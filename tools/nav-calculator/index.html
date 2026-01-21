@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NAV Computer • Transit Solver</title>
+<style>
+  :root{
+    --bg0:#030812;
+    --bg1:#071021;
+    --panel:rgba(10, 26, 38, .78);
+    --border:rgba(140, 255, 220, .18);
+    --border2:rgba(140, 255, 220, .10);
+
+    --text:rgba(210, 255, 240, .92);
+    --muted:rgba(210, 255, 240, .62);
+
+    --green:#7CFFB2;
+    --cyan:#64F0FF;
+    --amber:#FFC86B;
+    --red:#FF557A;
+
+    --glow: 0 0 18px rgba(124,255,178,.18), 0 0 40px rgba(100,240,255,.08);
+    --shadow: 0 28px 80px rgba(0,0,0,.55);
+    --r: 18px;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:var(--mono);
+    color:var(--text);
+    background:
+      radial-gradient(1200px 800px at 50% 35%, rgba(100,240,255,.12), transparent 65%),
+      radial-gradient(900px 700px at 20% 80%, rgba(124,255,178,.10), transparent 65%),
+      linear-gradient(180deg, var(--bg0), var(--bg1));
+    overflow-x:hidden;
+  }
+
+  .bgGrid{
+    position:fixed; inset:0;
+    background:
+      linear-gradient(to right, rgba(124,255,178,.06) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(124,255,178,.05) 1px, transparent 1px);
+    background-size: 42px 42px;
+    opacity:.55;
+    pointer-events:none;
+    mix-blend-mode:screen;
+  }
+  .scanlines{
+    position:fixed; inset:0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.0) 0px,
+      rgba(0,0,0,0.0) 2px,
+      rgba(0,0,0,0.12) 3px
+    );
+    opacity:.55;
+    pointer-events:none;
+  }
+  .vignette{
+    position:fixed; inset:0;
+    background: radial-gradient(1000px 700px at 50% 40%, transparent 45%, rgba(0,0,0,.58) 100%);
+    pointer-events:none;
+  }
+  .noise{
+    position:fixed; inset:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+    opacity:.06;
+    pointer-events:none;
+    mix-blend-mode:overlay;
+  }
+
+  .wrap{max-width:1180px;margin:0 auto;padding:24px 16px 60px;position:relative}
+
+  .topbar{
+    display:flex;justify-content:space-between;align-items:flex-start;gap:14px;
+    padding:16px 16px 14px;border:1px solid var(--border);border-radius: var(--r);
+    background: linear-gradient(180deg, rgba(10, 26, 38, .72), rgba(10, 26, 38, .35));
+    box-shadow: var(--shadow);backdrop-filter: blur(8px);
+  }
+  .brand{display:flex;flex-direction:column;gap:6px}
+  .brand .line1{
+    display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.18em;
+    text-transform:uppercase;color:rgba(210,255,240,.95);
+  }
+  .dot{width:10px;height:10px;border-radius:50%;background: var(--green);box-shadow:0 0 12px rgba(124,255,178,.45);margin-top:2px;}
+  .subtitle{
+    color:var(--muted);font-family:var(--sans);font-size:13px;line-height:1.35;max-width: 98ch;
+  }
+
+  .rightStatus{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;justify-content:flex-end}
+  .pill{
+    border:1px solid var(--border2);border-radius:999px;padding:8px 10px;
+    background: rgba(10,26,38,.55);color:rgba(210,255,240,.80);
+    font-size:12px;letter-spacing:.08em;text-transform:uppercase;box-shadow: var(--glow);
+  }
+  .pill strong{color:rgba(210,255,240,.95)}
+
+  .grid{
+    display:grid;grid-template-columns: 1.05fr .95fr;gap:16px;margin-top:16px;
+  }
+  @media(max-width:1000px){ .grid{grid-template-columns:1fr} }
+
+  .panel{
+    border:1px solid var(--border);border-radius: var(--r);
+    background: var(--panel);box-shadow: var(--shadow);backdrop-filter: blur(10px);
+    overflow:hidden;
+  }
+  .panelHead{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:14px 16px 12px;border-bottom:1px solid rgba(140,255,220,.12);
+    background: linear-gradient(180deg, rgba(124,255,178,.08), rgba(10,26,38,.0));
+  }
+  .panelHead .title{
+    letter-spacing:.16em;text-transform:uppercase;font-weight:900;font-size:13px;color:rgba(210,255,240,.85);
+  }
+  .panelHead .sub{
+    font-size:12px;color:rgba(210,255,240,.62);font-family:var(--sans);
+  }
+  .panelBody{ padding:16px; }
+
+  label{
+    display:block;font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+    color:rgba(210,255,240,.70);margin:0 0 8px;
+  }
+  input, select{
+    width:100%;padding:12px;border-radius:14px;border: 1px solid rgba(140,255,220,.20);
+    background: rgba(0,0,0,.28);color: var(--text);outline:none;font-family: var(--mono);
+  }
+  input:focus, select:focus{
+    border-color: rgba(100,240,255,.55);box-shadow: 0 0 0 4px rgba(100,240,255,.10), var(--glow);
+  }
+
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:520px){ .row{grid-template-columns:1fr} }
+
+  .hint{
+    margin-top:8px;font-family:var(--sans);font-size:12px;color:rgba(210,255,240,.55);line-height:1.35;
+  }
+
+  .divider{ margin:16px 0;border-top:1px dashed rgba(140,255,220,.18); }
+
+  .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
+  button{
+    border:1px solid rgba(100,240,255,.25);
+    padding:12px 14px;border-radius:14px;font-weight:900;letter-spacing:.10em;text-transform:uppercase;
+    cursor:pointer;font-family:var(--mono);color:#021018;
+    background: linear-gradient(135deg, rgba(124,255,178,.95), rgba(100,240,255,.90));
+    box-shadow: var(--glow);
+  }
+  button:active{ transform: translateY(1px); }
+  .ghost{
+    background: rgba(0,0,0,.20);color: rgba(210,255,240,.86);
+    border-color: rgba(140,255,220,.18);box-shadow:none;
+  }
+
+  .statusLine{
+    display:flex;gap:10px;align-items:center;margin-top:10px;padding:10px 12px;
+    border-radius: 14px;border:1px solid rgba(140,255,220,.14);
+    background: rgba(0,0,0,.18);color: rgba(210,255,240,.78);
+    font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+  }
+  .lamp{width:10px;height:10px;border-radius:50%;background: rgba(255,200,107,.35);box-shadow: 0 0 10px rgba(255,200,107,.18);}
+  .lamp.ok{ background: var(--green); box-shadow: 0 0 12px rgba(124,255,178,.45); }
+  .lamp.bad{ background: var(--red); box-shadow: 0 0 14px rgba(255,85,122,.35); }
+
+  .readout{ padding:16px; }
+  .primary{
+    display:flex;justify-content:space-between;align-items:flex-start;gap:12px;
+    border:1px solid rgba(140,255,220,.14);border-radius: 16px;
+    background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.10));
+    padding:14px 14px 12px;
+  }
+  .primary .big{
+    margin:0;font-size: 30px;letter-spacing:.06em;color: rgba(210,255,240,.96);text-shadow: var(--glow);
+  }
+  .primary .small{
+    margin:6px 0 0;font-family:var(--sans);color: rgba(210,255,240,.62);
+    font-size: 12px;line-height:1.3;
+  }
+  .chip{
+    font-size:12px;letter-spacing:.10em;text-transform:uppercase;padding:8px 10px;border-radius:999px;
+    border:1px solid rgba(124,255,178,.25);background: rgba(124,255,178,.10);color: rgba(210,255,240,.92);
+  }
+
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+  @media(max-width:520px){ .tiles{grid-template-columns:1fr} }
+
+  .tile{
+    border:1px solid rgba(140,255,220,.12);border-radius: 16px;background: rgba(0,0,0,.18);padding:12px;
+  }
+  .tile .k{
+    font-size:12px;letter-spacing:.12em;text-transform:uppercase;color: rgba(210,255,240,.62);margin-bottom:8px;
+  }
+  .tile .v{font-size:14px;color: rgba(210,255,240,.90);}
+
+  .log{
+    margin-top:12px;border:1px solid rgba(140,255,220,.12);border-radius:16px;background: rgba(0,0,0,.18);padding:12px;
+  }
+  .log .k{
+    font-size:12px;letter-spacing:.12em;text-transform:uppercase;color: rgba(210,255,240,.62);margin-bottom:8px;
+  }
+  .log .v{
+    font-family:var(--sans);font-size:13px;color: rgba(210,255,240,.74);line-height:1.45;
+  }
+
+  .err{
+    margin-top:12px;border-left:4px solid var(--red);padding:10px 12px;border-radius:14px;
+    background: rgba(255,85,122,.10);color: rgba(210,255,240,.92);font-family:var(--sans);font-size:13px;
+  }
+
+  .mini{font-family:var(--sans);font-size:12px;color: rgba(210,255,240,.62);}
+
+  .toggleRow{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-top:10px;}
+  .check{
+    display:flex; gap:10px; align-items:center;
+    padding:10px 12px; border-radius:14px;
+    border:1px solid rgba(140,255,220,.14);
+    background: rgba(0,0,0,.18);
+    font-family:var(--sans);
+    font-size:13px;
+    color: rgba(210,255,240,.80);
+  }
+  .check input{ width:auto; padding:0; margin:0; }
+
+  .inline{
+    display:grid;
+    grid-template-columns: 1.1fr .9fr;
+    gap:12px;
+    margin-top:10px;
+  }
+  @media(max-width:520px){ .inline{grid-template-columns:1fr} }
+
+  .drawer{
+    margin-top:12px;
+    border:1px solid rgba(140,255,220,.14);
+    border-radius:16px;
+    background: rgba(0,0,0,.18);
+    overflow:hidden;
+    display:none;
+  }
+  .drawer.open{ display:block; }
+  .drawer .hd{
+    padding:10px 12px;
+    border-bottom:1px solid rgba(140,255,220,.10);
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    font-size:12px;
+    color: rgba(210,255,240,.70);
+  }
+  .drawer .bd{
+    padding:12px;
+    font-family:var(--sans);
+    font-size:13px;
+    color: rgba(210,255,240,.74);
+    line-height:1.5;
+  }
+  .drawer .bd code{
+    color: rgba(210,255,240,.90);
+    background: rgba(255,255,255,.06);
+    border:1px solid rgba(140,255,220,.10);
+    padding:2px 6px;
+    border-radius:10px;
+  }
+  .drawer ul{ margin:8px 0 0 18px; }
+</style>
+</head>
+
+<body>
+<div class="bgGrid"></div>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+<div class="noise"></div>
+
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <div class="line1"><span class="dot"></span> NAV CORE • IN-SYSTEM TRANSIT</div>
+      <div class="subtitle">
+        Outputs: time as <b>Days / Hours / Minutes</b>. Distances display as <b>kkm</b> + <b>AU (1dp)</b>.
+        Optional <b>100D Clearance</b> computes the required jump-clearance distance (advisory only).
+        <br><br>
+        <b>// Ship Intellect Note:</b> “I will compute the route. You will provide the judgment. Please try not to confuse the two.”
+      </div>
+    </div>
+    <div class="rightStatus">
+      <div class="pill"><strong>PROFILE</strong> <span id="pillProfile">FLIP/BURN</span></div>
+      <div class="pill"><strong>DIST</strong> <span id="pillDist">KM</span></div>
+      <div class="pill"><strong>LINK</strong> LOCAL</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- INPUT PANEL -->
+    <section class="panel">
+      <div class="panelHead">
+        <div>
+          <div class="title">NAV INPUT</div>
+          <div class="sub">Astrogation deviations via Effect. Trans-solar uses distance multipliers.</div>
+        </div>
+      </div>
+
+      <div class="panelBody">
+        <div class="row">
+          <div>
+            <label for="thrust">Thrust (G)</label>
+            <input type="number" id="thrust" step="0.01" placeholder="1.00" />
+            <div class="hint">Grav plates keep the crew comfortable. Your drive still pays the bill.</div>
+          </div>
+          <div>
+            <label for="profile">Transit Profile</label>
+            <select id="profile" onchange="onProfileChange()">
+              <option value="flip" selected>Flip-and-burn (arrive stopped)</option>
+              <option value="const">Constant thrust (no braking)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <label for="distMode">Distance Mode</label>
+        <select id="distMode" onchange="onDistModeChange(); syncPills();">
+          <option value="km" selected>Direct entry: kilometers (km)</option>
+          <option value="au">Direct entry: astronomical units (AU)</option>
+          <option value="map">System-map model (AU radii + separation)</option>
+          <option value="orbit">Orbit# model (WBH Orbit# table)</option>
+        </select>
+
+                <div id="distKmBlock" style="margin-top:10px;">
+          <label for="distanceKm">Range (km)</label>
+          <input type="number" id="distanceKm" step="0.1" placeholder="100000" />
+        </div>
+
+        <div id="distAuBlock" style="margin-top:10px; display:none;">
+          <label for="distanceAu">Range (AU)</label>
+          <input type="number" id="distanceAu" step="0.0001" placeholder="1.0" />
+          <div class="hint">Tool uses 1 AU = 150,000,000 km (rounded).</div>
+        </div>
+
+        <div id="distMapBlock" style="margin-top:10px; display:none;">
+          <div class="inline">
+            <div>
+              <label for="aMode">Body A input</label>
+              <select id="aMode" onchange="onMapBodyModeChange()">
+                <option value="au" selected>AU radius (direct)</option>
+                <option value="orbit">Orbit# (WBH table)</option>
+              </select>
+            </div>
+            <div>
+              <label for="bMode">Body B input</label>
+              <select id="bMode" onchange="onMapBodyModeChange()">
+                <option value="au" selected>AU radius (direct)</option>
+                <option value="orbit">Orbit# (WBH table)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="inline" style="margin-top:10px;">
+            <div id="aAuBlock">
+              <label for="au1">Body A orbital radius (AU)</label>
+              <input type="number" id="au1" step="0.0001" placeholder="1.0" onchange="updateMapAUPreview()" />
+            </div>
+            <div id="bAuBlock">
+              <label for="au2">Body B orbital radius (AU)</label>
+              <input type="number" id="au2" step="0.0001" placeholder="5.0" onchange="updateMapAUPreview()" />
+            </div>
+          </div>
+
+          <div class="inline" style="margin-top:10px; display:none;" id="aOrbitBlock">
+            <div>
+              <label for="aOrbitWhole">Body A Orbit#</label>
+              <select id="aOrbitWhole" onchange="updateMapAUPreview()"></select>
+            </div>
+            <div>
+              <label for="aOrbitFrac">Body A fraction</label>
+              <input type="number" id="aOrbitFrac" step="0.01" min="0" max="0.99" value="0" onchange="updateMapAUPreview()" />
+            </div>
+          </div>
+
+          <div class="inline" style="margin-top:10px; display:none;" id="bOrbitBlock">
+            <div>
+              <label for="bOrbitWhole">Body B Orbit#</label>
+              <select id="bOrbitWhole" onchange="updateMapAUPreview()"></select>
+            </div>
+            <div>
+              <label for="bOrbitFrac">Body B fraction</label>
+              <input type="number" id="bOrbitFrac" step="0.01" min="0" max="0.99" value="0" onchange="updateMapAUPreview()" />
+            </div>
+          </div>
+
+          <div class="hint" id="mapAUPreview" style="margin-top:10px;">
+            Map radii: —
+          </div>
+
+          <div class="inline">
+            <div>
+              <label for="separation">Compass separation</label>
+              <select id="separation">
+                <option value="same">Same point</option>
+                <option value="opp">Opposite sides</option>
+                <option value="1">1 point apart</option>
+                <option value="2">2 point apart</option>
+                <option value="3">3 point apart</option>
+              </select>
+            </div>
+            <div>
+              <label for="routeType">Route type</label>
+              <select id="routeType" onchange="onRouteTypeChange()">
+                <option value="direct" selected>Direct transit</option>
+                <option value="trans">Trans-solar</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="safetyBlock" style="margin-top:10px; display:none;">
+            <label for="safety">Trans-solar safety</label>
+            <select id="safety">
+              <option value="1.5">Risky (×1.5 distance, Astrogation DM +2)</option>
+              <option value="2.0" selected>Normal (×2.0 distance, Astrogation DM +0)</option>
+              <option value="2.5">Cautious (×2.5 distance, Astrogation DM −2)</option>
+            </select>
+
+            <div class="toggleRow" style="margin-top:10px;">
+              <button type="button" class="ghost" onclick="toggleMultiplierHelp()">
+                Why trans-solar multipliers?
+              </button>
+            </div>
+
+            <div class="hint">
+              Safety DM is advisory text only. Players apply it on the Astrogation roll before entering final Effect.
+            </div>
+
+            <div class="drawer" id="multHelp">
+              <div class="hd">Reasoning: Trans-solar multipliers</div>
+              <div class="bd">
+                <p>
+                  The multiplier is <b>navigation geometry + hazard avoidance</b>, not physics.
+                  It represents taking a safer arc around the star instead of cutting through.
+                </p>
+                <p>
+                  If you want to ignore stellar hazards, choose <b>Direct transit</b> instead of <b>Trans-solar</b>.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="hint" style="margin-top:10px;">
+            Baseline (AU): same side = outer−inner, opposite = outer+inner.
+            Direct multipliers: 1pt×0.75, 2pt×1.5, 3pt×2.75.
+            Trans-solar: (AU1+AU2)×safety.
+          </div>
+        </div>
+
+        <div id="distOrbitBlock" style="margin-top:10px; display:none;">
+          <div class="inline">
+            <div>
+              <label for="orbitStartWhole">Start Orbit#</label>
+              <select id="orbitStartWhole" onchange="updateOrbitDistancePreview()"></select>
+            </div>
+            <div>
+              <label for="orbitStartFrac">Start fraction</label>
+              <input type="number" id="orbitStartFrac" step="0.01" min="0" max="0.99" value="0" onchange="updateOrbitDistancePreview()" />
+            </div>
+          </div>
+
+          <div class="inline" style="margin-top:10px;">
+            <div>
+              <label for="orbitEndWhole">End Orbit#</label>
+              <select id="orbitEndWhole" onchange="updateOrbitDistancePreview()"></select>
+            </div>
+            <div>
+              <label for="orbitEndFrac">End fraction</label>
+              <input type="number" id="orbitEndFrac" step="0.01" min="0" max="0.99" value="0" onchange="updateOrbitDistancePreview()" />
+            </div>
+          </div>
+
+          <div class="hint" id="orbitPreview" style="margin-top:10px;">
+            Orbit model: —
+          </div>
+          <div class="hint">
+            Orbit# to AU interpolation uses: <code>Base AU + Difference AU × fractional</code>. Fraction is 0.00–0.99.
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- 100D Jump Clearance -->
+        <div class="toggleRow">
+          <div class="check">
+            <input type="checkbox" id="use100d" onchange="on100DToggle()" />
+            <label style="margin:0; text-transform:none; letter-spacing:0; font-size:13px;">Show 100D jump clearance (distance only)</label>
+          </div>
+        </div>
+
+        <div id="jumpBlock" style="display:none; margin-top:10px;">
+          <div class="inline">
+            <div>
+              <label for="jumpBodyType">100D body type</label>
+              <select id="jumpBodyType" onchange="onJumpBodyTypeChange()">
+                <option value="rocky" selected>Mainworld / Rocky world (Size code)</option>
+                <option value="gg_small">Gas Giant (Small, 60,000 km)</option>
+                <option value="gg_std">Gas Giant (Standard, 120,000 km)</option>
+                <option value="gg_large">Gas Giant (Large, 160,000 km)</option>
+                <option value="gg_super">Gas Giant (Super, 200,000 km)</option>
+              </select>
+              <div class="hint">100D distance is <b>100 × diameter</b>. Added as a separate leg.</div>
+            </div>
+
+            <div id="sizeCodeBlock">
+              <label for="sizeCode">Mainworld size (Hex)</label>
+              <select id="sizeCode" onchange="update100DPreview()">
+                <option value="0">0 (Belt) • N/A</option>
+                <option value="R">R (Rings) • N/A</option>
+                <option value="S">S (Small body) • 600 km</option>
+                <option value="1">1 • 1,600 km</option>
+                <option value="2">2 • 3,200 km</option>
+                <option value="3">3 • 4,800 km</option>
+                <option value="4">4 • 6,400 km</option>
+                <option value="5">5 • 8,000 km</option>
+                <option value="6">6 • 9,600 km</option>
+                <option value="7">7 • 11,200 km</option>
+                <option value="8" selected>8 • 12,800 km</option>
+                <option value="9">9 • 14,400 km</option>
+                <option value="A">A • 16,000 km</option>
+                <option value="B">B • 17,600 km</option>
+                <option value="C">C • 19,200 km</option>
+                <option value="D">D • 20,800 km</option>
+                <option value="E">E • 22,400 km</option>
+                <option value="F">F • 24,000 km</option>
+              </select>
+              <div class="hint" id="d100Preview">100D clearance: —</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Astrogation deviations -->
+        <div class="toggleRow">
+          <div class="check">
+            <input type="checkbox" id="useAstro" onchange="onAstroToggle()" />
+            <label style="margin:0; text-transform:none; letter-spacing:0; font-size:13px;">Apply Astrogation deviations (Effect)</label>
+          </div>
+          <div class="check">
+            <input type="checkbox" id="autoDice" checked />
+            <label style="margin:0; text-transform:none; letter-spacing:0; font-size:13px;">Auto-roll deviation dice</label>
+          </div>
+        </div>
+
+        <div id="astroBlock" style="display:none; margin-top:10px;">
+          <div class="inline">
+            <div>
+              <label for="effect">Astrogation Effect (final)</label>
+              <input type="number" id="effect" step="1" placeholder="e.g. +2 or -3" />
+              <div class="hint">Enter the final Effect after applying any roll DMs (including safety DM text).</div>
+            </div>
+            <div>
+              <label for="manualPct">Manual % override (optional)</label>
+              <input type="number" id="manualPct" step="0.1" placeholder="leave blank" />
+              <div class="hint">Positive reduces time. Negative increases time. Overrides Effect logic.</div>
+            </div>
+          </div>
+
+          <div class="hint" style="margin-top:10px;">
+            +Effect reduces time by D3% per point. −Effect increases by D6% per point.
+            Failure is Effect ≤ −6: major correction delay of 4D% + 1D% per negative Effect.
+          </div>
+        </div>
+
+        <div class="actions">
+          <button onclick="solve()">Solve Route</button>
+          <button onclick="compute100DOnly()">Compute 100D Only</button>
+          <button onclick="resetAll()">Clear</button>
+        </div>
+
+        <div class="statusLine">
+          <span class="lamp" id="lamp"></span>
+          <span id="statusText">STANDBY • Awaiting input</span>
+        </div>
+
+        <div class="mini" style="margin-top:10px;">
+          Comm lag: 8.3 min per AU (one-way). AU conversion: 150,000,000 km per AU.
+        </div>
+      </div>
+    </section>
+
+    <!-- READOUT PANEL -->
+    <section class="panel">
+      <div class="panelHead">
+        <div>
+          <div class="title">NAV READOUT</div>
+          <div class="sub">Shows nominal vs Astrogation-adjusted routed transit. 100D is clearance guidance only.</div>
+        </div>
+      </div>
+
+      <div class="readout">
+        <div class="primary">
+          <div>
+            <p class="big" id="mainTime">0d 0h 0m</p>
+            <p class="small" id="mainSub">No solution computed.</p>
+          </div>
+          <div class="chip" id="chipStatus">READY</div>
+        </div>
+
+        <div class="actions" style="margin-top:12px;">
+          <button class="ghost" onclick="copyBrief()">Copy NAV Brief</button>
+        </div>
+
+        <div class="tiles">
+          <div class="tile">
+            <div class="k">Raw Distance</div>
+            <div class="v" id="rawDistOut">—</div>
+          </div>
+
+          <div class="tile">
+            <div class="k">Routed Distance</div>
+            <div class="v" id="distOut">—</div>
+          </div>
+
+          <div class="tile">
+            <div class="k">Navigation Arc Multiplier</div>
+            <div class="v" id="arcMultOut">—</div>
+          </div>
+
+          <div class="tile">
+            <div class="k">100D Jump Clearance</div>
+            <div class="v" id="jumpOut">—</div>
+          </div>
+
+          <div class="tile">
+            <div class="k">Total Distance Flown</div>
+            <div class="v" id="totalDistOut">—</div>
+          </div>
+
+          <div class="tile">
+            <div class="k">Comm Lag (one-way)</div>
+            <div class="v" id="commOut">—</div>
+          </div>
+
+          <div class="tile">
+            <div class="k">Nominal Time (Routed)</div>
+            <div class="v" id="nominalOut">—</div>
+          </div>
+
+          <div class="tile">
+            <div class="k">Adjusted Time (Astrogation)</div>
+            <div class="v" id="adjustedOut">—</div>
+          </div>
+
+          <div class="tile">
+            <div class="k">Routed Time (Adjusted)</div>
+            <div class="v" id="routeLegOut">—</div>
+          </div>
+
+          <div class="tile">
+            <div class="k">100D (Not Flown)</div>
+            <div class="v" id="jumpLegOut">—</div>
+          </div>
+
+          <div class="tile">
+            <div class="k">Total Time</div>
+            <div class="v" id="legsSumOut">—</div>
+          </div>
+
+          <div class="tile">
+            <div class="k">Peak / Arrival Speed</div>
+            <div class="v" id="speedOut">—</div>
+          </div>
+
+          <div class="tile">
+            <div class="k">Assumptions</div>
+            <div class="v" id="assumeOut">Start: rest</div>
+          </div>
+        </div>
+
+        <div class="log">
+          <div class="k">NAV LOG</div>
+          <div class="v" id="notesOut">Provide parameters, then solve.</div>
+        </div>
+
+        <div id="errorBox"></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+// Units / constants
+  const AU_TO_KM = 150000000;      // rounded per spec
+  const AU_TO_LAG_MIN = 8.3;       // one-way light time in minutes per AU
+
+  // Orbit# table (World Builder's Handbook): base AU + (difference AU * fractional)
+  // Orbit# 0..20
+  const ORBIT_BASE_AU = [
+    0, 0.4, 0.7, 1.0, 1.6, 2.8, 5.2, 10, 20, 40, 77,
+    154, 308, 615, 1230, 2500, 4900, 9800, 19500, 39500, 78700
+  ];
+  const ORBIT_DIFF_AU = [
+    0.4, 0.3, 0.3, 0.6, 1.2, 2.4, 4.8, 10, 20, 37, 77,
+    154, 307, 615, 1270, 2400, 4900, 9700, 20000, 39200, 0
+  ];
+
+  function clamp(n, lo, hi){
+    if(!Number.isFinite(n)) return lo;
+    return Math.min(hi, Math.max(lo, n));
+  }
+
+  function orbitToAU(whole, frac){
+    const w = clamp(parseInt(whole,10), 0, 20);
+    const f = clamp(parseFloat(frac), 0, 0.99);
+    return ORBIT_BASE_AU[w] + (ORBIT_DIFF_AU[w] * f);
+  }
+
+  function populateOrbitSelects(){
+    const sW = document.getElementById("orbitStartWhole");
+    const eW = document.getElementById("orbitEndWhole");
+    if(!sW || !eW) return;
+
+    const makeOpt = (v, label) => {
+      const o = document.createElement("option");
+      o.value = String(v);
+      o.textContent = label;
+      return o;
+    };
+
+    for(let i=0;i<=20;i++){
+      const label = `${i} • ${ORBIT_BASE_AU[i].toLocaleString()} AU`;
+      sW.appendChild(makeOpt(i,label));
+      eW.appendChild(makeOpt(i,label));
+    }
+    // sensible defaults: Earth-ish to Jupiter-ish
+    sW.value = "3";
+    eW.value = "6";
+    updateOrbitDistancePreview();
+  }
+  // Map-model Orbit# helpers (WBH Orbit# table)
+  function populateMapOrbitSelects(){
+    const aW = document.getElementById("aOrbitWhole");
+    const bW = document.getElementById("bOrbitWhole");
+    if(!aW || !bW) return;
+
+    const makeOpt = (v, label) => {
+      const o = document.createElement("option");
+      o.value = String(v);
+      o.textContent = label;
+      return o;
+    };
+
+    // clear (defensive)
+    aW.innerHTML = "";
+    bW.innerHTML = "";
+
+    for(let i=0;i<=20;i++){
+      const label = `${i} • ${ORBIT_BASE_AU[i].toLocaleString()} AU`;
+      aW.appendChild(makeOpt(i,label));
+      bW.appendChild(makeOpt(i,label));
+    }
+    aW.value = "3";
+    bW.value = "6";
+  }
+
+  function onMapBodyModeChange(){
+    const aMode = document.getElementById("aMode")?.value || "au";
+    const bMode = document.getElementById("bMode")?.value || "au";
+
+    // Toggle AU vs Orbit blocks
+    const aAu = document.getElementById("aAuBlock");
+    const bAu = document.getElementById("bAuBlock");
+    const aOr = document.getElementById("aOrbitBlock");
+    const bOr = document.getElementById("bOrbitBlock");
+
+    if(aAu) aAu.style.display = (aMode === "au") ? "" : "none";
+    if(aOr) aOr.style.display = (aMode === "orbit") ? "" : "none";
+
+    if(bAu) bAu.style.display = (bMode === "au") ? "" : "none";
+    if(bOr) bOr.style.display = (bMode === "orbit") ? "" : "none";
+
+    updateMapAUPreview();
+  }
+
+  function getMapBodyAU(which){
+    if(which === "A"){
+      const mode = document.getElementById("aMode")?.value || "au";
+      if(mode === "orbit"){
+        const w = document.getElementById("aOrbitWhole")?.value;
+        const f = document.getElementById("aOrbitFrac")?.value;
+        return orbitToAU(w, f);
+      }
+      return parseFloat(document.getElementById("au1")?.value);
+    } else {
+      const mode = document.getElementById("bMode")?.value || "au";
+      if(mode === "orbit"){
+        const w = document.getElementById("bOrbitWhole")?.value;
+        const f = document.getElementById("bOrbitFrac")?.value;
+        return orbitToAU(w, f);
+      }
+      return parseFloat(document.getElementById("au2")?.value);
+    }
+  }
+
+  function updateMapAUPreview(){
+    const mode = document.getElementById("distMode")?.value;
+    if(mode !== "map") return;
+
+    const a = getMapBodyAU("A");
+    const b = getMapBodyAU("B");
+    const prev = document.getElementById("mapAUPreview");
+    if(!prev) return;
+
+    if(!Number.isFinite(a) || !Number.isFinite(b) || a <= 0 || b <= 0){
+      prev.innerHTML = "Map radii: —";
+      return;
+    }
+    const dAU = Math.abs(a - b);
+    const dKm = dAU * AU_TO_KM;
+    prev.innerHTML = `Map radii: <b>A ${a.toFixed(4)} AU</b>, <b>B ${b.toFixed(4)} AU</b> • Δ ${dAU.toFixed(4)} AU (${fmtDistance(dKm)})`;
+  }
+
+  function updateOrbitDistancePreview(){
+    const mode = document.getElementById("distMode")?.value;
+    if(mode !== "orbit") return;
+
+    const sw = document.getElementById("orbitStartWhole").value;
+    const sf = document.getElementById("orbitStartFrac").value;
+    const ew = document.getElementById("orbitEndWhole").value;
+    const ef = document.getElementById("orbitEndFrac").value;
+
+    const a1 = orbitToAU(sw, sf);
+    const a2 = orbitToAU(ew, ef);
+    const dAU = Math.abs(a2 - a1);
+    const dKm = dAU * AU_TO_KM;
+
+    const prev = document.getElementById("orbitPreview");
+    if(prev){
+      prev.innerHTML = `Orbit model: <b>${dAU.toFixed(4)} AU</b> (${fmtDistance(dKm)})`;
+    }
+  }
+
+  const G0 = 9.80665;              // m/s^2
+
+  // expected values if Auto-roll deviation dice is off
+  const EV_D3 = 2.0;
+  const EV_D6 = 3.5;
+  const EV_4D6 = 14.0;
+
+  // Size chart: Average diameters in km
+  const SIZE_DIAM_KM = {
+    "0": null, "R": null, "S": 600,
+    "1": 1600, "2": 3200, "3": 4800, "4": 6400,
+    "5": 8000, "6": 9600, "7": 11200, "8": 12800,
+    "9": 14400, "A": 16000, "B": 17600, "C": 19200,
+    "D": 20800, "E": 22400, "F": 24000
+  };
+
+  // Gas giant diameter presets (km)
+  const GAS_GIANT_DIAM_KM = {
+    "gg_small": 60000,
+    "gg_std": 120000,
+    "gg_large": 160000,
+    "gg_super": 200000
+  };
+
+  let lastBrief = "";
+
+  function fmt(n, d=2){ return Number.isFinite(n) ? n.toFixed(d) : "—"; }
+
+  function fmtDHM(totalMinutes){
+    if(!Number.isFinite(totalMinutes)) return "—";
+    const total = Math.max(0, Math.round(totalMinutes));
+    const days = Math.floor(total / (60 * 24));
+    const remAfterDays = total - days * 60 * 24;
+    const hours = Math.floor(remAfterDays / 60);
+    const mins = remAfterDays - hours * 60;
+    return `${days}d ${hours}h ${mins}m`;
+  }
+
+  function fmtDistance(distanceKm){
+    const kkm = distanceKm / 1000;
+    const au = distanceKm / AU_TO_KM;
+    return `RANGE: ${fmt(kkm,2)} kkm / ${fmt(au,1)} AU`;
+  }
+
+  
+function setStatus(ok, text){
+    const lamp = document.getElementById("lamp");
+    if(lamp){
+      lamp.classList.remove("ok","bad");
+      lamp.classList.add(ok ? "ok" : "bad");
+    }
+    const st = document.getElementById("statusText");
+    if(st) st.textContent = text;
+    const chip = document.getElementById("chipStatus");
+    if(chip) chip.textContent = ok ? "SOLVED" : "INPUT ERR";
+  }
+
+  function setError(msg){
+    document.getElementById("errorBox").innerHTML =
+      `<div class="err"><b>NAV ERROR:</b> ${msg}</div>`;
+    setStatus(false, "FAULT • Check input values");
+  }
+
+  function clearError(){ document.getElementById("errorBox").innerHTML = ""; }
+
+  function onDistModeChange(){
+    const mode = document.getElementById("distMode").value;
+    document.getElementById("distKmBlock").style.display = (mode==="km") ? "" : "none";
+    document.getElementById("distAuBlock").style.display = (mode==="au") ? "" : "none";
+    document.getElementById("distMapBlock").style.display = (mode==="map") ? "" : "none";
+    document.getElementById("distOrbitBlock").style.display = (mode==="orbit") ? "" : "none";
+    if(mode==="map"){ onMapBodyModeChange(); updateMapAUPreview(); }
+  }
+
+  function onRouteTypeChange(){
+    const rt = document.getElementById("routeType").value;
+    document.getElementById("safetyBlock").style.display = (rt==="trans") ? "" : "none";
+    if(rt !== "trans"){
+      document.getElementById("multHelp").classList.remove("open");
+    }
+  }
+
+  function onAstroToggle(){
+    const on = document.getElementById("useAstro").checked;
+    document.getElementById("astroBlock").style.display = on ? "" : "none";
+  }
+
+  function syncPills(){
+    const profile = document.getElementById("profile").value;
+    const distMode = document.getElementById("distMode").value;
+    document.getElementById("pillProfile").textContent = (profile==="flip") ? "FLIP/BURN" : "NO BRAKE";
+    document.getElementById("pillDist").textContent = distMode.toUpperCase();
+  }
+
+  function onProfileChange(){
+    syncPills();
+
+    // If we already have a solved state, recompute so profile changes are reflected immediately.
+    // Fail silently if inputs are incomplete.
+    try{
+      const thrustG = parseFloat(document.getElementById("thrust").value);
+      if(!Number.isFinite(thrustG) || thrustG <= 0) return;
+
+      const mode = document.getElementById("distMode").value;
+
+      // If a route distance is available, re-solve.
+      if(mode === "km"){
+        const km = parseFloat(document.getElementById("distanceKm").value);
+        if(Number.isFinite(km) && km > 0) solve();
+        return;
+      }
+      if(mode === "au"){
+        const au = parseFloat(document.getElementById("distanceAu").value);
+        if(Number.isFinite(au) && au > 0) solve();
+        return;
+      }
+      if(mode === "orbit"){
+        // Orbit mode always has selects; just solve
+        solve();
+        return;
+      }
+      if(mode === "map"){
+        // For map, need either AU radii filled or Orbit mode selected and valid
+        const aMode = document.getElementById("aMode")?.value || "au";
+        const bMode = document.getElementById("bMode")?.value || "au";
+        let ok = true;
+        if(aMode === "au"){
+          const au1 = parseFloat(document.getElementById("au1").value);
+          ok = ok && Number.isFinite(au1) && au1 > 0;
+        }
+        if(bMode === "au"){
+          const au2 = parseFloat(document.getElementById("au2").value);
+          ok = ok && Number.isFinite(au2) && au2 > 0;
+        }
+        if(ok) solve();
+        return;
+      }
+
+      // If user is only using 100D, update that.
+      const use = document.getElementById("use100d");
+      if(use && use.checked && typeof compute100DOnly === "function"){
+        compute100DOnly();
+      }
+    } catch(e){
+      // intentionally silent
+      return;
+    }
+  }
+
+  function toggleMultiplierHelp(){
+    document.getElementById("multHelp").classList.toggle("open");
+  }
+
+  // 100D UI handlers
+  function on100DToggle(){
+    const on = document.getElementById("use100d").checked;
+    document.getElementById("jumpBlock").style.display = on ? "" : "none";
+    if(on) update100DPreview();
+  }
+
+  function onJumpBodyTypeChange(){
+    const type = document.getElementById("jumpBodyType").value;
+    const sizeBlock = document.getElementById("sizeCodeBlock");
+    sizeBlock.style.display = (type === "rocky") ? "" : "none";
+    update100DPreview();
+  }
+
+  function update100DPreview(){
+    const on = document.getElementById("use100d").checked;
+    if(!on){
+      document.getElementById("d100Preview").textContent = "100D clearance: —";
+      return;
+    }
+
+    const type = document.getElementById("jumpBodyType").value;
+    let diamKm = null;
+    let note = "";
+
+    if(type === "rocky"){
+      const code = document.getElementById("sizeCode").value;
+      diamKm = SIZE_DIAM_KM[code] ?? null;
+      note = (diamKm === null) ? "N/A for belts/rings" : `Size ${code} avg diameter ${diamKm.toLocaleString()} km`;
+    } else {
+      diamKm = GAS_GIANT_DIAM_KM[type];
+      note = `Gas giant avg diameter ${diamKm.toLocaleString()} km`;
+    }
+
+    if(diamKm === null){
+      document.getElementById("d100Preview").textContent = `100D clearance: N/A (${note})`;
+    } else {
+      const d100 = diamKm * 100;
+      document.getElementById("d100Preview").textContent =
+        `100D clearance: ${fmt(d100/1000,1)} kkm / ${fmt(d100/AU_TO_KM,2)} AU (${note})`;
+    }
+  }
+
+  function get100DClearanceKm(){
+    const on = document.getElementById("use100d").checked;
+    if(!on) return { clearanceKm: 0, label: "Not applied" };
+
+    const type = document.getElementById("jumpBodyType").value;
+
+    if(type === "rocky"){
+      const code = document.getElementById("sizeCode").value;
+      const diamKm = SIZE_DIAM_KM[code] ?? null;
+      if(diamKm === null){
+        return { clearanceKm: 0, label: `N/A (Size ${code})` };
+      }
+      return { clearanceKm: diamKm * 100, label: `100D from Size ${code} (${diamKm.toLocaleString()} km dia)` };
+    }
+
+    const diamKm = GAS_GIANT_DIAM_KM[type];
+    let tag = "Gas Giant";
+    if(type === "gg_small") tag = "Gas Giant Small";
+    if(type === "gg_std") tag = "Gas Giant Standard";
+    if(type === "gg_large") tag = "Gas Giant Large";
+    if(type === "gg_super") tag = "Gas Giant Super";
+
+    return { clearanceKm: diamKm * 100, label: `100D from ${tag} (${diamKm.toLocaleString()} km dia)` };
+  }
+
+  function resetAll(){
+    clearError();
+    lastBrief = "";
+
+    document.getElementById("thrust").value = "";
+    document.getElementById("profile").value = "flip";
+    document.getElementById("distMode").value = "km";
+    onDistModeChange();
+    syncPills();
+
+    document.getElementById("distanceKm").value = "";
+    document.getElementById("distanceAu").value = "";
+
+    // Orbit mode defaults
+    const osw = document.getElementById("orbitStartWhole");
+    const oew = document.getElementById("orbitEndWhole");
+    if(osw && oew){
+      osw.value = "3";
+      oew.value = "6";
+      document.getElementById("orbitStartFrac").value = "0";
+      document.getElementById("orbitEndFrac").value = "0";
+      updateOrbitDistancePreview();
+    }
+    document.getElementById("au1").value = "";
+    document.getElementById("au2").value = "";
+    document.getElementById("separation").value = "same";
+    document.getElementById("routeType").value = "direct";
+    onRouteTypeChange();
+    document.getElementById("safety").value = "2.0";
+
+    document.getElementById("use100d").checked = false;
+    document.getElementById("jumpBodyType").value = "rocky";
+    document.getElementById("sizeCode").value = "8";
+    on100DToggle();
+
+    document.getElementById("useAstro").checked = false;
+    document.getElementById("autoDice").checked = true;
+    onAstroToggle();
+    document.getElementById("effect").value = "";
+    document.getElementById("manualPct").value = "";
+
+    document.getElementById("multHelp").classList.remove("open");
+
+    document.getElementById("mainTime").textContent = "0d 0h 0m";
+    document.getElementById("mainSub").textContent = "No solution computed.";
+    document.getElementById("rawDistOut").textContent = "—";
+    document.getElementById("distOut").textContent = "—";
+    document.getElementById("arcMultOut").textContent = "—";
+    document.getElementById("jumpOut").textContent = "—";
+    document.getElementById("totalDistOut").textContent = "—";
+    document.getElementById("commOut").textContent = "—";
+    document.getElementById("nominalOut").textContent = "—";
+    document.getElementById("adjustedOut").textContent = "—";
+    document.getElementById("routeLegOut").textContent = "—";
+    document.getElementById("jumpLegOut").textContent = "—";
+    document.getElementById("legsSumOut").textContent = "—";
+    document.getElementById("speedOut").textContent = "—";
+    document.getElementById("assumeOut").textContent = "Start: rest";
+    document.getElementById("notesOut").textContent = "Provide parameters, then solve.";
+    document.getElementById("chipStatus").textContent = "READY";
+
+    const lamp = document.getElementById("lamp");
+    lamp.classList.remove("ok","bad");
+    document.getElementById("statusText").textContent = "STANDBY • Awaiting input";
+  }
+
+  function rollD(sides){ return Math.floor(Math.random()*sides) + 1; }
+
+  function computeDistanceInfo(){
+    const distMode = document.getElementById("distMode").value;
+
+    if(distMode === "km"){
+      const km = parseFloat(document.getElementById("distanceKm").value);
+      if(!Number.isFinite(km) || km <= 0) throw new Error("Enter a positive distance in km.");
+      return { rawKm: km, routedKm: km, arcMult: 1.0, modeLabel: "DIRECT (KM)" };
+    }
+
+    if(distMode === "au"){
+      const au = parseFloat(document.getElementById("distanceAu").value);
+      if(!Number.isFinite(au) || au <= 0) throw new Error("Enter a positive distance in AU.");
+      const km = au * AU_TO_KM;
+      return { rawKm: km, routedKm: km, arcMult: 1.0, modeLabel: "DIRECT (AU)" };
+    }
+
+    if(distMode === "orbit"){
+      const sw = document.getElementById("orbitStartWhole").value;
+      const sf = document.getElementById("orbitStartFrac").value;
+      const ew = document.getElementById("orbitEndWhole").value;
+      const ef = document.getElementById("orbitEndFrac").value;
+
+      const a1 = orbitToAU(sw, sf);
+      const a2 = orbitToAU(ew, ef);
+      const dAU = Math.abs(a2 - a1);
+      if(!Number.isFinite(dAU) || dAU <= 0) throw new Error("Select different start/end Orbit# values.");
+      const km = dAU * AU_TO_KM;
+      return { rawKm: km, routedKm: km, arcMult: 1.0, modeLabel: "ORBIT# (WBH)" };
+    }
+
+
+    if(distMode === "map"){
+    const au1 = getMapBodyAU("A");
+        const au2 = getMapBodyAU("B");
+        if(!Number.isFinite(au1) || !Number.isFinite(au2) || au1 <= 0 || au2 <= 0) {
+          throw new Error("Enter positive AU radii (or Orbit# values) for both bodies.");
+        }
+    
+        const inner = Math.min(au1, au2);
+        const outer = Math.max(au1, au2);
+    
+        const sep = document.getElementById("separation").value;
+        const routeType = document.getElementById("routeType").value;
+    
+        const baselineAU = (sep === "opp") ? (outer + inner) : (outer - inner);
+    
+        let geomMult = 1.0;
+        if(sep === "1") geomMult = 0.75;
+        else if(sep === "2") geomMult = 1.5;
+        else if(sep === "3") geomMult = 2.75;
+    
+        const rawAU = baselineAU * geomMult;
+    
+        let routedAU = rawAU;
+        let arcMult = 1.0;
+    
+        if(routeType === "trans"){
+          const safety = parseFloat(document.getElementById("safety").value);
+          routedAU = (au1 + au2) * safety;
+          arcMult = routedAU / rawAU;
+        }
+    
+        return {
+          rawKm: rawAU * AU_TO_KM,
+          routedKm: routedAU * AU_TO_KM,
+          arcMult: arcMult,
+          modeLabel: routeType === "trans" ? "SYSTEM MAP (TRANS-SOLAR)" : "SYSTEM MAP (DIRECT)"
+        };
+  }
+
+  throw new Error("Select a distance mode.");
+
+  }
+
+  // Physics: time from distance (starting from rest)
+  function timeMinutesFromDistance(distanceKm, thrustG, profile){
+    const a = thrustG * G0;
+    const dMeters = distanceKm * 1000;
+
+    let tSec;
+    if(profile === "flip"){
+      tSec = 2 * Math.sqrt(dMeters / a);
+    } else {
+      tSec = Math.sqrt((2 * dMeters) / a);
+    }
+    return tSec / 60;
+  }
+
+  function speedFromDistance(distanceKm, thrustG, profile){
+    const a = thrustG * G0;
+    const dMeters = distanceKm * 1000;
+
+    if(profile === "flip"){
+      return Math.sqrt(a * dMeters);
+    } else {
+      return Math.sqrt(2 * a * dMeters);
+    }
+  }
+
+    function buildBrief(obj){
+    const lines = [
+      "NAV BRIEF",
+      "---------",
+      `PROFILE: ${obj.profileLabel}`,
+      `THRUST: ${obj.thrustG.toFixed(2)} G`,
+      `RAW DIST: ${obj.rawKKM} kkm (${obj.rawAU} AU)`,
+      `ROUTED:   ${obj.routeKKM} kkm (${obj.routeAU} AU)`,
+      `ARC MULT: ${obj.arcMult}×`,
+      `100D CLR: ${obj.jumpKKM} kkm (${obj.jumpAU} AU) • ${obj.jumpLabel} • CLEARANCE ONLY (NOT ADDED) • t=${obj.jumpTimeDHM} (advisory)`,
+      `COMM LAG (1-WAY): ${obj.commLagDHM}`,
+      `TIME (NOMINAL ROUTED): ${obj.nominalRoutedDHM}`,
+      `TIME (ASTRO-ADJ ROUTED): ${obj.adjustedRoutedDHM}`,
+      `SPEED: ${obj.speedLine}`,
+      `ASTRO: ${obj.astroLine}`,
+      `NOTES: ${obj.notesShort}`
+    ];
+    return lines.join("\n");
+  }
+
+  async function copyBrief(){
+    if(!lastBrief){
+      alert("No NAV solution to copy yet. Solve a route first.");
+      return;
+    }
+    try{
+      await navigator.clipboard.writeText(lastBrief);
+      alert("NAV brief copied to clipboard.");
+    } catch(e){
+      const ta = document.createElement("textarea");
+      ta.value = lastBrief;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      alert("NAV brief copied (fallback).");
+    }
+  }
+
+    function solve(){
+  try{
+    clearError();
+    syncPills();
+
+    const thrustG = parseFloat(document.getElementById("thrust").value);
+    const profile = document.getElementById("profile").value;
+
+    if(!Number.isFinite(thrustG) || thrustG <= 0){
+      return setError("Enter a positive thrust in G.");
+    }
+
+    let dist;
+    try{ dist = computeDistanceInfo(); }
+    catch(e){ return setError(e.message); }
+
+    const rawKm = dist.rawKm;
+    const routedKm = dist.routedKm;
+
+    // 100D clearance (display only; NOT added to distance/time)
+    const jump = get100DClearanceKm();
+    const jumpKm = jump.clearanceKm;
+
+    // Advisory time to reach 100D clearance (start from rest). Not added to route time.
+    const jumpTimeConstMin = (jumpKm > 0) ? timeMinutesFromDistance(jumpKm, thrustG, "const") : 0;
+    const jumpTimeFlipMin  = (jumpKm > 0) ? timeMinutesFromDistance(jumpKm, thrustG, "flip")  : 0;
+    const jumpTimeSelMin   = (profile === "flip") ? jumpTimeFlipMin : jumpTimeConstMin;
+
+
+    // Total distance flown is the routed leg only
+    const totalKm = routedKm;
+
+    // Comm lag based on routed leg
+    const routedAU = routedKm / AU_TO_KM;
+    const commLagMin = routedAU * AU_TO_LAG_MIN;
+
+    // Nominal time for routed leg only
+    const nominalRoutedMin = timeMinutesFromDistance(routedKm, thrustG, profile);
+
+    // Astrogation adjustment applies to routed leg only
+    let adjustedRoutedMin = nominalRoutedMin;
+
+    let astroLog = "Astrogation deviations not applied.";
+    let astroBrief = "Not applied";
+
+    const useAstro = document.getElementById("useAstro").checked;
+    const autoDice = document.getElementById("autoDice").checked;
+
+    if(useAstro){
+      const manualPct = parseFloat(document.getElementById("manualPct").value);
+      const effect = parseInt(document.getElementById("effect").value, 10);
+
+      if(Number.isFinite(manualPct)){
+        const factor = 1 - (manualPct / 100);
+        adjustedRoutedMin = nominalRoutedMin * factor;
+        astroLog = `Manual % override: ${fmt(manualPct,1)}% applied to routed leg.`;
+        astroBrief = `Manual %: ${fmt(manualPct,1)}%`;
+      } else {
+        if(!Number.isFinite(effect)){
+          return setError("Astrogation Effect is required when deviations are enabled (unless manual % override is used).");
+        }
+
+        if(effect === 0){
+          astroLog = "Effect 0: no variance applied.";
+          astroBrief = "Effect 0: no variance";
+        } else if(effect > 0){
+          let totalPct = 0;
+          for(let i=0;i<effect;i++){
+            totalPct += autoDice ? rollD(3) : EV_D3;
+          }
+          adjustedRoutedMin = nominalRoutedMin * (1 - totalPct/100);
+          astroLog = autoDice
+            ? `Effect +${effect}: routed optimization −${fmt(totalPct,1)}% (D3% per point).`
+            : `Effect +${effect}: routed optimization −${fmt(totalPct,1)}% (expected D3=2% per point).`;
+          astroBrief = `Effect +${effect}: -${fmt(totalPct,1)}%`;
+        } else {
+          const neg = Math.abs(effect);
+
+          if(effect <= -6){
+            const base = autoDice ? (rollD(6)+rollD(6)+rollD(6)+rollD(6)) : EV_4D6;
+            let perSum = 0;
+            for(let i=0;i<neg;i++){
+              perSum += autoDice ? rollD(6) : EV_D6;
+            }
+            const totalPct = base + perSum;
+            adjustedRoutedMin = nominalRoutedMin * (1 + totalPct/100);
+
+            astroLog = autoDice
+              ? `FAILURE (Effect ${effect}): routed correction +${fmt(totalPct,1)}% (4D% + 1D%×${neg}).`
+              : `FAILURE (Effect ${effect}): routed correction +${fmt(totalPct,1)}% (expected 4D=14% + 3.5%×${neg}).`;
+            astroBrief = `FAILURE Effect ${effect}: +${fmt(totalPct,1)}%`;
+          } else {
+            let totalPct = 0;
+            for(let i=0;i<neg;i++){
+              totalPct += autoDice ? rollD(6) : EV_D6;
+            }
+            adjustedRoutedMin = nominalRoutedMin * (1 + totalPct/100);
+            astroLog = autoDice
+              ? `Effect ${effect}: routed inefficiency +${fmt(totalPct,1)}% (D6% per point).`
+              : `Effect ${effect}: routed inefficiency +${fmt(totalPct,1)}% (expected D6=3.5% per point).`;
+            astroBrief = `Effect ${effect}: +${fmt(totalPct,1)}%`;
+          }
+        }
+      }
+    }
+
+    // Speed (informational) based on routed distance only
+    const v = speedFromDistance(routedKm, thrustG, profile);
+    const vKmS = v / 1000;
+
+    const profileLabel = (profile==="flip") ? "FLIP-AND-BURN" : "CONSTANT THRUST (NO BRAKE)";
+    const speedLine = (profile==="flip")
+      ? `${fmt(vKmS,2)} km/s (midpoint peak)`
+      : `${fmt(vKmS,2)} km/s (arrival speed)`;
+
+    // Main readout: Astro-adjusted routed time (or nominal if astro off)
+    document.getElementById("mainTime").textContent = fmtDHM(adjustedRoutedMin);
+    document.getElementById("mainSub").textContent =
+      `${fmtDHM(nominalRoutedMin)} nominal routed • ${fmtDHM(adjustedRoutedMin)} astro-adjusted routed`;
+
+    document.getElementById("rawDistOut").textContent = fmtDistance(rawKm);
+    document.getElementById("distOut").textContent = fmtDistance(routedKm);
+    document.getElementById("arcMultOut").textContent = `${fmt(dist.arcMult,2)}×`;
+
+    // 100D clearance display only
+    document.getElementById("jumpOut").textContent =
+      (jumpKm > 0)
+        ? `${fmtDistance(jumpKm)} • ${fmtDHM(jumpTimeSelMin)}`
+        : `N/A / 0.0 AU • ${jump.label}`;
+
+    // Total distance flown is routed only
+    document.getElementById("totalDistOut").textContent = fmtDistance(totalKm);
+
+    document.getElementById("commOut").textContent = fmtDHM(commLagMin);
+
+    // Time tiles
+    document.getElementById("nominalOut").textContent = fmtDHM(nominalRoutedMin);
+    document.getElementById("adjustedOut").textContent = fmtDHM(adjustedRoutedMin);
+
+    // Keep these fields for layout compatibility; they now reflect routed-only logic
+    document.getElementById("routeLegOut").textContent = fmtDHM(adjustedRoutedMin);
+    document.getElementById("jumpLegOut").textContent = "—";
+    document.getElementById("legsSumOut").textContent = fmtDHM(adjustedRoutedMin);
+
+    document.getElementById("speedOut").textContent = speedLine;
+
+    document.getElementById("assumeOut").textContent =
+      (profile==="flip") ? "Start: rest • End: rest" : "Start: rest • End: not-rest";
+
+    const jumpNote = (jumpKm > 0)
+      ? `100D clearance requirement shown: ${fmt(jumpKm/1000,1)} kkm (not added to route).`
+      : `100D clearance not applied (${jump.label}).`;
+
+    document.getElementById("notesOut").innerHTML =
+      `<b>Transit:</b> ${profileLabel}<br>
+       <b>Distance Mode:</b> ${dist.modeLabel}<br>
+       <b>Arc Multiplier:</b> ${fmt(dist.arcMult,2)}× (routed ÷ raw)<br>
+       <b>100D Clearance:</b> ${jumpNote} <span style="opacity:.75">(time is advisory; not added to route)</span><br>
+       <b>Astrogation:</b> ${astroLog}<br>
+       <span style="opacity:.75">
+         Notes: Time and distance are computed for the routed leg only. 100D is displayed as a clearance requirement, not a flown leg.
+       </span>`;
+
+    // Brief text
+    lastBrief = buildBrief({
+      profileLabel,
+      thrustG,
+      rawKKM: fmt(rawKm/1000, 2),
+      rawAU: fmt(rawKm/AU_TO_KM, 1),
+      routeKKM: fmt(routedKm/1000, 2),
+      routeAU: fmt(routedKm/AU_TO_KM, 1),
+      arcMult: fmt(dist.arcMult,2),
+
+      jumpKKM: fmt(jumpKm/1000, 2),
+      jumpAU: fmt(jumpKm/AU_TO_KM, 1),
+      jumpLabel: jump.label,
+      jumpTimeDHM: (jumpKm > 0) ? fmtDHM(jumpTimeSelMin) : "—",
+
+      commLagDHM: fmtDHM(commLagMin),
+
+      nominalRoutedDHM: fmtDHM(nominalRoutedMin),
+      adjustedRoutedDHM: fmtDHM(adjustedRoutedMin),
+
+      speedLine,
+      astroLine: astroBrief,
+      notesShort: `${profileLabel}. ${useAstro ? "Astrogation deviations applied (routed leg)." : "No Astrogation deviations."} ${jumpKm>0 ? "100D shown (clearance only)." : "100D not applied."}`
+    });
+
+    setStatus(true, "NAV SOLUTION • Route computed");
+    const rt = document.getElementById("resultsTop");
+    if(rt){ rt.scrollIntoView({behavior:"smooth", block:"start"}); }
+  } catch(e){
+    const msg = (e && e.message) ? e.message : String(e);
+    document.getElementById("errorBox").innerHTML = `<div class="err"><b>NAV ERROR:</b> ${msg}</div>`;
+    setStatus(false, "FAULT • Script error");
+  }
+}
+
+  function compute100DOnly(){
+    clearError();
+    syncPills();
+
+    const thrustG = parseFloat(document.getElementById("thrust").value);
+    const profile = document.getElementById("profile").value;
+    if(!Number.isFinite(thrustG) || thrustG <= 0){
+      return setError("Enter a positive thrust in G to compute 100D time.");
+    }
+
+    // Enable 100D UI so body type/size can be selected
+    const use = document.getElementById("use100d");
+    if(use && !use.checked){
+      use.checked = true;
+      on100DToggle();
+    }
+
+    const jump = get100DClearanceKm();
+    const jumpKm = jump.clearanceKm;
+
+    // Advisory time to reach 100D clearance (start from rest). Not added to route time.
+    const jumpTimeConstMin = (jumpKm > 0) ? timeMinutesFromDistance(jumpKm, thrustG, "const") : 0;
+    const jumpTimeFlipMin  = (jumpKm > 0) ? timeMinutesFromDistance(jumpKm, thrustG, "flip")  : 0;
+    const jumpTimeSelMin   = (profile === "flip") ? jumpTimeFlipMin : jumpTimeConstMin;
+
+    // Update 100D output only (do not compute route)
+    document.getElementById("jumpOut").textContent =
+      (jumpKm > 0)
+        ? `${fmtDistance(jumpKm)} • ${fmtDHM(jumpTimeSelMin)}`
+        : `N/A / 0.0 AU • ${jump.label}`;
+
+    document.getElementById("notesOut").innerHTML =
+      (jumpKm > 0)
+        ? `<b>100D Clearance:</b> ${fmtDistance(jumpKm)} • ${fmtDHM(jumpTimeSelMin)} <span style="opacity:.75">(advisory only)</span><br>
+           <span style="opacity:.75">Clearance is displayed only. It is not added to travel time or distance.</span>`
+        : `<b>100D Clearance:</b> N/A • ${jump.label}`;
+
+    setStatus(jumpKm > 0, jumpKm > 0 ? "100D COMPUTED • Clearance distance & time (advisory)" : "100D N/A • Check body type/size");
+  }
+
+  function init(){
+    populateOrbitSelects();
+    populateMapOrbitSelects();
+    onMapBodyModeChange();
+    onDistModeChange();
+    onRouteTypeChange();
+    onAstroToggle();
+    syncPills();
+    on100DToggle();
+    onJumpBodyTypeChange();
+    update100DPreview();
+  }
+
+  init();
+</script>
+</body>
+</html>
