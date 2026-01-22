@@ -1,0 +1,3180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Traveller 2022 Ship Operations Logger V2</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+  --bg0: #030812;
+  --bg1: #071021;
+  --panel: rgba(10, 26, 38, 0.78);
+  --panel-solid: #0a1a26;
+  --border: rgba(140, 255, 220, 0.18);
+  --border2: rgba(140, 255, 220, 0.10);
+  --text: rgba(210, 255, 240, 0.92);
+  --muted: rgba(210, 255, 240, 0.62);
+  --green: #7CFFB2;
+  --cyan: #64F0FF;
+  --amber: #FFC86B;
+  --red: #FF557A;
+  --purple: #b794f6;
+  --glow: 0 0 18px rgba(124,255,178,0.18), 0 0 40px rgba(100,240,255,0.08);
+  --shadow: 0 28px 80px rgba(0,0,0,0.55);
+  --r: 14px;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+
+body {
+  font-family: var(--mono);
+  color: var(--text);
+  background:
+    radial-gradient(1200px 800px at 50% 35%, rgba(100,240,255,0.12), transparent 65%),
+    radial-gradient(900px 700px at 20% 80%, rgba(124,255,178,0.10), transparent 65%),
+    linear-gradient(180deg, var(--bg0), var(--bg1));
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Background effects */
+.bg-grid {
+  position: fixed; inset: 0;
+  background:
+    linear-gradient(to right, rgba(124,255,178,0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(124,255,178,0.03) 1px, transparent 1px);
+  background-size: 42px 42px;
+  pointer-events: none;
+}
+
+.scanlines {
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(to bottom, transparent 0px, transparent 2px, rgba(0,0,0,0.08) 3px);
+  pointer-events: none;
+}
+
+.vignette {
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.5) 100%);
+  pointer-events: none;
+}
+
+/* Layout */
+.app-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 12px rgba(124,255,178,0.5);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.brand h1 {
+  font-size: 16px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text);
+  font-weight: 900;
+}
+
+.subtitle {
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--muted);
+  max-width: 600px;
+  line-height: 1.4;
+}
+
+.header-right {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(0,0,0,0.3);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.status-pill .label { color: var(--muted); }
+.status-pill .value { color: var(--green); font-weight: 700; }
+.status-pill.warning .value { color: var(--amber); }
+.status-pill.danger .value { color: var(--red); }
+
+/* Quick Stats Bar */
+.quick-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+}
+
+.stat-card .stat-label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.stat-card .stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--cyan);
+}
+
+.stat-card .stat-value.positive { color: var(--green); }
+.stat-card .stat-value.negative { color: var(--red); }
+.stat-card .stat-value.warning { color: var(--amber); }
+
+.stat-card .stat-sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* Navigation Tabs */
+.nav-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: rgba(0,0,0,0.3);
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.nav-tab {
+  padding: 10px 16px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-tab:hover {
+  color: var(--text);
+  background: rgba(100,240,255,0.1);
+}
+
+.nav-tab.active {
+  color: #000;
+  background: linear-gradient(135deg, var(--green), var(--cyan));
+  border-color: transparent;
+  box-shadow: var(--glow);
+}
+
+/* Main Content Panels */
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.panel {
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(124,255,178,0.06), transparent);
+}
+
+.panel-title {
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.panel-subtitle {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: var(--sans);
+}
+
+.panel-body {
+  padding: 18px;
+}
+
+/* Form Elements */
+label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(0,0,0,0.3);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 3px rgba(100,240,255,0.15);
+}
+
+input::placeholder { color: var(--muted); opacity: 0.5; }
+
+input[type="number"] { font-variant-numeric: tabular-nums; }
+
+textarea { resize: vertical; min-height: 80px; }
+
+.input-group {
+  margin-bottom: 14px;
+}
+
+.input-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+}
+
+.input-hint {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+  font-family: var(--sans);
+}
+
+/* Buttons */
+button, .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--green), var(--cyan));
+  color: #000;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:hover, .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--glow);
+}
+
+button:active, .btn:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: rgba(0,0,0,0.3);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.btn-secondary:hover {
+  background: rgba(100,240,255,0.1);
+  border-color: var(--cyan);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--red), #ff7799);
+  border-color: var(--red);
+}
+
+.btn-small {
+  padding: 6px 12px;
+  font-size: 11px;
+}
+
+.btn-icon {
+  padding: 8px;
+  min-width: 36px;
+  justify-content: center;
+}
+
+.action-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+/* Tables */
+.table-container {
+  overflow-x: auto;
+  margin-top: 14px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+th {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: rgba(100,240,255,0.05);
+}
+
+tr:hover {
+  background: rgba(100,240,255,0.03);
+}
+
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+
+.amount-positive { color: var(--green); font-weight: 600; }
+.amount-negative { color: var(--red); font-weight: 600; }
+.amount-neutral { color: var(--amber); }
+
+.row-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.row-action {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.row-action:hover {
+  color: var(--text);
+  border-color: var(--cyan);
+  background: rgba(100,240,255,0.1);
+}
+
+.row-action.delete:hover {
+  color: var(--red);
+  border-color: var(--red);
+  background: rgba(255,85,122,0.1);
+}
+
+/* Tags/Badges */
+.tag {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.tag-green { background: rgba(124,255,178,0.2); color: var(--green); }
+.tag-cyan { background: rgba(100,240,255,0.2); color: var(--cyan); }
+.tag-amber { background: rgba(255,200,107,0.2); color: var(--amber); }
+.tag-red { background: rgba(255,85,122,0.2); color: var(--red); }
+.tag-purple { background: rgba(183,148,246,0.2); color: var(--purple); }
+
+/* Modal */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal {
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--panel-solid);
+  box-shadow: var(--shadow);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.modal-close {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.modal-close:hover {
+  color: var(--red);
+  border-color: var(--red);
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+
+/* Confirmation Dialog */
+.confirm-message {
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.confirm-warning {
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(255,85,122,0.1);
+  border-left: 3px solid var(--red);
+  font-size: 13px;
+  color: var(--text);
+}
+
+/* Charts */
+.chart-container {
+  position: relative;
+  height: 280px;
+  margin-top: 16px;
+}
+
+/* Grid layouts */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .grid-2, .grid-3, .grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Summary boxes */
+.summary-box {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(0,0,0,0.2);
+}
+
+.summary-box .summary-label {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.summary-box .summary-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--cyan);
+}
+
+.summary-box .summary-detail {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+/* Divider */
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 20px 0;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--muted);
+}
+
+.empty-state .empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-state .empty-text {
+  font-family: var(--sans);
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+/* Toast notifications */
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  padding: 12px 18px;
+  border-radius: 10px;
+  background: var(--panel-solid);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  font-size: 13px;
+  animation: slideIn 0.3s ease;
+}
+
+.toast.success { border-color: var(--green); }
+.toast.error { border-color: var(--red); }
+.toast.warning { border-color: var(--amber); }
+
+@keyframes slideIn {
+  from { transform: translateX(100px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Undo bar */
+.undo-bar {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 20px;
+  border-radius: 10px;
+  background: var(--panel-solid);
+  border: 1px solid var(--amber);
+  box-shadow: var(--shadow);
+  z-index: 1500;
+  align-items: center;
+  gap: 16px;
+}
+
+.undo-bar.active {
+  display: flex;
+}
+
+.undo-bar .undo-text {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.undo-bar .undo-btn {
+  padding: 6px 14px;
+  background: var(--amber);
+  color: #000;
+}
+
+/* Print styles */
+@media print {
+  .bg-grid, .scanlines, .vignette, .nav-tabs, .action-bar, .row-actions, .modal-overlay, .toast-container, .undo-bar {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+    color: #000;
+  }
+  .panel, .stat-card {
+    background: #fff;
+    border-color: #ccc;
+    box-shadow: none;
+  }
+}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<div class="app-container">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <div class="brand">
+        <span class="dot"></span>
+        <h1>Ship Operations Logger</h1>
+      </div>
+      <p class="subtitle">Mongoose Traveller 2022 Edition - Complete ship management, finances, cargo, passengers, and jump tracking with full persistence.</p>
+    </div>
+    <div class="header-right">
+      <div class="status-pill">
+        <span class="label">Ship:</span>
+        <span class="value" id="headerShipName">Unnamed</span>
+      </div>
+      <div class="status-pill" id="cashPill">
+        <span class="label">Cash:</span>
+        <span class="value" id="headerCash">Cr 0</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Quick Stats -->
+  <div class="quick-stats">
+    <div class="stat-card">
+      <div class="stat-label">Current Cash</div>
+      <div class="stat-value" id="statCash">Cr 0</div>
+      <div class="stat-sub" id="statCashTrend"></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Cargo Value</div>
+      <div class="stat-value" id="statCargoValue">Cr 0</div>
+      <div class="stat-sub" id="statCargoTons">0 / 0 tons</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Monthly Costs</div>
+      <div class="stat-value warning" id="statMonthlyCosts">Cr 0</div>
+      <div class="stat-sub">Mortgage + Crew + Life Support + Maint</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Jumps</div>
+      <div class="stat-value" id="statJumps">0</div>
+      <div class="stat-sub" id="statParsecs">0 parsecs traveled</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Net Worth</div>
+      <div class="stat-value positive" id="statNetWorth">Cr 0</div>
+      <div class="stat-sub">Cash + Cargo Value</div>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="nav-tabs">
+    <button class="nav-tab active" data-tab="ship">Ship & Crew</button>
+    <button class="nav-tab" data-tab="finances">Finances</button>
+    <button class="nav-tab" data-tab="cargo">Cargo</button>
+    <button class="nav-tab" data-tab="passengers">Passengers</button>
+    <button class="nav-tab" data-tab="jumps">Jump Log</button>
+    <button class="nav-tab" data-tab="locker">Ship's Locker</button>
+    <button class="nav-tab" data-tab="contacts">Contacts</button>
+    <button class="nav-tab" data-tab="dashboard">Dashboard</button>
+  </nav>
+
+  <!-- TAB: Ship & Crew -->
+  <div id="ship" class="tab-content active">
+    <div class="grid-2">
+      <!-- Ship Specifications -->
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">Ship Specifications</div>
+            <div class="panel-subtitle">Core vessel statistics</div>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="input-group">
+            <label>Ship Name</label>
+            <input type="text" id="shipName" placeholder="Enter ship name">
+          </div>
+          <div class="input-row">
+            <div class="input-group">
+              <label>Ship Class</label>
+              <input type="text" id="shipClass" placeholder="e.g. Free Trader">
+            </div>
+            <div class="input-group">
+              <label>Tonnage</label>
+              <input type="number" id="tonnage" value="200" min="1">
+            </div>
+          </div>
+          <div class="input-row">
+            <div class="input-group">
+              <label>Jump Rating</label>
+              <input type="number" id="jumpRating" value="2" min="1" max="6">
+            </div>
+            <div class="input-group">
+              <label>Maneuver (G)</label>
+              <input type="number" id="maneuver" value="1" min="0" max="6">
+            </div>
+          </div>
+          <div class="input-row">
+            <div class="input-group">
+              <label>Cargo Capacity (tons)</label>
+              <input type="number" id="cargoCap" value="82" min="0">
+            </div>
+            <div class="input-group">
+              <label>Fuel Capacity (tons)</label>
+              <input type="number" id="fuelCap" value="60" min="0">
+            </div>
+          </div>
+          <div class="input-row">
+            <div class="input-group">
+              <label>Staterooms</label>
+              <input type="number" id="staterooms" value="10" min="0">
+            </div>
+            <div class="input-group">
+              <label>Low Berths</label>
+              <input type="number" id="lowBerths" value="20" min="0">
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="input-row">
+            <div class="input-group">
+              <label>Ship Cost (MCr)</label>
+              <input type="number" id="shipCost" value="37.08" step="0.01" min="0">
+              <div class="input-hint">Used to calculate mortgage & maintenance</div>
+            </div>
+            <div class="input-group">
+              <label>Monthly Mortgage (Cr)</label>
+              <input type="number" id="mortgage" value="154500" min="0">
+              <div class="input-hint">Standard: Ship Cost / 240</div>
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Mortgage Payments Remaining</label>
+            <input type="number" id="mortgageRemaining" value="480" min="0">
+            <div class="input-hint">Standard term: 480 months (40 years)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recurring Costs Summary -->
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">Monthly Costs Summary</div>
+            <div class="panel-subtitle">Recurring operational expenses</div>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="summary-box" style="margin-bottom: 14px;">
+            <div class="summary-label">Total Monthly Burn Rate</div>
+            <div class="summary-value" id="totalMonthlyBurn">Cr 0</div>
+          </div>
+          <table>
+            <tr>
+              <td>Mortgage Payment</td>
+              <td class="text-right" id="costMortgage">Cr 0</td>
+            </tr>
+            <tr>
+              <td>Crew Salaries</td>
+              <td class="text-right" id="costSalaries">Cr 0</td>
+            </tr>
+            <tr>
+              <td>Life Support (Cr 2,000/stateroom)</td>
+              <td class="text-right" id="costLifeSupport">Cr 0</td>
+            </tr>
+            <tr>
+              <td>Maintenance (0.1% annual / 12)</td>
+              <td class="text-right" id="costMaintenance">Cr 0</td>
+            </tr>
+          </table>
+          <div class="divider"></div>
+          <div class="input-group">
+            <label>Berthing Fees (per port)</label>
+            <input type="number" id="berthingFee" value="100" min="0">
+            <div class="input-hint">Varies by starport: A=1000, B=500, C=100, D=10, E=0</div>
+          </div>
+          <div class="input-group">
+            <label>Fuel Cost per ton (Refined)</label>
+            <input type="number" id="fuelCostRefined" value="500" min="0">
+          </div>
+          <div class="input-group">
+            <label>Fuel Cost per ton (Unrefined)</label>
+            <input type="number" id="fuelCostUnrefined" value="100" min="0">
+          </div>
+          <div class="summary-box" style="margin-top: 14px;">
+            <div class="summary-label">Jump Fuel Required</div>
+            <div class="summary-value" id="jumpFuelRequired">0 tons</div>
+            <div class="summary-detail">Per jump at max rating</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Crew Roster -->
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Crew Roster</div>
+          <div class="panel-subtitle">Ship personnel and salaries</div>
+        </div>
+        <button class="btn-small" onclick="openCrewModal()">+ Add Crew</button>
+      </div>
+      <div class="panel-body">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Position</th>
+                <th>Skills</th>
+                <th class="text-right">Salary (Cr/mo)</th>
+                <th>Notes</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="crewTableBody">
+              <tr class="empty-row">
+                <td colspan="6">
+                  <div class="empty-state">
+                    <div class="empty-text">No crew members added yet</div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="summary-box" style="margin-top: 14px;">
+          <div class="summary-label">Total Monthly Salaries</div>
+          <div class="summary-value" id="totalSalaries">Cr 0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Finances -->
+  <div id="finances" class="tab-content">
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Financial Ledger</div>
+          <div class="panel-subtitle">Track all income and expenses</div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn-small btn-secondary" onclick="openRecurringCostModal()">+ Recurring Cost</button>
+          <button class="btn-small" onclick="openTransactionModal()">+ Transaction</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="input-row" style="margin-bottom: 16px;">
+          <div class="input-group">
+            <label>Starting Cash (Cr)</label>
+            <input type="number" id="startingCash" value="100000" min="0">
+          </div>
+          <div class="input-group">
+            <label>Filter by Category</label>
+            <select id="ledgerFilter">
+              <option value="all">All Transactions</option>
+              <option value="cargo">Cargo Sales</option>
+              <option value="passenger">Passenger Revenue</option>
+              <option value="freight">Freight Revenue</option>
+              <option value="fuel">Fuel Costs</option>
+              <option value="salary">Salaries</option>
+              <option value="mortgage">Mortgage</option>
+              <option value="maintenance">Maintenance</option>
+              <option value="berthing">Berthing Fees</option>
+              <option value="lifesupport">Life Support</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th class="text-right">Amount</th>
+                <th class="text-right">Balance</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="ledgerTableBody">
+              <tr class="empty-row">
+                <td colspan="6">
+                  <div class="empty-state">
+                    <div class="empty-text">No transactions recorded</div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="grid-3" style="margin-top: 16px;">
+          <div class="summary-box">
+            <div class="summary-label">Current Balance</div>
+            <div class="summary-value" id="currentBalance">Cr 0</div>
+          </div>
+          <div class="summary-box">
+            <div class="summary-label">Total Income</div>
+            <div class="summary-value positive" id="totalIncome">Cr 0</div>
+          </div>
+          <div class="summary-box">
+            <div class="summary-label">Total Expenses</div>
+            <div class="summary-value negative" id="totalExpenses">Cr 0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Cargo -->
+  <div id="cargo" class="tab-content">
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Cargo Manifest</div>
+          <div class="panel-subtitle">Speculative trade goods and freight</div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn-small btn-secondary" onclick="openFreightModal()">+ Freight</button>
+          <button class="btn-small" onclick="openCargoModal()">+ Speculative Cargo</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="grid-4" style="margin-bottom: 16px;">
+          <div class="summary-box">
+            <div class="summary-label">Cargo Space Used</div>
+            <div class="summary-value" id="cargoUsed">0 tons</div>
+            <div class="summary-detail" id="cargoCapacity">of 0 available</div>
+          </div>
+          <div class="summary-box">
+            <div class="summary-label">Speculative Value</div>
+            <div class="summary-value" id="speculativeValue">Cr 0</div>
+            <div class="summary-detail">Purchase cost</div>
+          </div>
+          <div class="summary-box">
+            <div class="summary-label">Freight Revenue</div>
+            <div class="summary-value positive" id="freightRevenue">Cr 0</div>
+            <div class="summary-detail">On delivery</div>
+          </div>
+          <div class="summary-box">
+            <div class="summary-label">Est. Profit</div>
+            <div class="summary-value positive" id="estProfit">Cr 0</div>
+            <div class="summary-detail">If sold at +20%</div>
+          </div>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Goods</th>
+                <th class="text-right">Tons</th>
+                <th class="text-right">Purchase Price</th>
+                <th>Origin</th>
+                <th>Destination</th>
+                <th>Notes</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="cargoTableBody">
+              <tr class="empty-row">
+                <td colspan="8">
+                  <div class="empty-state">
+                    <div class="empty-text">Cargo hold is empty</div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Passengers -->
+  <div id="passengers" class="tab-content">
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Passenger Manifest</div>
+          <div class="panel-subtitle">High, Middle, Low, and Basic passage</div>
+        </div>
+        <button class="btn-small" onclick="openPassengerModal()">+ Add Passenger</button>
+      </div>
+      <div class="panel-body">
+        <div class="grid-4" style="margin-bottom: 16px;">
+          <div class="summary-box">
+            <div class="summary-label">High Passengers</div>
+            <div class="summary-value" id="highPaxCount">0</div>
+            <div class="summary-detail">Cr 10,000/parsec</div>
+          </div>
+          <div class="summary-box">
+            <div class="summary-label">Middle Passengers</div>
+            <div class="summary-value" id="midPaxCount">0</div>
+            <div class="summary-detail">Cr 8,000/parsec</div>
+          </div>
+          <div class="summary-box">
+            <div class="summary-label">Low Passengers</div>
+            <div class="summary-value" id="lowPaxCount">0</div>
+            <div class="summary-detail">Cr 1,000/parsec</div>
+          </div>
+          <div class="summary-box">
+            <div class="summary-label">Total Revenue</div>
+            <div class="summary-value positive" id="paxRevenue">Cr 0</div>
+            <div class="summary-detail">This trip</div>
+          </div>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Passage Type</th>
+                <th>From</th>
+                <th>To</th>
+                <th class="text-right">Parsecs</th>
+                <th class="text-right">Fare</th>
+                <th>Notes</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="passengerTableBody">
+              <tr class="empty-row">
+                <td colspan="8">
+                  <div class="empty-state">
+                    <div class="empty-text">No passengers aboard</div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Jump Log -->
+  <div id="jumps" class="tab-content">
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Jump Log</div>
+          <div class="panel-subtitle">Navigation history and route tracking</div>
+        </div>
+        <button class="btn-small" onclick="openJumpModal()">+ Log Jump</button>
+      </div>
+      <div class="panel-body">
+        <div class="grid-4" style="margin-bottom: 16px;">
+          <div class="summary-box">
+            <div class="summary-label">Total Jumps</div>
+            <div class="summary-value" id="totalJumps">0</div>
+          </div>
+          <div class="summary-box">
+            <div class="summary-label">Total Parsecs</div>
+            <div class="summary-value" id="totalParsecs">0</div>
+          </div>
+          <div class="summary-box">
+            <div class="summary-label">Fuel Consumed</div>
+            <div class="summary-value" id="totalFuelUsed">0 tons</div>
+          </div>
+          <div class="summary-box">
+            <div class="summary-label">Current Location</div>
+            <div class="summary-value" id="currentLocation" style="font-size: 16px;">Unknown</div>
+          </div>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Date</th>
+                <th>From</th>
+                <th>To</th>
+                <th class="text-right">Parsecs</th>
+                <th class="text-right">Fuel Used</th>
+                <th>Fuel Type</th>
+                <th class="text-right">Fuel Cost</th>
+                <th>Notes</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="jumpTableBody">
+              <tr class="empty-row">
+                <td colspan="10">
+                  <div class="empty-state">
+                    <div class="empty-text">No jumps logged yet</div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Ship's Locker -->
+  <div id="locker" class="tab-content">
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Ship's Locker</div>
+          <div class="panel-subtitle">Equipment, weapons, and supplies inventory</div>
+        </div>
+        <button class="btn-small" onclick="openLockerModal()">+ Add Item</button>
+      </div>
+      <div class="panel-body">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Item</th>
+                <th class="text-right">Quantity</th>
+                <th class="text-right">Unit Cost</th>
+                <th class="text-right">Total Value</th>
+                <th>Location</th>
+                <th>Notes</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="lockerTableBody">
+              <tr class="empty-row">
+                <td colspan="8">
+                  <div class="empty-state">
+                    <div class="empty-text">Ship's locker is empty</div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="summary-box" style="margin-top: 16px; max-width: 300px;">
+          <div class="summary-label">Total Inventory Value</div>
+          <div class="summary-value" id="lockerValue">Cr 0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Contacts -->
+  <div id="contacts" class="tab-content">
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Contacts & Patrons</div>
+          <div class="panel-subtitle">NPCs, allies, enemies, and patrons</div>
+        </div>
+        <button class="btn-small" onclick="openContactModal()">+ Add Contact</button>
+      </div>
+      <div class="panel-body">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Location</th>
+                <th>Occupation</th>
+                <th>Relationship</th>
+                <th>Notes</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="contactTableBody">
+              <tr class="empty-row">
+                <td colspan="7">
+                  <div class="empty-state">
+                    <div class="empty-text">No contacts recorded</div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: Dashboard -->
+  <div id="dashboard" class="tab-content">
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">Cash Balance Over Time</div>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="chart-container">
+            <canvas id="cashChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">Profit/Loss by Jump</div>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="chart-container">
+            <canvas id="profitChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">Income by Category</div>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="chart-container">
+            <canvas id="incomeChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">Expenses by Category</div>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="chart-container">
+            <canvas id="expenseChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Export & Backup</div>
+          <div class="panel-subtitle">Save your data for transfer to another browser/computer</div>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="summary-box" style="margin-bottom: 16px; border-color: var(--amber);">
+          <div class="summary-label" style="color: var(--amber);">Important: Browser Data Warning</div>
+          <div style="font-family: var(--sans); font-size: 13px; color: var(--text); line-height: 1.5;">
+            Your ship data is stored in this browser's localStorage. It will be <strong>lost</strong> if you:
+            <ul style="margin: 8px 0 0 20px; padding: 0;">
+              <li>Clear browser data/cache</li>
+              <li>Reinstall your browser or OS</li>
+              <li>Switch to a different browser or computer</li>
+            </ul>
+            <strong style="color: var(--green);">Export a JSON backup regularly to keep your data safe!</strong>
+          </div>
+        </div>
+        <div class="grid-2" style="margin-bottom: 16px;">
+          <div class="summary-box">
+            <div class="summary-label">Last Backup</div>
+            <div class="summary-value" id="lastBackupDate" style="font-size: 16px;">Never</div>
+          </div>
+          <div class="summary-box">
+            <div class="summary-label">Data Size</div>
+            <div class="summary-value" id="dataSize" style="font-size: 16px;">0 KB</div>
+          </div>
+        </div>
+        <div class="action-bar">
+          <button onclick="exportJSON()">Export JSON Backup</button>
+          <button class="btn-secondary" onclick="importJSON()">Import JSON Backup</button>
+          <button class="btn-secondary" onclick="exportAllTables()">Copy Tables to Clipboard</button>
+          <button class="btn-danger" onclick="clearAllData()">Clear All Data</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Container -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">Modal</span>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="modalBody">
+      <!-- Dynamic content -->
+    </div>
+    <div class="modal-footer" id="modalFooter">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button id="modalConfirm">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Undo Bar -->
+<div class="undo-bar" id="undoBar">
+  <span class="undo-text" id="undoText">Item deleted</span>
+  <button class="undo-btn" onclick="performUndo()">Undo</button>
+</div>
+
+<!-- Hidden file input for JSON import -->
+<input type="file" id="jsonFileInput" accept=".json" style="display: none;">
+
+<script>
+// ============================================
+// DATA MANAGEMENT
+// ============================================
+
+const STORAGE_KEY = 'traveller_ship_logger_v2';
+
+// Default data structure
+const defaultData = {
+  ship: {
+    name: '', shipClass: '', tonnage: 200, jumpRating: 2, maneuver: 1,
+    cargoCap: 82, fuelCap: 60, staterooms: 10, lowBerths: 20,
+    shipCost: 37.08, mortgage: 154500, mortgageRemaining: 480,
+    berthingFee: 100, fuelCostRefined: 500, fuelCostUnrefined: 100
+  },
+  crew: [],
+  ledger: [],
+  cargo: [],
+  passengers: [],
+  jumps: [],
+  locker: [],
+  contacts: [],
+  startingCash: 100000,
+  undoStack: []
+};
+
+let data = {};
+let charts = {};
+
+// Load data from localStorage
+function loadData() {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored) {
+    try {
+      data = JSON.parse(stored);
+      // Merge with defaults for any missing properties
+      data = { ...defaultData, ...data, ship: { ...defaultData.ship, ...data.ship } };
+    } catch (e) {
+      console.error('Error loading data:', e);
+      data = { ...defaultData };
+    }
+  } else {
+    data = { ...defaultData };
+  }
+}
+
+// Save data to localStorage
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  updateAllDisplays();
+}
+
+// Generate unique ID
+function generateId() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+// Format currency
+function formatCr(amount) {
+  const num = Number(amount) || 0;
+  return 'Cr ' + num.toLocaleString();
+}
+
+// Format date
+function formatDate(dateStr) {
+  if (!dateStr) return new Date().toISOString().slice(0, 10);
+  return dateStr;
+}
+
+// ============================================
+// TOAST NOTIFICATIONS
+// ============================================
+
+function showToast(message, type = 'success') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 4000);
+}
+
+// ============================================
+// UNDO FUNCTIONALITY
+// ============================================
+
+let undoAction = null;
+
+function setUndoAction(type, item, collection) {
+  undoAction = { type, item, collection };
+  document.getElementById('undoText').textContent = `${type} deleted`;
+  document.getElementById('undoBar').classList.add('active');
+  setTimeout(() => {
+    document.getElementById('undoBar').classList.remove('active');
+    undoAction = null;
+  }, 8000);
+}
+
+function performUndo() {
+  if (!undoAction) return;
+  data[undoAction.collection].push(undoAction.item);
+  saveData();
+  document.getElementById('undoBar').classList.remove('active');
+  showToast('Item restored', 'success');
+  undoAction = null;
+}
+
+// ============================================
+// MODAL MANAGEMENT
+// ============================================
+
+let currentModalCallback = null;
+
+function openModal(title, bodyHtml, onConfirm, confirmText = 'Save') {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = bodyHtml;
+  document.getElementById('modalConfirm').textContent = confirmText;
+  document.getElementById('modalOverlay').classList.add('active');
+  currentModalCallback = onConfirm;
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('active');
+  currentModalCallback = null;
+}
+
+document.getElementById('modalConfirm').onclick = function() {
+  if (currentModalCallback) {
+    currentModalCallback();
+  }
+};
+
+// Close modal on overlay click
+document.getElementById('modalOverlay').onclick = function(e) {
+  if (e.target === this) closeModal();
+};
+
+// ============================================
+// CONFIRMATION DIALOG
+// ============================================
+
+function confirmAction(message, onConfirm) {
+  const html = `
+    <div class="confirm-message">${message}</div>
+    <div class="confirm-warning">This action cannot be undone (but you can use Undo within 8 seconds).</div>
+  `;
+  openModal('Confirm Action', html, onConfirm, 'Delete');
+}
+
+// ============================================
+// TAB NAVIGATION
+// ============================================
+
+function initTabs() {
+  const tabs = document.querySelectorAll('.nav-tab');
+  const contents = document.querySelectorAll('.tab-content');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      contents.forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(tab.dataset.tab).classList.add('active');
+    });
+  });
+}
+
+// ============================================
+// SHIP & CREW FUNCTIONS
+// ============================================
+
+function initShipInputs() {
+  const shipFields = [
+    'shipName', 'shipClass', 'tonnage', 'jumpRating', 'maneuver',
+    'cargoCap', 'fuelCap', 'staterooms', 'lowBerths',
+    'shipCost', 'mortgage', 'mortgageRemaining',
+    'berthingFee', 'fuelCostRefined', 'fuelCostUnrefined'
+  ];
+
+  shipFields.forEach(field => {
+    const el = document.getElementById(field);
+    if (el) {
+      // Map field names to data.ship keys
+      const key = field === 'shipName' ? 'name' : field;
+      el.value = data.ship[key] ?? '';
+      el.addEventListener('change', () => {
+        data.ship[key] = el.type === 'number' ? parseFloat(el.value) || 0 : el.value;
+        saveData();
+      });
+    }
+  });
+
+  // Starting cash
+  const startingCashEl = document.getElementById('startingCash');
+  if (startingCashEl) {
+    startingCashEl.value = data.startingCash;
+    startingCashEl.addEventListener('change', () => {
+      data.startingCash = parseFloat(startingCashEl.value) || 0;
+      saveData();
+    });
+  }
+}
+
+function openCrewModal(editId = null) {
+  const crew = editId ? data.crew.find(c => c.id === editId) : null;
+  const html = `
+    <div class="input-group">
+      <label>Name</label>
+      <input type="text" id="crewName" value="${crew?.name || ''}" placeholder="Crew member name">
+    </div>
+    <div class="input-group">
+      <label>Position</label>
+      <select id="crewPosition">
+        <option value="Captain" ${crew?.position === 'Captain' ? 'selected' : ''}>Captain</option>
+        <option value="Pilot" ${crew?.position === 'Pilot' ? 'selected' : ''}>Pilot</option>
+        <option value="Astrogator" ${crew?.position === 'Astrogator' ? 'selected' : ''}>Astrogator</option>
+        <option value="Engineer" ${crew?.position === 'Engineer' ? 'selected' : ''}>Engineer</option>
+        <option value="Medic" ${crew?.position === 'Medic' ? 'selected' : ''}>Medic</option>
+        <option value="Gunner" ${crew?.position === 'Gunner' ? 'selected' : ''}>Gunner</option>
+        <option value="Steward" ${crew?.position === 'Steward' ? 'selected' : ''}>Steward</option>
+        <option value="Marine" ${crew?.position === 'Marine' ? 'selected' : ''}>Marine</option>
+        <option value="Crew" ${crew?.position === 'Crew' ? 'selected' : ''}>General Crew</option>
+        <option value="Other" ${crew?.position === 'Other' ? 'selected' : ''}>Other</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <label>Monthly Salary (Cr)</label>
+      <input type="number" id="crewSalary" value="${crew?.salary || 4000}" min="0">
+      <div class="input-hint">Standard: Captain 6000, Pilot 6000, Astrogator 5000, Engineer 4000, Medic 4000, Gunner 2000, Steward 2000</div>
+    </div>
+    <div class="input-group">
+      <label>Skills/Notes</label>
+      <input type="text" id="crewSkills" value="${crew?.skills || ''}" placeholder="e.g. Pilot 2, Astrogation 1">
+    </div>
+    <div class="input-group">
+      <label>Additional Notes</label>
+      <textarea id="crewNotes" placeholder="Background, quirks, etc.">${crew?.notes || ''}</textarea>
+    </div>
+  `;
+
+  openModal(editId ? 'Edit Crew Member' : 'Add Crew Member', html, () => {
+    const crewData = {
+      id: editId || generateId(),
+      name: document.getElementById('crewName').value || 'Unnamed',
+      position: document.getElementById('crewPosition').value,
+      salary: parseFloat(document.getElementById('crewSalary').value) || 0,
+      skills: document.getElementById('crewSkills').value,
+      notes: document.getElementById('crewNotes').value
+    };
+
+    if (editId) {
+      const idx = data.crew.findIndex(c => c.id === editId);
+      if (idx !== -1) data.crew[idx] = crewData;
+    } else {
+      data.crew.push(crewData);
+    }
+
+    saveData();
+    closeModal();
+    showToast(editId ? 'Crew member updated' : 'Crew member added');
+  });
+}
+
+function deleteCrew(id) {
+  const crew = data.crew.find(c => c.id === id);
+  confirmAction(`Delete crew member "${crew?.name}"?`, () => {
+    data.crew = data.crew.filter(c => c.id !== id);
+    setUndoAction('Crew member', crew, 'crew');
+    saveData();
+    closeModal();
+    showToast('Crew member deleted');
+  });
+}
+
+function renderCrewTable() {
+  const tbody = document.getElementById('crewTableBody');
+  if (data.crew.length === 0) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="6"><div class="empty-state"><div class="empty-text">No crew members added yet</div></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = data.crew.map(c => `
+    <tr>
+      <td>${c.name}</td>
+      <td><span class="tag tag-cyan">${c.position}</span></td>
+      <td>${c.skills || '—'}</td>
+      <td class="text-right">${formatCr(c.salary)}</td>
+      <td>${c.notes || '—'}</td>
+      <td>
+        <div class="row-actions">
+          <button class="row-action" onclick="openCrewModal('${c.id}')">Edit</button>
+          <button class="row-action delete" onclick="deleteCrew('${c.id}')">Del</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ============================================
+// FINANCIAL LEDGER FUNCTIONS
+// ============================================
+
+const CATEGORIES = {
+  cargo: { label: 'Cargo Sale', color: 'green' },
+  passenger: { label: 'Passenger', color: 'green' },
+  freight: { label: 'Freight', color: 'green' },
+  fuel: { label: 'Fuel', color: 'red' },
+  salary: { label: 'Salary', color: 'red' },
+  mortgage: { label: 'Mortgage', color: 'red' },
+  maintenance: { label: 'Maintenance', color: 'red' },
+  berthing: { label: 'Berthing', color: 'red' },
+  lifesupport: { label: 'Life Support', color: 'red' },
+  other: { label: 'Other', color: 'amber' }
+};
+
+function openTransactionModal(editId = null) {
+  const txn = editId ? data.ledger.find(t => t.id === editId) : null;
+  const today = new Date().toISOString().slice(0, 10);
+
+  const categoryOptions = Object.entries(CATEGORIES).map(([key, val]) =>
+    `<option value="${key}" ${txn?.category === key ? 'selected' : ''}>${val.label}</option>`
+  ).join('');
+
+  const html = `
+    <div class="input-row">
+      <div class="input-group">
+        <label>Date</label>
+        <input type="date" id="txnDate" value="${txn?.date || today}">
+      </div>
+      <div class="input-group">
+        <label>Category</label>
+        <select id="txnCategory">${categoryOptions}</select>
+      </div>
+    </div>
+    <div class="input-group">
+      <label>Description</label>
+      <input type="text" id="txnDesc" value="${txn?.description || ''}" placeholder="What is this transaction for?">
+    </div>
+    <div class="input-group">
+      <label>Amount (Cr)</label>
+      <input type="number" id="txnAmount" value="${txn?.amount || 0}" step="1">
+      <div class="input-hint">Positive = income, Negative = expense</div>
+    </div>
+  `;
+
+  openModal(editId ? 'Edit Transaction' : 'Add Transaction', html, () => {
+    const txnData = {
+      id: editId || generateId(),
+      date: document.getElementById('txnDate').value || today,
+      category: document.getElementById('txnCategory').value,
+      description: document.getElementById('txnDesc').value || 'Transaction',
+      amount: parseFloat(document.getElementById('txnAmount').value) || 0
+    };
+
+    if (editId) {
+      const idx = data.ledger.findIndex(t => t.id === editId);
+      if (idx !== -1) data.ledger[idx] = txnData;
+    } else {
+      data.ledger.push(txnData);
+    }
+
+    // Sort by date
+    data.ledger.sort((a, b) => a.date.localeCompare(b.date));
+
+    saveData();
+    closeModal();
+    showToast(editId ? 'Transaction updated' : 'Transaction added');
+  });
+}
+
+function openRecurringCostModal() {
+  const html = `
+    <p style="margin-bottom: 16px; color: var(--muted); font-family: var(--sans);">
+      Add monthly recurring costs based on current ship configuration.
+    </p>
+    <div class="input-group">
+      <label>Date</label>
+      <input type="date" id="recurDate" value="${new Date().toISOString().slice(0, 10)}">
+    </div>
+    <div style="margin-top: 16px;">
+      <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+        <input type="checkbox" id="addMortgage" checked> Mortgage (${formatCr(data.ship.mortgage)})
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+        <input type="checkbox" id="addSalaries" checked> Crew Salaries (${formatCr(data.crew.reduce((s, c) => s + c.salary, 0))})
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+        <input type="checkbox" id="addLifeSupport" checked> Life Support (${formatCr(calculateLifeSupport())})
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+        <input type="checkbox" id="addMaintenance" checked> Maintenance (${formatCr(calculateMaintenance())})
+      </label>
+    </div>
+  `;
+
+  openModal('Add Monthly Costs', html, () => {
+    const date = document.getElementById('recurDate').value;
+
+    if (document.getElementById('addMortgage').checked && data.ship.mortgage > 0) {
+      data.ledger.push({
+        id: generateId(), date, category: 'mortgage',
+        description: 'Monthly mortgage payment', amount: -data.ship.mortgage
+      });
+    }
+    if (document.getElementById('addSalaries').checked) {
+      const total = data.crew.reduce((s, c) => s + c.salary, 0);
+      if (total > 0) {
+        data.ledger.push({
+          id: generateId(), date, category: 'salary',
+          description: 'Monthly crew salaries', amount: -total
+        });
+      }
+    }
+    if (document.getElementById('addLifeSupport').checked) {
+      const ls = calculateLifeSupport();
+      if (ls > 0) {
+        data.ledger.push({
+          id: generateId(), date, category: 'lifesupport',
+          description: 'Monthly life support', amount: -ls
+        });
+      }
+    }
+    if (document.getElementById('addMaintenance').checked) {
+      const maint = calculateMaintenance();
+      if (maint > 0) {
+        data.ledger.push({
+          id: generateId(), date, category: 'maintenance',
+          description: 'Monthly maintenance', amount: -maint
+        });
+      }
+    }
+
+    data.ledger.sort((a, b) => a.date.localeCompare(b.date));
+    saveData();
+    closeModal();
+    showToast('Monthly costs added');
+  }, 'Add Costs');
+}
+
+function deleteTransaction(id) {
+  const txn = data.ledger.find(t => t.id === id);
+  confirmAction(`Delete transaction "${txn?.description}"?`, () => {
+    data.ledger = data.ledger.filter(t => t.id !== id);
+    setUndoAction('Transaction', txn, 'ledger');
+    saveData();
+    closeModal();
+    showToast('Transaction deleted');
+  });
+}
+
+function renderLedgerTable() {
+  const tbody = document.getElementById('ledgerTableBody');
+  const filter = document.getElementById('ledgerFilter')?.value || 'all';
+
+  let filtered = data.ledger;
+  if (filter !== 'all') {
+    filtered = data.ledger.filter(t => t.category === filter);
+  }
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="6"><div class="empty-state"><div class="empty-text">No transactions recorded</div></div></td></tr>`;
+    return;
+  }
+
+  let balance = data.startingCash;
+  const rows = [];
+
+  // Calculate running balance for all transactions first
+  data.ledger.forEach(t => {
+    const thisBalance = balance + t.amount;
+    if (filter === 'all' || t.category === filter) {
+      rows.push({ ...t, balance: thisBalance });
+    }
+    balance = thisBalance;
+  });
+
+  tbody.innerHTML = rows.map(t => {
+    const cat = CATEGORIES[t.category] || CATEGORIES.other;
+    const amountClass = t.amount >= 0 ? 'amount-positive' : 'amount-negative';
+    return `
+      <tr>
+        <td>${t.date}</td>
+        <td><span class="tag tag-${cat.color}">${cat.label}</span></td>
+        <td>${t.description}</td>
+        <td class="text-right ${amountClass}">${formatCr(t.amount)}</td>
+        <td class="text-right">${formatCr(t.balance)}</td>
+        <td>
+          <div class="row-actions">
+            <button class="row-action" onclick="openTransactionModal('${t.id}')">Edit</button>
+            <button class="row-action delete" onclick="deleteTransaction('${t.id}')">Del</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// Filter change handler
+document.getElementById('ledgerFilter')?.addEventListener('change', renderLedgerTable);
+
+// ============================================
+// CARGO FUNCTIONS
+// ============================================
+
+function openCargoModal(editId = null) {
+  const cargo = editId ? data.cargo.find(c => c.id === editId) : null;
+
+  const html = `
+    <div class="input-group">
+      <label>Goods Type</label>
+      <input type="text" id="cargoGoods" value="${cargo?.goods || ''}" placeholder="e.g. Common Electronics, Luxury Goods">
+    </div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Tons</label>
+        <input type="number" id="cargoTons" value="${cargo?.tons || 1}" min="1">
+      </div>
+      <div class="input-group">
+        <label>Total Purchase Price (Cr)</label>
+        <input type="number" id="cargoPrice" value="${cargo?.price || 0}" min="0">
+      </div>
+    </div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Purchase Location</label>
+        <input type="text" id="cargoOrigin" value="${cargo?.origin || ''}" placeholder="System/World name">
+      </div>
+      <div class="input-group">
+        <label>Planned Destination</label>
+        <input type="text" id="cargoDest" value="${cargo?.destination || ''}" placeholder="Where to sell">
+      </div>
+    </div>
+    <div class="input-group">
+      <label>Notes</label>
+      <textarea id="cargoNotes" placeholder="Trade codes, expected profit, etc.">${cargo?.notes || ''}</textarea>
+    </div>
+  `;
+
+  openModal(editId ? 'Edit Cargo' : 'Add Speculative Cargo', html, () => {
+    const cargoData = {
+      id: editId || generateId(),
+      type: 'speculative',
+      goods: document.getElementById('cargoGoods').value || 'Cargo',
+      tons: parseFloat(document.getElementById('cargoTons').value) || 1,
+      price: parseFloat(document.getElementById('cargoPrice').value) || 0,
+      origin: document.getElementById('cargoOrigin').value,
+      destination: document.getElementById('cargoDest').value,
+      notes: document.getElementById('cargoNotes').value
+    };
+
+    if (editId) {
+      const idx = data.cargo.findIndex(c => c.id === editId);
+      if (idx !== -1) data.cargo[idx] = cargoData;
+    } else {
+      data.cargo.push(cargoData);
+    }
+
+    saveData();
+    closeModal();
+    showToast(editId ? 'Cargo updated' : 'Cargo added');
+  });
+}
+
+function openFreightModal(editId = null) {
+  const cargo = editId ? data.cargo.find(c => c.id === editId) : null;
+
+  const html = `
+    <div class="input-group">
+      <label>Freight Description</label>
+      <input type="text" id="freightDesc" value="${cargo?.goods || ''}" placeholder="e.g. Sealed containers, Industrial parts">
+    </div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Tons</label>
+        <input type="number" id="freightTons" value="${cargo?.tons || 1}" min="1">
+      </div>
+      <div class="input-group">
+        <label>Parsecs to Destination</label>
+        <input type="number" id="freightParsecs" value="${cargo?.parsecs || 1}" min="1">
+      </div>
+    </div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Origin</label>
+        <input type="text" id="freightOrigin" value="${cargo?.origin || ''}" placeholder="Pickup location">
+      </div>
+      <div class="input-group">
+        <label>Destination</label>
+        <input type="text" id="freightDest" value="${cargo?.destination || ''}" placeholder="Delivery location">
+      </div>
+    </div>
+    <div class="input-group">
+      <label>Revenue (auto-calculated: Cr 1,000/ton/parsec)</label>
+      <input type="number" id="freightRevenue" value="${cargo?.revenue || 0}" readonly>
+    </div>
+    <div class="input-group">
+      <label>Notes</label>
+      <textarea id="freightNotes" placeholder="Shipper, deadline, etc.">${cargo?.notes || ''}</textarea>
+    </div>
+  `;
+
+  openModal(editId ? 'Edit Freight' : 'Add Freight Contract', html, () => {
+    const tons = parseFloat(document.getElementById('freightTons').value) || 1;
+    const parsecs = parseFloat(document.getElementById('freightParsecs').value) || 1;
+
+    const cargoData = {
+      id: editId || generateId(),
+      type: 'freight',
+      goods: document.getElementById('freightDesc').value || 'Freight',
+      tons: tons,
+      parsecs: parsecs,
+      price: 0,
+      revenue: tons * parsecs * 1000,
+      origin: document.getElementById('freightOrigin').value,
+      destination: document.getElementById('freightDest').value,
+      notes: document.getElementById('freightNotes').value
+    };
+
+    if (editId) {
+      const idx = data.cargo.findIndex(c => c.id === editId);
+      if (idx !== -1) data.cargo[idx] = cargoData;
+    } else {
+      data.cargo.push(cargoData);
+    }
+
+    saveData();
+    closeModal();
+    showToast(editId ? 'Freight updated' : 'Freight contract added');
+  });
+
+  // Auto-calculate revenue
+  const updateRevenue = () => {
+    const tons = parseFloat(document.getElementById('freightTons')?.value) || 1;
+    const parsecs = parseFloat(document.getElementById('freightParsecs')?.value) || 1;
+    const revEl = document.getElementById('freightRevenue');
+    if (revEl) revEl.value = tons * parsecs * 1000;
+  };
+
+  setTimeout(() => {
+    document.getElementById('freightTons')?.addEventListener('input', updateRevenue);
+    document.getElementById('freightParsecs')?.addEventListener('input', updateRevenue);
+    updateRevenue();
+  }, 100);
+}
+
+function sellCargo(id) {
+  const cargo = data.cargo.find(c => c.id === id);
+  if (!cargo) return;
+
+  const estimatedSale = Math.round(cargo.price * 1.2);
+
+  const html = `
+    <div class="input-group">
+      <label>Selling: ${cargo.goods} (${cargo.tons} tons)</label>
+      <div class="input-hint">Purchased for ${formatCr(cargo.price)}</div>
+    </div>
+    <div class="input-group">
+      <label>Sale Price (Cr)</label>
+      <input type="number" id="salePrice" value="${estimatedSale}" min="0">
+      <div class="input-hint">Profit: <span id="saleProfit">${formatCr(estimatedSale - cargo.price)}</span></div>
+    </div>
+    <div class="input-group">
+      <label>Sale Location</label>
+      <input type="text" id="saleLocation" value="${cargo.destination || ''}" placeholder="Where sold">
+    </div>
+  `;
+
+  openModal('Sell Cargo', html, () => {
+    const salePrice = parseFloat(document.getElementById('salePrice').value) || 0;
+    const profit = salePrice - cargo.price;
+
+    // Add sale to ledger
+    data.ledger.push({
+      id: generateId(),
+      date: new Date().toISOString().slice(0, 10),
+      category: 'cargo',
+      description: `Sold ${cargo.goods} (${cargo.tons}t)`,
+      amount: salePrice
+    });
+
+    // Remove cargo
+    data.cargo = data.cargo.filter(c => c.id !== id);
+
+    data.ledger.sort((a, b) => a.date.localeCompare(b.date));
+    saveData();
+    closeModal();
+    showToast(`Cargo sold for ${formatCr(salePrice)} (profit: ${formatCr(profit)})`);
+  }, 'Sell');
+
+  // Update profit display
+  setTimeout(() => {
+    document.getElementById('salePrice')?.addEventListener('input', () => {
+      const sp = parseFloat(document.getElementById('salePrice').value) || 0;
+      document.getElementById('saleProfit').textContent = formatCr(sp - cargo.price);
+    });
+  }, 100);
+}
+
+function deliverFreight(id) {
+  const cargo = data.cargo.find(c => c.id === id);
+  if (!cargo || cargo.type !== 'freight') return;
+
+  confirmAction(`Deliver freight "${cargo.goods}" and collect ${formatCr(cargo.revenue)}?`, () => {
+    // Add revenue to ledger
+    data.ledger.push({
+      id: generateId(),
+      date: new Date().toISOString().slice(0, 10),
+      category: 'freight',
+      description: `Freight delivery: ${cargo.goods} (${cargo.tons}t)`,
+      amount: cargo.revenue
+    });
+
+    // Remove cargo
+    data.cargo = data.cargo.filter(c => c.id !== id);
+
+    data.ledger.sort((a, b) => a.date.localeCompare(b.date));
+    saveData();
+    closeModal();
+    showToast(`Freight delivered, ${formatCr(cargo.revenue)} collected`);
+  });
+}
+
+function deleteCargo(id) {
+  const cargo = data.cargo.find(c => c.id === id);
+  confirmAction(`Delete cargo "${cargo?.goods}"?`, () => {
+    data.cargo = data.cargo.filter(c => c.id !== id);
+    setUndoAction('Cargo', cargo, 'cargo');
+    saveData();
+    closeModal();
+    showToast('Cargo deleted');
+  });
+}
+
+function renderCargoTable() {
+  const tbody = document.getElementById('cargoTableBody');
+
+  if (data.cargo.length === 0) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="8"><div class="empty-state"><div class="empty-text">Cargo hold is empty</div></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = data.cargo.map(c => {
+    const typeTag = c.type === 'freight'
+      ? '<span class="tag tag-purple">Freight</span>'
+      : '<span class="tag tag-cyan">Speculative</span>';
+
+    const actionBtn = c.type === 'freight'
+      ? `<button class="row-action" onclick="deliverFreight('${c.id}')">Deliver</button>`
+      : `<button class="row-action" onclick="sellCargo('${c.id}')">Sell</button>`;
+
+    return `
+      <tr>
+        <td>${typeTag}</td>
+        <td>${c.goods}</td>
+        <td class="text-right">${c.tons}</td>
+        <td class="text-right">${c.type === 'freight' ? formatCr(c.revenue) + ' (rev)' : formatCr(c.price)}</td>
+        <td>${c.origin || '—'}</td>
+        <td>${c.destination || '—'}</td>
+        <td>${c.notes || '—'}</td>
+        <td>
+          <div class="row-actions">
+            ${actionBtn}
+            <button class="row-action" onclick="${c.type === 'freight' ? 'openFreightModal' : 'openCargoModal'}('${c.id}')">Edit</button>
+            <button class="row-action delete" onclick="deleteCargo('${c.id}')">Del</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ============================================
+// PASSENGER FUNCTIONS
+// ============================================
+
+const PASSAGE_TYPES = {
+  high: { label: 'High Passage', rate: 10000 },
+  middle: { label: 'Middle Passage', rate: 8000 },
+  basic: { label: 'Basic Passage', rate: 2000 },
+  low: { label: 'Low Passage', rate: 1000 }
+};
+
+function openPassengerModal(editId = null) {
+  const pax = editId ? data.passengers.find(p => p.id === editId) : null;
+
+  const passageOptions = Object.entries(PASSAGE_TYPES).map(([key, val]) =>
+    `<option value="${key}" ${pax?.passageType === key ? 'selected' : ''}>${val.label} (${formatCr(val.rate)}/parsec)</option>`
+  ).join('');
+
+  const html = `
+    <div class="input-group">
+      <label>Passenger Name</label>
+      <input type="text" id="paxName" value="${pax?.name || ''}" placeholder="Name or description">
+    </div>
+    <div class="input-group">
+      <label>Passage Type</label>
+      <select id="paxType" onchange="updatePassengerFare()">${passageOptions}</select>
+    </div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>From</label>
+        <input type="text" id="paxFrom" value="${pax?.from || ''}" placeholder="Origin system">
+      </div>
+      <div class="input-group">
+        <label>To</label>
+        <input type="text" id="paxTo" value="${pax?.to || ''}" placeholder="Destination system">
+      </div>
+    </div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Parsecs</label>
+        <input type="number" id="paxParsecs" value="${pax?.parsecs || 1}" min="1" onchange="updatePassengerFare()">
+      </div>
+      <div class="input-group">
+        <label>Fare (Cr)</label>
+        <input type="number" id="paxFare" value="${pax?.fare || PASSAGE_TYPES.high.rate}" min="0">
+        <div class="input-hint">Auto-calculated but can be overridden</div>
+      </div>
+    </div>
+    <div class="input-group">
+      <label>Notes</label>
+      <textarea id="paxNotes" placeholder="Special requests, background, etc.">${pax?.notes || ''}</textarea>
+    </div>
+  `;
+
+  openModal(editId ? 'Edit Passenger' : 'Add Passenger', html, () => {
+    const paxData = {
+      id: editId || generateId(),
+      name: document.getElementById('paxName').value || 'Passenger',
+      passageType: document.getElementById('paxType').value,
+      from: document.getElementById('paxFrom').value,
+      to: document.getElementById('paxTo').value,
+      parsecs: parseFloat(document.getElementById('paxParsecs').value) || 1,
+      fare: parseFloat(document.getElementById('paxFare').value) || 0,
+      notes: document.getElementById('paxNotes').value
+    };
+
+    if (editId) {
+      const idx = data.passengers.findIndex(p => p.id === editId);
+      if (idx !== -1) data.passengers[idx] = paxData;
+    } else {
+      data.passengers.push(paxData);
+    }
+
+    saveData();
+    closeModal();
+    showToast(editId ? 'Passenger updated' : 'Passenger added');
+  });
+
+  // Setup fare auto-calculation
+  setTimeout(() => {
+    window.updatePassengerFare = function() {
+      const type = document.getElementById('paxType')?.value || 'high';
+      const parsecs = parseFloat(document.getElementById('paxParsecs')?.value) || 1;
+      const rate = PASSAGE_TYPES[type]?.rate || 10000;
+      const fareEl = document.getElementById('paxFare');
+      if (fareEl) fareEl.value = rate * parsecs;
+    };
+  }, 100);
+}
+
+function disembarkPassenger(id) {
+  const pax = data.passengers.find(p => p.id === id);
+  if (!pax) return;
+
+  confirmAction(`Disembark "${pax.name}" and collect ${formatCr(pax.fare)}?`, () => {
+    data.ledger.push({
+      id: generateId(),
+      date: new Date().toISOString().slice(0, 10),
+      category: 'passenger',
+      description: `${PASSAGE_TYPES[pax.passageType]?.label || 'Passage'}: ${pax.name}`,
+      amount: pax.fare
+    });
+
+    data.passengers = data.passengers.filter(p => p.id !== id);
+    data.ledger.sort((a, b) => a.date.localeCompare(b.date));
+    saveData();
+    closeModal();
+    showToast(`Passenger disembarked, ${formatCr(pax.fare)} collected`);
+  });
+}
+
+function deletePassenger(id) {
+  const pax = data.passengers.find(p => p.id === id);
+  confirmAction(`Remove passenger "${pax?.name}"?`, () => {
+    data.passengers = data.passengers.filter(p => p.id !== id);
+    setUndoAction('Passenger', pax, 'passengers');
+    saveData();
+    closeModal();
+    showToast('Passenger removed');
+  });
+}
+
+function renderPassengerTable() {
+  const tbody = document.getElementById('passengerTableBody');
+
+  if (data.passengers.length === 0) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="8"><div class="empty-state"><div class="empty-text">No passengers aboard</div></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = data.passengers.map(p => {
+    const typeInfo = PASSAGE_TYPES[p.passageType] || PASSAGE_TYPES.middle;
+    const tagColor = p.passageType === 'high' ? 'green' : (p.passageType === 'low' ? 'amber' : 'cyan');
+    return `
+      <tr>
+        <td>${p.name}</td>
+        <td><span class="tag tag-${tagColor}">${typeInfo.label}</span></td>
+        <td>${p.from || '—'}</td>
+        <td>${p.to || '—'}</td>
+        <td class="text-right">${p.parsecs}</td>
+        <td class="text-right amount-positive">${formatCr(p.fare)}</td>
+        <td>${p.notes || '—'}</td>
+        <td>
+          <div class="row-actions">
+            <button class="row-action" onclick="disembarkPassenger('${p.id}')">Disembark</button>
+            <button class="row-action" onclick="openPassengerModal('${p.id}')">Edit</button>
+            <button class="row-action delete" onclick="deletePassenger('${p.id}')">Del</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ============================================
+// JUMP LOG FUNCTIONS
+// ============================================
+
+function openJumpModal(editId = null) {
+  const jump = editId ? data.jumps.find(j => j.id === editId) : null;
+  const today = new Date().toISOString().slice(0, 10);
+  const lastLocation = data.jumps.length > 0 ? data.jumps[data.jumps.length - 1].to : '';
+
+  const html = `
+    <div class="input-group">
+      <label>Date</label>
+      <input type="date" id="jumpDate" value="${jump?.date || today}">
+    </div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>From</label>
+        <input type="text" id="jumpFrom" value="${jump?.from || lastLocation}" placeholder="Origin system">
+      </div>
+      <div class="input-group">
+        <label>To</label>
+        <input type="text" id="jumpTo" value="${jump?.to || ''}" placeholder="Destination system">
+      </div>
+    </div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Parsecs</label>
+        <input type="number" id="jumpParsecs" value="${jump?.parsecs || data.ship.jumpRating}" min="1" max="6" onchange="updateJumpFuel()">
+      </div>
+      <div class="input-group">
+        <label>Fuel Used (tons)</label>
+        <input type="number" id="jumpFuel" value="${jump?.fuelUsed || calculateJumpFuel(data.ship.jumpRating)}" min="0" step="0.1">
+      </div>
+    </div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Fuel Type</label>
+        <select id="jumpFuelType" onchange="updateJumpFuelCost()">
+          <option value="refined" ${jump?.fuelType === 'refined' ? 'selected' : ''}>Refined</option>
+          <option value="unrefined" ${jump?.fuelType === 'unrefined' ? 'selected' : ''}>Unrefined</option>
+          <option value="wilderness" ${jump?.fuelType === 'wilderness' ? 'selected' : ''}>Wilderness (Free)</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Fuel Cost (Cr)</label>
+        <input type="number" id="jumpFuelCost" value="${jump?.fuelCost || 0}" min="0">
+      </div>
+    </div>
+    <div class="input-group">
+      <label>Notes</label>
+      <textarea id="jumpNotes" placeholder="Events during transit, misjumps, etc.">${jump?.notes || ''}</textarea>
+    </div>
+  `;
+
+  openModal(editId ? 'Edit Jump' : 'Log Jump', html, () => {
+    const fuelCost = parseFloat(document.getElementById('jumpFuelCost').value) || 0;
+
+    const jumpData = {
+      id: editId || generateId(),
+      date: document.getElementById('jumpDate').value || today,
+      from: document.getElementById('jumpFrom').value || 'Unknown',
+      to: document.getElementById('jumpTo').value || 'Unknown',
+      parsecs: parseFloat(document.getElementById('jumpParsecs').value) || 1,
+      fuelUsed: parseFloat(document.getElementById('jumpFuel').value) || 0,
+      fuelType: document.getElementById('jumpFuelType').value,
+      fuelCost: fuelCost,
+      notes: document.getElementById('jumpNotes').value
+    };
+
+    if (editId) {
+      const idx = data.jumps.findIndex(j => j.id === editId);
+      if (idx !== -1) data.jumps[idx] = jumpData;
+    } else {
+      data.jumps.push(jumpData);
+      // Add fuel cost to ledger if any
+      if (fuelCost > 0) {
+        data.ledger.push({
+          id: generateId(),
+          date: jumpData.date,
+          category: 'fuel',
+          description: `Fuel: ${jumpData.from} → ${jumpData.to}`,
+          amount: -fuelCost
+        });
+        data.ledger.sort((a, b) => a.date.localeCompare(b.date));
+      }
+    }
+
+    saveData();
+    closeModal();
+    showToast(editId ? 'Jump updated' : 'Jump logged');
+  });
+
+  // Setup auto-calculations
+  setTimeout(() => {
+    window.updateJumpFuel = function() {
+      const parsecs = parseFloat(document.getElementById('jumpParsecs')?.value) || 1;
+      const fuelEl = document.getElementById('jumpFuel');
+      if (fuelEl) fuelEl.value = calculateJumpFuel(parsecs);
+      updateJumpFuelCost();
+    };
+    window.updateJumpFuelCost = function() {
+      const fuel = parseFloat(document.getElementById('jumpFuel')?.value) || 0;
+      const type = document.getElementById('jumpFuelType')?.value || 'refined';
+      const costEl = document.getElementById('jumpFuelCost');
+      if (costEl) {
+        if (type === 'wilderness') costEl.value = 0;
+        else if (type === 'unrefined') costEl.value = fuel * data.ship.fuelCostUnrefined;
+        else costEl.value = fuel * data.ship.fuelCostRefined;
+      }
+    };
+    updateJumpFuelCost();
+  }, 100);
+}
+
+function deleteJump(id) {
+  const jump = data.jumps.find(j => j.id === id);
+  confirmAction(`Delete jump to "${jump?.to}"?`, () => {
+    data.jumps = data.jumps.filter(j => j.id !== id);
+    setUndoAction('Jump', jump, 'jumps');
+    saveData();
+    closeModal();
+    showToast('Jump deleted');
+  });
+}
+
+function renderJumpTable() {
+  const tbody = document.getElementById('jumpTableBody');
+
+  if (data.jumps.length === 0) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="10"><div class="empty-state"><div class="empty-text">No jumps logged yet</div></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = data.jumps.map((j, idx) => {
+    const fuelTypeTag = j.fuelType === 'wilderness' ? 'tag-green' : (j.fuelType === 'unrefined' ? 'tag-amber' : 'tag-cyan');
+    return `
+      <tr>
+        <td>${idx + 1}</td>
+        <td>${j.date}</td>
+        <td>${j.from}</td>
+        <td>${j.to}</td>
+        <td class="text-right">${j.parsecs}</td>
+        <td class="text-right">${j.fuelUsed}</td>
+        <td><span class="tag ${fuelTypeTag}">${j.fuelType}</span></td>
+        <td class="text-right ${j.fuelCost > 0 ? 'amount-negative' : ''}">${formatCr(j.fuelCost)}</td>
+        <td>${j.notes || '—'}</td>
+        <td>
+          <div class="row-actions">
+            <button class="row-action" onclick="openJumpModal('${j.id}')">Edit</button>
+            <button class="row-action delete" onclick="deleteJump('${j.id}')">Del</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ============================================
+// SHIP'S LOCKER FUNCTIONS
+// ============================================
+
+const LOCKER_CATEGORIES = ['Weapons', 'Armor', 'Electronics', 'Medical', 'Survival', 'Tools', 'Vacc Suits', 'Ammunition', 'Other'];
+
+function openLockerModal(editId = null) {
+  const item = editId ? data.locker.find(i => i.id === editId) : null;
+
+  const categoryOptions = LOCKER_CATEGORIES.map(cat =>
+    `<option value="${cat}" ${item?.category === cat ? 'selected' : ''}>${cat}</option>`
+  ).join('');
+
+  const html = `
+    <div class="input-row">
+      <div class="input-group">
+        <label>Category</label>
+        <select id="lockerCategory">${categoryOptions}</select>
+      </div>
+      <div class="input-group">
+        <label>Item Name</label>
+        <input type="text" id="lockerItem" value="${item?.item || ''}" placeholder="e.g. Autopistol, Medikit">
+      </div>
+    </div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Quantity</label>
+        <input type="number" id="lockerQty" value="${item?.quantity || 1}" min="1">
+      </div>
+      <div class="input-group">
+        <label>Unit Cost (Cr)</label>
+        <input type="number" id="lockerCost" value="${item?.unitCost || 0}" min="0">
+      </div>
+    </div>
+    <div class="input-group">
+      <label>Storage Location</label>
+      <input type="text" id="lockerLocation" value="${item?.location || ''}" placeholder="e.g. Bridge locker, Cargo bay">
+    </div>
+    <div class="input-group">
+      <label>Notes</label>
+      <textarea id="lockerNotes" placeholder="TL, special features, etc.">${item?.notes || ''}</textarea>
+    </div>
+  `;
+
+  openModal(editId ? 'Edit Item' : 'Add Item', html, () => {
+    const itemData = {
+      id: editId || generateId(),
+      category: document.getElementById('lockerCategory').value,
+      item: document.getElementById('lockerItem').value || 'Item',
+      quantity: parseInt(document.getElementById('lockerQty').value) || 1,
+      unitCost: parseFloat(document.getElementById('lockerCost').value) || 0,
+      location: document.getElementById('lockerLocation').value,
+      notes: document.getElementById('lockerNotes').value
+    };
+
+    if (editId) {
+      const idx = data.locker.findIndex(i => i.id === editId);
+      if (idx !== -1) data.locker[idx] = itemData;
+    } else {
+      data.locker.push(itemData);
+    }
+
+    saveData();
+    closeModal();
+    showToast(editId ? 'Item updated' : 'Item added');
+  });
+}
+
+function deleteLockerItem(id) {
+  const item = data.locker.find(i => i.id === id);
+  confirmAction(`Delete "${item?.item}"?`, () => {
+    data.locker = data.locker.filter(i => i.id !== id);
+    setUndoAction('Item', item, 'locker');
+    saveData();
+    closeModal();
+    showToast('Item deleted');
+  });
+}
+
+function renderLockerTable() {
+  const tbody = document.getElementById('lockerTableBody');
+
+  if (data.locker.length === 0) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="8"><div class="empty-state"><div class="empty-text">Ship's locker is empty</div></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = data.locker.map(i => `
+    <tr>
+      <td><span class="tag tag-cyan">${i.category}</span></td>
+      <td>${i.item}</td>
+      <td class="text-right">${i.quantity}</td>
+      <td class="text-right">${formatCr(i.unitCost)}</td>
+      <td class="text-right">${formatCr(i.quantity * i.unitCost)}</td>
+      <td>${i.location || '—'}</td>
+      <td>${i.notes || '—'}</td>
+      <td>
+        <div class="row-actions">
+          <button class="row-action" onclick="openLockerModal('${i.id}')">Edit</button>
+          <button class="row-action delete" onclick="deleteLockerItem('${i.id}')">Del</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ============================================
+// CONTACTS FUNCTIONS
+// ============================================
+
+const CONTACT_TYPES = ['Patron', 'Contact', 'Ally', 'Rival', 'Enemy', 'Informant', 'Merchant', 'Official', 'Other'];
+const RELATIONSHIP_LEVELS = ['Hostile', 'Unfriendly', 'Neutral', 'Friendly', 'Close', 'Loyal'];
+
+function openContactModal(editId = null) {
+  const contact = editId ? data.contacts.find(c => c.id === editId) : null;
+
+  const typeOptions = CONTACT_TYPES.map(t =>
+    `<option value="${t}" ${contact?.type === t ? 'selected' : ''}>${t}</option>`
+  ).join('');
+
+  const relOptions = RELATIONSHIP_LEVELS.map(r =>
+    `<option value="${r}" ${contact?.relationship === r ? 'selected' : ''}>${r}</option>`
+  ).join('');
+
+  const html = `
+    <div class="input-group">
+      <label>Name</label>
+      <input type="text" id="contactName" value="${contact?.name || ''}" placeholder="Contact name">
+    </div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Type</label>
+        <select id="contactType">${typeOptions}</select>
+      </div>
+      <div class="input-group">
+        <label>Relationship</label>
+        <select id="contactRel">${relOptions}</select>
+      </div>
+    </div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Location</label>
+        <input type="text" id="contactLoc" value="${contact?.location || ''}" placeholder="System/World">
+      </div>
+      <div class="input-group">
+        <label>Occupation</label>
+        <input type="text" id="contactOcc" value="${contact?.occupation || ''}" placeholder="What they do">
+      </div>
+    </div>
+    <div class="input-group">
+      <label>Notes</label>
+      <textarea id="contactNotes" placeholder="Background, how you met, etc.">${contact?.notes || ''}</textarea>
+    </div>
+  `;
+
+  openModal(editId ? 'Edit Contact' : 'Add Contact', html, () => {
+    const contactData = {
+      id: editId || generateId(),
+      name: document.getElementById('contactName').value || 'Unknown',
+      type: document.getElementById('contactType').value,
+      relationship: document.getElementById('contactRel').value,
+      location: document.getElementById('contactLoc').value,
+      occupation: document.getElementById('contactOcc').value,
+      notes: document.getElementById('contactNotes').value
+    };
+
+    if (editId) {
+      const idx = data.contacts.findIndex(c => c.id === editId);
+      if (idx !== -1) data.contacts[idx] = contactData;
+    } else {
+      data.contacts.push(contactData);
+    }
+
+    saveData();
+    closeModal();
+    showToast(editId ? 'Contact updated' : 'Contact added');
+  });
+}
+
+function deleteContact(id) {
+  const contact = data.contacts.find(c => c.id === id);
+  confirmAction(`Delete contact "${contact?.name}"?`, () => {
+    data.contacts = data.contacts.filter(c => c.id !== id);
+    setUndoAction('Contact', contact, 'contacts');
+    saveData();
+    closeModal();
+    showToast('Contact deleted');
+  });
+}
+
+function renderContactTable() {
+  const tbody = document.getElementById('contactTableBody');
+
+  if (data.contacts.length === 0) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="7"><div class="empty-state"><div class="empty-text">No contacts recorded</div></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = data.contacts.map(c => {
+    const typeColor = ['Enemy', 'Rival'].includes(c.type) ? 'red' : (['Patron', 'Ally'].includes(c.type) ? 'green' : 'cyan');
+    const relColor = ['Hostile', 'Unfriendly'].includes(c.relationship) ? 'red' : (['Close', 'Loyal'].includes(c.relationship) ? 'green' : 'amber');
+    return `
+      <tr>
+        <td>${c.name}</td>
+        <td><span class="tag tag-${typeColor}">${c.type}</span></td>
+        <td>${c.location || '—'}</td>
+        <td>${c.occupation || '—'}</td>
+        <td><span class="tag tag-${relColor}">${c.relationship}</span></td>
+        <td>${c.notes || '—'}</td>
+        <td>
+          <div class="row-actions">
+            <button class="row-action" onclick="openContactModal('${c.id}')">Edit</button>
+            <button class="row-action delete" onclick="deleteContact('${c.id}')">Del</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// ============================================
+// CALCULATION HELPERS
+// ============================================
+
+function calculateJumpFuel(parsecs) {
+  return 0.1 * data.ship.tonnage * parsecs;
+}
+
+function calculateLifeSupport() {
+  // Cr 2,000 per occupied stateroom (crew count or stateroom count, whichever is less)
+  const occupied = Math.min(data.crew.length, data.ship.staterooms);
+  return occupied * 2000;
+}
+
+function calculateMaintenance() {
+  // 0.1% of ship cost annually, divided by 12 for monthly
+  return Math.round((data.ship.shipCost * 1000000 * 0.001) / 12);
+}
+
+function getCurrentCash() {
+  let balance = data.startingCash;
+  data.ledger.forEach(t => balance += t.amount);
+  return balance;
+}
+
+function getCargoTons() {
+  return data.cargo.reduce((sum, c) => sum + c.tons, 0);
+}
+
+function getCargoValue() {
+  return data.cargo.filter(c => c.type === 'speculative').reduce((sum, c) => sum + c.price, 0);
+}
+
+function getFreightRevenue() {
+  return data.cargo.filter(c => c.type === 'freight').reduce((sum, c) => sum + c.revenue, 0);
+}
+
+// ============================================
+// UPDATE ALL DISPLAYS
+// ============================================
+
+function updateAllDisplays() {
+  // Header
+  document.getElementById('headerShipName').textContent = data.ship.name || 'Unnamed';
+  const cash = getCurrentCash();
+  document.getElementById('headerCash').textContent = formatCr(cash);
+
+  // Update cash pill color
+  const cashPill = document.getElementById('cashPill');
+  cashPill.classList.remove('warning', 'danger');
+  if (cash < 0) cashPill.classList.add('danger');
+  else if (cash < 50000) cashPill.classList.add('warning');
+
+  // Quick stats
+  document.getElementById('statCash').textContent = formatCr(cash);
+  document.getElementById('statCash').className = 'stat-value ' + (cash >= 0 ? 'positive' : 'negative');
+
+  const cargoValue = getCargoValue();
+  document.getElementById('statCargoValue').textContent = formatCr(cargoValue);
+  document.getElementById('statCargoTons').textContent = `${getCargoTons()} / ${data.ship.cargoCap} tons`;
+
+  const monthlyCosts = data.ship.mortgage + data.crew.reduce((s, c) => s + c.salary, 0) + calculateLifeSupport() + calculateMaintenance();
+  document.getElementById('statMonthlyCosts').textContent = formatCr(monthlyCosts);
+
+  document.getElementById('statJumps').textContent = data.jumps.length;
+  document.getElementById('statParsecs').textContent = data.jumps.reduce((s, j) => s + j.parsecs, 0) + ' parsecs traveled';
+
+  document.getElementById('statNetWorth').textContent = formatCr(cash + cargoValue);
+
+  // Ship & Crew panel
+  document.getElementById('totalMonthlyBurn').textContent = formatCr(monthlyCosts);
+  document.getElementById('costMortgage').textContent = formatCr(data.ship.mortgage);
+  document.getElementById('costSalaries').textContent = formatCr(data.crew.reduce((s, c) => s + c.salary, 0));
+  document.getElementById('costLifeSupport').textContent = formatCr(calculateLifeSupport());
+  document.getElementById('costMaintenance').textContent = formatCr(calculateMaintenance());
+  document.getElementById('jumpFuelRequired').textContent = calculateJumpFuel(data.ship.jumpRating) + ' tons';
+  document.getElementById('totalSalaries').textContent = formatCr(data.crew.reduce((s, c) => s + c.salary, 0));
+
+  // Financial ledger
+  let totalIncome = 0, totalExpenses = 0;
+  data.ledger.forEach(t => {
+    if (t.amount >= 0) totalIncome += t.amount;
+    else totalExpenses += Math.abs(t.amount);
+  });
+  document.getElementById('currentBalance').textContent = formatCr(cash);
+  document.getElementById('totalIncome').textContent = formatCr(totalIncome);
+  document.getElementById('totalExpenses').textContent = formatCr(totalExpenses);
+
+  // Cargo
+  document.getElementById('cargoUsed').textContent = getCargoTons() + ' tons';
+  document.getElementById('cargoCapacity').textContent = 'of ' + data.ship.cargoCap + ' available';
+  document.getElementById('speculativeValue').textContent = formatCr(cargoValue);
+  document.getElementById('freightRevenue').textContent = formatCr(getFreightRevenue());
+  document.getElementById('estProfit').textContent = formatCr(Math.round(cargoValue * 0.2));
+
+  // Passengers
+  const highPax = data.passengers.filter(p => p.passageType === 'high').length;
+  const midPax = data.passengers.filter(p => ['middle', 'basic'].includes(p.passageType)).length;
+  const lowPax = data.passengers.filter(p => p.passageType === 'low').length;
+  document.getElementById('highPaxCount').textContent = highPax;
+  document.getElementById('midPaxCount').textContent = midPax;
+  document.getElementById('lowPaxCount').textContent = lowPax;
+  document.getElementById('paxRevenue').textContent = formatCr(data.passengers.reduce((s, p) => s + p.fare, 0));
+
+  // Jumps
+  document.getElementById('totalJumps').textContent = data.jumps.length;
+  document.getElementById('totalParsecs').textContent = data.jumps.reduce((s, j) => s + j.parsecs, 0);
+  document.getElementById('totalFuelUsed').textContent = data.jumps.reduce((s, j) => s + j.fuelUsed, 0) + ' tons';
+  document.getElementById('currentLocation').textContent = data.jumps.length > 0 ? data.jumps[data.jumps.length - 1].to : 'Unknown';
+
+  // Locker
+  document.getElementById('lockerValue').textContent = formatCr(data.locker.reduce((s, i) => s + (i.quantity * i.unitCost), 0));
+
+  // Render all tables
+  renderCrewTable();
+  renderLedgerTable();
+  renderCargoTable();
+  renderPassengerTable();
+  renderJumpTable();
+  renderLockerTable();
+  renderContactTable();
+
+  // Update charts
+  updateCharts();
+}
+
+// ============================================
+// CHARTS
+// ============================================
+
+function updateCharts() {
+  // Cash balance over time
+  const cashCtx = document.getElementById('cashChart')?.getContext('2d');
+  if (cashCtx) {
+    if (charts.cash) charts.cash.destroy();
+
+    const labels = ['Start'];
+    const values = [data.startingCash];
+    let balance = data.startingCash;
+
+    data.ledger.forEach(t => {
+      balance += t.amount;
+      labels.push(t.description.substring(0, 15));
+      values.push(balance);
+    });
+
+    charts.cash = new Chart(cashCtx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Cash Balance',
+          data: values,
+          borderColor: '#64f0ff',
+          backgroundColor: 'rgba(100, 240, 255, 0.1)',
+          tension: 0.3,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { ticks: { color: '#a0a0a0' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+          x: { ticks: { color: '#a0a0a0', maxRotation: 45 }, grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  // Profit per jump
+  const profitCtx = document.getElementById('profitChart')?.getContext('2d');
+  if (profitCtx && data.jumps.length > 0) {
+    if (charts.profit) charts.profit.destroy();
+
+    // Simple: show cumulative profit between jumps
+    const jumpLabels = data.jumps.map((j, i) => `Jump ${i + 1}`);
+    const jumpProfits = [];
+    let prevBalance = data.startingCash;
+
+    data.jumps.forEach((jump, idx) => {
+      // Find transactions up to this jump's date
+      const jumpDate = jump.date;
+      let currentBalance = data.startingCash;
+      data.ledger.forEach(t => {
+        if (t.date <= jumpDate) currentBalance += t.amount;
+      });
+      jumpProfits.push(currentBalance - prevBalance);
+      prevBalance = currentBalance;
+    });
+
+    charts.profit = new Chart(profitCtx, {
+      type: 'bar',
+      data: {
+        labels: jumpLabels,
+        datasets: [{
+          label: 'Net Change',
+          data: jumpProfits,
+          backgroundColor: jumpProfits.map(v => v >= 0 ? 'rgba(124, 255, 178, 0.7)' : 'rgba(255, 85, 122, 0.7)'),
+          borderColor: jumpProfits.map(v => v >= 0 ? '#7cffb2' : '#ff557a'),
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { ticks: { color: '#a0a0a0' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+          x: { ticks: { color: '#a0a0a0' }, grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  // Income by category (pie)
+  const incomeCtx = document.getElementById('incomeChart')?.getContext('2d');
+  if (incomeCtx) {
+    if (charts.income) charts.income.destroy();
+
+    const incomeByCategory = {};
+    data.ledger.filter(t => t.amount > 0).forEach(t => {
+      const cat = CATEGORIES[t.category]?.label || 'Other';
+      incomeByCategory[cat] = (incomeByCategory[cat] || 0) + t.amount;
+    });
+
+    const labels = Object.keys(incomeByCategory);
+    const values = Object.values(incomeByCategory);
+
+    if (labels.length > 0) {
+      charts.income = new Chart(incomeCtx, {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [{
+            data: values,
+            backgroundColor: ['#7cffb2', '#64f0ff', '#ffc86b', '#b794f6', '#ff557a', '#66d9ef']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'right', labels: { color: '#e0e6f0' } } }
+        }
+      });
+    }
+  }
+
+  // Expenses by category (pie)
+  const expenseCtx = document.getElementById('expenseChart')?.getContext('2d');
+  if (expenseCtx) {
+    if (charts.expense) charts.expense.destroy();
+
+    const expenseByCategory = {};
+    data.ledger.filter(t => t.amount < 0).forEach(t => {
+      const cat = CATEGORIES[t.category]?.label || 'Other';
+      expenseByCategory[cat] = (expenseByCategory[cat] || 0) + Math.abs(t.amount);
+    });
+
+    const labels = Object.keys(expenseByCategory);
+    const values = Object.values(expenseByCategory);
+
+    if (labels.length > 0) {
+      charts.expense = new Chart(expenseCtx, {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [{
+            data: values,
+            backgroundColor: ['#ff557a', '#ffc86b', '#64f0ff', '#b794f6', '#7cffb2', '#66d9ef']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'right', labels: { color: '#e0e6f0' } } }
+        }
+      });
+    }
+  }
+}
+
+// ============================================
+// EXPORT / IMPORT / CLEAR
+// ============================================
+
+function exportAllTables() {
+  let text = `TRAVELLER SHIP LOG - ${data.ship.name || 'Unnamed Ship'}\n`;
+  text += `Generated: ${new Date().toISOString()}\n`;
+  text += `${'='.repeat(60)}\n\n`;
+
+  text += `SHIP: ${data.ship.name || 'Unnamed'} (${data.ship.shipClass || 'Unknown class'})\n`;
+  text += `Tonnage: ${data.ship.tonnage} | Jump: ${data.ship.jumpRating} | Cargo: ${data.ship.cargoCap}t\n`;
+  text += `Current Cash: ${formatCr(getCurrentCash())}\n\n`;
+
+  text += `CREW (${data.crew.length})\n${'-'.repeat(40)}\n`;
+  data.crew.forEach(c => text += `${c.position}: ${c.name} - ${formatCr(c.salary)}/mo\n`);
+  text += '\n';
+
+  text += `CARGO (${data.cargo.length} lots, ${getCargoTons()} tons)\n${'-'.repeat(40)}\n`;
+  data.cargo.forEach(c => text += `${c.goods}: ${c.tons}t - ${c.type === 'freight' ? formatCr(c.revenue) + ' revenue' : formatCr(c.price)}\n`);
+  text += '\n';
+
+  text += `PASSENGERS (${data.passengers.length})\n${'-'.repeat(40)}\n`;
+  data.passengers.forEach(p => text += `${p.name}: ${PASSAGE_TYPES[p.passageType]?.label} ${p.from} → ${p.to} - ${formatCr(p.fare)}\n`);
+  text += '\n';
+
+  text += `JUMP LOG (${data.jumps.length} jumps)\n${'-'.repeat(40)}\n`;
+  data.jumps.forEach((j, i) => text += `${i + 1}. ${j.date}: ${j.from} → ${j.to} (${j.parsecs}pc)\n`);
+
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('All tables copied to clipboard');
+  }).catch(() => {
+    showToast('Failed to copy', 'error');
+  });
+}
+
+function exportJSON() {
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const shipName = (data.ship.name || 'backup').replace(/[^a-zA-Z0-9]/g, '_');
+  const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+  a.download = `traveller_ship_log_${shipName}_${timestamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  // Record backup timestamp
+  localStorage.setItem(STORAGE_KEY + '_lastBackup', new Date().toISOString());
+  updateBackupInfo();
+  showToast('JSON backup downloaded - keep this file safe!');
+}
+
+function importJSON() {
+  const input = document.getElementById('jsonFileInput');
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const imported = JSON.parse(event.target.result);
+        data = { ...defaultData, ...imported, ship: { ...defaultData.ship, ...imported.ship } };
+        saveData();
+        initShipInputs();
+        showToast('Data imported successfully');
+      } catch (err) {
+        showToast('Invalid JSON file', 'error');
+      }
+    };
+    reader.readAsText(file);
+    input.value = '';
+  };
+  input.click();
+}
+
+function clearAllData() {
+  confirmAction('This will permanently delete ALL ship data. Are you sure?', () => {
+    localStorage.removeItem(STORAGE_KEY);
+    data = { ...defaultData };
+    saveData();
+    initShipInputs();
+    closeModal();
+    showToast('All data cleared');
+  });
+}
+
+// ============================================
+// BACKUP INFO
+// ============================================
+
+function updateBackupInfo() {
+  // Update last backup date
+  const lastBackup = localStorage.getItem(STORAGE_KEY + '_lastBackup');
+  const lastBackupEl = document.getElementById('lastBackupDate');
+  if (lastBackupEl) {
+    if (lastBackup) {
+      const date = new Date(lastBackup);
+      const now = new Date();
+      const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+
+      let displayText = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+      let warningStyle = '';
+
+      if (diffDays > 7) {
+        warningStyle = 'color: var(--red);';
+        displayText += ' ⚠️';
+      } else if (diffDays > 3) {
+        warningStyle = 'color: var(--amber);';
+      }
+
+      lastBackupEl.textContent = displayText;
+      lastBackupEl.style.cssText = warningStyle;
+    } else {
+      lastBackupEl.textContent = 'Never - Please backup!';
+      lastBackupEl.style.color = 'var(--red)';
+    }
+  }
+
+  // Update data size
+  const dataSizeEl = document.getElementById('dataSize');
+  if (dataSizeEl) {
+    const jsonStr = JSON.stringify(data);
+    const bytes = new Blob([jsonStr]).size;
+    let sizeText;
+    if (bytes < 1024) {
+      sizeText = bytes + ' bytes';
+    } else if (bytes < 1024 * 1024) {
+      sizeText = (bytes / 1024).toFixed(1) + ' KB';
+    } else {
+      sizeText = (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+    }
+    dataSizeEl.textContent = sizeText;
+  }
+}
+
+// ============================================
+// INITIALIZATION
+// ============================================
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadData();
+  initTabs();
+  initShipInputs();
+  updateAllDisplays();
+  updateBackupInfo();
+});
+</script>
+</body>
+</html>

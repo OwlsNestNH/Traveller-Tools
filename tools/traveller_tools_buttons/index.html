@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Traveller RPG Tools & Generators</title>
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --panel:#121926;
+      --panel2:#0f1520;
+      --text:#e8eef7;
+      --muted:#a9b5c6;
+      --accent:#7aa2ff;
+      --border:rgba(255,255,255,.08);
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius:14px;
+      --btn:#1b2740;
+      --btnHover:#24345a;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(1000px 600px at 20% 0%, #152241 0%, var(--bg) 60%);
+      color:var(--text);
+    }
+    header{
+      position: sticky;
+      top: 0;
+      backdrop-filter: blur(10px);
+      background: rgba(11,15,20,.7);
+      border-bottom: 1px solid var(--border);
+      z-index: 10;
+    }
+    .wrap{max-width:1100px;margin:0 auto;padding:18px 16px}
+    h1{font-size:22px;margin:0 0 6px 0;letter-spacing:.2px}
+    .sub{color:var(--muted);font-size:13px;margin:0}
+    .controls{
+      display:flex; gap:10px; align-items:center; margin-top:12px; flex-wrap:wrap;
+    }
+    input[type="search"]{
+      flex: 1 1 280px;
+      padding:10px 12px;
+      border-radius: 10px;
+      border:1px solid var(--border);
+      background: rgba(18,25,38,.7);
+      color: var(--text);
+      outline:none;
+    }
+    .pill{
+      padding:9px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: rgba(18,25,38,.45);
+      color: var(--muted);
+      font-size:12px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .pill.active{color:var(--text); border-color: rgba(122,162,255,.35); background: rgba(122,162,255,.12);}
+    main{max-width:1100px;margin:0 auto;padding:18px 16px 60px}
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap:14px;
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(18,25,38,.9), rgba(15,21,32,.9));
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .cardHeader{
+      padding:14px 14px 10px 14px;
+      border-bottom:1px solid var(--border);
+      display:flex; justify-content:space-between; align-items:flex-start; gap:10px;
+    }
+    .cardHeader h2{font-size:14px;margin:0;letter-spacing:.3px}
+    .count{font-size:12px;color:var(--muted)}
+    .cardBody{padding:12px}
+    .btn{
+      width:100%;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      margin:8px 0;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--btn);
+      color: var(--text);
+      text-decoration:none;
+      transition: transform .06s ease, background .12s ease, border-color .12s ease;
+    }
+    .btn:hover{background: var(--btnHover); border-color: rgba(122,162,255,.28)}
+    .btn:active{transform: scale(.99)}
+    .label{
+      font-size:13px;
+      line-height:1.2;
+    }
+    .url{
+      font-size:11px;
+      color: var(--muted);
+      overflow:hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 46ch;
+    }
+    .open{
+      font-size:12px;
+      color: var(--accent);
+      white-space:nowrap;
+    }
+    footer{
+      max-width:1100px;
+      margin:0 auto;
+      padding:0 16px 28px 16px;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .hidden{display:none !important;}
+    .smallNote{color:var(--muted);font-size:12px;margin-top:8px}
+    @media (prefers-reduced-motion: reduce){
+      .btn{transition:none}
+      .btn:active{transform:none}
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Traveller RPG Tools & Generators</h1>
+    <p class="sub">A civilized, clickable version of your link stash. Search and filter. Your browser does the rest.</p>
+    <div class="controls">
+      <input id="search" type="search" placeholder="Search labels or URLs (e.g., 'world', 'donjon', 'npc')…" autocomplete="off" />
+      <div id="filters"></div>
+    </div>
+    <div class="smallNote">Tip: Ctrl+Click / Cmd+Click opens links in a new tab like a responsible adult.</div>
+  </div>
+</header>
+
+<main>
+  <div id="grid" class="grid"></div>
+</main>
+
+<footer>
+  Generated for tabletop sanity. No tracking, no ads, no popups, no feelings.
+</footer>
+
+<script>
+const DATA = [
+  {
+    section: "PC Generation (and NPC with extra steps)",
+    items: [
+      { label: "MT PC Generator", url: "http://traveller.chromeblack.com/files/mtpcgen.html" },
+      { label: "MgT Manual Chargen", url: "http://www.munsondev.com/chargen/chargenname.php" },
+    ]
+  },
+  {
+    section: "NPC Generation",
+    items: [
+      { label: "Traveller Tools", url: "https://travellertools.azurewebsites.net/" },
+      { label: "Devil Ghost Traveller Character Generator", url: "https://devilghost.com/software/travellercharacter/" },
+      { label: "Bat in the Attic Traveller Tools", url: "http://www.batintheattic.com/traveller/" },
+      { label: "Last Gasp Grimoire NPC Generator", url: "https://www.lastgaspgrimoire.com/generators/npc-birthing-sacs/" },
+      { label: "DnDSpeak Sci-Fi Bartenders", url: "http://dndspeak.com/2019/03/100-unusual-scifi-bartenders/" },
+    ]
+  },
+  {
+    section: "Patron / Narrative NPC Generation",
+    items: [
+      { label: "Seventh Sanctum – General Person", url: "https://www.seventhsanctum.com/generate.php?Genname=generalperson" },
+      { label: "Seventh Sanctum – Villain", url: "https://www.seventhsanctum.com/generate.php?Genname=villain" },
+    ]
+  },
+  {
+    section: "Animal Encounter Generation",
+    items: [
+      { label: "Traveller Tools – Animals", url: "https://travellertools.azurewebsites.net/" },
+    ]
+  },
+  {
+    section: "World Generation",
+    items: [
+      { label: "Traveller Tools – World Generator", url: "https://travellertools.azurewebsites.net/" },
+      { label: "Torben Rasmussen World Maps", url: "https://topps.diku.dk/torbenm/maps.msp" },
+      { label: "Watabou Medieval City Generator", url: "https://watabou.itch.io/medieval-fantasy-city-generator" },
+      { label: "Vandeet Planetary Military Calculator", url: "http://www.vandeet.com/milcalc/" },
+      { label: "Traveller Worlds (T5)", url: "http://members.ozemail.com.au/~jonoreita/TravellerWorlds/" },
+      { label: "Dungeons Unlimited Tactical Maps", url: "http://www.angelfire.com/rpg2/dungeonsunlimited/" },
+    ]
+  },
+  {
+    section: "System Generation",
+    items: [
+      { label: "Donjon Sci-Fi System Generator", url: "https://donjon.bin.sh/scifi/tsg/" },
+    ]
+  },
+  {
+    section: "Subsector & Sector Mapping",
+    items: [
+      { label: "Campaign Wiki Traveller Editor", url: "https://campaignwiki.org/traveller/edit" },
+      { label: "Zhodani Random Subsector Generator", url: "https://zhodani.space/stuff/generators/random-subsector-generator/" },
+    ]
+  },
+  {
+    section: "Word & Name Generation",
+    items: [
+      { label: "Donjon Sci-Fi Name Generator", url: "http://donjon.bin.sh/scifi/name/#type=sx;sx=alien" },
+      { label: "Vilani Language Tools (Traveller5)", url: "http://traveller5.net/tools/vilanitools.html" },
+    ]
+  },
+  {
+    section: "Trade, Travel & Shops",
+    items: [
+      { label: "Traveller Tools – Trade & Travel", url: "https://travellertools.azurewebsites.net/" },
+      { label: "Rather Be Gaming – Traveller Trade", url: "http://ratherbegaming.net/apps/travellerRPG/index.php" },
+    ]
+  },
+  {
+    section: "Starship Generation",
+    items: [
+      { label: "Zhodani Random Starship Generator", url: "https://zhodani.space/random-starship-generator/" },
+    ]
+  },
+  {
+    section: "Other Tools & Resources",
+    items: [
+      { label: "DnDSpeak Generators", url: "http://dndspeak.com/generators/" },
+      { label: "Traveller Weaponary Encyclopedia", url: "http://www.ace-dog.co.uk/Traveller/WARBOOK/Index.htm" },
+      { label: "Vandeet Possession Generator", url: "http://www.vandeet.com/chargen/" },
+      { label: "Zhodani Hex Paper Generator", url: "https://zhodani.space/goodies/hex/" },
+      { label: "Traveller Map", url: "https://travellermap.com/" },
+      { label: "Vandeet Reference Tools", url: "http://www.vandeet.com/reftools/reftools.html" },
+      { label: "Shaun’s Solo Traveller Tables", url: "http://shauns-solo-traveller.blogspot.com/p/events-encounters-and-other-tables.html" },
+      { label: "Cyborg Prime Traveller Tools", url: "https://www.cyborgprime.com/component/tags/tag/traveller-rpg-tools" },
+    ]
+  },
+];
+
+const grid = document.getElementById('grid');
+const search = document.getElementById('search');
+const filters = document.getElementById('filters');
+
+let activeSection = "All";
+
+function makePill(name){
+  const b = document.createElement('button');
+  b.className = 'pill' + (name === activeSection ? ' active' : '');
+  b.type = 'button';
+  b.textContent = name;
+  b.addEventListener('click', () => {
+    activeSection = name;
+    [...filters.querySelectorAll('.pill')].forEach(p => p.classList.toggle('active', p.textContent === name));
+    render();
+  });
+  return b;
+}
+
+function buildFilters(){
+  filters.innerHTML = '';
+  const sections = ["All", ...DATA.map(d => d.section)];
+  sections.forEach(s => filters.appendChild(makePill(s)));
+}
+
+function cardTemplate(section, items){
+  const card = document.createElement('section');
+  card.className = 'card';
+  card.dataset.section = section;
+
+  const header = document.createElement('div');
+  header.className = 'cardHeader';
+
+  const h2 = document.createElement('h2');
+  h2.textContent = section;
+
+  const count = document.createElement('div');
+  count.className = 'count';
+  count.textContent = `${items.length} link${items.length === 1 ? '' : 's'}`;
+
+  header.appendChild(h2);
+  header.appendChild(count);
+
+  const body = document.createElement('div');
+  body.className = 'cardBody';
+
+  items.forEach(({label, url}) => {
+    const a = document.createElement('a');
+    a.className = 'btn';
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+
+    const left = document.createElement('div');
+    const lab = document.createElement('div');
+    lab.className = 'label';
+    lab.textContent = label;
+
+    const u = document.createElement('div');
+    u.className = 'url';
+    u.textContent = url;
+
+    left.appendChild(lab);
+    left.appendChild(u);
+
+    const right = document.createElement('div');
+    right.className = 'open';
+    right.textContent = 'Open ↗';
+
+    a.appendChild(left);
+    a.appendChild(right);
+    body.appendChild(a);
+  });
+
+  card.appendChild(header);
+  card.appendChild(body);
+  return card;
+}
+
+function matchesQuery(item, q){
+  if (!q) return true;
+  const hay = (item.label + " " + item.url).toLowerCase();
+  return hay.includes(q);
+}
+
+function render(){
+  const q = search.value.trim().toLowerCase();
+  grid.innerHTML = '';
+
+  DATA.forEach(group => {
+    if (activeSection !== "All" && group.section !== activeSection) return;
+
+    const filtered = group.items.filter(it => matchesQuery(it, q));
+    if (filtered.length === 0) return;
+
+    grid.appendChild(cardTemplate(group.section, filtered));
+  });
+
+  if (!grid.children.length){
+    const empty = document.createElement('div');
+    empty.className = 'card';
+    empty.innerHTML = `
+      <div class="cardHeader"><h2>No matches</h2><div class="count">0 links</div></div>
+      <div class="cardBody" style="color:var(--muted);font-size:13px;line-height:1.4;">
+        Your search produced nothing. Either the term is wrong, or the universe is.
+      </div>
+    `;
+    grid.appendChild(empty);
+  }
+}
+
+buildFilters();
+render();
+search.addEventListener('input', render);
+</script>
+</body>
+</html>
