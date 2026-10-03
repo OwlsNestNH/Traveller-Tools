@@ -53,7 +53,7 @@ Implemented native modules require no build step:
 | js/app.mjs | Views, forms, previews, explicit actions and Rules & Notes |
 | rules/decisions.json | Bundled approved interpretation register |
 
-Route searches load an area up to 12 parsecs around each requested stop, with a 1600-world cap; an unconnected bounded search fails explicitly. The displayed date is a campaign starting label plus elapsed days/hours. Freight prices use direct endpoint distance, while insurance uses the agreed planned-route distance. Contract deadlines remain referee-entered; the UI's editable suggested deadline is not a source rule.
+Route searches load an area up to 12 parsecs around each requested stop, with a 1600-world cap; an unconnected bounded search fails explicitly. The displayed date is an Imperial calendar date and hour, derived from the campaign starting date and elapsed hours (24-hour days, 365-day years). Freight prices use direct endpoint distance, while insurance uses the agreed planned-route distance. Contract deadlines remain referee-entered; the UI's editable suggested deadline is not a source rule.
 
 ## Responsive list views
 
@@ -149,3 +149,5 @@ Add premium, tax and approved-claim ledger types. Commits and undo reconcile ban
 `js/world-picker.mjs` provides native selects with labelled search inputs, cascading invalidation, loading/error/retry feedback and request sequencing. `js/map.mjs` loads sector/subsector/world catalogs using the documented public API, caches successful catalog promises in memory, and evicts failed requests for retry. Tab-delimited data supplies world names/hexes; selecting a world still resolves it through the existing normalized world lookup.
 
 A separate versioned localStorage key stores the last ten world choices; it is an optional UI preference, not economic campaign state or part of campaign JSON. Map hexes use the same world-coordinate projection as world markers. The overlay ignores pointer events, and the toggle changes only presentation.
+
+Map presentation supports bounded wheel/button zoom around the viewed world and draws only the four-parsec neighborhood grid. All public world/catalog requests explicitly use M1105; the sector list also deduplicates names. The separate calendar module derives the campaign date from existing saved fields without switching map milieu. Explicit starting-world correction uses the normal atomic, undoable campaign transition, clears the route, records a reason and flags active insurance for amendment.

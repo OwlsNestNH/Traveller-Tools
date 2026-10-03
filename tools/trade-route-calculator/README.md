@@ -26,7 +26,7 @@ Open `index.html` through an HTTP server or GitHub Pages. No build, paid service
 
 Requires a current browser with JavaScript, localStorage, BigInt, structuredClone and Web Locks. A browser without safe locking stays read-only. World lookup requires an internet connection; saved campaign data and calculations remain local. Search boundaries, manual referee inputs and browser storage limits remain visible rather than generating guessed values.
 
-The campaign display retains a starting date label plus exact elapsed days/hours. No Gregorian or other campaign-calendar conversion is inferred.
+The campaign clock displays an Imperial day-year date and hour, starting at 001-1105 by default. It advances from the saved start date and elapsed hours using 24-hour days and 365-day years. Map data stays in the M1105 era regardless of elapsed campaign years. Older custom date labels remain readable until corrected through Campaign time. Calendar convention reference: [Imperial calendar overview](https://mail.freelancetraveller.com/features/culture/reference/calend.html).
 
 ## Development and verification
 
@@ -65,3 +65,11 @@ The local map includes a numbered hex grid with a **Show hexes** toggle. Numbers
 Lists come from the [Traveller Map public API](https://travellermap.com/doc/api): universe, sector metadata, tab-delimited sector worlds, and final world lookup. Failed list requests offer a retry; changing a parent choice clears dependent choices, and late responses cannot replace a newer selection.
 
 Run `node verification/world-picker.test.mjs` for the selector, recent-world and grid browser checks, using the same Playwright settings as the other browser suites.
+
+## Map zoom and starting world
+
+The default map view is closer, and hexes are restricted to the four-parsec neighborhood rather than filling the viewport with extra empty cells. Use the mouse wheel over the map or the + / − / Reset view controls to zoom from 70% to 240%. Zoom changes only the view; ordinary scrolling elsewhere and Ctrl+wheel browser zoom are preserved.
+
+After Find World, **Use as starting world** opens an explicit confirmation. The same action is available on a browsed world's map panel. It sets the actual ship location, clears the old route, records a reason and supports Undo. It does not advance time or change bank/cargo/contract payments; active insurance is flagged for an amendment. Use COMMIT JUMP for normal travel.
+
+Sector lists and world lookups explicitly use Traveller Map's M1105 milieu. Other-era versions are excluded and repeated sector names are deduplicated, so Trojan Reach appears once.

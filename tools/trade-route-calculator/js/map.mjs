@@ -1,6 +1,7 @@
 import {parseUWP} from './rules.mjs';
 const API='https://travellermap.com/api/';
-async function get(path,params){const url=new URL(path,API);Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,v));const response=await fetch(url,{headers:{Accept:'application/json'},signal:AbortSignal.timeout(20000)});if(!response.ok)throw Error('Traveller Map returned '+response.status);return response.json();}
+const MILIEU='M1105';
+async function get(path,params){const url=new URL(path,API);url.searchParams.set('milieu',MILIEU);Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,v));const response=await fetch(url,{headers:{Accept:'application/json'},signal:AbortSignal.timeout(20000)});if(!response.ok)throw Error('Traveller Map returned '+response.status);return response.json();}
 export function normalize(w){if(!Number.isInteger(w.WorldX)||!Number.isInteger(w.WorldY)||!w.Sector||!/^\d{4}$/.test(w.Hex))throw Error('Traveller Map world is missing coordinates');return {id:w.WorldX+','+w.WorldY,name:w.Name||w.Hex,sector:w.Sector,hex:w.Hex,x:w.WorldX,y:w.WorldY,uwp:w.UWP,zone:w.Zone==='A'?'Amber':w.Zone==='R'?'Red':'Safe',gasGiants:w.PBG&&w.PBG[2]!=='?'?parseInt(w.PBG[2],16):null,raw:structuredClone(w)};}
 export async function loadWorld(sector,hex){if(!sector.trim()||!/^\d{4}$/.test(hex))throw Error('Enter a sector and four-digit hex');const data=await get('jumpworlds',{sector,hex,jump:0});if(!Array.isArray(data.Worlds)||!data.Worlds.length)throw Error('No world at that location');return normalize(data.Worlds[0]);}
 export async function nearby(world,radius=6){const data=await get('jumpworlds',{x:world.x,y:world.y,jump:radius});if(!Array.isArray(data.Worlds))throw Error('Invalid world-list response');return data.Worlds.map(normalize);}
@@ -19,7 +20,13 @@ export function subsectorForHex(hex){
 export function sectors(){return cached('sectors',async()=>{
  const data=await get('universe',{requireData:1});
  if(!Array.isArray(data.Sectors))throw Error('Invalid sector list');
- return data.Sectors.filter(s=>s.Names?.[0]?.Text).map(s=>({name:s.Names[0].Text,aliases:s.Names.map(n=>n.Text).concat(s.Abbreviation||'')})).sort((a,b)=>a.name.localeCompare(b.name));
+ const unique=new Map();
+ for(const s of data.Sectors.filter(s=>s.Names?.[0]?.Text&&(!s.Milieu||s.Milieu===MILIEU))){
+  const name=s.Names[0].Text.trim(),key=name.toLowerCase(),aliases=s.Names.map(n=>n.Text).concat(s.Abbreviation||'');
+  if(unique.has(key))unique.get(key).aliases=[...new Set([...unique.get(key).aliases,...aliases])];
+  else unique.set(key,{name,aliases});
+ }
+ return [...unique.values()].sort((a,b)=>a.name.localeCompare(b.name));
 });}
 export function sectorCatalog(sector){return cached('sector:'+sector,async()=>{
  const [metadata,table]=await Promise.all([get('metadata',{sector}),get('sec',{sector,type:'TabDelimited',metadata:0})]);

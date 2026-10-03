@@ -185,3 +185,9 @@ Prevent concurrent browser tabs from silently overwriting campaign state. Allow 
 Use searchable sector, subsector and world dropdowns in Find World, setup, route destinations and optional stops. Derive the hex from the chosen world. Route origin is the actual ship world and is displayed clearly. Default nearby choices to the current sector/subsector, show hexes beside world names, and provide the ten most recent selections as a browser shortcut. Changing a parent choice must invalidate its old descendants. Browse and route planning never commit travel.
 
 Provide a numbered local-map hex grid, enabled initially, with a show/hide control. Hex labels are local to each sector; world clicks remain available through the overlay.
+
+## Map and time refinement — 2026-10-03
+
+Show one sector entry per name, using the fixed 1105 map era. The campaign clock is separate: default start 001-1105; elapsed searches, jumps and manual time corrections advance its Imperial date (24-hour days, 365-day years). Later campaign years do not select a different map era. Preserve old custom date labels visibly until the owner converts them.
+
+Offer scroll-wheel map zoom plus accessible +, − and reset controls, with a closer default view and fewer empty hexes. Zoom and browsing do not mutate campaign state. Provide Use as starting world from Find World and the browsed-world panel, with explicit confirmation, a recorded reason, undo, and no implied jump/time/payment. Clear the old route and require amendments for active insurance after such a location correction.

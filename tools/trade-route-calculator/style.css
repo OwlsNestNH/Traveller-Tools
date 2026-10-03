@@ -15,3 +15,5 @@ td{padding:8px 10px}td .check{margin:0;white-space:nowrap}.cargo-scroll{max-heig
 .world-map .hex-grid{pointer-events:none;cursor:default}
 .world-map .hex-grid polygon{fill:none;stroke:#3a586b;stroke-width:.65;opacity:.7}
 .world-map .hex-grid text{font-size:6.5px;fill:#829aaa;pointer-events:none}
+
+.map-zoom-controls{display:flex;align-items:center;gap:8px;padding:0 16px 10px;flex-wrap:wrap}.map-zoom-controls button{min-width:40px}.world-map{overscroll-behavior:contain}

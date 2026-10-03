@@ -132,3 +132,9 @@ Route search is bounded to loaded areas; calendar display uses the chosen starti
 The searchable world selectors, Recent Worlds and numbered hex overlay change navigation presentation, not trade rules. [world-picker.test.mjs](verification/world-picker.test.mjs) passed in Microsoft Edge with deterministic API fixtures: derived hex, parent-selection clearing, stale-response protection, retry, empty sectors, unchanged campaign state while browsing, actual route origin, stop reorder/removal, route persistence, recent-world persistence/deduplication/ten-entry cap, grid alignment/toggle/world clicking, and narrow-screen width.
 
 The existing browser integration suite and all 28 application unit tests also passed. The live-map suite now verifies real sector/subsector/world list loading and a Jenghe selection with its automatic hex, while the actual ship stays at Regina. This does not change the existing rules-source verification scope.
+
+## Zoom, starting-world and era/calendar checks — 2026-10-03
+
+The world-picker browser suite also covers wheel/button zoom without page scrolling or campaign mutation, a maximum 61-cell neighborhood grid, cancellation/confirmation/undo of the explicit starting-world change, preserved bank/cargo/time/contracts, and deduplication of a sector returned for four eras. All map requests now pin M1105; inspection of the live API confirmed Trojan Reach was previously returned for M1105/M1120/M1201/M1248.
+
+The two [calendar tests](verification/calendar.test.mjs) passed, covering hour/day/year rollover, multiple years, invalid inputs and compatibility with custom saved labels. Calendar display is separate from fixed map-era selection; it uses the existing elapsed-hours accounting. The 365-day Imperial date convention is described in the linked [calendar reference](https://mail.freelancetraveller.com/features/culture/reference/calend.html); no additional trade rules or monthly-search conventions were changed.
