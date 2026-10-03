@@ -1,10 +1,10 @@
 # Optional insurance and taxation
 
-Status: agreed optional V1 scope; documentation only. Source verification and the unresolved adaptation details below remain pending.
+Status: agreed optional V1 scope; documentation only. Source/data verification is recorded for version 0.1.0; application verification is separate.
 
 ## Source and presentation
 
-Source identified by the project owner: **Mongoose Traveller 1st Edition, Book 7: Merchant Prince**, sections on purchasing goods/insurance and paying taxes. The supplied excerpts and table images are the current review evidence. Printed references supplied by the owner: **insurance p. 83; taxes p. 86**. Include these references in Rules & Notes and the affected calculation audits. Exact printing and applicable errata remain unconfirmed; recording page references does not establish that the complete rules data has been verified.
+Source identified by the project owner: **Mongoose Traveller 1st Edition, Book 7: Merchant Prince**, sections on purchasing goods/insurance and paying taxes. The supplied excerpts and table images are the current review evidence. Printed references supplied by the owner: **insurance p. 83; taxes p. 86**. Include these references in Rules & Notes and the affected calculation audits. INT-022 fixes the exact supplied tables as the authoritative adaptation baseline; unidentified printing/errata changes are not applied. Any later source change requires a new reviewed version.
 
 These are **optional first-edition rules adapted for the Core Rulebook Update 2022 baseline**, not rules asserted to be in that Core Rulebook. Insurance and taxation are independent campaign settings, both off by default. Enabling one does not enable the other or change the selected profit mode.
 
@@ -44,19 +44,35 @@ With taxes disabled, allocatedTax is zero and existing behavior is unchanged. Ta
 
 Illustrative expectation: proceeds Cr80000; market benchmark Cr70000; tax Cr800 at the supplied 8% example rate; actual allocated acquisition basis Cr60000; no selling fee. Taxable profit is Cr10000; actual pre-tax profit is Cr20000; after-tax profit is Cr19200. Reduced profit is Cr14400, with a separate -Cr4800 profit adjustment and a bank credit of Cr74400. This example fixes the ordering; it does not settle the aggregation questions below.
 
-## Questions to put to the owner before implementation
+## Additional decisions approved 2026-10-03
 
-Do not guess or silently supply defaults for these remaining ambiguities:
+All decisions below are revision 1. They are explicit app interpretations; where they differ from the supplied source, identify the difference in Rules & Notes.
 
-- Insurance distance: direct separation, total planned route distance, or individual legs; treatment of distances above six parsecs.
-- Amber/Red surcharges: once per category, cumulative when both occur, or only the highest; treatment of changes to an insured route.
-- Exact insured value and premium accounting: inclusion of broker fees, whether premiums enter lot cost basis, and partial sale/loss/claim treatment.
-- Meaning of normal market value in the newer commodity dataset; whether the tax bracket applies per lot, per sale, or to a day's combined trade, including mixed gains and losses.
-- How shared tax is allocated across lots; tax treatment of nonpositive taxable amounts; unsupported government codes; and the criminal-market formula's percentage/roll interpretation.
-- Scope of tax/insurance treatment for freight, mail and claim payouts. Do not automatically extend speculative-goods rules to these payments.
+| ID | Topic | Agreed behavior |
+| --- | --- | --- |
+| INT-010 | Tax brackets | One bracket and rate per committed sale, not per lot or per day. |
+| INT-011 | Insured distance | Sum the planned route's legs. Beyond six parsecs require a referee-entered premium. |
+| INT-012 | Risk surcharges | Add Amber +2 and Red +5 percentage points once each; a mixed route adds +7. |
+| INT-013 | Route amendments | Retain original policy terms; changed routes require an explicit referee-approved policy amendment. |
+| INT-014 | Insured value and costs | Insure goods' purchase value only, excluding broker fees and premium. Add the premium to lot acquisition cost basis for actual-profit accounting. |
+| INT-015 | Partial claims | Referee-approved claim equals coverage percentage times original goods purchase value of the lost insured quantity. Reduce remaining coverage; sales end coverage on sold quantities. |
+| INT-016 | Taxable-sale benchmark | Core Rulebook base price times tons sold. Net gains and losses across the entire sale. No tax when the net taxable amount is zero or negative. |
+| INT-017 | Tax allocation | Allocate the sale's posted tax among positive-taxable-gain lots proportionally to those gains. Losses reduce total taxable profit but receive no tax share. Whole-Credit remainders must reconcile deterministically. |
+| INT-018 | Criminal-market exemption | No automatic tax or criminal surcharge on criminal-market sales. Bribes/protection payments are manual expenses. This replaces the source's criminal-market formula. |
+| INT-019 | Optional-rule scope | Owned speculative-trade goods only. Freight/mail and insurance claim payouts are excluded from tax and profit reduction; freight/mail cargo is excluded from cargo insurance. |
+| INT-020 | Government-code mapping | Map the source row labelled Feudal Democracy to UWP government code 5, Feudal Technocracy, and retain the naming discrepancy in notes. |
+| INT-021 | Fractional tax bracket lookup | Use floor(taxable profit) only for bracket selection, using the first bracket for positive amounts below Cr1. Preserve full taxable precision for the percentage calculation; floor the final tax once. |
 
-These unresolved details do not undo INT-007 through INT-009. Resolve them through owner decisions and update this record before implementing their dependent behavior.
+One sale commit has one market classification and tax jurisdiction. Preserve the classification with the sale. A criminal-market exemption does not make its goods legal.
+
+Implementation detail for INT-017: allocate exact tax shares, floor each, then distribute remaining whole Credits by descending fractional remainder, breaking ties by stable lot ID. This implements the agreed deterministic reconciliation without changing the total tax. Exclude nonpositive-taxable-gain lines from the allocation denominator.
+
+Insurance amendments must preserve the original terms and record referee approval, reason, changed route/coverage and any explicitly entered premium adjustment. No automatic refund or increased coverage is inferred. Premiums already paid remain in recorded lot cost basis unless an explicit accounting correction changes them.
+
+## Verification status
+
+The initial versioned data and reproducible checks are in [rules/README.md](rules/README.md). INT-022, approved 2026-10-03, revision 1: use the exact supplied tables with the agreed corrections and house rules. Later changes require a new reviewed rules version. Newly discovered ambiguities must still be put to the owner. No runtime app depends on private files.
 
 ## Required checks
 
-Verify the complete insurance and tax tables, source provenance and approved corrections. Cover bracket boundaries (including Cr75000/75001/76000/76001), fractional percentage premiums, separate taxable/actual profit, tax-induced losses, tax off, RAW/Reduced/Custom ordering, policy lifecycle, duplicate claims, partial lots, export/import and atomic undo. No implementation tests have run.
+Verify the complete insurance and tax tables, source provenance and approved corrections. Cover bracket boundaries (including Cr75000/75001/76000/76001), fractional percentage premiums, separate taxable/actual profit, tax-induced losses, tax off, RAW/Reduced/Custom ordering, policy lifecycle, duplicate claims, partial lots, export/import and atomic undo. Source/data checks have run; no application tests have run yet.

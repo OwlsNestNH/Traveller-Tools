@@ -20,10 +20,10 @@ These ideas are outside locked V1 scope. They are candidates for later design, n
 
 ## Required implementation preparation, not deferred scope
 
-Rules verification is pending. Use Traveller Core Rulebook Update 2022 as the intended baseline and confirm its exact edition/update and applicable errata during verification. Before implementing the trading engine, check in a versioned rules dataset, edition/page or table references, and worked examples with expected results. Independently verify commodity tables, trade-code conditions, DMs and their combination, brokers/fees, illegal goods, freight/mail, and date/jump handling. PDFs and personal reference links must stay out of the repository and runtime.
+The source/data verification gate for version 0.1.0 is recorded as complete; runtime tests remain required. Use Traveller Core Rulebook Update 2022 as the intended baseline and confirm its exact edition/update and applicable errata during verification. Before implementing the trading engine, check in a versioned rules dataset, edition/page or table references, and worked examples with expected results. Independently verify commodity tables, trade-code conditions, DMs and their combination, brokers/fees, illegal goods, freight/mail, and date/jump handling. PDFs and personal reference links must stay out of the repository and runtime.
 
 Verify the agreed monetary round-down policy while preserving decimal cargo quantities. Cover partial-lot cost allocation, shared fees, per-lot positive-profit adjustment, unchanged losses, bank reconciliation, and freight/mail exclusion from the adjustment. Also cover Fewest jumps with mandatory stops and per-offer expiration/undo. These are required V1 checks, not deferred features.
 
 Do not use the buggy/untrusted existing `tools/spec-trade/` tool as rules authority. Reuse is allowed only after independent verification against the Core Rulebook.
 
-Future ideas may be promoted into a release only through an explicit scope decision. Do not implement the app as part of this documentation task.
+Future ideas may be promoted into a release only through an explicit scope decision. The owner subsequently authorized implementation after the rules questions and verification gate are resolved. This does not promote any deferred feature into V1.

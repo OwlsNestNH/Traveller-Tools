@@ -1,0 +1,1693 @@
+{
+  "schemaVersion": 1,
+  "dataVersion": "0.1.0",
+  "status": "source-and-example-verified",
+  "source": {
+    "id": "core-2022-copyright-2024",
+    "title": "Traveller Core Rulebook Update 2022",
+    "revision": "Copyright 2024",
+    "pages": [
+      157,
+      239,
+      240,
+      241,
+      242,
+      243,
+      244,
+      245,
+      257,
+      260
+    ]
+  },
+  "scope": "Review candidate for Core Rulebook V1 trade, freight/mail, jump duration and trade-code data; not an implemented or approved rules engine.",
+  "commodities": [
+    {
+      "id": "11",
+      "name": "Common Electronics",
+      "sourcePage": 244,
+      "common": true,
+      "availabilityAny": [],
+      "quantity": {
+        "dice": 2,
+        "sides": 6,
+        "multiplier": 10
+      },
+      "baseCreditsPerTon": 20000,
+      "purchaseDM": {
+        "In": 2,
+        "Ht": 3,
+        "Ri": 1
+      },
+      "saleDM": {
+        "Ni": 2,
+        "Lt": 1,
+        "Po": 1
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "12",
+      "name": "Common Industrial Goods",
+      "sourcePage": 244,
+      "common": true,
+      "availabilityAny": [],
+      "quantity": {
+        "dice": 2,
+        "sides": 6,
+        "multiplier": 10
+      },
+      "baseCreditsPerTon": 10000,
+      "purchaseDM": {
+        "Na": 2,
+        "In": 5
+      },
+      "saleDM": {
+        "Ni": 3,
+        "Ag": 2
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "13",
+      "name": "Common Manufactured Goods",
+      "sourcePage": 244,
+      "common": true,
+      "availabilityAny": [],
+      "quantity": {
+        "dice": 2,
+        "sides": 6,
+        "multiplier": 10
+      },
+      "baseCreditsPerTon": 20000,
+      "purchaseDM": {
+        "Na": 2,
+        "In": 5
+      },
+      "saleDM": {
+        "Ni": 3,
+        "Hi": 2
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "14",
+      "name": "Common Raw Materials",
+      "sourcePage": 244,
+      "common": true,
+      "availabilityAny": [],
+      "quantity": {
+        "dice": 2,
+        "sides": 6,
+        "multiplier": 20
+      },
+      "baseCreditsPerTon": 5000,
+      "purchaseDM": {
+        "Ag": 3,
+        "Ga": 2
+      },
+      "saleDM": {
+        "In": 2,
+        "Po": 2
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "15",
+      "name": "Common Consumables",
+      "sourcePage": 244,
+      "common": true,
+      "availabilityAny": [],
+      "quantity": {
+        "dice": 2,
+        "sides": 6,
+        "multiplier": 20
+      },
+      "baseCreditsPerTon": 500,
+      "purchaseDM": {
+        "Ag": 3,
+        "Wa": 2,
+        "Ga": 1,
+        "As": -4
+      },
+      "saleDM": {
+        "As": 1,
+        "Fl": 1,
+        "Ic": 1,
+        "Hi": 1
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "16",
+      "name": "Common Ore",
+      "sourcePage": 244,
+      "common": true,
+      "availabilityAny": [],
+      "quantity": {
+        "dice": 2,
+        "sides": 6,
+        "multiplier": 20
+      },
+      "baseCreditsPerTon": 1000,
+      "purchaseDM": {
+        "As": 4
+      },
+      "saleDM": {
+        "In": 3,
+        "Ni": 1
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "21",
+      "name": "Advanced Electronics",
+      "sourcePage": 244,
+      "common": false,
+      "availabilityAny": [
+        "In",
+        "Ht"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 5
+      },
+      "baseCreditsPerTon": 100000,
+      "purchaseDM": {
+        "In": 2,
+        "Ht": 3
+      },
+      "saleDM": {
+        "Ni": 1,
+        "Ri": 2,
+        "As": 3
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "22",
+      "name": "Advanced Machine Parts",
+      "sourcePage": 244,
+      "common": false,
+      "availabilityAny": [
+        "In",
+        "Ht"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 5
+      },
+      "baseCreditsPerTon": 75000,
+      "purchaseDM": {
+        "In": 2,
+        "Ht": 1
+      },
+      "saleDM": {
+        "As": 2,
+        "Ni": 1
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "23",
+      "name": "Advanced Manufactured Goods",
+      "sourcePage": 244,
+      "common": false,
+      "availabilityAny": [
+        "In",
+        "Ht"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 5
+      },
+      "baseCreditsPerTon": 100000,
+      "purchaseDM": {
+        "In": 1
+      },
+      "saleDM": {
+        "Hi": 1,
+        "Ri": 2
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "24",
+      "name": "Advanced Weapons",
+      "sourcePage": 244,
+      "common": false,
+      "availabilityAny": [
+        "In",
+        "Ht"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 5
+      },
+      "baseCreditsPerTon": 150000,
+      "purchaseDM": {
+        "Ht": 2
+      },
+      "saleDM": {
+        "Po": 1,
+        "Amber": 2,
+        "Red": 4
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "25",
+      "name": "Advanced Vehicles",
+      "sourcePage": 244,
+      "common": false,
+      "availabilityAny": [
+        "In",
+        "Ht"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 5
+      },
+      "baseCreditsPerTon": 180000,
+      "purchaseDM": {
+        "Ht": 2
+      },
+      "saleDM": {
+        "As": 2,
+        "Ri": 2
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "26",
+      "name": "Biochemicals",
+      "sourcePage": 244,
+      "common": false,
+      "availabilityAny": [
+        "Ag",
+        "Wa"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 5
+      },
+      "baseCreditsPerTon": 50000,
+      "purchaseDM": {
+        "Ag": 1,
+        "Wa": 2
+      },
+      "saleDM": {
+        "In": 2
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "31",
+      "name": "Crystals & Gems",
+      "sourcePage": 244,
+      "common": false,
+      "availabilityAny": [
+        "As",
+        "De",
+        "Ic"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 5
+      },
+      "baseCreditsPerTon": 20000,
+      "purchaseDM": {
+        "As": 2,
+        "De": 1,
+        "Ic": 1
+      },
+      "saleDM": {
+        "In": 3,
+        "Ri": 2
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "32",
+      "name": "Cybernetics",
+      "sourcePage": 244,
+      "common": false,
+      "availabilityAny": [
+        "Ht"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 1
+      },
+      "baseCreditsPerTon": 250000,
+      "purchaseDM": {
+        "Ht": 1
+      },
+      "saleDM": {
+        "As": 1,
+        "Ic": 1,
+        "Ri": 2
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "33",
+      "name": "Live Animals",
+      "sourcePage": 244,
+      "common": false,
+      "availabilityAny": [
+        "Ag",
+        "Ga"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 10
+      },
+      "baseCreditsPerTon": 10000,
+      "purchaseDM": {
+        "Ag": 2
+      },
+      "saleDM": {
+        "Lo": 3
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "34",
+      "name": "Luxury Consumables",
+      "sourcePage": 244,
+      "common": false,
+      "availabilityAny": [
+        "Ag",
+        "Ga",
+        "Wa"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 10
+      },
+      "baseCreditsPerTon": 20000,
+      "purchaseDM": {
+        "Ag": 2,
+        "Wa": 1
+      },
+      "saleDM": {
+        "Ri": 2,
+        "Hi": 2
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "35",
+      "name": "Luxury Goods",
+      "sourcePage": 244,
+      "common": false,
+      "availabilityAny": [
+        "Hi"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 1
+      },
+      "baseCreditsPerTon": 200000,
+      "purchaseDM": {
+        "Hi": 1
+      },
+      "saleDM": {
+        "Ri": 4
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "36",
+      "name": "Medical Supplies",
+      "sourcePage": 244,
+      "common": false,
+      "availabilityAny": [
+        "Ht",
+        "Hi"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 5
+      },
+      "baseCreditsPerTon": 50000,
+      "purchaseDM": {
+        "Ht": 2
+      },
+      "saleDM": {
+        "In": 2,
+        "Po": 1,
+        "Ri": 1
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "41",
+      "name": "Petrochemicals",
+      "sourcePage": 245,
+      "common": false,
+      "availabilityAny": [
+        "De",
+        "Fl",
+        "Ic",
+        "Wa"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 10
+      },
+      "baseCreditsPerTon": 10000,
+      "purchaseDM": {
+        "De": 2
+      },
+      "saleDM": {
+        "In": 2,
+        "Ag": 1,
+        "Lt": 2
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "42",
+      "name": "Pharmaceuticals",
+      "sourcePage": 245,
+      "common": false,
+      "availabilityAny": [
+        "As",
+        "De",
+        "Hi",
+        "Wa"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 1
+      },
+      "baseCreditsPerTon": 100000,
+      "purchaseDM": {
+        "As": 2,
+        "Hi": 1
+      },
+      "saleDM": {
+        "Ri": 2,
+        "Lt": 1
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "43",
+      "name": "Polymers",
+      "sourcePage": 245,
+      "common": false,
+      "availabilityAny": [
+        "In"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 10
+      },
+      "baseCreditsPerTon": 7000,
+      "purchaseDM": {
+        "In": 1
+      },
+      "saleDM": {
+        "Ri": 2,
+        "Ni": 1
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "44",
+      "name": "Precious Metals",
+      "sourcePage": 245,
+      "common": false,
+      "availabilityAny": [
+        "As",
+        "De",
+        "Ic",
+        "Fl"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 1
+      },
+      "baseCreditsPerTon": 50000,
+      "purchaseDM": {
+        "As": 3,
+        "De": 1,
+        "Ic": 2
+      },
+      "saleDM": {
+        "Ri": 3,
+        "In": 2,
+        "Ht": 1
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "45",
+      "name": "Radioactives",
+      "sourcePage": 245,
+      "common": false,
+      "availabilityAny": [
+        "As",
+        "De",
+        "Lo"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 1
+      },
+      "baseCreditsPerTon": 1000000,
+      "purchaseDM": {
+        "As": 2,
+        "Lo": 2
+      },
+      "saleDM": {
+        "In": 3,
+        "Ht": 1,
+        "Ni": -2,
+        "Ag": -3
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "46",
+      "name": "Robots",
+      "sourcePage": 245,
+      "common": false,
+      "availabilityAny": [
+        "In"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 5
+      },
+      "baseCreditsPerTon": 400000,
+      "purchaseDM": {
+        "In": 1
+      },
+      "saleDM": {
+        "Ag": 2,
+        "Ht": 1
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "51",
+      "name": "Spices",
+      "sourcePage": 245,
+      "common": false,
+      "availabilityAny": [
+        "Ga",
+        "De",
+        "Wa"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 10
+      },
+      "baseCreditsPerTon": 6000,
+      "purchaseDM": {
+        "De": 2
+      },
+      "saleDM": {
+        "Hi": 2,
+        "Ri": 3,
+        "Po": 3
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "52",
+      "name": "Textiles",
+      "sourcePage": 245,
+      "common": false,
+      "availabilityAny": [
+        "Ag",
+        "Ni"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 20
+      },
+      "baseCreditsPerTon": 3000,
+      "purchaseDM": {
+        "Ag": 7
+      },
+      "saleDM": {
+        "Hi": 3,
+        "Na": 2
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "53",
+      "name": "Uncommon Ore",
+      "sourcePage": 245,
+      "common": false,
+      "availabilityAny": [
+        "As",
+        "Ic"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 20
+      },
+      "baseCreditsPerTon": 5000,
+      "purchaseDM": {
+        "As": 4
+      },
+      "saleDM": {
+        "In": 3,
+        "Ni": 1
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "54",
+      "name": "Uncommon Raw Materials",
+      "sourcePage": 245,
+      "common": false,
+      "availabilityAny": [
+        "Ag",
+        "De",
+        "Wa"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 10
+      },
+      "baseCreditsPerTon": 20000,
+      "purchaseDM": {
+        "Ag": 2,
+        "Wa": 1
+      },
+      "saleDM": {
+        "In": 2,
+        "Ht": 1
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "55",
+      "name": "Wood",
+      "sourcePage": 245,
+      "common": false,
+      "availabilityAny": [
+        "Ag",
+        "Ga"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 20
+      },
+      "baseCreditsPerTon": 1000,
+      "purchaseDM": {
+        "Ag": 6
+      },
+      "saleDM": {
+        "Ri": 2,
+        "In": 1
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "56",
+      "name": "Vehicles",
+      "sourcePage": 245,
+      "common": false,
+      "availabilityAny": [
+        "In",
+        "Ht"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 10
+      },
+      "baseCreditsPerTon": 15000,
+      "purchaseDM": {
+        "In": 2,
+        "Ht": 1
+      },
+      "saleDM": {
+        "Ni": 2,
+        "Hi": 1
+      },
+      "universallyIllegal": false,
+      "refereeDefined": false
+    },
+    {
+      "id": "61",
+      "name": "Illegal Biochemicals",
+      "sourcePage": 245,
+      "common": false,
+      "availabilityAny": [
+        "Ag",
+        "Wa"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 5
+      },
+      "baseCreditsPerTon": 50000,
+      "purchaseDM": {
+        "Wa": 2
+      },
+      "saleDM": {
+        "In": 6
+      },
+      "universallyIllegal": true,
+      "refereeDefined": false
+    },
+    {
+      "id": "62",
+      "name": "Cybernetics, Illegal",
+      "sourcePage": 245,
+      "common": false,
+      "availabilityAny": [
+        "Ht"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 1
+      },
+      "baseCreditsPerTon": 250000,
+      "purchaseDM": {
+        "Ht": 1
+      },
+      "saleDM": {
+        "As": 4,
+        "Ic": 4,
+        "Ri": 8,
+        "Amber": 6,
+        "Red": 6
+      },
+      "universallyIllegal": true,
+      "refereeDefined": false
+    },
+    {
+      "id": "63",
+      "name": "Drugs, Illegal",
+      "sourcePage": 245,
+      "common": false,
+      "availabilityAny": [
+        "As",
+        "De",
+        "Hi",
+        "Wa"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 1
+      },
+      "baseCreditsPerTon": 100000,
+      "purchaseDM": {
+        "As": 1,
+        "De": 1,
+        "Ga": 1,
+        "Wa": 1
+      },
+      "saleDM": {
+        "Ri": 6,
+        "Hi": 6
+      },
+      "universallyIllegal": true,
+      "refereeDefined": false
+    },
+    {
+      "id": "64",
+      "name": "Luxuries, Illegal",
+      "sourcePage": 245,
+      "common": false,
+      "availabilityAny": [
+        "Ag",
+        "Ga",
+        "Wa"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 1
+      },
+      "baseCreditsPerTon": 50000,
+      "purchaseDM": {
+        "Ag": 2,
+        "Wa": 1
+      },
+      "saleDM": {
+        "Ri": 6,
+        "Hi": 4
+      },
+      "universallyIllegal": true,
+      "refereeDefined": false
+    },
+    {
+      "id": "65",
+      "name": "Weapons, Illegal",
+      "sourcePage": 245,
+      "common": false,
+      "availabilityAny": [
+        "In",
+        "Ht"
+      ],
+      "quantity": {
+        "dice": 1,
+        "sides": 6,
+        "multiplier": 5
+      },
+      "baseCreditsPerTon": 150000,
+      "purchaseDM": {
+        "Ht": 2
+      },
+      "saleDM": {
+        "Po": 6,
+        "Amber": 8,
+        "Red": 10
+      },
+      "universallyIllegal": true,
+      "refereeDefined": false
+    },
+    {
+      "id": "66",
+      "name": "Exotics",
+      "sourcePage": 245,
+      "common": false,
+      "availabilityAny": [],
+      "quantity": null,
+      "baseCreditsPerTon": null,
+      "purchaseDM": {},
+      "saleDM": {},
+      "universallyIllegal": null,
+      "refereeDefined": true
+    }
+  ],
+  "priceTable": {
+    "sourcePage": 243,
+    "minResult": -3,
+    "maxResult": 25,
+    "rows": [
+      {
+        "result": -3,
+        "purchasePercent": 300,
+        "salePercent": 10
+      },
+      {
+        "result": -2,
+        "purchasePercent": 250,
+        "salePercent": 20
+      },
+      {
+        "result": -1,
+        "purchasePercent": 200,
+        "salePercent": 30
+      },
+      {
+        "result": 0,
+        "purchasePercent": 175,
+        "salePercent": 40
+      },
+      {
+        "result": 1,
+        "purchasePercent": 150,
+        "salePercent": 45
+      },
+      {
+        "result": 2,
+        "purchasePercent": 135,
+        "salePercent": 50
+      },
+      {
+        "result": 3,
+        "purchasePercent": 125,
+        "salePercent": 55
+      },
+      {
+        "result": 4,
+        "purchasePercent": 120,
+        "salePercent": 60
+      },
+      {
+        "result": 5,
+        "purchasePercent": 115,
+        "salePercent": 65
+      },
+      {
+        "result": 6,
+        "purchasePercent": 110,
+        "salePercent": 70
+      },
+      {
+        "result": 7,
+        "purchasePercent": 105,
+        "salePercent": 75
+      },
+      {
+        "result": 8,
+        "purchasePercent": 100,
+        "salePercent": 80
+      },
+      {
+        "result": 9,
+        "purchasePercent": 95,
+        "salePercent": 85
+      },
+      {
+        "result": 10,
+        "purchasePercent": 90,
+        "salePercent": 90
+      },
+      {
+        "result": 11,
+        "purchasePercent": 85,
+        "salePercent": 100
+      },
+      {
+        "result": 12,
+        "purchasePercent": 80,
+        "salePercent": 105
+      },
+      {
+        "result": 13,
+        "purchasePercent": 75,
+        "salePercent": 110
+      },
+      {
+        "result": 14,
+        "purchasePercent": 70,
+        "salePercent": 115
+      },
+      {
+        "result": 15,
+        "purchasePercent": 65,
+        "salePercent": 120
+      },
+      {
+        "result": 16,
+        "purchasePercent": 60,
+        "salePercent": 125
+      },
+      {
+        "result": 17,
+        "purchasePercent": 55,
+        "salePercent": 130
+      },
+      {
+        "result": 18,
+        "purchasePercent": 50,
+        "salePercent": 140
+      },
+      {
+        "result": 19,
+        "purchasePercent": 45,
+        "salePercent": 150
+      },
+      {
+        "result": 20,
+        "purchasePercent": 40,
+        "salePercent": 160
+      },
+      {
+        "result": 21,
+        "purchasePercent": 35,
+        "salePercent": 175
+      },
+      {
+        "result": 22,
+        "purchasePercent": 30,
+        "salePercent": 200
+      },
+      {
+        "result": 23,
+        "purchasePercent": 25,
+        "salePercent": 250
+      },
+      {
+        "result": 24,
+        "purchasePercent": 20,
+        "salePercent": 300
+      },
+      {
+        "result": 25,
+        "purchasePercent": 15,
+        "salePercent": 400
+      }
+    ]
+  },
+  "tradeCodes": {
+    "sourcePage": 260,
+    "conditionOperator": "all",
+    "missingRequiredField": "unknown-not-false",
+    "conditions": {
+      "Ag": {
+        "atmosphere": {
+          "min": 4,
+          "max": 9
+        },
+        "hydrographics": {
+          "min": 4,
+          "max": 8
+        },
+        "population": {
+          "min": 5,
+          "max": 7
+        }
+      },
+      "As": {
+        "size": {
+          "equals": 0
+        },
+        "atmosphere": {
+          "equals": 0
+        },
+        "hydrographics": {
+          "equals": 0
+        }
+      },
+      "Ba": {
+        "population": {
+          "equals": 0
+        },
+        "government": {
+          "equals": 0
+        },
+        "law": {
+          "equals": 0
+        }
+      },
+      "De": {
+        "atmosphere": {
+          "min": 2,
+          "max": 9
+        },
+        "hydrographics": {
+          "equals": 0
+        }
+      },
+      "Fl": {
+        "atmosphere": {
+          "min": 10
+        },
+        "hydrographics": {
+          "min": 1
+        }
+      },
+      "Ga": {
+        "size": {
+          "min": 6,
+          "max": 8
+        },
+        "atmosphere": {
+          "oneOf": [
+            5,
+            6,
+            8
+          ]
+        },
+        "hydrographics": {
+          "min": 5,
+          "max": 7
+        }
+      },
+      "Hi": {
+        "population": {
+          "min": 9
+        }
+      },
+      "Ht": {
+        "techLevel": {
+          "min": 12
+        }
+      },
+      "Ic": {
+        "atmosphere": {
+          "min": 0,
+          "max": 1
+        },
+        "hydrographics": {
+          "min": 1
+        }
+      },
+      "In": {
+        "atmosphere": {
+          "oneOf": [
+            0,
+            1,
+            2,
+            4,
+            7,
+            9,
+            10,
+            11,
+            12
+          ]
+        },
+        "population": {
+          "min": 9
+        }
+      },
+      "Lo": {
+        "population": {
+          "min": 1,
+          "max": 3
+        }
+      },
+      "Lt": {
+        "population": {
+          "min": 1
+        },
+        "techLevel": {
+          "max": 5
+        }
+      },
+      "Na": {
+        "atmosphere": {
+          "min": 0,
+          "max": 3
+        },
+        "hydrographics": {
+          "min": 0,
+          "max": 3
+        },
+        "population": {
+          "min": 6
+        }
+      },
+      "Ni": {
+        "population": {
+          "min": 4,
+          "max": 6
+        }
+      },
+      "Po": {
+        "atmosphere": {
+          "min": 2,
+          "max": 5
+        },
+        "hydrographics": {
+          "min": 0,
+          "max": 3
+        }
+      },
+      "Ri": {
+        "atmosphere": {
+          "oneOf": [
+            6,
+            8
+          ]
+        },
+        "population": {
+          "min": 6,
+          "max": 8
+        },
+        "government": {
+          "min": 4,
+          "max": 9
+        }
+      },
+      "Va": {
+        "atmosphere": {
+          "equals": 0
+        }
+      },
+      "Wa": {
+        "atmosphere": {
+          "anyOf": [
+            {
+              "min": 3,
+              "max": 9
+            },
+            {
+              "min": 13
+            }
+          ]
+        },
+        "hydrographics": {
+          "min": 10
+        }
+      }
+    }
+  },
+  "travelZones": {
+    "derivedFromUWP": false,
+    "source": "Traveller Map or explicit referee override"
+  },
+  "dmSelection": {
+    "perColumn": "largest-matching",
+    "noMatches": 0,
+    "negativeMatches": "retain-largest-negative-do-not-clamp-to-zero",
+    "sourcePage": 243
+  },
+  "availability": {
+    "sourcePage": 242,
+    "commonIds": [
+      "11",
+      "12",
+      "13",
+      "14",
+      "15",
+      "16"
+    ],
+    "matchingGoods": "any-availability-code",
+    "randomCount": "world-population-code",
+    "randomTable": "D66",
+    "legalRerollIds": [
+      "61",
+      "62",
+      "63",
+      "64",
+      "65"
+    ],
+    "duplicates": "additional-quantity-roll",
+    "populationQuantityDM": [
+      {
+        "max": 3,
+        "dm": -3
+      },
+      {
+        "min": 9,
+        "dm": 3
+      }
+    ],
+    "quantityCalculation": "max(0, diceTotal + populationDM) * multiplier",
+    "blackMarket": {
+      "decision": "INT-003",
+      "includeCommonLegal": true,
+      "matchingGoods": "illegal-only",
+      "randomTable": "6-followed-by-D6",
+      "randomCount": "world-population-code"
+    }
+  },
+  "search": {
+    "sourcePages": [
+      241,
+      242
+    ],
+    "difficulty": 8,
+    "methods": {
+      "normal": {
+        "skill": "Broker",
+        "characteristics": [
+          "EDU",
+          "SOC"
+        ],
+        "durationDice": 1,
+        "durationUnit": "days"
+      },
+      "blackMarket": {
+        "skill": "Streetwise",
+        "characteristics": [
+          "EDU",
+          "SOC"
+        ],
+        "durationDice": 1,
+        "durationUnit": "days"
+      },
+      "online": {
+        "skill": "Admin",
+        "characteristics": [
+          "EDU"
+        ],
+        "minTechLevel": 8,
+        "durationDice": 1,
+        "durationUnit": "hours"
+      }
+    },
+    "starportDM": {
+      "A": 6,
+      "B": 4,
+      "C": 2
+    },
+    "priorAttemptDM": -1,
+    "priorAttemptWindowHours": 720,
+    "repeatDealCooldownHours": 720,
+    "timingDecision": "INT-005",
+    "rejectionDecision": "INT-006"
+  },
+  "negotiation": {
+    "sourcePages": [
+      242,
+      243
+    ],
+    "dice": 3,
+    "counterpartyDefaultSkill": 2,
+    "traderOrLocalSkill": "choose-one",
+    "localBroker": {
+      "skillDice": 2,
+      "skillDivisor": 3,
+      "skillRounding": "floor",
+      "roundingDecision": "INT-001",
+      "negotiationDM": 2,
+      "normalFeePercent": 10,
+      "illegalFeePercent": 20,
+      "feeBasis": "gross-transaction-value",
+      "illegalFeeOverrideAllowed": true,
+      "fixerInformerNaturalTotal": 2
+    },
+    "purchaseDirections": {
+      "purchaseDM": 1,
+      "saleDM": -1
+    },
+    "saleDirections": {
+      "purchaseDM": -1,
+      "saleDM": 1
+    },
+    "localIllegalSaleDM": "world-law-minus-referee-specified-ban-threshold",
+    "illegalDMCombination": "higher-of-local-and-universal"
+  },
+  "freight": {
+    "sourcePages": [
+      239,
+      240,
+      241
+    ],
+    "paymentCreditsPerTonByParsecs": {
+      "1": 1000,
+      "2": 1600,
+      "3": 2600,
+      "4": 4400,
+      "5": 8500,
+      "6": 32000
+    },
+    "trafficDice": 2,
+    "check": {
+      "difficulty": 8,
+      "skills": [
+        "Broker",
+        "Streetwise"
+      ],
+      "useEffect": true
+    },
+    "lotTypes": {
+      "major": {
+        "trafficDM": -4,
+        "tonnageDice": 1,
+        "multiplier": 10
+      },
+      "minor": {
+        "trafficDM": 0,
+        "tonnageDice": 1,
+        "multiplier": 5
+      },
+      "incidental": {
+        "trafficDM": 2,
+        "tonnageDice": 1,
+        "multiplier": 1
+      }
+    },
+    "endpointDM": {
+      "applyTo": "origin-and-destination",
+      "population": [
+        {
+          "max": 1,
+          "dm": -4
+        },
+        {
+          "min": 6,
+          "max": 7,
+          "dm": 2
+        },
+        {
+          "min": 8,
+          "dm": 4
+        }
+      ],
+      "starport": {
+        "A": 2,
+        "B": 1,
+        "E": -1,
+        "X": -3
+      },
+      "techLevel": [
+        {
+          "max": 6,
+          "dm": -1
+        },
+        {
+          "min": 9,
+          "dm": 2
+        }
+      ],
+      "zone": {
+        "Amber": -2,
+        "Red": -6
+      }
+    },
+    "distanceDM": "-max(0,parsecs-1)",
+    "trafficTable": [
+      {
+        "result": 1,
+        "numberOfLotDice": 0
+      },
+      {
+        "result": 2,
+        "numberOfLotDice": 1
+      },
+      {
+        "result": 3,
+        "numberOfLotDice": 1
+      },
+      {
+        "result": 4,
+        "numberOfLotDice": 2
+      },
+      {
+        "result": 5,
+        "numberOfLotDice": 2
+      },
+      {
+        "result": 6,
+        "numberOfLotDice": 3
+      },
+      {
+        "result": 7,
+        "numberOfLotDice": 3
+      },
+      {
+        "result": 8,
+        "numberOfLotDice": 3
+      },
+      {
+        "result": 9,
+        "numberOfLotDice": 4
+      },
+      {
+        "result": 10,
+        "numberOfLotDice": 4
+      },
+      {
+        "result": 11,
+        "numberOfLotDice": 4
+      },
+      {
+        "result": 12,
+        "numberOfLotDice": 5
+      },
+      {
+        "result": 13,
+        "numberOfLotDice": 5
+      },
+      {
+        "result": 14,
+        "numberOfLotDice": 5
+      },
+      {
+        "result": 15,
+        "numberOfLotDice": 6
+      },
+      {
+        "result": 16,
+        "numberOfLotDice": 6
+      },
+      {
+        "result": 17,
+        "numberOfLotDice": 7
+      },
+      {
+        "result": 18,
+        "numberOfLotDice": 8
+      },
+      {
+        "result": 19,
+        "numberOfLotDice": 9
+      },
+      {
+        "result": 20,
+        "numberOfLotDice": 10
+      }
+    ],
+    "minTrafficResult": 1,
+    "maxTrafficResult": 20,
+    "wholeLots": true,
+    "payment": "on-delivery",
+    "latePenalty": {
+      "dice": 1,
+      "add": 4,
+      "multiplyPercent": 10
+    },
+    "deadline": "referee-entered",
+    "deadlineDecision": "INT-005"
+  },
+  "mail": {
+    "sourcePage": 241,
+    "availabilityDice": 2,
+    "successAt": 12,
+    "freightDMBands": [
+      {
+        "max": -10,
+        "dm": -2
+      },
+      {
+        "min": -9,
+        "max": -5,
+        "dm": -1
+      },
+      {
+        "min": -4,
+        "max": 4,
+        "dm": 0
+      },
+      {
+        "min": 5,
+        "max": 9,
+        "dm": 1
+      },
+      {
+        "min": 10,
+        "dm": 2
+      }
+    ],
+    "freightDMDecision": "INT-004",
+    "freightDMIncludesSearchEffect": true,
+    "freightDMIncludesLotType": false,
+    "armedShipDM": 2,
+    "lowTech": {
+      "endpoint": "origin",
+      "maxTechLevel": 5,
+      "dm": -4,
+      "decision": "INT-002"
+    },
+    "rankDM": "highest-Naval-or-Scout-rank",
+    "socialDM": "highest-crew-SOC-DM",
+    "containerDice": 1,
+    "tonsPerContainer": 5,
+    "paymentCreditsPerContainer": 25000,
+    "allOrNone": true,
+    "paymentDistanceMultiplier": false
+  },
+  "travel": {
+    "jumpDuration": {
+      "sourcePage": 157,
+      "fixedHours": 148,
+      "dice": 6,
+      "sides": 6
+    },
+    "portFuel": {
+      "sourcePage": 257,
+      "A": "refined",
+      "B": "refined",
+      "C": "unrefined",
+      "D": "unrefined",
+      "E": "none",
+      "X": "none"
+    },
+    "wildFuel": {
+      "sourcePage": 157,
+      "requiresFuelScoops": true,
+      "possibleSources": [
+        "gas-giant",
+        "accessible-water"
+      ],
+      "quality": "unrefined"
+    },
+    "fuelConsumptionSimulation": false
+  },
+  "uwp": {
+    "source": "https://travellermap.com/doc/secondsurvey",
+    "format": "starport + size + atmosphere + hydrographics + population + government + law + '-' + techLevel",
+    "length": 9,
+    "separatorIndex": 7,
+    "fieldIndices": {
+      "starport": 0,
+      "size": 1,
+      "atmosphere": 2,
+      "hydrographics": 3,
+      "population": 4,
+      "government": 5,
+      "law": 6,
+      "techLevel": 8
+    },
+    "numericAlphabet": "0123456789ABCDEFGHJKLMNPQRSTUVWXYZ",
+    "unknownMarker": "?",
+    "unknownNumericValue": null,
+    "invalidInput": "reject-with-visible-error",
+    "notes": "Only parse supported main-world profiles; do not silently convert nonnumeric size markers to zero. Map trade remarks are not rule authority.",
+    "fieldMaxima": {
+      "size": 15,
+      "atmosphere": 15,
+      "hydrographics": 10,
+      "population": 15
+    }
+  },
+  "verification": {
+    "date": "2026-10-03",
+    "reviewer": "Codex",
+    "record": "../RULES_VERIFICATION.md",
+    "scope": "Source/data and independent expected calculations; application testing separate"
+  }
+}

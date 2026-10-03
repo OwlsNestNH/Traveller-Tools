@@ -79,3 +79,13 @@ Record subsequent conclusions, rationale and dates here; preserve these IDs in f
 ## Optional Merchant Prince adaptation
 
 See [OPTIONAL_RULES.md](OPTIONAL_RULES.md) for the owner-identified first-edition source, approved INT-007 (normal-market-value taxable profit), INT-008 (tax before profit reduction), and INT-009 (Cr75001 bracket correction), all approved 2026-10-03, revision 1. These are separate from Core Rulebook verification. The owner supplied printed references: insurance p. 83 and taxes p. 86. Exact printing, applicable errata, remaining adaptation decisions and full data verification are still pending. The Rules & Notes panel must include these decisions and their status.
+
+## Additional agreed optional-rule decisions
+
+INT-010 through INT-021, approved 2026-10-03, revision 1, are recorded in [OPTIONAL_RULES.md](OPTIONAL_RULES.md#additional-decisions-approved-2026-10-03). These resolve per-sale tax aggregation, insurance route/risk/value/claims, premium accounting, tax allocation, criminal-market exemption, exclusions, government-code mapping and fractional tax bracket lookup.
+
+Initial data and reproducible checks are now checked in; see [rules review evidence](rules/README.md). This is rules-data preparation, not an application test result.
+
+## Completed version 0.1.0 source/data review
+
+The initial pending statuses above describe the historical review phase. Version 0.1.0 has now completed the source/data gate, with 198 passing data and independent expected-result assertions. See [current verification record](RULES_VERIFICATION.md). INT-022 fixes the exact owner-supplied Merchant Prince tables as the adaptation baseline; this does not claim that unknown printing/errata changes were checked. Application verification remains separate.

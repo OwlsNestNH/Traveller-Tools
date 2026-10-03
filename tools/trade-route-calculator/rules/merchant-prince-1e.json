@@ -1,0 +1,771 @@
+{
+  "schemaVersion": 1,
+  "dataVersion": "0.1.0",
+  "status": "source-and-example-verified",
+  "source": {
+    "id": "merchant-prince-1e",
+    "title": "Mongoose Traveller 1st Edition, Book 7: Merchant Prince",
+    "evidence": "Owner-provided excerpts and table images; printed page references supplied by owner",
+    "printing": null,
+    "errataChecked": false,
+    "baselineDecision": "INT-022",
+    "baseline": "Exact owner-supplied tables, with agreed corrections; no unidentified errata applied"
+  },
+  "insurance": {
+    "sourcePage": 83,
+    "defaultEnabled": false,
+    "coveragePercent": [
+      20,
+      30,
+      40,
+      50,
+      60,
+      70,
+      80,
+      90,
+      100
+    ],
+    "premiumRows": [
+      {
+        "distance": "less-than-1",
+        "premiumPercent": [
+          0.5,
+          1,
+          2,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      },
+      {
+        "distance": "1",
+        "premiumPercent": [
+          1,
+          2,
+          3,
+          6,
+          7,
+          8,
+          9,
+          9,
+          12
+        ]
+      },
+      {
+        "distance": "2",
+        "premiumPercent": [
+          2,
+          2,
+          4,
+          6,
+          7,
+          8,
+          9,
+          10,
+          12
+        ]
+      },
+      {
+        "distance": "3",
+        "premiumPercent": [
+          2,
+          3,
+          5,
+          7,
+          8,
+          9,
+          10,
+          10,
+          14
+        ]
+      },
+      {
+        "distance": "4",
+        "premiumPercent": [
+          3,
+          4,
+          5,
+          7,
+          8,
+          9,
+          10,
+          11,
+          14
+        ]
+      },
+      {
+        "distance": "5",
+        "premiumPercent": [
+          4,
+          4,
+          6,
+          8,
+          9,
+          9,
+          11,
+          12,
+          15
+        ]
+      },
+      {
+        "distance": "6",
+        "premiumPercent": [
+          5,
+          5,
+          6,
+          8,
+          9,
+          10,
+          11,
+          12,
+          15
+        ]
+      }
+    ],
+    "surchargePercentagePoints": {
+      "Amber": 2,
+      "Red": 5
+    },
+    "rateUnit": "percent-of-insured-purchase-value",
+    "interpretations": [
+      "INT-011",
+      "INT-012",
+      "INT-013",
+      "INT-014",
+      "INT-015"
+    ],
+    "distanceMode": "sum-planned-route-legs",
+    "overSixParsecs": "manual-quote",
+    "riskSurcharges": "each-zone-once-additive",
+    "routeChanges": "referee-approved-amendment",
+    "insuredValue": "goods-purchase-price-excluding-fees-and-premium",
+    "premiumAccounting": "included-in-lot-acquisition-basis",
+    "partialClaims": "coverage-percent-times-original-purchase-value-of-lost-insured-quantity",
+    "sales": "end-coverage-on-sold-quantity",
+    "claimApproval": "explicit-referee",
+    "scope": "owned-speculative-goods-only",
+    "claimPayoutTax": false,
+    "claimPayoutProfitReduction": false
+  },
+  "tax": {
+    "sourcePage": 86,
+    "defaultEnabled": false,
+    "brackets": [
+      {
+        "minCredits": 1,
+        "maxCredits": 1000
+      },
+      {
+        "minCredits": 1001,
+        "maxCredits": 5000
+      },
+      {
+        "minCredits": 5001,
+        "maxCredits": 10000
+      },
+      {
+        "minCredits": 10001,
+        "maxCredits": 25000
+      },
+      {
+        "minCredits": 25001,
+        "maxCredits": 50000
+      },
+      {
+        "minCredits": 50001,
+        "maxCredits": 75000
+      },
+      {
+        "minCredits": 75001,
+        "maxCredits": 100000
+      },
+      {
+        "minCredits": 100001,
+        "maxCredits": 250000
+      },
+      {
+        "minCredits": 250001,
+        "maxCredits": 1000000
+      },
+      {
+        "minCredits": 1000001,
+        "maxCredits": null
+      }
+    ],
+    "governmentRates": [
+      {
+        "uwpGovernmentCode": "0",
+        "label": "None",
+        "rates": [
+          {
+            "percent": 0
+          },
+          {
+            "percent": 0
+          },
+          {
+            "percent": 0
+          },
+          {
+            "percent": 0
+          },
+          {
+            "percent": 0
+          },
+          {
+            "percent": 0
+          },
+          {
+            "percent": 0
+          },
+          {
+            "percent": 0
+          },
+          {
+            "percent": 0
+          },
+          {
+            "percent": 0
+          }
+        ]
+      },
+      {
+        "uwpGovernmentCode": "1",
+        "label": "Company/Corporation",
+        "rates": [
+          {
+            "percent": 6
+          },
+          {
+            "percent": 8
+          },
+          {
+            "percent": 10
+          },
+          {
+            "percent": 12
+          },
+          {
+            "percent": 12
+          },
+          {
+            "percent": 12
+          },
+          {
+            "percent": 15
+          },
+          {
+            "percent": 15
+          },
+          {
+            "percent": 22
+          },
+          {
+            "percent": 25
+          }
+        ]
+      },
+      {
+        "uwpGovernmentCode": "2",
+        "label": "Participating Democracy",
+        "rates": [
+          {
+            "percent": 3
+          },
+          {
+            "percent": 3
+          },
+          {
+            "percent": 5
+          },
+          {
+            "percent": 5
+          },
+          {
+            "percent": 10
+          },
+          {
+            "percent": 10
+          },
+          {
+            "percent": 10
+          },
+          {
+            "percent": 12
+          },
+          {
+            "percent": 12
+          },
+          {
+            "percent": 18
+          }
+        ]
+      },
+      {
+        "uwpGovernmentCode": "3",
+        "label": "Self-perpetuating Oligarchy",
+        "rates": [
+          {
+            "percent": 8
+          },
+          {
+            "percent": 8
+          },
+          {
+            "percent": 10
+          },
+          {
+            "percent": 10
+          },
+          {
+            "percent": 10
+          },
+          {
+            "percent": 12
+          },
+          {
+            "percent": 12
+          },
+          {
+            "percent": 12
+          },
+          {
+            "percent": 14
+          },
+          {
+            "percent": 14
+          }
+        ]
+      },
+      {
+        "uwpGovernmentCode": "4",
+        "label": "Representative Democracy",
+        "rates": [
+          {
+            "percent": 5
+          },
+          {
+            "percent": 6
+          },
+          {
+            "percent": 8
+          },
+          {
+            "percent": 10
+          },
+          {
+            "percent": 12
+          },
+          {
+            "percent": 14
+          },
+          {
+            "percent": 18
+          },
+          {
+            "percent": 20
+          },
+          {
+            "percent": 22
+          },
+          {
+            "percent": 25
+          }
+        ]
+      },
+      {
+        "uwpGovernmentCode": "5",
+        "label": "Feudal Technocracy",
+        "rates": [
+          {
+            "percent": 4
+          },
+          {
+            "percent": 4
+          },
+          {
+            "percent": 6
+          },
+          {
+            "percent": 8
+          },
+          {
+            "percent": 8
+          },
+          {
+            "percent": 10
+          },
+          {
+            "percent": 10
+          },
+          {
+            "percent": 12
+          },
+          {
+            "percent": 14
+          },
+          {
+            "percent": 16
+          }
+        ]
+      },
+      {
+        "uwpGovernmentCode": "6",
+        "label": "Captive Government",
+        "rates": [
+          {
+            "percent": 8
+          },
+          {
+            "percent": 10
+          },
+          {
+            "percent": 12
+          },
+          {
+            "percent": 14
+          },
+          {
+            "percent": 16
+          },
+          {
+            "percent": 20
+          },
+          {
+            "percent": 20
+          },
+          {
+            "percent": 20
+          },
+          {
+            "percent": 22
+          },
+          {
+            "percent": 25
+          }
+        ]
+      },
+      {
+        "uwpGovernmentCode": "7",
+        "label": "Balkanisation",
+        "rates": [
+          {
+            "dice": 1,
+            "sides": 6,
+            "unit": "percentage-points"
+          },
+          {
+            "dice": 1,
+            "sides": 6,
+            "unit": "percentage-points"
+          },
+          {
+            "dice": 2,
+            "sides": 6,
+            "unit": "percentage-points"
+          },
+          {
+            "dice": 2,
+            "sides": 6,
+            "unit": "percentage-points"
+          },
+          {
+            "dice": 3,
+            "sides": 6,
+            "unit": "percentage-points"
+          },
+          {
+            "dice": 3,
+            "sides": 6,
+            "unit": "percentage-points"
+          },
+          {
+            "dice": 3,
+            "sides": 6,
+            "unit": "percentage-points"
+          },
+          {
+            "dice": 4,
+            "sides": 6,
+            "unit": "percentage-points"
+          },
+          {
+            "dice": 4,
+            "sides": 6,
+            "unit": "percentage-points"
+          },
+          {
+            "dice": 5,
+            "sides": 6,
+            "unit": "percentage-points"
+          }
+        ]
+      },
+      {
+        "uwpGovernmentCode": "8",
+        "label": "Civil Service Bureaucracy",
+        "rates": [
+          {
+            "percent": 6
+          },
+          {
+            "percent": 6
+          },
+          {
+            "percent": 6
+          },
+          {
+            "percent": 8
+          },
+          {
+            "percent": 8
+          },
+          {
+            "percent": 10
+          },
+          {
+            "percent": 10
+          },
+          {
+            "percent": 12
+          },
+          {
+            "percent": 14
+          },
+          {
+            "percent": 16
+          }
+        ]
+      },
+      {
+        "uwpGovernmentCode": "9",
+        "label": "Impersonal Bureaucracy",
+        "rates": [
+          {
+            "percent": 5
+          },
+          {
+            "percent": 5
+          },
+          {
+            "percent": 8
+          },
+          {
+            "percent": 8
+          },
+          {
+            "percent": 10
+          },
+          {
+            "percent": 10
+          },
+          {
+            "percent": 12
+          },
+          {
+            "percent": 14
+          },
+          {
+            "percent": 15
+          },
+          {
+            "percent": 18
+          }
+        ]
+      },
+      {
+        "uwpGovernmentCode": "A",
+        "label": "Charismatic Dictator",
+        "rates": [
+          {
+            "percent": 12
+          },
+          {
+            "percent": 12
+          },
+          {
+            "percent": 12
+          },
+          {
+            "percent": 12
+          },
+          {
+            "percent": 12
+          },
+          {
+            "percent": 12
+          },
+          {
+            "percent": 12
+          },
+          {
+            "percent": 12
+          },
+          {
+            "percent": 12
+          },
+          {
+            "percent": 12
+          }
+        ]
+      },
+      {
+        "uwpGovernmentCode": "B",
+        "label": "Non-charismatic Dictator",
+        "rates": [
+          {
+            "percent": 10
+          },
+          {
+            "percent": 10
+          },
+          {
+            "percent": 10
+          },
+          {
+            "percent": 20
+          },
+          {
+            "percent": 20
+          },
+          {
+            "percent": 20
+          },
+          {
+            "percent": 20
+          },
+          {
+            "percent": 30
+          },
+          {
+            "percent": 30
+          },
+          {
+            "percent": 30
+          }
+        ]
+      },
+      {
+        "uwpGovernmentCode": "C",
+        "label": "Charismatic Oligarchy",
+        "rates": [
+          {
+            "percent": 3
+          },
+          {
+            "percent": 5
+          },
+          {
+            "percent": 5
+          },
+          {
+            "percent": 8
+          },
+          {
+            "percent": 8
+          },
+          {
+            "percent": 8
+          },
+          {
+            "percent": 10
+          },
+          {
+            "percent": 10
+          },
+          {
+            "percent": 10
+          },
+          {
+            "percent": 12
+          }
+        ]
+      },
+      {
+        "uwpGovernmentCode": "D",
+        "label": "Religious Dictatorship",
+        "rates": [
+          {
+            "percent": 10
+          },
+          {
+            "percent": 10
+          },
+          {
+            "percent": 12
+          },
+          {
+            "percent": 12
+          },
+          {
+            "percent": 14
+          },
+          {
+            "percent": 14
+          },
+          {
+            "percent": 15
+          },
+          {
+            "percent": 15
+          },
+          {
+            "percent": 15
+          },
+          {
+            "percent": 18
+          }
+        ]
+      }
+    ],
+    "corrections": [
+      {
+        "decision": "INT-009",
+        "sourceLowerBound": 76001,
+        "effectiveLowerBound": 75001,
+        "upperBound": 100000
+      }
+    ],
+    "sourceLabelNotes": [
+      {
+        "uwpGovernmentCode": "5",
+        "sourceLabel": "Feudal Democracy",
+        "effectiveLabel": "Feudal Technocracy",
+        "status": "owner-approved-INT-020"
+      }
+    ],
+    "unsupportedGovernment": "require-referee-rate",
+    "rateUnit": "percent-of-positive-taxable-sale-profit",
+    "interpretations": [
+      "INT-007",
+      "INT-008",
+      "INT-009",
+      "INT-010",
+      "INT-016",
+      "INT-017",
+      "INT-018",
+      "INT-019",
+      "INT-020",
+      "INT-021"
+    ],
+    "aggregation": "per-committed-sale",
+    "benchmark": "core-base-price-times-tons-sold",
+    "netTaxableAmount": "sum-sale-proceeds-minus-sum-benchmarks",
+    "nonpositiveTaxable": "zero-tax",
+    "allocation": "positive-taxable-gain-shares",
+    "criminalMarket": "zero-automatic-tax",
+    "scope": "owned-speculative-goods-only",
+    "bracketLookup": "max(1,floor(positive-taxable-amount))",
+    "taxCalculation": "floor(exact-positive-taxable-amount-times-rate-divided-by-100)",
+    "profitModeOrder": "tax-before-positive-profit-reduction"
+  },
+  "verification": {
+    "date": "2026-10-03",
+    "reviewer": "Codex",
+    "record": "../RULES_VERIFICATION.md",
+    "scope": "Compared with supplied tables and approved adaptations; application testing separate"
+  }
+}

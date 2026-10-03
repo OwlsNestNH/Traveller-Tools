@@ -2,7 +2,7 @@
 
 [Rules verification status and evidence](RULES_VERIFICATION.md)
 
-Status: proposed implementation structure for the locked V1 requirements. This folder currently contains planning documents only.
+Status: proposed implementation structure for the locked V1 requirements. Versioned rules data and a standalone verification script now accompany the plans; application implementation is authorized after the verification gate.
 
 ## Free-only static stack
 
@@ -102,13 +102,13 @@ The future UI and commodity audit view expose a **Rules verification** link to t
 
 ## Rules verification gate
 
-The intended baseline is Traveller Core Rulebook Update 2022; confirm the source's exact edition/update and applicable errata before marking data verified. The gate is currently pending. Before implementing the trading engine, check in:
+The intended baseline is Traveller Core Rulebook Update 2022; confirm the source's exact edition/update and applicable errata before marking data verified. The source/data gate for version 0.1.0 is complete as recorded in RULES_VERIFICATION.md; runtime implementation tests remain required. Before implementing the trading engine, check in:
 
 - A versioned structured rules dataset for trade codes, availability/tonnage, pricing, DM combinations, brokers/fees, illegal goods, freight/mail, and travel/date rules.
 - Source documentation giving edition/page or table provenance, explicit unresolved items, and a clear distinction between RAW rules and app/house-rule policies.
 - Worked input/output examples sufficient to independently check the data and calculations, including boundary cases.
 
-These are future preparation deliverables, not files or verified rules supplied by this documentation change. Do not import the existing spec-trade data as authoritative, bundle PDFs, or add personal source links. Store the rules-data version in snapshots so subsequent data corrections cannot silently change historical transactions.
+These preparation deliverables are now present under rules/ and verification/. Source/data verification is distinct from later application tests. Do not import the existing spec-trade data as authoritative, bundle PDFs, or add personal source links. Store the rules-data version in snapshots so subsequent data corrections cannot silently change historical transactions.
 
 ## Verification before release
 
@@ -130,4 +130,4 @@ Implement insurance and taxation as independently enabled modules, disabled by d
 
 Extend campaign settings and versioned exports with both switches. Policies retain covered lot IDs/quantities, destination, frozen route/risk/value inputs, premium, potential payout, status and claim references. Tax audits retain the normal-market-value benchmark separately from actual acquisition basis, government/organisation, taxable amount, bracket/rate, rolls/overrides and allocated posted tax. Preserve all applied rule/decision revisions.
 
-Add premium, tax and approved-claim ledger types. Commits and undo reconcile bank, cargo, policies, claims and taxes together; prevent duplicate claims. Follow the updated profit formulas in REQUIREMENTS.md: preserve pre-tax RAW profit, subtract tax, and apply profit mode only to the positive remainder. Do not choose tax aggregation/allocation or premium cost-basis rules until the owner resolves the recorded questions.
+Add premium, tax and approved-claim ledger types. Commits and undo reconcile bank, cargo, policies, claims and taxes together; prevent duplicate claims. Follow the updated profit formulas in REQUIREMENTS.md: preserve pre-tax RAW profit, subtract tax, and apply profit mode only to the positive remainder. Apply INT-010 through INT-021: per-sale net taxable profit, proportional positive-gain allocation, criminal-market exemption, premiums in cost basis and fractional bracket handling. Preserve each decision revision.

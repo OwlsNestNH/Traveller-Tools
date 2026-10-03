@@ -2,7 +2,7 @@
 
 [Rules verification status and evidence](RULES_VERIFICATION.md)
 
-Status: agreed V1 product scope; documentation only. Rules verification is pending and is required before implementing the trading engine. No app implementation is included.
+Status: agreed V1 product scope. Rules-data preparation is authorized. The owner has also authorized implementation after the open rules questions and verification gate are resolved; seek clarification when new ambiguities arise.
 
 ## Authority and scope
 
@@ -18,7 +18,7 @@ The intended V1 baseline is Traveller Core Rulebook Update 2022. During the veri
 
 Before implementing the trading engine, check in a versioned structured rules dataset, a rules-source document with edition/page or table references, and worked examples with expected results. Cover UWP-derived trade codes, commodity availability/tonnage, purchase/sale tables, applicable DMs and their combination rules, brokers/fees, illegal goods, freight/mail, and travel/date handling. Include decimal cargo quantities, rounding boundaries, and partial-lot cost allocation in the examples.
 
-Record unresolved rules as unresolved; do not substitute the old spec-trade implementation or guessed formulas. This preparation is in progress; see [initial source review](RULES_REVIEW.md). Ask the project owner to resolve ambiguous rules before adopting an interpretation. Record the question, alternatives, chosen conclusion, date and affected calculations in GitHub; silence is not approval. Keep unresolved interpretations visibly pending. The PDFs are development reference material only and must never be committed, linked as personal references, or accessed by the deployed app.
+Record unresolved rules as unresolved; do not substitute the old spec-trade implementation or guessed formulas. Version 0.1.0 has completed the recorded source/data gate; see [verification evidence](RULES_VERIFICATION.md). Ask the project owner to resolve ambiguous rules before adopting an interpretation. Record the question, alternatives, chosen conclusion, date and affected calculations in GitHub; silence is not approval. Keep unresolved interpretations visibly pending. The PDFs are development reference material only and must never be committed, linked as personal references, or accessed by the deployed app.
 
 ## Worlds, map, and route
 
@@ -101,7 +101,9 @@ Round each final posted monetary amount down to whole Credits once. Preserve unr
 
 Cargo quantities use decimal tons and preserve the accepted input/rule-result precision, including fractional quantities in manual overrides and partial sales. Do not apply monetary rounding to cargo, reservations, capacity, or remaining quantities. Apply quantity rounding only where an independently verified rule expressly requires it; use exact decimal arithmetic for quantity accounting.
 
-For partial lot sales, allocate the original purchase cost and applicable acquisition fees proportionally to the quantity sold. Round the allocated basis down to whole Credits and retain the allocation remainder on the remaining lot. Its final sale consumes the entire remaining recorded basis, reconciling the full original cost without lost or duplicated Credits. Each lot keeps its own basis.
+Insured purchase value excludes fees and premiums. Insurance premiums are included in actual acquisition cost basis; claims are separate ledger credits and are not sales or subject to tax/profit reduction.
+
+For partial lot sales, allocate the original purchase cost, applicable acquisition fees and insurance premiums proportionally to the quantity sold. Round the allocated basis down to whole Credits and retain the allocation remainder on the remaining lot. Its final sale consumes the entire remaining recorded basis, reconciling the full original cost without lost or duplicated Credits. Each lot keeps its own basis.
 
 ## Profit modes
 
@@ -129,7 +131,7 @@ Display RAW pre-tax profit, any tax and after-tax profit, and adjusted results s
 
 ## Optional insurance and taxation
 
-Include independent, off-by-default insurance and tax settings as specified in [OPTIONAL_RULES.md](OPTIONAL_RULES.md). Identify these as first-edition Merchant Prince adaptations in Rules & Notes. INT-007 through INT-009 are approved; remaining ambiguities must be answered and source data verified before their behavior is implemented.
+Include independent, off-by-default insurance and tax settings as specified in [OPTIONAL_RULES.md](OPTIONAL_RULES.md). Identify these as first-edition Merchant Prince adaptations in Rules & Notes. INT-007 through INT-021 record approved behavior; verify source data and raise any newly discovered ambiguity before implementing its dependent behavior.
 
 Insurance previews coverage and premiums, links policies to cargo lots, and requires explicit referee-approved claims. Taxes use normal market value to determine taxable profit, shown separately from actual cost-based profit; post tax before applying the positive-profit percentage. Preserve policies, taxes, settings and decision revisions in ledger history, persistence, export/import and undo.
 
@@ -176,4 +178,4 @@ Prevent concurrent browser tabs from silently overwriting campaign state. Allow 
 
 18. Rules & Notes shows accurate copyright/credits, rules sources, actual verification status and all agreed interpretation decisions, including the optional first-edition adaptations. Affected audits link to their notes, and historical snapshots retain their interpretation revisions.
 
-19. Optional insurance and taxation start disabled, preserve their own audits and history, follow INT-007 through INT-009, and pass the source, accounting and lifecycle checks in OPTIONAL_RULES.md before release.
+19. Optional insurance and taxation start disabled, preserve their own audits and history, follow INT-007 through INT-021, and pass the source, accounting and lifecycle checks in OPTIONAL_RULES.md before release.
