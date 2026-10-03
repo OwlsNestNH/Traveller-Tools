@@ -1,6 +1,6 @@
 # Traveller Trade Route Calculator — V1 Requirements
 
-Status: locked V1 scope; documentation only. No app implementation is included.
+Status: agreed V1 product scope; documentation only. Rules verification is pending and is required before implementing the trading engine. No app implementation is included.
 
 ## Authority and scope
 
@@ -10,12 +10,22 @@ The existing `tools/spec-trade/` tool is buggy and untrusted. It must not serve 
 
 V1 is a free-only static web app in this repository. All app code, verified rules data, and supporting documentation must be checked into GitHub. The deployed tool must not access, embed, link to, or require the actual rulebook PDFs, the user's private files/accounts, or the design conversation. Rulebook verification is a development activity; record concise rule provenance in GitHub without bundling PDFs or personal reference links. Passengers and the deferred features in [BACKLOG.md](BACKLOG.md) are excluded.
 
+## Rules verification before implementation
+
+The intended V1 baseline is Traveller Core Rulebook Update 2022. During the verification step, confirm the source's title, edition/update, and any applicable errata before marking rules data verified. Do not mix editions or supplement rules implicitly.
+
+Before implementing the trading engine, check in a versioned structured rules dataset, a rules-source document with edition/page or table references, and worked examples with expected results. Cover UWP-derived trade codes, commodity availability/tonnage, purchase/sale tables, applicable DMs and their combination rules, brokers/fees, illegal goods, freight/mail, and travel/date handling. Include decimal cargo quantities, rounding boundaries, and partial-lot cost allocation in the examples.
+
+Record unresolved rules as unresolved; do not substitute the old spec-trade implementation or guessed formulas. This preparation is still pending. The PDFs are development reference material only and must never be committed, linked as personal references, or accessed by the deployed app.
+
 ## Worlds, map, and route
 
 - Use the Traveller Map public API for live world and navigation data.
 - Provide a clickable local world map for selecting and inspecting worlds.
 - Parse UWP locally and derive trade codes locally from the effective UWP. Allow editable UWP overrides and display the original and effective values clearly.
-- Support a start world, end world, and editable intermediate stops. Revalidate the route after edits.
+- Automatically find a route from the selected start to end world using **Fewest jumps**, the single V1 route mode. Respect ship jump capability and the fuel-availability validity checks. Among equally valid routes with the same jump count, prefer the least total distance; use stable world identifiers to break remaining ties reproducibly.
+- Let the user insert, remove, or reorder mandatory intermediate stops. Find connecting routes through those stops in the chosen order and revalidate after each edit. Distinguish mandatory stops from automatically chosen intermediate worlds; committed travel history must remain intact when replanning the remaining route.
+- If no valid connection is found within the searched world data, explain which segment failed and the search boundary; do not present an incomplete route as valid. Planning does not relocate the ship. COMMIT JUMP must start at the ship's actual world.
 - Route validity considers ship jump capability and fuel availability at relevant stops. V1 does not simulate fuel consumption or maintain a fuel-use ledger.
 - Keep the viewed world separate from the ship's actual current world. Previous/next world controls browse the route for inspection and planning; they do not move the ship, advance the date, or deliver contracts.
 - Use an explicit **COMMIT JUMP** action to move the ship along a valid leg and record the resulting location, date, and history. Date/jump handling must use verified rules and preserve the applied elapsed time for audit.
@@ -33,7 +43,8 @@ Use a ship-computer interface with readable world, route, market, cargo, account
 - Support local brokers, their applicable skill/DM effects, and fees. Show fees in previews and account for them explicitly in committed transactions.
 - Support illegal goods fully, with clear illegal-goods markings in offers, audits, cargo, and transactions. Apply verified rules and allow referee overrides.
 - Market searches create dated world-specific snapshots. Support repeat searches and retain search history, original inputs, effective UWP/trade codes, rolls, DMs, offers, and overrides.
-- Old offers remain actionable by default. Each saved snapshot has Active/Expired status, an Expired checkbox, and an optional expiration/date note. Marking an offer expired disables its purchase action; time passage or another search does not invent automatic expiration.
+- Old offers remain actionable by default. Each individual offer has an **Expired** checkbox and an optional expiration/date note; unchecked means Active. Expiring one offer disables that offer's purchase action without expiring other offers in the snapshot. Unchecking it restores eligibility, subject to normal validation.
+- A snapshot may offer an optional **Expire all offers** convenience action that updates its individual offers. Any snapshot summary status is derived from those offers, not a separate conflicting expiration flag. Time passage or another search does not invent automatic expiration. Expiration changes are recorded in history and support undo.
 - Preserve snapshot calculations rather than silently recalculating historical offers when current trader or world inputs change. Purchases remain subject to actual-world, remaining quantity, bank, and cargo checks.
 
 ## Commit workflow, cargo, and accounts
@@ -47,21 +58,34 @@ Use a ship-computer interface with readable world, route, market, cargo, account
 
 ## Rounding and cost basis
 
-Round calculated quantities and monetary amounts down to the supported unit (whole tons and whole Credits unless a verified rule explicitly defines a different unit). Preserve unrounded intermediate values for calculation audit and round the final applicable result down; do not repeatedly round intermediate calculations. Rounding must not change the requirement that losses remain unchanged by profit mode.
+Round each final posted monetary amount down to whole Credits once. Preserve unrounded intermediate prices, percentages, and fee calculations for audit; do not repeatedly round intermediate calculations. Calculate realized profit from the posted sale proceeds, posted selling fees, and allocated recorded cost basis. Round positive adjusted profit down to whole Credits. Zero and losses pass through unchanged by the profit setting.
 
-For partial lot sales, allocate the original purchase cost and applicable acquisition fees proportionally to the quantity sold. Track remaining cost basis and retain any allocation remainder on the remaining lot so its final sale reconciles the full original cost without lost or duplicated Credits. Each lot keeps its own basis.
+Cargo quantities use decimal tons and preserve the accepted input/rule-result precision, including fractional quantities in manual overrides and partial sales. Do not apply monetary rounding to cargo, reservations, capacity, or remaining quantities. Apply quantity rounding only where an independently verified rule expressly requires it; use exact decimal arithmetic for quantity accounting.
+
+For partial lot sales, allocate the original purchase cost and applicable acquisition fees proportionally to the quantity sold. Round the allocated basis down to whole Credits and retain the allocation remainder on the remaining lot. Its final sale consumes the entire remaining recorded basis, reconciling the full original cost without lost or duplicated Credits. Each lot keeps its own basis.
 
 ## Profit modes
 
 Offer campaign settings **RAW = 100%**, **Reduced = 75%**, and **Custom = user-defined percentage**.
 
-Preserve RAW purchase/sale percentage tables and calculations. Apply the setting after the RAW transaction result is known:
+Preserve RAW purchase/sale percentage tables and calculations. Apply the setting **separately to the quantity sold from each cargo lot**, after allocating its recorded purchase cost (including acquisition fees) and subtracting selling fees. Combine multiple sale lines from the same lot within one commit before applying the percentage; do not net profits and losses across different lots first.
 
 ```text
-adjustedProfit = rawProfit > 0 ? rawProfit * selectedPercentage / 100 : rawProfit
+rawProfit = grossSaleProceeds - sellingFees - allocatedCostBasis
+adjustedProfit = rawProfit > 0
+    ? floor(rawProfit * selectedPercentage / 100)
+    : rawProfit
+profitAdjustment = adjustedProfit - rawProfit
+bankIncreaseOnSale = grossSaleProceeds - sellingFees + profitAdjustment
 ```
 
-Losses remain unchanged; zero remains zero. A RAW Cr10,000 profit becomes Cr7,500 in Reduced mode; a RAW Cr10,000 loss remains a Cr10,000 loss. Display RAW and adjusted results separately for every affected transaction. Preserve the percentage used on each committed transaction and reconcile any adjustment with the bank ledger without changing the original RAW calculation.
+Purchase costs have already been debited at acquisition: cost basis measures profit and must not be debited again on sale. Calculate broker fees using the verified RAW fee basis before the house-rule adjustment; the adjustment does not rewrite the fee or price tables. Allocate any shared selling fee proportionally by each lot's gross sale proceeds (by quantity if all proceeds are zero), with a stable remainder allocation that preserves the total charged fee. Record each lot's share. Manual port/operating expenses remain separate ledger expenses and are not retrospectively allocated to cargo profit.
+
+Losses remain unchanged; zero remains zero. A RAW Cr10,000 profit becomes Cr7,500 in Reduced mode; a RAW Cr10,000 loss remains a Cr10,000 loss. For two lots earning Cr100 and losing Cr100, the adjusted results are Cr75 and minus Cr100, totaling a Cr25 loss. A RAW Cr101 profit becomes Cr75 after rounding down.
+
+Freight and mail payments are outside this speculative-trade house rule and receive their verified contractual payout without a profit-mode reduction.
+
+Display RAW and adjusted results separately per sold lot and in transaction totals. Preserve the percentage used on each committed sale and its explicit adjustment ledger entry; later setting changes do not rewrite prior transactions. Custom percentages must be finite and within 0–100 inclusive.
 
 ## Freight and mail
 
@@ -84,7 +108,11 @@ Provide undo and an inspectable action history for committed state changes, incl
 2. UWP overrides feed local trade-code derivation and new calculations; historical snapshot inputs remain preserved.
 3. Generated and overridden commodity results are explainable through the per-commodity DM audit.
 4. Two lots of the same commodity at different prices/descriptions survive purchases, partial sales, reload, and export/import independently.
-5. Repeated market searches retain earlier offers; only explicit expiration disables an otherwise valid historical offer.
+5. Repeated market searches retain earlier offers. Expiring one offer leaves others active; optional bulk expiration, reactivation, and undo preserve individual offer state.
 6. Buy/sell commits and undo reconcile bank, fees, offer quantities, cargo, and both profit results, including positive, zero, and loss cases.
 7. Freight/mail reserve appropriate capacity, retain obligations, and pay once on committed delivery.
 8. Illegal goods, manual expenses, campaign dates, persistence, and recovery are exercised before V1 release.
+9. Fewest-jumps routes honor mandatory stop order, jump limits, and fuel availability; ties are reproducible and failed connections are explicit.
+10. Decimal cargo quantities survive partial sales, reservations, reload, and export/import without whole-ton truncation.
+11. Mixed profitable/loss-making lots use per-lot adjustment; Cr101 becomes Cr75 in Reduced mode; costs/fees are counted once, and freight/mail payouts are unchanged.
+12. The rules dataset, source references, and worked examples are independently verified and checked into GitHub before trading-engine implementation.

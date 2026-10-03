@@ -5,7 +5,7 @@ These ideas are outside locked V1 scope. They are candidates for later design, n
 | Idea | Later scope / design needed |
 | --- | --- |
 | Passengers | Availability, passage classes, stateroom/low-berth capacity, life support, bookings, delivery, and payments. Explicitly excluded from V1. |
-| More route modes | Profit-oriented, shortest, safest, fuel-aware alternatives, circuit/loop routes, and comparisons. Define objectives and constraints before adding optimization. |
+| More route modes | Profit-oriented, least-distance as a primary objective, safest, fuel-cost optimization, circuit/loop routes, and comparisons. V1 already includes automatic Fewest jumps with editable mandatory stops, fuel-availability validation, and distance as a tie-breaker. |
 | Full ship economics | Automated fuel quantities/consumption and cost, maintenance, mortgages, crew pay, life support, and recurring port/operating expenses. V1 supports manual expenses and fuel-availability route validation. |
 | Saved trader profiles | Reusable named trader/crew/broker configurations and switching among profiles. V1 retains the active trader state. |
 | Persistent campaign-specific world overrides | A reusable world-override registry with campaign identity, reset/version controls, and conflict handling. V1 supports editable effective UWP and preserves applied values in snapshots/state; a managed registry is deferred. |
@@ -18,7 +18,9 @@ These ideas are outside locked V1 scope. They are candidates for later design, n
 
 ## Required implementation preparation, not deferred scope
 
-Before coding rules, confirm the Core Rulebook edition and independently verify commodity tables, trade-code conditions, DMs, brokers/fees, freight/mail, and date/jump handling with rule references and worked examples. Apply the locked round-down policy and verify fee/cost-basis accounting consistently, including partial cargo-lot sales and profit-adjustment ledger entries.
+Rules verification is pending. Use Traveller Core Rulebook Update 2022 as the intended baseline and confirm its exact edition/update and applicable errata during verification. Before implementing the trading engine, check in a versioned rules dataset, edition/page or table references, and worked examples with expected results. Independently verify commodity tables, trade-code conditions, DMs and their combination, brokers/fees, illegal goods, freight/mail, and date/jump handling. PDFs and personal reference links must stay out of the repository and runtime.
+
+Verify the agreed monetary round-down policy while preserving decimal cargo quantities. Cover partial-lot cost allocation, shared fees, per-lot positive-profit adjustment, unchanged losses, bank reconciliation, and freight/mail exclusion from the adjustment. Also cover Fewest jumps with mandatory stops and per-offer expiration/undo. These are required V1 checks, not deferred features.
 
 Do not use the buggy/untrusted existing `tools/spec-trade/` tool as rules authority. Reuse is allowed only after independent verification against the Core Rulebook.
 

@@ -32,7 +32,7 @@ Confirm current Traveller Map endpoints and browser access requirements during i
 
 - **World/API adapter:** world identifiers, coordinates, UWP and navigation data, response normalization, request errors.
 - **UWP/rules data:** parsing, validation, local trade-code derivation, verified commodity tables and rule references.
-- **Route/map:** clickable local map, start/end/stops, route validation using jump capability and fuel availability, selected view world.
+- **Route/map:** clickable local map; automatic Fewest jumps between ordered mandatory stops; distance then stable-world-ID tie-breaking; route validation using jump capability and fuel availability; separate selected view world and actual ship position.
 - **Trade engine:** availability/pricing, explicit dice inputs, overrides, brokers/fees, per-commodity audit output, RAW/adjusted profit.
 - **Contracts:** freight/mail availability, acceptance, capacity reservation, destination obligations, delivery, and payout.
 - **Campaign store/actions:** actual ship location, date, trader/ship state, bank/cargo ledger, cargo lots, snapshots, settings, action history, and undo.
@@ -48,15 +48,16 @@ Use stable IDs and explicit links rather than commodity names as keys.
 | Entity | Essential data |
 | --- | --- |
 | Campaign | Schema version, ship/trader inputs, bank balance, actual world, campaign date, profit setting |
-| Route/view | Start/end, ordered stops, committed progress, independently selected browsed world |
+| Route/view | Start/end, ordered mandatory stops, calculated intermediate worlds, Fewest jumps mode, validation/search boundary, committed progress, independently selected browsed world |
 | World context | API identity/coordinates, original UWP, effective UWP, override provenance, derived trade codes |
-| Market snapshot | World/date/search ID, frozen calculation inputs, rolls, DMs, offers, overrides, Active/Expired state and note |
+| Market snapshot | World/date/search ID, rules-data version, frozen calculation inputs, rolls, DMs, offers, overrides; any expiration summary derived from offers |
+| Market offer | Stable offer ID, snapshot ID, commodity, original/remaining quantity, price/audit, individual Expired flag and optional expiration/date note |
 | Cargo lot | Lot ID, commodity/legality, description, quantity, cost basis/fees, purchase world/date, snapshot reference |
 | Freight/mail contract | Contract ID, origin/destination, tonnage/reservation, audit, payment terms, status and payout reference |
 | Ledger entry | Action ID, date/world, amount/type, linked lot/contract/offer, fees, RAW/adjusted results and applied percentage |
 | History | Committed action, affected entity IDs, prior/resulting state sufficient for consistent undo |
 
-Snapshots preserve original calculation context. A new UWP override or search creates new effective calculation inputs; it does not rewrite a saved offer. Reserve capacity for accepted contracts separately from owned cargo and derive available capacity from both.
+Snapshots preserve original calculation context. A new UWP override or search creates new effective calculation inputs; it does not rewrite a saved offer. Store expiration on each offer; optional bulk expiration updates those flags in one undoable action. Reactivation never resets sold quantities. Reserve capacity for accepted contracts separately from owned cargo and derive available capacity from both.
 
 ## Calculation and commit flow
 
@@ -66,7 +67,11 @@ A preview computes availability, prices, fees, and RAW/adjusted results without 
 
 Browsing previous/next worlds changes view state only. COMMIT JUMP validates the intended route leg and changes actual location/date/progress together. A delivery action validates actual destination independently of the browsed world.
 
-For profit settings, preserve RAW rule calculations and apply the percentage only to positive realized profit. Record RAW and adjusted values and an explicit reconciled adjustment in the ledger; never rewrite RAW price tables. Round final calculated quantities and monetary results down to their supported units, preserving unrounded intermediate values in audits. Allocate each lot's acquisition cost and fees proportionally on partial sales, retain allocation remainders in its remaining basis, and reconcile the full basis on its final sale. Verify these calculations with worked examples before implementation.
+Use the accounting formulas in [REQUIREMENTS.md](REQUIREMENTS.md#profit-modes). Calculate profit independently for each sold lot after its allocated acquisition cost/fees and selling fees; group lines from the same lot within one commit. Adjust only positive speculative-trade profit, round the adjusted value down, and record the adjustment explicitly. Sum those per-lot results for the commit; freight/mail payouts and manual operating expenses stay outside the house rule. Preserve the applied percentage and reject invalid custom percentages outside 0–100.
+
+Post final monetary amounts as whole Credits rounded down once, while retaining precise intermediate calculations for audit. Compute profit from recorded cash amounts and cost basis; never debit historical acquisition cost again on sale. Allocate acquisition costs proportionally, retaining remainders on the remaining lot; fully reconcile the basis at final sale. Shared selling-fee allocation must preserve the total fee and use deterministic remainder handling. Broker fees use their verified RAW basis before the profit adjustment.
+
+Preserve fractional tons with exact decimal arithmetic (for example, decimal strings with integer arithmetic at the required scale). Do not use whole-ton truncation or floating-point approximations for cargo/capacity accounting. Persist/export the same precision. Explicit rule-mandated quantity rounding belongs in the verified rules layer, separate from monetary rounding.
 
 ## Persistence, import, and undo
 
@@ -76,8 +81,18 @@ Export the complete campaign as JSON. Parse and validate schema, types, ranges, 
 
 Represent committed changes as reversible actions or equivalent prior-state records. Undo restores all dependent state together, including bank, cargo, offer quantities, location/date, contract reservations, and delivery/payout status. Preserve an inspectable history rather than silently discarding the accounting trail.
 
+## Rules verification gate
+
+The intended baseline is Traveller Core Rulebook Update 2022; confirm the source's exact edition/update and applicable errata before marking data verified. The gate is currently pending. Before implementing the trading engine, check in:
+
+- A versioned structured rules dataset for trade codes, availability/tonnage, pricing, DM combinations, brokers/fees, illegal goods, freight/mail, and travel/date rules.
+- Source documentation giving edition/page or table provenance, explicit unresolved items, and a clear distinction between RAW rules and app/house-rule policies.
+- Worked input/output examples sufficient to independently check the data and calculations, including boundary cases.
+
+These are future preparation deliverables, not files or verified rules supplied by this documentation change. Do not import the existing spec-trade data as authoritative, bundle PDFs, or add personal source links. Store the rules-data version in snapshots so subsequent data corrections cannot silently change historical transactions.
+
 ## Verification before release
 
-Verify rules/data independently against the Core Rulebook and record edition/page provenance. Use worked examples for availability, price DMs, broker fees, illegal goods, freight/mail, and travel dates. Test profit modes for gains, zero, and losses; partial sales across distinct lots; atomic commits/undo; browse versus jump; expiration; and JSON round trips.
+Verify rules/data independently against the Core Rulebook and record edition/page provenance. Use worked examples for availability, price DMs, broker fees, illegal goods, freight/mail, and travel dates. Test per-lot profit modes for gains, zero, and losses in the same commit; monetary rounding boundaries; fractional partial sales; cost-basis and shared-fee remainders; unchanged freight/mail payouts; atomic commits/undo; browse versus jump; Fewest jumps through mandatory stops; independent offer expiration/reactivation and bulk undo; and JSON round trips.
 
 Smoke-test direct loading from the GitHub Pages subdirectory, map/API failures, reload persistence, and storage/import errors. No app code or application tests are part of the current documentation-only change.
