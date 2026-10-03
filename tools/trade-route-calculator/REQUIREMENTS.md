@@ -1,5 +1,7 @@
 # Traveller Trade Route Calculator — V1 Requirements
 
+[Rules verification status and evidence](RULES_VERIFICATION.md)
+
 Status: agreed V1 product scope; documentation only. Rules verification is pending and is required before implementing the trading engine. No app implementation is included.
 
 ## Authority and scope
@@ -34,6 +36,8 @@ Record unresolved rules as unresolved; do not substitute the old spec-trade impl
 ## Ship-computer interface and state
 
 Use a ship-computer interface with readable world, route, market, cargo, accounts, and history views. Show actual location and browsed location distinctly. Maintain ship, trader, bank balance, cargo capacity/usage, campaign date, route progress, and profit-mode state. Trader and ship inputs must supply the verified rules calculations and route/capacity checks.
+
+The future app must include a visible **Rules verification** link to this project's public GitHub verification record. The record must state whether verification is pending or complete; linking to it must not imply that unverified rules have passed review. Keep this link available from the per-commodity DM audit view as well.
 
 ## Markets and speculative trade
 

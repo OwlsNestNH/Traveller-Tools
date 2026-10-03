@@ -1,5 +1,7 @@
 # Traveller Trade Route Calculator — Deferred Backlog
 
+[Rules verification status and evidence](RULES_VERIFICATION.md)
+
 These ideas are outside locked V1 scope. They are candidates for later design, not promises or reasons to delay V1. See [REQUIREMENTS.md](REQUIREMENTS.md) for required behavior.
 
 | Idea | Later scope / design needed |

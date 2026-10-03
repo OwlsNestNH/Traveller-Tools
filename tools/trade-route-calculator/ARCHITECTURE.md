@@ -1,5 +1,7 @@
 # Traveller Trade Route Calculator — Architecture Plan
 
+[Rules verification status and evidence](RULES_VERIFICATION.md)
+
 Status: proposed implementation structure for the locked V1 requirements. This folder currently contains planning documents only.
 
 ## Free-only static stack
@@ -18,7 +20,7 @@ No paid services, paid API dependencies, server backend, database service, or re
 
 ## Self-contained GitHub source
 
-All application code, verified structured rules data, and supporting documentation live in this GitHub repository. The runtime reads bundled rules data and Traveller Map public API responses only; it has no access to rulebook PDFs, private Drive files, the user's accounts, or design-chat history. Do not bundle PDFs or add personal reference links. Core Rulebook verification happens during development; record edition/page provenance in checked-in documentation so future maintainers can review the source without a dependency on the original user. The three planning documents are the implementation specification.
+All application code, verified structured rules data, and supporting documentation live in this GitHub repository. The runtime reads bundled rules data and Traveller Map public API responses only; it has no access to rulebook PDFs, private Drive files, the user's accounts, or design-chat history. Do not bundle PDFs or add personal reference links. Core Rulebook verification happens during development; record edition/page provenance in checked-in documentation so future maintainers can review the source without a dependency on the original user. The planning documents are the implementation specification. [RULES_VERIFICATION.md](RULES_VERIFICATION.md) is the public status and evidence record; it does not replace the specification or constitute verified rules data.
 
 ## Boundaries
 
@@ -80,6 +82,8 @@ Use a namespaced localStorage key to avoid collisions with other tools. Store a 
 Export the complete campaign as JSON. Parse and validate schema, types, ranges, references, and accounting/capacity consistency before applying an import. Failed validation must leave the current campaign intact.
 
 Represent committed changes as reversible actions or equivalent prior-state records. Undo restores all dependent state together, including bank, cargo, offer quantities, location/date, contract reservations, and delivery/payout status. Preserve an inspectable history rather than silently discarding the accounting trail.
+
+The future UI and commodity audit view expose a **Rules verification** link to the public GitHub record. Verification evidence must identify the applicable rules-data version/commit so users can distinguish evidence for the running version from later updates. No PDF access or private account is required to view the record.
 
 ## Rules verification gate
 
