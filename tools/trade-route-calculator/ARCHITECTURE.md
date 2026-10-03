@@ -115,3 +115,11 @@ These are future preparation deliverables, not files or verified rules supplied 
 Verify rules/data independently against the Core Rulebook and record edition/page provenance. Use worked examples for availability, price DMs, broker fees, illegal goods, freight/mail, and travel dates. Test per-lot profit modes for gains, zero, and losses in the same commit; monetary rounding boundaries; fractional partial sales; cost-basis and shared-fee remainders; unchanged freight/mail payouts; atomic commits/undo; browse versus jump; Fewest jumps through mandatory stops; independent offer expiration/reactivation and bulk undo; and JSON round trips.
 
 Smoke-test direct loading from the GitHub Pages subdirectory, map/API failures, reload persistence, and storage/import errors. No app code or application tests are part of the current documentation-only change.
+
+## Rules & Notes content
+
+Maintain a checked-in, versioned interpretation register with stable IDs, source references, the ambiguity, alternatives, owner decision, rationale, decision date, status and affected calculations. Only explicitly resolved entries may supply automatic rule behavior. Keep unresolved questions pending until the owner answers; do not infer approval from an unanswered question.
+
+The small Rules & Notes button opens an accessible panel rendered from bundled content. Include verification status and public evidence links, interpretations, house rules, copyright/license notices, credits and application version. Calculation audit entries deep-link to relevant notes. Preserve the current Rules verification link. Store applied interpretation IDs/revisions alongside the rules-data version in snapshots and committed history so exports and historical audits retain their meaning.
+
+Copyright and attribution text must be checked against the actual applicable notices before release. This panel does not itself establish a license or permission to reproduce source material. No rulebook PDFs or private reference links are included.

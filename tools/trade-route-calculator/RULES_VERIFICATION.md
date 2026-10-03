@@ -1,36 +1,36 @@
 # Traveller Trade Route Calculator — Rules Verification
 
-**Overall status: Pending — rules have not yet been independently verified.**
+**Overall status: In progress — initial source review recorded; the verification gate is not complete.**
 
 This is the public status and evidence record for the calculator. It tracks the verification required by [REQUIREMENTS.md](REQUIREMENTS.md#rules-verification-before-implementation) and [ARCHITECTURE.md](ARCHITECTURE.md#rules-verification-gate). A planning decision or a checked box without supporting evidence is not rules verification.
 
 ## Baseline and deliverables
 
 - Intended rulebook: Traveller Core Rulebook Update 2022.
-- Exact source edition/update and applicable errata: pending confirmation.
+- Examined source: Core Rulebook Update 2022, copyright 2024; August 2024 publisher FAQ reviewed. See [source baseline](RULES_REVIEW.md#source-baseline).
 - Verified rules dataset/version: not yet created.
-- Source page/table references: not yet recorded.
-- Independently checked worked examples: not yet recorded.
+- Initial source references: [RULES_REVIEW.md](RULES_REVIEW.md); complete dataset provenance remains pending.
+- Initial independently calculated expectations: [worked results](RULES_REVIEW.md#worked-expected-results). Dataset comparison and implementation tests remain pending.
 - App implementation and automated rule checks: not yet created.
 
 Keep the rules data, concise source references, examples, and results in GitHub. Do not upload PDFs, add private source links, or make the app depend on the user's files/accounts or design chat. The existing `tools/spec-trade/` implementation is buggy/untrusted and cannot establish correctness.
 
 ## Core Rulebook verification checklist
 
-All rows start Pending. Add links to actual checked-in evidence as work is completed; do not create placeholder links to files that do not exist.
+Initial source findings and unresolved interpretations are recorded in [RULES_REVIEW.md](RULES_REVIEW.md). In progress means evidence gathering has begun; it does not mean the complete area has passed.
 
 | ID | Area | Status | Evidence needed |
 | --- | --- | --- | --- |
-| RV-01 | Edition and errata | Pending | Exact source identity and applicable errata recorded |
-| RV-02 | UWP parsing and trade-code derivation | Pending | Rule references, boundary values, and expected codes |
-| RV-03 | Commodity availability and tonnage | Pending | Verified data, availability conditions, rolls, and quantity examples |
-| RV-04 | Purchase and sale pricing | Pending | Base prices, percentage tables, lookup boundaries, worked examples |
-| RV-05 | DMs and combination rules | Pending | Each modifier's source, signs, selection/stacking behavior, combined examples |
-| RV-06 | Local brokers and fees | Pending | Eligibility, skills/DMs, fee bases, and purchase/sale examples |
-| RV-07 | Illegal goods | Pending | Applicable availability, pricing, and legality rules with examples |
-| RV-08 | Freight | Pending | Availability, DMs, rolls, tonnage, payment and delivery rules |
-| RV-09 | Mail | Pending | Eligibility, availability, payment and delivery rules |
-| RV-10 | Travel and dates | Pending | Jump capability, fuel-availability inputs, elapsed-time rules and examples |
+| RV-01 | Edition and errata | In progress | Exact source identity and applicable errata recorded |
+| RV-02 | UWP parsing and trade-code derivation | In progress | Rule references, boundary values, and expected codes |
+| RV-03 | Commodity availability and tonnage | In progress | Verified data, availability conditions, rolls, and quantity examples |
+| RV-04 | Purchase and sale pricing | In progress | Base prices, percentage tables, lookup boundaries, worked examples |
+| RV-05 | DMs and combination rules | In progress | Each modifier's source, signs, selection/stacking behavior, combined examples |
+| RV-06 | Local brokers and fees | In progress | Eligibility, skills/DMs, fee bases, and purchase/sale examples |
+| RV-07 | Illegal goods | In progress | Applicable availability, pricing, and legality rules with examples |
+| RV-08 | Freight | In progress | Availability, DMs, rolls, tonnage, payment and delivery rules |
+| RV-09 | Mail | In progress | Eligibility, availability, payment and delivery rules |
+| RV-10 | Travel and dates | In progress | Jump capability, fuel-availability inputs, elapsed-time rules and examples |
 
 ## App and house-rule checks
 
@@ -71,4 +71,4 @@ Mark an area Verified only when its source, data, and worked examples have actua
 
 The pre-implementation rules gate is complete when RV-01 through RV-10 have verified evidence, the versioned dataset and source references are checked in, and the required worked examples (including applicable accounting/house-rule examples) have been independently checked. UI, persistence, and other implementation checks remain pending until implemented and tested.
 
-Record the verified dataset version and immutable commit here when that gate is met. Until then, the overall status remains Pending. This file adds visibility; it does not claim verification has taken place.
+Record the verified dataset version and immutable commit here when that gate is met. Until then, the overall status remains In progress. Source review and worked expectations must not be presented as a completed dataset or tested app.

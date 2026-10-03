@@ -18,7 +18,7 @@ The intended V1 baseline is Traveller Core Rulebook Update 2022. During the veri
 
 Before implementing the trading engine, check in a versioned structured rules dataset, a rules-source document with edition/page or table references, and worked examples with expected results. Cover UWP-derived trade codes, commodity availability/tonnage, purchase/sale tables, applicable DMs and their combination rules, brokers/fees, illegal goods, freight/mail, and travel/date handling. Include decimal cargo quantities, rounding boundaries, and partial-lot cost allocation in the examples.
 
-Record unresolved rules as unresolved; do not substitute the old spec-trade implementation or guessed formulas. This preparation is still pending. The PDFs are development reference material only and must never be committed, linked as personal references, or accessed by the deployed app.
+Record unresolved rules as unresolved; do not substitute the old spec-trade implementation or guessed formulas. This preparation is in progress; see [initial source review](RULES_REVIEW.md). Ask the project owner to resolve ambiguous rules before adopting an interpretation. Record the question, alternatives, chosen conclusion, date and affected calculations in GitHub; silence is not approval. Keep unresolved interpretations visibly pending. The PDFs are development reference material only and must never be committed, linked as personal references, or accessed by the deployed app.
 
 ## Worlds, map, and route
 
@@ -38,6 +38,22 @@ Record unresolved rules as unresolved; do not substitute the old spec-trade impl
 Use a ship-computer interface with readable world, route, market, cargo, accounts, and history views. Show actual location and browsed location distinctly. Maintain ship, trader, bank balance, cargo capacity/usage, campaign date, route progress, and profit-mode state. Trader and ship inputs must supply the verified rules calculations and route/capacity checks.
 
 The future app must include a visible **Rules verification** link to this project's public GitHub verification record. The record must state whether verification is pending or complete; linking to it must not imply that unverified rules have passed review. Keep this link available from the per-commodity DM audit view as well.
+
+The [interpretation decision register](RULES_REVIEW.md#interpretation-decision-register) records approved rules interpretations. Apply agreed entries by their revision; pending entries are not defaults.
+
+## Rules & Notes panel
+
+Provide a small, consistently available **Rules & Notes** button (working label). It opens an accessible panel with:
+
+- **Rules and verification:** source title/revision, printed page or table references, running rules-data version, and the public GitHub verification link with its actual status.
+- **Interpretations and assumptions:** each ambiguity, the owner's agreed conclusion and rationale, affected behavior, decision date and stable decision ID. Pending questions stay clearly marked and must not be presented as agreed rules.
+- **House rules:** Reduced/Custom profit modes, rounding and other app-specific policies, clearly distinguished from source rules.
+- **Copyright and credits:** accurate source/publisher attribution, actual applicable license/permission notices, Traveller Map attribution and relevant project credits. Do not invent permission claims or reproduce rulebook pages.
+- **About:** application version, concise scope and relevant limitations.
+
+Link affected calculation audit entries directly to the relevant interpretation or house-rule note. Keep the existing Rules verification link available from the commodity audit. The notes must be readable from bundled GitHub content without PDF access, a private account, or this conversation.
+
+A changed interpretation gets a new revision. Historical market snapshots and transactions retain the interpretation versions used when created; later decisions must not silently rewrite past results.
 
 ## Starting balances and referee corrections
 
@@ -150,3 +166,5 @@ Prevent concurrent browser tabs from silently overwriting campaign state. Allow 
 15. Referee adjustments require a reason, preserve history, reconcile cost basis, and undo consistently.
 16. Import/reset offers a backup and explicit confirmation; cancel or failed validation preserves current data.
 17. Two tabs attempting edits cannot overwrite each other's changes; the new editing tab reloads current state before accepting a commit.
+
+18. Rules & Notes shows accurate copyright/credits, rules sources, actual verification status and the six agreed interpretation decisions. Affected audits link to their notes, and historical snapshots retain their interpretation revisions.
