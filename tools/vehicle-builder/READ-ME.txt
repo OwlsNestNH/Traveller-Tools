@@ -1,0 +1,1 @@
+Double-click Traveller-Vehicle-Builder.html to open the vehicle builder in your web browser. No installation or internet connection is required. Use Save JSON to save a design and Open design to load it. Book titles and printed page references appear in the tables. Specialist rules that need manual review are flagged in the app.

@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "name": "Appendix I — Heavy Landing Craft rule check",
+  "type": "Ground Vehicle",
+  "tl": 7,
+  "spaces": 20,
+  "features": ["AFV", "Agile", "ATV", "Fast", "Streamlined"],
+  "power": "Powered",
+  "aux": ["Submarine Drive"],
+  "efficiency": 2,
+  "hull": "Reinforced",
+  "armour": 45,
+  "armourShift": [22, -10, -5, -5, -1, -1],
+  "control": "Control System (improved)",
+  "crew": 3,
+  "passengers": 10,
+  "crewSpace": 1,
+  "passengerSpace": 0.5,
+  "cargo": 0,
+  "equipment": [
+    {"name": "Autopilot (improved)", "quantity": 1},
+    {"name": "Transceiver, 500 km", "quantity": 1},
+    {"name": "Transceiver Encryption", "quantity": 1},
+    {"name": "Navigation System (basic)", "quantity": 1},
+    {"name": "Sensor System (improved)", "quantity": 1},
+    {"name": "Sensor System (improved, underwater)", "quantity": 1},
+    {"name": "Camouflage (improved)", "quantity": 1},
+    {"name": "Docking Hatch", "quantity": 1},
+    {"name": "Tow Hitch", "quantity": 20},
+    {"name": "Fire Extinguishers", "quantity": 1}
+  ],
+  "weapons": [
+    {"weapon": "Autocannon (heavy)", "quantity": 1, "mount": "Turret", "facing": "Dorsal", "remote": true, "fireControl": "Basic", "ammo": 0, "loaders": 0},
+    {"weapon": "Rocket Pod (medium)", "quantity": 1, "mount": "Hardpoint", "facing": "Port", "remote": true, "fireControl": "Basic", "ammo": 0, "loaders": 0},
+    {"weapon": "Rocket Pod (medium)", "quantity": 1, "mount": "Hardpoint", "facing": "Starboard", "remote": true, "fireControl": "Basic", "ammo": 0, "loaders": 0}
+  ],
+  "description": "Appendix I comparison fixture (printed pp176–181). It follows the described selections while retaining explicit construction rules where the example conflicts. See APPENDIX-I-TEST.md for results and discrepancies."
+}

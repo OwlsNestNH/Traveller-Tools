@@ -1,0 +1,419 @@
+{
+  "date": "2026-10-03T22:24:11.536Z",
+  "passed": 103,
+  "total": 103,
+  "tests": [
+    {
+      "name": "TL9 ground chassis: 12 Spaces, Cr9000, Hull24, speed High, 800km (p30)",
+      "status": "passed"
+    },
+    {
+      "name": "Default rover cost and space budget",
+      "status": "passed"
+    },
+    {
+      "name": "Heavy size threshold at 20, speed and agility -1 (p26)",
+      "status": "passed"
+    },
+    {
+      "name": "Huge threshold retains one speed penalty (p26)",
+      "status": "passed"
+    },
+    {
+      "name": "Aeroplane size does not reduce speed (p26)",
+      "status": "passed"
+    },
+    {
+      "name": "Submersible TL9 Slow and safe depth TL6 300m (p33 correction)",
+      "status": "passed"
+    },
+    {
+      "name": "Airship TL5 base range corrected to 6000 (p29)",
+      "status": "passed"
+    },
+    {
+      "name": "Feature costs are additive (p35)",
+      "status": "passed"
+    },
+    {
+      "name": "AFV + Tracks has one speed penalty (p43)",
+      "status": "passed"
+    },
+    {
+      "name": "AFV needs 20 Spaces",
+      "status": "passed"
+    },
+    {
+      "name": "Fast and Slow conflict",
+      "status": "passed"
+    },
+    {
+      "name": "Rail Rider and Tracks conflict symmetrically",
+      "status": "passed"
+    },
+    {
+      "name": "Supersonic requires jet engines",
+      "status": "passed"
+    },
+    {
+      "name": "Supersonic speed fixed at 9, supercruise allowed",
+      "status": "passed"
+    },
+    {
+      "name": "Supersonic cannot take Slower (p49)",
+      "status": "passed"
+    },
+    {
+      "name": "Aeroplane stall check (p28)",
+      "status": "passed"
+    },
+    {
+      "name": "Faster steps round independently: 12 Spaces loses 6 (p49)",
+      "status": "passed"
+    },
+    {
+      "name": "Slower steps round independently: 9 Spaces gains none (p49)",
+      "status": "passed"
+    },
+    {
+      "name": "TL4 cannot take two Faster steps",
+      "status": "passed"
+    },
+    {
+      "name": "Fuel and efficiency add (p50)",
+      "status": "passed"
+    },
+    {
+      "name": "Fuel reductions capped at two",
+      "status": "passed"
+    },
+    {
+      "name": "Nonpositive range rejected",
+      "status": "passed"
+    },
+    {
+      "name": "Unpowered cannot add secondary power",
+      "status": "passed"
+    },
+    {
+      "name": "Structure doubles space, free grid at TL3 (p32,45)",
+      "status": "passed"
+    },
+    {
+      "name": "Structure p45 default power uses 30% and doubles cost",
+      "status": "passed"
+    },
+    {
+      "name": "Structure alternative p32 ruling uses 25%",
+      "status": "passed"
+    },
+    {
+      "name": "Structure can have secondary reactor (p45)",
+      "status": "passed"
+    },
+    {
+      "name": "Muscle power -70% correction and minimum 1 Space gain",
+      "status": "passed"
+    },
+    {
+      "name": "Wind +20% correction (p46)",
+      "status": "passed"
+    },
+    {
+      "name": "Primary fusion minimum is 10 Spaces",
+      "status": "passed"
+    },
+    {
+      "name": "Primary fusion fractions round up",
+      "status": "passed"
+    },
+    {
+      "name": "Secondary fusion retains minimum",
+      "status": "passed"
+    },
+    {
+      "name": "Fission requires shielding",
+      "status": "passed"
+    },
+    {
+      "name": "Fusion+ minimum, power, range ×5 (p48)",
+      "status": "passed"
+    },
+    {
+      "name": "Armour p56 example: TL10, 30 Spaces, +10 consumes 2 Spaces",
+      "status": "passed"
+    },
+    {
+      "name": "Small vehicle armour volume x4",
+      "status": "passed"
+    },
+    {
+      "name": "Armour includes base in maximum",
+      "status": "passed"
+    },
+    {
+      "name": "AFV triples total armour limit",
+      "status": "passed"
+    },
+    {
+      "name": "Face allocation must conserve points",
+      "status": "passed"
+    },
+    {
+      "name": "Face cannot fall below base armour",
+      "status": "passed"
+    },
+    {
+      "name": "Open top has zero dorsal protection",
+      "status": "passed"
+    },
+    {
+      "name": "One-Space hull modifications rejected",
+      "status": "passed"
+    },
+    {
+      "name": "Hull minimum never below one",
+      "status": "passed"
+    },
+    {
+      "name": "Space overspending is invalid",
+      "status": "passed"
+    },
+    {
+      "name": "Equipment TL enforced",
+      "status": "passed"
+    },
+    {
+      "name": "Powered systems unavailable on muscle-only vehicle",
+      "status": "passed"
+    },
+    {
+      "name": "Life support rounds per 20 people (p81)",
+      "status": "passed"
+    },
+    {
+      "name": "Life support needs a sealed hull",
+      "status": "passed"
+    },
+    {
+      "name": "Life support over capacity flagged",
+      "status": "passed"
+    },
+    {
+      "name": "Grav plating needs grav drive or lifters",
+      "status": "passed"
+    },
+    {
+      "name": "Satellite uplink requires 500km radio",
+      "status": "passed"
+    },
+    {
+      "name": "Satellite uplink takes zero Spaces from TL8",
+      "status": "passed"
+    },
+    {
+      "name": "Software p93–95 corrections enforced",
+      "status": "passed"
+    },
+    {
+      "name": "Ship computer bandwidth works",
+      "status": "passed"
+    },
+    {
+      "name": "Reflec and camouflage conflict",
+      "status": "passed"
+    },
+    {
+      "name": "Electrostatic and reactive armour conflict",
+      "status": "passed"
+    },
+    {
+      "name": "Nuclear screen demand uses explicit PP (p76)",
+      "status": "passed"
+    },
+    {
+      "name": "Remote turret includes one loader Space under explicit p103 rule",
+      "status": "passed"
+    },
+    {
+      "name": "Remote gunner requires Basic FCS",
+      "status": "passed"
+    },
+    {
+      "name": "Pintle limited to 500kg",
+      "status": "passed"
+    },
+    {
+      "name": "External weapons count toward hard mass limit",
+      "status": "passed"
+    },
+    {
+      "name": "External weapons above 100kg per Space reduce speed",
+      "status": "passed"
+    },
+    {
+      "name": "Gunport only supports one weapon",
+      "status": "passed"
+    },
+    {
+      "name": "Turret crew not charged twice in accommodation",
+      "status": "passed"
+    },
+    {
+      "name": "Malformed number and negative values rejected",
+      "status": "passed"
+    },
+    {
+      "name": "Every exposed item retains a worksheet or book reference",
+      "status": "passed"
+    },
+    {
+      "name": "Finite results for 10 chassis across TL0–20 and five size boundaries",
+      "status": "passed"
+    },
+    {
+      "name": "Tow cable search finds both handbook towing fittings",
+      "status": "passed"
+    },
+    {
+      "name": "Tow hitch quantity means rated powered towing Spaces (p65)",
+      "status": "passed"
+    },
+    {
+      "name": "Winch price uses host vehicle size (p66)",
+      "status": "passed"
+    },
+    {
+      "name": "Winches cannot exceed six distinct faces",
+      "status": "passed"
+    },
+    {
+      "name": "All three life-support grades and seats remain exposed",
+      "status": "passed"
+    },
+    {
+      "name": "Long-term and closed-cycle life support round by five people",
+      "status": "passed"
+    },
+    {
+      "name": "Radio encryption and tightbeam prices do not decay with TL (p59)",
+      "status": "passed"
+    },
+    {
+      "name": "Radio accessories require a radio rather than only a meson communicator",
+      "status": "passed"
+    },
+    {
+      "name": "Basic sensor price follows p60 rather than worksheet discrepancy",
+      "status": "passed"
+    },
+    {
+      "name": "Sensor upgrades compound and add correct Spaces",
+      "status": "passed"
+    },
+    {
+      "name": "Underwater sensors retain their halved range and doubled cost",
+      "status": "passed"
+    },
+    {
+      "name": "Sensor high-fidelity and hardening TL prerequisites are enforced",
+      "status": "passed"
+    },
+    {
+      "name": "Fibre optics charge Cr100 for free computer or +50% otherwise",
+      "status": "passed"
+    },
+    {
+      "name": "Fibre-optic computer still contributes bandwidth",
+      "status": "passed"
+    },
+    {
+      "name": "Missing landing-deck grades are restored",
+      "status": "passed"
+    },
+    {
+      "name": "Luxury exterior SOC13 uses handbook +500%",
+      "status": "passed"
+    },
+    {
+      "name": "Docking and hangar bay allocations use worksheet prices",
+      "status": "passed"
+    },
+    {
+      "name": "Digger blade uses variable Spaces with 25% maximum",
+      "status": "passed"
+    },
+    {
+      "name": "External tank includes hardpoint, mass and p102 range example",
+      "status": "passed"
+    },
+    {
+      "name": "Self-contained AMS is not charged for another turret",
+      "status": "passed"
+    },
+    {
+      "name": "Gun shields use armour pricing and ignore AFV triple cap",
+      "status": "passed"
+    },
+    {
+      "name": "All 26 special ammunition profiles are present",
+      "status": "passed"
+    },
+    {
+      "name": "Special reserve ammo cost multiplier applies and requires compatibility review",
+      "status": "passed"
+    },
+    {
+      "name": "Biological weapons are omitted by scope",
+      "status": "passed"
+    },
+    {
+      "name": "Structure rounds Hull upward in tenths (Handbook p6)",
+      "status": "passed"
+    },
+    {
+      "name": "Each catalog option belongs to exactly one system dropdown",
+      "status": "passed"
+    },
+    {
+      "name": "Autopilot and radio variants group separately from radio accessories",
+      "status": "passed"
+    },
+    {
+      "name": "Underwater and tightbeam variants retain separate selectors",
+      "status": "passed"
+    },
+    {
+      "name": "Unavailable features are omitted and invalid selections remain recoverable",
+      "status": "passed"
+    },
+    {
+      "name": "Feature selector unlocks prerequisites without changing saved selections",
+      "status": "passed"
+    },
+    {
+      "name": "Entertainment contributes CP without consuming volume (p83)",
+      "status": "passed"
+    },
+    {
+      "name": "Tour guide contributes two CP without consuming volume (p100)",
+      "status": "passed"
+    },
+    {
+      "name": "Pre-TL9 autopilots support grav aircraft but not ground vehicles (p58)",
+      "status": "passed"
+    },
+    {
+      "name": "Luxury treatment upgrades existing Spaces and stacks with entertainment (pp84–85)",
+      "status": "passed"
+    },
+    {
+      "name": "Luxury cannot upgrade more accommodation than allocated",
+      "status": "passed"
+    },
+    {
+      "name": "Linked 150kg missiles round separately under dedicated p104 rule",
+      "status": "passed"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict');const {classifyHullStructure:C}=require('./hull-structure.cjs');
+assert.equal(C(7,66,7).rawMatch,true);
+assert.equal(C(66,66,7).inferredHullLabel,true);
+assert.equal(C(66,66,7).interpretedStructure,7);
+assert.equal(C(8,9,1).match,false);
+assert.equal(C(9,120,12).match,false);
+assert.equal(C(1,1,1).inferredHullLabel,false);
+assert.equal(C(66,66,7).published,66);
+require('./dist/data.js');const F=require('./dist/engine.js');
+const s=JSON.parse(require('node:fs').readFileSync('appendix-i-design.json','utf8'));
+const r=F.calculate(s);assert.equal(r.hull,66);assert.equal(r.structure,7);
+console.log('Hull/Structure classification, preserved input values, rounding and Appendix I 66/7 verified.');

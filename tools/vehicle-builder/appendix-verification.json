@@ -1,0 +1,95 @@
+{
+  "date": "2026-09-28T00:32:18.218Z",
+  "checks": [
+    {
+      "name": "20-Space TL7 ground chassis and reinforced AFV Hull66 / Structure7 (pp176–181)",
+      "status": "passed"
+    },
+    {
+      "name": "Feature price +530%, efficiency +50%, reinforced hull +50% (pp176–177)",
+      "status": "passed"
+    },
+    {
+      "name": "Agility +2 with improved controls (p181)",
+      "status": "passed"
+    },
+    {
+      "name": "Medium maximum, Slow cruise, range500 (p181)",
+      "status": "passed"
+    },
+    {
+      "name": "Cruise range750 follows the explicit +50% rule (p23)",
+      "status": "passed"
+    },
+    {
+      "name": "Nine Spaces and Cr112500 of added armour (p177)",
+      "status": "passed"
+    },
+    {
+      "name": "Front70, aft38, sides43; upper/lower25 after p26 rounding",
+      "status": "passed"
+    },
+    {
+      "name": "Submarine drive two Spaces, Cr60000, range75 (pp177–181)",
+      "status": "passed"
+    },
+    {
+      "name": "Encrypted 500km radio Cr4300 at TL7 (p177)",
+      "status": "passed"
+    },
+    {
+      "name": "Improved sensors 5km / underwater2.5km, combined Cr45000 (p177)",
+      "status": "passed"
+    },
+    {
+      "name": "Tow hitch rated20 Cr400, hatch500, extinguishers400 (pp178–180)",
+      "status": "passed"
+    },
+    {
+      "name": "Loader omitted deliberately: remote autocannon turret one Space, Cr75000 (p178)",
+      "status": "passed"
+    },
+    {
+      "name": "Each 500kg rocket pod has a two-Space rated hardpoint (p102)",
+      "status": "passed"
+    },
+    {
+      "name": "Three crew plus ten half-Space passengers use eight Spaces (p179)",
+      "status": "passed"
+    },
+    {
+      "name": "Entire design exactly fills20 Spaces without invalid-state errors",
+      "status": "passed"
+    },
+    {
+      "name": "No life support: three hours submerged endurance (p178)",
+      "status": "passed"
+    },
+    {
+      "name": "Independent full cost sum with explicit p102 hardpoints",
+      "status": "passed"
+    }
+  ],
+  "calculated": {
+    "cost": 484100,
+    "hull": 66,
+    "structure": 7,
+    "spaces": 20,
+    "armour": [
+      70,
+      38,
+      43,
+      43,
+      25,
+      25
+    ],
+    "range": 500,
+    "cruiseRange": 750
+  },
+  "notes": [
+    "Before TL9, this autopilot is useful in waterborne operation only; it is not a capable ground-driving autopilot (p58).",
+    "Tow hitch includes cables and hooks, rated for 20 powered towed Spaces or 40 unpowered towed Spaces. Vehicle towing limits still apply (pp23,65).",
+    "Without life support, submerged endurance is 3 hours (p33).",
+    "Autocannon (heavy): 1 loader(s) unassigned; reload time doubles per missing loader. No loader berth is reserved (p102; Appendix I p178)."
+  ]
+}
