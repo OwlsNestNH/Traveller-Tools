@@ -1,6 +1,6 @@
 # Optional insurance and taxation
 
-Status: agreed optional V1 scope; documentation only. Source/data verification is recorded for version 0.1.0; application verification is separate.
+Status: implemented optional V1 features, both disabled by default. Source/data version 0.1.0 and initial application checks passed; see RULES_VERIFICATION.md for evidence and limits.
 
 ## Source and presentation
 
@@ -42,7 +42,7 @@ bankIncreaseOnSale = grossSaleProceeds - sellingFees - allocatedTax + profitAdju
 
 With taxes disabled, allocatedTax is zero and existing behavior is unchanged. Tax can create or deepen an actual loss even when taxable profit is positive; the profit-mode percentage must not reduce that loss. Do not deduct historical acquisition cost again from the bank.
 
-Illustrative expectation: proceeds Cr80000; market benchmark Cr70000; tax Cr800 at the supplied 8% example rate; actual allocated acquisition basis Cr60000; no selling fee. Taxable profit is Cr10000; actual pre-tax profit is Cr20000; after-tax profit is Cr19200. Reduced profit is Cr14400, with a separate -Cr4800 profit adjustment and a bank credit of Cr74400. This example fixes the ordering; it does not settle the aggregation questions below.
+Illustrative expectation: proceeds Cr80000; market benchmark Cr70000; tax Cr800 at the supplied 8% example rate; actual allocated acquisition basis Cr60000; no selling fee. Taxable profit is Cr10000; actual pre-tax profit is Cr20000; after-tax profit is Cr19200. Reduced profit is Cr14400, with a separate -Cr4800 profit adjustment and a bank credit of Cr74400. This example fixes the ordering; the additional approved decisions below settle aggregation.
 
 ## Additional decisions approved 2026-10-03
 
@@ -75,4 +75,4 @@ The initial versioned data and reproducible checks are in [rules/README.md](rule
 
 ## Required checks
 
-Verify the complete insurance and tax tables, source provenance and approved corrections. Cover bracket boundaries (including Cr75000/75001/76000/76001), fractional percentage premiums, separate taxable/actual profit, tax-induced losses, tax off, RAW/Reduced/Custom ordering, policy lifecycle, duplicate claims, partial lots, export/import and atomic undo. Source/data checks have run; no application tests have run yet.
+Verify the complete insurance and tax tables, source provenance and approved corrections. Cover bracket boundaries (including Cr75000/75001/76000/76001), fractional percentage premiums, separate taxable/actual profit, tax-induced losses, tax off, RAW/Reduced/Custom ordering, policy lifecycle, duplicate claims, partial lots, export/import and atomic undo. Source/data checks, unit accounting/lifecycle tests and browser workflow checks have run. The verification record identifies their coverage; campaign playtesting remains open.

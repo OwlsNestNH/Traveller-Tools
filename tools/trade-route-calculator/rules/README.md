@@ -1,8 +1,10 @@
 # Rules data review — 0.1.0
 
-This is the **source/data-verified version 0.1.0**. Application implementation and its tests are separate. Data and decisions live in this repository; private PDFs, source scans and personal links are not required by the future runtime.
+This is the **source/data-verified version 0.1.0**. Application implementation and its tests are separate. Data and decisions live in this repository; private PDFs, source scans and personal links are not required by the runtime.
 
 ## Files
+
+- [decisions.json](decisions.json): all 22 approved interpretations, bundled for Rules & Notes.
 
 - [core-2022.json](core-2022.json): 36 D66 entries including referee-defined Exotics, 29 price-result rows, 18 locally derived trade-code conditions, supplier/negotiation, freight/mail and jump/fuel values.
 - [merchant-prince-1e.json](merchant-prince-1e.json): seven distance rows with nine coverage levels, ten tax bands and fourteen government rows; optional rules remain off by default.
@@ -33,7 +35,7 @@ Core Rulebook errata review is recorded in [RULES_REVIEW.md](../RULES_REVIEW.md)
 
 Latest run: **198 assertions passed**, including data dimensions and code references, price endpoints, selected trade-code boundaries, freight/mail payouts, jump bounds, insurance arithmetic, corrected tax bands, fractional bracket selection, mixed-sale tax allocation, acquisition-basis remainders and accounting order.
 
-These checks exercise the transcribed data and independent fixed expected values. They do not prove the complete rulebook transcription, test a deployed app, or test a deployed app; the source/data gate is documented separately.
+These checks exercise the transcribed data and independent fixed expected values. They do not alone prove the complete rulebook transcription or test the app. Separate application results are recorded in [RULES_VERIFICATION.md](../RULES_VERIFICATION.md).
 
 The source/data gate is complete in [RULES_VERIFICATION.md](../RULES_VERIFICATION.md). Combined freight/mail DMs, broker fees with partial lots, local illegality and unknown/malformed UWP examples are now present. Record any correction and bump the data version; do not silently overwrite historical version references.
 

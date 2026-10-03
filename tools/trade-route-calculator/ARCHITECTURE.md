@@ -2,7 +2,7 @@
 
 [Rules verification status and evidence](RULES_VERIFICATION.md)
 
-Status: proposed implementation structure for the locked V1 requirements. Versioned rules data and a standalone verification script now accompany the plans; application implementation is authorized after the verification gate.
+Status: implemented static application 0.1.0. See RULES_VERIFICATION.md for completed checks and remaining playtest scope.
 
 ## Free-only static stack
 
@@ -30,7 +30,7 @@ Traveller Map supplies live world/navigation information, not authoritative comm
 
 Confirm current Traveller Map endpoints and browser access requirements during implementation. Detailed API contracts are intentionally not asserted by these planning documents.
 
-## Proposed modules
+## Module responsibilities
 
 - **World/API adapter:** world identifiers, coordinates, UWP and navigation data, response normalization, request errors.
 - **UWP/rules data:** parsing, validation, local trade-code derivation, verified commodity tables and rule references.
@@ -41,7 +41,19 @@ Confirm current Traveller Map endpoints and browser access requirements during i
 - **Persistence:** versioned localStorage state and validated JSON import/export.
 - **UI:** ship-computer views, clear previews, audit screens, and explicit buy/sell, delivery, expense, and COMMIT JUMP controls.
 
-These are responsibilities, not files created by this task. Native JavaScript modules can provide separation without introducing a required build step.
+Implemented native modules require no build step:
+
+| File | Responsibility |
+| --- | --- |
+| js/amounts.mjs | Exact rational quantities/money and deterministic allocation |
+| js/rules.mjs | Pure rule calculations, prices, market, freight/mail, insurance and tax |
+| js/map.mjs | Public API normalization, coordinates, fuel checks and bounded route search |
+| js/state.mjs | Validated campaign transitions, accounting and inverse-change undo |
+| js/persistence.mjs | localStorage, Web Locks, revisions, backups/import and recovery |
+| js/app.mjs | Views, forms, previews, explicit actions and Rules & Notes |
+| rules/decisions.json | Bundled approved interpretation register |
+
+Route searches load an area up to 12 parsecs around each requested stop, with a 1600-world cap; an unconnected bounded search fails explicitly. The displayed date is a campaign starting label plus elapsed days/hours. Freight prices use direct endpoint distance, while insurance uses the agreed planned-route distance. Contract deadlines remain referee-entered; the UI's editable suggested deadline is not a source rule.
 
 ## Responsive list views
 
@@ -102,7 +114,7 @@ The future UI and commodity audit view expose a **Rules verification** link to t
 
 ## Rules verification gate
 
-The intended baseline is Traveller Core Rulebook Update 2022; confirm the source's exact edition/update and applicable errata before marking data verified. The source/data gate for version 0.1.0 is complete as recorded in RULES_VERIFICATION.md; runtime implementation tests remain required. Before implementing the trading engine, check in:
+The intended baseline is Traveller Core Rulebook Update 2022; confirm the source's exact edition/update and applicable errata before marking data verified. The source/data gate for version 0.1.0 is complete as recorded in RULES_VERIFICATION.md; initial runtime tests are recorded there. Before implementing the trading engine, check in:
 
 - A versioned structured rules dataset for trade codes, availability/tonnage, pricing, DM combinations, brokers/fees, illegal goods, freight/mail, and travel/date rules.
 - Source documentation giving edition/page or table provenance, explicit unresolved items, and a clear distinction between RAW rules and app/house-rule policies.

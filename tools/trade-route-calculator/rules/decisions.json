@@ -1,0 +1,156 @@
+[
+  {
+    "id": "INT-001",
+    "topic": "Local broker skill",
+    "conclusion": "Round 2D ÷ 3 down. A natural 2 still flags the illegal fixer's referee event.",
+    "date": "2026-10-03",
+    "revision": 1
+  },
+  {
+    "id": "INT-002",
+    "topic": "Mail low-tech modifier",
+    "conclusion": "Use the origin world's Tech Level.",
+    "date": "2026-10-03",
+    "revision": 1
+  },
+  {
+    "id": "INT-003",
+    "topic": "Black-market stock",
+    "conclusion": "Include common legal goods, matching illegal goods, and population-count rolls on the illegal table; exotics are referee-defined.",
+    "date": "2026-10-03",
+    "revision": 1
+  },
+  {
+    "id": "INT-004",
+    "topic": "Mail freight modifier",
+    "conclusion": "Use endpoint and distance modifiers plus the freight-search Effect, excluding major/incidental lot modifiers.",
+    "date": "2026-10-03",
+    "revision": 1
+  },
+  {
+    "id": "INT-005",
+    "topic": "Timing",
+    "conclusion": "Freight deadlines are entered by the referee. Repeated searches use a rolling 30-day window; rejected-deal cooldowns last 720 hours.",
+    "date": "2026-10-03",
+    "revision": 1
+  },
+  {
+    "id": "INT-006",
+    "topic": "Rejection",
+    "conclusion": "Only explicit Reject deal starts a counterparty cooldown. Browsing away leaves offers active.",
+    "date": "2026-10-03",
+    "revision": 1
+  },
+  {
+    "id": "INT-007",
+    "topic": "Taxable profit",
+    "conclusion": "Measure taxable profit against normal market value, separately from actual purchase-cost profit.",
+    "date": "2026-10-03",
+    "revision": 1
+  },
+  {
+    "id": "INT-008",
+    "topic": "Tax and profit reduction",
+    "conclusion": "Deduct tax before applying the positive-profit percentage. Losses are unchanged by the percentage.",
+    "date": "2026-10-03",
+    "revision": 1
+  },
+  {
+    "id": "INT-009",
+    "topic": "Tax bracket correction",
+    "conclusion": "Use Cr75,001–100,000 in place of the source's Cr76,001–100,000 gap.",
+    "date": "2026-10-03",
+    "revision": 1
+  },
+  {
+    "id": "INT-010",
+    "topic": "Tax brackets",
+    "conclusion": "One bracket and rate per committed sale, not per lot or per day.",
+    "date": "2026-10-03",
+    "revision": 1
+  },
+  {
+    "id": "INT-011",
+    "topic": "Insured distance",
+    "conclusion": "Sum the planned route's legs. Beyond six parsecs require a referee-entered premium.",
+    "date": "2026-10-03",
+    "revision": 1
+  },
+  {
+    "id": "INT-012",
+    "topic": "Risk surcharges",
+    "conclusion": "Add Amber +2 and Red +5 percentage points once each; a mixed route adds +7.",
+    "date": "2026-10-03",
+    "revision": 1
+  },
+  {
+    "id": "INT-013",
+    "topic": "Route amendments",
+    "conclusion": "Retain original policy terms; changed routes require an explicit referee-approved policy amendment.",
+    "date": "2026-10-03",
+    "revision": 1
+  },
+  {
+    "id": "INT-014",
+    "topic": "Insured value and costs",
+    "conclusion": "Insure goods' purchase value only, excluding broker fees and premium. Add the premium to lot acquisition cost basis for actual-profit accounting.",
+    "date": "2026-10-03",
+    "revision": 1
+  },
+  {
+    "id": "INT-015",
+    "topic": "Partial claims",
+    "conclusion": "Referee-approved claim equals coverage percentage times original goods purchase value of the lost insured quantity. Reduce remaining coverage; sales end coverage on sold quantities.",
+    "date": "2026-10-03",
+    "revision": 1
+  },
+  {
+    "id": "INT-016",
+    "topic": "Taxable-sale benchmark",
+    "conclusion": "Core Rulebook base price times tons sold. Net gains and losses across the entire sale. No tax when the net taxable amount is zero or negative.",
+    "date": "2026-10-03",
+    "revision": 1
+  },
+  {
+    "id": "INT-017",
+    "topic": "Tax allocation",
+    "conclusion": "Allocate the sale's posted tax among positive-taxable-gain lots proportionally to those gains. Losses reduce total taxable profit but receive no tax share. Whole-Credit remainders must reconcile deterministically.",
+    "date": "2026-10-03",
+    "revision": 1
+  },
+  {
+    "id": "INT-018",
+    "topic": "Criminal-market exemption",
+    "conclusion": "No automatic tax or criminal surcharge on criminal-market sales. Bribes/protection payments are manual expenses. This replaces the source's criminal-market formula.",
+    "date": "2026-10-03",
+    "revision": 1
+  },
+  {
+    "id": "INT-019",
+    "topic": "Optional-rule scope",
+    "conclusion": "Owned speculative-trade goods only. Freight/mail and insurance claim payouts are excluded from tax and profit reduction; freight/mail cargo is excluded from cargo insurance.",
+    "date": "2026-10-03",
+    "revision": 1
+  },
+  {
+    "id": "INT-020",
+    "topic": "Government-code mapping",
+    "conclusion": "Map the source row labelled Feudal Democracy to UWP government code 5, Feudal Technocracy, and retain the naming discrepancy in notes.",
+    "date": "2026-10-03",
+    "revision": 1
+  },
+  {
+    "id": "INT-021",
+    "topic": "Fractional tax bracket lookup",
+    "conclusion": "Use floor(taxable profit) only for bracket selection, using the first bracket for positive amounts below Cr1. Preserve full taxable precision for the percentage calculation; floor the final tax once.",
+    "date": "2026-10-03",
+    "revision": 1
+  },
+  {
+    "id": "INT-022",
+    "topic": "Merchant Prince baseline",
+    "conclusion": "Use the exact supplied insurance and tax tables as the fixed baseline, with agreed adaptations. Later changes require a new reviewed version.",
+    "date": "2026-10-03",
+    "revision": 1
+  }
+]

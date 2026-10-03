@@ -19,7 +19,7 @@
       260
     ]
   },
-  "scope": "Review candidate for Core Rulebook V1 trade, freight/mail, jump duration and trade-code data; not an implemented or approved rules engine.",
+  "scope": "Verified source/data for V1 commodity trading, freight/mail, jump duration and locally derived trade codes. Runtime test results are tracked separately.",
   "commodities": [
     {
       "id": "11",
