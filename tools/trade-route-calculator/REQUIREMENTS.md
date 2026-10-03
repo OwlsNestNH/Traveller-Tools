@@ -39,6 +39,17 @@ Use a ship-computer interface with readable world, route, market, cargo, account
 
 The future app must include a visible **Rules verification** link to this project's public GitHub verification record. The record must state whether verification is pending or complete; linking to it must not imply that unverified rules have passed review. Keep this link available from the per-commodity DM audit view as well.
 
+## Long lists and responsive layout
+
+- On desktop, market and cargo panels grow to a comfortable maximum height, then scroll independently without reducing text size. Keep their column headings visible while scrolling.
+- Aim for about eight visible market rows and five to six visible cargo rows in the dashboard, adapting to viewport height. These are layout targets, not data limits: every entry remains reachable.
+- Provide market search and filters for Active, Expired, and Illegal offers. Show total and matching counts; filtering affects only the view, never offer state.
+- Provide a **View all N lots** link from the cargo panel to the full Cargo tab, with a larger searchable, sortable table. Preserve each lot's identity, even when commodities match.
+- Keep the selected lot's sale preview visible while the desktop cargo list scrolls. Sorting or filtering must not silently change the selected lot or commit a transaction.
+- Keep bank balance, cargo capacity, actual location, and COMMIT JUMP easy to reach as lists grow. A long market or cargo list must not push the desktop jump control out of its navigation area.
+- On smaller screens, stack panels and favor normal page scrolling over nested vertical scroll areas. Preserve readable labels and access to all controls.
+- Use scrolling rather than pagination for lists of 10–15 entries.
+
 ## Markets and speculative trade
 
 - Simulate full commodity availability and purchase/sale pricing using verified Core Rulebook tables, DMs, dice rolls, and price percentages.
@@ -120,3 +131,5 @@ Provide undo and an inspectable action history for committed state changes, incl
 10. Decimal cargo quantities survive partial sales, reservations, reload, and export/import without whole-ton truncation.
 11. Mixed profitable/loss-making lots use per-lot adjustment; Cr101 becomes Cr75 in Reduced mode; costs/fees are counted once, and freight/mail payouts are unchanged.
 12. The rules dataset, source references, and worked examples are independently verified and checked into GitHub before trading-engine implementation.
+
+13. With at least 15 cargo lots and 15 market offers, all rows and controls remain reachable on desktop and small screens; headings, counts, filters, sorting, and selected-lot previews behave as specified.

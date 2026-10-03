@@ -43,6 +43,12 @@ Confirm current Traveller Map endpoints and browser access requirements during i
 
 These are responsibilities, not files created by this task. Native JavaScript modules can provide separation without introducing a required build step.
 
+## Responsive list views
+
+Use bounded, independently scrollable desktop market/cargo regions with sticky table headers and readable row sizes. Target roughly eight market rows and five to six dashboard cargo rows without capping the data. Keep the sale preview outside the cargo scroll region and navigation/jump controls outside market/cargo overflow.
+
+Provide view-only market search and status/legality filters, total/matching counts, and a full searchable/sortable Cargo tab reached through **View all N lots**. Key selection by stable lot/offer ID so sorting/filtering cannot switch transaction targets. Use scrolling, not pagination, for 10–15 entries. At narrow widths, stack panels and remove nested vertical scrolling in favor of page scrolling.
+
 ## State model
 
 Use stable IDs and explicit links rather than commodity names as keys.
