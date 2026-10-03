@@ -79,7 +79,7 @@ Insurance and taxation were added as independently optional V1 features on 2026-
 
 | ID | Area | Status | Required evidence |
 | --- | --- | --- | --- |
-| OV-01 | Merchant Prince source | In progress | First-edition Book 7 identity supplied; printed pages, exact printing and errata still unconfirmed |
+| OV-01 | Merchant Prince source | In progress | First-edition Book 7 identity and printed references supplied by owner: insurance p. 83; taxes p. 86. Exact printing and applicable errata remain unconfirmed |
 | OV-02 | Insurance | Pending | Complete rates; approved distance/risk/value rules; premium and claims examples; partial-loss handling |
 | OV-03 | Taxation | In progress | Complete rates; INT-007/009; benchmark mapping, aggregation, allocation and boundary examples |
 | OV-04 | Tax and profit modes | In progress | INT-008; independently verify the Cr80000 example and loss/zero/off cases against the eventual data and implementation |

@@ -78,4 +78,4 @@ Record subsequent conclusions, rationale and dates here; preserve these IDs in f
 
 ## Optional Merchant Prince adaptation
 
-See [OPTIONAL_RULES.md](OPTIONAL_RULES.md) for the owner-identified first-edition source, approved INT-007 (normal-market-value taxable profit), INT-008 (tax before profit reduction), and INT-009 (Cr75001 bracket correction), all approved 2026-10-03, revision 1. These are separate from Core Rulebook verification. Printed pages and remaining adaptation decisions are pending. The Rules & Notes panel must include these decisions and their status.
+See [OPTIONAL_RULES.md](OPTIONAL_RULES.md) for the owner-identified first-edition source, approved INT-007 (normal-market-value taxable profit), INT-008 (tax before profit reduction), and INT-009 (Cr75001 bracket correction), all approved 2026-10-03, revision 1. These are separate from Core Rulebook verification. The owner supplied printed references: insurance p. 83 and taxes p. 86. Exact printing, applicable errata, remaining adaptation decisions and full data verification are still pending. The Rules & Notes panel must include these decisions and their status.

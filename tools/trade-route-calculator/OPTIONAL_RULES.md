@@ -4,7 +4,7 @@ Status: agreed optional V1 scope; documentation only. Source verification and th
 
 ## Source and presentation
 
-Source identified by the project owner: **Mongoose Traveller 1st Edition, Book 7: Merchant Prince**, sections on purchasing goods/insurance and paying taxes. The supplied excerpts and table images are the current review evidence. Printed page numbers, exact printing and applicable errata remain unconfirmed.
+Source identified by the project owner: **Mongoose Traveller 1st Edition, Book 7: Merchant Prince**, sections on purchasing goods/insurance and paying taxes. The supplied excerpts and table images are the current review evidence. Printed references supplied by the owner: **insurance p. 83; taxes p. 86**. Include these references in Rules & Notes and the affected calculation audits. Exact printing and applicable errata remain unconfirmed; recording page references does not establish that the complete rules data has been verified.
 
 These are **optional first-edition rules adapted for the Core Rulebook Update 2022 baseline**, not rules asserted to be in that Core Rulebook. Insurance and taxation are independent campaign settings, both off by default. Enabling one does not enable the other or change the selected profit mode.
 
