@@ -400,11 +400,11 @@
             <div>
               <label for="separation">Compass separation</label>
               <select id="separation">
-                <option value="same">Same point</option>
-                <option value="opp">Opposite sides</option>
-                <option value="1">1 point apart</option>
-                <option value="2">2 point apart</option>
-                <option value="3">3 point apart</option>
+                <option value="same">Same direction (0°)</option>
+                <option value="opp">Opposite sides (180°)</option>
+                <option value="1">1 point apart (45°)</option>
+                <option value="2">2 points apart (90°)</option>
+                <option value="3">3 points apart (135°)</option>
               </select>
             </div>
             <div>
@@ -449,9 +449,9 @@
           </div>
 
           <div class="hint" style="margin-top:10px;">
-            Baseline (AU): same side = outer−inner, opposite = outer+inner.
-            Direct multipliers: 1pt×0.75, 2pt×1.5, 3pt×2.75.
-            Trans-solar: (AU1+AU2)×safety.
+            Direct distance uses the two orbital radii and their angular separation (eight-point compass).
+            Trans-solar: (AU1+AU2)×safety. These detour factors are navigation assumptions;
+            communication delay uses direct separation, without modelling signal blockage or relays.
           </div>
         </div>
 
@@ -560,8 +560,8 @@
             </div>
             <div>
               <label for="manualPct">Manual % override (optional)</label>
-              <input type="number" id="manualPct" step="0.1" placeholder="leave blank" />
-              <div class="hint">Positive reduces time. Negative increases time. Overrides Effect logic.</div>
+              <input type="number" id="manualPct" step="0.1" max="99.9" placeholder="leave blank" />
+              <div class="hint">Positive reduces time (must be below 100%). Negative increases time. Overrides Effect logic.</div>
             </div>
           </div>
 
@@ -583,7 +583,7 @@
         </div>
 
         <div class="mini" style="margin-top:10px;">
-          Comm lag: 8.3 min per AU (one-way). AU conversion: 150,000,000 km per AU.
+          Comm lag: 8.3 min per AU of direct separation (one-way; no blockage or relay model). AU conversion: 150,000,000 km per AU.
         </div>
       </div>
     </section>
@@ -897,7 +897,23 @@ function setStatus(ok, text){
     if(chip) chip.textContent = ok ? "SOLVED" : "INPUT ERR";
   }
 
+  function invalidateSolution(){
+    lastBrief = "";
+    for(const id of ["rawDistOut", "distOut", "arcMultOut", "jumpOut", "totalDistOut",
+      "commOut", "nominalOut", "adjustedOut", "routeLegOut", "jumpLegOut", "legsSumOut", "speedOut"]){
+      document.getElementById(id).textContent = "—";
+    }
+    document.getElementById("mainTime").textContent = "—";
+    document.getElementById("mainSub").textContent = "No current route solution. Solve again after changing inputs.";
+    document.getElementById("notesOut").textContent = "No current route solution.";
+    document.getElementById("assumeOut").textContent = "—";
+    document.getElementById("chipStatus").textContent = "READY";
+    document.getElementById("lamp").classList.remove("ok", "bad");
+    document.getElementById("statusText").textContent = "STANDBY • Inputs changed";
+  }
+
   function setError(msg){
+    invalidateSolution();
     document.getElementById("errorBox").innerHTML =
       `<div class="err"><b>NAV ERROR:</b> ${msg}</div>`;
     setStatus(false, "FAULT • Check input values");
@@ -935,58 +951,18 @@ function setStatus(ok, text){
   }
 
   function onProfileChange(){
+    // A 100D-only calculation must stay 100D-only even if an old route input exists.
+    const clearanceOnly = document.getElementById("statusText").textContent.startsWith("100D");
+    invalidateSolution();
     syncPills();
-
-    // If we already have a solved state, recompute so profile changes are reflected immediately.
-    // Fail silently if inputs are incomplete.
-    try{
-      const thrustG = parseFloat(document.getElementById("thrust").value);
-      if(!Number.isFinite(thrustG) || thrustG <= 0) return;
-
-      const mode = document.getElementById("distMode").value;
-
-      // If a route distance is available, re-solve.
-      if(mode === "km"){
-        const km = parseFloat(document.getElementById("distanceKm").value);
-        if(Number.isFinite(km) && km > 0) solve();
-        return;
-      }
-      if(mode === "au"){
-        const au = parseFloat(document.getElementById("distanceAu").value);
-        if(Number.isFinite(au) && au > 0) solve();
-        return;
-      }
-      if(mode === "orbit"){
-        // Orbit mode always has selects; just solve
-        solve();
-        return;
-      }
-      if(mode === "map"){
-        // For map, need either AU radii filled or Orbit mode selected and valid
-        const aMode = document.getElementById("aMode")?.value || "au";
-        const bMode = document.getElementById("bMode")?.value || "au";
-        let ok = true;
-        if(aMode === "au"){
-          const au1 = parseFloat(document.getElementById("au1").value);
-          ok = ok && Number.isFinite(au1) && au1 > 0;
-        }
-        if(bMode === "au"){
-          const au2 = parseFloat(document.getElementById("au2").value);
-          ok = ok && Number.isFinite(au2) && au2 > 0;
-        }
-        if(ok) solve();
-        return;
-      }
-
-      // If user is only using 100D, update that.
-      const use = document.getElementById("use100d");
-      if(use && use.checked && typeof compute100DOnly === "function"){
-        compute100DOnly();
-      }
-    } catch(e){
-      // intentionally silent
+    if(clearanceOnly){
+      compute100DOnly();
       return;
     }
+    const thrustG = Number(document.getElementById("thrust").value);
+    if(!Number.isFinite(thrustG) || thrustG <= 0) return;
+    try { computeDistanceInfo(); } catch { return; }
+    solve();
   }
 
   function toggleMultiplierHelp(){
@@ -1084,6 +1060,13 @@ function setStatus(ok, text){
       document.getElementById("orbitEndFrac").value = "0";
       updateOrbitDistancePreview();
     }
+    document.getElementById("aMode").value = "au";
+    document.getElementById("bMode").value = "au";
+    document.getElementById("aOrbitWhole").value = "3";
+    document.getElementById("bOrbitWhole").value = "6";
+    document.getElementById("aOrbitFrac").value = "0";
+    document.getElementById("bOrbitFrac").value = "0";
+    onMapBodyModeChange();
     document.getElementById("au1").value = "";
     document.getElementById("au2").value = "";
     document.getElementById("separation").value = "same";
@@ -1173,14 +1156,13 @@ function setStatus(ok, text){
         const sep = document.getElementById("separation").value;
         const routeType = document.getElementById("routeType").value;
     
-        const baselineAU = (sep === "opp") ? (outer + inner) : (outer - inner);
-    
-        let geomMult = 1.0;
-        if(sep === "1") geomMult = 0.75;
-        else if(sep === "2") geomMult = 1.5;
-        else if(sep === "3") geomMult = 2.75;
-    
-        const rawAU = baselineAU * geomMult;
+        const angle = {same: 0, "1": Math.PI/4, "2": Math.PI/2, "3": 3*Math.PI/4, opp: Math.PI}[sep];
+        if(angle === undefined) throw new Error("Select a compass separation.");
+        // Stable chord geometry, including equal radii and very small separations.
+        const rawAU = Math.hypot(outer - inner, 2 * Math.sqrt(inner) * Math.sqrt(outer) * Math.sin(angle/2));
+        if(!Number.isFinite(rawAU) || rawAU <= 0) {
+          throw new Error("The selected bodies have zero separation. Choose different radii or directions.");
+        }
     
         let routedAU = rawAU;
         let arcMult = 1.0;
@@ -1270,6 +1252,7 @@ function setStatus(ok, text){
     function solve(){
   try{
     clearError();
+    invalidateSolution();
     syncPills();
 
     const thrustG = parseFloat(document.getElementById("thrust").value);
@@ -1285,6 +1268,9 @@ function setStatus(ok, text){
 
     const rawKm = dist.rawKm;
     const routedKm = dist.routedKm;
+    if(!Number.isFinite(rawKm) || !Number.isFinite(routedKm) || rawKm <= 0 || routedKm <= 0){
+      return setError("Distance is outside the supported positive, finite range.");
+    }
 
     // 100D clearance (display only; NOT added to distance/time)
     const jump = get100DClearanceKm();
@@ -1299,9 +1285,8 @@ function setStatus(ok, text){
     // Total distance flown is the routed leg only
     const totalKm = routedKm;
 
-    // Comm lag based on routed leg
-    const routedAU = routedKm / AU_TO_KM;
-    const commLagMin = routedAU * AU_TO_LAG_MIN;
+    // Signals use endpoint separation, not the ship's navigation detour.
+    const commLagMin = (rawKm / AU_TO_KM) * AU_TO_LAG_MIN;
 
     // Nominal time for routed leg only
     const nominalRoutedMin = timeMinutesFromDistance(routedKm, thrustG, profile);
@@ -1316,19 +1301,28 @@ function setStatus(ok, text){
     const autoDice = document.getElementById("autoDice").checked;
 
     if(useAstro){
-      const manualPct = parseFloat(document.getElementById("manualPct").value);
-      const effect = parseInt(document.getElementById("effect").value, 10);
+      const manualInput = document.getElementById("manualPct").value.trim();
+      const manualPct = Number(manualInput);
+      const effectInput = document.getElementById("effect").value.trim();
+      const effect = Number(effectInput);
 
-      if(Number.isFinite(manualPct)){
+      if(manualInput !== ""){
+        if(!Number.isFinite(manualPct) || manualPct >= 100){
+          return setError("Manual time reduction must be finite and below 100%.");
+        }
         const factor = 1 - (manualPct / 100);
         adjustedRoutedMin = nominalRoutedMin * factor;
         astroLog = `Manual % override: ${fmt(manualPct,1)}% applied to routed leg.`;
         astroBrief = `Manual %: ${fmt(manualPct,1)}%`;
       } else {
-        if(!Number.isFinite(effect)){
-          return setError("Astrogation Effect is required when deviations are enabled (unless manual % override is used).");
+        if(effectInput === "" || !Number.isSafeInteger(effect)){
+          return setError("Enter a whole-number Astrogation Effect (or a manual % override).");
         }
 
+        // Bound dice work as well as the resulting time; extreme inputs must not freeze the page.
+        if(Math.abs(effect) > 1000){
+          return setError("Effect is outside the supported range (-1000 to 1000). Use a manual percentage for exceptional cases.");
+        }
         if(effect === 0){
           astroLog = "Effect 0: no variance applied.";
           astroBrief = "Effect 0: no variance";
@@ -1373,9 +1367,15 @@ function setStatus(ok, text){
       }
     }
 
+    if(!Number.isFinite(nominalRoutedMin) || nominalRoutedMin <= 0 ||
+       !Number.isFinite(adjustedRoutedMin) || adjustedRoutedMin <= 0){
+      return setError("The calculation must produce a positive, finite travel time. Check thrust, distance and time reduction.");
+    }
+
     // Speed (informational) based on routed distance only
     const v = speedFromDistance(routedKm, thrustG, profile);
     const vKmS = v / 1000;
+    if(!Number.isFinite(vKmS)) return setError("Speed is outside the supported finite range.");
 
     const profileLabel = (profile==="flip") ? "FLIP-AND-BURN" : "CONSTANT THRUST (NO BRAKE)";
     const speedLine = (profile==="flip")
@@ -1460,13 +1460,14 @@ function setStatus(ok, text){
     if(rt){ rt.scrollIntoView({behavior:"smooth", block:"start"}); }
   } catch(e){
     const msg = (e && e.message) ? e.message : String(e);
-    document.getElementById("errorBox").innerHTML = `<div class="err"><b>NAV ERROR:</b> ${msg}</div>`;
+    setError(msg);
     setStatus(false, "FAULT • Script error");
   }
 }
 
   function compute100DOnly(){
     clearError();
+    invalidateSolution();
     syncPills();
 
     const thrustG = parseFloat(document.getElementById("thrust").value);
@@ -1502,6 +1503,7 @@ function setStatus(ok, text){
            <span style="opacity:.75">Clearance is displayed only. It is not added to travel time or distance.</span>`
         : `<b>100D Clearance:</b> N/A • ${jump.label}`;
 
+    document.getElementById("mainSub").textContent = "100D advisory only. No route or NAV brief computed.";
     setStatus(jumpKm > 0, jumpKm > 0 ? "100D COMPUTED • Clearance distance & time (advisory)" : "100D N/A • Check body type/size");
   }
 
@@ -1516,6 +1518,20 @@ function setStatus(ok, text){
     on100DToggle();
     onJumpBodyTypeChange();
     update100DPreview();
+
+    // Never present or copy a prior solution as matching edited inputs.
+    document.querySelector(".panelBody").addEventListener("input", event => {
+      if(event.target.id === "profile") return;
+      clearError();
+      invalidateSolution();
+    });
+    document.querySelector(".panelBody").addEventListener("change", event => {
+      // Profile changes explicitly recompute through their inline handler.
+      if(event.target.id !== "profile"){
+        clearError();
+        invalidateSolution();
+      }
+    });
   }
 
   init();
