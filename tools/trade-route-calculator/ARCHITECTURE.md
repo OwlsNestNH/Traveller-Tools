@@ -63,6 +63,7 @@ Use stable IDs and explicit links rather than commodity names as keys.
 | Cargo lot | Lot ID, commodity/legality, description, quantity, cost basis/fees, purchase world/date, snapshot reference |
 | Freight/mail contract | Contract ID, origin/destination, tonnage/reservation, audit, payment terms, status and payout reference |
 | Ledger entry | Action ID, date/world, amount/type, linked lot/contract/offer, fees, RAW/adjusted results and applied percentage |
+| Setup/adjustment entry | Opening balance or referee correction, reason, effective date/world, before/after values, affected lot IDs, basis changes |
 | History | Committed action, affected entity IDs, prior/resulting state sufficient for consistent undo |
 
 Snapshots preserve original calculation context. A new UWP override or search creates new effective calculation inputs; it does not rewrite a saved offer. Store expiration on each offer; optional bulk expiration updates those flags in one undoable action. Reactivation never resets sold quantities. Reserve capacity for accepted contracts separately from owned cargo and derive available capacity from both.
@@ -81,9 +82,17 @@ Post final monetary amounts as whole Credits rounded down once, while retaining 
 
 Preserve fractional tons with exact decimal arithmetic (for example, decimal strings with integer arithmetic at the required scale). Do not use whole-ton truncation or floating-point approximations for cargo/capacity accounting. Persist/export the same precision. Explicit rule-mandated quantity rounding belongs in the verified rules layer, separate from monetary rounding.
 
+## Campaign setup and adjustments
+
+Opening balances/lots establish current state without replaying historical purchases or charging for already-owned cargo. Represent setup and referee corrections as explicit actions in the same ledger/history system. Require a reason for corrections and retain before/after bank, quantity, and cost-basis values. Quantity losses write off an explicitly previewed basis amount rather than becoming zero-price sales. Corrections must preserve historical transaction audits and be reversible consistently.
+
 ## Persistence, import, and undo
 
 Use a namespaced localStorage key to avoid collisions with other tools. Store a schema version, stable entity IDs, snapshots, ledger, settings, and undo/history. Handle corrupt data, quota/storage errors, and unsupported versions visibly.
+
+Offer a downloadable JSON backup before confirmed import replacement or reset. Cancel and validation/export failure must preserve current state unless the user explicitly elects to proceed without the failed backup. Reset/import must be coordinated with the same writer control as all other mutations.
+
+Use single-writer coordination across same-origin tabs, with an exclusive browser lock where supported and a clearly enforced read-only secondary-tab state. A bare localStorage read-then-write revision check is not an atomic lock and is insufficient by itself. Track a monotonically increasing revision, notify tabs of changes, and reload the latest saved state before allowing a different tab to write. Fail visibly rather than offering unsafe concurrent edits when coordination is unavailable. Revalidate any stale preview against the current revision before committing.
 
 Export the complete campaign as JSON. Parse and validate schema, types, ranges, references, and accounting/capacity consistency before applying an import. Failed validation must leave the current campaign intact.
 

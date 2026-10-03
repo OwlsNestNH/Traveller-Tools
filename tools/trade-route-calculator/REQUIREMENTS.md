@@ -39,6 +39,14 @@ Use a ship-computer interface with readable world, route, market, cargo, account
 
 The future app must include a visible **Rules verification** link to this project's public GitHub verification record. The record must state whether verification is pending or complete; linking to it must not imply that unverified rules have passed review. Keep this link available from the per-commodity DM audit view as well.
 
+## Starting balances and referee corrections
+
+- Allow a campaign to begin at its current world/date with an opening bank balance and separate existing cargo lots. Each opening lot records commodity, description, legality, quantity, and its remaining acquisition cost basis (including acquisition fees); original world/date may be recorded when known.
+- Record opening balances/lots as setup entries, not fabricated historical purchases. Do not debit the opening bank for cargo already owned. Validate quantities, capacity, and cost basis before saving setup.
+- Allow explicit bank and cargo adjustments for referee awards, loss/theft, damage, and bookkeeping corrections. Require a reason, record the effective date/world, and retain before/after values and affected lot IDs in the ledger/history.
+- A cargo adjustment must explicitly reconcile quantity and remaining cost basis. Preview any basis written off or added; do not silently treat removed cargo as a sale, award sale proceeds, or apply the reduced-profit rule to an adjustment.
+- Keep historical purchases/sales intact; corrections create new entries rather than overwriting past evidence. Support undo with consistent bank, cargo, and basis restoration.
+
 ## Long lists and responsive layout
 
 - On desktop, market and cargo panels grow to a comfortable maximum height, then scroll independently without reducing text size. Keep their column headings visible while scrolling.
@@ -117,6 +125,10 @@ Persist campaign state in the browser using localStorage. Provide JSON export/im
 
 Provide undo and an inspectable action history for committed state changes, including transactions and jumps. Undo must restore dependent bank, cargo, contract, date, location, and offer state consistently. Validate imported data before replacing the campaign and handle unsupported formats or storage failures visibly.
 
+Before an import replaces the campaign or a reset clears it, offer a JSON backup and show an explicit confirmation describing what will change. Canceling leaves the campaign intact. Import validation must finish successfully before replacement; a backup/export failure must be visible and must not silently proceed as if a backup succeeded.
+
+Prevent concurrent browser tabs from silently overwriting campaign state. Allow only one tab to write at a time; other tabs show that the campaign is open elsewhere and may view the latest saved state. Switching the editing tab must reload the latest revision and invalidate stale previews before further commits. Apply the same protection to transactions, edits, import, reset, and undo.
+
 ## V1 acceptance checks for implementation
 
 1. Clicking worlds and previous/next browsing leave ship location, date, bank, cargo, and contract delivery state unchanged; COMMIT JUMP changes only the intended committed travel state.
@@ -133,3 +145,8 @@ Provide undo and an inspectable action history for committed state changes, incl
 12. The rules dataset, source references, and worked examples are independently verified and checked into GitHub before trading-engine implementation.
 
 13. With at least 15 cargo lots and 15 market offers, all rows and controls remain reachable on desktop and small screens; headings, counts, filters, sorting, and selected-lot previews behave as specified.
+
+14. Opening bank/cargo setup supports an existing campaign without charging again for already-owned cargo.
+15. Referee adjustments require a reason, preserve history, reconcile cost basis, and undo consistently.
+16. Import/reset offers a backup and explicit confirmation; cancel or failed validation preserves current data.
+17. Two tabs attempting edits cannot overwrite each other's changes; the new editing tab reloads current state before accepting a commit.

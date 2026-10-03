@@ -47,6 +47,10 @@ These policies come from the agreed project requirements. They must be checked a
 | PV-07 | Browsing versus COMMIT JUMP | Pending | Browsing changes no actual location/date or delivery state |
 | PV-08 | Per-offer expiration | Pending | One expired offer leaves others active; reactivation/bulk action and undo |
 | PV-09 | Historical evidence and recovery | Pending | Snapshot inputs and rules version survive reload/import; undo reconciles state |
+| PV-10 | Mid-campaign setup | Pending | Opening cargo does not debit the opening bank; separate lots/bases remain intact |
+| PV-11 | Referee corrections | Pending | Reasons and before/after values preserved; basis changes and undo reconcile |
+| PV-12 | Backup/import/reset | Pending | Backup offered before replacement; confirmation/cancel and failure handling preserve data |
+| PV-13 | Concurrent tabs | Pending | One writer; stale previews rejected; transfer reloads latest revision without lost updates |
 
 Worked expected results can be verified before code exists. Automated implementation tests remain a separate later check; do not imply they have run.
 
