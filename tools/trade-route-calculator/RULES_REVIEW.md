@@ -75,3 +75,7 @@ Ambiguous rules are put to the owner before adoption. Conclusions appear in the 
 | INT-006 | Rejection versus browsing | Explicit Reject deal starts counterparty cooldown; browsing leaves offers active. Preserve counterparty identity across searches so another snapshot cannot bypass the cooldown. | Agreed 2026-10-03; revision 1 |
 
 Record subsequent conclusions, rationale and dates here; preserve these IDs in future versioned app notes. Any newly discovered ambiguity must be raised before its dependent behavior is finalized.
+
+## Optional Merchant Prince adaptation
+
+See [OPTIONAL_RULES.md](OPTIONAL_RULES.md) for the owner-identified first-edition source, approved INT-007 (normal-market-value taxable profit), INT-008 (tax before profit reduction), and INT-009 (Cr75001 bracket correction), all approved 2026-10-03, revision 1. These are separate from Core Rulebook verification. Printed pages and remaining adaptation decisions are pending. The Rules & Notes panel must include these decisions and their status.

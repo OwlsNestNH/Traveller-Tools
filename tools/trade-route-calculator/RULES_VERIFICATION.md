@@ -72,3 +72,17 @@ Mark an area Verified only when its source, data, and worked examples have actua
 The pre-implementation rules gate is complete when RV-01 through RV-10 have verified evidence, the versioned dataset and source references are checked in, and the required worked examples (including applicable accounting/house-rule examples) have been independently checked. UI, persistence, and other implementation checks remain pending until implemented and tested.
 
 Record the verified dataset version and immutable commit here when that gate is met. Until then, the overall status remains In progress. Source review and worked expectations must not be presented as a completed dataset or tested app.
+
+## Optional first-edition verification
+
+Insurance and taxation were added as independently optional V1 features on 2026-10-03. [OPTIONAL_RULES.md](OPTIONAL_RULES.md) records the source supplied by the owner, approved interpretations and remaining questions. Approval of an interpretation does not verify a source table.
+
+| ID | Area | Status | Required evidence |
+| --- | --- | --- | --- |
+| OV-01 | Merchant Prince source | In progress | First-edition Book 7 identity supplied; printed pages, exact printing and errata still unconfirmed |
+| OV-02 | Insurance | Pending | Complete rates; approved distance/risk/value rules; premium and claims examples; partial-loss handling |
+| OV-03 | Taxation | In progress | Complete rates; INT-007/009; benchmark mapping, aggregation, allocation and boundary examples |
+| OV-04 | Tax and profit modes | In progress | INT-008; independently verify the Cr80000 example and loss/zero/off cases against the eventual data and implementation |
+| OV-05 | Persistence and transactions | Pending | Default-off switches, frozen audits, policy/claim/tax exports, duplicate prevention and atomic undo |
+
+Optional calculations must not be implemented before the relevant source/data and interpretation checks pass; lifecycle and persistence checks require later implementation. The Core Rulebook gate remains incomplete, and optional-module verification must be reported separately.

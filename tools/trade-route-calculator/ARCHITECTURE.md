@@ -76,7 +76,7 @@ A preview computes availability, prices, fees, and RAW/adjusted results without 
 
 Browsing previous/next worlds changes view state only. COMMIT JUMP validates the intended route leg and changes actual location/date/progress together. A delivery action validates actual destination independently of the browsed world.
 
-Use the accounting formulas in [REQUIREMENTS.md](REQUIREMENTS.md#profit-modes). Calculate profit independently for each sold lot after its allocated acquisition cost/fees and selling fees; group lines from the same lot within one commit. Adjust only positive speculative-trade profit, round the adjusted value down, and record the adjustment explicitly. Sum those per-lot results for the commit; freight/mail payouts and manual operating expenses stay outside the house rule. Preserve the applied percentage and reject invalid custom percentages outside 0–100.
+Use the accounting formulas in [REQUIREMENTS.md](REQUIREMENTS.md#profit-modes). Calculate profit independently for each sold lot after its allocated acquisition cost/fees and selling fees; group lines from the same lot within one commit. Deduct any optional allocated tax first, then adjust only positive remaining speculative-trade profit, round the adjusted value down, and record the adjustment explicitly. Sum those per-lot results for the commit; freight/mail payouts and manual operating expenses stay outside the house rule. Preserve the applied percentage and reject invalid custom percentages outside 0–100.
 
 Post final monetary amounts as whole Credits rounded down once, while retaining precise intermediate calculations for audit. Compute profit from recorded cash amounts and cost basis; never debit historical acquisition cost again on sale. Allocate acquisition costs proportionally, retaining remainders on the remaining lot; fully reconcile the basis at final sale. Shared selling-fee allocation must preserve the total fee and use deterministic remainder handling. Broker fees use their verified RAW basis before the profit adjustment.
 
@@ -123,3 +123,11 @@ Maintain a checked-in, versioned interpretation register with stable IDs, source
 The small Rules & Notes button opens an accessible panel rendered from bundled content. Include verification status and public evidence links, interpretations, house rules, copyright/license notices, credits and application version. Calculation audit entries deep-link to relevant notes. Preserve the current Rules verification link. Store applied interpretation IDs/revisions alongside the rules-data version in snapshots and committed history so exports and historical audits retain their meaning.
 
 Copyright and attribution text must be checked against the actual applicable notices before release. This panel does not itself establish a license or permission to reproduce source material. No rulebook PDFs or private reference links are included.
+
+## Optional first-edition modules
+
+Implement insurance and taxation as independently enabled modules, disabled by default, following [OPTIONAL_RULES.md](OPTIONAL_RULES.md). Keep their data/provenance separate from the Core Rulebook baseline. Verification of the optional tables and unresolved adaptation decisions is required before implementing those calculations.
+
+Extend campaign settings and versioned exports with both switches. Policies retain covered lot IDs/quantities, destination, frozen route/risk/value inputs, premium, potential payout, status and claim references. Tax audits retain the normal-market-value benchmark separately from actual acquisition basis, government/organisation, taxable amount, bracket/rate, rolls/overrides and allocated posted tax. Preserve all applied rule/decision revisions.
+
+Add premium, tax and approved-claim ledger types. Commits and undo reconcile bank, cargo, policies, claims and taxes together; prevent duplicate claims. Follow the updated profit formulas in REQUIREMENTS.md: preserve pre-tax RAW profit, subtract tax, and apply profit mode only to the positive remainder. Do not choose tax aggregation/allocation or premium cost-basis rules until the owner resolves the recorded questions.

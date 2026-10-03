@@ -14,7 +14,7 @@ These ideas are outside locked V1 scope. They are candidates for later design, n
 | Offline cache | Durable world/navigation cache, offline status, freshness policy, and refresh controls. V1 local campaign persistence does not imply offline API availability. |
 | Multiple campaigns | Campaign selection, isolated storage, migrations, and archive management. |
 | Expanded analytics | Route/commodity comparisons, long-term profitability, cash flow, and ledger reporting. |
-| Additional rules/options | Supplements, alternative editions, configurable house rules beyond the locked profit modes, and more detailed legal consequences. Independently verify each ruleset. |
+| Additional rules/options | Supplements, alternative editions, configurable house rules beyond the agreed options, and more detailed legal consequences. The explicitly approved, off-by-default Merchant Prince insurance/tax adaptation is now V1 scope; see OPTIONAL_RULES.md. Independently verify each ruleset. |
 | Sharing and collaboration | Portable campaign sharing beyond JSON files; any future hosting/service choice must respect the free-only constraint. |
 | Enhanced market lifecycle | Optional referee-defined expiration policies or economic simulation. V1 offers remain active until manually expired. |
 

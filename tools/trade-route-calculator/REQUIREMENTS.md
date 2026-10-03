@@ -107,24 +107,31 @@ For partial lot sales, allocate the original purchase cost and applicable acquis
 
 Offer campaign settings **RAW = 100%**, **Reduced = 75%**, and **Custom = user-defined percentage**.
 
-Preserve RAW purchase/sale percentage tables and calculations. Apply the setting **separately to the quantity sold from each cargo lot**, after allocating its recorded purchase cost (including acquisition fees) and subtracting selling fees. Combine multiple sale lines from the same lot within one commit before applying the percentage; do not net profits and losses across different lots first.
+Preserve RAW purchase/sale percentage tables and calculations. Apply the setting **separately to the quantity sold from each cargo lot**, after allocating its recorded purchase cost (including acquisition fees), subtracting selling fees, and deducting any optional tax. Combine multiple sale lines from the same lot within one commit before applying the percentage; do not net profits and losses across different lots first.
 
 ```text
 rawProfit = grossSaleProceeds - sellingFees - allocatedCostBasis
-adjustedProfit = rawProfit > 0
-    ? floor(rawProfit * selectedPercentage / 100)
-    : rawProfit
-profitAdjustment = adjustedProfit - rawProfit
-bankIncreaseOnSale = grossSaleProceeds - sellingFees + profitAdjustment
+profitAfterTax = rawProfit - allocatedTax // zero tax when taxation is disabled
+adjustedProfit = profitAfterTax > 0
+    ? floor(profitAfterTax * selectedPercentage / 100)
+    : profitAfterTax
+profitAdjustment = adjustedProfit - profitAfterTax
+bankIncreaseOnSale = grossSaleProceeds - sellingFees - allocatedTax + profitAdjustment
 ```
 
 Purchase costs have already been debited at acquisition: cost basis measures profit and must not be debited again on sale. Calculate broker fees using the verified RAW fee basis before the house-rule adjustment; the adjustment does not rewrite the fee or price tables. Allocate any shared selling fee proportionally by each lot's gross sale proceeds (by quantity if all proceeds are zero), with a stable remainder allocation that preserves the total charged fee. Record each lot's share. Manual port/operating expenses remain separate ledger expenses and are not retrospectively allocated to cargo profit.
 
-Losses remain unchanged; zero remains zero. A RAW Cr10,000 profit becomes Cr7,500 in Reduced mode; a RAW Cr10,000 loss remains a Cr10,000 loss. For two lots earning Cr100 and losing Cr100, the adjusted results are Cr75 and minus Cr100, totaling a Cr25 loss. A RAW Cr101 profit becomes Cr75 after rounding down.
+The profit-mode adjustment leaves after-tax losses and zero unchanged; tax itself may create or deepen a loss. With taxes disabled: A RAW Cr10,000 profit becomes Cr7,500 in Reduced mode; a RAW Cr10,000 loss remains a Cr10,000 loss. For two lots earning Cr100 and losing Cr100, the adjusted results are Cr75 and minus Cr100, totaling a Cr25 loss. A RAW Cr101 profit becomes Cr75 after rounding down.
 
 Freight and mail payments are outside this speculative-trade house rule and receive their verified contractual payout without a profit-mode reduction.
 
-Display RAW and adjusted results separately per sold lot and in transaction totals. Preserve the percentage used on each committed sale and its explicit adjustment ledger entry; later setting changes do not rewrite prior transactions. Custom percentages must be finite and within 0–100 inclusive.
+Display RAW pre-tax profit, any tax and after-tax profit, and adjusted results separately per sold lot and in transaction totals. Preserve the percentage used on each committed sale and its explicit adjustment ledger entry; later setting changes do not rewrite prior transactions. Custom percentages must be finite and within 0–100 inclusive.
+
+## Optional insurance and taxation
+
+Include independent, off-by-default insurance and tax settings as specified in [OPTIONAL_RULES.md](OPTIONAL_RULES.md). Identify these as first-edition Merchant Prince adaptations in Rules & Notes. INT-007 through INT-009 are approved; remaining ambiguities must be answered and source data verified before their behavior is implemented.
+
+Insurance previews coverage and premiums, links policies to cargo lots, and requires explicit referee-approved claims. Taxes use normal market value to determine taxable profit, shown separately from actual cost-based profit; post tax before applying the positive-profit percentage. Preserve policies, taxes, settings and decision revisions in ledger history, persistence, export/import and undo.
 
 ## Freight and mail
 
@@ -167,4 +174,6 @@ Prevent concurrent browser tabs from silently overwriting campaign state. Allow 
 16. Import/reset offers a backup and explicit confirmation; cancel or failed validation preserves current data.
 17. Two tabs attempting edits cannot overwrite each other's changes; the new editing tab reloads current state before accepting a commit.
 
-18. Rules & Notes shows accurate copyright/credits, rules sources, actual verification status and the six agreed interpretation decisions. Affected audits link to their notes, and historical snapshots retain their interpretation revisions.
+18. Rules & Notes shows accurate copyright/credits, rules sources, actual verification status and all agreed interpretation decisions, including the optional first-edition adaptations. Affected audits link to their notes, and historical snapshots retain their interpretation revisions.
+
+19. Optional insurance and taxation start disabled, preserve their own audits and history, follow INT-007 through INT-009, and pass the source, accounting and lifecycle checks in OPTIONAL_RULES.md before release.
