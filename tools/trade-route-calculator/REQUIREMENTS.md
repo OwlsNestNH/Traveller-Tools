@@ -45,6 +45,12 @@ Use a ship-computer interface with readable world, route, market, cargo, account
 - Maintain a bank/cargo ledger linking every purchase, sale, fee, delivery payout, and manual expense to its date and source action. Bank and cargo updates must succeed together.
 - Allow manual port and operating expenses with an amount, date, and description; debit the bank and retain a ledger/history entry. Full automated ship economics is deferred.
 
+## Rounding and cost basis
+
+Round calculated quantities and monetary amounts down to the supported unit (whole tons and whole Credits unless a verified rule explicitly defines a different unit). Preserve unrounded intermediate values for calculation audit and round the final applicable result down; do not repeatedly round intermediate calculations. Rounding must not change the requirement that losses remain unchanged by profit mode.
+
+For partial lot sales, allocate the original purchase cost and applicable acquisition fees proportionally to the quantity sold. Track remaining cost basis and retain any allocation remainder on the remaining lot so its final sale reconciles the full original cost without lost or duplicated Credits. Each lot keeps its own basis.
+
 ## Profit modes
 
 Offer campaign settings **RAW = 100%**, **Reduced = 75%**, and **Custom = user-defined percentage**.

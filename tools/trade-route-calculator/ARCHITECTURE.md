@@ -66,7 +66,7 @@ A preview computes availability, prices, fees, and RAW/adjusted results without 
 
 Browsing previous/next worlds changes view state only. COMMIT JUMP validates the intended route leg and changes actual location/date/progress together. A delivery action validates actual destination independently of the browsed world.
 
-For profit settings, preserve RAW rule calculations and apply the percentage only to positive realized profit. Record RAW and adjusted values and an explicit reconciled adjustment in the ledger; never rewrite RAW price tables. Define rounding and allocation for partial sales against verified examples before implementation.
+For profit settings, preserve RAW rule calculations and apply the percentage only to positive realized profit. Record RAW and adjusted values and an explicit reconciled adjustment in the ledger; never rewrite RAW price tables. Round final calculated quantities and monetary results down to their supported units, preserving unrounded intermediate values in audits. Allocate each lot's acquisition cost and fees proportionally on partial sales, retain allocation remainders in its remaining basis, and reconcile the full basis on its final sale. Verify these calculations with worked examples before implementation.
 
 ## Persistence, import, and undo
 

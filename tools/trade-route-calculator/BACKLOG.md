@@ -18,7 +18,7 @@ These ideas are outside locked V1 scope. They are candidates for later design, n
 
 ## Required implementation preparation, not deferred scope
 
-Before coding rules, confirm the Core Rulebook edition and independently verify commodity tables, trade-code conditions, DMs, brokers/fees, freight/mail, and date/jump handling with rule references and worked examples. Resolve rounding and fee/cost-basis accounting consistently, including partial cargo-lot sales and profit-adjustment ledger entries.
+Before coding rules, confirm the Core Rulebook edition and independently verify commodity tables, trade-code conditions, DMs, brokers/fees, freight/mail, and date/jump handling with rule references and worked examples. Apply the locked round-down policy and verify fee/cost-basis accounting consistently, including partial cargo-lot sales and profit-adjustment ledger entries.
 
 Do not use the buggy/untrusted existing `tools/spec-trade/` tool as rules authority. Reuse is allowed only after independent verification against the Core Rulebook.
 
