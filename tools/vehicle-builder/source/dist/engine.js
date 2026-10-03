@@ -35,7 +35,7 @@ const weapons=D.Weapons.filter(x=>x.Bio!=="B"&&Number.isFinite(x.TL)&&Number.isF
 for(const [Weapon,flag] of [['No weapon installed','_empty'],['Personal weapon (gunport)','_personal']])weapons.push({Weapon,[flag]:true,TL:0,Cost:0,Tons:0,Crew:0,Damage:'—',Rangekm:0,Traits:flag==='_empty'?'Reserved mount capacity; no weapon fitted':'Personal weapon supplied by occupant',_source:'Handbook pp102–103',_book:'Vehicle Handbook Update 2026',_pages:'102–103'});
 const ammunition=[['Standard',0,1,'Standard weapon profile'],['Aerosol',7,3,'Blast 12; reduces laser damage through the cloud'],['APDS',5,5,'Range +10%; damage −1 per die; extra AP = 3 × dice'],['Armour Piercing',4,4,'Extra AP = damage dice'],['Baton',5,2,'Range −25%; half damage is Stun; removes AP and Blast'],['Bomblet',7,4,'3D damage; Blast 20; artillery and bombs only'],['Canister',2,2,'20 m range; 4D damage; Blast 20'],['Chemical',5,5,'Special gas effects; Blast 12'],['Concussion',7,1,'4D Stun'],['Directed Plasma',15,10,'+1D damage; AP ×3; Blast 0'],['Electromagnetic Pulse',9,10,'No direct damage; Blast 20; affects electronics'],['Extended Range',7,3,'Range +25%; damage −1D'],['Flare',4,1,'No damage; Blast 100 illumination'],['Fragmentation',6,1,'4D damage; Blast ×2 (or Blast 10 if absent)'],['Foam',9,5,'Immobilisation; special effects'],['Fuel-air',7,8,'1DD damage; Blast ×3; requires atmospheric oxygen'],['Guided',7,6,'Smart; small-arms TL restrictions apply'],['HEAP',5,8,'Range −25%; +1D; special AP based on original damage'],['Incendiary',8,3,'Fire; Blast equals damage dice'],['Net',8,3,'Range −50%; immobilisation; Blast ×0.5'],['Neurotoxin',5,10,'Special gas effects; Blast 12'],['Nuclear',6,20,'6DD; Blast 500; Radiation; calibre restrictions at TL13'],['Plasma',15,10,'+1D; AP ×2; Blast ×2 (or Blast 3 if absent)'],['Smoke',4,1,'No damage; Blast 12; visual concealment'],['Solid Shot',5,2,'Range −25%; extra AP = half damage dice, rounded up'],['Thermal Smoke',7,2,'Blast 12; visual and infrared concealment'],['Tracer',5,2,'Accurate when firing bursts or automatic fire; detection DM+2']].map(([name,tl,multiplier,effect])=>({name,tl,multiplier,effect}));
 const faces=['Forward','Aft','Port','Starboard','Dorsal','Ventral'];
-const defaults={version:1,name:'Frontier utility rover',type:'Ground Vehicle',tl:9,spaces:12,power:'Powered',secondary:'none',extraPower:0,features:['Off-Roader'],speedMod:0,efficiency:0,fuel:0,hull:'Standard',armour:0,armourShift:[0,0,0,0,0,0],crew:1,passengers:3,crewSpace:1,passengerSpace:1,sophont:1,cargo:4,gas:'Helium',depth:1,aux:[],equipment:[],weapons:[],control:'Control System (basic)',controlQuantity:1,unmodelledComponents:[],rail:'Rail (basic)',vacTube:false,drone:false,description:'',ruling:'table'};
+const defaults={version:1,name:'Frontier utility rover',type:'Ground Vehicle',tl:9,spaces:12,power:'Powered',secondary:'none',extraPower:0,features:['Off-Roader'],speedMod:0,efficiency:0,fuel:0,hull:'Standard',armour:0,armourShift:[0,0,0,0,0,0],crew:1,passengers:3,crewSpace:1,passengerSpace:1,passengerGroups:[],sophont:1,cargo:4,gas:'Helium',depth:1,aux:[],equipment:[],weapons:[],control:'Control System (basic)',controlQuantity:1,unmodelledComponents:[],rail:'Rail (basic)',vacTube:false,drone:false,description:'',ruling:'table'};
 const rules=[
  ['Size and volume','25–27','Whole Spaces; 1 Space cargo = 250 kg. Structures have twice their nominal Spaces. Size changes agility, armour volume and most primary speeds.'],
  ['Baseline and features','28–43','Type/TL eligibility, size limits, prerequisites and incompatible features are checked. Feature price changes add against the original chassis cost. AFV + Tracks incur one speed penalty.'],
@@ -123,11 +123,20 @@ function optionBudget(o,q,s,custom={}){
  if(/^(Heavy )?Manipulator Arm \(/.test(o.Name))cost*=2**(num(custom.strIncrease)+num(custom.dexIncrease));
  return {spaces,cost};
 }
+function passengerSeating(s){
+ return [{name:'Main passenger seats',count:s.passengers,space:s.passengerSpace},...(Array.isArray(s.passengerGroups)?s.passengerGroups:[])];
+}
+function validPassengerGroup(g){return !!g&&typeof g.name==='string'&&g.name.length<=100&&Number.isInteger(g.count)&&g.count>=0&&g.count<=1000000&&Number.isFinite(g.space)&&g.space>=0.25&&g.space<=100;}
 function calculate(input){
  const s={...clone(defaults),...clone(input)},issues=[],ledger=[],notes=[];
  const issue=(code,message,page,level='error')=>{if(!issues.some(x=>x.code===code&&x.message===message))issues.push({code,message,page,level})};
  const line=(name,spaces,cost,source)=>ledger.push({name,spaces,cost,source});
  if(!Array.isArray(s.unmodelledComponents))issue('UNMODELLED','Unmodelled components must be a list.',57);else for(const item of s.unmodelledComponents)issue('UNMODELLED',String(item),57);
+ if(!Number.isInteger(s.passengers)||s.passengers<0)issue('INPUT','Main passenger count must be a non-negative whole number.',25);
+ const extraGroups=Array.isArray(s.passengerGroups)?s.passengerGroups:[];
+ if(!Array.isArray(s.passengerGroups)||extraGroups.length>100||!extraGroups.every(validPassengerGroup))issue('PASSENGER_GROUP','Passenger groups need a label, whole non-negative count and 0.25–100 Spaces per person (maximum 100 groups).',24);
+ const seating=passengerSeating(s).map(g=>validPassengerGroup(g)?g:{name:'Invalid passenger group',count:0,space:1});
+ s.passengers=seating.reduce((sum,g)=>sum+g.count,0);
  const ints=['controlQuantity','tl','spaces','crew','passengers','cargo','speedMod','efficiency','fuel','extraPower','armour','depth'];
  for(const k of ints)if(!Number.isFinite(s[k])||!Number.isInteger(s[k]))issue('INPUT',`${k} must be a whole number.`,25);
  if(s.tl<0||s.tl>20)issue('TL','Tech Level must be 0–20.',27);
@@ -383,14 +392,14 @@ function calculate(input){
  if(powerDemand>pp)issue('POWER_OUTPUT',`Spacecraft systems require ${powerDemand} Power; reactors deliver ${pp}.`,44);
  const firingPenalty=powerDemand>0&&pp>0?Math.floor(powerDemand/pp*10):0;
  if(firingPenalty)notes.push(`Operating all spacecraft systems reduces speed by ${firingPenalty} bands; systems cannot run above total reactor output (p44 ruling).`);
- const crewSpaces=ceil(Math.max(0,s.crew-turretOccupants)*s.crewSpace*s.sophont),passengerSpaces=ceil(s.passengers*s.passengerSpace*s.sophont);
+ const crewSpaces=ceil(Math.max(0,s.crew-turretOccupants)*s.crewSpace*s.sophont),passengerSpaces=seating.reduce((sum,g)=>sum+ceil(g.count*g.space*s.sophont),0);
  const luxury=installed.filter(({o})=>o?.Name.startsWith('Luxury Interior Space')).reduce((a,{e})=>a+e.quantity,0);
  if(luxury){
   const eligible=crewSpaces+passengerSpaces+installed.filter(({o})=>o?.Comfort==='C'&&!o.Name.startsWith('Luxury Interior Space')&&!['Entertainment System','Tour Guide','Grav Plating'].includes(o.Name)).reduce((a,{o,e})=>a+optionBudget(o,e.quantity,s,e).spaces,0);
   if(luxury>eligible)issue('LUXURY_ALLOCATION',`${luxury} luxury-treated Spaces exceed ${eligible} allocated accommodation/common Spaces.`,84);
   notes.push('Luxury interiors upgrade existing 1-CP accommodation/common Spaces; they add no volume. Assign distinct treated Spaces. Applying luxury to spaces with an existing CP multiplier needs manual review (pp84–85).');
  }
- line('Crew accommodation',crewSpaces,0,'Handbook pp24,27');line('Passenger accommodation',passengerSpaces,0,'Handbook pp24,27');line('Cargo',s.cargo,0,'Handbook p27');
+ line('Crew accommodation',crewSpaces,0,'Handbook pp24,27');if(extraGroups.length){for(const g of seating)line('Passenger accommodation: '+g.name,ceil(g.count*g.space*s.sophont),0,'Handbook pp24,27');}else line('Passenger accommodation',passengerSpaces,0,'Handbook pp24,27');line('Cargo',s.cargo,0,'Handbook p27');
  // Gains were already added to capacity by plant(); keep their ledger entries explanatory only.
  const used=ledger.reduce((a,l)=>a+Math.max(0,l.spaces),0);const gains=ledger.filter(x=>x.name==='Speed customisation'||x.name==='Fuel capacity').reduce((a,l)=>a+Math.max(0,-l.spaces),0);capacity+=gains;
  const remaining=capacity-used;
@@ -429,8 +438,8 @@ function calculate(input){
  const infinite=['Wind','Muscle','Grid Power','Beamed Power'].includes(s.power)||primary.years>0||(s.power.startsWith('Fusion+')&&['Watercraft','Submersible'].includes(s.type))||(s.type==='Airship'&&s.gas==='Vacuum');
  if(primary.p?.Type==='Fission'||primary.p?.Type==='Fusion')notes.push('Cooling fluid: replenish 1 Space per 10 plant Spaces every four weeks; not extra installed plant volume (p47).');
  const depth=(s.tl>=15?4000:s.tl>=12?2000:s.tl>=9?600:s.tl>=6?300:s.tl>=5?200:50)*s.depth;
- return {valid:!issues.some(x=>x.level==='error'),review:issues.some(x=>x.level==='review'),issues,ledger,notes,t,size,capacity,used,remaining,baseCost,total,hull,structure:ceil(hull*.1),critical:ceil(hull*.1),shipping,agility,speed,cruise,range:Math.max(0,round(range)),cruiseRange:Math.max(0,round(range*1.5)),infinite,pp,powerDemand,firingPenalty,protection,defaultFaces,baseArmour,maxArmour:armour.Max*(has('AFV')?3:1),armourSpaces:ceil(armourRaw),weaponMass,weaponCrew,weaponResults,auxResults,traits:[...new Set(traits)],comfort:comfort(crewSpaces+passengerSpaces,s.crew+s.passengers),crewComfort:s.crewSpace,passengerComfort:s.passengerSpace,depth,software,bandwidth:computers.reduce((a,v)=>a+v,0),primary,secondary:second};
+ return {valid:!issues.some(x=>x.level==='error'),review:issues.some(x=>x.level==='review'),issues,ledger,notes,t,size,capacity,used,remaining,baseCost,total,hull,structure:ceil(hull*.1),critical:ceil(hull*.1),shipping,agility,speed,cruise,range:Math.max(0,round(range)),cruiseRange:Math.max(0,round(range*1.5)),infinite,pp,powerDemand,firingPenalty,protection,defaultFaces,baseArmour,maxArmour:armour.Max*(has('AFV')?3:1),armourSpaces:ceil(armourRaw),weaponMass,weaponCrew,weaponResults,auxResults,traits:[...new Set(traits)],passengerCount:s.passengers,passengerSeating:seating,crewSpaces,passengerSpaces,comfortBonus:cp,comfort:comfort(crewSpaces+passengerSpaces,s.crew+s.passengers),crewComfort:s.crewSpace,passengerComfort:s.passengerSpace,depth,software,bandwidth:computers.reduce((a,v)=>a+v,0),primary,secondary:second};
 }
-root.Forge={D,types,features,powers,options,weapons,ammunition,faces,defaults,rules,corrections,calculate,featureReasons,optionBudget,category,sizeFor,baseType};
+root.Forge={D,types,features,powers,options,weapons,ammunition,faces,defaults,rules,corrections,calculate,featureReasons,optionBudget,category,sizeFor,baseType,passengerSeating,validPassengerGroup};
 if(typeof module!=='undefined')module.exports=root.Forge;
 })(globalThis);

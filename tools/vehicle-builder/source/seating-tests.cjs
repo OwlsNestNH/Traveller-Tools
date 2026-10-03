@@ -1,0 +1,17 @@
+const assert=require('node:assert/strict');
+require('./dist/data.js');const F=require('./dist/engine.js');
+const base={...structuredClone(F.defaults),features:[],cargo:0,crew:1,passengers:3,crewSpace:1,passengerSpace:1};
+const extra={name:'Fold-down seats',count:2,space:0.5};
+const run=x=>F.calculate({...base,...x});
+const mixed=run({passengerGroups:[extra]});
+assert.equal(mixed.passengerCount,5);assert.equal(mixed.crewSpaces,1);assert.equal(mixed.passengerSpaces,4);assert.equal(mixed.used,5);assert.equal(mixed.comfort,5/6);
+assert.ok(mixed.ledger.some(x=>x.name.includes('Fold-down seats')&&x.spaces===1));
+const entertained=run({passengerGroups:[extra],equipment:[{name:'Entertainment System',quantity:6}]});
+assert.ok(Math.abs(entertained.comfortBonus-0.6)<1e-9);assert.ok(Math.abs(entertained.comfort-mixed.comfort-0.1)<1e-9);
+assert.equal(run({passengers:1,passengerSpace:0.5,passengerGroups:[{...extra,count:1}]}).passengerSpaces,2);
+assert.equal(run({sophont:2,passengerGroups:[extra]}).passengerSpaces,8);
+assert.ok(run({passengerGroups:[extra],equipment:[{name:'Life Support Seat',quantity:4}]}).issues.some(x=>x.code==='LIFE_CAPACITY'));
+assert.equal(run({}).passengerSpaces,3);
+assert.equal(run({crew:0,passengers:0,drone:true,passengerGroups:[]}).comfort,null);
+for(const bad of [{...extra,count:-1},{...extra,count:1.5},{...extra,space:0},{...extra,space:Infinity},null])assert.equal(run({passengerGroups:[bad]}).valid,false);
+console.log('Mixed seating, separate rounding, size multiplier, entertainment stacking, life-support totals, legacy designs and invalid groups passed.');
