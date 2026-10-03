@@ -8,7 +8,15 @@ await ctx.route('https://travellermap.com/api/universe?*',route=>route.fulfill({
 let broken=true;
 await ctx.route('https://travellermap.com/api/metadata?*',async route=>{const name=new URL(route.request().url()).searchParams.get('sector');if(name==='Broken Sector'&&broken){broken=false;return route.fulfill({status:503,body:'unavailable'});}if(name==='Empty Sector')await new Promise(r=>setTimeout(r,300));await route.fulfill({json:{Subsectors:[{Index:'C',Name:'Regina'},{Index:'A',Name:'Cronor'}]}});});
 await ctx.route('https://travellermap.com/api/sec?*',route=>route.fulfill({json:'Hex\tName\r\n'+(new URL(route.request().url()).searchParams.get('sector')==='Empty Sector'?'':sample.map(w=>w.Hex+'\t'+w.Name).join('\r\n'))}));
-await ctx.route('https://travellermap.com/api/jumpworlds?*',route=>{const u=new URL(route.request().url());return route.fulfill({json:{Worlds:u.searchParams.get('jump')==='0'?sample.filter(w=>w.Hex===u.searchParams.get('hex')):sample}});});
+const distant={Name:'Far Haven',Hex:'0101',UWP:'A788899-C',PBG:'703',Zone:'',WorldX:-128,WorldY:-79,Sector:'Spinward Marches'};
+const neighbor={...distant,Name:'Far Neighbor',Hex:'0201',WorldX:-127};
+sample.push(distant);
+let failNearby=true;
+await ctx.route('https://travellermap.com/api/jumpworlds?*',route=>{
+ const u=new URL(route.request().url());assert.equal(u.searchParams.get('jump')==='0'||u.searchParams.get('jump')==='12',true);const zero=u.searchParams.get('jump')==='0',far=u.searchParams.get('x')==='-128';
+ if(!zero&&far&&failNearby){failNearby=false;return route.fulfill({status:503,body:'Temporary map failure'});}
+ return route.fulfill({json:{Worlds:zero?sample.filter(w=>w.Hex===u.searchParams.get('hex')):far?[distant,neighbor]:sample.filter(w=>w!==distant)}});
+});
 const page=await ctx.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
 const base=process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/';
 const click=name=>page.getByRole('button',{name,exact:true}).click();
@@ -18,15 +26,17 @@ try{
  await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();await click('Set up campaign');
  await page.locator('#setup-world .picker-selection').getByText(/Hex 1910/).waitFor();await click('Start campaign');await page.locator('#modal').waitFor({state:'hidden'});
  const before=await read();
- assert.ok(await page.locator('.hex-grid polygon').count()>0);assert.ok(await page.locator('.hex-grid polygon').count()<=61);
+ assert.ok(await page.locator('.hex-grid polygon').count()>0);assert.ok(await page.locator('.hex-grid polygon').count()<=469);
  const aligned=await page.evaluate(()=>{const polygon=document.querySelector('.hex-grid [data-hex="1910"]');const points=Array.from(polygon.points);const x=points.reduce((n,p)=>n+p.x,0)/6,y=points.reduce((n,p)=>n+p.y,0)/6;const circle=document.querySelector('svg [data-arg="-110,-70"] circle');return Math.abs(x-Number(circle.getAttribute('cx')))<0.01&&Math.abs(y-Number(circle.getAttribute('cy')))<0.01;});assert.ok(aligned);
  await page.getByLabel('Show hexes',{exact:true}).uncheck();assert.equal(await page.locator('.hex-grid').count(),0);await page.getByLabel('Show hexes',{exact:true}).check();
  await page.locator('svg [data-arg="-111,-70"]').click();assert.deepEqual(await read(),before);await click('Current ship');
  const map=page.locator('.world-map');
  const separation=()=>page.evaluate(()=>{const a=document.querySelector('svg [data-arg="-110,-70"] circle'),b=document.querySelector('svg [data-arg="-111,-70"] circle');return Math.abs(Number(a.getAttribute('cx'))-Number(b.getAttribute('cx')));});
+ assert.equal(await page.evaluate(async()=>{const m=await import('./js/map.mjs');return m.distance({x:0,y:0},{x:12,y:6});}),12);
  const initialSpacing=await separation();await map.hover();const scrollBefore=await page.evaluate(()=>scrollY);await page.mouse.wheel(0,-150);await page.waitForFunction(()=>document.querySelector('.map-zoom-controls span').textContent!=='100%');assert.ok(await separation()>initialSpacing);assert.equal(await page.evaluate(()=>scrollY),scrollBefore);
  await page.mouse.wheel(0,150);await page.waitForFunction(()=>document.querySelector('.map-zoom-controls span').textContent==='100%');
  await click('+');await page.waitForFunction(()=>document.querySelector('.map-zoom-controls span').textContent==='120%');
+ for(let i=0;i<15;i++)await click('−');await page.waitForFunction(()=>document.querySelector('.map-zoom-controls span').textContent==='20%');assert.equal(await page.locator('.hex-grid polygon').count(),469);assert.equal(await page.locator('.hex-grid text').count(),0);
  await click('Reset view');await page.waitForFunction(()=>document.querySelector('.map-zoom-controls span').textContent==='100%');assert.deepEqual(await read(),before);
  await click('Find world');const picker=page.locator('#find-world');await picker.locator('.picker-selection').getByText(/Hex 1910/).waitFor();
  assert.equal(await picker.getByLabel('Sector',{exact:true}).locator('option').filter({hasText:'Trojan Reach'}).count(),1);
@@ -58,5 +68,12 @@ try{
  await click('Find world');await page.locator('#find-world').getByLabel('Subsector',{exact:true}).selectOption('C');await page.locator('#find-world').getByLabel('World',{exact:true}).selectOption('1810');await page.locator('#choose-starting-world').click();await page.getByRole('heading',{name:'Set ship location',exact:true}).waitFor();await click('Confirm starting world');await page.locator('#modal').waitFor({state:'hidden'});
  const moved=await read();assert.equal(moved.actual,'-111,-70');assert.deepEqual(moved.route,['-111,-70']);assert.equal(moved.routeIndex,0);assert.equal(moved.bank,beforeLocation.bank);assert.equal(moved.hours,beforeLocation.hours);assert.deepEqual(moved.lots,beforeLocation.lots);assert.deepEqual(moved.contracts,beforeLocation.contracts);
  await click('History');await click('Undo latest change');const undone=await read();assert.equal(undone.actual,beforeLocation.actual);assert.deepEqual(undone.route,beforeLocation.route);
+ await click('Overview');await click('Find world');await page.locator('#find-world').getByLabel('Subsector',{exact:true}).selectOption('A');await page.locator('#find-world').getByLabel('World',{exact:true}).selectOption('0101');await page.locator('#choose-starting-world').click();await page.getByRole('heading',{name:'Set ship location',exact:true}).waitFor();
+ const beforeFar=await read();await click('Confirm starting world');await page.locator('#modal-error').getByText(/503/).waitFor();assert.deepEqual(await read(),beforeFar);
+ await click('Confirm starting world');await page.locator('#modal').waitFor({state:'hidden'});
+ assert.equal((await read()).actual,'-128,-79');await page.getByRole('button',{name:'Browse Far Neighbor',exact:true}).waitFor();assert.ok((await read()).worlds['-127,-79']);
+ // A previously saved location with no cached neighborhood loads it on reopening.
+ await page.evaluate(()=>{const key='traveller-trade-route-calculator:v1',s=JSON.parse(localStorage.getItem(key));delete s.worlds['-127,-79'];localStorage.setItem(key,JSON.stringify(s));});
+ await page.reload();await page.getByRole('button',{name:'Browse Far Neighbor',exact:true}).waitFor();
  assert.deepEqual(errors,[]);console.log('PASS: cascading search, derived hex, browsing invariants, parent reset, loading race, retry, empty sector, actual origin, stop reorder/removal, route persistence, recent-world persistence/deduplication, hex alignment/toggle/clicking and mobile width.');
 }finally{await browser.close();}
