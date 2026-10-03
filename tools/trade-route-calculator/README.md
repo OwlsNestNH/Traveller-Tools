@@ -6,7 +6,7 @@ Open `index.html` through an HTTP server or GitHub Pages. No build, paid service
 
 ## Start a campaign
 
-1. Choose **Set up campaign**, enter your current sector/hex, ship, bank and starting date label.
+1. Choose **Set up campaign**, select your current sector, subsector and world, then enter ship, bank and starting date label.
 2. Add existing cargo from **Cargo** without debiting the opening bank again.
 3. **Find supplier** creates a market after an explicit search commit. Buy and sell through previews and explicit commits.
 4. **Plot route** accepts mandatory stops in order. Clicking the map or Previous/Next only browses; **COMMIT JUMP** moves the ship and advances elapsed hours.
@@ -53,3 +53,15 @@ node verification/live-map.test.mjs
 An optional first argument supplies the path to an existing Playwright module. `TRAVELLER_BROWSER_CHANNEL=msedge` or `chrome` selects an installed browser; otherwise Playwright's bundled Chromium is used. `TRAVELLER_TEST_URL` overrides the local server URL, including a GitHub Pages subdirectory. Screenshots go to ignored `verification-artifacts/`.
 
 The main browser test uses deterministic API fixtures based on a checked live response; the separate live test verifies actual browser access to Traveller Map. See [ARCHITECTURE.md](ARCHITECTURE.md), [REQUIREMENTS.md](REQUIREMENTS.md) and [BACKLOG.md](BACKLOG.md) for the specification and deferred scope.
+
+## World selection and map
+
+Find World, campaign setup, destinations and route stops use searchable **Sector → Subsector → World** dropdowns. World names include their hex; the hex is filled automatically. Route planning always starts at the actual ship location, with editable ordered stops. Nearby choices default to the current sector/subsector where possible.
+
+**Recent worlds** remembers up to ten successfully selected worlds in this browser, deduplicated by sector/hex. This optional shortcut is a browser preference separate from campaign JSON backups; storage failure does not prevent world selection. Selecting a recent world fills the full chain but does not move the ship.
+
+The local map includes a numbered hex grid with a **Show hexes** toggle. Numbers use sector-local coordinates, including when the map crosses a sector boundary. Grid lines and numbers do not block world clicks.
+
+Lists come from the [Traveller Map public API](https://travellermap.com/doc/api): universe, sector metadata, tab-delimited sector worlds, and final world lookup. Failed list requests offer a retry; changing a parent choice clears dependent choices, and late responses cannot replace a newer selection.
+
+Run `node verification/world-picker.test.mjs` for the selector, recent-world and grid browser checks, using the same Playwright settings as the other browser suites.

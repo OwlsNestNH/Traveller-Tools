@@ -12,6 +12,9 @@ try{
  await page.goto(process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/');
  const result=await page.evaluate(async()=>{const r=await fetch('https://travellermap.com/api/jumpworlds?sector=Spinward%20Marches&hex=1910&jump=1',{signal:AbortSignal.timeout(20000)});if(!r.ok)throw Error(String(r.status));const data=await r.json();return {count:data.Worlds.length,names:data.Worlds.map(w=>w.Name)};});
  assert.ok(result.names.includes('Regina'));console.log('PASS: live browser CORS fetch',JSON.stringify(result));
- await page.getByRole('button',{name:'Set up campaign',exact:true}).click();await page.getByRole('button',{name:'Start campaign',exact:true}).click();await page.locator('#modal').waitFor({state:'hidden'});await page.locator('svg g').nth(5).waitFor();
+ await page.getByRole('button',{name:'Set up campaign',exact:true}).click();await page.locator('#setup-world .picker-selection').getByText(/Hex 1910/).waitFor();await page.getByRole('button',{name:'Start campaign',exact:true}).click();await page.locator('#modal').waitFor({state:'hidden'});await page.locator('svg g').nth(5).waitFor();
+ await page.getByRole('button',{name:'Find world',exact:true}).click();const picker=page.locator('#find-world');await picker.locator('.picker-selection').getByText(/Hex 1910/).waitFor();await picker.getByLabel('Search worlds',{exact:true}).fill('Jenghe');await picker.getByLabel('World',{exact:true}).selectOption('1810');await page.getByRole('button',{name:'Browse world',exact:true}).click();await page.locator('#modal').waitFor({state:'hidden'});
+ assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('traveller-trade-route-calculator:v1')).actual),'-110,-70');
+ console.log('PASS: live sector/subsector/world search, derived hex, and browsing without moving the ship.');
  await page.screenshot({path:join(artifacts,'live-map-preview.png'),fullPage:true});console.log('PASS: live setup and nearby-world map.');
 }finally{await browser.close();}

@@ -11,6 +11,9 @@ const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BRO
 const ctx=await browser.newContext({viewport:{width:1440,height:1100},acceptDownloads:true});
 const sample=[{Name:'Regina',Hex:'1910',UWP:'A788899-C',PBG:'703',Zone:'',WorldX:-110,WorldY:-70,Sector:'Spinward Marches'},{Name:'Jenghe',Hex:'1810',UWP:'C799663-9',PBG:'323',Zone:'',WorldX:-111,WorldY:-70,Sector:'Spinward Marches'},{Name:'Ruie',Hex:'1809',UWP:'C776977-7',PBG:'701',Zone:'A',WorldX:-111,WorldY:-71,Sector:'Spinward Marches'}];
 await ctx.route('https://travellermap.com/api/jumpworlds?*',async route=>{const u=new URL(route.request().url());const rows=u.searchParams.get('jump')==='0'?sample.filter(w=>w.Hex===(u.searchParams.get('hex')||'1910')):sample;await route.fulfill({json:{Worlds:rows},headers:{'Access-Control-Allow-Origin':'*'}});});
+await ctx.route('https://travellermap.com/api/universe?*',route=>route.fulfill({json:{Sectors:[{Names:[{Text:'Spinward Marches'}],Abbreviation:'Spin'},{Names:[{Text:'Empty Sector'}]}]}}));
+await ctx.route('https://travellermap.com/api/metadata?*',route=>route.fulfill({json:{Subsectors:[{Index:'C',Name:'Regina'},{Index:'A',Name:'Cronor'}]}}));
+await ctx.route('https://travellermap.com/api/sec?*',route=>route.fulfill({json:'Hex\tName\r\n'+sample.map(w=>w.Hex+'\t'+w.Name).join('\r\n')}));
 const page=await ctx.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
 const click=async label=>{const modal=page.locator('#modal[open]');const target=modal.getByRole('button',{name:label,exact:true});if(await target.count())return target.click();return page.getByRole('button',{name:label,exact:true}).click();};
 const fill=(name,value)=>page.locator('[name="'+name+'"]').fill(String(value));
@@ -18,7 +21,7 @@ const read=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('traveller-trad
 const closed=()=>page.locator('#modal').waitFor({state:'hidden'});
 try{
  await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();
- await click('Set up campaign');await fill('bank','1000000');await click('Start campaign');await closed();
+ await click('Set up campaign');await page.locator('#setup-world .picker-selection').getByText(/Hex 1910/).waitFor();await fill('bank','1000000');await click('Start campaign');await closed();
  assert.equal((await read()).bank,'1000000');
  await click('Find supplier');await fill('dice',12);await click('Preview search');await click('Commit search');await closed();
  assert.ok((await read()).snapshots[0].offers.length>=6);
@@ -31,7 +34,7 @@ try{
  await fill('dice',12);await click('Preview search');await click('Commit search');
  await page.getByRole('heading',{name:/Prepare sale/}).waitFor();await click('Preview sale');await page.getByRole('heading',{name:'Confirm sale'}).waitFor();await click('COMMIT SALE');await closed();assert.equal((await read()).lots.length,0);
  await click('History');await click('Undo latest change');assert.equal((await read()).lots.length,1);
- await click('Overview');await click('Plot route');await fill('stops','Spinward Marches | 1810');await click('Calculate route');await click('Save route');await closed();assert.equal((await read()).route.length,2);
+ await click('Overview');await click('Plot route');await page.locator('#route-destination').getByLabel('Subsector',{exact:true}).selectOption('C');await page.locator('#route-destination').getByLabel('World',{exact:true}).selectOption('1810');await click('Calculate route');await click('Save route');await closed();assert.equal((await read()).route.length,2);
  await click('Settings');await click('Ship, trader & options');await page.locator('[name="insurance"]').check();await page.locator('[name="tax"]').check();await click('Save');await closed();
  await click('Overview');await page.getByRole('button',{name:'Buy',exact:true}).first().click();await fill('quantity','1');await page.locator('[name="insure"]').check();await click('Preview purchase');await click('COMMIT PURCHASE');await closed();assert.equal((await read()).policies.length,1);
  await click('Cargo');await click('Loss / claim');await fill('quantity','0.25');await fill('reason','Referee-confirmed partial loss');await page.locator('[name="approved"]').check();await click('Preview claim');await click('Commit loss & claim');await closed();assert.equal((await read()).policies[0].remainingQuantity,'0.75');

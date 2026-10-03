@@ -2,3 +2,16 @@
 .world-map g{pointer-events:bounding-box}.world-map text{pointer-events:auto}.world-map>rect{pointer-events:none}
 td{padding:8px 10px}td .check{margin:0;white-space:nowrap}.cargo-scroll{max-height:320px}
 @media(min-width:1500px){.world-map{height:380px}}@media(max-width:1000px){.grid{grid-template-columns:1fr}.summary{grid-template-columns:repeat(3,1fr)}header{align-items:flex-start}.header-actions{flex-wrap:wrap;justify-content:flex-end}.world-map{height:350px}}@media(max-width:620px){header{padding:16px;flex-direction:column}.header-actions{width:100%;justify-content:flex-start}h1{font-size:20px}.summary{grid-template-columns:repeat(2,1fr)}.stat{padding:13px 16px}.stat .value{font-size:17px}nav{padding:4px 8px 0;overflow:auto}nav button{padding:12px 10px;white-space:nowrap}main{padding:12px}.split{grid-template-columns:1fr}.scroll,.cargo-scroll,.large-scroll{max-height:none;overflow-x:auto}.grid{display:block}.panel-head{align-items:flex-start;flex-wrap:wrap}.jump-bar{flex-wrap:wrap}.world-map{height:300px}footer{flex-direction:column;padding:15px}.dialog-actions{position:static}#modal-form{padding:16px}.welcome{margin:20px 0;padding:22px}}
+
+/* Cascading world selectors */
+.world-picker{margin:16px 0;padding:14px;border:1px solid var(--line);border-radius:8px;min-width:0}
+.world-picker-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.world-picker-control{min-width:0}.world-picker input,.world-picker select{width:100%;min-width:0}
+.world-picker .picker-selection{color:var(--cyan);overflow-wrap:anywhere}
+.route-origin,.route-stop{padding:12px;border:1px solid var(--line);border-radius:8px;margin-bottom:12px}
+.route-origin p{margin-bottom:0}.route-stop>.row{flex-wrap:wrap}
+@media(max-width:650px){.world-picker-grid{grid-template-columns:1fr}}
+
+.world-map .hex-grid{pointer-events:none;cursor:default}
+.world-map .hex-grid polygon{fill:none;stroke:#3a586b;stroke-width:.65;opacity:.7}
+.world-map .hex-grid text{font-size:6.5px;fill:#829aaa;pointer-events:none}

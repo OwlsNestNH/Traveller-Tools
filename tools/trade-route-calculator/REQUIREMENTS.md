@@ -179,3 +179,9 @@ Prevent concurrent browser tabs from silently overwriting campaign state. Allow 
 18. Rules & Notes shows accurate copyright/credits, rules sources, actual verification status and all agreed interpretation decisions, including the optional first-edition adaptations. Affected audits link to their notes, and historical snapshots retain their interpretation revisions.
 
 19. Optional insurance and taxation start disabled, preserve their own audits and history, follow INT-007 through INT-021, and pass the source, accounting and lifecycle checks in OPTIONAL_RULES.md before release.
+
+## Navigation selection refinement — 2026-10-03
+
+Use searchable sector, subsector and world dropdowns in Find World, setup, route destinations and optional stops. Derive the hex from the chosen world. Route origin is the actual ship world and is displayed clearly. Default nearby choices to the current sector/subsector, show hexes beside world names, and provide the ten most recent selections as a browser shortcut. Changing a parent choice must invalidate its old descendants. Browse and route planning never commit travel.
+
+Provide a numbered local-map hex grid, enabled initially, with a show/hide control. Hex labels are local to each sector; world clicks remain available through the overlay.

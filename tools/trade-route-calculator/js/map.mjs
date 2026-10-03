@@ -7,3 +7,27 @@ export async function nearby(world,radius=6){const data=await get('jumpworlds',{
 export function distance(a,b){const az=a.y-Math.floor(a.x/2),bz=b.y-Math.floor(b.x/2),dx=a.x-b.x,dz=az-bz;return Math.max(Math.abs(dx),Math.abs(dz),Math.abs(dx+dz));}
 export function fuel(world,ship,data){if(world.fuelOverride===true)return true;if(world.fuelOverride===false)return false;try{const u=parseUWP(world.overrideUWP||world.uwp,data);if(['A','B','C','D'].includes(u.starport))return true;return !!ship.scoops&&(world.gasGiants>0||world.accessibleWater===true);}catch{return false;}}
 export function plan(worlds,stops,ship,data){if(stops.length<2)throw Error('Choose an origin and destination');const all=Object.values(worlds).sort((a,b)=>a.id.localeCompare(b.id));if(all.length>1600)throw Error('Route search exceeds 1,600 loaded worlds. Plan shorter segments.');const result=[];for(let leg=1;leg<stops.length;leg++){const from=worlds[stops[leg-1]],to=worlds[stops[leg]];if(!from||!to)throw Error('Load every mandatory stop first');if(!fuel(from,ship,data)||!fuel(to,ship,data))throw Error('Fuel availability is unconfirmed at '+(!fuel(from,ship,data)?from.name:to.name));if(from.id===to.id){if(!result.length)result.push(from.id);continue;}const best=new Map([[from.id,{jumps:0,length:0,path:[from.id]}]]),queue=[from.id],visited=new Set();const compare=(a,b)=>a.jumps-b.jumps||a.length-b.length||a.path.join('|').localeCompare(b.path.join('|'));while(queue.length){queue.sort((a,b)=>compare(best.get(a),best.get(b)));const id=queue.shift();if(visited.has(id))continue;visited.add(id);if(id===to.id)break;const at=best.get(id);for(const w of all){const d=distance(worlds[id],w);if(!d||d>ship.jump||!fuel(w,ship,data)||visited.has(w.id))continue;const option={jumps:at.jumps+1,length:at.length+d,path:[...at.path,w.id]};if(!best.has(w.id)||compare(option,best.get(w.id))<0){best.set(w.id,option);queue.push(w.id);}}}if(!best.has(to.id))throw Error('No valid connection from '+from.name+' to '+to.name+' within the loaded search area (12 parsecs around each requested stop).');const path=best.get(to.id).path;result.push(...(result.length?path.slice(1):path));}return result;}
+
+const catalogCache=new Map();
+function cached(key,loader){if(!catalogCache.has(key)){const p=loader().catch(e=>{catalogCache.delete(key);throw e;});catalogCache.set(key,p);}return catalogCache.get(key);}
+export function subsectorForHex(hex){
+ if(!/^[0-9]{4}$/.test(hex))throw Error('Invalid world hex');
+ const x=Number(hex.slice(0,2)),y=Number(hex.slice(2));
+ if(x<1||x>32||y<1||y>40)throw Error('World hex is outside its sector');
+ return String.fromCharCode(65+Math.floor((x-1)/8)+4*Math.floor((y-1)/10));
+}
+export function sectors(){return cached('sectors',async()=>{
+ const data=await get('universe',{requireData:1});
+ if(!Array.isArray(data.Sectors))throw Error('Invalid sector list');
+ return data.Sectors.filter(s=>s.Names?.[0]?.Text).map(s=>({name:s.Names[0].Text,aliases:s.Names.map(n=>n.Text).concat(s.Abbreviation||'')})).sort((a,b)=>a.name.localeCompare(b.name));
+});}
+export function sectorCatalog(sector){return cached('sector:'+sector,async()=>{
+ const [metadata,table]=await Promise.all([get('metadata',{sector}),get('sec',{sector,type:'TabDelimited',metadata:0})]);
+ if(typeof table!=='string')throw Error('Invalid world list');
+ const lines=table.replace(/^\uFEFF/,'').split(/\r?\n/).filter(l=>l.trim()&&!l.startsWith('#'));
+ const header=lines.shift()?.split('\t'),hexIndex=header?.indexOf('Hex'),nameIndex=header?.indexOf('Name');
+ if(hexIndex<0||nameIndex<0||!header)throw Error('World list is missing names or hexes');
+ const worlds=lines.map(l=>l.split('\t')).map(row=>({name:row[nameIndex]||row[hexIndex],hex:row[hexIndex]})).filter(w=>/^\d{4}$/.test(w.hex)).map(w=>({...w,sector,subsector:subsectorForHex(w.hex)})).sort((a,b)=>a.name.localeCompare(b.name)||a.hex.localeCompare(b.hex));
+ const subsectors=Array.from({length:16},(_,i)=>{const index=String.fromCharCode(65+i);return {index,name:metadata.Subsectors?.find(s=>s.Index===index)?.Name||'Subsector '+index};});
+ return {subsectors,worlds};
+});}

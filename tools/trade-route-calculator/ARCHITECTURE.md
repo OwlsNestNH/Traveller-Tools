@@ -143,3 +143,9 @@ Implement insurance and taxation as independently enabled modules, disabled by d
 Extend campaign settings and versioned exports with both switches. Policies retain covered lot IDs/quantities, destination, frozen route/risk/value inputs, premium, potential payout, status and claim references. Tax audits retain the normal-market-value benchmark separately from actual acquisition basis, government/organisation, taxable amount, bracket/rate, rolls/overrides and allocated posted tax. Preserve all applied rule/decision revisions.
 
 Add premium, tax and approved-claim ledger types. Commits and undo reconcile bank, cargo, policies, claims and taxes together; prevent duplicate claims. Follow the updated profit formulas in REQUIREMENTS.md: preserve pre-tax RAW profit, subtract tax, and apply profit mode only to the positive remainder. Apply INT-010 through INT-021: per-sale net taxable profit, proportional positive-gain allocation, criminal-market exemption, premiums in cost basis and fractional bracket handling. Preserve each decision revision.
+
+## World-picker and hex-grid implementation
+
+`js/world-picker.mjs` provides native selects with labelled search inputs, cascading invalidation, loading/error/retry feedback and request sequencing. `js/map.mjs` loads sector/subsector/world catalogs using the documented public API, caches successful catalog promises in memory, and evicts failed requests for retry. Tab-delimited data supplies world names/hexes; selecting a world still resolves it through the existing normalized world lookup.
+
+A separate versioned localStorage key stores the last ten world choices; it is an optional UI preference, not economic campaign state or part of campaign JSON. Map hexes use the same world-coordinate projection as world markers. The overlay ignores pointer events, and the toggle changes only presentation.

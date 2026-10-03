@@ -126,3 +126,9 @@ PV-01–05 are covered by exact-money, accounting and contract unit tests; PV-06
 These are initial checks, not a claim that every listed acceptance case has its own automated assertion. Bulk-expiration combinations, all policy-amendment sequences, every possible manual override, long-running storage growth and alternate browsers need further playtesting. Browser layout coverage includes 15 cargo lots and generated market rows, not every possible list length or assistive technology.
 
 Route search is bounded to loaded areas; calendar display uses the chosen starting label plus elapsed time. Referee inputs remain required for exotics, item-specific local bans, unsupported tax governments, premiums beyond six parsecs and policy amendments. No new rule interpretation is implied by an incomplete test case.
+
+## Navigation UI checks — 2026-10-03
+
+The searchable world selectors, Recent Worlds and numbered hex overlay change navigation presentation, not trade rules. [world-picker.test.mjs](verification/world-picker.test.mjs) passed in Microsoft Edge with deterministic API fixtures: derived hex, parent-selection clearing, stale-response protection, retry, empty sectors, unchanged campaign state while browsing, actual route origin, stop reorder/removal, route persistence, recent-world persistence/deduplication/ten-entry cap, grid alignment/toggle/world clicking, and narrow-screen width.
+
+The existing browser integration suite and all 28 application unit tests also passed. The live-map suite now verifies real sector/subsector/world list loading and a Jenghe selection with its automatic hex, while the actual ship stays at Regina. This does not change the existing rules-source verification scope.
