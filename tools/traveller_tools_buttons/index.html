@@ -58,6 +58,9 @@
       cursor:pointer;
       user-select:none;
     }
+    .export-links{padding:10px 14px;border:1px solid var(--accent);border-radius:10px;background:var(--btn);color:var(--text);font:inherit;cursor:pointer}
+    .export-links:hover{background:var(--btnHover)}
+    .export-links:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
     .pill.active{color:var(--text); border-color: rgba(122,162,255,.35); background: rgba(122,162,255,.12);}
     main{max-width:1100px;margin:0 auto;padding:18px 16px 60px}
     .grid{
@@ -136,6 +139,7 @@
     <p class="sub">A civilized, clickable version of your link stash. Search and filter. Your browser does the rest.</p>
     <div class="controls">
       <input id="search" type="search" placeholder="Search labels or URLs (e.g., 'world', 'donjon', 'npc')…" autocomplete="off" />
+      <button id="export-links" class="export-links" type="button" title="Download every listed link, including links hidden by your search or filter">Export all links (.md)</button>
       <div id="filters"></div>
     </div>
     <div class="smallNote">Tip: Ctrl+Click / Cmd+Click opens links in a new tab like a responsible adult.</div>
@@ -351,6 +355,32 @@ function render(){
     grid.appendChild(empty);
   }
 }
+
+
+function exportAllLinks(){
+  const escapeText = text => text.replace(/[\\`*_\[\]]/g, char => '\\' + char);
+  const lines = [
+    '# Traveller RPG Tools & Generators',
+    '',
+    'All listed links, grouped by category. Includes entries hidden by search or filters.',
+    ''
+  ];
+  DATA.forEach(({section, items}) => {
+    lines.push('## ' + escapeText(section), '');
+    items.forEach(({label, url}) => lines.push('- [' + escapeText(label) + '](<' + url.replace(/</g, '%3C').replace(/>/g, '%3E') + '>)'));
+    lines.push('');
+  });
+  const blob = new Blob([lines.join('\n')], {type: 'text/markdown;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'traveller-tools-and-generators.md';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+document.getElementById('export-links').addEventListener('click', exportAllLinks);
 
 buildFilters();
 render();
