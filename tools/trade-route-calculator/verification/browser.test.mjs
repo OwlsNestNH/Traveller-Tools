@@ -45,7 +45,7 @@ try{
  await page.locator('.cargo-table [data-action="lot-correct"]').first().click();await fill('description','Independent cargo lot');await fill('reason','Table edit verification');await click('Save');await closed();assert.equal((await read()).lots[0].description,'Independent cargo lot');
  // Browsing a real map node changes neither location nor economic state.
  await page.locator('svg [data-arg="-111,-70"]').click();assert.equal((await read()).actual,'-110,-70');assert.equal((await read()).bank,afterBuy);
- await click('Settings');await click('Ship, trader & options');await page.locator('[name="tax"]') .check();await click('Save');await closed();await click('Overview');await click('Current ship');await page.locator('[data-lot]').first().check();await click('Preview sale');
+ await click('Settings');await click('Ship, trader & options');await page.locator('[name="tax"]') .check();await click('Save');await closed();await click('Overview');await click('Current system');await page.locator('[data-lot]').first().check();await click('Preview sale');
  await fill('dice',12);await click('Preview search');await click('Commit search');
  await page.getByRole('heading',{name:/Prepare sale/}).waitFor();
  const saleLot=(await read()).lots[0],quotedPrice=await page.locator('[name="price_'+saleLot.id+'"]').inputValue();

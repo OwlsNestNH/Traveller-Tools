@@ -266,7 +266,7 @@ Provide a **Ship expenses** shortcut in the main navigation and in Accounts. The
 
 ## Map panning and area loading — 2026-10-04
 
-The map supports mouse drag and touch drag. Movement beyond a small threshold pans the map without selecting the world under the pointer. A normal click still browses that world. Reset view restores centered 100% zoom; Current ship centers the ship. Neither browsing nor panning moves the ship or changes campaign time, bank or cargo.
+The map supports mouse drag and touch drag. Movement beyond a small threshold pans the map without selecting the world under the pointer. A normal click still browses that world. Reset view restores centered 100% zoom; Current system centers the map on the ship’s actual system. Neither browsing nor panning moves the ship or changes campaign time, bank or cargo.
 
 The old 12-parsec display boundary is removed. After panning/zooming pauses, fetch small overlapping areas around the viewport using 12-parsec requests. Debounce requests, allow at most two concurrently, discard obsolete queued requests, and reuse a bounded 32-area memory cache. Map browsing data remains separate from saved campaign and route-planning data. Route search keeps its existing 12-parsec area around each requested stop.
 
