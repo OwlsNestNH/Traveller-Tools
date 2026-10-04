@@ -267,4 +267,4 @@ The map supports mouse drag and touch drag. Movement beyond a small threshold pa
 
 The old 12-parsec display boundary is removed. After panning/zooming pauses, fetch small overlapping areas around the viewport using 12-parsec requests. Debounce requests, allow at most two concurrently, discard obsolete queued requests, and reuse a bounded 32-area memory cache. Map browsing data remains separate from saved campaign and route-planning data. Route search keeps its existing 12-parsec area around each requested stop.
 
-Render nearby visible worlds only, capped at 1,500 markers. Hide ordinary world labels and hexes below 48% zoom; retain actual/viewed-world labels. Show loading/failure status and allow Refresh nearby to retry. This bounds rendering and requests rather than fetching a single enormous map.
+Render nearby visible worlds only, capped at 1,500 markers. Keep planet names visible at every zoom, scaling their font and fitting long names to hex width. Hide hex numbers below 80% zoom and the grid below 48% zoom. Show loading/failure status and allow Refresh nearby to retry. This bounds rendering and requests rather than fetching a single enormous map.

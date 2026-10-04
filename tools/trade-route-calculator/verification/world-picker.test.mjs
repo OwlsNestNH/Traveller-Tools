@@ -57,7 +57,7 @@ try{
  await map.waitFor({state:'visible'});const box=await page.evaluate(()=>{const r=document.querySelector('.world-map').getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};}),startX=box.x+box.width*.85,startY=box.y+box.height*.5;
  await page.mouse.move(startX,startY);await page.mouse.down();await page.mouse.move(startX-32*10*Math.sqrt(3)/2*box.width/520,startY,{steps:10});await page.mouse.up();
  await page.locator('svg [data-arg="-78,-70"]').waitFor();assert.deepEqual(await read(),before);assert.equal((await read()).worlds['-78,-70'],undefined);
- assert.equal(await page.locator('svg [data-arg="-78,-70"] text').count(),0);
+ assert.equal(await page.locator('svg [data-arg="-78,-70"] text').count(),1);
  await click('Reset view');await page.waitForFunction(()=>document.querySelector('.map-zoom-controls span').textContent==='100%');assert.deepEqual(await read(),before);
  await click('Find world');const picker=page.locator('#find-world');await picker.locator('.picker-selection').getByText(/Hex 1910/).waitFor();
  assert.equal(await picker.getByLabel('Sector',{exact:true}).locator('option').filter({hasText:'Trojan Reach'}).count(),1);
