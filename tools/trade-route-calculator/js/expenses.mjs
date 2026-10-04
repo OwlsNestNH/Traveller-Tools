@@ -1,4 +1,5 @@
 import * as A from './amounts.mjs';
+import {monthlyRates,serviceRate,serviceLabel} from './accommodation.mjs';
 
 export const berthMultipliers={A:1000,B:500,C:100,D:10,E:0,X:0};
 export function starport(world){return (world.overrideUWP||world.uwp).slice(0,1).toUpperCase();}
@@ -12,7 +13,7 @@ export function berthRate(world){
 }
 function count(value,label){const n=Number(value);if(!Number.isSafeInteger(n)||n<1)throw Error(label+' must be a positive whole number.');return n;}
 function people(value,label){const n=Number(value??0);if(!Number.isSafeInteger(n)||n<0)throw Error(label+' must be a non-negative whole number.');return n;}
-export const supportRates={low:100,middle:1000,high:3000};
+export const supportRates=monthlyRates;
 function period(input){if(!['week','month'].includes(input.period))throw Error('Choose weeks or months.');return {units:count(input.units,'Billing periods'),divisor:input.period==='week'?4n:1n};}
 export function expenseQuote(world,input){
  const kind=input.kind,notes=String(input.notes||'').trim(),port=starport(world);
@@ -36,15 +37,17 @@ export function expenseQuote(world,input){
    const rooms=count(input.staterooms,'Ship staterooms');monthly=BigInt(rooms)*1000n;
    details.push(['Staterooms (including empty)',String(rooms)],['Monthly cost per stateroom · Cr','1000']);
   }else{
-   for(const role of ['passengers','crew'])for(const [tier,rate] of Object.entries(supportRates)){
-    const n=people(input[role]?.[tier],role+' · '+tier);monthly+=BigInt(n)*BigInt(rate);
-    details.push([(role==='crew'?'Crew':'Passengers')+' · '+tier,String(n)+' × Cr'+rate+' / month']);
+   let totalPeople=0;
+   for(const role of ['passengers','crew'])for(const tier of Object.keys(supportRates)){
+    const service=input[role+'Service']?.[tier],rate=serviceRate(tier,service);
+    const n=people(input[role]?.[tier],role+' · '+tier);totalPeople+=n;monthly+=BigInt(n)*BigInt(rate);
+    details.push([(role==='crew'?'Crew':'Passengers')+' · '+tier,String(n)+' × Cr'+rate+' / month · '+serviceLabel(tier,service)+' service']);
    }
-   if(!monthly)throw Error('Enter at least one passenger or crew member.');
+   if(!totalPeople)throw Error('Enter at least one passenger or crew member.');
   }
   amount=String(monthly*BigInt(units)/divisor);
   details.push(['Monthly total · Cr',String(monthly)],['Billing period',input.period],['Periods purchased',String(units)],['Weekly billing basis','One quarter of a monthly charge']);
-  reference='Campaign-agreed rates: Cr1,000 per stateroom per month, including empty rooms; per-person life support Cr100 low, Cr1,000 middle, Cr3,000 high per month. One billing month = four weeks. High passage luggage is separate from life-support supplies.';
+  reference='Campaign-agreed rates: Cr1,000 per stateroom per month, including empty rooms; per-person life support Cr100 low, Cr1,000 middle, Cr3,000 high per month. Service upgrades and custom monthly rates are entered in ship settings, independently of passage class. One billing month = four weeks; final charges round down to whole Credits. Luggage is separate from life-support supplies.';
  }else if(kind==='lifeSupport'||kind==='salary'){
   const monthly=A.credit(input.monthly),months=count(input.months,'Months');if(monthly<=0n)throw Error('Enter a positive monthly cost.');
   amount=String(monthly*BigInt(months));details=[['Entered monthly cost · Cr',String(monthly)],['Months paid',String(months)]];
