@@ -76,3 +76,9 @@ The initial versioned data and reproducible checks are in [rules/README.md](rule
 ## Required checks
 
 Verify the complete insurance and tax tables, source provenance and approved corrections. Cover bracket boundaries (including Cr75000/75001/76000/76001), fractional percentage premiums, separate taxable/actual profit, tax-induced losses, tax off, RAW/Reduced/Custom ordering, policy lifecycle, duplicate claims, partial lots, export/import and atomic undo. Source/data checks, unit accounting/lifecycle tests and browser workflow checks have run. The verification record identifies their coverage; campaign playtesting remains open.
+
+## Selecting the insured route portion
+
+At purchase, Optional > Insurance exposes coverage, an Insure through dropdown listing each remaining route stop with jump count and cumulative parsecs, and an editable insured-distance field. The selected stop becomes the policy destination. Only the route prefix through that stop contributes distance and travel-zone surcharges; coverage ends on arrival there, even when the ship's planned route continues. The default is the full remaining route. Two Jump-2 legs count as four parsecs, not two, for premium lookup.
+
+Distance defaults to the selected route portion's calculated parsecs. A different value requires a referee reason; preserve calculated and effective distance and the reason in the saved policy. Unsupported table distances still require a referee premium. Preview and cancel do not alter campaign state. A committed policy retains its selected route and destination for claims, arrival and amendments.
