@@ -174,3 +174,9 @@ Validation: 48 application, expense, accommodation, rounding and report tests pa
 Accounts Details now renders labeled facts and explanatory text for purchases, sales, broker fees, taxes, profit adjustments, insurance payments/premiums/amendments, delivery income, opening funds, manual expenses and bank corrections. Trade calculations reuse the readable price-roll/DM tables and rule footnotes. No ledger type falls back to raw JSON. New purchase ledger entries retain immutable purchase price, quantity and audit facts after the cargo is sold; older missing facts are identified explicitly.
 
 Validation: all 48 application/expense/accommodation/rounding/report tests passed. The Edge browser suite exercised every recorded ledger entry after a profitable sale with fees/tax and after insurance/claim transactions, checking that there is no code block, no missing-value rendering and no campaign mutation. Purchase details remain readable after the lot is fully sold. Sale details were also visually inspected.
+
+### Readable contract and History audits — 2026-10-04
+
+Removed the last generic JSON detail renderer. Contract offers, accepted/delivered contracts, and History entries now display labeled summaries and relevant saved calculations. Freight/mail rolls and modifiers, edits, jump duration overrides, searches, cargo corrections and rounding records remain accessible. Newly recorded contract searches also preserve the skill and characteristic separately; older records are not guessed or rewritten. JSON campaign backup remains unchanged.
+
+Validation: syntax check and full isolated Edge browser suite passed, including every available History detail in the test campaign, edited freight offer calculations, mail search details, delivered-contract payment, no raw pre/code blocks, no invalid-value text, unchanged campaign data and continued JSON/TXT exports. Freight offer and jump History dialogs were visually inspected.

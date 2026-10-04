@@ -83,7 +83,7 @@ try{
  const freight=page.locator('.freight-table').first();assert.deepEqual(await freight.locator('th').allTextContents(),['Freight Lot / Description','Tons','Destination','Rate / ton','Total Revenue','Due / Delivery Date','Status','Actions']);
  await freight.getByRole('button',{name:'Edit',exact:true}).first().click();await fill('description','Referee freight lot');await fill('quantity','0.5');await fill('payment','900');await fill('due','');await fill('reason','Freight table edit');await click('Save');await closed();
  assert.match(await freight.locator('tbody tr').first().textContent(),/Referee freight lot/);assert.match(await freight.locator('tbody tr').first().textContent(),/No due date/);
- await freight.getByRole('button',{name:'Audit/View',exact:true}).first().click();assert.match(await page.locator('#modal-body').textContent(),/Freight table edit/);await click('Close');
+ await freight.getByRole('button',{name:'Audit/View',exact:true}).first().click();assert.match(await page.locator('#modal-body').textContent(),/Freight table edit/);assert.equal(await page.locator('#modal-body pre, #modal-body code').count(),0);assert.match(await page.locator('#modal-body').textContent(),/Traffic 2D roll/);await page.screenshot({path:join(artifacts,'readable-contract-offer.png')});await click('Close');
  await page.screenshot({path:join(artifacts,'freight-table.png'),fullPage:true});
  await freight.getByRole('button',{name:'Accept',exact:true}).first().click();await click('Accept whole contract');await closed();assert.equal((await read()).contracts.at(-1).description,'Referee freight lot');
  await click('History');await click('Undo latest change');assert.equal((await read()).contracts.length,0);
@@ -91,6 +91,22 @@ try{
  await click('Overview');await click('COMMIT JUMP → Jenghe');await fill('hours','160');await click('COMMIT JUMP');await closed();assert.equal((await read()).actual,'-111,-70');assert.equal((await read()).policies[0].status,'arrived');
  await click('Contracts');const beforeDelivery=BigInt((await read()).bank);await click('Deliver');await fill('die','2');await click('Commit delivery & payout');await closed();assert.equal(BigInt((await read()).bank)-beforeDelivery,400n);
  await click('Overview');
+
+ // Every remaining History and contract detail is readable and non-mutating.
+ const beforeDetails=await read();await click('Contracts');
+ for(const c of beforeDetails.contracts){
+  await page.locator('[data-action="contract-audit"][data-arg="'+c.id+'"]').click();
+  assert.equal(await page.locator('#modal-body pre, #modal-body code').count(),0);assert.match(await page.locator('#modal-body').textContent(),/Actual payment/);await click('Close');
+ }
+ await click('History');
+ for(const e of beforeDetails.events){
+  await page.locator('[data-action="event-audit"][data-arg="'+e.id+'"]').click();
+  const text=await page.locator('#modal-body').textContent();assert.equal(await page.locator('#modal-body pre, #modal-body code').count(),0);assert.doesNotMatch(text,/undefined|NaN|\[object Object\]/);
+  if(e.offers){assert.match(text,/Search Effect/);assert.match(text,/Mail availability/);}
+  if(e.generatedHours!=null){assert.match(text,/Elapsed time used/);await page.screenshot({path:join(artifacts,'readable-jump-history.png')});}
+  await click('Close');
+ }
+ assert.deepEqual(await read(),beforeDetails);
  // A second tab cannot overwrite state, and explicit transfer hands off the lock.
  await click('Accounts');await click('Record expense');await fill('amount','1');await fill('reason','Stale preview must not commit');
  const second=await ctx.newPage();await second.goto(base);await second.getByText('Read-only: campaign open in another tab.',{exact:true}).waitFor();

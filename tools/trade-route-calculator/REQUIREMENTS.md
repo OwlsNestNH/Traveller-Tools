@@ -315,3 +315,11 @@ Show available map data immediately, refresh it from Traveller Map, and offer Re
 ### Player-facing ledger details
 
 Every Accounts > Details dialog uses labeled, readable facts and explanations, never raw JSON or code. Show the recorded date/world, bank change and available calculation inputs. Sales distinguish gross proceeds, cost basis, fees, taxes, retained profit and net bank credit. Profit adjustments explain the historical retained percentage. Purchases retain price rolls and DMs with new immutable ledger snapshots so selling a lot does not erase its purchase detail. Older missing fields are explicitly identified rather than reconstructed from current quantities. Insurance, taxes, expenses and trading include relevant footnotes; no new claim processing workflow is introduced. Viewing details must not mutate campaign state.
+
+### Readable contract and history details
+
+- Freight/mail offer and saved-contract Audit/View must present labeled terms, origin/destination, tonnage, payment, deadline, status, delivery outcome and recorded overrides.
+- Preserve readable freight DMs, traffic/count/size dice, table result and rate; mail availability dice, each mail DM, final result and container count. Refer to Core Rulebook Update 2022 pp. 239–241. Missing historical components must say not recorded.
+- History Details must summarize the recorded action, date, world, notes and available event-specific information: jump duration and overrides, contract search results, contract edits, cargo additions/corrections and rounding changes. Never expose JSON, internal identifiers or generic raw-object rendering.
+- Newly saved contract search history retains skill and characteristic inputs separately. Existing historical records are not rewritten.
+- Read-only summaries do not alter campaign state. Full underlying data remains in JSON backups.
