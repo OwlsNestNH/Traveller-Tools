@@ -2,7 +2,7 @@ import {up,creditStep,roundExisting} from './rounding.mjs';
 import {validateAccommodation,passengerLuggage} from './accommodation.mjs?v=rounding-1';
 import {add,sub,mul,div,cmp,floor,sum,decimal,credit} from './amounts.mjs';
 import {VERSION} from './rules.mjs?v=rounding-1';
-import {expenseQuote,starport,berthMultipliers} from './expenses.mjs?v=rounding-1';
+import {expenseQuote,starport,berthMultipliers} from './expenses.mjs?v=fuel-sources-1';
 export const SCHEMA=1;
 export const uid=()=>crypto.randomUUID();
 export function initial(){return {schema:SCHEMA,revision:0,rulesVersion:VERSION,initialized:false,name:'My trading campaign',bank:'0',hours:0,dateLabel:'001-1105',ship:{name:'Independent trader',capacity:'60',staterooms:0,jump:2,scoops:true,armed:false},trader:{broker:0,streetwise:0,admin:0,characteristic:0,rank:0,soc:0},settings:{profit:75,tax:false,insurance:false,creditStep:1},worlds:{},actual:null,route:[],routeIndex:0,snapshots:[],lots:[],contracts:[],policies:[],ledger:[],cooldowns:{},undo:[],events:[]};}

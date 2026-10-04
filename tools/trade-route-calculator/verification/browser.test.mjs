@@ -126,6 +126,10 @@ try{
  await click('History');await click('Undo latest change');await click('Undo latest change');assert.equal((await read()).bank,expenseBank);
  await openExpenses();await page.locator('[name="include-berthing"]').uncheck();assert.equal(await page.locator('#modal-submit').isDisabled(),true);await page.locator('[name="include-fuel"]').check();await fill('fuelTons','12.5');await click('Preview expenses');await click('Pay Cr 1,300');await closed();assert.equal((await read()).ledger.at(-1).expense.kind,'fuel');
  await click('Undo latest change');assert.equal((await read()).bank,expenseBank);
+ await openExpenses();await page.locator('[name="include-berthing"]').uncheck();await page.locator('[name="include-fuel"]').check();await page.locator('[name="fuelType"]').selectOption('water');await fill('fuelTons','20');
+ assert.equal(await page.locator('#modal-submit').isDisabled(),false);await click('Preview expenses');assert.match(await page.locator('#modal-body').textContent(),/Free water collection/);await click('Pay Cr 0');await closed();
+ assert.equal((await read()).bank,expenseBank);assert.equal((await read()).ledger.at(-1).expense.amount,'0');await click('Undo latest change');
+
  await page.locator('#notes').click();await page.getByRole('heading',{name:'INT-018 · Criminal-market exemption'}).waitFor();await click('Close');
  // Whole-ton luggage field and previewed bulk rounding preserve history and undo.
  await click('Settings');await click('Ship, trader & options');await page.locator('[name="actualLuggage"]').check();await fill('luggageTons','0.01');await page.locator('[name="passengers-high"]').click();assert.equal(await page.locator('[name="luggageTons"]').inputValue(),'1');assert.equal(await page.locator('[name="luggageTons"]').getAttribute('step'),'1');assert.match(await page.locator('#rounding-input-note').textContent(),/0.01 → 1/);await click('Save');await closed();assert.equal((await read()).ship.accommodation.luggageTons,'1');

@@ -57,3 +57,22 @@ test('insufficient funds leaves state untouched; zero-cost berthing can be recor
  const s=campaign(),before=structuredClone(s);assert.throws(()=>S.shipExpense(s,{kind:'salary',monthly:'100001',months:1}));assert.deepEqual(s,before);
  s.worlds[s.actual]=world('E');S.shipExpense(s,{kind:'berthing',weeks:1});assert.equal(s.bank,'100000');assert.equal(s.ledger[0].amount,'0');
 });
+
+test('fuel sources distinguish purchases from free water at all port classes',()=>{
+ for(const port of ['A','B','C','D'])assert.equal(E.expenseQuote(world(port),{kind:'fuel',fuelType:'unrefined',tons:'20'}).amount,'2000');
+ for(const port of ['A','B','C','D','E','X']){
+  const q=E.expenseQuote(world(port),{kind:'fuel',fuelType:'water',tons:'20'});
+  assert.equal(q.amount,'0');assert.ok(q.details.some(([k,v])=>k==='Supply'&&v==='Free water collection'));
+ }
+ for(const uwp of ['X780899-C','X7A8899-C','X7??899-C']){
+  const w={...world('X'),uwp},input={kind:'fuel',fuelType:'water',tons:'1'};
+  assert.throws(()=>E.expenseQuote(w,input),/Usable water/);
+  assert.throws(()=>E.expenseQuote(w,{...input,otherSupplier:true}),/Usable water/);
+  assert.equal(E.expenseQuote(w,{...input,otherSupplier:true,notes:'Referee confirms a source after roleplay'}).amount,'0');
+  assert.equal(E.expenseQuote({...w,accessibleWater:true},input).amount,'0');
+ }
+ assert.throws(()=>E.expenseQuote({...world(),overrideUWP:'X780899-C'},{kind:'fuel',fuelType:'water',tons:'1'}));
+ const s=campaign(),after=S.transition(s,'Collect water',n=>S.shipExpenses(n,[{kind:'fuel',fuelType:'water',tons:'20'}]));
+ assert.equal(after.bank,s.bank);assert.equal(after.ledger.length,1);assert.equal(after.ledger[0].expense.amount,'0');
+ assert.deepEqual(S.validate(JSON.parse(JSON.stringify(after))),after);assert.equal(S.undo(after).ledger.length,0);
+});

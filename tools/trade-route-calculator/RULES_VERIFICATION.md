@@ -156,3 +156,9 @@ All 35 application/calendar/expense tests passed. Expense cases cover every star
 ## Map pan and expanded browsing checks — 2026-10-04
 
 All 37 application/calendar/expense/viewport unit tests passed. The viewport tests cover visible-hex coverage across coordinate parity and zoom, two-request concurrency, superseded queues, failed-request retry and the 32-area cache bound. The Edge world-picker suite covers drag starting on a world without accidental selection, shared-layer movement, reset, click after cancellation, pan persistence during redraw, and fetching a previously unknown world 32 parsecs from the starting world. Browsing leaves the saved campaign unchanged and does not copy exploration areas into it. At 20% zoom ordinary world labels and hexes are hidden. Existing navigation and application browser suites passed using deterministic map API fixtures. No trade or route-finding rules changed.
+
+### Fuel source clarification — 2026-10-04
+
+User ruling: wherever refined fuel is available, unrefined is also available. Usable natural water supplies free unrefined fuel regardless of starport class, including E/X; otherwise establish a source through roleplay. Purchased fuel retains Core prices (Cr500 refined / Cr100 unrefined per ton). Core pp. 156–157 support natural collection; the A/B availability interpretation and free-water handling are explicitly identified as campaign rulings in audits. Hydrographics with exotic atmospheres require confirmation rather than assuming fluid is water.
+
+Validation: 45 application, expense, accommodation and rounding tests passed. Fuel cases cover A/B unrefined purchases, free collection at A–X, dry/exotic/unknown worlds, referee confirmation, effective UWP overrides, zero-cost persistence and undo. The isolated Edge browser suite passed, including selecting free collection, previewing and confirming Cr0, unchanged bank and undo.
