@@ -32,8 +32,14 @@ try{
  assert.equal(await page.locator('.purchase-table tbody tr').first().locator('td').nth(3).textContent(),initialOffer.audit.percent+'%');
  await page.screenshot({path:join(artifacts,'purchase-table.png'),fullPage:true});
  const offerId=(await read()).snapshots[0].offers[0].id;await page.locator('[data-expire="'+offerId+'"]').click();assert.equal((await read()).snapshots[0].offers.filter(o=>o.expired).length,1);await page.locator('#market-filter').selectOption('all');const expired=page.locator('.expired-row');assert.equal(await expired.getByRole('button',{name:'Buy',exact:true}).isDisabled(),true);assert.equal(await expired.getByRole('button',{name:'Audit',exact:true}).isEnabled(),true);await expired.getByRole('button',{name:'Audit',exact:true}).click();await page.getByRole('heading',{name:/Commodity audit/}).waitFor();await click('Close');await page.locator('[data-expire="'+offerId+'"]').click();assert.equal((await read()).snapshots[0].offers.filter(o=>o.expired).length,0);
- await page.getByRole('button',{name:'Buy',exact:true}).first().click();await fill('quantity','0.5');await click('Preview purchase');await click('COMMIT PURCHASE');await closed();
- let saved=await read();assert.equal(saved.lots[0].quantity,'0.5');const afterBuy=saved.bank;
+ await page.getByRole('button',{name:'Buy',exact:true}).first().click();
+ assert.equal(await page.getByRole('group',{name:'Optional',exact:true}).count(),1);
+ assert.equal(await page.locator('[name="purchaseTax"]').count(),0);assert.equal(await page.locator('[name="insure"]').isChecked(),false);
+ await page.locator('[name="insure"]').check();assert.equal(await page.locator('#purchase-insurance-options').isVisible(),true);await page.locator('[name="insure"]').uncheck();
+ await fill('quantity','0.5');await click('Preview purchase');
+ await click('Cancel');assert.equal((await read()).settings.tax,false);assert.equal((await read()).lots.length,0);
+ await page.getByRole('button',{name:'Buy',exact:true}).first().click();await page.screenshot({path:join(artifacts,'purchase-optional.png')});await fill('quantity','0.5');await click('Preview purchase');await click('COMMIT PURCHASE');await closed();
+ let saved=await read();assert.equal(saved.settings.tax,false);assert.equal(saved.settings.insurance,false);assert.equal(saved.lots[0].quantity,'0.5');const afterBuy=saved.bank;
  assert.deepEqual(await page.locator('.cargo-table th').allTextContents(),['Commodity','Tons Held','Retail','Price %','Sale Price','Lot / Description','Actions']);
  await assertGrid('.cargo-table');assert.match(await page.locator('.cargo-table tbody').textContent(),/Not negotiated/);
  await page.locator('.cargo-table [data-action="lot-correct"]').first().click();await fill('description','Independent cargo lot');await fill('reason','Table edit verification');await click('Save');await closed();assert.equal((await read()).lots[0].description,'Independent cargo lot');
@@ -50,8 +56,8 @@ try{
  await page.locator('.cargo-table [data-action="lot-sell"]').first().click();await click('Negotiate sale');await click('Preview sale');await page.getByRole('heading',{name:'Confirm sale'}).waitFor();await click('COMMIT SALE');await closed();assert.equal((await read()).lots.length,0);
  await click('History');await click('Undo latest change');assert.equal((await read()).lots.length,1);
  await click('Overview');await click('Plot route');await page.locator('#route-destination').getByLabel('Subsector',{exact:true}).selectOption('C');await page.locator('#route-destination').getByLabel('World',{exact:true}).selectOption('1810');await click('Calculate route');await click('Save route');await closed();assert.equal((await read()).route.length,2);
- await click('Settings');await click('Ship, trader & options');await page.locator('[name="insurance"]').check();await page.locator('[name="tax"]').check();await click('Save');await closed();
- await click('Overview');await page.getByRole('button',{name:'Buy',exact:true}).first().click();await fill('quantity','1');await page.locator('[name="insure"]').check();await click('Preview purchase');await click('COMMIT PURCHASE');await closed();assert.equal((await read()).policies.length,1);
+ await click('Settings');await click('Ship, trader & options');await page.locator('[name="insurance"]').uncheck();await page.locator('[name="tax"]').check();await click('Save');await closed();
+ await click('Overview');await page.getByRole('button',{name:'Buy',exact:true}).first().click();await fill('quantity','1');await page.locator('[name="insure"]').check();await click('Preview purchase');await click('COMMIT PURCHASE');await closed();assert.equal((await read()).policies.length,1);assert.equal((await read()).settings.insurance,true);
  await click('Cargo');await click('Loss / claim');await fill('quantity','0.25');await fill('reason','Referee-confirmed partial loss');await page.locator('[name="approved"]').check();await click('Preview claim');await click('Commit loss & claim');await closed();assert.equal((await read()).policies[0].remainingQuantity,'0.75');
  await click('Contracts');await click('Find contracts');await fill('dice',12);await page.getByText('Override freight / mail dice',{exact:true}).click();await fill('diceSequence',Array(300).fill(6).join(','));await click('Generate offers');await closed();
  const freight=page.locator('.freight-table').first();assert.deepEqual(await freight.locator('th').allTextContents(),['Freight Lot / Description','Tons','Destination','Rate / ton','Total Revenue','Due / Delivery Date','Status','Actions']);
