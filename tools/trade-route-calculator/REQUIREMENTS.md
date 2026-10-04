@@ -299,3 +299,15 @@ Show available map data immediately, refresh it from Traveller Map, and offer Re
 - The normal luggage allowance still derives from 10 kg low, 100 kg middle and 1 ton high; round the combined reservation upward once when new ship settings are saved or bulk rounding is applied. Do not round each small allowance separately. An explicit zero luggage override remains zero. Existing campaigns are not rewritten merely by opening the calculator.
 - [R] **Rounding applied** footnotes identify the active Credit increment and whole-ton rule. Input changes and bulk previews show original and rounded values; saved history retains those pairs. Price and expense audits retain their unrounded calculation alongside the final charge. This is a campaign house rule, not a claim about published rounding rules.
 - Keep exact intermediate arithmetic and proportional cost-basis/insurance allocation so partial sales and write-offs reconcile. Historical fractional insured quantities can still be claimed without expanding their insured entitlement. Do not round source data or rewrite previously recorded transactions.
+
+### User report and campaign save files
+
+- Provide **Export report (TXT)** in Settings and Accounts, alongside **Save campaign (JSON)**. Use **Load campaign (JSON)** for restoration.
+- The UTF-8 text report is a readable summary of campaign date/location, ship and actual occupants/service levels, cargo capacity including freight and luggage, route/progress, financial totals, cargo lots, completed sales, insurance and recorded operating expenses.
+- Each aboard lot labels commodity, description, quantity, retail and original purchase price per ton, actual purchase percentage and discount/markup, remaining goods value and total cost basis, original broker fee/premium when recorded. Original charges must not be presented as the remaining lot's charges after partial sales.
+- Each completed sale labels quantity, sale unit price and percentage against retail, proceeds, cost basis sold, fees, taxes, profit before adjustment, historical profit setting when saved, adjustment, retained profit/loss and bank credit. Keep historical results when the current profit setting changes.
+- Missing historical information is explicitly marked not recorded; never infer a commodity or profit setting from ambiguous old records. New sales retain commodity and profit percentage in their existing saved audit.
+- Distinguish bank movement, realized trading result and operating result; unsold cargo is not profit. Show insurance payments separately. Report only recorded expenses, with no inferred accruals.
+- Include relevant rules/rounding footnotes without raw JSON, internal IDs or dice audits. Insurance processing/location/timing stays outside scope.
+- Report generation is read-only and does not modify campaign values or revision. Percentages may be rounded to two decimals for readability; stored values remain unchanged.
+- JSON remains the full lossless campaign backup/restore format, including audits and undo history. TXT is not an import format.

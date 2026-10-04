@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
-import {mkdir} from 'node:fs/promises';
+import {mkdir,readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
 const artifacts=fileURLToPath(new URL('../verification-artifacts/',import.meta.url));
@@ -92,10 +92,15 @@ try{
  await page.setViewportSize({width:390,height:844});await page.screenshot({path:join(artifacts,'mobile-preview.png'),fullPage:true});
  assert.ok(await page.locator('body').evaluate(e=>e.scrollWidth)<=410);
  await page.setViewportSize({width:1440,height:1100});await click('Overview');await page.screenshot({path:join(artifacts,'desktop-preview.png'),fullPage:true});
- await click('Settings');const downloadPromise=page.waitForEvent('download');await click('Export backup');const download=await downloadPromise;assert.ok(download.suggestedFilename().endsWith('.json'));
+ await click('Settings');const downloadPromise=page.waitForEvent('download');await click('Save campaign (JSON)');const download=await downloadPromise;assert.ok(download.suggestedFilename().endsWith('.json'));
+ const beforeReport=await read(),reportDownload=page.waitForEvent('download');await click('Export report (TXT)');const reportFile=await reportDownload;
+ assert.ok(reportFile.suggestedFilename().endsWith('.txt'));const reportText=await readFile(await reportFile.path(),'utf8');
+ assert.match(reportText,/TRAVELLER - TRADE ROUTE REPORT/);assert.match(reportText,/Remaining total cost basis/);assert.match(reportText,/COMPLETED CARGO SALES/);assert.match(reportText,/Realized trading profit \/ loss/);assert.doesNotMatch(reportText,/\[object Object\]|undefined|NaN/);assert.deepEqual(await read(),beforeReport);
+ await reportFile.saveAs(join(artifacts,'campaign-summary.txt'));
+
  await click('Reset campaign');await click('Cancel');assert.equal((await read()).lots.length,15);
  const beforeBadImport=(await read()).bank;await page.locator('#import-file').setInputFiles({name:'bad.json',mimeType:'application/json',buffer:Buffer.from('{broken')});await page.locator('#message.error').waitFor();assert.equal((await read()).bank,beforeBadImport);
- const restore=await read();await page.locator('#import-file').setInputFiles({name:'restore.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(restore))});await page.getByRole('heading',{name:'Import campaign'}).waitFor();await page.locator('[name="backed"]').check();await click('Replace campaign');await closed();assert.equal((await read()).lots.length,15);
+ const restore=await read();await page.locator('#import-file').setInputFiles({name:'restore.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(restore))});await page.getByRole('heading',{name:'Load campaign (JSON)'}).waitFor();await page.locator('[name="backed"]').check();await click('Replace campaign');await closed();assert.equal((await read()).lots.length,15);
  // A failed browser save must leave the prior stored campaign intact.
  await click('Accounts');await click('Record expense');await fill('amount','3');await fill('reason','Quota failure check');const bankBeforeFailure=(await read()).bank;
  await page.evaluate(()=>{window.savedSetItem=Storage.prototype.setItem;Storage.prototype.setItem=function(){throw new DOMException('Storage full','QuotaExceededError');};});await click('Save');await page.locator('#modal-error').getByText('Storage full',{exact:true}).waitFor();assert.equal((await read()).bank,bankBeforeFailure);await page.evaluate(()=>{Storage.prototype.setItem=window.savedSetItem;});await click('Cancel');
@@ -137,6 +142,6 @@ try{
  await click('Round up Credits to 100 & tons to whole');await click('Apply rounding');await closed();const rounded=await read();assert.equal(rounded.settings.creditStep,100);assert.equal(BigInt(rounded.bank)%100n,0n);assert.ok(rounded.lots.every(l=>!l.quantity.includes('.')));assert.deepEqual(rounded.ledger.slice(0,beforeRound.ledger.length),beforeRound.ledger);
  await openExpenses();await page.locator('[name="include-berthing"]').uncheck();await page.locator('[name="include-salary"]').check();await fill('salary','149');await fill('salaryMonths','1');await page.locator('[name="expenseNotes"]').click();assert.equal(await page.locator('[name="salary"]').inputValue(),'200');assert.equal(await page.locator('[name="salaryMonths"]').inputValue(),'1');await click('Preview expenses');assert.match(await page.locator('#modal-body').textContent(),/Cr 200/);await click('Cancel');
  await click('History');await click('Undo latest change');assert.equal((await read()).bank,beforeRound.bank);assert.deepEqual((await read()).lots,beforeRound.lots);
- const recoveryCopy=await read();await page.evaluate(()=>localStorage.setItem('traveller-trade-route-calculator:v1','{corrupt'));await page.reload();await page.getByRole('heading',{name:'Recover saved campaign'}).waitFor();assert.equal(await page.evaluate(()=>localStorage.getItem('traveller-trade-route-calculator:v1')),'{corrupt');await page.locator('#import-file').setInputFiles({name:'recovery.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(recoveryCopy))});await page.getByRole('heading',{name:'Import campaign'}).waitFor();await page.locator('[name="backed"]').check();await click('Replace campaign');await closed();assert.equal((await read()).lots.length,15);
+ const recoveryCopy=await read();await page.evaluate(()=>localStorage.setItem('traveller-trade-route-calculator:v1','{corrupt'));await page.reload();await page.getByRole('heading',{name:'Recover saved campaign'}).waitFor();assert.equal(await page.evaluate(()=>localStorage.getItem('traveller-trade-route-calculator:v1')),'{corrupt');await page.locator('#import-file').setInputFiles({name:'recovery.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(recoveryCopy))});await page.getByRole('heading',{name:'Load campaign (JSON)'}).waitFor();await page.locator('[name="backed"]').check();await click('Replace campaign');await closed();assert.equal((await read()).lots.length,15);
  assert.deepEqual(errors,[]);console.log('PASS: browser purchase/sale/undo, browsing, route/jump, insurance/partial claim, late freight delivery, two-tab transfer/stale preview, 15 cargo rows, mobile layout, backup/import/reset cancellation, quota failure and notes. API responses stubbed from live sample.');
 }finally{await browser.close();}

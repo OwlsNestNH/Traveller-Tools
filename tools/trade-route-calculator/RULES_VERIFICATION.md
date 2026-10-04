@@ -162,3 +162,9 @@ All 37 application/calendar/expense/viewport unit tests passed. The viewport tes
 User ruling: wherever refined fuel is available, unrefined is also available. Usable natural water supplies free unrefined fuel regardless of starport class, including E/X; otherwise establish a source through roleplay. Purchased fuel retains Core prices (Cr500 refined / Cr100 unrefined per ton). Core pp. 156–157 support natural collection; the A/B availability interpretation and free-water handling are explicitly identified as campaign rulings in audits. Hydrographics with exotic atmospheres require confirmation rather than assuming fluid is water.
 
 Validation: 45 application, expense, accommodation and rounding tests passed. Fuel cases cover A/B unrefined purchases, free collection at A–X, dry/exotic/unknown worlds, referee confirmation, effective UWP overrides, zero-cost persistence and undo. The isolated Edge browser suite passed, including selecting free collection, previewing and confirming Cr0, unchanged bank and undo.
+
+### TXT user report — 2026-10-04
+
+Added a read-only user summary alongside JSON campaign saving/restoration. Cargo reports separate original purchase prices/discounts and charges from remaining quantity and cost basis. Completed sales retain their actual historical results; newly recorded sales also preserve commodity and profit mode. Missing old fields are labeled rather than inferred. Banking, realized trading profit and operating expenses are distinguished; free fuel records remain Cr0.
+
+Validation: 48 application, expense, accommodation, rounding and report tests passed. Report tests cover partial sales, historical 75% versus current 100% mode, missing old metadata, very large integer Credits, markup versus discount, empty campaigns and no export mutation. The isolated Edge browser suite passed TXT download/content and unchanged campaign checks, JSON save/load and existing trading/insurance/expenses workflows.
