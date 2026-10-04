@@ -17,3 +17,15 @@ td{padding:8px 10px}td .check{margin:0;white-space:nowrap}.cargo-scroll{max-heig
 .world-map .hex-grid text{font-size:6.5px;fill:#829aaa;pointer-events:none}
 
 .map-zoom-controls{display:flex;align-items:center;gap:8px;padding:0 16px 10px;flex-wrap:wrap}.map-zoom-controls button{min-width:40px}.world-map{overscroll-behavior:contain}
+
+/* Shared column geometry keeps trade headers aligned with their row values. */
+.grid>div{min-width:0}
+.trade-table{table-layout:fixed;width:100%}
+.purchase-table{min-width:990px}.cargo-table{min-width:1100px}.freight-table{min-width:1370px}
+.trade-table th,.trade-table td{padding:10px;overflow-wrap:anywhere}
+.trade-table th.number{text-align:right;white-space:normal}
+.trade-table .table-actions{white-space:normal}
+.table-actions button{margin:2px!important;min-width:48px}
+.trade-table .check{white-space:normal;align-items:center}
+.offer-status{display:block;font-weight:600;margin-bottom:5px}
+.expired-row{color:var(--muted);background:#0c1622}.expired-row>td:not(.table-actions){opacity:.72}

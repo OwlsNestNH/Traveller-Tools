@@ -75,3 +75,11 @@ After Find World, **Use as starting world** opens an explicit confirmation. The 
 Sector lists and world lookups explicitly use Traveller Map's M1105 milieu. Other-era versions are excluded and repeated sector names are deduplicated, so Trojan Reach appears once.
 
 Nearby worlds within 12 hexes load automatically when setting the ship's starting world or reopening a saved campaign. Location changes wait for successful loading before committing. Zoom out to 20% to see the entire neighborhood; crowded world/hex labels simplify when zoomed out, with world names/hexes still available by hovering or selecting. Refresh nearby remains available for an explicit retry.
+
+## Trade tables
+
+Purchase offers show Retail (Core Rulebook base price), the 3D table Price %, and final Purchase Price per ton. Expired offers stay dimmed and auditable, with Buy disabled.
+
+Cargo sale rows retain each lot's description and cost basis, even for the same commodity. Use Sell to negotiate; Price % and Sale Price then show that session's quote, with its inputs available through Audit. Before negotiation, the table says Not negotiated. Campaign changes invalidate these previews; committed sales retain their saved audits. Edit supports explicit, recorded lot corrections.
+
+Freight and mail use a separate contract table with tons, destination, rate per ton, total contractual revenue, dates, status and row actions. Edit available offers before Accept; Audit/View preserves original calculations and overrides. Accepted contracts use the existing explicit delivery and payout workflow. Wide tables scroll horizontally on smaller panels and screens.
