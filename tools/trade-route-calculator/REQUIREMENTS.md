@@ -248,3 +248,14 @@ Provide a numbered local-map hex grid, enabled initially, with a show/hide contr
 Show one sector entry per name, using the fixed 1105 map era. The campaign clock is separate: default start 001-1105; elapsed searches, jumps and manual time corrections advance its Imperial date (24-hour days, 365-day years). Later campaign years do not select a different map era. Preserve old custom date labels visibly until the owner converts them.
 
 Offer scroll-wheel map zoom plus accessible +, − and reset controls, with a closer default view and fewer empty hexes. Zoom and browsing do not mutate campaign state. Provide Use as starting world from Find World and the browsed-world panel, with explicit confirmation, a recorded reason, undo, and no implied jump/time/payment. Clear the old route and require amendments for active insurance after such a location correction.
+
+
+## Ship expenses — clarification 2026-10-04
+
+Provide a **Ship expenses** shortcut in the main navigation and in Accounts. The form uses the ship's actual location, even while browsing another world. Show a live itemized estimate, then an explicit payment confirmation with bank before/after.
+
+- **Berthing:** use the effective starport class. Weekly rates are 1D × Cr1000 (A), × Cr500 (B), × Cr100 (C), × Cr10 (D), and zero (E/X). Explicitly roll and save the rate once per starport; retain it across visits, reloads and backups. Enter whole weeks to pay. A changed effective starport class needs a matching saved rate. Reference: Core Rulebook Update 2022, pp. 257–258.
+- **Fuel:** enter decimal tons and choose refined (Cr500/ton) or unrefined (Cr100/ton). Identify listed supply: A/B refined, C/D unrefined, E/X none. Purchasing outside that listed supply requires confirmation of another supplier/referee availability and a note. This records expenditure, not fuel-tank inventory. Reference: Core Rulebook Update 2022, pp. 154, 257–258.
+- **Life support and crew salaries:** enter the total monthly cost and whole months to pay. Remember each entered monthly amount after a successful payment. Billing periods are explicitly selected by the user; do not auto-charge when campaign time advances. Running-cost reference: Core Rulebook Update 2022, pp. 153–154.
+- Numeric controls have visible increment/decrement arrows. Include optional notes for the billing period or supplier. Prevent negative amounts, invalid periods and unaffordable payments.
+- Post each payment once as a separate operating-expense ledger entry, without changing cargo cost basis or campaign time. Preserve the calculation, location, rate/roll, periods or tons, notes and rule footnotes in a readable audit. Canceling a payment changes no bank balance. Undo restores the bank and related saved defaults.

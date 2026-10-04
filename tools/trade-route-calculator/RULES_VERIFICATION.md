@@ -144,3 +144,10 @@ Automatic-neighborhood regression checks passed: changing to a distant world loa
 ## Trade table UI verification — 2026-10-04
 
 Implemented the purchase-offer, cargo-sale and freight table requirements without changing rules data or pricing formulas. Validation: 30 Node application/calendar tests and 198 source/data checks passed. The Edge browser suite passed purchase/sale/undo, contract delivery, persistence and mobile layout checks, plus assertions for exact table headings, header/cell geometry, numeric alignment, expired-offer Buy disabling and audit access, cargo description edits, sale quote display/audit stability, independent lot cost bases, and freight offer edit/audit/accept/undo. Browser map responses use deterministic fixtures; this change does not reverify the live Traveller Map service.
+
+
+## Ship expense verification — 2026-10-04
+
+Checked the supplied Core Rulebook Update 2022: running costs p. 154; starport rates p. 257; weekly billing, one roll per starport, and fuel prices p. 258. Life support and salary amounts are entered by the user; monthly periods are manually selected, not automatically accrued.
+
+All 35 application/calendar/expense tests passed. Expense cases cover every starport class, saved-rate reuse, effective class changes, decimal fuel quantities, nonstandard supplier confirmation, monthly multiplication, insufficient funds, zero-cost berthing, persistence and atomic undo. The Edge browser integration suite passed, including expense access, saved rolls, live fuel totals, cancel, monthly defaults, payment, readable ledger audits and undo. Existing trading, insurance, contract, recovery and mobile-layout checks remain passing.
