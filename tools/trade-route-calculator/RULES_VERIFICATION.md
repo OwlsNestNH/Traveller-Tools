@@ -180,3 +180,7 @@ Validation: all 48 application/expense/accommodation/rounding/report tests passe
 Removed the last generic JSON detail renderer. Contract offers, accepted/delivered contracts, and History entries now display labeled summaries and relevant saved calculations. Freight/mail rolls and modifiers, edits, jump duration overrides, searches, cargo corrections and rounding records remain accessible. Newly recorded contract searches also preserve the skill and characteristic separately; older records are not guessed or rewritten. JSON campaign backup remains unchanged.
 
 Validation: syntax check and full isolated Edge browser suite passed, including every available History detail in the test campaign, edited freight offer calculations, mail search details, delivered-contract payment, no raw pre/code blocks, no invalid-value text, unchanged campaign data and continued JSON/TXT exports. Freight offer and jump History dialogs were visually inspected.
+
+### Accommodation rate correction — 2026-10-04
+
+User clarification: Cr100/Cr1,000/Cr3,000 monthly rates apply to low/middle/high staterooms, including empty rooms. Every passenger and crew member adds Cr1,000/month. A middle stateroom can upgrade to Cr3,000 service; custom rates replace the room rate. These are campaign-agreed settings, not a new claim of published-rule verification. Weekly billing remains one quarter of monthly cost. Legacy unclassified stateroom totals default to middle for review; historical payments remain immutable.

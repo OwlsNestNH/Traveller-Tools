@@ -1,9 +1,9 @@
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
-import {occupants,passengerLuggage,serviceLabel,serviceRate} from './accommodation.mjs?v=rounding-1';
+import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate} from './accommodation.mjs?v=stateroom-rates-1';
 import {distance} from './map.mjs';
 
-export const REPORT_VERSION='2026.10.04.23';
+export const REPORT_VERSION='2026.10.04.24';
 const clean=v=>String(v??'Not recorded').replace(/[\r\n\t\x00-\x1f]+/g,' ').trim();
 const number=v=>String(v).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const cr=v=>v==null?'Not recorded':'Cr '+number(v);
@@ -30,13 +30,14 @@ export function campaignReport(s,core,{exportedAt=new Date()}={}){
  const cargo=A.sum(s.lots.map(l=>l.quantity)),freight=A.sum(s.contracts.filter(c=>c.status==='accepted').map(c=>c.quantity)),luggage=passengerLuggage(s.ship);
  line('Cargo capacity',s.ship.capacity+' tons');line('Speculative cargo aboard',A.decimal(cargo)+' tons');line('Freight / mail aboard',A.decimal(freight)+' tons');line('Passenger luggage',luggage+' tons');
  line('Space available',A.decimal(A.sub(s.ship.capacity,A.sum([cargo,freight,luggage])))+' tons');
- line('Jump rating',s.ship.jump);line('Staterooms (all)',s.ship.staterooms??0);
+ line('Jump rating',s.ship.jump);line('Staterooms (all, including empty)',roomTotal(s.ship));
+ for(const tier of ['low','middle','high']){const service=s.ship.accommodation?.roomService?.[tier];line('  '+tier+' staterooms',roomCounts(s.ship)[tier]+'; '+serviceLabel(tier,service)+' service; '+cr(serviceRate(tier,service))+'/room/month');}
+ line('Cost basis','Campaign rates; weekly charges are one quarter of monthly rates.');
  const occ=occupants(s.ship);
  for(const role of ['passengers','crew']){
   line(role==='crew'?'Crew aboard':'Passengers aboard',['low','middle','high'].map(t=>(occ[role]?.[t]??0)+' '+t).join(' / '));
   for(const tier of ['low','middle','high'])if(occ[role]?.[tier]){
-   const service=s.ship.accommodation?.[role+'Service']?.[tier];
-   line('  '+role+' / '+tier+' support',serviceLabel(tier,service)+'; '+cr(serviceRate(tier,service))+'/person/month');
+   line('  '+role+' / '+tier+' support',cr(personMonthlyRate)+'/person/month, additional to stateroom expenses');
   }
  }
  section('FINANCIAL SUMMARY');

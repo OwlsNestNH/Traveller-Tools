@@ -18,7 +18,7 @@ test('rounding cannot overfill cargo or rewrite historical audits',()=>{
  s.ship.capacity='60';s.ledger=[{id:'h',hours:0,type:'Old expense',amount:'-149',audit:{quantity:'0.1'}}];const n=S.transition(s,'Round',x=>S.applyRounding(x));assert.deepEqual(n.ledger[0],s.ledger[0]);
 });
 test('new weekly support rounds up once to Cr1 or Cr100 and fuel uses whole tons',()=>{
- const input={kind:'passengerSupport',period:'week',units:1,passengers:{high:1},passengersService:{high:{level:'custom',monthly:'101'}},crew:{}};
+ const input={kind:'staterooms',period:'week',units:1,rooms:{middle:1},roomService:{middle:{level:'custom',monthly:'101'}}};
  assert.equal(E.expenseQuote(world,input).amount,'26');assert.equal(E.expenseQuote(world,{...input,creditStep:100}).amount,'100');
  assert.equal(E.expenseQuote(world,{kind:'fuel',fuelType:'refined',tons:'0.01'}).amount,'500');
 });

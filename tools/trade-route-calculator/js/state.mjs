@@ -1,8 +1,8 @@
 import {up,creditStep,roundExisting} from './rounding.mjs';
-import {validateAccommodation,passengerLuggage} from './accommodation.mjs?v=rounding-1';
+import {validateAccommodation,passengerLuggage,roomCounts} from './accommodation.mjs?v=stateroom-rates-1';
 import {add,sub,mul,div,cmp,floor,sum,decimal,credit} from './amounts.mjs';
 import {VERSION} from './rules.mjs?v=rounding-1';
-import {expenseQuote,starport,berthMultipliers} from './expenses.mjs?v=fuel-sources-1';
+import {expenseQuote,starport,berthMultipliers} from './expenses.mjs?v=stateroom-rates-1';
 export const SCHEMA=1;
 export const uid=()=>crypto.randomUUID();
 export function initial(){return {schema:SCHEMA,revision:0,rulesVersion:VERSION,initialized:false,name:'My trading campaign',bank:'0',hours:0,dateLabel:'001-1105',ship:{name:'Independent trader',capacity:'60',staterooms:0,jump:2,scoops:true,armed:false},trader:{broker:0,streetwise:0,admin:0,characteristic:0,rank:0,soc:0},settings:{profit:75,tax:false,insurance:false,creditStep:1},worlds:{},actual:null,route:[],routeIndex:0,snapshots:[],lots:[],contracts:[],policies:[],ledger:[],cooldowns:{},undo:[],events:[]};}
@@ -48,8 +48,8 @@ export function saveBerthingRate(s,die){
 }
 export function shipExpense(s,input){
  input={...input,creditStep:creditStep(s)};
- if(input.kind==='passengerSupport'&&s.ship.accommodation)input={...input,passengers:s.ship.accommodation.passengers,crew:s.ship.accommodation.crew,passengersService:s.ship.accommodation.passengersService,crewService:s.ship.accommodation.crewService};
- if(input.kind==='staterooms')input={...input,staterooms:s.ship.staterooms??0};
+ if(input.kind==='passengerSupport'&&s.ship.accommodation)input={...input,passengers:s.ship.accommodation.passengers,crew:s.ship.accommodation.crew};
+ if(input.kind==='staterooms')input={...input,staterooms:s.ship.staterooms??0,rooms:roomCounts(s.ship),roomService:s.ship.accommodation?.roomService};
  const quote=expenseQuote(s.worlds[s.actual],input),amount=credit(quote.amount);
  if(amount>credit(s.bank))throw Error('Insufficient funds');
  note(s,'Ship expense · '+quote.label,-amount,{expense:quote});
@@ -61,7 +61,7 @@ export function shipExpenses(s,inputs){
  if(!Array.isArray(inputs)||!inputs.length)throw Error('Select at least one expense.');
  if(new Set(inputs.map(x=>x.kind)).size!==inputs.length)throw Error('Each expense type can be included only once.');
  inputs=inputs.map(input=>({...input,creditStep:creditStep(s)}));
- inputs=inputs.map(input=>input.kind==='passengerSupport'&&s.ship.accommodation?{...input,passengers:s.ship.accommodation.passengers,crew:s.ship.accommodation.crew,passengersService:s.ship.accommodation.passengersService,crewService:s.ship.accommodation.crewService}:input.kind==='staterooms'?{...input,staterooms:s.ship.staterooms??0}:input);
+ inputs=inputs.map(input=>input.kind==='passengerSupport'&&s.ship.accommodation?{...input,passengers:s.ship.accommodation.passengers,crew:s.ship.accommodation.crew}:input.kind==='staterooms'?{...input,staterooms:s.ship.staterooms??0,rooms:roomCounts(s.ship),roomService:s.ship.accommodation?.roomService}:input);
  const quotes=inputs.map(input=>expenseQuote(s.worlds[s.actual],input));
  const total=quotes.reduce((n,q)=>n+credit(q.amount),0n);
  if(total>credit(s.bank))throw Error('Insufficient funds for the combined expenses');

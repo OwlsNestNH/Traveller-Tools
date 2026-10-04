@@ -7,11 +7,11 @@ const campaign=()=>{const s=S.initial();s.initialized=true;s.actual='0,0';s.worl
 test('stateroom and per-person refills use separate counts and weekly billing',()=>{
  const s=campaign();s.ship.staterooms=10;
  const support={kind:'passengerSupport',period:'week',units:2,passengers:{low:2,middle:3,high:1},crew:{middle:4}};
- assert.equal(E.expenseQuote(world(),support).amount,'5100');
- assert.equal(E.expenseQuote(world(),{...support,period:'month',units:1}).amount,'10200');
- assert.equal(E.expenseQuote(world(),{...support,passengers:{high:1},crew:{},units:1}).amount,'750');
+ assert.equal(E.expenseQuote(world(),support).amount,'5000');
+ assert.equal(E.expenseQuote(world(),{...support,period:'month',units:1}).amount,'10000');
+ assert.equal(E.expenseQuote(world(),{...support,passengers:{high:1},crew:{},units:1}).amount,'250');
  const after=S.transition(s,'Refill',n=>S.shipExpenses(n,[{kind:'staterooms',staterooms:999,period:'week',units:2},support]));
- assert.equal(after.bank,'89900');assert.equal(after.ledger[0].expense.amount,'5000');assert.deepEqual(after.ship.supportOccupants.passengers,support.passengers);assert.equal(S.undo(after).bank,s.bank);
+ assert.equal(after.bank,'90000');assert.equal(after.ledger[0].expense.amount,'5000');assert.deepEqual(after.ship.supportOccupants.passengers,support.passengers);assert.equal(S.undo(after).bank,s.bank);
  for(const invalid of [{...support,units:0},{...support,period:'day'},{...support,crew:{low:-1}},{...support,passengers:{},crew:{}}])assert.throws(()=>E.expenseQuote(world(),invalid));
  const legacy=campaign();delete legacy.ship.staterooms;assert.equal(S.validate(legacy),legacy);
  for(const staterooms of [-1,1.5,'4'])assert.throws(()=>S.validate({...s,ship:{...s.ship,staterooms}}));
