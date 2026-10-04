@@ -1,10 +1,10 @@
-import {campaignReport} from './report.mjs?v=summary-1';
+import {campaignReport} from './report.mjs?v=ledger-details-1';
 import {up,creditStep,roundExisting} from './rounding.mjs';
 import {tiers,luggageAllowance,occupants,passengerLuggage,serviceRate,serviceLabel} from './accommodation.mjs?v=rounding-1';
 import * as A from './amounts.mjs';
 import {parseDate,displayDate} from './calendar.mjs';
 import * as R from './rules.mjs?v=rounding-1';
-import * as S from './state.mjs?v=summary-1';
+import * as S from './state.mjs?v=ledger-details-1';
 import * as E from './expenses.mjs?v=fuel-sources-1';
 import {planetInformation,worldSheetURL} from './planet-info.mjs';
 import * as M from './map.mjs';
@@ -283,7 +283,56 @@ function rollBerthingRate(){
  const die=R.roll(1).total,next=act('Saved starport berthing rate',s=>S.saveBerthingRate(s,die));modalRevision=next.revision;
  document.querySelector('#modal-body [data-action="berthing-rate"]')?.remove();updateExpenseEstimate();
 }
-function ledgerAudit(id){const entry=state.ledger.find(l=>l.id===id);if(entry.expense)modal('Ship expense audit',auditFacts([['Recorded at',displayDate(state.dateLabel,entry.hours)],['Bank change',money(entry.amount)]])+expenseSummary(entry.expense),null);else audit('Ledger entry',entry);}
+function ledgerAudit(id){
+ const index=state.ledger.findIndex(l=>l.id===id),entry=state.ledger[index];if(!entry)throw Error('Ledger entry not found');
+ if(entry.expense){modal('Ship expense details',auditFacts([['Recorded at',displayDate(state.dateLabel,entry.hours)],['Bank change',money(entry.amount)]])+expenseSummary(entry.expense),null);return;}
+ const later=state.ledger.slice(index+1).reduce((n,e)=>n+A.credit(e.amount),0n),after=A.credit(state.bank)-later,before=after-A.credit(entry.amount);
+ const related=entry.lotId?state.ledger.slice(0,index+1).reverse().find(e=>e.lotId===entry.lotId&&['Sale','Purchase'].includes(e.type)):null;
+ const purchase=entry.type==='Purchase'?entry:related?.type==='Purchase'?related:null;
+ const sale=entry.type==='Sale'?entry:related?.type==='Sale'?related:null;
+ const lot=state.lots.find(l=>l.id===entry.lotId),p=state.policies.find(p=>p.id===entry.policyId);
+ const saved=purchase?.purchase,details=sale?.audit;
+ const historicalSale=state.ledger.find(e=>entry.lotId&&e.lotId===entry.lotId&&e.type==='Sale')?.audit;
+ const commodity=saved?.commodity??details?.commodity??lot?.commodity??historicalSale?.commodity;
+ const historicalDescription=historicalSale?.description;
+ const facts=[['Transaction',entry.type],['Recorded at',displayDate(state.dateLabel,entry.hours)],['World',world(entry.world)?.name||'Not recorded'],['Bank change',money(entry.amount)],['Bank before',money(String(before))],['Bank after',money(String(after))]];
+ if(entry.lotId)facts.push(['Commodity',good(commodity)?.name||'Not recorded in this older entry'],['Cargo description',saved?.description??details?.description??lot?.description??historicalDescription??'Not recorded']);
+ if(entry.reason)facts.push(['Reason / notes',entry.reason]);
+ const cash=v=>v==null?'Not recorded':money(v);
+ let body=auditFacts(facts),trade=false;
+ if(entry.type==='Purchase'){
+  trade=true;const offer=lot?.audit?.price,price=saved?.unitPrice??offer?.unitPrice;
+  body+='<h3>Purchase</h3>'+auditFacts([['Tons purchased',saved?.quantity==null?'Not recorded in this older entry':saved.quantity+' t'],['Purchase price per ton',cash(price)],['Goods cost',money(String(-A.credit(entry.amount)))],['Purchase broker fee',cash(saved?.fee??lot?.audit?.fee)],['Purchase insurance premium',cash(saved?.premium??lot?.audit?.premium)]]);
+  body+='<p class="help">This bank entry pays for the goods. Broker fees and insurance premiums have separate ledger entries. Current cargo quantities may be lower after sales or losses.</p>';
+  const priceData=saved?.priceAudit??offer?.audit;
+  if(priceData)body+=priceAudit(priceData,price,commodity);else body+='<p class="help">The original price rolls and modifiers were not retained in this older entry.</p>';
+ }else if(entry.type==='Sale'){
+  trade=true;const a=entry.audit||{};
+  body+='<h3>Sale calculation</h3>'+auditFacts([['Tons sold',a.quantity==null?'Not recorded':a.quantity+' t'],['Sale price per ton',cash(a.unitPrice)],['Gross sale proceeds',cash(a.gross??entry.amount)],['Cost basis of cargo sold',cash(a.basis)],['Sale broker fee',cash(a.fee)],['Sale tax',cash(a.tax)],['Profit / loss before profit adjustment',cash(a.afterTax)],['Profit retained setting',a.profitPercent==null?'Not recorded in this older sale':a.profitPercent+'%'],['Profit adjustment',cash(a.adjustment)],['Realized profit / loss',cash(a.adjusted)],['Net bank credit after sale charges',cash(a.bankDelta)]]);
+  body+='<p class="help">This entry records gross proceeds. Fees, taxes and profit adjustments appear separately in the ledger. The cargo cost was paid earlier and is not deducted from the bank again.</p>';
+  if(a.audit)body+=priceAudit(a.audit,a.unitPrice,commodity);
+ }else if(entry.type==='Profit adjustment'){
+  trade=true;body+='<h3>Retained trading profit</h3>'+auditFacts([['Positive profit retained',entry.percent==null?'Not recorded':entry.percent+'%'],['Profit after fees and tax',cash(details?.afterTax)],['Amount removed from profit',money(String(-A.credit(entry.amount)))],['Final realized profit / loss',cash(details?.adjusted)]])+'<p class="help">The profit setting reduces positive profit after fees and taxes. It does not reduce the gross sale price or soften a trading loss. This is a campaign adjustment, not another purchase or tax.</p>';
+ }else if(entry.type==='Broker fee'){
+  trade=true;body+='<h3>Broker payment</h3>'+auditFacts([['Fee paid',money(String(-A.credit(entry.amount)))],['Related transaction',related?.type||'Not recorded']])+'<p class="help">Purchase broker fees become part of the cargo cost basis. Sale broker fees reduce the realized sale profit.</p>';
+ }else if(entry.type==='Tax'){
+  trade=true;const a=entry.audit||{};
+  body+='<h3>Sale tax [T]</h3>'+auditFacts([['Tax paid for this lot',money(String(-A.credit(entry.amount)))],['Tax rate',a.rate==null?'Not recorded':a.rate+'%'],['Tax roll',a.dice?.dice?.length?a.dice.dice.join(' + ')+' = '+a.dice.total:'No tax dice recorded'],['Referee override',a.manual?'Yes':'No'],['Tax outcome',a.reason||'Calculated using the applicable bracket']])+'<p class="help">[T] Optional taxes: MGT 1st Edition, Book 7: Merchant Prince, p. 86. Tax is applied before the positive-profit adjustment.</p>';
+ }else if(['Insurance premium','Insurance claim','Insurance amendment'].includes(entry.type)){
+  body+='<h3>Insurance [I]</h3>'+auditFacts([['Coverage',p?p.coverage+'%':'Not recorded'],['Original insured goods value',cash(p?.insuredValue)],['Insured destination',world(p?.destination)?.name||'Not recorded'],['Recorded premium rate',p?.manual?'Referee-entered':p?.rate==null?'Not recorded':p.rate+'%'],['Insured distance',p?.distance==null?'Not recorded':p.distance+' parsecs'],['Travel zones',(p?.zones||[]).join(', ')||'Not recorded'],...(entry.quantity?[['Lost cargo',entry.quantity+' t'],['Cost basis written off',cash(entry.basisWrittenOff)]]:[])]);
+  body+='<p class="help">'+(entry.type==='Insurance premium'?'The premium is paid once and added to cargo cost basis.':entry.type==='Insurance claim'?'This is the payment recorded after referee approval. Claim processing and timing are outside this tool.':'This records the premium change or refund for an amended policy.')+'</p><p class="help">[I] Optional insurance: MGT 1st Edition, Book 7: Merchant Prince, pp. 82–83.</p>';
+ }else if(entry.contractId){
+  const c=state.contracts.find(c=>c.id===entry.contractId);
+  body+='<h3>Delivery payment</h3>'+auditFacts([['Cargo description',c?.description||c?.kind||'Not recorded'],['Tons delivered',c?.quantity==null?'Not recorded':c.quantity+' t'],['Destination',world(c?.destination)?.name||'Not recorded'],['Agreed payment',cash(c?.payment)],['Payment received',cash(entry.amount)],['Late delivery',entry.late?'Yes':'No'],['Late-penalty roll',entry.penaltyDie??'Not required']])+'<p class="help">[D] Traveller Core Rulebook Update 2022, pp. 239–241: freight and mail.</p>';
+ }else if(entry.type==='Opening bank')body+='<p class="help">The funds entered when this campaign was set up. This is starting money, not trading income.</p>';
+ else if(entry.type==='Manual expense')body+='<p class="help">An operating expense entered by the player. It reduces the bank balance and is kept separate from cargo cost basis.</p>';
+ else if(entry.type==='Referee bank correction')body+='<p class="help">A referee adjustment to the bank balance for the reason recorded above. It is not a cargo sale.</p>';
+ else if(entry.type==='Rounding adjustment')body+='<p class="help">This records the bank change from applying the previewed rounding option. It is not trading profit.</p>';
+ else body+='<p class="help">Recorded bank transaction. Additional historical calculation details are not available.</p>';
+ if(trade)body+=tradeFootnotes();
+ if(entry.roundingStep)body+=roundingFootnote([],entry.roundingStep);
+ modal(entry.type+' details',body,null);
+}
 function expenseForm(correction=false){modal(correction?'Referee bank correction':'Record expense',`${field('amount',correction?'Bank change · Cr (negative removes money)':'Expense · Cr','0')}${field('reason','Description / reason','')}`,f=>act(correction?'Bank correction':'Manual expense',s=>correction?S.bankCorrection(s,f.get('amount'),f.get('reason')):S.expense(s,f.get('amount'),f.get('reason'))));}
 function accommodationFields(){
  const a=occupants(state.ship);

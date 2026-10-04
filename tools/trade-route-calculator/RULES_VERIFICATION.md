@@ -168,3 +168,9 @@ Validation: 45 application, expense, accommodation and rounding tests passed. Fu
 Added a read-only user summary alongside JSON campaign saving/restoration. Cargo reports separate original purchase prices/discounts and charges from remaining quantity and cost basis. Completed sales retain their actual historical results; newly recorded sales also preserve commodity and profit mode. Missing old fields are labeled rather than inferred. Banking, realized trading profit and operating expenses are distinguished; free fuel records remain Cr0.
 
 Validation: 48 application, expense, accommodation, rounding and report tests passed. Report tests cover partial sales, historical 75% versus current 100% mode, missing old metadata, very large integer Credits, markup versus discount, empty campaigns and no export mutation. The isolated Edge browser suite passed TXT download/content and unchanged campaign checks, JSON save/load and existing trading/insurance/expenses workflows.
+
+### Readable ledger details — 2026-10-04
+
+Accounts Details now renders labeled facts and explanatory text for purchases, sales, broker fees, taxes, profit adjustments, insurance payments/premiums/amendments, delivery income, opening funds, manual expenses and bank corrections. Trade calculations reuse the readable price-roll/DM tables and rule footnotes. No ledger type falls back to raw JSON. New purchase ledger entries retain immutable purchase price, quantity and audit facts after the cargo is sold; older missing facts are identified explicitly.
+
+Validation: all 48 application/expense/accommodation/rounding/report tests passed. The Edge browser suite exercised every recorded ledger entry after a profitable sale with fees/tax and after insurance/claim transactions, checking that there is no code block, no missing-value rendering and no campaign mutation. Purchase details remain readable after the lot is fully sold. Sale details were also visually inspected.

@@ -311,3 +311,7 @@ Show available map data immediately, refresh it from Traveller Map, and offer Re
 - Include relevant rules/rounding footnotes without raw JSON, internal IDs or dice audits. Insurance processing/location/timing stays outside scope.
 - Report generation is read-only and does not modify campaign values or revision. Percentages may be rounded to two decimals for readability; stored values remain unchanged.
 - JSON remains the full lossless campaign backup/restore format, including audits and undo history. TXT is not an import format.
+
+### Player-facing ledger details
+
+Every Accounts > Details dialog uses labeled, readable facts and explanations, never raw JSON or code. Show the recorded date/world, bank change and available calculation inputs. Sales distinguish gross proceeds, cost basis, fees, taxes, retained profit and net bank credit. Profit adjustments explain the historical retained percentage. Purchases retain price rolls and DMs with new immutable ledger snapshots so selling a lot does not erase its purchase detail. Older missing fields are explicitly identified rather than reconstructed from current quantities. Insurance, taxes, expenses and trading include relevant footnotes; no new claim processing workflow is introduced. Viewing details must not mutate campaign state.
