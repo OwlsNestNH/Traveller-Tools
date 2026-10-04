@@ -41,7 +41,7 @@ function mapHexGrid(w,point,scale){
   const corners=Array.from({length:6},(_,i)=>[cx+radius*Math.cos(i*Math.PI/3),cy+radius*Math.sin(i*Math.PI/3)].join(',')).join(' ');
   const hx=((Number(w.hex.slice(0,2))-1+dx)%32+32)%32+1,hy=((Number(w.hex.slice(2))-1+dy)%40+40)%40+1;
   const hex=String(hx).padStart(2,'0')+String(hy).padStart(2,'0');
-  cells.push(`<polygon data-hex="${hex}" points="${corners}"/>${scale>=24?`<text x="${cx}" y="${cy+13}" text-anchor="middle">${hex}</text>`:''}`);
+  cells.push(`<polygon data-hex="${hex}" points="${corners}"/>${scale>=40?`<text x="${cx}" y="${cy+13}" text-anchor="middle">${hex}</text>`:''}`);
  }
  return '<g class="hex-grid" aria-hidden="true">'+cells.join('')+'</g>';
 }
