@@ -29,3 +29,6 @@ td{padding:8px 10px}td .check{margin:0;white-space:nowrap}.cargo-scroll{max-heig
 .trade-table .check{white-space:normal;align-items:center}
 .offer-status{display:block;font-weight:600;margin-bottom:5px}
 .expired-row{color:var(--muted);background:#0c1622}.expired-row>td:not(.table-actions){opacity:.72}
+
+/* Keep number steppers visible in transaction forms, including broker fees. */
+#modal input[type="number"]::-webkit-inner-spin-button{opacity:1}
