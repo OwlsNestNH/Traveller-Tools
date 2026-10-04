@@ -28,6 +28,15 @@ try{
  await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();await click('Set up campaign');
  await page.locator('#setup-world .picker-selection').getByText(/Hex 1910/).waitFor();await click('Start campaign');await page.locator('#modal').waitFor({state:'hidden'});
  const before=await read();
+ await click('Planet information');await page.getByText('Loaded from Traveller Map.',{exact:true}).waitFor();
+ assert.equal(await page.locator('#modal-body pre').count(),0);
+ assert.match(await page.locator('#planet-information').textContent(),/Dense/);
+ assert.match(await page.locator('#planet-information').textContent(),/700,000,000/);
+ assert.match(await page.getByRole('link',{name:'Traveller Map world sheet'}).getAttribute('href'),/milieu=M1105/);
+ await page.setViewportSize({width:390,height:844});assert.ok(await page.locator('#modal').evaluate(e=>e.scrollWidth<=e.clientWidth+2));
+ await page.setViewportSize({width:1280,height:720});
+ await page.getByRole('button',{name:'Close',exact:true}).click();assert.deepEqual(await read(),before);
+
  assert.ok(await page.locator('.hex-grid polygon').count()>0);assert.ok(await page.locator('.hex-grid polygon').count()<=469);
  const aligned=await page.evaluate(()=>{const polygon=document.querySelector('.hex-grid [data-hex="1910"]');const points=Array.from(polygon.points);const x=points.reduce((n,p)=>n+p.x,0)/6,y=points.reduce((n,p)=>n+p.y,0)/6;const circle=document.querySelector('svg [data-arg="-110,-70"] circle');return Math.abs(x-Number(circle.getAttribute('cx')))<0.01&&Math.abs(y-Number(circle.getAttribute('cy')))<0.01;});assert.ok(aligned);
  await page.getByLabel('Show hexes',{exact:true}).uncheck();assert.equal(await page.locator('.hex-grid').count(),0);await page.getByLabel('Show hexes',{exact:true}).check();

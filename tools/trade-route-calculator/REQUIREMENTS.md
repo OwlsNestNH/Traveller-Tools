@@ -268,3 +268,10 @@ The map supports mouse drag and touch drag. Movement beyond a small threshold pa
 The old 12-parsec display boundary is removed. After panning/zooming pauses, fetch small overlapping areas around the viewport using 12-parsec requests. Debounce requests, allow at most two concurrently, discard obsolete queued requests, and reuse a bounded 32-area memory cache. Map browsing data remains separate from saved campaign and route-planning data. Route search keeps its existing 12-parsec area around each requested stop.
 
 Render nearby visible worlds only, capped at 1,500 markers. Keep planet names visible at every zoom, scaling their font and fitting long names to hex width. Hide hex numbers below 80% zoom and the grid below 48% zoom. Show loading/failure status and allow Refresh nearby to retry. This bounds rendering and requests rather than fetching a single enormous map.
+
+
+## Planet information window — 2026-10-04
+
+Provide a Planet information button beside the viewed world's controls. Open a read-only, scrollable window showing Traveller Map M1105 data: sector/hex, subsector, allegiance, travel zone, population, decoded UWP, stars, gas giants, planetoid belts, other/total worlds, bases, nobility and resource units. Decode remarks and offer expandable importance, economics and culture details. Keep unknown data explicitly unknown; do not mistake absent counts for zero.
+
+Show available map data immediately, refresh it from Traveller Map, and offer Retry on failure. Cache successful details for the session with a bounded 32-world cache. Ignore responses arriving after the window closes or another dialog opens. Viewing information must not change the campaign, ship location, bank, cargo or time. Distinguish published data from campaign overrides. Include a link to the official world sheet. Decoder tables are adapted from Traveller Map's Apache-2.0 source; attribution and license accompany the tables.
