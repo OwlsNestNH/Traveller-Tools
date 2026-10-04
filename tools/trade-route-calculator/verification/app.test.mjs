@@ -39,3 +39,11 @@ test('opening cargo never debits bank; correction and undo preserve history',()=
 test('campaign round-trip and malformed imports',()=>{const s=campaign();assert.deepEqual(S.validate(JSON.parse(JSON.stringify(s))),s);const bad=campaign();bad.worlds['0,0'].id='\" onmouseover=alert(1)';assert.throws(()=>S.validate(bad));const big=campaign();big.ship.capacity='-1';assert.throws(()=>S.validate(big));});
 test('world-space hex distances across negative and positive parity',()=>{assert.equal(M.distance(w('-110,-70',-110,-70),w('-111,-71',-111,-71)),1);assert.equal(M.distance(w('-110,-70',-110,-70),w('-111,-70',-111,-70)),1);assert.equal(M.distance(w('0,0',0,0),w('1,-1',1,-1)),1);});
 test('fewest-jumps route, mandatory stops and unavailable fuel',()=>{const worlds=Object.fromEntries([w(),w('1,0',1,0),w('2,0',2,0),w('3,0',3,0)].map(x=>[x.id,x]));const ship={jump:2,scoops:false};assert.deepEqual(M.plan(worlds,['0,0','3,0'],ship,core),['0,0','1,0','3,0']);assert.deepEqual(M.plan(worlds,['0,0','2,0','3,0'],ship,core),['0,0','2,0','3,0']);worlds['3,0'].fuelOverride=false;assert.throws(()=>M.plan(worlds,['0,0','3,0'],ship,core));});
+
+test('insure held cargo charges only premium, blocks overlapping policies, and undoes atomically',()=>{
+ const s=campaign();s.lots=[lot('held','1000','2')];const q={...R.insuranceQuote('1000',70,1,['Red'],mp),route:['0,0','1,0'],destination:'1,0',routeProgress:0};
+ const after=S.transition(s,'Insure existing cargo',n=>S.insureLot(n,'held',q));
+ assert.equal(after.lots[0].quantity,'2');assert.equal(after.lots[0].goodsValue,'1000');assert.equal(BigInt(after.bank),BigInt(s.bank)-BigInt(q.premium));assert.equal(BigInt(after.lots[0].basis),1000n+BigInt(q.premium));assert.equal(after.policies.length,1);
+ assert.throws(()=>S.insureLot(after,'held',q),/already has coverage/);const undone=S.undo(after);assert.equal(undone.bank,s.bank);assert.equal(undone.lots[0].basis,'1000');assert.equal(undone.policies.length,0);
+ const poor=campaign();poor.lots=[lot('held','1000','2')];poor.bank='0';assert.throws(()=>S.insureLot(poor,'held',q),/Insufficient/);assert.equal(poor.policies.length,0);
+});
