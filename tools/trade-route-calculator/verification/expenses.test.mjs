@@ -4,6 +4,32 @@ import * as E from '../js/expenses.mjs';
 import * as S from '../js/state.mjs';
 const world=(port='A')=>({id:'0,0',name:'Port',uwp:port+'788899-C',x:0,y:0,sector:'Test',hex:'0101',zone:'Safe'});
 const campaign=()=>{const s=S.initial();s.initialized=true;s.actual='0,0';s.worlds={'0,0':world()};s.bank='100000';return s;};
+test('stateroom and per-person refills use separate counts and weekly billing',()=>{
+ const s=campaign();s.ship.staterooms=10;
+ const support={kind:'passengerSupport',period:'week',units:2,passengers:{low:2,middle:3,high:1},crew:{middle:4}};
+ assert.equal(E.expenseQuote(world(),support).amount,'5100');
+ assert.equal(E.expenseQuote(world(),{...support,period:'month',units:1}).amount,'10200');
+ assert.equal(E.expenseQuote(world(),{...support,passengers:{high:1},crew:{},units:1}).amount,'750');
+ const after=S.transition(s,'Refill',n=>S.shipExpenses(n,[{kind:'staterooms',staterooms:999,period:'week',units:2},support]));
+ assert.equal(after.bank,'89900');assert.equal(after.ledger[0].expense.amount,'5000');assert.deepEqual(after.ship.supportOccupants.passengers,support.passengers);assert.equal(S.undo(after).bank,s.bank);
+ for(const invalid of [{...support,units:0},{...support,period:'day'},{...support,crew:{low:-1}},{...support,passengers:{},crew:{}}])assert.throws(()=>E.expenseQuote(world(),invalid));
+ const legacy=campaign();delete legacy.ship.staterooms;assert.equal(S.validate(legacy),legacy);
+ for(const staterooms of [-1,1.5,'4'])assert.throws(()=>S.validate({...s,ship:{...s.ship,staterooms}}));
+});
+test('all four expenses pay atomically, retain separate audits and undo together',()=>{
+ const s=campaign();S.saveBerthingRate(s,2);
+ const inputs=[{kind:'berthing',weeks:2},{kind:'fuel',fuelType:'unrefined',tons:'12.5',otherSupplier:true,notes:'Private depot'},{kind:'lifeSupport',monthly:'2000',months:2},{kind:'salary',monthly:'6000',months:1}];
+ const after=S.transition(s,'Combined expenses',n=>S.shipExpenses(n,inputs));
+ assert.equal(after.bank,'84750');assert.equal(after.ledger.length,4);assert.equal(new Set(after.ledger.map(e=>e.batchId)).size,1);assert.ok(after.ledger[0].batchId);
+ assert.deepEqual(after.ledger.map(e=>e.expense.amount),['4000','1250','4000','6000']);assert.equal(after.ship.expenses.salary,'6000');assert.equal(after.ship.expenses.lifeSupport,'2000');
+ assert.equal(S.undo(after).bank,s.bank);assert.equal(S.undo(after).ledger.length,0);assert.deepEqual(S.validate(JSON.parse(JSON.stringify(after))),after);
+});
+test('invalid or unaffordable batches never partially charge',()=>{
+ const s=campaign(),before=structuredClone(s);
+ for(const inputs of [[],[{kind:'salary',monthly:'60000',months:1},{kind:'lifeSupport',monthly:'60000',months:1}],[{kind:'salary',monthly:'600',months:1},{kind:'fuel',tons:'0',fuelType:'refined'}],[{kind:'salary',monthly:'600',months:1},{kind:'salary',monthly:'600',months:1}]]){
+  assert.throws(()=>S.shipExpenses(s,inputs));assert.deepEqual(s,before);
+ }
+});
 test('all starport weekly rates; saved roll reused and class change needs a new rate',()=>{
  for(const [port,rate] of Object.entries({A:4000,B:2000,C:400,D:40,E:0,X:0})){
   const w={...world(port),berthingRate:{port,die:4}};

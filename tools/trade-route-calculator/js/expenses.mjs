@@ -11,6 +11,9 @@ export function berthRate(world){
  return {port,die:rate.die,multiplier,weekly:String(rate.die*multiplier)};
 }
 function count(value,label){const n=Number(value);if(!Number.isSafeInteger(n)||n<1)throw Error(label+' must be a positive whole number.');return n;}
+function people(value,label){const n=Number(value??0);if(!Number.isSafeInteger(n)||n<0)throw Error(label+' must be a non-negative whole number.');return n;}
+export const supportRates={low:100,middle:1000,high:3000};
+function period(input){if(!['week','month'].includes(input.period))throw Error('Choose weeks or months.');return {units:count(input.units,'Billing periods'),divisor:input.period==='week'?4n:1n};}
 export function expenseQuote(world,input){
  const kind=input.kind,notes=String(input.notes||'').trim(),port=starport(world);
  let amount,details,reference;
@@ -27,11 +30,26 @@ export function expenseQuote(world,input){
   if(A.credit(amount)<=0n)throw Error('Fuel purchase must total at least Cr1.');
   details=[['Fuel type',type==='refined'?'Refined':'Unrefined'],['Fuel tons',tons],['Rate · Cr/ton',String(rate)],['Starport class',port],['Supply',standard?'Listed starport supply':'Other supplier / referee-confirmed']];
   reference='Traveller Core Rulebook Update 2022, pp. 154, 257–258. Refined Cr500/ton; unrefined Cr100/ton. Final charge rounds down to whole Credits.';
+ }else if(kind==='staterooms'||kind==='passengerSupport'){
+  const {units,divisor}=period(input);let monthly=0n;details=[];
+  if(kind==='staterooms'){
+   const rooms=count(input.staterooms,'Ship staterooms');monthly=BigInt(rooms)*1000n;
+   details.push(['Staterooms (including empty)',String(rooms)],['Monthly cost per stateroom · Cr','1000']);
+  }else{
+   for(const role of ['passengers','crew'])for(const [tier,rate] of Object.entries(supportRates)){
+    const n=people(input[role]?.[tier],role+' · '+tier);monthly+=BigInt(n)*BigInt(rate);
+    details.push([(role==='crew'?'Crew':'Passengers')+' · '+tier,String(n)+' × Cr'+rate+' / month']);
+   }
+   if(!monthly)throw Error('Enter at least one passenger or crew member.');
+  }
+  amount=String(monthly*BigInt(units)/divisor);
+  details.push(['Monthly total · Cr',String(monthly)],['Billing period',input.period],['Periods purchased',String(units)],['Weekly billing basis','One quarter of a monthly charge']);
+  reference='Campaign-agreed rates: Cr1,000 per stateroom per month, including empty rooms; per-person life support Cr100 low, Cr1,000 middle, Cr3,000 high per month. One billing month = four weeks. High passage luggage is separate from life-support supplies.';
  }else if(kind==='lifeSupport'||kind==='salary'){
   const monthly=A.credit(input.monthly),months=count(input.months,'Months');if(monthly<=0n)throw Error('Enter a positive monthly cost.');
   amount=String(monthly*BigInt(months));details=[['Entered monthly cost · Cr',String(monthly)],['Months paid',String(months)]];
   reference='Traveller Core Rulebook Update 2022, pp. 153–154 (running costs). This amount is entered by the user; months are manually selected billing periods.';
  }else throw Error('Choose an expense type.');
- const label={berthing:'Berthing',fuel:'Fuel',lifeSupport:'Life support',salary:'Crew salaries'}[kind];
+ const label={berthing:'Berthing',fuel:'Fuel',lifeSupport:'Life support',salary:'Crew salaries',staterooms:'Stateroom expenses',passengerSupport:'Passenger & crew life support'}[kind];
  return {kind,label,amount,details,reference,notes,worldId:world.id,worldName:world.name};
 }

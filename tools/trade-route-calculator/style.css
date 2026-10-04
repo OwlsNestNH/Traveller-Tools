@@ -36,3 +36,5 @@ td{padding:8px 10px}td .check{margin:0;white-space:nowrap}.cargo-scroll{max-heig
 .world-map{cursor:grab;touch-action:none;user-select:none}.world-map.panning,.world-map.panning [data-action]{cursor:grabbing}.world-map .map-content{pointer-events:auto;cursor:grab}.world-map.panning .map-content{cursor:grabbing}
 
 .planet-info h3{margin-top:18px}.planet-info .preview dl{grid-template-columns:minmax(95px,1fr) minmax(0,2fr)}.planet-info .preview dd{text-align:left;font-family:inherit;overflow-wrap:anywhere}.planet-info-table{max-height:none}.planet-info-table th{position:static}.planet-info-table td{white-space:normal;overflow-wrap:anywhere}.planet-info-table td:nth-child(2){font-family:inherit}
+
+.expense-choice{border:1px solid var(--line);border-radius:6px;padding:10px 14px;margin:14px 0;min-width:0}.expense-choice legend{padding:0 6px}.expense-choice legend .check{margin:0;font-weight:600}

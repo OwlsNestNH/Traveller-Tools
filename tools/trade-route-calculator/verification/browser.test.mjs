@@ -100,23 +100,25 @@ try{
  await click('Accounts');await click('Record expense');await fill('amount','3');await fill('reason','Quota failure check');const bankBeforeFailure=(await read()).bank;
  await page.evaluate(()=>{window.savedSetItem=Storage.prototype.setItem;Storage.prototype.setItem=function(){throw new DOMException('Storage full','QuotaExceededError');};});await click('Save');await page.locator('#modal-error').getByText('Storage full',{exact:true}).waitFor();assert.equal((await read()).bank,bankBeforeFailure);await page.evaluate(()=>{Storage.prototype.setItem=window.savedSetItem;});await click('Cancel');
 
- // Ship expenses are reachable from every tab and charge only on confirmation.
+
+ // Combined expenses, stateroom setup, weekly refills, preview cancellation and batch undo.
+ await click('Settings');await click('Ship, trader & options');await fill('staterooms','10');await click('Save');await closed();assert.equal((await read()).ship.staterooms,10);
  const openExpenses=()=>page.locator('#tabs').getByRole('button',{name:'Ship expenses',exact:true}).click();
  const expenseBank=(await read()).bank;
- await openExpenses();await click('Roll & save starport rate');const berthWorld=(await read()).worlds[(await read()).actual];const savedDie=berthWorld.berthingRate.die;
- await page.screenshot({path:join(artifacts,'ship-expenses-berthing.png')});
- await click('Cancel');await openExpenses();assert.equal(await page.getByRole('button',{name:'Roll & save starport rate',exact:true}).count(),0);assert.equal((await read()).worlds[berthWorld.id].berthingRate.die,savedDie);
- await page.locator('[name="expenseKind"]').selectOption('fuel');await page.locator('[name="fuelType"]').selectOption('refined');await fill('fuelTons','12.5');
- await page.locator('[name="otherSupplier"]').check();await fill('expenseNotes','Private fuel depot');
- assert.match(await page.locator('#expense-estimate').textContent(),/Cr 6,250/);
- await page.locator('[name="fuelType"]').selectOption('unrefined');assert.match(await page.locator('#expense-estimate').textContent(),/Cr 1,250/);
- await click('Preview expense');await click('Cancel');assert.equal((await read()).bank,expenseBank);
- await openExpenses();await page.locator('[name="expenseKind"]').selectOption('salary');await fill('salary','6000');await fill('months','2');
- await click('Preview expense');await click('Pay Cr 12,000');await closed();assert.equal((await read()).bank,String(BigInt(expenseBank)-12000n));assert.equal((await read()).ship.expenses.salary,'6000');
- await page.locator('[data-action="ledger-audit"]').first().click();assert.equal(await page.locator('#modal-body pre').count(),0);assert.match(await page.locator('#modal-body').textContent(),/Months paid/);assert.match(await page.locator('.rule-footnote').textContent(),/153–154/);await click('Close');
- await openExpenses();await page.locator('[name="expenseKind"]').selectOption('salary');assert.equal(await page.locator('[name="salary"]').inputValue(),'6000');await page.locator('[name="expenseKind"]').selectOption('lifeSupport');await fill('lifeSupport','2000');await fill('months','1');await page.screenshot({path:join(artifacts,'ship-expenses-monthly.png')});await click('Preview expense');await click('Pay Cr 2,000');await closed();assert.equal((await read()).bank,String(BigInt(expenseBank)-14000n));
+ const fillExpenses=async()=>{await click('Select all expenses');await fill('weeks','2');await fill('fuelTons','12.5');await page.locator('[name="fuelType"]').selectOption('unrefined');await fill('stateroomsUnits','2');await fill('passengers-high','1');await fill('crew-middle','4');await fill('passengerSupportUnits','1');await fill('salary','6000');await fill('salaryMonths','2');};
+ await openExpenses();await fillExpenses();await click('Roll & save starport rate');assert.equal(await page.locator('[name="salary"]').inputValue(),'6000');assert.equal(await page.locator('[name="passengers-high"]').inputValue(),'1');
+ const savedDie=(await read()).worlds[(await read()).actual].berthingRate.die;
+ const expenseTotal=String(savedDie*200+1250+5000+1750+12000);
+ await page.screenshot({path:join(artifacts,'combined-ship-expenses.png')});
+ await click('Preview expenses');await click('Cancel');assert.equal((await read()).bank,expenseBank);
+ await openExpenses();await fillExpenses();assert.equal(await page.getByRole('button',{name:'Roll & save starport rate',exact:true}).count(),0);
+ await click('Preview expenses');await click('Pay Cr '+Number(expenseTotal).toLocaleString('en-US'));await closed();
+ const paid=await read();assert.equal(paid.bank,String(BigInt(expenseBank)-BigInt(expenseTotal)));assert.equal(new Set(paid.ledger.slice(-5).map(e=>e.batchId)).size,1);assert.equal(paid.ship.supportOccupants.passengers.high,1);assert.equal(paid.ship.expenses.salary,'6000');
+ await click('Settings');await click('Ship, trader & options');await click('Save');await closed();assert.equal((await read()).ship.expenses.salary,'6000');
+ await openExpenses();await page.locator('[name="include-passengerSupport"]').check();assert.equal(await page.locator('[name="passengers-high"]').inputValue(),'1');await click('Cancel');
  await click('History');await click('Undo latest change');await click('Undo latest change');assert.equal((await read()).bank,expenseBank);
- await openExpenses();await fill('weeks','2');const total=await page.locator('#expense-estimate dd').last().textContent();await click('Preview expense');await click('Pay '+total);await closed();assert.equal((await read()).ledger.at(-1).expense.kind,'berthing');await click('Undo latest change');assert.equal((await read()).bank,expenseBank);
+ await openExpenses();await page.locator('[name="include-berthing"]').uncheck();assert.equal(await page.locator('#modal-submit').isDisabled(),true);await page.locator('[name="include-fuel"]').check();await fill('fuelTons','12.5');await click('Preview expenses');await click('Pay Cr 1,250');await closed();assert.equal((await read()).ledger.at(-1).expense.kind,'fuel');
+ await click('Undo latest change');assert.equal((await read()).bank,expenseBank);
  await page.locator('#notes').click();await page.getByRole('heading',{name:'INT-018 · Criminal-market exemption'}).waitFor();await click('Close');
  const recoveryCopy=await read();await page.evaluate(()=>localStorage.setItem('traveller-trade-route-calculator:v1','{corrupt'));await page.reload();await page.getByRole('heading',{name:'Recover saved campaign'}).waitFor();assert.equal(await page.evaluate(()=>localStorage.getItem('traveller-trade-route-calculator:v1')),'{corrupt');await page.locator('#import-file').setInputFiles({name:'recovery.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(recoveryCopy))});await page.getByRole('heading',{name:'Import campaign'}).waitFor();await page.locator('[name="backed"]').check();await click('Replace campaign');await closed();assert.equal((await read()).lots.length,15);
  assert.deepEqual(errors,[]);console.log('PASS: browser purchase/sale/undo, browsing, route/jump, insurance/partial claim, late freight delivery, two-tab transfer/stale preview, 15 cargo rows, mobile layout, backup/import/reset cancellation, quota failure and notes. API responses stubbed from live sample.');
