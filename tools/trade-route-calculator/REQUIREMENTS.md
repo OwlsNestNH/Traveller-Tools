@@ -74,6 +74,61 @@ A changed interpretation gets a new revision. Historical market snapshots and tr
 - On smaller screens, stack panels and favor normal page scrolling over nested vertical scroll areas. Preserve readable labels and access to all controls.
 - Use scrolling rather than pagination for lists of 10–15 entries.
 
+## Trade data table UI requirements — 2026-10-04
+
+Screenshot feedback from the Trade Calculator Design discussion prompted this clarification: show the normal retail/base price and the percentage from the 3D modified-price table, and align column headings with their values. These are requirements for a future UI update; this documentation change does not implement them. The screenshot itself is not included.
+
+### General table layout and audit behavior
+
+- Use the exact column order and labels specified below. Headers and body cells must share fixed or consistent grid widths so each label aligns with its values, including while scrolling.
+- Left-align commodity names and lot descriptions. Right-align all tonnage and currency headers and values. Right-align **Price %** consistently in both purchase and sale tables.
+- Give the **Actions** column a fixed width and use consistent button sizing. Keep status labels clear and each checkbox together with its label in the same status cell.
+- Use **Purchase Price** and **Sale Price**, not a vague **Cr/ton** header. Make units explicit in the displayed values or supporting labels: tons, Cr/ton for unit prices, and Cr for total revenue.
+- Preserve modifier auditability from every row. Audit or Audit/View must identify that specific offer, cargo lot, or freight contract and expose its saved inputs, rolls, applicable DMs and sources, table result, overrides, and effective result. Preserve original calculations and edit history; editing must not silently overwrite historical evidence.
+- Keep existing responsive, sticky-header, filtering, and stable-row-selection requirements. Narrow layouts must retain readable labels and access to every column and action.
+
+### PURCHASE OFFERS
+
+Required columns, in order:
+
+| Commodity | Available | Retail | Price % | Purchase Price | Offer Status | Actions |
+| :--- | ---: | ---: | ---: | ---: | :--- | :--- |
+| Commodity name | Available tons | Core Rulebook base price (Cr/ton) | 3D purchase percentage | Final purchase price (Cr/ton) | Active/Expired and Expired checkbox | Buy, Audit, Edit |
+
+- **Retail** is the Core Rulebook base price, displayed separately from the negotiated purchase price.
+- **Price %** is the percentage result from the 3D modified-price purchase table, not the dice total, supplier-search result, or profit-mode percentage.
+- **Purchase Price** is the final Cr/ton; preserve the table result and any price override in the row's audit.
+- **Offer Status** shows **Active** when the **Expired** checkbox is unchecked and **Expired** when checked. Keep the checkbox and its label together.
+- Visually dim expired rows while keeping their values readable and their Audit/Edit controls available. Disable Buy for an expired offer; retain existing reactivation, history, undo, and purchase-validation rules. Expiration must not remove the row's audit evidence.
+- **Actions** contains **Buy**, **Audit**, and **Edit** for the individual offer.
+
+### CARGO SALE
+
+Required columns, in order:
+
+| Commodity | Tons Held | Retail | Price % | Sale Price | Lot / Description | Actions |
+| :--- | ---: | ---: | ---: | ---: | :--- | :--- |
+| Commodity name | Tons held in this lot | Core Rulebook base price (Cr/ton) | 3D sale percentage | Final sale price (Cr/ton) | Lot identity and description | Sell, Audit, Edit |
+
+- **Retail** is the base price. **Price %** is the percentage from the 3D modified-price sale table. **Sale Price** is the final Cr/ton, with any override separately traceable in the audit.
+- Support multiple lots of the same commodity as distinct rows, each with its own description and cost basis. Never merge lots by commodity name or replace acquisition cost basis with Retail or Sale Price.
+- Automatically populate this table only with cargo actually aboard. Explicitly entered manual commodity lots may also exist through the existing setup/adjustment workflow, retaining their own description, quantity, cost basis, and audit history.
+- **Actions** includes **Sell**, **Audit**, and **Edit**, targeting the specific lot. Selling a selected quantity retains the existing per-lot preview, cost-basis allocation, and commit rules.
+
+### FREIGHT
+
+Required columns, in order:
+
+| Freight Lot / Description | Tons | Destination | Rate / ton | Total Revenue | Due / Delivery Date | Status | Actions |
+| :--- | ---: | :--- | ---: | ---: | :--- | :--- | :--- |
+| Freight lot identity and description | Contract tons | Delivery destination | Contract rate (Cr/ton) | Contract revenue (Cr) | Due/delivery date, if applicable | Explicit contract state | Accept, Audit/View, Edit as appropriate |
+
+- Clearly separate freight from owned speculative cargo in both presentation and row identity. Freight contracts do not appear as speculative cargo sale lots.
+- Show **Due / Delivery Date** when applicable; distinguish a due date from a recorded delivery date and do not invent a deadline when none applies.
+- **Status** clearly identifies the contract's current acceptance, delivery, and payout state.
+- **Actions** allows **Accept** for eligible unaccepted freight, **Audit/View** for the row's calculation and contract details, and **Edit** where appropriate to the contract state. Acceptance and edits retain the existing capacity, obligation, history, and commit rules.
+- **Total Revenue** presents the contractual revenue; displaying it does not credit the bank. Delivery and payout remain explicit committed actions under the existing freight/mail requirements.
+
 ## Markets and speculative trade
 
 - Simulate full commodity availability and purchase/sale pricing using verified Core Rulebook tables, DMs, dice rolls, and price percentages.
@@ -179,6 +234,8 @@ Prevent concurrent browser tabs from silently overwriting campaign state. Allow 
 18. Rules & Notes shows accurate copyright/credits, rules sources, actual verification status and all agreed interpretation decisions, including the optional first-edition adaptations. Affected audits link to their notes, and historical snapshots retain their interpretation revisions.
 
 19. Optional insurance and taxation start disabled, preserve their own audits and history, follow INT-007 through INT-021, and pass the source, accounting and lifecycle checks in OPTIONAL_RULES.md before release.
+
+20. Purchase offers, cargo sale, and freight use the exact table columns and alignment specified above; headers stay aligned with rows, action widths remain consistent, and every row exposes its modifier audit. Expired offers remain readable and auditable with Buy disabled; same-commodity cargo lots retain separate descriptions and cost bases; freight stays separate from speculative cargo.
 
 ## Navigation selection refinement — 2026-10-03
 
