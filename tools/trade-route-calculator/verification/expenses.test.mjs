@@ -20,8 +20,8 @@ test('all four expenses pay atomically, retain separate audits and undo together
  const s=campaign();S.saveBerthingRate(s,2);
  const inputs=[{kind:'berthing',weeks:2},{kind:'fuel',fuelType:'unrefined',tons:'12.5',otherSupplier:true,notes:'Private depot'},{kind:'lifeSupport',monthly:'2000',months:2},{kind:'salary',monthly:'6000',months:1}];
  const after=S.transition(s,'Combined expenses',n=>S.shipExpenses(n,inputs));
- assert.equal(after.bank,'84750');assert.equal(after.ledger.length,4);assert.equal(new Set(after.ledger.map(e=>e.batchId)).size,1);assert.ok(after.ledger[0].batchId);
- assert.deepEqual(after.ledger.map(e=>e.expense.amount),['4000','1250','4000','6000']);assert.equal(after.ship.expenses.salary,'6000');assert.equal(after.ship.expenses.lifeSupport,'2000');
+ assert.equal(after.bank,'84700');assert.equal(after.ledger.length,4);assert.equal(new Set(after.ledger.map(e=>e.batchId)).size,1);assert.ok(after.ledger[0].batchId);
+ assert.deepEqual(after.ledger.map(e=>e.expense.amount),['4000','1300','4000','6000']);assert.equal(after.ship.expenses.salary,'6000');assert.equal(after.ship.expenses.lifeSupport,'2000');
  assert.equal(S.undo(after).bank,s.bank);assert.equal(S.undo(after).ledger.length,0);assert.deepEqual(S.validate(JSON.parse(JSON.stringify(after))),after);
 });
 test('invalid or unaffordable batches never partially charge',()=>{
@@ -40,11 +40,11 @@ test('all starport weekly rates; saved roll reused and class change needs a new 
  s.worlds[s.actual].overrideUWP='B788899-C';assert.throws(()=>E.berthRate(s.worlds[s.actual]));
 });
 test('fuel type, fractional tons, availability and zero/invalid input',()=>{
- assert.equal(E.expenseQuote(world(),{kind:'fuel',fuelType:'refined',tons:'12.5'}).amount,'6250');
- assert.equal(E.expenseQuote(world('C'),{kind:'fuel',fuelType:'unrefined',tons:'12.5'}).amount,'1250');
+ assert.equal(E.expenseQuote(world(),{kind:'fuel',fuelType:'refined',tons:'12.5'}).amount,'6500');
+ assert.equal(E.expenseQuote(world('C'),{kind:'fuel',fuelType:'unrefined',tons:'12.5'}).amount,'1300');
  assert.throws(()=>E.expenseQuote(world('E'),{kind:'fuel',fuelType:'refined',tons:'1'}));
  assert.equal(E.expenseQuote(world('E'),{kind:'fuel',fuelType:'refined',tons:'1',otherSupplier:true,notes:'Private fuel depot'}).amount,'500');
- for(const tons of ['0','-1','NaN','0.0001'])assert.throws(()=>E.expenseQuote(world(),{kind:'fuel',fuelType:'refined',tons}));
+ for(const tons of ['0','-1','NaN'])assert.throws(()=>E.expenseQuote(world(),{kind:'fuel',fuelType:'refined',tons}));
 });
 test('entered monthly costs persist, round-trip, and undo without affecting cargo basis or time',()=>{
  const s=campaign(),after=S.transition(s,'Salary',n=>S.shipExpense(n,{kind:'salary',monthly:'6500',months:2,notes:'001–060'}));

@@ -1,3 +1,4 @@
+import {up} from './rounding.mjs';
 import {sum,mul,decimal,cmp,credit} from './amounts.mjs';
 
 export const tiers=['low','middle','high'];
@@ -25,4 +26,4 @@ export function luggageAllowance(ship){
  const p=ship.accommodation?.passengers;if(!p)return '0';
  return decimal(sum(tiers.map(t=>mul(p[t]??0,luggageRates[t]))));
 }
-export function passengerLuggage(ship){return ship.accommodation?.luggageTons!=null?decimal(ship.accommodation.luggageTons):luggageAllowance(ship);}
+export function passengerLuggage(ship){const value=ship.accommodation?.luggageTons!=null?ship.accommodation.luggageTons:luggageAllowance(ship);return ship.roundTons?String(up(value)):decimal(value);}
