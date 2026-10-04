@@ -259,3 +259,12 @@ Provide a **Ship expenses** shortcut in the main navigation and in Accounts. The
 - **Life support and crew salaries:** enter the total monthly cost and whole months to pay. Remember each entered monthly amount after a successful payment. Billing periods are explicitly selected by the user; do not auto-charge when campaign time advances. Running-cost reference: Core Rulebook Update 2022, pp. 153–154.
 - Numeric controls have visible increment/decrement arrows. Include optional notes for the billing period or supplier. Prevent negative amounts, invalid periods and unaffordable payments.
 - Post each payment once as a separate operating-expense ledger entry, without changing cargo cost basis or campaign time. Preserve the calculation, location, rate/roll, periods or tons, notes and rule footnotes in a readable audit. Canceling a payment changes no bank balance. Undo restores the bank and related saved defaults.
+
+
+## Map panning and area loading — 2026-10-04
+
+The map supports mouse drag and touch drag. Movement beyond a small threshold pans the map without selecting the world under the pointer. A normal click still browses that world. Reset view restores centered 100% zoom; Current ship centers the ship. Neither browsing nor panning moves the ship or changes campaign time, bank or cargo.
+
+The old 12-parsec display boundary is removed. After panning/zooming pauses, fetch small overlapping areas around the viewport using 12-parsec requests. Debounce requests, allow at most two concurrently, discard obsolete queued requests, and reuse a bounded 32-area memory cache. Map browsing data remains separate from saved campaign and route-planning data. Route search keeps its existing 12-parsec area around each requested stop.
+
+Render nearby visible worlds only, capped at 1,500 markers. Hide ordinary world labels and hexes below 48% zoom; retain actual/viewed-world labels. Show loading/failure status and allow Refresh nearby to retry. This bounds rendering and requests rather than fetching a single enormous map.

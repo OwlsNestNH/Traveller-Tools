@@ -151,3 +151,8 @@ Implemented the purchase-offer, cargo-sale and freight table requirements withou
 Checked the supplied Core Rulebook Update 2022: running costs p. 154; starport rates p. 257; weekly billing, one roll per starport, and fuel prices p. 258. Life support and salary amounts are entered by the user; monthly periods are manually selected, not automatically accrued.
 
 All 35 application/calendar/expense tests passed. Expense cases cover every starport class, saved-rate reuse, effective class changes, decimal fuel quantities, nonstandard supplier confirmation, monthly multiplication, insufficient funds, zero-cost berthing, persistence and atomic undo. The Edge browser integration suite passed, including expense access, saved rolls, live fuel totals, cancel, monthly defaults, payment, readable ledger audits and undo. Existing trading, insurance, contract, recovery and mobile-layout checks remain passing.
+
+
+## Map pan and expanded browsing checks — 2026-10-04
+
+All 37 application/calendar/expense/viewport unit tests passed. The viewport tests cover visible-hex coverage across coordinate parity and zoom, two-request concurrency, superseded queues, failed-request retry and the 32-area cache bound. The Edge world-picker suite covers drag starting on a world without accidental selection, shared-layer movement, reset, click after cancellation, pan persistence during redraw, and fetching a previously unknown world 32 parsecs from the starting world. Browsing leaves the saved campaign unchanged and does not copy exploration areas into it. At 20% zoom ordinary world labels and hexes are hidden. Existing navigation and application browser suites passed using deterministic map API fixtures. No trade or route-finding rules changed.

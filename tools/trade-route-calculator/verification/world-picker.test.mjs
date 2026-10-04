@@ -9,11 +9,13 @@ let broken=true;
 await ctx.route('https://travellermap.com/api/metadata?*',async route=>{const name=new URL(route.request().url()).searchParams.get('sector');if(name==='Broken Sector'&&broken){broken=false;return route.fulfill({status:503,body:'unavailable'});}if(name==='Empty Sector')await new Promise(r=>setTimeout(r,300));await route.fulfill({json:{Subsectors:[{Index:'C',Name:'Regina'},{Index:'A',Name:'Cronor'}]}});});
 await ctx.route('https://travellermap.com/api/sec?*',route=>route.fulfill({json:'Hex\tName\r\n'+(new URL(route.request().url()).searchParams.get('sector')==='Empty Sector'?'':sample.map(w=>w.Hex+'\t'+w.Name).join('\r\n'))}));
 const distant={Name:'Far Haven',Hex:'0101',UWP:'A788899-C',PBG:'703',Zone:'',WorldX:-128,WorldY:-79,Sector:'Spinward Marches'};
+const explored={...sample[0],Name:'Beyond the old map',Hex:'1910',WorldX:-78};
 const neighbor={...distant,Name:'Far Neighbor',Hex:'0201',WorldX:-127};
 sample.push(distant);
 let failNearby=true;
 await ctx.route('https://travellermap.com/api/jumpworlds?*',route=>{
  const u=new URL(route.request().url());assert.equal(u.searchParams.get('jump')==='0'||u.searchParams.get('jump')==='12',true);const zero=u.searchParams.get('jump')==='0',far=u.searchParams.get('x')==='-128';
+ if(!zero&&u.searchParams.get('x')==='-80')return route.fulfill({json:{Worlds:[explored]}});
  if(!zero&&far&&failNearby){failNearby=false;return route.fulfill({status:503,body:'Temporary map failure'});}
  return route.fulfill({json:{Worlds:zero?sample.filter(w=>w.Hex===u.searchParams.get('hex')):far?[distant,neighbor]:sample.filter(w=>w!==distant)}});
 });
@@ -31,12 +33,31 @@ try{
  await page.getByLabel('Show hexes',{exact:true}).uncheck();assert.equal(await page.locator('.hex-grid').count(),0);await page.getByLabel('Show hexes',{exact:true}).check();
  await page.locator('svg [data-arg="-111,-70"]').click();assert.deepEqual(await read(),before);await click('Current ship');
  const map=page.locator('.world-map');
+
+ // Dragging pans the shared world/route/grid layer without browsing or mutating the campaign.
+ const transform=()=>page.locator('.map-content').getAttribute('transform');
+ const worldBefore=await page.locator('.world-info strong').first().textContent();
+ const dot=await page.locator('svg [data-arg="-111,-70"] circle').boundingBox();
+ await page.mouse.move(dot.x+dot.width/2,dot.y+dot.height/2);await page.mouse.down();await page.mouse.move(dot.x+90,dot.y+45,{steps:8});await page.mouse.up();
+ assert.notEqual(await transform(),'translate(0 0)');assert.equal(await page.locator('.world-info strong').first().textContent(),worldBefore);assert.deepEqual(await read(),before);
+ const pan=await transform();await page.getByLabel('Show hexes',{exact:true}).uncheck();assert.equal(await transform(),pan);await page.getByLabel('Show hexes',{exact:true}).check();
+ await click('Reset view');await page.waitForFunction(()=>document.querySelector('.map-content').getAttribute('transform')==='translate(0 0)');
+ // Touch pointer cancellation releases the drag, and the next ordinary world click still works.
+ await map.dispatchEvent('pointerdown',{pointerId:41,pointerType:'touch',isPrimary:true,button:0,clientX:200,clientY:200});
+ await map.dispatchEvent('pointercancel',{pointerId:41,pointerType:'touch',isPrimary:true});
+ await page.locator('svg [data-arg="-111,-70"]').click();assert.equal(await page.locator('.world-info strong').first().textContent(),'Jenghe');assert.equal(await transform(),'translate(0 0)');assert.deepEqual(await read(),before);await click('Current ship');
  const separation=()=>page.evaluate(()=>{const a=document.querySelector('svg [data-arg="-110,-70"] circle'),b=document.querySelector('svg [data-arg="-111,-70"] circle');return Math.abs(Number(a.getAttribute('cx'))-Number(b.getAttribute('cx')));});
  assert.equal(await page.evaluate(async()=>{const m=await import('./js/map.mjs');return m.distance({x:0,y:0},{x:12,y:6});}),12);
  const initialSpacing=await separation();await map.hover();const scrollBefore=await page.evaluate(()=>scrollY);await page.mouse.wheel(0,-150);await page.waitForFunction(()=>document.querySelector('.map-zoom-controls span').textContent!=='100%');assert.ok(await separation()>initialSpacing);assert.equal(await page.evaluate(()=>scrollY),scrollBefore);
  await page.mouse.wheel(0,150);await page.waitForFunction(()=>document.querySelector('.map-zoom-controls span').textContent==='100%');
  await click('+');await page.waitForFunction(()=>document.querySelector('.map-zoom-controls span').textContent==='120%');
- for(let i=0;i<15;i++)await click('−');await page.waitForFunction(()=>document.querySelector('.map-zoom-controls span').textContent==='20%');assert.equal(await page.locator('.hex-grid polygon').count(),469);assert.equal(await page.locator('.hex-grid text').count(),0);
+ for(let i=0;i<15;i++)await click('−');await page.waitForFunction(()=>document.querySelector('.map-zoom-controls span').textContent==='20%');assert.equal(await page.locator('.hex-grid polygon').count(),0);assert.equal(await page.locator('.hex-grid text').count(),0);
+
+ // At 20% zoom drag 32 parsecs east; an uncached world must load beyond the old radius.
+ await map.waitFor({state:'visible'});const box=await page.evaluate(()=>{const r=document.querySelector('.world-map').getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};}),startX=box.x+box.width*.85,startY=box.y+box.height*.5;
+ await page.mouse.move(startX,startY);await page.mouse.down();await page.mouse.move(startX-32*10*Math.sqrt(3)/2*box.width/520,startY,{steps:10});await page.mouse.up();
+ await page.locator('svg [data-arg="-78,-70"]').waitFor();assert.deepEqual(await read(),before);assert.equal((await read()).worlds['-78,-70'],undefined);
+ assert.equal(await page.locator('svg [data-arg="-78,-70"] text').count(),0);
  await click('Reset view');await page.waitForFunction(()=>document.querySelector('.map-zoom-controls span').textContent==='100%');assert.deepEqual(await read(),before);
  await click('Find world');const picker=page.locator('#find-world');await picker.locator('.picker-selection').getByText(/Hex 1910/).waitFor();
  assert.equal(await picker.getByLabel('Sector',{exact:true}).locator('option').filter({hasText:'Trojan Reach'}).count(),1);
@@ -76,4 +97,4 @@ try{
  await page.evaluate(()=>{const key='traveller-trade-route-calculator:v1',s=JSON.parse(localStorage.getItem(key));delete s.worlds['-127,-79'];localStorage.setItem(key,JSON.stringify(s));});
  await page.reload();await page.getByRole('button',{name:'Browse Far Neighbor',exact:true}).waitFor();
  assert.deepEqual(errors,[]);console.log('PASS: cascading search, derived hex, browsing invariants, parent reset, loading race, retry, empty sector, actual origin, stop reorder/removal, route persistence, recent-world persistence/deduplication, hex alignment/toggle/clicking and mobile width.');
-}finally{await browser.close();}
+}catch(error){console.log(errors);console.log((await page.locator('#main').innerHTML()).slice(0,1500));throw error;}finally{await browser.close();}
