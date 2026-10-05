@@ -64,3 +64,5 @@ td{padding:8px 10px}td .check{margin:0;white-space:nowrap}.cargo-scroll{max-heig
 .bank-ledger th:nth-child(7){width:17%}
 .bank-ledger td:nth-child(3){overflow-wrap:anywhere}
 .bank-ledger td:nth-child(3) button{margin-top:6px}
+
+.day-controls{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.day-controls button{padding:5px 9px;font-size:12px;white-space:nowrap}

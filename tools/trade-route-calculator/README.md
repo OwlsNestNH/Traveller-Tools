@@ -98,3 +98,11 @@ Ship settings combine crew and passenger cabins. Middle and high cabins each cos
 The main controls include **Refill life support**, and the ship summary shows remaining days. Configure capacity (default 28 days) and supplies actually aboard. Campaign time consumes supplies. Refill previews and purchases only missing stock using current cabin/person rates. Confirm local supply availability before paying. Undo restores stock and payment. Existing campaigns without recorded inventory must enter their actual supplies first. Manual Ship Expenses payments are separate accounting entries and do not refill tracked stock.
 
 Run `node --test verification/life-support.test.mjs` and `node verification/combined-cabins.test.mjs` for stock and browser checks.
+
+## Daily time controls
+
+Use **-1 day** or **+1 day** beside Campaign time. Advancing consumes 24 hours of recorded life support, stopping at zero. Moving the date backward does not restore supplies or reverse transactions, and cannot move before campaign start. Both actions appear in History (Settings filter). Undo reverses an accidental advance and restores the date and supplies together. Controls respect editing locks and save immediately.
+
+Run `node verification/day-controls.test.mjs` for date boundaries, stock use, History, undo, persistence, read-only tabs and mobile layout.
+
+Life support uses whole days. Short activities accumulate internally until 24 hours have elapsed, then one day is consumed. Refilling rounds any partly used day up, resets the partial-day counter and leaves campaign time unchanged. Settings, refill previews and TXT reports display whole days. Saving unrelated ship settings preserves the partial-day counter; changing the recorded stock starts a new counter. Historical charges remain unchanged.

@@ -6,3 +6,18 @@ function campaign(){const s=S.initial();s.bank='100000';s.ship.accommodation={ro
 test('refill buys only missing days using combined cabin and person service cost',()=>{const s=campaign();assert.equal(refillQuote(s).monthly,'14000');assert.equal(refillQuote(s).amount,'7000');const n=S.transition(s,'Refill',S.refillLifeSupport);assert.equal(n.bank,'93000');assert.equal(n.ship.lifeSupport.remainingHours,672);assert.equal(n.hours,0);assert.equal(refillQuote(n).amount,'0');assert.throws(()=>S.transition(n,'Again',S.refillLifeSupport),/already full/);assert.deepEqual(S.undo(n).ship.lifeSupport,s.ship.lifeSupport);assert.equal(S.undo(n).bank,s.bank);});
 test('time consumes stock, caps at empty, rollback does not create supplies; undo restores',()=>{const s=campaign();const n=S.transition(s,'Travel',n=>n.hours+=168);assert.equal(n.ship.lifeSupport.remainingHours,168);assert.equal(S.undo(n).ship.lifeSupport.remainingHours,336);const back=S.transition(n,'Correct time',n=>n.hours=0);assert.equal(back.ship.lifeSupport.remainingHours,168);const empty=S.transition(n,'Wait',n=>n.hours+=1000);assert.equal(empty.ship.lifeSupport.remainingHours,0);assert.equal(S.validate(JSON.parse(JSON.stringify(empty))).ship.lifeSupport.remainingHours,0);});
 test('invalid stock and unaffordable refill are rejected; legacy stock remains unknown',()=>{const s=campaign();s.bank='1';assert.throws(()=>S.transition(s,'Refill',S.refillLifeSupport),/Insufficient/);assert.equal(s.ship.lifeSupport.remainingHours,336);for(const remainingHours of [-1,673,0.5,null])assert.throws(()=>S.validate({...s,ship:{...s.ship,lifeSupport:{capacityHours:672,remainingHours}}}));delete s.ship.lifeSupport;assert.equal(S.validate(s),s);assert.throws(()=>refillQuote(s),/Set life support/);});
+
+test('short activities accumulate; refill rounds the partly used day and resets the counter',()=>{
+ let s=campaign();s.ship.lifeSupport={capacityHours:672,remainingHours:672,elapsedHours:0};
+ for(let i=1;i<=3;i++){s=S.transition(s,'Search',n=>n.hours+=6);assert.equal(s.ship.lifeSupport.remainingHours,672);assert.equal(s.ship.lifeSupport.elapsedHours,i*6);}
+ const q=refillQuote(s);assert.equal(q.missingDays,1);assert.equal(q.partialDay,1);assert.equal(q.amount,'500');
+ const refill=S.transition(s,'Refill',S.refillLifeSupport);assert.equal(refill.hours,s.hours);assert.equal(refill.ship.lifeSupport.elapsedHours,0);assert.equal(refill.ship.lifeSupport.remainingHours,672);assert.deepEqual(S.undo(refill).ship.lifeSupport,s.ship.lifeSupport);
+ const day=S.transition(s,'Search',n=>n.hours+=6);assert.equal(day.ship.lifeSupport.remainingHours,648);assert.equal(day.ship.lifeSupport.elapsedHours,0);assert.equal(refillQuote(day).missingDays,1);
+ const back=S.transition(s,'Correct date',n=>n.hours=0);assert.equal(back.ship.lifeSupport.elapsedHours,18);assert.equal(back.ship.lifeSupport.remainingHours,672);
+ assert.deepEqual(S.validate(JSON.parse(JSON.stringify(s))),s);
+});
+test('legacy partial stock preserves effective supplies and rounds refill to a whole day',()=>{
+ const s=campaign();s.ship.lifeSupport.remainingHours=650;const q=refillQuote(s);assert.equal(q.missingDays,1);assert.equal(q.partialDay,1);
+ const n=S.transition(s,'Wait two hours',x=>x.hours+=2);assert.equal(n.ship.lifeSupport.remainingHours,648);assert.equal(n.ship.lifeSupport.elapsedHours,0);assert.equal(S.undo(n).ship.lifeSupport.remainingHours,650);
+ for(const elapsedHours of [-1,24,0.5])assert.throws(()=>S.validate({...s,ship:{...s.ship,lifeSupport:{capacityHours:672,remainingHours:672,elapsedHours}}}));
+});

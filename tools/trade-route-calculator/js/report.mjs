@@ -3,7 +3,7 @@ import {displayDate} from './calendar.mjs';
 import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=passenger-input-3';
 import {distance} from './map.mjs';
 
-export const REPORT_VERSION='2026.10.04.24';
+export const REPORT_VERSION='2026.10.05.7';
 const clean=v=>String(v??'Not recorded').replace(/[\r\n\t\x00-\x1f]+/g,' ').trim();
 const number=v=>String(v).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const cr=v=>v==null?'Not recorded':'Cr '+number(v);
@@ -42,7 +42,7 @@ export function campaignReport(s,core,{exportedAt=new Date()}={}){
   }
  }
  if(s.ship.accommodation?.combinedPeople)line('People receiving high service',(occ.passengers?.high??0)+(occ.crew?.high??0));
- if(s.ship.lifeSupport)line('Life support days remaining / capacity',(s.ship.lifeSupport.remainingHours/24)+' / '+(s.ship.lifeSupport.capacityHours/24));
+ if(s.ship.lifeSupport)line('Life support days remaining / capacity',Math.ceil(s.ship.lifeSupport.remainingHours/24)+' / '+Math.ceil(s.ship.lifeSupport.capacityHours/24));
  section('FINANCIAL SUMMARY');
  const opening=s.ledger.find(e=>e.type==='Opening bank');
  line('Opening bank',cr(opening?.amount));line('Current bank',cr(s.bank));
