@@ -218,3 +218,7 @@ RAW comparison: Core Update 2022 p. 154 charges Cr1,000 per ordinary stateroom p
 ### Daily controls and whole-day supplies - 2026-10-05
 
 Added -1/+1 day controls next to Campaign time. Forward time consumes accumulated whole days; backward corrections restore neither supplies nor transactions. History and Undo use the existing atomic state transition. Refill rounds a partially consumed day up and resets its counter without advancing campaign time. These are user-requested campaign accounting conventions, not new rulebook claims.
+
+### Jump fuel tracking - 2026-10-05
+
+Verified against Core Rulebook Update 2022: p. 157 consumes 10% of hull tonnage per actual parsec, with jumps shorter than one parsec counted as Jump-1; p. 154 gives refined Cr500/ton and unrefined Cr100/ton. Page 180 separates jump tankage from power-plant fuel. User scope excludes power-plant tracking. Whole-ton rounding and free water collection retain existing campaign conventions. Added bank/tank purchase audits, insufficient-fuel and overfill rejection, committed-jump consumption, optional legacy configuration and undo coverage.

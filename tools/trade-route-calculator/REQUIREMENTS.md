@@ -323,3 +323,13 @@ Every Accounts > Details dialog uses labeled, readable facts and explanations, n
 - History Details must summarize the recorded action, date, world, notes and available event-specific information: jump duration and overrides, contract search results, contract edits, cargo additions/corrections and rounding changes. Never expose JSON, internal identifiers or generic raw-object rendering.
 - Newly saved contract search history retains skill and characteristic inputs separately. Existing historical records are not rewritten.
 - Read-only summaries do not alter campaign state. Full underlying data remains in JSON backups.
+
+## Jump fuel tracking - authorized 2026-10-05
+
+- Add whole-ton ship displacement, jump-fuel tank capacity and actual fuel aboard to ship setup/settings, independent of cargo space. All three fields must be provided together. Preserve older campaigns without guessing fuel; tracking starts after configuration.
+- Use actual leg distance at 10% hull tonnage per parsec, minimum Jump-1, rounded up to whole tons. Power-plant fuel is excluded at user request.
+- Fuel expenses default to the next-jump deficit where available and offer **Fuel for next jump** and **Fill tank**. Quantities stay editable. Refined/unrefined/free collection follow existing pricing and availability rules. Overfills and unaffordable combined payments must leave bank and stock unchanged.
+- Committing a jump deducts fuel once, rejects insufficient fuel, and records the formula and before/after values in readable audit details. Planning and previews do not consume stock. Undo restores stock and dependent campaign state atomically.
+- Save/load and TXT reports retain ship size and fuel quantities. Historical payments and completed jumps are not recalculated. Manual stock corrections in settings do not charge the bank.
+
+- Place a **Refuel** button and Refined / Unrefined / Collect water radio buttons beside Life support, with fuel aboard/capacity shown. The shortcut opens a fuel-only preview using the selected source and full-tank quantity; no automatic payment occurs. Stack the panels on narrow screens.

@@ -1,3 +1,4 @@
+import {fuelPurchase,fuelReference} from './fuel.mjs';
 import {up} from './rounding.mjs';
 import * as A from './amounts.mjs';
 import {monthlyRates,serviceRate,serviceLabel,personMonthlyRate,personRate} from './accommodation.mjs?v=passenger-input-3';
@@ -32,7 +33,10 @@ export function expenseQuote(world,input){
   if(!standard&&(!input.otherSupplier||!notes))throw Error(collecting?'Usable water is not established here. Confirm a source through roleplay with the referee and explain in notes.':'No standard starport supply for this fuel. Confirm another supplier and explain in notes.');
   unrounded=A.decimal(A.mul(tons,rate));amount=String(up(unrounded,input.creditStep||1));
   details=[['Fuel type',type==='refined'?'Refined':'Unrefined'],['Fuel tons',tons],['Rate · Cr/ton',String(rate)],['Starport class',port],['Hydrographics',hydro],['Supply',collecting?(standard?'Free water collection':'Free collection / referee-confirmed source'):(standard?'Starport purchase':'Other supplier / referee-confirmed')]];
-  reference='Traveller Core Rulebook Update 2022, pp. 154, 156–157, 257–258. Purchased refined Cr500/ton; purchased unrefined Cr100/ton. Campaign ruling: refined availability also includes unrefined; usable water collection is free at any starport class, including E/X. Campaign ruling: Class D and E worlds with hydrographics 1–A automatically provide water for collection. Other starport classes still require confirmation of usable water in exotic atmospheres. Other sources require referee confirmation and notes. Collection equipment and access are resolved in play; tank levels and collection time are not tracked.';
+  reference='Traveller Core Rulebook Update 2022, pp. 154, 156–157, 257–258. Purchased refined Cr500/ton; purchased unrefined Cr100/ton. Campaign ruling: refined availability also includes unrefined; usable water collection is free at any starport class, including E/X. Campaign ruling: Class D and E worlds with hydrographics 1–A automatically provide water for collection. Other starport classes still require confirmation of usable water in exotic atmospheres. Other sources require referee confirmation and notes. Collection equipment and access are resolved in play; collection time and fuel-grade mixing are resolved in play.';
+  const tank=input.fuelShip?fuelPurchase(input.fuelShip,tons):null;
+  if(tank)details.push(['Ship displacement - tons',String(tank.displacementTons)],['Tank capacity - tons',String(tank.capacity)],['Fuel aboard before - tons',String(tank.before)],['Fuel aboard after - tons',String(tank.after)]);
+  reference+=' '+fuelReference+(tank?' Confirming adds fuel to the tank.':' Fuel tracking is not configured; this records a payment only.');
  }else if(kind==='staterooms'||kind==='passengerSupport'){
   const {units,divisor}=period(input);let monthly=0n;details=[];
   if(kind==='staterooms'){

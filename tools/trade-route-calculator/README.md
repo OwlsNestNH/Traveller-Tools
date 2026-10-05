@@ -106,3 +106,15 @@ Use **-1 day** or **+1 day** beside Campaign time. Advancing consumes 24 hours o
 Run `node verification/day-controls.test.mjs` for date boundaries, stock use, History, undo, persistence, read-only tabs and mobile layout.
 
 Life support uses whole days. Short activities accumulate internally until 24 hours have elapsed, then one day is consumed. Refilling rounds any partly used day up, resets the partial-day counter and leaves campaign time unchanged. Settings, refill previews and TXT reports display whole days. Saving unrelated ship settings preserves the partial-day counter; changing the recorded stock starts a new counter. Historical charges remain unchanged.
+
+## Jump fuel tracking
+
+Enter total **Ship displacement**, **Jump-fuel tank capacity**, and **Jump fuel aboard** in setup or Ship settings. Displacement is separate from cargo capacity; tank figures cover jump fuel only. Power-plant consumption is excluded. Older campaigns remain untracked until their actual figures are entered. Entering initial fuel or correcting stock in settings does not charge the bank.
+
+Ship expenses suggests the deficit for the next planned jump, or the empty tank space when there is no next leg. **Fuel for next jump** and **Fill tank** set an editable purchase quantity. Purchased refined fuel costs Cr500/ton; purchased unrefined Cr100/ton; confirmed natural water collection remains free under existing availability rules. Confirming adds fuel to the tank and records a readable before/after audit; overfilling and unaffordable purchases are rejected.
+
+A committed jump consumes 10% of total hull tonnage per actual parsec, rounded up to whole tons, with a minimum Jump-1 expenditure. A 200-ton ship uses 20 tons for one parsec and 40 for two. Configured ships cannot commit a jump without enough fuel. Browsing, planning and cancelled previews consume none. Undo restores fuel along with the transaction or jump. Fuel type is recorded per purchase; grade mixing, refining, unrefined-fuel jump penalties and power-plant fuel are resolved outside this tool.
+
+Source: Core Rulebook Update 2022, p. 157 (jump consumption), p. 154 (prices); p. 180 distinguishes jump and power-plant tankage. Run `node --test verification/fuel.test.mjs` and `node verification/fuel-browser.test.mjs`.
+
+A **Refuel** panel sits beside Life support. Refined, Unrefined and Collect water radio buttons select the source; **Refuel** opens a fuel-only Ship expenses preview, initially set to fill the tank. Selecting a source never charges the bank. Missing ship fuel settings open setup before refuelling. On narrow screens the two panels stack.
