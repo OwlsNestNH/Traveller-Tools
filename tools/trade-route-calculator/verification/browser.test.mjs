@@ -135,7 +135,7 @@ try{
  assert.equal(await second.getByRole('button',{name:'Find supplier',exact:true}).isDisabled(),true);
  await second.getByRole('button',{name:'Take over editing',exact:true}).click();await second.getByText('Editing in this tab',{exact:true}).waitFor();await page.getByText('Read-only: editing transferred to another tab.',{exact:true}).waitFor();
  await second.getByRole('button',{name:'Accounts',exact:true}).click();await second.getByRole('button',{name:'Record expense',exact:true}).click();await second.locator('[name="amount"]').fill('2');await second.locator('[name="reason"]').fill('Second-tab change');await second.locator('#modal-submit').click();await second.locator('#modal').waitFor({state:'hidden'});
- const bankAfterOtherTab=(await read()).bank;await click('Save');await page.locator('#modal-error').getByText(/Campaign changed/).waitFor();assert.equal((await read()).bank,bankAfterOtherTab);await click('Cancel');
+ const bankAfterOtherTab=(await read()).bank;assert.equal(await page.locator('#modal-submit').isDisabled(),true);await page.locator('#modal-error').getByText(/Editing moved to another tab/).waitFor();assert.equal((await read()).bank,bankAfterOtherTab);await click('Cancel');
  await second.close();await page.getByRole('button',{name:'Take over editing',exact:true}).click();await page.getByText('Editing in this tab',{exact:true}).waitFor();
  // Long-list layout and safe import/export round-trip use a valid expanded campaign fixture.
  let many=await read();const seed=many.lots[0];many.lots=Array.from({length:15},(_,i)=>({...seed,id:'fixture-'+i,quantity:'0.5',basis:String(100+i),goodsValue:'100',description:'Fixture cargo '+(i+1)}));many.policies=[];many.undo=[];many.revision++;
