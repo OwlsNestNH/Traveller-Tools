@@ -51,3 +51,16 @@ td{padding:8px 10px}td .check{margin:0;white-space:nowrap}.cargo-scroll{max-heig
 .bank-ledger td:nth-child(1),.bank-ledger td.number{white-space:nowrap}
 .bank-ledger td:nth-child(7){min-width:180px;max-width:360px;overflow-wrap:anywhere}
 .bank-ledger td:nth-child(6){background:rgba(98,211,221,.05)}
+
+.bank-ledger table{table-layout:fixed;border-collapse:collapse;width:100%}
+.bank-ledger th,.bank-ledger td{border-right:1px solid #42586b}
+.bank-ledger th:last-child,.bank-ledger td:last-child{border-right:0}
+.bank-ledger th{padding:12px;border-bottom:2px solid #628095;color:#e5eef5;background:#223548}
+.bank-ledger th:nth-child(1){width:15%}
+.bank-ledger th:nth-child(2){width:10%}
+.bank-ledger th:nth-child(3){width:20%}
+.bank-ledger th:nth-child(4),.bank-ledger th:nth-child(5){width:12%}
+.bank-ledger th:nth-child(6){width:14%}
+.bank-ledger th:nth-child(7){width:17%}
+.bank-ledger td:nth-child(3){overflow-wrap:anywhere}
+.bank-ledger td:nth-child(3) button{margin-top:6px}
