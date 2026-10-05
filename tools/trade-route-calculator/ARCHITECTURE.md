@@ -34,7 +34,7 @@ Confirm current Traveller Map endpoints and browser access requirements during i
 
 - **World/API adapter:** world identifiers, coordinates, UWP and navigation data, response normalization, request errors.
 - **UWP/rules data:** parsing, validation, local trade-code derivation, verified commodity tables and rule references.
-- **Route/map:** clickable local map; automatic Fewest jumps between ordered mandatory stops; distance then stable-world-ID tie-breaking; route validation using jump capability and fuel availability; separate selected view world and actual ship position.
+- **Route/map:** clickable local map; automatic Fewest jumps between ordered mandatory stops; prefer longer legs first when jump counts tie, then stable world IDs; use the ship's jump rating from Settings and validate fuel availability. Shorter legs remain allowed for connectivity, the destination, and manually required stops. Selected view world and actual ship position remain separate.
 - **Trade engine:** availability/pricing, explicit dice inputs, overrides, brokers/fees, per-commodity audit output, RAW/adjusted profit.
 - **Contracts:** freight/mail availability, acceptance, capacity reservation, destination obligations, delivery, and payout.
 - **Campaign store/actions:** actual ship location, date, trader/ship state, bank/cargo ledger, cargo lots, snapshots, settings, action history, and undo.
@@ -151,3 +151,4 @@ Add premium, tax and approved-claim ledger types. Commits and undo reconcile ban
 A separate versioned localStorage key stores the last ten world choices; it is an optional UI preference, not economic campaign state or part of campaign JSON. Map hexes use the same world-coordinate projection as world markers. The overlay ignores pointer events, and the toggle changes only presentation.
 
 Map presentation supports bounded wheel/button zoom around the viewed world and draws only the twelve-parsec neighborhood grid. All public world/catalog requests explicitly use M1105; the sector list also deduplicates names. The separate calendar module derives the campaign date from existing saved fields without switching map milieu. Explicit starting-world correction uses the normal atomic, undoable campaign transition, clears the route, records a reason and flags active insurance for amendment.
+

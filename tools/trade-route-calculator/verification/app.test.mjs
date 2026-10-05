@@ -8,6 +8,19 @@ import * as M from '../js/map.mjs';
 const core=JSON.parse(await readFile(new URL('../rules/core-2022.json',import.meta.url)));
 const mp=JSON.parse(await readFile(new URL('../rules/merchant-prince-1e.json',import.meta.url)));
 const w=(id='0,0',x=0,y=0)=>({id,x,y,name:id,sector:'Test',hex:'0101',uwp:'A788899-C',zone:'Safe',gasGiants:1});
+test('routing uses configured maximum jump, longer legs first, and explicit shorter stops',()=>{
+ const worlds=Object.fromEntries(Array.from({length:14},(_,y)=>w('0,'+y,0,y)).map(x=>[x.id,x]));
+ for(let jump=1;jump<=6;jump++){
+  const route=M.plan(worlds,['0,0','0,13'],{jump,scoops:false},core);
+  const legs=route.slice(1).map((id,i)=>M.distance(worlds[route[i]],worlds[id]));
+  assert.equal(legs.length,Math.ceil(13/jump));assert.ok(legs.every(n=>n<=jump));
+  assert.ok(legs.slice(0,-1).every(n=>n===jump));
+ }
+ assert.deepEqual(M.plan(worlds,['0,0','0,1','0,5'],{jump:4,scoops:false},core),['0,0','0,1','0,5']);
+ worlds['0,4'].fuelOverride=false;
+ assert.deepEqual(M.plan(worlds,['0,0','0,5'],{jump:4,scoops:false},core),['0,0','0,3','0,5']);
+ assert.deepEqual(M.plan(worlds,['0,0','0,3'],{jump:4,scoops:false},core),['0,0','0,3']);
+});
 function campaign(){const s=S.initial();s.initialized=true;s.bank='1000000';s.worlds={'0,0':w(),'1,0':w('1,0',1,0)};s.actual='0,0';s.route=['0,0','1,0'];s.snapshots=[{id:'s',kind:'supplier',hours:0,startedHours:0,worldId:'0,0',party:'supplier',offers:[{id:'o',commodity:'11',description:'Electronics',unitPrice:'100',quantity:'10',remaining:'10',expired:false}]}];return s;}
 const lot=(id,basis='100',quantity='1',commodity='11')=>({id,quantity,basis,goodsValue:basis,commodity,description:id});
 const opts={percent:75,feePercent:0,government:'4',criminal:false,taxEnabled:false};
@@ -38,7 +51,7 @@ test('contract delivery once at destination and late penalty',()=>{const s=campa
 test('opening cargo never debits bank; correction and undo preserve history',()=>{const s=campaign();const n=S.transition(s,'opening',x=>S.addLot(x,lot('a','100','0.5'),'Opening cargo',true));assert.equal(n.bank,s.bank);assert.equal(A.decimal(S.used(n)),'1');assert.equal(S.undo(n).lots.length,0);});
 test('campaign round-trip and malformed imports',()=>{const s=campaign();assert.deepEqual(S.validate(JSON.parse(JSON.stringify(s))),s);const bad=campaign();bad.worlds['0,0'].id='\" onmouseover=alert(1)';assert.throws(()=>S.validate(bad));const big=campaign();big.ship.capacity='-1';assert.throws(()=>S.validate(big));});
 test('world-space hex distances across negative and positive parity',()=>{assert.equal(M.distance(w('-110,-70',-110,-70),w('-111,-71',-111,-71)),1);assert.equal(M.distance(w('-110,-70',-110,-70),w('-111,-70',-111,-70)),1);assert.equal(M.distance(w('0,0',0,0),w('1,-1',1,-1)),1);});
-test('fewest-jumps route, mandatory stops and unavailable fuel',()=>{const worlds=Object.fromEntries([w(),w('1,0',1,0),w('2,0',2,0),w('3,0',3,0)].map(x=>[x.id,x]));const ship={jump:2,scoops:false};assert.deepEqual(M.plan(worlds,['0,0','3,0'],ship,core),['0,0','1,0','3,0']);assert.deepEqual(M.plan(worlds,['0,0','2,0','3,0'],ship,core),['0,0','2,0','3,0']);worlds['3,0'].fuelOverride=false;assert.throws(()=>M.plan(worlds,['0,0','3,0'],ship,core));});
+test('fewest-jumps route, mandatory stops and unavailable fuel',()=>{const worlds=Object.fromEntries([w(),w('1,0',1,0),w('2,0',2,0),w('3,0',3,0)].map(x=>[x.id,x]));const ship={jump:2,scoops:false};assert.deepEqual(M.plan(worlds,['0,0','3,0'],ship,core),['0,0','2,0','3,0']);assert.deepEqual(M.plan(worlds,['0,0','1,0','3,0'],ship,core),['0,0','1,0','3,0']);assert.deepEqual(M.plan(worlds,['0,0','2,0','3,0'],ship,core),['0,0','2,0','3,0']);worlds['3,0'].fuelOverride=false;assert.throws(()=>M.plan(worlds,['0,0','3,0'],ship,core));});
 
 test('insure held cargo charges only premium, blocks overlapping policies, and undoes atomically',()=>{
  const s=campaign();s.lots=[lot('held','1000','2')];const q={...R.insuranceQuote('1000',70,1,['Red'],mp),route:['0,0','1,0'],destination:'1,0',routeProgress:0};
@@ -47,3 +60,4 @@ test('insure held cargo charges only premium, blocks overlapping policies, and u
  assert.throws(()=>S.insureLot(after,'held',q),/already has coverage/);const undone=S.undo(after);assert.equal(undone.bank,s.bank);assert.equal(undone.lots[0].basis,'1000');assert.equal(undone.policies.length,0);
  const poor=campaign();poor.lots=[lot('held','1000','2')];poor.bank='0';assert.throws(()=>S.insureLot(poor,'held',q),/Insufficient/);assert.equal(poor.policies.length,0);
 });
+

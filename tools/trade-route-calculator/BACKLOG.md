@@ -7,7 +7,7 @@ These ideas are outside locked V1 scope. They are candidates for later design, n
 | Idea | Later scope / design needed |
 | --- | --- |
 | Passengers | Availability, passage classes, stateroom/low-berth capacity, life support, bookings, delivery, and payments. Explicitly excluded from V1. |
-| More route modes | Profit-oriented, least-distance as a primary objective, safest, fuel-cost optimization, circuit/loop routes, and comparisons. V1 already includes automatic Fewest jumps with editable mandatory stops, fuel-availability validation, and distance as a tie-breaker. |
+| More route modes | Profit-oriented, least-distance as a primary objective, safest, fuel-cost optimization, circuit/loop routes, and comparisons. V1 already includes automatic Fewest jumps using the configured ship rating, editable mandatory stops, fuel-availability validation, and longer legs first when jump counts tie. |
 | Full ship economics | Automated fuel quantities/consumption and cost, maintenance, mortgages, crew pay, life support, and recurring port/operating expenses. V1 supports manual expenses and fuel-availability route validation. |
 | Saved trader profiles | Reusable named trader/crew/broker configurations and switching among profiles. V1 retains the active trader state. |
 | Persistent campaign-specific world overrides | A reusable world-override registry with campaign identity, reset/version controls, and conflict handling. V1 supports editable effective UWP and preserves applied values in snapshots/state; a managed registry is deferred. |
@@ -27,3 +27,4 @@ Verify the agreed monetary round-down policy while preserving decimal cargo quan
 Do not use the buggy/untrusted existing `tools/spec-trade/` tool as rules authority. Reuse is allowed only after independent verification against the Core Rulebook.
 
 Future ideas may be promoted into a release only through an explicit scope decision. The owner subsequently authorized implementation after the rules questions and verification gate are resolved. This does not promote any deferred feature into V1.
+
