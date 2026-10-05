@@ -239,7 +239,7 @@ function mapRouteControls(){
  const d=routeDraft;if(!d)return '';
  const unavailable=d.loading||!d.stops.length||!!d.error;
  const save=btn('Save planned route','route-save','',true,'primary').replace('<button','<button '+(unavailable?'data-unavailable disabled':''));
- return `<section class="panel-body route-draft" aria-label="Route planning"><h3>${d.mode==='auto'?'Auto plot':'Build route'} · Jump-${state.ship.jump}</h3><p>${d.mode==='auto'?'Click a destination on the map.':'Click worlds on the map in the order you want to visit them.'} The planner connects your choices using the ship’s jump rating and fuel availability. Save when ready.</p><p class="help">Starting at ${esc(world(d.origin)?.name)}. Map clicks plan this route; they do not move the ship.</p><ol>${d.stops.map((id,i)=>`<li>${esc(world(id)?.name)} ${btn('Remove stop','route-remove',i,true,'small')}</li>`).join('')}</ol><p role="status">${d.loading?'Calculating route…':d.error?esc(d.error):d.stops.length?d.path.map(id=>esc(world(id)?.name)).join(' → '):'Choose a world to begin.'}</p><div class="wide-actions">${save}${d.stops.length?btn('Remove last stop','route-last','',true):''}${d.error?btn('Retry route','route-retry','',true):''}${btn('Cancel planning','route-cancel')}</div></section>`;
+ return `<section class="panel-body route-draft" aria-label="Route planning"><h3>${d.mode==='auto'?'Auto plot':'Build route'} · Jump-${state.ship.jump}</h3><p>${d.mode==='auto'?'Click a destination on the map.':'Click each next stop on the map. Your exact order is kept; no automatic stops are inserted.'} ${d.mode==='auto'?'The planner connects your destination using the ship’s jump rating and fuel availability.':'Each direct leg must fit your ship’s jump rating and fuel availability.'} Save when ready.</p><p class="help">Starting at ${esc(world(d.origin)?.name)}. Map clicks plan this route; they do not move the ship.</p><details><summary>How to use ${d.mode==='auto'?'Auto plot':'Build route'}</summary><ol>${d.mode==='auto'?'<li>Click your destination on the map. The app finds connecting stops.</li>':'<li>Click the first world you want to jump to, then click each following world in order.</li><li>Every click adds that exact next stop. The app does not insert connecting worlds.</li>'}<li>Drag to pan and scroll to zoom. Your route starts at the ship’s actual location.</li><li>Use Remove stop or Remove last stop to correct a choice. If a leg is too long or fuel is unavailable, remove or change stops before saving.</li><li>Select Save planned route, review it, then select Save route. Cancel planning leaves the saved route unchanged.</li><li>Use COMMIT JUMP to travel one leg. Clear planned route removes the plan and leaves the ship at its current world.</li></ol></details><ol>${d.stops.map((id,i)=>`<li>${esc(world(id)?.name)} ${btn('Remove stop','route-remove',i,true,'small')}</li>`).join('')}</ol><p role="status">${d.loading?'Calculating route…':d.error?esc(d.error):d.stops.length?d.path.map(id=>esc(world(id)?.name)).join(' → '):'Choose a world to begin.'}</p><div class="wide-actions">${save}${d.stops.length?btn('Remove last stop','route-last','',true):''}${d.error?btn('Retry route','route-retry','',true):''}${btn('Cancel planning','route-cancel')}</div></section>`;
 }
 function mapWorld(id){
  if(!routeDraft){known[id]=world(id);view=id;mapPan={x:0,y:0};render();scheduleMapAreas();return;}
@@ -259,6 +259,16 @@ async function calculateMapRoute(){
  d.path=[d.origin];d.error='';d.loading=d.stops.length>0;render();if(!d.loading)return;
  try{
   const all={...mapAreas.worlds,...known,...state.worlds};
+  if(d.mode==='build'){
+   d.path=[...stops];
+   for(let i=0;i<stops.length;i++){
+    const w=all[stops[i]];
+    if(!w)throw Error('Selected world is unavailable. Remove it and choose again.');
+    if(!M.fuel(w,state.ship,core))throw Error('Fuel availability is unconfirmed at '+w.name+'. Your selected stops have been kept.');
+    if(i){const from=all[stops[i-1]],distance=M.distance(from,w);if(distance>state.ship.jump)throw Error(from.name+' → '+w.name+' is '+distance+' parsecs, beyond Jump-'+state.ship.jump+'. Add or change stops manually; no automatic stops will be inserted.');}
+   }
+   known={...known,...all};return;
+  }
   for(const id of stops){const rows=await M.nearby(all[id],12);if(!current())return;for(const w of rows)all[w.id]??=w;}
   const path=M.plan(all,stops,state.ship,core);if(!current())return;
   known={...known,...all};d.path=path;

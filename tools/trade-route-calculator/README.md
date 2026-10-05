@@ -56,7 +56,7 @@ The main browser test uses deterministic API fixtures based on a checked live re
 
 ## World selection and map
 
-**Auto plot** lets you click a destination on the map. **Build route** lets you click required stops in order, remove any chosen stop, or remove the last stop. Both connect your choices using the jump rating in Settings and the existing fuel rules. Review the preview and select **Save planned route** to confirm; Cancel planning leaves the saved route unchanged.
+**Auto plot** lets you click a destination on the map. **Build route** lets you click required stops in order, remove any chosen stop, or remove the last stop. Auto plot finds connecting stops using the jump rating in Settings and the existing fuel rules. Build route keeps exactly the worlds clicked, in order, without inserting or replacing stops. Invalid direct legs are flagged and must be corrected manually before saving. Review the preview and select **Save planned route** to confirm; Cancel planning leaves the saved route unchanged.
 
 **Clear planned route** clears future stops and resets the plan to the ship's current actual world. It does not move the ship back to its original campaign starting world. Time, bank, cargo, insurance terms and completed travel history remain unchanged; Undo restores the previous plan. Only **COMMIT JUMP** travels along the route.
 
