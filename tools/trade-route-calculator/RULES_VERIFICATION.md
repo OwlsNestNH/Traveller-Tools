@@ -207,3 +207,10 @@ Refill charges current cabin and person monthly costs multiplied by missing hour
 ## Additive people fields — 2026-10-05
 
 Ship setup/settings now asks for separate middle-service and high-service counts and adds them for total people. Four middle plus two high is six people, Cr10,000 monthly person costs and two default luggage tons. This replaces the confusing total-plus-subset form; saved counts are read without adding the high group twice. Cabin counts and historical records are unchanged.
+
+
+## Passenger labels and luggage correction — 2026-10-05
+
+The form explicitly asks how many Middle passengers and how many High passengers. Crew remain included in these combined counts, as requested. Automatic luggage is exactly High count × 1 ton; the previous ambiguous saved per-person multiplier no longer controls combined-count campaigns. A separate opt-in total-tonnage override is editable, including zero. The summary shows the multiplication or marks an override. This restores the user's specified two-High-passenger reservation to two cargo tons. Historical payments remain unchanged.
+
+RAW comparison: Core Update 2022 p. 154 charges Cr1,000 per ordinary stateroom plus Cr1,000 for each person outside low berths, with Cr100 per occupied low berth. High Guard Update 2022 p. 51 gives high staterooms a Cr3,000 life-support rate. Core pp. 158 and 238 provide 1 ton luggage for High and 100 kg for Middle. The campaign instead charges high cabins Cr1,000, High people Cr3,000, empty Low cabins Cr100, and no automatic Middle luggage. A high-passage ticket is not the same thing as the High Guard high stateroom option. Tracked supply days and the 28-day top-up model are campaign bookkeeping.

@@ -1,4 +1,4 @@
-import {tiers,roomCounts,serviceRate,occupants,personRate} from './accommodation.mjs?v=cabin-service-2';
+import {tiers,roomCounts,serviceRate,occupants,personRate} from './accommodation.mjs?v=passenger-input-3';
 import {mul,div} from './amounts.mjs';
 import {up,creditStep} from './rounding.mjs';
 export function validateSupport(ship){const x=ship.lifeSupport;if(x===undefined)return;if(!x||!Number.isSafeInteger(x.capacityHours)||x.capacityHours<1||!Number.isSafeInteger(x.remainingHours)||x.remainingHours<0||x.remainingHours>x.capacityHours)throw Error('Life support remaining must be between zero and capacity, in whole hours.');}

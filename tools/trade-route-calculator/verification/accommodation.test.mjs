@@ -47,3 +47,5 @@ test('room breakdown migrates legacy totals and saved room services govern futur
  assert.deepEqual(S.validate(JSON.parse(JSON.stringify(paid))),paid);assert.equal(S.undo(paid).bank,next.bank);
  for(const value of [-1,1.5,'2',null]){const bad=structuredClone(next);bad.ship.accommodation.rooms.low=value;assert.throws(()=>S.validate(bad));}
 });
+
+test('combined passengers default to one luggage ton per High despite old saved multiplier',()=>{const ship={accommodation:{combinedPeople:true,passengers:{low:0,middle:4,high:2},crew:{low:0,middle:0,high:0},highLuggageRate:'2',luggageTons:'4'}};assert.equal(passengerLuggage(ship),'2');ship.accommodation.luggageMode='manual';assert.equal(passengerLuggage(ship),'4');ship.accommodation.luggageTons='0';assert.equal(passengerLuggage(ship),'0');});

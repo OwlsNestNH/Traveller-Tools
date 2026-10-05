@@ -35,4 +35,4 @@ export function luggageAllowance(ship){
  const p=ship.accommodation?.passengers;if(!p)return '0';
  return decimal(sum(tiers.map(t=>mul(p[t]??0,luggageRates[t]))));
 }
-export function passengerLuggage(ship){const value=ship.accommodation?.luggageTons!=null?ship.accommodation.luggageTons:luggageAllowance(ship);return ship.roundTons?String(up(value)):decimal(value);}
+export function passengerLuggage(ship){if(ship.accommodation?.combinedPeople&&ship.accommodation.luggageMode!=='manual')return String((ship.accommodation.passengers?.high??0)+(ship.accommodation.crew?.high??0));const value=ship.accommodation?.luggageTons!=null?ship.accommodation.luggageTons:luggageAllowance(ship);return ship.roundTons?String(up(value)):decimal(value);}
