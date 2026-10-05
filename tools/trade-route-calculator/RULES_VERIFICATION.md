@@ -202,3 +202,8 @@ Validation: combined-cabins browser checks and accommodation/expense/report unit
 User approved tracking capacity and remaining days, with a visible Refill life support button buying only missing supplies. Default capacity is 28 days; both capacity and actual remaining stock are editable to whole-hour precision. Old campaigns show stock as unrecorded until configured. Setup does not invent paid supplies. Positive campaign-time advances consume stock and stop at zero; moving time backward does not create supplies. Undo restores the actual prior stock and bank balance. Supply exhaustion is displayed, with survival effects left to the referee.
 
 Refill charges current cabin and person monthly costs multiplied by missing hours / 672, then applies the campaign Credit rounding setting once. Full stock cannot be charged twice; unaffordable refills do not partially apply. The user confirms supplies are available at the current world. Changing complement requires review of remaining days; this simple days model does not simulate individual food/air stocks. Historical expenses remain payment records; manual Ship Expenses charges do not refill inventory, so the interface directs users to avoid paying twice for the same refill. Tests cover partial refill, full stock, exhaustion, time correction, Undo, imports and insufficient funds.
+
+
+## Additive people fields — 2026-10-05
+
+Ship setup/settings now asks for separate middle-service and high-service counts and adds them for total people. Four middle plus two high is six people, Cr10,000 monthly person costs and two default luggage tons. This replaces the confusing total-plus-subset form; saved counts are read without adding the high group twice. Cabin counts and historical records are unchanged.

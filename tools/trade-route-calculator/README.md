@@ -93,7 +93,7 @@ Freight and mail use a separate contract table with tons, destination, rate per 
 
 ## Cabins, service and supplies
 
-Ship settings combine crew and passenger cabins. Middle and high cabins each cost Cr1,000/month, including empty cabins. Enter total people and the subset receiving high service: middle costs Cr1,000/person/month; high costs Cr3,000, including upgraded middle-cabin occupants. These are campaign rates, explained in the form's rules note. High-service luggage defaults to one cargo ton per person, with an editable allowance; middle service reserves none. Luggage reduces available cargo capacity.
+Ship settings combine crew and passenger cabins. Middle and high cabins each cost Cr1,000/month, including empty cabins. Enter separate middle-service and high-service people counts; the total is their sum: middle costs Cr1,000/person/month; high costs Cr3,000, including upgraded middle-cabin occupants. These are campaign rates, explained in the form's rules note. High-service luggage defaults to one cargo ton per person, with an editable allowance; middle service reserves none. Luggage reduces available cargo capacity.
 
 The main controls include **Refill life support**, and the ship summary shows remaining days. Configure capacity (default 28 days) and supplies actually aboard. Campaign time consumes supplies. Refill previews and purchases only missing stock using current cabin/person rates. Confirm local supply availability before paying. Undo restores stock and payment. Existing campaigns without recorded inventory must enter their actual supplies first. Manual Ship Expenses payments are separate accounting entries and do not refill tracked stock.
 
