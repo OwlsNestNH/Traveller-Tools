@@ -8,6 +8,24 @@ import * as M from '../js/map.mjs';
 const core=JSON.parse(await readFile(new URL('../rules/core-2022.json',import.meta.url)));
 const mp=JSON.parse(await readFile(new URL('../rules/merchant-prince-1e.json',import.meta.url)));
 const w=(id='0,0',x=0,y=0)=>({id,x,y,name:id,sector:'Test',hex:'0101',uwp:'A788899-C',zone:'Safe',gasGiants:1});
+test('Class E water permits scoop refuelling, with dry worlds and overrides respected',()=>{
+ const ship={jump:2,scoops:true},wet={...w(),uwp:'E532000-0',gasGiants:0};
+ assert.equal(M.fuel(wet,ship,core),true);
+ assert.equal(M.fuel({...wet,uwp:'E5936A7-5'},ship,core),true);
+ assert.equal(M.fuel({...wet,uwp:'E5A2000-0'},ship,core),true);
+ assert.equal(M.fuel(wet,{...ship,scoops:false},core),false);
+ for(const uwp of ['E530000-0','E53?000-0'])assert.equal(M.fuel({...wet,uwp},ship,core),false);
+ assert.equal(M.fuel({...wet,fuelOverride:false},ship,core),false);
+ assert.equal(M.fuel({...wet,overrideUWP:'E530000-0'},ship,core),false);
+ assert.equal(M.fuel({...wet,uwp:'E530000-0',overrideUWP:'E532000-0'},ship,core),true);
+ assert.equal(M.fuel({...wet,uwp:'D530000-0'},{...ship,scoops:false},core),true);
+ const from={...w('-120,-50',-120,-50),name:'Flammarion'},to={...w('-117,-48',-117,-48),name:'Walston'};
+ for(const via of [{...wet,id:'-119,-49',x:-119,y:-49,name:'567-908'},{...wet,id:'-118,-49',x:-118,y:-49,name:'Faldor'}]){
+  const worlds=Object.fromEntries([from,via,to].map(x=>[x.id,x]));
+  assert.deepEqual(M.plan(worlds,[from.id,to.id],ship,core),[from.id,via.id,to.id]);
+  assert.equal(M.distance(from,via),2);assert.equal(M.distance(via,to),2);
+ }
+});
 test('routing uses configured maximum jump, longer legs first, and explicit shorter stops',()=>{
  const worlds=Object.fromEntries(Array.from({length:14},(_,y)=>w('0,'+y,0,y)).map(x=>[x.id,x]));
  for(let jump=1;jump<=6;jump++){

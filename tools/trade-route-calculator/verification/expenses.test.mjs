@@ -4,6 +4,14 @@ import * as E from '../js/expenses.mjs';
 import * as S from '../js/state.mjs';
 const world=(port='A')=>({id:'0,0',name:'Port',uwp:port+'788899-C',x:0,y:0,sector:'Test',hex:'0101',zone:'Safe'});
 const campaign=()=>{const s=S.initial();s.initialized=true;s.actual='0,0';s.worlds={'0,0':world()};s.bank='100000';return s;};
+test('Class D/E water follows effective hydrographics, including exotic atmospheres',()=>{
+ const input={kind:'fuel',fuelType:'water',tons:'1'};
+ for(const port of ['D','E']){
+  assert.equal(E.expenseQuote({...world(port),uwp:port+'5A2000-0'},input).amount,'0');
+  for(const hydro of ['0','?'])assert.throws(()=>E.expenseQuote({...world(port),uwp:port+'53'+hydro+'000-0'},input),/Usable water/);
+  assert.throws(()=>E.expenseQuote({...world(port),overrideUWP:port+'530000-0'},input),/Usable water/);
+ }
+});
 test('stateroom and per-person refills use separate counts and weekly billing',()=>{
  const s=campaign();s.ship.staterooms=10;
  const support={kind:'passengerSupport',period:'week',units:2,passengers:{low:2,middle:3,high:1},crew:{middle:4}};
@@ -76,3 +84,4 @@ test('fuel sources distinguish purchases from free water at all port classes',()
  assert.equal(after.bank,s.bank);assert.equal(after.ledger.length,1);assert.equal(after.ledger[0].expense.amount,'0');
  assert.deepEqual(S.validate(JSON.parse(JSON.stringify(after))),after);assert.equal(S.undo(after).ledger.length,0);
 });
+

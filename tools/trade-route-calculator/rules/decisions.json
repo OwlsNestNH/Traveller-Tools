@@ -152,5 +152,13 @@
     "conclusion": "Use the exact supplied insurance and tax tables as the fixed baseline, with agreed adaptations. Later changes require a new reviewed version.",
     "date": "2026-10-03",
     "revision": 1
+  },
+  {
+    "id": "INT-023",
+    "topic": "Class D/E water refuelling",
+    "conclusion": "Class D and E worlds with effective UWP hydrographics 1–A automatically have water available for fuel collection. The route planner requires ship fuel scoops to use this source. An explicit fuel-unavailable override takes precedence; hydrographics 0 or unknown does not establish water. Effective UWP overrides apply. This is a campaign ruling; it does not imply refined fuel or a fuel vendor at a Class E port (Class D already supplies purchased unrefined fuel).",
+    "date": "2026-10-04",
+    "revision": 1
   }
 ]
+

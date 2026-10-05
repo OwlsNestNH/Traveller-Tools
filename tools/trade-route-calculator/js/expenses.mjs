@@ -26,13 +26,13 @@ export function expenseQuote(world,input){
  }else if(kind==='fuel'){
   const type=input.fuelType;if(!['refined','unrefined','water'].includes(type))throw Error('Choose a fuel source.');
   const collecting=type==='water',uwp=world.overrideUWP||world.uwp,hydro=uwp[3],atmosphere=uwp[2];
-  const water=world.accessibleWater===true||(/^[1-9A]$/i.test(hydro)&&/^[0-9]$/.test(atmosphere));
+  const water=world.accessibleWater===true||(/^[1-9A]$/i.test(hydro)&&(['D','E'].includes(port)||/^[0-9]$/.test(atmosphere)));
   const tons=A.positive(String(up(input.tons)),'Fuel tons'),rate=collecting?0:type==='refined'?500:100;
   const standard=collecting?water:type==='refined'?['A','B'].includes(port):['A','B','C','D'].includes(port);
   if(!standard&&(!input.otherSupplier||!notes))throw Error(collecting?'Usable water is not established here. Confirm a source through roleplay with the referee and explain in notes.':'No standard starport supply for this fuel. Confirm another supplier and explain in notes.');
   unrounded=A.decimal(A.mul(tons,rate));amount=String(up(unrounded,input.creditStep||1));
   details=[['Fuel type',type==='refined'?'Refined':'Unrefined'],['Fuel tons',tons],['Rate · Cr/ton',String(rate)],['Starport class',port],['Hydrographics',hydro],['Supply',collecting?(standard?'Free water collection':'Free collection / referee-confirmed source'):(standard?'Starport purchase':'Other supplier / referee-confirmed')]];
-  reference='Traveller Core Rulebook Update 2022, pp. 154, 156–157, 257–258. Purchased refined Cr500/ton; purchased unrefined Cr100/ton. Campaign ruling: refined availability also includes unrefined; usable water collection is free at any starport class, including E/X. Hydrographics alone do not establish usable water in exotic atmospheres. Other sources require referee confirmation and notes. Collection equipment and access are resolved in play; tank levels and collection time are not tracked.';
+  reference='Traveller Core Rulebook Update 2022, pp. 154, 156–157, 257–258. Purchased refined Cr500/ton; purchased unrefined Cr100/ton. Campaign ruling: refined availability also includes unrefined; usable water collection is free at any starport class, including E/X. Campaign ruling: Class D and E worlds with hydrographics 1–A automatically provide water for collection. Other starport classes still require confirmation of usable water in exotic atmospheres. Other sources require referee confirmation and notes. Collection equipment and access are resolved in play; tank levels and collection time are not tracked.';
  }else if(kind==='staterooms'||kind==='passengerSupport'){
   const {units,divisor}=period(input);let monthly=0n;details=[];
   if(kind==='staterooms'){
@@ -65,3 +65,4 @@ export function expenseQuote(world,input){
  const before=unrounded??amount;amount=String(up(amount,input.creditStep||1));details.push(['Rounding [R]','Credits up to '+(input.creditStep||1)+'; tons up to whole tons'],['Amount before final rounding · Cr',before]);
  return {kind,label,amount,details,reference,notes,roundingStep:input.creditStep||1,worldId:world.id,worldName:world.name};
 }
+
