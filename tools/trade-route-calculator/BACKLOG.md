@@ -28,3 +28,7 @@ Do not use the buggy/untrusted existing `tools/spec-trade/` tool as rules author
 
 Future ideas may be promoted into a release only through an explicit scope decision. The owner subsequently authorized implementation after the rules questions and verification gate are resolved. This does not promote any deferred feature into V1.
 
+
+## Requested UI follow-ups
+
+- [ ] **Day-by-day time controls beside the campaign date** (requested 2026-10-05). Add compact **−1 day** and **+1 day** buttons. Proposed behavior: +1 day advances 24 hours and consumes life-support supplies normally; −1 day corrects the date backward by 24 hours without restoring supplies or reversing transactions. Prevent moving before the campaign start. Record both actions in History. Explain the backward-date behavior in a tooltip; Undo is the way to reverse an accidental advance and restore supplies together. Deferred: do not implement yet.
