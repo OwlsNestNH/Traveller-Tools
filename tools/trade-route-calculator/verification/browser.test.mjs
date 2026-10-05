@@ -37,6 +37,28 @@ try{
  await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();
  await click('Set up campaign');await page.locator('#setup-world .picker-selection').getByText(/Hex 1910/).waitFor();await fill('bank','1000000');await click('Start campaign');await closed();
  assert.equal((await read()).bank,'1000000');
+ // Invalid expense validation must not leak into the next shared dialog.
+ const beforeModalRegression=await read();
+ await page.locator('#tabs').getByRole('button',{name:'Ship expenses',exact:true}).click();
+ await page.locator('[name="include-berthing"]').uncheck();
+ assert.equal(await page.locator('#modal-submit').isDisabled(),true);
+ await click('Cancel');
+ await page.locator('svg [data-arg="-111,-70"]').click();
+ await click('Use as starting world');
+ assert.equal(await page.locator('#modal-submit').isEnabled(),true);
+ assert.equal(await page.locator('[name="reason"]').inputValue(),'Choose campaign starting world');
+ await click('Confirm starting world');await closed();
+ const afterLocation=await read();assert.equal(afterLocation.actual,'-111,-70');
+ assert.equal(afterLocation.bank,beforeModalRegression.bank);assert.equal(afterLocation.hours,beforeModalRegression.hours);
+ assert.deepEqual(afterLocation.lots,beforeModalRegression.lots);
+ await click('History');await click('Undo latest change');await click('Overview');await click('Current system');
+ assert.equal((await read()).actual,beforeModalRegression.actual);
+ await page.locator('#tabs').getByRole('button',{name:'Ship expenses',exact:true}).click();
+ await page.locator('[name="include-berthing"]').uncheck();
+ assert.equal(await page.locator('#modal-submit').isDisabled(),true);await click('Cancel');
+ await page.locator('#notes').click();assert.equal(await page.locator('#modal-submit').isHidden(),true);await click('Close');
+ await click('Settings');await click('Ship, trader & options');
+ assert.equal(await page.locator('#modal-submit').isEnabled(),true);await click('Cancel');await click('Overview');
  await click('Find supplier');await fill('dice',12);await click('Preview search');await click('Commit search');await closed();
  assert.ok((await read()).snapshots[0].offers.length>=6);
  assert.deepEqual(await page.locator('.purchase-table th').allTextContents(),['Commodity','Available','Retail','Price %','Purchase Price','Offer Status','Actions']);
@@ -175,3 +197,4 @@ try{
  const recoveryCopy=await read();await page.evaluate(()=>localStorage.setItem('traveller-trade-route-calculator:v1','{corrupt'));await page.reload();await page.getByRole('heading',{name:'Recover saved campaign'}).waitFor();assert.equal(await page.evaluate(()=>localStorage.getItem('traveller-trade-route-calculator:v1')),'{corrupt');await page.locator('#import-file').setInputFiles({name:'recovery.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(recoveryCopy))});await page.getByRole('heading',{name:'Load campaign (JSON)'}).waitFor();await page.locator('[name="backed"]').check();await click('Replace campaign');await closed();assert.equal((await read()).lots.length,15);
  assert.deepEqual(errors,[]);console.log('PASS: browser purchase/sale/undo, browsing, route/jump, insurance/partial claim, late freight delivery, two-tab transfer/stale preview, 15 cargo rows, mobile layout, backup/import/reset cancellation, quota failure and notes. API responses stubbed from live sample.');
 }finally{await browser.close();}
+
