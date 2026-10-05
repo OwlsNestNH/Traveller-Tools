@@ -184,3 +184,21 @@ Validation: syntax check and full isolated Edge browser suite passed, including 
 ### Accommodation rate correction — 2026-10-04
 
 User clarification: Cr100/Cr1,000/Cr3,000 monthly rates apply to low/middle/high staterooms, including empty rooms. Every passenger and crew member adds Cr1,000/month. A middle stateroom can upgrade to Cr3,000 service; custom rates replace the room rate. These are campaign-agreed settings, not a new claim of published-rule verification. Weekly billing remains one quarter of monthly cost. Legacy unclassified stateroom totals default to middle for review; historical payments remain immutable.
+
+
+## Combined cabins and service costs — 2026-10-04
+
+Supersedes the earlier campaign cabin-rate agreement for future expenses: installed middle and high cabins both cost Cr1,000/month, including empty cabins. Middle-service people cost Cr1,000/month; high-service people cost Cr3,000/month, including people in middle cabins upgraded to high service. Crew and passengers share cabin totals and headcounts. High-service people are a subset of the total, not additional people. Historical ledger entries are retained. Existing custom cabin rates remain explicit overrides. Low-service costs remain the earlier campaign convention.
+
+Verified against the user's Core Rulebook Update 2022 (copyright 2024), pp. 154, 158 and 238, and High Guard Update 2022, p. 51: RAW high passage reserves 1 cargo ton per passenger; middle passage allows 100 kg. The user's campaign instead reserves luggage only for high-service people at an editable allowance, default 1 ton each; middle service adds none. The combined reservation reduces usable cargo space and follows existing whole-ton rounding. Cabin construction tonnage is outside this tool's scope. Older explicit luggage reservations remain until settings are reviewed and saved.
+
+RAW High Guard lists Cr3,000 life support for a high stateroom. The new Cr1,000 cabin / Cr3,000 high-service person split is the user's campaign rule, not RAW. Applying installed-room costs while empty is the interpretation of Core's per-stateroom charge together with High Guard's replacement rate. RAW low berths use Cr100 per occupied berth and their occupants are excluded from the additional ordinary person charge; the retained Low cabin option is explicitly a campaign setting. Source PDFs are not included or required by the website.
+
+Validation: combined-cabins browser checks and accommodation/expense/report unit tests cover combined totals, empty high cabins, person upgrades, saved luggage, and unchanged historical payments.
+
+
+## Life support inventory — 2026-10-04
+
+User approved tracking capacity and remaining days, with a visible Refill life support button buying only missing supplies. Default capacity is 28 days; both capacity and actual remaining stock are editable to whole-hour precision. Old campaigns show stock as unrecorded until configured. Setup does not invent paid supplies. Positive campaign-time advances consume stock and stop at zero; moving time backward does not create supplies. Undo restores the actual prior stock and bank balance. Supply exhaustion is displayed, with survival effects left to the referee.
+
+Refill charges current cabin and person monthly costs multiplied by missing hours / 672, then applies the campaign Credit rounding setting once. Full stock cannot be charged twice; unaffordable refills do not partially apply. The user confirms supplies are available at the current world. Changing complement requires review of remaining days; this simple days model does not simulate individual food/air stocks. Historical expenses remain payment records; manual Ship Expenses charges do not refill inventory, so the interface directs users to avoid paying twice for the same refill. Tests cover partial refill, full stock, exhaustion, time correction, Undo, imports and insufficient funds.

@@ -1,0 +1,6 @@
+import {tiers,roomCounts,serviceRate,occupants,personRate} from './accommodation.mjs?v=cabin-service-2';
+import {mul,div} from './amounts.mjs';
+import {up,creditStep} from './rounding.mjs';
+export function validateSupport(ship){const x=ship.lifeSupport;if(x===undefined)return;if(!x||!Number.isSafeInteger(x.capacityHours)||x.capacityHours<1||!Number.isSafeInteger(x.remainingHours)||x.remainingHours<0||x.remainingHours>x.capacityHours)throw Error('Life support remaining must be between zero and capacity, in whole hours.');}
+export function monthlySupport(ship){const a=occupants(ship),rooms=roomCounts(ship);return tiers.reduce((n,t)=>n+BigInt(rooms[t]??0)*BigInt(serviceRate(t,ship.accommodation?.roomService?.[t]))+BigInt((a.passengers?.[t]??0)+(a.crew?.[t]??0))*BigInt(personRate(t)),0n);}
+export function refillQuote(s){validateSupport(s.ship);const x=s.ship.lifeSupport;if(!x)throw Error('Set life support capacity and remaining supplies first.');const missingHours=x.capacityHours-x.remainingHours,monthly=monthlySupport(s.ship);if(missingHours&&monthly<=0n)throw Error('Enter cabins and people in ship settings before buying supplies.');return {missingHours,capacityHours:x.capacityHours,beforeHours:x.remainingHours,monthly:String(monthly),amount:String(up(mul(monthly,div(missingHours,28*24)),creditStep(s)))};}

@@ -1,6 +1,6 @@
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
-import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate} from './accommodation.mjs?v=stateroom-rates-1';
+import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=cabin-service-2';
 import {distance} from './map.mjs';
 
 export const REPORT_VERSION='2026.10.04.24';
@@ -34,12 +34,15 @@ export function campaignReport(s,core,{exportedAt=new Date()}={}){
  for(const tier of ['low','middle','high']){const service=s.ship.accommodation?.roomService?.[tier];line('  '+tier+' staterooms',roomCounts(s.ship)[tier]+'; '+serviceLabel(tier,service)+' service; '+cr(serviceRate(tier,service))+'/room/month');}
  line('Cost basis','Campaign rates; weekly charges are one quarter of monthly rates.');
  const occ=occupants(s.ship);
- for(const role of ['passengers','crew']){
+ if(s.ship.accommodation?.combinedPeople)line('People aboard (crew + passengers)',['passengers','crew'].reduce((n,r)=>n+['low','middle','high'].reduce((v,t)=>v+(occ[r]?.[t]??0),0),0));
+ else for(const role of ['passengers','crew']){
   line(role==='crew'?'Crew aboard':'Passengers aboard',['low','middle','high'].map(t=>(occ[role]?.[t]??0)+' '+t).join(' / '));
   for(const tier of ['low','middle','high'])if(occ[role]?.[tier]){
-   line('  '+role+' / '+tier+' support',cr(personMonthlyRate)+'/person/month, additional to stateroom expenses');
+   line('  '+role+' / '+tier+' support',cr(personRate(tier))+'/person/month, additional to stateroom expenses');
   }
  }
+ if(s.ship.accommodation?.combinedPeople)line('People receiving high service',(occ.passengers?.high??0)+(occ.crew?.high??0));
+ if(s.ship.lifeSupport)line('Life support days remaining / capacity',(s.ship.lifeSupport.remainingHours/24)+' / '+(s.ship.lifeSupport.capacityHours/24));
  section('FINANCIAL SUMMARY');
  const opening=s.ledger.find(e=>e.type==='Opening bank');
  line('Opening bank',cr(opening?.amount));line('Current bank',cr(s.bank));

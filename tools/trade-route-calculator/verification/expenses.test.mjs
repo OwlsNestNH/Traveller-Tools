@@ -15,11 +15,11 @@ test('Class D/E water follows effective hydrographics, including exotic atmosphe
 test('stateroom and per-person refills use separate counts and weekly billing',()=>{
  const s=campaign();s.ship.staterooms=10;
  const support={kind:'passengerSupport',period:'week',units:2,passengers:{low:2,middle:3,high:1},crew:{middle:4}};
- assert.equal(E.expenseQuote(world(),support).amount,'5000');
- assert.equal(E.expenseQuote(world(),{...support,period:'month',units:1}).amount,'10000');
- assert.equal(E.expenseQuote(world(),{...support,passengers:{high:1},crew:{},units:1}).amount,'250');
+ assert.equal(E.expenseQuote(world(),support).amount,'6000');
+ assert.equal(E.expenseQuote(world(),{...support,period:'month',units:1}).amount,'12000');
+ assert.equal(E.expenseQuote(world(),{...support,passengers:{high:1},crew:{},units:1}).amount,'750');
  const after=S.transition(s,'Refill',n=>S.shipExpenses(n,[{kind:'staterooms',staterooms:999,period:'week',units:2},support]));
- assert.equal(after.bank,'90000');assert.equal(after.ledger[0].expense.amount,'5000');assert.deepEqual(after.ship.supportOccupants.passengers,support.passengers);assert.equal(S.undo(after).bank,s.bank);
+ assert.equal(after.bank,'89000');assert.equal(after.ledger[0].expense.amount,'5000');assert.deepEqual(after.ship.supportOccupants.passengers,support.passengers);assert.equal(S.undo(after).bank,s.bank);
  for(const invalid of [{...support,units:0},{...support,period:'day'},{...support,crew:{low:-1}},{...support,passengers:{},crew:{}}])assert.throws(()=>E.expenseQuote(world(),invalid));
  const legacy=campaign();delete legacy.ship.staterooms;assert.equal(S.validate(legacy),legacy);
  for(const staterooms of [-1,1.5,'4'])assert.throws(()=>S.validate({...s,ship:{...s.ship,staterooms}}));
@@ -85,3 +85,10 @@ test('fuel sources distinguish purchases from free water at all port classes',()
  assert.deepEqual(S.validate(JSON.parse(JSON.stringify(after))),after);assert.equal(S.undo(after).ledger.length,0);
 });
 
+
+test('campaign high cabin is charged empty; high service upgrades only the person rate',()=>{
+ const rooms={low:0,middle:3,high:1};
+ assert.equal(E.expenseQuote(world(),{kind:'staterooms',rooms,period:'month',units:1}).amount,'4000');
+ assert.equal(E.expenseQuote(world(),{kind:'passengerSupport',passengers:{middle:4,high:2},crew:{},period:'month',units:1}).amount,'10000');
+ assert.equal(E.expenseQuote(world(),{kind:'passengerSupport',passengers:{middle:3,high:3},crew:{},period:'month',units:1}).amount,'12000');
+});

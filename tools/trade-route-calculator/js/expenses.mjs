@@ -1,6 +1,6 @@
 import {up} from './rounding.mjs';
 import * as A from './amounts.mjs';
-import {monthlyRates,serviceRate,serviceLabel,personMonthlyRate} from './accommodation.mjs?v=stateroom-rates-1';
+import {monthlyRates,serviceRate,serviceLabel,personMonthlyRate,personRate} from './accommodation.mjs?v=cabin-service-2';
 
 export const berthMultipliers={A:1000,B:500,C:100,D:10,E:0,X:0};
 export function starport(world){return (world.overrideUWP||world.uwp).slice(0,1).toUpperCase();}
@@ -47,15 +47,15 @@ export function expenseQuote(world,input){
   }else{
    let totalPeople=0;
    for(const role of ['passengers','crew'])for(const tier of Object.keys(supportRates)){
-    const rate=String(personMonthlyRate);
+    const rate=String(personRate(tier));
     const n=people(input[role]?.[tier],role+' · '+tier);totalPeople+=n;monthly+=BigInt(n)*BigInt(rate);
-    details.push([(role==='crew'?'Crew':'Passengers')+' / '+tier,String(n)+' x Cr'+rate+' / month / same rate for every person']);
+    details.push([(role==='crew'?'Crew':'Passengers')+' / '+tier,String(n)+' x Cr'+rate+' / month / selected service level']);
    }
    if(!totalPeople)throw Error('Enter at least one passenger or crew member.');
   }
   unrounded=A.decimal(A.rat(monthly*BigInt(units),divisor));amount=String(up(unrounded,input.creditStep||1));
   details.push(['Monthly total · Cr',String(monthly)],['Billing period',input.period],['Periods purchased',String(units)],['Weekly billing basis','One quarter of a monthly charge']);
-  reference='Campaign-agreed rates: low/middle/high staterooms Cr100/Cr1,000/Cr3,000 per month, including empty rooms. Every passenger and crew member adds Cr1,000 per month, regardless of passage class. Stateroom service upgrades replace the room rate (middle to high: Cr1,000 to Cr3,000); custom rates are per stateroom, not per person. One billing month = four weeks; final charges round up to whole Credits. Luggage is separate from life-support supplies.';
+  reference='Campaign rule agreed 2026-10-04: installed middle and high cabins cost Cr1,000/month each, including empty cabins. Middle-service people cost Cr1,000/month; high-service people cost Cr3,000/month, including upgraded middle-cabin occupants. Low-service cabin Cr100 and low-service person Cr1,000 are retained campaign settings, not RAW low-berth costs. A week is one quarter of a month. Cabin custom rates are per cabin; person service is charged separately. Historical payments are unchanged.';
  }else if(kind==='lifeSupport'||kind==='salary'){
   const monthly=A.credit(input.monthly),months=count(input.months,'Months');if(monthly<=0n)throw Error('Enter a positive monthly cost.');
   amount=String(monthly*BigInt(months));details=[['Entered monthly cost · Cr',String(monthly)],['Months paid',String(months)]];

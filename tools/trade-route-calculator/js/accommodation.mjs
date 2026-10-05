@@ -3,7 +3,7 @@ import {sum,mul,decimal,cmp,credit} from './amounts.mjs';
 
 export const tiers=['low','middle','high'];
 export const luggageRates={low:'0.01',middle:'0.1',high:'1'};
-export const monthlyRates={low:100,middle:1000,high:3000};
+export const monthlyRates={low:100,middle:1000,high:1000};
 export function serviceRate(tier,service){
  const level=service?.level??tier;
  if(level==='custom'){const rate=credit(service.monthly);if(rate<0n)throw Error('Custom life support must be zero or more Credits per stateroom per month.');return String(rate);}
@@ -12,6 +12,7 @@ export function serviceRate(tier,service){
 }
 export function serviceLabel(tier,service){const level=service?.level??tier;return level[0].toUpperCase()+level.slice(1);}
 export const personMonthlyRate=1000;
+export const personRate=tier=>tier==='high'?3000:1000;
 // Old totals excluded low rooms. Preserve them as middle until the user reviews setup.
 export function roomCounts(ship){return ship.accommodation?.rooms??{low:ship.accommodation?.lowBerths??0,middle:ship.staterooms??0,high:0};}
 export function roomTotal(ship){return tiers.reduce((n,t)=>n+(roomCounts(ship)[t]??0),0);}
