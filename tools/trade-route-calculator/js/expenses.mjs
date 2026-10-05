@@ -70,3 +70,6 @@ export function expenseQuote(world,input){
  return {kind,label,amount,details,reference,notes,roundingStep:input.creditStep||1,worldId:world.id,worldName:world.name};
 }
 
+
+export function zeroFuel(input){return input.kind==='fuel'&&String(input.tons??'').trim()!==''&&A.cmp(input.tons,0)===0;}
+export function payableExpenses(inputs){return inputs.filter(input=>!zeroFuel(input));}

@@ -34,7 +34,7 @@ test('all four expenses pay atomically, retain separate audits and undo together
 });
 test('invalid or unaffordable batches never partially charge',()=>{
  const s=campaign(),before=structuredClone(s);
- for(const inputs of [[],[{kind:'salary',monthly:'60000',months:1},{kind:'lifeSupport',monthly:'60000',months:1}],[{kind:'salary',monthly:'600',months:1},{kind:'fuel',tons:'0',fuelType:'refined'}],[{kind:'salary',monthly:'600',months:1},{kind:'salary',monthly:'600',months:1}]]){
+ for(const inputs of [[],[{kind:'salary',monthly:'60000',months:1},{kind:'lifeSupport',monthly:'60000',months:1}],[{kind:'salary',monthly:'600',months:1},{kind:'fuel',tons:'-1',fuelType:'refined'}],[{kind:'salary',monthly:'600',months:1},{kind:'salary',monthly:'600',months:1}]]){
   assert.throws(()=>S.shipExpenses(s,inputs));assert.deepEqual(s,before);
  }
 });
@@ -91,4 +91,13 @@ test('campaign high cabin is charged empty; high service upgrades only the perso
  assert.equal(E.expenseQuote(world(),{kind:'staterooms',rooms,period:'month',units:1}).amount,'4000');
  assert.equal(E.expenseQuote(world(),{kind:'passengerSupport',passengers:{middle:4,high:2},crew:{},period:'month',units:1}).amount,'10000');
  assert.equal(E.expenseQuote(world(),{kind:'passengerSupport',passengers:{middle:3,high:3},crew:{},period:'month',units:1}).amount,'12000');
+});
+
+test('zero fuel is omitted from a payment batch without blocking other expenses',()=>{
+ const s=campaign();s.ship.fuel={displacementTons:200,capacityTons:40,aboardTons:40};const before=structuredClone(s);
+ const paid=S.transition(s,'Pay expenses',n=>S.shipExpenses(n,[{kind:'fuel',fuelType:'refined',tons:'0'},{kind:'salary',monthly:'20000',months:1}]));
+ assert.equal(paid.bank,'80000');assert.equal(paid.ledger.length,1);assert.equal(paid.ledger[0].expense.kind,'salary');assert.deepEqual(paid.ship.fuel,s.ship.fuel);assert.equal(S.undo(paid).bank,s.bank);
+ assert.throws(()=>S.shipExpenses(s,[{kind:'fuel',fuelType:'refined',tons:'0'}]),/Nothing to pay/);assert.deepEqual(s,before);
+ for(const tons of ['','NaN','-1'])assert.throws(()=>S.shipExpenses(s,[{kind:'fuel',fuelType:'refined',tons},{kind:'salary',monthly:'20000',months:1}]));
+ delete s.ship.fuel;const free=S.transition(s,'Collect water',n=>S.shipExpenses(n,[{kind:'fuel',fuelType:'water',tons:'1'}]));assert.equal(free.ledger.length,1);assert.equal(free.ledger[0].amount,'0');
 });

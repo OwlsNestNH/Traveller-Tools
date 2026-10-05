@@ -4,7 +4,7 @@ import {up,creditStep,roundExisting} from './rounding.mjs';
 import {validateAccommodation,passengerLuggage,roomCounts} from './accommodation.mjs?v=passenger-input-3';
 import {add,sub,mul,div,cmp,floor,sum,decimal,credit} from './amounts.mjs';
 import {VERSION} from './rules.mjs?v=rounding-1';
-import {expenseQuote,starport,berthMultipliers} from './expenses.mjs?v=jump-fuel-1';
+import {expenseQuote,starport,berthMultipliers,payableExpenses} from './expenses.mjs?v=zero-fuel-1';
 export const SCHEMA=1;
 export const uid=()=>crypto.randomUUID();
 export function initial(){return {schema:SCHEMA,revision:0,rulesVersion:VERSION,initialized:false,name:'My trading campaign',bank:'0',hours:0,dateLabel:'001-1105',ship:{name:'Independent trader',capacity:'60',staterooms:0,jump:2,scoops:true,armed:false},trader:{broker:0,streetwise:0,admin:0,characteristic:0,rank:0,soc:0},settings:{profit:100,tax:false,insurance:false,creditStep:1},worlds:{},actual:null,route:[],routeIndex:0,snapshots:[],lots:[],contracts:[],policies:[],ledger:[],cooldowns:{},undo:[],events:[]};}
@@ -63,6 +63,7 @@ export function shipExpense(s,input){
 export function shipExpenses(s,inputs){
  if(!Array.isArray(inputs)||!inputs.length)throw Error('Select at least one expense.');
  if(new Set(inputs.map(x=>x.kind)).size!==inputs.length)throw Error('Each expense type can be included only once.');
+ inputs=payableExpenses(inputs);if(!inputs.length)throw Error('Nothing to pay: no fuel to purchase. Select another expense or enter a fuel quantity.');
  inputs=inputs.map(input=>({...input,creditStep:creditStep(s),fuelShip:s.ship}));
  inputs=inputs.map(input=>input.kind==='passengerSupport'&&s.ship.accommodation?{...input,passengers:s.ship.accommodation.passengers,crew:s.ship.accommodation.crew}:input.kind==='staterooms'?{...input,staterooms:s.ship.staterooms??0,rooms:roomCounts(s.ship),roomService:s.ship.accommodation?.roomService}:input);
  const quotes=inputs.map(input=>expenseQuote(s.worlds[s.actual],input));

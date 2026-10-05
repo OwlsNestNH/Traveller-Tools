@@ -222,3 +222,7 @@ Added -1/+1 day controls next to Campaign time. Forward time consumes accumulate
 ### Jump fuel tracking - 2026-10-05
 
 Verified against Core Rulebook Update 2022: p. 157 consumes 10% of hull tonnage per actual parsec, with jumps shorter than one parsec counted as Jump-1; p. 154 gives refined Cr500/ton and unrefined Cr100/ton. Page 180 separates jump tankage from power-plant fuel. User scope excludes power-plant tracking. Whole-ton rounding and free water collection retain existing campaign conventions. Added bank/tank purchase audits, insufficient-fuel and overfill rejection, committed-jump consumption, optional legacy configuration and undo coverage.
+
+### Zero-fuel expense selection - 2026-10-05
+
+Selected fuel with exactly zero tons is omitted from expense previews and payment batches. Other selected expenses remain payable; fuel alone shows Nothing to pay. No fuel ledger entry or tank change is created. Positive-quantity free water collection still creates a zero-Credit fuel record. Invalid and over-capacity quantities remain rejected.

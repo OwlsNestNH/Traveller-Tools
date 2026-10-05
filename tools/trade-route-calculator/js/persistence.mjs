@@ -1,4 +1,4 @@
-import {initial,validate} from './state.mjs?v=jump-fuel-1';
+import {initial,validate} from './state.mjs?v=zero-fuel-1';
 export const KEY='traveller-trade-route-calculator:v1';
 const LOCK=KEY+':writer';
 export class Store{

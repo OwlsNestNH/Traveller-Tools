@@ -1,18 +1,18 @@
 import {validateFuel,jumpFuel,consumeJumpFuel,fuelReference} from './fuel.mjs';
 import {refillQuote,supportStock} from './life-support.mjs?v=whole-days-1';
-import {campaignReport} from './report.mjs?v=jump-fuel-1';
+import {campaignReport} from './report.mjs?v=zero-fuel-1';
 import {up,creditStep,roundExisting} from './rounding.mjs';
 import {tiers,luggageAllowance,occupants,passengerLuggage,serviceRate,serviceLabel,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=passenger-input-3';
 import * as A from './amounts.mjs';
 import {parseDate,displayDate} from './calendar.mjs';
 import * as R from './rules.mjs?v=rounding-1';
-import * as S from './state.mjs?v=jump-fuel-1';
-import * as E from './expenses.mjs?v=jump-fuel-1';
+import * as S from './state.mjs?v=zero-fuel-1';
+import * as E from './expenses.mjs?v=zero-fuel-1';
 import {planetInformation,worldSheetURL} from './planet-info.mjs';
 import * as M from './map.mjs';
 import {camera,viewportTiles,MapAreaCache} from './map-viewport.mjs';
 import {createWorldPicker,rememberWorld} from './world-picker.mjs';
-import {Store,KEY} from './persistence.mjs?v=jump-fuel-1';
+import {Store,KEY} from './persistence.mjs?v=zero-fuel-1';
 const $=id=>document.getElementById(id),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ROOT='https://github.com/OwlsNestNH/Traveller-Tools/blob/main/tools/trade-route-calculator/';
 let inputRounding=[];
@@ -445,7 +445,7 @@ function deliver(id){const c=state.contracts.find(c=>c.id===id);S.assertWorld(st
 const expenseKinds=['berthing','fuel','staterooms','passengerSupport','salary'];
 function expenseInput(){
  const f=new FormData($('modal-form'));
- return expenseKinds.filter(kind=>f.has('include-'+kind)).map(kind=>({kind,fuelShip:state.ship,creditStep:creditStep(state),weeks:f.get('weeks'),tons:f.get('fuelTons'),fuelType:f.get('fuelType'),monthly:f.get(kind),months:f.get(kind+'Months'),notes:f.get('expenseNotes'),otherSupplier:f.has('otherSupplier'),staterooms:roomTotal(state.ship),rooms:roomCounts(state.ship),roomService:state.ship.accommodation?.roomService,period:f.get(kind+'Period'),units:f.get(kind+'Units'),passengers:occupants(state.ship).passengers,crew:occupants(state.ship).crew}));
+ return E.payableExpenses(expenseKinds.filter(kind=>f.has('include-'+kind)).map(kind=>({kind,fuelShip:state.ship,creditStep:creditStep(state),weeks:f.get('weeks'),tons:f.get('fuelTons'),fuelType:f.get('fuelType'),monthly:f.get(kind),months:f.get(kind+'Months'),notes:f.get('expenseNotes'),otherSupplier:f.has('otherSupplier'),staterooms:roomTotal(state.ship),rooms:roomCounts(state.ship),roomService:state.ship.accommodation?.roomService,period:f.get(kind+'Period'),units:f.get(kind+'Units'),passengers:occupants(state.ship).passengers,crew:occupants(state.ship).crew})));
 }
 function expenseSummary(q){return auditFacts([['Expense',q.label],['Location',q.worldName],...q.details,['Total charge',money(q.amount)],...(q.notes?[['Notes',q.notes]]:[])])+'<p class="help rule-footnote">[1] '+esc(q.reference)+'</p>'+roundingFootnote([],q.roundingStep||1);}
 function expenseBundleSummary(quotes){
@@ -456,9 +456,10 @@ function updateExpenseEstimate(){
  if(!$('expense-estimate'))return;
  document.querySelectorAll('[data-expense-kind]').forEach(e=>{const selected=$('modal-form').elements['include-'+e.dataset.expenseKind].checked;e.hidden=!selected;e.querySelectorAll('input,select').forEach(x=>x.disabled=!selected);});
  try{
-  const inputs=expenseInput();if(!inputs.length)throw Error('Select at least one expense.');
+  const inputs=expenseInput();if(!inputs.length)throw Error('Nothing to pay. Select another expense or enter fuel to acquire.');
   const quotes=inputs.map(input=>E.expenseQuote(actual(),input));
-  $('expense-estimate').innerHTML=expenseBundleSummary(quotes);activeModal.valid=true;
+  const f=new FormData($('modal-form')),skipped=f.has('include-fuel')&&E.zeroFuel({kind:'fuel',tons:f.get('fuelTons')});
+  $('expense-estimate').innerHTML=(skipped?'<p class="help">No fuel to purchase (0 tons). Fuel is omitted; the other selected expenses can be paid.</p>':'')+expenseBundleSummary(quotes);activeModal.valid=true;
  }catch(e){$('expense-estimate').innerHTML='<p class="help">'+esc(e.message)+'</p>';activeModal.valid=false;}
  syncModalSubmit();
 }
@@ -473,7 +474,7 @@ function shipExpenses(initialFuelType=null){
  <fieldset class="expense-choice"><legend>${check('include-passengerSupport','Passenger & crew life support')}</legend><div data-expense-kind="passengerSupport" hidden>${table(['Service (crew + passengers)','People aboard','Cr/person/month'],tiers.map(t=>'<tr><td>'+t+'</td><td>'+((occupants(state.ship).passengers?.[t]??0)+(occupants(state.ship).crew?.[t]??0))+'</td><td>'+money(personRate(t))+'</td></tr>'))}<p class="help">Middle service costs Cr1,000 per person/month; high service costs Cr3,000, including middle-cabin upgrades. These are additional to cabin expenses. Headcounts come from Ship, trader & options. Change them there when people board or leave.</p>${expensePeriod('passengerSupport')}<p class="help">These expense entries record payments only. Use Refill life support to replenish tracked supplies; do not pay both for the same refill.</p></div></fieldset>
  <fieldset class="expense-choice"><legend>${check('include-salary','Crew salaries')}</legend><div data-expense-kind="salary" hidden><div class="split">${field('salary','Total crew salaries · Cr per month',defaults.salary||'0','number','min="1" step="1"')}${field('salaryMonths','Crew salaries · months to pay',1,'number','min="1" step="1"')}</div></div></fieldset>
  <p class="help">Crew salary is remembered after payment. Passenger and crew headcounts come from ship settings. Choose each billing period separately.</p>${field('expenseNotes','Notes / billing period (optional)','')}<div id="expense-estimate" aria-live="polite"></div><p class="help">One confirmation pays the selected expenses together. Each charge has its own ledger entry; undo reverses the whole payment.</p>`,()=>{
-  const inputs=expenseInput();if(!inputs.length)throw Error('Select at least one expense.');
+  const inputs=expenseInput();if(!inputs.length)throw Error('Nothing to pay. Select another expense or enter fuel to acquire.');
   const quotes=inputs.map(input=>E.expenseQuote(actual(),input)),total=quotes.reduce((n,q)=>n+A.credit(q.amount),0n);
   if(total>A.credit(state.bank))throw Error('Insufficient funds for the combined expenses');
   modal('Confirm ship expenses',expenseBundleSummary(quotes)+auditFacts([['Bank before',money(state.bank)],['Bank after',money(String(A.credit(state.bank)-total))]]),()=>act('Paid '+quotes.length+' ship expense'+(quotes.length===1?'':'s'),s=>S.shipExpenses(s,inputs)),'Pay '+money(String(total)));return false;
