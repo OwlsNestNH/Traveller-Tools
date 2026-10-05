@@ -1,0 +1,54 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {mkdir,readFile} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import {join} from 'node:path';
+const artifacts=fileURLToPath(new URL('../verification-artifacts/',import.meta.url));
+await mkdir(artifacts,{recursive:true});
+const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
+const base=process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/';
+const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BROWSER_CHANNEL?{channel:process.env.TRAVELLER_BROWSER_CHANNEL}:{})});
+const ctx=await browser.newContext({viewport:{width:1440,height:1100},acceptDownloads:true});
+const sample=[{Name:'Regina',Hex:'1910',UWP:'A788899-C',PBG:'703',Zone:'',WorldX:-110,WorldY:-70,Sector:'Spinward Marches'},{Name:'Jenghe',Hex:'1810',UWP:'C799663-9',PBG:'323',Zone:'',WorldX:-111,WorldY:-70,Sector:'Spinward Marches'},{Name:'Ruie',Hex:'1809',UWP:'C776977-7',PBG:'701',Zone:'A',WorldX:-111,WorldY:-71,Sector:'Spinward Marches'}];
+await ctx.route('https://travellermap.com/api/jumpworlds?*',async route=>{const u=new URL(route.request().url());const rows=u.searchParams.get('jump')==='0'?sample.filter(w=>w.Hex===(u.searchParams.get('hex')||'1910')):sample;await route.fulfill({json:{Worlds:rows},headers:{'Access-Control-Allow-Origin':'*'}});});
+await ctx.route('https://travellermap.com/api/universe?*',route=>route.fulfill({json:{Sectors:[{Names:[{Text:'Spinward Marches'}],Abbreviation:'Spin'},{Names:[{Text:'Empty Sector'}]}]}}));
+await ctx.route('https://travellermap.com/api/metadata?*',route=>route.fulfill({json:{Subsectors:[{Index:'C',Name:'Regina'},{Index:'A',Name:'Cronor'}]}}));
+await ctx.route('https://travellermap.com/api/sec?*',route=>route.fulfill({json:'Hex\tName\r\n'+sample.map(w=>w.Hex+'\t'+w.Name).join('\r\n')}));
+const page=await ctx.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
+const click=async label=>{const modal=page.locator('#modal[open]');const target=modal.getByRole('button',{name:label,exact:true});if(await target.count())return target.click();return page.getByRole('button',{name:label,exact:true}).click();};
+const fill=(name,value)=>page.locator('[name="'+name+'"]').fill(String(value));
+const read=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('traveller-trade-route-calculator:v1')));
+const closed=()=>page.locator('#modal').waitFor({state:'hidden'});
+const choose=id=>page.locator('svg [data-action="map-world"][data-arg="'+id+'"]').click();
+const ready=()=>page.getByRole('button',{name:'Save planned route',exact:true}).waitFor({state:'visible'}).then(()=>page.waitForFunction(()=>!document.querySelector('[data-action="route-save"]').disabled));
+try{
+ await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();await click('Set up campaign');await page.locator('#setup-world .picker-selection').getByText(/Hex 1910/).waitFor();await click('Start campaign');await closed();
+ const initial=await read();
+ await click('Auto plot');await choose('-111,-71');await ready();assert.deepEqual(await read(),initial);
+ await click('Save planned route');await click('Save route');await closed();
+ let s=await read();assert.equal(s.actual,initial.actual);assert.equal(s.hours,initial.hours);assert.equal(s.bank,initial.bank);assert.deepEqual(s.mandatoryStops,['-111,-71']);
+ await click('Build route');await choose('-111,-70');await ready();await choose('-111,-71');await ready();
+ assert.equal(await page.locator('.route-draft li').count(),2);
+ await page.locator('.route-draft li').first().getByRole('button',{name:'Remove stop'}).click();await ready();assert.equal(await page.locator('.route-draft li').count(),1);
+ await click('Remove last stop');assert.equal(await page.getByRole('button',{name:'Save planned route',exact:true}).isDisabled(),true);
+ await choose('-111,-70');await ready();await choose('-111,-71');await ready();await click('Save planned route');await click('Save route');await closed();
+ s=await read();assert.deepEqual(s.mandatoryStops,['-111,-70','-111,-71']);
+ await click('Clear planned route');await click('Cancel');assert.deepEqual(await read(),s);
+ await click('COMMIT JUMP → Jenghe');await click('COMMIT JUMP');await closed();const travelled=await read();
+ await click('Clear planned route');await click('Clear route');await closed();const cleared=await read();
+ assert.deepEqual(cleared.route,[travelled.actual]);assert.equal(cleared.routeIndex,0);assert.deepEqual(cleared.mandatoryStops,[]);
+ for(const key of ['actual','hours','bank','lots','policies','contracts'])assert.deepEqual(cleared[key],travelled[key]);
+ assert.ok(travelled.events.every(e=>cleared.events.some(x=>x.id===e.id)));
+ await click('History');await click('Undo latest change');assert.deepEqual((await read()).route,travelled.route);await click('Overview');
+ // A failed connection remains an unsaved draft and can be removed.
+ await ctx.route('https://travellermap.com/api/jumpworlds?*',r=>r.fulfill({status:503,body:'Unavailable'}));
+ const beforeFailure=await read();await click('Auto plot');await choose('-111,-71');await page.locator('.route-draft').getByText(/Cannot connect/).waitFor();
+ assert.equal(await page.getByRole('button',{name:'Save planned route',exact:true}).isDisabled(),true);assert.deepEqual(await read(),beforeFailure);
+ await click('Cancel planning');assert.equal(await page.locator('.route-draft').count(),0);
+ // Cancel a slow request; its response cannot resurrect the draft.
+ let release;const held=new Promise(r=>release=r);let started;const request=new Promise(r=>started=r);
+ await ctx.route('https://travellermap.com/api/jumpworlds?*',async r=>{started();await held;r.fulfill({json:{Worlds:sample}});});
+ await click('Build route');await choose('-111,-71');await request;await click('Cancel planning');release();await page.waitForTimeout(150);assert.equal(await page.locator('.route-draft').count(),0);assert.deepEqual(await read(),beforeFailure);
+ await page.setViewportSize({width:390,height:844});await click('Build route');assert.ok(await page.locator('body').evaluate(e=>e.scrollWidth)<=410);await page.screenshot({path:join(artifacts,'click-route-mobile.png'),fullPage:true});await click('Cancel planning');
+ assert.deepEqual(errors,[]);console.log('PASS: auto plot, ordered map stops, remove/last, save/cancel, actual-world reset after jump, preserved state/history, undo, failed and cancelled requests, mobile layout.');
+}finally{await browser.close();}
