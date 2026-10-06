@@ -28,6 +28,12 @@ try{
  await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();await click('History');const before=await read();
  for(const label of ['Jumps','Searches','Trade','Expenses','Settings','Undo','Other']){await page.locator('[data-action="history-filter"][data-arg="'+label+'"]').click();assert.equal(await page.locator('.action-history tbody tr').count(),1);assert.equal(await page.locator('[data-action="history-filter"][data-arg="'+label+'"]').getAttribute('aria-pressed'),'true');}
  await page.locator('[data-action="history-filter"][data-arg="All"]').click();assert.equal(await page.locator('.action-history tbody tr').count(),7);assert.deepEqual(await read(),before);
+ await page.evaluate(()=>{const k='traveller-trade-route-calculator:v1',s=JSON.parse(localStorage.getItem(k));s.events.push({id:'jump-audit',label:'Jump audit',hours:20,from:'old-world',to:s.actual},{id:'jump-summary',label:'Jump: Origin → Regina',hours:20,world:s.actual});localStorage.setItem(k,JSON.stringify(s));});
+ await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();await click('History');const paired=await read();
+ assert.equal(await page.locator('.action-history tbody tr').count(),8);
+ await page.locator('[data-action="history-filter"][data-arg="Jumps"]').click();assert.equal(await page.locator('.action-history tbody tr').count(),2);
+ assert.equal(await page.locator('[data-action="event-audit"][data-arg="jump-audit"]').count(),1);assert.equal(await page.locator('[data-action="event-audit"][data-arg="jump-summary"]').count(),0);
+ assert.match(await page.locator('[data-action="history-filter"][data-arg="Jumps"]').textContent(),/Jumps \(2\)/);assert.deepEqual(await read(),paired);
  await page.setViewportSize({width:390,height:844});assert.ok(await page.locator('body').evaluate(e=>e.scrollWidth)<=410);assert.deepEqual(errors,[]);console.log('PASS: all category filters, counts, selected state, All restores entries, unchanged campaign, mobile layout.');
 }finally{await browser.close();}
 

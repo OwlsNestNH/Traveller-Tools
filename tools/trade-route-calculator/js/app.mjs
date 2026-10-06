@@ -1,6 +1,6 @@
 import {configureFuel,bladderSpace,validateFuel,jumpFuel,consumeJumpFuel,fuelReference} from './fuel.mjs?v=fuel-warning-1';
 import {refillQuote,supportStock} from './life-support.mjs?v=whole-days-1';
-import {campaignReport} from './report.mjs?v=admin-default-1';
+import {campaignReport} from './report.mjs?v=jump-history-1';
 import {up,creditStep,roundExisting} from './rounding.mjs';
 import {tiers,luggageAllowance,occupants,passengerLuggage,serviceRate,serviceLabel,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=passenger-input-3';
 import * as A from './amounts.mjs';
@@ -278,8 +278,11 @@ function historyCategory(e){
 }
 function historyPanel(){
  const filters=['All','Jumps','Searches','Trade','Expenses','Settings','Undo','Other'];
- const events=[...state.events].reverse().filter(e=>historyFilter==='All'||historyCategory(e)===historyFilter);
- const controls='<div class="panel-body"><div class="toolbar" role="group" aria-label="Filter history">'+filters.map(label=>btn(label+' ('+(label==='All'?state.events.length:state.events.filter(e=>historyCategory(e)===label).length)+')','history-filter',label,false,historyFilter===label?'primary active':'').replace('<button','<button aria-pressed="'+(historyFilter===label)+'"')).join('')+'</div><p class="help" role="status">'+events.length+' / '+state.events.length+' entries shown. Filters only change this view. Undo always reverses the latest campaign change, regardless of the filter.</p></div>';
+ // A jump records its detailed audit immediately before the transition summary.
+ // Keep stored events intact for history exports and undo.
+ const visible=state.events.filter((e,i)=>{const audit=state.events[i-1];return !(e.label?.startsWith('Jump: ')&&audit?.label==='Jump audit'&&audit.hours===e.hours&&audit.to===e.world);});
+ const events=[...visible].reverse().filter(e=>historyFilter==='All'||historyCategory(e)===historyFilter);
+ const controls='<div class="panel-body"><div class="toolbar" role="group" aria-label="Filter history">'+filters.map(label=>btn(label+' ('+(label==='All'?visible.length:visible.filter(e=>historyCategory(e)===label).length)+')','history-filter',label,false,historyFilter===label?'primary active':'').replace('<button','<button aria-pressed="'+(historyFilter===label)+'"')).join('')+'</div><p class="help" role="status">'+events.length+' / '+visible.length+' entries shown. Filters only change this view. Undo always reverses the latest campaign change, regardless of the filter.</p></div>';
  const rows=events.map(e=>{
   const route=e.from&&e.to?(world(e.from)?.name||e.from)+' → '+(world(e.to)?.name||e.to):'';
   const note=[route,e.reason].filter(Boolean).join(' · ')||'—';
