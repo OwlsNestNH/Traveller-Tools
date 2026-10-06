@@ -1,18 +1,18 @@
 import {validateFuel,jumpFuel,consumeJumpFuel,fuelReference} from './fuel.mjs';
 import {refillQuote,supportStock} from './life-support.mjs?v=whole-days-1';
-import {campaignReport} from './report.mjs?v=fuel-deposit-1';
+import {campaignReport} from './report.mjs?v=resource-alert-1';
 import {up,creditStep,roundExisting} from './rounding.mjs';
 import {tiers,luggageAllowance,occupants,passengerLuggage,serviceRate,serviceLabel,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=passenger-input-3';
 import * as A from './amounts.mjs';
 import {parseDate,displayDate} from './calendar.mjs';
 import * as R from './rules.mjs?v=rounding-1';
-import * as S from './state.mjs?v=fuel-deposit-1';
-import * as E from './expenses.mjs?v=fuel-deposit-1';
+import * as S from './state.mjs?v=resource-alert-1';
+import * as E from './expenses.mjs?v=resource-alert-1';
 import {planetInformation,worldSheetURL} from './planet-info.mjs';
 import * as M from './map.mjs';
 import {camera,viewportTiles,MapAreaCache} from './map-viewport.mjs';
 import {createWorldPicker,rememberWorld} from './world-picker.mjs';
-import {Store,KEY} from './persistence.mjs?v=fuel-deposit-1';
+import {Store,KEY} from './persistence.mjs?v=resource-alert-1';
 const $=id=>document.getElementById(id),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ROOT='https://github.com/OwlsNestNH/Traveller-Tools/blob/main/tools/trade-route-calculator/';
 let inputRounding=[];
@@ -452,15 +452,32 @@ function expenseBundleSummary(quotes){
  const total=quotes.reduce((n,q)=>n+A.credit(q.amount),0n);
  return table(['Expense','Amount'],quotes.map(q=>'<tr><td>'+esc(q.label)+'</td><td class="number">'+money(q.amount)+'</td></tr>'))+auditFacts([['Combined total',money(String(total))]])+quotes.map(q=>'<details><summary>'+esc(q.label)+' calculation and rules</summary>'+expenseSummary(q)+'</details>').join('');
 }
+function updateFuelAvailability(){
+ const box=$('fuel-availability');if(!box)return;
+ const f=new FormData($('modal-form')),type=f.get('fuelType'),selected=f.has('include-fuel');
+ const {port,water,standard}=E.fuelAvailability(actual(),type);
+ const confirmed=f.has('otherSupplier')&&String(f.get('expenseNotes')||'').trim();
+ let text='';
+ if(selected&&!standard&&!confirmed){
+  const source=type==='water'?'Usable water is not established at '+actual().name+'.':(type==='refined'?'Refined':'Purchased unrefined')+' fuel is not supplied by Starport '+port+' at '+actual().name+'.';
+  const alternative=type!=='water'&&water?' Choose Collect water for free unrefined fuel, or':type==='refined'&&['C','D'].includes(port)?' Choose Purchased unrefined fuel, or':'';
+  text='Fuel unavailable: '+source+alternative+' tick Other supplier / referee confirms availability and describe the confirmed source in Notes / fuel source. Preview is disabled until a valid source is selected.';
+ }
+ if(box.textContent!==text)box.textContent=text;
+ box.hidden=!text;
+ const select=$('modal-form').elements.fuelType;
+ if(text)select.setAttribute('aria-describedby','fuel-availability');else select.removeAttribute('aria-describedby');
+}
 function updateExpenseEstimate(){
  if(!$('expense-estimate'))return;
  document.querySelectorAll('[data-expense-kind]').forEach(e=>{const selected=$('modal-form').elements['include-'+e.dataset.expenseKind].checked;e.hidden=!selected;e.querySelectorAll('input,select').forEach(x=>x.disabled=!selected);});
+ updateFuelAvailability();
  try{
   const inputs=expenseInput();if(!inputs.length)throw Error($('modal-form').elements['include-salary']?'Nothing to pay. Select another expense or enter fuel to acquire.':'No fuel to acquire. Your tank may already be full.');
   const quotes=inputs.map(input=>E.expenseQuote(actual(),input));
   const f=new FormData($('modal-form')),skipped=f.has('include-fuel')&&E.zeroFuel({kind:'fuel',tons:f.get('fuelTons')});
   $('expense-estimate').innerHTML=(skipped?'<p class="help">No fuel to purchase (0 tons). Fuel is omitted; the other selected expenses can be paid.</p>':'')+expenseBundleSummary(quotes);activeModal.valid=true;
- }catch(e){$('expense-estimate').innerHTML='<p class="help">'+esc(e.message)+'</p>';activeModal.valid=false;}
+ }catch(e){$('expense-estimate').innerHTML='<p class="notice" role="alert"><strong>Cannot preview: </strong>'+esc(e.message)+'</p>';activeModal.valid=false;}
  syncModalSubmit();
 }
 function expensePeriod(kind){return `<div class="split">${select(kind+'Period','Refill / billing period',[['week','Weeks'],['month','Months']],'week')}${field(kind+'Units','Number of periods',1,'number','min="1" step="1"')}</div><p class="help">Weekly cost is one quarter of the monthly rate (four-week billing month).</p>`;}
@@ -470,7 +487,7 @@ function shipExpenses(initialFuelType=null){
  const w=actual(),port=E.starport(w),saved=w.berthingRate?.port===port,defaults=state.ship.expenses||{};
  modal(fuelOnly?'Refuel':'Ship expenses',`<p><strong>${esc(w.name)}</strong> · Actual ship location · Starport ${esc(port)}</p>${fuelOnly?'':`<p class="help">Select any or all expenses to pay together.</p>${btn('Select all expenses','expenses-all')}`}
  ${fuelOnly?'':`<fieldset class="expense-choice"><legend>${check('include-berthing','Berthing',!initialFuelType)}</legend><div data-expense-kind="berthing">${!saved&&E.berthMultipliers[port]?btn('Roll & save starport rate','berthing-rate','',true):''}${field('weeks','Weeks to pay',1,'number','min="1" step="1"')}<p class="help">One saved 1D roll per starport. The weekly rate is reused on later visits.</p></div></fieldset>`}
- <fieldset class="expense-choice"><legend>${fuelOnly?'<input type="checkbox" name="include-fuel" checked hidden>Fuel':check('include-fuel','Fuel',false)}</legend><div data-expense-kind="fuel" hidden>${fuelPlanning()}<div class="split">${select('fuelType','Fuel type',[['refined','Refined · Cr500/ton'],['unrefined','Purchased unrefined · Cr100/ton'],['water','Collect water · Free unrefined fuel']],initialFuelType||(['A','B'].includes(port)?'refined':'unrefined'))}${field('fuelTons','Fuel to acquire · tons',suggestedFuel(!!initialFuelType),'number','min="0" step="1"')}</div><p class="help">A/B sell refined and unrefined; C/D sell unrefined. Usable water provides free unrefined fuel at any port, including E/X. Without usable water, establish another source through roleplay and explain below. Confirming fuel expenses adds purchased or collected fuel to the configured jump-fuel tank. Collection equipment, time and fuel-grade effects are resolved in play. Power-plant fuel is excluded.</p>${check('otherSupplier','Other supplier / referee confirms availability (explain in notes)')}</div></fieldset>
+ <fieldset class="expense-choice"><legend>${fuelOnly?'<input type="checkbox" name="include-fuel" checked hidden>Fuel':check('include-fuel','Fuel',false)}</legend><div data-expense-kind="fuel" hidden>${fuelPlanning()}<div class="split">${select('fuelType','Fuel type',[['refined','Refined · Cr500/ton'],['unrefined','Purchased unrefined · Cr100/ton'],['water','Collect water · Free unrefined fuel']],initialFuelType||(['A','B'].includes(port)?'refined':'unrefined'))}${field('fuelTons','Fuel to acquire · tons',suggestedFuel(!!initialFuelType),'number','min="0" step="1"')}</div><p id="fuel-availability" class="notice" role="alert" hidden></p><p class="help">A/B sell refined and unrefined; C/D sell unrefined. Usable water provides free unrefined fuel at any port, including E/X. Without usable water, establish another source through roleplay and explain below. Confirming fuel expenses adds purchased or collected fuel to the configured jump-fuel tank. Collection equipment, time and fuel-grade effects are resolved in play. Power-plant fuel is excluded.</p>${check('otherSupplier','Other supplier / referee confirms availability (explain in notes)')}</div></fieldset>
  ${fuelOnly?'':`<fieldset class="expense-choice"><legend>${check('include-staterooms','Stateroom expenses')}</legend><div data-expense-kind="staterooms" hidden>${table(['Stateroom class','Installed (including empty)','Service provided','Cr/room/month'],tiers.map(t=>`<tr><td>${t}</td><td class="number">${roomCounts(state.ship)[t]}</td><td>${serviceLabel(t,state.ship.accommodation?.roomService?.[t])}</td><td class="number">${money(serviceRate(t,state.ship.accommodation?.roomService?.[t]))}</td></tr>`))}<p class="help">${roomTotal(state.ship)} total staterooms, including crew rooms and empty rooms. Change counts and service upgrades in Ship, trader & options.</p>${expensePeriod('staterooms')}</div></fieldset>`}
  ${fuelOnly?'':`<fieldset class="expense-choice"><legend>${check('include-passengerSupport','Passenger & crew life support')}</legend><div data-expense-kind="passengerSupport" hidden>${table(['Service (crew + passengers)','People aboard','Cr/person/month'],tiers.map(t=>'<tr><td>'+t+'</td><td>'+((occupants(state.ship).passengers?.[t]??0)+(occupants(state.ship).crew?.[t]??0))+'</td><td>'+money(personRate(t))+'</td></tr>'))}<p class="help">Middle service costs Cr1,000 per person/month; high service costs Cr3,000, including middle-cabin upgrades. These are additional to cabin expenses. Headcounts come from Ship, trader & options. Change them there when people board or leave.</p>${expensePeriod('passengerSupport')}<p class="help">These expense entries record payments only. Use Refill life support to replenish tracked supplies; do not pay both for the same refill.</p></div></fieldset>`}
  ${fuelOnly?'':`<fieldset class="expense-choice"><legend>${check('include-salary','Crew salaries')}</legend><div data-expense-kind="salary" hidden><div class="split">${field('salary','Total crew salaries · Cr per month',defaults.salary||'0','number','min="1" step="1"')}${field('salaryMonths','Crew salaries · months to pay',1,'number','min="1" step="1"')}</div></div></fieldset>`}

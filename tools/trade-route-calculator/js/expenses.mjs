@@ -17,6 +17,12 @@ function count(value,label){const n=Number(value);if(!Number.isSafeInteger(n)||n
 function people(value,label){const n=Number(value??0);if(!Number.isSafeInteger(n)||n<0)throw Error(label+' must be a non-negative whole number.');return n;}
 export const supportRates=monthlyRates;
 function period(input){if(!['week','month'].includes(input.period))throw Error('Choose weeks or months.');return {units:count(input.units,'Billing periods'),divisor:input.period==='week'?4n:1n};}
+export function fuelAvailability(world,type){
+ const port=starport(world),uwp=world.overrideUWP||world.uwp,hydro=uwp[3],atmosphere=uwp[2];
+ const water=world.accessibleWater===true||(/^[1-9A]$/i.test(hydro)&&(['D','E'].includes(port)||/^[0-9]$/.test(atmosphere)));
+ const standard=type==='water'?water:type==='refined'?['A','B'].includes(port):type==='unrefined'&&['A','B','C','D'].includes(port);
+ return {port,hydro,water,standard};
+}
 export function expenseQuote(world,input){
  const kind=input.kind,notes=String(input.notes||'').trim(),port=starport(world);
  let amount,details,reference,unrounded;
@@ -26,10 +32,8 @@ export function expenseQuote(world,input){
   reference='Traveller Core Rulebook Update 2022, pp. 257–258. Roll once per starport; berthing is due weekly.';
  }else if(kind==='fuel'){
   const type=input.fuelType;if(!['refined','unrefined','water'].includes(type))throw Error('Choose a fuel source.');
-  const collecting=type==='water',uwp=world.overrideUWP||world.uwp,hydro=uwp[3],atmosphere=uwp[2];
-  const water=world.accessibleWater===true||(/^[1-9A]$/i.test(hydro)&&(['D','E'].includes(port)||/^[0-9]$/.test(atmosphere)));
+  const collecting=type==='water',{hydro,standard}=fuelAvailability(world,type);
   const tons=A.positive(String(up(input.tons)),'Fuel tons'),rate=collecting?0:type==='refined'?500:100;
-  const standard=collecting?water:type==='refined'?['A','B'].includes(port):['A','B','C','D'].includes(port);
   if(!standard&&(!input.otherSupplier||!notes))throw Error(collecting?'Usable water is not established here. Confirm a source through roleplay with the referee and explain in notes.':'No standard starport supply for this fuel. Confirm another supplier and explain in notes.');
   unrounded=A.decimal(A.mul(tons,rate));amount=String(up(unrounded,input.creditStep||1));
   details=[['Fuel type',type==='refined'?'Refined':'Unrefined'],['Fuel tons',tons],['Rate · Cr/ton',String(rate)],['Starport class',port],['Hydrographics',hydro],['Supply',collecting?(standard?'Free water collection':'Free collection / referee-confirmed source'):(standard?'Starport purchase':'Other supplier / referee-confirmed')]];

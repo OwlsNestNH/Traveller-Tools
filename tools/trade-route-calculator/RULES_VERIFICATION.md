@@ -228,3 +228,5 @@ Verified against Core Rulebook Update 2022: p. 157 consumes 10% of hull tonnage 
 Selected fuel with exactly zero tons is omitted from expense previews and payment batches. Other selected expenses remain payable; fuel alone shows Nothing to pay. No fuel ledger entry or tank change is created. Positive-quantity free water collection still creates a zero-Credit fuel record. Invalid and over-capacity quantities remain rejected.
 
 Refuel opens a fuel-only form and confirmation. Accounts supports manual deposits with a positive rounded Credit amount, required description, preview, ledger entry and undo. Browser checks cover deposit cancellation, persistence and undo, and isolated fuel purchase.
+
+Unavailable fuel displays an accessible alert beside the source selector with valid alternatives and supplier-confirmation instructions. Availability checks share the same function as fuel pricing. Expense preview blockers use a prominent warning.
