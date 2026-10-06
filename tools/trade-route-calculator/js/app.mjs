@@ -32,9 +32,20 @@ let mapLoadTimer=0,mapPaintFrame=0;
 const mapAreas=new MapAreaCache(tile=>M.nearby(tile,12),()=>{if(!mapDrag&&!mapPaintFrame)mapPaintFrame=requestAnimationFrame(()=>{mapPaintFrame=0;paintMap();});});
 let showHexes=true,showUwp=true,mapZoom=1,mapZoomFrame=0,mapPan={x:0,y:0},mapAnchor=null,mapDrag=null,suppressMapClick=false;
 let core,mp,decisions,state=S.initial(),store,known={},view=null,tab='Overview',snapshotId=null,marketFilter='active',marketSearch='',cargoSearch='',cargoSort='name',selected=new Set(),contractDrafts=[],modalRevision=0,modalGeneration=0,previewSale=null;
+const debugErrors=[];
+const DEV_CHANGES=[
+ {date:'2026-10-06',change:'Added configurable maximum commodity base retail price for speculative trade.'},
+ {date:'2026-10-06',change:'Added optional RAW base-price exception for illegal goods.'},
+ {date:'2026-10-06',change:'Pricing audits now show RAW base retail, effective base retail, cap and exception status.'},
+ {date:'2026-10-06',change:'Added temporary Dev Tools diagnostics, validation, error log, copy report and debug-link sharing.'}
+];
 function world(id){return state.worlds[id]||known[id]||mapAreas.worlds[id];}function good(id){return core.commodities.find(g=>g.id===id);}function ctx(id){return R.context(world(id),core);}function viewed(){return world(view||state.actual);}function actual(){return world(state.actual);}function partyKey(id,name){return id+'|'+name.trim().toLowerCase();}
 function message(text,error=false){$('message').textContent=text;$('message').className='visible'+(error?' error':'');}
-function safely(fn){return async(...args)=>{try{return await fn(...args);}catch(e){message(e.message,true);}};}
+function recordDebugError(error,context='runtime'){
+ const entry={time:new Date().toISOString(),context,message:String(error?.message||error),stack:error?.stack?String(error.stack).slice(0,4000):null};
+ debugErrors.push(entry);if(debugErrors.length>50)debugErrors.splice(0,debugErrors.length-50);
+}
+function safely(fn){return async(...args)=>{try{return await fn(...args);}catch(e){recordDebugError(e,fn?.name||'action');message(e.message,true);}};}
 function optionalRuleFootnote(kind){return '<p class="help rule-footnote">['+(kind==='insurance'?'I':'T')+'] '+(kind==='insurance'?'Insurance':'Taxes')+': MGT 1st Edition, Book 7: Merchant Prince, p. '+(kind==='insurance'?'83':'86')+'. Optional rules adapted for this calculator. <a href="'+ROOT+'OPTIONAL_RULES.md" target="_blank" rel="noopener">Approved adaptations and interpretations</a>.</p>';}
 function roundingFootnote(changes=[],step=creditStep(state)){return '<p class="help rule-footnote">[R] Rounding applied: Credits round up to '+(step===100?'the next Cr100':'whole Credits')+'; tons round up to whole tons. Exact intermediate calculations and proportional cost allocations are retained.'+(changes.length?' '+changes.map(c=>esc(c.label)+': '+esc(c.before)+' → '+esc(c.after)).join('; ')+'.':'')+'</p>';}
 function normaliseFields(form){for(const el of form.querySelectorAll('[data-round]')){if(el.disabled||el.value==='')continue;const before=el.value,after=String(up(before,el.dataset.round==='credits'?creditStep(state):1));if(A.cmp(before,after)){inputRounding.push({label:el.dataset.roundLabel,before,after});el.value=after;}}if($('rounding-input-note'))$('rounding-input-note').innerHTML=roundingFootnote(inputRounding);}
@@ -292,7 +303,114 @@ function historyPanel(){
  });
  return panel('Campaign history','<div class="panel-body row">'+btn('Undo latest change','undo','',true,'primary')+'<span class="help">All recorded actions: jumps, searches, purchases, sales, expenses, refills, settings and undo. Money movements and balances are in Accounts. Undo restores bank, cargo, route, contracts and policy state together.</span></div>'+controls+(rows.length?table(['Date/Time','Planet','Entry','Note',''],rows,'large-scroll action-history'):empty(state.events.length?'No entries match this filter.':'Your committed actions appear here.')))+closedPolicyHistory();
 }
-function settingsPanel(){return panel('Campaign controls',`<div class="panel-body"><div class="split"><div><h3>${esc(state.name)}</h3><p class="help">${esc(state.ship.name)} · Jump ${state.ship.jump} · ${esc(state.ship.capacity)} tons</p><p>Profit mode: <strong>${state.settings.profit===100?'RAW':state.settings.profit===75?'Reduced':'Custom'} ${state.settings.profit}%</strong></p><p class="help">Tax ${state.settings.tax?'on':'off'} · Insurance ${state.settings.insurance?'on':'off'} · Base retail cap ${state.settings.maxBaseRetailEnabled?money(state.settings.maxBaseRetail)+'/t':'off'}${state.settings.useRawIllegalPrices?' · Illegal goods use RAW base prices':''}</p></div><div class="wide-actions">${btn('Ship, trader & options','settings-edit','',true)}${btn('Round up Credits to 100 & tons to whole','rounding-preview','',true)}${btn('Advance / correct time','time','',true)}${btn('Rules & Notes','notes')}</div></div><hr><p class="help">Browser storage is local to this device and browser. Export a backup before moving devices or clearing browser data.</p><div class="wide-actions">${btn('Export report (TXT)','report')}${btn('Save campaign (JSON)','export')}${btn('Load campaign (JSON)','import','',true)}${btn('Reset campaign','reset','',true,'danger')}</div></div>`);}
+
+function debugValidation(){
+ try{S.validate(structuredClone(state));return {ok:true,message:'Campaign state validates successfully.'};}
+ catch(error){return {ok:false,message:error.message};}
+}
+function debugReportObject(){
+ const validation=debugValidation();
+ let ledgerTotal='unavailable',ledgerMatchesBank=false;
+ try{ledgerTotal=String(state.ledger.reduce((n,e)=>n+A.credit(e.amount),0n));ledgerMatchesBank=A.credit(ledgerTotal)===A.credit(state.bank);}catch{}
+ const currentWorld=world(state.actual),viewWorld=viewed();
+ return {
+  generatedAt:new Date().toISOString(),
+  application:{schema:state.schema,rulesVersion:R.VERSION,revision:state.revision,editable:!!store?.editable,storageKey:KEY},
+  validation,
+  campaign:{
+   name:state.name,initialized:state.initialized,dateLabel:state.dateLabel,hours:state.hours,
+   actualWorld:currentWorld?{id:currentWorld.id,name:currentWorld.name,uwp:currentWorld.overrideUWP||currentWorld.uwp,sector:currentWorld.sector,hex:currentWorld.hex}:null,
+   viewedWorld:viewWorld?{id:viewWorld.id,name:viewWorld.name,uwp:viewWorld.overrideUWP||viewWorld.uwp,sector:viewWorld.sector,hex:viewWorld.hex}:null,
+   bank:state.bank,ledgerTotal,ledgerMatchesBank,
+   cargoUsed:A.decimal(S.used(state)),cargoCapacity:state.ship.capacity,
+   route:[...state.route],routeIndex:state.routeIndex
+  },
+  ship:structuredClone(state.ship),
+  trader:structuredClone(state.trader),
+  settings:structuredClone(state.settings),
+  counts:{worlds:Object.keys(state.worlds||{}).length,knownWorlds:Object.keys(known||{}).length,lots:state.lots.length,contracts:state.contracts.length,policies:state.policies.length,ledger:state.ledger.length,snapshots:state.snapshots.length,events:state.events.length,undo:state.undo.length},
+  cargo:state.lots.map(l=>({id:l.id,commodity:l.commodity,description:l.description,quantity:l.quantity,basis:l.basis,goodsValue:l.goodsValue,world:l.world,hours:l.hours,illegal:!!l.illegal,snapshotId:l.snapshotId,offerId:l.offerId})),
+  contracts:structuredClone(state.contracts),
+  policies:structuredClone(state.policies),
+  marketSnapshots:structuredClone(state.snapshots.slice(-20)),
+  recentLedger:structuredClone(state.ledger.slice(-50)),
+  recentEvents:structuredClone(state.events.slice(-50)),
+  currentSaleQuotes:[...saleQuotes.entries()].map(([lotId,q])=>({lotId,...structuredClone(q)})),
+  interface:{tab,view,snapshotId,marketFilter,marketSearch,cargoSearch,cargoSort,selectedLots:[...selected],mapZoom,mapPan:{...mapPan},showHexes,showUwp,routeDraft:routeDraft?structuredClone(routeDraft):null},
+  errors:structuredClone(debugErrors),
+  changeLog:structuredClone(DEV_CHANGES)
+ };
+}
+function debugReportText(){return JSON.stringify(debugReportObject(),null,2);}
+async function copyDebugReport(){
+ const text=debugReportText();
+ try{await navigator.clipboard.writeText(text);message('Debug report copied to clipboard.');}
+ catch(error){recordDebugError(error,'copy-debug-report');modal('Debug report','<p class="help">Clipboard access was unavailable. Select and copy the report below.</p><textarea id="debug-output" rows="18" readonly style="width:100%;font-family:monospace">'+esc(text)+'</textarea>',null);setTimeout(()=>{$('debug-output')?.select();},0);}
+}
+function bytesToBase64Url(bytes){
+ let binary='';for(let i=0;i<bytes.length;i+=0x8000)binary+=String.fromCharCode(...bytes.subarray(i,i+0x8000));
+ return btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+async function encodeDebugPayload(text){
+ const raw=new TextEncoder().encode(text);
+ if(typeof CompressionStream==='function'){
+  const stream=new Blob([raw]).stream().pipeThrough(new CompressionStream('gzip'));
+  const compressed=new Uint8Array(await new Response(stream).arrayBuffer());
+  return 'gz.'+bytesToBase64Url(compressed);
+ }
+ return 'raw.'+bytesToBase64Url(raw);
+}
+async function createDebugLink(){
+ const payload=await encodeDebugPayload(debugReportText());
+ const link=location.origin+location.pathname+'#debug='+payload;
+ let copied=false;
+ try{await navigator.clipboard.writeText(link);copied=true;}catch(error){recordDebugError(error,'copy-debug-link');}
+ modal('Debug link',`<p class="help">${copied?'The debug link was copied to your clipboard. Paste the entire link into ChatGPT.':'Clipboard access was unavailable. Select and copy the entire link below.'} The report is stored in the URL fragment; the calculator does not upload it to a debug service.</p><textarea id="debug-link-output" rows="10" readonly style="width:100%;font-family:monospace">${esc(link)}</textarea><p class="help">Encoded report size: ${payload.length.toLocaleString()} characters.</p>`,null);
+ setTimeout(()=>{$('debug-link-output')?.select();},0);
+}
+function exportDebugBundle(){
+ const text=debugReportText(),url=URL.createObjectURL(new Blob([text],{type:'application/json;charset=utf-8'})),a=document.createElement('a');
+ a.href=url;a.download='traveller-debug-'+new Date().toISOString().replace(/[:.]/g,'-')+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);
+ message('Debug bundle download requested.');
+}
+function devTools(){
+ const r=debugReportObject(),v=r.validation,errors=debugErrors.slice(-10).reverse();
+ modal('TEMPORARY DEV TOOLS',`
+ <p class="${v.ok?'help':'notice'}"><strong>Validation:</strong> ${esc(v.message)}</p>
+ <div class="wide-actions">
+  ${btn('Validate campaign','dev-validate')}
+  ${btn('Copy Debug Report','dev-copy')}
+  ${btn('Create Debug Link','dev-link')}
+  ${btn('Export Debug JSON','dev-export')}
+  ${btn('Clear Error Log','dev-clear-errors')}
+ </div>
+ <h3>Current diagnostics</h3>
+ ${auditFacts([
+  ['Schema / rules',r.application.schema+' / '+r.application.rulesVersion],
+  ['Revision',r.application.revision],
+  ['Editing role',r.application.editable?'Editable':'Read-only'],
+  ['Current world',r.campaign.actualWorld?.name||'None'],
+  ['Campaign time',displayDate(state.dateLabel,state.hours)],
+  ['Bank',money(state.bank)],
+  ['Ledger total',r.campaign.ledgerTotal==='unavailable'?'Unavailable':money(r.campaign.ledgerTotal)],
+  ['Ledger matches bank',r.campaign.ledgerMatchesBank?'Yes':'No'],
+  ['Cargo used',r.campaign.cargoUsed+' / '+r.campaign.cargoCapacity+' t'],
+  ['Lots / snapshots / ledger',r.counts.lots+' / '+r.counts.snapshots+' / '+r.counts.ledger],
+  ['Loaded campaign worlds',r.counts.worlds],
+  ['Known worlds this session',r.counts.knownWorlds],
+  ['Captured errors',debugErrors.length]
+ ])}
+ <h3>Current settings</h3>
+ <pre style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(JSON.stringify(state.settings,null,2))}</pre>
+ <h3>Recent errors</h3>
+ ${errors.length?errors.map(e=>'<details><summary>'+esc(e.time+' · '+e.context+' · '+e.message)+'</summary><pre style="white-space:pre-wrap;overflow-wrap:anywhere">'+esc(e.stack||'No stack recorded')+'</pre></details>').join(''):'<p class="help">No captured errors this session.</p>'}
+ <h3>Temporary change log</h3>
+ ${table(['Date','Change'],DEV_CHANGES.map(x=>'<tr><td>'+esc(x.date)+'</td><td>'+esc(x.change)+'</td></tr>'))}
+ <p class="help">These tools are for development and diagnosis only. They do not edit campaign state.</p>
+ `,null);
+}
+
+function settingsPanel(){return panel('Campaign controls',`<div class="panel-body"><div class="split"><div><h3>${esc(state.name)}</h3><p class="help">${esc(state.ship.name)} · Jump ${state.ship.jump} · ${esc(state.ship.capacity)} tons</p><p>Profit mode: <strong>${state.settings.profit===100?'RAW':state.settings.profit===75?'Reduced':'Custom'} ${state.settings.profit}%</strong></p><p class="help">Tax ${state.settings.tax?'on':'off'} · Insurance ${state.settings.insurance?'on':'off'} · Base retail cap ${state.settings.maxBaseRetailEnabled?money(state.settings.maxBaseRetail)+'/t':'off'}${state.settings.useRawIllegalPrices?' · Illegal goods use RAW base prices':''}</p></div><div class="wide-actions">${btn('Ship, trader & options','settings-edit','',true)}${btn('Round up Credits to 100 & tons to whole','rounding-preview','',true)}${btn('Advance / correct time','time','',true)}${btn('Rules & Notes','notes')}${btn('TEMPORARY DEV TOOLS','dev-tools')}</div></div><hr><p class="help">Browser storage is local to this device and browser. Export a backup before moving devices or clearing browser data.</p><div class="wide-actions">${btn('Export report (TXT)','report')}${btn('Save campaign (JSON)','export')}${btn('Load campaign (JSON)','import','',true)}${btn('Reset campaign','reset','',true,'danger')}</div></div>`);}
 async function setup(){let picker;modal('Start your campaign',`<div class="split">${field('name','Campaign name','My trading campaign')}${field('ship','Ship name','Independent trader')}${field('bank','Opening bank · Cr','100000')}${field('capacity','Cargo capacity · tons','60')}${field('jump','Jump rating','2','number','min="1" max="6"')}${field('date','Starting Imperial date · day-year','001-1105')}</div>${fuelFields()}${accommodationFields()}<div id="setup-world"></div>${check('scoops','Ship has fuel scoops',true)}<p class="help">Existing cargo is added separately and will not debit this opening bank.</p>`,async(f,isCurrent)=>{const w=await picker.resolve();if(!isCurrent())return false;known[w.id]=w;parseDate(f.get('date'));const bank=A.credit(f.get('bank'));if(bank<0n)throw Error('Opening bank cannot be negative');act('Campaign setup',s=>{s.initialized=true;s.name=f.get('name');s.ship.name=f.get('ship');s.ship.capacity=A.decimal(f.get('capacity'));s.ship.accommodation=readAccommodation(f);s.ship.lifeSupport=readSupport(f);s.ship.fuel=readFuel(f);s.ship.staterooms=roomTotal(s.ship);s.ship.roundTons=true;s.ship.jump=Number(f.get('jump'));s.ship.scoops=f.has('scoops');s.bank=String(bank);s.dateLabel=f.get('date');s.actual=w.id;s.worlds[w.id]=w;s.route=[w.id];s.ledger.push({id:S.uid(),type:'Opening bank',amount:String(bank),hours:0,world:w.id});});view=w.id;await refreshNearby(false,isCurrent);},'Start campaign');updateAccommodationEstimate();updateFuelSettingsEstimate();picker=createWorldPicker($('setup-world'),{initial:{sector:'Spinward Marches',hex:'1910'},title:'Current world'});}
 async function refreshNearby(show=true,isCurrent=()=>true){const w=viewed();if(!w)return;const rows=await M.nearby(w,12);if(!isCurrent())return;rows.forEach(x=>known[x.id]=x);render();if(show)message('Live nearby worlds loaded.');}
 function findWorld(){
@@ -709,7 +827,7 @@ function exportReport(){
  a.href=url;a.download='traveller-report-'+now.toISOString().slice(0,10)+'.txt';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);
  message('TXT report download requested. Use Save campaign (JSON) for a restorable backup.');
 }
-const actions={refuel:refuelShortcut,'fuel-next':()=>setFuelQuantity(false),'fuel-fill':()=>setFuelQuantity(true),'day-back':()=>changeCampaignDay(-1),'day-forward':()=>changeCampaignDay(1),'history-filter':id=>{historyFilter=id;render();},'market-availability':marketAvailabilityAudit,'refill-support':refillSupport,'route-auto':()=>startMapRoute('auto'),'route-build':()=>startMapRoute('build'),'route-cancel':()=>{routeDraft=null;render();},'route-remove':removeMapStop,'route-last':()=>removeMapStop(routeDraft?.stops.length-1),'route-save':saveMapRoute,'route-retry':calculateMapRoute,'route-clear':clearPlannedRoute,'map-world':mapWorld,'map-empty':mapEmpty,report:exportReport,'rounding-preview':roundingPreview,'map-zoom-in':()=>zoomMap(1.2),'map-zoom-out':()=>zoomMap(1/1.2),'map-zoom-reset':()=>zoomMap(1,true),'set-location':setLocation,tab:id=>{tab=id;render();},notes,setup,find:findWorld,nearby:()=>{scheduleMapAreas();return refreshNearby();},world:id=>{known[id]=world(id);view=id;mapPan={x:0,y:0};render();scheduleMapAreas();},'browse-prev':()=>{const i=state.route.indexOf(view||state.actual);view=state.route[Math.max(0,i-1)]||state.actual;render();},'browse-next':()=>{const i=state.route.indexOf(view||state.actual);view=state.route[Math.min(state.route.length-1,i+1)]||state.actual;render();},'planet-info':showPlanetInfo,override:overrideWorld,route:plotRoute,jump,search:()=>searchDialog(),'buyer-search':()=>searchDialog('buyer'),buy:buyForm,'offer-edit':editOffer,'offer-audit':commodityAudit,'expire-all':id=>act('Expired all snapshot offers',s=>s.snapshots.find(x=>x.id===id).offers.forEach(o=>o.expired=true)),reject,'sale-edit':()=>editSale?.(),'sale-all':()=>{selected=new Set(state.lots.map(l=>l.id));render();},'sale-clear':()=>{selected.clear();render();},sale:beginSale,'add-lot':existingLot,'lot-correct':correctCargo,'lot-sell':id=>{selected=new Set([id]);beginSale();},'lot-audit':lotAudit,'lot-insure':insureHeldCargo,'policy-audit':policyAudit,claim:claimForm,amend:amendPolicy,'contracts-search':contractSearch,'contract-manual':manualContract,'contract-accept':accept,'draft-edit':editDraft,'draft-audit':id=>audit('Contract offer',contractDrafts.find(c=>c.offerId===id)),'contract-audit':id=>audit('Contract',state.contracts.find(c=>c.id===id)),deliver,'ship-expenses':shipExpenses,'expenses-all':selectAllExpenses,'berthing-rate':rollBerthingRate,deposit:depositForm,expense:()=>expenseForm(),'bank-correct':()=>expenseForm(true),'ledger-audit':ledgerAudit,'event-audit':id=>audit('History entry',state.events.find(e=>e.id===id)),undo:()=>{store.save(S.undo(state),state.revision);message('Latest action undone.');},'settings-edit':settings,time:timeForm,export:()=>{store.backup();message('Backup download requested. Check that the file was saved.');},import:()=>$('import-file').click(),reset:()=>backupReplace('Reset campaign',S.initial())};
+const actions={'dev-tools':devTools,'dev-validate':()=>{const v=debugValidation();message(v.message,!v.ok);devTools();},'dev-copy':copyDebugReport,'dev-link':createDebugLink,'dev-export':exportDebugBundle,'dev-clear-errors':()=>{debugErrors.length=0;message('Debug error log cleared.');devTools();},refuel:refuelShortcut,'fuel-next':()=>setFuelQuantity(false),'fuel-fill':()=>setFuelQuantity(true),'day-back':()=>changeCampaignDay(-1),'day-forward':()=>changeCampaignDay(1),'history-filter':id=>{historyFilter=id;render();},'market-availability':marketAvailabilityAudit,'refill-support':refillSupport,'route-auto':()=>startMapRoute('auto'),'route-build':()=>startMapRoute('build'),'route-cancel':()=>{routeDraft=null;render();},'route-remove':removeMapStop,'route-last':()=>removeMapStop(routeDraft?.stops.length-1),'route-save':saveMapRoute,'route-retry':calculateMapRoute,'route-clear':clearPlannedRoute,'map-world':mapWorld,'map-empty':mapEmpty,report:exportReport,'rounding-preview':roundingPreview,'map-zoom-in':()=>zoomMap(1.2),'map-zoom-out':()=>zoomMap(1/1.2),'map-zoom-reset':()=>zoomMap(1,true),'set-location':setLocation,tab:id=>{tab=id;render();},notes,setup,find:findWorld,nearby:()=>{scheduleMapAreas();return refreshNearby();},world:id=>{known[id]=world(id);view=id;mapPan={x:0,y:0};render();scheduleMapAreas();},'browse-prev':()=>{const i=state.route.indexOf(view||state.actual);view=state.route[Math.max(0,i-1)]||state.actual;render();},'browse-next':()=>{const i=state.route.indexOf(view||state.actual);view=state.route[Math.min(state.route.length-1,i+1)]||state.actual;render();},'planet-info':showPlanetInfo,override:overrideWorld,route:plotRoute,jump,search:()=>searchDialog(),'buyer-search':()=>searchDialog('buyer'),buy:buyForm,'offer-edit':editOffer,'offer-audit':commodityAudit,'expire-all':id=>act('Expired all snapshot offers',s=>s.snapshots.find(x=>x.id===id).offers.forEach(o=>o.expired=true)),reject,'sale-edit':()=>editSale?.(),'sale-all':()=>{selected=new Set(state.lots.map(l=>l.id));render();},'sale-clear':()=>{selected.clear();render();},sale:beginSale,'add-lot':existingLot,'lot-correct':correctCargo,'lot-sell':id=>{selected=new Set([id]);beginSale();},'lot-audit':lotAudit,'lot-insure':insureHeldCargo,'policy-audit':policyAudit,claim:claimForm,amend:amendPolicy,'contracts-search':contractSearch,'contract-manual':manualContract,'contract-accept':accept,'draft-edit':editDraft,'draft-audit':id=>audit('Contract offer',contractDrafts.find(c=>c.offerId===id)),'contract-audit':id=>audit('Contract',state.contracts.find(c=>c.id===id)),deliver,'ship-expenses':shipExpenses,'expenses-all':selectAllExpenses,'berthing-rate':rollBerthingRate,deposit:depositForm,expense:()=>expenseForm(),'bank-correct':()=>expenseForm(true),'ledger-audit':ledgerAudit,'event-audit':id=>audit('History entry',state.events.find(e=>e.id===id)),undo:()=>{store.save(S.undo(state),state.revision);message('Latest action undone.');},'settings-edit':settings,time:timeForm,export:()=>{store.backup();message('Backup download requested. Check that the file was saved.');},import:()=>$('import-file').click(),reset:()=>backupReplace('Reset campaign',S.initial())};
 document.addEventListener('click',safely(async e=>{const b=e.target.closest('[data-action]');if(b&&!b.disabled){e.preventDefault();await actions[b.dataset.action]?.(b.dataset.arg);}}));
 document.addEventListener('keydown',safely(e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('svg [data-action]')){e.preventDefault();actions[e.target.dataset.action]?.(e.target.dataset.arg);}}));
 document.addEventListener('change',safely(e=>{const t=e.target;if(t.name==='quickFuelType')fuelChoice=t.value;if(t.name==='insuranceLegs'){const route=state.route.slice(state.routeIndex, state.routeIndex+Number(t.value)+1);const distance=route.slice(1).reduce((n,x,i)=>n+M.distance(world(route[i]),world(x)),0);$('modal-form').elements.insuranceDistance.value=distance;$('modal-form').elements.distanceReason.value='';}if(t.name==='insure'&&$('purchase-insurance-options'))$('purchase-insurance-options').hidden=!t.checked;if(t.closest('#modal-form')){if(t.dataset.round)normaliseFields($('modal-form'));updateAccommodationEstimate();updateFuelSettingsEstimate();updateInsuranceEstimate();updateExpenseEstimate();}if(t.id==='map-hexes'){showHexes=t.checked;render();}if(t.id==='map-uwp'){showUwp=t.checked;render();}if(t.dataset.expire){const {snap}=findOffer(t.dataset.expire);act(t.checked?'Offer expired':'Offer reactivated',s=>s.snapshots.find(x=>x.id===snap.id).offers.find(o=>o.id===t.dataset.expire).expired=t.checked);}if(t.dataset.lot){t.checked?selected.add(t.dataset.lot):selected.delete(t.dataset.lot);render();}if(t.id==='market-filter'){marketFilter=t.value;render();}if(t.id==='snapshot-select'){snapshotId=t.value;render();}if(t.id==='cargo-sort'){cargoSort=t.value;render();}}));
@@ -719,6 +837,8 @@ $('modal').addEventListener('cancel',e=>{e.preventDefault();closeModal();});
 $('modal').addEventListener('close',()=>{if(!$('modal').open&&activeModal){activeModal=null;modalGeneration++;}});
 $('notes').onclick=safely(notes);$('takeover').onclick=safely(()=>store.acquire(true));
 $('import-file').onchange=safely(async e=>{const file=e.target.files[0];e.target.value='';if(!file)return;if(file.size>20000000)throw Error('Import exceeds the 20 MB review limit');const data=S.validate(JSON.parse(await file.text()));backupReplace('Load campaign (JSON)',data);});
+window.addEventListener('error',e=>recordDebugError(e.error||e.message,'window-error'));
+window.addEventListener('unhandledrejection',e=>recordDebugError(e.reason,'unhandled-rejection'));
 async function boot(){[core,mp,decisions]=await Promise.all(['rules/core-2022.json','rules/merchant-prince-1e.json','rules/decisions.json'].map(async url=>{const r=await fetch(url);if(!r.ok)throw Error('Could not load '+url);return r.json();}));store=new Store(s=>{state=s;known={...known,...s.worlds};view??=s.actual;render();},(editable,text)=>{$('save-status').textContent=text;$('save-status').className=editable?'muted':'readonly';$('takeover').hidden=editable;if(!editable&&activeModal?.mutates){activeModal.cancelled=true;$('modal-error').textContent='Editing moved to another tab. Reopen this dialog after taking over editing.';}syncModalSubmit();render();});try{state=store.read();}catch(error){store.recovery=true;store.recoveryMessage=error.message;state=S.initial();}known={...state.worlds};view=state.actual;render();await store.acquire();if(state.initialized)refreshNearby(false).catch(e=>message('Could not load nearby worlds: '+e.message+'. Use Refresh nearby to retry.',true));}
 boot().catch(e=>{message(e.message,true);$('main').innerHTML=empty('The calculator could not start. Your saved campaign has not been replaced. Reload after checking the error above.');});
 
