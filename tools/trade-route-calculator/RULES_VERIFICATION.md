@@ -230,3 +230,5 @@ Selected fuel with exactly zero tons is omitted from expense previews and paymen
 Refuel opens a fuel-only form and confirmation. Accounts supports manual deposits with a positive rounded Credit amount, required description, preview, ledger entry and undo. Browser checks cover deposit cancellation, persistence and undo, and isolated fuel purchase.
 
 Unavailable fuel displays an accessible alert beside the source selector with valid alternatives and supplier-confirmation instructions. Availability checks share the same function as fuel pricing. Expense preview blockers use a prominent warning.
+
+The summary labels total occupancy as Hold space used and separately lists owned trade goods, accepted freight/mail and passenger luggage. Delivered contracts do not occupy the hold. The goods table and its empty state explicitly distinguish owned goods from other hold occupancy.
