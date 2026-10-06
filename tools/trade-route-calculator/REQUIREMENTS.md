@@ -333,3 +333,7 @@ Every Accounts > Details dialog uses labeled, readable facts and explanations, n
 - Save/load and TXT reports retain ship size and fuel quantities. Historical payments and completed jumps are not recalculated. Manual stock corrections in settings do not charge the bank.
 
 - Place a **Refuel** button and Refined / Unrefined / Collect water radio buttons beside Life support, with fuel aboard/capacity shown. The shortcut opens a fuel-only preview using the selected source and full-tank quantity; no automatic payment occurs. Stack the panels on narrow screens.
+
+
+### Guided cargo sales
+Select individual cargo lots or all cargo, then Get sale offers. Reuse a single eligible buyer directly; search only when needed. Show quoted prices and editable tonnage before the sale review. Referee prices, retail benchmarks, local bans and tax overrides are collapsed; tax overrides appear only when taxes are enabled. Review each lot’s quantity, allocated cost basis, offer per ton, net proceeds and adjusted profit, plus fees, tax, profit adjustment and resulting bank balance. Preserve price and tax dice when editing or reopening an unchanged buyer offer. Price audit, rolls, modifiers and rule footnotes remain accessible. Only confirmation posts the sale; cancellation does not reject a buyer. Explicit rejection explains the 30-day restriction.
