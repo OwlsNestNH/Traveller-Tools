@@ -101,3 +101,9 @@ test('zero fuel is omitted from a payment batch without blocking other expenses'
  for(const tons of ['','NaN','-1'])assert.throws(()=>S.shipExpenses(s,[{kind:'fuel',fuelType:'refined',tons},{kind:'salary',monthly:'20000',months:1}]));
  delete s.ship.fuel;const free=S.transition(s,'Collect water',n=>S.shipExpenses(n,[{kind:'fuel',fuelType:'water',tons:'1'}]));assert.equal(free.ledger.length,1);assert.equal(free.ledger[0].amount,'0');
 });
+
+test('manual deposits require a positive amount and reason and round actual credits',()=>{
+ const s=campaign();S.deposit(s,'100.2','  Reward  ');assert.equal(s.bank,'100101');assert.equal(s.ledger.at(-1).amount,'101');assert.equal(s.ledger.at(-1).reason,'Reward');
+ for(const amount of ['0','-1','NaN'])assert.throws(()=>S.deposit(s,amount,'Reward'));
+ assert.throws(()=>S.deposit(s,'100','  '));assert.equal(s.bank,'100101');
+});
