@@ -32,3 +32,11 @@ Future ideas may be promoted into a release only through an explicit scope decis
 ## Requested UI follow-ups
 
 - [x] **Day-by-day time controls beside the campaign date** (requested 2026-10-05). Add compact **−1 day** and **+1 day** buttons. Implemented behavior: +1 day advances 24 hours and consumes life-support supplies normally; −1 day corrects the date backward by 24 hours without restoring supplies or reversing transactions. Prevent moving before the campaign start. Record both actions in History. Explain the backward-date behavior in a tooltip; Undo is the way to reverse an accidental advance and restore supplies together. Implemented 2026-10-05 in UI 2026.10.05.7.
+
+## Optional cloud campaigns — future option (2026-10-06)
+
+- [ ] Keep free browser-only campaigns with no account, local storage, and JSON export/import.
+- [ ] Offer optional password-protected cloud campaigns using Cloudflare Workers and D1, targeting their free tiers. Recheck quotas before implementation; paid upgrades require an explicit decision.
+- [ ] Support cross-device access and shared campaigns. Proposed access model: campaign code, individual player passwords, and owner/referee permissions; finalize this design before implementation.
+- [ ] Allow uploading a local campaign to the cloud and downloading a cloud campaign as a local copy. Preserve backups and handle conflicting edits safely.
+- Deferred only: no backend, accounts, or migration to be implemented now. Keep the separately downloaded Traveller Trade Simulator independent; use it for ideas unless explicitly authorized otherwise.
