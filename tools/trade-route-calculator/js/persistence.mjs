@@ -1,4 +1,4 @@
-import {initial,validate} from './state.mjs?v=fuel-warning-1';
+import {initial,validate} from './state.mjs?v=bladder-stock-1';
 export const KEY='traveller-trade-route-calculator:v1';
 const LOCK=KEY+':writer';
 export class Store{

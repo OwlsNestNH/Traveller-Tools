@@ -7,7 +7,7 @@ export function configureFuel(displacementTons,baseCapacityTons,aboardTons,bladd
  const bladderTons=bladderJumps*Math.ceil(displacementTons*jump/10);
  const fuel={displacementTons,baseCapacityTons,aboardTons,bladderJumps,bladderTons,capacityTons:baseCapacityTons+bladderTons};validateFuel({fuel,jump});return fuel;
 }
-export function bladderSpace(ship){return ship.fuel?.bladderTons||0;}
+export function bladderSpace(ship){const f=ship.fuel;if(!f?.bladderTons)return 0;return Math.max(0,f.aboardTons-f.baseCapacityTons);}
 export function jumpFuel(ship,parsecs){validateFuel(ship);if(!ship.fuel)return null;if(!Number.isSafeInteger(parsecs)||parsecs<0||parsecs>ship.jump)throw Error('Jump distance exceeds the configured jump rating.');const distance=Math.max(1,parsecs),f=ship.fuel,tons=Number((BigInt(f.displacementTons)*BigInt(distance)+9n)/10n);return {distance,displacementTons:f.displacementTons,tons,before:f.aboardTons,after:Math.max(0,f.aboardTons-tons),consumed:Math.min(f.aboardTons,tons),shortfall:Math.max(0,tons-f.aboardTons),capacity:f.capacityTons};}
 export function fuelPurchase(ship,value){validateFuel(ship);if(!ship.fuel)return null;const tons=Number(up(value)),f=ship.fuel;if(!Number.isSafeInteger(tons)||tons<=0)throw Error('Enter a positive whole fuel quantity.');if(tons>f.capacityTons-f.aboardTons)throw Error('Fuel purchase exceeds available tank capacity.');return {tons,before:f.aboardTons,after:f.aboardTons+tons,capacity:f.capacityTons,displacementTons:f.displacementTons};}
 export function consumeJumpFuel(ship,parsecs){const q=jumpFuel(ship,parsecs);if(!q)return null;ship.fuel.aboardTons=q.after;return q;}

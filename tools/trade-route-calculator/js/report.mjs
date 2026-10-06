@@ -1,4 +1,4 @@
-import {bladderSpace} from './fuel.mjs?v=fuel-warning-1';
+import {bladderSpace} from './fuel.mjs?v=bladder-stock-1';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
 import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=passenger-input-3';
@@ -30,7 +30,7 @@ export function campaignReport(s,core,{exportedAt=new Date()}={}){
  section('SHIP & OCCUPANTS');
  const cargo=A.sum(s.lots.map(l=>l.quantity)),freight=A.sum(s.contracts.filter(c=>c.status==='accepted').map(c=>c.quantity)),luggage=passengerLuggage(s.ship);
  line('Cargo capacity',s.ship.capacity+' tons');line('Speculative cargo aboard',A.decimal(cargo)+' tons');line('Freight / mail aboard',A.decimal(freight)+' tons');line('Passenger luggage',luggage+' tons');
- line('Fuel bladder space reserved',bladderSpace(s.ship)+' tons');line('Space available',A.decimal(A.sub(s.ship.capacity,A.sum([cargo,freight,luggage,bladderSpace(s.ship)])))+' tons');
+ line('Cargo space used by fuel in bladders',bladderSpace(s.ship)+' tons');line('Space available',A.decimal(A.sub(s.ship.capacity,A.sum([cargo,freight,luggage,bladderSpace(s.ship)])))+' tons');
  line('Jump rating',s.ship.jump);if(s.ship.fuel){line('Ship displacement',s.ship.fuel.displacementTons+' tons');line('Jump fuel aboard / capacity',s.ship.fuel.aboardTons+' / '+s.ship.fuel.capacityTons+' tons');line('Fuel scope','Jump fuel only; power-plant fuel excluded.');}line('Staterooms (all, including empty)',roomTotal(s.ship));
  for(const tier of ['low','middle','high']){const service=s.ship.accommodation?.roomService?.[tier];line('  '+tier+' staterooms',roomCounts(s.ship)[tier]+'; '+serviceLabel(tier,service)+' service; '+cr(serviceRate(tier,service))+'/room/month');}
  line('Cost basis','Campaign rates; weekly charges are one quarter of monthly rates.');

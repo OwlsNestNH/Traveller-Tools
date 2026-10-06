@@ -1,4 +1,4 @@
-import {bladderSpace,validateFuel,fuelPurchase} from './fuel.mjs?v=fuel-warning-1';
+import {bladderSpace,validateFuel,fuelPurchase} from './fuel.mjs?v=bladder-stock-1';
 import {validateSupport,refillQuote,consumeSupport} from './life-support.mjs?v=whole-days-1';
 import {up,creditStep,roundExisting} from './rounding.mjs';
 import {validateAccommodation,passengerLuggage,roomCounts} from './accommodation.mjs?v=passenger-input-3';
@@ -49,12 +49,14 @@ export function saveBerthingRate(s,die){
  if(!Number.isInteger(die)||die<1||die>6)throw Error('Invalid berthing die.');
  world.berthingRate={port,die};
 }
+function checkFuelCargo(s,input){if(input.kind!=='fuel'||!s.ship.fuel)return;const q=fuelPurchase(s.ship,input.tons),ship={...s.ship,fuel:{...s.ship.fuel,aboardTons:q.after}};if(cmp(add(sub(used(s),bladderSpace(s.ship)),bladderSpace(ship)),s.ship.capacity)>0)throw Error('Fuel in bladders would exceed cargo capacity.');}
 export function shipExpense(s,input){
  input={...input,creditStep:creditStep(s),fuelShip:s.ship};
  if(input.kind==='passengerSupport'&&s.ship.accommodation)input={...input,passengers:s.ship.accommodation.passengers,crew:s.ship.accommodation.crew};
  if(input.kind==='staterooms')input={...input,staterooms:s.ship.staterooms??0,rooms:roomCounts(s.ship),roomService:s.ship.accommodation?.roomService};
  const quote=expenseQuote(s.worlds[s.actual],input),amount=credit(quote.amount);
  if(amount>credit(s.bank))throw Error('Insufficient funds');
+ checkFuelCargo(s,input);
  if(input.kind==='fuel'&&s.ship.fuel)s.ship.fuel.aboardTons=fuelPurchase(s.ship,input.tons).after;
  note(s,'Ship expense · '+quote.label,-amount,{expense:quote});
  if(['lifeSupport','salary'].includes(input.kind))s.ship.expenses={...s.ship.expenses,[input.kind]:String(credit(input.monthly))};
@@ -70,6 +72,7 @@ export function shipExpenses(s,inputs){
  const quotes=inputs.map(input=>expenseQuote(s.worlds[s.actual],input));
  const total=quotes.reduce((n,q)=>n+credit(q.amount),0n);
  if(total>credit(s.bank))throw Error('Insufficient funds for the combined expenses');
+ inputs.forEach(input=>checkFuelCargo(s,input));
  const batchId=uid();
  inputs.forEach(input=>{shipExpense(s,input);s.ledger.at(-1).batchId=batchId;});
  return {quotes,total:String(total)};
