@@ -68,3 +68,5 @@ td{padding:8px 10px}td .check{margin:0;white-space:nowrap}.cargo-scroll{max-heig
 .day-controls{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.day-controls button{padding:5px 9px;font-size:12px;white-space:nowrap}
 
 .supply-counters{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px}.fuel-counter progress{width:100%;height:10px;margin:8px 0}.fuel-radio{display:flex;flex-wrap:wrap;gap:8px 18px;border:0;padding:0;margin:10px 0}.fuel-radio legend{font-size:12px;color:var(--muted);margin-bottom:6px}.fuel-radio label{display:flex;align-items:center;gap:6px;font-size:13px}.fuel-radio input{width:auto;min-height:0;margin:0}@media(max-width:620px){.supply-counters{grid-template-columns:1fr}}
+
+.world-map .hex-grid polygon[data-action]{pointer-events:all;cursor:pointer}.world-map .hex-grid polygon[data-action]:hover,.world-map .hex-grid polygon[data-action]:focus{fill:#24435a;stroke:#62d3dd}

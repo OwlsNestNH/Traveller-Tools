@@ -232,3 +232,7 @@ Refuel opens a fuel-only form and confirmation. Accounts supports manual deposit
 Unavailable fuel displays an accessible alert beside the source selector with valid alternatives and supplier-confirmation instructions. Availability checks share the same function as fuel pricing. Expense preview blockers use a prominent warning.
 
 The summary labels total occupancy as Hold space used and separately lists owned trade goods, accepted freight/mail and passenger luggage. Delivered contracts do not occupy the hold. The goods table and its empty state explicitly distinguish owned goods from other hold occupancy.
+
+Campaign fuel override: unconfirmed world fuel and insufficient tank fuel warn but do not block route planning or jump commitment. Jump range still applies. Commit consumes available tank fuel down to zero and records required fuel, consumed fuel and shortfall in the jump audit; undo restores the original tank.
+
+Empty-space stops: select an empty hex with Build route (hex grid visible); confirm no world at the selected coordinates using Traveller Map. Saved empty stops have no market or starport services. Fuel bladders reserve their full capacity in cargo and add whole-number full-drive-range jump capacity; actual consumption still uses each leg distance. No installation charge is invented.

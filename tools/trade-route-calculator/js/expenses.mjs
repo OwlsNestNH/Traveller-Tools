@@ -1,4 +1,4 @@
-import {fuelPurchase,fuelReference} from './fuel.mjs';
+import {fuelPurchase,fuelReference} from './fuel.mjs?v=fuel-warning-1';
 import {up} from './rounding.mjs';
 import * as A from './amounts.mjs';
 import {monthlyRates,serviceRate,serviceLabel,personMonthlyRate,personRate} from './accommodation.mjs?v=passenger-input-3';
@@ -24,6 +24,7 @@ export function fuelAvailability(world,type){
  return {port,hydro,water,standard};
 }
 export function expenseQuote(world,input){
+ if(world.emptySpace&&['berthing','staterooms','passengerSupport'].includes(input.kind))throw Error('No starport or life-support supply in empty space.');
  const kind=input.kind,notes=String(input.notes||'').trim(),port=starport(world);
  let amount,details,reference,unrounded;
  if(kind==='berthing'){

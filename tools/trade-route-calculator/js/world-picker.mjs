@@ -1,4 +1,4 @@
-import {sectors,sectorCatalog,subsectorForHex,loadWorld} from './map.mjs';
+import {sectors,sectorCatalog,subsectorForHex,loadWorld} from './map.mjs?v=fuel-warning-1';
 
 const RECENTS_KEY='traveller-trade-route-calculator:recent-worlds:v1';
 let recentMemory=[];
