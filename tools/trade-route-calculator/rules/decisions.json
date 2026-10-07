@@ -159,6 +159,12 @@
     "conclusion": "Class D and E worlds with effective UWP hydrographics 1–A automatically have water available for fuel collection. The route planner requires ship fuel scoops to use this source. An explicit fuel-unavailable override takes precedence; hydrographics 0 or unknown does not establish water. Effective UWP overrides apply. This is a campaign ruling; it does not imply refined fuel or a fuel vendor at a Class E port (Class D already supplies purchased unrefined fuel).",
     "date": "2026-10-04",
     "revision": 1
+  },
+  {
+    "id": "INT-024",
+    "topic": "Trade-code modifier precedence",
+    "conclusion": "For each commodity purchase and sale DM column independently, use the applicable modifier with greatest absolute magnitude and retain its sign. Thus -3 takes precedence over -2, and +3 over +2. Equal magnitudes with opposite signs break ties in favor of the positive modifier. Do not add trade-code DMs. This campaign interpretation replaces the Core Rulebook's ambiguous largest-DM wording; local illegal-goods override remains separate.",
+    "date": "2026-10-07",
+    "revision": 1
   }
 ]
-
