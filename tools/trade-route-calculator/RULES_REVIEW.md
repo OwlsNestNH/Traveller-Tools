@@ -38,7 +38,7 @@ These are independently calculated expectations for later data and implementatio
 | --- | --- | --- |
 | E-01 Purchase DM selection | Synthetic commodity: base Cr1000/t; 3D total 10; trader Broker 2; applicable Purchase DMs +2,+3; Sale DM +1; supplier Broker 2. Result = 10+2+3-1-2 = 12. Page 243 purchase percentage is 80%. | Cr800/t; do not add both Purchase DMs. |
 | E-02 Sale direction | Same synthetic inputs, reversing the two commodity DM columns: 10+2+1-3-2 = 8. Page 243 sale percentage is 80%. | Cr800/t. |
-| E-03 Endpoint lookup | Synthetic base Cr1000/t; modified roll -4 or 26. Page 243 endpoints apply. | At -4: buy Cr3000/t, sell Cr100/t. At 26: buy Cr150/t, sell Cr4000/t. |
+| E-02a Negative DM precedence | Arunisiir B776530-6 is Ag/Ni. Radioactives has Sale DM Ag -3 and Ni -2. | Select -3 by magnitude, not -2 by numeric maximum (INT-024). |\n| E-03 Endpoint lookup | Synthetic base Cr1000/t; modified roll -4 or 26. Page 243 endpoints apply. | At -4: buy Cr3000/t, sell Cr100/t. At 26: buy Cr150/t, sell Cr4000/t. |
 | E-04 Small market quantity | Quantity expression 1D × 5; die 2; population 3 gives -3 before multiplication. | Zero available, not negative tons. |
 | E-05 Large market quantity | Quantity expression 1D × 5; die 2; population 9 gives +3 before multiplication. | 25 tons. |
 | E-06 Mail | Successful availability check; container die 4. | 20 tons required and Cr100000 on delivery; accepting only three is invalid. |
