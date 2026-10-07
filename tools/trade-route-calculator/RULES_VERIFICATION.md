@@ -97,7 +97,7 @@ The source comparisons and independent expected-value checks cover:
 - RV-01: exact examined Core source and the previously reviewed August 2024 FAQ.
 - RV-02: Core code-table field conditions, Map transport field order/eHex, boundary cases and unknown/malformed UWP behavior.
 - RV-03: all D66 commodity rows, availability fields, population quantity DMs and zero quantities; INT-003 resolves black-market stock.
-- RV-04/05: all price percentages/endpoints, source modifier signs, largest-per-column selection and negative-only matches.
+- RV-04/05: all price percentages/endpoints, source modifier signs, greatest-absolute-magnitude per-column selection (INT-024) and negative-only matches.
 - RV-06: local broker skill rounding, +2 modifier, gross-value fees and partial-lot acquisition basis.
 - RV-07: illegal commodity rows and higher-of-local/universal sale modifier; local item ban thresholds remain explicit referee inputs, not inferred solely from commodity names.
 - RV-08/09: source freight/mail tables and values, combined endpoint/search/type DMs, mail eligibility, cargo size, delivery payment and late freight.
