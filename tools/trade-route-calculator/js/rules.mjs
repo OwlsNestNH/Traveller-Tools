@@ -7,7 +7,10 @@ export function parseUWP(text,data){text=String(text).trim().toUpperCase();if(te
 const matches=(n,r)=>r.anyOf?r.anyOf.some(x=>matches(n,x)):(!('equals'in r)||n===r.equals)&&(!r.oneOf||r.oneOf.includes(n))&&(!('min'in r)||n>=r.min)&&(!('max'in r)||n<=r.max);
 export function tradeCodes(uwp,data){const codes=[],unknown=[];for(const[c,conditions]of Object.entries(data.tradeCodes.conditions)){const entries=Object.entries(conditions);if(entries.some(([k,r])=>uwp[k]!==null&&!matches(uwp[k],r)))continue;if(entries.some(([k])=>uwp[k]===null)){unknown.push(c);continue;}codes.push(c);}return {codes,unknown};}
 export function context(world,data){const uwp=parseUWP(world.overrideUWP||world.uwp,data);const tc=tradeCodes(uwp,data);return {world:structuredClone(world),uwp,...tc,zone:world.zone||'Safe'};}
-function chosen(dm,codes){const applicable=Object.entries(dm).filter(([c])=>codes.includes(c));return {applicable:applicable.map(([code,value])=>({code,value})),selected:applicable.length?Math.max(...applicable.map(x=>x[1])):0};}
+// Campaign interpretation: use the trade-code DM with the greatest absolute magnitude, retaining its sign.
+// If opposite signs have equal magnitude, keep the numerically higher DM as a deterministic tiebreaker.
+function strongestDM(values){return values.reduce((best,value)=>Math.abs(value)>Math.abs(best)||(Math.abs(value)===Math.abs(best)&&value>best)?value:best);}
+function chosen(dm,codes){const applicable=Object.entries(dm).filter(([c])=>codes.includes(c));return {applicable:applicable.map(([code,value])=>({code,value})),selected:applicable.length?strongestDM(applicable.map(x=>x[1])):0};}
 export function effectiveBasePrice(good,options={}){
  const raw=good?.baseCreditsPerTon;
  if(raw===null||raw===undefined)return {raw:null,effective:null,cap:null,capApplied:false,illegalExempt:false};
