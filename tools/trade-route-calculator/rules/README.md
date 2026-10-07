@@ -20,7 +20,7 @@ Reviewer: Codex. Review date: 2026-10-03.
 | Data | Reference | Review performed |
 | --- | --- | --- |
 | Commodity values, quantities, availability and DMs | Core Rulebook Update 2022, copyright 2024, pp. 244–245 | Visually compared the two table pages with transcribed numeric data; omitted illustrative prose |
-| Price percentages and modifier combination | Same source, p. 243 | Visually compared all rows and the largest-per-column rule; preserve negative-only matches |
+| Price percentages and modifier combination | Same source, p. 243 | Visually compared all rows and the greatest-absolute-magnitude per-column campaign interpretation (INT-024); preserve negative signs |
 | Trade-code conditions | Same source, p. 260 | Visually checked field columns and boundaries, including Rich government condition and Waterworld atmosphere gap |
 | Supplier availability/search and broker rules | Same source, pp. 241–243 | Reviewed text; preserve source population DM before tonnage multiplier and agreed interpretations |
 | Freight/mail | Same source, pp. 239–241 | Compared extracted tables/text; initial boundary and payout cases checked; combined endpoint/DM cases now checked |
