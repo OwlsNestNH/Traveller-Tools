@@ -1288,9 +1288,10 @@
     "source": "Traveller Map or explicit referee override"
   },
   "dmSelection": {
-    "perColumn": "largest-matching",
+    "perColumn": "greatest-absolute-magnitude-retain-sign",
     "noMatches": 0,
-    "negativeMatches": "retain-largest-negative-do-not-clamp-to-zero",
+    "negativeMatches": "retain-most-negative-by-magnitude-do-not-clamp-to-zero",
+    "equalMagnitudeTie": "choose-numerically-higher",
     "sourcePage": 243
   },
   "availability": {
