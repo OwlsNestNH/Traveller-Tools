@@ -46,6 +46,23 @@ test('decimal cargo is exact beyond floating point precision',()=>{assert.equal(
 test('allocations reconcile with stable remainder',()=>{assert.deepEqual(A.allocate(5n,[{id:'b',weight:1},{id:'a',weight:1}]),[2n,3n]);assert.deepEqual(A.allocate(0n,[{id:'a',weight:0}]),[0n]);});
 test('UWP transport and local codes',()=>{const c=R.context(w(),core);assert.deepEqual(c.codes,['Ht','Ri']);assert.equal(R.parseUWP('A788899-J',core).techLevel,18);assert.throws(()=>R.parseUWP('AS88899-C',core));assert.equal(R.parseUWP('A??????-?',core).population,null);assert.ok(R.tradeCodes(R.parseUWP('A??????-?',core),core).unknown.length);});
 test('negative-only DM is not silently clamped',()=>{const c=R.context({...w(),uwp:'A000500-8'},core),g=core.commodities.find(g=>g.id==='15');const q=R.quote(g,c,{skill:0,side:'buy',rollTotal:10,counterparty:2},core);assert.equal(q.audit.purchase.selected,-4);assert.equal(q.audit.sale.selected,1);assert.equal(q.audit.modified,3);assert.equal(q.unitPrice,'625');});
+test('strongest absolute trade-code DM applies independently to purchases and sales',()=>{
+ const arunisiir=R.context({...w(),uwp:'B776530-6'},core);
+ const radioactives=core.commodities.find(g=>g.id==='45');
+ const q=R.quote(radioactives,arunisiir,{skill:0,side:'sell',rollTotal:10,counterparty:2},core);
+ assert.deepEqual(arunisiir.codes,['Ag','Ni']);
+ assert.equal(q.audit.sale.selected,-3);
+ assert.equal(q.audit.modified,5);
+ const mixed={...radioactives,purchaseDM:{Ag:2,Ni:-4},saleDM:{Ag:-2,Ni:3}};
+ const b=R.quote(mixed,arunisiir,{skill:0,side:'buy',rollTotal:10,counterparty:2},core);
+ assert.equal(b.audit.purchase.selected,-4);
+ assert.equal(b.audit.sale.selected,3);
+ assert.equal(b.audit.modified,1);
+ const tied={...radioactives,purchaseDM:{Ag:-3,Ni:3},saleDM:{Ag:-2,Ni:2}};
+ const t=R.quote(tied,arunisiir,{skill:0,side:'sell',rollTotal:10,counterparty:2},core);
+ assert.equal(t.audit.purchase.selected,3);
+ assert.equal(t.audit.sale.selected,2);
+});
 test('local broker uses one skill plus local bonus',()=>{const q=R.quote(core.commodities[0],R.context({...w(),uwp:'A000900-C'},core),{skill:2,local:true,rollTotal:10,counterparty:2,side:'buy'},core);assert.equal(q.audit.skill,2);assert.equal(q.audit.localDM,2);assert.equal(q.audit.purchase.selected,3);});
 test('price endpoint clamping',()=>{const c=R.context(w(),core);assert.equal(R.quote(core.commodities[0],c,{skill:-50,counterparty:2,rollTotal:3,side:'buy'},core).audit.percent,300);assert.equal(R.quote(core.commodities[0],c,{skill:50,counterparty:2,rollTotal:18,side:'sell'},core).audit.percent,400);});
 test('small markets can have zero common goods',()=>{const c=R.context({...w(),uwp:'A000000-0'},core);const offers=R.market(c,{skill:0,counterparty:2},core,()=>1);assert.equal(offers.filter(o=>Number(o.commodity)<20).length,6);assert.ok(offers.every(o=>o.quantity==='0'));});
