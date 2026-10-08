@@ -118,3 +118,13 @@ A committed jump consumes 10% of total hull tonnage per actual parsec, rounded u
 Source: Core Rulebook Update 2022, p. 157 (jump consumption), p. 154 (prices); p. 180 distinguishes jump and power-plant tankage. Run `node --test verification/fuel.test.mjs` and `node verification/fuel-browser.test.mjs`.
 
 A **Refuel** panel sits beside Life support. Refined, Unrefined and Collect water radio buttons select the source; **Refuel** opens a fuel-only Ship expenses preview, initially set to fill the tank. Selecting a source never charges the bank. Missing ship fuel settings open setup before refuelling. On narrow screens the two panels stack.
+
+## Optional reduced-profit price limits
+
+In **Ship, trader & options**, **Enable reduced-profit price limits** starts off. **Minimum buy · % of base retail** defaults to 85; **Maximum sell · % of base retail** defaults to 115. Separate native number inputs offer one-percentage-point steps. Both accept whole percentages from 0 through 400 (covering the RAW table range and allowing stricter custom floors/ceilings); they are independent, so minimum buy need not be below maximum sell. Blank, fractional, nonfinite and out-of-range values are rejected.
+
+The enabled option floors the generated purchase percentage and ceilings the generated sale percentage before converting to Credits, rounding, and calculating broker fees. The applicable base retail still comes from the independent commodity cap and illegal-goods RAW exception. Disabling this option restores the existing RAW quote formula; the existing 75%/Custom positive-profit adjustment remains separate and unchanged.
+
+Custom values remain editable and persist through off/on toggles, reload, JSON export/import and Undo. Legacy schema-1 campaigns receive disabled defaults without changing historical prices. New quotes use the option; saved supplier offers keep their frozen terms, including when recalculated using their saved options. Explicit referee price overrides remain available and auditable. Audits retain both the RAW table percentage and the effective percentage before fees; the table's Price % shows the effective quote percentage.
+
+Run the focused checks with `node --test verification/price-limits.test.mjs`, alongside the existing development checks above. Browser operation and native stepper appearance need browser verification.

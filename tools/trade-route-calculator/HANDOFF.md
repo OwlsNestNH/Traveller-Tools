@@ -43,3 +43,17 @@ Other future ideas are in [BACKLOG.md](BACKLOG.md). In particular, optional clou
 2. Ask what the owner wants to work on next, or continue only the specific task they request.
 3. For reported bugs, reproduce against current code, explain the observed cause briefly, make the narrow fix, and run the relevant existing checks. Do not claim the published site changed until deployment is verified.
 4. For rule changes, identify the affected decision, verify the source/data, ask about ambiguity, then update requirements, rules data, audit text, and tests as appropriate.
+
+## Price limits: verification and release approval (2026-10-08)
+
+Optional independent purchase floor/sale ceiling implemented, disabled by default, with 85%/115% defaults. Whole-number inputs 0–400, step 1; custom values survive toggles. Percentages apply before Credit conversion/rounding and broker fees, using the existing effective base retail. Profit mode remains separate. Schema 1 is retained; validation supplies disabled legacy defaults and rejects malformed values. Saved offer terms and referee overrides are preserved. See README and REQUIREMENTS for semantics.
+
+Fresh isolated-cloud QA supplied by the coordinating task was performed on exact feature commit `98ffa09fd0d894d2e6020ba2d6d19a7da0772bbb`; all 64 files were verified against Git blob hashes:
+- Native Node: all 12 focused price-limit tests passed, including fees, independent base-retail cap and illegal-goods exception. Existing application tests: 30 passed; two routing failures reproduced on the unchanged baseline. Routing code is unchanged.
+- Python rules check: 198 assertions passed. Application syntax check passed.
+- Cloud Chromium: default off with 85/115; visible native number steppers, step 1, bounds 0–400; invalid-value rejection; custom 91/109 retained through toggling, save and reload; Cancel discarded unsaved edits. Cr500 base-retail cap and 75% profit mode remained unchanged.
+- Full browser regression suite was NOT run. The private preview was stopped.
+
+The original local command runner still failed before PowerShell started (`helper_unknown_error: setup refresh had errors`), including a login-disabled retry. That local limitation does not negate the subsequent native cloud checks above. Local memories, checkout status and local instructions remained inaccessible; implementation used pinned GitHub sources and preserved unrelated local files.
+
+The user explicitly approved merging PR #2 and publishing the tested feature after Git rollback was explained. Release verification must confirm the remote merge commit, successful Pages deployment and live controls. Git preserves code history; this is not a backup of browser campaign data.
