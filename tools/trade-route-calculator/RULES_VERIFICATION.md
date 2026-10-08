@@ -248,3 +248,10 @@ Validation on the feature tree, based on `edfd7ed221731f25d15741bf6df73ab4bb8f6f
 - Existing map-overview, map-territory and map-viewport suites: 21/21 passed. Repository tool-visit test: passed. Rules source/data script: 198 assertions passed. Application/rules syntax and `git diff --check`: passed.
 - Final native aggregate: 142/144 passed, including all 37 new mail checks. Two existing routing assertions in `verification/app.test.mjs` (lines 39 and 89) also fail at unchanged baseline `edfd7ed`; the mail change does not touch route code. They remain open.
 - Browser/visual QA is **not completed**: the cloud Chromium process fails before loading the app with `socket() failed: Operation not permitted`. This blocks real layout, keyboard, focus, mobile and browser-storage verification here; the simulated DOM does not substitute for those checks. No deployment or live-site verification is claimed.
+
+
+### Mail browser CI follow-up (2026-10-08)
+
+The owner approved adding a GitHub Actions browser check to draft PR #4. `.github/workflows/mail-browser.yml` runs only on affected pull requests with read-only repository permissions, no secrets and no deployment steps. Official actions are pinned by commit; Playwright is pinned to 1.58.2. The runner checks out the exact PR head, runs the focused native/source-data checks, serves the app on loopback and runs `verification/mail-browser.test.mjs` in actual Chromium. Synthetic campaign fixtures and intercepted map responses isolate tests from user data and live API availability.
+
+Screenshots, Playwright traces, a JSON case summary, logs and the tested revision are uploaded even after a test failure. Workflow execution and results must be verified for the exact head before claiming browser coverage. This addition does not turn the earlier local browser block into a pass and does not suppress or modify the pre-existing aggregate routing failures.

@@ -157,3 +157,10 @@ Rules remain Core Rulebook Update 2022 pp. 240–241, INT-002/004: 2D plus DMs m
 Unaccepted offers stay in this session only. Reloading does not restore actionable offers from History. Accepted contracts persist normally, and historical checks remain read-only. A new standalone mail check replaces the session’s previous unaccepted mail offer while keeping its freight offers. Undoing a mail check discards that session’s mail offer; undoing a combined search or offer edit discards affected session offers rather than rebuilding older ones from History.
 
 Run `node --test verification/mail.test.mjs verification/mail-ui.test.mjs` for rule boundaries, lifecycle and native UI/control checks. The latter uses a simulated DOM; it is not browser or visual verification.
+
+
+### Mail browser CI
+
+The **Mail browser checks** GitHub Actions workflow checks out the exact PR head and runs focused Mail tests in real Chromium. It uses a loopback-only static server, fresh synthetic campaigns and deterministic Traveller Map fixtures; it does not publish the app or access player campaign data. The workflow has only `contents: read`, disables saved checkout credentials, uses commit-pinned official GitHub actions and installs Playwright 1.58.2. Screenshots, per-case traces, a JSON summary, source-data/native logs and the tested commit are retained as an Actions artifact for 14 days.
+
+To run the browser check locally with Playwright installed, start the static server described above, then run `node verification/mail-browser.test.mjs`. An optional argument supplies an installed Playwright module path, as in the other browser scripts. `TRAVELLER_TEST_URL` sets the server address; `TRAVELLER_COMMIT` labels the report. Browser results are separate from simulated-DOM tests and from the two existing native routing failures documented in RULES_VERIFICATION.md.

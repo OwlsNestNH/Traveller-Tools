@@ -1,0 +1,88 @@
+name: Mail browser checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'tools/trade-route-calculator/**'
+      - '.github/workflows/mail-browser.yml'
+
+# This job only reads source and writes disposable test artifacts. No deployment,
+# repository-write token, user credentials or repository secrets are used.
+permissions:
+  contents: read
+
+concurrency:
+  group: mail-browser-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  mail-browser:
+    name: Chromium Mail UI
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash
+        working-directory: tools/trade-route-calculator
+    env:
+      CI: 'true'
+      TRAVELLER_TEST_URL: http://127.0.0.1:8765/
+      TRAVELLER_COMMIT: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+      - name: Record tested revision
+        run: |
+          mkdir -p verification-artifacts
+          test "$(git rev-parse HEAD)" = "$TRAVELLER_COMMIT"
+          git rev-parse HEAD > verification-artifacts/commit.txt
+          node --version > verification-artifacts/runtime.txt
+          python3 --version >> verification-artifacts/runtime.txt
+      - name: Check Mail rules and control flow
+        run: |
+          node --check js/app.mjs
+          node --check js/rules.mjs
+          node --test verification/mail.test.mjs verification/mail-ui.test.mjs | tee verification-artifacts/mail-native.txt
+          python3 verification/check_rules.py | tee verification-artifacts/rules-data.txt
+      - name: Install pinned Playwright and Chromium
+        run: |
+          npm install --prefix "$RUNNER_TEMP/mail-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
+          node "$RUNNER_TEMP/mail-playwright/node_modules/playwright/cli.js" install --with-deps chromium
+          node "$RUNNER_TEMP/mail-playwright/node_modules/playwright/cli.js" --version >> verification-artifacts/runtime.txt
+      - name: Test real Mail browser flows
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 > verification-artifacts/server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent "$TRAVELLER_TEST_URL" > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent "$TRAVELLER_TEST_URL" > /dev/null
+          node verification/mail-browser.test.mjs "$RUNNER_TEMP/mail-playwright/node_modules/playwright" | tee verification-artifacts/mail-browser.txt
+      - name: Upload screenshots, trace and test evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: mail-browser-${{ github.event.pull_request.head.sha }}
+          path: tools/trade-route-calculator/verification-artifacts/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Summarize scope
+        if: always()
+        run: |
+          {
+            echo '## Mail browser verification'
+            echo "Exact PR head: $TRAVELLER_COMMIT"
+            echo 'The artifact contains test output, Chromium screenshots and a Playwright trace.'
+            echo 'Uses synthetic campaigns and deterministic Traveller Map fixtures; never accesses user campaign data or deploys the site.'
+            echo 'Existing aggregate routing failures remain separately documented in RULES_VERIFICATION.md; they are not suppressed or rewritten by this Mail-focused job.'
+          } >> "$GITHUB_STEP_SUMMARY"
