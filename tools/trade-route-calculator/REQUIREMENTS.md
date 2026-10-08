@@ -341,3 +341,12 @@ Select individual cargo lots or all cargo, then Get sale offers. Reuse a single 
 ## Optional price-percentage limits (2026-10-08)
 
 The campaign may independently enable reduced-profit price limits, off by default, with minimum purchase 85% and maximum sale 115% of applicable base retail before broker fees. Settings use separate editable numeric inputs, step 1, whole-number bounds 0–400. Preserve user values across toggles and JSON round trips. When off, keep the existing RAW quote calculation. When on, use `max(purchaseTablePercent, minPurchasePercent)` for purchases and `min(saleTablePercent, maxSalePercent)` for sales. Apply the independent base-retail cap/illegal-price exception first, then the effective percentage, existing Credit rounding and fees. Existing positive-profit adjustment, taxes, freight/mail and referee overrides retain their behavior. Saved offers and historical records are not repriced; old campaigns default to disabled. Price % displays the effective quote percentage; audit separately records the original table percentage and both configured limits.
+
+
+## Dedicated Mail controls (2026-10-08)
+
+- Add a compact Mail card inside the existing Contracts → Freight & mail panel; keep the wider screen layout. Provide Check for mail, a clear availability outcome, containers, tons, delivery payment and whole-consignment capacity fit.
+- Derive freight traffic DM and its mail band automatically from origin/destination world inputs, direct distance and search Effect, excluding freight lot-category modifiers (INT-004). Expand How was this calculated? to show dice and every recorded DM. Older records must label missing components rather than reconstruct them.
+- Reuse Settings armed-ship, highest Naval/Scout rank and highest SOC DM fields; show their current values and an edit shortcut. Do not duplicate their storage. Separate optional manual 2D availability and 1D container inputs from automatic rolls and label entered totals in audits.
+- Standalone mail checks must not call freight’s 1–6 parsec payment lookup. Keep freight generation/rates unchanged and retain existing whole-consignment acceptance, destination-only explicit delivery, single payout, reservation/release, Undo and recorded referee edits. Mail never gets a new deadline, late penalty or auto-payout.
+- Keep unaccepted offers session-only. Persist accepted contracts and read-only audit history; never rebuild actionable offers from events on reload. Retain schema-1 compatibility and historical terms.
