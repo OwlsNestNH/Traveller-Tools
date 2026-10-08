@@ -70,3 +70,10 @@ td{padding:8px 10px}td .check{margin:0;white-space:nowrap}.cargo-scroll{max-heig
 .supply-counters{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px}.fuel-counter progress{width:100%;height:10px;margin:8px 0}.fuel-radio{display:flex;flex-wrap:wrap;gap:8px 18px;border:0;padding:0;margin:10px 0}.fuel-radio legend{font-size:12px;color:var(--muted);margin-bottom:6px}.fuel-radio label{display:flex;align-items:center;gap:6px;font-size:13px}.fuel-radio input{width:auto;min-height:0;margin:0}@media(max-width:620px){.supply-counters{grid-template-columns:1fr}}
 
 .world-map .hex-grid polygon[data-action]{pointer-events:all;cursor:pointer}.world-map .hex-grid polygon[data-action]:hover,.world-map .hex-grid polygon[data-action]:focus{fill:#24435a;stroke:#62d3dd}
+
+/* Wide map layers: quiet boundaries and dots keep real catalog names dominant. */
+.world-map .overview-grid{fill:none;pointer-events:none}.overview-grid .sector-border{stroke:#7b9bb2;stroke-width:.8;opacity:.45}.overview-grid .subsector-border{stroke:#66869e;stroke-width:.5;opacity:.3}.world-map .sector-grid .subsector-border{opacity:.22}.world-map .overview-worlds{fill:#a5c0d0;opacity:.26;pointer-events:none}.world-map .overview-labels{pointer-events:none;cursor:inherit}.world-map .subsector-name,.world-map .sector-name{fill:#d5e5ed;font-weight:550;paint-order:stroke;stroke:#0d1c2b;stroke-width:3;stroke-linejoin:round}.world-map .sector-name{fill:#e1edf3;font-weight:600;stroke-width:4}.world-map .subsector-letter{fill:#94aebf;font-weight:500;paint-order:stroke;stroke:#0d1c2b;stroke-width:2}.world-map .overview-location{fill:#62d3dd;stroke:#102333;stroke-width:1;pointer-events:none}.map-level-label{font-size:11px;letter-spacing:.5px;color:#b4cbd9;margin-left:auto}
+
+.world-map .overview-labels *{pointer-events:none;cursor:inherit}
+
+.world-map .map-territories,.world-map .map-territories *{pointer-events:none;cursor:inherit}

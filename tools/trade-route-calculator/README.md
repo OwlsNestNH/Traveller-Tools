@@ -74,7 +74,7 @@ Run `node verification/world-picker.test.mjs` for the selector, recent-world and
 
 ## Map zoom and starting world
 
-The default map view is closer, and hexes are restricted to the twelve-parsec neighborhood rather than filling the viewport with extra empty cells. Use the mouse wheel over the map or the + / − / Reset view controls to zoom from 20% to 240%. Zoom changes only the view; ordinary scrolling elsewhere and Ctrl+wheel browser zoom are preserved.
+The default map view is closer, and hexes are restricted to the twelve-parsec neighborhood rather than filling the viewport with extra empty cells. Use the mouse wheel over the map or the + / − / Reset view controls to zoom from 6% to 240%. Zoom changes only the view; ordinary scrolling elsewhere and Ctrl+wheel browser zoom are preserved.
 
 After Find World, **Use as starting world** opens an explicit confirmation. The same action is available on a browsed world's map panel. It sets the actual ship location, clears the old route, records a reason and supports Undo. It does not advance time or change bank/cargo/contract payments; active insurance is flagged for an amendment. Use COMMIT JUMP for normal travel.
 
@@ -128,3 +128,19 @@ The enabled option floors the generated purchase percentage and ceilings the gen
 Custom values remain editable and persist through off/on toggles, reload, JSON export/import and Undo. Legacy schema-1 campaigns receive disabled defaults without changing historical prices. New quotes use the option; saved supplier offers keep their frozen terms, including when recalculated using their saved options. Explicit referee price overrides remain available and auditable. Audits retain both the RAW table percentage and the effective percentage before fees; the table's Price % shows the effective quote percentage.
 
 Run the focused checks with `node --test verification/price-limits.test.mjs`, alongside the existing development checks above. Browser operation and native stepper appearance need browser verification.
+
+
+## Wide map layers
+
+The existing world views at **20–240%** are unchanged, including maximum-zoom UWP labels. Zooming below 20% adds a **subsector view** with real subsector names and faint world dots. Below 16%, the **sector view** prioritizes sector names, readable A–P subsector letters and a subtle subdivision grid. Sector and subsector names tilt 45° to use the diagonal space; A–P letters remain upright and avoid the name. Long names fit or wrap within their cell. The widest scale is 6%; the 20% boundary remains a reachable step on the + / − controls. Reset view still returns to the centered 100% world view.
+
+Both wide layers use the same drag-to-pan camera. They are orientation views: zoom back in to select worlds or route stops. They do not change the ship, route, clock, bank, cargo or saved campaign. Sector coordinates and names come from Traveller Map's M1105 universe; named subsectors and world dots come from its metadata and sector tables. Unnamed subsectors show their official letter only. Failed requests remain retryable with Refresh nearby.
+
+Overview data is separate from campaign and route-search data. The overview fetches only visible sectors, limits loading to two HTTP requests at a time, retains at most 48 sector records, and discards superseded loading queues. With Political territory off, the widest layer needs only the universe catalog. With the overlay on, it loads sector metadata without requesting world tables.
+
+Run `node --test verification/map-overview.test.mjs verification/map-viewport.test.mjs` for layer boundaries, coordinates, camera continuity, M1105 parsing, and cache/race checks. Run `node verification/map-overview-browser.test.mjs` for the new layers, both preserved world views, retry, pan/cancel/reset, mobile and campaign invariants. Its compact fixture is sampled from live Traveller Map M1105 responses retrieved on 2026-10-08.
+
+
+**Political territory** is one optional toggle at every zoom level. It starts off. Faint allegiance colors and restrained borders follow Traveller Map's M1105 border hex paths, including sector-edge continuations; they do not color whole subsectors or infer territory from world allegiance. Regions unrelated to political borders are excluded. Missing border metadata leaves the area unshaded, which does not imply unclaimed space. Names, dots and the subdivision grid stay above the overlay. The tint sits beneath world names, UWPs, hexes and routes at close zoom. Toggling it never changes the campaign, selected world, route or camera; the original close-up details and interactions are preserved.
+
+Run `node --test verification/map-territory.test.mjs` for actual hex-edge geometry, parity, exact sector footprint, cross-sector continuity, one-hex/retraced/unclosed borders, safe styles and live-data coverage. Border geometry adapts [Traveller Map's renderer](https://github.com/inexorabletash/travellermap/blob/main/server/RenderUtil.cs) under Apache-2.0; the notice and full license are included in `licenses/`.

@@ -60,7 +60,7 @@ try{
  const initialSpacing=await separation();await map.hover();const scrollBefore=await page.evaluate(()=>scrollY);await page.mouse.wheel(0,-150);await page.waitForFunction(()=>document.querySelector('.map-zoom-controls span').textContent!=='100%');assert.ok(await separation()>initialSpacing);assert.equal(await page.evaluate(()=>scrollY),scrollBefore);
  await page.mouse.wheel(0,150);await page.waitForFunction(()=>document.querySelector('.map-zoom-controls span').textContent==='100%');
  await click('+');await page.waitForFunction(()=>document.querySelector('.map-zoom-controls span').textContent==='120%');
- for(let i=0;i<15;i++)await click('−');await page.waitForFunction(()=>document.querySelector('.map-zoom-controls span').textContent==='20%');assert.equal(await page.locator('.hex-grid polygon').count(),0);assert.equal(await page.locator('.hex-grid text').count(),0);
+ for(let i=0;i<15&&await page.locator('.map-zoom-controls .help').textContent()!=='20%';i++)await click('−');await page.waitForFunction(()=>document.querySelector('.map-zoom-controls span').textContent==='20%');assert.equal(await page.locator('.hex-grid polygon').count(),0);assert.equal(await page.locator('.hex-grid text').count(),0);
 
  // At 20% zoom drag 32 parsecs east; an uncached world must load beyond the old radius.
  await map.waitFor({state:'visible'});const box=await page.evaluate(()=>{const r=document.querySelector('.world-map').getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};}),startX=box.x+box.width*.85,startY=box.y+box.height*.5;
