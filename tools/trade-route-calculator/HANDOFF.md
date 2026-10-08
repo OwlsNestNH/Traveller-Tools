@@ -1,9 +1,9 @@
 # Traveller Trade Route Calculator — Handoff
 
-**Updated:** 2026-10-06  
+**Updated:** 2026-10-08
 **Repository:** [OwlsNestNH/Traveller-Tools](https://github.com/OwlsNestNH/Traveller-Tools)  
 **Tool folder:** `tools/trade-route-calculator/`  
-**Current main reviewed:** `ad4c01adbe0cfcecff586b6d19b7300453314523`
+**Current main reviewed:** `edfd7ed221731f25d15741bf6df73ab4bb8f6f40`
 
 Use the current GitHub files as the source of truth. This handoff summarizes continuity; it does not replace the requirements, rules decisions, verification record, or backlog.
 
@@ -33,7 +33,7 @@ For exact rules, rounding and accounting behavior, use the checked-in decision/d
 
 ## Open follow-up to clarify
 
-The owner previously reported that mail was not visible in the availability/available-lots experience and asked whether something had broken. The existing contract search includes a mail roll and the result/audit is recorded, but the mail availability outcome was not prominent as a distinct result. The owner then investigated a separate simulator; no explicit instruction to implement a mail-panel change followed. If this comes up again, first inspect the current implementation and ask whether they want the mail result displayed separately before changing scope.
+The owner approved a minimal dedicated Mail card in Contracts → Freight & mail on 2026-10-08. It adds Check for mail, automatic freight traffic/mail-band DMs, separate optional mail dice totals and an expandable calculation audit. Reuse existing Settings for armed/rank/SOC; the broader screen redesign remains deferred. Unaccepted offers remain session-only and are never rebuilt from History. See README, REQUIREMENTS and the latest RULES_VERIFICATION entry for scope and test limits. This branch is for draft review; merge and deployment require separate approval.
 
 Other future ideas are in [BACKLOG.md](BACKLOG.md). In particular, optional cloud campaigns are deferred: retain the local browser mode and JSON backups; do not build backend/accounts now. Cloudflare Workers/D1 were proposed as a possible free-tier option, but recheck current quotas and get an explicit scope decision before any implementation or paid service.
 

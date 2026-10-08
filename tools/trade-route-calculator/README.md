@@ -144,3 +144,23 @@ Run `node --test verification/map-overview.test.mjs verification/map-viewport.te
 **Political territory** is one optional toggle at every zoom level. It starts off. Faint allegiance colors and restrained borders follow Traveller Map's M1105 border hex paths, including sector-edge continuations; they do not color whole subsectors or infer territory from world allegiance. Regions unrelated to political borders are excluded. Missing border metadata leaves the area unshaded, which does not imply unclaimed space. Names, dots and the subdivision grid stay above the overlay. The tint sits beneath world names, UWPs, hexes and routes at close zoom. Toggling it never changes the campaign, selected world, route or camera; the original close-up details and interactions are preserved.
 
 Run `node --test verification/map-territory.test.mjs` for actual hex-edge geometry, parity, exact sector footprint, cross-sector continuity, one-hex/retraced/unclosed borders, safe styles and live-data coverage. Border geometry adapts [Traveller Map's renderer](https://github.com/inexorabletash/travellermap/blob/main/server/RenderUtil.cs) under Apache-2.0; the notice and full license are included in `licenses/`.
+
+
+## Mail check
+
+In **Contracts → Freight & mail**, the dedicated **Mail** card offers **Check for mail** without generating freight lots. Choose a destination and review the search roll/skills; freight traffic DM and the mail freight-band DM are calculated automatically. The card shows availability, the rolled container count, tons, delivery payment and whether the entire consignment fits in the remaining hold. **How was this calculated?** expands the search dice, endpoint population/port/TL/zone modifiers, distance, search Effect, mail-band, armed-ship, origin low-tech, highest Naval/Scout rank and highest SOC DMs. Existing Settings supply the armed/rank/SOC values; the card provides a shortcut to edit them.
+
+Leave the separate **Mail availability · 2D total** and **Mail containers · 1D roll** fields blank for automatic rolls, or enter physical/manual dice. The container die is only used after a successful availability check. **Find contracts** still generates freight and mail together, with the same separate optional mail inputs; its existing sequence override remains supported. A separate mail total replaces that roll without consuming sequence dice.
+
+Rules remain Core Rulebook Update 2022 pp. 240–241, INT-002/004: 2D plus DMs must reach 12; 1D containers each occupy 5 tons and pay Cr25,000 on explicit destination delivery. Mail is available to check independently of freight’s 1–6 parsec payment table. No guessed freight rate, mail deadline, automatic payment or late-mail penalty is added. Acceptance is all-or-none and reserves hold space; delivery releases it and can pay only once. Existing referee term overrides and Undo remain available.
+
+Unaccepted offers stay in this session only. Reloading does not restore actionable offers from History. Accepted contracts persist normally, and historical checks remain read-only. A new standalone mail check replaces the session’s previous unaccepted mail offer while keeping its freight offers. Undoing a mail check discards that session’s mail offer; undoing a combined search or offer edit discards affected session offers rather than rebuilding older ones from History.
+
+Run `node --test verification/mail.test.mjs verification/mail-ui.test.mjs` for rule boundaries, lifecycle and native UI/control checks. The latter uses a simulated DOM; it is not browser or visual verification.
+
+
+### Mail browser CI
+
+The **Mail browser checks** GitHub Actions workflow checks out the exact PR head and runs focused Mail tests in real Chromium. It uses a loopback-only static server, fresh synthetic campaigns and deterministic Traveller Map fixtures; it does not publish the app or access player campaign data. The workflow has only `contents: read`, disables saved checkout credentials, uses commit-pinned official GitHub actions and installs Playwright 1.58.2. Screenshots, per-case traces, a JSON summary, source-data/native logs and the tested commit are retained as an Actions artifact for 14 days.
+
+To run the browser check locally with Playwright installed, start the static server described above, then run `node verification/mail-browser.test.mjs`. An optional argument supplies an installed Playwright module path, as in the other browser scripts. `TRAVELLER_TEST_URL` sets the server address; `TRAVELLER_COMMIT` labels the report. Browser results are separate from simulated-DOM tests and from the two existing native routing failures documented in RULES_VERIFICATION.md.

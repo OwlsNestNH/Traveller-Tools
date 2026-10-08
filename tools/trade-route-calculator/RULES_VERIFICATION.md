@@ -236,3 +236,25 @@ The summary labels total occupancy as Hold space used and separately lists owned
 Campaign fuel override: unconfirmed world fuel and insufficient tank fuel warn but do not block route planning or jump commitment. Jump range still applies. Commit consumes available tank fuel down to zero and records required fuel, consumed fuel and shortfall in the jump audit; undo restores the original tank.
 
 Empty-space stops: select an empty hex with Build route (hex grid visible); confirm no world at the selected coordinates using Traveller Map. Saved empty stops have no market or starport services. Fuel bladders add whole-number full-drive-range jump capacity; actual consumption still uses each leg distance. Campaign correction agreed 2026-10-06: only fuel above the base tank capacity uses cargo space. Empty bladders use zero cargo space; hardware is handled by ship specifications. The single-stock model fills base tanks first and consumes bladder fuel first. No installation charge is invented.
+
+
+## Dedicated Mail controls (2026-10-08)
+
+Scope: a compact Mail card and independent Check for mail on the existing Contracts → Freight & mail screen. Freight traffic and mail-band DMs are derived automatically; optional manual availability/container totals are separate; Settings remain the source for armed/rank/SOC. New endpoint audits preserve population, port, TL and zone components. Existing records remain readable without reconstructing missing components or live offers. Rules, rates and lifecycle semantics remain unchanged.
+
+Validation on the feature tree, based on `edfd7ed221731f25d15741bf6df73ab4bb8f6f40`:
+- `verification/mail.test.mjs`: 16 native tests passed. Covers every traffic-band edge, 11/12 availability threshold, origin TL boundary, armed/rank/SOC, independent manual/automatic rolls and invalid inputs, zero/long-distance mail, unchanged freight table limits, legacy schema-1 round trips, complete capacity reservations, origin/destination validation, single payout, release, Undo and profit/tax exclusions.
+- `verification/mail-ui.test.mjs`: 21/21 passed. Application-function integration checks use the actual app source, real rules/state and mocked DOM/storage boundaries. Coverage includes standalone/combined checks, result and capacity states, read-only controls, manual-input audits, referee edits, explicit acceptance/delivery, session reset/reload, Cancel, replacement dialogs, stale previews, lock loss, duplicate submits and search/edit Undo. These are native control-flow checks, not browser verification.
+- Existing map-overview, map-territory and map-viewport suites: 21/21 passed. Repository tool-visit test: passed. Rules source/data script: 198 assertions passed. Application/rules syntax and `git diff --check`: passed.
+- Final native aggregate: 142/144 passed, including all 37 new mail checks. Two existing routing assertions in `verification/app.test.mjs` (lines 39 and 89) also fail at unchanged baseline `edfd7ed`; the mail change does not touch route code. They remain open.
+- Browser/visual QA is **not completed**: the cloud Chromium process fails before loading the app with `socket() failed: Operation not permitted`. This blocks real layout, keyboard, focus, mobile and browser-storage verification here; the simulated DOM does not substitute for those checks. No deployment or live-site verification is claimed.
+
+
+### Mail browser CI follow-up (2026-10-08)
+
+The owner approved adding a GitHub Actions browser check to draft PR #4. `.github/workflows/mail-browser.yml` runs only on affected pull requests with read-only repository permissions, no secrets and no deployment steps. Official actions are pinned by commit; Playwright is pinned to 1.58.2. The runner checks out the exact PR head, runs the focused native/source-data checks, serves the app on loopback and runs `verification/mail-browser.test.mjs` in actual Chromium. Synthetic campaign fixtures and intercepted map responses isolate tests from user data and live API availability.
+
+Screenshots, Playwright traces, a JSON case summary, logs and the tested revision are uploaded even after a test failure. Workflow execution and results must be verified for the exact head before claiming browser coverage. This addition does not turn the earlier local browser block into a pass and does not suppress or modify the pre-existing aggregate routing failures.
+
+
+The first real Chromium run [37859944437](https://github.com/OwlsNestNH/Traveller-Tools/actions/runs/37859944437) passed all six Mail scenarios on head `c0a9ae6d149ef9d5cdd62e953ee285aceb7cafab`, with 37 focused native and 198 source/data checks also passing. Subsequent screenshot inspection caught narrow audit-label columns at 390px despite the existing no-overflow assertion. The Mail card now gives mobile labels and values bounded equal-width columns, and the browser suite explicitly checks readable label widths. Verify the updated head’s workflow before treating that visual correction as passed.
