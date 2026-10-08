@@ -264,6 +264,8 @@ try {
     const bounds = await mail(page).boundingBox();
     assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= 392, 'Mail card fits a 390px mobile viewport');
     assert.ok(await page.locator('main').evaluate(el => el.scrollWidth <= el.clientWidth + 2), 'Main content does not overflow on mobile');
+    const labelWidths = await mail(page).locator('.preview dt').evaluateAll(labels => labels.map(label => label.getBoundingClientRect().width));
+    assert.ok(labelWidths.every(width => width >= 90), 'Mail audit labels retain readable columns instead of wrapping one character per line');
     await screenshot(page, result, 'mail-mobile-details.png');
   });
 
