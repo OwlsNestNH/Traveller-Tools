@@ -43,3 +43,11 @@ Other future ideas are in [BACKLOG.md](BACKLOG.md). In particular, optional clou
 2. Ask what the owner wants to work on next, or continue only the specific task they request.
 3. For reported bugs, reproduce against current code, explain the observed cause briefly, make the narrow fix, and run the relevant existing checks. Do not claim the published site changed until deployment is verified.
 4. For rule changes, identify the affected decision, verify the source/data, ask about ambiguity, then update requirements, rules data, audit text, and tests as appropriate.
+
+## Draft follow-up: price limits (2026-10-08)
+
+Optional independent purchase floor/sale ceiling implemented, disabled by default, with 85%/115% defaults. Whole-number inputs 0–400, step 1; custom values survive toggles. Percentages apply before Credit conversion/rounding and broker fees, using the existing effective base retail. Profit mode remains separate. Schema 1 is retained; validation supplies disabled legacy defaults and rejects malformed values. Saved offer terms and referee overrides are preserved. See README and REQUIREMENTS for semantics.
+
+The command runner failed before launching PowerShell (`helper_unknown_error: setup refresh had errors`); a login-disabled retry also failed. GitHub APIs were used against a pinned main commit, preserving local checkouts and the High Guard draft PR. Local memories, checkout status and local instructions could not be inspected. No Node/Python/Playwright commands ran. Focused test bodies were exercised in the available V8 runtime with a small assertion adapter, JSON cloning for the plain-data test fixtures, and deterministic UUID/crypto stubs; this is fallback evidence, not a Node or browser pass. Run `node --test verification/price-limits.test.mjs verification/app.test.mjs`, `python verification/check_rules.py` and the existing browser suite before marking the draft ready.
+
+Fallback evidence: all 12 focused cases passed. The existing application test bodies produced 30 passes and two routing failures in both the unchanged baseline and this draft under the same adapter (expected route `0,0 → 0,3 → 0,5` versus `0,0 → 0,4 → 0,5`; expected unavailable-fuel throw did not occur). Routing code was not changed. These results need confirmation with the native Node runner; the draft does not resolve those unrelated cases.
