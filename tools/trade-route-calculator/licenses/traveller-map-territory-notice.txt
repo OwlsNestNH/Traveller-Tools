@@ -1,0 +1,18 @@
+Traveller Map territory-rendering adaptations
+
+Upstream source copyright 2006-2023 Joshua Bell.
+Licensed under the Apache License, Version 2.0.
+The complete Apache-2.0 license is included in traveller-map.txt in this directory.
+
+The boundary and sector-footprint walkers in js/map-territory.mjs adapt algorithms
+from The Traveller Map. Modified 2026-10-08 for JavaScript/SVG output, an integer
+coordinate lattice, buffer-aware stroke segments, validated metadata styles,
+and pointer-inert map layers.
+
+Sources:
+https://github.com/inexorabletash/travellermap/blob/main/server/RenderUtil.cs
+https://github.com/inexorabletash/travellermap/blob/main/server/Astrometrics.cs
+https://github.com/inexorabletash/travellermap/blob/main/server/RenderContext.cs
+https://github.com/inexorabletash/travellermap/blob/main/server/SectorStylesheet.cs
+https://github.com/inexorabletash/travellermap/blob/main/res/styles/otu.css
+https://github.com/inexorabletash/travellermap/blob/main/LICENSE.md

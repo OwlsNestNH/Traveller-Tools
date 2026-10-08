@@ -24,20 +24,33 @@ export function sectors(){return cached('sectors',async()=>{
  for(const s of data.Sectors.filter(s=>s.Names?.[0]?.Text&&(!s.Milieu||s.Milieu===MILIEU))){
   const name=s.Names[0].Text.trim(),key=name.toLowerCase(),aliases=s.Names.map(n=>n.Text).concat(s.Abbreviation||'');
   if(unique.has(key))unique.get(key).aliases=[...new Set([...unique.get(key).aliases,...aliases])];
-  else unique.set(key,{name,aliases});
+  else unique.set(key,{name,aliases,x:s.X,y:s.Y});
  }
  return [...unique.values()].sort((a,b)=>a.name.localeCompare(b.name));
 });}
-export function sectorCatalog(sector){return cached('sector:'+sector,async()=>{
- const [metadata,table]=await Promise.all([get('metadata',{sector}),get('sec',{sector,type:'TabDelimited',metadata:0})]);
+function sectorSubsectors(metadata){return Array.from({length:16},(_,i)=>{const index=String.fromCharCode(65+i),name=metadata.Subsectors?.find(s=>s.Index===index)?.Name?.trim();return {index,name:name||'Subsector '+index,mapName:name||null};});}
+function parseSectorCatalog(sector,metadata,table){
  if(typeof table!=='string')throw Error('Invalid world list');
  const lines=table.replace(/^\uFEFF/,'').split(/\r?\n/).filter(l=>l.trim()&&!l.startsWith('#'));
  const header=lines.shift()?.split('\t'),hexIndex=header?.indexOf('Hex'),nameIndex=header?.indexOf('Name');
  if(hexIndex<0||nameIndex<0||!header)throw Error('World list is missing names or hexes');
  const worlds=lines.map(l=>l.split('\t')).map(row=>({name:row[nameIndex]||row[hexIndex],hex:row[hexIndex]})).filter(w=>/^\d{4}$/.test(w.hex)).map(w=>({...w,sector,subsector:subsectorForHex(w.hex)})).sort((a,b)=>a.name.localeCompare(b.name)||a.hex.localeCompare(b.hex));
- const subsectors=Array.from({length:16},(_,i)=>{const index=String.fromCharCode(65+i);return {index,name:metadata.Subsectors?.find(s=>s.Index===index)?.Name||'Subsector '+index};});
- return {subsectors,worlds};
+ return {subsectors:sectorSubsectors(metadata),worlds,metadata};
+}
+export function sectorCatalog(sector){return cached('sector:'+sector,async()=>{
+ const [metadata,table]=await Promise.all([get('metadata',{sector}),get('sec',{sector,type:'TabDelimited',metadata:0})]);
+ return parseSectorCatalog(sector,metadata,table);
 });}
+// Overview retention belongs to its bounded viewport cache, not the picker cache.
+// Sequential requests keep two overview jobs to at most two active HTTP requests.
+export async function sectorOverview(sector,{includeWorlds=true,metadata=null,onMetadata=null}={}){
+ metadata??=await get('metadata',{sector});
+ const partial={subsectors:sectorSubsectors(metadata),metadata};
+ onMetadata?.(partial);
+ if(!includeWorlds)return partial;
+ const table=await get('sec',{sector,type:'TabDelimited',metadata:0});
+ return parseSectorCatalog(sector,metadata,table);
+}
 
 
 export async function loadMapHex(x,y,anchor){
