@@ -11,7 +11,7 @@ await mkdir(artifacts,{recursive:true});
 const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BROWSER_CHANNEL?{channel:process.env.TRAVELLER_BROWSER_CHANNEL}:{})});
 let context;
 try{
- for(const size of [{width:1440,height:1100},{width:390,height:844}]){
+ for(const size of [{width:1440,height:1100},{width:390,height:844},{width:320,height:740}]){
   const fixture=guiFixture(),remote=fixture.state.route[2],actual=fixture.state.actual,errors=[];
   context=await browser.newContext({viewport:size});context.setDefaultTimeout(10000);
   await context.tracing.start({screenshots:true,snapshots:true,sources:true});
@@ -44,6 +44,11 @@ try{
    const before=await raw();await browse();await action(name).click();await title('Trade at the current system');
    assert.match(await page.locator('#modal-body').textContent(),/does not move the ship, advance time or spend Credits/);
    assert.ok((await page.locator('#modal-body').textContent()).includes(fixture.state.worlds[actual].name));
+   const recoveryLayout=await page.locator('#modal').evaluate(dialog=>{
+    const body=dialog.querySelector('#modal-body'),text=dialog.querySelector('.trade-recovery');
+    return {dialog:dialog.scrollWidth-dialog.clientWidth,body:body.scrollWidth-body.clientWidth,text:text.scrollWidth-text.clientWidth};
+   });
+   assert.ok(Object.values(recoveryLayout).every(excess=>excess<=1),'Recovery names and actions wrap without horizontal clipping');
    await page.screenshot({path:artifacts+`/trade-recovery-${kind}-${size.width}.png`});
    // Dismissal/reopening and keyboard activation do not change the campaign.
    await page.keyboard.press('Escape');await closed();assert.equal(await raw(),before);
