@@ -84,3 +84,6 @@ td{padding:8px 10px}td .check{margin:0;white-space:nowrap}.cargo-scroll{max-heig
 .mail-roll-summary p{margin:6px 0;line-height:1.5}.mail-roll-summary strong{color:#dce6ee}@media(max-width:600px){.mail-audit .preview dl{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.mail-audit .preview dt,.mail-audit .preview dd{min-width:0;overflow-wrap:anywhere}}
 
 .mail-accepted-details{margin-top:12px}.mail-accepted-details>summary{cursor:pointer;color:var(--cyan);font-size:13px;font-weight:600;padding:8px 0}.mail-accepted-details>summary:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+
+/* The entire Mail offer is a compact, keyboard-accessible disclosure. */
+.mail-card>.mail-card-summary{display:flex;align-items:center;cursor:pointer;list-style:none;min-height:48px;color:#dce6ee}.mail-card>.mail-card-summary::-webkit-details-marker{display:none}.mail-card>.mail-card-summary:focus-visible{outline:2px solid var(--cyan);outline-offset:-3px}.mail-card:not([open])>.mail-card-summary{border-bottom:0}.mail-card-chevron{color:var(--cyan);flex:none;transition:transform .15s}.mail-card[open]>.mail-card-summary .mail-card-chevron{transform:rotate(90deg)}.mail-card-status{flex:1 1 230px;min-width:0;overflow-wrap:anywhere;color:var(--muted);font-size:13px;font-weight:400}@media(prefers-reduced-motion:reduce){.mail-card-chevron{transition:none}}
