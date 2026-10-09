@@ -24,7 +24,7 @@ const destination={...origin,id:'1,0',x:1,name:'Destination',hex:'0201'};
 const far={...destination,id:'8,0',x:8,name:'Far Destination',hex:'0901'};
 const decode=t=>t.replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
 const attrs=s=>Object.fromEntries([...s.matchAll(/([\w-]+)(?:="([^"]*)")?/g)].map(m=>[m[1],decode(m[2]??'')]));
-function element(attributes={}){return {clientWidth:1440,attributes,dataset:Object.fromEntries(Object.entries(attributes).filter(([k])=>k.startsWith('data-')).map(([k,v])=>[k.slice(5).replace(/-([a-z])/g,(_,c)=>c.toUpperCase()),v])),value:attributes.value??'',name:attributes.name,disabled:'disabled'in attributes,hidden:false,open:false,textContent:'',innerHTML:'',hasAttribute(n){return n in this.attributes;},addEventListener(){},showModal(){this.open=true;},close(){this.open=false;},insertAdjacentHTML(_,html){this.innerHTML+=html;},querySelector(){return null;},querySelectorAll(){return [];},closest(){return null;}};}
+function element(attributes={}){return {clientWidth:1440,attributes,dataset:Object.fromEntries(Object.entries(attributes).filter(([k])=>k.startsWith('data-')).map(([k,v])=>[k.slice(5).replace(/-([a-z])/g,(_,c)=>c.toUpperCase()),v])),value:attributes.value??'',name:attributes.name,disabled:'disabled'in attributes,hidden:false,open:false,textContent:'',innerHTML:'',hasAttribute(n){return n in this.attributes;},getAttribute(n){return this.attributes[n]??null;},addEventListener(){},showModal(){this.open=true;},close(){this.open=false;},insertAdjacentHTML(_,html){this.innerHTML+=html;},querySelector(){return null;},querySelectorAll(){return [];},closest(){return null;}};}
 function domDouble(){
  const ids=new Map(['summary','ship-actions','tabs','main','modal','modal-title','modal-body','modal-error','modal-submit','modal-cancel','modal-form','modal-close','notes','takeover','import-file','save-status','message'].map(id=>[id,element()]));
  let fields=new Map(),buttons=[],markup='';const listeners=new Map();
@@ -50,7 +50,7 @@ function harness(saved=campaign(),priceDice=[]){
  const store={editable:true,recovery:false,save(next,expected){if(!this.editable)throw Error('This tab is read-only.');if(persisted.revision!==expected)throw Error('This preview is stale.');S.validate(next);persisted=structuredClone(next);calls.saves++;api.setState(next);api.render();},replace(next,expected){next=structuredClone(S.validate(next));next.revision=expected+1;this.save(next,expected);},read:()=>structuredClone(persisted)};
  const rules={...bindings.R,quote(...args){calls.quotes++;return bindings.R.quote(...args,()=>{calls.priceDice++;return priceDice.shift()??3;});},roll:n=>({dice:Array(n).fill(3),total:n*3}),die:()=>3,freightOffers(...args){calls.freight++;return bindings.R.freightOffers(...args);},mailOffer(...args){calls.mail++;return bindings.R.mailOffer(...args);}};
  const sandbox={...bindings,R:rules,document:dom.document,window:{addEventListener(){},innerWidth:1440},getComputedStyle:()=>({paddingLeft:'0',paddingRight:'0'}),crypto:webcrypto,structuredClone,console,FormData:dom.FormData,setTimeout,clearTimeout,requestAnimationFrame:()=>1,cancelAnimationFrame(){}};
- vm.runInContext(executable+`\nglobalThis.api={services,setInputRounding(values){inputRounding=values;},init(s,c,m,p){state=s;core=c;mp=m;store=p;known={...s.worlds};view=s.actual;tab='Trade';},get state(){return state;},get view(){return view;},setSelected(ids){selected=new Set(ids);},get drafts(){return contractDrafts;},get check(){return mailCheck;},setState(s){receiveCampaign(s);},setDrafts(d){contractDrafts=d;},setView(id){view=id;},get previewSale(){return previewSale;},setTab(t){tab=t;},setRouteDraft(d){routeDraft=d;},get mapZoom(){return mapZoom;},setMapDrag(d){mapDrag=d;},ledgerAudit,routeJumpControl,routeStops,shipActions,refuelShortcut,currentQuote,priceAudit,searchDialog,beginSale,buyForm,marketPanel,cargoPanel,mailPanel,mailRollSummary,contractsPanel,historyPanel,cancelledMailHistory,contractDetails,contractRolls,historyDetails,historyCategory,contractSearch,updateMailEstimate,accept,deliver,editDraft,closeModal,modal,syncModalSubmit,render,backupReplace,actions};`,vm.createContext(sandbox),{filename:'app.mjs (VM; boot omitted)'});
+ vm.runInContext(executable+`\nglobalThis.api={services,toggleShipPanel,setInputRounding(values){inputRounding=values;},init(s,c,m,p){state=s;core=c;mp=m;store=p;known={...s.worlds};view=s.actual;tab='Trade';},get state(){return state;},get view(){return view;},setSelected(ids){selected=new Set(ids);},get drafts(){return contractDrafts;},get check(){return mailCheck;},setState(s){receiveCampaign(s);},setDrafts(d){contractDrafts=d;},setView(id){view=id;},get previewSale(){return previewSale;},setTab(t){tab=t;},setRouteDraft(d){routeDraft=d;},get mapZoom(){return mapZoom;},setMapDrag(d){mapDrag=d;},ledgerAudit,routeJumpControl,routeStops,shipActions,refuelShortcut,currentQuote,priceAudit,searchDialog,beginSale,buyForm,marketPanel,cargoPanel,mailPanel,mailRollSummary,contractsPanel,historyPanel,cancelledMailHistory,contractDetails,contractRolls,historyDetails,historyCategory,contractSearch,updateMailEstimate,accept,deliver,editDraft,closeModal,modal,syncModalSubmit,render,backupReplace,actions};`,vm.createContext(sandbox),{filename:'app.mjs (VM; boot omitted)'});
  api=sandbox.api;api.init(structuredClone(saved),core,mp,store);api.render();
  const fill=values=>{for(const[k,v]of Object.entries(values)){const n=dom.fields().get(k);assert.ok(n,`Expected form field ${k}`);if(n.attributes.type==='checkbox')n.checked=Boolean(v);else n.value=String(v);}};
  const submit=()=>dom.ids.get('modal-form').onsubmit({preventDefault(){},currentTarget:dom.ids.get('modal-form')});
@@ -354,4 +354,74 @@ test('read-only Cargo Hold and its tab links preserve all campaign and Undo data
  h.api.actions.world(destination.id);assert.equal(h.api.state.actual,origin.id);assert.equal(h.api.view,destination.id);assert.match(h.dom.ids.get('main').innerHTML,/ship at Origin/);
  for(const tab of ['Cargo','Contracts']){h.api.actions['cargo-hold-tab'](tab);assert.doesNotMatch(h.dom.ids.get('main').innerHTML,/id="cargo-hold-panel"/);h.api.actions.tab('Overview');h.api.actions['cargo-hold']();}
  h.dom.dispatch('keydown',{matches:()=>false},{key:'Escape',preventDefault(){}});assert.doesNotMatch(h.dom.ids.get('main').innerHTML,/id="cargo-hold-panel"/);same(h.persisted(),before);assert.equal(h.calls.saves,0);
+});
+
+
+function selectedShipButton(h){
+ const buttons=[...h.api.shipActions().matchAll(/<button\b([^>]*)>/g)].map(m=>attrs(m[1])).filter(a=>'aria-pressed'in a);
+ assert.equal(buttons.length,4,'All service buttons expose a selected state');
+ for(const button of buttons)assert.ok(['true','false'].includes(button['aria-pressed']));
+ return buttons.filter(a=>a['aria-pressed']==='true').map(a=>a['data-action']);
+}
+for(const action of ['refuel','refill-support','cargo-hold','ship-expenses'])test(action+' toggles World data repeatedly without writes or campaign locks',()=>{
+ const h=harness(recurringCampaign()),before=h.persisted();h.api.setTab('Overview');
+ for(let i=0;i<8;i++){
+  h.api.toggleShipPanel(action);assert.deepEqual(selectedShipButton(h),i%2?[]:[action]);
+  assert.equal(h.api.services.active(),i%2===0&&action!=='cargo-hold');
+  same(h.persisted(),before);
+ }
+ assert.match(h.dom.ids.get('main').innerHTML,/id="world-information-panel"/);
+ assert.equal(h.api.services.active(),false);
+ h.api.actions['day-forward']();assert.equal(h.persisted().hours,before.hours+24,'Closing releases the campaign mutation lock');
+});
+test('switching each selected service directly to every different button preserves draft-only state',async()=>{
+ const h=harness(recurringCampaign()),before=h.persisted();h.api.setTab('Overview');
+ for(const from of ['refuel','refill-support','cargo-hold','ship-expenses'])for(const to of ['refuel','refill-support','cargo-hold','ship-expenses']){
+  if(selectedShipButton(h).length)h.api.toggleShipPanel(selectedShipButton(h)[0]);
+  h.api.toggleShipPanel(from);const token=h.api.services.token();
+  h.api.toggleShipPanel(to);assert.deepEqual(selectedShipButton(h),from===to?[]:[to]);
+  await h.api.services.action('service-confirm','',token);same(h.persisted(),before);
+ }
+});
+test('toggling support adjust/review and fuel correction invalidates every old stock handler',async()=>{
+ for(const kind of ['refuel','refill-support'])for(const mode of ['edit','review']){
+  const h=harness(recurringCampaign()),before=h.persisted();h.api.setTab('Overview');h.api.toggleShipPanel(kind);
+  const token=h.api.services.token();
+  await h.api.services.action(kind==='refuel'?'service-fuel-correct':'service-adjust','',token);
+  // A correction without reduced fuel cannot be reviewed; ordinary support can.
+  if(mode==='review'&&kind==='refill-support')await h.api.services.action('service-review','',token);
+  h.api.toggleShipPanel(kind);h.api.toggleShipPanel(kind);const replacement=h.api.services.panel();
+  for(const action of ['service-confirm','service-review','service-back','service-cancel','service-fuel-step'])await h.api.services.action(action,'10',token);
+  assert.equal(h.api.services.panel(),replacement);same(h.persisted(),before);
+  h.api.toggleShipPanel(kind);assert.deepEqual(selectedShipButton(h),[]);
+ }
+});
+test('Ship expenses stays selected on a draft or paid receipt; toggling only closes its view',async()=>{
+ const h=harness(recurringCampaign()),before=h.persisted();h.api.setTab('Overview');h.api.toggleShipPanel('ship-expenses');
+ h.api.services.open('mortgage',{fresh:true});const stalePay=expenseArg(h,'expense-pay');assert.deepEqual(selectedShipButton(h),['ship-expenses']);
+ h.api.toggleShipPanel('ship-expenses');assert.deepEqual(selectedShipButton(h),[]);await h.api.services.action('expense-pay',stalePay);same(h.persisted(),before);
+ h.api.toggleShipPanel('ship-expenses');h.api.services.open('mortgage',{fresh:true});const pay=expenseArg(h,'expense-pay');await h.api.services.action('expense-pay',pay);
+ const paid=h.persisted();assert.equal(paid.bank,'99000');assert.match(h.api.services.panel(),/Payment recorded/);assert.deepEqual(selectedShipButton(h),['ship-expenses']);
+ h.api.toggleShipPanel('ship-expenses');await h.api.services.action('expense-pay',pay);assert.deepEqual(selectedShipButton(h),[]);same(h.persisted(),paid);
+ h.api.toggleShipPanel('ship-expenses');assert.match(h.api.services.panel(),/Regular 4-week total/);same(h.persisted(),paid);
+});
+test('top-level toggles never undo or reapply confirmed fuel or life support',async()=>{
+ for(const kind of ['refuel','refill-support']){
+  const h=harness(recurringCampaign());h.api.setTab('Overview');h.api.toggleShipPanel(kind);
+  const token=h.api.services.token();await h.api.services.action('service-confirm','',token);const paid=h.persisted();
+  assert.equal(paid.ledger.length,1);assert.equal(paid.undo.length,1);assert.deepEqual(selectedShipButton(h),[]);
+  h.api.toggleShipPanel(kind);h.api.toggleShipPanel(kind);await h.api.services.action('service-confirm','',token);same(h.persisted(),paid);
+ }
+});
+
+test('a payment in progress blocks all toggles until its confirmed receipt is saved',async()=>{
+ const h=harness(recurringCampaign());h.api.setTab('Overview');h.api.services.open('mortgage',{fresh:true});
+ const pending=h.api.services.action('expense-pay',expenseArg(h,'expense-pay'));
+ assert.equal(h.api.services.committing(),true);
+ for(const action of ['refuel','refill-support','cargo-hold','ship-expenses'])assert.throws(()=>h.api.toggleShipPanel(action),/finish saving/);
+ await pending;const paid=h.persisted();assert.equal(h.api.services.committing(),false);h.api.toggleShipPanel('ship-expenses');same(h.persisted(),paid);assert.deepEqual(selectedShipButton(h),[]);
+});
+test('a stale selected stock view still closes after editing ownership is lost',()=>{
+ const h=harness(recurringCampaign()),before=h.persisted();h.api.setTab('Overview');h.api.toggleShipPanel('refuel');h.store.editable=false;
+ h.api.services.syncControls();h.api.toggleShipPanel('refuel');assert.equal(h.api.services.active(),false);assert.deepEqual(selectedShipButton(h),[]);same(h.persisted(),before);
 });

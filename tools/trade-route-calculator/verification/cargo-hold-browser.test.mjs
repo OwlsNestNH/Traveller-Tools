@@ -265,9 +265,9 @@ async function navigationAndDrafts(page,f){
  await unchanged(page,f,'Replacement expense rejects old payment token');
  await click(page,'cargo-hold');await opened(page);
  for(let i=0;i<4;i++){
-  await click(page,'cargo-hold');await opened(page);await click(page,'cargo-hold-close');
+  await click(page,'cargo-hold');
   await page.getByRole('complementary',{name:'Selected world data'}).waitFor();
-  assert.equal(await page.evaluate(()=>document.activeElement?.dataset.action),'cargo-hold','Closing returns keyboard focus to the quick-view button');
+  assert.equal(await page.evaluate(()=>document.activeElement?.dataset.action),'cargo-hold','Toggling the selected button returns keyboard focus to the quick-view button');
   await click(page,'cargo-hold');await opened(page);await unchanged(page,f,'Repeated quick-view switch '+i);
  }
  await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();

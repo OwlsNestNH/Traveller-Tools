@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 
 // Measure the live SVG after ResizeObserver/requestAnimationFrame have settled.
-// Height is intentionally not pinned: the map now balances the real right panel.
+// Service content scrolls inside the right screen; map dimensions must stay
+// stable as panels switch. Actual viewport resizing is measured separately.
 export async function overviewGeometry(page,{markers=false,columns=true}={}){
  await page.waitForFunction(()=>{
   const svg=document.querySelector('.world-map');if(!svg)return false;
@@ -69,6 +70,7 @@ export function assertMapCameraUnchanged(actual,expected,label){
  const near=(a,b,tolerance,detail)=>assert.ok(Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a-b)<=tolerance,`${label}: ${detail} changed (${b} → ${a})`);
  assert.equal(actual.zoom,expected.zoom,label+': selected zoom is preserved');
  assert.equal(actual.pan,expected.pan,label+': nonzero pan is preserved');
+ for(const key of ['width','height'])near(actual[key],expected[key],.15,'map '+key);
  for(const key of ['scaleX','scaleY'])near(actual[key],expected[key],.001,key);
  near(actual.spacing,expected.spacing,.15,'rendered world-to-world pixel distance');
  for(const axis of ['x','y']){

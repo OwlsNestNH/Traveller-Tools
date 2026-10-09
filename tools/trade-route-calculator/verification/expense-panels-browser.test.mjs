@@ -16,8 +16,8 @@ const results=[],cameraReports=[];
 try{
  for(const width of [1440,1100,390,320]){
   const f=guiFixture(12),s=f.state;s.bank='765432';s.hours=48;s.dateLabel='001-1105';s.lots=[];s.contracts=[];s.snapshots=[];s.ledger=[];s.events=[];s.undo=[];
-  // Keep the route compact so different right screens genuinely resize the
-  // flex-grown map slot; GUI parity separately covers 12/30-stop layouts.
+  // A compact route makes the fixed map slot independent of tall forms and
+  // receipts; GUI parity separately covers 12/30-stop layouts.
   s.route=s.route.slice(0,3);
   s.ship.fuel=configureFuel(200,43,20,0,2);s.ship.accommodation={rooms:{low:0,middle:4,high:0},passengers:{low:0,middle:4,high:0},crew:{low:0,middle:0,high:0}};s.ship.lifeSupport={capacityHours:672,remainingHours:336,elapsedHours:0};s.ship.expenses={salary:'12000'};
   s.ship.mortgage={originalAmount:'24000000',payment:'100000',remainingPayments:360,totalPaid:'12000000',nextDueDate:'029-1105'};
@@ -30,7 +30,8 @@ try{
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   const button=name=>page.locator('[data-action="'+name+'"]:visible').first(),click=name=>button(name).click();
   const raw=()=>page.evaluate(key=>localStorage.getItem(key),campaignKey),read=async()=>JSON.parse(await raw());
-  const openExpense=async label=>{await click('ship-expenses');await page.getByRole('button',{name:label+' ›',exact:true}).click();};
+  const openService=async name=>{if(await button(name).getAttribute('aria-pressed')==='true')await click(name);await click(name);};
+  const openExpense=async label=>{if(await button('ship-expenses').getAttribute('aria-pressed')==='true'){if(await page.locator('[data-action="expense-back"]').count())await click('expense-back');}else await click('ship-expenses');await page.getByRole('button',{name:label+' ›',exact:true}).click();};
   const remember=selector=>page.locator(selector).evaluate(el=>{window.detachedServiceAction={...el.dataset};});
   const replay=()=>page.evaluate(()=>{const b=document.createElement('button');Object.assign(b.dataset,window.detachedServiceAction);document.body.append(b);b.click();b.remove();});
   try{
@@ -59,14 +60,14 @@ try{
    await page.screenshot({path:artifacts+`/expenses-summary-${width}.png`,fullPage:true});await overviewGeometry(page);
    // Every remaining top-level service switches directly in every stock mode.
    for(const from of ['refuel','refill-support'])for(const mode of (from==='refuel'?['inline']:['summary','adjust','review']))for(const to of ['refuel','refill-support','ship-expenses']){
-    await click(from);await sameCamera('Open '+from+' for '+mode);
+    await openService(from);await sameCamera('Open '+from+' for '+mode);
     if(mode==='adjust'||mode==='review'){await click('service-adjust');await sameCamera(from+' Adjust');}
     if(mode==='review'){await click('service-review');await sameCamera(from+' Review');}
     await remember('[data-action="'+(mode==='adjust'?'service-review':'service-confirm')+'"]');await click(to);await replay();assert.equal(await raw(),bytes,from+'/'+mode+' → '+to+' and old callback are inert');
-    await sameCamera(from+'/'+mode+' → '+to);
+    await sameCamera(from+'/'+mode+' → '+to);if(from===to)assert.equal(await page.locator('#service-panel,#expense-panel').count(),0,'The active button returns to World data');
    }
    for(const [service,dismiss] of [['refuel','service-back'],['refill-support','service-cancel']]){
-    await click(service);if(service==='refill-support')await click('service-adjust');await sameCamera(service+' before dismissal');
+    await openService(service);if(service==='refill-support')await click('service-adjust');await sameCamera(service+' before dismissal');
     await click(dismiss);await sameCamera(service+' '+dismiss);assert.equal(await raw(),bytes);
    }
    for(const label of ['Mortgage','Monthly maintenance','Crew salaries','Port costs']){
@@ -81,7 +82,7 @@ try{
    await openExpense('Mortgage');await page.locator('#expense-form [name="payments"]').fill('2');await remember('[data-action="expense-pay"]');
    await page.screenshot({path:artifacts+`/expenses-mortgage-preview-${width}.png`,fullPage:true});
    await sameCamera('Mortgage before Pay');await button('expense-pay').evaluate(b=>{b.click();b.click();});await page.locator('.expense-receipt').waitFor();await sameCamera('Mortgage Pay → receipt');
-   const heightRange=Math.max(...mapHeights)-Math.min(...mapHeights);if(width>=1100)assert.ok(heightRange>10,'Desktop service screens actually resize the map viewport, exercising scale preservation');
+   const heightRange=Math.max(...mapHeights)-Math.min(...mapHeights);assert.ok(heightRange<.15,'All service screens preserve the exact map viewport height');
    cameraReports.push({width,checks:cameraChecks,heightRange,baseline:preservedCamera});
    const paid=await read();assert.equal(paid.bank,'565432');assert.equal(paid.ship.mortgage.remainingPayments,358);assert.equal(paid.ship.mortgage.nextDueDate,'085-1105');assert.equal(paid.ship.mortgage.totalPaid,'12200000');assert.equal(paid.ledger.length,1);assert.equal(paid.undo.length,1);
    assert.match(await page.locator('.expense-receipt').textContent(),/003-1105/);assert.equal(await page.locator('[data-action="expense-pay"],[data-action="expense-cancel"]').count(),0);
