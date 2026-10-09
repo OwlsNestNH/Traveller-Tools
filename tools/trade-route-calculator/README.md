@@ -48,7 +48,7 @@ node verification/run-native.mjs
 
 The native runner discovers every `node:test` suite; do not use `verification/*.test.mjs` with `node --test`, because that also selects the standalone browser scripts.
 
-Pull requests run all native suites, the 198 rules-data checks, the shared tool-visit check, and fourteen independent deterministic Chromium suites: main application, modal lifecycle, click routing, fuel, empty space, Mail, map overview, GUI parity, Trade buttons, Settings, insurance lifecycle, trade complications, the selected-world screen, and jump mulligans. See `.github/workflows/mail-browser.yml` at the repository root. Every job verifies the exact PR head and uploads evidence; it has read-only permissions and cannot deploy. Live API availability and the remaining browser scripts are separate checks.
+Pull requests run all native suites, the 198 rules-data checks, the shared tool-visit check, and nineteen independent deterministic Chromium suites: main application, modal lifecycle, click routing, fuel, empty space, Mail, map overview, GUI parity, Trade buttons, Settings, insurance lifecycle, trade complications, the selected-world screen, jump mulligans, in-panel ship services, combined cabins, daily time controls, zero-fuel payments, and resource alerts. See `.github/workflows/mail-browser.yml` at the repository root. Every job verifies the exact PR head and uploads evidence; it has read-only permissions and cannot deploy. Live API availability and the remaining browser scripts are separate checks.
 
 The browser scripts use Playwright only for development testing; it is not an application dependency. With Playwright installed, run:
 
@@ -102,9 +102,15 @@ Freight and mail use a separate contract table with tons, destination, rate per 
 
 Ship settings combine crew and passenger cabins. Middle and high cabins each cost Cr1,000/month, including empty cabins. Enter separate middle-service and high-service people counts; the total is their sum: middle costs Cr1,000/person/month; high costs Cr3,000, including upgraded middle-cabin occupants. These are campaign rates, explained in the form's rules note. High passenger luggage is automatically one cargo ton per High passenger; middle passengers reserve none. An optional override changes the total luggage tonnage, never a per-person multiplier. Luggage reduces available cargo capacity.
 
-The main controls include **Refill life support**, and the ship summary shows remaining days. Configure capacity (default 28 days) and supplies actually aboard. Campaign time consumes supplies. Refill previews and purchases only missing stock using current cabin/person rates. Confirm local supply availability before paying. Undo restores stock and payment. Existing campaigns without recorded inventory must enter their actual supplies first. Manual Ship Expenses payments are separate accounting entries and do not refill tracked stock.
+**Refill life support** replaces the Overview World data screen. Summary → Adjust → Review → Confirm is a draft-only flow until final confirmation. The map stays usable. Browsing another world never changes the service location or prices: the actual ship location is shown prominently. Back, Cancel and Escape discard the draft. Campaign mutations pause until the draft is closed; revision and editor-ownership checks prevent stale or duplicate payment.
 
-Run `node --test verification/life-support.test.mjs` and `node verification/combined-cabins.test.mjs` for stock and browser checks.
+Life support is one exact physical LSS balance: an awake person uses 1 unit/day, an actual occupied low berth uses 0.1. Enter frozen occupants separately from awake Middle/High people; crew are included once. All stock first occupies internal stores of 4 × hull displacement; only overflow uses cargo at 0.01 ton/LSS. Fractional hourly consumption and cargo reservations remain exact. The standard refill target (default 28 days) is separate from storage capacity. Physical reference: Cluster Truck, p. 14.
+
+Ordinary top-ups to the standard target keep existing cabin/person bundle rates. Extra stock beyond that target uses the Home rule: Cr1,000 per person-equivalent per 28 days, with frozen occupants counting 0.1, then one combined roundup to Cr100. Already-aboard stock is credited before quoting either portion. Optional comfort spending requires a note and adds no supplies, days or capacity. Refills check available cargo and Credits before the final confirmation. One Undo restores stock, cargo reservation and payment together.
+
+Legacy days are converted using the recorded complement and actual partial-day remainder inside the next undoable action. Loads/imports never rewrite historic prices or Undo patches. Unknown/zero-complement legacy stock remains unconverted and needs an explicit actual LSS correction; missing hull displacement preserves saved inventory but blocks new purchases until storage can be determined. Settings keep stock unchanged when the complement changes; editing recorded days or entering actual LSS is an explicit correction.
+
+Run `node --test verification/life-support.test.mjs verification/service-panels.test.mjs` and `node verification/service-panels-browser.test.mjs` for model and browser coverage.
 
 ## Daily time controls
 
@@ -112,19 +118,19 @@ Use **-1 day** or **+1 day** beside Campaign time. Advancing consumes 24 hours o
 
 Run `node verification/day-controls.test.mjs` for date boundaries, stock use, History, undo, persistence, read-only tabs and mobile layout.
 
-Life support uses whole days. Short activities accumulate internally until 24 hours have elapsed, then one day is consumed. Refilling rounds any partly used day up, resets the partial-day counter and leaves campaign time unchanged. Settings, refill previews and TXT reports display whole days. Saving unrelated ship settings preserves the partial-day counter; changing the recorded stock starts a new counter. Historical charges remain unchanged.
+Life support consumption is exact for each elapsed hour at the current complement. Time corrections backward do not invent supplies. Refilling changes physical stock without advancing campaign time. Settings and TXT reports show LSS, derived endurance, internal storage and cargo overflow. Historical charges remain unchanged.
 
 ## Jump fuel tracking
 
 Enter total **Ship displacement**, **Jump-fuel tank capacity**, and **Jump fuel aboard** in setup or Ship settings. Displacement is separate from cargo capacity; tank figures cover jump fuel only. Power-plant consumption is excluded. Older campaigns remain untracked until their actual figures are entered. Entering initial fuel or correcting stock in settings does not charge the bank.
 
-Ship expenses suggests the deficit for the next planned jump, or the empty tank space when there is no next leg. **Fuel for next jump** and **Fill tank** set an editable purchase quantity. Purchased refined fuel costs Cr500/ton; purchased unrefined Cr100/ton; confirmed natural water collection remains free under existing availability rules. Confirming adds fuel to the tank and records a readable before/after audit; overfilling and unaffordable purchases are rejected.
+Ship expenses suggests the deficit for the next planned jump, or the empty tank space when there is no next leg. **Fuel for next jump** and **Fill tank** set an editable purchase quantity. Purchased refined fuel costs Cr500/ton; purchased unrefined Cr100/ton; water collection is always available at zero cost; hydrographics or missing planet information only produces an advisory warning. Purchased fuel availability still requires an explicit supplier override and source note outside standard starport supply. Confirming adds fuel to the tank and records a readable before/after audit; overfilling and unaffordable purchases are rejected.
 
 A committed jump consumes 10% of total hull tonnage per actual parsec, rounded up to whole tons, with a minimum Jump-1 expenditure. A 200-ton ship uses 20 tons for one parsec and 40 for two. Under the approved campaign override, insufficient aboard fuel warns but does not block a jump. The commit consumes available fuel down to zero and records the required amount, consumed amount and shortfall. Browsing, planning and cancelled previews consume none. Undo restores fuel along with the transaction or jump. Fuel type is recorded per purchase; grade mixing, refining, unrefined-fuel jump penalties and power-plant fuel are resolved outside this tool.
 
 Source: Core Rulebook Update 2022, p. 157 (jump consumption), p. 154 (prices); p. 180 distinguishes jump and power-plant tankage. Run `node --test verification/fuel.test.mjs` and `node verification/fuel-browser.test.mjs`.
 
-**Refuel** opens the existing fuel-only Ship expenses dialog, initially set to fill the tank. Refined, purchased unrefined and free water collection are selected inside that dialog; there is no duplicate source selector in the Overview strip. The initial choice is refined at A/B ports and unrefined elsewhere. Selecting a source never charges the bank. Missing ship fuel settings open setup before refuelling.
+**Refuel** opens a summary in the Overview right-hand screen. Adjust selects fuel source and exact whole-ton quantity; −10/+10, exact Top off (including odd tank capacities), and Fuel for next jump are shortcuts bounded by tank and cargo space. Review returns to the summary; only Confirm adds stock and records payment. Adjust fuel aboard records an actual remaining reduction, with an optional reason, visible Audit and Undo, and no payment/refund. The existing general Ship expenses workflow remains available.
 
 ## Optional reduced-profit price limits
 

@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {settingsGroups,stepSetting,syncSettingsControls} from '../js/settings-layout.mjs';
 
-const names=['name','ship','capacity','jump','broker','streetwise','admin','characteristic','rank','soc','mode','custom','shipTons','fuelCapacity','bladderJumps','fuelAboard','rooms-low','roomService-low','roomCustom-low','rooms-middle','roomService-middle','roomCustom-middle','rooms-high','roomService-high','roomCustom-high','people-middle','people-high','luggageOverride','luggageTons','supportCapacity','supportRemaining','creditStep','scoops','armed','reducedProfitLimitsEnabled','minPurchasePercent','maxSalePercent','maxBaseRetailEnabled','maxBaseRetail','useRawIllegalPrices','tax','insurance'];
-test('compact Settings groups retain all 42 controls once, with rare groups collapsed',()=>{
+const names=['name','ship','capacity','jump','broker','streetwise','admin','characteristic','rank','soc','mode','custom','shipTons','fuelCapacity','bladderJumps','fuelAboard','rooms-low','roomService-low','roomCustom-low','rooms-middle','roomService-middle','roomCustom-middle','rooms-high','roomService-high','roomCustom-high','people-middle','people-high','occupiedLowBerths','luggageOverride','luggageTons','supportCapacity','supportRemaining','supportUnits','creditStep','scoops','armed','reducedProfitLimitsEnabled','minPurchasePercent','maxSalePercent','maxBaseRetailEnabled','maxBaseRetail','useRawIllegalPrices','tax','insurance'];
+test('compact Settings groups retain all 44 controls once, with rare groups collapsed',()=>{
  const grouped=settingsGroups.flatMap(group=>group.names);
- assert.equal(grouped.length,42);assert.deepEqual([...grouped].sort(),[...names].sort());
+ assert.equal(grouped.length,44);assert.deepEqual([...grouped].sort(),[...names].sort());
  assert.deepEqual(settingsGroups.filter(group=>group.advanced).map(group=>group.id),['trader','pricing','optional','rounding']);
 });
 test('numeric arrows retain native bounds and preserve fractional custom input',()=>{

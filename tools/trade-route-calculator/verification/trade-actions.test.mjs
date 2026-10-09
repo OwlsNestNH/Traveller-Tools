@@ -24,7 +24,7 @@ const destination={...origin,id:'1,0',x:1,name:'Destination',hex:'0201'};
 const far={...destination,id:'8,0',x:8,name:'Far Destination',hex:'0901'};
 const decode=t=>t.replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
 const attrs=s=>Object.fromEntries([...s.matchAll(/([\w-]+)(?:="([^"]*)")?/g)].map(m=>[m[1],decode(m[2]??'')]));
-function element(attributes={}){return {attributes,dataset:Object.fromEntries(Object.entries(attributes).filter(([k])=>k.startsWith('data-')).map(([k,v])=>[k.slice(5).replace(/-([a-z])/g,(_,c)=>c.toUpperCase()),v])),value:attributes.value??'',name:attributes.name,disabled:'disabled'in attributes,hidden:false,open:false,textContent:'',innerHTML:'',hasAttribute(n){return n in this.attributes;},addEventListener(){},showModal(){this.open=true;},close(){this.open=false;},insertAdjacentHTML(_,html){this.innerHTML+=html;},querySelectorAll(){return [];}};}
+function element(attributes={}){return {clientWidth:1440,attributes,dataset:Object.fromEntries(Object.entries(attributes).filter(([k])=>k.startsWith('data-')).map(([k,v])=>[k.slice(5).replace(/-([a-z])/g,(_,c)=>c.toUpperCase()),v])),value:attributes.value??'',name:attributes.name,disabled:'disabled'in attributes,hidden:false,open:false,textContent:'',innerHTML:'',hasAttribute(n){return n in this.attributes;},addEventListener(){},showModal(){this.open=true;},close(){this.open=false;},insertAdjacentHTML(_,html){this.innerHTML+=html;},querySelectorAll(){return [];},closest(){return null;}};}
 function domDouble(){
  const ids=new Map(['summary','ship-actions','tabs','main','modal','modal-title','modal-body','modal-error','modal-submit','modal-cancel','modal-form','modal-close','notes','takeover','import-file','save-status','message'].map(id=>[id,element()]));
  let fields=new Map(),buttons=[],markup='';const listeners=new Map();
@@ -49,8 +49,8 @@ function harness(saved=campaign(),priceDice=[]){
  const dom=domDouble(),calls={freight:0,mail:0,saves:0,quotes:0,priceDice:0};let persisted=structuredClone(saved),api;
  const store={editable:true,recovery:false,save(next,expected){if(!this.editable)throw Error('This tab is read-only.');if(persisted.revision!==expected)throw Error('This preview is stale.');S.validate(next);persisted=structuredClone(next);calls.saves++;api.setState(next);api.render();},replace(next,expected){next=structuredClone(S.validate(next));next.revision=expected+1;this.save(next,expected);},read:()=>structuredClone(persisted)};
  const rules={...bindings.R,quote(...args){calls.quotes++;return bindings.R.quote(...args,()=>{calls.priceDice++;return priceDice.shift()??3;});},roll:n=>({dice:Array(n).fill(3),total:n*3}),die:()=>3,freightOffers(...args){calls.freight++;return bindings.R.freightOffers(...args);},mailOffer(...args){calls.mail++;return bindings.R.mailOffer(...args);}};
- const sandbox={...bindings,R:rules,document:dom.document,window:{addEventListener(){}},crypto:webcrypto,structuredClone,console,FormData:dom.FormData,setTimeout,clearTimeout,requestAnimationFrame:()=>1,cancelAnimationFrame(){}};
- vm.runInContext(executable+`\nglobalThis.api={init(s,c,m,p){state=s;core=c;mp=m;store=p;known={...s.worlds};view=s.actual;tab='Trade';},get state(){return state;},get view(){return view;},setSelected(ids){selected=new Set(ids);},get drafts(){return contractDrafts;},get check(){return mailCheck;},setState(s){receiveCampaign(s);},setDrafts(d){contractDrafts=d;},setView(id){view=id;},get previewSale(){return previewSale;},setTab(t){tab=t;},setRouteDraft(d){routeDraft=d;},get mapZoom(){return mapZoom;},setMapDrag(d){mapDrag=d;},routeJumpControl,routeStops,shipActions,refuelShortcut,currentQuote,priceAudit,searchDialog,beginSale,buyForm,marketPanel,cargoPanel,mailPanel,mailRollSummary,contractsPanel,historyPanel,cancelledMailHistory,contractDetails,contractRolls,historyDetails,historyCategory,contractSearch,updateMailEstimate,accept,deliver,editDraft,closeModal,modal,syncModalSubmit,render,backupReplace,actions};`,vm.createContext(sandbox),{filename:'app.mjs (VM; boot omitted)'});
+ const sandbox={...bindings,R:rules,document:dom.document,window:{addEventListener(){},innerWidth:1440},getComputedStyle:()=>({paddingLeft:'0',paddingRight:'0'}),crypto:webcrypto,structuredClone,console,FormData:dom.FormData,setTimeout,clearTimeout,requestAnimationFrame:()=>1,cancelAnimationFrame(){}};
+ vm.runInContext(executable+`\nglobalThis.api={services,setInputRounding(values){inputRounding=values;},init(s,c,m,p){state=s;core=c;mp=m;store=p;known={...s.worlds};view=s.actual;tab='Trade';},get state(){return state;},get view(){return view;},setSelected(ids){selected=new Set(ids);},get drafts(){return contractDrafts;},get check(){return mailCheck;},setState(s){receiveCampaign(s);},setDrafts(d){contractDrafts=d;},setView(id){view=id;},get previewSale(){return previewSale;},setTab(t){tab=t;},setRouteDraft(d){routeDraft=d;},get mapZoom(){return mapZoom;},setMapDrag(d){mapDrag=d;},routeJumpControl,routeStops,shipActions,refuelShortcut,currentQuote,priceAudit,searchDialog,beginSale,buyForm,marketPanel,cargoPanel,mailPanel,mailRollSummary,contractsPanel,historyPanel,cancelledMailHistory,contractDetails,contractRolls,historyDetails,historyCategory,contractSearch,updateMailEstimate,accept,deliver,editDraft,closeModal,modal,syncModalSubmit,render,backupReplace,actions};`,vm.createContext(sandbox),{filename:'app.mjs (VM; boot omitted)'});
  api=sandbox.api;api.init(structuredClone(saved),core,mp,store);api.render();
  const fill=values=>{for(const[k,v]of Object.entries(values)){const n=dom.fields().get(k);assert.ok(n,`Expected form field ${k}`);if(n.attributes.type==='checkbox')n.checked=Boolean(v);else n.value=String(v);}};
  const submit=()=>dom.ids.get('modal-form').onsubmit({preventDefault(){},currentTarget:dom.ids.get('modal-form')});
@@ -199,12 +199,12 @@ test('next jump supports empty-space destinations and escapes destination labels
  const prepared=h.persisted();h.api.closeModal();same(h.persisted(),prepared);assert.equal(prepared.jumpAttempts.length,1);
 });
 test('one explicit jump commits only one leg, keeps history labels, rejects repeat submit and supports Undo',async()=>{
- const s=campaign();s.route=[origin.id,destination.id,origin.id];s.ship.fuel=bindings.configureFuel(200,40,40,0,2);s.ship.lifeSupport={capacityHours:672,remainingHours:672,elapsedHours:0};
+ const s=campaign();s.route=[origin.id,destination.id,origin.id];s.ship.fuel=bindings.configureFuel(200,40,40,0,2);s.ship.lifeSupport={capacityHours:672,remainingHours:672,elapsedHours:0};s.ship.accommodation={rooms:{low:0,middle:4,high:0},passengers:{low:0,middle:4,high:0},crew:{low:0,middle:0,high:0}};
  const h=harness(s),before=h.persisted();h.api.setView(far.id);
  h.api.actions.jump();const oldSubmit=h.dom.ids.get('modal-form').onsubmit;h.fill({hours:160});await h.submit();noError(h);
  const jumped=h.persisted();assert.equal(jumped.actual,destination.id);assert.equal(jumped.routeIndex,1);assert.equal(jumped.hours,160);assert.equal(jumped.ship.fuel.aboardTons,20);
  assert.equal(jumped.bank,before.bank);same(jumped.lots,before.lots);same(jumped.route,before.route);
- assert.equal(jumped.ship.lifeSupport.remainingHours,528);assert.equal(jumped.ship.lifeSupport.elapsedHours,16);
+ same(jumped.ship.lifeSupport.stockUnits,{numerator:'256',denominator:'3'});
  assert.equal(jumped.ledger.at(-1).type,'Jump');assert.equal(jumped.ledger.at(-1).amount,'0');
  assert.ok(jumped.events.some(e=>e.label==='Jump audit'));assert.ok(jumped.events.some(e=>e.label==='Jump: Origin → Destination'));
  await oldSubmit({preventDefault(){},currentTarget:h.dom.ids.get('modal-form')});same(h.persisted(),jumped);
@@ -222,15 +222,17 @@ test('jump confirmation cannot submit after close, ownership loss or newer campa
   if(mode==='revision')assert.match(h.dom.ids.get('modal-error').textContent,/stale|changed/i);
  }
 });
-test('Overview has four matching primary services and fuel source lives inside the existing refuel dialog',()=>{
+test('Overview has four services and Refuel opens a nonmutating in-panel summary',async()=>{
  for(const [port,type]of [['A','refined'],['B','refined'],['C','unrefined'],['D','unrefined'],['E','unrefined']]){
-  const s=campaign();s.worlds[origin.id].uwp=port+'788899-C';s.ship.fuel=bindings.configureFuel(200,40,10,0,2);
+  const s=campaign();s.worlds[origin.id].uwp=port+'788899-C';s.ship.fuel=bindings.configureFuel(200,43,20,0,2);
   const h=harness(s),before=h.persisted();h.api.setTab('Overview');const html=h.api.shipActions();
   assert.equal((html.match(/class="primary"/g)||[]).length,4);assert.doesNotMatch(html,/quickFuelType|fuel-radio|Refined|Unrefined/);
-  h.api.setTab('Trade');h.api.refuelShortcut();assert.equal(h.dom.ids.get('modal-title').textContent,'Refuel');
-  assert.equal(h.dom.fields().get('fuelType').value,type);assert.equal(h.dom.fields().get('fuelTons').value,'30');
-  assert.match(h.dom.ids.get('modal-body').innerHTML,/Refined · Cr500\/ton/);assert.match(h.dom.ids.get('modal-body').innerHTML,/Purchased unrefined · Cr100\/ton/);assert.match(h.dom.ids.get('modal-body').innerHTML,/Collect water · Free unrefined fuel/);
-  h.api.closeModal();same(h.persisted(),before);
+  h.api.setTab('Trade');h.api.refuelShortcut();assert.equal(h.dom.ids.get('modal').open,false);
+  assert.match(h.api.services.panel(),/Refuel · Summary/);assert.match(h.api.services.panel(),/Actual ship location/);
+  await h.api.services.action('service-adjust','');const editor=h.api.services.panel();
+  assert.match(editor,new RegExp('value="'+type+'" selected'));
+  assert.match(editor,/name="fuelTons"[^>]*value="23"/);assert.match(editor,/Top off · 23 t/);
+  h.api.services.close();same(h.persisted(),before);
  }
 });
 
@@ -265,4 +267,13 @@ test('dedicated Undo Jump confirmation cancels cleanly, rejects stale approval, 
   if(mode==='stale'){h.store.save(S.transition(arrived,'Later deposit',s=>S.deposit(s,1,'Newer action')),arrived.revision);const changed=h.persisted();await h.submit();same(h.persisted(),changed);assert.match(h.dom.ids.get('modal-error').textContent,/changed/i);continue;}
   await h.submit();noError(h);const undone=h.persisted();assert.equal(undone.actual,origin.id);assert.equal(h.api.view,origin.id);assert.equal(undone.jumpAttempts[0].mulliganUsed,true);await submit({preventDefault(){},currentTarget:h.dom.ids.get('modal-form')});same(h.persisted(),undone);
  }
+});
+
+test('cancelled modal rounding never contaminates a service confirmation audit',async()=>{
+ const s=campaign();s.ship.fuel=bindings.configureFuel(200,43,20,0,2);
+ const h=harness(s);h.api.setInputRounding([{label:'Cancelled old expense',before:'1.2',after:'2'}]);h.api.closeModal();
+ h.api.refuelShortcut();await h.api.services.action('service-confirm','');
+ assert.equal(h.persisted().ship.fuel.aboardTons,43);assert.equal(h.persisted().events.some(e=>e.label==='Rounding applied [R]'),false);
+ const detail=h.api.historyDetails({label:'Fuel aboard correction audit',world:origin.id,fuelCorrection:{before:43,after:20,removed:23,reason:'Tank sounding'}});
+ assert.match(detail,/Tank sounding/);assert.match(detail,/Cr 0 · no refund/);assert.doesNotMatch(detail,/Additional inputs were not saved/);
 });

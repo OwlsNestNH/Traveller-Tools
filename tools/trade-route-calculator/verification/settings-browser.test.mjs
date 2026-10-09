@@ -18,12 +18,12 @@ const fieldNames=[
  'name','ship','capacity','jump','broker','streetwise','admin','characteristic','rank','soc','mode','custom',
  'shipTons','fuelCapacity','bladderJumps','fuelAboard',
  'rooms-low','roomService-low','roomCustom-low','rooms-middle','roomService-middle','roomCustom-middle','rooms-high','roomService-high','roomCustom-high',
- 'people-middle','people-high','luggageOverride','luggageTons','supportCapacity','supportRemaining',
+ 'people-middle','people-high','occupiedLowBerths','luggageOverride','luggageTons','supportCapacity','supportRemaining','supportUnits',
  'creditStep','scoops','armed','reducedProfitLimitsEnabled','minPurchasePercent','maxSalePercent',
  'maxBaseRetailEnabled','maxBaseRetail','useRawIllegalPrices','tax','insurance'
 ];
-assert.equal(fieldNames.length,42);
-assert.equal(new Set(fieldNames).size,42);
+assert.equal(fieldNames.length,44);
+assert.equal(new Set(fieldNames).size,44);
 const draft={
  name:'Compact Settings verification',ship:'Synthetic Settings Trader',capacity:'160',jump:'3',
  broker:'3',streetwise:'2',admin:'1',characteristic:'-1',rank:'4',soc:'2',mode:'custom',custom:'62.5',
@@ -31,7 +31,7 @@ const draft={
  'rooms-low':'1','roomService-low':'custom','roomCustom-low':'200',
  'rooms-middle':'5','roomService-middle':'custom','roomCustom-middle':'1300',
  'rooms-high':'2','roomService-high':'custom','roomCustom-high':'1700',
- 'people-middle':'6','people-high':'3',luggageOverride:true,luggageTons:'7',supportCapacity:'35',supportRemaining:'14',
+ 'people-middle':'6','people-high':'3',occupiedLowBerths:'2',luggageOverride:true,luggageTons:'7',supportCapacity:'35',supportRemaining:'13.75',supportUnits:'',
  creditStep:'100',scoops:false,armed:true,reducedProfitLimitsEnabled:true,minPurchasePercent:'90',maxSalePercent:'110',
  maxBaseRetailEnabled:true,maxBaseRetail:'50000',useRawIllegalPrices:true,tax:true,insurance:true
 };
@@ -136,9 +136,9 @@ function savedValues(state,before){
  assert.deepEqual(state.ship.accommodation,{
   passengers:{low:0,middle:6,high:3},crew:{low:0,middle:0,high:0},combinedPeople:true,
   rooms:{low:1,middle:5,high:2},roomService:{low:{level:'custom',monthly:'200'},middle:{level:'custom',monthly:'1300'},high:{level:'custom',monthly:'1700'}},
-  luggageMode:'manual',luggageTons:'7'
+  luggageMode:'manual',luggageTons:'7',occupiedLowBerths:2
  });
- assert.deepEqual(state.ship.lifeSupport,{capacityHours:35*24,remainingHours:14*24,elapsedHours:6},'Unchanged recorded stock preserves the partial-day counter');
+ assert.deepEqual(state.ship.lifeSupport,{capacityHours:35*24,stockUnits:{numerator:'55',denominator:'2'}},'Unchanged recorded endurance preserves 27.5 LSS despite a larger complement');
  assert.equal(state.ship.scoops,false);assert.equal(state.ship.armed,true);assert.equal(state.ship.roundTons,true);
  assert.deepEqual(state.settings,{
   ...before.settings,profit:62.5,creditStep:100,reducedProfitLimitsEnabled:true,minPurchasePercent:90,maxSalePercent:110,
@@ -155,7 +155,7 @@ function savedValues(state,before){
 async function auxiliary(h){
  const {page,raw,unchanged,action,dismiss,reveal}=h,before=await raw();
  await action('settings-edit');await page.getByRole('heading',{name:'Ship, trader & options',exact:true}).waitFor();
- assert.deepEqual((await page.locator('#modal [name]').evaluateAll(fields=>fields.map(el=>el.name))).sort(),[...fieldNames].sort(),'The optional dialog has the same 42 fields');
+ assert.deepEqual((await page.locator('#modal [name]').evaluateAll(fields=>fields.map(el=>el.name))).sort(),[...fieldNames].sort(),'The optional dialog has the same 44 fields');
  await page.locator('#modal [name="mode"]').selectOption('custom');
  assert.equal(await page.locator('#modal [name="custom"]').isDisabled(),false,'Modal mode changes update the modal control');
  assert.equal(await page.locator('#settings-form').count(),0,'The inline form is detached while the optional dialog is open');
@@ -230,7 +230,7 @@ try{
   await tab('Settings');await page.locator('#settings-form').waitFor();
   assert.equal(await page.locator('#modal[open]').count(),0,'Settings are inline, not a compulsory modal');
   const inventory=await page.locator('#settings-form [name]').evaluateAll(fields=>fields.map(el=>({name:el.name,label:[...(el.labels||[])].map(label=>label.textContent.trim()).join(' '),row:!!el.closest('.setting-row')})));
-  assert.deepEqual(inventory.map(x=>x.name).sort(),[...fieldNames].sort(),'All 42 existing fields appear exactly once');
+  assert.deepEqual(inventory.map(x=>x.name).sort(),[...fieldNames].sort(),'All 44 existing fields appear exactly once');
   assert.ok(inventory.every(x=>x.label&&x.row),'Every field has a label and a compact setting row');
   assert.ok(await page.locator('#settings-form .settings-section').count()>1,'Settings are grouped into sections');
   const advanced=page.locator('#settings-form details').filter({has:page.locator('[name]')});
@@ -251,7 +251,7 @@ try{
   for(const name of ['minPurchasePercent','maxSalePercent'])assert.equal(await field(name).isDisabled(),false,'Price-limit values remain editable while the option is off');
   const switches=page.locator('#settings-form .settings-switch input[type="checkbox"],#settings-form input.settings-switch[type="checkbox"]');
   assert.equal(await switches.count(),8,'All eight boolean options retain native checkbox switches');
-  await setDraft();assert.deepEqual(await values(),draft,'All 42 draft controls accept their intended input types');
+  await setDraft();assert.deepEqual(await values(),draft,'All 44 draft controls accept their intended input types');
   // Explicit arrow buttons must preserve direct typing, signed values and the
   // fractional custom profit. A +1 / -1 round trip never silently saves.
   for(const number of await page.locator('#settings-form input[type="number"]').all()){
@@ -270,7 +270,7 @@ try{
   await unchanged(fixture.bytes,'Leaving Settings with an uncommitted draft');
   // Prepare a complete valid draft, then prove each invalid path is atomic.
   await setDraft();
-  for(const [name,bad]of [['jump','0'],['rooms-middle','1.5'],['minPurchasePercent',''],['minPurchasePercent','90.5'],['maxSalePercent','401'],['maxBaseRetail','0'],['supportRemaining','36'],['fuelAboard','151'],['shipTons',''],['capacity','1']]){
+  for(const [name,bad]of [['jump','0'],['rooms-middle','1.5'],['minPurchasePercent',''],['minPurchasePercent','90.5'],['maxSalePercent','401'],['maxBaseRetail','0'],['supportRemaining','-1'],['occupiedLowBerths','1.5'],['supportUnits','-1'],['fuelAboard','151'],['shipTons',''],['capacity','1']]){
    await set(name,bad);await page.locator('#settings-save').click();await frames();
    await unchanged(fixture.bytes,'Invalid '+name+' = '+JSON.stringify(bad));
    await set(name,draft[name]);
@@ -289,18 +289,18 @@ try{
   let saved=await read();savedValues(saved,fixture.state);
   assert.equal(await page.locator('#modal[open]').count(),0,'Inline save needs no modal');
   const savedBytes=await raw();await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();await tab('Settings');
-  assert.deepEqual(await values(),draft,'All controls reload with their saved values');
+  assert.deepEqual(await values(),{...draft,supportRemaining:'2.98913'},'Saved controls reload while endurance reflects the new 9.2-person-equivalent complement');
   await unchanged(savedBytes,'Reloading the saved settings');
-  // Restoring an old whole-day quantity deliberately resets only its partial
-  // counter; Undo restores it along with the saved stock.
+  // Explicitly changing endurance replaces physical stock at the current
+  // complement; Undo restores the exact, fractional stock balance.
   await set('supportRemaining','13');await page.locator('#settings-save').click();
-  assert.deepEqual((await read()).ship.lifeSupport,{capacityHours:35*24,remainingHours:13*24,elapsedHours:0});
+  assert.deepEqual((await read()).ship.lifeSupport,{capacityHours:35*24,stockUnits:{numerator:'598',denominator:'5'}});
   await tab('History');await page.locator('#main [data-action="undo"]').click();
-  assert.deepEqual((await read()).ship.lifeSupport,saved.ship.lifeSupport,'Undo restores the partial-day supply counter');
+  assert.deepEqual((await read()).ship.lifeSupport,saved.ship.lifeSupport,'Undo restores exact partial-day physical supplies');
   await page.locator('#main [data-action="undo"]').click();
   const undone=await read();
   for(const key of ['name','ship','trader','settings','bank','hours','actual','route','lots','contracts','snapshots','ledger'])assert.deepEqual(undone[key],fixture.state[key],'Undo restores original '+key);
-  await tab('Settings');assert.deepEqual(await values(),original,'Undo restores all 42 displayed values');
+  await tab('Settings');assert.deepEqual(await values(),original,'Undo restores all 44 displayed values');
   const beforeReadOnly=await raw(),other=await context.newPage();await other.goto(base);
   await other.getByText('Read-only: campaign open in another tab.',{exact:true}).waitFor();
   await other.locator('#tabs [data-arg="Settings"]').click();
@@ -320,7 +320,7 @@ try{
   await unchanged(beforeReadOnly,'Editing ownership transfer');
   if(size.width===1440){await auxiliary(h);await staleDraft(h);}
   await h.finish(String(size.width));
-  console.log(`PASS: ${size.width}px exact 42-field parity, compact controls, draft/revert, validation/reveal/focus, atomic save/reload/Undo, partial-day stock and editing locks.`);
+  console.log(`PASS: ${size.width}px exact 44-field parity, compact controls, draft/revert, validation/reveal/focus, atomic save/reload/Undo, partial-day stock and editing locks.`);
  }
  // Same-session blank saves must not produce undefined inverse values that
  // only become invalid when the campaign reaches localStorage or an export.
@@ -373,7 +373,7 @@ try{
  await fallback.page.locator('#modal [name="fuelAboard"]').fill('20');
  await fallback.page.locator('#modal-submit').click();await fallback.page.locator('#modal').waitFor({state:'hidden'});
  assert.deepEqual((await fallback.read()).ship.fuel,configureFuel(200,40,20,0,2));
- assert.equal((await fallback.read()).ship.lifeSupport.elapsedHours,6,'Fallback save also preserves partial-day supplies');
+ assert.deepEqual((await fallback.read()).ship.lifeSupport.stockUnits,{numerator:'55',denominator:'2'},'Fallback save also preserves 27.5 LSS with six used hours');
  await fallback.finish('fallback');
  console.log('PASS: time/rounding/rules previews, exact JSON/TXT downloads, import/reset cancellation stale-draft rejection/revert and legacy refuel-settings modal.');
 }catch(error){

@@ -282,3 +282,16 @@ test('prepared and spent jump allowances survive real Store.replace revision reb
   if(restored.actual==='1,0')assert.equal(jumpUndoEligibility(restored).allowed,false);
  }
 });
+
+test('physical LSS fractions survive writer save, import replacement and retained Undo',async t=>{
+ const {configureSupport,supportAmount,supportCargo}=await import('../js/life-support.mjs');
+ const {configureFuel}=await import('../js/fuel.mjs');
+ const {cmp}=await import('../js/amounts.mjs');
+ const env=environment(t),store=env.store();await store.acquire();await tick();
+ const source=initial();source.ship.fuel=configureFuel(10,2,0,0,2);source.ship.accommodation={rooms:{low:0,middle:1,high:0},passengers:{low:0,middle:1,high:0},crew:{low:0,middle:0,high:0},luggageTons:'0'};
+ source.ship.lifeSupport=configureSupport(source.ship,{stockUnits:41});
+ store.replace(source,0);const before=store.read(),advanced=transition(before,'One hour',x=>x.hours++);store.save(advanced,before.revision);
+ const reloaded=store.read();assert.equal(cmp(supportAmount(reloaded.ship.lifeSupport.stockUnits),{n:983n,d:24n}),0);assert.equal(cmp(supportCargo(reloaded.ship),{n:23n,d:2400n}),0);
+ const imported=JSON.parse(JSON.stringify(reloaded));store.replace(imported,reloaded.revision);const restored=undo(store.read());assert.deepEqual(restored.ship,before.ship);assert.equal(restored.hours,0);
+ const bytes=env.values.get(KEY),bad=JSON.parse(bytes);bad.ship.lifeSupport.stockUnits={numerator:'1000000',denominator:'1'};assert.throws(()=>store.replace(bad,store.read().revision),/capacity/);assert.equal(env.values.get(KEY),bytes);
+});

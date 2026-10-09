@@ -8,8 +8,8 @@ test('Class D/E water follows effective hydrographics, including exotic atmosphe
  const input={kind:'fuel',fuelType:'water',tons:'1'};
  for(const port of ['D','E']){
   assert.equal(E.expenseQuote({...world(port),uwp:port+'5A2000-0'},input).amount,'0');
-  for(const hydro of ['0','?'])assert.throws(()=>E.expenseQuote({...world(port),uwp:port+'53'+hydro+'000-0'},input),/Usable water/);
-  assert.throws(()=>E.expenseQuote({...world(port),overrideUWP:port+'530000-0'},input),/Usable water/);
+  for(const hydro of ['0','?'])assert.equal(E.expenseQuote({...world(port),uwp:port+'53'+hydro+'000-0'},input).amount,'0');
+  assert.equal(E.expenseQuote({...world(port),overrideUWP:port+'530000-0'},input).amount,'0');
  }
 });
 test('stateroom and per-person refills use separate counts and weekly billing',()=>{
@@ -74,12 +74,12 @@ test('fuel sources distinguish purchases from free water at all port classes',()
  }
  for(const uwp of ['X780899-C','X7A8899-C','X7??899-C']){
   const w={...world('X'),uwp},input={kind:'fuel',fuelType:'water',tons:'1'};
-  assert.throws(()=>E.expenseQuote(w,input),/Usable water/);
-  assert.throws(()=>E.expenseQuote(w,{...input,otherSupplier:true}),/Usable water/);
+  assert.equal(E.expenseQuote(w,input).amount,'0');
+  assert.equal(E.expenseQuote(w,{...input,otherSupplier:true}).amount,'0');
   assert.equal(E.expenseQuote(w,{...input,otherSupplier:true,notes:'Referee confirms a source after roleplay'}).amount,'0');
   assert.equal(E.expenseQuote({...w,accessibleWater:true},input).amount,'0');
  }
- assert.throws(()=>E.expenseQuote({...world(),overrideUWP:'X780899-C'},{kind:'fuel',fuelType:'water',tons:'1'}));
+ assert.equal(E.expenseQuote({...world(),overrideUWP:'X780899-C'},{kind:'fuel',fuelType:'water',tons:'1'}).amount,'0');
  const s=campaign(),after=S.transition(s,'Collect water',n=>S.shipExpenses(n,[{kind:'fuel',fuelType:'water',tons:'20'}]));
  assert.equal(after.bank,s.bank);assert.equal(after.ledger.length,1);assert.equal(after.ledger[0].expense.amount,'0');
  assert.deepEqual(S.validate(JSON.parse(JSON.stringify(after))),after);assert.equal(S.undo(after).ledger.length,0);

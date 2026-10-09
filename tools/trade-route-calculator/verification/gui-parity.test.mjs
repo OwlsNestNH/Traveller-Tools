@@ -6,6 +6,7 @@ import {createRequire} from 'node:module';
 import {mkdir} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {guiFixture,campaignKey} from './fixtures/gui-parity.mjs';
+import {overviewGeometry} from './overview-layout.mjs';
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const base=process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/';
 const artifacts=fileURLToPath(new URL('../verification-artifacts/',import.meta.url));
@@ -71,42 +72,14 @@ async function run(stops){
   assert.equal(await details.evaluate(el=>el.open),true);
   return details;
  }
- async function geometry(){
-  // Resizing may replace the SVG between two Playwright protocol calls. Wait
-  // for the current CSS width's intended geometry, not an old viewBox that is
-  // merely internally consistent; then select and measure the live node in
-  // one atomic page evaluation, without retaining a locator-resolved element.
-  await page.waitForFunction(()=>{
-   const svg=document.querySelector('.world-map');if(!svg)return false;
-   const b=svg.getBoundingClientRect(),v=svg.viewBox.baseVal;
-   const expectedHeight=Math.max(400,Math.min(600,b.width*.43));
-   const expectedWidth=b.width*440/expectedHeight;
-   return b.width>0&&v.height===440&&Math.abs(v.width-expectedWidth)<.1&&Math.abs(b.height-expectedHeight)<2;
-  });
-  const result=await page.evaluate(()=>{
-   const svg=document.querySelector('.world-map');if(!svg)throw Error('Live map disappeared before geometry measurement');
-   const box=svg.getBoundingClientRect(),v=svg.viewBox.baseVal,m=svg.getScreenCTM();
-   const expectedHeight=Math.max(400,Math.min(600,box.width*.43));
-   const circles=[...svg.querySelectorAll('[data-action="map-world"] circle')].map(c=>{const b=c.getBoundingClientRect();return {width:b.width,height:b.height};});
-   return {width:box.width,height:box.height,expectedHeight,expectedWidth:box.width*440/expectedHeight,logicalWidth:v.width,logicalHeight:v.height,scaleX:Math.hypot(m.a,m.b),scaleY:Math.hypot(m.c,m.d),circles,overflow:document.documentElement.scrollWidth-innerWidth};
-  });
-  assert.ok(Math.abs(result.height-result.expectedHeight)<2,`Map height ${result.height} must match intended height ${result.expectedHeight}`);
-  assert.ok(Math.abs(result.logicalWidth-result.expectedWidth)<.1,'Logical map width must track the current rendered width');
-  assert.ok(result.height>=399&&result.height<=601,'The slightly smaller map retains its 400–600px height range');
-  assert.ok(Math.abs(result.scaleX-result.scaleY)<.001,'The map uses uniform scale, not stretched circles');
-  assert.ok(result.circles.length>=2,'Synthetic nearby worlds are visible');
-  assert.ok(result.circles.every(c=>Math.abs(c.width-c.height)<.1),'All visible marker circles remain round');
-  assert.equal(result.logicalHeight/50,8.8,'100% map covers 8.8 rows, more than the previous 6.4');
-  assert.ok(result.overflow<=2,'The page must not scroll horizontally');
-  return result;
- }
+ async function geometry(){return overviewGeometry(page,{markers:true});}
  async function shellReadability(){
   const layout=await page.evaluate(()=>{
    const main=document.querySelector('main'),panel=document.querySelector('.navigation-layout'),tabs=document.querySelector('#tabs'),ship=document.querySelector('#ship-actions > .ship-actions');
    const box=el=>{const b=el.getBoundingClientRect();return {left:b.left,right:b.right,width:b.width,overflow:el.scrollWidth-el.clientWidth};};
    const style=getComputedStyle(main),contentLeft=main.getBoundingClientRect().left+parseFloat(style.paddingLeft);
    const textSelectors=['.world-info strong','.screen-section-heading>.mono','.screen-title>.tag','.world-info .badge-row span','.world-actions button','.world-actions .help','.jump-bar button','.jump-bar .help','.map-hint summary','.map-hint p'];
-   return {viewport:innerWidth,main:box(main),panel:box(panel),tabs:box(tabs),firstTab:box(tabs.querySelector('button')),shipLeft:ship.getBoundingClientRect().left+parseFloat(getComputedStyle(ship).paddingLeft),contentLeft,text:textSelectors.map(selector=>({selector,nodes:[...document.querySelectorAll(selector)].map(el=>({font:parseFloat(getComputedStyle(el).fontSize),...box(el)}))})),blocks:['.world-info','.world-actions','.jump-bar','.map-hint'].map(selector=>({selector,...box(document.querySelector(selector))}))};
+   return {viewport:innerWidth,screen:box(document.querySelector('.mfd-screen')),main:box(main),panel:box(panel),tabs:box(tabs),firstTab:box(tabs.querySelector('button')),shipLeft:ship.getBoundingClientRect().left+parseFloat(getComputedStyle(ship).paddingLeft),contentLeft,text:textSelectors.map(selector=>({selector,nodes:[...document.querySelectorAll(selector)].map(el=>({font:parseFloat(getComputedStyle(el).fontSize),...box(el)}))})),blocks:['.world-info','.world-actions','.jump-bar','.map-hint'].map(selector=>({selector,...box(document.querySelector(selector))}))};
   });
   assert.ok(Math.abs(layout.firstTab.left-layout.contentLeft)<1,'Overview tab shares the main content left gutter');
   assert.ok(Math.abs(layout.panel.left-layout.contentLeft)<1,'Map panel shares the main content left gutter');
@@ -114,9 +87,8 @@ async function run(stops){
   assert.ok(Math.abs(layout.panel.left-(layout.viewport-layout.panel.right))<2,'Navigation layout is centered in the viewport');
   assert.ok(layout.tabs.overflow<=2,'Tabs wrap within the viewport');
   if(layout.viewport>1880){
-   assert.ok(Math.abs(layout.main.width-1880)<1,'Ultrawide main uses the modestly wider 1880px shell');
-   const oldLeft=(layout.viewport-1800)/2+16;
-   assert.ok(Math.abs(layout.panel.left-(oldLeft-40))<1,'Ultrawide map shifts left by a balanced 40px');
+   assert.ok(Math.abs(layout.main.width-Math.min(1880,layout.screen.width-2))<2,'Overview fills the available bezel content up to the existing 1880px shell');
+   assert.ok(Math.abs(layout.panel.left-(layout.viewport-layout.panel.right))<2,'The working screens keep balanced outer gutters inside the bezel');
   }
   const minimums={'.world-info strong':layout.viewport<=620?20:22,'.screen-section-heading>.mono':16,'.screen-title>.tag':14,'.world-info .badge-row span':layout.viewport<=620?14:15,'.world-actions button':13,'.world-actions .help':13,'.jump-bar button':14,'.jump-bar .help':13,'.map-hint summary':13,'.map-hint p':13};
   for(const {selector,nodes}of layout.text){
@@ -140,6 +112,19 @@ async function run(stops){
   assert.equal(await jump.textContent(),'Jump to '+fixture.state.worlds[targetId].name+' →');
   assert.equal(await jump.isDisabled(),false);
   assert.equal(await page.locator('.next-destination strong').textContent(),fixture.state.worlds[targetId].name);
+  const nextLayout=await page.locator('.route-next').evaluate(container=>{
+   const box=el=>{const b=el.getBoundingClientRect();return {left:b.left,right:b.right,top:b.top,bottom:b.bottom,width:b.width,overflow:el.scrollWidth-el.clientWidth};};
+   const destination=container.querySelector('.next-destination'),name=destination.querySelector('strong');
+   return {viewport:innerWidth,container:box(container),destination:box(destination),name:box(name),jump:box(container.querySelector('[data-action="jump"]'))};
+  });
+  assert.ok(nextLayout.destination.overflow<=2&&nextLayout.name.overflow<=2,'The full next-world name wraps without horizontal clipping');
+  if(nextLayout.viewport>=1100)assert.ok(nextLayout.destination.width>=129,'Desktop next destination keeps at least 130px of readable width');
+  if(nextLayout.viewport<=620){
+   assert.ok(nextLayout.jump.top>=nextLayout.destination.bottom-1,'Mobile next destination sits above its Jump button');
+   assert.ok(Math.abs(nextLayout.destination.width-nextLayout.container.width)<=2,'Mobile next destination uses the full route-control width');
+   assert.ok(Math.abs(nextLayout.jump.width-nextLayout.container.width)<=2,'Mobile Jump uses the full route-control width');
+  }
+
   assert.equal(await page.locator('.route-list [aria-current="location"]').getAttribute('data-arg'),fixture.state.actual);
   assert.equal(await page.locator('.route-list button.next').getAttribute('data-arg'),targetId);
   const header=await page.locator('.route-heading').evaluate(el=>{
@@ -242,11 +227,11 @@ async function run(stops){
    await summary.press('Space');assert.equal(await summary.evaluate(el=>el.parentElement.open),false);
    await unchanged(selector+' read-only disclosure');
   }
-  assert.equal(await page.locator('[name="quickFuelType"]').count(),0,'Fuel source is selected only in the Refuel dialog');
-  await click('refuel');
+  assert.equal(await page.locator('[name="quickFuelType"]').count(),0,'Fuel source is selected only in the Refuel screen');
+  await click('refuel');await click('service-adjust');
   await page.locator('[name="fuelType"]').selectOption('unrefined');
   await page.locator('[name="fuelType"]').selectOption('refined');
-  await unchanged('Fuel-quality dialog choice');await dismiss('Cancel');
+  await unchanged('Fuel-quality screen choice');await click('service-cancel');await page.locator('#service-panel').waitFor({state:'hidden'});await unchanged('Fuel cancellation');
   // The relocated shortcut preserves every existing jump dismissal path and
   // cannot move the ship simply because another route stop is being browsed.
   await click('world',fixture.state.route.at(-1));
@@ -335,9 +320,13 @@ async function run(stops){
   await tab('Accounts');await click('ledger-audit','ledger-opening');await dismiss('Close');await unchanged('Trading, cargo and history filters and audit views');
   await tab('Overview');await current();
 
-  // All shared quick actions keep the existing modal lifecycle. Exercise each
-  // dismissal path, rather than testing only that a dialog became visible.
-  for(const [name,method]of [['refuel','Escape'],['refill-support','Cancel'],['port-costs','Close'],['ship-expenses','Cancel']]){
+  // Fuel/LSS now own the right screen; accounting retains its modal lifecycle.
+  for(const [name,method]of [['refuel','Escape'],['refill-support','Cancel']]){
+   await click(name);await page.locator('#service-panel').waitFor({state:'visible'});
+   if(method==='Escape')await page.keyboard.press('Escape');else await click('service-back');
+   await page.locator('#service-panel').waitFor({state:'hidden'});await unchanged(name+' '+method);
+  }
+  for(const [name,method]of [['port-costs','Close'],['ship-expenses','Cancel']]){
    await click(name);await page.locator('#modal').waitFor({state:'visible'});await dismiss(method);
   }
   if(stops===12){

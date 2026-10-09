@@ -28,6 +28,48 @@ const click=(action,arg)=>page.locator('[data-action="'+action+'"]'+(arg===undef
 const raw=()=>page.evaluate(key=>localStorage.getItem(key),campaignKey);
 const screen=page.getByRole('complementary',{name:'Selected world data'});
 const frame=()=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+const labelReports=[];
+async function labelFitsCell(id){
+ await page.waitForFunction(()=>{const svg=document.querySelector('.world-map');if(!svg)return false;const b=svg.getBoundingClientRect(),v=svg.viewBox.baseVal;return b.width>0&&b.height>0&&Math.abs(v.width-b.width*440/b.height)<.15;});
+ const label=page.locator('svg [data-action="map-world"][data-arg="'+id+'"] .world-name');
+ const q=await label.evaluate(text=>{
+  const svg=text.ownerSVGElement,group=text.parentElement,circle=group.querySelector('circle'),uwp=group.querySelector('.world-uwp');
+  const cx=Number(circle.getAttribute('cx')),cy=Number(circle.getAttribute('cy'));
+  const pointsOf=p=>Array.from({length:p.points.numberOfItems},(_,i)=>{const q=p.points.getItem(i);return {x:q.x,y:q.y};});
+  const cell=[...svg.querySelectorAll('.hex-grid polygon')].find(p=>{const points=pointsOf(p);return Math.abs(points.reduce((n,p)=>n+p.x,0)/points.length-cx)<.01&&Math.abs(points.reduce((n,p)=>n+p.y,0)/points.length-cy)<.01;});
+  if(!cell)throw Error('Closest-zoom label has no matching hex polygon');
+  const b=text.getBBox(),m=text.getScreenCTM(),screen=text.getBoundingClientRect(),points=pointsOf(cell);
+  const stroke=parseFloat(getComputedStyle(text).strokeWidth)||0,top=b.y-stroke/2,bottom=b.y+b.height+stroke/2;
+  // A hex narrows above/below its center. Test the whole painted label against
+  // its actual polygon at both text edges and every intervening vertex, rather
+  // than using the polygon's wider bounding box or a fixed screen-pixel limit.
+  const levels=[top,bottom,...points.map(p=>p.y).filter(y=>y>top&&y<bottom)];
+  const bands=levels.map(y=>{
+   const intersections=[];
+   for(let i=0;i<points.length;i++){
+    const a=points[i],z=points[(i+1)%points.length];
+    if(y<Math.min(a.y,z.y)-.001||y>Math.max(a.y,z.y)+.001)continue;
+    if(Math.abs(z.y-a.y)<.001){if(Math.abs(y-a.y)<.001)intersections.push(a.x,z.x);}
+    else intersections.push(a.x+(y-a.y)*(z.x-a.x)/(z.y-a.y));
+   }
+   if(intersections.length<2)throw Error('Painted world label extends outside its own hex vertically');
+   return {left:Math.min(...intersections),right:Math.max(...intersections)};
+  });
+  const left=Math.max(...bands.map(b=>b.left)),right=Math.min(...bands.map(b=>b.right));
+  const scaleX=Math.hypot(m.a,m.b),scaleY=Math.hypot(m.c,m.d),font=parseFloat(getComputedStyle(text).fontSize),uwpFont=parseFloat(getComputedStyle(uwp).fontSize);
+  return {viewport:innerWidth,text:text.textContent,title:group.querySelector('title').textContent,logical:{x:b.x,width:b.width,left:b.x-stroke/2,right:b.x+b.width+stroke/2,cellLeft:left,cellRight:right,cellBandWidth:right-left,font,uwpFont},screen:{left:screen.left-stroke/2*scaleX,right:screen.right+stroke/2*scaleX,width:screen.width,cellLeft:left*m.a+m.e,cellRight:right*m.a+m.e,font:font*scaleY,uwpFont:uwpFont*scaleY},matrix:{a:m.a,b:m.b,c:m.c,d:m.d,scaleX,scaleY}};
+ });
+ const diagnostic=JSON.stringify(q);
+ assert.match(q.text,/…$/,'Long names retain visible ellipsis');assert.match(q.title,/ExtraordinarilyLong/,'The title retains the full world name');
+ assert.equal(q.logical.font,14,'Closest-zoom world names retain 14-unit type');assert.equal(q.logical.uwpFont,10,'UWP retains 10-unit type');
+ assert.ok(q.screen.font>=12&&q.screen.uwpFont>=9,'Rendered closest-zoom world/UWP text remains readable: '+diagnostic);
+ assert.ok(q.logical.width<=88.5,'Long labels respect their 88-unit logical truncation budget: '+diagnostic);
+ assert.ok(q.logical.left>=q.logical.cellLeft-.1&&q.logical.right<=q.logical.cellRight+.1,'Painted label fits the actual hex across its full height: '+diagnostic);
+ assert.ok(Math.abs(q.matrix.b)<.001&&Math.abs(q.matrix.c)<.001&&Math.abs(q.matrix.scaleX-q.matrix.scaleY)<.001,'Cell and text share the same uniform map projection');
+ assert.ok(q.screen.left>=q.screen.cellLeft-.5&&q.screen.right<=q.screen.cellRight+.5,'Rendered label stays inside its own projected hex cell: '+diagnostic);
+ labelReports.push(q);
+}
+
 async function closeZoom(){for(let i=0;i<6;i++){await click('map-zoom-in');await frame();}await page.locator('.map-zoom-controls .help').getByText('240%',{exact:true}).waitFor();}
 try{
  await page.goto(process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/');await page.getByText('Editing in this tab',{exact:true}).waitFor();await frame();
@@ -47,7 +89,7 @@ try{
  assert.equal(await marker.locator('.world-uwp').textContent(),'B777777-A','Existing effective-UWP labels are retained');
  await page.screenshot({path:artifacts+'/world-screen-desktop.png',fullPage:true});
  const long=page.locator('svg [data-action="map-world"][data-arg="'+selected.id+'"]');assert.match(await long.locator('.world-name').textContent(),/…$/);assert.match(await long.locator('title').textContent(),/ExtraordinarilyLong/);
- const bounds=await long.locator('.world-name').boundingBox();assert.ok(bounds.width<110,'Long names stay within a single closest-zoom cell');
+ await labelFitsCell(selected.id);
  await long.focus();await page.keyboard.press('Enter');await frame();
  assert.equal(await screen.locator('.screen-title strong').textContent(),selected.name);
  assert.equal(await screen.locator('.screen-title .tag').textContent(),'Not supplied');
@@ -64,10 +106,10 @@ try{
   const b=await page.evaluate(()=>{const map=document.querySelector('.navigation-panel').getBoundingClientRect(),screen=document.querySelector('.world-screen').getBoundingClientRect();return {mapBottom:map.bottom,screenTop:screen.top,left:screen.left,right:screen.right,overflow:document.documentElement.scrollWidth-innerWidth};});
   assert.ok(b.screenTop>=b.mapBottom,'Mobile world data follows the map');assert.ok(b.left>=0&&b.right<=width&&b.overflow<=1,'Mobile has no page overflow');
   assert.equal(await screen.locator('.screen-uwp tbody tr').count(),8);
-  await page.screenshot({path:artifacts+'/world-screen-'+width+'.png',fullPage:true});
+  await page.screenshot({path:artifacts+'/world-screen-'+width+'.png',fullPage:true});await labelFitsCell(selected.id);
  }
  assert.equal(await raw(),f.bytes,'Reading controls and viewport changes do not change saves or Undo');
  assert.deepEqual(errors,[]);
- await writeFile(artifacts+'/world-screen-report.json',JSON.stringify({pass:true,commit:process.env.TRAVELLER_COMMIT||null,viewports:[1440,390,320],apiZeroLookups:requests.filter(url=>new URL(url).searchParams.get('jump')==='0').length,errors},null,2));
+ await writeFile(artifacts+'/world-screen-report.json',JSON.stringify({pass:true,commit:process.env.TRAVELLER_COMMIT||null,viewports:[1440,390,320],labelGeometry:labelReports,apiZeroLookups:requests.filter(url=>new URL(url).searchParams.get('jump')==='0').length,errors},null,2));
  console.log('PASS: selected world screen, published eight-row UWP, override distinction, data absence, closest symbols, long names, keyboard browsing, desktop/mobile, unchanged campaign and Undo, no added per-world API requests.');
 }finally{await context.tracing.stop({path:artifacts+'/world-screen-trace.zip'});await browser.close();}
