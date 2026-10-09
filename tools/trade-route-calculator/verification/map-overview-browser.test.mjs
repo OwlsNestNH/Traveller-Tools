@@ -7,7 +7,7 @@ const fixtures=JSON.parse(await readFile(new URL('./fixtures/map-overview.json',
 const artifacts=fileURLToPath(new URL('../verification-artifacts/',import.meta.url));await mkdir(artifacts,{recursive:true});
 const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BROWSER_CHANNEL?{channel:process.env.TRAVELLER_BROWSER_CHANNEL}:{})});
 const context=await browser.newContext({viewport:{width:1440,height:1100}});
-let failSector=true,requests=0;
+let failSector=true,requests=0,denebTableAttempts=0;
 await context.route('https://travellermap.com/api/**',async route=>{
  const url=new URL(route.request().url()),name=url.searchParams.get('sector');
  assert.equal(url.searchParams.get('milieu'),'M1105');
@@ -17,6 +17,7 @@ await context.route('https://travellermap.com/api/**',async route=>{
   return route.fulfill({json:fixtures.catalogs[name]?.metadata||{Subsectors:[]}});
  }
  if(url.pathname.endsWith('/sec')){
+  if(name==='Deneb')denebTableAttempts++;
   if(name==='Deneb'&&failSector){failSector=false;return route.fulfill({status:503,body:'Temporary map failure'});}
   return route.fulfill({json:fixtures.catalogs[name]?.sec||'Hex\tName\n'});
  }
@@ -42,9 +43,15 @@ const level=()=>page.locator('.world-map').getAttribute('data-map-level');
 const transform=()=>page.locator('.map-content').getAttribute('transform');
 async function reach(target){for(let i=0;i<30&&await zoom()!==target;i++)await click(target==='240%'?'+':'−');assert.equal(await zoom(),target);}
 async function drag(){
- const b=await page.locator('.world-map').boundingBox();
- await page.mouse.move(b.x+b.width*.6,b.y+b.height*.5);await page.mouse.down();
- await page.mouse.move(b.x+b.width*.6+60,b.y+b.height*.5+30,{steps:8});await page.mouse.up();
+ // Raw mouse coordinates do not auto-scroll like locator.click(). The map can
+ // be below the viewport after toolbar actions or full-page screenshots.
+ await page.locator('.world-map').scrollIntoViewIfNeeded();
+ const before=await transform(),b=await page.locator('.world-map').boundingBox(),viewport=page.viewportSize();
+ const x=b.x+b.width*.6,y=b.y+b.height*.5;
+ assert.ok(x>=0&&y>=0&&x+60<viewport.width&&y+30<viewport.height,'Drag coordinates must be inside the visible browser viewport');
+ await page.mouse.move(x,y);await page.mouse.down();
+ await page.mouse.move(x+60,y+30,{steps:8});await page.mouse.up();
+ await page.waitForFunction(previous=>document.querySelector('.map-content')?.getAttribute('transform')!==previous,before);
 }
 try{
  await page.goto(process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/');
@@ -71,7 +78,15 @@ try{
  await click('−');assert.equal(await level(),'subsector');
  await page.locator('.subsector-label[data-sector="Spinward Marches"][data-subsector="C"] .subsector-name').getByText('Regina',{exact:true}).waitFor();
  await page.locator('#map-load-status').getByText(/could not load/).waitFor();
- await click('Refresh nearby');await page.waitForFunction(()=>document.querySelector('#map-load-status').textContent==='');
+ const beforeRetry=denebTableAttempts;
+ const retryResponse=page.waitForResponse(response=>{const url=new URL(response.url());return url.pathname.endsWith('/sec')&&url.searchParams.get('sector')==='Deneb'&&response.status()===200;});
+ await click('Refresh nearby');
+ const recovered=await retryResponse;await recovered.finished();
+ assert.ok(denebTableAttempts>beforeRetry,'Refresh must retry the failed Deneb world table');
+ // render() temporarily clears the status before the scheduled retry begins.
+ // Wait for the response and its painted frame, not that transient empty text.
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ await page.waitForFunction(()=>document.querySelector('#map-load-status').textContent==='');
  assert.ok(await page.locator('.overview-worlds circle').count()>0);
  assert.equal(await page.locator('.world-name,.world-uwp,.hex-grid').count(),0);
  assert.equal(await page.locator('.overview-labels [data-action]').count(),0);
