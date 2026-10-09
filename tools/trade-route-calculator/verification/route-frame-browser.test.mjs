@@ -13,6 +13,7 @@ const action=(page,name,arg)=>page.locator('[data-action="'+name+'"]'+(arg===und
 const click=(page,name,arg)=>action(page,name,arg).filter({visible:true}).first().click();
 const raw=page=>page.evaluate(key=>localStorage.getItem(key),campaignKey);
 const closed=page=>page.locator('#modal').waitFor({state:'hidden'});
+async function openRouteMenu(page){const menu=page.locator('#route-menu');if(!await menu.evaluate(el=>el.open))await menu.locator('summary').click();}
 function fixture(count){
  const f=guiFixture(30),all=[...f.state.route];
  f.state.route=all.slice(0,count);f.state.routeIndex=count>1?1:0;f.state.actual=f.state.route[f.state.routeIndex]||f.state.actual;
@@ -47,16 +48,15 @@ async function changingContent(page,f,count){
  const stable=async label=>{const actual=await mapCameraSnapshot(page,f.cameraIds);assertMapCameraUnchanged(actual,baseline,label);checks.push({label,height:actual.height});};
  for(const name of ['cargo-hold','cargo-hold-close','ship-expenses','refuel','refill-support']){await click(page,name);await stable('Route frame with '+name);assert.equal(await raw(page),f.bytes,'Panel switching remains read-only');}
  await click(page,'service-back');await stable('Service closed');const saved=await geometry(page,count);
- await page.locator('#route-menu > summary').click();await click(page,'route-build');await geometry(page,1,{preview:true});await stable('Short draft');
+ await openRouteMenu(page);await click(page,'route-build');await geometry(page,1,{preview:true});await stable('Short draft');
  for(let i=0;i<6;i++){await click(page,'map-world',f.previewIds[i%2]);await page.waitForFunction(()=>!document.querySelector('.route-draft [data-action="route-save"]')?.disabled);}
  const expanded=await geometry(page,7,{preview:true});await stable('Expanded draft');
  for(let i=0;i<6;i++)await click(page,'route-last');
  const contracted=await geometry(page,1,{preview:true});assert.ok(contracted.route.height<expanded.route.height-20,'Removing draft stops shrinks the same live border');await stable('Contracted draft');
  await click(page,'route-cancel');const cancelled=await geometry(page,count);assert.ok(Math.abs(cancelled.route.height-saved.route.height)<1,'Cancel restores the original frame height');await stable('Cancelled draft');assert.equal(await raw(page),f.bytes,'Draft growth/removal/cancel keep save and Undo byte-identical');
  const width=(await page.viewportSize()).width;await page.screenshot({path:artifacts+'/route-frame-'+count+'-'+width+'-camera.png',fullPage:true});
- if(!await page.locator('#route-menu').evaluate(el=>el.open))await page.locator('#route-menu > summary').click();
- await click(page,'route-clear');await page.locator('#modal-cancel').click();await closed(page);assert.equal(await raw(page),f.bytes,'Cancelled clear retains all bytes');
- await click(page,'route-clear');await page.locator('#modal-submit').click();await closed(page);
+ await openRouteMenu(page);await click(page,'route-clear');await page.locator('#modal-cancel').click();await closed(page);assert.equal(await raw(page),f.bytes,'Cancelled clear retains all bytes');
+ await openRouteMenu(page);await click(page,'route-clear');await page.locator('#modal-submit').click();await closed(page);
  const clear=await geometry(page,1);assert.ok(clear.route.height<saved.route.height-20,'Clearing a saved route removes unused frame height');await stable('Cleared saved route');
  const cleared=JSON.parse(await raw(page));assert.deepEqual(cleared.route,[f.state.actual]);for(const key of ['actual','hours','bank','lots','contracts','policies'])assert.deepEqual(cleared[key],f.state[key],'Clear preserves '+key);
  await page.screenshot({path:artifacts+'/route-frame-shrunk-'+count+'-'+width+'.png',fullPage:true});
