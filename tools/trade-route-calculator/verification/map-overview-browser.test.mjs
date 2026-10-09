@@ -42,8 +42,8 @@ const zoom=()=>page.locator('.map-zoom-controls .help').textContent();
 const level=()=>page.locator('.world-map').getAttribute('data-map-level');
 const transform=()=>page.locator('.map-content').getAttribute('transform');
 async function geometry(){
- const result=await page.locator('.world-map').evaluate(svg=>{const v=svg.viewBox.baseVal,b=svg.getBoundingClientRect(),m=svg.getScreenCTM();return {width:v.width,height:v.height,backgroundWidth:Number(svg.querySelector(':scope > rect').getAttribute('width')),backgroundHeight:Number(svg.querySelector(':scope > rect').getAttribute('height')),cssWidth:b.width,cssHeight:b.height,scaleX:m.a,scaleY:m.d};});
- assert.equal(result.height,440);assert.equal(result.backgroundHeight,440);assert.equal(result.backgroundWidth,result.width);
+ const result=await page.evaluate(()=>{const svg=document.querySelector('.world-map'),v=svg.viewBox.baseVal,b=svg.getBoundingClientRect(),m=svg.getScreenCTM();return {width:v.width,height:v.height,backgroundWidth:Number(svg.querySelector(':scope > rect').getAttribute('width')),backgroundHeight:Number(svg.querySelector(':scope > rect').getAttribute('height')),cssWidth:b.width,cssHeight:b.height,scaleX:m.a,scaleY:m.d};});
+ assert.equal(result.height,440);assert.equal(result.backgroundHeight,440);assert.ok(Math.abs(result.backgroundWidth-result.width)<.001,'SVG float geometry matches the full background');
  assert.ok(Math.abs(result.scaleX-result.scaleY)<.001,'Viewport does not stretch map geography');
  assert.ok(Math.abs(result.width/result.height-result.cssWidth/result.cssHeight)<.015,'Logical and displayed map aspects agree');
  assert.ok(result.cssHeight>=418&&result.cssHeight<=642,'Taller responsive map retains eight to nine rows');

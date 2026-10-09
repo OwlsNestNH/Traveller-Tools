@@ -71,17 +71,27 @@ async function run(stops){
   return details;
  }
  async function geometry(){
+  // Resizing may replace the SVG between two Playwright protocol calls. Wait
+  // for the current CSS width's intended geometry, not an old viewBox that is
+  // merely internally consistent; then select and measure the live node in
+  // one atomic page evaluation, without retaining a locator-resolved element.
   await page.waitForFunction(()=>{
    const svg=document.querySelector('.world-map');if(!svg)return false;
    const b=svg.getBoundingClientRect(),v=svg.viewBox.baseVal;
-   return v.height===440&&Math.abs(v.width/v.height-b.width/b.height)<.015;
+   const expectedHeight=Math.max(420,Math.min(640,b.width*.45));
+   const expectedWidth=b.width*440/expectedHeight;
+   return b.width>0&&v.height===440&&Math.abs(v.width-expectedWidth)<.1&&Math.abs(b.height-expectedHeight)<2;
   });
-  const result=await page.locator('.world-map').evaluate(svg=>{
+  const result=await page.evaluate(()=>{
+   const svg=document.querySelector('.world-map');if(!svg)throw Error('Live map disappeared before geometry measurement');
    const box=svg.getBoundingClientRect(),v=svg.viewBox.baseVal,m=svg.getScreenCTM();
+   const expectedHeight=Math.max(420,Math.min(640,box.width*.45));
    const circles=[...svg.querySelectorAll('[data-action="map-world"] circle')].map(c=>{const b=c.getBoundingClientRect();return {width:b.width,height:b.height};});
-   return {width:box.width,height:box.height,logicalWidth:v.width,logicalHeight:v.height,scaleX:Math.hypot(m.a,m.b),scaleY:Math.hypot(m.c,m.d),circles,overflow:document.documentElement.scrollWidth-innerWidth};
+   return {width:box.width,height:box.height,expectedHeight,expectedWidth:box.width*440/expectedHeight,logicalWidth:v.width,logicalHeight:v.height,scaleX:Math.hypot(m.a,m.b),scaleY:Math.hypot(m.c,m.d),circles,overflow:document.documentElement.scrollWidth-innerWidth};
   });
-  assert.ok(result.height>=300,'Map remains a substantial viewport at every width');
+  assert.ok(Math.abs(result.height-result.expectedHeight)<2,`Map height ${result.height} must match intended height ${result.expectedHeight}`);
+  assert.ok(Math.abs(result.logicalWidth-result.expectedWidth)<.1,'Logical map width must track the current rendered width');
+  assert.ok(result.height>=419,'The map retains its 420px minimum at every width');
   assert.ok(Math.abs(result.scaleX-result.scaleY)<.001,'The map uses uniform scale, not stretched circles');
   assert.ok(result.circles.length>=2,'Synthetic nearby worlds are visible');
   assert.ok(result.circles.every(c=>Math.abs(c.width-c.height)<.1),'All visible marker circles remain round');

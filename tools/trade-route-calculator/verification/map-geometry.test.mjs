@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
-import {MAP_GEOMETRY,setMapGeometry} from '../js/map-geometry.mjs?v=map-first-1';
+import {MAP_GEOMETRY,setMapGeometry,visibleMapWorlds} from '../js/map-geometry.mjs?v=map-first-1';
 import {camera,viewportTiles} from '../js/map-viewport.mjs';
 import {visibleSectors,overviewMarkup} from '../js/map-overview.mjs';
 import {readFile} from 'node:fs/promises';
@@ -56,5 +56,16 @@ test('expanded Overview geometry drives tile loads, projection and clipping toge
   assert.equal(setMapGeometry(1000,440),false,'Unchanged resize is a no-op');
   setMapGeometry(320,440);assert.equal(MAP_GEOMETRY.originX,160);assert.equal(MAP_GEOMETRY.height/50,8.8);
   assert.throws(()=>setMapGeometry(0,440),/Invalid/);
+ }finally{setMapGeometry(520,320);}
+});
+
+test('expanded 20% viewport keeps every visible marker above the former 1500-world cap',()=>{
+ const worlds=[];for(let x=-67;x<=67;x++)for(let y=-21;y<=21;y++)if((x+y)%3===0)worlds.push({id:x+','+y,x,y});
+ try{
+  setMapGeometry(1200,440);
+  const visible=visibleMapWorlds(worlds,{x:0,y:0},10);
+  assert.ok(visible.length>1500);assert.equal(visible.length,worlds.length);
+  assert.ok(visible.some(w=>w.id===worlds.at(-1).id),'The last loaded visible world remains selectable');
+  assert.equal(visibleMapWorlds([...worlds,{id:'outside',x:1000,y:0}],{x:0,y:0},10).length,visible.length,'Offscreen worlds are still culled');
  }finally{setMapGeometry(520,320);}
 });

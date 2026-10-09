@@ -7,3 +7,9 @@ export function setMapGeometry(width,height){
  if(Math.abs(MAP_GEOMETRY.width-width)<.01&&Math.abs(MAP_GEOMETRY.height-height)<.01)return false;
  MAP_GEOMETRY=geometry(width,height);return true;
 }
+
+// Cull only by the displayed bounds. A widened, zoomed-out viewport can contain
+// more than 1,500 worlds; truncating the result would silently hide geography.
+export function visibleMapWorlds(worlds,center,scale){
+ return worlds.filter(w=>Math.abs(w.x-center.x)*scale*Math.sqrt(3)/2<MAP_GEOMETRY.halfWidth+70&&Math.abs(w.y+((w.x%2+2)%2)*.5-center.y)*scale<MAP_GEOMETRY.halfHeight+60);
+}
