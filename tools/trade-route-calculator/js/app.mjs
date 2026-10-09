@@ -6,7 +6,7 @@ import {tiers,luggageAllowance,occupants,passengerLuggage,serviceRate,serviceLab
 import * as A from './amounts.mjs';
 import {parseDate,displayDate} from './calendar.mjs';
 import * as R from './rules.mjs?v=mail-result-roll-1';
-import * as S from './state.mjs?v=price-limits-1';
+import * as S from './state.mjs?v=foundation-reliability-1';
 import * as E from './expenses.mjs?v=fuel-warning-1';
 import {planetInformation,worldSheetURL} from './planet-info.mjs';
 import * as M from './map.mjs?v=map-overview-1';
@@ -14,7 +14,7 @@ import {camera,viewportTiles,MapAreaCache} from './map-viewport.mjs';
 import {nextMapZoom,mapLevel,MapOverviewCache,overviewMarkup,mapTerritories} from './map-overview.mjs';
 import {readPoliticalTerritory,savePoliticalTerritory} from './map-preferences.mjs';
 import {createWorldPicker,rememberWorld} from './world-picker.mjs?v=fuel-warning-1';
-import {Store,KEY} from './persistence.mjs?v=price-limits-1';
+import {Store,KEY} from './persistence.mjs?v=foundation-reliability-1';
 const $=id=>document.getElementById(id),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ROOT='https://github.com/OwlsNestNH/Traveller-Tools/blob/main/tools/trade-route-calculator/';
 let inputRounding=[];

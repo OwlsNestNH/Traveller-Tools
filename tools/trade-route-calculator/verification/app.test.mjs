@@ -36,7 +36,9 @@ test('routing uses configured maximum jump, longer legs first, and explicit shor
  }
  assert.deepEqual(M.plan(worlds,['0,0','0,1','0,5'],{jump:4,scoops:false},core),['0,0','0,1','0,5']);
  worlds['0,4'].fuelOverride=false;
- assert.deepEqual(M.plan(worlds,['0,0','0,5'],{jump:4,scoops:false},core),['0,0','0,3','0,5']);
+ // Campaign fuel override (11b9e19): unavailable supply warns; it does not reroute.
+ assert.equal(M.fuel(worlds['0,4'],{jump:4,scoops:false},core),false);
+ assert.deepEqual(M.plan(worlds,['0,0','0,5'],{jump:4,scoops:false},core),['0,0','0,4','0,5']);
  assert.deepEqual(M.plan(worlds,['0,0','0,3'],{jump:4,scoops:false},core),['0,0','0,3']);
 });
 function campaign(){const s=S.initial();s.initialized=true;s.bank='1000000';s.worlds={'0,0':w(),'1,0':w('1,0',1,0)};s.actual='0,0';s.route=['0,0','1,0'];s.snapshots=[{id:'s',kind:'supplier',hours:0,startedHours:0,worldId:'0,0',party:'supplier',offers:[{id:'o',commodity:'11',description:'Electronics',unitPrice:'100',quantity:'10',remaining:'10',expired:false}]}];return s;}
@@ -86,7 +88,7 @@ test('contract delivery once at destination and late penalty',()=>{const s=campa
 test('opening cargo never debits bank; correction and undo preserve history',()=>{const s=campaign();const n=S.transition(s,'opening',x=>S.addLot(x,lot('a','100','0.5'),'Opening cargo',true));assert.equal(n.bank,s.bank);assert.equal(A.decimal(S.used(n)),'1');assert.equal(S.undo(n).lots.length,0);});
 test('campaign round-trip and malformed imports',()=>{const s=campaign();assert.deepEqual(S.validate(JSON.parse(JSON.stringify(s))),s);const bad=campaign();bad.worlds['0,0'].id='\" onmouseover=alert(1)';assert.throws(()=>S.validate(bad));const big=campaign();big.ship.capacity='-1';assert.throws(()=>S.validate(big));});
 test('world-space hex distances across negative and positive parity',()=>{assert.equal(M.distance(w('-110,-70',-110,-70),w('-111,-71',-111,-71)),1);assert.equal(M.distance(w('-110,-70',-110,-70),w('-111,-70',-111,-70)),1);assert.equal(M.distance(w('0,0',0,0),w('1,-1',1,-1)),1);});
-test('fewest-jumps route, mandatory stops and unavailable fuel',()=>{const worlds=Object.fromEntries([w(),w('1,0',1,0),w('2,0',2,0),w('3,0',3,0)].map(x=>[x.id,x]));const ship={jump:2,scoops:false};assert.deepEqual(M.plan(worlds,['0,0','3,0'],ship,core),['0,0','2,0','3,0']);assert.deepEqual(M.plan(worlds,['0,0','1,0','3,0'],ship,core),['0,0','1,0','3,0']);assert.deepEqual(M.plan(worlds,['0,0','2,0','3,0'],ship,core),['0,0','2,0','3,0']);worlds['3,0'].fuelOverride=false;assert.throws(()=>M.plan(worlds,['0,0','3,0'],ship,core));});
+test('fewest-jumps route preserves mandatory stops even with unavailable destination fuel',()=>{const worlds=Object.fromEntries([w(),w('1,0',1,0),w('2,0',2,0),w('3,0',3,0)].map(x=>[x.id,x]));const ship={jump:2,scoops:false};assert.deepEqual(M.plan(worlds,['0,0','3,0'],ship,core),['0,0','2,0','3,0']);assert.deepEqual(M.plan(worlds,['0,0','1,0','3,0'],ship,core),['0,0','1,0','3,0']);assert.deepEqual(M.plan(worlds,['0,0','2,0','3,0'],ship,core),['0,0','2,0','3,0']);worlds['3,0'].fuelOverride=false;assert.equal(M.fuel(worlds['3,0'],ship,core),false);assert.deepEqual(M.plan(worlds,['0,0','3,0'],ship,core),['0,0','2,0','3,0']);});
 
 test('insure held cargo charges only premium, blocks overlapping policies, and undoes atomically',()=>{
  const s=campaign();s.lots=[lot('held','1000','2')];const q={...R.insuranceQuote('1000',70,1,['Red'],mp),route:['0,0','1,0'],destination:'1,0',routeProgress:0};

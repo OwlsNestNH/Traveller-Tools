@@ -40,8 +40,12 @@ Run the standard-library source/data checks and Node unit tests:
 
 ```sh
 python verification/check_rules.py
-node --test verification/app.test.mjs
+node verification/run-native.mjs
 ```
+
+The native runner discovers every `node:test` suite; do not use `verification/*.test.mjs` with `node --test`, because that also selects the standalone browser scripts.
+
+Pull requests run all native suites, the 198 rules-data checks, the shared tool-visit check, and seven independent deterministic Chromium suites: main application, modal lifecycle, click routing, fuel, empty space, Mail, and map overview. See `.github/workflows/mail-browser.yml` at the repository root. Every job verifies the exact PR head and uploads evidence; it has read-only permissions and cannot deploy. Live API availability and the remaining browser scripts are separate checks.
 
 The browser scripts use Playwright only for development testing; it is not an application dependency. With Playwright installed, run:
 
@@ -56,7 +60,7 @@ The main browser test uses deterministic API fixtures based on a checked live re
 
 ## World selection and map
 
-**Auto plot** lets you click a destination on the map. **Build route** lets you click required stops in order, remove any chosen stop, or remove the last stop. Auto plot finds connecting stops using the jump rating in Settings and the existing fuel rules. Build route keeps exactly the worlds clicked, in order, without inserting or replacing stops. Invalid direct legs are flagged and must be corrected manually before saving. Review the preview and select **Save planned route** to confirm; Cancel planning leaves the saved route unchanged.
+**Auto plot** lets you click a destination on the map. **Build route** lets you click required stops in order, remove any chosen stop, or remove the last stop. Auto plot finds connecting stops using the jump rating in Settings, preferring longer legs first when jump counts tie, then stable world IDs. Unconfirmed fuel produces a warning and does not change route ranking under the approved campaign override. Build route keeps exactly the worlds clicked, in order, without inserting or replacing stops. Invalid direct legs are flagged and must be corrected manually before saving. Review the preview and select **Save planned route** to confirm; Cancel planning leaves the saved route unchanged.
 
 **Clear planned route** clears future stops and resets the plan to the ship's current actual world. It does not move the ship back to its original campaign starting world. Time, bank, cargo, insurance terms and completed travel history remain unchanged; Undo restores the previous plan. Only **COMMIT JUMP** travels along the route.
 
@@ -113,7 +117,7 @@ Enter total **Ship displacement**, **Jump-fuel tank capacity**, and **Jump fuel 
 
 Ship expenses suggests the deficit for the next planned jump, or the empty tank space when there is no next leg. **Fuel for next jump** and **Fill tank** set an editable purchase quantity. Purchased refined fuel costs Cr500/ton; purchased unrefined Cr100/ton; confirmed natural water collection remains free under existing availability rules. Confirming adds fuel to the tank and records a readable before/after audit; overfilling and unaffordable purchases are rejected.
 
-A committed jump consumes 10% of total hull tonnage per actual parsec, rounded up to whole tons, with a minimum Jump-1 expenditure. A 200-ton ship uses 20 tons for one parsec and 40 for two. Configured ships cannot commit a jump without enough fuel. Browsing, planning and cancelled previews consume none. Undo restores fuel along with the transaction or jump. Fuel type is recorded per purchase; grade mixing, refining, unrefined-fuel jump penalties and power-plant fuel are resolved outside this tool.
+A committed jump consumes 10% of total hull tonnage per actual parsec, rounded up to whole tons, with a minimum Jump-1 expenditure. A 200-ton ship uses 20 tons for one parsec and 40 for two. Under the approved campaign override, insufficient aboard fuel warns but does not block a jump. The commit consumes available fuel down to zero and records the required amount, consumed amount and shortfall. Browsing, planning and cancelled previews consume none. Undo restores fuel along with the transaction or jump. Fuel type is recorded per purchase; grade mixing, refining, unrefined-fuel jump penalties and power-plant fuel are resolved outside this tool.
 
 Source: Core Rulebook Update 2022, p. 157 (jump consumption), p. 154 (prices); p. 180 distinguishes jump and power-plant tankage. Run `node --test verification/fuel.test.mjs` and `node verification/fuel-browser.test.mjs`.
 

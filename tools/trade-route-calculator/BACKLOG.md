@@ -7,8 +7,8 @@ These ideas are outside locked V1 scope. They are candidates for later design, n
 | Idea | Later scope / design needed |
 | --- | --- |
 | Passengers | Availability, passage classes, stateroom/low-berth capacity, life support, bookings, delivery, and payments. Explicitly excluded from V1. |
-| More route modes | Profit-oriented, least-distance as a primary objective, safest, fuel-cost optimization, circuit/loop routes, and comparisons. V1 already includes automatic Fewest jumps using the configured ship rating, editable mandatory stops, fuel-availability validation, and longer legs first when jump counts tie. |
-| Full ship economics | Automated fuel quantities/consumption and cost, maintenance, mortgages, crew pay, life support, and recurring port/operating expenses. V1 supports manual expenses and fuel-availability route validation. |
+| More route modes | Profit-oriented, least-distance as a primary objective, safest, fuel-cost optimization, circuit/loop routes, and comparisons. V1 already includes automatic Fewest jumps using the configured ship rating, editable mandatory stops, nonblocking fuel-availability warnings, and longer legs first when jump counts tie. |
+| Full ship economics | Automated fuel quantities/consumption and cost, maintenance, mortgages, crew pay, life support, and recurring port/operating expenses. Current campaigns support explicit expenses and optional jump-fuel tracking; fuel supply and stock warnings do not block travel. |
 | Saved trader profiles | Reusable named trader/crew/broker configurations and switching among profiles. V1 retains the active trader state. |
 | Persistent campaign-specific world overrides | A reusable world-override registry with campaign identity, reset/version controls, and conflict handling. V1 supports editable effective UWP and preserves applied values in snapshots/state; a managed registry is deferred. |
 | Offline cache | Durable world/navigation cache, offline status, freshness policy, and refresh controls. V1 local campaign persistence does not imply offline API availability. |
@@ -37,6 +37,6 @@ Future ideas may be promoted into a release only through an explicit scope decis
 
 - [ ] Keep free browser-only campaigns with no account, local storage, and JSON export/import.
 - [ ] Offer optional password-protected cloud campaigns using Cloudflare Workers and D1, targeting their free tiers. Recheck quotas before implementation; paid upgrades require an explicit decision.
-- [ ] Support cross-device access and shared campaigns. Proposed access model: campaign code, individual player passwords, and owner/referee permissions; finalize this design before implementation.
+- [ ] Support cross-device access and shared campaigns, initially with one editor, read-only viewers and explicit editor handoff. Preserve the state/persistence boundary and JSON backup compatibility described in ARCHITECTURE.md; server-enforced ownership and revision conflicts require a separate design. Proposed access model: campaign code, individual player passwords, and owner/referee permissions; finalize this design before implementation.
 - [ ] Allow uploading a local campaign to the cloud and downloading a cloud campaign as a local copy. Preserve backups and handle conflicting edits safely.
 - Deferred only: no backend, accounts, or migration to be implemented now. Keep the separately downloaded Traveller Trade Simulator independent; use it for ideas unless explicitly authorized otherwise.

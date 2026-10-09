@@ -9,6 +9,7 @@ const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const base=process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/';
 const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BROWSER_CHANNEL?{channel:process.env.TRAVELLER_BROWSER_CHANNEL}:{})});
 const ctx=await browser.newContext({viewport:{width:1440,height:1100},acceptDownloads:true});
+await ctx.tracing.start({screenshots:true,snapshots:true,sources:true});
 const sample=[{Name:'Regina',Hex:'1910',UWP:'A788899-C',PBG:'703',Zone:'',WorldX:-110,WorldY:-70,Sector:'Spinward Marches'},{Name:'Jenghe',Hex:'1810',UWP:'C799663-9',PBG:'323',Zone:'',WorldX:-111,WorldY:-70,Sector:'Spinward Marches'},{Name:'Ruie',Hex:'1809',UWP:'C776977-7',PBG:'701',Zone:'A',WorldX:-111,WorldY:-71,Sector:'Spinward Marches'}];
 await ctx.route('https://travellermap.com/api/jumpworlds?*',async route=>{const u=new URL(route.request().url());const rows=u.searchParams.get('jump')==='0'?sample.filter(w=>w.Hex===(u.searchParams.get('hex')||'1910')):sample;await route.fulfill({json:{Worlds:rows},headers:{'Access-Control-Allow-Origin':'*'}});});
 await ctx.route('https://travellermap.com/api/universe?*',route=>route.fulfill({json:{Sectors:[{Names:[{Text:'Spinward Marches'}],Abbreviation:'Spin'},{Names:[{Text:'Empty Sector'}]}]}}));
@@ -121,7 +122,15 @@ try{
   assert.equal(await page.locator('#modal-body pre, #modal-body code').count(),0);assert.match(await page.locator('#modal-body').textContent(),/Actual payment/);await click('Close');
  }
  await click('History');
- for(const e of beforeDetails.events){
+ for(const [index,e] of beforeDetails.events.entries()){
+  const prior=beforeDetails.events[index-1];
+  // History deliberately displays the full jump audit instead of its paired
+  // transition-summary row. Require exactly that omission; don't skip missing audits.
+  if(e.label.startsWith('Jump: ')&&prior?.label==='Jump audit'&&prior.hours===e.hours&&prior.to===e.world){
+   assert.equal(await page.locator('[data-action="event-audit"][data-arg="'+e.id+'"]').count(),0);
+   assert.equal(await page.locator('[data-action="event-audit"][data-arg="'+prior.id+'"]').count(),1);
+   continue;
+  }
   await page.locator('[data-action="event-audit"][data-arg="'+e.id+'"]').click();
   const text=await page.locator('#modal-body').textContent();assert.equal(await page.locator('#modal-body pre, #modal-body code').count(),0);assert.doesNotMatch(text,/undefined|NaN|\[object Object\]/);
   if(e.offers){assert.match(text,/Search Effect/);assert.match(text,/Mail availability/);}
@@ -133,10 +142,19 @@ try{
  await click('Accounts');await click('Record expense');await fill('amount','1');await fill('reason','Stale preview must not commit');
  const second=await ctx.newPage();await second.goto(base);await second.getByText('Read-only: campaign open in another tab.',{exact:true}).waitFor();
  assert.equal(await second.getByRole('button',{name:'Find supplier',exact:true}).isDisabled(),true);
- await second.getByRole('button',{name:'Take over editing',exact:true}).click();await second.getByText('Editing in this tab',{exact:true}).waitFor();await page.getByText('Read-only: editing transferred to another tab.',{exact:true}).waitFor();
+ await second.getByRole('button',{name:'Take over editing',exact:true}).evaluate(button=>{button.click();button.click();button.click();});await second.getByText('Editing in this tab',{exact:true}).waitFor();await page.getByText('Read-only: editing transferred to another tab.',{exact:true}).waitFor();
  await second.getByRole('button',{name:'Accounts',exact:true}).click();await second.getByRole('button',{name:'Record expense',exact:true}).click();await second.locator('[name="amount"]').fill('2');await second.locator('[name="reason"]').fill('Second-tab change');await second.locator('#modal-submit').click();await second.locator('#modal').waitFor({state:'hidden'});
  const bankAfterOtherTab=(await read()).bank;assert.equal(await page.locator('#modal-submit').isDisabled(),true);await page.locator('#modal-error').getByText(/Editing moved to another tab/).waitFor();assert.equal((await read()).bank,bankAfterOtherTab);await click('Cancel');
- await second.close();await page.getByRole('button',{name:'Take over editing',exact:true}).click();await page.getByText('Editing in this tab',{exact:true}).waitFor();
+ // Hand back while the other tab is still alive: closing it would hide queued duplicates.
+ await page.getByRole('button',{name:'Take over editing',exact:true}).click();await page.getByText('Editing in this tab',{exact:true}).waitFor();
+ await second.getByText('Read-only: editing transferred to another tab.',{exact:true}).waitFor();
+ const ownership=await page.evaluate(()=>navigator.locks.query());
+ assert.equal(ownership.held.filter(lock=>lock.name==='traveller-trade-route-calculator:v1:writer').length,1);
+ assert.equal(ownership.pending.filter(lock=>lock.name==='traveller-trade-route-calculator:v1:writer').length,0);
+ await click('Accounts');await click('Record expense');await fill('amount','1');await fill('reason','Handback ownership check');await click('Save');await closed();
+ assert.equal((await read()).bank,String(BigInt(bankAfterOtherTab)-1n));
+ assert.equal(await second.getByRole('button',{name:'Record expense',exact:true}).isDisabled(),true);
+ await second.close();
  // Long-list layout and safe import/export round-trip use a valid expanded campaign fixture.
  let many=await read();const seed=many.lots[0];many.lots=Array.from({length:15},(_,i)=>({...seed,id:'fixture-'+i,quantity:'0.5',basis:String(100+i),goodsValue:'100',description:'Fixture cargo '+(i+1)}));many.policies=[];many.undo=[];many.revision++;
  await page.evaluate(s=>localStorage.setItem('traveller-trade-route-calculator:v1',JSON.stringify(s)),many);await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();
@@ -196,5 +214,5 @@ try{
  await click('History');await click('Undo latest change');assert.equal((await read()).bank,beforeRound.bank);assert.deepEqual((await read()).lots,beforeRound.lots);
  const recoveryCopy=await read();await page.evaluate(()=>localStorage.setItem('traveller-trade-route-calculator:v1','{corrupt'));await page.reload();await page.getByRole('heading',{name:'Recover saved campaign'}).waitFor();assert.equal(await page.evaluate(()=>localStorage.getItem('traveller-trade-route-calculator:v1')),'{corrupt');await page.locator('#import-file').setInputFiles({name:'recovery.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(recoveryCopy))});await page.getByRole('heading',{name:'Load campaign (JSON)'}).waitFor();await page.locator('[name="backed"]').check();await click('Replace campaign');await closed();assert.equal((await read()).lots.length,15);
  assert.deepEqual(errors,[]);console.log('PASS: browser purchase/sale/undo, browsing, route/jump, insurance/partial claim, late freight delivery, two-tab transfer/stale preview, 15 cargo rows, mobile layout, backup/import/reset cancellation, quota failure and notes. API responses stubbed from live sample.');
-}finally{await browser.close();}
+}catch(error){await page.screenshot({path:join(artifacts,'browser-failure.png'),fullPage:true}).catch(()=>{});throw error;}finally{await ctx.tracing.stop({path:join(artifacts,'browser-trace.zip')});await browser.close();}
 

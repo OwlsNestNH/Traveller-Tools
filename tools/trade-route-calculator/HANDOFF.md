@@ -1,9 +1,9 @@
 # Traveller Trade Route Calculator — Handoff
 
-**Updated:** 2026-10-08
+**Updated:** 2026-10-09
 **Repository:** [OwlsNestNH/Traveller-Tools](https://github.com/OwlsNestNH/Traveller-Tools)  
 **Tool folder:** `tools/trade-route-calculator/`  
-**Current main reviewed:** `edfd7ed221731f25d15741bf6df73ab4bb8f6f40`
+**Current main reviewed:** `4ec6d71f91cd7428f85e7d760e85c82bb90dbecd`
 
 Use the current GitHub files as the source of truth. This handoff summarizes continuity; it does not replace the requirements, rules decisions, verification record, or backlog.
 
@@ -57,3 +57,9 @@ Fresh isolated-cloud QA supplied by the coordinating task was performed on exact
 The original local command runner still failed before PowerShell started (`helper_unknown_error: setup refresh had errors`), including a login-disabled retry. That local limitation does not negate the subsequent native cloud checks above. Local memories, checkout status and local instructions remained inaccessible; implementation used pinned GitHub sources and preserved unrelated local files.
 
 The user explicitly approved merging PR #2 and publishing the tested feature after Git rollback was explained. Release verification must confirm the remote merge commit, successful Pages deployment and live controls. Git preserves code history; this is not a backup of browser campaign data.
+
+## Foundation reliability cleanup (2026-10-09)
+
+The two aggregate routing failures were stale expectations predating the approved warning-only fuel override in commit `11b9e1926ef292f72ba5e2516880edb035906f35`. The route algorithm and campaign rules are preserved; tests and conflicting route/fuel wording now match that contract. Additional route cases protect deterministic ties, ordered mandatory stops, missing connections, search bounds and nonmutation.
+
+The cleanup also deduplicates/cancels queued writer-lock requests, fails closed on lock/render errors, and rejects clearly malformed imported route/container/undo structures before replacing data. Schema 1 and valid legacy defaults remain supported. The expanded read-only CI runs the complete native/rules suite and seven independent deterministic browser scripts on each affected PR. Check the exact PR head's result before merging. Sharing implementation and new features remain deferred; no merge or deployment is authorized by this draft.
