@@ -1,4 +1,4 @@
-# Traveller Trade Route Calculator — Rules Verification
+# Traveller Ship Operations — Rules Verification
 
 **Overall status: source/data gate complete; initial application 0.1.0 automated checks passed. Campaign playtesting remains open.**
 

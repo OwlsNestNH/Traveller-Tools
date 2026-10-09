@@ -1,4 +1,4 @@
-# Traveller Trade Route Calculator — Deferred Backlog
+# Traveller Ship Operations — Deferred Backlog
 
 [Rules verification status and evidence](RULES_VERIFICATION.md)
 

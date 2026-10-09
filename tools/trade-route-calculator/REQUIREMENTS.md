@@ -1,4 +1,4 @@
-# Traveller Trade Route Calculator — V1 Requirements
+# Traveller Ship Operations — V1 Requirements
 
 [Rules verification status and evidence](RULES_VERIFICATION.md)
 

@@ -249,7 +249,7 @@ try{
  await click('Settings');const downloadPromise=page.waitForEvent('download');await click('Save campaign (JSON)');const download=await downloadPromise;assert.ok(download.suggestedFilename().endsWith('.json'));
  const beforeReport=await read(),reportDownload=page.waitForEvent('download');await click('Export report (TXT)');const reportFile=await reportDownload;
  assert.ok(reportFile.suggestedFilename().endsWith('.txt'));const reportText=await readFile(await reportFile.path(),'utf8');
- assert.match(reportText,/TRAVELLER - TRADE ROUTE REPORT/);assert.match(reportText,/Remaining total cost basis/);assert.match(reportText,/COMPLETED CARGO SALES/);assert.match(reportText,/Realized trading profit \/ loss/);assert.doesNotMatch(reportText,/\[object Object\]|undefined|NaN/);assert.deepEqual(await read(),beforeReport);
+ assert.match(reportText,/TRAVELLER SHIP OPERATIONS - CAMPAIGN REPORT/);assert.match(reportText,/Remaining total cost basis/);assert.match(reportText,/COMPLETED CARGO SALES/);assert.match(reportText,/Realized trading profit \/ loss/);assert.doesNotMatch(reportText,/\[object Object\]|undefined|NaN/);assert.deepEqual(await read(),beforeReport);
  await reportFile.saveAs(join(artifacts,'campaign-summary.txt'));
 
  await click('Reset campaign');await click('Cancel');assert.equal((await read()).lots.length,15);

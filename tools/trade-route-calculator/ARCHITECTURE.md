@@ -1,4 +1,4 @@
-# Traveller Trade Route Calculator — Architecture Plan
+# Traveller Ship Operations — Architecture Plan
 
 [Rules verification status and evidence](RULES_VERIFICATION.md)
 

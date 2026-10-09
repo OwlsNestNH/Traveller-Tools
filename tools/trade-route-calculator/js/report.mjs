@@ -5,7 +5,7 @@ import {displayDate} from './calendar.mjs';
 import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=passenger-input-3';
 import {distance} from './map.mjs?v=fuel-warning-1';
 
-export const REPORT_VERSION='2026.10.09.18';
+export const REPORT_VERSION='2026.10.09.23';
 const clean=v=>String(v??'Not recorded').replace(/[\r\n\t\x00-\x1f]+/g,' ').trim();
 const number=v=>String(v).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const cr=v=>v==null?'Not recorded':'Cr '+number(v);
@@ -25,7 +25,7 @@ export function campaignReport(s,core,{exportedAt=new Date()}={}){
  const complete=sales.every(e=>e.audit?.adjusted!=null);
  const retained=total(sales.map(e=>e.audit?.adjusted)),operating=-total(expenses.map(e=>e.amount));
  const income=total(s.ledger.filter(e=>['Freight delivery','Mail delivery'].includes(e.type)).map(e=>e.amount));
- out.push('TRAVELLER - TRADE ROUTE REPORT');
+ out.push('TRAVELLER SHIP OPERATIONS - CAMPAIGN REPORT');
  line('Campaign',s.name);line('Ship',s.ship.name);line('Campaign date',date(s.hours));line('Current system',world(s.actual));
  line('Exported',exportedAt.toISOString());line('Calculator version',REPORT_VERSION);
  section('SHIP & OCCUPANTS');

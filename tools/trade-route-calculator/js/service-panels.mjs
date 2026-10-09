@@ -1,8 +1,8 @@
 import * as A from './amounts.mjs';
 import {bladderSpace,fuelPurchase} from './fuel.mjs?v=mfd-services-1';
-import {expenseQuote,fuelAvailability,starport} from './expenses.mjs?v=cargo-hex-20261009-22';
+import {expenseQuote,fuelAvailability,starport} from './expenses.mjs?v=route-frame-name-20261009-23';
 import {refillQuote,supportStock,supportCargo,supportAmount,anchorSupport} from './life-support.mjs?v=mfd-services-1';
-import {used,validate,shipExpense,refillLifeSupport,uid} from './state.mjs?v=cargo-hex-20261009-22';
+import {used,validate,shipExpense,refillLifeSupport,uid} from './state.mjs?v=route-frame-name-20261009-23';
 import {creditStep} from './rounding.mjs';
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=x=>'Cr '+String(x).replace(/\B(?=(\d{3})+(?!\d))/g,','),num=x=>x==null?'Unknown':String(Number(Number(x).toFixed(3)));

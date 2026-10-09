@@ -1,8 +1,8 @@
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=cargo-hex-20261009-22';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=route-frame-name-20261009-23';
 import {monthlySupport,supportComplement} from './life-support.mjs?v=mfd-services-1';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=cargo-hex-20261009-22';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=cargo-hex-20261009-22';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=route-frame-name-20261009-23';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=route-frame-name-20261009-23';
 import {creditStep} from './rounding.mjs';
 import {roll} from './rules.mjs';
 
