@@ -237,7 +237,7 @@ async function navigationAndDrafts(page,f){
   await click(page,'cargo-hold');await opened(page);
  }
  await click(page,'ship-expenses');await page.locator('#expense-panel').waitFor();
- const oldExpenseLink=await remember('#expense-panel [data-action="expense-open"]');
+ const oldExpenseLink=await remember('#expense-panel [data-action="expense-open"][data-arg$=":mortgage"]');
  await click(page,'cargo-hold');await replay(oldExpenseLink);await opened(page);
  await click(page,'ship-expenses');await page.getByRole('button',{name:'Mortgage ›',exact:true}).click();
  await page.locator('#expense-form [name="payments"]').fill('2');

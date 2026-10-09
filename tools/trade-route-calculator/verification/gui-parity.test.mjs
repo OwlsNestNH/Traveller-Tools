@@ -177,9 +177,10 @@ async function run(stops){
   assert.equal(await page.locator('.overview-cargo').count(),1,'Overview owns the compact cargo table');
   assert.equal(await page.locator('#market-search').count(),0,'Full supplier trading belongs on Trade');
   await unchanged('Initial shell');
-  const serviceStyles=await page.locator('.ship-actions > button').evaluateAll(buttons=>buttons.map(button=>{const s=getComputedStyle(button);return {background:s.background,color:s.color,border:s.borderColor};}));
-  assert.equal(serviceStyles.length,3,'Three direct ship service shortcuts remain; Port costs is inside Expenses');
-  assert.ok(serviceStyles.every(style=>JSON.stringify(style)===JSON.stringify(serviceStyles[0])),'Ship expenses uses the same primary colors as the other ship services');
+  const serviceStyles=await page.locator('.ship-actions > button').evaluateAll(buttons=>buttons.map(button=>{const s=getComputedStyle(button);return {action:button.dataset.action,style:{background:s.background,color:s.color,border:s.borderColor}};}));
+  assert.equal(serviceStyles.length,4,'Four direct shortcuts include Cargo Hold; Port costs remains inside Expenses');
+  assert.deepEqual(serviceStyles.map(item=>item.action),['refuel','refill-support','cargo-hold','ship-expenses']);
+  assert.ok(serviceStyles.filter(item=>item.action!=='cargo-hold').every(item=>JSON.stringify(item.style)===JSON.stringify(serviceStyles[0].style)),'Ship expenses uses the same primary colors as the other ship services');
   const compactRows=await page.locator('.overview-cargo tbody tr').evaluateAll(rows=>rows.map(row=>[...row.querySelectorAll('td')].map(td=>td.textContent)));
   const recordedAudit=fixture.state.lots[0].audit.price.audit;
   const recordedDM=recordedAudit.skill+recordedAudit.localDM-recordedAudit.counterparty+recordedAudit.purchase.selected-recordedAudit.sale.selected;
