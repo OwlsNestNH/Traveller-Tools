@@ -265,8 +265,9 @@ async function run(stops){
   // zooms only the map without moving the page. Do not synthesize a DOM event.
   await page.setViewportSize({width:1280,height:800});await geometry();
   const hoverMap=async()=>{
-   const point=await page.locator('.world-map').evaluate(svg=>{svg.scrollIntoView({block:'center',behavior:'instant'});const b=svg.getBoundingClientRect();return {x:b.x+b.width*.5,y:b.y+b.height*.5};});
-   await page.mouse.move(point.x,point.y);await frames();
+   // Scrolling can trigger a map redraw. Locator hover re-resolves a detached
+   // SVG rather than sending the wheel to a stale element's zero-size bounds.
+   await page.locator('.world-map').hover();await frames();
   };
   await hoverMap();const plainScroll=await page.evaluate(()=>scrollY);
   await page.mouse.wheel(0,160);

@@ -326,6 +326,13 @@ hover title and selected-world screen. The optional UWP label retains calculator
 overrides. The cyan ship marker and white selection brackets are distinct.
 Clicking, keyboard browsing, panning or zooming never moves the ship.
 
+Small World Data labels, values, UWP rows and map-key text use 14px type.
+The selected-world name and the existing panel widths are unchanged; long values
+remain fully readable. UWP words stay intact; the table scrolls inside the panel
+on narrow screens instead of splitting labels or meanings mid-word. Jump-fuel
+and life-support bars share aligned summary
+tracks even when a value or the life-support stock note wraps.
+
 The compact key below the data explains symbols and distinguishes political
 borders from travel zones. Unknown data stays unknown, including missing bases,
 gas-giant counts and unknown-world population. No Wiki or generated-world links
