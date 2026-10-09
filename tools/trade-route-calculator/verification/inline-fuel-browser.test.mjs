@@ -77,10 +77,12 @@ try{
   const {f,page,action,click,field,fill,unchanged,frames,screenshot,remember,replay,open,closed}=h;
   const ids=f.state.route,camera=()=>mapCameraSnapshot(page,ids);
   await click('map-zoom-in');await frames();
-  const drag=await page.locator('.world-map').evaluate(map=>{map.scrollIntoView({block:'center',behavior:'instant'});const r=map.getBoundingClientRect();return {x:r.left+r.width*.65,y:r.top+r.height*.5,pan:map.querySelector('.map-content').getAttribute('transform')};});
-  await page.mouse.move(drag.x,drag.y);await page.mouse.down();await page.mouse.move(drag.x+24,drag.y+15,{steps:8});await page.mouse.up();
-  await page.waitForFunction(before=>document.querySelector('.map-content').getAttribute('transform')!==before,drag.pan);
-  const initialCamera=await camera();assert.notEqual(initialCamera.zoom,'100%');assert.notEqual(initialCamera.pan,'translate(0 0)');
+  const panMap=async()=>{
+   const drag=await page.locator('.world-map').evaluate(map=>{map.scrollIntoView({block:'center',behavior:'instant'});const r=map.getBoundingClientRect();return {x:r.left+r.width*.65,y:r.top+r.height*.5,pan:map.querySelector('.map-content').getAttribute('transform')};});
+   await page.mouse.move(drag.x,drag.y);await page.mouse.down();await page.mouse.move(drag.x+24,drag.y+15,{steps:8});await page.mouse.up();
+   await page.waitForFunction(before=>document.querySelector('.map-content').getAttribute('transform')!==before,drag.pan);
+  };
+  await panMap();let initialCamera=await camera();assert.notEqual(initialCamera.zoom,'100%');assert.notEqual(initialCamera.pan,'translate(0 0)');
   const sameCamera=async label=>assertMapCameraUnchanged(await camera(),initialCamera,label);
   await open();await sameCamera('Open inline fuel');await unchanged('Open inline fuel');
   assert.equal(await field('fuelTons').inputValue(),'23');assert.deepEqual(await field('fuelType').locator('option').evaluateAll(els=>els.map(el=>el.value)),['refined','unrefined','water','custom']);
@@ -95,7 +97,10 @@ try{
   await fill('fuelTons','2.25');await field('fuelType').selectOption('custom');await field('customFuelType').selectOption('unrefined');await fill('customFuelRate','101.25');await fill('expenseNotes','Negotiated local price');
   assert.match(await page.locator('#service-quote').textContent(),/Entered 2\.25 t → 3 t/);assert.match(await page.locator('#service-quote .service-total strong').textContent(),/Cr 304/);await unchanged('All draft inputs');await sameCamera('Custom fields');await checkControls(page);await screenshot('custom');
   const values=async()=>Object.fromEntries(await Promise.all(['fuelTons','fuelType','customFuelType','customFuelRate','expenseNotes'].map(async name=>[name,await field(name).inputValue()]))),draft=await values();
-  await click('map-world',f.state.route[1]);await frames();assert.deepEqual(await values(),draft);assert.match(await page.locator('#service-panel h3').textContent(),/Actual Fuel Harbor/);assert.equal(await action('service-confirm').isEnabled(),true);await unchanged('Browse dry remote world');await sameCamera('World browse');
+  await click('map-world',f.state.route[1]);await frames();assert.deepEqual(await values(),draft);assert.match(await page.locator('#service-panel h3').textContent(),/Actual Fuel Harbor/);assert.equal(await action('service-confirm').isEnabled(),true);await unchanged('Browse dry remote world');
+  // Explicit world selection intentionally recenters the existing map. Re-pan
+  // afterward so navigation checks still exercise a nonzero camera offset.
+  assert.equal((await camera()).zoom,initialCamera.zoom);assert.equal((await camera()).pan,'translate(0 0)');await panMap();initialCamera=await camera();assert.notEqual(initialCamera.pan,'translate(0 0)');
   const beforeNearby=await camera(),response=page.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/jumpworlds'));await click('nearby');await response;await frames();assert.deepEqual(await values(),draft);assertMapCameraUnchanged(await camera(),beforeNearby,'Nearby refresh');await unchanged('Nearby refresh');
   const oldConfirm=await remember('#service-panel [data-action="service-confirm"]');await click('service-back');await closed();await unchanged('Back');await sameCamera('Back');
   await open();await replay(oldConfirm);assert.equal(await field('fuelTons').inputValue(),'23');await unchanged('Detached confirm after reopen');
