@@ -1,10 +1,11 @@
+import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=mfd-services-1';
 import {bladderSpace} from './fuel.mjs?v=bladder-stock-1';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
 import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=passenger-input-3';
 import {distance} from './map.mjs?v=fuel-warning-1';
 
-export const REPORT_VERSION='2026.10.05.19';
+export const REPORT_VERSION='2026.10.09.18';
 const clean=v=>String(v??'Not recorded').replace(/[\r\n\t\x00-\x1f]+/g,' ').trim();
 const number=v=>String(v).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const cr=v=>v==null?'Not recorded':'Cr '+number(v);
@@ -30,7 +31,7 @@ export function campaignReport(s,core,{exportedAt=new Date()}={}){
  section('SHIP & OCCUPANTS');
  const cargo=A.sum(s.lots.map(l=>l.quantity)),freight=A.sum(s.contracts.filter(c=>c.status==='accepted').map(c=>c.quantity)),luggage=passengerLuggage(s.ship);
  line('Cargo capacity',s.ship.capacity+' tons');line('Speculative cargo aboard',A.decimal(cargo)+' tons');line('Freight / mail aboard',A.decimal(freight)+' tons');line('Passenger luggage',luggage+' tons');
- line('Cargo space used by fuel in bladders',bladderSpace(s.ship)+' tons');line('Space available',A.decimal(A.sub(s.ship.capacity,A.sum([cargo,freight,luggage,bladderSpace(s.ship)])))+' tons');
+ line('Cargo space used by fuel in bladders',bladderSpace(s.ship)+' tons');line('Cargo space used by life support',supportStock(s.ship).cargoTons===null?'Unknown until stock and hull are recorded':supportDisplay(supportCargo(s.ship))+' tons');line('Space available',supportDisplay(A.sub(s.ship.capacity,A.sum([cargo,freight,luggage,bladderSpace(s.ship),supportCargo(s.ship)])))+' tons');
  line('Jump rating',s.ship.jump);if(s.ship.fuel){line('Ship displacement',s.ship.fuel.displacementTons+' tons');line('Jump fuel aboard / capacity',s.ship.fuel.aboardTons+' / '+s.ship.fuel.capacityTons+' tons');line('Fuel scope','Jump fuel only; power-plant fuel excluded.');}line('Staterooms (all, including empty)',roomTotal(s.ship));
  for(const tier of ['low','middle','high']){const service=s.ship.accommodation?.roomService?.[tier];line('  '+tier+' staterooms',roomCounts(s.ship)[tier]+'; '+serviceLabel(tier,service)+' service; '+cr(serviceRate(tier,service))+'/room/month');}
  line('Cost basis','Campaign rates; weekly charges are one quarter of monthly rates.');
@@ -43,7 +44,7 @@ export function campaignReport(s,core,{exportedAt=new Date()}={}){
   }
  }
  if(s.ship.accommodation?.combinedPeople)line('People receiving high service',(occ.passengers?.high??0)+(occ.crew?.high??0));
- if(s.ship.lifeSupport)line('Life support days remaining / capacity',Math.ceil(s.ship.lifeSupport.remainingHours/24)+' / '+Math.ceil(s.ship.lifeSupport.capacityHours/24));
+ if(s.ship.lifeSupport){const q=supportStock(s.ship);line('Life support stock',q.remainingUnits===null?'Legacy days; actual LSS needs confirmation':q.remainingUnits+' LSS');line('Life support days / refill target',(q.remainingDays??'Unknown at current complement')+' / '+q.targetDays);line('Awake people / occupied low berths',q.awakePeople+' / '+q.occupiedLowBerths);line('Life support consumption',q.complementKnown?q.dailyUnits+' LSS/day':'Unknown complement');line('Internal life support capacity',q.internalCapacityUnits===null?'Unknown until hull displacement is recorded':q.internalCapacityUnits+' LSS');line('Life support source',supportReference);if(q.legacy)line('Legacy life support',q.migration.possible?'Converts inside the next reversible campaign change.':q.migration.reason);}
  section('FINANCIAL SUMMARY');
  const opening=s.ledger.find(e=>e.type==='Opening bank');
  line('Opening bank',cr(opening?.amount));line('Current bank',cr(s.bank));
