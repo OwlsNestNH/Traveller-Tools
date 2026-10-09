@@ -63,28 +63,29 @@ async function run(name,options,test){
 try{
  await run('fuel draft controls and navigation',{},async h=>{
   const {f,page,action,click,field,fill,read,unchanged,frames,open,closed}=h;
-  await open();await unchanged('Opening the summary');
-  assert.equal(await page.locator('#service-form').count(),0,'Summary opens before editing');
+  await open();await unchanged('Opening the inline form');
+  assert.equal(await page.locator('#service-form').count(),1,'Refuel opens directly for editing');
+  assert.equal(await action('service-adjust').count(),0);assert.equal(await action('service-review').count(),0);
   assert.equal(await page.locator('.world-screen:not(#service-panel)').count(),0,'Service replaces the world screen');
   assert.match(await page.locator('#service-panel').textContent(),/Actual Service Harbor/);
   for(const name of ['jump','day-back','day-forward'])assert.equal(await action(name).isDisabled(),true,name+' is frozen while a draft is open');
   for(const name of ['refuel','refill-support','ship-expenses'])assert.equal(await action(name).isEnabled(),true,name+' remains available for direct navigation');
   assert.equal(await page.locator('#ship-actions [data-action="port-costs"]').count(),0);
-  await click('service-adjust');assert.equal(await field('fuelTons').inputValue(),'23','Odd tank top-off is exact');
+  assert.equal(await field('fuelTons').inputValue(),'23','Odd tank top-off is exact');
   await click('service-fuel-step','10');assert.equal(await field('fuelTons').inputValue(),'23','+10 clamps at 23 free tons');
   for(const expected of ['13','3','0']){await click('service-fuel-step','-10');assert.equal(await field('fuelTons').inputValue(),expected);}
   await click('service-fuel-step','-10');assert.equal(await field('fuelTons').inputValue(),'0','-10 clamps at zero');
-  assert.equal(await action('service-review').isDisabled(),true,'Zero purchase cannot commit');
+  assert.equal(await action('service-confirm').isDisabled(),true,'Zero purchase cannot commit');
   await click('service-fuel-topoff');assert.equal(await field('fuelTons').inputValue(),'23');
   await click('service-fuel-next');assert.equal(await field('fuelTons').inputValue(),'20','J2 needs 40 aboard and buys only the missing 20');
-  await fill('fuelTons',24);assert.equal(await action('service-review').isDisabled(),true,'Overfill cannot be reviewed');
+  await fill('fuelTons',24);assert.equal(await action('service-confirm').isDisabled(),true,'Overfill cannot be reviewed');
   await fill('fuelTons',7);await field('fuelType').selectOption('refined');await fill('expenseNotes','Retained draft input');
   const draft=async()=>({tons:await field('fuelTons').inputValue(),source:await field('fuelType').inputValue(),notes:await field('expenseNotes').inputValue()});
   const expected=await draft();
   await click('map-world',f.state.route[1]);await frames();assert.deepEqual(await draft(),expected,'World browse retains unsaved form values');
   assert.match(await page.locator('#service-panel').textContent(),/Actual Service Harbor/,'Service quote remains tied to ship location');
   assert.match(await page.locator('#service-quote').textContent(),/Cr 3,500/,'Browsing X port does not change A-port refined pricing');
-  assert.equal(await action('service-review').isEnabled(),true,'Browsed X port does not block actual A-port supply');
+  assert.equal(await action('service-confirm').isEnabled(),true,'Browsed X port does not block actual A-port supply');
   await click('map-zoom-in');await frames();await page.getByLabel('Show UWP',{exact:true}).uncheck();await page.getByLabel('Political territory',{exact:true}).uncheck();
   const response=page.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/jumpworlds'));
   await click('nearby');await response;await frames();assert.deepEqual(await draft(),expected,'Zoom, map options and nearby refresh retain draft');
@@ -92,20 +93,19 @@ try{
   await page.mouse.move(drag.x,drag.y);await page.mouse.down();await page.mouse.move(drag.x+35,drag.y+20,{steps:8});await page.mouse.up();
   await page.waitForFunction(before=>document.querySelector('.map-content').getAttribute('transform')!==before,drag.before);assert.deepEqual(await draft(),expected,'Panning retains draft');
   const view=await page.locator('.map-caption').textContent(),zoom=await page.locator('.map-zoom-controls .help').textContent(),pan=await page.locator('.map-content').getAttribute('transform');
-  await click('service-review');await unchanged('Review');assert.equal(await page.locator('#service-form').count(),0);
-  await click('service-adjust');assert.deepEqual(await draft(),expected,'Review/Adjust round trip retains all fields');
+  await unchanged('Inline editing');assert.deepEqual(await draft(),expected,'Map interaction retains all inline fields');
   await click('service-back');await closed();await unchanged('Back from Adjust discards draft');
   assert.equal(await page.locator('.map-caption').textContent(),view,'Cancel preserves browsed world');
   assert.equal(await page.locator('.map-zoom-controls .help').textContent(),zoom,'Cancel preserves zoom');
   assert.equal(await page.locator('.map-content').getAttribute('transform'),pan,'Cancel preserves pan');
   assert.equal((await read()).actual,f.state.actual);assert.equal(await action('jump').isEnabled(),true,'Cancel unfreezes normal actions');
-  await open();await click('service-adjust');await fill('fuelTons',9);await click('service-cancel');await closed();await unchanged('Cancel from Adjust');
-  await open();await click('service-adjust');await fill('fuelTons',9);await page.keyboard.press('Escape');await closed();await unchanged('Escape');
+  await open();await fill('fuelTons',9);await click('service-cancel');await closed();await unchanged('Cancel from Adjust');
+  await open();await fill('fuelTons',9);await page.keyboard.press('Escape');await closed();await unchanged('Escape');
  });
  await run('leaving services restores current-world Trade controls without applying drafts',{},async h=>{
   const {page,action,click,unchanged,open,closed}=h;
-  for(const kind of ['refuel','refill-support'])for(const mode of ['summary','adjust','review']){
-   await click('tab','Overview');await open(kind);if(mode!=='summary')await click('service-adjust');if(mode==='review')await click('service-review');
+  for(const kind of ['refuel','refill-support'])for(const mode of (kind==='refuel'?['inline']:['summary','adjust','review'])){
+   await click('tab','Overview');await open(kind);if(mode==='adjust'||mode==='review')await click('service-adjust');if(mode==='review')await click('service-review');
    const old=await action(mode==='adjust'?'service-review':'service-confirm').evaluate(el=>({...el.dataset}));
    await click('tab','Trade');await closed();assert.equal(await action('search').isEnabled(),true);assert.equal(await action('buyer-search').isEnabled(),true);await click('sale');assert.match(await page.locator('#message').textContent(),/Select cargo first/);assert.equal(await page.locator('#modal').isVisible(),false,'No selected cargo still prevents a sale preview');
    await page.evaluate(data=>{const b=document.createElement('button');Object.assign(b.dataset,data);document.body.append(b);b.click();b.remove();},old);await unchanged(kind+' '+mode+' → Trade discards only draft');
@@ -113,11 +113,11 @@ try{
    await click('buyer-search');await page.getByRole('heading',{name:'Find a buyer',exact:true}).waitFor();await page.locator('#modal-cancel').click();await unchanged('Opening available searches never commits');
   }
   await click('tab','Overview');await click('ship-expenses');await page.locator('#expense-panel').waitFor();await click('tab','Trade');assert.equal(await page.locator('#expense-panel').count(),0);assert.equal(await action('search').isEnabled(),true);assert.equal(await action('buyer-search').isEnabled(),true);await unchanged('Expenses → Trade');
-  await click('tab','Overview');await open();await click('service-adjust');await click('tab','Accounts');assert.equal(await action('deposit').isEnabled(),true);assert.equal(await action('ship-expenses').isEnabled(),true);await click('tab','Overview');await closed();await unchanged('Accounts tab discards hidden service draft');
+  await click('tab','Overview');await open();await click('tab','Accounts');assert.equal(await action('deposit').isEnabled(),true);assert.equal(await action('ship-expenses').isEnabled(),true);await click('tab','Overview');await closed();await unchanged('Accounts tab discards hidden service draft');
  });
  await run('fuel commit exactly once and Undo',{},async h=>{
   const {f,page,click,field,read,open,closed,undo}=h;
-  await open();await click('service-adjust');await field('fuelType').selectOption('unrefined');await click('service-review');
+  await open();await field('fuelType').selectOption('unrefined');
   await page.locator('[data-action="service-confirm"]').evaluate(button=>{button.click();button.click();});await closed();
   const paid=await read();assert.equal(paid.ship.fuel.aboardTons,43);assert.equal(paid.bank,'97700');assert.equal(paid.revision,f.state.revision+1);assert.equal(paid.ledger.length,1);assert.equal(paid.undo.length,1);assert.equal(paid.hours,f.state.hours);
   assert.equal(paid.ledger[0].expense.kind,'fuel');assert.equal(paid.ledger[0].world,f.state.actual);
@@ -127,7 +127,7 @@ try{
  });
  await run('manual aboard reduction',{},async h=>{
   const {f,page,action,click,fill,read,unchanged,open,closed,undo}=h;
-  await open();await click('service-adjust');await click('service-fuel-correct');await fill('fuelRemaining',13);
+  await open();await click('service-fuel-correct');await fill('fuelRemaining',13);
   await fill('fuelReason','Referee recorded a seven-ton leak');await fill('fuelRemaining',21);
   assert.equal(await action('service-review').isDisabled(),true,'Manual reduction cannot invent additional fuel');
   await fill('fuelRemaining',13);await click('service-review');await unchanged('Manual reduction review');
@@ -144,15 +144,15 @@ try{
  });
  for(const hydro of ['0','?'])await run('water advisory hydro '+hydro,{port:'X',hydro},async h=>{
   const {f,page,action,click,field,fill,read,unchanged,open,closed}=h;
-  await open();await click('service-adjust');await fill('fuelTons',3);await field('fuelType').selectOption('unrefined');
-  assert.equal(await action('service-review').isDisabled(),true,'Purchased unrefined needs a source at X port');
-  await field('otherSupplier').check();assert.equal(await action('service-review').isDisabled(),true,'Override alone is insufficient');
-  await fill('expenseNotes','Referee confirmed a local fuel cache');assert.equal(await action('service-review').isEnabled(),true);
-  await fill('expenseNotes','');assert.equal(await action('service-review').isDisabled(),true,'Clearing source notes restores the gate');
+  await open();await fill('fuelTons',3);await field('fuelType').selectOption('unrefined');
+  assert.equal(await action('service-confirm').isDisabled(),true,'Purchased unrefined needs a source at X port');
+  await field('otherSupplier').check();assert.equal(await action('service-confirm').isDisabled(),true,'Override alone is insufficient');
+  await fill('expenseNotes','Referee confirmed a local fuel cache');assert.equal(await action('service-confirm').isEnabled(),true);
+  await fill('expenseNotes','');assert.equal(await action('service-confirm').isDisabled(),true,'Clearing source notes restores the gate');
   await field('otherSupplier').uncheck();await field('fuelType').selectOption('water');
   assert.equal(await page.locator('#fuel-availability').isVisible(),true,'Dry/unknown hydrographics remains visible as an advisory');
-  assert.equal(await action('service-review').isEnabled(),true,'Water collection stays selectable with no override or note');
-  await click('service-review');await unchanged('Water review');await click('service-confirm');await closed();
+  assert.equal(await action('service-confirm').isEnabled(),true,'Water collection stays selectable with no override or note');
+  await unchanged('Water inline forecast');await click('service-confirm');await closed();
   const paid=await read();assert.equal(paid.bank,f.state.bank);assert.equal(paid.ship.fuel.aboardTons,23);assert.equal(paid.ledger.at(-1).expense.amount,'0');
  });
  await run('LSS extra supplies and comfort',{},async h=>{
@@ -177,15 +177,15 @@ try{
   assert.equal(await action('service-review').isDisabled(),true,'Paid comfort requires its audit note');
   await fill('comfortNote','Frozen berth pricing verification');await click('service-review');await unchanged('Frozen LSS review');await click('service-confirm');await closed();
   const paid=await read(),stock=paid.ship.lifeSupport.stockUnits;assert.equal(Number(stock.numerator)/Number(stock.denominator),176.4);assert.equal(paid.bank,'91900');
-  await open('refill-support');assert.equal(await action('service-confirm').isDisabled(),true,'No-op normal refill does not create another charge');await click('service-cancel');
+  await open('refill-support');assert.equal(await page.locator('#service-form').count(),1,'Full supplies still expose extra reserve and comfort controls');assert.equal(await action('service-review').isDisabled(),true,'No-op normal refill does not create another charge');await click('service-cancel');
  });
  await run('unaffordable LSS summary',{bank:'3000'},async h=>{
   await h.open('refill-support');assert.equal(await h.action('service-confirm').isDisabled(),true);assert.match(await h.page.locator('#service-quote').textContent(),/Insufficient/i);await h.click('service-cancel');await h.unchanged('Unaffordable LSS cancellation');
  });
  await run('service refresh import stale and ownership',{},async h=>{
   const {f,context,page,click,fill,read,raw,unchanged,open,closed}=h;
-  await open();await click('service-adjust');await fill('fuelTons',8);await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();await closed();await unchanged('Reload abandons only unsaved draft');
-  await open();await click('service-adjust');await fill('fuelTons',9);await click('service-review');
+  await open();await fill('fuelTons',8);await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();await closed();await unchanged('Reload abandons only unsaved draft');
+  await open();await fill('fuelTons',9);
   // A persisted revision can change between rendering and the click even when
   // the storage event has not reached this document. The save must fail closed.
   const changed=await page.evaluate(key=>{const s=JSON.parse(localStorage.getItem(key));s.revision++;s.bank='99999';const bytes=JSON.stringify(s);localStorage.setItem(key,bytes);return bytes;},campaignKey);
@@ -201,12 +201,12 @@ try{
   await page.locator('#import-file').setInputFiles({name:'synthetic-service-import.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(imported))});
   await page.getByRole('heading',{name:'Load campaign (JSON)',exact:true}).waitFor();await page.locator('[name="backed"]').check();await page.getByRole('button',{name:'Replace campaign',exact:true}).click();await page.locator('#modal').waitFor({state:'hidden'});
   assert.equal((await read()).ship.fuel.aboardTons,6);assert.equal((await read()).name,imported.name);const importedBytes=await raw();
-  await open();await click('service-adjust');assert.equal(await page.locator('[name="fuelTons"]').inputValue(),'37','Imported campaign starts a new exact draft');await click('service-cancel');await unchanged('Cancelled imported draft',importedBytes);
+  await open();assert.equal(await page.locator('[name="fuelTons"]').inputValue(),'37','Imported campaign starts a new exact draft');await click('service-cancel');await unchanged('Cancelled imported draft',importedBytes);
  });
  await run('service layout and keyboard accessibility',{},async h=>{
   const {page,click,fill,unchanged,frames,open,closed}=h;
   for(const type of ['refuel','refill-support']){
-   await open(type);await page.locator('[data-action="service-adjust"]').focus();await page.keyboard.press('Enter');
+   await open(type);if(type==='refill-support'){await page.locator('[data-action="service-adjust"]').focus();await page.keyboard.press('Enter');}
    if(type==='refuel')await fill('expenseNotes','LongUnbrokenServiceNote'.repeat(12));else{await page.locator('.service-comfort > summary').click();await fill('comfortNote','LongUnbrokenComfortNote'.repeat(12));}
    for(const width of [2160,1440,768,390,320]){
     await page.setViewportSize({width,height:1100});await frames();await overviewGeometry(page);

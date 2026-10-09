@@ -14,7 +14,7 @@ await mkdir(artifacts,{recursive:true});
 const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BROWSER_CHANNEL?{channel:process.env.TRAVELLER_BROWSER_CHANNEL}:{})});
 const results=[],cameraReports=[];
 try{
- for(const width of [1440,390,320]){
+ for(const width of [1440,1100,390,320]){
   const f=guiFixture(12),s=f.state;s.bank='765432';s.hours=48;s.dateLabel='001-1105';s.lots=[];s.contracts=[];s.snapshots=[];s.ledger=[];s.events=[];s.undo=[];
   // Keep the route compact so different right screens genuinely resize the
   // flex-grown map slot; GUI parity separately covers 12/30-stop layouts.
@@ -58,15 +58,15 @@ try{
    await click('ship-expenses');await sameCamera('Open Ship expenses');assert.equal(await page.locator('.expense-table tbody tr').count(),6);assert.match(await page.locator('.expense-table tfoot').textContent(),/Cr 122,000/);assert.equal(await raw(),bytes);
    await page.screenshot({path:artifacts+`/expenses-summary-${width}.png`,fullPage:true});await overviewGeometry(page);
    // Every remaining top-level service switches directly in every stock mode.
-   for(const from of ['refuel','refill-support'])for(const mode of ['summary','adjust','review'])for(const to of ['refuel','refill-support','ship-expenses']){
+   for(const from of ['refuel','refill-support'])for(const mode of (from==='refuel'?['inline']:['summary','adjust','review']))for(const to of ['refuel','refill-support','ship-expenses']){
     await click(from);await sameCamera('Open '+from+' for '+mode);
-    if(mode!=='summary'){await click('service-adjust');await sameCamera(from+' Adjust');}
+    if(mode==='adjust'||mode==='review'){await click('service-adjust');await sameCamera(from+' Adjust');}
     if(mode==='review'){await click('service-review');await sameCamera(from+' Review');}
     await remember('[data-action="'+(mode==='adjust'?'service-review':'service-confirm')+'"]');await click(to);await replay();assert.equal(await raw(),bytes,from+'/'+mode+' → '+to+' and old callback are inert');
     await sameCamera(from+'/'+mode+' → '+to);
    }
    for(const [service,dismiss] of [['refuel','service-back'],['refill-support','service-cancel']]){
-    await click(service);await click('service-adjust');await sameCamera(service+' before dismissal');
+    await click(service);if(service==='refill-support')await click('service-adjust');await sameCamera(service+' before dismissal');
     await click(dismiss);await sameCamera(service+' '+dismiss);assert.equal(await raw(),bytes);
    }
    for(const label of ['Mortgage','Monthly maintenance','Crew salaries','Port costs']){

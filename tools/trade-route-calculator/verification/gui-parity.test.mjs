@@ -229,7 +229,7 @@ async function run(stops){
    await unchanged(selector+' read-only disclosure');
   }
   assert.equal(await page.locator('[name="quickFuelType"]').count(),0,'Fuel source is selected only in the Refuel screen');
-  await click('refuel');await click('service-adjust');
+  await click('refuel');
   await page.locator('[name="fuelType"]').selectOption('unrefined');
   await page.locator('[name="fuelType"]').selectOption('refined');
   await unchanged('Fuel-quality screen choice');await click('service-cancel');await page.locator('#service-panel').waitFor({state:'hidden'});await unchanged('Fuel cancellation');

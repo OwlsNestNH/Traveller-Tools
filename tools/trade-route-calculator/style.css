@@ -288,7 +288,7 @@ main{padding-top:18px}
 .expense-table th:first-child{width:39%}.expense-table th:nth-child(2){width:32%}
 .expense-table thead th,.expense-table tfoot th{font-size:.68rem;color:var(--muted)}
 .expense-table .number{font-variant-numeric:tabular-nums;text-align:right;white-space:normal}
-.expense-table .expense-name{border:0;background:transparent;color:var(--accent,#64d4df);padding:.2rem 0;text-align:left;min-height:28px;font-size:inherit;font-weight:600}
+.expense-table .expense-name{width:100%;border:1px solid #76c8e8;border-radius:4px;background:#b8e7f7;color:#083148;padding:.4rem .45rem;text-align:left;min-height:36px;font-size:inherit;font-weight:650;line-height:1.25;white-space:normal;overflow-wrap:normal;word-break:normal}.expense-table .expense-name:hover{background:#d6f3ff;border-color:#a9e5fb;color:#05283b}.expense-table .expense-name:focus-visible{outline:2px solid #fff;outline-offset:2px}
 .expense-table tfoot th,.expense-table tfoot td{border-top:1px solid var(--line);font-weight:700}
 .expense-panel .field{margin:.65rem 0}.expense-panel input{min-width:0;max-width:100%}
 .expense-panel .expense-total{padding:.7rem;gap:.5rem}.expense-panel .expense-total strong{font-size:1.3rem}
@@ -330,3 +330,17 @@ main{padding-top:18px}
 /* Selection remains below route lines and world symbols. */
 .world-map .selected-world-hex,.world-map .selected-world-hex *{pointer-events:none;cursor:inherit}
 .world-map .selected-world .world-name,.world-map .selected-world .world-uwp{fill:#fff}
+
+/* Refuel is a single editable service screen with a live pre-payment quote. */
+.fuel-inline .service-current{margin-top:0;margin-bottom:.65rem}
+.fuel-inline .service-session-note{padding-bottom:.45rem;font-size:.72rem}
+.fuel-inline .service-facts{margin:.5rem 0}.fuel-inline .service-facts dt,.fuel-inline .service-facts dd{padding:.4rem 0}
+.fuel-inline .service-total{margin:.6rem 0;padding:.8rem;grid-template-columns:minmax(0,1fr) auto}
+.fuel-inline .service-total strong{overflow-wrap:anywhere;min-width:0;max-width:100%}
+.fuel-inline .service-total small{overflow-wrap:anywhere}
+.fuel-after{display:flex;align-items:center;justify-content:space-between;gap:.4rem;flex-wrap:wrap;margin:.5rem 0}
+.fuel-after>span{font-size:.78rem;color:var(--muted,#90a8b8)}.fuel-after>strong{color:#64d4df;font-size:1.2rem}.fuel-after progress{flex-basis:100%}
+.fuel-inline .service-audit{margin:.6rem 0;font-size:.8rem;padding:.6rem}
+.fuel-inline .service-current button{min-height:36px;font-size:.76rem;padding:.3rem .4rem;border:1px solid var(--line);border-radius:4px}
+#fuel-custom-fields[hidden],#fuel-purchase-fields[hidden],#fuel-availability[hidden]{display:none}
+@media(max-width:700px){.fuel-inline .service-actions{position:static}.fuel-inline .service-total{grid-template-columns:minmax(0,1fr)}.fuel-inline .service-total strong{font-size:1.5rem}.fuel-inline .service-total small{grid-column:1}}

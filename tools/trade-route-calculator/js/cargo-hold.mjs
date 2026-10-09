@@ -1,7 +1,7 @@
 // Read-only bridge manifest. Purchase facts come from each lot's frozen audit;
 // current price settings, contract revenue and insurance destinations are not inputs.
 import * as A from './amounts.mjs';
-import {used} from './state.mjs?v=route-frame-name-20261009-23';
+import {used} from './state.mjs?v=service-controls-20261009-24';
 import {bladderSpace} from './fuel.mjs?v=total-fuel-labels-1';
 import {passengerLuggage} from './accommodation.mjs?v=passenger-input-3';
 import {supportCargo,supportStock,supportDisplay} from './life-support.mjs?v=mfd-services-1';

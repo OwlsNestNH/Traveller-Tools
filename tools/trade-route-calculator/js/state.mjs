@@ -1,5 +1,5 @@
-import {validateMaintenance,validateMaintenancePaymentRecord} from './maintenance.mjs?v=route-frame-name-20261009-23';
-import {validateMortgage,validateMortgagePaymentRecord} from './mortgage.mjs?v=route-frame-name-20261009-23';
+import {validateMaintenance,validateMaintenancePaymentRecord} from './maintenance.mjs?v=service-controls-20261009-24';
+import {validateMortgage,validateMortgagePaymentRecord} from './mortgage.mjs?v=service-controls-20261009-24';
 import {validateJumpAttempts,currentJumpAttempt,lastJump,savedJumpAttempt,departureKey,jumpPreparationBridge} from './jump-attempts.mjs';
 import {distance as jumpDistance} from './map.mjs?v=map-overview-1';
 import {validateMailHistory} from './mail-history.mjs?v=mail-history-1';
@@ -9,7 +9,7 @@ import {up,creditStep,roundExisting} from './rounding.mjs';
 import {validateAccommodation,passengerLuggage,roomCounts} from './accommodation.mjs?v=passenger-input-3';
 import {add,sub,mul,div,cmp,floor,sum,decimal,credit} from './amounts.mjs';
 import {VERSION,priceLimits} from './rules.mjs?v=price-limits-1';
-import {expenseQuote,starport,berthMultipliers,payableExpenses} from './expenses.mjs?v=route-frame-name-20261009-23';
+import {expenseQuote,starport,berthMultipliers,payableExpenses} from './expenses.mjs?v=service-controls-20261009-24';
 export const SCHEMA=1;
 export const uid=()=>crypto.randomUUID();
 export function initial(){return {schema:SCHEMA,revision:0,rulesVersion:VERSION,initialized:false,name:'My trading campaign',bank:'0',hours:0,dateLabel:'001-1105',ship:{name:'Independent trader',capacity:'60',staterooms:0,jump:2,scoops:true,armed:false},trader:{broker:0,streetwise:0,admin:0,characteristic:0,rank:0,soc:0},settings:{reducedProfitLimitsEnabled:false,minPurchasePercent:85,maxSalePercent:115,profit:100,tax:false,insurance:false,creditStep:1,maxBaseRetailEnabled:false,maxBaseRetail:'100000',useRawIllegalPrices:false},worlds:{},actual:null,route:[],routeIndex:0,snapshots:[],lots:[],contracts:[],policies:[],ledger:[],cooldowns:{},undo:[],events:[],jumpAttempts:[],latestMailCheckId:null};}
