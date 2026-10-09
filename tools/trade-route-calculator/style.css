@@ -21,7 +21,7 @@ td{padding:8px 10px}td .check{margin:0;white-space:nowrap}.cargo-scroll{max-heig
 /* Shared column geometry keeps trade headers aligned with their row values. */
 .grid>div{min-width:0}
 .trade-table{table-layout:fixed;width:100%}
-.purchase-table{min-width:990px}.cargo-table{min-width:1165px}.freight-table{min-width:1370px}
+.purchase-table{min-width:1010px}.cargo-table{min-width:1185px}.freight-table{min-width:1370px}
 .trade-table th,.trade-table td{padding:10px;overflow-wrap:anywhere}
 .trade-table th.number{text-align:right;white-space:normal}
 .trade-table .table-actions{white-space:normal}
@@ -119,7 +119,7 @@ main{max-width:var(--shell-width);padding:8px var(--shell-gutter) 16px}.panel{ma
 @media(forced-colors:active){.settings-switch input{appearance:auto}.settings-switch input:after{display:none}.settings-number,.settings-section,.setting-row{border-color:CanvasText}.settings-stepper button{color:ButtonText}}
 
 /* Trade complications are readable flags, separate from transaction controls. */
-.trade-complication{display:block;width:fit-content;max-width:100%;margin-top:7px;padding:5px 7px;border:2px solid #d45b66;border-radius:4px;background:#36171d;color:#ff5b65;font-size:20px;font-weight:800;line-height:1.3;letter-spacing:.3px;white-space:normal;text-align:left;overflow-wrap:anywhere}
+.trade-complication{display:block;width:fit-content;max-width:100%;margin-top:7px;padding:5px 7px;border:2px solid #d45b66;border-radius:4px;background:#36171d;color:#ff5b65;font-family:system-ui,sans-serif;font-size:20px;font-weight:800;line-height:1.3;letter-spacing:.3px;white-space:normal;text-align:left;overflow-wrap:normal}
 
 .sale-complications{display:grid;gap:10px;margin-top:12px}.sale-complications:empty{display:none}.sale-complication{min-width:0}.sale-complication>p{margin:0;font-size:13px}.sale-complication .trade-complication{overflow-wrap:normal}
 /* Keep the intentional-zoom gesture visible beside the map controls. */

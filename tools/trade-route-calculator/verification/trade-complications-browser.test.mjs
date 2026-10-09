@@ -81,8 +81,14 @@ async function flags(scope,result,count=1){
    assert.notEqual(css.wrap,'nowrap','Large warning text may wrap on mobile');
    // The longest alert word must stay readable instead of a letter-by-letter column.
   }
-  for(const size of await flag.evaluateAll(nodes=>nodes.map(el=>({width:el.clientWidth,height:el.clientHeight})))){
-   assert.ok(size.width>=170&&size.height<=66,'Warning words stay readable in rows and full-width confirmation blocks');
+  for(const words of await flag.evaluateAll(nodes=>nodes.map(el=>{
+   const text=el.firstChild;
+   return [...text.textContent.matchAll(/\S+/g)].map(match=>{
+    const range=document.createRange();range.setStart(text,match.index);range.setEnd(text,match.index+match[0].length);
+    return {word:match[0],fragments:range.getClientRects().length};
+   });
+  }))){
+   assert.ok(words.every(word=>word.fragments===1),'Each warning word stays intact in rows and full-width confirmation blocks: '+JSON.stringify(words));
   }
  }
 }
