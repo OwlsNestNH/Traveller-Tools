@@ -35,7 +35,7 @@ try{
  await choose('-111,-70');await ready();await choose('-112,-70');await ready();await click('Save planned route');await click('Save route');await closed();
  s=await read();assert.deepEqual(s.route,[initial.actual,'-111,-70','-112,-70']);assert.deepEqual(s.mandatoryStops,['-111,-70','-112,-70']);
  await click('Clear planned route');await click('Cancel');assert.deepEqual(await read(),s);
- await click('COMMIT JUMP → Jenghe');await click('COMMIT JUMP');await closed();const travelled=await read();
+ await click('Jump to Jenghe →');await click('COMMIT JUMP');await closed();const travelled=await read();
  await click('Clear planned route');await click('Clear route');await closed();const cleared=await read();
  assert.deepEqual(cleared.route,[travelled.actual]);assert.equal(cleared.routeIndex,0);assert.deepEqual(cleared.mandatoryStops,[]);
  for(const key of ['actual','hours','bank','lots','policies','contracts'])assert.deepEqual(cleared[key],travelled[key]);

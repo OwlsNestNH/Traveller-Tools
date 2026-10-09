@@ -75,7 +75,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [browser, modal-lifecycle, click-route, fuel-browser, empty-space, mail-browser, map-overview-browser, gui-parity, trade-buttons, settings-browser, insurance-browser]
+        suite: [browser, modal-lifecycle, click-route, fuel-browser, empty-space, mail-browser, map-overview-browser, gui-parity, trade-buttons, settings-browser, insurance-browser, trade-complications-browser]
     steps:
       - name: Check out exact PR head
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -117,6 +117,17 @@ jobs:
         with:
           name: trade-${{ matrix.suite }}-${{ github.event.pull_request.head.sha }}
           path: tools/trade-route-calculator/verification-artifacts/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload compact GUI screenshots
+        if: ${{ always() && matrix.suite == 'gui-parity' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: trade-gui-screenshots-${{ github.event.pull_request.head.sha }}
+          path: |
+            tools/trade-route-calculator/verification-artifacts/*.png
+            tools/trade-route-calculator/verification-artifacts/commit.txt
+            tools/trade-route-calculator/verification-artifacts/gui-parity.txt
           if-no-files-found: error
           retention-days: 14
       - name: Summarize scope

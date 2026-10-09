@@ -25,7 +25,7 @@ try{
  await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();await click('Set up campaign');await page.locator('#setup-world .picker-selection').getByText(/Hex 1910/).waitFor();await fill('jump',1);await click('Start campaign');await closed();
 
  const initial=await read();await click('Auto plot');await choose('-111,-70');await ready();await click('Save planned route');await click('Save route');await closed();
- await click('COMMIT JUMP → Jenghe');await click('COMMIT JUMP');await closed();const jumped=await read();assert.equal(jumped.bank,initial.bank);assert.equal(jumped.ledger.at(-1).amount,'0');
+ await click('Jump to Jenghe →');await click('COMMIT JUMP');await closed();const jumped=await read();assert.equal(jumped.bank,initial.bank);assert.equal(jumped.ledger.at(-1).amount,'0');
  await click('History');let row=page.locator('.bank-ledger tbody tr').first();assert.equal(await row.locator('td').nth(1).textContent(),'Jenghe');assert.equal(await row.locator('td').nth(6).textContent(),'Regina → Jenghe');assert.equal(await row.locator('td').nth(3).textContent(),'—');assert.equal(await row.locator('td').nth(4).textContent(),'—');assert.equal(await row.locator('td').nth(5).textContent(),'Cr 100,000');assert.equal(await page.locator('.bank-ledger tbody tr').count(),2);
  await row.getByRole('button',{name:'Details'}).click();assert.ok((await page.locator('#modal-body').textContent()).includes('Jump duration'));await click('Close');
  await click('Undo latest change');assert.equal(await page.locator('.bank-ledger tbody tr').count(),1);assert.equal((await read()).actual,initial.actual);

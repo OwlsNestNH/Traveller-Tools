@@ -169,7 +169,8 @@ try{
  await fill('dice',12);await click('Preview search');await click('Commit search');
  await page.getByRole('heading',{name:/Prepare sale/}).waitFor();
  const saleLot=(await read()).lots[0],quotedPrice=await page.locator('[name="price_'+saleLot.id+'"]').inputValue();
- assert.equal(await page.locator('.cargo-table tbody tr td').nth(4).textContent(),'Cr '+quotedPrice.replace(/\B(?=(\d{3})+(?!\d))/g,',')+' / t');
+ // The Sale Price cell also contains the separately tested complication alert.
+ assert.equal(await page.locator('.cargo-table tbody tr td').nth(4).evaluate(cell=>[...cell.childNodes].filter(node=>node.nodeType===Node.TEXT_NODE).map(node=>node.textContent).join('')),'Cr '+quotedPrice.replace(/\B(?=(\d{3})+(?!\d))/g,',')+' / t');
  assert.match(await page.locator('.cargo-table tbody tr td').nth(3).textContent(),/^\d+%$/);
  await click('Cancel');await page.locator('.cargo-table [data-action="lot-audit"]').first().click();assert.match(await page.locator('#modal-body').textContent(),/Current sale quote/);assert.match(await page.locator('#modal-body').textContent(),/Table lookup result/);assert.match(await page.locator('#modal-body').textContent(),/Total price DM/);assert.equal(await page.locator('#modal-body pre').count(),0);assert.equal(await page.locator('#trade-rule-1').count(),1);await page.screenshot({path:join(artifacts,'readable-cargo-audit.png')});await click('Close');
  const displayedQuote=await page.locator('.cargo-table tbody tr td').nth(4).textContent();await click('Cargo');assert.equal(await page.locator('.cargo-table tbody tr td').nth(4).textContent(),displayedQuote);
@@ -194,7 +195,7 @@ try{
  await freight.getByRole('button',{name:'Accept',exact:true}).first().click();await click('Accept whole contract');await closed();assert.equal((await read()).contracts.at(-1).description,'Referee freight lot');
  await click('History');await click('Undo latest change');assert.equal((await read()).contracts.length,0);
  await click('Contracts');await click('Manual contract');await page.locator('[name="destination"]').selectOption('-111,-70');await fill('quantity','1');await fill('payment','1000');await fill('days','0');await fill('reason','Browser verification delivery');await click('Save');await closed();
- await click('Overview');await click('COMMIT JUMP → Jenghe');await fill('hours','160');await click('COMMIT JUMP');await closed();assert.equal((await read()).actual,'-111,-70');assert.equal((await read()).policies[0].status,'arrived');
+ await click('Overview');await click('Jump to Jenghe →');await fill('hours','160');await click('COMMIT JUMP');await closed();assert.equal((await read()).actual,'-111,-70');assert.equal((await read()).policies[0].status,'arrived');
  await click('Contracts');const beforeDelivery=BigInt((await read()).bank);await click('Deliver');await fill('die','2');await click('Commit delivery & payout');await closed();assert.equal(BigInt((await read()).bank)-beforeDelivery,400n);
  await click('Overview');
 
