@@ -198,7 +198,7 @@ try{
    await page.getByRole('button',{name:label+' ›',exact:true}).click();
    if(label==='Life support'){await page.locator('#service-panel').waitFor();await click('service-adjust');assert.equal(await page.locator('#service-form [name="extraDays"]').isEditable(),true);}
    else assert.equal(await page.locator((label==='Fuel'?'#service-form':'#expense-form')+' [name="'+fieldName+'"]').isEditable(),true,label+' opens working controls');
-   assert.equal(await page.locator('#modal').isVisible(),false);await unchanged('Expense destination '+label);await click('ship-expenses');
+   assert.equal(await page.locator('#modal').isVisible(),false);await unchanged('Expense destination '+label);if(await page.locator('#expense-panel').count())await click('expense-back');else await click('ship-expenses');
   }
  });
  for(const kind of ['mortgage','maintenance'])await run('unconfigured '+kind+' settings route',{},async h=>{

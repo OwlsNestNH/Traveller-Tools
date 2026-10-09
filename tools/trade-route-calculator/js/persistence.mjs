@@ -1,4 +1,4 @@
-import {initial,validate} from './state.mjs?v=modal-stress-fixes-20261009-25';
+import {initial,validate} from './state.mjs?v=stable-service-panels-20261009-26';
 export const KEY='traveller-trade-route-calculator:v1';
 const LOCK=KEY+':writer';
 function serializedCampaign(next){

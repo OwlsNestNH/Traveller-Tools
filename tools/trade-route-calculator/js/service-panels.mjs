@@ -1,8 +1,8 @@
 import * as A from './amounts.mjs';
 import {bladderSpace,fuelPurchase} from './fuel.mjs?v=mfd-services-1';
-import {expenseQuote,fuelAvailability,fuelPricing,starport} from './expenses.mjs?v=modal-stress-fixes-20261009-25';
+import {expenseQuote,fuelAvailability,fuelPricing,starport} from './expenses.mjs?v=stable-service-panels-20261009-26';
 import {refillQuote,supportStock,supportCargo,supportAmount,anchorSupport} from './life-support.mjs?v=mfd-services-1';
-import {used,validate,shipExpense,refillLifeSupport,uid} from './state.mjs?v=modal-stress-fixes-20261009-25';
+import {used,validate,shipExpense,refillLifeSupport,uid} from './state.mjs?v=stable-service-panels-20261009-26';
 import {creditStep,up} from './rounding.mjs';
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=x=>{const [whole,decimal]=String(x).split('.');return 'Cr '+whole.replace(/\B(?=(\d{3})+(?!\d))/g,',')+(decimal?'.'+decimal:'');},num=x=>x==null?'Unknown':String(Number(Number(x).toFixed(3)));
@@ -127,5 +127,5 @@ export function createServicePanels({document,getState,isEditable,commit,render,
   }
   return true;
  }
- return {active,token,open,panel,sync,syncControls,action,close,committing:()=>!!session?.busy};
+ return {active,kind:()=>session?.kind??null,token,open,panel,sync,syncControls,action,close,committing:()=>!!session?.busy};
 }
