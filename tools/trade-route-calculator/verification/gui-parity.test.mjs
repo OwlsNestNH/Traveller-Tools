@@ -14,7 +14,7 @@ const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BRO
 const tabs=['Overview','Trade','Cargo','Contracts','Accounts','History','Settings'];
 // 640×400 additionally checks the CSS space available to a 1280×800 window at
 // 200% zoom. This is a reduced-viewport equivalent, not genuine browser zoom.
-const sizes=[{width:1440,height:1100},{width:2160,height:1200},{width:1280,height:800},{width:768,height:1024},{width:390,height:844},{width:320,height:740},{width:844,height:390},{width:640,height:400}];
+const sizes=[{width:1440,height:1100},{width:2160,height:1200},{width:3200,height:1600},{width:1280,height:800},{width:768,height:1024},{width:390,height:844},{width:320,height:740},{width:844,height:390},{width:640,height:400}];
 let activeContext=null,releasePending=()=>{};
 async function deadline(promise,label){
  let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(label+' timed out')),10000);})]);}finally{clearTimeout(timer);}
@@ -117,7 +117,7 @@ async function run(stops){
    const oldLeft=(layout.viewport-1800)/2+16;
    assert.ok(Math.abs(layout.panel.left-(oldLeft-40))<1,'Ultrawide map shifts left by a balanced 40px');
   }
-  const minimums={'.world-info strong':18,'.world-info>.mono':14,'.world-info>.tag':12,'.world-info .badge-row span':12,'.world-actions button':13,'.world-actions .help':13,'.jump-bar button':14,'.jump-bar .help':13,'.map-hint summary':13,'.map-hint p':13};
+  const minimums={'.world-info strong':layout.viewport<=620?20:22,'.world-info>.mono':16,'.world-info>.tag':14,'.world-info .badge-row span':layout.viewport<=620?14:15,'.world-actions button':13,'.world-actions .help':13,'.jump-bar button':14,'.jump-bar .help':13,'.map-hint summary':13,'.map-hint p':13};
   for(const {selector,nodes}of layout.text){
    assert.ok(nodes.length,selector+' has readable text to check');
    assert.ok(nodes.every(node=>node.font>=minimums[selector]),selector+' retains larger readable type at every width');
