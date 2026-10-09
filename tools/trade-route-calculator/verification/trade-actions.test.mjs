@@ -324,6 +324,14 @@ test('expense fuel and life support names use existing setup guards for legacy c
  }
 });
 
-test('Accounts batch remains locked while a hidden service draft is open',()=>{
- const h=harness(recurringCampaign());h.api.refuelShortcut();h.api.actions.tab('Accounts');assert.equal(h.button('ship-expenses').disabled,true);assert.equal(h.button('deposit').disabled,true);
+test('leaving Overview closes unfinished service views and restores current-world Trade and Accounts controls',async()=>{
+ for(const kind of ['fuel','support','expenses','mortgage','maintenance','salary','berthing']){
+  const h=harness(recurringCampaign()),before=h.persisted();h.api.services.open(kind,{fresh:true});const token=h.api.services.token();
+  h.api.actions.tab('Trade');assert.equal(h.api.services.active(),false,kind+' leaves no hidden lock');assert.equal(h.button('search').disabled,false);assert.equal(h.button('buyer-search').disabled,false);same(h.persisted(),before);
+  await h.api.services.action('service-confirm','',token);same(h.persisted(),before);
+  h.api.services.open(kind,{fresh:true});h.api.actions.tab('Accounts');assert.equal(h.button('ship-expenses').disabled,false);assert.equal(h.button('deposit').disabled,false);same(h.persisted(),before);
+ }
+});
+test('leaving a service retains editor ownership guards on Trade',()=>{
+ const h=harness(recurringCampaign()),before=h.persisted();h.api.refuelShortcut();h.store.editable=false;h.api.actions.tab('Trade');assert.equal(h.api.services.active(),false);assert.equal(h.button('search').disabled,true);assert.equal(h.button('buyer-search').disabled,true);same(h.persisted(),before);
 });
