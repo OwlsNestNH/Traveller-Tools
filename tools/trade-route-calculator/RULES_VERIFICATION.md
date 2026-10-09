@@ -276,3 +276,10 @@ The visible-roll/Audit head `7407f9015609a64b6c6ee72be09bbd053c5759ad` passed al
 The action row now contains one Check for mail button immediately after Manual contract. Accepted/delivered shipment details use a native expandable section; the outcome, route, recorded roll and Audit remain available while collapsed. Its open/closed preference is session-only and makes no campaign changes. Desktop/mobile placement, matching colors, collapse/reopen, tab-render retention and unchanged financial state are checked in the updated tests. The newest head must pass the workflow before these extra layout changes are treated as browser-verified.
 
 Before the updated layout push: 47/47 focused Mail tests passed, 152/154 aggregate native tests passed (the two unchanged baseline routing failures), and 198 source/data assertions passed. The browser suite now has seven scenarios, including the new toolbar/disclosure flow; its result must be checked on the updated head.
+
+
+### Political territory default (2026-10-09)
+
+The seven-scenario Mail layout workflow [37864016591](https://github.com/OwlsNestNH/Traveller-Tools/actions/runs/37864016591) passed on `655fd2dd32dd0bc265aa24d96c05fc2922ebdea6`; the accepted/collapsed desktop and 390px screenshots were inspected. The owner then requested political territory on by default. New/unset browser preferences now default on, while an explicit off choice is saved separately from campaign JSON and survives redraws, reloads and campaign imports. Storage failure does not prevent using the toggle. Map geometry, route calculations and campaign data remain unchanged.
+
+Local checks for this update: 71/71 focused Mail/map tests passed, 155/157 aggregate native tests passed with the same two baseline routing failures, 198 source/data checks passed, and changed JavaScript syntax/whitespace checks passed. CI now runs an eighth real-browser scenario covering the new default, off/on persistence and actual JSON import, plus the existing full map-overview browser regression. Those browser results must be verified against the updated PR head.

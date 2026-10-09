@@ -272,6 +272,8 @@ The old 12-parsec display boundary is removed. After panning/zooming pauses, fet
 
 Render nearby visible worlds only, capped at 1,500 markers. Keep planet names visible at every zoom, scaling their font and fitting long names to hex width. Hide hex numbers below 80% zoom and the grid below 48% zoom. Show loading/failure status and allow Refresh nearby to retry. This bounds rendering and requests rather than fetching a single enormous map.
 
+Political territory starts enabled when no browser preference exists. Remember an explicit on/off choice separately from campaign JSON, preserving it across redraws, reloads, campaign imports and resets. Read the initial preference once; rendering must not force the overlay back on. Unavailable preference storage must not prevent toggling the current view. This default change does not alter map geometry, source data, campaign state or trade calculations.
+
 
 ## Planet information window — 2026-10-04
 

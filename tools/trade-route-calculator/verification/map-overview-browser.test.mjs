@@ -40,7 +40,10 @@ try{
  await click('Set up campaign');await page.locator('#setup-world .picker-selection').getByText(/Hex 1910/).waitFor();
  await click('Start campaign');await page.locator('#modal').waitFor({state:'hidden'});
  const before=await read();assert.equal(await level(),'world');
- assert.equal(await page.getByLabel('Political territory',{exact:true}).isChecked(),false);
+ assert.equal(await page.getByLabel('Political territory',{exact:true}).isChecked(),true);
+ await page.locator('.territory-fill').first().waitFor({state:'attached'});
+ await page.getByLabel('Political territory',{exact:true}).uncheck();
+ assert.equal(await page.locator('.map-territories').count(),0);
  const plainWorlds=await page.locator('.world-name').allTextContents();
  await page.getByLabel('Political territory',{exact:true}).check();
  await page.locator('.territory-fill').first().waitFor({state:'attached'});
@@ -83,5 +86,5 @@ try{
  await drag();assert.deepEqual(await read(),before);await page.locator('.world-map').screenshot({path:artifacts+'/map-sectors-mobile.png'});
  await click('Reset view');assert.equal(await level(),'world');assert.deepEqual(await read(),before);
  assert.deepEqual(errors,[]);
- console.log('PASS: all-zoom territory toggle, preserved world/UWP layers, subsectors and dots, sector names/letters, API retry, bounded requests, pan/cancel/reset, mobile and campaign immutability.');
+ console.log('PASS: default-on and all-zoom territory toggle, preserved world/UWP layers, subsectors and dots, sector names/letters, API retry, bounded requests, pan/cancel/reset, mobile and campaign immutability.');
 }finally{await browser.close();}

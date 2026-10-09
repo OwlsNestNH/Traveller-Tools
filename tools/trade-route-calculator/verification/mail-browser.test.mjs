@@ -643,6 +643,43 @@ try {
     assert.deepEqual(moneyState(await read(page)), beforeMoney);
   });
 
+  await runCase('political-territory-default-and-preference', {}, async (page, context, result, initial) => {
+    const preferenceKey = 'traveller-trade-route-calculator:political-territory:v1';
+    await tab(page, 'Overview');
+    const toggle = page.getByLabel('Political territory', {exact:true});
+    assert.equal(await toggle.isChecked(), true, 'A fresh browser defaults political territory on');
+    assert.deepEqual(await read(page), initial, 'Map default never changes the campaign');
+    await screenshot(page, result, 'map-political-default-on.png');
+    await toggle.uncheck();
+    assert.equal(await page.evaluate(key => localStorage.getItem(key), preferenceKey), 'false');
+    assert.equal(await page.locator('.map-territories').count(), 0);
+    await tab(page, 'Contracts');
+    await tab(page, 'Overview');
+    assert.equal(await toggle.isChecked(), false, 'An explicit off choice survives redraw');
+    await page.reload();
+    await page.getByText('Editing in this tab', {exact:true}).waitFor();
+    assert.equal(await toggle.isChecked(), false, 'An explicit off choice survives reload');
+    assert.deepEqual(await read(page), initial);
+
+    // Import a synthetic backup through the actual file input and confirmation.
+    await page.locator('#import-file').setInputFiles({name:'synthetic-map-preference.json', mimeType:'application/json', buffer:Buffer.from(JSON.stringify(initial))});
+    await page.getByRole('heading', {name:'Load campaign (JSON)', exact:true}).waitFor();
+    await modal(page).locator('[name="backed"]').check();
+    await submit(page, 'Replace campaign');
+    await tab(page, 'Overview');
+    assert.equal(await toggle.isChecked(), false, 'Campaign import preserves the browser map preference');
+    assert.equal(await page.evaluate(key => localStorage.getItem(key), preferenceKey), 'false');
+    const imported = await read(page);
+    assert.deepEqual(moneyState(imported), moneyState(initial));
+    assert.equal(Object.hasOwn(imported.settings, 'showTerritories'), false, 'Map display preference stays outside campaign JSON');
+    await toggle.check();
+    assert.equal(await page.evaluate(key => localStorage.getItem(key), preferenceKey), 'true');
+    await page.reload();
+    await page.getByText('Editing in this tab', {exact:true}).waitFor();
+    assert.equal(await toggle.isChecked(), true, 'An explicit on choice also survives reload');
+    assert.deepEqual(await read(page), imported, 'Toggling the map never changes accounting or History');
+  });
+
   await runCase('reload-and-read-only-history', {}, async (page, context) => {
     const audit = await checkMail(page);
     const saved = await read(page);
@@ -683,8 +720,8 @@ try {
     catch (error) { summary.errors.push('Browser close: '+errorText(error)); }
   }
   summary.finishedAt = new Date().toISOString();
-  summary.passed = summary.errors.length === 0 && summary.cases.length === 7 && summary.cases.every(c => c.status === 'passed');
+  summary.passed = summary.errors.length === 0 && summary.cases.length === 8 && summary.cases.every(c => c.status === 'passed');
   await writeFile(join(artifacts, 'mail-browser-summary.json'), JSON.stringify(summary, null, 2)+'\n');
 }
 if (!summary.passed) throw new Error('Mail browser verification failed. See verification-artifacts/mail-browser-summary.json and per-case traces/screenshots.');
-console.log('PASS: all 7 Mail browser scenarios; desktop/mobile screenshots, per-case Playwright traces and commit-tagged JSON summary saved.');
+console.log('PASS: all 8 Mail/map browser scenarios; desktop/mobile screenshots, per-case Playwright traces and commit-tagged JSON summary saved.');
