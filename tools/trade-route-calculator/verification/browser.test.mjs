@@ -11,15 +11,98 @@ const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BRO
 const ctx=await browser.newContext({viewport:{width:1440,height:1100},acceptDownloads:true});
 await ctx.tracing.start({screenshots:true,snapshots:true,sources:true});
 const sample=[{Name:'Regina',Hex:'1910',UWP:'A788899-C',PBG:'703',Zone:'',WorldX:-110,WorldY:-70,Sector:'Spinward Marches'},{Name:'Jenghe',Hex:'1810',UWP:'C799663-9',PBG:'323',Zone:'',WorldX:-111,WorldY:-70,Sector:'Spinward Marches'},{Name:'Ruie',Hex:'1809',UWP:'C776977-7',PBG:'701',Zone:'A',WorldX:-111,WorldY:-71,Sector:'Spinward Marches'}];
-await ctx.route('https://travellermap.com/api/jumpworlds?*',async route=>{const u=new URL(route.request().url());const rows=u.searchParams.get('jump')==='0'?sample.filter(w=>w.Hex===(u.searchParams.get('hex')||'1910')):sample;await route.fulfill({json:{Worlds:rows},headers:{'Access-Control-Allow-Origin':'*'}});});
-await ctx.route('https://travellermap.com/api/universe?*',route=>route.fulfill({json:{Sectors:[{Names:[{Text:'Spinward Marches'}],Abbreviation:'Spin'},{Names:[{Text:'Empty Sector'}]}]}}));
-await ctx.route('https://travellermap.com/api/metadata?*',route=>route.fulfill({json:{Subsectors:[{Index:'C',Name:'Regina'},{Index:'A',Name:'Cronor'}]}}));
-await ctx.route('https://travellermap.com/api/sec?*',route=>route.fulfill({json:'Hex\tName\r\n'+sample.map(w=>w.Hex+'\t'+w.Name).join('\r\n')}));
+const fixtureMap=async context=>{
+await context.route('https://travellermap.com/api/jumpworlds?*',async route=>{const u=new URL(route.request().url());const rows=u.searchParams.get('jump')==='0'?sample.filter(w=>w.Hex===(u.searchParams.get('hex')||'1910')):sample;await route.fulfill({json:{Worlds:rows},headers:{'Access-Control-Allow-Origin':'*'}});});
+await context.route('https://travellermap.com/api/universe?*',route=>route.fulfill({json:{Sectors:[{Names:[{Text:'Spinward Marches'}],Abbreviation:'Spin'},{Names:[{Text:'Empty Sector'}]}]}}));
+await context.route('https://travellermap.com/api/metadata?*',route=>route.fulfill({json:{Subsectors:[{Index:'C',Name:'Regina'},{Index:'A',Name:'Cronor'}]}}));
+await context.route('https://travellermap.com/api/sec?*',route=>route.fulfill({json:'Hex\tName\r\n'+sample.map(w=>w.Hex+'\t'+w.Name).join('\r\n')}));
+};
+await fixtureMap(ctx);
 const page=await ctx.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
 const click=async label=>{const modal=page.locator('#modal[open]');const target=modal.getByRole('button',{name:label,exact:true});if(await target.count())return target.click();return page.getByRole('button',{name:label,exact:true}).click();};
 const fill=(name,value)=>page.locator('[name="'+name+'"]').fill(String(value));
 const read=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('traveller-trade-route-calculator:v1')));
 const closed=()=>page.locator('#modal').waitFor({state:'hidden'});
+// Seed an isolated context so layout fixtures never mutate the main flow's campaign.
+const checkCompactLedgerLayout=async campaign=>{
+ const context=await browser.newContext({viewport:{width:1440,height:1100}});
+ await fixtureMap(context);
+ const fixture=structuredClone(campaign),longType='Historical expense · LifeSupportReplenishment'.repeat(3)+' <record & audit>';
+ fixture.ledger.push(
+  {id:'compact-expense',type:'Manual expense',amount:'-250',hours:2,world:fixture.actual,reason:'Compact debit check'},
+  {id:'compact-deposit',type:'Manual deposit',amount:'75',hours:1,world:fixture.actual,reason:'Compact credit check'},
+  {id:'compact-long',type:longType,amount:'-5',hours:3,world:fixture.actual,reason:'Long entry readability check'}
+ );
+ fixture.bank=String(BigInt(fixture.bank)-180n);
+ const original=JSON.stringify(fixture);
+ await context.addInitScript(saved=>localStorage.setItem('traveller-trade-route-calculator:v1',saved),original);
+ const ledgerPage=await context.newPage();ledgerPage.on('pageerror',e=>errors.push(e.message));
+ const raw=()=>ledgerPage.evaluate(()=>localStorage.getItem('traveller-trade-route-calculator:v1'));
+ const button=id=>ledgerPage.locator('[data-action="ledger-audit"][data-arg="'+id+'"]');
+ const row=id=>ledgerPage.locator('.bank-ledger tbody tr').filter({has:button(id)});
+ const cash=value=>'Cr '+BigInt(value).toLocaleString('en-US');
+ const geometry=id=>row(id).evaluate(element=>{
+  const cell=element.children[2],label=cell.querySelector('.ledger-entry-label'),button=cell.querySelector('button');
+  const rect=e=>{const r=e.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};};
+  const range=document.createRange();range.selectNodeContents(label);
+  return {row:rect(element),cell:rect(cell),label:rect(label),button:rect(button),lines:range.getClientRects().length,labelFits:label.scrollWidth<=label.clientWidth+1&&label.scrollHeight<=label.clientHeight+1,buttonFits:button.scrollWidth<=button.clientWidth+1&&button.scrollHeight<=button.clientHeight+1};
+ });
+ const assertContained=g=>{
+  assert.ok(g.labelFits&&g.buttonFits,'Entry text and Details must not be clipped');
+  assert.ok(g.button.width>=44&&g.button.height>=24,'Keep the existing usable Details target');
+  for(const part of [g.label,g.button]){
+   assert.ok(part.left>=g.cell.left&&part.right<=g.cell.right,'Entry content must fit its column');
+   assert.ok(part.top>=g.cell.top&&part.bottom<=g.cell.bottom,'Entry content must fit its row');
+  }
+ };
+ try{
+  await ledgerPage.goto(base);await ledgerPage.getByText('Editing in this tab',{exact:true}).waitFor();
+  await ledgerPage.getByRole('button',{name:'Accounts',exact:true}).click();
+  const rows=ledgerPage.locator('.bank-ledger tbody tr');
+  const expectedIds=fixture.ledger.filter(entry=>BigInt(entry.amount)!==0n).map(entry=>entry.id).reverse();
+  assert.deepEqual(await rows.locator('[data-action="ledger-audit"]').evaluateAll(buttons=>buttons.map(button=>button.dataset.arg)),expectedIds);
+  assert.equal(await row('compact-long').locator('.ledger-entry-label').textContent(),longType);
+  assert.equal(await row('compact-long').locator('.ledger-entry-label > *').count(),0,'Imported labels remain escaped text');
+  assert.equal(await row('compact-expense').locator('td').nth(3).textContent(),'Cr 250');
+  assert.equal(await row('compact-deposit').locator('td').nth(4).textContent(),'Cr 75');
+  assert.equal(await row('compact-long').locator('td').nth(5).textContent(),cash(fixture.bank));
+  assert.equal(await row('compact-deposit').locator('td').nth(5).textContent(),cash(BigInt(fixture.bank)+5n));
+  assert.equal(await row('compact-expense').locator('td').nth(5).textContent(),cash(BigInt(fixture.bank)-70n));
+  const short=await geometry('compact-deposit'),long=await geometry('compact-long');
+  assertContained(short);assertContained(long);
+  assert.ok(short.row.height<=50&&short.row.height<72*.75,'Ordinary rows must be substantially shorter than the 72px stacked baseline');
+  assert.ok(short.label.left>=short.button.right+4,'Details comes first, followed by the Entry label');
+  assert.ok(short.label.top<short.button.bottom&&short.button.top<short.label.bottom,'Button and short entry share the same line');
+  assert.ok(long.label.left>=long.button.right+4&&long.label.top<long.button.bottom,'Long entry wraps beside the leading Details button');
+  assert.ok(long.lines>1,'Long entry labels wrap onto readable lines');
+  await ledgerPage.screenshot({path:join(artifacts,'ledger-compact-desktop.png'),fullPage:true});
+  // Tab into the next row and activate Details without a pointer.
+  await button('compact-long').focus();await ledgerPage.keyboard.press('Tab');
+  assert.equal(await ledgerPage.evaluate(()=>document.activeElement?.dataset.arg),'compact-deposit');
+  await ledgerPage.keyboard.press('Enter');
+  await ledgerPage.getByRole('heading',{name:'Manual deposit details',exact:true}).waitFor();
+  assert.match(await ledgerPage.locator('#modal-body').textContent(),/Compact credit check/);
+  assert.equal(await ledgerPage.locator('#modal-body dt').filter({hasText:/^Bank change$/}).evaluate(dt=>dt.nextElementSibling.textContent),'Cr 75');
+  await ledgerPage.getByRole('button',{name:'Close',exact:true}).click();
+  await ledgerPage.locator('#modal').waitFor({state:'hidden'});
+  assert.equal(await raw(),original,'Opening and dismissing Details does not save campaign changes');
+  await ledgerPage.setViewportSize({width:390,height:844});
+  const mobile=await geometry('compact-long');assertContained(mobile);assert.ok(mobile.lines>1);
+  assert.ok(mobile.label.left>=mobile.button.right+4&&mobile.label.top<mobile.button.bottom,'Mobile long labels wrap beside the leading Details button');
+  const scroll=ledgerPage.locator('.bank-ledger');
+  assert.ok(await scroll.evaluate(element=>element.scrollWidth>element.clientWidth),'Wide ledger scrolls within its own panel');
+  await scroll.evaluate(element=>{element.scrollLeft=250;});
+  assert.ok(await ledgerPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1&&document.body.scrollWidth<=innerWidth+1),'Ledger must not cause horizontal page overflow');
+  await ledgerPage.screenshot({path:join(artifacts,'ledger-compact-mobile.png'),fullPage:true});
+  await button('compact-long').click();
+  await ledgerPage.getByRole('heading',{name:longType+' details',exact:true}).waitFor();
+  assert.match(await ledgerPage.locator('#modal-body').textContent(),/Long entry readability check/);
+  await ledgerPage.getByRole('button',{name:'Close',exact:true}).click();
+  assert.equal(await raw(),original,'Responsive layout and both audit routes leave all campaign data unchanged');
+  console.log(`PASS: compact Bank & ledger rows (${short.row.height}px vs 72px baseline), leading Details buttons, adjacent wrapped labels, keyboard audit, mobile panel scroll and unchanged campaign.`);
+ }catch(error){await ledgerPage.screenshot({path:join(artifacts,'ledger-compact-failure.png'),fullPage:true}).catch(()=>{});throw error;}
+ finally{await context.close();}
+};
 const checkLedgerDetails=async()=>{
  const before=await read();await click('Accounts');
  for(const entry of before.ledger){
@@ -90,7 +173,7 @@ try{
  assert.match(await page.locator('.cargo-table tbody tr td').nth(3).textContent(),/^\d+%$/);
  await click('Cancel');await page.locator('.cargo-table [data-action="lot-audit"]').first().click();assert.match(await page.locator('#modal-body').textContent(),/Current sale quote/);assert.match(await page.locator('#modal-body').textContent(),/Table lookup result/);assert.match(await page.locator('#modal-body').textContent(),/Total price DM/);assert.equal(await page.locator('#modal-body pre').count(),0);assert.equal(await page.locator('#trade-rule-1').count(),1);await page.screenshot({path:join(artifacts,'readable-cargo-audit.png')});await click('Close');
  const displayedQuote=await page.locator('.cargo-table tbody tr td').nth(4).textContent();await click('Cargo');assert.equal(await page.locator('.cargo-table tbody tr td').nth(4).textContent(),displayedQuote);
- await page.locator('.cargo-table [data-action="lot-sell"]').first().click();await page.getByText('Referee options for this lot',{exact:true}).click();assert.equal(await page.locator('[name="price_'+saleLot.id+'"]').inputValue(),quotedPrice);await page.getByText('Referee options',{exact:true}).click();await fill('price_'+saleLot.id,'100000');await fill('fee','1');await fill('reason','Verify readable sale fees, tax and profit adjustment');await click('Preview sale');await page.getByRole('heading',{name:'Confirm sale'}).waitFor();assert.equal(await page.locator('#modal-body pre').count(),0);assert.match((await page.locator('.rule-footnote').allTextContents()).join(' '),/MGT 1st Edition, Book 7: Merchant Prince, p. 86/);const review=await page.locator('#modal-body table').first().textContent();await click('Edit quantities / fees');assert.equal(await page.locator('[name="price_'+saleLot.id+'"]').inputValue(),'100000');await click('Preview sale');assert.equal(await page.locator('#modal-body table').first().textContent(),review);await click('COMMIT SALE');await closed();assert.equal((await read()).lots.length,0);await checkLedgerDetails();
+ await page.locator('.cargo-table [data-action="lot-sell"]').first().click();await page.getByText('Referee options for this lot',{exact:true}).click();assert.equal(await page.locator('[name="price_'+saleLot.id+'"]').inputValue(),quotedPrice);await page.getByText('Referee options',{exact:true}).click();await fill('price_'+saleLot.id,'100000');await fill('fee','1');await fill('reason','Verify readable sale fees, tax and profit adjustment');await click('Preview sale');await page.getByRole('heading',{name:'Confirm sale'}).waitFor();assert.equal(await page.locator('#modal-body pre').count(),0);assert.match((await page.locator('.rule-footnote').allTextContents()).join(' '),/MGT 1st Edition, Book 7: Merchant Prince, p. 86/);const review=await page.locator('#modal-body table').first().textContent();await click('Edit quantities / fees');assert.equal(await page.locator('[name="price_'+saleLot.id+'"]').inputValue(),'100000');await click('Preview sale');assert.equal(await page.locator('#modal-body table').first().textContent(),review);await click('COMMIT SALE');await closed();assert.equal((await read()).lots.length,0);await checkLedgerDetails();await checkCompactLedgerLayout(await read());
  await click('History');await click('Undo latest change');assert.equal((await read()).lots.length,1);
  await click('Overview');await click('Plot route');await page.locator('#route-destination').getByLabel('Subsector',{exact:true}).selectOption('C');await page.locator('#route-destination').getByLabel('World',{exact:true}).selectOption('1810');await click('Calculate route');await click('Save route');await closed();assert.equal((await read()).route.length,2);
  await click('Settings');await click('Ship, trader & options');await page.locator('[name="insurance"]').uncheck();await page.locator('[name="tax"]').check();await click('Save');await closed();
@@ -156,7 +239,7 @@ try{
  assert.equal(await second.getByRole('button',{name:'Record expense',exact:true}).isDisabled(),true);
  await second.close();
  // Long-list layout and safe import/export round-trip use a valid expanded campaign fixture.
- let many=await read();const seed=many.lots[0];many.lots=Array.from({length:15},(_,i)=>({...seed,id:'fixture-'+i,quantity:'0.5',basis:String(100+i),goodsValue:'100',description:'Fixture cargo '+(i+1)}));many.policies=[];many.undo=[];many.revision++;
+ let many=await read();const seed=many.lots[0];many.lots=Array.from({length:15},(_,i)=>({...seed,id:'fixture-'+i,quantity:'0.5',basis:String(100+i),goodsValue:'100',description:'Fixture cargo '+(i+1)}));many.policies=[];many.undo=[];many.latestMailCheckId=null;many.revision++;
  await page.evaluate(s=>localStorage.setItem('traveller-trade-route-calculator:v1',JSON.stringify(s)),many);await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();
  await click('Cargo');assert.equal(await page.locator('[data-lot]').count(),15);assert.match(await page.locator('.cargo-table tbody').textContent(),/Cost basis: Cr 114/);
  await page.setViewportSize({width:390,height:844});await page.screenshot({path:join(artifacts,'mobile-preview.png'),fullPage:true});

@@ -45,8 +45,17 @@ async function reach(target){for(let i=0;i<30&&await zoom()!==target;i++)await c
 async function drag(){
  // Raw mouse coordinates do not auto-scroll like locator.click(). The map can
  // be below the viewport after toolbar actions or full-page screenshots.
- await page.locator('.world-map').scrollIntoViewIfNeeded();
- const before=await transform(),b=await page.locator('.world-map').boundingBox(),viewport=page.viewportSize();
+ // Metadata may replace the SVG while Playwright waits for element stability.
+ // Read the current node, scroll and measure in one synchronous browser task;
+ // the drag itself still uses real mouse input and must change the live map.
+ const {before,b}=await page.evaluate(()=>{
+  const map=document.querySelector('.world-map');if(!map)throw Error('Map missing before drag');
+  map.scrollIntoView({behavior:'instant',block:'center',inline:'nearest'});
+  const box=map.getBoundingClientRect();
+  return {before:map.querySelector('.map-content')?.getAttribute('transform'),b:{x:box.x,y:box.y,width:box.width,height:box.height}};
+ });
+ assert.ok(before&&b.width>0&&b.height>0,'A rendered live map is required before dragging');
+ const viewport=page.viewportSize();
  const x=b.x+b.width*.6,y=b.y+b.height*.5;
  assert.ok(x>=0&&y>=0&&x+60<viewport.width&&y+30<viewport.height,'Drag coordinates must be inside the visible browser viewport');
  await page.mouse.move(x,y);await page.mouse.down();

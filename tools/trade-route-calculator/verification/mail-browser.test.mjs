@@ -26,6 +26,7 @@ const summary = {
   fixtures:'Synthetic campaigns, intercepted Traveller Map API, automatic dice fixed to 3',
   cases:[], errors:[],
 };
+const expectedCases=["whole-panel-disclosure-desktop", "whole-panel-disclosure-mobile", "settings-and-independent-rolls", "unavailable-and-undo-check", "repeat-mail-checks-replace-result-and-preserve-audit", "offscreen-mail-draft-invalidated-check-and-undo", "offscreen-mail-draft-invalidated-same-id-import", "whole-consignment-capacity", "accept-jump-deliver-and-undo", "cancel-before-first-jump-full-hold-and-recheck", "first-departure-survives-return-time-route-and-reload", "current-and-legacy-mail-export-import", "cancelled-mail-archive-keeps-mixed-contracts-clean", "manual-mail-reset-does-not-affect-freight", "cancel-read-only-and-stale-cross-tab-confirmation", "toolbar-and-collapsible-mail-details", "combined-freight-and-referee-edit", "political-territory-default-and-preference", "reload-and-read-only-history"];
 let browser;
 await mkdir(artifacts, {recursive:true});
 
@@ -158,6 +159,11 @@ async function savedRowRoll(page, id, expected) {
   assert.equal(await roll.isVisible(), true, 'Persisted contract roll is immediately visible in its description cell');
   assert.equal(normalized(await roll.innerText()), expected);
   assert.ok(normalized(await row.innerText()).includes(expected));
+}
+async function cancelledRowHidden(page, id) {
+  assert.equal(await contractRow(page, id).count(), 0, 'Cancelled Mail is absent from the main Contracts tables, not merely disabled or visually hidden');
+  assert.equal(await page.locator('#main [data-action="contract-audit"][data-arg="'+id+'"]').count(), 0, 'The cancelled contract Audit/View action is no longer in the main Contracts list');
+  assert.equal(await cancelButtons(page, id).count(), 0, 'Cancelled Mail cannot be cancelled again');
 }
 async function openMailAudit(page) {
   await openMailPanel(page);
@@ -461,7 +467,7 @@ try {
       assert.deepEqual(await storageSnapshot(page), acceptedStorage, 'Nested disclosure changes cannot alter contracts, dice, History or storage');
       await commitMailCancel(page, id);
       await compactMailPanel(page, 'Mail cancelled · 10 t released · No payment');
-      await savedRowRoll(page, id, manualRoll);
+      await cancelledRowHidden(page, id);
       assert.equal(await page.locator('#mail-accepted-details').evaluate(el => el.open), false, 'Cancellation preserves the independent inner preference');
       assert.equal(contract(await read(page), id).status, 'cancelled');
       assert.deepEqual(unchangedAccounting(await read(page)), unchangedAccounting(accepted));
@@ -520,9 +526,10 @@ try {
       await page.reload();
       await page.getByText('Read-only: campaign open in another tab.', {exact:true}).waitFor();
       await tab(page, 'Contracts');
-      await compactMailPanel(page, 'Not checked this session');
+      await compactMailPanel(page, 'Mail delivered · 15 t delivered · Cr 75,000 paid');
       await savedRowRoll(page, nextId, manualRoll);
-      assert.deepEqual(await read(page), readOnlyState, 'Reload resets presentation to compact without changing saved contracts or restoring session offers');
+      assert.equal(await page.locator('[data-action="contract-accept"]').count(), 0, 'Reload displays the latest recorded result without restoring session offers');
+      assert.deepEqual(await read(page), readOnlyState, 'Reload resets presentation to compact without changing saved contracts');
     });
   }
 
@@ -673,6 +680,197 @@ try {
     assert.deepEqual(moneyState(await read(page)), moneyState(initial));
   });
 
+  await runCase('repeat-mail-checks-replace-result-and-preserve-audit', {}, async (page, context, result, initial) => {
+    const first = await checkMail(page);
+    const originalFirst = structuredClone(first);
+    assert.equal((await read(page)).latestMailCheckId, first.id);
+    await compactMailPanel(page, 'Mail available · 15 t · Cr 75,000 on delivery');
+    assert.equal(await page.locator('#main tbody tr').filter({hasText:'Mail contract'}).count(), 1);
+    const reader = await context.newPage();
+    await reader.goto(base);
+    await reader.getByText('Read-only: campaign open in another tab.', {exact:true}).waitFor();
+    await tab(reader, 'Contracts');
+    await compactMailPanel(reader, 'Previous mail result · Offer no longer active');
+
+    const second = await checkMail(page, {availability:2});
+    assert.equal(second.supersedesMailCheckId, first.id, 'The replacement records which check it superseded');
+    assert.equal((await read(page)).latestMailCheckId, second.id);
+    assert.equal(await mail(page).count(), 1, 'Repeated checks never stack Mail panels');
+    await compactMailPanel(page, 'No mail available');
+    assert.equal(await page.locator('#main tbody tr').filter({hasText:'Mail contract'}).count(), 0, 'An unavailable result replaces the earlier offer');
+    assert.equal(await page.locator('[data-action="contract-accept"]').count(), 0);
+    const originalSecond = structuredClone(second);
+    await screenshot(page, result, 'mail-repeated-check-unavailable-replaces-offer.png');
+    await reader.waitForFunction(() => document.querySelector('#mail-card .mail-card-status')?.textContent === 'No mail available');
+    assert.equal(await mail(reader).count(), 1);
+    assert.equal(await reader.locator('[data-action="contract-accept"]').count(), 0);
+    const unavailableState = await read(page);
+    await page.reload();
+    await page.getByText('Editing in this tab', {exact:true}).waitFor();
+    await tab(page, 'Contracts');
+    await compactMailPanel(page, 'No mail available');
+    assert.equal(await mail(page).count(), 1);
+    assert.deepEqual(await read(page), unavailableState, 'Unavailable latest results also survive reload without campaign mutation');
+    const unavailableBackup = await exportCampaign(page);
+    await importCampaign(page, unavailableBackup, 'synthetic-latest-unavailable-mail-result.json');
+    await compactMailPanel(page, 'No mail available');
+    assert.equal((await read(page)).latestMailCheckId, second.id);
+    assert.deepEqual((await read(page)).events, unavailableState.events);
+
+    const third = await checkMail(page, {containers:1});
+    assert.equal(third.supersedesMailCheckId, second.id);
+    const current = await read(page);
+    assert.equal(current.latestMailCheckId, third.id);
+    assert.equal(await mail(page).count(), 1);
+    await compactMailPanel(page, 'Mail available · 5 t · Cr 25,000 on delivery');
+    const offers = page.locator('#main tbody tr').filter({hasText:'Mail contract'});
+    assert.equal(await offers.count(), 1, 'Only the latest Mail offer is actionable');
+    assert.ok((await offers.innerText()).includes(third.offers[0].offerId));
+    assert.equal(await page.locator('[data-action="contract-accept"][data-arg="'+first.offers[0].offerId+'"]').count(), 0, 'The older offer cannot be accepted');
+    assert.deepEqual(current.events.find(e => e.id === first.id), originalFirst);
+    assert.deepEqual(current.events.find(e => e.id === second.id), originalSecond);
+    assert.deepEqual(moneyState(current), moneyState(initial), 'Repeated checks never reserve cargo or pay money');
+    await screenshot(page, result, 'mail-repeated-check-latest-offer-only.png');
+    await reader.waitForFunction(() => document.querySelector('#mail-card .mail-card-status')?.textContent === 'Previous mail result · Offer no longer active' && document.querySelector('#mail-card .mail-result .mail-roll-summary')?.textContent.includes('manual 1D total 1'));
+    await compactMailPanel(reader, 'Previous mail result · Offer no longer active');
+    assert.equal(await mail(reader).count(), 1);
+    assert.equal(await reader.locator('[data-action="contract-accept"]').count(), 0, 'Cross-tab replacement never restores actionable historical offers');
+    await visibleRoll(reader, 'Availability roll: manual 2D total 12; 12 + 7 DM = 19 (12+ required) Container roll: manual 1D total 1');
+    await screenshot(reader, result, 'mail-read-only-cross-tab-latest-check.png');
+    assert.deepEqual(await read(reader), current);
+
+    for (const [superseded, replacement] of [[first,second],[second,third]]) {
+      await historyAudit(page, superseded.id);
+      assert.match(await modal(page).innerText(), /Superseded mail check/);
+      assert.ok((await modal(page).innerText()).includes(replacement.id), 'The old audit identifies its replacement check');
+      await modal(page).getByText('Mail search result', {exact:true}).click();
+      assert.match(await modal(page).innerText(), superseded === first ? /Manual roll total: 12/ : /Manual roll total: 2/);
+      assert.equal(await modal(page).locator('[data-mutate], input, select, textarea').count(), 0);
+      await screenshot(page, result, 'mail-superseded-'+(superseded === first ? 'available' : 'unavailable')+'-history-audit.png');
+      await closeAudit(page);
+    }
+    await historyAudit(page, third.id);
+    assert.doesNotMatch(await modal(page).innerText(), /Superseded mail check/);
+    await closeAudit(page);
+    assert.deepEqual(await read(page), current, 'History labels derive from linkage without rewriting any saved audit');
+
+    await undo(page);
+    assert.equal((await read(page)).latestMailCheckId, second.id, 'Undo restores the prior latest-result reference');
+    assert.equal(await mail(page).count(), 1);
+    assert.match(await mail(page).textContent(), /No mail available/);
+    assert.equal(await page.locator('[data-action="contract-accept"]').count(), 0, 'Undo never revives an earlier actionable offer');
+    await historyAudit(page, second.id);
+    assert.doesNotMatch(await modal(page).innerText(), /Superseded mail check/, 'Undo removes the superseding relationship together with its check');
+    await closeAudit(page);
+    await undo(page);
+    assert.equal((await read(page)).latestMailCheckId, first.id);
+    assert.equal(await mail(page).count(), 1);
+    assert.equal(await page.locator('[data-action="contract-accept"]').count(), 0, 'An older available result restored by Undo stays read-only');
+    await visibleRoll(page, manualRoll);
+    assert.equal(normalized(await openMailAudit(page)).includes('Manual roll total: 12'), true);
+    await closeAudit(page);
+    const restored = await read(page);
+    await page.reload();
+    await page.getByText('Editing in this tab', {exact:true}).waitFor();
+    await tab(page, 'Contracts');
+    assert.equal(await mail(page).count(), 1);
+    await compactMailPanel(page, 'Previous mail result · Offer no longer active');
+    assert.equal(await page.locator('[data-action="contract-accept"]').count(), 0);
+    await visibleRoll(page, manualRoll);
+    assert.deepEqual(await read(page), restored);
+    const backup = await exportCampaign(page);
+    await importCampaign(page, backup, 'synthetic-restored-latest-mail-result.json');
+    assert.equal((await read(page)).latestMailCheckId, first.id);
+    assert.equal(await mail(page).count(), 1);
+    assert.equal(await page.locator('[data-action="contract-accept"]').count(), 0);
+    await visibleRoll(page, manualRoll);
+    assert.deepEqual((await read(page)).events, restored.events);
+    assert.deepEqual(moneyState(await read(page)), moneyState(initial));
+  });
+
+  for (const replacement of ['check-and-undo','same-id-import']) {
+    await runCase('offscreen-mail-draft-invalidated-'+replacement, {}, async (page, context, result, initial) => {
+      const first = await checkMail(page), firstOfferId = first.offers[0].offerId;
+      assert.equal(await page.locator('#main tbody tr').filter({hasText:firstOfferId}).count(), 1);
+      const backup = await exportCampaign(page);
+      await tab(page, 'History');
+      assert.equal(await mail(page).count(), 0, 'The original writer stays away from Contracts throughout the external changes');
+
+      const other = await context.newPage();
+      await other.goto(base);
+      await other.getByText('Read-only: campaign open in another tab.', {exact:true}).waitFor();
+      await other.getByRole('button', {name:'Take over editing', exact:true}).click();
+      await other.getByText('Editing in this tab', {exact:true}).waitFor();
+      await page.getByText('Read-only: editing transferred to another tab.', {exact:true}).waitFor();
+      await tab(other, 'Contracts');
+
+      if (replacement === 'check-and-undo') {
+        const second = await checkMail(other, {containers:2});
+        assert.equal(second.supersedesMailCheckId, first.id);
+        // Waiting for the rendered History button proves the background tab
+        // consumed the storage update without ever rendering its Mail panel.
+        await page.locator('[data-action="event-audit"][data-arg="'+second.id+'"]').waitFor({state:'visible'});
+        assert.equal(await mail(page).count(), 0);
+        await undo(other);
+        const undoEvent = (await read(other)).events.at(-1);
+        assert.equal(undoEvent.label, 'Undo: Mail check');
+        await page.locator('[data-action="event-audit"][data-arg="'+undoEvent.id+'"]').waitFor({state:'visible'});
+      } else {
+        // This replacement deliberately preserves the check and offer IDs.
+        // Observe its real storage event because the History rows themselves
+        // are identical before and after replacing the exported campaign.
+        await page.evaluate(key => {
+          window.__mailImportStorageRevision = null;
+          const observed = event => {
+            if (event.key !== key || !event.newValue) return;
+            window.removeEventListener('storage', observed);
+            window.__mailImportStorageRevision = JSON.parse(event.newValue).revision;
+          };
+          window.addEventListener('storage', observed);
+        }, KEY);
+        await importCampaign(other, backup, 'synthetic-same-id-mail-check-replacement.json');
+        const imported = await read(other);
+        await page.waitForFunction(revision => window.__mailImportStorageRevision === revision, imported.revision);
+        await page.evaluate(() => { delete window.__mailImportStorageRevision; });
+        assert.equal(imported.latestMailCheckId, first.id);
+        assert.equal(latestSearch(imported).offers[0].offerId, firstOfferId);
+        assert.deepEqual(imported.events, backup.events);
+      }
+
+      assert.equal(await mail(page).count(), 0);
+      const received = await read(page);
+      assert.equal(received.latestMailCheckId, first.id);
+      assert.deepEqual(received.events.find(event => event.id === first.id), first);
+      assert.deepEqual(moneyState(received), moneyState(initial));
+      await tab(page, 'Contracts');
+      await compactMailPanel(page, 'Previous mail result · Offer no longer active');
+      assert.equal(await page.locator('[data-action="contract-accept"]').count(), 0, 'Returning to Contracts cannot resurrect the original session draft');
+      assert.equal(await page.locator('#main tbody tr').filter({hasText:'Mail contract'}).count(), 0);
+      await screenshot(page, result, 'mail-offscreen-'+replacement+'-read-only.png');
+
+      await page.getByRole('button', {name:'Take over editing', exact:true}).click();
+      await page.getByText('Editing in this tab', {exact:true}).waitFor();
+      await other.getByText('Read-only: editing transferred to another tab.', {exact:true}).waitFor();
+      await compactMailPanel(page, 'Previous mail result · Offer no longer active');
+      assert.equal(await page.locator('[data-action="contract-accept"]').count(), 0, 'Taking ownership back cannot revive an invalidated offer');
+      assert.equal(await page.locator('[data-action="draft-edit"]').count(), 0);
+      assert.deepEqual(await read(page), received, 'Changing tab ownership does not change the campaign or historical offer');
+      await visibleRoll(page, manualRoll);
+      await openMailAudit(page);
+      await closeAudit(page);
+
+      const fresh = await checkMail(page, {containers:1});
+      assert.notEqual(fresh.id, first.id);
+      assert.notEqual(fresh.offers[0].offerId, firstOfferId);
+      assert.equal(fresh.supersedesMailCheckId, first.id);
+      assert.equal(await page.locator('#main tbody tr').filter({hasText:'Mail contract'}).count(), 1, 'Only an explicit fresh check creates a new actionable offer');
+      assert.equal(await page.locator('[data-action="contract-accept"][data-arg="'+firstOfferId+'"]').count(), 0);
+      assert.equal(await mail(page).getByRole('button', {name:'Accept whole mail consignment', exact:true}).isEnabled(), true);
+      assert.deepEqual(moneyState(await read(page)), moneyState(initial));
+      await screenshot(page, result, 'mail-offscreen-'+replacement+'-fresh-offer.png');
+    });
+  }
+
   await runCase('whole-consignment-capacity', {capacity:'14'}, async (page, context, result) => {
     await checkMail(page);
     await openMailPanel(page);
@@ -702,8 +900,10 @@ try {
     await page.reload();
     await page.getByText('Editing in this tab', {exact:true}).waitFor();
     await tab(page, 'Contracts');
+    await compactMailPanel(page, 'Mail accepted · 15 t reserved · Cr 75,000 on delivery');
     await openMailPanel(page);
-    assert.match(await mail(page).innerText(), /No mail check in this session/);
+    assert.match(await mail(page).innerText(), /Mail accepted/);
+    await visibleRoll(page, manualRoll);
     await savedRowRoll(page, accepted.contracts[0].id, manualRoll);
     assert.deepEqual(await read(page), accepted, 'Reload preserves the accepted contract and its saved roll');
     await page.locator('[data-action="contract-audit"][data-arg="'+accepted.contracts[0].id+'"]').click();
@@ -843,11 +1043,11 @@ try {
     assert.match(await mail(page).innerText(), /Mail cancelled/);
     assert.match(await mail(page).innerText(), /Released after cancellation/);
     await visibleRoll(page, manualRoll);
-    assert.match(await contractRow(page, id).innerText(), /Cancelled · no payment or penalty/);
-    assert.equal(await contractRow(page, id).locator('[data-action="deliver"], [data-action="mail-cancel"], [data-action="contract-accept"]').count(), 0);
-    assert.equal(await page.locator('#main tbody tr').filter({hasText:'Mail contract'}).count(), 1, 'The cancelled offer cannot be accepted a second time');
+    await cancelledRowHidden(page, id);
+    assert.equal(await page.locator('#main tbody tr').filter({hasText:'Mail contract'}).count(), 0, 'The cancelled consignment and its offer are absent from both Contracts tables');
+    assert.equal(await page.getByText('No accepted or delivered contracts.', {exact:true}).isVisible(), true, 'A list containing only cancelled Mail uses the empty state');
     assert.deepEqual(await freightRows(page), freight, 'Cancelling Mail does not discard unrelated freight offers');
-    await screenshot(page, result, 'mail-desktop-cancelled-history-row.png');
+    await screenshot(page, result, 'mail-desktop-cancelled-row-absent.png');
     const cancellationAudit = cancelled.events.find(e => e.label === 'Mail cancellation audit' && e.contract?.id === id);
     assert.ok(cancellationAudit);
     assert.deepEqual(cancellationAudit.contract, saved);
@@ -858,7 +1058,8 @@ try {
     await closeAudit(page);
     await tab(page, 'Contracts');
     await page.setViewportSize({width:390, height:844});
-    await screenshot(page, result, 'mail-mobile-cancelled-history.png');
+    await cancelledRowHidden(page, id);
+    await screenshot(page, result, 'mail-mobile-cancelled-row-absent.png');
     await page.setViewportSize({width:1440, height:1100});
 
     await undo(page);
@@ -866,8 +1067,10 @@ try {
     assert.deepEqual(restored.contracts, accepted.contracts, 'Undo restores the exact same accepted contract, including the unused departure marker');
     assert.deepEqual(unchangedAccounting(restored), unchangedAccounting(accepted));
     assert.match(await page.locator('#hold-summary .value').innerText(), /15 \/ 15 t/);
+    await savedRowRoll(page, id, manualRoll);
     assert.equal(await contractRow(page, id).locator('[data-action="mail-cancel"]').isEnabled(), true);
     await commitMailCancel(page, id);
+    await cancelledRowHidden(page, id);
     const cancelledAgain = contract(await read(page), id);
     await checkMail(page);
     assert.equal(await mail(page).getByRole('button', {name:'Accept whole mail consignment', exact:true}).isEnabled(), true);
@@ -878,9 +1081,12 @@ try {
     assert.equal(next.status, 'accepted');
     assert.equal(next.firstDeparture, null);
     assert.deepEqual(contract(reaccepted, id), cancelledAgain);
+    await cancelledRowHidden(page, id);
+    await savedRowRoll(page, next.id, manualRoll);
     assert.deepEqual(unchangedAccounting(reaccepted), unchangedAccounting(accepted));
     assert.match(await page.locator('#hold-summary .value').innerText(), /15 \/ 15 t/);
     await commitMailCancel(page, next.id);
+    await cancelledRowHidden(page, next.id);
     await checkMail(page, {availability:2});
     assert.match(await mail(page).innerText(), /No mail available/);
     assert.equal(await page.locator('#main tbody tr').filter({hasText:'Mail contract'}).locator('[data-action="contract-accept"]').count(), 0);
@@ -955,6 +1161,7 @@ try {
     // A valid old export can also prove a past jump. Remove the new field and
     // its generated inverse patch to reproduce the pre-marker schema exactly.
     const legacyDeparted = structuredClone(backup);
+    delete legacyDeparted.latestMailCheckId;
     delete contract(legacyDeparted, id).firstDeparture;
     for (const entry of legacyDeparted.undo) entry.inverse = entry.inverse.filter(op => !(op.path[0] === 'contracts' && op.path.at(-1) === 'firstDeparture'));
     await importCampaign(page, legacyDeparted, 'synthetic-legacy-mail-returned-to-origin.json');
@@ -969,19 +1176,21 @@ try {
     const backup = await exportCampaign(page), id = backup.contracts[0].id;
     assert.equal(backup.contracts[0].firstDeparture, null);
     await importCampaign(page, backup);
-    assert.equal(await cancelButtons(page, id).count(), 1, 'Reload/import exposes cancellation on the persisted contract row without reviving a session offer');
-    assert.equal(await cancelButtons(page, id).isEnabled(), true);
+    assert.equal(await cancelButtons(page, id).count(), 2, 'Reload/import displays the latest accepted consignment and persisted row without reviving a session offer');
+    for (const button of await cancelButtons(page, id).all()) assert.equal(await button.isEnabled(), true);
     assert.equal(await page.locator('[data-action="contract-accept"]').count(), 0);
     await commitMailCancel(page, id);
     const cancelledBackup = await exportCampaign(page);
     await importCampaign(page, cancelledBackup);
     assert.deepEqual((await read(page)).contracts, cancelledBackup.contracts);
     assert.deepEqual((await read(page)).ledger, cancelledBackup.ledger);
-    assert.equal(await cancelButtons(page, id).count(), 0);
-    assert.equal(await contractRow(page, id).locator('[data-action="deliver"], [data-action="contract-accept"]').count(), 0);
-    assert.match(await contractRow(page, id).innerText(), /Cancelled · no payment or penalty/);
-    await page.locator('[data-action="contract-audit"][data-arg="'+id+'"]').click();
+    assert.deepEqual((await read(page)).events, cancelledBackup.events, 'Import retains every cancellation and roll event');
+    await cancelledRowHidden(page, id);
+    const cancellationAudit = cancelledBackup.events.find(e => e.label === 'Mail cancellation audit' && e.contract?.id === id);
+    assert.ok(cancellationAudit);
+    await historyAudit(page, cancellationAudit.id);
     assert.match(await modal(page).innerText(), /Mail lifecycle/);
+    assert.match(await modal(page).innerText(), /Cancelled before first jump; no payment or penalty/);
     assert.equal(await page.locator('#modal-submit').isVisible(), false);
     await closeAudit(page);
     const importedCancellation = await read(page);
@@ -989,26 +1198,53 @@ try {
     await page.getByText('Editing in this tab', {exact:true}).waitFor();
     await tab(page, 'Contracts');
     assert.deepEqual(await read(page), importedCancellation);
-    assert.equal(await cancelButtons(page, id).count(), 0, 'Cancelled history remains final across import and reload');
+    await cancelledRowHidden(page, id);
+    await historyAudit(page, cancellationAudit.id);
+    assert.match(await modal(page).innerText(), /Cancellation result/);
+    await closeAudit(page);
+    await tab(page, 'Contracts');
+
+    // A valid backup may retain the cancelled contract but omit old event or
+    // Undo records. Its frozen contract audit must remain reachable in History.
+    const noTrail = structuredClone(cancelledBackup);
+    noTrail.events = [];
+    noTrail.undo = [];
+    delete noTrail.latestMailCheckId;
+    await importCampaign(page, noTrail, 'synthetic-cancelled-mail-without-event-trail.json');
+    await cancelledRowHidden(page, id);
+    assert.deepEqual((await read(page)).contracts, cancelledBackup.contracts);
+    await tab(page, 'History');
+    const archive = page.locator('#cancelled-mail-history');
+    assert.equal(await archive.locator('tbody tr').count(), 1, 'The saved contract remains archived without a cancellation event');
+    await archive.locator('[data-action="contract-audit"][data-arg="'+id+'"]').click();
+    assert.match(await modal(page).innerText(), /Mail lifecycle/);
+    assert.match(await modal(page).innerText(), /Cancellation result/);
+    assert.match(await modal(page).innerText(), /Container-count die/);
+    assert.equal(await page.locator('#modal-submit').isVisible(), false);
+    assert.equal(await modal(page).locator('input, select, textarea, [data-mutate]').count(), 0);
+    await screenshot(page, result, 'mail-import-missing-event-trail-archive-audit.png');
+    await closeAudit(page);
+    assert.deepEqual((await read(page)).events, [], 'Rendering a legacy archive never invents missing audit events');
 
     // Old schema-1 exports omitted the marker. Preserve the genuine UI-created
     // acceptance/undo trail, removing the newly introduced lifecycle metadata.
     const legacy = structuredClone(backup);
+    delete legacy.latestMailCheckId;
     delete legacy.contracts[0].firstDeparture;
     delete legacy.contracts[0].acceptanceEventId;
     legacy.events = legacy.events.filter(e => e.label !== 'Mail acceptance audit');
     await importCampaign(page, legacy, 'synthetic-legacy-mail-complete-trail.json');
-    assert.equal(await cancelButtons(page, id).isEnabled(), true, 'A complete legacy acceptance trail proves no committed departure');
+    assert.equal(await contractRow(page, id).locator('[data-action="mail-cancel"]').isEnabled(), true, 'A complete legacy acceptance trail proves no committed departure');
     await page.reload();
     await page.getByText('Editing in this tab', {exact:true}).waitFor();
     await tab(page, 'Contracts');
-    assert.equal(await cancelButtons(page, id).isEnabled(), true);
+    assert.equal(await contractRow(page, id).locator('[data-action="mail-cancel"]').isEnabled(), true);
     await commitMailCancel(page, id);
     assert.equal(contract(await read(page), id).cancellation.source, 'legacy-undo');
     assert.equal(contract(await read(page), id).firstDeparture, null);
     await undo(page);
     assert.equal(Object.hasOwn(contract(await read(page), id), 'firstDeparture'), false, 'Undo also restores the original legacy representation');
-    assert.equal(await cancelButtons(page, id).isEnabled(), true, 'Undo preserves verified legacy eligibility across the import revision seam');
+    assert.equal(await contractRow(page, id).locator('[data-action="mail-cancel"]').isEnabled(), true, 'Undo preserves verified legacy eligibility across the import revision seam');
 
     const unknown = structuredClone(legacy);
     unknown.undo = [];
@@ -1026,6 +1262,104 @@ try {
     await page.getByText('Editing in this tab', {exact:true}).waitFor();
     await tab(page, 'Contracts');
     await assertCancelBlocked(page, id, /cannot.*(verify|confirm)|unknown|unverified|incomplete|not.*recorded/i);
+  });
+
+  await runCase('cancelled-mail-archive-keeps-mixed-contracts-clean', {}, async (page, context, result) => {
+    // Build every lifecycle through the real controls so the main view contains
+    // accepted/delivered Mail and freight alongside a retained cancelled record.
+    const checks = [], mailIds = [];
+    for (let i=0; i<3; i++) {
+      checks.push(await checkMail(page));
+      await acceptMail(page);
+      mailIds.push((await read(page)).contracts.at(-1).id);
+    }
+    const [cancelledId, deliveredId, acceptedId] = mailIds;
+    await page.getByRole('button', {name:'Manual contract', exact:true}).click();
+    await modal(page).locator('[name="kind"]').selectOption('freight');
+    await modal(page).locator('[name="destination"]').selectOption(destination.id);
+    await fill(page, 'quantity', 5);
+    await fill(page, 'payment', 1000);
+    await fill(page, 'reason', 'Synthetic freight retained beside mixed Mail lifecycles');
+    await submit(page, 'Save');
+    const freightId = (await read(page)).contracts.at(-1).id;
+    await commitMailCancel(page, cancelledId);
+    await committedJump(page);
+    await contractRow(page, deliveredId).getByRole('button', {name:'Deliver', exact:true}).click();
+    await submit(page, 'Commit delivery & payout');
+    await toggleMailPanel(page, false);
+    const mixed = await read(page), storedCancelled = contract(mixed, cancelledId);
+    const cancellationEvent = mixed.events.find(e => e.label === 'Mail cancellation audit' && e.contract?.id === cancelledId);
+    assert.ok(cancellationEvent);
+    assert.deepEqual(mixed.contracts.map(c => [c.kind,c.status]), [['mail','cancelled'],['mail','delivered'],['mail','accepted'],['freight','accepted']]);
+    assert.equal(mixed.bank, '175000');
+    assert.equal(mixed.ledger.filter(e => e.contractId === deliveredId && e.type === 'Mail delivery').length, 1);
+    assert.equal(mixed.ledger.filter(e => e.contractId === cancelledId).length, 0);
+    for (const check of checks) assert.deepEqual(mixed.events.find(e => e.id === check.id), check, 'Later checks and lifecycle changes retain the exact original roll audit');
+    const assertMixedRows = async target => {
+      await cancelledRowHidden(target, cancelledId);
+      assert.equal(await target.locator('#main tbody tr').count(), 3, 'Only the two non-cancelled Mail contracts and freight remain');
+      await savedRowRoll(target, acceptedId, manualRoll);
+      await savedRowRoll(target, deliveredId, manualRoll);
+      assert.match(await contractRow(target, acceptedId).innerText(), /Accepted · unpaid/);
+      assert.match(await contractRow(target, deliveredId).innerText(), /Delivered · paid Cr 75,000/);
+      assert.match(await contractRow(target, freightId).innerText(), /Freight contract/);
+      assert.match(await target.locator('#hold-summary .value').innerText(), /20 \/ 60 t/);
+      assert.equal(await target.locator('#cancelled-mail-history').count(), 0, 'The cancelled archive is History-only');
+    };
+    for (const [size, viewport] of [['desktop',{width:1440,height:1100}], ['mobile',{width:390,height:844}]]) {
+      await page.setViewportSize(viewport);
+      await compactMailPanel(page, 'Mail accepted · 15 t reserved · Cr 75,000 on delivery');
+      await assertMixedRows(page);
+      await screenshot(page, result, 'mail-'+size+'-mixed-contracts-cancelled-absent.png');
+      await historyAudit(page, cancellationEvent.id);
+      const auditText = await modal(page).innerText();
+      for (const text of ['Cancellation result','15 t','Cr 75,000','Cargo space released','Income','Penalty','Cr 0','Container-count die']) assert.ok(auditText.includes(text), text);
+      assert.equal(await modal(page).locator('input, select, textarea, [data-mutate]').count(), 0, 'Cancellation event audit is entirely read-only');
+      await screenshot(page, result, 'mail-'+size+'-mixed-cancellation-event-audit.png');
+      await closeAudit(page);
+      const archive = page.locator('#cancelled-mail-history');
+      assert.equal(await archive.getByRole('heading', {name:'Cancelled mail archive', exact:true}).isVisible(), true);
+      assert.equal(await archive.locator('tbody tr').count(), 1);
+      assert.equal(await archive.locator('[data-action="deliver"], [data-action="mail-cancel"], [data-action="contract-accept"], [data-mutate]').count(), 0, 'The archive exposes audit only');
+      await archive.locator('[data-action="contract-audit"][data-arg="'+cancelledId+'"]').click();
+      assert.match(await modal(page).innerText(), /Cancelled before first jump; no payment or penalty/);
+      assert.equal(await page.locator('#modal-submit').isVisible(), false);
+      await closeAudit(page);
+      await screenshot(page, result, 'mail-'+size+'-cancelled-history-archive.png', archive);
+      await tab(page, 'Contracts');
+    }
+    assert.deepEqual(await read(page), mixed, 'Main-list filtering and every archive/event audit leave all stored facts unchanged');
+    const backup = await exportCampaign(page);
+    assert.deepEqual(backup.contracts, mixed.contracts, 'JSON export retains cancelled contracts alongside every other status');
+    assert.deepEqual(backup.events, mixed.events);
+    await importCampaign(page, backup, 'synthetic-mixed-mail-lifecycles.json');
+    await assertMixedRows(page);
+    assert.deepEqual((await read(page)).contracts, mixed.contracts);
+    assert.deepEqual((await read(page)).events, mixed.events);
+    const imported = await read(page);
+    await page.reload();
+    await page.getByText('Editing in this tab', {exact:true}).waitFor();
+    await tab(page, 'Contracts');
+    await assertMixedRows(page);
+    assert.deepEqual(await read(page), imported, 'Reload applies presentation filtering without rewriting the campaign');
+
+    const reader = await context.newPage();
+    await reader.goto(base);
+    await reader.getByText('Read-only: campaign open in another tab.', {exact:true}).waitFor();
+    await tab(reader, 'Contracts');
+    await assertMixedRows(reader);
+    for (const button of await reader.locator('#main [data-mutate]').all()) assert.equal(await button.isDisabled(), true);
+    const readOnlyStorage = await storageSnapshot(reader);
+    await historyAudit(reader, cancellationEvent.id);
+    assert.match(await modal(reader).innerText(), /Cancellation result/);
+    await closeAudit(reader);
+    await reader.locator('#cancelled-mail-history [data-action="contract-audit"][data-arg="'+cancelledId+'"]').click();
+    assert.equal(await reader.locator('#modal-submit').isVisible(), false);
+    assert.equal(await modal(reader).locator('input, select, textarea, [data-mutate]').count(), 0);
+    await screenshot(reader, result, 'mail-read-only-cancelled-archive-audit.png');
+    await closeAudit(reader);
+    assert.deepEqual(await storageSnapshot(reader), readOnlyStorage, 'Read-only archived audit inspection changes no storage');
+    assert.deepEqual(contract(await read(reader), cancelledId), storedCancelled);
   });
 
   await runCase('manual-mail-reset-does-not-affect-freight', {capacity:'10'}, async page => {
@@ -1048,9 +1382,12 @@ try {
     assert.equal(contract(cancelled, manual.id).status, 'cancelled');
     assert.deepEqual(contract(cancelled, freight.id), freight);
     assert.deepEqual(unchangedAccounting(cancelled), unchangedAccounting(accepted));
+    await cancelledRowHidden(page, manual.id);
+    assert.equal(await contractRow(page, freight.id).count(), 1, 'Accepted freight remains listed when manual Mail is cancelled');
     assert.match(await page.locator('#hold-summary .value').innerText(), /5 \/ 10 t/);
     await undo(page);
     assert.deepEqual((await read(page)).contracts, accepted.contracts);
+    assert.equal(await contractRow(page, manual.id).count(), 1, 'Undo restores manual Mail to the main list');
     assert.match(await page.locator('#hold-summary .value').innerText(), /10 \/ 10 t/);
   });
 
@@ -1063,7 +1400,7 @@ try {
     await reader.goto(base);
     await reader.getByText('Read-only: campaign open in another tab.', {exact:true}).waitFor();
     await tab(reader, 'Contracts');
-    assert.equal(await cancelButtons(reader, id).isDisabled(), true, 'Read-only tabs cannot cancel persisted accepted Mail');
+    for (const button of await cancelButtons(reader, id).all()) assert.equal(await button.isDisabled(), true, 'Read-only tabs cannot cancel persisted accepted Mail');
     await reader.locator('[data-action="contract-audit"][data-arg="'+id+'"]').click();
     assert.equal(await reader.locator('#modal-submit').isVisible(), false);
     await closeAudit(reader);
@@ -1077,12 +1414,16 @@ try {
     await commitMailCancel(reader, id);
     const cancelled = await read(reader);
     assert.equal(contract(cancelled, id).status, 'cancelled');
-    await page.waitForFunction(() => document.querySelector('#main')?.textContent.includes('Cancelled · no payment or penalty'));
+    await contractRow(page, id).waitFor({state:'detached'});
+    await cancelledRowHidden(reader, id);
+    await cancelledRowHidden(page, id);
     await page.locator('#modal-form').evaluate(form => { form.requestSubmit(); form.requestSubmit(); });
     assert.deepEqual(await read(page), cancelled, 'A stale confirmation cannot repeat another tab’s committed cancellation');
     await cancel(page);
-    assert.equal(await cancelButtons(page, id).count(), 0);
-    await page.locator('[data-action="contract-audit"][data-arg="'+id+'"]').click();
+    await cancelledRowHidden(page, id);
+    const cancellationAudit = cancelled.events.find(e => e.label === 'Mail cancellation audit' && e.contract?.id === id);
+    assert.ok(cancellationAudit);
+    await historyAudit(page, cancellationAudit.id);
     assert.match(await modal(page).innerText(), /Mail lifecycle/);
     assert.equal(await page.locator('#modal-submit').isVisible(), false);
     await closeAudit(page);
@@ -1198,7 +1539,8 @@ try {
     assert.deepEqual(moneyState(await read(page)), beforeMoney);
     await undo(page);
     assert.deepEqual(await freightRows(page), beforeRows, 'Undo Mail check retains existing freight');
-    assert.match(await mail(page).textContent(), /No mail check in this session/);
+    assert.match(await mail(page).textContent(), /Previous mail result/);
+    assert.equal((await read(page)).latestMailCheckId, combined.id);
     assert.equal(await page.locator('#main tbody tr').filter({hasText:'Mail contract'}).count(), 0);
     await undo(page);
     assert.equal(await page.locator('[data-action="contract-accept"]').count(), 0, 'Undo combined search removes every actionable offer');
@@ -1225,7 +1567,8 @@ try {
     await closeAudit(page);
     await undo(page);
     assert.equal(await page.locator('[data-action="contract-accept"]').count(), 0, 'Undo referee edit discards stale session offers');
-    assert.match(await mail(page).textContent(), /No mail check in this session/);
+    assert.match(await mail(page).textContent(), /Previous mail result/);
+    assert.equal((await read(page)).latestMailCheckId, search.id);
     assert.deepEqual(moneyState(await read(page)), beforeMoney);
   });
 
@@ -1271,10 +1614,12 @@ try {
     const saved = await read(page);
     assert.equal(Object.hasOwn(saved, 'mailCheck'), false);
     assert.equal(Object.hasOwn(saved, 'contractDrafts'), false);
+    assert.equal(saved.latestMailCheckId, audit.id, 'Only a reference to the latest saved audit is persisted');
     await page.reload();
     await page.getByText('Editing in this tab', {exact:true}).waitFor();
     await tab(page, 'Contracts');
-    assert.match(await mail(page).textContent(), /No mail check in this session/);
+    await compactMailPanel(page, 'Previous mail result · Offer no longer active');
+    await visibleRoll(page, manualRoll);
     assert.equal(await page.locator('[data-action="contract-accept"]').count(), 0);
     assert.deepEqual(await read(page), saved);
     await historyAudit(page, audit.id);
@@ -1289,6 +1634,7 @@ try {
     await reader.goto(base);
     await reader.getByText('Read-only: campaign open in another tab.', {exact:true}).waitFor();
     await tab(reader, 'Contracts');
+    await compactMailPanel(reader, 'Previous mail result · Offer no longer active');
     assert.equal(await reader.locator('#contract-actions').getByRole('button', {name:'Check for mail', exact:true}).isDisabled(), true);
     await openMailPanel(reader);
     assert.equal(await mail(reader).getByRole('button', {name:'Edit mail settings', exact:true}).isDisabled(), true);
@@ -1307,8 +1653,9 @@ try {
     catch (error) { summary.errors.push('Browser close: '+errorText(error)); }
   }
   summary.finishedAt = new Date().toISOString();
-  summary.passed = summary.errors.length === 0 && summary.cases.length === 15 && summary.cases.every(c => c.status === 'passed');
+  summary.expectedCases = expectedCases;
+  summary.passed = summary.errors.length === 0 && summary.cases.length === expectedCases.length && expectedCases.every(id => summary.cases.some(c => c.id === id && c.status === 'passed'));
   await writeFile(join(artifacts, 'mail-browser-summary.json'), JSON.stringify(summary, null, 2)+'\n');
 }
 if (!summary.passed) throw new Error('Mail browser verification failed. See verification-artifacts/mail-browser-summary.json and per-case traces/screenshots.');
-console.log('PASS: all 15 Mail/map browser scenarios; desktop/mobile screenshots, per-case Playwright traces and commit-tagged JSON summary saved.');
+console.log('PASS: all '+expectedCases.length+' Mail/map browser scenarios; desktop/mobile screenshots, per-case Playwright traces and commit-tagged JSON summary saved.');
