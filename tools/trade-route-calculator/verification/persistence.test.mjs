@@ -185,3 +185,82 @@ test('schema-1 campaigns retain populated history, optional legacy fields and wo
  assert.equal(read.contracts[0].audit,undefined);assert.equal(read.policies[0].amendments,undefined);
  assert.equal(undo(read).hours,0);
 });
+
+// Exercise the real JSON boundary, including changes before any page reload.
+test('blank fuel, configuration, clearing and reconfiguration remain reloadable and undoable', async t => {
+ const env=environment(t), observed=[], store=env.store(s=>observed.push(s));
+ await store.acquire();await tick();
+ const initialState=store.read(),fuel={displacementTons:200,capacityTons:40,aboardTons:20};
+ const save=(label,action)=>{
+  const before=observed.at(-1),next=transition(before,label,action);
+  store.save(next,before.revision);
+  assert.deepEqual(observed.at(-1),store.read(),'Memory and reloaded JSON agree after every save');
+  return store.read();
+ };
+ save('Blank fuel settings',s=>{s.ship.fuel=undefined;});
+ assert.equal(Object.hasOwn(observed.at(-1).ship,'fuel'),false);
+ const blank=store.read(),configured=save('Configure fuel',s=>{s.ship.fuel=fuel;});
+ assert.deepEqual(configured.undo.at(-1).inverse,[{path:['ship','fuel'],remove:true}]);
+ assert.deepEqual(configured.ship.fuel,fuel);
+ const cleared=save('Clear fuel',s=>{s.ship.fuel=undefined;});
+ assert.equal(Object.hasOwn(cleared.ship,'fuel'),false);
+ const again=save('Reconfigure fuel',s=>{s.ship.fuel={...fuel,aboardTons:30};});
+ assert.equal(again.ship.fuel.aboardTons,30);
+ for(const expected of [cleared,configured,blank,initialState]){
+  const current=store.read();store.save(undo(current),current.revision);
+  const restored=store.read();
+  assert.deepEqual(restored.ship,expected.ship);assert.equal(restored.bank,expected.bank);
+  assert.equal(restored.hours,expected.hours);assert.deepEqual(restored.ledger,expected.ledger);
+  assert.deepEqual(restored.undo,expected.undo);
+ }
+ save('Edit after all Undo operations',s=>{s.name='Still editable';});
+ assert.equal(store.read().name,'Still editable');
+});
+
+test('inverse changes also normalize unsaved optional undefined values before JSON export', () => {
+ const blank=transition(initial(),'Blank fuel',s=>{s.ship.fuel=undefined;});
+ assert.equal(Object.hasOwn(blank.ship,'fuel'),true,'Reproduces the former in-memory input');
+ const fuel={displacementTons:200,capacityTons:40,aboardTons:20};
+ const configured=transition(blank,'Configure fuel',s=>{s.ship.fuel=fuel;});
+ const loaded=validate(JSON.parse(JSON.stringify(configured)));
+ assert.deepEqual(loaded.undo.at(-1).inverse,[{path:['ship','fuel'],remove:true}]);
+ assert.equal(Object.hasOwn(undo(loaded).ship,'fuel'),false);
+ const cleared=transition(configured,'Clear fuel',s=>{s.ship.fuel=undefined;});
+ assert.deepEqual(undo(validate(JSON.parse(JSON.stringify(cleared)))).ship.fuel,fuel);
+});
+
+test('writes reject undefined Undo values and JSON-invalid campaigns before changing bytes', async t => {
+ const env=environment(t), changes=[], store=env.store(s=>changes.push(s));
+ await store.acquire();await tick();store.replace(populated(),0);
+ const raw=env.values.get(KEY),expected=store.read().revision,notifications=changes.length;
+ for(const mutate of [
+  s=>{s.undo[0].inverse=[{path:['ship','fuel'],value:undefined}];},
+  // Reject malformed fields and values that disappear during serialization.
+  s=>{s.trader.broker=Infinity;},
+  s=>{s.undo[0].inverse[0].value={toJSON:()=>undefined};},
+ ]){
+  const next=store.read();mutate(next);
+  assert.throws(()=>store.save(next,expected));
+  assert.equal(env.values.get(KEY),raw);assert.equal(changes.length,notifications);
+ }
+});
+
+test('already damaged Undo stays in Recovery with its raw history preserved', async t => {
+ const env=environment(t), changes=[], roles=[], store=env.store(s=>changes.push(s),(...args)=>roles.push(args));
+ const damaged=populated();damaged.undo[0].inverse=[{path:['ship','fuel']}];
+ const raw=JSON.stringify(damaged);env.values.set(KEY,raw);
+ await store.acquire();await tick();
+ assert.equal(store.recovery,true);assert.match(store.recoveryMessage,/Invalid undo operation/);
+ assert.equal(env.values.get(KEY),raw,'Acquiring the writer never rewrites ambiguous damaged history');
+ assert.throws(()=>store.read(),/Invalid undo operation/);
+ assert.throws(()=>store.save(initial(),damaged.revision),/Restore or reset/);
+ assert.equal(env.values.get(KEY),raw);
+ const invalid=populated();invalid.undo[0].inverse=[{path:['ship','fuel'],value:undefined}];
+ assert.throws(()=>store.replace(invalid,damaged.revision),/Invalid undo operation/);
+ assert.equal(env.values.get(KEY),raw);assert.equal(store.recovery,true);
+ const restored=populated();restored.ship.fuel=undefined;
+ store.replace(restored,damaged.revision);
+ assert.equal(store.recovery,false);assert.deepEqual(changes.at(-1),store.read());
+ assert.deepEqual(store.read().undo,restored.undo,'An explicit valid restore retains its own complete history');
+ assert.equal(Object.hasOwn(changes.at(-1).ship,'fuel'),false);
+});
