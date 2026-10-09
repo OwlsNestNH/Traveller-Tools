@@ -191,3 +191,15 @@ Cancellation is available only before that Mail's first committed jump. Even a z
 New accepted Mail saves an explicit departure marker in the jump transaction, including through JSON export/import. Older contracts without that marker are cancellable only when their complete, consistent acceptance/Undo/jump trail proves they have not departed. Missing or ambiguous older history displays **Travel history unverified** and disables cancellation. Older imported campaigns may have revision discontinuities that prevent this proof; the app does not guess from the ship's current location or date. Existing schema-1 campaigns remain readable without silently assigning an unrecorded departure state.
 
 Run `node --test verification/mail-reset.test.mjs verification/mail-ui.test.mjs` for state/import/Undo and actual-app lifecycle checks. `verification/mail-browser.test.mjs` extends the existing real Chromium gate with cancellation, history, ownership, return travel and JSON-import flows.
+
+### One current Mail result and a quieter contract list
+
+Cancelled Mail no longer appears in the main Freight & mail table. Its contract, rolls and cancellation are retained in **History → Cancelled mail archive → Audit/View**, including imported records without their original event trail. The normal cancellation history entries remain readable too. Undo restores the accepted row and cargo reservation. Accepted and delivered contracts, freight offers and the collapsible Mail panel are unchanged.
+
+Each new Mail check replaces the previous displayed result. History identifies the older check as **Superseded mail check** and links it to its replacement, while preserving the original dice, terms and inputs. Only the current session's newest unaccepted Mail offer can be accepted. An unavailable result also replaces the prior offer. Already accepted consignments remain separate contracts.
+
+Reload/import reconstructs a valid latest saved result for read-only viewing; it never recreates an actionable offer. Undo can restore the previous result reference, also read-only. Older backups without the new reference use only a consistent retained action/Undo trail; otherwise the panel remains unchecked. The Mail panel still starts collapsed after reload and preserves your open/closed choice during the session.
+
+### Compact Bank & ledger rows
+
+**Details** comes first, followed by the Entry label on the same row, with smaller row padding. Longer labels wrap and the wide ledger scrolls inside its panel on small screens. Amounts, transaction order, balances, audit actions and accounting rules are unchanged.

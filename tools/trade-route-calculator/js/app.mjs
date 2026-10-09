@@ -6,7 +6,8 @@ import {tiers,luggageAllowance,occupants,passengerLuggage,serviceRate,serviceLab
 import * as A from './amounts.mjs';
 import {parseDate,displayDate} from './calendar.mjs';
 import * as R from './rules.mjs?v=mail-result-roll-1';
-import * as S from './state.mjs?v=mail-prejump-reset-1';
+import * as S from './state.mjs?v=mail-history-1';
+import {latestMailCheck,recordMailCheck,mailCheckHistoryStatus} from './mail-history.mjs?v=mail-history-1';
 import * as E from './expenses.mjs?v=fuel-warning-1';
 import {planetInformation,worldSheetURL} from './planet-info.mjs';
 import * as M from './map.mjs?v=map-overview-1';
@@ -14,10 +15,10 @@ import {camera,viewportTiles,MapAreaCache} from './map-viewport.mjs';
 import {nextMapZoom,mapLevel,MapOverviewCache,overviewMarkup,mapTerritories} from './map-overview.mjs';
 import {readPoliticalTerritory,savePoliticalTerritory} from './map-preferences.mjs';
 import {createWorldPicker,rememberWorld} from './world-picker.mjs?v=fuel-warning-1';
-import {Store,KEY} from './persistence.mjs?v=mail-prejump-reset-1';
+import {Store,KEY} from './persistence.mjs?v=mail-history-1';
 const $=id=>document.getElementById(id),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ROOT='https://github.com/OwlsNestNH/Traveller-Tools/blob/main/tools/trade-route-calculator/';
-let inputRounding=[];
+let inputRounding=[],localCampaignSave=false;
 let historyFilter='All';
 let fuelChoice=null;
 let routeDraft=null;
@@ -82,7 +83,18 @@ function modal(title,body,submit,label='Save',mutates=true){
  if(!$('modal').open)$('modal').showModal();
  if(submit&&title!=='Preview rounding'){normaliseFields($('modal-form'));$('modal-body').insertAdjacentHTML('beforeend','<div id="rounding-input-note">'+roundingFootnote(inputRounding)+'</div>');}
 }
-function act(label,fn,expected=($('modal').open?modalRevision:state.revision)){if(expected!==state.revision)throw Error('Campaign changed. Reopen this preview before committing.');const next=S.transition(state,label,s=>{s.worlds={...known,...s.worlds};fn(s);if(inputRounding.length)s.events.push({id:S.uid(),label:'Rounding applied [R]',hours:s.hours,roundingStep:creditStep(s),roundingChanges:structuredClone(inputRounding)});});store.save(next,expected);message(label+' saved.');return next;}
+function saveCampaign(next,expected){
+ localCampaignSave=true;
+ try{return store.save(next,expected);}finally{localCampaignSave=false;}
+}
+function receiveCampaign(next){
+ // Storage updates, imports and ownership acquisition end this tab's offers,
+ // even if a replacement reuses the same saved audit/offer IDs.
+ if(!localCampaignSave){contractDrafts=[];mailCheck=null;}
+ state=next;known={...known,...next.worlds};view??=next.actual;
+ syncMailCheck();render();
+}
+function act(label,fn,expected=($('modal').open?modalRevision:state.revision)){if(expected!==state.revision)throw Error('Campaign changed. Reopen this preview before committing.');const next=S.transition(state,label,s=>{s.worlds={...known,...s.worlds};fn(s);if(inputRounding.length)s.events.push({id:S.uid(),label:'Rounding applied [R]',hours:s.hours,roundingStep:creditStep(s),roundingChanges:structuredClone(inputRounding)});});saveCampaign(next,expected);message(label+' saved.');return next;}
 function savedRoll(r){return r?.dice?.length?r.dice.join(' + ')+' = '+r.total:r?.total!=null?(r.manual?'Manual roll total: ':'Recorded total: ')+r.total:'Not recorded';}
 function contractRules(){return '<h3>Rule references</h3><p class="help">[F] Traveller Core Rulebook Update 2022, pp. 239–241: freight availability, lot sizes, payments and mail. Deadlines and manual contract terms are referee inputs. Recorded overrides take precedence over generated terms.</p>';}
 function contractRolls(c){
@@ -131,6 +143,7 @@ function historyDetails(e){
  if(e.generatedHours!=null||e.effectiveHours!=null)body+=auditFacts([['Jump duration dice',savedRoll(e.dice)],['Generated jump duration',e.generatedHours==null?'Not recorded':e.generatedHours+' hours'],['Elapsed time used',e.effectiveHours==null?'Not recorded':e.effectiveHours+' hours']])+'<p class="help">[J] Traveller Core Rulebook Update 2022, pp. 157–158: jump travel. Any entered duration override is shown above.</p>';
  if(e.fuel)body+='<h3>Jump fuel</h3>'+auditFacts([['Ship displacement',e.fuel.displacementTons+' tons'],['Distance',e.fuel.distance+' pc'],['Calculation','10% of displacement per parsec, rounded up'],['Fuel required',e.fuel.tons+' tons'],['Fuel consumed from tank',(e.fuel.consumed??e.fuel.tons)+' tons'],['Fuel shortfall',(e.fuel.shortfall??0)+' tons'],['Fuel before',e.fuel.before+' tons'],['Fuel after',e.fuel.after+' tons']])+'<p class="help rule-footnote">[F] '+fuelReference+'</p>';
  if(e.offers){
+  if(e.mailAudit)body+=mailCheckReferenceDetails(e);
   body+='<h3>'+(e.mailOnly?'Mail check':'Freight and mail search')+'</h3>'+auditFacts([['Destination',name(e.destination)],['Generated search dice',savedRoll(e.generatedSearchDice||e.searchDice)],['Search total used',e.effectiveSearchDice??'Not recorded'],['Broker / Streetwise skill DM',e.searchSkill??'Not separately recorded'],['Characteristic DM',e.searchCharacteristic??'Not separately recorded'],['Search target','8+'],['Search Effect',signedDM(e.effect)],['Offers generated',e.offers.length],['Entered dice used',e.manualDiceConsumed??0]]);
   if(e.manualDice?.length)body+=auditFacts([['Entered dice sequence',e.manualDice.join(', ')]]);
   body+=e.offers.length?table(['Type / description','Tons','Destination','Revenue'],e.offers.map(c=>'<tr><td>'+esc(c.description||c.type||c.kind)+'</td><td>'+esc(c.quantity)+'</td><td>'+esc(name(c.destination))+'</td><td>'+money(c.payment)+'</td></tr>')):'<p class="help">No offers generated.</p>';
@@ -286,13 +299,38 @@ function mailCalculationDetails(record){
  const a=record.audit||{};
  return mailRollSummary(a)+contractRolls({kind:'mail',audit:a})+'<p class="help">Low-tech penalty uses the origin only (INT-002). All containers must be accepted together. Each is 5 tons and pays Cr 25,000 only on delivery. Mail has no automatic deadline or late penalty. This audit uses the recorded check, not current Settings or world values.</p>'+contractRules();
 }
-function mailAudit(){if(!mailCheck)throw Error('No mail check in this session.');modal('Mail roll audit','<div class="mail-audit">'+mailCalculationDetails(mailCheck)+'</div>',null);}
+function syncMailCheck(){
+ const saved=latestMailCheck(state);
+ const offer=saved?.offers.find(c=>c.kind==='mail');
+ // Only this session's latest draft can be actionable. Saved audits are display
+ // records, including after reload, import, cross-tab replacement and Undo.
+ contractDrafts=contractDrafts.filter(c=>c.kind!=='mail'||c.offerId===offer?.offerId);
+ if(!saved){mailCheck=null;return;}
+ if(mailCheck?.checkId!==saved.id)mailCheck={checkId:saved.id,historical:true,available:!!offer,origin:saved.world,destination:saved.destination,offerId:offer?.offerId,quantity:offer?.quantity,payment:offer?.payment,audit:structuredClone(saved.mailAudit),searchDice:saved.searchDice,searchSkill:saved.searchSkill,searchCharacteristic:saved.searchCharacteristic};
+}
+function mailCheckStatusText(event){
+ const status=mailCheckHistoryStatus(state,event.id);
+ return status.status==='latest'?'Latest mail check':status.status==='superseded'?'Superseded mail check':'Historical mail check';
+}
+function mailCheckReferenceDetails(event){
+ const status=mailCheckHistoryStatus(state,event.id);
+ return '<h3>Mail check reference</h3>'+auditFacts([['Status',mailCheckStatusText(event)],['Check reference',event.id],['Replaces check',event.supersedesMailCheckId||'None recorded'],['Replaced by check',status.supersededById||'None']])+'<p class="help">Saved checks are read-only. New checks replace the displayed result; original dice and inputs remain in History. Accepted consignments keep their own contracts.</p>';
+}
+function cancelledMailHistory(){
+ const cancelled=state.contracts.filter(c=>c.kind==='mail'&&c.status==='cancelled');
+ if(!cancelled.length)return '';
+ const rows=cancelled.map(c=>'<tr><td>'+esc(c.description||'Mail containers')+'<div class="help">'+esc(c.id)+'</div></td><td>'+esc(world(c.origin)?.name||c.origin)+' → '+esc(world(c.destination)?.name||c.destination)+'</td><td>'+esc(c.quantity)+' t</td><td>'+esc(displayDate(state.dateLabel,c.cancelledHours))+'</td><td>'+btn('Audit/View','contract-audit',c.id,false,'small')+'</td></tr>');
+ return '<div id="cancelled-mail-history">'+panel('Cancelled mail archive','<div class="panel-body help">Cancelled consignments are kept here for audit. They reserve no cargo space and have no payment or penalty.</div>'+table(['Consignment','Route','Tons released','Cancelled at','Audit'],rows))+'</div>';
+}
+
+function mailAudit(){syncMailCheck();if(!mailCheck)throw Error('No mail check in this session.');modal('Mail roll audit','<div class="mail-audit">'+mailCalculationDetails(mailCheck)+'</div>',null);}
 function mailCancellationControl(c){
  if(c.kind!=='mail'||c.status!=='accepted')return '';
  const eligibility=S.mailCancellationEligibility(state,c.id);
  return '<button class="small" data-action="mail-cancel" data-arg="'+esc(c.id)+'" data-mutate '+(eligibility.allowed?'':'data-unavailable disabled')+'>Cancel mail</button><p class="help">'+esc(eligibility.allowed?'Before the first committed jump only. Cancels this whole consignment with no income or penalty.':eligibility.reason)+'</p>';
 }
 function mailPanel(){
+ syncMailCheck();
  let body=mailSettingsSummary(),summary='Not checked this session';
  if(!mailCheck)body+='<p>No mail check in this session.</p><p class="help">Check at the ship’s actual world. Unaccepted offers are session-only; previous checks remain read-only in History.</p>';
  else{
@@ -329,12 +367,13 @@ function mailPanel(){
  return '<details id="mail-card" class="mail-card" aria-label="Mail" '+(mailPanelOpen?'open':'')+'><summary class="panel-head mail-card-summary"><span class="mail-card-chevron" aria-hidden="true">▸</span><strong>Mail</strong><span class="mail-card-status" role="status">'+esc(summary)+'</span></summary><div class="panel-body">'+body+'</div></details>';
 }
 function contractsPanel(){
+ const visibleContracts=state.contracts.filter(c=>!(c.kind==='mail'&&c.status==='cancelled'));
  const contractTable=(items,draft=false)=>tradeTable('freight',['Freight Lot / Description','Tons','Destination','Rate / ton','Total Revenue','Due / Delivery Date','Status','Actions'],[225,90,170,145,145,195,170,230],items.map(c=>{
   const id=draft?c.offerId:c.id;let rate;try{rate=money(A.decimal(A.div(c.payment,c.quantity)))+' / t';}catch{const r=A.auditNumber(A.div(c.payment,c.quantity));rate='Cr '+r.numerator+' / '+r.denominator+' per t';}
   const due=c.dueHours==null?'No due date':'Due: '+displayDate(state.dateLabel,c.dueHours),date=c.status==='cancelled'?'Cancelled: '+displayDate(state.dateLabel,c.cancelledHours):c.deliveredHours==null?due:due+'<br>Delivered: '+displayDate(state.dateLabel,c.deliveredHours);
   return `<tr><td>${esc(c.description||c.type||c.kind)}<div class="help">${esc(c.kind==='mail'?'Mail contract':'Freight contract')} · ${esc(id)}</div>${c.kind==='mail'?mailRollSummary(c.audit):''}</td><td class="number">${esc(c.quantity)} t</td><td>${esc(world(c.destination)?.name||c.destination)}</td><td class="number">${rate}</td><td class="number">${money(c.payment)}</td><td>${date}</td><td>${draft?'Available · unpaid':c.status==='cancelled'?'Cancelled · no payment or penalty':c.status==='delivered'?'Delivered · paid '+money(c.payout):'Accepted · unpaid'}</td><td class="table-actions">${draft?btn('Accept','contract-accept',id,true,'small'):c.status==='accepted'?btn('Deliver','deliver',id,true,'small'):''}${btn('Audit/View',draft?'draft-audit':'contract-audit',id,false,'small')}${draft?btn('Edit','draft-edit',id,true,'small'):mailCancellationControl(c)}</td></tr>`;
  }));
- return panel('Freight & mail',`<div id="contract-actions" class="panel-body toolbar">${btn('Find contracts','contracts-search','',true,'primary')}${btn('Manual contract','contract-manual','',true,'primary')}${btn('Check for mail','mail-check','',true,'primary')}</div><p class="panel-body help">Freight and mail are transport contracts, separate from owned speculative cargo. Revenue is paid only on committed delivery. Edit available offers before acceptance; accepted terms remain auditable.</p>${mailPanel()}${state.contracts.length?contractTable(state.contracts):empty('No accepted contracts.') }`)+panel('Available contracts',contractDrafts.length?contractTable(contractDrafts,true):empty('Find contracts to generate offers.'))+policyPanel();
+ return panel('Freight & mail',`<div id="contract-actions" class="panel-body toolbar">${btn('Find contracts','contracts-search','',true,'primary')}${btn('Manual contract','contract-manual','',true,'primary')}${btn('Check for mail','mail-check','',true,'primary')}</div><p class="panel-body help">Freight and mail are transport contracts, separate from owned speculative cargo. Revenue is paid only on committed delivery. Edit available offers before acceptance; accepted terms remain auditable.</p>${mailPanel()}${visibleContracts.length?contractTable(visibleContracts):empty('No accepted or delivered contracts.')}<p class="panel-body help">Cancelled mail and older checks remain available in History.</p>`)+panel('Available contracts',contractDrafts.length?contractTable(contractDrafts,true):empty('Find contracts to generate offers.'))+policyPanel();
 }
 function editDraft(id){
  const c=contractDrafts.find(c=>c.offerId===id);if(!c)throw Error('Offer no longer available');
@@ -357,7 +396,7 @@ function bankLedger(){
   const amount=A.credit(l.amount);balance+=amount;if(amount<0n)expense-=amount;else deposit+=amount;
   const lot=state.lots.find(x=>x.id===l.lotId),contract=state.contracts.find(x=>x.id===l.contractId);
   const note=l.reason||l.expense?.notes||l.expense?.reason||l.purchase?.description||lot?.description||contract?.description||(l.type==='Opening bank'?'Starting campaign funds':l.expense?.label|| (l.audit?.commodity?good(l.audit.commodity)?.name:'')||'—');
-  return '<tr><td>'+esc(l.hours==null?'—':displayDate(state.dateLabel,l.hours))+'</td><td>'+esc(world(l.world)?.name||'Campaign')+'</td><td>'+esc(l.type)+'<div>'+btn('Details',l.historicalJump||l.eventId?'event-audit':'ledger-audit',l.eventId||l.id,false,'small')+'</div></td><td class="number bad">'+(amount<0n?money(-amount):'—')+'</td><td class="number good">'+(amount>0n?money(amount):'—')+'</td><td class="number"><strong>'+(l.historicalJump?'—':money(balance))+'</strong></td><td>'+esc(note)+'</td></tr>';
+  return '<tr><td>'+esc(l.hours==null?'—':displayDate(state.dateLabel,l.hours))+'</td><td>'+esc(world(l.world)?.name||'Campaign')+'</td><td><div class="ledger-entry">'+btn('Details',l.historicalJump||l.eventId?'event-audit':'ledger-audit',l.eventId||l.id,false,'small')+'<span class="ledger-entry-label">'+esc(l.type)+'</span></div></td><td class="number bad">'+(amount<0n?money(-amount):'—')+'</td><td class="number good">'+(amount>0n?money(amount):'—')+'</td><td class="number"><strong>'+(l.historicalJump?'—':money(balance))+'</strong></td><td>'+esc(note)+'</td></tr>';
  }).reverse();
  return '<div class="panel-body">'+auditFacts([['Total expenses',money(expense)],['Total deposits (including opening funds)',money(deposit)],['Current balance',money(state.bank)]])+'<p class="help">Newest entries first. Balance shows funds after each transaction. All amounts are Credits. Undo removes the reversed payment from this ledger; the action log retains its history.</p>'+(carry!==0n?'<p class="notice">Balance carried before listed transactions: '+money(carry)+'. This reconciles the saved bank with the available ledger records.</p>':'')+'</div>'+ (rows.length?table(['Date/Time','Planet','Entry','Expenses','Deposit','Total Balance','Note'],rows,'large-scroll bank-ledger'):empty('No payments recorded yet.'));
 }
@@ -382,9 +421,9 @@ function historyPanel(){
  const rows=events.map(e=>{
   const route=e.from&&e.to?(world(e.from)?.name||e.from)+' → '+(world(e.to)?.name||e.to):'';
   const note=[route,e.reason].filter(Boolean).join(' · ')||'—';
-  return '<tr><td>'+esc(e.hours==null?'—':displayDate(state.dateLabel,e.hours))+'</td><td>'+esc(world(e.to||e.world)?.name||'Campaign')+'</td><td>'+esc(e.label)+'</td><td>'+esc(note)+'</td><td>'+btn('Details','event-audit',e.id,false,'small')+'</td></tr>';
+  return '<tr><td>'+esc(e.hours==null?'—':displayDate(state.dateLabel,e.hours))+'</td><td>'+esc(world(e.to||e.world)?.name||'Campaign')+'</td><td>'+esc(e.label)+(e.mailAudit?'<div class="help">'+mailCheckStatusText(e)+'</div>':'')+'</td><td>'+esc(note)+'</td><td>'+btn('Details','event-audit',e.id,false,'small')+'</td></tr>';
  });
- return panel('Campaign history','<div class="panel-body row">'+btn('Undo latest change','undo','',true,'primary')+'<span class="help">All recorded actions: jumps, searches, purchases, sales, expenses, refills, settings and undo. Money movements and balances are in Accounts. Undo restores bank, cargo, route, contracts and policy state together.</span></div>'+controls+(rows.length?table(['Date/Time','Planet','Entry','Note',''],rows,'large-scroll action-history'):empty(state.events.length?'No entries match this filter.':'Your committed actions appear here.')))+closedPolicyHistory();
+ return panel('Campaign history','<div class="panel-body row">'+btn('Undo latest change','undo','',true,'primary')+'<span class="help">All recorded actions: jumps, searches, purchases, sales, expenses, refills, settings and undo. Money movements and balances are in Accounts. Undo restores bank, cargo, route, contracts and policy state together.</span></div>'+controls+(rows.length?table(['Date/Time','Planet','Entry','Note',''],rows,'large-scroll action-history'):empty(state.events.length?'No entries match this filter.':'Your committed actions appear here.')))+cancelledMailHistory()+closedPolicyHistory();
 }
 
 function debugValidation(){
@@ -684,10 +723,11 @@ function contractSearch(mailOnly=false){
   const searchDice=searchTotal===dice.total?dice:{dice:null,total:searchTotal,manual:true};
   Object.assign(mail.audit,{searchDice:structuredClone(searchDice),generatedSearchDice:structuredClone(dice),searchSkill,searchCharacteristic});
   const generated=[...freight,...(mail.available?[mail]:[])].map(o=>({...o,offerId:S.uid(),origin:state.actual,destination,dueHours:o.kind==='mail'?null:state.hours+days*24,generatedHours:state.hours,rulesVersion:R.VERSION}));
-  act(mailOnly?'Mail check':'Contract search',s=>{s.events.push({id:S.uid(),label:mailOnly?'Mail check audit':'Contract search audit',hours:s.hours,world:s.actual,destination,mailOnly,searchDice,generatedSearchDice:dice,effectiveSearchDice:searchTotal,searchSkill,searchCharacteristic,effect,manualDice,manualDiceConsumed:usedDice,mailAudit:mail.audit,offers:structuredClone(generated)});});
+  const checkId=S.uid();
+  act(mailOnly?'Mail check':'Contract search',s=>recordMailCheck(s,{id:checkId,label:mailOnly?'Mail check audit':'Contract search audit',hours:s.hours,world:s.actual,destination,mailOnly,searchDice,generatedSearchDice:dice,effectiveSearchDice:searchTotal,searchSkill,searchCharacteristic,effect,manualDice,manualDiceConsumed:usedDice,mailAudit:mail.audit,offers:structuredClone(generated)}));
   contractDrafts=mailOnly?[...contractDrafts.filter(c=>c.kind!=='mail'),...generated]:generated;
   mailAcceptedDetailsOpen=true;
-  mailCheck={...mail,origin:state.actual,destination,offerId:generated.find(c=>c.kind==='mail')?.offerId,searchDice,searchSkill,searchCharacteristic};
+  mailCheck={...mail,checkId,origin:state.actual,destination,offerId:generated.find(c=>c.kind==='mail')?.offerId,searchDice,searchSkill,searchCharacteristic};
   tab='Contracts';render();message(mail.available?'Mail available: '+mail.audit.count.total+' containers, '+mail.quantity+' tons.': 'No mail available this check.');
  },mailOnly?'Check for mail':'Generate offers');
  updateMailEstimate();
@@ -703,7 +743,7 @@ function updateMailEstimate(){
  }catch(error){target.textContent=error.message;}
 }
 function manualContract(){const destinations=Object.values({...known,...state.worlds}).filter(w=>w.id!==state.actual);modal('Manual freight / mail contract',`${select('kind','Kind',[['freight','Freight'],['mail','Mail']],'freight')}${select('destination','Destination',destinations.map(w=>[w.id,w.name]),destinations[0]?.id)}<div class="split">${field('quantity','Whole contract · tons','5')}${field('payment','Payment on delivery · Cr','1000')}${field('days','Due in days (freight)','14','number','min="0" step="1"')}${field('reason','Referee terms / reason','')}</div>`,f=>{if(!f.get('reason').trim())throw Error('Reason required');const c={offerId:S.uid(),kind:f.get('kind'),origin:state.actual,destination:f.get('destination'),quantity:A.positive(f.get('quantity')),payment:String(A.credit(f.get('payment'))),dueHours:f.get('kind')==='mail'?null:state.hours+Number(f.get('days'))*24,audit:{manual:true,reason:f.get('reason')},rulesVersion:R.VERSION};act('Manual contract accepted',s=>S.acceptContract(s,c));});}
-function accept(id){const c=contractDrafts.find(c=>c.offerId===id);if(!c)throw Error('Offer no longer available');modal('Accept '+c.kind,`<p>${esc(c.quantity)} tons to ${esc(world(c.destination).name)}, paying ${money(c.payment)} on delivery.</p><p class="help">The entire contract must fit. This reserves capacity; it does not pay you yet.</p>`,()=>{act('Accepted '+c.kind,s=>S.acceptContract(s,c));contractDrafts=contractDrafts.filter(x=>x.offerId!==id);render();},'Accept whole contract');}
+function accept(id){syncMailCheck();const c=contractDrafts.find(c=>c.offerId===id);if(!c)throw Error('Offer no longer available');modal('Accept '+c.kind,`<p>${esc(c.quantity)} tons to ${esc(world(c.destination).name)}, paying ${money(c.payment)} on delivery.</p><p class="help">The entire contract must fit. This reserves capacity; it does not pay you yet.</p>`,()=>{act('Accepted '+c.kind,s=>S.acceptContract(s,c));contractDrafts=contractDrafts.filter(x=>x.offerId!==id);render();},'Accept whole contract');}
 function cancelMail(id){
  const c=state.contracts.find(c=>c.id===id),eligibility=S.mailCancellationEligibility(state,id);
  if(!eligibility.allowed)throw Error(eligibility.reason);
@@ -955,7 +995,7 @@ function exportReport(){
  a.href=url;a.download='traveller-report-'+now.toISOString().slice(0,10)+'.txt';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);
  message('TXT report download requested. Use Save campaign (JSON) for a restorable backup.');
 }
-const actions={'dev-tools':devTools,'dev-validate':()=>{const v=debugValidation();message(v.message,!v.ok);devTools();},'dev-copy':copyDebugReport,'dev-link':createDebugLink,'dev-export':exportDebugBundle,'dev-clear-errors':()=>{debugErrors.length=0;message('Debug error log cleared.');devTools();},refuel:refuelShortcut,'fuel-next':()=>setFuelQuantity(false),'fuel-fill':()=>setFuelQuantity(true),'day-back':()=>changeCampaignDay(-1),'day-forward':()=>changeCampaignDay(1),'history-filter':id=>{historyFilter=id;render();},'market-availability':marketAvailabilityAudit,'refill-support':refillSupport,'route-auto':()=>startMapRoute('auto'),'route-build':()=>startMapRoute('build'),'route-cancel':()=>{routeDraft=null;render();},'route-remove':removeMapStop,'route-last':()=>removeMapStop(routeDraft?.stops.length-1),'route-save':saveMapRoute,'route-retry':calculateMapRoute,'route-clear':clearPlannedRoute,'map-world':mapWorld,'map-empty':mapEmpty,report:exportReport,'rounding-preview':roundingPreview,'map-zoom-in':()=>zoomMap(1.2),'map-zoom-out':()=>zoomMap(1/1.2),'map-zoom-reset':()=>zoomMap(1,true),'set-location':setLocation,tab:id=>{tab=id;render();},notes,setup,find:findWorld,nearby:()=>{scheduleMapAreas();return refreshNearby();},world:id=>{known[id]=world(id);view=id;mapPan={x:0,y:0};render();scheduleMapAreas();},'browse-prev':()=>{const i=state.route.indexOf(view||state.actual);view=state.route[Math.max(0,i-1)]||state.actual;render();},'browse-next':()=>{const i=state.route.indexOf(view||state.actual);view=state.route[Math.min(state.route.length-1,i+1)]||state.actual;render();},'planet-info':showPlanetInfo,override:overrideWorld,route:plotRoute,jump,search:()=>searchDialog(),'buyer-search':()=>searchDialog('buyer'),buy:buyForm,'offer-edit':editOffer,'offer-audit':commodityAudit,'expire-all':id=>act('Expired all snapshot offers',s=>s.snapshots.find(x=>x.id===id).offers.forEach(o=>o.expired=true)),reject,'sale-edit':()=>editSale?.(),'sale-all':()=>{selected=new Set(state.lots.map(l=>l.id));render();},'sale-clear':()=>{selected.clear();render();},sale:beginSale,'add-lot':existingLot,'lot-correct':correctCargo,'lot-sell':id=>{selected=new Set([id]);beginSale();},'lot-audit':lotAudit,'lot-insure':insureHeldCargo,'policy-audit':policyAudit,claim:claimForm,amend:amendPolicy,'contracts-search':()=>contractSearch(false),'mail-check':()=>contractSearch(true),'mail-audit':mailAudit,'mail-cancel':cancelMail,'contract-manual':manualContract,'contract-accept':accept,'draft-edit':editDraft,'draft-audit':id=>audit('Contract offer',contractDrafts.find(c=>c.offerId===id)),'contract-audit':id=>audit('Contract',state.contracts.find(c=>c.id===id)),deliver,'ship-expenses':shipExpenses,'expenses-all':selectAllExpenses,'berthing-rate':rollBerthingRate,deposit:depositForm,expense:()=>expenseForm(),'bank-correct':()=>expenseForm(true),'ledger-audit':ledgerAudit,'event-audit':id=>audit('History entry',state.events.find(e=>e.id===id)),undo:()=>{const label=state.undo.at(-1)?.label;store.save(S.undo(state),state.revision);if(label==='Mail check'){contractDrafts=contractDrafts.filter(c=>c.kind!=='mail');mailCheck=null;}else if(['Contract search','Contract offer edited'].includes(label)){contractDrafts=[];mailCheck=null;}render();message('Latest action undone.');},'settings-edit':settings,time:timeForm,export:()=>{store.backup();message('Backup download requested. Check that the file was saved.');},import:()=>$('import-file').click(),reset:()=>backupReplace('Reset campaign',S.initial())};
+const actions={'dev-tools':devTools,'dev-validate':()=>{const v=debugValidation();message(v.message,!v.ok);devTools();},'dev-copy':copyDebugReport,'dev-link':createDebugLink,'dev-export':exportDebugBundle,'dev-clear-errors':()=>{debugErrors.length=0;message('Debug error log cleared.');devTools();},refuel:refuelShortcut,'fuel-next':()=>setFuelQuantity(false),'fuel-fill':()=>setFuelQuantity(true),'day-back':()=>changeCampaignDay(-1),'day-forward':()=>changeCampaignDay(1),'history-filter':id=>{historyFilter=id;render();},'market-availability':marketAvailabilityAudit,'refill-support':refillSupport,'route-auto':()=>startMapRoute('auto'),'route-build':()=>startMapRoute('build'),'route-cancel':()=>{routeDraft=null;render();},'route-remove':removeMapStop,'route-last':()=>removeMapStop(routeDraft?.stops.length-1),'route-save':saveMapRoute,'route-retry':calculateMapRoute,'route-clear':clearPlannedRoute,'map-world':mapWorld,'map-empty':mapEmpty,report:exportReport,'rounding-preview':roundingPreview,'map-zoom-in':()=>zoomMap(1.2),'map-zoom-out':()=>zoomMap(1/1.2),'map-zoom-reset':()=>zoomMap(1,true),'set-location':setLocation,tab:id=>{tab=id;render();},notes,setup,find:findWorld,nearby:()=>{scheduleMapAreas();return refreshNearby();},world:id=>{known[id]=world(id);view=id;mapPan={x:0,y:0};render();scheduleMapAreas();},'browse-prev':()=>{const i=state.route.indexOf(view||state.actual);view=state.route[Math.max(0,i-1)]||state.actual;render();},'browse-next':()=>{const i=state.route.indexOf(view||state.actual);view=state.route[Math.min(state.route.length-1,i+1)]||state.actual;render();},'planet-info':showPlanetInfo,override:overrideWorld,route:plotRoute,jump,search:()=>searchDialog(),'buyer-search':()=>searchDialog('buyer'),buy:buyForm,'offer-edit':editOffer,'offer-audit':commodityAudit,'expire-all':id=>act('Expired all snapshot offers',s=>s.snapshots.find(x=>x.id===id).offers.forEach(o=>o.expired=true)),reject,'sale-edit':()=>editSale?.(),'sale-all':()=>{selected=new Set(state.lots.map(l=>l.id));render();},'sale-clear':()=>{selected.clear();render();},sale:beginSale,'add-lot':existingLot,'lot-correct':correctCargo,'lot-sell':id=>{selected=new Set([id]);beginSale();},'lot-audit':lotAudit,'lot-insure':insureHeldCargo,'policy-audit':policyAudit,claim:claimForm,amend:amendPolicy,'contracts-search':()=>contractSearch(false),'mail-check':()=>contractSearch(true),'mail-audit':mailAudit,'mail-cancel':cancelMail,'contract-manual':manualContract,'contract-accept':accept,'draft-edit':editDraft,'draft-audit':id=>audit('Contract offer',contractDrafts.find(c=>c.offerId===id)),'contract-audit':id=>audit('Contract',state.contracts.find(c=>c.id===id)),deliver,'ship-expenses':shipExpenses,'expenses-all':selectAllExpenses,'berthing-rate':rollBerthingRate,deposit:depositForm,expense:()=>expenseForm(),'bank-correct':()=>expenseForm(true),'ledger-audit':ledgerAudit,'event-audit':id=>audit('History entry',state.events.find(e=>e.id===id)),undo:()=>{const label=state.undo.at(-1)?.label;saveCampaign(S.undo(state),state.revision);if(label==='Mail check'){contractDrafts=contractDrafts.filter(c=>c.kind!=='mail');mailCheck=null;}else if(['Contract search','Contract offer edited'].includes(label)){contractDrafts=[];mailCheck=null;}render();message('Latest action undone.');},'settings-edit':settings,time:timeForm,export:()=>{store.backup();message('Backup download requested. Check that the file was saved.');},import:()=>$('import-file').click(),reset:()=>backupReplace('Reset campaign',S.initial())};
 document.addEventListener('click',safely(async e=>{const b=e.target.closest('[data-action]');if(b&&!b.disabled){e.preventDefault();await actions[b.dataset.action]?.(b.dataset.arg);}}));
 document.addEventListener('toggle',e=>{if(!e.target.isConnected)return;if(e.target.id==='mail-card')mailPanelOpen=e.target.open;else if(e.target.id==='mail-accepted-details')mailAcceptedDetailsOpen=e.target.open;},true);
 document.addEventListener('keydown',safely(e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('svg [data-action]')){e.preventDefault();actions[e.target.dataset.action]?.(e.target.dataset.arg);}}));
@@ -968,5 +1008,5 @@ $('notes').onclick=safely(notes);$('takeover').onclick=safely(()=>store.acquire(
 $('import-file').onchange=safely(async e=>{const file=e.target.files[0];e.target.value='';if(!file)return;if(file.size>20000000)throw Error('Import exceeds the 20 MB review limit');const data=S.validate(JSON.parse(await file.text()));backupReplace('Load campaign (JSON)',data);});
 window.addEventListener('error',e=>recordDebugError(e.error||e.message,'window-error'));
 window.addEventListener('unhandledrejection',e=>recordDebugError(e.reason,'unhandled-rejection'));
-async function boot(){[core,mp,decisions]=await Promise.all(['rules/core-2022.json','rules/merchant-prince-1e.json','rules/decisions.json'].map(async url=>{const r=await fetch(url);if(!r.ok)throw Error('Could not load '+url);return r.json();}));store=new Store(s=>{state=s;known={...known,...s.worlds};view??=s.actual;render();},(editable,text)=>{$('save-status').textContent=text;$('save-status').className=editable?'muted':'readonly';$('takeover').hidden=editable;if(!editable&&activeModal?.mutates){activeModal.cancelled=true;$('modal-error').textContent='Editing moved to another tab. Reopen this dialog after taking over editing.';}syncModalSubmit();render();});try{state=store.read();}catch(error){store.recovery=true;store.recoveryMessage=error.message;state=S.initial();}known={...state.worlds};view=state.actual;render();await store.acquire();if(state.initialized)refreshNearby(false).catch(e=>message('Could not load nearby worlds: '+e.message+'. Use Refresh nearby to retry.',true));}
+async function boot(){[core,mp,decisions]=await Promise.all(['rules/core-2022.json','rules/merchant-prince-1e.json','rules/decisions.json'].map(async url=>{const r=await fetch(url);if(!r.ok)throw Error('Could not load '+url);return r.json();}));store=new Store(receiveCampaign,(editable,text)=>{$('save-status').textContent=text;$('save-status').className=editable?'muted':'readonly';$('takeover').hidden=editable;if(!editable&&activeModal?.mutates){activeModal.cancelled=true;$('modal-error').textContent='Editing moved to another tab. Reopen this dialog after taking over editing.';}syncModalSubmit();render();});try{state=store.read();}catch(error){store.recovery=true;store.recoveryMessage=error.message;state=S.initial();}known={...state.worlds};view=state.actual;render();await store.acquire();if(state.initialized)refreshNearby(false).catch(e=>message('Could not load nearby worlds: '+e.message+'. Use Refresh nearby to retry.',true));}
 boot().catch(e=>{message(e.message,true);$('main').innerHTML=empty('The calculator could not start. Your saved campaign has not been replaced. Reload after checking the error above.');});
