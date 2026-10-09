@@ -26,8 +26,16 @@ await context.route('https://travellermap.com/api/**',async route=>{
 // Capture the page, not a retained SVG element: async map redraws replace that
 // element while screenshots wait for fonts/layout. Assertions still inspect
 // the live map immediately before each capture.
+await context.tracing.start({screenshots:true,snapshots:true,sources:true});
 const page=await context.newPage(),errors=[];page.on('pageerror',error=>errors.push(error.message));
-const click=name=>page.getByRole('button',{name,exact:true}).click();
+async function click(name){
+ const before=['+','−'].includes(name)?await page.locator('.map-zoom-controls .help').textContent():null;
+ await page.getByRole('button',{name,exact:true}).click();
+ // Zoom/reset intentionally paints on requestAnimationFrame. Observe that
+ // frame's result before continuing instead of asserting the previous DOM.
+ if(name==='Reset view')await page.waitForFunction(()=>document.querySelector('.map-zoom-controls .help')?.textContent==='100%'&&document.querySelector('.map-content')?.getAttribute('transform')==='translate(0 0)');
+ else if(before&&before!==(name==='+'?'240%':'6%'))await page.waitForFunction(previous=>document.querySelector('.map-zoom-controls .help')?.textContent!==previous,before);
+}
 const read=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('traveller-trade-route-calculator:v1')));
 const zoom=()=>page.locator('.map-zoom-controls .help').textContent();
 const level=()=>page.locator('.world-map').getAttribute('data-map-level');
@@ -90,4 +98,4 @@ try{
  await click('Reset view');assert.equal(await level(),'world');assert.deepEqual(await read(),before);
  assert.deepEqual(errors,[]);
  console.log('PASS: default-on and all-zoom territory toggle, preserved world/UWP layers, subsectors and dots, sector names/letters, API retry, bounded requests, pan/cancel/reset, mobile and campaign immutability.');
-}finally{await browser.close();}
+}finally{await context.tracing.stop({path:artifacts+'/map-overview-trace.zip'});await browser.close();}
