@@ -355,3 +355,5 @@ The campaign may independently enable reduced-profit price limits, off by defaul
 ### Mail result rolls and Audit (2026-10-08)
 
 Show recorded availability dice/total + combined mail DM = final result against 12+ directly in available/unavailable results and saved mail contract rows. Show the container die when recorded; label manual totals and missing legacy components honestly. Provide an explicit read-only Audit button for the result while preserving the detailed expansion. Show every recorded modifier, including zero, its source world/search inputs, freight-band conversion and rule reference. Snapshot new check inputs; never substitute current Settings/world values into historical audits. This is a presentation/audit extension, not a rules or accounting change.
+
+Move Check for mail next to Manual contract in the main Freight & mail action row, with matching light-blue primary styling. Make the accepted/delivered Mail detail section collapsible with a clear reserved/paid summary, keeping its recorded roll and Audit accessible while collapsed. Collapse/reopen is a view-only session choice, not a campaign event or transaction.

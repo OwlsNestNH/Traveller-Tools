@@ -27,7 +27,7 @@ const attrs=s=>Object.fromEntries([...s.matchAll(/([\w-]+)(?:="([^"]*)")?/g)].ma
 function element(attributes={}){return {attributes,dataset:Object.fromEntries(Object.entries(attributes).filter(([k])=>k.startsWith('data-')).map(([k,v])=>[k.slice(5).replace(/-([a-z])/g,(_,c)=>c.toUpperCase()),v])),value:attributes.value??'',name:attributes.name,disabled:'disabled'in attributes,hidden:false,open:false,textContent:'',innerHTML:'',hasAttribute(n){return n in this.attributes;},addEventListener(){},showModal(){this.open=true;},close(){this.open=false;},insertAdjacentHTML(_,html){this.innerHTML+=html;},querySelectorAll(){return [];}};}
 function domDouble(){
  const ids=new Map(['summary','tabs','main','modal','modal-title','modal-body','modal-error','modal-submit','modal-cancel','modal-form','modal-close','notes','takeover','import-file','save-status','message'].map(id=>[id,element()]));
- let fields=new Map(),buttons=[],markup='';
+ let fields=new Map(),buttons=[],markup='';const listeners=new Map();
  Object.defineProperty(ids.get('modal-body'),'innerHTML',{get:()=>markup,set:html=>{
   markup=html;fields=new Map();
   for(const match of html.matchAll(/<input\b([^>]*)>/g)){const n=element(attrs(match[1]));fields.set(n.name,n);}
@@ -39,7 +39,7 @@ function domDouble(){
   for(const[,id]of html.matchAll(/id="(mail-dm-preview|rounding-input-note)"/g))ids.set(id,element());
  }});
  const form=ids.get('modal-form');form.elements={namedItem:n=>fields.get(n)};form.querySelectorAll=selector=>selector==='[data-round]'?[...fields.values()].filter(n=>n.hasAttribute('data-round')):[];
- return {ids,fields:()=>fields,buttons:()=>buttons,document:{createElement(){return {...element(),getContext(){return {measureText:t=>({width:String(t).length*6})};}};},getElementById:id=>ids.get(id)||null,addEventListener(){},querySelector(){return null;},querySelectorAll(selector){
+ return {ids,fields:()=>fields,buttons:()=>buttons,dispatch(type,target){for(const listener of listeners.get(type)||[])listener({type,target});},document:{createElement(){return {...element(),getContext(){return {measureText:t=>({width:String(t).length*6})};}};},getElementById:id=>ids.get(id)||null,addEventListener(type,listener){if(!listeners.has(type))listeners.set(type,[]);listeners.get(type).push(listener);},querySelector(){return null;},querySelectorAll(selector){
   if(selector!=='[data-mutate]')return [];
   buttons=[...ids.values()].flatMap(n=>[...(n.innerHTML||'').matchAll(/<button\b([^>]*)>/g)].map(m=>element(attrs(m[1])))).filter(n=>n.hasAttribute('data-mutate'));return buttons;
  }},FormData:class{constructor(){this.values=new Map([...fields].filter(([,n])=>!n.disabled&&n.attributes.type!=='checkbox').map(([k,n])=>[k,n.value]));for(const[k,n]of fields)if(n.attributes.type==='checkbox'&&n.checked)this.values.set(k,'on');}get(k){return this.values.get(k)??null;}has(k){return this.values.has(k);}}};
@@ -66,7 +66,8 @@ const summaryText=markup=>{
  assert.ok(match,'A rendered roll summary is present');return text(match[1]);
 };
 function visibleCardRoll(h){
- const card=html(h);assert.doesNotMatch(card,/<details\b[^>]*\bopen(?:\s|=|>)/,'Calculation details start collapsed');
+ const card=html(h),calculation=card.match(/<details\b([^>]*)><summary>How was this calculated\?<\/summary>/);
+ assert.ok(calculation,'The calculation disclosure is present');assert.equal('open'in attrs(calculation[1]),false,'Calculation details start collapsed');
  const visible=outsideDetails(card);assert.equal((visible.match(/class="mail-roll-summary/g)||[]).length,1,'Exactly one roll summary sits outside collapsed details');
  assert.match(visible,/data-action="mail-audit"[^>]*>Audit<\/button>/);
  return summaryText(visible);
@@ -76,9 +77,21 @@ const contractRow=(h,id)=>{
  assert.ok(row,'Saved contract row is rendered');return row[1];
 };
 const auditValues=markup=>Object.fromEntries([...markup.matchAll(/<dt>(.*?)<\/dt><dd>(.*?)<\/dd>/g)].map(([,k,v])=>[decode(k),decode(v)]));
+const acceptedDetails=h=>{
+ const match=html(h).match(/<details\b([^>]*\bid="mail-accepted-details"[^>]*)><summary>(.*?)<\/summary>([\s\S]*?)<\/details>/);
+ assert.ok(match,'Accepted/delivered mail has a native details container');const attributes=attrs(match[1]);
+ assert.ok(attributes.class.split(/\s+/).includes('mail-accepted-details'));
+ return {open:'open'in attributes,summary:text(match[2]),body:match[3]};
+};
 
-test('initial card has explicit check, settings and session-only/read-only History explanation',()=>{
- const h=harness();assert.match(html(h),/No mail check in this session/);assert.match(html(h),/Check for mail/);assert.match(html(h),/previous checks remain read-only in History/);
+test('initial card has settings and session-only/read-only History explanation; check is in the primary toolbar',()=>{
+ const h=harness();assert.match(html(h),/No mail check in this session/);assert.match(html(h),/previous checks remain read-only in History/);
+ const panel=h.api.contractsPanel(),toolbar=panel.match(/<div id="contract-actions"[^>]*>([\s\S]*?)<\/div>/);assert.ok(toolbar,'A dedicated contract-action toolbar is present');
+ const buttons=[...toolbar[1].matchAll(/<button\b([^>]*)>(.*?)<\/button>/g)].map(([,attributes,label])=>({...attrs(attributes),label:text(label)}));
+ assert.deepEqual(buttons.map(b=>b.label),['Find contracts','Manual contract','Check for mail']);
+ assert.deepEqual(buttons.map(b=>b['data-action']),['contracts-search','contract-manual','mail-check']);
+ for(const button of buttons)assert.ok(button.class.split(/\s+/).includes('primary'),button.label+' uses primary styling');
+ assert.equal((panel.match(/data-action="mail-check"/g)||[]).length,1,'Exactly one mail-check action exists');assert.doesNotMatch(html(h),/data-action="mail-check"/,'The check button is outside the Mail card');
  assert.match(html(h),/armed ship Yes \(\+2\)/);assert.match(html(h),/Naval \/ Scout rank 2/);assert.match(html(h),/SOC DM \+1/);assert.equal(h.calls.saves,0);assert.equal(h.api.drafts.length,0);
 });
 test('standalone Check Mail skips freight table even at eight parsecs, retains freight drafts, saves only audit',async()=>{
@@ -109,6 +122,28 @@ test('whole-consignment capacity and wrong origin disable acceptance through ren
 test('actual app acceptance/delivery submissions show correct status and reserve/release capacity',async()=>{
  const h=harness();await h.check();const id=h.api.drafts[0].offerId,bank=h.api.state.bank;h.api.accept(id);assert.match(h.dom.ids.get('modal-body').innerHTML,/does not pay you yet/);await h.submit();assert.equal(h.api.state.contracts.length,1);assert.equal(h.api.drafts.length,0);assert.equal(h.api.state.bank,bank);assert.equal(A.decimal(S.used(h.api.state)),'15');assert.match(html(h),/Mail accepted/);assert.match(html(h),/15 t reserved/);assert.doesNotMatch(html(h),/data-action="contract-accept"/);
  h.api.state.actual=destination.id;assert.match(html(h),/At destination/);h.api.deliver(h.api.state.contracts[0].id);await h.submit();assert.equal(h.api.state.contracts[0].status,'delivered');assert.equal(h.api.state.bank,'175000');assert.equal(A.decimal(S.used(h.api.state)),'0');assert.match(html(h),/Mail delivered/);assert.match(html(h),/Released after delivery/);
+});
+test('accepted details collapse independently, survive renders and tabs, and never change campaign data',async()=>{
+ const h=harness();assert.doesNotMatch(html(h),/id="mail-accepted-details"/);await h.check();assert.doesNotMatch(html(h),/id="mail-accepted-details"/);
+ const expected=visibleCardRoll(h);h.api.accept(h.api.drafts[0].offerId);await h.submit();
+ const details=acceptedDetails(h);assert.equal(details.open,true);assert.equal(details.summary,'Accepted mail details · 15 t reserved');
+ for(const label of ['From Settings:','Edit mail settings','Containers rolled','Total tons','Payment on delivery','Hold capacity','Deliver explicitly at the destination'])assert.ok(details.body.includes(label),label+' is inside the collapsible section');
+ const saved=h.persisted(),live=structuredClone(h.api.state),saves=h.calls.saves,check=JSON.stringify(h.api.check);
+ const toggle=open=>h.dom.dispatch('toggle',{id:'mail-accepted-details',open,isConnected:true});
+ toggle(false);h.api.render();assert.equal(acceptedDetails(h).open,false);assert.equal(visibleCardRoll(h),expected);
+ const outside=text(outsideDetails(html(h)));assert.match(outside,/Mail accepted/);assert.match(outside,/Origin → Destination/);assert.doesNotMatch(outside,/From Settings:|Containers rolled|Payment on delivery|Hold capacity/);
+ // Native toggle events from detached/replaced elements must not overwrite the
+ // live session preference after a render.
+ h.dom.dispatch('toggle',{id:'mail-accepted-details',open:true,isConnected:false});h.api.render();assert.equal(acceptedDetails(h).open,false);
+ h.api.actions.tab('History');h.api.actions.tab('Contracts');assert.equal(acceptedDetails(h).open,false);assert.equal(visibleCardRoll(h),expected);
+ h.api.actions['mail-audit']();assert.equal(h.dom.ids.get('modal-title').textContent,'Mail roll audit');assert.equal(h.dom.ids.get('modal-submit').hidden,true);h.api.closeModal();
+ toggle(true);h.api.render();assert.equal(acceptedDetails(h).open,true);h.api.actions.tab('History');h.api.actions.tab('Contracts');assert.equal(acceptedDetails(h).open,true);
+ same(h.persisted(),saved);same(h.api.state,live);assert.equal(h.calls.saves,saves);assert.equal(JSON.stringify(h.api.check),check);
+ toggle(false);h.api.state.actual=destination.id;h.api.deliver(h.api.state.contracts[0].id);await h.submit();
+ const delivered=acceptedDetails(h);assert.equal(delivered.open,false,'Delivery renders keep the session disclosure preference');assert.equal(delivered.summary,'Delivered mail details · Cr 75,000 paid');assert.match(delivered.body,/Released after delivery/);assert.equal(visibleCardRoll(h),expected);assert.match(text(outsideDetails(html(h))),/Mail delivered/);
+ const deliveredSaved=h.persisted(),deliveredSaves=h.calls.saves;toggle(true);h.api.render();assert.equal(acceptedDetails(h).open,true);toggle(false);h.api.render();same(h.persisted(),deliveredSaved);assert.equal(h.calls.saves,deliveredSaves);
+ h.api.state.actual=origin.id;await h.check();assert.doesNotMatch(html(h),/id="mail-accepted-details"/);h.api.accept(h.api.drafts[0].offerId);await h.submit();assert.equal(acceptedDetails(h).open,true,'A new check resets details to open for its accepted result');
+ const reload=harness(h.persisted());assert.equal(reload.api.check,null);assert.doesNotMatch(html(reload),/id="mail-accepted-details"/);assert.equal('mailAcceptedDetailsOpen'in reload.api.state,false,'Disclosure state is session-only');
 });
 test('read-only render disables mutations and still displays contract audits',async()=>{
  const h=harness();await h.check();h.store.editable=false;h.api.render();for(const action of ['mail-check','settings-edit','contract-accept','draft-edit'])assert.equal(h.button(action)?.disabled,true,action);assert.match(h.dom.ids.get('main').innerHTML,/data-action="draft-audit"/);const before=h.persisted();h.api.accept(h.api.drafts[0].offerId);assert.equal(h.dom.ids.get('modal-submit').disabled,true);await h.submit();same(h.persisted(),before);

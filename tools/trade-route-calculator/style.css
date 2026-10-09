@@ -82,3 +82,5 @@ td{padding:8px 10px}td .check{margin:0;white-space:nowrap}.cargo-scroll{max-heig
 .mail-card{margin:0 16px 16px;border:1px solid var(--line);border-radius:8px;overflow:hidden}.mail-card h3{margin:0}.mail-card .panel-head{gap:12px;flex-wrap:wrap}.mail-card .help .small{margin-top:6px}.mail-result{margin:12px 0}.mail-card details{margin-top:12px}.mail-card dl{overflow-wrap:anywhere}@media(max-width:600px){.mail-card{margin:0 8px 12px}.mail-card .toolbar{align-items:stretch}.mail-card .toolbar button{white-space:normal}.mail-card .preview dl{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.mail-card .preview dt,.mail-card .preview dd{min-width:0}}
 
 .mail-roll-summary p{margin:6px 0;line-height:1.5}.mail-roll-summary strong{color:#dce6ee}@media(max-width:600px){.mail-audit .preview dl{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.mail-audit .preview dt,.mail-audit .preview dd{min-width:0;overflow-wrap:anywhere}}
+
+.mail-accepted-details{margin-top:12px}.mail-accepted-details>summary{cursor:pointer;color:var(--cyan);font-size:13px;font-weight:600;padding:8px 0}.mail-accepted-details>summary:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}

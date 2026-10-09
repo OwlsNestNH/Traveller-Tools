@@ -267,3 +267,12 @@ Follow-up scope: the saved availability dice/total + combined mail DM = final re
 Focused native and real Chromium coverage is extended to verify visible collapsed summaries, automatic/manual/negative rolls, accepted historical rows, old/missing audits, the Audit button, saved-input stability and mobile audit readability. Browser evidence must be associated with this follow-up’s exact PR head; PR #4’s earlier passing run does not verify these new controls. The existing two aggregate routing failures remain separate and unchanged.
 
 Local verification before publishing the follow-up: 46/46 focused Mail tests passed (17 rules/lifecycle plus 29 actual-app simulated-DOM tests), 151/153 aggregate native tests passed with only the two established routing failures, 198 rules checks passed, and changed JavaScript syntax / whitespace checks passed. The six real-browser scenarios are extended, but must run against the new PR head before browser success is claimed.
+
+
+### Follow-up action row and collapsible shipment details (2026-10-09)
+
+The visible-roll/Audit head `7407f9015609a64b6c6ee72be09bbd053c5759ad` passed all six real Chromium scenarios in [run 37862985427](https://github.com/OwlsNestNH/Traveller-Tools/actions/runs/37862985427). The owner then requested Check for mail beside Manual contract, matching light-blue button styles, and a collapsible accepted-Mail section. The supplied screenshot was inspected before these targeted layout changes.
+
+The action row now contains one Check for mail button immediately after Manual contract. Accepted/delivered shipment details use a native expandable section; the outcome, route, recorded roll and Audit remain available while collapsed. Its open/closed preference is session-only and makes no campaign changes. Desktop/mobile placement, matching colors, collapse/reopen, tab-render retention and unchanged financial state are checked in the updated tests. The newest head must pass the workflow before these extra layout changes are treated as browser-verified.
+
+Before the updated layout push: 47/47 focused Mail tests passed, 152/154 aggregate native tests passed (the two unchanged baseline routing failures), and 198 source/data assertions passed. The browser suite now has seven scenarios, including the new toolbar/disclosure flow; its result must be checked on the updated head.
