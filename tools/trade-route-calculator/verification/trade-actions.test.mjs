@@ -222,11 +222,11 @@ test('jump confirmation cannot submit after close, ownership loss or newer campa
   if(mode==='revision')assert.match(h.dom.ids.get('modal-error').textContent,/stale|changed/i);
  }
 });
-test('Overview has three services and Refuel opens a nonmutating in-panel summary',async()=>{
+test('Overview has four shortcuts and Refuel opens a nonmutating in-panel summary',async()=>{
  for(const [port,type]of [['A','refined'],['B','refined'],['C','unrefined'],['D','unrefined'],['E','unrefined']]){
   const s=campaign();s.worlds[origin.id].uwp=port+'788899-C';s.ship.fuel=bindings.configureFuel(200,43,20,0,2);
   const h=harness(s),before=h.persisted();h.api.setTab('Overview');const html=h.api.shipActions();
-  assert.equal((html.match(/class="primary"/g)||[]).length,3);assert.doesNotMatch(html,/quickFuelType|fuel-radio|Refined|Unrefined/);
+  assert.equal((html.match(/class="primary"/g)||[]).length,3);assert.match(html,/data-action="cargo-hold"/);assert.doesNotMatch(html,/quickFuelType|fuel-radio|Refined|Unrefined/);
   h.api.setTab('Trade');h.api.refuelShortcut();assert.equal(h.dom.ids.get('modal').open,false);
   assert.match(h.api.services.panel(),/Refuel · Summary/);assert.match(h.api.services.panel(),/Actual ship location/);
   await h.api.services.action('service-adjust','',h.api.services.token());const editor=h.api.services.panel();
@@ -334,4 +334,24 @@ test('leaving Overview closes unfinished service views and restores current-worl
 });
 test('leaving a service retains editor ownership guards on Trade',()=>{
  const h=harness(recurringCampaign()),before=h.persisted();h.api.refuelShortcut();h.store.editable=false;h.api.actions.tab('Trade');assert.equal(h.api.services.active(),false);assert.equal(h.button('search').disabled,true);assert.equal(h.button('buyer-search').disabled,true);same(h.persisted(),before);
+});
+
+
+test('Cargo Hold cancels every unfinished service without saving or replaying stale controls',async()=>{
+ const h=harness(recurringCampaign()),before=h.persisted();h.api.setTab('Overview');
+ for(const from of ['fuel','support','mortgage','maintenance','salary','berthing']){
+  h.api.services.open(from,{fresh:true});const stock=['fuel','support'].includes(from),oldToken=h.api.services.token(),oldArg=stock?'':expenseArg(h,'expense-back');
+  if(stock)await h.api.services.action('service-adjust','',oldToken);
+  h.api.actions['cargo-hold']();assert.equal(h.api.services.active(),false);assert.match(h.dom.ids.get('main').innerHTML,/id="cargo-hold-panel"/);same(h.persisted(),before);
+  await h.api.services.action(stock?'service-confirm':'expense-pay',oldArg,oldToken);same(h.persisted(),before);
+  for(const next of ['refuel','refill-support','ship-expenses']){h.api.actions['cargo-hold']();h.api.actions[next]();assert.doesNotMatch(h.dom.ids.get('main').innerHTML,/id="cargo-hold-panel"/);same(h.persisted(),before);}
+ }
+ h.api.actions['cargo-hold']();h.api.actions['cargo-hold-close']();assert.doesNotMatch(h.dom.ids.get('main').innerHTML,/id="cargo-hold-panel"/);assert.match(h.dom.ids.get('main').innerHTML,/Selected world data/);assert.equal(h.calls.saves,0);
+});
+test('read-only Cargo Hold and its tab links preserve all campaign and Undo data',()=>{
+ const h=harness(recurringCampaign()),before=h.persisted();h.store.editable=false;h.api.setTab('Overview');
+ h.api.actions['cargo-hold']();assert.match(h.dom.ids.get('main').innerHTML,/id="cargo-hold-panel"/);assert.match(h.dom.ids.get('main').innerHTML,/overview-cargo/);
+ h.api.actions.world(destination.id);assert.equal(h.api.state.actual,origin.id);assert.equal(h.api.view,destination.id);assert.match(h.dom.ids.get('main').innerHTML,/ship at Origin/);
+ for(const tab of ['Cargo','Contracts']){h.api.actions['cargo-hold-tab'](tab);assert.doesNotMatch(h.dom.ids.get('main').innerHTML,/id="cargo-hold-panel"/);h.api.actions.tab('Overview');h.api.actions['cargo-hold']();}
+ h.dom.dispatch('keydown',{matches:()=>false},{key:'Escape',preventDefault(){}});assert.doesNotMatch(h.dom.ids.get('main').innerHTML,/id="cargo-hold-panel"/);same(h.persisted(),before);assert.equal(h.calls.saves,0);
 });

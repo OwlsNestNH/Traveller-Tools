@@ -35,7 +35,7 @@ try{
   const replay=()=>page.evaluate(()=>{const b=document.createElement('button');Object.assign(b.dataset,window.detachedServiceAction);document.body.append(b);b.click();b.remove();});
   try{
    await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();
-   assert.equal(await page.locator('#ship-actions > .ship-actions > button').count(),3);assert.equal(await page.locator('[data-action="port-costs"]').count(),0);
+   assert.equal(await page.locator('#ship-actions > .ship-actions > button').count(),4);assert.equal(await page.locator('[data-action="port-costs"]').count(),0);
    const worldIds=[s.actual,s.route[0]],camera=()=>mapCameraSnapshot(page,worldIds),originalCamera=await camera();
    const panMap=async()=>{
     const start=await page.locator('.world-map').evaluate(svg=>{

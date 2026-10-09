@@ -14,6 +14,14 @@ export function worldMapFacts(world){
 }
 const ringed=(x,y)=>`<g class="symbol-gas-giant" transform="translate(${x} ${y}) rotate(-25)"><circle r="3.1"/><ellipse rx="7" ry="2.2" fill="none" stroke="currentColor" stroke-width="1.5"/></g>`;
 const bracket=(x,y)=>`<path class="symbol-selection" d="M ${x-6} ${y-11} h -5 v 5 M ${x+6} ${y-11} h 5 v 5 M ${x-6} ${y+11} h -5 v -5 M ${x+6} ${y+11} h 5 v -5" fill="none" stroke="#eaf5ff" stroke-width="1.5"/>`;
+const hexPoints=(x,y,radius)=>Array.from({length:6},(_,i)=>[x+radius*Math.cos(i*Math.PI/3),y+radius*Math.sin(i*Math.PI/3)].join(',')).join(' ');
+// A separate layer keeps the browsing highlight below every route and world
+// symbol. Its inset leaves the hex grid and political border strokes visible.
+export function selectedWorldHex(x,y,scale=50){
+ if(![x,y,scale].every(Number.isFinite)||scale<=0)return '';
+ const radius=scale/Math.sqrt(3),factor=Math.min(1,scale/50);
+ return `<g class="selected-world-hex" aria-hidden="true"><polygon class="selection-hex-fill" points="${hexPoints(x,y,radius-2*factor)}" fill="#245d94" fill-opacity="0.42" stroke="none"/><polygon class="selection-hex-outline" points="${hexPoints(x,y,radius-3*factor)}" fill="none" stroke="#80beff" stroke-width="${2*factor}" stroke-linejoin="round"/></g>`;
+}
 export function worldSymbols(world,x,y,{close=false,selected=false,actual=false,scale=50}={}){
  const f=worldMapFacts(world),parts=[];
  if(close&&!world.emptySpace){
@@ -37,7 +45,7 @@ export function mapKeyMarkup(){
   [icon('<path d="M -8 5 A 9 9 0 1 1 8 5" fill="none" stroke="#f5bd6c" stroke-width="2"/>'),'Amber zone'],
   [icon('<path d="M -8 5 A 9 9 0 1 1 8 5" fill="none" stroke="#ff959e" stroke-width="2"/>'),'Red zone'],
   [icon('<circle r="3" fill="#62d3dd"/><path d="M 6 3 l -3 7 3 -2 3 2 Z" fill="#62d3dd"/>'),'Ship location'],
-  [icon(bracket(0,0)),'Selected world']
+  [icon(`<polygon points="${hexPoints(0,0,10)}" fill="#245d94" fill-opacity="0.42" stroke="#80beff" stroke-width="1.8"/>`,'key-selected-world'),'Selected world']
  ];
- return '<section class="map-key" aria-label="Map key"><h3>Map key <span>Symbols at 240%</span></h3><ul>'+entries.map(([symbol,label])=>'<li>'+symbol+'<span>'+label+'</span></li>').join('')+'</ul><p class="help">Shown symbols use published data. Other base types are listed above. Missing data is not proof of absence. Political borders show allegiance territory, not travel zones.</p></section>';
+ return '<section class="map-key" aria-label="Map key"><h3>Map key <span>Symbols at 240%</span></h3><ul>'+entries.map(([symbol,label])=>'<li>'+symbol+'<span>'+label+'</span></li>').join('')+'</ul><p class="help">The blue hex marks the selected world; the cyan ship marks your actual location. Browsing never moves the ship.</p><p class="help">Shown symbols use published data. Other base types are listed above. Missing data is not proof of absence. Political borders show allegiance territory, not travel zones.</p></section>';
 }

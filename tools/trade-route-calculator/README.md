@@ -48,7 +48,7 @@ node verification/run-native.mjs
 
 The native runner discovers every `node:test` suite; do not use `verification/*.test.mjs` with `node --test`, because that also selects the standalone browser scripts.
 
-Pull requests run all native suites, the 198 rules-data checks, the shared tool-visit check, and twenty-one independent deterministic Chromium suites: main application, modal lifecycle, click routing, fuel, empty space, Mail, map overview, GUI parity, Trade buttons, Settings, insurance lifecycle, trade complications, the selected-world screen, jump mulligans, in-panel ship services, combined cabins, daily time controls, zero-fuel payments, resource alerts, recurring payment batches, and the compact Expenses panel. See `.github/workflows/mail-browser.yml` at the repository root. Every job verifies the exact PR head and uploads evidence; it has read-only permissions and cannot deploy. Live API availability and the remaining browser scripts are separate checks.
+Pull requests run all native suites, the 198 rules-data checks, the shared tool-visit check, and twenty-two independent deterministic Chromium suites: main application, modal lifecycle, click routing, fuel, empty space, Mail, map overview, GUI parity, Trade buttons, Settings, insurance lifecycle, trade complications, the selected-world screen, jump mulligans, in-panel ship services, combined cabins, daily time controls, zero-fuel payments, resource alerts, recurring payment batches, the compact Expenses panel, and the Cargo Hold manifest. See `.github/workflows/mail-browser.yml` at the repository root. Every job verifies the exact PR head and uploads evidence; it has read-only permissions and cannot deploy. Live API availability and the remaining browser scripts are separate checks.
 
 The browser scripts use Playwright only for development testing; it is not an application dependency. With Playwright installed, run:
 
@@ -219,7 +219,7 @@ Seven folder-style tabs share a compact ship/current-world/fuel/life-support/car
 
 The Route disclosure retains Plot route, Auto plot, Build route and Clear planned route. Active drafts keep Save, Remove, Retry and Cancel visible. Route chips wrap without separating their outgoing arrows. Previous/Next only browse. **Jump to [next destination]** is paired with the saved next destination above the wrapped route, with Current/Next chip badges. It follows actual route progress even when browsing another world, opens the existing **COMMIT JUMP** confirmation, and never commits the whole route. It is disabled during draft planning, without a next leg, or in read-only tabs. The old duplicate jump action below the map is removed. Current system returns to the actual ship; Reset view resets the viewed map, not the ship.
 
-The three Overview service shortcuts (Refuel, Refill life support and Ship expenses) switch the same right-hand screen directly. Switching services or leaving Overview for another tab discards unfinished service drafts, just like Back, and never applies a payment or reverses a recorded transaction. Trade and Accounts regain their ordinary controls immediately; editor ownership and actual-world restrictions still apply. Stale controls retain their original session token and cannot commit into a newer screen. Port costs is a compact row inside Expenses, using the existing saved weekly berthing rate and overrides. Roll and save starport rate remains an explicit, separate audited action. The Accounts Ship expenses button retains the existing combined-payment dialog.
+The four Overview shortcuts (Refuel, Refill life support, Cargo Hold and Ship expenses) switch the same right-hand screen directly. Switching services or leaving Overview for another tab discards unfinished service drafts, just like Back, and never applies a payment or reverses a recorded transaction. Trade and Accounts regain their ordinary controls immediately; editor ownership and actual-world restrictions still apply. Stale controls retain their original session token and cannot commit into a newer screen. Port costs is a compact row inside Expenses, using the existing saved weekly berthing rate and overrides. Roll and save starport rate remains an explicit, separate audited action. The Accounts Ship expenses button retains the existing combined-payment dialog.
 
 The compact Overview cargo table uses frozen recorded purchase rolls/DMs/percentages and the remaining cost basis. Opening or older cargo without those values says Not recorded; Audit opens the original detailed audit.
 
@@ -323,7 +323,7 @@ amber/red zone arcs appear at the actual hex coordinates. Only the documented
 subset is drawn: other bases remain identified in the data screen. Long names
 are ellipsized within the hex; their full name remains in the accessible label,
 hover title and selected-world screen. The optional UWP label retains calculator
-overrides. The cyan ship marker and white selection brackets are distinct.
+overrides. The cyan ship marker stays distinct from the dark translucent blue selected hex, bright inset outline and small white center brackets. The selected name/UWP stays white; the inset leaves political borders readable, while routes and symbols draw above the fill.
 Clicking, keyboard browsing, panning or zooming never moves the ship.
 
 Small World Data labels, values, UWP rows and map-key text use 14px type.
@@ -358,3 +358,32 @@ Overview → Ship expenses displays aligned recurring costs and a regular four-w
 The whole expense batch commits atomically. Ledger Details retain the original figures, paid amounts and schedule before/after; receipts preserve the campaign date recorded at payment. History → Undo latest change restores the bank, both schedules and totals together. JSON backups/imports retain the records and reject inconsistent payment audits. The TXT report includes the original mortgage, total paid, remaining scheduled amount and maintenance totals.
 
 Run `node --test verification/mortgage.test.mjs verification/maintenance.test.mjs verification/persistence.test.mjs verification/expense-panels.test.mjs`, the full native runner, and the `mortgage-browser` and `expense-panels-browser` scripts for synthetic real-browser payment, receipt and service-switch coverage.
+
+## Cargo Hold bridge manifest
+
+Overview → Cargo Hold opens a read-only quick manifest in the right-hand screen.
+It shows used/free capacity, separate owned speculative lots, accepted freight
+and mail, and the existing luggage, bladder-fuel and life-support cargo
+reservations exactly once. Separate purchases remain separate rows. Purchase
+Cr/t comes from each frozen purchase record; its percentage uses that record’s
+historical effective base, including a saved manual price override. Missing
+prices or bases say Not recorded. Neither present-day settings nor an insurance
+destination reprices or assigns a destination to owned cargo.
+
+The opaque Cargo investment footer stays directly below the internally scrolling
+goods rows and above freight/mail. It sums remaining owned-lot cost basis,
+including recorded costs, without adding promised contract income. Long rows
+scroll horizontally within keyboard-focusable regions. Open Cargo and Open
+Contracts retain the full existing workflows. The existing lower Overview cargo
+table remains available with its original roll/DM columns and controls.
+
+Opening Cargo Hold or another service discards only an unfinished service draft;
+it never records or reverses a transaction. The manifest is available in read-only
+tabs. Viewing, scrolling, details, map selection, and closing do not change
+campaign/save/Undo data. Reload starts with World data unless a saved expense
+receipt was already the current receipt view.
+
+Run `node --test verification/cargo-hold.test.mjs verification/world-symbols.test.mjs`
+and `node verification/cargo-hold-browser.test.mjs` for exact accounting, frozen
+purchase facts, blue-hex layering, cancellation, scroll/footer, read-only and
+320/390/1100/1440px responsive checks.
