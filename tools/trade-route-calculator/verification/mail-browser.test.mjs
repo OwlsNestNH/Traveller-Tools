@@ -1102,7 +1102,15 @@ try {
     await tab(page, 'Overview');
     await page.locator('[data-action="jump"]').click();
     await cancel(page);
-    assert.deepEqual(await read(page), accepted, 'Opening or dismissing a jump does not mark departure');
+    const prepared = await read(page);
+    const travelState = state => Object.fromEntries(Object.entries(state).filter(([key]) => !['revision','events','jumpAttempts'].includes(key)));
+    assert.deepEqual(travelState(prepared), travelState(accepted), 'Opening or dismissing a jump saves dice without marking departure or changing travel state');
+    assert.deepEqual(prepared.events.slice(0,-1), accepted.events);
+    assert.equal(prepared.events.at(-1).label, 'Jump roll prepared');
+    assert.equal(prepared.jumpAttempts.length, 1);
+    assert.equal(prepared.jumpAttempts[0].mulliganUsed, false);
+    await page.locator('[data-action="jump"]').click();await cancel(page);
+    assert.deepEqual(await read(page), prepared, 'Reopening and cancelling retain exactly the saved preparation');
     await committedJump(page, 0);
     const zeroHourJump = await read(page), first = contract(zeroHourJump, id).firstDeparture;
     assert.equal(typeof first, 'object');
