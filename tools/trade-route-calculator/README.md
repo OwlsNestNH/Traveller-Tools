@@ -122,11 +122,11 @@ Life support consumption is exact for each elapsed hour at the current complemen
 
 ## Jump fuel tracking
 
-Enter total **Ship displacement**, **Jump-fuel tank capacity**, and **Jump fuel aboard** in setup or Ship settings. Displacement is separate from cargo capacity; tank figures cover jump fuel only. Power-plant consumption is excluded. Older campaigns remain untracked until their actual figures are entered. Entering initial fuel or correcting stock in settings does not charge the bank.
+Enter total **Ship displacement**, **Base fuel tank capacity**, and **Fuel aboard** in setup or Ship settings. Displacement is separate from cargo capacity. Enter the total base tank capacity you want tracked, including any power-plant or small-craft allowance; optional bladders are added separately. Power-plant and small-craft use are not tracked separately. Older campaigns remain untracked until their actual figures are entered. Entering initial fuel or correcting stock in settings does not charge the bank.
 
 Ship expenses suggests the deficit for the next planned jump, or the empty tank space when there is no next leg. **Fuel for next jump** and **Fill tank** set an editable purchase quantity. Purchased refined fuel costs Cr500/ton; purchased unrefined Cr100/ton; water collection is always available at zero cost; hydrographics or missing planet information only produces an advisory warning. Purchased fuel availability still requires an explicit supplier override and source note outside standard starport supply. Confirming adds fuel to the tank and records a readable before/after audit; overfilling and unaffordable purchases are rejected.
 
-A committed jump consumes 10% of total hull tonnage per actual parsec, rounded up to whole tons, with a minimum Jump-1 expenditure. A 200-ton ship uses 20 tons for one parsec and 40 for two. Under the approved campaign override, insufficient aboard fuel warns but does not block a jump. The commit consumes available fuel down to zero and records the required amount, consumed amount and shortfall. Browsing, planning and cancelled previews consume none. Undo restores fuel along with the transaction or jump. Fuel type is recorded per purchase; grade mixing, refining, unrefined-fuel jump penalties and power-plant fuel are resolved outside this tool.
+A committed jump consumes 10% of total hull tonnage per actual parsec, rounded up to whole tons, with a minimum Jump-1 expenditure. A 200-ton ship uses 20 tons for one parsec and 40 for two. Under the approved campaign override, insufficient aboard fuel warns but does not block a jump. The commit consumes available fuel down to zero and records the required amount, consumed amount and shortfall. Browsing, planning and cancelled previews consume none. Undo restores fuel along with the transaction or jump. Fuel type is recorded per purchase; grade mixing, refining, unrefined-fuel jump penalties and separate power-plant/small-craft consumption are resolved outside this tool.
 
 Source: Core Rulebook Update 2022, p. 157 (jump consumption), p. 154 (prices); p. 180 distinguishes jump and power-plant tankage. Run `node --test verification/fuel.test.mjs` and `node verification/fuel-browser.test.mjs`.
 
@@ -234,11 +234,18 @@ Run `node --test verification/trade-actions.test.mjs` for the application regres
 
 ## Compact Settings page
 
-The Settings tab contains all 42 existing controls in grouped, aligned rows. Direct
+The Settings tab contains all 44 existing controls in grouped, aligned rows. Direct
 numeric typing and visible up/down buttons share the original bounds and rounding;
-checkbox switches and dropdowns retain their existing values and choices. Trader
-modifiers, optional pricing rules, taxes/insurance and credit rounding can be
-expanded when needed. Fuel and cabin rule details remain available in disclosures.
+checkbox switches and dropdowns retain their existing values and choices. Every
+section heading, including Rounding & time and Backup & data, expands or collapses
+its section by click, Enter or Space. Common settings and the two utility panels
+start open; trader modifiers, optional pricing rules, taxes/insurance and credit
+rounding start collapsed. Open/closed choices survive Save, Revert and tab changes
+for this visit without changing campaign data; reload restores the defaults.
+Collapsing a section preserves unsaved values, and Save includes hidden fields. An
+invalid hidden field is opened and focused for correction. Cross-field errors
+reveal all field groups and focus the error message so the related values can be
+reviewed together. Fuel and cabin rule details remain in independent disclosures.
 
 Select **Save changes** to commit the full form as one undoable settings action, or
 **Revert changes** to reload the saved values. Draft edits survive tab navigation in
@@ -248,7 +255,7 @@ loaded with Revert changes. The existing settings dialog remains available as an
 alternate editor and for missing fuel/life-support setup. Backup, report, time,
 rounding preview and reset actions retain their existing confirmation flows.
 
-Run `node verification/settings-browser.test.mjs` for the deterministic 42-field
+Run `node verification/settings-browser.test.mjs` for the deterministic 44-field
 inventory, desktop/mobile layout, controls, persistence, Undo, validation, read-only
 ownership and cancellation checks.
 
