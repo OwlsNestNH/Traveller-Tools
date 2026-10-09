@@ -26,6 +26,7 @@ const summary = {
   fixtures:'Synthetic campaigns, intercepted Traveller Map API, automatic dice fixed to 3',
   cases:[], errors:[],
 };
+const expectedCases=["whole-panel-disclosure-desktop", "whole-panel-disclosure-mobile", "settings-and-independent-rolls", "unavailable-and-undo-check", "repeat-mail-checks-replace-result-and-preserve-audit", "offscreen-mail-draft-invalidated-check-and-undo", "offscreen-mail-draft-invalidated-same-id-import", "whole-consignment-capacity", "accept-jump-deliver-and-undo", "cancel-before-first-jump-full-hold-and-recheck", "first-departure-survives-return-time-route-and-reload", "current-and-legacy-mail-export-import", "cancelled-mail-archive-keeps-mixed-contracts-clean", "manual-mail-reset-does-not-affect-freight", "cancel-read-only-and-stale-cross-tab-confirmation", "toolbar-and-collapsible-mail-details", "combined-freight-and-referee-edit", "political-territory-default-and-preference", "reload-and-read-only-history"];
 let browser;
 await mkdir(artifacts, {recursive:true});
 
@@ -1652,8 +1653,9 @@ try {
     catch (error) { summary.errors.push('Browser close: '+errorText(error)); }
   }
   summary.finishedAt = new Date().toISOString();
-  summary.passed = summary.errors.length === 0 && summary.cases.length === 15 && summary.cases.every(c => c.status === 'passed');
+  summary.expectedCases = expectedCases;
+  summary.passed = summary.errors.length === 0 && summary.cases.length === expectedCases.length && expectedCases.every(id => summary.cases.some(c => c.id === id && c.status === 'passed'));
   await writeFile(join(artifacts, 'mail-browser-summary.json'), JSON.stringify(summary, null, 2)+'\n');
 }
 if (!summary.passed) throw new Error('Mail browser verification failed. See verification-artifacts/mail-browser-summary.json and per-case traces/screenshots.');
-console.log('PASS: all 15 Mail/map browser scenarios; desktop/mobile screenshots, per-case Playwright traces and commit-tagged JSON summary saved.');
+console.log('PASS: all '+expectedCases.length+' Mail/map browser scenarios; desktop/mobile screenshots, per-case Playwright traces and commit-tagged JSON summary saved.');
