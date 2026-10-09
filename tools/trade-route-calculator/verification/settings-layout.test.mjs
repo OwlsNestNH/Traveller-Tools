@@ -4,11 +4,11 @@ import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import {settingsGroups,mountSettingsLayout,stepSetting,syncSettingsControls} from '../js/settings-layout.mjs';
 
-const names=['name','ship','capacity','jump','broker','streetwise','admin','characteristic','rank','soc','mode','custom','shipTons','fuelCapacity','bladderJumps','fuelAboard','rooms-low','roomService-low','roomCustom-low','rooms-middle','roomService-middle','roomCustom-middle','rooms-high','roomService-high','roomCustom-high','people-middle','people-high','occupiedLowBerths','luggageOverride','luggageTons','supportCapacity','supportRemaining','supportUnits','creditStep','scoops','armed','reducedProfitLimitsEnabled','minPurchasePercent','maxSalePercent','maxBaseRetailEnabled','maxBaseRetail','useRawIllegalPrices','tax','insurance'];
-test('compact Settings groups retain all 44 controls once, with existing disclosure defaults',()=>{
+const names=['name','ship','capacity','jump','broker','streetwise','admin','characteristic','rank','soc','mode','custom','shipTons','fuelCapacity','bladderJumps','fuelAboard','rooms-low','roomService-low','roomCustom-low','rooms-middle','roomService-middle','roomCustom-middle','rooms-high','roomService-high','roomCustom-high','people-middle','people-high','occupiedLowBerths','luggageOverride','luggageTons','supportCapacity','supportRemaining','supportUnits','creditStep','scoops','armed','reducedProfitLimitsEnabled','minPurchasePercent','maxSalePercent','maxBaseRetailEnabled','maxBaseRetail','useRawIllegalPrices','tax','insurance','mortgageOriginal','mortgagePayment','mortgageRemaining','mortgagePaid','mortgageDueDate','maintenancePayment','maintenanceDueDate'];
+test('compact Settings groups retain all 51 controls once, with existing disclosure defaults',()=>{
  const grouped=settingsGroups.flatMap(group=>group.names);
- assert.equal(grouped.length,44);assert.deepEqual([...grouped].sort(),[...names].sort());
- assert.deepEqual(settingsGroups.filter(group=>group.advanced).map(group=>group.id),['trader','pricing','optional','rounding']);
+ assert.equal(grouped.length,51);assert.deepEqual([...grouped].sort(),[...names].sort());
+ assert.deepEqual(settingsGroups.filter(group=>group.advanced).map(group=>group.id),['mortgage','maintenance','trader','pricing','optional','rounding']);
 });
 test('numeric arrows retain native bounds and preserve fractional custom input',()=>{
  const events=[],input={value:'62.5',step:'any',min:'0',max:'100',disabled:false,dispatchEvent:event=>events.push(event.type)};
@@ -45,17 +45,17 @@ function layoutFixture(){
  const fuelEstimate=element(),luggageEstimate=element(),costEstimate=element();
  const fuel={querySelector:()=>fuelEstimate,querySelectorAll:()=>[fuelEstimate,element('p')]};
  const accommodation={querySelector:selector=>selector==='#luggage-estimate'?luggageEstimate:costEstimate,querySelectorAll:()=>[element('p')]};
- const source=Object.assign(element(),{querySelectorAll:selector=>selector==='[name]'?inputs:selector==='fieldset'?[fuel,accommodation]:[element('p')]});
+ const source=Object.assign(element(),{querySelector:()=>element('p'),querySelectorAll:selector=>selector==='[name]'?inputs:selector==='fieldset'?[fuel,accommodation]:[element('p')]});
  return {inputs,source,form:{querySelector:()=>source},document:{createElement:element}};
 }
-test('all nine Settings groups mount as labelled native disclosures without replacing field values',()=>{
+test('all eleven Settings groups mount as labelled native disclosures without replacing field values',()=>{
  const previous=globalThis.document;
  try{
   for(const override of [undefined,new Map([['campaign',false],['fuel',false],['trader',true]])]){
    const fixture=layoutFixture();globalThis.document=fixture.document;
    mountSettingsLayout(fixture.form,override);
    const groups=fixture.source.children[0].children.flatMap(column=>column.children);
-   assert.equal(groups.length,9);
+   assert.equal(groups.length,11);
    for(const section of groups){
     const definition=settingsGroups.find(group=>group.id===section.dataset.settingsGroup),summary=section.children[0];
     assert.equal(section.tagName,'DETAILS');assert.equal(summary.tagName,'SUMMARY');

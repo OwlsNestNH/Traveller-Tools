@@ -1,6 +1,7 @@
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={
+ mortgageOriginal:['Original mortgage amount · Cr'],mortgagePayment:['Fixed payment · Cr','', 'Every 4 weeks (28 days)'],mortgageRemaining:['Payments remaining'],mortgagePaid:['Total paid so far · Cr'],mortgageDueDate:['First / next unpaid due date'],maintenancePayment:['Maintenance · Cr','', 'Every 4 weeks (28 days)'],maintenanceDueDate:['First / next unpaid due date'],
  name:['Campaign'],ship:['Ship name'],capacity:['Cargo capacity','tons'],jump:['Jump rating'],scoops:['Fuel scoops fitted'],armed:['Ship is armed','','Mail modifier'],
  shipTons:['Ship displacement','tons'],fuelCapacity:['Base fuel tank capacity','tons'],bladderJumps:['Fuel bladders','extra jumps','Extra full-range jumps'],fuelAboard:['Fuel aboard','tons'],
  broker:['Broker skill'],streetwise:['Streetwise skill'],admin:['Admin skill'],characteristic:['Default EDU / SOC DM'],rank:['Highest Naval / Scout rank'],soc:['Highest SOC DM'],
@@ -14,6 +15,8 @@ const fields={
 export const settingsGroups=[
  {id:'campaign',title:'Campaign & ship',description:'Identity, capacity and fitted equipment',names:['name','ship','capacity','jump','scoops','armed']},
  {id:'fuel',title:'Ship size & fuel',description:'Total configured fuel capacity; no separate tank tracking',names:['shipTons','fuelCapacity','bladderJumps','fuelAboard']},
+ {id:'mortgage',title:'Mortgage',description:'Original amount, fixed installments and payments made',advanced:true,names:['mortgageOriginal','mortgagePayment','mortgageRemaining','mortgagePaid','mortgageDueDate']},
+ {id:'maintenance',title:'Monthly maintenance',description:'A separate four-week payment schedule',advanced:true,names:['maintenancePayment','maintenanceDueDate']},
  {id:'trader',title:'Trader & mail modifiers',description:'Whole-number skills and DMs',advanced:true,names:['broker','streetwise','admin','characteristic','rank','soc']},
  {id:'pricing',title:'Trade rules & pricing',description:'Optional limits and profit settings for new transactions',advanced:true,names:['mode','custom','reducedProfitLimitsEnabled','minPurchasePercent','maxSalePercent','maxBaseRetailEnabled','maxBaseRetail','useRawIllegalPrices']},
  {id:'cabins',title:'Cabins & running costs',description:'All installed cabins, including crew and empty cabins',names:['rooms-low','roomService-low','roomCustom-low','rooms-middle','roomService-middle','roomCustom-middle','rooms-high','roomService-high','roomCustom-high']},
@@ -44,6 +47,7 @@ export function mountSettingsLayout(form,openGroups=new Map()){
  const fieldsets=source.querySelectorAll('fieldset'),fuel=fieldsets[0],accommodation=fieldsets[1];
  const fuelEstimate=fuel.querySelector('#fuel-settings-estimate'),luggageEstimate=accommodation.querySelector('#luggage-estimate'),costEstimate=accommodation.querySelector('#accommodation-estimate');
  const fuelNotes=[...fuel.querySelectorAll(':scope > p')].filter(el=>el!==fuelEstimate),accommodationNotes=[...accommodation.querySelectorAll(':scope > p, :scope > details')],pricingNotes=[...source.querySelectorAll(':scope > p')];
+ const recurringNotes=Object.fromEntries(['mortgage','maintenance'].map(kind=>[kind,[source.querySelector('#'+kind+'-settings-summary'),source.querySelector('#'+kind+'-settings-help')]]));
  const columns=node('div','settings-columns'),left=node('div','settings-column'),right=node('div','settings-column');columns.append(left,right);
  for(const group of settingsGroups){
   const section=node('details','settings-section'),heading=node('summary','settings-section-heading'),title=node('div'),chevron=node('span','settings-disclosure','▸');
@@ -56,8 +60,9 @@ export function mountSettingsLayout(form,openGroups=new Map()){
   if(group.id==='people'){luggageEstimate.className='settings-note';section.append(luggageEstimate);}
   if(group.id==='support'){costEstimate.className='settings-note';section.append(notes('Current cabin costs & supplies',[costEstimate]));}
   if(group.id==='pricing')section.append(...pricingNotes.map(el=>{el.classList.add('settings-note');return el;}));
+  if(recurringNotes[group.id])for(const el of recurringNotes[group.id]){el.className='settings-note';section.append(el);}
   if(group.id==='optional')section.append(node('p','settings-note','Turning insurance off hides open-policy panels. Policies reappear when enabled; closed policies remain in History.'));
-  (['campaign','fuel','trader','pricing'].includes(group.id)?left:right).append(section);
+  (['campaign','fuel','mortgage','maintenance','trader','pricing'].includes(group.id)?left:right).append(section);
  }
  source.replaceChildren(columns);
 }

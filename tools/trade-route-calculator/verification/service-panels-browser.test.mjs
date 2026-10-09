@@ -67,7 +67,9 @@ try{
   assert.equal(await page.locator('#service-form').count(),0,'Summary opens before editing');
   assert.equal(await page.locator('.world-screen:not(#service-panel)').count(),0,'Service replaces the world screen');
   assert.match(await page.locator('#service-panel').textContent(),/Actual Service Harbor/);
-  for(const name of ['jump','day-back','day-forward','ship-expenses','port-costs'])assert.equal(await action(name).isDisabled(),true,name+' is frozen while a draft is open');
+  for(const name of ['jump','day-back','day-forward'])assert.equal(await action(name).isDisabled(),true,name+' is frozen while a draft is open');
+  for(const name of ['refuel','refill-support','ship-expenses'])assert.equal(await action(name).isEnabled(),true,name+' remains available for direct navigation');
+  assert.equal(await page.locator('#ship-actions [data-action="port-costs"]').count(),0);
   await click('service-adjust');assert.equal(await field('fuelTons').inputValue(),'23','Odd tank top-off is exact');
   await click('service-fuel-step','10');assert.equal(await field('fuelTons').inputValue(),'23','+10 clamps at 23 free tons');
   for(const expected of ['13','3','0']){await click('service-fuel-step','-10');assert.equal(await field('fuelTons').inputValue(),expected);}

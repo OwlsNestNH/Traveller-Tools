@@ -24,7 +24,7 @@ const destination={...origin,id:'1,0',x:1,name:'Destination',hex:'0201'};
 const far={...destination,id:'8,0',x:8,name:'Far Destination',hex:'0901'};
 const decode=t=>t.replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
 const attrs=s=>Object.fromEntries([...s.matchAll(/([\w-]+)(?:="([^"]*)")?/g)].map(m=>[m[1],decode(m[2]??'')]));
-function element(attributes={}){return {clientWidth:1440,attributes,dataset:Object.fromEntries(Object.entries(attributes).filter(([k])=>k.startsWith('data-')).map(([k,v])=>[k.slice(5).replace(/-([a-z])/g,(_,c)=>c.toUpperCase()),v])),value:attributes.value??'',name:attributes.name,disabled:'disabled'in attributes,hidden:false,open:false,textContent:'',innerHTML:'',hasAttribute(n){return n in this.attributes;},addEventListener(){},showModal(){this.open=true;},close(){this.open=false;},insertAdjacentHTML(_,html){this.innerHTML+=html;},querySelectorAll(){return [];},closest(){return null;}};}
+function element(attributes={}){return {clientWidth:1440,attributes,dataset:Object.fromEntries(Object.entries(attributes).filter(([k])=>k.startsWith('data-')).map(([k,v])=>[k.slice(5).replace(/-([a-z])/g,(_,c)=>c.toUpperCase()),v])),value:attributes.value??'',name:attributes.name,disabled:'disabled'in attributes,hidden:false,open:false,textContent:'',innerHTML:'',hasAttribute(n){return n in this.attributes;},addEventListener(){},showModal(){this.open=true;},close(){this.open=false;},insertAdjacentHTML(_,html){this.innerHTML+=html;},querySelector(){return null;},querySelectorAll(){return [];},closest(){return null;}};}
 function domDouble(){
  const ids=new Map(['summary','ship-actions','tabs','main','modal','modal-title','modal-body','modal-error','modal-submit','modal-cancel','modal-form','modal-close','notes','takeover','import-file','save-status','message'].map(id=>[id,element()]));
  let fields=new Map(),buttons=[],markup='';const listeners=new Map();
@@ -50,7 +50,7 @@ function harness(saved=campaign(),priceDice=[]){
  const store={editable:true,recovery:false,save(next,expected){if(!this.editable)throw Error('This tab is read-only.');if(persisted.revision!==expected)throw Error('This preview is stale.');S.validate(next);persisted=structuredClone(next);calls.saves++;api.setState(next);api.render();},replace(next,expected){next=structuredClone(S.validate(next));next.revision=expected+1;this.save(next,expected);},read:()=>structuredClone(persisted)};
  const rules={...bindings.R,quote(...args){calls.quotes++;return bindings.R.quote(...args,()=>{calls.priceDice++;return priceDice.shift()??3;});},roll:n=>({dice:Array(n).fill(3),total:n*3}),die:()=>3,freightOffers(...args){calls.freight++;return bindings.R.freightOffers(...args);},mailOffer(...args){calls.mail++;return bindings.R.mailOffer(...args);}};
  const sandbox={...bindings,R:rules,document:dom.document,window:{addEventListener(){},innerWidth:1440},getComputedStyle:()=>({paddingLeft:'0',paddingRight:'0'}),crypto:webcrypto,structuredClone,console,FormData:dom.FormData,setTimeout,clearTimeout,requestAnimationFrame:()=>1,cancelAnimationFrame(){}};
- vm.runInContext(executable+`\nglobalThis.api={services,setInputRounding(values){inputRounding=values;},init(s,c,m,p){state=s;core=c;mp=m;store=p;known={...s.worlds};view=s.actual;tab='Trade';},get state(){return state;},get view(){return view;},setSelected(ids){selected=new Set(ids);},get drafts(){return contractDrafts;},get check(){return mailCheck;},setState(s){receiveCampaign(s);},setDrafts(d){contractDrafts=d;},setView(id){view=id;},get previewSale(){return previewSale;},setTab(t){tab=t;},setRouteDraft(d){routeDraft=d;},get mapZoom(){return mapZoom;},setMapDrag(d){mapDrag=d;},routeJumpControl,routeStops,shipActions,refuelShortcut,currentQuote,priceAudit,searchDialog,beginSale,buyForm,marketPanel,cargoPanel,mailPanel,mailRollSummary,contractsPanel,historyPanel,cancelledMailHistory,contractDetails,contractRolls,historyDetails,historyCategory,contractSearch,updateMailEstimate,accept,deliver,editDraft,closeModal,modal,syncModalSubmit,render,backupReplace,actions};`,vm.createContext(sandbox),{filename:'app.mjs (VM; boot omitted)'});
+ vm.runInContext(executable+`\nglobalThis.api={services,setInputRounding(values){inputRounding=values;},init(s,c,m,p){state=s;core=c;mp=m;store=p;known={...s.worlds};view=s.actual;tab='Trade';},get state(){return state;},get view(){return view;},setSelected(ids){selected=new Set(ids);},get drafts(){return contractDrafts;},get check(){return mailCheck;},setState(s){receiveCampaign(s);},setDrafts(d){contractDrafts=d;},setView(id){view=id;},get previewSale(){return previewSale;},setTab(t){tab=t;},setRouteDraft(d){routeDraft=d;},get mapZoom(){return mapZoom;},setMapDrag(d){mapDrag=d;},ledgerAudit,routeJumpControl,routeStops,shipActions,refuelShortcut,currentQuote,priceAudit,searchDialog,beginSale,buyForm,marketPanel,cargoPanel,mailPanel,mailRollSummary,contractsPanel,historyPanel,cancelledMailHistory,contractDetails,contractRolls,historyDetails,historyCategory,contractSearch,updateMailEstimate,accept,deliver,editDraft,closeModal,modal,syncModalSubmit,render,backupReplace,actions};`,vm.createContext(sandbox),{filename:'app.mjs (VM; boot omitted)'});
  api=sandbox.api;api.init(structuredClone(saved),core,mp,store);api.render();
  const fill=values=>{for(const[k,v]of Object.entries(values)){const n=dom.fields().get(k);assert.ok(n,`Expected form field ${k}`);if(n.attributes.type==='checkbox')n.checked=Boolean(v);else n.value=String(v);}};
  const submit=()=>dom.ids.get('modal-form').onsubmit({preventDefault(){},currentTarget:dom.ids.get('modal-form')});
@@ -222,14 +222,14 @@ test('jump confirmation cannot submit after close, ownership loss or newer campa
   if(mode==='revision')assert.match(h.dom.ids.get('modal-error').textContent,/stale|changed/i);
  }
 });
-test('Overview has four services and Refuel opens a nonmutating in-panel summary',async()=>{
+test('Overview has three services and Refuel opens a nonmutating in-panel summary',async()=>{
  for(const [port,type]of [['A','refined'],['B','refined'],['C','unrefined'],['D','unrefined'],['E','unrefined']]){
   const s=campaign();s.worlds[origin.id].uwp=port+'788899-C';s.ship.fuel=bindings.configureFuel(200,43,20,0,2);
   const h=harness(s),before=h.persisted();h.api.setTab('Overview');const html=h.api.shipActions();
-  assert.equal((html.match(/class="primary"/g)||[]).length,4);assert.doesNotMatch(html,/quickFuelType|fuel-radio|Refined|Unrefined/);
+  assert.equal((html.match(/class="primary"/g)||[]).length,3);assert.doesNotMatch(html,/quickFuelType|fuel-radio|Refined|Unrefined/);
   h.api.setTab('Trade');h.api.refuelShortcut();assert.equal(h.dom.ids.get('modal').open,false);
   assert.match(h.api.services.panel(),/Refuel · Summary/);assert.match(h.api.services.panel(),/Actual ship location/);
-  await h.api.services.action('service-adjust','');const editor=h.api.services.panel();
+  await h.api.services.action('service-adjust','',h.api.services.token());const editor=h.api.services.panel();
   assert.match(editor,new RegExp('value="'+type+'" selected'));
   assert.match(editor,/name="fuelTons"[^>]*value="23"/);assert.match(editor,/Top off · 23 t/);
   h.api.services.close();same(h.persisted(),before);
@@ -272,8 +272,58 @@ test('dedicated Undo Jump confirmation cancels cleanly, rejects stale approval, 
 test('cancelled modal rounding never contaminates a service confirmation audit',async()=>{
  const s=campaign();s.ship.fuel=bindings.configureFuel(200,43,20,0,2);
  const h=harness(s);h.api.setInputRounding([{label:'Cancelled old expense',before:'1.2',after:'2'}]);h.api.closeModal();
- h.api.refuelShortcut();await h.api.services.action('service-confirm','');
+ h.api.refuelShortcut();await h.api.services.action('service-confirm','',h.api.services.token());
  assert.equal(h.persisted().ship.fuel.aboardTons,43);assert.equal(h.persisted().events.some(e=>e.label==='Rounding applied [R]'),false);
  const detail=h.api.historyDetails({label:'Fuel aboard correction audit',world:origin.id,fuelCorrection:{before:43,after:20,removed:23,reason:'Tank sounding'}});
  assert.match(detail,/Tank sounding/);assert.match(detail,/Cr 0 · no refund/);assert.doesNotMatch(detail,/Additional inputs were not saved/);
+});
+
+test('recurring settings history shows mortgage and maintenance facts instead of cargo corrections',()=>{
+ const s=campaign(),mortgage={originalAmount:'24000000',payment:'100000',remainingPayments:360,totalPaid:'12000000',nextDueDate:'029-1105'},maintenance={payment:'2000',nextDueDate:'015-1105',paidSinceTracking:'0'};
+ const n=S.transition(s,'Ship / trader settings',n=>{S.setMortgage(n,mortgage);S.setMaintenance(n,maintenance);});
+ const h=harness(n);
+ const mortgageHTML=h.api.historyDetails(n.events.find(e=>e.label==='Mortgage settings audit'));
+ assert.match(mortgageHTML,/Mortgage before/);assert.match(mortgageHTML,/Not configured/);assert.match(mortgageHTML,/Original mortgage amount/);assert.match(mortgageHTML,/Cr 24,000,000/);assert.match(mortgageHTML,/029-1105/);assert.doesNotMatch(mortgageHTML,/Cargo before correction|Cargo after correction/);
+ const maintenanceHTML=h.api.historyDetails(n.events.find(e=>e.label==='Maintenance settings audit'));
+ assert.match(maintenanceHTML,/Monthly maintenance after/);assert.match(maintenanceHTML,/Cr 2,000/);assert.match(maintenanceHTML,/015-1105/);assert.doesNotMatch(maintenanceHTML,/Cargo before correction/);
+ const cleared=S.transition(n,'Clear tracking',n=>S.setMortgage(n,undefined));const clearHTML=h.api.historyDetails(cleared.events.at(-2));assert.match(clearHTML,/Mortgage after<\/h3><p class="help">Not configured/);
+});
+
+function expenseArg(h,name){const tag=[...h.api.services.panel().matchAll(/<button\b([^>]*)>/g)].map(m=>attrs(m[1])).find(a=>a['data-action']===name);assert.ok(tag,'Rendered '+name);return tag['data-arg'];}
+function recurringCampaign(){const s=campaign();s.ship.fuel=bindings.configureFuel(200,43,20,0,2);s.ship.accommodation={rooms:{low:0,middle:4,high:0},passengers:{low:0,middle:4,high:0},crew:{low:0,middle:0,high:0}};s.ship.lifeSupport={capacityHours:672,remainingHours:336,elapsedHours:0};s.ship.mortgage={originalAmount:'240000',payment:'1000',remainingPayments:360,totalPaid:'120000',nextDueDate:'029-1105'};s.ship.maintenance={payment:'100',nextDueDate:'015-1105',paidSinceTracking:'0'};return S.validate(s);}
+test('all direct service switches discard only drafts and detached callbacks cannot commit',async()=>{
+ const h=harness(recurringCampaign()),before=h.persisted();h.api.setTab('Overview');
+ for(const from of ['fuel','support','mortgage','maintenance','salary','berthing'])for(const to of ['fuel','support','expenses']){
+  h.api.services.open(from,{fresh:true});const stock=['fuel','support'].includes(from),oldToken=h.api.services.token(),oldArg=stock?'':expenseArg(h,'expense-back');
+  h.api.services.open(to);same(h.persisted(),before);
+  await h.api.services.action(stock?'service-confirm':'expense-pay',oldArg,oldToken);same(h.persisted(),before);
+ }
+ h.api.services.close();assert.doesNotMatch(h.api.shipActions(),/port-costs/);
+});
+test('mortgage payment stays on a ledger-backed receipt across switching and reload, with History Undo only',async()=>{
+ const h=harness(recurringCampaign()),before=h.persisted();h.api.setTab('Overview');h.api.actions['ship-expenses']();assert.match(h.api.services.panel(),/Regular 4-week total/);
+ h.api.services.open('mortgage',{fresh:true});const pay=expenseArg(h,'expense-pay');await h.api.services.action('expense-pay',pay);
+ const paid=h.persisted();assert.equal(paid.bank,'99000');assert.equal(paid.ship.mortgage.remainingPayments,359);assert.match(h.api.services.panel(),/Payment recorded/);assert.doesNotMatch(h.api.services.panel(),/data-action="expense-(pay|cancel)"/);
+ await h.api.services.action('expense-pay',pay);same(h.persisted(),paid);
+ h.api.services.open('support');same(h.persisted(),paid);h.api.services.open('mortgage');assert.match(h.api.services.panel(),/Payment recorded/);same(h.persisted(),paid);
+ const reload=harness(paid);reload.api.services.open('mortgage');assert.match(reload.api.services.panel(),/Payment recorded/);same(reload.persisted(),paid);
+ h.api.actions.tab('History');h.api.actions.undo();assert.equal(h.persisted().bank,before.bank);same(h.persisted().ship.mortgage,before.ship.mortgage);
+});
+test('life support expense audit retains the saved location after moving, including legacy fallback',()=>{
+ const s=recurringCampaign(),paid=S.transition(s,'Refill',S.refillLifeSupport),entry=paid.ledger.at(-1);
+ assert.equal(entry.expense.worldId,origin.id);assert.equal(entry.expense.worldName,'Origin');
+ paid.actual=destination.id;paid.route=[destination.id];paid.routeIndex=0;const h=harness(S.validate(paid));
+ h.api.ledgerAudit(entry.id);assert.match(modalText(h),/Origin/);assert.doesNotMatch(modalText(h),/Destination/);h.api.closeModal();
+ const legacy=structuredClone(paid);delete legacy.ledger.at(-1).expense.worldName;delete legacy.ledger.at(-1).expense.worldId;const old=harness(legacy);old.api.ledgerAudit(entry.id);assert.match(modalText(old),/Origin/);assert.doesNotMatch(modalText(old),/Destination/);
+});
+
+test('expense fuel and life support names use existing setup guards for legacy campaigns',async()=>{
+ for(const kind of ['fuel','support']){
+  const h=harness(campaign()),before=h.persisted();h.api.services.open('expenses');const buttons=[...h.api.services.panel().matchAll(/<button\b([^>]*)>/g)].map(m=>attrs(m[1]));const link=buttons.find(a=>a['data-action']==='expense-open'&&a['data-arg'].endsWith(':'+kind));assert.ok(link);
+  await h.api.services.action('expense-open',link['data-arg']);assert.equal(h.dom.ids.get('modal-title').textContent,'Ship, trader & options');assert.equal(h.api.services.active(),false);h.api.closeModal();assert.doesNotMatch(h.dom.ids.get('main').innerHTML,/id="expense-panel"/);h.api.services.open('expenses');assert.match(h.api.services.panel(),/Regular 4-week total/);same(h.persisted(),before);
+ }
+});
+
+test('Accounts batch remains locked while a hidden service draft is open',()=>{
+ const h=harness(recurringCampaign());h.api.refuelShortcut();h.api.actions.tab('Accounts');assert.equal(h.button('ship-expenses').disabled,true);assert.equal(h.button('deposit').disabled,true);
 });

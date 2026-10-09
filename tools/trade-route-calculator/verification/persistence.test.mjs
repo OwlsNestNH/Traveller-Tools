@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Store, KEY} from '../js/persistence.mjs';
-import {initial, transition, validate, undo, prepareJump, commitJump, undoJump, jumpUndoEligibility} from '../js/state.mjs';
+import {initial, transition, validate, undo, prepareJump, commitJump, undoJump, jumpUndoEligibility, shipExpenses} from '../js/state.mjs';
 
 const tick = () => new Promise(resolve => setImmediate(resolve));
 
@@ -294,4 +294,21 @@ test('physical LSS fractions survive writer save, import replacement and retaine
  const reloaded=store.read();assert.equal(cmp(supportAmount(reloaded.ship.lifeSupport.stockUnits),{n:983n,d:24n}),0);assert.equal(cmp(supportCargo(reloaded.ship),{n:23n,d:2400n}),0);
  const imported=JSON.parse(JSON.stringify(reloaded));store.replace(imported,reloaded.revision);const restored=undo(store.read());assert.deepEqual(restored.ship,before.ship);assert.equal(restored.hours,0);
  const bytes=env.values.get(KEY),bad=JSON.parse(bytes);bad.ship.lifeSupport.stockUnits={numerator:'1000000',denominator:'1'};assert.throws(()=>store.replace(bad,store.read().revision),/capacity/);assert.equal(env.values.get(KEY),bytes);
+});
+
+test('mortgage and maintenance save/reload/import atomically, with stale and storage failures preserving the prior schedule',async t=>{
+ const env=environment(t),store=env.store();await store.acquire();await tick();
+ const before=transition(initial(),'Setup recurring expenses',s=>{
+  s.bank='1000000';s.actual='0,0';s.initialized=true;s.worlds={'0,0':{id:'0,0',x:0,y:0,name:'Test',sector:'Test',hex:'0101',uwp:'E000000-0',zone:'Safe'}};s.route=['0,0'];
+  s.ship.mortgage={originalAmount:'24000000',payment:'100000',remainingPayments:360,totalPaid:'12000000',nextDueDate:'029-1105'};
+  s.ship.maintenance={payment:'2000',nextDueDate:'015-1105',paidSinceTracking:'0'};
+ });store.save(before,0);
+ const paid=transition(before,'Pay both',s=>shipExpenses(s,[{kind:'mortgage',mortgagePayments:2},{kind:'maintenance',maintenancePayments:3}]));
+ const originalWrite=localStorage.setItem,bytes=env.values.get(KEY);
+ localStorage.setItem=()=>{throw Error('Quota exceeded');};assert.throws(()=>store.save(paid,before.revision),/Quota/);localStorage.setItem=originalWrite;
+ assert.equal(env.values.get(KEY),bytes);assert.deepEqual(store.read().ship,before.ship);
+ store.save(paid,before.revision);assert.deepEqual(store.read(),paid);assert.throws(()=>store.save(paid,before.revision),/stale/);
+ const restored=store.read();assert.equal(restored.bank,'794000');assert.equal(restored.ship.mortgage.nextDueDate,'085-1105');assert.equal(restored.ship.maintenance.nextDueDate,'099-1105');
+ const imported=JSON.parse(JSON.stringify(paid));store.replace(imported,restored.revision);assert.deepEqual(store.read().ship,paid.ship);assert.deepEqual(store.read().ledger,paid.ledger);
+ store.save(undo(store.read()),store.read().revision);assert.deepEqual(store.read().ship,before.ship);assert.equal(store.read().bank,before.bank);
 });

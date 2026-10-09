@@ -1,4 +1,4 @@
-import {initial,validate} from './state.mjs?v=mfd-services-1';
+import {initial,validate} from './state.mjs?v=expenses-20261009-21';
 export const KEY='traveller-trade-route-calculator:v1';
 const LOCK=KEY+':writer';
 function serializedCampaign(next){

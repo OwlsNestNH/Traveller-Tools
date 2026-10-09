@@ -178,7 +178,7 @@ async function run(stops){
   assert.equal(await page.locator('#market-search').count(),0,'Full supplier trading belongs on Trade');
   await unchanged('Initial shell');
   const serviceStyles=await page.locator('.ship-actions > button').evaluateAll(buttons=>buttons.map(button=>{const s=getComputedStyle(button);return {background:s.background,color:s.color,border:s.borderColor};}));
-  assert.equal(serviceStyles.length,4,'Four direct ship service shortcuts remain');
+  assert.equal(serviceStyles.length,3,'Three direct ship service shortcuts remain; Port costs is inside Expenses');
   assert.ok(serviceStyles.every(style=>JSON.stringify(style)===JSON.stringify(serviceStyles[0])),'Ship expenses uses the same primary colors as the other ship services');
   const compactRows=await page.locator('.overview-cargo tbody tr').evaluateAll(rows=>rows.map(row=>[...row.querySelectorAll('td')].map(td=>td.textContent)));
   const recordedAudit=fixture.state.lots[0].audit.price.audit;
@@ -327,9 +327,10 @@ async function run(stops){
    if(method==='Escape')await page.keyboard.press('Escape');else await click('service-back');
    await page.locator('#service-panel').waitFor({state:'hidden'});await unchanged(name+' '+method);
   }
-  for(const [name,method]of [['port-costs','Close'],['ship-expenses','Cancel']]){
-   await click(name);await page.locator('#modal').waitFor({state:'visible'});await dismiss(method);
-  }
+  await click('ship-expenses');await page.locator('#expense-panel').waitFor({state:'visible'});
+  await page.getByRole('button',{name:'Port costs ›',exact:true}).click();
+  await click('expense-back');await click('expense-close');await unchanged('Expenses and Port costs navigation');
+  await tab('Accounts');await click('ship-expenses');await page.locator('#modal').waitFor({state:'visible'});await dismiss('Cancel');await tab('Overview');
   if(stops===12){
    // A delayed nearby response after leaving Overview must not repopulate Trade
    // or retain the old desktop geometry when Overview is mounted again.

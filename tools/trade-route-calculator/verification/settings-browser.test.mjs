@@ -20,11 +20,12 @@ const fieldNames=[
  'rooms-low','roomService-low','roomCustom-low','rooms-middle','roomService-middle','roomCustom-middle','rooms-high','roomService-high','roomCustom-high',
  'people-middle','people-high','occupiedLowBerths','luggageOverride','luggageTons','supportCapacity','supportRemaining','supportUnits',
  'creditStep','scoops','armed','reducedProfitLimitsEnabled','minPurchasePercent','maxSalePercent',
- 'maxBaseRetailEnabled','maxBaseRetail','useRawIllegalPrices','tax','insurance'
+ 'maxBaseRetailEnabled','maxBaseRetail','useRawIllegalPrices','tax','insurance','mortgageOriginal','mortgagePayment','mortgageRemaining','mortgagePaid','mortgageDueDate','maintenancePayment','maintenanceDueDate'
 ];
-assert.equal(fieldNames.length,44);
-assert.equal(new Set(fieldNames).size,44);
+assert.equal(fieldNames.length,51);
+assert.equal(new Set(fieldNames).size,51);
 const draft={
+ mortgageOriginal:'24000000',mortgagePayment:'100001',mortgageRemaining:'360',mortgagePaid:'12000000',mortgageDueDate:'029-1105',maintenancePayment:'2001',maintenanceDueDate:'015-1105',
  name:'Compact Settings verification',ship:'Synthetic Settings Trader',capacity:'160',jump:'3',
  broker:'3',streetwise:'2',admin:'1',characteristic:'-1',rank:'4',soc:'2',mode:'custom',custom:'62.5',
  shipTons:'300',fuelCapacity:'60',bladderJumps:'1',fuelAboard:'65',
@@ -128,6 +129,8 @@ async function layout(page,label){
 }
 
 function savedValues(state,before){
+ assert.deepEqual(state.ship.mortgage,{originalAmount:'24000000',payment:'100001',remainingPayments:360,totalPaid:'12000000',nextDueDate:'029-1105'});
+ assert.deepEqual(state.ship.maintenance,{payment:'2001',nextDueDate:'015-1105',paidSinceTracking:'0'});
  assert.equal(state.name,draft.name);assert.equal(state.ship.name,draft.ship);
  assert.equal(state.ship.capacity,draft.capacity);assert.equal(state.ship.jump,Number(draft.jump));
  assert.deepEqual(state.trader,{broker:3,streetwise:2,admin:1,characteristic:-1,rank:4,soc:2});
@@ -155,7 +158,7 @@ function savedValues(state,before){
 async function auxiliary(h){
  const {page,raw,unchanged,action,dismiss,reveal}=h,before=await raw();
  await action('settings-edit');await page.getByRole('heading',{name:'Ship, trader & options',exact:true}).waitFor();
- assert.deepEqual((await page.locator('#modal [name]').evaluateAll(fields=>fields.map(el=>el.name))).sort(),[...fieldNames].sort(),'The optional dialog has the same 44 fields');
+ assert.deepEqual((await page.locator('#modal [name]').evaluateAll(fields=>fields.map(el=>el.name))).sort(),[...fieldNames].sort(),'The optional dialog has the same 51 fields');
  await page.locator('#modal [name="mode"]').selectOption('custom');
  assert.equal(await page.locator('#modal [name="custom"]').isDisabled(),false,'Modal mode changes update the modal control');
  assert.equal(await page.locator('#settings-form').count(),0,'The inline form is detached while the optional dialog is open');
@@ -230,15 +233,15 @@ try{
   await tab('Settings');await page.locator('#settings-form').waitFor();
   assert.equal(await page.locator('#modal[open]').count(),0,'Settings are inline, not a compulsory modal');
   const inventory=await page.locator('#settings-form [name]').evaluateAll(fields=>fields.map(el=>({name:el.name,label:[...(el.labels||[])].map(label=>label.textContent.trim()).join(' '),row:!!el.closest('.setting-row')})));
-  assert.deepEqual(inventory.map(x=>x.name).sort(),[...fieldNames].sort(),'All 44 existing fields appear exactly once');
+  assert.deepEqual(inventory.map(x=>x.name).sort(),[...fieldNames].sort(),'All 51 existing fields appear exactly once');
   assert.ok(inventory.every(x=>x.label&&x.row),'Every field has a label and a compact setting row');
   assert.ok(await page.locator('#settings-form .settings-section').count()>1,'Settings are grouped into sections');
   const sections=page.locator('#main details[data-settings-group]');
-  const defaults={campaign:true,fuel:true,trader:false,pricing:false,cabins:true,people:true,support:true,optional:false,rounding:false,'rounding-time':true,'backup-data':true};
+  const defaults={campaign:true,fuel:true,mortgage:false,maintenance:false,trader:false,pricing:false,cabins:true,people:true,support:true,optional:false,rounding:false,'rounding-time':true,'backup-data':true};
   const disclosureStates=()=>sections.evaluateAll(nodes=>Object.fromEntries(nodes.map(el=>[el.dataset.settingsGroup,el.open])));
   const closeAll=async()=>{for(const section of await sections.all())if(await section.evaluate(el=>el.open))await section.locator(':scope > summary').click();};
   const allClosed=Object.fromEntries(Object.keys(defaults).map(id=>[id,false]));
-  assert.equal(await sections.count(),11,'Every field group and both utility panels can collapse');
+  assert.equal(await sections.count(),13,'Every field group and both utility panels can collapse');
   assert.deepEqual(await disclosureStates(),defaults,'Previously visible groups start open; advanced groups start closed');
   await layout(page,'default sections '+size.width);
   await page.screenshot({path:artifacts+`/settings-default-${size.width}.png`,fullPage:true});
@@ -248,7 +251,7 @@ try{
    assert.ok(await summary.getAttribute('aria-label'),id+' has an accessible disclosure name');
    assert.equal(await summary.locator('.settings-disclosure').getAttribute('aria-hidden'),'true');
    // Pointer, Enter and Space all operate the same native disclosure, without
-   // changing any sibling or the 44 draft fields.
+   // changing any sibling or the 51 draft fields.
    for(const key of ['pointer','Enter','Space']){
     if(key==='pointer')await summary.click();else{await summary.focus();await page.keyboard.press(key);}
     assert.equal(await section.evaluate(el=>el.open),!initial,id+' toggles with '+key);
@@ -300,7 +303,7 @@ try{
   for(const name of ['minPurchasePercent','maxSalePercent'])assert.equal(await field(name).isDisabled(),false,'Price-limit values remain editable while the option is off');
   const switches=page.locator('#settings-form .settings-switch input[type="checkbox"],#settings-form input.settings-switch[type="checkbox"]');
   assert.equal(await switches.count(),8,'All eight boolean options retain native checkbox switches');
-  await setDraft();assert.deepEqual(await values(),draft,'All 44 draft controls accept their intended input types');
+  await setDraft();assert.deepEqual(await values(),draft,'All 51 draft controls accept their intended input types');
   // Explicit arrow buttons must preserve direct typing, signed values and the
   // fractional custom profit. A +1 / -1 round trip never silently saves.
   for(const number of await page.locator('#settings-form input[type="number"]').all()){
@@ -366,7 +369,7 @@ try{
   await page.locator('#main [data-action="undo"]').click();
   const undone=await read();
   for(const key of ['name','ship','trader','settings','bank','hours','actual','route','lots','contracts','snapshots','ledger'])assert.deepEqual(undone[key],fixture.state[key],'Undo restores original '+key);
-  await tab('Settings');assert.deepEqual(await values(),original,'Undo restores all 44 displayed values');
+  await tab('Settings');assert.deepEqual(await values(),original,'Undo restores all 51 displayed values');
   assert.deepEqual(await disclosureStates(),beforeUndoLayout,'Undo restores values without changing disclosure choices');
   const beforeReadOnly=await raw(),other=await context.newPage();await other.goto(base);
   await other.getByText('Read-only: campaign open in another tab.',{exact:true}).waitFor();
@@ -391,7 +394,7 @@ try{
   await unchanged(beforeReadOnly,'Editing ownership transfer');
   if(size.width===1440){await auxiliary(h);await staleDraft(h);}
   await h.finish(String(size.width));
-  console.log(`PASS: ${size.width}px all 11 disclosure headers, pointer/keyboard, defaults/navigation, exact 44-field parity, collapsed draft/save/revert, validation/reveal/focus, atomic save/reload/Undo, partial-day stock and editing locks.`);
+  console.log(`PASS: ${size.width}px all 13 disclosure headers, pointer/keyboard, defaults/navigation, exact 51-field parity, collapsed draft/save/revert, validation/reveal/focus, atomic save/reload/Undo, partial-day stock and editing locks.`);
  }
  // Same-session blank saves must not produce undefined inverse values that
  // only become invalid when the campaign reaches localStorage or an export.

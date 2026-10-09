@@ -1,3 +1,5 @@
+import {maintenancePaymentQuote,MAINTENANCE_REFERENCE} from './maintenance.mjs?v=expenses-20261009-21';
+import {mortgagePaymentQuote,MORTGAGE_REFERENCE} from './mortgage.mjs?v=expenses-20261009-21';
 import {fuelPurchase,fuelReference} from './fuel.mjs?v=fuel-warning-1';
 import {up} from './rounding.mjs';
 import * as A from './amounts.mjs';
@@ -23,9 +25,25 @@ export function fuelAvailability(world,type){
  const standard=type==='water'?water:type==='refined'?['A','B'].includes(port):type==='unrefined'&&['A','B','C','D'].includes(port);
  return {port,hydro,water,standard};
 }
+export function recurringExpenseDetails(expense){
+ if(expense.kind==='mortgage'){const q=expense.mortgage;return [['Original mortgage amount · Cr',q.before.originalAmount],['Fixed payment · Cr / 4 weeks',q.before.payment],['Payments paid now',String(q.periods)],['First installment due',q.firstDueDate],['Paid through installment due',q.lastDueDate],['Payments remaining before',String(q.before.remainingPayments)],['Payments remaining after',String(q.after.remainingPayments)],['Total paid before · Cr',q.before.totalPaid],['Total paid after · Cr',q.after.totalPaid],['Remaining scheduled payments · Cr',q.remainingAmount],['Next unpaid payment due',q.after.remainingPayments?q.after.nextDueDate:'None · all scheduled payments paid']];}
+ if(expense.kind==='maintenance'){const q=expense.maintenance;return [['Monthly cost · Cr / 4 weeks',q.before.payment],['Payments paid now',String(q.periods)],['First installment due',q.firstDueDate],['Paid through installment due',q.lastDueDate],['Next unpaid payment due',q.after.nextDueDate],['Paid since tracking before · Cr',q.before.paidSinceTracking],['Paid since tracking after · Cr',q.after.paidSinceTracking]];}
+ return expense.details;
+}
 export function expenseQuote(world,input){
  if(world.emptySpace&&['berthing','staterooms','passengerSupport'].includes(input.kind))throw Error('No starport or life-support supply in empty space.');
  const kind=input.kind,notes=String(input.notes||'').trim(),port=starport(world);
+ if(kind==='maintenance'){
+  const q=maintenancePaymentQuote({ship:input.recurringShip||{}},input.maintenancePayments);
+  const details=recurringExpenseDetails({kind,maintenance:q});
+  return {kind,label:'Monthly maintenance',amount:q.amount,details,reference:MAINTENANCE_REFERENCE+' Fixed costs are paid exactly as recorded, unaffected by Credit rounding.',notes,worldId:world.id,worldName:world.name,fixedAmount:true,maintenance:q};
+ }
+ if(kind==='mortgage'){
+  const q=mortgagePaymentQuote({ship:input.recurringShip||{}},input.mortgagePayments);
+  const details=recurringExpenseDetails({kind,mortgage:q});
+  return {kind,label:'Mortgage payment',amount:q.amount,details,reference:MORTGAGE_REFERENCE+' Fixed amounts are paid exactly as recorded, unaffected by Credit rounding.',notes,worldId:world.id,worldName:world.name,fixedAmount:true,mortgage:q};
+ }
+
  let amount,details,reference,unrounded;
  if(kind==='berthing'){
   const rate=berthRate(world),weeks=count(input.weeks,'Weeks');amount=String(BigInt(rate.weekly)*BigInt(weeks));
