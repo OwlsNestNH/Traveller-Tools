@@ -7,7 +7,8 @@ import {join} from 'node:path';
 import * as S from '../js/state.mjs';
 
 // Real Chromium integration tests. Seed only a fresh synthetic campaign before
-// boot; every subsequent campaign change goes through the rendered application.
+// boot; every subsequent campaign change goes through the rendered application
+// (including exported synthetic backups loaded through its real import form).
 // The only doubles are the external map API and the browser's random-die source.
 const require = createRequire(import.meta.url);
 const artifacts = fileURLToPath(new URL('../verification-artifacts/', import.meta.url));
@@ -51,6 +52,10 @@ const tab = (page, name) => page.locator('#tabs').getByRole('button', {name, exa
 const moneyState = state => ({bank:state.bank, hours:state.hours, lots:state.lots, contracts:state.contracts, ledger:state.ledger});
 const latestSearch = state => state.events.filter(e => Array.isArray(e.offers)).at(-1);
 const freightRows = page => page.locator('#main tbody tr').filter({hasText:'Freight contract'}).allTextContents();
+const contractRow = (page, id) => page.locator('#main tbody tr').filter({hasText:id});
+const cancelButtons = (page, id) => page.locator('[data-action="mail-cancel"][data-arg="'+id+'"]');
+const contract = (state, id) => state.contracts.find(c => c.id === id);
+const unchangedAccounting = state => ({bank:state.bank, hours:state.hours, lots:state.lots, ledger:state.ledger});
 
 const normalized = value => value.replace(/\s+/g, ' ').trim();
 const manualRoll = 'Availability roll: manual 2D total 12; 12 + 7 DM = 19 (12+ required) Container roll: manual 1D total 3';
@@ -164,6 +169,50 @@ async function acceptMail(page) {
   await mail(page).getByRole('button', {name:'Accept whole mail consignment', exact:true}).click();
   assert.match(await modal(page).textContent(), /does not pay you yet/);
   await submit(page, 'Accept whole contract');
+}
+async function openMailCancel(page, id, {details=false}={}) {
+  const target = details ? page.locator('#mail-accepted-details') : contractRow(page, id);
+  await target.locator('[data-action="mail-cancel"][data-arg="'+id+'"]').click();
+  assert.equal(await page.locator('#modal-title').innerText(), 'Cancel mail');
+  assert.equal(await modal(page).getByRole('button', {name:'Cancel mail and start over', exact:true}).isEnabled(), true);
+}
+async function commitMailCancel(page, id) {
+  await openMailCancel(page, id);
+  await submit(page, 'Cancel mail and start over');
+}
+async function committedJump(page, hours=168) {
+  await tab(page, 'Overview');
+  await page.locator('[data-action="jump"]').click();
+  await fill(page, 'hours', hours);
+  await submit(page, 'COMMIT JUMP');
+  await tab(page, 'Contracts');
+}
+async function exportCampaign(page) {
+  await tab(page, 'Settings');
+  const downloadReady = page.waitForEvent('download');
+  await page.getByRole('button', {name:'Save campaign (JSON)', exact:true}).click();
+  const download = await downloadReady;
+  const stream = await download.createReadStream();
+  assert.ok(stream, 'A real JSON backup is downloaded');
+  const chunks = [];
+  for await (const chunk of stream) chunks.push(chunk);
+  assert.equal(await download.failure(), null);
+  return JSON.parse(Buffer.concat(chunks).toString('utf8'));
+}
+async function importCampaign(page, state, filename='synthetic-mail-backup.json') {
+  // Validate the synthetic fixture before exercising the real import flow.
+  S.validate(structuredClone(state));
+  await page.locator('#import-file').setInputFiles({name:filename, mimeType:'application/json', buffer:Buffer.from(JSON.stringify(state))});
+  await page.getByRole('heading', {name:'Load campaign (JSON)', exact:true}).waitFor();
+  await modal(page).locator('[name="backed"]').check();
+  await submit(page, 'Replace campaign');
+  await tab(page, 'Contracts');
+}
+async function assertCancelBlocked(page, id, reason) {
+  const buttons = cancelButtons(page, id);
+  assert.ok(await buttons.count() > 0, 'An accepted mail contract explains why cancellation is unavailable');
+  for (const button of await buttons.all()) assert.equal(await button.isDisabled(), true);
+  assert.match(await contractRow(page, id).innerText(), reason);
 }
 async function historyAudit(page, id) {
   await tab(page, 'History');
@@ -480,6 +529,7 @@ try {
     assert.equal(delivered.contracts[0].payout, '75000');
     assert.equal(delivered.contracts[0].late, false);
     assert.equal(delivered.contracts[0].penaltyDie, null);
+    assert.equal(await cancelButtons(page, contractId).count(), 0, 'Delivered mail cannot be cancelled or reset');
     assert.equal(delivered.ledger.filter(e => e.contractId === contractId).length, 1);
     assert.match(await mail(page).textContent(), /Mail delivered/);
     assert.equal(await page.locator('#mail-accepted-details').evaluate(el => el.open), true, 'Delivered details remain open when the accepted disclosure was not collapsed');
@@ -502,6 +552,310 @@ try {
     assert.deepEqual(await read(page), delivered);
     await savedRowRoll(page, contractId, manualRoll);
     assert.equal(await page.locator('[data-action="deliver"], [data-action="contract-accept"]').count(), 0);
+    assert.equal(await cancelButtons(page, contractId).count(), 0, 'Reload does not revive a reset action for delivered mail');
+    const deliveredBackup = await exportCampaign(page);
+    await importCampaign(page, deliveredBackup);
+    assert.deepEqual((await read(page)).contracts, delivered.contracts);
+    assert.deepEqual((await read(page)).ledger, delivered.ledger);
+    assert.equal((await read(page)).bank, delivered.bank);
+    assert.equal(await page.locator('[data-action="deliver"], [data-action="contract-accept"], [data-action="mail-cancel"]').count(), 0, 'Import does not revive any action for a paid consignment');
+  });
+
+  await runCase('cancel-before-first-jump-full-hold-and-recheck', {capacity:'15'}, async (page, context, result) => {
+    const checked = await checkMail(page, {combined:true});
+    const freight = await freightRows(page);
+    assert.ok(freight.length > 0);
+    await acceptMail(page);
+    const accepted = await read(page), original = accepted.contracts[0], id = original.id;
+    assert.equal(original.firstDeparture, null, 'Acceptance explicitly records that no jump has been committed');
+    assert.equal(await cancelButtons(page, id).count(), 2, 'Both accepted details and the persisted contract row offer cancellation');
+    assert.match(await page.locator('#hold-summary .value').innerText(), /15 \/ 15 t/);
+    await screenshot(page, result, 'mail-desktop-accepted-cancel-action.png');
+
+    // Every ordinary dismissal leaves the contract, full hold, and audit intact.
+    for (const method of ['Cancel','Close dialog','Escape']) {
+      await openMailCancel(page, id, {details:true});
+      if (method === 'Escape') await page.keyboard.press('Escape');
+      else await modal(page).getByRole('button', {name:method, exact:true}).click();
+      await page.locator('#modal').waitFor({state:'hidden'});
+      assert.deepEqual(await read(page), accepted, method+' does not commit a cancellation');
+      assert.deepEqual(await freightRows(page), freight);
+    }
+    await page.setViewportSize({width:390, height:844});
+    const bounds = await mail(page).boundingBox();
+    assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= 392);
+    assert.ok(await page.locator('main').evaluate(el => el.scrollWidth <= el.clientWidth + 2));
+    await screenshot(page, result, 'mail-mobile-accepted-cancel-action.png');
+    await openMailCancel(page, id, {details:true});
+    assert.match(await modal(page).innerText(), /15 t|15 tons/);
+    assert.match(await modal(page).innerText(), /no (income|payment)|income.*0|Cr 0/i);
+    const dialogBounds = await modal(page).boundingBox();
+    assert.ok(dialogBounds.x >= 0 && dialogBounds.x + dialogBounds.width <= 392);
+    await screenshot(page, result, 'mail-mobile-cancel-confirmation.png');
+    await page.setViewportSize({width:1440, height:1100});
+    await screenshot(page, result, 'mail-desktop-cancel-confirmation.png');
+    // Exercise a duplicated browser submit, rather than calling the state API.
+    await page.locator('#modal-form').evaluate(form => { form.requestSubmit(); form.requestSubmit(); });
+    await page.locator('#modal').waitFor({state:'hidden'});
+    const cancelled = await read(page), saved = contract(cancelled, id);
+    assert.equal(cancelled.revision, accepted.revision + 1, 'Repeated submission commits only once');
+    assert.equal(cancelled.undo.length, accepted.undo.length + 1);
+    assert.equal(cancelled.contracts.length, 1);
+    assert.equal(saved.status, 'cancelled');
+    assert.equal(saved.firstDeparture, null);
+    assert.equal(saved.cancelledHours, accepted.hours);
+    assert.deepEqual(saved.cancellation, {world:origin.id, revision:cancelled.revision, source:'recorded'});
+    for (const field of ['id','offerId','kind','origin','destination','quantity','payment','dueHours','audit','rulesVersion']) assert.deepEqual(saved[field], original[field], field+' remains auditable');
+    assert.deepEqual(unchangedAccounting(cancelled), unchangedAccounting(accepted), 'Cancellation releases the hold without changing money, time, cargo, or the ledger');
+    assert.deepEqual(cancelled.events.find(e => e.id === checked.id), checked, 'The original roll history is immutable');
+    assert.match(await page.locator('#hold-summary .value').innerText(), /0 \/ 15 t/);
+    assert.match(await mail(page).innerText(), /Mail cancelled/);
+    assert.match(await mail(page).innerText(), /Released after cancellation/);
+    await visibleRoll(page, manualRoll);
+    assert.match(await contractRow(page, id).innerText(), /Cancelled · no payment or penalty/);
+    assert.equal(await contractRow(page, id).locator('[data-action="deliver"], [data-action="mail-cancel"], [data-action="contract-accept"]').count(), 0);
+    assert.equal(await page.locator('#main tbody tr').filter({hasText:'Mail contract'}).count(), 1, 'The cancelled offer cannot be accepted a second time');
+    assert.deepEqual(await freightRows(page), freight, 'Cancelling Mail does not discard unrelated freight offers');
+    await screenshot(page, result, 'mail-desktop-cancelled-history-row.png');
+    const cancellationAudit = cancelled.events.find(e => e.label === 'Mail cancellation audit' && e.contract?.id === id);
+    assert.ok(cancellationAudit);
+    assert.deepEqual(cancellationAudit.contract, saved);
+    await historyAudit(page, cancellationAudit.id);
+    const auditText = await modal(page).innerText();
+    for (const text of ['Mail lifecycle','Cancellation result','Cargo space released','Income','Penalty','Cr 0']) assert.ok(auditText.includes(text), text);
+    await screenshot(page, result, 'mail-desktop-cancellation-history-audit.png');
+    await closeAudit(page);
+    await tab(page, 'Contracts');
+    await page.setViewportSize({width:390, height:844});
+    await screenshot(page, result, 'mail-mobile-cancelled-history.png');
+    await page.setViewportSize({width:1440, height:1100});
+
+    await undo(page);
+    const restored = await read(page);
+    assert.deepEqual(restored.contracts, accepted.contracts, 'Undo restores the exact same accepted contract, including the unused departure marker');
+    assert.deepEqual(unchangedAccounting(restored), unchangedAccounting(accepted));
+    assert.match(await page.locator('#hold-summary .value').innerText(), /15 \/ 15 t/);
+    assert.equal(await contractRow(page, id).locator('[data-action="mail-cancel"]').isEnabled(), true);
+    await commitMailCancel(page, id);
+    const cancelledAgain = contract(await read(page), id);
+    await checkMail(page);
+    assert.equal(await mail(page).getByRole('button', {name:'Accept whole mail consignment', exact:true}).isEnabled(), true);
+    await acceptMail(page);
+    const reaccepted = await read(page), next = reaccepted.contracts.at(-1);
+    assert.notEqual(next.id, id);
+    assert.notEqual(next.offerId, original.offerId, 'A new check produces a new offer rather than reviving the cancelled one');
+    assert.equal(next.status, 'accepted');
+    assert.equal(next.firstDeparture, null);
+    assert.deepEqual(contract(reaccepted, id), cancelledAgain);
+    assert.deepEqual(unchangedAccounting(reaccepted), unchangedAccounting(accepted));
+    assert.match(await page.locator('#hold-summary .value').innerText(), /15 \/ 15 t/);
+    await commitMailCancel(page, next.id);
+    await checkMail(page, {availability:2});
+    assert.match(await mail(page).innerText(), /No mail available/);
+    assert.equal(await page.locator('#main tbody tr').filter({hasText:'Mail contract'}).locator('[data-action="contract-accept"]').count(), 0);
+    assert.equal((await read(page)).contracts.filter(c => c.status === 'accepted').length, 0);
+    assert.deepEqual(await freightRows(page), freight);
+    assert.match(await page.locator('#hold-summary .value').innerText(), /0 \/ 15 t/);
+  });
+
+  await runCase('first-departure-survives-return-time-route-and-reload', {}, async (page, context, result) => {
+    await checkMail(page);
+    await acceptMail(page);
+    const accepted = await read(page), id = accepted.contracts[0].id;
+    await tab(page, 'Overview');
+    await page.locator('[data-action="jump"]').click();
+    await cancel(page);
+    assert.deepEqual(await read(page), accepted, 'Opening or dismissing a jump does not mark departure');
+    await committedJump(page, 0);
+    const zeroHourJump = await read(page), first = contract(zeroHourJump, id).firstDeparture;
+    assert.equal(typeof first, 'object');
+    assert.ok(first);
+    assert.equal(first.from, origin.id);
+    assert.equal(first.to, destination.id);
+    assert.equal(first.hours, 0, 'Departure is established even when a referee commits a zero-hour jump');
+    assert.equal(first.revision, zeroHourJump.revision);
+    assert.ok(zeroHourJump.events.some(e => e.id === first.eventId && e.label === 'Jump audit'));
+    await assertCancelBlocked(page, id, /first.*jump|depart|already.*jump/i);
+    await undo(page);
+    assert.deepEqual((await read(page)).contracts, accepted.contracts, 'Undoing the first jump restores the pre-departure marker');
+    assert.equal(await contractRow(page, id).locator('[data-action="mail-cancel"]').isEnabled(), true);
+
+    await committedJump(page);
+    const departed = await read(page), marker = contract(departed, id).firstDeparture;
+    await assertCancelBlocked(page, id, /first.*jump|depart|already.*jump/i);
+    // Commit an actual return journey. Equal current/accepted worlds are not
+    // evidence that the consignment never left.
+    await tab(page, 'Overview');
+    await page.getByRole('button', {name:'Build route', exact:true}).click();
+    await page.locator('svg [data-action="map-world"][data-arg="'+origin.id+'"]').click();
+    await page.waitForFunction(() => document.querySelector('[data-action="route-save"]')?.disabled === false);
+    await page.getByRole('button', {name:'Save planned route', exact:true}).click();
+    await submit(page, 'Save route');
+    await committedJump(page);
+    assert.equal((await read(page)).actual, origin.id);
+    assert.deepEqual(contract(await read(page), id).firstDeparture, marker, 'Later jumps never replace the first departure');
+    await assertCancelBlocked(page, id, /first.*jump|depart|already.*jump/i);
+    await tab(page, 'Settings');
+    await page.getByRole('button', {name:'Advance / correct time', exact:true}).click();
+    await fill(page, 'date', '001-1104');
+    await fill(page, 'hours', 0);
+    await fill(page, 'reason', 'Synthetic referee date correction after return');
+    await submit(page, 'Save');
+    await tab(page, 'Overview');
+    await page.getByRole('button', {name:'Clear planned route', exact:true}).click();
+    await submit(page, 'Clear route');
+    const edited = await read(page);
+    assert.equal(edited.routeIndex, 0);
+    assert.equal(edited.hours, 0);
+    assert.deepEqual(edited.route, [origin.id]);
+    assert.deepEqual(contract(edited, id).firstDeparture, marker);
+    await tab(page, 'Contracts');
+    await assertCancelBlocked(page, id, /first.*jump|depart|already.*jump/i);
+    await page.reload();
+    await page.getByText('Editing in this tab', {exact:true}).waitFor();
+    await tab(page, 'Contracts');
+    assert.deepEqual(await read(page), edited);
+    await assertCancelBlocked(page, id, /first.*jump|depart|already.*jump/i);
+    const backup = await exportCampaign(page);
+    await importCampaign(page, backup);
+    assert.deepEqual(contract(await read(page), id).firstDeparture, marker);
+    await assertCancelBlocked(page, id, /first.*jump|depart|already.*jump/i);
+    await screenshot(page, result, 'mail-departed-after-return-date-route-reload-import.png');
+    // A valid old export can also prove a past jump. Remove the new field and
+    // its generated inverse patch to reproduce the pre-marker schema exactly.
+    const legacyDeparted = structuredClone(backup);
+    delete contract(legacyDeparted, id).firstDeparture;
+    for (const entry of legacyDeparted.undo) entry.inverse = entry.inverse.filter(op => !(op.path[0] === 'contracts' && op.path.at(-1) === 'firstDeparture'));
+    await importCampaign(page, legacyDeparted, 'synthetic-legacy-mail-returned-to-origin.json');
+    assert.equal((await read(page)).actual, origin.id);
+    assert.equal((await read(page)).hours, 0);
+    await assertCancelBlocked(page, id, /first.*jump|depart|already.*jump/i);
+  });
+
+  await runCase('current-and-legacy-mail-export-import', {}, async (page, context, result) => {
+    await checkMail(page);
+    await acceptMail(page);
+    const backup = await exportCampaign(page), id = backup.contracts[0].id;
+    assert.equal(backup.contracts[0].firstDeparture, null);
+    await importCampaign(page, backup);
+    assert.equal(await cancelButtons(page, id).count(), 1, 'Reload/import exposes cancellation on the persisted contract row without reviving a session offer');
+    assert.equal(await cancelButtons(page, id).isEnabled(), true);
+    assert.equal(await page.locator('[data-action="contract-accept"]').count(), 0);
+    await commitMailCancel(page, id);
+    const cancelledBackup = await exportCampaign(page);
+    await importCampaign(page, cancelledBackup);
+    assert.deepEqual((await read(page)).contracts, cancelledBackup.contracts);
+    assert.deepEqual((await read(page)).ledger, cancelledBackup.ledger);
+    assert.equal(await cancelButtons(page, id).count(), 0);
+    assert.equal(await contractRow(page, id).locator('[data-action="deliver"], [data-action="contract-accept"]').count(), 0);
+    assert.match(await contractRow(page, id).innerText(), /Cancelled · no payment or penalty/);
+    await page.locator('[data-action="contract-audit"][data-arg="'+id+'"]').click();
+    assert.match(await modal(page).innerText(), /Mail lifecycle/);
+    assert.equal(await page.locator('#modal-submit').isVisible(), false);
+    await closeAudit(page);
+    const importedCancellation = await read(page);
+    await page.reload();
+    await page.getByText('Editing in this tab', {exact:true}).waitFor();
+    await tab(page, 'Contracts');
+    assert.deepEqual(await read(page), importedCancellation);
+    assert.equal(await cancelButtons(page, id).count(), 0, 'Cancelled history remains final across import and reload');
+
+    // Old schema-1 exports omitted the marker. Preserve the genuine UI-created
+    // acceptance/undo trail, removing the newly introduced lifecycle metadata.
+    const legacy = structuredClone(backup);
+    delete legacy.contracts[0].firstDeparture;
+    delete legacy.contracts[0].acceptanceEventId;
+    legacy.events = legacy.events.filter(e => e.label !== 'Mail acceptance audit');
+    await importCampaign(page, legacy, 'synthetic-legacy-mail-complete-trail.json');
+    assert.equal(await cancelButtons(page, id).isEnabled(), true, 'A complete legacy acceptance trail proves no committed departure');
+    await page.reload();
+    await page.getByText('Editing in this tab', {exact:true}).waitFor();
+    await tab(page, 'Contracts');
+    assert.equal(await cancelButtons(page, id).isEnabled(), true);
+    await commitMailCancel(page, id);
+    assert.equal(contract(await read(page), id).cancellation.source, 'legacy-undo');
+    assert.equal(contract(await read(page), id).firstDeparture, null);
+    await undo(page);
+    assert.equal(Object.hasOwn(contract(await read(page), id), 'firstDeparture'), false, 'Undo also restores the original legacy representation');
+    assert.equal(await cancelButtons(page, id).isEnabled(), true, 'Undo preserves verified legacy eligibility across the import revision seam');
+
+    const unknown = structuredClone(legacy);
+    unknown.undo = [];
+    unknown.events = [];
+    await importCampaign(page, unknown, 'synthetic-legacy-mail-missing-trail.json');
+    await assertCancelBlocked(page, id, /cannot.*(verify|confirm)|unknown|unverified|incomplete|not.*recorded/i);
+    const unchanged = await read(page);
+    await page.locator('[data-action="contract-audit"][data-arg="'+id+'"]').click();
+    assert.equal(await page.locator('#modal-submit').isVisible(), false);
+    assert.match(await modal(page).innerText(), /Mail lifecycle/);
+    await closeAudit(page);
+    assert.deepEqual(await read(page), unchanged);
+    await screenshot(page, result, 'mail-legacy-unverified-cancellation-disabled.png');
+    await page.reload();
+    await page.getByText('Editing in this tab', {exact:true}).waitFor();
+    await tab(page, 'Contracts');
+    await assertCancelBlocked(page, id, /cannot.*(verify|confirm)|unknown|unverified|incomplete|not.*recorded/i);
+  });
+
+  await runCase('manual-mail-reset-does-not-affect-freight', {capacity:'10'}, async page => {
+    for (const kind of ['freight','mail']) {
+      await page.getByRole('button', {name:'Manual contract', exact:true}).click();
+      await modal(page).locator('[name="kind"]').selectOption(kind);
+      await modal(page).locator('[name="destination"]').selectOption(destination.id);
+      await fill(page, 'quantity', 5);
+      await fill(page, 'payment', 1000);
+      await fill(page, 'reason', 'Synthetic manual '+kind+' contract');
+      await submit(page, 'Save');
+    }
+    const accepted = await read(page), manual = accepted.contracts.find(c => c.kind === 'mail'), freight = accepted.contracts.find(c => c.kind === 'freight');
+    assert.equal(manual.audit.manual, true);
+    assert.equal(manual.firstDeparture, null);
+    assert.equal(await cancelButtons(page, freight.id).count(), 0, 'Freight never receives the Mail-only reset');
+    assert.match(await page.locator('#hold-summary .value').innerText(), /10 \/ 10 t/);
+    await commitMailCancel(page, manual.id);
+    const cancelled = await read(page);
+    assert.equal(contract(cancelled, manual.id).status, 'cancelled');
+    assert.deepEqual(contract(cancelled, freight.id), freight);
+    assert.deepEqual(unchangedAccounting(cancelled), unchangedAccounting(accepted));
+    assert.match(await page.locator('#hold-summary .value').innerText(), /5 \/ 10 t/);
+    await undo(page);
+    assert.deepEqual((await read(page)).contracts, accepted.contracts);
+    assert.match(await page.locator('#hold-summary .value').innerText(), /10 \/ 10 t/);
+  });
+
+  await runCase('cancel-read-only-and-stale-cross-tab-confirmation', {}, async (page, context) => {
+    await checkMail(page);
+    await acceptMail(page);
+    const accepted = await read(page), id = accepted.contracts[0].id;
+    await openMailCancel(page, id);
+    const reader = await context.newPage();
+    await reader.goto(base);
+    await reader.getByText('Read-only: campaign open in another tab.', {exact:true}).waitFor();
+    await tab(reader, 'Contracts');
+    assert.equal(await cancelButtons(reader, id).isDisabled(), true, 'Read-only tabs cannot cancel persisted accepted Mail');
+    await reader.locator('[data-action="contract-audit"][data-arg="'+id+'"]').click();
+    assert.equal(await reader.locator('#modal-submit').isVisible(), false);
+    await closeAudit(reader);
+    assert.deepEqual(await read(page), accepted);
+    await reader.getByRole('button', {name:'Take over editing', exact:true}).click();
+    await reader.getByText('Editing in this tab', {exact:true}).waitFor();
+    await page.getByText('Read-only: editing transferred to another tab.', {exact:true}).waitFor();
+    assert.equal(await page.locator('#modal-submit').isDisabled(), true);
+    await page.locator('#modal-form').evaluate(form => form.requestSubmit());
+    assert.deepEqual(await read(page), accepted, 'Submitting an already-open confirmation after lock loss is inert');
+    await commitMailCancel(reader, id);
+    const cancelled = await read(reader);
+    assert.equal(contract(cancelled, id).status, 'cancelled');
+    await page.waitForFunction(() => document.querySelector('#main')?.textContent.includes('Cancelled · no payment or penalty'));
+    await page.locator('#modal-form').evaluate(form => { form.requestSubmit(); form.requestSubmit(); });
+    assert.deepEqual(await read(page), cancelled, 'A stale confirmation cannot repeat another tab’s committed cancellation');
+    await cancel(page);
+    assert.equal(await cancelButtons(page, id).count(), 0);
+    await page.locator('[data-action="contract-audit"][data-arg="'+id+'"]').click();
+    assert.match(await modal(page).innerText(), /Mail lifecycle/);
+    assert.equal(await page.locator('#modal-submit').isVisible(), false);
+    await closeAudit(page);
+    assert.deepEqual(await read(page), cancelled);
   });
 
   await runCase('toolbar-and-collapsible-mail-details', {}, async (page, context, result, initial) => {
@@ -720,8 +1074,8 @@ try {
     catch (error) { summary.errors.push('Browser close: '+errorText(error)); }
   }
   summary.finishedAt = new Date().toISOString();
-  summary.passed = summary.errors.length === 0 && summary.cases.length === 8 && summary.cases.every(c => c.status === 'passed');
+  summary.passed = summary.errors.length === 0 && summary.cases.length === 13 && summary.cases.every(c => c.status === 'passed');
   await writeFile(join(artifacts, 'mail-browser-summary.json'), JSON.stringify(summary, null, 2)+'\n');
 }
 if (!summary.passed) throw new Error('Mail browser verification failed. See verification-artifacts/mail-browser-summary.json and per-case traces/screenshots.');
-console.log('PASS: all 8 Mail/map browser scenarios; desktop/mobile screenshots, per-case Playwright traces and commit-tagged JSON summary saved.');
+console.log('PASS: all 13 Mail/map browser scenarios; desktop/mobile screenshots, per-case Playwright traces and commit-tagged JSON summary saved.');

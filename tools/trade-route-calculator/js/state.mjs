@@ -31,7 +31,17 @@ function validateStructure(s){
   }
  }
 }
-export function validate(s){validateStructure(s);if(!s||s.schema!==SCHEMA||s.rulesVersion!==VERSION||!Number.isSafeInteger(s.revision)||s.revision<0)throw Error('Unsupported or invalid campaign format.');for(const key of ['lots','contracts','policies','ledger','snapshots','undo','events','route'])if(!Array.isArray(s[key]))throw Error('Missing campaign '+key);for(const key of ['lots','contracts','policies','ledger','snapshots','events']){const seen=new Set();for(const item of s[key]){if(!validId(item.id)||seen.has(item.id))throw Error('Invalid or duplicate '+key+' ID');seen.add(item.id);}}if(!s.ship||!s.trader||!s.settings||!s.worlds||!s.cooldowns)throw Error('Incomplete campaign');credit(s.bank);validateFuel(s.ship);validateSupport(s.ship);validateAccommodation(s.ship);if(s.ship?.staterooms!==undefined&&(!Number.isSafeInteger(s.ship.staterooms)||s.ship.staterooms<0))throw Error('Staterooms must be a non-negative whole number.');for(const [id,w]of Object.entries(s.worlds)){if(!w||id!==w.id||id!==w.x+','+w.y||!Number.isSafeInteger(w.x)||!Number.isSafeInteger(w.y)||!['Safe','Amber','Red'].includes(w.zone)||typeof w.name!=='string'||typeof w.uwp!=='string'||typeof w.sector!=='string'||!/^\d{4}$/.test(w.hex))throw Error('Invalid world record');}if(s.initialized&&!s.actual)throw Error('Initialized campaign has no actual world');for(const k of ['broker','streetwise','admin','characteristic','rank','soc'])if(!Number.isInteger(s.trader[k]))throw Error('Invalid trader input');if(cmp(s.ship.capacity,0)<0||!Number.isInteger(s.ship.jump)||s.ship.jump<1||s.ship.jump>6)throw Error('Invalid ship capacity or jump rating');if(!Number.isSafeInteger(s.hours)||s.hours<0)throw Error('Invalid campaign hours');if(!Number.isFinite(s.settings.profit)||s.settings.profit<0||s.settings.profit>100)throw Error('Invalid profit setting');Object.assign(s.settings,priceLimits(s.settings));if(typeof s.settings.maxBaseRetailEnabled!=='boolean')s.settings.maxBaseRetailEnabled=false;if(s.settings.maxBaseRetail===undefined)s.settings.maxBaseRetail='100000';if(!Number.isFinite(Number(s.settings.maxBaseRetail))||Number(s.settings.maxBaseRetail)<=0)throw Error('Invalid maximum base retail setting');if(typeof s.settings.useRawIllegalPrices!=='boolean')s.settings.useRawIllegalPrices=false;if(s.actual&&!s.worlds[s.actual])throw Error('Actual world missing');const ids=new Set();for(const l of s.lots){if(!validId(l.id)||!(/^[1-6][1-6]$/).test(l.commodity)||typeof l.description!=='string'||ids.has(l.id)||cmp(l.quantity,0)<=0||credit(l.basis)<0n||credit(l.goodsValue)<0n)throw Error('Invalid cargo lot');ids.add(l.id);}for(const p of s.policies){if(!p.id||!Array.isArray(p.claims)||cmp(p.remainingQuantity,0)<0||credit(p.remainingValue)<0n||cmp(p.initialQuantity,0)<=0||cmp(p.insuredValue,0)<0||!Number.isFinite(p.coverage)||p.coverage<20||p.coverage>100)throw Error('Invalid policy');if(cmp(p.remainingQuantity,0)>0&&!ids.has(p.lotId))throw Error('Active policy has no cargo');const insuredLot=s.lots.find(l=>l.id===p.lotId);if(insuredLot&&cmp(p.remainingQuantity,insuredLot.quantity)>0)throw Error('Policy exceeds remaining cargo');if(![20,30,40,50,60,70,80,90,100].includes(p.coverage)||!['active','closed','arrived','amendment-required'].includes(p.status))throw Error('Invalid insurance terms');}for(const c of s.contracts){if(!['freight','mail'].includes(c.kind)||!['accepted','delivered'].includes(c.status)||!s.worlds[c.origin]||cmp(c.quantity,0)<=0||credit(c.payment)<0n||!s.worlds[c.destination]||(c.dueHours!==null&&(!Number.isSafeInteger(c.dueHours)||c.dueHours<0)))throw Error('Invalid contract');}if(cmp(used(s),s.ship.capacity)>0)throw Error('Cargo, accepted contracts, passenger luggage and fuel bladders exceed capacity.');for(const entry of s.ledger){credit(entry.amount);if(!Number.isSafeInteger(entry.hours)||entry.hours<0||typeof entry.type!=='string')throw Error('Invalid ledger entry');}for(const event of s.events){if(typeof event.label!=='string'||(event.hours!==undefined&&!Number.isSafeInteger(event.hours)))throw Error('Invalid history event');}const offerIds=new Set();for(const snap of s.snapshots){if(!Number.isSafeInteger(snap.hours)||!Number.isSafeInteger(snap.startedHours)||snap.hours<0||snap.startedHours<0||!s.worlds[snap.worldId]||!['supplier','buyer'].includes(snap.kind))throw Error('Invalid market snapshot');if(!Array.isArray(snap.offers))throw Error('Invalid market snapshot');for(const o of snap.offers){if(!validId(o.id)||offerIds.has(o.id)||!(/^[1-6][1-6]$/).test(o.commodity)||typeof o.expired!=='boolean'||cmp(o.remaining,0)<0||cmp(o.unitPrice,0)<0)throw Error('Invalid or duplicate market offer');offerIds.add(o.id);}}return s;}
+function validateMailLifecycle(s,c){
+ if(c.acceptanceEventId!==undefined&&(c.kind!=='mail'||!validId(c.acceptanceEventId)))throw Error('Invalid mail acceptance record');
+ if(Object.hasOwn(c,'firstDeparture')){
+  const d=c.firstDeparture;
+  if(c.kind!=='mail'||d!==null&&(!record(d)||!validId(d.eventId)||!s.worlds[d.from]||!s.worlds[d.to]||!Number.isSafeInteger(d.hours)||d.hours<0||!Number.isSafeInteger(d.revision)||d.revision<1||d.priorHistoryUnverified!==undefined&&typeof d.priorHistoryUnverified!=='boolean'))throw Error('Invalid mail departure record');
+ }
+ if(c.status==='cancelled'){
+  if(c.kind!=='mail'||c.firstDeparture!==null||!Number.isSafeInteger(c.cancelledHours)||c.cancelledHours<0||!record(c.cancellation)||!s.worlds[c.cancellation.world]||!Number.isSafeInteger(c.cancellation.revision)||c.cancellation.revision<1||!['recorded','legacy-undo'].includes(c.cancellation.source)||['payout','deliveredHours','late','penaltyDie'].some(key=>Object.hasOwn(c,key)))throw Error('Invalid mail cancellation record');
+ }else if(Object.hasOwn(c,'cancellation')||Object.hasOwn(c,'cancelledHours'))throw Error('Unexpected mail cancellation record');
+}
+export function validate(s){validateStructure(s);if(!s||s.schema!==SCHEMA||s.rulesVersion!==VERSION||!Number.isSafeInteger(s.revision)||s.revision<0)throw Error('Unsupported or invalid campaign format.');for(const key of ['lots','contracts','policies','ledger','snapshots','undo','events','route'])if(!Array.isArray(s[key]))throw Error('Missing campaign '+key);for(const key of ['lots','contracts','policies','ledger','snapshots','events']){const seen=new Set();for(const item of s[key]){if(!validId(item.id)||seen.has(item.id))throw Error('Invalid or duplicate '+key+' ID');seen.add(item.id);}}if(!s.ship||!s.trader||!s.settings||!s.worlds||!s.cooldowns)throw Error('Incomplete campaign');credit(s.bank);validateFuel(s.ship);validateSupport(s.ship);validateAccommodation(s.ship);if(s.ship?.staterooms!==undefined&&(!Number.isSafeInteger(s.ship.staterooms)||s.ship.staterooms<0))throw Error('Staterooms must be a non-negative whole number.');for(const [id,w]of Object.entries(s.worlds)){if(!w||id!==w.id||id!==w.x+','+w.y||!Number.isSafeInteger(w.x)||!Number.isSafeInteger(w.y)||!['Safe','Amber','Red'].includes(w.zone)||typeof w.name!=='string'||typeof w.uwp!=='string'||typeof w.sector!=='string'||!/^\d{4}$/.test(w.hex))throw Error('Invalid world record');}if(s.initialized&&!s.actual)throw Error('Initialized campaign has no actual world');for(const k of ['broker','streetwise','admin','characteristic','rank','soc'])if(!Number.isInteger(s.trader[k]))throw Error('Invalid trader input');if(cmp(s.ship.capacity,0)<0||!Number.isInteger(s.ship.jump)||s.ship.jump<1||s.ship.jump>6)throw Error('Invalid ship capacity or jump rating');if(!Number.isSafeInteger(s.hours)||s.hours<0)throw Error('Invalid campaign hours');if(!Number.isFinite(s.settings.profit)||s.settings.profit<0||s.settings.profit>100)throw Error('Invalid profit setting');Object.assign(s.settings,priceLimits(s.settings));if(typeof s.settings.maxBaseRetailEnabled!=='boolean')s.settings.maxBaseRetailEnabled=false;if(s.settings.maxBaseRetail===undefined)s.settings.maxBaseRetail='100000';if(!Number.isFinite(Number(s.settings.maxBaseRetail))||Number(s.settings.maxBaseRetail)<=0)throw Error('Invalid maximum base retail setting');if(typeof s.settings.useRawIllegalPrices!=='boolean')s.settings.useRawIllegalPrices=false;if(s.actual&&!s.worlds[s.actual])throw Error('Actual world missing');const ids=new Set();for(const l of s.lots){if(!validId(l.id)||!(/^[1-6][1-6]$/).test(l.commodity)||typeof l.description!=='string'||ids.has(l.id)||cmp(l.quantity,0)<=0||credit(l.basis)<0n||credit(l.goodsValue)<0n)throw Error('Invalid cargo lot');ids.add(l.id);}for(const p of s.policies){if(!p.id||!Array.isArray(p.claims)||cmp(p.remainingQuantity,0)<0||credit(p.remainingValue)<0n||cmp(p.initialQuantity,0)<=0||cmp(p.insuredValue,0)<0||!Number.isFinite(p.coverage)||p.coverage<20||p.coverage>100)throw Error('Invalid policy');if(cmp(p.remainingQuantity,0)>0&&!ids.has(p.lotId))throw Error('Active policy has no cargo');const insuredLot=s.lots.find(l=>l.id===p.lotId);if(insuredLot&&cmp(p.remainingQuantity,insuredLot.quantity)>0)throw Error('Policy exceeds remaining cargo');if(![20,30,40,50,60,70,80,90,100].includes(p.coverage)||!['active','closed','arrived','amendment-required'].includes(p.status))throw Error('Invalid insurance terms');}for(const c of s.contracts){if(!['freight','mail'].includes(c.kind)||!['accepted','delivered','cancelled'].includes(c.status)||!s.worlds[c.origin]||cmp(c.quantity,0)<=0||credit(c.payment)<0n||!s.worlds[c.destination]||(c.dueHours!==null&&(!Number.isSafeInteger(c.dueHours)||c.dueHours<0)))throw Error('Invalid contract');validateMailLifecycle(s,c);}if(cmp(used(s),s.ship.capacity)>0)throw Error('Cargo, accepted contracts, passenger luggage and fuel bladders exceed capacity.');for(const entry of s.ledger){credit(entry.amount);if(!Number.isSafeInteger(entry.hours)||entry.hours<0||typeof entry.type!=='string')throw Error('Invalid ledger entry');}for(const event of s.events){if(typeof event.label!=='string'||(event.hours!==undefined&&!Number.isSafeInteger(event.hours)))throw Error('Invalid history event');}const offerIds=new Set();for(const snap of s.snapshots){if(!Number.isSafeInteger(snap.hours)||!Number.isSafeInteger(snap.startedHours)||snap.hours<0||snap.startedHours<0||!s.worlds[snap.worldId]||!['supplier','buyer'].includes(snap.kind))throw Error('Invalid market snapshot');if(!Array.isArray(snap.offers))throw Error('Invalid market snapshot');for(const o of snap.offers){if(!validId(o.id)||offerIds.has(o.id)||!(/^[1-6][1-6]$/).test(o.commodity)||typeof o.expired!=='boolean'||cmp(o.remaining,0)<0||cmp(o.unitPrice,0)<0)throw Error('Invalid or duplicate market offer');offerIds.add(o.id);}}return s;}
 function note(s,type,amount,detail){s.ledger.push({id:uid(),type,amount:String(amount),hours:s.hours,world:s.actual,roundingStep:creditStep(s),...detail});s.bank=String(credit(s.bank)+BigInt(amount));}
 // Inverse changes avoid copying the entire growing ledger into every undo entry.
 function inverseChanges(before,after,path=[],out=[]){
@@ -49,8 +59,8 @@ function inverseChanges(before,after,path=[],out=[]){
  }else out.push({path,value:structuredClone(before)});
  return out;
 }
-function applyInverse(state,ops){
- for(const op of ops){if(!Array.isArray(op.path)||!op.path.length||op.path.some(k=>['__proto__','constructor','prototype'].includes(k)))throw Error('Invalid undo record');let target=state;for(const key of op.path.slice(0,-1)){if(!Object.hasOwn(target,key))throw Error('Undo path missing');target=target[key];}const key=op.path.at(-1);if(op.remove){if(Array.isArray(target))target.splice(key,1);else delete target[key];}else if(op.insert){if(!Array.isArray(target))throw Error('Invalid undo insert');target.splice(key,0,structuredClone(op.value));}else target[key]=structuredClone(op.value);}
+function applyInverse(state,ops,strict=false){
+ for(const op of ops){if(!Array.isArray(op.path)||!op.path.length||op.path.some(k=>['__proto__','constructor','prototype'].includes(k)))throw Error('Invalid undo record');let target=state;for(const key of op.path.slice(0,-1)){if(!Object.hasOwn(target,key))throw Error('Undo path missing');target=target[key];}const key=op.path.at(-1);if(strict&&(op.remove&&!Object.hasOwn(target,key)||Array.isArray(target)&&(!Number.isSafeInteger(key)||key<0||key>=target.length&&!(op.insert&&key===target.length))))throw Error('Undo operation does not match saved state');if(op.remove){if(Array.isArray(target))target.splice(key,1);else delete target[key];}else if(op.insert){if(!Array.isArray(target))throw Error('Invalid undo insert');target.splice(key,0,structuredClone(op.value));}else target[key]=structuredClone(op.value);}
  return state;
 }
 export function transition(original,label,action){validate(original);const s=structuredClone(original);const before=structuredClone(original);delete before.undo;delete before.events;action(s);if(s.ship.lifeSupport&&s.hours>original.hours)consumeSupport(s.ship,s.hours-original.hours);const after={...s};delete after.undo;delete after.events;const inverse=inverseChanges(before,after);s.revision=original.revision+1;s.undo.push({id:uid(),label,inverse});s.events.push({id:uid(),label,hours:s.hours,world:s.actual,revision:s.revision});validate(s);return s;}
@@ -101,7 +111,122 @@ export function shipExpenses(s,inputs){
 export function bankCorrection(s,amount,reason){amount=String(up(amount,creditStep(s)));if(!reason.trim())throw Error('Correction reason required');note(s,'Referee bank correction',credit(amount),{reason});}
 export function addLot(s,lot,reason,opening=false){lot={...lot,quantity:String(up(lot.quantity)),basis:String(up(lot.basis,creditStep(s))),goodsValue:String(up(lot.goodsValue,creditStep(s)))};if(!reason.trim()||cmp(lot.quantity,0)<=0||credit(lot.basis)<0n||credit(lot.goodsValue)<0n)throw Error('Valid quantity, basis, goods value and reason required');s.lots.push({...lot,id:uid(),quantity:decimal(lot.quantity),basis:String(credit(lot.basis)),goodsValue:String(credit(lot.goodsValue)),world:s.actual,hours:s.hours});s.events.push({id:uid(),label:opening?'Opening cargo':'Referee cargo addition',reason,lot:structuredClone(lot),hours:s.hours});}
 export function correctLot(s,id,quantity,basis,goodsValue,reason){if(!reason.trim())throw Error('Correction reason required');const lot=s.lots.find(l=>l.id===id);if(!lot)throw Error('Lot missing');if(s.policies.some(p=>p.lotId===id&&p.status==='active'))throw Error('Close/amend active insurance before directly correcting its cargo; use Claim for an insured loss.');const before=structuredClone(lot);if(cmp(quantity,0)<0||credit(basis)<0n||credit(goodsValue)<0n)throw Error('Negative cargo values');if(cmp(quantity,0)===0&&(credit(basis)||credit(goodsValue)))throw Error('Zero cargo must have zero remaining values');Object.assign(lot,{quantity:decimal(quantity),basis:String(credit(basis)),goodsValue:String(credit(goodsValue))});s.lots=s.lots.filter(l=>cmp(l.quantity,0)>0);s.events.push({id:uid(),label:'Referee cargo correction',reason,before,after:structuredClone(lot),hours:s.hours});}
-export function acceptContract(s,c){c={...c,quantity:String(up(c.quantity)),payment:String(up(c.payment,creditStep(s)))};assertWorld(s,c.origin);if(cmp(add(used(s),c.quantity),s.ship.capacity)>0)throw Error('Not enough capacity for the whole contract');if(s.contracts.some(x=>x.offerId===c.offerId))throw Error('Contract already accepted');s.contracts.push({...c,id:uid(),status:'accepted'});}
+export function acceptContract(s,c){c={...c,quantity:String(up(c.quantity)),payment:String(up(c.payment,creditStep(s)))};assertWorld(s,c.origin);if(cmp(add(used(s),c.quantity),s.ship.capacity)>0)throw Error('Not enough capacity for the whole contract');if(s.contracts.some(x=>x.offerId===c.offerId))throw Error('Contract already accepted');const contract={...c,id:uid(),status:'accepted',...(c.kind==='mail'?{firstDeparture:null,acceptanceEventId:uid()}:{})};s.contracts.push(contract);if(c.kind==='mail')s.events.push({id:contract.acceptanceEventId,label:'Mail acceptance audit',contractId:contract.id,contract:structuredClone(contract),hours:s.hours,world:s.actual});}
+// A missing legacy marker is unknown, never an implicit null. Old exports can
+// prove their journey only through a complete, internally consistent action trail.
+function mailActionTrail(s){
+ const actions=s.events.filter(e=>Number.isSafeInteger(e.revision)),stack=[];
+ for(const [index,event]of actions.entries()){
+  if(event.label.startsWith('Undo: ')){
+   if(stack.at(-1)?.event.label!==event.label.slice(6))return null;
+   stack.pop();
+  }else stack.push({event,index});
+ }
+ return {actions,stack};
+}
+function mailJumpAuditConflict(s,acceptanceIndex,stack,matchedAudits=new Set()){
+ const active=new Set(stack.map(entry=>entry.event)),paired=new Set();
+ for(let i=acceptanceIndex+1;i<s.events.length;i++){
+  const audit=s.events[i];if(audit.label!=='Jump audit')continue;
+  const action=s.events.slice(i+1).find(e=>Number.isSafeInteger(e.revision));
+  // Old releases wrote jump audits before adding jump ledger rows. An orphan
+  // audit cannot be ignored, but a properly paired, undone jump is harmless.
+  if(!action||!action.label.startsWith('Jump: ')||action.hours!==audit.hours||action.world!==audit.to||paired.has(action))return true;
+  paired.add(action);
+  if(active.has(action)&&!matchedAudits.has(audit.id))return true;
+ }
+ return false;
+}
+function legacyMailDeparture(s,id){
+ try{
+  const trail=mailActionTrail(s);if(!trail)return null;
+  const {actions,stack}=trail;
+  if(stack.length!==s.undo.length||stack.some((entry,i)=>entry.event.label!==s.undo[i].label))return null;
+  const material={...s};delete material.events;delete material.undo;
+  const cursor=structuredClone(material);let departure=null;const matchedJumps=new Set(),matchedAudits=new Set();
+  for(let i=s.undo.length-1;i>=0;i--){
+   const {event,index}=stack[i],entry=s.undo[i];
+   const after={actual:cursor.actual,hours:cursor.hours,bank:cursor.bank,contracts:structuredClone(cursor.contracts),jumps:cursor.ledger.filter(e=>e.type==='Jump').map(e=>({...e})),ledger:['Accepted mail','Manual contract accepted'].includes(entry.label)?JSON.stringify(cursor.ledger):null};
+   const contract=after.contracts.find(c=>c.id===id);
+   if(!contract||contract.kind!=='mail'||contract.status!=='accepted'||event.hours!==after.hours||event.world!==after.actual)return null;
+   // Generated inverse patches never modify the audit/undo trail itself.
+   if(entry.inverse.some(op=>['events','undo','revision'].includes(op.path[0])))return null;
+   const before=applyInverse(cursor,entry.inverse,true);
+   validate({...before,events:[],undo:[]});
+   const previous=before.contracts.find(c=>c.id===id);
+   if(!previous){
+    const at=after.contracts.findIndex(c=>c.id===id);
+    if(!['Accepted mail','Manual contract accepted'].includes(entry.label)||after.actual!==contract.origin||before.actual!==after.actual||before.hours!==after.hours||before.bank!==after.bank||JSON.stringify(before.ledger)!==after.ledger||before.contracts.length!==after.contracts.length-1||!entry.inverse.some(op=>op.remove&&op.path.length===2&&op.path[0]==='contracts'&&op.path[1]===at)||JSON.stringify(before.contracts)!==JSON.stringify(after.contracts.filter(c=>c.id!==id)))return null;
+    // Imports historically reset the campaign revision without marking the
+    // seam. An ambiguous seam after acceptance cannot prove no departure.
+    for(let j=index+1;j<actions.length;j++)if(actions[j].revision!==actions[j-1].revision+1){
+     const action=actions[j],proof=s.events[s.events.indexOf(action)-1];
+     // A verified legacy cancellation can follow an otherwise invisible import
+     // revision reset. Its retained audit proves eligibility at that boundary;
+     // once the cancellation is undone, do not discard that proof. No other
+     // import gaps or unverified cancellations are promoted into evidence.
+     if(action.label!=='Cancelled mail'||stack.some(entry=>entry.event===action)||proof?.label!=='Mail cancellation audit'||proof.contract?.id!==id||proof.contract?.status!=='cancelled'||proof.contract?.firstDeparture!==null||proof.contract?.cancellation?.source!=='legacy-undo'||proof.contract?.cancellation?.revision!==action.revision||proof.hours!==action.hours||proof.world!==action.world)return null;
+     validateMailLifecycle(s,proof.contract);
+     if(proof.contract.cancelledHours!==proof.hours||proof.contract.cancellation.world!==proof.world)return null;
+    }
+    // Surviving jump ledger rows must all agree with the reconstructed trail.
+    // This also detects a removed jump action/inverse after a zero-hour return.
+    const acceptanceIndex=s.events.indexOf(event);
+    if(mailJumpAuditConflict(s,acceptanceIndex,stack,matchedAudits))return null;
+    for(const jump of s.ledger.filter(e=>e.type==='Jump')){
+     const auditIndex=s.events.findIndex(e=>e.id===jump.eventId);
+     if(auditIndex<0||auditIndex>acceptanceIndex&&!matchedJumps.has(jump.id))return null;
+    }
+    return {firstDeparture:departure};
+   }
+   if(previous.kind!=='mail'||previous.status!=='accepted')return null;
+   const beforeIds=new Set(before.ledger.map(e=>e.id));
+   const jumps=after.jumps.filter(e=>!beforeIds.has(e.id));
+   const isJump=entry.label.startsWith('Jump: ');
+   if(isJump||jumps.length){
+    if(!isJump||jumps.length!==1)return null;
+    const jump=jumps[0],audit=s.events.find(e=>e.id===jump.eventId);
+    if(jump.from!==before.actual||jump.to!==after.actual||jump.hours!==after.hours||!audit||audit.label!=='Jump audit'||audit.from!==jump.from||audit.to!==jump.to||audit.hours!==jump.hours)return null;
+    matchedJumps.add(jump.id);matchedAudits.add(audit.id);departure={eventId:audit.id,from:jump.from,to:jump.to,hours:jump.hours,revision:event.revision};
+   }
+  }
+ }catch{ /* Invalid or incomplete older inverse records must fail closed. */ }
+ return null;
+}
+export function mailCancellationEligibility(s,id){
+ const c=s.contracts.find(c=>c.id===id);
+ if(!c||c.kind!=='mail')return {allowed:false,reason:'Only accepted mail can be cancelled.',source:'unverified'};
+ if(c.status!=='accepted')return {allowed:false,reason:c.status==='delivered'?'Delivered mail cannot be cancelled.':'This mail is already cancelled.',source:'recorded'};
+ const recorded=Object.hasOwn(c,'firstDeparture'),legacy=recorded?null:legacyMailDeparture(s,id);
+ if(!recorded&&!legacy)return {allowed:false,reason:'Travel history unverified. This older mail cannot be cancelled safely.',source:'unverified'};
+ const firstDeparture=recorded?c.firstDeparture:legacy.firstDeparture;
+ if(recorded&&firstDeparture===null){
+  const acceptanceIndex=s.events.findIndex(e=>e.id===c.acceptanceEventId&&e.label==='Mail acceptance audit'&&e.contractId===c.id);
+  // The explicit marker is the authority, but an import must not use null to
+  // contradict surviving committed jumps. Undone jumps have no ledger row.
+  const conflict=s.ledger.some(e=>e.type==='Jump'&&(!e.eventId||s.events.findIndex(a=>a.id===e.eventId)<0||s.events.findIndex(a=>a.id===e.eventId)>acceptanceIndex));
+  const trail=acceptanceIndex<0?null:mailActionTrail({events:s.events.slice(acceptanceIndex)});
+  if(acceptanceIndex<0||conflict||!trail||mailJumpAuditConflict(s,acceptanceIndex,trail.stack))return {allowed:false,reason:'Travel history unverified. The departure record and saved audit do not agree.',source:'unverified'};
+ }
+ const source=recorded?'recorded':'legacy-undo';
+ return {allowed:firstDeparture===null,reason:firstDeparture===null?'Can be cancelled before its first committed jump.':'Mail has already departed. Cancellation is only available before its first committed jump.',source,firstDeparture};
+}
+export function recordMailDeparture(s,event){
+ for(const c of s.contracts.filter(c=>c.kind==='mail'&&c.status==='accepted')){
+  if(c.firstDeparture)continue;
+  const evidence=mailCancellationEligibility(s,c.id);
+  c.firstDeparture=evidence.firstDeparture||{eventId:event.id,from:event.from,to:event.to,hours:event.hours,revision:s.revision+1,...(evidence.source==='unverified'?{priorHistoryUnverified:true}:{})};
+ }
+}
+export function cancelMail(s,id){
+ const eligibility=mailCancellationEligibility(s,id);
+ if(!eligibility.allowed)throw Error(eligibility.reason);
+ const c=s.contracts.find(c=>c.id===id);
+ c.status='cancelled';c.firstDeparture=null;c.cancelledHours=s.hours;
+ c.cancellation={world:s.actual,revision:s.revision+1,source:eligibility.source};
+ s.events.push({id:uid(),label:'Mail cancellation audit',hours:s.hours,world:s.actual,contract:structuredClone(c),reason:'Cancelled before first committed jump; no income or penalty.'});
+}
+
 export function deliver(s,id,penaltyDie=1){const c=s.contracts.find(c=>c.id===id);if(!c||c.status!=='accepted')throw Error('Contract is not awaiting delivery');assertWorld(s,c.destination);let amount=credit(c.payment);const late=c.kind==='freight'&&c.dueHours!==null&&s.hours>c.dueHours;if(late){if(!Number.isInteger(penaltyDie)||penaltyDie<1||penaltyDie>6)throw Error('Invalid late-penalty die');amount=up(div(mul(amount,100-(penaltyDie+4)*10),100),creditStep(s));}c.status='delivered';c.deliveredHours=s.hours;c.payout=String(amount);c.late=late;c.penaltyDie=late?penaltyDie:null;note(s,c.kind==='mail'?'Mail delivery':'Freight delivery',amount,{contractId:id,late});}
 
 export function insureLot(s,lotId,quote){

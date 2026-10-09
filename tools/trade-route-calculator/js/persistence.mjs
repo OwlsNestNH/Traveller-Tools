@@ -1,4 +1,4 @@
-import {initial,validate} from './state.mjs?v=foundation-reliability-1';
+import {initial,validate} from './state.mjs?v=mail-prejump-reset-1';
 export const KEY='traveller-trade-route-calculator:v1';
 const LOCK=KEY+':writer';
 export class Store{

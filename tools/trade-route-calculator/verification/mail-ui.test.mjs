@@ -323,3 +323,88 @@ test('Audit displays distinct origin and destination source values and component
  same(section('Destination world modifiers'),{'Population DM':'-4','Starport DM':'-1','Technology DM':'-1','Travel-zone DM':'-6'});
  const facts=auditValues(body);assert.equal(facts['Origin world DM'],'+6');assert.equal(facts['Destination world DM'],'-12');assert.equal(facts['Search Effect'],'+3');assert.equal(facts['Combined freight traffic DM'],'-3');
 });
+
+async function acceptMail(h,values={}){await h.check(values);const offerId=h.api.drafts.find(c=>c.kind==='mail').offerId;h.api.accept(offerId);await h.submit();assert.equal(h.dom.ids.get('modal-error').textContent,'');return h.api.state.contracts.find(c=>c.offerId===offerId).id;}
+const cancelButton=(h,id)=>{
+ const match=contractRow(h,id).match(/<button\b([^>]*data-action="mail-cancel"[^>]*)>/);
+ assert.ok(match,'The accepted Mail contract has its own cancel action');return attrs(match[1]);
+};
+
+test('Mail cancellation confirmation names the whole consignment and dismissing does not change anything',async()=>{
+ const h=harness(),id=await acceptMail(h),before=h.persisted(),roll=visibleCardRoll(h),saves=h.calls.saves;
+ assert.equal(cancelButton(h,id)['data-arg'],id);assert.equal('disabled'in cancelButton(h,id),false);
+ assert.match(acceptedDetails(h).body,/data-action="mail-cancel"/);
+ h.api.actions['mail-cancel'](id);const cancelled=h.dom.ids.get('modal-form').onsubmit;
+ assert.equal(h.dom.ids.get('modal-title').textContent,'Cancel mail');assert.equal(h.dom.ids.get('modal-submit').textContent,'Cancel mail and start over');
+ const body=text(h.dom.ids.get('modal-body').innerHTML);for(const label of ['whole accepted mail consignment','Origin','Destination','15 t','Income Cr 0','Penalty Cr 0','no income or penalty','Undo','Check for mail'])assert.ok(body.includes(label),label);
+ h.api.closeModal();await cancelled({preventDefault(){},currentTarget:h.dom.ids.get('modal-form')});same(h.persisted(),before);same(h.api.state,before);assert.equal(h.calls.saves,saves);assert.equal(visibleCardRoll(h),roll);assert.match(html(h),/Mail accepted/);
+});
+
+test('cancel releases the full hold once, preserves rolls and audits, survives reload, and Undo restores acceptance',async()=>{
+ const saved=campaign();saved.ship.capacity='15';const h=harness(saved),id=await acceptMail(h),before=h.persisted(),roll=visibleCardRoll(h);
+ h.dom.dispatch('toggle',{id:'mail-accepted-details',open:false,isConnected:true});h.api.render();
+ h.api.actions['mail-cancel'](id);await Promise.all([h.submit(),h.submit()]);await h.submit();
+ assert.equal(h.calls.saves,3,'Check, acceptance and exactly one cancellation save');assert.equal(h.api.state.contracts.length,1);const c=h.api.state.contracts[0];
+ assert.equal(c.status,'cancelled');assert.equal(c.cancelledHours,before.hours);assert.equal(c.cancellation.world,before.actual);assert.equal(c.cancellation.source,'recorded');assert.equal(A.decimal(S.used(h.api.state)),'0');
+ assert.equal(h.api.state.bank,before.bank);assert.equal(h.api.state.hours,before.hours);assert.equal(h.api.state.actual,before.actual);same(h.api.state.ledger,before.ledger);same(h.api.state.lots,before.lots);same(h.api.state.ship,before.ship);same(c.audit,before.contracts[0].audit);
+ assert.match(text(outsideDetails(html(h))),/Mail cancelled/);assert.equal(visibleCardRoll(h),roll);assert.equal(acceptedDetails(h).open,false);assert.equal(acceptedDetails(h).summary,'Cancelled mail details · 15 t released');assert.match(acceptedDetails(h).body,/Released after cancellation/);assert.doesNotMatch(html(h),/15 t reserved|data-action="mail-cancel"|data-action="contract-accept"/);
+ const row=contractRow(h,id);assert.match(row,/Cancelled · no payment or penalty/);assert.doesNotMatch(row,/data-action="deliver"|data-action="mail-cancel"/);assert.equal(summaryText(row),roll);
+ const cancellation=h.api.state.events.find(e=>e.label==='Mail cancellation audit'),audit=h.api.historyDetails(cancellation),facts=auditValues(audit);assert.equal(h.api.historyCategory(cancellation),'Trade');assert.equal(h.api.historyCategory({label:'Cancelled mail'}),'Trade');assert.equal(h.api.historyCategory({label:'Mail acceptance audit'}),'Trade');same(cancellation.contract,c);
+ for(const label of ['Mail lifecycle','Cancellation result','Cancelled before first jump; no payment or penalty','Manual roll total: 3'])assert.ok(audit.includes(label),label);
+ assert.equal(facts['Reserved cargo'],'None');assert.equal(facts.Income,'Cr 0');assert.equal(facts.Penalty,'Cr 0');assert.equal(facts['Cargo space released'],'15 t');assert.equal(facts['Departure verification'],'Recorded lifecycle marker');assert.doesNotMatch(audit,/Additional inputs were not saved/);
+ const reload=harness(h.persisted());assert.equal(reload.api.check,null);assert.match(contractRow(reload,id),/Cancelled · no payment or penalty/);assert.equal(A.decimal(S.used(reload.api.state)),'0');assert.throws(()=>reload.api.actions['mail-cancel'](id),/already cancelled/);
+ h.api.actions.undo();assert.equal(h.api.state.contracts[0].status,'accepted');assert.equal(A.decimal(S.used(h.api.state)),'15');assert.equal(acceptedDetails(h).open,false);assert.equal(visibleCardRoll(h),roll);assert.equal('disabled'in cancelButton(h,id),false);same(h.api.state.contracts,before.contracts);assert.equal(h.api.state.bank,before.bank);
+ assert.equal(h.api.state.events.find(e=>e.id===cancellation.id).contract.status,'cancelled','Historical cancellation snapshot survives Undo unchanged');
+});
+
+test('a saved contract can be cancelled without a session card and a fresh Mail check yields a new actionable offer',async()=>{
+ const h=harness(),id=await acceptMail(h),reload=harness(h.persisted());assert.equal(reload.api.check,null);assert.equal('disabled'in cancelButton(reload,id),false);
+ reload.api.actions['mail-cancel'](id);await reload.submit();assert.equal(reload.api.state.contracts[0].status,'cancelled');assert.equal(reload.api.check,null);assert.equal(reload.calls.mail,0,'Cancellation never rolls replacement mail');
+ await reload.check({mailContainers:2});const newId=reload.api.drafts[0].offerId;assert.notEqual(newId,h.api.state.contracts[0].offerId);assert.match(html(reload),/Mail available/);assert.match(html(reload),/10 t/);assert.equal(reload.button('contract-accept').disabled,false);
+ reload.api.accept(newId);await reload.submit();assert.equal(reload.api.state.contracts.length,2);assert.equal(reload.api.state.contracts[0].status,'cancelled');assert.equal(reload.api.state.contracts[1].status,'accepted');assert.equal(A.decimal(S.used(reload.api.state)),'10');assert.equal(reload.api.state.bank,'100000');
+});
+
+test('cancellation affects only its selected consignment and preserves freight and session drafts',async()=>{
+ const h=harness(),first=await acceptMail(h,{mailContainers:1}),second=await acceptMail(h,{mailContainers:2});
+ const saved=S.transition(h.api.state,'Manual contract accepted',s=>S.acceptContract(s,{offerId:'freight-consignment',kind:'freight',quantity:'3',payment:'1000',origin:origin.id,destination:destination.id,dueHours:336}));h.store.save(saved,h.api.state.revision);
+ const drafts=[{offerId:'unaccepted-freight',kind:'freight',quantity:'1',payment:'50',origin:origin.id,destination:destination.id,dueHours:100}];h.api.setDrafts(drafts);const before=h.persisted(),check=JSON.stringify(h.api.check);
+ h.api.actions['mail-cancel'](first);await h.submit();assert.equal(h.api.state.contracts.find(c=>c.id===first).status,'cancelled');same(h.api.state.contracts.filter(c=>c.id!==first),before.contracts.filter(c=>c.id!==first));assert.equal(h.api.state.contracts.find(c=>c.id===second).status,'accepted');same(h.api.drafts,drafts);assert.equal(JSON.stringify(h.api.check),check);assert.equal(A.decimal(S.used(h.api.state)),'13');
+});
+
+test('replacement dialogs and repeated cancel clicks cannot commit an obsolete confirmation',async()=>{
+ const h=harness(),id=await acceptMail(h),before=h.persisted();h.api.actions['mail-cancel'](id);const first=h.dom.ids.get('modal-form').onsubmit;
+ h.api.actions['mail-cancel'](id);await first({preventDefault(){},currentTarget:h.dom.ids.get('modal-form')});same(h.persisted(),before);assert.equal(h.dom.ids.get('modal-title').textContent,'Cancel mail');
+ const second=h.dom.ids.get('modal-form').onsubmit;h.api.actions['contract-audit'](id);await second({preventDefault(){},currentTarget:h.dom.ids.get('modal-form')});same(h.persisted(),before);assert.equal(h.dom.ids.get('modal-title').textContent,'Contract');assert.equal(h.dom.ids.get('modal-submit').hidden,true);
+ h.api.closeModal();h.api.actions['mail-cancel'](id);await h.submit();assert.equal(h.api.state.contracts[0].status,'cancelled');assert.equal(h.calls.saves,3);
+});
+
+test('stale cancellation previews and lost editing locks cannot mutate the campaign',async()=>{
+ for(const mode of ['revision','store','lock']){
+  const h=harness(),id=await acceptMail(h),before=h.persisted();h.api.actions['mail-cancel'](id);
+  if(mode==='revision')h.api.state.revision++;else if(mode==='store'){const other=S.transition(before,'Other tab change',s=>{s.name='Newer save';});h.store.save(other,before.revision);h.api.setState(structuredClone(before));}else{h.store.editable=false;h.api.syncModalSubmit();assert.equal(h.dom.ids.get('modal-submit').disabled,true);}
+  const persisted=h.persisted();await h.submit();same(h.persisted(),persisted);assert.equal(h.api.state.contracts[0].status,'accepted');assert.equal(A.decimal(S.used(h.api.state)),'15');
+  if(mode!=='lock')assert.match(h.dom.ids.get('modal-error').textContent,/changed|stale/);else{h.api.closeModal();h.api.render();assert.equal(h.button('mail-cancel').disabled,true);h.api.actions['contract-audit'](id);assert.equal(h.dom.ids.get('modal-submit').hidden,true);}
+ }
+});
+
+test('jump cancellation is a preview only; committing even a zero-hour jump permanently disables Mail cancellation until Undo',async()=>{
+ const h=harness(),id=await acceptMail(h),before=h.persisted();h.api.actions.jump();h.api.closeModal();same(h.persisted(),before);assert.equal('disabled'in cancelButton(h,id),false);
+ h.api.actions.jump();h.fill({hours:0});await h.submit();assert.equal(h.dom.ids.get('modal-error').textContent,'');assert.equal(h.api.state.actual,destination.id);assert.equal(h.api.state.hours,0);const c=h.api.state.contracts[0],jump=h.api.state.events.find(e=>e.label==='Jump audit');
+ same(c.firstDeparture,{eventId:jump.id,from:origin.id,to:destination.id,hours:0,revision:h.api.state.revision});assert.equal('disabled'in cancelButton(h,id),true);assert.ok('data-unavailable'in cancelButton(h,id));assert.match(contractRow(h,id),/already departed/);assert.throws(()=>h.api.actions['mail-cancel'](id),/already departed/);
+ const audit=auditValues(h.api.contractDetails(c));assert.match(audit['First departure'],/Origin → Destination/);assert.equal(audit['Departure event'],jump.id);assert.equal(audit['Departure revision'],String(h.api.state.revision));
+ h.api.state.actual=origin.id;h.api.render();assert.equal('disabled'in cancelButton(h,id),true,'Returning to the origin does not reset departure');h.api.actions.undo();assert.equal(h.api.state.actual,origin.id);assert.equal(h.api.state.contracts[0].firstDeparture,null);assert.equal('disabled'in cancelButton(h,id),false);assert.equal(A.decimal(S.used(h.api.state)),'15');
+});
+
+test('delivered and unverified legacy Mail are not cancellable and their audits remain readable',async()=>{
+ const h=harness(),id=await acceptMail(h);h.api.state.actual=destination.id;h.api.deliver(id);await h.submit();assert.doesNotMatch(contractRow(h,id),/data-action="mail-cancel"/);assert.throws(()=>h.api.actions['mail-cancel'](id),/Delivered mail/);
+ const saved=campaign();saved.contracts=[{id:'legacy-mail',kind:'mail',status:'accepted',origin:origin.id,destination:destination.id,quantity:'10',payment:'50000',dueHours:null}];const legacy=harness(saved);
+ assert.equal('disabled'in cancelButton(legacy,'legacy-mail'),true);assert.match(contractRow(legacy,'legacy-mail'),/Travel history unverified/);assert.throws(()=>legacy.api.actions['mail-cancel']('legacy-mail'),/unverified/);assert.match(legacy.api.contractDetails(legacy.api.state.contracts[0]),/Not verified in this older contract/);
+ const before=legacy.persisted();legacy.api.actions['contract-audit']('legacy-mail');await legacy.submit();same(legacy.persisted(),before);assert.equal(legacy.calls.saves,0);
+});
+
+test('legacy Mail with complete Undo proof can cancel, and its first jump is recorded before the campaign moves',async()=>{
+ const source=harness(),id=await acceptMail(source),saved=source.persisted();delete saved.contracts[0].firstDeparture;
+ const h=harness(saved);assert.equal('disabled'in cancelButton(h,id),false);const facts=auditValues(h.api.contractDetails(h.api.state.contracts[0]));assert.equal(facts['First departure'],'No committed jump after acceptance');assert.equal(facts['Departure verification'],'Verified from retained Undo history');
+ h.api.actions['mail-cancel'](id);await h.submit();assert.equal(h.dom.ids.get('modal-error').textContent,'');assert.equal(h.api.state.contracts[0].cancellation.source,'legacy-undo');assert.match(h.api.historyDetails(h.api.state.events.find(e=>e.label==='Mail cancellation audit')),/Verified from retained Undo history/);
+ const travelled=harness(saved);travelled.api.actions.jump();travelled.fill({hours:0});await travelled.submit();assert.equal(travelled.dom.ids.get('modal-error').textContent,'');const departure=travelled.api.state.contracts[0].firstDeparture;assert.equal(departure.from,origin.id);assert.equal(departure.to,destination.id);assert.equal(departure.priorHistoryUnverified,undefined,'Legacy proof is reconstructed while pre-jump state is intact');assert.equal('disabled'in cancelButton(travelled,id),true);
+});
