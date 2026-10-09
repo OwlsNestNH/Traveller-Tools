@@ -1,4 +1,5 @@
-import {camera} from './map-viewport.mjs';
+import {MAP_GEOMETRY} from './map-geometry.mjs';
+import {camera} from './map-viewport.mjs?v=gui-foundations-1';
 import {territoryMarkup} from './map-territory.mjs';
 
 // Keep the existing world views intact. Only the newly added, wider scales use
@@ -16,7 +17,7 @@ export function sectorBounds(sector){
  return {x:32*sector.x-.5,y:40*sector.y-39.5,width:32,height:40};
 }
 export function visibleSectors(sectors,anchor,pan,zoom){
- const c=camera(anchor,pan,zoom),rx=280/(50*zoom*Math.sqrt(3)/2),ry=180/(50*zoom);
+ const c=camera(anchor,pan,zoom),rx=(MAP_GEOMETRY.halfWidth+20)/(50*zoom*Math.sqrt(3)/2),ry=(MAP_GEOMETRY.halfHeight+20)/(50*zoom);
  return sectors.filter(s=>Number.isInteger(s.x)&&Number.isInteger(s.y)).filter(s=>{
   const b=sectorBounds(s);return b.x<c.x+rx&&b.x+b.width>c.x-rx&&b.y<c.y+ry&&b.y+b.height>c.y-ry;
  }).sort((a,b)=>{const aa=sectorBounds(a),bb=sectorBounds(b);return Math.hypot(aa.x+16-c.x,aa.y+20-c.y)-Math.hypot(bb.x+16-c.x,bb.y+20-c.y);});
@@ -116,7 +117,7 @@ function sectorLetterPosition(left,top,cw,ch,cx,cy,layout,row){
 
 export function mapTerritories({anchor,pan,zoom,sectors,catalogs}){
  const scale=50*zoom,ay=anchor.y+((anchor.x%2+2)%2)*.5;
- const project=(x,y)=>[260+(x-anchor.x)*scale*Math.sqrt(3)/2,158+(y-ay)*scale];
+ const project=(x,y)=>[MAP_GEOMETRY.originX+(x-anchor.x)*scale*Math.sqrt(3)/2,MAP_GEOMETRY.originY+(y-ay)*scale];
  return territoryMarkup({sectors:visibleSectors(sectors,anchor,pan,zoom),metadata:new Map([...catalogs].map(([name,data])=>[name,data.metadata])),project});
 }
 
@@ -124,7 +125,7 @@ export function mapTerritories({anchor,pan,zoom,sectors,catalogs}){
 // Labels are inert: overview browsing never selects a world or changes a route.
 export function overviewMarkup({anchor,pan,zoom,sectors,catalogs,measure,showTerritories=false}){
  const level=mapLevel(zoom),scale=50*zoom,dx=scale*Math.sqrt(3)/2,ay=anchor.y+((anchor.x%2+2)%2)*.5;
- const project=(x,y)=>[260+(x-anchor.x)*dx,158+(y-ay)*scale];
+ const project=(x,y)=>[MAP_GEOMETRY.originX+(x-anchor.x)*dx,MAP_GEOMETRY.originY+(y-ay)*scale];
  const visible=visibleSectors(sectors,anchor,pan,zoom),grid=[],dots=[],labels=[];
  const territory=showTerritories?mapTerritories({anchor,pan,zoom,sectors,catalogs}):'';
  for(const s of visible){
@@ -138,7 +139,7 @@ export function overviewMarkup({anchor,pan,zoom,sectors,catalogs,measure,showTer
   }
   for(let i=0;i<16;i++){
    const letter=String.fromCharCode(65+i),left=x+(i%4)*cw,top=y+Math.floor(i/4)*ch;
-   if(left+pan.x+cw<0||left+pan.x>520||top+pan.y+ch<0||top+pan.y>320)continue;
+   if(left+pan.x+cw<0||left+pan.x>MAP_GEOMETRY.width||top+pan.y+ch<0||top+pan.y>MAP_GEOMETRY.height)continue;
    const name=data?.subsectors.find(ss=>ss.index===letter)?.mapName;
    if(level==='sector'){const [lx,ly]=sectorLetterPosition(left,top,cw,ch,x+width/2,y+height/2,sectorLabel,Math.floor(i/4));labels.push(`<text class="subsector-letter" x="${lx}" y="${ly}" style="font-size:9px">${letter}</text>`);}
    else labels.push(`<g class="subsector-label" data-sector="${esc(s.name)}" data-subsector="${letter}"><title>${esc(s.name)} · ${letter}${name?' · '+esc(name):''}</title>${label(overviewLabelLayout(name||letter,cw-8,Math.min(12,Math.max(9,cw/4.8)),measure,name?-45:0),left+cw/2,top+ch/2,'subsector-name')}</g>`);

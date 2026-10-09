@@ -167,10 +167,11 @@ Offer campaign settings **RAW = 100%**, **Reduced = 75%**, and **Custom = user-d
 Preserve RAW purchase/sale percentage tables and calculations. Apply the setting **separately to the quantity sold from each cargo lot**, after allocating its recorded purchase cost (including acquisition fees), subtracting selling fees, and deducting any optional tax. Combine multiple sale lines from the same lot within one commit before applying the percentage; do not net profits and losses across different lots first.
 
 ```text
+creditIncrement = 1 or 100 // selected Credit rounding setting for this commit
 rawProfit = grossSaleProceeds - sellingFees - allocatedCostBasis
 profitAfterTax = rawProfit - allocatedTax // zero tax when taxation is disabled
 adjustedProfit = profitAfterTax > 0
-    ? floor(profitAfterTax * selectedPercentage / 100)
+    ? ceil((profitAfterTax * selectedPercentage / 100) / creditIncrement) * creditIncrement
     : profitAfterTax
 profitAdjustment = adjustedProfit - profitAfterTax
 bankIncreaseOnSale = grossSaleProceeds - sellingFees - allocatedTax + profitAdjustment
@@ -221,7 +222,7 @@ Prevent concurrent browser tabs from silently overwriting campaign state. Allow 
 8. Illegal goods, manual expenses, campaign dates, persistence, and recovery are exercised before V1 release.
 9. Fewest-jumps routes honor mandatory stop order, jump limits, and nonblocking fuel warnings; ties are reproducible and failed connections are explicit.
 10. Decimal cargo quantities survive partial sales, reservations, reload, and export/import without whole-ton truncation.
-11. Mixed profitable/loss-making lots use per-lot adjustment; Cr101 becomes Cr75 in Reduced mode; costs/fees are counted once, and freight/mail payouts are unchanged.
+11. Mixed profitable/loss-making lots use per-lot adjustment; Cr101 becomes Cr76 in Reduced mode with whole-Credit rounding (or Cr100 with Cr100 rounding); costs/fees are counted once, and freight/mail payouts are unchanged.
 12. The rules dataset, source references, and worked examples are independently verified and checked into GitHub before trading-engine implementation.
 
 13. With at least 15 cargo lots and 15 market offers, all rows and controls remain reachable on desktop and small screens; headings, counts, filters, sorting, and selected-lot previews behave as specified.

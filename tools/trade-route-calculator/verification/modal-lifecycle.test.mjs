@@ -67,6 +67,35 @@ try{
  await second.close();await page.getByRole('button',{name:'Take over editing',exact:true}).click();await page.getByText('Editing in this tab',{exact:true}).waitFor();
  // A fresh confirmation after taking over works normally.
  await openLocation();await click('Confirm starting world');await closed();assert.equal((await read()).actual,'-111,-70');
- assert.deepEqual(errors,[]);console.log('PASS: Cancel/close/Escape, duplicate submit, late success/error isolation, cancelled route, lock loss during request, read-only browsing and fresh confirmation.');
+ // The actual app module can use new display wording without losing Credit
+ // normalization or the review's accumulated rounding annotations.
+ await ctx.route('**/js/app.mjs?*',async route=>{
+  const response=await route.fetch();let source=await response.text();
+  for(const [before,after]of [["field('amount','Deposit amount - Cr'","field('amount','Amount'"],["modal('Record deposit',","modal('Funds received',"],["modal('Confirm deposit',","modal('Incoming funds review',"]]){
+   assert.ok(source.includes(before));source=source.replace(before,after);
+  }
+  await route.fulfill({response,body:source});
+ });
+ await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();
+ await click('Accounts');const depositBefore=await read();
+ for(const commit of [false,true]){
+  await click('Record deposit');assert.equal(await page.locator('#modal-title').textContent(),'Funds received');
+  const amount=page.getByLabel('Amount',{exact:true});
+  assert.equal(await amount.getAttribute('type'),'number');assert.equal(await amount.getAttribute('data-round'),'credits');
+  await amount.fill('10.1');await fill('reason','Renamed display metadata regression');await click('Preview deposit');
+  assert.equal(await page.locator('#modal-title').textContent(),'Incoming funds review');
+  assert.match(await page.locator('#rounding-input-note').textContent(),/Amount: 10.1 → 11/);
+  await page.screenshot({fullPage:true,path:join(artifacts,'renamed-deposit-review.png')});
+  if(commit)await page.locator('#modal-submit').click();else await click('Cancel');
+  await closed();const after=await read();
+  if(commit){
+   assert.equal(after.bank,String(BigInt(depositBefore.bank)+11n));
+   assert.equal(after.revision,depositBefore.revision+1);
+   assert.equal(after.undo.at(-1).label,'Manual deposit');
+  }else assert.deepEqual(after,depositBefore);
+ }
+ await click('History');await click('Undo latest change');
+ const undone=await read();assert.equal(undone.bank,depositBefore.bank);assert.deepEqual(undone.ledger,depositBefore.ledger);
+ assert.deepEqual(errors,[]);console.log('PASS: Cancel/close/Escape, duplicate submit, late success/error isolation, cancelled route, lock loss during request, read-only browsing fresh confirmation, renamed numeric labels/review titles, cancel/commit and deposit Undo.');
 }finally{gate?.release();await browser.close();}
 

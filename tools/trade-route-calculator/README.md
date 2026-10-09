@@ -30,6 +30,8 @@ The campaign clock displays an Imperial day-year date and hour, starting at 001-
 
 ## Development and verification
 
+[GUI_PARITY.md](GUI_PARITY.md) tracks the existing controls, future homes and acceptance checks for the planned GUI refit. The checklist is preparation only; it does not mean that GUI has been implemented.
+
 From this folder, serve the files with any static server, for example:
 
 ```sh
