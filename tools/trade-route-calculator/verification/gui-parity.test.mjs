@@ -221,7 +221,11 @@ async function run(stops){
   await page.locator('.route-draft').getByText(/Empty hex/).first().waitFor();
   await page.waitForFunction(()=>document.querySelector('[data-action="route-save"]')?.disabled===false);
   await unchanged('Empty-hex keyboard planning');await click('route-cancel');
-  await routeMenu();await click('route-build');await action('map-empty',emptyId).click();
+  await routeMenu();await click('route-build');await action('map-world',emptyId).click();
+  await page.waitForFunction(()=>document.querySelector('[data-action="route-save"]')?.disabled===false);await unchanged('Cached empty-space marker remains selectable');await click('route-cancel');
+  const pointerEmptyId=origin.x+','+(origin.y-1);
+  assert.ok(!fixture.apiWorlds.some(w=>w.WorldX===origin.x&&w.WorldY===origin.y-1),'Pointer empty-hex fixture is genuinely empty');
+  await routeMenu();await click('route-build');await action('map-empty',pointerEmptyId).click();
   await page.waitForFunction(()=>document.querySelector('[data-action="route-save"]')?.disabled===false);
   await geometry();await unchanged('Empty-hex pointer planning');await click('route-cancel');
   await routeMenu();await click('route-build');await action('map-world',targetId).press('Space');

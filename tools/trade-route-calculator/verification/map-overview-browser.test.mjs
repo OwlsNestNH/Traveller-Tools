@@ -42,6 +42,7 @@ const zoom=()=>page.locator('.map-zoom-controls .help').textContent();
 const level=()=>page.locator('.world-map').getAttribute('data-map-level');
 const transform=()=>page.locator('.map-content').getAttribute('transform');
 async function geometry(){
+ await page.waitForFunction(()=>{const svg=document.querySelector('.world-map');if(!svg)return false;const b=svg.getBoundingClientRect(),v=svg.viewBox.baseVal,expected=Math.max(420,Math.min(640,b.width*.45));return Math.abs(b.height-expected)<2&&Math.abs(v.width-b.width*440/expected)<.1;});
  const result=await page.evaluate(()=>{const svg=document.querySelector('.world-map'),v=svg.viewBox.baseVal,b=svg.getBoundingClientRect(),m=svg.getScreenCTM();return {width:v.width,height:v.height,backgroundWidth:Number(svg.querySelector(':scope > rect').getAttribute('width')),backgroundHeight:Number(svg.querySelector(':scope > rect').getAttribute('height')),cssWidth:b.width,cssHeight:b.height,scaleX:m.a,scaleY:m.d};});
  assert.equal(result.height,440);assert.equal(result.backgroundHeight,440);assert.ok(Math.abs(result.backgroundWidth-result.width)<.001,'SVG float geometry matches the full background');
  assert.ok(Math.abs(result.scaleX-result.scaleY)<.001,'Viewport does not stretch map geography');
@@ -75,7 +76,7 @@ try{
  await click('Set up campaign');await page.locator('#setup-world .picker-selection').getByText(/Hex 1910/).waitFor();
  await click('Start campaign');await page.locator('#modal').waitFor({state:'hidden'});
  const before=await read();assert.equal(await level(),'world');await geometry(320);
- const origin=page.locator('svg [data-action="map-world"][data-arg="-110,-70"] circle');assert.equal(await origin.getAttribute('cx'),'260');assert.equal(await origin.getAttribute('cy'),'158');
+ const origin=await page.evaluate(()=>{const svg=document.querySelector('.world-map'),circle=svg.querySelector('[data-action="map-world"][data-arg="-110,-70"] circle');return {cx:Number(circle.getAttribute('cx')),cy:Number(circle.getAttribute('cy')),width:svg.viewBox.baseVal.width,height:svg.viewBox.baseVal.height};});assert.ok(Math.abs(origin.cx-origin.width/2)<.001);assert.equal(origin.cy,origin.height/2-2);
  assert.equal(await page.getByLabel('Political territory',{exact:true}).isChecked(),true);
  await page.locator('.territory-fill').first().waitFor({state:'attached'});
  await page.getByLabel('Political territory',{exact:true}).uncheck();
@@ -110,7 +111,7 @@ try{
  assert.equal(await page.locator('.overview-labels [data-action]').count(),0);
  await page.screenshot({fullPage:true,path:artifacts+'/map-subsectors.png'});
  await drag();assert.notEqual(await transform(),'translate(0 0)');assert.deepEqual(await read(),before);
- const pan=await transform();await page.getByLabel('Show hexes',{exact:true}).uncheck();assert.equal(await transform(),pan);
+ const pan=await transform();assert.equal(await page.locator('#map-hexes').count(),0,'The visible hex toggle is intentionally removed');await page.getByLabel('Show UWP',{exact:true}).uncheck();assert.equal(await transform(),pan);await page.getByLabel('Show UWP',{exact:true}).check();assert.equal(await transform(),pan);
  await reach('6%');assert.equal(await level(),'sector');await geometry(320);
  assert.ok(await page.locator('.sector-name').count()>0);assert.ok(await page.locator('.subsector-letter').count()>0);
  assert.equal(await page.locator('.overview-worlds circle').count(),0);
