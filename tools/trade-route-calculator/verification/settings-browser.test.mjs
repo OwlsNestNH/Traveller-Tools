@@ -47,9 +47,11 @@ async function start(size,{untrackedFuel=false}={}){
  const context=activeContext=await browser.newContext({viewport:size,acceptDownloads:true});
  context.setDefaultTimeout(10000);
  await context.tracing.start({screenshots:true,snapshots:true,sources:true});
- await context.addInitScript(({key,bytes})=>{
-  if(!localStorage.getItem(key))localStorage.setItem(key,bytes);
- },{key:campaignKey,bytes:fixture.bytes});
+ await context.addInitScript(({key,bytes,origin})=>{
+  // Blank/download documents have opaque origins and no localStorage access.
+  // Seed only the served application, while retaining all application errors.
+  if(location.origin===origin&&!localStorage.getItem(key))localStorage.setItem(key,bytes);
+ },{key:campaignKey,bytes:fixture.bytes,origin:new URL(base).origin});
  const errors=[],unexpected=[];
  await context.route('https://travellermap.com/api/**',route=>{
   const url=new URL(route.request().url());
