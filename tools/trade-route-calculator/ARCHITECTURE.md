@@ -34,7 +34,7 @@ Confirm current Traveller Map endpoints and browser access requirements during i
 
 - **World/API adapter:** world identifiers, coordinates, UWP and navigation data, response normalization, request errors.
 - **UWP/rules data:** parsing, validation, local trade-code derivation, verified commodity tables and rule references.
-- **Route/map:** clickable local map; automatic Fewest jumps between ordered mandatory stops; prefer longer legs first when jump counts tie, then stable world IDs; use the ship's jump rating from Settings and validate fuel availability. Shorter legs remain allowed for connectivity, the destination, and manually required stops. Selected view world and actual ship position remain separate.
+- **Route/map:** clickable local map; automatic Fewest jumps between ordered mandatory stops; prefer longer legs first when jump counts tie, then stable world IDs; enforce the ship's jump rating from Settings and show nonblocking fuel-availability warnings under the approved campaign override. Shorter legs remain allowed for connectivity, the destination, and manually required stops. Selected view world and actual ship position remain separate.
 - **Trade engine:** availability/pricing, explicit dice inputs, overrides, brokers/fees, per-commodity audit output, RAW/adjusted profit.
 - **Contracts:** freight/mail availability, acceptance, capacity reservation, destination obligations, delivery, and payout.
 - **Campaign store/actions:** actual ship location, date, trader/ship state, bank/cargo ledger, cargo lots, snapshots, settings, action history, and undo.
@@ -152,3 +152,11 @@ A separate versioned localStorage key stores the last ten world choices; it is a
 
 Map presentation supports bounded wheel/button zoom around the viewed world and draws only the twelve-parsec neighborhood grid. All public world/catalog requests explicitly use M1105; the sector list also deduplicates names. The separate calendar module derives the campaign date from existing saved fields without switching map milieu. Explicit starting-world correction uses the normal atomic, undoable campaign transition, clears the route, records a reason and flags active insurance for amendment.
 
+
+## Reliability boundary for later shared campaigns
+
+The current local mode remains one writer with read-only secondary tabs. `Store` owns lock acquisition, cancellation, revision checks, save and replacement. Repeated takeover requests cannot queue duplicate ownership; yielding cancels pending acquisition and releases a held lock. A failed lock request or rendering callback must leave saves disabled. Taking ownership reloads the latest validated state before allowing edits. This is same-browser coordination, not a cross-device authorization mechanism.
+
+Keep `state.mjs` transitions and `validate` as the campaign boundary, with route/rules calculations outside persistence. Imports validate structure, references and safe undo-operation shapes before any replacement write; failed imports preserve saved bytes. Schema 1, historical audits, existing optional defaults and JSON backups remain compatible. Browser-only map/disclosure preferences and unaccepted offers do not become campaign authority.
+
+Future sharing should preserve this boundary: one authoritative editor, read-only viewers and explicit handoff, with server-enforced ownership and revision conflict checks if a backend is separately approved. Do not use a browser lock or current viewed world as proof of cross-device authority. Any future schema migration needs versioned backup/round-trip and legacy fixture tests before release. No sharing backend, accounts, new storage service or migration is introduced by this cleanup.
