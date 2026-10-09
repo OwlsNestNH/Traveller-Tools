@@ -47,7 +47,7 @@ async function geometry(){
  assert.equal(result.height,440);assert.equal(result.backgroundHeight,440);assert.ok(Math.abs(result.backgroundWidth-result.width)<.001,'SVG float geometry matches the full background');
  assert.ok(Math.abs(result.scaleX-result.scaleY)<.001,'Viewport does not stretch map geography');
  assert.ok(Math.abs(result.width/result.height-result.cssWidth/result.cssHeight)<.015,'Logical and displayed map aspects agree');
- assert.ok(result.cssHeight>=418&&result.cssHeight<=642,'Taller responsive map retains eight to nine rows');
+ assert.ok(result.cssHeight>=398&&result.cssHeight<=602,'Compact responsive map retains the 440-unit logical height');
 }
 
 async function reach(target){for(let i=0;i<30&&await zoom()!==target;i++)await click(target==='240%'?'+':'−');assert.equal(await zoom(),target);}
