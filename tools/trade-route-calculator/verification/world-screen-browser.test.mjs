@@ -102,7 +102,7 @@ try{
  await page.screenshot({path:artifacts+'/world-screen-long-desktop.png',fullPage:true});
  assert.equal(await screen.locator('.screen-title .tag').textContent(),'Not supplied');
  assert.match(await screen.locator('.screen-system').textContent(),/Gas giantsNot suppliedBasesNot supplied/);
- assert.equal(await page.locator('.symbol-selection').count(),2,'One selected bracket plus the legend example');
+ assert.equal(await page.locator('.symbol-selection').count(),1,'One selected center bracket; the legend uses a blue hex');
  assert.equal(await raw(),f.bytes,'Selecting a world leaves every saved byte unchanged');
  // Browse back to ship without moving it; an API-zero lookup is only allowed
  // when opening existing full Planet information explicitly.

@@ -292,3 +292,35 @@ main{padding-top:18px}
 .expense-panel .covered-payments table{font-size:.8rem}.expense-panel .covered-payments td:last-child{text-align:right}
 .expense-panel .expense-audit{font-size:.8rem;padding:.65rem}.expense-panel .help{font-size:.76rem}
 @media(max-width:400px){.expense-panel .expense-table{font-size:.74rem}.expense-table th,.expense-table td{padding:.4rem .2rem}.expense-panel .expense-facts{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+
+/* Read-only quick manifest: only the rows scroll; investment stays beneath them. */
+.cargo-hold-panel{display:flex;flex-direction:column;gap:14px;min-width:0;padding:16px}
+.cargo-hold-panel h2{font-size:clamp(1.4rem,2vw,1.9rem);margin:0}.cargo-hold-panel p{margin:0}
+.cargo-hold-panel .screen-topline{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.cargo-hold-panel .screen-topline button{border:0;background:none;padding:4px 0;min-height:30px;font-size:12px;color:var(--muted)}
+.cargo-hold-panel .cargo-location{margin-top:-8px;overflow-wrap:anywhere}
+.cargo-capacity{padding:14px;background:#122936;border:1px solid var(--line);border-radius:4px;min-width:0}
+.cargo-capacity>.label{font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:650}
+.cargo-capacity-values{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;margin:7px 0 10px;overflow-wrap:anywhere}
+.cargo-capacity-values strong{font-size:24px}.cargo-capacity-values>span{font-weight:650;color:var(--cyan)}
+.cargo-capacity progress{width:100%;height:7px;accent-color:var(--cyan);display:block;margin:0 0 10px}
+.cargo-other{margin:6px 0 0}.cargo-other summary{font-size:12px}.cargo-other dl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;font-size:12px}.cargo-other dd{margin:0;text-align:right}.cargo-other .help{margin-top:6px}
+.cargo-section-heading{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;margin:4px 0 10px}
+.cargo-section-heading h3{margin:0;font-size:12px;color:var(--cyan)}
+.cargo-hold-panel section{min-width:0}.cargo-manifest-scroll{max-width:100%;min-width:0;overflow:auto;overscroll-behavior:contain;scrollbar-color:#6d8fa2 #16303e;scrollbar-width:thin}
+.cargo-goods-scroll{max-height:280px}.cargo-contract-scroll{max-height:180px}
+.cargo-manifest-scroll table{width:100%;min-width:410px;table-layout:auto;font-size:13px}
+.cargo-manifest-scroll th,.cargo-manifest-scroll td{white-space:nowrap;padding:9px 10px;vertical-align:top}.cargo-manifest-scroll th{font-size:11px;background:#192e3c;position:sticky;top:0;z-index:1}
+.cargo-manifest-scroll td strong{font-size:13px}.cargo-manifest-scroll td.number{font-variant-numeric:tabular-nums}
+.cargo-row-meta{display:flex;justify-content:flex-end;align-items:center;gap:9px;font-size:11px;color:var(--muted);margin-top:5px;min-height:22px}
+.cargo-manifest-scroll td:first-child .cargo-row-meta{justify-content:flex-start}.cargo-row-meta>span:not(.tag){font-family:ui-monospace,monospace}
+.cargo-row-meta button{background:none;border:0;padding:2px 0;color:var(--cyan);font-size:11px;min-height:24px}.cargo-row-meta .tag{font-size:9px;padding:3px 6px}
+.cargo-investment{background:#142d3b;padding:10px 12px;margin-top:8px;min-width:0;max-width:100%;overflow:auto;white-space:nowrap;border-radius:3px}
+.cargo-investment>div{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 16px;min-width:0}.cargo-investment strong{font-size:16px}.cargo-investment .mono{color:var(--cyan);font-size:18px}.cargo-investment .help{margin-top:5px;font-size:11px}
+.cargo-empty{padding:12px 0}.cargo-panel-actions{display:flex;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:14px;margin-top:auto}.cargo-panel-actions button{flex:1 1 140px;min-height:42px}
+.cargo-panel-footnote{font-size:11px}.cargo-manifest-scroll:focus-visible,.cargo-investment:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+@media(max-width:620px){.cargo-hold-panel{padding:12px}.cargo-capacity{padding:10px}.cargo-capacity-values strong{font-size:22px}.cargo-goods-scroll{max-height:280px}.cargo-contract-scroll{max-height:180px}}
+
+/* Selection remains below route lines and world symbols. */
+.world-map .selected-world-hex,.world-map .selected-world-hex *{pointer-events:none;cursor:inherit}
+.world-map .selected-world .world-name,.world-map .selected-world .world-uwp{fill:#fff}

@@ -75,7 +75,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [browser, modal-lifecycle, click-route, fuel-browser, empty-space, mail-browser, map-overview-browser, gui-parity, trade-buttons, settings-browser, insurance-browser, trade-complications-browser, world-screen-browser, jump-undo-browser, service-panels-browser, combined-cabins, day-controls, zero-fuel, resource-alert, mortgage-browser, expense-panels-browser]
+        suite: [browser, modal-lifecycle, click-route, fuel-browser, empty-space, mail-browser, map-overview-browser, gui-parity, trade-buttons, settings-browser, insurance-browser, trade-complications-browser, world-screen-browser, jump-undo-browser, service-panels-browser, combined-cabins, day-controls, zero-fuel, resource-alert, mortgage-browser, expense-panels-browser, cargo-hold-browser]
     steps:
       - name: Check out exact PR head
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -128,6 +128,18 @@ jobs:
             tools/trade-route-calculator/verification-artifacts/*.png
             tools/trade-route-calculator/verification-artifacts/commit.txt
             tools/trade-route-calculator/verification-artifacts/gui-parity.txt
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload compact Cargo Hold screenshots and report
+        if: ${{ always() && matrix.suite == 'cargo-hold-browser' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: trade-cargo-screenshots-${{ github.event.pull_request.head.sha }}
+          path: |
+            tools/trade-route-calculator/verification-artifacts/cargo-hold-*.png
+            tools/trade-route-calculator/verification-artifacts/cargo-hold-report.json
+            tools/trade-route-calculator/verification-artifacts/cargo-hold-browser.txt
+            tools/trade-route-calculator/verification-artifacts/commit.txt
           if-no-files-found: error
           retention-days: 14
       - name: Summarize scope
