@@ -128,6 +128,26 @@ async function run(stops){
   }
  }
  async function routeLayout(){
+  const zoomHint=page.locator('#map-zoom-hint');
+  assert.equal(await zoomHint.textContent(),'Ctrl + scroll to zoom.');
+  assert.equal(await zoomHint.isVisible(),true,'The zoom gesture is visible at every viewport');
+  assert.equal(await page.locator('.world-map').getAttribute('aria-describedby'),'map-zoom-hint');
+  const hintBox=await zoomHint.evaluate(el=>{const b=el.getBoundingClientRect();return {left:b.left,right:b.right,overflow:el.scrollWidth-el.clientWidth,font:parseFloat(getComputedStyle(el).fontSize),width:innerWidth};});
+  assert.ok(hintBox.font>=12&&hintBox.overflow<=2&&hintBox.left>=-1&&hintBox.right<=hintBox.width+1,'The short gesture label stays readable and unclipped');
+  const jump=page.locator('.route-next [data-action="jump"]');
+  assert.equal(await page.locator('[data-action="jump"]').count(),1,'The top action replaces the old duplicate jump control');
+  assert.equal(await jump.textContent(),'Jump to '+fixture.state.worlds[targetId].name+' →');
+  assert.equal(await jump.isDisabled(),false);
+  assert.equal(await page.locator('.next-destination strong').textContent(),fixture.state.worlds[targetId].name);
+  assert.equal(await page.locator('.route-list [aria-current="location"]').getAttribute('data-arg'),fixture.state.actual);
+  assert.equal(await page.locator('.route-list button.next').getAttribute('data-arg'),targetId);
+  const header=await page.locator('.route-heading').evaluate(el=>{
+   const list=el.nextElementSibling,b=el.getBoundingClientRect();
+   return {bottom:b.bottom,listTop:list.getBoundingClientRect().top,overflow:el.scrollWidth-el.clientWidth,parts:[...el.querySelectorAll('.route-jump,.route-next,.next-destination,button')].map(n=>{const b=n.getBoundingClientRect();return {left:b.left,right:b.right,overflow:n.scrollWidth-n.clientWidth};}),width:innerWidth};
+  });
+  assert.ok(header.bottom<=header.listTop+1,'Next destination and jump sit above the wrapped route');
+  assert.ok(header.overflow<=2,'Route heading stays within the panel');
+  for(const part of header.parts){assert.ok(part.overflow<=2,'Next-jump content wraps without clipping');assert.ok(part.left>=-1&&part.right<=header.width+1,'Next-jump content stays in the viewport');}
   const items=page.locator('.route-list [data-action="world"]');assert.equal(await items.count(),stops);
   const layout=await page.locator('.route-list').evaluate(list=>{
    const b=list.getBoundingClientRect();
@@ -171,6 +191,9 @@ async function run(stops){
   assert.equal(await page.locator('.overview-cargo').count(),1,'Overview owns the compact cargo table');
   assert.equal(await page.locator('#market-search').count(),0,'Full supplier trading belongs on Trade');
   await unchanged('Initial shell');
+  const serviceStyles=await page.locator('.ship-actions > button').evaluateAll(buttons=>buttons.map(button=>{const s=getComputedStyle(button);return {background:s.background,color:s.color,border:s.borderColor};}));
+  assert.equal(serviceStyles.length,4,'Four direct ship service shortcuts remain');
+  assert.ok(serviceStyles.every(style=>JSON.stringify(style)===JSON.stringify(serviceStyles[0])),'Ship expenses uses the same primary colors as the other ship services');
   const compactRows=await page.locator('.overview-cargo tbody tr').evaluateAll(rows=>rows.map(row=>[...row.querySelectorAll('td')].map(td=>td.textContent)));
   const recordedAudit=fixture.state.lots[0].audit.price.audit;
   const recordedDM=recordedAudit.skill+recordedAudit.localDM-recordedAudit.counterparty+recordedAudit.purchase.selected-recordedAudit.sale.selected;
@@ -185,7 +208,7 @@ async function run(stops){
     assert.equal(longId,targetId,'The long browsed label also labels the next jump button');
     const overflow=await page.locator('.navigation-panel').evaluate(panel=>{
      const result={page:document.documentElement.scrollWidth-innerWidth};
-     for(const selector of ['.world-info','.map-caption','.jump-bar [data-action="jump"]']){
+     for(const selector of ['.world-info','.map-caption','.route-next [data-action="jump"]']){
       const el=panel.querySelector(selector),b=el.getBoundingClientRect();
       result[selector]={excess:el.scrollWidth-el.clientWidth,right:b.right,left:b.left};
      }
@@ -218,9 +241,22 @@ async function run(stops){
    await summary.press('Space');assert.equal(await summary.evaluate(el=>el.parentElement.open),false);
    await unchanged(selector+' read-only disclosure');
   }
-  await page.locator('[name="quickFuelType"][value="unrefined"]').check();
-  await page.locator('[name="quickFuelType"][value="refined"]').check();
-  await unchanged('Fuel-quality display choice');
+  assert.equal(await page.locator('[name="quickFuelType"]').count(),0,'Fuel source is selected only in the Refuel dialog');
+  await click('refuel');
+  await page.locator('[name="fuelType"]').selectOption('unrefined');
+  await page.locator('[name="fuelType"]').selectOption('refined');
+  await unchanged('Fuel-quality dialog choice');await dismiss('Cancel');
+  // The relocated shortcut preserves every existing jump dismissal path and
+  // cannot move the ship simply because another route stop is being browsed.
+  await click('world',fixture.state.route.at(-1));
+  for(const method of ['Cancel','Close','Escape']){
+   await click('jump');
+   assert.equal(await page.locator('#modal-title').textContent(),'Commit jump · '+fixture.state.worlds[fixture.state.actual].name+' → '+fixture.state.worlds[targetId].name);
+   assert.equal(await page.locator('#modal-submit').textContent(),'COMMIT JUMP');
+   await page.locator('#modal [name="hours"]').fill('160');await dismiss(method);
+   assert.ok((await page.locator('.world-info').textContent()).includes(fixture.state.worlds[fixture.state.route.at(-1)].name),'Cancelling keeps the browsed world');
+  }
+  await current();
 
   // Browse is not travel. Keyboard activation and the persistent ship position
   // are verified independently; no mutation button is submitted here.
@@ -238,12 +274,32 @@ async function run(stops){
   await click('map-zoom-in');await page.waitForFunction(()=>document.querySelector('.map-zoom-controls .help')?.textContent!=='100%');
   await click('map-zoom-reset');await page.waitForFunction(()=>document.querySelector('.map-zoom-controls .help')?.textContent==='100%');
   await geometry();
+  // Real wheel input: ordinary scrolling leaves map scale alone; Ctrl+wheel
+  // zooms only the map without moving the page. Do not synthesize a DOM event.
+  await page.setViewportSize({width:1280,height:800});await geometry();
+  const hoverMap=async()=>{
+   const point=await page.locator('.world-map').evaluate(svg=>{svg.scrollIntoView({block:'center',behavior:'instant'});const b=svg.getBoundingClientRect();return {x:b.x+b.width*.5,y:b.y+b.height*.5};});
+   await page.mouse.move(point.x,point.y);await frames();
+  };
+  await hoverMap();const plainScroll=await page.evaluate(()=>scrollY);
+  await page.mouse.wheel(0,160);
+  await page.waitForFunction(before=>scrollY>before,plainScroll);await frames();
+  assert.equal(await page.locator('.map-zoom-controls .help').textContent(),'100%','Plain wheel scroll never zooms the map');
+  await hoverMap();const ctrlScroll=await page.evaluate(()=>scrollY);
+  await page.keyboard.down('Control');
+  try{await page.mouse.wheel(0,-150);await page.waitForFunction(()=>document.querySelector('.map-zoom-controls .help')?.textContent!=='100%');}finally{await page.keyboard.up('Control');}
+  await frames();assert.equal(await page.evaluate(()=>scrollY),ctrlScroll,'Ctrl+wheel zoom leaves page scroll unchanged');
+  await unchanged('Plain wheel scroll and intentional Ctrl+wheel map zoom');
+  await click('map-zoom-reset');await page.waitForFunction(()=>document.querySelector('.map-zoom-controls .help')?.textContent==='100%');
+  await page.setViewportSize(sizes[0]);await geometry();
   const pan=await page.locator('.world-map').evaluate(svg=>{svg.scrollIntoView({block:'center',behavior:'instant'});const b=svg.getBoundingClientRect();return {x:b.x+b.width*.55,y:b.y+b.height*.55,before:svg.querySelector('.map-content').getAttribute('transform')};});
   await page.mouse.move(pan.x,pan.y);await page.mouse.down();await page.mouse.move(pan.x+45,pan.y+25,{steps:8});await page.mouse.up();
   await page.waitForFunction(before=>document.querySelector('.map-content')?.getAttribute('transform')!==before,pan.before);
   await geometry();await unchanged('Map pan');await click('map-zoom-reset');await frames();await current();
 
   await routeMenu();await click('route-build');
+  assert.equal(await action('jump').isDisabled(),true,'Draft planning cannot jump');
+  assert.match(await page.locator('#route-jump-help').textContent(),/Finish or cancel route planning/);
   const origin=fixture.state.worlds[fixture.state.actual],emptyId=origin.x+','+(origin.y-2);
   assert.ok(!fixture.apiWorlds.some(w=>w.WorldX===origin.x&&w.WorldY===origin.y-2),'Keyboard empty-hex fixture is genuinely empty');
   await action('map-empty',emptyId).press('Space');
@@ -304,7 +360,7 @@ async function run(stops){
    await page.getByText('Read-only: editing transferred to another tab.',{exact:true}).waitFor();assert.equal(await page.locator('#modal-submit').isDisabled(),true);await release(pending);
    assert.equal(await page.locator('#modal-submit').isDisabled(),true);await unchanged('Ownership handoff during modal request');await dismiss('Cancel');
    await tab('Overview');await current();await action('map-world',targetId).press('Enter');await unchanged('Read-only browsing');
-   assert.equal(await action('set-location').isDisabled(),true);
+   assert.equal(await action('set-location').isDisabled(),true);assert.equal(await action('jump').isDisabled(),true,'Read-only browsing never enables travel');
    await page.locator('.overview-cargo [data-action="lot-audit"]').first().click();await dismiss('Close');
    await second.close();await page.locator('#takeover').click();await page.getByText('Editing in this tab',{exact:true}).waitFor();await unchanged('Editing reacquisition');
   }

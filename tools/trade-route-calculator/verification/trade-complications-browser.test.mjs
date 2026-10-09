@@ -79,6 +79,10 @@ async function flags(scope,result,count=1){
    const rgb=css.color.match(/[\d.]+/g).slice(0,3).map(Number);
    assert.ok(rgb[0]>=180&&rgb[0]>rgb[1]+40&&rgb[0]>rgb[2]+40,'Both complication levels use visibly red text');
    assert.notEqual(css.wrap,'nowrap','Large warning text may wrap on mobile');
+   // The longest alert word must stay readable instead of a letter-by-letter column.
+  }
+  for(const size of await flag.evaluateAll(nodes=>nodes.map(el=>({width:el.clientWidth,height:el.clientHeight})))){
+   assert.ok(size.width>=170&&size.height<=66,'Warning words stay readable in rows and full-width confirmation blocks');
   }
  }
 }
@@ -166,12 +170,12 @@ async function saleCase(page,context,result,f){
  assert.equal(initialPrices.pair,initialPrices.severe,'Equal totals/modifiers price pair and triple identically');
  await diceUsed(page,rolled);await layout(page);assert.equal(await raw(page),initial);
  await submit(page,'Preview sale','Confirm sale');
- const confirmationRows=()=>modal(page).locator('table').first().locator('tbody tr');
+ const confirmationRows=()=>modal(page).locator('.sale-complications .sale-complication');
  await flags(confirmationRows().nth(0),'complication');await flags(confirmationRows().nth(1),'severe');
  await modal(page).locator('details').filter({has:page.locator('summary',{hasText:'Price rolls and modifiers'})}).locator(':scope > summary').click();
  assert.deepEqual(await facts(page,'3D price roll'),['2 + 2 + 5 = 9','3 + 3 + 3 = 9']);
  assert.deepEqual(await facts(page,'Trade complication · house rule'),['COMPLICATION','SEVERE COMPLICATION']);
- await layout(page);await screenshot(page,result,'trade-complications-confirm-'+result.id+'.png');await dismiss(page);
+ await layout(page);await modal(page).evaluate(el=>{el.scrollTop=0;});await screenshot(page,result,'trade-complications-confirm-'+result.id+'.png');await dismiss(page);
  assert.equal(await raw(page),initial,'Negotiation and cancelled confirmation never write a campaign change');
  // Cancel/reopen, editing quantities/fees, then cancel again must reuse both
  // original per-lot offers rather than rolling once for each UI callback.

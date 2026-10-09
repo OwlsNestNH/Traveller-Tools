@@ -9,7 +9,7 @@ Open `index.html` through an HTTP server or GitHub Pages. No build, paid service
 1. Choose **Set up campaign**, select your current sector, subsector and world, then enter ship, bank and starting date label.
 2. Add existing cargo from **Cargo** without debiting the opening bank again.
 3. Open **Trade**. **Find supplier** creates a market after an explicit search commit. Buy and sell through previews and explicit commits.
-4. **Plot route** accepts mandatory stops in order. Clicking the map or Previous/Next only browses; **COMMIT JUMP** moves the ship and advances elapsed hours.
+4. **Plot route** accepts mandatory stops in order. Clicking the map or Previous/Next only browses; **Jump to [next destination]** above the route opens the existing **COMMIT JUMP** confirmation, which moves the ship one leg and advances elapsed hours.
 5. Use **Settings** for trader skills, profit mode, insurance and taxes. Both Merchant Prince options start off.
 6. Export JSON backups regularly. The campaign is stored in this browser; it is not uploaded to GitHub or Traveller Map.
 
@@ -64,7 +64,7 @@ The main browser test uses deterministic API fixtures based on a checked live re
 
 **Auto plot** lets you click a destination on the map. **Build route** lets you click required stops in order, remove any chosen stop, or remove the last stop. Auto plot finds connecting stops using the jump rating in Settings, preferring longer legs first when jump counts tie, then stable world IDs. Unconfirmed fuel produces a warning and does not change route ranking under the approved campaign override. Build route keeps exactly the worlds clicked, in order, without inserting or replacing stops. Invalid direct legs are flagged and must be corrected manually before saving. Review the preview and select **Save planned route** to confirm; Cancel planning leaves the saved route unchanged.
 
-**Clear planned route** clears future stops and resets the plan to the ship's current actual world. It does not move the ship back to its original campaign starting world. Time, bank, cargo, insurance terms and completed travel history remain unchanged; Undo restores the previous plan. Only **COMMIT JUMP** travels along the route.
+**Clear planned route** clears future stops and resets the plan to the ship's current actual world. It does not move the ship back to its original campaign starting world. Time, bank, cargo, insurance terms and completed travel history remain unchanged; Undo restores the previous plan. Only the explicit **COMMIT JUMP** confirmation travels one leg along the route.
 
 Run `node verification/click-route.test.mjs` for map route planning, removing stops, save/cancel, clear after travel, Undo, request failures and mobile layout checks.
 
@@ -80,7 +80,7 @@ Run `node verification/world-picker.test.mjs` for the selector, recent-world and
 
 ## Map zoom and starting world
 
-The Overview map shows about 8.8 hex rows at 100% zoom. Its logical width follows the available screen width, with uniform projection, clipping and live map-area loading; narrow screens retain map height instead of squashing geography. Use the mouse wheel over the map or the + / − / Reset view controls to zoom from 6% to 240%. Zoom changes only the view; ordinary scrolling elsewhere and Ctrl+wheel browser zoom are preserved.
+The Overview map shows about 8.8 hex rows at 100% zoom. Its logical width follows the available screen width, with uniform projection, clipping and live map-area loading; narrow screens retain map height instead of squashing geography. Hold Ctrl while scrolling over the map, or use the + / − / Reset view controls, to zoom from 6% to 240%. The visible label says **Ctrl + scroll to zoom.** Plain wheel scrolling over the map moves the page without changing map zoom. Ctrl+wheel is intercepted only over the map; browser behavior elsewhere is unchanged. Map zoom changes only the view. Existing single-pointer/touch dragging is unchanged; this app has no dedicated two-finger touchscreen pinch handler.
 
 After Find World, **Use as starting world** opens an explicit confirmation. The same action is available on a browsed world's map panel. It sets the actual ship location, clears the old route, records a reason and supports Undo. It does not advance time or change bank/cargo/contract payments; active insurance is flagged for an amendment. Use COMMIT JUMP for normal travel.
 
@@ -123,7 +123,7 @@ A committed jump consumes 10% of total hull tonnage per actual parsec, rounded u
 
 Source: Core Rulebook Update 2022, p. 157 (jump consumption), p. 154 (prices); p. 180 distinguishes jump and power-plant tankage. Run `node --test verification/fuel.test.mjs` and `node verification/fuel-browser.test.mjs`.
 
-A **Refuel** panel sits beside Life support. Refined, Unrefined and Collect water radio buttons select the source; **Refuel** opens a fuel-only Ship expenses preview, initially set to fill the tank. Selecting a source never charges the bank. Missing ship fuel settings open setup before refuelling. On narrow screens the two panels stack.
+**Refuel** opens the existing fuel-only Ship expenses dialog, initially set to fill the tank. Refined, purchased unrefined and free water collection are selected inside that dialog; there is no duplicate source selector in the Overview strip. The initial choice is refined at A/B ports and unrefined elsewhere. Selecting a source never charges the bank. Missing ship fuel settings open setup before refuelling.
 
 ## Optional reduced-profit price limits
 
@@ -210,9 +210,9 @@ Reload/import reconstructs a valid latest saved result for read-only viewing; it
 
 Seven folder-style tabs share a compact ship/current-world/fuel/life-support/cargo/credits strip. Cargo occupancy expands to include freight/mail, luggage and bladder fuel. Ship service shortcuts and campaign-day controls are on Overview; Trade reuses the existing supplier and cargo-sale panels without repricing or regenerating offers.
 
-The Route disclosure retains Plot route, Auto plot, Build route and Clear planned route. Active drafts keep Save, Remove, Retry and Cancel visible. Route chips wrap without separating their outgoing arrows. Previous/Next only browse; COMMIT JUMP retains the existing confirmation. Current system returns to the actual ship; Reset view resets the viewed map, not the ship.
+The Route disclosure retains Plot route, Auto plot, Build route and Clear planned route. Active drafts keep Save, Remove, Retry and Cancel visible. Route chips wrap without separating their outgoing arrows. Previous/Next only browse. **Jump to [next destination]** is paired with the saved next destination above the wrapped route, with Current/Next chip badges. It follows actual route progress even when browsing another world, opens the existing **COMMIT JUMP** confirmation, and never commits the whole route. It is disabled during draft planning, without a next leg, or in read-only tabs. The old duplicate jump action below the map is removed. Current system returns to the actual ship; Reset view resets the viewed map, not the ship.
 
-Refuel still asks for fuel to acquire, and Refill life support still fills the missing configured capacity. Port costs opens the existing Ship expenses flow with Berthing selected. Merely opening these dialogs does not pay anything. Roll & save starport rate remains a separate immediate saved action, even if the expense dialog is later cancelled.
+All four ship service shortcuts, including Ship expenses, share the same primary colors. Refuel still asks for fuel to acquire, and Refill life support still fills the missing configured capacity. Port costs opens the existing Ship expenses flow with Berthing selected. Merely opening these dialogs does not pay anything. Roll & save starport rate remains a separate immediate saved action, even if the expense dialog is later cancelled.
 
 The compact Overview cargo table uses frozen recorded purchase rolls/DMs/percentages and the remaining cost basis. Opening or older cargo without those values says Not recorded; Audit opens the original detailed audit.
 

@@ -119,6 +119,17 @@ jobs:
           path: tools/trade-route-calculator/verification-artifacts/
           if-no-files-found: error
           retention-days: 14
+      - name: Upload compact GUI screenshots
+        if: ${{ always() && matrix.suite == 'gui-parity' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: trade-gui-screenshots-${{ github.event.pull_request.head.sha }}
+          path: |
+            tools/trade-route-calculator/verification-artifacts/*.png
+            tools/trade-route-calculator/verification-artifacts/commit.txt
+            tools/trade-route-calculator/verification-artifacts/gui-parity.txt
+          if-no-files-found: error
+          retention-days: 14
       - name: Summarize scope
         if: always()
         env:

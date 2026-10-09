@@ -39,7 +39,7 @@ function domDouble(){
   for(const[,id]of html.matchAll(/id="(mail-dm-preview|rounding-input-note)"/g))ids.set(id,element());
  }});
  const form=ids.get('modal-form');form.elements={namedItem:n=>fields.get(n)};form.querySelectorAll=selector=>selector==='[data-round]'?[...fields.values()].filter(n=>n.hasAttribute('data-round')):[];
- return {ids,fields:()=>fields,buttons:()=>buttons,dispatch(type,target){for(const listener of listeners.get(type)||[])listener({type,target});},document:{createElement(){return {...element(),getContext(){return {measureText:t=>({width:String(t).length*6})};}};},getElementById:id=>ids.get(id)||null,addEventListener(type,listener){if(!listeners.has(type))listeners.set(type,[]);listeners.get(type).push(listener);},querySelector(){return null;},querySelectorAll(selector){
+ return {ids,fields:()=>fields,buttons:()=>buttons,dispatch(type,target,details={}){for(const listener of listeners.get(type)||[])listener({type,target,...details});},document:{createElement(){return {...element(),getContext(){return {measureText:t=>({width:String(t).length*6})};}};},getElementById:id=>ids.get(id)||null,addEventListener(type,listener){if(!listeners.has(type))listeners.set(type,[]);listeners.get(type).push(listener);},querySelector(){return null;},querySelectorAll(selector){
   if(selector!=='[data-mutate]')return [];
   buttons=[...ids.values()].flatMap(n=>[...(n.innerHTML||'').matchAll(/<button\b([^>]*)>/g)].map(m=>element(attrs(m[1])))).filter(n=>n.hasAttribute('data-mutate'));return buttons;
  }},FormData:class{constructor(){this.values=new Map([...fields].filter(([,n])=>!n.disabled&&n.attributes.type!=='checkbox').map(([k,n])=>[k,n.value]));for(const[k,n]of fields)if(n.attributes.type==='checkbox'&&n.checked)this.values.set(k,'on');}get(k){return this.values.get(k)??null;}has(k){return this.values.has(k);}[Symbol.iterator](){return this.values[Symbol.iterator]();}}};
@@ -50,7 +50,7 @@ function harness(saved=campaign(),priceDice=[]){
  const store={editable:true,recovery:false,save(next,expected){if(!this.editable)throw Error('This tab is read-only.');if(persisted.revision!==expected)throw Error('This preview is stale.');S.validate(next);persisted=structuredClone(next);calls.saves++;api.setState(next);api.render();},replace(next,expected){next=structuredClone(S.validate(next));next.revision=expected+1;this.save(next,expected);},read:()=>structuredClone(persisted)};
  const rules={...bindings.R,quote(...args){calls.quotes++;return bindings.R.quote(...args,()=>{calls.priceDice++;return priceDice.shift()??3;});},roll:n=>({dice:Array(n).fill(3),total:n*3}),die:()=>3,freightOffers(...args){calls.freight++;return bindings.R.freightOffers(...args);},mailOffer(...args){calls.mail++;return bindings.R.mailOffer(...args);}};
  const sandbox={...bindings,R:rules,document:dom.document,window:{addEventListener(){}},crypto:webcrypto,structuredClone,console,FormData:dom.FormData,setTimeout,clearTimeout,requestAnimationFrame:()=>1,cancelAnimationFrame(){}};
- vm.runInContext(executable+`\nglobalThis.api={init(s,c,m,p){state=s;core=c;mp=m;store=p;known={...s.worlds};view=s.actual;tab='Trade';},get state(){return state;},get view(){return view;},setSelected(ids){selected=new Set(ids);},get drafts(){return contractDrafts;},get check(){return mailCheck;},setState(s){receiveCampaign(s);},setDrafts(d){contractDrafts=d;},setView(id){view=id;},get previewSale(){return previewSale;},currentQuote,priceAudit,searchDialog,beginSale,buyForm,marketPanel,cargoPanel,mailPanel,mailRollSummary,contractsPanel,historyPanel,cancelledMailHistory,contractDetails,contractRolls,historyDetails,historyCategory,contractSearch,updateMailEstimate,accept,deliver,editDraft,closeModal,modal,syncModalSubmit,render,backupReplace,actions};`,vm.createContext(sandbox),{filename:'app.mjs (VM; boot omitted)'});
+ vm.runInContext(executable+`\nglobalThis.api={init(s,c,m,p){state=s;core=c;mp=m;store=p;known={...s.worlds};view=s.actual;tab='Trade';},get state(){return state;},get view(){return view;},setSelected(ids){selected=new Set(ids);},get drafts(){return contractDrafts;},get check(){return mailCheck;},setState(s){receiveCampaign(s);},setDrafts(d){contractDrafts=d;},setView(id){view=id;},get previewSale(){return previewSale;},setTab(t){tab=t;},setRouteDraft(d){routeDraft=d;},get mapZoom(){return mapZoom;},setMapDrag(d){mapDrag=d;},routeJumpControl,routeStops,shipActions,refuelShortcut,currentQuote,priceAudit,searchDialog,beginSale,buyForm,marketPanel,cargoPanel,mailPanel,mailRollSummary,contractsPanel,historyPanel,cancelledMailHistory,contractDetails,contractRolls,historyDetails,historyCategory,contractSearch,updateMailEstimate,accept,deliver,editDraft,closeModal,modal,syncModalSubmit,render,backupReplace,actions};`,vm.createContext(sandbox),{filename:'app.mjs (VM; boot omitted)'});
  api=sandbox.api;api.init(structuredClone(saved),core,mp,store);api.render();
  const fill=values=>{for(const[k,v]of Object.entries(values)){const n=dom.fields().get(k);assert.ok(n,`Expected form field ${k}`);if(n.attributes.type==='checkbox')n.checked=Boolean(v);else n.value=String(v);}};
  const submit=()=>dom.ids.get('modal-form').onsubmit({preventDefault(){},currentTarget:dom.ids.get('modal-form')});
@@ -155,4 +155,104 @@ test('legacy and entered-total Audit labels never invent a clean roll or active 
  delete audit.tradeComplication;const legacy=h.api.priceAudit(audit,'1000','11');assert.match(legacy,/Not recorded for this quote/);assert.doesNotMatch(legacy,/data-complication=/);
  const manual=bindings.R.quote(core.commodities[0],bindings.R.context(origin,core),{side:'buy',skill:1,rollTotal:15},core);
  const html=h.api.priceAudit(manual.audit,manual.unitPrice,'11');assert.match(html,/Unknown · natural dice not recorded/);assert.doesNotMatch(html,/data-complication=|None \(no matching dice\)/);
+});
+
+
+// Overview shortcuts keep existing application handlers and state transactions.
+test('next jump always follows actual saved route progress while browsing another world',()=>{
+ const s=campaign();s.route=[far.id,origin.id,destination.id];s.routeIndex=1;
+ const h=harness(s),before=h.persisted();h.api.setView(far.id);
+ const html=h.api.routeJumpControl();
+ assert.match(html,/Next destination/);assert.match(html,/Jump to Destination →/);
+ assert.doesNotMatch(html,/Jump to Far Destination|data-unavailable/);
+ assert.equal((html.match(/data-action="jump"/g)||[]).length,1);
+ h.api.actions.jump();assert.equal(h.dom.ids.get('modal-title').textContent,'Commit jump · Origin → Destination');
+ assert.equal(h.dom.ids.get('modal-submit').textContent,'COMMIT JUMP');
+ same(h.persisted(),before);h.api.closeModal();same(h.persisted(),before);
+});
+test('no route, origin-only and completed route retain a disabled jump control with an explanation',()=>{
+ for(const [route,index,actual,reason]of [[[],0,origin.id,'No route planned'],[[origin.id],0,origin.id,'No route planned'],[[origin.id,destination.id],1,destination.id,'Route complete']]){
+  const s=campaign();Object.assign(s,{route,routeIndex:index,actual});const h=harness(s);
+  assert.match(h.api.routeJumpControl(),/data-unavailable disabled/);assert.ok(h.api.routeJumpControl().includes(reason));
+  assert.throws(()=>h.api.actions.jump(),/Plan a route first/);
+ }
+});
+test('draft planning disables jump without replacing the saved destination or committing anything',()=>{
+ const h=harness(),before=h.persisted();h.api.setRouteDraft({path:[origin.id,far.id]});
+ assert.match(h.api.routeJumpControl(),/data-unavailable disabled/);
+ assert.match(h.api.routeJumpControl(),/Finish or cancel route planning before jumping/);
+ assert.doesNotMatch(h.api.routeJumpControl(),/Jump to Far Destination/);
+ h.api.setRouteDraft(null);assert.match(h.api.routeJumpControl(),/Jump to Destination →/);same(h.persisted(),before);
+});
+test('route badges identify actual progress and next stop even when a world repeats',()=>{
+ const s=campaign();s.route=[origin.id,destination.id,origin.id];const h=harness(s);
+ const html=h.api.routeStops();assert.equal((html.match(/aria-current="location"/g)||[]).length,1);
+ assert.equal((html.match(/route-stop-status">Current/g)||[]).length,1);
+ assert.equal((html.match(/route-stop-status">Next/g)||[]).length,1);
+ assert.equal((html.match(/route-arrow/g)||[]).length,2);same(h.persisted(),s);
+});
+test('next jump supports empty-space destinations and escapes destination labels',()=>{
+ const s=campaign();Object.assign(s.worlds[destination.id],{emptySpace:true,name:'Empty hex <0201> & beyond'});const h=harness(s);
+ assert.match(h.api.routeJumpControl(),/Jump to Empty hex &lt;0201&gt; &amp; beyond →/);
+ assert.doesNotMatch(h.api.routeJumpControl(),/data-unavailable/);
+ h.api.actions.jump();assert.equal(h.dom.ids.get('modal-title').textContent,'Commit jump · Origin → Empty hex <0201> & beyond');
+ h.api.closeModal();same(h.persisted(),s);
+});
+test('one explicit jump commits only one leg, keeps history labels, rejects repeat submit and supports Undo',async()=>{
+ const s=campaign();s.route=[origin.id,destination.id,origin.id];s.ship.fuel=bindings.configureFuel(200,40,40,0,2);s.ship.lifeSupport={capacityHours:672,remainingHours:672,elapsedHours:0};
+ const h=harness(s),before=h.persisted();h.api.setView(far.id);
+ h.api.actions.jump();const oldSubmit=h.dom.ids.get('modal-form').onsubmit;h.fill({hours:160});await h.submit();noError(h);
+ const jumped=h.persisted();assert.equal(jumped.actual,destination.id);assert.equal(jumped.routeIndex,1);assert.equal(jumped.hours,160);assert.equal(jumped.ship.fuel.aboardTons,20);
+ assert.equal(jumped.bank,before.bank);same(jumped.lots,before.lots);same(jumped.route,before.route);
+ assert.equal(jumped.ship.lifeSupport.remainingHours,528);assert.equal(jumped.ship.lifeSupport.elapsedHours,16);
+ assert.equal(jumped.ledger.at(-1).type,'Jump');assert.equal(jumped.ledger.at(-1).amount,'0');
+ assert.ok(jumped.events.some(e=>e.label==='Jump audit'));assert.ok(jumped.events.some(e=>e.label==='Jump: Origin → Destination'));
+ await oldSubmit({preventDefault(){},currentTarget:h.dom.ids.get('modal-form')});same(h.persisted(),jumped);
+ assert.match(h.api.routeJumpControl(),/Jump to Origin →/);
+ h.api.actions.undo();const undone=h.persisted();for(const key of ['actual','routeIndex','hours','bank','ship','route','lots','ledger'])same(undone[key],before[key]);
+ assert.ok(undone.events.some(e=>e.label==='Undo: Jump: Origin → Destination'));
+});
+test('jump confirmation cannot submit after close, ownership loss or newer campaign revision',async()=>{
+ for(const mode of ['close','ownership','revision']){
+  const h=harness(),before=h.persisted();h.api.actions.jump();h.fill({hours:160});
+  if(mode==='close')h.api.closeModal();
+  if(mode==='ownership'){h.store.editable=false;h.api.syncModalSubmit();assert.equal(h.dom.ids.get('modal-submit').disabled,true);}
+  if(mode==='revision')h.store.save(S.transition(before,'Newer test action',s=>s.bank='99999'),before.revision);
+  const expected=h.persisted();await h.submit();same(h.persisted(),expected);
+  if(mode==='revision')assert.match(h.dom.ids.get('modal-error').textContent,/stale|changed/i);
+ }
+});
+test('Overview has four matching primary services and fuel source lives inside the existing refuel dialog',()=>{
+ for(const [port,type]of [['A','refined'],['B','refined'],['C','unrefined'],['D','unrefined'],['E','unrefined']]){
+  const s=campaign();s.worlds[origin.id].uwp=port+'788899-C';s.ship.fuel=bindings.configureFuel(200,40,10,0,2);
+  const h=harness(s),before=h.persisted();h.api.setTab('Overview');const html=h.api.shipActions();
+  assert.equal((html.match(/class="primary"/g)||[]).length,4);assert.doesNotMatch(html,/quickFuelType|fuel-radio|Refined|Unrefined/);
+  h.api.setTab('Trade');h.api.refuelShortcut();assert.equal(h.dom.ids.get('modal-title').textContent,'Refuel');
+  assert.equal(h.dom.fields().get('fuelType').value,type);assert.equal(h.dom.fields().get('fuelTons').value,'30');
+  assert.match(h.dom.ids.get('modal-body').innerHTML,/Refined · Cr500\/ton/);assert.match(h.dom.ids.get('modal-body').innerHTML,/Purchased unrefined · Cr100\/ton/);assert.match(h.dom.ids.get('modal-body').innerHTML,/Collect water · Free unrefined fuel/);
+  h.api.closeModal();same(h.persisted(),before);
+ }
+});
+
+
+test('plain wheel on the map preserves page scrolling and never changes map zoom or campaign data',()=>{
+ for(const deltaMode of [0,1,2]){
+  const h=harness(),before=h.persisted();let prevented=0;
+  h.dom.dispatch('wheel',{closest:()=>({})},{deltaY:150,deltaMode,ctrlKey:false,preventDefault(){prevented++;}});
+  assert.equal(prevented,0);assert.equal(h.api.mapZoom,1);same(h.persisted(),before);
+ }
+});
+test('only Ctrl plus vertical wheel over an active map is intercepted to change zoom',()=>{
+ for(const deltaMode of [0,1,2]){
+  const h=harness(),before=h.persisted();let prevented=0;
+  h.dom.dispatch('wheel',{closest:()=>({})},{deltaY:-1,deltaMode,ctrlKey:true,preventDefault(){prevented++;}});
+  assert.equal(prevented,1);assert.ok(h.api.mapZoom>1);same(h.persisted(),before);
+ }
+ for(const guard of ['outside','modal','drag','horizontal']){
+  const h=harness(),before=h.persisted();let prevented=0;
+  if(guard==='modal')h.dom.ids.get('modal').open=true;
+  if(guard==='drag')h.api.setMapDrag({});
+  h.dom.dispatch('wheel',{closest:()=>guard==='outside'?null:{}},{deltaY:guard==='horizontal'?0:-150,deltaMode:0,ctrlKey:true,preventDefault(){prevented++;}});
+  assert.equal(prevented,0,guard+' retains default behavior');assert.equal(h.api.mapZoom,1);same(h.persisted(),before);
+ }
 });
