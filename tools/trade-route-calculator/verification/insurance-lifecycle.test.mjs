@@ -39,7 +39,7 @@ function domDouble(){
   for(const id of ['mail-dm-preview','rounding-input-note'])ids.delete(id);
   for(const[,id]of html.matchAll(/id="(mail-dm-preview|rounding-input-note)"/g))ids.set(id,element());
  }});
- const form=ids.get('modal-form');form.elements={namedItem:n=>fields.get(n)};form.querySelectorAll=selector=>selector==='[data-round]'?[...fields.values()].filter(n=>n.hasAttribute('data-round')):[];
+ const form=ids.get('modal-form');form.elements=new Proxy({namedItem:n=>fields.get(n)},{get:(target,key)=>key in target?target[key]:fields.get(key)});form.querySelectorAll=selector=>selector==='[data-round]'?[...fields.values()].filter(n=>n.hasAttribute('data-round')):[];
  return {ids,fields:()=>fields,buttons:()=>buttons,dispatch(type,target){for(const listener of listeners.get(type)||[])listener({type,target});},document:{body:{append(){}},createElement(){return {...element(),getContext(){return {measureText:t=>({width:String(t).length*6})};}};},getElementById:id=>ids.get(id)||null,addEventListener(type,listener){if(!listeners.has(type))listeners.set(type,[]);listeners.get(type).push(listener);},querySelector(){return null;},querySelectorAll(selector){
   if(selector!=='[data-mutate]')return [];
   buttons=[...ids.values()].flatMap(n=>[...(n.innerHTML||'').matchAll(/<button\b([^>]*)>/g)].map(m=>element(attrs(m[1])))).filter(n=>n.hasAttribute('data-mutate'));return buttons;
@@ -192,4 +192,23 @@ test('Amendment approval, blank reason, insufficient funds and excessive refund 
 
 test('Arrived and amendment-required policy claim controls remain enabled although actual preview rejects payout',async()=>{
  for(const status of ['arrived','amendment-required']){const h=harness();await h.insure();const seeded=h.persisted();seeded.policies[0].status=status;const ended=harness(seeded);assert.equal(ended.button('claim').disabled,false);const before=ended.persisted();ended.api.claimForm(before.policies[0].id);ended.fill({quantity:1,approved:true,reason:'Cannot claim'});await ended.submit();assert.match(error(ended),/Policy is not active/);same(ended.persisted(),before);}
+});
+
+
+test('Insurance action input never invokes a missing custom-profit field; Settings still toggles its real field',async()=>{
+ const h=harness();await h.insure();const bytes=h.raw();
+ h.api.amendPolicy(h.persisted().policies[0].id);
+ assert.equal(h.dom.fields().has('custom'),false);
+ for(const mode of ['close','amend']){
+  h.fill({mode});
+  assert.doesNotThrow(()=>h.dom.dispatch('input',{...h.dom.fields().get('mode'),closest:selector=>selector==='#modal-form'?h.dom.ids.get('modal-form'):null}));
+  assert.equal(h.raw(),bytes,'Input events do not change policy or campaign data');
+ }
+ h.api.closeModal();h.api.settings();
+ for(const mode of ['custom','100','75','custom']){
+  h.fill({mode});
+  assert.doesNotThrow(()=>h.dom.dispatch('input',{...h.dom.fields().get('mode'),closest:selector=>selector==='#modal-form'?h.dom.ids.get('modal-form'):null}));
+  assert.equal(h.dom.fields().get('custom').disabled,mode!=='custom');
+ }
+ assert.equal(h.raw(),bytes);h.api.closeModal();
 });

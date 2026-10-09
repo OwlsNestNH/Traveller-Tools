@@ -972,7 +972,9 @@ function readAccommodation(f){
 }
 function updateAccommodationEstimate(form=$('modal-form')){
  const estimate=id=>form?.querySelector('#'+id);
- const profitMode=form?.elements.mode;if(profitMode)form.elements.custom.disabled=profitMode.value!=='custom';
+ // Other dialogs also have a mode selector (for example insurance actions).
+ const profitMode=form?.elements.mode,customProfit=form?.elements.custom;
+ if(profitMode&&customProfit)customProfit.disabled=profitMode.value!=='custom';
  if(!estimate('accommodation-estimate'))return;
  form.elements.luggageTons.disabled=!form.elements.luggageOverride.checked;if(!form.elements.luggageOverride.checked){const high=Number(form.elements['people-high'].value);form.elements.luggageTons.value=Number.isSafeInteger(high)&&high>=0?String(high):'';}for(const t of tiers)form.elements['roomCustom-'+t].disabled=form.elements['roomService-'+t].value!=='custom';
  try{
