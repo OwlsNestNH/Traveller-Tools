@@ -45,7 +45,12 @@ function campaign({capacity='60', configured=true}={}) {
 }
 const errorText = error => error?.stack || String(error);
 const read = page => page.evaluate(key => JSON.parse(localStorage.getItem(key)), KEY);
-const mail = page => page.locator('.mail-card');
+const mail = page => page.locator('#mail-card');
+const mailSummary = page => mail(page).locator(':scope > summary');
+const storageSnapshot = page => page.evaluate(() => ({
+  local:Object.fromEntries(Object.keys(localStorage).sort().map(key => [key, localStorage.getItem(key)])),
+  session:Object.fromEntries(Object.keys(sessionStorage).sort().map(key => [key, sessionStorage.getItem(key)])),
+}));
 const modal = page => page.locator('#modal[open]');
 const fill = (page, name, value) => modal(page).locator('[name="'+name+'"]').fill(String(value));
 const tab = (page, name) => page.locator('#tabs').getByRole('button', {name, exact:true}).click();
@@ -60,16 +65,54 @@ const unchangedAccounting = state => ({bank:state.bank, hours:state.hours, lots:
 const normalized = value => value.replace(/\s+/g, ' ').trim();
 const manualRoll = 'Availability roll: manual 2D total 12; 12 + 7 DM = 19 (12+ required) Container roll: manual 1D total 3';
 const calculationDetails = page => mail(page).locator('details').filter({has:page.locator('summary').filter({hasText:/^How was this calculated\?$/})});
+async function toggleMailPanel(page, open, {key=null}={}) {
+  assert.equal(await mail(page).evaluate(el => el.open), !open, 'Exercise an actual outer disclosure state change');
+  if (key) { await mailSummary(page).focus(); await mailSummary(page).press(key); }
+  else await mailSummary(page).click();
+  await page.waitForFunction(expected => document.querySelector('#mail-card')?.open === expected, open);
+  // Native toggle events are queued. Let the session-state listener finish
+  // before a tab change destroys the old node and renders another disclosure.
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+}
+async function openMailPanel(page) {
+  if (!await mail(page).evaluate(el => el.open)) await toggleMailPanel(page, true);
+}
+async function compactMailPanel(page, expected) {
+  const card = mail(page), summary = mailSummary(page);
+  assert.equal(await card.evaluate(el => el.tagName), 'DETAILS', 'The entire Mail panel is a native disclosure');
+  assert.equal(await card.getAttribute('aria-label'), 'Mail');
+  assert.equal(await card.evaluate(el => el.firstElementChild.tagName), 'SUMMARY', 'The disclosure summary comes before its body');
+  assert.equal(await summary.count(), 1);
+  assert.equal(await card.evaluate(el => el.children.length), 2, 'The whole panel consists only of its summary and collapsible body');
+  assert.equal(await card.locator(':scope > .panel-body').count(), 1);
+  assert.equal(await summary.evaluate(el => el.tabIndex), 0, 'The native summary participates in keyboard navigation');
+  assert.equal(await summary.locator('button, a, input, select, textarea, [role="button"]').count(), 0, 'Summary contains no nested interactive controls');
+  assert.equal(await card.evaluate(el => el.open), false);
+  assert.equal(await card.locator(':scope > .panel-body').isVisible(), false, 'All Mail content is hidden while the panel is collapsed');
+  const visible = normalized(await card.innerText());
+  assert.equal(visible, normalized(await summary.innerText()), 'Only the title and compact summary remain visible');
+  assert.equal(await summary.locator('strong').innerText(), 'Mail');
+  const status = summary.locator('.mail-card-status');
+  assert.equal(await status.isVisible(), true, 'Current result remains visible while Mail is collapsed');
+  assert.equal(await status.getAttribute('role'), 'status');
+  assert.equal(normalized(await status.innerText()), expected);
+  assert.doesNotMatch(visible, /From Settings:|Availability roll:|Container roll:|How was this calculated|Containers rolled|Edit mail settings/);
+  const bounds = await card.boundingBox(), viewport = page.viewportSize();
+  assert.ok(bounds.height <= 140, 'Collapsed Mail remains a compact header on desktop and mobile');
+  assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= viewport.width + 2, 'Compact Mail fits the viewport');
+  assert.ok(await page.locator('main').evaluate(el => el.scrollWidth <= el.clientWidth + 2), 'Compact Mail does not overflow the main content');
+}
 async function visibleRoll(page, expected) {
+  await openMailPanel(page);
   const card = mail(page), roll = card.locator('.mail-result .mail-roll-summary');
   assert.equal(await calculationDetails(page).count(), 1);
   assert.equal(await calculationDetails(page).evaluate(el => el.open), false, 'The roll must be readable before expanding calculation details');
   assert.equal(await roll.count(), 1);
   assert.equal(await roll.isVisible(), true);
-  assert.equal(await roll.evaluate(el => el.closest('details') === null), true, 'Roll summary is outside collapsed details');
+  assert.equal(await roll.evaluate(el => el.closest('details')?.id === 'mail-card'), true, 'Roll summary is inside the open outer panel and outside collapsed calculation/accepted details');
   assert.equal(normalized(await roll.innerText()), expected);
   const visible = normalized(await card.innerText());
-  assert.ok(visible.includes(expected), 'The complete formula is part of the initially visible card text');
+  assert.ok(visible.includes(expected), 'The complete formula is visible after expanding the outer Mail panel');
   assert.doesNotMatch(visible, /Freight-band DM|Origin world DM/, 'Detailed calculation is still collapsed');
   assert.equal(await card.getByRole('button', {name:'Audit', exact:true}).isVisible(), true);
 }
@@ -98,6 +141,7 @@ async function contractToolbar(page) {
   }
 }
 async function toggleAccepted(page, open, {keyboard=false}={}) {
+  await openMailPanel(page);
   const details = page.locator('#mail-accepted-details');
   assert.equal(await details.count(), 1);
   assert.equal(await details.evaluate(el => el.tagName), 'DETAILS', 'Accepted mail uses a native disclosure');
@@ -116,6 +160,7 @@ async function savedRowRoll(page, id, expected) {
   assert.ok(normalized(await row.innerText()).includes(expected));
 }
 async function openMailAudit(page) {
+  await openMailPanel(page);
   await mail(page).getByRole('button', {name:'Audit', exact:true}).click();
   assert.equal(await page.locator('#modal-title').innerText(), 'Mail roll audit');
   assert.equal(await page.locator('#modal-submit').isVisible(), false, 'The Mail audit is read-only');
@@ -166,11 +211,13 @@ async function undo(page) {
   await tab(page, 'Contracts');
 }
 async function acceptMail(page) {
+  await openMailPanel(page);
   await mail(page).getByRole('button', {name:'Accept whole mail consignment', exact:true}).click();
   assert.match(await modal(page).textContent(), /does not pay you yet/);
   await submit(page, 'Accept whole contract');
 }
 async function openMailCancel(page, id, {details=false}={}) {
+  if (details) await openMailPanel(page);
   const target = details ? page.locator('#mail-accepted-details') : contractRow(page, id);
   await target.locator('[data-action="mail-cancel"][data-arg="'+id+'"]').click();
   assert.equal(await page.locator('#modal-title').innerText(), 'Cancel mail');
@@ -300,11 +347,191 @@ try {
   browser = await playwright.chromium.launch({headless:true, ...(process.env.TRAVELLER_BROWSER_CHANNEL ? {channel:process.env.TRAVELLER_BROWSER_CHANNEL} : {})});
   summary.browser = {name:'Chromium', version:browser.version(), channel:process.env.TRAVELLER_BROWSER_CHANNEL || 'bundled', headless:true};
 
+  for (const [size, viewport] of [['desktop',{width:1440,height:1100}], ['mobile',{width:390,height:844}]]) {
+    await runCase('whole-panel-disclosure-'+size, {}, async (page, context, result, initial) => {
+      await page.setViewportSize(viewport);
+      await contractToolbar(page);
+      await compactMailPanel(page, 'Not checked this session');
+      await screenshot(page, result, 'mail-'+size+'-panel-default-compact.png');
+      const untouchedStorage = await storageSnapshot(page);
+      const collapsedHeight = (await mail(page).boundingBox()).height;
+      await toggleMailPanel(page, true, {key:'Enter'});
+      assert.equal(await mail(page).getByRole('button', {name:'Edit mail settings', exact:true}).isVisible(), true);
+      assert.match(await mail(page).innerText(), /No mail check in this session/);
+      assert.ok((await mail(page).boundingBox()).height > collapsedHeight + 40, 'Opening reveals the full Mail body');
+      await tab(page, 'History');
+      await tab(page, 'Contracts');
+      assert.equal(await mail(page).evaluate(el => el.open), true, 'Open outer panel survives tab changes');
+      await toggleMailPanel(page, false, {key:'Space'});
+      await tab(page, 'Settings');
+      await tab(page, 'Contracts');
+      await compactMailPanel(page, 'Not checked this session');
+      assert.deepEqual(await read(page), initial, 'Initial disclosure gestures do not alter campaign state');
+      assert.deepEqual(await storageSnapshot(page), untouchedStorage, 'Disclosure preferences are not written to local or session storage');
+
+      // The toolbar remains usable while the entire Mail card is genuinely shut.
+      // Neither this check helper nor these assertions silently opens the panel.
+      const search = await checkMail(page);
+      await compactMailPanel(page, 'Mail available · 15 t · Cr 75,000 on delivery');
+      assert.equal(await page.locator('#message').isVisible(), true);
+      assert.match(await page.locator('#message').innerText(), /Mail available: 3 containers, 15 tons/);
+      assert.deepEqual(moneyState(await read(page)), moneyState(initial), 'A collapsed check records history without changing accounting');
+      assert.equal(await page.locator('#mail-accepted-details').count(), 0);
+      await screenshot(page, result, 'mail-'+size+'-panel-offer-compact.png');
+      await toggleMailPanel(page, true, {key:'Space'});
+      await visibleRoll(page, manualRoll);
+      assert.equal(await mail(page).getByRole('button', {name:'Accept whole mail consignment', exact:true}).isVisible(), true);
+      const originalAudit = normalized(await openMailAudit(page));
+      await closeAudit(page);
+      await screenshot(page, result, 'mail-'+size+'-panel-offer-expanded.png');
+      const checkedState = await read(page), checkedStorage = await storageSnapshot(page);
+      const offerRow = page.locator('#main tbody tr').filter({hasText:'Mail contract'});
+      const originalOffer = normalized(await offerRow.innerText());
+      await toggleMailPanel(page, false, {key:'Enter'});
+      await tab(page, 'History');
+      await tab(page, 'Contracts');
+      await compactMailPanel(page, 'Mail available · 15 t · Cr 75,000 on delivery');
+      await toggleMailPanel(page, true);
+      await visibleRoll(page, manualRoll);
+      assert.equal(normalized(await offerRow.innerText()), originalOffer, 'Closing and reopening retains the same actionable offer');
+      assert.deepEqual(await read(page), checkedState, 'The offer, dice, audit and History remain unchanged');
+      assert.deepEqual(await storageSnapshot(page), checkedStorage, 'Toggling a checked panel writes no persisted state');
+
+      // Real referee edits must survive collapse and update the compact terms,
+      // while recorded dice and the original search remain immutable.
+      await mail(page).getByRole('button', {name:'Edit / referee override', exact:true}).click();
+      await fill(page, 'description', 'Priority dispatch');
+      await fill(page, 'quantity', 10);
+      await fill(page, 'payment', 60000);
+      await fill(page, 'due', '');
+      await fill(page, 'reason', 'Referee replaces one container');
+      await submit(page, 'Save');
+      assert.equal(await mail(page).evaluate(el => el.open), true, 'An offer edit preserves the open outer panel');
+      const editedState = await read(page), editedStorage = await storageSnapshot(page);
+      assert.deepEqual(editedState.events.find(event => event.id === search.id), search);
+      assert.equal(editedState.events.find(event => event.label === 'Contract offer edit').offer.overrides.length, 1);
+      await toggleMailPanel(page, false);
+      await compactMailPanel(page, 'Mail available · 10 t · Cr 60,000 on delivery');
+      await toggleMailPanel(page, true);
+      await visibleRoll(page, manualRoll);
+      assert.match(await mail(page).innerText(), /Referee-edited terms/);
+      assert.equal(normalized(await openMailAudit(page)), originalAudit, 'Reopening does not reroll or replace the recorded calculation');
+      await closeAudit(page);
+      await mail(page).getByRole('button', {name:'Edit / referee override', exact:true}).click();
+      assert.equal(await modal(page).locator('[name="description"]').inputValue(), 'Priority dispatch');
+      assert.equal(await modal(page).locator('[name="quantity"]').inputValue(), '10');
+      assert.equal(await modal(page).locator('[name="payment"]').inputValue(), '60000');
+      await cancel(page);
+      await toggleMailPanel(page, false);
+      assert.deepEqual(await read(page), editedState);
+      assert.deepEqual(await storageSnapshot(page), editedStorage, 'Disclosure, Audit and dismissed editing preserve every stored byte');
+
+      // Persisted/table actions remain independent of whether Mail is open.
+      await offerRow.getByRole('button', {name:'Accept', exact:true}).click();
+      await submit(page, 'Accept whole contract');
+      const accepted = await read(page), id = accepted.contracts.at(-1).id;
+      await compactMailPanel(page, 'Mail accepted · 10 t reserved · Cr 60,000 on delivery');
+      assert.equal(await page.locator('#mail-accepted-details').evaluate(el => el.open), true, 'Newly accepted inner details start open even inside a closed outer panel');
+      await savedRowRoll(page, id, manualRoll);
+      await screenshot(page, result, 'mail-'+size+'-panel-accepted-compact.png');
+      await toggleMailPanel(page, true);
+      await toggleAccepted(page, false, {keyboard:true});
+      assert.equal(await mail(page).evaluate(el => el.open), true, 'Closing accepted details does not close the outer panel');
+      await visibleRoll(page, manualRoll);
+      await mail(page).getByText('How was this calculated?', {exact:true}).click();
+      assert.equal(await calculationDetails(page).evaluate(el => el.open), true);
+      const acceptedStorage = await storageSnapshot(page);
+      await toggleMailPanel(page, false);
+      assert.equal(await page.locator('#mail-accepted-details').evaluate(el => el.open), false);
+      assert.equal(await calculationDetails(page).evaluate(el => el.open), true, 'Closing the outer panel does not toggle its calculation disclosure');
+      await toggleMailPanel(page, true);
+      assert.equal(await page.locator('#mail-accepted-details').evaluate(el => el.open), false, 'Reopening Mail retains collapsed accepted details');
+      assert.equal(await calculationDetails(page).evaluate(el => el.open), true, 'Reopening Mail retains expanded calculations');
+      await mail(page).getByText('How was this calculated?', {exact:true}).click();
+      await toggleMailPanel(page, false);
+      await tab(page, 'History');
+      await tab(page, 'Contracts');
+      await compactMailPanel(page, 'Mail accepted · 10 t reserved · Cr 60,000 on delivery');
+      assert.equal(await page.locator('#mail-accepted-details').evaluate(el => el.open), false, 'Outer and inner collapse preferences survive rendering independently');
+      await toggleMailPanel(page, true);
+      assert.equal(normalized(await openMailAudit(page)), originalAudit, 'Audit is available after opening Mail while accepted details remain shut');
+      await closeAudit(page);
+      await toggleMailPanel(page, false);
+      assert.deepEqual(await read(page), accepted);
+      assert.deepEqual(await storageSnapshot(page), acceptedStorage, 'Nested disclosure changes cannot alter contracts, dice, History or storage');
+      await commitMailCancel(page, id);
+      await compactMailPanel(page, 'Mail cancelled · 10 t released · No payment');
+      await savedRowRoll(page, id, manualRoll);
+      assert.equal(await page.locator('#mail-accepted-details').evaluate(el => el.open), false, 'Cancellation preserves the independent inner preference');
+      assert.equal(contract(await read(page), id).status, 'cancelled');
+      assert.deepEqual(unchangedAccounting(await read(page)), unchangedAccounting(accepted));
+
+      // A new check updates the collapsed summary, never forces Mail open,
+      // and resets only the accepted-details preference for the new result.
+      await checkMail(page, {availability:2});
+      await compactMailPanel(page, 'No mail available');
+      assert.match(await page.locator('#message').innerText(), /No mail available this check/);
+      assert.equal(await page.locator('#mail-accepted-details').count(), 0);
+      await toggleMailPanel(page, true);
+      await visibleRoll(page, 'Availability roll: manual 2D total 2; 2 + 7 DM = 9 (12+ required)');
+      assert.match(await openMailAudit(page), /Not rolled: no mail available/);
+      await closeAudit(page);
+      await toggleMailPanel(page, false);
+      await checkMail(page);
+      await compactMailPanel(page, 'Mail available · 15 t · Cr 75,000 on delivery');
+      await page.locator('#main tbody tr').filter({hasText:'Available · unpaid'}).getByRole('button', {name:'Accept', exact:true}).click();
+      await submit(page, 'Accept whole contract');
+      const nextId = (await read(page)).contracts.at(-1).id;
+      assert.notEqual(nextId, id);
+      assert.equal(await page.locator('#mail-accepted-details').evaluate(el => el.open), true, 'The new result resets only accepted details to expanded');
+      await compactMailPanel(page, 'Mail accepted · 15 t reserved · Cr 75,000 on delivery');
+      await toggleMailPanel(page, true);
+      await toggleAccepted(page, false);
+      await toggleMailPanel(page, false);
+      await committedJump(page);
+      await compactMailPanel(page, 'Mail accepted · 15 t reserved · Cr 75,000 on delivery');
+      await contractRow(page, nextId).getByRole('button', {name:'Deliver', exact:true}).click();
+      await submit(page, 'Commit delivery & payout');
+      await compactMailPanel(page, 'Mail delivered · 15 t delivered · Cr 75,000 paid');
+      assert.equal(await page.locator('#mail-accepted-details').evaluate(el => el.open), false, 'Delivery preserves the separate inner disclosure state');
+      await savedRowRoll(page, nextId, manualRoll);
+      await screenshot(page, result, 'mail-'+size+'-panel-delivered-compact.png');
+
+      // Transfer the real navigator lock. The original tab retains its session
+      // result and must still permit display-only expansion and audit reading.
+      const reader = await context.newPage();
+      await reader.goto(base);
+      await reader.getByText('Read-only: campaign open in another tab.', {exact:true}).waitFor();
+      await reader.getByRole('button', {name:'Take over editing', exact:true}).click();
+      await reader.getByText('Editing in this tab', {exact:true}).waitFor();
+      await page.getByText('Read-only: editing transferred to another tab.', {exact:true}).waitFor();
+      const readOnlyState = await read(page), readOnlyStorage = await storageSnapshot(page);
+      await compactMailPanel(page, 'Mail delivered · 15 t delivered · Cr 75,000 paid');
+      await toggleMailPanel(page, true, {key:'Enter'});
+      assert.equal(normalized(await openMailAudit(page)), originalAudit, 'Read-only tabs can expand Mail and inspect its recorded audit');
+      await closeAudit(page);
+      await toggleAccepted(page, true);
+      assert.equal(await mail(page).getByRole('button', {name:'Edit mail settings', exact:true}).isDisabled(), true);
+      assert.equal(await page.locator('#contract-actions').getByRole('button', {name:'Check for mail', exact:true}).isDisabled(), true);
+      await toggleMailPanel(page, false, {key:'Space'});
+      assert.deepEqual(await read(page), readOnlyState);
+      assert.deepEqual(await storageSnapshot(page), readOnlyStorage, 'Read-only disclosure and audit actions have no persistence effects');
+      await toggleMailPanel(page, true);
+      await page.reload();
+      await page.getByText('Read-only: campaign open in another tab.', {exact:true}).waitFor();
+      await tab(page, 'Contracts');
+      await compactMailPanel(page, 'Not checked this session');
+      await savedRowRoll(page, nextId, manualRoll);
+      assert.deepEqual(await read(page), readOnlyState, 'Reload resets presentation to compact without changing saved contracts or restoring session offers');
+    });
+  }
+
   await runCase('settings-and-independent-rolls', {configured:false}, async (page, context, result, initial) => {
     assert.match(await mail(page).textContent(), /No mail check in this session/);
     assert.match(await mail(page).textContent(), /session-only; previous checks remain read-only in History/);
     assert.match(await mail(page).textContent(), /armed ship No \(\+0\)/);
     assert.deepEqual(await read(page), initial);
+    await openMailPanel(page);
     await mail(page).getByRole('button', {name:'Edit mail settings', exact:true}).click();
     assert.equal(await page.locator('#modal-title').textContent(), 'Ship, trader & options');
     await modal(page).locator('[name="armed"]').check();
@@ -355,6 +582,7 @@ try {
     await visibleRoll(page, 'Availability roll: 2D 3 + 3 = 6; 6 + 7 DM = 13 (12+ required) Container roll: 1D 3 = 3');
     await screenshot(page, result, 'mail-desktop-automatic-roll.png');
     audit = await checkMail(page, {availability:12, containers:''});
+    assert.equal(await mail(page).evaluate(el => el.open), true, 'A new check preserves an already-open outer Mail panel');
     assert.deepEqual(audit.mailAudit.dice, {dice:null, total:12, manual:true});
     assert.deepEqual(audit.mailAudit.count, {dice:[3], total:3});
     await visibleRoll(page, 'Availability roll: manual 2D total 12; 12 + 7 DM = 19 (12+ required) Container roll: 1D 3 = 3');
@@ -447,6 +675,7 @@ try {
 
   await runCase('whole-consignment-capacity', {capacity:'14'}, async (page, context, result) => {
     await checkMail(page);
+    await openMailPanel(page);
     assert.match(await mail(page).textContent(), /Does not fit.*14 t free/s);
     assert.match(await mail(page).textContent(), /partial acceptance is not available/);
     assert.equal(await mail(page).getByRole('button', {name:'Accept whole mail consignment', exact:true}).isDisabled(), true);
@@ -473,6 +702,7 @@ try {
     await page.reload();
     await page.getByText('Editing in this tab', {exact:true}).waitFor();
     await tab(page, 'Contracts');
+    await openMailPanel(page);
     assert.match(await mail(page).innerText(), /No mail check in this session/);
     await savedRowRoll(page, accepted.contracts[0].id, manualRoll);
     assert.deepEqual(await read(page), accepted, 'Reload preserves the accepted contract and its saved roll');
@@ -487,6 +717,7 @@ try {
   await runCase('accept-jump-deliver-and-undo', {}, async page => {
     await checkMail(page);
     const checked = await read(page);
+    await openMailPanel(page);
     await mail(page).getByRole('button', {name:'Accept whole mail consignment', exact:true}).click();
     await cancel(page);
     assert.deepEqual(await read(page), checked);
@@ -866,7 +1097,7 @@ try {
     await cancel(page);
     assert.deepEqual(await read(page), initial, 'Repositioned Manual contract still opens its non-mutating form');
     await checkMail(page);
-    assert.equal(await page.locator('#mail-accepted-details').count(), 0, 'Available offers stay expanded and actionable');
+    assert.equal(await page.locator('#mail-accepted-details').count(), 0, 'Unaccepted offers do not acquire an accepted-only disclosure');
     await acceptMail(page);
     let details = page.locator('#mail-accepted-details');
     assert.equal(await details.evaluate(el => el.open), true, 'Accepted details start open');
@@ -974,6 +1205,7 @@ try {
 
     const search = await checkMail(page, {combined:true});
     const searchBeforeEdit = structuredClone(search);
+    await openMailPanel(page);
     await mail(page).getByRole('button', {name:'Edit / referee override', exact:true}).click();
     await fill(page, 'description', 'Priority dispatch');
     await fill(page, 'quantity', 10);
@@ -1058,6 +1290,7 @@ try {
     await reader.getByText('Read-only: campaign open in another tab.', {exact:true}).waitFor();
     await tab(reader, 'Contracts');
     assert.equal(await reader.locator('#contract-actions').getByRole('button', {name:'Check for mail', exact:true}).isDisabled(), true);
+    await openMailPanel(reader);
     assert.equal(await mail(reader).getByRole('button', {name:'Edit mail settings', exact:true}).isDisabled(), true);
     await historyAudit(reader, audit.id);
     await modal(reader).getByText('Mail search result', {exact:true}).click();
@@ -1074,8 +1307,8 @@ try {
     catch (error) { summary.errors.push('Browser close: '+errorText(error)); }
   }
   summary.finishedAt = new Date().toISOString();
-  summary.passed = summary.errors.length === 0 && summary.cases.length === 13 && summary.cases.every(c => c.status === 'passed');
+  summary.passed = summary.errors.length === 0 && summary.cases.length === 15 && summary.cases.every(c => c.status === 'passed');
   await writeFile(join(artifacts, 'mail-browser-summary.json'), JSON.stringify(summary, null, 2)+'\n');
 }
 if (!summary.passed) throw new Error('Mail browser verification failed. See verification-artifacts/mail-browser-summary.json and per-case traces/screenshots.');
-console.log('PASS: all 13 Mail/map browser scenarios; desktop/mobile screenshots, per-case Playwright traces and commit-tagged JSON summary saved.');
+console.log('PASS: all 15 Mail/map browser scenarios; desktop/mobile screenshots, per-case Playwright traces and commit-tagged JSON summary saved.');

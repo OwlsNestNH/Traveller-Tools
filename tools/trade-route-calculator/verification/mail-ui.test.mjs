@@ -60,15 +60,29 @@ const html=h=>h.api.mailPanel();
 const same=(a,b)=>assert.deepEqual(JSON.parse(JSON.stringify(a)),JSON.parse(JSON.stringify(b)));
 
 const text=markup=>decode(markup.replace(/<[^>]*>/g,' ')).replace(/\s+/g,' ').trim();
-const outsideDetails=markup=>markup.replace(/<details\b[^>]*>[\s\S]*?<\/details>/g,'');
+// Inspect the expanded outer card while excluding the independent nested
+// shipment/calculation disclosures. Outer visibility has its own tests below.
+const outsideInnerDetails=markup=>{
+ const body=markup.startsWith('<details id="mail-card"')?markup.replace(/^<details\b[^>]*><summary\b[^>]*>[\s\S]*?<\/summary>/,'').replace(/<\/details>$/,''):markup;
+ return body.replace(/<details\b[^>]*>[\s\S]*?<\/details>/g,'');
+};
+const outerDetails=h=>{
+ const match=html(h).match(/^<details\b([^>]*)><summary\b([^>]*)>([\s\S]*?)<\/summary>/);
+ assert.ok(match,'The whole Mail card is a native details disclosure');
+ assert.equal(attrs(match[1]).id,'mail-card');assert.equal(attrs(match[1])['aria-label'],'Mail');
+ assert.doesNotMatch(match[3],/<button|<a\b|<input|<select|<summary/,'Summary contains no nested interactive controls');
+ assert.match(match[3],/role="status"/,'Visible header exposes the current result');
+ return {open:'open'in attrs(match[1]),summary:text(match[3].replace(/<span[^>]*aria-hidden="true"[^>]*>[\s\S]*?<\/span>/g,'')),markup:match[0]};
+};
+const toggleOuter=(h,open)=>h.dom.dispatch('toggle',{id:'mail-card',open,isConnected:true});
 const summaryText=markup=>{
  const match=markup.match(/<div class="mail-roll-summary[^"]*">([\s\S]*?)<\/div>/);
  assert.ok(match,'A rendered roll summary is present');return text(match[1]);
 };
-function visibleCardRoll(h){
+function expandedCardRoll(h){
  const card=html(h),calculation=card.match(/<details\b([^>]*)><summary>How was this calculated\?<\/summary>/);
  assert.ok(calculation,'The calculation disclosure is present');assert.equal('open'in attrs(calculation[1]),false,'Calculation details start collapsed');
- const visible=outsideDetails(card);assert.equal((visible.match(/class="mail-roll-summary/g)||[]).length,1,'Exactly one roll summary sits outside collapsed details');
+ const visible=outsideInnerDetails(card);assert.equal((visible.match(/class="mail-roll-summary/g)||[]).length,1,'Exactly one roll summary sits outside nested collapsed details');
  assert.match(visible,/data-action="mail-audit"[^>]*>Audit<\/button>/);
  return summaryText(visible);
 }
@@ -125,22 +139,22 @@ test('actual app acceptance/delivery submissions show correct status and reserve
 });
 test('accepted details collapse independently, survive renders and tabs, and never change campaign data',async()=>{
  const h=harness();assert.doesNotMatch(html(h),/id="mail-accepted-details"/);await h.check();assert.doesNotMatch(html(h),/id="mail-accepted-details"/);
- const expected=visibleCardRoll(h);h.api.accept(h.api.drafts[0].offerId);await h.submit();
+ const expected=expandedCardRoll(h);h.api.accept(h.api.drafts[0].offerId);await h.submit();
  const details=acceptedDetails(h);assert.equal(details.open,true);assert.equal(details.summary,'Accepted mail details · 15 t reserved');
  for(const label of ['From Settings:','Edit mail settings','Containers rolled','Total tons','Payment on delivery','Hold capacity','Deliver explicitly at the destination'])assert.ok(details.body.includes(label),label+' is inside the collapsible section');
  const saved=h.persisted(),live=structuredClone(h.api.state),saves=h.calls.saves,check=JSON.stringify(h.api.check);
  const toggle=open=>h.dom.dispatch('toggle',{id:'mail-accepted-details',open,isConnected:true});
- toggle(false);h.api.render();assert.equal(acceptedDetails(h).open,false);assert.equal(visibleCardRoll(h),expected);
- const outside=text(outsideDetails(html(h)));assert.match(outside,/Mail accepted/);assert.match(outside,/Origin → Destination/);assert.doesNotMatch(outside,/From Settings:|Containers rolled|Payment on delivery|Hold capacity/);
+ toggle(false);h.api.render();assert.equal(acceptedDetails(h).open,false);assert.equal(expandedCardRoll(h),expected);
+ const outside=text(outsideInnerDetails(html(h)));assert.match(outside,/Mail accepted/);assert.match(outside,/Origin → Destination/);assert.doesNotMatch(outside,/From Settings:|Containers rolled|Payment on delivery|Hold capacity/);
  // Native toggle events from detached/replaced elements must not overwrite the
  // live session preference after a render.
  h.dom.dispatch('toggle',{id:'mail-accepted-details',open:true,isConnected:false});h.api.render();assert.equal(acceptedDetails(h).open,false);
- h.api.actions.tab('History');h.api.actions.tab('Contracts');assert.equal(acceptedDetails(h).open,false);assert.equal(visibleCardRoll(h),expected);
+ h.api.actions.tab('History');h.api.actions.tab('Contracts');assert.equal(acceptedDetails(h).open,false);assert.equal(expandedCardRoll(h),expected);
  h.api.actions['mail-audit']();assert.equal(h.dom.ids.get('modal-title').textContent,'Mail roll audit');assert.equal(h.dom.ids.get('modal-submit').hidden,true);h.api.closeModal();
  toggle(true);h.api.render();assert.equal(acceptedDetails(h).open,true);h.api.actions.tab('History');h.api.actions.tab('Contracts');assert.equal(acceptedDetails(h).open,true);
  same(h.persisted(),saved);same(h.api.state,live);assert.equal(h.calls.saves,saves);assert.equal(JSON.stringify(h.api.check),check);
  toggle(false);h.api.state.actual=destination.id;h.api.deliver(h.api.state.contracts[0].id);await h.submit();
- const delivered=acceptedDetails(h);assert.equal(delivered.open,false,'Delivery renders keep the session disclosure preference');assert.equal(delivered.summary,'Delivered mail details · Cr 75,000 paid');assert.match(delivered.body,/Released after delivery/);assert.equal(visibleCardRoll(h),expected);assert.match(text(outsideDetails(html(h))),/Mail delivered/);
+ const delivered=acceptedDetails(h);assert.equal(delivered.open,false,'Delivery renders keep the session disclosure preference');assert.equal(delivered.summary,'Delivered mail details · Cr 75,000 paid');assert.match(delivered.body,/Released after delivery/);assert.equal(expandedCardRoll(h),expected);assert.match(text(outsideInnerDetails(html(h))),/Mail delivered/);
  const deliveredSaved=h.persisted(),deliveredSaves=h.calls.saves;toggle(true);h.api.render();assert.equal(acceptedDetails(h).open,true);toggle(false);h.api.render();same(h.persisted(),deliveredSaved);assert.equal(h.calls.saves,deliveredSaves);
  h.api.state.actual=origin.id;await h.check();assert.doesNotMatch(html(h),/id="mail-accepted-details"/);h.api.accept(h.api.drafts[0].offerId);await h.submit();assert.equal(acceptedDetails(h).open,true,'A new check resets details to open for its accepted result');
  const reload=harness(h.persisted());assert.equal(reload.api.check,null);assert.doesNotMatch(html(reload),/id="mail-accepted-details"/);assert.equal('mailAcceptedDetailsOpen'in reload.api.state,false,'Disclosure state is session-only');
@@ -214,23 +228,23 @@ test('Undo combined search or referee edit discards session drafts without rebui
 });
 
 
-test('roll summary is visible outside collapsed details for automatic, manual and unavailable checks',async()=>{
+test('expanded card shows rolls outside nested details for automatic, manual and unavailable checks',async()=>{
  const h=harness();await h.check({mailAvailability:'',mailContainers:''});
- assert.equal(visibleCardRoll(h),'Availability roll: 2D 3 + 3 = 6; 6 + 7 DM = 13 (12+ required) Container roll: 1D 3 = 3');
- assert.match(text(outsideDetails(html(h))),/Mail available/);
+ assert.equal(expandedCardRoll(h),'Availability roll: 2D 3 + 3 = 6; 6 + 7 DM = 13 (12+ required) Container roll: 1D 3 = 3');
+ assert.match(text(outsideInnerDetails(html(h))),/Mail available/);
  await h.check();
- assert.equal(visibleCardRoll(h),'Availability roll: manual 2D total 12; 12 + 7 DM = 19 (12+ required) Container roll: manual 1D total 3');
+ assert.equal(expandedCardRoll(h),'Availability roll: manual 2D total 12; 12 + 7 DM = 19 (12+ required) Container roll: manual 1D total 3');
  await h.check({dice:2,mailAvailability:2,mailContainers:6});
- assert.equal(visibleCardRoll(h),'Availability roll: manual 2D total 2; 2 + 7 DM = 9 (12+ required)');
- assert.match(text(outsideDetails(html(h))),/No mail available/);assert.doesNotMatch(visibleCardRoll(h),/Container roll|1D/);
+ assert.equal(expandedCardRoll(h),'Availability roll: manual 2D total 2; 2 + 7 DM = 9 (12+ required)');
+ assert.match(text(outsideInnerDetails(html(h))),/No mail available/);assert.doesNotMatch(expandedCardRoll(h),/Container roll|1D/);
 });
 
 test('negative total DM uses subtraction and retains the exact recorded outcome',async()=>{
  const saved=campaign();saved.ship.armed=false;saved.trader.rank=0;saved.trader.soc=-1;saved.worlds[origin.id].uwp='C000500-5';saved.worlds[destination.id].uwp='C000500-8';
  const h=harness(saved);await h.check({mailAvailability:12});
  assert.equal(h.api.check.audit.modifierTotal,-5);assert.equal(h.api.check.audit.total,7);
- assert.equal(visibleCardRoll(h),'Availability roll: manual 2D total 12; 12 - 5 DM = 7 (12+ required)');
- assert.doesNotMatch(visibleCardRoll(h),/\+\s*-/);
+ assert.equal(expandedCardRoll(h),'Availability roll: manual 2D total 12; 12 - 5 DM = 7 (12+ required)');
+ assert.doesNotMatch(expandedCardRoll(h),/\+\s*-/);
 });
 
 test('legacy roll summary uses only recorded values and requires all five modifiers for its fallback',()=>{
@@ -260,7 +274,7 @@ test('legacy roll summary uses only recorded values and requires all five modifi
 
 test('card Audit is read-only and preserves every recorded input and modifier after settings or world changes',async()=>{
  const h=harness();await h.check({skill:2,characteristic:-1});
- const recorded=structuredClone(h.api.check.audit),saved=h.persisted(),saves=h.calls.saves,visible=visibleCardRoll(h);
+ const recorded=structuredClone(h.api.check.audit),saved=h.persisted(),saves=h.calls.saves,visible=expandedCardRoll(h);
  same(recorded.searchDice,{dice:null,total:8,manual:true});assert.equal(recorded.searchSkill,2);assert.equal(recorded.searchCharacteristic,-1);
  same(recorded.worldInputs,{origin:{name:'Origin',population:8,starport:'A',techLevel:12,zone:'Safe'},destination:{name:'Destination',population:8,starport:'A',techLevel:12,zone:'Safe'}});
  h.api.actions['mail-audit']();assert.equal(h.dom.ids.get('modal-title').textContent,'Mail roll audit');assert.equal(h.dom.ids.get('modal-submit').hidden,true);
@@ -271,26 +285,26 @@ test('card Audit is read-only and preserves every recorded input and modifier af
  assert.equal((original.match(/<dt>Population DM<\/dt>/g)||[]).length,2);assert.equal((original.match(/<dt>Travel-zone DM<\/dt>/g)||[]).length,2);
  h.api.closeModal();h.api.state.ship.armed=false;h.api.state.trader.rank=0;h.api.state.trader.soc=-2;h.api.state.trader.characteristic=5;
  h.api.state.worlds[origin.id].uwp='X000000-0';h.api.state.worlds[origin.id].name='Edited origin';h.api.state.worlds[destination.id].zone='Red';h.api.render();
- assert.equal(visibleCardRoll(h),visible);h.api.actions['mail-audit']();assert.equal(h.dom.ids.get('modal-body').innerHTML,original);same(h.api.check.audit,recorded);
+ assert.equal(expandedCardRoll(h),visible);h.api.actions['mail-audit']();assert.equal(h.dom.ids.get('modal-body').innerHTML,original);same(h.api.check.audit,recorded);
  await h.submit();assert.equal(h.calls.saves,saves);same(h.persisted(),saved);h.api.closeModal();
  h.store.editable=false;h.api.render();h.api.actions['mail-audit']();assert.equal(h.dom.ids.get('modal-body').innerHTML,original);assert.equal(h.dom.ids.get('modal-submit').hidden,true);
 });
 
 test('Audit includes explicit zeroes for every mail DM and both neutral endpoints',async()=>{
  const saved=campaign();saved.ship.armed=false;saved.trader.rank=0;saved.trader.soc=0;for(const w of Object.values(saved.worlds))w.uwp='C000500-8';
- const h=harness(saved);await h.check();assert.match(visibleCardRoll(h),/12 \+ 0 DM = 12 \(12\+ required\)/);
+ const h=harness(saved);await h.check();assert.match(expandedCardRoll(h),/12 \+ 0 DM = 12 \(12\+ required\)/);
  h.api.actions['mail-audit']();const body=h.dom.ids.get('modal-body').innerHTML,facts=auditValues(body);
  for(const label of ['Search skill DM','Search characteristic DM','Origin world DM','Destination world DM','Distance DM','Search Effect','Combined freight traffic DM','Freight-band DM','Armed ship DM','Low technology DM','Naval / Scout rank DM','Social Standing DM'])assert.equal(facts[label],'+0',label);
  for(const label of ['Population DM','Starport DM','Technology DM','Travel-zone DM'])assert.equal((body.match(new RegExp('<dt>'+label+'</dt><dd>\\+0</dd>','g'))||[]).length,2,label);
 });
 
 test('accepted and delivered cards and saved contract rows retain the visible roll after reload',async()=>{
- const h=harness();await h.check();const expected=visibleCardRoll(h);h.api.accept(h.api.drafts[0].offerId);await h.submit();const id=h.api.state.contracts[0].id;
- assert.match(text(outsideDetails(html(h))),/Mail accepted/);assert.equal(visibleCardRoll(h),expected);
+ const h=harness();await h.check();const expected=expandedCardRoll(h);h.api.accept(h.api.drafts[0].offerId);await h.submit();const id=h.api.state.contracts[0].id;
+ assert.match(text(outsideInnerDetails(html(h))),/Mail accepted/);assert.equal(expandedCardRoll(h),expected);
  for(const status of ['accepted','delivered']){
-  if(status==='delivered'){h.api.state.actual=destination.id;h.api.deliver(id);await h.submit();assert.match(text(outsideDetails(html(h))),/Mail delivered/);assert.equal(visibleCardRoll(h),expected);}
+  if(status==='delivered'){h.api.state.actual=destination.id;h.api.deliver(id);await h.submit();assert.match(text(outsideInnerDetails(html(h))),/Mail delivered/);assert.equal(expandedCardRoll(h),expected);}
   const reload=harness(h.persisted());assert.equal(reload.api.check,null);assert.match(html(reload),/No mail check in this session/);
-  const row=contractRow(reload,id);assert.equal(summaryText(outsideDetails(row)),expected);assert.equal(reload.api.state.contracts[0].status,status);
+  const row=contractRow(reload,id);assert.equal(summaryText(outsideInnerDetails(row)),expected);assert.equal(reload.api.state.contracts[0].status,status);
   assert.ok(row.indexOf('mail-roll-summary')<row.indexOf('</td>'),'Roll is in the description cell, not an audit popup');
   const facts=auditValues(reload.api.contractDetails(reload.api.state.contracts[0]));assert.equal(facts['Search 2D'],'Manual roll total: 8');assert.equal(facts['Search skill DM'],'+0');
  }
@@ -331,29 +345,29 @@ const cancelButton=(h,id)=>{
 };
 
 test('Mail cancellation confirmation names the whole consignment and dismissing does not change anything',async()=>{
- const h=harness(),id=await acceptMail(h),before=h.persisted(),roll=visibleCardRoll(h),saves=h.calls.saves;
+ const h=harness(),id=await acceptMail(h),before=h.persisted(),roll=expandedCardRoll(h),saves=h.calls.saves;
  assert.equal(cancelButton(h,id)['data-arg'],id);assert.equal('disabled'in cancelButton(h,id),false);
  assert.match(acceptedDetails(h).body,/data-action="mail-cancel"/);
  h.api.actions['mail-cancel'](id);const cancelled=h.dom.ids.get('modal-form').onsubmit;
  assert.equal(h.dom.ids.get('modal-title').textContent,'Cancel mail');assert.equal(h.dom.ids.get('modal-submit').textContent,'Cancel mail and start over');
  const body=text(h.dom.ids.get('modal-body').innerHTML);for(const label of ['whole accepted mail consignment','Origin','Destination','15 t','Income Cr 0','Penalty Cr 0','no income or penalty','Undo','Check for mail'])assert.ok(body.includes(label),label);
- h.api.closeModal();await cancelled({preventDefault(){},currentTarget:h.dom.ids.get('modal-form')});same(h.persisted(),before);same(h.api.state,before);assert.equal(h.calls.saves,saves);assert.equal(visibleCardRoll(h),roll);assert.match(html(h),/Mail accepted/);
+ h.api.closeModal();await cancelled({preventDefault(){},currentTarget:h.dom.ids.get('modal-form')});same(h.persisted(),before);same(h.api.state,before);assert.equal(h.calls.saves,saves);assert.equal(expandedCardRoll(h),roll);assert.match(html(h),/Mail accepted/);
 });
 
 test('cancel releases the full hold once, preserves rolls and audits, survives reload, and Undo restores acceptance',async()=>{
- const saved=campaign();saved.ship.capacity='15';const h=harness(saved),id=await acceptMail(h),before=h.persisted(),roll=visibleCardRoll(h);
+ const saved=campaign();saved.ship.capacity='15';const h=harness(saved),id=await acceptMail(h),before=h.persisted(),roll=expandedCardRoll(h);
  h.dom.dispatch('toggle',{id:'mail-accepted-details',open:false,isConnected:true});h.api.render();
  h.api.actions['mail-cancel'](id);await Promise.all([h.submit(),h.submit()]);await h.submit();
  assert.equal(h.calls.saves,3,'Check, acceptance and exactly one cancellation save');assert.equal(h.api.state.contracts.length,1);const c=h.api.state.contracts[0];
  assert.equal(c.status,'cancelled');assert.equal(c.cancelledHours,before.hours);assert.equal(c.cancellation.world,before.actual);assert.equal(c.cancellation.source,'recorded');assert.equal(A.decimal(S.used(h.api.state)),'0');
  assert.equal(h.api.state.bank,before.bank);assert.equal(h.api.state.hours,before.hours);assert.equal(h.api.state.actual,before.actual);same(h.api.state.ledger,before.ledger);same(h.api.state.lots,before.lots);same(h.api.state.ship,before.ship);same(c.audit,before.contracts[0].audit);
- assert.match(text(outsideDetails(html(h))),/Mail cancelled/);assert.equal(visibleCardRoll(h),roll);assert.equal(acceptedDetails(h).open,false);assert.equal(acceptedDetails(h).summary,'Cancelled mail details · 15 t released');assert.match(acceptedDetails(h).body,/Released after cancellation/);assert.doesNotMatch(html(h),/15 t reserved|data-action="mail-cancel"|data-action="contract-accept"/);
+ assert.match(text(outsideInnerDetails(html(h))),/Mail cancelled/);assert.equal(expandedCardRoll(h),roll);assert.equal(acceptedDetails(h).open,false);assert.equal(acceptedDetails(h).summary,'Cancelled mail details · 15 t released');assert.match(acceptedDetails(h).body,/Released after cancellation/);assert.doesNotMatch(html(h),/15 t reserved|data-action="mail-cancel"|data-action="contract-accept"/);
  const row=contractRow(h,id);assert.match(row,/Cancelled · no payment or penalty/);assert.doesNotMatch(row,/data-action="deliver"|data-action="mail-cancel"/);assert.equal(summaryText(row),roll);
  const cancellation=h.api.state.events.find(e=>e.label==='Mail cancellation audit'),audit=h.api.historyDetails(cancellation),facts=auditValues(audit);assert.equal(h.api.historyCategory(cancellation),'Trade');assert.equal(h.api.historyCategory({label:'Cancelled mail'}),'Trade');assert.equal(h.api.historyCategory({label:'Mail acceptance audit'}),'Trade');same(cancellation.contract,c);
  for(const label of ['Mail lifecycle','Cancellation result','Cancelled before first jump; no payment or penalty','Manual roll total: 3'])assert.ok(audit.includes(label),label);
  assert.equal(facts['Reserved cargo'],'None');assert.equal(facts.Income,'Cr 0');assert.equal(facts.Penalty,'Cr 0');assert.equal(facts['Cargo space released'],'15 t');assert.equal(facts['Departure verification'],'Recorded lifecycle marker');assert.doesNotMatch(audit,/Additional inputs were not saved/);
  const reload=harness(h.persisted());assert.equal(reload.api.check,null);assert.match(contractRow(reload,id),/Cancelled · no payment or penalty/);assert.equal(A.decimal(S.used(reload.api.state)),'0');assert.throws(()=>reload.api.actions['mail-cancel'](id),/already cancelled/);
- h.api.actions.undo();assert.equal(h.api.state.contracts[0].status,'accepted');assert.equal(A.decimal(S.used(h.api.state)),'15');assert.equal(acceptedDetails(h).open,false);assert.equal(visibleCardRoll(h),roll);assert.equal('disabled'in cancelButton(h,id),false);same(h.api.state.contracts,before.contracts);assert.equal(h.api.state.bank,before.bank);
+ h.api.actions.undo();assert.equal(h.api.state.contracts[0].status,'accepted');assert.equal(A.decimal(S.used(h.api.state)),'15');assert.equal(acceptedDetails(h).open,false);assert.equal(expandedCardRoll(h),roll);assert.equal('disabled'in cancelButton(h,id),false);same(h.api.state.contracts,before.contracts);assert.equal(h.api.state.bank,before.bank);
  assert.equal(h.api.state.events.find(e=>e.id===cancellation.id).contract.status,'cancelled','Historical cancellation snapshot survives Undo unchanged');
 });
 
@@ -407,4 +421,39 @@ test('legacy Mail with complete Undo proof can cancel, and its first jump is rec
  const h=harness(saved);assert.equal('disabled'in cancelButton(h,id),false);const facts=auditValues(h.api.contractDetails(h.api.state.contracts[0]));assert.equal(facts['First departure'],'No committed jump after acceptance');assert.equal(facts['Departure verification'],'Verified from retained Undo history');
  h.api.actions['mail-cancel'](id);await h.submit();assert.equal(h.dom.ids.get('modal-error').textContent,'');assert.equal(h.api.state.contracts[0].cancellation.source,'legacy-undo');assert.match(h.api.historyDetails(h.api.state.events.find(e=>e.label==='Mail cancellation audit')),/Verified from retained Undo history/);
  const travelled=harness(saved);travelled.api.actions.jump();travelled.fill({hours:0});await travelled.submit();assert.equal(travelled.dom.ids.get('modal-error').textContent,'');const departure=travelled.api.state.contracts[0].firstDeparture;assert.equal(departure.from,origin.id);assert.equal(departure.to,destination.id);assert.equal(departure.priorHistoryUnverified,undefined,'Legacy proof is reconstructed while pre-jump state is intact');assert.equal('disabled'in cancelButton(travelled,id),true);
+});
+
+
+test('whole Mail panel starts collapsed, keeps a noninteractive summary, and retains session disclosure state without saving',async()=>{
+ const h=harness(),initial=h.persisted();assert.equal(outerDetails(h).open,false);assert.equal(outerDetails(h).summary,'Mail Not checked this session');
+ const saves=h.calls.saves;toggleOuter(h,true);h.api.render();assert.equal(outerDetails(h).open,true);
+ h.api.actions.tab('History');h.api.actions.tab('Contracts');assert.equal(outerDetails(h).open,true);
+ h.dom.dispatch('toggle',{id:'mail-card',open:false,isConnected:false});h.api.render();assert.equal(outerDetails(h).open,true,'Detached toggles do not override the live preference');
+ toggleOuter(h,false);h.api.render();assert.equal(outerDetails(h).open,false);same(h.persisted(),initial);same(h.api.state,initial);assert.equal(h.calls.saves,saves);
+ await h.check();assert.equal(outerDetails(h).open,false,'Checking while collapsed keeps the compact panel');
+ assert.equal(outerDetails(h).summary,'Mail Mail available · 15 t · Cr 75,000 on delivery');assert.match(h.dom.ids.get('message').textContent,/Mail available/);
+ const saved=h.persisted(),check=JSON.stringify(h.api.check),drafts=JSON.stringify(h.api.drafts),afterCheckSaves=h.calls.saves;
+ toggleOuter(h,true);h.api.render();const roll=expandedCardRoll(h);toggleOuter(h,false);h.api.render();toggleOuter(h,true);h.api.render();assert.equal(expandedCardRoll(h),roll);
+ same(h.persisted(),saved);assert.equal(h.calls.saves,afterCheckSaves);assert.equal(JSON.stringify(h.api.check),check);assert.equal(JSON.stringify(h.api.drafts),drafts);
+ await h.check({mailContainers:1});assert.equal(outerDetails(h).open,true,'New checks preserve an explicitly expanded panel');assert.equal(outerDetails(h).summary,'Mail Mail available · 5 t · Cr 25,000 on delivery');
+ const reload=harness(h.persisted());assert.equal(outerDetails(reload).open,false);assert.equal(outerDetails(reload).summary,'Mail Not checked this session');assert.equal('mailPanelOpen'in reload.api.state,false);assert.equal(reload.api.drafts.length,0);
+});
+
+test('collapsed summary reflects unavailability, current overrides, capacity guards and lifecycle without inventing a payment',async()=>{
+ const h=harness();await h.check({dice:2,mailAvailability:2});assert.equal(outerDetails(h).summary,'Mail No mail available');assert.equal(outerDetails(h).open,false);assert.match(h.dom.ids.get('message').textContent,/No mail available/);
+ await h.check();h.api.state.ship.capacity='14';h.api.render();assert.match(outerDetails(h).summary,/15 t · Cr 75,000 on delivery · Does not fit$/);
+ h.api.state.ship.capacity='60';h.api.state.actual=destination.id;h.api.render();assert.match(outerDetails(h).summary,/Return to origin to accept$/);h.api.state.actual=origin.id;
+ h.api.editDraft(h.api.drafts[0].offerId);h.fill({description:'Compact override',quantity:10,payment:60000,due:'',reason:'Referee amendment'});await h.submit();assert.equal(outerDetails(h).summary,'Mail Mail available · 10 t · Cr 60,000 on delivery');
+ const recorded=JSON.stringify(h.api.check.audit);h.api.accept(h.api.drafts[0].offerId);await h.submit();assert.equal(outerDetails(h).summary,'Mail Mail accepted · 10 t reserved · Cr 60,000 on delivery');assert.equal(outerDetails(h).open,false);
+ const id=h.api.state.contracts[0].id;h.api.actions['mail-cancel'](id);await h.submit();assert.equal(outerDetails(h).summary,'Mail Mail cancelled · 10 t released · No payment');assert.equal(JSON.stringify(h.api.check.audit),recorded);
+ h.api.actions.undo();assert.match(outerDetails(h).summary,/Mail accepted · 10 t reserved/);h.api.state.actual=destination.id;h.api.deliver(id);await h.submit();assert.equal(outerDetails(h).summary,'Mail Mail delivered · 10 t delivered · Cr 60,000 paid');assert.equal(JSON.stringify(h.api.check.audit),recorded);
+ const old=harness();await old.check();old.api.setDrafts([]);old.api.render();assert.equal(outerDetails(old).summary,'Mail Previous mail result · Offer no longer active');assert.doesNotMatch(outerDetails(old).summary,/Cr |reserved/);
+});
+
+test('outer and accepted disclosures are independent in read-only mode and keep audit access',async()=>{
+ const h=harness();await acceptMail(h);toggleOuter(h,true);h.dom.dispatch('toggle',{id:'mail-accepted-details',open:false,isConnected:true});h.api.render();
+ assert.equal(outerDetails(h).open,true);assert.equal(acceptedDetails(h).open,false);const roll=expandedCardRoll(h),saved=h.persisted(),saves=h.calls.saves;
+ h.store.editable=false;toggleOuter(h,false);h.api.render();assert.equal(outerDetails(h).open,false);toggleOuter(h,true);h.api.render();assert.equal(outerDetails(h).open,true);assert.equal(acceptedDetails(h).open,false);assert.equal(expandedCardRoll(h),roll);
+ h.api.actions['mail-audit']();assert.equal(h.dom.ids.get('modal-submit').hidden,true);h.api.closeModal();h.dom.dispatch('toggle',{id:'mail-accepted-details',open:true,isConnected:true});h.api.render();assert.equal(outerDetails(h).open,true);assert.equal(acceptedDetails(h).open,true);assert.equal(h.button('mail-cancel').disabled,true);
+ same(h.persisted(),saved);assert.equal(h.calls.saves,saves);assert.equal(h.api.state.bank,saved.bank);
 });
