@@ -312,3 +312,30 @@ test('mortgage and maintenance save/reload/import atomically, with stale and sto
  const imported=JSON.parse(JSON.stringify(paid));store.replace(imported,restored.revision);assert.deepEqual(store.read().ship,paid.ship);assert.deepEqual(store.read().ledger,paid.ledger);
  store.save(undo(store.read()),store.read().revision);assert.deepEqual(store.read().ship,before.ship);assert.equal(store.read().bank,before.bank);
 });
+
+// Passenger contracts use the real Store and existing schema-1 replacement boundary.
+import {recordPassengerSearch,configurePassengerCapacity,acceptPassengers,deliverPassengers} from '../js/state.mjs';
+import {passengerOffers} from '../js/passenger-rules.mjs';
+import {passengerShip} from '../js/passengers.mjs';
+import {context as passengerWorldContext} from '../js/rules.mjs';
+import {supportStock as passengerStock} from '../js/life-support.mjs';
+import {readFile as readPassengerData} from 'node:fs/promises';
+const passengerData=JSON.parse(await readPassengerData(new URL('../rules/core-2022.json',import.meta.url)));
+function passengerStoreFixture(){
+ let s=initial();s.initialized=true;s.actual='0,0';s.bank='100000';s.worlds=Object.fromEntries([0,1].map(x=>[x+',0',{id:x+',0',x,y:0,name:'Passenger port '+x,sector:'Test',hex:'0'+(x+1)+'01',uwp:'A788999-C',zone:'Safe',raw:{PBG:'100'}}]));
+ s.ship.accommodation={combinedPeople:true,rooms:{low:0,middle:4,high:0},passengers:{low:0,middle:2,high:0},crew:{low:0,middle:0,high:0},occupiedLowBerths:0,luggageMode:'auto',luggageTons:'0'};s.ship.lifeSupport={capacityHours:672,stockUnits:{numerator:'112',denominator:'1'}};
+ s=transition(s,'Passenger capacity settings',n=>configurePassengerCapacity(n,{reservedCabins:1,installedLowBerths:3}));
+ const offers=passengerOffers(passengerWorldContext(s.worlds['0,0'],passengerData),passengerWorldContext(s.worlds['1,0'],passengerData),1,{effect:4,steward:1},passengerData,()=>3).map((o,i)=>({...o,offerId:'passenger-offer-'+i,origin:'0,0',destination:'1,0'}));
+ return transition(s,'Passenger search',n=>recordPassengerSearch(n,{id:'passenger-search',label:'Passenger search audit',hours:0,world:'0,0',destination:'1,0',offers}));
+}
+test('passenger Store save/reload/import replacement preserves baseline, receipts, exact supplies and Undo',async t=>{
+ const env=environment(t),original=passengerStoreFixture();env.values.set(KEY,JSON.stringify(original));const store=env.store();await store.acquire();await tick();
+ const boarded=transition(store.read(),'Accepted passenger booking',n=>acceptPassengers(n,'passenger-offer-3',{count:2,cabinMode:'shared',serviceConfirmed:true}));store.save(boarded,original.revision);
+ const loaded=store.read();assert.deepEqual(loaded.ship,original.ship);assert.equal(passengerStock(passengerShip(loaded)).dailyUnits,'4');assert.equal(loaded.contracts[0].count,2);
+ const imported=JSON.parse(env.values.get(KEY));store.replace(imported,loaded.revision);const rebased=store.read();assert.equal(rebased.contracts[0].payment,'18000');
+ const arrived=transition(rebased,'Arrived',n=>{n.actual='1,0';n.hours=25;});store.save(arrived,rebased.revision);const stockBefore=store.read().ship.lifeSupport;
+ const delivered=transition(store.read(),'Delivered passenger booking',n=>deliverPassengers(n,n.contracts[0].id));store.save(delivered,arrived.revision);assert.equal(store.read().bank,'118000');assert.equal(store.read().ledger.filter(e=>e.type==='Passenger delivery').length,1);
+ const restored=undo(store.read());store.save(restored,delivered.revision);assert.equal(store.read().bank,'100000');assert.equal(store.read().contracts[0].status,'accepted');assert.deepEqual(store.read().ship.lifeSupport,stockBefore);
+ const before=env.values.get(KEY),bad=store.read();bad.contracts[0].count=-1;assert.throws(()=>store.replace(bad,restored.revision));assert.equal(env.values.get(KEY),before);
+ store.editable=false;assert.throws(()=>store.save(transition(store.read(),'No write',n=>n.name='No'),restored.revision),/read-only/);assert.equal(env.values.get(KEY),before);
+});

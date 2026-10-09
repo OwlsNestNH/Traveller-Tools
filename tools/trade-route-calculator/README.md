@@ -403,3 +403,20 @@ Run `node --test verification/cargo-hold.test.mjs verification/world-symbols.tes
 and `node verification/cargo-hold-browser.test.mjs` for exact accounting, frozen
 purchase facts, blue-hex layering, cancellation, scroll/footer, read-only and
 320/390/1100/1440px responsive checks.
+
+
+## Passenger contracts (UI 2026.10.09.27)
+
+Freight/Mail now includes **Passengers**. Review passenger capacity before the first boarding: reserve the cabins used by crew and other existing occupants, and enter installed Low berths separately from low-service cabins. Existing combined headcounts are preserved as the non-booked baseline. Booked people are added automatically to life support; do not enter them again in Settings.
+
+**Find passengers** searches for High, Middle, Basic and Low passage to a destination within one jump. Availability, fares and modifiers use Core Rulebook Update 2022, pp. 158, 238–239. The audit retains search inputs, traffic/count dice, endpoint modifiers and the original availability. Select any whole number within the remaining pool. Unaccepted offers are session-only; saved History does not recreate actionable offers after reload/import.
+
+High and Middle default to private cabins. Explicit two-per-cabin sharing preserves the campaign's referee-managed allocation, including High double occupancy. Two High people sharing one standard-cost High cabin still cost Cr7,000/month (Cr1,000 cabin + 2 × Cr3,000 people). Basic defaults to shared cabins; fitted spare space can instead reserve 2 t/person when confirmed. Shared bookings of the same class pool their places, rounding the total up to cabins. Low passage needs an installed physical Low berth, never an awake low-service cabin. Steward cover is confirmed on boarding; Low revival is resolved in play.
+
+High baggage defaults to 1 t/person, Middle to the established campaign override of zero, and Basic/Low to 0.01 t/person. Automatic baggage is combined before the existing whole-ton rounding. A manual whole-ship luggage override, including zero, remains fixed through boarding/delivery until edited. Legacy explicit luggage totals without the newer mode flag remain manual when Settings is saved; current-format automatic baggage remains automatic.
+
+Boarding preserves bank and physical LSS stock. Future consumption includes each booked awake person once, and each Low passenger at 0.1 LSS/day. Standard monthly billing adds Cr3,000 per booked High person, Cr1,000 per Middle/Basic and Cr100 per booked Low; installed cabin charges and old baseline frozen billing are unchanged. New bookings do not add installed cabins or charge their cost again. Extra-supply pricing keeps the existing campaign rule.
+
+At the actual destination, **Complete passage** releases the booking and posts its payment once. Payment on explicit delivery is an app convention, not a Core timing rule. No automatic freight lateness penalty, speculative-trade tax/profit adjustment, passenger mortality or lottery charge applies. Accepted terms, receipts, JSON backups, reports and History Undo retain the original calculations. Undo reverses occupancy and payments together; used life support is restored only when undoing the action that consumed it.
+
+Native checks: `node --test verification/passenger-rules.test.mjs verification/passengers.test.mjs verification/passenger-ui.test.mjs`. The independent `passengers-browser.test.mjs` script covers the real UI and must pass on the exact release candidate alongside the existing browser matrix.

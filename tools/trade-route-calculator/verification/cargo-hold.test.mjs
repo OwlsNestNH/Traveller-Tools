@@ -48,3 +48,10 @@ test('historic decimal purchase display groups only integer digits and missing p
  const s=fixture();s.lots[0].audit.price.unitPrice='1234.56789';s.lots[0].audit.price.audit.basePrice='20000';let html=cargoHoldPanel(s,core);assert.match(html,/Cr 1,234\.56789/);assert.doesNotMatch(html,/1,234\.56,789/);
  delete s.lots[0].audit.price.unitPrice;html=cargoHoldPanel(s,core);const row=html.match(/<tr data-cargo-lot="lot-recorded">([\s\S]*?)<\/tr>/)[1];assert.match(row,/Not recorded/);assert.match(row,/Percentage unavailable/);assert.doesNotMatch(row,/Base not recorded/);
 });
+
+
+test('Basic fitted passenger space appears only when occupied and never becomes freight',()=>{
+ const s=fixture();assert.doesNotMatch(cargoHoldPanel(s,core),/<dt>Basic passenger accommodation/);
+ s.contracts.push({id:'basic-display',kind:'passenger',status:'accepted',passageClass:'basic',count:2,cabinMode:'cargo'});
+ const before=JSON.stringify(s),q=cargoManifest(s),html=cargoHoldPanel(s,core);assert.equal(A.decimal(q.passengerAccommodation),'4');assert.equal(q.contracts.length,1);assert.match(html,/<dt>Basic passenger accommodation<\/dt><dd>4 t<\/dd>/);assert.doesNotMatch(html,/data-cargo-contract="basic-display"/);assert.equal(JSON.stringify(s),before);
+});

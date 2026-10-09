@@ -1,4 +1,4 @@
-import {up} from './rounding.mjs';
+import {up} from './rounding.mjs?v=passenger-contracts-20261009-27';
 import {sum,mul,decimal,cmp,credit} from './amounts.mjs';
 
 export const tiers=['low','middle','high'];
@@ -19,7 +19,7 @@ export function roomTotal(ship){return tiers.reduce((n,t)=>n+(roomCounts(ship)[t
 export function occupants(ship){return ship.accommodation||ship.supportOccupants||{passengers:{},crew:{}};}
 export function validateAccommodation(ship){
  const a=ship.accommodation;if(a===undefined)return;
- if(!a)throw Error('Invalid accommodation.');
+ if(!a||Object.hasOwn(a,'bookedLowSupport'))throw Error('Invalid accommodation.');
  for(const tier of tiers){
   const n=roomCounts(ship)[tier];if(!Number.isSafeInteger(n)||n<0)throw Error('Stateroom counts must be non-negative whole numbers.');
   serviceRate(tier,a.roomService?.[tier]);
@@ -36,3 +36,6 @@ export function luggageAllowance(ship){
  return decimal(sum(tiers.map(t=>mul(p[t]??0,luggageRates[t]))));
 }
 export function passengerLuggage(ship){if(ship.accommodation?.combinedPeople&&ship.accommodation.luggageMode!=='manual')return String((ship.accommodation.passengers?.high??0)+(ship.accommodation.crew?.high??0));const value=ship.accommodation?.luggageTons!=null?ship.accommodation.luggageTons:luggageAllowance(ship);return ship.roundTons?String(up(value)):decimal(value);}
+
+// Older saves stored an explicit total without a mode flag. Keep zero, too.
+export function manualLuggage(ship){const a=ship.accommodation;return !!a&&(a.luggageMode==='manual'||a.luggageMode===undefined&&!a.combinedPeople&&a.luggageTons!=null);}

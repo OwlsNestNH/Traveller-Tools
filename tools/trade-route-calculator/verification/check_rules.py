@@ -184,5 +184,14 @@ check("tax allocation stable remainder",shares,[1,0])
 for raw,pct,expected in [(100,75,75),(-100,75,-100),(0,75,0),(101,100,101),(101,0,0),(101,50,50)]:
     check(f"profit mode {raw}/{pct}",math.floor(Fraction(raw*pct,100)) if raw>0 else raw,expected)
 check("mixed lots no profit netting",75-100,-25)
+# Core Update 2022 pp. 238-239: independently checked passenger fare/traffic data.
+passengers=core["passengers"]
+for kind,fares in {"high":[9000,14000,21000,34000,60000,210000],"middle":[6500,10000,14000,23000,40000,130000],"basic":[2000,3000,5000,8000,14000,55000],"low":[700,1300,2200,3900,7200,27000]}.items():
+    for distance,fare in enumerate(fares,1): check(f"passenger {kind} fare {distance}",passengers["fareCreditsByParsecs"][kind][distance-1],fare)
+check("passenger traffic count dice",passengers["trafficCountDice"],[0,1,1,2,2,2,3,3,3,3,4,4,4,5,5,6,7,8,9,10])
+check("passenger class DMs",passengers["classDM"],{"high":-4,"middle":0,"basic":0,"low":1})
+check("passenger zone DMs",passengers["endpointDM"]["zone"],{"Safe":0,"Amber":1,"Red":-4})
+check("passenger raw baggage",passengers["rawBaggageTons"],{"high":"1","middle":"0.1","basic":"0.01","low":"0.01"})
+check("passenger campaign Middle baggage override",passengers["campaignBaggageTons"]["middle"],"0")
 print(f"PASS: {len(passed)} data and expected-result checks.")
 print("Scope: review-data validation only. No application or browser tests.")
