@@ -179,3 +179,13 @@ The Mail result now shows the recorded availability dice/total, combined DM and 
 Mail contract rows retain the visible roll summary after acceptance, delivery and reload, using their saved audits; older missing rolls or inputs are labeled not recorded. No historical dice are recreated and no unaccepted offers are restored from History.
 
 **Check for mail** sits beside **Manual contract** in the Freight & mail action row; both use the same light-blue style. Accepted/delivered Mail details can collapse while the recorded roll, outcome, route and Audit stay visible. Expanding shows saved shipment details and the current Settings shortcut again. The collapse choice is session-only, survives tab changes and does not alter campaign data; a new check starts expanded.
+
+### Cancel Mail before departure
+
+Accepted Mail now offers **Cancel mail** in its shipment details and saved contract row. Confirm **Cancel mail and start over** to release that whole consignment's hold space without payment or penalty, then use **Check for mail** for a fresh result. Other contracts and freight offers stay unchanged. The cancelled contract, saved dice, terms and cancellation audit remain visible; **Undo latest change** restores the consignment and its capacity reservation together.
+
+Cancellation is available only before that Mail's first committed jump. Even a zero-hour jump closes it; returning to the origin, replacing the route or correcting the date/location does not reopen it. Undoing that jump restores its prior eligibility. Delivered Mail cannot be cancelled. Read-only tabs cannot commit cancellations, and an outdated confirmation must be reopened.
+
+New accepted Mail saves an explicit departure marker in the jump transaction, including through JSON export/import. Older contracts without that marker are cancellable only when their complete, consistent acceptance/Undo/jump trail proves they have not departed. Missing or ambiguous older history displays **Travel history unverified** and disables cancellation. Older imported campaigns may have revision discontinuities that prevent this proof; the app does not guess from the ship's current location or date. Existing schema-1 campaigns remain readable without silently assigning an unrecorded departure state.
+
+Run `node --test verification/mail-reset.test.mjs verification/mail-ui.test.mjs` for state/import/Undo and actual-app lifecycle checks. `verification/mail-browser.test.mjs` extends the existing real Chromium gate with cancellation, history, ownership, return travel and JSON-import flows.
