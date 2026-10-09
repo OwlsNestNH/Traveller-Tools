@@ -1,4 +1,4 @@
-import {initial,validate} from './state.mjs?v=json-undo-1';
+import {initial,validate} from './state.mjs?v=jump-mulligan-1';
 export const KEY='traveller-trade-route-calculator:v1';
 const LOCK=KEY+':writer';
 function serializedCampaign(next){

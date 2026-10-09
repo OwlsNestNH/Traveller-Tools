@@ -164,11 +164,11 @@ test('next jump always follows actual saved route progress while browsing anothe
  const h=harness(s),before=h.persisted();h.api.setView(far.id);
  const html=h.api.routeJumpControl();
  assert.match(html,/Next destination/);assert.match(html,/Jump to Destination →/);
- assert.doesNotMatch(html,/Jump to Far Destination|data-unavailable/);
+ assert.doesNotMatch(html,/Jump to Far Destination/);assert.doesNotMatch(html.match(/<button[^>]*data-action="jump"[^>]*>/)[0],/data-unavailable/);
  assert.equal((html.match(/data-action="jump"/g)||[]).length,1);
  h.api.actions.jump();assert.equal(h.dom.ids.get('modal-title').textContent,'Commit jump · Origin → Destination');
  assert.equal(h.dom.ids.get('modal-submit').textContent,'COMMIT JUMP');
- same(h.persisted(),before);h.api.closeModal();same(h.persisted(),before);
+ const prepared=h.persisted();for(const key of ['actual','ship','hours','route','contracts','bank','ledger'])same(prepared[key],before[key]);assert.equal(prepared.jumpAttempts.length,1);h.api.closeModal();same(h.persisted(),prepared);
 });
 test('no route, origin-only and completed route retain a disabled jump control with an explanation',()=>{
  for(const [route,index,actual,reason]of [[[],0,origin.id,'No route planned'],[[origin.id],0,origin.id,'No route planned'],[[origin.id,destination.id],1,destination.id,'Route complete']]){
@@ -194,9 +194,9 @@ test('route badges identify actual progress and next stop even when a world repe
 test('next jump supports empty-space destinations and escapes destination labels',()=>{
  const s=campaign();Object.assign(s.worlds[destination.id],{emptySpace:true,name:'Empty hex <0201> & beyond'});const h=harness(s);
  assert.match(h.api.routeJumpControl(),/Jump to Empty hex &lt;0201&gt; &amp; beyond →/);
- assert.doesNotMatch(h.api.routeJumpControl(),/data-unavailable/);
+ assert.doesNotMatch(h.api.routeJumpControl().match(/<button[^>]*data-action="jump"[^>]*>/)[0],/data-unavailable/);
  h.api.actions.jump();assert.equal(h.dom.ids.get('modal-title').textContent,'Commit jump · Origin → Empty hex <0201> & beyond');
- h.api.closeModal();same(h.persisted(),s);
+ const prepared=h.persisted();h.api.closeModal();same(h.persisted(),prepared);assert.equal(prepared.jumpAttempts.length,1);
 });
 test('one explicit jump commits only one leg, keeps history labels, rejects repeat submit and supports Undo',async()=>{
  const s=campaign();s.route=[origin.id,destination.id,origin.id];s.ship.fuel=bindings.configureFuel(200,40,40,0,2);s.ship.lifeSupport={capacityHours:672,remainingHours:672,elapsedHours:0};
@@ -217,7 +217,7 @@ test('jump confirmation cannot submit after close, ownership loss or newer campa
   const h=harness(),before=h.persisted();h.api.actions.jump();h.fill({hours:160});
   if(mode==='close')h.api.closeModal();
   if(mode==='ownership'){h.store.editable=false;h.api.syncModalSubmit();assert.equal(h.dom.ids.get('modal-submit').disabled,true);}
-  if(mode==='revision')h.store.save(S.transition(before,'Newer test action',s=>s.bank='99999'),before.revision);
+  if(mode==='revision'){const prepared=h.persisted();h.store.save(S.transition(prepared,'Newer test action',s=>s.bank='99999'),prepared.revision);}
   const expected=h.persisted();await h.submit();same(h.persisted(),expected);
   if(mode==='revision')assert.match(h.dom.ids.get('modal-error').textContent,/stale|changed/i);
  }
@@ -254,5 +254,15 @@ test('only Ctrl plus vertical wheel over an active map is intercepted to change 
   if(guard==='drag')h.api.setMapDrag({});
   h.dom.dispatch('wheel',{closest:()=>guard==='outside'?null:{}},{deltaY:guard==='horizontal'?0:-150,deltaMode:0,ctrlKey:true,preventDefault(){prevented++;}});
   assert.equal(prevented,0,guard+' retains default behavior');assert.equal(h.api.mapZoom,1);same(h.persisted(),before);
+ }
+});
+
+test('dedicated Undo Jump confirmation cancels cleanly, rejects stale approval, and commits at most once',async()=>{
+ for(const mode of ['cancel','stale','commit']){
+  const h=harness();h.api.actions.jump();h.fill({hours:160});await h.submit();noError(h);const arrived=h.persisted();h.api.setView(far.id);
+  h.api.actions['jump-undo']();assert.equal(h.dom.ids.get('modal-submit').textContent,'Use mulligan & return');const submit=h.dom.ids.get('modal-form').onsubmit;
+  if(mode==='cancel'){h.api.closeModal();await submit({preventDefault(){},currentTarget:h.dom.ids.get('modal-form')});same(h.persisted(),arrived);continue;}
+  if(mode==='stale'){h.store.save(S.transition(arrived,'Later deposit',s=>S.deposit(s,1,'Newer action')),arrived.revision);const changed=h.persisted();await h.submit();same(h.persisted(),changed);assert.match(h.dom.ids.get('modal-error').textContent,/changed/i);continue;}
+  await h.submit();noError(h);const undone=h.persisted();assert.equal(undone.actual,origin.id);assert.equal(h.api.view,origin.id);assert.equal(undone.jumpAttempts[0].mulliganUsed,true);await submit({preventDefault(){},currentTarget:h.dom.ids.get('modal-form')});same(h.persisted(),undone);
  }
 });

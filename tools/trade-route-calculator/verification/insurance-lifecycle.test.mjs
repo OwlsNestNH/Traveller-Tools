@@ -101,9 +101,10 @@ test('Claim approval, reason and quantity validation reject safely; cancel, repe
  for(const mode of ['cancel','stale','readonly','repeat']){const h=harness();await h.insure();const before=h.persisted();h.api.claimForm(before.policies[0].id);h.fill({quantity:2,reason:'Loss',approved:true});await h.submit();const cb=h.dom.ids.get('modal-form').onsubmit;if(mode==='cancel')h.api.closeModal();if(mode==='stale')h.api.state.revision++;if(mode==='readonly')h.store.editable=false;await Promise.all([cb({preventDefault(){},currentTarget:h.dom.ids.get('modal-form')}),cb({preventDefault(){},currentTarget:h.dom.ids.get('modal-form')})]);if(mode==='repeat'){assert.equal(h.persisted().policies[0].claims.length,1);assert.equal(h.persisted().bank,String(BigInt(before.bank)+14000n));}else same(h.persisted(),before);}
 });
 
-test('Insurance route progress updates while hidden, ends on arrival, rejects claims and Undo restores active coverage',async()=>{
+test('Insurance route progress updates while hidden; immediate jump Undo restores coverage, later Settings closes it',async()=>{
  const h=harness();await h.insure();await h.settings({insurance:false});const before=h.persisted();h.api.jump();h.fill({hours:0});await h.submit();assert.equal(error(h),'');assert.equal(h.persisted().policies[0].status,'arrived');assert.equal(h.persisted().policies[0].routeProgress,1);assert.equal(h.api.policyPanel(),'');
- await h.settings({insurance:true});h.api.claimForm(h.persisted().policies[0].id);h.fill({quantity:1,approved:true,reason:'Cannot claim after arrival'});await h.submit();assert.match(error(h),/Policy is not active/);h.api.closeModal();h.api.actions.undo();h.api.actions.undo();same(financial(h.persisted()),financial(before));
+ const immediate=harness(h.persisted());immediate.api.actions.undo();same(financial(immediate.persisted()),financial(before));
+ await h.settings({insurance:true});h.api.claimForm(h.persisted().policies[0].id);h.fill({quantity:1,approved:true,reason:'Cannot claim after arrival'});await h.submit();assert.match(error(h),/Policy is not active/);h.api.closeModal();h.api.actions.undo();assert.throws(()=>h.api.actions.undo(),/later campaign change/);assert.equal(h.persisted().policies[0].status,'arrived');
 });
 
 test('Amend and close production callbacks preserve original terms, adjust bank/basis and Undo',async()=>{

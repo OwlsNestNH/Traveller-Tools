@@ -401,8 +401,8 @@ test('stale cancellation previews and lost editing locks cannot mutate the campa
  }
 });
 
-test('jump cancellation is a preview only; committing even a zero-hour jump permanently disables Mail cancellation until Undo',async()=>{
- const h=harness(),id=await acceptMail(h),before=h.persisted();h.api.actions.jump();h.api.closeModal();same(h.persisted(),before);assert.equal('disabled'in cancelButton(h,id),false);
+test('jump cancellation saves dice only; committing even a zero-hour jump permanently disables Mail cancellation until Undo',async()=>{
+ const h=harness(),id=await acceptMail(h),before=h.persisted();h.api.actions.jump();const prepared=h.persisted();h.api.closeModal();same(h.persisted(),prepared);for(const key of ['actual','ship','hours','contracts','ledger','bank','route'])same(prepared[key],before[key]);assert.equal(prepared.jumpAttempts.length,1);assert.equal('disabled'in cancelButton(h,id),false);
  h.api.actions.jump();h.fill({hours:0});await h.submit();assert.equal(h.dom.ids.get('modal-error').textContent,'');assert.equal(h.api.state.actual,destination.id);assert.equal(h.api.state.hours,0);const c=h.api.state.contracts[0],jump=h.api.state.events.find(e=>e.label==='Jump audit');
  same(c.firstDeparture,{eventId:jump.id,from:origin.id,to:destination.id,hours:0,revision:h.api.state.revision});assert.equal('disabled'in cancelButton(h,id),true);assert.ok('data-unavailable'in cancelButton(h,id));assert.match(contractRow(h,id),/already departed/);assert.throws(()=>h.api.actions['mail-cancel'](id),/already departed/);
  const audit=auditValues(h.api.contractDetails(c));assert.match(audit['First departure'],/Origin → Destination/);assert.equal(audit['Departure event'],jump.id);assert.equal(audit['Departure revision'],String(h.api.state.revision));

@@ -22,6 +22,7 @@ Open `index.html` through an HTTP server or GitHub Pages. No build, paid service
 - Full Core commodity table and per-commodity modifier audits. Exotics and local item-ban thresholds require referee input. Generated dice/results can be overridden with recorded reasons.
 - Freight/mail capacity reservations, explicit delivery, late-freight penalties and duplicate-payout protection. Auto-generated contract prices use direct endpoint distance; manual contracts support alternative terms.
 - Optional first-edition Merchant Prince insurance and per-sale tax adaptations. Criminal-market sales are tax-free; protection payments are manual expenses. Policies preserve original terms and require explicit amendments for changed routes.
+- **Undo Jump** beside the next-jump control restores the departure world and all pre-jump travel state. One mulligan is available per departure before any later campaign change. The next initiation receives one fresh roll; Cancel, reopening, reload, route edits and History Undo do not reset that allowance. Original and replacement dice stay in the audit trail, while transient previews are cleared. Older jumps require a complete retained audit for the dedicated control.
 - One editing tab at a time, stale-preview rejection, validated imports, recovery for corrupt saves and visible storage errors. Undo stores inverse changes instead of repeatedly copying the entire ledger.
 
 Requires a current browser with JavaScript, localStorage, BigInt, structuredClone and Web Locks. A browser without safe locking stays read-only. World lookup requires an internet connection; saved campaign data and calculations remain local. Search boundaries, manual referee inputs and browser storage limits remain visible rather than generating guessed values.
@@ -47,7 +48,7 @@ node verification/run-native.mjs
 
 The native runner discovers every `node:test` suite; do not use `verification/*.test.mjs` with `node --test`, because that also selects the standalone browser scripts.
 
-Pull requests run all native suites, the 198 rules-data checks, the shared tool-visit check, and thirteen independent deterministic Chromium suites: main application, modal lifecycle, click routing, fuel, empty space, Mail, map overview, GUI parity, Trade buttons, Settings, insurance lifecycle, trade complications, and the selected-world screen. See `.github/workflows/mail-browser.yml` at the repository root. Every job verifies the exact PR head and uploads evidence; it has read-only permissions and cannot deploy. Live API availability and the remaining browser scripts are separate checks.
+Pull requests run all native suites, the 198 rules-data checks, the shared tool-visit check, and fourteen independent deterministic Chromium suites: main application, modal lifecycle, click routing, fuel, empty space, Mail, map overview, GUI parity, Trade buttons, Settings, insurance lifecycle, trade complications, the selected-world screen, and jump mulligans. See `.github/workflows/mail-browser.yml` at the repository root. Every job verifies the exact PR head and uploads evidence; it has read-only permissions and cannot deploy. Live API availability and the remaining browser scripts are separate checks.
 
 The browser scripts use Playwright only for development testing; it is not an application dependency. With Playwright installed, run:
 
