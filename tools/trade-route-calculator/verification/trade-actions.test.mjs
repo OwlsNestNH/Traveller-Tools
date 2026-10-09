@@ -425,3 +425,65 @@ test('a stale selected stock view still closes after editing ownership is lost',
  const h=harness(recurringCampaign()),before=h.persisted();h.api.setTab('Overview');h.api.toggleShipPanel('refuel');h.store.editable=false;
  h.api.services.syncControls();h.api.toggleShipPanel('refuel');assert.equal(h.api.services.active(),false);assert.deepEqual(selectedShipButton(h),[]);same(h.persisted(),before);
 });
+
+// Audit F02/F03: execute the actual form, normalization, preview, commit and
+// persistence boundaries. Browser-native validity has its own dedicated suite.
+const radioactives=core.commodities.find(g=>g.name==='Radioactives');
+function auditTradeCampaign({raw=true,quantity='1.5',criminal=true}={}){
+ const s=tradeCampaign();Object.assign(s.settings,{maxBaseRetailEnabled:true,maxBaseRetail:'100000',useRawIllegalPrices:raw});
+ const supplier=s.snapshots[0];Object.assign(supplier.options,s.settings);
+ const quote=bindings.R.quote(radioactives,supplier.world,{...supplier.options,side:'buy',illegalGood:false,rollTotal:10},core);
+ supplier.offers=[{id:'radio-offer',commodity:radioactives.id,description:'Radioactives',remaining:'3',illegal:false,expired:false,...quote}];
+ s.snapshots[1].criminal=criminal;
+ s.lots=[{id:'legacy',commodity:radioactives.id,description:'Legacy radioactives',quantity,basis:'1001',goodsValue:'501',illegal:false,world:s.actual,hours:0}];
+ return S.validate(s);
+}
+for(const raw of [true,false])test('offer first-save legality uses the submitted checkbox; RAW exception '+raw,async()=>{
+ const h=harness(auditTradeCampaign({raw}));
+ const save=async illegal=>{h.api.actions['offer-edit']('radio-offer');h.fill({illegal,useRoll:true,roll:10,reason:'Referee local legality'});await h.submit();noError(h);return h.persisted().snapshots[0].offers[0];};
+ const first=await save(true);assert.equal(first.illegal,true);assert.equal(first.audit.effectiveIllegal,true);assert.equal(first.audit.basePrice,raw?1000000:100000);assert.equal(first.audit.illegalRawPriceExempt,raw);
+ const repeated=await save(true);assert.equal(repeated.unitPrice,first.unitPrice,'A second identical save must not change the price');
+ const legal=await save(false);assert.equal(legal.illegal,false);assert.equal(legal.audit.effectiveIllegal,false);assert.equal(legal.audit.basePrice,100000);assert.equal(legal.audit.illegalRawPriceExempt,false);
+ h.api.actions['offer-edit']('radio-offer');h.fill({illegal:true,useRoll:false,price:123456,reason:'Explicit referee price'});await h.submit();noError(h);
+ assert.equal(h.persisted().snapshots[0].offers[0].unitPrice,'123456','Manual price survives a legality change');
+});
+for(const raw of [true,false])for(const threshold of [5,9,10])test('sale local legality, benchmark and price basis agree: RAW '+raw+', threshold '+threshold,async()=>{
+ const h=harness(auditTradeCampaign({raw})),before=h.persisted();h.api.setSelected(['legacy']);h.api.beginSale();
+ const original=h.api.currentQuote('legacy');h.fill({ban_legacy:threshold});await h.submit();noError(h);
+ const line=h.api.previewSale.lines[0],illegal=threshold<=9,base=raw&&illegal?1000000:100000;
+ assert.equal(line.audit.effectiveIllegal,illegal);assert.equal(line.audit.locallyBanned,illegal);assert.equal(line.audit.illegalRawPriceExempt,raw&&illegal);assert.equal(line.audit.basePrice,base);assert.equal(line.benchmarkPrice,String(base));
+ assert.equal(line.audit.sale.localIllegalDM,illegal?9-threshold:undefined);same(line.audit.dice,original.audit.dice);same(line.audit.tradeComplication,original.audit.tradeComplication);
+ assert.equal(line.audit.manualPrice,null);assert.equal(h.calls.priceDice,3);same(h.persisted(),before);
+ h.api.actions['sale-edit']();await h.submit();noError(h);assert.equal(h.api.previewSale.lines[0].unitPrice,line.unitPrice);assert.equal(h.calls.priceDice,3);
+ await h.submit();noError(h);assert.equal(h.persisted().ledger.find(e=>e.type==='Sale').audit.audit.basePrice,base);
+});
+test('local ban keeps explicit referee price and benchmark and rejects a noncriminal buyer atomically',async()=>{
+ const h=harness(auditTradeCampaign());h.api.setSelected(['legacy']);h.api.beginSale();h.fill({ban_legacy:5,price_legacy:123456,benchmark_legacy:234567,reason:'Referee agrees special terms'});await h.submit();noError(h);
+ const line=h.api.previewSale.lines[0];assert.equal(line.unitPrice,'123456');assert.equal(line.benchmarkPrice,'234567');assert.equal(line.audit.manualPrice,'123456');assert.equal(line.audit.basePrice,1000000);assert.equal(line.audit.effectiveIllegal,true);
+ const legal=harness(auditTradeCampaign({criminal:false})),before=legal.persisted();legal.api.setSelected(['legacy']);legal.api.beginSale();legal.fill({ban_legacy:5});await legal.submit();assert.match(legal.dom.ids.get('modal-error').textContent,/Locally banned cargo needs a black-market buyer/);same(legal.persisted(),before);
+});
+for(const quantity of ['0.5','1.5'])test('legacy '+quantity+' tons can preview, fully sell, reload and Undo without rounding stock',async()=>{
+ const h=harness(auditTradeCampaign({quantity})),before=h.persisted();h.api.setSelected(['legacy']);h.api.beginSale();
+ const input=h.dom.fields().get('qty_legacy');assert.equal(input.value,quantity);assert.equal(input.attributes.min,'0');assert.equal(input.attributes.max,quantity);assert.equal(input.attributes.step,'any');assert.equal(input.dataset.roundExact,quantity);
+ await h.submit();noError(h);assert.equal(h.api.previewSale.lines[0].quantity,quantity);assert.equal(h.api.previewSale.lines[0].basis,'1001');same(h.persisted(),before);
+ h.api.actions['sale-edit']();assert.equal(h.dom.fields().get('qty_legacy').value,quantity);await h.submit();noError(h);const delta=h.api.previewSale.bankDelta;await h.submit();noError(h);
+ assert.equal(h.persisted().lots.length,0);assert.equal(h.persisted().bank,String(BigInt(before.bank)+BigInt(delta)));
+ const reloaded=harness(S.validate(JSON.parse(JSON.stringify(h.persisted()))));assert.equal(reloaded.persisted().ledger.find(e=>e.type==='Sale').audit.quantity,quantity);
+ reloaded.api.actions.undo();same(reloaded.persisted().lots,before.lots);assert.equal(reloaded.persisted().bank,before.bank);
+});
+test('one ton from a 1.5-ton legacy lot leaves an exactly saleable 0.5-ton remainder across reload and Undo',async()=>{
+ let h=harness(auditTradeCampaign()),before=h.persisted();h.api.setSelected(['legacy']);h.api.beginSale();h.fill({qty_legacy:1});await h.submit();noError(h);assert.equal(h.api.previewSale.lines[0].basis,'667');await h.submit();noError(h);
+ const partial=h.persisted();assert.equal(partial.lots[0].quantity,'0.5');assert.equal(partial.lots[0].basis,'334');assert.equal(partial.lots[0].goodsValue,'167');
+ h=harness(S.validate(JSON.parse(JSON.stringify(partial))));h.api.setSelected(['legacy']);h.api.beginSale();assert.equal(h.dom.fields().get('qty_legacy').value,'0.5');await h.submit();noError(h);assert.equal(h.api.previewSale.lines[0].basis,'334');await h.submit();noError(h);
+ assert.equal(h.persisted().lots.length,0);const sales=h.persisted().ledger.filter(e=>e.type==='Sale');assert.equal(A.decimal(A.sum(sales.map(e=>e.audit.quantity))),'1.5');assert.equal(sales.reduce((n,e)=>n+BigInt(e.audit.basis),0n),1001n);
+ h=harness(S.validate(JSON.parse(JSON.stringify(h.persisted()))));h.api.actions.undo();same(h.persisted().lots,partial.lots);assert.equal(h.persisted().bank,partial.bank);h.api.actions.undo();same(h.persisted().lots,before.lots);assert.equal(h.persisted().bank,before.bank);
+});
+test('the historical remainder exception preserves ordinary upward entry rounding and over-sale rejection',async()=>{
+ for(const [quantity,entered,expected]of [['1.5','0.25','1'],['2','0.5','1']]){
+  const h=harness(auditTradeCampaign({quantity}));h.api.setSelected(['legacy']);h.api.beginSale();h.fill({qty_legacy:entered});await h.submit();noError(h);assert.equal(h.api.previewSale.lines[0].quantity,expected);
+ }
+ for(const entered of ['0','1.6']){
+  const h=harness(auditTradeCampaign()),before=h.persisted();h.api.setSelected(['legacy']);h.api.beginSale();h.fill({qty_legacy:entered});await h.submit();assert.match(h.dom.ids.get('modal-error').textContent,/Invalid sale quantity/);same(h.persisted(),before);
+ }
+ const h=harness(auditTradeCampaign());h.api.buyForm('radio-offer');h.fill({quantity:'0.5'});await h.submit();noError(h);assert.match(modalText(h),/<dd>1 t<\/dd>/);assert.match(modalText(h),/0.5 → 1/);
+});

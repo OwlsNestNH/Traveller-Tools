@@ -114,3 +114,19 @@ test('Store save/read/replace preserves limits and supplies legacy defaults',()=
   memory.set(KEY,JSON.stringify(legacy));assert.deepEqual(R.priceLimits(store.read().settings),R.priceLimits());
  }finally{Object.assign(globalThis,original);}
 });
+
+test('local-ban effective legality controls the RAW exemption at the quote boundary, including exact law threshold',()=>{
+ const expensive={...good,baseCreditsPerTon:1000000};
+ const options={side:'sell',skill:0,counterparty:0,rollTotal:10,maxBaseRetailEnabled:true,maxBaseRetail:100000,useRawIllegalPrices:true,illegalGood:false};
+ const original=JSON.stringify(options);
+ for(const [threshold,illegal,base]of [[5,true,1000000],[9,true,1000000],[10,false,100000]]){
+  const q=R.quote(expensive,ctx,{...options,banThreshold:threshold},core);
+  assert.equal(q.audit.effectiveIllegal,illegal);assert.equal(q.audit.locallyBanned,illegal);assert.equal(q.audit.illegalRawPriceExempt,illegal);assert.equal(q.audit.basePrice,base);
+  assert.equal(q.audit.sale.localIllegalDM,illegal?9-threshold:undefined);
+ }
+ const capped=R.quote(expensive,ctx,{...options,banThreshold:5,useRawIllegalPrices:false},core);assert.equal(capped.audit.effectiveIllegal,true);assert.equal(capped.audit.basePrice,100000);assert.equal(capped.audit.illegalRawPriceExempt,false);
+ const inherentlyIllegal=R.quote(expensive,ctx,{...options,illegalGood:true,banThreshold:10},core);assert.equal(inherentlyIllegal.audit.effectiveIllegal,true);assert.equal(inherentlyIllegal.audit.locallyBanned,false);assert.equal(inherentlyIllegal.audit.basePrice,1000000);
+ assert.equal(JSON.stringify(options),original);
+ for(const banThreshold of [-1,NaN,Infinity])assert.throws(()=>R.tradeLegality(ctx,{banThreshold}),/Invalid ban threshold/);
+ assert.throws(()=>R.tradeLegality({...ctx,uwp:{...ctx.uwp,law:null}},{banThreshold:5}),/Law Level required/);
+});
