@@ -75,7 +75,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [browser, modal-lifecycle, click-route, fuel-browser, empty-space, mail-browser, map-overview-browser, gui-parity, trade-buttons, settings-browser, insurance-browser, trade-complications-browser, world-screen-browser, jump-undo-browser, service-panels-browser, combined-cabins, day-controls, zero-fuel, resource-alert, mortgage-browser, expense-panels-browser, cargo-hold-browser, route-frame-browser]
+        suite: [browser, modal-lifecycle, click-route, fuel-browser, empty-space, mail-browser, map-overview-browser, gui-parity, trade-buttons, settings-browser, insurance-browser, trade-complications-browser, world-screen-browser, jump-undo-browser, service-panels-browser, combined-cabins, day-controls, zero-fuel, resource-alert, mortgage-browser, expense-panels-browser, cargo-hold-browser, route-frame-browser, inline-fuel-browser]
     steps:
       - name: Check out exact PR head
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -112,7 +112,7 @@ jobs:
           curl --fail --silent "$TRAVELLER_TEST_URL" > /dev/null
           node "verification/$SUITE.test.mjs" "$RUNNER_TEMP/trade-playwright/node_modules/playwright" | tee "verification-artifacts/$SUITE.txt"
       - name: Upload browser evidence
-        if: ${{ always() && matrix.suite != 'route-frame-browser' }}
+        if: ${{ always() && matrix.suite != 'route-frame-browser' && matrix.suite != 'inline-fuel-browser' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: trade-${{ matrix.suite }}-${{ github.event.pull_request.head.sha }}
@@ -181,6 +181,70 @@ jobs:
         with:
           name: trade-route-frame-visual-320-${{ github.event.pull_request.head.sha }}
           path: tools/trade-route-calculator/verification-artifacts/route-frame-visual-320/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Prepare bounded service-control visuals
+        id: service_visual_evidence
+        if: ${{ always() && matrix.suite == 'inline-fuel-browser' }}
+        run: |
+          python3 - <<'PYTHON'
+          from pathlib import Path
+          from shutil import copyfile
+          source = Path('verification-artifacts')
+          for width in [1440, 1100, 390, 320]:
+              target = source / f'inline-fuel-visual-{width}'
+              target.mkdir(exist_ok=True)
+              files = list(source.glob(f'inline-fuel-*-{width}.png'))
+              files += [source / name for name in ['inline-fuel-report.json', 'commit.txt', 'runtime.txt', 'inline-fuel-browser.txt']]
+              for file in files:
+                  if file.is_file():
+                      copyfile(file, target / file.name)
+              size = sum(file.stat().st_size for file in target.iterdir() if file.is_file())
+              if size >= 30 * 1024 * 1024:
+                  raise RuntimeError(f'Service visual evidence at {width}px exceeds the safe download bound: {size} bytes')
+              print(f'Service visual evidence at {width}px: {size} bytes')
+          PYTHON
+      - name: Upload service-control traces
+        if: ${{ always() && matrix.suite == 'inline-fuel-browser' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: trade-inline-fuel-traces-${{ github.event.pull_request.head.sha }}
+          path: |
+            tools/trade-route-calculator/verification-artifacts/inline-fuel-trace-*.zip
+            tools/trade-route-calculator/verification-artifacts/commit.txt
+            tools/trade-route-calculator/verification-artifacts/inline-fuel-browser.txt
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload compact service-control visuals 1440px
+        if: ${{ always() && matrix.suite == 'inline-fuel-browser' && steps.service_visual_evidence.outcome == 'success' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: trade-inline-fuel-visual-1440-${{ github.event.pull_request.head.sha }}
+          path: tools/trade-route-calculator/verification-artifacts/inline-fuel-visual-1440/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload compact service-control visuals 1100px
+        if: ${{ always() && matrix.suite == 'inline-fuel-browser' && steps.service_visual_evidence.outcome == 'success' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: trade-inline-fuel-visual-1100-${{ github.event.pull_request.head.sha }}
+          path: tools/trade-route-calculator/verification-artifacts/inline-fuel-visual-1100/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload compact service-control visuals 390px
+        if: ${{ always() && matrix.suite == 'inline-fuel-browser' && steps.service_visual_evidence.outcome == 'success' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: trade-inline-fuel-visual-390-${{ github.event.pull_request.head.sha }}
+          path: tools/trade-route-calculator/verification-artifacts/inline-fuel-visual-390/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload compact service-control visuals 320px
+        if: ${{ always() && matrix.suite == 'inline-fuel-browser' && steps.service_visual_evidence.outcome == 'success' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: trade-inline-fuel-visual-320-${{ github.event.pull_request.head.sha }}
+          path: tools/trade-route-calculator/verification-artifacts/inline-fuel-visual-320/
           if-no-files-found: error
           retention-days: 14
       - name: Upload compact GUI screenshots

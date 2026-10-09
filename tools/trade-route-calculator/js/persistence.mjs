@@ -1,4 +1,4 @@
-import {initial,validate} from './state.mjs?v=route-frame-name-20261009-23';
+import {initial,validate} from './state.mjs?v=service-controls-20261009-24';
 export const KEY='traveller-trade-route-calculator:v1';
 const LOCK=KEY+':writer';
 function serializedCampaign(next){

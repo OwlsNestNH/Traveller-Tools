@@ -1,5 +1,5 @@
-import {maintenancePaymentQuote,MAINTENANCE_REFERENCE} from './maintenance.mjs?v=route-frame-name-20261009-23';
-import {mortgagePaymentQuote,MORTGAGE_REFERENCE} from './mortgage.mjs?v=route-frame-name-20261009-23';
+import {maintenancePaymentQuote,MAINTENANCE_REFERENCE} from './maintenance.mjs?v=service-controls-20261009-24';
+import {mortgagePaymentQuote,MORTGAGE_REFERENCE} from './mortgage.mjs?v=service-controls-20261009-24';
 import {fuelPurchase,fuelReference} from './fuel.mjs?v=fuel-warning-1';
 import {up} from './rounding.mjs';
 import * as A from './amounts.mjs';
@@ -24,6 +24,16 @@ export function fuelAvailability(world,type){
  const water=world.accessibleWater===true||(/^[1-9A]$/i.test(hydro)&&(['D','E'].includes(port)||/^[0-9]$/.test(atmosphere)));
  const standard=type==='water'?water:type==='refined'?['A','B'].includes(port):type==='unrefined'&&['A','B','C','D'].includes(port);
  return {port,hydro,water,standard};
+}
+// Custom changes only the local price. Physical grade and purchase availability
+// stay explicit; collection remains a separate, free source.
+export function fuelPricing(world,input){
+ const type=input.fuelType;if(!['refined','unrefined','water'].includes(type))throw Error('Choose a fuel source.');
+ const collecting=type==='water',{hydro,standard}=fuelAvailability(world,type),custom=input.customFuelRate!==undefined;
+ if(collecting&&custom)throw Error('Water collection is free; choose a purchased fuel grade for custom pricing.');
+ const rate=custom?A.decimal(input.customFuelRate):String(collecting?0:type==='refined'?500:100);
+ if(A.cmp(rate,0)<0)throw Error('Fuel price cannot be negative.');
+ return {type,collecting,hydro,standard,custom,rate};
 }
 export function recurringExpenseDetails(expense){
  if(expense.kind==='mortgage'){const q=expense.mortgage;return [['Original mortgage amount · Cr',q.before.originalAmount],['Fixed payment · Cr / 4 weeks',q.before.payment],['Payments paid now',String(q.periods)],['First installment due',q.firstDueDate],['Paid through installment due',q.lastDueDate],['Payments remaining before',String(q.before.remainingPayments)],['Payments remaining after',String(q.after.remainingPayments)],['Total paid before · Cr',q.before.totalPaid],['Total paid after · Cr',q.after.totalPaid],['Remaining scheduled payments · Cr',q.remainingAmount],['Next unpaid payment due',q.after.remainingPayments?q.after.nextDueDate:'None · all scheduled payments paid']];}
@@ -50,15 +60,15 @@ export function expenseQuote(world,input){
   details=[['Starport class',port],['Saved 1D roll',rate.die??'No roll required'],['Multiplier · Cr',String(rate.multiplier)],['Weekly berthing · Cr',rate.weekly],['Weeks paid',String(weeks)]];
   reference='Traveller Core Rulebook Update 2022, pp. 257–258. Roll once per starport; berthing is due weekly.';
  }else if(kind==='fuel'){
-  const type=input.fuelType;if(!['refined','unrefined','water'].includes(type))throw Error('Choose a fuel source.');
-  const collecting=type==='water',{hydro,standard}=fuelAvailability(world,type);
-  const tons=A.positive(String(up(input.tons)),'Fuel tons'),rate=collecting?0:type==='refined'?500:100;
+  const {type,collecting,hydro,standard,custom,rate}=fuelPricing(world,input);
   if(!collecting&&!standard&&(!input.otherSupplier||!notes))throw Error('No standard starport supply for this fuel. Confirm another supplier and explain in notes.');
+  const requestedTons=A.positive(input.tons,'Fuel tons'),tons=String(up(requestedTons));
   unrounded=A.decimal(A.mul(tons,rate));amount=String(up(unrounded,input.creditStep||1));
-  details=[['Fuel type',type==='refined'?'Refined':'Unrefined'],['Fuel tons',tons],['Rate · Cr/ton',String(rate)],['Starport class',port],['Hydrographics',hydro],['Supply',collecting?(standard?'Free water collection':'Free water collection / availability warning'):(standard?'Starport purchase':'Other supplier / referee-confirmed')]];
+  details=[['Fuel type',type==='refined'?'Refined':'Unrefined'],['Fuel tons',tons],['Entered fuel tons',requestedTons],['Rate · Cr/ton',rate],['Price basis',custom?'Custom local price':'Standard price'],['Starport class',port],['Hydrographics',hydro],['Supply',collecting?(standard?'Free water collection':'Free water collection / availability warning'):(standard?'Starport purchase':'Other supplier / referee-confirmed')]];
   reference='Traveller Core Rulebook Update 2022, pp. 154, 156–157, 257–258. Purchased refined Cr500/ton; purchased unrefined Cr100/ton. Campaign ruling: refined availability also includes unrefined; water collection is always selectable and free at any starport class. Missing or unsuitable hydrographics and planet information are advisory warnings only. Purchased fuel outside standard starport availability requires referee confirmation and notes. Collection equipment and access are resolved in play; collection time and fuel-grade mixing are resolved in play.';
   const tank=input.fuelShip?fuelPurchase(input.fuelShip,tons):null;
   if(tank)details.push(['Ship displacement - tons',String(tank.displacementTons)],['Tank capacity - tons',String(tank.capacity)],['Fuel aboard before - tons',String(tank.before)],['Fuel aboard after - tons',String(tank.after)]);
+  if(custom)reference+=' A manually entered local Cr/ton price overrides the standard rate without changing fuel grade or purchase availability.';
   reference+=' '+fuelReference+(tank?' Confirming adds fuel to the tank.':' Fuel tracking is not configured; this records a payment only.');
  }else if(kind==='staterooms'||kind==='passengerSupport'){
   const {units,divisor}=period(input);let monthly=0n;details=[];

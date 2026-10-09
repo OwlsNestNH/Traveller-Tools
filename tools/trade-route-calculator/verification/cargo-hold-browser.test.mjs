@@ -218,11 +218,11 @@ async function navigationAndDrafts(page,f){
  const replay=data=>page.evaluate(data=>{const b=document.createElement('button');Object.assign(b.dataset,data);document.body.append(b);b.click();b.remove();},data);
  // All service modes are interrupted without commit. Old tokens remain inert
  // both while Cargo is visible and after another service session is opened.
- for(const from of ['refuel','refill-support'])for(const mode of ['summary','adjust','review']){
+ for(const from of ['refuel','refill-support'])for(const mode of (from==='refuel'?['inline']:['summary','adjust','review'])){
   await click(page,from);await page.locator('#service-panel').waitFor();
   const oldConfirm=await remember('#service-panel [data-action="service-confirm"]');
   if(mode!=='summary'){
-   await click(page,'service-adjust');
+   if(from==='refill-support')await click(page,'service-adjust');
    await page.locator('#service-form [name="'+(from==='refuel'?'fuelTons':'extraDays')+'"]').fill(from==='refuel'?'2':'200');
    if(mode==='review')await click(page,'service-review');
   }
@@ -231,7 +231,7 @@ async function navigationAndDrafts(page,f){
   assert.equal(await page.locator('#service-panel,#expense-panel,#service-form').count(),0);
   await replay(oldAction);await replay(oldConfirm);await opened(page);await unchanged(page,f,from+'/'+mode+' → Cargo with detached callbacks');
   await click(page,from);await replay(oldAction);await replay(oldConfirm);
-  await click(page,'service-adjust');
+  if(from==='refill-support')await click(page,'service-adjust');
   const reset=await page.locator('#service-form [name="'+(from==='refuel'?'fuelTons':'extraDays')+'"]').inputValue();
   assert.equal(reset,from==='refuel'?'15':'0','Discarded service draft is not resurrected');
   await unchanged(page,f,'Reopening '+from+' with stale callbacks');

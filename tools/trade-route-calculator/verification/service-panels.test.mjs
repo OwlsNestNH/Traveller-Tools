@@ -41,17 +41,17 @@ function harness(s=campaign()){
 }
 test('fuel maximum preserves odd tons and combines empty base tanks with exact free cargo',()=>{const s=campaign();assert.equal(maxFuelAddition(s),23);s.ship.fuel=configureFuel(200,43,40,1,2);s.ship.capacity='9';s.lots=[{quantity:'5.2'}];assert.equal(maxFuelAddition(s),6);s.ship.fuel.aboardTons=50;assert.equal(maxFuelAddition(s),0);});
 test('fuel correction is reduction-only, audited, bank-neutral, releases bladder cargo and undoes',()=>{const s=campaign();s.ship.fuel=configureFuel(200,43,55,1,2);const before=structuredClone(s),n=S.transition(s,'Adjusted fuel aboard',n=>fuelCorrection(n,'41','Actual tank check'));assert.equal(n.bank,s.bank);assert.equal(n.ship.fuel.aboardTons,41);assert.equal(n.events[0].fuelCorrection.removed,14);assert.equal(n.events[0].fuelCorrection.reason,'Actual tank check');assert.equal(n.ledger.length,0);assert.deepEqual(S.undo(n).ship,before.ship);for(const bad of ['','56','-1','2.5','55'])assert.throws(()=>fuelCorrection(structuredClone(s),bad));assert.deepEqual(s,before);});
-test('opening, adjusting, reviewing and cancelling never mutate the campaign',async()=>{const h=harness(),before=structuredClone(h.state());h.services.open('fuel');assert.match(h.services.panel(),/Refuel · Summary/);assert.match(h.services.panel(),/Actual origin/);await h.action('service-adjust','');assert.match(h.services.panel(),/value="23"/);await h.action('service-review','');assert.equal(h.commits,0);await h.action('service-back','');assert.equal(h.services.active(),false);assert.deepEqual(h.state(),before);});
-test('only final summary Confirm saves once; repeated click cannot pay again',async()=>{const h=harness();h.services.open('fuel');await h.action('service-adjust','');await h.action('service-confirm','');assert.equal(h.commits,0);await h.action('service-review','');await h.action('service-confirm','');await h.action('service-confirm','');assert.equal(h.commits,1);assert.equal(h.state().ship.fuel.aboardTons,43);assert.equal(h.state().bank,'88500');assert.equal(S.undo(h.state()).ship.fuel.aboardTons,20);});
+test('opening, editing and cancelling inline fuel never mutate the campaign',async()=>{const h=harness(),before=structuredClone(h.state());h.services.open('fuel');assert.match(h.services.panel(),/id="service-form"/);assert.doesNotMatch(h.services.panel(),/data-action="service-(?:adjust|review)"/);assert.match(h.services.panel(),/Actual origin/);assert.match(h.services.panel(),/value="23"/);h.fill({fuelTons:'7.25',fuelType:'unrefined',expenseNotes:'Draft only'});assert.equal(h.commits,0);await h.action('service-back','');assert.equal(h.services.active(),false);assert.deepEqual(h.state(),before);});
+test('direct inline Confirm saves once; repeated click cannot pay again',async()=>{const h=harness();h.services.open('fuel');const confirm=h.capture('service-confirm');await confirm();await confirm();assert.equal(h.commits,1);assert.equal(h.state().ship.fuel.aboardTons,43);assert.equal(h.state().bank,'88500');assert.equal(S.undo(h.state()).ship.fuel.aboardTons,20);});
 test('stale and read-only drafts cannot commit and keep frozen actual-world display',async()=>{for(const mode of ['revision','ownership']){const h=harness();h.services.open('fuel');if(mode==='revision'){const next=S.transition(h.state(),'Other change',s=>s.bank='99999');h.setState(next);}else h.readOnly();assert.match(h.services.panel(),/Campaign or editing ownership changed/);await assert.rejects(h.action('service-confirm',''),/Campaign or editing ownership changed/);assert.equal(h.commits,0);await h.action('service-cancel','');assert.equal(h.services.active(),false);}});
 test('LSS preview rejects funds and cargo overflow before offering payment',()=>{for(const kind of ['funds','cargo']){const s=campaign();s.ship.accommodation={rooms:{low:0,middle:4,high:0},passengers:{low:0,middle:4,high:0},crew:{low:0,middle:0,high:0}};s.ship.lifeSupport={capacityHours:672,stockUnits:{numerator:'56',denominator:'1'}};if(kind==='funds')s.bank='1';else{s.ship.fuel=configureFuel(10,4,2,0,2);s.ship.capacity='0';}const h=harness(s);h.services.open('support');assert.match(h.services.panel(),kind==='funds'?/Insufficient funds/:/exceed available cargo/);assert.equal(h.commits,0);}});
 
 for(const [from,to] of [['fuel','support'],['support','fuel']]){
- for(const mode of ['summary','adjust','reviewed'])test(`${from} → ${to} from ${mode} discards only the draft and rejects its detached callbacks`,async()=>{
+ for(const mode of (from==='fuel'?['inline']:['summary','adjust','reviewed']))test(`${from} → ${to} from ${mode} discards only the draft and rejects its detached callbacks`,async()=>{
   const h=harness(withSupport({frozen:2})),before=h.bytes();
   h.services.open(from);
   if(mode!=='summary'){
-   await h.action('service-adjust');
+   if(from==='support')await h.action('service-adjust');
    h.fill(from==='fuel'?{fuelType:'water',fuelTons:'7',expenseNotes:'Discard this fuel draft'}:{extraDays:'14',comfortCredits:'2000',comfortNote:'Discard this support draft'});
    if(mode==='reviewed')await h.action('service-review');
   }
@@ -59,13 +59,13 @@ for(const [from,to] of [['fuel','support'],['support','fuel']]){
   h.services.open(to);
   assert.notEqual(h.services.token(),oldToken,'Each switch has a fresh generation');
   const replacement=h.services.panel(),renders=h.renders;
-  assert.match(replacement,to==='fuel'?/Refuel · Summary/:/Life support · Summary/);
+  assert.match(replacement,to==='fuel'?/id="service-form"/:/Life support · Summary/);
   assert.match(replacement,/Actual origin/);
   assert.equal(h.bytes(),before,'Switching must preserve every serialized campaign byte');
   for(const callback of callbacks)await callback();
   assert.equal(h.services.panel(),replacement,'Detached callbacks cannot edit or dismiss the replacement panel');
   assert.equal(h.renders,renders);assert.equal(h.commits,0);assert.equal(h.bytes(),before);
-  await h.action('service-adjust');
+  if(to==='support')await h.action('service-adjust');
   const editor=h.services.panel();
   if(to==='fuel'){
    assert.match(editor,/name="fuelTons"[^>]*value="23"/);
@@ -78,7 +78,7 @@ for(const [from,to] of [['fuel','support'],['support','fuel']]){
    assert.match(editor,/Cr 4,000/,'Fresh standard LSS quote ignores discarded extras');
   }
   // Return directly once more: the original service also starts afresh.
-  h.services.open(from);await h.action('service-adjust');
+  h.services.open(from);if(from==='support')await h.action('service-adjust');
   assert.match(h.services.panel(),from==='fuel'?/name="fuelTons"[^>]*value="23"/:/name="extraDays"[^>]*value="0"/);
   assert.doesNotMatch(h.services.panel(),/Discard this/);
   await h.action('service-cancel');assert.equal(h.services.active(),false);assert.equal(h.bytes(),before);
@@ -87,18 +87,17 @@ for(const [from,to] of [['fuel','support'],['support','fuel']]){
 
 test('fuel correction draft is discarded by a direct switch without a refund, audit or stock change',async()=>{
  const h=harness(withSupport()),before=h.bytes();h.services.open('fuel');
- await h.action('service-adjust');await h.action('service-fuel-correct');
+ await h.action('service-fuel-correct');
  h.fill({fuelRemaining:'13',fuelReason:'Unfinished correction'});await h.action('service-review');
  const confirm=h.capture('service-confirm');assert.match(h.services.panel(),/Adjust fuel aboard · Summary/);
  h.services.open('support');await confirm();assert.equal(h.bytes(),before);
- h.services.open('fuel');assert.match(h.services.panel(),/Refuel · Summary/);assert.doesNotMatch(h.services.panel(),/Unfinished correction/);
+ h.services.open('fuel');assert.match(h.services.panel(),/id="service-form"/);assert.doesNotMatch(h.services.panel(),/Unfinished correction/);
  assert.equal(h.state().ship.fuel.aboardTons,20);assert.equal(h.commits,0);
 });
 
 test('every button and form carries its session token while numeric fuel steps retain their payload',async()=>{
  const h=harness();h.services.open('fuel');
- for(const mode of ['summary','adjust']){
-  if(mode==='adjust')await h.action('service-adjust');
+ for(const mode of ['inline']){
   const tags=h.services.panel().match(/<(?:button|form)\b[^>]*>/g);
   assert.ok(tags.length);
   for(const tag of tags)assert.match(tag,new RegExp('data-service-token="'+h.services.token()+'"'));
@@ -147,7 +146,7 @@ test('the replacement session reads current revision, actual world and LSS stock
 });
 
 test('read-only switch cannot replace or commit a session, and ownership recovery needs a fresh session',async()=>{
- const h=harness(withSupport()),before=h.bytes();h.services.open('fuel');await h.action('service-adjust');h.fill({fuelTons:'7'});
+ const h=harness(withSupport()),before=h.bytes();h.services.open('fuel');h.fill({fuelTons:'7'});
  const token=h.services.token(),oldConfirm=h.capture('service-confirm');h.readOnly();h.services.syncControls();
  assert.throws(()=>h.services.open('support'),/read-only/);assert.equal(h.services.token(),token);
  await assert.rejects(h.action('service-review'),/Campaign or editing ownership changed/);assert.equal(h.bytes(),before);
@@ -198,4 +197,16 @@ test('a failed final save stays atomic, and reentrant switching is locked until 
   assert.equal(h.services.token(),token);
  };
  await h.action('service-confirm');assert.equal(h.commits,1);assert.equal(h.services.active(),false);assert.equal(h.state().bank,'88500');
+});
+
+for(const frozen of [0,2])for(const kind of ['extra','comfort'])test(`full LSS exposes ${kind} without charging baseline again (${frozen} frozen)`,async()=>{
+ const s=withSupport({frozen});s.ship.lifeSupport.remainingHours=672;const before=structuredClone(s),h=harness(s);h.services.open('support');
+ assert.match(h.services.panel(),/id="service-form"/);assert.match(h.services.panel(),/name="extraDays"[^>]*value="0"/);assert.match(h.services.panel(),/name="comfortCredits"[^>]*value="0"/);assert.match(h.services.panel(),/Standard top-up<\/dt><dd>\+0 days · Cr 0/);assert.match(h.services.panel(),/<strong>Cr 0<\/strong>/);assert.equal(h.bytes(),JSON.stringify(before));
+ await h.action('service-confirm');assert.equal(h.commits,0,'Full initial draft still requires Review');
+ h.fill(kind==='extra'?{extraDays:'14'}:{comfortCredits:'2000',comfortNote:'Comfort only, no physical stock'});
+ const q=refillQuote(s,kind==='extra'?{extraDays:'14'}:{comfortCost:'2000',comfortNote:'Comfort only, no physical stock'});assert.equal(q.standardAmount,'0');assert.equal(q.extraAmount,kind==='extra'?(frozen?'2100':'2000'):'0');assert.equal(q.amount,kind==='comfort'?'2000':frozen?'2100':'2000');
+ assert.equal(h.bytes(),JSON.stringify(before));await h.action('service-review');assert.equal(h.bytes(),JSON.stringify(before));const confirm=h.capture('service-confirm');await confirm();await confirm();
+ assert.equal(h.commits,1);assert.equal(h.state().bank,String(100000n-BigInt(q.amount)));assert.equal(supportStock(h.state().ship).remainingUnits,q.afterUnits);assert.equal(h.state().ledger.length,1);assert.equal(h.state().undo.length,1);
+ h.services.open('support');assert.match(h.services.panel(),/id="service-form"/);assert.match(h.services.panel(),/<strong>Cr 0<\/strong>/);assert.equal(h.commits,1);
+ const undone=S.undo(h.state());for(const key of ['bank','ship','ledger','hours'])assert.deepEqual(undone[key],before[key]);
 });

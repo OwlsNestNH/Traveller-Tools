@@ -222,14 +222,14 @@ test('jump confirmation cannot submit after close, ownership loss or newer campa
   if(mode==='revision')assert.match(h.dom.ids.get('modal-error').textContent,/stale|changed/i);
  }
 });
-test('Overview has four shortcuts and Refuel opens a nonmutating in-panel summary',async()=>{
+test('Overview has four shortcuts and Refuel opens its nonmutating inline editor',async()=>{
  for(const [port,type]of [['A','refined'],['B','refined'],['C','unrefined'],['D','unrefined'],['E','unrefined']]){
   const s=campaign();s.worlds[origin.id].uwp=port+'788899-C';s.ship.fuel=bindings.configureFuel(200,43,20,0,2);
   const h=harness(s),before=h.persisted();h.api.setTab('Overview');const html=h.api.shipActions();
   assert.equal((html.match(/class="primary"/g)||[]).length,3);assert.match(html,/data-action="cargo-hold"/);assert.doesNotMatch(html,/quickFuelType|fuel-radio|Refined|Unrefined/);
   h.api.setTab('Trade');h.api.refuelShortcut();assert.equal(h.dom.ids.get('modal').open,false);
-  assert.match(h.api.services.panel(),/Refuel · Summary/);assert.match(h.api.services.panel(),/Actual ship location/);
-  await h.api.services.action('service-adjust','',h.api.services.token());const editor=h.api.services.panel();
+  assert.match(h.api.services.panel(),/id="service-form"/);assert.doesNotMatch(h.api.services.panel(),/data-action="service-(?:adjust|review)"/);assert.match(h.api.services.panel(),/Actual ship location/);
+  const editor=h.api.services.panel();
   assert.match(editor,new RegExp('value="'+type+'" selected'));
   assert.match(editor,/name="fuelTons"[^>]*value="23"/);assert.match(editor,/Top off · 23 t/);
   h.api.services.close();same(h.persisted(),before);
@@ -341,7 +341,7 @@ test('Cargo Hold cancels every unfinished service without saving or replaying st
  const h=harness(recurringCampaign()),before=h.persisted();h.api.setTab('Overview');
  for(const from of ['fuel','support','mortgage','maintenance','salary','berthing']){
   h.api.services.open(from,{fresh:true});const stock=['fuel','support'].includes(from),oldToken=h.api.services.token(),oldArg=stock?'':expenseArg(h,'expense-back');
-  if(stock)await h.api.services.action('service-adjust','',oldToken);
+  if(from==='support')await h.api.services.action('service-adjust','',oldToken);
   h.api.actions['cargo-hold']();assert.equal(h.api.services.active(),false);assert.match(h.dom.ids.get('main').innerHTML,/id="cargo-hold-panel"/);same(h.persisted(),before);
   await h.api.services.action(stock?'service-confirm':'expense-pay',oldArg,oldToken);same(h.persisted(),before);
   for(const next of ['refuel','refill-support','ship-expenses']){h.api.actions['cargo-hold']();h.api.actions[next]();assert.doesNotMatch(h.dom.ids.get('main').innerHTML,/id="cargo-hold-panel"/);same(h.persisted(),before);}
