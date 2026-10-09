@@ -41,6 +41,11 @@ const read=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('traveller-trad
 const zoom=()=>page.locator('.map-zoom-controls .help').textContent();
 const level=()=>page.locator('.world-map').getAttribute('data-map-level');
 const transform=()=>page.locator('.map-content').getAttribute('transform');
+async function geometry(height){
+ const result=await page.locator('.world-map').evaluate(svg=>({viewBox:svg.getAttribute('viewBox'),width:svg.querySelector(':scope > rect').getAttribute('width'),height:svg.querySelector(':scope > rect').getAttribute('height'),cssHeight:getComputedStyle(svg).height}));
+ assert.deepEqual(result,{viewBox:'0 0 520 320',width:'520',height:'320',cssHeight:height+'px'});
+}
+
 async function reach(target){for(let i=0;i<30&&await zoom()!==target;i++)await click(target==='240%'?'+':'−');assert.equal(await zoom(),target);}
 async function drag(){
  // Raw mouse coordinates do not auto-scroll like locator.click(). The map can
@@ -66,7 +71,8 @@ try{
  await page.goto(process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/');
  await click('Set up campaign');await page.locator('#setup-world .picker-selection').getByText(/Hex 1910/).waitFor();
  await click('Start campaign');await page.locator('#modal').waitFor({state:'hidden'});
- const before=await read();assert.equal(await level(),'world');
+ const before=await read();assert.equal(await level(),'world');await geometry(320);
+ const origin=page.locator('svg [data-action="map-world"][data-arg="-110,-70"] circle');assert.equal(await origin.getAttribute('cx'),'260');assert.equal(await origin.getAttribute('cy'),'158');
  assert.equal(await page.getByLabel('Political territory',{exact:true}).isChecked(),true);
  await page.locator('.territory-fill').first().waitFor({state:'attached'});
  await page.getByLabel('Political territory',{exact:true}).uncheck();
@@ -75,7 +81,7 @@ try{
  await page.getByLabel('Political territory',{exact:true}).check();
  await page.locator('.territory-fill').first().waitFor({state:'attached'});
  assert.deepEqual(await page.locator('.world-name').allTextContents(),plainWorlds);assert.deepEqual(await read(),before);
- await reach('240%');assert.ok(await page.locator('.world-uwp').count()>0);
+ await reach('240%');await geometry(320);assert.ok(await page.locator('.world-uwp').count()>0);
  assert.ok(await page.locator('.territory-fill').count()>0);
  await page.screenshot({fullPage:true,path:artifacts+'/map-world-uwp.png'});
  await page.getByLabel('Political territory',{exact:true}).uncheck();assert.equal(await page.locator('.map-territories').count(),0);
@@ -84,7 +90,7 @@ try{
  await click('Reset view');assert.equal(await zoom(),'100%');assert.equal(await page.locator('.world-uwp').count(),0);
  assert.ok(await page.locator('.world-name').count()>0);await page.screenshot({fullPage:true,path:artifacts+'/map-worlds.png'});
  await reach('20%');assert.equal(await level(),'world');assert.ok(await page.locator('.world-name').count()>0);
- await click('−');assert.equal(await level(),'subsector');
+ await click('−');assert.equal(await level(),'subsector');await geometry(320);
  await page.locator('.subsector-label[data-sector="Spinward Marches"][data-subsector="C"] .subsector-name').getByText('Regina',{exact:true}).waitFor();
  await page.locator('#map-load-status').getByText(/could not load/).waitFor();
  const beforeRetry=denebTableAttempts;
@@ -102,7 +108,7 @@ try{
  await page.screenshot({fullPage:true,path:artifacts+'/map-subsectors.png'});
  await drag();assert.notEqual(await transform(),'translate(0 0)');assert.deepEqual(await read(),before);
  const pan=await transform();await page.getByLabel('Show hexes',{exact:true}).uncheck();assert.equal(await transform(),pan);
- await reach('6%');assert.equal(await level(),'sector');
+ await reach('6%');assert.equal(await level(),'sector');await geometry(320);
  assert.ok(await page.locator('.sector-name').count()>0);assert.ok(await page.locator('.subsector-letter').count()>0);
  assert.equal(await page.locator('.overview-worlds circle').count(),0);
  const name=page.locator('.sector-label[data-sector="Spinward Marches"]');assert.equal(await name.count(),1);
@@ -116,7 +122,7 @@ try{
  await click('Reset view');assert.equal(await zoom(),'100%');assert.equal(await transform(),'translate(0 0)');
  assert.equal(await level(),'world');await page.locator('svg [data-arg="-111,-70"]').click();
  assert.equal(await page.locator('.world-info strong').first().textContent(),'Jenghe');assert.deepEqual(await read(),before);
- await click('Current system');await reach('6%');await page.setViewportSize({width:390,height:844});
+ await click('Current system');await reach('6%');await page.setViewportSize({width:390,height:844});await geometry(300);
  assert.ok(await page.locator('main').evaluate(el=>el.scrollWidth<=el.clientWidth+2));
  await drag();assert.deepEqual(await read(),before);await page.screenshot({fullPage:true,path:artifacts+'/map-sectors-mobile.png'});
  await click('Reset view');assert.equal(await level(),'world');assert.deepEqual(await read(),before);

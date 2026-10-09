@@ -1,0 +1,293 @@
+{
+  "sourceCommit": "ee77f6d7a95928bb02da59cf76faf73ebbc35b56",
+  "sectors": [
+    {
+      "name": "Spinward Marches",
+      "x": -4,
+      "y": -1
+    },
+    {
+      "name": "Deneb",
+      "x": -3,
+      "y": -1
+    }
+  ],
+  "catalogs": [
+    [
+      "Spinward Marches",
+      {
+        "subsectors": [
+          {
+            "index": "C",
+            "mapName": "Regina"
+          },
+          {
+            "index": "J",
+            "mapName": "Sword Worlds"
+          }
+        ],
+        "worlds": [
+          {
+            "hex": "1910"
+          },
+          {
+            "hex": "1810"
+          },
+          {
+            "hex": "0101"
+          },
+          {
+            "hex": "3240"
+          }
+        ]
+      }
+    ],
+    [
+      "Deneb",
+      {
+        "subsectors": [
+          {
+            "index": "C",
+            "mapName": "Regina"
+          },
+          {
+            "index": "J",
+            "mapName": "Sword Worlds"
+          }
+        ],
+        "worlds": [
+          {
+            "hex": "1910"
+          },
+          {
+            "hex": "1810"
+          },
+          {
+            "hex": "0101"
+          },
+          {
+            "hex": "3240"
+          }
+        ]
+      }
+    ]
+  ],
+  "scenarios": [
+    {
+      "anchor": {
+        "x": -110,
+        "y": -70
+      },
+      "pan": {
+        "x": 0,
+        "y": 0
+      },
+      "zoom": 0.06,
+      "sha256": "d7d89d80731ea49aba66992fc3f4389acf735ea291f011b1afebb65d1c491778"
+    },
+    {
+      "anchor": {
+        "x": -110,
+        "y": -70
+      },
+      "pan": {
+        "x": 0,
+        "y": 0
+      },
+      "zoom": 0.16,
+      "sha256": "7f39f0930eb2b9c98044f61219e4680723f4287f145c3979eebf54b908ec5025"
+    },
+    {
+      "anchor": {
+        "x": -110,
+        "y": -70
+      },
+      "pan": {
+        "x": 0,
+        "y": 0
+      },
+      "zoom": 0.199,
+      "sha256": "f729cf6569bd42a7acbd0a67a103d3cf5c5207d8b3161b13966534de7873ab22"
+    },
+    {
+      "anchor": {
+        "x": -110,
+        "y": -70
+      },
+      "pan": {
+        "x": 519,
+        "y": -321
+      },
+      "zoom": 0.06,
+      "sha256": "bda7d8b15551588ee03c0c2339cd2954f8aaa4212b2d46d28f9dbfa16d737728"
+    },
+    {
+      "anchor": {
+        "x": -110,
+        "y": -70
+      },
+      "pan": {
+        "x": 519,
+        "y": -321
+      },
+      "zoom": 0.16,
+      "sha256": "239c4968a5bea9d6b5f26b97d6c64496f922e3af8a3ce9ed389b8e5c0c733ba3"
+    },
+    {
+      "anchor": {
+        "x": -110,
+        "y": -70
+      },
+      "pan": {
+        "x": 519,
+        "y": -321
+      },
+      "zoom": 0.199,
+      "sha256": "239c4968a5bea9d6b5f26b97d6c64496f922e3af8a3ce9ed389b8e5c0c733ba3"
+    },
+    {
+      "anchor": {
+        "x": -110,
+        "y": -70
+      },
+      "pan": {
+        "x": -680,
+        "y": 420
+      },
+      "zoom": 0.06,
+      "sha256": "bda7d8b15551588ee03c0c2339cd2954f8aaa4212b2d46d28f9dbfa16d737728"
+    },
+    {
+      "anchor": {
+        "x": -110,
+        "y": -70
+      },
+      "pan": {
+        "x": -680,
+        "y": 420
+      },
+      "zoom": 0.16,
+      "sha256": "239c4968a5bea9d6b5f26b97d6c64496f922e3af8a3ce9ed389b8e5c0c733ba3"
+    },
+    {
+      "anchor": {
+        "x": -110,
+        "y": -70
+      },
+      "pan": {
+        "x": -680,
+        "y": 420
+      },
+      "zoom": 0.199,
+      "sha256": "239c4968a5bea9d6b5f26b97d6c64496f922e3af8a3ce9ed389b8e5c0c733ba3"
+    },
+    {
+      "anchor": {
+        "x": -111,
+        "y": -70
+      },
+      "pan": {
+        "x": 0,
+        "y": 0
+      },
+      "zoom": 0.06,
+      "sha256": "be3fd6351a689d220cd3788b0a89f00d6c97eb1cda32508d9c0ee8e4afccedc4"
+    },
+    {
+      "anchor": {
+        "x": -111,
+        "y": -70
+      },
+      "pan": {
+        "x": 0,
+        "y": 0
+      },
+      "zoom": 0.16,
+      "sha256": "86a4ad941ce9d65ea439108a321bfccbd3a0db80cd3f524d28519fc9804d8be9"
+    },
+    {
+      "anchor": {
+        "x": -111,
+        "y": -70
+      },
+      "pan": {
+        "x": 0,
+        "y": 0
+      },
+      "zoom": 0.199,
+      "sha256": "c0c0de1569b404423e0b1ee273a995ffc3615f1937a7f6ed8fb2360da3bc9b58"
+    },
+    {
+      "anchor": {
+        "x": -111,
+        "y": -70
+      },
+      "pan": {
+        "x": 519,
+        "y": -321
+      },
+      "zoom": 0.06,
+      "sha256": "bda7d8b15551588ee03c0c2339cd2954f8aaa4212b2d46d28f9dbfa16d737728"
+    },
+    {
+      "anchor": {
+        "x": -111,
+        "y": -70
+      },
+      "pan": {
+        "x": 519,
+        "y": -321
+      },
+      "zoom": 0.16,
+      "sha256": "239c4968a5bea9d6b5f26b97d6c64496f922e3af8a3ce9ed389b8e5c0c733ba3"
+    },
+    {
+      "anchor": {
+        "x": -111,
+        "y": -70
+      },
+      "pan": {
+        "x": 519,
+        "y": -321
+      },
+      "zoom": 0.199,
+      "sha256": "239c4968a5bea9d6b5f26b97d6c64496f922e3af8a3ce9ed389b8e5c0c733ba3"
+    },
+    {
+      "anchor": {
+        "x": -111,
+        "y": -70
+      },
+      "pan": {
+        "x": -680,
+        "y": 420
+      },
+      "zoom": 0.06,
+      "sha256": "bda7d8b15551588ee03c0c2339cd2954f8aaa4212b2d46d28f9dbfa16d737728"
+    },
+    {
+      "anchor": {
+        "x": -111,
+        "y": -70
+      },
+      "pan": {
+        "x": -680,
+        "y": 420
+      },
+      "zoom": 0.16,
+      "sha256": "239c4968a5bea9d6b5f26b97d6c64496f922e3af8a3ce9ed389b8e5c0c733ba3"
+    },
+    {
+      "anchor": {
+        "x": -111,
+        "y": -70
+      },
+      "pan": {
+        "x": -680,
+        "y": 420
+      },
+      "zoom": 0.199,
+      "sha256": "239c4968a5bea9d6b5f26b97d6c64496f922e3af8a3ce9ed389b8e5c0c733ba3"
+    }
+  ]
+}
