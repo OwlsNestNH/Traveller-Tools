@@ -1,5 +1,5 @@
-import {maintenancePaymentQuote,MAINTENANCE_REFERENCE} from './maintenance.mjs?v=cargo-hex-20261009-22';
-import {mortgagePaymentQuote,MORTGAGE_REFERENCE} from './mortgage.mjs?v=cargo-hex-20261009-22';
+import {maintenancePaymentQuote,MAINTENANCE_REFERENCE} from './maintenance.mjs?v=route-frame-name-20261009-23';
+import {mortgagePaymentQuote,MORTGAGE_REFERENCE} from './mortgage.mjs?v=route-frame-name-20261009-23';
 import {fuelPurchase,fuelReference} from './fuel.mjs?v=fuel-warning-1';
 import {up} from './rounding.mjs';
 import * as A from './amounts.mjs';

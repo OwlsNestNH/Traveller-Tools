@@ -1,4 +1,4 @@
-# Traveller Trade Route Calculator
+# Traveller Ship Operations
 
 A free static ship-computer interface for campaign trading, routes, cargo, accounts, freight/mail, and optional cargo insurance and taxes.
 
@@ -46,9 +46,13 @@ python verification/check_rules.py
 node verification/run-native.mjs
 ```
 
+The public display name is **Traveller Ship Operations**. The existing `tools/trade-route-calculator/` URL, browser storage keys and schema-1 JSON backups remain compatible.
+
+The Planned route heading, Jump/Undo Jump controls and wrapping stop list share a thin content-sized border. It grows with longer routes and returns to its compact height when stops are removed; the map keeps its existing zoom and pan.
+
 The native runner discovers every `node:test` suite; do not use `verification/*.test.mjs` with `node --test`, because that also selects the standalone browser scripts.
 
-Pull requests run all native suites, the 198 rules-data checks, the shared tool-visit check, and twenty-two independent deterministic Chromium suites: main application, modal lifecycle, click routing, fuel, empty space, Mail, map overview, GUI parity, Trade buttons, Settings, insurance lifecycle, trade complications, the selected-world screen, jump mulligans, in-panel ship services, combined cabins, daily time controls, zero-fuel payments, resource alerts, recurring payment batches, the compact Expenses panel, and the Cargo Hold manifest. See `.github/workflows/mail-browser.yml` at the repository root. Every job verifies the exact PR head and uploads evidence; it has read-only permissions and cannot deploy. Live API availability and the remaining browser scripts are separate checks.
+Pull requests run all native suites, the 198 rules-data checks, the shared tool-visit check, and twenty-three independent deterministic Chromium suites: main application, modal lifecycle, click routing, fuel, empty space, Mail, map overview, GUI parity, Trade buttons, Settings, insurance lifecycle, trade complications, the selected-world screen, jump mulligans, in-panel ship services, combined cabins, daily time controls, zero-fuel payments, resource alerts, recurring payment batches, the compact Expenses panel, the Cargo Hold manifest, and the content-sized route frame/display-name checks. See `.github/workflows/mail-browser.yml` at the repository root. Every job verifies the exact PR head and uploads evidence; it has read-only permissions and cannot deploy. Live API availability and the remaining browser scripts are separate checks.
 
 The browser scripts use Playwright only for development testing; it is not an application dependency. With Playwright installed, run:
 

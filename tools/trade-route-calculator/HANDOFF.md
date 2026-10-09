@@ -1,4 +1,4 @@
-# Traveller Trade Route Calculator — Handoff
+# Traveller Ship Operations — Handoff
 
 **Updated:** 2026-10-09
 **Repository:** [OwlsNestNH/Traveller-Tools](https://github.com/OwlsNestNH/Traveller-Tools)  
