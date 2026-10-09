@@ -146,7 +146,12 @@ main{max-width:var(--shell-width);padding:8px var(--shell-gutter) 16px}.panel{ma
    The selected name and the existing map/world column widths are preserved. */
 .world-screen.world-info :is(.help,.world-facts,.screen-uwp table,.screen-uwp th,.map-key li,.map-key h3>span,.world-actions button){font-size:14px}
 .world-screen.world-info h3{font-size:14px}
-.world-screen.world-info .screen-uwp th:nth-child(2){width:3.5em;white-space:nowrap}
+.world-screen.world-info .screen-uwp-scroll{max-width:100%;overflow-x:auto}
+.world-screen.world-info .screen-uwp-scroll:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.world-screen.world-info .screen-uwp table{table-layout:auto;min-width:20em}
+.world-screen.world-info .screen-uwp :is(th,td){overflow-wrap:normal;word-break:normal}
+.world-screen.world-info .screen-uwp th:first-child{width:9.2em}
+.world-screen.world-info .screen-uwp th:nth-child(2){width:3.9em;white-space:nowrap}
 .world-screen.world-info .screen-topline,.world-screen.world-info .screen-topline>span:last-child{font-size:12px}
 .world-screen.world-info .map-key ul{grid-template-columns:repeat(2,minmax(0,1fr))}
 .world-screen.world-info .map-key li>span{min-width:0;overflow-wrap:anywhere}

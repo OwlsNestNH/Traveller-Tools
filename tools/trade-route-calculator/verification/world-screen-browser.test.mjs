@@ -118,6 +118,14 @@ try{
   readabilityReports.push(await worldReadability(page,{oneLineFacts:width>=1280}));
   resourceReports.push(await resourceBarGeometry(page));
   assert.equal(await screen.locator('.screen-uwp tbody tr').count(),8);
+  const tableScroll=screen.getByRole('region',{name:'Decoded World Profile table'});
+  const scrollable=await tableScroll.evaluate(el=>el.scrollWidth>el.clientWidth+1);
+  if(scrollable){
+   await tableScroll.focus();await page.keyboard.press('ArrowRight');
+   await page.waitForFunction(()=>document.querySelector('.screen-uwp-scroll').scrollLeft>0);
+   await tableScroll.evaluate(el=>el.scrollLeft=0);await frame();
+  }
+  if(width===320)assert.ok(scrollable,'The narrowest UWP table scrolls internally to keep whole words readable');
   await page.screenshot({path:artifacts+'/world-screen-'+width+'.png',fullPage:true});await labelFitsCell(selected.id);
   // Stress only rendered text, then restore it: no campaign mutation is needed
   // to prove that content-sized tracks handle wrapped labels, values and notes.
@@ -127,7 +135,7 @@ try{
   });
   await frame();const stressed=await resourceBarGeometry(page),beforeStress=resourceReports.at(-1);resourceReports.push(stressed);
   for(const kind of ['fuel','support']){assert.equal(stressed[kind].fill,beforeStress[kind].fill);assert.equal(stressed[kind].max,beforeStress[kind].max);}
-  await page.screenshot({path:artifacts+'/summary-wrapped-'+width+'.png'});
+  await page.locator('#summary').screenshot({path:artifacts+'/summary-wrapped-'+width+'.png'});
   await page.locator('#summary').evaluate((summary,originals)=>originals.forEach(([selector,text])=>summary.querySelector(selector).textContent=text),originals);await frame();
   if(width<=390){
    await click('world',selected.id);await frame();readabilityReports.push(await worldReadability(page));

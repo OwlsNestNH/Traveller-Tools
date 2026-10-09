@@ -7,16 +7,22 @@ export async function worldReadability(page,{oneLineFacts=false}={}){
   const text=selectors.flatMap(selector=>[...screen.querySelectorAll(selector)].map(el=>{
    const range=document.createRange();range.selectNodeContents(el);
    const rects=[...range.getClientRects()].filter(r=>r.width&&r.height).map(r=>({left:r.left,right:r.right,top:r.top,bottom:r.bottom}));
-   return {selector,text:el.textContent,font:parseFloat(getComputedStyle(el).fontSize),overflow:el.scrollWidth-el.clientWidth,box:box(el),rects};
+   return {selector,text:el.textContent,font:parseFloat(getComputedStyle(el).fontSize),overflow:el.scrollWidth-el.clientWidth,wrap:getComputedStyle(el).overflowWrap,wordBreak:getComputedStyle(el).wordBreak,firstField:el.matches('.screen-uwp tbody td:first-child'),box:box(el),rects};
   }));
-  return {viewport:innerWidth,screen:box(screen),text,nameFont:parseFloat(getComputedStyle(screen.querySelector('.screen-title strong')).fontSize),uwpFont:parseFloat(getComputedStyle(screen.querySelector('.screen-section-heading>.mono')).fontSize),overflow:document.documentElement.scrollWidth-innerWidth};
+  const scroller=screen.querySelector('.screen-uwp-scroll');
+  return {viewport:innerWidth,screen:box(screen),tableOverflow:scroller.scrollWidth-scroller.clientWidth,text,nameFont:parseFloat(getComputedStyle(screen.querySelector('.screen-title strong')).fontSize),uwpFont:parseFloat(getComputedStyle(screen.querySelector('.screen-section-heading>.mono')).fontSize),overflow:document.documentElement.scrollWidth-innerWidth};
  });
  assert.equal(result.nameFont,result.viewport<=620?24:28,'Selected-world name size is unchanged');
  assert.equal(result.uwpFont,result.viewport<=620?18:20,'The existing UWP heading size is unchanged');
  assert.ok(result.overflow<=1,'The larger readout adds no page overflow');
+ if(result.viewport>=1100)assert.ok(result.tableOverflow<=1,'Desktop UWP text fits without internal scrolling');
  for(const text of result.text){
   const diagnostic=JSON.stringify(text);
   assert.ok(text.font>=14,'Small World Data text is at least 14px: '+diagnostic);
+  if(text.selector==='.screen-uwp td'){
+   assert.equal(text.wrap,'normal','UWP words are not split arbitrarily');assert.equal(text.wordBreak,'normal');
+   if(text.firstField&&(result.viewport>=1280||!/\s/.test(text.text)))assert.ok(new Set(text.rects.map(r=>Math.round(r.top))).size===1,'Desktop UWP fields and all single-word labels stay on one line: '+diagnostic);
+  }
   assert.ok(text.overflow<=1,'Text stays within its own readout cell: '+diagnostic);
   assert.ok(text.rects.every(r=>r.left>=text.box.left-1&&r.right<=text.box.right+1),'All text remains visible within its cell: '+diagnostic);
   if(oneLineFacts&&['.world-facts dt','.world-facts dd'].includes(text.selector))assert.ok(new Set(text.rects.map(r=>Math.round(r.top))).size<=1,'Ordinary desktop facts do not gain unnecessary wrapping: '+diagnostic);
