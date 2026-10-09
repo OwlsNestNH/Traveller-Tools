@@ -131,7 +131,11 @@ async function scrollGeometry(page){
  for(const region of [goods,contracts]){assert.equal(await region.getAttribute('tabindex'),'0');await region.focus();assert.equal(await region.evaluate(el=>document.activeElement===el),true);}
  const measure=()=>page.evaluate(()=>{
   const goods=document.querySelector('.cargo-goods-scroll'),footer=document.querySelector('.cargo-investment'),contracts=document.querySelector('.cargo-consignments'),investment=footer.querySelector('.mono');
-  const box=el=>{const r=el.getBoundingClientRect();return {top:r.top+scrollY,bottom:r.bottom+scrollY,left:r.left+scrollX,right:r.right+scrollX,height:r.height};};
+  // Focus may scroll the containing MFD screen to expose another region.
+  // Compare content coordinates so that only the goods table's own scrolling
+  // moves its rows; the investment remains outside that nested scroll region.
+  const panelScroll=document.querySelector('#cargo-hold-panel').scrollTop;
+  const box=el=>{const r=el.getBoundingClientRect();return {top:r.top+scrollY+panelScroll,bottom:r.bottom+scrollY+panelScroll,left:r.left+scrollX,right:r.right+scrollX,height:r.height};};
   const background=getComputedStyle(footer).backgroundColor,footerAlpha=background.startsWith('rgba(')?Number(background.slice(background.lastIndexOf(',')+1,-1)):background==='transparent'?0:1;
   return {goods:box(goods),footer:box(footer),investment:box(investment),footerOverflow:footer.scrollWidth-footer.clientWidth,contracts:box(contracts),firstRow:box(goods.querySelector('tbody tr')),footerInsideScroll:!!footer.closest('.cargo-manifest-scroll'),footerBackground:background,footerAlpha,cellsNoWrap:[...document.querySelectorAll('.cargo-manifest-scroll th,.cargo-manifest-scroll td')].every(cell=>getComputedStyle(cell).whiteSpace==='nowrap'),scrollWidth:goods.scrollWidth,clientWidth:goods.clientWidth,scrollHeight:goods.scrollHeight,clientHeight:goods.clientHeight,pageOverflow:document.documentElement.scrollWidth-innerWidth};
  });

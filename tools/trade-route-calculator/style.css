@@ -192,6 +192,7 @@ main{padding-top:18px}
 .navigation-layout>.panel{margin-bottom:0}
 .navigation-layout>.world-screen{contain:size;min-height:0;overflow-y:auto;scrollbar-gutter:stable;overscroll-behavior-y:contain}
 .navigation-layout>.world-screen>*{flex-shrink:0}
+.navigation-layout>.world-screen summary{min-height:24px}
 .ship-actions>button[aria-pressed]{font-weight:650}
 .ship-actions>button[aria-pressed="true"]{outline:2px solid var(--cyan);outline-offset:2px;box-shadow:inset 0 -3px 0 var(--cyan)}
 .navigation-panel{display:flex;flex-direction:column;container-type:inline-size}
