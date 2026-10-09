@@ -34,7 +34,7 @@ export async function resourceBarGeometry(page){
  assert.ok(result.fuel.bar&&result.support.bar,'Both configured resource counters retain their progress indicators');
  for(const [name,counter]of [['fuel',result.fuel],['support',result.support]]){
   if(!counter.bar)continue;
-  assert.ok(counter.bar.top>=Math.max(counter.value.bottom,counter.note?.bottom??0),'The '+name+' bar follows all wrapped text');
+  assert.ok(counter.bar.top>=Math.max(counter.value.bottom,counter.note?.bottom??-Infinity),'The '+name+' bar follows all wrapped text');
   assert.ok(counter.bar.bottom<=counter.box.bottom,'The '+name+' bar stays inside its counter');
  }
  if(Math.abs(result.fuel.box.top-result.support.box.top)<1&&result.fuel.bar&&result.support.bar){
