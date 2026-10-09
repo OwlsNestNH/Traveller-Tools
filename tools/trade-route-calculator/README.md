@@ -47,7 +47,7 @@ node verification/run-native.mjs
 
 The native runner discovers every `node:test` suite; do not use `verification/*.test.mjs` with `node --test`, because that also selects the standalone browser scripts.
 
-Pull requests run all native suites, the 198 rules-data checks, the shared tool-visit check, and nine independent deterministic Chromium suites: main application, modal lifecycle, click routing, fuel, empty space, Mail, map overview, GUI parity, and Trade buttons. See `.github/workflows/mail-browser.yml` at the repository root. Every job verifies the exact PR head and uploads evidence; it has read-only permissions and cannot deploy. Live API availability and the remaining browser scripts are separate checks.
+Pull requests run all native suites, the 198 rules-data checks, the shared tool-visit check, and ten independent deterministic Chromium suites: main application, modal lifecycle, click routing, fuel, empty space, Mail, map overview, GUI parity, Trade buttons, and Settings. See `.github/workflows/mail-browser.yml` at the repository root. Every job verifies the exact PR head and uploads evidence; it has read-only permissions and cannot deploy. Live API availability and the remaining browser scripts are separate checks.
 
 The browser scripts use Playwright only for development testing; it is not an application dependency. With Playwright installed, run:
 
@@ -223,3 +223,24 @@ If the map is browsing another world, **Find supplier**, **Find buyer**, **Sell*
 The tabs now share the centered map/content gutter on wide displays. The Overview map is slightly shorter (400–600 CSS pixels with unchanged logical hex scale), and the world details, UWP, trade badges, route navigation and help beneath it use larger text.
 
 Run `node --test verification/trade-actions.test.mjs` for the application regression and `node verification/trade-buttons.test.mjs` for desktop/mobile browser clicks, recovery, cancellation, local commits and related controls.
+
+
+## Compact Settings page
+
+The Settings tab contains all 42 existing controls in grouped, aligned rows. Direct
+numeric typing and visible up/down buttons share the original bounds and rounding;
+checkbox switches and dropdowns retain their existing values and choices. Trader
+modifiers, optional pricing rules, taxes/insurance and credit rounding can be
+expanded when needed. Fuel and cabin rule details remain available in disclosures.
+
+Select **Save changes** to commit the full form as one undoable settings action, or
+**Revert changes** to reload the saved values. Draft edits survive tab navigation in
+the current page but are not saved until submitted. If another action or tab changes
+the campaign while a draft is open, saving is blocked until the latest settings are
+loaded with Revert changes. The existing settings dialog remains available as an
+alternate editor and for missing fuel/life-support setup. Backup, report, time,
+rounding preview and reset actions retain their existing confirmation flows.
+
+Run `node verification/settings-browser.test.mjs` for the deterministic 42-field
+inventory, desktop/mobile layout, controls, persistence, Undo, validation, read-only
+ownership and cancellation checks.
