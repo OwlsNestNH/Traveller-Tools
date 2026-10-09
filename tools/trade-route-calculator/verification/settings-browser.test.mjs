@@ -114,7 +114,7 @@ async function layout(page,label){
   const form=document.querySelector('#settings-form');
   const visible=el=>el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden';
   return {viewport:innerWidth,page:document.documentElement.scrollWidth-innerWidth,
-   boxes:[form,...form.querySelectorAll('.settings-section,.setting-row,.settings-number,input,select,button')].filter(visible).map(el=>{
+   boxes:[form,...document.querySelectorAll('#main .settings-section,#main .settings-section-heading,#main .setting-row,#main .settings-number,#main input,#main select,#main button')].filter(visible).map(el=>{
     const box=el.getBoundingClientRect();return {name:el.name||el.id||el.className,left:box.left,right:box.right,width:box.width,
      overflow:el.matches('input,select,button')?0:el.scrollWidth-el.clientWidth};
    })};
@@ -233,14 +233,63 @@ try{
   assert.deepEqual(inventory.map(x=>x.name).sort(),[...fieldNames].sort(),'All 44 existing fields appear exactly once');
   assert.ok(inventory.every(x=>x.label&&x.row),'Every field has a label and a compact setting row');
   assert.ok(await page.locator('#settings-form .settings-section').count()>1,'Settings are grouped into sections');
-  const advanced=page.locator('#settings-form details').filter({has:page.locator('[name]')});
-  assert.ok(await advanced.count()>0,'Advanced groups use native details');
-  assert.ok((await advanced.evaluateAll(details=>details.map(el=>el.open))).every(open=>!open),'Advanced groups start collapsed');
-  const first=advanced.first();await first.locator(':scope > summary').focus();await page.keyboard.press('Enter');
-  assert.equal(await first.evaluate(el=>el.open),true,'Advanced controls reveal by keyboard');
-  await page.keyboard.press('Enter');assert.equal(await first.evaluate(el=>el.open),false,'Native disclosure closes by keyboard');
+  const sections=page.locator('#main details[data-settings-group]');
+  const defaults={campaign:true,fuel:true,trader:false,pricing:false,cabins:true,people:true,support:true,optional:false,rounding:false,'rounding-time':true,'backup-data':true};
+  const disclosureStates=()=>sections.evaluateAll(nodes=>Object.fromEntries(nodes.map(el=>[el.dataset.settingsGroup,el.open])));
+  const closeAll=async()=>{for(const section of await sections.all())if(await section.evaluate(el=>el.open))await section.locator(':scope > summary').click();};
+  const allClosed=Object.fromEntries(Object.keys(defaults).map(id=>[id,false]));
+  assert.equal(await sections.count(),11,'Every field group and both utility panels can collapse');
+  assert.deepEqual(await disclosureStates(),defaults,'Previously visible groups start open; advanced groups start closed');
+  await layout(page,'default sections '+size.width);
+  await page.screenshot({path:artifacts+`/settings-default-${size.width}.png`,fullPage:true});
+  const beforeToggles=await values();
+  for(const section of await sections.all()){
+   const summary=section.locator(':scope > summary'),id=await section.getAttribute('data-settings-group'),initial=defaults[id];
+   assert.ok(await summary.getAttribute('aria-label'),id+' has an accessible disclosure name');
+   assert.equal(await summary.locator('.settings-disclosure').getAttribute('aria-hidden'),'true');
+   // Pointer, Enter and Space all operate the same native disclosure, without
+   // changing any sibling or the 44 draft fields.
+   for(const key of ['pointer','Enter','Space']){
+    if(key==='pointer')await summary.click();else{await summary.focus();await page.keyboard.press(key);}
+    assert.equal(await section.evaluate(el=>el.open),!initial,id+' toggles with '+key);
+    if(key==='pointer')await summary.click();else await page.keyboard.press(key);
+    assert.deepEqual(await disclosureStates(),defaults,id+' round trip preserves every sibling');
+   }
+   assert.deepEqual(await values(),beforeToggles,id+' preserves all field values');
+  }
+  // A nested rules disclosure stays independent of its containing section.
+  const fuel=page.locator('[data-settings-group="fuel"]'),fuelNotes=fuel.locator('details.settings-notes');
+  assert.equal(await fuel.locator(':scope > summary').getAttribute('aria-label'),'Ship size & fuel');
+  assert.equal(await fuel.getByLabel('Base fuel tank capacity',{exact:true}).count(),1);
+  await fuelNotes.locator(':scope > summary').click();
+  assert.match(await fuelNotes.textContent(),/including any power-plant or small-craft allowance/);
+  assert.match(await fuelNotes.textContent(),/Optional bladders are added separately/);
+  await fuel.locator(':scope > summary').click();await fuel.locator(':scope > summary').click();
+  assert.equal(await fuelNotes.evaluate(el=>el.open),true,'Closing a group retains nested rules state');
+  await fuelNotes.locator(':scope > summary').click();
+  await closeAll();assert.deepEqual(await disclosureStates(),allClosed);
+  await layout(page,'all sections collapsed '+size.width);
+  await page.screenshot({path:artifacts+`/settings-all-collapsed-${size.width}.png`,fullPage:true});
+  const firstSummary=sections.first().locator(':scope > summary');await firstSummary.focus();await page.keyboard.press('Tab');
+  assert.equal(await page.evaluate(()=>!!document.activeElement.closest('.setting-row')),false,'Collapsed fields are skipped by keyboard navigation');
+  await tab('Overview');await tab('Settings');assert.deepEqual(await disclosureStates(),allClosed,'Navigation retains every collapsed choice');
   await unchanged(fixture.bytes,'Initial settings and disclosure toggles');
-  await layout(page,'collapsed '+size.width);await page.screenshot({path:artifacts+`/settings-collapsed-${size.width}.png`,fullPage:true});
+  // Synchronous navigation exercises replacement before the queued native
+  // toggle event runs; the DOM state still has to survive both renders.
+  await sections.first().evaluate(section=>{section.open=true;document.querySelector('#tabs [data-arg="Overview"]').click();document.querySelector('#tabs [data-arg="Settings"]').click();});
+  assert.deepEqual(await disclosureStates(),{...allClosed,campaign:true},'A toggle followed by immediate navigation is captured before replacement');
+  await closeAll();await page.locator('[data-settings-group="backup-data"] > summary').click();
+  await sections.first().evaluate(section=>{
+   section.open=true;
+   document.querySelector('#main [data-action="settings-edit"]').click();
+   // A render while the modal owns the controls cannot consult the detached
+   // form. Capture must already have happened during modal suspension.
+   document.querySelector('#tabs [data-arg="Settings"]').click();
+  });
+  await page.locator('#modal[open]').waitFor();assert.equal(await page.locator('#settings-form').count(),0);
+  await h.dismiss();
+  assert.deepEqual(await disclosureStates(),{...allClosed,campaign:true,'backup-data':true},'A queued toggle survives modal detachment and an interrupted render');
+  await unchanged(fixture.bytes,'Immediate modal interruption');await closeAll();
   await openAll();const original=await values();
   for(const name of ['custom','luggageTons','roomCustom-low','roomCustom-middle','roomCustom-high']){
    assert.equal(await field(name).isDisabled(),true,name+' is disabled when its mode is inactive');
@@ -264,7 +313,9 @@ try{
   }
   await unchanged(fixture.bytes,'Typing, switches, selects and every numeric stepper');
   await layout(page,'expanded '+size.width);await page.screenshot({path:artifacts+`/settings-expanded-${size.width}.png`,fullPage:true});
+  const steppedDraft=await values();await closeAll();assert.deepEqual(await values(),steppedDraft,'Collapsing preserves all unsaved fields, including the edited blank-to-zero LSS override');
   await page.locator('#settings-reset').click();assert.deepEqual(await values(),original,'Revert restores every control');
+  assert.deepEqual(await disclosureStates(),allClosed,'Revert retains the collapsed layout');
   await unchanged(fixture.bytes,'Revert changes');
   await set('name','This draft must not be saved by navigation');await tab('Overview');await tab('Settings');
   await unchanged(fixture.bytes,'Leaving Settings with an uncommitted draft');
@@ -275,36 +326,56 @@ try{
    await unchanged(fixture.bytes,'Invalid '+name+' = '+JSON.stringify(bad));
    await set(name,draft[name]);
   }
-  // Chromium cannot focus a hidden native-invalid input. The submit path must
-  // open its disclosure first, then focus that exact field without a write.
-  const hiddenInvalid=field('minPurchasePercent');await set('minPurchasePercent','401');
-  const detail=hiddenInvalid.locator('xpath=ancestor::details[1]');assert.equal(await detail.count(),1,'Price limits live in an advanced disclosure');
-  await detail.locator(':scope > summary').click();assert.equal(await detail.evaluate(el=>el.open),false);
-  await page.locator('#settings-save').click();await frames();
-  assert.equal(await detail.evaluate(el=>el.open),true,'Invalid advanced field is revealed');
-  assert.equal(await hiddenInvalid.evaluate(el=>document.activeElement===el),true,'The precise invalid field receives focus');
-  await unchanged(fixture.bytes,'Collapsed advanced invalid submission');await set('minPurchasePercent',draft.minPurchasePercent);
+  // Chromium cannot focus a hidden native-invalid input. Check both a newly
+  // collapsible common group and the existing advanced pricing group.
+  for(const [name,bad]of [['jump','0'],['minPurchasePercent','401']]){
+   const hiddenInvalid=field(name);await set(name,bad);await closeAll();
+   const detail=hiddenInvalid.locator('xpath=ancestor::details[1]');
+   assert.equal(await detail.evaluate(el=>el.open),false);
+   await page.locator('#settings-save').click();await frames();
+   assert.equal(await detail.evaluate(el=>el.open),true,'Invalid '+name+' group is revealed');
+   assert.equal(await hiddenInvalid.evaluate(el=>document.activeElement===el),true,'The precise invalid '+name+' field receives focus');
+   await unchanged(fixture.bytes,'Collapsed '+name+' invalid submission');await set(name,draft[name]);
+  }
+  // Existing business validation can reject a combination of individually
+  // valid fields. Reveal all related settings without changing the campaign.
+  for(const [name,bad]of [['supportRemaining',''],['fuelAboard','151'],['shipTons',''],['capacity','1']]){
+   await set(name,bad);await closeAll();await page.locator('#settings-save').click();await frames();
+   assert.ok((await page.locator('#settings-form details[data-settings-group]').evaluateAll(nodes=>nodes.map(el=>el.open))).every(Boolean),'Cross-field '+name+' error reveals settings for correction');
+   assert.ok(await page.locator('#settings-error').textContent(),'Cross-field '+name+' error is explained');
+   assert.equal(await page.locator('#settings-error').evaluate(el=>document.activeElement===el),true,'Cross-field error receives focus');
+   await unchanged(fixture.bytes,'Collapsed cross-field '+name+' rejection');await set(name,draft[name]);
+  }
+  await closeAll();assert.deepEqual(await values(),draft,'A fully collapsed form retains the complete draft');
   await page.locator('#settings-save').click();
   await page.waitForFunction(({key,revision})=>JSON.parse(localStorage.getItem(key)).revision===revision,{key:campaignKey,revision:fixture.state.revision+1});
   let saved=await read();savedValues(saved,fixture.state);
+  assert.deepEqual(await disclosureStates(),allClosed,'Save retains all collapsed choices');
   assert.equal(await page.locator('#modal[open]').count(),0,'Inline save needs no modal');
   const savedBytes=await raw();await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();await tab('Settings');
   assert.deepEqual(await values(),{...draft,supportRemaining:'2.98913'},'Saved controls reload while endurance reflects the new 9.2-person-equivalent complement');
+  assert.deepEqual(await disclosureStates(),defaults,'Reload restores disclosure defaults, independent of campaign data');
   await unchanged(savedBytes,'Reloading the saved settings');
   // Explicitly changing endurance replaces physical stock at the current
   // complement; Undo restores the exact, fractional stock balance.
   await set('supportRemaining','13');await page.locator('#settings-save').click();
   assert.deepEqual((await read()).ship.lifeSupport,{capacityHours:35*24,stockUnits:{numerator:'598',denominator:'5'}});
+  const beforeUndoLayout=await disclosureStates();
   await tab('History');await page.locator('#main [data-action="undo"]').click();
   assert.deepEqual((await read()).ship.lifeSupport,saved.ship.lifeSupport,'Undo restores exact partial-day physical supplies');
   await page.locator('#main [data-action="undo"]').click();
   const undone=await read();
   for(const key of ['name','ship','trader','settings','bank','hours','actual','route','lots','contracts','snapshots','ledger'])assert.deepEqual(undone[key],fixture.state[key],'Undo restores original '+key);
   await tab('Settings');assert.deepEqual(await values(),original,'Undo restores all 44 displayed values');
+  assert.deepEqual(await disclosureStates(),beforeUndoLayout,'Undo restores values without changing disclosure choices');
   const beforeReadOnly=await raw(),other=await context.newPage();await other.goto(base);
   await other.getByText('Read-only: campaign open in another tab.',{exact:true}).waitFor();
   await other.locator('#tabs [data-arg="Settings"]').click();
   assert.equal(await other.locator('#settings-save').isDisabled(),true,'Read-only tabs cannot save');
+  const readOnlyGroup=other.locator('[data-settings-group="campaign"]');await readOnlyGroup.locator(':scope > summary').click();
+  assert.equal(await readOnlyGroup.evaluate(el=>el.open),false,'Read-only users can collapse settings');
+  await readOnlyGroup.locator(':scope > summary').focus();await other.keyboard.press('Space');
+  assert.equal(await readOnlyGroup.evaluate(el=>el.open),true,'Read-only users can expand by keyboard');
   assert.ok((await other.locator('#settings-form [name]').evaluateAll(fields=>fields.map(el=>el.disabled))).every(Boolean),'Every settings field respects the editing lock');
   assert.ok((await other.locator('#settings-form [data-setting-step]').evaluateAll(buttons=>buttons.map(el=>el.disabled))).every(Boolean),'Read-only steppers cannot edit drafts');
   await other.locator('#settings-form').evaluate(form=>form.requestSubmit());await unchanged(beforeReadOnly,'Programmatic submit in a read-only tab');
@@ -320,7 +391,7 @@ try{
   await unchanged(beforeReadOnly,'Editing ownership transfer');
   if(size.width===1440){await auxiliary(h);await staleDraft(h);}
   await h.finish(String(size.width));
-  console.log(`PASS: ${size.width}px exact 44-field parity, compact controls, draft/revert, validation/reveal/focus, atomic save/reload/Undo, partial-day stock and editing locks.`);
+  console.log(`PASS: ${size.width}px all 11 disclosure headers, pointer/keyboard, defaults/navigation, exact 44-field parity, collapsed draft/save/revert, validation/reveal/focus, atomic save/reload/Undo, partial-day stock and editing locks.`);
  }
  // Same-session blank saves must not produce undefined inverse values that
  // only become invalid when the campaign reaches localStorage or an export.

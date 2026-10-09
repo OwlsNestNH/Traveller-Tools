@@ -2,7 +2,7 @@
 // validation attributes. The application keeps the same save and Undo path.
 const fields={
  name:['Campaign'],ship:['Ship name'],capacity:['Cargo capacity','tons'],jump:['Jump rating'],scoops:['Fuel scoops fitted'],armed:['Ship is armed','','Mail modifier'],
- shipTons:['Ship displacement','tons'],fuelCapacity:['Base jump-fuel tank capacity','tons'],bladderJumps:['Fuel bladders','extra jumps','Extra full-range jumps'],fuelAboard:['Jump fuel aboard','tons'],
+ shipTons:['Ship displacement','tons'],fuelCapacity:['Base fuel tank capacity','tons'],bladderJumps:['Fuel bladders','extra jumps','Extra full-range jumps'],fuelAboard:['Fuel aboard','tons'],
  broker:['Broker skill'],streetwise:['Streetwise skill'],admin:['Admin skill'],characteristic:['Default EDU / SOC DM'],rank:['Highest Naval / Scout rank'],soc:['Highest SOC DM'],
  mode:['Profit mode'],custom:['Custom profit','%','Only used in Custom mode'],reducedProfitLimitsEnabled:['Enable reduced-profit price limits'],minPurchasePercent:['Minimum buy','%','Percentage of base retail'],maxSalePercent:['Maximum sell','%','Percentage of base retail'],maxBaseRetailEnabled:['Cap commodity base retail price'],maxBaseRetail:['Maximum base retail','Cr / ton'],useRawIllegalPrices:['Use original RAW base prices for illegal goods'],
  'rooms-low':['Low service · cabins'],'roomService-low':['Low cabin running-cost rate'],'roomCustom-low':['Custom low cabin cost','Cr / month','Per cabin; only in Custom mode'],
@@ -13,7 +13,7 @@ const fields={
 };
 export const settingsGroups=[
  {id:'campaign',title:'Campaign & ship',description:'Identity, capacity and fitted equipment',names:['name','ship','capacity','jump','scoops','armed']},
- {id:'fuel',title:'Ship size & jump fuel',description:'Jump fuel only; power-plant fuel is excluded',names:['shipTons','fuelCapacity','bladderJumps','fuelAboard']},
+ {id:'fuel',title:'Ship size & fuel',description:'Total configured fuel capacity; no separate tank tracking',names:['shipTons','fuelCapacity','bladderJumps','fuelAboard']},
  {id:'trader',title:'Trader & mail modifiers',description:'Whole-number skills and DMs',advanced:true,names:['broker','streetwise','admin','characteristic','rank','soc']},
  {id:'pricing',title:'Trade rules & pricing',description:'Optional limits and profit settings for new transactions',advanced:true,names:['mode','custom','reducedProfitLimitsEnabled','minPurchasePercent','maxSalePercent','maxBaseRetailEnabled','maxBaseRetail','useRawIllegalPrices']},
  {id:'cabins',title:'Cabins & running costs',description:'All installed cabins, including crew and empty cabins',names:['rooms-low','roomService-low','roomCustom-low','rooms-middle','roomService-middle','roomCustom-middle','rooms-high','roomService-high','roomCustom-high']},
@@ -38,7 +38,7 @@ function settingRow(input){
  row.append(label,control);return row;
 }
 function notes(title,children){const details=node('details','settings-notes');details.append(node('summary','',title),...children);return details;}
-export function mountSettingsLayout(form,openGroups=new Set()){
+export function mountSettingsLayout(form,openGroups=new Map()){
  const source=form.querySelector('#settings-fields'),inputs=new Map([...source.querySelectorAll('[name]')].map(el=>[el.name,el]));
  if(inputs.size!==Object.keys(fields).length||[...inputs.keys()].some(name=>!fields[name]))throw Error('Settings layout does not match the existing settings fields.');
  const fieldsets=source.querySelectorAll('fieldset'),fuel=fieldsets[0],accommodation=fieldsets[1];
@@ -46,9 +46,9 @@ export function mountSettingsLayout(form,openGroups=new Set()){
  const fuelNotes=[...fuel.querySelectorAll(':scope > p')].filter(el=>el!==fuelEstimate),accommodationNotes=[...accommodation.querySelectorAll(':scope > p, :scope > details')],pricingNotes=[...source.querySelectorAll(':scope > p')];
  const columns=node('div','settings-columns'),left=node('div','settings-column'),right=node('div','settings-column');columns.append(left,right);
  for(const group of settingsGroups){
-  const section=node(group.advanced?'details':'section','settings-section'),heading=node(group.advanced?'summary':'div','settings-section-heading'),title=node('div');
-  section.dataset.settingsGroup=group.id;if(group.advanced)section.open=openGroups.has(group.id);
-  title.append(node('h3','',group.title),node('p','',group.description));heading.append(title);if(group.advanced){heading.append(node('span','settings-disclosure','▸'));heading.setAttribute('aria-label',group.title);}
+  const section=node('details','settings-section'),heading=node('summary','settings-section-heading'),title=node('div'),chevron=node('span','settings-disclosure','▸');
+  section.dataset.settingsGroup=group.id;section.open=openGroups.get(group.id)??!group.advanced;
+  title.append(node('h3','',group.title),node('p','',group.description));chevron.setAttribute('aria-hidden','true');heading.append(title,chevron);heading.setAttribute('aria-label',group.title);
   section.append(heading);
   for(const name of group.names){if(name.startsWith('rooms-'))section.append(node('div','settings-band',name.slice(6)+' service'));section.append(settingRow(inputs.get(name)));}
   if(group.id==='fuel'){fuelEstimate.className='settings-note';section.append(fuelEstimate,notes('Fuel tracking details & rules',fuelNotes));}
