@@ -23,6 +23,9 @@ await context.route('https://travellermap.com/api/**',async route=>{
  if(url.pathname.endsWith('/jumpworlds'))return route.fulfill({json:{Worlds:fixtures.worlds}});
  throw Error('Unexpected API request: '+url);
 });
+// Capture the page, not a retained SVG element: async map redraws replace that
+// element while screenshots wait for fonts/layout. Assertions still inspect
+// the live map immediately before each capture.
 const page=await context.newPage(),errors=[];page.on('pageerror',error=>errors.push(error.message));
 const click=name=>page.getByRole('button',{name,exact:true}).click();
 const read=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('traveller-trade-route-calculator:v1')));
@@ -50,12 +53,12 @@ try{
  assert.deepEqual(await page.locator('.world-name').allTextContents(),plainWorlds);assert.deepEqual(await read(),before);
  await reach('240%');assert.ok(await page.locator('.world-uwp').count()>0);
  assert.ok(await page.locator('.territory-fill').count()>0);
- await page.locator('.world-map').screenshot({path:artifacts+'/map-world-uwp.png'});
+ await page.screenshot({fullPage:true,path:artifacts+'/map-world-uwp.png'});
  await page.getByLabel('Political territory',{exact:true}).uncheck();assert.equal(await page.locator('.map-territories').count(),0);
  assert.ok(await page.locator('.world-uwp').count()>0);
  await page.getByLabel('Political territory',{exact:true}).check();
  await click('Reset view');assert.equal(await zoom(),'100%');assert.equal(await page.locator('.world-uwp').count(),0);
- assert.ok(await page.locator('.world-name').count()>0);await page.locator('.world-map').screenshot({path:artifacts+'/map-worlds.png'});
+ assert.ok(await page.locator('.world-name').count()>0);await page.screenshot({fullPage:true,path:artifacts+'/map-worlds.png'});
  await reach('20%');assert.equal(await level(),'world');assert.ok(await page.locator('.world-name').count()>0);
  await click('−');assert.equal(await level(),'subsector');
  await page.locator('.subsector-label[data-sector="Spinward Marches"][data-subsector="C"] .subsector-name').getByText('Regina',{exact:true}).waitFor();
@@ -64,14 +67,14 @@ try{
  assert.ok(await page.locator('.overview-worlds circle').count()>0);
  assert.equal(await page.locator('.world-name,.world-uwp,.hex-grid').count(),0);
  assert.equal(await page.locator('.overview-labels [data-action]').count(),0);
- await page.locator('.world-map').screenshot({path:artifacts+'/map-subsectors.png'});
+ await page.screenshot({fullPage:true,path:artifacts+'/map-subsectors.png'});
  await drag();assert.notEqual(await transform(),'translate(0 0)');assert.deepEqual(await read(),before);
  const pan=await transform();await page.getByLabel('Show hexes',{exact:true}).uncheck();assert.equal(await transform(),pan);
  await reach('6%');assert.equal(await level(),'sector');
  assert.ok(await page.locator('.sector-name').count()>0);assert.ok(await page.locator('.subsector-letter').count()>0);
  assert.equal(await page.locator('.overview-worlds circle').count(),0);
  const name=page.locator('.sector-label[data-sector="Spinward Marches"]');assert.equal(await name.count(),1);
- await page.locator('.world-map').screenshot({path:artifacts+'/map-sectors.png'});
+ await page.screenshot({fullPage:true,path:artifacts+'/map-sectors.png'});
  await page.getByLabel('Political territory',{exact:true}).uncheck();
  await page.waitForTimeout(300);const count=requests;await click('−');await click('−');assert.equal(await zoom(),'6%');
  await drag();assert.deepEqual(await read(),before);await page.waitForTimeout(400);assert.equal(requests,count);
@@ -83,7 +86,7 @@ try{
  assert.equal(await page.locator('.world-info strong').first().textContent(),'Jenghe');assert.deepEqual(await read(),before);
  await click('Current system');await reach('6%');await page.setViewportSize({width:390,height:844});
  assert.ok(await page.locator('main').evaluate(el=>el.scrollWidth<=el.clientWidth+2));
- await drag();assert.deepEqual(await read(),before);await page.locator('.world-map').screenshot({path:artifacts+'/map-sectors-mobile.png'});
+ await drag();assert.deepEqual(await read(),before);await page.screenshot({fullPage:true,path:artifacts+'/map-sectors-mobile.png'});
  await click('Reset view');assert.equal(await level(),'world');assert.deepEqual(await read(),before);
  assert.deepEqual(errors,[]);
  console.log('PASS: default-on and all-zoom territory toggle, preserved world/UWP layers, subsectors and dots, sector names/letters, API retry, bounded requests, pan/cancel/reset, mobile and campaign immutability.');
