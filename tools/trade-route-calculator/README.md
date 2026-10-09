@@ -47,7 +47,7 @@ node verification/run-native.mjs
 
 The native runner discovers every `node:test` suite; do not use `verification/*.test.mjs` with `node --test`, because that also selects the standalone browser scripts.
 
-Pull requests run all native suites, the 198 rules-data checks, the shared tool-visit check, and twelve independent deterministic Chromium suites: main application, modal lifecycle, click routing, fuel, empty space, Mail, map overview, GUI parity, Trade buttons, Settings, insurance lifecycle, and trade complications. See `.github/workflows/mail-browser.yml` at the repository root. Every job verifies the exact PR head and uploads evidence; it has read-only permissions and cannot deploy. Live API availability and the remaining browser scripts are separate checks.
+Pull requests run all native suites, the 198 rules-data checks, the shared tool-visit check, and thirteen independent deterministic Chromium suites: main application, modal lifecycle, click routing, fuel, empty space, Mail, map overview, GUI parity, Trade buttons, Settings, insurance lifecycle, trade complications, and the selected-world screen. See `.github/workflows/mail-browser.yml` at the repository root. Every job verifies the exact PR head and uploads evidence; it has read-only permissions and cannot deploy. Live API availability and the remaining browser scripts are separate checks.
 
 The browser scripts use Playwright only for development testing; it is not an application dependency. With Playwright installed, run:
 
@@ -292,3 +292,34 @@ No incident-management or automatic consequences are applied.
 
 Run `node --test verification/trade-complications.test.mjs` and
 `node verification/trade-complications-browser.test.mjs` for the focused checks.
+
+## Selected-world screen and map key
+
+Overview places the navigation map on the left and a dedicated world-data screen
+on the right from 1100px wide; narrower screens stack the readout below the map.
+The old world strip is moved into that screen, with every existing action retained.
+It shows the selected world, sector/hex, subsector, allegiance, travel zone,
+population, all eight decoded UWP fields, bases and gas giants. Calculator trade
+codes and any campaign overrides stay clearly separated from published data.
+Planet information still opens the full system/remarks view and its existing refresh.
+Reading the screen makes no additional per-world API requests.
+
+At 240% zoom, published starport letters, gas giants, Naval/Scout bases and
+amber/red zone arcs appear at the actual hex coordinates. Only the documented
+subset is drawn: other bases remain identified in the data screen. Long names
+are ellipsized within the hex; their full name remains in the accessible label,
+hover title and selected-world screen. The optional UWP label retains calculator
+overrides. The cyan ship marker and white selection brackets are distinct.
+Clicking, keyboard browsing, panning or zooming never moves the ship.
+
+The compact key below the data explains symbols and distinguishes political
+borders from travel zones. Unknown data stays unknown, including missing bases,
+gas-giant counts and unknown-world population. No Wiki or generated-world links
+are added. Source definitions: [Traveller Map Second Survey](https://travellermap.com/doc/secondsurvey)
+and its [renderer](https://github.com/inexorabletash/travellermap/blob/main/server/Stylesheet.cs).
+
+Run `node --test verification/world-symbols.test.mjs` and
+`node verification/world-screen-browser.test.mjs` for focused verification.
+The browser suite checks 1440/390/320px layouts, closest-zoom symbols, long names,
+keyboard browsing, unknown fields, effective overrides, and byte-identical saves
+(including Undo) across read-only interactions.

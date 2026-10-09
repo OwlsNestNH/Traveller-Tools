@@ -101,23 +101,23 @@ async function run(stops){
  }
  async function shellReadability(){
   const layout=await page.evaluate(()=>{
-   const main=document.querySelector('main'),panel=document.querySelector('.navigation-panel'),tabs=document.querySelector('#tabs'),ship=document.querySelector('#ship-actions > .ship-actions');
+   const main=document.querySelector('main'),panel=document.querySelector('.navigation-layout'),tabs=document.querySelector('#tabs'),ship=document.querySelector('#ship-actions > .ship-actions');
    const box=el=>{const b=el.getBoundingClientRect();return {left:b.left,right:b.right,width:b.width,overflow:el.scrollWidth-el.clientWidth};};
    const style=getComputedStyle(main),contentLeft=main.getBoundingClientRect().left+parseFloat(style.paddingLeft);
-   const textSelectors=['.world-info strong','.world-info>.mono','.world-info>.tag','.world-info .badge-row span','.world-actions button','.world-actions .help','.jump-bar button','.jump-bar .help','.map-hint summary','.map-hint p'];
+   const textSelectors=['.world-info strong','.screen-section-heading>.mono','.screen-title>.tag','.world-info .badge-row span','.world-actions button','.world-actions .help','.jump-bar button','.jump-bar .help','.map-hint summary','.map-hint p'];
    return {viewport:innerWidth,main:box(main),panel:box(panel),tabs:box(tabs),firstTab:box(tabs.querySelector('button')),shipLeft:ship.getBoundingClientRect().left+parseFloat(getComputedStyle(ship).paddingLeft),contentLeft,text:textSelectors.map(selector=>({selector,nodes:[...document.querySelectorAll(selector)].map(el=>({font:parseFloat(getComputedStyle(el).fontSize),...box(el)}))})),blocks:['.world-info','.world-actions','.jump-bar','.map-hint'].map(selector=>({selector,...box(document.querySelector(selector))}))};
   });
   assert.ok(Math.abs(layout.firstTab.left-layout.contentLeft)<1,'Overview tab shares the main content left gutter');
   assert.ok(Math.abs(layout.panel.left-layout.contentLeft)<1,'Map panel shares the main content left gutter');
   assert.ok(Math.abs(layout.shipLeft-layout.contentLeft)<1,'Ship services share the main content left gutter');
-  assert.ok(Math.abs(layout.panel.left-(layout.viewport-layout.panel.right))<2,'Map panel is centered in the viewport');
+  assert.ok(Math.abs(layout.panel.left-(layout.viewport-layout.panel.right))<2,'Navigation layout is centered in the viewport');
   assert.ok(layout.tabs.overflow<=2,'Tabs wrap within the viewport');
   if(layout.viewport>1880){
    assert.ok(Math.abs(layout.main.width-1880)<1,'Ultrawide main uses the modestly wider 1880px shell');
    const oldLeft=(layout.viewport-1800)/2+16;
    assert.ok(Math.abs(layout.panel.left-(oldLeft-40))<1,'Ultrawide map shifts left by a balanced 40px');
   }
-  const minimums={'.world-info strong':layout.viewport<=620?20:22,'.world-info>.mono':16,'.world-info>.tag':14,'.world-info .badge-row span':layout.viewport<=620?14:15,'.world-actions button':13,'.world-actions .help':13,'.jump-bar button':14,'.jump-bar .help':13,'.map-hint summary':13,'.map-hint p':13};
+  const minimums={'.world-info strong':layout.viewport<=620?20:22,'.screen-section-heading>.mono':16,'.screen-title>.tag':14,'.world-info .badge-row span':layout.viewport<=620?14:15,'.world-actions button':13,'.world-actions .help':13,'.jump-bar button':14,'.jump-bar .help':13,'.map-hint summary':13,'.map-hint p':13};
   for(const {selector,nodes}of layout.text){
    assert.ok(nodes.length,selector+' has readable text to check');
    assert.ok(nodes.every(node=>node.font>=minimums[selector]),selector+' retains larger readable type at every width');
@@ -206,7 +206,7 @@ async function run(stops){
     const longId=fixture.state.route[2];
     await page.locator('.route-list [data-action="world"][data-arg="'+longId+'"]').click();
     assert.equal(longId,targetId,'The long browsed label also labels the next jump button');
-    const overflow=await page.locator('.navigation-panel').evaluate(panel=>{
+    const overflow=await page.locator('.navigation-layout').evaluate(panel=>{
      const result={page:document.documentElement.scrollWidth-innerWidth};
      for(const selector of ['.world-info','.map-caption','.route-next [data-action="jump"]']){
       const el=panel.querySelector(selector),b=el.getBoundingClientRect();

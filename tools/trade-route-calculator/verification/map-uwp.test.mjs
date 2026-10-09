@@ -33,7 +33,7 @@ try{
  assert.equal(await marker.locator('.world-uwp').textContent(),'A788899-C');
  const positions=await marker.evaluate(el=>({name:JSON.parse(JSON.stringify(el.querySelector('.world-name').getBoundingClientRect())),uwp:JSON.parse(JSON.stringify(el.querySelector('.world-uwp').getBoundingClientRect())),cy:el.querySelector('circle').getBoundingClientRect().top+7}));
  assert.ok(positions.name.y+positions.name.height<positions.uwp.y);
- assert.ok(positions.uwp.y+positions.uwp.height<positions.cy-7);
+ assert.ok(positions.name.y>positions.cy+7,'Closest-zoom names appear below the world marker');
  assert.ok(await page.locator('.hex-grid text').count()>0);
  await page.screenshot({path:join(artifacts,'map-uwp-desktop.png'),fullPage:true});
  await page.locator('#map-uwp').uncheck();assert.equal(await page.locator('.world-uwp').count(),0);
