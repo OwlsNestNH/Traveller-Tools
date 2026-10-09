@@ -9,6 +9,7 @@ const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const base=process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/';
 const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BROWSER_CHANNEL?{channel:process.env.TRAVELLER_BROWSER_CHANNEL}:{})});
 const ctx=await browser.newContext({viewport:{width:1440,height:1100},acceptDownloads:true});
+await ctx.tracing.start({screenshots:true,snapshots:true,sources:true});
 const sample=[{Name:'Regina',Hex:'1910',UWP:'A788899-C',PBG:'703',Zone:'',WorldX:-110,WorldY:-70,Sector:'Spinward Marches'},{Name:'Jenghe',Hex:'1810',UWP:'C799663-9',PBG:'323',Zone:'',WorldX:-111,WorldY:-70,Sector:'Spinward Marches'},{Name:'Ruie',Hex:'1809',UWP:'C776977-7',PBG:'701',Zone:'A',WorldX:-111,WorldY:-71,Sector:'Spinward Marches'}];
 await ctx.route('https://travellermap.com/api/jumpworlds?*',async route=>{const u=new URL(route.request().url());const rows=u.searchParams.get('jump')==='0'?sample.filter(w=>w.Hex===(u.searchParams.get('hex')||'1910')):sample;await route.fulfill({json:{Worlds:rows},headers:{'Access-Control-Allow-Origin':'*'}});});
 await ctx.route('https://travellermap.com/api/universe?*',route=>route.fulfill({json:{Sectors:[{Names:[{Text:'Spinward Marches'}],Abbreviation:'Spin'},{Names:[{Text:'Empty Sector'}]}]}}));
@@ -121,7 +122,15 @@ try{
   assert.equal(await page.locator('#modal-body pre, #modal-body code').count(),0);assert.match(await page.locator('#modal-body').textContent(),/Actual payment/);await click('Close');
  }
  await click('History');
- for(const e of beforeDetails.events){
+ for(const [index,e] of beforeDetails.events.entries()){
+  const prior=beforeDetails.events[index-1];
+  // History deliberately displays the full jump audit instead of its paired
+  // transition-summary row. Require exactly that omission; don't skip missing audits.
+  if(e.label.startsWith('Jump: ')&&prior?.label==='Jump audit'&&prior.hours===e.hours&&prior.to===e.world){
+   assert.equal(await page.locator('[data-action="event-audit"][data-arg="'+e.id+'"]').count(),0);
+   assert.equal(await page.locator('[data-action="event-audit"][data-arg="'+prior.id+'"]').count(),1);
+   continue;
+  }
   await page.locator('[data-action="event-audit"][data-arg="'+e.id+'"]').click();
   const text=await page.locator('#modal-body').textContent();assert.equal(await page.locator('#modal-body pre, #modal-body code').count(),0);assert.doesNotMatch(text,/undefined|NaN|\[object Object\]/);
   if(e.offers){assert.match(text,/Search Effect/);assert.match(text,/Mail availability/);}
@@ -205,5 +214,5 @@ try{
  await click('History');await click('Undo latest change');assert.equal((await read()).bank,beforeRound.bank);assert.deepEqual((await read()).lots,beforeRound.lots);
  const recoveryCopy=await read();await page.evaluate(()=>localStorage.setItem('traveller-trade-route-calculator:v1','{corrupt'));await page.reload();await page.getByRole('heading',{name:'Recover saved campaign'}).waitFor();assert.equal(await page.evaluate(()=>localStorage.getItem('traveller-trade-route-calculator:v1')),'{corrupt');await page.locator('#import-file').setInputFiles({name:'recovery.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(recoveryCopy))});await page.getByRole('heading',{name:'Load campaign (JSON)'}).waitFor();await page.locator('[name="backed"]').check();await click('Replace campaign');await closed();assert.equal((await read()).lots.length,15);
  assert.deepEqual(errors,[]);console.log('PASS: browser purchase/sale/undo, browsing, route/jump, insurance/partial claim, late freight delivery, two-tab transfer/stale preview, 15 cargo rows, mobile layout, backup/import/reset cancellation, quota failure and notes. API responses stubbed from live sample.');
-}finally{await browser.close();}
+}catch(error){await page.screenshot({path:join(artifacts,'browser-failure.png'),fullPage:true}).catch(()=>{});throw error;}finally{await ctx.tracing.stop({path:join(artifacts,'browser-trace.zip')});await browser.close();}
 
