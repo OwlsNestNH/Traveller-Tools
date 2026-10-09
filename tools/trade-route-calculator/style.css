@@ -316,7 +316,7 @@ main{padding-top:18px}
 .cargo-manifest-scroll td:first-child .cargo-row-meta{justify-content:flex-start}.cargo-row-meta>span:not(.tag){font-family:ui-monospace,monospace}
 .cargo-row-meta button{background:none;border:0;padding:2px 0;color:var(--cyan);font-size:11px;min-height:24px}.cargo-row-meta .tag{font-size:9px;padding:3px 6px}
 .cargo-investment{background:#142d3b;padding:10px 12px;margin-top:8px;min-width:0;max-width:100%;overflow:auto;white-space:nowrap;border-radius:3px}
-.cargo-investment>div{display:flex;justify-content:space-between;gap:16px;min-width:max-content}.cargo-investment strong{font-size:16px}.cargo-investment .mono{color:var(--cyan);font-size:18px}.cargo-investment .help{margin-top:5px;font-size:11px}
+.cargo-investment>div{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 16px;min-width:0}.cargo-investment strong{font-size:16px}.cargo-investment .mono{color:var(--cyan);font-size:18px}.cargo-investment .help{margin-top:5px;font-size:11px}
 .cargo-empty{padding:12px 0}.cargo-panel-actions{display:flex;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:14px;margin-top:auto}.cargo-panel-actions button{flex:1 1 140px;min-height:42px}
 .cargo-panel-footnote{font-size:11px}.cargo-manifest-scroll:focus-visible,.cargo-investment:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
 @media(max-width:620px){.cargo-hold-panel{padding:12px}.cargo-capacity{padding:10px}.cargo-capacity-values strong{font-size:22px}.cargo-goods-scroll{max-height:280px}.cargo-contract-scroll{max-height:180px}}

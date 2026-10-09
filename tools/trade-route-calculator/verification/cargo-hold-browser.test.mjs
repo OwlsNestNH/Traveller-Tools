@@ -130,16 +130,17 @@ async function scrollGeometry(page){
  const goods=page.getByRole('region',{name:'Speculative goods; scroll for more lots and columns'}),contracts=page.getByRole('region',{name:'Freight and mail; scroll for more consignments and columns'});
  for(const region of [goods,contracts]){assert.equal(await region.getAttribute('tabindex'),'0');await region.focus();assert.equal(await region.evaluate(el=>document.activeElement===el),true);}
  const measure=()=>page.evaluate(()=>{
-  const goods=document.querySelector('.cargo-goods-scroll'),footer=document.querySelector('.cargo-investment'),contracts=document.querySelector('.cargo-consignments');
+  const goods=document.querySelector('.cargo-goods-scroll'),footer=document.querySelector('.cargo-investment'),contracts=document.querySelector('.cargo-consignments'),investment=footer.querySelector('.mono');
   const box=el=>{const r=el.getBoundingClientRect();return {top:r.top+scrollY,bottom:r.bottom+scrollY,left:r.left+scrollX,right:r.right+scrollX,height:r.height};};
   const background=getComputedStyle(footer).backgroundColor,footerAlpha=background.startsWith('rgba(')?Number(background.slice(background.lastIndexOf(',')+1,-1)):background==='transparent'?0:1;
-  return {goods:box(goods),footer:box(footer),contracts:box(contracts),firstRow:box(goods.querySelector('tbody tr')),footerInsideScroll:!!footer.closest('.cargo-manifest-scroll'),footerBackground:background,footerAlpha,cellsNoWrap:[...document.querySelectorAll('.cargo-manifest-scroll th,.cargo-manifest-scroll td')].every(cell=>getComputedStyle(cell).whiteSpace==='nowrap'),scrollWidth:goods.scrollWidth,clientWidth:goods.clientWidth,scrollHeight:goods.scrollHeight,clientHeight:goods.clientHeight,pageOverflow:document.documentElement.scrollWidth-innerWidth};
+  return {goods:box(goods),footer:box(footer),investment:box(investment),footerOverflow:footer.scrollWidth-footer.clientWidth,contracts:box(contracts),firstRow:box(goods.querySelector('tbody tr')),footerInsideScroll:!!footer.closest('.cargo-manifest-scroll'),footerBackground:background,footerAlpha,cellsNoWrap:[...document.querySelectorAll('.cargo-manifest-scroll th,.cargo-manifest-scroll td')].every(cell=>getComputedStyle(cell).whiteSpace==='nowrap'),scrollWidth:goods.scrollWidth,clientWidth:goods.clientWidth,scrollHeight:goods.scrollHeight,clientHeight:goods.clientHeight,pageOverflow:document.documentElement.scrollWidth-innerWidth};
  });
  const before=await measure();
  assert.ok(before.scrollHeight>before.clientHeight+100,'80 lots overflow inside the goods region');
  assert.ok(before.scrollWidth>before.clientWidth+1,'Long unbroken lot IDs require internal horizontal scrolling');
  assert.ok(before.goods.height<=282,'Goods viewport is bounded independently of lot count');
  assert.equal(before.footerInsideScroll,false,'Investment is outside the scrolling goods table');
+ assert.ok(before.footerOverflow<=2&&before.investment.left>=before.footer.left&&before.investment.right<=before.footer.right,'Complete normal investment total is visible without scrolling its footer, including at 320px');
  assert.equal(before.footerAlpha,1,'Investment footer has an opaque background');
  assert.equal(before.cellsNoWrap,true,'Goods and freight/mail keep whole words and columns in their internal scroll areas');
  assert.ok(before.footer.top>=before.goods.bottom-1&&before.footer.top-before.goods.bottom<=12,'Investment sits directly below the goods list');
