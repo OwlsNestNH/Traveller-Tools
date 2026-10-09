@@ -235,3 +235,13 @@ test('mail income bypasses trading profit reduction, tax and freight lateness wi
   assert.match(report,/Realized trading profit \/ loss:\s+Cr 0/);assert.match(report,/Freight \/ mail income:\s+Cr 50,000/);
  }
 });
+
+test('new mail audits snapshot endpoint inputs without later world edits changing their source',()=>{
+ const origin=context('A788800-9','Amber'),destination=context('E000100-6','Red');
+ const m=offer({availabilityTotal:12,containerRoll:2},noRoll,{origin,destination,effect:12});
+ const expected={origin:{name:'Port 0',population:8,starport:'A',techLevel:9,zone:'Amber'},destination:{name:'Port 0',population:1,starport:'E',techLevel:6,zone:'Red'}};
+ assert.deepEqual(m.audit.worldInputs,expected);
+ origin.world.name='Renamed';origin.uwp.population=0;origin.uwp.techLevel=1;origin.zone='Safe';destination.uwp.starport='A';
+ assert.deepEqual(m.audit.worldInputs,expected);
+ assert.deepEqual(JSON.parse(JSON.stringify(m)).audit.worldInputs,expected);
+});

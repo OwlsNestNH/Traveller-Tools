@@ -164,3 +164,10 @@ Run `node --test verification/mail.test.mjs verification/mail-ui.test.mjs` for r
 The **Mail browser checks** GitHub Actions workflow checks out the exact PR head and runs focused Mail tests in real Chromium. It uses a loopback-only static server, fresh synthetic campaigns and deterministic Traveller Map fixtures; it does not publish the app or access player campaign data. The workflow has only `contents: read`, disables saved checkout credentials, uses commit-pinned official GitHub actions and installs Playwright 1.58.2. Screenshots, per-case traces, a JSON summary, source-data/native logs and the tested commit are retained as an Actions artifact for 14 days.
 
 To run the browser check locally with Playwright installed, start the static server described above, then run `node verification/mail-browser.test.mjs`. An optional argument supplies an installed Playwright module path, as in the other browser scripts. `TRAVELLER_TEST_URL` sets the server address; `TRAVELLER_COMMIT` labels the report. Browser results are separate from simulated-DOM tests and from the two existing native routing failures documented in RULES_VERIFICATION.md.
+
+
+### Visible Mail rolls and Audit
+
+The Mail result now shows the recorded availability dice/total, combined DM and final result against 12+ without opening details. The container roll is shown when recorded. **Audit** opens a read-only view of the saved search inputs, each endpoint’s population/port/TL/zone values and DMs, distance, search Effect, freight-band conversion, armed-ship, origin low-tech, rank and SOC modifiers, including zeroes and rule references. **How was this calculated?** stays available. New checks snapshot these inputs so later Settings or world edits do not rewrite the audit.
+
+Mail contract rows retain the visible roll summary after acceptance, delivery and reload, using their saved audits; older missing rolls or inputs are labeled not recorded. No historical dice are recreated and no unaccepted offers are restored from History.

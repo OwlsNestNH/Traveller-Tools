@@ -258,3 +258,12 @@ Screenshots, Playwright traces, a JSON case summary, logs and the tested revisio
 
 
 The first real Chromium run [37859944437](https://github.com/OwlsNestNH/Traveller-Tools/actions/runs/37859944437) passed all six Mail scenarios on head `c0a9ae6d149ef9d5cdd62e953ee285aceb7cafab`, with 37 focused native and 198 source/data checks also passing. Subsequent screenshot inspection caught narrow audit-label columns at 390px despite the existing no-overflow assertion. The Mail card now gives mobile labels and values bounded equal-width columns, and the browser suite explicitly checks readable label widths. Verify the updated head’s workflow before treating that visual correction as passed.
+
+
+## Visible Mail rolls and explicit Audit (2026-10-08)
+
+Follow-up scope: the saved availability dice/total + combined mail DM = final result against 12+ is visible without expanding details; the container roll is shown when recorded. Saved mail contract rows retain the same summary after reload. An explicit read-only Audit button exposes every recorded modifier, zero components, both endpoint inputs, distance/search Effect, freight-band mapping and rule sources. New mail checks snapshot search/world inputs; existing missing values remain labeled not recorded. No rule, price, acceptance or delivery behavior changes.
+
+Focused native and real Chromium coverage is extended to verify visible collapsed summaries, automatic/manual/negative rolls, accepted historical rows, old/missing audits, the Audit button, saved-input stability and mobile audit readability. Browser evidence must be associated with this follow-up’s exact PR head; PR #4’s earlier passing run does not verify these new controls. The existing two aggregate routing failures remain separate and unchanged.
+
+Local verification before publishing the follow-up: 46/46 focused Mail tests passed (17 rules/lifecycle plus 29 actual-app simulated-DOM tests), 151/153 aggregate native tests passed with only the two established routing failures, 198 rules checks passed, and changed JavaScript syntax / whitespace checks passed. The six real-browser scenarios are extended, but must run against the new PR head before browser success is claimed.

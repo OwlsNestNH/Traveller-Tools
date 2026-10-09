@@ -350,3 +350,8 @@ The campaign may independently enable reduced-profit price limits, off by defaul
 - Reuse Settings armed-ship, highest Naval/Scout rank and highest SOC DM fields; show their current values and an edit shortcut. Do not duplicate their storage. Separate optional manual 2D availability and 1D container inputs from automatic rolls and label entered totals in audits.
 - Standalone mail checks must not call freight’s 1–6 parsec payment lookup. Keep freight generation/rates unchanged and retain existing whole-consignment acceptance, destination-only explicit delivery, single payout, reservation/release, Undo and recorded referee edits. Mail never gets a new deadline, late penalty or auto-payout.
 - Keep unaccepted offers session-only. Persist accepted contracts and read-only audit history; never rebuild actionable offers from events on reload. Retain schema-1 compatibility and historical terms.
+
+
+### Mail result rolls and Audit (2026-10-08)
+
+Show recorded availability dice/total + combined mail DM = final result against 12+ directly in available/unavailable results and saved mail contract rows. Show the container die when recorded; label manual totals and missing legacy components honestly. Provide an explicit read-only Audit button for the result while preserving the detailed expansion. Show every recorded modifier, including zero, its source world/search inputs, freight-band conversion and rule reference. Snapshot new check inputs; never substitute current Settings/world values into historical audits. This is a presentation/audit extension, not a rules or accounting change.
