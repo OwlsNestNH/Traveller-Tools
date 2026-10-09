@@ -14,7 +14,7 @@ const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BRO
 const tabs=['Overview','Trade','Cargo','Contracts','Accounts','History','Settings'];
 // 640×400 additionally checks the CSS space available to a 1280×800 window at
 // 200% zoom. This is a reduced-viewport equivalent, not genuine browser zoom.
-const sizes=[{width:1440,height:1100},{width:1280,height:800},{width:768,height:1024},{width:390,height:844},{width:320,height:740},{width:844,height:390},{width:640,height:400}];
+const sizes=[{width:1440,height:1100},{width:2160,height:1200},{width:1280,height:800},{width:768,height:1024},{width:390,height:844},{width:320,height:740},{width:844,height:390},{width:640,height:400}];
 let activeContext=null,releasePending=()=>{};
 async function deadline(promise,label){
  let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(label+' timed out')),10000);})]);}finally{clearTimeout(timer);}
@@ -78,26 +78,54 @@ async function run(stops){
   await page.waitForFunction(()=>{
    const svg=document.querySelector('.world-map');if(!svg)return false;
    const b=svg.getBoundingClientRect(),v=svg.viewBox.baseVal;
-   const expectedHeight=Math.max(420,Math.min(640,b.width*.45));
+   const expectedHeight=Math.max(400,Math.min(600,b.width*.43));
    const expectedWidth=b.width*440/expectedHeight;
    return b.width>0&&v.height===440&&Math.abs(v.width-expectedWidth)<.1&&Math.abs(b.height-expectedHeight)<2;
   });
   const result=await page.evaluate(()=>{
    const svg=document.querySelector('.world-map');if(!svg)throw Error('Live map disappeared before geometry measurement');
    const box=svg.getBoundingClientRect(),v=svg.viewBox.baseVal,m=svg.getScreenCTM();
-   const expectedHeight=Math.max(420,Math.min(640,box.width*.45));
+   const expectedHeight=Math.max(400,Math.min(600,box.width*.43));
    const circles=[...svg.querySelectorAll('[data-action="map-world"] circle')].map(c=>{const b=c.getBoundingClientRect();return {width:b.width,height:b.height};});
    return {width:box.width,height:box.height,expectedHeight,expectedWidth:box.width*440/expectedHeight,logicalWidth:v.width,logicalHeight:v.height,scaleX:Math.hypot(m.a,m.b),scaleY:Math.hypot(m.c,m.d),circles,overflow:document.documentElement.scrollWidth-innerWidth};
   });
   assert.ok(Math.abs(result.height-result.expectedHeight)<2,`Map height ${result.height} must match intended height ${result.expectedHeight}`);
   assert.ok(Math.abs(result.logicalWidth-result.expectedWidth)<.1,'Logical map width must track the current rendered width');
-  assert.ok(result.height>=419,'The map retains its 420px minimum at every width');
+  assert.ok(result.height>=399&&result.height<=601,'The slightly smaller map retains its 400–600px height range');
   assert.ok(Math.abs(result.scaleX-result.scaleY)<.001,'The map uses uniform scale, not stretched circles');
   assert.ok(result.circles.length>=2,'Synthetic nearby worlds are visible');
   assert.ok(result.circles.every(c=>Math.abs(c.width-c.height)<.1),'All visible marker circles remain round');
   assert.equal(result.logicalHeight/50,8.8,'100% map covers 8.8 rows, more than the previous 6.4');
   assert.ok(result.overflow<=2,'The page must not scroll horizontally');
   return result;
+ }
+ async function shellReadability(){
+  const layout=await page.evaluate(()=>{
+   const main=document.querySelector('main'),panel=document.querySelector('.navigation-panel'),tabs=document.querySelector('#tabs'),ship=document.querySelector('#ship-actions > .ship-actions');
+   const box=el=>{const b=el.getBoundingClientRect();return {left:b.left,right:b.right,width:b.width,overflow:el.scrollWidth-el.clientWidth};};
+   const style=getComputedStyle(main),contentLeft=main.getBoundingClientRect().left+parseFloat(style.paddingLeft);
+   const textSelectors=['.world-info strong','.world-info>.mono','.world-info>.tag','.world-info .badge-row span','.world-actions button','.world-actions .help','.jump-bar button','.jump-bar .help','.map-hint summary','.map-hint p'];
+   return {viewport:innerWidth,main:box(main),panel:box(panel),tabs:box(tabs),firstTab:box(tabs.querySelector('button')),shipLeft:ship.getBoundingClientRect().left+parseFloat(getComputedStyle(ship).paddingLeft),contentLeft,text:textSelectors.map(selector=>({selector,nodes:[...document.querySelectorAll(selector)].map(el=>({font:parseFloat(getComputedStyle(el).fontSize),...box(el)}))})),blocks:['.world-info','.world-actions','.jump-bar','.map-hint'].map(selector=>({selector,...box(document.querySelector(selector))}))};
+  });
+  assert.ok(Math.abs(layout.firstTab.left-layout.contentLeft)<1,'Overview tab shares the main content left gutter');
+  assert.ok(Math.abs(layout.panel.left-layout.contentLeft)<1,'Map panel shares the main content left gutter');
+  assert.ok(Math.abs(layout.shipLeft-layout.contentLeft)<1,'Ship services share the main content left gutter');
+  assert.ok(Math.abs(layout.panel.left-(layout.viewport-layout.panel.right))<2,'Map panel is centered in the viewport');
+  assert.ok(layout.tabs.overflow<=2,'Tabs wrap within the viewport');
+  if(layout.viewport>1880){
+   assert.ok(Math.abs(layout.main.width-1880)<1,'Ultrawide main uses the modestly wider 1880px shell');
+   const oldLeft=(layout.viewport-1800)/2+16;
+   assert.ok(Math.abs(layout.panel.left-(oldLeft-40))<1,'Ultrawide map shifts left by a balanced 40px');
+  }
+  const minimums={'.world-info strong':18,'.world-info>.mono':14,'.world-info>.tag':12,'.world-info .badge-row span':12,'.world-actions button':13,'.world-actions .help':13,'.jump-bar button':14,'.jump-bar .help':13,'.map-hint summary':13,'.map-hint p':13};
+  for(const {selector,nodes}of layout.text){
+   assert.ok(nodes.length,selector+' has readable text to check');
+   assert.ok(nodes.every(node=>node.font>=minimums[selector]),selector+' retains larger readable type at every width');
+  }
+  for(const box of layout.blocks){
+   assert.ok(box.overflow<=2,box.selector+' wraps without clipping its larger text');
+   assert.ok(box.left>=-1&&box.right<=layout.viewport+1,box.selector+' stays within the viewport');
+  }
  }
  async function routeLayout(){
   const items=page.locator('.route-list [data-action="world"]');assert.equal(await items.count(),stops);
@@ -150,7 +178,7 @@ async function run(stops){
   assert.deepEqual(compactRows[1].slice(3,7),['lot-legacy','11','Not recorded','Not recorded'],'Legacy total-only purchase does not gain invented DMs or a percentage');
   assert.deepEqual(compactRows[2].slice(3,7),['lot-opening','Not recorded','Not recorded','Not recorded'],'Opening cargo does not gain invented negotiation inputs');
   for(const size of sizes){
-   await page.setViewportSize(size);await geometry();await routeLayout();
+   await page.setViewportSize(size);await geometry();await shellReadability();await routeLayout();
    if(size.width===320){
     const longId=fixture.state.route[2];
     await page.locator('.route-list [data-action="world"][data-arg="'+longId+'"]').click();
@@ -168,6 +196,7 @@ async function run(stops){
      assert.ok(box.excess<=2,selector+' wraps its full unbroken label');
      assert.ok(box.left>=-1&&box.right<=321,selector+' stays in the viewport');
     }
+    await shellReadability();
     await unchanged('Long world browse and next-jump label at 320px');
     await page.screenshot({path:artifacts+`/gui-parity-${stops}-320-long-world.png`,fullPage:true});
     await current();await geometry();
@@ -281,7 +310,7 @@ async function run(stops){
   }
   assert.deepEqual(unexpected,[],'No API endpoint is accidentally live');assert.deepEqual(errors,[],'No uncaught browser errors');
   await unchanged('Final GUI parity');
-  console.log(`PASS: ${stops}-stop deterministic GUI parity at desktop, tablet, mobile, 320px, landscape and reduced-viewport zoom equivalent; keyboard, map geometry, browsing, audits, filters and modal guards.`);
+  console.log(`PASS: ${stops}-stop deterministic GUI parity at ultrawide, desktop, tablet, mobile, 320px, landscape and reduced-viewport zoom equivalent; aligned gutters, readable map details, keyboard, map geometry, browsing, audits, filters and modal guards.`);
  }finally{
   gate?.release();await ctx.tracing.stop({path:artifacts+`/gui-parity-${stops}-trace.zip`});await ctx.close();activeContext=null;releasePending=()=>{};
  }

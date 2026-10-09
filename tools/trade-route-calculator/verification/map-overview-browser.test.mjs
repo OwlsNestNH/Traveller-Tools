@@ -42,12 +42,12 @@ const zoom=()=>page.locator('.map-zoom-controls .help').textContent();
 const level=()=>page.locator('.world-map').getAttribute('data-map-level');
 const transform=()=>page.locator('.map-content').getAttribute('transform');
 async function geometry(){
- await page.waitForFunction(()=>{const svg=document.querySelector('.world-map');if(!svg)return false;const b=svg.getBoundingClientRect(),v=svg.viewBox.baseVal,expected=Math.max(420,Math.min(640,b.width*.45));return Math.abs(b.height-expected)<2&&Math.abs(v.width-b.width*440/expected)<.1;});
+ await page.waitForFunction(()=>{const svg=document.querySelector('.world-map');if(!svg)return false;const b=svg.getBoundingClientRect(),v=svg.viewBox.baseVal,expected=Math.max(400,Math.min(600,b.width*.43));return Math.abs(b.height-expected)<2&&Math.abs(v.width-b.width*440/expected)<.1;});
  const result=await page.evaluate(()=>{const svg=document.querySelector('.world-map'),v=svg.viewBox.baseVal,b=svg.getBoundingClientRect(),m=svg.getScreenCTM();return {width:v.width,height:v.height,backgroundWidth:Number(svg.querySelector(':scope > rect').getAttribute('width')),backgroundHeight:Number(svg.querySelector(':scope > rect').getAttribute('height')),cssWidth:b.width,cssHeight:b.height,scaleX:m.a,scaleY:m.d};});
  assert.equal(result.height,440);assert.equal(result.backgroundHeight,440);assert.ok(Math.abs(result.backgroundWidth-result.width)<.001,'SVG float geometry matches the full background');
  assert.ok(Math.abs(result.scaleX-result.scaleY)<.001,'Viewport does not stretch map geography');
  assert.ok(Math.abs(result.width/result.height-result.cssWidth/result.cssHeight)<.015,'Logical and displayed map aspects agree');
- assert.ok(result.cssHeight>=418&&result.cssHeight<=642,'Taller responsive map retains eight to nine rows');
+ assert.ok(result.cssHeight>=398&&result.cssHeight<=602,'Compact responsive map retains the 440-unit logical height');
 }
 
 async function reach(target){for(let i=0;i<30&&await zoom()!==target;i++)await click(target==='240%'?'+':'−');assert.equal(await zoom(),target);}

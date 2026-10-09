@@ -47,7 +47,7 @@ node verification/run-native.mjs
 
 The native runner discovers every `node:test` suite; do not use `verification/*.test.mjs` with `node --test`, because that also selects the standalone browser scripts.
 
-Pull requests run all native suites, the 198 rules-data checks, the shared tool-visit check, and eight independent deterministic Chromium suites: main application, modal lifecycle, click routing, fuel, empty space, Mail, map overview, and GUI parity. See `.github/workflows/mail-browser.yml` at the repository root. Every job verifies the exact PR head and uploads evidence; it has read-only permissions and cannot deploy. Live API availability and the remaining browser scripts are separate checks.
+Pull requests run all native suites, the 198 rules-data checks, the shared tool-visit check, and nine independent deterministic Chromium suites: main application, modal lifecycle, click routing, fuel, empty space, Mail, map overview, GUI parity, and Trade buttons. See `.github/workflows/mail-browser.yml` at the repository root. Every job verifies the exact PR head and uploads evidence; it has read-only permissions and cannot deploy. Live API availability and the remaining browser scripts are separate checks.
 
 The browser scripts use Playwright only for development testing; it is not an application dependency. With Playwright installed, run:
 
@@ -215,3 +215,11 @@ The Route disclosure retains Plot route, Auto plot, Build route and Clear planne
 Refuel still asks for fuel to acquire, and Refill life support still fills the missing configured capacity. Port costs opens the existing Ship expenses flow with Berthing selected. Merely opening these dialogs does not pay anything. Roll & save starport rate remains a separate immediate saved action, even if the expense dialog is later cancelled.
 
 The compact Overview cargo table uses frozen recorded purchase rolls/DMs/percentages and the remaining cost basis. Opening or older cargo without those values says Not recorded; Audit opens the original detailed audit.
+
+## Trade navigation recovery
+
+If the map is browsing another world, **Find supplier**, **Find buyer**, **Sell**, and **Get sale offers** explain where the ship is and offer **Continue at current system**. Continuing changes only the trading view and opens the requested form; searching still requires an explicit preview and commit. Cancel keeps the browsed world and campaign unchanged. Remote purchases remain prohibited.
+
+The tabs now share the centered map/content gutter on wide displays. The Overview map is slightly shorter (400–600 CSS pixels with unchanged logical hex scale), and the world details, UWP, trade badges, route navigation and help beneath it use larger text.
+
+Run `node --test verification/trade-actions.test.mjs` for the application regression and `node verification/trade-buttons.test.mjs` for desktop/mobile browser clicks, recovery, cancellation, local commits and related controls.
