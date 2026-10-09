@@ -18,7 +18,7 @@ const base=process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/';
 const artifacts=fileURLToPath(new URL('../verification-artifacts/',import.meta.url));
 const root=fileURLToPath(new URL('../../../',import.meta.url));
 const sizes=[{width:1440,height:1100},{width:390,height:844},{width:320,height:740}];
-const report={suite:'Bounded synthetic campaign compound-flow stress',startedAt:new Date().toISOString(),requestedCommit:process.env.TRAVELLER_COMMIT||null,baseURL:base,cases:[],errors:[],evidencePolicy:'One viewport-sized completion image and at most two failure images per scenario; no unbounded traces, videos, or live campaign data.'};
+const report={suite:'Bounded synthetic campaign compound-flow stress',startedAt:new Date().toISOString(),requestedCommit:process.env.TRAVELLER_COMMIT||null,baseURL:base,cases:[],errors:[],evidencePolicy:'One viewport-sized completion image, a targeted mail review image, and at most two failure images per scenario; no unbounded traces, videos, or live campaign data.'};
 let browser;
 const errorText=error=>error?.stack||String(error);
 
@@ -74,8 +74,16 @@ async function choose(page,name,value,scope='#modal'){
 async function submit(page,label,next=null,{double=false}={}){
  const button=modal(page).getByRole('button',{name:label,exact:true});
  // Real pointer events, rather than invoking application callbacks or injecting
- // a stale synthetic button. The same rendered confirmation gets two clicks.
+ // a stale synthetic button. The follow-up click must not reach a background
+ // control when the first confirmation closes the dialog.
+ const originalTitle=await page.locator('#modal-title').innerText();
  await button.click({clickCount:double?2:1,delay:double?20:0});
+ if(double){
+  await frames(page);
+  const open=await page.locator('#modal').evaluate(el=>el.open),title=await page.locator('#modal-title').innerText();
+  if(next)assert.equal(open,true,'Repeated Preview must leave its confirmation open for a separate explicit commitment');
+  assert.ok(!open||title===(next||originalTitle),'Repeated button activation must not open an unrelated dialog: '+title);
+ }
  await page.waitForFunction(next=>!document.querySelector('#modal').open||!!document.querySelector('#modal-error').textContent||(next&&document.querySelector('#modal-title').textContent===next),next);
  assert.equal(await page.locator('#modal-error').textContent(),'','The requested UI action succeeds without a validation/runtime error');
  if(next)await heading(page,next);else await closed(page);
@@ -90,10 +98,11 @@ async function undo(page){await tab(page,'History');assert.equal(await action(pa
 async function layout(page,result,label){
  const geometry=await page.evaluate(()=>{
   const d=document.querySelector('#modal[open]');
-  return {pageOverflow:document.documentElement.scrollWidth-innerWidth,dialog:d?{left:d.getBoundingClientRect().left,right:d.getBoundingClientRect().right,overflow:d.scrollWidth-d.clientWidth}:null,width:innerWidth};
+  return {pageOverflow:document.documentElement.scrollWidth-innerWidth,dialog:d?{left:d.getBoundingClientRect().left,right:d.getBoundingClientRect().right,overflow:d.scrollWidth-d.clientWidth}:null,width:innerWidth,auditCells:d?[...d.querySelectorAll('.preview dt,.preview dd')].filter(el=>el.getClientRects().length).map(el=>({text:el.textContent,left:el.getBoundingClientRect().left,right:el.getBoundingClientRect().right,overflow:el.scrollWidth-el.clientWidth})):[]};
  });
  result.layouts.push({label,...geometry});assert.ok(geometry.pageOverflow<=2,label+': no page-width overflow');
  if(geometry.dialog){assert.ok(geometry.dialog.left>=-1&&geometry.dialog.right<=geometry.width+1,label+': dialog is reachable at this width');assert.ok(geometry.dialog.overflow<=2,label+': dialog content scrolls within its controls');}
+ for(const cell of geometry.auditCells){assert.ok(cell.overflow<=2,label+': audit value wraps without clipping: '+cell.text);assert.ok(cell.left>=geometry.dialog.left&&cell.right<=geometry.dialog.right,label+': complete audit value stays inside dialog: '+cell.text);}
 }
 async function buy(page,{quantity=1,fee=0,double=false,cancel=false}={}){
  await tab(page,'Trade');await action(page,'buy','stress-offer').click();
@@ -202,10 +211,23 @@ async function invalidCase(page,context,result){
   result.invalidInputs.push({form:'sale',field:name,attempt:value,value:await field.inputValue(),error:await page.locator('#modal-error').innerText()});
   await unchanged(page,initial,'Invalid sale '+name+'='+value);await dismiss(page);
  }
+ await tab(page,'Settings');await page.locator('#settings-reset').click();
+ await page.getByRole('button',{name:'Increase Jump rating',exact:true}).click({clickCount:2,delay:20});assert.equal(await page.locator('#settings-form [name="jump"]').inputValue(),'4','Ordinary real double-click increments remain two actions');
+ await page.getByRole('button',{name:'Decrease Jump rating',exact:true}).click({clickCount:2,delay:20});assert.equal(await page.locator('#settings-form [name="jump"]').inputValue(),'2');await unchanged(page,initial,'Repeated settings increment/decrement drafts');await page.locator('#settings-reset').click();
  await buy(page,{quantity:1,double:true});const recovered=await read(page);assert.equal(recovered.bank,'9987655');assert.equal(recovered.revision,1,'Invalid drafts did not leave invisible commits');
  await undo(page);assert.deepEqual(comparable(await read(page)),comparable(JSON.parse(initial)),'Valid transaction and Undo still work after all invalid attempts');
  await tab(page,'Settings');await layout(page,result,'invalid-input-recovery');
  result.checks.push('Negative/zero/out-of-stock purchase, unsafe-large values, keyboard nonfinite exponent, out-of-range jump/fuel/capacity/sale/fee, no incidental save, valid recovery');
+}
+
+async function previewRepeatCase(page,context,result){
+ const before=await raw(page);
+ await tab(page,'Trade');await action(page,'buy','stress-offer').click();await fill(page,'quantity',2);await fill(page,'fee',10);
+ await submit(page,'Preview purchase','Confirm purchase',{double:true});await unchanged(page,before,'Repeated purchase Preview');await dismiss(page);
+ await saleDraft(page);await submit(page,'Preview sale','Confirm sale',{double:true});await unchanged(page,before,'Repeated sale Preview');await dismiss(page);
+ await tab(page,'Accounts');await action(page,'deposit').click();await fill(page,'amount',7);await fill(page,'reason','Synthetic repeated-preview boundary');
+ await submit(page,'Preview deposit','Confirm deposit',{double:true});await unchanged(page,before,'Repeated deposit Preview');await layout(page,result,'repeated-preview-awaits-commit');await dismiss(page);
+ result.checks.push('Real pointer double-click Preview purchase/sale/deposit must stop at review without committing or opening an unrelated screen');
 }
 
 async function settingsCase(page,context,result,f){
@@ -255,7 +277,7 @@ async function contractsCase(page,context,result,f){
  const checkedBytes=await raw(page);await tab(page,'History');await action(page,'event-audit',first.id).click();assert.match(await modal(page).innerText(),/Superseded mail check/);assert.equal(await page.locator('#modal-submit').isVisible(),false);assert.equal(await modal(page).locator('[data-action="contract-accept"]').count(),0);await dismiss(page);await unchanged(page,checkedBytes,'Superseded mail audit');
  await tab(page,'Contracts');await action(page,'contract-accept',secondMail.offerId).click();await submit(page,'Accept whole contract',null,{double:true});const accepted=await read(page),mail=contractsOf(accepted,'mail','accepted')[0];
  assert.equal(contractsOf(accepted,'mail').length,1);assert.equal(mail.quantity,'5');assert.equal(mail.payment,'25000');assert.equal(accepted.bank,start.bank);assert.deepEqual(accepted.ledger,start.ledger);
- const acceptedBytes=await raw(page);await action(page,'mail-cancel',mail.id).click();await layout(page,result,'mail-cancel-review');await dismiss(page,'Close dialog');await unchanged(page,acceptedBytes,'Mail cancel close/reopen');
+ const acceptedBytes=await raw(page);await action(page,'mail-cancel',mail.id).click();await layout(page,result,'mail-cancel-review');await capture(page,result,'mail-cancel-review');await dismiss(page,'Close dialog');await unchanged(page,acceptedBytes,'Mail cancel close/reopen');
  await action(page,'mail-cancel',mail.id).click();await submit(page,'Cancel mail and start over',null,{double:true});const cancelled=await read(page);
  assert.equal(cancelled.revision,accepted.revision+1);assert.equal(contractsOf(cancelled,'mail','cancelled').length,1);assert.deepEqual(accounting(cancelled),accounting(accepted));assert.deepEqual(contractsOf(cancelled,'freight'),contractsOf(accepted,'freight'));
  assert.equal(await page.locator('#main [data-action="contract-audit"][data-arg="'+mail.id+'"]').count(),0,'Cancelled mail leaves the active contract list');
@@ -305,7 +327,7 @@ async function jumpCase(page,context,result,f){
  result.checks.push('Cancel/reopen/reload retained dice, double zero-hour jump, first mail departure, one mulligan restores whole campaign, exactly one reroll, repeat cannot Undo, next-departure independence, later deposit/Undo boundary, import/reload retention');
 }
 
-const scenarios=[['trade-partial-lots-backup-undo',tradingCase],['invalid-values-and-recovery',invalidCase],['settings-world-tabs-and-rounding',settingsCase],['freight-mail-recheck-and-audit',contractsCase],['editor-handover-stale-confirmation',ownershipCase],['jump-mulligan-and-transaction-boundary',jumpCase]];
+const scenarios=[['trade-partial-lots-backup-undo',tradingCase],['invalid-values-and-recovery',invalidCase],['settings-world-tabs-and-rounding',settingsCase],['freight-mail-recheck-and-audit',contractsCase],['editor-handover-stale-confirmation',ownershipCase],['jump-mulligan-and-transaction-boundary',jumpCase],['preview-repeat-no-commit',previewRepeatCase]];
 report.expectedCases=sizes.flatMap(size=>scenarios.map(([name])=>name+'-'+size.width));
 async function capture(page,result,label){
  const filename='campaign-stress-'+result.id+'-'+label+'.png';await page.screenshot({path:join(artifacts,filename),fullPage:false});result.screenshots.push(filename);
@@ -353,7 +375,7 @@ async function runScenario(name,body,viewport){
 
 if(process.argv[2]==='--fixtures-only'){
  for(const kind of ['ordinary','jump'])fixture(kind);
- assert.equal(new Set(report.expectedCases).size,18);console.log('PASS: both synthetic fixture branches validate; 18 unique named scenarios. Chromium was not launched.');
+ assert.equal(new Set(report.expectedCases).size,21);console.log('PASS: both synthetic fixture branches validate; 21 unique named scenarios. Chromium was not launched.');
 }else{
  await mkdir(artifacts,{recursive:true});
  try{
@@ -369,5 +391,5 @@ if(process.argv[2]==='--fixtures-only'){
   await writeFile(join(artifacts,'campaign-stress-report.json'),JSON.stringify(report,null,2)+'\n');
  }
  if(!report.passed)throw Error('Campaign stress verification failed; see verification-artifacts/campaign-stress-report.json and per-scenario screenshots/results.');
- console.log('PASS: 18 independent Chromium scenarios at 1440, 390 and 320px; synthetic compound-flow accounting, validation, settings, contracts, ownership and jump boundaries.');
+ console.log('PASS: '+report.expectedCases.length+' independent Chromium scenarios at 1440, 390 and 320px; synthetic compound-flow accounting, validation, settings, contracts, ownership, jump and repeated-preview boundaries.');
 }

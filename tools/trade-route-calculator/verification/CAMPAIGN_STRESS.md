@@ -19,7 +19,7 @@ suite uses separately labeled, richer synthetic branches, not top-ups to these t
   price/search/jump audits are recorded. No successful-search or price overrides.
 - No retry-until-profit, invented supplier, money top-up, or empty-space refueling.
 - The existing 24-suite browser regression matrix and native/rules gates are preserved.
-  This adds five journeys plus 18 bounded compound scenarios at 1440/390/320px.
+  This adds five journeys plus 21 bounded compound scenarios at 1440/390/320px.
 
 ## Baseline
 

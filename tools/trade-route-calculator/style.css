@@ -33,6 +33,10 @@ td{padding:8px 10px}td .check{margin:0;white-space:nowrap}.cargo-scroll{max-heig
 /* Keep number steppers visible in transaction forms, including broker fees. */
 #modal input[type="number"]::-webkit-inner-spin-button{opacity:1}
 
+/* Long world names and audit references must not push confirmation values off
+   the edge of narrow dialogs. Keep both grid tracks shrinkable and readable. */
+@media(max-width:620px){#modal .preview dl{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}#modal .preview dt,#modal .preview dd{min-width:0;overflow-wrap:anywhere}}
+
 .world-map{cursor:grab;touch-action:none;user-select:none}.world-map.panning,.world-map.panning [data-action]{cursor:grabbing}.world-map .map-content{pointer-events:auto;cursor:grab}.world-map.panning .map-content{cursor:grabbing}
 
 .planet-info h3{margin-top:18px}.planet-info .preview dl{grid-template-columns:minmax(95px,1fr) minmax(0,2fr)}.planet-info .preview dd{text-align:left;font-family:inherit;overflow-wrap:anywhere}.planet-info-table{max-height:none}.planet-info-table th{position:static}.planet-info-table td{white-space:normal;overflow-wrap:anywhere}.planet-info-table td:nth-child(2){font-family:inherit}
