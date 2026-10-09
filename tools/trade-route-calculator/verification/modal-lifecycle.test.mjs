@@ -15,7 +15,7 @@ await ctx.route('https://travellermap.com/api/universe?*',route=>route.fulfill({
 await ctx.route('https://travellermap.com/api/metadata?*',route=>route.fulfill({json:{Subsectors:[{Index:'C',Name:'Regina'},{Index:'A',Name:'Cronor'}]}}));
 await ctx.route('https://travellermap.com/api/sec?*',route=>route.fulfill({json:'Hex\tName\r\n'+sample.map(w=>w.Hex+'\t'+w.Name).join('\r\n')}));
 const page=await ctx.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
-const click=async label=>{const modal=page.locator('#modal[open]');const target=modal.getByRole('button',{name:label,exact:true});if(await target.count())return target.click();return page.getByRole('button',{name:label,exact:true}).click();};
+const click=async label=>{if(['Plot route','Auto plot','Build route','Clear planned route'].includes(label)&&!await page.locator('#route-menu').evaluate(e=>e.open))await page.locator('#route-menu > summary').click();const modal=page.locator('#modal[open]');const target=modal.getByRole('button',{name:label,exact:true});if(await target.count())return target.click();return page.getByRole('button',{name:label,exact:true}).click();};
 const fill=(name,value)=>page.locator('[name="'+name+'"]').fill(String(value));
 const read=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('traveller-trade-route-calculator:v1')));
 const closed=()=>page.locator('#modal').waitFor({state:'hidden'});
@@ -32,7 +32,7 @@ function holdRequest(fail=false){
 }
 async function finish(pending){pending.release();await pending.done;await page.waitForTimeout(100);gate=null;}
 const openLocation=async()=>{await click('Overview');await page.locator('svg [data-arg="-111,-70"]').click();await click('Use as starting world');};
-const invalidExpenses=async()=>{await page.locator('#tabs').getByRole('button',{name:'Ship expenses',exact:true}).click();await page.locator('[name="include-berthing"]').uncheck();assert.equal(await page.locator('#modal-submit').isDisabled(),true);};
+const invalidExpenses=async()=>{await page.locator('#ship-actions').getByRole('button',{name:'Ship expenses',exact:true}).click();await page.locator('[name="include-berthing"]').uncheck();assert.equal(await page.locator('#modal-submit').isDisabled(),true);};
 try{
  await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();
  await click('Set up campaign');await page.locator('#setup-world .picker-selection').getByText(/Hex 1910/).waitFor();await click('Start campaign');await closed();

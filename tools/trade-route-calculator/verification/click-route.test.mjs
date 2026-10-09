@@ -15,7 +15,7 @@ await ctx.route('https://travellermap.com/api/universe?*',route=>route.fulfill({
 await ctx.route('https://travellermap.com/api/metadata?*',route=>route.fulfill({json:{Subsectors:[{Index:'C',Name:'Regina'},{Index:'A',Name:'Cronor'}]}}));
 await ctx.route('https://travellermap.com/api/sec?*',route=>route.fulfill({json:'Hex\tName\r\n'+sample.map(w=>w.Hex+'\t'+w.Name).join('\r\n')}));
 const page=await ctx.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
-const click=async label=>{const modal=page.locator('#modal[open]');const target=modal.getByRole('button',{name:label,exact:true});if(await target.count())return target.click();return page.getByRole('button',{name:label,exact:true}).click();};
+const click=async label=>{if(['Plot route','Auto plot','Build route','Clear planned route'].includes(label)&&!await page.locator('#route-menu').evaluate(e=>e.open))await page.locator('#route-menu > summary').click();const modal=page.locator('#modal[open]');const target=modal.getByRole('button',{name:label,exact:true});if(await target.count())return target.click();return page.getByRole('button',{name:label,exact:true}).click();};
 const fill=(name,value)=>page.locator('[name="'+name+'"]').fill(String(value));
 const read=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('traveller-trade-route-calculator:v1')));
 const closed=()=>page.locator('#modal').waitFor({state:'hidden'});

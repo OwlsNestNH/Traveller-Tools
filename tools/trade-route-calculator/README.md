@@ -8,7 +8,7 @@ Open `index.html` through an HTTP server or GitHub Pages. No build, paid service
 
 1. Choose **Set up campaign**, select your current sector, subsector and world, then enter ship, bank and starting date label.
 2. Add existing cargo from **Cargo** without debiting the opening bank again.
-3. **Find supplier** creates a market after an explicit search commit. Buy and sell through previews and explicit commits.
+3. Open **Trade**. **Find supplier** creates a market after an explicit search commit. Buy and sell through previews and explicit commits.
 4. **Plot route** accepts mandatory stops in order. Clicking the map or Previous/Next only browses; **COMMIT JUMP** moves the ship and advances elapsed hours.
 5. Use **Settings** for trader skills, profit mode, insurance and taxes. Both Merchant Prince options start off.
 6. Export JSON backups regularly. The campaign is stored in this browser; it is not uploaded to GitHub or Traveller Map.
@@ -30,7 +30,7 @@ The campaign clock displays an Imperial day-year date and hour, starting at 001-
 
 ## Development and verification
 
-[GUI_PARITY.md](GUI_PARITY.md) tracks the existing controls, future homes and acceptance checks for the planned GUI refit. The checklist is preparation only; it does not mean that GUI has been implemented.
+[GUI_PARITY.md](GUI_PARITY.md) tracks the existing controls, future homes and acceptance checks for the planned GUI refit. Stage 1 implements the shared status/navigation shell and map-first Overview. The later Trade and secondary-page visual refits remain separate work.
 
 From this folder, serve the files with any static server, for example:
 
@@ -47,7 +47,7 @@ node verification/run-native.mjs
 
 The native runner discovers every `node:test` suite; do not use `verification/*.test.mjs` with `node --test`, because that also selects the standalone browser scripts.
 
-Pull requests run all native suites, the 198 rules-data checks, the shared tool-visit check, and seven independent deterministic Chromium suites: main application, modal lifecycle, click routing, fuel, empty space, Mail, and map overview. See `.github/workflows/mail-browser.yml` at the repository root. Every job verifies the exact PR head and uploads evidence; it has read-only permissions and cannot deploy. Live API availability and the remaining browser scripts are separate checks.
+Pull requests run all native suites, the 198 rules-data checks, the shared tool-visit check, and eight independent deterministic Chromium suites: main application, modal lifecycle, click routing, fuel, empty space, Mail, map overview, and GUI parity. See `.github/workflows/mail-browser.yml` at the repository root. Every job verifies the exact PR head and uploads evidence; it has read-only permissions and cannot deploy. Live API availability and the remaining browser scripts are separate checks.
 
 The browser scripts use Playwright only for development testing; it is not an application dependency. With Playwright installed, run:
 
@@ -72,7 +72,7 @@ Find World, campaign setup, destinations and route stops use searchable **Sector
 
 **Recent worlds** remembers up to ten successfully selected worlds in this browser, deduplicated by sector/hex. This optional shortcut is a browser preference separate from campaign JSON backups; storage failure does not prevent world selection. Selecting a recent world fills the full chain but does not move the ship.
 
-The local map includes a numbered hex grid with a **Show hexes** toggle. Numbers use sector-local coordinates, including when the map crosses a sector boundary. Grid lines and numbers do not block world clicks.
+The local map keeps the numbered hex grid on without a visible toolbar toggle. Numbers use sector-local coordinates, including when the map crosses a sector boundary. Grid lines and numbers do not block world clicks.
 
 Lists come from the [Traveller Map public API](https://travellermap.com/doc/api): universe, sector metadata, tab-delimited sector worlds, and final world lookup. Failed list requests offer a retry; changing a parent choice clears dependent choices, and late responses cannot replace a newer selection.
 
@@ -80,7 +80,7 @@ Run `node verification/world-picker.test.mjs` for the selector, recent-world and
 
 ## Map zoom and starting world
 
-The default map view is closer, and hexes are restricted to the twelve-parsec neighborhood rather than filling the viewport with extra empty cells. Use the mouse wheel over the map or the + / − / Reset view controls to zoom from 6% to 240%. Zoom changes only the view; ordinary scrolling elsewhere and Ctrl+wheel browser zoom are preserved.
+The Overview map shows about 8.8 hex rows at 100% zoom. Its logical width follows the available screen width, with uniform projection, clipping and live map-area loading; narrow screens retain map height instead of squashing geography. Use the mouse wheel over the map or the + / − / Reset view controls to zoom from 6% to 240%. Zoom changes only the view; ordinary scrolling elsewhere and Ctrl+wheel browser zoom are preserved.
 
 After Find World, **Use as starting world** opens an explicit confirmation. The same action is available on a browsed world's map panel. It sets the actual ship location, clears the old route, records a reason and supports Undo. It does not advance time or change bank/cargo/contract payments; active insurance is flagged for an amendment. Use COMMIT JUMP for normal travel.
 
@@ -205,3 +205,13 @@ Reload/import reconstructs a valid latest saved result for read-only viewing; it
 ### Compact Bank & ledger rows
 
 **Details** comes first, followed by the Entry label on the same row, with smaller row padding. Longer labels wrap and the wide ledger scrolls inside its panel on small screens. Amounts, transaction order, balances, audit actions and accounting rules are unchanged.
+
+## Stage 1 Overview
+
+Seven folder-style tabs share a compact ship/current-world/fuel/life-support/cargo/credits strip. Cargo occupancy expands to include freight/mail, luggage and bladder fuel. Ship service shortcuts and campaign-day controls are on Overview; Trade reuses the existing supplier and cargo-sale panels without repricing or regenerating offers.
+
+The Route disclosure retains Plot route, Auto plot, Build route and Clear planned route. Active drafts keep Save, Remove, Retry and Cancel visible. Route chips wrap without separating their outgoing arrows. Previous/Next only browse; COMMIT JUMP retains the existing confirmation. Current system returns to the actual ship; Reset view resets the viewed map, not the ship.
+
+Refuel still asks for fuel to acquire, and Refill life support still fills the missing configured capacity. Port costs opens the existing Ship expenses flow with Berthing selected. Merely opening these dialogs does not pay anything. Roll & save starport rate remains a separate immediate saved action, even if the expense dialog is later cancelled.
+
+The compact Overview cargo table uses frozen recorded purchase rolls/DMs/percentages and the remaining cost basis. Opening or older cargo without those values says Not recorded; Audit opens the original detailed audit.

@@ -1123,6 +1123,7 @@ try {
     // Commit an actual return journey. Equal current/accepted worlds are not
     // evidence that the consignment never left.
     await tab(page, 'Overview');
+    await page.locator('#route-menu > summary').click();
     await page.getByRole('button', {name:'Build route', exact:true}).click();
     await page.locator('svg [data-action="map-world"][data-arg="'+origin.id+'"]').click();
     await page.waitForFunction(() => document.querySelector('[data-action="route-save"]')?.disabled === false);
@@ -1139,6 +1140,7 @@ try {
     await fill(page, 'reason', 'Synthetic referee date correction after return');
     await submit(page, 'Save');
     await tab(page, 'Overview');
+    await page.locator('#route-menu > summary').click();
     await page.getByRole('button', {name:'Clear planned route', exact:true}).click();
     await submit(page, 'Clear route');
     const edited = await read(page);

@@ -1,4 +1,4 @@
-import {MAP_GEOMETRY} from './map-geometry.mjs';
+import {MAP_GEOMETRY} from './map-geometry.mjs?v=map-first-1';
 // Small overlapping map areas; browsing data is deliberately separate from campaign data.
 export function camera(anchor,pan,zoom){const scale=50*zoom,x=anchor.x-pan.x/(scale*Math.sqrt(3)/2),y=anchor.y+((anchor.x%2+2)%2)*.5-pan.y/scale;return {x,y};}
 export function viewportTiles(anchor,pan,zoom){
