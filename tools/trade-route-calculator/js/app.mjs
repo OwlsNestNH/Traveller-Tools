@@ -1,31 +1,31 @@
-import {advancePaymentDate,recordedPaymentDate} from './payment-schedule.mjs?v=service-controls-20261009-24';
-import {configureMortgage,mortgageStatus} from './mortgage.mjs?v=service-controls-20261009-24';
-import {configureMaintenance,maintenanceStatus} from './maintenance.mjs?v=service-controls-20261009-24';
-import {createServicePanels} from './service-panels.mjs?v=service-controls-20261009-24';
-import {cargoHoldPanel} from './cargo-hold.mjs?v=service-controls-20261009-24';
-import {createExpensePanels} from './expense-panels.mjs?v=service-controls-20261009-24';
+import {advancePaymentDate,recordedPaymentDate} from './payment-schedule.mjs?v=modal-stress-fixes-20261009-25';
+import {configureMortgage,mortgageStatus} from './mortgage.mjs?v=modal-stress-fixes-20261009-25';
+import {configureMaintenance,maintenanceStatus} from './maintenance.mjs?v=modal-stress-fixes-20261009-25';
+import {createServicePanels} from './service-panels.mjs?v=modal-stress-fixes-20261009-25';
+import {cargoHoldPanel} from './cargo-hold.mjs?v=modal-stress-fixes-20261009-25';
+import {createExpensePanels} from './expense-panels.mjs?v=modal-stress-fixes-20261009-25';
 import {currentJumpAttempt} from './jump-attempts.mjs';
-import {mountSettingsLayout,syncSettingsControls,stepSetting} from './settings-layout.mjs?v=service-controls-20261009-24';
+import {mountSettingsLayout,syncSettingsControls,stepSetting} from './settings-layout.mjs?v=modal-stress-fixes-20261009-25';
 import {configureFuel,bladderSpace,validateFuel,jumpFuel,fuelReference} from './fuel.mjs?v=total-fuel-labels-1';
 import {refillQuote,supportStock,supportCargo,supportDisplay,anchorSupport,configureSupport} from './life-support.mjs?v=mfd-services-1';
-import {campaignReport} from './report.mjs?v=service-controls-20261009-24';
+import {campaignReport} from './report.mjs?v=modal-stress-fixes-20261009-25';
 import {up,creditStep,roundExisting} from './rounding.mjs';
 import {tiers,luggageAllowance,occupants,passengerLuggage,serviceRate,serviceLabel,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=passenger-input-3';
 import * as A from './amounts.mjs';
 import {parseDate,displayDate} from './calendar.mjs';
 import * as R from './rules.mjs?v=trade-complications-1';
-import * as S from './state.mjs?v=service-controls-20261009-24';
+import * as S from './state.mjs?v=modal-stress-fixes-20261009-25';
 import {latestMailCheck,recordMailCheck,mailCheckHistoryStatus} from './mail-history.mjs?v=mail-history-1';
-import * as E from './expenses.mjs?v=service-controls-20261009-24';
+import * as E from './expenses.mjs?v=modal-stress-fixes-20261009-25';
 import {planetInformation,worldSheetURL} from './planet-info.mjs?v=world-data-1';
-import {worldMapFacts,worldSymbols,selectedWorldHex,mapKeyMarkup} from './world-symbols.mjs?v=service-controls-20261009-24';
+import {worldMapFacts,worldSymbols,selectedWorldHex,mapKeyMarkup} from './world-symbols.mjs?v=modal-stress-fixes-20261009-25';
 import * as M from './map.mjs?v=map-overview-1';
 import {MAP_GEOMETRY,setMapGeometry,visibleMapWorlds} from './map-geometry.mjs?v=map-first-1';
 import {camera,viewportTiles,MapAreaCache} from './map-viewport.mjs?v=map-first-1';
 import {nextMapZoom,mapLevel,MapOverviewCache,overviewMarkup,mapTerritories} from './map-overview.mjs?v=map-first-1';
 import {readPoliticalTerritory,savePoliticalTerritory} from './map-preferences.mjs';
 import {createWorldPicker,rememberWorld} from './world-picker.mjs?v=fuel-warning-1';
-import {Store,KEY} from './persistence.mjs?v=service-controls-20261009-24';
+import {Store,KEY} from './persistence.mjs?v=modal-stress-fixes-20261009-25';
 const $=id=>document.getElementById(id),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ROOT='https://github.com/OwlsNestNH/Traveller-Tools/blob/main/tools/trade-route-calculator/';
 let inputRounding=[],localCampaignSave=false;
@@ -86,6 +86,25 @@ function normaliseFields(form){for(const el of form.querySelectorAll('[data-roun
 function roundingPreview(){const draft=structuredClone(state),changes=roundExisting(draft);let error='';try{S.validate(draft);}catch(e){error=e.message;}modal('Preview rounding',`<p>Round current bank, cargo quantities and values, cargo capacity, luggage, market offers, accepted contracts and saved monthly costs. Future Credit entries and charges will round up to Cr100. Historical transactions, insurance contract terms and original audits stay unchanged.</p>${table(['Value','Before','After'],changes.map(c=>`<tr><td>${esc(c.label)}</td><td class="number">${esc(c.before)}</td><td class="number">${esc(c.after)}</td></tr>`))}${roundingFootnote([],100)}${error?'<p class="notice">Cannot apply: '+esc(error)+' Adjust cargo or capacity first.</p>':'<p>One undo restores all these changes.</p>'}`,error?null:()=>act('Round Credits to 100 and tons to whole',s=>S.applyRounding(s)),'Apply rounding',true,{annotateRounding:false});}
 let activeModal=null;
 let suspendedSettings=null;
+let modalPointerClick=null,modalTransitionClick=null;
+function resetModalPointerGesture(){modalPointerClick=null;modalTransitionClick=null;}
+function preserveModalPointerGesture(){
+ const previous=modalPointerClick||modalTransitionClick,now=Date.now();
+ modalTransitionClick=previous&&now>=previous.at&&now-previous.at<=750?previous:null;modalPointerClick=null;
+}
+function captureModalClick(e){
+ const dialog=$('modal'),now=Date.now(),previous=modalTransitionClick;
+ // One double-click must not cross into a replacement confirmation or the
+ // underlying page. Fresh clicks, keyboard actions and ordinary repeated
+ // controls remain available; only the original pointer gesture is consumed.
+ if(previous&&e.detail>1&&e.button===previous.button&&e.pointerId===previous.pointerId&&now>=previous.at&&now-previous.at<=750&&Math.abs(e.clientX-previous.x)<=4&&Math.abs(e.clientY-previous.y)<=4){
+  e.preventDefault();e.stopImmediatePropagation();return true;
+ }
+ modalTransitionClick=null;
+ const button=e.target.closest?.('button');
+ modalPointerClick=dialog.open&&e.detail>0&&e.button===0&&['modal-submit','modal-cancel','modal-close'].includes(button?.id)&&dialog.contains(button)?{at:now,x:e.clientX,y:e.clientY,button:e.button,pointerId:e.pointerId}:null;
+ return false;
+}
 function suspendSettingsForm(){const form=$('settings-form');if(!form)return;captureSettingsDisclosures();const placeholder=document.createElement('div');placeholder.style.height=form.getBoundingClientRect().height+'px';form.replaceWith(placeholder);suspendedSettings={form,placeholder};}
 function restoreSettingsForm(){if(suspendedSettings?.placeholder.isConnected)suspendedSettings.placeholder.replaceWith(suspendedSettings.form);suspendedSettings=null;}
 
@@ -94,9 +113,10 @@ function syncModalSubmit(){
  const session=activeModal;if(!session)return;
  $('modal-submit').disabled=session.busy||!session.valid||session.cancelled||(session.mutates&&!store?.editable);
 }
-function closeModal(){activeModal=null;modalGeneration++;$('modal').close();$('modal-body').innerHTML='';restoreSettingsForm();}
+function closeModal(){preserveModalPointerGesture();activeModal=null;modalGeneration++;$('modal').close();$('modal-body').innerHTML='';restoreSettingsForm();}
 // Display titles are presentation only. Callers declare review/footnote behavior.
 function modal(title,body,submit,label='Save',mutates=true,{retainRounding=false,insurance=false,tax=false,annotateRounding=true}={}){
+ if($('modal').open)preserveModalPointerGesture();else resetModalPointerGesture();
  suspendSettingsForm();
  if(!retainRounding)inputRounding=[];
  if(insurance)body+=optionalRuleFootnote('insurance');if(tax)body+=optionalRuleFootnote('tax');modalGeneration++;modalRevision=state.revision;
@@ -1267,6 +1287,8 @@ function exportReport(){
 function closeCargoHold(){cargoHoldOpen=false;render();document.querySelector('#ship-actions [data-action="cargo-hold"]')?.focus();}
 function openCargoHold(){if(services.committing())throw Error('Wait for this payment to finish saving.');services.close({render:false});inputRounding=[];cargoHoldOpen=true;tab='Overview';render();document.querySelector('#cargo-hold-panel h2')?.focus({preventScroll:true});if(document.defaultView?.matchMedia?.('(max-width:1099px)').matches)$('cargo-hold-panel')?.scrollIntoView({block:'start',behavior:'instant'});}
 const actions={'cargo-hold':openCargoHold,'cargo-hold-close':closeCargoHold,'cargo-hold-tab':id=>{cargoHoldOpen=false;actions.tab(id);},'dev-tools':devTools,'dev-validate':()=>{const v=debugValidation();message(v.message,!v.ok);devTools();},'dev-copy':copyDebugReport,'dev-link':createDebugLink,'dev-export':exportDebugBundle,'dev-clear-errors':()=>{debugErrors.length=0;message('Debug error log cleared.');devTools();},refuel:refuelShortcut,'fuel-next':()=>setFuelQuantity(false),'fuel-fill':()=>setFuelQuantity(true),'day-back':()=>changeCampaignDay(-1),'day-forward':()=>changeCampaignDay(1),'history-filter':id=>{historyFilter=id;render();},'market-availability':marketAvailabilityAudit,'refill-support':refillSupport,'route-auto':()=>startMapRoute('auto'),'route-build':()=>startMapRoute('build'),'route-cancel':()=>{routeDraft=null;render();},'route-remove':removeMapStop,'route-last':()=>removeMapStop(routeDraft?.stops.length-1),'route-save':saveMapRoute,'route-retry':calculateMapRoute,'route-clear':clearPlannedRoute,'map-world':mapWorld,'map-empty':mapEmpty,report:exportReport,'rounding-preview':roundingPreview,'map-zoom-in':()=>zoomMap(1.2),'map-zoom-out':()=>zoomMap(1/1.2),'map-zoom-reset':()=>zoomMap(1,true),'set-location':setLocation,tab:id=>{if(services.committing())throw Error('Wait for this payment to finish saving.');if(id!=='Overview'){cargoHoldOpen=false;services.close({render:false});}tab=id;render();document.querySelector('#tabs [data-arg="'+id+'"]')?.focus();scheduleMapAreas();},notes,setup,find:findWorld,nearby:()=>{scheduleMapAreas();return refreshNearby();},world:id=>{known[id]=world(id);view=id;mapPan={x:0,y:0};render();scheduleMapAreas();},'browse-prev':()=>{const i=state.route.indexOf(view||state.actual);view=state.route[Math.max(0,i-1)]||state.actual;render();},'browse-next':()=>{const i=state.route.indexOf(view||state.actual);view=state.route[Math.min(state.route.length-1,i+1)]||state.actual;render();},'planet-info':showPlanetInfo,override:overrideWorld,route:plotRoute,jump,search:()=>searchDialog(),'buyer-search':()=>searchDialog('buyer'),buy:buyForm,'offer-edit':editOffer,'offer-audit':commodityAudit,'expire-all':id=>act('Expired all snapshot offers',s=>s.snapshots.find(x=>x.id===id).offers.forEach(o=>o.expired=true)),reject,'sale-edit':()=>editSale?.(),'sale-all':()=>{selected=new Set(state.lots.map(l=>l.id));render();},'sale-clear':()=>{selected.clear();render();},sale:beginSale,'add-lot':existingLot,'lot-correct':correctCargo,'lot-sell':id=>{selected=new Set([id]);beginSale();},'lot-audit':lotAudit,'lot-insure':insureHeldCargo,'policy-audit':policyAudit,claim:claimForm,amend:amendPolicy,'contracts-search':()=>contractSearch(false),'mail-check':()=>contractSearch(true),'mail-audit':mailAudit,'mail-cancel':cancelMail,'contract-manual':manualContract,'contract-accept':accept,'draft-edit':editDraft,'draft-audit':id=>audit('Contract offer',contractDrafts.find(c=>c.offerId===id)),'contract-audit':id=>audit('Contract',state.contracts.find(c=>c.id===id)),deliver,'ship-expenses':()=>tab==='Accounts'?shipExpenses():services.open('expenses'),'expenses-all':selectAllExpenses,'berthing-rate':rollBerthingRate,deposit:depositForm,expense:()=>expenseForm(),'bank-correct':()=>expenseForm(true),'ledger-audit':ledgerAudit,'event-audit':id=>audit('History entry',state.events.find(e=>e.id===id)),'jump-undo':undoJump,undo:undoLatestChange,'settings-edit':settings,time:timeForm,export:()=>{store.backup();message('Backup download requested. Check that the file was saved.');},import:()=>$('import-file').click(),reset:()=>backupReplace('Reset campaign',S.initial())};
+document.addEventListener('click',captureModalClick,true);
+document.addEventListener('keydown',resetModalPointerGesture,true);
 document.addEventListener('click',safely(async e=>{const b=e.target.closest('[data-action]');if(b&&!b.disabled){e.preventDefault();if(await services.action(b.dataset.action,b.dataset.arg,b.dataset.serviceToken))return;const menu=b.closest('#route-menu');if(menu)menu.open=false;await actions[b.dataset.action]?.(b.dataset.arg);}}));
 document.addEventListener('toggle',e=>{if(!e.target.isConnected)return;if(e.target.dataset?.settingsGroup)settingsOpenGroups.set(e.target.dataset.settingsGroup,e.target.open);if(e.target.id==='mail-card')mailPanelOpen=e.target.open;else if(e.target.id==='mail-accepted-details')mailAcceptedDetailsOpen=e.target.open;},true);
 document.addEventListener('toggle',safely(e=>{if(e.target.classList?.contains('covered-payments'))return renderCoveredPayments(e.target);}),true);
