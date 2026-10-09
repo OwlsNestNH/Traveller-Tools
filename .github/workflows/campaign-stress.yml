@@ -1,0 +1,100 @@
+name: Five-trip campaign stress
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'tools/trade-route-calculator/**'
+      - '.github/workflows/campaign-stress.yml'
+permissions:
+  contents: read
+concurrency:
+  group: campaign-stress-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  campaign:
+    name: Campaign Chromium (${{ matrix.scenario }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        scenario: [Theev, Fist, Acis, Fantasy, Homestead, adversarial]
+    defaults:
+      run:
+        shell: bash
+        working-directory: tools/trade-route-calculator
+    env:
+      CI: 'true'
+      TRAVELLER_TEST_URL: http://127.0.0.1:8765/
+      TRAVELLER_COMMIT: ${{ github.event.pull_request.head.sha }}
+      TRAVELLER_ROUTE: ${{ matrix.scenario }}
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22'
+      - name: Check syntax and baseline oracle
+        run: |
+          mkdir -p verification-artifacts
+          test "$(git rev-parse HEAD)" = "$TRAVELLER_COMMIT"
+          git rev-parse HEAD > verification-artifacts/commit.txt
+          node --version > verification-artifacts/runtime.txt
+          for file in verification/campaign-*.mjs verification/fixtures/campaign-baseline.mjs; do node --check "$file"; done
+          node --test verification/campaign-baseline.test.mjs | tee verification-artifacts/baseline.txt
+      - name: Install pinned Playwright and Chromium
+        run: |
+          npm install --prefix "$RUNNER_TEMP/trade-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
+          node "$RUNNER_TEMP/trade-playwright/node_modules/playwright/cli.js" install --with-deps chromium
+          node "$RUNNER_TEMP/trade-playwright/node_modules/playwright/cli.js" --version >> verification-artifacts/runtime.txt
+      - name: Exercise the real rendered UI
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 > verification-artifacts/server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent "$TRAVELLER_TEST_URL" > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent "$TRAVELLER_TEST_URL" > /dev/null
+          suite=campaign-routes-browser
+          if [ "$TRAVELLER_ROUTE" = adversarial ]; then suite=campaign-stress-browser; fi
+          node "verification/$suite.test.mjs" "$RUNNER_TEMP/trade-playwright/node_modules/playwright" | tee verification-artifacts/browser.txt
+      - name: Bound visual/report artifacts below 30 MiB
+        id: bounded_evidence
+        if: always()
+        run: |
+          python3 - <<'PYTHON'
+          from pathlib import Path
+          from shutil import copyfile
+          root = Path('verification-artifacts')
+          out = root / 'compact'
+          out.mkdir(exist_ok=True)
+          for file in root.iterdir():
+              if file.is_file() and file.suffix != '.zip':
+                  copyfile(file, out / file.name)
+          size = sum(p.stat().st_size for p in out.iterdir())
+          assert size < 30 * 1024 * 1024, f'Compact evidence exceeds 30 MiB: {size}'
+          print(f'Compact evidence: {size} bytes')
+          PYTHON
+      - name: Upload compact report and screenshots
+        if: ${{ always() && steps.bounded_evidence.outcome == 'success' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: campaign-${{ matrix.scenario }}-${{ github.event.pull_request.head.sha }}
+          path: tools/trade-route-calculator/verification-artifacts/compact/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload traces separately
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: campaign-traces-${{ matrix.scenario }}-${{ github.event.pull_request.head.sha }}
+          path: tools/trade-route-calculator/verification-artifacts/*-trace.zip
+          if-no-files-found: warn
+          retention-days: 14
