@@ -47,7 +47,7 @@ node verification/run-native.mjs
 
 The native runner discovers every `node:test` suite; do not use `verification/*.test.mjs` with `node --test`, because that also selects the standalone browser scripts.
 
-Pull requests run all native suites, the 198 rules-data checks, the shared tool-visit check, and ten independent deterministic Chromium suites: main application, modal lifecycle, click routing, fuel, empty space, Mail, map overview, GUI parity, Trade buttons, and Settings. See `.github/workflows/mail-browser.yml` at the repository root. Every job verifies the exact PR head and uploads evidence; it has read-only permissions and cannot deploy. Live API availability and the remaining browser scripts are separate checks.
+Pull requests run all native suites, the 198 rules-data checks, the shared tool-visit check, and twelve independent deterministic Chromium suites: main application, modal lifecycle, click routing, fuel, empty space, Mail, map overview, GUI parity, Trade buttons, Settings, insurance lifecycle, and trade complications. See `.github/workflows/mail-browser.yml` at the repository root. Every job verifies the exact PR head and uploads evidence; it has read-only permissions and cannot deploy. Live API availability and the remaining browser scripts are separate checks.
 
 The browser scripts use Playwright only for development testing; it is not an application dependency. With Playwright installed, run:
 
@@ -267,3 +267,28 @@ The native persistence and insurance lifecycle suites cover serialization, stric
 imports, claims, reload and Undo. The real Chromium Settings and fuel suites cover
 blank setup and same-session fuel edits; `verification/insurance-browser.test.mjs`
 covers JSON-file imports and insurance amendment/closure/claim lifecycles.
+
+## Trade complication flags (campaign house rule)
+
+New purchase and sale price quotes inspect their three natural dice before any
+DMs: exactly two matching dice flag **Complication**; three matching dice flag
+**Severe complication** instead. The GM decides the issue and consequences.
+The flag itself changes no price, elapsed time, cargo, insurance or other state.
+It is not a Core Rulebook price-table rule.
+
+Large, bold red **COMPLICATION** / **SEVERE COMPLICATION** warnings appear on
+offer/negotiated sale rows, purchase/sale previews, and Audit.
+Purchases from the same commodity offer keep its one original roll; separate
+cargo lots each negotiate their own sale roll. Cancelling or editing a sale
+retains that buyer's current quote until the campaign changes, as before.
+Local-ban repricing retains the original natural dice and flag; a manual price
+change also retains the flag. A referee-entered roll total has no natural faces,
+so Audit says **Unknown · natural dice not recorded**, never a clean roll.
+
+Versioned quote audits persist through purchase cargo records, sale ledger
+entries, JSON backups, reload and Undo. Historical quotes without this audit
+field say **Not recorded for this quote** and gain no retroactive flags.
+No incident-management or automatic consequences are applied.
+
+Run `node --test verification/trade-complications.test.mjs` and
+`node verification/trade-complications-browser.test.mjs` for the focused checks.

@@ -42,15 +42,15 @@ function domDouble(){
  return {ids,fields:()=>fields,buttons:()=>buttons,dispatch(type,target){for(const listener of listeners.get(type)||[])listener({type,target});},document:{createElement(){return {...element(),getContext(){return {measureText:t=>({width:String(t).length*6})};}};},getElementById:id=>ids.get(id)||null,addEventListener(type,listener){if(!listeners.has(type))listeners.set(type,[]);listeners.get(type).push(listener);},querySelector(){return null;},querySelectorAll(selector){
   if(selector!=='[data-mutate]')return [];
   buttons=[...ids.values()].flatMap(n=>[...(n.innerHTML||'').matchAll(/<button\b([^>]*)>/g)].map(m=>element(attrs(m[1])))).filter(n=>n.hasAttribute('data-mutate'));return buttons;
- }},FormData:class{constructor(){this.values=new Map([...fields].filter(([,n])=>!n.disabled&&n.attributes.type!=='checkbox').map(([k,n])=>[k,n.value]));for(const[k,n]of fields)if(n.attributes.type==='checkbox'&&n.checked)this.values.set(k,'on');}get(k){return this.values.get(k)??null;}has(k){return this.values.has(k);}}};
+ }},FormData:class{constructor(){this.values=new Map([...fields].filter(([,n])=>!n.disabled&&n.attributes.type!=='checkbox').map(([k,n])=>[k,n.value]));for(const[k,n]of fields)if(n.attributes.type==='checkbox'&&n.checked)this.values.set(k,'on');}get(k){return this.values.get(k)??null;}has(k){return this.values.has(k);}[Symbol.iterator](){return this.values[Symbol.iterator]();}}};
 }
 function campaign(){const s=S.initial();s.initialized=true;s.bank='100000';s.actual=origin.id;s.worlds=structuredClone({[origin.id]:origin,[destination.id]:destination,[far.id]:far});s.route=[origin.id,destination.id];s.ship.armed=true;s.trader.rank=2;s.trader.soc=1;return S.validate(s);}
-function harness(saved=campaign()){
- const dom=domDouble(),calls={freight:0,mail:0,saves:0};let persisted=structuredClone(saved),api;
+function harness(saved=campaign(),priceDice=[]){
+ const dom=domDouble(),calls={freight:0,mail:0,saves:0,quotes:0,priceDice:0};let persisted=structuredClone(saved),api;
  const store={editable:true,recovery:false,save(next,expected){if(!this.editable)throw Error('This tab is read-only.');if(persisted.revision!==expected)throw Error('This preview is stale.');S.validate(next);persisted=structuredClone(next);calls.saves++;api.setState(next);api.render();},replace(next,expected){next=structuredClone(S.validate(next));next.revision=expected+1;this.save(next,expected);},read:()=>structuredClone(persisted)};
- const rules={...bindings.R,roll:n=>({dice:Array(n).fill(3),total:n*3}),die:()=>3,freightOffers(...args){calls.freight++;return bindings.R.freightOffers(...args);},mailOffer(...args){calls.mail++;return bindings.R.mailOffer(...args);}};
+ const rules={...bindings.R,quote(...args){calls.quotes++;return bindings.R.quote(...args,()=>{calls.priceDice++;return priceDice.shift()??3;});},roll:n=>({dice:Array(n).fill(3),total:n*3}),die:()=>3,freightOffers(...args){calls.freight++;return bindings.R.freightOffers(...args);},mailOffer(...args){calls.mail++;return bindings.R.mailOffer(...args);}};
  const sandbox={...bindings,R:rules,document:dom.document,window:{addEventListener(){}},crypto:webcrypto,structuredClone,console,FormData:dom.FormData,setTimeout,clearTimeout,requestAnimationFrame:()=>1,cancelAnimationFrame(){}};
- vm.runInContext(executable+`\nglobalThis.api={init(s,c,m,p){state=s;core=c;mp=m;store=p;known={...s.worlds};view=s.actual;tab='Trade';},get state(){return state;},get view(){return view;},setSelected(ids){selected=new Set(ids);},get drafts(){return contractDrafts;},get check(){return mailCheck;},setState(s){receiveCampaign(s);},setDrafts(d){contractDrafts=d;},setView(id){view=id;},searchDialog,beginSale,buyForm,marketPanel,cargoPanel,mailPanel,mailRollSummary,contractsPanel,historyPanel,cancelledMailHistory,contractDetails,contractRolls,historyDetails,historyCategory,contractSearch,updateMailEstimate,accept,deliver,editDraft,closeModal,modal,syncModalSubmit,render,backupReplace,actions};`,vm.createContext(sandbox),{filename:'app.mjs (VM; boot omitted)'});
+ vm.runInContext(executable+`\nglobalThis.api={init(s,c,m,p){state=s;core=c;mp=m;store=p;known={...s.worlds};view=s.actual;tab='Trade';},get state(){return state;},get view(){return view;},setSelected(ids){selected=new Set(ids);},get drafts(){return contractDrafts;},get check(){return mailCheck;},setState(s){receiveCampaign(s);},setDrafts(d){contractDrafts=d;},setView(id){view=id;},get previewSale(){return previewSale;},currentQuote,priceAudit,searchDialog,beginSale,buyForm,marketPanel,cargoPanel,mailPanel,mailRollSummary,contractsPanel,historyPanel,cancelledMailHistory,contractDetails,contractRolls,historyDetails,historyCategory,contractSearch,updateMailEstimate,accept,deliver,editDraft,closeModal,modal,syncModalSubmit,render,backupReplace,actions};`,vm.createContext(sandbox),{filename:'app.mjs (VM; boot omitted)'});
  api=sandbox.api;api.init(structuredClone(saved),core,mp,store);api.render();
  const fill=values=>{for(const[k,v]of Object.entries(values)){const n=dom.fields().get(k);assert.ok(n,`Expected form field ${k}`);if(n.attributes.type==='checkbox')n.checked=Boolean(v);else n.value=String(v);}};
  const submit=()=>dom.ids.get('modal-form').onsubmit({preventDefault(){},currentTarget:dom.ids.get('modal-form')});
@@ -107,4 +107,52 @@ test('recovery submission is inert after editing ownership is lost',async()=>{
  const h=harness(),before=h.persisted();h.api.setView(destination.id);h.api.actions.search();
  h.store.editable=false;h.api.syncModalSubmit();assert.equal(h.dom.ids.get('modal-submit').disabled,true);
  await h.submit();assert.equal(h.api.view,destination.id);same(h.persisted(),before);
+});
+
+
+function tradeCampaign(){
+ const s=campaign();s.bank='1000000';
+ const c=bindings.R.context(origin,core),options={skill:1,counterparty:2,local:false};let n=0;
+ const price=bindings.R.quote(core.commodities[0],c,{...options,side:'buy'},core,()=>[5,5,2][n++]);
+ s.snapshots=[{id:'supplier',kind:'supplier',worldId:origin.id,party:'supplier',partyName:'Supplier',hours:0,startedHours:0,world:c,options,offers:[{id:'paired-offer',commodity:'11',description:'Paired goods',remaining:'6',expired:false,...price}]},{id:'buyer',kind:'buyer',worldId:origin.id,party:'buyer',partyName:'Buyer',hours:0,startedHours:0,success:true,criminal:true,world:c,options,offers:[]}];
+ return S.validate(s);
+}
+const modalText=h=>h.dom.ids.get('modal-body').innerHTML;
+const noError=h=>assert.equal(h.dom.ids.get('modal-error').textContent,'');
+
+test('complication purchase warnings keep one offer roll across cancel, previews, repeated purchases and audits',async()=>{
+ const h=harness(tradeCampaign()),before=h.persisted();
+ assert.match(h.api.marketPanel(),/data-complication="complication"/);
+ h.api.buyForm('paired-offer');assert.match(modalText(h),/GM decides the issue and consequences/);h.api.closeModal();same(h.persisted(),before);
+ for(let i=0;i<2;i++){
+  h.api.buyForm('paired-offer');h.fill({quantity:1});await h.submit();noError(h);assert.match(modalText(h),/data-complication="complication"/);await h.submit();noError(h);
+ }
+ assert.equal(h.calls.priceDice,0);assert.equal(h.persisted().lots.length,2);assert.equal(h.persisted().hours,before.hours);
+ for(const l of h.persisted().lots){assert.equal(l.audit.price.audit.tradeComplication.result,'complication');h.api.actions['lot-audit'](l.id);assert.match(modalText(h),/Trade complication · house rule/);h.api.closeModal();}
+ for(const e of h.persisted().ledger){h.api.actions['ledger-audit'](e.id);assert.match(modalText(h),/data-complication="complication"/);h.api.closeModal();}
+});
+
+test('sale pair and severe flags survive cancel/reopen, quantity/fee edit, local-ban repricing and manual price with no reroll',async()=>{
+ const s=tradeCampaign();s.lots=[{id:'pair',commodity:'11',description:'Pair lot',quantity:'3',basis:'30000',goodsValue:'30000'},{id:'triple',commodity:'11',description:'Triple lot',quantity:'2',basis:'20000',goodsValue:'20000'}];
+ const h=harness(S.validate(s),[5,5,2,5,5,5]),before=h.persisted();h.api.setSelected(['pair','triple']);h.api.beginSale();
+ assert.equal(h.calls.priceDice,6);assert.equal(h.calls.quotes,2);assert.match(modalText(h),/data-complication="complication"/);assert.match(modalText(h),/data-complication="severe"/);same(h.persisted(),before);
+ const original=JSON.parse(JSON.stringify([h.api.currentQuote('pair'),h.api.currentQuote('triple')]));
+ h.api.closeModal();assert.match(h.api.cargoPanel(true),/data-complication="severe"/);h.api.beginSale();assert.equal(h.calls.priceDice,6);
+ h.fill({qty_pair:1,qty_triple:2,ban_pair:2,ban_triple:2,price_triple:12345,reason:'Referee price',fee:5});await h.submit();noError(h);
+ assert.equal(h.dom.ids.get('modal-title').textContent,'Confirm sale');assert.match(modalText(h),/data-complication="complication"/);assert.match(modalText(h),/data-complication="severe"/);
+ const first=JSON.parse(JSON.stringify(h.api.previewSale));
+ for(let i=0;i<2;i++){same(first.lines[i].audit.dice,original[i].audit.dice);same(first.lines[i].audit.tradeComplication,original[i].audit.tradeComplication);assert.equal(first.lines[i].audit.dice.manual,undefined);}
+ assert.equal(first.lines[1].audit.manualPrice,'12345');assert.equal(first.lines[0].audit.sale.localIllegalDM,7);assert.equal(h.calls.priceDice,6);
+ h.api.actions['sale-edit']();noError(h);assert.equal(h.dom.fields().get('ban_pair').value,'2');h.fill({fee:10});await h.submit();noError(h);assert.equal(h.calls.priceDice,6);
+ const edited=JSON.parse(JSON.stringify(h.api.previewSale));await h.submit();noError(h);
+ assert.equal(h.persisted().lots.length,1);assert.equal(h.persisted().lots[0].quantity,'2');assert.equal(h.persisted().hours,before.hours);assert.equal(h.persisted().bank,String(BigInt(before.bank)+BigInt(edited.bankDelta)));
+ for(const e of h.persisted().ledger.filter(e=>e.type==='Sale')){h.api.actions['ledger-audit'](e.id);assert.match(modalText(h),/Trade complication · house rule/);h.api.closeModal();}
+ h.api.actions.undo();same(h.persisted().lots,before.lots);assert.equal(h.persisted().bank,before.bank);assert.equal(h.api.currentQuote('pair'),null,'Campaign change invalidates session quote');
+});
+
+test('legacy and entered-total Audit labels never invent a clean roll or active complication',()=>{
+ const h=harness(tradeCampaign()),audit=h.persisted().snapshots[0].offers[0].audit;
+ delete audit.tradeComplication;const legacy=h.api.priceAudit(audit,'1000','11');assert.match(legacy,/Not recorded for this quote/);assert.doesNotMatch(legacy,/data-complication=/);
+ const manual=bindings.R.quote(core.commodities[0],bindings.R.context(origin,core),{side:'buy',skill:1,rollTotal:15},core);
+ const html=h.api.priceAudit(manual.audit,manual.unitPrice,'11');assert.match(html,/Unknown · natural dice not recorded/);assert.doesNotMatch(html,/data-complication=|None \(no matching dice\)/);
 });
