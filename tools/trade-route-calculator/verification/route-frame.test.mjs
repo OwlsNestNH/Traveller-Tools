@@ -49,6 +49,12 @@ test('frame uses normal content height, thin border, no shadow and the preserved
  assert.equal(8+1+3,12);assert.equal(6+1+2,9);assert.equal(6+1+1,8);
 });
 
+test('long route-planning names wrap in their existing preview without clipping or widening mobile layout',()=>{
+ assert.match(css,/\.navigation-panel \.route-draft\{min-width:0;overflow-wrap:anywhere\}/);
+ assert.match(css,/\.navigation-panel \.route-draft>ol>li\{min-width:0;max-width:100%\}/);
+ assert.doesNotMatch(css.match(/\.navigation-panel \.route-draft\{([^}]+)\}/)?.[1]||'',/overflow:hidden|text-overflow/);
+});
+
 test('public name is consistent while URLs, storage keys, schema and fixture identities remain compatible',async()=>{
  const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
  const catalog=await readFile(new URL('../../../index.html',import.meta.url),'utf8');
