@@ -162,7 +162,7 @@ async function run(stops){
   await closed();await unchanged(method+' dialog dismissal');
  }
  async function invalidExpenses(){
-  await click('ship-expenses');
+  await tab('Accounts');await click('ship-expenses');await page.locator('#modal').waitFor({state:'visible'});
   for(const checkbox of await page.locator('#modal input[name^="include-"]').all())if(await checkbox.isChecked())await checkbox.uncheck();
   assert.equal(await page.locator('#modal-submit').isDisabled(),true,'Invalid replacement expenses cannot submit');
  }

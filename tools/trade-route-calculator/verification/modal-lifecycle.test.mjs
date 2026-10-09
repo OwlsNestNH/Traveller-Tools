@@ -32,7 +32,7 @@ function holdRequest(fail=false){
 }
 async function finish(pending){pending.release();await pending.done;await page.waitForTimeout(100);gate=null;}
 const openLocation=async()=>{await click('Overview');await page.locator('svg [data-arg="-111,-70"]').click();await click('Use as starting world');};
-const invalidExpenses=async()=>{await page.locator('#ship-actions').getByRole('button',{name:'Ship expenses',exact:true}).click();await page.locator('[name="include-berthing"]').uncheck();assert.equal(await page.locator('#modal-submit').isDisabled(),true);};
+const invalidExpenses=async()=>{await click('Accounts');await page.locator('#main').getByRole('button',{name:'Ship expenses',exact:true}).click();await page.locator('[name="include-berthing"]').uncheck();assert.equal(await page.locator('#modal-submit').isDisabled(),true);};
 try{
  await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();
  await click('Set up campaign');await page.locator('#setup-world .picker-selection').getByText(/Hex 1910/).waitFor();await click('Start campaign');await closed();
@@ -54,7 +54,7 @@ try{
  await click('Cancel');await invalidExpenses();await finish(pending);
  assert.equal(await page.locator('#modal-error').textContent(),'');assert.equal(await page.locator('#modal-submit').isDisabled(),true);await click('Cancel');
  // A cancelled route lookup must not reopen its review dialog.
- await click('Plot route');await page.locator('#route-destination').getByLabel('Subsector',{exact:true}).selectOption('C');await page.locator('#route-destination').getByLabel('World',{exact:true}).selectOption('1810');
+ await click('Overview');await click('Plot route');await page.locator('#route-destination').getByLabel('Subsector',{exact:true}).selectOption('C');await page.locator('#route-destination').getByLabel('World',{exact:true}).selectOption('1810');
  pending=holdRequest();await click('Calculate route');await pending.start;await click('Cancel');await invalidExpenses();await finish(pending);
  assert.equal(await page.locator('#modal-title').textContent(),'Ship expenses');assert.equal(await page.locator('#modal-submit').isDisabled(),true);assert.deepEqual(await read(),original);await click('Cancel');
  // Losing the editing lock invalidates an in-flight mutation.
