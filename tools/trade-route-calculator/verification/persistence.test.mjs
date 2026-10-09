@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Store, KEY} from '../js/persistence.mjs';
-import {initial, transition, validate, undo} from '../js/state.mjs';
+import {initial, transition, validate, undo, prepareJump, commitJump, undoJump, jumpUndoEligibility} from '../js/state.mjs';
 
 const tick = () => new Promise(resolve => setImmediate(resolve));
 
@@ -263,4 +263,22 @@ test('already damaged Undo stays in Recovery with its raw history preserved', as
  assert.equal(store.recovery,false);assert.deepEqual(changes.at(-1),store.read());
  assert.deepEqual(store.read().undo,restored.undo,'An explicit valid restore retains its own complete history');
  assert.equal(Object.hasOwn(changes.at(-1).ship,'fuel'),false);
+});
+
+
+test('prepared and spent jump allowances survive real Store.replace revision rebasing and reload', async t => {
+ const env=environment(t),store=env.store();await store.acquire();await tick();
+ const w=x=>({id:x+',0',x,y:0,name:x?'Destination':'Origin',sector:'Test',hex:x?'0201':'0101',uwp:'A788899-C',zone:'Safe'});
+ let source=transition(initial(),'Campaign setup',s=>{s.initialized=true;s.actual='0,0';s.worlds={'0,0':w(0),'1,0':w(1)};s.route=['0,0','1,0'];});
+ const first=prepareJump(source,()=>({dice:[2,2,2,2,2,2],total:12})),prepared=first.state;
+ const committed=transition(prepared,'Jump: Origin → Destination',s=>commitJump(s,{attemptId:first.attempt.id,elapsed:160}));
+ const spent=undoJump(committed),second=prepareJump(spent,()=>({dice:[6,6,6,6,6,6],total:36}));
+ const retried=transition(second.state,'Jump: Origin → Destination',s=>commitJump(s,{attemptId:second.attempt.id,elapsed:184}));
+ for(const exported of [prepared,spent,second.state,retried]){
+  env.values.set(KEY,JSON.stringify(initial()));
+  store.replace(JSON.parse(JSON.stringify(exported)),0);
+  const restored=store.read();assert.equal(restored.revision,1);assert.deepEqual(restored.jumpAttempts,exported.jumpAttempts);assert.deepEqual(restored.events,exported.events);
+  if(restored.actual==='0,0'&&restored.jumpAttempts[0].rolls.length===(restored.jumpAttempts[0].mulliganUsed?2:1))assert.deepEqual(prepareJump(restored,()=>{throw Error('Must reuse imported dice');}).roll,restored.jumpAttempts[0].rolls.at(-1));
+  if(restored.actual==='1,0')assert.equal(jumpUndoEligibility(restored).allowed,false);
+ }
 });

@@ -58,7 +58,8 @@ async function run(stops){
  const click=async(name,arg)=>action(name,arg).filter({visible:true}).first().click();
  const tab=name=>page.locator('#tabs [data-action="tab"][data-arg="'+name+'"]').click();
  const raw=()=>page.evaluate(key=>localStorage.getItem(key),campaignKey);
- const unchanged=async label=>assert.equal(await raw(),fixture.bytes,label+' must not write campaign bytes');
+ let expectedBytes=fixture.bytes;
+ const unchanged=async label=>assert.equal(await raw(),expectedBytes,label+' must not write campaign bytes');
  const frames=()=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
  const closed=()=>page.locator('#modal').waitFor({state:'hidden'});
  async function release(pending){pending.release();await deadline(pending.done,'Gated API response');gate=null;releasePending=()=>{};await frames();}
@@ -251,6 +252,7 @@ async function run(stops){
   await click('world',fixture.state.route.at(-1));
   for(const method of ['Cancel','Close','Escape']){
    await click('jump');
+   if(method==='Cancel'){const prepared=JSON.parse(await raw());assert.equal(prepared.jumpAttempts.length,1);const material=s=>Object.fromEntries(Object.entries(s).filter(([k])=>!['revision','jumpAttempts','events'].includes(k)));assert.deepEqual(material(prepared),material(fixture.state),'Preparing jump saves only its dice and revision');assert.deepEqual(prepared.events.slice(0,-1),fixture.state.events);assert.equal(prepared.events.at(-1).label,'Jump roll prepared');expectedBytes=await raw();}
    assert.equal(await page.locator('#modal-title').textContent(),'Commit jump · '+fixture.state.worlds[fixture.state.actual].name+' → '+fixture.state.worlds[targetId].name);
    assert.equal(await page.locator('#modal-submit').textContent(),'COMMIT JUMP');
    await page.locator('#modal [name="hours"]').fill('160');await dismiss(method);

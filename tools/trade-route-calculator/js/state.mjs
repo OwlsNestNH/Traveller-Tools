@@ -1,5 +1,7 @@
+import {validateJumpAttempts,currentJumpAttempt,lastJump,savedJumpAttempt,departureKey,jumpPreparationBridge} from './jump-attempts.mjs';
+import {distance as jumpDistance} from './map.mjs?v=map-overview-1';
 import {validateMailHistory} from './mail-history.mjs?v=mail-history-1';
-import {bladderSpace,validateFuel,fuelPurchase} from './fuel.mjs?v=bladder-stock-1';
+import {bladderSpace,validateFuel,fuelPurchase,consumeJumpFuel} from './fuel.mjs?v=bladder-stock-1';
 import {validateSupport,refillQuote,consumeSupport} from './life-support.mjs?v=whole-days-1';
 import {up,creditStep,roundExisting} from './rounding.mjs';
 import {validateAccommodation,passengerLuggage,roomCounts} from './accommodation.mjs?v=passenger-input-3';
@@ -8,7 +10,7 @@ import {VERSION,priceLimits} from './rules.mjs?v=price-limits-1';
 import {expenseQuote,starport,berthMultipliers,payableExpenses} from './expenses.mjs?v=fuel-warning-1';
 export const SCHEMA=1;
 export const uid=()=>crypto.randomUUID();
-export function initial(){return {schema:SCHEMA,revision:0,rulesVersion:VERSION,initialized:false,name:'My trading campaign',bank:'0',hours:0,dateLabel:'001-1105',ship:{name:'Independent trader',capacity:'60',staterooms:0,jump:2,scoops:true,armed:false},trader:{broker:0,streetwise:0,admin:0,characteristic:0,rank:0,soc:0},settings:{reducedProfitLimitsEnabled:false,minPurchasePercent:85,maxSalePercent:115,profit:100,tax:false,insurance:false,creditStep:1,maxBaseRetailEnabled:false,maxBaseRetail:'100000',useRawIllegalPrices:false},worlds:{},actual:null,route:[],routeIndex:0,snapshots:[],lots:[],contracts:[],policies:[],ledger:[],cooldowns:{},undo:[],events:[],latestMailCheckId:null};}
+export function initial(){return {schema:SCHEMA,revision:0,rulesVersion:VERSION,initialized:false,name:'My trading campaign',bank:'0',hours:0,dateLabel:'001-1105',ship:{name:'Independent trader',capacity:'60',staterooms:0,jump:2,scoops:true,armed:false},trader:{broker:0,streetwise:0,admin:0,characteristic:0,rank:0,soc:0},settings:{reducedProfitLimitsEnabled:false,minPurchasePercent:85,maxSalePercent:115,profit:100,tax:false,insurance:false,creditStep:1,maxBaseRetailEnabled:false,maxBaseRetail:'100000',useRawIllegalPrices:false},worlds:{},actual:null,route:[],routeIndex:0,snapshots:[],lots:[],contracts:[],policies:[],ledger:[],cooldowns:{},undo:[],events:[],jumpAttempts:[],latestMailCheckId:null};}
 export function used(state){return sum([bladderSpace(state.ship),passengerLuggage(state.ship),...state.lots.map(l=>l.quantity),...state.contracts.filter(c=>c.status==='accepted').map(c=>c.quantity)]);}
 const validId=x=>typeof x==='string'&&/^[A-Za-z0-9_,.:-]{1,100}$/.test(x);
 const record=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
@@ -27,7 +29,7 @@ function validateStructure(s){
  for(const entry of s.undo){
   if(!record(entry)||typeof entry.label!=='string'||!Array.isArray(entry.inverse))throw Error('Invalid undo record');
   for(const op of entry.inverse){
-   if(!record(op)||!Array.isArray(op.path)||!op.path.length||op.path.some(key=>!(typeof key==='string'&&key.length>0||Number.isSafeInteger(key)&&key>=0)||['__proto__','constructor','prototype'].includes(key)))throw Error('Invalid undo path');
+   if(!record(op)||!Array.isArray(op.path)||!op.path.length||op.path[0]==='jumpAttempts'||op.path.some(key=>!(typeof key==='string'&&key.length>0||Number.isSafeInteger(key)&&key>=0)||['__proto__','constructor','prototype'].includes(key)))throw Error('Invalid undo path');
    if(op.remove!==undefined&&op.remove!==true||op.insert!==undefined&&op.insert!==true||op.remove&&op.insert||op.remove&&Object.hasOwn(op,'value')||!op.remove&&(!Object.hasOwn(op,'value')||op.value===undefined))throw Error('Invalid undo operation');
   }
  }
@@ -42,7 +44,7 @@ function validateMailLifecycle(s,c){
   if(c.kind!=='mail'||c.firstDeparture!==null||!Number.isSafeInteger(c.cancelledHours)||c.cancelledHours<0||!record(c.cancellation)||!s.worlds[c.cancellation.world]||!Number.isSafeInteger(c.cancellation.revision)||c.cancellation.revision<1||!['recorded','legacy-undo'].includes(c.cancellation.source)||['payout','deliveredHours','late','penaltyDie'].some(key=>Object.hasOwn(c,key)))throw Error('Invalid mail cancellation record');
  }else if(Object.hasOwn(c,'cancellation')||Object.hasOwn(c,'cancelledHours'))throw Error('Unexpected mail cancellation record');
 }
-export function validate(s){validateStructure(s);if(!s||s.schema!==SCHEMA||s.rulesVersion!==VERSION||!Number.isSafeInteger(s.revision)||s.revision<0)throw Error('Unsupported or invalid campaign format.');for(const key of ['lots','contracts','policies','ledger','snapshots','undo','events','route'])if(!Array.isArray(s[key]))throw Error('Missing campaign '+key);for(const key of ['lots','contracts','policies','ledger','snapshots','events']){const seen=new Set();for(const item of s[key]){if(!validId(item.id)||seen.has(item.id))throw Error('Invalid or duplicate '+key+' ID');seen.add(item.id);}}if(!s.ship||!s.trader||!s.settings||!s.worlds||!s.cooldowns)throw Error('Incomplete campaign');credit(s.bank);validateFuel(s.ship);validateSupport(s.ship);validateAccommodation(s.ship);if(s.ship?.staterooms!==undefined&&(!Number.isSafeInteger(s.ship.staterooms)||s.ship.staterooms<0))throw Error('Staterooms must be a non-negative whole number.');for(const [id,w]of Object.entries(s.worlds)){if(!w||id!==w.id||id!==w.x+','+w.y||!Number.isSafeInteger(w.x)||!Number.isSafeInteger(w.y)||!['Safe','Amber','Red'].includes(w.zone)||typeof w.name!=='string'||typeof w.uwp!=='string'||typeof w.sector!=='string'||!/^\d{4}$/.test(w.hex))throw Error('Invalid world record');}if(s.initialized&&!s.actual)throw Error('Initialized campaign has no actual world');for(const k of ['broker','streetwise','admin','characteristic','rank','soc'])if(!Number.isInteger(s.trader[k]))throw Error('Invalid trader input');if(cmp(s.ship.capacity,0)<0||!Number.isInteger(s.ship.jump)||s.ship.jump<1||s.ship.jump>6)throw Error('Invalid ship capacity or jump rating');if(!Number.isSafeInteger(s.hours)||s.hours<0)throw Error('Invalid campaign hours');if(!Number.isFinite(s.settings.profit)||s.settings.profit<0||s.settings.profit>100)throw Error('Invalid profit setting');Object.assign(s.settings,priceLimits(s.settings));if(typeof s.settings.maxBaseRetailEnabled!=='boolean')s.settings.maxBaseRetailEnabled=false;if(s.settings.maxBaseRetail===undefined)s.settings.maxBaseRetail='100000';if(!Number.isFinite(Number(s.settings.maxBaseRetail))||Number(s.settings.maxBaseRetail)<=0)throw Error('Invalid maximum base retail setting');if(typeof s.settings.useRawIllegalPrices!=='boolean')s.settings.useRawIllegalPrices=false;if(s.actual&&!s.worlds[s.actual])throw Error('Actual world missing');const ids=new Set();for(const l of s.lots){if(!validId(l.id)||!(/^[1-6][1-6]$/).test(l.commodity)||typeof l.description!=='string'||ids.has(l.id)||cmp(l.quantity,0)<=0||credit(l.basis)<0n||credit(l.goodsValue)<0n)throw Error('Invalid cargo lot');ids.add(l.id);}for(const p of s.policies){if(!p.id||!Array.isArray(p.claims)||cmp(p.remainingQuantity,0)<0||credit(p.remainingValue)<0n||cmp(p.initialQuantity,0)<=0||cmp(p.insuredValue,0)<0||!Number.isFinite(p.coverage)||p.coverage<20||p.coverage>100)throw Error('Invalid policy');if(cmp(p.remainingQuantity,0)>0&&!ids.has(p.lotId))throw Error('Active policy has no cargo');const insuredLot=s.lots.find(l=>l.id===p.lotId);if(insuredLot&&cmp(p.remainingQuantity,insuredLot.quantity)>0)throw Error('Policy exceeds remaining cargo');if(![20,30,40,50,60,70,80,90,100].includes(p.coverage)||!['active','closed','arrived','amendment-required'].includes(p.status))throw Error('Invalid insurance terms');}for(const c of s.contracts){if(!['freight','mail'].includes(c.kind)||!['accepted','delivered','cancelled'].includes(c.status)||!s.worlds[c.origin]||cmp(c.quantity,0)<=0||credit(c.payment)<0n||!s.worlds[c.destination]||(c.dueHours!==null&&(!Number.isSafeInteger(c.dueHours)||c.dueHours<0)))throw Error('Invalid contract');validateMailLifecycle(s,c);}if(cmp(used(s),s.ship.capacity)>0)throw Error('Cargo, accepted contracts, passenger luggage and fuel bladders exceed capacity.');for(const entry of s.ledger){credit(entry.amount);if(!Number.isSafeInteger(entry.hours)||entry.hours<0||typeof entry.type!=='string')throw Error('Invalid ledger entry');}for(const event of s.events){if(typeof event.label!=='string'||(event.hours!==undefined&&!Number.isSafeInteger(event.hours)))throw Error('Invalid history event');}validateMailHistory(s);const offerIds=new Set();for(const snap of s.snapshots){if(!Number.isSafeInteger(snap.hours)||!Number.isSafeInteger(snap.startedHours)||snap.hours<0||snap.startedHours<0||!s.worlds[snap.worldId]||!['supplier','buyer'].includes(snap.kind))throw Error('Invalid market snapshot');if(!Array.isArray(snap.offers))throw Error('Invalid market snapshot');for(const o of snap.offers){if(!validId(o.id)||offerIds.has(o.id)||!(/^[1-6][1-6]$/).test(o.commodity)||typeof o.expired!=='boolean'||cmp(o.remaining,0)<0||cmp(o.unitPrice,0)<0)throw Error('Invalid or duplicate market offer');offerIds.add(o.id);}}return s;}
+export function validate(s){validateStructure(s);validateJumpAttempts(s);if(!s||s.schema!==SCHEMA||s.rulesVersion!==VERSION||!Number.isSafeInteger(s.revision)||s.revision<0)throw Error('Unsupported or invalid campaign format.');for(const key of ['lots','contracts','policies','ledger','snapshots','undo','events','route'])if(!Array.isArray(s[key]))throw Error('Missing campaign '+key);for(const key of ['lots','contracts','policies','ledger','snapshots','events']){const seen=new Set();for(const item of s[key]){if(!validId(item.id)||seen.has(item.id))throw Error('Invalid or duplicate '+key+' ID');seen.add(item.id);}}if(!s.ship||!s.trader||!s.settings||!s.worlds||!s.cooldowns)throw Error('Incomplete campaign');credit(s.bank);validateFuel(s.ship);validateSupport(s.ship);validateAccommodation(s.ship);if(s.ship?.staterooms!==undefined&&(!Number.isSafeInteger(s.ship.staterooms)||s.ship.staterooms<0))throw Error('Staterooms must be a non-negative whole number.');for(const [id,w]of Object.entries(s.worlds)){if(!w||id!==w.id||id!==w.x+','+w.y||!Number.isSafeInteger(w.x)||!Number.isSafeInteger(w.y)||!['Safe','Amber','Red'].includes(w.zone)||typeof w.name!=='string'||typeof w.uwp!=='string'||typeof w.sector!=='string'||!/^\d{4}$/.test(w.hex))throw Error('Invalid world record');}if(s.initialized&&!s.actual)throw Error('Initialized campaign has no actual world');for(const k of ['broker','streetwise','admin','characteristic','rank','soc'])if(!Number.isInteger(s.trader[k]))throw Error('Invalid trader input');if(cmp(s.ship.capacity,0)<0||!Number.isInteger(s.ship.jump)||s.ship.jump<1||s.ship.jump>6)throw Error('Invalid ship capacity or jump rating');if(!Number.isSafeInteger(s.hours)||s.hours<0)throw Error('Invalid campaign hours');if(!Number.isFinite(s.settings.profit)||s.settings.profit<0||s.settings.profit>100)throw Error('Invalid profit setting');Object.assign(s.settings,priceLimits(s.settings));if(typeof s.settings.maxBaseRetailEnabled!=='boolean')s.settings.maxBaseRetailEnabled=false;if(s.settings.maxBaseRetail===undefined)s.settings.maxBaseRetail='100000';if(!Number.isFinite(Number(s.settings.maxBaseRetail))||Number(s.settings.maxBaseRetail)<=0)throw Error('Invalid maximum base retail setting');if(typeof s.settings.useRawIllegalPrices!=='boolean')s.settings.useRawIllegalPrices=false;if(s.actual&&!s.worlds[s.actual])throw Error('Actual world missing');const ids=new Set();for(const l of s.lots){if(!validId(l.id)||!(/^[1-6][1-6]$/).test(l.commodity)||typeof l.description!=='string'||ids.has(l.id)||cmp(l.quantity,0)<=0||credit(l.basis)<0n||credit(l.goodsValue)<0n)throw Error('Invalid cargo lot');ids.add(l.id);}for(const p of s.policies){if(!p.id||!Array.isArray(p.claims)||cmp(p.remainingQuantity,0)<0||credit(p.remainingValue)<0n||cmp(p.initialQuantity,0)<=0||cmp(p.insuredValue,0)<0||!Number.isFinite(p.coverage)||p.coverage<20||p.coverage>100)throw Error('Invalid policy');if(cmp(p.remainingQuantity,0)>0&&!ids.has(p.lotId))throw Error('Active policy has no cargo');const insuredLot=s.lots.find(l=>l.id===p.lotId);if(insuredLot&&cmp(p.remainingQuantity,insuredLot.quantity)>0)throw Error('Policy exceeds remaining cargo');if(![20,30,40,50,60,70,80,90,100].includes(p.coverage)||!['active','closed','arrived','amendment-required'].includes(p.status))throw Error('Invalid insurance terms');}for(const c of s.contracts){if(!['freight','mail'].includes(c.kind)||!['accepted','delivered','cancelled'].includes(c.status)||!s.worlds[c.origin]||cmp(c.quantity,0)<=0||credit(c.payment)<0n||!s.worlds[c.destination]||(c.dueHours!==null&&(!Number.isSafeInteger(c.dueHours)||c.dueHours<0)))throw Error('Invalid contract');validateMailLifecycle(s,c);}if(cmp(used(s),s.ship.capacity)>0)throw Error('Cargo, accepted contracts, passenger luggage and fuel bladders exceed capacity.');for(const entry of s.ledger){credit(entry.amount);if(!Number.isSafeInteger(entry.hours)||entry.hours<0||typeof entry.type!=='string')throw Error('Invalid ledger entry');}for(const event of s.events){if(typeof event.label!=='string'||(event.hours!==undefined&&!Number.isSafeInteger(event.hours)))throw Error('Invalid history event');}validateMailHistory(s);const offerIds=new Set();for(const snap of s.snapshots){if(!Number.isSafeInteger(snap.hours)||!Number.isSafeInteger(snap.startedHours)||snap.hours<0||snap.startedHours<0||!s.worlds[snap.worldId]||!['supplier','buyer'].includes(snap.kind))throw Error('Invalid market snapshot');if(!Array.isArray(snap.offers))throw Error('Invalid market snapshot');for(const o of snap.offers){if(!validId(o.id)||offerIds.has(o.id)||!(/^[1-6][1-6]$/).test(o.commodity)||typeof o.expired!=='boolean'||cmp(o.remaining,0)<0||cmp(o.unitPrice,0)<0)throw Error('Invalid or duplicate market offer');offerIds.add(o.id);}}return s;}
 function note(s,type,amount,detail){s.ledger.push({id:uid(),type,amount:String(amount),hours:s.hours,world:s.actual,roundingStep:creditStep(s),...detail});s.bank=String(credit(s.bank)+BigInt(amount));}
 // Inverse changes avoid copying the entire growing ledger into every undo entry.
 function inverseChanges(before,after,path=[],out=[]){
@@ -67,20 +69,71 @@ function applyInverse(state,ops,strict=false){
 export function transition(original,label,action){
  validate(original);
  const s=structuredClone(original),before=structuredClone(original);
- delete before.undo;delete before.events;
+ delete before.undo;delete before.events;delete before.jumpAttempts;
  action(s);
  if(s.ship.lifeSupport&&s.hours>original.hours)consumeSupport(s.ship,s.hours-original.hours);
- const after={...s};delete after.undo;delete after.events;
+ // A later committed change closes the previous jump's mulligan, even if
+ // that later change is subsequently undone. Preparing/cancelling a preview
+ // is not a committed campaign action.
+ const previousJump=lastJump(original),previousAttempt=savedJumpAttempt(s,previousJump);
+ if(previousAttempt){s.jumpAttempts??=[];if(!s.jumpAttempts.some(a=>a.id===previousAttempt.id))s.jumpAttempts.push(previousAttempt);previousAttempt.closed=true;}
+ const after={...s};delete after.undo;delete after.events;delete after.jumpAttempts;
  // Undo describes the JSON campaign that reload/import can actually restore.
  // Optional undefined properties are absent on disk; never emit an undefined
  // value that JSON would strip out of an inverse operation.
  const inverse=inverseChanges(JSON.parse(JSON.stringify(before)),JSON.parse(JSON.stringify(after)));
  s.revision=original.revision+1;
- s.undo.push({id:uid(),label,inverse});
+ const committedJump=lastJump(s);
+ s.undo.push({id:uid(),label,inverse,...(committedJump&&committedJump.id!==previousJump?.id?{jumpEventId:committedJump.eventId}:{})});
  s.events.push({id:uid(),label,hours:s.hours,world:s.actual,revision:s.revision});
  validate(s);return s;
 }
-export function undo(original){if(!original.undo.length)throw Error('Nothing to undo');const entry=original.undo.at(-1);if(!Array.isArray(entry.inverse))throw Error('Unsupported undo record');const s=applyInverse(structuredClone(original),entry.inverse);s.undo=original.undo.slice(0,-1);s.events=[...original.events,{id:uid(),label:'Undo: '+entry.label,hours:original.hours,revision:original.revision+1}];s.revision=original.revision+1;return validate(s);}
+export function jumpUndoEligibility(s){
+ const jump=lastJump(s),entry=s.undo.at(-1),attempt=jump&&savedJumpAttempt(s,jump);
+ if(!jump)return {allowed:false,reason:'No committed jump to undo.'};
+ if(!entry||!(entry.jumpEventId===jump.eventId||!entry.jumpEventId&&entry.label.startsWith('Jump: ')))return {allowed:false,reason:'Undo Jump is unavailable after a later campaign change.'};
+ if(!attempt)return {allowed:false,reason:'This older jump has no complete saved roll. Its existing History Undo remains available.'};
+ if(attempt.mulliganUsed)return {allowed:false,reason:'Mulligan used. This jump cannot be undone again.',attempt,jump};
+ if(attempt.closed)return {allowed:false,reason:'Undo Jump is unavailable after a later campaign change.',attempt,jump};
+ return {allowed:true,reason:'One mulligan: return to the departure world and allow one fresh attempt.',attempt,jump};
+}
+export function prepareJump(original,roll){
+ validate(original);
+ if(!original.actual||!original.worlds[original.route[original.routeIndex+1]])throw Error('Plan a route first');
+ const s=structuredClone(original);s.jumpAttempts??=[];
+ let attempt=currentJumpAttempt(s);
+ if(!attempt){attempt={id:uid(),departure:departureKey(s),from:s.actual,rolls:[roll()],mulliganUsed:false,closed:false};s.jumpAttempts.push(attempt);}
+ else if(attempt.mulliganUsed&&attempt.rolls.length===1)attempt.rolls.push(roll());
+ else return {state:original,attempt,roll:attempt.rolls.at(-1)};
+ s.revision=original.revision+1;
+ s.events.push({id:uid(),label:'Jump roll prepared',preparedRevision:s.revision,jumpAttemptId:attempt.id,mulliganUsed:attempt.mulliganUsed,rollIndex:attempt.rolls.length-1,hours:s.hours,world:s.actual});
+ validate(s);return {state:s,attempt,roll:attempt.rolls.at(-1)};
+}
+export function commitJump(s,{attemptId,elapsed}){
+ const attempt=currentJumpAttempt(s),from=s.worlds[s.actual],to=s.worlds[s.route[s.routeIndex+1]];
+ if(!attempt||attempt.id!==attemptId||!to||attempt.mulliganUsed&&attempt.rolls.length!==2)throw Error('Jump preview is stale. Reopen it before committing.');
+ if(!Number.isSafeInteger(elapsed)||elapsed<0)throw Error('Enter whole nonnegative hours');
+ const distance=jumpDistance(from,to);if(distance>s.ship.jump)throw Error('Route leg exceeds this ship’s jump rating.');
+ const dice=structuredClone(attempt.rolls.at(-1));
+ const event={id:uid(),label:'Jump audit',from:from.id,to:to.id,dice,generatedHours:148+dice.total,effectiveHours:elapsed,hours:s.hours+elapsed,jumpAttemptId:attempt.id,mulliganUsed:attempt.mulliganUsed};
+ recordMailDeparture(s,event);event.fuel=consumeJumpFuel(s.ship,distance);
+ s.actual=to.id;s.routeIndex++;s.hours+=elapsed;s.events.push(event);
+ s.ledger.push({id:uid(),type:'Jump',amount:'0',hours:s.hours,world:to.id,from:from.id,to:to.id,eventId:event.id,reason:from.name+' → '+to.name});
+ for(const p of s.policies.filter(p=>p.status==='active')){const i=p.routeProgress||0;if(p.route?.[i]!==from.id||p.route?.[i+1]!==to.id)p.status='amendment-required';else{p.routeProgress=i+1;if(p.destination===to.id)p.status='arrived';}}
+}
+export function undo(original){
+ validate(original);
+ if(!original.undo.length)throw Error('Nothing to undo');
+ const entry=original.undo.at(-1);if(!Array.isArray(entry.inverse))throw Error('Unsupported undo record');
+ const eligibility=jumpUndoEligibility(original),isJump=entry.jumpEventId||entry.label.startsWith('Jump: '),attempt=isJump?eligibility.attempt:null;
+ if(isJump&&attempt&&!eligibility.allowed)throw Error(eligibility.reason);
+ const s=applyInverse(structuredClone(original),entry.inverse);
+ // The attempt log is deliberately outside all reversible campaign patches.
+ s.jumpAttempts=structuredClone(original.jumpAttempts||[]);
+ if(attempt){let saved=s.jumpAttempts.find(a=>a.id===attempt.id);if(!saved){saved=structuredClone(attempt);s.jumpAttempts.push(saved);}saved.mulliganUsed=true;}
+ s.undo=original.undo.slice(0,-1);s.events=[...original.events,{id:uid(),label:'Undo: '+entry.label,hours:original.hours,revision:original.revision+1,...(attempt?{jumpAttemptId:attempt.id,mulliganUsed:true,reason:'One jump mulligan used; the next attempt gets one fresh roll.'}:{})}];s.revision=original.revision+1;return validate(s);
+}
+export function undoJump(original){const eligible=jumpUndoEligibility(original);if(!eligible.allowed)throw Error(eligible.reason);return undo(original);}
 export function assertWorld(s,world){if(s.actual!==world)throw Error('The ship must be at this world. Browsing does not move it.');}
 function cooldown(s,party){if(party&&(s.cooldowns[party]||0)>s.hours)throw Error('Counterparty is unavailable until hour '+s.cooldowns[party]);}
 export function buy(s,{snapshotId,offerId,quantity,feePercent=0,description,insurance=null}){quantity=String(up(quantity));const snap=s.snapshots.find(x=>x.id===snapshotId),offer=snap?.offers.find(x=>x.id===offerId);if(!offer||offer.expired||offer.manualRequired)throw Error('Offer unavailable');assertWorld(s,snap.worldId);cooldown(s,snap.party);if(cmp(quantity,0)<=0||cmp(quantity,offer.remaining)>0)throw Error('Quantity exceeds available offer');if(cmp(add(used(s),quantity),s.ship.capacity)>0)throw Error('Not enough cargo capacity');if(!Number.isFinite(feePercent)||feePercent<0||feePercent>100)throw Error('Invalid broker fee');const cost=up(mul(quantity,offer.unitPrice),creditStep(s)),fee=up(mul(cost,div(feePercent,100)),creditStep(s)),premium=insurance?credit(insurance.premium):0n,total=cost+fee+premium;if(total>credit(s.bank))throw Error('Insufficient funds');const id=uid();const lot={id,commodity:offer.commodity,description:description||offer.name||offer.commodity,quantity:decimal(quantity),basis:String(total),goodsValue:String(cost),world:s.actual,hours:s.hours,snapshotId,offerId,illegal:!!offer.illegal,audit:{price:structuredClone(offer),fee:String(fee),premium:String(premium),rulesVersion:VERSION}};s.lots.push(lot);offer.remaining=decimal(sub(offer.remaining,quantity));note(s,'Purchase',-cost,{lotId:id,purchase:{commodity:lot.commodity,description:lot.description,quantity:lot.quantity,unitPrice:offer.unitPrice,fee:String(fee),premium:String(premium),priceAudit:structuredClone(offer.audit||{})}});if(fee)note(s,'Broker fee',-fee,{lotId:id});if(insurance){if(!s.settings.insurance)throw Error('Insurance is disabled');if(cmp(insurance.insuredValue,cost)!==0)throw Error('Insurance value must match this purchase’s goods value');if(!s.worlds[insurance.destination])throw Error('Insurance destination is missing');const policy={...insurance,id:uid(),lotId:id,status:'active',remainingQuantity:decimal(quantity),remainingValue:String(cost),claims:[],amendments:[],createdHours:s.hours,initialQuantity:decimal(quantity)};s.policies.push(policy);note(s,'Insurance premium',-premium,{lotId:id,policyId:policy.id});}return id;}
@@ -176,6 +229,7 @@ function legacyMailDeparture(s,id){
     // Imports historically reset the campaign revision without marking the
     // seam. An ambiguous seam after acceptance cannot prove no departure.
     for(let j=index+1;j<actions.length;j++)if(actions[j].revision!==actions[j-1].revision+1){
+     if(jumpPreparationBridge(s,actions[j-1],actions[j]))continue;
      const action=actions[j],proof=s.events[s.events.indexOf(action)-1];
      // A verified legacy cancellation can follow an otherwise invisible import
      // revision reset. Its retained audit proves eligibility at that boundary;
