@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
-import {MAP_GEOMETRY} from '../js/map-geometry.mjs';
+import {MAP_GEOMETRY,setMapGeometry} from '../js/map-geometry.mjs?v=map-first-1';
 import {camera,viewportTiles} from '../js/map-viewport.mjs';
 import {visibleSectors,overviewMarkup} from '../js/map-overview.mjs';
 import {readFile} from 'node:fs/promises';
@@ -37,4 +37,24 @@ test('overview projection and label clipping match exact pre-preparation SVG sna
   const svg=overviewMarkup({...scenario,sectors,catalogs:new Map(catalogs),measure:(text,size)=>text.length*size*.55});
   assert.equal(createHash('sha256').update(svg).digest('hex'),scenario.sha256,JSON.stringify(scenario));
  }
+});
+
+test('expanded Overview geometry drives tile loads, projection and clipping together',()=>{
+ try{
+  assert.equal(setMapGeometry(1000,440),true);
+  assert.deepEqual(MAP_GEOMETRY,{width:1000,height:440,halfWidth:500,halfHeight:220,originX:500,originY:218});
+  for(const anchor of anchors)for(const pan of pans)for(const zoom of [.2,1,2.4]){
+   const tiles=viewportTiles(anchor,pan,zoom),c=camera(anchor,pan,zoom),scale=50*zoom;
+   for(const dx of [-500,500])for(const dy of [-220,220]){
+    const x=c.x+dx/(scale*Math.sqrt(3)/2),y=c.y+dy/scale;
+    assert.ok(tiles.some(t=>Math.abs(x-t.x)<=8&&Math.abs(y-t.y)<=8),'All visible corners have a loaded area tile');
+   }
+  }
+  const sample=golden.scenarios[0];
+  const svg=overviewMarkup({...sample,sectors:golden.sectors,catalogs:new Map(golden.catalogs),measure:(text,size)=>text.length*size*.55});
+  assert.notEqual(createHash('sha256').update(svg).digest('hex'),sample.sha256,'Expanded geometry changes projection or clipping instead of only CSS');
+  assert.equal(setMapGeometry(1000,440),false,'Unchanged resize is a no-op');
+  setMapGeometry(320,440);assert.equal(MAP_GEOMETRY.originX,160);assert.equal(MAP_GEOMETRY.height/50,8.8);
+  assert.throws(()=>setMapGeometry(0,440),/Invalid/);
+ }finally{setMapGeometry(520,320);}
 });

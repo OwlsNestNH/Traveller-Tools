@@ -31,7 +31,7 @@ await context.tracing.start({screenshots:true,snapshots:true,sources:true});
 const page=await context.newPage(),errors=[];page.on('pageerror',error=>errors.push(error.message));
 async function click(name){
  const before=['+','−'].includes(name)?await page.locator('.map-zoom-controls .help').textContent():null;
- await page.getByRole('button',{name,exact:true}).click();
+ await page.getByRole('button',{name:name==='+'?'Zoom in':name==='−'?'Zoom out':name,exact:true}).click();
  // Zoom/reset intentionally paints on requestAnimationFrame. Observe that
  // frame's result before continuing instead of asserting the previous DOM.
  if(name==='Reset view')await page.waitForFunction(()=>document.querySelector('.map-zoom-controls .help')?.textContent==='100%'&&document.querySelector('.map-content')?.getAttribute('transform')==='translate(0 0)');
@@ -41,9 +41,12 @@ const read=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('traveller-trad
 const zoom=()=>page.locator('.map-zoom-controls .help').textContent();
 const level=()=>page.locator('.world-map').getAttribute('data-map-level');
 const transform=()=>page.locator('.map-content').getAttribute('transform');
-async function geometry(height){
- const result=await page.locator('.world-map').evaluate(svg=>({viewBox:svg.getAttribute('viewBox'),width:svg.querySelector(':scope > rect').getAttribute('width'),height:svg.querySelector(':scope > rect').getAttribute('height'),cssHeight:getComputedStyle(svg).height}));
- assert.deepEqual(result,{viewBox:'0 0 520 320',width:'520',height:'320',cssHeight:height+'px'});
+async function geometry(){
+ const result=await page.locator('.world-map').evaluate(svg=>{const v=svg.viewBox.baseVal,b=svg.getBoundingClientRect(),m=svg.getScreenCTM();return {width:v.width,height:v.height,backgroundWidth:Number(svg.querySelector(':scope > rect').getAttribute('width')),backgroundHeight:Number(svg.querySelector(':scope > rect').getAttribute('height')),cssWidth:b.width,cssHeight:b.height,scaleX:m.a,scaleY:m.d};});
+ assert.equal(result.height,440);assert.equal(result.backgroundHeight,440);assert.equal(result.backgroundWidth,result.width);
+ assert.ok(Math.abs(result.scaleX-result.scaleY)<.001,'Viewport does not stretch map geography');
+ assert.ok(Math.abs(result.width/result.height-result.cssWidth/result.cssHeight)<.015,'Logical and displayed map aspects agree');
+ assert.ok(result.cssHeight>=418&&result.cssHeight<=642,'Taller responsive map retains eight to nine rows');
 }
 
 async function reach(target){for(let i=0;i<30&&await zoom()!==target;i++)await click(target==='240%'?'+':'−');assert.equal(await zoom(),target);}

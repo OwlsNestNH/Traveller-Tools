@@ -1,4 +1,4 @@
-import {MAP_GEOMETRY} from './map-geometry.mjs';
+import {MAP_GEOMETRY} from './map-geometry.mjs?v=map-first-1';
 import {camera} from './map-viewport.mjs?v=gui-foundations-1';
 import {territoryMarkup} from './map-territory.mjs';
 

@@ -164,3 +164,11 @@ These are **unexecuted future-GUI checks**. Passing baseline or preparation test
 - [ ] Run all native suites, all rules-data checks and the seven trusted Chromium suites: main application, modal lifecycle, click routing, fuel, empty space, Mail and map overview. Add a focused GUI-parity browser gate and update moved-control selectors while preserving behavior assertions.
 - [ ] Review historical browser scripts before promoting them into CI. `verification/ledger-layout.test.mjs` and `verification/jump-ledger.test.mjs` contain obsolete assumptions about a bank ledger in History; do not restore that old UI merely to satisfy them. Accounts holds financial rows; History holds events. Adapt source-shape/VM tests if rendering is extracted rather than deleting coverage or calling it browser verification.
 - [ ] Record passed, failed and not-run checks for the exact final implementation commit, with responsive screenshots and fixture/export comparisons. Do not mark this checklist complete or the GUI ready for release from preparation-only results.
+
+## Stage 1 implementation scope
+
+The shared status strip and seven-view navigation, Overview-only services/day controls, map-first Overview, Route disclosure, wrapped route chips, original jump/browse controls and compact audited cargo summary are implemented in this slice. The old market and sale panels are reachable in the real Trade view; Cargo and all secondary view content retain their existing workflows.
+
+Geometry is a shared measured descriptor: 440 logical vertical pixels, about 8.8 hex rows at 100%, and width matched to the displayed aspect ratio. Area fetches, culling, projections, clipping and pointer transforms follow it. The original 520×320 descriptor remains the non-Overview module baseline.
+
+Verification for this slice adds the GUI-parity browser job (synthetic campaigns only), alongside all seven existing Chromium jobs. It covers tab/filter/audit byte stability, compact audit missingness, 12/30-stop wrapping, desktop/tablet/narrow/landscape viewports, keyboard route/world/empty-hex controls, modal interruption and ownership transfer. Actual 200% browser zoom is distinct from the suite's reduced-viewport equivalent. The unchecked full matrix above remains the acceptance inventory for the later refit; it is not a claim that every item has been implemented or reverified.
