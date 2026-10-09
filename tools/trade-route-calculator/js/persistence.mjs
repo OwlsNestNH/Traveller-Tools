@@ -1,6 +1,11 @@
-import {initial,validate} from './state.mjs?v=mail-history-1';
+import {initial,validate} from './state.mjs?v=json-undo-1';
 export const KEY='traveller-trade-route-calculator:v1';
 const LOCK=KEY+':writer';
+function serializedCampaign(next){
+ validate(next);
+ const raw=JSON.stringify(next),state=validate(JSON.parse(raw));
+ return {raw,state};
+}
 export class Store{
  constructor(onChange,onRole){this.onChange=onChange;this.onRole=onRole;this.editable=false;this.release=null;this.acquisition=null;this.id=crypto.randomUUID();this.channel=typeof BroadcastChannel==='function'?new BroadcastChannel(KEY):null;this.channel?.addEventListener('message',e=>{if(e.data.type==='takeover'&&e.data.id!==this.id)this.yield();});window.addEventListener('storage',e=>{if(e.key===KEY){this.onChange(this.read());}if(e.key===KEY+':takeover'&&e.newValue!==this.id)this.yield();});}
  read(){const raw=localStorage.getItem(KEY);if(!raw)return initial();let s;try{s=JSON.parse(raw);}catch{throw Error('Saved data could not be read. Export the raw backup before resetting.');}return validate(s);}
@@ -41,7 +46,7 @@ export class Store{
   request?.release?.();
   this.onRole(false,'Read-only: editing transferred to another tab.');
  }
- save(next,expected){if(this.recovery)throw Error('Restore or reset the saved campaign before editing.');if(!this.editable)throw Error('This tab is read-only. Take over editing first.');const current=this.read();if(current.revision!==expected)throw Error('This preview is stale. Reload it before committing.');validate(next);localStorage.setItem(KEY,JSON.stringify(next));this.onChange(next);}
+ save(next,expected){if(this.recovery)throw Error('Restore or reset the saved campaign before editing.');if(!this.editable)throw Error('This tab is read-only. Take over editing first.');const current=this.read();if(current.revision!==expected)throw Error('This preview is stale. Reload it before committing.');const saved=serializedCampaign(next);localStorage.setItem(KEY,saved.raw);this.onChange(saved.state);}
  backup(){const raw=localStorage.getItem(KEY)||JSON.stringify(initial());const url=URL.createObjectURL(new Blob([raw],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='traveller-campaign-'+new Date().toISOString().slice(0,10)+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}
- replace(next,expected){next=structuredClone(validate(next));next.revision=expected+1;if(this.recovery){if(!this.editable)throw Error('Take over editing before restoring');localStorage.setItem(KEY,JSON.stringify(next));this.recovery=false;this.onChange(next);this.onRole(true,'Editing in this tab');}else this.save(next,expected);}
+ replace(next,expected){next=structuredClone(validate(next));next.revision=expected+1;if(this.recovery){if(!this.editable)throw Error('Take over editing before restoring');const saved=serializedCampaign(next);localStorage.setItem(KEY,saved.raw);this.recovery=false;this.onChange(saved.state);this.onRole(true,'Editing in this tab');}else this.save(next,expected);}
 }

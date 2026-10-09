@@ -28,7 +28,7 @@ function validateStructure(s){
   if(!record(entry)||typeof entry.label!=='string'||!Array.isArray(entry.inverse))throw Error('Invalid undo record');
   for(const op of entry.inverse){
    if(!record(op)||!Array.isArray(op.path)||!op.path.length||op.path.some(key=>!(typeof key==='string'&&key.length>0||Number.isSafeInteger(key)&&key>=0)||['__proto__','constructor','prototype'].includes(key)))throw Error('Invalid undo path');
-   if(op.remove!==undefined&&op.remove!==true||op.insert!==undefined&&op.insert!==true||op.remove&&op.insert||op.remove&&Object.hasOwn(op,'value')||!op.remove&&!Object.hasOwn(op,'value'))throw Error('Invalid undo operation');
+   if(op.remove!==undefined&&op.remove!==true||op.insert!==undefined&&op.insert!==true||op.remove&&op.insert||op.remove&&Object.hasOwn(op,'value')||!op.remove&&(!Object.hasOwn(op,'value')||op.value===undefined))throw Error('Invalid undo operation');
   }
  }
 }
@@ -64,7 +64,22 @@ function applyInverse(state,ops,strict=false){
  for(const op of ops){if(!Array.isArray(op.path)||!op.path.length||op.path.some(k=>['__proto__','constructor','prototype'].includes(k)))throw Error('Invalid undo record');let target=state;for(const key of op.path.slice(0,-1)){if(!Object.hasOwn(target,key))throw Error('Undo path missing');target=target[key];}const key=op.path.at(-1);if(strict&&(op.remove&&!Object.hasOwn(target,key)||Array.isArray(target)&&(!Number.isSafeInteger(key)||key<0||key>=target.length&&!(op.insert&&key===target.length))))throw Error('Undo operation does not match saved state');if(op.remove){if(Array.isArray(target))target.splice(key,1);else delete target[key];}else if(op.insert){if(!Array.isArray(target))throw Error('Invalid undo insert');target.splice(key,0,structuredClone(op.value));}else target[key]=structuredClone(op.value);}
  return state;
 }
-export function transition(original,label,action){validate(original);const s=structuredClone(original);const before=structuredClone(original);delete before.undo;delete before.events;action(s);if(s.ship.lifeSupport&&s.hours>original.hours)consumeSupport(s.ship,s.hours-original.hours);const after={...s};delete after.undo;delete after.events;const inverse=inverseChanges(before,after);s.revision=original.revision+1;s.undo.push({id:uid(),label,inverse});s.events.push({id:uid(),label,hours:s.hours,world:s.actual,revision:s.revision});validate(s);return s;}
+export function transition(original,label,action){
+ validate(original);
+ const s=structuredClone(original),before=structuredClone(original);
+ delete before.undo;delete before.events;
+ action(s);
+ if(s.ship.lifeSupport&&s.hours>original.hours)consumeSupport(s.ship,s.hours-original.hours);
+ const after={...s};delete after.undo;delete after.events;
+ // Undo describes the JSON campaign that reload/import can actually restore.
+ // Optional undefined properties are absent on disk; never emit an undefined
+ // value that JSON would strip out of an inverse operation.
+ const inverse=inverseChanges(JSON.parse(JSON.stringify(before)),JSON.parse(JSON.stringify(after)));
+ s.revision=original.revision+1;
+ s.undo.push({id:uid(),label,inverse});
+ s.events.push({id:uid(),label,hours:s.hours,world:s.actual,revision:s.revision});
+ validate(s);return s;
+}
 export function undo(original){if(!original.undo.length)throw Error('Nothing to undo');const entry=original.undo.at(-1);if(!Array.isArray(entry.inverse))throw Error('Unsupported undo record');const s=applyInverse(structuredClone(original),entry.inverse);s.undo=original.undo.slice(0,-1);s.events=[...original.events,{id:uid(),label:'Undo: '+entry.label,hours:original.hours,revision:original.revision+1}];s.revision=original.revision+1;return validate(s);}
 export function assertWorld(s,world){if(s.actual!==world)throw Error('The ship must be at this world. Browsing does not move it.');}
 function cooldown(s,party){if(party&&(s.cooldowns[party]||0)>s.hours)throw Error('Counterparty is unavailable until hour '+s.cooldowns[party]);}

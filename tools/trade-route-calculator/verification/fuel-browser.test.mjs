@@ -22,7 +22,14 @@ const closed=()=>page.locator('#modal').waitFor({state:'hidden'});
 const choose=id=>page.locator('svg [data-action="map-world"][data-arg="'+id+'"]').click();
 const ready=()=>page.getByRole('button',{name:'Save planned route',exact:true}).waitFor({state:'visible'}).then(()=>page.waitForFunction(()=>!document.querySelector('[data-action="route-save"]').disabled));
 try{
- await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();await click('Set up campaign');await page.locator('#setup-world .picker-selection').getByText(/Hex 1910/).waitFor();await fill('shipTons',200);await fill('fuelCapacity',40);await fill('fuelAboard',10);await click('Start campaign');await closed();
+ await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();await click('Set up campaign');await page.locator('#setup-world .picker-selection').getByText(/Hex 1910/).waitFor();await click('Start campaign');await closed();
+ assert.equal(Object.hasOwn((await read()).ship,'fuel'),false,'Blank setup has no serialized fuel property');
+ // Configure without reloading the just-created campaign: this used to create
+ // a value-less inverse operation and poison subsequent saves and reloads.
+ await click('Refuel');await page.getByRole('heading',{name:'Ship, trader & options',exact:true}).waitFor();
+ await fill('shipTons',200);await fill('fuelCapacity',40);await fill('fuelAboard',10);await click('Save');await closed();
+ await click('History');await click('Undo latest change');assert.equal(Object.hasOwn((await read()).ship,'fuel'),false);
+ await click('Overview');await click('Refuel');await fill('shipTons',200);await fill('fuelCapacity',40);await fill('fuelAboard',10);await click('Save');await closed();
  assert.equal((await read()).ship.fuel.displacementTons,200);const initial=await read();
  await click('Auto plot');await choose('-111,-70');await ready();assert.match(await page.locator('#main').textContent(),/Fuel alert/);await click('Save planned route');await click('Save route');await closed();
  await page.locator('[data-action="jump"]').click();assert.match(await page.locator('#modal-body').textContent(),/Insufficient fuel/);await click('COMMIT JUMP');await closed();assert.equal((await read()).ship.fuel.aboardTons,0);await click('History');await click('Undo latest change');await click('Overview');assert.equal((await read()).ship.fuel.aboardTons,10);

@@ -322,6 +322,46 @@ try{
   await h.finish(String(size.width));
   console.log(`PASS: ${size.width}px exact 42-field parity, compact controls, draft/revert, validation/reveal/focus, atomic save/reload/Undo, partial-day stock and editing locks.`);
  }
+ // Same-session blank saves must not produce undefined inverse values that
+ // only become invalid when the campaign reaches localStorage or an export.
+ for(const size of [{width:1440,height:1100},{width:390,height:844}]){
+  const h=await start(size,{untrackedFuel:true}),{page,read,tab,set,field}=h;
+  await tab('Settings');
+  for(const name of ['shipTons','fuelCapacity','fuelAboard'])assert.equal(await field(name).inputValue(),'');
+  const save=async()=>{
+   const revision=(await read()).revision;
+   await page.locator('#settings-save').click();
+   await page.waitForFunction(({key,revision})=>JSON.parse(localStorage.getItem(key)).revision===revision+1,{key:campaignKey,revision});
+   const state=await read();validate(state);return state;
+  };
+  const blank=await save();assert.equal(Object.hasOwn(blank.ship,'fuel'),false);
+  await set('shipTons','200');await set('fuelCapacity','40');await set('fuelAboard','20');
+  const configured=await save();assert.deepEqual(configured.ship.fuel,configureFuel(200,40,20,0,2));
+  assert.ok(configured.undo.at(-1).inverse.some(op=>op.path.join('.')==='ship.fuel'&&op.remove===true),'First configuration undoes to absent fuel');
+  // A further save catches the previously poisoned Store.read before reload.
+  await set('name','Fuel history stays editable');const edited=await save();
+  await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();
+  assert.equal((await read()).name,edited.name);
+  await tab('History');await page.locator('#main [data-action="undo"]').click();
+  assert.equal((await read()).name,configured.name);
+  await page.locator('#main [data-action="undo"]').click();
+  assert.deepEqual((await read()).ship,blank.ship,'Undo after reload restores the complete blank-fuel ship');
+  await tab('Settings');
+  await set('shipTons','200');await set('fuelCapacity','40');await set('fuelAboard','20');
+  const restored=await save();
+  for(const name of ['shipTons','fuelCapacity','fuelAboard'])await set(name,'');
+  const cleared=await save();assert.equal(Object.hasOwn(cleared.ship,'fuel'),false);
+  await set('shipTons','200');await set('fuelCapacity','40');await set('fuelAboard','30');
+  await save();
+  await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();
+  await tab('History');await page.locator('#main [data-action="undo"]').click();
+  assert.deepEqual((await read()).ship,cleared.ship);
+  await page.locator('#main [data-action="undo"]').click();
+  const undone=await read();assert.deepEqual(undone.ship,restored.ship);
+  for(const key of ['bank','hours','lots','contracts','policies','ledger'])assert.deepEqual(undone[key],blank[key],'Fuel edits and Undo preserve '+key);
+  await h.finish('fuel-history-'+size.width);
+  console.log(`PASS: ${size.width}px blank fuel save/configure, further edit, reload, clear/reconfigure and complete Undo.`);
+ }
  // The pre-existing modal is still needed by unconfigured refuelling. It must
  // use the same commit semantics without duplicate inline-form IDs or fields.
  const fallback=await start({width:1440,height:1100},{untrackedFuel:true});

@@ -244,3 +244,26 @@ rounding preview and reset actions retain their existing confirmation flows.
 Run `node verification/settings-browser.test.mjs` for the deterministic 42-field
 inventory, desktop/mobile layout, controls, persistence, Undo, validation, read-only
 ownership and cancellation checks.
+
+## JSON-safe Undo and imported insurance histories
+
+Saving blank fuel settings, then configuring or clearing/reconfiguring fuel in the
+same session, now records Undo against the JSON form of the campaign. Optional
+undefined properties are treated as absent, and every saved/restored campaign is
+validated again after JSON serialization before its bytes replace the saved copy.
+The running campaign receives that same validated serialized state.
+
+Existing valid schema-1 saves keep their history and remain compatible. An already
+invalid backup with a missing Undo value still opens Recovery and its raw bytes
+are preserved for export; this update does not guess missing values or discard
+history. Export the raw backup before choosing a valid restore or reset.
+
+Imported policies may omit the optional amendment-history array. An approved
+amendment or closure starts that history when necessary; malformed histories still
+fail import validation, and Undo restores the original omitted field. Premiums,
+claims, taxes and profit calculations are unchanged.
+
+The native persistence and insurance lifecycle suites cover serialization, strict
+imports, claims, reload and Undo. The real Chromium Settings and fuel suites cover
+blank setup and same-session fuel edits; `verification/insurance-browser.test.mjs`
+covers JSON-file imports and insurance amendment/closure/claim lifecycles.
