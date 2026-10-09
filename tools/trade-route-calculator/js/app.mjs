@@ -86,17 +86,21 @@ function normaliseFields(form){for(const el of form.querySelectorAll('[data-roun
 function roundingPreview(){const draft=structuredClone(state),changes=roundExisting(draft);let error='';try{S.validate(draft);}catch(e){error=e.message;}modal('Preview rounding',`<p>Round current bank, cargo quantities and values, cargo capacity, luggage, market offers, accepted contracts and saved monthly costs. Future Credit entries and charges will round up to Cr100. Historical transactions, insurance contract terms and original audits stay unchanged.</p>${table(['Value','Before','After'],changes.map(c=>`<tr><td>${esc(c.label)}</td><td class="number">${esc(c.before)}</td><td class="number">${esc(c.after)}</td></tr>`))}${roundingFootnote([],100)}${error?'<p class="notice">Cannot apply: '+esc(error)+' Adjust cargo or capacity first.</p>':'<p>One undo restores all these changes.</p>'}`,error?null:()=>act('Round Credits to 100 and tons to whole',s=>S.applyRounding(s)),'Apply rounding',true,{annotateRounding:false});}
 let activeModal=null;
 let suspendedSettings=null;
-let modalPointerClick=null,modalDismissedClick=null;
-function resetModalPointerGesture(){modalPointerClick=null;modalDismissedClick=null;}
+let modalPointerClick=null,modalTransitionClick=null;
+function resetModalPointerGesture(){modalPointerClick=null;modalTransitionClick=null;}
+function preserveModalPointerGesture(){
+ const previous=modalPointerClick||modalTransitionClick,now=Date.now();
+ modalTransitionClick=previous&&now>=previous.at&&now-previous.at<=750?previous:null;modalPointerClick=null;
+}
 function captureModalClick(e){
- const dialog=$('modal'),now=Date.now(),previous=modalDismissedClick;
- // A confirmation can disappear between the two clicks of one double-click.
- // Consume only the remainder of that same pointer gesture, not fresh clicks
- // or repeated controls elsewhere in the application.
- if(previous&&!dialog.open&&e.detail>1&&e.button===previous.button&&e.pointerId===previous.pointerId&&now>=previous.at&&now-previous.at<=750&&Math.abs(e.clientX-previous.x)<=4&&Math.abs(e.clientY-previous.y)<=4){
+ const dialog=$('modal'),now=Date.now(),previous=modalTransitionClick;
+ // One double-click must not cross into a replacement confirmation or the
+ // underlying page. Fresh clicks, keyboard actions and ordinary repeated
+ // controls remain available; only the original pointer gesture is consumed.
+ if(previous&&e.detail>1&&e.button===previous.button&&e.pointerId===previous.pointerId&&now>=previous.at&&now-previous.at<=750&&Math.abs(e.clientX-previous.x)<=4&&Math.abs(e.clientY-previous.y)<=4){
   e.preventDefault();e.stopImmediatePropagation();return true;
  }
- modalDismissedClick=null;
+ modalTransitionClick=null;
  const button=e.target.closest?.('button');
  modalPointerClick=dialog.open&&e.detail>0&&e.button===0&&['modal-submit','modal-cancel','modal-close'].includes(button?.id)&&dialog.contains(button)?{at:now,x:e.clientX,y:e.clientY,button:e.button,pointerId:e.pointerId}:null;
  return false;
@@ -109,10 +113,10 @@ function syncModalSubmit(){
  const session=activeModal;if(!session)return;
  $('modal-submit').disabled=session.busy||!session.valid||session.cancelled||(session.mutates&&!store?.editable);
 }
-function closeModal(){modalDismissedClick=modalPointerClick&&Date.now()-modalPointerClick.at<=750?modalPointerClick:null;modalPointerClick=null;activeModal=null;modalGeneration++;$('modal').close();$('modal-body').innerHTML='';restoreSettingsForm();}
+function closeModal(){preserveModalPointerGesture();activeModal=null;modalGeneration++;$('modal').close();$('modal-body').innerHTML='';restoreSettingsForm();}
 // Display titles are presentation only. Callers declare review/footnote behavior.
 function modal(title,body,submit,label='Save',mutates=true,{retainRounding=false,insurance=false,tax=false,annotateRounding=true}={}){
- resetModalPointerGesture();
+ if($('modal').open)preserveModalPointerGesture();else resetModalPointerGesture();
  suspendSettingsForm();
  if(!retainRounding)inputRounding=[];
  if(insurance)body+=optionalRuleFootnote('insurance');if(tax)body+=optionalRuleFootnote('tax');modalGeneration++;modalRevision=state.revision;
