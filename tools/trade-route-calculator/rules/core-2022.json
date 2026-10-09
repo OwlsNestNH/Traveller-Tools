@@ -7,7 +7,10 @@
     "title": "Traveller Core Rulebook Update 2022",
     "revision": "Copyright 2024",
     "pages": [
+      154,
       157,
+      158,
+      238,
       239,
       240,
       241,
@@ -19,7 +22,7 @@
       260
     ]
   },
-  "scope": "Verified source/data for V1 commodity trading, freight/mail, jump duration and locally derived trade codes. Runtime test results are tracked separately.",
+  "scope": "Verified source/data for commodity trading, freight/mail, passenger availability and fares, jump duration and locally derived trade codes. Runtime checks are tracked separately; passenger payment timing and campaign overrides are documented.",
   "commodities": [
     {
       "id": "11",
@@ -1690,5 +1693,128 @@
     "reviewer": "Codex",
     "record": "../RULES_VERIFICATION.md",
     "scope": "Source/data and independent expected calculations; application testing separate"
+  },
+  "passengers": {
+    "dataVersion": "passengers-1",
+    "sourcePages": [
+      154,
+      158,
+      238,
+      239
+    ],
+    "classOrder": [
+      "low",
+      "basic",
+      "middle",
+      "high"
+    ],
+    "fareCreditsByParsecs": {
+      "high": [
+        9000,
+        14000,
+        21000,
+        34000,
+        60000,
+        210000
+      ],
+      "middle": [
+        6500,
+        10000,
+        14000,
+        23000,
+        40000,
+        130000
+      ],
+      "basic": [
+        2000,
+        3000,
+        5000,
+        8000,
+        14000,
+        55000
+      ],
+      "low": [
+        700,
+        1300,
+        2200,
+        3900,
+        7200,
+        27000
+      ]
+    },
+    "classDM": {
+      "high": -4,
+      "middle": 0,
+      "basic": 0,
+      "low": 1
+    },
+    "endpointDM": {
+      "population": [
+        {
+          "max": 1,
+          "dm": -4
+        },
+        {
+          "min": 6,
+          "max": 7,
+          "dm": 1
+        },
+        {
+          "min": 8,
+          "dm": 3
+        }
+      ],
+      "starport": {
+        "A": 2,
+        "B": 1,
+        "E": -1,
+        "X": -3
+      },
+      "zone": {
+        "Safe": 0,
+        "Amber": 1,
+        "Red": -4
+      }
+    },
+    "trafficCountDice": [
+      0,
+      1,
+      1,
+      2,
+      2,
+      2,
+      3,
+      3,
+      3,
+      3,
+      4,
+      4,
+      4,
+      5,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "rawBaggageTons": {
+      "high": "1",
+      "middle": "0.1",
+      "basic": "0.01",
+      "low": "0.01"
+    },
+    "campaignBaggageTons": {
+      "high": "1",
+      "middle": "0",
+      "basic": "0.01",
+      "low": "0.01"
+    },
+    "notes": [
+      "Fares are per person for a single jump.",
+      "Payment on explicit delivery is an app convention.",
+      "Campaign Middle baggage is zero; High is one ton. Existing total baggage overrides remain authoritative.",
+      "High double occupancy remains an explicit campaign allocation; cabin and person charges remain separate."
+    ]
   }
 }

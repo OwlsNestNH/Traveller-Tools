@@ -1,9 +1,10 @@
+import {passengerShip} from './passengers.mjs?v=passenger-contracts-20261009-27';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=stable-service-panels-20261009-26';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=mfd-services-1';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=stable-service-panels-20261009-26';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=stable-service-panels-20261009-26';
-import {creditStep} from './rounding.mjs';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=passenger-contracts-20261009-27';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=passenger-contracts-20261009-27';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=passenger-contracts-20261009-27';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=passenger-contracts-20261009-27';
+import {creditStep} from './rounding.mjs?v=passenger-contracts-20261009-27';
 import {roll} from './rules.mjs';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -17,7 +18,7 @@ const field=(name,label,value,extra='')=>`<label class="field">${esc(label)}<inp
 // MonthlySupport is the existing cabin/person billing calculator. A missing
 // complement is unknown, even if the legacy billing helper could return zero.
 export function expenseOverview(state){
- const ship=state.ship,rows=[];
+ const ship=passengerShip(state),rows=[];
  for(const kind of ['mortgage','maintenance']){
   const value=ship[kind],complete=kind==='mortgage'&&value?.remainingPayments===0;
   rows.push({kind,label:labels[kind],amount:value?(complete?'0':value.payment):null,due:!value?'Not configured':complete?'All payments paid':value.nextDueDate});

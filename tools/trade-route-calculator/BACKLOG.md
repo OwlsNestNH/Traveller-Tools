@@ -6,7 +6,7 @@ These ideas are outside locked V1 scope. They are candidates for later design, n
 
 | Idea | Later scope / design needed |
 | --- | --- |
-| Passengers | Availability, passage classes, stateroom/low-berth capacity, life support, bookings, delivery, and payments. Explicitly excluded from V1. |
+| Passengers | Implemented in the passenger-contract extension: availability, four classes, reviewed capacity, derived occupancy/LSS, explicit delivery/payment, audit and Undo. Exact-head browser/release verification is tracked in RULES_VERIFICATION.md. |
 | More route modes | Profit-oriented, least-distance as a primary objective, safest, fuel-cost optimization, circuit/loop routes, and comparisons. V1 already includes automatic Fewest jumps using the configured ship rating, editable mandatory stops, nonblocking fuel-availability warnings, and longer legs first when jump counts tie. |
 | Full ship economics | Automated fuel quantities/consumption and cost, maintenance, mortgages, crew pay, life support, and recurring port/operating expenses. Current campaigns support explicit expenses and optional jump-fuel tracking; fuel supply and stock warnings do not block travel. |
 | Saved trader profiles | Reusable named trader/crew/broker configurations and switching among profiles. V1 retains the active trader state. |

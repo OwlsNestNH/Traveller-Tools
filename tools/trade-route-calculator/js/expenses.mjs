@@ -1,9 +1,9 @@
-import {maintenancePaymentQuote,MAINTENANCE_REFERENCE} from './maintenance.mjs?v=stable-service-panels-20261009-26';
-import {mortgagePaymentQuote,MORTGAGE_REFERENCE} from './mortgage.mjs?v=stable-service-panels-20261009-26';
+import {maintenancePaymentQuote,MAINTENANCE_REFERENCE} from './maintenance.mjs?v=passenger-contracts-20261009-27';
+import {mortgagePaymentQuote,MORTGAGE_REFERENCE} from './mortgage.mjs?v=passenger-contracts-20261009-27';
 import {fuelPurchase,fuelReference} from './fuel.mjs?v=fuel-warning-1';
-import {up} from './rounding.mjs';
+import {up} from './rounding.mjs?v=passenger-contracts-20261009-27';
 import * as A from './amounts.mjs';
-import {monthlyRates,serviceRate,serviceLabel,personMonthlyRate,personRate} from './accommodation.mjs?v=passenger-input-3';
+import {monthlyRates,serviceRate,serviceLabel,personMonthlyRate,personRate} from './accommodation.mjs?v=passenger-contracts-20261009-27';
 
 export const berthMultipliers={A:1000,B:500,C:100,D:10,E:0,X:0};
 export function starport(world){return (world.overrideUWP||world.uwp).slice(0,1).toUpperCase();}
@@ -88,6 +88,7 @@ export function expenseQuote(world,input){
     const n=people(input[role]?.[tier],role+' · '+tier);totalPeople+=n;monthly+=BigInt(n)*BigInt(rate);
     details.push([(role==='crew'?'Crew':'Passengers')+' / '+tier,String(n)+' x Cr'+rate+' / month / selected service level']);
    }
+   const low=people(input.bookedLowBerths,'Booked Low passengers');monthly+=BigInt(low)*100n;totalPeople+=low;if(low)details.push(['Booked frozen Low passengers',String(low)+' x Cr100 / month / Core p.154']);
    if(!totalPeople)throw Error('Enter at least one passenger or crew member.');
   }
   unrounded=A.decimal(A.rat(monthly*BigInt(units),divisor));amount=String(up(unrounded,input.creditStep||1));

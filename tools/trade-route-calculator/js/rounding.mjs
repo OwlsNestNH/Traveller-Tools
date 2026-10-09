@@ -11,7 +11,7 @@ export function roundExisting(s){
  for(const [tier,service]of Object.entries(s.ship.accommodation?.roomService||{}))if(service.level==='custom')set(service,'monthly',100,tier+' stateroom custom monthly cost');
  for(const l of s.lots){set(l,'quantity',1,l.description+' · tons');set(l,'basis',100,l.description+' · cost basis');set(l,'goodsValue',100,l.description+' · goods value');}
  for(const snap of s.snapshots)for(const o of snap.offers||[]){set(o,'remaining',1,(o.description||o.commodity)+' offer · remaining tons');set(o,'unitPrice',100,(o.description||o.commodity)+' offer · Cr/ton');}
- for(const c of s.contracts.filter(c=>c.status==='accepted')){set(c,'quantity',1,(c.description||c.kind)+' · tons');set(c,'payment',100,(c.description||c.kind)+' · payment');}
+ for(const c of s.contracts.filter(c=>c.status==='accepted'&&c.kind!=='passenger')){set(c,'quantity',1,(c.description||c.kind)+' · tons');set(c,'payment',100,(c.description||c.kind)+' · payment');}
  // Insurance terms/claims and original transaction audits are historical contracts, not editable balances.
  s.ship.roundTons=true;s.settings.creditStep=100;
  return changes;

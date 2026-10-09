@@ -1,6 +1,7 @@
-import {tiers,roomCounts,serviceRate,occupants,personRate} from './accommodation.mjs?v=passenger-input-3';
+import {passengerShip} from './passengers.mjs?v=passenger-contracts-20261009-27';
+import {tiers,roomCounts,serviceRate,occupants,personRate} from './accommodation.mjs?v=passenger-contracts-20261009-27';
 import {add,sub,mul,div,cmp,dec,rat,decimal,auditNumber,credit,floor} from './amounts.mjs';
-import {up,creditStep} from './rounding.mjs';
+import {up,creditStep} from './rounding.mjs?v=passenger-contracts-20261009-27';
 
 export const supportReference='Cluster Truck, p. 14: awake occupants consume 1 LSS per day; occupied low berths consume 0.1. Internal storage holds 4 LSS per displacement ton; overflow uses 0.01 cargo tons per LSS.';
 export const extraSupportReference='Home rule: extra supplies cost Cr1,000 per person-equivalent per 28 days. An occupied low berth counts as 0.1 person-equivalent. Round the combined extra charge up once to Cr100.';
@@ -47,7 +48,7 @@ export function validateSupport(ship){
  if(x.elapsedHours!==undefined&&(!Number.isSafeInteger(x.elapsedHours)||x.elapsedHours<0||x.elapsedHours>=24||x.remainingHours%24!==0||x.capacityHours%24!==0))throw Error('Invalid legacy whole-day life support stock.');
  if(x.migrationRequired!==undefined&&x.migrationRequired!==true)throw Error('Invalid life support migration marker.');
 }
-export function monthlySupport(ship){const a=occupants(ship),rooms=roomCounts(ship);return tiers.reduce((n,t)=>n+BigInt(rooms[t]??0)*BigInt(serviceRate(t,ship.accommodation?.roomService?.[t]))+BigInt((a.passengers?.[t]??0)+(a.crew?.[t]??0))*BigInt(personRate(t)),0n);}
+export function monthlySupport(ship){const a=occupants(ship),rooms=roomCounts(ship);return tiers.reduce((n,t)=>n+BigInt(rooms[t]??0)*BigInt(serviceRate(t,ship.accommodation?.roomService?.[t]))+BigInt((a.passengers?.[t]??0)+(a.crew?.[t]??0))*BigInt(personRate(t)),0n)+BigInt(ship.accommodation?.bookedLowSupport??0)*100n;}
 function legacyHours(x){return Math.max(0,x.remainingHours-(x.elapsedHours??0));}
 export function supportMigration(ship){
  const x=ship.lifeSupport,c=supportComplement(ship);
@@ -87,9 +88,9 @@ export function supportStock(ship){
 }
 // Called only inside an undoable transition, before the action can change the
 // complement. Never normalize legacy saves in validate, load, import or Undo.
-export function anchorSupport(ship){
+export function anchorSupport(ship,{complementShip=ship}={}){
  const x=ship.lifeSupport;if(!x||x.stockUnits!==undefined)return;
- const units=unitsOf(ship);
+ const units=unitsOf(complementShip);
  if(units===null){x.migrationRequired=true;return;}
  ship.lifeSupport={capacityHours:x.capacityHours,stockUnits:auditNumber(units)};
 }
@@ -112,12 +113,13 @@ export function configureSupport(ship,{targetDays=ship.lifeSupport?supportDispla
 export function consumeSupport(ship,hours,{complementShip=ship}={}){
  if(!Number.isSafeInteger(hours)||hours<0)throw Error('Life support consumption needs non-negative whole hours.');
  if(!ship.lifeSupport)return;
- anchorSupport(ship);
+ anchorSupport(ship,{complementShip});
  if(ship.lifeSupport.stockUnits===undefined)return; // Unknown legacy quantity is preserved, never invented.
  const c=supportComplement(complementShip);if(!c.known)return;
  ship.lifeSupport.stockUnits=auditNumber(maxZero(sub(supportAmount(ship.lifeSupport.stockUnits),mul(c.dailyUnits,div(hours,24)))));
 }
 export function refillQuote(s,{extraDays='0',comfortCost='0',comfortNote=''}={}){
+ s={...s,ship:passengerShip(s)};
  validateSupport(s.ship);const x=s.ship.lifeSupport;if(!x)throw Error('Set life support supplies first.');
  const stock=unitsOf(s.ship),c=supportComplement(s.ship),internalCapacity=supportInternalCapacity(s.ship);
  if(stock===null)throw Error(supportMigration(s.ship).reason);

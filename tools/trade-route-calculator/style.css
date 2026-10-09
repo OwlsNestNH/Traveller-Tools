@@ -353,3 +353,7 @@ main{padding-top:18px}
 .fuel-inline .service-current button{min-height:36px;font-size:.76rem;padding:.3rem .4rem;border:1px solid var(--line);border-radius:4px}
 #fuel-custom-fields[hidden],#fuel-purchase-fields[hidden],#fuel-availability[hidden]{display:none}
 @media(max-width:700px){.fuel-inline .service-actions{position:static}.fuel-inline .service-total{grid-template-columns:minmax(0,1fr)}.fuel-inline .service-total strong{font-size:1.5rem}.fuel-inline .service-total small{grid-column:1}}
+
+/* Passenger contracts keep people distinct from cargo-ton columns. */
+.passenger-panel .panel-body{padding:12px}.passenger-panel .panel-head{flex-wrap:wrap;gap:8px}.passenger-offers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}.passenger-offer{border:1px solid var(--line,#365064);border-radius:6px;padding:12px;min-width:0}.passenger-offer h3{margin-top:0}.passenger-offer .row{flex-wrap:wrap}.passenger-facts{display:grid;grid-template-columns:minmax(140px,1fr) minmax(0,2fr);gap:6px 16px}.passenger-facts dt,.passenger-facts dd{margin:0;overflow-wrap:anywhere}.passenger-facts dd{font-variant-numeric:tabular-nums}.passenger-summary{font-weight:700}.passenger-panel details{margin:10px 0}.passenger-panel table{min-width:760px}
+@media(max-width:900px){.passenger-offers{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.passenger-offers{grid-template-columns:1fr}.passenger-facts{grid-template-columns:minmax(0,1fr);gap:3px}.passenger-facts dd{margin-bottom:8px}}
