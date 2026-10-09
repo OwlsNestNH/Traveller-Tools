@@ -67,7 +67,9 @@ try{
   assert.equal(await page.locator('#service-form').count(),0,'Summary opens before editing');
   assert.equal(await page.locator('.world-screen:not(#service-panel)').count(),0,'Service replaces the world screen');
   assert.match(await page.locator('#service-panel').textContent(),/Actual Service Harbor/);
-  for(const name of ['jump','day-back','day-forward','ship-expenses','port-costs'])assert.equal(await action(name).isDisabled(),true,name+' is frozen while a draft is open');
+  for(const name of ['jump','day-back','day-forward'])assert.equal(await action(name).isDisabled(),true,name+' is frozen while a draft is open');
+  for(const name of ['refuel','refill-support','ship-expenses'])assert.equal(await action(name).isEnabled(),true,name+' remains available for direct navigation');
+  assert.equal(await page.locator('#ship-actions [data-action="port-costs"]').count(),0);
   await click('service-adjust');assert.equal(await field('fuelTons').inputValue(),'23','Odd tank top-off is exact');
   await click('service-fuel-step','10');assert.equal(await field('fuelTons').inputValue(),'23','+10 clamps at 23 free tons');
   for(const expected of ['13','3','0']){await click('service-fuel-step','-10');assert.equal(await field('fuelTons').inputValue(),expected);}
@@ -86,7 +88,6 @@ try{
   await click('map-zoom-in');await frames();await page.getByLabel('Show UWP',{exact:true}).uncheck();await page.getByLabel('Political territory',{exact:true}).uncheck();
   const response=page.waitForResponse(r=>new URL(r.url()).pathname.endsWith('/jumpworlds'));
   await click('nearby');await response;await frames();assert.deepEqual(await draft(),expected,'Zoom, map options and nearby refresh retain draft');
-  await click('tab','Accounts');assert.equal(await action('deposit').isDisabled(),true,'Browsing Accounts cannot mutate a frozen service session');await click('tab','Overview');assert.deepEqual(await draft(),expected,'Tab round trip retains service values');
   const drag=await page.evaluate(()=>{const map=document.querySelector('.world-map');map.scrollIntoView({block:'center',behavior:'instant'});const b=map.getBoundingClientRect();return {x:b.x+b.width*.8,y:b.y+b.height*.5,before:map.querySelector('.map-content').getAttribute('transform')};});
   await page.mouse.move(drag.x,drag.y);await page.mouse.down();await page.mouse.move(drag.x+35,drag.y+20,{steps:8});await page.mouse.up();
   await page.waitForFunction(before=>document.querySelector('.map-content').getAttribute('transform')!==before,drag.before);assert.deepEqual(await draft(),expected,'Panning retains draft');
@@ -100,6 +101,19 @@ try{
   assert.equal((await read()).actual,f.state.actual);assert.equal(await action('jump').isEnabled(),true,'Cancel unfreezes normal actions');
   await open();await click('service-adjust');await fill('fuelTons',9);await click('service-cancel');await closed();await unchanged('Cancel from Adjust');
   await open();await click('service-adjust');await fill('fuelTons',9);await page.keyboard.press('Escape');await closed();await unchanged('Escape');
+ });
+ await run('leaving services restores current-world Trade controls without applying drafts',{},async h=>{
+  const {page,action,click,unchanged,open,closed}=h;
+  for(const kind of ['refuel','refill-support'])for(const mode of ['summary','adjust','review']){
+   await click('tab','Overview');await open(kind);if(mode!=='summary')await click('service-adjust');if(mode==='review')await click('service-review');
+   const old=await action(mode==='adjust'?'service-review':'service-confirm').evaluate(el=>({...el.dataset}));
+   await click('tab','Trade');await closed();assert.equal(await action('search').isEnabled(),true);assert.equal(await action('buyer-search').isEnabled(),true);await click('sale');assert.match(await page.locator('#message').textContent(),/Select cargo first/);assert.equal(await page.locator('#modal').isVisible(),false,'No selected cargo still prevents a sale preview');
+   await page.evaluate(data=>{const b=document.createElement('button');Object.assign(b.dataset,data);document.body.append(b);b.click();b.remove();},old);await unchanged(kind+' '+mode+' → Trade discards only draft');
+   await click('search');await page.getByRole('heading',{name:'Find a supplier',exact:true}).waitFor();await page.locator('#modal-cancel').click();
+   await click('buyer-search');await page.getByRole('heading',{name:'Find a buyer',exact:true}).waitFor();await page.locator('#modal-cancel').click();await unchanged('Opening available searches never commits');
+  }
+  await click('tab','Overview');await click('ship-expenses');await page.locator('#expense-panel').waitFor();await click('tab','Trade');assert.equal(await page.locator('#expense-panel').count(),0);assert.equal(await action('search').isEnabled(),true);assert.equal(await action('buyer-search').isEnabled(),true);await unchanged('Expenses → Trade');
+  await click('tab','Overview');await open();await click('service-adjust');await click('tab','Accounts');assert.equal(await action('deposit').isEnabled(),true);assert.equal(await action('ship-expenses').isEnabled(),true);await click('tab','Overview');await closed();await unchanged('Accounts tab discards hidden service draft');
  });
  await run('fuel commit exactly once and Undo',{},async h=>{
   const {f,page,click,field,read,open,closed,undo}=h;

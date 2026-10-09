@@ -123,10 +123,10 @@ try{
  assert.equal((await read()).bank,'1000000');
  // Invalid expense validation must not leak into the next shared dialog.
  const beforeModalRegression=await read();
- await page.locator('#ship-actions').getByRole('button',{name:'Ship expenses',exact:true}).click();
+ await click('Accounts');await page.locator('#main').getByRole('button',{name:'Ship expenses',exact:true}).click();
  await page.locator('[name="include-berthing"]').uncheck();
  assert.equal(await page.locator('#modal-submit').isDisabled(),true);
- await click('Cancel');
+ await click('Cancel');await click('Overview');
  await page.locator('svg [data-arg="-111,-70"]').click();
  await click('Use as starting world');
  assert.equal(await page.locator('#modal-submit').isEnabled(),true);
@@ -137,7 +137,7 @@ try{
  assert.deepEqual(afterLocation.lots,beforeModalRegression.lots);
  await click('History');await click('Undo latest change');await click('Overview');await click('Current system');
  assert.equal((await read()).actual,beforeModalRegression.actual);
- await page.locator('#ship-actions').getByRole('button',{name:'Ship expenses',exact:true}).click();
+ await click('Accounts');await page.locator('#main').getByRole('button',{name:'Ship expenses',exact:true}).click();
  await page.locator('[name="include-berthing"]').uncheck();
  assert.equal(await page.locator('#modal-submit').isDisabled(),true);await click('Cancel');
  await page.locator('#notes').click();assert.equal(await page.locator('#modal-submit').isHidden(),true);await click('Close');
@@ -262,7 +262,7 @@ try{
 
  // Combined expenses, stateroom setup, weekly refills, preview cancellation and batch undo.
  await click('Settings');await click('Ship, trader & options');await fill('rooms-middle','10');await fill('rooms-low','4');await fill('people-middle','4');await fill('people-high','1');assert.match(await page.locator('#accommodation-estimate').textContent(),/Luggage: 1 t/);await page.screenshot({path:join(artifacts,'ship-berths-settings.png')});await click('Save');await closed();assert.equal((await read()).ship.staterooms,14);
- const openExpenses=async()=>{await click('Overview');await page.locator('#ship-actions').getByRole('button',{name:'Ship expenses',exact:true}).click();};
+ const openExpenses=async()=>{await click('Accounts');await page.locator('#main').getByRole('button',{name:'Ship expenses',exact:true}).click();};
  await click('Cargo');assert.match(await page.locator('#main').textContent(),/Passenger luggage: 1 t/);
  await click('Settings');await click('Ship, trader & options');await page.setViewportSize({width:390,height:844});await page.locator('[name="people-high"]').scrollIntoViewIfNeeded();await page.screenshot({path:join(artifacts,'ship-berths-mobile.png')});assert.ok(await page.locator('#modal-body').evaluate(e=>e.scrollWidth<=e.clientWidth+1));await page.setViewportSize({width:1440,height:1100});await fill('people-high','0');await click('Save');await closed();await click('Cargo');assert.match(await page.locator('#main').textContent(),/Passenger luggage: 0 t/);await click('History');await click('Undo latest change');assert.equal((await read()).ship.accommodation.passengers.high,1);
  // Actual luggage and service cost adjustments are independent and reversible.

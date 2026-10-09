@@ -48,6 +48,22 @@ export function campaignReport(s,core,{exportedAt=new Date()}={}){
  section('FINANCIAL SUMMARY');
  const opening=s.ledger.find(e=>e.type==='Opening bank');
  line('Opening bank',cr(opening?.amount));line('Current bank',cr(s.bank));
+ if(s.ship.mortgage){
+  const m=s.ship.mortgage;
+  line('Original mortgage amount',cr(m.originalAmount));line('Mortgage / 4 weeks (28 days)',cr(m.payment));
+  line('Mortgage payments remaining',m.remainingPayments);line('Mortgage total paid',cr(m.totalPaid));
+  line('Mortgage scheduled amount remaining',cr(BigInt(m.payment)*BigInt(m.remainingPayments)));
+  line('Next unpaid mortgage due',m.remainingPayments?m.nextDueDate:'None - all scheduled payments paid');
+  line('Paid through installment due',m.lastPaidDueDate??'Prior installment dates not recorded');
+  out.push('Mortgage is fixed-installment tracking. Original amount is retained; scheduled payments remaining are not principal or an early-payoff amount.');
+ }
+
+ if(s.ship.maintenance){
+  const m=s.ship.maintenance;
+  line('Maintenance / 4 weeks (28 days)',cr(m.payment));line('Maintenance next unpaid due',m.nextDueDate);
+  line('Maintenance paid since tracking',cr(m.paidSinceTracking));
+  line('Maintenance paid through due',m.lastPaidDueDate??'Prior installment dates not recorded');
+ }
  if(opening)line('Bank change since opening',cr(BigInt(s.bank)-BigInt(opening.amount)));
  line('Cargo remaining cost basis',cr(total(s.lots.map(l=>l.basis))));
  line('Realized trading profit / loss',complete?cr(retained):'Incomplete historical sale records');

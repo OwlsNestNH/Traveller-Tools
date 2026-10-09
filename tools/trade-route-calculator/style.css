@@ -265,3 +265,30 @@ main{padding-top:18px}
 .service-panel .check{min-height:44px;align-items:center;gap:.6rem;margin:.4rem 0}
 .service-panel input[type=checkbox]{width:20px;height:20px;min-width:20px;flex:none}
 .service-panel>button[data-action="service-back"]{min-height:32px}
+
+/* Installment coverage stays compact until expanded. Long schedules build in
+   small batches without blocking Cancel or Back, and remain vertically scrollable. */
+.covered-payments { margin: .65rem 0; }
+.covered-payments-scroll { max-height: 20rem; overflow-y: auto; }
+.covered-payments-scroll table { width: 100%; min-width: 0; }
+.covered-payments-scroll th:last-child { text-align: right; }
+
+/* Expenses use the same MFD, with compact spreadsheet rows and aligned costs. */
+.expense-panel{min-width:0;padding:16px;display:flex;flex-direction:column;gap:.55rem;overflow-wrap:anywhere}
+.expense-panel h2{font-size:clamp(1.25rem,2vw,1.9rem);margin:.2rem 0 0}.expense-panel h3,.expense-panel p{margin:0}
+.expense-panel>button{align-self:flex-start;border:0;background:none;color:var(--cyan);padding:.25rem 0;text-align:left}
+.expense-panel .expense-table{width:100%;min-width:0;table-layout:fixed;font-size:.8rem;margin:.7rem 0}
+.expense-table th,.expense-table td{padding:.5rem .3rem;vertical-align:middle;overflow-wrap:anywhere}
+.expense-table th:first-child{width:39%}.expense-table th:nth-child(2){width:32%}
+.expense-table thead th,.expense-table tfoot th{font-size:.68rem;color:var(--muted)}
+.expense-table .number{font-variant-numeric:tabular-nums;text-align:right;white-space:normal}
+.expense-table .expense-name{border:0;background:transparent;color:var(--accent,#64d4df);padding:.2rem 0;text-align:left;min-height:28px;font-size:inherit;font-weight:600}
+.expense-table tfoot th,.expense-table tfoot td{border-top:1px solid var(--line);font-weight:700}
+.expense-panel .field{margin:.65rem 0}.expense-panel input{min-width:0;max-width:100%}
+.expense-panel .expense-total{padding:.7rem;gap:.5rem}.expense-panel .expense-total strong{font-size:1.3rem}
+.expense-panel>button{min-height:32px}.expense-panel .expense-facts{font-size:.8rem}
+.expense-receipt{margin:.8rem 0;padding:.75rem;border:1px solid #287b6b;border-radius:4px;background:#12332e}
+.expense-receipt h3{margin:0 0 .5rem;color:#86e5c0}
+.expense-panel .covered-payments table{font-size:.8rem}.expense-panel .covered-payments td:last-child{text-align:right}
+.expense-panel .expense-audit{font-size:.8rem;padding:.65rem}.expense-panel .help{font-size:.76rem}
+@media(max-width:400px){.expense-panel .expense-table{font-size:.74rem}.expense-table th,.expense-table td{padding:.4rem .2rem}.expense-panel .expense-facts{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}

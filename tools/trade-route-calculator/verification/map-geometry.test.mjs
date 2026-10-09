@@ -69,3 +69,25 @@ test('expanded 20% viewport keeps every visible marker above the former 1500-wor
   assert.equal(visibleMapWorlds([...worlds,{id:'outside',x:1000,y:0}],{x:0,y:0},10).length,visible.length,'Offscreen worlds are still culled');
  }finally{setMapGeometry(520,320);}
 });
+
+test('measured CSS-pixel bounds preserve spacing and panned center while expanding real visible geography',()=>{
+ const anchor={x:-123,y:-70},neighbor={x:-124,y:-70},pan={x:37,y:-23},zoom=1.2,scale=50*zoom;
+ const project=w=>({x:MAP_GEOMETRY.originX+pan.x+(w.x-anchor.x)*scale*Math.sqrt(3)/2,y:MAP_GEOMETRY.originY+pan.y+(w.y+((w.x%2+2)%2)*.5-anchor.y-((anchor.x%2+2)%2)*.5)*scale});
+ const originalCamera=camera(anchor,pan,zoom);let first=null;
+ try{
+  for(const [width,height] of [[800,400],[800,1150],[800,610],[320,400],[1170,720]]){
+   setMapGeometry(width,height);
+   const a=project(anchor),b=project(neighbor),measurement={dx:b.x-a.x,dy:b.y-a.y,offsetX:a.x-width/2,offsetY:a.y-height/2};
+   if(!first)first=measurement;else for(const key of Object.keys(first))assert.ok(Math.abs(measurement[key]-first[key])<1e-10,key+' is independent of the panel dimensions');
+   assert.deepEqual(camera(anchor,pan,zoom),originalCamera,'The geographic center remains on the same panned coordinates');
+   const tiles=viewportTiles(anchor,pan,zoom);
+   for(const dx of [-width/2,width/2])for(const dy of [-height/2,height/2]){
+    const x=originalCamera.x+dx/(scale*Math.sqrt(3)/2),y=originalCamera.y+dy/scale;
+    assert.ok(tiles.some(t=>Math.abs(x-t.x)<=8&&Math.abs(y-t.y)<=8),'Every resized viewport corner is covered by requested map data');
+   }
+  }
+  const distant={id:'-123,-62',x:-123,y:-62};
+  setMapGeometry(800,400);assert.deepEqual(visibleMapWorlds([distant],originalCamera,scale),[]);
+  setMapGeometry(800,1150);assert.deepEqual(visibleMapWorlds([distant],originalCamera,scale),[distant],'Extra vertical space reveals actual geography rather than magnifying the same viewport');
+ }finally{setMapGeometry(520,320);}
+});

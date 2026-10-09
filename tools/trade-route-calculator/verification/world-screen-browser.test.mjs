@@ -32,7 +32,7 @@ const screen=page.getByRole('complementary',{name:'Selected world data'});
 const frame=()=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
 const labelReports=[],readabilityReports=[],resourceReports=[];
 async function labelFitsCell(id){
- await page.waitForFunction(()=>{const svg=document.querySelector('.world-map');if(!svg)return false;const b=svg.getBoundingClientRect(),v=svg.viewBox.baseVal;return b.width>0&&b.height>0&&Math.abs(v.width-b.width*440/b.height)<.15;});
+ await page.waitForFunction(()=>{const svg=document.querySelector('.world-map');if(!svg)return false;const b=svg.getBoundingClientRect(),v=svg.viewBox.baseVal;return b.width>0&&b.height>0&&Math.abs(v.width-b.width)<.1&&Math.abs(v.height-b.height)<.1;});
  const label=page.locator('svg [data-action="map-world"][data-arg="'+id+'"] .world-name');
  const q=await label.evaluate(text=>{
   const svg=text.ownerSVGElement,group=text.parentElement,circle=group.querySelector('circle'),uwp=group.querySelector('.world-uwp');
