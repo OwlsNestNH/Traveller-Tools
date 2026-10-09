@@ -52,6 +52,72 @@ const moneyState = state => ({bank:state.bank, hours:state.hours, lots:state.lot
 const latestSearch = state => state.events.filter(e => Array.isArray(e.offers)).at(-1);
 const freightRows = page => page.locator('#main tbody tr').filter({hasText:'Freight contract'}).allTextContents();
 
+const normalized = value => value.replace(/\s+/g, ' ').trim();
+const manualRoll = 'Availability roll: manual 2D total 12; 12 + 7 DM = 19 (12+ required) Container roll: manual 1D total 3';
+const calculationDetails = page => mail(page).locator('details').filter({has:page.locator('summary').filter({hasText:/^How was this calculated\?$/})});
+async function visibleRoll(page, expected) {
+  const card = mail(page), roll = card.locator('.mail-result .mail-roll-summary');
+  assert.equal(await calculationDetails(page).count(), 1);
+  assert.equal(await calculationDetails(page).evaluate(el => el.open), false, 'The roll must be readable before expanding calculation details');
+  assert.equal(await roll.count(), 1);
+  assert.equal(await roll.isVisible(), true);
+  assert.equal(await roll.evaluate(el => el.closest('details') === null), true, 'Roll summary is outside collapsed details');
+  assert.equal(normalized(await roll.innerText()), expected);
+  const visible = normalized(await card.innerText());
+  assert.ok(visible.includes(expected), 'The complete formula is part of the initially visible card text');
+  assert.doesNotMatch(visible, /Freight-band DM|Origin world DM/, 'Detailed calculation is still collapsed');
+  assert.equal(await card.getByRole('button', {name:'Audit', exact:true}).isVisible(), true);
+}
+async function contractToolbar(page) {
+  const toolbar = page.locator('#contract-actions');
+  assert.equal(await toolbar.count(), 1);
+  assert.deepEqual(await toolbar.getByRole('button').allTextContents(), ['Find contracts','Manual contract','Check for mail']);
+  const check = page.locator('#main [data-action="mail-check"]');
+  assert.equal(await check.count(), 1, 'Only one Check for mail action exists');
+  assert.equal(await mail(page).locator('[data-action="mail-check"]').count(), 0, 'The Mail card no longer owns the check action');
+  assert.equal(await check.evaluate(el => el.parentElement.id === 'contract-actions' && el.previousElementSibling.dataset.action === 'contract-manual'), true, 'Check follows Manual contract in the contract toolbar');
+  await page.mouse.move(0, 0); // Compare resting primary styles, not a hovered button.
+  const buttons = await toolbar.getByRole('button').evaluateAll(elements => elements.map(el => {
+    const style = getComputedStyle(el), rect = el.getBoundingClientRect();
+    return {label:el.textContent, primary:el.classList.contains('primary'), background:style.backgroundColor, color:style.color, border:style.borderColor, x:rect.x, right:rect.right, y:rect.y};
+  }));
+  assert.equal(buttons[0].background, 'rgb(98, 211, 221)', 'Find contracts retains the existing light-blue primary background');
+  for (const button of buttons) {
+    assert.equal(button.primary, true, button.label+' uses primary styling');
+    for (const property of ['background','color','border']) assert.equal(button[property], buttons[0][property], button.label+' matches Find contracts '+property);
+    assert.ok(button.x >= 0 && button.right <= page.viewportSize().width + 2, button.label+' fits the viewport');
+  }
+  if (page.viewportSize().width > 600) {
+    assert.ok(buttons.every(button => button.y === buttons[0].y), 'Desktop actions share a row');
+    assert.ok(buttons[0].x < buttons[1].x && buttons[1].x < buttons[2].x, 'Desktop visual order matches toolbar order');
+  }
+}
+async function toggleAccepted(page, open, {keyboard=false}={}) {
+  const details = page.locator('#mail-accepted-details');
+  assert.equal(await details.count(), 1);
+  assert.equal(await details.evaluate(el => el.tagName), 'DETAILS', 'Accepted mail uses a native disclosure');
+  assert.equal(await details.evaluate(el => el.open), !open, 'Exercise an actual disclosure state change');
+  const summary = details.locator(':scope > summary');
+  if (keyboard) { await summary.focus(); await summary.press('Enter'); }
+  else await summary.click();
+  await page.waitForFunction(expected => document.querySelector('#mail-accepted-details')?.open === expected, open);
+}
+async function savedRowRoll(page, id, expected) {
+  const row = page.locator('#main tbody tr').filter({hasText:id});
+  assert.equal(await row.count(), 1);
+  const roll = row.locator('td').first().locator('.mail-roll-summary');
+  assert.equal(await roll.isVisible(), true, 'Persisted contract roll is immediately visible in its description cell');
+  assert.equal(normalized(await roll.innerText()), expected);
+  assert.ok(normalized(await row.innerText()).includes(expected));
+}
+async function openMailAudit(page) {
+  await mail(page).getByRole('button', {name:'Audit', exact:true}).click();
+  assert.equal(await page.locator('#modal-title').innerText(), 'Mail roll audit');
+  assert.equal(await page.locator('#modal-submit').isVisible(), false, 'The Mail audit is read-only');
+  assert.equal(await modal(page).locator('input, select, textarea, [data-mutate]').count(), 0);
+  return modal(page).locator('.mail-audit').innerText();
+}
+
 async function submit(page, name) {
   await modal(page).getByRole('button', {name, exact:true}).click();
   await page.waitForFunction(() => !document.querySelector('#modal').open || !!document.querySelector('#modal-error').textContent);
@@ -68,7 +134,7 @@ async function closeAudit(page) {
 }
 async function openCheck(page, {combined=false}={}) {
   if (combined) await page.getByRole('button', {name:'Find contracts', exact:true}).click();
-  else await mail(page).getByRole('button', {name:'Check for mail', exact:true}).click();
+  else await page.locator('#contract-actions').getByRole('button', {name:'Check for mail', exact:true}).click();
   await modal(page).locator('[name="destination"]').selectOption(destination.id);
 }
 async function checkMail(page, {combined=false, dice=8, availability=12, containers=3, days=17}={}) {
@@ -237,12 +303,20 @@ try {
     assert.deepEqual(audit.mailAudit.dice, {dice:[3,3], total:6});
     assert.deepEqual(audit.mailAudit.count, {dice:[3], total:3});
     assert.equal(audit.mailAudit.total, 13);
+    await visibleRoll(page, 'Availability roll: 2D 3 + 3 = 6; 6 + 7 DM = 13 (12+ required) Container roll: 1D 3 = 3');
+    await screenshot(page, result, 'mail-desktop-automatic-roll.png');
     audit = await checkMail(page, {availability:12, containers:''});
     assert.deepEqual(audit.mailAudit.dice, {dice:null, total:12, manual:true});
     assert.deepEqual(audit.mailAudit.count, {dice:[3], total:3});
+    await visibleRoll(page, 'Availability roll: manual 2D total 12; 12 + 7 DM = 19 (12+ required) Container roll: 1D 3 = 3');
     audit = await checkMail(page, {availability:'', containers:5});
     assert.deepEqual(audit.mailAudit.dice, {dice:[3,3], total:6});
     assert.deepEqual(audit.mailAudit.count, {dice:null, total:5, manual:true});
+    await visibleRoll(page, 'Availability roll: 2D 3 + 3 = 6; 6 + 7 DM = 13 (12+ required) Container roll: manual 1D total 5');
+    audit = await checkMail(page, {availability:5});
+    assert.equal(audit.mailAudit.total, 12);
+    assert.match(await mail(page).innerText(), /Mail available/);
+    await visibleRoll(page, 'Availability roll: manual 2D total 5; 5 + 7 DM = 12 (12+ required) Container roll: manual 1D total 3');
     audit = await checkMail(page);
     assert.deepEqual(audit.searchDice, {dice:null, total:8, manual:true});
     assert.deepEqual(audit.generatedSearchDice, {dice:[3,3], total:6});
@@ -255,9 +329,20 @@ try {
     assert.match(await mail(page).textContent(), /Mail available/);
     assert.match(await mail(page).textContent(), /15 t/);
     assert.match(await mail(page).textContent(), /Cr 75,000/);
+    await visibleRoll(page, manualRoll);
     await screenshot(page, result, 'mail-desktop-available.png');
+    const beforeAudit = await read(page);
+    const originalAuditText = await openMailAudit(page);
+    for (const label of ['Recorded search inputs','Origin at this check','Destination at this check','Origin world modifiers','Destination world modifiers','Population DM','Starport DM','Technology DM','Travel-zone DM','Origin world DM','Destination world DM','Distance DM','Search Effect','Combined freight traffic DM','Freight-band DM','Armed ship DM','Low technology DM','Naval / Scout rank DM','Social Standing DM']) assert.ok(originalAuditText.includes(label), label);
+    const auditFacts = await modal(page).locator('.mail-audit dt').evaluateAll(labels => labels.map(label => [label.textContent, label.nextElementSibling.textContent]));
+    for (const label of ['Distance DM','Search Effect','Low technology DM','Search skill DM','Search characteristic DM']) assert.ok(auditFacts.some(([key,value]) => key === label && value === '+0'), label+' records zero');
+    assert.equal(auditFacts.filter(([label,value]) => label === 'Travel-zone DM' && value === '+0').length, 2, 'Both endpoint zero zone DMs are visible');
+    await screenshot(page, result, 'mail-desktop-audit.png');
+    await closeAudit(page);
+    assert.deepEqual(await read(page), beforeAudit, 'Opening and closing Audit does not change campaign data');
+    await visibleRoll(page, manualRoll);
     await mail(page).getByText('How was this calculated?', {exact:true}).click();
-    const details = await mail(page).locator('details').innerText();
+    const details = await calculationDetails(page).innerText();
     for (const label of ['Origin world DM','Destination world DM','Distance DM','Search Effect','Population DM','Starport DM','Technology DM','Travel-zone DM','Availability 2D roll','Freight-band DM','Armed ship DM','Low technology DM','Naval / Scout rank DM','Social Standing DM','Final availability result','Container-count die','Manual roll total: 12','Manual roll total: 3','INT-002','INT-004','no automatic deadline or late penalty']) assert.ok(details.includes(label), label);
     await screenshot(page, result, 'mail-desktop-details.png');
     await page.setViewportSize({width:390, height:844});
@@ -267,6 +352,27 @@ try {
     const labelWidths = await mail(page).locator('.preview dt').evaluateAll(labels => labels.map(label => label.getBoundingClientRect().width));
     assert.ok(labelWidths.every(width => width >= 90), 'Mail audit labels retain readable columns instead of wrapping one character per line');
     await screenshot(page, result, 'mail-mobile-details.png');
+    await mail(page).getByText('How was this calculated?', {exact:true}).click();
+    await visibleRoll(page, manualRoll);
+    await screenshot(page, result, 'mail-mobile-visible-roll.png');
+    assert.equal(normalized(await openMailAudit(page)), normalized(originalAuditText));
+    const auditBounds = await modal(page).boundingBox();
+    assert.ok(auditBounds.x >= 0 && auditBounds.x + auditBounds.width <= 392, 'Audit dialog fits a 390px viewport');
+    assert.ok(await modal(page).locator('.mail-audit').evaluate(el => el.scrollWidth <= el.clientWidth + 2), 'Audit content does not overflow on mobile');
+    const auditLabelWidths = await modal(page).locator('.mail-audit .preview dt').evaluateAll(labels => labels.map(label => label.getBoundingClientRect().width));
+    assert.ok(auditLabelWidths.length > 0 && auditLabelWidths.every(width => width >= 90), 'Audit labels remain readable on mobile');
+    await screenshot(page, result, 'mail-mobile-audit.png');
+    await closeAudit(page);
+    // Later Settings edits must not silently recalculate the saved check.
+    await mail(page).getByRole('button', {name:'Edit mail settings', exact:true}).click();
+    await modal(page).locator('[name="armed"]').uncheck();
+    await fill(page, 'rank', 0);
+    await fill(page, 'soc', -2);
+    await submit(page, 'Save');
+    await visibleRoll(page, manualRoll);
+    assert.equal(normalized(await openMailAudit(page)), normalized(originalAuditText), 'Audit uses recorded settings, not current values');
+    await closeAudit(page);
+    assert.deepEqual(latestSearch(await read(page)), audit, 'Settings edits leave the recorded search immutable');
   });
 
   await runCase('unavailable-and-undo-check', {}, async (page, context, result, initial) => {
@@ -277,15 +383,20 @@ try {
     assert.equal(audit.offers.length, 0);
     assert.equal('count' in audit.mailAudit, false, 'An unavailable check never rolls containers');
     assert.deepEqual(moneyState(await read(page)), moneyState(initial));
-    await mail(page).getByText('How was this calculated?', {exact:true}).click();
-    assert.match(await mail(page).locator('details').innerText(), /Not rolled: no mail available/);
+    await visibleRoll(page, 'Availability roll: manual 2D total 2; 2 + 7 DM = 9 (12+ required)');
+    assert.doesNotMatch(await mail(page).locator('.mail-result').innerText(), /Container roll|1D/);
     await screenshot(page, result, 'mail-desktop-unavailable.png');
+    assert.match(await openMailAudit(page), /Not rolled: no mail available/);
+    await closeAudit(page);
+    await mail(page).getByText('How was this calculated?', {exact:true}).click();
+    assert.match(await calculationDetails(page).innerText(), /Not rolled: no mail available/);
+    await screenshot(page, result, 'mail-desktop-unavailable-details.png');
     await undo(page);
     assert.match(await mail(page).textContent(), /No mail check in this session/);
     assert.deepEqual(moneyState(await read(page)), moneyState(initial));
   });
 
-  await runCase('whole-consignment-capacity', {capacity:'14'}, async page => {
+  await runCase('whole-consignment-capacity', {capacity:'14'}, async (page, context, result) => {
     await checkMail(page);
     assert.match(await mail(page).textContent(), /Does not fit.*14 t free/s);
     assert.match(await mail(page).textContent(), /partial acceptance is not available/);
@@ -309,6 +420,19 @@ try {
     assert.equal(accepted.contracts[0].quantity, '15');
     assert.equal(accepted.bank, before.bank);
     assert.match(await mail(page).textContent(), /15 t reserved/);
+    await visibleRoll(page, manualRoll);
+    await page.reload();
+    await page.getByText('Editing in this tab', {exact:true}).waitFor();
+    await tab(page, 'Contracts');
+    assert.match(await mail(page).innerText(), /No mail check in this session/);
+    await savedRowRoll(page, accepted.contracts[0].id, manualRoll);
+    assert.deepEqual(await read(page), accepted, 'Reload preserves the accepted contract and its saved roll');
+    await page.locator('[data-action="contract-audit"][data-arg="'+accepted.contracts[0].id+'"]').click();
+    assert.match(await modal(page).innerText(), /Search 2D\s+Manual roll total: 8/);
+    assert.match(await modal(page).innerText(), /Origin at this check/);
+    assert.equal(await page.locator('#modal-submit').isVisible(), false);
+    await closeAudit(page);
+    await screenshot(page, result, 'mail-desktop-accepted-reloaded-roll.png');
   });
 
   await runCase('accept-jump-deliver-and-undo', {}, async page => {
@@ -320,6 +444,7 @@ try {
     await acceptMail(page);
     assert.equal((await read(page)).bank, '100000');
     assert.equal((await read(page)).contracts[0].status, 'accepted');
+    await visibleRoll(page, manualRoll);
     assert.match(await page.locator('#hold-summary .value').textContent(), /15 \/ 60 t/);
     assert.equal(await page.locator('[data-action="contract-accept"]').count(), 0);
     await undo(page);
@@ -357,6 +482,8 @@ try {
     assert.equal(delivered.contracts[0].penaltyDie, null);
     assert.equal(delivered.ledger.filter(e => e.contractId === contractId).length, 1);
     assert.match(await mail(page).textContent(), /Mail delivered/);
+    assert.equal(await page.locator('#mail-accepted-details').evaluate(el => el.open), true, 'Delivered details remain open when the accepted disclosure was not collapsed');
+    await visibleRoll(page, manualRoll);
     assert.match(await mail(page).textContent(), /Released after delivery/);
     assert.match(await page.locator('#hold-summary .value').textContent(), /0 \/ 60 t/);
     assert.equal(await page.locator('[data-action="deliver"]').count(), 0, 'A delivered contract has no second payout action');
@@ -373,7 +500,101 @@ try {
     await page.getByText('Editing in this tab', {exact:true}).waitFor();
     await tab(page, 'Contracts');
     assert.deepEqual(await read(page), delivered);
+    await savedRowRoll(page, contractId, manualRoll);
     assert.equal(await page.locator('[data-action="deliver"], [data-action="contract-accept"]').count(), 0);
+  });
+
+  await runCase('toolbar-and-collapsible-mail-details', {}, async (page, context, result, initial) => {
+    await contractToolbar(page);
+    assert.equal(await page.locator('#mail-accepted-details').count(), 0, 'No accepted-only disclosure appears before a check');
+    await page.locator('#contract-actions').getByRole('button', {name:'Manual contract', exact:true}).click();
+    assert.equal(await page.locator('#modal-title').innerText(), 'Manual freight / mail contract');
+    await cancel(page);
+    assert.deepEqual(await read(page), initial, 'Repositioned Manual contract still opens its non-mutating form');
+    await checkMail(page);
+    assert.equal(await page.locator('#mail-accepted-details').count(), 0, 'Available offers stay expanded and actionable');
+    await acceptMail(page);
+    let details = page.locator('#mail-accepted-details');
+    assert.equal(await details.evaluate(el => el.open), true, 'Accepted details start open');
+    assert.equal(normalized(await details.locator(':scope > summary').innerText()), 'Accepted mail details · 15 t reserved');
+    const saved = await read(page), savedRaw = await page.evaluate(key => localStorage.getItem(key), KEY);
+    assert.equal(Object.hasOwn(saved, 'mailAcceptedDetailsOpen'), false);
+    const originalAudit = normalized(await openMailAudit(page));
+    await closeAudit(page);
+
+    for (const [size, viewport] of [['desktop',{width:1440,height:1100}], ['mobile',{width:390,height:844}]]) {
+      await page.setViewportSize(viewport);
+      await contractToolbar(page);
+      details = page.locator('#mail-accepted-details');
+      assert.equal(await details.evaluate(el => el.open), true);
+      assert.equal(await details.getByRole('button', {name:'Edit mail settings', exact:true}).isVisible(), true);
+      for (const label of ['Containers rolled','Total tons','Payment on delivery','Hold capacity']) assert.equal(await details.getByText(label, {exact:true}).isVisible(), true, label+' starts visible');
+      const expandedHeight = (await mail(page).boundingBox()).height;
+      await toggleAccepted(page, false, {keyboard:size === 'desktop'});
+      assert.equal(await details.getByRole('button', {name:'Edit mail settings', exact:true}).isVisible(), false);
+      assert.equal(await details.locator('.preview').isVisible(), false, 'Settings and contract stats collapse together');
+      assert.doesNotMatch(await mail(page).innerText(), /From Settings:|Containers rolled|Hold capacity|Deliver explicitly/);
+      assert.equal(await mail(page).getByRole('heading', {name:'Mail accepted', exact:true}).isVisible(), true);
+      assert.equal(await mail(page).getByText('Mail Origin → Mail Destination', {exact:true}).isVisible(), true);
+      assert.equal(await mail(page).getByText('How was this calculated?', {exact:true}).isVisible(), true);
+      assert.equal(await calculationDetails(page).evaluate(el => el.closest('#mail-accepted-details') === null), true, 'Calculation disclosure remains independent');
+      await visibleRoll(page, manualRoll);
+      const bounds = await mail(page).boundingBox();
+      assert.ok(bounds.height < expandedHeight, 'Collapsing makes the accepted card shorter');
+      assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= viewport.width + 2, 'Collapsed card fits the '+size+' viewport');
+      assert.ok(await page.locator('main').evaluate(el => el.scrollWidth <= el.clientWidth + 2), 'Collapsed Mail layout does not overflow');
+      await screenshot(page, result, 'mail-'+size+'-accepted-collapsed.png');
+      assert.equal(normalized(await openMailAudit(page)), originalAudit, 'Audit stays accessible with details collapsed');
+      await closeAudit(page);
+      await mail(page).getByText('How was this calculated?', {exact:true}).click();
+      assert.equal(await calculationDetails(page).evaluate(el => el.open), true);
+      assert.match(await calculationDetails(page).innerText(), /Freight-band DM/);
+      assert.equal(await details.evaluate(el => el.open), false, 'Opening calculations does not reopen accepted details');
+      await mail(page).getByText('How was this calculated?', {exact:true}).click();
+      await tab(page, 'History');
+      await tab(page, 'Contracts');
+      assert.equal(await page.locator('#mail-accepted-details').evaluate(el => el.open), false, 'Collapsed state survives a tab render');
+      await visibleRoll(page, manualRoll);
+      await toggleAccepted(page, true, {keyboard:size === 'desktop'});
+      assert.equal(await page.locator('#mail-accepted-details').getByRole('button', {name:'Edit mail settings', exact:true}).isVisible(), true);
+      await tab(page, 'History');
+      await tab(page, 'Contracts');
+      assert.equal(await page.locator('#mail-accepted-details').evaluate(el => el.open), true, 'Reopened state also survives a tab render');
+      assert.deepEqual(await read(page), saved, 'Collapse, reopen, Audit and tab navigation do not mutate any campaign data');
+      assert.equal(await page.evaluate(key => localStorage.getItem(key), KEY), savedRaw, 'Disclosure state never rewrites the saved campaign');
+    }
+
+    await toggleAccepted(page, false);
+    await checkMail(page);
+    assert.equal(await page.locator('#mail-accepted-details').count(), 0);
+    await acceptMail(page);
+    assert.equal(await page.locator('#mail-accepted-details').evaluate(el => el.open), true, 'A new check resets accepted details to open');
+    const contractId = (await read(page)).contracts.at(-1).id;
+    await toggleAccepted(page, false);
+    await tab(page, 'Overview');
+    await page.locator('[data-action="jump"]').click();
+    await fill(page, 'hours', 168);
+    await submit(page, 'COMMIT JUMP');
+    await tab(page, 'Contracts');
+    assert.equal(await page.locator('#mail-accepted-details').evaluate(el => el.open), false, 'Arrival keeps the disclosure preference');
+    await page.locator('[data-action="deliver"][data-arg="'+contractId+'"]').click();
+    await submit(page, 'Commit delivery & payout');
+    const delivered = await read(page);
+    for (const [size, viewport] of [['desktop',{width:1440,height:1100}], ['mobile',{width:390,height:844}]]) {
+      await page.setViewportSize(viewport);
+      details = page.locator('#mail-accepted-details');
+      assert.equal(await details.evaluate(el => el.open), false, 'Delivery preserves collapsed state');
+      assert.equal(normalized(await details.locator(':scope > summary').innerText()), 'Delivered mail details · Cr 75,000 paid');
+      assert.equal(await mail(page).getByRole('heading', {name:'Mail delivered', exact:true}).isVisible(), true);
+      await visibleRoll(page, manualRoll);
+      assert.equal(normalized(await openMailAudit(page)), originalAudit);
+      await closeAudit(page);
+      await screenshot(page, result, 'mail-'+size+'-delivered-collapsed.png');
+      await toggleAccepted(page, true);
+      assert.equal(await details.getByText('Released after delivery', {exact:true}).isVisible(), true);
+      await toggleAccepted(page, false);
+      assert.deepEqual(await read(page), delivered, 'Delivered disclosure toggles cannot change payments, contracts or History');
+    }
   });
 
   await runCase('combined-freight-and-referee-edit', {}, async page => {
@@ -422,6 +643,43 @@ try {
     assert.deepEqual(moneyState(await read(page)), beforeMoney);
   });
 
+  await runCase('political-territory-default-and-preference', {}, async (page, context, result, initial) => {
+    const preferenceKey = 'traveller-trade-route-calculator:political-territory:v1';
+    await tab(page, 'Overview');
+    const toggle = page.getByLabel('Political territory', {exact:true});
+    assert.equal(await toggle.isChecked(), true, 'A fresh browser defaults political territory on');
+    assert.deepEqual(await read(page), initial, 'Map default never changes the campaign');
+    await screenshot(page, result, 'map-political-default-on.png');
+    await toggle.uncheck();
+    assert.equal(await page.evaluate(key => localStorage.getItem(key), preferenceKey), 'false');
+    assert.equal(await page.locator('.map-territories').count(), 0);
+    await tab(page, 'Contracts');
+    await tab(page, 'Overview');
+    assert.equal(await toggle.isChecked(), false, 'An explicit off choice survives redraw');
+    await page.reload();
+    await page.getByText('Editing in this tab', {exact:true}).waitFor();
+    assert.equal(await toggle.isChecked(), false, 'An explicit off choice survives reload');
+    assert.deepEqual(await read(page), initial);
+
+    // Import a synthetic backup through the actual file input and confirmation.
+    await page.locator('#import-file').setInputFiles({name:'synthetic-map-preference.json', mimeType:'application/json', buffer:Buffer.from(JSON.stringify(initial))});
+    await page.getByRole('heading', {name:'Load campaign (JSON)', exact:true}).waitFor();
+    await modal(page).locator('[name="backed"]').check();
+    await submit(page, 'Replace campaign');
+    await tab(page, 'Overview');
+    assert.equal(await toggle.isChecked(), false, 'Campaign import preserves the browser map preference');
+    assert.equal(await page.evaluate(key => localStorage.getItem(key), preferenceKey), 'false');
+    const imported = await read(page);
+    assert.deepEqual(moneyState(imported), moneyState(initial));
+    assert.equal(Object.hasOwn(imported.settings, 'showTerritories'), false, 'Map display preference stays outside campaign JSON');
+    await toggle.check();
+    assert.equal(await page.evaluate(key => localStorage.getItem(key), preferenceKey), 'true');
+    await page.reload();
+    await page.getByText('Editing in this tab', {exact:true}).waitFor();
+    assert.equal(await toggle.isChecked(), true, 'An explicit on choice also survives reload');
+    assert.deepEqual(await read(page), imported, 'Toggling the map never changes accounting or History');
+  });
+
   await runCase('reload-and-read-only-history', {}, async (page, context) => {
     const audit = await checkMail(page);
     const saved = await read(page);
@@ -445,7 +703,8 @@ try {
     await reader.goto(base);
     await reader.getByText('Read-only: campaign open in another tab.', {exact:true}).waitFor();
     await tab(reader, 'Contracts');
-    for (const name of ['Check for mail','Edit mail settings']) assert.equal(await mail(reader).getByRole('button', {name, exact:true}).isDisabled(), true);
+    assert.equal(await reader.locator('#contract-actions').getByRole('button', {name:'Check for mail', exact:true}).isDisabled(), true);
+    assert.equal(await mail(reader).getByRole('button', {name:'Edit mail settings', exact:true}).isDisabled(), true);
     await historyAudit(reader, audit.id);
     await modal(reader).getByText('Mail search result', {exact:true}).click();
     assert.match(await modal(reader).innerText(), /Mail available/);
@@ -461,8 +720,8 @@ try {
     catch (error) { summary.errors.push('Browser close: '+errorText(error)); }
   }
   summary.finishedAt = new Date().toISOString();
-  summary.passed = summary.errors.length === 0 && summary.cases.length === 6 && summary.cases.every(c => c.status === 'passed');
+  summary.passed = summary.errors.length === 0 && summary.cases.length === 8 && summary.cases.every(c => c.status === 'passed');
   await writeFile(join(artifacts, 'mail-browser-summary.json'), JSON.stringify(summary, null, 2)+'\n');
 }
 if (!summary.passed) throw new Error('Mail browser verification failed. See verification-artifacts/mail-browser-summary.json and per-case traces/screenshots.');
-console.log('PASS: all 6 Mail browser scenarios; desktop/mobile screenshots, per-case Playwright traces and commit-tagged JSON summary saved.');
+console.log('PASS: all 8 Mail/map browser scenarios; desktop/mobile screenshots, per-case Playwright traces and commit-tagged JSON summary saved.');

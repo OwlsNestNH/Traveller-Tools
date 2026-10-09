@@ -46,18 +46,18 @@ jobs:
           git rev-parse HEAD > verification-artifacts/commit.txt
           node --version > verification-artifacts/runtime.txt
           python3 --version >> verification-artifacts/runtime.txt
-      - name: Check Mail rules and control flow
+      - name: Check Mail and map rules and control flow
         run: |
           node --check js/app.mjs
           node --check js/rules.mjs
-          node --test verification/mail.test.mjs verification/mail-ui.test.mjs | tee verification-artifacts/mail-native.txt
+          node --test verification/mail.test.mjs verification/mail-ui.test.mjs verification/map-preferences.test.mjs verification/map-overview.test.mjs verification/map-territory.test.mjs verification/map-viewport.test.mjs | tee verification-artifacts/mail-native.txt
           python3 verification/check_rules.py | tee verification-artifacts/rules-data.txt
       - name: Install pinned Playwright and Chromium
         run: |
           npm install --prefix "$RUNNER_TEMP/mail-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
           node "$RUNNER_TEMP/mail-playwright/node_modules/playwright/cli.js" install --with-deps chromium
           node "$RUNNER_TEMP/mail-playwright/node_modules/playwright/cli.js" --version >> verification-artifacts/runtime.txt
-      - name: Test real Mail browser flows
+      - name: Test real Mail and map browser flows
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 > verification-artifacts/server.log 2>&1 &
           server_pid=$!
@@ -68,6 +68,7 @@ jobs:
           done
           curl --fail --silent "$TRAVELLER_TEST_URL" > /dev/null
           node verification/mail-browser.test.mjs "$RUNNER_TEMP/mail-playwright/node_modules/playwright" | tee verification-artifacts/mail-browser.txt
+          node verification/map-overview-browser.test.mjs "$RUNNER_TEMP/mail-playwright/node_modules/playwright" | tee verification-artifacts/map-overview-browser.txt
       - name: Upload screenshots, trace and test evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

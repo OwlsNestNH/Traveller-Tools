@@ -258,3 +258,30 @@ Screenshots, Playwright traces, a JSON case summary, logs and the tested revisio
 
 
 The first real Chromium run [37859944437](https://github.com/OwlsNestNH/Traveller-Tools/actions/runs/37859944437) passed all six Mail scenarios on head `c0a9ae6d149ef9d5cdd62e953ee285aceb7cafab`, with 37 focused native and 198 source/data checks also passing. Subsequent screenshot inspection caught narrow audit-label columns at 390px despite the existing no-overflow assertion. The Mail card now gives mobile labels and values bounded equal-width columns, and the browser suite explicitly checks readable label widths. Verify the updated head’s workflow before treating that visual correction as passed.
+
+
+## Visible Mail rolls and explicit Audit (2026-10-08)
+
+Follow-up scope: the saved availability dice/total + combined mail DM = final result against 12+ is visible without expanding details; the container roll is shown when recorded. Saved mail contract rows retain the same summary after reload. An explicit read-only Audit button exposes every recorded modifier, zero components, both endpoint inputs, distance/search Effect, freight-band mapping and rule sources. New mail checks snapshot search/world inputs; existing missing values remain labeled not recorded. No rule, price, acceptance or delivery behavior changes.
+
+Focused native and real Chromium coverage is extended to verify visible collapsed summaries, automatic/manual/negative rolls, accepted historical rows, old/missing audits, the Audit button, saved-input stability and mobile audit readability. Browser evidence must be associated with this follow-up’s exact PR head; PR #4’s earlier passing run does not verify these new controls. The existing two aggregate routing failures remain separate and unchanged.
+
+Local verification before publishing the follow-up: 46/46 focused Mail tests passed (17 rules/lifecycle plus 29 actual-app simulated-DOM tests), 151/153 aggregate native tests passed with only the two established routing failures, 198 rules checks passed, and changed JavaScript syntax / whitespace checks passed. The six real-browser scenarios are extended, but must run against the new PR head before browser success is claimed.
+
+
+### Follow-up action row and collapsible shipment details (2026-10-09)
+
+The visible-roll/Audit head `7407f9015609a64b6c6ee72be09bbd053c5759ad` passed all six real Chromium scenarios in [run 37862985427](https://github.com/OwlsNestNH/Traveller-Tools/actions/runs/37862985427). The owner then requested Check for mail beside Manual contract, matching light-blue button styles, and a collapsible accepted-Mail section. The supplied screenshot was inspected before these targeted layout changes.
+
+The action row now contains one Check for mail button immediately after Manual contract. Accepted/delivered shipment details use a native expandable section; the outcome, route, recorded roll and Audit remain available while collapsed. Its open/closed preference is session-only and makes no campaign changes. Desktop/mobile placement, matching colors, collapse/reopen, tab-render retention and unchanged financial state are checked in the updated tests. The newest head must pass the workflow before these extra layout changes are treated as browser-verified.
+
+Before the updated layout push: 47/47 focused Mail tests passed, 152/154 aggregate native tests passed (the two unchanged baseline routing failures), and 198 source/data assertions passed. The browser suite now has seven scenarios, including the new toolbar/disclosure flow; its result must be checked on the updated head.
+
+
+### Political territory default (2026-10-09)
+
+The seven-scenario Mail layout workflow [37864016591](https://github.com/OwlsNestNH/Traveller-Tools/actions/runs/37864016591) passed on `655fd2dd32dd0bc265aa24d96c05fc2922ebdea6`; the accepted/collapsed desktop and 390px screenshots were inspected. The owner then requested political territory on by default. New/unset browser preferences now default on, while an explicit off choice is saved separately from campaign JSON and survives redraws, reloads and campaign imports. Storage failure does not prevent using the toggle. Map geometry, route calculations and campaign data remain unchanged.
+
+Local checks for this update: 71/71 focused Mail/map tests passed, 155/157 aggregate native tests passed with the same two baseline routing failures, 198 source/data checks passed, and changed JavaScript syntax/whitespace checks passed. CI now runs an eighth real-browser scenario covering the new default, off/on persistence and actual JSON import, plus the existing full map-overview browser regression. Those browser results must be verified against the updated PR head.
+
+Run 37865638946 passed all eight Mail/map scenarios, including default-on and persistence/import checks. The additional map-overview regression stopped while its SVG was replaced during element screenshot capture. Capture now uses the page rather than a retained SVG handle; map assertions are unchanged. The full workflow is rerun on the correction’s exact head.

@@ -55,7 +55,8 @@ export function mailModifiers(origin,dest,distance,effect,ship,crew,data){
  if(!band)throw Error('Mail needs a valid freight traffic DM.');
  const modifiers={freight:band.dm,armed:ship.armed?2:0,lowTech:origin.uwp.techLevel<=5?-4:0,rank:Number(crew.rank||0),soc:Number(crew.soc||0)};
  if(!Object.values(modifiers).every(Number.isInteger))throw Error('Mail DMs must be whole numbers.');
- return {dm,modifiers,modifierTotal:Object.values(modifiers).reduce((a,b)=>a+b,0),distance,sourcePage:241};
+ const inputs=ctx=>({name:ctx.world?.name??null,population:ctx.uwp.population,starport:ctx.uwp.starport,techLevel:ctx.uwp.techLevel,zone:ctx.zone});
+ return {dm,modifiers,modifierTotal:Object.values(modifiers).reduce((a,b)=>a+b,0),worldInputs:{origin:inputs(origin),destination:inputs(dest)},distance,sourcePage:241};
 }
 function optionalMailRoll(value,min,max,label){
  if(value==null||value==='')return null;

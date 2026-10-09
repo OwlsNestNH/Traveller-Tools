@@ -7,7 +7,7 @@ const fixtures=JSON.parse(await readFile(new URL('./fixtures/map-overview.json',
 const artifacts=fileURLToPath(new URL('../verification-artifacts/',import.meta.url));await mkdir(artifacts,{recursive:true});
 const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BROWSER_CHANNEL?{channel:process.env.TRAVELLER_BROWSER_CHANNEL}:{})});
 const context=await browser.newContext({viewport:{width:1440,height:1100}});
-let failSector=true,requests=0;
+let failSector=true,requests=0,denebTableAttempts=0;
 await context.route('https://travellermap.com/api/**',async route=>{
  const url=new URL(route.request().url()),name=url.searchParams.get('sector');
  assert.equal(url.searchParams.get('milieu'),'M1105');
@@ -17,58 +17,87 @@ await context.route('https://travellermap.com/api/**',async route=>{
   return route.fulfill({json:fixtures.catalogs[name]?.metadata||{Subsectors:[]}});
  }
  if(url.pathname.endsWith('/sec')){
+  if(name==='Deneb')denebTableAttempts++;
   if(name==='Deneb'&&failSector){failSector=false;return route.fulfill({status:503,body:'Temporary map failure'});}
   return route.fulfill({json:fixtures.catalogs[name]?.sec||'Hex\tName\n'});
  }
  if(url.pathname.endsWith('/jumpworlds'))return route.fulfill({json:{Worlds:fixtures.worlds}});
  throw Error('Unexpected API request: '+url);
 });
+// Capture the page, not a retained SVG element: async map redraws replace that
+// element while screenshots wait for fonts/layout. Assertions still inspect
+// the live map immediately before each capture.
+await context.tracing.start({screenshots:true,snapshots:true,sources:true});
 const page=await context.newPage(),errors=[];page.on('pageerror',error=>errors.push(error.message));
-const click=name=>page.getByRole('button',{name,exact:true}).click();
+async function click(name){
+ const before=['+','−'].includes(name)?await page.locator('.map-zoom-controls .help').textContent():null;
+ await page.getByRole('button',{name,exact:true}).click();
+ // Zoom/reset intentionally paints on requestAnimationFrame. Observe that
+ // frame's result before continuing instead of asserting the previous DOM.
+ if(name==='Reset view')await page.waitForFunction(()=>document.querySelector('.map-zoom-controls .help')?.textContent==='100%'&&document.querySelector('.map-content')?.getAttribute('transform')==='translate(0 0)');
+ else if(before&&before!==(name==='+'?'240%':'6%'))await page.waitForFunction(previous=>document.querySelector('.map-zoom-controls .help')?.textContent!==previous,before);
+}
 const read=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('traveller-trade-route-calculator:v1')));
 const zoom=()=>page.locator('.map-zoom-controls .help').textContent();
 const level=()=>page.locator('.world-map').getAttribute('data-map-level');
 const transform=()=>page.locator('.map-content').getAttribute('transform');
 async function reach(target){for(let i=0;i<30&&await zoom()!==target;i++)await click(target==='240%'?'+':'−');assert.equal(await zoom(),target);}
 async function drag(){
- const b=await page.locator('.world-map').boundingBox();
- await page.mouse.move(b.x+b.width*.6,b.y+b.height*.5);await page.mouse.down();
- await page.mouse.move(b.x+b.width*.6+60,b.y+b.height*.5+30,{steps:8});await page.mouse.up();
+ // Raw mouse coordinates do not auto-scroll like locator.click(). The map can
+ // be below the viewport after toolbar actions or full-page screenshots.
+ await page.locator('.world-map').scrollIntoViewIfNeeded();
+ const before=await transform(),b=await page.locator('.world-map').boundingBox(),viewport=page.viewportSize();
+ const x=b.x+b.width*.6,y=b.y+b.height*.5;
+ assert.ok(x>=0&&y>=0&&x+60<viewport.width&&y+30<viewport.height,'Drag coordinates must be inside the visible browser viewport');
+ await page.mouse.move(x,y);await page.mouse.down();
+ await page.mouse.move(x+60,y+30,{steps:8});await page.mouse.up();
+ await page.waitForFunction(previous=>document.querySelector('.map-content')?.getAttribute('transform')!==previous,before);
 }
 try{
  await page.goto(process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/');
  await click('Set up campaign');await page.locator('#setup-world .picker-selection').getByText(/Hex 1910/).waitFor();
  await click('Start campaign');await page.locator('#modal').waitFor({state:'hidden'});
  const before=await read();assert.equal(await level(),'world');
- assert.equal(await page.getByLabel('Political territory',{exact:true}).isChecked(),false);
+ assert.equal(await page.getByLabel('Political territory',{exact:true}).isChecked(),true);
+ await page.locator('.territory-fill').first().waitFor({state:'attached'});
+ await page.getByLabel('Political territory',{exact:true}).uncheck();
+ assert.equal(await page.locator('.map-territories').count(),0);
  const plainWorlds=await page.locator('.world-name').allTextContents();
  await page.getByLabel('Political territory',{exact:true}).check();
  await page.locator('.territory-fill').first().waitFor({state:'attached'});
  assert.deepEqual(await page.locator('.world-name').allTextContents(),plainWorlds);assert.deepEqual(await read(),before);
  await reach('240%');assert.ok(await page.locator('.world-uwp').count()>0);
  assert.ok(await page.locator('.territory-fill').count()>0);
- await page.locator('.world-map').screenshot({path:artifacts+'/map-world-uwp.png'});
+ await page.screenshot({fullPage:true,path:artifacts+'/map-world-uwp.png'});
  await page.getByLabel('Political territory',{exact:true}).uncheck();assert.equal(await page.locator('.map-territories').count(),0);
  assert.ok(await page.locator('.world-uwp').count()>0);
  await page.getByLabel('Political territory',{exact:true}).check();
  await click('Reset view');assert.equal(await zoom(),'100%');assert.equal(await page.locator('.world-uwp').count(),0);
- assert.ok(await page.locator('.world-name').count()>0);await page.locator('.world-map').screenshot({path:artifacts+'/map-worlds.png'});
+ assert.ok(await page.locator('.world-name').count()>0);await page.screenshot({fullPage:true,path:artifacts+'/map-worlds.png'});
  await reach('20%');assert.equal(await level(),'world');assert.ok(await page.locator('.world-name').count()>0);
  await click('−');assert.equal(await level(),'subsector');
  await page.locator('.subsector-label[data-sector="Spinward Marches"][data-subsector="C"] .subsector-name').getByText('Regina',{exact:true}).waitFor();
  await page.locator('#map-load-status').getByText(/could not load/).waitFor();
- await click('Refresh nearby');await page.waitForFunction(()=>document.querySelector('#map-load-status').textContent==='');
+ const beforeRetry=denebTableAttempts;
+ const retryResponse=page.waitForResponse(response=>{const url=new URL(response.url());return url.pathname.endsWith('/sec')&&url.searchParams.get('sector')==='Deneb'&&response.status()===200;});
+ await click('Refresh nearby');
+ const recovered=await retryResponse;await recovered.finished();
+ assert.ok(denebTableAttempts>beforeRetry,'Refresh must retry the failed Deneb world table');
+ // render() temporarily clears the status before the scheduled retry begins.
+ // Wait for the response and its painted frame, not that transient empty text.
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ await page.waitForFunction(()=>document.querySelector('#map-load-status').textContent==='');
  assert.ok(await page.locator('.overview-worlds circle').count()>0);
  assert.equal(await page.locator('.world-name,.world-uwp,.hex-grid').count(),0);
  assert.equal(await page.locator('.overview-labels [data-action]').count(),0);
- await page.locator('.world-map').screenshot({path:artifacts+'/map-subsectors.png'});
+ await page.screenshot({fullPage:true,path:artifacts+'/map-subsectors.png'});
  await drag();assert.notEqual(await transform(),'translate(0 0)');assert.deepEqual(await read(),before);
  const pan=await transform();await page.getByLabel('Show hexes',{exact:true}).uncheck();assert.equal(await transform(),pan);
  await reach('6%');assert.equal(await level(),'sector');
  assert.ok(await page.locator('.sector-name').count()>0);assert.ok(await page.locator('.subsector-letter').count()>0);
  assert.equal(await page.locator('.overview-worlds circle').count(),0);
  const name=page.locator('.sector-label[data-sector="Spinward Marches"]');assert.equal(await name.count(),1);
- await page.locator('.world-map').screenshot({path:artifacts+'/map-sectors.png'});
+ await page.screenshot({fullPage:true,path:artifacts+'/map-sectors.png'});
  await page.getByLabel('Political territory',{exact:true}).uncheck();
  await page.waitForTimeout(300);const count=requests;await click('−');await click('−');assert.equal(await zoom(),'6%');
  await drag();assert.deepEqual(await read(),before);await page.waitForTimeout(400);assert.equal(requests,count);
@@ -80,8 +109,8 @@ try{
  assert.equal(await page.locator('.world-info strong').first().textContent(),'Jenghe');assert.deepEqual(await read(),before);
  await click('Current system');await reach('6%');await page.setViewportSize({width:390,height:844});
  assert.ok(await page.locator('main').evaluate(el=>el.scrollWidth<=el.clientWidth+2));
- await drag();assert.deepEqual(await read(),before);await page.locator('.world-map').screenshot({path:artifacts+'/map-sectors-mobile.png'});
+ await drag();assert.deepEqual(await read(),before);await page.screenshot({fullPage:true,path:artifacts+'/map-sectors-mobile.png'});
  await click('Reset view');assert.equal(await level(),'world');assert.deepEqual(await read(),before);
  assert.deepEqual(errors,[]);
- console.log('PASS: all-zoom territory toggle, preserved world/UWP layers, subsectors and dots, sector names/letters, API retry, bounded requests, pan/cancel/reset, mobile and campaign immutability.');
-}finally{await browser.close();}
+ console.log('PASS: default-on and all-zoom territory toggle, preserved world/UWP layers, subsectors and dots, sector names/letters, API retry, bounded requests, pan/cancel/reset, mobile and campaign immutability.');
+}finally{await context.tracing.stop({path:artifacts+'/map-overview-trace.zip'});await browser.close();}
