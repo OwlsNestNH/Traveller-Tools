@@ -83,16 +83,16 @@ async function refillLss(force=false){
  if(stock(s)>=140-1e-9||!force&&stock(s)>=105)return;
  const cost=Math.ceil((140-stock(s))*100-1e-7); // Cr14,000 /140 LSS, once.
  if(BigInt(s.bank)<BigInt(cost)){report.decisions.push({kind:'LSS unavailable: insufficient cash',world:s.actual,cost,bank:s.bank});throw Error('Expected operating cash shortfall stops this trip before unsupported travel.');}
- await click('refill-support');assert.equal(await action('service-confirm').isEnabled(),true);await click('service-confirm');await page.locator('#service-panel').waitFor({state:'hidden'});
+ await tab('Overview');await click('refill-support');assert.equal(await action('service-confirm').isEnabled(),true);await click('service-confirm');await page.locator('#service-panel').waitFor({state:'hidden'});
  const after=await checkpoint('LSS normal refill');assert.equal(after.bank,String(BigInt(s.bank)-BigInt(cost)));assert.ok(Math.abs(stock(after)-140)<1e-9);assert.equal(after.ledger.length,s.ledger.length+1);check('normal LSS refill: exact prorating; no duplicate cabin/person payment',{world:s.worlds[s.actual].name,cost});
 }
 async function refuel(target){
  const s=await read(),tons=target-s.ship.fuel.aboardTons;if(tons<=0)return;assert.equal(s.worlds[s.actual].emptySpace,undefined,'Never refuel empty space');const port=s.worlds[s.actual].uwp[0],type=['A','B'].includes(port)?'refined':'unrefined';assert.ok(['A','B','C','D'].includes(port),'Do not invent supplier');const cost=tons*(type==='refined'?500:100);assert.ok(BigInt(s.bank)>=BigInt(cost),'Operating fuel affordability');
- await click('refuel');await page.locator('#service-form [name="fuelTons"]').fill(String(tons));await page.locator('#service-form [name="fuelType"]').selectOption(type);await click('service-confirm');await page.locator('#service-panel').waitFor({state:'hidden'});
+ await tab('Overview');await click('refuel');await page.locator('#service-form [name="fuelTons"]').fill(String(tons));await page.locator('#service-form [name="fuelType"]').selectOption(type);await click('service-confirm');await page.locator('#service-panel').waitFor({state:'hidden'});
  const after=await checkpoint('fuel purchase '+tons+'t '+type);assert.equal(after.ship.fuel.aboardTons,target);assert.equal(after.bank,String(BigInt(s.bank)-BigInt(cost)));check('fuel only fills missing stock',{world:s.worlds[s.actual].name,tons,target,type,cost});
 }
 async function payExpense(kind,count=1){
- await click('ship-expenses');const labels={salary:'Crew salaries',mortgage:'Mortgage',maintenance:'Monthly maintenance',berthing:'Port costs'};
+ await tab('Overview');await click('ship-expenses');const labels={salary:'Crew salaries',mortgage:'Mortgage',maintenance:'Monthly maintenance',berthing:'Port costs'};
  await page.getByRole('button',{name:labels[kind]+' ›',exact:true}).click();
  if(kind==='berthing'&&await action('expense-berthing-rate').count()){await click('expense-berthing-rate');await page.locator('#expense-form').waitFor();}
  await page.locator('#expense-form [name="'+(kind==='berthing'?'weeks':'payments')+'"]').fill(String(count));
