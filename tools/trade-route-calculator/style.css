@@ -170,8 +170,9 @@ main{padding-top:18px}
 .navigation-panel .route-title{flex:1 1 190px}
 .navigation-panel .route-title>.help{font-size:12px;line-height:1.5}
 .navigation-panel .route-jump{flex:1 1 310px;max-width:52%}
-.navigation-panel .route-next{gap:12px;align-items:center}
-.navigation-panel .next-destination{flex:1 1 110px}
+/* A long Jump label must not shrink the destination to a narrow letter stack. */
+.navigation-panel .route-next{display:grid;grid-template-columns:minmax(130px,1fr) minmax(0,1.25fr);gap:12px;align-items:center}
+.navigation-panel .next-destination{min-width:0;width:100%;max-width:none;overflow-wrap:anywhere}
 .navigation-panel .next-destination>.help{font-size:10px;text-transform:uppercase;letter-spacing:.35px}
 .navigation-panel .route-next>button{min-width:0;min-height:44px;flex:0 1 auto;padding:9px 14px;font-size:14px}
 .navigation-panel .route-jump>p{font-size:11px;line-height:1.5}
@@ -203,7 +204,7 @@ main{padding-top:18px}
  .bezel-screw{width:6px;height:6px}.bezel-screw:before,.bezel-screw:after{left:1px;top:2px;width:2px}.bezel-screw.top-left{top:1px;left:1px}.bezel-screw.top-right{top:1px;right:1px}.bezel-screw.bottom-left{bottom:1px;left:1px}.bezel-screw.bottom-right{bottom:1px;right:1px}
  .mfd-screen>header{padding:14px var(--shell-gutter)}.mfd-screen>footer{padding:14px var(--shell-gutter);line-height:1.6}
  main{padding-top:12px}.world-screen.world-info{padding:12px}
- .navigation-panel .route-heading{padding:12px 9px;gap:10px}.navigation-panel .route-jump{flex-basis:100%;max-width:100%}.navigation-panel .route-next>button{font-size:14px;flex-basis:58%;padding:9px}.navigation-panel .route-jump>p{text-align:left}
+ .navigation-panel .route-heading{padding:12px 9px;gap:10px}.navigation-panel .route-jump{flex-basis:100%;max-width:100%}.navigation-panel .route-next{grid-template-columns:minmax(0,1fr);gap:9px;align-items:stretch}.navigation-panel .route-next>button{font-size:14px;flex-basis:58%;padding:9px}.navigation-panel .route-jump>p{text-align:left}
  .navigation-panel .route-list{padding:4px 8px 10px;gap:7px}.navigation-panel .map-caption{padding:7px 9px}
  .navigation-panel .map-toolbar{padding:9px 8px;gap:8px}.navigation-panel .map-tools{gap:7px}.navigation-panel .map-tools button,.navigation-panel .map-zoom-controls button,.navigation-panel .route-menu>summary{min-height:40px;padding:8px 10px;font-size:12px}.navigation-panel .map-switch{min-height:40px;font-size:12px}
  .navigation-panel .map-toolbar-row{gap:9px}.navigation-panel .jump-bar{margin-left:0}.navigation-panel .jump-bar button{min-height:40px}.navigation-panel .map-zoom-hint{flex-basis:100%;margin:0;text-align:left;white-space:normal}.navigation-panel .map-hint{padding:9px}
@@ -237,3 +238,6 @@ main{padding-top:18px}
 .service-comfort,.service-audit{padding:.8rem;border:1px solid var(--border,#244252);border-radius:4px;margin:.8rem 0}.service-comfort summary,.service-audit summary{cursor:pointer;color:#64d4df}
 #service-quote .notice{margin:1rem 0}.service-panel .rule-footnote{font-size:.69rem;line-height:1.6;margin-top:.7rem}
 @media(max-width:700px){.service-panel{width:100%}.service-quantity{gap:.35rem}.service-quantity button{padding:.5rem}.service-total strong{font-size:1.5rem}.service-actions{position:sticky;bottom:0;background:#0b1b28;padding:.65rem 0;margin-bottom:0}.service-comparison{gap:.5rem}}
+.service-panel .check{min-height:44px;align-items:center;gap:.6rem;margin:.4rem 0}
+.service-panel input[type=checkbox]{width:20px;height:20px;min-width:20px;flex:none}
+.service-panel>button[data-action="service-back"]{min-height:32px}

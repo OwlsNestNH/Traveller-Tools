@@ -11,6 +11,7 @@ import {join} from 'node:path';
 import {guiFixture,campaignKey} from './fixtures/gui-parity.mjs';
 import * as R from '../js/rules.mjs';
 import * as S from '../js/state.mjs';
+import {supportStock} from '../js/life-support.mjs';
 
 const base=process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/';
 const artifacts=fileURLToPath(new URL('../verification-artifacts/',import.meta.url));
@@ -26,6 +27,12 @@ const errorText=error=>error?.stack||String(error);
 
 function fixture(){
  const f=guiFixture(),s=f.state,world=R.context(s.worlds[s.actual],core);
+ // This suite isolates trade effects using canonical physical inventory.
+ // Legacy-to-LSS migration is tested separately by the service/native suites;
+ // keep strict whole-ship equality across every buy/sale and cancellation here.
+ assert.equal(supportStock(s.ship).remainingUnits,'28');
+ s.ship.lifeSupport={capacityHours:672,stockUnits:{numerator:'28',denominator:'1'}};
+ assert.equal(supportStock(s.ship).remainingDays,'14','Canonical fixture retains exactly the original endurance');
  s.name='Disposable trade complication verification';
  s.settings={...s.settings,profit:100,tax:false,insurance:false,creditStep:1};
  s.contracts=[];s.policies=[];s.undo=[];
@@ -143,7 +150,7 @@ async function purchaseCase(page,context,result,f){
   const after=await read(page),lot=after.lots.at(-1),entry=after.ledger.at(-1);
   assert.equal(after.lots.length,before.lots.length+1,'Each Buy creates a separate lot');assert.equal(lot.quantity,'1');
   assert.equal(lot.basis,offer.unitPrice);assert.equal(lot.goodsValue,offer.unitPrice);assert.equal(after.bank,String(BigInt(before.bank)-BigInt(offer.unitPrice)));
-  assert.equal(after.hours,before.hours,'Flags add no campaign time');assert.deepEqual(after.ship,before.ship);assert.deepEqual(after.route,before.route);assert.deepEqual(after.contracts,before.contracts);
+  assert.equal(after.hours,before.hours,'Flags add no campaign time');assert.deepEqual(after.ship,before.ship,'Trade retains the complete ship, including exactly 28 LSS');assert.deepEqual(after.ship.lifeSupport.stockUnits,{numerator:'28',denominator:'1'});assert.deepEqual(after.route,before.route);assert.deepEqual(after.contracts,before.contracts);
   assert.deepEqual(lot.audit.price.audit,offer.audit,'Each lot preserves the exact supplier price dice and flag');
   assert.deepEqual(entry.purchase.priceAudit,offer.audit,'Purchase ledger independently retains the price audit');
   assert.equal(after.snapshots[0].offers.find(o=>o.id===id).remaining,String(Number(offer.remaining)-1));
@@ -215,7 +222,7 @@ async function saleCase(page,context,result,f){
  const after=await read(page),sales=after.ledger.filter(e=>e.type==='Sale');
  assert.equal(after.lots.length,0,'Both full-sale lots leave cargo');assert.equal(sales.length,2);
  assert.equal(after.bank,String(BigInt(before.bank)+3n*BigInt(expectedBan)+3n*BigInt(manual)),'Only ordinary sale arithmetic affects the bank');
- assert.equal(after.hours,before.hours,'Flags do not advance time');assert.deepEqual(after.ship,before.ship);assert.deepEqual(after.route,before.route);assert.deepEqual(after.contracts,before.contracts);assert.deepEqual(after.snapshots,before.snapshots);
+ assert.equal(after.hours,before.hours,'Flags do not advance time');assert.deepEqual(after.ship,before.ship,'Trade retains the complete ship, including exactly 28 LSS');assert.deepEqual(after.ship.lifeSupport.stockUnits,{numerator:'28',denominator:'1'});assert.deepEqual(after.route,before.route);assert.deepEqual(after.contracts,before.contracts);assert.deepEqual(after.snapshots,before.snapshots);
  for(const [id,dice,outcome,price]of [['sale-pair',pair,'complication',expectedBan],['sale-severe',triple,'severe',manual]]){
   const entry=sales.find(e=>e.lotId===id),a=entry.audit.audit;
   assert.deepEqual(a.dice,{dice,total:9});assert.deepEqual(a.tradeComplication,{version:1,result:outcome});

@@ -112,6 +112,19 @@ async function run(stops){
   assert.equal(await jump.textContent(),'Jump to '+fixture.state.worlds[targetId].name+' →');
   assert.equal(await jump.isDisabled(),false);
   assert.equal(await page.locator('.next-destination strong').textContent(),fixture.state.worlds[targetId].name);
+  const nextLayout=await page.locator('.route-next').evaluate(container=>{
+   const box=el=>{const b=el.getBoundingClientRect();return {left:b.left,right:b.right,top:b.top,bottom:b.bottom,width:b.width,overflow:el.scrollWidth-el.clientWidth};};
+   const destination=container.querySelector('.next-destination'),name=destination.querySelector('strong');
+   return {viewport:innerWidth,container:box(container),destination:box(destination),name:box(name),jump:box(container.querySelector('[data-action="jump"]'))};
+  });
+  assert.ok(nextLayout.destination.overflow<=2&&nextLayout.name.overflow<=2,'The full next-world name wraps without horizontal clipping');
+  if(nextLayout.viewport>=1100)assert.ok(nextLayout.destination.width>=129,'Desktop next destination keeps at least 130px of readable width');
+  if(nextLayout.viewport<=620){
+   assert.ok(nextLayout.jump.top>=nextLayout.destination.bottom-1,'Mobile next destination sits above its Jump button');
+   assert.ok(Math.abs(nextLayout.destination.width-nextLayout.container.width)<=2,'Mobile next destination uses the full route-control width');
+   assert.ok(Math.abs(nextLayout.jump.width-nextLayout.container.width)<=2,'Mobile Jump uses the full route-control width');
+  }
+
   assert.equal(await page.locator('.route-list [aria-current="location"]').getAttribute('data-arg'),fixture.state.actual);
   assert.equal(await page.locator('.route-list button.next').getAttribute('data-arg'),targetId);
   const header=await page.locator('.route-heading').evaluate(el=>{

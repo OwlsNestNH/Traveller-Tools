@@ -119,6 +119,13 @@ try{
   await fill('fuelRemaining',13);await click('service-review');await unchanged('Manual reduction review');
   await click('service-confirm');await closed();const reduced=await read();
   assert.equal(reduced.ship.fuel.aboardTons,13);assert.equal(reduced.bank,f.state.bank);assert.deepEqual(reduced.ledger,f.state.ledger,'Manual reduction is not a fuel purchase');assert.equal(reduced.hours,f.state.hours);assert.match(JSON.stringify(reduced.events),/seven-ton leak/);
+  const entry=reduced.events.find(e=>e.fuelCorrection);assert.ok(entry,'Correction has a recorded audit event');
+  await click('tab','History');await click('event-audit',entry.id);
+  const audit=page.locator('#modal-body');assert.equal(await audit.getByRole('heading',{name:'Fuel aboard correction',exact:true}).count(),1);
+  const facts=await audit.locator('dt').evaluateAll(nodes=>Object.fromEntries(nodes.map(node=>[node.textContent,node.nextElementSibling.textContent])));
+  assert.equal(facts['Fuel before'],'20 t');assert.equal(facts['Actual fuel remaining'],'13 t');assert.equal(facts['Fuel removed'],'7 t');assert.equal(facts.Reason,'Referee recorded a seven-ton leak');assert.equal(facts['Bank change'],'Cr 0 · no refund');
+  assert.doesNotMatch(await audit.textContent(),/Additional inputs were not saved/);
+  await page.locator('#modal-cancel').click();await page.locator('#modal').waitFor({state:'hidden'});assert.deepEqual(await read(),reduced,'Reading correction audit does not write campaign state');
   await undo();assert.equal((await read()).ship.fuel.aboardTons,20);assert.equal((await read()).bank,f.state.bank);
  });
  for(const hydro of ['0','?'])await run('water advisory hydro '+hydro,{port:'X',hydro},async h=>{
@@ -189,9 +196,29 @@ try{
    if(type==='refuel')await fill('expenseNotes','LongUnbrokenServiceNote'.repeat(12));else{await page.locator('.service-comfort > summary').click();await fill('comfortNote','LongUnbrokenComfortNote'.repeat(12));}
    for(const width of [2160,1440,768,390,320]){
     await page.setViewportSize({width,height:1100});await frames();await overviewGeometry(page);
-    const a11y=await page.locator('#service-panel').evaluate(panel=>({heading:!!panel.querySelector('h1,h2,h3'),labels:[...panel.querySelectorAll('input:not([type="hidden"]),select,textarea')].map(el=>({name:el.name,label:el.labels?.length||el.getAttribute('aria-label')||el.getAttribute('aria-labelledby')})),bounds:[...panel.querySelectorAll('button,input,select,textarea')].filter(el=>el.getBoundingClientRect().width).map(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width,height:r.height};}),overflow:panel.scrollWidth-panel.clientWidth,viewport:innerWidth}));
+    const a11y=await page.locator('#service-panel').evaluate(panel=>{
+     const rect=el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};};
+     return {heading:!!panel.querySelector('h1,h2,h3'),labels:[...panel.querySelectorAll('input:not([type="hidden"]),select,textarea')].map(el=>({name:el.name,label:el.labels?.length||el.getAttribute('aria-label')||el.getAttribute('aria-labelledby')})),bounds:[...panel.querySelectorAll('button,input,select,textarea')].filter(el=>el.getBoundingClientRect().width).map(el=>{
+      // A native checkbox is activated by its associated label as well as its
+      // small visual box. Measure the real, clickable target, excluding margin.
+      const checkbox=el.type==='checkbox',label=checkbox?[...(el.labels||[])].find(label=>label.getBoundingClientRect().width):null;
+      return {name:el.name||el.dataset.action||el.id||el.textContent.trim(),type:el.type||el.tagName.toLowerCase(),checkbox,labelTarget:!!label,control:rect(el),target:rect(label||el)};
+     }),overflow:panel.scrollWidth-panel.clientWidth,viewport:innerWidth};
+    });
     assert.ok(a11y.heading,'Service screen has a heading');for(const input of a11y.labels)assert.ok(input.label,'Accessible label for '+input.name);
-    assert.ok(a11y.overflow<=2,'Service screen does not overflow');for(const box of a11y.bounds)assert.ok(box.left>=-1&&box.right<=a11y.viewport+1&&box.height>=24,'Controls are visible and usable within the viewport');
+    assert.ok(a11y.overflow<=2,'Service screen does not overflow');
+    for(const item of a11y.bounds){
+     const box=item.target,diagnostic=type+' at '+width+'px: '+JSON.stringify(item);
+     if(item.checkbox)assert.ok(item.labelTarget,'Checkbox has a native associated-label hit target: '+diagnostic);
+     assert.ok(box.left>=-1&&box.right<=a11y.viewport+1&&box.height>=24,'Controls have usable in-viewport hit targets: '+diagnostic);
+    }
+    if(type==='refuel'){
+     const checkbox=page.locator('#service-form [name="otherSupplier"]'),label=checkbox.locator('xpath=ancestor::label[1]'),b=await label.boundingBox(),before=await checkbox.isChecked();
+     // Click away from the checkbox icon to prove the measured label really
+     // is part of its target, then restore the original draft value.
+     await label.click({position:{x:b.width-4,y:b.height/2}});assert.equal(await checkbox.isChecked(),!before,'Associated-label edge toggles its checkbox');
+     await label.click({position:{x:b.width-4,y:b.height/2}});assert.equal(await checkbox.isChecked(),before);
+    }
     await unchanged(type+' responsive layout '+width);
     await page.screenshot({path:artifacts+'/service-'+type+'-'+width+'.png',fullPage:true});
    }
