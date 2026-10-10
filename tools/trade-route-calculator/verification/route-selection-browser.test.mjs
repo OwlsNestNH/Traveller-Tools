@@ -5,6 +5,7 @@ import {mkdir,writeFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
 import * as S from '../js/state.mjs';
+import {createDashboardBaseline} from '../js/dashboard-baseline.mjs';
 import {normalize} from '../js/map.mjs';
 
 const root=fileURLToPath(new URL('../../../',import.meta.url));
@@ -22,7 +23,7 @@ const sample=[
  {Name:'Jenghe',Hex:'1810',UWP:'C799663-9',PBG:'323',Zone:'',WorldX:-111,WorldY:-70,Sector:'Spinward Marches'}
 ];
 const worlds=sample.map(normalize),origin=worlds[0].id,known=worlds[1].id,first='-109,-70',second='-109,-71';
-const seed=S.initial();Object.assign(seed,{initialized:true,bank:'100000',actual:origin,worlds:Object.fromEntries(worlds.map(w=>[w.id,w])),route:[origin]});S.validate(seed);
+const seed=S.initial();Object.assign(seed,{initialized:true,bank:'100000',actual:origin,worlds:Object.fromEntries(worlds.map(w=>[w.id,w])),route:[origin]});seed.dashboardBaseline=createDashboardBaseline(seed);S.validate(seed);
 const key='traveller-trade-route-calculator:v1',seedBytes=JSON.stringify(seed),errors=[],checks=[],waiters=new Map();
 const nextHex=id=>new Promise((resolve,reject)=>{
  assert.ok(!waiters.has(id),'Only one expected request per hex');

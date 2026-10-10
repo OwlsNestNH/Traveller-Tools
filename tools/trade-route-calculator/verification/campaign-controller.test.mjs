@@ -197,4 +197,7 @@ function deterministicIds(t){
  t.after(()=>Object.defineProperty(globalThis,'crypto',descriptor));
 }
 
-test('every checkpoint matches released campaign JSON bytes, including IDs, revisions, audits and inverse Undo',async t=>{deterministicIds(t);const expected=JSON.parse(await readFile(new URL('./fixtures/campaign-writes-baseline.json',import.meta.url),'utf8'));assert.deepEqual(replay(harness(t)),expected);});
+test('every checkpoint matches released campaign JSON bytes apart from explicit Dashboard metadata',async t=>{
+ deterministicIds(t);const expected=JSON.parse(await readFile(new URL('./fixtures/campaign-writes-baseline.json',import.meta.url),'utf8')),actual=replay(harness(t));
+ assert.deepEqual(actual.map((raw,index)=>{const state=JSON.parse(raw);if(index>=10)assert.deepEqual(state.dashboardBaseline,{version:1,origin:'current',bank:'100000',dateLabel:'001-1105',hours:0,excludedLedgerIds:[]});else assert.equal(state.dashboardBaseline,undefined);delete state.dashboardBaseline;return JSON.stringify(state);}),expected);
+});

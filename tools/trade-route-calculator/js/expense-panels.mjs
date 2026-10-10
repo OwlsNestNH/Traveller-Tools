@@ -1,13 +1,13 @@
-import {ruleInfo} from './rule-references.mjs?v=world-history-20261010-40';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=world-history-20261010-40';
-import {passengerShip} from './passengers.mjs?v=world-history-20261010-40';
+import {ruleInfo} from './rule-references.mjs?v=dashboard-20261010-41';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=dashboard-20261010-41';
+import {passengerShip} from './passengers.mjs?v=dashboard-20261010-41';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=world-history-20261010-40';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=world-history-20261010-40';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=world-history-20261010-40';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=world-history-20261010-40';
-import {creditStep} from './rounding.mjs?v=world-history-20261010-40';
-import {roll} from './rules.mjs?v=world-history-20261010-40';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=dashboard-20261010-41';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=dashboard-20261010-41';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=dashboard-20261010-41';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=dashboard-20261010-41';
+import {creditStep} from './rounding.mjs?v=dashboard-20261010-41';
+import {roll} from './rules.mjs?v=dashboard-20261010-41';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

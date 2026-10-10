@@ -1,4 +1,4 @@
-import {up} from './rounding.mjs?v=world-history-20261010-40';
+import {up} from './rounding.mjs?v=dashboard-20261010-41';
 import {dec,rat,add,sub,mul,div,cmp,floor,sum,decimal,auditNumber,allocate,credit} from './amounts.mjs';
 export const VERSION='0.1.0';
 export function die(){const a=new Uint32Array(1);let x;do{crypto.getRandomValues(a);x=a[0];}while(x>=4294967292);return x%6+1;}

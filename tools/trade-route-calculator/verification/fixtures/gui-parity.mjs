@@ -1,6 +1,7 @@
 // Synthetic, deterministic GUI records. No live campaign or third-party data.
 import {readFile} from 'node:fs/promises';
 import {initial,validate} from '../../js/state.mjs';
+import {createDashboardBaseline} from '../../js/dashboard-baseline.mjs';
 import {normalize} from '../../js/map.mjs';
 import {context,quote} from '../../js/rules.mjs';
 import {configureFuel} from '../../js/fuel.mjs';
@@ -33,6 +34,9 @@ export function guiFixture(stops=12){
  state.contracts=[{id:'contract-fixture',kind:'freight',status:'accepted',origin:state.actual,destination:state.route[state.routeIndex+1],description:'Synthetic sealed machine spares',quantity:'5',payment:'5000',dueHours:24*30,audit:{manual:true,reason:'Deterministic verification contract'}}];
  state.ledger=[{id:'ledger-opening',type:'Opening bank',amount:'765432',hours:0,world:state.actual}];
  state.events=[{id:'event-setup',label:'Campaign setup',hours:0,world:state.actual},{id:'event-cargo',label:'Opening cargo',hours:0,world:state.actual,reason:'Synthetic fixture; no generated rolls'}];
+ // Model an already-migrated save so exact-byte UI checks still catch any
+ // unexpected write; baseline migration has its own browser regression suite.
+ state.dashboardBaseline=createDashboardBaseline(state);
  validate(state);
  const bytes=JSON.stringify(state);
  return {state,bytes,apiWorlds,universe:{Sectors:[{Names:[{Text:'Verification Reach'}],X:-4,Y:-1,Milieu:'M1105'}]},metadata:{Subsectors:Array.from({length:16},(_,i)=>({Index:String.fromCharCode(65+i),Name:'Verification '+String.fromCharCode(65+i)}))},sec:'Hex\tName\n'+apiWorlds.map(w=>w.Hex+'\t'+w.Name).join('\n')};

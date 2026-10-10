@@ -19,7 +19,7 @@ const restore=(s,event,key='techLevel')=>S.transition(s,'World field reverted',n
 const setup=s=>{const h=depositHarness(s,{setTimeout:()=>0,clearTimeout(){}});h.api.setTab('History');h.api.render();return h;};
 const open=(h,event,key='techLevel')=>h.api.actions['world-field-revert'](event.id+'|'+key);
 const submitEvent=h=>({preventDefault(){},currentTarget:h.dom.ids.get('modal-form')});
-const material=s=>Object.fromEntries(Object.entries(s).filter(([key])=>!['revision','events','undo'].includes(key)));
+const material=s=>Object.fromEntries(Object.entries(s).filter(([key])=>!['revision','events','undo','dashboardBaseline'].includes(key)));
 const unchanged=(h,raw,state)=>{assert.equal(h.bytes(),raw);same(h.api.state,state);assert.equal(h.counters.writes,0);};
 const noSuccess=h=>assert.doesNotMatch(ui(h).message,/saved\.|undone\.|replaced\./i);
 const roll=()=>({dice:[2,2,2,2,2,2],total:12});

@@ -5,6 +5,7 @@ import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
 import * as S from '../js/state.mjs';
+import {createDashboardBaseline} from '../js/dashboard-baseline.mjs';
 
 // Real Chromium integration tests. Seed only a fresh synthetic campaign before
 // boot; every subsequent campaign change goes through the rendered application
@@ -42,6 +43,7 @@ function campaign({capacity='60', configured=true}={}) {
   state.ship.armed = configured;
   state.trader.rank = configured ? 2 : 0;
   state.trader.soc = configured ? 1 : 0;
+  state.dashboardBaseline = createDashboardBaseline(state);
   return S.validate(state);
 }
 const errorText = error => error?.stack || String(error);

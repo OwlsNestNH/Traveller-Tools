@@ -1,4 +1,4 @@
-import {searchWorlds,loadWorld} from './map.mjs?v=world-history-20261010-40';
+import {searchWorlds,loadWorld} from './map.mjs?v=dashboard-20261010-41';
 
 export const planetSearchLabel=w=>[w.name,w.subsectorName,w.sector,w.hex].join(' — ');
 

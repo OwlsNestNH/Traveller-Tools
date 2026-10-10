@@ -395,3 +395,11 @@ Keep the existing 240% close view reachable and add one further ×1.2 step to 28
 - Retain all original and corrective audits. No bulk reset, audit deletion, campaign-history bypass or departure-identity migration is included.
 - Keep dedicated Jump Undo and History Undo subject to the existing mulligan/closed-jump rules. A protected History attempt must display an explanatory warning and perform no write; read-only controls remain disabled.
 - Cancel, stale revisions, editor handoff, invalid imports, storage failure and repeated confirmation must not apply a partial or duplicate correction. Unknown or saved-but-unpublished outcomes require reload rather than a blind retry.
+
+## Financial Dashboard (approved .41)
+
+- Provide a separate Dashboard tab with cash balance, recorded operating result by jump/visit, cash expenses by category, and cash income by category.
+- A new campaign begins at its opening bank/date. An older campaign captures its current bank/date once under the editing owner and reports only subsequent activity. Preserve that starting point across reload/import; do not reconstruct earlier activity.
+- Derive all views from saved campaign records. Reuse the report's realized-trading/transport/operating-cost semantics; distinguish cash flow, capital adjustments and incomplete evidence. Do not add a second ledger or external chart dependency.
+- Undo and ownership retain their existing protections. A baseline-crossing Undo must visibly reconcile the current bank without shifting the starting point or inventing profit.
+- Render exact Credits in accessible tables, adapt to narrow displays, and verify source/native/browser behavior before release.

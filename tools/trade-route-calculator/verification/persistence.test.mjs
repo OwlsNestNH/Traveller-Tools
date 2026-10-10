@@ -1,3 +1,5 @@
+import {createDashboardBaseline} from '../js/dashboard-baseline.mjs';
+import {dashboardData} from '../js/dashboard-data.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Store, KEY} from '../js/persistence.mjs';
@@ -173,7 +175,7 @@ test('schema-1 campaigns retain populated history, optional legacy fields and wo
  const saved=populated();
  assert.deepEqual(validate(JSON.parse(JSON.stringify(saved))),saved);
  store.replace(saved,0);const restored=store.read();
- assert.deepEqual(restored,saved);assert.equal(undo(restored).hours,0);
+ assert.deepEqual(restored,{...saved,dashboardBaseline:createDashboardBaseline(saved)});assert.equal(undo(restored).hours,0);
  assert.deepEqual(undo(restored).policies,saved.policies);assert.deepEqual(undo(restored).ledger,saved.ledger);
  const legacy=structuredClone(saved);
  delete legacy.settings.reducedProfitLimitsEnabled;delete legacy.settings.minPurchasePercent;delete legacy.settings.maxSalePercent;
@@ -338,4 +340,44 @@ test('passenger Store save/reload/import replacement preserves baseline, receipt
  const restored=undo(store.read());store.save(restored,delivered.revision);assert.equal(store.read().bank,'100000');assert.equal(store.read().contracts[0].status,'accepted');assert.deepEqual(store.read().ship.lifeSupport,stockBefore);
  const before=env.values.get(KEY),bad=store.read();bad.contracts[0].count=-1;assert.throws(()=>store.replace(bad,restored.revision));assert.equal(env.values.get(KEY),before);
  store.editable=false;assert.throws(()=>store.save(transition(store.read(),'No write',n=>n.name='No'),restored.revision),/read-only/);assert.equal(env.values.get(KEY),before);
+});
+
+// Dashboard metadata is a one-time snapshot under the same exclusive writer.
+// It must not impersonate an economic action or a campaign revision.
+test('Dashboard legacy baseline persists once, preserves original fields, revision and Undo',async t=>{
+ const env=environment(t),source=populated();delete source.settings.useRawIllegalPrices;source.dateLabel='';
+ const original=JSON.stringify(source);env.values.set(KEY,original);let writes=0;const put=localStorage.setItem;localStorage.setItem=(key,value)=>{if(key===KEY)writes++;return put(key,value);};
+ const store=env.store();const readBefore=store.read();assert.equal(writes,0);assert.equal(readBefore.dashboardBaseline,undefined);await store.acquire();await tick();
+ const captured=JSON.parse(env.values.get(KEY)),b=captured.dashboardBaseline;assert.equal(writes,1);assert.equal(b.bank,source.bank);assert.equal(b.hours,source.hours);assert.equal(b.dateLabel,'');assert.deepEqual(b.excludedLedgerIds,source.ledger.map(e=>e.id));delete captured.dashboardBaseline;assert.deepEqual(captured,JSON.parse(original));
+ assert.equal(store.read().revision,source.revision);assert.deepEqual(store.read().undo,source.undo);assert.deepEqual(store.read().jumpAttempts,source.jumpAttempts);store.yield();await tick();await store.acquire();await tick();assert.equal(writes,1);assert.deepEqual(store.read().dashboardBaseline,b);
+});
+test('Dashboard initialization is absent for read-only, no-lock and empty campaign reads',async t=>{
+ const env=environment(t),source=populated();env.values.set(KEY,JSON.stringify(source));let writes=0;const put=localStorage.setItem;localStorage.setItem=(key,value)=>{if(key===KEY)writes++;return put(key,value);};
+ const hold=navigator.locks; navigator.locks=undefined;const locked=env.store();await locked.acquire();assert.equal(writes,0);assert.equal(locked.read().dashboardBaseline,undefined);navigator.locks=hold;
+ const a=env.store(),b=env.store();await a.acquire();await tick();assert.equal(writes,1);await b.acquire();await tick();assert.equal(b.editable,false);assert.equal(writes,1);assert.deepEqual(b.read().dashboardBaseline,a.read().dashboardBaseline);
+ a.yield();await tick();env.values.set(KEY,JSON.stringify(initial()));await a.acquire();await tick();assert.equal(writes,1);assert.equal(a.read().dashboardBaseline,undefined);
+});
+test('Dashboard quota failure preserves valid data, releases editor and retries only on reacquire',async t=>{
+ const env=environment(t),source=populated(),raw=JSON.stringify(source);env.values.set(KEY,raw);const put=localStorage.setItem;let reject=true,writes=0;localStorage.setItem=(key,value)=>{if(key===KEY){writes++;if(reject)throw Error('Storage quota exceeded');}return put(key,value);};
+ const roles=[],seen=[],store=env.store(s=>seen.push(s),(...args)=>roles.push(args));await store.acquire();await tick();assert.equal(store.editable,false);assert.equal(store.recovery,false);assert.equal(env.held(),false);assert.equal(env.values.get(KEY),raw);assert.equal(seen.length,0);assert.match(roles.at(-1)[1],/quota/);assert.equal(writes,1);
+ reject=false;await store.acquire();await tick();assert.equal(store.editable,true);assert.equal(writes,2);assert.equal(store.read().dashboardBaseline.bank,source.bank);
+});
+test('Dashboard durable metadata survives publication failure and retry without recapture',async t=>{
+ const env=environment(t);env.values.set(KEY,JSON.stringify(populated()));let fail=true,writes=0;const put=localStorage.setItem;localStorage.setItem=(key,value)=>{if(key===KEY)writes++;return put(key,value);};
+ const store=env.store(()=>{if(fail)throw Error('Render failed');});await store.acquire();await tick();const raw=env.values.get(KEY);assert.equal(writes,1);assert.equal(store.editable,false);assert.equal(env.held(),false);fail=false;await store.acquire();await tick();assert.equal(store.editable,true);assert.equal(writes,1);assert.equal(env.values.get(KEY),raw);
+});
+test('Dashboard normal saves reject same-revision baseline loss or changes, including after Undo setup',async t=>{
+ const env=environment(t),source=populated();env.values.set(KEY,JSON.stringify(source));const store=env.store();await store.acquire();await tick();const raw=env.values.get(KEY);
+ for(const candidate of [source,{...store.read(),dashboardBaseline:{...store.read().dashboardBaseline,bank:'1'}}]){assert.throws(()=>store.save(candidate,source.revision),/Dashboard starting point changed/);assert.equal(env.values.get(KEY),raw);}
+ const empty=initial();empty.dashboardBaseline=createDashboardBaseline(source);store.replace(empty,store.read().revision);const current=store.read(),lost=structuredClone(current);delete lost.dashboardBaseline;assert.throws(()=>store.save(lost,current.revision),/Dashboard starting point changed/);
+});
+test('Dashboard import uses incoming boundary or captures incoming current state, while reset clears it',async t=>{
+ const env=environment(t),store=env.store();await store.acquire();await tick();const source=populated();store.replace(source,0);const b=store.read().dashboardBaseline;
+ let next=transition(store.read(),'Money after boundary',s=>{s.bank=String(BigInt(s.bank)+10n);s.ledger.push({id:'new-after',type:'Manual deposit',amount:'10',hours:s.hours,world:s.actual});});store.save(next,store.read().revision);const copy=store.read();store.replace(copy,copy.revision);assert.deepEqual(store.read().dashboardBaseline,b);assert.equal(dashboardData(store.read()).otherInflows,'10');
+ const other=populated();other.bank='900';other.dateLabel='222-1107';store.replace(other,store.read().revision);assert.equal(store.read().dashboardBaseline.bank,'900');assert.equal(store.read().dashboardBaseline.dateLabel,'222-1107');assert.equal(dashboardData(store.read()).cashPoints.length,1);
+ const invalid=store.read();invalid.dashboardBaseline.version=999;const raw=env.values.get(KEY);assert.throws(()=>store.replace(invalid,store.read().revision),/Invalid dashboard/);assert.equal(env.values.get(KEY),raw);store.replace(initial(),store.read().revision);assert.equal(store.read().dashboardBaseline,undefined);
+});
+test('Dashboard snapshot does not consume prepared or committed jump allowances',async t=>{
+ const env=environment(t),w=x=>({id:x+',0',x,y:0,name:x?'Destination':'Origin',sector:'Test',hex:x?'0201':'0101',uwp:'A788899-C',zone:'Safe'});let source=initial();Object.assign(source,{initialized:true,actual:'0,0',worlds:{'0,0':w(0),'1,0':w(1)},route:['0,0','1,0']});const prepared=prepareJump(source,()=>({dice:[2,2,2,2,2,2],total:12}));source=transition(prepared.state,'Jump: Origin → Destination',s=>commitJump(s,{attemptId:prepared.attempt.id,elapsed:160}));assert.equal(jumpUndoEligibility(source).allowed,true);
+ env.values.set(KEY,JSON.stringify(source));const store=env.store();await store.acquire();await tick();assert.equal(jumpUndoEligibility(store.read()).allowed,true);assert.deepEqual(store.read().jumpAttempts,source.jumpAttempts);assert.deepEqual(store.read().events,source.events);const next=undoJump(store.read());store.save(next,source.revision);assert.equal(dashboardData(store.read()).adjustment,'0');assert.deepEqual(store.read().dashboardBaseline,createDashboardBaseline(source));
 });

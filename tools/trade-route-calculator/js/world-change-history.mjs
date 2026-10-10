@@ -1,4 +1,4 @@
-import {parseUWP} from './rules.mjs?v=world-history-20261010-40';
+import {parseUWP} from './rules.mjs?v=dashboard-20261010-41';
 
 // Audit only the editable world fields. A selective correction must never
 // replay an old world object, campaign inverse, price quote or transaction.
