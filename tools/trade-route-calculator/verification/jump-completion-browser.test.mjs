@@ -165,7 +165,7 @@ async function assertTerminal(page,result,scenario,before,{committed,unknown=fal
  await capture(page,result,'reload-only');await page.locator('#modal-cancel').click();await closed(page);assert.equal(await page.locator('[data-mutate]:enabled').count(),0);
  result.checks.push('Terminal outcome releases real Web Lock and remains reload-only across repeated activation and role callback');
 }
-async function restore(page,result,scenario,before,{committed=true}){
+async function restore(page,result,scenario,before,{committed=true}={}){
  const bytes=await raw(page);await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();assert.equal(await raw(page),bytes,'Reload cannot duplicate preparation or travel');
  if(scenario.phase==='commit'&&committed){
   assertJump(await read(page),before);await action(page,'jump-undo').click();await page.locator('#modal-submit').click();await closed(page);assert.deepEqual(material(await read(page)),material(before));assert.equal((await read(page)).jumpAttempts[0].mulliganUsed,true);assert.equal(await diceCalls(page),0);
