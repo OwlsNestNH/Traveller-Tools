@@ -21,7 +21,7 @@ harnessSource=replace(harnessSource,'clearTimeout:cancel=clearTimeout}={}','$MAP
 harnessSource=harnessSource.replace('$MAP$','clearTimeout:cancel=clearTimeout,mapControl}={}');
 harnessSource=replace(harnessSource,'...bindings,R:rules,document:dom.document','...bindings,M:{...bindings.M,nearby:(...args)=>mapControl.nearby(...args)},createWorldPicker:(...args)=>mapControl.createPicker(...args),createGlobalWorldSearch:()=>({}),R:rules,document:dom.document');
 harnessSource=replace(harnessSource,"'takeover','import-file'","'takeover','setup-world','find-world','global-world-search','choose-starting-world','import-file'");
-harnessSource=replace(harnessSource,'globalThis.api={setStore','globalThis.api={setup,setLocation,findWorld,roleChange:'+roleCallback+',setStore');
+harnessSource=replace(harnessSource,'globalThis.api={setStore','globalThis.api={setup,setLocation,findWorld,paintMap,roleChange:'+roleCallback+',setStore');
 const harnessModule='data:text/javascript;base64,'+Buffer.from(harnessSource).toString('base64');
 let storageSource=absolutize(await readFile(storageURL,'utf8'),storageURL);
 storageSource=replace(storageSource,JSON.stringify(harnessURL.href),JSON.stringify(harnessModule));
@@ -169,4 +169,19 @@ for(const path of ['setup','location'])test(`${path} throwing prepared-form free
 });
 for(const path of ['setup','location'])for(const committed of [false,true])test(`${path} detached unknown outcome ${committed?'after':'before'} write latches global reload without overwriting newer modal`,async t=>{
  const {h,gate,operation}=await pending(t,path);if(committed)gate.entries[0].write();const dialog=h.dom.ids.get('modal');dialog.close();dialog.dispatch('close');h.api.modal('Newer read-only review','Preserve newer review',null);const session=h.api.modalSession,body=h.dom.ids.get('modal-body').innerHTML;gate.entries[0].reject();await operation;assert.equal(h.store.reloadRequired,true);assert.equal(h.store.editable,false);assert.match(h.dom.ids.get('save-status').textContent,/Reload/);assert.equal(h.api.modalSession,session);assert.equal(ui(h).modalTitle,'Newer read-only review');assert.equal(ui(h).modalError,'');assert.equal(h.dom.ids.get('modal-body').innerHTML,body);assert.equal(ui(h).modalOpen,true);assert.equal(h.counters.writes,committed?1:0);assert.equal(gate.entries.length,1);
+});
+
+for(const resolution of ['completion','foreign publication'])test(`actual map repaint cannot expose owned location publication before ${resolution}`,async t=>{
+ const h=setup();h.api.setTab('Overview');h.api.render();let replacements=0,statusWrites=0;const originalQuery=h.dom.document.querySelector,originalCreate=h.dom.document.createElement;
+ const mapNode={replaceWith(node){assert.ok(node,'Actual map builder produces replacement SVG');replacements++;}},status={textContent:'Original map status'};
+ Object.defineProperty(status,'textContent',{get:()=> 'Original map status',set(){statusWrites++;}});h.dom.ids.set('map-load-status',status);
+ h.dom.document.querySelector=selector=>selector==='.world-map'?mapNode:originalQuery(selector);
+ h.dom.document.createElement=tag=>{const element=originalCreate(tag);if(tag==='div')element.querySelector=selector=>selector==='.world-map'?{syntheticSVG:true}:null;return element;};
+ const {gate,operation,before,session}=await pending(t,'location',h);
+ h.api.paintMap();assert.equal(replacements,1,'Read-only nearby repaint is permitted before publication');assert.equal(statusWrites,1);
+ gate.entries[0].write();assert.equal(h.api.state.actual,target.id);busy(h,session);const counts=[replacements,statusWrites];h.api.paintMap();same([replacements,statusWrites],counts,'Direct production paintMap obeys the same deferred publication boundary as render');
+ if(resolution==='foreign publication'){h.external(structuredClone(h.persisted()));h.api.paintMap();assert.equal(replacements,2,'Foreign authoritative publication retires old deferral');assert.equal(statusWrites,2);}
+ gate.entries[0].fulfill();await operation;
+ if(resolution==='completion'){assert.equal(ui(h).modalOpen,false);h.api.paintMap();assert.equal(replacements,2,'Completed operation permits repaint of the authoritative route');assert.equal(statusWrites,2);economics(h,before);}
+ else noSuccess(h);
 });

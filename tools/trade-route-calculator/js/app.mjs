@@ -1972,6 +1972,9 @@ function setLocation(w){
  owner=createWorldWriteOwner(activeModal);
 }
 function paintMap(){
+ // Background map callbacks must respect the same owned-publication boundary
+ // as render(), including ship/route markers drawn from the installed state.
+ if(worldWriteOperation?.publicationDeferred&&!worldWriteOperation.invalidated)return;
  if(mapDrag||tab!=='Overview')return;
  const old=document.querySelector('.world-map');if(!old||!viewed())return;
  const holder=document.createElement('div');holder.innerHTML=mapPanel();

@@ -75,6 +75,15 @@ publication failure or unknown result (reload required, no duplicate retry).
    review as deposit and stock services. Do not count them as fully migrated
    merely because they contain `await`.
 
+8. **Shared background-map presentation audit.** `render()` defers owned
+   Settings/Undo/replacement publication cleanup, but `paintMap()` can separately
+   rebuild the SVG from installed campaign state. The setup/location boundary
+   now has its own repaint guard. Verify the older owners with delayed-provider
+   and background-paint tests before treating all shared display paths as
+   completion-safe. This is a source-supported, not yet reproduced risk for
+   those older callers, distinct from the separate keyboard-focus restoration
+   bug; it is not fixed by this setup/location batch.
+
 Each batch needs delayed success, known pre-write failure, committed-publication
 failure, unknown outcome, duplicate activation, stale revision/ownership and
 cleanup/reload tests, plus the existing synchronous and real-browser regression
