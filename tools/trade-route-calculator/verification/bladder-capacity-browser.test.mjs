@@ -52,6 +52,12 @@ try{
    if(confirm){await page.locator('#modal [name="backed"]').check();await page.locator('#modal').getByRole('button',{name:'Replace campaign',exact:true}).click();}
    else await page.locator('#modal').getByRole('button',{name:'Cancel',exact:true}).click();
    await page.locator('#modal').waitFor({state:'hidden'});
+   if(confirm){
+    // An intentionally invalid draft from the previous campaign is retained
+    // as stale by Settings. Explicitly load the newly imported values before
+    // testing them; Revert itself must not change saved campaign bytes.
+    const imported=await raw();await tab('Settings');await page.locator('#settings-reset').click();assert.equal(await raw(),imported);
+   }
   }
   try{
    await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();await checkSummary(40,40,80);assert.equal(await raw(),bytes,'Reading legacy capacity never changes saved bytes');

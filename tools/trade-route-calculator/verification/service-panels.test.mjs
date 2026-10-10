@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {createServicePanels,maxFuelAddition,fuelCorrection} from '../js/service-panels.mjs';
 import {configureFuel} from '../js/fuel.mjs';
 import {refillQuote,supportStock} from '../js/life-support.mjs';
+import {campaignBaseline} from './fixtures/campaign-baseline.mjs';
 import * as S from '../js/state.mjs';
 const campaign=()=>{const s=S.initial();s.initialized=true;s.bank='100000';s.actual='0,0';s.route=['0,0'];s.worlds={'0,0':{id:'0,0',name:'Actual origin',x:0,y:0,sector:'Test',hex:'0101',uwp:'A788899-C',zone:'Safe'}};s.ship.fuel=configureFuel(200,43,20,0,2);return s;};
 function withSupport({frozen=0}={}){
@@ -14,11 +15,11 @@ function withSupport({frozen=0}={}){
 }
 function harness(s=campaign()){
  let state=s,editable=true,form=null;
- const h={renders:0,commits:0,commitError:null};
+ const h={renders:0,commits:0,commitError:null,confirmControl:{disabled:false}};
  const document={
   getElementById(id){return id==='service-form'?form:null;},
   querySelector(selector){return selector==='#service-form [name="fuelTons"]'?form?.elements.find(el=>el.name==='fuelTons'):null;},
-  querySelectorAll(){return [];}
+  querySelectorAll(selector){return selector==='#service-panel [data-action="service-confirm"],#service-panel [data-action="service-review"]'?[h.confirmControl]:[];}
  };
  h.services=createServicePanels({document,getState:()=>state,isEditable:()=>editable,
   commit(label,fn,revision){
@@ -43,6 +44,26 @@ test('fuel maximum preserves odd tons and combines empty base tanks with exact f
 test('fuel correction is reduction-only, audited, bank-neutral, releases bladder cargo and undoes',()=>{const s=campaign();s.ship.fuel=configureFuel(200,43,55,40,2);const before=structuredClone(s),n=S.transition(s,'Adjusted fuel aboard',n=>fuelCorrection(n,'41','Actual tank check'));assert.equal(n.bank,s.bank);assert.equal(n.ship.fuel.aboardTons,41);assert.equal(n.events[0].fuelCorrection.removed,14);assert.equal(n.events[0].fuelCorrection.reason,'Actual tank check');assert.equal(n.ledger.length,0);assert.deepEqual(S.undo(n).ship,before.ship);for(const bad of ['','56','-1','2.5','55'])assert.throws(()=>fuelCorrection(structuredClone(s),bad));assert.deepEqual(s,before);});
 test('opening, editing and cancelling inline fuel never mutate the campaign',async()=>{const h=harness(),before=structuredClone(h.state());h.services.open('fuel');assert.match(h.services.panel(),/id="service-form"/);assert.doesNotMatch(h.services.panel(),/data-action="service-(?:adjust|review)"/);assert.match(h.services.panel(),/Actual origin/);assert.match(h.services.panel(),/value="23"/);h.fill({fuelTons:'7.25',fuelType:'unrefined',expenseNotes:'Draft only'});assert.equal(h.commits,0);await h.action('service-back','');assert.equal(h.services.active(),false);assert.deepEqual(h.state(),before);});
 test('direct inline Confirm saves once; repeated click cannot pay again',async()=>{const h=harness();h.services.open('fuel');const confirm=h.capture('service-confirm');await confirm();await confirm();assert.equal(h.commits,1);assert.equal(h.state().ship.fuel.aboardTons,43);assert.equal(h.state().bank,'88500');assert.equal(S.undo(h.state()).ship.fuel.aboardTons,20);});
+test('legacy campaign baseline can preview, cancel, refuel bladders and undo without rewriting fuel data',async()=>{
+ const s=campaignBaseline(),before=structuredClone(s),h=harness(s);
+ assert.equal(s.ship.fuel.bladderJumps,1,'Use the unchanged legacy campaign-stress fixture');
+ h.services.open('fuel');h.fill({fuelTons:'20',fuelType:'refined'});
+ assert.equal(h.confirmControl.disabled,false,'A valid legacy refuel preview keeps Confirm enabled');
+ assert.match(h.services.panel(),/After refuelling<\/span><strong>60 \/ 80 t/);
+ assert.match(h.services.panel(),/Cargo occupied by fuel after<\/dt><dd>20 t/);
+ assert.doesNotMatch(h.services.panel(),/Legacy fuel bladder capacity needs/);
+ assert.deepEqual(h.state(),before,'Preview keeps the entire legacy campaign unchanged');
+ await h.action('service-cancel');assert.deepEqual(h.state(),before);
+ h.services.open('fuel');h.fill({fuelTons:'20',fuelType:'refined'});
+ const confirm=h.capture('service-confirm');await confirm();await confirm();
+ assert.equal(h.commits,1);assert.equal(h.state().bank,'390000');
+ assert.deepEqual(h.state().ship.fuel,{...before.ship.fuel,aboardTons:60});
+ assert.equal(h.state().ledger.length,before.ledger.length+1);
+ const undone=S.undo(h.state());
+ for(const key of ['ship','bank','ledger','hours'])assert.deepEqual(undone[key],before[key]);
+ assert.deepEqual(undone.events.slice(0,before.events.length),before.events);
+ assert.deepEqual(undone.events.slice(before.events.length).map(e=>e.label),['Refuelled','Undo: Refuelled']);
+});
 test('stale and read-only drafts cannot commit and keep frozen actual-world display',async()=>{for(const mode of ['revision','ownership']){const h=harness();h.services.open('fuel');if(mode==='revision'){const next=S.transition(h.state(),'Other change',s=>s.bank='99999');h.setState(next);}else h.readOnly();assert.match(h.services.panel(),/Campaign or editing ownership changed/);await assert.rejects(h.action('service-confirm',''),/Campaign or editing ownership changed/);assert.equal(h.commits,0);await h.action('service-cancel','');assert.equal(h.services.active(),false);}});
 test('LSS preview rejects funds and cargo overflow before offering payment',()=>{for(const kind of ['funds','cargo']){const s=campaign();s.ship.accommodation={rooms:{low:0,middle:4,high:0},passengers:{low:0,middle:4,high:0},crew:{low:0,middle:0,high:0}};s.ship.lifeSupport={capacityHours:672,stockUnits:{numerator:'56',denominator:'1'}};if(kind==='funds')s.bank='1';else{s.ship.fuel=configureFuel(10,4,2,0,2);s.ship.capacity='0';}const h=harness(s);h.services.open('support');assert.match(h.services.panel(),kind==='funds'?/Insufficient funds/:/exceed available cargo/);assert.equal(h.commits,0);}});
 
