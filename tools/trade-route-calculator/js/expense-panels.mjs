@@ -1,11 +1,11 @@
-import {passengerShip} from './passengers.mjs?v=passenger-contracts-20261009-27';
+import {passengerShip} from './passengers.mjs?v=audited-defects-20261009-28';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=passenger-contracts-20261009-27';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=passenger-contracts-20261009-27';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=passenger-contracts-20261009-27';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=passenger-contracts-20261009-27';
-import {creditStep} from './rounding.mjs?v=passenger-contracts-20261009-27';
-import {roll} from './rules.mjs';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=audited-defects-20261009-28';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=audited-defects-20261009-28';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=audited-defects-20261009-28';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=audited-defects-20261009-28';
+import {creditStep} from './rounding.mjs?v=audited-defects-20261009-28';
+import {roll} from './rules.mjs?v=audited-defects-20261009-28';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=value=>'Cr '+String(value).replace(/\B(?=(\d{3})+(?!\d))/g,',');

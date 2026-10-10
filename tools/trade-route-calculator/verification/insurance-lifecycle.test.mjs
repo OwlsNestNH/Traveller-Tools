@@ -50,7 +50,7 @@ function harness(saved=campaign()){
  const dom=domDouble(),calls={saves:0,downloads:[]},memory=new Map([['traveller-trade-route-calculator:v1',JSON.stringify(saved)]]);let api,store;
  const localStorage={getItem:k=>memory.get(k)??null,setItem(k,v){memory.set(k,v);calls.saves++;},removeItem:k=>memory.delete(k)};
  const sandbox={...bindings,document:dom.document,window:{addEventListener(){}},crypto:webcrypto,structuredClone,console,FormData:dom.FormData,setTimeout:()=>1,clearTimeout(){},requestAnimationFrame:()=>1,cancelAnimationFrame(){},localStorage,Blob,URL:{createObjectURL(blob){calls.downloads.push(blob);return 'blob:test';},revokeObjectURL(){}},BroadcastChannel:undefined};
- vm.runInContext('const initial=S.initial,validate=S.validate;\n'+persistence+'\n'+executable+`\nglobalThis.api={init(s,c,m){core=c;mp=m;known={...s.worlds};view=s.actual;tab='Cargo';store=new Store(receiveCampaign,()=>{});store.editable=true;state=store.read();render();},get state(){return state;},get store(){return store;},get drafts(){return contractDrafts;},setState(s){receiveCampaign(s);},setView(id){view=id;},policyPanel,closedPolicyHistory,cargoPanel,contractsPanel,historyPanel,claimForm,amendPolicy,insureHeldCargo,policyAudit,settings,jump,closeModal,modal,syncModalSubmit,render,backupReplace,actions};`,vm.createContext(sandbox),{filename:'app.mjs + production persistence (VM; boot omitted)'});
+ vm.runInContext('const initial=S.initial,validate=S.validate;\n'+persistence+'\n'+executable+`\nglobalThis.api={init(s,c,m){core=c;mp=m;known={...s.worlds};view=s.actual;tab='Cargo';store=new Store(receiveCampaign,()=>{});store.editable=true;state=store.read();render();},get state(){return state;},get store(){return store;},get drafts(){return contractDrafts;},setState(s){receiveCampaign(s);},setView(id){view=id;},policyPanel,availabilityAudit,ledgerAudit,accountsPanel,closedPolicyHistory,cargoPanel,contractsPanel,historyPanel,claimForm,amendPolicy,insureHeldCargo,policyAudit,settings,jump,closeModal,modal,syncModalSubmit,render,backupReplace,actions};`,vm.createContext(sandbox),{filename:'app.mjs + production persistence (VM; boot omitted)'});
  api=sandbox.api;api.init(structuredClone(saved),core,mp);store=api.store;
  const fill=values=>{for(const[k,v]of Object.entries(values)){const n=dom.fields().get(k);assert.ok(n,`Expected form field ${k}`);if(n.attributes.type==='checkbox')n.checked=Boolean(v);else n.value=String(v);}};
  const submit=()=>dom.ids.get('modal-form').onsubmit({preventDefault(){},currentTarget:dom.ids.get('modal-form')});
@@ -212,4 +212,99 @@ test('Insurance action input never invokes a missing custom-profit field; Settin
   assert.equal(h.dom.fields().get('custom').disabled,mode!=='custom');
  }
  assert.equal(h.raw(),bytes);h.api.closeModal();
+});
+
+// Approved release-audit regressions. These inputs are ordinary invalid data
+// and inert punctuation only; no executable markup or exploit payloads.
+test('Imported optional policy numbers reject invalid types before any replacement write',async()=>{
+ const source=harness();await source.insure();const valid=source.persisted();
+ for(const [key,value]of [['premium','not a number'],['premium','12.5'],['premium',-1],['premium',{}],['premium',null],['distance','one'],['rate',false],['potentialPayout','unknown']]){
+  const bad=structuredClone(valid);bad.policies[0][key]=value;
+  assert.throws(()=>S.validate(bad));
+  const target=harness(),before=target.raw(),text=JSON.stringify(bad);
+  await target.dom.ids.get('import-file').onchange({target:{files:[{size:text.length,text:async()=>text}],value:''}});
+  assert.equal(target.raw(),before);assert.equal(target.calls.saves,0);assert.equal(target.dom.ids.get('modal').open,false);
+  assert.ok(target.dom.ids.get('message').textContent);
+ }
+ for(const premium of ['0','8000',8000]){const value=structuredClone(valid);value.policies[0].premium=premium;S.validate(value);}
+ const legacy=structuredClone(valid);for(const key of ['premium','potentialPayout','rate','distance'])delete legacy.policies[0][key];
+ const target=harness();await target.imported(JSON.stringify(legacy));same(target.persisted().policies,legacy.policies);
+ assert.match(target.api.policyPanel(),/premium Not recorded/);
+});
+
+test('All saved quantity-roll audit locations reject nonnumeric DMs and preserve stored bytes',async()=>{
+ const quantityRolls=[{dice:[2,4],populationDM:3,multiplier:10,tons:90}];
+ const withAudit=(location,value)=>{
+  const s=campaign(),audit={quantityRolls:structuredClone(value)};
+  if(location==='lot')s.lots[0].audit={price:{audit}};
+  if(location==='ledger')s.ledger=[{id:'sale-audit',type:'Sale',hours:0,amount:'0',audit:{audit}}];
+  if(location==='snapshot')s.snapshots=[{id:'market',worldId:s.actual,kind:'supplier',hours:0,startedHours:0,offers:[{id:'offer',commodity:'11',expired:false,remaining:'10',unitPrice:'100',audit}]}];
+  if(location==='previous')s.lots[0].audit={price:{previousAudits:[audit]}};
+  return s;
+ };
+ for(const location of ['lot','ledger','snapshot','previous']){
+  S.validate(withAudit(location,quantityRolls));
+  for(const value of ['three',null,{},false]){
+   const rolls=structuredClone(quantityRolls);rolls[0].populationDM=value;
+   const bad=withAudit(location,rolls);assert.throws(()=>S.validate(bad),/quantity-roll audit/);
+   const target=harness(),before=target.raw(),text=JSON.stringify(bad);
+   await target.dom.ids.get('import-file').onchange({target:{files:[{size:text.length,text:async()=>text}],value:''}});
+   assert.equal(target.raw(),before);assert.equal(target.calls.saves,0);assert.equal(target.dom.ids.get('modal').open,false);
+  }
+ }
+});
+
+test('Display formatters encode inert punctuation independently of import validation',async()=>{
+ const h=harness();await h.insure();const p=h.api.state.policies[0];
+ p.premium='A & B < C';p.coverage='70 & note';
+ const html=h.api.policyPanel();assert.match(html,/Cr A &amp; B &lt; C/);assert.match(html,/70 &amp; note/);assert.doesNotMatch(html,/A & B < C/);
+ const audit=h.api.availabilityAudit({audit:{quantityRolls:[{dice:[2],populationDM:'A & B < C',multiplier:'1 & note',tons:'2 & note'}]}},'11');
+ assert.match(audit,/A &amp; B &lt; C/);assert.match(audit,/1 &amp; note/);assert.match(audit,/2 &amp; note/);
+});
+
+test('Arrived policies follow cargo correction reductions, preserve terms/claims, reload and Undo',async()=>{
+ for(const remaining of ['5','0']){
+  const h=harness();await h.insure();await h.claim({quantity:2});h.api.jump();h.fill({hours:0});await h.submit();assert.equal(error(h),'');
+  const before=h.persisted(),original=before.policies[0];assert.equal(original.status,'arrived');
+  h.api.actions['lot-correct']('insured-lot');h.fill({quantity:remaining,basis:remaining==='0'?'0':'50000',goods:remaining==='0'?'0':'50000',reason:'Record uninsured loss after arrival'});await h.submit();assert.equal(error(h),'');
+  const after=h.persisted(),policy=after.policies[0];assert.equal(policy.remainingQuantity,remaining);assert.equal(policy.remainingValue,remaining==='0'?'0':'50000');assert.equal(policy.status,remaining==='0'?'closed':'arrived');
+  for(const key of ['premium','coverage','initialQuantity','insuredValue','claims','amendments'])same(policy[key],original[key]);
+  assert.equal(after.bank,before.bank);assert.equal(after.ledger.length,before.ledger.length);
+  const reloaded=harness(JSON.parse(await h.exported()));same(reloaded.persisted(),after);reloaded.api.actions.undo();same(financial(reloaded.persisted()),financial(before));
+ }
+});
+
+test('Active and amendment-required policies still reject direct uninsured write-offs atomically',async()=>{
+ for(const status of ['active','amendment-required']){
+  const h=harness();await h.insure();const before=h.persisted();before.policies[0].status=status;
+  const bytes=JSON.stringify(before);assert.throws(()=>S.transition(before,'Uninsured loss',s=>S.correctLot(s,'insured-lot','0','0','0','Loss')),/Close\/amend active insurance/);assert.equal(JSON.stringify(before),bytes);
+ }
+});
+
+test('Freight delivery ledger snapshots all penalty faces; historical fallback distinguishes unrecorded rolls',()=>{
+ for(const die of [1,2,3,4,5,6]){
+  const start=campaign();start.actual=destination.id;start.hours=11;start.contracts=[{id:'freight',kind:'freight',status:'accepted',origin:origin.id,destination:destination.id,quantity:'1',payment:'10000',dueHours:10}];
+  const paid=S.transition(start,'Freight delivery',s=>S.deliver(s,'freight',die)),entry=paid.ledger.at(-1);
+  assert.equal(entry.penaltyDie,die);assert.equal(entry.amount,String(10000*(6-die)/10));assert.equal(paid.contracts[0].penaltyDie,die);
+  const h=harness(paid);assert.ok(h.api.accountsPanel().includes('data-action="ledger-audit" data-arg="'+entry.id+'"'),'Every penalty face, including a zero payout, has an accessible Accounts audit');h.api.ledgerAudit(entry.id);assert.match(h.dom.ids.get('modal-body').innerHTML,new RegExp('<dt>Late-penalty roll</dt><dd>'+die+'</dd>'));
+  const old=structuredClone(paid);delete old.ledger.at(-1).penaltyDie;const legacy=harness(old);legacy.api.ledgerAudit(entry.id);assert.match(legacy.dom.ids.get('modal-body').innerHTML,new RegExp('<dt>Late-penalty roll</dt><dd>'+die+'</dd>'));
+  delete old.contracts[0].penaltyDie;const missing=harness(old);missing.api.ledgerAudit(entry.id);assert.match(missing.dom.ids.get('modal-body').innerHTML,/<dt>Late-penalty roll<\/dt><dd>Not recorded<\/dd>/);
+  const conflict=structuredClone(paid);delete conflict.ledger.at(-1).penaltyDie;conflict.contracts[0].payout='999';const mismatch=harness(conflict);mismatch.api.ledgerAudit(entry.id);assert.match(mismatch.dom.ids.get('modal-body').innerHTML,/<dt>Late-penalty roll<\/dt><dd>Not recorded<\/dd>/);
+  same(financial(S.undo(JSON.parse(JSON.stringify(paid)))),financial(start));
+ }
+ for(const hours of [9,10]){
+  const s=campaign();s.actual=destination.id;s.hours=hours;s.contracts=[{id:'freight',kind:'freight',status:'accepted',origin:origin.id,destination:destination.id,quantity:'1',payment:'10000',dueHours:10}];
+  const paid=S.transition(s,'On-time delivery',x=>S.deliver(x,'freight',6));assert.equal(paid.ledger.at(-1).amount,'10000');assert.equal(paid.ledger.at(-1).penaltyDie,null);
+  const h=harness(paid);h.api.ledgerAudit(paid.ledger.at(-1).id);assert.match(h.dom.ids.get('modal-body').innerHTML,/<dt>Late-penalty roll<\/dt><dd>Not required<\/dd>/);
+ }
+});
+
+test('The shared dialog explicitly references its changing accessible title',async()=>{
+ const html=await readFile(new URL('../index.html',import.meta.url),'utf8');assert.match(html,/<dialog[^>]*id="modal"[^>]*aria-labelledby="modal-title"/);assert.match(html,/<h2 id="modal-title">/);
+ const h=harness();h.api.modal('Read-only audit','Details',null);assert.equal(h.dom.ids.get('modal-title').textContent,'Read-only audit');h.api.closeModal();h.api.modal('Confirm payment','Review',()=>{});assert.equal(h.dom.ids.get('modal-title').textContent,'Confirm payment');
+});
+
+test('Zero freight settlements remain auditable without showing unrelated zero charges',()=>{
+ const s=campaign();s.ledger=[{id:'zero-fee',type:'Broker fee',amount:'0',hours:0,world:origin.id},{id:'zero-tax',type:'Tax',amount:'0',hours:0,world:origin.id}];
+ const h=harness(s),html=h.api.accountsPanel();assert.doesNotMatch(html,/data-arg="zero-(fee|tax)"/);assert.match(html,/No payments recorded yet/);same(h.persisted(),s);
 });

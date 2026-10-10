@@ -20,7 +20,7 @@ const destination={...origin,id:'-111,-70',x:-111,name:'Insurance Destination',h
 const extension={...origin,id:'-110,-69',y:-69,name:'Insurance Extension',hex:'1911'};
 const worlds=[origin,destination,extension];
 const mapWorlds=worlds.map(w=>({Name:w.name,Hex:w.hex,UWP:w.uwp,PBG:'703',Zone:'',WorldX:w.x,WorldY:w.y,Sector:w.sector}));
-const expectedCases=['amend-desktop','close-desktop','amend-mobile','close-mobile','malformed-history-import','cancel-and-read-only'];
+const expectedCases=['amend-desktop','close-desktop','amend-mobile','close-mobile','malformed-history-import','invalid-numeric-import','arrived-cargo-correction','freight-audit-dice','cancel-and-read-only'];
 const summary={suite:'Insurance real-browser verification',startedAt:new Date().toISOString(),baseURL:base,node:process.version,requestedCommit:process.env.TRAVELLER_COMMIT||null,githubSHA:process.env.GITHUB_SHA||null,cases:[],errors:[],expectedCases};
 let browser;
 await mkdir(artifacts,{recursive:true});
@@ -61,6 +61,7 @@ async function insure(page){
  await page.locator('[data-action="lot-insure"][data-arg="insured-lot"]').click();
  await modal(page).locator('[name="coverage"]').selectOption('70');
  await submit(page,'Preview insurance','Confirm cargo insurance');
+ await page.getByRole('dialog',{name:'Confirm cargo insurance',exact:true}).waitFor();
  assert.deepEqual(await read(page),before,'Insurance preview does not persist a debit');
  await submit(page,'COMMIT INSURANCE');
  const after=await read(page),policy=after.policies[0];
@@ -235,6 +236,64 @@ try{
   }
   await reload(page);assert.equal(await raw(page),before);
  });
+ await runCase('invalid-numeric-import',{width:1440,height:1100},async(page,context,result)=>{
+  await insure(page);const valid=await exported(page),before=await raw(page);
+  for(const [index,change]of [
+   s=>{s.policies[0].premium='not a number';},
+   s=>{s.policies[0].premium='12.5';},
+   s=>{s.policies[0].rate='unknown';},
+   s=>{s.lots[0].audit={price:{audit:{quantityRolls:[{dice:[2,4],populationDM:'three',multiplier:10,tons:90}]}}};},
+  ].entries()){
+   const bad=structuredClone(valid);change(bad);assert.throws(()=>S.validate(bad));
+   await page.locator('#message').evaluate(el=>el.textContent='');
+   await importFile(page,bad,'invalid-numeric-'+index+'.json');
+   await page.waitForFunction(()=>Boolean(document.querySelector('#message').textContent));
+   assert.equal(await page.locator('#modal[open]').count(),0);
+   assert.equal(await raw(page),before,'Rejected numeric import never replaces saved bytes');
+  }
+  await reload(page);assert.equal(await raw(page),before);
+  await page.locator('[data-action="policy-audit"]').click();
+  await page.getByRole('dialog',{name:'Insurance policy',exact:true}).waitFor();
+  await screenshot(page,result,'audit-named-insurance-dialog.png');await closeAudit(page);
+ });
+ await runCase('arrived-cargo-correction',{width:390,height:844},async(page,context,result)=>{
+  await insure(page);await tab(page,'Overview');await page.locator('[data-action="jump"]').click();
+  await fill(page,'hours',0);await submit(page,'COMMIT JUMP');
+  const arrived=await read(page),original=arrived.policies[0];assert.equal(original.status,'arrived');
+  for(const remaining of [5,0]){
+   if(remaining===0)await imported(page,arrived);
+   const before=await read(page);await tab(page,'Cargo');await page.locator('[data-action="lot-correct"]').click();
+   await fill(page,'quantity',remaining);await fill(page,'basis',remaining?50000:0);await fill(page,'goods',remaining?50000:0);await fill(page,'reason','Uninsured loss after coverage ended');await submit(page,'Save');
+   const after=await read(page),policy=after.policies[0];assert.equal(policy.remainingQuantity,String(remaining));assert.equal(policy.remainingValue,String(remaining?50000:0));assert.equal(policy.status,remaining?'arrived':'closed');
+   for(const key of ['premium','coverage','initialQuantity','insuredValue','claims','amendments'])assert.deepEqual(policy[key],original[key]);
+   assert.equal(after.bank,before.bank);assert.deepEqual(after.ledger,before.ledger);
+   await reload(page);assert.deepEqual(await read(page),after);await undo(page);
+   // A committed correction permanently retires the previous jump mulligan.
+   // Undo restores cargo/policy fields but must not reopen that dice opportunity.
+   const expected=structuredClone(before);assert.equal(expected.jumpAttempts.length,1);expected.jumpAttempts[0].closed=true;
+   assert.deepEqual(after.jumpAttempts,expected.jumpAttempts);restored(await read(page),expected);
+  }
+  await screenshot(page,result,'audit-arrived-policy-correction-mobile.png');
+ });
+ await runCase('freight-audit-dice',{width:1440,height:1100},async(page,context,result)=>{
+  for(const die of [1,2,3,4,5,6]){
+   const start=campaign();start.actual=destination.id;start.hours=11;
+   start.contracts=[{id:'audit-freight',kind:'freight',status:'accepted',origin:origin.id,destination:destination.id,quantity:'1',payment:'10000',dueHours:10}];
+   await imported(page,start);await tab(page,'Contracts');await page.locator('[data-action="deliver"]').click();await fill(page,'die',die);await submit(page,'Commit delivery & payout');
+   const paid=await read(page),entry=paid.ledger.at(-1);assert.equal(entry.penaltyDie,die);assert.equal(entry.amount,String(10000*(6-die)/10));
+   await tab(page,'Accounts');await page.locator('[data-action="ledger-audit"][data-arg="'+entry.id+'"]').click();
+   await page.getByRole('dialog',{name:'Freight delivery details',exact:true}).waitFor();
+   const roll=modal(page).locator('dt').filter({hasText:/^Late-penalty roll$/}).locator('xpath=following-sibling::dd[1]');assert.equal(await roll.textContent(),String(die));
+   if(die===2||die===6)await screenshot(page,result,'audit-freight-penalty-'+die+'-details.png');await closeAudit(page);
+   if(die===2){
+    for(const recorded of [true,false]){
+     const older=structuredClone(paid);delete older.ledger.at(-1).penaltyDie;if(!recorded)delete older.contracts[0].penaltyDie;
+     await imported(page,older);await tab(page,'Accounts');await page.locator('[data-action="ledger-audit"][data-arg="'+entry.id+'"]').click();
+     assert.equal(await modal(page).locator('dt').filter({hasText:/^Late-penalty roll$/}).locator('xpath=following-sibling::dd[1]').textContent(),recorded?'2':'Not recorded');await closeAudit(page);
+    }
+   }
+  }
+ });
  await runCase('cancel-and-read-only',{width:1440,height:1100},async(page,context)=>{
   const before=await importedWithoutHistory(page),bytes=await raw(page);
   await openAmend(page,'close',1234);await cancel(page);assert.equal(await raw(page),bytes,'Cancel leaves the optional field absent');
@@ -242,7 +301,7 @@ try{
   await submit(page,'Preview claim','Confirm loss and claim');await cancel(page);assert.equal(await raw(page),bytes);
   const reader=await context.newPage();await reader.goto(base);await reader.getByText('Read-only: campaign open in another tab.',{exact:true}).waitFor();await tab(reader,'Cargo');
   for(const action of ['amend','claim'])assert.equal(await reader.locator('[data-action="'+action+'"]').isDisabled(),true,'Read-only '+action+' remains disabled');
-  await reader.locator('[data-action="policy-audit"]').click();assert.equal(await reader.locator('#modal-submit').isVisible(),false);assert.match(await modal(reader).innerText(),/No amendments recorded/);await closeAudit(reader);
+  await reader.locator('[data-action="policy-audit"]').click();await reader.getByRole('dialog',{name:'Insurance policy',exact:true}).waitFor();assert.equal(await reader.locator('#modal-submit').isVisible(),false);assert.match(await modal(reader).innerText(),/No amendments recorded/);await closeAudit(reader);
   assert.deepEqual(await read(reader),before);
  });
 }catch(error){summary.errors.push(errorText(error));console.error(errorText(error));}

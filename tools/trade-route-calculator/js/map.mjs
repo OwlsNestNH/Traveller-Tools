@@ -1,8 +1,10 @@
-import {parseUWP} from './rules.mjs';
+import {parseUWP} from './rules.mjs?v=audited-defects-20261009-28';
 const API='https://travellermap.com/api/';
 const MILIEU='M1105';
 async function get(path,params){const url=new URL(path,API);url.searchParams.set('milieu',MILIEU);Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,v));const response=await fetch(url,{headers:{Accept:'application/json'},signal:AbortSignal.timeout(20000)});if(!response.ok)throw Error('Traveller Map returned '+response.status);return response.json();}
-export function normalize(w){if(!Number.isInteger(w.WorldX)||!Number.isInteger(w.WorldY)||!w.Sector||!/^\d{4}$/.test(w.Hex))throw Error('Traveller Map world is missing coordinates');return {id:w.WorldX+','+w.WorldY,name:w.Name||w.Hex,sector:w.Sector,hex:w.Hex,x:w.WorldX,y:w.WorldY,uwp:w.UWP,zone:w.Zone==='A'?'Amber':w.Zone==='R'?'Red':'Safe',gasGiants:w.PBG&&w.PBG[2]!=='?'?parseInt(w.PBG[2],16):null,raw:structuredClone(w)};}
+// Traveller Map World.cs treats Unabsorbed (U) as Amber and Forbidden (F) as Red.
+// Normalize API data only; saved referee overrides and historical audits stay intact.
+export function normalize(w){if(!Number.isInteger(w.WorldX)||!Number.isInteger(w.WorldY)||!w.Sector||!/^\d{4}$/.test(w.Hex))throw Error('Traveller Map world is missing coordinates');return {id:w.WorldX+','+w.WorldY,name:w.Name||w.Hex,sector:w.Sector,hex:w.Hex,x:w.WorldX,y:w.WorldY,uwp:w.UWP,zone:['A','U'].includes(String(w.Zone||'').toUpperCase())?'Amber':['R','F'].includes(String(w.Zone||'').toUpperCase())?'Red':'Safe',gasGiants:w.PBG&&w.PBG[2]!=='?'?parseInt(w.PBG[2],16):null,raw:structuredClone(w)};}
 export async function loadWorld(sector,hex){if(!sector.trim()||!/^\d{4}$/.test(hex))throw Error('Enter a sector and four-digit hex');const data=await get('jumpworlds',{sector,hex,jump:0});if(!Array.isArray(data.Worlds)||!data.Worlds.length)throw Error('No world at that location');return normalize(data.Worlds[0]);}
 export async function nearby(world,radius=6){const data=await get('jumpworlds',{x:world.x,y:world.y,jump:radius});if(!Array.isArray(data.Worlds))throw Error('Invalid world-list response');return data.Worlds.map(normalize);}
 export function distance(a,b){const az=a.y-Math.floor(a.x/2),bz=b.y-Math.floor(b.x/2),dx=a.x-b.x,dz=az-bz;return Math.max(Math.abs(dx),Math.abs(dz),Math.abs(dx+dz));}

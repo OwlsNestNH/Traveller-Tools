@@ -32,6 +32,9 @@ const screen=page.getByRole('complementary',{name:'Selected world data'});
 const frame=()=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
 const labelReports=[],readabilityReports=[],resourceReports=[];
 async function labelFitsCell(id){
+ // Full-page screenshots can capture this map while it is below the live
+ // viewport. Bring the measured content into view and settle its paint first.
+ await page.locator('.world-map').scrollIntoViewIfNeeded();await frame();
  await page.waitForFunction(()=>{const svg=document.querySelector('.world-map');if(!svg)return false;const b=svg.getBoundingClientRect(),v=svg.viewBox.baseVal;return b.width>0&&b.height>0&&Math.abs(v.width-b.width)<.1&&Math.abs(v.height-b.height)<.1;});
  const label=page.locator('svg [data-action="map-world"][data-arg="'+id+'"] .world-name');
  const q=await label.evaluate(text=>{
@@ -54,12 +57,12 @@ async function labelFitsCell(id){
     if(Math.abs(z.y-a.y)<.001){if(Math.abs(y-a.y)<.001)intersections.push(a.x,z.x);}
     else intersections.push(a.x+(y-a.y)*(z.x-a.x)/(z.y-a.y));
    }
-   if(intersections.length<2)throw Error('Painted world label extends outside its own hex vertically');
+   if(intersections.length<2)throw Error('Painted world label extends outside its own hex vertically: '+JSON.stringify({viewport:{width:innerWidth,height:innerHeight,scrollX,scrollY},connected:text.isConnected,bbox:{x:b.x,y:b.y,width:b.width,height:b.height},screen:{left:screen.left,top:screen.top,width:screen.width,height:screen.height},stroke,top,bottom,level:y,center:{cx,cy},points}));
    return {left:Math.min(...intersections),right:Math.max(...intersections)};
   });
   const left=Math.max(...bands.map(b=>b.left)),right=Math.min(...bands.map(b=>b.right));
   const scaleX=Math.hypot(m.a,m.b),scaleY=Math.hypot(m.c,m.d),font=parseFloat(getComputedStyle(text).fontSize),uwpFont=parseFloat(getComputedStyle(uwp).fontSize);
-  return {viewport:innerWidth,text:text.textContent,title:group.querySelector('title').textContent,logical:{x:b.x,width:b.width,left:b.x-stroke/2,right:b.x+b.width+stroke/2,cellLeft:left,cellRight:right,cellBandWidth:right-left,font,uwpFont},screen:{left:screen.left-stroke/2*scaleX,right:screen.right+stroke/2*scaleX,width:screen.width,cellLeft:left*m.a+m.e,cellRight:right*m.a+m.e,font:font*scaleY,uwpFont:uwpFont*scaleY},matrix:{a:m.a,b:m.b,c:m.c,d:m.d,scaleX,scaleY}};
+  return {viewport:innerWidth,text:text.textContent,title:group.querySelector('title').textContent,logical:{x:b.x,y:b.y,width:b.width,height:b.height,top,bottom,cellTop:Math.min(...points.map(p=>p.y)),cellBottom:Math.max(...points.map(p=>p.y)),left:b.x-stroke/2,right:b.x+b.width+stroke/2,cellLeft:left,cellRight:right,cellBandWidth:right-left,font,uwpFont},screen:{left:screen.left-stroke/2*scaleX,right:screen.right+stroke/2*scaleX,width:screen.width,cellLeft:left*m.a+m.e,cellRight:right*m.a+m.e,font:font*scaleY,uwpFont:uwpFont*scaleY},matrix:{a:m.a,b:m.b,c:m.c,d:m.d,scaleX,scaleY}};
  });
  const diagnostic=JSON.stringify(q);
  assert.match(q.text,/…$/,'Long names retain visible ellipsis');assert.match(q.title,/ExtraordinarilyLong/,'The title retains the full world name');
