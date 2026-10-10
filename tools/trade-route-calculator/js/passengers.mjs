@@ -1,9 +1,9 @@
-import {up} from './rounding.mjs?v=setup-location-completion-20261010-46';
+import {up} from './rounding.mjs?v=map-publication-completion-20261010-47';
 // Passenger contracts are authoritative. Effective ship values are derived only;
 // never write them back into the manual crew / other-occupant baseline.
 import * as A from './amounts.mjs';
-import {roomTotal,luggageAllowance,passengerLuggage,manualLuggage} from './accommodation.mjs?v=setup-location-completion-20261010-46';
-import {PASSAGE_CLASSES} from './passenger-rules.mjs?v=setup-location-completion-20261010-46';
+import {roomTotal,luggageAllowance,passengerLuggage,manualLuggage} from './accommodation.mjs?v=map-publication-completion-20261010-47';
+import {PASSAGE_CLASSES} from './passenger-rules.mjs?v=map-publication-completion-20261010-47';
 export const passengerReference='Core Rulebook Update 2022, pp. 158, 238–239. Generated fares cover one jump. Payment on explicit destination delivery is an app convention; no automatic lateness penalty.';
 export const bookingLuggage={high:'1',middle:'0',basic:'0.01',low:'0.01'};
 const id=x=>typeof x==='string'&&/^[A-Za-z0-9_,.:-]{1,100}$/.test(x);

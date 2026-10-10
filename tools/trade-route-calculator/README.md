@@ -591,7 +591,7 @@ an unrelated stale inline draft until explicit Revert. Settings economics,
 Dashboard baseline and Undo/mulligan rules are unchanged.
 
 
-Setup/location save completion (.46 candidate) separates cancellable world
+Setup/location save completion (.46) separates cancellable world
 lookup from the accepted save. A pending save retains the submitted fields and
 rounding, blocks duplicate activation and dismissal, and updates the displayed
 world or related drafts only after its exact owned publication completes.
@@ -603,3 +603,12 @@ refresh. Opening balance, Dashboard baseline, location correction history,
 insurance amendment, Undo and jump-mulligan behavior remain unchanged. Time/day
 and quote/preview ownership are separate remaining work. Final source, native,
 exact-head browser and actual screenshot gates are required before release.
+
+
+Map publication completion (.47 candidate) keeps the map aligned with the
+owned save boundary for Undo and campaign replacement. With a delayed provider,
+background map callbacks must retain the prewrite presentation until settlement;
+foreign publication still takes precedence when the old owner is invalidated.
+The correction changes no campaign data, accounting or native synchronous Store
+behavior. Settings, day/time callers and Stage 3 remain separate work. See the
+completion migration queue and exact-head regression evidence before release.
