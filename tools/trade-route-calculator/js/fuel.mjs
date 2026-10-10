@@ -1,4 +1,4 @@
-import {up} from './rounding.mjs?v=settings-completion-20261010-45';
+import {up} from './rounding.mjs?v=setup-location-completion-20261010-46';
 export const fuelReference='Traveller Core Rulebook Update 2022, p. 157: jump fuel is 10% of ship hull tonnage per parsec (minimum Jump-1). Fuel prices: p. 154. Power-plant and small-craft use are not tracked separately. Final fuel tonnage rounds up to whole tons [R].';
 // Read legacy jump-count saves without rewriting their retained Undo patches.
 // New configuration always stores capacity directly in tons.

@@ -1,10 +1,10 @@
-import {ruleInfo} from './rule-references.mjs?v=settings-completion-20261010-45';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=settings-completion-20261010-45';
+import {ruleInfo} from './rule-references.mjs?v=setup-location-completion-20261010-46';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=setup-location-completion-20261010-46';
 import * as A from './amounts.mjs';
-import {manualLuggage} from './accommodation.mjs?v=settings-completion-20261010-45';
-import * as P from './passengers.mjs?v=settings-completion-20261010-45';
-import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=settings-completion-20261010-45';
-import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=settings-completion-20261010-45';
+import {manualLuggage} from './accommodation.mjs?v=setup-location-completion-20261010-46';
+import * as P from './passengers.mjs?v=setup-location-completion-20261010-46';
+import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=setup-location-completion-20261010-46';
+import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=setup-location-completion-20261010-46';
 import {displayDate} from './calendar.mjs';
 const esc=escapeHtml;
 const money=formatCreditsText,signed=x=>x>0?'+'+x:String(x);

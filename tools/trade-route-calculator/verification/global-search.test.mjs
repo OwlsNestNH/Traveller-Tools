@@ -129,7 +129,10 @@ function findHarness(){
  let submit,searchOptions,current=true,view=null,nearby=async()=>[],resolve=async()=>({id:'legacy'}),location=null,renders=0;
  const elements=new Map(['find-world','global-world-search','choose-starting-world','modal-error'].map(id=>[id,{disabled:false,textContent:''}]));
  const appSession={},known={};
- const env={modal:(title,body,handler)=>{submit=handler;},createWorldPicker:()=>({resolve:()=>resolve()}),createGlobalWorldSearch:(host,options)=>{searchOptions=options;},$:id=>elements.get(id),viewed:()=>null,activeModal:appSession,modalCurrent:s=>current&&s===appSession,M:{nearby:()=>nearby()},known,render:()=>renders++,scheduleMapAreas(){},rememberWorld(){},closeModal:()=>current=false,setLocation:w=>{location=w;current=false;}};
+ // Find World now binds mutable handoff to this campaign/editor tenure.
+ // These unchanged ambient values keep the isolated browse fixture editable.
+ const campaignContext={state:{revision:0},campaignPublicationEpoch:0,editingLossEpoch:0,store:{editable:true},campaignReloadRequired:false};
+ const env={...campaignContext,modal:(title,body,handler)=>{submit=handler;},createWorldPicker:()=>({resolve:()=>resolve()}),createGlobalWorldSearch:(host,options)=>{searchOptions=options;},$:id=>elements.get(id),viewed:()=>null,activeModal:appSession,modalCurrent:s=>current&&s===appSession,M:{nearby:()=>nearby()},known,render:()=>renders++,scheduleMapAreas(){},rememberWorld(){},closeModal:()=>current=false,setLocation:w=>{location=w;current=false;}};
  const setup=new Function(...Object.keys(env),'let view=null,mapPan={},mapZoom=1;'+findSource+'; findWorld();return()=>view;')(...Object.values(env));
  return {elements,known,search:()=>searchOptions,setResolve:f=>resolve=f,setNearby:f=>nearby=f,submit:()=>submit(null,()=>current),get view(){return setup();},get location(){return location;},get renders(){return renders;}};
 }

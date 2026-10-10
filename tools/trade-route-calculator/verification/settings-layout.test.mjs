@@ -90,7 +90,11 @@ test('all settings disclosures remember both states before replacement and ignor
  assert.equal(sandbox.saved.get('campaign'),true);
  onToggle({target:{isConnected:true,dataset:{},open:true}});
  assert.equal(sandbox.saved.size,3,'Nested disclosures do not enter top-level presentation state');
- assert.match(source,/function render\(\)\{if\(!core\)return;captureSettingsDisclosures\(\)/);
+ const renderStart=source.indexOf('function render(){'),renderEnd=source.indexOf('\nfunction ',renderStart+1);
+ assert.ok(renderStart>=0&&renderEnd>renderStart,'Production render boundary exists');
+ const renderSource=source.slice(renderStart,renderEnd),captureAt=renderSource.indexOf('captureSettingsDisclosures();'),replaceAt=renderSource.indexOf('.innerHTML=');
+ assert.match(renderSource,/^function render\(\)\{if\(!core\)return;/);
+ assert.ok(captureAt>=0&&replaceAt>captureAt,'Disclosures are captured before render replaces DOM, after any pending-publication guard');
  assert.match(source,/settingsUtilityPanel\('rounding-time','Rounding & time'/);
  assert.match(source,/settingsUtilityPanel\('backup-data','Backup & data'/);
 });
@@ -99,8 +103,8 @@ test('cross-field settings failures reveal the form, while stale drafts keep dis
  // Isolated layout/error boundary only: run the unchanged production owner,
  // submit and failure helpers, with storage represented by a known-prewrite
  // validation stub. Deferred persistence and real DOM live in completion suites.
- const ownerStart=source.indexOf('function invalidateSettingsOperation('),mountEnd=source.indexOf('\n\nasync function setup()');
- assert.ok(ownerStart>=0&&mountEnd>ownerStart,'Production owner and inline mount extraction boundaries exist');
+ const ownerStart=source.indexOf('function invalidateSettingsOperation('),mountStart=source.indexOf('\nfunction mountSettingsForm(){',ownerStart),mountEnd=source.indexOf('\nfunction createWorldWriteOwner(',mountStart);
+ assert.ok(ownerStart>=0&&mountStart>ownerStart&&mountEnd>mountStart,'Production Settings owner/mount and next owner boundary exist');
  const mount=source.slice(ownerStart,mountEnd);
  const readFuel=source.match(/^function readFuel.*$/m)[0];
  const groups=[{open:false},{open:false}],events=[],field={name:'shipTons',value:'',type:'number',disabled:false,willValidate:true,validity:{valid:true}};
@@ -109,10 +113,10 @@ test('cross-field settings failures reveal the form, while stale drafts keep dis
  form.elements.namedItem=name=>name===field.name?field:null;
  const ids={'settings-form':form,'settings-error':error,'settings-reset':{},'settings-save':{},modal:{open:false}};
  const state={revision:1,ship:{}};
- const sandbox={Map,document:{},SaveNotCommittedError,$:id=>ids[id],state,settingsDraft:null,settingsFormRevision:0,settingsOpenGroups:new Map(),settingsRounding:[],inputRounding:[],store:{editable:true},settingsOperation:null,campaignReloadRequired:false,tab:'Settings',suspendedSettings:null,services:{active:()=>false},
+ const sandbox={Map,document:{},SaveNotCommittedError,$:id=>ids[id],state,settingsDraft:null,settingsFormRevision:0,settingsOpenGroups:new Map(),settingsRounding:[],inputRounding:[],store:{editable:true},settingsOperation:null,worldWriteOperation:null,campaignReloadRequired:false,tab:'Settings',suspendedSettings:null,services:{active:()=>false},
   mountSettingsLayout(){},normaliseSettingsFields(){},updateSettingsForm(){},syncSettingsControls(){},captureSettingsDraft(){},captureSettingsDisclosures(){},render(){throw Error('An invalid form must not render a committed state');},
   FormData:class{get(name){return {shipTons:'',fuelCapacity:'40',fuelAboard:'10'}[name]??null;}}};
- vm.runInNewContext(readFuel+';function saveSettings(data){try{readFuel(data);}catch(error){throw new SaveNotCommittedError(error);}throw Error("Validation should have failed");}'+mount+';globalThis.mount=mountSettingsForm;',sandbox);
+ vm.runInNewContext(readFuel+';function saveSettings(data){try{readFuel(data);}catch(error){throw new SaveNotCommittedError(error);}throw Error("Validation should have failed");}'+mount+'\n;globalThis.mount=mountSettingsForm;',sandbox);
  sandbox.mount();form.onsubmit({preventDefault(){}});
  assert.ok(groups.every(group=>group.open),'Individually valid fields with a cross-field error are revealed');
  assert.match(error.textContent,/ship displacement, fuel tank capacity and fuel aboard together/);

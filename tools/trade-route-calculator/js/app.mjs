@@ -1,42 +1,42 @@
-import {dashboardPanel} from './dashboard-view.mjs?v=settings-completion-20261010-45';
-import {recordWorldOverride,revertWorldField,worldFieldRevertEligibility,worldChangeFields,worldFieldValue,isWorldChangeAudit} from './world-change-history.mjs?v=settings-completion-20261010-45';
-import {createCampaignController} from './campaign-controller.mjs?v=settings-completion-20261010-45';
-import {ruleInfo,referenceIndex,REFERENCE_VERSION} from './rule-references.mjs?v=settings-completion-20261010-45';
-import {mountRulePopover,replaceReferenceContent} from './rule-popover.mjs?v=settings-completion-20261010-45';
-import {escapeHtml,moneyHtml} from './display.mjs?v=settings-completion-20261010-45';
-import {normalizeAmountFields} from './form-values.mjs?v=settings-completion-20261010-45';
-import {contactSearchStatus,contactSearchPeriod,contactSearchRule} from './contact-search.mjs?v=settings-completion-20261010-45';
-import {createPassengerUI} from './passenger-ui.mjs?v=settings-completion-20261010-45';
-import {passengerShip,passengerTotals,passengerSpace,passengerCapacity} from './passengers.mjs?v=settings-completion-20261010-45';
-import {advancePaymentDate,recordedPaymentDate} from './payment-schedule.mjs?v=settings-completion-20261010-45';
-import {configureMortgage,mortgageStatus} from './mortgage.mjs?v=settings-completion-20261010-45';
-import {configureMaintenance,maintenanceStatus} from './maintenance.mjs?v=settings-completion-20261010-45';
-import {createServicePanels} from './service-panels.mjs?v=settings-completion-20261010-45';
-import {cargoHoldPanel} from './cargo-hold.mjs?v=settings-completion-20261010-45';
-import {createExpensePanels} from './expense-panels.mjs?v=settings-completion-20261010-45';
+import {dashboardPanel} from './dashboard-view.mjs?v=setup-location-completion-20261010-46';
+import {recordWorldOverride,revertWorldField,worldFieldRevertEligibility,worldChangeFields,worldFieldValue,isWorldChangeAudit} from './world-change-history.mjs?v=setup-location-completion-20261010-46';
+import {createCampaignController} from './campaign-controller.mjs?v=setup-location-completion-20261010-46';
+import {ruleInfo,referenceIndex,REFERENCE_VERSION} from './rule-references.mjs?v=setup-location-completion-20261010-46';
+import {mountRulePopover,replaceReferenceContent} from './rule-popover.mjs?v=setup-location-completion-20261010-46';
+import {escapeHtml,moneyHtml} from './display.mjs?v=setup-location-completion-20261010-46';
+import {normalizeAmountFields} from './form-values.mjs?v=setup-location-completion-20261010-46';
+import {contactSearchStatus,contactSearchPeriod,contactSearchRule} from './contact-search.mjs?v=setup-location-completion-20261010-46';
+import {createPassengerUI} from './passenger-ui.mjs?v=setup-location-completion-20261010-46';
+import {passengerShip,passengerTotals,passengerSpace,passengerCapacity} from './passengers.mjs?v=setup-location-completion-20261010-46';
+import {advancePaymentDate,recordedPaymentDate} from './payment-schedule.mjs?v=setup-location-completion-20261010-46';
+import {configureMortgage,mortgageStatus} from './mortgage.mjs?v=setup-location-completion-20261010-46';
+import {configureMaintenance,maintenanceStatus} from './maintenance.mjs?v=setup-location-completion-20261010-46';
+import {createServicePanels} from './service-panels.mjs?v=setup-location-completion-20261010-46';
+import {cargoHoldPanel} from './cargo-hold.mjs?v=setup-location-completion-20261010-46';
+import {createExpensePanels} from './expense-panels.mjs?v=setup-location-completion-20261010-46';
 import {currentJumpAttempt} from './jump-attempts.mjs';
-import {mountSettingsLayout,syncSettingsControls,stepSetting} from './settings-layout.mjs?v=settings-completion-20261010-45';
-import {configureFuel,fuelCapacities,bladderSpace,validateFuel,jumpFuel} from './fuel.mjs?v=settings-completion-20261010-45';
-import {refillQuote,supportStock,supportCargo,supportDisplay,anchorSupport,configureSupport} from './life-support.mjs?v=settings-completion-20261010-45';
-import {campaignReport} from './report.mjs?v=settings-completion-20261010-45';
-import {up,creditStep,roundExisting} from './rounding.mjs?v=settings-completion-20261010-45';
-import {tiers,luggageAllowance,occupants,passengerLuggage,manualLuggage,serviceRate,serviceLabel,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=settings-completion-20261010-45';
+import {mountSettingsLayout,syncSettingsControls,stepSetting} from './settings-layout.mjs?v=setup-location-completion-20261010-46';
+import {configureFuel,fuelCapacities,bladderSpace,validateFuel,jumpFuel} from './fuel.mjs?v=setup-location-completion-20261010-46';
+import {refillQuote,supportStock,supportCargo,supportDisplay,anchorSupport,configureSupport} from './life-support.mjs?v=setup-location-completion-20261010-46';
+import {campaignReport} from './report.mjs?v=setup-location-completion-20261010-46';
+import {up,creditStep,roundExisting} from './rounding.mjs?v=setup-location-completion-20261010-46';
+import {tiers,luggageAllowance,occupants,passengerLuggage,manualLuggage,serviceRate,serviceLabel,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=setup-location-completion-20261010-46';
 import * as A from './amounts.mjs';
 import {parseDate,displayDate} from './calendar.mjs';
-import * as R from './rules.mjs?v=settings-completion-20261010-45';
-import * as S from './state.mjs?v=settings-completion-20261010-45';
+import * as R from './rules.mjs?v=setup-location-completion-20261010-46';
+import * as S from './state.mjs?v=setup-location-completion-20261010-46';
 import {latestMailCheck,recordMailCheck,mailCheckHistoryStatus} from './mail-history.mjs?v=mail-history-1';
-import * as E from './expenses.mjs?v=settings-completion-20261010-45';
-import {planetInformation,worldSheetURL} from './planet-info.mjs?v=settings-completion-20261010-45';
-import {worldMapFacts,worldSymbols,selectedWorldHex,mapKeyMarkup} from './world-symbols.mjs?v=settings-completion-20261010-45';
-import * as M from './map.mjs?v=settings-completion-20261010-45';
+import * as E from './expenses.mjs?v=setup-location-completion-20261010-46';
+import {planetInformation,worldSheetURL} from './planet-info.mjs?v=setup-location-completion-20261010-46';
+import {worldMapFacts,worldSymbols,selectedWorldHex,mapKeyMarkup} from './world-symbols.mjs?v=setup-location-completion-20261010-46';
+import * as M from './map.mjs?v=setup-location-completion-20261010-46';
 import {MAP_GEOMETRY,setMapGeometry,visibleMapWorlds} from './map-geometry.mjs?v=map-first-1';
 import {camera,viewportTiles,MapAreaCache} from './map-viewport.mjs?v=map-first-1';
-import {MAP_ZOOM_STEP,nextMapZoom,mapLevel,MapOverviewCache,overviewMarkup,mapTerritories} from './map-overview.mjs?v=settings-completion-20261010-45';
+import {MAP_ZOOM_STEP,nextMapZoom,mapLevel,MapOverviewCache,overviewMarkup,mapTerritories} from './map-overview.mjs?v=setup-location-completion-20261010-46';
 import {readPoliticalTerritory,savePoliticalTerritory} from './map-preferences.mjs';
-import {createGlobalWorldSearch} from './global-world-search.mjs?v=settings-completion-20261010-45';
-import {createWorldPicker,rememberWorld} from './world-picker.mjs?v=settings-completion-20261010-45';
-import {Store,KEY,SaveNotCommittedError,SaveCommittedPublicationError} from './persistence.mjs?v=settings-completion-20261010-45';
+import {createGlobalWorldSearch} from './global-world-search.mjs?v=setup-location-completion-20261010-46';
+import {createWorldPicker,rememberWorld} from './world-picker.mjs?v=setup-location-completion-20261010-46';
+import {Store,KEY,SaveNotCommittedError,SaveCommittedPublicationError} from './persistence.mjs?v=setup-location-completion-20261010-46';
 const $=id=>document.getElementById(id),esc=escapeHtml;
 const ROOT='https://github.com/OwlsNestNH/Traveller-Tools/blob/main/tools/trade-route-calculator/';
 let inputRounding=[];
@@ -62,7 +62,7 @@ const campaignWrites=createCampaignController({getState:()=>state,getStore:()=>s
 let cargoHoldOpen=false;
 // Expanded navigation is a local view, never part of the campaign or backup.
 let mapExpanded=false,mapRestorePanel=null;
-function showOverviewPanels(){mapExpanded=false;mapRestorePanel=null;tab='Overview';}
+function showOverviewPanels(){worldNearbyRequest=null;mapExpanded=false;mapRestorePanel=null;tab='Overview';}
 const passengers=createPassengerUI({getState:()=>state,getCore:()=>core,getWorld:world,getWorlds:()=>({...known,...state.worlds}),getView:viewed,modal,act,render,message,S,R,M});
 const stockServices=createServicePanels({document,getState:()=>state,isEditable:()=>!!store?.editable&&!campaignReloadRequired,commit:act,render,showOverview:showOverviewPanels,message,onTerminalFailure:(error,guidance)=>{requireCampaignReload(error,guidance,'service-save');message(guidance,true);},nextJumpFuel:s=>{const to=s.worlds[s.route[s.routeIndex+1]];if(!to)return null;const q=jumpFuel(s.ship,M.distance(s.worlds[s.actual],to));return q?Math.max(0,q.tons-q.before):null;}});
 const expenseRouteKey='traveller-expense-receipt-route';
@@ -105,6 +105,7 @@ function roundingPreview(){const draft=structuredClone(state),changes=roundExist
 let activeModal=null;
 let undoOperation=null;
 let settingsOperation=null;
+let worldWriteOperation=null,worldNearbyRequest=null;
 let replacementReview=null,importRead=null,campaignPublicationEpoch=0,editingLossEpoch=0;
 let jumpPreparation=null;
 let campaignReloadRequired=false,campaignReloadMessage='';
@@ -141,7 +142,7 @@ function syncModalSubmit(){
  if($('modal-cancel'))$('modal-cancel').disabled=pending;
  if($('modal-close'))$('modal-close').disabled=pending;
 }
-function closeModal(){if(activeModal?.awaitSave&&activeModal.busy)return false;if(settingsOperation?.session&&settingsOperation.session===activeModal)invalidateSettingsOperation();preserveModalPointerGesture();activeModal=null;modalGeneration++;$('modal').close();$('modal-body').innerHTML='';restoreSettingsForm();}
+function closeModal(){if(activeModal?.awaitSave&&activeModal.busy)return false;if(settingsOperation?.session&&settingsOperation.session===activeModal)invalidateSettingsOperation();if(worldWriteOperation?.session===activeModal)invalidateWorldWriteOperation();preserveModalPointerGesture();activeModal=null;modalGeneration++;$('modal').close();$('modal-body').innerHTML='';restoreSettingsForm();}
 function requireCampaignReload(error,guidance,context){
  // A terminal save outcome survives subsequent role callbacks and dialogs.
  // Set both application and provider guards before yielding can render/throw.
@@ -165,7 +166,9 @@ function terminalModalSaveFailure(session,error){
 }
 // Display titles are presentation only. Callers declare review/footnote behavior.
 function modal(title,body,submit,label='Save',mutates=true,{retainRounding=false,insurance=false,tax=false,annotateRounding=true,awaitSave=false,saveName='Deposit',saveContext='deposit-save'}={}){
- if(activeModal?.awaitSave&&activeModal.busy)return false;
+ if(activeModal?.awaitSave&&activeModal.busy||worldWriteOperation?.pending&&!worldWriteOperation.invalidated)return false;
+ worldNearbyRequest=null;
+ if(worldWriteOperation?.session===activeModal)invalidateWorldWriteOperation();
  if(settingsOperation?.pending&&!settingsOperation.invalidated&&!(settingsOperation.inline&&!settingsOperation.session&&!submit&&saveContext==='settings-save'))return false;
  if(settingsOperation?.session&&settingsOperation.session===activeModal)invalidateSettingsOperation();
  if($('modal').open)preserveModalPointerGesture();else resetModalPointerGesture();
@@ -209,10 +212,12 @@ function saveCampaign(next,expected){return campaignWrites.save(next,expected);}
 function receiveCampaign(next,metadata){
  // Storage updates, imports and ownership acquisition end this tab's offers,
  // even if a replacement reuses the same saved audit/offer IDs.
- campaignPublicationEpoch++;
+ campaignPublicationEpoch++;worldNearbyRequest=null;
  const local=campaignWrites.isLocalPublication(next,metadata),replacement=campaignWrites.takeReplacementPublication(next,metadata);
  // Controller provenance is one-use. A revision number by itself never owns
  // Settings completion, including a foreign publication at the same revision.
+ const worldOwner=worldWriteOperation,ownWorld=local&&worldOwner?.pending&&!worldOwner.publication&&next.revision===worldOwner.revision+1;
+ if(ownWorld)worldOwner.publication=next;else invalidateWorldWriteOperation();
  const settingsOwner=settingsOperation,ownSettings=local&&settingsOwner?.pending&&!settingsOwner.publication&&next.revision===settingsOwner.revision+1;
  if(ownSettings){settingsOwner.publication=next;if(!settingsOwner.inline)markSettingsDraftStale();}
  else invalidateSettingsOperation(true);
@@ -223,6 +228,7 @@ function receiveCampaign(next,metadata){
  // A local Undo publication is not its provider's completed save. Keep draft,
  // selection and route reconciliation in the owned completion below. Foreign
  // publications still reconcile immediately and retire that owner.
+ if(ownWorld&&!worldOwner.invalidated){worldOwner.publicationDeferred=true;return;}
  if(ownSettings&&!settingsOwner.invalidated){settingsOwner.publicationDeferred=true;return;}
  if(local&&undoOperation?.pending&&!undoOperation.invalidated){undoOperation.publicationDeferred=true;return;}
  if(replacement&&replacementReview?.pending&&!replacementReview.invalidated){replacementReview.publicationDeferred=true;return;}
@@ -366,7 +372,7 @@ function changeCampaignDay(direction){
  const before=displayDate(state.dateLabel,state.hours),after=displayDate(state.dateLabel,hours);
  act((direction>0?'Time advanced +1 day: ':'Time correction -1 day: ')+before+' to '+after+(direction<0?' (supplies and transactions unchanged)':''),s=>{s.hours=hours;});
 }
-function render(){if(!core)return;captureSettingsDisclosures();if(settingsOperation&&!settingsOperation.invalidated&&(settingsOperation.pending||settingsOperation.publicationDeferred))return;if(undoOperation?.pending&&undoOperation.publicationDeferred&&!undoOperation.invalidated)return;if(replacementReview?.pending&&replacementReview.publicationDeferred&&!replacementReview.invalidated)return;if(routeDraft&&(routeDraft.revision!==state.revision||!store?.editable))routeDraft=null;if(view&&!world(view))view=state.actual;selected=new Set([...selected].filter(id=>state.lots.some(l=>l.id===id)));$('summary').innerHTML=[['Ship',state.ship.name],['Current world',actual()?.name||'Not set']].map(([l,v])=>`<div class="stat"><span class="label">${esc(l)}</span><span class="value">${esc(v)}</span></div>`).join('')+fuelCounter()+lifeSupportCounter()+holdCounter()+`<div class="stat"><span class="label">Credits</span><span class="value mono">${money(state.bank)}</span></div>`;$('ship-actions').innerHTML=shipActions();$('tabs').innerHTML=['Overview','Trade','Cargo','Contracts','Accounts','Dashboard','History','Settings'].map(t=>btn(t,'tab',t,false,tab===t?'active':'').replace('<button','<button '+(tab===t?'aria-current="page"':''))).join('');if(store?.recovery){$('main').innerHTML=panel('Recover saved campaign',`<div class="panel-body"><p class="notice">${esc(store.recoveryMessage||'Saved data needs recovery.')}</p><p>The saved data has not been replaced. Export its raw contents before importing a valid backup or resetting.</p><div class="wide-actions">${btn('Export raw saved data','export')}${btn('Load campaign (JSON)','import','',true)}${btn('Reset campaign','reset','',true,'danger')}</div></div>`);}else if(!state.initialized){$('main').innerHTML=`<section class="panel welcome"><span class="eyebrow">YOUR NEXT TRADE STARTS HERE</span><h2>Bring your campaign aboard.</h2><p class="muted">Set your current world, ship and bank balance. Add cargo you already own without buying it again. Your campaign stays in this browser; export a backup whenever you need one.</p><div class="wide-actions">${btn('Set up campaign','setup','',true,'primary')}${btn('Load campaign (JSON)','import')}</div><p class="help">Free static tool · Traveller Map world data · Core Rulebook Update 2022 · Optional Merchant Prince insurance and taxes</p></section>`;}else if(tab==='Overview')$('main').innerHTML='<div class="navigation-layout'+(mapExpanded?' map-expanded':'')+'">'+mapPanel()+(mapExpanded?'':services.active()?services.panel():cargoHoldOpen?cargoHoldPanel(state,core):worldScreen(viewed()))+'</div>'+overviewCargo();else if(tab==='Trade')$('main').innerHTML=tradeLocation()+marketPanel()+cargoPanel(false);else if(tab==='Cargo')$('main').innerHTML=cargoPanel(true)+policyPanel();else if(tab==='Contracts')$('main').innerHTML=contractsPanel();else if(tab==='Accounts')$('main').innerHTML=accountsPanel();else if(tab==='Dashboard')$('main').innerHTML=dashboardPanel(state);else if(tab==='History')$('main').innerHTML=historyPanel();else $('main').innerHTML=settingsPanel();mountSettingsForm();if($('modal').open)suspendSettingsForm();document.querySelectorAll('[data-mutate]').forEach(b=>b.disabled=(!store?.editable&&!(b.closest('#ship-actions')&&b.getAttribute('aria-pressed')==='true'))||b.hasAttribute('data-unavailable')||services.active()&&!b.closest('#service-panel,#expense-panel')&&!(b.closest('#ship-actions')&&['refuel','refill-support','ship-expenses'].includes(b.dataset.action)));services.syncControls();}
+function render(){if(!core)return;if(worldWriteOperation?.publicationDeferred&&!worldWriteOperation.invalidated)return;captureSettingsDisclosures();if(settingsOperation&&!settingsOperation.invalidated&&(settingsOperation.pending||settingsOperation.publicationDeferred))return;if(undoOperation?.pending&&undoOperation.publicationDeferred&&!undoOperation.invalidated)return;if(replacementReview?.pending&&replacementReview.publicationDeferred&&!replacementReview.invalidated)return;if(routeDraft&&(routeDraft.revision!==state.revision||!store?.editable))routeDraft=null;if(view&&!world(view))view=state.actual;selected=new Set([...selected].filter(id=>state.lots.some(l=>l.id===id)));$('summary').innerHTML=[['Ship',state.ship.name],['Current world',actual()?.name||'Not set']].map(([l,v])=>`<div class="stat"><span class="label">${esc(l)}</span><span class="value">${esc(v)}</span></div>`).join('')+fuelCounter()+lifeSupportCounter()+holdCounter()+`<div class="stat"><span class="label">Credits</span><span class="value mono">${money(state.bank)}</span></div>`;$('ship-actions').innerHTML=shipActions();$('tabs').innerHTML=['Overview','Trade','Cargo','Contracts','Accounts','Dashboard','History','Settings'].map(t=>btn(t,'tab',t,false,tab===t?'active':'').replace('<button','<button '+(tab===t?'aria-current="page"':''))).join('');if(store?.recovery){$('main').innerHTML=panel('Recover saved campaign',`<div class="panel-body"><p class="notice">${esc(store.recoveryMessage||'Saved data needs recovery.')}</p><p>The saved data has not been replaced. Export its raw contents before importing a valid backup or resetting.</p><div class="wide-actions">${btn('Export raw saved data','export')}${btn('Load campaign (JSON)','import','',true)}${btn('Reset campaign','reset','',true,'danger')}</div></div>`);}else if(!state.initialized){$('main').innerHTML=`<section class="panel welcome"><span class="eyebrow">YOUR NEXT TRADE STARTS HERE</span><h2>Bring your campaign aboard.</h2><p class="muted">Set your current world, ship and bank balance. Add cargo you already own without buying it again. Your campaign stays in this browser; export a backup whenever you need one.</p><div class="wide-actions">${btn('Set up campaign','setup','',true,'primary')}${btn('Load campaign (JSON)','import')}</div><p class="help">Free static tool · Traveller Map world data · Core Rulebook Update 2022 · Optional Merchant Prince insurance and taxes</p></section>`;}else if(tab==='Overview')$('main').innerHTML='<div class="navigation-layout'+(mapExpanded?' map-expanded':'')+'">'+mapPanel()+(mapExpanded?'':services.active()?services.panel():cargoHoldOpen?cargoHoldPanel(state,core):worldScreen(viewed()))+'</div>'+overviewCargo();else if(tab==='Trade')$('main').innerHTML=tradeLocation()+marketPanel()+cargoPanel(false);else if(tab==='Cargo')$('main').innerHTML=cargoPanel(true)+policyPanel();else if(tab==='Contracts')$('main').innerHTML=contractsPanel();else if(tab==='Accounts')$('main').innerHTML=accountsPanel();else if(tab==='Dashboard')$('main').innerHTML=dashboardPanel(state);else if(tab==='History')$('main').innerHTML=historyPanel();else $('main').innerHTML=settingsPanel();mountSettingsForm();if($('modal').open)suspendSettingsForm();document.querySelectorAll('[data-mutate]').forEach(b=>b.disabled=(!store?.editable&&!(b.closest('#ship-actions')&&b.getAttribute('aria-pressed')==='true'))||b.hasAttribute('data-unavailable')||services.active()&&!b.closest('#service-panel,#expense-panel')&&!(b.closest('#ship-actions')&&['refuel','refill-support','ship-expenses'].includes(b.dataset.action)));services.syncControls();}
 function mapHexGrid(w,point,scale){
  if(!showHexes||scale<24)return '';
  const radius=scale/Math.sqrt(3),cells=[];
@@ -991,7 +997,7 @@ function releaseSettingsPendingControls(owner){
  syncSettingsControls(form,!store?.editable||campaignReloadRequired||services.active());
 }
 function completeSettingsWrite(owner,data){
- if(settingsOperation?.pending)return false;
+ if(settingsOperation?.pending||worldWriteOperation?.pending)return false;
  if(!settingsOwnerCurrent(owner)||owner.revision!==state.revision)throw new SaveNotCommittedError(Error('Campaign changed. Revert changes or reopen Settings before editing again.'));
  if(services.active())throw new SaveNotCommittedError(Error('Finish or cancel the open ship service before changing Settings.'));
  owner.pending=true;owner.publication=null;owner.publicationDeferred=false;owner.candidatePrepared=false;
@@ -1113,17 +1119,126 @@ function mountSettingsForm(){
  };
 }
 
-async function setup(){let picker;modal('Start your campaign',`<div class="split">${field('name','Campaign name','My trading campaign')}${field('ship','Ship name','Independent trader')}${field('bank','Opening bank · Cr','100000','text','','credits')}${field('capacity','Cargo capacity · tons','60','text','','tons')}${field('jump','Jump rating','2','number','min="1" max="6"')}${field('date','Starting Imperial date · day-year','001-1105')}</div>${fuelFields()}${accommodationFields()}<div id="setup-world"></div>${check('scoops','Ship has fuel scoops',true)}<p class="help">Existing cargo is added separately and will not debit this opening bank.</p>`,async(f,isCurrent)=>{const w=await picker.resolve();if(!isCurrent())return false;known[w.id]=w;parseDate(f.get('date'));const bank=A.credit(f.get('bank'));if(bank<0n)throw Error('Opening bank cannot be negative');act('Campaign setup',s=>{s.initialized=true;s.name=f.get('name');s.ship.name=f.get('ship');s.ship.capacity=A.decimal(f.get('capacity'));s.ship.accommodation=readAccommodation(f);s.ship.fuel=readFuel(f);s.ship.lifeSupport=readSupport(f,s.ship);s.ship.staterooms=roomTotal(s.ship);s.ship.roundTons=true;s.ship.jump=Number(f.get('jump'));s.ship.scoops=f.has('scoops');s.bank=String(bank);s.dateLabel=f.get('date');s.actual=w.id;s.worlds[w.id]=w;s.route=[w.id];s.ledger.push({id:S.uid(),type:'Opening bank',amount:String(bank),hours:0,world:w.id});});view=w.id;await refreshNearby(false,isCurrent);},'Start campaign');updateAccommodationEstimate();updateFuelSettingsEstimate();picker=createWorldPicker($('setup-world'),{initial:{sector:'Spinward Marches',hex:'1910'},title:'Current world'});}
+// Setup and location share only their save-completion boundary. Lookup remains
+// dismissible; the prepared candidate locks this exact dialog before save().
+function createWorldWriteOwner(session){
+ const owner={session,form:$('modal-form'),campaign:state,revision:state.revision,epoch:campaignPublicationEpoch,editing:editingLossEpoch,pending:false,invalidated:false,publication:null,publicationDeferred:false,rounding:null};
+ worldWriteOperation=owner;return owner;
+}
+function invalidateWorldWriteOperation(){
+ const owner=worldWriteOperation;if(!owner)return;
+ owner.invalidated=true;owner.publicationDeferred=false;owner.session.cancelled=true;
+ if(activeModal===owner.session&&$('modal').open){
+  $('modal-error').textContent=campaignReloadRequired?campaignReloadMessage:'Campaign or editing ownership changed. Close and review the current campaign before continuing.';
+  syncModalSubmit();
+ }
+}
+function worldWriteOwnerCurrent(owner){
+ return worldWriteOperation===owner&&!owner.invalidated&&!campaignReloadRequired&&store?.editable&&editingLossEpoch===owner.editing&&modalCurrent(owner.session)&&
+  (owner.publication?state===owner.publication&&campaignPublicationEpoch===owner.epoch+1:state===owner.campaign&&state.revision===owner.revision&&campaignPublicationEpoch===owner.epoch);
+}
+function beginWorldWriteLookup(owner){
+ if(!worldWriteOwnerCurrent(owner)||owner.pending)throw new SaveNotCommittedError(Error('Campaign changed. Reopen this dialog before saving.'));
+ // FormData and rounding belong to this submission, not edits during lookup.
+ owner.rounding=structuredClone(inputRounding);owner.publication=null;owner.publicationDeferred=false;
+}
+function restoreWorldWriteControls(owner){
+ if(activeModal!==owner.session||!$('modal').open)return;
+ for(const [control,disabled]of owner.controls||[])control.disabled=disabled;
+ owner.controls=null;syncModalSubmit();
+}
+function worldWriteFailure(owner,error){
+ if(owner.publication&&error?.code!=='SAVE_COMMITTED_PUBLICATION_FAILED')error=new SaveCommittedPublicationError(owner.publication.revision,error);
+ owner.pending=false;owner.publicationDeferred=false;owner.session.busy=false;
+ const known=error?.code==='SAVE_NOT_COMMITTED'&&error.committed===false&&!owner.publication;
+ if(known){
+  owner.session.awaitSave=false;
+  if(!worldWriteOwnerCurrent(owner))return false;
+  restoreWorldWriteControls(owner);throw error;
+ }
+ // A failed native close may leave this same dialog open after ownership was
+ // cleared. Recover only its exact closing generation, never a newer dialog.
+ if(!activeModal&&$('modal').open&&modalGeneration===owner.closingGeneration)activeModal=owner.session;
+ // Terminal safety does not depend on the old dialog still being mounted.
+ owner.invalidated=true;
+ try{terminalModalSaveFailure(owner.session,error);}catch{/* Reload guards precede reporting. */}
+ restoreWorldWriteControls(owner);return false;
+}
+function finishWorldWrite(owner,label,after){
+ const published=owner.publication;
+ if(!published||published.revision!==owner.revision+1)throw Error('Save completion did not publish the expected campaign.');
+ owner.session.savedRevision=published.revision;
+ if(!worldWriteOwnerCurrent(owner))return false;
+ owner.publicationDeferred=false;
+ after();syncMailCheck();owner.session.busy=false;
+ owner.closingGeneration=modalGeneration+1;closeModal();
+ if(state!==published||campaignPublicationEpoch!==owner.epoch+1||editingLossEpoch!==owner.editing||!store?.editable||campaignReloadRequired||activeModal||modalGeneration!==owner.closingGeneration)return false;
+ render();message(label+' saved.');
+ return true;
+}
+function completeWorldWrite(owner,label,change,after,nearby=null){
+ if(!worldWriteOwnerCurrent(owner)||owner.pending)throw new SaveNotCommittedError(Error('Campaign changed. Reopen this dialog before saving.'));
+ const fail=error=>worldWriteFailure(owner,error);
+ const finish=()=>{
+  try{
+   const current=finishWorldWrite(owner,label,after);
+   owner.pending=false;owner.publicationDeferred=false;
+   if(current&&nearby)refreshWorldNearby(nearby,{setupOwner:owner});
+   return false; // This owner already closed its dialog, never close a newer one.
+  }catch(error){return fail(error);}
+  finally{owner.pending=false;owner.publicationDeferred=false;owner.session.busy=false;}
+ };
+ let result;
+ try{
+  const previous=inputRounding;inputRounding=owner.rounding;
+  try{result=act(label,change,owner.revision,{announce:false,onPrepared:()=>{
+   if(!worldWriteOwnerCurrent(owner))throw Error('Campaign changed. Reopen this dialog before saving.');
+   owner.pending=true;owner.session.awaitSave=true;
+   owner.controls=new Map([...owner.form.querySelectorAll('input,select,textarea,button')].map(control=>[control,control.disabled]));
+   for(const control of owner.controls.keys())control.disabled=true;
+   syncModalSubmit();
+  }});}finally{inputRounding=previous;}
+ }catch(error){return fail(error);}
+ return result&&typeof result.then==='function'?Promise.resolve(result).then(finish,fail):finish();
+}
+async function refreshWorldNearby(w,{setupOwner=null}={}){
+ // Nearby loading is read-only enrichment. Saving setup has already completed;
+ // any newer navigation/modal/publication permanently retires this request.
+ const request={};worldNearbyRequest=request;
+ const campaign=state,epoch=campaignPublicationEpoch,editing=editingLossEpoch,generation=modalGeneration;
+ const current=()=>worldNearbyRequest===request&&state===campaign&&campaignPublicationEpoch===epoch&&editingLossEpoch===editing&&!campaignReloadRequired&&modalGeneration===generation&&view===w.id&&(!setupOwner||state===setupOwner.publication&&store?.editable);
+ try{const rows=await M.nearby(w,12);if(!current())return;rows.forEach(x=>known[x.id]=x);render();if(!setupOwner)message('Live nearby worlds loaded.');}
+ catch(error){if(current()){try{message((setupOwner?'Campaign setup saved. Could not load nearby worlds: ':'Could not refresh nearby worlds: ')+error.message+'. Use Refresh nearby to retry.',true);}catch{/* Optional map reporting cannot undo a completed save. */}}}
+ finally{if(worldNearbyRequest===request)worldNearbyRequest=null;}
+}
+async function setup(){
+ if(worldWriteOperation?.pending)return false;
+ let picker,owner;
+ const opened=modal('Start your campaign',`<div class="split">${field('name','Campaign name','My trading campaign')}${field('ship','Ship name','Independent trader')}${field('bank','Opening bank · Cr','100000','text','','credits')}${field('capacity','Cargo capacity · tons','60','text','','tons')}${field('jump','Jump rating','2','number','min="1" max="6"')}${field('date','Starting Imperial date · day-year','001-1105')}</div>${fuelFields()}${accommodationFields()}<div id="setup-world"></div>${check('scoops','Ship has fuel scoops',true)}<p class="help">Existing cargo is added separately and will not debit this opening bank.</p>`,async f=>{
+  beginWorldWriteLookup(owner);
+  let w,bank;
+  try{w=await picker.resolve();if(!worldWriteOwnerCurrent(owner))return false;parseDate(f.get('date'));bank=A.credit(f.get('bank'));if(bank<0n)throw Error('Opening bank cannot be negative');}
+  catch(error){if(!worldWriteOwnerCurrent(owner))return false;throw new SaveNotCommittedError(error);}
+  known[w.id]=w;
+  return completeWorldWrite(owner,'Campaign setup',s=>{s.initialized=true;s.name=f.get('name');s.ship.name=f.get('ship');s.ship.capacity=A.decimal(f.get('capacity'));s.ship.accommodation=readAccommodation(f);s.ship.fuel=readFuel(f);s.ship.lifeSupport=readSupport(f,s.ship);s.ship.staterooms=roomTotal(s.ship);s.ship.roundTons=true;s.ship.jump=Number(f.get('jump'));s.ship.scoops=f.has('scoops');s.bank=String(bank);s.dateLabel=f.get('date');s.actual=w.id;s.worlds[w.id]=w;s.route=[w.id];s.ledger.push({id:S.uid(),type:'Opening bank',amount:String(bank),hours:0,world:w.id});},()=>{view=w.id;},w);
+ },'Start campaign',true,{saveName:'Campaign setup',saveContext:'setup-save'});
+ if(opened===false)return false;
+ owner=createWorldWriteOwner(activeModal);
+ updateAccommodationEstimate();updateFuelSettingsEstimate();picker=createWorldPicker($('setup-world'),{initial:{sector:'Spinward Marches',hex:'1910'},title:'Current world'});
+}
 async function refreshNearby(show=true,isCurrent=()=>true){const w=viewed();if(!w)return;const rows=await M.nearby(w,12);if(!isCurrent())return;rows.forEach(x=>known[x.id]=x);render();if(show)message('Live nearby worlds loaded.');}
 function findWorld(){
  let picker,selectionVersion=0;
  const claimIntent=()=>{const version=++selectionVersion;return()=>version===selectionVersion;};
- modal('Find a world','<div id="global-world-search"></div><div id="find-world"></div><p class="help">Browse to inspect this world, or use it as your ship’s starting position.</p><button type="button" id="choose-starting-world">Use as starting world</button>',async(f,isCurrent)=>{
+ const opened=modal('Find a world','<div id="global-world-search"></div><div id="find-world"></div><p class="help">Browse to inspect this world, or use it as your ship’s starting position.</p><button type="button" id="choose-starting-world">Use as starting world</button>',async(f,isCurrent)=>{
   const ownsIntent=claimIntent(),current=()=>isCurrent()&&ownsIntent();
   try{const w=await picker.resolve();if(!current())return false;const rows=await M.nearby(w,12);if(!current())return false;
    rows.forEach(x=>known[x.id]=x);known[w.id]=w;view=w.id;render();scheduleMapAreas();
   }catch(e){if(!current())return false;throw e;}
  },'Browse world',false);
+ if(opened===false)return false;
+ const campaign=state,epoch=campaignPublicationEpoch,editing=editingLossEpoch,editable=!!store?.editable;
+ const mutationCurrent=()=>editable&&store?.editable&&!campaignReloadRequired&&state===campaign&&campaignPublicationEpoch===epoch&&editingLossEpoch===editing;
  picker=createWorldPicker($('find-world'),{initial:viewed()||{sector:'Spinward Marches',hex:'1910'},title:'Or choose by location'});
  const session=activeModal;
  createGlobalWorldSearch($('global-world-search'),{claimIntent,onDismiss:closeModal,isCurrent:()=>modalCurrent(session),onBrowse:async(w,isCurrent)=>{
@@ -1132,7 +1247,14 @@ function findWorld(){
   rows.forEach(x=>known[x.id]=x);known[w.id]=w;view=w.id;mapPan={x:0,y:0};mapZoom=Math.max(1,mapZoom);rememberWorld(w);
   closeModal();render();scheduleMapAreas();
  }});
- $('choose-starting-world').onclick=async()=>{const ownsIntent=claimIntent(),current=()=>modalCurrent(session)&&ownsIntent(),b=$('choose-starting-world');b.disabled=true;try{const w=await picker.resolve();if(!current())return;known[w.id]=w;setLocation(w);}catch(e){if(current())$('modal-error').textContent=e.message;}finally{if(modalCurrent(session))b.disabled=false;}};
+ const starting=$('choose-starting-world');starting.disabled=!mutationCurrent();
+ starting.onclick=async()=>{
+  if(!modalCurrent(session)||starting.disabled||!mutationCurrent())return;
+  const ownsIntent=claimIntent(),current=()=>modalCurrent(session)&&ownsIntent()&&mutationCurrent();starting.disabled=true;
+  try{const w=await picker.resolve();if(!current())return;known[w.id]=w;setLocation(w);}
+  catch(e){if(current())$('modal-error').textContent=e.message;}
+  finally{if(modalCurrent(session))starting.disabled=!mutationCurrent();}
+ };
 }
 const planetCache=new Map();
 function planetInfoBody(w){
@@ -1202,6 +1324,7 @@ async function mapEmpty(id){
  return loadMapSelection(d,selection);
 }
 function mapWorld(id){
+ worldNearbyRequest=null;
  if(!routeDraft){known[id]=world(id);view=id;mapPan={x:0,y:0};render();scheduleMapAreas();return;}
  const d=routeDraft;selectMapStop(d,id);return calculateMapRoute();
 }
@@ -1758,7 +1881,7 @@ function settings(){
  updateAccommodationEstimate();updateFuelSettingsEstimate();updateRecurringSettings();
 }
 function timeForm(){modal('Campaign time',`${field('date','Starting Imperial date · day-year',state.dateLabel)}${field('hours','Total elapsed hours from starting date',state.hours,'number','min="0" step="1"')}${field('reason','Reason for time change','')}`,f=>{if(!f.get('reason').trim())throw Error('Reason required');parseDate(f.get('date'));act('Time correction: '+f.get('reason'),s=>{s.dateLabel=f.get('date');s.hours=Number(f.get('hours'));});});}
-function notes(){modal('Rules & Notes',`<div class="notes-list"><article><h3>Rules and verification</h3><p>UI 2026.10.10.45 · rules data ${R.VERSION} · reference catalogue ${REFERENCE_VERSION}. Source checks and runtime test results, with their applicable revisions and scope, are recorded in the public verification record.</p><p>Traveller Core Rulebook Update 2022, examined copyright 2024 revision. Book 7: Merchant Prince (Mongoose Traveller First Edition, 2010), insurance pp.82–83, taxation pp.86–87 (table p.87). Cluster Truck (Mongoose Publishing, ©2026), physical life-support supplies p.14. Optional first-edition adaptations are off by default.</p><p><a href="${ROOT}RULES_VERIFICATION.md" target="_blank" rel="noopener">Rules verification status and evidence</a> · <a href="${ROOT}rules/README.md" target="_blank" rel="noopener">Sources and worked examples</a></p></article><article><h3>Calculation references</h3><p>Published rules, Home rules, App conventions and Referee inputs are labelled separately. References explain the current policy; saved audits retain their recorded terms and missing evidence.</p>${referenceIndex()}</article><article><h3>House rules</h3><p>Each departure allows one jump mulligan before any later campaign change. Undo Jump returns to the origin and restores the pre-jump state. Reopening or reloading keeps saved jump dice; the mulligan permits one fresh roll and cannot be reset by Undo. On new purchase and sale price rolls, exactly two matching natural dice flag Complication; three matching dice flag Severe complication. The GM decides the issue and consequences. These flags do not change time, prices or cargo. Entered totals without natural dice are unknown; historical quotes are not flagged retroactively.</p><p>RAW retains 100% of positive actual profit; Reduced retains 75%; Custom accepts 0–100%. A configurable maximum commodity base retail value may be applied before normal purchase/sale percentage modifiers; final prices may exceed the cap. Illegal goods can optionally retain their original RAW base prices. Independent reduced-profit price limits optionally floor purchase percentages (default 85%) and ceiling sale percentages (default 115%) before broker fees, using the applicable base retail. Whole percentages 0–400 are retained when off. Existing offers and explicit referee price overrides retain their recorded terms. Tax is deducted first. Losses are unchanged by the profit setting. Each lot is adjusted separately. New monetary amounts round up to whole Credits, or Cr100 when enabled; new tons round up to whole tons. The Settings rounding button previews changes to existing values before applying them. Historical transactions are retained. Operating expenses remain separate.</p></article>${decisions.map(d=>`<article id="${esc(d.id)}"><h3>${esc(d.id)} · ${esc(d.topic)}</h3><p>${esc(d.conclusion)}</p>${d.id==='INT-021'?'<p class="help">Historical decision: later campaign rounding uses upward rounding for new final charges. Partial cost-basis allocation remains separate; saved amounts are not rewritten. '+ruleInfo('rounding')+'</p>':''}<p class="help">Agreed ${esc(d.date)} · revision ${d.revision}</p></article>`).join('')}<article><h3>Copyright and credits</h3><p>Traveller and the source publications are owned by Mongoose Publishing and their respective rights holders. This is an unofficial campaign tool, not a publisher-endorsed product. Rulebook PDFs, scans and descriptive source prose are not distributed with this tool.</p><p>Live world data: <a href="https://travellermap.com" target="_blank" rel="noopener">Traveller Map</a>. Source and calculation references are retained for review. The existing spec-trade tool is not a rules authority.</p></article><article><h3>Calendar and map era</h3><p>World data stays in the M1105 era. The campaign starts at its chosen Imperial day-year date, default 001-1105, and advances in 24-hour days and 365-day years as searches and jumps consume time. Advancing the campaign year never switches map eras. The +1 day control advances 24 hours and consumes life support. The -1 day control corrects the date without restoring supplies or reversing transactions; it cannot go before the campaign start. Both actions appear in History. Use Undo to reverse an accidental advance and restore supplies together. Browsing, route previews and setting a starting world do not advance time.</p></article><article><h3>About your data</h3><p>Your campaign stays in this browser’s local storage. Export JSON backups to keep a portable copy. Traveller Map requests disclose the worlds/sectors being requested; campaign bank and cargo data are not sent to it. Route searches cover a bounded loaded area. Route previews do not consume fuel; committed jumps track configured jump fuel under the campaign rules.</p></article></div>`,null);}
+function notes(){modal('Rules & Notes',`<div class="notes-list"><article><h3>Rules and verification</h3><p>UI 2026.10.10.46 · rules data ${R.VERSION} · reference catalogue ${REFERENCE_VERSION}. Source checks and runtime test results, with their applicable revisions and scope, are recorded in the public verification record.</p><p>Traveller Core Rulebook Update 2022, examined copyright 2024 revision. Book 7: Merchant Prince (Mongoose Traveller First Edition, 2010), insurance pp.82–83, taxation pp.86–87 (table p.87). Cluster Truck (Mongoose Publishing, ©2026), physical life-support supplies p.14. Optional first-edition adaptations are off by default.</p><p><a href="${ROOT}RULES_VERIFICATION.md" target="_blank" rel="noopener">Rules verification status and evidence</a> · <a href="${ROOT}rules/README.md" target="_blank" rel="noopener">Sources and worked examples</a></p></article><article><h3>Calculation references</h3><p>Published rules, Home rules, App conventions and Referee inputs are labelled separately. References explain the current policy; saved audits retain their recorded terms and missing evidence.</p>${referenceIndex()}</article><article><h3>House rules</h3><p>Each departure allows one jump mulligan before any later campaign change. Undo Jump returns to the origin and restores the pre-jump state. Reopening or reloading keeps saved jump dice; the mulligan permits one fresh roll and cannot be reset by Undo. On new purchase and sale price rolls, exactly two matching natural dice flag Complication; three matching dice flag Severe complication. The GM decides the issue and consequences. These flags do not change time, prices or cargo. Entered totals without natural dice are unknown; historical quotes are not flagged retroactively.</p><p>RAW retains 100% of positive actual profit; Reduced retains 75%; Custom accepts 0–100%. A configurable maximum commodity base retail value may be applied before normal purchase/sale percentage modifiers; final prices may exceed the cap. Illegal goods can optionally retain their original RAW base prices. Independent reduced-profit price limits optionally floor purchase percentages (default 85%) and ceiling sale percentages (default 115%) before broker fees, using the applicable base retail. Whole percentages 0–400 are retained when off. Existing offers and explicit referee price overrides retain their recorded terms. Tax is deducted first. Losses are unchanged by the profit setting. Each lot is adjusted separately. New monetary amounts round up to whole Credits, or Cr100 when enabled; new tons round up to whole tons. The Settings rounding button previews changes to existing values before applying them. Historical transactions are retained. Operating expenses remain separate.</p></article>${decisions.map(d=>`<article id="${esc(d.id)}"><h3>${esc(d.id)} · ${esc(d.topic)}</h3><p>${esc(d.conclusion)}</p>${d.id==='INT-021'?'<p class="help">Historical decision: later campaign rounding uses upward rounding for new final charges. Partial cost-basis allocation remains separate; saved amounts are not rewritten. '+ruleInfo('rounding')+'</p>':''}<p class="help">Agreed ${esc(d.date)} · revision ${d.revision}</p></article>`).join('')}<article><h3>Copyright and credits</h3><p>Traveller and the source publications are owned by Mongoose Publishing and their respective rights holders. This is an unofficial campaign tool, not a publisher-endorsed product. Rulebook PDFs, scans and descriptive source prose are not distributed with this tool.</p><p>Live world data: <a href="https://travellermap.com" target="_blank" rel="noopener">Traveller Map</a>. Source and calculation references are retained for review. The existing spec-trade tool is not a rules authority.</p></article><article><h3>Calendar and map era</h3><p>World data stays in the M1105 era. The campaign starts at its chosen Imperial day-year date, default 001-1105, and advances in 24-hour days and 365-day years as searches and jumps consume time. Advancing the campaign year never switches map eras. The +1 day control advances 24 hours and consumes life support. The -1 day control corrects the date without restoring supplies or reversing transactions; it cannot go before the campaign start. Both actions appear in History. Use Undo to reverse an accidental advance and restore supplies together. Browsing, route previews and setting a starting world do not advance time.</p></article><article><h3>About your data</h3><p>Your campaign stays in this browser’s local storage. Export JSON backups to keep a portable copy. Traveller Map requests disclose the worlds/sectors being requested; campaign bank and cargo data are not sent to it. Route searches cover a bounded loaded area. Route previews do not consume fuel; committed jumps track configured jump fuel under the campaign rules.</p></article></div>`,null);}
 // Replacement owns completion separately from ordinary local saves: its
 // publication still invalidates every old campaign offer and service session.
 function invalidateReplacementReview(){
@@ -1825,23 +1948,28 @@ async function importCampaignFile(e){
  const data=S.validate(JSON.parse(text));backupReplace('Load campaign (JSON)',data);
 }
 function zoomMap(factor,reset=false){
+ worldNearbyRequest=null;
  scheduleMapAreas();const previousZoom=mapZoom;mapZoom=reset?1:nextMapZoom(mapZoom,factor);
  mapPan=reset?{x:0,y:0}:{x:mapPan.x*mapZoom/previousZoom,y:mapPan.y*mapZoom/previousZoom};
  if(!mapZoomFrame)mapZoomFrame=requestAnimationFrame(()=>{mapZoomFrame=0;const action=document.activeElement?.dataset.action;render();if(action?.startsWith('map-zoom-'))document.querySelector('[data-action="'+action+'"]')?.focus({preventScroll:true});});
 }
 function setLocation(w){
+ if(worldWriteOperation?.pending||activeModal?.awaitSave&&activeModal.busy)return false;
+ worldNearbyRequest=null;
  if(typeof w==='string')w=world(w);
  if(!w)throw Error('Choose a world first');
- if(w.id===state.actual){view=w.id;return refreshNearby().catch(e=>message('Could not refresh nearby worlds: '+e.message,true));}
- const from=actual();
- modal('Set ship location',`<p>Use <strong>${esc(w.name)}</strong> · ${esc(w.sector)} · Hex ${esc(w.hex)} as the ship’s actual location?</p><p class="notice">This sets or corrects your starting position. It does not simulate a jump or advance time. The current route will be cleared. Bank, cargo and contract payments stay unchanged. Active insurance will require a route amendment.</p>${field('reason','Reason',state.hours===0&&state.lots.length===0?'Choose campaign starting world':'')}`,async(f,isCurrent)=>{
-  const reason=f.get('reason').trim();if(!reason)throw Error('Enter a reason for changing the ship location.');
-  const revision=modalRevision;
-  const neighbors=await M.nearby(w,12);if(!isCurrent())return false;
+ if(w.id===state.actual){view=w.id;return refreshWorldNearby(w);}
+ const from=actual();let owner;
+ const opened=modal('Set ship location',`<p>Use <strong>${esc(w.name)}</strong> · ${esc(w.sector)} · Hex ${esc(w.hex)} as the ship’s actual location?</p><p class="notice">This sets or corrects your starting position. It does not simulate a jump or advance time. The current route will be cleared. Bank, cargo and contract payments stay unchanged. Active insurance will require a route amendment.</p>${field('reason','Reason',state.hours===0&&state.lots.length===0?'Choose campaign starting world':'')}`,async f=>{
+  beginWorldWriteLookup(owner);
+  const reason=f.get('reason').trim();let neighbors;
+  try{if(!reason)throw Error('Enter a reason for changing the ship location.');neighbors=await M.nearby(w,12);if(!worldWriteOwnerCurrent(owner))return false;}
+  catch(error){if(!worldWriteOwnerCurrent(owner))return false;throw new SaveNotCommittedError(error);}
   neighbors.forEach(x=>known[x.id]=x);
-  act('Ship location set: '+w.name,s=>{s.worlds[w.id]=w;s.actual=w.id;s.route=[w.id];s.routeIndex=0;s.mandatoryStops=[];s.events.push({id:S.uid(),label:'Starting-world / location correction',from:from?.id||null,to:w.id,reason,hours:s.hours});for(const p of s.policies.filter(p=>p.status==='active'))p.status='amendment-required';},revision);
-  view=w.id;contractDrafts=[];mailCheck=null;passengers.clear();render();
- },'Confirm starting world');
+  return completeWorldWrite(owner,'Ship location set: '+w.name,s=>{s.worlds[w.id]=w;s.actual=w.id;s.route=[w.id];s.routeIndex=0;s.mandatoryStops=[];s.events.push({id:S.uid(),label:'Starting-world / location correction',from:from?.id||null,to:w.id,reason,hours:s.hours});for(const p of s.policies.filter(p=>p.status==='active'))p.status='amendment-required';},()=>{view=w.id;contractDrafts=[];mailCheck=null;passengers.clear();});
+ },'Confirm starting world',true,{saveName:'Ship location',saveContext:'location-save'});
+ if(opened===false)return false;
+ owner=createWorldWriteOwner(activeModal);
 }
 function paintMap(){
  if(mapDrag||tab!=='Overview')return;
@@ -1946,28 +2074,28 @@ function toggleShipPanel(action){
 }
 function closeCargoHold(){cargoHoldOpen=false;render();document.querySelector('#ship-actions [data-action="cargo-hold"]')?.focus();}
 function openCargoHold(){if(services.committing())throw Error('Wait for this payment to finish saving.');services.close({render:false});inputRounding=[];cargoHoldOpen=true;showOverviewPanels();render();document.querySelector('#cargo-hold-panel h2')?.focus({preventScroll:true});if(document.defaultView?.matchMedia?.('(max-width:1099px)').matches)$('cargo-hold-panel')?.scrollIntoView({block:'start',behavior:'instant'});}
-const actions={'passenger-search':()=>passengers.search(),'passenger-setup':()=>passengers.setup(),'passenger-board':id=>passengers.board(id),'passenger-deliver':id=>passengers.deliver(id),'passenger-offer-audit':id=>passengers.auditOffer(id),'cargo-hold':openCargoHold,'cargo-hold-close':closeCargoHold,'cargo-hold-tab':id=>{cargoHoldOpen=false;actions.tab(id);},'dev-tools':devTools,'dev-validate':()=>{const v=debugValidation();message(v.message,!v.ok);devTools();},'dev-copy':copyDebugReport,'dev-link':createDebugLink,'dev-export':exportDebugBundle,'dev-clear-errors':()=>{debugErrors.length=0;message('Debug error log cleared.');devTools();},refuel:refuelShortcut,'fuel-next':()=>setFuelQuantity(false),'fuel-fill':()=>setFuelQuantity(true),'day-back':()=>changeCampaignDay(-1),'day-forward':()=>changeCampaignDay(1),'history-filter':id=>{historyFilter=id;render();},'market-availability':marketAvailabilityAudit,'refill-support':refillSupport,'route-auto':()=>startMapRoute('auto'),'route-build':()=>startMapRoute('build'),'route-cancel':()=>{routeDraft=null;render();},'route-remove':removeMapStop,'route-last':()=>removeMapStop(routeDraft?.stops.length-1),'route-save':saveMapRoute,'route-retry':retryMapRoute,'route-clear':clearPlannedRoute,'map-world':mapWorld,'map-empty':mapEmpty,report:exportReport,'rounding-preview':roundingPreview,'map-expand':toggleMapExpanded,'map-zoom-in':()=>zoomMap(MAP_ZOOM_STEP),'map-zoom-out':()=>zoomMap(1/MAP_ZOOM_STEP),'map-zoom-reset':()=>zoomMap(1,true),'set-location':setLocation,tab:id=>{if(settingsOperation?.pending)return false;if(services.committing())throw Error('Wait for this payment to finish saving.');if(id!=='Overview'){mapExpanded=false;mapRestorePanel=null;cargoHoldOpen=false;services.close({render:false});}tab=id;render();document.querySelector('#tabs [data-arg="'+id+'"]')?.focus();scheduleMapAreas();},notes,setup,find:findWorld,nearby:()=>{scheduleMapAreas();return refreshNearby();},world:id=>{known[id]=world(id);view=id;mapPan={x:0,y:0};render();scheduleMapAreas();},'browse-prev':()=>{const i=state.route.indexOf(view||state.actual);view=state.route[Math.max(0,i-1)]||state.actual;render();},'browse-next':()=>{const i=state.route.indexOf(view||state.actual);view=state.route[Math.min(state.route.length-1,i+1)]||state.actual;render();},'planet-info':showPlanetInfo,override:overrideWorld,route:plotRoute,jump,search:()=>searchDialog(),'buyer-search':()=>searchDialog('buyer'),buy:buyForm,'offer-edit':editOffer,'offer-audit':commodityAudit,'expire-all':id=>act('Expired all snapshot offers',s=>s.snapshots.find(x=>x.id===id).offers.forEach(o=>o.expired=true)),reject,'sale-edit':()=>editSale?.(),'sale-all':()=>{selected=new Set(state.lots.map(l=>l.id));render();},'sale-clear':()=>{selected.clear();render();},sale:beginSale,'add-lot':existingLot,'lot-correct':correctCargo,'lot-sell':id=>{selected=new Set([id]);beginSale();},'lot-audit':lotAudit,'lot-insure':insureHeldCargo,'policy-audit':policyAudit,claim:claimForm,amend:amendPolicy,'contracts-search':()=>contractSearch(false),'mail-check':()=>contractSearch(true),'mail-audit':mailAudit,'mail-cancel':cancelMail,'contract-manual':manualContract,'contract-accept':accept,'draft-edit':editDraft,'draft-audit':id=>audit('Contract offer',contractDrafts.find(c=>c.offerId===id)),'contract-audit':id=>audit('Contract',state.contracts.find(c=>c.id===id)),deliver,'ship-expenses':()=>tab==='Accounts'?shipExpenses():services.open('expenses'),'expenses-all':selectAllExpenses,'berthing-rate':rollBerthingRate,deposit:depositForm,expense:()=>expenseForm(),'bank-correct':()=>expenseForm(true),'ledger-audit':ledgerAudit,'world-field-revert':previewWorldFieldRevert,'event-audit':id=>audit('History entry',state.events.find(e=>e.id===id)),'jump-undo':undoJump,undo:undoLatestChange,'settings-edit':settings,time:timeForm,export:()=>{store.backup();message('Backup download requested. Check that the file was saved.');},import:()=>$('import-file').click(),reset:()=>backupReplace('Reset campaign',S.initial())};
+const actions={'passenger-search':()=>passengers.search(),'passenger-setup':()=>passengers.setup(),'passenger-board':id=>passengers.board(id),'passenger-deliver':id=>passengers.deliver(id),'passenger-offer-audit':id=>passengers.auditOffer(id),'cargo-hold':openCargoHold,'cargo-hold-close':closeCargoHold,'cargo-hold-tab':id=>{cargoHoldOpen=false;actions.tab(id);},'dev-tools':devTools,'dev-validate':()=>{const v=debugValidation();message(v.message,!v.ok);devTools();},'dev-copy':copyDebugReport,'dev-link':createDebugLink,'dev-export':exportDebugBundle,'dev-clear-errors':()=>{debugErrors.length=0;message('Debug error log cleared.');devTools();},refuel:refuelShortcut,'fuel-next':()=>setFuelQuantity(false),'fuel-fill':()=>setFuelQuantity(true),'day-back':()=>changeCampaignDay(-1),'day-forward':()=>changeCampaignDay(1),'history-filter':id=>{historyFilter=id;render();},'market-availability':marketAvailabilityAudit,'refill-support':refillSupport,'route-auto':()=>startMapRoute('auto'),'route-build':()=>startMapRoute('build'),'route-cancel':()=>{routeDraft=null;render();},'route-remove':removeMapStop,'route-last':()=>removeMapStop(routeDraft?.stops.length-1),'route-save':saveMapRoute,'route-retry':retryMapRoute,'route-clear':clearPlannedRoute,'map-world':mapWorld,'map-empty':mapEmpty,report:exportReport,'rounding-preview':roundingPreview,'map-expand':toggleMapExpanded,'map-zoom-in':()=>zoomMap(MAP_ZOOM_STEP),'map-zoom-out':()=>zoomMap(1/MAP_ZOOM_STEP),'map-zoom-reset':()=>zoomMap(1,true),'set-location':setLocation,tab:id=>{if(settingsOperation?.pending||worldWriteOperation?.pending)return false;worldNearbyRequest=null;if(services.committing())throw Error('Wait for this payment to finish saving.');if(id!=='Overview'){mapExpanded=false;mapRestorePanel=null;cargoHoldOpen=false;services.close({render:false});}tab=id;render();document.querySelector('#tabs [data-arg="'+id+'"]')?.focus();scheduleMapAreas();},notes,setup,find:findWorld,nearby:()=>{worldNearbyRequest=null;scheduleMapAreas();return refreshNearby();},world:id=>{worldNearbyRequest=null;known[id]=world(id);view=id;mapPan={x:0,y:0};render();scheduleMapAreas();},'browse-prev':()=>{worldNearbyRequest=null;const i=state.route.indexOf(view||state.actual);view=state.route[Math.max(0,i-1)]||state.actual;render();},'browse-next':()=>{worldNearbyRequest=null;const i=state.route.indexOf(view||state.actual);view=state.route[Math.min(state.route.length-1,i+1)]||state.actual;render();},'planet-info':showPlanetInfo,override:overrideWorld,route:plotRoute,jump,search:()=>searchDialog(),'buyer-search':()=>searchDialog('buyer'),buy:buyForm,'offer-edit':editOffer,'offer-audit':commodityAudit,'expire-all':id=>act('Expired all snapshot offers',s=>s.snapshots.find(x=>x.id===id).offers.forEach(o=>o.expired=true)),reject,'sale-edit':()=>editSale?.(),'sale-all':()=>{selected=new Set(state.lots.map(l=>l.id));render();},'sale-clear':()=>{selected.clear();render();},sale:beginSale,'add-lot':existingLot,'lot-correct':correctCargo,'lot-sell':id=>{selected=new Set([id]);beginSale();},'lot-audit':lotAudit,'lot-insure':insureHeldCargo,'policy-audit':policyAudit,claim:claimForm,amend:amendPolicy,'contracts-search':()=>contractSearch(false),'mail-check':()=>contractSearch(true),'mail-audit':mailAudit,'mail-cancel':cancelMail,'contract-manual':manualContract,'contract-accept':accept,'draft-edit':editDraft,'draft-audit':id=>audit('Contract offer',contractDrafts.find(c=>c.offerId===id)),'contract-audit':id=>audit('Contract',state.contracts.find(c=>c.id===id)),deliver,'ship-expenses':()=>tab==='Accounts'?shipExpenses():services.open('expenses'),'expenses-all':selectAllExpenses,'berthing-rate':rollBerthingRate,deposit:depositForm,expense:()=>expenseForm(),'bank-correct':()=>expenseForm(true),'ledger-audit':ledgerAudit,'world-field-revert':previewWorldFieldRevert,'event-audit':id=>audit('History entry',state.events.find(e=>e.id===id)),'jump-undo':undoJump,undo:undoLatestChange,'settings-edit':settings,time:timeForm,export:()=>{store.backup();message('Backup download requested. Check that the file was saved.');},import:()=>$('import-file').click(),reset:()=>backupReplace('Reset campaign',S.initial())};
 document.addEventListener('click',captureModalClick,true);
 document.addEventListener('keydown',resetModalPointerGesture,true);
 // Undo must claim/check its owner before an unrelated async service dispatch.
 // A click queued during synchronous publication must not become a second Undo.
-document.addEventListener('click',safely(async e=>{if(settingsOperation?.pending)return;const b=e.target.closest('[data-action]');if(b&&!b.disabled){e.preventDefault();if(['undo','jump-undo'].includes(b.dataset.action))return actions[b.dataset.action]?.(b.dataset.arg);if(b.closest('#ship-actions')&&['refuel','refill-support','cargo-hold','ship-expenses'].includes(b.dataset.action)){toggleShipPanel(b.dataset.action);return;}if(await services.action(b.dataset.action,b.dataset.arg,b.dataset.serviceToken))return;const menu=b.closest('#route-menu');if(menu)menu.open=false;await actions[b.dataset.action]?.(b.dataset.arg);}}));
+document.addEventListener('click',safely(async e=>{if(settingsOperation?.pending||worldWriteOperation?.pending)return;const b=e.target.closest('[data-action]');if(b&&!b.disabled){worldNearbyRequest=null;e.preventDefault();if(['undo','jump-undo'].includes(b.dataset.action))return actions[b.dataset.action]?.(b.dataset.arg);if(b.closest('#ship-actions')&&['refuel','refill-support','cargo-hold','ship-expenses'].includes(b.dataset.action)){toggleShipPanel(b.dataset.action);return;}if(await services.action(b.dataset.action,b.dataset.arg,b.dataset.serviceToken))return;const menu=b.closest('#route-menu');if(menu)menu.open=false;await actions[b.dataset.action]?.(b.dataset.arg);}}));
 document.addEventListener('toggle',e=>{if(!e.target.isConnected)return;if(e.target.dataset?.settingsGroup)settingsOpenGroups.set(e.target.dataset.settingsGroup,e.target.open);if(e.target.id==='mail-card')mailPanelOpen=e.target.open;else if(e.target.id==='mail-accepted-details')mailAcceptedDetailsOpen=e.target.open;},true);
 document.addEventListener('toggle',safely(e=>{if(e.target.classList?.contains('covered-payments'))return renderCoveredPayments(e.target);}),true);
-document.addEventListener('keydown',safely(e=>{if(settingsOperation?.pending)return;if(e.key==='Escape'&&!$('modal').open){const menu=$('route-menu');if(menu?.open){e.preventDefault();menu.open=false;menu.querySelector('summary').focus();}else if(mapExpanded){e.preventDefault();setMapExpanded(false);}else if(services.active()){e.preventDefault();services.close();}else if(cargoHoldOpen){e.preventDefault();closeCargoHold();}}if((e.key==='Enter'||e.key===' ')&&e.target.matches('svg [data-action]')){e.preventDefault();return actions[e.target.dataset.action]?.(e.target.dataset.arg);}}));
-document.addEventListener('change',safely(e=>{const t=e.target;if(settingsOperation?.pending)return;if(t.closest('#service-form,#expense-form'))services.sync();if(t.name==='insuranceLegs'){const route=state.route.slice(state.routeIndex, state.routeIndex+Number(t.value)+1);const distance=route.slice(1).reduce((n,x,i)=>n+M.distance(world(route[i]),world(x)),0);$('modal-form').elements.insuranceDistance.value=distance;$('modal-form').elements.distanceReason.value='';}if(t.name==='insure'&&$('purchase-insurance-options'))$('purchase-insurance-options').hidden=!t.checked;if(t.closest('#modal-form')){if(t.dataset.round)normaliseFields($('modal-form'));updateAccommodationEstimate();updateFuelSettingsEstimate();updateRecurringSettings();updateInsuranceEstimate();updateExpenseEstimate();updateMailEstimate();}if(t.id==='map-territories'){showTerritories=t.checked;savePoliticalTerritory(showTerritories);render();$('map-territories')?.focus();clearTimeout(mapLoadTimer);requestMapAreas();}if(t.id==='map-hexes'){showHexes=t.checked;render();}if(t.id==='map-uwp'){showUwp=t.checked;render();$('map-uwp')?.focus();}if(t.dataset.expire){const {snap}=findOffer(t.dataset.expire);act(t.checked?'Offer expired':'Offer reactivated',s=>s.snapshots.find(x=>x.id===snap.id).offers.find(o=>o.id===t.dataset.expire).expired=t.checked);}if(t.dataset.lot){t.checked?selected.add(t.dataset.lot):selected.delete(t.dataset.lot);render();}if(t.id==='market-filter'){marketFilter=t.value;render();}if(t.id==='snapshot-select'){snapshotId=t.value;render();}if(t.id==='cargo-sort'){cargoSort=t.value;render();}}));
-document.addEventListener('input',e=>{if(settingsOperation?.pending)return;if(e.target.closest('#service-form,#expense-form'))services.sync();if(e.target.closest('#modal-form')){updateAccommodationEstimate();updateFuelSettingsEstimate();updateRecurringSettings();updateInsuranceEstimate();updateExpenseEstimate();updateMailEstimate();}if(!['market-search','cargo-search'].includes(e.target.id))return;const id=e.target.id,pos=e.target.selectionStart;if(id==='market-search')marketSearch=e.target.value;else cargoSearch=e.target.value;render();$(id)?.focus();$(id)?.setSelectionRange(pos,pos);});
+document.addEventListener('keydown',safely(e=>{if(settingsOperation?.pending||worldWriteOperation?.pending)return;if(e.key==='Escape'&&!$('modal').open){const menu=$('route-menu');if(menu?.open){e.preventDefault();menu.open=false;menu.querySelector('summary').focus();}else if(mapExpanded){e.preventDefault();setMapExpanded(false);}else if(services.active()){e.preventDefault();services.close();}else if(cargoHoldOpen){e.preventDefault();closeCargoHold();}}if((e.key==='Enter'||e.key===' ')&&e.target.matches('svg [data-action]')){e.preventDefault();return actions[e.target.dataset.action]?.(e.target.dataset.arg);}}));
+document.addEventListener('change',safely(e=>{const t=e.target;if(settingsOperation?.pending||worldWriteOperation?.pending)return;if(t.closest('#service-form,#expense-form'))services.sync();if(t.name==='insuranceLegs'){const route=state.route.slice(state.routeIndex, state.routeIndex+Number(t.value)+1);const distance=route.slice(1).reduce((n,x,i)=>n+M.distance(world(route[i]),world(x)),0);$('modal-form').elements.insuranceDistance.value=distance;$('modal-form').elements.distanceReason.value='';}if(t.name==='insure'&&$('purchase-insurance-options'))$('purchase-insurance-options').hidden=!t.checked;if(t.closest('#modal-form')){if(t.dataset.round)normaliseFields($('modal-form'));updateAccommodationEstimate();updateFuelSettingsEstimate();updateRecurringSettings();updateInsuranceEstimate();updateExpenseEstimate();updateMailEstimate();}if(t.id==='map-territories'){showTerritories=t.checked;savePoliticalTerritory(showTerritories);render();$('map-territories')?.focus();clearTimeout(mapLoadTimer);requestMapAreas();}if(t.id==='map-hexes'){showHexes=t.checked;render();}if(t.id==='map-uwp'){showUwp=t.checked;render();$('map-uwp')?.focus();}if(t.dataset.expire){const {snap}=findOffer(t.dataset.expire);act(t.checked?'Offer expired':'Offer reactivated',s=>s.snapshots.find(x=>x.id===snap.id).offers.find(o=>o.id===t.dataset.expire).expired=t.checked);}if(t.dataset.lot){t.checked?selected.add(t.dataset.lot):selected.delete(t.dataset.lot);render();}if(t.id==='market-filter'){marketFilter=t.value;render();}if(t.id==='snapshot-select'){snapshotId=t.value;render();}if(t.id==='cargo-sort'){cargoSort=t.value;render();}}));
+document.addEventListener('input',e=>{if(settingsOperation?.pending||worldWriteOperation?.pending)return;if(e.target.closest('#service-form,#expense-form'))services.sync();if(e.target.closest('#modal-form')){updateAccommodationEstimate();updateFuelSettingsEstimate();updateRecurringSettings();updateInsuranceEstimate();updateExpenseEstimate();updateMailEstimate();}if(!['market-search','cargo-search'].includes(e.target.id))return;const id=e.target.id,pos=e.target.selectionStart;if(id==='market-search')marketSearch=e.target.value;else cargoSearch=e.target.value;render();$(id)?.focus();$(id)?.setSelectionRange(pos,pos);});
 // Modal forms are application controls, never native document navigations.
 // Keep this fallback even when partial dialog construction failed before its
 // owned onsubmit handler was installed, including after terminal settlement.
-document.addEventListener('submit',safely(async e=>{if(e.target.id==='modal-form'){e.preventDefault();return;}if(settingsOperation?.pending){e.preventDefault();return;}if(e.target.id==='service-form'){e.preventDefault();await services.action('service-review','',e.target.dataset.serviceToken);}else if(e.target.id==='expense-form'){e.preventDefault();await services.action('expense-pay',e.target.dataset.expenseSession+':');}}));
+document.addEventListener('submit',safely(async e=>{if(e.target.id==='modal-form'){e.preventDefault();return;}if(settingsOperation?.pending||worldWriteOperation?.pending){e.preventDefault();return;}if(e.target.id==='service-form'){e.preventDefault();await services.action('service-review','',e.target.dataset.serviceToken);}else if(e.target.id==='expense-form'){e.preventDefault();await services.action('expense-pay',e.target.dataset.expenseSession+':');}}));
 $('modal-close').onclick=closeModal;$('modal-cancel').onclick=closeModal;
 $('modal').addEventListener('cancel',e=>{e.preventDefault();closeModal();});
-$('modal').addEventListener('close',()=>{if(!$('modal').open){if(settingsOperation?.session&&settingsOperation.session===activeModal)invalidateSettingsOperation();if(activeModal){activeModal=null;modalGeneration++;}$('modal-body').innerHTML='';restoreSettingsForm();}});
+$('modal').addEventListener('close',()=>{if(!$('modal').open){if(settingsOperation?.session&&settingsOperation.session===activeModal)invalidateSettingsOperation();if(worldWriteOperation?.session===activeModal)invalidateWorldWriteOperation();if(activeModal){activeModal=null;modalGeneration++;}$('modal-body').innerHTML='';restoreSettingsForm();}});
 $('notes').onclick=safely(notes);$('takeover').onclick=safely(()=>{if(campaignReloadRequired)throw Error('Reload this page before editing the campaign again.');return store.acquire(true);});
 $('import-file').onchange=safely(importCampaignFile);
 if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{if(tab==='Overview'&&viewed()&&updateMapGeometry()){scheduleMapPaint();scheduleMapAreas();}}).observe($('main'));
 window.addEventListener('error',e=>recordDebugError(e.error||e.message,'window-error'));
 window.addEventListener('unhandledrejection',e=>recordDebugError(e.reason,'unhandled-rejection'));
-async function boot(){mountRulePopover(document);[core,mp,decisions]=await Promise.all(['rules/core-2022.json?v=settings-completion-20261010-45','rules/merchant-prince-1e.json','rules/decisions.json'].map(async url=>{const r=await fetch(url);if(!r.ok)throw Error('Could not load '+url);return r.json();}));store=new Store(receiveCampaign,(editable,text)=>{if(!editable){invalidateSettingsOperation(true);invalidateJumpPreparation();invalidateUndoOperation();invalidateReplacementEditing();stockServices.invalidate();}$('save-status').textContent=campaignReloadRequired?campaignReloadMessage:text;$('save-status').className=editable&&!campaignReloadRequired?'muted':'readonly';$('takeover').hidden=editable||campaignReloadRequired;$('takeover').disabled=campaignReloadRequired;if(!editable&&activeModal?.mutates){activeModal.cancelled=true;$('modal-error').textContent=campaignReloadRequired?campaignReloadMessage:'Editing moved to another tab. Reopen this dialog after taking over editing.';}syncModalSubmit();render();});try{state=store.read();}catch(error){store.recovery=true;store.recoveryMessage=error.message;state=S.initial();}known={...state.worlds};view=state.actual;render();await store.acquire();if(state.initialized)restoreExpenseReceipt();if(state.initialized)refreshNearby(false).catch(e=>message('Could not load nearby worlds: '+e.message+'. Use Refresh nearby to retry.',true));}
+async function boot(){mountRulePopover(document);[core,mp,decisions]=await Promise.all(['rules/core-2022.json?v=setup-location-completion-20261010-46','rules/merchant-prince-1e.json','rules/decisions.json'].map(async url=>{const r=await fetch(url);if(!r.ok)throw Error('Could not load '+url);return r.json();}));store=new Store(receiveCampaign,(editable,text)=>{if(!editable){worldNearbyRequest=null;invalidateWorldWriteOperation();invalidateSettingsOperation(true);invalidateJumpPreparation();invalidateUndoOperation();invalidateReplacementEditing();stockServices.invalidate();}$('save-status').textContent=campaignReloadRequired?campaignReloadMessage:text;$('save-status').className=editable&&!campaignReloadRequired?'muted':'readonly';$('takeover').hidden=editable||campaignReloadRequired;$('takeover').disabled=campaignReloadRequired;if(!editable&&activeModal?.mutates){activeModal.cancelled=true;$('modal-error').textContent=campaignReloadRequired?campaignReloadMessage:'Editing moved to another tab. Reopen this dialog after taking over editing.';}syncModalSubmit();render();});try{state=store.read();}catch(error){store.recovery=true;store.recoveryMessage=error.message;state=S.initial();}known={...state.worlds};view=state.actual;render();await store.acquire();if(state.initialized)restoreExpenseReceipt();if(state.initialized)refreshNearby(false).catch(e=>message('Could not load nearby worlds: '+e.message+'. Use Refresh nearby to retry.',true));}
 boot().catch(e=>{message(e.message,true);$('main').innerHTML=empty('The calculator could not start. Your saved campaign has not been replaced. Reload after checking the error above.');});

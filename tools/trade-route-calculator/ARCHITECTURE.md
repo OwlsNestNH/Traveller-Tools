@@ -404,3 +404,32 @@ or failed-publication/cleanup/close outcomes latch reload guards before reportin
 including detached or partially constructed pending dialogs. An observed owned
 publication outranks a contradictory not-committed provider error. Setup,
 location, time/day controls and Stage 3 ownership remain separate work.
+
+
+## Stage 2 setup/location completion (.46)
+
+Setup and location correction own their modal, submitted fields/rounding,
+campaign revision and editor tenure across two phases. Lookup and validation
+remain cancellable; entering the controller's existing preparation hook promotes
+only that session to non-dismissible save-pending before provider invocation.
+Synchronous Store completion remains synchronous once lookup has completed.
+The consumed local publication token must identify the exact expected revision
+and snapshot. Owned publication installs state while presentation cleanup waits
+for completion. Foreign/same-revision publication, editing loss or obsolete
+modal intent permanently retires the old owner; later editing cannot revive it.
+
+Known no-write failures preserve correction/retry. Observed publication outranks
+a contradictory not-committed error. Missing or wrong publication, unknown
+outcome, and post-publication cleanup/close/reporting failures latch reload
+protection even after detachment. Completion may not clear newer drafts, steal
+newer view/focus, close a newer dialog or announce obsolete success. Find-world
+browsing remains available without editing; its starting-world handoff carries
+separate campaign/editor intent through picker resolution.
+
+Setup's nearby-world enrichment is guarded ancillary work after the campaign
+save; failure must say the campaign was saved and must not reopen its submission.
+Location's nearby lookup stays before saving. Same-world refresh creates no
+campaign write. The existing setup/location state mutations, opening baseline,
+location correction audit, policy amendment and one-mulligan rules are retained.
+There is no new persistence schema, provider protocol, accounting engine or
+Stage 3 preview ownership change.
