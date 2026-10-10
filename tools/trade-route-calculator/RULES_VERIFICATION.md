@@ -514,3 +514,15 @@ this record does not claim deployment or live runtime verification.
 ## Dashboard .41 verification scope
 
 Dashboard adds presentation and a saved reporting boundary, not a new Traveller rule or accounting transaction. The common recorded-operating-result helper retains the TXT report's existing formula and exclusions. Local verification covers exact cash reconciliation, opening/current boundaries, category totals beyond individual input width, visit attribution, missing profit audits, Undo, writer ownership, failure/publication retry and unchanged economic/history fixtures. The source/data check remains 227 checks. Real Chromium evidence for the exact release candidate is produced by the `dashboard-browser` matrix job; local cloud Chromium launch was blocked by its socket environment, so source/native results alone do not claim browser verification. Merge and deployment remain gated on actual browser results and screenshot review.
+
+## Jump save-completion .42 verification scope
+
+This is a UI save-boundary migration, not a rules change. The controller and
+state calculation layer retain their existing synchronous behavior, prepared
+roll persistence/reuse, jump audit and one-mulligan policy. Native and actual
+Chromium cases cover delayed preparation and commit, exact fuel/LSS/cargo/mail/
+insurance state, revision and editor loss, repeat activation, typed elapsed
+hours, known unsaved versus saved/unknown failures, partial display failure and
+reload. The existing full native/rules and campaign browser gates still apply.
+Actual exact-head browser results and independent screenshot review are required
+before release; this scope record alone is not a verification result.

@@ -1,42 +1,42 @@
-import {dashboardPanel} from './dashboard-view.mjs?v=dashboard-20261010-41';
-import {recordWorldOverride,revertWorldField,worldFieldRevertEligibility,worldChangeFields,worldFieldValue,isWorldChangeAudit} from './world-change-history.mjs?v=dashboard-20261010-41';
-import {createCampaignController} from './campaign-controller.mjs?v=dashboard-20261010-41';
-import {ruleInfo,referenceIndex,REFERENCE_VERSION} from './rule-references.mjs?v=dashboard-20261010-41';
-import {mountRulePopover,replaceReferenceContent} from './rule-popover.mjs?v=dashboard-20261010-41';
-import {escapeHtml,moneyHtml} from './display.mjs?v=dashboard-20261010-41';
-import {normalizeAmountFields} from './form-values.mjs?v=dashboard-20261010-41';
-import {contactSearchStatus,contactSearchPeriod,contactSearchRule} from './contact-search.mjs?v=dashboard-20261010-41';
-import {createPassengerUI} from './passenger-ui.mjs?v=dashboard-20261010-41';
-import {passengerShip,passengerTotals,passengerSpace,passengerCapacity} from './passengers.mjs?v=dashboard-20261010-41';
-import {advancePaymentDate,recordedPaymentDate} from './payment-schedule.mjs?v=dashboard-20261010-41';
-import {configureMortgage,mortgageStatus} from './mortgage.mjs?v=dashboard-20261010-41';
-import {configureMaintenance,maintenanceStatus} from './maintenance.mjs?v=dashboard-20261010-41';
-import {createServicePanels} from './service-panels.mjs?v=dashboard-20261010-41';
-import {cargoHoldPanel} from './cargo-hold.mjs?v=dashboard-20261010-41';
-import {createExpensePanels} from './expense-panels.mjs?v=dashboard-20261010-41';
+import {dashboardPanel} from './dashboard-view.mjs?v=jump-completion-20261010-42';
+import {recordWorldOverride,revertWorldField,worldFieldRevertEligibility,worldChangeFields,worldFieldValue,isWorldChangeAudit} from './world-change-history.mjs?v=jump-completion-20261010-42';
+import {createCampaignController} from './campaign-controller.mjs?v=jump-completion-20261010-42';
+import {ruleInfo,referenceIndex,REFERENCE_VERSION} from './rule-references.mjs?v=jump-completion-20261010-42';
+import {mountRulePopover,replaceReferenceContent} from './rule-popover.mjs?v=jump-completion-20261010-42';
+import {escapeHtml,moneyHtml} from './display.mjs?v=jump-completion-20261010-42';
+import {normalizeAmountFields} from './form-values.mjs?v=jump-completion-20261010-42';
+import {contactSearchStatus,contactSearchPeriod,contactSearchRule} from './contact-search.mjs?v=jump-completion-20261010-42';
+import {createPassengerUI} from './passenger-ui.mjs?v=jump-completion-20261010-42';
+import {passengerShip,passengerTotals,passengerSpace,passengerCapacity} from './passengers.mjs?v=jump-completion-20261010-42';
+import {advancePaymentDate,recordedPaymentDate} from './payment-schedule.mjs?v=jump-completion-20261010-42';
+import {configureMortgage,mortgageStatus} from './mortgage.mjs?v=jump-completion-20261010-42';
+import {configureMaintenance,maintenanceStatus} from './maintenance.mjs?v=jump-completion-20261010-42';
+import {createServicePanels} from './service-panels.mjs?v=jump-completion-20261010-42';
+import {cargoHoldPanel} from './cargo-hold.mjs?v=jump-completion-20261010-42';
+import {createExpensePanels} from './expense-panels.mjs?v=jump-completion-20261010-42';
 import {currentJumpAttempt} from './jump-attempts.mjs';
-import {mountSettingsLayout,syncSettingsControls,stepSetting} from './settings-layout.mjs?v=dashboard-20261010-41';
-import {configureFuel,fuelCapacities,bladderSpace,validateFuel,jumpFuel} from './fuel.mjs?v=dashboard-20261010-41';
-import {refillQuote,supportStock,supportCargo,supportDisplay,anchorSupport,configureSupport} from './life-support.mjs?v=dashboard-20261010-41';
-import {campaignReport} from './report.mjs?v=dashboard-20261010-41';
-import {up,creditStep,roundExisting} from './rounding.mjs?v=dashboard-20261010-41';
-import {tiers,luggageAllowance,occupants,passengerLuggage,manualLuggage,serviceRate,serviceLabel,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=dashboard-20261010-41';
+import {mountSettingsLayout,syncSettingsControls,stepSetting} from './settings-layout.mjs?v=jump-completion-20261010-42';
+import {configureFuel,fuelCapacities,bladderSpace,validateFuel,jumpFuel} from './fuel.mjs?v=jump-completion-20261010-42';
+import {refillQuote,supportStock,supportCargo,supportDisplay,anchorSupport,configureSupport} from './life-support.mjs?v=jump-completion-20261010-42';
+import {campaignReport} from './report.mjs?v=jump-completion-20261010-42';
+import {up,creditStep,roundExisting} from './rounding.mjs?v=jump-completion-20261010-42';
+import {tiers,luggageAllowance,occupants,passengerLuggage,manualLuggage,serviceRate,serviceLabel,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=jump-completion-20261010-42';
 import * as A from './amounts.mjs';
 import {parseDate,displayDate} from './calendar.mjs';
-import * as R from './rules.mjs?v=dashboard-20261010-41';
-import * as S from './state.mjs?v=dashboard-20261010-41';
+import * as R from './rules.mjs?v=jump-completion-20261010-42';
+import * as S from './state.mjs?v=jump-completion-20261010-42';
 import {latestMailCheck,recordMailCheck,mailCheckHistoryStatus} from './mail-history.mjs?v=mail-history-1';
-import * as E from './expenses.mjs?v=dashboard-20261010-41';
-import {planetInformation,worldSheetURL} from './planet-info.mjs?v=dashboard-20261010-41';
-import {worldMapFacts,worldSymbols,selectedWorldHex,mapKeyMarkup} from './world-symbols.mjs?v=dashboard-20261010-41';
-import * as M from './map.mjs?v=dashboard-20261010-41';
+import * as E from './expenses.mjs?v=jump-completion-20261010-42';
+import {planetInformation,worldSheetURL} from './planet-info.mjs?v=jump-completion-20261010-42';
+import {worldMapFacts,worldSymbols,selectedWorldHex,mapKeyMarkup} from './world-symbols.mjs?v=jump-completion-20261010-42';
+import * as M from './map.mjs?v=jump-completion-20261010-42';
 import {MAP_GEOMETRY,setMapGeometry,visibleMapWorlds} from './map-geometry.mjs?v=map-first-1';
 import {camera,viewportTiles,MapAreaCache} from './map-viewport.mjs?v=map-first-1';
-import {MAP_ZOOM_STEP,nextMapZoom,mapLevel,MapOverviewCache,overviewMarkup,mapTerritories} from './map-overview.mjs?v=dashboard-20261010-41';
+import {MAP_ZOOM_STEP,nextMapZoom,mapLevel,MapOverviewCache,overviewMarkup,mapTerritories} from './map-overview.mjs?v=jump-completion-20261010-42';
 import {readPoliticalTerritory,savePoliticalTerritory} from './map-preferences.mjs';
-import {createGlobalWorldSearch} from './global-world-search.mjs?v=dashboard-20261010-41';
-import {createWorldPicker,rememberWorld} from './world-picker.mjs?v=dashboard-20261010-41';
-import {Store,KEY,SaveNotCommittedError,SaveCommittedPublicationError} from './persistence.mjs?v=dashboard-20261010-41';
+import {createGlobalWorldSearch} from './global-world-search.mjs?v=jump-completion-20261010-42';
+import {createWorldPicker,rememberWorld} from './world-picker.mjs?v=jump-completion-20261010-42';
+import {Store,KEY,SaveNotCommittedError,SaveCommittedPublicationError} from './persistence.mjs?v=jump-completion-20261010-42';
 const $=id=>document.getElementById(id),esc=escapeHtml;
 const ROOT='https://github.com/OwlsNestNH/Traveller-Tools/blob/main/tools/trade-route-calculator/';
 let inputRounding=[];
@@ -103,6 +103,7 @@ function roundingFootnote(changes=[],step=creditStep(state)){return '<p class="h
 function normaliseFields(form){normalizeAmountFields(form.querySelectorAll('[data-round]'),{creditStep:creditStep(state),rounding:inputRounding});if(form===$('modal-form')&&$('rounding-input-note'))replaceReferenceContent($('rounding-input-note'),roundingFootnote(inputRounding));}
 function roundingPreview(){const draft=structuredClone(state),changes=roundExisting(draft);let error='';try{S.validate(draft);}catch(e){error=e.message;}modal('Preview rounding',`<p>Round current bank, cargo quantities and values, cargo capacity, luggage, market offers, accepted contracts and saved monthly costs. Future Credit entries and charges will round up to Cr100. Historical transactions, insurance contract terms and original audits stay unchanged.</p>${table(['Value','Before','After'],changes.map(c=>`<tr><td>${esc(c.label)}</td><td class="number">${esc(c.before)}</td><td class="number">${esc(c.after)}</td></tr>`))}${roundingFootnote([],100)}${error?'<p class="notice">Cannot apply: '+esc(error)+' Adjust cargo or capacity first.</p>':'<p>One undo restores all these changes.</p>'}`,error?null:()=>act('Round Credits to 100 and tons to whole',s=>S.applyRounding(s)),'Apply rounding',true,{annotateRounding:false});}
 let activeModal=null;
+let jumpPreparation=null;
 let campaignReloadRequired=false,campaignReloadMessage='';
 let suspendedSettings=null;
 let modalPointerClick=null,modalTransitionClick=null;
@@ -131,6 +132,8 @@ function modalCurrent(session){return activeModal===session&&!session.cancelled&
 function syncModalSubmit(){
  const session=activeModal;if(!session)return;
  $('modal-submit').disabled=session.busy||session.terminal||!session.valid||session.cancelled||(session.mutates&&(!store?.editable||campaignReloadRequired));
+ // Readonly fields remain in FormData; disabled fields would drop elapsed hours.
+ if(session.jumpCommit){const hours=$('modal-form').elements.namedItem('hours');if(hours)hours.readOnly=session.busy||session.terminal||session.cancelled||!store?.editable;}
  const pending=session.awaitSave&&session.busy;
  if($('modal-cancel'))$('modal-cancel').disabled=pending;
  if($('modal-close'))$('modal-close').disabled=pending;
@@ -193,7 +196,7 @@ function saveCampaign(next,expected){return campaignWrites.save(next,expected);}
 function receiveCampaign(next,metadata){
  // Storage updates, imports and ownership acquisition end this tab's offers,
  // even if a replacement reuses the same saved audit/offer IDs.
- if(!campaignWrites.isLocalPublication(next,metadata)){stockServices.invalidate();contractDrafts=[];mailCheck=null;passengers.clear();}
+ if(!campaignWrites.isLocalPublication(next,metadata)){invalidateJumpPreparation();stockServices.invalidate();contractDrafts=[];mailCheck=null;passengers.clear();}
  state=next;known={...known,...next.worlds};view??=next.actual;
  syncMailCheck();render();
 }
@@ -1019,7 +1022,97 @@ function routeFuelAlert(path,worlds=null){
  const missing=[...new Set(path)].map(id=>worlds?.[id]||world(id)).filter(w=>w&&!M.fuel(w,state.ship,core));
  return missing.length?'<p class="notice" role="alert"><strong>Fuel alert:</strong> Supply is unconfirmed or unavailable at '+missing.map(w=>esc(w.name)).join(', ')+'. You can continue this route; arrange fuel in play.</p>':'';
 }
-function jump(){const to=world(state.route[state.routeIndex+1]);if(!to)throw Error('Plan a route first');const from=actual(),distance=M.distance(from,to);if(distance>state.ship.jump)throw Error('Route leg exceeds this ship’s jump rating.');const fuel=jumpFuel(state.ship,distance);const prepared=campaignWrites.prepareJump(()=>R.roll(6),state.revision);const dice=prepared.roll,hours=148+dice.total,attemptId=prepared.attempt.id;modal('Commit jump · '+from.name+' → '+to.name,`<div class="preview"><dl><dt>Distance</dt><dd>${distance} pc</dd><dt>Jump dice ${ruleInfo('jump-duration')}</dt><dd>${dice.dice.join(' + ')}</dd><dt>Elapsed time</dt><dd>${hours} hours</dd></dl></div>${routeFuelAlert([from.id,to.id])}${fuel?.shortfall?'<p class="notice" role="alert"><strong>Insufficient fuel:</strong> Need '+fuel.tons+' tons; '+fuel.before+' aboard; shortfall '+fuel.shortfall+' tons. You may still commit this jump. The tank will show 0 tons; resolve the missing fuel in play.</p>':''}${fuel?auditFacts([['Ship displacement',fuel.displacementTons+' tons'],['Jump fuel required',fuel.tons+' tons'],['Fuel aboard before',fuel.before+' tons'],['Fuel aboard after',fuel.after+' tons']])+'<p class="help rule-footnote">Jump fuel '+ruleInfo('jump-fuel')+'</p>':'<p class="help">Fuel tracking is not configured. Enter ship size and fuel in Ship settings.</p>'}${field('hours','Elapsed hours · referee override',hours,'number','min="0" step="1"')}<p class="help">${ruleInfo('jump-undo')} ${prepared.attempt.mulliganUsed?'Mulligan used: this is the final attempt.':'One mulligan is available immediately after committing, before any later campaign change.'} Cancel, reopening and reloading keep these dice.</p><p class="help">This moves the ship and advances time. A policy covering a different route requires an amendment before it covers the changed route.</p>`,f=>{const elapsed=Number(f.get('hours'));if(!Number.isSafeInteger(elapsed)||elapsed<0)throw Error('Enter whole nonnegative hours');act('Jump: '+from.name+' → '+to.name,s=>S.commitJump(s,{attemptId,elapsed}));view=to.id;render();},'COMMIT JUMP');}
+// Only preparation with a delayed provider needs a pending screen. The local
+// synchronous path still opens the ordinary jump confirmation immediately.
+function invalidateJumpPreparation(){
+ const owner=jumpPreparation;
+ if(owner){owner.invalidated=true;if(owner.session)owner.session.cancelled=true;}
+ if(activeModal?.jumpCommit)activeModal.cancelled=true;
+ if(activeModal&&$('modal').open&&(activeModal.jumpCommit||activeModal===owner?.session)){
+  if(campaignReloadRequired)$('modal-error').textContent=campaignReloadMessage;
+  else if(!activeModal.terminal)$('modal-error').textContent='Campaign or editing ownership changed. Reopen Jump from the current campaign.';
+  syncModalSubmit();
+ }
+}
+function preparationSession(owner){return owner.session||{saveName:'Prepared jump roll',saveContext:'jump-prepare',terminal:false,cancelled:false};}
+function finishBrokenJumpPreparation(owner){
+ owner.pending=false;if(owner.session){owner.session.busy=false;if(activeModal===owner.session)syncModalSubmit();}
+ if(jumpPreparation===owner)jumpPreparation=null;return false;
+}
+function failJumpPreparation(owner,error){
+ owner.pending=false;
+ const session=owner.session;if(session)session.busy=false;
+ if(error?.code==='SAVE_NOT_COMMITTED'&&error.committed===false){
+  if(session&&activeModal===session&&$('modal').open){
+   $('modal-error').textContent=error.message+(!store?.editable||owner.invalidated?' Reopen Jump from the current campaign after taking over editing.':'');
+   $('modal-body').innerHTML='<p>The jump dice were not saved. Retry preparation to use the same rolled dice, or cancel. The ship has not moved.</p>';
+   $('modal-submit').hidden=false;syncModalSubmit();return false;
+  }
+  if(jumpPreparation===owner)jumpPreparation=null;throw error;
+ }
+ terminalModalSaveFailure(preparationSession(owner),error);
+ if(session&&activeModal===session)syncModalSubmit();
+ if(jumpPreparation===owner)jumpPreparation=null;return false;
+}
+function finishJumpPreparation(owner,prepared){
+ owner.pending=false;if(owner.session)owner.session.busy=false;
+ if(owner.invalidated||!store?.editable||jumpPreparation!==owner){
+  if(activeModal===owner.session&&$('modal').open){
+   owner.session.cancelled=true;$('modal-body').innerHTML='<p>The campaign or editor changed while the jump dice were saving. Reopen Jump from the current campaign. No journey is confirmed by this screen.</p>';syncModalSubmit();
+  }
+  if(jumpPreparation===owner)jumpPreparation=null;return false;
+ }
+ if(state.revision!==prepared.state.revision||state.actual!==owner.from.id)return failJumpPreparation(owner,Error('Jump preparation completion did not publish the expected campaign.'));
+ try{
+  owner.confirmationGeneration=modalGeneration+1;showJumpConfirmation(prepared,owner);
+  if(jumpPreparation===owner)jumpPreparation=null;
+ }catch(cause){
+  // A prepared roll is not a committed journey. Its own saved revision is
+  // nevertheless durable and must not become a fresh-roll retry on UI failure.
+  if(modalGeneration===owner.confirmationGeneration&&activeModal?.saveContext==='jump-commit'){owner.session=activeModal;owner.session.saveName='Prepared jump roll';owner.session.saveContext='jump-prepare';}
+  return failJumpPreparation(owner,new SaveCommittedPublicationError(prepared.state.revision,cause));
+ }
+ return;
+}
+function saveJumpPreparation(owner){
+ try{
+  if(campaignReloadRequired||owner.invalidated||jumpPreparation!==owner||!store?.editable||state.revision!==owner.revision||state.actual!==owner.from.id)throw new SaveNotCommittedError(Error('Campaign or editing ownership changed. Reopen Jump from the current campaign.'));
+  owner.pending=true;
+  const result=campaignWrites.prepareJump(()=>{owner.roll??=R.roll(6);return structuredClone(owner.roll);},owner.revision);
+  if(!result||typeof result.then!=='function')return finishJumpPreparation(owner,result);
+  // Observe the result before rendering: even a pending-screen failure must
+  // not abandon an in-flight durable write or create an unhandled rejection.
+  owner.promise=Promise.resolve(result).then(prepared=>owner.uiFailure?finishBrokenJumpPreparation(owner):finishJumpPreparation(owner,prepared),error=>owner.uiFailure?finishBrokenJumpPreparation(owner):failJumpPreparation(owner,error));
+  try{
+   if(!owner.session){
+    const opened=modal('Preparing jump','<p>Saving the jump dice. Wait for confirmation before continuing. This prepares a roll only; the ship has not moved.</p>',()=>saveJumpPreparation(owner),'Retry preparation',true,{awaitSave:true,saveName:'Prepared jump roll',saveContext:'jump-prepare',annotateRounding:false});
+    if(opened===false)throw Error('Jump preparation could not acquire its pending screen.');
+    owner.session=activeModal;
+   }
+   owner.session.busy=true;$('modal-submit').hidden=true;syncModalSubmit();
+  }catch(error){
+   owner.uiFailure=true;owner.invalidated=true;
+   try{terminalModalSaveFailure(preparationSession(owner),error);}catch{/* Reload guards are set before publication/display reporting. */}
+  }
+  return owner.promise;
+ }catch(error){return failJumpPreparation(owner,error);}
+}
+function jump(){
+ if(jumpPreparation?.pending)return jumpPreparation.promise||false;
+ if(campaignReloadRequired)throw new SaveNotCommittedError(Error('Reload this page before editing the campaign again.'));
+ if(!store?.editable)throw new SaveNotCommittedError(Error('This tab is read-only. Take over editing first.'));
+ if(activeModal?.awaitSave&&activeModal.busy)throw new SaveNotCommittedError(Error('Wait for the current campaign save to finish.'));
+ if(services.active())throw new SaveNotCommittedError(Error('Finish or cancel the open ship service before preparing a jump.'));
+ const to=world(state.route[state.routeIndex+1]);if(!to)throw Error('Plan a route first');const from=actual(),distance=M.distance(from,to);if(distance>state.ship.jump)throw Error('Route leg exceeds this ship’s jump rating.');const fuel=jumpFuel(state.ship,distance);
+ const owner={base:state,revision:state.revision,from,to,distance,fuel,roll:null,session:null,pending:true,invalidated:false,promise:null,uiFailure:false};jumpPreparation=owner;
+ return saveJumpPreparation(owner);
+}
+function showJumpConfirmation(prepared,owner){const {from,to,distance,fuel}=owner,revision=prepared.state.revision;const dice=prepared.roll,hours=148+dice.total,attemptId=prepared.attempt.id;modal('Commit jump · '+from.name+' → '+to.name,`<div class="preview"><dl><dt>Distance</dt><dd>${distance} pc</dd><dt>Jump dice ${ruleInfo('jump-duration')}</dt><dd>${dice.dice.join(' + ')}</dd><dt>Elapsed time</dt><dd>${hours} hours</dd></dl></div>${routeFuelAlert([from.id,to.id])}${fuel?.shortfall?'<p class="notice" role="alert"><strong>Insufficient fuel:</strong> Need '+fuel.tons+' tons; '+fuel.before+' aboard; shortfall '+fuel.shortfall+' tons. You may still commit this jump. The tank will show 0 tons; resolve the missing fuel in play.</p>':''}${fuel?auditFacts([['Ship displacement',fuel.displacementTons+' tons'],['Jump fuel required',fuel.tons+' tons'],['Fuel aboard before',fuel.before+' tons'],['Fuel aboard after',fuel.after+' tons']])+'<p class="help rule-footnote">Jump fuel '+ruleInfo('jump-fuel')+'</p>':'<p class="help">Fuel tracking is not configured. Enter ship size and fuel in Ship settings.</p>'}${field('hours','Elapsed hours · referee override',hours,'number','min="0" step="1"')}<p class="help">${ruleInfo('jump-undo')} ${prepared.attempt.mulliganUsed?'Mulligan used: this is the final attempt.':'One mulligan is available immediately after committing, before any later campaign change.'} Cancel, reopening and reloading keep these dice.</p><p class="help">This moves the ship and advances time. A policy covering a different route requires an amendment before it covers the changed route.</p>`,(f,isCurrent=()=>true)=>{
+ let elapsed;try{elapsed=Number(f.get('hours'));if(!Number.isSafeInteger(elapsed)||elapsed<0)throw Error('Enter whole nonnegative hours');}catch(cause){throw new SaveNotCommittedError(cause);}
+ const next=act('Jump: '+from.name+' → '+to.name,s=>S.commitJump(s,{attemptId,elapsed}),revision);
+ const finish=saved=>{if(isCurrent()){try{view=to.id;render();}catch(cause){throw new SaveCommittedPublicationError(saved.revision,cause);}}return saved;};
+ return next&&typeof next.then==='function'?Promise.resolve(next).then(finish):finish(next);
+ },'COMMIT JUMP',true,{awaitSave:true,saveName:'Jump',saveContext:'jump-commit'});activeModal.jumpCommit=true;syncModalSubmit();}
 // A map selection is only a browsing position. Offer a visible way back to the
 // ship before opening a search or sale; never move the ship or trade remotely.
 function returnToTradingWorld(resume){
@@ -1397,7 +1490,7 @@ function settingsFields(){return `<div class="split">${field('name','Campaign',s
 function saveSettings(f,expected){return act('Ship / trader settings',s=>{S.setMortgage(s,readMortgage(f));S.setMaintenance(s,readMaintenance(f));s.name=f.get('name');s.ship={...s.ship,name:f.get('ship'),capacity:A.decimal(f.get('capacity')),staterooms:roomTotal({accommodation:readAccommodation(f)}),accommodation:readAccommodation(f),fuel:readFuel(f),roundTons:true,jump:Number(f.get('jump')),scoops:f.has('scoops'),armed:f.has('armed')};s.ship.lifeSupport=readSupport(f,s.ship);for(const key of ['broker','streetwise','admin','characteristic','rank','soc']){const n=Number(f.get(key));if(!Number.isInteger(n))throw Error('Skills and DMs must be whole numbers');s.trader[key]=n;}const maxBaseRetail=Number(f.get('maxBaseRetail'));if(!Number.isFinite(maxBaseRetail)||maxBaseRetail<=0)throw Error('Maximum base retail must be a positive number');s.settings={...s.settings,...R.priceLimits({reducedProfitLimitsEnabled:f.has('reducedProfitLimitsEnabled'),minPurchasePercent:f.get('minPurchasePercent'),maxSalePercent:f.get('maxSalePercent')}),creditStep:Number(f.get('creditStep')),profit:Number(f.get('mode')==='custom'?f.get('custom'):f.get('mode')),maxBaseRetailEnabled:f.has('maxBaseRetailEnabled'),maxBaseRetail:String(Math.ceil(maxBaseRetail)),useRawIllegalPrices:f.has('useRawIllegalPrices'),tax:f.has('tax'),insurance:f.has('insurance')};},expected);}
 function settings(){modal('Ship, trader & options',settingsFields(),f=>saveSettings(f,modalRevision));updateAccommodationEstimate();updateFuelSettingsEstimate();updateRecurringSettings();}
 function timeForm(){modal('Campaign time',`${field('date','Starting Imperial date · day-year',state.dateLabel)}${field('hours','Total elapsed hours from starting date',state.hours,'number','min="0" step="1"')}${field('reason','Reason for time change','')}`,f=>{if(!f.get('reason').trim())throw Error('Reason required');parseDate(f.get('date'));act('Time correction: '+f.get('reason'),s=>{s.dateLabel=f.get('date');s.hours=Number(f.get('hours'));});});}
-function notes(){modal('Rules & Notes',`<div class="notes-list"><article><h3>Rules and verification</h3><p>UI 2026.10.10.41 · rules data ${R.VERSION} · reference catalogue ${REFERENCE_VERSION}. Source checks and runtime test results, with their applicable revisions and scope, are recorded in the public verification record.</p><p>Traveller Core Rulebook Update 2022, examined copyright 2024 revision. Book 7: Merchant Prince (Mongoose Traveller First Edition, 2010), insurance pp.82–83, taxation pp.86–87 (table p.87). Cluster Truck (Mongoose Publishing, ©2026), physical life-support supplies p.14. Optional first-edition adaptations are off by default.</p><p><a href="${ROOT}RULES_VERIFICATION.md" target="_blank" rel="noopener">Rules verification status and evidence</a> · <a href="${ROOT}rules/README.md" target="_blank" rel="noopener">Sources and worked examples</a></p></article><article><h3>Calculation references</h3><p>Published rules, Home rules, App conventions and Referee inputs are labelled separately. References explain the current policy; saved audits retain their recorded terms and missing evidence.</p>${referenceIndex()}</article><article><h3>House rules</h3><p>Each departure allows one jump mulligan before any later campaign change. Undo Jump returns to the origin and restores the pre-jump state. Reopening or reloading keeps saved jump dice; the mulligan permits one fresh roll and cannot be reset by Undo. On new purchase and sale price rolls, exactly two matching natural dice flag Complication; three matching dice flag Severe complication. The GM decides the issue and consequences. These flags do not change time, prices or cargo. Entered totals without natural dice are unknown; historical quotes are not flagged retroactively.</p><p>RAW retains 100% of positive actual profit; Reduced retains 75%; Custom accepts 0–100%. A configurable maximum commodity base retail value may be applied before normal purchase/sale percentage modifiers; final prices may exceed the cap. Illegal goods can optionally retain their original RAW base prices. Independent reduced-profit price limits optionally floor purchase percentages (default 85%) and ceiling sale percentages (default 115%) before broker fees, using the applicable base retail. Whole percentages 0–400 are retained when off. Existing offers and explicit referee price overrides retain their recorded terms. Tax is deducted first. Losses are unchanged by the profit setting. Each lot is adjusted separately. New monetary amounts round up to whole Credits, or Cr100 when enabled; new tons round up to whole tons. The Settings rounding button previews changes to existing values before applying them. Historical transactions are retained. Operating expenses remain separate.</p></article>${decisions.map(d=>`<article id="${esc(d.id)}"><h3>${esc(d.id)} · ${esc(d.topic)}</h3><p>${esc(d.conclusion)}</p>${d.id==='INT-021'?'<p class="help">Historical decision: later campaign rounding uses upward rounding for new final charges. Partial cost-basis allocation remains separate; saved amounts are not rewritten. '+ruleInfo('rounding')+'</p>':''}<p class="help">Agreed ${esc(d.date)} · revision ${d.revision}</p></article>`).join('')}<article><h3>Copyright and credits</h3><p>Traveller and the source publications are owned by Mongoose Publishing and their respective rights holders. This is an unofficial campaign tool, not a publisher-endorsed product. Rulebook PDFs, scans and descriptive source prose are not distributed with this tool.</p><p>Live world data: <a href="https://travellermap.com" target="_blank" rel="noopener">Traveller Map</a>. Source and calculation references are retained for review. The existing spec-trade tool is not a rules authority.</p></article><article><h3>Calendar and map era</h3><p>World data stays in the M1105 era. The campaign starts at its chosen Imperial day-year date, default 001-1105, and advances in 24-hour days and 365-day years as searches and jumps consume time. Advancing the campaign year never switches map eras. The +1 day control advances 24 hours and consumes life support. The -1 day control corrects the date without restoring supplies or reversing transactions; it cannot go before the campaign start. Both actions appear in History. Use Undo to reverse an accidental advance and restore supplies together. Browsing, route previews and setting a starting world do not advance time.</p></article><article><h3>About your data</h3><p>Your campaign stays in this browser’s local storage. Export JSON backups to keep a portable copy. Traveller Map requests disclose the worlds/sectors being requested; campaign bank and cargo data are not sent to it. Route searches cover a bounded loaded area. Route previews do not consume fuel; committed jumps track configured jump fuel under the campaign rules.</p></article></div>`,null);}
+function notes(){modal('Rules & Notes',`<div class="notes-list"><article><h3>Rules and verification</h3><p>UI 2026.10.10.42 · rules data ${R.VERSION} · reference catalogue ${REFERENCE_VERSION}. Source checks and runtime test results, with their applicable revisions and scope, are recorded in the public verification record.</p><p>Traveller Core Rulebook Update 2022, examined copyright 2024 revision. Book 7: Merchant Prince (Mongoose Traveller First Edition, 2010), insurance pp.82–83, taxation pp.86–87 (table p.87). Cluster Truck (Mongoose Publishing, ©2026), physical life-support supplies p.14. Optional first-edition adaptations are off by default.</p><p><a href="${ROOT}RULES_VERIFICATION.md" target="_blank" rel="noopener">Rules verification status and evidence</a> · <a href="${ROOT}rules/README.md" target="_blank" rel="noopener">Sources and worked examples</a></p></article><article><h3>Calculation references</h3><p>Published rules, Home rules, App conventions and Referee inputs are labelled separately. References explain the current policy; saved audits retain their recorded terms and missing evidence.</p>${referenceIndex()}</article><article><h3>House rules</h3><p>Each departure allows one jump mulligan before any later campaign change. Undo Jump returns to the origin and restores the pre-jump state. Reopening or reloading keeps saved jump dice; the mulligan permits one fresh roll and cannot be reset by Undo. On new purchase and sale price rolls, exactly two matching natural dice flag Complication; three matching dice flag Severe complication. The GM decides the issue and consequences. These flags do not change time, prices or cargo. Entered totals without natural dice are unknown; historical quotes are not flagged retroactively.</p><p>RAW retains 100% of positive actual profit; Reduced retains 75%; Custom accepts 0–100%. A configurable maximum commodity base retail value may be applied before normal purchase/sale percentage modifiers; final prices may exceed the cap. Illegal goods can optionally retain their original RAW base prices. Independent reduced-profit price limits optionally floor purchase percentages (default 85%) and ceiling sale percentages (default 115%) before broker fees, using the applicable base retail. Whole percentages 0–400 are retained when off. Existing offers and explicit referee price overrides retain their recorded terms. Tax is deducted first. Losses are unchanged by the profit setting. Each lot is adjusted separately. New monetary amounts round up to whole Credits, or Cr100 when enabled; new tons round up to whole tons. The Settings rounding button previews changes to existing values before applying them. Historical transactions are retained. Operating expenses remain separate.</p></article>${decisions.map(d=>`<article id="${esc(d.id)}"><h3>${esc(d.id)} · ${esc(d.topic)}</h3><p>${esc(d.conclusion)}</p>${d.id==='INT-021'?'<p class="help">Historical decision: later campaign rounding uses upward rounding for new final charges. Partial cost-basis allocation remains separate; saved amounts are not rewritten. '+ruleInfo('rounding')+'</p>':''}<p class="help">Agreed ${esc(d.date)} · revision ${d.revision}</p></article>`).join('')}<article><h3>Copyright and credits</h3><p>Traveller and the source publications are owned by Mongoose Publishing and their respective rights holders. This is an unofficial campaign tool, not a publisher-endorsed product. Rulebook PDFs, scans and descriptive source prose are not distributed with this tool.</p><p>Live world data: <a href="https://travellermap.com" target="_blank" rel="noopener">Traveller Map</a>. Source and calculation references are retained for review. The existing spec-trade tool is not a rules authority.</p></article><article><h3>Calendar and map era</h3><p>World data stays in the M1105 era. The campaign starts at its chosen Imperial day-year date, default 001-1105, and advances in 24-hour days and 365-day years as searches and jumps consume time. Advancing the campaign year never switches map eras. The +1 day control advances 24 hours and consumes life support. The -1 day control corrects the date without restoring supplies or reversing transactions; it cannot go before the campaign start. Both actions appear in History. Use Undo to reverse an accidental advance and restore supplies together. Browsing, route previews and setting a starting world do not advance time.</p></article><article><h3>About your data</h3><p>Your campaign stays in this browser’s local storage. Export JSON backups to keep a portable copy. Traveller Map requests disclose the worlds/sectors being requested; campaign bank and cargo data are not sent to it. Route searches cover a bounded loaded area. Route previews do not consume fuel; committed jumps track configured jump fuel under the campaign rules.</p></article></div>`,null);}
 function backupReplace(title,next){modal(title,`<p class="notice">This replaces the current campaign in this browser. Export a backup before continuing.</p><div class="wide-actions">${btn('Export current backup','export')}</div>${check('backed','I saved a backup, or explicitly choose to proceed without one')}<p class="help">Cancel keeps the current campaign. The replacement is validated before it is saved.</p>`,f=>{if(!f.has('backed'))throw Error('Export a backup or explicitly choose to proceed without one');campaignWrites.replace(next,modalRevision);known={...next.worlds};view=next.actual;selected.clear();contractDrafts=[];mailCheck=null;render();message('Campaign replaced.');},'Replace campaign');}
 function zoomMap(factor,reset=false){
  scheduleMapAreas();const previousZoom=mapZoom;mapZoom=reset?1:nextMapZoom(mapZoom,factor);
@@ -1539,5 +1632,5 @@ $('import-file').onchange=safely(async e=>{const file=e.target.files[0];e.target
 if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{if(tab==='Overview'&&viewed()&&updateMapGeometry()){scheduleMapPaint();scheduleMapAreas();}}).observe($('main'));
 window.addEventListener('error',e=>recordDebugError(e.error||e.message,'window-error'));
 window.addEventListener('unhandledrejection',e=>recordDebugError(e.reason,'unhandled-rejection'));
-async function boot(){mountRulePopover(document);[core,mp,decisions]=await Promise.all(['rules/core-2022.json?v=dashboard-20261010-41','rules/merchant-prince-1e.json','rules/decisions.json'].map(async url=>{const r=await fetch(url);if(!r.ok)throw Error('Could not load '+url);return r.json();}));store=new Store(receiveCampaign,(editable,text)=>{if(!editable)stockServices.invalidate();$('save-status').textContent=campaignReloadRequired?campaignReloadMessage:text;$('save-status').className=editable&&!campaignReloadRequired?'muted':'readonly';$('takeover').hidden=editable||campaignReloadRequired;$('takeover').disabled=campaignReloadRequired;if(!editable&&activeModal?.mutates){activeModal.cancelled=true;$('modal-error').textContent=campaignReloadRequired?campaignReloadMessage:'Editing moved to another tab. Reopen this dialog after taking over editing.';}syncModalSubmit();render();});try{state=store.read();}catch(error){store.recovery=true;store.recoveryMessage=error.message;state=S.initial();}known={...state.worlds};view=state.actual;render();await store.acquire();if(state.initialized)restoreExpenseReceipt();if(state.initialized)refreshNearby(false).catch(e=>message('Could not load nearby worlds: '+e.message+'. Use Refresh nearby to retry.',true));}
+async function boot(){mountRulePopover(document);[core,mp,decisions]=await Promise.all(['rules/core-2022.json?v=jump-completion-20261010-42','rules/merchant-prince-1e.json','rules/decisions.json'].map(async url=>{const r=await fetch(url);if(!r.ok)throw Error('Could not load '+url);return r.json();}));store=new Store(receiveCampaign,(editable,text)=>{if(!editable){invalidateJumpPreparation();stockServices.invalidate();}$('save-status').textContent=campaignReloadRequired?campaignReloadMessage:text;$('save-status').className=editable&&!campaignReloadRequired?'muted':'readonly';$('takeover').hidden=editable||campaignReloadRequired;$('takeover').disabled=campaignReloadRequired;if(!editable&&activeModal?.mutates){activeModal.cancelled=true;$('modal-error').textContent=campaignReloadRequired?campaignReloadMessage:'Editing moved to another tab. Reopen this dialog after taking over editing.';}syncModalSubmit();render();});try{state=store.read();}catch(error){store.recovery=true;store.recoveryMessage=error.message;state=S.initial();}known={...state.worlds};view=state.actual;render();await store.acquire();if(state.initialized)restoreExpenseReceipt();if(state.initialized)refreshNearby(false).catch(e=>message('Could not load nearby worlds: '+e.message+'. Use Refresh nearby to retry.',true));}
 boot().catch(e=>{message(e.message,true);$('main').innerHTML=empty('The calculator could not start. Your saved campaign has not been replaced. Reload after checking the error above.');});

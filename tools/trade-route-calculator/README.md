@@ -543,3 +543,18 @@ Operating result reuses the TXT report: saved realized sale profit plus freight,
 Undo uses the surviving ledger. Reversing activity from before the fixed starting point produces an explicit **Earlier-history adjustment**, reconciling cash without changing the original baseline or calling the adjustment profit. Baseline initialization does not advance the campaign revision, add an Undo action or consume a jump mulligan. Read-only tabs never initialize it. Failed storage writes leave the original campaign intact and editing unavailable until a successful retry. Browser-local storage limits still apply; keep JSON backups.
 
 Verification: `node --test verification/dashboard-data.test.mjs verification/dashboard-view.test.mjs verification/persistence.test.mjs` covers pure derivation, exact amounts, escaped/accessible markup, baseline ownership and persistence. `verification/dashboard-browser.test.mjs` covers real Chromium at 1440/390/320 pixels, actual setup/import, charts/tables, first-writer initialization, reload/Undo, takeover and failed storage. It is included in the read-only exact-head PR browser matrix.
+
+## Save-completion work
+
+[Completion migration queue](COMPLETION_MIGRATION.md) distinguishes the remaining
+Stage 2 save callers from the later Stage 3 quote/preview ownership work.
+The .42 batch covers jump preparation and committed travel only. Normal local
+saves remain immediate. A delayed provider keeps the exact jump review pending;
+safe failures permit correction/retry, while a saved or uncertain outcome asks
+for a reload before continuing. Saved dice, travel economics and the existing
+one-mulligan policy are unchanged.
+
+`verification/jump-completion.test.mjs` and the exact-head
+`jump-completion-browser` CI job cover delayed success/failure, duplicate
+activation, stale ownership/revision, display failure and reload alongside the
+existing synchronous jump and campaign regression suites.

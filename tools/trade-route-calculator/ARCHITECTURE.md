@@ -295,3 +295,29 @@ retains its existing unavailable state.
 Normal saves reject changes/removal of a durable baseline even at the same action revision. Explicit campaign replacement uses the incoming boundary or seeds its current state; reset clears it. Fresh setup after Undo setup may establish a new opening boundary. Transition inverse snapshots exclude the metadata, and Undo retains it. Baseline shape validation is intrinsic: its IDs may have been undone, its hours may exceed a corrected clock, and its bank may be negative.
 
 `dashboard-data.mjs` selects surviving ledger IDs outside that fixed exclusion set. The residual `bank - baseline.bank - sum(selected amounts)` is a visible earlier-history/balance adjustment, never operating income. Ledger order supplies transaction and jump-visit order. `financial-summary.mjs` is the common read-only operating-result calculation for the Dashboard and TXT report. `dashboard-view.mjs` plus `dashboard.css` render dependency-free local SVG with accessible exact-value tables. Reads, navigation, rendering, chart sampling and window sizes never mutate a campaign.
+
+### Stage 2: jump save completion (.42)
+
+`jump()` owns one preparation operation before asking the existing controller
+to prepare its roll. A synchronous local result opens the existing confirmation
+immediately. Only a completion Promise opens a pending preparation screen; the
+Promise is observed before constructing that screen. Repeated activation cannot
+start another preparation. A known unsaved failure can retry the same transient
+rolled dice within that screen; Cancel/reload still use authoritative saved
+state and do not add persistent draft data.
+
+Foreign publication or editing loss invalidates only the owned jump operation
+and jump confirmation. Late completion cannot reopen its destination or change
+a newer view. Saved or unknown preparation/display failures require reload,
+with wording about prepared dice rather than claiming the journey happened.
+
+Final jump confirmation opts into the existing awaited-modal boundary, captures
+its explicit revision and elapsed hours, and freezes the hours field with
+`readonly` rather than disabling it (so FormData retains the value). It changes
+the viewed location only after save completion and while its session is current.
+Validation is a known pre-write failure; post-save display cleanup is a committed
+publication failure. No controller/state rule, ledger calculation, saved-roll
+reuse rule or one-mulligan policy is changed.
+
+`COMPLETION_MIGRATION.md` tracks the remaining Stage 2 callers. Quote/preview
+ownership consolidation (Stage 3) remains separate and has not started here.
