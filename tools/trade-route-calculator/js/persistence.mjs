@@ -1,4 +1,4 @@
-import {initial,validate} from './state.mjs?v=closer-map-zoom-20261010-35';
+import {initial,validate} from './state.mjs?v=revision-guard-20261010-36';
 export const KEY='traveller-trade-route-calculator:v1';
 const LOCK=KEY+':writer';
 function serializedCampaign(next){

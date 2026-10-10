@@ -72,3 +72,39 @@ Further stage-2 acceptance work includes the compound passenger/resource
 journey, expanded ownership-contention cases and delayed completion adapters.
 Those are not represented as completed by this extraction. Trade-preview
 ownership and shared-device implementation remain separate work.
+
+## Revision guard checkpoint — UI 2026.10.10.36
+
+Based on released merge `1660f7b52cd03409298a95551765c30b440a2b05` (UI .35).
+Prepared-roll writes and History Undo now reject an expected revision that
+does not match the in-memory campaign used to construct their next state.
+This closes a controller-boundary gap: supplying a newer disk revision while
+memory was still old could otherwise overwrite the newer saved campaign.
+Normal UI callers did not supply that combination, but the controller must
+fail closed independently. Rejection preserves the full saved bytes and
+published state, including balances, stock, contracts and history.
+
+The guard applies only when preparation would write. Reopening an existing
+prepared roll remains a non-writing read, including stale expectations and
+read-only ownership; its later commit still revalidates through the normal
+write path. State still creates the preparation candidate before the guard,
+so rejected fresh preparation can call the supplied dice function without
+retaining its result. History Undo checks the memory revision before deriving
+the inverse change. Store still owns editing authority and disk-revision
+checks, and all saves remain synchronous.
+
+Focused native regressions use the real Store with synthetic storage and
+compare complete memory and saved JSON bytes on rejection. All 23 controller
+cases pass; running the same suite against the unchanged .35 controller
+produces seven expected failures. All 667 native tests across 54 suites,
+227 rules/data checks and shared tool integration pass locally. The dedicated
+`campaign-revision-browser` suite exercises real Chromium localStorage and
+the rendered failure/retry flow in an isolated synthetic campaign. It joins
+the read-only exact-head Actions matrix; browser success and actual screenshot
+review remain release gates, not claims made by adding the test. Existing
+13 saved-JSON equivalence checkpoints remain unchanged. The runtime cache
+token, visible version and generated report version advance together to .36.
+
+This checkpoint does not introduce Promise-backed saves, reclassify exceptions
+after a durable write, change campaign schema or arithmetic, or implement
+shared-device storage. Those later decisions remain separate.

@@ -1,7 +1,7 @@
-import * as S from './state.mjs?v=closer-map-zoom-20261010-35';
-import {creditStep} from './rounding.mjs?v=closer-map-zoom-20261010-35';
+import * as S from './state.mjs?v=revision-guard-20261010-36';
+import {creditStep} from './rounding.mjs?v=revision-guard-20261010-36';
 
-// Synchronous relocation only. Store owns editing authority, disk revisions,
+// Synchronous write boundary. Store owns editing authority, disk revisions,
 // serialization, durable writes and publication through its onChange callback.
 // Expected revisions are supplied by callers, never inferred from a dialog.
 export function createCampaignController({getState,getStore,getKnownWorlds,getRounding}){
@@ -29,10 +29,17 @@ export function createCampaignController({getState,getStore,getKnownWorlds,getRo
   },
   prepareJump(roll,expectedRevision){
    const current=getState(),prepared=S.prepareJump(current,roll);
-   if(prepared.state!==current)save(prepared.state,expectedRevision);
+   if(prepared.state!==current){
+    if(expectedRevision!==current.revision)throw Error('Campaign changed. Reopen this preview before committing.');
+    save(prepared.state,expectedRevision);
+   }
    return prepared;
   },
-  undo(expectedRevision){return save(S.undo(getState()),expectedRevision);},
+  undo(expectedRevision){
+   const current=getState();
+   if(expectedRevision!==current.revision)throw Error('Campaign changed. Reopen this preview before committing.');
+   return save(S.undo(current),expectedRevision);
+  },
   undoJump(expectedRevision){
    const current=getState();
    if(current.revision!==expectedRevision)throw Error('Campaign changed. Reopen this preview before committing.');
