@@ -124,7 +124,28 @@ async function closeReadability(page,f){
  const result=await page.evaluate(({viewedId,actualId})=>{
   const svg=document.querySelector('.world-map'),selected=svg.querySelector('.selected-world'),actual=svg.querySelector('[data-action="map-world"][data-arg="'+actualId+'"]');
   const box=element=>{const b=element.getBoundingClientRect();return {left:b.left,right:b.right,top:b.top,bottom:b.bottom,width:b.width,height:b.height};};
-  const measure=element=>({text:element.textContent,font:parseFloat(getComputedStyle(element).fontSize),fill:getComputedStyle(element).fill,...box(element)});
+  const measure=element=>{
+   const style=getComputedStyle(element),text=element.textContent;
+   const typography=Object.fromEntries(['font','fontFamily','fontSize','fontWeight','fontStyle','fontStretch','fontVariantCaps','fontKerning','fontFeatureSettings','fontVariationSettings','letterSpacing','wordSpacing','textRendering','textAnchor','dominantBaseline'].map(key=>[key,style[key]]));
+   let intrinsic=null;
+   if(element.tagName.toLowerCase()==='text'){
+    // SVG client rectangles describe painted glyph bounds: Chromium can change
+    // those by a fraction of a pixel after scrolling/remounting identical text.
+    // Measure the live computed font at an untransformed canvas origin instead
+    // when asserting font/size invariance. Keep real SVG boxes below for the
+    // independent containment, separation and on-screen readability checks.
+    if(!style.font)throw Error('A complete computed SVG font is required for intrinsic measurement');
+    const context=document.createElement('canvas').getContext('2d');
+    context.font=style.font;
+    context.fontKerning=style.fontKerning;context.fontStretch=style.fontStretch;context.fontVariantCaps=style.fontVariantCaps;
+    context.letterSpacing=style.letterSpacing==='normal'?'0px':style.letterSpacing;
+    context.wordSpacing=style.wordSpacing==='normal'?'0px':style.wordSpacing;
+    const metrics=context.measureText(text);
+    intrinsic={font:context.font,...Object.fromEntries(['width','actualBoundingBoxLeft','actualBoundingBoxRight','actualBoundingBoxAscent','actualBoundingBoxDescent','fontBoundingBoxAscent','fontBoundingBoxDescent'].map(key=>[key,metrics[key]]))};
+   }
+   const matrix=element.getScreenCTM();
+   return {text,font:parseFloat(style.fontSize),fill:style.fill,typography,intrinsic,scaleX:Math.hypot(matrix.a,matrix.b),scaleY:Math.hypot(matrix.c,matrix.d),...box(element)};
+  };
   return {selectedId:selected.dataset.arg,actualId:actual.dataset.arg,map:box(svg),marker:box(selected.querySelector(':scope > circle')),
    name:measure(selected.querySelector('.world-name')),uwp:measure(selected.querySelector('.world-uwp')),title:selected.querySelector('title').textContent,
    icons:Object.fromEntries(['symbol-starport','symbol-gas-giant','symbol-naval','symbol-scout','zone-amber','symbol-selection'].map(name=>[name,measure(selected.querySelector('.'+name))])),
@@ -143,6 +164,7 @@ async function closeReadability(page,f){
  assert.ok(result.name.bottom<result.uwp.top,'World name and UWP do not overlap');
  for(const text of [result.name,result.uwp])assert.ok(text.left>=result.map.left&&text.right<=result.map.right&&text.top>=result.map.top&&text.bottom<=result.map.bottom,'The centered selected label stays fully readable inside the map');
  for(const [name,icon]of Object.entries(result.icons))assert.ok(icon.width>0&&icon.height>0,'Existing close-detail icon stays measurable: '+name);
+ for(const detail of [result.name,result.uwp,...Object.values(result.icons)])for(const axis of ['scaleX','scaleY'])near(detail[axis],1,.001,'Close labels/icons retain their actual CSS-pixel scale');
  assert.equal(result.icons['symbol-starport'].font,15);assert.equal(result.icons['symbol-naval'].font,12);
  assert.equal(result.icons['symbol-starport'].text,'A','Published starport remains separate from the effective UWP override');
  assert.equal(result.shipCount,1);assert.equal(result.selectedCount,1);
@@ -153,12 +175,19 @@ async function closeReadability(page,f){
  return result;
 }
 function sameDetails(actual,expected,label){
- for(const name of ['name','uwp']){
-  assert.equal(actual[name].text,expected[name].text,label+' preserves '+name+' content');
-  assert.equal(actual[name].font,expected[name].font,label+' preserves '+name+' font');
-  for(const size of ['width','height'])near(actual[name][size],expected[name][size],.1,label+' preserves '+name+' '+size);
+ const pairs=[...['name','uwp'].map(name=>[name,actual[name],expected[name]]),...Object.keys(expected.icons).map(name=>[name,actual.icons[name],expected.icons[name]])];
+ for(const [name,current,previous]of pairs){
+  assert.equal(current.text,previous.text,label+' preserves '+name+' content');
+  assert.equal(current.font,previous.font,label+' preserves '+name+' font size');
+  assert.equal(current.fill,previous.fill,label+' preserves '+name+' fill');
+  assert.deepEqual(current.typography,previous.typography,label+' preserves every measured '+name+' text style');
+  if(previous.intrinsic){
+   assert.ok(current.intrinsic&&current.intrinsic.width>0,label+' has positive '+name+' intrinsic text width');
+   assert.deepEqual(current.intrinsic,previous.intrinsic,label+' preserves origin-based '+name+' font metrics');
+  }else{
+   for(const size of ['width','height'])near(current[size],previous[size],.1,label+' preserves '+name+' '+size);
+  }
  }
- for(const [name,icon]of Object.entries(expected.icons))for(const size of ['width','height'])near(actual.icons[name][size],icon[size],.1,label+' preserves '+name+' '+size);
 }
 async function screenshot(page,label,width,result){
  await frame(page);
@@ -206,9 +235,9 @@ async function runWidth(browser,width,report){
    const label=expanded?'expanded':'normal',entry={mode:label,pinchPaths:[]};result.layouts.push(entry);
    if(expanded){const before=await camera();await click(page,'map-expand');await mode(page,true);sameCamera(await camera(),before,'Expand at 288%',{resized:true});}
    await reset(page,f.cameraIds,viewedId);await oldMaximum(page);const old=await drag(page,f.cameraIds);entry.old=old;
-   const oldDetails=await closeReadability(page,f);
+   const oldDetails=await closeReadability(page,f);entry.readability={old:oldDetails};
    await click(page,'map-zoom-in');const close=await camera();entry.close=close;closerCamera(close,old,label+' button zoom');
-   const details=await closeReadability(page,f);sameDetails(details,oldDetails,label+' extra close step');entry.readability={name:details.name.text,nameFont:details.name.font,uwp:details.uwp.text,uwpFont:details.uwp.font,icons:Object.keys(details.icons)};
+   const details=await closeReadability(page,f);entry.readability.close=details;sameDetails(details,oldDetails,label+' extra close step');
    await overviewGeometry(page,{markers:true,columns:!expanded});await screenshot(page,label,width,result);
    for(let i=0;i<3;i++){await click(page,'map-zoom-in');sameCamera(await camera(),close,label+' repeated maximum click '+i);}
    await click(page,'map-zoom-out');assert.equal(await zoom(page),'240%');sameCamera(await camera(),old,label+' button returns to old maximum');
@@ -223,7 +252,7 @@ async function runWidth(browser,width,report){
    sameCamera(await camera(),close,label+' ordinary wheel scroll leaves map camera unchanged');
    assert.deepEqual(await page.evaluate(()=>({width:innerWidth,ratio:devicePixelRatio})),{width,ratio:1},'Map wheel input never zooms the browser page');
    await page.getByLabel('Show UWP',{exact:true}).uncheck();await frame(page);assert.equal(await page.locator('.world-uwp').count(),0);sameCamera(await camera(),close,label+' UWP off');
-   await page.getByLabel('Show UWP',{exact:true}).check();await frame(page);sameDetails(await closeReadability(page,f),oldDetails,label+' UWP restored');sameCamera(await camera(),close,label+' UWP on');
+   await page.getByLabel('Show UWP',{exact:true}).check();await frame(page);entry.readability.restored=await closeReadability(page,f);sameDetails(entry.readability.restored,oldDetails,label+' UWP restored');sameCamera(await camera(),close,label+' UWP on');
    assert.deepEqual(await routeView(page),route,label+' retains saved route stops, controls and browsing caption');await unchanged(label+' input paths');
    await reset(page,f.cameraIds,viewedId);await unchanged(label+' reset to 100%');
    await oldMaximum(page);await drag(page,f.cameraIds);await click(page,'map-zoom-in');assert.equal(await zoom(page),'288%');
