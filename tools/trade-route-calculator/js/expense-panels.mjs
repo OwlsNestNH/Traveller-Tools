@@ -1,12 +1,13 @@
-import {escapeHtml,formatCreditsText} from './display.mjs?v=expanded-map-20261010-32';
-import {passengerShip} from './passengers.mjs?v=expanded-map-20261010-32';
+import {ruleInfo} from './rule-references.mjs?v=rule-info-20261010-33';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=rule-info-20261010-33';
+import {passengerShip} from './passengers.mjs?v=rule-info-20261010-33';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=expanded-map-20261010-32';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=expanded-map-20261010-32';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=expanded-map-20261010-32';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=expanded-map-20261010-32';
-import {creditStep} from './rounding.mjs?v=expanded-map-20261010-32';
-import {roll} from './rules.mjs?v=expanded-map-20261010-32';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=rule-info-20261010-33';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=rule-info-20261010-33';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=rule-info-20261010-33';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=rule-info-20261010-33';
+import {creditStep} from './rounding.mjs?v=rule-info-20261010-33';
+import {roll} from './rules.mjs?v=rule-info-20261010-33';
 
 const esc=escapeHtml;
 const money=formatCreditsText;
@@ -100,7 +101,7 @@ export function createExpensePanels({document,getState,isEditable,commit,render,
   try{return {...quote(),valid:true};}catch(error){return {valid:false,error:error.message};}
  }
  function details(expense){
-  return `<details class="expense-audit service-audit"><summary>${expense.kind==='mortgage'?'Mortgage details / audit':expense.kind==='maintenance'?'Maintenance details / audit':'Calculation / audit'}</summary>${facts(recurringExpenseDetails(expense))}<p class="help rule-footnote">${esc(expense.reference)}</p></details>`;
+  return `<details class="expense-audit service-audit"><summary>${expense.kind==='mortgage'?'Mortgage details / audit':expense.kind==='maintenance'?'Maintenance details / audit':'Calculation / audit'} ${ruleInfo(expense.kind)}</summary>${facts(recurringExpenseDetails(expense))}<p class="help rule-footnote">${esc(expense.reference)}</p></details>`;
  }
  function overview(){
   const s=getState(),q=expenseOverview(s);

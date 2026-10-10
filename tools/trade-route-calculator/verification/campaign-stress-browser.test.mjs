@@ -63,7 +63,7 @@ const contractsOf=(s,kind,status)=>s.contracts.filter(c=>c.kind===kind&&(!status
 const lot=(s,id)=>s.lots.find(l=>l.id===id);
 const ledgerNet=(before,after)=>after.ledger.slice(before.ledger.length).reduce((total,entry)=>total+BigInt(entry.amount),0n);
 async function reveal(target){
- for(const detail of await target.locator('xpath=ancestor::details').all())if(!await detail.evaluate(el=>el.open))await detail.locator(':scope > summary').click();
+ for(const detail of await target.locator('xpath=ancestor::details').all())if(!await detail.evaluate(el=>el.open)){await detail.locator(':scope > summary').click({position:{x:8,y:8}});assert.equal(await detail.evaluate(el=>el.open),true,'Field disclosure opens without activating its reference');}
 }
 async function fill(page,name,value,scope='#modal'){
  const field=page.locator(scope+' [name="'+name+'"]');await reveal(field);await field.fill(String(value));

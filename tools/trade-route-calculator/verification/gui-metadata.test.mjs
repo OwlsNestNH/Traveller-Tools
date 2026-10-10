@@ -7,13 +7,15 @@ import * as A from '../js/amounts.mjs';
 import {escapeHtml,moneyHtml} from '../js/display.mjs';
 import {normalizeAmountFields} from '../js/form-values.mjs';
 import * as R from '../js/rules.mjs';
+import {ruleInfo} from '../js/rule-references.mjs';
+import {replaceReferenceContent} from '../js/rule-popover.mjs';
 const app=await readFile(new URL('../js/app.mjs',import.meta.url),'utf8');
 const escape=escapeHtml;
 const field=runInNewContext(app.slice(app.indexOf('const money='),app.indexOf('\nconst select='))+'\nfield;', {esc:escape,moneyHtml});
 const rounding=app.slice(app.indexOf('function roundingFootnote('),app.indexOf('\nfunction roundingPreview('));
 function modalHarness(step=1){
  const nodes={modal:{open:false,showModal(){this.open=true;},close(){this.open=false;}},'modal-body':{innerHTML:'',insertAdjacentHTML(_where,html){this.innerHTML+=html;}},'modal-title':{},'modal-error':{},'modal-submit':{},'modal-cancel':{},'modal-form':{querySelectorAll:()=>[]}};
- const context={state:{revision:17,settings:{creditStep:step}},store:{editable:true},inputRounding:[],modalGeneration:0,modalRevision:0,$:id=>nodes[id],esc:escape,creditStep,up,A,normalizeAmountFields,optionalRuleFootnote:kind=>'<p>'+kind+' reference</p>'};
+ const context={ruleInfo,replaceReferenceContent,state:{revision:17,settings:{creditStep:step}},store:{editable:true},inputRounding:[],modalGeneration:0,modalRevision:0,$:id=>nodes[id],esc:escape,creditStep,up,A,normalizeAmountFields,optionalRuleFootnote:kind=>'<p>'+kind+' reference</p>'};
  const settingsNormalizer=app.match(/^function normaliseSettingsFields\(.*$/m)[0];
  const api=runInNewContext(rounding+'\n'+app.slice(app.indexOf('let activeModal=null;'),app.indexOf('\nfunction saveCampaign('))+'\n'+settingsNormalizer+'\n({modal,closeModal,normaliseFields,normaliseSettingsFields});',context);
  return {api,context,nodes};

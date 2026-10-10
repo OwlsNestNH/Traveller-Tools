@@ -1,4 +1,4 @@
-import {searchWorlds,loadWorld} from './map.mjs?v=expanded-map-20261010-32';
+import {searchWorlds,loadWorld} from './map.mjs?v=rule-info-20261010-33';
 
 export const planetSearchLabel=w=>[w.name,w.subsectorName,w.sector,w.hex].join(' — ');
 

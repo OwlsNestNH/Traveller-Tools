@@ -468,3 +468,31 @@ bladder cargo space first.
 Run `node --test verification/bladder-capacity.test.mjs` and
 `node verification/bladder-capacity-browser.test.mjs` for focused migration,
 Settings, cargo limits, save/import/Undo, compact readout, and responsive checks.
+
+## Contextual rule references (UI 2026.10.10.33)
+
+Small circled **i** buttons beside calculation groups open a short reference
+popup. They work with click, touch, Enter and Space; Escape or the close control
+returns to the source button without closing the underlying transaction. The
+same reference catalogue is available from **Rules & Notes**. Long explanations
+scroll within the popup, including on narrow screens.
+
+References identify the book and printed pages, then distinguish published
+mechanics, Home rules, App conventions and Referee inputs. They do not supply
+missing historical rolls or recalculate saved transactions. Existing warnings,
+amounts, audits and commit controls remain in place. In particular:
+
+- The shared per-planet search clock is a campaign interpretation: 28 days from
+  the first committed search, with all penalties clearing together. Core says
+  “same month”; it does not prescribe this grouped clock.
+- Bladder capacity is entered directly in tons. The combined fuel-store model
+  is separate from the hardware context in Core pp.184–185.
+- Optional insurance cites Merchant Prince First Edition (2010), pp.82–83;
+  tax cites pp.86–87, with the table on p.87. The bracket-gap correction remains
+  INT-009, not a claimed publisher erratum.
+- Physical LSS consumption/storage cites Cluster Truck p.14. Refill pricing
+  remains the separately labelled campaign policy.
+
+No rulebook files, scans, private links or copied source passages are included.
+The catalogue is display-only; campaign schema, calculations, saved audit
+records, Undo and browser storage are unchanged.

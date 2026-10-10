@@ -1,0 +1,22 @@
+/* The small visible i has its own padded, non-overlapping hit target. */
+button.rule-info{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;min-width:28px;padding:0;margin:0 2px;vertical-align:middle;border:0;border-radius:5px;background:transparent;color:var(--muted);font-size:11px;line-height:1;font-weight:600;letter-spacing:0;text-transform:none;flex:none}
+button.rule-info span{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border:1px solid currentColor;border-radius:50%;font-family:Georgia,serif;font-style:normal;font-size:12px;font-weight:bold}
+button.rule-info:hover:not(:disabled){background:#203c4d;color:var(--cyan)}
+button.rule-info:focus-visible{outline:2px solid var(--cyan);outline-offset:2px;background:#203c4d;color:#e8fbff}
+.rule-reference-popup{width:min(560px,calc(100vw - 24px));max-height:min(80vh,720px);max-height:min(80dvh,720px);padding:0;overflow:hidden}
+.rule-reference-popup[open]{display:flex;flex-direction:column}
+.rule-reference-popup::backdrop{background:#02070d99;backdrop-filter:blur(1px)}
+.rule-reference-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 18px;border-bottom:1px solid var(--line);flex:none}
+.rule-reference-heading h2{font-size:16px;line-height:1.35}
+.rule-reference-heading .rule-reference-close{font-size:22px;line-height:1;width:36px;height:36px;min-width:36px;padding:0;flex:none}
+.rule-reference-body{overflow:auto;overscroll-behavior:contain;min-height:0;padding:4px 18px 18px;font-size:13px;line-height:1.6;overflow-wrap:anywhere}
+.rule-reference-body:focus-visible{outline:2px solid var(--cyan);outline-offset:-3px}
+.rule-reference-body .rule-source{font-size:12px;color:var(--muted);margin:12px 0 18px}
+.rule-reference-body .rule-source strong{font-size:13px;color:var(--cyan)}
+.rule-reference-part{margin-top:16px}
+.rule-reference-part h3{font-size:12px;color:var(--cyan);margin:0 0 4px}
+.rule-reference-part p{margin:0}
+.rule-reference-index{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:4px 18px;margin-top:10px}
+.rule-reference-index>div{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px}
+@media(pointer:coarse){button.rule-info{width:40px;height:40px;min-width:40px}.rule-reference-heading .rule-reference-close{width:44px;height:44px;min-width:44px}}
+@media(max-width:420px){.rule-reference-heading{padding:12px 14px}.rule-reference-body{padding:4px 14px 14px}}

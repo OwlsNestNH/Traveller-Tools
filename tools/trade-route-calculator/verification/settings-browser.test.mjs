@@ -83,7 +83,7 @@ async function start(size,{untrackedFuel=false}={}){
  async function reveal(target){
   // Native disclosure clicks, outside-in, exercise the same affordance as a user.
   for(const detail of await target.locator('xpath=ancestor::details').all()){
-   if(!await detail.evaluate(el=>el.open))await detail.locator(':scope > summary').click();
+   if(!await detail.evaluate(el=>el.open))await detail.locator(':scope > summary').click({position:{x:8,y:8}});
   }
  }
  async function set(name,value){
@@ -95,7 +95,7 @@ async function start(size,{untrackedFuel=false}={}){
  async function setDraft(){for(const [name,value]of Object.entries(draft))await set(name,value);}
  async function openAll(){
   for(const detail of await page.locator('#settings-form details').all()){
-   if(!await detail.evaluate(el=>el.open))await detail.locator(':scope > summary').click();
+   if(!await detail.evaluate(el=>el.open))await detail.locator(':scope > summary').click({position:{x:8,y:8}});
   }
  }
  async function unchanged(bytes,label){assert.equal(await raw(),bytes,label+' must not write campaign bytes');}
@@ -239,7 +239,7 @@ try{
   const sections=page.locator('#main details[data-settings-group]');
   const defaults={campaign:true,fuel:true,mortgage:false,maintenance:false,trader:false,pricing:false,cabins:true,people:true,support:true,optional:false,rounding:false,'rounding-time':true,'backup-data':true};
   const disclosureStates=()=>sections.evaluateAll(nodes=>Object.fromEntries(nodes.map(el=>[el.dataset.settingsGroup,el.open])));
-  const closeAll=async()=>{for(const section of await sections.all())if(await section.evaluate(el=>el.open))await section.locator(':scope > summary').click();};
+  const closeAll=async()=>{for(const section of await sections.all())if(await section.evaluate(el=>el.open))await section.locator(':scope > summary').click({position:{x:8,y:8}});};
   const allClosed=Object.fromEntries(Object.keys(defaults).map(id=>[id,false]));
   assert.equal(await sections.count(),13,'Every field group and both utility panels can collapse');
   assert.deepEqual(await disclosureStates(),defaults,'Previously visible groups start open; advanced groups start closed');
@@ -253,9 +253,10 @@ try{
    // Pointer, Enter and Space all operate the same native disclosure, without
    // changing any sibling or the 51 draft fields.
    for(const key of ['pointer','Enter','Space']){
-    if(key==='pointer')await summary.click();else{await summary.focus();await page.keyboard.press(key);}
+    if(key==='pointer')await summary.locator('.settings-disclosure').click();else{await summary.focus();await page.keyboard.press(key);}
     assert.equal(await section.evaluate(el=>el.open),!initial,id+' toggles with '+key);
-    if(key==='pointer')await summary.click();else await page.keyboard.press(key);
+    assert.equal(await page.locator('#rule-reference-popup').isVisible(),false,'Disclosure gesture does not activate its separate reference');
+    if(key==='pointer')await summary.locator('.settings-disclosure').click();else await page.keyboard.press(key);
     assert.deepEqual(await disclosureStates(),defaults,id+' round trip preserves every sibling');
    }
    assert.deepEqual(await values(),beforeToggles,id+' preserves all field values');
@@ -264,12 +265,12 @@ try{
   const fuel=page.locator('[data-settings-group="fuel"]'),fuelNotes=fuel.locator('details.settings-notes');
   assert.equal(await fuel.locator(':scope > summary').getAttribute('aria-label'),'Ship size & fuel');
   assert.equal(await fuel.getByLabel('Base fuel tank capacity',{exact:true}).count(),1);
-  await fuelNotes.locator(':scope > summary').click();
+  await fuelNotes.locator(':scope > summary').click({position:{x:8,y:8}});
   assert.match(await fuelNotes.textContent(),/including any power-plant or small-craft allowance/);
   assert.match(await fuelNotes.textContent(),/Optional bladders are added separately/);
-  await fuel.locator(':scope > summary').click();await fuel.locator(':scope > summary').click();
+  await fuel.locator(':scope > summary').click({position:{x:8,y:8}});await fuel.locator(':scope > summary').click({position:{x:8,y:8}});
   assert.equal(await fuelNotes.evaluate(el=>el.open),true,'Closing a group retains nested rules state');
-  await fuelNotes.locator(':scope > summary').click();
+  await fuelNotes.locator(':scope > summary').click({position:{x:8,y:8}});
   await closeAll();assert.deepEqual(await disclosureStates(),allClosed);
   await layout(page,'all sections collapsed '+size.width);
   await page.screenshot({path:artifacts+`/settings-all-collapsed-${size.width}.png`,fullPage:true});
@@ -375,7 +376,7 @@ try{
   await other.getByText('Read-only: campaign open in another tab.',{exact:true}).waitFor();
   await other.locator('#tabs [data-arg="Settings"]').click();
   assert.equal(await other.locator('#settings-save').isDisabled(),true,'Read-only tabs cannot save');
-  const readOnlyGroup=other.locator('[data-settings-group="campaign"]');await readOnlyGroup.locator(':scope > summary').click();
+  const readOnlyGroup=other.locator('[data-settings-group="campaign"]');await readOnlyGroup.locator(':scope > summary').click({position:{x:8,y:8}});
   assert.equal(await readOnlyGroup.evaluate(el=>el.open),false,'Read-only users can collapse settings');
   await readOnlyGroup.locator(':scope > summary').focus();await other.keyboard.press('Space');
   assert.equal(await readOnlyGroup.evaluate(el=>el.open),true,'Read-only users can expand by keyboard');

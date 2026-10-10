@@ -75,7 +75,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [browser, modal-lifecycle, click-route, fuel-browser, empty-space, mail-browser, map-overview-browser, gui-parity, trade-buttons, settings-browser, insurance-browser, bladder-capacity-browser, trade-complications-browser, world-screen-browser, jump-undo-browser, service-panels-browser, combined-cabins, day-controls, zero-fuel, resource-alert, mortgage-browser, expense-panels-browser, cargo-hold-browser, route-frame-browser, inline-fuel-browser, service-navigation-browser, passengers-browser, route-selection-browser, trade-audit-browser, contact-search-browser, global-search-browser, expanded-map-browser]
+        suite: [browser, modal-lifecycle, click-route, fuel-browser, empty-space, mail-browser, map-overview-browser, gui-parity, trade-buttons, settings-browser, insurance-browser, bladder-capacity-browser, trade-complications-browser, world-screen-browser, jump-undo-browser, service-panels-browser, combined-cabins, day-controls, zero-fuel, resource-alert, mortgage-browser, expense-panels-browser, cargo-hold-browser, route-frame-browser, inline-fuel-browser, service-navigation-browser, passengers-browser, route-selection-browser, trade-audit-browser, contact-search-browser, global-search-browser, expanded-map-browser, rule-references-browser]
         # Independent browser processes exercise the resize/repaint measurement
         # repeatedly. A failure fails its job; these are not automatic retries.
         include:
@@ -122,12 +122,33 @@ jobs:
           curl --fail --silent "$TRAVELLER_TEST_URL" > /dev/null
           node "verification/$SCRIPT.test.mjs" "$RUNNER_TEMP/trade-playwright/node_modules/playwright" | tee "verification-artifacts/$SUITE.txt"
       - name: Upload browser evidence
-        if: ${{ always() && matrix.suite != 'route-frame-browser' && matrix.suite != 'inline-fuel-browser' }}
+        if: ${{ always() && matrix.suite != 'route-frame-browser' && matrix.suite != 'inline-fuel-browser' && matrix.suite != 'rule-references-browser' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: trade-${{ matrix.suite }}-${{ github.event.pull_request.head.sha }}
           path: tools/trade-route-calculator/verification-artifacts/
           if-no-files-found: error
+          retention-days: 14
+      - name: Upload rule-reference screenshots and report
+        if: ${{ always() && matrix.suite == 'rule-references-browser' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: trade-rule-reference-visuals-${{ github.event.pull_request.head.sha }}
+          path: |
+            tools/trade-route-calculator/verification-artifacts/rule-info-*.png
+            tools/trade-route-calculator/verification-artifacts/rule-info-report.json
+            tools/trade-route-calculator/verification-artifacts/commit.txt
+            tools/trade-route-calculator/verification-artifacts/runtime.txt
+            tools/trade-route-calculator/verification-artifacts/rule-references-browser.txt
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload rule-reference traces separately
+        if: ${{ always() && matrix.suite == 'rule-references-browser' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: trade-rule-reference-traces-${{ github.event.pull_request.head.sha }}
+          path: tools/trade-route-calculator/verification-artifacts/rule-info-*-trace.zip
+          if-no-files-found: warn
           retention-days: 14
       - name: Prepare bounded route-frame visuals
         id: route_visual_evidence

@@ -53,7 +53,7 @@ try{
   for(const kind of ['supplier','buyer']){
    await open(kind);assert.match(await page.locator('#modal-body').textContent(),/previous attempts in this period: 2 \(DM −2\)/);
    assert.ok((await page.locator('#modal-body').textContent()).includes(displayDate(s.dateLabel,672)));
-   await page.locator('#modal-body summary').filter({hasText:'Home Rule'}).click();assert.match(await page.locator('#modal-body').textContent(),/same month/);
+   await page.locator('#modal-body [data-rule-info="contact-search"]').click();assert.match(await page.locator('#rule-reference-popup').textContent(),/same month/);await page.keyboard.press('Escape');assert.equal(await page.locator('#modal').evaluate(el=>el.open),true);
    await preview(kind);assert.equal(await raw(),initial);await cancel();assert.equal(await raw(),initial);
    await open(kind);await page.keyboard.press('Escape');await closed();assert.equal(await raw(),initial);
   }
