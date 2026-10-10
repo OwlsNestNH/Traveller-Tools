@@ -53,6 +53,7 @@ function verifyFixtures(){
   assert.deepEqual(setup.dashboardBaseline,{version:1,origin:'opening',bank,dateLabel:'101-1105',hours:0,excludedLedgerIds:['opening-balance']});
   assert.equal(data.currentBank,String(BigInt(bank)+10500n));assert.equal(data.operatingResult,'9600');assert.equal(data.otherInflows,'900');assert.equal(data.adjustment,'0');
   assert.equal(data.cashPoints.length,11);assert.deepEqual(data.visits.map(v=>v.result),['3800','5800']);
+  const wire=JSON.parse(JSON.stringify(s));S.validate(wire);assert.deepEqual(dashboardData(wire),data,'JSON import/export retains all Dashboard values');
  }
 }
 verifyFixtures();
@@ -160,8 +161,10 @@ try{
   await page.reload();await editing(page);assert.equal((await read(page)).dashboardBaseline.origin,'opening');assert.equal(await writes(page),0);
  });
  await run('import-retains-baseline',activityCampaign(),async({page,result})=>{
-  await page.goto(base);await editing(page);const imported=activityCampaign('700000'),baseline=structuredClone(imported.dashboardBaseline),revision=(await read(page)).revision;
-  await page.locator('#import-file').setInputFiles({name:'synthetic-dashboard-campaign.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(imported))});await page.getByRole('heading',{name:'Load campaign (JSON)',exact:true}).waitFor();await page.locator('#modal [name="backed"]').check();await page.locator('#modal-submit').click();await closed(page);
+  await page.goto(base);await editing(page);
+  // Compare against the actual uploaded JSON, which omits optional undefined fields.
+  const importedBytes=JSON.stringify(activityCampaign('700000')),imported=JSON.parse(importedBytes),baseline=structuredClone(imported.dashboardBaseline),revision=(await read(page)).revision;
+  await page.locator('#import-file').setInputFiles({name:'synthetic-dashboard-campaign.json',mimeType:'application/json',buffer:Buffer.from(importedBytes)});await page.getByRole('heading',{name:'Load campaign (JSON)',exact:true}).waitFor();await page.locator('#modal [name="backed"]').check();await page.locator('#modal-submit').click();await closed(page);
   const saved=await read(page);assert.deepEqual(saved,{...imported,revision:revision+1});assert.deepEqual(saved.dashboardBaseline,baseline);await tab(page,'Dashboard');await showTables(page);assert.equal((await dataRows(page,'cash'))[0][1],'Cr 700,000');assert.equal((await dataRows(page,'cash')).at(-1)[1],'Cr 710,500');await capture(page,result,'imported');
   await page.reload();await editing(page);assert.deepEqual(await read(page),saved);assert.equal(await writes(page),0);
  });
