@@ -26,6 +26,10 @@ const base = process.env.TRAVELLER_TEST_URL || 'http://127.0.0.1:8765/';
 const root = fileURLToPath(new URL('../../../', import.meta.url));
 const artifacts = fileURLToPath(new URL('../verification-artifacts/', import.meta.url));
 const prefix = 'map-publication-completion-';
+// Playwright's default caret hiding writes inline styles to every input and
+// leaves empty style attributes behind. Evidence capture must not mutate the
+// exact DOM under test. Keep ordinary caret behavior in every screenshot.
+const screenshotOptions = Object.freeze({type: 'jpeg', quality: 70, caret: 'initial'});
 const KEY = 'traveller-trade-route-calculator:v1', LOCK = KEY + ':writer';
 const sizes = [{width: 1440, height: 1100}, {width: 390, height: 844}];
 const core = JSON.parse(await readFile(new URL('../rules/core-2022.json', import.meta.url)));
@@ -478,6 +482,14 @@ function assertPending(g, before, scenario, {written}) {
  }
 }
 async function screenshot(page, result, label) {
+ // A failure image records the failure as-is. Successful pending captures must
+ // themselves preserve the same strict boundary as the real map callbacks.
+ const pendingBefore = result.strictMapRegression && label !== 'failure' ? await gate(page) : null;
+ const strictPending = pendingBefore?.pending;
+ if (strictPending) {
+  assertPendingPresentation(pendingBefore, {strictMap: true});
+  assertFrozenPresentation(pendingBefore.baseline, await record(page, result, 'before-screenshot-' + label));
+ }
  const geometry = await page.evaluate(() => {
   const rect = node => {const r = node?.getBoundingClientRect(); return r ? {left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height} : null;};
   const dialog = rect(document.querySelector('#modal[open]'));
@@ -490,7 +502,11 @@ async function screenshot(page, result, label) {
  });
  result.screenshots.push({label, geometry, pixelClaim: 'Context image only. DOM candidate findings do not imply a marker was visible through the opaque dialog.'});
  assert.ok(geometry.pageOverflow <= 2, 'No horizontal page overflow in evidence');
- const bytes = await page.screenshot({type: 'jpeg', quality: 70});
+ const bytes = await page.screenshot(screenshotOptions);
+ if (strictPending) {
+  assertFrozenPresentation(pendingBefore.baseline, await record(page, result, 'after-screenshot-' + label));
+  assertPendingPresentation(await gate(page), {strictMap: true});
+ }
  assert.ok(evidenceBytes + bytes.length < 16 * 1024 * 1024, 'Bound images below 16 MiB');
  const name = prefix + result.id + '-' + label + '.jpg'; await writeFile(join(artifacts, name), bytes);
  evidenceBytes += bytes.length; Object.assign(result.screenshots.at(-1), {name, bytes: bytes.length});
@@ -625,6 +641,13 @@ const storeSource = await readFile(new URL('../js/persistence.mjs', import.meta.
 const hash = text => createHash('sha256').update(text).digest('hex');
 report.sourceHashes = {app: hash(appSource), store: hash(storeSource)};
 if (process.argv.includes('--fixtures-only')) {
+ assert.deepEqual(screenshotOptions, {type: 'jpeg', quality: 70, caret: 'initial'}, 'Evidence capture leaves input styles untouched');
+ assert.equal(Object.isFrozen(screenshotOptions), true);
+ const captureSource = screenshot.toString();
+ assert.match(captureSource, /page\.screenshot\(screenshotOptions\)/);
+ assert.equal((captureSource.match(/page\.screenshot\(/g) || []).length, 1, 'Every capture uses the non-mutating options');
+ assert.match(captureSource, /assertFrozenPresentation\(pendingBefore\.baseline, await record\(page, result, 'before-screenshot-'/);
+ assert.match(captureSource, /assertFrozenPresentation\(pendingBefore\.baseline, await record\(page, result, 'after-screenshot-'/);
  assert.equal(new Set(scenarios.map(scenario => scenario.id)).size, scenarios.length);
  assert.equal(report.declaredCases, 14); assert.equal(report.declaredStrictMapCases, 4);
  assert.deepEqual(scenarios.filter(scenario => scenario.strictMap).map(scenario => scenario.id), ['undo-jump-overview', 'import-overview-delayed-read']);
