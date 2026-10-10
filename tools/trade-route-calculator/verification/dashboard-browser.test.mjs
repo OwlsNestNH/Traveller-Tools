@@ -106,7 +106,14 @@ async function layout(page,result){
 async function dataRows(page,id){
  return card(page,id).locator('tbody tr').evaluateAll(rows=>rows.map(row=>[...row.cells].map(cell=>{const copy=cell.cloneNode(true);copy.querySelectorAll('.dashboard-row-note,.dashboard-key').forEach(el=>el.remove());return copy.textContent.trim();})));
 }
-async function showTables(page){for(const summary of await page.locator('.dashboard-data:not([open]) > summary').all())await summary.click();}
+async function showTables(page){
+ // Playwright's all() returns live indexed locators. Keep the collection stable
+ // while a click changes [open], rather than indexing a shrinking :not([open]) list.
+ for(const detail of await page.locator('.dashboard-data').all()){
+  if(await detail.getAttribute('open')===null)await detail.locator(':scope > summary').click();
+  assert.notEqual(await detail.getAttribute('open'),null,'The exact-value table disclosure opens');
+ }
+}
 async function deposit(page,amount='600'){
  await tab(page,'Accounts');await action(page,'deposit').click();await page.locator('#modal [name="amount"]').fill(amount);await page.locator('#modal [name="reason"]').fill('Synthetic Dashboard refresh');await page.locator('#modal-submit').click();await page.getByRole('heading',{name:'Confirm deposit',exact:true}).waitFor();await page.locator('#modal-submit').click();await closed(page);
 }
