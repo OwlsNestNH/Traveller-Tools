@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=service-completion-20261010-38';
+import {escapeHtml as esc} from './display.mjs?v=world-override-20261010-39';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.

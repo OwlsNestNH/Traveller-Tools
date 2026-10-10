@@ -348,7 +348,12 @@ on the right from 1100px wide; narrower screens stack the readout below the map.
 The old world strip is moved into that screen, with every existing action retained.
 It shows the selected world, sector/hex, subsector, allegiance, travel zone,
 population, all eight decoded UWP fields, bases and gas giants. Calculator trade
-codes and any campaign overrides stay clearly separated from published data.
+codes use the same effective UWP as the map label. A saved UWP override updates
+all eight decoded fields and the population exponent in this screen; the existing
+published PBG multiplier is retained. The original published UWP and override
+reason remain visible as reference. Other metadata and map symbols stay published.
+Invalid effective UWP displays an explicit warning and published fallback; unknown
+fields and missing population multipliers remain unknown.
 Planet information still opens the full system/remarks view and its existing refresh.
 Reading the screen makes no additional per-world API requests.
 

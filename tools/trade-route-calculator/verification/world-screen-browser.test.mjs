@@ -83,9 +83,9 @@ try{
  await page.goto(process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/');await page.getByText('Editing in this tab',{exact:true}).waitFor();await frame();
  assert.equal(await screen.locator('.screen-title strong').textContent(),current.name);
  assert.equal(await screen.locator('.screen-uwp tbody tr').count(),8);
- assert.equal(await screen.locator('.screen-section-heading .mono').textContent(),'C774622-5');
- assert.match(await screen.locator('.screen-override').textContent(),/B777777-A/);
- assert.match(await screen.locator('.world-facts').first().textContent(),/3,000,000/);
+ assert.equal(await screen.locator('.screen-section-heading .mono').textContent(),'B777777-A');
+ assert.match(await screen.locator('.screen-override').first().textContent(),/Published UWP: C774622-5/);
+ assert.match(await screen.locator('.world-facts').first().textContent(),/30,000,000/);
  assert.match(await screen.locator('.screen-system').textContent(),/Naval Base.*Scout Base/);
  assert.equal(await page.locator('.map-key li').count(),8);
  assert.equal(await page.locator('.world-info').count(),1,'Selected-world strip is moved, not duplicated');
@@ -152,5 +152,5 @@ try{
  assert.equal(await raw(),f.bytes,'Reading controls and viewport changes do not change saves or Undo');
  assert.deepEqual(errors,[]);
  await writeFile(artifacts+'/world-screen-report.json',JSON.stringify({pass:true,commit:process.env.TRAVELLER_COMMIT||null,viewports:[1440,2160,1280,1100,1099,768,620,390,320],readability:readabilityReports,resourceBars:resourceReports,labelGeometry:labelReports,apiZeroLookups:requests.filter(url=>new URL(url).searchParams.get('jump')==='0').length,errors},null,2));
- console.log('PASS: selected world screen, published eight-row UWP, override distinction, data absence, closest symbols, long names, keyboard browsing, 14px readout, aligned summary bars, desktop/mobile, unchanged campaign and Undo, no added per-world API requests.');
+ console.log('PASS: selected world screen, effective eight-row UWP, published reference, data absence, closest symbols, long names, keyboard browsing, 14px readout, aligned summary bars, desktop/mobile, unchanged campaign and Undo, no added per-world API requests.');
 }finally{await context.tracing.stop({path:artifacts+'/world-screen-trace.zip'});await browser.close();}
