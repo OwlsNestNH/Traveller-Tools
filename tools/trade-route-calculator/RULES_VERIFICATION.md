@@ -382,3 +382,37 @@ The first exact-head Chromium run on `24d165e` passed 43 global-search/state che
 Local evidence: all native tests, rule-data checks, shared tool integration and module syntax were run. Exact counts and final tested revision belong to the release record. Browser regressions cover insurance OFF and preserved policy lifecycle, bladder migration/settings/Undo and compact readout at 320/390/1100/1440 px, contact period boundaries/import/Undo, and Cargo Hold button parity. Local Chromium execution is unavailable because the cloud shell blocks required local sockets; the exact-head GitHub Actions browser matrix is required before publication and is not represented here as passed.
 
 Integrated on merged global-search main `a953ae5d40a1b6a7d6444c9ff20f6b687c56c945`, preserving the latest-intent and Escape-dismissal fixes. Both global-search and contact-search modules participate in the .30 cache-token check.
+
+## Stage 1 display and form-value extraction (2026-10-10; UI 2026.10.10.31)
+
+This behavior-preserving cleanup moves shared text escaping, explicit Credit
+display variants, and metadata-driven amount normalization into `display.mjs`
+and `form-values.mjs`. Feature markup and the existing HTML/text sink contracts
+remain unchanged. No pricing, campaign-write timing, trade-session ownership,
+saved schema, passenger, map or search behavior is redesigned.
+
+The release baseline is merged PR #31, commit
+`0c1413ae03e4bed79d6bc6693063f2a03820f91c`, tree
+`2dd2d5feee94271f38bdf259a38da437bc4adddf`, after the global-search release.
+It preserves the final controls correction that supplies full ship context to
+legacy refuel forecasts and its native/browser regressions.
+Fifteen focused characterization tests passed before extraction. The same
+display/value assertions now use ordinary module imports; additional direct
+tests cover blank/disabled inputs, repeat normalization, sequential partial
+failure and retry, Settings annotation ownership, exact 0.5/1.5-ton remainders,
+malformed text, nulls and Credit strings beyond safe floating-point precision.
+
+Local verification passed **619 native tests across 50 suites**, **227 rules/data
+checks**, shared tool integration, module syntax and whitespace checks. Release
+checks include both new modules, their dependency cache tokens and the complete
+static module graph under the GitHub Pages project subdirectory.
+
+The existing `modal-lifecycle` Chromium suite now loads the new helper assets
+through the running release URLs and checks inert HTML text, exact large Credit
+strings, Cr1/Cr100 native input validity, disabled/empty fields, fractional
+remainders and repeat normalization without changing campaign state. Existing
+deposit commit/cancel/Undo, fractional full/partial sales with reload/Undo,
+service, passenger, responsive and global-search browser gates remain required.
+No local Chromium launch was attempted because required sockets are blocked in
+this executor. Final exact-head Actions results and deployment verification are
+still release gates; this entry does not claim they have passed.

@@ -50,6 +50,8 @@ Implemented native modules require no build step:
 | js/map.mjs | Public API normalization, coordinates, fuel checks and bounded route search |
 | js/state.mjs | Validated campaign transitions, accounting and inverse-change undo |
 | js/persistence.mjs | localStorage, Web Locks, revisions, backups/import and recovery |
+| js/display.mjs | Explicit plain-text Credit formatting and HTML escaping |
+| js/form-values.mjs | Exact entry normalization and ordered rounding annotations |
 | js/app.mjs | Views, forms, previews, explicit actions and Rules & Notes |
 | rules/decisions.json | Bundled approved interpretation register |
 
@@ -196,3 +198,26 @@ Bank-ledger density changes are scoped to `.bank-ledger` and its inline entry wr
 `js/map-geometry.mjs` owns the map's logical dimensions. Rendering, world culling, grid extents, SVG/background bounds, overview projection/clipping, visible-area loading and page-wheel scaling derive from it. This preparation retains the baseline 520×320 viewBox, (260,158) projection origin, original half-dimension camera/load center, overscan, CSS sizes, zoom thresholds and browser-only preferences. A later tall-map change must adjust the real logical viewport and verify all layers/load bounds together; changing CSS alone is not a larger geographic view. Route-search bounds are separate and unchanged.
 
 See [GUI_PARITY.md](GUI_PARITY.md) for all existing controls' future homes and the still-unchecked acceptance gate. No GUI relocation or new feature is implemented by preparation.
+
+## Shared display and form-value helpers
+
+`display.mjs` separates raw `formatCreditsText` from `escapeHtml` and the
+application's existing null-aware `moneyHtml` compatibility wrapper. Services
+retain their distinct whole-part-only grouping through `formatDecimalCreditsText`.
+These helpers preserve exact string/BigInt digits, historical formatting and
+the callers' existing text-versus-HTML boundaries. They do not validate data,
+round prices, or convert Credit values through `Number`. Feature-specific field
+builders, facts lists, labels and attributes remain in their feature modules.
+
+`form-values.mjs` normalizes opted-in entries using the existing exact amounts
+and rounding modules. Its pure single-value helper retains an exactly matching
+legacy fractional remainder. The field adapter skips blank/disabled controls,
+preserves unchanged input spelling, and appends annotations to the supplied
+array in order. If a later field is invalid, earlier normalized fields and
+annotations remain available for correction and retry. The application still
+owns modal/Settings note rendering and the annotation lifetime.
+
+This extraction does not authorize transactions, change state validation or
+move save completion, modal/session ownership, trade quotes or map/search work.
+Campaign schema, storage, calculations, prepared jump rolls, Undo, passenger
+accounting and the future one-editor boundary are unchanged.
