@@ -4,8 +4,10 @@ const hex=c=>c&&c!=='?'?'0123456789ABCDEFGHJKLMNPQRSTUVWXYZ'.indexOf(c.toUpperCa
 const explain=(table,code)=>Object.hasOwn(table,code)?table[code]:'Unknown / not decoded';
 const shown=x=>x===undefined||x===null||x===''||x==='?'?unknown:String(x);
 export function worldSheetURL(world){const url=new URL('https://travellermap.com/world');url.search=new URLSearchParams({sector:world.sector,hex:world.hex,milieu:'M1105'});return url.href;}
-export function planetInformation(world){
- const r=world.raw||{},uwp=String(r.UWP||world.uwp||'????????-?'),pbg=String(r.PBG||'???');
+// Published data remains the default for the reference dialog. The MFD can
+// explicitly supply its validated effective UWP without changing source records.
+export function planetInformation(world,{uwp:effectiveUWP}={}){
+ const r=world.raw||{},uwp=String(effectiveUWP??(r.UWP||world.uwp||'????????-?')),pbg=String(r.PBG||'???');
  const fields=[['Starport',0,T.STARPORT_TABLE],['Size',1,T.SIZ_TABLE],['Atmosphere',2,T.ATM_TABLE],['Hydrographics',3,T.HYD_TABLE],['Population',4,T.POP_TABLE],['Government',5,T.GOV_TABLE],['Law level',6,T.LAW_TABLE],['Technology level',8,T.TECH_TABLE]];
  const decoded=fields.map(([name,i,t])=>[name,uwp[i]||'?',explain(t,uwp[i])]);
  const multiplier=hex(pbg[0]),exponent=uwp[4]==='X'?-1:hex(uwp[4]);let population=unknown;

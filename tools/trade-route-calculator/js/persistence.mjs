@@ -1,4 +1,4 @@
-import {initial,validate} from './state.mjs?v=service-completion-20261010-38';
+import {initial,validate} from './state.mjs?v=world-override-20261010-39';
 export const KEY='traveller-trade-route-calculator:v1';
 const LOCK=KEY+':writer';
 // Only the provider can distinguish a rejected write from failed publication.

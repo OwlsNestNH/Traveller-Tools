@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=service-completion-20261010-38';
+import {ruleInfo} from './rule-references.mjs?v=world-override-20261010-39';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={
