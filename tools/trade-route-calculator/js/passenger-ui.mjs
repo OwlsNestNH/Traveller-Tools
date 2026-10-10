@@ -1,8 +1,8 @@
 import * as A from './amounts.mjs';
-import {manualLuggage} from './accommodation.mjs?v=audited-defects-20261009-28';
-import * as P from './passengers.mjs?v=audited-defects-20261009-28';
-import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=audited-defects-20261009-28';
-import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=audited-defects-20261009-28';
+import {manualLuggage} from './accommodation.mjs?v=global-planet-search-20261010-29';
+import * as P from './passengers.mjs?v=global-planet-search-20261010-29';
+import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=global-planet-search-20261010-29';
+import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=global-planet-search-20261010-29';
 import {displayDate} from './calendar.mjs';
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=x=>'Cr '+String(x).replace(/\B(?=(\d{3})+(?!\d))/g,','),signed=x=>x>0?'+'+x:String(x);

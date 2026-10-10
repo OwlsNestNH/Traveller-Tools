@@ -1,7 +1,7 @@
-import {parseUWP} from './rules.mjs?v=audited-defects-20261009-28';
+import {parseUWP} from './rules.mjs?v=global-planet-search-20261010-29';
 const API='https://travellermap.com/api/';
 const MILIEU='M1105';
-async function get(path,params){const url=new URL(path,API);url.searchParams.set('milieu',MILIEU);Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,v));const response=await fetch(url,{headers:{Accept:'application/json'},signal:AbortSignal.timeout(20000)});if(!response.ok)throw Error('Traveller Map returned '+response.status);return response.json();}
+async function get(path,params,{signal}={}){const url=new URL(path,API);url.searchParams.set('milieu',MILIEU);Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,v));const response=await fetch(url,{headers:{Accept:'application/json'},signal:signal?AbortSignal.any([signal,AbortSignal.timeout(20000)]):AbortSignal.timeout(20000)});if(!response.ok)throw Error('Traveller Map returned '+response.status);return response.json();}
 // Traveller Map World.cs treats Unabsorbed (U) as Amber and Forbidden (F) as Red.
 // Normalize API data only; saved referee overrides and historical audits stay intact.
 export function normalize(w){if(!Number.isInteger(w.WorldX)||!Number.isInteger(w.WorldY)||!w.Sector||!/^\d{4}$/.test(w.Hex))throw Error('Traveller Map world is missing coordinates');return {id:w.WorldX+','+w.WorldY,name:w.Name||w.Hex,sector:w.Sector,hex:w.Hex,x:w.WorldX,y:w.WorldY,uwp:w.UWP,zone:['A','U'].includes(String(w.Zone||'').toUpperCase())?'Amber':['R','F'].includes(String(w.Zone||'').toUpperCase())?'Red':'Safe',gasGiants:w.PBG&&w.PBG[2]!=='?'?parseInt(w.PBG[2],16):null,raw:structuredClone(w)};}
@@ -62,4 +62,33 @@ export async function loadMapHex(x,y,anchor){
  const hx=Number(anchor.hex.slice(0,2))+x-anchor.x,hy=Number(anchor.hex.slice(2))+y-anchor.y;
  const hex=String(((hx-1)%32+32)%32+1).padStart(2,'0')+String(((hy-1)%40+40)%40+1).padStart(2,'0');
  return {id:x+','+y,x,y,hex,sector:hx>=1&&hx<=32&&hy>=1&&hy<=40?anchor.sector:'Empty space (global '+x+', '+y+')',name:'Empty hex '+hex,emptySpace:true,uwp:'X000000-0',zone:'Safe',gasGiants:0};
+}
+
+// Official SearchHandler supports types=worlds and caps results at 160, with no
+// paging. Search worlds carry sector/hex, not subsector names: join metadata.
+// https://github.com/inexorabletash/travellermap/blob/main/server/api/SearchHandler.cs
+export async function searchWorlds(query,{signal}={}){
+ query=String(query).trim();
+ if(!query)return {worlds:[],limited:false,missingNames:0};
+ const data=await get('search',{q:query,types:'worlds'},{signal});
+ if(!Array.isArray(data.Results?.Items))throw Error('Invalid planet-search response');
+ const unique=new Map();
+ for(const item of data.Results.Items){
+  const w=item.World;if(!w)continue;
+  if(typeof w.Name!=='string'||typeof w.Sector!=='string'||!w.Name.trim()||!w.Sector.trim()||!Number.isInteger(w.SectorX)||!Number.isInteger(w.SectorY)||!Number.isInteger(w.HexX)||!Number.isInteger(w.HexY))throw Error('Invalid planet-search location');
+  const hex=String(w.HexX).padStart(2,'0')+String(w.HexY).padStart(2,'0'),subsector=subsectorForHex(hex),sector=w.Sector.trim();
+  unique.set(w.SectorX+','+w.SectorY+'|'+hex,{name:w.Name,sector,hex,subsector,sectorX:w.SectorX,sectorY:w.SectorY});
+ }
+ const worlds=[...unique.values()],names=new Map(),key=w=>w.sectorX+','+w.sectorY,pending=[...new Map(worlds.map(w=>[key(w),w])).values()];
+ // Keep global searches polite even when a broad name spans many sectors.
+ async function worker(){while(pending.length){
+  signal?.throwIfAborted();const w=pending.shift(),id=key(w);
+  try{names.set(id,sectorSubsectors(await cached('metadata-coordinates:'+id,()=>get('metadata',{sx:w.sectorX,sy:w.sectorY}))));}catch{names.set(id,null);}
+ }}
+ await Promise.all(Array.from({length:Math.min(4,pending.length)},worker));signal?.throwIfAborted();
+ let missingNames=0;
+ for(const w of worlds){const name=names.get(key(w))?.find(s=>s.index===w.subsector)?.mapName;w.subsectorName=name||'Subsector '+w.subsector+' (name unavailable)';if(!name)missingNames++;}
+ const exact=w=>w.name.toLowerCase()===query.toLowerCase()?0:1;
+ worlds.sort((a,b)=>exact(a)-exact(b)||a.name.localeCompare(b.name)||a.sector.localeCompare(b.sector)||a.hex.localeCompare(b.hex));
+ return {worlds,limited:data.Results.Count>=160||data.Results.Items.length>=160,missingNames};
 }

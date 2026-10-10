@@ -357,3 +357,15 @@ main{padding-top:18px}
 /* Passenger contracts keep people distinct from cargo-ton columns. */
 .passenger-panel .panel-body{padding:12px}.passenger-panel .panel-head{flex-wrap:wrap;gap:8px}.passenger-offers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}.passenger-offer{overflow-wrap:anywhere;border:1px solid var(--line,#365064);border-radius:6px;padding:12px;min-width:0}.passenger-offer h3{margin-top:0}.passenger-offer .row{flex-wrap:wrap}.passenger-facts{display:grid;grid-template-columns:minmax(140px,1fr) minmax(0,2fr);gap:6px 16px}.passenger-facts dt,.passenger-facts dd{margin:0;overflow-wrap:anywhere}.passenger-facts dd{font-variant-numeric:tabular-nums}.passenger-summary{font-weight:700}.passenger-panel details{margin:10px 0}.passenger-panel table{min-width:760px}
 @media(max-width:900px){.passenger-offers{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.passenger-offers{grid-template-columns:1fr}.passenger-facts{grid-template-columns:minmax(0,1fr);gap:3px}.passenger-facts dd{margin-bottom:8px}}
+
+/* Global planet results wrap every location component, including long names. */
+.global-world-search{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px;min-width:0}
+.planet-search-controls{display:flex;align-items:end;gap:10px;flex-wrap:wrap}
+.planet-search-controls .field{flex:1 1 220px;margin:0;min-width:0}
+.planet-search-controls input{width:100%;min-width:0}
+.planet-search-controls>button{min-height:42px}
+.planet-search-results{list-style:none;padding:0;margin:0;max-height:300px;overflow:auto;scrollbar-gutter:stable}
+.planet-search-results li+li{margin-top:6px}
+.planet-search-results button{display:block;width:100%;min-height:44px;text-align:left;line-height:1.5;white-space:normal;overflow-wrap:anywhere}
+.planet-search-results button:focus-visible,.planet-search-controls :focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.global-world-search .error{color:var(--red)}

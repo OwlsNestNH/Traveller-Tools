@@ -1,10 +1,10 @@
-import {passengerShip} from './passengers.mjs?v=audited-defects-20261009-28';
+import {passengerShip} from './passengers.mjs?v=global-planet-search-20261010-29';
 import * as A from './amounts.mjs';
-import {bladderSpace,fuelPurchase} from './fuel.mjs?v=audited-defects-20261009-28';
-import {expenseQuote,fuelAvailability,fuelPricing,starport} from './expenses.mjs?v=audited-defects-20261009-28';
-import {refillQuote,supportStock,supportCargo,supportAmount,anchorSupport} from './life-support.mjs?v=audited-defects-20261009-28';
-import {used,validate,shipExpense,refillLifeSupport,uid} from './state.mjs?v=audited-defects-20261009-28';
-import {creditStep,up} from './rounding.mjs?v=audited-defects-20261009-28';
+import {bladderSpace,fuelPurchase} from './fuel.mjs?v=global-planet-search-20261010-29';
+import {expenseQuote,fuelAvailability,fuelPricing,starport} from './expenses.mjs?v=global-planet-search-20261010-29';
+import {refillQuote,supportStock,supportCargo,supportAmount,anchorSupport} from './life-support.mjs?v=global-planet-search-20261010-29';
+import {used,validate,shipExpense,refillLifeSupport,uid} from './state.mjs?v=global-planet-search-20261010-29';
+import {creditStep,up} from './rounding.mjs?v=global-planet-search-20261010-29';
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=x=>{const [whole,decimal]=String(x).split('.');return 'Cr '+whole.replace(/\B(?=(\d{3})+(?!\d))/g,',')+(decimal?'.'+decimal:'');},num=x=>x==null?'Unknown':String(Number(Number(x).toFixed(3)));
 const field=(name,label,value,type='number',extra='')=>`<label class="field">${label}<input name="${name}" type="${type}" value="${esc(value)}" ${extra}></label>`;

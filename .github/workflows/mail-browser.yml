@@ -75,7 +75,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [browser, modal-lifecycle, click-route, fuel-browser, empty-space, mail-browser, map-overview-browser, gui-parity, trade-buttons, settings-browser, insurance-browser, trade-complications-browser, world-screen-browser, jump-undo-browser, service-panels-browser, combined-cabins, day-controls, zero-fuel, resource-alert, mortgage-browser, expense-panels-browser, cargo-hold-browser, route-frame-browser, inline-fuel-browser, service-navigation-browser, passengers-browser, route-selection-browser, trade-audit-browser]
+        suite: [browser, modal-lifecycle, click-route, fuel-browser, empty-space, mail-browser, map-overview-browser, gui-parity, trade-buttons, settings-browser, insurance-browser, trade-complications-browser, world-screen-browser, jump-undo-browser, service-panels-browser, combined-cabins, day-controls, zero-fuel, resource-alert, mortgage-browser, expense-panels-browser, cargo-hold-browser, route-frame-browser, inline-fuel-browser, service-navigation-browser, passengers-browser, route-selection-browser, trade-audit-browser, global-search-browser]
         # Independent browser processes exercise the resize/repaint measurement
         # repeatedly. A failure fails its job; these are not automatic retries.
         include:
