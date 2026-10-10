@@ -61,8 +61,15 @@ async function focusedAfterPaint(page,label){
  assert.equal(await action(page,'map-expand').evaluate(el=>el===document.activeElement),true,label+': toggle keeps focus after geometry and map-data repaint');
 }
 async function visibleWorlds(page){
- return page.locator('.world-map').evaluate(svg=>{
+ // paintMap replaces the SVG on animation frames. Locator.evaluate first
+ // obtains an ElementHandle in a separate protocol call, so that handle can
+ // become detached before measurement and report zero visible worlds. Query
+ // and measure the current SVG in one browser task, as mapCameraSnapshot does.
+ return page.evaluate(()=>{
+  const svg=document.querySelector('.world-map');
+  if(!svg?.isConnected)throw Error('The current map SVG is unavailable');
   const b=svg.getBoundingClientRect();
+  if(!b.width||!b.height)throw Error('The current map SVG has no rendered bounds');
   return [...svg.querySelectorAll('[data-action="map-world"] > circle')].filter(circle=>{
    const p=new DOMPoint(circle.cx.baseVal.value,circle.cy.baseVal.value).matrixTransform(circle.getScreenCTM());
    return p.x>b.left+4&&p.x<b.right-4&&p.y>b.top+4&&p.y<b.bottom-4;
@@ -194,6 +201,8 @@ async function runWidth(browser,width,report){
   let normal=await primeCamera(page,f.cameraIds),preserved=normal;
   const initialWorlds=await visibleWorlds(page);await shot('normal');
   await click(page,'map-expand');await mode(page,true);const expanded=await camera(),expandedWorlds=await visibleWorlds(page);
+  // Record evidence before any assertion so failed runs retain their actual counts.
+  result.geometry={normal,expanded,normalWorldCount:initialWorlds.length,expandedWorldCount:expandedWorlds.length,normalWorldIds:initialWorlds,expandedWorldIds:expandedWorlds};
   sameCamera(expanded,preserved,'Expand zoomed and panned map');
   assert.ok(expanded.height>normal.height+100,'Expansion gives a taller viewport at every tested width');
   if(width>=1100)assert.ok(expanded.width>normal.width*1.4,'Desktop expansion increases viewport width substantially');
@@ -201,7 +210,6 @@ async function runWidth(browser,width,report){
   assert.ok(expanded.width*expanded.height>normal.width*normal.height*1.2,'Larger viewport reveals greater geographic area at constant scale');
   assert.ok(expandedWorlds.length>initialWorlds.length,'More real projected world centers are visible, not merely larger markers');
   assert.ok(initialWorlds.every(id=>expandedWorlds.includes(id)),'Expanded bounds retain all previously visible worlds');
-  result.geometry={normal,expanded,normalWorldCount:initialWorlds.length,expandedWorldCount:expandedWorlds.length};
   await fullNavigation(page,true);assert.equal(await action(page,'jump').isEnabled(),true,'Jump remains enabled in expanded mode');
   for(const selector of ['[data-action="map-expand"]','#route-menu > summary','[data-action="map-zoom-in"]','.route-jump [data-action="jump"]'])await reachable(page,selector);
   await unchanged('Expanded controls');await shot('expanded');
