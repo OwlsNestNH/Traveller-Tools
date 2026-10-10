@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=dashboard-20261010-41';
+import {escapeHtml as esc} from './display.mjs?v=jump-completion-20261010-42';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.
