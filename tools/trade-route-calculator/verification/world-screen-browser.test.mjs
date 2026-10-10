@@ -33,11 +33,14 @@ const frame=()=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=
 const labelReports=[],readabilityReports=[],resourceReports=[];
 async function labelFitsCell(id){
  // Full-page screenshots can capture this map while it is below the live
- // viewport. Bring the measured content into view and settle its paint first.
- await page.locator('.world-map').scrollIntoViewIfNeeded();await frame();
+ // viewport. Scroll its stable wrapper: map paints replace the SVG itself.
+ await page.locator('.map-viewport').scrollIntoViewIfNeeded();await frame();
  await page.waitForFunction(()=>{const svg=document.querySelector('.world-map');if(!svg)return false;const b=svg.getBoundingClientRect(),v=svg.viewBox.baseVal;return b.width>0&&b.height>0&&Math.abs(v.width-b.width)<.1&&Math.abs(v.height-b.height)<.1;});
- const label=page.locator('svg [data-action="map-world"][data-arg="'+id+'"] .world-name');
- const q=await label.evaluate(text=>{
+ // Resolve and measure the current label in one synchronous browser task, so
+ // an intervening repaint cannot detach a previously resolved element handle.
+ const q=await page.evaluate(id=>{
+  const text=document.querySelector('svg [data-action="map-world"][data-arg="'+id+'"] .world-name');
+  if(!text)throw Error('Expected world label is missing: '+id);
   const svg=text.ownerSVGElement,group=text.parentElement,circle=group.querySelector('circle'),uwp=group.querySelector('.world-uwp');
   const cx=Number(circle.getAttribute('cx')),cy=Number(circle.getAttribute('cy'));
   const pointsOf=p=>Array.from({length:p.points.numberOfItems},(_,i)=>{const q=p.points.getItem(i);return {x:q.x,y:q.y};});
@@ -63,7 +66,7 @@ async function labelFitsCell(id){
   const left=Math.max(...bands.map(b=>b.left)),right=Math.min(...bands.map(b=>b.right));
   const scaleX=Math.hypot(m.a,m.b),scaleY=Math.hypot(m.c,m.d),font=parseFloat(getComputedStyle(text).fontSize),uwpFont=parseFloat(getComputedStyle(uwp).fontSize);
   return {viewport:innerWidth,text:text.textContent,title:group.querySelector('title').textContent,logical:{x:b.x,y:b.y,width:b.width,height:b.height,top,bottom,cellTop:Math.min(...points.map(p=>p.y)),cellBottom:Math.max(...points.map(p=>p.y)),left:b.x-stroke/2,right:b.x+b.width+stroke/2,cellLeft:left,cellRight:right,cellBandWidth:right-left,font,uwpFont},screen:{left:screen.left-stroke/2*scaleX,right:screen.right+stroke/2*scaleX,width:screen.width,cellLeft:left*m.a+m.e,cellRight:right*m.a+m.e,font:font*scaleY,uwpFont:uwpFont*scaleY},matrix:{a:m.a,b:m.b,c:m.c,d:m.d,scaleX,scaleY}};
- });
+ },id);
  const diagnostic=JSON.stringify(q);
  assert.match(q.text,/…$/,'Long names retain visible ellipsis');assert.match(q.title,/ExtraordinarilyLong/,'The title retains the full world name');
  assert.equal(q.logical.font,14,'Closest-zoom world names retain 14-unit type');assert.equal(q.logical.uwpFont,10,'UWP retains 10-unit type');

@@ -76,6 +76,15 @@ jobs:
       fail-fast: false
       matrix:
         suite: [browser, modal-lifecycle, click-route, fuel-browser, empty-space, mail-browser, map-overview-browser, gui-parity, trade-buttons, settings-browser, insurance-browser, trade-complications-browser, world-screen-browser, jump-undo-browser, service-panels-browser, combined-cabins, day-controls, zero-fuel, resource-alert, mortgage-browser, expense-panels-browser, cargo-hold-browser, route-frame-browser, inline-fuel-browser, service-navigation-browser, passengers-browser, route-selection-browser, trade-audit-browser]
+        # Independent browser processes exercise the resize/repaint measurement
+        # repeatedly. A failure fails its job; these are not automatic retries.
+        include:
+          - suite: world-screen-repeat-2
+            script: world-screen-browser
+          - suite: world-screen-repeat-3
+            script: world-screen-browser
+          - suite: world-screen-repeat-4
+            script: world-screen-browser
     steps:
       - name: Check out exact PR head
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -101,6 +110,7 @@ jobs:
       - name: Test real browser flows
         env:
           SUITE: ${{ matrix.suite }}
+          SCRIPT: ${{ matrix.script || matrix.suite }}
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 > verification-artifacts/server.log 2>&1 &
           server_pid=$!
@@ -110,7 +120,7 @@ jobs:
             sleep 1
           done
           curl --fail --silent "$TRAVELLER_TEST_URL" > /dev/null
-          node "verification/$SUITE.test.mjs" "$RUNNER_TEMP/trade-playwright/node_modules/playwright" | tee "verification-artifacts/$SUITE.txt"
+          node "verification/$SCRIPT.test.mjs" "$RUNNER_TEMP/trade-playwright/node_modules/playwright" | tee "verification-artifacts/$SUITE.txt"
       - name: Upload browser evidence
         if: ${{ always() && matrix.suite != 'route-frame-browser' && matrix.suite != 'inline-fuel-browser' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
