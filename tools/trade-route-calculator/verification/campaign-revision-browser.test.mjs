@@ -10,6 +10,7 @@ import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
 import * as S from '../js/state.mjs';
+import {createDashboardBaseline} from '../js/dashboard-baseline.mjs';
 import {configureFuel} from '../js/fuel.mjs';
 
 const base=process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/';
@@ -27,6 +28,8 @@ function fixture(){
  state.lots=[{id:'revision-cargo',commodity:'11',description:'Synthetic saved cargo',quantity:'5',basis:'1000',goodsValue:'1000'}];
  state.contracts=[{id:'revision-mail',kind:'mail',status:'accepted',firstDeparture:null,origin:origin.id,destination:destination.id,quantity:'5',payment:'1000',dueHours:null}];
  state.policies=[{id:'revision-policy',lotId:'revision-cargo',claims:[],status:'active',initialQuantity:'5',remainingQuantity:'5',insuredValue:'1000',remainingValue:'1000',coverage:70,route:state.route.slice(),routeProgress:0,destination:destination.id}];
+ // Keep storage-fault counters scoped to the revision operation under test.
+ state.dashboardBaseline=createDashboardBaseline(state);
  return S.validate(state);
 }
 const raw=page=>page.evaluate(key=>localStorage.getItem(key),KEY);

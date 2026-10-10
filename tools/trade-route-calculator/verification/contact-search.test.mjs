@@ -1,3 +1,4 @@
+import {createDashboardBaseline,sameDashboardBaseline} from '../js/dashboard-baseline.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -81,7 +82,7 @@ test('rejection remains independent and cannot be bypassed by the commit helper'
 test('production Store read/save/replace round-trip grouped periods without a load-time migration write',async()=>{
  const source=(await readFile(new URL('../js/persistence.mjs',import.meta.url),'utf8')).replace(/^import .*;\n/gm,'').replace(/export /g,'');
  const key='traveller-trade-route-calculator:v1',saved=commit(jumpClock(campaign(),12)),memory=new Map([[key,JSON.stringify(saved)]]);let writes=0;
- const sandbox={initial:S.initial,validate:S.validate,crypto,structuredClone,window:{addEventListener(){}},localStorage:{getItem:k=>memory.get(k)??null,setItem(k,v){writes++;memory.set(k,v);}},BroadcastChannel:undefined};
+ const sandbox={createDashboardBaseline,sameDashboardBaseline,initial:S.initial,validate:S.validate,crypto,structuredClone,window:{addEventListener(){}},localStorage:{getItem:k=>memory.get(k)??null,setItem(k,v){writes++;memory.set(k,v);}},BroadcastChannel:undefined};
  vm.runInNewContext(source+';globalThis.store=new Store(()=>{},()=>{});',sandbox);const store=sandbox.store;store.editable=true;
  assert.deepEqual(status(store.read()),status(saved));assert.equal(writes,0);
  const next=commit(store.read(),{kind:'buyer'});store.save(next,saved.revision);assert.equal(writes,1);assert.equal(status(store.read()).previous,2);

@@ -1,3 +1,6 @@
+import {dashboardData} from '../js/dashboard-data.mjs';
+import {createDashboardBaseline} from '../js/dashboard-baseline.mjs';
+import {formatCreditsText} from '../js/display.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,writeFileSync} from 'node:fs';
@@ -39,4 +42,10 @@ test('empty campaign and markup export without changing values or rounding histo
  const empty=campaignReport(S.initial(),core,options);assert.match(empty,/No route planned/);assert.doesNotMatch(empty,/\[T\]|\[I\]|\[R\]/);
  const s=fixture();s.lots[0].audit.price.unitPrice='12500';s.lots[0].quantity='0.5';
  const report=campaignReport(s,core,options);assert.match(report,/Purchase markup:\s+25%/);assert.match(report,/Quantity held:\s+0.5 tons/);
+});
+
+test('valid generated large negative sale profit remains exact in report and Dashboard',()=>{
+ const s=fixture(),basis='9'+'0'.repeat(49);s.bank='0';s.ledger[0].amount='0';s.lots[0].quantity='1';s.lots[0].basis=basis;s.lots[0].goodsValue=basis;s.dashboardBaseline=createDashboardBaseline(s);
+ const sale=R.salePreview(s.lots,[{lotId:'lot1',quantity:'1',unitPrice:'1'}],{percent:100,feePercent:0,taxEnabled:false,government:'4'},core,mp);S.sell(s,sale,s.actual,'buyer');S.validate(s);
+ const profit=String(1n-BigInt(basis));assert.equal(profit.length,51);assert.equal(dashboardData(s).operatingResult,profit);assert.equal(dashboardData(s).complete,true);assert.ok(campaignReport(s,core,options).includes(formatCreditsText(profit)));assert.doesNotMatch(campaignReport(s,core,options),/Incomplete historical sale records/);
 });

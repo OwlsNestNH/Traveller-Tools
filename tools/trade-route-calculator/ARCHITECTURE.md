@@ -287,3 +287,11 @@ the event list. Legacy target-world ambiguity is displayed explicitly. Protected
 History Undo is clickable by an editor to obtain a warning, while state-level
 jump/mulligan enforcement remains unchanged. The dedicated Jump Undo control
 retains its existing unavailable state.
+
+### Read-only Dashboard and fixed baseline (.41)
+
+`dashboard-baseline.mjs` validates an optional schema-1 `dashboardBaseline` with version, origin, bank, dateLabel, hours and excludedLedgerIds. New setup captures its opening entry. A legacy initialized campaign is captured synchronously while acquiring the existing writer lock, before editing/publication; only that metadata is attached to the original parsed JSON. This same-revision initialization preserves legacy action-sequence proofs and jump mulligans. It is outside the corrupt-save catch: an unsuccessful metadata write fails closed without labelling valid saved data corrupt.
+
+Normal saves reject changes/removal of a durable baseline even at the same action revision. Explicit campaign replacement uses the incoming boundary or seeds its current state; reset clears it. Fresh setup after Undo setup may establish a new opening boundary. Transition inverse snapshots exclude the metadata, and Undo retains it. Baseline shape validation is intrinsic: its IDs may have been undone, its hours may exceed a corrected clock, and its bank may be negative.
+
+`dashboard-data.mjs` selects surviving ledger IDs outside that fixed exclusion set. The residual `bank - baseline.bank - sum(selected amounts)` is a visible earlier-history/balance adjustment, never operating income. Ledger order supplies transaction and jump-visit order. `financial-summary.mjs` is the common read-only operating-result calculation for the Dashboard and TXT report. `dashboard-view.mjs` plus `dashboard.css` render dependency-free local SVG with accessible exact-value tables. Reads, navigation, rendering, chart sampling and window sizes never mutate a campaign.

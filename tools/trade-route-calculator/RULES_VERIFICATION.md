@@ -510,3 +510,7 @@ checks, the shared tool-visit check, JavaScript syntax and whitespace checks
 passed. Independent source review reported no remaining blocker after the
 source/action linkage correction. Browser and visual gates remain pending;
 this record does not claim deployment or live runtime verification.
+
+## Dashboard .41 verification scope
+
+Dashboard adds presentation and a saved reporting boundary, not a new Traveller rule or accounting transaction. The common recorded-operating-result helper retains the TXT report's existing formula and exclusions. Local verification covers exact cash reconciliation, opening/current boundaries, category totals beyond individual input width, visit attribution, missing profit audits, Undo, writer ownership, failure/publication retry and unchanged economic/history fixtures. The source/data check remains 227 checks. Real Chromium evidence for the exact release candidate is produced by the `dashboard-browser` matrix job; local cloud Chromium launch was blocked by its socket environment, so source/native results alone do not claim browser verification. Merge and deployment remain gated on actual browser results and screenshot review.

@@ -1,12 +1,13 @@
-import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=world-history-20261010-40';
-import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=world-history-20261010-40';
-import {bladderSpace} from './fuel.mjs?v=world-history-20261010-40';
+import {recordedOperatingResult} from './financial-summary.mjs?v=dashboard-20261010-41';
+import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=dashboard-20261010-41';
+import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=dashboard-20261010-41';
+import {bladderSpace} from './fuel.mjs?v=dashboard-20261010-41';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
-import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=world-history-20261010-40';
-import {distance} from './map.mjs?v=world-history-20261010-40';
+import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=dashboard-20261010-41';
+import {distance} from './map.mjs?v=dashboard-20261010-41';
 
-export const REPORT_VERSION='2026.10.10.40';
+export const REPORT_VERSION='2026.10.10.41';
 const clean=v=>String(v??'Not recorded').replace(/[\r\n\t\x00-\x1f]+/g,' ').trim();
 const number=v=>String(v).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const cr=v=>v==null?'Not recorded':'Cr '+number(v);
@@ -24,9 +25,9 @@ export function campaignReport(s,core,{exportedAt=new Date()}={}){
  const goods=id=>core.commodities.find(g=>g.id===id);
  const date=h=>displayDate(s.dateLabel,h??0);
  const sales=s.ledger.filter(e=>e.type==='Sale'),expenses=s.ledger.filter(e=>e.type.startsWith('Ship expense')||e.type==='Manual expense');
- const complete=sales.every(e=>e.audit?.adjusted!=null);
- const retained=total(sales.map(e=>e.audit?.adjusted)),operating=-total(expenses.map(e=>e.amount));
- const income=total(s.ledger.filter(e=>['Freight delivery','Mail delivery'].includes(e.type)).map(e=>e.amount)),passengerIncome=total(s.ledger.filter(e=>e.type==='Passenger delivery').map(e=>e.amount));
+ const financial=recordedOperatingResult(s.ledger),complete=financial.complete;
+ const retained=BigInt(financial.tradeProfit),operating=BigInt(financial.expenses);
+ const income=BigInt(financial.freightMailIncome),passengerIncome=BigInt(financial.passengerIncome);
  out.push('TRAVELLER SHIP OPERATIONS - CAMPAIGN REPORT');
  line('Campaign',s.name);line('Ship',s.ship.name);line('Campaign date',date(s.hours));line('Current system',world(s.actual));
  line('Exported',exportedAt.toISOString());line('Calculator version',REPORT_VERSION);

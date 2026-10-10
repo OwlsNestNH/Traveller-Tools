@@ -1,3 +1,4 @@
+import {createDashboardBaseline,sameDashboardBaseline} from '../js/dashboard-baseline.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
@@ -49,7 +50,7 @@ function campaign(){const s=S.initial();s.settings.insurance=true;s.initialized=
 function harness(saved=campaign()){
  const dom=domDouble(),calls={saves:0,downloads:[]},memory=new Map([['traveller-trade-route-calculator:v1',JSON.stringify(saved)]]);let api,store;
  const localStorage={getItem:k=>memory.get(k)??null,setItem(k,v){memory.set(k,v);calls.saves++;},removeItem:k=>memory.delete(k)};
- const sandbox={...bindings,document:dom.document,window:{addEventListener(){}},crypto:webcrypto,structuredClone,console,FormData:dom.FormData,setTimeout:()=>1,clearTimeout(){},requestAnimationFrame:()=>1,cancelAnimationFrame(){},localStorage,Blob,URL:{createObjectURL(blob){calls.downloads.push(blob);return 'blob:test';},revokeObjectURL(){}},BroadcastChannel:undefined};
+ const sandbox={createDashboardBaseline,sameDashboardBaseline,...bindings,document:dom.document,window:{addEventListener(){}},crypto:webcrypto,structuredClone,console,FormData:dom.FormData,setTimeout:()=>1,clearTimeout(){},requestAnimationFrame:()=>1,cancelAnimationFrame(){},localStorage,Blob,URL:{createObjectURL(blob){calls.downloads.push(blob);return 'blob:test';},revokeObjectURL(){}},BroadcastChannel:undefined};
  vm.runInContext('const initial=S.initial,validate=S.validate;\n'+persistence+'\n'+executable+`\nglobalThis.api={init(s,c,m){core=c;mp=m;known={...s.worlds};view=s.actual;tab='Cargo';store=new Store(receiveCampaign,()=>{});store.editable=true;state=store.read();render();},get state(){return state;},get store(){return store;},get drafts(){return contractDrafts;},setState(s){receiveCampaign(s);},setView(id){view=id;},policyPanel,availabilityAudit,ledgerAudit,accountsPanel,closedPolicyHistory,cargoPanel,contractsPanel,historyPanel,claimForm,amendPolicy,insureHeldCargo,policyAudit,settings,jump,closeModal,modal,syncModalSubmit,render,backupReplace,actions};`,vm.createContext(sandbox),{filename:'app.mjs + production persistence (VM; boot omitted)'});
  api=sandbox.api;api.init(structuredClone(saved),core,mp);store=api.store;
  const fill=values=>{for(const[k,v]of Object.entries(values)){const n=dom.fields().get(k);assert.ok(n,`Expected form field ${k}`);if(n.attributes.type==='checkbox')n.checked=Boolean(v);else n.value=String(v);}};

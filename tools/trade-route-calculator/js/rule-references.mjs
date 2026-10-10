@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=world-history-20261010-40';
+import {escapeHtml as esc} from './display.mjs?v=dashboard-20261010-41';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.

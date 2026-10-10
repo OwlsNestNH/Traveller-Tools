@@ -12,7 +12,7 @@ const base=process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/';
 const artifacts=fileURLToPath(new URL('../verification-artifacts/',import.meta.url));
 await mkdir(artifacts,{recursive:true});
 const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BROWSER_CHANNEL?{channel:process.env.TRAVELLER_BROWSER_CHANNEL}:{})});
-const tabs=['Overview','Trade','Cargo','Contracts','Accounts','History','Settings'];
+const tabs=['Overview','Trade','Cargo','Contracts','Accounts','Dashboard','History','Settings'];
 // 640×400 additionally checks the CSS space available to a 1280×800 window at
 // 200% zoom. This is a reduced-viewport equivalent, not genuine browser zoom.
 const sizes=[{width:1440,height:1100},{width:2160,height:1200},{width:3200,height:1600},{width:1280,height:800},{width:768,height:1024},{width:390,height:844},{width:320,height:740},{width:844,height:390},{width:640,height:400}];

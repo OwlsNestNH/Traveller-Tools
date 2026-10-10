@@ -531,3 +531,15 @@ that jump. Individual eligible world-field corrections remain available without
 rolling back travel or transactions. Run the native
 `verification/world-change-history.test.mjs` and the independent
 `verification/world-change-history-browser.test.mjs` for focused verification.
+
+## Financial Dashboard
+
+**Dashboard** is a separate, read-only tab with cash balance, recorded operating result by jump/visit, cash expenses by category, and cash income by category. Charts use local SVG; exact Credits and accessible tables remain available without a chart dependency. New campaigns start at their opening date and balance. An existing campaign starts once at its current date/balance when the editing tab opens the upgraded app. Earlier activity is excluded; its old history is not reconstructed. The saved boundary travels with JSON backups/imports and never resets when the Dashboard is reopened.
+
+Each committed jump starts a destination visit; later transactions belong to that visit until the next jump. The starting visit precedes the first tracked jump and the last visit is ongoing. Transactions follow saved ledger order, including same-hour entries and clock corrections. Cash graphs group very long series while retaining every exact row; the operating chart shows the latest 24 visits with every visit in its table.
+
+Operating result reuses the TXT report: saved realized sale profit plus freight, mail and passenger receipts, less recorded ship/manual operating expenses. Unsold cargo, capital deposits, bank/rounding corrections, insurance claims and cargo writeoffs are excluded. Sale profit already incorporates cost basis, fees, taxes and retained-profit adjustments; those charges are not deducted again. Category charts are cash-flow breakdowns, so cargo purchases/proceeds appear there even though they are not the same as profit. Opening funds, deposits and bank/rounding corrections appear separately from category totals. Missing sale audits make the affected operating result unavailable.
+
+Undo uses the surviving ledger. Reversing activity from before the fixed starting point produces an explicit **Earlier-history adjustment**, reconciling cash without changing the original baseline or calling the adjustment profit. Baseline initialization does not advance the campaign revision, add an Undo action or consume a jump mulligan. Read-only tabs never initialize it. Failed storage writes leave the original campaign intact and editing unavailable until a successful retry. Browser-local storage limits still apply; keep JSON backups.
+
+Verification: `node --test verification/dashboard-data.test.mjs verification/dashboard-view.test.mjs verification/persistence.test.mjs` covers pure derivation, exact amounts, escaped/accessible markup, baseline ownership and persistence. `verification/dashboard-browser.test.mjs` covers real Chromium at 1440/390/320 pixels, actual setup/import, charts/tables, first-writer initialization, reload/Undo, takeover and failed storage. It is included in the read-only exact-head PR browser matrix.

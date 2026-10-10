@@ -3,6 +3,7 @@ import {createRequire} from 'node:module';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import * as S from '../js/state.mjs';
+import {createDashboardBaseline} from '../js/dashboard-baseline.mjs';
 import {recordWorldOverride} from '../js/world-change-history.mjs';
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const core=JSON.parse(await readFile(new URL('../rules/core-2022.json',import.meta.url)));
@@ -19,6 +20,7 @@ function fixture(){
  state=S.transition(prepared.state,'Jump: History Origin → History Destination',x=>S.commitJump(x,{attemptId:prepared.attempt.id,elapsed:160}));
  state=S.transition(state,'World override',x=>recordWorldOverride(x,'1,0',{uwp:'B788899-D',zone:'Amber',fuelOverride:true,accessibleWater:true,reason:'Later unrelated world fields'},core));
  state=S.transition(state,'Manual deposit',x=>S.deposit(x,10,'Later transaction'));
+ state.dashboardBaseline=createDashboardBaseline(state);
  return {state,sourceId:source.id};
 }
 const read=page=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)),key);
