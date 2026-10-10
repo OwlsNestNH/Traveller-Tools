@@ -1,13 +1,14 @@
-import {replaceReferenceContent} from './rule-popover.mjs?v=deposit-completion-20261010-37';
-import {ruleInfo} from './rule-references.mjs?v=deposit-completion-20261010-37';
-import {escapeHtml,formatDecimalCreditsText} from './display.mjs?v=deposit-completion-20261010-37';
-import {passengerShip} from './passengers.mjs?v=deposit-completion-20261010-37';
+import {replaceReferenceContent} from './rule-popover.mjs?v=service-completion-20261010-38';
+import {ruleInfo} from './rule-references.mjs?v=service-completion-20261010-38';
+import {escapeHtml,formatDecimalCreditsText} from './display.mjs?v=service-completion-20261010-38';
+import {passengerShip} from './passengers.mjs?v=service-completion-20261010-38';
 import * as A from './amounts.mjs';
-import {bladderSpace,fuelPurchase} from './fuel.mjs?v=deposit-completion-20261010-37';
-import {expenseQuote,fuelAvailability,fuelPricing,starport} from './expenses.mjs?v=deposit-completion-20261010-37';
-import {refillQuote,supportStock,supportCargo,supportAmount,anchorSupport} from './life-support.mjs?v=deposit-completion-20261010-37';
-import {used,validate,shipExpense,refillLifeSupport,uid} from './state.mjs?v=deposit-completion-20261010-37';
-import {creditStep,up} from './rounding.mjs?v=deposit-completion-20261010-37';
+import {bladderSpace,fuelPurchase} from './fuel.mjs?v=service-completion-20261010-38';
+import {expenseQuote,fuelAvailability,fuelPricing,starport} from './expenses.mjs?v=service-completion-20261010-38';
+import {refillQuote,supportStock,supportCargo,supportAmount,anchorSupport} from './life-support.mjs?v=service-completion-20261010-38';
+import {used,validate,shipExpense,refillLifeSupport,uid} from './state.mjs?v=service-completion-20261010-38';
+import {creditStep,up} from './rounding.mjs?v=service-completion-20261010-38';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=service-completion-20261010-38';
 const esc=escapeHtml;
 const money=formatDecimalCreditsText,num=x=>x==null?'Unknown':String(Number(Number(x).toFixed(3)));
 const field=(name,label,value,type='number',extra='')=>`<label class="field">${label}<input name="${name}" type="${type}" value="${esc(value)}" ${extra}></label>`;
@@ -21,13 +22,14 @@ export function fuelCorrection(s,value,reason=''){
  const detail={before,after,removed:before-after,reason:String(reason).trim(),bankChange:'0',world:s.actual};
  s.ship.fuel.aboardTons=after;s.events.push({id:uid(),label:'Fuel aboard correction audit',hours:s.hours,world:s.actual,fuelCorrection:detail});return detail;
 }
-export function createServicePanels({document,getState,isEditable,commit,render,showOverview,message,nextJumpFuel}){
- let session=null,generation=0;
+export function createServicePanels({document,getState,isEditable,commit,render,showOverview,message,nextJumpFuel,onTerminalFailure=()=>{}}){
+ let session=null,generation=0,reloadMessage='';
  const quoteContent=new WeakMap();
  const active=()=>!!session,token=()=>session?.token??'';
  const button=(text,action,arg='',primary=false)=>`<button type="button" data-action="${action}" data-arg="${esc(arg)}" data-service-token="${session.token}" class="${primary?'primary':''}">${esc(text)}</button>`;
  function open(kind){
   if(session?.busy)throw Error('Wait for the current service to finish saving.');
+  if(reloadMessage)throw Error(reloadMessage);
   if(!['fuel','support'].includes(kind))throw Error('Unknown ship service.');
   const base=structuredClone(getState()),w=base.worlds[base.actual];
   if(!isEditable())throw Error('This tab is read-only. Take over editing first.');
@@ -39,7 +41,8 @@ export function createServicePanels({document,getState,isEditable,commit,render,
   showOverview();render();if(document.defaultView?.matchMedia('(max-width:1099px)').matches)document.getElementById('service-panel')?.scrollIntoView({block:'start',behavior:'instant'});
  }
  function stale(){return !session||session.invalidated||!isEditable()||session.revision!==getState().revision||session.base.actual!==getState().actual;}
- function status(){if(!session)return '';return stale()?'Campaign or editing ownership changed. Cancel this draft and reopen the service to use current values.':'';}
+ function status(){if(!session)return '';if(session.terminal)return reloadMessage;if(session.busy)return 'Saving this service. Wait for confirmation before continuing.';return stale()?'Campaign or editing ownership changed. Cancel this draft and reopen the service to use current values.':session.error||'';}
+ function invalidate(){if(session)session.invalidated=true;}
  function quote(preview=false){
   const {base,draft:d,world:w,kind,correction}=session;
   if(kind==='support'){const q=refillQuote(base,{extraDays:d.extraDays,comfortCost:d.comfortCredits,comfortNote:d.comfortNote});if(A.credit(q.amount)>A.credit(base.bank))throw Error('Insufficient funds for this refill.');if(A.cmp(A.add(A.sub(used(base),supportCargo(base.ship)),supportAmount(q.afterCargoExact)),base.ship.capacity)>0)throw Error('Life support overflow would exceed available cargo space.');if(!preview&&A.cmp(supportAmount(q.purchasedStockUnits),0)===0&&A.credit(q.comfortAmount)===0n)throw Error('Stock already covers this target. Adjust extra days or comfort provisions if needed.');return q;}
@@ -90,10 +93,16 @@ export function createServicePanels({document,getState,isEditable,commit,render,
  function supportEditor(){const {draft:d,base}=session,s=supportStock(passengerShip(base));return `<div class="service-current"><span>Current supplies</span><strong>${num(s.remainingDays)} days</strong><small>${num(s.remainingUnits)} LSS aboard</small></div><p class="help">Standard refill target: ${num(s.targetDays)} days. Stock already aboard is credited before any purchase.</p>${field('extraDays','Extra days beyond standard refill',d.extraDays,'number','min="0" step="1" required')}<p class="help">1-day steps, or type an exact whole number.</p><details class="service-comfort" ${Number(d.comfortCredits)?'open':''}><summary>Extra provisions · comfort spending</summary>${field('comfortCredits','Comfort provisions · Cr',d.comfortCredits,'number','min="0" step="1000" required')}${field('comfortNote','Comfort provisions note (required when spending)',d.comfortNote,'text')}<p class="help">Cost only. No additional days, LSS or capacity.</p></details><p class="help">Confirm supplies are available at ${esc(session.world.name)}.</p>`;}
  function panel(){
   if(!session)return '';const f=forecast(),s=session.kind==='support'?supportStock(passengerShip(session.base)):null,inline=session.kind==='fuel'&&!session.correction,title=session.kind==='fuel'?(session.correction?'Adjust fuel aboard':'Refuel'):'Life support',editing=inline||session.mode==='adjust';
-  return `<aside id="service-panel" class="panel world-screen service-panel ${inline?'fuel-inline':''}" aria-label="Ship service"><div class="screen-topline"><span>● Ship service</span><span>${inline?'Refuelling':editing?'Edit details':'Summary'}</span></div>${button('← Back to world data','service-back')}<h2 aria-label="${title}${editing?'':' · Summary'}">${title}${editing?'':' · Summary'}${session.kind==='support'?' '+ruleInfo('support-stock'):''}</h2><h3>${esc(session.base.ship.name)} · at ${esc(session.world.name)}</h3><p class="help">Actual ship location · ${session.kind==='fuel'?'Starport '+esc(starport(session.world)):num(session.base.ship.fuel?.displacementTons)+' t ship · '+s.awakePeople+' awake people · '+s.occupiedLowBerths+' occupied low berths'}</p><p class="help service-session-note">Jump and campaign changes are paused while this draft is open. The map remains available.</p><p id="service-status" class="notice" role="alert" ${status()?'':'hidden'}>${esc(status())}</p>${editing?'<form id="service-form" data-service-token="'+session.token+'">'+(session.kind==='fuel'?fuelEditor():supportEditor())+'</form>':''}<div id="service-quote" aria-live="polite">${f.html}</div><div class="service-actions">${inline?button('Cancel','service-cancel')+button('Confirm refuel','service-confirm','',true):editing?button('Cancel','service-cancel')+button('Review changes','service-review','',true):button('Adjust','service-adjust')+button(session.correction?'Confirm fuel correction':'Confirm refill','service-confirm','',true)}</div><p class="help">${editing&&!inline?'Review and confirm before supplies or Credits change.':'Only final confirmation changes supplies or Credits. Cancel discards this draft.'}</p></aside>`;
+  return `<aside id="service-panel" class="panel world-screen service-panel ${inline?'fuel-inline':''}" aria-label="Ship service" aria-busy="${session.busy}"><div class="screen-topline"><span>● Ship service</span><span>${inline?'Refuelling':editing?'Edit details':'Summary'}</span></div>${button('← Back to world data','service-back')}<h2 aria-label="${title}${editing?'':' · Summary'}">${title}${editing?'':' · Summary'}${session.kind==='support'?' '+ruleInfo('support-stock'):''}</h2><h3>${esc(session.base.ship.name)} · at ${esc(session.world.name)}</h3><p class="help">Actual ship location · ${session.kind==='fuel'?'Starport '+esc(starport(session.world)):num(session.base.ship.fuel?.displacementTons)+' t ship · '+s.awakePeople+' awake people · '+s.occupiedLowBerths+' occupied low berths'}</p><p class="help service-session-note">Jump and campaign changes are paused while this draft is open. The map remains available.</p><p id="service-status" class="notice" role="alert" ${status()?'':'hidden'}>${esc(status())}</p>${editing?'<form id="service-form" data-service-token="'+session.token+'">'+(session.kind==='fuel'?fuelEditor():supportEditor())+'</form>':''}<div id="service-quote" aria-live="polite">${f.html}</div><div class="service-actions">${inline?button('Cancel','service-cancel')+button('Confirm refuel','service-confirm','',true):editing?button('Cancel','service-cancel')+button('Review changes','service-review','',true):button('Adjust','service-adjust')+button(session.correction?'Confirm fuel correction':'Confirm refill','service-confirm','',true)}</div><p class="help">${editing&&!inline?'Review and confirm before supplies or Credits change.':'Only final confirmation changes supplies or Credits. Cancel discards this draft.'}</p></aside>`;
  }
  function sync(){
   if(!session)return;const form=document.getElementById('service-form');
+  // Disabled controls can still receive synthetic input/change events. Restore
+  // their displayed values without changing the frozen pending or stale draft.
+  if(session.busy||session.terminal||stale()){
+   if(form?.dataset?.serviceToken===session.token)for(const el of form.elements){if(!(el.name in session.draft))continue;if(el.type==='checkbox')el.checked=session.draft[el.name];else el.value=session.draft[el.name];}
+   syncControls();return;
+  }
   if(form?.dataset?.serviceToken===session.token){
    const previousType=session.draft.fuelType;
    for(const el of form.elements){if(!el.name)continue;session.draft[el.name]=el.type==='checkbox'?el.checked:el.value;}
@@ -115,14 +124,30 @@ export function createServicePanels({document,getState,isEditable,commit,render,
    const warning=document.getElementById('fuel-availability');if(warning&&session.kind==='fuel'){warning.textContent=waterWarning();warning.hidden=d.fuelType!=='water';}
   }syncControls();
  }
- function syncControls(){if(!session)return;if(!isEditable()||session.revision!==getState().revision||session.base.actual!==getState().actual)session.invalidated=true;const invalid=stale()||!forecast().valid;document.querySelectorAll('#service-panel [data-action="service-confirm"],#service-panel [data-action="service-review"]').forEach(b=>b.disabled=invalid||session.busy);document.querySelectorAll('#service-panel input,#service-panel select').forEach(el=>el.disabled=stale());}
+ function syncControls(){
+  if(!session)return;if(!isEditable()||session.revision!==getState().revision||session.base.actual!==getState().actual)session.invalidated=true;
+  const outdated=stale(),invalid=outdated||session.terminal||!forecast().valid;
+  document.querySelectorAll('#service-panel [data-action]').forEach(b=>b.disabled=session.busy||((outdated||session.terminal)&&!['service-back','service-cancel'].includes(b.dataset.action)));
+  document.querySelectorAll('#service-panel [data-action="service-confirm"],#service-panel [data-action="service-review"]').forEach(b=>b.disabled=invalid||session.busy);
+  document.querySelectorAll('#service-panel input,#service-panel select').forEach(el=>el.disabled=outdated||session.busy||!!session.terminal);
+  const notice=document.getElementById('service-status'),text=status();if(notice){notice.textContent=text;notice.hidden=!text;}
+  document.getElementById('service-panel')?.setAttribute?.('aria-busy',String(session.busy));
+ }
+ function terminalFailure(current,error){
+  const committed=error?.code==='SAVE_COMMITTED_PUBLICATION_FAILED'&&error.committed===true&&Number.isSafeInteger(error.revision),subject=current.kind==='support'?'Life support refill':current.correction?'Fuel correction':'Refuel';
+  const guidance=committed?subject+' saved, but the display could not update. Reload this page before continuing; do not record this service again.':'The '+subject.toLowerCase()+' save outcome could not be confirmed. Reload this page and check History before trying again.';
+  // Latch the result before any application role/render callbacks can fail.
+  current.terminal=true;current.invalidated=true;reloadMessage=guidance;
+  try{onTerminalFailure(error,guidance);}catch{/* The local terminal guard remains latched even if reporting fails. */}
+  return new Error(guidance,{cause:error});
+ }
  function close({render:shouldRender=true}={}){if(session?.busy)return false;session=null;if(shouldRender)render();return true;}
  async function action(name,arg,actionToken){if(!name.startsWith('service-'))return false;
   // Every DOM action carries the generation it was rendered for. Detached
   // buttons and forms must never change or confirm a replacement draft.
   if(!session||actionToken!==session.token||session.busy)return true;
   if(name==='service-back'||name==='service-cancel'){close();return true;}
-  if(stale())throw Error(status());sync();
+  if(stale()||session.terminal){syncControls();throw Error(status());}sync();
   if(name==='service-adjust'){if(session.kind==='fuel'&&!session.correction)return true;session.mode='adjust';render();}
   else if(name==='service-fuel-correct'){session.correction=true;session.mode='adjust';render();}
   else if(name==='service-review'){if(session.kind==='fuel'&&!session.correction)return true;quote();session.mode='summary';render();}
@@ -130,10 +155,27 @@ export function createServicePanels({document,getState,isEditable,commit,render,
    let value=name==='service-fuel-topoff'?maxFuelAddition(session.base):name==='service-fuel-step'?A.decimal(A.add(session.draft.fuelTons||0,arg)):nextJumpFuel(session.base);
    if(value===null)throw Error('Plan the next jump first.');session.draft.fuelTons=A.cmp(value,0)<0?'0':A.cmp(value,maxFuelAddition(session.base))>0?String(maxFuelAddition(session.base)):A.decimal(value);const input=document.querySelector('#service-form [name="fuelTons"]');if(input)input.value=session.draft.fuelTons;sync();
   }else if(name==='service-confirm'){
-   if(session.busy||(session.mode!=='summary'&&!(session.kind==='fuel'&&!session.correction&&session.mode==='inline')))return true;const q=quote(),current=session;session.busy=true;syncControls();
-   try{commit(session.kind==='fuel'?(session.correction?'Adjusted fuel aboard':'Refuelled'):'Refilled life support',s=>{if(current.kind==='fuel'){if(current.correction)fuelCorrection(s,current.draft.fuelRemaining,current.draft.fuelReason);else shipExpense(s,q.input);}else refillLifeSupport(s,{extraDays:current.draft.extraDays,comfortCost:current.draft.comfortCredits,comfortNote:current.draft.comfortNote});},current.revision);session=null;render();}finally{if(session===current){session.busy=false;syncControls();}}
+   if(session.busy||(session.mode!=='summary'&&!(session.kind==='fuel'&&!session.correction&&session.mode==='inline')))return true;
+   const q=quote(),current=session,draft=structuredClone(current.draft);let submitted=false,completed=false;
+   current.busy=true;current.error='';
+   try{
+    syncControls();submitted=true;
+    const result=commit(current.kind==='fuel'?(current.correction?'Adjusted fuel aboard':'Refuelled'):'Refilled life support',s=>{if(current.kind==='fuel'){if(current.correction)fuelCorrection(s,draft.fuelRemaining,draft.fuelReason);else shipExpense(s,q.input);}else refillLifeSupport(s,{extraDays:draft.extraDays,comfortCost:draft.comfortCredits,comfortNote:draft.comfortNote});},current.revision);
+    // Preserve the synchronous local Store path; only a declared completion
+    // Promise keeps this exact review pending beyond the current call stack.
+    if(result&&typeof result.then==='function')await result;
+    completed=true;session=null;render();
+   }catch(error){
+    if(completed){
+     // Cleanup is publication too. Never turn a durable success into a retry.
+     if(!session)session=current;
+     throw terminalFailure(current,new SaveCommittedPublicationError(current.revision+1,error));
+    }
+    if(!submitted||(error?.code==='SAVE_NOT_COMMITTED'&&error.committed===false)){current.error=error.message;throw error;}
+    throw terminalFailure(current,error);
+   }finally{current.busy=false;if(session===current)syncControls();}
   }
   return true;
  }
- return {active,kind:()=>session?.kind??null,token,open,panel,sync,syncControls,action,close,committing:()=>!!session?.busy};
+ return {active,kind:()=>session?.kind??null,token,open,panel,sync,syncControls,action,close,invalidate,committing:()=>!!session?.busy};
 }

@@ -166,3 +166,51 @@ the public catalogue's release-status suffix changes from **Alpha** to
 **Beta** at the owner's request. The product name, application title, URL,
 campaign identity and unrelated Research Station names remain unchanged.
 No feature-advertising banner is added.
+
+## Fuel and life-support completion checkpoint — UI 2026.10.10.38
+
+Based on released merge `ce5449200479452fdcb8cef800c88c86acb0ff5b` (UI .37).
+This checkpoint extends completion-aware UI to the existing Fuel and Life
+Support MFD panels: refuelling, the no-refund fuel correction, and standard,
+extra-reserve and comfort-provision life-support confirmation. It does not
+migrate the separate expense-payment, purchase, sale or jump interfaces.
+
+The confirming service retains its exact review while a declared completion
+Promise is pending. Inputs, repeated confirmation, local draft changes and
+panel dismissal/replacement remain blocked until the outcome is known.
+Success text and panel cleanup follow durable completion. The production
+localStorage provider remains synchronous, and the synchronous service path
+does not acquire an artificial wait.
+
+A known pre-write failure retains the draft for a deliberate retry only while
+its campaign and editing authority remain current. External publication
+invalidates a retained service draft even when its revision number is the
+same; later role changes cannot revive that draft. Such invalidation does not
+claim to cancel a save already accepted by a provider. The real Store still
+rechecks disk revision and editing authority before its write.
+
+Committed publication/cleanup failures and unknown outcomes are terminal:
+the service cannot be confirmed again, editing is yielded, and a real reload
+is required before another campaign write. Guidance distinguishes a known
+saved service from an unconfirmed outcome that requires checking History.
+The existing deposit reload guard is shared narrowly with these panels;
+the controller, Store outcome contract and one-use publication identity remain
+unchanged. No saved state is rolled back after a committed write.
+
+Fuel price, rounding, tank/bladder and cargo capacity, life-support Home rules,
+stock and comfort accounting, saved format and Undo all remain in their
+existing state/rules modules. The runtime cache token and UI/report version
+advance together to .38. No backend, real asynchronous provider or
+shared-device storage is introduced. Full native/rules checks, exact-head
+Chromium failure/delay coverage and independent source/pixel review remain
+release gates.
+
+Local verification passes 804 native tests across 56 discovered suites,
+including 103 new service-completion cases and a permanent deposit
+reporting-order regression, plus 227 rules/data checks and shared tool
+integration. Four baseline-compatible probes fail clean .37 on early panel
+closure or stale-draft reuse and pass this implementation. The existing
+13 exact saved-JSON checkpoints and all checked-in rules/fixture data remain
+unchanged. Independent source review and eight extra adversarial probes pass.
+The new Chromium suite declares 30 desktop/mobile cases; adding the harness
+does not claim browser execution or pixel review before the exact-head gates.

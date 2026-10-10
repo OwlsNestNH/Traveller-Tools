@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=deposit-completion-20261010-37';
+import {ruleInfo} from './rule-references.mjs?v=service-completion-20261010-38';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={

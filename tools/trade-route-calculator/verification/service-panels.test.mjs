@@ -5,6 +5,7 @@ import {configureFuel} from '../js/fuel.mjs';
 import {refillQuote,supportStock} from '../js/life-support.mjs';
 import {campaignBaseline} from './fixtures/campaign-baseline.mjs';
 import * as S from '../js/state.mjs';
+import {SaveNotCommittedError} from '../js/persistence.mjs';
 const campaign=()=>{const s=S.initial();s.initialized=true;s.bank='100000';s.actual='0,0';s.route=['0,0'];s.worlds={'0,0':{id:'0,0',name:'Actual origin',x:0,y:0,sector:'Test',hex:'0101',uwp:'A788899-C',zone:'Safe'}};s.ship.fuel=configureFuel(200,43,20,0,2);return s;};
 function withSupport({frozen=0}={}){
  const s=campaign();
@@ -26,7 +27,7 @@ function harness(s=campaign()){
   commit(label,fn,revision){
    assert.equal(revision,state.revision);
    if(!editable)throw Error('read-only');
-   if(h.commitError)throw Error(h.commitError);
+   if(h.commitError)throw new SaveNotCommittedError(Error(h.commitError));
    h.duringCommit?.();state=S.transition(state,label,fn);h.commits++;
   },
   render(){h.renders++;form=null;},showOverview(){},message(){},nextJumpFuel:()=>20
