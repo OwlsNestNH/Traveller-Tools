@@ -578,7 +578,7 @@ newer selection, dialog, campaign or editing tenure. JSON schema, economic
 values, History/Undo and jump-mulligan rules are unchanged.
 
 
-Settings save completion (.45 candidate) covers the inline form and legacy
+Settings save completion (.45) covers the inline form and legacy
 Settings dialog. Local synchronous saves keep their immediate behavior. A
 completion-Promise provider keeps the submitted values, rounding and disclosure
 state while a pending dialog prevents duplicate or conflicting edits. Success
@@ -589,3 +589,17 @@ outcomes require reload before editing again. Cross-field validation retains
 its existing error/disclosure behavior, and saving the legacy dialog preserves
 an unrelated stale inline draft until explicit Revert. Settings economics,
 Dashboard baseline and Undo/mulligan rules are unchanged.
+
+
+Setup/location save completion (.46 candidate) separates cancellable world
+lookup from the accepted save. A pending save retains the submitted fields and
+rounding, blocks duplicate activation and dismissal, and updates the displayed
+world or related drafts only after its exact owned publication completes.
+Known-unsaved failures keep the form for correction; saved or uncertain outcomes
+require reload. Setup nearby-world enrichment is ancillary: a loading failure
+after the opening balance is saved must never invite a duplicate setup. Location
+lookup remains pre-save, and selecting the current world remains a zero-write
+refresh. Opening balance, Dashboard baseline, location correction history,
+insurance amendment, Undo and jump-mulligan behavior remain unchanged. Time/day
+and quote/preview ownership are separate remaining work. Final source, native,
+exact-head browser and actual screenshot gates are required before release.

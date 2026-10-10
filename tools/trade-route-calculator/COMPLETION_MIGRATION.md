@@ -1,7 +1,7 @@
 # Save-completion migration queue
 
-Inventory checked against UI 2026.10.10.44, repository merge
-`6c104a1924f8ce5e50de7dace322e6f031a30c2d` (2026-10-10).
+Inventory checked against UI 2026.10.10.45, repository merge
+`fc7281f41d02fbf33950dc2346d46f6879a0eff8` (2026-10-10).
 This records the save-boundary work, not the earlier GUI-refit stages.
 
 ## Stage 2: finish save callers
@@ -41,22 +41,25 @@ publication failure or unknown result (reload required, no duplicate retry).
    deployment were verified. All 90 permitted live-file URLs matched; ten
    prior tunnel/proxy-denied URLs were skipped, so full live verification is
    explicitly incomplete. No denied path was retried or alternate-routed.
-3. **Settings is the bounded .45 candidate; setup/location/time remain.**
-   Inline Settings and the legacy Settings modal now share an owned completion
-   boundary. Native synchronous saving stays immediate; a delayed inline save
-   gets a pending dialog. Draft/rounding/cleanup/success belong to the submitted
-   form and exact publication. Final aggregate, exact-head browser and actual
-   screenshot gates are required before release.
-   `setup`, `setLocation`, `changeCampaignDay` and `timeForm` still discard
-   completion. Keep setup/location separate from time/day migration: lookup,
-   reason/date validation and ancillary nearby loading need correct prewrite
-   versus post-save classification; delayed repeated day clicks need ownership.
-4. **Trade and transport workflows with post-save UI effects.**
+3. **Settings: released in .45.** Inline and legacy Settings have an owned
+   completion boundary, retained form/rounding, deliberate known-unsaved retry
+   and saved/unknown reload protection. Final 1,155 native tests, 54 exact-head
+   CI jobs, 46 focused browser cases and independent source/38-screenshot review
+   passed; merge/tree and Pages were verified. All 90 permitted live URLs
+   matched; ten prior proxy-denied variants remain unverified and excluded.
+4. **Setup/location is the bounded .46 candidate; time/day remain.**
+   `setup` and `setLocation` are being migrated with cancellable lookup followed
+   by an owned pending-save boundary. Setup's nearby enrichment must remain
+   ancillary after its saved opening balance; location lookup remains pre-save.
+   Final native, exact-head browser and actual screenshot gates are required.
+   `changeCampaignDay` and `timeForm` still discard completion. Keep their
+   time/LSS semantics and repeated-day-click ownership in a separate batch.
+5. **Trade and transport workflows with post-save UI effects.**
    `searchDialog`, `saleForm`, `editDraft`, `contractSearch` and `accept` publish,
    replace or clear previews/drafts after invoking a save. `passenger-ui.mjs`
    capacity setup, passenger search and boarding also discard completion;
    passenger search publishes generated offers immediately.
-5. **Remaining direct mutation/confirmation callers.** Audit and migrate
+6. **Remaining direct mutation/confirmation callers.** Audit and migrate
    `editOffer`, `manualContract`, `amendPolicy`, the market expiration checkbox,
    and `rollBerthingRate` (which reads `next.revision` synchronously).
    Confirmations that already return the save still need the full pending and
@@ -66,11 +69,20 @@ publication failure or unknown result (reload required, no duplicate retry).
    `shipExpenses`, `expenseForm` (manual expense/bank correction), passenger
    delivery, and the expire-all action. Returning a Promise alone is not full
    completion safety; several listed callbacks also discard it.
-6. **Expense screen failure handling.** `expense-panels.mjs: savePayment` and
+7. **Expense screen failure handling.** `expense-panels.mjs: savePayment` and
    `saveRate` already await saves and block repeat submission, but their generic
    catch/finally path needs the same explicit committed/unknown terminal safety
    review as deposit and stock services. Do not count them as fully migrated
    merely because they contain `await`.
+
+8. **Shared background-map presentation audit.** `render()` defers owned
+   Settings/Undo/replacement publication cleanup, but `paintMap()` can separately
+   rebuild the SVG from installed campaign state. The setup/location boundary
+   now has its own repaint guard. Verify the older owners with delayed-provider
+   and background-paint tests before treating all shared display paths as
+   completion-safe. This is a source-supported, not yet reproduced risk for
+   those older callers, distinct from the separate keyboard-focus restoration
+   bug; it is not fixed by this setup/location batch.
 
 Each batch needs delayed success, known pre-write failure, committed-publication
 failure, unknown outcome, duplicate activation, stale revision/ownership and

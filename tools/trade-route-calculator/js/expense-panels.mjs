@@ -1,13 +1,13 @@
-import {ruleInfo} from './rule-references.mjs?v=settings-completion-20261010-45';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=settings-completion-20261010-45';
-import {passengerShip} from './passengers.mjs?v=settings-completion-20261010-45';
+import {ruleInfo} from './rule-references.mjs?v=setup-location-completion-20261010-46';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=setup-location-completion-20261010-46';
+import {passengerShip} from './passengers.mjs?v=setup-location-completion-20261010-46';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=settings-completion-20261010-45';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=settings-completion-20261010-45';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=settings-completion-20261010-45';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=settings-completion-20261010-45';
-import {creditStep} from './rounding.mjs?v=settings-completion-20261010-45';
-import {roll} from './rules.mjs?v=settings-completion-20261010-45';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=setup-location-completion-20261010-46';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=setup-location-completion-20261010-46';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=setup-location-completion-20261010-46';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=setup-location-completion-20261010-46';
+import {creditStep} from './rounding.mjs?v=setup-location-completion-20261010-46';
+import {roll} from './rules.mjs?v=setup-location-completion-20261010-46';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

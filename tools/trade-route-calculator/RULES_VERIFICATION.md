@@ -572,3 +572,25 @@ plus legacy dialog, missing/wrong publication, contradictory provider errors,
 render/focus/close/partial-pending-screen faults, reload and Undo. Full native,
 rules, existing browser regressions and independent source/actual screenshot
 review remain required. This scope entry is not a pass or deployment claim.
+
+
+## Setup/location save-completion .46 verification scope
+
+This caller migration changes no Traveller economic or travel rules. Compare
+synchronous and delayed setup/location candidates, including normalized money,
+rounding, existing life-support anchoring, opening Dashboard baseline, correction
+audit, insurance route amendment and consumed-mulligan behavior. Setup creates
+one opening bank ledger entry/revision/Undo record; Undo then fresh setup retains
+the existing baseline replacement rule. Location does not advance time, travel,
+consume fuel or pay contracts, and a same-world refresh remains zero-write.
+
+Cover lookup/validation cancellation and retry, actual picker failure/retry,
+pending provider success/failure, publication before fulfillment, duplicate and
+detached actions, stale disk, foreign same-revision state, lost/reacquired editor,
+wrong/missing provenance and contradictory result classifications. Partial-dialog,
+cleanup and reporting faults must not navigate or allow replay. Post-save setup
+nearby failure is ancillary, never another setup opportunity. Native tests use
+production callbacks/controller/Store; real desktop/mobile Chromium must check
+field retention, gestures, native locks, reload/Undo, visible warnings and layout.
+Full native/rules/catalog gates, existing browser regressions and independent
+source plus actual screenshot review are required. This scope is not a pass claim.
