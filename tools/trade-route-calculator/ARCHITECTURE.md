@@ -455,3 +455,31 @@ unchanged. Ordinary History, inline Settings and normal reset had no mounted map
 Strict callback regression cases supplement, rather than replace, the existing
 completion, ownership, error and synchronous-provider suites. Separate keyboard
 focus and Cargo pointer-coordinate races are not fixed by these save guards.
+
+
+## Stage 2 time/day completion (.48)
+
+`changeCampaignDay` and `timeForm` share a narrow time-write owner. It records
+the originating campaign reference/revision, publication and editor tenure,
+submitted scalars and modal session. The controller's existing `onPrepared`
+hook freezes fields before the provider runs. An owned, one-use save token must
+identify the expected revision and exact snapshot before success can be shown.
+`receiveCampaign` installs an owned publication but defers time/LSS presentation,
+draft cleanup and success until completion. Foreign publication, editing loss
+or a retired modal permanently invalidates the owner. Late completion cannot
+close a newer dialog, restore retired form state or steal newer navigation.
+
+Daily controls and opening Campaign time dispatch before the service handler's
+first asynchronous yield; clicks made during a save are blocked rather than
+queued. Synchronous saves return immediately. Only a Promise result needs the
+owned pending surface; completion handlers are installed before its creation.
+A known no-write failure is retryable only without an observed publication.
+Unknown, contradictory or missing publication and saved cleanup/reporting faults
+latch reload protection even when the initiating dialog has been detached.
+
+The controller, Store, schema and time mutations are unchanged. Advancing time
+consumes life support with the existing rational calculation and original
+complement; moving backward does not replenish it. Undo restores the prior
+time/stock representation while preserving permanent jump-mulligan closure.
+Date-only and same-hours corrections still use the existing ordinary transition.
+No Stage 3 quote/preview behavior is introduced.

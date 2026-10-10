@@ -612,3 +612,14 @@ foreign publication still takes precedence when the old owner is invalidated.
 The correction changes no campaign data, accounting or native synchronous Store
 behavior. Settings, day/time callers and Stage 3 remain separate work. See the
 completion migration queue and exact-head regression evidence before release.
+
+
+Time/day save completion (.48 candidate) covers both daily controls and the
+Campaign time correction dialog. A delayed save keeps the displayed date and
+life-support values at their prewrite state until its owned save completes.
+Repeated clicks cannot queue another day change; submitted correction fields
+stay fixed while pending. A known-unsaved failure allows deliberate retry, while
+a saved or uncertain outcome requires reload before further editing. Native
+synchronous saves retain immediate behavior. Existing day/hour, life-support,
+History Undo and jump-mulligan rules are unchanged. The remaining Stage 2 caller
+inventory stays open; exact-head browser and screenshot gates are still required.

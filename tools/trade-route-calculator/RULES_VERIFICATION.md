@@ -613,3 +613,22 @@ exposures, zero probe errors, 34 independently inspected screenshots. A green
 diagnostic result established valid probes, not product safety. Original Cargo
 pointer-input race evidence and its unchanged-head rerun outcome remain part of
 the release record. This scope entry is not a candidate pass/deployment claim.
+
+
+## Time/day completion .48 verification scope
+
+This caller-only change preserves both existing time mutation bodies and all
+controller, persistence, state, calendar, life-support and economic logic.
+Native cases compare synchronous and delayed candidates through the actual
+app/controller/Store, including exact rational stock depletion, backward/date-only
+changes, boundary validation, inverse Undo and jump-mulligan permanence.
+
+Cover separate write/publication/settlement, known failure/retry, saved and
+unknown outcomes, callback and token faults, repeated/pre-yield clicks, stale
+campaign/editor/modal ownership, frozen correction fields and terminal reload
+protection after cleanup/reporting faults. Desktop/mobile Chromium must verify
+actual native locks, retained presentation, correction forms, reload, Undo,
+visible errors and layout. Screenshots preserve caret styles and strict prewrite
+DOM assertions. Full native/rules/catalog checks, all existing browser jobs and
+independent source plus actual screenshot review remain release requirements.
+This scope entry does not claim candidate browser success or deployment.
