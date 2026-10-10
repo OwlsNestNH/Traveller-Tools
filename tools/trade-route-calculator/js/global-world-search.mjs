@@ -1,4 +1,4 @@
-import {searchWorlds,loadWorld} from './map.mjs?v=replacement-completion-20261010-44';
+import {searchWorlds,loadWorld} from './map.mjs?v=settings-completion-20261010-45';
 
 export const planetSearchLabel=w=>[w.name,w.subsectorName,w.sector,w.hex].join(' — ');
 

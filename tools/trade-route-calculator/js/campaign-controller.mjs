@@ -1,6 +1,6 @@
-import * as S from './state.mjs?v=replacement-completion-20261010-44';
-import {creditStep} from './rounding.mjs?v=replacement-completion-20261010-44';
-import {SaveNotCommittedError} from './persistence.mjs?v=replacement-completion-20261010-44';
+import * as S from './state.mjs?v=settings-completion-20261010-45';
+import {creditStep} from './rounding.mjs?v=settings-completion-20261010-45';
+import {SaveNotCommittedError} from './persistence.mjs?v=settings-completion-20261010-45';
 
 // Store remains synchronous. An injected provider may return a completion
 // Promise; that completion must include the durable write and publication.
@@ -45,7 +45,7 @@ export function createCampaignController({getState,getStore,getKnownWorlds,getRo
    replacementPublications.delete(token);return true;
   },
   save,
-  transition(label,change,expectedRevision){
+  transition(label,change,expectedRevision,{onPrepared}={}){
    const next=beforeWrite(()=>{
     requireIdle();const current=getState();
     if(expectedRevision!==current.revision)throw Error('Campaign changed. Reopen this preview before committing.');
@@ -56,6 +56,9 @@ export function createCampaignController({getState,getStore,getKnownWorlds,getRo
      if(rounding.length)state.events.push({id:S.uid(),label:'Rounding applied [R]',hours:state.hours,roundingStep:creditStep(state),roundingChanges:structuredClone(rounding)});
     });
    });
+   // Optional UI phase notification; no candidate is exposed or replaced.
+   // A throwing observer is still before the provider and cannot commit.
+   beforeWrite(()=>onPrepared?.());
    return completed(save(next,expectedRevision),next);
   },
   prepareJump(roll,expectedRevision){

@@ -1,7 +1,7 @@
 # Save-completion migration queue
 
-Inventory checked against UI 2026.10.10.43, merge
-`e2b7619ecf17e42e338fc347ebf1effb0243d253` (2026-10-10).
+Inventory checked against UI 2026.10.10.44, repository merge
+`6c104a1924f8ce5e50de7dace322e6f031a30c2d` (2026-10-10).
 This records the save-boundary work, not the earlier GUI-refit stages.
 
 ## Stage 2: finish save callers
@@ -33,21 +33,24 @@ publication failure or unknown result (reload required, no duplicate retry).
    prepared dice across a known-unsaved retry, and freezes elapsed hours while
    saving. Native and exact-head browser tests, independent screenshot review
    and live-file verification passed, including the saved-roll/mulligan policy.
-2. **Undo released in .43; replacement is the bounded .44 candidate.**
-   `undoJump` and `undoLatestChange` passed 1,030 native checks, the exact-head
-   browser matrix and independent source/screenshot review. Merge-tree and
-   Pages deployment verification passed. Live byte checks matched 90/100 URLs;
-   ten tunnel/proxy 403 reads remain unverified and were not retried or routed
-   around. Do not describe that live-file gate as complete.
-   `backupReplace` now awaits JSON import/reset completion with a distinct
-   one-use replacement publication identity. This still clears external-style
-   offers; it does not become a local-save exemption. File reads and completion
-   cleanup are tied to their campaign/editor/dialog owner. Its final full
-   native/browser/source/screenshot gates remain required before release.
-3. **Settings, setup and position/time changes.** The inline
-   `mountSettingsForm` submit clears its draft without waiting; `setup`,
-   `setLocation`, `changeCampaignDay` and `timeForm` discard the save completion.
-   The Settings modal returns it but lacks terminal/reload handling.
+2. **Undo and campaign replacement: released in .43/.44.**
+   Ordinary Undo/Undo Jump and JSON import/reset passed their full native,
+   exact-head browser and independent source/screenshot gates. Replacement .44
+   passed 1,117 native tests, 53 CI jobs and 98 focused browser cases; 36 actual
+   screenshots were independently reviewed. Its exact merge/tree and Pages
+   deployment were verified. All 90 permitted live-file URLs matched; ten
+   prior tunnel/proxy-denied URLs were skipped, so full live verification is
+   explicitly incomplete. No denied path was retried or alternate-routed.
+3. **Settings is the bounded .45 candidate; setup/location/time remain.**
+   Inline Settings and the legacy Settings modal now share an owned completion
+   boundary. Native synchronous saving stays immediate; a delayed inline save
+   gets a pending dialog. Draft/rounding/cleanup/success belong to the submitted
+   form and exact publication. Final aggregate, exact-head browser and actual
+   screenshot gates are required before release.
+   `setup`, `setLocation`, `changeCampaignDay` and `timeForm` still discard
+   completion. Keep setup/location separate from time/day migration: lookup,
+   reason/date validation and ancillary nearby loading need correct prewrite
+   versus post-save classification; delayed repeated day clicks need ownership.
 4. **Trade and transport workflows with post-save UI effects.**
    `searchDialog`, `saleForm`, `editDraft`, `contractSearch` and `accept` publish,
    replace or clear previews/drafts after invoking a save. `passenger-ui.mjs`

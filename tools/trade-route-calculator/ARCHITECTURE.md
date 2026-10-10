@@ -372,3 +372,35 @@ failure are inert. Validation and the 20 MB limit remain. This is UI completion
 ownership, not cancellation of an already accepted provider operation; the
 existing recovery replacement deliberately bypasses reading a corrupt revision.
 No new provider source/CAS protocol, JSON schema or Stage 3 work is introduced.
+
+
+## Stage 2 Settings completion (.45)
+
+Settings has a form/draft completion owner; it does not retain a second campaign
+or recompute settings at settlement. The existing settings mutator remains
+unchanged. A narrow optional `act` announcement option suppresses only the
+Settings caller's early/stale banner. An optional controller transition
+preparation notification runs after successful transition validation and before
+provider save, with no candidate arguments. It lets Settings distinguish input
+validation (existing group reveal) from verified storage rejection (preserve
+existing disclosures), without duplicating validation or matching error text.
+The default transition signature and synchronous/Promise result contract remain.
+
+Inline submission captures revision, draft/form and rounding identities before
+saving. Matching one-use local publication installs state and records the exact
+expected-revision-plus-one object; UI cleanup waits for completion. Only delayed
+saves acquire a non-submit pending modal, with Promise rejection observed before
+constructing that screen. Global render/handoff guards are scoped to that actual
+operation. Foreign/nonmatching publication, same-revision update or editor loss
+permanently retires its UI owner and releases deferral; a submitted stale draft
+requires explicit Revert rather than silent rebasing.
+
+Per-form pending locks cover mounted and suspended Settings forms. Settlement
+releases only that operation's lock and reapplies current read-only/terminal
+restrictions without rewriting newer values, disclosures, focus or view.
+Successful cleanup prevents close from reattaching the saved old form. Legacy
+modal saving preserves an unrelated dirty inline draft as stale. Saved/unknown
+or failed-publication/cleanup/close outcomes latch reload guards before reporting,
+including detached or partially constructed pending dialogs. An observed owned
+publication outranks a contradictory not-committed provider error. Setup,
+location, time/day controls and Stage 3 ownership remain separate work.

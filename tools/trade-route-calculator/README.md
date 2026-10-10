@@ -567,7 +567,7 @@ reload before further editing. See [the completion migration queue](COMPLETION_M
 for remaining callers and the explicit .43 live-file verification gap.
 
 
-Campaign replacement completion (.44 candidate) keeps the existing backup
+Campaign replacement completion (.44) keeps the existing backup
 confirmation for import/reset. Saving waits for the provider's durable write
 and publication before changing the viewed world, clearing selection or showing
 success. The published campaign supplies the rebased revision and Dashboard
@@ -576,3 +576,16 @@ an uncertain or already-saved outcome requires reload and verification of the
 saved campaign before another replacement. A late file read cannot overwrite a
 newer selection, dialog, campaign or editing tenure. JSON schema, economic
 values, History/Undo and jump-mulligan rules are unchanged.
+
+
+Settings save completion (.45 candidate) covers the inline form and legacy
+Settings dialog. Local synchronous saves keep their immediate behavior. A
+completion-Promise provider keeps the submitted values, rounding and disclosure
+state while a pending dialog prevents duplicate or conflicting edits. Success
+and draft cleanup follow the exact owned publication and completed save; stale
+campaign/editor/dialog completions cannot clear newer work. Known-unsaved
+storage failures preserve the draft for deliberate retry. Saved or uncertain
+outcomes require reload before editing again. Cross-field validation retains
+its existing error/disclosure behavior, and saving the legacy dialog preserves
+an unrelated stale inline draft until explicit Revert. Settings economics,
+Dashboard baseline and Undo/mulligan rules are unchanged.
