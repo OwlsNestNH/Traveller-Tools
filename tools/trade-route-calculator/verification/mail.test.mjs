@@ -174,7 +174,7 @@ test('old campaigns and old mail audits still round-trip without migration or ac
 test('accepting mail reserves the whole consignment against goods, freight, mail, luggage and bladders',()=>{
  const s=campaign();s.ship.capacity='30';s.lots=[structuredClone(ownedLot)];
  s.ship.accommodation={lowBerths:0,passengers:{low:0,middle:0,high:0},crew:{low:0,middle:0,high:0},luggageMode:'manual',luggageTons:'2'};
- s.ship.fuel=configureFuel(200,40,43,1,s.ship.jump);
+ s.ship.fuel=configureFuel(200,40,43,40,s.ship.jump);
  s.contracts=[
   {id:'freight',offerId:'freight-offer',kind:'freight',status:'accepted',origin:'0,0',destination:'1,0',quantity:'4',payment:'4000',dueHours:null},
   {id:'mail',offerId:'other-mail-offer',kind:'mail',status:'accepted',origin:'0,0',destination:'1,0',quantity:'5',payment:'25000',dueHours:null},

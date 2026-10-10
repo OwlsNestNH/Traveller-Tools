@@ -70,7 +70,7 @@ test('fractional capacity boundary succeeds and overflow failures are fully atom
  const poor=campaign();poor.bank='1';const original=JSON.stringify(poor);assert.throws(()=>S.refillLifeSupport(poor),/Insufficient/);assert.equal(JSON.stringify(poor),original);
 });
 test('fuel bladders, luggage and LSS share cargo capacity atomically',()=>{
- const s=campaign({hull:10,days:28,capacity:'3'});s.ship.fuel=configureFuel(10,2,2,1,2);s.ship.accommodation.luggageTons='1';s.worlds={'0,0':{id:'0,0',x:0,y:0,sector:'Test',hex:'0101',zone:'Safe',name:'Port',uwp:'A000000-0'}};s.actual='0,0';
+ const s=campaign({hull:10,days:28,capacity:'3'});s.ship.fuel=configureFuel(10,2,2,2,2);s.ship.accommodation.luggageTons='1';s.worlds={'0,0':{id:'0,0',x:0,y:0,sector:'Test',hex:'0101',zone:'Safe',name:'Port',uwp:'A000000-0'}};s.actual='0,0';
  assertExact(S.used(s),43,25);const before=JSON.stringify(s);
  assert.throws(()=>S.transition(s,'Fuel',x=>S.shipExpense(x,{kind:'fuel',fuelType:'refined',tons:'2'})),/capacity/);assert.equal(JSON.stringify(s),before);
  assert.throws(()=>S.transition(s,'Luggage',x=>x.ship.accommodation.luggageTons='3'),/capacity/);assert.equal(JSON.stringify(s),before);

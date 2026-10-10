@@ -45,7 +45,7 @@ function domDouble(){
   buttons=[...ids.values()].flatMap(n=>[...(n.innerHTML||'').matchAll(/<button\b([^>]*)>/g)].map(m=>element(attrs(m[1])))).filter(n=>n.hasAttribute('data-mutate'));return buttons;
  }},FormData:class{constructor(){this.values=new Map([...fields].filter(([,n])=>!n.disabled&&n.attributes.type!=='checkbox').map(([k,n])=>[k,n.value]));for(const[k,n]of fields)if(n.attributes.type==='checkbox'&&n.checked)this.values.set(k,'on');}get(k){return this.values.get(k)??null;}has(k){return this.values.has(k);}}};
 }
-function campaign(){const s=S.initial();s.initialized=true;s.bank='1000000';s.actual=origin.id;s.worlds=structuredClone({[origin.id]:origin,[destination.id]:destination,[far.id]:far});s.route=[origin.id,destination.id];s.lots=[{id:'insured-lot',commodity:'11',description:'Synthetic insured goods',quantity:'10',basis:'110000',goodsValue:'100000'}];return S.validate(s);}
+function campaign(){const s=S.initial();s.settings.insurance=true;s.initialized=true;s.bank='1000000';s.actual=origin.id;s.worlds=structuredClone({[origin.id]:origin,[destination.id]:destination,[far.id]:far});s.route=[origin.id,destination.id];s.lots=[{id:'insured-lot',commodity:'11',description:'Synthetic insured goods',quantity:'10',basis:'110000',goodsValue:'100000'}];return S.validate(s);}
 function harness(saved=campaign()){
  const dom=domDouble(),calls={saves:0,downloads:[]},memory=new Map([['traveller-trade-route-calculator:v1',JSON.stringify(saved)]]);let api,store;
  const localStorage={getItem:k=>memory.get(k)??null,setItem(k,v){memory.set(k,v);calls.saves++;},removeItem:k=>memory.delete(k)};
@@ -61,16 +61,16 @@ const same=(a,b)=>assert.deepEqual(JSON.parse(JSON.stringify(a)),JSON.parse(JSON
 const financial=s=>({bank:s.bank,lots:s.lots,policies:s.policies,ledger:s.ledger,settings:s.settings,actual:s.actual,route:s.route,hours:s.hours});
 const error=h=>h.dom.ids.get('modal-error').textContent;
 
-test('Actual insurance preview and commit debit premium once, preserve quantity/goods, enable feature, Undo atomically',async()=>{
+test('Actual insurance preview and commit debit premium once, preserve quantity/goods and saved ON setting, Undo atomically',async()=>{
  const h=harness(),before=h.persisted();h.api.insureHeldCargo('insured-lot');assert.equal(h.calls.saves,0);h.api.closeModal();same(h.persisted(),before);
  const p=await h.insure(),after=h.persisted();assert.equal(p.status,'active');assert.equal(p.coverage,70);assert.equal(p.destination,destination.id);assert.equal(p.remainingQuantity,'10');assert.equal(p.insuredValue,'100000');assert.equal(after.bank,String(BigInt(before.bank)-BigInt(p.premium)));assert.equal(after.lots[0].basis,String(BigInt(before.lots[0].basis)+BigInt(p.premium)));assert.equal(after.lots[0].quantity,before.lots[0].quantity);assert.equal(after.lots[0].goodsValue,before.lots[0].goodsValue);assert.equal(after.settings.insurance,true);assert.equal(after.ledger.filter(e=>e.type==='Insurance premium').length,1);
  await h.submit();assert.equal(h.calls.saves,1);h.api.actions.undo();same(financial(h.persisted()),financial(before));
 });
 
-test('Active policy hide/show through actual Settings callback preserves original policy terms; Undo restores visibility',async()=>{
+test('New-coverage controls hide/show through Settings while existing policy actions and terms remain available',async()=>{
  const h=harness();await h.insure();const insured=h.persisted(),p=insured.policies;assert.match(h.api.policyPanel(),/Cargo insurance/);assert.match(h.api.contractsPanel(),/Cargo insurance/);
- await h.settings({insurance:false});assert.equal(h.api.policyPanel(),'');assert.doesNotMatch(h.api.contractsPanel(),/Cargo insurance/);same(h.persisted().policies,p);assert.equal(h.persisted().bank,insured.bank);same(h.persisted().lots,insured.lots);
- const off=h.persisted();const reloaded=harness(off);assert.equal(reloaded.api.policyPanel(),'');same(reloaded.persisted().policies,p);
+ await h.settings({insurance:false});assert.match(h.api.policyPanel(),/Cargo insurance/);assert.match(h.api.contractsPanel(),/Cargo insurance/);assert.doesNotMatch(h.api.cargoPanel(true),/lot-insure/);same(h.persisted().policies,p);assert.equal(h.persisted().bank,insured.bank);same(h.persisted().lots,insured.lots);
+ const off=h.persisted();const reloaded=harness(off);assert.match(reloaded.api.policyPanel(),/Cargo insurance/);assert.doesNotMatch(reloaded.api.cargoPanel(true),/lot-insure/);same(reloaded.persisted().policies,p);
  h.api.actions.undo();assert.equal(h.persisted().settings.insurance,true);same(h.persisted().policies,p);assert.match(h.api.policyPanel(),/Cargo insurance/);
  await h.settings({insurance:false});await h.settings({insurance:true});same(h.persisted().policies,p);
 });
@@ -78,9 +78,9 @@ test('Active policy hide/show through actual Settings callback preserves origina
 test('Production Store backup/reload and actual JSON import preserve active policies with insurance on or off',async()=>{
  for(const enabled of [true,false]){
   const h=harness();await h.insure();await h.settings({insurance:enabled});const source=h.persisted(),text=await h.exported();same(JSON.parse(text),source);
-  const reloaded=harness(JSON.parse(text));same(reloaded.api.state,source);assert.equal(Boolean(reloaded.api.policyPanel()),enabled);
-  const target=harness();await target.imported(text);const imported=target.persisted();same(imported.policies,source.policies);same(imported.lots,source.lots);same(imported.ledger,source.ledger);same(imported.settings,source.settings);assert.equal(imported.bank,source.bank);assert.equal(Boolean(target.api.policyPanel()),enabled);
-  if(!enabled)await target.settings({insurance:true});await target.claim();assert.equal(target.persisted().policies[0].remainingQuantity,'8');
+  const reloaded=harness(JSON.parse(text));same(reloaded.api.state,source);assert.equal(Boolean(reloaded.api.policyPanel()),true);
+  const target=harness();await target.imported(text);const imported=target.persisted();same(imported.policies,source.policies);same(imported.lots,source.lots);same(imported.ledger,source.ledger);same(imported.settings,source.settings);assert.equal(imported.bank,source.bank);assert.equal(Boolean(target.api.policyPanel()),true);
+  await target.claim();assert.equal(target.persisted().settings.insurance,enabled);assert.equal(target.persisted().policies[0].remainingQuantity,'8');
  }
 });
 
@@ -101,8 +101,8 @@ test('Claim approval, reason and quantity validation reject safely; cancel, repe
  for(const mode of ['cancel','stale','readonly','repeat']){const h=harness();await h.insure();const before=h.persisted();h.api.claimForm(before.policies[0].id);h.fill({quantity:2,reason:'Loss',approved:true});await h.submit();const cb=h.dom.ids.get('modal-form').onsubmit;if(mode==='cancel')h.api.closeModal();if(mode==='stale')h.api.state.revision++;if(mode==='readonly')h.store.editable=false;await Promise.all([cb({preventDefault(){},currentTarget:h.dom.ids.get('modal-form')}),cb({preventDefault(){},currentTarget:h.dom.ids.get('modal-form')})]);if(mode==='repeat'){assert.equal(h.persisted().policies[0].claims.length,1);assert.equal(h.persisted().bank,String(BigInt(before.bank)+14000n));}else same(h.persisted(),before);}
 });
 
-test('Insurance route progress updates while hidden; immediate jump Undo restores coverage, later Settings closes it',async()=>{
- const h=harness();await h.insure();await h.settings({insurance:false});const before=h.persisted();h.api.jump();h.fill({hours:0});await h.submit();assert.equal(error(h),'');assert.equal(h.persisted().policies[0].status,'arrived');assert.equal(h.persisted().policies[0].routeProgress,1);assert.equal(h.api.policyPanel(),'');
+test('Insurance route progress updates while new coverage is OFF; immediate jump Undo restores coverage, later Settings closes it',async()=>{
+ const h=harness();await h.insure();await h.settings({insurance:false});const before=h.persisted();h.api.jump();h.fill({hours:0});await h.submit();assert.equal(error(h),'');assert.equal(h.persisted().policies[0].status,'arrived');assert.equal(h.persisted().policies[0].routeProgress,1);assert.match(h.api.policyPanel(),/Cargo insurance/);
  const immediate=harness(h.persisted());immediate.api.actions.undo();same(financial(immediate.persisted()),financial(before));
  await h.settings({insurance:true});h.api.claimForm(h.persisted().policies[0].id);h.fill({quantity:1,approved:true,reason:'Cannot claim after arrival'});await h.submit();assert.match(error(h),/Policy is not active/);h.api.closeModal();h.api.actions.undo();assert.throws(()=>h.api.actions.undo(),/later campaign change/);assert.equal(h.persisted().policies[0].status,'arrived');
 });
@@ -111,7 +111,7 @@ test('Amend and close production callbacks preserve original terms, adjust bank/
  for(const mode of ['amend','close']){const h=harness();await h.insure();const before=h.persisted(),original=before.policies[0];h.api.amendPolicy(original.id);h.fill({mode,adjustment:1234,approved:true,reason:'Synthetic amendment'});await h.submit();assert.equal(error(h),'');const after=h.persisted(),p=after.policies[0];assert.equal(after.bank,String(BigInt(before.bank)-1234n));assert.equal(after.lots[0].basis,String(BigInt(before.lots[0].basis)+1234n));assert.equal(p.premium,original.premium);assert.equal(p.insuredValue,original.insuredValue);assert.equal(p.coverage,original.coverage);assert.equal(p.amendments.length,1);same(p.amendments[0].previous,{route:original.route,destination:original.destination,status:original.status});assert.equal(p.status,mode==='close'?'closed':'active');h.api.actions.undo();same(financial(h.persisted()),financial(before));}
 });
 
-test('Route deviation while insurance hidden marks amendment-required and explicit amendment reactivates',async()=>{
+test('Route deviation while new insurance is OFF marks amendment-required and explicit amendment reactivates',async()=>{
  const h=harness();await h.insure();await h.settings({insurance:false});const s=h.persisted();s.ship.jump=6;s.worlds['0,1']={...s.worlds['1,0'],id:'0,1',x:0,y:1,name:'Alternate',hex:'0102'};s.route=['0,0','0,1','1,0'];const moved=harness(s);moved.api.jump();moved.fill({hours:0});await moved.submit();assert.equal(error(moved),'');assert.equal(moved.persisted().policies[0].status,'amendment-required');
  await moved.settings({insurance:true});const before=moved.persisted();moved.api.amendPolicy(before.policies[0].id);moved.fill({mode:'amend',adjustment:0,approved:true,reason:'Referee approves alternative route'});await moved.submit();assert.equal(error(moved),'');const p=moved.persisted().policies[0];assert.equal(p.status,'active');same(p.route,['0,1','1,0']);assert.equal(p.routeProgress,0);same(p.amendments[0].previous.route,['0,0','1,0']);await moved.claim({quantity:1});assert.equal(moved.persisted().policies[0].claims[0].payout,'7000');
 });
@@ -307,4 +307,15 @@ test('The shared dialog explicitly references its changing accessible title',asy
 test('Zero freight settlements remain auditable without showing unrelated zero charges',()=>{
  const s=campaign();s.ledger=[{id:'zero-fee',type:'Broker fee',amount:'0',hours:0,world:origin.id},{id:'zero-tax',type:'Tax',amount:'0',hours:0,world:origin.id}];
  const h=harness(s),html=h.api.accountsPanel();assert.doesNotMatch(html,/data-arg="zero-(fee|tax)"/);assert.match(html,/No payments recorded yet/);same(h.persisted(),s);
+});
+
+
+test('production persistence keeps insurance OFF and rejects unavailable held-cargo entry without mutation',async()=>{
+ const s=campaign();s.settings.insurance=false;const h=harness(s),bytes=h.raw();
+ assert.equal(h.api.policyPanel(),'');assert.doesNotMatch(h.api.cargoPanel(true),/lot-insure/);
+ assert.throws(()=>h.api.insureHeldCargo('insured-lot'),/Insurance is disabled/);assert.equal(h.raw(),bytes);assert.equal(h.calls.saves,0);
+ const backup=await h.exported();await h.imported(backup);assert.equal(h.persisted().settings.insurance,false);
+ assert.throws(()=>h.api.insureHeldCargo('insured-lot'),/Insurance is disabled/);assert.equal(h.persisted().settings.insurance,false);
+ await h.settings({insurance:true});assert.match(h.api.cargoPanel(true),/lot-insure/);await h.insure();assert.equal(h.persisted().policies.length,1);
+ h.api.actions.undo();assert.equal(h.persisted().policies.length,0);h.api.actions.undo();assert.equal(h.persisted().settings.insurance,false);
 });

@@ -1,11 +1,11 @@
-import {passengerShip,passengerSpace} from './passengers.mjs?v=global-planet-search-20261010-29';
+import {passengerShip,passengerSpace} from './passengers.mjs?v=campaign-controls-20261010-30';
 // Read-only bridge manifest. Purchase facts come from each lot's frozen audit;
 // current price settings, contract revenue and insurance destinations are not inputs.
 import * as A from './amounts.mjs';
-import {used} from './state.mjs?v=global-planet-search-20261010-29';
-import {bladderSpace} from './fuel.mjs?v=global-planet-search-20261010-29';
-import {passengerLuggage} from './accommodation.mjs?v=global-planet-search-20261010-29';
-import {supportCargo,supportStock,supportDisplay} from './life-support.mjs?v=global-planet-search-20261010-29';
+import {used} from './state.mjs?v=campaign-controls-20261010-30';
+import {bladderSpace} from './fuel.mjs?v=campaign-controls-20261010-30';
+import {passengerLuggage} from './accommodation.mjs?v=campaign-controls-20261010-30';
+import {supportCargo,supportStock,supportDisplay} from './life-support.mjs?v=campaign-controls-20261010-30';
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=x=>{const [whole,fraction]=String(x).split('.');return 'Cr '+whole.replace(/\B(?=(\d{3})+(?!\d))/g,',')+(fraction===undefined?'':'.'+fraction);};
 const button=(label,action,arg='',extra='')=>'<button data-action="'+action+'" data-arg="'+esc(arg)+'" '+extra+'>'+esc(label)+'</button>';

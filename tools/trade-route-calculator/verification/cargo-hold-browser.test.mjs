@@ -18,7 +18,7 @@ const base=process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/';
 export function cargoFixture({empty=false}={}){
  const f=guiFixture(12),s=f.state,recorded=structuredClone(s.lots[0]);
  s.name='Read-only cargo manifest verification';s.ship.name='Synthetic Long-Haul Manifest Trader';
- s.ship.capacity='120';s.ship.roundTons=false;s.ship.fuel=configureFuel(200,40,50,1,2);
+ s.ship.capacity='120';s.ship.roundTons=false;s.ship.fuel=configureFuel(200,40,50,40,2);
  s.ship.accommodation={rooms:{low:0,middle:4,high:1},passengers:{low:0,middle:2,high:1},crew:{low:0,middle:2,high:0},luggageTons:'3'};
  s.ship.lifeSupport={capacityHours:672,stockUnits:'950'}; // 800 internal + 150 LSS = 1.5 cargo tons.
  s.ship.expenses={salary:'12000'};
@@ -297,6 +297,21 @@ async function readonlyView(context,f){
  }finally{await page.close();}
 }
 
+async function serviceButtonStyleParity(page){
+ const buttons=page.locator('#ship-actions > .ship-actions > button');
+ const styles=()=>buttons.evaluateAll(nodes=>nodes.map(node=>{const s=getComputedStyle(node);return {background:s.backgroundImage,backgroundColor:s.backgroundColor,color:s.color,border:s.borderColor,opacity:s.opacity,fontWeight:s.fontWeight};}));
+ const initial=await styles();for(const style of initial.slice(1))assert.deepEqual(style,initial[0],'Cargo Hold shares the same service-button palette and text contrast');
+ const cargo=action(page,'cargo-hold'),fuel=action(page,'refuel');
+ await cargo.focus();const cargoFocus=await cargo.evaluate(node=>{const s=getComputedStyle(node);return [s.outlineColor,s.outlineStyle,s.outlineWidth,s.outlineOffset];});
+ await fuel.focus();const fuelFocus=await fuel.evaluate(node=>{const s=getComputedStyle(node);return [s.outlineColor,s.outlineStyle,s.outlineWidth,s.outlineOffset];});assert.deepEqual(cargoFocus,fuelFocus,'Cargo focus is equally visible');
+ await buttons.evaluateAll(nodes=>nodes.forEach(node=>{node.disabled=true;}));
+ const disabled=await styles();for(const style of disabled.slice(1))assert.deepEqual(style,disabled[0],'Cargo disabled palette matches other service controls');
+ await buttons.evaluateAll(nodes=>nodes.forEach(node=>{node.disabled=false;node.blur();}));
+ await click(page,'cargo-hold');await opened(page);const selected=await cargo.evaluate(node=>{const s=getComputedStyle(node);return [s.backgroundImage,s.color,s.outlineColor,s.outlineWidth,s.boxShadow];});
+ await click(page,'refuel');await page.locator('#service-panel').waitFor();const fuelSelected=await fuel.evaluate(node=>{const s=getComputedStyle(node);return [s.backgroundImage,s.color,s.outlineColor,s.outlineWidth,s.boxShadow];});
+ assert.deepEqual(selected,fuelSelected,'Cargo active state has the same selected styling');await click(page,'refuel');
+}
+
 async function main(){
  await mkdir(artifacts,{recursive:true});
  const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
@@ -319,6 +334,7 @@ async function main(){
    try{
     await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();
     assert.deepEqual(await page.locator('#ship-actions > .ship-actions > button').evaluateAll(buttons=>buttons.map(b=>b.dataset.action)),['refuel','refill-support','cargo-hold','ship-expenses']);
+    await serviceButtonStyleParity(page);
     await click(page,'cargo-hold');await opened(page);
     if(width<1100){
      const heading=await page.locator('#cargo-hold-panel h2').boundingBox();

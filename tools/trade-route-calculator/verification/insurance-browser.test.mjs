@@ -20,7 +20,7 @@ const destination={...origin,id:'-111,-70',x:-111,name:'Insurance Destination',h
 const extension={...origin,id:'-110,-69',y:-69,name:'Insurance Extension',hex:'1911'};
 const worlds=[origin,destination,extension];
 const mapWorlds=worlds.map(w=>({Name:w.name,Hex:w.hex,UWP:w.uwp,PBG:'703',Zone:'',WorldX:w.x,WorldY:w.y,Sector:w.sector}));
-const expectedCases=['amend-desktop','close-desktop','amend-mobile','close-mobile','malformed-history-import','invalid-numeric-import','arrived-cargo-correction','freight-audit-dice','cancel-and-read-only'];
+const expectedCases=['amend-desktop','close-desktop','amend-mobile','close-mobile','malformed-history-import','invalid-numeric-import','arrived-cargo-correction','freight-audit-dice','cancel-and-read-only','insurance-off-desktop','insurance-off-mobile'];
 const summary={suite:'Insurance real-browser verification',startedAt:new Date().toISOString(),baseURL:base,node:process.version,requestedCommit:process.env.TRAVELLER_COMMIT||null,githubSHA:process.env.GITHUB_SHA||null,cases:[],errors:[],expectedCases};
 let browser;
 await mkdir(artifacts,{recursive:true});
@@ -28,6 +28,7 @@ await mkdir(artifacts,{recursive:true});
 function campaign(){
  const state=S.initial();
  Object.assign(state,{initialized:true,name:'Disposable insurance browser verification',bank:'1000000',actual:origin.id,worlds:Object.fromEntries(worlds.map(w=>[w.id,structuredClone(w)])),route:[origin.id,destination.id]});
+ state.settings.insurance=true;
  state.lots=[{id:'insured-lot',commodity:'11',description:'Synthetic insured goods',quantity:'10',basis:'110000',goodsValue:'100000'}];
  return S.validate(state);
 }
@@ -213,6 +214,26 @@ try{
    await screenshot(page,result,'insurance-restored-'+mode+'-'+size+'.png');
   });
  }
+ for(const [size,width]of [['desktop',1440],['mobile',390]])await runCase('insurance-off-'+size,{width,height:1100},async(page,context,result)=>{
+  await insure(page);await insuranceSetting(page,false);await tab(page,'Cargo');
+  const before=await read(page);assert.equal(before.settings.insurance,false);
+  assert.equal(await page.locator('[data-action="lot-insure"]').count(),0,'OFF hides new held-cargo coverage');
+  for(const action of ['policy-audit','claim','amend'])assert.equal(await page.locator('[data-action="'+action+'"]').count(),1,'Existing '+action+' remains available');
+  await screenshot(page,result,'insurance-off-existing-'+size+'.png');
+  await claim(page,2);assert.equal((await read(page)).settings.insurance,false);await undo(page);restored(await read(page),before);
+  await openAmend(page,'amend',0);await submit(page,'Save');assert.equal((await read(page)).settings.insurance,false);await undo(page);restored(await read(page),before);
+  const backup=await exported(page);await imported(page,backup);await reload(page);
+  assert.equal((await read(page)).settings.insurance,false);assert.equal(await page.locator('[data-action="lot-insure"]').count(),0);
+  await tab(page,'Trade');await page.getByRole('button',{name:'Find supplier',exact:true}).click();await fill(page,'dice',12);await fill(page,'duration',1);
+  await submit(page,'Preview search','Review supplier search');await submit(page,'Commit search');
+  await page.getByRole('button',{name:'Buy',exact:true}).first().click();
+  assert.equal(await modal(page).locator('[name="insure"],#purchase-insurance-options').count(),0,'OFF purchase has no insurance controls');
+  await fill(page,'quantity',1);await submit(page,'Preview purchase','Confirm purchase');
+  assert.doesNotMatch(await modal(page).innerText(),/Insurance premium/);await screenshot(page,result,'insurance-off-purchase-'+size+'.png');
+  const beforeBuy=await read(page);await submit(page,'COMMIT PURCHASE');
+  assert.equal((await read(page)).settings.insurance,false);assert.deepEqual((await read(page)).policies,beforeBuy.policies);
+  await insuranceSetting(page,true);await tab(page,'Cargo');assert.ok(await page.locator('[data-action="lot-insure"]').count()>0);
+ });
  await runCase('malformed-history-import',{width:1440,height:1100},async page=>{
   await insure(page);const valid=await exported(page),before=await raw(page);
   for(const [index,value]of[null,{},'invalid',0,false].entries()){

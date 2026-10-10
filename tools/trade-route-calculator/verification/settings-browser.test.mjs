@@ -16,7 +16,7 @@ await mkdir(artifacts,{recursive:true});
 const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BROWSER_CHANNEL?{channel:process.env.TRAVELLER_BROWSER_CHANNEL}:{})});
 const fieldNames=[
  'name','ship','capacity','jump','broker','streetwise','admin','characteristic','rank','soc','mode','custom',
- 'shipTons','fuelCapacity','bladderJumps','fuelAboard',
+ 'shipTons','fuelCapacity','bladderTons','fuelAboard',
  'rooms-low','roomService-low','roomCustom-low','rooms-middle','roomService-middle','roomCustom-middle','rooms-high','roomService-high','roomCustom-high',
  'people-middle','people-high','occupiedLowBerths','luggageOverride','luggageTons','supportCapacity','supportRemaining','supportUnits',
  'creditStep','scoops','armed','reducedProfitLimitsEnabled','minPurchasePercent','maxSalePercent',
@@ -28,7 +28,7 @@ const draft={
  mortgageOriginal:'24000000',mortgagePayment:'100001',mortgageRemaining:'360',mortgagePaid:'12000000',mortgageDueDate:'029-1105',maintenancePayment:'2001',maintenanceDueDate:'015-1105',
  name:'Compact Settings verification',ship:'Synthetic Settings Trader',capacity:'160',jump:'3',
  broker:'3',streetwise:'2',admin:'1',characteristic:'-1',rank:'4',soc:'2',mode:'custom',custom:'62.5',
- shipTons:'300',fuelCapacity:'60',bladderJumps:'1',fuelAboard:'65',
+ shipTons:'300',fuelCapacity:'60',bladderTons:'90',fuelAboard:'65',
  'rooms-low':'1','roomService-low':'custom','roomCustom-low':'200',
  'rooms-middle':'5','roomService-middle':'custom','roomCustom-middle':'1300',
  'rooms-high':'2','roomService-high':'custom','roomCustom-high':'1700',
@@ -134,7 +134,7 @@ function savedValues(state,before){
  assert.equal(state.name,draft.name);assert.equal(state.ship.name,draft.ship);
  assert.equal(state.ship.capacity,draft.capacity);assert.equal(state.ship.jump,Number(draft.jump));
  assert.deepEqual(state.trader,{broker:3,streetwise:2,admin:1,characteristic:-1,rank:4,soc:2});
- assert.deepEqual(state.ship.fuel,configureFuel(300,60,65,1,3));
+ assert.deepEqual(state.ship.fuel,configureFuel(300,60,65,90,3));
  assert.equal(state.ship.staterooms,8);
  assert.deepEqual(state.ship.accommodation,{
   passengers:{low:0,middle:6,high:3},crew:{low:0,middle:0,high:0},combinedPeople:true,

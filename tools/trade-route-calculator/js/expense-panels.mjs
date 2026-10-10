@@ -1,11 +1,11 @@
-import {passengerShip} from './passengers.mjs?v=global-planet-search-20261010-29';
+import {passengerShip} from './passengers.mjs?v=campaign-controls-20261010-30';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=global-planet-search-20261010-29';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=global-planet-search-20261010-29';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=global-planet-search-20261010-29';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=global-planet-search-20261010-29';
-import {creditStep} from './rounding.mjs?v=global-planet-search-20261010-29';
-import {roll} from './rules.mjs?v=global-planet-search-20261010-29';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=campaign-controls-20261010-30';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=campaign-controls-20261010-30';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=campaign-controls-20261010-30';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=campaign-controls-20261010-30';
+import {creditStep} from './rounding.mjs?v=campaign-controls-20261010-30';
+import {roll} from './rules.mjs?v=campaign-controls-20261010-30';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=value=>'Cr '+String(value).replace(/\B(?=(\d{3})+(?!\d))/g,',');

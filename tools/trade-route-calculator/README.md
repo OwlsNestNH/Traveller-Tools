@@ -21,7 +21,7 @@ Open `index.html` through an HTTP server or GitHub Pages. No build, paid service
 - Separately tracked cargo lots, decimal tons, audited fees, per-lot profit adjustment, bank ledger and reversible actions. Money and quantity calculations use exact rational arithmetic.
 - Full Core commodity table and per-commodity modifier audits. Exotics and local item-ban thresholds require referee input. Generated dice/results can be overridden with recorded reasons.
 - Freight/mail capacity reservations, explicit delivery, late-freight penalties and duplicate-payout protection. Auto-generated contract prices use direct endpoint distance; manual contracts support alternative terms.
-- Optional first-edition Merchant Prince insurance and per-sale tax adaptations. Criminal-market sales are tax-free; protection payments are manual expenses. Policies preserve original terms and require explicit amendments for changed routes.
+- Optional first-edition Merchant Prince insurance and per-sale tax adaptations. Criminal-market sales are tax-free; protection payments are manual expenses. Policies preserve original terms and require explicit amendments for changed routes. Saved insurance OFF hides purchase and held-cargo coverage controls and blocks new policies; existing policies, claims, amendments and History remain available. Enable new coverage explicitly in Settings.
 - **Undo Jump** beside the next-jump control restores the departure world and all pre-jump travel state. One mulligan is available per departure before any later campaign change. The next initiation receives one fresh roll; Cancel, reopening, reload, route edits and History Undo do not reset that allowance. Original and replacement dice stay in the audit trail, while transient previews are cleared. Older jumps require a complete retained audit for the dedicated control.
 - One editing tab at a time, stale-preview rejection, validated imports, recovery for corrupt saves and visible storage errors. Undo stores inverse changes instead of repeatedly copying the entire ledger.
 
@@ -56,7 +56,7 @@ The four service buttons show their selected state. Clicking the selected button
 
 The native runner discovers every `node:test` suite; do not use `verification/*.test.mjs` with `node --test`, because that also selects the standalone browser scripts.
 
-Pull requests run all native suites, the 227 rules-data checks, the shared tool-visit check, and twenty-nine independent deterministic Chromium suites: main application, modal lifecycle, click routing, fuel, empty space, Mail, map overview, GUI parity, Trade buttons, Settings, insurance lifecycle, trade complications, the selected-world screen, jump mulligans, in-panel ship services, combined cabins, daily time controls, zero-fuel payments, resource alerts, recurring payment batches, the compact Expenses panel, the Cargo Hold manifest, route frame/title, inline fuel/full-stock service controls, stable service-panel navigation, passenger contracts, ordered route selections/keyboard errors, legality/fractional-sales regressions, and global planet-name search. See `.github/workflows/mail-browser.yml` at the repository root. Every job verifies the exact PR head and uploads evidence; it has read-only permissions and cannot deploy. Live API availability and the remaining browser scripts are separate checks.
+Pull requests run all native suites, the 227 rules-data checks, the shared tool-visit check, and thirty-one independent deterministic Chromium suites: main application, modal lifecycle, click routing, fuel, empty space, Mail, map overview, GUI parity, Trade buttons, Settings, insurance lifecycle, trade complications, the selected-world screen, jump mulligans, in-panel ship services, combined cabins, daily time controls, zero-fuel payments, resource alerts, recurring payment batches, the compact Expenses panel, the Cargo Hold manifest, route frame/title, inline fuel/full-stock service controls, stable service-panel navigation, passenger contracts, ordered route selections/keyboard errors, legality/fractional-sales regressions, global planet-name search, direct-ton bladder capacity, and grouped contact-search periods. See `.github/workflows/mail-browser.yml` at the repository root. Every job verifies the exact PR head and uploads evidence; it has read-only permissions and cannot deploy. Live API availability and the remaining browser scripts are separate checks.
 
 The browser scripts use Playwright only for development testing; it is not an application dependency. With Playwright installed, run:
 
@@ -111,6 +111,14 @@ Cargo sale rows retain each lot's description and cost basis, even for the same 
 
 Freight and mail use a separate contract table with tons, destination, rate per ton, total contractual revenue, dates, status and row actions. Edit available offers before Accept; Audit/View preserves original calculations and overrides. Accepted contracts use the existing explicit delivery and payout workflow. Wide tables scroll horizontally on smaller panels and screens.
 
+
+## Contact-search periods
+
+Buyer and supplier searches share a per-planet penalty: DM −1 per earlier committed attempt in the current grouped 28-day (672-hour) period. The first committed search anchors that period at its start time; all penalties clear together at the exact reset hour, and the next committed search starts the next period. Changing counterparties, search methods or leaving and revisiting the planet does not reset the count. Failed searches count; previews and cancellations do not. A search that finishes after reset still uses its start-time penalty.
+
+This is a **Home Rule / campaign interpretation** of Core’s “same month” wording. The form shows the current period and reset date; new History audits preserve the period and penalty. Legacy snapshots are replayed in saved commit order without rewriting their historic rolls, totals, prices or Undo records. Each new period uses its first committed search’s start time; backward clock corrections do not discard the latest committed group. Reject-deal cooldowns remain 720 hours.
+
+Run `node --test verification/contact-search.test.mjs verification/contact-search-ui.test.mjs` and `node verification/contact-search-browser.test.mjs` for boundary, migration, persistence, cancellation, shared-count and Undo checks.
 
 ## Cabins, service and supplies
 
@@ -426,3 +434,33 @@ Boarding preserves bank and physical LSS stock. Future consumption includes each
 At the actual destination, **Complete passage** releases the booking and posts its payment once. Payment on explicit delivery is an app convention, not a Core timing rule. No automatic freight lateness penalty, speculative-trade tax/profit adjustment, passenger mortality or lottery charge applies. Accepted terms, receipts, JSON backups, reports and History Undo retain the original calculations. Undo reverses occupancy and payments together; used life support is restored only when undoing the action that consumed it.
 
 Native checks: `node --test verification/passenger-rules.test.mjs verification/passengers.test.mjs verification/passenger-ui.test.mjs`. The independent `passengers-browser.test.mjs` script covers the real UI and must pass on the exact release candidate alongside the existing browser matrix.
+
+## Fuel bladder capacity in tons
+
+Settings and setup now ask for **Fuel bladder capacity** directly in whole tons.
+For example, entering `2` installs 2 t of capacity, without adding fuel. Hull size
+and drive rating still determine fuel burn: a 200 t Jump-2 ship needs 40 t for a
+full-range jump. Changing those settings never resizes a direct-ton bladder.
+The compact Overview readout identifies actual total **Aboard**, base **Tank**
+capacity, and **Bladder** capacity separately; the bar uses total fuel capacity.
+
+Legacy jump-count saves are read without rewriting saved bytes or Undo history.
+Their old capacity is preserved using extra jumps × ceiling(hull tons × jump
+rating / 10), so an old value of two on that 200 t Jump-2 ship remains 80 t, not
+2 t. Saving Settings converts it to direct tons. Undo can restore the original
+legacy record and earlier retained changes. Missing or contradictory legacy
+figures are rejected rather than guessed.
+
+New or edited bladder capacities cannot exceed the total cargo hold or take
+combined base/bladder capacity above ship displacement. Existing oversized
+installed capacity remains usable during unrelated Settings edits; increasing
+that capacity or reducing the hold requires a fitting value. Fuel actually in
+bladders must always fit alongside cargo, contracts, luggage, and life support.
+Shrinking or removing a bladder below fuel already aboard requires an explicit
+stock correction. Empty bladder capacity consumes no cargo space, and normal
+refuelling and fuel consumption continue to fill base tanks first and release
+bladder cargo space first.
+
+Run `node --test verification/bladder-capacity.test.mjs` and
+`node verification/bladder-capacity-browser.test.mjs` for focused migration,
+Settings, cargo limits, save/import/Undo, compact readout, and responsive checks.

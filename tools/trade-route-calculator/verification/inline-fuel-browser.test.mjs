@@ -17,7 +17,7 @@ const report={pass:false,commit:process.env.TRAVELLER_COMMIT||null,widths:[320,3
 function fixture({port='A',hydro='8',aboard=20,bladders=0,cargo='120',bank='100000',creditStep=1,frozen=0,fullSupport=false,fixedExpenses=false}={}){
  const f=guiFixture(12),s=f.state;
  Object.assign(s,{name:'Inline fuel verification',bank,hours:48,lots:[],contracts:[],snapshots:[],ledger:[],events:[],undo:[],jumpAttempts:[]});
- s.ship.name='Synthetic inline fuel trader';s.ship.capacity=cargo;s.ship.fuel=configureFuel(200,43,aboard,bladders,2);s.settings.creditStep=creditStep;
+ s.ship.name='Synthetic inline fuel trader';s.ship.capacity=cargo;s.ship.fuel=configureFuel(200,43,aboard,bladders*40,2);s.settings.creditStep=creditStep;
  s.ship.accommodation={occupiedLowBerths:frozen,rooms:{low:0,middle:4,high:0},passengers:{low:0,middle:0,high:0},crew:{low:0,middle:4,high:0}};
  // Keep a legacy representation to prove opening or editing never saves migration.
  s.ship.lifeSupport={capacityHours:672,remainingHours:fullSupport?672:336,elapsedHours:0};

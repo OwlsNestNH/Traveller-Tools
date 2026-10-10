@@ -226,7 +226,7 @@ test('Overview has four shortcuts and Refuel opens its nonmutating inline editor
  for(const [port,type]of [['A','refined'],['B','refined'],['C','unrefined'],['D','unrefined'],['E','unrefined']]){
   const s=campaign();s.worlds[origin.id].uwp=port+'788899-C';s.ship.fuel=bindings.configureFuel(200,43,20,0,2);
   const h=harness(s),before=h.persisted();h.api.setTab('Overview');const html=h.api.shipActions();
-  assert.equal((html.match(/class="primary"/g)||[]).length,3);assert.match(html,/data-action="cargo-hold"/);assert.doesNotMatch(html,/quickFuelType|fuel-radio|Refined|Unrefined/);
+  assert.equal((html.match(/class="primary"/g)||[]).length,4);assert.match(html,/data-action="cargo-hold"/);assert.doesNotMatch(html,/quickFuelType|fuel-radio|Refined|Unrefined/);
   h.api.setTab('Trade');h.api.refuelShortcut();assert.equal(h.dom.ids.get('modal').open,false);
   assert.match(h.api.services.panel(),/id="service-form"/);assert.doesNotMatch(h.api.services.panel(),/data-action="service-(?:adjust|review)"/);assert.match(h.api.services.panel(),/Actual ship location/);
   const editor=h.api.services.panel();
@@ -486,4 +486,26 @@ test('the historical remainder exception preserves ordinary upward entry roundin
   const h=harness(auditTradeCampaign()),before=h.persisted();h.api.setSelected(['legacy']);h.api.beginSale();h.fill({qty_legacy:entered});await h.submit();assert.match(h.dom.ids.get('modal-error').textContent,/Invalid sale quantity/);same(h.persisted(),before);
  }
  const h=harness(auditTradeCampaign());h.api.buyForm('radio-offer');h.fill({quantity:'0.5'});await h.submit();noError(h);assert.match(modalText(h),/<dd>1 t<\/dd>/);assert.match(modalText(h),/0.5 → 1/);
+});
+
+
+test('saved insurance OFF hides new coverage and omits irrelevant purchase premium, without enabling it',async()=>{
+ const s=campaign();s.lots=[{id:'held',commodity:'11',description:'Held goods',quantity:'1',basis:'100',goodsValue:'100'}];
+ s.snapshots=[{id:'off-supplier',kind:'supplier',party:'supplier',partyName:'Supplier',worldId:origin.id,world:bindings.R.context(origin,core),startedHours:0,hours:0,success:true,criminal:false,options:{local:false},offers:[{id:'off-offer',commodity:'11',name:'Common Electronics',description:'New goods',quantity:'10',remaining:'10',unitPrice:'100',expired:false,illegal:false,audit:{percent:100}}]}];
+ const h=harness(s),before=h.persisted();
+ assert.doesNotMatch(h.api.cargoPanel(true),/lot-insure/);
+ assert.throws(()=>h.api.actions['lot-insure']('held'),/Insurance is disabled/);same(h.persisted(),before);
+ h.api.buyForm('off-offer');assert.equal(h.dom.fields().has('insure'),false);assert.equal(h.dom.fields().has('coverage'),false);
+ h.fill({quantity:1,fee:0});await h.submit();assert.equal(h.dom.ids.get('modal-title').textContent,'Confirm purchase');
+ assert.doesNotMatch(h.dom.ids.get('modal-body').innerHTML,/Insurance premium/);same(h.persisted(),before);
+ await h.submit();assert.equal(h.persisted().settings.insurance,false);assert.equal(h.persisted().policies.length,0);assert.equal(h.persisted().bank,'99900');
+});
+
+test('saved insurance ON exposes both new coverage controls and zero-cost policy premiums remain visible',async()=>{
+ const s=campaign();s.settings.insurance=true;s.lots=[{id:'held',commodity:'11',description:'Held goods',quantity:'1',basis:'100',goodsValue:'100'}];
+ s.snapshots=[{id:'on-supplier',kind:'supplier',party:'supplier',partyName:'Supplier',worldId:origin.id,world:bindings.R.context(origin,core),startedHours:0,hours:0,success:true,criminal:false,options:{local:false},offers:[{id:'on-offer',commodity:'11',name:'Common Electronics',description:'New goods',quantity:'10',remaining:'10',unitPrice:'100',expired:false,illegal:false,audit:{percent:100}}]}];
+ const h=harness(s);assert.match(h.api.cargoPanel(true),/lot-insure/);h.api.buyForm('on-offer');assert.equal(h.dom.fields().has('insure'),true);
+ h.fill({quantity:1,fee:0,insure:true,insuranceLegs:1,insuranceDistance:1,coverage:70,manualPremium:0});await h.submit();
+ assert.equal(h.dom.ids.get('modal-error').textContent,'');assert.match(h.dom.ids.get('modal-body').innerHTML,/<dt>Insurance premium<\/dt><dd>Cr 0<\/dd>/);
+ await h.submit();assert.equal(h.persisted().settings.insurance,true);assert.equal(h.persisted().policies.length,1);
 });

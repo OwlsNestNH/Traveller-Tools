@@ -3,7 +3,7 @@
 const fields={
  mortgageOriginal:['Original mortgage amount · Cr'],mortgagePayment:['Fixed payment · Cr','', 'Every 4 weeks (28 days)'],mortgageRemaining:['Payments remaining'],mortgagePaid:['Total paid so far · Cr'],mortgageDueDate:['First / next unpaid due date'],maintenancePayment:['Maintenance · Cr','', 'Every 4 weeks (28 days)'],maintenanceDueDate:['First / next unpaid due date'],
  name:['Campaign'],ship:['Ship name'],capacity:['Cargo capacity','tons'],jump:['Jump rating'],scoops:['Fuel scoops fitted'],armed:['Ship is armed','','Mail modifier'],
- shipTons:['Ship displacement','tons'],fuelCapacity:['Base fuel tank capacity','tons'],bladderJumps:['Fuel bladders','extra jumps','Extra full-range jumps'],fuelAboard:['Fuel aboard','tons'],
+ shipTons:['Ship displacement','tons'],fuelCapacity:['Base fuel tank capacity','tons'],bladderTons:['Fuel bladder capacity','tons'],fuelAboard:['Fuel aboard','tons'],
  broker:['Broker skill'],streetwise:['Streetwise skill'],admin:['Admin skill'],characteristic:['Default EDU / SOC DM'],rank:['Highest Naval / Scout rank'],soc:['Highest SOC DM'],
  mode:['Profit mode'],custom:['Custom profit','%','Only used in Custom mode'],reducedProfitLimitsEnabled:['Enable reduced-profit price limits'],minPurchasePercent:['Minimum buy','%','Percentage of base retail'],maxSalePercent:['Maximum sell','%','Percentage of base retail'],maxBaseRetailEnabled:['Cap commodity base retail price'],maxBaseRetail:['Maximum base retail','Cr / ton'],useRawIllegalPrices:['Use original RAW base prices for illegal goods'],
  'rooms-low':['Low service · cabins'],'roomService-low':['Low cabin running-cost rate'],'roomCustom-low':['Custom low cabin cost','Cr / month','Per cabin; only in Custom mode'],
@@ -14,7 +14,7 @@ const fields={
 };
 export const settingsGroups=[
  {id:'campaign',title:'Campaign & ship',description:'Identity, capacity and fitted equipment',names:['name','ship','capacity','jump','scoops','armed']},
- {id:'fuel',title:'Ship size & fuel',description:'Total configured fuel capacity; no separate tank tracking',names:['shipTons','fuelCapacity','bladderJumps','fuelAboard']},
+ {id:'fuel',title:'Ship size & fuel',description:'Total configured fuel capacity; no separate tank tracking',names:['shipTons','fuelCapacity','bladderTons','fuelAboard']},
  {id:'mortgage',title:'Mortgage',description:'Original amount, fixed installments and payments made',advanced:true,names:['mortgageOriginal','mortgagePayment','mortgageRemaining','mortgagePaid','mortgageDueDate']},
  {id:'maintenance',title:'Monthly maintenance',description:'A separate four-week payment schedule',advanced:true,names:['maintenancePayment','maintenanceDueDate']},
  {id:'trader',title:'Trader & mail modifiers',description:'Whole-number skills and DMs',advanced:true,names:['broker','streetwise','admin','characteristic','rank','soc']},
