@@ -579,7 +579,8 @@ function editDraft(id){
 function bankLedger(){
  const amounts=state.ledger.map(l=>A.credit(l.amount)),net=amounts.reduce((n,a)=>n+a,0n),carry=A.credit(state.bank)-net;
  let balance=carry,expense=0n,deposit=0n;
- const entries=state.ledger.filter(l=>A.credit(l.amount)!==0n);
+ // A 100% late-freight penalty still needs an accessible delivery audit.
+ const entries=state.ledger.filter(l=>A.credit(l.amount)!==0n||l.type==='Freight delivery');
  const rows=entries.map(l=>{
   const amount=A.credit(l.amount);balance+=amount;if(amount<0n)expense-=amount;else deposit+=amount;
   const lot=state.lots.find(x=>x.id===l.lotId),contract=state.contracts.find(x=>x.id===l.contractId);

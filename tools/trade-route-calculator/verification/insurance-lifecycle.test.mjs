@@ -50,7 +50,7 @@ function harness(saved=campaign()){
  const dom=domDouble(),calls={saves:0,downloads:[]},memory=new Map([['traveller-trade-route-calculator:v1',JSON.stringify(saved)]]);let api,store;
  const localStorage={getItem:k=>memory.get(k)??null,setItem(k,v){memory.set(k,v);calls.saves++;},removeItem:k=>memory.delete(k)};
  const sandbox={...bindings,document:dom.document,window:{addEventListener(){}},crypto:webcrypto,structuredClone,console,FormData:dom.FormData,setTimeout:()=>1,clearTimeout(){},requestAnimationFrame:()=>1,cancelAnimationFrame(){},localStorage,Blob,URL:{createObjectURL(blob){calls.downloads.push(blob);return 'blob:test';},revokeObjectURL(){}},BroadcastChannel:undefined};
- vm.runInContext('const initial=S.initial,validate=S.validate;\n'+persistence+'\n'+executable+`\nglobalThis.api={init(s,c,m){core=c;mp=m;known={...s.worlds};view=s.actual;tab='Cargo';store=new Store(receiveCampaign,()=>{});store.editable=true;state=store.read();render();},get state(){return state;},get store(){return store;},get drafts(){return contractDrafts;},setState(s){receiveCampaign(s);},setView(id){view=id;},policyPanel,availabilityAudit,ledgerAudit,closedPolicyHistory,cargoPanel,contractsPanel,historyPanel,claimForm,amendPolicy,insureHeldCargo,policyAudit,settings,jump,closeModal,modal,syncModalSubmit,render,backupReplace,actions};`,vm.createContext(sandbox),{filename:'app.mjs + production persistence (VM; boot omitted)'});
+ vm.runInContext('const initial=S.initial,validate=S.validate;\n'+persistence+'\n'+executable+`\nglobalThis.api={init(s,c,m){core=c;mp=m;known={...s.worlds};view=s.actual;tab='Cargo';store=new Store(receiveCampaign,()=>{});store.editable=true;state=store.read();render();},get state(){return state;},get store(){return store;},get drafts(){return contractDrafts;},setState(s){receiveCampaign(s);},setView(id){view=id;},policyPanel,availabilityAudit,ledgerAudit,accountsPanel,closedPolicyHistory,cargoPanel,contractsPanel,historyPanel,claimForm,amendPolicy,insureHeldCargo,policyAudit,settings,jump,closeModal,modal,syncModalSubmit,render,backupReplace,actions};`,vm.createContext(sandbox),{filename:'app.mjs + production persistence (VM; boot omitted)'});
  api=sandbox.api;api.init(structuredClone(saved),core,mp);store=api.store;
  const fill=values=>{for(const[k,v]of Object.entries(values)){const n=dom.fields().get(k);assert.ok(n,`Expected form field ${k}`);if(n.attributes.type==='checkbox')n.checked=Boolean(v);else n.value=String(v);}};
  const submit=()=>dom.ids.get('modal-form').onsubmit({preventDefault(){},currentTarget:dom.ids.get('modal-form')});
@@ -286,7 +286,7 @@ test('Freight delivery ledger snapshots all penalty faces; historical fallback d
   const start=campaign();start.actual=destination.id;start.hours=11;start.contracts=[{id:'freight',kind:'freight',status:'accepted',origin:origin.id,destination:destination.id,quantity:'1',payment:'10000',dueHours:10}];
   const paid=S.transition(start,'Freight delivery',s=>S.deliver(s,'freight',die)),entry=paid.ledger.at(-1);
   assert.equal(entry.penaltyDie,die);assert.equal(entry.amount,String(10000*(6-die)/10));assert.equal(paid.contracts[0].penaltyDie,die);
-  const h=harness(paid);h.api.ledgerAudit(entry.id);assert.match(h.dom.ids.get('modal-body').innerHTML,new RegExp('<dt>Late-penalty roll</dt><dd>'+die+'</dd>'));
+  const h=harness(paid);assert.ok(h.api.accountsPanel().includes('data-action="ledger-audit" data-arg="'+entry.id+'"'),'Every penalty face, including a zero payout, has an accessible Accounts audit');h.api.ledgerAudit(entry.id);assert.match(h.dom.ids.get('modal-body').innerHTML,new RegExp('<dt>Late-penalty roll</dt><dd>'+die+'</dd>'));
   const old=structuredClone(paid);delete old.ledger.at(-1).penaltyDie;const legacy=harness(old);legacy.api.ledgerAudit(entry.id);assert.match(legacy.dom.ids.get('modal-body').innerHTML,new RegExp('<dt>Late-penalty roll</dt><dd>'+die+'</dd>'));
   delete old.contracts[0].penaltyDie;const missing=harness(old);missing.api.ledgerAudit(entry.id);assert.match(missing.dom.ids.get('modal-body').innerHTML,/<dt>Late-penalty roll<\/dt><dd>Not recorded<\/dd>/);
   const conflict=structuredClone(paid);delete conflict.ledger.at(-1).penaltyDie;conflict.contracts[0].payout='999';const mismatch=harness(conflict);mismatch.api.ledgerAudit(entry.id);assert.match(mismatch.dom.ids.get('modal-body').innerHTML,/<dt>Late-penalty roll<\/dt><dd>Not recorded<\/dd>/);
@@ -302,4 +302,9 @@ test('Freight delivery ledger snapshots all penalty faces; historical fallback d
 test('The shared dialog explicitly references its changing accessible title',async()=>{
  const html=await readFile(new URL('../index.html',import.meta.url),'utf8');assert.match(html,/<dialog[^>]*id="modal"[^>]*aria-labelledby="modal-title"/);assert.match(html,/<h2 id="modal-title">/);
  const h=harness();h.api.modal('Read-only audit','Details',null);assert.equal(h.dom.ids.get('modal-title').textContent,'Read-only audit');h.api.closeModal();h.api.modal('Confirm payment','Review',()=>{});assert.equal(h.dom.ids.get('modal-title').textContent,'Confirm payment');
+});
+
+test('Zero freight settlements remain auditable without showing unrelated zero charges',()=>{
+ const s=campaign();s.ledger=[{id:'zero-fee',type:'Broker fee',amount:'0',hours:0,world:origin.id},{id:'zero-tax',type:'Tax',amount:'0',hours:0,world:origin.id}];
+ const h=harness(s),html=h.api.accountsPanel();assert.doesNotMatch(html,/data-arg="zero-(fee|tax)"/);assert.match(html,/No payments recorded yet/);same(h.persisted(),s);
 });

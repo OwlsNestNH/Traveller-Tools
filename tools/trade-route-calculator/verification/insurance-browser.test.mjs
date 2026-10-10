@@ -267,7 +267,11 @@ try{
    const after=await read(page),policy=after.policies[0];assert.equal(policy.remainingQuantity,String(remaining));assert.equal(policy.remainingValue,String(remaining?50000:0));assert.equal(policy.status,remaining?'arrived':'closed');
    for(const key of ['premium','coverage','initialQuantity','insuredValue','claims','amendments'])assert.deepEqual(policy[key],original[key]);
    assert.equal(after.bank,before.bank);assert.deepEqual(after.ledger,before.ledger);
-   await reload(page);assert.deepEqual(await read(page),after);await undo(page);restored(await read(page),before);
+   await reload(page);assert.deepEqual(await read(page),after);await undo(page);
+   // A committed correction permanently retires the previous jump mulligan.
+   // Undo restores cargo/policy fields but must not reopen that dice opportunity.
+   const expected=structuredClone(before);assert.equal(expected.jumpAttempts.length,1);expected.jumpAttempts[0].closed=true;
+   assert.deepEqual(after.jumpAttempts,expected.jumpAttempts);restored(await read(page),expected);
   }
   await screenshot(page,result,'audit-arrived-policy-correction-mobile.png');
  });
@@ -280,7 +284,7 @@ try{
    await tab(page,'Accounts');await page.locator('[data-action="ledger-audit"][data-arg="'+entry.id+'"]').click();
    await page.getByRole('dialog',{name:'Freight delivery details',exact:true}).waitFor();
    const roll=modal(page).locator('dt').filter({hasText:/^Late-penalty roll$/}).locator('xpath=following-sibling::dd[1]');assert.equal(await roll.textContent(),String(die));
-   if(die===2)await screenshot(page,result,'audit-freight-penalty-details.png');await closeAudit(page);
+   if(die===2||die===6)await screenshot(page,result,'audit-freight-penalty-'+die+'-details.png');await closeAudit(page);
    if(die===2){
     for(const recorded of [true,false]){
      const older=structuredClone(paid);delete older.ledger.at(-1).penaltyDie;if(!recorded)delete older.contracts[0].penaltyDie;

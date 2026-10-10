@@ -60,10 +60,15 @@ const failureResponse=()=>({status:503,body:'Synthetic Traveller Map outage'});
 async function begin(mode='build'){
  await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();
  await page.locator('#route-menu > summary').click();await click('route-'+mode);assert.equal(await read(),seedBytes);
+ // Let the finite startup fixtures and their SVG repaints finish before
+ // keyboard cases take focus. Deliberately held hex requests start afterward.
+ await page.waitForLoadState('networkidle');
+ await page.waitForFunction(()=>document.querySelector('#map-load-status')?.textContent==='');
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
 }
 async function pending(id,keyPress){
  const incoming=nextHex(id);
- if(keyPress){await hex(id).focus();await page.keyboard.press(keyPress);}else await hex(id).click();
+ if(keyPress)await hex(id).press(keyPress);else await hex(id).click();
  return incoming;
 }
 async function check(name){
