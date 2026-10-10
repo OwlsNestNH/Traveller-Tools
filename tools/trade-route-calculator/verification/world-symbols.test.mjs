@@ -34,7 +34,7 @@ test('published starport and zones remain separate from effective calculator ove
 });
 
 test('selected blue hex matches the approved paints and remains inset from the cell boundary',()=>{
- for(const scale of [10,24,40,50,120]){
+ for(const scale of [10,24,40,50,120,144]){
   const x=132.5,y=-82.25,svg=selectedWorldHex(x,y,scale),factor=Math.min(1,scale/50);
   assert.match(svg,/class="selected-world-hex" aria-hidden="true"/);
   assert.match(svg,/fill="#245d94" fill-opacity="0\.42" stroke="none"/);

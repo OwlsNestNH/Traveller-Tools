@@ -4,7 +4,7 @@ import {camera,viewportTiles,MapAreaCache} from '../js/map-viewport.mjs';
 import {distance} from '../js/map.mjs';
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 test('viewport loads cover visible hexes across parity, zoom and distant panning',()=>{
- for(const anchor of [{x:0,y:0},{x:-111,y:-70}])for(const zoom of [.2,1,2.4]){
+ for(const anchor of [{x:0,y:0},{x:-111,y:-70}])for(const zoom of [.2,1,2.4,2.88]){
   const pan={x:-1234,y:456},c=camera(anchor,pan,zoom),tiles=viewportTiles(anchor,pan,zoom);
   assert.ok(tiles.length<=24);
   for(let x=Math.floor(c.x-260/(50*zoom*.866));x<=Math.ceil(c.x+260/(50*zoom*.866));x++)for(let y=Math.floor(c.y-160/(50*zoom));y<=Math.ceil(c.y+160/(50*zoom));y++)assert.ok(tiles.some(t=>distance(t,{x,y})<=12));

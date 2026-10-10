@@ -78,7 +78,7 @@ async function labelFitsCell(id){
  labelReports.push(q);
 }
 
-async function closeZoom(){for(let i=0;i<6;i++){await click('map-zoom-in');await frame();}await page.locator('.map-zoom-controls .help').getByText('240%',{exact:true}).waitFor();}
+async function closeZoom(){for(let i=0;i<6;i++){await click('map-zoom-in');await frame();}await page.locator('.map-zoom-controls .help').getByText('288%',{exact:true}).waitFor();}
 try{
  await page.goto(process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/');await page.getByText('Editing in this tab',{exact:true}).waitFor();await frame();
  assert.equal(await screen.locator('.screen-title strong').textContent(),current.name);

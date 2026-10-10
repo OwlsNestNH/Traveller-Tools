@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {MIN_MAP_ZOOM,mapLevel,nextMapZoom,sectorBounds,visibleSectors,MapOverviewCache,overviewMarkup,overviewLabelLayout} from '../js/map-overview.mjs';
+import {MIN_MAP_ZOOM,MAP_ZOOM_STEP,CLOSE_MAP_ZOOM,MAX_MAP_ZOOM,mapLevel,nextMapZoom,sectorBounds,visibleSectors,MapOverviewCache,overviewMarkup,overviewLabelLayout} from '../js/map-overview.mjs';
 import {camera} from '../js/map-viewport.mjs';
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const spin={name:'Spinward Marches',x:-4,y:-1},regina={x:-110,y:-70};
@@ -17,6 +17,29 @@ test('new layers live below the preserved world range and stop at a readable wid
   const pan={x:90,y:-40},next=nextMapZoom(zoom,1/1.2);
   const before=camera(anchor,pan,zoom),after=camera(anchor,{x:pan.x*next/zoom,y:pan.y*next/zoom},next);
   assert.ok(Math.abs(before.x-after.x)<1e-10&&Math.abs(before.y-after.y)<1e-10);
+ }
+});
+test('one additional close step preserves old stops and clamps at 288%',()=>{
+ assert.equal(MAP_ZOOM_STEP,1.2);assert.equal(CLOSE_MAP_ZOOM,2.4);assert.equal(MAX_MAP_ZOOM,2.88);
+ let zoom=1;const stops=[];
+ for(let i=0;i<8;i++){zoom=nextMapZoom(zoom,MAP_ZOOM_STEP);stops.push(Math.round(zoom*100));}
+ assert.deepEqual(stops,[120,144,173,207,240,288,288,288]);
+ assert.equal(nextMapZoom(MAX_MAP_ZOOM,1/MAP_ZOOM_STEP),CLOSE_MAP_ZOOM);
+ assert.equal(nextMapZoom(CLOSE_MAP_ZOOM,1/MAP_ZOOM_STEP),2);
+ for(const factor of [1.001,1.2,Math.exp(.4),1000]){
+  assert.equal(nextMapZoom(MAX_MAP_ZOOM,factor),MAX_MAP_ZOOM);
+  assert.ok(nextMapZoom(CLOSE_MAP_ZOOM,factor)>CLOSE_MAP_ZOOM);
+  assert.ok(nextMapZoom(CLOSE_MAP_ZOOM,factor)<=MAX_MAP_ZOOM);
+ }
+ assert.equal(nextMapZoom(2.3,Math.exp(.4)),CLOSE_MAP_ZOOM);
+ assert.equal(nextMapZoom(2.6,Math.exp(-.4)),CLOSE_MAP_ZOOM);
+ assert.equal(nextMapZoom(2.88,.001),CLOSE_MAP_ZOOM,'Cross the nearest preserved stop first');
+ assert.equal(nextMapZoom(.1,1000),.2);assert.equal(nextMapZoom(.06,.01),MIN_MAP_ZOOM);
+ for(const anchor of [regina,{x:-111,y:-70},{x:0,y:0}])for(const zoom of [2.3,2.4,2.6,2.88])for(const factor of [1/MAP_ZOOM_STEP,MAP_ZOOM_STEP,Math.exp(.4),Math.exp(-.4)]){
+  const pan={x:90,y:-40},next=nextMapZoom(zoom,factor);
+  const before=camera(anchor,pan,zoom),after=camera(anchor,{x:pan.x*next/zoom,y:pan.y*next/zoom},next);
+  for(const axis of ['x','y'])assert.ok(Math.abs(before[axis]-after[axis])<1e-10,'Zoom preserves the panned geographic center');
+  assert.equal(mapLevel(next),'world');
  }
 });
 test('official sector rectangles join across zero and negative coordinates',()=>{

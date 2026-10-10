@@ -28,7 +28,7 @@ try{
  assert.equal(await page.locator('#map-uwp').isChecked(),true);
  assert.equal(await page.locator('.world-uwp').count(),0);
  for(let i=0;i<6;i++){await click('+');await page.waitForTimeout(60);}
- await page.locator('.map-zoom-controls').getByText('240%',{exact:true}).waitFor();
+ await page.locator('.map-zoom-controls').getByText('288%',{exact:true}).waitFor();
  const marker=page.locator('svg [data-action="map-world"]').filter({has:page.locator('.world-name',{hasText:'Regina'})});
  assert.equal(await marker.locator('.world-uwp').textContent(),'A788899-C');
  const positions=await marker.evaluate(el=>({name:JSON.parse(JSON.stringify(el.querySelector('.world-name').getBoundingClientRect())),uwp:JSON.parse(JSON.stringify(el.querySelector('.world-uwp').getBoundingClientRect())),cy:el.querySelector('circle').getBoundingClientRect().top+7}));

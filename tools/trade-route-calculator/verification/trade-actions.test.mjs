@@ -50,7 +50,7 @@ function harness(saved=campaign(),priceDice=[]){
  const store={editable:true,recovery:false,save(next,expected){if(!this.editable)throw Error('This tab is read-only.');if(persisted.revision!==expected)throw Error('This preview is stale.');S.validate(next);persisted=structuredClone(next);calls.saves++;api.setState(next);api.render();},replace(next,expected){next=structuredClone(S.validate(next));next.revision=expected+1;this.save(next,expected);},read:()=>structuredClone(persisted)};
  const rules={...bindings.R,quote(...args){calls.quotes++;return bindings.R.quote(...args,()=>{calls.priceDice++;return priceDice.shift()??3;});},roll:n=>({dice:Array(n).fill(3),total:n*3}),die:()=>3,freightOffers(...args){calls.freight++;return bindings.R.freightOffers(...args);},mailOffer(...args){calls.mail++;return bindings.R.mailOffer(...args);}};
  const sandbox={...bindings,R:rules,document:dom.document,window:{addEventListener(){},innerWidth:1440},getComputedStyle:()=>({paddingLeft:'0',paddingRight:'0'}),crypto:webcrypto,structuredClone,console,FormData:dom.FormData,setTimeout,clearTimeout,requestAnimationFrame:()=>1,cancelAnimationFrame(){}};
- vm.runInContext(executable+`\nglobalThis.api={services,toggleShipPanel,setInputRounding(values){inputRounding=values;},init(s,c,m,p){state=s;core=c;mp=m;store=p;known={...s.worlds};view=s.actual;tab='Trade';},get state(){return state;},get view(){return view;},setSelected(ids){selected=new Set(ids);},get drafts(){return contractDrafts;},get check(){return mailCheck;},setState(s){receiveCampaign(s);},setDrafts(d){contractDrafts=d;},setView(id){view=id;},get previewSale(){return previewSale;},setTab(t){tab=t;},setRouteDraft(d){routeDraft=d;},get mapZoom(){return mapZoom;},setMapDrag(d){mapDrag=d;},ledgerAudit,routeJumpControl,routeStops,shipActions,refuelShortcut,currentQuote,priceAudit,searchDialog,beginSale,buyForm,marketPanel,cargoPanel,mailPanel,mailRollSummary,contractsPanel,historyPanel,cancelledMailHistory,contractDetails,contractRolls,historyDetails,historyCategory,contractSearch,updateMailEstimate,accept,deliver,editDraft,closeModal,modal,syncModalSubmit,render,backupReplace,actions};`,vm.createContext(sandbox),{filename:'app.mjs (VM; boot omitted)'});
+ vm.runInContext(executable+`\nglobalThis.api={services,toggleShipPanel,setInputRounding(values){inputRounding=values;},init(s,c,m,p){state=s;core=c;mp=m;store=p;known={...s.worlds};view=s.actual;tab='Trade';},get state(){return state;},get view(){return view;},setSelected(ids){selected=new Set(ids);},get drafts(){return contractDrafts;},get check(){return mailCheck;},setState(s){receiveCampaign(s);},setDrafts(d){contractDrafts=d;},setView(id){view=id;},get previewSale(){return previewSale;},setTab(t){tab=t;},setRouteDraft(d){routeDraft=d;},get mapZoom(){return mapZoom;},get mapPan(){return mapPan;},setMapPan(p){mapPan=p;},setMapDrag(d){mapDrag=d;},ledgerAudit,routeJumpControl,routeStops,shipActions,refuelShortcut,currentQuote,priceAudit,searchDialog,beginSale,buyForm,marketPanel,cargoPanel,mailPanel,mailRollSummary,contractsPanel,historyPanel,cancelledMailHistory,contractDetails,contractRolls,historyDetails,historyCategory,contractSearch,updateMailEstimate,accept,deliver,editDraft,closeModal,modal,syncModalSubmit,render,backupReplace,actions};`,vm.createContext(sandbox),{filename:'app.mjs (VM; boot omitted)'});
  api=sandbox.api;api.init(structuredClone(saved),core,mp,store);api.render();
  const fill=values=>{for(const[k,v]of Object.entries(values)){const n=dom.fields().get(k);assert.ok(n,`Expected form field ${k}`);if(n.attributes.type==='checkbox')n.checked=Boolean(v);else n.value=String(v);}};
  const submit=()=>dom.ids.get('modal-form').onsubmit({preventDefault(){},currentTarget:dom.ids.get('modal-form')});
@@ -256,6 +256,23 @@ test('only Ctrl plus vertical wheel over an active map is intercepted to change 
   if(guard==='drag')h.api.setMapDrag({});
   h.dom.dispatch('wheel',{closest:()=>guard==='outside'?null:{}},{deltaY:guard==='horizontal'?0:-150,deltaMode:0,ctrlKey:true,preventDefault(){prevented++;}});
   assert.equal(prevented,0,guard+' retains default behavior');assert.equal(h.api.mapZoom,1);same(h.persisted(),before);
+ }
+});
+
+test('close zoom buttons and Ctrl-wheel share the extra step without changing selection or campaign',()=>{
+ for(const input of ['buttons','wheel']){
+  const h=harness(),before=h.persisted();h.api.setView(destination.id);h.api.setMapPan({x:30,y:-20});
+  const advance=factor=>input==='buttons'?h.api.actions[factor>1?'map-zoom-in':'map-zoom-out']():h.dom.dispatch('wheel',{closest:()=>({})},{deltaY:factor>1?-200:200,deltaMode:0,ctrlKey:true,preventDefault(){}});
+  while(h.api.mapZoom<2.4)advance(1.2);
+  assert.equal(h.api.mapZoom,2.4);
+  advance(1.2);assert.equal(h.api.mapZoom,2.88);
+  for(let i=0;i<4;i++)advance(1.2);
+  assert.equal(h.api.mapZoom,2.88);
+  assert.ok(Math.abs(h.api.mapPan.x-30*2.88)<1e-10);assert.ok(Math.abs(h.api.mapPan.y+20*2.88)<1e-10);
+  advance(1/1.2);assert.equal(h.api.mapZoom,2.4);
+  assert.equal(h.api.view,destination.id);same(h.persisted(),before);
+  h.api.actions['map-zoom-reset']();assert.equal(h.api.mapZoom,1);same(h.api.mapPan,{x:0,y:0});
+  assert.equal(h.api.view,destination.id);same(h.persisted(),before);assert.equal(h.calls.saves,0);
  }
 });
 

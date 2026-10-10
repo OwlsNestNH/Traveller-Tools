@@ -380,3 +380,8 @@ This supersedes the original V1 exclusion of passengers without changing existin
 Find World can search names across all M1105 sectors without a sector/subsector choice. Results identify Planet — Subsector — Sector — Hex, preserving repeated names as distinct locations. Real subsector names come from the sector metadata for the returned sector coordinates; unavailable names remain explicitly unavailable with the known A–P letter. Search is keyboard/mobile usable with wrapped labels, debouncing, visible loading/empty/error states, retry, a notice at the API’s 160-result cap, and stale-response protection.
 
 Selecting a result only browses and highlights that world, at a world-level zoom with its nearby map. It must not move the ship, change the campaign origin, alter an existing route/draft, advance time, or create transactions. Close/Cancel/Escape and newer queries invalidate pending searches and selections. Existing location dropdowns, recent worlds, Current system, and the separately confirmed Use as starting world flow remain available.
+
+
+## Additional close map zoom — 2026-10-10
+
+Keep the existing 240% close view reachable and add one further ×1.2 step to 288%. Use the same bounded zoom calculation for buttons and Ctrl+wheel, including trackpad pinch events represented by Ctrl+wheel. Preserve the geographic viewport center, panning, selected browsed world, actual ship location, route and campaign state. Both normal and expanded maps retain the existing close-view labels, UWP toggle, icons and planet colors. Reset view remains centered 100%; reload retains the existing temporary-view reset behavior. No dedicated touchscreen pinch interaction is added.

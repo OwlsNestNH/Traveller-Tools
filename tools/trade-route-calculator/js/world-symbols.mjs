@@ -47,5 +47,5 @@ export function mapKeyMarkup(){
   [icon('<circle r="3" fill="#62d3dd"/><path d="M 6 3 l -3 7 3 -2 3 2 Z" fill="#62d3dd"/>'),'Ship location'],
   [icon(`<polygon points="${hexPoints(0,0,10)}" fill="#245d94" fill-opacity="0.42" stroke="#80beff" stroke-width="1.8"/>`,'key-selected-world'),'Selected world']
  ];
- return '<section class="map-key" aria-label="Map key"><h3>Map key <span>Symbols at 240%</span></h3><ul>'+entries.map(([symbol,label])=>'<li>'+symbol+'<span>'+label+'</span></li>').join('')+'</ul><p class="help">The blue hex marks the selected world; the cyan ship marks your actual location. Browsing never moves the ship.</p><p class="help">Shown symbols use published data. Other base types are listed above. Missing data is not proof of absence. Political borders show allegiance territory, not travel zones.</p></section>';
+ return '<section class="map-key" aria-label="Map key"><h3>Map key <span>Symbols at 240–288%</span></h3><ul>'+entries.map(([symbol,label])=>'<li>'+symbol+'<span>'+label+'</span></li>').join('')+'</ul><p class="help">The blue hex marks the selected world; the cyan ship marks your actual location. Browsing never moves the ship.</p><p class="help">Shown symbols use published data. Other base types are listed above. Missing data is not proof of absence. Political borders show allegiance territory, not travel zones.</p></section>';
 }
