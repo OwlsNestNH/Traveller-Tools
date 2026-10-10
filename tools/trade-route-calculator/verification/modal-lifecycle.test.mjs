@@ -37,6 +37,35 @@ try{
  await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();
  await click('Set up campaign');await page.locator('#setup-world .picker-selection').getByText(/Hex 1910/).waitFor();await click('Start campaign');await closed();
  const original=await read();
+ // Load the extracted helpers through the real release URLs and exercise their
+ // text/HTML boundaries and opted-in fields with Chromium's DOM/validity rules.
+ // The controls are detached; this check must not change the campaign.
+ const helperEvidence=await page.evaluate(async()=>{
+  const token=new URL(document.querySelector('link[href*="style.css"]').href).searchParams.get('v');
+  const display=await import(new URL('js/display.mjs?v='+token,location.href));
+  const {normalizeAmountFields}=await import(new URL('js/form-values.mjs?v='+token,location.href));
+  const raw='<img src=x onerror="bad()"> & \'1234\'',sink=document.createElement('div');
+  sink.innerHTML=display.moneyHtml(raw);
+  const examples=[];
+  for(const creditStep of [1,100]){
+   const form=document.createElement('form');
+   form.innerHTML='<label>Credit amount<input name="amount" type="number" step="1" data-round="credits" data-round-label="Credit amount"></label><input name="half" type="number" step="any" data-round="tons" data-round-exact="0.5"><input name="remaining" type="number" step="any" data-round="tons" data-round-exact="1.5"><input name="tons" type="number" step="1" data-round="tons" data-round-label="Tons"><input name="blank" type="number" data-round="credits"><input name="disabled" type="text" disabled data-round="credits">';
+   for(const [name,value]of Object.entries({amount:'10.1',half:'0.5',remaining:'1.5',tons:'1.01',blank:'',disabled:'not finite'}))form.elements.namedItem(name).value=value;
+   const amount=form.elements.namedItem('amount'),beforeValid=amount.checkValidity(),rounding=[];
+   normalizeAmountFields(form.querySelectorAll('[data-round]'),{creditStep,rounding});
+   const once=JSON.stringify(rounding);normalizeAmountFields(form.querySelectorAll('[data-round]'),{creditStep,rounding});
+   examples.push({creditStep,beforeValid,afterValid:form.checkValidity(),values:[...form.elements].map(input=>input.value),rounding,stable:once===JSON.stringify(rounding)});
+  }
+  return {text:sink.textContent,elements:sink.children.length,missing:display.moneyHtml(null),large:display.formatCreditsText('900719925474099312345678901234'),fractional:display.formatDecimalCreditsText('1234.5678'),examples};
+ });
+ assert.equal(helperEvidence.text,'Cr <img src=x onerror="bad()"> & \'1,234\'');assert.equal(helperEvidence.elements,0);
+ assert.equal(helperEvidence.missing,'Not recorded');assert.equal(helperEvidence.large,'Cr 900,719,925,474,099,312,345,678,901,234');assert.equal(helperEvidence.fractional,'Cr 1,234.5678');
+ for(const result of helperEvidence.examples){
+  assert.equal(result.beforeValid,false);assert.equal(result.afterValid,true);assert.equal(result.stable,true);
+  assert.deepEqual(result.values,[result.creditStep===100?'100':'11','0.5','1.5','2','','not finite']);
+  assert.deepEqual(result.rounding,[{label:'Credit amount',before:'10.1',after:result.creditStep===100?'100':'11'},{label:'Tons',before:'1.01',after:'2'}]);
+ }
+ assert.deepEqual(await read(),original);
  for(const method of ['Cancel','Close dialog','Escape']){
   await openLocation();const pending=holdRequest();await click('Confirm starting world');await pending.start;
   assert.equal(await page.locator('#modal-submit').isDisabled(),true);
@@ -96,6 +125,6 @@ try{
  }
  await click('History');await click('Undo latest change');
  const undone=await read();assert.equal(undone.bank,depositBefore.bank);assert.deepEqual(undone.ledger,depositBefore.ledger);
- assert.deepEqual(errors,[]);console.log('PASS: Cancel/close/Escape, duplicate submit, late success/error isolation, cancelled route, lock loss during request, read-only browsing fresh confirmation, renamed numeric labels/review titles, cancel/commit and deposit Undo.');
+ assert.deepEqual(errors,[]);console.log('PASS: release-loaded display/form helpers, inert saved text, exact large Credits, Cr1/Cr100 native validity and fractional remainders; Cancel/close/Escape, duplicate submit, late success/error isolation, cancelled route, lock loss during request, read-only browsing fresh confirmation, renamed numeric labels/review titles, cancel/commit and deposit Undo.');
 }finally{gate?.release();await browser.close();}
 

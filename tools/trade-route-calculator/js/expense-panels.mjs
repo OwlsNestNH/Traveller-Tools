@@ -1,14 +1,15 @@
-import {passengerShip} from './passengers.mjs?v=campaign-controls-20261010-30';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=shared-helpers-20261010-31';
+import {passengerShip} from './passengers.mjs?v=shared-helpers-20261010-31';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=campaign-controls-20261010-30';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=campaign-controls-20261010-30';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=campaign-controls-20261010-30';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=campaign-controls-20261010-30';
-import {creditStep} from './rounding.mjs?v=campaign-controls-20261010-30';
-import {roll} from './rules.mjs?v=campaign-controls-20261010-30';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=shared-helpers-20261010-31';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=shared-helpers-20261010-31';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=shared-helpers-20261010-31';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=shared-helpers-20261010-31';
+import {creditStep} from './rounding.mjs?v=shared-helpers-20261010-31';
+import {roll} from './rules.mjs?v=shared-helpers-20261010-31';
 
-const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const money=value=>'Cr '+String(value).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+const esc=escapeHtml;
+const money=formatCreditsText;
 const labels={mortgage:'Mortgage',maintenance:'Monthly maintenance',salary:'Crew salaries',support:'Life support',fuel:'Fuel',berthing:'Port costs'};
 const payableKinds=['mortgage','maintenance','salary','berthing'];
 const fixed=kind=>kind==='mortgage'||kind==='maintenance';

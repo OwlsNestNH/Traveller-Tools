@@ -1,11 +1,12 @@
+import {escapeHtml,formatCreditsText} from './display.mjs?v=shared-helpers-20261010-31';
 import * as A from './amounts.mjs';
-import {manualLuggage} from './accommodation.mjs?v=campaign-controls-20261010-30';
-import * as P from './passengers.mjs?v=campaign-controls-20261010-30';
-import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=campaign-controls-20261010-30';
-import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=campaign-controls-20261010-30';
+import {manualLuggage} from './accommodation.mjs?v=shared-helpers-20261010-31';
+import * as P from './passengers.mjs?v=shared-helpers-20261010-31';
+import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=shared-helpers-20261010-31';
+import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=shared-helpers-20261010-31';
 import {displayDate} from './calendar.mjs';
-const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const money=x=>'Cr '+String(x).replace(/\B(?=(\d{3})+(?!\d))/g,','),signed=x=>x>0?'+'+x:String(x);
+const esc=escapeHtml;
+const money=formatCreditsText,signed=x=>x>0?'+'+x:String(x);
 const facts=rows=>'<dl class="passenger-facts">'+rows.map(([k,v])=>'<dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd>').join('')+'</dl>';
 const button=(label,action,arg='',mutate=false,disabled=false)=>'<button data-action="'+action+'" data-arg="'+esc(arg)+'" '+(mutate?'data-mutate ':'')+(disabled?'data-unavailable disabled ':'')+'>'+esc(label)+'</button>';
 const field=(name,label,value='',extra='')=>'<label class="field">'+esc(label)+'<input name="'+name+'" value="'+esc(value)+'" '+extra+'></label>';

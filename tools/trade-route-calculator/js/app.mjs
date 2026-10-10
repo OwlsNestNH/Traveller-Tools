@@ -1,42 +1,44 @@
-import {contactSearchStatus,contactSearchPeriod,contactSearchRule} from './contact-search.mjs?v=campaign-controls-20261010-30';
-import {createPassengerUI} from './passenger-ui.mjs?v=campaign-controls-20261010-30';
-import {passengerShip,passengerTotals,passengerSpace,passengerCapacity} from './passengers.mjs?v=campaign-controls-20261010-30';
-import {advancePaymentDate,recordedPaymentDate} from './payment-schedule.mjs?v=campaign-controls-20261010-30';
-import {configureMortgage,mortgageStatus} from './mortgage.mjs?v=campaign-controls-20261010-30';
-import {configureMaintenance,maintenanceStatus} from './maintenance.mjs?v=campaign-controls-20261010-30';
-import {createServicePanels} from './service-panels.mjs?v=campaign-controls-20261010-30';
-import {cargoHoldPanel} from './cargo-hold.mjs?v=campaign-controls-20261010-30';
-import {createExpensePanels} from './expense-panels.mjs?v=campaign-controls-20261010-30';
+import {escapeHtml,moneyHtml} from './display.mjs?v=shared-helpers-20261010-31';
+import {normalizeAmountFields} from './form-values.mjs?v=shared-helpers-20261010-31';
+import {contactSearchStatus,contactSearchPeriod,contactSearchRule} from './contact-search.mjs?v=shared-helpers-20261010-31';
+import {createPassengerUI} from './passenger-ui.mjs?v=shared-helpers-20261010-31';
+import {passengerShip,passengerTotals,passengerSpace,passengerCapacity} from './passengers.mjs?v=shared-helpers-20261010-31';
+import {advancePaymentDate,recordedPaymentDate} from './payment-schedule.mjs?v=shared-helpers-20261010-31';
+import {configureMortgage,mortgageStatus} from './mortgage.mjs?v=shared-helpers-20261010-31';
+import {configureMaintenance,maintenanceStatus} from './maintenance.mjs?v=shared-helpers-20261010-31';
+import {createServicePanels} from './service-panels.mjs?v=shared-helpers-20261010-31';
+import {cargoHoldPanel} from './cargo-hold.mjs?v=shared-helpers-20261010-31';
+import {createExpensePanels} from './expense-panels.mjs?v=shared-helpers-20261010-31';
 import {currentJumpAttempt} from './jump-attempts.mjs';
-import {mountSettingsLayout,syncSettingsControls,stepSetting} from './settings-layout.mjs?v=campaign-controls-20261010-30';
-import {configureFuel,fuelCapacities,bladderSpace,validateFuel,jumpFuel,fuelReference} from './fuel.mjs?v=campaign-controls-20261010-30';
-import {refillQuote,supportStock,supportCargo,supportDisplay,anchorSupport,configureSupport} from './life-support.mjs?v=campaign-controls-20261010-30';
-import {campaignReport} from './report.mjs?v=campaign-controls-20261010-30';
-import {up,creditStep,roundExisting} from './rounding.mjs?v=campaign-controls-20261010-30';
-import {tiers,luggageAllowance,occupants,passengerLuggage,manualLuggage,serviceRate,serviceLabel,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=campaign-controls-20261010-30';
+import {mountSettingsLayout,syncSettingsControls,stepSetting} from './settings-layout.mjs?v=shared-helpers-20261010-31';
+import {configureFuel,fuelCapacities,bladderSpace,validateFuel,jumpFuel,fuelReference} from './fuel.mjs?v=shared-helpers-20261010-31';
+import {refillQuote,supportStock,supportCargo,supportDisplay,anchorSupport,configureSupport} from './life-support.mjs?v=shared-helpers-20261010-31';
+import {campaignReport} from './report.mjs?v=shared-helpers-20261010-31';
+import {up,creditStep,roundExisting} from './rounding.mjs?v=shared-helpers-20261010-31';
+import {tiers,luggageAllowance,occupants,passengerLuggage,manualLuggage,serviceRate,serviceLabel,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=shared-helpers-20261010-31';
 import * as A from './amounts.mjs';
 import {parseDate,displayDate} from './calendar.mjs';
-import * as R from './rules.mjs?v=campaign-controls-20261010-30';
-import * as S from './state.mjs?v=campaign-controls-20261010-30';
+import * as R from './rules.mjs?v=shared-helpers-20261010-31';
+import * as S from './state.mjs?v=shared-helpers-20261010-31';
 import {latestMailCheck,recordMailCheck,mailCheckHistoryStatus} from './mail-history.mjs?v=mail-history-1';
-import * as E from './expenses.mjs?v=campaign-controls-20261010-30';
+import * as E from './expenses.mjs?v=shared-helpers-20261010-31';
 import {planetInformation,worldSheetURL} from './planet-info.mjs?v=world-data-1';
-import {worldMapFacts,worldSymbols,selectedWorldHex,mapKeyMarkup} from './world-symbols.mjs?v=campaign-controls-20261010-30';
-import * as M from './map.mjs?v=campaign-controls-20261010-30';
+import {worldMapFacts,worldSymbols,selectedWorldHex,mapKeyMarkup} from './world-symbols.mjs?v=shared-helpers-20261010-31';
+import * as M from './map.mjs?v=shared-helpers-20261010-31';
 import {MAP_GEOMETRY,setMapGeometry,visibleMapWorlds} from './map-geometry.mjs?v=map-first-1';
 import {camera,viewportTiles,MapAreaCache} from './map-viewport.mjs?v=map-first-1';
 import {nextMapZoom,mapLevel,MapOverviewCache,overviewMarkup,mapTerritories} from './map-overview.mjs?v=map-first-1';
 import {readPoliticalTerritory,savePoliticalTerritory} from './map-preferences.mjs';
-import {createGlobalWorldSearch} from './global-world-search.mjs?v=campaign-controls-20261010-30';
-import {createWorldPicker,rememberWorld} from './world-picker.mjs?v=campaign-controls-20261010-30';
-import {Store,KEY} from './persistence.mjs?v=campaign-controls-20261010-30';
-const $=id=>document.getElementById(id),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+import {createGlobalWorldSearch} from './global-world-search.mjs?v=shared-helpers-20261010-31';
+import {createWorldPicker,rememberWorld} from './world-picker.mjs?v=shared-helpers-20261010-31';
+import {Store,KEY} from './persistence.mjs?v=shared-helpers-20261010-31';
+const $=id=>document.getElementById(id),esc=escapeHtml;
 const ROOT='https://github.com/OwlsNestNH/Traveller-Tools/blob/main/tools/trade-route-calculator/';
 let inputRounding=[],localCampaignSave=false;
 let historyFilter='All';
 let routeDraft=null;
 // Monetary text is also used directly in HTML; keep even invalid historic values inert.
-const money=x=>x==null?'Not recorded':'Cr '+esc(String(x).replace(/\B(?=(\d{3})+(?!\d))/g,',')),field=(name,label,value='',type='text',extra='',unit=null)=>{if(unit!==null&&!['credits','tons'].includes(unit))throw Error('Unknown field rounding unit: '+unit);if(unit){type='number';extra=extra.replace(/step="[^"]*"/g,'').replace(/min="0\.0[0-9]*"/g,'min="0"')+' step="1"';}return `<label class="field">${esc(label)}<input name="${name}" type="${type}" value="${esc(value)}" ${unit?'data-round="'+unit+'" data-round-label="'+esc(label)+'"':''} ${extra}></label>`;};
+const money=moneyHtml,field=(name,label,value='',type='text',extra='',unit=null)=>{if(unit!==null&&!['credits','tons'].includes(unit))throw Error('Unknown field rounding unit: '+unit);if(unit){type='number';extra=extra.replace(/step="[^"]*"/g,'').replace(/min="0\.0[0-9]*"/g,'min="0"')+' step="1"';}return `<label class="field">${esc(label)}<input name="${name}" type="${type}" value="${esc(value)}" ${unit?'data-round="'+unit+'" data-round-label="'+esc(label)+'"':''} ${extra}></label>`;};
 
 const select=(name,label,options,value)=>`<label class="field">${esc(label)}<select name="${name}">${options.map(([v,t])=>`<option value="${esc(v)}" ${String(v)===String(value)?'selected':''}>${esc(t)}</option>`).join('')}</select></label>`;
 const check=(name,label,value=false)=>`<label class="check"><input type="checkbox" name="${name}" ${value?'checked':''}>${esc(label)}</label>`;
@@ -89,7 +91,7 @@ function recordDebugError(error,context='runtime'){
 function safely(fn){return async(...args)=>{try{return await fn(...args);}catch(e){recordDebugError(e,fn?.name||'action');message(e.message,true);}};}
 function optionalRuleFootnote(kind){return '<p class="help rule-footnote">['+(kind==='insurance'?'I':'T')+'] '+(kind==='insurance'?'Insurance':'Taxes')+': MGT 1st Edition, Book 7: Merchant Prince, p. '+(kind==='insurance'?'83':'86')+'. Optional rules adapted for this calculator. <a href="'+ROOT+'OPTIONAL_RULES.md" target="_blank" rel="noopener">Approved adaptations and interpretations</a>.</p>';}
 function roundingFootnote(changes=[],step=creditStep(state)){return '<p class="help rule-footnote">[R] Rounding applied: Credits round up to '+(step===100?'the next Cr100':'whole Credits')+'; tons round up to whole tons. Exact intermediate calculations and proportional cost allocations are retained.'+(changes.length?' '+changes.map(c=>esc(c.label)+': '+esc(c.before)+' → '+esc(c.after)).join('; ')+'.':'')+'</p>';}
-function normaliseFields(form){for(const el of form.querySelectorAll('[data-round]')){if(el.disabled||el.value==='')continue;if(el.dataset.roundExact!==undefined&&A.cmp(el.value,el.dataset.roundExact)===0)continue;const before=el.value,after=String(up(before,el.dataset.round==='credits'?creditStep(state):1));if(A.cmp(before,after)){inputRounding.push({label:el.dataset.roundLabel,before,after});el.value=after;}}if(form===$('modal-form')&&$('rounding-input-note'))$('rounding-input-note').innerHTML=roundingFootnote(inputRounding);}
+function normaliseFields(form){normalizeAmountFields(form.querySelectorAll('[data-round]'),{creditStep:creditStep(state),rounding:inputRounding});if(form===$('modal-form')&&$('rounding-input-note'))$('rounding-input-note').innerHTML=roundingFootnote(inputRounding);}
 function roundingPreview(){const draft=structuredClone(state),changes=roundExisting(draft);let error='';try{S.validate(draft);}catch(e){error=e.message;}modal('Preview rounding',`<p>Round current bank, cargo quantities and values, cargo capacity, luggage, market offers, accepted contracts and saved monthly costs. Future Credit entries and charges will round up to Cr100. Historical transactions, insurance contract terms and original audits stay unchanged.</p>${table(['Value','Before','After'],changes.map(c=>`<tr><td>${esc(c.label)}</td><td class="number">${esc(c.before)}</td><td class="number">${esc(c.after)}</td></tr>`))}${roundingFootnote([],100)}${error?'<p class="notice">Cannot apply: '+esc(error)+' Adjust cargo or capacity first.</p>':'<p>One undo restores all these changes.</p>'}`,error?null:()=>act('Round Credits to 100 and tons to whole',s=>S.applyRounding(s)),'Apply rounding',true,{annotateRounding:false});}
 let activeModal=null;
 let suspendedSettings=null;
@@ -1431,5 +1433,5 @@ $('import-file').onchange=safely(async e=>{const file=e.target.files[0];e.target
 if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{if(tab==='Overview'&&viewed()&&updateMapGeometry()){scheduleMapPaint();scheduleMapAreas();}}).observe($('main'));
 window.addEventListener('error',e=>recordDebugError(e.error||e.message,'window-error'));
 window.addEventListener('unhandledrejection',e=>recordDebugError(e.reason,'unhandled-rejection'));
-async function boot(){[core,mp,decisions]=await Promise.all(['rules/core-2022.json?v=campaign-controls-20261010-30','rules/merchant-prince-1e.json','rules/decisions.json'].map(async url=>{const r=await fetch(url);if(!r.ok)throw Error('Could not load '+url);return r.json();}));store=new Store(receiveCampaign,(editable,text)=>{$('save-status').textContent=text;$('save-status').className=editable?'muted':'readonly';$('takeover').hidden=editable;if(!editable&&activeModal?.mutates){activeModal.cancelled=true;$('modal-error').textContent='Editing moved to another tab. Reopen this dialog after taking over editing.';}syncModalSubmit();render();});try{state=store.read();}catch(error){store.recovery=true;store.recoveryMessage=error.message;state=S.initial();}known={...state.worlds};view=state.actual;render();await store.acquire();if(state.initialized)restoreExpenseReceipt();if(state.initialized)refreshNearby(false).catch(e=>message('Could not load nearby worlds: '+e.message+'. Use Refresh nearby to retry.',true));}
+async function boot(){[core,mp,decisions]=await Promise.all(['rules/core-2022.json?v=shared-helpers-20261010-31','rules/merchant-prince-1e.json','rules/decisions.json'].map(async url=>{const r=await fetch(url);if(!r.ok)throw Error('Could not load '+url);return r.json();}));store=new Store(receiveCampaign,(editable,text)=>{$('save-status').textContent=text;$('save-status').className=editable?'muted':'readonly';$('takeover').hidden=editable;if(!editable&&activeModal?.mutates){activeModal.cancelled=true;$('modal-error').textContent='Editing moved to another tab. Reopen this dialog after taking over editing.';}syncModalSubmit();render();});try{state=store.read();}catch(error){store.recovery=true;store.recoveryMessage=error.message;state=S.initial();}known={...state.worlds};view=state.actual;render();await store.acquire();if(state.initialized)restoreExpenseReceipt();if(state.initialized)refreshNearby(false).catch(e=>message('Could not load nearby worlds: '+e.message+'. Use Refresh nearby to retry.',true));}
 boot().catch(e=>{message(e.message,true);$('main').innerHTML=empty('The calculator could not start. Your saved campaign has not been replaced. Reload after checking the error above.');});

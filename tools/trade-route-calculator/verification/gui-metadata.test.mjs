@@ -4,15 +4,18 @@ import {readFile} from 'node:fs/promises';
 import {runInNewContext} from 'node:vm';
 import {up,creditStep} from '../js/rounding.mjs';
 import * as A from '../js/amounts.mjs';
+import {escapeHtml,moneyHtml} from '../js/display.mjs';
+import {normalizeAmountFields} from '../js/form-values.mjs';
 import * as R from '../js/rules.mjs';
 const app=await readFile(new URL('../js/app.mjs',import.meta.url),'utf8');
-const escape=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const field=runInNewContext(app.slice(app.indexOf('const money='),app.indexOf('\nconst select='))+'\nfield;', {esc:escape});
+const escape=escapeHtml;
+const field=runInNewContext(app.slice(app.indexOf('const money='),app.indexOf('\nconst select='))+'\nfield;', {esc:escape,moneyHtml});
 const rounding=app.slice(app.indexOf('function roundingFootnote('),app.indexOf('\nfunction roundingPreview('));
 function modalHarness(step=1){
  const nodes={modal:{open:false,showModal(){this.open=true;},close(){this.open=false;}},'modal-body':{innerHTML:'',insertAdjacentHTML(_where,html){this.innerHTML+=html;}},'modal-title':{},'modal-error':{},'modal-submit':{},'modal-cancel':{},'modal-form':{querySelectorAll:()=>[]}};
- const context={state:{revision:17,settings:{creditStep:step}},store:{editable:true},inputRounding:[],modalGeneration:0,modalRevision:0,$:id=>nodes[id],esc:escape,creditStep,up,A,optionalRuleFootnote:kind=>'<p>'+kind+' reference</p>'};
- const api=runInNewContext(rounding+'\n'+app.slice(app.indexOf('let activeModal=null;'),app.indexOf('\nfunction saveCampaign('))+'\n({modal,closeModal,normaliseFields});',context);
+ const context={state:{revision:17,settings:{creditStep:step}},store:{editable:true},inputRounding:[],modalGeneration:0,modalRevision:0,$:id=>nodes[id],esc:escape,creditStep,up,A,normalizeAmountFields,optionalRuleFootnote:kind=>'<p>'+kind+' reference</p>'};
+ const settingsNormalizer=app.match(/^function normaliseSettingsFields\(.*$/m)[0];
+ const api=runInNewContext(rounding+'\n'+app.slice(app.indexOf('let activeModal=null;'),app.indexOf('\nfunction saveCampaign('))+'\n'+settingsNormalizer+'\n({modal,closeModal,normaliseFields,normaliseSettingsFields});',context);
  return {api,context,nodes};
 }
 function element(value,round,label='Amount',disabled=false){return {value,disabled,dataset:{round,roundLabel:label}};}
@@ -44,6 +47,19 @@ test('fractional legacy claims explicitly opt out while normal quantities still 
  assert.match(fractional,/type="text"/);assert.doesNotMatch(fractional,/data-round=/);
  assert.match(field('anything','Lost','1','text','','tons'),/data-round="tons"/);
  assert.match(app,/A\.cmp\(p\.remainingQuantity,up\(p\.remainingQuantity\)\)\?null:'tons'/);
+});
+
+test('Settings keeps its own annotation array and refreshes only its own note',()=>{
+ const {api,context,nodes}=modalHarness(100),prior=[{label:'Modal amount',before:'0.1',after:'1'}],settings=[{label:'Prior setting',before:'1.1',after:'2'}];
+ context.inputRounding=prior;context.settingsRounding=settings;
+ const note={innerHTML:''},fields=[element('10.1','credits','Settings <amount>')];
+ const form={querySelectorAll:()=>fields,querySelector:selector=>{assert.equal(selector,'#settings-rounding-note');return note;}};
+ const modalBody=nodes['modal-body'].innerHTML;
+ api.normaliseSettingsFields(form);
+ assert.equal(context.inputRounding,prior);assert.equal(context.settingsRounding,settings);
+ assert.equal(prior.length,1);assert.equal(settings.length,2);assert.equal(fields[0].value,'100');
+ assert.match(note.innerHTML,/Settings &lt;amount&gt;: 10.1 → 100/);
+ assert.equal(nodes['modal-body'].innerHTML,modalBody);
 });
 
 test('modal flags survive renamed titles and alone control annotation retention and optional footnotes',()=>{

@@ -1,4 +1,4 @@
-import {initial,validate} from './state.mjs?v=campaign-controls-20261010-30';
+import {initial,validate} from './state.mjs?v=shared-helpers-20261010-31';
 export const KEY='traveller-trade-route-calculator:v1';
 const LOCK=KEY+':writer';
 function serializedCampaign(next){
