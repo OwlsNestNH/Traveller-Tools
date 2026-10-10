@@ -1,4 +1,4 @@
-import {searchWorlds,loadWorld} from './map.mjs?v=shared-helpers-20261010-31';
+import {searchWorlds,loadWorld} from './map.mjs?v=expanded-map-20261010-32';
 
 export const planetSearchLabel=w=>[w.name,w.subsectorName,w.sector,w.hex].join(' — ');
 

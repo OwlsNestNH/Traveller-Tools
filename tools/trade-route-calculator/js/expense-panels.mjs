@@ -1,12 +1,12 @@
-import {escapeHtml,formatCreditsText} from './display.mjs?v=shared-helpers-20261010-31';
-import {passengerShip} from './passengers.mjs?v=shared-helpers-20261010-31';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=expanded-map-20261010-32';
+import {passengerShip} from './passengers.mjs?v=expanded-map-20261010-32';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=shared-helpers-20261010-31';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=shared-helpers-20261010-31';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=shared-helpers-20261010-31';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=shared-helpers-20261010-31';
-import {creditStep} from './rounding.mjs?v=shared-helpers-20261010-31';
-import {roll} from './rules.mjs?v=shared-helpers-20261010-31';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=expanded-map-20261010-32';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=expanded-map-20261010-32';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=expanded-map-20261010-32';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=expanded-map-20261010-32';
+import {creditStep} from './rounding.mjs?v=expanded-map-20261010-32';
+import {roll} from './rules.mjs?v=expanded-map-20261010-32';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

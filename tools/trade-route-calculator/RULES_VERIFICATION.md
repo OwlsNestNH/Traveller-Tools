@@ -416,3 +416,22 @@ service, passenger, responsive and global-search browser gates remain required.
 No local Chromium launch was attempted because required sockets are blocked in
 this executor. Final exact-head Actions results and deployment verification are
 still release gates; this entry does not claim they have passed.
+
+## Expanded Overview map (2026-10-10; UI 2026.10.10.32)
+
+Based on released Stage 1 merge `b656454c498e0061545ed505aa969aacc76c7947`.
+The entire navigation unit can span the Overview, with a wider and taller
+measured viewport. Zoom, world spacing, camera center/pan, browsing selection,
+actual ship location and route are retained. Restore returns the normal panel
+layout. Service draft cancellation remains explicit; receipts are restored
+without repeating or reversing payment. This is view state, not a rules change.
+
+Native source-executed tests cover repeated toggles, unchanged campaign/camera/
+route draft, unpaid confirmation/cancellation, saving guards, receipt identity
+and reload preference, restored panel destinations, and expanded map bounds.
+`expanded-map-browser` is included in the exact-head read-only Chromium matrix
+and verifies desktop/mobile geometry and interrupted navigation. Local browser
+launch is unavailable because this executor blocks required sockets; browser
+results and actual screenshot review remain release gates until CI completes.
+
+Local verification passed **628 native tests across 51 suites**, **227 rules/data checks**, shared tool integration, every application module syntax check, and whitespace validation. Independent source review approved the implementation after the expanded view’s Ship services accessibility targets were corrected. Browser results remain pending the draft PR gate.

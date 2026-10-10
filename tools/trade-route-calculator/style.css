@@ -372,3 +372,13 @@ main{padding-top:18px}
 
 /* Keep the three distinct fuel quantities compact without changing bar tracks. */
 .summary .fuel-counter>.value{font-size:12px;line-height:1.35;overflow-wrap:normal}
+
+/* Expand the entire navigation unit; pixel-scale map geography is unchanged. */
+.navigation-layout.map-expanded{grid-template-columns:minmax(0,1fr)}
+.navigation-layout.map-expanded .map-viewport{height:clamp(620px,80vh,1100px);height:clamp(620px,80svh,1100px);min-height:620px}
+.navigation-panel .map-caption{align-items:center}
+.navigation-panel .map-expand-toggle{margin-left:auto;flex:none;min-height:36px;padding:7px 10px;font-size:12px}
+@media(max-width:620px){
+ .navigation-layout.map-expanded .map-viewport{height:clamp(540px,80vh,1100px);height:clamp(540px,80svh,1100px);min-height:540px}
+ .navigation-panel .map-expand-toggle{min-height:40px}
+}

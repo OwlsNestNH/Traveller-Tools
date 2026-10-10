@@ -1,9 +1,9 @@
-import {escapeHtml,formatCreditsText} from './display.mjs?v=shared-helpers-20261010-31';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=expanded-map-20261010-32';
 import * as A from './amounts.mjs';
-import {manualLuggage} from './accommodation.mjs?v=shared-helpers-20261010-31';
-import * as P from './passengers.mjs?v=shared-helpers-20261010-31';
-import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=shared-helpers-20261010-31';
-import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=shared-helpers-20261010-31';
+import {manualLuggage} from './accommodation.mjs?v=expanded-map-20261010-32';
+import * as P from './passengers.mjs?v=expanded-map-20261010-32';
+import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=expanded-map-20261010-32';
+import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=expanded-map-20261010-32';
 import {displayDate} from './calendar.mjs';
 const esc=escapeHtml;
 const money=formatCreditsText,signed=x=>x>0?'+'+x:String(x);

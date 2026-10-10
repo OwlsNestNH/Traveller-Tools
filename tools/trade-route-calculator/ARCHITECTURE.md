@@ -221,3 +221,20 @@ This extraction does not authorize transactions, change state validation or
 move save completion, modal/session ownership, trade quotes or map/search work.
 Campaign schema, storage, calculations, prepared jump rolls, Undo, passenger
 accounting and the future one-editor boundary are unchanged.
+
+## Expanded Overview navigation
+
+`mapExpanded` and its restore destination are session-only UI state in `app.mjs`.
+The full navigation section becomes a single column, while its map viewport
+grows in both dimensions. Existing measured geometry drives SVG bounds, world
+projection/culling, grid, overview layers and visible-area requests. The zoom,
+pixel pan and selected-world anchor are unchanged, so larger dimensions reveal
+more geography without scaling labels, markers or controls.
+
+Unpaid services retain their existing campaign lock until the user explicitly
+chooses to discard the draft and expand. That choice uses the existing Back
+cleanup, invalidating detached service controls; cancelling changes nothing.
+Expense summary and paid receipt destinations may be restored, using the same
+ledger receipt ID rather than a new payment. The receipt reload preference is
+retained while expanded. Opening another service or main tab exits expansion.
+This feature adds no campaign state, schema, storage key or transaction path.

@@ -50,6 +50,10 @@ The public display name is **Traveller Ship Operations**. The existing `tools/tr
 
 The Planned route heading, Jump/Undo Jump controls and wrapping stop list share a thin content-sized border. It grows with longer routes and returns to its compact height when stops are removed; the map keeps its existing zoom and pan.
 
+**Expand map** widens the entire navigation unit across the Overview and makes its map taller. It reveals more geography at the same zoom, world spacing and camera center; route, Jump/Undo and map controls keep their normal size. **Restore panels** returns to the normal layout and prior World data, Cargo Hold, expense overview or paid receipt. Expansion is a temporary view choice; reloading returns to the normal layout. Opening a ship service or another main tab also leaves the expanded view.
+
+An unpaid service asks before expansion discards its unsaved changes, using the same cleanup as Back. Cancel keeps the draft intact; a saving payment must finish first. Paid receipts remain in the ledger, are restored without another charge, and can still reopen after a reload while expanded. Expansion alone does not save a campaign change.
+
 Switching between World data, Refuel, Refill life support, Cargo Hold and Ship expenses keeps the same map dimensions and outer MFD frame. The map and right screen align at both ends on desktop; taller screen contents scroll inside the right panel. On smaller screens they stay stacked, with a consistent viewport-responsive right-screen height and all controls reachable by scrolling.
 
 The four service buttons show their selected state. Clicking the selected button again returns to World data; selecting a different one switches directly. This uses the same draft cleanup as Back: unconfirmed input is discarded, paid transactions remain in the ledger, and no payment is repeated or reversed. A payment already saving must finish before leaving. Closing a paid receipt also clears its reload navigation preference without deleting the receipt.
