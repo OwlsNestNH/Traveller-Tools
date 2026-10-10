@@ -49,6 +49,7 @@ Implemented native modules require no build step:
 | js/rules.mjs | Pure rule calculations, prices, market, freight/mail, insurance and tax |
 | js/map.mjs | Public API normalization, coordinates, fuel checks and bounded route search |
 | js/state.mjs | Validated campaign transitions, accounting and inverse-change undo |
+| js/campaign-controller.mjs | Synchronous write orchestration with caller-supplied revisions; distinct transition, prepared jump, Undo, mulligan and replacement paths |
 | js/persistence.mjs | localStorage, Web Locks, revisions, backups/import and recovery |
 | js/display.mjs | Explicit plain-text Credit formatting and HTML escaping |
 | js/form-values.mjs | Exact entry normalization and ordered rounding annotations |

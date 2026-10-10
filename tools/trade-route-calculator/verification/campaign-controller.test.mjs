@@ -1,29 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import vm from 'node:vm';
 import * as S from '../js/state.mjs';
 import {Store,KEY} from '../js/persistence.mjs';
-import {creditStep} from '../js/rounding.mjs';
+import {createCampaignController as boundary} from '../js/campaign-controller.mjs';
 
-// Characterize the released ordinary-write functions before extraction. The
-// other entry points exercise their existing domain operations and real Store.
-const source=await readFile(new URL('../js/app.mjs',import.meta.url),'utf8');
-const saveSource=source.slice(source.indexOf('function saveCampaign('),source.indexOf('\nfunction receiveCampaign('));
-const actSource=source.slice(source.indexOf('function act('),source.indexOf('\nfunction savedRoll('));
-function boundary(options){
- const context={S,creditStep,structuredClone,Error,state:options.getState(),store:options.getStore(),known:options.getKnownWorlds(),inputRounding:options.getRounding(),localCampaignSave:false,services:{active:()=>false},$:()=>({open:false}),message(){}};
- vm.createContext(context);vm.runInContext(saveSource+'\n'+actSource,context);
- const sync=()=>{context.state=options.getState();context.known=options.getKnownWorlds();context.inputRounding=options.getRounding();};
- return {
-  isLocalSave:()=>context.localCampaignSave,
-  transition(label,fn,expected){sync();return context.act(label,fn,expected);},
-  prepareJump(roll,expected){sync();const p=S.prepareJump(context.state,roll);if(p.state!==context.state)context.saveCampaign(p.state,expected);return p;},
-  undo(expected){sync();return context.saveCampaign(S.undo(context.state),expected);},
-  undoJump(expected){sync();if(context.state.revision!==expected)throw Error('Campaign changed. Reopen this preview before committing.');return context.saveCampaign(S.undoJump(context.state),expected);},
-  replace(next,expected){return context.store.replace(next,expected);}
- };
-}
+// The same assertions first passed against the released app write functions.
+// After relocation they exercise the public module and real Store directly.
 const worlds=Object.fromEntries([0,1,2].map(x=>[`${x},0`,{id:`${x},0`,x,y:0,name:'World '+x,sector:'Test',hex:`0${x+1}01`,uwp:'A788899-C',zone:'Safe'}]));
 function campaign(){const s=S.initial();Object.assign(s,{initialized:true,bank:'100000',actual:'0,0',worlds:structuredClone(worlds),route:['0,0','1,0'],dateLabel:'001-1105'});s.ship.capacity='100';s.ship.fuel={displacementTons:200,baseCapacityTons:40,aboardTons:20,capacityTons:40,bladderTons:0,bladderJumps:0};return S.validate(s);}
 function harness(t,initial=campaign()){
@@ -106,3 +89,27 @@ test('recovery notification failure leaves replacement on disk and recovery clea
  assert.equal(h.store.read().bank,'12345');assert.equal(h.store.read().revision,1);assert.equal(h.store.recovery,false);assert.equal(h.state().bank,'100000');assert.equal(h.controller.isLocalSave(),false);
  const raw=h.raw();assert.throws(()=>h.controller.replace(replacement,0),/stale/);assert.equal(h.raw(),raw);h.reload();assert.equal(h.state().bank,'12345');
 });
+
+
+function replay(h){
+ const snapshots=[],capture=()=>snapshots.push(h.raw());
+ capture();h.setKnown({'2,0':worlds['2,0']});h.setRounding([{label:'Deposit',before:'1.2',after:'2'}]);
+ h.controller.transition('Deposit',s=>S.deposit(s,2,'Synthetic parity'),0);capture();h.setRounding([]);
+ h.controller.transition('Refuel',s=>S.shipExpenses(s,[{kind:'fuel',tons:2,fuelType:'refined'}]),1);capture();
+ h.controller.transition('Freight',s=>S.acceptContract(s,{offerId:'parity-freight',kind:'freight',origin:'0,0',destination:'1,0',quantity:'2',payment:'2000',dueHours:null,audit:{manual:true,reason:'Synthetic parity'}}),2);capture();
+ const roll=()=>({dice:[2,2,2,2,2,2],total:12}),prepared=h.controller.prepareJump(roll,3);capture();
+ h.reload();h.controller.prepareJump(roll,4);capture();
+ h.controller.transition('Jump: World 0 → World 1',s=>S.commitJump(s,{attemptId:prepared.attempt.id,elapsed:160}),4);capture();
+ h.controller.undoJump(5);capture();const final=h.controller.prepareJump(()=>({dice:[3,3,3,3,3,3],total:18}),6);capture();
+ h.controller.transition('Jump: World 0 → World 1',s=>S.commitJump(s,{attemptId:final.attempt.id,elapsed:166}),7);capture();
+ h.controller.replace(campaign(),8);capture();
+ h.controller.transition('Deposit after replacement',s=>S.deposit(s,1,'After import'),9);capture();h.controller.undo(10);capture();
+ return snapshots;
+}
+function deterministicIds(t){
+ const descriptor=Object.getOwnPropertyDescriptor(globalThis,'crypto');let counter=0;
+ Object.defineProperty(globalThis,'crypto',{value:{randomUUID:()=>`parity-id-${++counter}`},configurable:true});
+ t.after(()=>Object.defineProperty(globalThis,'crypto',descriptor));
+}
+
+test('every checkpoint matches released campaign JSON bytes, including IDs, revisions, audits and inverse Undo',async t=>{deterministicIds(t);const expected=JSON.parse(await readFile(new URL('./fixtures/campaign-writes-baseline.json',import.meta.url),'utf8'));assert.deepEqual(replay(harness(t)),expected);});
