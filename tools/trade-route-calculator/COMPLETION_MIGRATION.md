@@ -1,7 +1,7 @@
 # Save-completion migration queue
 
-Inventory checked against UI 2026.10.10.42, merge
-`1780038d016c0c825b134319d4d63cb7021be075` (2026-10-10).
+Inventory checked against UI 2026.10.10.43, merge
+`e2b7619ecf17e42e338fc347ebf1effb0243d253` (2026-10-10).
 This records the save-boundary work, not the earlier GUI-refit stages.
 
 ## Stage 2: finish save callers
@@ -33,13 +33,17 @@ publication failure or unknown result (reload required, no duplicate retry).
    prepared dice across a known-unsaved retry, and freezes elapsed hours while
    saving. Native and exact-head browser tests, independent screenshot review
    and live-file verification passed, including the saved-roll/mulligan policy.
-2. **Undo and campaign replacement.** `undoJump` and `undoLatestChange` are
-   the current bounded .43 completion-safety candidate. Ordinary Undo retains
-   its immediate click behavior with a pending screen only for delayed saves;
-   Undo Jump retains its existing confirmation. Their exact-head browser and
-   screenshot gates remain required before release. `backupReplace` still
-   needs a separate batch for JSON import and reset; it currently cleans up
-   and announces replacement before the controller completion is known.
+2. **Undo released in .43; replacement is the bounded .44 candidate.**
+   `undoJump` and `undoLatestChange` passed 1,030 native checks, the exact-head
+   browser matrix and independent source/screenshot review. Merge-tree and
+   Pages deployment verification passed. Live byte checks matched 90/100 URLs;
+   ten tunnel/proxy 403 reads remain unverified and were not retried or routed
+   around. Do not describe that live-file gate as complete.
+   `backupReplace` now awaits JSON import/reset completion with a distinct
+   one-use replacement publication identity. This still clears external-style
+   offers; it does not become a local-save exemption. File reads and completion
+   cleanup are tied to their campaign/editor/dialog owner. Its final full
+   native/browser/source/screenshot gates remain required before release.
 3. **Settings, setup and position/time changes.** The inline
    `mountSettingsForm` submit clears its draft without waiting; `setup`,
    `setLocation`, `changeCampaignDay` and `timeForm` discard the save completion.

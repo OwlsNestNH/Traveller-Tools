@@ -1,10 +1,10 @@
-import {ruleInfo} from './rule-references.mjs?v=undo-completion-20261010-43';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=undo-completion-20261010-43';
+import {ruleInfo} from './rule-references.mjs?v=replacement-completion-20261010-44';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=replacement-completion-20261010-44';
 import * as A from './amounts.mjs';
-import {manualLuggage} from './accommodation.mjs?v=undo-completion-20261010-43';
-import * as P from './passengers.mjs?v=undo-completion-20261010-43';
-import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=undo-completion-20261010-43';
-import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=undo-completion-20261010-43';
+import {manualLuggage} from './accommodation.mjs?v=replacement-completion-20261010-44';
+import * as P from './passengers.mjs?v=replacement-completion-20261010-44';
+import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=replacement-completion-20261010-44';
+import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=replacement-completion-20261010-44';
 import {displayDate} from './calendar.mjs';
 const esc=escapeHtml;
 const money=formatCreditsText,signed=x=>x>0?'+'+x:String(x);

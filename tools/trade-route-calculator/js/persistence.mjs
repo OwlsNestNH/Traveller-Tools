@@ -1,5 +1,5 @@
-import {createDashboardBaseline,sameDashboardBaseline} from './dashboard-baseline.mjs?v=undo-completion-20261010-43';
-import {initial,validate} from './state.mjs?v=undo-completion-20261010-43';
+import {createDashboardBaseline,sameDashboardBaseline} from './dashboard-baseline.mjs?v=replacement-completion-20261010-44';
+import {initial,validate} from './state.mjs?v=replacement-completion-20261010-44';
 export const KEY='traveller-trade-route-calculator:v1';
 const LOCK=KEY+':writer';
 // Only the provider can distinguish a rejected write from failed publication.
@@ -15,7 +15,7 @@ function serializedCampaign(next){
  const raw=JSON.stringify(next),state=validate(JSON.parse(raw));
  return {raw,state};
 }
-function saveWithBoundary(next,expected,saveToken,replacement){
+function saveWithBoundary(next,expected,publicationToken,replacement){
   let saved;
   try{
    if(this.reloadRequired)throw Error('Reload this page before editing the campaign again.');
@@ -28,7 +28,7 @@ function saveWithBoundary(next,expected,saveToken,replacement){
    localStorage.setItem(KEY,saved.raw);
   }catch(cause){throw new SaveNotCommittedError(cause);}
   const revision=saved.state.revision;
-  try{this.onChange(saved.state,{saveToken});}
+  try{this.onChange(saved.state,replacement?{replacementToken:publicationToken}:{saveToken:publicationToken});}
   catch(cause){throw new SaveCommittedPublicationError(revision,cause);}
  }
 export class Store{
@@ -87,7 +87,7 @@ export class Store{
  save(next,expected,saveToken){return saveWithBoundary.call(this,next,expected,saveToken,false);}
 
  backup(){const raw=localStorage.getItem(KEY)||JSON.stringify(initial());const url=URL.createObjectURL(new Blob([raw],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='traveller-campaign-'+new Date().toISOString().slice(0,10)+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}
- replace(next,expected){
+ replace(next,expected,replacementToken){
   let saved;
   try{
    if(this.reloadRequired)throw Error('Reload this page before editing the campaign again.');
@@ -98,10 +98,10 @@ export class Store{
     saved=serializedCampaign(next);localStorage.setItem(KEY,saved.raw);
    }
   }catch(cause){throw new SaveNotCommittedError(cause);}
-  if(!saved)return saveWithBoundary.call(this,next,expected,undefined,true);
+  if(!saved)return saveWithBoundary.call(this,next,expected,replacementToken,true);
   this.recovery=false;
   const revision=saved.state.revision;
-  try{this.onChange(saved.state);this.onRole(true,'Editing in this tab');}
+  try{this.onChange(saved.state,{replacementToken});this.onRole(true,'Editing in this tab');}
   catch(cause){throw new SaveCommittedPublicationError(revision,cause);}
  }
 }

@@ -537,3 +537,17 @@ activation, same-revision foreign publication, editor loss, pending display
 failure, cleanup failure and reload. Generic Undo remains immediate, and campaign
 replacement is excluded. Full native/rules/browser gates and independent source
 and exact-head screenshot review are required; this scope is not a pass claim.
+
+
+## Replacement save-completion .44 verification scope
+
+Import/reset must preserve exact incoming economic/history/Undo data while
+Store rebases revision and retains or establishes its existing Dashboard
+baseline. The new native and actual-browser suites cover confirmation/cancel,
+backup acknowledgement, synchronous and delayed completion, publication before
+fulfillment, known-unsaved retry, saved/unknown failure and reload, duplicate or
+detached submission, foreign same-revision publication, editor loss/reacquisition,
+newer dialogs and out-of-order file reads. Provenance tests cover wrong/replayed/
+retired tokens and normal/recovery Store paths. No Traveller rules change.
+Full native/rules gates, exact-head browser CI and independent source and actual
+screenshot review remain required; this scope is not a pass claim.

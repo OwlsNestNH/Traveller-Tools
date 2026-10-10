@@ -343,3 +343,32 @@ pending UI creation. Post-save cleanup failures identify the captured expected
 revision; controller Undo still returns the provider's raw completion.
 
 Replacement/import/reset and Stage 3 quote ownership are separate remaining work.
+
+
+## Stage 2 replacement completion (.44)
+
+The controller's existing write-operation object also supplies an optional
+replacement publication token. `takeReplacementPublication` consumes it once
+at expected revision + 1, independent of the imported revision. Store forwards
+it only as callback metadata in normal and corrupt-recovery branches; it never
+enters JSON. Replacement remains false for both local-save classifications and
+still invalidates old campaign offers. Raw synchronous/provider completion
+values and Store's revision, ownership and Dashboard-baseline rules are retained.
+
+`backupReplace` captures its revision and review session before submission.
+Matching publication installs state and invalidates offers immediately, while
+completion-specific view/selection reconciliation is deferred. Only the exact
+published snapshot and retained campaign/editor/dialog owner may finish cleanup
+and show success. Other publication (including same revision) or editing loss
+permanently invalidates the review; reacquiring editing cannot revive it.
+Known-unsaved failures retain a retryable review. Published or unknown outcomes,
+including detached-dialog and post-save-close faults, require reload and checking
+which campaign is saved. Reset may empty History, so History alone is not the
+recovery instruction.
+
+Each file selection captures a request identity, publication epoch, modal
+creation/closure generation and editing-loss epoch. Stale read success and
+failure are inert. Validation and the 20 MB limit remain. This is UI completion
+ownership, not cancellation of an already accepted provider operation; the
+existing recovery replacement deliberately bypasses reading a corrupt revision.
+No new provider source/CAS protocol, JSON schema or Stage 3 work is introduced.
