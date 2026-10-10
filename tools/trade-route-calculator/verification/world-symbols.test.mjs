@@ -74,7 +74,7 @@ test('actual map rendering keeps the selection below routes, on the browsed worl
  const ship={...make(),name:'Ship world',id:'0,1',x:0,y:1};
  const state={actual:ship.id,worlds:{[selected.id]:selected,[ship.id]:ship},route:[ship.id,selected.id]};
  const before=structuredClone(state);
- const context={state,known:{},view:selected.id,showHexes:true,showUwp:true,showTerritories:true,mapZoom:2.4,mapPan:{x:0,y:0},mapAnchor:selected.id,routeDraft:null,
+ const context={mapExpanded:false,state,known:{},view:selected.id,showHexes:true,showUwp:true,showTerritories:true,mapZoom:2.4,mapPan:{x:0,y:0},mapAnchor:selected.id,routeDraft:null,
   core:{},world:id=>state.worlds[id],viewed:()=>state.worlds[context.view],actual:()=>ship,
   MAP_GEOMETRY:{width:520,height:440,halfWidth:260,halfHeight:220,originX:260,originY:218},
   mapAreas:{worlds:{}},mapOverview:{sectors:[],cache:new Map()},

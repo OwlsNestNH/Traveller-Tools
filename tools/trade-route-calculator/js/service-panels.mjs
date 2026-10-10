@@ -1,11 +1,11 @@
-import {escapeHtml,formatDecimalCreditsText} from './display.mjs?v=shared-helpers-20261010-31';
-import {passengerShip} from './passengers.mjs?v=shared-helpers-20261010-31';
+import {escapeHtml,formatDecimalCreditsText} from './display.mjs?v=expanded-map-20261010-32';
+import {passengerShip} from './passengers.mjs?v=expanded-map-20261010-32';
 import * as A from './amounts.mjs';
-import {bladderSpace,fuelPurchase} from './fuel.mjs?v=shared-helpers-20261010-31';
-import {expenseQuote,fuelAvailability,fuelPricing,starport} from './expenses.mjs?v=shared-helpers-20261010-31';
-import {refillQuote,supportStock,supportCargo,supportAmount,anchorSupport} from './life-support.mjs?v=shared-helpers-20261010-31';
-import {used,validate,shipExpense,refillLifeSupport,uid} from './state.mjs?v=shared-helpers-20261010-31';
-import {creditStep,up} from './rounding.mjs?v=shared-helpers-20261010-31';
+import {bladderSpace,fuelPurchase} from './fuel.mjs?v=expanded-map-20261010-32';
+import {expenseQuote,fuelAvailability,fuelPricing,starport} from './expenses.mjs?v=expanded-map-20261010-32';
+import {refillQuote,supportStock,supportCargo,supportAmount,anchorSupport} from './life-support.mjs?v=expanded-map-20261010-32';
+import {used,validate,shipExpense,refillLifeSupport,uid} from './state.mjs?v=expanded-map-20261010-32';
+import {creditStep,up} from './rounding.mjs?v=expanded-map-20261010-32';
 const esc=escapeHtml;
 const money=formatDecimalCreditsText,num=x=>x==null?'Unknown':String(Number(Number(x).toFixed(3)));
 const field=(name,label,value,type='number',extra='')=>`<label class="field">${label}<input name="${name}" type="${type}" value="${esc(value)}" ${extra}></label>`;

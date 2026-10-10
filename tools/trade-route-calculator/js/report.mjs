@@ -1,12 +1,12 @@
-import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=shared-helpers-20261010-31';
-import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=shared-helpers-20261010-31';
-import {bladderSpace} from './fuel.mjs?v=shared-helpers-20261010-31';
+import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=expanded-map-20261010-32';
+import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=expanded-map-20261010-32';
+import {bladderSpace} from './fuel.mjs?v=expanded-map-20261010-32';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
-import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=shared-helpers-20261010-31';
-import {distance} from './map.mjs?v=shared-helpers-20261010-31';
+import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=expanded-map-20261010-32';
+import {distance} from './map.mjs?v=expanded-map-20261010-32';
 
-export const REPORT_VERSION='2026.10.10.31';
+export const REPORT_VERSION='2026.10.10.32';
 const clean=v=>String(v??'Not recorded').replace(/[\r\n\t\x00-\x1f]+/g,' ').trim();
 const number=v=>String(v).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const cr=v=>v==null?'Not recorded':'Cr '+number(v);
