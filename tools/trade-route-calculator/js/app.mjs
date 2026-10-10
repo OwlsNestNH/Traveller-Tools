@@ -143,7 +143,7 @@ function syncModalSubmit(){
  if($('modal-cancel'))$('modal-cancel').disabled=pending;
  if($('modal-close'))$('modal-close').disabled=pending;
 }
-function closeModal(){if(activeModal?.awaitSave&&activeModal.busy)return false;if(settingsOperation?.session&&settingsOperation.session===activeModal)invalidateSettingsOperation();if(worldWriteOperation?.session===activeModal)invalidateWorldWriteOperation();if(timeWriteOperation?.session&&timeWriteOperation.session===activeModal)invalidateTimeWriteOperation();preserveModalPointerGesture();activeModal=null;modalGeneration++;$('modal').close();$('modal-body').innerHTML='';restoreSettingsForm();}
+function closeModal(){if(activeModal?.awaitSave&&activeModal.busy)return false;if(settingsOperation?.session&&settingsOperation.session===activeModal)invalidateSettingsOperation();if(worldWriteOperation?.session===activeModal)invalidateWorldWriteOperation();if(timeWriteOperation?.session&&timeWriteOperation.session===activeModal)invalidateTimeWriteOperation(timeWriteOperation.closingGeneration!==modalGeneration+1||campaignReloadRequired);preserveModalPointerGesture();activeModal=null;modalGeneration++;$('modal').close();$('modal-body').innerHTML='';restoreSettingsForm();}
 function requireCampaignReload(error,guidance,context){
  // A terminal save outcome survives subsequent role callbacks and dialogs.
  // Set both application and provider guards before yielding can render/throw.
@@ -375,12 +375,12 @@ function createTimeWriteOwner(session=null){
  const owner={session,form:session?$('modal-form'):null,campaign:state,revision:state.revision,epoch:campaignPublicationEpoch,editing:editingLossEpoch,generation:modalGeneration,tab,view,pending:false,invalidated:false,publication:null,publicationDeferred:false};
  if(session)session.timeOwner=owner;timeWriteOperation=owner;return owner;
 }
-function invalidateTimeWriteOperation(){
+function invalidateTimeWriteOperation(notify=true){
  const owner=timeWriteOperation;if(!owner)return;
  owner.invalidated=true;owner.publicationDeferred=false;
  if(owner.session)owner.session.cancelled=true;
  if(owner.session&&activeModal===owner.session&&$('modal').open){
-  $('modal-error').textContent=campaignReloadRequired?campaignReloadMessage:'Campaign or editing ownership changed. Close and review the current campaign time before continuing.';
+  if(notify)$('modal-error').textContent=campaignReloadRequired?campaignReloadMessage:'Campaign or editing ownership changed. Close and review the current campaign time before continuing.';
   syncModalSubmit();
  }
 }
@@ -421,7 +421,7 @@ function finishTimeWrite(owner,label){
  if(owner.session)owner.session.savedRevision=published.revision;
  if(!timeWriteOwnerCurrent(owner))return false;
  owner.publicationDeferred=false;syncMailCheck();
- if(owner.session){owner.session.busy=false;owner.closingGeneration=modalGeneration+1;closeModal();}
+ if(owner.session){$('modal-error').textContent='';owner.session.busy=false;owner.closingGeneration=modalGeneration+1;closeModal();}
  if(state!==published||campaignPublicationEpoch!==owner.epoch+1||editingLossEpoch!==owner.editing||!store?.editable||campaignReloadRequired||tab!==owner.tab||view!==owner.view||activeModal||modalGeneration!==(owner.closingGeneration??owner.generation))return false;
  render();message(label+' saved.');return false;
 }

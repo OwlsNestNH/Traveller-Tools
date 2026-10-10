@@ -28,7 +28,7 @@ const sizes = [{width: 1440, height: 1100}, {width: 390, height: 844}];
 const paired = ['success', 'prewrite', 'unknown-before', 'unknown-after', 'contradictory', 'notification-before', 'notification-after', 'missing', 'missing-token', 'wrong-token'];
 const scenarios = [
  ...['forward', 'back', 'form'].flatMap(path => paired.map(mode => ({id: path + '-' + mode, path, mode}))),
- ...['forward', 'form'].flatMap(path => ['foreign-same', 'foreign-new', 'editor-regain', 'native-close', 'new-dialog', 'render', 'report', 'close'].map(mode => ({id: path + '-' + mode, path, mode}))),
+ ...['forward', 'form'].flatMap(path => ['foreign-same', 'foreign-new', 'editor-regain', 'native-close', 'new-dialog', 'render', 'report', 'close', 'clear-error'].map(mode => ({id: path + '-' + mode, path, mode}))),
  ...['forward', 'back', 'form'].flatMap(path => ['sync', 'reentrant'].map(mode => ({id: path + '-' + mode, path, mode}))),
  ...['title-before', 'title-after', 'body-before', 'body-after'].map(fault => ({id: 'pending-ui-' + fault, path: 'forward', mode: 'pending-ui', fault})),
  ...[
@@ -183,6 +183,7 @@ async function installGate(page, result) {
   const text = Object.getOwnPropertyDescriptor(Node.prototype, 'textContent');
   Object.defineProperty(Node.prototype, 'textContent', {...text, set(value) {
    if (g.pendingUI?.startsWith('title-') && this.id === 'modal-title' && value === 'Saving campaign day') {const fault = g.pendingUI; g.pendingUI = null; g.faults.push(fault); throw Error('Synthetic time pending title construction fault');}
+   if (g.cleanupFault === 'clear-error' && this.id === 'modal-error' && value === '' && g.settlements.at(-1)?.kind === 'native-fulfilled') {g.cleanupFault = null; g.faults.push('clear-error'); throw Error('Synthetic owned time success error-clear fault');}
    if (g.cleanupFault === 'report' && this.id === 'message' && /^Time (advanced|correction).* saved\.$/s.test(value)) {g.cleanupFault = null; g.faults.push('report'); throw Error('Synthetic time success reporting fault');}
    return Reflect.apply(text.set, this, [value]);
   }});
@@ -371,6 +372,7 @@ async function reloadUndo(page, result, before, scenario, {committed = true, cap
 }
 async function successful(page, result, before, scenario, {fresh = false} = {}) {
  await closed(page); await frames(page); assertTime(await read(page), before, scenario);
+ assert.equal(await page.locator('#modal-error').textContent(), '', 'Successful time completion leaves no stale modal warning');
  const snapshot = await gate(page); result.gate = safeReport(snapshot);
  assert.equal(await raw(page), snapshot.candidates.at(-1), 'Stored bytes exactly match controller-owned snapshot');
  assert.equal(snapshot.storage.writes, 1); assert.equal(snapshot.durableToken, false); assert.match(await page.locator('#message').textContent(), successPattern);
@@ -382,6 +384,7 @@ async function successful(page, result, before, scenario, {fresh = false} = {}) 
  const bytes = await raw(page), total = snapshot.totalCalls;
  await page.evaluate(() => {if (timeGate.oldSubmit) void timeGate.oldSubmit({preventDefault() {}, currentTarget: document.querySelector('#modal-form')}); timeGate.oldButton?.click();});
  await frames(page); assert.equal(await raw(page), bytes, 'Detached prior callbacks cannot replay completion'); assert.equal((await gate(page)).totalCalls, total);
+ assert.equal(await page.locator('#modal-error').textContent(), '', 'Detached callbacks cannot create a warning after successful completion');
  if (scenario.mode === 'dirty-settings') {
   assert.equal(await page.locator('#settings-form [name="name"]').inputValue(), 'Unrelated dirty inline time draft');
   const beforeAttempt = await raw(page); await page.locator('#settings-save').click(); await frames(page);
@@ -394,6 +397,7 @@ async function successful(page, result, before, scenario, {fresh = false} = {}) 
   await page.evaluate(() => {timeGate.armed = false; timeGate.reentrant = false;});
   const first = await read(page); await prepare(page, scenario, first); await start(page, scenario, {keyboard: scenario.path !== 'form'}); await closed(page); await frames(page);
   assertTime(await read(page), first, scenario); assert.equal((await gate(page)).storage.writes, 2);
+  assert.equal(await page.locator('#modal-error').textContent(), '', 'Fresh successful time action leaves no modal warning');
   await tab(page, 'History'); await action(page, 'undo').click(); await closed(page);
   const restoredFirst = await read(page); assert.equal(restoredFirst.hours, first.hours); assert.deepEqual(restoredFirst.ship, first.ship);
   // Fresh operation and its Undo add audit entries; test the original Undo
@@ -490,7 +494,11 @@ async function runBody(page, result, scenario, context) {
    assert.equal(await raw(page), bytes); assert.equal((await gate(page)).totalCalls, 0); assert.equal(await page.locator('#modal').evaluate(el => el.open), true);
    await page.locator('#modal [name="' + name + '"]').fill(String(name === 'reason' ? valid.reason : name === 'date' ? valid.date : valid.hours));
   }
-  await capture(page, result, 'validation-no-write'); result.checks.push('Reason, Imperial date, whole hours, nonnegative and safe integer validation preserve form and durable bytes'); return;
+  await capture(page, result, 'validation-no-write'); result.checks.push('Reason, Imperial date, whole hours, nonnegative and safe integer validation preserve form and durable bytes');
+  await start(page, scenario); await closed(page); await frames(page);
+  assert.equal(await page.locator('#modal-error').textContent(), '', 'Corrected valid submission clears earlier validation errors only after successful completion');
+  await capture(page, result, 'validation-corrected-success');
+  await successful(page, result, before, scenario); return;
  }
  if (scenario.mode === 'idle-stale') {
   await page.evaluate(() => {timeGate.remember('form');});
@@ -506,8 +514,8 @@ async function runBody(page, result, scenario, context) {
   await page.evaluate(mode => {timeGate.reentrant = mode === 'reentrant';}, scenario.mode);
   await page.evaluate(path => timeGate.remember(path), scenario.path);
   if (scenario.path !== 'form') {
-   const immediate = await page.evaluate(path => {document.querySelector('[data-action="day-' + path + '"]').click(); return {writes: timeStorage.writes, pending: !!timeGate.pending, open: document.querySelector('#modal').open};}, scenario.path);
-   assert.deepEqual(immediate, {writes: 1, pending: false, open: false}, 'Synchronous day write executes before service-await/event microtask window and adds no confirmation');
+   const immediate = await page.evaluate(path => {document.querySelector('[data-action="day-' + path + '"]').click(); return {writes: timeStorage.writes, pending: !!timeGate.pending, open: document.querySelector('#modal').open, modalError: document.querySelector('#modal-error').textContent};}, scenario.path);
+   assert.deepEqual(immediate, {writes: 1, pending: false, open: false, modalError: ''}, 'Synchronous day write executes before service-await/event microtask window and adds no confirmation');
   } else await start(page, scenario);
   await frames(page); assertTime(await read(page), before, scenario);
   const snapshot = await gate(page); assert.equal(snapshot.totalCalls, 1);
@@ -553,11 +561,11 @@ async function runBody(page, result, scenario, context) {
   if (scenario.mode === 'success') await capture(page, result, 'durable-publication-held');
   await release(page); await successful(page, result, before, scenario); return;
  }
- if (['render', 'report', 'close'].includes(scenario.mode)) await page.evaluate(mode => {timeGate.cleanupFault = mode;}, scenario.mode);
+ if (['render', 'report', 'close', 'clear-error'].includes(scenario.mode)) await page.evaluate(mode => {timeGate.cleanupFault = mode;}, scenario.mode);
  const kind = ['unknown-before', 'unknown-after', 'contradictory'].includes(scenario.mode) ? scenario.mode : 'native';
  await release(page, kind);
  await terminal(page, result, before, scenario, {committed: scenario.mode !== 'unknown-before', unknown: ['unknown-before', 'missing', 'missing-token', 'wrong-token'].includes(scenario.mode)});
- if (['render', 'report', 'close'].includes(scenario.mode)) assert.deepEqual(result.gate.faults, [scenario.mode]);
+ if (['render', 'report', 'close', 'clear-error'].includes(scenario.mode)) assert.deepEqual(result.gate.faults, [scenario.mode]);
  if (scenario.mode === 'notification-after') assert.equal(result.gate.roleThrows, 1);
  if (scenario.mode === 'contradictory') assert.equal(result.gate.settlements.at(-1).kind, 'contradictory');
  if (['missing-token', 'wrong-token'].includes(scenario.mode)) {const publication = result.gate.publications.find(item => item.actualCallback); assert.ok(publication); assert.equal(publication.deliveredTokenMatches, false); assert.equal(publication.deliveredTokenPresent, scenario.mode === 'wrong-token');}
