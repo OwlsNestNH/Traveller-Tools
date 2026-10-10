@@ -1,4 +1,4 @@
-import {sectors,sectorCatalog,subsectorForHex,loadWorld} from './map.mjs?v=world-override-20261010-39';
+import {sectors,sectorCatalog,subsectorForHex,loadWorld} from './map.mjs?v=world-history-20261010-40';
 
 const RECENTS_KEY='traveller-trade-route-calculator:recent-worlds:v1';
 let recentMemory=[];

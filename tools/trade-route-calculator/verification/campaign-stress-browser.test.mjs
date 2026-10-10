@@ -95,6 +95,13 @@ async function dismiss(page,method='Cancel'){
 async function reload(page){await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();assert.equal(await page.getByRole('heading',{name:'Recover saved campaign',exact:true}).count(),0);}
 async function unchanged(page,before,label){assert.equal(await raw(page),before,label+' preserves exact campaign bytes');}
 async function undo(page){await tab(page,'History');assert.equal(await action(page,'undo').isEnabled(),true);await action(page,'undo').click();}
+async function protectedHistoryUndo(page,reason,label){
+ await tab(page,'History');const before=await raw(page);
+ assert.equal(await action(page,'undo').isEnabled(),true,'Protected History Undo remains available to explain its refusal');
+ await action(page,'undo').click({clickCount:2,delay:20});
+ const warning=await page.locator('#message').innerText();assert.match(warning,/Cannot undo this protected jump/);assert.match(warning,reason);assert.match(warning,/Nothing was changed/);
+ await unchanged(page,before,label);assert.equal(await modal(page).count(),0,'A protected Undo cannot open a rollback confirmation');
+}
 async function layout(page,result,label){
  const geometry=await page.evaluate(()=>{
   const d=document.querySelector('#modal[open]');
@@ -318,11 +325,11 @@ async function jumpCase(page,context,result,f){
  await action(page,'jump').click();const retry=await read(page);assert.equal(retry.jumpAttempts[0].rolls.length,2);assert.equal(await page.evaluate(()=>globalThis.stressDice.calls),6,'Only the one permitted retry rolls six dice');await dismiss(page);
  await reload(page);await action(page,'jump').click();assert.equal(await page.evaluate(()=>globalThis.stressDice.calls),0);await fill(page,'hours',168);await submit(page,'COMMIT JUMP',null,{double:true});const repeated=await read(page);
  assert.equal(repeated.actual,f.state.route[2]);assert.equal(repeated.hours,source.hours+168);assert.equal(repeated.bank,source.bank);assert.equal(repeated.ship.lifeSupport.stockUnits.numerator,'14');assert.equal(repeated.ship.lifeSupport.stockUnits.denominator,'1');assert.equal(await action(page,'jump-undo').isDisabled(),true);
- await tab(page,'History');assert.equal(await action(page,'undo').isDisabled(),true,'History cannot bypass the used mulligan');
+ await protectedHistoryUndo(page,/Mulligan used/,'History cannot bypass the used mulligan');
  await tab(page,'Overview');await action(page,'jump').click();await fill(page,'hours',0);await submit(page,'COMMIT JUMP');const next=await read(page);assert.equal(next.actual,f.state.route[3]);assert.equal(await action(page,'jump-undo').isEnabled(),true,'Next departure has its own one mulligan');
  await deposit(page,7);await tab(page,'Overview');assert.equal(await action(page,'jump-undo').isDisabled(),true,'Later monetary transaction closes jump mulligan');
- await undo(page);const depositUndone=await read(page);assert.equal(depositUndone.bank,next.bank);assert.equal(depositUndone.actual,next.actual);assert.equal(await action(page,'undo').isDisabled(),true,'Undoing later payment does not reopen the jump');
- const bytes=await exportBytes(page);await importBytes(page,bytes);await reload(page);await tab(page,'History');assert.equal(await action(page,'undo').isDisabled(),true,'Closed mulligan survives backup/import/reload');
+ await undo(page);const depositUndone=await read(page);assert.equal(depositUndone.bank,next.bank);assert.equal(depositUndone.actual,next.actual);await protectedHistoryUndo(page,/later campaign change/,'Undoing later payment does not reopen the jump');
+ const bytes=await exportBytes(page);await importBytes(page,bytes);await reload(page);await protectedHistoryUndo(page,/later campaign change/,'Closed mulligan survives backup/import/reload');
  await tab(page,'Overview');assert.equal(await action(page,'jump-undo').isDisabled(),true);await layout(page,result,'jump-boundaries');
  result.checks.push('Cancel/reopen/reload retained dice, double zero-hour jump, first mail departure, one mulligan restores whole campaign, exactly one reroll, repeat cannot Undo, next-departure independence, later deposit/Undo boundary, import/reload retention');
 }

@@ -1,6 +1,6 @@
-import * as S from './state.mjs?v=world-override-20261010-39';
-import {creditStep} from './rounding.mjs?v=world-override-20261010-39';
-import {SaveNotCommittedError} from './persistence.mjs?v=world-override-20261010-39';
+import * as S from './state.mjs?v=world-history-20261010-40';
+import {creditStep} from './rounding.mjs?v=world-history-20261010-40';
+import {SaveNotCommittedError} from './persistence.mjs?v=world-history-20261010-40';
 
 // Store remains synchronous. An injected provider may return a completion
 // Promise; that completion must include the durable write and publication.

@@ -1,4 +1,4 @@
-import {searchWorlds,loadWorld} from './map.mjs?v=world-override-20261010-39';
+import {searchWorlds,loadWorld} from './map.mjs?v=world-history-20261010-40';
 
 export const planetSearchLabel=w=>[w.name,w.subsectorName,w.sector,w.hex].join(' — ');
 

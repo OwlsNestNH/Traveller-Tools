@@ -501,3 +501,33 @@ amounts, audits and commit controls remain in place. In particular:
 No rulebook files, scans, private links or copied source passages are included.
 The catalogue is display-only; campaign schema, calculations, saved audit
 records, Undo and browser storage are unchanged.
+
+## World Changes in History
+
+History has a **World Changes** filter, available in both editing and read-only
+tabs. New world edits retain the target world, reason and each changed UWP
+component, travel zone, fuel override and accessible-water value. The audit and
+its committing summary appear as one readable row; all saved evidence remains
+in JSON and History.
+
+An editing tab can open Details and **Restore previous** for an individual
+field. For example, restoring a recorded Tech level change preserves later
+changes to the other seven UWP components. Each restoration is a new audited
+correction. It changes no completed jump, payment, cargo, contract or saved
+market quote. A later edit to the same field, a mismatched current value or a
+stale preview prevents the restoration. Ordinary Undo can reverse the new
+correction.
+
+“Previous” is the value before that particular edit; it may itself be another
+campaign override, not the published default. Older generic World override
+entries lack reliable target/before/after information and offer no guessed
+restoration. Select the intended world and use the existing World override
+editor to enter the desired values; its published-UWP reference remains visible.
+No bulk reset, audit deletion or new permission system is added.
+
+The one-mulligan jump restriction is unchanged. Attempting History Undo at a
+protected jump now shows a warning and writes nothing. It cannot erase or skip
+that jump. Individual eligible world-field corrections remain available without
+rolling back travel or transactions. Run the native
+`verification/world-change-history.test.mjs` and the independent
+`verification/world-change-history-browser.test.mjs` for focused verification.
