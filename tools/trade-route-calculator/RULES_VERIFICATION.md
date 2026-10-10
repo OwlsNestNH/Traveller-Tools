@@ -526,3 +526,14 @@ hours, known unsaved versus saved/unknown failures, partial display failure and
 reload. The existing full native/rules and campaign browser gates still apply.
 Actual exact-head browser results and independent screenshot review are required
 before release; this scope record alone is not a verification result.
+
+## Undo save-completion .43 verification scope
+
+This caller migration changes no Traveller rules, state inverse, audit retention,
+world-field correction linkage, fixed Dashboard starting point or one-mulligan
+policy. Its tests must cover immediate and delayed generic Undo/Undo Jump, exact
+restored campaign values, known-unsaved retry, saved/unknown failures, repeated
+activation, same-revision foreign publication, editor loss, pending display
+failure, cleanup failure and reload. Generic Undo remains immediate, and campaign
+replacement is excluded. Full native/rules/browser gates and independent source
+and exact-head screenshot review are required; this scope is not a pass claim.

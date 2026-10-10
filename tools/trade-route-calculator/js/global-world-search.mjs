@@ -1,4 +1,4 @@
-import {searchWorlds,loadWorld} from './map.mjs?v=jump-completion-20261010-42';
+import {searchWorlds,loadWorld} from './map.mjs?v=undo-completion-20261010-43';
 
 export const planetSearchLabel=w=>[w.name,w.subsectorName,w.sector,w.hex].join(' — ');
 

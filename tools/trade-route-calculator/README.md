@@ -558,3 +558,10 @@ one-mulligan policy are unchanged.
 `jump-completion-browser` CI job cover delayed success/failure, duplicate
 activation, stale ownership/revision, display failure and reload alongside the
 existing synchronous jump and campaign regression suites.
+
+Undo save completion (.43 candidate) retains ordinary History Undo's immediate
+behavior and Undo Jump's existing confirmation. A delayed save waits before
+clearing previews or claiming success. Known-unsaved Undo can be retried from
+History after closing its notice; an uncertain or already-saved outcome requires
+reload before further editing. Campaign replacement/import/reset is a separate
+remaining item in [the completion migration queue](COMPLETION_MIGRATION.md).

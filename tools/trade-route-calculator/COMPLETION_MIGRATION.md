@@ -1,7 +1,7 @@
 # Save-completion migration queue
 
-Inventory checked against UI 2026.10.10.41, merge
-`f7bf76eb159145e93eeea652b085e575e5070df0` (2026-10-10).
+Inventory checked against UI 2026.10.10.42, merge
+`1780038d016c0c825b134319d4d63cb7021be075` (2026-10-10).
 This records the save-boundary work, not the earlier GUI-refit stages.
 
 ## Stage 2: finish save callers
@@ -28,15 +28,18 @@ publication failure or unknown result (reload required, no duplicate retry).
 
 ### Remaining queue, in priority order
 
-1. **Jump preparation and commit: implemented in the .42 candidate.**
-   `app.mjs: jump` now waits for preparation and commit completion, retains the
-   same prepared dice across a known-unsaved retry, and freezes elapsed hours
-   while saving. Native tests cover the existing saved-roll/mulligan policy.
-   The exact-head browser and independent screenshot gates must pass before
-   this item is treated as released.
-2. **Undo and campaign replacement.** `undoJump`, `undoLatestChange` and
-   `backupReplace` perform cleanup or success messages immediately after the
-   controller call. Replacement covers JSON import and reset.
+1. **Jump preparation and commit: released and verified in .42.**
+   `app.mjs: jump` waits for preparation and commit completion, retains the same
+   prepared dice across a known-unsaved retry, and freezes elapsed hours while
+   saving. Native and exact-head browser tests, independent screenshot review
+   and live-file verification passed, including the saved-roll/mulligan policy.
+2. **Undo and campaign replacement.** `undoJump` and `undoLatestChange` are
+   the current bounded .43 completion-safety candidate. Ordinary Undo retains
+   its immediate click behavior with a pending screen only for delayed saves;
+   Undo Jump retains its existing confirmation. Their exact-head browser and
+   screenshot gates remain required before release. `backupReplace` still
+   needs a separate batch for JSON import and reset; it currently cleans up
+   and announces replacement before the controller completion is known.
 3. **Settings, setup and position/time changes.** The inline
    `mountSettingsForm` submit clears its draft without waiting; `setup`,
    `setLocation`, `changeCampaignDay` and `timeForm` discard the save completion.
