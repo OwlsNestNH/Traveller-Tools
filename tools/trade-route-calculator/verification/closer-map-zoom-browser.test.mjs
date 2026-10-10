@@ -119,7 +119,32 @@ async function routeView(page){
   caption:document.querySelector('.map-caption strong')?.textContent
  }));
 }
+async function platformFontDiagnostics(page){
+ // Diagnostic protocol reads happen after the synchronous live-SVG sample.
+ // An async map repaint can detach a node between calls; report that instead
+ // of turning optional font identification into a separate flaky test gate.
+ const result={capture:'after live readability snapshot',fonts:{},errors:[]};let session;
+ try{
+  session=await page.context().newCDPSession(page);await session.send('DOM.enable');await session.send('CSS.enable');
+  const {root}=await session.send('DOM.getDocument',{depth:0});
+  for(const [label,selector]of [['name','.world-map .selected-world .world-name'],['uwp','.world-map .selected-world .world-uwp']]){
+   try{
+    const {nodeId}=await session.send('DOM.querySelector',{nodeId:root.nodeId,selector});
+    if(!nodeId)throw Error('Current text node is unavailable');
+    result.fonts[label]=(await session.send('CSS.getPlatformFontsForNode',{nodeId})).fonts;
+   }catch(error){result.errors.push({label,error:String(error.message||error)});}
+  }
+ }catch(error){result.errors.push({label:'session',error:String(error.message||error)});}
+ finally{if(session)await session.detach().catch(error=>result.errors.push({label:'detach',error:String(error.message||error)}));}
+ return result;
+}
 async function closeReadability(page,f){
+ // This settles the document's current font loading/layout. It is not a
+ // guarantee that generic family names retain one particular OS font face.
+ const fontReadiness=await page.evaluate(async()=>{
+  await document.fonts.ready;
+  return {status:document.fonts.status,size:document.fonts.size,faces:[...document.fonts].map(font=>({family:font.family,status:font.status}))};
+ });await frame(page);
  const viewed=f.state.worlds[f.state.route[0]],actualId=f.state.actual;
  const result=await page.evaluate(({viewedId,actualId})=>{
   const svg=document.querySelector('.world-map'),selected=svg.querySelector('.selected-world'),actual=svg.querySelector('[data-action="map-world"][data-arg="'+actualId+'"]');
@@ -129,11 +154,11 @@ async function closeReadability(page,f){
    const typography=Object.fromEntries(['font','fontFamily','fontSize','fontWeight','fontStyle','fontStretch','fontVariantCaps','fontKerning','fontFeatureSettings','fontVariationSettings','letterSpacing','wordSpacing','textRendering','textAnchor','dominantBaseline'].map(key=>[key,style[key]]));
    let intrinsic=null;
    if(element.tagName.toLowerCase()==='text'){
-    // SVG client rectangles describe painted glyph bounds: Chromium can change
-    // those by a fraction of a pixel after scrolling/remounting identical text.
-    // Measure the live computed font at an untransformed canvas origin instead
-    // when asserting font/size invariance. Keep real SVG boxes below for the
-    // independent containment, separation and on-screen readability checks.
+    // Preserve intrinsic metrics as diagnostics, not a cross-sample invariant:
+    // observed generic-monospace advances exactly matched DejaVu Sans Mono and
+    // Liberation Mono despite identical computed CSS. The face-resolution
+    // trigger is unverified. Real SVG bounds and semantic styles below test
+    // the product contract without asserting OS font-cache identity.
     if(!style.font)throw Error('A complete computed SVG font is required for intrinsic measurement');
     const context=document.createElement('canvas').getContext('2d');
     context.font=style.font;
@@ -162,7 +187,11 @@ async function closeReadability(page,f){
  assert.ok(result.title.includes(viewed.name),'The full synthetic world name remains available in its title');
  assert.ok(result.name.top>result.marker.bottom,'Name stays below the world marker');
  assert.ok(result.name.bottom<result.uwp.top,'World name and UWP do not overlap');
- for(const text of [result.name,result.uwp])assert.ok(text.left>=result.map.left&&text.right<=result.map.right&&text.top>=result.map.top&&text.bottom<=result.map.bottom,'The centered selected label stays fully readable inside the map');
+ for(const text of [result.name,result.uwp]){
+  assert.ok(Number.isFinite(text.width)&&Number.isFinite(text.height)&&text.width>0&&text.height>0,'Live name/UWP glyph boxes have finite positive dimensions');
+  assert.ok(text.left>=result.map.left&&text.right<=result.map.right&&text.top>=result.map.top&&text.bottom<=result.map.bottom,'The centered selected label stays fully readable inside the map');
+ }
+ assert.ok(result.name.font*result.name.scaleY>=12&&result.uwp.font*result.uwp.scaleY>=9,'Physical world/UWP type retains the existing 12px/9px readability floors');
  for(const [name,icon]of Object.entries(result.icons))assert.ok(icon.width>0&&icon.height>0,'Existing close-detail icon stays measurable: '+name);
  for(const detail of [result.name,result.uwp,...Object.values(result.icons)])for(const axis of ['scaleX','scaleY'])near(detail[axis],1,.001,'Close labels/icons retain their actual CSS-pixel scale');
  assert.equal(result.icons['symbol-starport'].font,15);assert.equal(result.icons['symbol-naval'].font,12);
@@ -172,6 +201,7 @@ async function closeReadability(page,f){
  assert.equal(result.selectedFill,'#245d94');assert.equal(result.selectedOutline,'#80beff');assert.equal(result.selectedStroke,'#fff');
  near(result.marker.width,result.marker.height,.1,'World marker remains round');
  assert.equal(result.level,'world');assert.ok(result.hexes>0);assert.equal(result.uwpCount,result.nameCount,'Every rendered world keeps its UWP at close zoom');
+ result.fontReadiness=fontReadiness;result.platformFonts=await platformFontDiagnostics(page);
  return result;
 }
 function sameDetails(actual,expected,label){
@@ -182,8 +212,8 @@ function sameDetails(actual,expected,label){
   assert.equal(current.fill,previous.fill,label+' preserves '+name+' fill');
   assert.deepEqual(current.typography,previous.typography,label+' preserves every measured '+name+' text style');
   if(previous.intrinsic){
-   assert.ok(current.intrinsic&&current.intrinsic.width>0,label+' has positive '+name+' intrinsic text width');
-   assert.deepEqual(current.intrinsic,previous.intrinsic,label+' preserves origin-based '+name+' font metrics');
+   const metrics=current.intrinsic,height=metrics?.actualBoundingBoxAscent+metrics?.actualBoundingBoxDescent;
+   assert.ok(metrics&&Number.isFinite(metrics.width)&&metrics.width>0&&Number.isFinite(height)&&height>0,label+' has finite positive '+name+' intrinsic text dimensions');
   }else{
    for(const size of ['width','height'])near(current[size],previous[size],.1,label+' preserves '+name+' '+size);
   }
