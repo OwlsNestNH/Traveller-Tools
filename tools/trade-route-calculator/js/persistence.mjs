@@ -1,6 +1,14 @@
-import {initial,validate} from './state.mjs?v=revision-guard-20261010-36';
+import {initial,validate} from './state.mjs?v=deposit-completion-20261010-37';
 export const KEY='traveller-trade-route-calculator:v1';
 const LOCK=KEY+':writer';
+// Only the provider can distinguish a rejected write from failed publication.
+// Keep errors thrown (including for synchronous callers), with their cause.
+export class SaveNotCommittedError extends Error{
+ constructor(cause){super(String(cause?.message??cause),{cause});this.name='SaveNotCommittedError';this.code='SAVE_NOT_COMMITTED';this.committed=false;}
+}
+export class SaveCommittedPublicationError extends Error{
+ constructor(revision,cause){super('Saved revision '+revision+', but publication failed: '+String(cause?.message??cause),{cause});this.name='SaveCommittedPublicationError';this.code='SAVE_COMMITTED_PUBLICATION_FAILED';this.committed=true;this.revision=revision;}
+}
 function serializedCampaign(next){
  validate(next);
  const raw=JSON.stringify(next),state=validate(JSON.parse(raw));
@@ -10,6 +18,7 @@ export class Store{
  constructor(onChange,onRole){this.onChange=onChange;this.onRole=onRole;this.editable=false;this.release=null;this.acquisition=null;this.id=crypto.randomUUID();this.channel=typeof BroadcastChannel==='function'?new BroadcastChannel(KEY):null;this.channel?.addEventListener('message',e=>{if(e.data.type==='takeover'&&e.data.id!==this.id)this.yield();});window.addEventListener('storage',e=>{if(e.key===KEY){this.onChange(this.read());}if(e.key===KEY+':takeover'&&e.newValue!==this.id)this.yield();});}
  read(){const raw=localStorage.getItem(KEY);if(!raw)return initial();let s;try{s=JSON.parse(raw);}catch{throw Error('Saved data could not be read. Export the raw backup before resetting.');}return validate(s);}
  async acquire(takeover=false){
+  if(this.reloadRequired){this.onRole(false,'Reload this page before editing the campaign again.');return;}
   // A request remains owned until its held lock is released. Repeated clicks
   // must not leave another request queued to steal editing back after yield.
   if(this.editable||this.acquisition)return;
@@ -46,7 +55,36 @@ export class Store{
   request?.release?.();
   this.onRole(false,'Read-only: editing transferred to another tab.');
  }
- save(next,expected){if(this.recovery)throw Error('Restore or reset the saved campaign before editing.');if(!this.editable)throw Error('This tab is read-only. Take over editing first.');const current=this.read();if(current.revision!==expected)throw Error('This preview is stale. Reload it before committing.');const saved=serializedCampaign(next);localStorage.setItem(KEY,saved.raw);this.onChange(saved.state);}
+ save(next,expected,saveToken){
+  let saved;
+  try{
+   if(this.reloadRequired)throw Error('Reload this page before editing the campaign again.');
+   if(this.recovery)throw Error('Restore or reset the saved campaign before editing.');
+   if(!this.editable)throw Error('This tab is read-only. Take over editing first.');
+   const current=this.read();if(current.revision!==expected)throw Error('This preview is stale. Reload it before committing.');
+   saved=serializedCampaign(next);
+   // localStorage.setItem is atomic: a throwing write leaves the old value.
+   localStorage.setItem(KEY,saved.raw);
+  }catch(cause){throw new SaveNotCommittedError(cause);}
+  const revision=saved.state.revision;
+  try{this.onChange(saved.state,{saveToken});}
+  catch(cause){throw new SaveCommittedPublicationError(revision,cause);}
+ }
  backup(){const raw=localStorage.getItem(KEY)||JSON.stringify(initial());const url=URL.createObjectURL(new Blob([raw],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='traveller-campaign-'+new Date().toISOString().slice(0,10)+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}
- replace(next,expected){next=structuredClone(validate(next));next.revision=expected+1;if(this.recovery){if(!this.editable)throw Error('Take over editing before restoring');const saved=serializedCampaign(next);localStorage.setItem(KEY,saved.raw);this.recovery=false;this.onChange(saved.state);this.onRole(true,'Editing in this tab');}else this.save(next,expected);}
+ replace(next,expected){
+  let saved;
+  try{
+   if(this.reloadRequired)throw Error('Reload this page before editing the campaign again.');
+   next=structuredClone(validate(next));next.revision=expected+1;
+   if(this.recovery){
+    if(!this.editable)throw Error('Take over editing before restoring');
+    saved=serializedCampaign(next);localStorage.setItem(KEY,saved.raw);
+   }
+  }catch(cause){throw new SaveNotCommittedError(cause);}
+  if(!saved)return this.save(next,expected);
+  this.recovery=false;
+  const revision=saved.state.revision;
+  try{this.onChange(saved.state);this.onRole(true,'Editing in this tab');}
+  catch(cause){throw new SaveCommittedPublicationError(revision,cause);}
+ }
 }

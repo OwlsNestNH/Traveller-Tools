@@ -74,7 +74,7 @@ test('full-unit expansion stays separate from campaign storage and keeps existin
  assert.match(app,/btn\(mapExpanded\?'Restore panels':'Expand map','map-expand'/);
  assert.match(app,/aria-expanded="'\+mapExpanded\+'" aria-controls="overview-navigation"/);
  assert.match(app,/mapExpanded\?'':services\.active\(\)\?services\.panel\(\)/);
- assert.match(app,/if\(services\.active\(\)&&!services\.committing\(\)\)throw Error\('Finish or cancel/);
+ assert.match(app,/if\(services\.active\(\)&&!services\.committing\(\)\)throw new SaveNotCommittedError\(Error\('Finish or cancel/);
  assert.match(css,/\.navigation-layout\.map-expanded\{grid-template-columns:minmax\(0,1fr\)\}/);
  assert.match(css,/height:clamp\(620px,80svh,1100px\)/);assert.match(css,/height:clamp\(540px,80svh,1100px\)/);
  assert.doesNotMatch(source,/saveCampaign|act\(|localStorage|state\.[\w]+\s*=/);

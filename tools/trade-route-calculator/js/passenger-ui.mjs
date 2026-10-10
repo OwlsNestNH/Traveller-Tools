@@ -1,10 +1,10 @@
-import {ruleInfo} from './rule-references.mjs?v=revision-guard-20261010-36';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=revision-guard-20261010-36';
+import {ruleInfo} from './rule-references.mjs?v=deposit-completion-20261010-37';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=deposit-completion-20261010-37';
 import * as A from './amounts.mjs';
-import {manualLuggage} from './accommodation.mjs?v=revision-guard-20261010-36';
-import * as P from './passengers.mjs?v=revision-guard-20261010-36';
-import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=revision-guard-20261010-36';
-import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=revision-guard-20261010-36';
+import {manualLuggage} from './accommodation.mjs?v=deposit-completion-20261010-37';
+import * as P from './passengers.mjs?v=deposit-completion-20261010-37';
+import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=deposit-completion-20261010-37';
+import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=deposit-completion-20261010-37';
 import {displayDate} from './calendar.mjs';
 const esc=escapeHtml;
 const money=formatCreditsText,signed=x=>x>0?'+'+x:String(x);

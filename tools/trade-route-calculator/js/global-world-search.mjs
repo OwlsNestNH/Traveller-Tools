@@ -1,4 +1,4 @@
-import {searchWorlds,loadWorld} from './map.mjs?v=revision-guard-20261010-36';
+import {searchWorlds,loadWorld} from './map.mjs?v=deposit-completion-20261010-37';
 
 export const planetSearchLabel=w=>[w.name,w.subsectorName,w.sector,w.hex].join(' — ');
 
