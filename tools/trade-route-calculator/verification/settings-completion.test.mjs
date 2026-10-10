@@ -144,3 +144,18 @@ test('Settings owner exists before synchronous publication and rejects reentrant
  const h=setup(),before=h.persisted();open(h);let calls=0,reentrant;
  h.hooks.beforeNotify=()=>{calls++;reentrant=h.submit();};const operation=h.submit();assert.equal(h.counters.writes,1);await operation;await reentrant;assert.equal(calls,1);assert.equal(h.counters.writes,1);assert.equal(h.persisted().undo.length,before.undo.length+1);economics(h.persisted(),before);
 });
+
+for(const committed of [false,true])test(`production delegated modal submit prevents native navigation without a session handler after terminal Settings, committed=${committed}`,async t=>{
+ const {h,gate,operation}=await pending(t);if(committed)gate.entries[0].write();gate.entries[0].reject();await operation;terminal(h);const bytes=h.bytes(),form=h.dom.ids.get('modal-form');
+ // A pending-screen construction fault may occur before modal() installs its
+ // per-session handler. Chromium owns that actual fault/navigation proof; this
+ // native check exercises the unchanged production document listener alone.
+ form.id='modal-form';form.onsubmit=null;let prevented=0;h.dom.dispatch('submit',form,{preventDefault(){prevented++;}});await flush();assert.equal(prevented,1,'Unowned modal forms must never fall through to browser-native GET submission');assert.equal(h.bytes(),bytes);assert.equal(gate.entries.length,1);assert.equal(h.store.reloadRequired,true);
+});
+
+test('actual modal title construction failure leaves native form submission cancelled before any session handler exists',async()=>{
+ const h=setup(),raw=h.bytes(),title=h.dom.ids.get('modal-title'),form=h.dom.ids.get('modal-form');form.id='modal-form';let faults=0;
+ Object.defineProperty(title,'textContent',{get:()=>'',set(){faults++;throw Error('Synthetic pending Settings title construction fault');}});
+ assert.throws(()=>h.api.modal('Saving Settings','<p>Pending Settings</p>',null,undefined,true,{awaitSave:true,saveName:'Settings',saveContext:'settings-save',annotateRounding:false}),/title construction fault/);
+ assert.equal(faults,1);assert.equal(typeof form.onsubmit,'undefined','Construction failed before per-session submit handler installation');assert.equal(ui(h).modalOpen,false);let prevented=0;h.dom.dispatch('submit',form,{preventDefault(){prevented++;}});await flush();assert.equal(prevented,1);assert.equal(h.bytes(),raw);assert.equal(h.counters.writes,0);
+});
