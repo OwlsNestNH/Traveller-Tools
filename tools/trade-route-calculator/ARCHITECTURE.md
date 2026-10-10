@@ -433,3 +433,25 @@ campaign write. The existing setup/location state mutations, opening baseline,
 location correction audit, policy amendment and one-mulligan rules are retained.
 There is no new persistence schema, provider protocol, accounting engine or
 Stage 3 preview ownership change.
+
+
+## Stage 2 map publication completion (.47)
+
+`receiveCampaign` installs an owned Undo/replacement snapshot before an async
+provider settles, while `render()` defers presentation. The separate `paintMap()`
+callback must honor those same pending, publication-deferred, non-invalidated
+owners. Two early-return predicates close that boundary without changing the
+controller, native Store, revision protocol or campaign mutation bodies. Foreign
+publication and editor loss retire the old owner, so the guard does not hide a
+new authoritative campaign. Normal settlement releases the owner and renders
+the completed snapshot. The existing setup/location guard is retained.
+
+The baseline test-only audit observed candidate ship-marker/world-name/route
+DOM changes across cache-origin paints in dedicated Undo Jump and a genuine
+import-over-Overview path reached through delayed file reading. Later resize
+callbacks repainted that state. Production storage remains synchronous. Legacy
+Settings rebuilt SVG but exposed no changed campaign semantics; its behavior is
+unchanged. Ordinary History, inline Settings and normal reset had no mounted map.
+Strict callback regression cases supplement, rather than replace, the existing
+completion, ownership, error and synchronous-provider suites. Separate keyboard
+focus and Cargo pointer-coordinate races are not fixed by these save guards.

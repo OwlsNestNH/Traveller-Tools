@@ -594,3 +594,22 @@ production callbacks/controller/Store; real desktop/mobile Chromium must check
 field retention, gestures, native locks, reload/Undo, visible warnings and layout.
 Full native/rules/catalog gates, existing browser regressions and independent
 source plus actual screenshot review are required. This scope is not a pass claim.
+
+
+## Map publication completion .47 verification scope
+
+No economic, travel, campaign schema or persistence behavior changes. Native
+truth-table tests execute the actual map-paint boundary for pending/deferred,
+settled, invalidated and absent Undo/replacement owners. Exact-head Chromium
+must preserve the immediately-prewrite DOM, SVG identity, loading status and
+campaign-specific map semantics through actual cache and ResizeObserver/rAF
+callbacks in the four reproduced Undo Jump/import cases, then show coherent
+settlement, one write and durable reload. Keep the remaining Settings/no-map
+controls and all existing completion/failure/ownership suites.
+
+Baseline diagnostic evidence came from PR49 head
+`b30ec23579d1befcf0aa22642181d6c6b41e2151`: 14 valid probes, four candidate-DOM
+exposures, zero probe errors, 34 independently inspected screenshots. A green
+diagnostic result established valid probes, not product safety. Original Cargo
+pointer-input race evidence and its unchanged-head rerun outcome remain part of
+the release record. This scope entry is not a candidate pass/deployment claim.

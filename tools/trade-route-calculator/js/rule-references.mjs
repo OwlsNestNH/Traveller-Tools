@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=setup-location-completion-20261010-46';
+import {escapeHtml as esc} from './display.mjs?v=map-publication-completion-20261010-47';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.

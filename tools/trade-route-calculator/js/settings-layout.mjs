@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=setup-location-completion-20261010-46';
+import {ruleInfo} from './rule-references.mjs?v=map-publication-completion-20261010-47';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={

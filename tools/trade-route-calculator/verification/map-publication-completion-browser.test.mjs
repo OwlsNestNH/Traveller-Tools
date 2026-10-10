@@ -1,11 +1,13 @@
-// Diagnostic only: a passing job means the probes ran, not that the pending
-// presentation boundary held. Read observations in map-publication-audit-report.json.
-// Native .46 Store is synchronous. The fixture delays its real write/publication
+// Strict product regressions for the four reproduced Overview Undo/import cases:
+// exact prewrite DOM/SVG/status/semantics and node identity must survive real cache
+// and ResizeObserver callbacks until owned provider settlement. Other paths remain
+// controls: legacy Settings may rebuild; no-map paths cannot prove map safety.
+// Production Store is synchronous. The fixture delays its real write/publication
 // and then its returned settlement to test the promised asynchronous boundary.
 // No private UI function, campaign state, DOM setter, lock implementation or
 // paint body is replaced. Provider/File.text completion is held; RO/rAF wrappers
 // only observe unchanged callbacks. File.text reaches a real Overview import review.
-// Run: node verification/map-publication-audit-browser.test.mjs [playwright-module]
+// Run: node verification/map-publication-completion-browser.test.mjs [playwright-module]
 // --fixtures-only runs native fixture/source checks without starting a browser.
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
@@ -23,7 +25,7 @@ import {recordWorldOverride, revertWorldField} from '../js/world-change-history.
 const base = process.env.TRAVELLER_TEST_URL || 'http://127.0.0.1:8765/';
 const root = fileURLToPath(new URL('../../../', import.meta.url));
 const artifacts = fileURLToPath(new URL('../verification-artifacts/', import.meta.url));
-const prefix = 'map-publication-audit-';
+const prefix = 'map-publication-completion-';
 const KEY = 'traveller-trade-route-calculator:v1', LOCK = KEY + ':writer';
 const sizes = [{width: 1440, height: 1100}, {width: 390, height: 844}];
 const core = JSON.parse(await readFile(new URL('../rules/core-2022.json', import.meta.url)));
@@ -33,17 +35,17 @@ const scenarios = [
  {id: 'settings-legacy-overview', method: 'save', map: true, route: 'Overview → Refuel without configured fuel → legacy Settings Save'},
  {id: 'undo-history-deposit', method: 'save', map: false, route: 'History → Undo latest change (deposit)'},
  {id: 'undo-history-world-revert', method: 'save', map: false, route: 'History → Undo latest change (individual world-field revert)'},
- {id: 'undo-jump-overview', method: 'save', map: true, route: 'Overview → Undo Jump → Use mulligan & return'},
- {id: 'import-overview-delayed-read', method: 'replace', map: true, route: 'Settings → select JSON → Overview while File.text is pending → resolve file → replacement review'},
+ {id: 'undo-jump-overview', method: 'save', map: true, strictMap: true, route: 'Overview → Undo Jump → Use mulligan & return'},
+ {id: 'import-overview-delayed-read', method: 'replace', map: true, strictMap: true, route: 'Settings → select JSON → Overview while File.text is pending → resolve file → replacement review'},
  {id: 'reset-settings', method: 'replace', map: false, route: 'Settings → Reset campaign → backup acknowledgement → Replace campaign'}
 ];
 const report = {
- suite: 'Pending owned-save map publication diagnostic', diagnosticOnly: true,
+ suite: 'Pending owned-save map publication completion', diagnosticOnly: false,
  startedAt: new Date().toISOString(), requestedCommit: process.env.TRAVELLER_COMMIT || null,
- releasedRuntimeTree: '7d0b1b7b557e5943d31e69e1c226520aa955e082', node: process.version,
- declaredCases: scenarios.length * sizes.length, cases: [], errors: [],
+ releasedBaselineRuntimeTree: '7d0b1b7b557e5943d31e69e1c226520aa955e082', node: process.version,
+ declaredCases: scenarios.length * sizes.length, declaredStrictMapCases: scenarios.filter(scenario => scenario.strictMap).length * sizes.length, cases: [], errors: [],
  fixtureView: {mapZoomPercent: 100, politicalTerritory: false, reason: 'Supported saved view preference isolates the local-world cache/paint boundary from unrelated sector catalog loading.'},
- scope: 'Synthetic actual-UI cases; discovered versioned native Store, native Web Locks, held write/publication and held settlement. Real cache-response and ResizeObserver/rAF callbacks. DOM equality and candidate-specific map semantics are observations, not product-pass assertions. Production Store is synchronous; this does not establish a naturally slow deployed write or certify completion safety. No runtime fix, live campaign, external map request, fault matrix, or keyboard-focus certification.'
+ scope: 'Synthetic actual-UI cases; discovered versioned native Store, native Web Locks, held write/publication and held settlement. Four reproduced Overview Undo/import cases strictly assert exact prewrite DOM/SVG/status/semantics and node identity through real cache-response and ResizeObserver/rAF callbacks, then single-write settlement/reload. Legacy Settings rebuilds are allowed; eight no-map controls do not prove map safety. Production Store is synchronous; this does not establish a naturally slow deployed write. No live campaign, external map request, broader fault matrix, or keyboard-focus certification.'
 };
 let browser, evidenceBytes = 0;
 const errorText = error => error?.stack || String(error);
@@ -239,9 +241,9 @@ async function installGate(page, result) {
   const native = {save: Store.prototype.save, replace: Store.prototype.replace};
   const g = globalThis.mapAudit = {armed: false, pending: null, store: null, args: null, calls: 0, executions: 0,
    forwarded: [], publications: [], settlements: [], paintEdges: [], phase: 'prepared',
-   baseline: null, snapshots: [], mutations: [], mutationCount: 0, nodeIds: new WeakMap(), nextId: 0};
+   baseline: null, snapshots: [], mutations: [], mutationCount: 0, paintEdgesDropped: 0, nodeIds: new WeakMap(), nextId: 0};
   const nodeId = node => node ? (g.nodeIds.has(node) ? g.nodeIds.get(node) : (g.nodeIds.set(node, ++g.nextId), g.nextId)) : null;
-  const selectors = ['#main', '.world-map', '#map-load-status', '.planned-route', '#world-information-panel', '#summary'];
+  const selectors = ['#main', '.world-map', '#map-load-status', '.planned-route', '#world-information-panel', '#summary', '#save-status', '#message'];
   const describe = node => node.nodeType === 1 ? node.tagName.toLowerCase() + (node.id ? '#' + node.id : '') : node.nodeName;
   const observer = new MutationObserver(records => {
    g.mutationCount += records.length;
@@ -279,7 +281,8 @@ async function installGate(page, result) {
    semantics: mapSemantics()});
   g.paintEdge = (edge, cache) => {
    if (!g.pending?.executed) return;
-   if (g.paintEdges.length < 16) g.paintEdges.push({edge, cache, ...g.capture('actual-paintMap-' + edge)});
+   if (g.paintEdges.length < 32) g.paintEdges.push({edge, cache, ...g.capture('actual-paintMap-' + edge)});
+   else g.paintEdgesDropped++;
   };
   const observeStore = store => {
    if (g.store === store) return;
@@ -326,7 +329,7 @@ async function installGate(page, result) {
    providerError: g.pending?.error?.message || null, editable: g.store?.editable ?? null, reloadRequired: !!g.store?.reloadRequired,
    forwarded: g.forwarded, publications: g.publications, settlements: g.settlements, callbacks: {...mapAuditCallbacks},
    storage: {...mapAuditStorage}, baseline: g.baseline, snapshots: g.snapshots, paintEdges: g.paintEdges,
-   mutationCount: g.mutationCount, mutations: g.mutations, file: {calls: mapAuditFile.calls, pending: !!mapAuditFile.pending, releases: mapAuditFile.releases}});
+   mutationCount: g.mutationCount, mutations: g.mutations, paintEdgesDropped: g.paintEdgesDropped, file: {calls: mapAuditFile.calls, pending: !!mapAuditFile.pending, releases: mapAuditFile.releases}});
   return {appURL, storeURL, appHash, storeHash};
  });
  assert.equal(result.runtime.appHash, report.sourceHashes.app, 'Served app bytes match exact checked-out app');
@@ -403,6 +406,47 @@ function compare(before, after, candidate) {
    actualCandidateExposed || routeCandidateExposed || candidateNamesExposed.length ? 'Candidate-specific map semantics appeared while provider settlement was still held.' :
    changed(map, old) ? 'Map semantics changed; inspect snapshots to attribute the change.' : 'No candidate-specific map semantic change observed; inspect SVG identity/markup separately.'};
 }
+function assertFrozenPresentation(before, after) {
+ const label = after.label + ' (' + after.phase + ')';
+ assert.equal(after.pending, true, label + ': provider settlement remains held');
+ assert.equal(after.settlements, 0, label + ': no provider settlement');
+ assert.equal(after.activeTab, before.activeTab, label + ': active tab');
+ assert.equal(after.message, before.message, label + ': exact message status');
+ assert.deepEqual(after.modal, before.modal, label + ': exact pending modal state');
+ assert.deepEqual(after.semantics, before.semantics, label + ': exact actual/route/world semantics');
+ assert.deepEqual(after.regions.map(region => region.selector), before.regions.map(region => region.selector));
+ for (let i = 0; i < before.regions.length; i++) {
+  const expected = before.regions[i], actual = after.regions[i];
+  assert.equal(actual.nodeId, expected.nodeId, label + ': preserved ' + expected.selector + ' node');
+  assert.ok(actual.html === expected.html, label + ': exact ' + expected.selector + ' markup');
+ }
+}
+function assertPendingPresentation(g, scenario, {callbacks = false} = {}) {
+ if (!scenario.strictMap) return;
+ assert.ok(g.baseline.semantics, 'Strict map case has an actual prewrite SVG');
+ for (const region of g.baseline.regions) assert.ok(region.nodeId && region.html !== null, 'Mounted strict region: ' + region.selector);
+ for (const snapshot of [...g.snapshots, ...g.paintEdges]) assertFrozenPresentation(g.baseline, snapshot);
+ assert.equal(g.paintEdgesDropped, 0, 'All actual callback edges fit in the bounded evidence');
+ assert.equal(g.mutationCount, 0, 'No transient main/SVG/status mutations while owned settlement is held');
+ if (callbacks) {
+  assert.ok(g.paintEdges.some(edge => edge.cache && edge.edge === 'after'), 'Actual cache callback reached its after edge');
+  assert.ok(g.paintEdges.some(edge => !edge.cache && edge.edge === 'after' && edge.phase.startsWith('before-resize-')), 'Actual resize-scheduled callback reached its after edge');
+ }
+}
+function assertSettledMap(snapshot, saved) {
+ const map = snapshot.semantics;
+ assert.ok(map, 'Settled/reloaded map is mounted');
+ assert.deepEqual(map.actualIds, [saved.actual], 'Actual marker matches saved state');
+ assert.deepEqual(map.routeIds, saved.route, 'SVG route matches saved state');
+ assert.deepEqual(map.selectedIds, [saved.actual], 'Overview is centered on the saved actual world');
+ assert.deepEqual(map.worlds.map(world => world.id).sort(), Object.keys(saved.worlds).sort(), 'All synthetic worlds remain visible');
+ for (const world of map.worlds) {
+  const savedWorld = saved.worlds[world.id];
+  assert.equal(world.label, 'Browse ' + savedWorld.name, 'Saved world accessible name');
+  assert.equal(world.name, savedWorld.name, 'Saved world visible name');
+  assert.equal(world.title, savedWorld.name + ' · ' + savedWorld.hex, 'Saved world title');
+ }
+}
 // Preserve the exact prewrite DOM once. Later snapshots retain semantic values,
 // node identity and SHA-256/length plus small diffs, rather than repeating large
 // SVG hex grids in every callback and both pending/final provider snapshots.
@@ -456,15 +500,19 @@ async function probe(page, result, scenario, before, candidate, network) {
  const baseline = g.baseline; assert.equal(baseline.label, 'immediately-before-native-write');
  result.baseline = baseline; result.afterPublication = compactSnapshot(g.snapshots[0]);
  result.observations.push(compare(baseline, g.snapshots[0], candidate));
+ assertPendingPresentation(g, scenario);
  if (scenario.map) {
   assert.ok(network.held, 'MapAreaCache response remains genuinely pending at native publication');
   await frames(page);
   await page.waitForFunction(() => mapAuditCallbacks.scheduled === mapAuditCallbacks.executed);
   const cacheBefore = await record(page, result, 'before-held-map-response');
+  if (scenario.strictMap) assertFrozenPresentation(baseline, cacheBefore);
   network.release();
   await page.waitForFunction(previous => mapAuditCallbacks.cacheExecuted > previous, cacheBefore.callbacks.cacheExecuted);
   await frames(page);
   const cacheAfter = await record(page, result, 'after-held-map-response');
+  if (scenario.strictMap) assertFrozenPresentation(baseline, cacheAfter);
+  assertPendingPresentation(await gate(page), scenario);
   assert.equal(cacheAfter.pending, true); assert.equal(cacheAfter.settlements, 0);
   assert.ok(cacheAfter.callbacks.cacheExecuted > cacheBefore.callbacks.cacheExecuted, 'Actual map cache finally/onChange scheduled a real paint callback');
   result.observations.push(compare(cacheBefore, cacheAfter, candidate), compare(baseline, cacheAfter, candidate));
@@ -472,11 +520,14 @@ async function probe(page, result, scenario, before, candidate, network) {
  }
  for (const width of [result.viewport.width - 8, result.viewport.width]) {
   const resizeBefore = await record(page, result, 'before-resize-' + width);
+  if (scenario.strictMap) assertFrozenPresentation(baseline, resizeBefore);
   await page.setViewportSize({...result.viewport, width});
   await page.waitForFunction(previous => mapAuditCallbacks.resizeDelivered > previous, resizeBefore.callbacks.resizeDelivered);
   if (scenario.map) await page.waitForFunction(previous => mapAuditCallbacks.executed > previous, resizeBefore.callbacks.executed);
   await frames(page);
   const resizeAfter = await record(page, result, 'after-resize-' + width);
+  if (scenario.strictMap) assertFrozenPresentation(baseline, resizeAfter);
+  assertPendingPresentation(await gate(page), scenario, {callbacks: true});
   assert.equal(resizeAfter.pending, true); assert.equal(resizeAfter.settlements, 0);
   assert.ok(resizeAfter.callbacks.resizeDelivered > resizeBefore.callbacks.resizeDelivered, 'Real map ResizeObserver callback delivered');
   if (scenario.map) assert.ok(resizeAfter.callbacks.executed > resizeBefore.callbacks.executed, 'Real scheduled paintMap callback executed');
@@ -513,6 +564,8 @@ async function runBody(page, result, scenario, network) {
  }
  await probe(page, result, scenario, before, result.expectedCandidate, network);
  const durable = await raw(page); g = await gate(page); result.pendingGate = compactGate(g);
+ assertPendingPresentation(g, scenario, {callbacks: true});
+ if (scenario.strictMap) assertFrozenPresentation(g.baseline, await record(page, result, 'immediately-before-settlement'));
  assert.equal(g.publications.length, 1); assert.equal(g.settlements.length, 0);
  assert.equal(await raw(page), durable); assert.doesNotMatch(await page.locator('#message').textContent(), successPattern);
  await page.evaluate(() => mapAudit.release());
@@ -521,11 +574,7 @@ async function runBody(page, result, scenario, network) {
  assert.equal(await raw(page), durable, 'Settlement performs no second write');
  assertSaved(await read(page), before, scenario, submitted);
  result.afterSettlement = compactSnapshot(await record(page, result, 'after-settlement'));
- if (scenario.map) {
-  assert.deepEqual(result.afterSettlement.semantics.actualIds, [saved.actual], 'True settled actual marker matches saved state');
-  assert.deepEqual(result.afterSettlement.semantics.routeIds, saved.route, 'True settled SVG route matches saved state');
-  assert.deepEqual(result.afterSettlement.semantics.selectedIds, [saved.actual], 'Settled Overview is centered on the saved actual world');
- }
+ if (scenario.map) assertSettledMap(result.afterSettlement, saved);
  if (scenario.id === 'reset-settings') await page.getByText('Bring your campaign aboard.', {exact: true}).waitFor();
  if (scenario.id === 'settings-inline') assert.equal(await page.locator('#settings-form [name="name"]').inputValue(), saved.name);
  result.finalGate = compactGate(await gate(page));
@@ -537,24 +586,34 @@ async function runBody(page, result, scenario, network) {
  await page.waitForLoadState('networkidle'); await frames(page);
  assert.equal(await raw(page), durable, 'Reload preserves exact native-save bytes');
  assert.equal(await page.evaluate(() => mapAuditStorage.writes), 0, 'Reload never repeats the save');
+ if (scenario.map) {
+  const reloaded = {}; await installGate(page, reloaded); result.reloadRuntime = reloaded.runtime;
+  result.afterReload = compactSnapshot(await record(page, result, 'after-reload'));
+  assertSettledMap(result.afterReload, saved);
+ }
  result.reloadVerified = true;
  result.candidateLeakObserved = result.observations.some(item => item.candidateSemanticLeakObserved);
  result.frozenDOMObserved = result.observations.filter(item => item.from === 'immediately-before-native-write').every(item => item.regions.every(region => region.sameNode && !region.html));
- result.interpretation = result.candidateLeakObserved ? 'Candidate-specific DOM map exposure observed while settlement was held; this diagnostic passing is not a product pass.' :
-  scenario.map ? 'No candidate-specific map exposure observed in these callbacks; inspect identity/markup and semantic observations separately.' : 'Negative control completed with no mounted map; does not establish map callback safety.';
+ if (scenario.strictMap) {
+  assert.equal(result.candidateLeakObserved, false, 'No candidate-specific map exposure before settlement');
+  assert.equal(result.frozenDOMObserved, true, 'Every baseline comparison preserves exact markup and node identity');
+  result.strictMapFreezePassed = true;
+ }
+ result.interpretation = scenario.strictMap ? 'Strict prewrite DOM/SVG/status/semantic and node-identity equality passed through actual cache and resize callbacks, followed by correct one-write settlement and reload.' :
+  scenario.map ? 'Legacy Settings control: map rebuilds remain allowed; candidate-semantic and identity observations are recorded without extending the fix to Settings.' : 'Negative control completed with no mounted map; does not establish map callback safety.';
 }
 async function writeReport() {await writeFile(join(artifacts, prefix + 'report.json'), JSON.stringify(report, null, 2) + '\n');}
 async function runCase(scenario, viewport) {
- const result = {id: scenario.id + '-' + viewport.width, scenario: scenario.id, viewport, status: 'running',
+ const result = {id: scenario.id + '-' + viewport.width, scenario: scenario.id, viewport, strictMapRegression: !!scenario.strictMap, status: 'running',
   snapshots: [], observations: [], screenshots: [], pageErrors: [], consoleErrors: [], unhandledRejections: [], networkErrors: [], unexpectedRequests: [], fixtureErrors: [], errors: []};
  report.cases.push(result); let context, network;
  try {
   ({context, network} = await contextFor(result, scenario)); const page = await context.newPage();
   await runBody(page, result, scenario, network);
   for (const key of ['pageErrors', 'consoleErrors', 'unhandledRejections', 'networkErrors', 'unexpectedRequests', 'fixtureErrors']) assert.deepEqual(result[key], [], key);
-  assert.equal(network.held, false, 'No abandoned map response'); result.status = 'probes-passed';
+  assert.equal(network.held, false, 'No abandoned map response'); result.status = scenario.strictMap ? 'regression-passed' : 'control-passed';
  } catch (error) {
-  result.status = 'probe-failed'; result.errors.push(errorText(error)); const page = context?.pages()[0];
+  result.status = scenario.strictMap ? 'regression-failed' : 'control-failed'; result.errors.push(errorText(error)); const page = context?.pages()[0];
   if (page) {await screenshot(page, result, 'failure').catch(e => result.errors.push(errorText(e))); result.failedGate = await gate(page).then(compactGate).catch(() => null);}
  } finally {network?.cleanup(); await context?.close(); await writeReport();}
  console.log(result.status.toUpperCase() + ': ' + result.id + ' | candidate DOM exposure: ' + (result.candidateLeakObserved ?? 'not established'));
@@ -567,6 +626,9 @@ const hash = text => createHash('sha256').update(text).digest('hex');
 report.sourceHashes = {app: hash(appSource), store: hash(storeSource)};
 if (process.argv.includes('--fixtures-only')) {
  assert.equal(new Set(scenarios.map(scenario => scenario.id)).size, scenarios.length);
+ assert.equal(report.declaredCases, 14); assert.equal(report.declaredStrictMapCases, 4);
+ assert.deepEqual(scenarios.filter(scenario => scenario.strictMap).map(scenario => scenario.id), ['undo-jump-overview', 'import-overview-delayed-read']);
+ assert.equal(scenarios.filter(scenario => !scenario.map).length * sizes.length, 8, 'Eight ordinary no-map controls');
  for (const scenario of scenarios) {
   const s = seed(scenario); S.validate(structuredClone(s)); assert.ok(s.dashboardBaseline);
   if (scenario.id.startsWith('undo-')) {
@@ -577,8 +639,8 @@ if (process.argv.includes('--fixtures-only')) {
  }
  assert.equal(imported().actual, B); assert.deepEqual(imported().route, [B, A, C]);
  assert.notEqual(imported().worlds[A].name, fixture().worlds[A].name);
- // The diagnostic classifier must distinguish geometry/identity-only rebuilds
- // from candidate actual/route/name exposure; neither is a product assertion.
+ // The evidence classifier distinguishes geometry/identity-only rebuilds
+ // from candidate actual/route/name exposure. Strict cases reject both.
  const originalMap = {actualIds: [A], routeIds: [A, B], worlds: [{id: A, label: 'Browse Audit Origin'}]};
  const originalDOM = {label: 'before', regions: [{selector: '.world-map', nodeId: 1, html: '<svg viewBox="0 0 400 400"/>'}], semantics: originalMap};
  const rebuiltDOM = {...originalDOM, label: 'resized', regions: [{selector: '.world-map', nodeId: 2, html: '<svg viewBox="0 0 392 400"/>'}]};
@@ -589,6 +651,42 @@ if (process.argv.includes('--fixtures-only')) {
  const exposed = compare(originalDOM, exposedDOM, mapCandidate(imported()));
  assert.equal(exposed.actualCandidateExposed, true); assert.equal(exposed.routeCandidateExposed, true);
  assert.deepEqual(exposed.candidateNamesExposed, [A]); assert.equal(exposed.candidateSemanticLeakObserved, true);
+ // Exercise the actual strict assertion helper, including identity-only and
+ // status-only drift that the semantic classifier deliberately distinguishes.
+ const frozen = {...originalDOM, pending: true, settlements: 0, phase: 'fixture', activeTab: 'Overview',
+  message: 'Before completion', modal: {open: true, submitDisabled: true},
+  regions: [...originalDOM.regions, {selector: '#map-load-status', nodeId: 3, html: '<span>Loading map data…</span>'}]};
+ assertFrozenPresentation(frozen, structuredClone(frozen));
+ for (const drift of [
+  snapshot => {snapshot.regions[0].nodeId++;},
+  snapshot => {snapshot.regions[0].html = rebuiltDOM.regions[0].html;},
+  snapshot => {snapshot.regions[1].html = '<span></span>';},
+  snapshot => {snapshot.semantics.actualIds = [B];},
+  snapshot => {snapshot.semantics.routeIds = [B, A, C];},
+  snapshot => {snapshot.semantics.worlds[0].label = 'Browse Imported Origin';},
+  snapshot => {snapshot.activeTab = 'Settings';},
+  snapshot => {snapshot.message = 'Campaign replaced.';},
+  snapshot => {snapshot.modal.submitDisabled = false;},
+  snapshot => {snapshot.pending = false;},
+  snapshot => {snapshot.settlements = 1;}
+ ]) {
+  const changed = structuredClone(frozen); drift(changed);
+  assert.throws(() => assertFrozenPresentation(frozen, changed), assert.AssertionError, 'Strict presentation assertion rejects drift');
+ }
+ const strictGate = {baseline: frozen, snapshots: [structuredClone(frozen)], paintEdges: [
+  {...structuredClone(frozen), cache: true, edge: 'after'},
+  {...structuredClone(frozen), cache: false, edge: 'after', phase: 'before-resize-1432'}
+ ], paintEdgesDropped: 0, mutationCount: 0};
+ assertPendingPresentation(strictGate, {strictMap: true}, {callbacks: true});
+ for (const drift of [
+  gate => {gate.paintEdges = gate.paintEdges.filter(edge => !edge.cache);},
+  gate => {gate.paintEdges = gate.paintEdges.filter(edge => edge.cache);},
+  gate => {gate.paintEdgesDropped = 1;},
+  gate => {gate.mutationCount = 1;}
+ ]) {
+  const changed = structuredClone(strictGate); drift(changed);
+  assert.throws(() => assertPendingPresentation(changed, {strictMap: true}, {callbacks: true}), assert.AssertionError, 'Strict gate rejects missing or transient callback evidence');
+ }
  assert.equal(compactSnapshot(originalDOM).regions[0].htmlSHA256, hash(originalDOM.regions[0].html));
  assert.equal(Object.hasOwn(compactSnapshot(originalDOM).regions[0], 'html'), false);
  S.validate(replacementExpected(imported(), 12)); S.validate(replacementExpected(S.initial(), 12));
@@ -600,7 +698,7 @@ if (process.argv.includes('--fixtures-only')) {
  assert.match(appSource, /if\(!state\.ship\.fuel\)\{services\.close\(\);settings\(\);/);
  assert.match(appSource, /text=await file\.text\(\)/);
  assert.match(appSource, /if\(worldWriteOperation\?\.publicationDeferred&&!worldWriteOperation\.invalidated\)return;/);
- console.log(`PASS: ${scenarios.length} validated synthetic cases × ${sizes.length} widths = ${report.declaredCases} diagnostic browser probes; actual versioned Store, native callback and reachable UI wiring verified. Chromium was not launched. No presentation outcome has been observed.`);
+ console.log(`PASS: ${scenarios.length} validated synthetic cases × ${sizes.length} widths = ${report.declaredCases} browser cases (${report.declaredStrictMapCases} strict map regressions); actual versioned Store, native callback and reachable UI wiring verified. Chromium was not launched. No browser outcome has been established.`);
 } else {
  await mkdir(artifacts, {recursive: true});
  try {
@@ -608,7 +706,7 @@ if (process.argv.includes('--fixtures-only')) {
   assert.ok(report.requestedCommit, 'Set TRAVELLER_COMMIT to the exact requested test commit');
   assert.equal(report.testedCommit, report.requestedCommit, 'Run exactly the requested commit');
   report.workingTree = execFileSync('git', ['status', '--porcelain'], {cwd: root, encoding: 'utf8'}).trim();
-  assert.equal(report.workingTree, '', 'Exact-head diagnostic evidence requires a clean checkout');
+  assert.equal(report.workingTree, '', 'Exact-head completion evidence requires a clean checkout');
   const {chromium} = createRequire(import.meta.url)(process.argv[2] || 'playwright');
   browser = await chromium.launch({headless: true, ...(process.env.TRAVELLER_BROWSER_CHANNEL ? {channel: process.env.TRAVELLER_BROWSER_CHANNEL} : {})});
   report.browser = {name: 'Chromium', version: browser.version()};
@@ -616,15 +714,16 @@ if (process.argv.includes('--fixtures-only')) {
  } catch (error) {report.errors.push(errorText(error));}
  finally {
   await browser?.close(); report.finishedAt = new Date().toISOString();
-  report.probesPassed = report.errors.length === 0 && report.cases.length === report.declaredCases && report.cases.every(result => result.status === 'probes-passed');
-  report.productSafetyVerdict = 'Not certified by this diagnostic. Review candidate exposure, no-map controls and DOM-only versus visible-marker evidence.';
+  report.passed = report.errors.length === 0 && report.cases.length === report.declaredCases && report.cases.every(result => result.status === (result.strictMapRegression ? 'regression-passed' : 'control-passed'));
+  report.strictMapFreezePassed = report.passed && report.cases.filter(result => result.strictMapFreezePassed).length === report.declaredStrictMapCases;
+  report.productSafetyVerdict = report.strictMapFreezePassed ? 'Four synthetic Overview Undo/import map-publication regressions passed. Settings rebuilds remain allowed and no-map controls are not map-safety evidence. No broader completion, natural delayed-write or keyboard-focus certification.' : 'Required completion regression or control assertions failed or did not run; no product pass.';
   report.candidateLeakCases = report.cases.filter(result => result.candidateLeakObserved).map(result => result.id);
   await writeReport();
   const files = (await readdir(artifacts)).filter(name => name.startsWith(prefix));
   report.artifactBytes = (await Promise.all(files.map(async name => (await stat(join(artifacts, name))).size))).reduce((a, b) => a + b, 0);
-  if (report.artifactBytes >= 24 * 1024 * 1024 - 65536) {report.probesPassed = false; report.errors.push('Diagnostic artifacts exceed bounded 24 MiB allowance');}
+  if (report.artifactBytes >= 24 * 1024 * 1024 - 65536) {report.passed = false; report.strictMapFreezePassed = false; report.productSafetyVerdict = 'Evidence exceeded its bounded allowance; no product pass.'; report.errors.push('Completion artifacts exceed bounded 24 MiB allowance');}
   await writeReport();
  }
- if (!report.probesPassed) throw Error('Map publication audit probe failed; inspect verification-artifacts/' + prefix + 'report.json');
- console.log(`DIAGNOSTIC COMPLETE: ${report.declaredCases} valid browser probes; ${report.candidateLeakCases.length} cases observed candidate-specific DOM map exposure. This is not a completion-safety pass.`);
+ if (!report.passed || !report.strictMapFreezePassed) throw Error('Map publication completion regression failed; inspect verification-artifacts/' + prefix + 'report.json');
+ console.log(`PASS: ${report.declaredStrictMapCases} strict map-publication regressions and ${report.declaredCases - report.declaredStrictMapCases} controls. Legacy Settings rebuilds are allowed; no-map controls do not prove map safety.`);
 }

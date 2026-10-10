@@ -1,7 +1,7 @@
 # Save-completion migration queue
 
-Inventory checked against UI 2026.10.10.45, repository merge
-`fc7281f41d02fbf33950dc2346d46f6879a0eff8` (2026-10-10).
+Inventory checked against UI 2026.10.10.46, repository merge
+`55a45985299c0b142065a125e9ee3ee273117db2` (2026-10-10).
 This records the save-boundary work, not the earlier GUI-refit stages.
 
 ## Stage 2: finish save callers
@@ -47,11 +47,13 @@ publication failure or unknown result (reload required, no duplicate retry).
    CI jobs, 46 focused browser cases and independent source/38-screenshot review
    passed; merge/tree and Pages were verified. All 90 permitted live URLs
    matched; ten prior proxy-denied variants remain unverified and excluded.
-4. **Setup/location is the bounded .46 candidate; time/day remain.**
-   `setup` and `setLocation` are being migrated with cancellable lookup followed
-   by an owned pending-save boundary. Setup's nearby enrichment must remain
-   ancillary after its saved opening balance; location lookup remains pre-save.
-   Final native, exact-head browser and actual screenshot gates are required.
+4. **Setup/location: released in .46; time/day remain.**
+   Cancellable lookup now precedes its owned pending-save boundary. Setup's
+   nearby enrichment remains ancillary after its saved opening balance;
+   location lookup stays pre-save. Final 1,293 native tests, 55 exact-head CI
+   jobs, 160 focused browser cases and independent 36-screenshot review passed.
+   Merge/tree, Pages and all 90 permitted live URLs were verified; ten prior
+   proxy-excluded variants remain unverified. Duplicate CI also passed.
    `changeCampaignDay` and `timeForm` still discard completion. Keep their
    time/LSS semantics and repeated-day-click ownership in a separate batch.
 5. **Trade and transport workflows with post-save UI effects.**
@@ -75,14 +77,22 @@ publication failure or unknown result (reload required, no duplicate retry).
    review as deposit and stock services. Do not count them as fully migrated
    merely because they contain `await`.
 
-8. **Shared background-map presentation audit.** `render()` defers owned
-   Settings/Undo/replacement publication cleanup, but `paintMap()` can separately
-   rebuild the SVG from installed campaign state. The setup/location boundary
-   now has its own repaint guard. Verify the older owners with delayed-provider
-   and background-paint tests before treating all shared display paths as
-   completion-safe. This is a source-supported, not yet reproduced risk for
-   those older callers, distinct from the separate keyboard-focus restoration
-   bug; it is not fixed by this setup/location batch.
+8. **Owned background-map presentation: bounded .47 candidate.**
+   A test-only audit on exact .46 runtime reproduced candidate map data entering
+   the DOM during held Undo Jump/import settlement at both desktop/mobile
+   widths. All 14 diagnostic probes were valid and 34 screenshots were reviewed.
+   Cache-origin paint caused the first exposure; later resize repainted already
+   exposed state. Desktop marker pixels were outside the opaque dialog rectangle, dimmed
+   and blurred by its backdrop; mobile findings were DOM-only because markers
+   were below the viewport.
+   The .47 candidate adds only the existing Undo/replacement ownership guards
+   to `paintMap()` and strict regression assertions for those four cases.
+   Settings showed a rebuild without changed campaign semantics and is unchanged.
+   Normal History/inline Settings/reset controls had no mounted map. The native
+   Store remains synchronous; this is a delayed-provider contract correction.
+   Native truth-table, full exact-head browser and screenshot gates are required.
+   The earlier .46 prewrite empty-style mismatch, Cargo detached-handle pointer
+   input race and keyboard-focus restoration issue remain separate findings.
 
 Each batch needs delayed success, known pre-write failure, committed-publication
 failure, unknown outcome, duplicate activation, stale revision/ownership and
