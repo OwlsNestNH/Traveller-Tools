@@ -5,11 +5,18 @@ import {territoryMarkup} from './map-territory.mjs';
 // Keep the existing world views intact. Only the newly added, wider scales use
 // sector catalogs instead of requesting hundreds of overlapping jump areas.
 export const MIN_MAP_ZOOM=.06;
+export const MAP_ZOOM_STEP=1.2;
+export const CLOSE_MAP_ZOOM=2.4;
+export const MAX_MAP_ZOOM=CLOSE_MAP_ZOOM*MAP_ZOOM_STEP;
 export function mapLevel(zoom){return zoom>=.2?'world':zoom>=.16?'subsector':'sector';}
 export function nextMapZoom(zoom,factor){
- const next=Math.max(MIN_MAP_ZOOM,Math.min(2.4,zoom*factor));
- // Keep the old 20% endpoint reachable when entering or leaving the new layers.
- return (zoom>.2&&next<.2)||(zoom<.2&&next>.2)?.2:next;
+ const next=Math.max(MIN_MAP_ZOOM,Math.min(MAX_MAP_ZOOM,zoom*factor));
+ // Preserve the 20% layer boundary and the old 240% close view as reachable
+ // stops in either direction. One more existing-size step reaches 288%.
+ for(const stop of factor>1?[.2,CLOSE_MAP_ZOOM]:[CLOSE_MAP_ZOOM,.2]){
+  if((zoom<stop&&next>stop)||(zoom>stop&&next<stop))return stop;
+ }
+ return next;
 }
 export function sectorBounds(sector){
  // Traveller Map world coordinates: x=32*sx+hx-1, y=40*sy+hy-40.

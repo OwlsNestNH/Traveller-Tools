@@ -354,7 +354,7 @@ async function main(){
      await action(page,'map-world',selectedId).focus();await page.keyboard.press('Enter');await opened(page);
      await unchanged(page,f,'Keyboard world browsing while Cargo is open');
      for(let i=0;i<6;i++){await click(page,'map-zoom-in');await frame(page);}
-     await page.locator('.map-zoom-controls .help').getByText('240%',{exact:true}).waitFor();
+     await page.locator('.map-zoom-controls .help').getByText('288%',{exact:true}).waitFor();
      selection=await selectionGeometry(page,selectedId,actualId,{close:true});
      await manifestFacts(page,f);
      await page.screenshot({path:artifacts+'/cargo-hold-selected-hex-'+width+'.png',fullPage:true});

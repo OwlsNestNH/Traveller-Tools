@@ -75,7 +75,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        suite: [browser, modal-lifecycle, click-route, fuel-browser, empty-space, mail-browser, map-overview-browser, gui-parity, trade-buttons, settings-browser, insurance-browser, bladder-capacity-browser, trade-complications-browser, world-screen-browser, jump-undo-browser, service-panels-browser, combined-cabins, day-controls, zero-fuel, resource-alert, mortgage-browser, expense-panels-browser, cargo-hold-browser, route-frame-browser, inline-fuel-browser, service-navigation-browser, passengers-browser, route-selection-browser, trade-audit-browser, contact-search-browser, global-search-browser, expanded-map-browser, rule-references-browser]
+        suite: [browser, modal-lifecycle, click-route, fuel-browser, empty-space, mail-browser, map-overview-browser, gui-parity, trade-buttons, settings-browser, insurance-browser, bladder-capacity-browser, trade-complications-browser, world-screen-browser, jump-undo-browser, service-panels-browser, combined-cabins, day-controls, zero-fuel, resource-alert, mortgage-browser, expense-panels-browser, cargo-hold-browser, route-frame-browser, inline-fuel-browser, service-navigation-browser, passengers-browser, route-selection-browser, trade-audit-browser, contact-search-browser, global-search-browser, expanded-map-browser, closer-map-zoom-browser, rule-references-browser]
         # Independent browser processes exercise the resize/repaint measurement
         # repeatedly. A failure fails its job; these are not automatic retries.
         include:
@@ -322,6 +322,18 @@ jobs:
             tools/trade-route-calculator/verification-artifacts/expanded-map-*.png
             tools/trade-route-calculator/verification-artifacts/expanded-map-report.json
             tools/trade-route-calculator/verification-artifacts/expanded-map-browser.txt
+            tools/trade-route-calculator/verification-artifacts/commit.txt
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload compact closer-map-zoom screenshots and report
+        if: ${{ always() && matrix.suite == 'closer-map-zoom-browser' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: trade-closer-map-zoom-visuals-${{ github.event.pull_request.head.sha }}
+          path: |
+            tools/trade-route-calculator/verification-artifacts/closer-map-zoom-*.png
+            tools/trade-route-calculator/verification-artifacts/closer-map-zoom-report.json
+            tools/trade-route-calculator/verification-artifacts/closer-map-zoom-browser.txt
             tools/trade-route-calculator/verification-artifacts/commit.txt
           if-no-files-found: error
           retention-days: 14

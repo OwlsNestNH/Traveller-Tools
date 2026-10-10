@@ -1,13 +1,13 @@
-import {ruleInfo} from './rule-references.mjs?v=campaign-writes-20261010-34';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=campaign-writes-20261010-34';
-import {passengerShip} from './passengers.mjs?v=campaign-writes-20261010-34';
+import {ruleInfo} from './rule-references.mjs?v=closer-map-zoom-20261010-35';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=closer-map-zoom-20261010-35';
+import {passengerShip} from './passengers.mjs?v=closer-map-zoom-20261010-35';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=campaign-writes-20261010-34';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=campaign-writes-20261010-34';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=campaign-writes-20261010-34';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=campaign-writes-20261010-34';
-import {creditStep} from './rounding.mjs?v=campaign-writes-20261010-34';
-import {roll} from './rules.mjs?v=campaign-writes-20261010-34';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=closer-map-zoom-20261010-35';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=closer-map-zoom-20261010-35';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=closer-map-zoom-20261010-35';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=closer-map-zoom-20261010-35';
+import {creditStep} from './rounding.mjs?v=closer-map-zoom-20261010-35';
+import {roll} from './rules.mjs?v=closer-map-zoom-20261010-35';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

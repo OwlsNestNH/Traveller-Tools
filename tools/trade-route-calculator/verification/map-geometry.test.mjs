@@ -22,10 +22,10 @@ test('shared logical viewport keeps the original dimensions and asymmetric proje
  assert.ok(Object.isFrozen(MAP_GEOMETRY));
 });
 test('visible-area tile loads retain exact bounds and ordering across parity, zoom and pan',()=>{
- for(const anchor of anchors)for(const pan of pans)for(const zoom of [.2,1,2.4])assert.deepEqual(viewportTiles(anchor,pan,zoom),baselineTiles(anchor,pan,zoom));
+ for(const anchor of anchors)for(const pan of pans)for(const zoom of [.2,1,2.4,2.88])assert.deepEqual(viewportTiles(anchor,pan,zoom),baselineTiles(anchor,pan,zoom));
 });
 test('overview load radii remain the original viewport plus 20 logical pixels',()=>{
- for(const anchor of anchors)for(const pan of pans)for(const zoom of [.06,.16,.2,1,2.4]){
+ for(const anchor of anchors)for(const pan of pans)for(const zoom of [.06,.16,.2,1,2.4,2.88]){
   const c=camera(anchor,pan,zoom),rx=280/(50*zoom*Math.sqrt(3)/2),ry=180/(50*zoom);
   const expected=sectors.filter(s=>32*s.x-.5<c.x+rx&&32*s.x+31.5>c.x-rx&&40*s.y-39.5<c.y+ry&&40*s.y+.5>c.y-ry).sort((a,b)=>Math.hypot(32*a.x+15.5-c.x,40*a.y-19.5-c.y)-Math.hypot(32*b.x+15.5-c.x,40*b.y-19.5-c.y));
   assert.deepEqual(visibleSectors(sectors,anchor,pan,zoom),expected);
@@ -43,7 +43,7 @@ test('expanded Overview geometry drives tile loads, projection and clipping toge
  try{
   assert.equal(setMapGeometry(1000,440),true);
   assert.deepEqual(MAP_GEOMETRY,{width:1000,height:440,halfWidth:500,halfHeight:220,originX:500,originY:218});
-  for(const anchor of anchors)for(const pan of pans)for(const zoom of [.2,1,2.4]){
+  for(const anchor of anchors)for(const pan of pans)for(const zoom of [.2,1,2.4,2.88]){
    const tiles=viewportTiles(anchor,pan,zoom),c=camera(anchor,pan,zoom),scale=50*zoom;
    for(const dx of [-500,500])for(const dy of [-220,220]){
     const x=c.x+dx/(scale*Math.sqrt(3)/2),y=c.y+dy/scale;

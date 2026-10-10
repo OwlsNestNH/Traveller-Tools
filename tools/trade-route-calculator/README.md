@@ -99,7 +99,7 @@ Run `node verification/world-picker.test.mjs` for the selector, recent-world and
 
 ## Map zoom and starting world
 
-At 100% zoom, neighboring hex rows are 50 CSS pixels apart. The map adapts its visible bounds to the available space without changing zoom or the geographic center. Its logical width follows the available screen width, with uniform projection, clipping and live map-area loading; narrow screens retain map height instead of squashing geography. Hold Ctrl while scrolling over the map, or use the + / − / Reset view controls, to zoom from 6% to 240%. The visible label says **Ctrl + scroll to zoom.** Plain wheel scrolling over the map moves the page without changing map zoom. Ctrl+wheel is intercepted only over the map; browser behavior elsewhere is unchanged. Map zoom changes only the view. Existing single-pointer/touch dragging is unchanged; this app has no dedicated two-finger touchscreen pinch handler.
+At 100% zoom, neighboring hex rows are 50 CSS pixels apart. The map adapts its visible bounds to the available space without changing zoom or the geographic center. Its logical width follows the available screen width, with uniform projection, clipping and live map-area loading; narrow screens retain map height instead of squashing geography. Hold Ctrl while scrolling over the map, or use the + / − / Reset view controls, to zoom from 6% to 288%. The existing 240% close view stays reachable; one more + step reaches 288%, and one − step returns to 240%. Both close views keep the same readable UWP labels and symbols, with more space between worlds. Zooming preserves the geographic center and browsed-world selection in normal and expanded layouts. The visible label says **Ctrl + scroll to zoom.** Plain wheel scrolling over the map moves the page without changing map zoom. Ctrl+wheel is intercepted only over the map; browser behavior elsewhere is unchanged. Map zoom changes only the view. Existing single-pointer/touch dragging is unchanged; this app has no dedicated two-finger touchscreen pinch handler.
 
 After Find World, **Use as starting world** opens an explicit confirmation. The same action is available on a browsed world's map panel. It sets the actual ship location, clears the old route, records a reason and supports Undo. It does not advance time or change bank/cargo/contract payments; active insurance is flagged for an amendment. Use COMMIT JUMP for normal travel.
 
@@ -179,7 +179,7 @@ Run the focused checks with `node --test verification/price-limits.test.mjs`, al
 
 ## Wide map layers
 
-The existing world views at **20–240%** are unchanged, including maximum-zoom UWP labels. Zooming below 20% adds a **subsector view** with real subsector names and faint world dots. Below 16%, the **sector view** prioritizes sector names, readable A–P subsector letters and a subtle subdivision grid. Sector and subsector names tilt 45° to use the diagonal space; A–P letters remain upright and avoid the name. Long names fit or wrap within their cell. The widest scale is 6%; the 20% boundary remains a reachable step on the + / − controls. Reset view still returns to the centered 100% world view.
+The existing world views at **20–240%** are unchanged, including the close-view UWP labels; the additional 288% step extends that same presentation. Zooming below 20% adds a **subsector view** with real subsector names and faint world dots. Below 16%, the **sector view** prioritizes sector names, readable A–P subsector letters and a subtle subdivision grid. Sector and subsector names tilt 45° to use the diagonal space; A–P letters remain upright and avoid the name. Long names fit or wrap within their cell. The widest scale is 6%; the 20% boundary remains a reachable step on the + / − controls. Reset view still returns to the centered 100% world view.
 
 Both wide layers use the same drag-to-pan camera. They are orientation views: zoom back in to select worlds or route stops. They do not change the ship, route, clock, bank, cargo or saved campaign. Sector coordinates and names come from Traveller Map's M1105 universe; named subsectors and world dots come from its metadata and sector tables. Unnamed subsectors show their official letter only. Failed requests remain retryable with Refresh nearby.
 
@@ -352,7 +352,7 @@ codes and any campaign overrides stay clearly separated from published data.
 Planet information still opens the full system/remarks view and its existing refresh.
 Reading the screen makes no additional per-world API requests.
 
-At 240% zoom, published starport letters, gas giants, Naval/Scout bases and
+At 240–288% zoom, published starport letters, gas giants, Naval/Scout bases and
 amber/red zone arcs appear at the actual hex coordinates. Only the documented
 subset is drawn: other bases remain identified in the data screen. Long names
 are ellipsized within the hex; their full name remains in the accessible label,

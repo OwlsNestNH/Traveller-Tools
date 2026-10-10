@@ -36,7 +36,7 @@ async function click(name){
  // Zoom/reset intentionally paints on requestAnimationFrame. Observe that
  // frame's result before continuing instead of asserting the previous DOM.
  if(name==='Reset view')await page.waitForFunction(()=>document.querySelector('.map-zoom-controls .help')?.textContent==='100%'&&document.querySelector('.map-content')?.getAttribute('transform')==='translate(0 0)');
- else if(before&&before!==(name==='+'?'240%':'6%'))await page.waitForFunction(previous=>document.querySelector('.map-zoom-controls .help')?.textContent!==previous,before);
+ else if(before&&before!==(name==='+'?'288%':'6%'))await page.waitForFunction(previous=>document.querySelector('.map-zoom-controls .help')?.textContent!==previous,before);
 }
 const read=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('traveller-trade-route-calculator:v1')));
 const zoom=()=>page.locator('.map-zoom-controls .help').textContent();

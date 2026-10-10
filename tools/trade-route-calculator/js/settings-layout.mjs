@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=campaign-writes-20261010-34';
+import {ruleInfo} from './rule-references.mjs?v=closer-map-zoom-20261010-35';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={
