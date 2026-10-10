@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=closer-map-zoom-20261010-35';
+import {escapeHtml as esc} from './display.mjs?v=revision-guard-20261010-36';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.

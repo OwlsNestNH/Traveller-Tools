@@ -21,6 +21,22 @@ function harness(t,initial=campaign()){
  return {controller,store,roles,notifications,raw:()=>values.get(KEY),state:()=>state,writes:()=>writes,failWrite:()=>{failWrite=true;},failNotify:()=>{failNotify=true;},setKnown:v=>{known=v;},setRounding:v=>{rounding=v;},reload:()=>{state=store.read();}};
 }
 const json=v=>JSON.parse(JSON.stringify(v));
+function unchangedSnapshot(h){return {raw:h.raw(),memory:structuredClone(h.state()),reference:h.state(),writes:h.writes(),notifications:json(h.notifications),roles:json(h.roles)};}
+function assertUnchanged(h,before){
+ assert.equal(h.raw(),before.raw);assert.equal(h.state(),before.reference);assert.deepEqual(structuredClone(h.state()),before.memory);
+ assert.equal(h.writes(),before.writes);assert.deepEqual(h.notifications,before.notifications);assert.deepEqual(h.roles,before.roles);assert.equal(h.controller.isLocalSave(),false);
+}
+const jumpRoll=()=>({dice:[2,2,2,2,2,2],total:12});
+function historyCampaign(){return S.transition(campaign(),'Supplies and freight',s=>{
+ S.deposit(s,123,'Synthetic deposit');S.shipExpenses(s,[{kind:'fuel',tons:2,fuelType:'refined'}]);
+ S.acceptContract(s,{offerId:'guard-freight',kind:'freight',origin:'0,0',destination:'1,0',quantity:'2',payment:'2000',dueHours:null,audit:{manual:true,reason:'Synthetic terms'}});
+});}
+function jumpedCampaign(){const p=S.prepareJump(historyCampaign(),jumpRoll);return S.transition(p.state,'Jump: World 0 → World 1',s=>S.commitJump(s,{attemptId:p.attempt.id,elapsed:160}));}
+function advanceDiskWithoutMemory(h){
+ const current=h.state();h.failNotify();
+ assert.throws(()=>h.store.save(S.transition(current,'Other writer deposit',s=>S.deposit(s,17,'Saved in newer revision')),current.revision),/Notification failed/);
+ assert.equal(h.store.read().revision,current.revision+1);assert.equal(h.state(),current);
+}
 
 test('ordinary writes preserve cached worlds, rounding audits, synchronous state, JSON and Undo',t=>{
  const h=harness(t),before=json(h.state());h.setKnown({'2,0':worlds['2,0'],'0,0':{...worlds['0,0'],name:'Cached name'}});h.setRounding([{label:'Deposit',before:'1.2',after:'2'}]);
@@ -58,19 +74,88 @@ test('post-write notification failure is characterized separately: disk advanced
  const raw=h.raw();assert.throws(()=>h.controller.transition('Retry',s=>S.deposit(s,7,'Do not repeat'),0),/stale/);assert.equal(h.raw(),raw);h.reload();assert.equal(h.state().ledger.length,1);
 });
 
-test('prepared jump persists dice without an Undo entry; reopen/reload reuse, mulligan permits one final roll',t=>{
+for(const [name,initial,perform]of [
+ ['fresh prepared jump',historyCampaign,(h,r)=>h.controller.prepareJump(jumpRoll,r)],
+ ['mulligan prepared jump',()=>S.undo(jumpedCampaign()),(h,r)=>h.controller.prepareJump(jumpRoll,r)],
+ ['ordinary History Undo',historyCampaign,(h,r)=>h.controller.undo(r)],
+ ['jump History Undo',jumpedCampaign,(h,r)=>h.controller.undo(r)]
+])test(`${name}: newer disk expectation cannot authorize a candidate derived from older memory`,t=>{
+ const h=harness(t,initial()),revision=h.state().revision;advanceDiskWithoutMemory(h);
+ const before=unchangedSnapshot(h);
+ // Matching the disk is insufficient: the candidate must use that revision too.
+ // Fresh preparation may generate a pure candidate before rejecting the write.
+ for(const expected of [revision+1,revision-1,revision+2]){
+  assert.throws(()=>perform(h,expected),/Campaign changed/);assertUnchanged(h,before);
+ }
+ assert.throws(()=>perform(h,revision),/stale/);assertUnchanged(h,before);
+ h.reload();const loaded=unchangedSnapshot(h);h.store.editable=false;
+ assert.throws(()=>perform(h,revision+1),/read-only/);assertUnchanged(h,loaded);
+ h.store.editable=true;perform(h,revision+1);
+ assert.equal(h.state().revision,revision+2);assert.equal(h.writes(),before.writes+1);assert.equal(h.notifications.length,before.notifications.length+1);assert.equal(h.notifications.at(-1).local,true);
+ assert.deepEqual(json(h.state()),h.store.read());assert.equal(h.controller.isLocalSave(),false);
+ if(name.includes('prepared')){
+  for(const key of ['bank','ship','lots','contracts','snapshots','policies','ledger','undo','actual','routeIndex','hours'])assert.deepEqual(h.state()[key],loaded.memory[key]);
+ }else{
+  assert.equal(h.state().bank,before.memory.bank);assert.deepEqual(h.state().ledger,before.memory.ledger);assert.deepEqual(h.state().ship,before.memory.ship);assert.deepEqual(h.state().contracts,before.memory.contracts);
+ }
+});
+
+test('History Undo checks the memory revision before interpreting an empty Undo stack',t=>{
+ const h=harness(t),before=unchangedSnapshot(h);
+ assert.throws(()=>h.controller.undo(1),/Campaign changed/);assertUnchanged(h,before);
+ assert.throws(()=>h.controller.undo(0),/Nothing to undo/);assertUnchanged(h,before);
+});
+
+test('saved roll reuse stays non-writing with stale expectations, newer disk and read-only ownership',t=>{
+ const h=harness(t),prepared=h.controller.prepareJump(jumpRoll,0);advanceDiskWithoutMemory(h);h.store.editable=false;
+ const before=unchangedSnapshot(h);
+ for(const expected of [0,1,2,3]){
+  const reused=h.controller.prepareJump(()=>assert.fail('A saved roll must not reroll'),expected);
+  assert.equal(reused.state,h.state());assert.deepEqual(reused.roll,prepared.roll);assert.deepEqual(reused.attempt,prepared.attempt);assertUnchanged(h,before);
+ }
+});
+
+for(const undoMethod of ['undoJump','undo'])test(`prepared jump persists dice without an Undo entry; reopen/reload reuse, ${undoMethod} permits one final roll`,t=>{
  const h=harness(t);let rolls=0;const roll=()=>({dice:Array(6).fill(++rolls),total:6*rolls});
  const p=h.controller.prepareJump(roll,0);assert.equal(h.state().revision,1);assert.equal(h.state().undo.length,0);assert.equal(h.state().actual,'0,0');assert.equal(h.writes(),1);
  h.reload();const reused=h.controller.prepareJump(roll,1);assert.deepEqual(reused.roll,p.roll);assert.equal(rolls,1);assert.equal(h.writes(),1);
- h.controller.transition('Jump: World 0 → World 1',s=>S.commitJump(s,{attemptId:p.attempt.id,elapsed:154}),1);assert.equal(h.state().actual,'1,0');h.controller.undoJump(2);assert.equal(h.state().actual,'0,0');assert.equal(h.state().ship.fuel.aboardTons,20);
+ h.controller.transition('Jump: World 0 → World 1',s=>S.commitJump(s,{attemptId:p.attempt.id,elapsed:154}),1);assert.equal(h.state().actual,'1,0');h.controller[undoMethod](2);assert.equal(h.state().actual,'0,0');assert.equal(h.state().ship.fuel.aboardTons,20);
  h.reload();const final=h.controller.prepareJump(roll,3);assert.equal(rolls,2);assert.equal(final.attempt.mulliganUsed,true);assert.equal(h.state().revision,4);
  h.controller.transition('Jump: World 0 → World 1',s=>S.commitJump(s,{attemptId:final.attempt.id,elapsed:160}),4);
  const raw=h.raw();assert.throws(()=>h.controller.undoJump(5),/Mulligan used/);assert.throws(()=>h.controller.undo(5),/Mulligan used/);assert.equal(h.raw(),raw);
 });
 
 test('failed prepared-jump save does not retain an uncommitted roll',t=>{
- const h=harness(t),raw=h.raw();h.failWrite();assert.throws(()=>h.controller.prepareJump(()=>({dice:[1,1,1,1,1,1],total:6}),0),/storage failure/);assert.equal(h.raw(),raw);assert.equal(h.state().jumpAttempts?.length??0,0);
+ const h=harness(t),before=unchangedSnapshot(h);h.failWrite();assert.throws(()=>h.controller.prepareJump(()=>({dice:[1,1,1,1,1,1],total:6}),0),/storage failure/);assertUnchanged(h,before);assert.equal(h.state().jumpAttempts?.length??0,0);
  const p=h.controller.prepareJump(()=>({dice:[2,2,2,2,2,2],total:12}),0);assert.equal(p.roll.total,12);assert.equal(h.state().revision,1);
+});
+
+test('History Undo storage failure preserves the full campaign; retry reverses one saved action',t=>{
+ const h=harness(t,historyCampaign()),before=unchangedSnapshot(h);h.failWrite();
+ assert.throws(()=>h.controller.undo(1),/storage failure/);assertUnchanged(h,before);
+ h.controller.undo(1);assert.equal(h.state().revision,2);assert.equal(h.writes(),1);assert.equal(h.notifications.length,1);
+ assert.equal(h.state().bank,'100000');assert.equal(h.state().ship.fuel.aboardTons,20);assert.equal(h.state().contracts.length,0);assert.equal(h.state().ledger.length,0);assert.equal(h.state().undo.length,0);
+ assert.equal(h.state().events.filter(e=>e.label==='Undo: Supplies and freight').length,1);assert.deepEqual(json(h.state()),h.store.read());
+});
+
+for(const [name,perform]of [
+ ['prepared jump',(h,r)=>h.controller.prepareJump(jumpRoll,r)],
+ ['History Undo',(h,r)=>h.controller.undo(r)]
+])test(`${name}: post-write notification failure requires reload before using the advanced revision`,t=>{
+ const h=harness(t,historyCampaign()),before=unchangedSnapshot(h);h.failNotify();
+ assert.throws(()=>perform(h,1),/Notification failed/);
+ assert.equal(h.store.read().revision,2);assert.notEqual(h.raw(),before.raw);assert.equal(h.state(),before.reference);assert.deepEqual(structuredClone(h.state()),before.memory);
+ assert.equal(h.writes(),1);assert.equal(h.notifications.length,1);assert.equal(h.notifications[0].local,true);assert.equal(h.controller.isLocalSave(),false);
+ const saved=unchangedSnapshot(h);
+ assert.throws(()=>perform(h,1),/stale/);assertUnchanged(h,saved);
+ assert.throws(()=>perform(h,2),/Campaign changed/);assertUnchanged(h,saved);
+ h.reload();assert.deepEqual(json(h.state()),h.store.read());const loaded=unchangedSnapshot(h);
+ if(name==='prepared jump'){
+  assert.equal(h.state().jumpAttempts.length,1);assert.equal(h.state().jumpAttempts[0].rolls.length,1);perform(h,2);
+ }else{
+  assert.equal(h.state().undo.length,0);assert.equal(h.state().ledger.length,0);assert.equal(h.state().bank,'100000');assert.throws(()=>perform(h,2),/Nothing to undo/);
+ }
+ assertUnchanged(h,loaded);
 });
 
 for(const recovery of [false,true])test(`replacement ${recovery?'in recovery':'normally'} preserves synchronous external notification and failure/retry behavior`,t=>{
