@@ -170,3 +170,28 @@ for(const outcome of ['unknown before write','unknown after write','committed pu
 test('forcibly closed pending Undo Jump known-unsaved failure remains retryable without reload',async t=>{
  const {h,gate,operation,before,raw}=await pending(t,'jump');h.dom.ids.get('modal').close();h.failNext();gate.entries[0].fulfill();await operation;assert.equal(h.bytes(),raw);assert.equal(h.store.reloadRequired??false,false);assert.equal(h.store.editable,true);noSuccess(h);h.api.actions['jump-undo']();const retry=h.submit();await flush();assert.equal(gate.entries.length,2);gate.entries[1].fulfill();await retry;exactUndo(h.persisted(),before);assert.equal(h.counters.writes,1);
 });
+
+// These probes enter the actual document-level delegated click listeners. Direct
+// api.actions calls alone cannot expose an async dispatcher yield or a duplicate
+// click attaching safely() to the original confirmation's rejecting Promise.
+function documentActionClick(h,name){
+ const button={id:'',disabled:false,dataset:{action:name,arg:''},closest(selector){return selector==='[data-action]'||selector==='button'?this:null;}};
+ h.dom.dispatch('click',button,{detail:0,button:0,preventDefault(){},stopImmediatePropagation(){}});
+}
+for(const point of ['beforeNotify','afterNotify'])test(`actual document click dispatch synchronously coalesces reentrant History Undo during ${point}`,async()=>{
+ const before=S.transition(deposited(),'Second deposit',next=>S.deposit(next,10,'Retain prior inverse')),h=setup(before);let reentries=0;
+ h.hooks[point]=()=>{h.hooks[point]=null;reentries++;documentActionClick(h,'undo');};documentActionClick(h,'undo');
+ assert.equal(h.counters.writes,1,'Dispatcher enters synchronous Undo before yielding to unrelated service routing');await flush();await flush();assert.equal(reentries,1);assert.equal(h.counters.writes,1,'Reentrant click cannot escape the synchronous owner guard through a microtask');assert.equal(h.persisted().undo.length,1);exactUndo(h.persisted(),before);assert.equal(ui(h).message,'Latest action undone.');
+});
+
+for(const outcome of ['unknown before write','unknown after write','committed beforeNotify','committed afterNotify','committed cleanup'])test(`actual repeated document Undo Jump clicks retain complete reload guidance after ${outcome}`,async t=>{
+ const {h,gate,operation,before,raw}=await pending(t,'jump');documentActionClick(h,'jump-undo');documentActionClick(h,'jump-undo');documentActionClick(h,'undo');await flush();assert.equal(gate.entries.length,1);
+ if(outcome==='unknown after write')gate.entries[0].write();
+ if(outcome.startsWith('committed ')){
+  if(outcome==='committed cleanup'){const main=h.dom.ids.get('main');let value=main.innerHTML,injected=false;Object.defineProperty(main,'innerHTML',{get:()=>value,set(next){if(gate.entries[0].settled&&!injected){injected=true;throw Error('Injected dispatcher cleanup failure');}value=next;}});}
+  else h.hooks[outcome.slice('committed '.length)]=()=>{throw Error('Injected dispatcher publication failure');};
+  gate.entries[0].fulfill();
+ }else gate.entries[0].reject(Error('Injected dispatcher unknown outcome'));
+ await operation;await flush();await flush();terminal(h);const guidance=ui(h).modalError;assert.equal(ui(h).message,guidance,'Repeated click wrappers cannot overwrite full terminal guidance with the raw provider error');assert.equal(h.dom.ids.get('save-status').textContent,guidance);
+ assert.match(guidance,outcome.startsWith('committed ')?/Undo Jump saved[\s\S]*Reload[\s\S]*do not record/i:/undo jump save outcome could not be confirmed[\s\S]*Reload[\s\S]*History/i);assert.equal(gate.entries.length,1);if(outcome==='unknown before write')assert.equal(h.bytes(),raw);else exactUndo(h.persisted(),before);
+});
