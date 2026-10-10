@@ -172,3 +172,14 @@ test('terminal outcome cannot be cleared by takeover, later role callbacks or a 
  const raw=h.bytes();await h.store.acquire(true);terminal(h);assert.equal(h.dom.ids.get('takeover').disabled,true);
  h.api.closeModal();h.api.actions.deposit();h.fill({amount:11,reason:'Must remain blocked'});await h.submit();assert.equal(h.counters.writes,0);assert.equal(h.bytes(),raw);assert.equal(ui(h).submitDisabled,true);
 });
+
+test('terminal deposit sets modal reload guidance and Close before the final banner can fail to render',async()=>{
+ const h=depositHarness();await prepareDeposit(h);const gate=deferredSave(h.store),operation=h.submit();await flush();
+ const banner=h.dom.ids.get('message');let value=banner.textContent;
+ Object.defineProperty(banner,'textContent',{get:()=>value,set(next){if(String(next).includes('Reload this page'))throw Error('Injected final message display fault');value=next;}});
+ gate.pending[0].reject(Error('Unknown provider outcome'));
+ await assert.rejects(operation,/Injected final message display fault/);gate.restore();
+ assert.match(h.dom.ids.get('modal-error').textContent,/Reload this page/);assert.equal(h.dom.ids.get('modal-cancel').textContent,'Close');
+ assert.equal(h.store.reloadRequired,true);assert.equal(h.store.editable,false);assert.equal(ui(h).submitDisabled,true);assert.equal(h.dom.ids.get('takeover').disabled,true);
+ assert.match(h.dom.ids.get('save-status').textContent,/Reload this page/);assert.equal(h.counters.writes,0);
+});

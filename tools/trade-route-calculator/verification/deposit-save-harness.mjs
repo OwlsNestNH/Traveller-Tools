@@ -15,8 +15,8 @@ for(const[,names,path]of source.matchAll(/^import (.+) from '([^']+)';$/gm)){
  else for(const name of names.slice(1,-1).split(','))imports[name.trim()]=module[name.trim()];
 }
 const executable=source.replace(/^import .*;\n/gm,'').replaceAll('export ','');
-export function depositHarness(saved=campaign()){
- const h=harness(saved),values=new Map(),trace=[],roles=[],notifications=[];
+export function depositHarness(saved=campaign(),harnessOptions={}){
+ const h=harness(saved,[],harnessOptions),values=new Map(),trace=[],roles=[],notifications=[];
  const hooks={beforeWrite:null,afterWrite:null,beforeNotify:null,afterNotify:null,onRole:null};
  const counters={attempts:0,writes:0,notifications:0};let failCount=0;
  const localStorage={getItem:key=>values.get(key)??null,setItem(key,value){

@@ -1,7 +1,7 @@
-import {passengerShip} from './passengers.mjs?v=deposit-completion-20261010-37';
-import {tiers,roomCounts,serviceRate,occupants,personRate} from './accommodation.mjs?v=deposit-completion-20261010-37';
+import {passengerShip} from './passengers.mjs?v=service-completion-20261010-38';
+import {tiers,roomCounts,serviceRate,occupants,personRate} from './accommodation.mjs?v=service-completion-20261010-38';
 import {add,sub,mul,div,cmp,dec,rat,decimal,auditNumber,credit,floor} from './amounts.mjs';
-import {up,creditStep} from './rounding.mjs?v=deposit-completion-20261010-37';
+import {up,creditStep} from './rounding.mjs?v=service-completion-20261010-38';
 
 export const supportReference='Cluster Truck, p. 14: awake occupants consume 1 LSS per day; occupied low berths consume 0.1. Internal storage holds 4 LSS per displacement ton; overflow uses 0.01 cargo tons per LSS.';
 export const extraSupportReference='Home rule: extra supplies cost Cr1,000 per person-equivalent per 28 days. An occupied low berth counts as 0.1 person-equivalent. Round the combined extra charge up once to Cr100.';

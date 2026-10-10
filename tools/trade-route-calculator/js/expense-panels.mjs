@@ -1,13 +1,13 @@
-import {ruleInfo} from './rule-references.mjs?v=deposit-completion-20261010-37';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=deposit-completion-20261010-37';
-import {passengerShip} from './passengers.mjs?v=deposit-completion-20261010-37';
+import {ruleInfo} from './rule-references.mjs?v=service-completion-20261010-38';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=service-completion-20261010-38';
+import {passengerShip} from './passengers.mjs?v=service-completion-20261010-38';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=deposit-completion-20261010-37';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=deposit-completion-20261010-37';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=deposit-completion-20261010-37';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=deposit-completion-20261010-37';
-import {creditStep} from './rounding.mjs?v=deposit-completion-20261010-37';
-import {roll} from './rules.mjs?v=deposit-completion-20261010-37';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=service-completion-20261010-38';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=service-completion-20261010-38';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=service-completion-20261010-38';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=service-completion-20261010-38';
+import {creditStep} from './rounding.mjs?v=service-completion-20261010-38';
+import {roll} from './rules.mjs?v=service-completion-20261010-38';
 
 const esc=escapeHtml;
 const money=formatCreditsText;
