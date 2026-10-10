@@ -112,7 +112,7 @@ const checkLedgerDetails=async()=>{
   if(entry.type==='Sale'){assert.match(text,/Realized profit/);assert.match(text,/3D price roll/);await page.screenshot({path:join(artifacts,'ledger-sale-details.png')});}
   if(entry.type==='Purchase'&&entry.purchase){assert.match(text,/Tons purchased/);assert.match(text,/Total price DM/);}
   if(entry.type==='Profit adjustment')assert.match(text,/Positive profit retained/);
-  if(entry.type==='Insurance premium')assert.match(text,/Merchant Prince/);
+  if(entry.type==='Insurance premium'){await page.locator('#modal [data-rule-info="insurance"]').first().click();assert.match(await page.locator('#rule-reference-popup').textContent(),/Merchant Prince/);assert.match(await page.locator('#rule-reference-popup').textContent(),/82–83/);await page.keyboard.press('Escape');assert.equal(await page.locator('#modal').evaluate(el=>el.open),true);}
   await click('Close');
  }
  assert.deepEqual(await read(),before);

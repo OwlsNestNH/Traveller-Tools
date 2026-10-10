@@ -26,6 +26,15 @@ export function mountRulePopover(document){
  const title=dialog.querySelector('h2'),body=dialog.querySelector('.rule-reference-body'),closeButton=dialog.querySelector('button');
  let opener=null,origin=null,transition=null;
  function rememberGesture(event){transition=event?.detail>0?{at:Date.now(),x:event.clientX,y:event.clientY,button:event.button,pointerId:event.pointerId}:null;}
+ function repeatedGesture(event,checkPointer=true){
+  const previous=transition,now=Date.now();
+  return previous&&event.detail>1&&event.button===previous.button&&(!checkPointer||event.pointerId===previous.pointerId)&&now>=previous.at&&now-previous.at<=750&&Math.abs(event.clientX-previous.x)<=4&&Math.abs(event.clientY-previous.y)<=4;
+ }
+ function mousedown(event){
+  // A double-close's second mousedown can steal the restored opener focus
+  // before its click is consumed. MouseEvent has no pointerId.
+  if(repeatedGesture(event,false)){event.preventDefault();event.stopImmediatePropagation();}
+ }
  function close(event){
   if(!dialog.open)return;
   rememberGesture(event);let target=opener;opener=null;dialog.close();
@@ -61,10 +70,9 @@ export function mountRulePopover(document){
   if(button&&!button.disabled&&event.button===0)event.preventDefault();
  }
  function click(event){
-  const previous=transition,now=Date.now();
   // Consume only the remainder of the same double-click across a popup change,
   // never a fresh click. Dismissal must not click a transaction behind the popup.
-  if(previous&&event.detail>1&&event.button===previous.button&&event.pointerId===previous.pointerId&&now>=previous.at&&now-previous.at<=750&&Math.abs(event.clientX-previous.x)<=4&&Math.abs(event.clientY-previous.y)<=4){event.preventDefault();event.stopImmediatePropagation();return;}
+  if(repeatedGesture(event)){event.preventDefault();event.stopImmediatePropagation();return;}
   transition=null;
   const button=event.target.closest?.('[data-rule-info]');
   if(button&&!button.disabled){event.preventDefault();event.stopImmediatePropagation();open(button,event);}
@@ -82,8 +90,9 @@ export function mountRulePopover(document){
  }
  function cancel(event){event.preventDefault();event.stopPropagation();close();}
  document.addEventListener('pointerdown',pointerdown,true);
+ document.addEventListener('mousedown',mousedown,true);
  document.addEventListener('click',click,true);
  document.addEventListener('keydown',keydown,true);
  dialog.addEventListener('cancel',cancel);
- return {close,isOpen:()=>dialog.open,destroy(){close();document.removeEventListener('pointerdown',pointerdown,true);document.removeEventListener('click',click,true);document.removeEventListener('keydown',keydown,true);dialog.removeEventListener('cancel',cancel);dialog.remove();}};
+ return {close,isOpen:()=>dialog.open,destroy(){close();document.removeEventListener('pointerdown',pointerdown,true);document.removeEventListener('mousedown',mousedown,true);document.removeEventListener('click',click,true);document.removeEventListener('keydown',keydown,true);dialog.removeEventListener('cancel',cancel);dialog.remove();}};
 }

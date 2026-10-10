@@ -51,7 +51,9 @@ test('fallback stays in a transaction dialog, otherwise returns to visible navig
 });
 test('the second click of a close gesture cannot activate the page underneath',()=>{
  const h=harness(),b=h.marker();h.event('click',b,{detail:1});h.event('click',h.close,{detail:1});
+ const down=h.event('mousedown',h.modal,{detail:2,pointerId:undefined});assert.equal(down.prevented,true);assert.equal(down.stopped,true);assert.equal(h.active(),b,'The second mousedown cannot steal returned focus');
  const repeated=h.event('click',b,{detail:2});assert.equal(repeated.prevented,true);assert.equal(repeated.stopped,true);assert.equal(h.api.isOpen(),false);
+ assert.equal(h.event('mousedown',b,{detail:1,pointerId:undefined}).prevented,false,'A fresh gesture is not swallowed');
  const fresh=h.event('click',b,{detail:1});assert.equal(fresh.prevented,true);assert.equal(h.api.isOpen(),true);
 });
 test('disabled markers are inert and destroying the controller removes its listeners',()=>{

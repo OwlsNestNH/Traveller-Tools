@@ -23,6 +23,7 @@ export function fuelCorrection(s,value,reason=''){
 }
 export function createServicePanels({document,getState,isEditable,commit,render,showOverview,message,nextJumpFuel}){
  let session=null,generation=0;
+ const quoteContent=new WeakMap();
  const active=()=>!!session,token=()=>session?.token??'';
  const button=(text,action,arg='',primary=false)=>`<button type="button" data-action="${action}" data-arg="${esc(arg)}" data-service-token="${session.token}" class="${primary?'primary':''}">${esc(text)}</button>`;
  function open(kind){
@@ -107,7 +108,10 @@ export function createServicePanels({document,getState,isEditable,commit,render,
     const custom=document.getElementById('fuel-custom-fields');if(custom)custom.hidden=d.fuelType!=='custom';
     const purchased=document.getElementById('fuel-purchase-fields');if(purchased)purchased.hidden=d.fuelType==='water';
    }
-   const box=document.getElementById('service-quote'),f=forecast();if(box)replaceReferenceContent(box,f.html);
+   const box=document.getElementById('service-quote'),f=forecast();
+   // Input has already refreshed this quote. Its following blur/change must
+   // not replace the summary receiving the user's click or keyboard focus.
+   if(box&&quoteContent.get(box)!==f.html){replaceReferenceContent(box,f.html);quoteContent.set(box,f.html);}
    const warning=document.getElementById('fuel-availability');if(warning&&session.kind==='fuel'){warning.textContent=waterWarning();warning.hidden=d.fuelType!=='water';}
   }syncControls();
  }

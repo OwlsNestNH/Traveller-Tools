@@ -16,8 +16,9 @@ function withSupport({frozen=0}={}){
 function harness(s=campaign()){
  let state=s,editable=true,form=null;
  const h={renders:0,commits:0,commitError:null,confirmControl:{disabled:false}};
+ h.quoteWrites=0;h.quote={auditOpen:false,set innerHTML(html){this.html=html;this.auditOpen=false;h.quoteWrites++;}};
  const document={
-  getElementById(id){return id==='service-form'?form:null;},
+  getElementById(id){return id==='service-form'?form:id==='service-quote'?h.quote:null;},
   querySelector(selector){return selector==='#service-form [name="fuelTons"]'?form?.elements.find(el=>el.name==='fuelTons'):null;},
   querySelectorAll(selector){return selector==='#service-panel [data-action="service-confirm"],#service-panel [data-action="service-review"]'?[h.confirmControl]:[];}
  };
@@ -43,6 +44,14 @@ function harness(s=campaign()){
 test('fuel maximum preserves odd tons and combines empty base tanks with exact free cargo',()=>{const s=campaign();assert.equal(maxFuelAddition(s),23);s.ship.fuel=configureFuel(200,43,40,40,2);s.ship.capacity='9';s.lots=[{quantity:'5.2'}];assert.equal(maxFuelAddition(s),6);s.ship.fuel.aboardTons=50;assert.equal(maxFuelAddition(s),0);});
 test('fuel correction is reduction-only, audited, bank-neutral, releases bladder cargo and undoes',()=>{const s=campaign();s.ship.fuel=configureFuel(200,43,55,40,2);const before=structuredClone(s),n=S.transition(s,'Adjusted fuel aboard',n=>fuelCorrection(n,'41','Actual tank check'));assert.equal(n.bank,s.bank);assert.equal(n.ship.fuel.aboardTons,41);assert.equal(n.events[0].fuelCorrection.removed,14);assert.equal(n.events[0].fuelCorrection.reason,'Actual tank check');assert.equal(n.ledger.length,0);assert.deepEqual(S.undo(n).ship,before.ship);for(const bad of ['','56','-1','2.5','55'])assert.throws(()=>fuelCorrection(structuredClone(s),bad));assert.deepEqual(s,before);});
 test('opening, editing and cancelling inline fuel never mutate the campaign',async()=>{const h=harness(),before=structuredClone(h.state());h.services.open('fuel');assert.match(h.services.panel(),/id="service-form"/);assert.doesNotMatch(h.services.panel(),/data-action="service-(?:adjust|review)"/);assert.match(h.services.panel(),/Actual origin/);assert.match(h.services.panel(),/value="23"/);h.fill({fuelTons:'7.25',fuelType:'unrefined',expenseNotes:'Draft only'});assert.equal(h.commits,0);await h.action('service-back','');assert.equal(h.services.active(),false);assert.deepEqual(h.state(),before);});
+test('duplicate input/change synchronization retains quote disclosure nodes and still validates controls',async()=>{
+ const h=harness(),before=h.bytes();h.services.open('fuel');h.fill({fuelTons:'7',expenseNotes:'Draft note'});
+ assert.equal(h.quoteWrites,1);h.quote.auditOpen=true;
+ h.services.sync();assert.equal(h.quoteWrites,1);assert.equal(h.quote.auditOpen,true,'Blur/change leaves the current summary in place');
+ await h.action('service-fuel-step','10');assert.equal(h.quoteWrites,2);assert.match(h.quote.html,/17 t/,'Programmatic shortcuts still refresh the quote');
+ h.readOnly();h.services.sync();assert.equal(h.quoteWrites,2);assert.equal(h.confirmControl.disabled,true,'Unchanged markup does not bypass ownership validation');
+ assert.equal(h.bytes(),before);assert.equal(h.commits,0);
+});
 test('direct inline Confirm saves once; repeated click cannot pay again',async()=>{const h=harness();h.services.open('fuel');const confirm=h.capture('service-confirm');await confirm();await confirm();assert.equal(h.commits,1);assert.equal(h.state().ship.fuel.aboardTons,43);assert.equal(h.state().bank,'88500');assert.equal(S.undo(h.state()).ship.fuel.aboardTons,20);});
 test('legacy campaign baseline can preview, cancel, refuel bladders and undo without rewriting fuel data',async()=>{
  const s=campaignBaseline(),before=structuredClone(s),h=harness(s);
