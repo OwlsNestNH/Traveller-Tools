@@ -60,7 +60,8 @@ test('public name is consistent while URLs, storage keys, schema and fixture ide
  const catalog=await readFile(new URL('../../../index.html',import.meta.url),'utf8');
  assert.match(html,/<title>Traveller Ship Operations<\/title>/);
  assert.match(html,/<h1>Traveller Ship Operations<\/h1>/);
- assert.match(catalog,/<h2>Traveller Ship Operations — Alpha<\/h2>/);
+ assert.match(catalog,/<h2>Traveller Ship Operations — Beta<\/h2>/);
+ assert.doesNotMatch(catalog,/<h2>Traveller Ship Operations — Alpha<\/h2>/);
  assert.match(catalog,/href="tools\/trade-route-calculator\/"/);
  for(const file of ['README.md','ARCHITECTURE.md','BACKLOG.md','HANDOFF.md','REQUIREMENTS.md','RULES_VERIFICATION.md']){
   const text=await readFile(new URL('../'+file,import.meta.url),'utf8');assert.match(text,/^# Traveller Ship Operations/);

@@ -108,3 +108,61 @@ token, visible version and generated report version advance together to .36.
 This checkpoint does not introduce Promise-backed saves, reclassify exceptions
 after a durable write, change campaign schema or arithmetic, or implement
 shared-device storage. Those later decisions remain separate.
+
+## Deposit completion checkpoint — UI 2026.10.10.37
+
+Based on released merge `d13622fc20eae917f3258617d631c2f546b696ed` (UI .36).
+The representative UI slice is **Record deposit → Confirm deposit**. A pending
+save owns that confirmation: repeat submission, Cancel, close, Escape and a
+replacement dialog cannot discard it before the save outcome is known.
+Success text and dismissal follow completion. A known pre-write failure keeps
+the same review available for a deliberate retry.
+
+The production localStorage Store remains synchronous. Its successful return
+is still `undefined`; synchronous controller transitions and `act` still
+return their candidate. The controller forwards completion when a test
+adapter returns a Promise rather than turning every action into an async
+function. That adapter's fulfillment contract means the durable write and
+publication have completed; this is not a verifier for arbitrary providers
+that incorrectly fulfill without saving. A detached payload and one in-flight
+write owner prevent pending input mutation and competing controller writes.
+State, arithmetic, revision
+guards, saved history, schema and storage keys stay unchanged.
+
+Pre-write failure, committed storage with failed publication, and an unknown
+provider outcome are distinct. The deposit confirmation never retries a
+committed or uncertain operation: it becomes terminal, yields editing and
+requires a page reload before another change. A failed role/display callback
+must not hide the durable outcome or accidentally re-enable confirmation.
+No committed campaign is rolled back to make the old preview look current.
+
+Publication carries an ephemeral per-save identity token through Store's
+callback. It is not serialized into campaign data. Only the matching local
+publication retains this tab's unaccepted offers; tokenless external storage
+updates, ownership acquisition and replacement remain external, including
+while a local completion is pending. A boolean held throughout a Promise is
+not used to classify unrelated notifications.
+
+Focused native and Chromium checks exercise a controlled delayed adapter
+around the real local Store, including rejection/retry, repeated input,
+dismissal attempts, ownership and revision changes, publication faults,
+reload and economic Undo. Existing full regression workflows remain release
+gates. This does not certify a real asynchronous/network provider or migrate
+sale cleanup, services, prepared-jump UI, History Undo UI, import/reset or
+other callers to a new persistence mode.
+
+Local verification passes all 700 native tests across 55 suites, including
+33 deposit-completion cases, the unchanged 13 exact saved-JSON checkpoints,
+227 rules/data checks and shared tool integration. Seven baseline-compatible
+completion probes fail the unchanged .36 implementation and pass this one.
+The original 58 trade-action assertions are unchanged after sharing their
+actual-app harness. Independent source review and adversarial probes pass.
+The new Chromium matrix entry declares 16 deposit cases and two catalogue
+viewports; actual exact-head execution and screenshot review remain required
+before release.
+
+The runtime token and UI/report version advance together to .37. Separately,
+the public catalogue's release-status suffix changes from **Alpha** to
+**Beta** at the owner's request. The product name, application title, URL,
+campaign identity and unrelated Research Station names remain unchanged.
+No feature-advertising banner is added.

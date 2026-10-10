@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=revision-guard-20261010-36';
+import {escapeHtml as esc} from './display.mjs?v=deposit-completion-20261010-37';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.
