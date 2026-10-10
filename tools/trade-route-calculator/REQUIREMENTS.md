@@ -385,3 +385,13 @@ Selecting a result only browses and highlights that world, at a world-level zoom
 ## Additional close map zoom — 2026-10-10
 
 Keep the existing 240% close view reachable and add one further ×1.2 step to 288%. Use the same bounded zoom calculation for buttons and Ctrl+wheel, including trackpad pinch events represented by Ctrl+wheel. Preserve the geographic viewport center, panning, selected browsed world, actual ship location, route and campaign state. Both normal and expanded maps retain the existing close-view labels, UWP toggle, icons and planet colors. Reset view remains centered 100%; reload retains the existing temporary-view reset behavior. No dedicated touchscreen pinch interaction is added.
+
+## Individual world-history corrections — 2026-10-10
+
+- World Changes filtering, counts and audit details are visible to all existing viewers; mutation uses the existing single-editor gate.
+- New edits retain explicit target-world identity, a reason and immutable before/after snapshots of editable world values. Treat all eight UWP components independently even though the editor accepts one UWP string.
+- Restore one recorded field as a new audited correction only when its source action remains active, no later active edit supersedes that field, the current value matches the recorded result and the preview revision is current. Preserve unrelated UWP components and world fields, previous jumps, payments, cargo, contracts and frozen quotes.
+- Clearly distinguish a recorded previous value from a published default. Do not infer missing historical target/value evidence in legacy entries. Preserve existing manual World override editing and its original-UWP reference.
+- Retain all original and corrective audits. No bulk reset, audit deletion, campaign-history bypass or departure-identity migration is included.
+- Keep dedicated Jump Undo and History Undo subject to the existing mulligan/closed-jump rules. A protected History attempt must display an explanatory warning and perform no write; read-only controls remain disabled.
+- Cancel, stale revisions, editor handoff, invalid imports, storage failure and repeated confirmation must not apply a partial or duplicate correction. Unknown or saved-but-unpublished outcomes require reload rather than a blind retry.

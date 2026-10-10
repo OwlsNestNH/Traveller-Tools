@@ -262,3 +262,28 @@ values, entered reasons, missing evidence and recorded amounts remain in their
 existing audits. Historical interpretation records are retained; the Notes
 view explains that later upward-charge rounding supersedes INT-021's older
 rounding description without rewriting that decision or any transaction.
+
+## Selective world-field correction history
+
+`world-change-history.mjs` owns version-1 optional world-change audits inside
+schema-1 campaign events. Snapshots contain only published-UWP context and the
+editable override fields, preserving absence separately from explicit values.
+UWP differences are named semantic components. New transitions link their audit
+to both the action summary and its retained Undo entry. Validation checks exact
+summary/revision pairing and replays the new action/Undo suffix, preserving
+incomplete legacy prefixes and import revision restamping without granting them
+new evidence.
+
+Selective correction checks the linked active action, later same-field changes
+and the current field value before changing one live property/component. It
+never applies an old whole-world or whole-campaign inverse. The existing
+controller/Store owns revision, writer and durable-save boundaries. The new
+awaited confirmation declares its own failure-message context while preserving
+the established deposit behavior. Original events remain immutable; global
+Undo removes the correction's active link but retains its audit.
+
+History presentation hides only the paired duplicate summary, without mutating
+the event list. Legacy target-world ambiguity is displayed explicitly. Protected
+History Undo is clickable by an editor to obtain a warning, while state-level
+jump/mulligan enforcement remains unchanged. The dedicated Jump Undo control
+retains its existing unavailable state.

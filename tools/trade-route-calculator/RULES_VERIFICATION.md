@@ -475,3 +475,38 @@ keyboard/touch, dirty-input blur, read-only handoff, saved/legacy audits and
 expanded-map coexistence. Actual browser and visual verification must pass on
 the final release head before publication; the presence of this record alone
 is not that result.
+
+## Individual World Changes history — local implementation, 2026-10-10
+
+Based on the source tree deployed by merge `29a36939d3c2d7fa34021302d26d0cbd25c8262d`
+(UI .39). This is a campaign editing/audit feature, with no new published-rule
+interpretation. World Changes is readable in existing read-only tabs. New
+versioned audits permit guarded restoration of one field, including one UWP
+digit, without rewriting later unrelated values or historical economics and
+travel. Old incomplete entries retain their evidence and have no inferred
+selective restore. Existing jump protection remains enforced; an attempted
+protected History Undo now explains its refusal.
+
+The focused native suite covers all eight UWP components, other editable world
+fields, source/action/Undo linkage, legacy and unknown extra history, import
+revision rebasing, stale previews, writer handoff, cancellation, duplicate
+confirmation and classified/unclassified persistence faults. Independent review
+identified an import-linkage gap; summary pairing and replayed Undo suffix
+validation were added to reject swapped links and missing/mislabeled summaries.
+The final native aggregate and exact-head CI results must be recorded against
+the release candidate before publication.
+
+The new `world-change-history-browser` CI job covers actual History filtering,
+individual restoration, unchanged later world fields and transactions,
+cancel/repeated clicks/reload/Undo, protected-jump refusal, read-only takeover,
+legacy notices and 1440/390/320px evidence. Existing jump/fuel browser assertions
+now exercise the warning rather than expecting only a disabled History button.
+Local Chromium cannot launch in the current restricted executor (`socket()` is
+not permitted); no local browser or visual pass is claimed. Browser CI and
+independent screenshot review remain required.
+
+Local .40 release-candidate checks: 901/901 native tests, 227/227 rules/data
+checks, the shared tool-visit check, JavaScript syntax and whitespace checks
+passed. Independent source review reported no remaining blocker after the
+source/action linkage correction. Browser and visual gates remain pending;
+this record does not claim deployment or live runtime verification.

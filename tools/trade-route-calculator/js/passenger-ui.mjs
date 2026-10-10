@@ -1,10 +1,10 @@
-import {ruleInfo} from './rule-references.mjs?v=world-override-20261010-39';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=world-override-20261010-39';
+import {ruleInfo} from './rule-references.mjs?v=world-history-20261010-40';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=world-history-20261010-40';
 import * as A from './amounts.mjs';
-import {manualLuggage} from './accommodation.mjs?v=world-override-20261010-39';
-import * as P from './passengers.mjs?v=world-override-20261010-39';
-import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=world-override-20261010-39';
-import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=world-override-20261010-39';
+import {manualLuggage} from './accommodation.mjs?v=world-history-20261010-40';
+import * as P from './passengers.mjs?v=world-history-20261010-40';
+import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=world-history-20261010-40';
+import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=world-history-20261010-40';
 import {displayDate} from './calendar.mjs';
 const esc=escapeHtml;
 const money=formatCreditsText,signed=x=>x>0?'+'+x:String(x);
