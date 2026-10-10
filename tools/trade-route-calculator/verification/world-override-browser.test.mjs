@@ -11,6 +11,9 @@ try{
  for(const width of [1440,390])for(const browsed of [false,true]){
   const f=guiFixture(),actual=f.state.worlds[f.state.actual],selected=f.state.worlds[f.state.route[2]],target=browsed?selected:actual;
   actual.name='Verification Harbor';selected.name='Verification Destination';
+  // Use canonical stock so the first write does not trigger the unrelated
+  // legacy hours-to-stock migration; retain exact ship equality assertions.
+  f.state.ship.lifeSupport={capacityHours:672,stockUnits:{numerator:'28',denominator:'1'}};
   for(const w of [actual,selected]){w.raw={...w.raw,Name:w.name,UWP:w.uwp,PBG:'703',Bases:'NS',Zone:'',Allegiance:'Im',SubsectorName:'Fixture'};Object.assign(f.apiWorlds.find(r=>r.WorldX===w.x&&r.WorldY===w.y),w.raw);}
   const context=await browser.newContext({viewport:{width,height:1000}}),errors=[];
   await context.addInitScript(({key,bytes})=>{if(!localStorage.getItem(key))localStorage.setItem(key,bytes);},{key:campaignKey,bytes:JSON.stringify(f.state)});
