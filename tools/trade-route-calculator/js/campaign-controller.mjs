@@ -1,5 +1,5 @@
-import * as S from './state.mjs?v=rule-info-20261010-33';
-import {creditStep} from './rounding.mjs?v=rule-info-20261010-33';
+import * as S from './state.mjs?v=campaign-writes-20261010-34';
+import {creditStep} from './rounding.mjs?v=campaign-writes-20261010-34';
 
 // Synchronous relocation only. Store owns editing authority, disk revisions,
 // serialization, durable writes and publication through its onChange callback.

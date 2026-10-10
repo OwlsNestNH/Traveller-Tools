@@ -43,11 +43,21 @@ money, stock and contracts after a retry.
 Before extraction: 642 native tests passed. After extraction: 655 tests in all 54 discovered
 native suites passed, including 13 controller cases. The 227 rules/data checks,
 syntax checks, module graph and shared tool integration also passed.
-On publication of a draft PR, the existing workflows will run the exact head through the full Chromium matrix,
-five rendered campaign routes and the adversarial compound-flow stress suite.
-Browser verification remains pending: this execution workspace has no installed
-Chromium. The user approved uploading this checkpoint as a draft PR for the
-exact-head workflows. No release claim follows from native checks.
+The original draft head `512f2bf7453176531a9bbf28959b0a1a979bc0a4` passed the
+[full Chromium matrix](https://github.com/OwlsNestNH/Traveller-Tools/actions/runs/38047684116)
+and [five campaign routes plus 21 adversarial compound scenarios](https://github.com/OwlsNestNH/Traveller-Tools/actions/runs/38047684117).
+Independent source review found no blocking extraction defect; actual-pixel
+review covered 28 adversarial and jump screenshots at desktop and narrow widths.
+An independent replay of literal released-app write blocks also passed all 13
+characterization cases, including every exact saved-JSON checkpoint.
+
+Release preparation advances the runtime cache token and UI/report version to
+2026.10.10.34 without changing behavior. The resulting final head must pass the
+same complete workflows and screenshot review before merge. Browser execution
+uses GitHub Actions; this workspace does not claim a local Chromium pass.
+The user approved uploading the checkpoint as a draft PR and subsequently
+authorized tested and reviewed publication. CI success alone is not a live
+deployment claim.
 
 ## Follow-up checkpoint
 
