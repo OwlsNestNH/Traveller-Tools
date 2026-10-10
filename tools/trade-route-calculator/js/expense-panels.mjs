@@ -1,13 +1,13 @@
-import {ruleInfo} from './rule-references.mjs?v=rule-info-20261010-33';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=rule-info-20261010-33';
-import {passengerShip} from './passengers.mjs?v=rule-info-20261010-33';
+import {ruleInfo} from './rule-references.mjs?v=campaign-writes-20261010-34';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=campaign-writes-20261010-34';
+import {passengerShip} from './passengers.mjs?v=campaign-writes-20261010-34';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=rule-info-20261010-33';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=rule-info-20261010-33';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=rule-info-20261010-33';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=rule-info-20261010-33';
-import {creditStep} from './rounding.mjs?v=rule-info-20261010-33';
-import {roll} from './rules.mjs?v=rule-info-20261010-33';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=campaign-writes-20261010-34';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=campaign-writes-20261010-34';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=campaign-writes-20261010-34';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=campaign-writes-20261010-34';
+import {creditStep} from './rounding.mjs?v=campaign-writes-20261010-34';
+import {roll} from './rules.mjs?v=campaign-writes-20261010-34';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

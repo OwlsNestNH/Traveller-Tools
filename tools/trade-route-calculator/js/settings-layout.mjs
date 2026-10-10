@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=rule-info-20261010-33';
+import {ruleInfo} from './rule-references.mjs?v=campaign-writes-20261010-34';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={
