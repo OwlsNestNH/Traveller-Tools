@@ -85,7 +85,7 @@ test('mortgage prepay uses exact fixed credits, all dates metadata, and a saved 
  assert.doesNotMatch(html,/Review changes|data-action="expense-review"/);
  const pay=h.arg('expense-pay');await h.expenses.action('expense-pay',pay);await h.expenses.action('expense-pay',pay);
  assert.equal(h.commits,1);assert.equal(h.state().bank,'4799998');assert.equal(h.state().ship.mortgage.remainingPayments,478);assert.equal(h.state().ship.mortgage.totalPaid,'200002');assert.equal(h.state().ship.mortgage.originalAmount,'24000001');
- html=h.expenses.panel();assert.match(html,/Payment recorded/);assert.match(html,/002-1105 · 05:00/);assert.match(html,/085-1105/);assert.match(html,/>478</);assert.match(html,/Cr 200,002/);assert.equal((html.match(/<button/g)||[]).length,1);assert.doesNotMatch(html,/expense-pay|expense-cancel/);
+ html=h.expenses.panel();assert.match(html,/Payment recorded/);assert.match(html,/002-1105 · 05:00/);assert.match(html,/085-1105/);assert.match(html,/>478</);assert.match(html,/Cr 200,002/);assert.equal((html.match(/<button(?=[^>]*data-action)/g)||[]).length,1);assert.match(html,/type="button" class="rule-info" data-rule-info="mortgage"/);assert.doesNotMatch(html,/expense-pay|expense-cancel/);
  assert.deepEqual(h.expenses.route(),{kind:'mortgage',receiptId:h.state().ledger.at(-1).id});assert.equal(h.state().events.at(-1).label,'Paid mortgage');
 });
 

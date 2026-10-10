@@ -1,3 +1,4 @@
+import {ruleInfo} from './rule-references.mjs?v=rule-info-20261010-33';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={
@@ -48,11 +49,12 @@ export function mountSettingsLayout(form,openGroups=new Map()){
  const fuelEstimate=fuel.querySelector('#fuel-settings-estimate'),luggageEstimate=accommodation.querySelector('#luggage-estimate'),costEstimate=accommodation.querySelector('#accommodation-estimate');
  const fuelNotes=[...fuel.querySelectorAll(':scope > p')].filter(el=>el!==fuelEstimate),accommodationNotes=[...accommodation.querySelectorAll(':scope > p, :scope > details')],pricingNotes=[...source.querySelectorAll(':scope > p')];
  const recurringNotes=Object.fromEntries(['mortgage','maintenance'].map(kind=>[kind,[source.querySelector('#'+kind+'-settings-summary'),source.querySelector('#'+kind+'-settings-help')]]));
+ const groupReferences={fuel:['bladders'],mortgage:['mortgage'],maintenance:['maintenance'],trader:['broker'],pricing:['profit'],cabins:['support-cost'],people:['accommodation'],support:['lss'],optional:['tax','insurance'],rounding:['rounding']};
  const columns=node('div','settings-columns'),left=node('div','settings-column'),right=node('div','settings-column');columns.append(left,right);
  for(const group of settingsGroups){
   const section=node('details','settings-section'),heading=node('summary','settings-section-heading'),title=node('div'),chevron=node('span','settings-disclosure','▸');
   section.dataset.settingsGroup=group.id;section.open=openGroups.get(group.id)??!group.advanced;
-  title.append(node('h3','',group.title),node('p','',group.description));chevron.setAttribute('aria-hidden','true');heading.append(title,chevron);heading.setAttribute('aria-label',group.title);
+  const caption=node('h3','',group.title);caption.setAttribute('aria-label',group.title);for(const id of groupReferences[group.id]||[])caption.insertAdjacentHTML('beforeend',ruleInfo(id));title.append(caption,node('p','',group.description));chevron.setAttribute('aria-hidden','true');heading.append(title,chevron);heading.setAttribute('aria-label',group.title);
   section.append(heading);
   for(const name of group.names){if(name.startsWith('rooms-'))section.append(node('div','settings-band',name.slice(6)+' service'));section.append(settingRow(inputs.get(name)));}
   if(group.id==='fuel'){fuelEstimate.className='settings-note';section.append(fuelEstimate,notes('Fuel tracking details & rules',fuelNotes));}

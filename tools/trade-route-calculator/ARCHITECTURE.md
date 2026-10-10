@@ -238,3 +238,26 @@ Expense summary and paid receipt destinations may be restored, using the same
 ledger receipt ID rather than a new payment. The receipt reload preference is
 retained while expanded. Opening another service or main tab exits expansion.
 This feature adds no campaign state, schema, storage key or transaction path.
+
+## Contextual rule-reference presentation
+
+`rule-references.mjs` is a versioned, static bibliography and classification
+catalogue. It contains no campaign state, dynamic amounts or rule calculations.
+`ruleInfo()` emits a non-submitting, read-only control. Existing audit headings
+and grouped Settings/service content own placement; no new table columns or
+persistent campaign fields are introduced.
+
+`rule-popover.mjs` mounts one independent native dialog above any existing
+transaction dialog. It never replaces the host form, submit callback, revision
+or rounding annotation state. Capture-phase activation prevents summary toggles
+and form submission. Escape closes only the reference; focus returns to the
+original button or its logical replacement after a background render. A small
+same-gesture guard prevents the tail of a double-click from reaching controls
+behind a dismissed popup. Dynamic quote/rounding updates retain reference-button
+nodes, preserving pointer and keyboard targets through ordinary input blur.
+
+The catalogue explains current policy. Saved inputs, generated/effective
+values, entered reasons, missing evidence and recorded amounts remain in their
+existing audits. Historical interpretation records are retained; the Notes
+view explains that later upward-charge rounding supersedes INT-021's older
+rounding description without rewriting that decision or any transaction.

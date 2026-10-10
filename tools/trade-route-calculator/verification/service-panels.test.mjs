@@ -116,12 +116,12 @@ test('fuel correction draft is discarded by a direct switch without a refund, au
  assert.equal(h.state().ship.fuel.aboardTons,20);assert.equal(h.commits,0);
 });
 
-test('every button and form carries its session token while numeric fuel steps retain their payload',async()=>{
+test('every service action and form carries its session token while references remain read-only',async()=>{
  const h=harness();h.services.open('fuel');
  for(const mode of ['inline']){
   const tags=h.services.panel().match(/<(?:button|form)\b[^>]*>/g);
   assert.ok(tags.length);
-  for(const tag of tags)assert.match(tag,new RegExp('data-service-token="'+h.services.token()+'"'));
+  for(const tag of tags){if(tag.includes('data-rule-info=')){assert.match(tag,/type="button"/);assert.doesNotMatch(tag,/data-action=|data-mutate/);}else assert.match(tag,new RegExp('data-service-token="'+h.services.token()+'"'));}
  }
  assert.match(h.services.panel(),/data-action="service-fuel-step" data-arg="-10"/);
  assert.match(h.services.panel(),/data-action="service-fuel-step" data-arg="10"/);

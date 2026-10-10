@@ -435,3 +435,43 @@ launch is unavailable because this executor blocks required sockets; browser
 results and actual screenshot review remain release gates until CI completes.
 
 Local verification passed **628 native tests across 51 suites**, **227 rules/data checks**, shared tool integration, every application module syntax check, and whitespace validation. Independent source review approved the implementation after the expanded view’s Ship services accessibility targets were corrected. Browser results remain pending the draft PR gate.
+
+## Contextual rule references — UI 2026.10.10.33
+
+Display-only change based on the expanded-map release candidate. The 29-entry
+reference catalogue has an independent source/content review against the
+examined Core Rulebook Update 2022 revision, selected Cluster Truck physical
+LSS mechanics and the complete Book 7: Merchant Prince (First Edition, 2010)
+source. This is a provenance/description check, not a new transcription or an
+exhaustive recheck of every commodity/table cell.
+
+Correct source distinctions retained:
+- Core pp.241–243 supplies “same month” search wording; the grouped per-planet
+  28-day committed-search clock is a campaign interpretation.
+- Core pp.184–185 describes bladder hardware; the app's direct-ton capacity and
+  unified fuel bookkeeping are its approved campaign model.
+- Merchant Prince insurance spans pp.82–83. Tax discussion is p.86 and the
+  table p.87. The printed Cr75,001–76,000 gap is covered by approved INT-009;
+  no publisher-erratum claim is made.
+- Cluster Truck (Mongoose Publishing, ©2026) p.14 supplies selected physical
+  consumption and storage figures. Campaign support prices remain separate.
+- Broker rounding is INT-001; local illegality's source mechanism is Core p.243.
+  INT-003 concerns black-market stock. INT-024 retains the largest absolute
+  commodity DM's sign, with its approved positive tie-break.
+
+The implementation preserves dice, modifiers, amounts, resource consumption,
+search periods, booking terms, schedules, campaign schema, storage and Undo.
+No private source locations, scans, PDFs or copied source passages are shipped.
+Markers add no event-specific information beyond the audit they accompany.
+Future shared-viewer authorization remains outside this local UI pass.
+
+Native reference/controller tests cover catalogue completeness and provenance,
+read-only markup, replacement-opener focus, isolation from a transaction,
+activation timing and repeated-click guarding. The normal aggregate native,
+rules-data and repository integration checks apply. The new
+`rule-references-browser.test.mjs` is included in the exact-head CI matrix and
+covers 1440/1100/390/320px screenshots, all 29 references, native dialog focus,
+keyboard/touch, dirty-input blur, read-only handoff, saved/legacy audits and
+expanded-map coexistence. Actual browser and visual verification must pass on
+the final release head before publication; the presence of this record alone
+is not that result.

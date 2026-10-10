@@ -1,11 +1,12 @@
-import {passengerShip,passengerSpace} from './passengers.mjs?v=expanded-map-20261010-32';
+import {ruleInfo} from './rule-references.mjs?v=rule-info-20261010-33';
+import {passengerShip,passengerSpace} from './passengers.mjs?v=rule-info-20261010-33';
 // Read-only bridge manifest. Purchase facts come from each lot's frozen audit;
 // current price settings, contract revenue and insurance destinations are not inputs.
 import * as A from './amounts.mjs';
-import {used} from './state.mjs?v=expanded-map-20261010-32';
-import {bladderSpace} from './fuel.mjs?v=expanded-map-20261010-32';
-import {passengerLuggage} from './accommodation.mjs?v=expanded-map-20261010-32';
-import {supportCargo,supportStock,supportDisplay} from './life-support.mjs?v=expanded-map-20261010-32';
+import {used} from './state.mjs?v=rule-info-20261010-33';
+import {bladderSpace} from './fuel.mjs?v=rule-info-20261010-33';
+import {passengerLuggage} from './accommodation.mjs?v=rule-info-20261010-33';
+import {supportCargo,supportStock,supportDisplay} from './life-support.mjs?v=rule-info-20261010-33';
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=x=>{const [whole,fraction]=String(x).split('.');return 'Cr '+whole.replace(/\B(?=(\d{3})+(?!\d))/g,',')+(fraction===undefined?'':'.'+fraction);};
 const button=(label,action,arg='',extra='')=>'<button data-action="'+action+'" data-arg="'+esc(arg)+'" '+extra+'>'+esc(label)+'</button>';
@@ -43,7 +44,7 @@ export function cargoHoldPanel(state,core){
  const ratio=A.cmp(m.capacity,0)>0?Math.max(0,Math.min(100,Number(supportDisplay(A.mul(A.div(m.occupied,m.capacity),100))))):0;
  return '<aside id="cargo-hold-panel" class="panel world-screen cargo-hold-panel" aria-label="Cargo hold quick manifest">'+
   '<div class="screen-topline"><span>● Cargo Hold</span>'+button('← World data','cargo-hold-close')+'</div><h2 tabindex="-1">Cargo aboard</h2><p class="help cargo-location">'+esc(state.ship.name)+' · ship at '+esc(actual?.name||'Not set')+'</p>'+
-  '<section class="cargo-capacity" aria-label="Hold capacity"><span class="label">Hold capacity</span><div class="cargo-capacity-values"><strong>'+tons(m.occupied)+' / '+tons(m.capacity)+' t</strong><span>'+tons(m.free)+' t free</span></div><progress max="100" value="'+ratio+'" aria-label="Cargo hold used" aria-valuetext="'+tons(m.occupied)+' of '+tons(m.capacity)+' tons"></progress><p class="help">Goods '+tons(m.goods)+' t · Freight '+tons(m.freight)+' t · Mail '+tons(m.mail)+' t</p><details class="cargo-other"><summary>Other hold use: '+tons(m.other)+' t · Breakdown</summary><dl><dt>Passenger luggage</dt><dd>'+tons(m.luggage)+' t</dd>'+(A.cmp(m.passengerAccommodation,0)>0?'<dt>Basic passenger accommodation</dt><dd>'+tons(m.passengerAccommodation)+' t</dd>':'')+'<dt>Fuel in bladders</dt><dd>'+tons(m.bladders)+' t</dd><dt>Life support overflow</dt><dd>'+tons(m.support)+' t</dd></dl>'+(m.supportNote?'<p class="help">'+esc(m.supportNote)+'</p>':'')+'</details></section>'+
+  '<section class="cargo-capacity" aria-label="Hold capacity"><span class="label">Hold capacity</span><div class="cargo-capacity-values"><strong>'+tons(m.occupied)+' / '+tons(m.capacity)+' t</strong><span>'+tons(m.free)+' t free</span></div><progress max="100" value="'+ratio+'" aria-label="Cargo hold used" aria-valuetext="'+tons(m.occupied)+' of '+tons(m.capacity)+' tons"></progress><p class="help">Goods '+tons(m.goods)+' t · Freight '+tons(m.freight)+' t · Mail '+tons(m.mail)+' t</p><details class="cargo-other"><summary>Other hold use: '+tons(m.other)+' t · Breakdown '+ruleInfo('hold')+'</summary><dl><dt>Passenger luggage</dt><dd>'+tons(m.luggage)+' t</dd>'+(A.cmp(m.passengerAccommodation,0)>0?'<dt>Basic passenger accommodation</dt><dd>'+tons(m.passengerAccommodation)+' t</dd>':'')+'<dt>Fuel in bladders '+ruleInfo('bladders')+'</dt><dd>'+tons(m.bladders)+' t</dd><dt>Life support overflow</dt><dd>'+tons(m.support)+' t</dd></dl>'+(m.supportNote?'<p class="help">'+esc(m.supportNote)+'</p>':'')+'</details></section>'+
   '<section class="cargo-speculative" aria-labelledby="cargo-spec-heading"><div class="cargo-section-heading"><h3 id="cargo-spec-heading">Speculative goods</h3><span class="help">'+lots.length+' separate '+(lots.length===1?'lot':'lots')+'</span></div>'+(lots.length?table('Speculative goods; scroll for more lots and columns',['Cargo','Tons','Purchase Cr / t'],lots,'cargo-goods-scroll'):'<p class="cargo-empty help">No owned trade goods aboard.</p>')+
   '<div class="cargo-investment" tabindex="0" role="region" aria-label="Cargo investment"><div><strong>Cargo investment</strong><span class="mono">'+esc(money(m.investment))+'</span></div><p class="help">Remaining owned-goods cost basis only</p></div></section>'+
   '<section class="cargo-consignments" aria-labelledby="cargo-contract-heading"><div class="cargo-section-heading"><h3 id="cargo-contract-heading">Freight &amp; mail</h3><span class="help">'+contracts.length+' '+(contracts.length===1?'consignment':'consignments')+'</span></div>'+(contracts.length?table('Freight and mail; scroll for more consignments and columns',['Consignment','Tons','Destination'],contracts,'cargo-contract-scroll'):'<p class="cargo-empty help">No accepted freight or mail aboard.</p>')+'</section>'+

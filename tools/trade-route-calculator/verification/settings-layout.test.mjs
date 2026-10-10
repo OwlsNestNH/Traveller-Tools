@@ -40,7 +40,7 @@ test('inline and modal Settings share the original save path and scoped estimate
 // Minimal element double exercises the real layout builder. Native disclosure
 // interaction, visibility and focus are verified separately in Chromium.
 function layoutFixture(){
- const element=(tag='div')=>({tagName:tag.toUpperCase(),children:[],dataset:{},attributes:{},className:'',classList:{add(){}},setAttribute(name,value){this.attributes[name]=value;},append(...children){this.children.push(...children);},replaceChildren(...children){this.children=children;}});
+ const element=(tag='div')=>({tagName:tag.toUpperCase(),children:[],dataset:{},attributes:{},className:'',classList:{add(){}},setAttribute(name,value){this.attributes[name]=value;},append(...children){this.children.push(...children);},insertAdjacentHTML(position,html){assert.equal(position,'beforeend');this.referenceHTML=(this.referenceHTML||'')+html;},replaceChildren(...children){this.children=children;}});
  const inputs=names.map((name,i)=>Object.assign(element('input'),{name,type:'text',value:'preserved-'+i,disabled:i===3}));
  const fuelEstimate=element(),luggageEstimate=element(),costEstimate=element();
  const fuel={querySelector:()=>fuelEstimate,querySelectorAll:()=>[fuelEstimate,element('p')]};
