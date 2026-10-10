@@ -1,42 +1,42 @@
-import {dashboardPanel} from './dashboard-view.mjs?v=replacement-completion-20261010-44';
-import {recordWorldOverride,revertWorldField,worldFieldRevertEligibility,worldChangeFields,worldFieldValue,isWorldChangeAudit} from './world-change-history.mjs?v=replacement-completion-20261010-44';
-import {createCampaignController} from './campaign-controller.mjs?v=replacement-completion-20261010-44';
-import {ruleInfo,referenceIndex,REFERENCE_VERSION} from './rule-references.mjs?v=replacement-completion-20261010-44';
-import {mountRulePopover,replaceReferenceContent} from './rule-popover.mjs?v=replacement-completion-20261010-44';
-import {escapeHtml,moneyHtml} from './display.mjs?v=replacement-completion-20261010-44';
-import {normalizeAmountFields} from './form-values.mjs?v=replacement-completion-20261010-44';
-import {contactSearchStatus,contactSearchPeriod,contactSearchRule} from './contact-search.mjs?v=replacement-completion-20261010-44';
-import {createPassengerUI} from './passenger-ui.mjs?v=replacement-completion-20261010-44';
-import {passengerShip,passengerTotals,passengerSpace,passengerCapacity} from './passengers.mjs?v=replacement-completion-20261010-44';
-import {advancePaymentDate,recordedPaymentDate} from './payment-schedule.mjs?v=replacement-completion-20261010-44';
-import {configureMortgage,mortgageStatus} from './mortgage.mjs?v=replacement-completion-20261010-44';
-import {configureMaintenance,maintenanceStatus} from './maintenance.mjs?v=replacement-completion-20261010-44';
-import {createServicePanels} from './service-panels.mjs?v=replacement-completion-20261010-44';
-import {cargoHoldPanel} from './cargo-hold.mjs?v=replacement-completion-20261010-44';
-import {createExpensePanels} from './expense-panels.mjs?v=replacement-completion-20261010-44';
+import {dashboardPanel} from './dashboard-view.mjs?v=settings-completion-20261010-45';
+import {recordWorldOverride,revertWorldField,worldFieldRevertEligibility,worldChangeFields,worldFieldValue,isWorldChangeAudit} from './world-change-history.mjs?v=settings-completion-20261010-45';
+import {createCampaignController} from './campaign-controller.mjs?v=settings-completion-20261010-45';
+import {ruleInfo,referenceIndex,REFERENCE_VERSION} from './rule-references.mjs?v=settings-completion-20261010-45';
+import {mountRulePopover,replaceReferenceContent} from './rule-popover.mjs?v=settings-completion-20261010-45';
+import {escapeHtml,moneyHtml} from './display.mjs?v=settings-completion-20261010-45';
+import {normalizeAmountFields} from './form-values.mjs?v=settings-completion-20261010-45';
+import {contactSearchStatus,contactSearchPeriod,contactSearchRule} from './contact-search.mjs?v=settings-completion-20261010-45';
+import {createPassengerUI} from './passenger-ui.mjs?v=settings-completion-20261010-45';
+import {passengerShip,passengerTotals,passengerSpace,passengerCapacity} from './passengers.mjs?v=settings-completion-20261010-45';
+import {advancePaymentDate,recordedPaymentDate} from './payment-schedule.mjs?v=settings-completion-20261010-45';
+import {configureMortgage,mortgageStatus} from './mortgage.mjs?v=settings-completion-20261010-45';
+import {configureMaintenance,maintenanceStatus} from './maintenance.mjs?v=settings-completion-20261010-45';
+import {createServicePanels} from './service-panels.mjs?v=settings-completion-20261010-45';
+import {cargoHoldPanel} from './cargo-hold.mjs?v=settings-completion-20261010-45';
+import {createExpensePanels} from './expense-panels.mjs?v=settings-completion-20261010-45';
 import {currentJumpAttempt} from './jump-attempts.mjs';
-import {mountSettingsLayout,syncSettingsControls,stepSetting} from './settings-layout.mjs?v=replacement-completion-20261010-44';
-import {configureFuel,fuelCapacities,bladderSpace,validateFuel,jumpFuel} from './fuel.mjs?v=replacement-completion-20261010-44';
-import {refillQuote,supportStock,supportCargo,supportDisplay,anchorSupport,configureSupport} from './life-support.mjs?v=replacement-completion-20261010-44';
-import {campaignReport} from './report.mjs?v=replacement-completion-20261010-44';
-import {up,creditStep,roundExisting} from './rounding.mjs?v=replacement-completion-20261010-44';
-import {tiers,luggageAllowance,occupants,passengerLuggage,manualLuggage,serviceRate,serviceLabel,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=replacement-completion-20261010-44';
+import {mountSettingsLayout,syncSettingsControls,stepSetting} from './settings-layout.mjs?v=settings-completion-20261010-45';
+import {configureFuel,fuelCapacities,bladderSpace,validateFuel,jumpFuel} from './fuel.mjs?v=settings-completion-20261010-45';
+import {refillQuote,supportStock,supportCargo,supportDisplay,anchorSupport,configureSupport} from './life-support.mjs?v=settings-completion-20261010-45';
+import {campaignReport} from './report.mjs?v=settings-completion-20261010-45';
+import {up,creditStep,roundExisting} from './rounding.mjs?v=settings-completion-20261010-45';
+import {tiers,luggageAllowance,occupants,passengerLuggage,manualLuggage,serviceRate,serviceLabel,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=settings-completion-20261010-45';
 import * as A from './amounts.mjs';
 import {parseDate,displayDate} from './calendar.mjs';
-import * as R from './rules.mjs?v=replacement-completion-20261010-44';
-import * as S from './state.mjs?v=replacement-completion-20261010-44';
+import * as R from './rules.mjs?v=settings-completion-20261010-45';
+import * as S from './state.mjs?v=settings-completion-20261010-45';
 import {latestMailCheck,recordMailCheck,mailCheckHistoryStatus} from './mail-history.mjs?v=mail-history-1';
-import * as E from './expenses.mjs?v=replacement-completion-20261010-44';
-import {planetInformation,worldSheetURL} from './planet-info.mjs?v=replacement-completion-20261010-44';
-import {worldMapFacts,worldSymbols,selectedWorldHex,mapKeyMarkup} from './world-symbols.mjs?v=replacement-completion-20261010-44';
-import * as M from './map.mjs?v=replacement-completion-20261010-44';
+import * as E from './expenses.mjs?v=settings-completion-20261010-45';
+import {planetInformation,worldSheetURL} from './planet-info.mjs?v=settings-completion-20261010-45';
+import {worldMapFacts,worldSymbols,selectedWorldHex,mapKeyMarkup} from './world-symbols.mjs?v=settings-completion-20261010-45';
+import * as M from './map.mjs?v=settings-completion-20261010-45';
 import {MAP_GEOMETRY,setMapGeometry,visibleMapWorlds} from './map-geometry.mjs?v=map-first-1';
 import {camera,viewportTiles,MapAreaCache} from './map-viewport.mjs?v=map-first-1';
-import {MAP_ZOOM_STEP,nextMapZoom,mapLevel,MapOverviewCache,overviewMarkup,mapTerritories} from './map-overview.mjs?v=replacement-completion-20261010-44';
+import {MAP_ZOOM_STEP,nextMapZoom,mapLevel,MapOverviewCache,overviewMarkup,mapTerritories} from './map-overview.mjs?v=settings-completion-20261010-45';
 import {readPoliticalTerritory,savePoliticalTerritory} from './map-preferences.mjs';
-import {createGlobalWorldSearch} from './global-world-search.mjs?v=replacement-completion-20261010-44';
-import {createWorldPicker,rememberWorld} from './world-picker.mjs?v=replacement-completion-20261010-44';
-import {Store,KEY,SaveNotCommittedError,SaveCommittedPublicationError} from './persistence.mjs?v=replacement-completion-20261010-44';
+import {createGlobalWorldSearch} from './global-world-search.mjs?v=settings-completion-20261010-45';
+import {createWorldPicker,rememberWorld} from './world-picker.mjs?v=settings-completion-20261010-45';
+import {Store,KEY,SaveNotCommittedError,SaveCommittedPublicationError} from './persistence.mjs?v=settings-completion-20261010-45';
 const $=id=>document.getElementById(id),esc=escapeHtml;
 const ROOT='https://github.com/OwlsNestNH/Traveller-Tools/blob/main/tools/trade-route-calculator/';
 let inputRounding=[];
@@ -104,6 +104,7 @@ function normaliseFields(form){normalizeAmountFields(form.querySelectorAll('[dat
 function roundingPreview(){const draft=structuredClone(state),changes=roundExisting(draft);let error='';try{S.validate(draft);}catch(e){error=e.message;}modal('Preview rounding',`<p>Round current bank, cargo quantities and values, cargo capacity, luggage, market offers, accepted contracts and saved monthly costs. Future Credit entries and charges will round up to Cr100. Historical transactions, insurance contract terms and original audits stay unchanged.</p>${table(['Value','Before','After'],changes.map(c=>`<tr><td>${esc(c.label)}</td><td class="number">${esc(c.before)}</td><td class="number">${esc(c.after)}</td></tr>`))}${roundingFootnote([],100)}${error?'<p class="notice">Cannot apply: '+esc(error)+' Adjust cargo or capacity first.</p>':'<p>One undo restores all these changes.</p>'}`,error?null:()=>act('Round Credits to 100 and tons to whole',s=>S.applyRounding(s)),'Apply rounding',true,{annotateRounding:false});}
 let activeModal=null;
 let undoOperation=null;
+let settingsOperation=null;
 let replacementReview=null,importRead=null,campaignPublicationEpoch=0,editingLossEpoch=0;
 let jumpPreparation=null;
 let campaignReloadRequired=false,campaignReloadMessage='';
@@ -128,7 +129,7 @@ function captureModalClick(e){
  return false;
 }
 function suspendSettingsForm(){const form=$('settings-form');if(!form)return;captureSettingsDisclosures();const placeholder=document.createElement('div');placeholder.style.height=form.getBoundingClientRect().height+'px';form.replaceWith(placeholder);suspendedSettings={form,placeholder};}
-function restoreSettingsForm(){if(suspendedSettings?.placeholder.isConnected)suspendedSettings.placeholder.replaceWith(suspendedSettings.form);suspendedSettings=null;}
+function restoreSettingsForm(){const retained=suspendedSettings;suspendedSettings=null;if(retained?.placeholder.isConnected){retained.placeholder.replaceWith(retained.form);updateSettingsForm(retained.form);}}
 
 function modalCurrent(session){return activeModal===session&&!session.cancelled&&$('modal').open&&(!session.mutates||store?.editable);}
 function syncModalSubmit(){
@@ -140,7 +141,7 @@ function syncModalSubmit(){
  if($('modal-cancel'))$('modal-cancel').disabled=pending;
  if($('modal-close'))$('modal-close').disabled=pending;
 }
-function closeModal(){if(activeModal?.awaitSave&&activeModal.busy)return false;preserveModalPointerGesture();activeModal=null;modalGeneration++;$('modal').close();$('modal-body').innerHTML='';restoreSettingsForm();}
+function closeModal(){if(activeModal?.awaitSave&&activeModal.busy)return false;if(settingsOperation?.session&&settingsOperation.session===activeModal)invalidateSettingsOperation();preserveModalPointerGesture();activeModal=null;modalGeneration++;$('modal').close();$('modal-body').innerHTML='';restoreSettingsForm();}
 function requireCampaignReload(error,guidance,context){
  // A terminal save outcome survives subsequent role callbacks and dialogs.
  // Set both application and provider guards before yielding can render/throw.
@@ -165,6 +166,8 @@ function terminalModalSaveFailure(session,error){
 // Display titles are presentation only. Callers declare review/footnote behavior.
 function modal(title,body,submit,label='Save',mutates=true,{retainRounding=false,insurance=false,tax=false,annotateRounding=true,awaitSave=false,saveName='Deposit',saveContext='deposit-save'}={}){
  if(activeModal?.awaitSave&&activeModal.busy)return false;
+ if(settingsOperation?.pending&&!settingsOperation.invalidated&&!(settingsOperation.inline&&!settingsOperation.session&&!submit&&saveContext==='settings-save'))return false;
+ if(settingsOperation?.session&&settingsOperation.session===activeModal)invalidateSettingsOperation();
  if($('modal').open)preserveModalPointerGesture();else resetModalPointerGesture();
  suspendSettingsForm();
  if(!retainRounding)inputRounding=[];
@@ -181,18 +184,19 @@ function modal(title,body,submit,label='Save',mutates=true,{retainRounding=false
    submitted=true;
    const result=await submit(data,()=>modalCurrent(session));
    session.busy=false;
-   if(result!==false&&(modalCurrent(session)||(session.awaitSave&&activeModal===session&&$('modal').open)))closeModal();
+   if(session.settingsOwner){if(result!==false)finishSettingsOperation(session.settingsOwner);}
+   else if(result!==false&&(modalCurrent(session)||(session.awaitSave&&activeModal===session&&$('modal').open)))closeModal();
   }catch(err){
    // Replacement can empty History and its successful close can itself fail.
    // Its owned save outcome must stay terminal even after the dialog detached.
-   if(session.saveContext==='campaign-replace'&&submitted&&!(err?.code==='SAVE_NOT_COMMITTED'&&err.committed===false)){
+   if(['campaign-replace','settings-save'].includes(session.saveContext)&&submitted&&!(err?.code==='SAVE_NOT_COMMITTED'&&err.committed===false)){
     // closeModal retires its owner before native close. Restore that owner only
     // when close failed with this dialog still open and no newer owner exists.
     if(!activeModal&&$('modal').open)activeModal=session;
-    terminalModalSaveFailure(session,Number.isSafeInteger(session.savedRevision)&&err?.code!=='SAVE_COMMITTED_PUBLICATION_FAILED'?new SaveCommittedPublicationError(session.savedRevision,err):err);
+    try{terminalModalSaveFailure(session,Number.isSafeInteger(session.savedRevision)&&err?.code!=='SAVE_COMMITTED_PUBLICATION_FAILED'?new SaveCommittedPublicationError(session.savedRevision,err):err);}catch(reportError){if(session.saveContext!=='settings-save')throw reportError;}
    }else if(session.awaitSave&&activeModal===session&&$('modal').open){
     if(submitted&&!(err?.code==='SAVE_NOT_COMMITTED'&&err.committed===false))terminalModalSaveFailure(session,err);
-    else $('modal-error').textContent=err.message+(!store?.editable?' Reopen this dialog after taking over editing.':'');
+    else{if(session.settingsOwner&&!session.settingsOwner.invalidated)restoreSettingsControls(session.settingsOwner);$('modal-error').textContent=err.message+(!store?.editable?' Reopen this dialog after taking over editing.':'');}
    }else if(modalCurrent(session))$('modal-error').textContent=err.message;
   }
   finally{if(activeModal===session){session.busy=false;syncModalSubmit();}}
@@ -207,6 +211,11 @@ function receiveCampaign(next,metadata){
  // even if a replacement reuses the same saved audit/offer IDs.
  campaignPublicationEpoch++;
  const local=campaignWrites.isLocalPublication(next,metadata),replacement=campaignWrites.takeReplacementPublication(next,metadata);
+ // Controller provenance is one-use. A revision number by itself never owns
+ // Settings completion, including a foreign publication at the same revision.
+ const settingsOwner=settingsOperation,ownSettings=local&&settingsOwner?.pending&&!settingsOwner.publication&&next.revision===settingsOwner.revision+1;
+ if(ownSettings){settingsOwner.publication=next;if(!settingsOwner.inline)markSettingsDraftStale();}
+ else invalidateSettingsOperation(true);
  if(replacement&&replacementReview?.pending)replacementReview.publication=next;
  else invalidateReplacementReview();
  if(!local){invalidateJumpPreparation();invalidateUndoOperation();stockServices.invalidate();contractDrafts=[];mailCheck=null;passengers.clear();}
@@ -214,14 +223,16 @@ function receiveCampaign(next,metadata){
  // A local Undo publication is not its provider's completed save. Keep draft,
  // selection and route reconciliation in the owned completion below. Foreign
  // publications still reconcile immediately and retire that owner.
+ if(ownSettings&&!settingsOwner.invalidated){settingsOwner.publicationDeferred=true;return;}
  if(local&&undoOperation?.pending&&!undoOperation.invalidated){undoOperation.publicationDeferred=true;return;}
  if(replacement&&replacementReview?.pending&&!replacementReview.invalidated){replacementReview.publicationDeferred=true;return;}
  syncMailCheck();render();
 }
-function act(label,fn,expected=($('modal').open?modalRevision:state.revision)){
+function act(label,fn,expected=($('modal').open?modalRevision:state.revision),{announce=true,onPrepared}={}){
  if(campaignReloadRequired)throw new SaveNotCommittedError(Error('Reload this page before editing the campaign again.'));
  if(services.active()&&!services.committing())throw new SaveNotCommittedError(Error('Finish or cancel the open ship service before changing the campaign.'));
- const next=campaignWrites.transition(label,fn,expected);
+ const next=campaignWrites.transition(label,fn,expected,{onPrepared});
+ if(!announce)return next;
  const completed=candidate=>{try{message(label+' saved.');}catch(cause){throw new SaveCommittedPublicationError(candidate.revision,cause);}return candidate;};
  return next&&typeof next.then==='function'?Promise.resolve(next).then(completed):completed(next);
 }
@@ -355,7 +366,7 @@ function changeCampaignDay(direction){
  const before=displayDate(state.dateLabel,state.hours),after=displayDate(state.dateLabel,hours);
  act((direction>0?'Time advanced +1 day: ':'Time correction -1 day: ')+before+' to '+after+(direction<0?' (supplies and transactions unchanged)':''),s=>{s.hours=hours;});
 }
-function render(){if(!core)return;captureSettingsDisclosures();if(undoOperation?.pending&&undoOperation.publicationDeferred&&!undoOperation.invalidated)return;if(replacementReview?.pending&&replacementReview.publicationDeferred&&!replacementReview.invalidated)return;if(routeDraft&&(routeDraft.revision!==state.revision||!store?.editable))routeDraft=null;if(view&&!world(view))view=state.actual;selected=new Set([...selected].filter(id=>state.lots.some(l=>l.id===id)));$('summary').innerHTML=[['Ship',state.ship.name],['Current world',actual()?.name||'Not set']].map(([l,v])=>`<div class="stat"><span class="label">${esc(l)}</span><span class="value">${esc(v)}</span></div>`).join('')+fuelCounter()+lifeSupportCounter()+holdCounter()+`<div class="stat"><span class="label">Credits</span><span class="value mono">${money(state.bank)}</span></div>`;$('ship-actions').innerHTML=shipActions();$('tabs').innerHTML=['Overview','Trade','Cargo','Contracts','Accounts','Dashboard','History','Settings'].map(t=>btn(t,'tab',t,false,tab===t?'active':'').replace('<button','<button '+(tab===t?'aria-current="page"':''))).join('');if(store?.recovery){$('main').innerHTML=panel('Recover saved campaign',`<div class="panel-body"><p class="notice">${esc(store.recoveryMessage||'Saved data needs recovery.')}</p><p>The saved data has not been replaced. Export its raw contents before importing a valid backup or resetting.</p><div class="wide-actions">${btn('Export raw saved data','export')}${btn('Load campaign (JSON)','import','',true)}${btn('Reset campaign','reset','',true,'danger')}</div></div>`);}else if(!state.initialized){$('main').innerHTML=`<section class="panel welcome"><span class="eyebrow">YOUR NEXT TRADE STARTS HERE</span><h2>Bring your campaign aboard.</h2><p class="muted">Set your current world, ship and bank balance. Add cargo you already own without buying it again. Your campaign stays in this browser; export a backup whenever you need one.</p><div class="wide-actions">${btn('Set up campaign','setup','',true,'primary')}${btn('Load campaign (JSON)','import')}</div><p class="help">Free static tool · Traveller Map world data · Core Rulebook Update 2022 · Optional Merchant Prince insurance and taxes</p></section>`;}else if(tab==='Overview')$('main').innerHTML='<div class="navigation-layout'+(mapExpanded?' map-expanded':'')+'">'+mapPanel()+(mapExpanded?'':services.active()?services.panel():cargoHoldOpen?cargoHoldPanel(state,core):worldScreen(viewed()))+'</div>'+overviewCargo();else if(tab==='Trade')$('main').innerHTML=tradeLocation()+marketPanel()+cargoPanel(false);else if(tab==='Cargo')$('main').innerHTML=cargoPanel(true)+policyPanel();else if(tab==='Contracts')$('main').innerHTML=contractsPanel();else if(tab==='Accounts')$('main').innerHTML=accountsPanel();else if(tab==='Dashboard')$('main').innerHTML=dashboardPanel(state);else if(tab==='History')$('main').innerHTML=historyPanel();else $('main').innerHTML=settingsPanel();mountSettingsForm();if($('modal').open)suspendSettingsForm();document.querySelectorAll('[data-mutate]').forEach(b=>b.disabled=(!store?.editable&&!(b.closest('#ship-actions')&&b.getAttribute('aria-pressed')==='true'))||b.hasAttribute('data-unavailable')||services.active()&&!b.closest('#service-panel,#expense-panel')&&!(b.closest('#ship-actions')&&['refuel','refill-support','ship-expenses'].includes(b.dataset.action)));services.syncControls();}
+function render(){if(!core)return;captureSettingsDisclosures();if(settingsOperation&&!settingsOperation.invalidated&&(settingsOperation.pending||settingsOperation.publicationDeferred))return;if(undoOperation?.pending&&undoOperation.publicationDeferred&&!undoOperation.invalidated)return;if(replacementReview?.pending&&replacementReview.publicationDeferred&&!replacementReview.invalidated)return;if(routeDraft&&(routeDraft.revision!==state.revision||!store?.editable))routeDraft=null;if(view&&!world(view))view=state.actual;selected=new Set([...selected].filter(id=>state.lots.some(l=>l.id===id)));$('summary').innerHTML=[['Ship',state.ship.name],['Current world',actual()?.name||'Not set']].map(([l,v])=>`<div class="stat"><span class="label">${esc(l)}</span><span class="value">${esc(v)}</span></div>`).join('')+fuelCounter()+lifeSupportCounter()+holdCounter()+`<div class="stat"><span class="label">Credits</span><span class="value mono">${money(state.bank)}</span></div>`;$('ship-actions').innerHTML=shipActions();$('tabs').innerHTML=['Overview','Trade','Cargo','Contracts','Accounts','Dashboard','History','Settings'].map(t=>btn(t,'tab',t,false,tab===t?'active':'').replace('<button','<button '+(tab===t?'aria-current="page"':''))).join('');if(store?.recovery){$('main').innerHTML=panel('Recover saved campaign',`<div class="panel-body"><p class="notice">${esc(store.recoveryMessage||'Saved data needs recovery.')}</p><p>The saved data has not been replaced. Export its raw contents before importing a valid backup or resetting.</p><div class="wide-actions">${btn('Export raw saved data','export')}${btn('Load campaign (JSON)','import','',true)}${btn('Reset campaign','reset','',true,'danger')}</div></div>`);}else if(!state.initialized){$('main').innerHTML=`<section class="panel welcome"><span class="eyebrow">YOUR NEXT TRADE STARTS HERE</span><h2>Bring your campaign aboard.</h2><p class="muted">Set your current world, ship and bank balance. Add cargo you already own without buying it again. Your campaign stays in this browser; export a backup whenever you need one.</p><div class="wide-actions">${btn('Set up campaign','setup','',true,'primary')}${btn('Load campaign (JSON)','import')}</div><p class="help">Free static tool · Traveller Map world data · Core Rulebook Update 2022 · Optional Merchant Prince insurance and taxes</p></section>`;}else if(tab==='Overview')$('main').innerHTML='<div class="navigation-layout'+(mapExpanded?' map-expanded':'')+'">'+mapPanel()+(mapExpanded?'':services.active()?services.panel():cargoHoldOpen?cargoHoldPanel(state,core):worldScreen(viewed()))+'</div>'+overviewCargo();else if(tab==='Trade')$('main').innerHTML=tradeLocation()+marketPanel()+cargoPanel(false);else if(tab==='Cargo')$('main').innerHTML=cargoPanel(true)+policyPanel();else if(tab==='Contracts')$('main').innerHTML=contractsPanel();else if(tab==='Accounts')$('main').innerHTML=accountsPanel();else if(tab==='Dashboard')$('main').innerHTML=dashboardPanel(state);else if(tab==='History')$('main').innerHTML=historyPanel();else $('main').innerHTML=settingsPanel();mountSettingsForm();if($('modal').open)suspendSettingsForm();document.querySelectorAll('[data-mutate]').forEach(b=>b.disabled=(!store?.editable&&!(b.closest('#ship-actions')&&b.getAttribute('aria-pressed')==='true'))||b.hasAttribute('data-unavailable')||services.active()&&!b.closest('#service-panel,#expense-panel')&&!(b.closest('#ship-actions')&&['refuel','refill-support','ship-expenses'].includes(b.dataset.action)));services.syncControls();}
 function mapHexGrid(w,point,scale){
  if(!showHexes||scale<24)return '';
  const radius=scale/Math.sqrt(3),cells=[];
@@ -926,36 +937,177 @@ function settingsUtilityPanel(id,title,body){return `<details class="panel setti
 function settingsPanel(){return `<form id="settings-form" novalidate><div class="settings-heading"><div><h2>Campaign settings</h2><p class="help">One setting per row. Save changes to apply your edits.</p></div><div class="row"><button id="settings-reset" type="button" data-mutate>Revert changes</button><button id="settings-save" type="submit" class="primary" data-mutate>Save changes</button></div></div><p id="settings-error" role="alert" tabindex="-1"></p><div id="settings-fields">${settingsFields()}</div><div id="settings-rounding-note">${roundingFootnote(settingsRounding)}</div></form>`+
  settingsUtilityPanel('rounding-time','Rounding & time',`<div class="settings-aux-row"><div>Round existing Credits & tons<p class="help">Credits up to 100; tons up to whole. Review before applying.</p></div>${btn('Round up Credits to 100 & tons to whole','rounding-preview','',true)}</div><div class="settings-aux-row"><div>Campaign time<p class="help">${esc(displayDate(state.dateLabel,state.hours))}</p></div>${btn('Advance / correct time','time','',true)}</div>`)+
  settingsUtilityPanel('backup-data','Backup & data',`<div class="panel-body"><p class="help">Browser storage is local to this device and browser. Save a JSON backup before moving devices or clearing browser data.</p><div class="settings-data-actions">${btn('Save campaign (JSON)','export')}${btn('Load campaign (JSON)','import','',true)}${btn('Export report (TXT)','report')}${btn('Rules & Notes','notes')}${btn('Reset campaign','reset','',true,'danger')}</div><div class="settings-legacy-actions">${btn('Ship, trader & options','settings-edit','',true)}${btn('TEMPORARY DEV TOOLS','dev-tools')}</div></div>`);}
-function captureSettingsDraft(form){settingsDraft={revision:settingsFormRevision,fields:[...form.querySelectorAll('[name]')].map(el=>[el.name,el.type==='checkbox'?el.checked:el.value])};}
+function captureSettingsDraft(form){settingsDraft={revision:form.settingsRevision??settingsFormRevision,stale:!!form.settingsStale,fields:[...form.querySelectorAll('[name]')].map(el=>[el.name,el.type==='checkbox'?el.checked:el.value])};}
 function normaliseSettingsFields(form){const previous=inputRounding;inputRounding=settingsRounding;try{normaliseFields(form);settingsRounding=inputRounding;}finally{inputRounding=previous;}replaceReferenceContent(form.querySelector('#settings-rounding-note'),roundingFootnote(settingsRounding));}
-function updateSettingsForm(form){updateAccommodationEstimate(form);updateFuelSettingsEstimate(form);updateRecurringSettings(form);syncSettingsControls(form,!store?.editable||services.active());}
+function updateSettingsForm(form){
+ for(const [control,disabled]of form.settingsPendingControls||[])control.disabled=disabled;
+ for(const input of form.querySelectorAll('[name]'))input.disabled=false;
+ updateAccommodationEstimate(form);updateFuelSettingsEstimate(form);updateRecurringSettings(form);
+ const readOnly=!store?.editable||campaignReloadRequired||services.active();syncSettingsControls(form,readOnly);
+ if(settingsOperation?.pending){
+  form.settingsPendingOwner=settingsOperation;
+  form.settingsPendingControls=new Map([...form.querySelectorAll('input,select,textarea,button')].map(control=>[control,control.disabled]));
+  syncSettingsControls(form,true);
+ }
+}
+// Settings owns a submitted form/draft and the controller's exact publication.
+// It never keeps a second campaign or recomputes settings at completion time.
+function markSettingsDraftStale(){
+ if(!settingsDraft)return;settingsDraft.stale=true;
+ const form=$('settings-form')||suspendedSettings?.form;if(form)form.settingsStale=true;
+}
+function invalidateSettingsOperation(stale=false){
+ if(stale)markSettingsDraftStale();
+ const owner=settingsOperation;if(!owner)return;
+ owner.invalidated=true;owner.publicationDeferred=false;
+ if(owner.session)owner.session.cancelled=true;
+ if(owner.session&&activeModal===owner.session&&$('modal').open){
+  $('modal-error').textContent=campaignReloadRequired?campaignReloadMessage:'Campaign or editing ownership changed. Close and review the current Settings before continuing.';
+  syncModalSubmit();
+ }
+}
+function settingsOwnerCurrent(owner){
+ if(settingsOperation!==owner||owner.invalidated||campaignReloadRequired||!store?.editable)return false;
+ if(owner.session&&!modalCurrent(owner.session))return false;
+ if(owner.inline)return settingsDraft===owner.draft&&settingsRounding===owner.rounding&&tab==='Settings'&&
+  (($('settings-form')===owner.form&&owner.form.isConnected)||(suspendedSettings?.form===owner.form&&suspendedSettings.placeholder.isConnected));
+ return owner.session?.settingsOwner===owner;
+}
+function freezeSettingsForm(owner){
+ owner.controls=new Map([...owner.form.querySelectorAll('input,select,textarea,button')].map(control=>[control,control.disabled]));
+ for(const control of owner.controls.keys())control.disabled=true;
+ if(owner.inline){owner.form.settingsPendingOwner=owner;owner.form.settingsPendingControls=owner.controls;}
+}
+function restoreSettingsControls(owner){for(const [control,disabled]of owner.controls||[])control.disabled=disabled;}
+function releaseSettingsPendingControls(owner){
+ // A forced native close or foreign publication may leave a different current
+ // form behind. Release only the temporary lock this operation put on that
+ // exact mounted form, never its values, draft, disclosures, focus or view.
+ if(settingsOperation!==owner)return;
+ const form=$('settings-form')||(suspendedSettings?.placeholder.isConnected?suspendedSettings.form:null);
+ if(!form||form.settingsPendingOwner!==owner)return;
+ for(const [control,disabled]of form.settingsPendingControls||[])control.disabled=disabled;
+ form.settingsPendingOwner=null;form.settingsPendingControls=null;
+ syncSettingsControls(form,!store?.editable||campaignReloadRequired||services.active());
+}
+function completeSettingsWrite(owner,data){
+ if(settingsOperation?.pending)return false;
+ if(!settingsOwnerCurrent(owner)||owner.revision!==state.revision)throw new SaveNotCommittedError(Error('Campaign changed. Revert changes or reopen Settings before editing again.'));
+ if(services.active())throw new SaveNotCommittedError(Error('Finish or cancel the open ship service before changing Settings.'));
+ owner.pending=true;owner.publication=null;owner.publicationDeferred=false;owner.candidatePrepared=false;
+ const release=()=>{owner.pending=false;releaseSettingsPendingControls(owner);};
+ const fail=error=>{
+  // An observed durable publication outweighs a contradictory provider result.
+  if(owner.publication&&error?.code!=='SAVE_COMMITTED_PUBLICATION_FAILED')error=new SaveCommittedPublicationError(owner.publication.revision,error);
+  owner.publicationDeferred=false;release();throw error;
+ };
+ const finish=()=>{
+  try{
+   if(!owner.publication||owner.publication.revision!==owner.revision+1)throw Error('Settings completion did not publish the expected campaign.');
+   if(owner.session)owner.session.savedRevision=owner.publication.revision;
+   return settingsOwnerCurrent(owner)&&state===owner.publication;
+  }catch(error){return fail(error);}finally{release();}
+ };
+ let result;
+ try{
+  freezeSettingsForm(owner);
+  const previous=inputRounding;inputRounding=owner.rounding;
+  // Candidate creation and rounding capture are synchronous even for a delayed
+  // provider. Never leave another dialog bound to this form's rounding array.
+  try{result=saveSettings(data,owner.revision,false,()=>{owner.candidatePrepared=true;});}finally{inputRounding=previous;}
+ }catch(error){return fail(error);}
+ if(result&&typeof result.then==='function')return Promise.resolve(result).then(finish,fail);
+ const current=finish();
+ if(current&&!owner.inline){finishSettingsOperation(owner);return false;}
+ return current;
+}
+function finishSettingsOperation(owner){
+ if(!settingsOwnerCurrent(owner)||state!==owner.publication)return false;
+ const revision=owner.publication.revision;
+ try{
+  if(owner.session)owner.session.savedRevision=revision;
+  // A saved form must not be reattached by closeModal. The following render
+  // builds the current state (or a separately retained stale inline draft).
+  suspendedSettings=null;owner.publicationDeferred=false;settingsOperation=null;
+  if(owner.inline){settingsDraft=null;settingsRounding=[];}
+  if(owner.session){owner.session.busy=false;closeModal();}
+  render();if(owner.inline)$('settings-save')?.focus();
+  message('Ship / trader settings saved.');
+  return true;
+ }catch(cause){throw new SaveCommittedPublicationError(revision,cause);}
+}
+function settingsSaveFailure(owner,error){
+ if(owner.publication&&error?.code!=='SAVE_COMMITTED_PUBLICATION_FAILED')error=new SaveCommittedPublicationError(owner.publication.revision,error);
+ const session=owner.session;if(session)session.busy=false;
+ if(owner.uiFailure){if(activeModal===session)syncModalSubmit();return;}
+ const known=error?.code==='SAVE_NOT_COMMITTED'&&error.committed===false&&!owner.publication;
+ if(!known){
+  owner.invalidated=true;owner.publicationDeferred=false;
+  // Terminal safety is independent of the dialog being attached. Reporting is
+  // best effort only after the application and provider reload guards latch.
+  try{terminalModalSaveFailure(session||{saveName:'Settings',saveContext:'settings-save'},error);}catch{/* Guards precede reporting. */}
+  if(session&&activeModal===session)syncModalSubmit();
+  return;
+ }
+ if(!settingsOwnerCurrent(owner))return;
+ restoreSettingsControls(owner);
+ if(!owner.candidatePrepared){for(const section of owner.form.querySelectorAll('details[data-settings-group]'))section.open=true;captureSettingsDisclosures();}
+ if(session){
+  $('modal-body').innerHTML='<p>Settings were not saved. Close this dialog to review your retained changes and try Save changes again.</p>';
+  $('modal-error').textContent=error.message;syncModalSubmit();
+ }else{
+  const errorNode=owner.form.querySelector('#settings-error');errorNode.textContent=error.message;errorNode.focus();errorNode.scrollIntoView({block:'center'});
+ }
+}
+function awaitInlineSettings(owner,result){
+ // Observe fulfillment and rejection before constructing the pending screen.
+ const completed=Promise.resolve(result).then(current=>{
+  const session=owner.session;if(session)session.busy=false;
+  if(owner.uiFailure){if(activeModal===session)syncModalSubmit();return;}
+  try{if(current)finishSettingsOperation(owner);else if(session&&activeModal===session)syncModalSubmit();}
+  catch(error){settingsSaveFailure(owner,error);}
+ },error=>settingsSaveFailure(owner,error));
+ owner.promise=completed;owner.pendingGeneration=modalGeneration+1;
+ try{
+  const opened=modal('Saving Settings','<p>Saving Settings. Wait for the result before continuing.</p>',null,undefined,true,{retainRounding:true,awaitSave:true,saveName:'Settings',saveContext:'settings-save',annotateRounding:false});
+  if(opened===false)throw Error('Settings could not acquire its pending screen.');
+  owner.session=activeModal;owner.session.busy=true;owner.session.mutates=true;syncModalSubmit();
+ }catch(error){
+  if(modalGeneration===owner.pendingGeneration&&activeModal?.saveContext==='settings-save')owner.session=activeModal;
+  owner.uiFailure=true;owner.invalidated=true;owner.publicationDeferred=false;
+  try{terminalModalSaveFailure(owner.session||{saveName:'Settings',saveContext:'settings-save'},error);}catch{/* Guards precede reporting. */}
+ }
+ return completed;
+}
 function mountSettingsForm(){
  const form=$('settings-form');if(!form)return;
  mountSettingsLayout(form,settingsOpenGroups);
  settingsFormRevision=settingsDraft?.revision??state.revision;
+ const revision=settingsFormRevision;form.settingsRevision=revision;form.settingsStale=!!settingsDraft?.stale;
+ const current=()=>form.isConnected&&$('settings-form')===form&&!settingsOperation?.pending&&!campaignReloadRequired;
  if(settingsDraft){for(const [name,value]of settingsDraft.fields){const el=form.elements.namedItem(name);if(el){if(el.type==='checkbox')el.checked=value;else el.value=value;}}}
  else{settingsRounding=[];normaliseSettingsFields(form);}
  updateSettingsForm(form);
- form.addEventListener('input',()=>{updateSettingsForm(form);captureSettingsDraft(form);});
- form.addEventListener('change',()=>{normaliseSettingsFields(form);updateSettingsForm(form);captureSettingsDraft(form);});
- form.addEventListener('click',e=>{const arrow=e.target.closest('[data-setting-step]');if(!arrow)return;stepSetting(arrow);});
- $('settings-reset').onclick=()=>{settingsDraft=null;settingsRounding=[];render();$('settings-reset')?.focus();};
+ form.addEventListener('input',()=>{if(!current())return;updateSettingsForm(form);captureSettingsDraft(form);});
+ form.addEventListener('change',()=>{if(!current())return;normaliseSettingsFields(form);updateSettingsForm(form);captureSettingsDraft(form);});
+ form.addEventListener('click',e=>{if(!current())return;const arrow=e.target.closest('[data-setting-step]');if(!arrow)return;stepSetting(arrow);});
+ $('settings-reset').onclick=()=>{if(!current()||!store?.editable||$('modal').open)return;settingsDraft=null;settingsRounding=[];render();$('settings-reset')?.focus();};
  form.onsubmit=e=>{
-  e.preventDefault();if(!store?.editable||$('modal').open)return;
-  const error=$('settings-error');error.textContent='';let revealOnError=false;
+  e.preventDefault();if(!current()||!store?.editable||$('modal').open)return;
+  const error=form.querySelector('#settings-error');error.textContent='';let owner=null;
   try{
-   if(settingsFormRevision!==state.revision)throw Error('Campaign changed. Revert changes to load the latest settings before editing again.');
-   revealOnError=true;normaliseSettingsFields(form);updateSettingsForm(form);
+   if(form.settingsStale||revision!==state.revision)throw Error('Campaign changed. Revert changes to load the latest settings before editing again.');
+   normaliseSettingsFields(form);updateSettingsForm(form);captureSettingsDraft(form);captureSettingsDisclosures();
    const invalid=[...form.elements].find(el=>el.willValidate&&!el.validity.valid);
    if(invalid){for(let node=invalid.parentElement;node&&node!==form;node=node.parentElement)if(node.tagName==='DETAILS')node.open=true;invalid.reportValidity();invalid.focus();return;}
-   const previous=inputRounding;inputRounding=settingsRounding;
-   try{saveSettings(new FormData(form),settingsFormRevision);}finally{inputRounding=previous;}
-   settingsDraft=null;settingsRounding=[];render();$('settings-save')?.focus();
+   const data=new FormData(form);
+   owner={inline:true,form,revision,draft:settingsDraft,rounding:settingsRounding,session:null,pending:false,invalidated:false,publication:null,publicationDeferred:false};
+   settingsOperation=owner;
+   const result=completeSettingsWrite(owner,data);
+   if(result&&typeof result.then==='function')return awaitInlineSettings(owner,result);
+   if(result)finishSettingsOperation(owner);
   }catch(err){
-   // Cross-field errors can involve several groups (for example occupied cargo
-   // versus ship capacity). Reveal the fields without duplicating rule checks
-   // or guessing which control is wrong from the error's display text.
-   if(revealOnError)for(const section of form.querySelectorAll('details[data-settings-group]'))section.open=true;
+   if(owner)return settingsSaveFailure(owner,err);
    error.textContent=err.message;error.focus();error.scrollIntoView({block:'center'});
   }
  };
@@ -1596,10 +1748,17 @@ function updateRecurringSettings(form=$('modal-form')){
  }
 }
 function settingsFields(){return `<div class="split">${field('name','Campaign',state.name)}${field('ship','Ship name',state.ship.name)}${field('capacity','Cargo capacity · tons',state.ship.capacity,'text','','tons')}${field('jump','Jump rating',state.ship.jump,'number','min="1" max="6"')}${field('broker','Broker skill',state.trader.broker,'number','step="1"')}${field('streetwise','Streetwise skill',state.trader.streetwise,'number','step="1"')}${field('admin','Admin skill',state.trader.admin,'number','step="1"')}${field('characteristic','Default EDU / SOC DM',state.trader.characteristic,'number','step="1"')}${field('rank','Highest Naval / Scout rank',state.trader.rank,'number','min="0" step="1"')}${field('soc','Highest SOC DM',state.trader.soc,'number','step="1"')}${select('mode','Profit mode',[['100','RAW · 100%'],['75','Reduced · 75%'],['custom','Custom']],state.settings.profit===75||state.settings.profit===100?String(state.settings.profit):'custom')}${field('custom','Custom profit % — only used in Custom mode',state.settings.profit,'number','min="0" max="100" step="any"')}</div>${fuelFields()}${accommodationFields()}${mortgageFields()}${maintenanceFields()}${select('creditStep','Credit rounding for new entries',[['1','Up to whole Credits'],['100','Up to Cr100']],creditStep(state))}${check('scoops','Fuel scoops fitted',state.ship.scoops)}${check('armed','Ship is armed (mail modifier)',state.ship.armed)}${check('reducedProfitLimitsEnabled','Enable reduced-profit price limits',state.settings.reducedProfitLimitsEnabled)}<div class="split">${field('minPurchasePercent','Minimum buy · % of base retail',state.settings.minPurchasePercent??85,'number','min="0" max="400" step="1" required')}${field('maxSalePercent','Maximum sell · % of base retail',state.settings.maxSalePercent??115,'number','min="0" max="400" step="1" required')}</div><p class="help">Minimum buy is a purchase-price floor; maximum sell is a sale-price ceiling, before broker fees. Whole percentages 0–400, in one-point steps. Values stay editable and are retained while off. Applies to new quotes; saved offers retain their prices. This option is independent of profit mode and the base retail cap.</p>${check('maxBaseRetailEnabled','Cap commodity base retail price',state.settings.maxBaseRetailEnabled)}${field('maxBaseRetail','Maximum base retail · Cr / ton',state.settings.maxBaseRetail??'100000','number','min="1" step="1"','credits')}${check('useRawIllegalPrices','Use original RAW base prices for illegal goods',state.settings.useRawIllegalPrices)}${check('tax','Enable optional Merchant Prince taxes',state.settings.tax)}${check('insurance','Enable optional Merchant Prince cargo insurance',state.settings.insurance)}<p class="help">The retail cap changes the base price used before normal Traveller buy/sell percentages. Final sale prices may exceed the cap. The illegal-goods option bypasses the cap only for goods treated as illegal. Options affect future transactions. Turning cargo insurance off hides new-coverage controls. Existing policies, claims and amendments remain available; closed policies stay in History.</p>`;}
-function saveSettings(f,expected){return act('Ship / trader settings',s=>{S.setMortgage(s,readMortgage(f));S.setMaintenance(s,readMaintenance(f));s.name=f.get('name');s.ship={...s.ship,name:f.get('ship'),capacity:A.decimal(f.get('capacity')),staterooms:roomTotal({accommodation:readAccommodation(f)}),accommodation:readAccommodation(f),fuel:readFuel(f),roundTons:true,jump:Number(f.get('jump')),scoops:f.has('scoops'),armed:f.has('armed')};s.ship.lifeSupport=readSupport(f,s.ship);for(const key of ['broker','streetwise','admin','characteristic','rank','soc']){const n=Number(f.get(key));if(!Number.isInteger(n))throw Error('Skills and DMs must be whole numbers');s.trader[key]=n;}const maxBaseRetail=Number(f.get('maxBaseRetail'));if(!Number.isFinite(maxBaseRetail)||maxBaseRetail<=0)throw Error('Maximum base retail must be a positive number');s.settings={...s.settings,...R.priceLimits({reducedProfitLimitsEnabled:f.has('reducedProfitLimitsEnabled'),minPurchasePercent:f.get('minPurchasePercent'),maxSalePercent:f.get('maxSalePercent')}),creditStep:Number(f.get('creditStep')),profit:Number(f.get('mode')==='custom'?f.get('custom'):f.get('mode')),maxBaseRetailEnabled:f.has('maxBaseRetailEnabled'),maxBaseRetail:String(Math.ceil(maxBaseRetail)),useRawIllegalPrices:f.has('useRawIllegalPrices'),tax:f.has('tax'),insurance:f.has('insurance')};},expected);}
-function settings(){modal('Ship, trader & options',settingsFields(),f=>saveSettings(f,modalRevision));updateAccommodationEstimate();updateFuelSettingsEstimate();updateRecurringSettings();}
+function saveSettings(f,expected,announce=true,onPrepared){return act('Ship / trader settings',s=>{S.setMortgage(s,readMortgage(f));S.setMaintenance(s,readMaintenance(f));s.name=f.get('name');s.ship={...s.ship,name:f.get('ship'),capacity:A.decimal(f.get('capacity')),staterooms:roomTotal({accommodation:readAccommodation(f)}),accommodation:readAccommodation(f),fuel:readFuel(f),roundTons:true,jump:Number(f.get('jump')),scoops:f.has('scoops'),armed:f.has('armed')};s.ship.lifeSupport=readSupport(f,s.ship);for(const key of ['broker','streetwise','admin','characteristic','rank','soc']){const n=Number(f.get(key));if(!Number.isInteger(n))throw Error('Skills and DMs must be whole numbers');s.trader[key]=n;}const maxBaseRetail=Number(f.get('maxBaseRetail'));if(!Number.isFinite(maxBaseRetail)||maxBaseRetail<=0)throw Error('Maximum base retail must be a positive number');s.settings={...s.settings,...R.priceLimits({reducedProfitLimitsEnabled:f.has('reducedProfitLimitsEnabled'),minPurchasePercent:f.get('minPurchasePercent'),maxSalePercent:f.get('maxSalePercent')}),creditStep:Number(f.get('creditStep')),profit:Number(f.get('mode')==='custom'?f.get('custom'):f.get('mode')),maxBaseRetailEnabled:f.has('maxBaseRetailEnabled'),maxBaseRetail:String(Math.ceil(maxBaseRetail)),useRawIllegalPrices:f.has('useRawIllegalPrices'),tax:f.has('tax'),insurance:f.has('insurance')};},expected,{announce,onPrepared});}
+function settings(){
+ if(settingsOperation?.pending||activeModal?.awaitSave&&activeModal.busy)return false;
+ const owner={inline:false,revision:state.revision,form:null,session:null,pending:false,invalidated:false,publication:null,publicationDeferred:false};
+ const opened=modal('Ship, trader & options',settingsFields(),f=>completeSettingsWrite(owner,f),'Save',true,{awaitSave:true,saveName:'Settings',saveContext:'settings-save'});
+ if(opened===false)return false;
+ owner.session=activeModal;owner.form=$('modal-form');owner.rounding=inputRounding;owner.session.settingsOwner=owner;settingsOperation=owner;
+ updateAccommodationEstimate();updateFuelSettingsEstimate();updateRecurringSettings();
+}
 function timeForm(){modal('Campaign time',`${field('date','Starting Imperial date · day-year',state.dateLabel)}${field('hours','Total elapsed hours from starting date',state.hours,'number','min="0" step="1"')}${field('reason','Reason for time change','')}`,f=>{if(!f.get('reason').trim())throw Error('Reason required');parseDate(f.get('date'));act('Time correction: '+f.get('reason'),s=>{s.dateLabel=f.get('date');s.hours=Number(f.get('hours'));});});}
-function notes(){modal('Rules & Notes',`<div class="notes-list"><article><h3>Rules and verification</h3><p>UI 2026.10.10.44 · rules data ${R.VERSION} · reference catalogue ${REFERENCE_VERSION}. Source checks and runtime test results, with their applicable revisions and scope, are recorded in the public verification record.</p><p>Traveller Core Rulebook Update 2022, examined copyright 2024 revision. Book 7: Merchant Prince (Mongoose Traveller First Edition, 2010), insurance pp.82–83, taxation pp.86–87 (table p.87). Cluster Truck (Mongoose Publishing, ©2026), physical life-support supplies p.14. Optional first-edition adaptations are off by default.</p><p><a href="${ROOT}RULES_VERIFICATION.md" target="_blank" rel="noopener">Rules verification status and evidence</a> · <a href="${ROOT}rules/README.md" target="_blank" rel="noopener">Sources and worked examples</a></p></article><article><h3>Calculation references</h3><p>Published rules, Home rules, App conventions and Referee inputs are labelled separately. References explain the current policy; saved audits retain their recorded terms and missing evidence.</p>${referenceIndex()}</article><article><h3>House rules</h3><p>Each departure allows one jump mulligan before any later campaign change. Undo Jump returns to the origin and restores the pre-jump state. Reopening or reloading keeps saved jump dice; the mulligan permits one fresh roll and cannot be reset by Undo. On new purchase and sale price rolls, exactly two matching natural dice flag Complication; three matching dice flag Severe complication. The GM decides the issue and consequences. These flags do not change time, prices or cargo. Entered totals without natural dice are unknown; historical quotes are not flagged retroactively.</p><p>RAW retains 100% of positive actual profit; Reduced retains 75%; Custom accepts 0–100%. A configurable maximum commodity base retail value may be applied before normal purchase/sale percentage modifiers; final prices may exceed the cap. Illegal goods can optionally retain their original RAW base prices. Independent reduced-profit price limits optionally floor purchase percentages (default 85%) and ceiling sale percentages (default 115%) before broker fees, using the applicable base retail. Whole percentages 0–400 are retained when off. Existing offers and explicit referee price overrides retain their recorded terms. Tax is deducted first. Losses are unchanged by the profit setting. Each lot is adjusted separately. New monetary amounts round up to whole Credits, or Cr100 when enabled; new tons round up to whole tons. The Settings rounding button previews changes to existing values before applying them. Historical transactions are retained. Operating expenses remain separate.</p></article>${decisions.map(d=>`<article id="${esc(d.id)}"><h3>${esc(d.id)} · ${esc(d.topic)}</h3><p>${esc(d.conclusion)}</p>${d.id==='INT-021'?'<p class="help">Historical decision: later campaign rounding uses upward rounding for new final charges. Partial cost-basis allocation remains separate; saved amounts are not rewritten. '+ruleInfo('rounding')+'</p>':''}<p class="help">Agreed ${esc(d.date)} · revision ${d.revision}</p></article>`).join('')}<article><h3>Copyright and credits</h3><p>Traveller and the source publications are owned by Mongoose Publishing and their respective rights holders. This is an unofficial campaign tool, not a publisher-endorsed product. Rulebook PDFs, scans and descriptive source prose are not distributed with this tool.</p><p>Live world data: <a href="https://travellermap.com" target="_blank" rel="noopener">Traveller Map</a>. Source and calculation references are retained for review. The existing spec-trade tool is not a rules authority.</p></article><article><h3>Calendar and map era</h3><p>World data stays in the M1105 era. The campaign starts at its chosen Imperial day-year date, default 001-1105, and advances in 24-hour days and 365-day years as searches and jumps consume time. Advancing the campaign year never switches map eras. The +1 day control advances 24 hours and consumes life support. The -1 day control corrects the date without restoring supplies or reversing transactions; it cannot go before the campaign start. Both actions appear in History. Use Undo to reverse an accidental advance and restore supplies together. Browsing, route previews and setting a starting world do not advance time.</p></article><article><h3>About your data</h3><p>Your campaign stays in this browser’s local storage. Export JSON backups to keep a portable copy. Traveller Map requests disclose the worlds/sectors being requested; campaign bank and cargo data are not sent to it. Route searches cover a bounded loaded area. Route previews do not consume fuel; committed jumps track configured jump fuel under the campaign rules.</p></article></div>`,null);}
+function notes(){modal('Rules & Notes',`<div class="notes-list"><article><h3>Rules and verification</h3><p>UI 2026.10.10.45 · rules data ${R.VERSION} · reference catalogue ${REFERENCE_VERSION}. Source checks and runtime test results, with their applicable revisions and scope, are recorded in the public verification record.</p><p>Traveller Core Rulebook Update 2022, examined copyright 2024 revision. Book 7: Merchant Prince (Mongoose Traveller First Edition, 2010), insurance pp.82–83, taxation pp.86–87 (table p.87). Cluster Truck (Mongoose Publishing, ©2026), physical life-support supplies p.14. Optional first-edition adaptations are off by default.</p><p><a href="${ROOT}RULES_VERIFICATION.md" target="_blank" rel="noopener">Rules verification status and evidence</a> · <a href="${ROOT}rules/README.md" target="_blank" rel="noopener">Sources and worked examples</a></p></article><article><h3>Calculation references</h3><p>Published rules, Home rules, App conventions and Referee inputs are labelled separately. References explain the current policy; saved audits retain their recorded terms and missing evidence.</p>${referenceIndex()}</article><article><h3>House rules</h3><p>Each departure allows one jump mulligan before any later campaign change. Undo Jump returns to the origin and restores the pre-jump state. Reopening or reloading keeps saved jump dice; the mulligan permits one fresh roll and cannot be reset by Undo. On new purchase and sale price rolls, exactly two matching natural dice flag Complication; three matching dice flag Severe complication. The GM decides the issue and consequences. These flags do not change time, prices or cargo. Entered totals without natural dice are unknown; historical quotes are not flagged retroactively.</p><p>RAW retains 100% of positive actual profit; Reduced retains 75%; Custom accepts 0–100%. A configurable maximum commodity base retail value may be applied before normal purchase/sale percentage modifiers; final prices may exceed the cap. Illegal goods can optionally retain their original RAW base prices. Independent reduced-profit price limits optionally floor purchase percentages (default 85%) and ceiling sale percentages (default 115%) before broker fees, using the applicable base retail. Whole percentages 0–400 are retained when off. Existing offers and explicit referee price overrides retain their recorded terms. Tax is deducted first. Losses are unchanged by the profit setting. Each lot is adjusted separately. New monetary amounts round up to whole Credits, or Cr100 when enabled; new tons round up to whole tons. The Settings rounding button previews changes to existing values before applying them. Historical transactions are retained. Operating expenses remain separate.</p></article>${decisions.map(d=>`<article id="${esc(d.id)}"><h3>${esc(d.id)} · ${esc(d.topic)}</h3><p>${esc(d.conclusion)}</p>${d.id==='INT-021'?'<p class="help">Historical decision: later campaign rounding uses upward rounding for new final charges. Partial cost-basis allocation remains separate; saved amounts are not rewritten. '+ruleInfo('rounding')+'</p>':''}<p class="help">Agreed ${esc(d.date)} · revision ${d.revision}</p></article>`).join('')}<article><h3>Copyright and credits</h3><p>Traveller and the source publications are owned by Mongoose Publishing and their respective rights holders. This is an unofficial campaign tool, not a publisher-endorsed product. Rulebook PDFs, scans and descriptive source prose are not distributed with this tool.</p><p>Live world data: <a href="https://travellermap.com" target="_blank" rel="noopener">Traveller Map</a>. Source and calculation references are retained for review. The existing spec-trade tool is not a rules authority.</p></article><article><h3>Calendar and map era</h3><p>World data stays in the M1105 era. The campaign starts at its chosen Imperial day-year date, default 001-1105, and advances in 24-hour days and 365-day years as searches and jumps consume time. Advancing the campaign year never switches map eras. The +1 day control advances 24 hours and consumes life support. The -1 day control corrects the date without restoring supplies or reversing transactions; it cannot go before the campaign start. Both actions appear in History. Use Undo to reverse an accidental advance and restore supplies together. Browsing, route previews and setting a starting world do not advance time.</p></article><article><h3>About your data</h3><p>Your campaign stays in this browser’s local storage. Export JSON backups to keep a portable copy. Traveller Map requests disclose the worlds/sectors being requested; campaign bank and cargo data are not sent to it. Route searches cover a bounded loaded area. Route previews do not consume fuel; committed jumps track configured jump fuel under the campaign rules.</p></article></div>`,null);}
 // Replacement owns completion separately from ordinary local saves: its
 // publication still invalidates every old campaign offer and service session.
 function invalidateReplacementReview(){
@@ -1787,25 +1946,28 @@ function toggleShipPanel(action){
 }
 function closeCargoHold(){cargoHoldOpen=false;render();document.querySelector('#ship-actions [data-action="cargo-hold"]')?.focus();}
 function openCargoHold(){if(services.committing())throw Error('Wait for this payment to finish saving.');services.close({render:false});inputRounding=[];cargoHoldOpen=true;showOverviewPanels();render();document.querySelector('#cargo-hold-panel h2')?.focus({preventScroll:true});if(document.defaultView?.matchMedia?.('(max-width:1099px)').matches)$('cargo-hold-panel')?.scrollIntoView({block:'start',behavior:'instant'});}
-const actions={'passenger-search':()=>passengers.search(),'passenger-setup':()=>passengers.setup(),'passenger-board':id=>passengers.board(id),'passenger-deliver':id=>passengers.deliver(id),'passenger-offer-audit':id=>passengers.auditOffer(id),'cargo-hold':openCargoHold,'cargo-hold-close':closeCargoHold,'cargo-hold-tab':id=>{cargoHoldOpen=false;actions.tab(id);},'dev-tools':devTools,'dev-validate':()=>{const v=debugValidation();message(v.message,!v.ok);devTools();},'dev-copy':copyDebugReport,'dev-link':createDebugLink,'dev-export':exportDebugBundle,'dev-clear-errors':()=>{debugErrors.length=0;message('Debug error log cleared.');devTools();},refuel:refuelShortcut,'fuel-next':()=>setFuelQuantity(false),'fuel-fill':()=>setFuelQuantity(true),'day-back':()=>changeCampaignDay(-1),'day-forward':()=>changeCampaignDay(1),'history-filter':id=>{historyFilter=id;render();},'market-availability':marketAvailabilityAudit,'refill-support':refillSupport,'route-auto':()=>startMapRoute('auto'),'route-build':()=>startMapRoute('build'),'route-cancel':()=>{routeDraft=null;render();},'route-remove':removeMapStop,'route-last':()=>removeMapStop(routeDraft?.stops.length-1),'route-save':saveMapRoute,'route-retry':retryMapRoute,'route-clear':clearPlannedRoute,'map-world':mapWorld,'map-empty':mapEmpty,report:exportReport,'rounding-preview':roundingPreview,'map-expand':toggleMapExpanded,'map-zoom-in':()=>zoomMap(MAP_ZOOM_STEP),'map-zoom-out':()=>zoomMap(1/MAP_ZOOM_STEP),'map-zoom-reset':()=>zoomMap(1,true),'set-location':setLocation,tab:id=>{if(services.committing())throw Error('Wait for this payment to finish saving.');if(id!=='Overview'){mapExpanded=false;mapRestorePanel=null;cargoHoldOpen=false;services.close({render:false});}tab=id;render();document.querySelector('#tabs [data-arg="'+id+'"]')?.focus();scheduleMapAreas();},notes,setup,find:findWorld,nearby:()=>{scheduleMapAreas();return refreshNearby();},world:id=>{known[id]=world(id);view=id;mapPan={x:0,y:0};render();scheduleMapAreas();},'browse-prev':()=>{const i=state.route.indexOf(view||state.actual);view=state.route[Math.max(0,i-1)]||state.actual;render();},'browse-next':()=>{const i=state.route.indexOf(view||state.actual);view=state.route[Math.min(state.route.length-1,i+1)]||state.actual;render();},'planet-info':showPlanetInfo,override:overrideWorld,route:plotRoute,jump,search:()=>searchDialog(),'buyer-search':()=>searchDialog('buyer'),buy:buyForm,'offer-edit':editOffer,'offer-audit':commodityAudit,'expire-all':id=>act('Expired all snapshot offers',s=>s.snapshots.find(x=>x.id===id).offers.forEach(o=>o.expired=true)),reject,'sale-edit':()=>editSale?.(),'sale-all':()=>{selected=new Set(state.lots.map(l=>l.id));render();},'sale-clear':()=>{selected.clear();render();},sale:beginSale,'add-lot':existingLot,'lot-correct':correctCargo,'lot-sell':id=>{selected=new Set([id]);beginSale();},'lot-audit':lotAudit,'lot-insure':insureHeldCargo,'policy-audit':policyAudit,claim:claimForm,amend:amendPolicy,'contracts-search':()=>contractSearch(false),'mail-check':()=>contractSearch(true),'mail-audit':mailAudit,'mail-cancel':cancelMail,'contract-manual':manualContract,'contract-accept':accept,'draft-edit':editDraft,'draft-audit':id=>audit('Contract offer',contractDrafts.find(c=>c.offerId===id)),'contract-audit':id=>audit('Contract',state.contracts.find(c=>c.id===id)),deliver,'ship-expenses':()=>tab==='Accounts'?shipExpenses():services.open('expenses'),'expenses-all':selectAllExpenses,'berthing-rate':rollBerthingRate,deposit:depositForm,expense:()=>expenseForm(),'bank-correct':()=>expenseForm(true),'ledger-audit':ledgerAudit,'world-field-revert':previewWorldFieldRevert,'event-audit':id=>audit('History entry',state.events.find(e=>e.id===id)),'jump-undo':undoJump,undo:undoLatestChange,'settings-edit':settings,time:timeForm,export:()=>{store.backup();message('Backup download requested. Check that the file was saved.');},import:()=>$('import-file').click(),reset:()=>backupReplace('Reset campaign',S.initial())};
+const actions={'passenger-search':()=>passengers.search(),'passenger-setup':()=>passengers.setup(),'passenger-board':id=>passengers.board(id),'passenger-deliver':id=>passengers.deliver(id),'passenger-offer-audit':id=>passengers.auditOffer(id),'cargo-hold':openCargoHold,'cargo-hold-close':closeCargoHold,'cargo-hold-tab':id=>{cargoHoldOpen=false;actions.tab(id);},'dev-tools':devTools,'dev-validate':()=>{const v=debugValidation();message(v.message,!v.ok);devTools();},'dev-copy':copyDebugReport,'dev-link':createDebugLink,'dev-export':exportDebugBundle,'dev-clear-errors':()=>{debugErrors.length=0;message('Debug error log cleared.');devTools();},refuel:refuelShortcut,'fuel-next':()=>setFuelQuantity(false),'fuel-fill':()=>setFuelQuantity(true),'day-back':()=>changeCampaignDay(-1),'day-forward':()=>changeCampaignDay(1),'history-filter':id=>{historyFilter=id;render();},'market-availability':marketAvailabilityAudit,'refill-support':refillSupport,'route-auto':()=>startMapRoute('auto'),'route-build':()=>startMapRoute('build'),'route-cancel':()=>{routeDraft=null;render();},'route-remove':removeMapStop,'route-last':()=>removeMapStop(routeDraft?.stops.length-1),'route-save':saveMapRoute,'route-retry':retryMapRoute,'route-clear':clearPlannedRoute,'map-world':mapWorld,'map-empty':mapEmpty,report:exportReport,'rounding-preview':roundingPreview,'map-expand':toggleMapExpanded,'map-zoom-in':()=>zoomMap(MAP_ZOOM_STEP),'map-zoom-out':()=>zoomMap(1/MAP_ZOOM_STEP),'map-zoom-reset':()=>zoomMap(1,true),'set-location':setLocation,tab:id=>{if(settingsOperation?.pending)return false;if(services.committing())throw Error('Wait for this payment to finish saving.');if(id!=='Overview'){mapExpanded=false;mapRestorePanel=null;cargoHoldOpen=false;services.close({render:false});}tab=id;render();document.querySelector('#tabs [data-arg="'+id+'"]')?.focus();scheduleMapAreas();},notes,setup,find:findWorld,nearby:()=>{scheduleMapAreas();return refreshNearby();},world:id=>{known[id]=world(id);view=id;mapPan={x:0,y:0};render();scheduleMapAreas();},'browse-prev':()=>{const i=state.route.indexOf(view||state.actual);view=state.route[Math.max(0,i-1)]||state.actual;render();},'browse-next':()=>{const i=state.route.indexOf(view||state.actual);view=state.route[Math.min(state.route.length-1,i+1)]||state.actual;render();},'planet-info':showPlanetInfo,override:overrideWorld,route:plotRoute,jump,search:()=>searchDialog(),'buyer-search':()=>searchDialog('buyer'),buy:buyForm,'offer-edit':editOffer,'offer-audit':commodityAudit,'expire-all':id=>act('Expired all snapshot offers',s=>s.snapshots.find(x=>x.id===id).offers.forEach(o=>o.expired=true)),reject,'sale-edit':()=>editSale?.(),'sale-all':()=>{selected=new Set(state.lots.map(l=>l.id));render();},'sale-clear':()=>{selected.clear();render();},sale:beginSale,'add-lot':existingLot,'lot-correct':correctCargo,'lot-sell':id=>{selected=new Set([id]);beginSale();},'lot-audit':lotAudit,'lot-insure':insureHeldCargo,'policy-audit':policyAudit,claim:claimForm,amend:amendPolicy,'contracts-search':()=>contractSearch(false),'mail-check':()=>contractSearch(true),'mail-audit':mailAudit,'mail-cancel':cancelMail,'contract-manual':manualContract,'contract-accept':accept,'draft-edit':editDraft,'draft-audit':id=>audit('Contract offer',contractDrafts.find(c=>c.offerId===id)),'contract-audit':id=>audit('Contract',state.contracts.find(c=>c.id===id)),deliver,'ship-expenses':()=>tab==='Accounts'?shipExpenses():services.open('expenses'),'expenses-all':selectAllExpenses,'berthing-rate':rollBerthingRate,deposit:depositForm,expense:()=>expenseForm(),'bank-correct':()=>expenseForm(true),'ledger-audit':ledgerAudit,'world-field-revert':previewWorldFieldRevert,'event-audit':id=>audit('History entry',state.events.find(e=>e.id===id)),'jump-undo':undoJump,undo:undoLatestChange,'settings-edit':settings,time:timeForm,export:()=>{store.backup();message('Backup download requested. Check that the file was saved.');},import:()=>$('import-file').click(),reset:()=>backupReplace('Reset campaign',S.initial())};
 document.addEventListener('click',captureModalClick,true);
 document.addEventListener('keydown',resetModalPointerGesture,true);
 // Undo must claim/check its owner before an unrelated async service dispatch.
 // A click queued during synchronous publication must not become a second Undo.
-document.addEventListener('click',safely(async e=>{const b=e.target.closest('[data-action]');if(b&&!b.disabled){e.preventDefault();if(['undo','jump-undo'].includes(b.dataset.action))return actions[b.dataset.action]?.(b.dataset.arg);if(b.closest('#ship-actions')&&['refuel','refill-support','cargo-hold','ship-expenses'].includes(b.dataset.action)){toggleShipPanel(b.dataset.action);return;}if(await services.action(b.dataset.action,b.dataset.arg,b.dataset.serviceToken))return;const menu=b.closest('#route-menu');if(menu)menu.open=false;await actions[b.dataset.action]?.(b.dataset.arg);}}));
+document.addEventListener('click',safely(async e=>{if(settingsOperation?.pending)return;const b=e.target.closest('[data-action]');if(b&&!b.disabled){e.preventDefault();if(['undo','jump-undo'].includes(b.dataset.action))return actions[b.dataset.action]?.(b.dataset.arg);if(b.closest('#ship-actions')&&['refuel','refill-support','cargo-hold','ship-expenses'].includes(b.dataset.action)){toggleShipPanel(b.dataset.action);return;}if(await services.action(b.dataset.action,b.dataset.arg,b.dataset.serviceToken))return;const menu=b.closest('#route-menu');if(menu)menu.open=false;await actions[b.dataset.action]?.(b.dataset.arg);}}));
 document.addEventListener('toggle',e=>{if(!e.target.isConnected)return;if(e.target.dataset?.settingsGroup)settingsOpenGroups.set(e.target.dataset.settingsGroup,e.target.open);if(e.target.id==='mail-card')mailPanelOpen=e.target.open;else if(e.target.id==='mail-accepted-details')mailAcceptedDetailsOpen=e.target.open;},true);
 document.addEventListener('toggle',safely(e=>{if(e.target.classList?.contains('covered-payments'))return renderCoveredPayments(e.target);}),true);
-document.addEventListener('keydown',safely(e=>{if(e.key==='Escape'&&!$('modal').open){const menu=$('route-menu');if(menu?.open){e.preventDefault();menu.open=false;menu.querySelector('summary').focus();}else if(mapExpanded){e.preventDefault();setMapExpanded(false);}else if(services.active()){e.preventDefault();services.close();}else if(cargoHoldOpen){e.preventDefault();closeCargoHold();}}if((e.key==='Enter'||e.key===' ')&&e.target.matches('svg [data-action]')){e.preventDefault();return actions[e.target.dataset.action]?.(e.target.dataset.arg);}}));
-document.addEventListener('change',safely(e=>{const t=e.target;if(t.closest('#service-form,#expense-form'))services.sync();if(t.name==='insuranceLegs'){const route=state.route.slice(state.routeIndex, state.routeIndex+Number(t.value)+1);const distance=route.slice(1).reduce((n,x,i)=>n+M.distance(world(route[i]),world(x)),0);$('modal-form').elements.insuranceDistance.value=distance;$('modal-form').elements.distanceReason.value='';}if(t.name==='insure'&&$('purchase-insurance-options'))$('purchase-insurance-options').hidden=!t.checked;if(t.closest('#modal-form')){if(t.dataset.round)normaliseFields($('modal-form'));updateAccommodationEstimate();updateFuelSettingsEstimate();updateRecurringSettings();updateInsuranceEstimate();updateExpenseEstimate();updateMailEstimate();}if(t.id==='map-territories'){showTerritories=t.checked;savePoliticalTerritory(showTerritories);render();$('map-territories')?.focus();clearTimeout(mapLoadTimer);requestMapAreas();}if(t.id==='map-hexes'){showHexes=t.checked;render();}if(t.id==='map-uwp'){showUwp=t.checked;render();$('map-uwp')?.focus();}if(t.dataset.expire){const {snap}=findOffer(t.dataset.expire);act(t.checked?'Offer expired':'Offer reactivated',s=>s.snapshots.find(x=>x.id===snap.id).offers.find(o=>o.id===t.dataset.expire).expired=t.checked);}if(t.dataset.lot){t.checked?selected.add(t.dataset.lot):selected.delete(t.dataset.lot);render();}if(t.id==='market-filter'){marketFilter=t.value;render();}if(t.id==='snapshot-select'){snapshotId=t.value;render();}if(t.id==='cargo-sort'){cargoSort=t.value;render();}}));
-document.addEventListener('input',e=>{if(e.target.closest('#service-form,#expense-form'))services.sync();if(e.target.closest('#modal-form')){updateAccommodationEstimate();updateFuelSettingsEstimate();updateRecurringSettings();updateInsuranceEstimate();updateExpenseEstimate();updateMailEstimate();}if(!['market-search','cargo-search'].includes(e.target.id))return;const id=e.target.id,pos=e.target.selectionStart;if(id==='market-search')marketSearch=e.target.value;else cargoSearch=e.target.value;render();$(id)?.focus();$(id)?.setSelectionRange(pos,pos);});
-document.addEventListener('submit',safely(async e=>{if(e.target.id==='service-form'){e.preventDefault();await services.action('service-review','',e.target.dataset.serviceToken);}else if(e.target.id==='expense-form'){e.preventDefault();await services.action('expense-pay',e.target.dataset.expenseSession+':');}}));
+document.addEventListener('keydown',safely(e=>{if(settingsOperation?.pending)return;if(e.key==='Escape'&&!$('modal').open){const menu=$('route-menu');if(menu?.open){e.preventDefault();menu.open=false;menu.querySelector('summary').focus();}else if(mapExpanded){e.preventDefault();setMapExpanded(false);}else if(services.active()){e.preventDefault();services.close();}else if(cargoHoldOpen){e.preventDefault();closeCargoHold();}}if((e.key==='Enter'||e.key===' ')&&e.target.matches('svg [data-action]')){e.preventDefault();return actions[e.target.dataset.action]?.(e.target.dataset.arg);}}));
+document.addEventListener('change',safely(e=>{const t=e.target;if(settingsOperation?.pending)return;if(t.closest('#service-form,#expense-form'))services.sync();if(t.name==='insuranceLegs'){const route=state.route.slice(state.routeIndex, state.routeIndex+Number(t.value)+1);const distance=route.slice(1).reduce((n,x,i)=>n+M.distance(world(route[i]),world(x)),0);$('modal-form').elements.insuranceDistance.value=distance;$('modal-form').elements.distanceReason.value='';}if(t.name==='insure'&&$('purchase-insurance-options'))$('purchase-insurance-options').hidden=!t.checked;if(t.closest('#modal-form')){if(t.dataset.round)normaliseFields($('modal-form'));updateAccommodationEstimate();updateFuelSettingsEstimate();updateRecurringSettings();updateInsuranceEstimate();updateExpenseEstimate();updateMailEstimate();}if(t.id==='map-territories'){showTerritories=t.checked;savePoliticalTerritory(showTerritories);render();$('map-territories')?.focus();clearTimeout(mapLoadTimer);requestMapAreas();}if(t.id==='map-hexes'){showHexes=t.checked;render();}if(t.id==='map-uwp'){showUwp=t.checked;render();$('map-uwp')?.focus();}if(t.dataset.expire){const {snap}=findOffer(t.dataset.expire);act(t.checked?'Offer expired':'Offer reactivated',s=>s.snapshots.find(x=>x.id===snap.id).offers.find(o=>o.id===t.dataset.expire).expired=t.checked);}if(t.dataset.lot){t.checked?selected.add(t.dataset.lot):selected.delete(t.dataset.lot);render();}if(t.id==='market-filter'){marketFilter=t.value;render();}if(t.id==='snapshot-select'){snapshotId=t.value;render();}if(t.id==='cargo-sort'){cargoSort=t.value;render();}}));
+document.addEventListener('input',e=>{if(settingsOperation?.pending)return;if(e.target.closest('#service-form,#expense-form'))services.sync();if(e.target.closest('#modal-form')){updateAccommodationEstimate();updateFuelSettingsEstimate();updateRecurringSettings();updateInsuranceEstimate();updateExpenseEstimate();updateMailEstimate();}if(!['market-search','cargo-search'].includes(e.target.id))return;const id=e.target.id,pos=e.target.selectionStart;if(id==='market-search')marketSearch=e.target.value;else cargoSearch=e.target.value;render();$(id)?.focus();$(id)?.setSelectionRange(pos,pos);});
+// Modal forms are application controls, never native document navigations.
+// Keep this fallback even when partial dialog construction failed before its
+// owned onsubmit handler was installed, including after terminal settlement.
+document.addEventListener('submit',safely(async e=>{if(e.target.id==='modal-form'){e.preventDefault();return;}if(settingsOperation?.pending){e.preventDefault();return;}if(e.target.id==='service-form'){e.preventDefault();await services.action('service-review','',e.target.dataset.serviceToken);}else if(e.target.id==='expense-form'){e.preventDefault();await services.action('expense-pay',e.target.dataset.expenseSession+':');}}));
 $('modal-close').onclick=closeModal;$('modal-cancel').onclick=closeModal;
 $('modal').addEventListener('cancel',e=>{e.preventDefault();closeModal();});
-$('modal').addEventListener('close',()=>{if(!$('modal').open){if(activeModal){activeModal=null;modalGeneration++;}$('modal-body').innerHTML='';restoreSettingsForm();}});
+$('modal').addEventListener('close',()=>{if(!$('modal').open){if(settingsOperation?.session&&settingsOperation.session===activeModal)invalidateSettingsOperation();if(activeModal){activeModal=null;modalGeneration++;}$('modal-body').innerHTML='';restoreSettingsForm();}});
 $('notes').onclick=safely(notes);$('takeover').onclick=safely(()=>{if(campaignReloadRequired)throw Error('Reload this page before editing the campaign again.');return store.acquire(true);});
 $('import-file').onchange=safely(importCampaignFile);
 if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{if(tab==='Overview'&&viewed()&&updateMapGeometry()){scheduleMapPaint();scheduleMapAreas();}}).observe($('main'));
 window.addEventListener('error',e=>recordDebugError(e.error||e.message,'window-error'));
 window.addEventListener('unhandledrejection',e=>recordDebugError(e.reason,'unhandled-rejection'));
-async function boot(){mountRulePopover(document);[core,mp,decisions]=await Promise.all(['rules/core-2022.json?v=replacement-completion-20261010-44','rules/merchant-prince-1e.json','rules/decisions.json'].map(async url=>{const r=await fetch(url);if(!r.ok)throw Error('Could not load '+url);return r.json();}));store=new Store(receiveCampaign,(editable,text)=>{if(!editable){invalidateJumpPreparation();invalidateUndoOperation();invalidateReplacementEditing();stockServices.invalidate();}$('save-status').textContent=campaignReloadRequired?campaignReloadMessage:text;$('save-status').className=editable&&!campaignReloadRequired?'muted':'readonly';$('takeover').hidden=editable||campaignReloadRequired;$('takeover').disabled=campaignReloadRequired;if(!editable&&activeModal?.mutates){activeModal.cancelled=true;$('modal-error').textContent=campaignReloadRequired?campaignReloadMessage:'Editing moved to another tab. Reopen this dialog after taking over editing.';}syncModalSubmit();render();});try{state=store.read();}catch(error){store.recovery=true;store.recoveryMessage=error.message;state=S.initial();}known={...state.worlds};view=state.actual;render();await store.acquire();if(state.initialized)restoreExpenseReceipt();if(state.initialized)refreshNearby(false).catch(e=>message('Could not load nearby worlds: '+e.message+'. Use Refresh nearby to retry.',true));}
+async function boot(){mountRulePopover(document);[core,mp,decisions]=await Promise.all(['rules/core-2022.json?v=settings-completion-20261010-45','rules/merchant-prince-1e.json','rules/decisions.json'].map(async url=>{const r=await fetch(url);if(!r.ok)throw Error('Could not load '+url);return r.json();}));store=new Store(receiveCampaign,(editable,text)=>{if(!editable){invalidateSettingsOperation(true);invalidateJumpPreparation();invalidateUndoOperation();invalidateReplacementEditing();stockServices.invalidate();}$('save-status').textContent=campaignReloadRequired?campaignReloadMessage:text;$('save-status').className=editable&&!campaignReloadRequired?'muted':'readonly';$('takeover').hidden=editable||campaignReloadRequired;$('takeover').disabled=campaignReloadRequired;if(!editable&&activeModal?.mutates){activeModal.cancelled=true;$('modal-error').textContent=campaignReloadRequired?campaignReloadMessage:'Editing moved to another tab. Reopen this dialog after taking over editing.';}syncModalSubmit();render();});try{state=store.read();}catch(error){store.recovery=true;store.recoveryMessage=error.message;state=S.initial();}known={...state.worlds};view=state.actual;render();await store.acquire();if(state.initialized)restoreExpenseReceipt();if(state.initialized)refreshNearby(false).catch(e=>message('Could not load nearby worlds: '+e.message+'. Use Refresh nearby to retry.',true));}
 boot().catch(e=>{message(e.message,true);$('main').innerHTML=empty('The calculator could not start. Your saved campaign has not been replaced. Reload after checking the error above.');});

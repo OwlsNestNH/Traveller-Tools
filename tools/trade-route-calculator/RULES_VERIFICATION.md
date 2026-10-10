@@ -551,3 +551,24 @@ newer dialogs and out-of-order file reads. Provenance tests cover wrong/replayed
 retired tokens and normal/recovery Store paths. No Traveller rules change.
 Full native/rules gates, exact-head browser CI and independent source and actual
 screenshot review remain required; this scope is not a pass claim.
+
+
+## Settings save-completion .45 verification scope
+
+This is an inline/modal Settings save-boundary change, not a Traveller rules
+change. Retain the original settings mutator, exact fuel/LSS correction and
+complement behavior, mortgage/maintenance audits, rounding, bank/ledger/cargo/
+contract/policy/route/time values, one revision and Undo record, fixed Dashboard
+baseline and existing later-change mulligan closure. Native tests cover the
+production modal/controller/Store boundary and preparation notification; actual
+Chromium must prove inline form suspension/remount, disclosure retention,
+pre-Revert usability after stale completion, controls and focus. The native DOM
+double does not certify those inline browser behaviors.
+
+Focused coverage includes synchronous/delayed save, publication before
+settlement, repeated or detached handlers, known rejection and input correction,
+foreign same-revision publication, lost/reacquired editor, dirty inline draft
+plus legacy dialog, missing/wrong publication, contradictory provider errors,
+render/focus/close/partial-pending-screen faults, reload and Undo. Full native,
+rules, existing browser regressions and independent source/actual screenshot
+review remain required. This scope entry is not a pass or deployment claim.

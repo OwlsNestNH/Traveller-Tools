@@ -1,5 +1,5 @@
-import {dashboardData} from './dashboard-data.mjs?v=replacement-completion-20261010-44';
-import {escapeHtml as esc,moneyHtml} from './display.mjs?v=replacement-completion-20261010-44';
+import {dashboardData} from './dashboard-data.mjs?v=settings-completion-20261010-45';
+import {escapeHtml as esc,moneyHtml} from './display.mjs?v=settings-completion-20261010-45';
 
 // Read-only presentation. Exact Credits remain BigInts until bounded ratios are
 // converted to SVG coordinates; display values always use the shared formatter.

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
+import {SaveNotCommittedError} from '../js/persistence.mjs';
 import {settingsGroups,mountSettingsLayout,stepSetting,syncSettingsControls} from '../js/settings-layout.mjs';
 
 const names=['name','ship','capacity','jump','broker','streetwise','admin','characteristic','rank','soc','mode','custom','shipTons','fuelCapacity','bladderTons','fuelAboard','rooms-low','roomService-low','roomCustom-low','rooms-middle','roomService-middle','roomCustom-middle','rooms-high','roomService-high','roomCustom-high','people-middle','people-high','occupiedLowBerths','luggageOverride','luggageTons','supportCapacity','supportRemaining','supportUnits','creditStep','scoops','armed','reducedProfitLimitsEnabled','minPurchasePercent','maxSalePercent','maxBaseRetailEnabled','maxBaseRetail','useRawIllegalPrices','tax','insurance','mortgageOriginal','mortgagePayment','mortgageRemaining','mortgagePaid','mortgageDueDate','maintenancePayment','maintenanceDueDate'];
@@ -29,10 +30,13 @@ test('read-only controls and stepper buttons share the editing lock',()=>{
 test('inline and modal Settings share the original save path and scoped estimates',async()=>{
  const source=await readFile(new URL('../js/app.mjs',import.meta.url),'utf8');
  assert.match(source,/function settingsFields\(\)/);
- assert.match(source,/function saveSettings\(f,expected\)\{return act\('Ship \/ trader settings'/);
- assert.match(source,/settingsFields\(\),f=>saveSettings\(f,modalRevision\)/);
- assert.match(source,/saveSettings\(new FormData\(form\),settingsFormRevision\)/);
- assert.match(source,/settingsFormRevision!==state\.revision/);
+ assert.match(source,/function saveSettings\(f,expected,announce=true,onPrepared\)\{return act\('Ship \/ trader settings'/);
+ assert.match(source,/settingsFields\(\),f=>completeSettingsWrite\(owner,f\)/);
+ assert.match(source,/const data=new FormData\(form\)/);
+ assert.match(source,/completeSettingsWrite\(owner,data\)/);
+ assert.match(source,/return awaitInlineSettings\(owner,result\)/);
+ assert.match(source,/saveSettings\(data,owner\.revision,false,\(\)=>\{owner\.candidatePrepared=true;\}\)/);
+ assert.match(source,/revision!==state\.revision/);
  assert.match(source,/function updateAccommodationEstimate\(form=/);
  assert.match(source,/function updateFuelSettingsEstimate\(form=/);
 });
@@ -92,17 +96,23 @@ test('all settings disclosures remember both states before replacement and ignor
 });
 test('cross-field settings failures reveal the form, while stale drafts keep disclosure choices',async()=>{
  const source=await readFile(new URL('../js/app.mjs',import.meta.url),'utf8');
- const mount=source.slice(source.indexOf('function mountSettingsForm(){'),source.indexOf('\n\nasync function setup()'));
+ // Isolated layout/error boundary only: run the unchanged production owner,
+ // submit and failure helpers, with storage represented by a known-prewrite
+ // validation stub. Deferred persistence and real DOM live in completion suites.
+ const ownerStart=source.indexOf('function invalidateSettingsOperation('),mountEnd=source.indexOf('\n\nasync function setup()');
+ assert.ok(ownerStart>=0&&mountEnd>ownerStart,'Production owner and inline mount extraction boundaries exist');
+ const mount=source.slice(ownerStart,mountEnd);
  const readFuel=source.match(/^function readFuel.*$/m)[0];
- const groups=[{open:false},{open:false}],events=[];
- const form={elements:[{willValidate:true,validity:{valid:true}}],querySelectorAll:()=>groups,addEventListener(){}};
+ const groups=[{open:false},{open:false}],events=[],field={name:'shipTons',value:'',type:'number',disabled:false,willValidate:true,validity:{valid:true}};
  const error={textContent:'',focus:()=>events.push('focus-error'),scrollIntoView:()=>events.push('show-error')};
+ const form={isConnected:true,elements:[field],querySelector:()=>error,querySelectorAll:selector=>selector==='details[data-settings-group]'?groups:[field],addEventListener(){}};
+ form.elements.namedItem=name=>name===field.name?field:null;
  const ids={'settings-form':form,'settings-error':error,'settings-reset':{},'settings-save':{},modal:{open:false}};
  const state={revision:1,ship:{}};
- const sandbox={Map,document:{},$:id=>ids[id],state,settingsDraft:null,settingsFormRevision:0,settingsOpenGroups:new Map(),settingsRounding:[],inputRounding:[],store:{editable:true},
-  mountSettingsLayout(){},normaliseSettingsFields(){},updateSettingsForm(){},render(){throw Error('An invalid form must not render a committed state');},
+ const sandbox={Map,document:{},SaveNotCommittedError,$:id=>ids[id],state,settingsDraft:null,settingsFormRevision:0,settingsOpenGroups:new Map(),settingsRounding:[],inputRounding:[],store:{editable:true},settingsOperation:null,campaignReloadRequired:false,tab:'Settings',suspendedSettings:null,services:{active:()=>false},
+  mountSettingsLayout(){},normaliseSettingsFields(){},updateSettingsForm(){},syncSettingsControls(){},captureSettingsDraft(){},captureSettingsDisclosures(){},render(){throw Error('An invalid form must not render a committed state');},
   FormData:class{get(name){return {shipTons:'',fuelCapacity:'40',fuelAboard:'10'}[name]??null;}}};
- vm.runInNewContext(readFuel+';function saveSettings(data){readFuel(data);throw Error("Validation should have failed");}'+mount+';globalThis.mount=mountSettingsForm;',sandbox);
+ vm.runInNewContext(readFuel+';function saveSettings(data){try{readFuel(data);}catch(error){throw new SaveNotCommittedError(error);}throw Error("Validation should have failed");}'+mount+';globalThis.mount=mountSettingsForm;',sandbox);
  sandbox.mount();form.onsubmit({preventDefault(){}});
  assert.ok(groups.every(group=>group.open),'Individually valid fields with a cross-field error are revealed');
  assert.match(error.textContent,/ship displacement, fuel tank capacity and fuel aboard together/);
