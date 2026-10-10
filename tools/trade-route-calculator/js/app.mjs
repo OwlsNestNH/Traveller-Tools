@@ -1,33 +1,34 @@
-import {createPassengerUI} from './passenger-ui.mjs?v=audited-defects-20261009-28';
-import {passengerShip,passengerTotals,passengerSpace,passengerCapacity} from './passengers.mjs?v=audited-defects-20261009-28';
-import {advancePaymentDate,recordedPaymentDate} from './payment-schedule.mjs?v=audited-defects-20261009-28';
-import {configureMortgage,mortgageStatus} from './mortgage.mjs?v=audited-defects-20261009-28';
-import {configureMaintenance,maintenanceStatus} from './maintenance.mjs?v=audited-defects-20261009-28';
-import {createServicePanels} from './service-panels.mjs?v=audited-defects-20261009-28';
-import {cargoHoldPanel} from './cargo-hold.mjs?v=audited-defects-20261009-28';
-import {createExpensePanels} from './expense-panels.mjs?v=audited-defects-20261009-28';
+import {createPassengerUI} from './passenger-ui.mjs?v=global-planet-search-20261010-29';
+import {passengerShip,passengerTotals,passengerSpace,passengerCapacity} from './passengers.mjs?v=global-planet-search-20261010-29';
+import {advancePaymentDate,recordedPaymentDate} from './payment-schedule.mjs?v=global-planet-search-20261010-29';
+import {configureMortgage,mortgageStatus} from './mortgage.mjs?v=global-planet-search-20261010-29';
+import {configureMaintenance,maintenanceStatus} from './maintenance.mjs?v=global-planet-search-20261010-29';
+import {createServicePanels} from './service-panels.mjs?v=global-planet-search-20261010-29';
+import {cargoHoldPanel} from './cargo-hold.mjs?v=global-planet-search-20261010-29';
+import {createExpensePanels} from './expense-panels.mjs?v=global-planet-search-20261010-29';
 import {currentJumpAttempt} from './jump-attempts.mjs';
-import {mountSettingsLayout,syncSettingsControls,stepSetting} from './settings-layout.mjs?v=audited-defects-20261009-28';
-import {configureFuel,bladderSpace,validateFuel,jumpFuel,fuelReference} from './fuel.mjs?v=audited-defects-20261009-28';
-import {refillQuote,supportStock,supportCargo,supportDisplay,anchorSupport,configureSupport} from './life-support.mjs?v=audited-defects-20261009-28';
-import {campaignReport} from './report.mjs?v=audited-defects-20261009-28';
-import {up,creditStep,roundExisting} from './rounding.mjs?v=audited-defects-20261009-28';
-import {tiers,luggageAllowance,occupants,passengerLuggage,manualLuggage,serviceRate,serviceLabel,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=audited-defects-20261009-28';
+import {mountSettingsLayout,syncSettingsControls,stepSetting} from './settings-layout.mjs?v=global-planet-search-20261010-29';
+import {configureFuel,bladderSpace,validateFuel,jumpFuel,fuelReference} from './fuel.mjs?v=global-planet-search-20261010-29';
+import {refillQuote,supportStock,supportCargo,supportDisplay,anchorSupport,configureSupport} from './life-support.mjs?v=global-planet-search-20261010-29';
+import {campaignReport} from './report.mjs?v=global-planet-search-20261010-29';
+import {up,creditStep,roundExisting} from './rounding.mjs?v=global-planet-search-20261010-29';
+import {tiers,luggageAllowance,occupants,passengerLuggage,manualLuggage,serviceRate,serviceLabel,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=global-planet-search-20261010-29';
 import * as A from './amounts.mjs';
 import {parseDate,displayDate} from './calendar.mjs';
-import * as R from './rules.mjs?v=audited-defects-20261009-28';
-import * as S from './state.mjs?v=audited-defects-20261009-28';
+import * as R from './rules.mjs?v=global-planet-search-20261010-29';
+import * as S from './state.mjs?v=global-planet-search-20261010-29';
 import {latestMailCheck,recordMailCheck,mailCheckHistoryStatus} from './mail-history.mjs?v=mail-history-1';
-import * as E from './expenses.mjs?v=audited-defects-20261009-28';
+import * as E from './expenses.mjs?v=global-planet-search-20261010-29';
 import {planetInformation,worldSheetURL} from './planet-info.mjs?v=world-data-1';
-import {worldMapFacts,worldSymbols,selectedWorldHex,mapKeyMarkup} from './world-symbols.mjs?v=audited-defects-20261009-28';
-import * as M from './map.mjs?v=audited-defects-20261009-28';
+import {worldMapFacts,worldSymbols,selectedWorldHex,mapKeyMarkup} from './world-symbols.mjs?v=global-planet-search-20261010-29';
+import * as M from './map.mjs?v=global-planet-search-20261010-29';
 import {MAP_GEOMETRY,setMapGeometry,visibleMapWorlds} from './map-geometry.mjs?v=map-first-1';
 import {camera,viewportTiles,MapAreaCache} from './map-viewport.mjs?v=map-first-1';
 import {nextMapZoom,mapLevel,MapOverviewCache,overviewMarkup,mapTerritories} from './map-overview.mjs?v=map-first-1';
 import {readPoliticalTerritory,savePoliticalTerritory} from './map-preferences.mjs';
-import {createWorldPicker,rememberWorld} from './world-picker.mjs?v=audited-defects-20261009-28';
-import {Store,KEY} from './persistence.mjs?v=audited-defects-20261009-28';
+import {createGlobalWorldSearch} from './global-world-search.mjs?v=global-planet-search-20261010-29';
+import {createWorldPicker,rememberWorld} from './world-picker.mjs?v=global-planet-search-20261010-29';
+import {Store,KEY} from './persistence.mjs?v=global-planet-search-20261010-29';
 const $=id=>document.getElementById(id),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ROOT='https://github.com/OwlsNestNH/Traveller-Tools/blob/main/tools/trade-route-calculator/';
 let inputRounding=[],localCampaignSave=false;
@@ -769,13 +770,23 @@ function mountSettingsForm(){
 async function setup(){let picker;modal('Start your campaign',`<div class="split">${field('name','Campaign name','My trading campaign')}${field('ship','Ship name','Independent trader')}${field('bank','Opening bank · Cr','100000','text','','credits')}${field('capacity','Cargo capacity · tons','60','text','','tons')}${field('jump','Jump rating','2','number','min="1" max="6"')}${field('date','Starting Imperial date · day-year','001-1105')}</div>${fuelFields()}${accommodationFields()}<div id="setup-world"></div>${check('scoops','Ship has fuel scoops',true)}<p class="help">Existing cargo is added separately and will not debit this opening bank.</p>`,async(f,isCurrent)=>{const w=await picker.resolve();if(!isCurrent())return false;known[w.id]=w;parseDate(f.get('date'));const bank=A.credit(f.get('bank'));if(bank<0n)throw Error('Opening bank cannot be negative');act('Campaign setup',s=>{s.initialized=true;s.name=f.get('name');s.ship.name=f.get('ship');s.ship.capacity=A.decimal(f.get('capacity'));s.ship.accommodation=readAccommodation(f);s.ship.fuel=readFuel(f);s.ship.lifeSupport=readSupport(f,s.ship);s.ship.staterooms=roomTotal(s.ship);s.ship.roundTons=true;s.ship.jump=Number(f.get('jump'));s.ship.scoops=f.has('scoops');s.bank=String(bank);s.dateLabel=f.get('date');s.actual=w.id;s.worlds[w.id]=w;s.route=[w.id];s.ledger.push({id:S.uid(),type:'Opening bank',amount:String(bank),hours:0,world:w.id});});view=w.id;await refreshNearby(false,isCurrent);},'Start campaign');updateAccommodationEstimate();updateFuelSettingsEstimate();picker=createWorldPicker($('setup-world'),{initial:{sector:'Spinward Marches',hex:'1910'},title:'Current world'});}
 async function refreshNearby(show=true,isCurrent=()=>true){const w=viewed();if(!w)return;const rows=await M.nearby(w,12);if(!isCurrent())return;rows.forEach(x=>known[x.id]=x);render();if(show)message('Live nearby worlds loaded.');}
 function findWorld(){
- let picker;
- modal('Find a world','<div id="find-world"></div><p class="help">Browse to inspect this world, or use it as your ship’s starting position.</p><button type="button" id="choose-starting-world">Use as starting world</button>',async(f,isCurrent)=>{
-  const w=await picker.resolve();if(!isCurrent())return false;known[w.id]=w;view=w.id;await refreshNearby(false,isCurrent);
+ let picker,selectionVersion=0;
+ const claimIntent=()=>{const version=++selectionVersion;return()=>version===selectionVersion;};
+ modal('Find a world','<div id="global-world-search"></div><div id="find-world"></div><p class="help">Browse to inspect this world, or use it as your ship’s starting position.</p><button type="button" id="choose-starting-world">Use as starting world</button>',async(f,isCurrent)=>{
+  const ownsIntent=claimIntent(),current=()=>isCurrent()&&ownsIntent();
+  try{const w=await picker.resolve();if(!current())return false;const rows=await M.nearby(w,12);if(!current())return false;
+   rows.forEach(x=>known[x.id]=x);known[w.id]=w;view=w.id;render();scheduleMapAreas();
+  }catch(e){if(!current())return false;throw e;}
  },'Browse world',false);
- picker=createWorldPicker($('find-world'),{initial:viewed()||{sector:'Spinward Marches',hex:'1910'}});
+ picker=createWorldPicker($('find-world'),{initial:viewed()||{sector:'Spinward Marches',hex:'1910'},title:'Or choose by location'});
  const session=activeModal;
- $('choose-starting-world').onclick=async()=>{const b=$('choose-starting-world');b.disabled=true;try{const w=await picker.resolve();if(!modalCurrent(session))return;known[w.id]=w;setLocation(w);}catch(e){if(modalCurrent(session))$('modal-error').textContent=e.message;}finally{if(modalCurrent(session))b.disabled=false;}};
+ createGlobalWorldSearch($('global-world-search'),{claimIntent,onDismiss:closeModal,isCurrent:()=>modalCurrent(session),onBrowse:async(w,isCurrent)=>{
+  const rows=await M.nearby(w,12);if(!isCurrent())return;
+  // Browsing stays session-only: no act/save, route change, or ship movement.
+  rows.forEach(x=>known[x.id]=x);known[w.id]=w;view=w.id;mapPan={x:0,y:0};mapZoom=Math.max(1,mapZoom);rememberWorld(w);
+  closeModal();render();scheduleMapAreas();
+ }});
+ $('choose-starting-world').onclick=async()=>{const ownsIntent=claimIntent(),current=()=>modalCurrent(session)&&ownsIntent(),b=$('choose-starting-world');b.disabled=true;try{const w=await picker.resolve();if(!current())return;known[w.id]=w;setLocation(w);}catch(e){if(current())$('modal-error').textContent=e.message;}finally{if(modalCurrent(session))b.disabled=false;}};
 }
 const planetCache=new Map();
 function planetInfoBody(w){
@@ -1385,5 +1396,5 @@ $('import-file').onchange=safely(async e=>{const file=e.target.files[0];e.target
 if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{if(tab==='Overview'&&viewed()&&updateMapGeometry()){scheduleMapPaint();scheduleMapAreas();}}).observe($('main'));
 window.addEventListener('error',e=>recordDebugError(e.error||e.message,'window-error'));
 window.addEventListener('unhandledrejection',e=>recordDebugError(e.reason,'unhandled-rejection'));
-async function boot(){[core,mp,decisions]=await Promise.all(['rules/core-2022.json?v=audited-defects-20261009-28','rules/merchant-prince-1e.json','rules/decisions.json'].map(async url=>{const r=await fetch(url);if(!r.ok)throw Error('Could not load '+url);return r.json();}));store=new Store(receiveCampaign,(editable,text)=>{$('save-status').textContent=text;$('save-status').className=editable?'muted':'readonly';$('takeover').hidden=editable;if(!editable&&activeModal?.mutates){activeModal.cancelled=true;$('modal-error').textContent='Editing moved to another tab. Reopen this dialog after taking over editing.';}syncModalSubmit();render();});try{state=store.read();}catch(error){store.recovery=true;store.recoveryMessage=error.message;state=S.initial();}known={...state.worlds};view=state.actual;render();await store.acquire();if(state.initialized)restoreExpenseReceipt();if(state.initialized)refreshNearby(false).catch(e=>message('Could not load nearby worlds: '+e.message+'. Use Refresh nearby to retry.',true));}
+async function boot(){[core,mp,decisions]=await Promise.all(['rules/core-2022.json?v=global-planet-search-20261010-29','rules/merchant-prince-1e.json','rules/decisions.json'].map(async url=>{const r=await fetch(url);if(!r.ok)throw Error('Could not load '+url);return r.json();}));store=new Store(receiveCampaign,(editable,text)=>{$('save-status').textContent=text;$('save-status').className=editable?'muted':'readonly';$('takeover').hidden=editable;if(!editable&&activeModal?.mutates){activeModal.cancelled=true;$('modal-error').textContent='Editing moved to another tab. Reopen this dialog after taking over editing.';}syncModalSubmit();render();});try{state=store.read();}catch(error){store.recovery=true;store.recoveryMessage=error.message;state=S.initial();}known={...state.worlds};view=state.actual;render();await store.acquire();if(state.initialized)restoreExpenseReceipt();if(state.initialized)refreshNearby(false).catch(e=>message('Could not load nearby worlds: '+e.message+'. Use Refresh nearby to retry.',true));}
 boot().catch(e=>{message(e.message,true);$('main').innerHTML=empty('The calculator could not start. Your saved campaign has not been replaced. Reload after checking the error above.');});

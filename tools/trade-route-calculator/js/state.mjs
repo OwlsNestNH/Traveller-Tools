@@ -1,16 +1,16 @@
-import {passengerShip,passengerSpace,passengerTotals,passengerCapacity,validatePassengerContract,validatePassengerHistory,latestPassengerSearch,passengerOfferRemaining} from './passengers.mjs?v=audited-defects-20261009-28';
-import {validateMaintenance,validateMaintenancePaymentRecord} from './maintenance.mjs?v=audited-defects-20261009-28';
-import {validateMortgage,validateMortgagePaymentRecord} from './mortgage.mjs?v=audited-defects-20261009-28';
+import {passengerShip,passengerSpace,passengerTotals,passengerCapacity,validatePassengerContract,validatePassengerHistory,latestPassengerSearch,passengerOfferRemaining} from './passengers.mjs?v=global-planet-search-20261010-29';
+import {validateMaintenance,validateMaintenancePaymentRecord} from './maintenance.mjs?v=global-planet-search-20261010-29';
+import {validateMortgage,validateMortgagePaymentRecord} from './mortgage.mjs?v=global-planet-search-20261010-29';
 import {validateJumpAttempts,currentJumpAttempt,lastJump,savedJumpAttempt,departureKey,jumpPreparationBridge} from './jump-attempts.mjs';
-import {distance as jumpDistance} from './map.mjs?v=audited-defects-20261009-28';
+import {distance as jumpDistance} from './map.mjs?v=global-planet-search-20261010-29';
 import {validateMailHistory} from './mail-history.mjs?v=mail-history-1';
-import {bladderSpace,validateFuel,fuelPurchase,consumeJumpFuel} from './fuel.mjs?v=audited-defects-20261009-28';
-import {validateSupport,refillQuote,consumeSupport,anchorSupport,supportCargo,supportAmount,supportReference,extraSupportReference} from './life-support.mjs?v=audited-defects-20261009-28';
-import {up,creditStep,roundExisting} from './rounding.mjs?v=audited-defects-20261009-28';
-import {validateAccommodation,passengerLuggage,roomCounts} from './accommodation.mjs?v=audited-defects-20261009-28';
+import {bladderSpace,validateFuel,fuelPurchase,consumeJumpFuel} from './fuel.mjs?v=global-planet-search-20261010-29';
+import {validateSupport,refillQuote,consumeSupport,anchorSupport,supportCargo,supportAmount,supportReference,extraSupportReference} from './life-support.mjs?v=global-planet-search-20261010-29';
+import {up,creditStep,roundExisting} from './rounding.mjs?v=global-planet-search-20261010-29';
+import {validateAccommodation,passengerLuggage,roomCounts} from './accommodation.mjs?v=global-planet-search-20261010-29';
 import {add,sub,mul,div,cmp,floor,sum,decimal,credit} from './amounts.mjs';
-import {VERSION,priceLimits} from './rules.mjs?v=audited-defects-20261009-28';
-import {expenseQuote,starport,berthMultipliers,payableExpenses} from './expenses.mjs?v=audited-defects-20261009-28';
+import {VERSION,priceLimits} from './rules.mjs?v=global-planet-search-20261010-29';
+import {expenseQuote,starport,berthMultipliers,payableExpenses} from './expenses.mjs?v=global-planet-search-20261010-29';
 export const SCHEMA=1;
 export const uid=()=>crypto.randomUUID();
 export function initial(){return {schema:SCHEMA,revision:0,rulesVersion:VERSION,initialized:false,name:'My trading campaign',bank:'0',hours:0,dateLabel:'001-1105',ship:{name:'Independent trader',capacity:'60',staterooms:0,jump:2,scoops:true,armed:false},trader:{broker:0,streetwise:0,admin:0,characteristic:0,rank:0,soc:0},settings:{reducedProfitLimitsEnabled:false,minPurchasePercent:85,maxSalePercent:115,profit:100,tax:false,insurance:false,creditStep:1,maxBaseRetailEnabled:false,maxBaseRetail:'100000',useRawIllegalPrices:false},worlds:{},actual:null,route:[],routeIndex:0,snapshots:[],lots:[],contracts:[],policies:[],ledger:[],cooldowns:{},undo:[],events:[],jumpAttempts:[],latestMailCheckId:null};}
