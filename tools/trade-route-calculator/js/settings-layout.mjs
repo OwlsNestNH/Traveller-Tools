@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=jump-completion-20261010-42';
+import {ruleInfo} from './rule-references.mjs?v=undo-completion-20261010-43';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={

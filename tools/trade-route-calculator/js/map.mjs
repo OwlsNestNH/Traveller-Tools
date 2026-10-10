@@ -1,4 +1,4 @@
-import {parseUWP} from './rules.mjs?v=jump-completion-20261010-42';
+import {parseUWP} from './rules.mjs?v=undo-completion-20261010-43';
 const API='https://travellermap.com/api/';
 const MILIEU='M1105';
 async function get(path,params,{signal}={}){const url=new URL(path,API);url.searchParams.set('milieu',MILIEU);Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,v));const response=await fetch(url,{headers:{Accept:'application/json'},signal:signal?AbortSignal.any([signal,AbortSignal.timeout(20000)]):AbortSignal.timeout(20000)});if(!response.ok)throw Error('Traveller Map returned '+response.status);return response.json();}

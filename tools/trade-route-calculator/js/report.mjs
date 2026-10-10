@@ -1,13 +1,13 @@
-import {recordedOperatingResult} from './financial-summary.mjs?v=jump-completion-20261010-42';
-import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=jump-completion-20261010-42';
-import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=jump-completion-20261010-42';
-import {bladderSpace} from './fuel.mjs?v=jump-completion-20261010-42';
+import {recordedOperatingResult} from './financial-summary.mjs?v=undo-completion-20261010-43';
+import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=undo-completion-20261010-43';
+import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=undo-completion-20261010-43';
+import {bladderSpace} from './fuel.mjs?v=undo-completion-20261010-43';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
-import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=jump-completion-20261010-42';
-import {distance} from './map.mjs?v=jump-completion-20261010-42';
+import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=undo-completion-20261010-43';
+import {distance} from './map.mjs?v=undo-completion-20261010-43';
 
-export const REPORT_VERSION='2026.10.10.42';
+export const REPORT_VERSION='2026.10.10.43';
 const clean=v=>String(v??'Not recorded').replace(/[\r\n\t\x00-\x1f]+/g,' ').trim();
 const number=v=>String(v).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const cr=v=>v==null?'Not recorded':'Cr '+number(v);

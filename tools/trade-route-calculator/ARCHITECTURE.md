@@ -321,3 +321,25 @@ reuse rule or one-mulligan policy is changed.
 
 `COMPLETION_MIGRATION.md` tracks the remaining Stage 2 callers. Quote/preview
 ownership consolidation (Stage 3) remains separate and has not started here.
+
+## Stage 2 Undo completion (.43)
+
+`undoJump` and `undoLatestChange` share only an in-flight UI owner. State Undo,
+controller return values, persistence, audits and the one-mulligan barrier are
+unchanged. The owner exists before the controller invocation, including a
+reentrant publication, and is invalidated by foreign publication or editor loss.
+Cleanup and success occur only after completion in the same owned session.
+A local pending Undo publication installs campaign state but defers UI mail,
+selection and route reconciliation until that completion, including renders
+requested by an earlier map refresh. Foreign publication still reconciles
+immediately and retires the owner.
+
+Undo Jump uses its existing confirmation with the awaited save contract. Ordinary
+History Undo remains immediate for the synchronous Store. A delayed provider gets
+a no-submit pending dialog, preventing repeat activation and dismissal. A known
+unsaved failure allows Close and a deliberate fresh History retry; saved or
+unknown failures require reload. Promise rejection handlers are installed before
+pending UI creation. Post-save cleanup failures identify the captured expected
+revision; controller Undo still returns the provider's raw completion.
+
+Replacement/import/reset and Stage 3 quote ownership are separate remaining work.
