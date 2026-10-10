@@ -72,6 +72,12 @@ export function mountRulePopover(document){
  }
  function keydown(event){
   transition=null;
+  if(event.key==='Tab'&&dialog.open){
+   // Native modal dialogs can still move Tab focus into browser chrome. This
+   // read-only popup has exactly two tab stops: Close and its scrollable text.
+   event.preventDefault();event.stopImmediatePropagation();
+   (document.activeElement===closeButton?body:closeButton).focus();
+  }
   if(event.key==='Escape'&&dialog.open){event.preventDefault();event.stopImmediatePropagation();close();}
  }
  function cancel(event){event.preventDefault();event.stopPropagation();close();}

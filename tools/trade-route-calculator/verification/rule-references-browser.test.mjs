@@ -48,7 +48,7 @@ try{
    assert.ok(geometry.x>=0&&geometry.y>=0&&geometry.right<=viewport.width+1&&geometry.bottom<=viewport.height+1,JSON.stringify(geometry));
    assert.ok(geometry.scrollWidth<=geometry.clientWidth+1,'Reference paragraphs wrap without horizontal scrolling');
    const focus=await popup.locator('.rule-reference-close').evaluate(el=>el===document.activeElement);assert.equal(focus,true);
-   for(let n=0;n<4;n++){await page.keyboard.press('Tab');assert.equal(await popup.evaluate(el=>el.contains(document.activeElement)),true,'Native dialog keeps keyboard focus inside');}
+   for(const key of ['Tab','Tab','Shift+Tab','Shift+Tab']){await page.keyboard.press(key);assert.equal(await popup.evaluate(el=>el.contains(document.activeElement)),true,'Native dialog keeps keyboard focus inside');}
    if(screenshot)await page.screenshot({path:artifacts+`/rule-info-${screenshot}-${viewport.width}.png`});
    if(close==='button')await popup.getByRole('button',{name:'Close rules reference',exact:true}).click();else if(close==='double')await popup.getByRole('button',{name:'Close rules reference',exact:true}).dblclick();else await page.keyboard.press('Escape');
    await popup.waitFor({state:'hidden'});

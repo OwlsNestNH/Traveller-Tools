@@ -12,7 +12,7 @@ function harness(){
  dialog.showModal=()=>{dialog.open=true;blur?.();};dialog.close=()=>{dialog.open=false;};
  const main=element('main'),modal=element('modal'),modalClose=element('modal-close'),nav=element('tab-overview'),notes=element('notes');modal.children=[modalClose];
  for(const el of [main,modal,modalClose,notes])nodes.set(el.id,el);
- const document={body:element('body'),createElement:tag=>{assert.equal(tag,'dialog');return dialog;},getElementById:id=>nodes.get(id),querySelector:()=>nav,querySelectorAll:()=>[],addEventListener(type,fn){listeners.set(type,fn);},removeEventListener(type){listeners.delete(type);}};
+ const document={body:element('body'),get activeElement(){return active;},createElement:tag=>{assert.equal(tag,'dialog');return dialog;},getElementById:id=>nodes.get(id),querySelector:()=>nav,querySelectorAll:()=>[],addEventListener(type,fn){listeners.set(type,fn);},removeEventListener(type){listeners.delete(type);}};
  const api=mountRulePopover(document);
  function marker(id='jump-duration',scope=main){const b=element();b.dataset.ruleInfo=id;b.closest=selector=>selector==='[data-rule-info]'?b:selector==='[id]'?scope:null;scope.references=[...(scope.references||[]),b];scope.children.push(b);return b;}
  close.closest=selector=>selector==='.rule-reference-close'?close:null;
@@ -27,6 +27,15 @@ test('click and keyboard Escape isolate the popup and restore its exact connecte
 test('opening over a transaction does not close or submit it',()=>{
  const h=harness();h.modal.open=true;const b=h.marker('tax',h.modal);
  h.event('click',b);assert.equal(h.modal.open,true);h.event('click',h.close);assert.equal(h.modal.open,true);assert.equal(h.active(),b);
+});
+test('Tab and Shift+Tab wrap between Close and scrollable reference text',()=>{
+ const h=harness(),b=h.marker();assert.equal(h.event('keydown',b,{key:'Tab'}).prevented,false);
+ h.event('click',b);
+ for(const shiftKey of [false,true])for(let n=0;n<4;n++){
+  const before=h.active(),e=h.event('keydown',before,{key:'Tab',shiftKey});
+  assert.equal(e.prevented,true);assert.equal(e.stopped,true);assert.equal(h.active(),before===h.close?h.body:h.close);
+ }
+ h.event('keydown',h.active(),{key:'Escape'});assert.equal(h.active(),b);
 });
 test('a marker replaced during ordinary blur or a background render has a logical focus successor',()=>{
  const h=harness(),b=h.marker('refuel');let replacement;

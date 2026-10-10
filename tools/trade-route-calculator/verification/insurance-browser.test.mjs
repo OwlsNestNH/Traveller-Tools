@@ -125,7 +125,7 @@ async function claim(page,quantity){
 }
 async function insuranceSetting(page,enabled){
  await tab(page,'Settings');const input=page.locator('#settings-form [name="insurance"]');
- for(const details of await input.locator('xpath=ancestor::details').all())if(!await details.evaluate(el=>el.open))await details.locator(':scope > summary').click();
+ for(const details of await input.locator('xpath=ancestor::details').all())if(!await details.evaluate(el=>el.open)){await details.locator(':scope > summary').click({position:{x:8,y:8}});assert.equal(await details.evaluate(el=>el.open),true);assert.equal(await page.locator('#rule-reference-popup').isVisible(),false);}
  await input.setChecked(enabled);await page.locator('#settings-save').click();
  await page.waitForFunction(({key,enabled})=>JSON.parse(localStorage.getItem(key)).settings.insurance===enabled,{key:KEY,enabled});
  assert.equal(await page.locator('#settings-error').textContent(),'');

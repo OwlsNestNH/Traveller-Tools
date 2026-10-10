@@ -239,7 +239,8 @@ async function runWidth(browser,width,report){
   // Subscreen growth, audit disclosure, internal scroll and reachable actions.
   for(const name of names){
    await header(page,name).click();await selected(page,name);await draft(page,name);
-   if(name==='refuel')await page.locator('.service-audit > summary').click();
+   if(name==='refuel'){await page.locator('.service-audit > summary').click({position:{x:8,y:8}});assert.equal(await page.locator('.service-audit').evaluate(el=>el.open),true);}
+   assert.equal(await page.locator('#rule-reference-popup').isVisible(),false,'Disclosure clicks do not activate the separate source button');
    await controls(page);result.scroll.push({name,...await internalScroll(page,name)});
    await stable('Expanded and scrolled '+name);await screenshot(name+'-expanded');
    await header(page,name).click();await selected(page,'world');await unlocked(page);
