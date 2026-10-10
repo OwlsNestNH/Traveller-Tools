@@ -38,7 +38,7 @@ export function createPlanetSearchSession({search=searchWorlds,resolve=loadWorld
  prompt();return {input,run,choose,cancel:invalidate};
 }
 
-export function createGlobalWorldSearch(host,{onBrowse,isCurrent,claimIntent}){
+export function createGlobalWorldSearch(host,{onBrowse,isCurrent,claimIntent,onDismiss}){
  host.classList.add('global-world-search');
  const heading=document.createElement('h3');heading.textContent='Search all sectors';
  const label=document.createElement('label');label.className='field';label.append('Planet name');
@@ -53,7 +53,7 @@ export function createGlobalWorldSearch(host,{onBrowse,isCurrent,claimIntent}){
   results.replaceChildren(...rows.map((w,i)=>{const item=document.createElement('li'),choice=document.createElement('button');choice.type='button';choice.textContent=planetSearchLabel(w);choice.disabled=busy;choice.addEventListener('click',()=>void session.choose(i));item.append(choice);return item;}));
  }});
  input.addEventListener('input',()=>session.input(input.value));
- input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.stopPropagation();void session.run();}});
+ input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.stopPropagation();void session.run();}else if(e.key==='Escape'){e.preventDefault();e.stopPropagation();session.cancel();onDismiss();}});
  button.addEventListener('click',()=>void session.run());
  host.closest('dialog')?.addEventListener('close',()=>session.cancel(),{once:true});
  input.focus();

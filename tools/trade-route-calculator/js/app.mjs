@@ -780,7 +780,7 @@ function findWorld(){
  },'Browse world',false);
  picker=createWorldPicker($('find-world'),{initial:viewed()||{sector:'Spinward Marches',hex:'1910'},title:'Or choose by location'});
  const session=activeModal;
- createGlobalWorldSearch($('global-world-search'),{claimIntent,isCurrent:()=>modalCurrent(session),onBrowse:async(w,isCurrent)=>{
+ createGlobalWorldSearch($('global-world-search'),{claimIntent,onDismiss:closeModal,isCurrent:()=>modalCurrent(session),onBrowse:async(w,isCurrent)=>{
   const rows=await M.nearby(w,12);if(!isCurrent())return;
   // Browsing stays session-only: no act/save, route change, or ship movement.
   rows.forEach(x=>known[x.id]=x);known[w.id]=w;view=w.id;mapPan={x:0,y:0};mapZoom=Math.max(1,mapZoom);rememberWorld(w);

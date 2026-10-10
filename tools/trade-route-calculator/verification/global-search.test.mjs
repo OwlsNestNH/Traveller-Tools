@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createPlanetSearchSession,planetSearchLabel} from '../js/global-world-search.mjs';
+import {createPlanetSearchSession,planetSearchLabel,createGlobalWorldSearch} from '../js/global-world-search.mjs';
 const tick=()=>new Promise(r=>setImmediate(r));
 const deferred=()=>{let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return {promise,resolve,reject};};
 const row=(Name='Terra',Sector='Solomani Rim',SectorX=0,HexX=18,HexY=27)=>({World:{Name,Sector,SectorX,SectorY:0,HexX,HexY}});
@@ -173,4 +173,19 @@ test('superseded global activity returns to usable results without stealing lega
  let version=0;const claimIntent=()=>{const own=++version;return()=>own===version;};
  const gate=deferred();const h=session({claimIntent,resolve:()=>gate.promise});h.s.input('Terra');await h.s.run();const chosen=h.s.choose(0);
  const legacy=claimIntent();gate.resolve({id:'old'});await chosen;assert.equal(h.last().busy,false);assert.equal(h.last().rows.length,1);assert.equal(legacy(),true);assert.equal(h.browsed.length,0);h.s.cancel();
+});
+
+
+test('Escape in the search input dismisses once and suppresses native search-field clearing',()=>{
+ const original=globalThis.document;
+ function element(){return {children:[],listeners:{},classList:{add(){}},append(...xs){this.children.push(...xs);},setAttribute(){},replaceChildren(...xs){this.children=xs;},addEventListener(name,fn){this.listeners[name]=fn;},closest(){return null;},focus(){this.focused=true;}};}
+ globalThis.document={createElement:element};
+ try{
+  const host=element();let dismissed=0,prevented=0,stopped=0;
+  createGlobalWorldSearch(host,{onBrowse:()=>assert.fail('Escape must not browse'),isCurrent:()=>true,onDismiss:()=>dismissed++});
+  const input=host.children[1].children[0].children[1];
+  assert.equal(input.type,'search');assert.equal(input.focused,true);
+  input.listeners.keydown({key:'Escape',preventDefault:()=>prevented++,stopPropagation:()=>stopped++});
+  assert.equal(dismissed,1);assert.equal(prevented,1);assert.equal(stopped,1);
+ }finally{globalThis.document=original;}
 });
