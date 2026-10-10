@@ -1,12 +1,12 @@
-import {ruleInfo} from './rule-references.mjs?v=undo-completion-20261010-43';
-import {passengerShip,passengerSpace} from './passengers.mjs?v=undo-completion-20261010-43';
+import {ruleInfo} from './rule-references.mjs?v=replacement-completion-20261010-44';
+import {passengerShip,passengerSpace} from './passengers.mjs?v=replacement-completion-20261010-44';
 // Read-only bridge manifest. Purchase facts come from each lot's frozen audit;
 // current price settings, contract revenue and insurance destinations are not inputs.
 import * as A from './amounts.mjs';
-import {used} from './state.mjs?v=undo-completion-20261010-43';
-import {bladderSpace} from './fuel.mjs?v=undo-completion-20261010-43';
-import {passengerLuggage} from './accommodation.mjs?v=undo-completion-20261010-43';
-import {supportCargo,supportStock,supportDisplay} from './life-support.mjs?v=undo-completion-20261010-43';
+import {used} from './state.mjs?v=replacement-completion-20261010-44';
+import {bladderSpace} from './fuel.mjs?v=replacement-completion-20261010-44';
+import {passengerLuggage} from './accommodation.mjs?v=replacement-completion-20261010-44';
+import {supportCargo,supportStock,supportDisplay} from './life-support.mjs?v=replacement-completion-20261010-44';
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=x=>{const [whole,fraction]=String(x).split('.');return 'Cr '+whole.replace(/\B(?=(\d{3})+(?!\d))/g,',')+(fraction===undefined?'':'.'+fraction);};
 const button=(label,action,arg='',extra='')=>'<button data-action="'+action+'" data-arg="'+esc(arg)+'" '+extra+'>'+esc(label)+'</button>';

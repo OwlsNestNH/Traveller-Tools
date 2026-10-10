@@ -1,24 +1,26 @@
-import * as S from './state.mjs?v=undo-completion-20261010-43';
-import {creditStep} from './rounding.mjs?v=undo-completion-20261010-43';
-import {SaveNotCommittedError} from './persistence.mjs?v=undo-completion-20261010-43';
+import * as S from './state.mjs?v=replacement-completion-20261010-44';
+import {creditStep} from './rounding.mjs?v=replacement-completion-20261010-44';
+import {SaveNotCommittedError} from './persistence.mjs?v=replacement-completion-20261010-44';
 
 // Store remains synchronous. An injected provider may return a completion
 // Promise; that completion must include the durable write and publication.
 // Expected revisions are always supplied by callers, never inferred here.
 export function createCampaignController({getState,getStore,getKnownWorlds,getRounding}){
  let localSave=false,pending=null;
- const publications=new Map();
+ const publications=new Map(),replacementPublications=new Map();
  const beforeWrite=fn=>{try{return fn();}catch(cause){throw new SaveNotCommittedError(cause);}};
  const requireIdle=()=>{if(pending)throw Error('Wait for the current campaign save to finish.');};
  function write(next,expectedRevision,replacement=false){
   // The provider never receives the candidate retained by a caller/mutator.
   const snapshot=beforeWrite(()=>{requireIdle();return structuredClone(next);});
+  const publicationRevision=beforeWrite(()=>replacement?expectedRevision+1:snapshot.revision);
   const operation={};pending=operation;
-  if(!replacement)publications.set(operation,snapshot.revision);
-  const finish=()=>{publications.delete(operation);if(pending===operation)pending=null;};
+  if(replacement)replacementPublications.set(operation,publicationRevision);
+  else publications.set(operation,publicationRevision);
+  const finish=()=>{publications.delete(operation);replacementPublications.delete(operation);if(pending===operation)pending=null;};
   localSave=!replacement;
   try{
-   const result=replacement?getStore().replace(snapshot,expectedRevision):getStore().save(snapshot,expectedRevision,operation);
+   const result=replacement?getStore().replace(snapshot,expectedRevision,operation):getStore().save(snapshot,expectedRevision,operation);
    if(result&&typeof result.then==='function')return Promise.resolve(result).then(value=>{finish();return value;},error=>{finish();throw error;});
    finish();return result;
   }catch(error){finish();throw error;}
@@ -34,6 +36,13 @@ export function createCampaignController({getState,getStore,getKnownWorlds,getRo
    const token=metadata?.saveToken;
    if(!publications.has(token)||publications.get(token)!==next.revision)return false;
    publications.delete(token);return true;
+  },
+  // Replacement provenance identifies an owned completion only. It must never
+  // retain local offers or turn a replacement into an ordinary local save.
+  takeReplacementPublication(next,metadata){
+   const token=metadata?.replacementToken;
+   if(!replacementPublications.has(token)||replacementPublications.get(token)!==next.revision)return false;
+   replacementPublications.delete(token);return true;
   },
   save,
   transition(label,change,expectedRevision){

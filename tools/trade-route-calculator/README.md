@@ -559,9 +559,20 @@ one-mulligan policy are unchanged.
 activation, stale ownership/revision, display failure and reload alongside the
 existing synchronous jump and campaign regression suites.
 
-Undo save completion (.43 candidate) retains ordinary History Undo's immediate
+Undo save completion (.43) retains ordinary History Undo's immediate
 behavior and Undo Jump's existing confirmation. A delayed save waits before
 clearing previews or claiming success. Known-unsaved Undo can be retried from
 History after closing its notice; an uncertain or already-saved outcome requires
-reload before further editing. Campaign replacement/import/reset is a separate
-remaining item in [the completion migration queue](COMPLETION_MIGRATION.md).
+reload before further editing. See [the completion migration queue](COMPLETION_MIGRATION.md)
+for remaining callers and the explicit .43 live-file verification gap.
+
+
+Campaign replacement completion (.44 candidate) keeps the existing backup
+confirmation for import/reset. Saving waits for the provider's durable write
+and publication before changing the viewed world, clearing selection or showing
+success. The published campaign supplies the rebased revision and Dashboard
+starting point. A known-unsaved failure keeps the review for correction/retry;
+an uncertain or already-saved outcome requires reload and verification of the
+saved campaign before another replacement. A late file read cannot overwrite a
+newer selection, dialog, campaign or editing tenure. JSON schema, economic
+values, History/Undo and jump-mulligan rules are unchanged.
