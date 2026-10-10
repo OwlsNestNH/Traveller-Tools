@@ -91,10 +91,30 @@ test('world-space hex distances across negative and positive parity',()=>{assert
 test('fewest-jumps route preserves mandatory stops even with unavailable destination fuel',()=>{const worlds=Object.fromEntries([w(),w('1,0',1,0),w('2,0',2,0),w('3,0',3,0)].map(x=>[x.id,x]));const ship={jump:2,scoops:false};assert.deepEqual(M.plan(worlds,['0,0','3,0'],ship,core),['0,0','2,0','3,0']);assert.deepEqual(M.plan(worlds,['0,0','1,0','3,0'],ship,core),['0,0','1,0','3,0']);assert.deepEqual(M.plan(worlds,['0,0','2,0','3,0'],ship,core),['0,0','2,0','3,0']);worlds['3,0'].fuelOverride=false;assert.equal(M.fuel(worlds['3,0'],ship,core),false);assert.deepEqual(M.plan(worlds,['0,0','3,0'],ship,core),['0,0','2,0','3,0']);});
 
 test('insure held cargo charges only premium, blocks overlapping policies, and undoes atomically',()=>{
- const s=campaign();s.lots=[lot('held','1000','2')];const q={...R.insuranceQuote('1000',70,1,['Red'],mp),route:['0,0','1,0'],destination:'1,0',routeProgress:0};
+ const s=campaign();s.settings.insurance=true;s.lots=[lot('held','1000','2')];const q={...R.insuranceQuote('1000',70,1,['Red'],mp),route:['0,0','1,0'],destination:'1,0',routeProgress:0};
  const after=S.transition(s,'Insure existing cargo',n=>S.insureLot(n,'held',q));
  assert.equal(after.lots[0].quantity,'2');assert.equal(after.lots[0].goodsValue,'1000');assert.equal(BigInt(after.bank),BigInt(s.bank)-BigInt(q.premium));assert.equal(BigInt(after.lots[0].basis),1000n+BigInt(q.premium));assert.equal(after.policies.length,1);
  assert.throws(()=>S.insureLot(after,'held',q),/already has coverage/);const undone=S.undo(after);assert.equal(undone.bank,s.bank);assert.equal(undone.lots[0].basis,'1000');assert.equal(undone.policies.length,0);
- const poor=campaign();poor.lots=[lot('held','1000','2')];poor.bank='0';assert.throws(()=>S.insureLot(poor,'held',q),/Insufficient/);assert.equal(poor.policies.length,0);
+ const poor=campaign();poor.settings.insurance=true;poor.lots=[lot('held','1000','2')];poor.bank='0';assert.throws(()=>S.insureLot(poor,'held',q),/Insufficient/);assert.equal(poor.policies.length,0);
 });
 
+
+test('insurance OFF rejects both new-coverage entry points before any state mutation',()=>{
+ const s=campaign(),q={...R.insuranceQuote(200,70,1,[],mp),route:['0,0','1,0'],destination:'1,0',routeProgress:0};
+ s.lots=[lot('held','200','2')];const before=structuredClone(s);
+ assert.throws(()=>S.buy(s,{snapshotId:'s',offerId:'o',quantity:2,insurance:q}),/Insurance is disabled/);
+ assert.deepEqual(s,before,'Rejected insured purchase changes no stock, bank, lots, ledger or options');
+ assert.throws(()=>S.insureLot(s,'held',q),/Insurance is disabled/);assert.deepEqual(s,before);
+ S.buy(s,{snapshotId:'s',offerId:'o',quantity:2});assert.equal(s.settings.insurance,false);assert.equal(s.policies.length,0);
+});
+test('insurance OFF preserves existing policy lifecycle and Undo through JSON round trip',()=>{
+ let s=campaign();s.settings.insurance=true;
+ const q={...R.insuranceQuote(200,70,1,[],mp),route:['0,0','1,0'],destination:'1,0',routeProgress:0};
+ s=S.transition(s,'Insured purchase',n=>S.buy(n,{snapshotId:'s',offerId:'o',quantity:2,insurance:q}));
+ s=S.transition(s,'Disable new insurance',n=>{n.settings.insurance=false;});
+ const before=S.validate(JSON.parse(JSON.stringify(s))),id=before.policies[0].id;
+ const after=S.transition(before,'Existing insurance claim',n=>S.claim(n,{policyId:id,quantity:1,reason:'Approved loss',approved:true}));
+ assert.equal(after.settings.insurance,false);assert.equal(after.policies[0].remainingQuantity,'1');assert.equal(after.policies[0].claims.length,1);
+ const restored=S.undo(S.validate(JSON.parse(JSON.stringify(after))));
+ assert.equal(restored.bank,before.bank);assert.deepEqual(restored.policies,before.policies);assert.deepEqual(restored.lots,before.lots);assert.equal(restored.settings.insurance,false);
+});

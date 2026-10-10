@@ -30,9 +30,9 @@
   {
     "id": "INT-005",
     "topic": "Timing",
-    "conclusion": "Freight deadlines are entered by the referee. Repeated searches use a rolling 30-day window; rejected-deal cooldowns last 720 hours.",
-    "date": "2026-10-03",
-    "revision": 1
+    "conclusion": "Freight deadlines are entered by the referee. Home Rule / campaign interpretation: each planet has grouped 28-day (672-hour) contact-search periods anchored at its first committed search. Buyer and supplier searches share DM -1 per prior committed attempt across methods and counterparties. All penalties clear together at period end; the next committed search starts a new period. Preview/cancel does not count. Core says same month; it does not explicitly define this grouped 28-day ruling. Rejected-deal cooldowns remain 720 hours.",
+    "date": "2026-10-10",
+    "revision": 2
   },
   {
     "id": "INT-006",

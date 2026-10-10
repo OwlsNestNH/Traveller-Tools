@@ -10,7 +10,7 @@ import {configureSupport} from '../js/life-support.mjs';
 const core=JSON.parse(await readFile(new URL('../rules/core-2022.json',import.meta.url)));
 const fixture=()=>guiFixture(12).state;
 test('manifest uses exact hold accounting once and excludes delivered/cancelled cargo',()=>{
- const s=fixture();s.ship.capacity='200';s.ship.fuel=configureFuel(200,40,45,1,2);
+ const s=fixture();s.ship.capacity='200';s.ship.fuel=configureFuel(200,40,45,40,2);
  s.ship.accommodation.passengers.high=2;s.ship.lifeSupport=configureSupport(s.ship,{stockUnits:'901.5'});
  const contract=s.contracts[0];s.contracts.push({...contract,id:'mail',kind:'mail',quantity:'10',payment:'50000'},{...contract,id:'delivered',status:'delivered',quantity:'99'},{...contract,id:'cancelled',status:'cancelled',quantity:'88'});
  const q=cargoManifest(s);assert.equal(A.decimal(q.goods),'9');assert.equal(A.decimal(q.freight),'5');assert.equal(A.decimal(q.mail),'10');assert.equal(q.luggage,'2');assert.equal(q.bladders,5);assert.equal(A.decimal(q.support),'1.015');assert.equal(A.decimal(q.other),'8.015');assert.equal(A.decimal(q.occupied),'32.015');assert.equal(A.decimal(q.free),'167.985');assert.equal(q.contracts.length,2);assert.equal(A.cmp(q.occupied,S.used(s)),0);

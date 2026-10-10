@@ -1378,7 +1378,10 @@
       "C": 2
     },
     "priorAttemptDM": -1,
-    "priorAttemptWindowHours": 720,
+    "priorAttemptPeriodHours": 672,
+    "priorAttemptPeriodMode": "grouped-first-committed-search-per-world",
+    "priorAttemptClassification": "Home Rule / campaign interpretation",
+    "priorAttemptSourceWording": "same month",
     "repeatDealCooldownHours": 720,
     "timingDecision": "INT-005",
     "rejectionDecision": "INT-006"

@@ -1,5 +1,5 @@
 // Mechanical data: Core Rulebook Update 2022, printed pp. 238–239.
-import {roll,die} from './rules.mjs?v=global-planet-search-20261010-29';
+import {roll,die} from './rules.mjs?v=campaign-controls-20261010-30';
 export const PASSAGE_CLASSES=['low','basic','middle','high'];
 export const passageLabel=x=>({low:'Low',basic:'Basic',middle:'Middle',high:'High'}[x]||x);
 function integer(value,label){if(!Number.isSafeInteger(value))throw Error(label+' must be a whole number.');return value;}

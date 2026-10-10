@@ -1,4 +1,4 @@
-import {initial,validate} from './state.mjs?v=global-planet-search-20261010-29';
+import {initial,validate} from './state.mjs?v=campaign-controls-20261010-30';
 export const KEY='traveller-trade-route-calculator:v1';
 const LOCK=KEY+':writer';
 function serializedCampaign(next){

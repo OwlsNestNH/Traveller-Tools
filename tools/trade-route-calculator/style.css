@@ -369,3 +369,6 @@ main{padding-top:18px}
 .planet-search-results button{display:block;width:100%;min-height:44px;text-align:left;line-height:1.5;white-space:normal;overflow-wrap:anywhere}
 .planet-search-results button:focus-visible,.planet-search-controls :focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
 .global-world-search .error{color:var(--red)}
+
+/* Keep the three distinct fuel quantities compact without changing bar tracks. */
+.summary .fuel-counter>.value{font-size:12px;line-height:1.35;overflow-wrap:normal}

@@ -8,7 +8,7 @@ import {createServicePanels,maxFuelAddition} from '../js/service-panels.mjs';
 function campaign({port='A',aboard=20,bladders=0,cargo='120',bank='100000',creditStep=1}={}){
  const s=S.initial();Object.assign(s,{initialized:true,bank,actual:'0,0',route:['0,0']});
  s.worlds={'0,0':{id:'0,0',name:'Actual Fuel Harbor',x:0,y:0,sector:'Synthetic',hex:'0101',uwp:port+'788899-C',zone:'Safe'}};
- s.ship.fuel=configureFuel(200,43,aboard,bladders,2);s.ship.capacity=cargo;s.settings.creditStep=creditStep;return s;
+ s.ship.fuel=configureFuel(200,43,aboard,bladders*40,2);s.ship.capacity=cargo;s.settings.creditStep=creditStep;return s;
 }
 function harness(options){
  let state=campaign(options),form=null;const h={commits:0};
