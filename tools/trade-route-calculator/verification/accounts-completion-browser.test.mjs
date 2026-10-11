@@ -53,7 +53,7 @@ for(const [id,amount]of [['positive','10.1'],['zero','0'],['negative-bank','-900
 // identical already-represented surfaces are measured but not photographed.
 // Failures always retain a complete viewport diagnostic, even in assertion-only
 // cases. This fixes the evidence plan before CI rather than lowering readability.
-function persistsEvidence(s){if(s.mode==='construction-reentry')return ['manual-entry-title-reentry','bundle-entry-body-reentry'].includes(s.id);if(s.mode==='handoff-reentry')return s.point==='normalization';if(s.mode==='nearby-refresh')return s.nearbyStage==='publication';if(s.mode==='rate-handoff-reentry')return s.point==='report';return detailedSuccess(s)||['deferred','retry','unknown-before','unknown-after','foreign-same','new-dialog','read-only','disk-same','disk-unreadable','early-durable','reentrant-close','construction-reentry','handoff-reentry','entry-fault','nearby-refresh','map-owned','map-foreign','rate-handoff-reentry','rate-refresh-fault','rate-chain','retry-input-change','economic','published-disk-drift','published-disk-unreadable','retired-unknown-newer','covered-details-pending'].includes(s.mode)||s.mode==='stage-ownership'&&s.drift==='replacement'||s.mode==='native'&&s.operation==='correction';}
+function persistsEvidence(s){if(s.mode==='construction-reentry')return ['manual-entry-title-reentry','bundle-entry-body-reentry'].includes(s.id);if(s.mode==='handoff-reentry')return s.point==='normalization';if(s.mode==='nearby-refresh')return s.nearbyStage==='publication';if(s.mode==='rate-handoff-reentry')return s.point==='report';return detailedSuccess(s)||['deferred','retry','unknown-before','unknown-after','foreign-same','new-dialog','read-only','disk-same','disk-unreadable','early-durable','reentrant-close','construction-reentry','handoff-reentry','entry-fault','nearby-refresh','map-owned','map-foreign','rate-handoff-reentry','rate-refresh-fault','rate-chain','retry-input-change','controls','economic','published-disk-drift','published-disk-unreadable','retired-unknown-newer','covered-details-pending'].includes(s.mode)||s.mode==='stage-ownership'&&s.drift==='replacement'||s.mode==='native'&&s.operation==='correction';}
 for(const operation of operations)scenarios.push({id:operation+'-published-disk-drift',operation,mode:'published-disk-drift'});
 for(const operation of ['rate','manual'])for(const mode of ['published-disk-unreadable','retired-unknown-newer','moved-form'])scenarios.push({id:operation+'-'+mode,operation,mode,dual:operation==='manual'&&mode==='retired-unknown-newer'});
 for(const operation of ['bundle','manual','correction'])scenarios.push({id:operation+'-entry-formdata-fault',operation,mode:'entry-fault',fault:'form-data'});
@@ -218,7 +218,7 @@ async function installGate(page, result) {
   const storeResponse = await fetch(storeURL); if (!storeResponse.ok) throw Error('Cannot inspect runtime Store');
   const storeSource = await storeResponse.text();
   const g = globalThis.accountsGate = {armed: false, pending: null, store: null, args: null, lastState: null, calls: 0, totalCalls: 0, executions: 0, notifyFault: null, cleanupFault: null, entryFault: false, readFault: false, recoveryReentry: false, recoveryChecks: [], faults: [], candidates: [], forwarded: [], publications: [], observations: [], settlements: [], reentrant: false, reentrantChecks: [], oldSubmit: null, baseline: null};
-  Object.assign(g, {timeline: [], timelineDropped: 0, constructionChecks: [], readChecks: []});
+  Object.assign(g, {timeline: [], timelineDropped: 0, constructionChecks: [], normalizationChecks: [], readChecks: []});
   g.trace = (event, detail = {}) => {const entry = {order: g.timeline.length + 1, at: performance.now(), event, ...detail}; if (g.timeline.length < 120) g.timeline.push(entry); else g.timelineDropped++; return entry;};
   Object.assign(g, {strict: false, paintEdges: [], paintEdgesDropped: 0, mutationCount: 0, phase: 'review', nextNodeId: 0, nodeIds: new WeakMap()});
   const nodeId = node => node ? (g.nodeIds.has(node) ? g.nodeIds.get(node) : (g.nodeIds.set(node, ++g.nextNodeId), g.nextNodeId)) : null;
@@ -252,7 +252,20 @@ async function installGate(page, result) {
   const NativeFormData=FormData;globalThis.FormData=new Proxy(NativeFormData,{construct(target,args,newTarget){if(g.formDataFault&&args[0]?.id==='modal-form'){g.formDataFault=false;g.faults.push('form-data');throw Error('Synthetic Accounts FormData fault');}return Reflect.construct(target,args,newTarget);}});
   const qsa=Element.prototype.querySelectorAll;
   Element.prototype.querySelectorAll=function(selector){
-   if(this.id==='modal-form'&&selector==='[data-round]'&&g.normalizationFault&&(!g.normalizationAfter||!--g.normalizationAfter)){const mode=g.normalizationFault;g.normalizationFault=null;g.faults.push('normalization');if(mode==='reentry'){g.constructionFault='normalization';g.replaceConstruction();}else throw Error('Synthetic accounts normalization fault');}
+   if(this.id==='modal-form'&&selector==='[data-round]'&&g.normalizationFault){
+    const delayed=!!g.normalizationAfter&&--g.normalizationAfter>0;
+    if(g.probePendingNormalization){
+     const form=this,handler=form.onsubmit,body=document.querySelector('#modal-body').innerHTML,title=document.querySelector('#modal-title').textContent,bytes=localStorage.getItem(KEY);
+     const check={call:g.normalizationChecks.length+1,title,open:document.querySelector('#modal').open,sameFirstForm:form===g.firstForm,sameFirstSubmit:handler===g.firstSubmit,providerPending:!!g.pending,totalCalls:g.totalCalls,writes:accountsStorage.writes,dice:accountsDiceCalls,controls:['modal-submit','modal-cancel','modal-close'].map(id=>({id,disabled:document.querySelector('#'+id).disabled}))};
+     // The accepted first submit already owns its pending interval. A real Notes
+     // click here must be blocked; only the next confirmation's construction may
+     // be replaced. Do not confuse this with native-close owner invalidation.
+     if(delayed){document.querySelector('#notes').click();Object.assign(check,{notesBlocked:document.querySelector('#modal-title').textContent===title,sameBody:document.querySelector('#modal-body').innerHTML===body,sameHandler:form.onsubmit===handler,sameOpen:document.querySelector('#modal').open===check.open,sameDurableBytes:localStorage.getItem(KEY)===bytes});}
+     g.normalizationChecks.push(g.trace(delayed?'first-submit-normalization-notes-blocked':'confirmation-construction-normalization',check));
+     if(delayed&&(!check.notesBlocked||!check.sameBody||!check.sameHandler||!check.sameOpen||!check.sameDurableBytes))throw Error('Pending first normalization did not block Notes replacement');
+    }
+    if(!delayed){const mode=g.normalizationFault;g.normalizationFault=null;g.faults.push('normalization');if(mode==='reentry'){g.constructionFault='normalization';g.replaceConstruction();}else throw Error('Synthetic accounts normalization fault');}
+   }
    return Reflect.apply(qsa,this,[selector]);
   };
   const text = Object.getOwnPropertyDescriptor(Node.prototype, 'textContent');
@@ -361,10 +374,10 @@ async function installGate(page, result) {
    else {g.settlements.push({kind: 'native-fulfilled', executed: true}); p.resolve(p.result);}
   };
   g.remember = () => {g.oldSubmit = document.querySelector('#modal-form').onsubmit; g.baseline = semantic(); g.reviewNode = document.querySelector('#modal-body').firstElementChild; g.mainNode = document.querySelector('#main').firstElementChild; g.retainedBaselineOrder = g.trace('retained-baseline', {mapStatus: document.querySelector('#map-load-status')?.textContent ?? null, mapStatusNodeId: nodeId(document.querySelector('#map-load-status')), cacheCompleted: accountsMapCallbacks.cacheCompleted, loadingCacheCompleted: accountsMapCallbacks.loadingCacheCompleted});};
-  g.snapshot=()=>({calls:g.calls,totalCalls:g.totalCalls,executions:g.executions,pending:!!g.pending,editable:g.store?.editable??null,reloadRequired:!!g.store?.reloadRequired,storage:{...accountsStorage},candidates:g.candidates,forwarded:g.forwarded,publications:g.publications,observations:g.observations,settlements:g.settlements,faults:g.faults,reentrantChecks:g.reentrantChecks,baseline:g.baseline,acceptedDice:g.acceptedDice,semantic:semantic(),reviewNodeRetained:!!g.reviewNode?.isConnected,mainNodeRetained:!!g.mainNode?.isConnected,newer:g.newer,recoveryChecks:g.recoveryChecks,callbacks:{...accountsMapCallbacks},nearbyResponses:accountsNearbyResponses,bootstrap:g.bootstrap,mapReadiness:g.mapReadiness,retainedBaselineOrder:g.retainedBaselineOrder,constructionChecks:g.constructionChecks,readChecks:g.readChecks,timeline:g.timeline,timelineDropped:g.timelineDropped,mapBaseline:g.mapBaseline,paintEdges:g.paintEdges,paintEdgesDropped:g.paintEdgesDropped,mutationCount:g.mutationCount,handoffChecks:g.handoffChecks||[],dieReentryCheck:g.dieReentryCheck??null,durableToken:/"saveToken"\s*:/.test(localStorage.getItem(KEY))});
+  g.snapshot=()=>({calls:g.calls,totalCalls:g.totalCalls,executions:g.executions,pending:!!g.pending,editable:g.store?.editable??null,reloadRequired:!!g.store?.reloadRequired,storage:{...accountsStorage},candidates:g.candidates,forwarded:g.forwarded,publications:g.publications,observations:g.observations,settlements:g.settlements,faults:g.faults,reentrantChecks:g.reentrantChecks,baseline:g.baseline,acceptedDice:g.acceptedDice,semantic:semantic(),reviewNodeRetained:!!g.reviewNode?.isConnected,mainNodeRetained:!!g.mainNode?.isConnected,newer:g.newer,recoveryChecks:g.recoveryChecks,callbacks:{...accountsMapCallbacks},nearbyResponses:accountsNearbyResponses,bootstrap:g.bootstrap,mapReadiness:g.mapReadiness,retainedBaselineOrder:g.retainedBaselineOrder,constructionChecks:g.constructionChecks,normalizationChecks:g.normalizationChecks,readChecks:g.readChecks,timeline:g.timeline,timelineDropped:g.timelineDropped,mapBaseline:g.mapBaseline,paintEdges:g.paintEdges,paintEdgesDropped:g.paintEdgesDropped,mutationCount:g.mutationCount,handoffChecks:g.handoffChecks||[],dieReentryCheck:g.dieReentryCheck??null,durableToken:/"saveToken"\s*:/.test(localStorage.getItem(KEY))});
   g.reset = () => {
    if(g.pending)throw Error('Cannot reset pending boundary observations');
-   Object.assign(g,{args:null,calls:0,totalCalls:0,executions:0,candidates:[],forwarded:[],publications:[],observations:[],settlements:[],faults:[],reentrantChecks:[],baseline:null,acceptedDice:null,timeline:[],timelineDropped:0,recoveryChecks:[],constructionChecks:[]});
+   Object.assign(g,{args:null,calls:0,totalCalls:0,executions:0,candidates:[],forwarded:[],publications:[],observations:[],settlements:[],faults:[],reentrantChecks:[],baseline:null,acceptedDice:null,timeline:[],timelineDropped:0,recoveryChecks:[],constructionChecks:[],normalizationChecks:[]});
    Object.assign(accountsStorage,{attempts:0,writes:0,failNext:false,observations:[]});
   };
   // In this.onChange(this.read()), JavaScript resolves onChange before read.
@@ -509,7 +522,7 @@ async function reloadUndo(page,result,before,scenario,{committed=true}={}){
  if(!committed){assert.deepEqual(await read(page),before);return;}
  const saved=await read(page);assertSaved(saved,before,scenario);await tab(page,'Accounts');if(detailedSuccess(scenario))await detail(page,result,'reload-current-balance',['#main .panel-body > .preview > dl > dt:nth-of-type(3)','#main .panel-body > .preview > dl > dd:nth-of-type(3)'],/Current balance/);
  await tab(page,'History');await action(page,'undo').click();await closed(page);await frames(page);assert.deepEqual(normalize(await read(page)),normalize(S.undo(saved)),'Genuine History Undo equals complete original inverse transition');assert.deepEqual(material(await read(page)),material(before));assert.equal((await read(page)).revision,before.revision+2);assert.equal(await page.evaluate(()=>accountsStorage.writes),1);assert.equal(S.jumpUndoEligibility(await read(page)).allowed,false);
- if(detailedSuccess(scenario))await detail(page,result,'history-undo-one-atomic-transition',['#message'],/Undo/);
+ if(detailedSuccess(scenario))await detail(page,result,'history-undo-one-atomic-transition',['#message'],/^Latest action undone\.$/);
  result.checks.push('Genuine uninstrumented reload, exact History Undo, one atomic revision/batch and permanently closed prior jump mulligan');
 }
 async function successful(page,result,before,scenario,{reload=true}={}){
@@ -644,9 +657,16 @@ async function stageOwnership(page,result,scenario,before,context){
 }
 async function constructionReentry(page,result,scenario,before,{handoff=false}={}){
  if(handoff)await prepare(page,result,scenario,before,{firstOnly:true});else await tab(page,'Accounts');const bytes=await raw(page);
- await page.evaluate(point=>{if(point==='normalization')accountsGate.normalizationFault='reentry';else accountsGate.constructionFault=point;},scenario.point);
+ await page.evaluate(point=>{if(point==='normalization'){accountsGate.normalizationFault='reentry';accountsGate.normalizationAfter=2;accountsGate.probePendingNormalization=true;}else accountsGate.constructionFault=point;},scenario.point);
  if(handoff)await pointer(page,'#modal-submit');else await action(page,['bundle','rate'].includes(scenario.operation)?'ship-expenses':scenario.operation==='manual'?'expense':'bank-correct').click();
  await page.locator('#modal-title').filter({hasText:/^Rules & Notes$/}).waitFor();await frames(page);let snapshot=await gate(page);assert.equal(snapshot.totalCalls,0);assert.equal(await raw(page),bytes);assert.equal(snapshot.constructionChecks.length,1);assert.equal(snapshot.constructionChecks[0].handlerChanged,true);
+ if(scenario.point==='normalization'){
+  const [first,second]=snapshot.normalizationChecks;assert.equal(snapshot.normalizationChecks.length,2,'Both exact normalization boundaries must be reached');
+  for(const check of [first,second]){assert.equal(check.open,true);assert.equal(check.sameFirstForm,true);assert.equal(check.providerPending,false);assert.equal(check.totalCalls,0);assert.equal(check.writes,0);assert.equal(check.dice,0);}
+  assert.equal(first.call,1);assert.equal(first.title,'Ship expenses');assert.equal(first.sameFirstSubmit,true);for(const key of ['notesBlocked','sameBody','sameHandler','sameOpen','sameDurableBytes'])assert.equal(first[key],true,key);assert.ok(first.controls.every(control=>control.disabled),'First normalization already owns pending controls');
+  assert.equal(second.call,2);assert.equal(second.title,'Confirm ship expenses');assert.equal(second.sameFirstSubmit,false);assert.ok(second.controls.every(control=>!control.disabled),'Fresh confirmation construction has independent unlocked chrome');assert.ok(first.order<second.order&&second.order<snapshot.constructionChecks[0].order);assert.equal(snapshot.constructionChecks[0].point,'normalization');
+  result.checks.push('First accepted-submit normalization blocks actual Notes click without changing DOM/handler/bytes; second normalization demonstrably belongs to fresh Confirm ship expenses construction and is replaced by newer Notes');
+ }
  if(handoff)await page.evaluate(()=>{void accountsGate.firstSubmit({preventDefault(){},currentTarget:accountsGate.firstForm});});await frames(page);snapshot=await gate(page);assert.equal(await page.locator('#modal-body').innerHTML(),snapshot.newer.body);await detail(page,result,'newer-notes-owns-construction',['#modal-body .notes-list article:first-child'],/Rules and verification/);await verifyNewerNotes(page,result);result.gate=safeReport(await gate(page));
 }
 async function contextDrift(page,result,scenario,before){
@@ -745,7 +765,7 @@ function evidenceTargets(s){
  if(['native','deferred','retry','economic'].includes(s.mode)){
   if(s.mode==='economic'&&s.invalid)return [s.selected?.length===0?'empty-selection-no-payment':'insufficient-combined-funds'];
   labels=success();if(s.mode==='deferred')labels.unshift('pending-before-write-controls','durable-publication-held-controls');if(s.mode==='retry')labels.unshift('known-unsaved-deliberate-retry-warning','known-unsaved-deliberate-retry-controls');if(s.dry)labels.unshift('free-water-advisory');if(s.supplier)labels.unshift('private-supplier-confirmed');
- }else if(['unknown-before','unknown-after','rate-refresh-fault'].includes(s.mode))labels=['terminal-reload-warning','terminal-dismissal-controls'];
+ }else if(['unknown-before','unknown-after','rate-refresh-fault','controls'].includes(s.mode))labels=['terminal-reload-warning','terminal-dismissal-controls'];
  else if(s.mode==='foreign-same')labels=['saved-retired-form-reload'];
  else if(s.mode==='new-dialog')labels=['newer-notes-retained'];
  else if(s.mode==='read-only')labels=['read-only-warning'];

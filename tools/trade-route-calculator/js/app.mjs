@@ -157,7 +157,7 @@ function syncModalSubmit(){
 function closeModal(){
  if(activeModal?.awaitSave&&activeModal.busy||accountsWriteOperation?.handoff&&!accountsWriteOperation.invalidated)return false;
  const accountsOwner=accountsWriteOperation?.session===activeModal?accountsWriteOperation:null;
- if(accountsOwner){const generation=modalGeneration;invalidateAccountsWriteOperation(accountsOwner.closingGeneration!==generation+1||campaignReloadRequired,accountsOwner);if(activeModal!==accountsOwner.session||modalGeneration!==generation)return false;}
+ if(accountsOwner){const generation=modalGeneration;invalidateAccountsWriteOperation(!accountsOwner.session?.terminal&&(accountsOwner.closingGeneration!==generation+1||campaignReloadRequired),accountsOwner);if(activeModal!==accountsOwner.session||modalGeneration!==generation)return false;}
  const passengerOwner=passengerWriteOperation?.session&&passengerWriteOperation.session===activeModal?passengerWriteOperation:null,lifecycleOwner=contractLifecycleWriteOperation?.session&&contractLifecycleWriteOperation.session===activeModal?contractLifecycleWriteOperation:null,saleOwner=saleWriteOperation?.session===activeModal?saleWriteOperation:null,purchaseOwner=purchaseWriteOperation?.session===activeModal?purchaseWriteOperation:null,insuranceOwner=insuranceWriteOperation?.session===activeModal?insuranceWriteOperation:null,contactOwner=contactSearchWriteOperation?.session===activeModal?contactSearchWriteOperation:null,contractOwner=contractOfferWriteOperation?.session&&contractOfferWriteOperation.session===activeModal?contractOfferWriteOperation:null,generation=modalGeneration;
  if(passengerOwner){
   invalidatePassengerWriteOperation(passengerOwner.closingGeneration!==generation+1||campaignReloadRequired,passengerOwner);
@@ -3007,7 +3007,7 @@ function accountsEntryCurrent(owner,session,generation){
 function invalidateAccountsWriteOperation(notify=true,owner=accountsWriteOperation){
  if(!owner)return;owner.invalidated=true;owner.retired=true;if(owner.session){owner.session.cancelled=true;owner.session.busy=false;owner.session.awaitSave=false;}
  if(notify&&owner.session&&activeModal===owner.session&&modalGeneration===owner.generation&&$('modal').open){
-  $('modal-error').textContent=campaignReloadRequired?campaignReloadMessage:owner.retiredReason||'Campaign, Accounts fields or editing ownership changed. Close and review the current campaign before continuing.';
+  $('modal-error').textContent=campaignReloadRequired?campaignReloadMessage:owner.retiredReason||(!store?.editable||editingLossEpoch!==owner.editing?'Editing moved to another tab. Reopen this dialog after taking over editing.':'Campaign, Accounts fields or editing ownership changed. Close and review the current campaign before continuing.');
   if(activeModal===owner.session&&modalGeneration===owner.generation)syncModalSubmit();
  }
 }
@@ -3073,6 +3073,14 @@ function restoreAccountsControls(owner,a){
  for(const [c,disabled]of a.referenceControls||[]){c.disabled=disabled;assertAccountsCurrent(owner);}
  for(const [c,disabled] of a.controls||[]){a.terms.get(c).disabled=disabled;c.disabled=disabled;assertAccountsCurrent(owner);}
 }
+function restoreAccountsDismissal(owner){
+ const current=()=>accountsReportsCurrent(owner)&&activeModal===owner.session&&owner.session.terminal&&$('modal-form')===owner.form&&owner.dialog.contains(owner.form);
+ for(const [id,disabled]of [['modal-submit',true],['modal-cancel',false],['modal-close',false]]){
+  if(!current())return;
+  const control=owner.identity?.find(c=>c.id===id);if(!control||$(id)!==control)continue;
+  try{control.disabled=disabled;}catch{/* A failed dismissal control must not prevent restoring the other one. */}
+ }
+}
 function accountsWriteFailure(owner,a,error){
  owner.session.saveName=a.kind==='rate'?'Starport berthing rate':owner.kind==='correction'?'Bank correction':owner.kind==='manual'?'Manual expense':'Ship expenses';
  if(a.publication&&!(error?.code==='SAVE_COMMITTED_PUBLICATION_FAILED'&&error.committed===true&&error.revision===a.publication.revision))error=new SaveCommittedPublicationError(a.publication.revision,error);
@@ -3108,7 +3116,7 @@ function accountsWriteFailure(owner,a,error){
   if(!known){try{terminalModalSaveFailure(owner.session,a.publication?new SaveCommittedPublicationError(a.publication.revision,reportError):reportError,()=>accountsReportsCurrent(owner));}catch{/* Already terminal. */}}
   else{owner.session.awaitSave=false;for(const report of [()=>{$('modal-submit').disabled=true;},()=>{$('modal-cancel').disabled=false;},()=>{$('modal-close').disabled=false;},()=>{$('modal-error').textContent='This Accounts change was not saved. Close and reopen the form before trying again.';}]){if(activeModal!==owner.session)break;try{report();}catch{/* Keep dismissal best-effort. */}}}
   return false;
- }finally{if(accountsWriteOperation===owner&&owner.attempt===a){owner.pending=false;owner.session.busy=false;}owner.recovering=false;if(known&&!owner.invalidated)resumeAccountsPayments(owner);}
+ }finally{if(accountsWriteOperation===owner&&owner.attempt===a){owner.pending=false;owner.session.busy=false;restoreAccountsDismissal(owner);}owner.recovering=false;if(known&&!owner.invalidated)resumeAccountsPayments(owner);}
 }
 function acceptAccountsAttempt(a,args,rounding){Object.defineProperties(a,{args:{value:args,enumerable:true},rounding:{value:rounding,enumerable:true}});}
 function submitAccounts(owner){

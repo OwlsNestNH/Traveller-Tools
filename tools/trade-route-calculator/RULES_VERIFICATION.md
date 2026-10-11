@@ -1135,6 +1135,30 @@ checks. A fresh faithful-shell run of all 80 complete original outcomes matches
 every unchanged committed expectation. Full corrected native and exact-head
 browser gates remain required; no existing browser assertion is relaxed.
 
+The corrected browser run then completed all 222 Accounts cases: 212 passed and
+10 failed. Eight failures were an overly specific screenshot-caption expectation
+after genuine Undo and full inverse-state assertions had passed; the test now
+requires the exact existing "Latest action undone." text. A construction-reentry
+case targeted first-form submit normalization, where blocking Notes is correct,
+rather than fresh confirmation construction. Its corrected trigger proves both
+the first boundary's block and the second boundary's actual title/handler change.
+Neither correction changes application Undo or the save/ownership assertions.
+
+Two further real candidate runtime issues remain separately recorded. The existing
+two-tab browser control exposed editing-loss guidance being overwritten by a
+later foreign publication; the fix preserves global reload and explicit saved
+guidance before selecting the specific editing-tenure warning. An injected one-
+time control-restoration exception left terminal Close disabled after a saved
+write. Accounts now independently restores only its exact owned dismissal chrome,
+keeps Save/reload protection latched, and cannot modify a newer dialog. Faithful
+native red runs reproduce both failures; persistent faults retain best-effort
+limits. No provider, accounting, browser timeout or image ceiling changes apply.
+An additional four-branch regression found that a persistently broken Cancel
+setter could still block the intact X during redundant close-time synchronization.
+Explicit dismissal now retires only its captured already-terminal Accounts owner
+without repeating that notification. Publication-driven guidance, exact owner/
+generation guards and the global reload/write lock remain intact.
+
 Four delayed original callers reproduce the pre-migration pending-save gap.
 Additional independent stale/provenance/form and native Cancel/X/Escape plus Undo
 probes pass. Fourteen independent immediate/next-microtask comparisons preserve
@@ -1146,9 +1170,9 @@ A mistakenly selected historical browser runner in a local test list failed at
 its missing executable before context/page startup; it supplied no browser
 verification and was not retried. Subsequent native selections are source-checked.
 
-The new Chromium gate declares 222 desktop/mobile cases (197/25), with 107
-representative image cases and 115 duplicate-surface cases retaining all semantic
-and geometry assertions. Its 243 planned frame groups can expand for complete
+The new Chromium gate declares 222 desktop/mobile cases (197/25), with 108
+representative image cases and 114 duplicate-surface cases retaining all semantic
+and geometry assertions. Its 245 planned frame groups can expand for complete
 full-height form walks. Original resolution, readable encoding, full target
 ranges and fixed 24 MiB total / 20 MiB image ceilings remain required. Fixture-only
 mode exits before browser import; actual execution is restricted to GitHub CI.
