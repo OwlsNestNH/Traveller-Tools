@@ -1,7 +1,7 @@
 # Save-completion migration queue
 
-Inventory refreshed against UI 2026.10.11.55, repository merge
-`02cef19f755052a07aa1ac07570f9e29d950faf5` (2026-10-11).
+Inventory refreshed against UI 2026.10.11.56, repository merge
+`f335255a1a6a1abcfdf1025f2cd06175e61471d5` (2026-10-11).
 This records the save-boundary work, not the earlier GUI-refit stages.
 
 ## Stage 2: finish save callers
@@ -142,45 +142,58 @@ routed. This is not a claim of complete 100-URL live-file verification.
   captured separately, not all middle columns simultaneously. This closes the
   generation/draft group; acceptance, cancellation and payout remain separate.
 
+- **.56 Freight/mail acceptance, cancellation and delivery:** all four callers
+  completed. Final 4,189 native tests across 76 files (922 focused), 227 rules
+  checks, 65 exact-head CI jobs and 98 focused browser cases passed. All 276
+  image hashes/layouts and frames were reviewed; 127 originals were individually
+  inspected, including all 84 mobile. Fifty-one independent ownership probes
+  and 104 full UUID-normalized original/candidate state/ephemeral/dice outcomes
+  passed. Five strict map cases observed 70 real callback edges with no pending
+  DOM mutations. Original 889/898 and 4,181/4,189 fixture failures and corrections
+  remain documented, as does a failed pre-process local browser executable lookup;
+  actual browser evidence is GitHub CI. Exact merge/tree, Pages, all 90 permitted
+  live URL variants and all 65 ready-event duplicate CI jobs were verified. Ten
+  restricted variants remain unverified. Existing extreme-number table overlap,
+  separately scrolled mobile columns and representative browser economics remain
+  qualified. Exactly two acceptContract callers, one cancelMail and one deliver
+  caller were inventoried, closing the freight/mail lifecycle group.
+
 ### Remaining bounded groups
 
 These are scope groups, not a promise that each needs exactly one release.
 Further inventory findings must be recorded rather than declaring Stage 2 done.
-There are five open scope groups after freight/mail generation and draft editing
-were verified. The .56 candidate addresses four freight/mail lifecycle callers.
-Automatic policy updates in cargo, routes, arrival and Undo stay with those
-workflows; closed groups do not establish completion of unrelated callers.
+There are four open scope groups after the verified freight/mail lifecycle
+release. The .57 candidate addresses passenger setup/search, only the first of
+its two planned subbatches. Automatic policy updates in cargo, routes, arrival
+and Undo stay with those workflows; closed groups do not establish completion
+of unrelated callers.
 
-1. **Freight/mail acceptance, cancellation and payout: .56 candidate.** `app.mjs:
-   manualContract`, `accept`, `cancelMail`, `deliver`. Exactly two production
-   callers invoke S.acceptContract, one S.cancelMail and one S.deliver. Manual
-   acceptance directly reserves a referee contract; it creates no draft. Both
-   acceptance callbacks previously discarded completion, and generated acceptance
-   removed its draft early. Cancellation/delivery returned completion but lacked
-   full pending/terminal ownership. Preserve accepted terms and delivery dice,
-   capacity, origin/duplicate/departure proofs, unrelated drafts and exact payouts.
-   Full source/local/exact-head browser and release gates are still required.
-2. **Passenger workflows, preferably two batches.** `passenger-ui.mjs: setup`,
-   `search`, then `board`, `deliver`. Setup/search/boarding discard completion;
-   search exposes offers and boarding renders immediately. Delivery returns
-   the save but lacks full failure handling. Preserve capacity, accommodation,
-   LSS/luggage and audited terms; History must not recreate actionable offers.
-3. **Legacy Accounts payments and inline rate.** `app.mjs: shipExpenses`,
-   `expenseForm` (including bank correction), `rollBerthingRate`. Payment forms
-   remain generic; the rate path assumes a synchronous `next.revision` and
+1. **Passenger workflows: .57 setup/search candidate, then boarding/delivery.**
+   Exactly four production UI write callers in passenger-ui.mjs: setup ->
+   S.configurePassengerCapacity; search -> S.recordPassengerSearch; board ->
+   S.acceptPassengers; deliver -> S.deliverPassengers. The first three discard
+   completion; search exposes offers and boarding renders immediately. Delivery
+   returns the save but lacks full pending/terminal ownership. The boarding
+   preview is side-effect free; S.deliver's compatibility fallback is not a fifth
+   dedicated UI caller. Preserve allocation, generated results/dice, capacity,
+   accommodation, LSS/luggage and audited terms. History must not recreate
+   actionable offers. Keep this group open until all four callers are complete.
+2. **Legacy Accounts payments and inline rate.** app.mjs: shipExpenses,
+   expenseForm (including bank correction), rollBerthingRate. Payment forms
+   remain generic; the rate path assumes a synchronous next.revision and
    removes its control early. Keep rate saving distinct from payment and preserve
    the remaining Accounts bundle despite completed dedicated fuel/LSS services.
-4. **Route/world/rounding confirmations.** `app.mjs: saveMapRoute`, `plotRoute`,
-   `clearPlannedRoute`, `overrideWorld`, `roundingPreview`. Clear-route discards
+3. **Route/world/rounding confirmations.** app.mjs: saveMapRoute, plotRoute,
+   clearPlannedRoute, overrideWorld, roundingPreview. Clear-route discards
    completion and clears its draft; other returning callbacks still need the
    complete contract. Ordinary world override is distinct from completed World
    Changes reversion. Lookup/route calculations stay cancellable before saving.
-5. **Cargo adjustments and market controls.** `app.mjs: existingLot`,
-    `correctCargo`, `reject`, `editOffer`, market-expiration checkbox and
-    expire-all. Returning confirmations still need ownership/terminal handling;
-    overrides/checkbox discard completion. Expire-all is a direct action without
-    an owned pending surface. Restore checkbox presentation on known-unsaved
-    failure without pretending an uncertain save did not happen.
+4. **Cargo adjustments and market controls.** app.mjs: existingLot,
+   correctCargo, reject, editOffer, market-expiration checkbox and expire-all.
+   Returning confirmations still need ownership/terminal handling; overrides/
+   checkbox discard completion. Expire-all is a direct action without an owned
+   pending surface. Restore checkbox presentation on known-unsaved failure
+   without pretending an uncertain save did not happen.
 
 
 Each batch needs synchronous equivalence, delayed write/publication/settlement,

@@ -60,7 +60,7 @@ The four service buttons show their selected state. Clicking the selected button
 
 The native runner discovers every `node:test` suite; do not use `verification/*.test.mjs` with `node --test`, because that also selects the standalone browser scripts.
 
-Pull requests run all native suites, the 227 rules-data checks, the shared tool-visit check, and thirty-one independent deterministic Chromium suites: main application, modal lifecycle, click routing, fuel, empty space, Mail, map overview, GUI parity, Trade buttons, Settings, insurance lifecycle, trade complications, the selected-world screen, jump mulligans, in-panel ship services, combined cabins, daily time controls, zero-fuel payments, resource alerts, recurring payment batches, the compact Expenses panel, the Cargo Hold manifest, route frame/title, inline fuel/full-stock service controls, stable service-panel navigation, passenger contracts, ordered route selections/keyboard errors, legality/fractional-sales regressions, global planet-name search, direct-ton bladder capacity, and grouped contact-search periods. See `.github/workflows/mail-browser.yml` at the repository root. Every job verifies the exact PR head and uploads evidence; it has read-only permissions and cannot deploy. Live API availability and the remaining browser scripts are separate checks.
+Pull requests run all native suites, the 227 rules-data checks, the shared tool-visit check, and independent deterministic Chromium suites, including: main application, modal lifecycle, click routing, fuel, empty space, Mail, map overview, GUI parity, Trade buttons, Settings, insurance lifecycle, trade complications, the selected-world screen, jump mulligans, in-panel ship services, combined cabins, daily time controls, zero-fuel payments, resource alerts, recurring payment batches, the compact Expenses panel, the Cargo Hold manifest, route frame/title, inline fuel/full-stock service controls, stable service-panel navigation, passenger contracts, ordered route selections/keyboard errors, legality/fractional-sales regressions, global planet-name search, direct-ton bladder capacity, and grouped contact-search periods. See `.github/workflows/mail-browser.yml` at the repository root. Every job verifies the exact PR head and uploads evidence; it has read-only permissions and cannot deploy. Live API availability and the remaining browser scripts are separate checks.
 
 The browser scripts use Playwright only for development testing; it is not an application dependency. With Playwright installed, run:
 
@@ -692,13 +692,19 @@ attempts retain their accepted identifiers, dice and audit for deliberate retry.
 Offer publication and navigation wait for owned completion; saved or uncertain
 failed outcomes require reload before another save. Existing freight/mail
 calculations, deadlines, mail-only freight retention and Undo stay unchanged.
-Acceptance, cancellation and delivery/payment are a separate queued group.
+Acceptance, cancellation and delivery/payment completed separately in .56 below.
 
 
-The verified .55 generation/draft release leaves five Stage 2 scope groups.
-Freight/mail lifecycle completion (.56 candidate) covers manual/generated
+Freight/mail lifecycle completion (.56 released) covers manual/generated
 acceptance, accepted-mail cancellation and delivery/payout. It retains accepted
 terms and delivery dice through a pending save, with owned cleanup and safe
 known-unsaved retry. Capacity, departure proof, ledger/late-payment calculations
-and Undo stay with the existing state mutations. Passenger workflows remain in
-their later group. Full candidate tests and review are required before release.
+and Undo stay with the existing state mutations. Exact merge/Pages, all 90
+permitted live URL variants and all duplicate CI jobs were verified; ten prior
+proxy-restricted URL variants remain unverified.
+
+Four Stage 2 scope groups remain. Passenger capacity setup and search are the
+.57 candidate subbatch: retain reviewed cabin/Low allocation and generated
+four-class results until owned save completion. Boarding/delivery are a later
+subbatch in the same passenger group. Full candidate tests and review are
+required before release; Stage 3 has not started.

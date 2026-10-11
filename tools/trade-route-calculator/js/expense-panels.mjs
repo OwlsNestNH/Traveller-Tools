@@ -1,14 +1,14 @@
-import {ruleInfo} from './rule-references.mjs?v=contract-lifecycle-completion-20261011-56';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=contract-lifecycle-completion-20261011-56';
-import {passengerShip} from './passengers.mjs?v=contract-lifecycle-completion-20261011-56';
+import {ruleInfo} from './rule-references.mjs?v=passenger-search-completion-20261011-57';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=passenger-search-completion-20261011-57';
+import {passengerShip} from './passengers.mjs?v=passenger-search-completion-20261011-57';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=contract-lifecycle-completion-20261011-56';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=contract-lifecycle-completion-20261011-56';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=contract-lifecycle-completion-20261011-56';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=contract-lifecycle-completion-20261011-56';
-import {creditStep} from './rounding.mjs?v=contract-lifecycle-completion-20261011-56';
-import {roll} from './rules.mjs?v=contract-lifecycle-completion-20261011-56';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=contract-lifecycle-completion-20261011-56';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=passenger-search-completion-20261011-57';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=passenger-search-completion-20261011-57';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=passenger-search-completion-20261011-57';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=passenger-search-completion-20261011-57';
+import {creditStep} from './rounding.mjs?v=passenger-search-completion-20261011-57';
+import {roll} from './rules.mjs?v=passenger-search-completion-20261011-57';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=passenger-search-completion-20261011-57';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

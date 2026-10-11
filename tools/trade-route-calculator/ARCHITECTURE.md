@@ -722,15 +722,15 @@ before fallible reporting and require reload; pre-save construction failures
 retire only their partial form with close/reopen guidance. Recovery callbacks
 cannot resubmit automatically or overwrite a newer real dialog handler.
 
-Acceptance, manual contracts, cancellation and delivery payout remain in their
-separate completion group. This released boundary passed independent source,
+Acceptance, manual contracts, cancellation and delivery payout completed in the
+separate .56 lifecycle group below. This released boundary passed independent source,
 full native and exact-head browser/pixel review, exact merge/Pages, all 90 permitted
 live URLs and terminal duplicate CI. Ten restricted URL variants remain unverified.
 The existing wide-table and extreme synthetic-value layout qualifications are
 recorded in RULES_VERIFICATION.md; this release does not claim universal numeric
 column readability.
 
-## Stage 2 freight/mail lifecycle completion (.56 candidate)
+## Stage 2 freight/mail lifecycle completion (.56 released)
 
 Manual acceptance, generated-offer acceptance, accepted-mail cancellation and
 freight/mail delivery share a lifecycle-specific owner. It captures the campaign
@@ -761,5 +761,29 @@ save authority and latch reload before fallible reporting. Recovery callbacks
 cannot submit automatically; partial construction only retires its own review.
 These caller-specific safeguards do not replace or rewrite Store/controller or
 state economics. Passenger UI and the state's existing passenger delivery fallback
-retain their separate behavior. Final full local/exact-head browser/pixel and
-release gates remain required for this candidate.
+retain their separate behavior. Independent source/local/exact-head browser and
+pixel review passed; exact merge/tree, Pages, 90 permitted live URL variants and
+all duplicate CI jobs were verified. Ten restricted variants remain unverified.
+
+## Stage 2 passenger setup/search completion (.57 candidate)
+
+The capacity-review and passenger-search callers receive a passenger-specific
+completion boundary through the app/module integration. Capacity retains the
+reviewed cabin reservation, installed Low berths and acknowledgement. Search
+retains its opening roll, normalized accepted inputs, generated four-class
+results, identifiers and immutable audit through deliberate known-unsaved retry.
+Only genuine owned completion can expose new actionable results or announce
+success. Prior eligible session results remain until that boundary; existing
+campaign/world/reload invalidation remains authoritative. History is evidence,
+not a source for rebuilding actionable offers.
+
+The candidate must preserve immediate synchronous behavior, exact economic/state
+mutations, dice order, no-money/no-time search, accommodation/LSS/luggage and Undo.
+Its explicit ownership includes full readable durable campaign equality, editor,
+world, modal/form and ephemeral draft identity, pre-callback pending authority,
+genuine one-use publication provenance, and terminal retirement before fallible
+reporting. Pending presentation must remain stable through actual publication.
+Boarding and delivery remain unchanged regression controls until their separate
+completion subbatch. The passenger group remains open until all four callers and
+release verification finish. Final source/local/exact-head CI and actual browser/
+pixel gates remain required for this candidate.
