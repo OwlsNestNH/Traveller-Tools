@@ -13,11 +13,13 @@ const app=await readFile(new URL('../js/app.mjs',import.meta.url),'utf8');
 const escape=escapeHtml;
 const field=runInNewContext(app.slice(app.indexOf('const money='),app.indexOf('\nconst select='))+'\nfield;', {esc:escape,moneyHtml});
 const rounding=app.slice(app.indexOf('function roundingFootnote('),app.indexOf('\nfunction roundingPreview('));
+const clearRouteGuard=app.match(/^function clearRouteBusy\(\).*$/m)?.[0];
+assert.ok(clearRouteGuard,'Use actual Clear route entry predicate in extracted modal');
 function modalHarness(step=1){
  const nodes={modal:{open:false,showModal(){this.open=true;},close(){this.open=false;}},'modal-body':{innerHTML:'',insertAdjacentHTML(_where,html){this.innerHTML+=html;}},'modal-title':{},'modal-error':{},'modal-submit':{},'modal-cancel':{},'modal-form':{querySelectorAll:()=>[]}};
- const context={ruleInfo,replaceReferenceContent,state:{revision:17,settings:{creditStep:step}},store:{editable:true},inputRounding:[],modalGeneration:0,modalRevision:0,$:id=>nodes[id],esc:escape,creditStep,up,A,normalizeAmountFields,optionalRuleFootnote:kind=>'<p>'+kind+' reference</p>'};
+ const context={ruleInfo,replaceReferenceContent,state:{revision:17,settings:{creditStep:step}},store:{editable:true},clearRouteWriteOperation:null,inputRounding:[],modalGeneration:0,modalRevision:0,$:id=>nodes[id],esc:escape,creditStep,up,A,normalizeAmountFields,optionalRuleFootnote:kind=>'<p>'+kind+' reference</p>'};
  const settingsNormalizer=app.match(/^function normaliseSettingsFields\(.*$/m)[0];
- const api=runInNewContext(rounding+'\n'+app.slice(app.indexOf('let activeModal=null;'),app.indexOf('\nfunction saveCampaign('))+'\n'+settingsNormalizer+'\n({modal,closeModal,normaliseFields,normaliseSettingsFields});',context);
+ const api=runInNewContext(rounding+'\n'+clearRouteGuard+'\n'+app.slice(app.indexOf('let activeModal=null;'),app.indexOf('\nfunction saveCampaign('))+'\n'+settingsNormalizer+'\n({modal,closeModal,normaliseFields,normaliseSettingsFields});',context);
  return {api,context,nodes};
 }
 function element(value,round,label='Amount',disabled=false){return {value,disabled,dataset:{round,roundLabel:label}};}

@@ -1178,3 +1178,82 @@ ranges and fixed 24 MiB total / 20 MiB image ceilings remain required. Fixture-o
 mode exits before browser import; actual execution is restricted to GitHub CI.
 Actual exact-head browser results, image-byte budgets and pixel review remain
 pending, so this is not a merge or deployment approval.
+
+
+### Final .59 Accounts release evidence
+
+Final candidate `18a4a1dcfb547f93762b9dbf9b5199810250a168` passed all 5,862
+native cases, 227 rules checks, the shared catalog check and all 68 exact-head
+CI jobs. Accounts completed 222/222 cases (197 desktop, 25 mobile) with no
+recorded errors in 452 seconds. Independent review verified all 255 frames /
+177 distinct hashes, 528 target extents and 14 gap-free vertical walks. It viewed
+all nine changed/new originals, with exact-byte reuse yielding 106 individually
+reviewed distinct final images, including all 67 mobile and 39 desktop images.
+Actual artifact size 21,047,545 bytes and image size 15,735,769 bytes remain below
+the fixed ceilings. The original 80 complete economic expectations are unchanged.
+
+[Trade checks](https://github.com/OwlsNestNH/Traveller-Tools/actions/runs/38143383560)
+and [Campaign checks](https://github.com/OwlsNestNH/Traveller-Tools/actions/runs/38143383572)
+passed; all 68 ready-event duplicate jobs passed before merge. Duplicate Accounts
+again completed 222/222 with no errors. Earlier failed runs and distinctions
+between runtime defects and test-boundary corrections above remain valid.
+Mobile horizontal-scroller columns beyond the declared targets are not proved
+by vertical walks. Extreme ledger overlap is source-qualified as inherited,
+without separate baseline pixels or a layout fix.
+
+Merged as `ae68a384318581131f6575c38c147e34411bf120`, exact tree
+`9cf138a71ef02d8f9fea9cad95750efa826d6bdf`. Pages run 38145808980 succeeded.
+All 90 permitted live URL variants matched at 2026-10-11 14:09 UTC. Ten prior
+proxy-restricted variants remained excluded, with no new live failures.
+
+## Clear Planned Route save completion (.60 candidate)
+
+Scope is one caller and its necessary pending presentation/lookup guards. Verify
+real controller/Store publication and independent durable state before success
+or draft cleanup. Preserve the exact route mutator, monetary/cargo/insurance/time
+state, original native save timing, complete audit/inverse and genuine reload/
+Undo. Cover stale/foreign/editor ownership, duplicate/queued/reentrant actions,
+known-unsaved retry, saved/unknown reload protection, newer draft/dialog safety,
+and real held lookup/map callback DOM/SVG equality. Production modal chrome must
+match index.html, including Close inside modal-form. Existing native and browser
+suites remain required; current candidate results are pending.
+
+
+### Local candidate verification and retained findings
+
+The initial complete .60 local gate passed 6,009 native cases across 82 files,
+227 rules checks, the shared catalog check, documented browser-free fixtures,
+syntax and whitespace checks. All 5,862 released case names remain, with 116
+Clear completion cases, five full released-source observations and 26 genuine
+map-predicate branches added. The first full gate detected a concurrent final
+browser-only timing assertion edit; that source-drift run is diagnostic, with a
+fresh frozen-source final gate required before publication.
+
+The independent original oracle uses complete retained .59 app/Store/controller/
+helper sources, fixed original app hash and seeds. It compares full saved,
+reloaded and undone campaign state, full rendered-output hashes, synchronous
+write/announcement and first-microtask close observations. Original-callback
+only overlays are supplementary, not a substitute for that full-source evidence.
+Five older extracted suites now include the actual Clear predicates and absent
+owner bindings; no original case name or assertion was removed.
+
+The first focused native run passed 76/85. One real saved-close reporting defect
+was corrected while its strict assertion remained. The other eight failures
+were guidance-observer or reentry/construction-harness errors. That first failed
+log survives, but an exact contemporaneous runtime snapshot was not captured.
+Later source snapshots and hashes are explicit, never substituted for that
+missing artifact. Two native-discovery attempts stopped before test execution
+while the new browser file was incomplete/unclassified; these supplied no test
+result and never launched a browser. A diagnostic full allowlist run then passed
+5,958/5,978; the 20 failures were independently classified as extracted-harness
+dependencies or newly added painter expectations, and were corrected without
+weakening old assertions. Expanded focused checks passed 716/716 with exact
+source snapshots and no drift. Independent review verified that owned success
+painting resumes only synchronously after authenticated publication and durable
+checks, while review, pending publication and recovery remain frozen.
+
+The browser gate declares 82 cases (63 desktop, 19 mobile), 39 representative
+image cases and 87 planned frame groups, with complete native-resolution target
+walks and fixed 14-minute/24-MiB/20-MiB limits. Its final source additionally checks
+first-microtask closure without changing the same-stack saved assertions. Actual
+GitHub Chromium results, final pixels, duplicates and deployment remain pending.

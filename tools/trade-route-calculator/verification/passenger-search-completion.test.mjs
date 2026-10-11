@@ -219,6 +219,8 @@ assert.equal(app.indexOf('function paintMap(){', start + 1), -1);
 const source = app.slice(start, end);
 const accountsGuard = app.match(/^function accountsBusy\(\).*$/m)?.[0];
 assert.ok(accountsGuard, 'Actual Accounts ownership predicate remains part of extracted paintMap');
+const clearRouteGuard=app.match(/^function clearRoutePresentationHeld\(\).*$/m)?.[0];
+assert.ok(clearRouteGuard,'Actual Clear route ownership predicate remains part of extracted paintMap');
 
 function mapHarness(owners = {}) {
  const calls = [], replacement = {kind: 'new map'}, status = {textContent: 'Original status'};
@@ -230,6 +232,7 @@ function mapHarness(owners = {}) {
  // Insurance adds one lexical owner to the production painter; keep every
  // existing body/spy/assertion intact while supplying its absent default.
  const context = vm.createContext({
+  clearRouteWriteOperation:null,clearRouteSaveOperation:null,
   accountsWriteOperation: null,
   expenseServices: {publicationDeferred: () => false},
   worldWriteOperation: null, undoOperation: null, replacementReview: null, settingsOperation: null, purchaseWriteOperation: null, insuranceWriteOperation: null, contactSearchWriteOperation: null, contractOfferWriteOperation: null, contractLifecycleWriteOperation: null, passengerWriteOperation: null,
@@ -243,7 +246,7 @@ function mapHarness(owners = {}) {
   $(id) {assert.equal(id, 'map-load-status'); calls.push('status'); return status;},
   ...owners
  });
- vm.runInContext(accountsGuard + '\n' + source + '\nglobalThis.paint = paintMap;', context, {filename: 'production paintMap'});
+ vm.runInContext(accountsGuard + '\n' + clearRouteGuard + '\n' + source + '\nglobalThis.paint = paintMap;', context, {filename: 'production paintMap'});
  return {context, calls, status, paint: () => context.paint()};
 }
 function assertFrozen(h) {

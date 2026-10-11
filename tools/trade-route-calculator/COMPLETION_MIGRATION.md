@@ -1,7 +1,7 @@
 # Save-completion migration queue
 
-Inventory refreshed against UI 2026.10.11.58, repository merge
-`81011e305aef7e8561b4b2f9f9417f4059676b44` (2026-10-11).
+Inventory refreshed against UI 2026.10.11.59, repository merge
+`ae68a384318581131f6575c38c147e34411bf120` (2026-10-11).
 This records the save-boundary work, not the earlier GUI-refit stages.
 
 ## Stage 2: finish save callers
@@ -200,32 +200,42 @@ routed. This is not a claim of complete 100-URL live-file verification.
   qualified, with inherited layout attribution based on source rather than
   separate baseline pixels. All four passenger callers are now complete.
 
+- **.59 Legacy Accounts:** all four saved branches completed: atomic expense
+  bundle, retained inline berthing rate, manual expense and bank correction.
+  Final 5,862 native tests across 80 files, 227 rules checks, all 68 exact-head
+  and ready-event duplicate jobs, and 222 focused browser cases passed.
+  All 255 frame hashes/layouts, 528 target extents and 14 full vertical walks
+  were checked. Independent original-resolution review covers 106 distinct
+  final images, including all 67 mobile images, with exact-byte reuse recorded.
+  All 80 complete original economic outcomes and native event-loop timing remain
+  unchanged. Actual browser testing caught production-form chrome ownership,
+  warning-precedence and dismissal-recovery defects; strict corrections and
+  separate test-boundary corrections retain the earlier failed evidence.
+  Exact merge/tree, Pages and all 90 permitted live variants were verified;
+  ten restricted variants remain unverified. Mobile offscreen horizontal columns,
+  extreme ledger overlap and prior Setup/Cargo findings remain qualified.
+  The optional fuel-only bundle path remains compatibility coverage without a
+  production caller. This closes Accounts, not unrelated automatic policy writes.
+
 ### Remaining bounded groups
 
 These are scope groups, not a promise that each needs exactly one release.
 Further inventory findings must be recorded rather than declaring Stage 2 done.
-There are three open scope groups after the verified passenger release.
-The .59 candidate targets the four legacy Accounts mutation branches. Automatic
-policy updates in cargo, routes, arrival and Undo stay with those workflows;
-closed groups do not establish completion of unrelated callers.
+There are two open groups after the verified Accounts release. Automatic policy
+updates remain part of their owning workflows; no new accounting engine is needed.
 
-1. **Legacy Accounts payments and inline rate (.59 candidate).** app.mjs has
-   exactly four write branches: final shipExpenses bundle, rollBerthingRate,
-   expenseForm(false) and expenseForm(true). Keep the separate inline rate save
-   and retained first form distinct from payment. Its completion must make a
-   locked handoff to fresh form authority before payment becomes available;
-   old continuations must not reset a newer attempt. Preserve monetary field
-   normalization, one accepted die on safe retry and exact atomic expense/
-   correction semantics. The optional fuel-only shipExpenses branch has no
-   current production caller but remains compatibility coverage. Dedicated
-   Expense, Fuel and LSS panels remain unchanged controls. This group stays open
-   until source/native/browser/pixel review and release verification finish.
-2. **Route/world/rounding confirmations.** app.mjs: saveMapRoute, plotRoute,
-   clearPlannedRoute, overrideWorld, roundingPreview. Clear-route discards
-   completion and clears its draft; other returning callbacks still need the
-   complete contract. Ordinary world override is distinct from completed World
-   Changes reversion. Lookup/route calculations stay cancellable before saving.
-3. **Cargo adjustments and market controls.** app.mjs: existingLot,
+1. **Route/world/rounding confirmations.** app.mjs: clearPlannedRoute,
+   saveMapRoute, plotRoute, overrideWorld, roundingPreview. The .60 candidate
+   targets only Clear Planned Route: retain accepted confirmation/draft/context
+   through completion and clear only that owned draft after a verified save.
+   In-flight route lookup/map callbacks cannot resurrect or overwrite it.
+   Preserve route=[actual], routeIndex=0, mandatoryStops=[], exact economics and
+   Undo/mulligan. The group remains open after this subbatch. Subsequent bounded
+   work is saveMapRoute + plotRoute, ordinary world override, then rounding Apply.
+   World override is distinct from completed World Changes reversion. Lookup/
+   route calculations stay cancellable before saving; do not migrate them merely
+   to share this caller's completion boundary.
+2. **Cargo adjustments and market controls.** app.mjs: existingLot,
    correctCargo, reject, editOffer, market-expiration checkbox and expire-all.
    Returning confirmations still need ownership/terminal handling; overrides/
    checkbox discard completion. Expire-all is a direct action without an owned

@@ -818,7 +818,7 @@ The released implementation passed source/native/exact-head browser/pixel review
 all ready-event duplicate jobs and exact merge/tree/Pages verification. All 90
 permitted live variants matched; ten established restrictions remain unverified.
 
-## Stage 2 legacy Accounts completion (.59 candidate)
+## Stage 2 legacy Accounts completion (.59 released)
 
 The Accounts-specific adapter covers exactly four saved branches: the final
 atomic ship-expense bundle, inline berthing-rate save, manual expense and referee
@@ -851,8 +851,26 @@ synchronous, while final form closure retains the original submit continuation's
 microtask timing. The existing construction guard is reused through a neutral
 optional alias; this is not a new general transaction or modal framework.
 
-The candidate requires complete-state original-source parity, focused race and
-failure tests, every existing native/browser control, exact-head real-browser
-and original-image review, all ready-event duplicates and deployment verification.
-No Stage 3 quote-cache consolidation, ledger layout redesign or backend is part
-of this boundary.
+The released boundary passed complete-state original-source parity, focused
+race/failure tests, existing native/browser controls, exact-head real-browser and
+original-image review, all ready-event duplicates and qualified deployment
+verification. See RULES_VERIFICATION.md for exact results and the ten restricted
+live variants. No Stage 3 quote-cache consolidation, ledger layout redesign or
+backend is part of this boundary.
+
+
+## Stage 2 Clear Planned Route completion (.60 candidate)
+
+Only the clear-route caller is being migrated. Its existing state mutation is
+unchanged: route becomes the actual world, routeIndex becomes zero, and mandatory
+stops become empty. Campaign, elapsed time, cargo, money, policy terms, completed
+travel and the existing Undo/mulligan rules remain under their current modules.
+
+A caller-owned review captures campaign/durable/editor tenure, actual location,
+exact draft and modal/presentation authority before yielding. Pending lookup and
+paint continuations must respect that ownership; a saved outcome clears only its
+owned draft. A safely unwritten failure permits a deliberate unchanged retry;
+saved or uncertain outcomes require reload and cannot be repeated. Newer drafts
+and dialogs cannot be changed by old cleanup. Preserve the original synchronous
+save/announcement and microtask close timing. This does not migrate route saving,
+Plot route lookup, world overrides or rounding Apply.

@@ -1,4 +1,4 @@
-import {up} from './rounding.mjs?v=accounts-completion-20261011-59';
+import {up} from './rounding.mjs?v=clear-route-completion-20261011-60';
 import {dec,rat,add,sub,mul,div,cmp,floor,sum,decimal,auditNumber,allocate,credit} from './amounts.mjs';
 export const VERSION='0.1.0';
 export function die(){const a=new Uint32Array(1);let x;do{crypto.getRandomValues(a);x=a[0];}while(x>=4294967292);return x%6+1;}

@@ -8,12 +8,14 @@ import {runInNewContext} from 'node:vm';
 const source=await readFile(new URL('../js/app.mjs',import.meta.url),'utf8');
 const accountsGuard=source.match(/^function accountsBusy\(\).*$/m)?.[0];
 assert.ok(accountsGuard,'Extract the real Accounts predicate required by modal click capture');
+const clearRouteGuard=source.match(/^function clearRouteBusy\(\).*$/m)?.[0];
+assert.ok(clearRouteGuard,'Extract real Clear route predicate required by modal entry');
 const modalSource=source.slice(source.indexOf('let activeModal=null;'),source.indexOf('\nfunction saveCampaign('));
 function harness(){
  let now=1000;
  const nodes={modal:{open:true,contains:el=>!!el?.insideModal,showModal(){this.open=true;},close(){this.open=false;}},'modal-body':{innerHTML:'',insertAdjacentHTML(){}},'modal-title':{},'modal-error':{},'modal-submit':{},'modal-cancel':{},'modal-form':{}};
- const context={$:id=>nodes[id],Date:{now:()=>now},FormData:class{},modalGeneration:0,modalRevision:0,inputRounding:[],state:{revision:1},store:{editable:true},normaliseFields(){},roundingFootnote:()=>'',optionalRuleFootnote:()=>''};
- const api=runInNewContext(accountsGuard+'\n'+modalSource+'\n({captureModalClick,closeModal,modal,resetModalPointerGesture});',context);
+ const context={$:id=>nodes[id],Date:{now:()=>now},FormData:class{},modalGeneration:0,modalRevision:0,inputRounding:[],state:{revision:1},store:{editable:true},clearRouteWriteOperation:null,normaliseFields(){},roundingFootnote:()=>'',optionalRuleFootnote:()=>''};
+ const api=runInNewContext(accountsGuard+'\n'+clearRouteGuard+'\n'+modalSource+'\n({captureModalClick,closeModal,modal,resetModalPointerGesture});',context);
  const click=({id='background-increment',detail=1,x=100,y=200,pointerId=1,button=0,insideModal=false}={})=>{
   const target={id,insideModal};target.closest=()=>target;
   return {target,detail,clientX:x,clientY:y,pointerId,button,prevented:false,stopped:false,preventDefault(){this.prevented=true;},stopImmediatePropagation(){this.stopped=true;}};

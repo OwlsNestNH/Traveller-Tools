@@ -715,8 +715,14 @@ exact merge/tree, Pages and all 90 permitted live URL variants were verified.
 Ten established proxy-restricted variants remain unverified. Prior Setup idle
 causes and the separate Cargo focus race remain qualified in RULES_VERIFICATION.
 
-Three Stage 2 scope groups remain: legacy Accounts, route/world/rounding
-confirmations, and cargo/market controls. The .59 Accounts candidate targets its
-four remaining payment/rate mutation branches, preserving the inline rate form
-and atomic expense/correction calculations. It remains subject to all release
-gates. Stage 3 has not started.
+Legacy Accounts (.59 released) completes the atomic expense bundle, retained
+inline rate, manual expense and bank correction. All 5,862 native tests, 222
+focused browser cases and 68 ready-event duplicate jobs passed. Exact merge/tree,
+Pages and 90 permitted live variants were verified; ten restricted variants
+remain unverified. Earlier browser-found defects and visual limits are retained
+in RULES_VERIFICATION.
+
+Two Stage 2 scope groups remain: route/world/rounding and cargo/market controls.
+The .60 candidate targets only Clear Planned Route, preserving its existing
+route mutation and waiting for verified completion before clearing its own draft.
+Other route callers remain queued. Stage 3 has not started.
