@@ -88,24 +88,39 @@ is retained; missing request-level traces leave the exact idle cause unproven. T
 paths remain excluded and unverified; no denied path was retried or alternate-
 routed. This is not a claim of complete 100-URL live-file verification.
 
+- **.52 Purchase confirmation:** one atomic purchase, including optional
+  at-purchase insurance, owns accepted terms and the pending save. Final 2,001
+  native tests, 227 rules checks, 61 exact-head CI jobs and 59 focused browser
+  cases passed. Independent review audited 109 frames and opened 41 originals,
+  including all 28 mobile images. The initial 56/59 browser result is retained:
+  two test-observer ordering failures and one mobile loading-baseline failure
+  were corrected only in the harness, preserving every strict assertion. The
+  corrected report directly observes initial cache completion before baseline,
+  then owned publication and the held cache callback with zero DOM mutations.
+  Runtime was unchanged between browser runs. Exact merge/tree, Pages and all
+  90 permitted live URLs matched; duplicate CI passed all 61 jobs. The existing
+  ten proxy-denied URL variants remain excluded and unverified.
+
 ### Remaining bounded groups
 
 These are scope groups, not a promise that each needs exactly one release.
 Further inventory findings must be recorded rather than declaring Stage 2 done.
-There are eight open scope groups. The .52 candidate addresses only purchase
-confirmation within group 1, including insurance bought in that same transaction.
-Held-cargo coverage, claims and amendments remain in group 1 afterward; completing
-one subbatch does not close that whole group.
+There are eight open scope groups. Released .52 addressed purchase confirmation
+within group 1, including insurance bought in that same transaction. The .53
+candidate covers the remaining held-cargo coverage, claims and amendments within
+that group. Group 1 stays open until its remaining caller inventory and full
+release gates are verified; a candidate does not close a scope group.
 
-1. **Purchase and insurance confirmations: .52 purchase-only candidate.**
-   `app.mjs: buyForm` owns one atomic purchase including optional at-purchase
-   insurance. The candidate adds completion handling without changing `S.buy`,
-   offer prices/dice, broker fees, premium, cost basis, ledger or Undo. Candidate
-   gates and release verification are still required. Separate subsequent work
-   covers `insureHeldCargo`, `claimForm` and `amendPolicy`: held coverage and
-   claims return `act()` without a full owned pending/terminal contract;
-   amendment discards completion. Preserve their different lot/policy identities,
-   premium, payout, proportional loss and amendment/refund semantics.
+1. **Purchase and insurance confirmations: .53 held-insurance candidate.**
+   Released `app.mjs: buyForm` owns one atomic purchase including optional
+   at-purchase insurance without changing `S.buy`, prices/dice, fee/premium,
+   cost basis, ledger or Undo. Remaining callers `insureHeldCargo`, `claimForm`
+   and `amendPolicy` cover new held coverage, claims, amendment and closure.
+   The candidate owns their distinct accepted lot/policy/route/form terms,
+   premium, payout, proportional loss and amendment/refund semantics through
+   completion. Actual `S.insureLot`, `S.claim` and amendment mutation economics
+   remain unchanged. Independent review and full native/browser/pixel/release
+   gates must pass before closing this group.
 2. **Supplier/buyer contact search.** `app.mjs: searchDialog` discards completion
    before choosing its snapshot/tab or opening a sale. Retain its generated
    snapshot/dice on known-unsaved retry; delay UI and buyer-to-sale handoff until

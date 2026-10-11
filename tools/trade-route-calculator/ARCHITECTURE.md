@@ -573,7 +573,7 @@ characterized, not claimed repaired by this change. No accounting, persistence,
 calendar, jump/mulligan, price/dice or Undo mutation body changes.
 
 
-## Stage 2 purchase confirmation completion (.52 candidate)
+## Stage 2 purchase confirmation completion (.52 released)
 
 Purchase confirmation owns its accepted quantity, saved supplier offer and price,
 broker fee, optional insurance quote, rounding, campaign/revision, editing tenure
@@ -609,7 +609,48 @@ Purchase must not copy Sale's selected-cargo or quote-cache cleanup.
 Known-unwritten control/error recovery is itself a guarded phase: callback reentry
 cannot initiate a retry before recovery and the outer submit cleanup finish.
 
-This section records the candidate contract. Independent source/native and real
-browser/pixel gates must verify it before release. `S.buy`, insurance/rules,
+This released contract passed independent source/native and real browser/pixel
+gates; see the completion queue for the bounded evidence record. `S.buy`, insurance/rules,
 rounding, persistence/controller, price/dice, accounting and Undo mutation bodies
 remain outside this UI-completion patch.
+
+
+## Stage 2 held-insurance completion (.53 candidate)
+
+A separate insurance owner covers held-cargo coverage, claims, amendment and
+closure. Accepted terms are immutable and tied to the actual lot/policy objects,
+full campaign baseline, revision/publication, editing tenure and presentation.
+Owner identity exists before callback-capable initial/review construction;
+construction checks guard both visible content and the newer real submit handler.
+Coverage and claim preview calculations remain nonwriting validation, while
+amendment accepts one form/route snapshot at submission. A known-unsaved retry
+uses those accepted values; editing an accepted amendment after failure requires
+reopening rather than silently applying old values beneath new controls.
+
+One existing controller transition calls the unchanged S.insureLot/S.claim or
+amendment economic body. The amendment adapter supplies immutable form get/has
+values without changing its accounting, optional audit history or close/refund
+semantics. Premium/payout/refund/basis/ledger, original policy terms, route audit,
+rounding, Undo and jump mulligan behavior stay in their established mutations.
+Purchase, Sale, Expense and shared controller/Store helpers are not rewritten.
+
+Pending insurance owns modal controls, its retained summary/panels/map/status,
+and queued action boundaries before provider entry. Native Store completion
+remains immediate. Delayed owned publication is installed internally without
+premature UI publication; actual one-use controller provenance authorizes the
+completion. Foreign campaign/editor intent retires the old owner. No state/value
+comparison substitutes for provenance.
+
+Known-unsaved retry requires a current owner and equal readable durable baseline.
+A stale or unreadable baseline retires the review with accurate not-saved reload
+guidance. Publication outranks a contradictory rejection; saved, uncertain or
+missing-provenance outcomes latch reload before fallible reporting. Construction
+and failure/control recovery are guarded against callback-driven repeated saves.
+Success cleanup rechecks ownership across callback-capable boundaries and cannot
+close or announce over a newer dialog.
+
+This section describes the candidate contract, not a release claim. Independent
+source review, full native and exact-head browser regressions, actual mobile and
+desktop screenshot inspection, then exact merge/Pages/permitted live verification
+remain required before closing the purchase/insurance Stage 2 group. Stage 3
+quote/preview lifecycle consolidation remains separate.
