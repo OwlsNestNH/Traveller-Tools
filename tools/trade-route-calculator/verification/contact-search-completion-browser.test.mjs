@@ -427,7 +427,6 @@ async function successful(page, result, before, scenario) {
  const snapshot = await gate(page), saved = await read(page), snap = saved.snapshots.at(-1);
  assert.equal(await raw(page), snapshot.candidates.at(-1)); assert.equal(snapshot.storage.writes, 1); assert.equal(snapshot.durableToken, false); assert.equal(snapshot.reloadRequired, false); assert.equal(await page.locator('#modal-error').textContent(), '');
  assert.equal(await page.locator('#tabs [aria-current="page"]').textContent(), 'Trade', 'Owned completion publishes the Trade tab');
- assert.equal(await page.locator('#ship-actions .campaign-time .value').textContent(), displayDate(saved.dateLabel, saved.hours), 'Visible campaign date/hour updates only on successful completion');
  assert.equal(snapshot.semantic.dice, snapshot.baseline.dice + (handoff ? 3 : 0), 'Accepted save/retry never rerolls; only requested buyer sale quote rolls once after success');
  if (scenario.kind === 'supplier') assert.equal(await page.locator('#snapshot-select').inputValue(), snap.id, 'Correct saved supplier snapshot is selected');
  if(legalMismatch){assert.equal(await page.locator('#message').textContent(),'Illegal cargo needs a black-market buyer.');assert.equal(snapshot.reloadRequired,false);assert.equal(snapshot.editable,true);}
@@ -440,6 +439,13 @@ async function successful(page, result, before, scenario) {
  assert.equal(await raw(page), bytes); assert.equal((await gate(page)).totalCalls, calls); assert.equal(await page.locator('#modal-title').textContent(), title, 'Detached commit handler cannot close newer sale preparation');
  if (handoff) {await detail(page,result,'saved-buyer-handoff',['#modal-title'],/^Prepare sale/); await pointer(page,'#modal-cancel'); await closed(page);}
  else await detail(page,result,'saved-success',['#message'],legalMismatch?/^Illegal cargo needs a black-market buyer\.$/:successPattern);
+ // Campaign time is an Overview-only control in both released and current UI.
+ // First prove the owned Trade/handoff result above, then inspect its saved clock.
+ await tab(page, 'Overview'); await frames(page);
+ assert.equal(await page.locator('#tabs [aria-current="page"]').textContent(), 'Overview');
+ assert.equal(await raw(page), bytes, 'Inspecting the saved clock cannot charge search time again');
+ const clock = await gate(page); assert.equal(clock.totalCalls, calls); assert.equal(clock.semantic.dice, snapshot.semantic.dice, 'Clock navigation cannot regenerate contacts or sale quotes');
+ assert.equal(await page.locator('#ship-actions .campaign-time .value').textContent(), displayDate(saved.dateLabel, saved.hours), 'Overview shows the exact successfully saved campaign date/hour');
  await detail(page,result,'saved-campaign-time',['#ship-actions .campaign-time .value'],new RegExp(displayDate(saved.dateLabel,saved.hours).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));
  result.gate = safeReport(await gate(page)); await reloadUndo(page,result,before,scenario);
 }
