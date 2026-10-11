@@ -655,10 +655,21 @@ caller-specific save outcomes, Sale's entry handling, accounting and Undo remain
 unchanged. Remaining save callers and Stage 3 stay in the completion queue.
 
 
-Purchase completion (.52 candidate) covers the confirmed purchase and any optional
+Purchase completion (.52 released) covers the confirmed purchase and any optional
 insurance bought in that same transaction. The reviewed quantity, supplier price,
 broker fee, premium and rounding stay owned until saving finishes. A safely
 unwritten failure retains those terms for deliberate retry; saved or uncertain
 outcomes require reload. Existing lot cost basis, offer depletion, ledger and
 Undo rules remain unchanged. Held-cargo insurance, claims and amendments remain
 in the same open purchase/insurance group in the completion queue.
+
+
+Held-cargo insurance completion (.53 candidate) extends the same save boundary to
+new coverage for owned cargo, loss claims, and policy amendment or closure. The
+accepted premium, payout, adjustment/refund, lot/policy and route stay owned until
+completion. A demonstrably unwritten attempt permits deliberate retry with its
+retained terms; saved or uncertain outcomes require reload before another save.
+The existing insurance calculations, proportional loss, cost basis, ledger,
+original/amended policy audit, rounding and Undo rules remain unchanged. This is
+the remaining insurance subbatch within the open purchase/insurance group; the
+completion queue keeps other Stage 2 groups and Stage 3 separate.

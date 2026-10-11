@@ -747,3 +747,45 @@ rounding and saved-accounting evidence with safe caret capture, source/commit
 provenance and image geometry/hash checks. Existing Sale, Expense, shared-entry,
 insurance and other full regressions remain required. This records scope rather
 than a final browser/deployment result; coverage axes must be reported accurately.
+
+
+### Purchase .52 completed evidence
+
+Final native aggregate passed 2,001 tests plus 227 rules checks and catalog/syntax
+checks. Exact-head Trade and campaign workflows passed all 55 and 6 jobs. The
+focused Purchase run passed 59 cases with 109 images; independent review audited
+all frame/target records and inspected 41 originals, including all 28 mobile.
+The initial 56/59 result and its original images remain retained. Only the browser
+observer bootstrap and observable pre-submit map-loading boundary were corrected;
+no strict pending semantic/node/mutation/economic assertion or runtime was changed.
+Exact merge/tree, Pages, 90 permitted live URL variants and duplicate CI passed.
+Ten existing proxy-denied variants remain unverified, not a full 100-URL pass.
+
+## Held-cargo insurance completion .53 verification scope
+
+Actual-function probes on the released .52 tree reproduced delayed-save gaps for
+held coverage, claims, amendment and closure: pending controls/publication and
+unknown-outcome repeat-save safety. These are synthetic provider/fault cases,
+not a report of ordinary live synchronous storage failure.
+
+Compare native immediate and delayed outcomes with unchanged `S.insureLot`,
+`S.claim` and amendment bodies. Include table/manual/zero premium, Cr1/Cr100
+rounding, huge Credit strings, partial/fractional/full losses, payout and basis
+remainders, route amendment, negative premium refunds and zero-adjustment closure,
+optional imported amendment history, original policy audit, exact reload and Undo.
+Accepted term/context drift must reject without new consent or changed accounting.
+
+Cover duplicate/queued/detached actions, separate write/publication/settlement,
+known-unwritten deliberate retry, stale/unreadable durable baselines, wrong/missing/
+consumed provenance, saved/unknown/contradictory outcomes, editor/foreign/new-modal
+retirement and construction/recovery callback reentry. Pending render/map/status
+must retain their exact presentation through actual cache/ResizeObserver callbacks.
+Construction must preserve a newer working handler, not only its visible text.
+
+Actual Chromium uses cache-tagged production code, native Web Locks, disposable
+synthetic campaigns and bounded desktop/mobile evidence. Verify callback ordering
+before baselines, real pending callbacks, economic records, readable confirmation/
+warning/footer and saved-accounting detail, source/commit provenance and image
+geometry/hashes. Existing insurance, Purchase, Sale, Expense, shared-entry and all
+other regression jobs remain required. This records candidate scope, not a final
+browser, deployment or group-completion claim.

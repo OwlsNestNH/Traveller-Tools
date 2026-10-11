@@ -20,9 +20,11 @@ function harness(owners = {}) {
   querySelector(selector) {assert.equal(selector, '.world-map'); return replacement;}};
  // This extraction isolates the existing owners; the expense browser/native
  // suites exercise the real expense controller's publication guard.
+ // Insurance adds one lexical owner to the production painter; keep every
+ // existing body/spy/assertion intact while supplying its absent default.
  const context = vm.createContext({
   expenseServices: {publicationDeferred: () => false},
-  worldWriteOperation: null, undoOperation: null, replacementReview: null, settingsOperation: null, purchaseWriteOperation: null,
+  worldWriteOperation: null, undoOperation: null, replacementReview: null, settingsOperation: null, purchaseWriteOperation: null, insuranceWriteOperation: null,
   mapDrag: null, tab: 'Overview', mapZoom: 1, showTerritories: false,
   mapAreas: {error: null, pending: false}, mapOverview: {error: null, pending: false},
   document: {querySelector(selector) {assert.equal(selector, '.world-map'); calls.push('query'); return old;},
