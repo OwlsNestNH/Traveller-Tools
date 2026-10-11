@@ -868,7 +868,7 @@ controls, durable same-revision drift/unreadability, provenance and saved/unknow
 outcomes, editor/foreign/newer modal ownership and construction/recovery callback
 reentry. Offer/check/editor publication must wait for owned completion. Reload,
 Undo and History cannot reconstruct actionable offers. Acceptance/cancellation/
-delivery/payment remain the next group.
+delivery/payment completed separately in .56 below.
 
 Actual exact-head Chromium must prove real tagged Store/Web Locks, completed
 bootstrap/cache callbacks before baselines, retained pending DOM/map/status and
@@ -894,7 +894,7 @@ not every middle column simultaneously. Neither is a completion-specific blocker
 this evidence does not claim every extreme numeric column is readable.
 
 
-## Freight/mail lifecycle completion .56 verification scope
+## Freight/mail lifecycle completion .56 verification scope (completed)
 
 Reproduce delayed completion in manualContract, accept, cancelMail and deliver.
 Compare complete original/candidate campaign, ledger, audit, ephemeral drafts and
@@ -919,5 +919,52 @@ drafts and normal mail reconciliation remain correct. Reload/History cannot
 recreate actionable offers. Real desktop/mobile browser evidence must prove
 pending map/status retention, actual cache/ResizeObserver callbacks, real newer
 Notes handlers, correct warning/footer controls and saved contract/ledger outcomes.
-Keep every earlier regression. This is candidate scope; final source/local/browser/
-pixel and release gates remain required. Passenger workflows and Stage 3 are later.
+Keep every earlier regression. Completed evidence follows; passenger workflows
+remain their own group and Stage 3 has not started.
+
+Final 4,189 native tests across 76 files (922 focused), 227 rules checks and all
+65 exact-head CI jobs passed. The first actual browser run passed 98 cases (76
+desktop, 22 mobile), with 276 frames. Independent review verified all producer
+hashes/layouts, scanned all frames and individually inspected 127 originals,
+including all 84 mobile and 43 desktop frames. The eight added delivery-term
+frames were all inspected. Independent probes passed 51 cases; 104 complete
+original/candidate economic and ephemeral outcomes matched after UUID-only
+normalization. Five strict map cases observed 70 real callbacks with zero
+pending paint mutations. Native CI matched the exact 4,189-case local multiset.
+
+The initial focused 889/898 and full 4,181/4,189 failures are retained. Reviewed
+fixture corrections fixed malformed expectations and seven live-only location
+prerequisites that left the independent durable campaign at another world,
+plus one obsolete warning assertion. All economic/save/replay assertions remain;
+runtime did not change for those corrections. A separate ad hoc native command
+mistakenly included a browser script: executable lookup failed before Chromium
+started. No local browser install/retry/escalation followed, and that invocation
+is not counted as a passing aggregate. Actual browser evidence is exact-head CI.
+
+Exact merge/tree, Pages and all 90 permitted live variants matched; ten prior
+proxy-restricted variants remain excluded. All 65 ready-event duplicate jobs
+passed before merge. Future release gates wait for these duplicates as well.
+Preserve the unchanged extreme-number table overlap qualification without
+claiming separately observed baseline pixels. Mobile terms/status/actions use
+separate horizontal positions; Notes captures show its upper region, not the
+whole document. Browser economics are representative, while native comparisons
+cover every late die; no exhaustive browser cross-product is claimed.
+
+## Passenger setup/search .57 candidate verification scope
+
+Reproduce the two actual discarded-completion paths in passenger-ui setup/search.
+Preserve complete original/candidate saved/live state, drafts/search identity,
+allocation, all four generated classes, IDs/audits, manual/fallback dice order,
+fares, bank/time/LSS/luggage, Undo and existing eligibility. Normalize generated
+UUIDs only. Do not substitute live state for independent readable durable state.
+
+Require immediate SYNC, delayed/split publication, validation before provider,
+immutable deliberate known-unsaved retry, unknown/saved/missing-provenance
+terminal behavior, duplicate/queued/reentrant input, stale editor/campaign/world/
+form/drafts, construction and cleanup/reporting failures, actual newer handlers,
+reload and History Undo. Pending map/status must survive real callbacks until
+owned settlement. Actual tagged Store/native Web Locks, observed bootstrap/cache
+completion, zero pending DOM mutations, desktop/mobile warning/footer/results/
+allocation/audit frames and exact source/image provenance are required. Keep
+boarding/delivery and all earlier regressions unchanged; those two remaining
+passenger save callers are a later subbatch. Final counts and review are pending.

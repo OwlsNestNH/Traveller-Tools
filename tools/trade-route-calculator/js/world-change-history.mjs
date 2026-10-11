@@ -1,4 +1,4 @@
-import {parseUWP} from './rules.mjs?v=contract-lifecycle-completion-20261011-56';
+import {parseUWP} from './rules.mjs?v=passenger-search-completion-20261011-57';
 
 // Audit only the editable world fields. A selective correction must never
 // replay an old world object, campaign inverse, price quote or transaction.
