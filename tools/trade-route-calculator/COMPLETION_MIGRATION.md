@@ -1,7 +1,7 @@
 # Save-completion migration queue
 
-Inventory refreshed against UI 2026.10.11.54, repository merge
-`f9060754314ccf1e80198752d890d7059fceb9ee` (2026-10-11).
+Inventory refreshed against UI 2026.10.11.55, repository merge
+`02cef19f755052a07aa1ac07570f9e29d950faf5` (2026-10-11).
 This records the save-boundary work, not the earlier GUI-refit stages.
 
 ## Stage 2: finish save callers
@@ -127,44 +127,55 @@ routed. This is not a claim of complete 100-URL live-file verification.
   remain unverified. Mobile Sale handoff review covers title/cargo, not every
   Sale scroll region; the separate Sale recovery assessment remains unproven.
 
+- **.55 Freight/mail generation and draft editing:** both production callers now
+  use one owned generation/edit completion boundary. Final 3,267 native tests
+  across 75 test files (438 focused), 227 rules checks, 64 exact-head CI jobs and
+  102 focused browser cases passed on the first candidate browser run. All 225
+  image hashes/layouts and frames were reviewed; 105 originals were individually
+  inspected, including all 68 mobile frames. Forty-two independent ownership
+  probes and 36 full original/candidate state/ephemeral/dice comparisons passed.
+  Exact merge/tree, Pages and all 90 permitted live URL variants matched; all 64
+  duplicate jobs passed. Ten restricted variants remain unverified. Extreme
+  synthetic payment values overlap numeric table cells in candidate pixels;
+  unchanged renderer/formatting/CSS supports pre-existing behavior without a
+  separately observed baseline browser result. Mobile terms/actions were
+  captured separately, not all middle columns simultaneously. This closes the
+  generation/draft group; acceptance, cancellation and payout remain separate.
+
 ### Remaining bounded groups
 
 These are scope groups, not a promise that each needs exactly one release.
 Further inventory findings must be recorded rather than declaring Stage 2 done.
-There are six open scope groups after the contact-search group's verified
-closure. The .55 candidate addresses freight/mail generation and draft editing
-only. Automatic policy updates in cargo, routes, arrival and Undo stay with
-those workflows; closing direct insurance and contact search does not declare
-other groups complete.
+There are five open scope groups after freight/mail generation and draft editing
+were verified. The .56 candidate addresses four freight/mail lifecycle callers.
+Automatic policy updates in cargo, routes, arrival and Undo stay with those
+workflows; closed groups do not establish completion of unrelated callers.
 
-1. **Freight/mail generation and draft editing: .55 candidate.** `app.mjs:
-   contractSearch`, `editDraft` previously discarded completion before publishing
-   or replacing local offers. The candidate owns accepted generated IDs/dice/
-   audits and edited terms through completion, without changing generation or
-   economics. Known-unsaved retry must retain prepared values; foreign publication,
-   Undo and reload must never revive actionable offers from History. Full review,
-   exact-head CI and release verification are required before closing this group.
-2. **Freight/mail acceptance, cancellation and payout.** `app.mjs:
-   manualContract`, `accept`, `cancelMail`, `deliver`. Manual/generated acceptance
-   discard completion; generated acceptance also removes its draft immediately.
-   Cancellation/delivery return completion but still need full pending/terminal
-   ownership. Preserve late-delivery dice, reservations and exact payouts.
-3. **Passenger workflows, preferably two batches.** `passenger-ui.mjs: setup`,
+1. **Freight/mail acceptance, cancellation and payout: .56 candidate.** `app.mjs:
+   manualContract`, `accept`, `cancelMail`, `deliver`. Exactly two production
+   callers invoke S.acceptContract, one S.cancelMail and one S.deliver. Manual
+   acceptance directly reserves a referee contract; it creates no draft. Both
+   acceptance callbacks previously discarded completion, and generated acceptance
+   removed its draft early. Cancellation/delivery returned completion but lacked
+   full pending/terminal ownership. Preserve accepted terms and delivery dice,
+   capacity, origin/duplicate/departure proofs, unrelated drafts and exact payouts.
+   Full source/local/exact-head browser and release gates are still required.
+2. **Passenger workflows, preferably two batches.** `passenger-ui.mjs: setup`,
    `search`, then `board`, `deliver`. Setup/search/boarding discard completion;
    search exposes offers and boarding renders immediately. Delivery returns
    the save but lacks full failure handling. Preserve capacity, accommodation,
    LSS/luggage and audited terms; History must not recreate actionable offers.
-4. **Legacy Accounts payments and inline rate.** `app.mjs: shipExpenses`,
+3. **Legacy Accounts payments and inline rate.** `app.mjs: shipExpenses`,
    `expenseForm` (including bank correction), `rollBerthingRate`. Payment forms
    remain generic; the rate path assumes a synchronous `next.revision` and
    removes its control early. Keep rate saving distinct from payment and preserve
    the remaining Accounts bundle despite completed dedicated fuel/LSS services.
-5. **Route/world/rounding confirmations.** `app.mjs: saveMapRoute`, `plotRoute`,
+4. **Route/world/rounding confirmations.** `app.mjs: saveMapRoute`, `plotRoute`,
    `clearPlannedRoute`, `overrideWorld`, `roundingPreview`. Clear-route discards
    completion and clears its draft; other returning callbacks still need the
    complete contract. Ordinary world override is distinct from completed World
    Changes reversion. Lookup/route calculations stay cancellable before saving.
-6. **Cargo adjustments and market controls.** `app.mjs: existingLot`,
+5. **Cargo adjustments and market controls.** `app.mjs: existingLot`,
     `correctCargo`, `reject`, `editOffer`, market-expiration checkbox and
     expire-all. Returning confirmations still need ownership/terminal handling;
     overrides/checkbox discard completion. Expire-all is a direct action without

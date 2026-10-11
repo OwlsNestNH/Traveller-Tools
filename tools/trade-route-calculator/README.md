@@ -686,10 +686,19 @@ The verified contact-search release leaves six Stage 2 groups in the queue,
 with Stage 3 remaining separate.
 
 
-Freight/mail offer completion (.55 candidate) owns generated checks/offers and
+Freight/mail offer completion (.55 released) owns generated checks/offers and
 referee-edited available-contract terms until saving completes. Safely unwritten
 attempts retain their accepted identifiers, dice and audit for deliberate retry.
 Offer publication and navigation wait for owned completion; saved or uncertain
 failed outcomes require reload before another save. Existing freight/mail
 calculations, deadlines, mail-only freight retention and Undo stay unchanged.
 Acceptance, cancellation and delivery/payment are a separate queued group.
+
+
+The verified .55 generation/draft release leaves five Stage 2 scope groups.
+Freight/mail lifecycle completion (.56 candidate) covers manual/generated
+acceptance, accepted-mail cancellation and delivery/payout. It retains accepted
+terms and delivery dice through a pending save, with owned cleanup and safe
+known-unsaved retry. Capacity, departure proof, ledger/late-payment calculations
+and Undo stay with the existing state mutations. Passenger workflows remain in
+their later group. Full candidate tests and review are required before release.
