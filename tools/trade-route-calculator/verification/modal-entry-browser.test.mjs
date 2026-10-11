@@ -235,6 +235,10 @@ async function installGate(page, result) {
   globalThis.FormData = new Proxy(NativeFormData, {construct(target, args, newTarget) {
    if (args[0]?.id === 'modal-form') {
     g.formdata++;
+    if (g.formdataPreviewProbe) {
+     const stack = new Error('Settings preview read provenance').stack;
+     g.formdataPreviewProbe.push({caller: stack.match(/\bat (updateAccommodationEstimate|updateFuelSettingsEstimate|updateRecurringSettings)\b/)?.[1] || null, stack});
+    }
     if (g.fault === 'formdata') {g.fault = null; g.faults.push({target: 'formdata', controls: controls()}); throw Error('Synthetic pre-callback FormData fault');}
    }
    return Reflect.construct(target, args, newTarget);
@@ -248,7 +252,7 @@ async function installGate(page, result) {
 }
 
 async function fill(page, name, value) {const input = page.locator('#modal [name="' + name + '"]'); await input.fill(String(value)); await input.dispatchEvent('change');}
-async function openReview(page, scenario, before) {
+async function openReview(page, scenario, before, result) {
  const kind = scenario.kind;
  if (['deposit', 'generic'].includes(kind)) {
   await tab(page, 'Accounts'); await action(page, 'deposit').click();
@@ -285,6 +289,31 @@ async function openReview(page, scenario, before) {
  } else if (kind === 'read-only') await page.locator('#notes').click();
  await page.locator('#modal').waitFor({state: 'visible'});
  await page.waitForLoadState('networkidle'); await frames(page);
+ if (kind === 'settings') {
+  // fill() dispatches a synthetic change without committing the browser's
+  // focused edit. Settle its real blur/change BEFORE the entry baseline, and
+  // prove these four reads are the unchanged Settings estimates, not submit.
+  const beforeBlur = await gate(page);
+  const blur = await page.evaluate(() => {
+   const input = document.querySelector('#modal [name="name"]'), changes = [];
+   if (document.activeElement !== input) throw Error('Expected the edited Settings name to retain focus before native blur');
+   const observe = event => changes.push({type: event.type, name: event.target.name, trusted: event.isTrusted});
+   const value = input.value; input.addEventListener('change', observe);
+   entryGate.formdataPreviewProbe = [];
+   try {
+    input.blur();
+    return {changes, reads: entryGate.formdataPreviewProbe, valueBefore: value, valueAfter: input.value, blurred: document.activeElement !== input};
+   } finally {input.removeEventListener('change', observe); entryGate.formdataPreviewProbe = null;}
+  });
+  await frames(page); const afterBlur = await gate(page);
+  result.preEntrySettingsBlur = {...blur, formdataBefore: beforeBlur.formdata, formdataAfter: afterBlur.formdata, normalizationBefore: beforeBlur.normalization, normalizationAfter: afterBlur.normalization};
+  assert.deepEqual(blur.changes, [{type: 'change', name: 'name', trusted: true}], 'One actual browser change commits the focused Settings edit');
+  assert.equal(blur.blurred, true); assert.equal(blur.valueAfter, blur.valueBefore);
+  assert.deepEqual(blur.reads.map(read => read.caller), ['updateAccommodationEstimate', 'updateFuelSettingsEstimate', 'updateRecurringSettings', 'updateRecurringSettings'], 'Only the four existing Settings preview reads run on native blur');
+  assert.equal(afterBlur.formdata, beforeBlur.formdata + 4);
+  assert.equal(afterBlur.normalization, beforeBlur.normalization, 'Name blur does not normalize fields or enter submission');
+  assertNoWrite(afterBlur, beforeBlur);
+ }
  await page.evaluate(() => {entryGate.oldForm = document.querySelector('#modal-form'); entryGate.oldSubmit = entryGate.oldForm.onsubmit;});
 }
 
@@ -436,7 +465,7 @@ async function terminal(page, result, scenario, before, baseline) {
 async function runBody(page, result, scenario) {
  await page.goto(base); await page.getByText('Editing in this tab', {exact: true}).waitFor();
  await page.waitForLoadState('networkidle'); await installGate(page, result);
- const before = await read(page); await openReview(page, scenario, before);
+ const before = await read(page); await openReview(page, scenario, before, result);
  const review = {bytes: await raw(page), title: await page.locator('#modal-title').textContent(), body: await page.locator('#modal-body').innerHTML(), fields: await values(page), message: await page.locator('#message').textContent(), lookups: result.lookups.length};
  const baseline = await gate(page); result.baseline = {revision: before.revision, sha256: hash(review.bytes), title: review.title, fields: review.fields, gate: baseline, lookups: review.lookups};
  await page.evaluate(({fault, mode}) => {entryGate.fault = ['submit', 'cancel', 'close'].includes(fault) ? 'modal-' + fault : fault; entryGate.effect = mode; entryGate.persistent = mode === 'persistent';}, scenario);
