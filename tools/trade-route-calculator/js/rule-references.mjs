@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=contact-search-completion-20261011-54';
+import {escapeHtml as esc} from './display.mjs?v=contract-offer-completion-20261011-55';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.

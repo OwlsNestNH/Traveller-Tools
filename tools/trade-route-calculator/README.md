@@ -675,12 +675,21 @@ verified release completes the direct purchase/insurance group; the completion
 queue keeps other Stage 2 groups and Stage 3 separate.
 
 
-Supplier/buyer contact-search completion (.54 candidate) retains the reviewed
+Supplier/buyer contact-search completion (.54 released) retains the reviewed
 search and generated market while its save is pending. A demonstrably unwritten
 attempt can retry the same snapshot and dice. A failed completion with a saved
 or uncertain outcome requires reload before another save. Snapshot selection,
 navigation and successful buyer handoff wait for owned completion. Existing
 search-period penalties, duration,
 life support, prices, dice-generation policy and Undo behavior stay unchanged.
-The completed purchase/insurance group leaves seven Stage 2 groups in the queue;
-this candidate covers contact search, with Stage 3 remaining separate.
+The verified contact-search release leaves six Stage 2 groups in the queue,
+with Stage 3 remaining separate.
+
+
+Freight/mail offer completion (.55 candidate) owns generated checks/offers and
+referee-edited available-contract terms until saving completes. Safely unwritten
+attempts retain their accepted identifiers, dice and audit for deliberate retry.
+Offer publication and navigation wait for owned completion; saved or uncertain
+failed outcomes require reload before another save. Existing freight/mail
+calculations, deadlines, mail-only freight retention and Undo stay unchanged.
+Acceptance, cancellation and delivery/payment are a separate queued group.
