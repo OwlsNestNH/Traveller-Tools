@@ -513,3 +513,37 @@ State.sell and all accounting, cost-basis, tax, fee, insurance and Undo logic st
 unchanged. Submission and retry reuse the existing preview and never regenerate
 price or tax dice. Existing quote and tax cache keys, eligibility and edit/cancel
 behavior remain intact; their broader lifecycle belongs to Stage 3.
+
+
+## Stage 2 expense-panel completion (.50)
+
+Dedicated expense panels own each payment or rate attempt separately from their
+longer-lived navigation session. The accepted payment terms or prepared rate die,
+campaign/revision, editing tenure and UI context travel through the existing
+controller boundary. The application forwards its already-validated one-use
+publication provenance before rendering; revision, receipt ID or die equality
+alone never proves ownership. Native provider completion remains synchronous,
+while an explicit thenable retains pending controls until settlement.
+
+Only a still-current owned completion can expose its receipt, updated rate,
+financial display, route preference or success. Render and background paintMap
+respect an owned deferred publication. A pre-yield write generation prevents
+unrelated click continuations accepted before a payment from running after it
+settles. Foreign publication/editor loss permanently retires that owner; later
+editing reacquisition cannot revive it. Reentrant completion callbacks must not
+retire a newer payment that happens to share the completed rate's panel.
+
+An explicit unwritten failure retains the prepared draft/die only while both the
+local owner and full validated durable baseline remain current. A stale or
+unreadable durable baseline requires current-state reload guidance, without
+calling a known-unwritten attempt committed. Observed owned publication outranks
+a contradictory unwritten error. Unknown completion, missing expected provenance,
+and saved presentation failures latch reload protection before fallible reports.
+After owned publication, authoritative newer intent followed by fulfilled
+completion silently retires the old owner rather than overwriting the new UI.
+
+Initial-control faults are contained before provider invocation. Successful rate
+saving rotates its panel action identity so detached old rate controls cannot
+reroll or masquerade as the following payment. Existing state/controller/Store
+bodies, monetary calculations, schedules, ledger, audit and Undo remain intact.
+The general shared-modal entry-fault group and Stage 3 are separate work.

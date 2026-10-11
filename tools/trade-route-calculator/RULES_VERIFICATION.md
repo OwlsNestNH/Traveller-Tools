@@ -659,3 +659,31 @@ unchanged. Desktop/mobile Chromium must use actual version-tagged Store/native
 locks and provide bounded, independently inspected screenshots. Full exact-head
 CI and subsequent release checks remain required; this entry is scope, not a
 candidate browser pass or deployment claim.
+
+
+## Expense-panel completion .50 verification scope
+
+Read-only probes on .49 reproduced accepted receipts after editor loss/regain or
+same-revision foreign replacement, a fresh die on known-unwritten rate retry,
+and an injected initial control fault leaving a zero-write busy panel. Actual
+app/controller/Store diagnostics also exercise the separated write/publication/
+settlement boundary and pre-completion display reconciliation. These are delayed
+provider and injected-fault checks; production local Store remains synchronous.
+
+Compare all four dedicated payment kinds and saved berthing rates against exact
+native outcomes, including fixed-cost rounding exemptions, salary rounding,
+zero-rate berthing, huge Credits/installment counts, recorded location/date,
+receipt recovery, History and Undo. Retain actual economic mutation functions.
+Test prepared rate retry then payment, detached old rate actions, queued clicks,
+entry/control/report/render/navigation faults, one-use provenance, missing/wrong
+publication, unknown/contradictory outcomes, foreign same/new/disk-only state,
+editing loss/regain and newer reentrant UI intent.
+
+Real Chromium must use the version-tagged Store/native Web Locks and real cache/
+ResizeObserver-to-animation-frame map callbacks. Assert callback execution and
+strict retained map DOM/SVG/status during an owned held publication, then correct
+settlement/authoritative repaint. Inspect desktop/mobile overview plus visible
+warning/footer, receipt, success and large-money detail screenshots; use safe
+caret capture and bounded artifacts. Existing native/rules/catalog and all browser
+regressions remain mandatory. This entry records scope, not a browser or live
+deployment pass.

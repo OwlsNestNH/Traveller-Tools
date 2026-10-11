@@ -7,6 +7,7 @@ import {configureMaintenance} from '../js/maintenance.mjs';
 import {expenseQuote} from '../js/expenses.mjs';
 import {monthlySupport} from '../js/life-support.mjs';
 import * as S from '../js/state.mjs';
+import {SaveNotCommittedError} from '../js/persistence.mjs';
 
 const campaign=()=>{
  const s=S.initial();s.initialized=true;s.bank='5000000';s.actual='0,0';s.route=['0,0'];s.dateLabel='001-1105';s.hours=29;
@@ -29,10 +30,12 @@ function harness(initial=campaign(),options={}){
  const nodes={quote:{innerHTML:''},status:{textContent:'',hidden:true}};
  const controls={pay:{disabled:false,textContent:''},input:{disabled:false}};
  const document={getElementById(id){return id==='expense-form'?form:id==='expense-quote'?nodes.quote:id==='expense-status'?nodes.status:null;},querySelectorAll(selector){return selector.includes('[data-action="expense-pay"]')?[controls.pay]:[controls.input];}};
- function save(label,fn,revision){assert.equal(revision,state.revision);if(!editable)throw Error('read-only');const next=S.transition(state,label,fn);if(options.fail)throw Error('Storage rejected this save.');state=next;h.commits++;return next;}
- const commit=options.commit?((label,fn,revision)=>options.commit({label,fn,revision,save,h})):save;
+ // Explicit host contract: preserve fourth commit options, classify only
+ // demonstrably unwritten failures, then forward validated owned publication.
+ function save(label,fn,revision,contract={}){let next;try{assert.equal(revision,state.revision);if(!editable)throw Error('read-only');next=S.transition(state,label,fn);contract.onPrepared?.();if(options.fail)throw Error('Storage rejected this save.');}catch(cause){throw new SaveNotCommittedError(cause);}h.expenses.receiveCampaign(next,true);state=next;h.commits++;return next;}
+ const commit=options.commit?((label,fn,revision,contract)=>options.commit({label,fn,revision,contract,save:(label,fn,revision)=>save(label,fn,revision,contract),h})):save;
  h.expenses=createExpensePanels({document,getState:()=>state,isEditable:()=>editable,commit,render(){h.renders++;form=null;},showOverview(){},message(text){h.messages.push(text);},openService(kind){if(options.serviceError)throw Error(options.serviceError);h.services.push(kind);},showSettings(kind){h.settings.push(kind);},onNavigate(route){h.routes.push(route);},rollDie:()=>3});
- h.state=()=>state;h.setState=value=>{state=value;};h.setEditable=value=>{editable=value;};h.controls=controls;h.nodes=nodes;
+ h.state=()=>state;h.setState=value=>{h.expenses.receiveCampaign(value,false);state=value;};h.setEditable=value=>{editable=value;if(!value)h.expenses.invalidate();};h.controls=controls;h.nodes=nodes;
  h.edit=values=>{const html=h.expenses.panel(),token=/data-expense-session="([^"]+)"/.exec(html)?.[1];assert.ok(token,'No editable form rendered');form={dataset:{expenseSession:token},elements:Object.entries(values).map(([name,value])=>({name,value:String(value)}))};h.expenses.sync();};
  h.arg=(name,value)=>actionArg(h.expenses.panel(),name,value);
  h.click=(name,value)=>h.expenses.action(name,h.arg(name,value));
@@ -180,7 +183,7 @@ test('old deferred transaction callback cannot apply after revision or ownership
  for(const mode of ['revision','ownership']){
   const h=harness(campaign(),{commit({label,fn,revision,save,h}){return new Promise((resolve,reject)=>{h.pending=()=>{try{resolve(save(label,fn,revision));}catch(error){reject(error);}};});}});
   h.expenses.open('mortgage',{fresh:true});const pending=h.click('expense-pay');if(mode==='revision')h.setState(S.transition(h.state(),'Other change',s=>s.bank='4999999'));else h.setEditable(false);
-  h.pending();await assert.rejects(pending);assert.equal(h.commits,0);assert.equal(h.state().ledger.length,0);assert.equal(h.expenses.committing(),false);
+  h.pending();await pending;assert.equal(h.commits,0);assert.equal(h.state().ledger.length,0);assert.equal(h.expenses.committing(),false);assert.doesNotMatch(h.messages.join(' '),/saved/i);assert.match(h.expenses.panel(),/Campaign or editing ownership changed/);
  }
 });
 

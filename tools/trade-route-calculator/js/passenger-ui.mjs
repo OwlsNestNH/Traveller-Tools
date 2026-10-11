@@ -1,10 +1,10 @@
-import {ruleInfo} from './rule-references.mjs?v=sale-completion-20261011-49';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=sale-completion-20261011-49';
+import {ruleInfo} from './rule-references.mjs?v=expense-completion-20261011-50';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=expense-completion-20261011-50';
 import * as A from './amounts.mjs';
-import {manualLuggage} from './accommodation.mjs?v=sale-completion-20261011-49';
-import * as P from './passengers.mjs?v=sale-completion-20261011-49';
-import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=sale-completion-20261011-49';
-import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=sale-completion-20261011-49';
+import {manualLuggage} from './accommodation.mjs?v=expense-completion-20261011-50';
+import * as P from './passengers.mjs?v=expense-completion-20261011-50';
+import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=expense-completion-20261011-50';
+import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=expense-completion-20261011-50';
 import {displayDate} from './calendar.mjs';
 const esc=escapeHtml;
 const money=formatCreditsText,signed=x=>x>0?'+'+x:String(x);
