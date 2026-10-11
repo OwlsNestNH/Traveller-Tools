@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {serviceHarness,serviceCampaign,serviceSaveGate,serviceUI,S,same,flush} from './service-save-harness.mjs';
 import {supportStock} from '../js/life-support.mjs';
+import {accountsHarness} from './accounts-save-harness.mjs';
 import {bladderSpace,configureFuel} from '../js/fuel.mjs';
 import {campaignBaseline} from './fixtures/campaign-baseline.mjs';
 
@@ -160,7 +161,7 @@ test('unchanged legacy baseline refuels bladders through delayed completion and 
 });
 
 test('service save completion does not alter synchronous provider return or ordinary expense/deposit contracts',async()=>{
- const h=serviceHarness();const candidate=S.transition(h.api.state,'Legacy direct save',s=>S.deposit(s,1,'Direct provider'));
+ const h=accountsHarness(serviceCampaign());h.api.setTab('Trade');h.api.render();const candidate=S.transition(h.api.state,'Legacy direct save',s=>S.deposit(s,1,'Direct provider'));
  assert.equal(h.store.save(candidate,0),undefined);assert.equal(h.counters.writes,1);assert.equal(h.api.controller.undo(1),undefined);
  h.api.actions.expense();h.fill({amount:17,reason:'Legacy expense'});const expense=h.submit();assert.equal(h.persisted().bank,'99983');assert.match(h.dom.ids.get('message').textContent,/Manual expense saved\./);await expense;
  h.api.actions.deposit();h.fill({amount:'10.1',reason:'Existing deposit completion'});await h.submit();await h.submit();assert.equal(h.persisted().bank,'99994');assert.match(h.dom.ids.get('message').textContent,/Manual deposit saved\./);

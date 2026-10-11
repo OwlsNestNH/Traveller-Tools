@@ -106,6 +106,8 @@ test('cross-field settings failures reveal the form, while stale drafts keep dis
  const ownerStart=source.indexOf('function invalidateSettingsOperation('),mountStart=source.indexOf('\nfunction mountSettingsForm(){',ownerStart),mountEnd=source.indexOf('\nfunction createWorldWriteOwner(',mountStart);
  assert.ok(ownerStart>=0&&mountStart>ownerStart&&mountEnd>mountStart,'Production Settings owner/mount and next owner boundary exist');
  const mount=source.slice(ownerStart,mountEnd);
+ const accountsGuard=source.match(/^function accountsBusy\(\).*$/m)?.[0];
+ assert.ok(accountsGuard,'Extract the actual Accounts predicate used by the Settings submit boundary');
  const readFuel=source.match(/^function readFuel.*$/m)[0];
  const groups=[{open:false},{open:false}],events=[],field={name:'shipTons',value:'',type:'number',disabled:false,willValidate:true,validity:{valid:true}};
  const error={textContent:'',focus:()=>events.push('focus-error'),scrollIntoView:()=>events.push('show-error')};
@@ -113,10 +115,10 @@ test('cross-field settings failures reveal the form, while stale drafts keep dis
  form.elements.namedItem=name=>name===field.name?field:null;
  const ids={'settings-form':form,'settings-error':error,'settings-reset':{},'settings-save':{},modal:{open:false}};
  const state={revision:1,ship:{}};
- const sandbox={Map,document:{},SaveNotCommittedError,$:id=>ids[id],state,settingsDraft:null,settingsFormRevision:0,settingsOpenGroups:new Map(),settingsRounding:[],inputRounding:[],store:{editable:true},settingsOperation:null,worldWriteOperation:null,campaignReloadRequired:false,tab:'Settings',suspendedSettings:null,services:{active:()=>false},
+ const sandbox={Map,document:{},accountsWriteOperation:null,SaveNotCommittedError,$:id=>ids[id],state,settingsDraft:null,settingsFormRevision:0,settingsOpenGroups:new Map(),settingsRounding:[],inputRounding:[],store:{editable:true},settingsOperation:null,worldWriteOperation:null,campaignReloadRequired:false,tab:'Settings',suspendedSettings:null,services:{active:()=>false},
   mountSettingsLayout(){},normaliseSettingsFields(){},updateSettingsForm(){},syncSettingsControls(){},captureSettingsDraft(){},captureSettingsDisclosures(){},render(){throw Error('An invalid form must not render a committed state');},
   FormData:class{get(name){return {shipTons:'',fuelCapacity:'40',fuelAboard:'10'}[name]??null;}}};
- vm.runInNewContext(readFuel+';function saveSettings(data){try{readFuel(data);}catch(error){throw new SaveNotCommittedError(error);}throw Error("Validation should have failed");}'+mount+'\n;globalThis.mount=mountSettingsForm;',sandbox);
+ vm.runInNewContext(accountsGuard+'\n'+readFuel+';function saveSettings(data){try{readFuel(data);}catch(error){throw new SaveNotCommittedError(error);}throw Error("Validation should have failed");}'+mount+'\n;globalThis.mount=mountSettingsForm;',sandbox);
  sandbox.mount();form.onsubmit({preventDefault(){}});
  assert.ok(groups.every(group=>group.open),'Individually valid fields with a cross-field error are revealed');
  assert.match(error.textContent,/ship displacement, fuel tank capacity and fuel aboard together/);

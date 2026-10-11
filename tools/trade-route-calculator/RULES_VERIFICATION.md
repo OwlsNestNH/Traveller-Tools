@@ -1043,3 +1043,138 @@ assertions. Its original report and artifacts are retained. Empty recorded error
 arrays do not establish the missing final idle/pending checks; precise network
 cause is not established without a request timeline. No Setup assertion was
 relaxed. Final release evidence must disclose the result of subsequent checks.
+
+
+### Passenger .58 final release evidence
+
+PR60 merged as `81011e305aef7e8561b4b2f9f9417f4059676b44`, exact reviewed
+head `342acab7ef6ac6d862af6ff30755d799975c29fd`, tree
+`3ce9475096d364f337569d833ab862a658418ba4`. The final native aggregate passed
+5,306 tests across 78 files, 227 rules checks and shared catalog integration.
+Focused passenger Chromium passed 139 cases, with all 260 screenshots/layouts
+and 329 complete evidence targets audited. Ninety-nine original frames were
+individually reviewed (64 mobile, 35 desktop, 81 distinct image hashes); the
+final Setup-diagnostic-only commit kept all 260 reviewed image bytes identical.
+
+A second unchanged Setup suite again passed 159/160 with the same final idle
+failure. The two original reports remain retained. Minimal passive request/
+lifecycle observation preserves all 510 original awaits, 160 scenarios,
+assertions, the 15-second timeout and artifact limits. It observed two clean
+160/160 runs, each with no pending request or fixture at final idle entry or
+context close. Earlier timeout causes remain unknown; observer overhead could
+change timing. This is a bounded observation, not a demonstrated Setup repair.
+
+The final-head original Cargo job failed keyboard selection after an observed
+SVG/focus-marker replacement. Exact keydown target/callback cause remain inferred.
+A single authorized unchanged-head Cargo-only rerun passed all eight cases/four
+widths. Only Cargo re-executed; the other 60 job timings were copied to attempt 2.
+Trade run 38134216603 and Campaign run 38134216672 passed. All ready-event
+duplicates then passed without retries: Trade 38135364812 (61 jobs) and Campaign
+38135364815 (6 jobs), including clean Setup, Cargo and passenger checks.
+
+Pages 38136148626 passed all three jobs; all 90 permitted live URL variants
+matched the reviewed bytes. Ten previously proxy-restricted variants remain
+excluded. Mobile booking tables scroll horizontally; extreme long-destination/
+large-number desktop ledger rows overlap, inherited by source comparison rather
+than separate baseline pixels. The dedicated new boarding paragraph wraps
+without overflow. No broader layout or map-focus repair is claimed.
+
+### Legacy Accounts .59 candidate verification scope
+
+Characterize the exact .58 original app, controller and Store before comparing
+the four remaining legacy Accounts writes: atomic expense bundle, inline saved
+berthing rate, manual expense and signed referee bank correction. Preserve full
+state, ledger/audit/Undo, stock/time, exact amounts, installment rules and retained
+form values; normalize only generated UUID identity and explicit report-version
+labels in the oracle. The optional fuel-only branch remains compatibility-only.
+
+Exercise synchronous equivalence, independent durable reads, genuine publication
+and delayed settlement, frozen accepted quotes/fields, normalization, repeated/
+queued/reentrant actions, one retained die on safe rate retry, terminal saved or
+unknown outcomes, ownership loss and newer real dialogs. Rate success must hand
+its exact retained form to fresh authority while still locked; old cleanup may
+not rebase or unlock a newer payment. Observe real nearby/map callbacks and
+strict pending presentation equality, reload and genuine History Undo. Existing
+Expense/Fuel/LSS and all released suites remain controls. Full desktop/mobile
+first-form, total, warning, footer, success/Details and balance evidence must pass
+fixed budgets and independent source/pixel review. Candidate results are pending.
+
+
+The initial complete local .59 prepublication gate passed 5,765 native tests across
+80 discovered files, 227 rules checks and one shared catalog test. This includes
+350 focused completion/fixture cases, 80 complete-original economic comparisons,
+two integrity/canonicalization checks and 27 additional actual Accounts painter
+truth-table cases. All 5,306 released native case names remain present. The
+original whole app and imports were pinned to released .58; committed seeds and
+compact full-outcome hashes preserve every live/durable, report, audit, inverse,
+stock and reload field. Only new explicit generated identity/reference fields
+and the report's exact release-version line are canonicalized; seeded identities
+and UUID/version-shaped reasons remain exact.
+
+An interrupted first aggregate had no terminal result and is not counted. The
+next complete aggregate reported 4,817 cases, 97 failures: a historical test
+splice removed the new Accounts helper and prevented 922 contract cases from
+registering, while older extracted tests lacked the new real guard or faithful
+form membership APIs. Seven narrow fixture-only corrections restored every
+original assertion/name and historical source check, reused the faithful Accounts
+DOM for two expense controls, and added the 27 genuine map cases. The corrected
+full run then passed all 5,765. No production change was made for these fixture
+corrections.
+
+Actual browser testing then caught a real candidate runtime defect: the dialog's
+X button is inside the production form, but the native fixture placed it outside.
+The new Accounts guard treated its legitimate busy-lock disabled state as changed
+economic terms, rejecting all four branches before provider entry. Original
+browser failures and a faithful-shell native red run (41/383 passed) are retained.
+The narrow correction excludes shared X chrome from mutable economic terms while
+preserving its exact control identity, shape and containment. The native shell now
+reads the selected original/candidate index markup. All 350 prior focused cases
+are preserved, with 33 additional shell, genuine-handler and chrome-ownership
+regressions. The corrected focused gate passes 465/465, including the 82 economic
+checks. A fresh faithful-shell run of all 80 complete original outcomes matches
+every unchanged committed expectation. Full corrected native and exact-head
+browser gates remain required; no existing browser assertion is relaxed.
+
+The corrected browser run then completed all 222 Accounts cases: 212 passed and
+10 failed. Eight failures were an overly specific screenshot-caption expectation
+after genuine Undo and full inverse-state assertions had passed; the test now
+requires the exact existing "Latest action undone." text. A construction-reentry
+case targeted first-form submit normalization, where blocking Notes is correct,
+rather than fresh confirmation construction. Its corrected trigger proves both
+the first boundary's block and the second boundary's actual title/handler change.
+Neither correction changes application Undo or the save/ownership assertions.
+
+Two further real candidate runtime issues remain separately recorded. The existing
+two-tab browser control exposed editing-loss guidance being overwritten by a
+later foreign publication; the fix preserves global reload and explicit saved
+guidance before selecting the specific editing-tenure warning. An injected one-
+time control-restoration exception left terminal Close disabled after a saved
+write. Accounts now independently restores only its exact owned dismissal chrome,
+keeps Save/reload protection latched, and cannot modify a newer dialog. Faithful
+native red runs reproduce both failures; persistent faults retain best-effort
+limits. No provider, accounting, browser timeout or image ceiling changes apply.
+An additional four-branch regression found that a persistently broken Cancel
+setter could still block the intact X during redundant close-time synchronization.
+Explicit dismissal now retires only its captured already-terminal Accounts owner
+without repeating that notification. Publication-driven guidance, exact owner/
+generation guards and the global reload/write lock remain intact.
+
+Four delayed original callers reproduce the pre-migration pending-save gap.
+Additional independent stale/provenance/form and native Cancel/X/Escape plus Undo
+probes pass. Fourteen independent immediate/next-microtask comparisons preserve
+original synchronous writes/announcements and the existing close continuation.
+The first mixed-timing economic comparison log was overwritten; that limitation
+is recorded, and independent exact-source traces reproduce the timing finding
+and verify its correction. Individual native failure logs remain preserved.
+A mistakenly selected historical browser runner in a local test list failed at
+its missing executable before context/page startup; it supplied no browser
+verification and was not retried. Subsequent native selections are source-checked.
+
+The new Chromium gate declares 222 desktop/mobile cases (197/25), with 108
+representative image cases and 114 duplicate-surface cases retaining all semantic
+and geometry assertions. Its 245 planned frame groups can expand for complete
+full-height form walks. Original resolution, readable encoding, full target
+ranges and fixed 24 MiB total / 20 MiB image ceilings remain required. Fixture-only
+mode exits before browser import; actual execution is restricted to GitHub CI.
+Actual exact-head browser results, image-byte budgets and pixel review remain
+pending, so this is not a merge or deployment approval.

@@ -36,9 +36,11 @@ async function loadHarness(source){
  return (await import('data:text/javascript;base64,'+Buffer.from(ss).toString('base64'))).depositHarness;
 }
 const depositHarness=await loadHarness(app);
+// Replace only each historical caller. The next top-level declaration may now
+// be an Accounts helper; never remove its required guard with the old caller.
 let originalApp=app;
 for(const [name,end]of [['manualContract','accept'],['accept','cancelMail'],['cancelMail','deliver'],['deliver',null]]){
- const begin=originalApp.indexOf('function '+name+'('),finish=end?originalApp.indexOf('\nfunction '+end+'(',begin):originalApp.indexOf('\n\nconst expenseKinds',begin);
+ const begin=originalApp.indexOf('function '+name+'('),finish=end?originalApp.indexOf('\nfunction '+end+'(',begin):begin+1+originalApp.slice(begin+1).search(/\n(?=function |const |let )/);
  assert.ok(begin>=0&&finish>begin);originalApp=originalApp.slice(0,begin)+historicalFunctions[name]+originalApp.slice(finish);
 }
 const originalHarness=await loadHarness(originalApp);
