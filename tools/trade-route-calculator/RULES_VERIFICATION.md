@@ -1100,7 +1100,7 @@ first-form, total, warning, footer, success/Details and balance evidence must pa
 fixed budgets and independent source/pixel review. Candidate results are pending.
 
 
-The complete local .59 prepublication gate passes 5,765 native tests across
+The initial complete local .59 prepublication gate passed 5,765 native tests across
 80 discovered files, 227 rules checks and one shared catalog test. This includes
 350 focused completion/fixture cases, 80 complete-original economic comparisons,
 two integrity/canonicalization checks and 27 additional actual Accounts painter
@@ -1120,6 +1120,20 @@ original assertion/name and historical source check, reused the faithful Account
 DOM for two expense controls, and added the 27 genuine map cases. The corrected
 full run then passed all 5,765. No production change was made for these fixture
 corrections.
+
+Actual browser testing then caught a real candidate runtime defect: the dialog's
+X button is inside the production form, but the native fixture placed it outside.
+The new Accounts guard treated its legitimate busy-lock disabled state as changed
+economic terms, rejecting all four branches before provider entry. Original
+browser failures and a faithful-shell native red run (41/383 passed) are retained.
+The narrow correction excludes shared X chrome from mutable economic terms while
+preserving its exact control identity, shape and containment. The native shell now
+reads the selected original/candidate index markup. All 350 prior focused cases
+are preserved, with 33 additional shell, genuine-handler and chrome-ownership
+regressions. The corrected focused gate passes 465/465, including the 82 economic
+checks. A fresh faithful-shell run of all 80 complete original outcomes matches
+every unchanged committed expectation. Full corrected native and exact-head
+browser gates remain required; no existing browser assertion is relaxed.
 
 Four delayed original callers reproduce the pre-migration pending-save gap.
 Additional independent stale/provenance/form and native Cancel/X/Escape plus Undo

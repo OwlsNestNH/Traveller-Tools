@@ -2984,7 +2984,7 @@ function deliver(id){
 function accountsBusy(){const o=accountsWriteOperation;return !!o&&!o.invalidated&&(o.pending||o.constructing||o.handoff||o.recovering||o.updating);}
 function accountsControls(form){return [...form.querySelectorAll('input,select,textarea,button')].filter(c=>!c.hasAttribute('data-rule-info'));}
 function accountsControlShape(c){return JSON.stringify([c.name,c.getAttribute('type'),c.dataset.action,c.dataset.arg,c.dataset.round,c.dataset.roundLabel,c.dataset.roundExact]);}
-function accountsTerms(form){return new Map(accountsControls(form).filter(c=>!['modal-submit','modal-cancel'].includes(c.id)).map(c=>[c,{name:c.name,type:c.getAttribute('type'),value:c.value,checked:c.checked,disabled:c.disabled}]));}
+function accountsTerms(form){return new Map(accountsControls(form).filter(c=>!['modal-submit','modal-cancel','modal-close'].includes(c.id)).map(c=>[c,{name:c.name,type:c.getAttribute('type'),value:c.value,checked:c.checked,disabled:c.disabled}]));}
 function accountsFormCurrent(owner,terms=owner.attempt?.terms){
  const controls=accountsControls(owner.form);
  if(owner.identity&&(controls.length!==owner.identity.length||controls.some((c,i)=>c!==owner.identity[i]||owner.structure?.get(c)!==accountsControlShape(c))))return false;

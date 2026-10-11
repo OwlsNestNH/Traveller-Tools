@@ -250,3 +250,27 @@ for(const [kind,invalid]of [['expense','zero'],['expense','negative'],['expense'
 test('closing retained form after rate success keeps the separate saved rate and records no payment',async()=>{
  const h=setup('rate'),before=h.persisted();prepare(h,'rate');await h.start('rate');const afterRate=h.persisted();h.api.closeModal();assert.equal(ui(h).modalOpen,false);assert.equal(h.counters.writes,1);same(h.persisted(),afterRate);assert.equal(afterRate.bank,before.bank);same(afterRate.ledger,before.ledger);assert.ok(afterRate.worlds[afterRate.actual].berthingRate);assert.equal(afterRate.undo.length,before.undo.length+1);const fresh=setup('bundle',afterRate);await fresh.runAction('undo');same(fresh.persisted().worlds,before.worlds);assert.equal(fresh.persisted().bank,before.bank);
 });
+
+// The browser gate exposed an incorrect hand-built native shell: production's
+// close X belongs inside the form. Load its exact selected-root index markup,
+// then require all mutable chrome locks without surrendering node/shape identity.
+test('Accounts fixture uses the production dialog shell with heading X and ordered action controls inside the form',()=>{
+ const h=setup(),dialog=h.dom.ids.get('modal'),form=h.form(),title=h.dom.ids.get('modal-title'),close=h.dom.ids.get('modal-close'),cancel=h.dom.ids.get('modal-cancel'),submit=h.dom.ids.get('modal-submit');
+ assert.deepEqual(dialog.children,[form]);assert.equal(form.parentElement,dialog);assert.equal(title.tagName,'H2');assert.equal(close.parentElement,title.parentElement);assert.equal(close.parentElement.className,'dialog-heading');assert.equal(close.parentElement.parentElement,form);assert.equal(close.getAttribute('aria-label'),'Close dialog');assert.equal(h.dom.ids.get('modal-error').tagName,'P');assert.equal(h.dom.ids.get('modal-error').getAttribute('role'),'alert');assert.equal(cancel.parentElement.className,'dialog-actions');assert.equal(cancel.parentElement,submit.parentElement);assert.equal(cancel.parentElement.parentElement,form);
+ assert.deepEqual(form.querySelectorAll('button'),[close,cancel,submit]);assert.deepEqual([close,cancel,submit].map(n=>n.type),['button','button','submit']);
+ for(const n of [form,title,close,cancel,submit]){assert.equal(n.isConnected,true);assert.equal(dialog.contains(n),true);assert.equal(h.dom.document.querySelectorAll('#'+n.id).length,1);assert.equal(h.dom.document.getElementById(n.id),n);}for(const n of [close,cancel,submit]){assert.equal(n.form,form);assert.ok(form.elements.includes(n));}
+});
+for(const kind of kinds)test(`${kind}: genuine form or rate-click handler saves with production in-form chrome locked`,async()=>{
+ const h=setup(kind);prepare(h,kind);const form=h.form(),chrome=['modal-close','modal-cancel','modal-submit'].map(id=>h.dom.ids.get(id)),before=h.persisted();let entries=0;
+ h.hooks.beforeWrite=()=>{entries++;assert.equal(h.form(),form);for(const n of chrome){assert.equal(n.form,form);assert.equal(n.disabled,true,'All production in-form chrome is locked before provider write');assert.ok(h.api.owner.identity.includes(n),'Chrome identity remains authoritative');}};
+ const operation=kind==='rate'?h.click('berthing-rate'):form.onsubmit(event(h));assert.equal(entries,1);assert.equal(h.counters.writes,1);assert.equal(h.persisted().revision,before.revision+1);assert.match(ui(h).message,success);assert.equal(ui(h).modalError,'');await operation;await flush();assert.equal(ui(h).modalOpen,kind==='rate');assert.equal(h.store.reloadRequired??false,false);assert.equal(h.form(),form);for(const n of chrome)assert.equal(h.dom.ids.get(n.id),n);
+ if(kind==='rate')for(const n of chrome)assert.equal(n.disabled,false,'Retained form chrome is usable after rate handoff');
+});
+for(const kind of kinds)for(const id of ['modal-close','modal-cancel','modal-submit'])for(const change of ['equal-valued replacement','shape mutation'])test(`${kind}: in-form ${id} ${change} before submission retains strict identity and rejects the write`,async()=>{
+ const h=setup(kind);prepare(h,kind);const prior=h.dom.ids.get(id),raw=h.bytes();assert.equal(prior.form,h.form());assert.ok(h.api.owner.identity.includes(prior));
+ if(change==='equal-valued replacement'){const next=h.dom.node('button',{...prior.attributes});next.value=prior.value;next.checked=prior.checked;next.disabled=prior.disabled;prior.replaceWith(next);assert.equal(h.dom.ids.get(id),next);assert.equal(prior.isConnected,false);assert.equal(next.form,h.form());}else prior.setAttribute('type',prior.getAttribute('type')==='button'?'submit':'button');
+ await h.start(kind);assert.equal(h.bytes(),raw);assert.equal(h.counters.writes,0);assert.equal(h.calls.rolls,0);noSuccess(h);
+});
+for(const kind of kinds)test(`${kind}: equal-valued in-form X replacement during pending publication cannot authenticate old completion`,async t=>{
+ const {h,gate,operation,callback}=await pending(t,kind),prior=h.dom.ids.get('modal-close'),next=h.dom.node('button',{...prior.attributes});next.value=prior.value;next.checked=prior.checked;next.disabled=prior.disabled;prior.replaceWith(next);assert.equal(prior.isConnected,false);assert.equal(next.form,h.form());assert.equal(h.dom.ids.get('modal-close'),next);gate.entries[0].write();gate.entries[0].fulfill();await operation;assert.equal(h.counters.writes,1);noSuccess(h);const raw=h.bytes();await callback(event(h));assert.equal(h.bytes(),raw);assert.equal(gate.entries.length,1);
+});
