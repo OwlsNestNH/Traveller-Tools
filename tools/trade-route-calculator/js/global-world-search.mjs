@@ -1,4 +1,4 @@
-import {searchWorlds,loadWorld} from './map.mjs?v=clear-route-completion-20261011-60';
+import {searchWorlds,loadWorld} from './map.mjs?v=planned-route-completion-20261011-61';
 
 export const planetSearchLabel=w=>[w.name,w.subsectorName,w.sector,w.hex].join(' — ');
 

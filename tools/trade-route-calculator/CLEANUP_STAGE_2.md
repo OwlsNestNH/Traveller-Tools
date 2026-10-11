@@ -214,3 +214,31 @@ closure or stale-draft reuse and pass this implementation. The existing
 unchanged. Independent source review and eight extra adversarial probes pass.
 The new Chromium suite declares 30 desktop/mobile cases; adding the harness
 does not claim browser execution or pixel review before the exact-head gates.
+
+
+## Planned-route completion candidate — UI 2026.10.11.61
+
+Based on released .60 merge `dc9006ad649aff7973be1d24276b7a64946ae982`.
+Map/Auto and modal Plot route saves retain one accepted review through declared
+provider completion. The synchronous provider preserves native save/render/
+announcement timing and the existing first-microtask close. Known-unwritten
+retry keeps the original terms; saved/unknown outcomes require genuine reload.
+The original Map live-known-world merge and Plot calculated-world snapshot
+mutation bodies, travelled route prefix, stop ordering/repetition, routeIndex,
+time/economics, Undo and permanent mulligan policy are unchanged.
+
+Initial Plot remains cancellable while ordered world and radius-12 nearby
+requests run. Each continuation verifies campaign/editor/modal ownership,
+original attached picker/control identities, row order and accepted values.
+Foreign retained-submit targets cannot normalize or start lookups. Partial entry
+failure retires only the exact form and restores suspended Settings when safely
+closed; a native close failure leaves a terminal dismissible form. Newer dialogs
+are preserved. One dedicated planned-route-review paragraph class wraps long
+world names only in these callers' origin/path/fuel paragraphs.
+
+The 6,027 released native cases and 69 existing CI controls remain mandatory.
+New full released-source observations execute the real .60 app and complete
+helper family for four wholly synthetic campaigns across Build, Auto and Plot,
+recording submit stack, first microtask, settlement, reload and ordinary Undo.
+Candidate publication permits exact-head CI; it does not establish a browser
+pass or authorize merge before independent source and actual-image review.

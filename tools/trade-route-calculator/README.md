@@ -723,6 +723,11 @@ remain unverified. Earlier browser-found defects and visual limits are retained
 in RULES_VERIFICATION.
 
 Two Stage 2 scope groups remain: route/world/rounding and cargo/market controls.
-The .60 candidate targets only Clear Planned Route, preserving its existing
-route mutation and waiting for verified completion before clearing its own draft.
-Other route callers remain queued. Stage 3 has not started.
+Clear Planned Route (.60 released) passed 6,027 native tests, 87 focused browser
+cases and all 69 ready-event duplicate jobs. Exact merge/tree, Pages and all 90
+permitted live variants were verified; ten restricted variants, including both
+style.css URLs, remain unverified. The .61 candidate covers Map/Auto route save
+and Plot final-save completion, retaining accepted terms and the exact owned
+draft until verified completion. Map keeps its live known-world merge; Plot keeps
+its calculated snapshot. Ordinary world override, rounding Apply and cargo/market
+controls remain queued. Stage 3 has not started.

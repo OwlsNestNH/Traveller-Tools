@@ -1301,3 +1301,83 @@ legitimate current-role synchronization as old-owner repair were independently
 corrected. The subsequent focused run passed 139/139 with an exact no-drift source
 snapshot. Additional explicit newer-title/body/enabled-control assertions were
 then strengthened; a fresh complete aggregate is required for final publication.
+
+
+## .60 final release verification
+
+PR #62 final head `ace8e2063567b591b1bca463aa65e8928a0025c1` passed 6,027
+native tests, 227 rules checks, all 69 required exact-head jobs and 87 focused
+browser cases. Trade workflow 38150795055 and campaign workflow 38150795052
+passed, followed by ready-event workflows 38152089047 and 38152089018. All 82
+original focused cases remain; five new cases prove Cancel/X repair and preclaim
+replacement. Independent original-resolution review covered 52 unique images;
+45 duplicate frames matched those exact bytes, reconciling all 97 frames and all
+46 mobile frames. All 156 layout checks had no overflow; 206 target checks,
+two complete mobile form walks and 27 physical terminal dismissals passed.
+Original failed runs and their qualified diagnoses above remain part of evidence.
+
+Merge `dc9006ad649aff7973be1d24276b7a64946ae982` matched reviewed tree
+`3ea07e318412343f9cc986b096a6066dd195b16f`. Pages run 38153048723 succeeded;
+all 90 permitted live variants matched. Ten previously proxy-denied variants,
+including both style.css URLs, remain excluded/unverified. No retry or alternate
+route was used for them; candidate CSS source/CI/pixel verification is separate
+from live-byte verification.
+
+## Planned-route completion candidate — UI 2026.10.11.61
+
+The candidate is based on exact released .60. Before editing, all 309 repository
+files matched Git blob hashes and the full released native aggregate passed
+6,027/6,027. Map save and Plot save original mutation closures are preserved.
+Twelve full .60 observations use four wholly synthetic campaigns for Build,
+Auto and Plot, the complete released helper family and real Store/controller.
+Only generated UUIDs are normalized; complete state, audits, ledger, timing,
+rendered panels, saved bytes, reload and Undo outcomes remain strict.
+
+Preserved native diagnostics distinguish actual ownership gaps from fixture
+corrections. Initial 136/273 failures were dominated by a DOM double that did not
+mark attached dynamic form nodes connected, plus the approved path-class markup
+delta and an incorrect known-unwritten candidate-alias model. Correcting those
+boundaries without runtime changes yielded 273/273. New red lookup cases then
+reproduced detached picker host/row and foreign currentTarget gaps; original
+records are retained alongside the repaired DOM topology self-check. The narrow
+runtime correction binds actual picker/control identities and row order, rejects
+foreign first-submit targets before normalization, and retires partial entry
+without touching newer dialogs. A 298/298 focused run passed before subsequent
+strict early-construction and suspended-Settings cleanup cases were added.
+
+One dedicated paragraph wrapping class applies only to these planned-route
+origin/path/fuel paragraphs. Fuel-notice overflow was predicted from source, not
+claimed observed baseline pixels. All final source/native/rules/catalog/fixture
+controls, exact-head browser execution and actual screenshots remain release
+gates. Browser scripts are executed locally only in their documented non-browser
+fixture modes; actual Chromium evidence comes from GitHub CI. Existing prior
+Setup-idle/Cargo-focus qualifications and ten live URL exclusions remain intact.
+
+
+The initial .61 candidate head `920b8b11c4457b8927ca7980d2f1fb924eeb0b24`
+passed all 69 pre-existing exact-head CI jobs. The new focused suite executed
+all 157 cases: all 129 desktop cases passed, while all 28 mobile cases failed
+its unchanged no-horizontal-page-overflow assertion. Every mobile measurement
+reported 187px document overflow; open dialogs remained bounded at 19–371px
+with zero internal overflow. The original artifact has 128 images; each file's
+hash, size, head/source/gate provenance and original resolution were checked.
+Trade run 38159270019 and its failed focused job 114528580551, the successful
+campaign run 38159270033, original logs and artifact remain preserved.
+
+Independent source review points to the underlying Overview fuel-warning
+paragraph: this fixture deliberately makes the 77-character unbroken current
+world name fuel-unavailable. That pre-existing mapPanel warning lacked wrapping,
+while current-dialog paragraphs fit. Its renderer/shared generator/relevant CSS
+match .60, but no separate baseline browser pixels establish inherited behavior;
+the original report also did not identify the overflowing element's rectangles.
+Direct inspection of the original Plot cancelled-review mobile image confirms
+that this warning's long current-world name extends past the 390px right edge
+while its background ends at 369px. This is observed candidate overflow, not
+separately observed .60 behavior or a measured node-attribution diagnostic.
+The approved bounded correction applies the existing dedicated paragraph class
+only at mapPanel's fuel-warning call site. Shared fuel text/logic, calculations,
+other panels and CSS rules are unchanged. The new diagnostic records actual
+warning and long-name text-fragment bounds before page assertions and adds full
+mobile saved/cancelled warning captures. All 157 cases, original targets, fixture
+stress, page-overflow assertions and budgets remain. The corrected exact-head
+browser result must verify containment before this is called fixed.

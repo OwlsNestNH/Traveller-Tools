@@ -1,14 +1,14 @@
-import {ruleInfo} from './rule-references.mjs?v=clear-route-completion-20261011-60';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=clear-route-completion-20261011-60';
-import {passengerShip} from './passengers.mjs?v=clear-route-completion-20261011-60';
+import {ruleInfo} from './rule-references.mjs?v=planned-route-completion-20261011-61';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=planned-route-completion-20261011-61';
+import {passengerShip} from './passengers.mjs?v=planned-route-completion-20261011-61';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=clear-route-completion-20261011-60';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=clear-route-completion-20261011-60';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=clear-route-completion-20261011-60';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=clear-route-completion-20261011-60';
-import {creditStep} from './rounding.mjs?v=clear-route-completion-20261011-60';
-import {roll} from './rules.mjs?v=clear-route-completion-20261011-60';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=clear-route-completion-20261011-60';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=planned-route-completion-20261011-61';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=planned-route-completion-20261011-61';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=planned-route-completion-20261011-61';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=planned-route-completion-20261011-61';
+import {creditStep} from './rounding.mjs?v=planned-route-completion-20261011-61';
+import {roll} from './rules.mjs?v=planned-route-completion-20261011-61';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=planned-route-completion-20261011-61';
 
 const esc=escapeHtml;
 const money=formatCreditsText;
