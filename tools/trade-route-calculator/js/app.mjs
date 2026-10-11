@@ -1,42 +1,42 @@
-import {dashboardPanel} from './dashboard-view.mjs?v=passenger-search-completion-20261011-57';
-import {recordWorldOverride,revertWorldField,worldFieldRevertEligibility,worldChangeFields,worldFieldValue,isWorldChangeAudit} from './world-change-history.mjs?v=passenger-search-completion-20261011-57';
-import {createCampaignController} from './campaign-controller.mjs?v=passenger-search-completion-20261011-57';
-import {ruleInfo,referenceIndex,REFERENCE_VERSION} from './rule-references.mjs?v=passenger-search-completion-20261011-57';
-import {mountRulePopover,replaceReferenceContent} from './rule-popover.mjs?v=passenger-search-completion-20261011-57';
-import {escapeHtml,moneyHtml} from './display.mjs?v=passenger-search-completion-20261011-57';
-import {normalizeAmountFields} from './form-values.mjs?v=passenger-search-completion-20261011-57';
-import {contactSearchStatus,contactSearchPeriod,contactSearchRule} from './contact-search.mjs?v=passenger-search-completion-20261011-57';
-import {createPassengerUI} from './passenger-ui.mjs?v=passenger-search-completion-20261011-57';
-import {passengerShip,passengerTotals,passengerSpace,passengerCapacity} from './passengers.mjs?v=passenger-search-completion-20261011-57';
-import {advancePaymentDate,recordedPaymentDate} from './payment-schedule.mjs?v=passenger-search-completion-20261011-57';
-import {configureMortgage,mortgageStatus} from './mortgage.mjs?v=passenger-search-completion-20261011-57';
-import {configureMaintenance,maintenanceStatus} from './maintenance.mjs?v=passenger-search-completion-20261011-57';
-import {createServicePanels} from './service-panels.mjs?v=passenger-search-completion-20261011-57';
-import {cargoHoldPanel} from './cargo-hold.mjs?v=passenger-search-completion-20261011-57';
-import {createExpensePanels} from './expense-panels.mjs?v=passenger-search-completion-20261011-57';
+import {dashboardPanel} from './dashboard-view.mjs?v=passenger-booking-completion-20261011-58';
+import {recordWorldOverride,revertWorldField,worldFieldRevertEligibility,worldChangeFields,worldFieldValue,isWorldChangeAudit} from './world-change-history.mjs?v=passenger-booking-completion-20261011-58';
+import {createCampaignController} from './campaign-controller.mjs?v=passenger-booking-completion-20261011-58';
+import {ruleInfo,referenceIndex,REFERENCE_VERSION} from './rule-references.mjs?v=passenger-booking-completion-20261011-58';
+import {mountRulePopover,replaceReferenceContent} from './rule-popover.mjs?v=passenger-booking-completion-20261011-58';
+import {escapeHtml,moneyHtml} from './display.mjs?v=passenger-booking-completion-20261011-58';
+import {normalizeAmountFields} from './form-values.mjs?v=passenger-booking-completion-20261011-58';
+import {contactSearchStatus,contactSearchPeriod,contactSearchRule} from './contact-search.mjs?v=passenger-booking-completion-20261011-58';
+import {createPassengerUI} from './passenger-ui.mjs?v=passenger-booking-completion-20261011-58';
+import {passengerShip,passengerTotals,passengerSpace,passengerCapacity} from './passengers.mjs?v=passenger-booking-completion-20261011-58';
+import {advancePaymentDate,recordedPaymentDate} from './payment-schedule.mjs?v=passenger-booking-completion-20261011-58';
+import {configureMortgage,mortgageStatus} from './mortgage.mjs?v=passenger-booking-completion-20261011-58';
+import {configureMaintenance,maintenanceStatus} from './maintenance.mjs?v=passenger-booking-completion-20261011-58';
+import {createServicePanels} from './service-panels.mjs?v=passenger-booking-completion-20261011-58';
+import {cargoHoldPanel} from './cargo-hold.mjs?v=passenger-booking-completion-20261011-58';
+import {createExpensePanels} from './expense-panels.mjs?v=passenger-booking-completion-20261011-58';
 import {currentJumpAttempt} from './jump-attempts.mjs';
-import {mountSettingsLayout,syncSettingsControls,stepSetting} from './settings-layout.mjs?v=passenger-search-completion-20261011-57';
-import {configureFuel,fuelCapacities,bladderSpace,validateFuel,jumpFuel} from './fuel.mjs?v=passenger-search-completion-20261011-57';
-import {refillQuote,supportStock,supportCargo,supportDisplay,anchorSupport,configureSupport} from './life-support.mjs?v=passenger-search-completion-20261011-57';
-import {campaignReport} from './report.mjs?v=passenger-search-completion-20261011-57';
-import {up,creditStep,roundExisting} from './rounding.mjs?v=passenger-search-completion-20261011-57';
-import {tiers,luggageAllowance,occupants,passengerLuggage,manualLuggage,serviceRate,serviceLabel,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=passenger-search-completion-20261011-57';
+import {mountSettingsLayout,syncSettingsControls,stepSetting} from './settings-layout.mjs?v=passenger-booking-completion-20261011-58';
+import {configureFuel,fuelCapacities,bladderSpace,validateFuel,jumpFuel} from './fuel.mjs?v=passenger-booking-completion-20261011-58';
+import {refillQuote,supportStock,supportCargo,supportDisplay,anchorSupport,configureSupport} from './life-support.mjs?v=passenger-booking-completion-20261011-58';
+import {campaignReport} from './report.mjs?v=passenger-booking-completion-20261011-58';
+import {up,creditStep,roundExisting} from './rounding.mjs?v=passenger-booking-completion-20261011-58';
+import {tiers,luggageAllowance,occupants,passengerLuggage,manualLuggage,serviceRate,serviceLabel,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=passenger-booking-completion-20261011-58';
 import * as A from './amounts.mjs';
 import {parseDate,displayDate} from './calendar.mjs';
-import * as R from './rules.mjs?v=passenger-search-completion-20261011-57';
-import * as S from './state.mjs?v=passenger-search-completion-20261011-57';
+import * as R from './rules.mjs?v=passenger-booking-completion-20261011-58';
+import * as S from './state.mjs?v=passenger-booking-completion-20261011-58';
 import {latestMailCheck,recordMailCheck,mailCheckHistoryStatus} from './mail-history.mjs?v=mail-history-1';
-import * as E from './expenses.mjs?v=passenger-search-completion-20261011-57';
-import {planetInformation,worldSheetURL} from './planet-info.mjs?v=passenger-search-completion-20261011-57';
-import {worldMapFacts,worldSymbols,selectedWorldHex,mapKeyMarkup} from './world-symbols.mjs?v=passenger-search-completion-20261011-57';
-import * as M from './map.mjs?v=passenger-search-completion-20261011-57';
+import * as E from './expenses.mjs?v=passenger-booking-completion-20261011-58';
+import {planetInformation,worldSheetURL} from './planet-info.mjs?v=passenger-booking-completion-20261011-58';
+import {worldMapFacts,worldSymbols,selectedWorldHex,mapKeyMarkup} from './world-symbols.mjs?v=passenger-booking-completion-20261011-58';
+import * as M from './map.mjs?v=passenger-booking-completion-20261011-58';
 import {MAP_GEOMETRY,setMapGeometry,visibleMapWorlds} from './map-geometry.mjs?v=map-first-1';
 import {camera,viewportTiles,MapAreaCache} from './map-viewport.mjs?v=map-first-1';
-import {MAP_ZOOM_STEP,nextMapZoom,mapLevel,MapOverviewCache,overviewMarkup,mapTerritories} from './map-overview.mjs?v=passenger-search-completion-20261011-57';
+import {MAP_ZOOM_STEP,nextMapZoom,mapLevel,MapOverviewCache,overviewMarkup,mapTerritories} from './map-overview.mjs?v=passenger-booking-completion-20261011-58';
 import {readPoliticalTerritory,savePoliticalTerritory} from './map-preferences.mjs';
-import {createGlobalWorldSearch} from './global-world-search.mjs?v=passenger-search-completion-20261011-57';
-import {createWorldPicker,rememberWorld} from './world-picker.mjs?v=passenger-search-completion-20261011-57';
-import {Store,KEY,SaveNotCommittedError,SaveCommittedPublicationError} from './persistence.mjs?v=passenger-search-completion-20261011-57';
+import {createGlobalWorldSearch} from './global-world-search.mjs?v=passenger-booking-completion-20261011-58';
+import {createWorldPicker,rememberWorld} from './world-picker.mjs?v=passenger-booking-completion-20261011-58';
+import {Store,KEY,SaveNotCommittedError,SaveCommittedPublicationError} from './persistence.mjs?v=passenger-booking-completion-20261011-58';
 const $=id=>document.getElementById(id),esc=escapeHtml;
 const ROOT='https://github.com/OwlsNestNH/Traveller-Tools/blob/main/tools/trade-route-calculator/';
 let inputRounding=[];
@@ -322,12 +322,27 @@ function modal(title,body,submit,label='Save',mutates=true,{retainRounding=false
 // Temporary adapter: retain the established modal-test extraction boundary.
 function saveCampaign(next,expected){return campaignWrites.save(next,expected);}
 function receiveCampaign(next,metadata){
+ // Boarding/delivery must still own the old review before its campaign is
+ // replaced. An authentic saved candidate cannot erase intervening drift and
+ // thereby revive stale presentation authority. Keep its provenance below so
+ // later provider failures still classify the real committed write correctly.
+ const passengerOwner=passengerWriteOperation;
+ let passengerReviewCurrent=true;
+ if(['board','deliver'].includes(passengerOwner?.kind)&&passengerOwner.pending&&passengerOwner.publicationArmed&&!passengerOwner.publication){
+  try{passengerReviewCurrent=passengerWriteOwnerCurrent(passengerOwner);}catch{passengerReviewCurrent=false;}
+ }
  // Storage updates, imports and ownership acquisition end this tab's offers,
  // even if a replacement reuses the same saved audit/offer IDs.
  campaignPublicationEpoch++;worldNearbyRequest=null;
  const local=campaignWrites.isLocalPublication(next,metadata),replacement=campaignWrites.takeReplacementPublication(next,metadata);
- const passengerOwner=passengerWriteOperation,ownPassenger=local&&passengerOwner?.pending&&passengerOwner.publicationArmed&&!passengerOwner.publication&&next.revision===passengerOwner.revision+1;
- if(ownPassenger){passengerOwner.publication=next;passengerOwner.publicationBaseline=JSON.stringify(next);}else invalidatePassengerWriteOperation();
+ const ownPassenger=local&&passengerOwner?.pending&&passengerOwner.publicationArmed&&!passengerOwner.publication&&next.revision===passengerOwner.revision+1;
+ if(ownPassenger){
+  passengerOwner.publication=next;passengerOwner.publicationBaseline=JSON.stringify(next);
+  if(!passengerReviewCurrent){
+   passengerOwner.retired=true;passengerOwner.retiredReason='This passenger change was saved, but its earlier review changed before completion. Close and review the current campaign; do not record this change again.';
+   invalidatePassengerWriteOperation(false,passengerOwner);
+  }
+ }else invalidatePassengerWriteOperation();
  const lifecycleOwner=contractLifecycleWriteOperation,ownLifecycle=local&&lifecycleOwner?.pending&&lifecycleOwner.publicationArmed&&!lifecycleOwner.publication&&next.revision===lifecycleOwner.revision+1;
  if(ownLifecycle){lifecycleOwner.publication=next;lifecycleOwner.publicationBaseline=JSON.stringify(next);}else invalidateContractLifecycleWriteOperation();
  const contractOwner=contractOfferWriteOperation,ownContract=local&&contractOwner?.pending&&contractOwner.publicationArmed&&!contractOwner.publication&&next.revision===contractOwner.revision+1;
@@ -359,7 +374,8 @@ function receiveCampaign(next,metadata){
  // selection and route reconciliation in the owned completion below. Foreign
  // publications still reconcile immediately and retire that owner.
  if(ownPassenger){
-  if(!passengerOwner.invalidated){
+  if(!passengerReviewCurrent)invalidatePassengerWriteOperation(true,passengerOwner);
+  else if(!passengerOwner.invalidated){
    if(passengerWriteOwnerCurrent(passengerOwner))passengerOwner.publicationDeferred=true;
    else invalidatePassengerWriteOperation(true,passengerOwner);
   }
@@ -2717,8 +2733,8 @@ function retainedPassengerInput(value){
  const copy=structuredClone(value),freeze=input=>{if(input&&typeof input==='object'){for(const child of Object.values(input))freeze(child);Object.freeze(input);}return input;};
  return freeze(copy);
 }
-// Passenger setup/search use this explicit host adapter. Boarding and delivery
-// keep their existing callbacks until their separately reviewed migration.
+// Passenger forms share durable completion ownership. Boarding first transfers
+// a side-effect-free preview into an immutable final review under that owner.
 function passengerPresentationCurrent(owner,completed=false){
  const drafts=completed?owner.publishedDrafts:owner.drafts,check=completed?owner.publishedCheck:owner.check;
  return tab===owner.tab&&view===owner.view&&mapExpanded===owner.mapExpanded&&cargoHoldOpen===owner.cargoHoldOpen&&contractDrafts.length===drafts.length&&drafts.every((draft,i)=>contractDrafts[i]===draft)&&JSON.stringify(contractDrafts)===(completed?owner.publishedDraftBaseline:owner.draftBaseline)&&mailCheck===check&&JSON.stringify(mailCheck)===(completed?owner.publishedCheckBaseline:owner.checkBaseline)&&(!owner.context||owner.context.current());
@@ -2733,27 +2749,70 @@ function passengerWriteEntryCurrent(owner){return passengerWriteOperation===owne
 function openPassengerWrite(spec){
  if(passengerWriteOperation?.pending||contractLifecycleWriteOperation?.pending||contractOfferWriteOperation?.pending||contactSearchWriteOperation?.pending||insuranceWriteOperation?.pending||purchaseWriteOperation?.pending||saleWriteOperation?.pending||worldWriteOperation?.pending||timeWriteOperation?.pending||settingsOperation?.pending||undoOperation?.pending||replacementReview?.pending||jumpPreparation?.pending||activeModal?.awaitSave&&activeModal.busy||services.committing()||campaignReloadRequired)return false;
  if(services.active())throw Error('Finish or cancel the open ship service before changing the campaign.');
- const owner={...captureContractOfferContext(),kind:spec.kind,session:null,form:$('modal-form'),entrySession:activeModal,generation:modalGeneration+1,label:spec.kind==='setup'?'Passenger capacity settings':'Passenger search',pending:false,processing:false,recovering:false,constructing:true,retired:false,invalidated:false,publication:null,publicationDeferred:false};
+ const owner={...captureContractOfferContext(),kind:spec.kind,target:spec.target,session:null,form:$('modal-form'),entrySession:activeModal,generation:modalGeneration+1,label:({setup:'Passenger capacity settings',search:'Passenger search',board:'Accepted passenger booking',deliver:'Delivered passenger booking'})[spec.kind],stage:spec.preview?'preview':'review',pending:false,processing:false,recovering:false,constructing:true,retired:false,invalidated:false,publication:null,publicationDeferred:false};
  passengerWriteOperation=owner;
- owner.entryCurrent=()=>passengerWriteEntryCurrent(owner);owner.current=()=>passengerWriteOwnerCurrent(owner);
+ owner.entryCurrent=()=>passengerWriteEntryCurrent(owner);owner.current=()=>passengerWriteOwnerCurrent(owner);owner.retain=retainedPassengerInput;
  try{
   if(!owner.entryCurrent())return false;
   owner.context=spec.capture(owner);if(!owner.context||!owner.entryCurrent())return false;
+  const title=typeof spec.title==='function'?spec.title(owner):spec.title;if(!owner.entryCurrent())return false;
   const html=spec.body(owner);if(!owner.entryCurrent())return false;
-  const opened=modal(spec.title,html,f=>completePassengerWrite(owner,f,()=>spec.prepare(f,owner),spec.apply,spec.success),spec.label,true,{saveName:owner.label,saveContext:'passenger-save',passengerOwner:owner});
+  const opened=modal(title,html,f=>spec.preview?completePassengerPreview(owner,f,spec):completePassengerWrite(owner,f,()=>spec.prepare(f,owner),spec.apply,spec.success),spec.label,true,{saveName:owner.label,saveContext:'passenger-save',passengerOwner:owner});
   if(opened!==false&&owner.current())owner.constructing=false;
   else if(activeModal===owner.session&&modalGeneration===owner.generation)invalidatePassengerWriteOperation(true,owner);
   return opened;
- }catch(error){
-  owner.retired=true;owner.invalidated=true;owner.constructing=false;
-  if(!owner.session)throw error;
-  owner.session.cancelled=true;owner.session.terminal=true;owner.session.busy=false;owner.session.awaitSave=false;
-  const current=()=>passengerWriteOperation===owner&&activeModal===owner.session&&modalGeneration===owner.generation&&$('modal-form')===owner.form;
-  const guidance='This passenger change was not saved. The form could not be prepared. Close and reopen it.';
-  for(const report of [()=>{$('modal-submit').disabled=true;},()=>{$('modal-cancel').disabled=false;},()=>{$('modal-close').disabled=false;},()=>{$('modal-cancel').textContent='Close';},()=>{$('modal-error').textContent=guidance;}]){
-   if(!current())return false;try{report();}catch{/* The partial form has no save authority. */}
-  }
+ }catch(error){return failPassengerConstruction(owner,error);}
+}
+function failPassengerConstruction(owner,error){
+ owner.retired=true;owner.invalidated=true;owner.constructing=false;owner.pending=false;owner.processing=false;
+ if(!owner.session)throw error;
+ owner.session.cancelled=true;owner.session.terminal=true;owner.session.busy=false;owner.session.awaitSave=false;
+ const current=()=>passengerWriteOperation===owner&&activeModal===owner.session&&modalGeneration===owner.generation&&$('modal-form')===owner.form;
+ const guidance='This passenger change was not saved. The form could not be prepared. Close and reopen it.';
+ for(const report of [()=>{$('modal-submit').disabled=true;},()=>{$('modal-cancel').disabled=false;},()=>{$('modal-close').disabled=false;},()=>{$('modal-cancel').textContent='Close';},()=>{$('modal-error').textContent=guidance;}]){
+  if(!current())return false;try{report();}catch{/* The partial form has no save authority. */}
+ }
+ return false;
+}
+function completePassengerPreview(owner,f,spec){
+ if(owner.stage!=='preview'||owner.processing||owner.recovering||owner.constructing||owner.retired)return false;
+ if(!owner.pending&&!beginPassengerWrite(owner))return false;
+ owner.processing=true;
+ let accepted,html;
+ try{
+  if(!owner.current())throw Error('Campaign or passenger terms changed. Reopen this passenger form before continuing.');
+  if(JSON.stringify(store.read())!==owner.baseline)throw Error('The saved campaign changed. Reload before reviewing this passenger booking.');
+  if(!owner.current())throw Error('Passenger review changed before preparing boarding.');
+  // Copy and freeze every closed-over boarding term before preview or markup
+  // can yield to callbacks. Final confirmation intentionally has no inputs.
+  accepted=retainedPassengerInput(spec.prepare(f,owner));
+  if(!owner.current())throw Error('Passenger review changed while preparing this change.');
+  html=spec.review(owner,accepted);
+  if(!owner.current())throw Error('Passenger review changed while preparing this change.');
+  if(JSON.stringify(store.read())!==owner.baseline)throw Error('The saved campaign changed. Reload before reviewing this passenger booking.');
+  if(!owner.current())throw Error('Passenger review changed before confirming boarding.');
+ }catch(error){return passengerWriteFailure(owner,new SaveNotCommittedError(error));}
+ // Consume the first form's authority before any final-dialog construction.
+ // Its detached callback cannot turn a retired preview into a fresh review.
+ const previous=owner.session;
+ previous.terminal=true;previous.cancelled=true;previous.awaitSave=false;previous.busy=false;
+ Object.defineProperty(owner,'reviewArgs',{value:accepted,enumerable:true});
+ owner.stage='review';owner.entrySession=previous;owner.session=null;owner.generation++;
+ owner.formTerms=null;owner.controls=null;owner.pending=false;owner.processing=false;owner.constructing=true;
+ try{
+  if(!owner.entryCurrent())return false;
+  const opened=modal(spec.reviewTitle,html,f=>completePassengerWrite(owner,f,()=>owner.reviewArgs,spec.apply,spec.success),spec.reviewLabel,true,{saveName:owner.label,saveContext:'passenger-save',passengerOwner:owner});
+  if(opened!==false&&owner.current())owner.constructing=false;
+  else if(activeModal===owner.session&&modalGeneration===owner.generation)invalidatePassengerWriteOperation(true,owner);
   return false;
+ }catch(error){
+  // A failure before modal() installs the second session still belongs to the
+  // retired first form. Never borrow a newer dialog's handlers for reporting.
+  if(!owner.session){
+   if(activeModal===previous&&modalGeneration===owner.generation-1){owner.session=previous;owner.generation=modalGeneration;}
+   else{owner.retired=true;owner.invalidated=true;owner.constructing=false;return false;}
+  }
+  return failPassengerConstruction(owner,error);
  }
 }
 function invalidatePassengerWriteOperation(notify=true,owner=passengerWriteOperation){
@@ -3147,7 +3206,7 @@ function timeForm(){
  if(opened===false)return false;
  owner=createTimeWriteOwner(activeModal);
 }
-function notes(){modal('Rules & Notes',`<div class="notes-list"><article><h3>Rules and verification</h3><p>UI 2026.10.11.57 · rules data ${R.VERSION} · reference catalogue ${REFERENCE_VERSION}. Source checks and runtime test results, with their applicable revisions and scope, are recorded in the public verification record.</p><p>Traveller Core Rulebook Update 2022, examined copyright 2024 revision. Book 7: Merchant Prince (Mongoose Traveller First Edition, 2010), insurance pp.82–83, taxation pp.86–87 (table p.87). Cluster Truck (Mongoose Publishing, ©2026), physical life-support supplies p.14. Optional first-edition adaptations are off by default.</p><p><a href="${ROOT}RULES_VERIFICATION.md" target="_blank" rel="noopener">Rules verification status and evidence</a> · <a href="${ROOT}rules/README.md" target="_blank" rel="noopener">Sources and worked examples</a></p></article><article><h3>Calculation references</h3><p>Published rules, Home rules, App conventions and Referee inputs are labelled separately. References explain the current policy; saved audits retain their recorded terms and missing evidence.</p>${referenceIndex()}</article><article><h3>House rules</h3><p>Each departure allows one jump mulligan before any later campaign change. Undo Jump returns to the origin and restores the pre-jump state. Reopening or reloading keeps saved jump dice; the mulligan permits one fresh roll and cannot be reset by Undo. On new purchase and sale price rolls, exactly two matching natural dice flag Complication; three matching dice flag Severe complication. The GM decides the issue and consequences. These flags do not change time, prices or cargo. Entered totals without natural dice are unknown; historical quotes are not flagged retroactively.</p><p>RAW retains 100% of positive actual profit; Reduced retains 75%; Custom accepts 0–100%. A configurable maximum commodity base retail value may be applied before normal purchase/sale percentage modifiers; final prices may exceed the cap. Illegal goods can optionally retain their original RAW base prices. Independent reduced-profit price limits optionally floor purchase percentages (default 85%) and ceiling sale percentages (default 115%) before broker fees, using the applicable base retail. Whole percentages 0–400 are retained when off. Existing offers and explicit referee price overrides retain their recorded terms. Tax is deducted first. Losses are unchanged by the profit setting. Each lot is adjusted separately. New monetary amounts round up to whole Credits, or Cr100 when enabled; new tons round up to whole tons. The Settings rounding button previews changes to existing values before applying them. Historical transactions are retained. Operating expenses remain separate.</p></article>${decisions.map(d=>`<article id="${esc(d.id)}"><h3>${esc(d.id)} · ${esc(d.topic)}</h3><p>${esc(d.conclusion)}</p>${d.id==='INT-021'?'<p class="help">Historical decision: later campaign rounding uses upward rounding for new final charges. Partial cost-basis allocation remains separate; saved amounts are not rewritten. '+ruleInfo('rounding')+'</p>':''}<p class="help">Agreed ${esc(d.date)} · revision ${d.revision}</p></article>`).join('')}<article><h3>Copyright and credits</h3><p>Traveller and the source publications are owned by Mongoose Publishing and their respective rights holders. This is an unofficial campaign tool, not a publisher-endorsed product. Rulebook PDFs, scans and descriptive source prose are not distributed with this tool.</p><p>Live world data: <a href="https://travellermap.com" target="_blank" rel="noopener">Traveller Map</a>. Source and calculation references are retained for review. The existing spec-trade tool is not a rules authority.</p></article><article><h3>Calendar and map era</h3><p>World data stays in the M1105 era. The campaign starts at its chosen Imperial day-year date, default 001-1105, and advances in 24-hour days and 365-day years as searches and jumps consume time. Advancing the campaign year never switches map eras. The +1 day control advances 24 hours and consumes life support. The -1 day control corrects the date without restoring supplies or reversing transactions; it cannot go before the campaign start. Both actions appear in History. Use Undo to reverse an accidental advance and restore supplies together. Browsing, route previews and setting a starting world do not advance time.</p></article><article><h3>About your data</h3><p>Your campaign stays in this browser’s local storage. Export JSON backups to keep a portable copy. Traveller Map requests disclose the worlds/sectors being requested; campaign bank and cargo data are not sent to it. Route searches cover a bounded loaded area. Route previews do not consume fuel; committed jumps track configured jump fuel under the campaign rules.</p></article></div>`,null);}
+function notes(){modal('Rules & Notes',`<div class="notes-list"><article><h3>Rules and verification</h3><p>UI 2026.10.11.58 · rules data ${R.VERSION} · reference catalogue ${REFERENCE_VERSION}. Source checks and runtime test results, with their applicable revisions and scope, are recorded in the public verification record.</p><p>Traveller Core Rulebook Update 2022, examined copyright 2024 revision. Book 7: Merchant Prince (Mongoose Traveller First Edition, 2010), insurance pp.82–83, taxation pp.86–87 (table p.87). Cluster Truck (Mongoose Publishing, ©2026), physical life-support supplies p.14. Optional first-edition adaptations are off by default.</p><p><a href="${ROOT}RULES_VERIFICATION.md" target="_blank" rel="noopener">Rules verification status and evidence</a> · <a href="${ROOT}rules/README.md" target="_blank" rel="noopener">Sources and worked examples</a></p></article><article><h3>Calculation references</h3><p>Published rules, Home rules, App conventions and Referee inputs are labelled separately. References explain the current policy; saved audits retain their recorded terms and missing evidence.</p>${referenceIndex()}</article><article><h3>House rules</h3><p>Each departure allows one jump mulligan before any later campaign change. Undo Jump returns to the origin and restores the pre-jump state. Reopening or reloading keeps saved jump dice; the mulligan permits one fresh roll and cannot be reset by Undo. On new purchase and sale price rolls, exactly two matching natural dice flag Complication; three matching dice flag Severe complication. The GM decides the issue and consequences. These flags do not change time, prices or cargo. Entered totals without natural dice are unknown; historical quotes are not flagged retroactively.</p><p>RAW retains 100% of positive actual profit; Reduced retains 75%; Custom accepts 0–100%. A configurable maximum commodity base retail value may be applied before normal purchase/sale percentage modifiers; final prices may exceed the cap. Illegal goods can optionally retain their original RAW base prices. Independent reduced-profit price limits optionally floor purchase percentages (default 85%) and ceiling sale percentages (default 115%) before broker fees, using the applicable base retail. Whole percentages 0–400 are retained when off. Existing offers and explicit referee price overrides retain their recorded terms. Tax is deducted first. Losses are unchanged by the profit setting. Each lot is adjusted separately. New monetary amounts round up to whole Credits, or Cr100 when enabled; new tons round up to whole tons. The Settings rounding button previews changes to existing values before applying them. Historical transactions are retained. Operating expenses remain separate.</p></article>${decisions.map(d=>`<article id="${esc(d.id)}"><h3>${esc(d.id)} · ${esc(d.topic)}</h3><p>${esc(d.conclusion)}</p>${d.id==='INT-021'?'<p class="help">Historical decision: later campaign rounding uses upward rounding for new final charges. Partial cost-basis allocation remains separate; saved amounts are not rewritten. '+ruleInfo('rounding')+'</p>':''}<p class="help">Agreed ${esc(d.date)} · revision ${d.revision}</p></article>`).join('')}<article><h3>Copyright and credits</h3><p>Traveller and the source publications are owned by Mongoose Publishing and their respective rights holders. This is an unofficial campaign tool, not a publisher-endorsed product. Rulebook PDFs, scans and descriptive source prose are not distributed with this tool.</p><p>Live world data: <a href="https://travellermap.com" target="_blank" rel="noopener">Traveller Map</a>. Source and calculation references are retained for review. The existing spec-trade tool is not a rules authority.</p></article><article><h3>Calendar and map era</h3><p>World data stays in the M1105 era. The campaign starts at its chosen Imperial day-year date, default 001-1105, and advances in 24-hour days and 365-day years as searches and jumps consume time. Advancing the campaign year never switches map eras. The +1 day control advances 24 hours and consumes life support. The -1 day control corrects the date without restoring supplies or reversing transactions; it cannot go before the campaign start. Both actions appear in History. Use Undo to reverse an accidental advance and restore supplies together. Browsing, route previews and setting a starting world do not advance time.</p></article><article><h3>About your data</h3><p>Your campaign stays in this browser’s local storage. Export JSON backups to keep a portable copy. Traveller Map requests disclose the worlds/sectors being requested; campaign bank and cargo data are not sent to it. Route searches cover a bounded loaded area. Route previews do not consume fuel; committed jumps track configured jump fuel under the campaign rules.</p></article></div>`,null);}
 // Replacement owns completion separately from ordinary local saves: its
 // publication still invalidates every old campaign offer and service session.
 function invalidateReplacementReview(){
@@ -3374,5 +3433,5 @@ $('import-file').onchange=safely(importCampaignFile);
 if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{if(tab==='Overview'&&viewed()&&updateMapGeometry()){scheduleMapPaint();scheduleMapAreas();}}).observe($('main'));
 window.addEventListener('error',e=>recordDebugError(e.error||e.message,'window-error'));
 window.addEventListener('unhandledrejection',e=>recordDebugError(e.reason,'unhandled-rejection'));
-async function boot(){mountRulePopover(document);[core,mp,decisions]=await Promise.all(['rules/core-2022.json?v=passenger-search-completion-20261011-57','rules/merchant-prince-1e.json','rules/decisions.json'].map(async url=>{const r=await fetch(url);if(!r.ok)throw Error('Could not load '+url);return r.json();}));store=new Store(receiveCampaign,(editable,text)=>{if(!editable){worldNearbyRequest=null;invalidatePassengerWriteOperation();invalidateContractLifecycleWriteOperation();invalidateContractOfferWriteOperation();invalidateContactSearchWriteOperation();invalidateInsuranceWriteOperation();invalidatePurchaseWriteOperation();invalidateSaleWriteOperation();invalidateWorldWriteOperation();invalidateTimeWriteOperation();invalidateSettingsOperation(true);invalidateJumpPreparation();invalidateUndoOperation();invalidateReplacementEditing();stockServices.invalidate();expenseServices.invalidate();}$('save-status').textContent=campaignReloadRequired?campaignReloadMessage:text;$('save-status').className=editable&&!campaignReloadRequired?'muted':'readonly';$('takeover').hidden=editable||campaignReloadRequired;$('takeover').disabled=campaignReloadRequired;if(!editable&&activeModal?.mutates){activeModal.cancelled=true;$('modal-error').textContent=campaignReloadRequired?campaignReloadMessage:'Editing moved to another tab. Reopen this dialog after taking over editing.';}syncModalSubmit();render();});try{state=store.read();}catch(error){store.recovery=true;store.recoveryMessage=error.message;state=S.initial();}known={...state.worlds};view=state.actual;render();await store.acquire();if(state.initialized)restoreExpenseReceipt();if(state.initialized)refreshNearby(false).catch(e=>message('Could not load nearby worlds: '+e.message+'. Use Refresh nearby to retry.',true));}
+async function boot(){mountRulePopover(document);[core,mp,decisions]=await Promise.all(['rules/core-2022.json?v=passenger-booking-completion-20261011-58','rules/merchant-prince-1e.json','rules/decisions.json'].map(async url=>{const r=await fetch(url);if(!r.ok)throw Error('Could not load '+url);return r.json();}));store=new Store(receiveCampaign,(editable,text)=>{if(!editable){worldNearbyRequest=null;invalidatePassengerWriteOperation();invalidateContractLifecycleWriteOperation();invalidateContractOfferWriteOperation();invalidateContactSearchWriteOperation();invalidateInsuranceWriteOperation();invalidatePurchaseWriteOperation();invalidateSaleWriteOperation();invalidateWorldWriteOperation();invalidateTimeWriteOperation();invalidateSettingsOperation(true);invalidateJumpPreparation();invalidateUndoOperation();invalidateReplacementEditing();stockServices.invalidate();expenseServices.invalidate();}$('save-status').textContent=campaignReloadRequired?campaignReloadMessage:text;$('save-status').className=editable&&!campaignReloadRequired?'muted':'readonly';$('takeover').hidden=editable||campaignReloadRequired;$('takeover').disabled=campaignReloadRequired;if(!editable&&activeModal?.mutates){activeModal.cancelled=true;$('modal-error').textContent=campaignReloadRequired?campaignReloadMessage:'Editing moved to another tab. Reopen this dialog after taking over editing.';}syncModalSubmit();render();});try{state=store.read();}catch(error){store.recovery=true;store.recoveryMessage=error.message;state=S.initial();}known={...state.worlds};view=state.actual;render();await store.acquire();if(state.initialized)restoreExpenseReceipt();if(state.initialized)refreshNearby(false).catch(e=>message('Could not load nearby worlds: '+e.message+'. Use Refresh nearby to retry.',true));}
 boot().catch(e=>{message(e.message,true);$('main').innerHTML=empty('The calculator could not start. Your saved campaign has not been replaced. Reload after checking the error above.');});

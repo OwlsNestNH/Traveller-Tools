@@ -1,10 +1,10 @@
-import {ruleInfo} from './rule-references.mjs?v=passenger-search-completion-20261011-57';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=passenger-search-completion-20261011-57';
+import {ruleInfo} from './rule-references.mjs?v=passenger-booking-completion-20261011-58';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=passenger-booking-completion-20261011-58';
 import * as A from './amounts.mjs';
-import {manualLuggage} from './accommodation.mjs?v=passenger-search-completion-20261011-57';
-import * as P from './passengers.mjs?v=passenger-search-completion-20261011-57';
-import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=passenger-search-completion-20261011-57';
-import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=passenger-search-completion-20261011-57';
+import {manualLuggage} from './accommodation.mjs?v=passenger-booking-completion-20261011-58';
+import * as P from './passengers.mjs?v=passenger-booking-completion-20261011-58';
+import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=passenger-booking-completion-20261011-58';
+import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=passenger-booking-completion-20261011-58';
 import {displayDate} from './calendar.mjs';
 const esc=escapeHtml;
 const money=formatCreditsText,signed=x=>x>0?'+'+x:String(x);
@@ -47,6 +47,32 @@ export function createPassengerUI({getState,getCore,getWorld,getWorlds,getView,m
   let retained=drafts,retainedId=searchId,baseline=JSON.stringify(drafts);
   const draftsCurrent=()=>drafts===retained&&searchId===retainedId&&JSON.stringify(drafts)===baseline;
   if(owner.kind==='setup')return {current:draftsCurrent,publish:()=>true};
+  if(owner.kind==='board'||owner.kind==='deliver'){
+   const campaign=owner.campaign,isBoard=owner.kind==='board',c=isBoard?activeDrafts().find(o=>o.offerId===owner.target):campaign.contracts.find(c=>c.id===owner.target&&c.kind==='passenger');
+   if(!c||!isBoard&&c.status!=='accepted')throw Error(isBoard?'This passenger offer is no longer active. Search again.':'Passenger booking is not awaiting delivery.');
+   const search=isBoard?P.latestPassengerSearch(campaign):null,recorded=search?.offers.find(o=>o.offerId===c.offerId),bytes=JSON.stringify(c);
+   if(isBoard&&(!recorded||JSON.stringify(recorded)!==bytes))throw Error('This passenger offer no longer matches its recorded availability. Search again.');
+   const subject=owner.retain(c),draftRefs=[...drafts],origin=JSON.stringify(world(c.origin)),destination=JSON.stringify(world(c.destination)),remaining=isBoard?P.passengerOfferRemaining(campaign,c):null;
+   let published=null;
+   if(!owner.entryCurrent())return null;
+   return {subject,remaining,current:()=>{
+    if(!draftsCurrent()||!draftRefs.every((draft,i)=>drafts[i]===draft)||JSON.stringify(world(subject.origin))!==origin||JSON.stringify(world(subject.destination))!==destination)return false;
+    // The authenticated candidate legitimately replaces campaign objects and
+    // changes booking status / remaining availability. Validate old identity
+    // only before publication; the host binds completion to the exact candidate.
+    const current=state();
+    if(owner.publication){
+     if(current!==owner.publication)return false;
+     const currentSearch=isBoard?P.latestPassengerSearch(current):null,currentSubject=isBoard?currentSearch?.offers.find(o=>o.offerId===subject.offerId):current.contracts.find(x=>x.id===subject.id),bookings=isBoard?P.passengerBookings(current).filter(x=>x.offerId===subject.offerId):[];
+     if(!currentSubject)return false;
+     // Capture the new, authenticated objects once, then retain their identity
+     // through settlement. A same-byte foreign replacement is still obsolete.
+     if(!published)published={campaign:current,search:currentSearch,subject:currentSubject,bookings};
+     return published.campaign===current&&published.search===currentSearch&&published.subject===currentSubject&&published.bookings.length===bookings.length&&published.bookings.every((booking,i)=>booking===bookings[i]);
+    }
+    return current===campaign&&(isBoard?P.latestPassengerSearch(current)===search&&search.offers.find(o=>o.offerId===subject.offerId)===recorded&&drafts.includes(c)&&JSON.stringify(c)===bytes&&P.passengerOfferRemaining(current,c)===remaining:current.contracts.find(x=>x.id===subject.id)===c&&JSON.stringify(c)===bytes);
+   },publish:()=>true};
+  }
   const catalog=getWorlds();if(!owner.entryCurrent())return null;
   const worlds=structuredClone(catalog),sourceRules=getCore();if(!owner.entryCurrent())return null;
   const ruleInputs=data=>({passengers:data.passengers,uwp:data.uwp,tradeCodes:data.tradeCodes}),rules=structuredClone(sourceRules),rulesBaseline=JSON.stringify(ruleInputs(sourceRules)),originBaseline=JSON.stringify(worlds[owner.worldId]);
@@ -103,16 +129,27 @@ export function createPassengerUI({getState,getCore,getWorld,getWorlds,getView,m
   });
  }
  function board(offerId){
-  const c=activeDrafts().find(o=>o.offerId===offerId);if(!c)throw Error('This passenger offer is no longer active. Search again.');const remaining=P.passengerOfferRemaining(state(),c),kind=c.passageClass,modes=kind==='low'?[['low','Installed Low berth']]:kind==='basic'?[['shared','Shared cabins · two people per cabin'],['cargo','Fitted spare space · 2 t per person']]:[['private','Private cabins · one per person'],['shared','Shared cabins · two per cabin (referee allocation)']];
-  modal('Board '+passageLabel(kind)+' passengers','<p class="help">Accommodation '+ruleInfo('accommodation')+'</p><p>'+remaining+' available to '+esc(world(c.destination).name)+' at '+money(c.fare)+' per person. Boarding reserves accommodation; payment is due on explicit delivery.</p>'+field('count','People to board',1,'type="number" min="1" max="'+remaining+'" step="1" required')+select('cabinMode','Accommodation',modes,modes[0][0])+(kind==='high'||kind==='middle'?'<p class="help">'+(kind==='high'?'High requires a Steward skill level per ten passengers.':'Middle requires a Steward skill level per hundred; Steward 0 can serve ten.')+' Include people already aboard when checking service.</p>'+check('serviceConfirmed','Steward service is available for these passengers.'):'')+(kind==='basic'?check('spaceConfirmed','For spare-space accommodation: the selected space is fitted for passengers.'):'')+(kind==='low'?'<p class="notice">Low revival checks and their consequences are resolved in play. Completing passage records the agreed payment; no automated death or penalty is applied.</p>':'')+field('populationException','Exceptional population circumstances (only if required)','','type="text"'),f=>{
-   if(!activeDrafts().some(o=>o.offerId===offerId))throw Error('This passenger offer is no longer active.');
-   const args={count:Number(f.get('count')),cabinMode:f.get('cabinMode'),serviceConfirmed:f.has('serviceConfirmed'),spaceConfirmed:f.has('spaceConfirmed'),populationException:f.get('populationException')},before=state(),preview=S.transition(before,'Preview passenger boarding',n=>S.acceptPassengers(n,offerId,args)),q=P.passengerCapacity(preview),stock=supportStock(P.passengerShip(preview)),c=preview.contracts.at(-1);
-   modal('Confirm passenger booking','<p class="help">Booking '+ruleInfo('booking')+' · Accommodation '+ruleInfo('accommodation')+'</p>'+facts([['Passage',passageLabel(kind)],['People boarding',args.count],['Destination',world(c.destination).name],['Payment on delivery',money(c.payment)],['Cabins / Low berths free after',q.freeCabins+' / '+q.freeLowBerths],['Total luggage after',q.luggage+' t'],['Basic fitted space after',q.cargoSpace+' t'],['Cargo space free after',supportDisplay(A.sub(preview.ship.capacity,S.used(preview)))+' t'],['Total consumption after',stock.dailyUnits+' LSS/day'],['Monthly cabin/person bundle after',money(monthlySupport(P.passengerShip(preview)))],['Supplies','Existing LSS stock is preserved']])+'<p class="help">Booked people are added automatically. Do not enter them again in Settings. Cabin sharing changes accommodation use, not the number of people receiving service.</p>',()=>{
-    if(!activeDrafts().some(o=>o.offerId===offerId))throw Error('This passenger offer is no longer active.');act('Accepted passenger booking',n=>S.acceptPassengers(n,offerId,args));render();
-   },'Board passengers');return false;
-  },'Preview boarding');
+  return completion.open({kind:'board',target:offerId,preview:true,title:owner=>'Board '+passageLabel(owner.context.subject.passageClass)+' passengers',label:'Preview boarding',reviewTitle:'Confirm passenger booking',reviewLabel:'Board passengers',capture:captureReview,
+   body:owner=>{
+    const c=owner.context.subject,remaining=owner.context.remaining,kind=c.passageClass,modes=kind==='low'?[['low','Installed Low berth']]:kind==='basic'?[['shared','Shared cabins · two people per cabin'],['cargo','Fitted spare space · 2 t per person']]:[['private','Private cabins · one per person'],['shared','Shared cabins · two per cabin (referee allocation)']];
+    return '<p class="help">Accommodation '+ruleInfo('accommodation')+'</p><p>'+remaining+' available to '+esc(world(c.destination).name)+' at '+money(c.fare)+' per person. Boarding reserves accommodation; payment is due on explicit delivery.</p>'+field('count','People to board',1,'type="number" min="1" max="'+remaining+'" step="1" required')+select('cabinMode','Accommodation',modes,modes[0][0])+(kind==='high'||kind==='middle'?'<p class="help">'+(kind==='high'?'High requires a Steward skill level per ten passengers.':'Middle requires a Steward skill level per hundred; Steward 0 can serve ten.')+' Include people already aboard when checking service.</p>'+check('serviceConfirmed','Steward service is available for these passengers.'):'')+(kind==='basic'?check('spaceConfirmed','For spare-space accommodation: the selected space is fitted for passengers.'):'')+(kind==='low'?'<p class="notice">Low revival checks and their consequences are resolved in play. Completing passage records the agreed payment; no automated death or penalty is applied.</p>':'')+field('populationException','Exceptional population circumstances (only if required)','','type="text"');
+   },prepare:f=>({count:Number(f.get('count')),cabinMode:f.get('cabinMode'),serviceConfirmed:f.has('serviceConfirmed'),spaceConfirmed:f.has('spaceConfirmed'),populationException:f.get('populationException')}),review:(owner,args)=>{
+    const kind=owner.context.subject.passageClass,preview=S.transition(owner.campaign,'Preview passenger boarding',n=>S.acceptPassengers(n,offerId,args));
+    if(!owner.current())throw Error('Passenger review changed while preparing boarding.');
+    const q=P.passengerCapacity(preview),stock=supportStock(P.passengerShip(preview)),c=preview.contracts.at(-1);
+    return '<p class="help">Booking '+ruleInfo('booking')+' · Accommodation '+ruleInfo('accommodation')+'</p>'+facts([['Passage',passageLabel(kind)],['People boarding',args.count],['Destination',world(c.destination).name],['Payment on delivery',money(c.payment)],['Cabins / Low berths free after',q.freeCabins+' / '+q.freeLowBerths],['Total luggage after',q.luggage+' t'],['Basic fitted space after',q.cargoSpace+' t'],['Cargo space free after',supportDisplay(A.sub(preview.ship.capacity,S.used(preview)))+' t'],['Total consumption after',stock.dailyUnits+' LSS/day'],['Monthly cabin/person bundle after',money(monthlySupport(P.passengerShip(preview)))],['Supplies','Existing LSS stock is preserved']])+'<p class="help">Booked people are added automatically. Do not enter them again in Settings. Cabin sharing changes accommodation use, not the number of people receiving service.</p>';
+   },apply:(n,args)=>S.acceptPassengers(n,offerId,args),success:'Accepted passenger booking saved.'
+  });
  }
- function deliver(id){const c=state().contracts.find(c=>c.id===id&&c.kind==='passenger');if(!c||c.status!=='accepted')throw Error('Passenger booking is not awaiting delivery.');S.assertWorld(state(),c.destination);const preview={...state(),contracts:state().contracts.map(x=>x.id===c.id?{...x,status:'delivered'}:x)},capacity=P.passengerCapacity(preview);modal('Complete passenger passage','<p class="help">Booking and delivery '+ruleInfo('booking')+'</p>'+facts([['Class / people',passageLabel(c.passageClass)+' / '+c.count],['Destination',world(c.destination).name],['Payment',money(c.payment)],['Whole-ship luggage after',capacity.luggage+' t'],['Cabins / Low berths free after',capacity.freeCabins+' / '+capacity.freeLowBerths]])+(manualLuggage(state().ship)?'<p class="notice">Your manual whole-ship luggage total remains fixed after delivery. Edit it in Settings if the actual total changes.</p>':'')+'<p class="help">This releases the booking and records its payment once. Used life support is not restored. Payment on delivery is the app convention, with no automatic lateness penalty.</p>',()=>act('Delivered passenger booking',s=>S.deliverPassengers(s,id)),'Complete passage & payout');}
+ function deliver(id){
+  return completion.open({kind:'deliver',target:id,title:'Complete passenger passage',label:'Complete passage & payout',capture:captureReview,
+   body:owner=>{
+    const c=owner.context.subject,s=owner.campaign;S.assertWorld(s,c.destination);
+    const preview={...s,contracts:s.contracts.map(x=>x.id===c.id?{...x,status:'delivered'}:x)},capacity=P.passengerCapacity(preview);
+    return '<p class="help">Booking and delivery '+ruleInfo('booking')+'</p>'+facts([['Class / people',passageLabel(c.passageClass)+' / '+c.count],['Destination',world(c.destination).name],['Payment',money(c.payment)],['Whole-ship luggage after',capacity.luggage+' t'],['Cabins / Low berths free after',capacity.freeCabins+' / '+capacity.freeLowBerths]])+(manualLuggage(s.ship)?'<p class="notice">Your manual whole-ship luggage total remains fixed after delivery. Edit it in Settings if the actual total changes.</p>':'')+'<p class="help">This releases the booking and records its payment once. Used life support is not restored. Payment on delivery is the app convention, with no automatic lateness penalty.</p>';
+   },prepare:(_f,owner)=>({id:owner.context.subject.id}),apply:(n,args)=>S.deliverPassengers(n,args.id),success:'Delivered passenger booking saved.'
+  });
+ }
  function auditOffer(id){const c=activeDrafts().find(o=>o.offerId===id);if(!c)throw Error('Offer is no longer active. Find its read-only result in History.');modal('Passenger availability audit',details(c),null);}
  return {panel,details,setup,search,board,deliver,auditOffer,clear};
 }

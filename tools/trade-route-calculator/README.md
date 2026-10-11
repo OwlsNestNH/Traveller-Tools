@@ -703,8 +703,14 @@ and Undo stay with the existing state mutations. Exact merge/Pages, all 90
 permitted live URL variants and all duplicate CI jobs were verified; ten prior
 proxy-restricted URL variants remain unverified.
 
-Four Stage 2 scope groups remain. Passenger capacity setup and search are the
-.57 candidate subbatch: retain reviewed cabin/Low allocation and generated
-four-class results until owned save completion. Boarding/delivery are a later
-subbatch in the same passenger group. Full candidate tests and review are
-required before release; Stage 3 has not started.
+Passenger capacity setup/search (.57 released) retains reviewed cabin/Low
+allocation and generated four-class results until owned save completion.
+Exact merge/Pages, all 90 permitted live URL variants and all 66 duplicate CI
+jobs were verified; ten prior proxy-restricted variants remain unverified.
+
+Four Stage 2 scope groups remain. The .58 candidate addresses boarding and
+completion of passenger passage, including ownership of the initial boarding
+form and its side-effect-free preview. Accepted terms, capacity, luggage/LSS,
+one delivery payment and Undo retain their existing calculations. The passenger
+group remains open pending both callers and complete release gates. Stage 3 has
+not started.

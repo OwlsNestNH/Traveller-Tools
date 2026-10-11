@@ -1,7 +1,7 @@
 # Save-completion migration queue
 
-Inventory refreshed against UI 2026.10.11.56, repository merge
-`f335255a1a6a1abcfdf1025f2cd06175e61471d5` (2026-10-11).
+Inventory refreshed against UI 2026.10.11.57, repository merge
+`a9a9db438a6beca38cd8aad93a47078ff6ec8844` (2026-10-11).
 This records the save-boundary work, not the earlier GUI-refit stages.
 
 ## Stage 2: finish save callers
@@ -158,26 +158,47 @@ routed. This is not a claim of complete 100-URL live-file verification.
   qualified. Exactly two acceptContract callers, one cancelMail and one deliver
   caller were inventoried, closing the freight/mail lifecycle group.
 
+- **.57 Passenger capacity setup and search:** both callers own accepted review,
+  generated four-class results/dice/audits and completion. Final 4,629 native tests
+  across 77 files (440 focused), 227 rules checks, 66 exact-head CI jobs and 110
+  focused browser cases passed. All 310 image hashes/layouts and frames were
+  reviewed; 142 originals were individually opened (all 86 mobile, 56 desktop;
+  90 distinct image hashes). Forty-four complete original/candidate outcomes
+  matched after UUID-only normalization. The initial 97/110 browser result is
+  retained: a test-only correction fixed full mobile target-range framing and
+  quality-30 image budgeting without changing runtime or the byte ceilings.
+  Initial extreme unbroken Jump-name overflow remains observed candidate behavior
+  with inherited-source attribution, not separately observed baseline pixels.
+  One unchanged Cargo keyboard-selection failure showed map-only SVG replacement;
+  an independently reviewed unchanged-head rerun passed, with exact keydown target
+  and callback cause still inferred. That race is not fixed by this release.
+  Exact merge/tree, Pages, all 90 permitted live URL variants and all 66 ready-
+  event duplicate jobs were verified. Ten restricted variants remain unverified.
+  Mobile booking tables remain horizontally scrollable and browser economic
+  screenshots are representative. Boarding/delivery remain the next subbatch.
+
 ### Remaining bounded groups
 
 These are scope groups, not a promise that each needs exactly one release.
 Further inventory findings must be recorded rather than declaring Stage 2 done.
-There are four open scope groups after the verified freight/mail lifecycle
-release. The .57 candidate addresses passenger setup/search, only the first of
-its two planned subbatches. Automatic policy updates in cargo, routes, arrival
+There are four open scope groups after the verified passenger setup/search
+release. The .58 candidate addresses boarding/delivery, the second passenger
+subbatch. Automatic policy updates in cargo, routes, arrival
 and Undo stay with those workflows; closed groups do not establish completion
 of unrelated callers.
 
-1. **Passenger workflows: .57 setup/search candidate, then boarding/delivery.**
+1. **Passenger workflows: .57 setup/search released; .58 boarding/delivery candidate.**
    Exactly four production UI write callers in passenger-ui.mjs: setup ->
    S.configurePassengerCapacity; search -> S.recordPassengerSearch; board ->
-   S.acceptPassengers; deliver -> S.deliverPassengers. The first three discard
-   completion; search exposes offers and boarding renders immediately. Delivery
-   returns the save but lacks full pending/terminal ownership. The boarding
-   preview is side-effect free; S.deliver's compatibility fallback is not a fifth
-   dedicated UI caller. Preserve allocation, generated results/dice, capacity,
-   accommodation, LSS/luggage and audited terms. History must not recreate
-   actionable offers. Keep this group open until all four callers are complete.
+   S.acceptPassengers; deliver -> S.deliverPassengers. Setup/search are complete.
+   Boarding discards completion and renders immediately; delivery returns the
+   save but lacks full pending/terminal ownership in the .57 baseline. The .58
+   candidate also guards the side-effect-free first boarding form/preview/handoff;
+   this is not another save caller. S.deliver's compatibility fallback is not a
+   fifth dedicated UI caller. Preserve allocation, capacity, accommodation,
+   LSS/luggage and audited terms. Delivery must not replenish the original search
+   pool; History must not recreate actionable offers. Keep this group open until
+   both remaining callers, review and release verification finish.
 2. **Legacy Accounts payments and inline rate.** app.mjs: shipExpenses,
    expenseForm (including bank correction), rollBerthingRate. Payment forms
    remain generic; the rate path assumes a synchronous next.revision and

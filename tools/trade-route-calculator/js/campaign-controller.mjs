@@ -1,6 +1,6 @@
-import * as S from './state.mjs?v=passenger-search-completion-20261011-57';
-import {creditStep} from './rounding.mjs?v=passenger-search-completion-20261011-57';
-import {SaveNotCommittedError} from './persistence.mjs?v=passenger-search-completion-20261011-57';
+import * as S from './state.mjs?v=passenger-booking-completion-20261011-58';
+import {creditStep} from './rounding.mjs?v=passenger-booking-completion-20261011-58';
+import {SaveNotCommittedError} from './persistence.mjs?v=passenger-booking-completion-20261011-58';
 
 // Store remains synchronous. An injected provider may return a completion
 // Promise; that completion must include the durable write and publication.

@@ -765,7 +765,7 @@ retain their separate behavior. Independent source/local/exact-head browser and
 pixel review passed; exact merge/tree, Pages, 90 permitted live URL variants and
 all duplicate CI jobs were verified. Ten restricted variants remain unverified.
 
-## Stage 2 passenger setup/search completion (.57 candidate)
+## Stage 2 passenger setup/search completion (.57 released)
 
 The capacity-review and passenger-search callers receive a passenger-specific
 completion boundary through the app/module integration. Capacity retains the
@@ -777,13 +777,42 @@ success. Prior eligible session results remain until that boundary; existing
 campaign/world/reload invalidation remains authoritative. History is evidence,
 not a source for rebuilding actionable offers.
 
-The candidate must preserve immediate synchronous behavior, exact economic/state
+The released boundary preserves immediate synchronous behavior, exact economic/state
 mutations, dice order, no-money/no-time search, accommodation/LSS/luggage and Undo.
 Its explicit ownership includes full readable durable campaign equality, editor,
 world, modal/form and ephemeral draft identity, pre-callback pending authority,
 genuine one-use publication provenance, and terminal retirement before fallible
-reporting. Pending presentation must remain stable through actual publication.
+reporting. Pending presentation remains stable through actual publication.
 Boarding and delivery remain unchanged regression controls until their separate
 completion subbatch. The passenger group remains open until all four callers and
-release verification finish. Final source/local/exact-head CI and actual browser/
-pixel gates remain required for this candidate.
+release verification finish. Independent source/local/exact-head browser/pixel
+review, exact merge/tree, Pages, all 90 permitted live variants and all 66 ready-
+event duplicate jobs passed. Ten restricted live variants remain unverified.
+
+## Stage 2 passenger boarding/delivery completion (.58 candidate)
+
+Extend the passenger-specific adapter to the two remaining saved operations.
+Boarding must own the first form and its side-effect-free preview/handoff before
+fallible construction and callbacks, then freeze reviewed count, cabin/service,
+fitted-space and population-exception terms before final confirmation. Preview
+must not write, consume mulligan eligibility or become the saved transition.
+Its existing distinct transient identifiers remain unchanged.
+
+Final boarding and delivery reviews capture the exact offer/search or accepted
+booking, campaign and readable durable baseline, editing tenure and presentation.
+Genuine publication changes booking identity/status and remaining availability;
+completion checks must recognize the authenticated candidate rather than require
+obsolete pre-save identities. The earlier board/delivery owner must also be
+checked before publication replaces the live campaign; genuine committed proof
+remains recorded even when intervening drift retires its presentation authority.
+Both retain the session search pool, whose remaining
+availability still counts delivered bookings. Only search publishes new offers.
+
+Keep native synchronous results immediate and preserve accepted terms for a
+deliberate known-unsaved retry. Retire stale or saved/unknown authority
+before fallible reporting; preserve newer real dialogs and require reload when
+appropriate. Pending presentation remains owned through real nearby/map callbacks
+and publication/settlement. State, Store/controller, fares, rounding, capacity,
+LSS/luggage, payment, audit and Undo bodies remain outside this migration.
+Final implementation, full source/native/exact-head browser/pixel review and
+release verification are required before this candidate is called complete.
