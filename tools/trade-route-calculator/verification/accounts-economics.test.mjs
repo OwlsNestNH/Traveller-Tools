@@ -13,7 +13,9 @@ import {executeEconomics,canonical} from './accounts-economic-observations.mjs';
 // live campaigns, serialized durable bytes, reports, reload/import, every audit
 // and inverse Undo, rather than substituting candidate helpers into the oracle.
 // Only consistently mapped generated UUID identity and the explicit report
-// release-version line are canonicalized. No business/economic field is omitted.
+// release-version line are canonicalized. The approved .64 fuel-help sentence
+// is compared using its historical spelling below. No business/economic field
+// is omitted.
 const readJSON=async name=>JSON.parse(await readFile(new URL('./fixtures/accounts-original/'+name,import.meta.url),'utf8'));
 const expected=await readJSON('expected.json'),seeds=await readJSON('seeds.json'),scenarios=await readJSON('scenarios.json');
 const core=JSON.parse(await readFile(new URL('../rules/core-2022.json',import.meta.url),'utf8'));
@@ -31,6 +33,19 @@ test('Accounts complete-state oracle is pinned to independently released .58 sou
 for(const [index,spec]of scenarios.entries())test('original complete-state parity: '+spec.name,async()=>{
  const result=await executeEconomics(spec,seeds[spec.name],factory,report,S,{accountsHarness,kinds,core,S}),record=expected.cases[index];
  assert.equal(result.writes,record.writes);assert.equal(result.rolls,record.rolls);assert.deepEqual(result.checkpoints.map(checkpoint=>checkpoint.stage),record.checkpoints);
+ // .64 deliberately qualifies this display-only fuel guidance. Retain the
+ // released oracle and compare every economic field and all remaining UI bytes.
+ // Do not normalize campaign, audit, saved JSON, quote or report strings.
+ const advisory='A/B list refined fuel; unrefined may be offered at referee discretion or under local policy. C/D list unrefined fuel.';
+ if(spec.kind==='bundle'){
+  const originalHelp='A/B sell refined and unrefined; C/D sell unrefined.';
+  assert.equal(result.opened.split(advisory).length-1,1,'Exactly one approved fuel-help copy change');
+  result.opened=result.opened.replace(advisory,originalHelp);
+  if(spec.reject&&result.preview.body.includes(advisory)){
+   assert.equal(result.preview.body.split(advisory).length-1,1,'Rejected form retains exactly the approved guidance');
+   result.preview.body=result.preview.body.replace(advisory,originalHelp);
+  }
+ }
  const value=canonical(result).value;
  assert.equal(sha(JSON.stringify(value)),record.canonicalSha256,'Full original app/controller/Store state, saved JSON, UI quote, accounting/audit/stock, ephemera, reload, report and Undo must all match; investigate the first changed field before updating any fixture.');
  const saved=result.checkpoints.find(checkpoint=>checkpoint.stage==='saved');

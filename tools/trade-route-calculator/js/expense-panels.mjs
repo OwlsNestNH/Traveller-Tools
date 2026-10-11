@@ -1,14 +1,14 @@
-import {ruleInfo} from './rule-references.mjs?v=market-quote-labels-20261011-63';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=market-quote-labels-20261011-63';
-import {passengerShip} from './passengers.mjs?v=market-quote-labels-20261011-63';
+import {ruleInfo} from './rule-references.mjs?v=freight-passengers-fuel-20261011-64';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=freight-passengers-fuel-20261011-64';
+import {passengerShip} from './passengers.mjs?v=freight-passengers-fuel-20261011-64';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=market-quote-labels-20261011-63';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=market-quote-labels-20261011-63';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=market-quote-labels-20261011-63';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=market-quote-labels-20261011-63';
-import {creditStep} from './rounding.mjs?v=market-quote-labels-20261011-63';
-import {roll} from './rules.mjs?v=market-quote-labels-20261011-63';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=market-quote-labels-20261011-63';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=freight-passengers-fuel-20261011-64';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=freight-passengers-fuel-20261011-64';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=freight-passengers-fuel-20261011-64';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=freight-passengers-fuel-20261011-64';
+import {creditStep} from './rounding.mjs?v=freight-passengers-fuel-20261011-64';
+import {roll} from './rules.mjs?v=freight-passengers-fuel-20261011-64';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=freight-passengers-fuel-20261011-64';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

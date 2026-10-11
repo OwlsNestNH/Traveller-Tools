@@ -31,7 +31,7 @@ const uri=source=>'data:text/javascript;base64,'+Buffer.from(source).toString('b
 async function loadHarness(source,moduleSource){
  // Expose the real closure only to inspect retained draft identity and to inject
  // adversarial mutations. Production functions and all state transitions run unchanged.
- moduleSource=replace(moduleSource,'return {panel,details,setup,search,board,deliver,auditOffer,clear};','return {testSnapshot:()=>({drafts,searchId}),testSet:(d,id)=>{drafts=d;searchId=id;},panel,details,setup,search,board,deliver,auditOffer,clear};');
+ moduleSource=replace(moduleSource,'return {panel,details,setup,search,manual,board,deliver,auditOffer,clear};','return {testSnapshot:()=>({drafts,searchId}),testSet:(d,id)=>{drafts=d;searchId=id;},panel,details,setup,search,manual,board,deliver,auditOffer,clear};');
  const pu=uri(absolutize(moduleSource,passengerURL));
  source=source.replace(/^import \{createPassengerUI\} from '[^']+';/m,"import {createPassengerUI} from '"+pu+"';");
  let hs=await readFile(harnessURL,'utf8');
@@ -318,4 +318,18 @@ for(const kind of kinds)for(const fault of ['saved drift warning throw','saved d
  if(fault==='rejection after stale publication'){gate.entries[0].write();gate.entries[0].reject(new SaveNotCommittedError(Error('Contradictory rejection after genuine saved drift')));}else gate.entries[0].fulfill();await operation;assert.equal(h.counters.writes,1);same(h.persisted(),gate.entries[0].args[0]);noSuccess(h);
  if(fault==='saved drift warning Notes'){assert.equal(fired,1);assert.equal(ui(h).modalTitle,'Rules & Notes');assert.equal(body(h),newerBody);assert.equal(h.dom.ids.get('modal-form').onsubmit,newerHandler);assert.equal(ui(h).modalError,'Genuine newer Notes warning');assert.equal(h.store.reloadRequired??false,false);}else {terminal(h);assert.match(ui(h).message,/saved, but/);}
  const raw=h.bytes();await detached(submitEvent(h));await h.submit();assert.equal(h.bytes(),raw);assert.equal(gate.entries.length,1);if(newerHandler)assert.equal(h.dom.ids.get('modal-form').onsubmit,newerHandler);
+});
+
+for(const mode of ['deferred','retry','unknown','cancel'])test('manual passenger terms use retained preview and save ownership: '+mode,async t=>{
+ const h=setup(),before=h.bytes(),search=h.api.state.latestPassengerSearchId;
+ h.api.passengers.manual('1,0');h.fill({destination:'1,0',passageClass:'high',count:'2',fare:'1234',cabinMode:'shared',serviceConfirmed:true,reason:'Synthetic referee terms'});await h.submit();
+ assert.equal(ui(h).modalTitle,'Confirm manual passenger booking');assert.equal(ui(h).modalError,'');assert.equal(h.bytes(),before);
+ if(mode==='cancel'){const detached=h.dom.ids.get('modal-form').onsubmit;h.api.closeModal();await detached(submitEvent(h));assert.equal(h.bytes(),before);assert.equal(h.counters.writes,0);return;}
+ const gate=serviceSaveGate(h.store);t.after(()=>gate.restore());const detached=h.dom.ids.get('modal-form').onsubmit,operation=h.submit();await flush();assert.equal(gate.entries.length,1);await h.submit();await detached(submitEvent(h));assert.equal(gate.entries.length,1);assert.equal(h.bytes(),before);assert.equal(ui(h).modalOpen,true);
+ if(mode==='unknown'){gate.entries[0].reject();await operation;terminal(h);assert.equal(h.bytes(),before);return;}
+ if(mode==='retry'){
+  const accepted=structuredClone(gate.entries[0].args[0]);gate.entries[0].reject(new SaveNotCommittedError(Error('Synthetic known unwritten manual booking')));await operation;assert.equal(h.bytes(),before);assert.equal(ui(h).submitDisabled,false);
+  const retry=h.submit();await flush();assert.equal(gate.entries.length,2);same(canonical(gate.entries[1].args[0].contracts),canonical(accepted.contracts));same(canonical(gate.entries[1].args[0].events),canonical(accepted.events));gate.entries[1].fulfill();await retry;
+ }else{gate.entries[0].fulfill();await operation;}
+ assert.equal(h.counters.writes,1);assert.equal(h.persisted().contracts.at(-1).payment,'2468');assert.equal(h.persisted().latestPassengerSearchId,search);assert.equal(ui(h).modalOpen,false);assert.equal(h.persisted().bank,JSON.parse(before).bank);assert.equal(h.api.passengers.testSnapshot().drafts.length,4);
 });

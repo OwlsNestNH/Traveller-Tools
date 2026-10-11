@@ -1424,3 +1424,32 @@ Exact-head browser execution, independent original-image review, ready-event
 duplicates and exact merge/Pages/permitted-live verification remain required.
 Further world/offer/expiry consistency work is deferred; Stage 3 remains a
 separate approved focused review to start only after this bounded Stage 2 release.
+
+### .64 candidate: bounded freight/mail review, passenger controls and fuel advice
+
+Base: released .63 merge `49a7126b7c8ad539c396f0e4574f101d3618704a`.
+Source review on 2026-10-11 used extracted text of the actual Mongoose Traveller
+Core Rulebook Update 2022, examined copyright 2024 revision, pp.239–241 and
+257–258. This review did not visually render the rulebook pages. No private
+source files, links or campaign data are distributed.
+
+The freight endpoint, distance, search Effect, class, traffic bands, lot sizes,
+payments and late penalty match the verified source. No arithmetic correction
+was warranted. Mail's traffic bands, threshold, container count, capacity and
+payment also match. The source does not explicitly resolve the lot class feeding
+mail, inclusion of search Effect or the endpoint for its low-TL modifier. Existing
+INT-004 (shared endpoint/distance/Effect DM, excluding lot class) and INT-002
+(origin TL) remain unchanged. Negative Effect remains signed. Freight beyond
+six parsecs still requires manual terms. Audit labels expose the raw modified
+freight score and clearly distinguish the shared DM converted for mail.
+
+Fuel guidance cites the Starport Facilities table on printed p.257. Page 258
+provides retail context. A/B unrefined is labelled referee discretion/local
+policy, not a published entitlement. E/X None refers to starport retail, not a
+prohibition on wilderness fuel or separately arranged sources. The advisory is
+display-only; existing prices and referee-confirmed purchase behavior are retained.
+
+Focused native and CI browser evidence must be recorded against the final
+candidate head before release. No local Chromium, live-site validation, deployment
+or merge is performed by this candidate work. Established live URL exclusions
+remain in force; the parent owns mark-ready, duplicate CI, merge and deployment.

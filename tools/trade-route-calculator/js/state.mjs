@@ -1,20 +1,20 @@
-import {createDashboardBaseline,validateDashboardBaseline} from './dashboard-baseline.mjs?v=market-quote-labels-20261011-63';
-import {validateWorldChangeHistory,isWorldChangeAudit} from './world-change-history.mjs?v=market-quote-labels-20261011-63';
-import {validateContactSearchHistory,commitContactSearch} from './contact-search.mjs?v=market-quote-labels-20261011-63';
+import {createDashboardBaseline,validateDashboardBaseline} from './dashboard-baseline.mjs?v=freight-passengers-fuel-20261011-64';
+import {validateWorldChangeHistory,isWorldChangeAudit} from './world-change-history.mjs?v=freight-passengers-fuel-20261011-64';
+import {validateContactSearchHistory,commitContactSearch} from './contact-search.mjs?v=freight-passengers-fuel-20261011-64';
 export {commitContactSearch};
-import {passengerShip,passengerSpace,passengerTotals,passengerCapacity,validatePassengerContract,validatePassengerHistory,latestPassengerSearch,passengerOfferRemaining} from './passengers.mjs?v=market-quote-labels-20261011-63';
-import {validateMaintenance,validateMaintenancePaymentRecord} from './maintenance.mjs?v=market-quote-labels-20261011-63';
-import {validateMortgage,validateMortgagePaymentRecord} from './mortgage.mjs?v=market-quote-labels-20261011-63';
+import {passengerShip,passengerSpace,passengerTotals,passengerCapacity,validatePassengerContract,validatePassengerHistory,latestPassengerSearch,passengerOfferRemaining} from './passengers.mjs?v=freight-passengers-fuel-20261011-64';
+import {validateMaintenance,validateMaintenancePaymentRecord} from './maintenance.mjs?v=freight-passengers-fuel-20261011-64';
+import {validateMortgage,validateMortgagePaymentRecord} from './mortgage.mjs?v=freight-passengers-fuel-20261011-64';
 import {validateJumpAttempts,currentJumpAttempt,lastJump,savedJumpAttempt,departureKey,jumpPreparationBridge} from './jump-attempts.mjs';
-import {distance as jumpDistance} from './map.mjs?v=market-quote-labels-20261011-63';
+import {distance as jumpDistance} from './map.mjs?v=freight-passengers-fuel-20261011-64';
 import {validateMailHistory} from './mail-history.mjs?v=mail-history-1';
-import {bladderSpace,validateFuel,fuelPurchase,consumeJumpFuel} from './fuel.mjs?v=market-quote-labels-20261011-63';
-import {validateSupport,refillQuote,consumeSupport,anchorSupport,supportCargo,supportAmount,supportReference,extraSupportReference} from './life-support.mjs?v=market-quote-labels-20261011-63';
-import {up,creditStep,roundExisting} from './rounding.mjs?v=market-quote-labels-20261011-63';
-import {validateAccommodation,passengerLuggage,roomCounts} from './accommodation.mjs?v=market-quote-labels-20261011-63';
+import {bladderSpace,validateFuel,fuelPurchase,consumeJumpFuel} from './fuel.mjs?v=freight-passengers-fuel-20261011-64';
+import {validateSupport,refillQuote,consumeSupport,anchorSupport,supportCargo,supportAmount,supportReference,extraSupportReference} from './life-support.mjs?v=freight-passengers-fuel-20261011-64';
+import {up,creditStep,roundExisting} from './rounding.mjs?v=freight-passengers-fuel-20261011-64';
+import {validateAccommodation,passengerLuggage,roomCounts} from './accommodation.mjs?v=freight-passengers-fuel-20261011-64';
 import {add,sub,mul,div,cmp,floor,sum,decimal,credit} from './amounts.mjs';
-import {VERSION,priceLimits} from './rules.mjs?v=market-quote-labels-20261011-63';
-import {expenseQuote,starport,berthMultipliers,payableExpenses} from './expenses.mjs?v=market-quote-labels-20261011-63';
+import {VERSION,priceLimits} from './rules.mjs?v=freight-passengers-fuel-20261011-64';
+import {expenseQuote,starport,berthMultipliers,payableExpenses} from './expenses.mjs?v=freight-passengers-fuel-20261011-64';
 export const SCHEMA=1;
 export const uid=()=>crypto.randomUUID();
 export function initial(){return {schema:SCHEMA,revision:0,rulesVersion:VERSION,initialized:false,name:'My trading campaign',bank:'0',hours:0,dateLabel:'001-1105',ship:{name:'Independent trader',capacity:'60',staterooms:0,jump:2,scoops:true,armed:false},trader:{broker:0,streetwise:0,admin:0,characteristic:0,rank:0,soc:0},settings:{reducedProfitLimitsEnabled:false,minPurchasePercent:85,maxSalePercent:115,profit:100,tax:false,insurance:false,creditStep:1,maxBaseRetailEnabled:false,maxBaseRetail:'100000',useRawIllegalPrices:false},worlds:{},actual:null,route:[],routeIndex:0,snapshots:[],lots:[],contracts:[],policies:[],ledger:[],cooldowns:{},undo:[],events:[],jumpAttempts:[],latestMailCheckId:null};}
@@ -23,6 +23,7 @@ const validId=x=>typeof x==='string'&&/^[A-Za-z0-9_,.:-]{1,100}$/.test(x);
 const record=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
 function validateStructure(s){
  if(!record(s))throw Error('Invalid campaign record');
+ if(s.settings?.fuelAvailabilityAlert!==undefined&&typeof s.settings.fuelAvailabilityAlert!=='boolean')throw Error('Invalid fuel-availability alert setting.');
  for(const key of ['ship','trader','settings','worlds','cooldowns'])if(!record(s[key]))throw Error('Invalid campaign '+key);
  if(!Array.isArray(s.route)||!Number.isSafeInteger(s.routeIndex)||s.routeIndex<0||s.routeIndex>=Math.max(1,s.route.length))throw Error('Invalid route progress');
  if(s.route.some(id=>!validId(id)||!Object.hasOwn(s.worlds,id)))throw Error('Route world missing');
@@ -399,8 +400,17 @@ export function configurePassengerCapacity(s,{reservedCabins,installedLowBerths}
  validatePassengerHistory(s);
  s.events.push({id:uid(),label:'Passenger capacity settings audit',hours:s.hours,world:s.actual,beforeCapacity:before,afterCapacity:structuredClone(s.ship.accommodation.passengerCapacity)});
 }
-export function acceptPassengers(s,offerId,{count,cabinMode,serviceConfirmed=false,spaceConfirmed=false,populationException=''}={}){
+export function acceptPassengers(s,offerId,args={}){
  const search=latestPassengerSearch(s),offer=search?.offers.find(o=>o.offerId===offerId);
+ return acceptPassengerOffer(s,search,offer,args);
+}
+export function acceptManualPassengers(s,event,args){
+ if(event.label!=='Manual passenger terms audit'||!event.offers?.[0]?.audit?.reason?.trim())throw Error('Referee passenger terms require a reason.');
+ s.events.push(structuredClone(event));
+ return acceptPassengerOffer(s,event,event.offers[0],args);
+}
+function acceptPassengerOffer(s,search,offer,{count,cabinMode,serviceConfirmed=false,spaceConfirmed=false,populationException=''}={}){
+ const offerId=offer?.offerId;
  if(!offer)throw Error('Passenger offer is no longer current. Search again.');
  assertWorld(s,offer.origin);
  if(s.worlds[offer.origin].emptySpace||s.worlds[offer.destination].emptySpace||jumpDistance(s.worlds[offer.origin],s.worlds[offer.destination])>s.ship.jump)throw Error('Choose a destination within one jump of the ship.');

@@ -1,4 +1,4 @@
-import {sectors,sectorCatalog,subsectorForHex,loadWorld} from './map.mjs?v=market-quote-labels-20261011-63';
+import {sectors,sectorCatalog,subsectorForHex,loadWorld} from './map.mjs?v=freight-passengers-fuel-20261011-64';
 
 const RECENTS_KEY='traveller-trade-route-calculator:recent-worlds:v1';
 let recentMemory=[];

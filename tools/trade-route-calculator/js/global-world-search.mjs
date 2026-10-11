@@ -1,4 +1,4 @@
-import {searchWorlds,loadWorld} from './map.mjs?v=market-quote-labels-20261011-63';
+import {searchWorlds,loadWorld} from './map.mjs?v=freight-passengers-fuel-20261011-64';
 
 export const planetSearchLabel=w=>[w.name,w.subsectorName,w.sector,w.hex].join(' — ');
 

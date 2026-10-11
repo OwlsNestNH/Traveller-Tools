@@ -28,7 +28,7 @@ const uri=source=>'data:text/javascript;base64,'+Buffer.from(source).toString('b
 async function loadHarness(source,moduleSource){
  // Expose the real closure only to inspect retained draft identity and to inject
  // adversarial mutations. Production functions and all state transitions run unchanged.
- moduleSource=replace(moduleSource,'return {panel,details,setup,search,board,deliver,auditOffer,clear};','return {testSnapshot:()=>({drafts,searchId}),testSet:(d,id)=>{drafts=d;searchId=id;},panel,details,setup,search,board,deliver,auditOffer,clear};');
+ moduleSource=replace(moduleSource,'return {panel,details,setup,search,manual,board,deliver,auditOffer,clear};','return {testSnapshot:()=>({drafts,searchId}),testSet:(d,id)=>{drafts=d;searchId=id;},panel,details,setup,search,manual,board,deliver,auditOffer,clear};');
  const pu=uri(absolutize(moduleSource,passengerURL));
  source=source.replace(/^import \{createPassengerUI\} from '[^']+';/m,"import {createPassengerUI} from '"+pu+"';");
  let hs=await readFile(harnessURL,'utf8');
@@ -43,7 +43,7 @@ async function loadHarness(source,moduleSource){
 }
 const depositHarness=await loadHarness(app,passenger);
 let originalPassenger=passenger;
-for(const [name,end]of [['setup','search'],['search','board']]){const begin=originalPassenger.indexOf(' function '+name+'('),finish=originalPassenger.indexOf(' function '+end+'(',begin);assert.ok(begin>=0&&finish>begin);originalPassenger=originalPassenger.slice(0,begin)+historicalFunctions[name]+originalPassenger.slice(finish);}
+for(const [name,end]of [['setup','search'],['search','manual']]){const begin=originalPassenger.indexOf(' function '+name+'('),finish=originalPassenger.indexOf(' function '+end+'(',begin);assert.ok(begin>=0&&finish>begin);originalPassenger=originalPassenger.slice(0,begin)+historicalFunctions[name]+originalPassenger.slice(finish);}
 const originalHarness=await loadHarness(app,originalPassenger);
 const kinds=['setup','search'],successes={setup:/^Passenger capacity settings saved\./,search:/^Passenger availability recorded\./};
 function fixture(){const s=campaign();s.hours=37;s.bank='900719925474099312345';s.ship.capacity='120';s.settings={...s.settings,tax:true,profit:75};s.lots=[{id:'existing-cargo',commodity:'11',description:'Synthetic held goods',quantity:'3',basis:'30001',goodsValue:'27001'}];s.ship.accommodation={combinedPeople:true,rooms:{low:0,middle:3,high:1},passengers:{low:0,middle:4,high:0},crew:{low:0,middle:0,high:0},occupiedLowBerths:0,luggageMode:'auto',luggageTons:'0'};s.ship.lifeSupport={capacityHours:672,stockUnits:{numerator:'112',denominator:'1'}};s.ship.fuel={displacementTons:200,capacityTons:40,aboardTons:40};return S.validate(s);}

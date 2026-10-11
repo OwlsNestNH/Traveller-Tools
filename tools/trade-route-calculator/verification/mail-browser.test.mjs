@@ -122,7 +122,7 @@ async function visibleRoll(page, expected) {
 async function contractToolbar(page) {
   const toolbar = page.locator('#contract-actions');
   assert.equal(await toolbar.count(), 1);
-  assert.deepEqual(await toolbar.getByRole('button').allTextContents(), ['Find contracts','Manual contract','Check for mail']);
+  assert.deepEqual(await toolbar.getByRole('button').allTextContents(), ['Find contracts','Manual contract','Check for mail','Find passengers','Set passenger capacity']);
   const check = page.locator('#main [data-action="mail-check"]');
   assert.equal(await check.count(), 1, 'Only one Check for mail action exists');
   assert.equal(await mail(page).locator('[data-action="mail-check"]').count(), 0, 'The Mail card no longer owns the check action');
@@ -1446,7 +1446,7 @@ try {
     await contractToolbar(page);
     assert.equal(await page.locator('#mail-accepted-details').count(), 0, 'No accepted-only disclosure appears before a check');
     await page.locator('#contract-actions').getByRole('button', {name:'Manual contract', exact:true}).click();
-    assert.equal(await page.locator('#modal-title').innerText(), 'Manual freight / mail contract');
+    assert.equal(await page.locator('#modal-title').innerText(), 'Manual transport contract');
     await cancel(page);
     assert.deepEqual(await read(page), initial, 'Repositioned Manual contract still opens its non-mutating form');
     await checkMail(page);

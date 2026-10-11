@@ -24,7 +24,7 @@ async function loadHarness(source){
  let hs=await readFile(harnessURL,'utf8');
  hs=replace(hs,"const app=await readFile(new URL('../js/app.mjs',import.meta.url),'utf8');",'const app=LIFECYCLE_APP_SOURCE;');
  hs=absolutize(hs,harnessURL);hs=replace(hs,'LIFECYCLE_APP_SOURCE',JSON.stringify(source));
- hs=replace(hs,'globalThis.api={setStore',"globalThis.api={setDecisions(value){decisions=value;},get tab(){return tab;},get snapshotId(){return snapshotId;},setCheck(value){mailCheck=value;},get mailAcceptedDetailsOpen(){return mailAcceptedDetailsOpen;},manualContract,cancelMail,get contractOwner(){return typeof contractLifecycleWriteOperation==='undefined'?null:contractLifecycleWriteOperation;},completeContractLifecycleWrite:typeof completeContractLifecycleWrite==='function'?completeContractLifecycleWrite:null,roleChange:"+roleCallback+',setStore');
+ hs=replace(hs,'globalThis.api={setStore',"globalThis.api={setDecisions(value){decisions=value;},get tab(){return tab;},get snapshotId(){return snapshotId;},get passengers(){return passengers;},setCheck(value){mailCheck=value;},get mailAcceptedDetailsOpen(){return mailAcceptedDetailsOpen;},manualContract,cancelMail,get contractOwner(){return typeof contractLifecycleWriteOperation==='undefined'?null:contractLifecycleWriteOperation;},completeContractLifecycleWrite:typeof completeContractLifecycleWrite==='function'?completeContractLifecycleWrite:null,roleChange:"+roleCallback+',setStore');
  hs=replace(hs,'priceDice:0','priceDice:0,rolls:0,dice:0');
  hs=replace(hs,'roll:n=>({dice:Array(n).fill(3),total:n*3}),die:()=>3','roll:n=>{calls.rolls++;calls.onRoll?.();return bindings.R.roll(n,()=>3);},die:()=>{calls.dice++;return 3;}');
  hs=replace(hs,'calls.freight++;return bindings.R.freightOffers','calls.freight++;calls.onFreight?.();return bindings.R.freightOffers');
@@ -149,7 +149,7 @@ for(const kind of kinds){
 const constructionBoundaries={title:['modal-title','textContent'],body:['modal-body','innerHTML'],error:['modal-error','textContent'],'submit label':['modal-submit','textContent'],'submit hidden':['modal-submit','hidden'],'cancel label':['modal-cancel','textContent'],'initial submit state':['modal-submit','disabled']};
 function trap(h,id,property,callback){const node=h.dom.ids.get(id),descriptor=Object.getOwnPropertyDescriptor(node,property);let value=node[property];Object.defineProperty(node,property,{configurable:true,get:descriptor?.get??(()=>value),set(next){if(descriptor?.set)descriptor.set(next);else value=next;callback(next);}});}
 function open(h,kind){if(kind.startsWith('manual'))return h.api.manualContract();if(kind.startsWith('accept'))return h.api.accept(h.api.drafts.find(o=>o.kind===kind.split('-')[1]).offerId);if(kind.startsWith('cancel'))return h.api.cancelMail(h.api.state.contracts.find(c=>c.kind==='mail').id);return h.api.deliver(h.api.state.contracts.find(c=>c.kind===kind.split('-')[1]).id);}
-function title(kind){return kind.startsWith('manual')?'Manual freight / mail contract':kind.startsWith('accept')?'Accept '+kind.split('-')[1]:kind.startsWith('cancel')?'Cancel mail':'Deliver '+kind.split('-')[1];}
+function title(kind){return kind.startsWith('manual')?'Manual transport contract':kind.startsWith('accept')?'Accept '+kind.split('-')[1]:kind.startsWith('cancel')?'Cancel mail':'Deliver '+kind.split('-')[1];}
 for(const kind of kinds){
  for(const point of Object.keys(constructionBoundaries))test(`${kind}: construction ${point} actual Notes reentry preserves newer body, warning, handler and controls`,async()=>{
   const h=setup(fixture(kind)),raw=h.bytes();let fired=0,newerHandler,newerBody,newerMessage,newerStatus;
@@ -281,3 +281,10 @@ for(const kind of kinds)for(const phase of ['before submit','pending'])test(`${k
  const h=setup(fixture(kind));prepare(h,kind);const original=h.dom.ids.get('modal-form'),callback=original.onsubmit,raw=h.bytes(),gate=serviceSaveGate(h.store),operation=phase==='pending'?h.submit():null;const replacement=element();replacement.elements={namedItem:()=>null};h.dom.ids.set('modal-form',replacement);if(operation){gate.entries[0].fulfill();await operation;}await callback({preventDefault(){},currentTarget:original});assert.equal(gate.entries.length,phase==='pending'?1:0);assert.equal(h.counters.writes,phase==='pending'?1:0);if(!operation)assert.equal(h.bytes(),raw);assert.equal(replacement.onsubmit,undefined);noSuccess(h);gate.restore();
 });
 test('schema-invalid cancelled freight durable campaign is reload-only without payout',async()=>{const before=fixture('deliver-freight');before.contracts[0].status='cancelled';assert.throws(()=>S.validate(structuredClone(before)),/mail cancellation/);const h=setup(before),raw=h.bytes();prepare(h,'deliver-freight');await h.submit();assert.equal(h.bytes(),raw);assert.equal(h.counters.writes,0);terminal(h);assert.match(ui(h).message,/not saved/);});
+
+for(const outcome of ['throw','replaced'])test(`manual passenger handoff ${outcome} preserves owned controls and never saves`,async()=>{
+ const h=setup(),raw=h.bytes();h.api.manualContract();const kind=h.dom.fields().get('kind');let calls=0;h.api.passengers.manual=()=>{calls++;throw Error('Load nearby worlds before recording passengers.');};
+ if(outcome==='replaced')h.dom.ids.get('notes').onclick();kind.value='passenger';kind.dispatch('change');await flush();
+ assert.equal(h.bytes(),raw);assert.equal(h.counters.writes,0);assert.equal(calls,outcome==='throw'?1:0);
+ if(outcome==='throw'){assert.equal(kind.value,'freight');assert.match(ui(h).modalError,/Load nearby worlds/);assert.equal(ui(h).modalTitle,'Manual transport contract');}else assert.equal(ui(h).modalTitle,'Rules & Notes');
+});
