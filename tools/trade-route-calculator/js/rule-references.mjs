@@ -59,7 +59,7 @@ export const RULE_REFERENCES=Object.freeze({
  ]),
  'mail':entry('mail checks and consignments',[core('241')],[
   part('Published rule','Mail uses 2D plus its freight-traffic band, armed-ship, technology, rank and SOC modifiers against 12+. Success generates 1D containers: each occupies 5 tons and pays Cr25,000 on delivery. The whole consignment is accepted together.'),
-  part('Home rule · INT-002 / INT-004','Low technology is checked at the origin only. The traffic-to-mail conversion excludes freight lot-class modifiers.'),
+  part('Home rule · INT-002 / INT-004','Low technology is checked at the origin only. The traffic-to-mail conversion includes search Effect and excludes freight lot-class modifiers.'),
   part('App convention','There is no automatic mail lateness penalty. Cancellation is allowed only before a verified first departure. Checks, accepted terms and cancellation history remain separate; old checks do not recreate offers.')
  ]),
  'passengers':entry('passenger traffic and fares',[core('238–239')],[

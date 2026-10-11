@@ -3339,7 +3339,7 @@ function manualContract(){
   if(!f.get('reason').trim())throw Error('Reason required');
   return {contract:{offerId:S.uid(),kind:f.get('kind'),origin:owner.worldId,destination:f.get('destination'),quantity:A.positive(f.get('quantity')),payment:String(A.credit(f.get('payment'))),dueHours:f.get('kind')==='mail'?null:owner.campaign.hours+Number(f.get('days'))*24,audit:{manual:true,reason:f.get('reason')},rulesVersion:R.VERSION}};
  },(s,args)=>S.acceptContract(s,structuredClone(args.contract))));
- if(opened!==false)owner.form.elements.kind.addEventListener('change',()=>{if(owner.form.elements.kind.value==='passenger'&&!owner.pending)passengers.manual(owner.form.elements.destination.value);});
+ if(opened!==false)owner.form.elements.namedItem('kind').addEventListener('change',()=>{if(contractLifecycleWriteOwnerCurrent(owner)&&!owner.pending&&owner.form.elements.namedItem('kind').value==='passenger')passengers.manual(owner.form.elements.namedItem('destination').value);});
  return opened;
 }
 function accept(id){
