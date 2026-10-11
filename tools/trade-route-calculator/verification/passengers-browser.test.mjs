@@ -77,12 +77,17 @@ try{
   const booked=await read(page),manual=booked.contracts.find(c=>c.kind==='passenger'&&c.audit.manual);
   assert.equal(booked.contracts.filter(c=>c.kind==='passenger'&&c.audit.manual).length,1);assert.equal(booked.revision,before.revision+1);assert.deepEqual(booked.contracts.filter(c=>c.kind!=='passenger'),before.contracts);assert.equal(manual.payment,'2468');assert.equal(manual.quantity,undefined);assert.equal(booked.latestPassengerSearchId,before.latestPassengerSearchId);assert.equal(booked.bank,before.bank);assert.deepEqual(booked.ship.lifeSupport,before.ship.lifeSupport);
   assert.equal(await page.locator('.passenger-offer').count(),4,'Manual booking retains generated session offers');
-  await page.locator('[data-action="contract-audit"][data-arg="'+manual.id+'"]').click();await page.screenshot({path:join(artifacts,`combined-manual-passengers-audit-${width}.png`),fullPage:true});await page.keyboard.press('Escape');await closed(page);
+  await page.locator('[data-action="contract-audit"][data-arg="'+manual.id+'"]').click();await page.screenshot({path:join(artifacts,`combined-manual-passengers-audit-${width}.png`),fullPage:true});
+  const auditFooter=page.locator('#modal-body > p').last();await auditFooter.scrollIntoViewIfNeeded();
+  assert.equal(await auditFooter.evaluate(el=>{const r=el.getBoundingClientRect(),d=el.closest('dialog').getBoundingClientRect();return r.top>=Math.max(0,d.top)-1&&r.bottom<=Math.min(innerHeight,d.bottom)+1;}),true,'Manual audit footer is reachable within the original viewport');
+  assert.match(await page.locator('#modal-body').textContent(),/Referee terms[\s\S]*Synthetic referee fare[\s\S]*Payment rounding/);
+  await page.screenshot({path:join(artifacts,`combined-manual-passengers-audit-bottom-${width}.png`),fullPage:false});await page.keyboard.press('Escape');await closed(page);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
   await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();await tab(page,'Contracts').click();assert.equal((await read(page)).contracts.find(c=>c.id===manual.id).payment,'2468');
   await tab(page,'History').click();await action(page,'undo').click();assert.equal((await read(page)).contracts.some(c=>c.id===manual.id),false);
   // The informational preference persists through the normal Settings completion.
-  await tab(page,'Settings').click();const toggle=page.locator('#settings-form [name="fuelAvailabilityAlert"]');await reveal(toggle);assert.equal(await toggle.isChecked(),false);await toggle.check();await page.locator('#settings-save').click();
+  await tab(page,'Settings').click();const toggle=page.locator('#settings-form [name="fuelAvailabilityAlert"]');await reveal(toggle);assert.equal(await toggle.isChecked(),false);await toggle.scrollIntoViewIfNeeded();
+  await page.screenshot({path:join(artifacts,`combined-fuel-toggle-default-off-${width}.png`),fullPage:false});await toggle.check();await page.locator('#settings-save').click();
   assert.equal((await read(page)).settings.fuelAvailabilityAlert,true);
   await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();await tab(page,'Overview').click();await action(page,'refuel').click();
   const advice=page.locator('#service-panel .fuel-availability-advice');await advice.waitFor();assert.match(await advice.textContent(),/Starport.*referee discretion|Starport.*Unrefined|Starport.*No starport fuel supply/);
