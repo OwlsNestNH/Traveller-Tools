@@ -1,10 +1,10 @@
-import {ruleInfo} from './rule-references.mjs?v=market-quote-labels-20261011-63';
+import {ruleInfo} from './rule-references.mjs?v=freight-passengers-fuel-20261011-64';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={
  mortgageOriginal:['Original mortgage amount · Cr'],mortgagePayment:['Fixed payment · Cr','', 'Every 4 weeks (28 days)'],mortgageRemaining:['Payments remaining'],mortgagePaid:['Total paid so far · Cr'],mortgageDueDate:['First / next unpaid due date'],maintenancePayment:['Maintenance · Cr','', 'Every 4 weeks (28 days)'],maintenanceDueDate:['First / next unpaid due date'],
  name:['Campaign'],ship:['Ship name'],capacity:['Cargo capacity','tons'],jump:['Jump rating'],scoops:['Fuel scoops fitted'],armed:['Ship is armed','','Mail modifier'],
- shipTons:['Ship displacement','tons'],fuelCapacity:['Base fuel tank capacity','tons'],bladderTons:['Fuel bladder capacity','tons'],fuelAboard:['Fuel aboard','tons'],
+ fuelAvailabilityAlert:['Show fuel-availability information','','Advisory only; purchases and prices are unchanged'],shipTons:['Ship displacement','tons'],fuelCapacity:['Base fuel tank capacity','tons'],bladderTons:['Fuel bladder capacity','tons'],fuelAboard:['Fuel aboard','tons'],
  broker:['Broker skill'],streetwise:['Streetwise skill'],admin:['Admin skill'],characteristic:['Default EDU / SOC DM'],rank:['Highest Naval / Scout rank'],soc:['Highest SOC DM'],
  mode:['Profit mode'],custom:['Custom profit','%','Only used in Custom mode'],reducedProfitLimitsEnabled:['Enable reduced-profit price limits'],minPurchasePercent:['Minimum buy','%','Percentage of base retail'],maxSalePercent:['Maximum sell','%','Percentage of base retail'],maxBaseRetailEnabled:['Cap commodity base retail price'],maxBaseRetail:['Maximum base retail','Cr / ton'],useRawIllegalPrices:['Use original RAW base prices for illegal goods'],
  'rooms-low':['Low service · cabins'],'roomService-low':['Low cabin running-cost rate'],'roomCustom-low':['Custom low cabin cost','Cr / month','Per cabin; only in Custom mode'],
@@ -15,7 +15,7 @@ const fields={
 };
 export const settingsGroups=[
  {id:'campaign',title:'Campaign & ship',description:'Identity, capacity and fitted equipment',names:['name','ship','capacity','jump','scoops','armed']},
- {id:'fuel',title:'Ship size & fuel',description:'Total configured fuel capacity; no separate tank tracking',names:['shipTons','fuelCapacity','bladderTons','fuelAboard']},
+ {id:'fuel',title:'Ship size & fuel',description:'Total configured fuel capacity; no separate tank tracking',names:['shipTons','fuelCapacity','bladderTons','fuelAboard','fuelAvailabilityAlert']},
  {id:'mortgage',title:'Mortgage',description:'Original amount, fixed installments and payments made',advanced:true,names:['mortgageOriginal','mortgagePayment','mortgageRemaining','mortgagePaid','mortgageDueDate']},
  {id:'maintenance',title:'Monthly maintenance',description:'A separate four-week payment schedule',advanced:true,names:['maintenancePayment','maintenanceDueDate']},
  {id:'trader',title:'Trader & mail modifiers',description:'Whole-number skills and DMs',advanced:true,names:['broker','streetwise','admin','characteristic','rank','soc']},
@@ -49,7 +49,7 @@ export function mountSettingsLayout(form,openGroups=new Map()){
  const fuelEstimate=fuel.querySelector('#fuel-settings-estimate'),luggageEstimate=accommodation.querySelector('#luggage-estimate'),costEstimate=accommodation.querySelector('#accommodation-estimate');
  const fuelNotes=[...fuel.querySelectorAll(':scope > p')].filter(el=>el!==fuelEstimate),accommodationNotes=[...accommodation.querySelectorAll(':scope > p, :scope > details')],pricingNotes=[...source.querySelectorAll(':scope > p')];
  const recurringNotes=Object.fromEntries(['mortgage','maintenance'].map(kind=>[kind,[source.querySelector('#'+kind+'-settings-summary'),source.querySelector('#'+kind+'-settings-help')]]));
- const groupReferences={fuel:['bladders'],mortgage:['mortgage'],maintenance:['maintenance'],trader:['broker'],pricing:['profit'],cabins:['support-cost'],people:['accommodation'],support:['lss'],optional:['tax','insurance'],rounding:['rounding']};
+ const groupReferences={fuel:['bladders','fuel-availability'],mortgage:['mortgage'],maintenance:['maintenance'],trader:['broker'],pricing:['profit'],cabins:['support-cost'],people:['accommodation'],support:['lss'],optional:['tax','insurance'],rounding:['rounding']};
  const columns=node('div','settings-columns'),left=node('div','settings-column'),right=node('div','settings-column');columns.append(left,right);
  for(const group of settingsGroups){
   const section=node('details','settings-section'),heading=node('summary','settings-section-heading'),title=node('div'),chevron=node('span','settings-disclosure','▸');

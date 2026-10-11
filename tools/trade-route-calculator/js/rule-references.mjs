@@ -1,8 +1,8 @@
-import {escapeHtml as esc} from './display.mjs?v=market-quote-labels-20261011-63';
+import {escapeHtml as esc} from './display.mjs?v=freight-passengers-fuel-20261011-64';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.
-export const REFERENCE_VERSION='2026.10.10.1';
+export const REFERENCE_VERSION='2026.10.11.2';
 export const SOURCE_BOOKS=Object.freeze({
  core:Object.freeze({short:'Core 2022',title:'Traveller Core Rulebook Update 2022',edition:'Examined copyright 2024 revision'}),
  cluster:Object.freeze({short:'Cluster Truck',title:'Cluster Truck',edition:'Mongoose Publishing, ©2026; reviewed file dated 16 December 2025'}),
@@ -42,6 +42,11 @@ export const RULE_REFERENCES=Object.freeze({
   part('Home rule','On a new natural 3D purchase or sale price roll, exactly two matching dice flag Complication; three matching dice flag Severe. The referee decides the event and consequences. No event table or consequence is applied automatically.'),
   part('App convention','Entered totals without recorded natural faces are unknown. Search, broker and traffic dice do not use this rule; old quotes are not flagged retroactively.'),
   part('Explanation','The dice identify a problem; they have declined to elaborate.')
+ ]),
+ 'fuel-availability':entry('starport fuel availability',[core('257')],[
+  part('Published rule','The Starport Facilities table lists refined fuel at Class A and B ports, unrefined fuel at Class C and D ports, and no fuel at Class E or X ports.'),
+  part('Referee input','At A/B ports, an unrefined offer depends on referee discretion or local policy. Where no supply is listed, water collection and other arrangements are resolved in play.'),
+  part('App convention','The optional alert is informational. It changes no purchase controls, fuel price or supply calculation.')
  ]),
  'freight':entry('freight traffic, lots and fares',[core('239–241')],[
   part('Published rule','Separate traffic rolls for each lot class use both endpoints, distance and search Effect. The selected result band supplies lot-count dice, then size dice determine tons. Freight lots are indivisible; the fare table determines their revenue.'),

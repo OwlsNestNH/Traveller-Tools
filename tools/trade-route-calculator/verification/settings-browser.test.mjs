@@ -16,14 +16,14 @@ await mkdir(artifacts,{recursive:true});
 const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BROWSER_CHANNEL?{channel:process.env.TRAVELLER_BROWSER_CHANNEL}:{})});
 const fieldNames=[
  'name','ship','capacity','jump','broker','streetwise','admin','characteristic','rank','soc','mode','custom',
- 'shipTons','fuelCapacity','bladderTons','fuelAboard',
+ 'fuelAvailabilityAlert','shipTons','fuelCapacity','bladderTons','fuelAboard',
  'rooms-low','roomService-low','roomCustom-low','rooms-middle','roomService-middle','roomCustom-middle','rooms-high','roomService-high','roomCustom-high',
  'people-middle','people-high','occupiedLowBerths','luggageOverride','luggageTons','supportCapacity','supportRemaining','supportUnits',
  'creditStep','scoops','armed','reducedProfitLimitsEnabled','minPurchasePercent','maxSalePercent',
  'maxBaseRetailEnabled','maxBaseRetail','useRawIllegalPrices','tax','insurance','mortgageOriginal','mortgagePayment','mortgageRemaining','mortgagePaid','mortgageDueDate','maintenancePayment','maintenanceDueDate'
 ];
-assert.equal(fieldNames.length,51);
-assert.equal(new Set(fieldNames).size,51);
+assert.equal(fieldNames.length,52);
+assert.equal(new Set(fieldNames).size,52);
 const draft={
  mortgageOriginal:'24000000',mortgagePayment:'100001',mortgageRemaining:'360',mortgagePaid:'12000000',mortgageDueDate:'029-1105',maintenancePayment:'2001',maintenanceDueDate:'015-1105',
  name:'Compact Settings verification',ship:'Synthetic Settings Trader',capacity:'160',jump:'3',
@@ -34,7 +34,7 @@ const draft={
  'rooms-high':'2','roomService-high':'custom','roomCustom-high':'1700',
  'people-middle':'6','people-high':'3',occupiedLowBerths:'2',luggageOverride:true,luggageTons:'7',supportCapacity:'35',supportRemaining:'13.75',supportUnits:'',
  creditStep:'100',scoops:false,armed:true,reducedProfitLimitsEnabled:true,minPurchasePercent:'90',maxSalePercent:'110',
- maxBaseRetailEnabled:true,maxBaseRetail:'50000',useRawIllegalPrices:true,tax:true,insurance:true
+ maxBaseRetailEnabled:true,maxBaseRetail:'50000',useRawIllegalPrices:true,tax:true,insurance:true,fuelAvailabilityAlert:true
 };
 assert.deepEqual(Object.keys(draft).sort(),[...fieldNames].sort(),'Every preserved setting has an explicit edited value');
 let activeContext=null,activePage=null;
@@ -145,7 +145,7 @@ function savedValues(state,before){
  assert.equal(state.ship.scoops,false);assert.equal(state.ship.armed,true);assert.equal(state.ship.roundTons,true);
  assert.deepEqual(state.settings,{
   ...before.settings,profit:62.5,creditStep:100,reducedProfitLimitsEnabled:true,minPurchasePercent:90,maxSalePercent:110,
-  maxBaseRetailEnabled:true,maxBaseRetail:'50000',useRawIllegalPrices:true,tax:true,insurance:true
+  maxBaseRetailEnabled:true,maxBaseRetail:'50000',useRawIllegalPrices:true,tax:true,insurance:true,fuelAvailabilityAlert:true
  });
  for(const key of ['bank','hours','dateLabel','actual','route','routeIndex','lots','contracts','policies','snapshots','ledger','cooldowns']){
   assert.deepEqual(state[key],before[key],'Settings preserve existing '+key);
@@ -158,7 +158,7 @@ function savedValues(state,before){
 async function auxiliary(h){
  const {page,raw,unchanged,action,dismiss,reveal}=h,before=await raw();
  await action('settings-edit');await page.getByRole('heading',{name:'Ship, trader & options',exact:true}).waitFor();
- assert.deepEqual((await page.locator('#modal [name]').evaluateAll(fields=>fields.map(el=>el.name))).sort(),[...fieldNames].sort(),'The optional dialog has the same 51 fields');
+ assert.deepEqual((await page.locator('#modal [name]').evaluateAll(fields=>fields.map(el=>el.name))).sort(),[...fieldNames].sort(),'The optional dialog has the same 52 fields');
  await page.locator('#modal [name="mode"]').selectOption('custom');
  assert.equal(await page.locator('#modal [name="custom"]').isDisabled(),false,'Modal mode changes update the modal control');
  assert.equal(await page.locator('#settings-form').count(),0,'The inline form is detached while the optional dialog is open');
@@ -233,7 +233,7 @@ try{
   await tab('Settings');await page.locator('#settings-form').waitFor();
   assert.equal(await page.locator('#modal[open]').count(),0,'Settings are inline, not a compulsory modal');
   const inventory=await page.locator('#settings-form [name]').evaluateAll(fields=>fields.map(el=>({name:el.name,label:[...(el.labels||[])].map(label=>label.textContent.trim()).join(' '),row:!!el.closest('.setting-row')})));
-  assert.deepEqual(inventory.map(x=>x.name).sort(),[...fieldNames].sort(),'All 51 existing fields appear exactly once');
+  assert.deepEqual(inventory.map(x=>x.name).sort(),[...fieldNames].sort(),'All 52 existing fields appear exactly once');
   assert.ok(inventory.every(x=>x.label&&x.row),'Every field has a label and a compact setting row');
   assert.ok(await page.locator('#settings-form .settings-section').count()>1,'Settings are grouped into sections');
   const sections=page.locator('#main details[data-settings-group]');
@@ -251,7 +251,7 @@ try{
    assert.ok(await summary.getAttribute('aria-label'),id+' has an accessible disclosure name');
    assert.equal(await summary.locator('.settings-disclosure').getAttribute('aria-hidden'),'true');
    // Pointer, Enter and Space all operate the same native disclosure, without
-   // changing any sibling or the 51 draft fields.
+   // changing any sibling or the 52 draft fields.
    for(const key of ['pointer','Enter','Space']){
     if(key==='pointer')await summary.locator('.settings-disclosure').click();else{await summary.focus();await page.keyboard.press(key);}
     assert.equal(await section.evaluate(el=>el.open),!initial,id+' toggles with '+key);
@@ -304,7 +304,7 @@ try{
   for(const name of ['minPurchasePercent','maxSalePercent'])assert.equal(await field(name).isDisabled(),false,'Price-limit values remain editable while the option is off');
   const switches=page.locator('#settings-form .settings-switch input[type="checkbox"],#settings-form input.settings-switch[type="checkbox"]');
   assert.equal(await switches.count(),8,'All eight boolean options retain native checkbox switches');
-  await setDraft();assert.deepEqual(await values(),draft,'All 51 draft controls accept their intended input types');
+  await setDraft();assert.deepEqual(await values(),draft,'All 52 draft controls accept their intended input types');
   // Explicit arrow buttons must preserve direct typing, signed values and the
   // fractional custom profit. A +1 / -1 round trip never silently saves.
   for(const number of await page.locator('#settings-form input[type="number"]').all()){
@@ -395,14 +395,14 @@ try{
   await unchanged(beforeReadOnly,'Editing ownership transfer');
   if(size.width===1440){await auxiliary(h);await staleDraft(h);}
   await h.finish(String(size.width));
-  console.log(`PASS: ${size.width}px all 13 disclosure headers, pointer/keyboard, defaults/navigation, exact 51-field parity, collapsed draft/save/revert, validation/reveal/focus, atomic save/reload/Undo, partial-day stock and editing locks.`);
+  console.log(`PASS: ${size.width}px all 13 disclosure headers, pointer/keyboard, defaults/navigation, exact 52-field parity, collapsed draft/save/revert, validation/reveal/focus, atomic save/reload/Undo, partial-day stock and editing locks.`);
  }
  // Same-session blank saves must not produce undefined inverse values that
  // only become invalid when the campaign reaches localStorage or an export.
  for(const size of [{width:1440,height:1100},{width:390,height:844}]){
   const h=await start(size,{untrackedFuel:true}),{page,read,tab,set,field}=h;
   await tab('Settings');
-  for(const name of ['shipTons','fuelCapacity','fuelAboard'])assert.equal(await field(name).inputValue(),'');
+  for(const name of ['fuelAvailabilityAlert','shipTons','fuelCapacity','fuelAboard'])assert.equal(await field(name).inputValue(),'');
   const save=async()=>{
    const revision=(await read()).revision;
    await page.locator('#settings-save').click();
@@ -424,7 +424,7 @@ try{
   await tab('Settings');
   await set('shipTons','200');await set('fuelCapacity','40');await set('fuelAboard','20');
   const restored=await save();
-  for(const name of ['shipTons','fuelCapacity','fuelAboard'])await set(name,'');
+  for(const name of ['fuelAvailabilityAlert','shipTons','fuelCapacity','fuelAboard'])await set(name,'');
   const cleared=await save();assert.equal(Object.hasOwn(cleared.ship,'fuel'),false);
   await set('shipTons','200');await set('fuelCapacity','40');await set('fuelAboard','30');
   await save();

@@ -1,9 +1,9 @@
-import {maintenancePaymentQuote,MAINTENANCE_REFERENCE} from './maintenance.mjs?v=market-quote-labels-20261011-63';
-import {mortgagePaymentQuote,MORTGAGE_REFERENCE} from './mortgage.mjs?v=market-quote-labels-20261011-63';
-import {fuelPurchase,fuelReference} from './fuel.mjs?v=market-quote-labels-20261011-63';
-import {up} from './rounding.mjs?v=market-quote-labels-20261011-63';
+import {maintenancePaymentQuote,MAINTENANCE_REFERENCE} from './maintenance.mjs?v=freight-passengers-fuel-20261011-64';
+import {mortgagePaymentQuote,MORTGAGE_REFERENCE} from './mortgage.mjs?v=freight-passengers-fuel-20261011-64';
+import {fuelPurchase,fuelReference} from './fuel.mjs?v=freight-passengers-fuel-20261011-64';
+import {up} from './rounding.mjs?v=freight-passengers-fuel-20261011-64';
 import * as A from './amounts.mjs';
-import {monthlyRates,serviceRate,serviceLabel,personMonthlyRate,personRate} from './accommodation.mjs?v=market-quote-labels-20261011-63';
+import {monthlyRates,serviceRate,serviceLabel,personMonthlyRate,personRate} from './accommodation.mjs?v=freight-passengers-fuel-20261011-64';
 
 export const berthMultipliers={A:1000,B:500,C:100,D:10,E:0,X:0};
 export function starport(world){return (world.overrideUWP||world.uwp).slice(0,1).toUpperCase();}
@@ -19,6 +19,11 @@ function count(value,label){const n=Number(value);if(!Number.isSafeInteger(n)||n
 function people(value,label){const n=Number(value??0);if(!Number.isSafeInteger(n)||n<0)throw Error(label+' must be a non-negative whole number.');return n;}
 export const supportRates=monthlyRates;
 function period(input){if(!['week','month'].includes(input.period))throw Error('Choose weeks or months.');return {units:count(input.units,'Billing periods'),divisor:input.period==='week'?4n:1n};}
+export function fuelAvailabilityAdvice(world){
+ const port=world?.emptySpace?'None':starport(world);
+ const text=['A','B'].includes(port)?'Refined fuel is available for purchase. Unrefined fuel may be offered at referee discretion or under local policy.':['C','D'].includes(port)?'Unrefined fuel is available for purchase.':'No starport fuel supply is listed. Arrange water collection or other fuel sources through roleplay and referee agreement.';
+ return 'Starport '+port+': '+text;
+}
 export function fuelAvailability(world,type){
  const port=starport(world),uwp=world.overrideUWP||world.uwp,hydro=uwp[3],atmosphere=uwp[2];
  const water=world.accessibleWater===true||(/^[1-9A]$/i.test(hydro)&&(['D','E'].includes(port)||/^[0-9]$/.test(atmosphere)));

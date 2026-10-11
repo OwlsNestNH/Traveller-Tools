@@ -1,9 +1,9 @@
-import {up} from './rounding.mjs?v=market-quote-labels-20261011-63';
+import {up} from './rounding.mjs?v=freight-passengers-fuel-20261011-64';
 // Passenger contracts are authoritative. Effective ship values are derived only;
 // never write them back into the manual crew / other-occupant baseline.
 import * as A from './amounts.mjs';
-import {roomTotal,luggageAllowance,passengerLuggage,manualLuggage} from './accommodation.mjs?v=market-quote-labels-20261011-63';
-import {PASSAGE_CLASSES} from './passenger-rules.mjs?v=market-quote-labels-20261011-63';
+import {roomTotal,luggageAllowance,passengerLuggage,manualLuggage} from './accommodation.mjs?v=freight-passengers-fuel-20261011-64';
+import {PASSAGE_CLASSES} from './passenger-rules.mjs?v=freight-passengers-fuel-20261011-64';
 export const passengerReference='Core Rulebook Update 2022, pp. 158, 238–239. Generated fares cover one jump. Payment on explicit destination delivery is an app convention; no automatic lateness penalty.';
 export const bookingLuggage={high:'1',middle:'0',basic:'0.01',low:'0.01'};
 const id=x=>typeof x==='string'&&/^[A-Za-z0-9_,.:-]{1,100}$/.test(x);
@@ -43,7 +43,7 @@ export function validatePassengerContract(s,c){
  if(!['accepted','delivered'].includes(c.status)||!PASSAGE_CLASSES.includes(c.passageClass)||!whole(c.count,1)||!id(c.offerId)||!id(c.searchId)||!s.worlds[c.origin]||!s.worlds[c.destination]||c.origin===c.destination||!whole(c.acceptedHours)||!record(c.audit)||!['private','shared','cargo','low'].includes(c.cabinMode)||c.passageClass==='low'&&c.cabinMode!=='low'||c.passageClass!=='low'&&c.cabinMode==='low'||c.cabinMode==='cargo'&&c.passageClass!=='basic')throw Error('Invalid passenger booking.');
  if(['quantity','dueHours','late','penaltyDie','firstDeparture','acceptanceEventId'].some(k=>Object.hasOwn(c,k)))throw Error('Passenger bookings cannot contain freight or mail terms.');
  if(![1,100].includes(c.roundingStep)||A.credit(c.payment)!==up(A.mul(c.fare,c.count),c.roundingStep)||A.credit(c.fare)<0n||A.credit(c.payment)<0n||c.serviceConfirmed!==true&&['high','middle'].includes(c.passageClass)||c.cabinMode==='cargo'&&c.spaceConfirmed!==true)throw Error('Invalid passenger terms or service confirmation.');
- const search=s.events.find(e=>e.id===c.searchId&&e.label==='Passenger search audit'),offer=search?.offers?.find(o=>o.offerId===c.offerId);
+ const search=s.events.find(e=>e.id===c.searchId&&['Passenger search audit','Manual passenger terms audit'].includes(e.label)),offer=search?.offers?.find(o=>o.offerId===c.offerId);
  if(!offer||offer.passageClass!==c.passageClass||offer.origin!==c.origin||offer.destination!==c.destination||A.cmp(offer.fare,c.fare)!==0||passengerOfferRemaining(s,offer)<0)throw Error('Passenger booking does not match its recorded availability.');
  if(c.status==='delivered'){
   if(!whole(c.deliveredHours)||A.credit(c.payout)!==A.credit(c.payment))throw Error('Invalid passenger delivery.');
@@ -52,8 +52,9 @@ export function validatePassengerContract(s,c){
 }
 export function validatePassengerHistory(s){
  if(s.latestPassengerSearchId!=null&&(!id(s.latestPassengerSearchId)||!latestPassengerSearch(s)))throw Error('Passenger search reference is invalid.');
- const ids=new Set();for(const e of s.events.filter(e=>e.label==='Passenger search audit')){
-  if(!s.worlds[e.world]||!s.worlds[e.destination]||e.world===e.destination||!whole(e.hours)||!Array.isArray(e.offers)||e.offers.length!==4)throw Error('Invalid passenger search audit.');
+ const ids=new Set();for(const e of s.events.filter(e=>['Passenger search audit','Manual passenger terms audit'].includes(e.label))){
+  if(!s.worlds[e.world]||!s.worlds[e.destination]||e.world===e.destination||!whole(e.hours)||!Array.isArray(e.offers)||e.offers.length!==(e.label==='Manual passenger terms audit'?1:4))throw Error('Invalid passenger search audit.');
+  if(e.label==='Manual passenger terms audit'&&(e.offers[0]?.audit?.manual!==true||typeof e.offers[0]?.audit?.reason!=='string'||!e.offers[0].audit.reason.trim()))throw Error('Invalid manual passenger terms audit.');
   const classes=new Set();for(const o of e.offers){if(!record(o)||!id(o.offerId)||ids.has(o.offerId)||classes.has(o.passageClass)||!PASSAGE_CLASSES.includes(o.passageClass)||!whole(o.count)||o.origin!==e.world||o.destination!==e.destination||A.credit(o.fare)<0n||!record(o.audit))throw Error('Invalid passenger availability audit.');ids.add(o.offerId);classes.add(o.passageClass);}
  }
  if(activePassengers(s).length&&!s.ship.accommodation?.passengerCapacity)throw Error('Review passenger cabin and berth capacity before boarding.');

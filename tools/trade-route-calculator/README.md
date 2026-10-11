@@ -753,3 +753,28 @@ Copy Debug Report, Create Debug Link and Export Debug JSON remain detailed
 options. They include campaign data and raw error text; share those only with
 someone you trust. The full report remains encoded locally or in a URL fragment;
 there is no new logging server, persistent log storage or automatic transmission.
+
+## Freight, passenger controls and fuel information (.64 candidate)
+
+The freight/mail source review found the existing Core Update 2022 calculations
+consistent with pp.239–241. Freight audits distinguish the modified score from
+the bounded traffic-table lookup. Mail converts the shared freight **DM**, not
+its 2D result. Existing INT-004 includes search Effect and excludes lot-class
+modifiers; INT-002 applies the low-TL penalty at the origin. These remain labelled
+campaign interpretations where the published wording is ambiguous.
+
+Find passengers and passenger capacity now share the freight/mail action toolbar.
+Selecting **Passengers** in Manual contract opens referee-entered class, count,
+fare and accommodation terms. The existing booking checks reserve cabins/Low
+berths, luggage and fitted Basic space, preserve supplies and opening bank, and
+pay once on explicit destination delivery. Manual bookings retain generated
+passenger-search results and use the existing preview, save-completion and Undo
+paths. They require a reason and a destination within one jump.
+
+Settings → Ship size & fuel has **Show fuel-availability information**, off by
+default, including for older saves. The advisory appears in Refuel and legacy
+Accounts fuel controls. Core Update 2022 p.257 lists A/B refined, C/D unrefined and
+E/X no starport retail fuel. A/B unrefined offers depend on referee discretion or
+local policy. Where no starport supply is listed, water collection and roleplay
+arrangements remain possible. The information icon cites that table. The toggle
+changes no purchase restrictions, prices, existing supply policy or route rules.

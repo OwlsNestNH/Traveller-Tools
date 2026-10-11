@@ -76,3 +76,30 @@ test('origin population threshold applies across classes and explicit exceptions
 test('baseline frozen billing stays unchanged while newly booked Low adds Cr100 and physical consumption once',()=>{
  const s=base();s.ship.accommodation.occupiedLowBerths=2;assert.equal(monthlySupport(s.ship),9000n);assert.equal(stock(s).dailyUnits,'4.2');const n=board(s,'low');assert.equal(monthlySupport(P.passengerShip(n)),9100n);assert.equal(stock(n).dailyUnits,'4.3');assert.equal(stock(n).occupiedLowBerths,3);assert.equal(refillQuote(n).monthly,'9100');assert.deepEqual(n.ship.accommodation,s.ship.accommodation);
 });
+
+function manual(s,type='middle',count=2,fare='1234',mode='private',extra={}){
+ const event={id:S.uid(),label:'Manual passenger terms audit',world:s.actual,destination:'1,0',hours:s.hours,offers:[{offerId:S.uid(),origin:s.actual,destination:'1,0',passageClass:type,count,fare,audit:{manual:true,reason:'Synthetic referee fare'}}]};
+ return S.transition(s,'Accepted manual passenger booking',n=>S.acceptManualPassengers(n,event,{count,cabinMode:mode,serviceConfirmed:true,spaceConfirmed:true,...extra}));
+}
+test('manual passenger booking preserves generated availability, baseline, bank and supplies and uses existing delivery/Undo',()=>{
+ const s=base(),n=manual(s),c=n.contracts.at(-1);
+ assert.equal(c.payment,'2468');assert.equal(c.quantity,undefined);assert.equal(c.dueHours,undefined);
+ assert.deepEqual(n.ship,s.ship);assert.equal(n.bank,s.bank);assert.equal(n.latestPassengerSearchId,s.latestPassengerSearchId);assert.deepEqual(P.latestPassengerSearch(n),P.latestPassengerSearch(s));
+ assert.equal(stock(n).awakePeople,6);assert.equal(P.passengerCapacity(n).freeCabins,1);S.validate(JSON.parse(JSON.stringify(n)));
+ assert.deepEqual(S.undo(n).contracts,s.contracts);assert.deepEqual(P.latestPassengerSearch(S.undo(n)),P.latestPassengerSearch(s));
+ const arrived=S.transition(n,'Synthetic arrival',v=>{v.actual=c.destination;v.hours+=168;});
+ const delivered=S.transition(arrived,'Manual passenger delivery',v=>S.deliverPassengers(v,c.id));
+ assert.equal(delivered.bank,String(BigInt(arrived.bank)+2468n));assert.equal(delivered.ledger.at(-1).type,'Passenger delivery');assert.equal(P.passengerCapacity(delivered).freeCabins,3);
+ assert.throws(()=>S.transition(delivered,'Duplicate payout',v=>S.deliverPassengers(v,c.id)),/awaiting/);assert.equal(S.undo(delivered).bank,arrived.bank);S.validate(JSON.parse(JSON.stringify(delivered)));
+});
+test('manual terms enforce cabins, physical Low berths, fitted Basic space and service without charging early',()=>{
+ assert.throws(()=>manual(base(),'high',4),/cabins/);
+ assert.throws(()=>manual(base({low:1}),'low',2,'100','low'),/Low berths/);
+ assert.throws(()=>manual(base(),'middle',1,'100','private',{serviceConfirmed:false}),/Steward/);
+ assert.throws(()=>manual(base(),'basic',1,'100','cargo',{spaceConfirmed:false}),/fitted/);
+ const s=base();s.ship.capacity='2';assert.throws(()=>manual(s,'basic',2,'100','cargo'),/cargo capacity/);
+ const n=manual(base(),'low',2,'123','low');assert.equal(n.contracts[0].payment,'246');assert.equal(stock(n).dailyUnits,'4.2');
+ const rounded=base();rounded.settings.creditStep=100;assert.equal(manual(rounded,'middle',2,'123').contracts.at(-1).payment,'300');
+ const fixed=base();fixed.ship.accommodation.luggageMode='manual';fixed.ship.accommodation.luggageTons='0';assert.equal(A.decimal(S.used(manual(fixed,'high'))),'0');
+ for(const change of [s=>s.events.find(e=>e.label==='Manual passenger terms audit').offers[0].audit.reason='',s=>s.contracts.at(-1).fare='999',s=>s.contracts.at(-1).count=1.5]){const bad=structuredClone(manual(base()));change(bad);assert.throws(()=>S.validate(bad));}
+});

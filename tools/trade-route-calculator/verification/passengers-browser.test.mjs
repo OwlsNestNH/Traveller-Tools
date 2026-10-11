@@ -58,6 +58,42 @@ try{
  {
   const {ctx,page}=await start(1440);await tab(page,'Contracts').click();await capacity(page);await search(page);await boardPreview(page,'Low',2,'low');await submit(page);await closed(page);await boardPreview(page,'Basic',2,'cargo');await submit(page);await closed(page);let s=await read(page);assert.equal(s.contracts.filter(c=>c.kind==='passenger').length,2);await tab(page,'Overview').click();await action(page,'day-forward').click();s=await read(page);assert.equal(units(s),107.8);await action(page,'refill-support').click();assert.match(await page.locator('#service-panel').textContent(),/4\.2/);await page.keyboard.press('Escape');await finish(ctx,'low-basic-support');
  }
+ for(const width of [1440,390,320]){
+  const {ctx,page}=await start(width);await tab(page,'Contracts').click();await capacity(page);await search(page);
+  const before=await read(page),toolbar=page.locator('#contract-actions');
+  assert.equal(await toolbar.locator('[data-action="passenger-search"]').count(),1);
+  assert.equal(await toolbar.locator('[data-action="passenger-setup"]').count(),1);
+  assert.equal(await toolbar.locator('button').evaluateAll(buttons=>buttons.every(b=>b.classList.contains('primary'))),true);
+  await page.screenshot({path:join(artifacts,`combined-contract-controls-${width}.png`),fullPage:true});
+  async function manualPreview(){
+   await action(page,'contract-manual').click();await field(page,'kind').selectOption('passenger');
+   await page.getByRole('heading',{name:'Manual passenger contract',exact:true}).waitFor();
+   await field(page,'passageClass').selectOption('high');await field(page,'count').fill('2');await field(page,'fare').fill('1234');await field(page,'cabinMode').selectOption('shared');await field(page,'serviceConfirmed').check();await field(page,'reason').fill('Synthetic referee fare');
+   await submit(page);await page.getByRole('heading',{name:'Confirm manual passenger booking',exact:true}).waitFor();
+  }
+  await manualPreview();assert.deepEqual(await read(page),before);await page.keyboard.press('Escape');await closed(page);assert.deepEqual(await read(page),before);
+  await manualPreview();await page.screenshot({path:join(artifacts,`combined-manual-passengers-review-${width}.png`),fullPage:true});
+  await page.locator('#modal-submit').evaluate(b=>{b.click();b.click();});await closed(page);
+  const booked=await read(page),manual=booked.contracts.find(c=>c.audit.manual);
+  assert.equal(booked.contracts.filter(c=>c.audit.manual).length,1);assert.equal(manual.payment,'2468');assert.equal(manual.quantity,undefined);assert.equal(booked.latestPassengerSearchId,before.latestPassengerSearchId);assert.equal(booked.bank,before.bank);assert.deepEqual(booked.ship.lifeSupport,before.ship.lifeSupport);
+  assert.equal(await page.locator('.passenger-offer').count(),4,'Manual booking retains generated session offers');
+  await page.locator('[data-action="contract-audit"][data-arg="'+manual.id+'"]').click();await page.screenshot({path:join(artifacts,`combined-manual-passengers-audit-${width}.png`),fullPage:true});await page.keyboard.press('Escape');await closed(page);
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
+  await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();await tab(page,'Contracts').click();assert.equal((await read(page)).contracts.find(c=>c.id===manual.id).payment,'2468');
+  await tab(page,'History').click();await action(page,'undo').click();assert.equal((await read(page)).contracts.some(c=>c.id===manual.id),false);
+  // The informational preference persists through the normal Settings completion.
+  await tab(page,'Settings').click();const toggle=page.locator('#settings-form [name="fuelAvailabilityAlert"]');await reveal(toggle);assert.equal(await toggle.isChecked(),false);await toggle.check();await page.locator('#settings-save').click();
+  assert.equal((await read(page)).settings.fuelAvailabilityAlert,true);
+  await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();await tab(page,'Overview').click();await action(page,'refuel').click();
+  const advice=page.locator('#service-panel .fuel-availability-advice');await advice.waitFor();assert.match(await advice.textContent(),/Starport.*referee discretion|Starport.*Unrefined|Starport.*No starport fuel supply/);
+  const fuelBefore=await read(page);await advice.locator('[data-rule-info="fuel-availability"]').click();
+  const popup=page.locator('#rule-reference-popup');await popup.waitFor();assert.match(await popup.textContent(),/Core Rulebook Update 2022.*257|257[\s\S]*Core Rulebook Update 2022/);
+  await page.screenshot({path:join(artifacts,`combined-fuel-information-${width}.png`),fullPage:true});await page.keyboard.press('Escape');await popup.waitFor({state:'hidden'});
+  await page.locator('#service-form [name="fuelType"]').selectOption('unrefined');assert.equal(await advice.isVisible(),true);assert.deepEqual(await read(page),fuelBefore,'Advice and source edits do not purchase fuel');
+  await action(page,'service-cancel').click();await tab(page,'Settings').click();await reveal(page.locator('#settings-form [name="fuelAvailabilityAlert"]'));await page.locator('#settings-form [name="fuelAvailabilityAlert"]').uncheck();await page.locator('#settings-save').click();
+  await tab(page,'Overview').click();await action(page,'refuel').click();assert.equal(await page.locator('#service-panel .fuel-availability-advice').count(),0);await action(page,'service-cancel').click();
+  await finish(ctx,'combined-manual-fuel-'+width);
+ }
  assert.deepEqual(errors,[]);console.log('PASS: passenger browser cases: '+cases.join(', '));
 }finally{
  if(activeContext){await activePage?.screenshot({path:join(artifacts,'passengers-failure.png'),fullPage:true}).catch(()=>{});await activeContext.tracing.stop({path:join(artifacts,'passengers-failure.zip')}).catch(()=>{});}

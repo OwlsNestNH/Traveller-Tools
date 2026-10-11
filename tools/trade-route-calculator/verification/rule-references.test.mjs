@@ -5,7 +5,7 @@ import {REFERENCE_VERSION,SOURCE_BOOKS,RULE_REFERENCES,ruleInfo,ruleReference,re
 
 const plain=id=>RULE_REFERENCES[id].parts.map(part=>part.kind+': '+part.text).join(' ');
 test('all reference entries have frozen display-only classifications and printed-page provenance',()=>{
- assert.equal(REFERENCE_VERSION,'2026.10.10.1');assert.equal(Object.keys(RULE_REFERENCES).length,29);
+ assert.equal(REFERENCE_VERSION,'2026.10.11.2');assert.equal(Object.keys(RULE_REFERENCES).length,30);
  const allowed=/^(Published rule|Published context|Home rule|App convention|Referee input|Explanation)/;
  for(const [id,entry] of Object.entries(RULE_REFERENCES)){
   assert.equal(ruleReference(id),entry);assert.ok(entry.title);assert.ok(Object.isFrozen(entry));assert.ok(Object.isFrozen(entry.parts));assert.ok(entry.parts.length);
@@ -16,7 +16,7 @@ test('all reference entries have frozen display-only classifications and printed
   assert.doesNotMatch(ruleInfo(id),/data-mutate|data-action|\bid=/);
  }
  assert.throws(()=>ruleInfo('unrecognised'),/Unknown rules reference/);
- assert.equal((referenceIndex().match(/data-rule-info=/g)||[]).length,29);
+ assert.equal((referenceIndex().match(/data-rule-info=/g)||[]).length,30);
 });
 test('current campaign interpretations do not inherit superseded inventory descriptions',()=>{
  assert.match(plain('contact-search'),/first committed supplier or buyer search/);assert.match(plain('contact-search'),/All penalties clear together after 28 days/);assert.match(plain('contact-search'),/same month/);assert.match(plain('contact-search'),/Core does not specify this grouped 28-day clock/);assert.match(plain('contact-search'),/Previews and cancelled searches do not count/);

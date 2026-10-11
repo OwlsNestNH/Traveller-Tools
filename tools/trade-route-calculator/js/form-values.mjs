@@ -1,5 +1,5 @@
 import {cmp} from './amounts.mjs';
-import {up} from './rounding.mjs?v=market-quote-labels-20261011-63';
+import {up} from './rounding.mjs?v=freight-passengers-fuel-20261011-64';
 
 // Normalize one entry without campaign, DOM, transaction or validation state.
 // The exact-remainder exception preserves historical fractional full sales.

@@ -1,10 +1,10 @@
-import {ruleInfo} from './rule-references.mjs?v=market-quote-labels-20261011-63';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=market-quote-labels-20261011-63';
+import {ruleInfo} from './rule-references.mjs?v=freight-passengers-fuel-20261011-64';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=freight-passengers-fuel-20261011-64';
 import * as A from './amounts.mjs';
-import {manualLuggage} from './accommodation.mjs?v=market-quote-labels-20261011-63';
-import * as P from './passengers.mjs?v=market-quote-labels-20261011-63';
-import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=market-quote-labels-20261011-63';
-import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=market-quote-labels-20261011-63';
+import {manualLuggage} from './accommodation.mjs?v=freight-passengers-fuel-20261011-64';
+import * as P from './passengers.mjs?v=freight-passengers-fuel-20261011-64';
+import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=freight-passengers-fuel-20261011-64';
+import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=freight-passengers-fuel-20261011-64';
 import {displayDate} from './calendar.mjs';
 const esc=escapeHtml;
 const money=formatCreditsText,signed=x=>x>0?'+'+x:String(x);
@@ -24,7 +24,8 @@ export function createPassengerUI({getState,getCore,getWorld,getWorlds,getView,m
   const a=c.audit||{},dm=a.dm||{},s=state(),source=c.status?c.status==='accepted'?'Aboard; unpaid':'Delivered and paid':'Available search result';
   let html=facts([['Passage',passageLabel(c.passageClass)],['People',c.count],['Status',source],['Origin',world(c.origin)?.name||c.origin],['Destination',world(c.destination)?.name||c.destination],['Fare per person',money(c.fare)],['Agreed total',money(c.payment)],['Accommodation',c.cabinMode?modeLabel(c.cabinMode):'Choose on boarding'],['Baggage allowance per person',P.bookingLuggage[c.passageClass]+' t before the whole-ship override / aggregate rounding'],['Accepted',date(c.acceptedHours)],['Delivered',date(c.deliveredHours)]]);
   if(c.status==='delivered')html+=facts([['Payment received',money(c.payout)]]);
-  html+='<h3>Passenger availability calculation '+ruleInfo('passengers')+'</h3>'+facts([['Search 2D',roll(a.searchDice)],['Search skill',a.searchSkill??'Not recorded'],['Characteristic DM',a.searchCharacteristic??'Not recorded'],['Search Effect',dm.effect],['Highest Steward skill',dm.steward],['Origin DM',signed(dm.origin??0)],['Destination DM',signed(dm.destination??0)],['Distance DM',signed(dm.distance??0)],['Referee DM',signed(dm.refereeDM??0)],['Class DM',signed(a.classDM??0)],['Traffic 2D',roll(a.traffic)],['Modified traffic result',a.total],['Count dice',a.countDice+'D'],['Available people roll',roll(a.count)],['Direct jump distance',a.distance+' parsecs'],['Recorded origin population',a.originPopulation??'Unknown; exact cap requires referee review']]);
+  if(a.manual)html+=facts([['Referee terms',a.reason]]);
+  else html+='<h3>Passenger availability calculation '+ruleInfo('passengers')+'</h3>'+facts([['Search 2D',roll(a.searchDice)],['Search skill',a.searchSkill??'Not recorded'],['Characteristic DM',a.searchCharacteristic??'Not recorded'],['Search Effect',dm.effect],['Highest Steward skill',dm.steward],['Origin DM',signed(dm.origin??0)],['Destination DM',signed(dm.destination??0)],['Distance DM',signed(dm.distance??0)],['Referee DM',signed(dm.refereeDM??0)],['Class DM',signed(a.classDM??0)],['Traffic 2D',roll(a.traffic)],['Modified traffic result',a.total],['Count dice',a.countDice+'D'],['Available people roll',roll(a.count)],['Direct jump distance',a.distance+' parsecs'],['Recorded origin population',a.originPopulation??'Unknown; exact cap requires referee review']]);
   for(const key of ['origin','destination']){const w=a.worldInputs?.[key],d=dm.components?.[key];if(w&&d)html+='<h4>'+esc(key==='origin'?'Origin at search':'Destination at search')+'</h4>'+facts([['World',w.name],['Population code',w.population],['Starport',w.starport],['Travel zone',w.zone],['Population DM',signed(d.population)],['Starport DM',signed(d.starport)],['Zone DM',signed(d.zone)]]);}
   if(c.populationException)html+=facts([['Exceptional population circumstances',c.populationException]]);
   if(c.status)html+=facts([['Steward service confirmed',c.serviceConfirmed?'Yes':'Not required for this class'],['Fitted spare space confirmed',c.spaceConfirmed?'Yes':'Not used'],['Payment rounding',c.roundingStep===100?'Up to Cr100':'Up to whole Credits']]);
@@ -33,7 +34,7 @@ export function createPassengerUI({getState,getCore,getWorld,getWorlds,getView,m
  function panel(){
   const s=state(),q=P.passengerCapacity(s),available=activeDrafts(),bookings=P.passengerBookings(s),stock=supportStock(P.passengerShip(s));
   const summary=q.configured?`${q.freeCabins} cabins and ${q.freeLowBerths} Low berths free · ${q.counts.total} booked people aboard`:'Review crew/cabin allocation and installed Low berths before boarding';
-  let html='<section class="panel passenger-panel" aria-label="Passengers"><div class="panel-head"><h2>Passengers</h2><div class="row">'+button('Find passengers','passenger-search','',true)+button(q.configured?'Review passenger capacity':'Set passenger capacity','passenger-setup','',true)+'</div></div><div class="panel-body"><p class="passenger-summary">'+esc(summary)+'</p><p class="help">Fares cover one jump. Select how many people to board. Payment is recorded only when you complete passage at the destination. Existing crew and other people are counted separately.</p>';
+  let html='<section class="panel passenger-panel" aria-label="Passengers"><div class="panel-head"><h2>Passengers</h2></div><div class="panel-body"><p class="passenger-summary">'+esc(summary)+'</p><p class="help">Fares cover one jump. Select how many people to board. Payment is recorded only when you complete passage at the destination. Existing crew and other people are counted separately.</p>';
   if(q.configured)html+='<details><summary>Accommodation &amp; supplies '+ruleInfo('accommodation')+'</summary>'+facts([['Installed cabins',q.installedCabins],['Reserved for crew / other existing people',q.reservedCabins],['Cabins used by passenger bookings',q.bookedCabins],['Installed / occupied Low berths',q.installedLowBerths+' / '+q.occupiedLowBerths],['Awake people, including booked passengers',stock.awakePeople],['Frozen people, including booked Low',stock.occupiedLowBerths],['Consumption',stock.dailyUnits+' LSS/day'],['Whole-ship luggage reservation',q.luggage+' t'],['Basic fitted-space reservation',q.cargoSpace+' t']])+'<p class="help">Booked people are automatic. Do not enter them again in Settings. Crew cabin sharing is your allocation. High double occupancy remains available; two High people in one standard-cost High cabin cost Cr7,000/month.</p></details>';
   if(manualLuggage(s.ship))html+='<p class="notice">A manual whole-ship luggage total is active. Boarding and delivery keep that fixed total until you edit it in Settings.</p>';
   if(available.length)html+='<div class="passenger-offers">'+available.map(o=>{const n=P.passengerOfferRemaining(s,o);return '<article class="passenger-offer"><h3>'+passageLabel(o.passageClass)+'</h3><strong>'+n+' available</strong><p>'+money(o.fare)+' / person · '+esc(world(o.destination)?.name||o.destination)+'</p><p class="help">Traffic '+o.audit.total+' → '+o.audit.countDice+'D · rolled '+o.count+' people</p><div class="row">'+button('Board passengers','passenger-board',o.offerId,true,n<1||!q.configured)+button('Audit','passenger-offer-audit',o.offerId)+'</div></article>';}).join('')+'</div>';
@@ -79,7 +80,7 @@ export function createPassengerUI({getState,getCore,getWorld,getWorlds,getView,m
   return {worlds,rules,current:()=>{
    const destination=owner.args?.event.destination??(!owner.constructing&&owner.session?owner.form.elements.namedItem('destination')?.value:owner.destination);
    return draftsCurrent()&&JSON.stringify(world(owner.worldId))===originBaseline&&(!destination||JSON.stringify(world(destination))===JSON.stringify(worlds[destination]))&&getCore()===sourceRules&&JSON.stringify(ruleInputs(sourceRules))===rulesBaseline;
-  },publish(args){const offers=structuredClone(args.event.offers),bytes=JSON.stringify(offers);if(!owner.completedCurrent())return false;drafts=offers;searchId=args.event.id;retained=drafts;retainedId=searchId;baseline=bytes;return true;}
+  },publish(args){if(owner.kind==='manual')return true;const offers=structuredClone(args.event.offers),bytes=JSON.stringify(offers);if(!owner.completedCurrent())return false;drafts=offers;searchId=args.event.id;retained=drafts;retainedId=searchId;baseline=bytes;return true;}
   };
  }
 
@@ -128,6 +129,25 @@ export function createPassengerUI({getState,getCore,getWorld,getWorlds,getView,m
    },apply:(n,args)=>S.recordPassengerSearch(n,args.event),success:'Passenger availability recorded. Choose how many people to board.'
   });
  }
+ function manual(initialDestination=''){
+  return completion.open({kind:'manual',preview:true,title:'Manual passenger contract',label:'Preview boarding',reviewTitle:'Confirm manual passenger booking',reviewLabel:'Board passengers',capture:captureReview,
+   body:owner=>{
+    const s=owner.campaign,worlds=owner.context.worlds;
+    const destinations=Object.values(worlds).filter(w=>w.id!==s.actual&&!w.emptySpace&&M.distance(worlds[s.actual],w)<=s.ship.jump);
+    if(!destinations.length)throw Error('Load nearby worlds within the ship’s jump rating first.');
+    owner.destination=destinations.some(w=>w.id===initialDestination)?initialDestination:destinations[0].id;
+    return '<p class="help">Referee terms '+ruleInfo('booking')+' · Accommodation '+ruleInfo('accommodation')+'</p>'+select('destination','Single-jump destination',destinations.map(w=>[w.id,w.name]),owner.destination)+select('passageClass','Passage class',PASSAGE_CLASSES.map(c=>[c,passageLabel(c)]),'middle')+field('count','People to board',1,'type="number" min="1" step="1" required')+field('fare','Agreed fare per person · Cr','1000','type="number" min="0" step="1" required')+select('cabinMode','Accommodation',[['private','Private cabins'],['shared','Shared, two per cabin'],['cargo','Basic fitted spare space · 2 t per person'],['low','Installed Low berth']],'private')+check('serviceConfirmed','Steward service is available (required for High / Middle).')+check('spaceConfirmed','Selected spare space is fitted for Basic passengers (if used).')+field('reason','Referee terms / reason','','type="text" required')+'<p class="help">Capacity, luggage and life support use the existing booking rules. Payment is recorded once on destination delivery; no automatic lateness penalty. Low revival is resolved in play.</p>';
+   },prepare:(f,owner)=>{
+    const reason=String(f.get('reason')||'').trim(),count=Number(f.get('count')),passageClass=f.get('passageClass'),fare=String(A.credit(f.get('fare')));
+    if(!reason||!PASSAGE_CLASSES.includes(passageClass)||!Number.isSafeInteger(count)||count<1||A.cmp(fare,0)<0)throw Error('Enter a passage class, whole passenger count, nonnegative fare and referee reason.');
+    const event={id:S.uid(),label:'Manual passenger terms audit',hours:owner.campaign.hours,world:owner.worldId,destination:f.get('destination'),offers:[{offerId:S.uid(),passageClass,count,fare,origin:owner.worldId,destination:f.get('destination'),audit:{manual:true,reason}}]};
+    return {event,count,cabinMode:f.get('cabinMode'),serviceConfirmed:f.has('serviceConfirmed'),spaceConfirmed:f.has('spaceConfirmed')};
+   },review:(owner,args)=>{
+    const preview=S.transition(owner.campaign,'Preview manual passenger booking',n=>S.acceptManualPassengers(n,args.event,args)),c=preview.contracts.at(-1),q=P.passengerCapacity(preview);
+    return facts([['Passage / people',passageLabel(c.passageClass)+' / '+c.count],['Destination',world(c.destination).name],['Fare per person',money(c.fare)],['Payment on delivery',money(c.payment)],['Cabins / Low berths free after',q.freeCabins+' / '+q.freeLowBerths],['Cargo space free after',supportDisplay(A.sub(preview.ship.capacity,S.used(preview)))+' t'],['Referee terms',c.audit.reason]])+'<p class="help">Boarding reserves capacity and preserves bank and existing supplies. '+ruleInfo('booking')+'</p>';
+   },apply:(n,args)=>S.acceptManualPassengers(n,args.event,args),success:'Accepted manual passenger booking saved.'
+  });
+ }
  function board(offerId){
   return completion.open({kind:'board',target:offerId,preview:true,title:owner=>'Board '+passageLabel(owner.context.subject.passageClass)+' passengers',label:'Preview boarding',reviewTitle:'Confirm passenger booking',reviewLabel:'Board passengers',capture:captureReview,
    body:owner=>{
@@ -151,5 +171,5 @@ export function createPassengerUI({getState,getCore,getWorld,getWorlds,getView,m
   });
  }
  function auditOffer(id){const c=activeDrafts().find(o=>o.offerId===id);if(!c)throw Error('Offer is no longer active. Find its read-only result in History.');modal('Passenger availability audit',details(c),null);}
- return {panel,details,setup,search,board,deliver,auditOffer,clear};
+ return {panel,details,setup,search,manual,board,deliver,auditOffer,clear};
 }
