@@ -122,7 +122,7 @@ async function visibleRoll(page, expected) {
 async function contractToolbar(page) {
   const toolbar = page.locator('#contract-actions');
   assert.equal(await toolbar.count(), 1);
-  assert.deepEqual(await toolbar.getByRole('button').allTextContents(), ['Find contracts','Manual contract','Check for mail']);
+  assert.deepEqual(await toolbar.getByRole('button').allTextContents(), ['Find contracts','Manual contract','Check for mail','Find passengers','Set passenger capacity']);
   const check = page.locator('#main [data-action="mail-check"]');
   assert.equal(await check.count(), 1, 'Only one Check for mail action exists');
   assert.equal(await mail(page).locator('[data-action="mail-check"]').count(), 0, 'The Mail card no longer owns the check action');
