@@ -1,4 +1,4 @@
-import {parseUWP} from './rules.mjs?v=planned-route-completion-20261011-61';
+import {parseUWP} from './rules.mjs?v=devlog-diagnostics-20261011-62';
 
 // Audit only the editable world fields. A selective correction must never
 // replay an old world object, campaign inverse, price quote or transaction.

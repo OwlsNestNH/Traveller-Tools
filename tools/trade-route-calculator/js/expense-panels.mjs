@@ -1,14 +1,14 @@
-import {ruleInfo} from './rule-references.mjs?v=planned-route-completion-20261011-61';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=planned-route-completion-20261011-61';
-import {passengerShip} from './passengers.mjs?v=planned-route-completion-20261011-61';
+import {ruleInfo} from './rule-references.mjs?v=devlog-diagnostics-20261011-62';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=devlog-diagnostics-20261011-62';
+import {passengerShip} from './passengers.mjs?v=devlog-diagnostics-20261011-62';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=planned-route-completion-20261011-61';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=planned-route-completion-20261011-61';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=planned-route-completion-20261011-61';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=planned-route-completion-20261011-61';
-import {creditStep} from './rounding.mjs?v=planned-route-completion-20261011-61';
-import {roll} from './rules.mjs?v=planned-route-completion-20261011-61';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=planned-route-completion-20261011-61';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=devlog-diagnostics-20261011-62';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=devlog-diagnostics-20261011-62';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=devlog-diagnostics-20261011-62';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=devlog-diagnostics-20261011-62';
+import {creditStep} from './rounding.mjs?v=devlog-diagnostics-20261011-62';
+import {roll} from './rules.mjs?v=devlog-diagnostics-20261011-62';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=devlog-diagnostics-20261011-62';
 
 const esc=escapeHtml;
 const money=formatCreditsText;
@@ -55,7 +55,7 @@ export function latestExpenseReceipt(state,kind,receiptId){
  * fresh draft. Persist route() / onNavigate to recover a particular receipt.
  * The host must forward each rendered data-arg unchanged to action().
  */
-export function createExpensePanels({document,getState,isEditable,commit,render,showOverview,message=()=>{},openService,showSettings,onNavigate=()=>{},rollDie=()=>roll(1).total,onTerminalFailure=()=>{},onComplete=()=>{},canRetry=()=>true,captureContext=()=>()=>true}){
+export function createExpensePanels({document,getState,isEditable,commit,render,showOverview,message=()=>{},openService,showSettings,onNavigate=()=>{},rollDie=()=>roll(1).total,onTerminalFailure=()=>{},onDiagnostic=()=>{},onComplete=()=>{},canRetry=()=>true,captureContext=()=>()=>true}){
  let session=null,operation=null,generation=0,reloadMessage='';
  const active=()=>!!session;
  const route=()=>session?{kind:session.kind,...(session.mode==='receipt'?{receiptId:session.receiptId}:{})}:null;
@@ -218,8 +218,10 @@ export function createExpensePanels({document,getState,isEditable,commit,render,
   owner.pending=false;owner.publicationDeferred=false;
   if(owner.session.operation===owner)owner.session.busy=false;
  }
+ function diagnostic(error){try{onDiagnostic(error);}catch{/* Diagnostics cannot affect payment recovery. */}}
  function terminalFailure(owner,error){
   if(owner.publication)error=new SaveCommittedPublicationError(owner.publication.revision,error);
+  diagnostic(error);
   const committed=error?.code==='SAVE_COMMITTED_PUBLICATION_FAILED'&&error.committed===true&&Number.isSafeInteger(error.revision),name=owner.kind==='rate'?'Berthing rate':'Payment';
   const guidance=committed?name+' saved, but the display could not update. Reload this page before continuing; do not record this '+name.toLowerCase()+' again.':'The '+name.toLowerCase()+' save outcome could not be confirmed. Reload this page and check History before trying again.';
   const report=()=>session===owner.session&&owner.session.operation===owner&&owner.context();
@@ -233,6 +235,7 @@ export function createExpensePanels({document,getState,isEditable,commit,render,
   const known=!owner.submitted||(error?.code==='SAVE_NOT_COMMITTED'&&error.committed===false&&!owner.publication);
   release(owner);
   if(!known)return terminalFailure(owner,error);
+  diagnostic(error);
   // Only an unchanged, still-owned, demonstrably unwritten attempt can retry.
   // Its prepared input/die remains in the session; obsolete callbacks remain used.
   if(!ownerCurrent(owner))return false;

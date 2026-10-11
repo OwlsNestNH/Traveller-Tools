@@ -1,5 +1,5 @@
-import {createDashboardBaseline,sameDashboardBaseline} from './dashboard-baseline.mjs?v=planned-route-completion-20261011-61';
-import {initial,validate} from './state.mjs?v=planned-route-completion-20261011-61';
+import {createDashboardBaseline,sameDashboardBaseline} from './dashboard-baseline.mjs?v=devlog-diagnostics-20261011-62';
+import {initial,validate} from './state.mjs?v=devlog-diagnostics-20261011-62';
 export const KEY='traveller-trade-route-calculator:v1';
 const LOCK=KEY+':writer';
 // Only the provider can distinguish a rejected write from failed publication.
@@ -32,7 +32,8 @@ function saveWithBoundary(next,expected,publicationToken,replacement){
   catch(cause){throw new SaveCommittedPublicationError(revision,cause);}
  }
 export class Store{
- constructor(onChange,onRole){this.onChange=onChange;this.onRole=onRole;this.editable=false;this.release=null;this.acquisition=null;this.id=crypto.randomUUID();this.channel=typeof BroadcastChannel==='function'?new BroadcastChannel(KEY):null;this.channel?.addEventListener('message',e=>{if(e.data.type==='takeover'&&e.data.id!==this.id)this.yield();});window.addEventListener('storage',e=>{if(e.key===KEY){this.onChange(this.read());}if(e.key===KEY+':takeover'&&e.newValue!==this.id)this.yield();});}
+ constructor(onChange,onRole,onDiagnostic){this.onDiagnostic=onDiagnostic;this.onChange=onChange;this.onRole=onRole;this.editable=false;this.release=null;this.acquisition=null;this.id=crypto.randomUUID();this.channel=typeof BroadcastChannel==='function'?new BroadcastChannel(KEY):null;this.channel?.addEventListener('message',e=>{if(e.data.type==='takeover'&&e.data.id!==this.id)this.yield();});window.addEventListener('storage',e=>{if(e.key===KEY){this.onChange(this.read());}if(e.key===KEY+':takeover'&&e.newValue!==this.id)this.yield();});}
+ diagnostic(error,context){try{this.onDiagnostic?.(error,context);}catch{/* Diagnostics cannot affect locks or saves. */}}
  read(){const raw=localStorage.getItem(KEY);if(!raw)return initial();let s;try{s=JSON.parse(raw);}catch{throw Error('Saved data could not be read. Export the raw backup before resetting.');}return validate(s);}
  async acquire(takeover=false){
   if(this.reloadRequired){this.onRole(false,'Reload this page before editing the campaign again.');return;}
@@ -45,6 +46,7 @@ export class Store{
   const finish=()=>{if(this.acquisition===request){this.acquisition=null;this.editable=false;this.release=null;}};
   const failed=error=>{
    if(this.acquisition!==request)return;
+   this.diagnostic(error,'startup-acquire');
    finish();
    // A rendering callback can also fail. Ownership must still fail closed.
    try{this.onRole(false,error.message);}catch(roleError){console.error('Could not display read-only status',roleError);}
@@ -56,7 +58,7 @@ export class Store{
     if(!lock){this.onRole(false,'Read-only: campaign open in another tab.');return;}
     const held=new Promise(resolve=>{request.release=resolve;this.release=resolve;});
     let state;
-    try{state=this.read();this.recovery=false;}catch(error){this.recovery=true;this.recoveryMessage=error.message;state=initial();}
+    try{state=this.read();this.recovery=false;}catch(error){this.diagnostic(error,'startup-read');this.recovery=true;this.recoveryMessage=error.message;state=initial();}
     if(!this.recovery&&state.initialized&&!state.dashboardBaseline){
      // Granted lock, no published editor or drafts yet. This is metadata only:
      // keep the action revision, Undo trail and jump mulligan exactly as saved.

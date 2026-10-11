@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=planned-route-completion-20261011-61';
+import {ruleInfo} from './rule-references.mjs?v=devlog-diagnostics-20261011-62';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={

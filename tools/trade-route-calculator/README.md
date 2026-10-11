@@ -722,12 +722,34 @@ Pages and 90 permitted live variants were verified; ten restricted variants
 remain unverified. Earlier browser-found defects and visual limits are retained
 in RULES_VERIFICATION.
 
-Two Stage 2 scope groups remain: route/world/rounding and cargo/market controls.
-Clear Planned Route (.60 released) passed 6,027 native tests, 87 focused browser
-cases and all 69 ready-event duplicate jobs. Exact merge/tree, Pages and all 90
-permitted live variants were verified; ten restricted variants, including both
-style.css URLs, remain unverified. The .61 candidate covers Map/Auto route save
-and Plot final-save completion, retaining accepted terms and the exact owned
-draft until verified completion. Map keeps its live known-world merge; Plot keeps
-its calculated snapshot. Ordinary world override, rounding Apply and cargo/market
-controls remain queued. Stage 3 has not started.
+Map/Auto route save and Plot final-save completion (.61 released) passed 6,331
+native tests, 157 focused browser cases and all 70 ready-event duplicate jobs.
+Exact merge/tree, Pages and all 90 permitted live variants were verified; ten
+restricted variants, including both style.css URLs, remain unverified. Map keeps
+its live known-world merge; Plot keeps its calculated snapshot.
+
+The revised bounded Stage 2 review checked existing cargo addition/correction and
+rounding Apply using the unchanged production app and synchronous Store. All 18
+focused observations passed, including save rejection/retry, repeat submission,
+stale terms, original amounts/audits and Undo. No runtime change was needed.
+Further world/offer/expiry consistency migration is deferred. Stage 3 has not
+started.
+
+## Session error diagnostics (.62)
+
+Dev Tools records caught save/startup errors as well as uncaught errors. Entries
+include app build, fixed action/screen metadata and recognized save outcome;
+the log stays in memory, retains at most 50 entries and displays the latest 10.
+Clear Error Log clears this session log. Diagnostics do not retry writes, alter
+campaign data or upload telemetry.
+
+Copy Error Report contains only allowlisted app/error metadata, including a
+validated durable revision when a committed failure supplies one. It omits
+campaign contents, user input, raw messages, stacks, causes, URLs and identifiers.
+Clipboard denial offers a selectable text fallback. Fatal-startup and recovery
+screens expose the same safe copy action without requiring a working campaign.
+
+Copy Debug Report, Create Debug Link and Export Debug JSON remain detailed
+options. They include campaign data and raw error text; share those only with
+someone you trust. The full report remains encoded locally or in a URL fragment;
+there is no new logging server, persistent log storage or automatic transmission.
