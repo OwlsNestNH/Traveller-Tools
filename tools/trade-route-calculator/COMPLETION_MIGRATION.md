@@ -1,121 +1,146 @@
 # Save-completion migration queue
 
-Inventory checked against UI 2026.10.10.47, repository merge
-`8ab805fa0dc2bf3fa52a4ca9e33f1ef49212050d` (2026-10-10).
+Inventory checked against UI 2026.10.10.48, repository merge
+`9b121bdfac91fcd237e96b911cdf6d1b2de5e7eb` (2026-10-11).
 This records the save-boundary work, not the earlier GUI-refit stages.
 
 ## Stage 2: finish save callers
 
-The controller is centralized and supports synchronous saves or an explicit
-completion Promise. Its transition, prepared-jump, Undo, Undo Jump and campaign
-replacement paths retain revision/ownership checks. That centralization does
-**not** mean every UI caller waits safely for completion. The live local Store
-is still synchronous; this queue is preparation for a delayed provider, not a
-claim that ordinary local saving is currently broken.
+The controller supports synchronous saves or an explicit completion Promise.
+Its transition, prepared-jump, Undo, Undo Jump and replacement paths preserve
+revision and editing checks. The live local Store remains synchronous. This
+queue concerns delayed-provider completion safety; centralizing writes alone
+never established that every UI caller waits safely for completion.
 
-A completed caller must wait before showing success or changing its draft,
-block repeat submission while pending, preserve ownership/revision checks, and
-distinguish a known uncommitted failure (safe correction/retry) from a committed
-publication failure or unknown result (reload required, no duplicate retry).
+A completed caller owns its review, campaign/revision and editing tenure; blocks
+repeat submission; waits before success or draft cleanup; and distinguishes a
+known uncommitted failure from a saved or unknown outcome. The latter requires
+reload protection so an uncertain transaction cannot be repeated.
 
-### Verified patterns already present
+The generic modal already awaits a Promise returned by its callback and sets
+`session.busy`. That alone is insufficient: without an explicit completion
+contract, dismissal/replacement and ordinary error handling remain possible.
+Callbacks which discard the Promise bypass even that wait. Do not blanket-enable
+`awaitSave`: pre-provider validation must remain known-uncommitted, and each
+operation needs its own identity, failure context and owned cleanup.
 
-- Deposit confirmation: awaited modal with terminal/reload protection.
-- Refuel, fuel correction and life-support refill: owned service session,
-  pending-save controls, completion-aware cleanup and terminal/reload protection.
-- Individual World Changes correction: the awaited confirmation pattern,
-  including its own failure context.
+### Released patterns
 
-### Remaining queue, in priority order
+- Deposit confirmation; Refuel, fuel correction and life-support refill; and
+  individual World Changes reversion already have completion-aware boundaries.
+- **.42 Jump preparation/commit:** preserved roll reuse, revision checks and the
+  one-mulligan policy through delayed preparation and commit.
+- **.43/.44 Undo and replacement:** ordinary Undo/Undo Jump and JSON import/reset
+  have owned completion and terminal/reload handling. Replacement invalidation,
+  audit behavior and schema compatibility remain intact.
+- **.45 Settings:** inline and legacy forms preserve inputs, rounding and
+  disclosures through pending completion and deliberate known-unsaved retry.
+- **.46 Setup/location:** cancellable world lookup precedes the owned save;
+  opening balance and Dashboard baseline remain normal state mutations. Setup
+  nearby enrichment is ancillary, while location lookup remains pre-save.
+- **.47 Owned map publication:** Undo/replacement map callbacks retain the
+  prewrite presentation until settlement. Four reproduced cases became strict
+  regressions; normal foreign publication and editor invalidation still win.
+- **.48 Time/day:** daily controls and Campaign time now have an owned boundary,
+  pre-yield repeated-click protection, retained date/LSS presentation and saved/
+  unknown reload handling. Time/LSS mutation bodies, Undo and permanent jump
+  mulligan closure are unchanged. Final 1,480 native tests, 227 rules checks,
+  57 exact-head CI jobs and 142 focused browser cases passed. Independent review
+  inspected 52 of 192 actual screenshots and audited all case records. The first
+  candidate's existing Mail failure exposed a stale error on successful close;
+  the correction retained the Mail assertion and strengthened fresh/retry/
+  validation success and terminal-cleanup checks. Original evidence is retained.
 
-1. **Jump preparation and commit: released and verified in .42.**
-   `app.mjs: jump` waits for preparation and commit completion, retains the same
-   prepared dice across a known-unsaved retry, and freezes elapsed hours while
-   saving. Native and exact-head browser tests, independent screenshot review
-   and live-file verification passed, including the saved-roll/mulligan policy.
-2. **Undo and campaign replacement: released in .43/.44.**
-   Ordinary Undo/Undo Jump and JSON import/reset passed their full native,
-   exact-head browser and independent source/screenshot gates. Replacement .44
-   passed 1,117 native tests, 53 CI jobs and 98 focused browser cases; 36 actual
-   screenshots were independently reviewed. Its exact merge/tree and Pages
-   deployment were verified. All 90 permitted live-file URLs matched; ten
-   prior tunnel/proxy-denied URLs were skipped, so full live verification is
-   explicitly incomplete. No denied path was retried or alternate-routed.
-3. **Settings: released in .45.** Inline and legacy Settings have an owned
-   completion boundary, retained form/rounding, deliberate known-unsaved retry
-   and saved/unknown reload protection. Final 1,155 native tests, 54 exact-head
-   CI jobs, 46 focused browser cases and independent source/38-screenshot review
-   passed; merge/tree and Pages were verified. All 90 permitted live URLs
-   matched; ten prior proxy-denied variants remain unverified and excluded.
-4. **Setup/location: released in .46; time/day are the .48 candidate.**
-   Cancellable lookup now precedes its owned pending-save boundary. Setup's
-   nearby enrichment remains ancillary after its saved opening balance;
-   location lookup stays pre-save. Final 1,293 native tests, 55 exact-head CI
-   jobs, 160 focused browser cases and independent 36-screenshot review passed.
-   Merge/tree, Pages and all 90 permitted live URLs were verified; ten prior
-   proxy-excluded variants remain unverified. Duplicate CI also passed.
-   The .48 candidate gives `changeCampaignDay` and `timeForm` an owned save
-   boundary, pre-yield repeated-click protection and terminal reload handling.
-   Time/LSS/economic mutation semantics remain exact. Local/source verification
-   does not complete this item: exact-head browser and screenshot gates must
-   pass before release, followed by merge/Pages/permitted live-file checks.
-5. **Trade and transport workflows with post-save UI effects.**
-   `searchDialog`, `saleForm`, `editDraft`, `contractSearch` and `accept` publish,
-   replace or clear previews/drafts after invoking a save. `passenger-ui.mjs`
-   capacity setup, passenger search and boarding also discard completion;
-   passenger search publishes generated offers immediately.
-6. **Remaining direct mutation/confirmation callers.** Audit and migrate
-   `editOffer`, `manualContract`, `amendPolicy`, the market expiration checkbox,
-   and `rollBerthingRate` (which reads `next.revision` synchronously).
-   Confirmations that already return the save still need the full pending and
-   failure contract: `roundingPreview`, `overrideWorld`, `saveMapRoute`,
-   `plotRoute`, `clearPlannedRoute`, `buyForm`, `insureHeldCargo`, `reject`,
-   `existingLot`, `correctCargo`, `claimForm`, `cancelMail`, `deliver`,
-   `shipExpenses`, `expenseForm` (manual expense/bank correction), passenger
-   delivery, and the expire-all action. Returning a Promise alone is not full
-   completion safety; several listed callbacks also discard it.
-7. **Expense screen failure handling.** `expense-panels.mjs: savePayment` and
-   `saveRate` already await saves and block repeat submission, but their generic
-   catch/finally path needs the same explicit committed/unknown terminal safety
-   review as deposit and stock services. Do not count them as fully migrated
-   merely because they contain `await`.
+The .48 exact merge/tree, Pages deployment and all 90 permitted live URLs were
+verified, and duplicate CI passed. Ten URL variants at prior tunnel/proxy-denied
+paths remain excluded and unverified; no denied path was retried or alternate-
+routed. This is not a claim of complete 100-URL live-file verification.
 
-8. **Owned background-map presentation: released in .47.**
-   A test-only audit on exact .46 runtime reproduced candidate map data entering
-   the DOM during held Undo Jump/import settlement at both desktop/mobile
-   widths. All 14 diagnostic probes were valid and 34 screenshots were reviewed.
-   Cache-origin paint caused the first exposure; later resize repainted already
-   exposed state. Desktop marker pixels were outside the opaque dialog rectangle, dimmed
-   and blurred by its backdrop; mobile findings were DOM-only because markers
-   were below the viewport.
-   The .47 release adds only the existing Undo/replacement ownership guards
-   to `paintMap()` and strict regression assertions for those four cases.
-   Settings showed a rebuild without changed campaign semantics and is unchanged.
-   Normal History/inline Settings/reset controls had no mounted map. The native
-   Store remains synchronous; this is a delayed-provider contract correction.
-   All 1,345 native tests, 56 exact-head CI jobs and the 14-case focused browser
-   suite passed; all 34 screenshots were independently reviewed. Four strict
-   regression cases retained the prewrite DOM through actual callbacks. Exact
-   merge/tree and Pages, all 90 permitted live URLs and duplicate CI were
-   verified; the ten prior proxy-denied variants remain excluded/unverified.
-   The earlier .46 prewrite empty-style mismatch, Cargo detached-handle pointer
-   input race and keyboard-focus restoration issue remain separate findings.
+### Remaining bounded groups, in risk order
 
-Each batch needs delayed success, known pre-write failure, committed-publication
-failure, unknown outcome, duplicate activation, stale revision/ownership and
-cleanup/reload tests, plus the existing synchronous and real-browser regression
-gates. Keep ledger/history/Undo/economic behavior unchanged. Stage 2 remains
-open until this inventory is reconciled and every caller is covered; later
-feature work must add any new write callers here.
+These are scope groups, not a promise that each needs exactly one release.
+Further inventory findings must be recorded rather than declaring Stage 2 done.
+
+1. **Sale commit: .49 candidate.** `app.mjs: saleForm` originally discarded
+   `act()` completion, cleared selected cargo and closed its review before a
+   delayed write settled. `receiveCampaign`/`render` could also reconcile sold
+   selections at publication time. Own only the existing confirmation and its
+   submission/settlement. Capture its reviewed `p`, revision, world/buyer and
+   selection; preserve prices, tax dice, fees, rounding and the existing edit/
+   cancel loops. Quote generation and cache eligibility remain unchanged. Full
+   source/native/exact-head browser/pixel and release gates remain required.
+2. **Expense-panel payment/rate terminal handling.** `expense-panels.mjs:
+   savePayment`, `saveRate` already await completion and block repeated actions,
+   but generic catch/finally can restore a retryable draft after a saved/unknown
+   result. Review its `app.mjs` adapter, receipt/navigation publication, controls
+   before the try boundary and retention of a prepared berthing die.
+3. **Purchase and insurance confirmations, split if needed.** `app.mjs:
+   buyForm`, `insureHeldCargo`, `claimForm`, `amendPolicy`. The first three return
+   `act()` but lack the full owned pending/terminal contract; amendment discards
+   completion. Preserve purchase, premium, payout and cost-basis semantics.
+4. **Supplier/buyer contact search.** `app.mjs: searchDialog` discards completion
+   before choosing its snapshot/tab or opening a sale. Retain its generated
+   snapshot/dice on known-unsaved retry; delay UI and buyer-to-sale handoff until
+   owned completion. Its elapsed time/LSS transition is separate from day controls.
+5. **Freight/mail generation and draft editing.** `app.mjs: contractSearch`,
+   `editDraft` discard completion while publishing/replacing local offers. Keep
+   check IDs, generated dice/offers and original audits across a safe retry;
+   never revive offers after authoritative foreign publication or Undo.
+6. **Freight/mail acceptance, cancellation and payout.** `app.mjs:
+   manualContract`, `accept`, `cancelMail`, `deliver`. Manual/generated acceptance
+   discard completion; generated acceptance also removes its draft immediately.
+   Cancellation/delivery return completion but still need full pending/terminal
+   ownership. Preserve late-delivery dice, reservations and exact payouts.
+7. **Passenger workflows, preferably two batches.** `passenger-ui.mjs: setup`,
+   `search`, then `board`, `deliver`. Setup/search/boarding discard completion;
+   search exposes offers and boarding renders immediately. Delivery returns
+   the save but lacks full failure handling. Preserve capacity, accommodation,
+   LSS/luggage and audited terms; History must not recreate actionable offers.
+8. **Legacy Accounts payments and inline rate.** `app.mjs: shipExpenses`,
+   `expenseForm` (including bank correction), `rollBerthingRate`. Payment forms
+   remain generic; the rate path assumes a synchronous `next.revision` and
+   removes its control early. Keep rate saving distinct from payment and preserve
+   the remaining Accounts bundle despite completed dedicated fuel/LSS services.
+9. **Route/world/rounding confirmations.** `app.mjs: saveMapRoute`, `plotRoute`,
+   `clearPlannedRoute`, `overrideWorld`, `roundingPreview`. Clear-route discards
+   completion and clears its draft; other returning callbacks still need the
+   complete contract. Ordinary world override is distinct from completed World
+   Changes reversion. Lookup/route calculations stay cancellable before saving.
+10. **Cargo adjustments and market controls.** `app.mjs: existingLot`,
+    `correctCargo`, `reject`, `editOffer`, market-expiration checkbox and
+    expire-all. Returning confirmations still need ownership/terminal handling;
+    overrides/checkbox discard completion. Expire-all is a direct action without
+    an owned pending surface. Restore checkbox presentation on known-unsaved
+    failure without pretending an uncertain save did not happen.
+
+11. **Shared-modal entry-failure containment.** Sale review demonstrated a
+    separate pre-provider boundary: an injected one-shot failure setting the
+    initial submit-control state can leave Deposit or Campaign time busy with
+    zero writes and no retry; Deposit also prevents Close. This was reproduced
+    in actual production callbacks with an isolated Store, not observed during
+    ordinary DOM operation. Sale contains its own entry fault in this batch.
+    Audit and correct the remaining shared entry boundary separately, preserving
+    each completed caller's known-unsaved and saved/unknown contracts. Earlier
+    family completion does not close this newly demonstrated fault-injection gap.
+
+Each batch needs synchronous equivalence, delayed write/publication/settlement,
+known-unsaved retry, committed/unknown outcomes, duplicates and queued actions,
+stale campaign/editor/modal ownership, cleanup/reporting faults, reload and Undo.
+Preserve ledger, History, exact economics and existing dice policies. Existing
+browser regressions remain mandatory alongside focused desktop/mobile cases.
 
 ## Stage 3: quote and preview ownership
 
-After Stage 2, separately consolidate who owns a quote/preview and when it
+Only after Stage 2, separately consolidate who owns a quote/preview and when it
 becomes stale or is discarded. Current session data includes `saleQuotes`,
 `saleTaxDice`, `previewSale`, `editSale`, selected cargo, freight/mail drafts and
 passenger drafts. Review/world/buyer/campaign changes, replacement, cancellation,
-reopening and editor handoff must retain the intended price/dice reuse without
-allowing an old response or detached control to act on a newer session.
+reopening and editor handoff must retain intended price/dice reuse without letting
+an old response or detached control act on a newer session.
 
-This is a lifecycle/ownership task, not another accounting engine and not a
-substitute for finishing save completion. Stage 3 has not started in this batch.
+The sale-only completion batch must preserve today's behavior: same eligible
+world/revision/buyer reuses quotes; editing quantities/fees retains FormData and
+price rolls; tax caches remain buyer/revision keyed; successful sale clears
+selection without explicitly clearing all quote/tax/preview caches. It must not
+invent stronger cache promises or persistent quotes. Stage 3 is a lifecycle task,
+not another accounting engine or a substitute for unfinished save callers.
