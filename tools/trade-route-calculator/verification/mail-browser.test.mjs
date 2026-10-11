@@ -1446,7 +1446,7 @@ try {
     await contractToolbar(page);
     assert.equal(await page.locator('#mail-accepted-details').count(), 0, 'No accepted-only disclosure appears before a check');
     await page.locator('#contract-actions').getByRole('button', {name:'Manual contract', exact:true}).click();
-    assert.equal(await page.locator('#modal-title').innerText(), 'Manual freight / mail contract');
+    assert.equal(await page.locator('#modal-title').innerText(), 'Manual transport contract');
     await cancel(page);
     assert.deepEqual(await read(page), initial, 'Repositioned Manual contract still opens its non-mutating form');
     await checkMail(page);

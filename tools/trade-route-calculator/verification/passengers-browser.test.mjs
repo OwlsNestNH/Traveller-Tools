@@ -74,8 +74,8 @@ try{
   await manualPreview();assert.deepEqual(await read(page),before);await page.keyboard.press('Escape');await closed(page);assert.deepEqual(await read(page),before);
   await manualPreview();await page.screenshot({path:join(artifacts,`combined-manual-passengers-review-${width}.png`),fullPage:true});
   await page.locator('#modal-submit').evaluate(b=>{b.click();b.click();});await closed(page);
-  const booked=await read(page),manual=booked.contracts.find(c=>c.audit.manual);
-  assert.equal(booked.contracts.filter(c=>c.audit.manual).length,1);assert.equal(manual.payment,'2468');assert.equal(manual.quantity,undefined);assert.equal(booked.latestPassengerSearchId,before.latestPassengerSearchId);assert.equal(booked.bank,before.bank);assert.deepEqual(booked.ship.lifeSupport,before.ship.lifeSupport);
+  const booked=await read(page),manual=booked.contracts.find(c=>c.kind==='passenger'&&c.audit.manual);
+  assert.equal(booked.contracts.filter(c=>c.kind==='passenger'&&c.audit.manual).length,1);assert.equal(booked.revision,before.revision+1);assert.deepEqual(booked.contracts.filter(c=>c.kind!=='passenger'),before.contracts);assert.equal(manual.payment,'2468');assert.equal(manual.quantity,undefined);assert.equal(booked.latestPassengerSearchId,before.latestPassengerSearchId);assert.equal(booked.bank,before.bank);assert.deepEqual(booked.ship.lifeSupport,before.ship.lifeSupport);
   assert.equal(await page.locator('.passenger-offer').count(),4,'Manual booking retains generated session offers');
   await page.locator('[data-action="contract-audit"][data-arg="'+manual.id+'"]').click();await page.screenshot({path:join(artifacts,`combined-manual-passengers-audit-${width}.png`),fullPage:true});await page.keyboard.press('Escape');await closed(page);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);

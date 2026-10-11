@@ -303,7 +303,7 @@ try{
   }
   for(const name of ['minPurchasePercent','maxSalePercent'])assert.equal(await field(name).isDisabled(),false,'Price-limit values remain editable while the option is off');
   const switches=page.locator('#settings-form .settings-switch input[type="checkbox"],#settings-form input.settings-switch[type="checkbox"]');
-  assert.equal(await switches.count(),8,'All eight boolean options retain native checkbox switches');
+  assert.equal(await switches.count(),9,'All nine boolean options retain native checkbox switches');
   await setDraft();assert.deepEqual(await values(),draft,'All 52 draft controls accept their intended input types');
   // Explicit arrow buttons must preserve direct typing, signed values and the
   // fractional custom profit. A +1 / -1 round trip never silently saves.
