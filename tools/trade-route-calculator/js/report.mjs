@@ -1,13 +1,13 @@
-import {recordedOperatingResult} from './financial-summary.mjs?v=expense-completion-20261011-50';
-import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=expense-completion-20261011-50';
-import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=expense-completion-20261011-50';
-import {bladderSpace} from './fuel.mjs?v=expense-completion-20261011-50';
+import {recordedOperatingResult} from './financial-summary.mjs?v=modal-entry-20261011-51';
+import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=modal-entry-20261011-51';
+import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=modal-entry-20261011-51';
+import {bladderSpace} from './fuel.mjs?v=modal-entry-20261011-51';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
-import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=expense-completion-20261011-50';
-import {distance} from './map.mjs?v=expense-completion-20261011-50';
+import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=modal-entry-20261011-51';
+import {distance} from './map.mjs?v=modal-entry-20261011-51';
 
-export const REPORT_VERSION='2026.10.11.50';
+export const REPORT_VERSION='2026.10.11.51';
 const clean=v=>String(v??'Not recorded').replace(/[\r\n\t\x00-\x1f]+/g,' ').trim();
 const number=v=>String(v).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const cr=v=>v==null?'Not recorded':'Cr '+number(v);

@@ -645,3 +645,11 @@ Existing payment amounts, schedules, rounding, recorded dates, ledger and Undo
 rules remain unchanged. The separate legacy Accounts and shared-modal groups
 remain in the completion queue. Exact-head browser and screenshot gates are
 required before release.
+
+
+Shared-modal entry containment (.51 candidate) keeps a pre-save control error
+from leaving an otherwise unchanged review permanently busy. The same reviewed
+inputs remain available for deliberate retry or dismissal once the transient
+control fault clears. No save callback is started by that failed entry. Existing
+caller-specific save outcomes, Sale's entry handling, accounting and Undo remain
+unchanged. Remaining save callers and Stage 3 stay in the completion queue.

@@ -1,7 +1,7 @@
 # Save-completion migration queue
 
-Inventory checked against UI 2026.10.11.49, repository merge
-`663ffe38b76573d612ddc62725d03d42de195b54` (2026-10-11).
+Inventory checked against UI 2026.10.11.50, repository merge
+`5869061d5848863ba18d7a53de1be086d5d1b0b9` (2026-10-11).
 This records the save-boundary work, not the earlier GUI-refit stages.
 
 ## Stage 2: finish save callers
@@ -60,71 +60,80 @@ operation needs its own identity, failure context and owned cleanup.
   retained. Independent review inspected all 46 initial images and 18 final
   images, including all eight added details, and audited all 54 final layouts.
 
-The .49 exact merge/tree, Pages deployment and all 90 permitted live URLs were
+- **.50 Dedicated Expense panels:** mortgage, maintenance, salary, berthing and
+  saved-rate operations own publication/completion and retained retry intent.
+  The native provider remains immediate; stale durable baselines retire the old
+  draft with accurate not-saved reload guidance. Rate-to-payment reentrancy,
+  receipt/navigation and background map ownership are covered without changing
+  monetary/schedule/state/Store/controller bodies. Final 1,705 native tests,
+  227 rules checks, 59 exact-head CI jobs and 65 focused browser cases passed.
+  Review audited all 186 frames/85 detail-layout records, scanned all images and
+  individually inspected 40 originals (15 desktop, 25 mobile). Disk-only stale
+  detail is desktop-only; mobile stale/retry are separate cases.
+
+The .50 exact merge/tree, Pages deployment and all 90 permitted live URLs were
 verified, and duplicate CI passed. Ten URL variants at prior tunnel/proxy-denied
 paths remain excluded and unverified; no denied path was retried or alternate-
 routed. This is not a claim of complete 100-URL live-file verification.
 
-### Remaining bounded groups, in risk order
+### Remaining bounded groups
 
 These are scope groups, not a promise that each needs exactly one release.
 Further inventory findings must be recorded rather than declaring Stage 2 done.
+The current .51 candidate addresses shared entry group 9 before more modal callers.
 
-1. **Expense-panel payment/rate completion: .50 candidate.** `expense-panels.mjs:
-   savePayment`, `saveRate` in the .49 baseline awaited completion and blocked
-   repeated actions, but generic catch/finally could restore a retryable draft
-   after a saved/unknown result. The .50 candidate adds owned completion,
-   receipt/navigation publication, control-entry containment and prepared-die
-   retention. Final native/source/exact-head browser/pixel and release gates
-   remain required; the group is not yet declared released.
-2. **Purchase and insurance confirmations, split if needed.** `app.mjs:
+1. **Purchase and insurance confirmations, split if needed.** `app.mjs:
    buyForm`, `insureHeldCargo`, `claimForm`, `amendPolicy`. The first three return
    `act()` but lack the full owned pending/terminal contract; amendment discards
    completion. Preserve purchase, premium, payout and cost-basis semantics.
-3. **Supplier/buyer contact search.** `app.mjs: searchDialog` discards completion
+2. **Supplier/buyer contact search.** `app.mjs: searchDialog` discards completion
    before choosing its snapshot/tab or opening a sale. Retain its generated
    snapshot/dice on known-unsaved retry; delay UI and buyer-to-sale handoff until
    owned completion. Its elapsed time/LSS transition is separate from day controls.
-4. **Freight/mail generation and draft editing.** `app.mjs: contractSearch`,
+3. **Freight/mail generation and draft editing.** `app.mjs: contractSearch`,
    `editDraft` discard completion while publishing/replacing local offers. Keep
    check IDs, generated dice/offers and original audits across a safe retry;
    never revive offers after authoritative foreign publication or Undo.
-5. **Freight/mail acceptance, cancellation and payout.** `app.mjs:
+4. **Freight/mail acceptance, cancellation and payout.** `app.mjs:
    manualContract`, `accept`, `cancelMail`, `deliver`. Manual/generated acceptance
    discard completion; generated acceptance also removes its draft immediately.
    Cancellation/delivery return completion but still need full pending/terminal
    ownership. Preserve late-delivery dice, reservations and exact payouts.
-6. **Passenger workflows, preferably two batches.** `passenger-ui.mjs: setup`,
+5. **Passenger workflows, preferably two batches.** `passenger-ui.mjs: setup`,
    `search`, then `board`, `deliver`. Setup/search/boarding discard completion;
    search exposes offers and boarding renders immediately. Delivery returns
    the save but lacks full failure handling. Preserve capacity, accommodation,
    LSS/luggage and audited terms; History must not recreate actionable offers.
-7. **Legacy Accounts payments and inline rate.** `app.mjs: shipExpenses`,
+6. **Legacy Accounts payments and inline rate.** `app.mjs: shipExpenses`,
    `expenseForm` (including bank correction), `rollBerthingRate`. Payment forms
    remain generic; the rate path assumes a synchronous `next.revision` and
    removes its control early. Keep rate saving distinct from payment and preserve
    the remaining Accounts bundle despite completed dedicated fuel/LSS services.
-8. **Route/world/rounding confirmations.** `app.mjs: saveMapRoute`, `plotRoute`,
+7. **Route/world/rounding confirmations.** `app.mjs: saveMapRoute`, `plotRoute`,
    `clearPlannedRoute`, `overrideWorld`, `roundingPreview`. Clear-route discards
    completion and clears its draft; other returning callbacks still need the
    complete contract. Ordinary world override is distinct from completed World
    Changes reversion. Lookup/route calculations stay cancellable before saving.
-9. **Cargo adjustments and market controls.** `app.mjs: existingLot`,
+8. **Cargo adjustments and market controls.** `app.mjs: existingLot`,
     `correctCargo`, `reject`, `editOffer`, market-expiration checkbox and
     expire-all. Returning confirmations still need ownership/terminal handling;
     overrides/checkbox discard completion. Expire-all is a direct action without
     an owned pending surface. Restore checkbox presentation on known-unsaved
     failure without pretending an uncertain save did not happen.
 
-10. **Shared-modal entry-failure containment.** Sale review demonstrated a
+9. **Shared-modal entry-failure containment: .51 candidate.** Sale review demonstrated a
     separate pre-provider boundary: an injected one-shot failure setting the
     initial submit-control state can leave Deposit or Campaign time busy with
     zero writes and no retry; Deposit also prevents Close. This was reproduced
     in actual production callbacks with an isolated Store, not observed during
-    ordinary DOM operation. Sale contains its own entry fault in this batch.
+    ordinary DOM operation. Sale has contained its own entry fault since .49.
     Audit and correct the remaining shared entry boundary separately, preserving
     each completed caller's known-unsaved and saved/unknown contracts. Earlier
-    family completion does not close this newly demonstrated fault-injection gap.
+    family completion does not close this newly demonstrated fault-injection gap. The
+    .51 candidate moves only non-sale initial control synchronization into the
+    existing pre-callback try. Sale's special entry catch stays outside. It does
+    not redesign persistent cleanup faults or alter caller terminal fallbacks;
+    full native/source/browser/pixel and release gates remain required.
 
 Each batch needs synchronous equivalence, delayed write/publication/settlement,
 known-unsaved retry, committed/unknown outcomes, duplicates and queued actions,
