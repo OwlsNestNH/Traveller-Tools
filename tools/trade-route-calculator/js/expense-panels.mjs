@@ -1,14 +1,14 @@
-import {ruleInfo} from './rule-references.mjs?v=passenger-search-completion-20261011-57';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=passenger-search-completion-20261011-57';
-import {passengerShip} from './passengers.mjs?v=passenger-search-completion-20261011-57';
+import {ruleInfo} from './rule-references.mjs?v=passenger-booking-completion-20261011-58';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=passenger-booking-completion-20261011-58';
+import {passengerShip} from './passengers.mjs?v=passenger-booking-completion-20261011-58';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=passenger-search-completion-20261011-57';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=passenger-search-completion-20261011-57';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=passenger-search-completion-20261011-57';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=passenger-search-completion-20261011-57';
-import {creditStep} from './rounding.mjs?v=passenger-search-completion-20261011-57';
-import {roll} from './rules.mjs?v=passenger-search-completion-20261011-57';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=passenger-search-completion-20261011-57';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=passenger-booking-completion-20261011-58';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=passenger-booking-completion-20261011-58';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=passenger-booking-completion-20261011-58';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=passenger-booking-completion-20261011-58';
+import {creditStep} from './rounding.mjs?v=passenger-booking-completion-20261011-58';
+import {roll} from './rules.mjs?v=passenger-booking-completion-20261011-58';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=passenger-booking-completion-20261011-58';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

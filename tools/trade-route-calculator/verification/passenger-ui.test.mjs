@@ -61,7 +61,11 @@ function passengerCampaign(){const s=campaign();s.ship.accommodation={combinedPe
 async function setupPassengers(h){h.api.actions['passenger-setup']();h.fill({reservedCabins:2,installedLowBerths:4,reviewed:true});await h.submit();assert.equal(h.dom.ids.get('modal-error').textContent,'');}
 async function searchPassengers(h){h.api.actions['passenger-search']();h.fill({dice:12,skill:2,characteristic:1,steward:1,sequence:Array(200).fill(2).join(',')});await h.submit();assert.equal(h.dom.ids.get('modal-error').textContent,'');return h.api.state.events.findLast(e=>e.label==='Passenger search audit');}
 const passengerOffer=(h,type)=>h.api.state.events.findLast(e=>e.label==='Passenger search audit').offers.find(o=>o.passageClass===type);
-async function previewBoard(h,type='high',count=2,mode='shared'){h.api.actions['passenger-board'](passengerOffer(h,type).offerId);h.fill({count,cabinMode:mode,...(['high','middle'].includes(type)?{serviceConfirmed:true}:{}),...(type==='basic'?{spaceConfirmed:true}:{})});await h.submit();assert.equal(h.dom.ids.get('modal-error').textContent,'');assert.equal(h.dom.ids.get('modal-title').textContent,'Confirm passenger booking');}
+async function previewBoard(h,type='high',count=2,mode='shared'){h.api.actions['passenger-board'](passengerOffer(h,type).offerId);const firstBody=h.dom.ids.get('modal-body').innerHTML;h.fill({count,cabinMode:mode,...(['high','middle'].includes(type)?{serviceConfirmed:true}:{}),...(type==='basic'?{spaceConfirmed:true}:{})});await h.submit();assert.equal(h.dom.ids.get('modal-error').textContent,'');assert.equal(h.dom.ids.get('modal-title').textContent,'Confirm passenger booking');return firstBody;}
+
+// Persist the actual two-step jump before delivery. The independent Store.read
+// copy must never follow a test-only change to the live campaign.
+function arrive(h){const prepared=S.prepareJump(h.api.state,()=>({dice:[3,3,3,3,3,3],total:18}));h.store.save(prepared.state,h.api.state.revision);const arrived=S.transition(h.api.state,'Jump: Origin → Destination',n=>S.commitJump(n,{attemptId:prepared.attempt.id,elapsed:166}));h.store.save(arrived,h.api.state.revision);assert.equal(h.persisted().actual,destination.id);}
 
 test('actual passenger UI searches four classes, requires capacity review and keeps freight/mail controls separate',async()=>{
  const h=harness(passengerCampaign());const before=h.persisted();await searchPassengers(h);assert.equal(h.api.state.contracts.length,0);assert.equal(h.api.state.bank,before.bank);assert.deepEqual(h.api.state.ship,before.ship);
@@ -69,7 +73,12 @@ test('actual passenger UI searches four classes, requires capacity review and ke
  await setupPassengers(h);assert.equal(h.button('passenger-board').disabled,false);assert.equal(h.api.state.ship.accommodation.passengerCapacity.reservedCabins,2);
 });
 test('actual boarding preview is side-effect free, double submit boards once and booked people do not replace manual counts',async()=>{
- const h=harness(passengerCampaign());await setupPassengers(h);await searchPassengers(h);const before=h.persisted();await previewBoard(h);same(h.persisted(),before);assert.match(h.dom.ids.get('modal-body').innerHTML,/Existing LSS stock is preserved/);
+ const h=harness(passengerCampaign());await setupPassengers(h);await searchPassengers(h);const before=h.persisted(),firstBody=await previewBoard(h);same(h.persisted(),before);assert.match(h.dom.ids.get('modal-body').innerHTML,/Existing LSS stock is preserved/);
+ // Scope the approved wrapping change to the actual first-form route paragraph.
+ // Native checks prove the hook/rule, not browser layout or visual parity.
+ const routeParagraphs=[...firstBody.matchAll(/<p class="passenger-boarding-route">([\s\S]*?)<\/p>/g)];assert.equal(routeParagraphs.length,1);assert.match(routeParagraphs[0][1],/ available to Destination at /);assert.match(routeParagraphs[0][1],/per person\. Boarding reserves accommodation; payment is due on explicit delivery\./);
+ const css=await readFile(new URL('../style.css',import.meta.url),'utf8'),wrappingRules=[...css.matchAll(/\.passenger-boarding-route\s*\{[^}]*\}/g)].map(match=>match[0]);assert.equal(wrappingRules.length,1);assert.match(wrappingRules[0],/^\.passenger-boarding-route\s*\{\s*overflow-wrap:\s*anywhere\s*;?\s*\}$/);
+
  await Promise.all([h.submit(),h.submit()]);assert.equal(h.api.state.contracts.length,1);assert.equal(h.api.state.contracts[0].count,2);same(h.api.state.ship.accommodation.passengers,before.ship.accommodation.passengers);same(h.api.state.ship.lifeSupport,before.ship.lifeSupport);assert.equal(h.api.state.bank,before.bank);assert.match(h.dom.ids.get('main').innerHTML,/2 booked people aboard/);
  const audit=h.api.contractDetails(h.api.state.contracts[0]);assert.match(audit,/Shared, two per cabin/);assert.match(audit,/Passenger availability calculation/);assert.match(audit,/app convention/);assert.doesNotMatch(audit,/Rate per ton|Freight contract/);
 });
@@ -82,7 +91,7 @@ test('reload and external replacement never rebuild actionable offers from passe
  const old=e.offers[0].offerId;h.api.setState(structuredClone(h.api.state));assert.throws(()=>h.api.actions['passenger-board'](old),/no longer active/);
 });
 test('actual delivery dialog posts one receipt, frees booked occupancy and History Undo restores it',async()=>{
- const h=harness(passengerCampaign());await setupPassengers(h);await searchPassengers(h);await previewBoard(h);await h.submit();const c=h.api.state.contracts[0];h.api.state.actual=destination.id;h.api.actions['passenger-deliver'](c.id);const before=h.persisted();await Promise.all([h.submit(),h.submit()]);assert.equal(h.api.state.contracts[0].status,'delivered');assert.equal(h.api.state.ledger.filter(e=>e.type==='Passenger delivery').length,1);assert.equal(h.api.state.bank,String(BigInt(before.bank)+BigInt(c.payment)));assert.match(h.dom.ids.get('main').innerHTML,/0 booked people aboard/);
+ const h=harness(passengerCampaign());await setupPassengers(h);await searchPassengers(h);await previewBoard(h);await h.submit();const c=h.api.state.contracts[0];arrive(h);h.api.actions['passenger-deliver'](c.id);const before=h.persisted();await Promise.all([h.submit(),h.submit()]);assert.equal(h.api.state.contracts[0].status,'delivered');assert.equal(h.api.state.ledger.filter(e=>e.type==='Passenger delivery').length,1);assert.equal(h.api.state.bank,String(BigInt(before.bank)+BigInt(c.payment)));assert.match(h.dom.ids.get('main').innerHTML,/0 booked people aboard/);
  h.api.actions.undo();assert.equal(h.api.state.contracts[0].status,'accepted');assert.equal(h.api.state.bank,before.bank);assert.equal(h.api.state.ledger.filter(e=>e.type==='Passenger delivery').length,0);
 });
 test('legacy zero/custom luggage overrides are preselected in actual Settings and preserved by readAccommodation',()=>{
@@ -94,5 +103,7 @@ test('legacy zero/custom luggage overrides are preselected in actual Settings an
 });
 
 test('delivery preview discloses fixed whole-ship luggage override and remains draft-only',async()=>{
- const s=passengerCampaign();s.ship.accommodation.luggageMode='manual';s.ship.accommodation.luggageTons='7';const h=harness(s);await setupPassengers(h);await searchPassengers(h);await previewBoard(h);await h.submit();const c=h.api.state.contracts[0];h.api.state.actual=destination.id;const before=h.persisted();h.api.actions['passenger-deliver'](c.id);assert.match(h.dom.ids.get('modal-body').innerHTML,/manual whole-ship luggage total remains fixed/);assert.match(h.dom.ids.get('modal-body').innerHTML,/Whole-ship luggage after<\/dt><dd>7 t/);same(h.persisted(),before);h.api.closeModal();same(h.persisted(),before);
+ const s=passengerCampaign();s.ship.accommodation.luggageMode='manual';s.ship.accommodation.luggageTons='7';const h=harness(s);await setupPassengers(h);await searchPassengers(h);await previewBoard(h);await h.submit();const c=h.api.state.contracts[0];arrive(h);const before=h.persisted();h.api.actions['passenger-deliver'](c.id);assert.match(h.dom.ids.get('modal-body').innerHTML,/manual whole-ship luggage total remains fixed/);assert.match(h.dom.ids.get('modal-body').innerHTML,/Whole-ship luggage after<\/dt><dd>7 t/);same(h.persisted(),before);h.api.closeModal();same(h.persisted(),before);
 });
+
+test('delivery rejects live-only arrival drift without changing independent saved state',async()=>{const h=harness(passengerCampaign());await setupPassengers(h);await searchPassengers(h);await previewBoard(h);await h.submit();const saved=h.persisted(),writes=h.calls.saves;h.api.state.actual=destination.id;h.api.actions['passenger-deliver'](h.api.state.contracts[0].id);await h.submit();same(h.persisted(),saved);assert.equal(h.calls.saves,writes);assert.equal(h.dom.ids.get('modal-submit').disabled,true);assert.match(h.dom.ids.get('modal-error').textContent,/saved campaign.*changed|reload/i);});

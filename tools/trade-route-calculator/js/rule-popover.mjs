@@ -1,4 +1,4 @@
-import {ruleReference,referenceMarkup} from './rule-references.mjs?v=passenger-search-completion-20261011-57';
+import {ruleReference,referenceMarkup} from './rule-references.mjs?v=passenger-booking-completion-20261011-58';
 
 // Refresh an audit's text while retaining its existing reference buttons. This
 // keeps a pointer/Tab target alive when a form's ordinary blur handler rerenders

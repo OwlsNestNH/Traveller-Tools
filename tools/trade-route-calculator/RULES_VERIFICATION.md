@@ -950,7 +950,7 @@ separate horizontal positions; Notes captures show its upper region, not the
 whole document. Browser economics are representative, while native comparisons
 cover every late die; no exhaustive browser cross-product is claimed.
 
-## Passenger setup/search .57 candidate verification scope
+## Passenger setup/search .57 verification scope (completed)
 
 Reproduce the two actual discarded-completion paths in passenger-ui setup/search.
 Preserve complete original/candidate saved/live state, drafts/search identity,
@@ -967,4 +967,79 @@ owned settlement. Actual tagged Store/native Web Locks, observed bootstrap/cache
 completion, zero pending DOM mutations, desktop/mobile warning/footer/results/
 allocation/audit frames and exact source/image provenance are required. Keep
 boarding/delivery and all earlier regressions unchanged; those two remaining
-passenger save callers are a later subbatch. Final counts and review are pending.
+passenger save callers are a later subbatch. Completed evidence follows.
+
+Final 4,629 native tests across 77 files (440 focused), 227 rules checks and all
+66 exact-head jobs passed. Forty-four complete original/candidate outcomes match
+with UUID-only normalization. Corrected actual Chromium passed 110 cases and 310
+frames. Independent review audited all hashes/layouts and scanned all frames;
+142 original files were individually opened (86 mobile, 56 desktop; 90 distinct
+hashes). Quality-30 full-viewport originals remain readable. Image bytes total
+17,175,965, final extracted artifact 21,429,066, below unchanged 20/24 MiB limits;
+the report's earlier in-process artifact snapshot is 20,226,903 bytes.
+
+The first actual browser run's 97/110 result is retained. Two mobile target-range
+framing failures and ten image-budget failures were corrected only in capture
+code; all strict behavioral predicates remained. An unchanged boarding/delivery
+control exposed long-unbroken-name overflow in the Jump success message. Its
+source matches .56, supporting inherited behavior without baseline browser pixels;
+only that control now uses an ordinary name. Migrated setup/search retain the
+long-name stress. The corrected full run also exposed the known Cargo keyboard
+selection race: the trace observes map-only SVG replacement during Enter, but
+actual keydown target and callback origin remain inferred. One unchanged-head
+Cargo-only rerun passed all eight cases; the failure and trace remain retained.
+Only Cargo re-executed; 59 other job timestamps were copied under new attempt IDs.
+
+Exact merge/tree, Pages and all 90 permitted live URL variants matched; ten prior
+proxy-restricted variants remain excluded. All 66 ready-event duplicate jobs
+passed before merge. Existing mobile booking-table horizontal scrolling and
+representative economic screenshot coverage remain qualified. Stage 3 has not
+started; the passenger group remains open for boarding/delivery.
+
+## Passenger boarding/delivery .58 candidate verification scope
+
+Reproduce the two remaining production save boundaries and first boarding
+entry/preview/handoff ownership. Compare complete original/candidate live/durable
+state, session drafts, audit, ledger, dice/IDs, results, reload and Undo after
+UUID-only normalization. Keep preview zero-write and preserve distinct preview
+IDs. Test partial/exhausted availability, shared cabins, fitted Basic space,
+baseline/booked Low occupancy, exact fares and saved rounding, aggregate/explicit/
+legacy-zero luggage, legacy LSS anchoring and physical stock, actual-origin
+boarding and actual-destination payment, one receipt and permanent mulligan
+closure. Delivery must not replenish the original search pool.
+
+Require immediate native behavior, delayed before-write and split genuine
+publication/settlement, retained immutable known-unsaved retry, malformed/missing/
+replayed provenance and saved/unknown retirement, repeated/queued/reentrant input,
+stale first/final form, campaign/editor/view/terms/durable state, original-owner
+drift after provider entry but before publication, and construction,
+normalization, controls, close/render/report failures preserving newer real Notes.
+Observe actual nearby, map-cache and ResizeObserver callbacks without pending
+DOM/SVG/status mutation; preserve legitimate unrelated catalog enrichment and
+reject relevant endpoint drift. Reload/History cannot recreate offers. Preserve
+all earlier regressions and independently review narrow fixture prerequisites.
+Actual desktop/mobile evidence must show both boarding forms, warning/footer
+controls, accepted terms, occupancy/luggage/LSS, delivery receipts/audits, Credits,
+reload and Undo at the exact reviewed candidate. Final counts/results are pending.
+
+
+The first .58 actual Chromium run is retained as 131/139 passed, with 250 of
+260 planned frames. Three failures were screenshot-helper bookkeeping after a
+genuine uninstrumented reload; two expected obsolete warning text after the
+reviewed saved-provenance guard. A helper-local Playwright handle now retains and
+restores scroll references without reinstalling save instrumentation, and the
+stale-saved cases assert the exact reviewed saved/do-not-repeat warning. Neither
+change weakens economic, ownership, reload, Undo, geometry or evidence budgets.
+
+Three mobile first-boarding cases observed 316 px of horizontal overflow in the
+long unbroken destination paragraph. The original paragraph/CSS match .57 by
+source comparison; baseline browser pixels were not separately observed. The
+bounded fix adds one dedicated paragraph class and its overflow-wrap:anywhere
+rule. Long-name fixtures, complete target ranges and strict overflow assertions
+remain. Corrected exact-head native/browser/pixel gates are required before merge.
+The separate unchanged Setup/location suite initially passed 159/160, with one
+final network-idle timeout after completed save/rounding/reload/History Undo
+assertions. Its original report and artifacts are retained. Empty recorded error
+arrays do not establish the missing final idle/pending checks; precise network
+cause is not established without a request timeline. No Setup assertion was
+relaxed. Final release evidence must disclose the result of subsequent checks.

@@ -86,6 +86,45 @@ function assertLocation(saved,before,viewport){
 }
 const assertSaved=(saved,before,scenario,viewport)=>scenario.path==='setup'?assertSetup(saved,before):assertLocation(saved,before,viewport);
 
+// Observer-only evidence for the repeated desktop rounding final-idle timeout.
+// No bodies, headers, private query values, new waits or route promise wrappers.
+const idleDiagnostics=new WeakMap();
+const idleMark=(result,label,snapshot=false,fixturePending=null)=>idleDiagnostics.get(result)?.mark(label,snapshot,fixturePending);
+function observeIdle(context,result){
+ if(result.id!=='setup-rounding-snapshot-1440')return;
+ const started=performance.now(),requests=new WeakMap(),pending=new Map(),pages=new WeakMap(),frames=new WeakMap();let requestId=0,pageId=0,frameId=0,sealed=false;
+ const data=result.networkIdleDiagnostic={clock:'Monotonic milliseconds since context creation; r/p/f = request/page/frame IDs',urlPolicy:'App/map paths with allowlisted public cache tags and synthetic map parameters only; other origins, query values, fragments and payloads omitted',byteLimit:16384,completedDropped:0,timelineDropped:0,observerErrors:0,completed:[],timeline:[],snapshots:[]};
+ const time=()=>Math.round(performance.now()-started),safe=fn=>(...args)=>{if(sealed)return;try{return fn(...args);}catch{data.observerErrors++;}};
+ const urlLabel=value=>{
+  const url=new URL(value),origin=url.origin===new URL(base).origin?'app':url.origin==='https://travellermap.com'?'map':null;if(!origin)return 'other-origin';const query=[];
+  for(const key of origin==='app'?['v']:['milieu','x','y','jump','sector','hex']){const value=url.searchParams.get(key);if(value===null)continue;const allowed=key==='v'?/^[a-z]+(?:-[a-z]+)*-\d{8}-\d{1,5}$/.test(value)&&value.length<=80:key==='milieu'?value==='M1105':key==='sector'?value==='Spinward Marches':key==='hex'?apiWorlds.some(w=>w.Hex===value):key==='jump'?/^[0-6]$/.test(value):apiWorlds.some(w=>String(w[key==='x'?'WorldX':'WorldY'])===value);if(allowed)query.push(key+'='+encodeURIComponent(value));}
+  return origin+url.pathname.replace(/[^a-zA-Z0-9_./-]/g,'_').slice(0,112)+(query.length?'?'+query.join('&'):'');
+ };
+ const pageNumber=page=>{if(!pages.has(page))pages.set(page,++pageId);return pages.get(page);},frameNumber=frame=>{if(!frame)return 0;if(!frames.has(frame))frames.set(frame,++frameId);return frames.get(frame);};
+ const describe=r=>`r${r.id} p${r.page} f${r.frame} ${r.method} ${r.type} ${r.url} start@${r.start}${r.redirect?' redirect-from=r'+r.redirect:''}${r.route==null?'':' route@'+r.route}${r.response==null?'':' response='+r.status+'@'+r.response}${r.end==null?'':' '+r.outcome+'@'+r.end}`;
+ const append=(key,value,limit)=>{data[key].push(value);if(data[key].length>limit){data[key].shift();data[key+'Dropped']++;}};
+ const mark=safe((label,snapshot=false,fixturePending=null)=>{const at=time();append('timeline',at+' '+label,64);if(snapshot){const all=[...pending.values()];data.snapshots.push({label,at,fixturePending,pendingCount:all.length,pendingDropped:Math.max(0,all.length-64),pending:all.slice(0,64).map(describe)});}});
+ const record=(request,page)=>{let r=requests.get(request);if(!r){let frame=null;try{frame=request.frame();}catch{}r={id:++requestId,page:pageNumber(page),frame:frameNumber(frame),method:request.method().slice(0,16),type:request.resourceType().slice(0,16),url:urlLabel(request.url()),start:time(),redirect:requests.get(request.redirectedFrom())?.id};requests.set(request,r);pending.set(r.id,r);}return r;};
+ const finish=(request,page,outcome)=>{const r=record(request,page);r.end=time();r.outcome=outcome;pending.delete(r.id);append('completed',describe(r),64);};
+ context.on('page',safe(page=>{
+  const id=pageNumber(page);mark('page-created p'+id);
+  page.on('request',safe(request=>{record(request,page);}));
+  page.on('response',safe(response=>{const r=record(response.request(),page);r.status=response.status();r.response=time();}));
+  page.on('requestfinished',safe(request=>finish(request,page,'finished')));
+  page.on('requestfailed',safe(request=>{const error=request.failure()?.errorText;finish(request,page,'failed:'+(typeof error==='string'&&/^net::[A-Z0-9_]+$/.test(error)?error.slice(0,64):'unclassified'));}));
+  page.on('framenavigated',safe(frame=>mark('navigated p'+id+' f'+frameNumber(frame)+(frame===page.mainFrame()?' main ':' child ')+urlLabel(frame.url()))));
+  page.on('framedetached',safe(frame=>mark('detached p'+id+' f'+frameNumber(frame))));
+  for(const event of ['domcontentloaded','load','close','crash'])page.on(event,safe(()=>mark(event+' p'+id)));
+ }));
+ idleDiagnostics.set(result,{mark,route:safe(route=>{const r=requests.get(route.request());if(r)r.route=time();}),finish:safe(()=>{
+  // Keep failure-time pending evidence ahead of historical completed requests.
+  // The wrapper accounts for the report's actual indentation, not compact JSON.
+  const bytes=()=>Buffer.byteLength(JSON.stringify({cases:[{networkIdleDiagnostic:data}]},null,2));
+  while(bytes()>data.byteLimit){if(data.completed.length){data.completed.shift();data.completedDropped++;}else if(data.timeline.length){data.timeline.shift();data.timelineDropped++;}else{const snapshot=data.snapshots.find(s=>s.label!=='case-failed-before-evidence'&&s.pending.length)||data.snapshots.find(s=>s.pending.length);if(!snapshot)break;snapshot.pending.pop();snapshot.pendingDropped++;}}
+  sealed=true;
+ })});
+}
+
 // A network fixture can delay/fail one exact request independently of Store.
 // It never replaces picker, resolve(), nearby(), app callbacks or their Promises.
 function networkFixture(result){
@@ -108,6 +147,7 @@ function networkFixture(result){
 }
 async function contextFor(result,scenario){
  const context=await browser.newContext({viewport:result.viewport,serviceWorkers:'block'});context.setDefaultTimeout(10000);context.setDefaultNavigationTimeout(15000);const net=networkFixture(result);
+ observeIdle(context,result);
  context.on('page',page=>{page.on('pageerror',e=>result.pageErrors.push(errorText(e)));page.on('console',entry=>{if(entry.type()==='error')result.consoleErrors.push({text:entry.text(),url:entry.location().url});});page.on('requestfailed',request=>{if(request.failure()?.errorText!=='net::ERR_ABORTED')result.networkErrors.push(request.url()+': '+request.failure()?.errorText);});page.on('response',response=>{if(response.status()>=400)result.httpErrors.push({status:response.status(),url:response.url()});});});
  await context.exposeBinding('__worldUnhandled',(_source,message)=>result.unhandledRejections.push(message));
  await context.addInitScript(({key,bytes,origin})=>{if(location.origin!==origin)return;addEventListener('unhandledrejection',event=>{void globalThis.__worldUnhandled(String(event.reason?.stack||event.reason));});if(!localStorage.getItem(key))localStorage.setItem(key,bytes);
@@ -118,7 +158,7 @@ async function contextFor(result,scenario){
   const nativeSet=Storage.prototype.setItem;globalThis.worldStorage={attempts:0,writes:0,failNext:false,observations:[]};
   Storage.prototype.setItem=function(name,value){if(this!==localStorage||name!==key)return Reflect.apply(nativeSet,this,[name,value]);worldStorage.attempts++;worldStorage.observations.push({message:document.querySelector('#message')?.textContent||'',open:!!document.querySelector('#modal')?.open,submitDisabled:!!document.querySelector('#modal-submit')?.disabled});if(worldStorage.failNext){worldStorage.failNext=false;throw Error('Synthetic known world prewrite rejection');}const result=Reflect.apply(nativeSet,this,[name,value]);worldStorage.writes++;return result;};
  },{key:KEY,bytes:JSON.stringify(seed(scenario)),origin:new URL(base).origin});
- await context.route('**/*',async route=>{try{const url=new URL(route.request().url());if(url.href===new URL('verification/world-completion-peer.html',base).href)return route.fulfill({contentType:'text/html',body:'<!doctype html><title>Disposable world completion lock peer</title>'});if(url.origin===new URL(base).origin)return route.continue();if(url.origin==='https://travellermap.com'&&url.pathname.startsWith('/api/')){assert.equal(url.searchParams.get('milieu'),'M1105');return await net.route(route);}result.unexpectedRequests.push(url.href);return await route.abort('blockedbyclient');}catch(error){result.fixtureErrors.push(errorText(error));await route.abort('failed').catch(()=>{});}});
+ await context.route('**/*',async route=>{idleDiagnostics.get(result)?.route(route);try{const url=new URL(route.request().url());if(url.href===new URL('verification/world-completion-peer.html',base).href)return route.fulfill({contentType:'text/html',body:'<!doctype html><title>Disposable world completion lock peer</title>'});if(url.origin===new URL(base).origin)return route.continue();if(url.origin==='https://travellermap.com'&&url.pathname.startsWith('/api/')){assert.equal(url.searchParams.get('milieu'),'M1105');return await net.route(route);}result.unexpectedRequests.push(url.href);return await route.abort('blockedbyclient');}catch(error){result.fixtureErrors.push(errorText(error));await route.abort('failed').catch(()=>{});}});
  return {context,net};
 }
 async function installGate(page,result){
@@ -252,14 +292,14 @@ async function newerDisk(page,result,{publish=true}={}){
  await page.evaluate(async({storeURL,key,publish})=>{const url=new URL('state.mjs',storeURL);url.search=new URL(storeURL).search;const S=await import(url.href),current=worldGate.store.read(),next=S.transition(current,'Synthetic external newer campaign',state=>{state.name='Newer disk campaign';});localStorage.setItem(key,JSON.stringify(next));if(publish)dispatchEvent(new StorageEvent('storage',{key,newValue:localStorage.getItem(key)}));},{...result.runtime,key:KEY,publish});
 }
 async function reloadUndo(page,result,scenario,before,{committed=true,undo=true}={}){
- const bytes=await raw(page),saved=JSON.parse(bytes);await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();await frames(page);assert.equal(await raw(page),bytes,'Reload never repeats setup/location');assert.equal(await page.evaluate(()=>worldStorage.writes),0);
+ const bytes=await raw(page),saved=JSON.parse(bytes);idleMark(result,'reload-start');await page.reload();idleMark(result,'reload-returned');await page.getByText('Editing in this tab',{exact:true}).waitFor();await frames(page);assert.equal(await raw(page),bytes,'Reload never repeats setup/location');assert.equal(await page.evaluate(()=>worldStorage.writes),0);
  if(committed)assertSaved(await read(page),before,scenario,result.viewport);else assert.deepEqual(await read(page),before);
  if(committed&&undo){
-  const expected=S.undo(saved);await tab(page,'History');await action(page,'undo').click();await page.waitForFunction(({key,revision})=>JSON.parse(localStorage.getItem(key)).revision===revision,{key:KEY,revision:expected.revision});await closed(page);const undone=await read(page);expected.events.at(-1).id=undone.events.at(-1).id;assert.deepEqual(undone,expected,'Actual History Undo restores precise inverse, preserving audit/baseline and consumed jump');assert.equal(await page.evaluate(()=>worldStorage.writes),1);assert.equal(undone.bank,before.bank);assert.deepEqual(undone.ledger,before.ledger);
+  const expected=S.undo(saved);idleMark(result,'history-tab-start');await tab(page,'History');idleMark(result,'history-undo-start');await action(page,'undo').click();idleMark(result,'history-undo-click-returned');await page.waitForFunction(({key,revision})=>JSON.parse(localStorage.getItem(key)).revision===revision,{key:KEY,revision:expected.revision});await closed(page);const undone=await read(page);expected.events.at(-1).id=undone.events.at(-1).id;assert.deepEqual(undone,expected,'Actual History Undo restores precise inverse, preserving audit/baseline and consumed jump');assert.equal(await page.evaluate(()=>worldStorage.writes),1);assert.equal(undone.bank,before.bank);assert.deepEqual(undone.ledger,before.ledger);
   if(scenario.path==='setup'){assert.equal(undone.initialized,false);assert.deepEqual(undone.dashboardBaseline,saved.dashboardBaseline,'Undo preserves original boundary until a second setup replaces it');}
   else{for(const key of ['ship','lots','contracts','policies','route','actual','hours','dashboardBaseline'])assert.deepEqual(undone[key],before[key],key+' restored by History Undo');assert.equal(undone.jumpAttempts.at(-1).mulliganUsed,true);assert.equal(undone.jumpAttempts.at(-1).closed,true);assert.equal(S.jumpUndoEligibility(undone).allowed,false);}
  }
- await capture(page,result,committed&&undo?'reload-and-history-undo':'authoritative-reload');result.checks.push('Authoritative reload has zero writes; real History Undo restores the exact inverse without resetting consumed jump or opening baseline');return read(page);
+ idleMark(result,'reload-undo-verified');await capture(page,result,committed&&undo?'reload-and-history-undo':'authoritative-reload');result.checks.push('Authoritative reload has zero writes; real History Undo restores the exact inverse without resetting consumed jump or opening baseline');return read(page);
 }
 async function success(page,result,scenario,before,{recovery=true}={}){
  await closed(page);await frames(page);const snapshot=await gate(page),saved=await read(page);assertSaved(saved,before,scenario,result.viewport);assert.equal(await raw(page),snapshot.candidates.at(-1));assert.equal(snapshot.storage.writes,1);assert.equal(snapshot.durableToken,false);assert.match(await page.locator('#message').textContent(),successPattern);
@@ -417,13 +457,13 @@ async function writeReport(){await writeFile(join(artifacts,prefix+'report.json'
 async function runCase(scenario,viewport){
  const result={id:scenario.id+'-'+viewport.width,path:scenario.path,mode:scenario.mode,viewport,status:'running',checks:[],screenshots:[],layouts:[],evidenceTargets:[],navigationProbes:[],lookupBoundaries:[],expectedHTTPFailures:[],pageErrors:[],unhandledRejections:[],consoleErrors:[],networkErrors:[],httpErrors:[],unexpectedRequests:[],fixtureErrors:[],errors:[]};report.cases.push(result);let context,net;
  try{
-  ({context,net}=await contextFor(result,scenario));const page=await context.newPage();await runBody(page,result,scenario,context,net);await page.waitForLoadState('networkidle');await frames(page);
+  ({context,net}=await contextFor(result,scenario));const page=await context.newPage();await runBody(page,result,scenario,context,net);idleMark(result,'final-networkidle-start',true,net?.pending??null);await page.waitForLoadState('networkidle');idleMark(result,'final-networkidle-returned');await frames(page);
   for(const key of ['pageErrors','unhandledRejections','networkErrors','unexpectedRequests','fixtureErrors'])assert.deepEqual(result[key],[],key);
   const unexpectedHTTP=result.httpErrors.filter(e=>e.status!==503||!result.expectedHTTPFailures.includes(e.url));assert.deepEqual(unexpectedHTTP,[],'Only explicitly injected 503 responses are allowed');
   const unexpectedConsole=result.consoleErrors.filter(e=>!(/503/.test(e.text)&&result.expectedHTTPFailures.includes(e.url)));assert.deepEqual(unexpectedConsole,[],'No unrelated console errors');
   assert.equal(net.pending,false,'No abandoned network boundary');result.status='passed';
- }catch(error){result.status='failed';result.errors.push(errorText(error));const page=context?.pages()[0];if(page){await capture(page,result,'failure').catch(e=>result.errors.push('Evidence: '+errorText(e)));result.failedGate=await gate(page).catch(()=>null);}}
- finally{if(net?.pending)net.release();await context?.close();await writeReport();}
+ }catch(error){idleMark(result,'case-failed-before-evidence',true,net?.pending??null);result.status='failed';result.errors.push(errorText(error));const page=context?.pages()[0];if(page){await capture(page,result,'failure').catch(e=>result.errors.push('Evidence: '+errorText(e)));result.failedGate=await gate(page).catch(()=>null);}}
+ finally{idleMark(result,'context-close-start');if(net?.pending)net.release();await context?.close();idleMark(result,'context-close-returned',true,net?.pending??null);idleDiagnostics.get(result)?.finish();await writeReport();}
  console.log(result.status.toUpperCase()+': '+result.id);for(const error of result.errors)console.error(error);
 }
 if(process.argv.includes('--fixtures-only')){

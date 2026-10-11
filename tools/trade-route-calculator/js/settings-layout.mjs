@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=passenger-search-completion-20261011-57';
+import {ruleInfo} from './rule-references.mjs?v=passenger-booking-completion-20261011-58';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={
