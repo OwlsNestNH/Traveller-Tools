@@ -1255,5 +1255,49 @@ checks, while review, pending publication and recovery remain frozen.
 The browser gate declares 82 cases (63 desktop, 19 mobile), 39 representative
 image cases and 87 planned frame groups, with complete native-resolution target
 walks and fixed 14-minute/24-MiB/20-MiB limits. Its final source additionally checks
-first-microtask closure without changing the same-stack saved assertions. Actual
-GitHub Chromium results, final pixels, duplicates and deployment remain pending.
+first-microtask closure without changing the same-stack saved assertions.
+
+The first exact-head GitHub run at `c9134cb7dbd4704f46d18acf7cb63ece02b82b46`
+passed all 68 existing jobs, while the new Clear browser gate passed 66/82.
+All 16 failures and 81 original screenshots are retained. Twelve mobile cases
+showed genuine clipped long unbroken current-world names (490 px internal
+content overflow despite the dialog itself fitting). The released paragraph and
+CSS are identical by source; inheritance is source-qualified, without baseline
+browser pixels. One desktop case exposed a genuine terminal recovery defect:
+a consumed one-shot Cancel disabled-setter failure in the read-only role callback
+left both dismissal controls disabled. Reload protection and the single durable
+write remained intact, but the physical Close assertion correctly failed.
+
+The other three desktop failures were independently traced to test models:
+wrong-candidate preserved authentic commit provenance and needed saved/display-
+failed guidance; native-close had retired its caller-local reporting ownership,
+so the old message must remain unchanged while the global reload banner applies;
+and the queued-action setup synchronously replaced the accepted dialog before
+submission, correctly causing zero writes instead of reaching a pending save.
+Correct those exact boundaries while retaining full state, provenance, economics,
+Undo, reload, no-repeat and ownership assertions. Keep every original case, strict
+mobile long-name geometry and physical dismissal. The bounded runtime correction
+is caller-owned independent dismissal restoration plus one dedicated Clear
+confirmation wrapping class. Fresh frozen native, exact-head browser, original-
+resolution image review, duplicate CI and deployment gates remain required.
+
+
+The corrected browser plan retains all 82 original case identifiers and adds five:
+mobile Cancel restoration, desktop/mobile X restoration, and desktop/mobile
+preclaim replacement with zero provider calls/writes. It declares 65 scenarios,
+87 cases (22 mobile), 43 representative image cases and 97 planned frame groups.
+Duration and artifact/image byte limits are unchanged. Every open terminal review
+now asserts genuinely enabled Cancel/X, disabled Save and successful physical
+dismissal before genuine reload/Undo; native-close preserves its exact prior
+message and closed state. Actual revised-head results remain pending.
+
+
+Eighteen additional native regressions exercise throwing-before-assignment
+Cancel/X setters with native and delayed providers, each real dismissal choice,
+persistent faults, reentrant newer dialog/chrome and retired owners. All original
+116 Clear tests and five full released-source observations remain. The first new
+run passed 15/18; one CSS selector expectation and two observations counting
+legitimate current-role synchronization as old-owner repair were independently
+corrected. The subsequent focused run passed 139/139 with an exact no-drift source
+snapshot. Additional explicit newer-title/body/enabled-control assertions were
+then strengthened; a fresh complete aggregate is required for final publication.

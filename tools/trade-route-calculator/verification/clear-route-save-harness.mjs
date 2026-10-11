@@ -74,7 +74,7 @@ export function setup(saved=fixture(),{original=false,draft=true,factory=null}={
  const h=(factory||(original?originalHarness:candidateHarness))(saved,{setTimeout:()=>0,clearTimeout(){},mapControl:map,frameControl});
  h.api.setDecisions(decisions);h.hooks.onRole=(editable,text)=>h.api.roleChange(editable,text);
  const form=h.dom.ids.get('modal-form'),dialog=h.dom.ids.get('modal');form.id='modal-form';form.isConnected=true;dialog.isConnected=true;
- for(const attributes of chrome){const node=h.dom.ids.get(attributes.id);Object.assign(node,{attributes,id:attributes.id,type:attributes.type,form});}
+ for(const attributes of chrome){const node=h.dom.ids.get(attributes.id);Object.assign(node,{attributes,id:attributes.id,type:attributes.type,form,isConnected:true});}
  const originalQuery=form.querySelectorAll;
  form.querySelectorAll=selector=>selector==='input,select,textarea,button'?[h.dom.ids.get('modal-close'),...h.dom.fields().values(),h.dom.ids.get('modal-cancel'),h.dom.ids.get('modal-submit')]:originalQuery(selector);
  form.contains=node=>form.querySelectorAll('input,select,textarea,button').includes(node);dialog.contains=node=>node===form||form.contains(node);

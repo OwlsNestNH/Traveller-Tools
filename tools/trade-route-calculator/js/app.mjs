@@ -1714,6 +1714,18 @@ function clearRouteEntryCurrent(o,session,generation){
  if(session){if(!o.session){o.session=session;session.clearRouteOwner=o;}return o.session===session&&activeModal===session&&modalGeneration===generation&&generation===o.generation;}
  return activeModal===o.entrySession&&modalGeneration===o.generation-1;
 }
+function restoreClearRouteDismissal(o){
+ const current=()=>clearRouteWriteOperation===o&&activeModal===o.session&&o.session.terminal&&(modalGeneration===o.generation||modalGeneration===o.closingGeneration)&&$('modal')===o.dialog&&o.dialog.open&&$('modal-form')===o.form&&o.form.isConnected&&o.dialog.contains(o.form);
+ for(const [id,disabled]of [['modal-submit',true],['modal-cancel',false],['modal-close',false]]){
+  try{
+   if(!current())return;
+   const control=o.review?.nodes.find(([name])=>name===id)?.[1];
+   if(!control||$(id)!==control||!control.isConnected||!o.dialog.contains(control))continue;
+   if(!current()||$(id)!==control)return;
+   control.disabled=disabled;
+  }catch{/* One failed control must not prevent restoring the other dismissal control. */}
+ }
+}
 function clearRouteWriteFailure(o,a,error){
  if(a.publication)error=new SaveCommittedPublicationError(a.publication.revision,error);
  else if(error?.code==='SAVE_COMMITTED_PUBLICATION_FAILED'&&!(error.committed===true&&error.revision===o.revision+1))error=Error('Clear route save outcome could not be confirmed.');
@@ -1745,10 +1757,9 @@ function clearRouteWriteFailure(o,a,error){
   if(!known){try{terminalModalSaveFailure(o.session,a.publication?new SaveCommittedPublicationError(a.publication.revision,reportError):reportError,()=>clearRouteReportsCurrent(o));}catch{/* Keep reload protection. */}}
   else if(clearRouteReportsCurrent(o)){
    o.session.terminal=true;o.session.awaitSave=false;
-   for(const [id,disabled]of [['modal-submit',true],['modal-cancel',false],['modal-close',false]]){if(!clearRouteReportsCurrent(o))break;try{$(id).disabled=disabled;}catch{/* Best-effort dismissal after a known unsaved fault. */}}
   }
   return false;
- }finally{a.recovering=false;o.recovering=false;if(clearRouteSaveOperation?.attempt===a)clearRouteSaveOperation=null;}
+ }finally{try{restoreClearRouteDismissal(o);}finally{a.recovering=false;o.recovering=false;if(clearRouteSaveOperation?.attempt===a)clearRouteSaveOperation=null;}}
 }
 function finishClearRouteWrite(o,a,candidate){
  a.retired=true;
@@ -1796,7 +1807,7 @@ function clearPlannedRoute(){
  invalidateClearRouteWriteOperation(false);clearRouteWriteOperation=o;clearRouteWriteEpoch++;
  o.draftHold=new Promise(resolve=>{o.releaseDraft=resolve;});
  try{
-  const opened=modal('Clear planned route',`<p>Clear future stops and start a new route from <strong>${esc(o.actualWorld?.name)}</strong>, the ship’s actual location?</p><p class="help">This does not return the ship to its original campaign starting world. Time, cargo, bank, completed travel history and insurance terms stay unchanged. You can undo this change.</p>`,()=>false,'Clear route',true,{saveName:'Clear route',saveContext:'clear-route-save',constructionGuard:(session,generation)=>clearRouteEntryCurrent(o,session,generation)});
+  const opened=modal('Clear planned route',`<p class="clear-route-location">Clear future stops and start a new route from <strong>${esc(o.actualWorld?.name)}</strong>, the ship’s actual location?</p><p class="help">This does not return the ship to its original campaign starting world. Time, cargo, bank, completed travel history and insurance terms stay unchanged. You can undo this change.</p>`,()=>false,'Clear route',true,{saveName:'Clear route',saveContext:'clear-route-save',constructionGuard:(session,generation)=>clearRouteEntryCurrent(o,session,generation)});
   if(opened===false||!clearRouteWriteOwnerCurrent(o)){invalidateClearRouteWriteOperation(false,o);return false;}
   o.review={nodes:['modal-body','modal-title','modal-error','modal-submit','modal-cancel','modal-close'].map(id=>[id,$(id)]),body:$('modal-body').innerHTML,title:$('modal-title').textContent,label:$('modal-submit').textContent};
   assertClearRouteCurrent(o);o.form.onsubmit=e=>{e.preventDefault();if(e.currentTarget!==o.form)return false;return submitClearRoute(o);};
