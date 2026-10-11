@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {serviceSaveGate} from './service-save-harness.mjs';
 import {harness,campaign,core,origin,destination,far,bindings,S,A,same,attrs} from './app-harness.mjs';
 
 for(const [action,kind] of [['search','supplier'],['buyer-search','buyer']]){
@@ -377,10 +378,13 @@ test('top-level toggles never undo or reapply confirmed fuel or life support',as
 
 test('a payment in progress blocks all toggles until its confirmed receipt is saved',async()=>{
  const h=harness(recurringCampaign());h.api.setTab('Overview');h.api.services.open('mortgage',{fresh:true});
+ // Native completion is immediate. Hold the existing provider explicitly to
+ // test the genuinely pending interval rather than an unconditional await.
+ const gate=serviceSaveGate(h.store);
  const pending=h.api.services.action('expense-pay',expenseArg(h,'expense-pay'));
  assert.equal(h.api.services.committing(),true);
  for(const action of ['refuel','refill-support','cargo-hold','ship-expenses'])assert.throws(()=>h.api.toggleShipPanel(action),/finish saving/);
- await pending;const paid=h.persisted();assert.equal(h.api.services.committing(),false);h.api.toggleShipPanel('ship-expenses');same(h.persisted(),paid);assert.deepEqual(selectedShipButton(h),[]);
+ gate.entries[0].fulfill();await pending;gate.restore();const paid=h.persisted();assert.equal(h.api.services.committing(),false);h.api.toggleShipPanel('ship-expenses');same(h.persisted(),paid);assert.deepEqual(selectedShipButton(h),[]);
 });
 test('a stale selected stock view still closes after editing ownership is lost',()=>{
  const h=harness(recurringCampaign()),before=h.persisted();h.api.setTab('Overview');h.api.toggleShipPanel('refuel');h.store.editable=false;

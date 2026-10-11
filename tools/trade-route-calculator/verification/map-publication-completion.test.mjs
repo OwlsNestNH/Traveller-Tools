@@ -18,7 +18,10 @@ function harness(owners = {}) {
  const old = {replaceWith(node) {assert.equal(node, replacement); calls.push('replace');}};
  const holder = {set innerHTML(html) {assert.equal(html, '<section>Candidate map</section>'); calls.push('markup');},
   querySelector(selector) {assert.equal(selector, '.world-map'); return replacement;}};
+ // This extraction isolates the existing owners; the expense browser/native
+ // suites exercise the real expense controller's publication guard.
  const context = vm.createContext({
+  expenseServices: {publicationDeferred: () => false},
   worldWriteOperation: null, undoOperation: null, replacementReview: null, settingsOperation: null,
   mapDrag: null, tab: 'Overview', mapZoom: 1, showTerritories: false,
   mapAreas: {error: null, pending: false}, mapOverview: {error: null, pending: false},

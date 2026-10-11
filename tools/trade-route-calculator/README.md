@@ -633,3 +633,15 @@ and rounding for a deliberate retry; saved or uncertain outcomes require reload.
 The native local Store remains synchronous. Existing price generation, edit/cancel
 loops, accounting and quote-cache eligibility are unchanged. The remaining Stage 2
 caller groups are recorded in [the completion queue](COMPLETION_MIGRATION.md).
+
+
+Expense-panel completion (.50 candidate) covers mortgage, maintenance, crew
+salary and berthing payments, plus the explicit saved berthing-rate roll. A
+pending operation retains its draft and financial display; receipts, navigation
+and success follow owned completion. A demonstrably unwritten failure permits a
+deliberate retry with the same prepared terms or rate die. A failure after saving, or an uncertain save outcome, requires reload; foreign
+campaign/editor intent retires the old owner.
+Existing payment amounts, schedules, rounding, recorded dates, ledger and Undo
+rules remain unchanged. The separate legacy Accounts and shared-modal groups
+remain in the completion queue. Exact-head browser and screenshot gates are
+required before release.

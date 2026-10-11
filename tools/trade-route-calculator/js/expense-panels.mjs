@@ -1,13 +1,14 @@
-import {ruleInfo} from './rule-references.mjs?v=sale-completion-20261011-49';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=sale-completion-20261011-49';
-import {passengerShip} from './passengers.mjs?v=sale-completion-20261011-49';
+import {ruleInfo} from './rule-references.mjs?v=expense-completion-20261011-50';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=expense-completion-20261011-50';
+import {passengerShip} from './passengers.mjs?v=expense-completion-20261011-50';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=sale-completion-20261011-49';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=sale-completion-20261011-49';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=sale-completion-20261011-49';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=sale-completion-20261011-49';
-import {creditStep} from './rounding.mjs?v=sale-completion-20261011-49';
-import {roll} from './rules.mjs?v=sale-completion-20261011-49';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=expense-completion-20261011-50';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=expense-completion-20261011-50';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=expense-completion-20261011-50';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=expense-completion-20261011-50';
+import {creditStep} from './rounding.mjs?v=expense-completion-20261011-50';
+import {roll} from './rules.mjs?v=expense-completion-20261011-50';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=expense-completion-20261011-50';
 
 const esc=escapeHtml;
 const money=formatCreditsText;
@@ -54,14 +55,15 @@ export function latestExpenseReceipt(state,kind,receiptId){
  * fresh draft. Persist route() / onNavigate to recover a particular receipt.
  * The host must forward each rendered data-arg unchanged to action().
  */
-export function createExpensePanels({document,getState,isEditable,commit,render,showOverview,message=()=>{},openService,showSettings,onNavigate=()=>{},rollDie=()=>roll(1).total}){
- let session=null;
+export function createExpensePanels({document,getState,isEditable,commit,render,showOverview,message=()=>{},openService,showSettings,onNavigate=()=>{},rollDie=()=>roll(1).total,onTerminalFailure=()=>{},onComplete=()=>{},canRetry=()=>true,captureContext=()=>()=>true}){
+ let session=null,operation=null,generation=0,reloadMessage='';
  const active=()=>!!session;
  const route=()=>session?{kind:session.kind,...(session.mode==='receipt'?{receiptId:session.receiptId}:{})}:null;
  const notify=()=>onNavigate(route());
  const button=(text,action,value='',primary=false,disabled=false)=>`<button type="button" data-action="${action}" data-arg="${esc(session.token+':'+value)}" class="${primary?'primary':''}"${disabled?' disabled':''}>${esc(text)}</button>`;
  function open(kind='expenses',{fresh=false,receiptId}={}){
   if(session?.busy){message('Wait for the current expense to finish saving.');return false;}
+  if(reloadMessage)throw Error(reloadMessage);
   if(!['expenses',...payableKinds,'fuel','support'].includes(kind))throw Error('Choose a ship expense.');
   if(kind==='fuel'||kind==='support'){
    if(typeof openService!=='function')throw Error('Ship service navigation is unavailable.');
@@ -70,22 +72,42 @@ export function createExpensePanels({document,getState,isEditable,commit,render,
    const previous=session;openService(kind);
    if(session===previous)close({render:false});return;
   }
-  const base=structuredClone(getState());
+  const campaign=getState(),base=structuredClone(campaign);
   if(!base.initialized||!base.worlds[base.actual])throw Error('Set up a campaign first.');
   const receipt=kind!=='expenses'&&!fresh?latestExpenseReceipt(base,kind,receiptId):null;
-  session={kind,token:uid(),mode:receipt?'receipt':receiptId?'missing-receipt':kind==='expenses'?'summary':'draft',receiptId:receipt?.id??receiptId,base,revision:base.revision,world:base.worlds[base.actual],editable:isEditable(),busy:false,invalidated:false,error:'',draft:{payments:'1',monthly:base.ship.expenses?.salary??'',weeks:'1'}};
-  notify();showOverview();render();
+  session={kind,token:uid(),mode:receipt?'receipt':receiptId?'missing-receipt':kind==='expenses'?'summary':'draft',receiptId:receipt?.id??receiptId,campaign,base,revision:base.revision,world:base.worlds[base.actual],editable:isEditable(),busy:false,invalidated:false,error:'',draft:{payments:'1',monthly:base.ship.expenses?.salary??'',weeks:'1'}};
+  const opened=session;notify();if(session!==opened)return;showOverview();if(session!==opened)return;render();if(session!==opened)return;
   if(document.defaultView?.matchMedia?.('(max-width:1099px)').matches)document.getElementById('expense-panel')?.scrollIntoView({block:'start',behavior:'instant'});
+ }
+ function invalidate(){
+  if(session)session.invalidated=true;
+  if(operation){operation.invalidated=true;operation.publicationDeferred=false;}
+ }
+ // The host has already consumed the controller's one-use publication token.
+ // A matching revision, receipt or die is never a substitute for that proof.
+ function receiveCampaign(next,local){
+  const owner=operation;
+  if(local&&owner?.pending&&owner.prepared&&!owner.publication&&next.revision===owner.revision+1){
+   owner.publication=next;
+   owner.publicationDeferred=!owner.invalidated&&session===owner.session&&owner.context();
+   return true;
+  }
+  invalidate();return false;
  }
  function stale(current=session){
   if(!current)return true;
-  const now=getState(),changed=!current.editable||!isEditable()||current.revision!==now.revision||current.base.actual!==now.actual;
-  if(changed&&!current.busy)current.invalidated=true;
+  const now=getState(),owner=current.operation,expected=owner?.publication||current.campaign;
+  const changed=!!reloadMessage||!current.editable||!isEditable()||now!==expected||now.revision!==(owner?.publication?.revision??current.revision)||current.base.actual!==now.actual;
+  // Editing loss is permanent even if it is observed during an owned save.
+  if(changed){current.invalidated=true;if(owner){owner.invalidated=true;owner.publicationDeferred=false;}}
   return current.invalidated||changed;
  }
  function status(){
-  if(!session||session.mode!=='draft')return '';
-  if(stale())return !session.editable?'This tab is read-only. Take over editing, then return to Expenses and reopen this payment.':'Campaign or editing ownership changed. Return to Expenses and reopen this payment with current values.';
+  if(!session)return '';
+  if(session.terminal)return reloadMessage;
+  if(session.mode!=='draft')return '';
+  if(stale())return session.staleReason||(!session.editable?'This tab is read-only. Take over editing, then return to Expenses and reopen this payment.':'Campaign or editing ownership changed. Return to Expenses and reopen this payment with current values.');
+  if(session.busy)return 'Saving this expense. Wait for confirmation before continuing.';
   return session.error;
  }
  function inputFor(current,state=current.base){
@@ -157,46 +179,145 @@ export function createExpensePanels({document,getState,isEditable,commit,render,
   if(form&&form.dataset?.expenseSession===session.token&&!stale()){
    let changed=false;
    for(const el of form.elements)if(Object.hasOwn(session.draft,el.name)&&session.draft[el.name]!==el.value){session.draft[el.name]=el.value;changed=true;}
-   if(changed){session.error='';const box=document.getElementById('expense-quote');if(box)box.innerHTML=previewMarkup(forecast());}
+   if(changed){session.intent=null;session.error='';const box=document.getElementById('expense-quote');if(box)box.innerHTML=previewMarkup(forecast());}
   }
   syncControls();
  }
  function syncControls(){
-  if(!session||session.mode!=='draft')return;
+  const current=session;if(!current||current.mode!=='draft')return;
+  const token=current.token,owner=current.operation,context=captureContext(),same=()=>session===current&&current.token===token&&current.operation===owner&&context();
   const invalid=stale(),f=forecast(),notice=status();
-  document.querySelectorAll('#expense-panel [data-action="expense-pay"]').forEach(el=>{el.disabled=invalid||!f.valid||session.busy;el.textContent=f.valid?'Pay '+money(f.expense.amount):'Pay';});
-  document.querySelectorAll('#expense-panel input,#expense-panel select,#expense-panel [data-action="expense-berthing-rate"],#expense-panel [data-action="expense-settings"]').forEach(el=>el.disabled=invalid||session.busy);
-  const node=document.getElementById('expense-status');if(node){node.textContent=notice;node.hidden=!notice;}
+  for(const el of document.querySelectorAll('#expense-panel [data-action="expense-pay"]')){
+   if(!same())return;el.disabled=invalid||!f.valid||current.busy;
+   if(!same())return;el.textContent=f.valid?'Pay '+money(f.expense.amount):'Pay';
+  }
+  if(!same())return;
+  for(const el of document.querySelectorAll('#expense-panel input,#expense-panel select,#expense-panel [data-action="expense-berthing-rate"],#expense-panel [data-action="expense-settings"]')){if(!same())return;el.disabled=invalid||current.busy;}
+  if(!same())return;
+  const node=document.getElementById('expense-status');if(node&&same()){node.textContent=notice;if(same())node.hidden=!notice;}
  }
- function close(options={}){if(session?.busy){message('Wait for the current expense to finish saving.');return false;}session=null;notify();if(options.render!==false)render();return true;}
+ function close(options={}){if(session?.busy){message('Wait for the current expense to finish saving.');return false;}session=null;const context=captureContext();notify();if(!session&&context()&&options.render!==false)render();return true;}
  function assertCurrent(current,state=getState()){
   if(session!==current||current.mode!=='draft'||stale(current)||state.revision!==current.revision||state.actual!==current.base.actual||state.hours!==current.base.hours||state.dateLabel!==current.base.dateLabel)throw Error('Campaign or editing ownership changed. Return to Expenses and reopen this payment with current values.');
  }
- async function savePayment(current){
-  assertCurrent(current);const preview=quote(current),draft=structuredClone(current.draft);let entryId,applied=false;
-  current.busy=true;current.error='';syncControls();
-  try{
-   await commit('Paid '+labels[current.kind].toLowerCase(),s=>{
-    assertCurrent(current,s);if(applied)throw Error('This payment callback has already been used.');
-    // Recalculate against the transaction's actual state, never a preview copy.
-    const fresh=quote({...current,draft},s);
-    if(JSON.stringify(fresh.expense)!==JSON.stringify(preview.expense)||s.bank!==current.base.bank)throw Error('Payment preview changed. Return to Expenses and reopen it.');
-    applied=true;shipExpense(s,fresh.input);
-    const entry=s.ledger.at(-1);entry.paidAt??={dateLabel:s.dateLabel,hours:s.hours};entryId=entry.id;
-   },current.revision);
-   if(!entryId||!latestExpenseReceipt(getState(),current.kind,entryId))throw Error('Payment was not saved. Check the campaign ledger before trying again.');
-   if(session===current){current.mode='receipt';current.receiptId=entryId;current.base=structuredClone(getState());current.revision=current.base.revision;current.invalidated=false;notify();render();}
-  }catch(error){if(session===current){current.error=error.message;render();}throw error;}
-  finally{current.busy=false;if(session===current)syncControls();}
+ function ownerCurrent(owner){
+  const current=owner.session,expected=owner.publication||owner.campaign;
+  const valid=operation===owner&&session===current&&current.operation===owner&&!owner.invalidated&&!current.invalidated&&!current.terminal&&!reloadMessage&&isEditable()&&owner.context()&&getState()===expected&&expected.revision===(owner.publication?owner.revision+1:owner.revision);
+  if(!valid){owner.invalidated=true;owner.publicationDeferred=false;if(current.operation===owner)current.invalidated=true;}
+  return valid;
  }
- async function saveRate(current){
-  assertCurrent(current);let applied=false;const die=rollDie();current.busy=true;current.error='';syncControls();
+ function publicationDeferred(){
+  const owner=operation;if(!owner?.publicationDeferred||owner.invalidated)return false;
+  // receiveCampaign records the owner before installing next. A reentrant
+  // paint in that narrow handoff must not compare next with the old state.
+  if(session===owner.session&&owner.session.operation===owner&&isEditable()&&owner.context())return true;
+  owner.invalidated=true;owner.publicationDeferred=false;if(owner.session.operation===owner)owner.session.invalidated=true;
+  return false;
+ }
+ function release(owner){
+  owner.pending=false;owner.publicationDeferred=false;
+  if(owner.session.operation===owner)owner.session.busy=false;
+ }
+ function terminalFailure(owner,error){
+  if(owner.publication)error=new SaveCommittedPublicationError(owner.publication.revision,error);
+  const committed=error?.code==='SAVE_COMMITTED_PUBLICATION_FAILED'&&error.committed===true&&Number.isSafeInteger(error.revision),name=owner.kind==='rate'?'Berthing rate':'Payment';
+  const guidance=committed?name+' saved, but the display could not update. Reload this page before continuing; do not record this '+name.toLowerCase()+' again.':'The '+name.toLowerCase()+' save outcome could not be confirmed. Reload this page and check History before trying again.';
+  const report=()=>session===owner.session&&owner.session.operation===owner&&owner.context();
+  // Both guards precede role callbacks, reporting, rendering and control work.
+  reloadMessage=guidance;owner.invalidated=true;owner.session.terminal=true;owner.session.invalidated=true;owner.session.error=guidance;release(owner);
+  try{onTerminalFailure(error,guidance,report);}catch{/* The terminal latch must survive a failed host notification. */}
+  try{if(report())render();}catch{/* Reload is already required. */}
+  return false;
+ }
+ function fail(owner,error){
+  const known=!owner.submitted||(error?.code==='SAVE_NOT_COMMITTED'&&error.committed===false&&!owner.publication);
+  release(owner);
+  if(!known)return terminalFailure(owner,error);
+  // Only an unchanged, still-owned, demonstrably unwritten attempt can retry.
+  // Its prepared input/die remains in the session; obsolete callbacks remain used.
+  if(!ownerCurrent(owner))return false;
+  if(owner.submitted){
+   let unchanged=false,checked=false;try{unchanged=canRetry(owner.campaign)===true;checked=true;}catch{/* An unreadable baseline cannot authorize a retry. */}
+   if(!ownerCurrent(owner))return false;
+   if(!unchanged){
+    owner.invalidated=true;owner.session.invalidated=true;
+    reloadMessage='This expense was not saved. '+(checked?'The saved campaign no longer matches this draft.':'The saved campaign could not be checked.')+' Reload this page before reopening Expenses with current values.';
+    owner.session.staleReason=reloadMessage;
+    try{if(session===owner.session&&owner.context())render();}catch{/* The draft remains permanently retired. */}
+    return false;
+   }
+  }
+  owner.session.error=error.message;
+  try{render();if(ownerCurrent(owner))syncControls();}catch{/* No provider write occurred; keep Back/Close and deliberate retry usable. */}
+  if(ownerCurrent(owner))throw error;
+  return false;
+ }
+ function finish(owner){
   try{
-   await commit('Saved starport berthing rate',s=>{assertCurrent(current,s);if(applied)throw Error('This rate callback has already been used.');applied=true;saveBerthingRate(s,die);},current.revision);
-   const saved=getState();if(saved.worlds[current.base.actual]?.berthingRate?.die!==die||saved.revision!==current.revision+1)throw Error('Berthing rate was not saved. Reopen Expenses to check the current rate.');
-   if(session===current){current.base=structuredClone(saved);current.revision=saved.revision;current.world=current.base.worlds[saved.actual];current.invalidated=false;message('Starport berthing rate saved.');render();}
-  }catch(error){if(session===current){current.error=error.message;render();}throw error;}
-  finally{current.busy=false;if(session===current)syncControls();}
+   const published=owner.publication,current=owner.session;
+   if(!published||published.revision!==owner.revision+1)throw Error('Expense save completion did not publish the expected campaign.');
+   if(!ownerCurrent(owner)){release(owner);return false;}
+   if(owner.kind==='payment'&&!latestExpenseReceipt(published,current.kind,owner.entryId))throw Error('The saved payment receipt is missing.');
+   if(owner.kind==='rate'&&published.worlds[owner.campaign.actual]?.berthingRate?.die!==owner.intent.die)throw Error('The saved berthing rate is missing.');
+   const base=structuredClone(published);
+   if(!ownerCurrent(owner))return false;
+   current.campaign=published;current.base=base;current.revision=published.revision;current.world=base.worlds[base.actual];current.intent=null;current.error='';
+   // A completed rate and its subsequent payment have different DOM actions.
+   // Replaying a detached rate button cannot reroll or start a second write.
+   current.token=uid();
+   if(owner.kind==='payment'){current.mode='receipt';current.receiptId=owner.entryId;}
+   release(owner);
+   onComplete();if(!ownerCurrent(owner))return false;
+   notify();if(!ownerCurrent(owner))return false;
+   render();if(!ownerCurrent(owner))return false;
+   syncControls();if(!ownerCurrent(owner))return false;
+   message(owner.kind==='rate'?'Starport berthing rate saved.':'Paid '+labels[current.kind].toLowerCase()+' saved.');
+   return true;
+  }catch(error){return fail(owner,error);}
+  finally{release(owner);}
+ }
+ function save(current,kind,intent){
+  assertCurrent(current);
+  const owner={session:current,kind,intent,campaign:current.campaign,revision:current.revision,context:captureContext(),pending:true,submitted:false,prepared:false,applied:false,invalidated:false,publication:null,publicationDeferred:false};
+  operation=owner;current.operation=owner;current.intent=intent;current.busy=true;current.error='';generation++;
+  let result;
+  try{
+   // Control entry can throw too. It is contained before calling the provider.
+   syncControls();if(!ownerCurrent(owner))throw Error('Campaign or editing ownership changed. Reopen this expense.');
+   owner.submitted=true;
+   result=commit(kind==='rate'?'Saved starport berthing rate':'Paid '+labels[current.kind].toLowerCase(),s=>{
+    assertCurrent(current,s);if(!ownerCurrent(owner)||owner.applied)throw Error('Campaign or editing ownership changed. This expense callback cannot be reused.');
+    owner.applied=true;
+    if(kind==='rate'){
+     if(starport(s.worlds[s.actual])!==intent.port||s.worlds[s.actual].emptySpace)throw Error('Starport changed. Return to Expenses and reopen this rate.');
+     saveBerthingRate(s,intent.die);
+    }
+    else{
+     // Recalculate against the transaction's actual state, never a preview copy.
+     const fresh=quote({...current,draft:intent.draft},s);
+     if(JSON.stringify(fresh.expense)!==JSON.stringify(intent.expense)||s.bank!==owner.campaign.bank)throw Error('Payment preview changed. Return to Expenses and reopen it.');
+     shipExpense(s,fresh.input);
+     const entry=s.ledger.at(-1);entry.paidAt??={dateLabel:s.dateLabel,hours:s.hours};owner.entryId=entry.id;
+    }
+   },owner.revision,{announce:false,onPrepared:()=>{if(!ownerCurrent(owner))throw Error('Campaign or editing ownership changed. Reopen this expense.');owner.prepared=true;}});
+   // Native Store completion remains in this stack. Only thenables yield.
+   if(result&&typeof result.then==='function')return Promise.resolve(result).then(()=>finish(owner),error=>fail(owner,error));
+  }catch(error){return fail(owner,error);}
+  return finish(owner);
+ }
+ function savePayment(current){
+  assertCurrent(current);
+  const intent=current.intent?.kind==='payment'?current.intent:{kind:'payment',draft:structuredClone(current.draft),expense:quote(current).expense};
+  return save(current,'payment',intent);
+ }
+ function saveRate(current){
+  assertCurrent(current);
+  const world=current.base.worlds[current.base.actual],port=starport(world);
+  // Reject an obsolete action before consuming randomness, even if its DOM
+  // token was retained by an embedding host after the rate was already saved.
+  if(world.emptySpace||!berthMultipliers[port]||world.berthingRate?.port===port)return false;
+  const intent=current.intent?.kind==='rate'?current.intent:{kind:'rate',port,die:rollDie()};
+  return save(current,'rate',intent);
  }
  async function action(name,arg){
   if(!name.startsWith('expense-'))return false;
@@ -210,12 +331,12 @@ export function createExpensePanels({document,getState,isEditable,commit,render,
   if(current.mode!=='draft'||current.busy)return true;
   if(name==='expense-settings'){
    assertCurrent(current);if(typeof showSettings!=='function')throw Error('Open Settings to configure '+labels[current.kind].toLowerCase()+'.');
-   close({render:false});showSettings(current.kind);return true;
+   const context=captureContext();close({render:false});if(!session&&context())showSettings(current.kind);return true;
   }
   assertCurrent(current);sync();
   if(name==='expense-pay')await savePayment(current);
   else if(name==='expense-berthing-rate'&&current.kind==='berthing')await saveRate(current);
   return true;
  }
- return {active,open,panel,sync,syncControls,action,close,route,committing:()=>!!session?.busy};
+ return {active,open,panel,sync,syncControls,action,close,route,invalidate,receiveCampaign,publicationDeferred,writeGeneration:()=>generation,committing:()=>!!session?.busy};
 }
