@@ -384,19 +384,23 @@ async function capture(page, result, label) {
 }
 async function detail(page, result, label, selectors, pattern) {
  const saved = await page.evaluate(() => ({x: scrollX, y: scrollY, dialog: document.querySelector('#modal').scrollTop}));
+ let scrollState;
  try {
-  const framing=await page.evaluate(selectors=>{
+  // Helper-local references also work after a genuine, uninstrumented reload.
+  // Never reinstall the provider gate just to frame or restore a screenshot.
+  scrollState=await page.evaluateHandle(selectors=>{
    const nodes=selectors.map(selector=>{const node=document.querySelector(selector);if(!node)throw Error('Missing detail target: '+selector);return node;});
    const union=()=>{const rects=nodes.map(node=>node.getBoundingClientRect());return {top:Math.min(...rects.map(r=>r.top)),bottom:Math.max(...rects.map(r=>r.bottom))};};
    const containers=[];for(let node=nodes[0].parentElement;node&&node!==document.body&&node!==document.documentElement;node=node.parentElement){if(nodes.every(target=>node.contains(target))&&/(?:auto|scroll|overlay)/.test(getComputedStyle(node).overflowY)&&node.scrollHeight>node.clientHeight)containers.push(node);}
-   passengerBookingGate.detailScrolls=containers.map(node=>({node,top:node.scrollTop,left:node.scrollLeft}));
+   const scrolls=containers.map(node=>({node,top:node.scrollTop,left:node.scrollLeft}));
    const changes=[];
    // Center the whole requested range, not just its first already-visible dt.
    // Scroll real containers only; never resize, restyle, crop or hide content.
    for(const node of containers){const range=union(),rect=node.getBoundingClientRect(),top=rect.top+node.clientTop,bottom=top+node.clientHeight,before=node.scrollTop;node.scrollTop+=((range.top+range.bottom)-(top+bottom))/2;changes.push({container:node.id?'#'+node.id:node.tagName.toLowerCase(),before,after:node.scrollTop,clientHeight:node.clientHeight,rangeHeight:range.bottom-range.top});}
    const modal=document.querySelector('#modal[open]');if(!modal||!nodes.every(node=>modal.contains(node))){const range=union(),before=scrollY;scrollTo({left:scrollX,top:scrollY+(range.top+range.bottom-innerHeight)/2,behavior:'instant'});changes.push({container:'document',before,after:scrollY,clientHeight:innerHeight,rangeHeight:range.bottom-range.top});}
-   return changes;
-  },selectors);await frames(page);
+   return {changes,scrolls};
+  },selectors);
+  const framing=await scrollState.evaluate(state=>state.changes);await frames(page);
   const targets = await page.evaluate(selectors => selectors.map(selector => {const el = document.querySelector(selector), r = el.getBoundingClientRect(), style = getComputedStyle(el); return {selector, text: el.textContent, left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height, visible: style.display !== 'none' && style.visibility !== 'hidden', viewport: {width: innerWidth, height: innerHeight}};}), selectors);
   // Preserve measured targets even if an assertion below fails, so a failure
   // report identifies every requested edge instead of losing the failing range.
@@ -407,7 +411,14 @@ async function detail(page, result, label, selectors, pattern) {
   }
   if (pattern) assert.match(targets.map(target => target.text).join('\n'), pattern);
   await capture(page, result, label);
- } finally {await page.evaluate(saved => {for(const {node,top,left}of passengerBookingGate.detailScrolls||[])if(node.isConnected){node.scrollTop=top;node.scrollLeft=left;}passengerBookingGate.detailScrolls=[];document.querySelector('#modal').scrollTop=saved.dialog;scrollTo(saved.x,saved.y);}, saved);}
+ } finally {
+  try {
+   if(scrollState)await scrollState.evaluate(state=>{for(const {node,top,left}of state.scrolls)if(node.isConnected){node.scrollTop=top;node.scrollLeft=left;}});
+  } finally {
+   try {await page.evaluate(saved=>{document.querySelector('#modal').scrollTop=saved.dialog;scrollTo(saved.x,saved.y);},saved);}
+   finally {await scrollState?.dispose();}
+  }
+ }
 }
 async function pointer(page, selector, clickCount = 1) {
  const locator = page.locator(selector); if (!await locator.isVisible()) return;
@@ -575,7 +586,10 @@ async function retired(page, result, before, scenario, context) {
  if (mode === 'new-dialog') {assert.equal(await page.locator('#modal-title').textContent(), 'Rules & Notes'); assert.equal(await page.locator('#modal-body').textContent(), newer); assert.equal(await page.locator('#modal-error').textContent(), '');}
  const bytes = await raw(page); await page.evaluate(() => {void passengerBookingGate.oldSubmit({preventDefault() {}, currentTarget: document.querySelector('#modal-form')});}); await frames(page);
  assert.equal(await raw(page), bytes); assert.equal((await gate(page)).totalCalls, 1);
- if (mode === 'foreign-same') await detail(page, result, 'stale-owner-warning', ['#modal-error'], /Campaign, passenger terms or editing ownership changed/);
+ if (mode === 'foreign-same') {
+  assert.equal(await page.locator('#modal-error').textContent(),'This passenger change was saved, but its earlier review changed before completion. Close and review the current campaign; do not record this change again.');
+  await detail(page,result,'stale-owner-warning',['#modal-error']);
+ }
  else await capture(page, result, 'retired-owner');
  if(mode==='new-dialog')await verifyNewerNotes(page,result);
  result.gate = safeReport(await gate(page));

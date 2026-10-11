@@ -1021,3 +1021,25 @@ all earlier regressions and independently review narrow fixture prerequisites.
 Actual desktop/mobile evidence must show both boarding forms, warning/footer
 controls, accepted terms, occupancy/luggage/LSS, delivery receipts/audits, Credits,
 reload and Undo at the exact reviewed candidate. Final counts/results are pending.
+
+
+The first .58 actual Chromium run is retained as 131/139 passed, with 250 of
+260 planned frames. Three failures were screenshot-helper bookkeeping after a
+genuine uninstrumented reload; two expected obsolete warning text after the
+reviewed saved-provenance guard. A helper-local Playwright handle now retains and
+restores scroll references without reinstalling save instrumentation, and the
+stale-saved cases assert the exact reviewed saved/do-not-repeat warning. Neither
+change weakens economic, ownership, reload, Undo, geometry or evidence budgets.
+
+Three mobile first-boarding cases observed 316 px of horizontal overflow in the
+long unbroken destination paragraph. The original paragraph/CSS match .57 by
+source comparison; baseline browser pixels were not separately observed. The
+bounded fix adds one dedicated paragraph class and its overflow-wrap:anywhere
+rule. Long-name fixtures, complete target ranges and strict overflow assertions
+remain. Corrected exact-head native/browser/pixel gates are required before merge.
+The separate unchanged Setup/location suite initially passed 159/160, with one
+final network-idle timeout after completed save/rounding/reload/History Undo
+assertions. Its original report and artifacts are retained. Empty recorded error
+arrays do not establish the missing final idle/pending checks; precise network
+cause is not established without a request timeline. No Setup assertion was
+relaxed. Final release evidence must disclose the result of subsequent checks.

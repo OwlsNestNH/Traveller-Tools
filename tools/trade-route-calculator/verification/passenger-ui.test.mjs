@@ -61,7 +61,7 @@ function passengerCampaign(){const s=campaign();s.ship.accommodation={combinedPe
 async function setupPassengers(h){h.api.actions['passenger-setup']();h.fill({reservedCabins:2,installedLowBerths:4,reviewed:true});await h.submit();assert.equal(h.dom.ids.get('modal-error').textContent,'');}
 async function searchPassengers(h){h.api.actions['passenger-search']();h.fill({dice:12,skill:2,characteristic:1,steward:1,sequence:Array(200).fill(2).join(',')});await h.submit();assert.equal(h.dom.ids.get('modal-error').textContent,'');return h.api.state.events.findLast(e=>e.label==='Passenger search audit');}
 const passengerOffer=(h,type)=>h.api.state.events.findLast(e=>e.label==='Passenger search audit').offers.find(o=>o.passageClass===type);
-async function previewBoard(h,type='high',count=2,mode='shared'){h.api.actions['passenger-board'](passengerOffer(h,type).offerId);h.fill({count,cabinMode:mode,...(['high','middle'].includes(type)?{serviceConfirmed:true}:{}),...(type==='basic'?{spaceConfirmed:true}:{})});await h.submit();assert.equal(h.dom.ids.get('modal-error').textContent,'');assert.equal(h.dom.ids.get('modal-title').textContent,'Confirm passenger booking');}
+async function previewBoard(h,type='high',count=2,mode='shared'){h.api.actions['passenger-board'](passengerOffer(h,type).offerId);const firstBody=h.dom.ids.get('modal-body').innerHTML;h.fill({count,cabinMode:mode,...(['high','middle'].includes(type)?{serviceConfirmed:true}:{}),...(type==='basic'?{spaceConfirmed:true}:{})});await h.submit();assert.equal(h.dom.ids.get('modal-error').textContent,'');assert.equal(h.dom.ids.get('modal-title').textContent,'Confirm passenger booking');return firstBody;}
 
 // Persist the actual two-step jump before delivery. The independent Store.read
 // copy must never follow a test-only change to the live campaign.
@@ -73,7 +73,12 @@ test('actual passenger UI searches four classes, requires capacity review and ke
  await setupPassengers(h);assert.equal(h.button('passenger-board').disabled,false);assert.equal(h.api.state.ship.accommodation.passengerCapacity.reservedCabins,2);
 });
 test('actual boarding preview is side-effect free, double submit boards once and booked people do not replace manual counts',async()=>{
- const h=harness(passengerCampaign());await setupPassengers(h);await searchPassengers(h);const before=h.persisted();await previewBoard(h);same(h.persisted(),before);assert.match(h.dom.ids.get('modal-body').innerHTML,/Existing LSS stock is preserved/);
+ const h=harness(passengerCampaign());await setupPassengers(h);await searchPassengers(h);const before=h.persisted(),firstBody=await previewBoard(h);same(h.persisted(),before);assert.match(h.dom.ids.get('modal-body').innerHTML,/Existing LSS stock is preserved/);
+ // Scope the approved wrapping change to the actual first-form route paragraph.
+ // Native checks prove the hook/rule, not browser layout or visual parity.
+ const routeParagraphs=[...firstBody.matchAll(/<p class="passenger-boarding-route">([\s\S]*?)<\/p>/g)];assert.equal(routeParagraphs.length,1);assert.match(routeParagraphs[0][1],/ available to Destination at /);assert.match(routeParagraphs[0][1],/per person\. Boarding reserves accommodation; payment is due on explicit delivery\./);
+ const css=await readFile(new URL('../style.css',import.meta.url),'utf8'),wrappingRules=[...css.matchAll(/\.passenger-boarding-route\s*\{[^}]*\}/g)].map(match=>match[0]);assert.equal(wrappingRules.length,1);assert.match(wrappingRules[0],/^\.passenger-boarding-route\s*\{\s*overflow-wrap:\s*anywhere\s*;?\s*\}$/);
+
  await Promise.all([h.submit(),h.submit()]);assert.equal(h.api.state.contracts.length,1);assert.equal(h.api.state.contracts[0].count,2);same(h.api.state.ship.accommodation.passengers,before.ship.accommodation.passengers);same(h.api.state.ship.lifeSupport,before.ship.lifeSupport);assert.equal(h.api.state.bank,before.bank);assert.match(h.dom.ids.get('main').innerHTML,/2 booked people aboard/);
  const audit=h.api.contractDetails(h.api.state.contracts[0]);assert.match(audit,/Shared, two per cabin/);assert.match(audit,/Passenger availability calculation/);assert.match(audit,/app convention/);assert.doesNotMatch(audit,/Rate per ton|Freight contract/);
 });
