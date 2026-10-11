@@ -3,28 +3,30 @@
 **Updated:** 2026-10-11
 **Repository:** [OwlsNestNH/Traveller-Tools](https://github.com/OwlsNestNH/Traveller-Tools)  
 **Tool folder:** `tools/trade-route-calculator/`  
-**Current main reviewed:** `81011e305aef7e8561b4b2f9f9417f4059676b44`
+**Current main reviewed:** `ae68a384318581131f6575c38c147e34411bf120`
 
 Use the current GitHub files as the source of truth. This handoff summarizes continuity; it does not replace the requirements, rules decisions, verification record, or backlog.
 
 ## Current save-completion checkpoint
 
-UI .58 passenger boarding/delivery is released. Exact reviewed tree, Pages,
-all 90 permitted live URL variants and all 67 ready-event duplicate CI jobs
-were verified; ten established proxy-restricted variants remain unverified.
-Prior Setup idle causes are still unknown after two clean diagnostic runs;
-the separately observed/inferred Cargo SVG focus race remains unfixed.
+UI .59 legacy Accounts is released. Exact reviewed tree, Pages, all 90 permitted
+live URL variants and all 68 ready-event duplicate CI jobs were verified; ten
+established proxy-restricted variants remain unverified. Its 5,862 native and
+222 focused browser cases passed independent source and actual-image review.
+Earlier Accounts candidate failures are preserved in RULES_VERIFICATION. Prior
+Setup idle causes and the separate Cargo SVG focus race remain qualified.
 
-Three Stage 2 scope groups remain, with concrete callers and release evidence in
-[COMPLETION_MIGRATION.md](COMPLETION_MIGRATION.md): legacy Accounts,
-route/world/rounding confirmations, and cargo/market controls. The .59 candidate
-addresses Accounts' four payment/rate branches. Its inline rate save must retain
-its first form through completion and hand it safely to a new payment attempt.
-Existing arithmetic, scheduler, State/controller/Store bodies and Undo remain the
-reference. Candidate code is not complete until source/native/exact-head browser/
-pixel review, every ready-event duplicate and post-merge deployment checks pass.
-Stage 3 quote/preview ownership has not started. Earlier sections below preserve
-historical checkpoints; use this queue and current exact GitHub checks for status.
+Two Stage 2 scope groups remain, with concrete callers and release evidence in
+[COMPLETION_MIGRATION.md](COMPLETION_MIGRATION.md): route/world/rounding and
+cargo/market. The .60 candidate is only Clear Planned Route completion. Retain
+its accepted confirmation and draft while saving; clear only that owned draft
+after a proven save, without late lookup callbacks reviving an obsolete plan.
+Exact economics, State/controller/Store and Undo/mulligan remain authoritative.
+Other route/world/rounding callers remain separate, as does Stage 3.
+
+Require final source/native/exact-head browser/pixel review, every ready-event
+duplicate and post-merge deployment verification. Earlier sections preserve
+historical checkpoints; use the current queue and exact GitHub checks for status.
 
 ## Current state
 

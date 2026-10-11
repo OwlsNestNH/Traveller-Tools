@@ -383,3 +383,6 @@ main{padding-top:18px}
  .navigation-layout.map-expanded .map-viewport{height:clamp(540px,80vh,1100px);height:clamp(540px,80svh,1100px);min-height:540px}
  .navigation-panel .map-expand-toggle{min-height:40px}
 }
+
+/* Keep the accepted Clear route location readable without changing other dialogs. */
+.clear-route-location{overflow-wrap:anywhere}

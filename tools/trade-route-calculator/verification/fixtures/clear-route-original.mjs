@@ -1,0 +1,4 @@
+// Exact function from deployed .59, commit ae68a384318581131f6575c38c147e34411bf120.
+// Target-function oracle only; both sides execute the real controller, state and Store.
+export const originalClearRoute = "function clearPlannedRoute(){\n modal('Clear planned route',`<p>Clear future stops and start a new route from <strong>${esc(actual()?.name)}</strong>, the ship\u2019s actual location?</p><p class=\"help\">This does not return the ship to its original campaign starting world. Time, cargo, bank, completed travel history and insurance terms stay unchanged. You can undo this change.</p>`,()=>{act('Cleared planned route',s=>{s.route=[s.actual];s.routeIndex=0;s.mandatoryStops=[];});routeDraft=null;render();},'Clear route');\n}";
+export const originalClearRouteSHA256 = "ea4d7e645de33e39f7ffeb3d81a1f7572842e77702d5127ec1330840ebfacc1a";

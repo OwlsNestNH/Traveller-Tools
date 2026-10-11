@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=accounts-completion-20261011-59';
+import {escapeHtml as esc} from './display.mjs?v=clear-route-completion-20261011-60';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.

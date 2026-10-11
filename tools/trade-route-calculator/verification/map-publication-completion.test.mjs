@@ -14,6 +14,10 @@ assert.equal(app.indexOf('function paintMap(){', start + 1), -1);
 const source = app.slice(start, end);
 const accountsGuard = app.match(/^function accountsBusy\(\).*$/m)?.[0];
 assert.ok(accountsGuard, 'Include the actual Accounts ownership predicate, not a false stub');
+const clearRouteGuards=['clearRouteBusy','clearRoutePresentationHeld'].map(name=>{
+ const source=app.match(new RegExp('^function '+name+'\\(\\).*$', 'm'))?.[0];
+ assert.ok(source,'Include actual '+name+' predicate');return source;
+}).join('\n');
 
 function harness(owners = {}) {
  const calls = [], replacement = {kind: 'new map'}, status = {textContent: 'Original status'};
@@ -26,6 +30,7 @@ function harness(owners = {}) {
  // existing body/spy/assertion intact while supplying its absent default.
  const context = vm.createContext({
   accountsWriteOperation: null,
+  clearRouteWriteOperation: null, clearRouteSaveOperation: null,
   expenseServices: {publicationDeferred: () => false},
   worldWriteOperation: null, undoOperation: null, replacementReview: null, settingsOperation: null, purchaseWriteOperation: null, insuranceWriteOperation: null, contactSearchWriteOperation: null, contractOfferWriteOperation: null, contractLifecycleWriteOperation: null, passengerWriteOperation: null,
   mapDrag: null, tab: 'Overview', mapZoom: 1, showTerritories: false,
@@ -38,7 +43,7 @@ function harness(owners = {}) {
   $(id) {assert.equal(id, 'map-load-status'); calls.push('status'); return status;},
   ...owners
  });
- vm.runInContext(accountsGuard + '\n' + source + '\nglobalThis.paint = paintMap;', context, {filename: 'production paintMap'});
+ vm.runInContext(accountsGuard + '\n' + clearRouteGuards + '\n' + source + '\nglobalThis.paint = paintMap;', context, {filename: 'production paintMap'});
  return {context, calls, status, paint: () => context.paint()};
 }
 function assertFrozen(h) {
@@ -153,4 +158,15 @@ for(const flag of ['pending','constructing','handoff','recovering','updating'])f
 for(const absent of [null,undefined])test(`Accounts map: absent ${absent} owner permits existing painter`,()=>assertPainted(harness({accountsWriteOperation:absent})));
 for(const flag of ['pending','constructing','handoff','recovering','updating'])test(`Accounts map: clearing ${flag} resumes the same production painter`,()=>{
  const owner={[flag]:true,invalidated:false},h=harness({accountsWriteOperation:owner});assertFrozen(h);owner[flag]=false;assertPainted(h);
+});
+
+// Branch coverage executes the new real predicates in the existing complete
+// paintMap extraction, not a neutral false-returning compatibility stub.
+for(const flag of ['constructing','pending','recovering'])for(const active of [false,true])for(const invalidated of [false,true])for(const presenting of [false,true])test(`clear route map: ${flag}=${active}, invalidated=${invalidated}, presenting=${presenting}`,()=>{
+ const h=harness({clearRouteWriteOperation:{[flag]:active,invalidated,presenting}});
+ if(flag==='recovering'&&active||!invalidated&&!presenting)assertFrozen(h);else assertPainted(h);
+});
+for(const recovering of [false,true])test(`clear route map: detached save recovery=${recovering}`,()=>{
+ const h=harness({clearRouteWriteOperation:{invalidated:true},clearRouteSaveOperation:{attempt:{recovering}}});
+ if(recovering)assertFrozen(h);else assertPainted(h);
 });
