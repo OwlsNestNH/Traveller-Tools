@@ -22,7 +22,7 @@ function harness(owners = {}) {
  // suites exercise the real expense controller's publication guard.
  const context = vm.createContext({
   expenseServices: {publicationDeferred: () => false},
-  worldWriteOperation: null, undoOperation: null, replacementReview: null, settingsOperation: null,
+  worldWriteOperation: null, undoOperation: null, replacementReview: null, settingsOperation: null, purchaseWriteOperation: null,
   mapDrag: null, tab: 'Overview', mapZoom: 1, showTerritories: false,
   mapAreas: {error: null, pending: false}, mapOverview: {error: null, pending: false},
   document: {querySelector(selector) {assert.equal(selector, '.world-map'); calls.push('query'); return old;},
@@ -93,4 +93,26 @@ test('Undo and replacement paint guards exactly match their render ownership pre
   const guard = `if(${owner}?.pending&&${owner}.publicationDeferred&&!${owner}.invalidated)return;`;
   assert.ok(source.includes(guard)); assert.ok(render.includes(guard));
  }
+});
+
+// Purchase holds prewrite presentation too. Only supply the new lexical
+// dependency here: the extracted production painter and old assertions remain.
+for (const pending of [false, true]) for (const publicationDeferred of [false, true]) for (const invalidated of [false, true]) {
+ test(`purchase: pending=${pending}, publicationDeferred=${publicationDeferred}, invalidated=${invalidated}`, () => {
+  const h = harness({purchaseWriteOperation: {pending, publicationDeferred, invalidated}});
+  if (pending && !invalidated) assertFrozen(h); else assertPainted(h);
+ });
+}
+for (const absent of [null, undefined]) test(`purchase: absent ${absent} owner permits painting`, () => assertPainted(harness({purchaseWriteOperation: absent})));
+for (const release of ['settled', 'cleared', 'invalidated']) test(`purchase: ${release} resumes the same production painter`, () => {
+ const h = harness({purchaseWriteOperation: {pending: true, publicationDeferred: true, invalidated: false}}); assertFrozen(h);
+ if (release === 'settled') h.context.purchaseWriteOperation.pending = false;
+ else if (release === 'cleared') h.context.purchaseWriteOperation = null;
+ else h.context.purchaseWriteOperation.invalidated = true;
+ assertPainted(h);
+});
+test('purchase paint guard exactly matches its render ownership predicate', () => {
+ const render = app.slice(app.indexOf('function render(){'), app.indexOf('\nfunction mapHexGrid('));
+ const guard = 'if(purchaseWriteOperation?.pending&&!purchaseWriteOperation.invalidated)return;';
+ assert.ok(source.includes(guard)); assert.ok(render.includes(guard));
 });

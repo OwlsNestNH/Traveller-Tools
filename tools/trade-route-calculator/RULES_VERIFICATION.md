@@ -714,3 +714,36 @@ synthetic fixtures, with desktop/mobile readable error, retry/dismiss and succes
 frames. Full native/rules/catalog, all existing browser jobs and independent
 source plus actual pixel review remain required. This entry records scope only;
 it does not claim candidate browser success or deployment.
+
+
+## Purchase confirmation completion .52 verification scope
+
+Read-only native probes against the released .51 tree reproduced synthetic delayed-
+provider gaps: a pending purchase could be dismissed before its later bank debit,
+an unknown rejection re-enabled COMMIT PURCHASE without a reload guard, and an
+owned publication refreshed the bank before settlement. These are injected
+provider cases, not reports of ordinary live synchronous failure.
+
+Compare native immediate and delayed purchase outcomes using the existing atomic
+`S.buy`, both uninsured and optionally insured. Preserve supplier offer/complication
+and manual-price audits, fee/no-fee, Cr1/Cr100 rounding, huge Credit strings, partial/
+full offer depletion, separate lots, goods value versus cost basis, premium/ledger
+entries, exact reload and real Undo. Preview/cancel and entry validation cannot
+save or reroll; a deliberate known-unwritten retry retains the accepted terms.
+The reproduced Cr1,050 review versus Cr2,100 in-memory changed offer must reject
+with unchanged bank and no provider entry, including same-revision changes.
+
+Test duplicate/Enter/detached/queued actions, pending publication/render/map
+ownership, foreign/editor/modal/world/offer changes, disk-only same-revision and
+unreadable durable baselines, missing/wrong/consumed provenance, contradictory
+outcomes, and control/cleanup/close/render/reporting faults. Unknown or saved
+outcomes must block repeat accounting before any fallible warning callback.
+Control-restoration, error-report and final-sync callback reentry after an
+unwritten failure must remain nonwriting; retry requires a later deliberate action.
+
+Actual Chromium must use version-tagged production runtime, native Web Locks and
+bounded synthetic fixtures. Review desktop/mobile target-framed warning/control,
+rounding and saved-accounting evidence with safe caret capture, source/commit
+provenance and image geometry/hash checks. Existing Sale, Expense, shared-entry,
+insurance and other full regressions remain required. This records scope rather
+than a final browser/deployment result; coverage axes must be reported accurately.

@@ -569,7 +569,7 @@ if (process.argv.includes('--fixtures-only')) {
  const html = await readFile(new URL('../index.html', import.meta.url), 'utf8'), app = await source('app');
  assert.match(html, /<script type="module" src="js\/app\.mjs\?[^\"]+"/);
  assert.match(app, /import\s*\{[^}]*\bStore\b[^}]*\}\s*from\s*['"]\.\/persistence\.mjs\?[^'"]+['"]/);
- assert.match(app, /if\(session\.saleOwner\)\{try\{syncModalSubmit\(\);\}catch\(error\)\{return saleWriteFailure\(session\.saleOwner,new SaveNotCommittedError\(error\)\);\}\}\s*let submitted=false;\s*try\{\s*if\(!session\.saleOwner\)syncModalSubmit\(\);\s*normaliseFields/);
+ assert.match(app, /if\(session\.purchaseOwner\)\{try\{syncModalSubmit\(\);\}catch\(error\)\{return purchaseWriteFailure\(session\.purchaseOwner,new SaveNotCommittedError\(error\)\);\}\}\s*else if\(session\.saleOwner\)\{try\{syncModalSubmit\(\);\}catch\(error\)\{return saleWriteFailure\(session\.saleOwner,new SaveNotCommittedError\(error\)\);\}\}\s*let submitted=false;\s*try\{\s*if\(!session\.saleOwner&&!session\.purchaseOwner\)syncModalSubmit\(\);\s*normaliseFields/);
  assert.match(app, /finally\{if\(activeModal===session\)\{session\.busy=false/);
  console.log(`PASS: deterministic campaign, recorded jump/Undo, time, world-field and replacement oracles; actual version-tagged Store wiring and narrow non-sale try boundary; ${scenarios.length} scenarios × ${sizes.length} widths = ${report.declaredCases} declared browser cases, ${report.declaredScreenshots} JPEG detail frames, caret=initial, <24 MiB / <14 minutes. Chromium was NOT launched.`);
 } else {
