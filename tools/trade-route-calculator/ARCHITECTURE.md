@@ -571,3 +571,45 @@ by persistent control failure may leave controls disabled or invoke a caller's
 conservative reload fallback, even without writes. Such outcomes are separately
 characterized, not claimed repaired by this change. No accounting, persistence,
 calendar, jump/mulligan, price/dice or Undo mutation body changes.
+
+
+## Stage 2 purchase confirmation completion (.52 candidate)
+
+Purchase confirmation owns its accepted quantity, saved supplier offer and price,
+broker fee, optional insurance quote, rounding, campaign/revision, editing tenure
+and modal presentation. A changed offer or accepted term, even at the same
+revision, must reject without charging rather than treating the old confirmation
+as consent to a new price. Optional at-purchase insurance stays inside the existing
+atomic `S.buy` transition. No second ledger, quote-cache policy or economic
+mutation is introduced. Held-cargo insurance, claims and amendments have distinct
+identities and remain subsequent work.
+
+Accepted terms and their state baseline are captured before callback-capable
+confirmation construction. Purchase-specific session/generation guards protect a
+newer reentrant dialog, including its working submit handler, rather than merely
+preserving the visible text.
+
+The pending owner is claimed before provider entry or any yield. The existing
+one-use controller publication provenance establishes ownership; matching a
+revision or comparing monetary values does not. Native Store completion remains
+immediate, while explicit thenables keep repeated submission/dismissal and queued
+UI continuations blocked. An owned held publication must not expose its bank,
+cargo or offer changes through render or background map callbacks before the
+completion boundary. Authoritative foreign publication/editor intent still wins.
+
+A known-unwritten attempt is retryable only while the accepted review, local owner
+and full validated durable baseline remain current. Retrying keeps the reviewed
+terms and saved dice; it must not silently regenerate the purchase. Stale or
+unreadable durable data calls for accurate not-saved reload guidance. Observed
+publication outranks contradictory unwritten errors; unknown, missing-provenance
+or saved presentation failure latches reload protection before fallible reports.
+Owned success may close/render/announce only while its original presentation is
+still current, rechecking ownership across callback-capable cleanup boundaries.
+Purchase must not copy Sale's selected-cargo or quote-cache cleanup.
+Known-unwritten control/error recovery is itself a guarded phase: callback reentry
+cannot initiate a retry before recovery and the outer submit cleanup finish.
+
+This section records the candidate contract. Independent source/native and real
+browser/pixel gates must verify it before release. `S.buy`, insurance/rules,
+rounding, persistence/controller, price/dice, accounting and Undo mutation bodies
+remain outside this UI-completion patch.

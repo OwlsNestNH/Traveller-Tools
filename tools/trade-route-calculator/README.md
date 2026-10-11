@@ -653,3 +653,12 @@ inputs remain available for deliberate retry or dismissal once the transient
 control fault clears. No save callback is started by that failed entry. Existing
 caller-specific save outcomes, Sale's entry handling, accounting and Undo remain
 unchanged. Remaining save callers and Stage 3 stay in the completion queue.
+
+
+Purchase completion (.52 candidate) covers the confirmed purchase and any optional
+insurance bought in that same transaction. The reviewed quantity, supplier price,
+broker fee, premium and rounding stay owned until saving finishes. A safely
+unwritten failure retains those terms for deliberate retry; saved or uncertain
+outcomes require reload. Existing lot cost basis, offer depletion, ledger and
+Undo rules remain unchanged. Held-cargo insurance, claims and amendments remain
+in the same open purchase/insurance group in the completion queue.

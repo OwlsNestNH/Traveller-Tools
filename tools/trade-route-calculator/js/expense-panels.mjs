@@ -1,14 +1,14 @@
-import {ruleInfo} from './rule-references.mjs?v=modal-entry-20261011-51';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=modal-entry-20261011-51';
-import {passengerShip} from './passengers.mjs?v=modal-entry-20261011-51';
+import {ruleInfo} from './rule-references.mjs?v=purchase-completion-20261011-52';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=purchase-completion-20261011-52';
+import {passengerShip} from './passengers.mjs?v=purchase-completion-20261011-52';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=modal-entry-20261011-51';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=modal-entry-20261011-51';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=modal-entry-20261011-51';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=modal-entry-20261011-51';
-import {creditStep} from './rounding.mjs?v=modal-entry-20261011-51';
-import {roll} from './rules.mjs?v=modal-entry-20261011-51';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=modal-entry-20261011-51';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=purchase-completion-20261011-52';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=purchase-completion-20261011-52';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=purchase-completion-20261011-52';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=purchase-completion-20261011-52';
+import {creditStep} from './rounding.mjs?v=purchase-completion-20261011-52';
+import {roll} from './rules.mjs?v=purchase-completion-20261011-52';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=purchase-completion-20261011-52';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

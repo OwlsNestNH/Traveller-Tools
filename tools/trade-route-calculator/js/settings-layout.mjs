@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=modal-entry-20261011-51';
+import {ruleInfo} from './rule-references.mjs?v=purchase-completion-20261011-52';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={

@@ -1,7 +1,7 @@
 # Save-completion migration queue
 
-Inventory checked against UI 2026.10.11.50, repository merge
-`5869061d5848863ba18d7a53de1be086d5d1b0b9` (2026-10-11).
+Inventory checked against UI 2026.10.11.51, repository merge
+`df9c43b79ba18ff1602885c4089a883241345b42` (2026-10-11).
 This records the save-boundary work, not the earlier GUI-refit stages.
 
 ## Stage 2: finish save callers
@@ -71,8 +71,20 @@ operation needs its own identity, failure context and owned cleanup.
   individually inspected 40 originals (15 desktop, 25 mobile). Disk-only stale
   detail is desktop-only; mobile stale/retry are separate cases.
 
-The .50 exact merge/tree, Pages deployment and all 90 permitted live URLs were
-verified, and duplicate CI passed. Ten URL variants at prior tunnel/proxy-denied
+- **.51 Shared-modal initial entry:** only non-sale initial control synchronization
+  moved inside the existing pre-callback try; Sale's established entry catch
+  stayed outside. Final 1,843 native tests, 227 rules checks, 60 exact-head CI jobs
+  and 50 focused browser cases passed. Review audited all 194 frames and
+  individually inspected 44 originals. An initial Settings test-boundary failure
+  was corrected by settling and proving the native blur/preview reads before the
+  fault baseline; all strict post-entry assertions remained unchanged. Persistent
+  cleanup faults retain their separately documented existing limitations.
+
+The .51 exact merge/tree, Pages deployment and all 90 permitted live URLs were
+verified. Duplicate CI passed after one unchanged-head Setup/location job rerun:
+its initial 159/160 result timed out at a final network-idle wait after the case's
+save/terminal/reload/Undo assertions. The rerun passed 160/160. Original evidence
+is retained; missing request-level traces leave the exact idle cause unproven. Ten URL variants at prior tunnel/proxy-denied
 paths remain excluded and unverified; no denied path was retried or alternate-
 routed. This is not a claim of complete 100-URL live-file verification.
 
@@ -80,12 +92,20 @@ routed. This is not a claim of complete 100-URL live-file verification.
 
 These are scope groups, not a promise that each needs exactly one release.
 Further inventory findings must be recorded rather than declaring Stage 2 done.
-The current .51 candidate addresses shared entry group 9 before more modal callers.
+There are eight open scope groups. The .52 candidate addresses only purchase
+confirmation within group 1, including insurance bought in that same transaction.
+Held-cargo coverage, claims and amendments remain in group 1 afterward; completing
+one subbatch does not close that whole group.
 
-1. **Purchase and insurance confirmations, split if needed.** `app.mjs:
-   buyForm`, `insureHeldCargo`, `claimForm`, `amendPolicy`. The first three return
-   `act()` but lack the full owned pending/terminal contract; amendment discards
-   completion. Preserve purchase, premium, payout and cost-basis semantics.
+1. **Purchase and insurance confirmations: .52 purchase-only candidate.**
+   `app.mjs: buyForm` owns one atomic purchase including optional at-purchase
+   insurance. The candidate adds completion handling without changing `S.buy`,
+   offer prices/dice, broker fees, premium, cost basis, ledger or Undo. Candidate
+   gates and release verification are still required. Separate subsequent work
+   covers `insureHeldCargo`, `claimForm` and `amendPolicy`: held coverage and
+   claims return `act()` without a full owned pending/terminal contract;
+   amendment discards completion. Preserve their different lot/policy identities,
+   premium, payout, proportional loss and amendment/refund semantics.
 2. **Supplier/buyer contact search.** `app.mjs: searchDialog` discards completion
    before choosing its snapshot/tab or opening a sale. Retain its generated
    snapshot/dice on known-unsaved retry; delay UI and buyer-to-sale handoff until
@@ -121,19 +141,6 @@ The current .51 candidate addresses shared entry group 9 before more modal calle
     an owned pending surface. Restore checkbox presentation on known-unsaved
     failure without pretending an uncertain save did not happen.
 
-9. **Shared-modal entry-failure containment: .51 candidate.** Sale review demonstrated a
-    separate pre-provider boundary: an injected one-shot failure setting the
-    initial submit-control state can leave Deposit or Campaign time busy with
-    zero writes and no retry; Deposit also prevents Close. This was reproduced
-    in actual production callbacks with an isolated Store, not observed during
-    ordinary DOM operation. Sale has contained its own entry fault since .49.
-    Audit and correct the remaining shared entry boundary separately, preserving
-    each completed caller's known-unsaved and saved/unknown contracts. Earlier
-    family completion does not close this newly demonstrated fault-injection gap. The
-    .51 candidate moves only non-sale initial control synchronization into the
-    existing pre-callback try. Sale's special entry catch stays outside. It does
-    not redesign persistent cleanup faults or alter caller terminal fallbacks;
-    full native/source/browser/pixel and release gates remain required.
 
 Each batch needs synchronous equivalence, delayed write/publication/settlement,
 known-unsaved retry, committed/unknown outcomes, duplicates and queued actions,
