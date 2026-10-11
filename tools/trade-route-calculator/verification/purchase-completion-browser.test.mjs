@@ -143,18 +143,27 @@ async function contextFor(result, scenario) {
   globalThis.purchaseDiceCalls = 0;
   const random = crypto.getRandomValues.bind(crypto);
   crypto.getRandomValues = array => {if (array instanceof Uint32Array && array.length === 1) {purchaseDiceCalls++; array[0] = 2; return array;} return random(array);};
-  globalThis.purchaseMapCallbacks = {scheduled: 0, executed: 0, cacheExecuted: 0, resizeDelivered: 0};
+  globalThis.purchaseMapCallbacks = {scheduled: 0, executed: 0, cacheExecuted: 0, completed: 0, cacheCompleted: 0, loadingCacheCompleted: 0, lastLoadingCacheCompletedAt: null, resizeDelivered: 0};
+  globalThis.purchaseMapLoadingStatusNode = null;
   const raf = requestAnimationFrame;
   window.requestAnimationFrame = function(callback) {
    if (!/\bpaintMap\(\)/.test(Function.prototype.toString.call(callback))) return Reflect.apply(raf, this, [callback]);
    const cache = /\/map-viewport\.mjs(?:\?|:)/.test(new Error().stack || ''); purchaseMapCallbacks.scheduled++;
-   return Reflect.apply(raf, this, [function(time) {purchaseMapCallbacks.executed++; if (cache) purchaseMapCallbacks.cacheExecuted++; globalThis.purchaseGate?.paintEdge('before', cache); const result = Reflect.apply(callback, this, [time]); globalThis.purchaseGate?.paintEdge('after', cache); return result;}]);
+   return Reflect.apply(raf, this, [function(time) {
+    purchaseMapCallbacks.executed++; if (cache) purchaseMapCallbacks.cacheExecuted++;
+    globalThis.purchaseGate?.paintEdge('before', cache); const result = Reflect.apply(callback, this, [time]); globalThis.purchaseGate?.paintEdge('after', cache);
+    purchaseMapCallbacks.completed++; if (cache) purchaseMapCallbacks.cacheCompleted++;
+    const statusNode = document.querySelector('#map-load-status'), status = statusNode?.textContent ?? null, pending = !!globalThis.purchaseGate?.pending;
+    if (cache && !pending && /Loading map data/.test(status || '')) {purchaseMapCallbacks.loadingCacheCompleted++; purchaseMapCallbacks.lastLoadingCacheCompletedAt = performance.now(); globalThis.purchaseMapLoadingStatusNode = statusNode;}
+    globalThis.purchaseGate?.trace('map-paint-completed', {cache, status, statusNodeId: globalThis.purchaseGate?.mapNodeId(statusNode) ?? null, pending, writeExecuted: !!globalThis.purchaseGate?.pending?.executed});
+    return result;
+   }]);
   };
   const RO = ResizeObserver;
   window.ResizeObserver = class extends RO {constructor(callback) {const relevant = /scheduleMapPaint/.test(Function.prototype.toString.call(callback)); super(function(entries, observer) {if (relevant) purchaseMapCallbacks.resizeDelivered++; return Reflect.apply(callback, this, [entries, observer]);});}};
  }, {key: KEY, bytes: JSON.stringify(fixture(scenario)), origin: new URL(base).origin, politicalKey: POLITICAL_TERRITORY_KEY});
  let held, releaseHold, heldOnce = false;
- context.purchaseNetwork = {async waitHeld() {const end = Date.now() + 10000; while (!held && Date.now() < end) await new Promise(resolve => setTimeout(resolve, 25)); assert.ok(held, 'Real MapAreaCache tile reached network fixture');}, release() {assert.ok(releaseHold); const callback = releaseHold; releaseHold = null; callback();}, cleanup() {releaseHold?.(); releaseHold = null;}};
+ context.purchaseNetwork = {async waitHeld() {const end = Date.now() + 10000; while (!held && Date.now() < end) await new Promise(resolve => setTimeout(resolve, 25)); assert.ok(held, 'Real MapAreaCache tile reached network fixture'); return {...held};}, release() {assert.ok(releaseHold); const callback = releaseHold; releaseHold = null; callback();}, cleanup() {releaseHold?.(); releaseHold = null;}};
  await context.route('**/*', async route => {
   const url = new URL(route.request().url());
   if (url.href === new URL('verification/purchase-peer.html', base).href) return route.fulfill({contentType: 'text/html', body: '<!doctype html><title>Disposable purchase native Store peer</title>'});
@@ -162,7 +171,7 @@ async function contextFor(result, scenario) {
   if (url.origin === 'https://travellermap.com' && url.pathname.startsWith('/api/')) {
    assert.equal(url.searchParams.get('milieu'), 'M1105'); const headers = {'Access-Control-Allow-Origin': '*'};
    if (url.pathname.endsWith('/jumpworlds')) {
-    if (scenario.map && !heldOnce && url.searchParams.get('x') === '0' && url.searchParams.get('y') === '0') {heldOnce = true; held = {url: url.href, released: false}; result.mapResponse = held; await new Promise(resolve => {releaseHold = resolve;}); held.released = true;}
+    if (scenario.map && !heldOnce && url.searchParams.get('x') === '0' && url.searchParams.get('y') === '0') {heldOnce = true; held = {url: url.href, heldAt: Date.now(), released: false}; result.mapResponse = held; await new Promise(resolve => {releaseHold = resolve;}); held.released = true; held.releasedAt = Date.now();}
     return route.fulfill({json: {Worlds: []}, headers});
    }
    if (url.pathname.endsWith('/universe')) return route.fulfill({json: {Sectors: []}, headers});
@@ -186,8 +195,11 @@ async function installGate(page, result) {
   const storeResponse = await fetch(storeURL); if (!storeResponse.ok) throw Error('Cannot inspect runtime Store');
   const storeSource = await storeResponse.text();
   const g = globalThis.purchaseGate = {armed: false, pending: null, store: null, args: null, lastState: null, calls: 0, totalCalls: 0, executions: 0, notifyFault: null, cleanupFault: null, entryFault: false, readFault: false, recoveryReentry: false, recoveryChecks: [], faults: [], candidates: [], forwarded: [], publications: [], observations: [], settlements: [], reentrant: false, reentrantChecks: [], oldSubmit: null, baseline: null};
+  Object.assign(g, {timeline: [], timelineDropped: 0});
+  g.trace = (event, detail = {}) => {const entry = {order: g.timeline.length + 1, at: performance.now(), event, ...detail}; if (g.timeline.length < 120) g.timeline.push(entry); else g.timelineDropped++; return entry;};
   Object.assign(g, {strict: false, paintEdges: [], paintEdgesDropped: 0, mutationCount: 0, phase: 'review', nextNodeId: 0, nodeIds: new WeakMap()});
   const nodeId = node => node ? (g.nodeIds.has(node) ? g.nodeIds.get(node) : (g.nodeIds.set(node, ++g.nextNodeId), g.nextNodeId)) : null;
+  g.mapNodeId = nodeId;
   g.mapCapture = label => ({label, pending: !!g.pending, settlements: g.settlements.length, regions: ['.world-map', '#map-load-status', '.planned-route', '#modal-body', '#summary', '#message', '#save-status'].map(selector => {const node = document.querySelector(selector); return {selector, nodeId: nodeId(node), html: node?.outerHTML ?? null};})});
   g.paintEdge = (edge, cache) => {if (!g.strict) return; if (g.paintEdges.length < 40) g.paintEdges.push({...g.mapCapture('paintMap-' + edge), edge, cache, phase: g.phase}); else g.paintEdgesDropped++;};
   const observer = new MutationObserver(records => {if (g.strict) g.mutationCount += records.length;});
@@ -250,7 +262,7 @@ async function installGate(page, result) {
     if (g.notifyFault === 'wrong-token') args[1] = {saveToken: {foreign: true}};
     if (g.notifyFault === 'wrong-revision') args[0] = {...args[0], revision: args[0].revision + 1};
     record.deliveredTokenPresent = args[1]?.saveToken != null; record.deliveredTokenMatches = args[1]?.saveToken === g.args?.[2] && args[1]?.saveToken != null; record.deliveredRevision = args[0].revision;
-    const result = Reflect.apply(change, this, args); record.actualCallback = true;
+    const result = Reflect.apply(change, this, args); record.actualCallback = true; g.trace('publication-delivered', {revision: args[0].revision, tokenMatches: record.deliveredTokenMatches});
     if (g.notifyFault === 'consumed-token') {g.notifyFault = null; Reflect.apply(change, this, args); record.replayedConsumedToken = true;}
     if (g.reentrant && g.pending) g.replay();
     g.observations.push(observation('after-native-publication'));
@@ -260,16 +272,16 @@ async function installGate(page, result) {
   }
   Store.prototype.read = function(...args) {observeStore(this); if (g.readFault) throw Error('Synthetic unreadable durable purchase baseline'); return Reflect.apply(nativeRead, this, args);};
   Store.prototype.save = function(...args) {
-   observeStore(this); g.args = args; g.totalCalls++;
+   observeStore(this); g.args = args; g.totalCalls++; g.trace('provider-invoked', {call: g.totalCalls, mapStatus: document.querySelector('#map-load-status')?.textContent ?? null, mapStatusNodeId: nodeId(document.querySelector('#map-load-status'))});
    g.forwarded.push({argumentCount: args.length, tokenPresent: args[2] != null, expectedRevision: args[1], candidateRevision: args[0].revision}); g.candidates.push(JSON.stringify(args[0]));
    if (g.reentrant) g.replay();
    if (!g.armed) {g.executions++; return Reflect.apply(nativeSave, this, args);}
    if (g.pending) throw Error('Application called Store.save twice during pending purchase'); g.calls++;
    return new Promise((resolve, reject) => {g.pending = {store: this, args, resolve, reject, executed: false, result: undefined, error: null};});
   };
-  g.write = () => {const p = g.pending; if (!p || p.executed) throw Error('Native purchase write must execute exactly once'); p.executed = true; g.executions++; try {p.result = Reflect.apply(nativeSave, p.store, p.args);} catch (error) {p.error = error;}};
+  g.write = () => {const p = g.pending; if (!p || p.executed) throw Error('Native purchase write must execute exactly once'); p.executed = true; g.executions++; g.trace('native-write-invoked', {execution: g.executions}); try {p.result = Reflect.apply(nativeSave, p.store, p.args);} catch (error) {p.error = error;}};
   g.release = kind => {
-   const p = g.pending; if (!p) throw Error('No pending purchase completion');
+   const p = g.pending; if (!p) throw Error('No pending purchase completion'); g.trace('provider-release', {kind, writeExecuted: p.executed});
    if (['unknown-before', 'known-before', 'fulfilled-no-publication'].includes(kind)) {
     g.pending = null; g.settlements.push({kind, executed: false});
     if (kind === 'fulfilled-no-publication') p.resolve();
@@ -281,11 +293,21 @@ async function installGate(page, result) {
    else if (p.error) {g.settlements.push({kind: 'native-rejected', code: p.error.code || null, committed: p.error.committed ?? null}); p.reject(p.error);}
    else {g.settlements.push({kind: 'native-fulfilled', executed: true}); p.resolve(p.result);}
   };
-  g.remember = () => {g.oldSubmit = document.querySelector('#modal-form').onsubmit; g.baseline = semantic(); g.reviewNode = document.querySelector('#modal-body').firstElementChild; g.mainNode = document.querySelector('#main').firstElementChild;};
-  g.snapshot = () => ({calls: g.calls, totalCalls: g.totalCalls, executions: g.executions, pending: !!g.pending, editable: g.store?.editable ?? null, reloadRequired: !!g.store?.reloadRequired, storage: {...purchaseStorage}, candidates: g.candidates, forwarded: g.forwarded, publications: g.publications, observations: g.observations, settlements: g.settlements, faults: g.faults, reentrantChecks: g.reentrantChecks, baseline: g.baseline, semantic: semantic(), reviewNodeRetained: !!g.reviewNode?.isConnected, mainNodeRetained: !!g.mainNode?.isConnected, newer: g.newer, recoveryChecks: g.recoveryChecks, callbacks: {...purchaseMapCallbacks}, mapBaseline: g.mapBaseline, paintEdges: g.paintEdges, paintEdgesDropped: g.paintEdgesDropped, mutationCount: g.mutationCount, durableToken: /"saveToken"\s*:/.test(localStorage.getItem(KEY))});
-  // Real Store read/publication captures the actual delivered object before review.
-  // Later in-place fixture drift never patches app functions or lexical variables.
-  dispatchEvent(new StorageEvent('storage', {key: KEY, newValue: localStorage.getItem(KEY)}));
+  g.remember = () => {g.oldSubmit = document.querySelector('#modal-form').onsubmit; g.baseline = semantic(); g.reviewNode = document.querySelector('#modal-body').firstElementChild; g.mainNode = document.querySelector('#main').firstElementChild; g.retainedBaselineOrder = g.trace('retained-baseline', {mapStatus: document.querySelector('#map-load-status')?.textContent ?? null, mapStatusNodeId: nodeId(document.querySelector('#map-load-status')), cacheCompleted: purchaseMapCallbacks.cacheCompleted, loadingCacheCompleted: purchaseMapCallbacks.loadingCacheCompleted});};
+  g.snapshot = () => ({calls: g.calls, totalCalls: g.totalCalls, executions: g.executions, pending: !!g.pending, editable: g.store?.editable ?? null, reloadRequired: !!g.store?.reloadRequired, storage: {...purchaseStorage}, candidates: g.candidates, forwarded: g.forwarded, publications: g.publications, observations: g.observations, settlements: g.settlements, faults: g.faults, reentrantChecks: g.reentrantChecks, baseline: g.baseline, semantic: semantic(), reviewNodeRetained: !!g.reviewNode?.isConnected, mainNodeRetained: !!g.mainNode?.isConnected, newer: g.newer, recoveryChecks: g.recoveryChecks, callbacks: {...purchaseMapCallbacks}, bootstrap: g.bootstrap, mapReadiness: g.mapReadiness, retainedBaselineOrder: g.retainedBaselineOrder, timeline: g.timeline, timelineDropped: g.timelineDropped, mapBaseline: g.mapBaseline, paintEdges: g.paintEdges, paintEdgesDropped: g.paintEdgesDropped, mutationCount: g.mutationCount, durableToken: /"saveToken"\s*:/.test(localStorage.getItem(KEY))});
+  // In this.onChange(this.read()), JavaScript resolves onChange before read.
+  // First discover the real Store through read; the second actual storage event
+  // then reaches the installed observation wrapper and the unchanged app callback.
+  const initialBytes = localStorage.getItem(KEY), initialWrites = purchaseStorage.writes;
+  dispatchEvent(new StorageEvent('storage', {key: KEY, newValue: initialBytes}));
+  if (!g.store) throw Error('Actual Store discovery failed');
+  const discoveredPublications = g.publications.length;
+  dispatchEvent(new StorageEvent('storage', {key: KEY, newValue: initialBytes}));
+  if (!g.lastState || g.publications.length !== discoveredPublications + 1 || !g.publications.at(-1).actualCallback) throw Error('Second storage event did not deliver an observed real campaign to the app');
+  if (JSON.stringify(g.lastState) !== initialBytes || localStorage.getItem(KEY) !== initialBytes || purchaseStorage.writes !== initialWrites || g.totalCalls !== 0) throw Error('Observation bootstrap changed the synthetic campaign');
+  g.bootstrap = {storeDiscovered: true, dispatches: 2, observedPublications: g.publications.length - discoveredPublications, appCallbackCompleted: g.publications.at(-1).actualCallback, deliveredRevision: g.lastState.revision, exactDurableBytes: true, writes: 0};
+  g.trace('observation-bootstrap-complete', g.bootstrap);
+  // Later in-place fixture drift changes only this actual delivered test object.
   return {appURL, storeURL, appSHA256: await digest(source), storeSHA256: await digest(storeSource), nativeLocks: !!navigator.locks};
  });
  assert.equal(result.runtime.nativeLocks, true);
@@ -319,7 +341,7 @@ async function pointer(page, selector, clickCount = 1) {
  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2, {clickCount, delay: 20});
 }
 async function fill(page, name, value) {const input = page.locator('#modal [name="' + name + '"]'); await input.fill(String(value)); await input.blur();}
-async function prepare(page, scenario, before, {loops = false, select = true} = {}) {
+async function prepare(page, scenario, before, {loops = false, select = true, network = null} = {}) {
  if (select) {await tab(page, 'Cargo'); await action(page, 'sale-all').click(); await tab(page, scenario.map ? 'Overview' : 'Trade');}
  const initialCalls = (await gate(page)).totalCalls;
  const spec = specification(before, scenario);
@@ -343,7 +365,19 @@ async function prepare(page, scenario, before, {loops = false, select = true} = 
  };
  await enter();
  if (loops) {const review = await page.locator('#modal-body').textContent(); await pointer(page, '#modal-cancel'); await closed(page); assert.deepEqual(await read(page), before); await enter(); assert.equal(await page.locator('#modal-body').textContent(), review, 'Cancel and reopen reproduce the same accepted terms without writes or dice');}
- await page.evaluate(() => document.activeElement?.blur()); await frames(page); await page.evaluate(() => purchaseGate.remember());
+ await page.evaluate(() => document.activeElement?.blur()); await frames(page);
+ if (scenario.map) {
+  assert.ok(network, 'Map setup requires the actual held network fixture');
+  const held = await network.waitHeld(); assert.equal(held.released, false, 'Keep cache response held before retained baseline');
+  // Wait for observed completion, not a delay: the 250 ms production request
+  // debounce may paint its first loading state after ordinary form preparation.
+  await page.waitForFunction(() => purchaseMapCallbacks.loadingCacheCompleted > 0 && purchaseMapLoadingStatusNode === document.querySelector('#map-load-status') && /Loading map data/.test(document.querySelector('#map-load-status')?.textContent || ''));
+  await page.evaluate(held => {
+   if (purchaseGate.totalCalls || purchaseGate.pending || purchaseStorage.writes) throw Error('Map readiness must precede all provider work');
+   purchaseGate.mapReadiness = purchaseGate.trace('initial-cache-ready', {heldURL: held.url, heldResponseReleased: held.released, callbacks: {...purchaseMapCallbacks}, status: document.querySelector('#map-load-status').textContent, statusNodeId: purchaseGate.mapNodeId(purchaseMapLoadingStatusNode)});
+  }, held);
+ }
+ await page.evaluate(() => purchaseGate.remember());
 }
 async function replay(page, {physical = true, navigation = true} = {}) {
  if (physical) {for (const id of ['modal-submit', 'modal-cancel', 'modal-close']) await pointer(page, '#' + id, 2); await page.keyboard.press('Enter'); await page.keyboard.press('Escape');}
@@ -478,16 +512,25 @@ async function resizeProbe(page, result, {frozen = false, resume = false} = {}) 
  result.checks.push('Observed real ResizeObserver → rAF → paintMap ' + (frozen ? 'with strict DOM identity retained' : 'repainting normally'));
 }
 async function mapPublication(page, result, scenario, before, context) {
- await context.purchaseNetwork.waitHeld();
+ const held = await context.purchaseNetwork.waitHeld(); assert.equal(held.released, false, 'Original response remains held through native publication');
+ const setup = await gate(page), provider = setup.timeline.find(entry => entry.event === 'provider-invoked');
+ assert.equal(setup.timelineDropped, 0); assert.ok(setup.mapReadiness.callbacks.loadingCacheCompleted > 0);
+ const initialPaint = setup.timeline.findLast(entry => entry.event === 'map-paint-completed' && entry.cache && !entry.pending && entry.statusNodeId === setup.mapReadiness.statusNodeId && /Loading map data/.test(entry.status || '') && entry.order < setup.mapReadiness.order);
+ assert.ok(initialPaint, 'Current mounted status node has an observed completed initial cache-loading callback before readiness');
+ assert.ok(setup.mapReadiness.order < setup.retainedBaselineOrder.order && setup.retainedBaselineOrder.order < provider.order, 'Observed initial cache completion precedes retained baseline, then provider invocation');
+ assert.equal(setup.retainedBaselineOrder.mapStatus, setup.mapReadiness.status); assert.equal(setup.retainedBaselineOrder.mapStatusNodeId, setup.mapReadiness.statusNodeId); assert.equal(provider.mapStatusNodeId, setup.mapReadiness.statusNodeId, 'Readiness belongs to the currently mounted status node through provider entry');
  await page.evaluate(() => {purchaseGate.beginStrict(); purchaseGate.write();}); await frames(page); assertPurchase(await read(page), before, scenario);
  const baseline = (await gate(page)).mapBaseline;
  for (const region of baseline.regions) assert.ok(region.nodeId && region.html, 'Mounted strict map region: ' + region.selector);
- const callbacks = (await gate(page)).callbacks; await page.evaluate(() => {purchaseGate.phase = 'cache-response';}); context.purchaseNetwork.release();
- await page.waitForFunction(n => purchaseMapCallbacks.cacheExecuted > n, callbacks.cacheExecuted); await frames(page);
+ const callbacks = (await gate(page)).callbacks; await page.evaluate(() => {purchaseGate.phase = 'cache-response'; purchaseGate.trace('held-cache-release-requested');}); context.purchaseNetwork.release();
+ await page.waitForFunction(n => purchaseMapCallbacks.cacheCompleted > n, callbacks.cacheCompleted); await frames(page);
  assert.deepEqual((await page.evaluate(() => purchaseGate.mapCapture('after-cache'))).regions, baseline.regions, 'Actual cache callback preserves DOM and SVG');
  await resizeProbe(page, result, {frozen: true}); const snapshot = await gate(page);
  assert.ok(snapshot.paintEdges.some(edge => edge.edge === 'after' && edge.cache), 'Real cache after-edge executed'); assert.ok(snapshot.paintEdges.some(edge => edge.edge === 'after' && !edge.cache && edge.phase === 'resize'), 'Real resize after-edge executed');
  assert.equal(snapshot.paintEdgesDropped, 0); assert.equal(snapshot.mutationCount, 0, 'No transient SVG/panel/summary/status mutation');
+ const publication = snapshot.timeline.find(entry => entry.event === 'publication-delivered' && entry.tokenMatches), cacheRelease = snapshot.timeline.find(entry => entry.event === 'held-cache-release-requested'), cacheCompletion = snapshot.timeline.find(entry => entry.event === 'map-paint-completed' && entry.cache && entry.writeExecuted && entry.order > cacheRelease.order);
+ assert.ok(publication && cacheCompletion && publication.order < cacheRelease.order && cacheRelease.order < cacheCompletion.order, 'Owned publication precedes held HTTP release and actual completed cache callback');
+ assert.equal(snapshot.timelineDropped, 0);
  for (const edge of snapshot.paintEdges) {assert.equal(edge.pending, true); assert.equal(edge.settlements, baseline.settlements); assert.deepEqual(edge.regions, baseline.regions);}
  await detail(page, result, 'map-publication-held-controls', ['#modal-cancel', '#modal-submit']);
  await page.evaluate(() => purchaseGate.endStrict());
@@ -502,7 +545,7 @@ async function runBody(page, result, scenario, context) {
  await page.goto(base); await page.getByText('Editing in this tab', {exact: true}).waitFor(); await frames(page);
  assert.equal(await page.evaluate(() => purchaseStorage.writes), 0, 'Complete seed needs no migration write');
  await installGate(page, result); const before = await read(page), bytes = await raw(page);
- await prepare(page, scenario, before, {loops: scenario.mode === 'deferred' && !scenario.huge});
+ await prepare(page, scenario, before, {loops: scenario.mode === 'deferred' && !scenario.huge, network: context.purchaseNetwork});
  if (scenario.mode === 'chain') {
   await pointer(page, '#modal-submit'); await closed(page); await frames(page); const first = await read(page); assertPurchase(first, before, scenario);
   await prepare(page, scenario, first, {select: false}); await pointer(page, '#modal-submit'); await closed(page); await frames(page); const second = await read(page); assertPurchase(second, first, scenario);
