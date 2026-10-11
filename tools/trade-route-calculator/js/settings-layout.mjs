@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=clear-route-completion-20261011-60';
+import {ruleInfo} from './rule-references.mjs?v=planned-route-completion-20261011-61';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={

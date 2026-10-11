@@ -14,7 +14,7 @@ assert.equal(app.indexOf('function paintMap(){', start + 1), -1);
 const source = app.slice(start, end);
 const accountsGuard = app.match(/^function accountsBusy\(\).*$/m)?.[0];
 assert.ok(accountsGuard, 'Include the actual Accounts ownership predicate, not a false stub');
-const clearRouteGuards=['clearRouteBusy','clearRoutePresentationHeld'].map(name=>{
+const clearRouteGuards=['clearRouteBusy','clearRoutePresentationHeld','plannedRouteBusy','plannedRoutePresentationHeld'].map(name=>{
  const source=app.match(new RegExp('^function '+name+'\\(\\).*$', 'm'))?.[0];
  assert.ok(source,'Include actual '+name+' predicate');return source;
 }).join('\n');
@@ -30,7 +30,7 @@ function harness(owners = {}) {
  // existing body/spy/assertion intact while supplying its absent default.
  const context = vm.createContext({
   accountsWriteOperation: null,
-  clearRouteWriteOperation: null, clearRouteSaveOperation: null,
+  clearRouteWriteOperation: null, clearRouteSaveOperation: null, plannedRouteWriteOperation: null, plannedRouteSaveOperation: null,
   expenseServices: {publicationDeferred: () => false},
   worldWriteOperation: null, undoOperation: null, replacementReview: null, settingsOperation: null, purchaseWriteOperation: null, insuranceWriteOperation: null, contactSearchWriteOperation: null, contractOfferWriteOperation: null, contractLifecycleWriteOperation: null, passengerWriteOperation: null,
   mapDrag: null, tab: 'Overview', mapZoom: 1, showTerritories: false,

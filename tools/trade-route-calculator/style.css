@@ -386,3 +386,6 @@ main{padding-top:18px}
 
 /* Keep the accepted Clear route location readable without changing other dialogs. */
 .clear-route-location{overflow-wrap:anywhere}
+
+/* Accepted planned-route names wrap without changing other dialogs. */
+.planned-route-review{overflow-wrap:anywhere}

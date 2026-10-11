@@ -3,26 +3,25 @@
 **Updated:** 2026-10-11
 **Repository:** [OwlsNestNH/Traveller-Tools](https://github.com/OwlsNestNH/Traveller-Tools)  
 **Tool folder:** `tools/trade-route-calculator/`  
-**Current main reviewed:** `ae68a384318581131f6575c38c147e34411bf120`
+**Current main reviewed:** `dc9006ad649aff7973be1d24276b7a64946ae982`
 
 Use the current GitHub files as the source of truth. This handoff summarizes continuity; it does not replace the requirements, rules decisions, verification record, or backlog.
 
 ## Current save-completion checkpoint
 
-UI .59 legacy Accounts is released. Exact reviewed tree, Pages, all 90 permitted
-live URL variants and all 68 ready-event duplicate CI jobs were verified; ten
-established proxy-restricted variants remain unverified. Its 5,862 native and
-222 focused browser cases passed independent source and actual-image review.
-Earlier Accounts candidate failures are preserved in RULES_VERIFICATION. Prior
-Setup idle causes and the separate Cargo SVG focus race remain qualified.
+UI .60 Clear Planned Route is released. Exact reviewed tree, Pages, all 90
+permitted live URL variants and all 69 ready-event duplicate CI jobs were
+verified; ten established proxy-restricted variants remain unverified, including
+both style.css URLs. Its 6,027 native and 87 focused browser cases passed
+independent source and actual-image review. Earlier candidate failures remain
+recorded in RULES_VERIFICATION. Prior Setup idle causes and the separate Cargo
+SVG focus race remain qualified.
 
-Two Stage 2 scope groups remain, with concrete callers and release evidence in
-[COMPLETION_MIGRATION.md](COMPLETION_MIGRATION.md): route/world/rounding and
-cargo/market. The .60 candidate is only Clear Planned Route completion. Retain
-its accepted confirmation and draft while saving; clear only that owned draft
-after a proven save, without late lookup callbacks reviving an obsolete plan.
-Exact economics, State/controller/Store and Undo/mulligan remain authoritative.
-Other route/world/rounding callers remain separate, as does Stage 3.
+Two Stage 2 scope groups remain: route/world/rounding and cargo/market. The .61
+candidate covers only Map/Auto route save and Plot final-save completion, with
+caller-owned lookup/review/pending/retirement handling. Original Map live-catalog
+merge and Plot calculated-snapshot behavior are deliberately distinct. Other
+world/rounding and cargo/market callers remain queued in COMPLETION_MIGRATION.
 
 Require final source/native/exact-head browser/pixel review, every ready-event
 duplicate and post-merge deployment verification. Earlier sections preserve

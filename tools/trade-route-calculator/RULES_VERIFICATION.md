@@ -1301,3 +1301,54 @@ legitimate current-role synchronization as old-owner repair were independently
 corrected. The subsequent focused run passed 139/139 with an exact no-drift source
 snapshot. Additional explicit newer-title/body/enabled-control assertions were
 then strengthened; a fresh complete aggregate is required for final publication.
+
+
+## .60 final release verification
+
+PR #62 final head `ace8e2063567b591b1bca463aa65e8928a0025c1` passed 6,027
+native tests, 227 rules checks, all 69 required exact-head jobs and 87 focused
+browser cases. Trade workflow 38150795055 and campaign workflow 38150795052
+passed, followed by ready-event workflows 38152089047 and 38152089018. All 82
+original focused cases remain; five new cases prove Cancel/X repair and preclaim
+replacement. Independent original-resolution review covered 52 unique images;
+45 duplicate frames matched those exact bytes, reconciling all 97 frames and all
+46 mobile frames. All 156 layout checks had no overflow; 206 target checks,
+two complete mobile form walks and 27 physical terminal dismissals passed.
+Original failed runs and their qualified diagnoses above remain part of evidence.
+
+Merge `dc9006ad649aff7973be1d24276b7a64946ae982` matched reviewed tree
+`3ea07e318412343f9cc986b096a6066dd195b16f`. Pages run 38153048723 succeeded;
+all 90 permitted live variants matched. Ten previously proxy-denied variants,
+including both style.css URLs, remain excluded/unverified. No retry or alternate
+route was used for them; candidate CSS source/CI/pixel verification is separate
+from live-byte verification.
+
+## Planned-route completion candidate — UI 2026.10.11.61
+
+The candidate is based on exact released .60. Before editing, all 309 repository
+files matched Git blob hashes and the full released native aggregate passed
+6,027/6,027. Map save and Plot save original mutation closures are preserved.
+Twelve full .60 observations use four wholly synthetic campaigns for Build,
+Auto and Plot, the complete released helper family and real Store/controller.
+Only generated UUIDs are normalized; complete state, audits, ledger, timing,
+rendered panels, saved bytes, reload and Undo outcomes remain strict.
+
+Preserved native diagnostics distinguish actual ownership gaps from fixture
+corrections. Initial 136/273 failures were dominated by a DOM double that did not
+mark attached dynamic form nodes connected, plus the approved path-class markup
+delta and an incorrect known-unwritten candidate-alias model. Correcting those
+boundaries without runtime changes yielded 273/273. New red lookup cases then
+reproduced detached picker host/row and foreign currentTarget gaps; original
+records are retained alongside the repaired DOM topology self-check. The narrow
+runtime correction binds actual picker/control identities and row order, rejects
+foreign first-submit targets before normalization, and retires partial entry
+without touching newer dialogs. A 298/298 focused run passed before subsequent
+strict early-construction and suspended-Settings cleanup cases were added.
+
+One dedicated paragraph wrapping class applies only to these planned-route
+origin/path/fuel paragraphs. Fuel-notice overflow was predicted from source, not
+claimed observed baseline pixels. All final source/native/rules/catalog/fixture
+controls, exact-head browser execution and actual screenshots remain release
+gates. Browser scripts are executed locally only in their documented non-browser
+fixture modes; actual Chromium evidence comes from GitHub CI. Existing prior
+Setup-idle/Cargo-focus qualifications and ten live URL exclusions remain intact.

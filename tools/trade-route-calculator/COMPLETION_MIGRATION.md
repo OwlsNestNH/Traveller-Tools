@@ -1,7 +1,7 @@
 # Save-completion migration queue
 
-Inventory refreshed against UI 2026.10.11.59, repository merge
-`ae68a384318581131f6575c38c147e34411bf120` (2026-10-11).
+Inventory refreshed against UI 2026.10.11.60, repository merge
+`dc9006ad649aff7973be1d24276b7a64946ae982` (2026-10-11).
 This records the save-boundary work, not the earlier GUI-refit stages.
 
 ## Stage 2: finish save callers
@@ -217,24 +217,39 @@ routed. This is not a claim of complete 100-URL live-file verification.
   The optional fuel-only bundle path remains compatibility coverage without a
   production caller. This closes Accounts, not unrelated automatic policy writes.
 
+- **.60 Clear Planned Route:** final 6,027 native tests across 83 files, 227
+  rules checks, all 69 exact-head CI jobs and 87 focused browser cases passed.
+  All 82 original cases remain, with five additional dismissal/preclaim controls.
+  Independent review inspected 52 unique actual images; 45 other frames matched
+  those exact bytes. All 97 frame hashes/layouts, including 46 mobile frames,
+  were reconciled. Original 66/82 browser failures and native diagnostic failures
+  are retained: one Clear-only wrapping class, owner-checked independent dismissal
+  restoration and three corrected test-model boundaries resolved them. Exact
+  merge/tree, Pages, all 90 permitted live variants and all 69 ready-event duplicate
+  jobs were verified. Ten established proxy-restricted variants, including both
+  style.css URLs, remain unverified. Source/CI and actual candidate CSS pixels
+  passed; restricted live stylesheet bytes are not claimed verified.
+
 ### Remaining bounded groups
 
 These are scope groups, not a promise that each needs exactly one release.
 Further inventory findings must be recorded rather than declaring Stage 2 done.
-There are two open groups after the verified Accounts release. Automatic policy
+There are two open groups after the verified Clear Planned Route release. Automatic policy
 updates remain part of their owning workflows; no new accounting engine is needed.
 
-1. **Route/world/rounding confirmations.** app.mjs: clearPlannedRoute,
-   saveMapRoute, plotRoute, overrideWorld, roundingPreview. The .60 candidate
-   targets only Clear Planned Route: retain accepted confirmation/draft/context
-   through completion and clear only that owned draft after a verified save.
-   In-flight route lookup/map callbacks cannot resurrect or overwrite it.
-   Preserve route=[actual], routeIndex=0, mandatoryStops=[], exact economics and
-   Undo/mulligan. The group remains open after this subbatch. Subsequent bounded
-   work is saveMapRoute + plotRoute, ordinary world override, then rounding Apply.
-   World override is distinct from completed World Changes reversion. Lookup/
-   route calculations stay cancellable before saving; do not migrate them merely
-   to share this caller's completion boundary.
+1. **Route/world/rounding confirmations.** Clear Planned Route is released.
+   The .61 candidate targets saveMapRoute and plotRoute final-save completion:
+   retain accepted path/stops/world terms and the exact owned draft until a
+   verified save; distinguish known-unwritten retry from saved/unknown outcomes.
+   Preserve the travelled prefix, routeIndex, ordered repeated mandatory stops,
+   routing/tie-breakers, advisory fuel, exact economics and Undo/mulligan. Map save
+   still merges the live known-world catalog; Plot still saves its calculated
+   world snapshot. Initial Plot lookups stay cancellable and sequential, with
+   original attached picker/control identities and values checked at continuation
+   boundaries. Partial form construction retires only its exact owner.
+   The group remains open. Subsequent bounded work is ordinary overrideWorld,
+   then roundingPreview Apply. World override is distinct from completed World
+   Changes reversion. Stage 3 quote/cache work has not started.
 2. **Cargo adjustments and market controls.** app.mjs: existingLot,
    correctCargo, reject, editOffer, market-expiration checkbox and expire-all.
    Returning confirmations still need ownership/terminal handling; overrides/
