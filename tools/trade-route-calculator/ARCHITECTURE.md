@@ -582,7 +582,7 @@ revision, must reject without charging rather than treating the old confirmation
 as consent to a new price. Optional at-purchase insurance stays inside the existing
 atomic `S.buy` transition. No second ledger, quote-cache policy or economic
 mutation is introduced. Held-cargo insurance, claims and amendments have distinct
-identities and remain subsequent work.
+identities and were completed in the subsequent .53 release.
 
 Accepted terms and their state baseline are captured before callback-capable
 confirmation construction. Purchase-specific session/generation guards protect a
@@ -615,7 +615,7 @@ rounding, persistence/controller, price/dice, accounting and Undo mutation bodie
 remain outside this UI-completion patch.
 
 
-## Stage 2 held-insurance completion (.53 candidate)
+## Stage 2 held-insurance completion (.53 released)
 
 A separate insurance owner covers held-cargo coverage, claims, amendment and
 closure. Accepted terms are immutable and tied to the actual lot/policy objects,
@@ -649,8 +649,45 @@ and failure/control recovery are guarded against callback-driven repeated saves.
 Success cleanup rechecks ownership across callback-capable boundaries and cannot
 close or announce over a newer dialog.
 
-This section describes the candidate contract, not a release claim. Independent
-source review, full native and exact-head browser regressions, actual mobile and
-desktop screenshot inspection, then exact merge/Pages/permitted live verification
-remain required before closing the purchase/insurance Stage 2 group. Stage 3
-quote/preview lifecycle consolidation remains separate.
+This released contract passed independent source/native and exact-head browser
+regressions, actual mobile/desktop screenshot review, exact merge/Pages and all
+90 permitted live URL checks. The ten known restricted URL variants remain
+unverified. This closes the direct purchase/insurance group; automatic policy
+updates remain with their own workflows. Stage 3 quote/preview lifecycle
+consolidation remains separate.
+
+
+## Stage 2 contact-search completion (.54 candidate)
+
+A contact-search owner retains the accepted supplier/buyer snapshot, generated
+market/offers, dice and search audit, full campaign baseline, revision/publication,
+world, editing tenure and selected-cargo presentation. Initial preview, cancel
+and reopen retain their existing generation policy. The unchanged
+S.commitContactSearch transition owns duration, life support, contact periods,
+penalties, snapshot installation and Undo; no parallel accounting or cache
+engine is introduced.
+
+Ownership exists before callback-capable construction and provider entry. While
+pending, the review and retained panels/map/status cannot publish a held owned
+state early. One-use controller provenance permits completion; foreign/editor
+intent retires the older owner. Native completion remains immediate. Deliberate
+known-unsaved retry requires the same accepted values and equal readable durable
+baseline, reusing the prepared snapshot rather than rerolling. Recovery and
+construction cannot trigger an automatic repeated save. A pre-save construction
+fault retires only its owned partial review with close/reopen guidance.
+
+Failed saved, unknown or missing-provenance outcomes retire duplicate-write
+authority before reporting. An owned completed search may select its installed snapshot,
+navigate, close and announce only across current presentation boundaries. A
+successful buyer handoff uses a caller-owned optional Sale entry guard, checked
+at entry, each quote-loop iteration, before cache publication, after rendering
+and during modal construction. This guards the demonstrated contact-to-Sale
+boundary while ordinary Sale retains its prior quote/price/cache behavior. It
+does not establish independent Sale recovery behavior.
+
+Expected normal-buyer/illegal-cargo validation follows one saved search and
+reports the existing guidance without reload or a second search. Unexpected
+post-save presentation faults use saved/reload guidance. Independent full
+original/candidate comparisons must preserve prices, dice, search periods,
+elapsed time/life support, ledger, Undo and mulligan behavior. This is a candidate
+contract; full exact-head browser/pixel and deployment gates remain required.

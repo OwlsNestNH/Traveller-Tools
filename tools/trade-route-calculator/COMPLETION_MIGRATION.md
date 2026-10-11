@@ -101,55 +101,57 @@ routed. This is not a claim of complete 100-URL live-file verification.
   90 permitted live URLs matched; duplicate CI passed all 61 jobs. The existing
   ten proxy-denied URL variants remain excluded and unverified.
 
+- **.53 Held insurance, claims and amendments:** the remaining direct insurance
+  callers own accepted lot/policy/route/form terms through completion. Final
+  2,481 native tests (480 focused), 227 rules checks, 62 exact-head CI jobs and
+  94 focused browser cases passed. All 187 producer image hashes/layouts were
+  audited, all images scanned, and 71 originals inspected including every one
+  of the 45 mobile frames. Twenty complete original/candidate economic results
+  match after generated-ID normalization; the amendment body is byte-identical.
+  Exact merge/tree, Pages and 90 permitted URL variants matched; all 62 duplicate
+  CI jobs passed. Ten prior proxy-denied variants remain excluded. The direct
+  insurance caller inventory is complete, closing the purchase/insurance group.
+
 ### Remaining bounded groups
 
 These are scope groups, not a promise that each needs exactly one release.
 Further inventory findings must be recorded rather than declaring Stage 2 done.
-There are eight open scope groups. Released .52 addressed purchase confirmation
-within group 1, including insurance bought in that same transaction. The .53
-candidate covers the remaining held-cargo coverage, claims and amendments within
-that group. Group 1 stays open until its remaining caller inventory and full
-release gates are verified; a candidate does not close a scope group.
+There are seven open scope groups after the purchase/insurance group's verified
+closure. The .54 candidate addresses supplier/buyer search only. Automatic policy
+updates in cargo, routes, arrival and Undo stay with their respective workflows;
+closing direct insurance does not declare those other groups complete.
 
-1. **Purchase and insurance confirmations: .53 held-insurance candidate.**
-   Released `app.mjs: buyForm` owns one atomic purchase including optional
-   at-purchase insurance without changing `S.buy`, prices/dice, fee/premium,
-   cost basis, ledger or Undo. Remaining callers `insureHeldCargo`, `claimForm`
-   and `amendPolicy` cover new held coverage, claims, amendment and closure.
-   The candidate owns their distinct accepted lot/policy/route/form terms,
-   premium, payout, proportional loss and amendment/refund semantics through
-   completion. Actual `S.insureLot`, `S.claim` and amendment mutation economics
-   remain unchanged. Independent review and full native/browser/pixel/release
-   gates must pass before closing this group.
-2. **Supplier/buyer contact search.** `app.mjs: searchDialog` discards completion
-   before choosing its snapshot/tab or opening a sale. Retain its generated
-   snapshot/dice on known-unsaved retry; delay UI and buyer-to-sale handoff until
-   owned completion. Its elapsed time/LSS transition is separate from day controls.
-3. **Freight/mail generation and draft editing.** `app.mjs: contractSearch`,
+1. **Supplier/buyer contact search: .54 candidate.** `app.mjs: searchDialog` previously discarded completion before choosing its
+   snapshot/tab or opening a sale. The candidate retains the accepted generated
+   snapshot/dice on known-unsaved retry and delays UI/buyer handoff until owned
+   completion. Preserve initial preview/cancel generation policy, search-period
+   penalties and exact elapsed time/LSS. Full gates and release verification are
+   required before closing the group; this is separate from Stage 3 caches.
+2. **Freight/mail generation and draft editing.** `app.mjs: contractSearch`,
    `editDraft` discard completion while publishing/replacing local offers. Keep
    check IDs, generated dice/offers and original audits across a safe retry;
    never revive offers after authoritative foreign publication or Undo.
-4. **Freight/mail acceptance, cancellation and payout.** `app.mjs:
+3. **Freight/mail acceptance, cancellation and payout.** `app.mjs:
    manualContract`, `accept`, `cancelMail`, `deliver`. Manual/generated acceptance
    discard completion; generated acceptance also removes its draft immediately.
    Cancellation/delivery return completion but still need full pending/terminal
    ownership. Preserve late-delivery dice, reservations and exact payouts.
-5. **Passenger workflows, preferably two batches.** `passenger-ui.mjs: setup`,
+4. **Passenger workflows, preferably two batches.** `passenger-ui.mjs: setup`,
    `search`, then `board`, `deliver`. Setup/search/boarding discard completion;
    search exposes offers and boarding renders immediately. Delivery returns
    the save but lacks full failure handling. Preserve capacity, accommodation,
    LSS/luggage and audited terms; History must not recreate actionable offers.
-6. **Legacy Accounts payments and inline rate.** `app.mjs: shipExpenses`,
+5. **Legacy Accounts payments and inline rate.** `app.mjs: shipExpenses`,
    `expenseForm` (including bank correction), `rollBerthingRate`. Payment forms
    remain generic; the rate path assumes a synchronous `next.revision` and
    removes its control early. Keep rate saving distinct from payment and preserve
    the remaining Accounts bundle despite completed dedicated fuel/LSS services.
-7. **Route/world/rounding confirmations.** `app.mjs: saveMapRoute`, `plotRoute`,
+6. **Route/world/rounding confirmations.** `app.mjs: saveMapRoute`, `plotRoute`,
    `clearPlannedRoute`, `overrideWorld`, `roundingPreview`. Clear-route discards
    completion and clears its draft; other returning callbacks still need the
    complete contract. Ordinary world override is distinct from completed World
    Changes reversion. Lookup/route calculations stay cancellable before saving.
-8. **Cargo adjustments and market controls.** `app.mjs: existingLot`,
+7. **Cargo adjustments and market controls.** `app.mjs: existingLot`,
     `correctCargo`, `reject`, `editOffer`, market-expiration checkbox and
     expire-all. Returning confirmations still need ownership/terminal handling;
     overrides/checkbox discard completion. Expire-all is a direct action without

@@ -24,7 +24,7 @@ function harness(owners = {}) {
  // existing body/spy/assertion intact while supplying its absent default.
  const context = vm.createContext({
   expenseServices: {publicationDeferred: () => false},
-  worldWriteOperation: null, undoOperation: null, replacementReview: null, settingsOperation: null, purchaseWriteOperation: null, insuranceWriteOperation: null,
+  worldWriteOperation: null, undoOperation: null, replacementReview: null, settingsOperation: null, purchaseWriteOperation: null, insuranceWriteOperation: null, contactSearchWriteOperation: null,
   mapDrag: null, tab: 'Overview', mapZoom: 1, showTerritories: false,
   mapAreas: {error: null, pending: false}, mapOverview: {error: null, pending: false},
   document: {querySelector(selector) {assert.equal(selector, '.world-map'); calls.push('query'); return old;},
