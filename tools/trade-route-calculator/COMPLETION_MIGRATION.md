@@ -1,7 +1,7 @@
 # Save-completion migration queue
 
-Inventory checked against UI 2026.10.10.46, repository merge
-`55a45985299c0b142065a125e9ee3ee273117db2` (2026-10-10).
+Inventory checked against UI 2026.10.10.47, repository merge
+`8ab805fa0dc2bf3fa52a4ca9e33f1ef49212050d` (2026-10-10).
 This records the save-boundary work, not the earlier GUI-refit stages.
 
 ## Stage 2: finish save callers
@@ -47,15 +47,18 @@ publication failure or unknown result (reload required, no duplicate retry).
    CI jobs, 46 focused browser cases and independent source/38-screenshot review
    passed; merge/tree and Pages were verified. All 90 permitted live URLs
    matched; ten prior proxy-denied variants remain unverified and excluded.
-4. **Setup/location: released in .46; time/day remain.**
+4. **Setup/location: released in .46; time/day are the .48 candidate.**
    Cancellable lookup now precedes its owned pending-save boundary. Setup's
    nearby enrichment remains ancillary after its saved opening balance;
    location lookup stays pre-save. Final 1,293 native tests, 55 exact-head CI
    jobs, 160 focused browser cases and independent 36-screenshot review passed.
    Merge/tree, Pages and all 90 permitted live URLs were verified; ten prior
    proxy-excluded variants remain unverified. Duplicate CI also passed.
-   `changeCampaignDay` and `timeForm` still discard completion. Keep their
-   time/LSS semantics and repeated-day-click ownership in a separate batch.
+   The .48 candidate gives `changeCampaignDay` and `timeForm` an owned save
+   boundary, pre-yield repeated-click protection and terminal reload handling.
+   Time/LSS/economic mutation semantics remain exact. Local/source verification
+   does not complete this item: exact-head browser and screenshot gates must
+   pass before release, followed by merge/Pages/permitted live-file checks.
 5. **Trade and transport workflows with post-save UI effects.**
    `searchDialog`, `saleForm`, `editDraft`, `contractSearch` and `accept` publish,
    replace or clear previews/drafts after invoking a save. `passenger-ui.mjs`
@@ -77,7 +80,7 @@ publication failure or unknown result (reload required, no duplicate retry).
    review as deposit and stock services. Do not count them as fully migrated
    merely because they contain `await`.
 
-8. **Owned background-map presentation: bounded .47 candidate.**
+8. **Owned background-map presentation: released in .47.**
    A test-only audit on exact .46 runtime reproduced candidate map data entering
    the DOM during held Undo Jump/import settlement at both desktop/mobile
    widths. All 14 diagnostic probes were valid and 34 screenshots were reviewed.
@@ -85,12 +88,16 @@ publication failure or unknown result (reload required, no duplicate retry).
    exposed state. Desktop marker pixels were outside the opaque dialog rectangle, dimmed
    and blurred by its backdrop; mobile findings were DOM-only because markers
    were below the viewport.
-   The .47 candidate adds only the existing Undo/replacement ownership guards
+   The .47 release adds only the existing Undo/replacement ownership guards
    to `paintMap()` and strict regression assertions for those four cases.
    Settings showed a rebuild without changed campaign semantics and is unchanged.
    Normal History/inline Settings/reset controls had no mounted map. The native
    Store remains synchronous; this is a delayed-provider contract correction.
-   Native truth-table, full exact-head browser and screenshot gates are required.
+   All 1,345 native tests, 56 exact-head CI jobs and the 14-case focused browser
+   suite passed; all 34 screenshots were independently reviewed. Four strict
+   regression cases retained the prewrite DOM through actual callbacks. Exact
+   merge/tree and Pages, all 90 permitted live URLs and duplicate CI were
+   verified; the ten prior proxy-denied variants remain excluded/unverified.
    The earlier .46 prewrite empty-style mismatch, Cargo detached-handle pointer
    input race and keyboard-focus restoration issue remain separate findings.
 
