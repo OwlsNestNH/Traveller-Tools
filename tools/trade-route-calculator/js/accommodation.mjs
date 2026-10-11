@@ -1,4 +1,4 @@
-import {up} from './rounding.mjs?v=insurance-completion-20261011-53';
+import {up} from './rounding.mjs?v=contact-search-completion-20261011-54';
 import {sum,mul,decimal,cmp,credit} from './amounts.mjs';
 
 export const tiers=['low','middle','high'];

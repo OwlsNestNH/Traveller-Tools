@@ -1,14 +1,14 @@
-import {ruleInfo} from './rule-references.mjs?v=insurance-completion-20261011-53';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=insurance-completion-20261011-53';
-import {passengerShip} from './passengers.mjs?v=insurance-completion-20261011-53';
+import {ruleInfo} from './rule-references.mjs?v=contact-search-completion-20261011-54';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=contact-search-completion-20261011-54';
+import {passengerShip} from './passengers.mjs?v=contact-search-completion-20261011-54';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=insurance-completion-20261011-53';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=insurance-completion-20261011-53';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=insurance-completion-20261011-53';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=insurance-completion-20261011-53';
-import {creditStep} from './rounding.mjs?v=insurance-completion-20261011-53';
-import {roll} from './rules.mjs?v=insurance-completion-20261011-53';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=insurance-completion-20261011-53';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=contact-search-completion-20261011-54';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=contact-search-completion-20261011-54';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=contact-search-completion-20261011-54';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=contact-search-completion-20261011-54';
+import {creditStep} from './rounding.mjs?v=contact-search-completion-20261011-54';
+import {roll} from './rules.mjs?v=contact-search-completion-20261011-54';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=contact-search-completion-20261011-54';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

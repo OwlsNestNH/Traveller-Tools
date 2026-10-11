@@ -789,3 +789,45 @@ warning/footer and saved-accounting detail, source/commit provenance and image
 geometry/hashes. Existing insurance, Purchase, Sale, Expense, shared-entry and all
 other regression jobs remain required. This records candidate scope, not a final
 browser, deployment or group-completion claim.
+
+
+### Held-insurance .53 completed evidence
+
+Final native aggregate passed 2,481 tests (480 focused) plus 227 rules checks,
+catalog and syntax/fixture gates. Exact-head Trade and campaign CI passed 56 and
+6 jobs. The focused browser passed 94 cases with 187 images; independent review
+matched every producer digest and geometry record, scanned all images and opened
+71 originals including all 45 mobile frames. Twenty full original/candidate
+campaign outcomes match after UUID normalization, and amendment economics remain
+byte-identical. Exact merge/Pages, 90 permitted live URLs and all duplicate CI
+passed; ten known restricted variants stay unverified.
+
+## Contact-search completion .54 verification scope
+
+Actual-production baseline probes reproduce supplier presentation moving ahead
+of a delayed save and selected successful buyers opening Sale/rolling a quote
+before any write. Preserve these failures as regressions. Test supplier/buyer
+success and failure, selected/no-selected cargo, ordinary/online/black-market and
+local broker input, referee overrides, exact search-period boundary penalties,
+prepared market/offers/audits, elapsed hours/life support and exact reload/Undo.
+
+Compare complete original/candidate state with unchanged S.commitContactSearch.
+Known-unsaved deliberate retry must reuse the accepted snapshot and generated
+dice rather than create another market or attempt. Preserve initial preview/
+cancel/reopen generation policy and existing Sale price/cache policy. No Stage 3
+quote-lifecycle redesign or independent Sale recovery audit is included.
+
+Exercise native SYNC, separated write/publication/settlement, repeats/queued
+controls, accepted-context drift, disk-only/unreadable storage, authentic and
+wrong/missing/consumed provenance, saved/unknown/contradictory outcomes, editor/
+foreign/modal retirement and construction/recovery callback reentry. Pending
+DOM/map/status must remain unchanged through observed real cache/observer work.
+Buyer handoff only follows the owned durable completion and must not allow old
+cleanup to overwrite a newer dialog or repeat elapsed time.
+
+Use cache-tagged production runtime and native Web Locks in exact-head Chromium,
+with synthetic data, source/commit provenance and per-image producer hashes.
+Inspect mobile warnings/footer, retained terms and saved search/time/accounting
+alongside desktop scenarios. Prior insurance, Purchase, Sale, grouped-search,
+life-support and all other regressions remain required. This is a candidate
+scope record; exact-head CI, actual pixels and live verification remain pending.

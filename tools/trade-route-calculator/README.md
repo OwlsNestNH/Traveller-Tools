@@ -660,16 +660,27 @@ insurance bought in that same transaction. The reviewed quantity, supplier price
 broker fee, premium and rounding stay owned until saving finishes. A safely
 unwritten failure retains those terms for deliberate retry; saved or uncertain
 outcomes require reload. Existing lot cost basis, offer depletion, ledger and
-Undo rules remain unchanged. Held-cargo insurance, claims and amendments remain
-in the same open purchase/insurance group in the completion queue.
+Undo rules remain unchanged. Held-cargo insurance, claims and amendments were
+completed in the subsequent .53 release below.
 
 
-Held-cargo insurance completion (.53 candidate) extends the same save boundary to
+Held-cargo insurance completion (.53 released) extends the same save boundary to
 new coverage for owned cargo, loss claims, and policy amendment or closure. The
 accepted premium, payout, adjustment/refund, lot/policy and route stay owned until
 completion. A demonstrably unwritten attempt permits deliberate retry with its
 retained terms; saved or uncertain outcomes require reload before another save.
 The existing insurance calculations, proportional loss, cost basis, ledger,
-original/amended policy audit, rounding and Undo rules remain unchanged. This is
-the remaining insurance subbatch within the open purchase/insurance group; the
-completion queue keeps other Stage 2 groups and Stage 3 separate.
+original/amended policy audit, rounding and Undo rules remain unchanged. This
+verified release completes the direct purchase/insurance group; the completion
+queue keeps other Stage 2 groups and Stage 3 separate.
+
+
+Supplier/buyer contact-search completion (.54 candidate) retains the reviewed
+search and generated market while its save is pending. A demonstrably unwritten
+attempt can retry the same snapshot and dice. A failed completion with a saved
+or uncertain outcome requires reload before another save. Snapshot selection,
+navigation and successful buyer handoff wait for owned completion. Existing
+search-period penalties, duration,
+life support, prices, dice-generation policy and Undo behavior stay unchanged.
+The completed purchase/insurance group leaves seven Stage 2 groups in the queue;
+this candidate covers contact search, with Stage 3 remaining separate.
