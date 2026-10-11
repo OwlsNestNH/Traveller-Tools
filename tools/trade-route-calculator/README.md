@@ -623,3 +623,13 @@ a saved or uncertain outcome requires reload before further editing. Native
 synchronous saves retain immediate behavior. Existing day/hour, life-support,
 History Undo and jump-mulligan rules are unchanged. The remaining Stage 2 caller
 inventory stays open; exact-head browser and screenshot gates are still required.
+
+
+Sale-commit completion (.49 candidate) keeps an accepted sale confirmation and
+its selected cargo intact while a delayed provider is saving. Success, selection
+cleanup and the updated financial display follow the exact owned save completion.
+A known-unsaved failure keeps the same reviewed quantities, fees, prices, tax dice
+and rounding for a deliberate retry; saved or uncertain outcomes require reload.
+The native local Store remains synchronous. Existing price generation, edit/cancel
+loops, accounting and quote-cache eligibility are unchanged. The remaining Stage 2
+caller groups are recorded in [the completion queue](COMPLETION_MIGRATION.md).

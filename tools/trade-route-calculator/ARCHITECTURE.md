@@ -483,3 +483,33 @@ complement; moving backward does not replenish it. Undo restores the prior
 time/stock representation while preserving permanent jump-mulligan closure.
 Date-only and same-hours corrections still use the existing ordinary transition.
 No Stage 3 quote/preview behavior is introduced.
+
+
+## Stage 2 sale-commit completion (.49)
+
+Only the existing Confirm sale submission gains a write owner. It captures the
+reviewed preview and revision, world/buyer, selected cargo and exact campaign,
+publication/editor tenure and modal intent. The controller's existing onPrepared
+boundary claims pending before provider invocation. Duplicate or detached actions
+cannot queue another sale or edit the accepted review while saving.
+
+An owned local publication may install the validated state before a delayed
+provider settles. Both receiveCampaign and render must defer reconciliation so
+sold lots do not silently erase the original selection early. A normal render
+which leaves selected IDs unchanged must not invalidate a known-unsaved retry;
+an actual newer selection or foreign campaign/editor/modal intent must retire
+the old completion. Success clears only its still-owned selection and dialog.
+
+The same reviewed sale is retried only after an explicit known no-write failure
+with no observed publication. Observed publication outranks a contradictory
+not-committed result; fulfilled completion without expected provenance, unknown
+provider outcomes and saved cleanup/report/close failures latch reload protection
+even after detachment. Foreign publication followed by a typed known-unsaved
+rejection retires the old review without inventing an uncertain saved outcome.
+The synchronous Store path stays immediate. A successful owned retry must not
+leave stale validation/storage/ownership text in the closed modal error.
+
+State.sell and all accounting, cost-basis, tax, fee, insurance and Undo logic stay
+unchanged. Submission and retry reuse the existing preview and never regenerate
+price or tax dice. Existing quote and tax cache keys, eligibility and edit/cancel
+behavior remain intact; their broader lifecycle belongs to Stage 3.

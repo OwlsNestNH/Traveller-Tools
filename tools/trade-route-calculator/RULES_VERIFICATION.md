@@ -632,3 +632,30 @@ visible errors and layout. Screenshots preserve caret styles and strict prewrite
 DOM assertions. Full native/rules/catalog checks, all existing browser jobs and
 independent source plus actual screenshot review remain release requirements.
 This scope entry does not claim candidate browser success or deployment.
+
+
+## Sale-commit completion .49 verification scope
+
+A native diagnostic on the released .48 source reproduced the discarded save
+completion: while one provider result was pending with zero durable writes,
+Confirm sale had already closed and selected cargo was empty. This concerns the
+delayed-provider contract; production local Store saves remain synchronous.
+
+Compare synchronous and delayed sales through the production app/controller/
+Store, preserving exact bank/ledger, partial and full lot basis/goods values,
+policy reductions, fees, taxes, profit adjustments, History and Undo. Cover
+fractional and multiple lots, manual pricing/tax, criminal buyers, local-ban
+repricing, retained rounding and large exact Credit values. Quote and tax-dice
+call counts must preserve existing edit/cancel/reopen/retry eligibility.
+
+Test separate write/publication/settlement, retained review/selection, normal
+render versus genuinely newer selection, duplicate/pre-yield/detached actions,
+known failure/retry, committed/unknown and contradictory outcomes, wrong/missing
+provenance, foreign same-revision state, editor loss/reacquisition and newer modal
+intent. UI/control/report/close faults must not turn a saved sale into another
+retry opportunity. Successful fresh, corrected and retried saves leave their
+owned error state clear. Existing Mail/time and all other regression gates stay
+unchanged. Desktop/mobile Chromium must use actual version-tagged Store/native
+locks and provide bounded, independently inspected screenshots. Full exact-head
+CI and subsequent release checks remain required; this entry is scope, not a
+candidate browser pass or deployment claim.
