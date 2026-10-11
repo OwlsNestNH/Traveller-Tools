@@ -1352,3 +1352,32 @@ controls, exact-head browser execution and actual screenshots remain release
 gates. Browser scripts are executed locally only in their documented non-browser
 fixture modes; actual Chromium evidence comes from GitHub CI. Existing prior
 Setup-idle/Cargo-focus qualifications and ten live URL exclusions remain intact.
+
+
+The initial .61 candidate head `920b8b11c4457b8927ca7980d2f1fb924eeb0b24`
+passed all 69 pre-existing exact-head CI jobs. The new focused suite executed
+all 157 cases: all 129 desktop cases passed, while all 28 mobile cases failed
+its unchanged no-horizontal-page-overflow assertion. Every mobile measurement
+reported 187px document overflow; open dialogs remained bounded at 19–371px
+with zero internal overflow. The original artifact has 128 images; each file's
+hash, size, head/source/gate provenance and original resolution were checked.
+Trade run 38159270019 and its failed focused job 114528580551, the successful
+campaign run 38159270033, original logs and artifact remain preserved.
+
+Independent source review points to the underlying Overview fuel-warning
+paragraph: this fixture deliberately makes the 77-character unbroken current
+world name fuel-unavailable. That pre-existing mapPanel warning lacked wrapping,
+while current-dialog paragraphs fit. Its renderer/shared generator/relevant CSS
+match .60, but no separate baseline browser pixels establish inherited behavior;
+the original report also did not identify the overflowing element's rectangles.
+Direct inspection of the original Plot cancelled-review mobile image confirms
+that this warning's long current-world name extends past the 390px right edge
+while its background ends at 369px. This is observed candidate overflow, not
+separately observed .60 behavior or a measured node-attribution diagnostic.
+The approved bounded correction applies the existing dedicated paragraph class
+only at mapPanel's fuel-warning call site. Shared fuel text/logic, calculations,
+other panels and CSS rules are unchanged. The new diagnostic records actual
+warning and long-name text-fragment bounds before page assertions and adds full
+mobile saved/cancelled warning captures. All 157 cases, original targets, fixture
+stress, page-overflow assertions and budgets remain. The corrected exact-head
+browser result must verify containment before this is called fixed.
