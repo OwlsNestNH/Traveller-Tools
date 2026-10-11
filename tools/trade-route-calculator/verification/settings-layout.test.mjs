@@ -120,7 +120,7 @@ test('cross-field settings failures reveal the form, while stale drafts keep dis
  const ids={'settings-form':form,'settings-error':error,'settings-reset':{},'settings-save':{},modal:{open:false}};
  const state={revision:1,ship:{}};
  const sandbox={Map,document:{},accountsWriteOperation:null,clearRouteWriteOperation:null,plannedRouteWriteOperation:null,routePlanOperation:null,SaveNotCommittedError,$:id=>ids[id],state,settingsDraft:null,settingsFormRevision:0,settingsOpenGroups:new Map(),settingsRounding:[],inputRounding:[],store:{editable:true},settingsOperation:null,worldWriteOperation:null,campaignReloadRequired:false,tab:'Settings',suspendedSettings:null,services:{active:()=>false},
-  mountSettingsLayout(){},normaliseSettingsFields(){},updateSettingsForm(){},syncSettingsControls(){},captureSettingsDraft(){},captureSettingsDisclosures(){},render(){throw Error('An invalid form must not render a committed state');},
+  recordSaveDebugError(){},mountSettingsLayout(){},normaliseSettingsFields(){},updateSettingsForm(){},syncSettingsControls(){},captureSettingsDraft(){},captureSettingsDisclosures(){},render(){throw Error('An invalid form must not render a committed state');},
   FormData:class{get(name){return {shipTons:'',fuelCapacity:'40',fuelAboard:'10'}[name]??null;}}};
  vm.runInNewContext(accountsGuard+'\n'+clearRouteGuard+'\n'+plannedRouteGuard+'\n'+readFuel+';function saveSettings(data){try{readFuel(data);}catch(error){throw new SaveNotCommittedError(error);}throw Error("Validation should have failed");}'+mount+'\n;globalThis.mount=mountSettingsForm;',sandbox);
  sandbox.mount();form.onsubmit({preventDefault(){}});

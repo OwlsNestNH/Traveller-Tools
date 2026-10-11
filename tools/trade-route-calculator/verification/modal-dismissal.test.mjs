@@ -16,7 +16,7 @@ const modalSource=source.slice(source.indexOf('let activeModal=null;'),source.in
 function harness(){
  let now=1000;
  const nodes={modal:{open:true,contains:el=>!!el?.insideModal,showModal(){this.open=true;},close(){this.open=false;}},'modal-body':{innerHTML:'',insertAdjacentHTML(){}},'modal-title':{},'modal-error':{},'modal-submit':{},'modal-cancel':{},'modal-form':{}};
- const context={$:id=>nodes[id],Date:{now:()=>now},FormData:class{},modalGeneration:0,modalRevision:0,inputRounding:[],state:{revision:1},store:{editable:true},clearRouteWriteOperation:null,plannedRouteWriteOperation:null,routePlanOperation:null,normaliseFields(){},roundingFootnote:()=>'',optionalRuleFootnote:()=>''};
+ const context={tab:'Overview',$:id=>nodes[id],Date:{now:()=>now},FormData:class{},modalGeneration:0,modalRevision:0,inputRounding:[],state:{revision:1},store:{editable:true},clearRouteWriteOperation:null,plannedRouteWriteOperation:null,routePlanOperation:null,normaliseFields(){},roundingFootnote:()=>'',optionalRuleFootnote:()=>''};
  const api=runInNewContext(accountsGuard+'\n'+clearRouteGuard+'\n'+plannedRouteGuard+'\n'+modalSource+'\n({captureModalClick,closeModal,modal,resetModalPointerGesture});',context);
  const click=({id='background-increment',detail=1,x=100,y=200,pointerId=1,button=0,insideModal=false}={})=>{
   const target={id,insideModal};target.closest=()=>target;

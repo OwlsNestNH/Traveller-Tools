@@ -1,6 +1,6 @@
-import * as S from './state.mjs?v=planned-route-completion-20261011-61';
-import {creditStep} from './rounding.mjs?v=planned-route-completion-20261011-61';
-import {SaveNotCommittedError} from './persistence.mjs?v=planned-route-completion-20261011-61';
+import * as S from './state.mjs?v=devlog-diagnostics-20261011-62';
+import {creditStep} from './rounding.mjs?v=devlog-diagnostics-20261011-62';
+import {SaveNotCommittedError} from './persistence.mjs?v=devlog-diagnostics-20261011-62';
 
 // Store remains synchronous. An injected provider may return a completion
 // Promise; that completion must include the durable write and publication.

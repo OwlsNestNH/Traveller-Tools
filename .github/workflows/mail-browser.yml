@@ -121,6 +121,9 @@ jobs:
           done
           curl --fail --silent "$TRAVELLER_TEST_URL" > /dev/null
           node "verification/$SCRIPT.test.mjs" "$RUNNER_TEMP/trade-playwright/node_modules/playwright" | tee "verification-artifacts/$SUITE.txt"
+          if [[ "$SUITE" == 'browser' ]]; then
+            node verification/devtools-browser.test.mjs "$RUNNER_TEMP/trade-playwright/node_modules/playwright" | tee verification-artifacts/devtools-browser.txt
+          fi
       - name: Upload browser evidence
         if: ${{ always() && matrix.suite != 'route-frame-browser' && matrix.suite != 'inline-fuel-browser' && matrix.suite != 'rule-references-browser' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

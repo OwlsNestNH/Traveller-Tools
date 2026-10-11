@@ -1381,3 +1381,46 @@ warning and long-name text-fragment bounds before page assertions and adds full
 mobile saved/cancelled warning captures. All 157 cases, original targets, fixture
 stress, page-overflow assertions and budgets remain. The corrected exact-head
 browser result must verify containment before this is called fixed.
+
+
+## Bounded diagnostics update (.62)
+
+The corrected .61 route-save candidate f94eab8d7f52f22f2edb9e5b64edc8c2d0812f86
+passed all 157 focused browser cases, all 70 original and duplicate CI jobs and
+independent original-resolution image review. Its exact merge
+085c63bf6aaa4388e78573d84bfd598452304753 deployed successfully; 90 permitted live
+URL variants matched, with the established ten proxy-denied exclusions retained.
+The initial mobile failure above remains part of the verification record.
+
+The revised scope first ran 18 finite cargo-addition/correction/rounding checks
+against unchanged .61 app/controller/Store source. All passed. The initial 17/18
+result expected disabled Apply for invalid rounding capacity; independent source
+review established that the existing UI hides Apply and supplies no submit
+callback instead. Correcting only that diagnostic expectation retained all
+no-write, input, capacity and unchanged-state assertions. No runtime migration
+was justified. These are native integration observations, not browser evidence.
+
+This update adds session-only diagnostic capture at existing error handlers,
+nonthrowing optional expense/acquisition observers, fixed release/action/screen
+metadata and recognized save outcomes. Explicit primary failure occurrences stay
+separate across retries; wrapper/fallback reporting deduplicates the same error.
+Authoritative committed metadata may upgrade a previously reported occurrence.
+No economic mutation, save protocol, ownership, retry or Undo behavior is changed.
+
+The error-only serializer is an explicit safe metadata projection, not redaction
+of the full report. Raw messages/stacks/causes, dynamic labels, user inputs,
+campaign identifiers and snapshots are omitted. Existing full report/link/export
+contents remain available with a visible data-sharing disclosure. No new network
+transmission or persistent storage is introduced. Fatal-startup and saved-data
+recovery screens expose the safe copy action; clipboard denial offers focused,
+selectable text.
+
+Release gates retain all prior native/browser controls. Focused checks cover
+capture/deduplication, bounded retention/clear, typed outcomes, hostile-text
+privacy, unchanged save behavior and nonthrowing observers. Eight targeted Dev
+Tools scenarios run at desktop and mobile widths as a second command in the
+existing browser CI job; no additional CI job or broad save fault matrix is added.
+Exact-head browser execution, independent original-image review, ready-event
+duplicates and exact merge/Pages/permitted-live verification remain required.
+Further world/offer/expiry consistency work is deferred; Stage 3 remains a
+separate approved focused review to start only after this bounded Stage 2 release.

@@ -19,7 +19,7 @@ const plannedRouteGuard=app.match(/^function plannedRouteBusy\(\).*$/m)?.[0];
 assert.ok(clearRouteGuard,'Use actual Clear route entry predicate in extracted modal');
 function modalHarness(step=1){
  const nodes={modal:{open:false,showModal(){this.open=true;},close(){this.open=false;}},'modal-body':{innerHTML:'',insertAdjacentHTML(_where,html){this.innerHTML+=html;}},'modal-title':{},'modal-error':{},'modal-submit':{},'modal-cancel':{},'modal-form':{querySelectorAll:()=>[]}};
- const context={ruleInfo,replaceReferenceContent,state:{revision:17,settings:{creditStep:step}},store:{editable:true},clearRouteWriteOperation:null,plannedRouteWriteOperation:null,routePlanOperation:null,inputRounding:[],modalGeneration:0,modalRevision:0,$:id=>nodes[id],esc:escape,creditStep,up,A,normalizeAmountFields,optionalRuleFootnote:kind=>'<p>'+kind+' reference</p>'};
+ const context={tab:'Overview',ruleInfo,replaceReferenceContent,state:{revision:17,settings:{creditStep:step}},store:{editable:true},clearRouteWriteOperation:null,plannedRouteWriteOperation:null,routePlanOperation:null,inputRounding:[],modalGeneration:0,modalRevision:0,$:id=>nodes[id],esc:escape,creditStep,up,A,normalizeAmountFields,optionalRuleFootnote:kind=>'<p>'+kind+' reference</p>'};
  const settingsNormalizer=app.match(/^function normaliseSettingsFields\(.*$/m)[0];
  const api=runInNewContext(rounding+'\n'+clearRouteGuard+'\n'+plannedRouteGuard+'\n'+app.slice(app.indexOf('let activeModal=null;'),app.indexOf('\nfunction saveCampaign('))+'\n'+settingsNormalizer+'\n({modal,closeModal,normaliseFields,normaliseSettingsFields});',context);
  return {api,context,nodes};
