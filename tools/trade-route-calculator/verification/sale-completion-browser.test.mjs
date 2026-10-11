@@ -30,9 +30,23 @@ const modes = ['success', 'prewrite', 'validation', 'queued-pending', 'queued-se
 const scenarios = modes.map(mode => ({id: mode, mode}));
 const cases = scenarios.flatMap(scenario => sizes.filter(size => size.width === 1440 || dual.has(scenario.mode)).map(viewport => ({scenario, viewport})));
 const screenshotOptions = Object.freeze({type: 'jpeg', quality: 65, caret: 'initial'});
+// Preserve every overview frame, then add one bounded mobile detail per missing
+// presentation class. Scrolling is restored; no app values/styles are changed.
+const mobileDetailPlan = new Map([
+ ['success-390|pending-before-write', {label: 'pending-before-write-footer', state: 'pending', surface: 'footer'}],
+ ['success-390|durable-publication-held', {label: 'durable-publication-held-footer', state: 'pending', surface: 'footer'}],
+ ['prewrite-390|known-unsaved-retained', {label: 'known-unsaved-footer', state: 'retry', surface: 'footer'}],
+ ['unknown-before-390|terminal-warning', {label: 'unknown-terminal-footer', state: 'unknown', surface: 'footer'}],
+ ['contradictory-390|terminal-warning', {label: 'saved-terminal-footer', state: 'saved', surface: 'footer'}],
+ ['foreign-same-390|retired-owner', {label: 'stale-owner-footer', state: 'stale', surface: 'footer'}],
+ ['render-390|terminal-warning', {label: 'global-reload-banner', state: 'saved', surface: 'banner'}],
+ ['huge-credits-390|saved', {label: 'saved-credits-summary', state: 'success', surface: 'summary'}]
+]);
+const declaredScreenshots = cases.length + cases.filter(({scenario}) => scenario.mode === 'success').length * 2 + cases.filter(({scenario}) => scenario.mode === 'prewrite').length + mobileDetailPlan.size;
+
 const successPattern = /Sale to Synthetic buyer saved\./;
 const reason = 'Synthetic manual sale values';
-const report = {suite: 'Sale commit save completion', startedAt: new Date().toISOString(), requestedCommit: process.env.TRAVELLER_COMMIT || null, node: process.version, declaredCases: cases.length, cases: [], errors: [], scope: 'Actual production sale DOM callbacks, version-tagged Store, native Web Locks and deterministic Map fixtures. Deferred native write versus completion, exact economics, stale/foreign/editor ownership, no-reroll retry, DOM faults, reload/History Undo, bounded desktop/mobile screenshots. SALE COMMIT only; no Stage 3 preview redesign, live campaign or deployment.'};
+const report = {suite: 'Sale commit save completion', startedAt: new Date().toISOString(), requestedCommit: process.env.TRAVELLER_COMMIT || null, node: process.version, declaredCases: cases.length, declaredScreenshots, mobileDetailPlan: [...mobileDetailPlan].map(([overview, detail]) => ({overview, ...detail})), cases: [], errors: [], scope: 'Actual production sale DOM callbacks, version-tagged Store, native Web Locks and deterministic Map fixtures. Deferred native write versus completion, exact economics, stale/foreign/editor ownership, no-reroll retry, DOM faults, reload/History Undo, bounded desktop/mobile screenshots. SALE COMMIT only; no Stage 3 preview redesign, live campaign or deployment.'};
 let browser;
 const errorText = error => error?.stack || String(error);
 const raw = page => page.evaluate(key => localStorage.getItem(key), KEY);
@@ -241,6 +255,66 @@ async function capture(page, result, label) {
  const geometry = await page.evaluate(() => {const el = document.querySelector('#modal[open]'), rect = el?.getBoundingClientRect(); return {width: innerWidth, pageOverflow: document.documentElement.scrollWidth - innerWidth, dialog: rect ? {left: rect.left, right: rect.right, overflow: el.scrollWidth - el.clientWidth} : null};});
  result.layouts.push({label, ...geometry}); assert.ok(geometry.pageOverflow <= 2, 'No horizontal page overflow');
  if (geometry.dialog) {assert.ok(geometry.dialog.left >= -1 && geometry.dialog.right <= geometry.width + 1, 'Sale dialog fits viewport'); assert.ok(geometry.dialog.overflow <= 2, 'Sale table scroll stays inside dialog');}
+ const detail = mobileDetailPlan.get(result.id + '|' + label);
+ if (detail) await captureMobileDetail(page, result, label, detail);
+}
+async function captureMobileDetail(page, result, overview, detail) {
+ const scroll = await page.evaluate(surface => {
+  const dialog = document.querySelector('#modal');
+  const previous = {x: scrollX, y: scrollY, dialog: dialog.scrollTop};
+  if (surface === 'footer') dialog.scrollTo({top: dialog.scrollHeight, left: 0, behavior: 'instant'});
+  else window.scrollTo({top: 0, left: 0, behavior: 'instant'});
+  return previous;
+ }, detail.surface);
+ try {
+  await frames(page);
+  const visible = await page.evaluate(({surface, state}) => {
+   const dialog = document.querySelector('#modal'), rect = element => {
+    const r = element.getBoundingClientRect(), style = getComputedStyle(element);
+    return {text: element.textContent, left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height, visible: style.display !== 'none' && style.visibility !== 'hidden'};
+   };
+   const targets = {};
+   if (surface === 'footer') {
+    targets.submit = rect(document.querySelector('#modal-submit')); targets.cancel = rect(document.querySelector('#modal-cancel'));
+    if (state !== 'pending') targets.warning = rect(document.querySelector('#modal-error'));
+   } else {
+    targets.banner = rect(document.querySelector('#message'));
+    if (surface === 'banner') targets.saveStatus = rect(document.querySelector('#save-status'));
+    else {
+     const credits = [...document.querySelectorAll('#summary > .stat')].find(node => node.querySelector('.label')?.textContent === 'Credits');
+     if (!credits) throw Error('Actual Credits summary is missing');
+     targets.credits = rect(credits); targets.creditValue = rect(credits.querySelector('.value'));
+    }
+   }
+   return {width: innerWidth, height: innerHeight, dialogOpen: dialog.open, dialog: rect(dialog), targets, submitDisabled: document.querySelector('#modal-submit').disabled, cancelDisabled: document.querySelector('#modal-cancel').disabled};
+  }, detail);
+  for (const [name, target] of Object.entries(visible.targets)) {
+   assert.ok(target.visible && target.width > 0 && target.height > 0, detail.label + ': ' + name + ' is rendered');
+   assert.ok(target.left >= -1 && target.right <= visible.width + 1 && target.top >= -1 && target.bottom <= visible.height + 1, detail.label + ': ' + name + ' is fully inside the screenshot viewport');
+   if (detail.surface === 'footer') assert.ok(target.top >= visible.dialog.top && target.bottom <= visible.dialog.bottom, detail.label + ': ' + name + ' is not clipped by the dialog');
+  }
+  if (detail.surface === 'footer') {
+   assert.equal(visible.dialogOpen, true);
+   assert.equal(visible.submitDisabled, detail.state !== 'retry'); assert.equal(visible.cancelDisabled, detail.state === 'pending');
+   if (detail.state === 'retry') assert.match(visible.targets.warning.text, /Synthetic known sale prewrite/);
+   if (detail.state === 'unknown') assert.match(visible.targets.warning.text, /outcome could not be confirmed[\s\S]*Reload/i);
+   if (detail.state === 'saved') assert.match(visible.targets.warning.text, /Sale saved[\s\S]*Reload/i);
+   if (detail.state === 'stale') assert.match(visible.targets.warning.text, /Campaign or editing ownership changed/);
+  } else {
+   assert.equal(visible.dialogOpen, false);
+   if (detail.surface === 'banner') {
+    assert.match(visible.targets.banner.text, /Sale saved[\s\S]*Reload/i); assert.match(visible.targets.saveStatus.text, /Sale saved[\s\S]*Reload/i);
+   } else {
+    assert.match(visible.targets.banner.text, successPattern);
+    assert.equal(visible.targets.creditValue.text.replace(/[^0-9]/g, ''), (await read(page)).bank, 'Detail frame contains the complete exact saved Credits string');
+   }
+  }
+  await capture(page, result, detail.label);
+  (result.detailCaptures ??= []).push({overview, ...detail, ...visible});
+ } finally {
+  await page.evaluate(previous => {document.querySelector('#modal').scrollTop = previous.dialog; window.scrollTo({left: previous.x, top: previous.y, behavior: 'instant'});}, scroll);
+  await frames(page);
+ }
 }
 async function pointer(page, selector, clickCount = 1) {
  const locator = page.locator(selector); if (!await locator.isVisible()) return;
@@ -482,8 +556,9 @@ if (process.argv.includes('--fixtures-only')) {
  const html = await readFile(new URL('../index.html', import.meta.url), 'utf8'), app = await readFile(new URL('../js/app.mjs', import.meta.url), 'utf8');
  assert.match(html, /<script type="module" src="js\/app\.mjs\?[^\"]+"/); assert.match(app, /import\s*\{[^}]*\bStore\b[^}]*\}\s*from\s*['"]\.\/persistence\.mjs\?[^'"]+['"]/);
  for (const name of ['createSaleWriteOwner', 'completeSaleWrite', 'finishSaleWrite', 'saleWriteFailure']) assert.match(app, new RegExp('function ' + name + '\\('));
- assert.match(app, /saveContext:'sale-save'/); assert.equal(new Set(scenarios.map(s => s.id)).size, scenarios.length); assert.equal(screenshotOptions.caret, 'initial'); assert.equal(report.declaredCases, 40);
- console.log(`PASS: sale fixture/oracle, partial/full/fractional exact accounting, policies/Undo, tax on/off/manual/criminal, retained rounding, huge credits and version-tagged runtime wiring; ${scenarios.length} scenarios, ${report.declaredCases} browser cases declared (27 desktop, 13 mobile). Chromium was NOT launched.`);
+ assert.match(app, /saveContext:'sale-save'/); assert.equal(new Set(scenarios.map(s => s.id)).size, scenarios.length); assert.equal(screenshotOptions.caret, 'initial'); assert.equal(report.declaredCases, 40); assert.equal(report.declaredScreenshots, 54); assert.equal(mobileDetailPlan.size, 8);
+ for (const key of mobileDetailPlan.keys()) assert.ok(cases.some(({scenario, viewport}) => key.startsWith(scenario.id + '-' + viewport.width + '|')), 'Every detail capture belongs to a declared case');
+ console.log(`PASS: sale fixture/oracle, partial/full/fractional exact accounting, policies/Undo, tax on/off/manual/criminal, retained rounding, huge credits and version-tagged runtime wiring; ${scenarios.length} scenarios, ${report.declaredCases} browser cases declared (27 desktop, 13 mobile), ${report.declaredScreenshots} screenshots including 8 targeted mobile details. Chromium was NOT launched.`);
 } else {
  await mkdir(artifacts, {recursive: true});
  try {
@@ -493,6 +568,7 @@ if (process.argv.includes('--fixtures-only')) {
   const {chromium} = createRequire(import.meta.url)(process.argv[2] || 'playwright'); browser = await chromium.launch({headless: true, ...(process.env.TRAVELLER_BROWSER_CHANNEL ? {channel: process.env.TRAVELLER_BROWSER_CHANNEL} : {})}); report.browser = {name: 'Chromium', version: browser.version()};
   for (const {scenario, viewport} of cases) await runCase(scenario, viewport);
   const files = (await readdir(artifacts)).filter(name => name.startsWith('sale-completion-')); report.screenshotCount = files.filter(name => name.endsWith('.jpg')).length;
+  assert.equal(report.screenshotCount, report.declaredScreenshots, 'Every original overview and declared mobile detail frame is present');
   report.artifactBytes = (await Promise.all(files.map(async name => (await stat(join(artifacts, name))).size))).reduce((a, b) => a + b, 0);
   assert.ok(report.artifactBytes < 24 * 1024 * 1024 - 262144, 'Combined sale native/browser evidence stays below 24 MiB');
  } catch (error) {report.errors.push(errorText(error));}
