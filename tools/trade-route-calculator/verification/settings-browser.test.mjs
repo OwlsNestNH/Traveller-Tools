@@ -402,7 +402,8 @@ try{
  for(const size of [{width:1440,height:1100},{width:390,height:844}]){
   const h=await start(size,{untrackedFuel:true}),{page,read,tab,set,field}=h;
   await tab('Settings');
-  for(const name of ['fuelAvailabilityAlert','shipTons','fuelCapacity','fuelAboard'])assert.equal(await field(name).inputValue(),'');
+  assert.equal(await field('fuelAvailabilityAlert').isChecked(),false,'Fuel advice defaults off in untracked-fuel campaigns');
+  for(const name of ['shipTons','fuelCapacity','fuelAboard'])assert.equal(await field(name).inputValue(),'');
   const save=async()=>{
    const revision=(await read()).revision;
    await page.locator('#settings-save').click();
@@ -424,7 +425,7 @@ try{
   await tab('Settings');
   await set('shipTons','200');await set('fuelCapacity','40');await set('fuelAboard','20');
   const restored=await save();
-  for(const name of ['fuelAvailabilityAlert','shipTons','fuelCapacity','fuelAboard'])await set(name,'');
+  for(const name of ['shipTons','fuelCapacity','fuelAboard'])await set(name,'');
   const cleared=await save();assert.equal(Object.hasOwn(cleared.ship,'fuel'),false);
   await set('shipTons','200');await set('fuelCapacity','40');await set('fuelAboard','30');
   await save();
