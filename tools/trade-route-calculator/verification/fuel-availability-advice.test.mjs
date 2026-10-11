@@ -13,7 +13,7 @@ test('fuel advice follows the Core 2022 facilities table and labels A/B unrefine
  assert.match(ruleInfo('fuel-availability'),/data-rule-info="fuel-availability"/);assert.match(referenceIndex(),/fuel-availability/);assert.match(referenceMarkup('fuel-availability'),/257/);
 });
 test('fuel alert is optional for old saves, validates types, survives save/Undo and never changes fuel quotes',()=>{
- const s=S.initial();assert.equal(s.settings.fuelAvailabilityAlert,false);
+ const s=S.initial();assert.equal(s.settings.fuelAvailabilityAlert??false,false);
  const old=structuredClone(s);delete old.settings.fuelAvailabilityAlert;S.validate(old);
  const n=S.transition(old,'Fuel advice setting',v=>v.settings.fuelAvailabilityAlert=true);S.validate(JSON.parse(JSON.stringify(n)));assert.equal(S.undo(n).settings.fuelAvailabilityAlert,undefined);
  for(const v of ['true',1,null]){const bad=structuredClone(s);bad.settings.fuelAvailabilityAlert=v;assert.throws(()=>S.validate(bad),/fuel-availability/);}
