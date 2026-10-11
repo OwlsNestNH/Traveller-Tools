@@ -145,7 +145,7 @@ try{
  assert.equal(await page.locator('#modal-submit').isEnabled(),true);await click('Cancel');await click('Overview');
  await click('Trade');await click('Find supplier');await fill('dice',12);await click('Preview search');await click('Commit search');await closed();
  assert.ok((await read()).snapshots[0].offers.length>=6);
- assert.deepEqual(await page.locator('.purchase-table th').allTextContents(),['Commodity','Available','Retail','Price %','Purchase Price','Offer Status','Actions']);
+ assert.deepEqual(await page.locator('.purchase-table th').allTextContents(),['Commodity','Available','Current retail','Price %','Purchase Price','Offer Status','Actions']);
  const assertGrid=async selector=>{const cells=await page.locator(selector).evaluate(table=>[...table.querySelectorAll('thead th')].map((h,i)=>{const d=table.querySelector('tbody tr').children[i],a=h.getBoundingClientRect(),b=d.getBoundingClientRect();return {left:Math.abs(a.left-b.left),width:Math.abs(a.width-b.width),align:getComputedStyle(h).textAlign,cellAlign:getComputedStyle(d).textAlign};}));assert.ok(cells.every(c=>c.left<1&&c.width<1));assert.ok(cells.slice(1,5).every(c=>c.align==='right'&&c.cellAlign==='right'));};
  await assertGrid('.purchase-table');
  const initialOffer=(await read()).snapshots[0].offers[0];

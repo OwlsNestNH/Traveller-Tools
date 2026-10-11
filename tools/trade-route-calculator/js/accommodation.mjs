@@ -1,4 +1,4 @@
-import {up} from './rounding.mjs?v=devlog-diagnostics-20261011-62';
+import {up} from './rounding.mjs?v=market-quote-labels-20261011-63';
 import {sum,mul,decimal,cmp,credit} from './amounts.mjs';
 
 export const tiers=['low','middle','high'];

@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=devlog-diagnostics-20261011-62';
+import {ruleInfo} from './rule-references.mjs?v=market-quote-labels-20261011-63';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={

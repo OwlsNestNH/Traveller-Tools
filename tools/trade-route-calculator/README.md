@@ -109,7 +109,7 @@ Nearby worlds within 12 hexes load automatically when setting the ship's startin
 
 ## Trade tables
 
-Purchase offers show Retail (Core Rulebook base price), the 3D table Price %, and final Purchase Price per ton. Expired offers stay dimmed and auditable, with Buy disabled.
+Purchase offers show Current retail (base retail with current settings), the saved quote’s effective Price %, and final Purchase Price per ton. Saved prices retain their original retail basis, available in Audit. Expired offers stay dimmed and auditable, with Buy disabled.
 
 Cargo sale rows retain each lot's description and cost basis, even for the same commodity. Use Sell to negotiate; Price % and Sale Price then show that session's quote, with its inputs available through Audit. Before negotiation, the table says Not negotiated. Campaign changes invalidate these previews; committed sales retain their saved audits. Edit supports explicit, recorded lot corrections.
 
@@ -172,7 +172,7 @@ In **Ship, trader & options**, **Enable reduced-profit price limits** starts off
 
 The enabled option floors the generated purchase percentage and ceilings the generated sale percentage before converting to Credits, rounding, and calculating broker fees. The applicable base retail still comes from the independent commodity cap and illegal-goods RAW exception. Disabling this option restores the existing RAW quote formula; the existing 75%/Custom positive-profit adjustment remains separate and unchanged.
 
-Custom values remain editable and persist through off/on toggles, reload, JSON export/import and Undo. Legacy schema-1 campaigns receive disabled defaults without changing historical prices. New quotes use the option; saved supplier offers keep their frozen terms, including when recalculated using their saved options. Explicit referee price overrides remain available and auditable. Audits retain both the RAW table percentage and the effective percentage before fees; the table's Price % shows the effective quote percentage.
+Custom values remain editable and persist through off/on toggles, reload, JSON export/import and Undo. Legacy schema-1 campaigns receive disabled defaults without changing historical prices. New quotes use the option; saved supplier offers keep their frozen terms, including when recalculated using their saved options. Explicit referee price overrides remain available and auditable. Audits retain both the RAW table percentage and the effective percentage before fees; the table's Price % shows the effective quote percentage. Market’s Current retail uses present settings; Price % and Purchase Price remain the saved supplier terms. Audit shows their original retail basis.
 
 Run the focused checks with `node --test verification/price-limits.test.mjs`, alongside the existing development checks above. Browser operation and native stepper appearance need browser verification.
 

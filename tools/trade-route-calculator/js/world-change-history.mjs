@@ -1,4 +1,4 @@
-import {parseUWP} from './rules.mjs?v=devlog-diagnostics-20261011-62';
+import {parseUWP} from './rules.mjs?v=market-quote-labels-20261011-63';
 
 // Audit only the editable world fields. A selective correction must never
 // replay an old world object, campaign inverse, price quote or transaction.

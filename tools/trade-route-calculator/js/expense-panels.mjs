@@ -1,14 +1,14 @@
-import {ruleInfo} from './rule-references.mjs?v=devlog-diagnostics-20261011-62';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=devlog-diagnostics-20261011-62';
-import {passengerShip} from './passengers.mjs?v=devlog-diagnostics-20261011-62';
+import {ruleInfo} from './rule-references.mjs?v=market-quote-labels-20261011-63';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=market-quote-labels-20261011-63';
+import {passengerShip} from './passengers.mjs?v=market-quote-labels-20261011-63';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=devlog-diagnostics-20261011-62';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=devlog-diagnostics-20261011-62';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=devlog-diagnostics-20261011-62';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=devlog-diagnostics-20261011-62';
-import {creditStep} from './rounding.mjs?v=devlog-diagnostics-20261011-62';
-import {roll} from './rules.mjs?v=devlog-diagnostics-20261011-62';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=devlog-diagnostics-20261011-62';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=market-quote-labels-20261011-63';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=market-quote-labels-20261011-63';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=market-quote-labels-20261011-63';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=market-quote-labels-20261011-63';
+import {creditStep} from './rounding.mjs?v=market-quote-labels-20261011-63';
+import {roll} from './rules.mjs?v=market-quote-labels-20261011-63';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=market-quote-labels-20261011-63';
 
 const esc=escapeHtml;
 const money=formatCreditsText;
