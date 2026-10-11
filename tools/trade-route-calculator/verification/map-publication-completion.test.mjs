@@ -24,7 +24,7 @@ function harness(owners = {}) {
  // existing body/spy/assertion intact while supplying its absent default.
  const context = vm.createContext({
   expenseServices: {publicationDeferred: () => false},
-  worldWriteOperation: null, undoOperation: null, replacementReview: null, settingsOperation: null, purchaseWriteOperation: null, insuranceWriteOperation: null, contactSearchWriteOperation: null,
+  worldWriteOperation: null, undoOperation: null, replacementReview: null, settingsOperation: null, purchaseWriteOperation: null, insuranceWriteOperation: null, contactSearchWriteOperation: null, contractOfferWriteOperation: null,
   mapDrag: null, tab: 'Overview', mapZoom: 1, showTerritories: false,
   mapAreas: {error: null, pending: false}, mapOverview: {error: null, pending: false},
   document: {querySelector(selector) {assert.equal(selector, '.world-map'); calls.push('query'); return old;},
@@ -116,5 +116,27 @@ for (const release of ['settled', 'cleared', 'invalidated']) test(`purchase: ${r
 test('purchase paint guard exactly matches its render ownership predicate', () => {
  const render = app.slice(app.indexOf('function render(){'), app.indexOf('\nfunction mapHexGrid('));
  const guard = 'if(purchaseWriteOperation?.pending&&!purchaseWriteOperation.invalidated)return;';
+ assert.ok(source.includes(guard)); assert.ok(render.includes(guard));
+});
+
+// Contract generation and draft editing now share a prewrite-presentation owner.
+// Add its absent binding without changing the old owners or assertions above.
+for (const pending of [false, true]) for (const publicationDeferred of [false, true]) for (const invalidated of [false, true]) {
+ test(`contract offers: pending=${pending}, publicationDeferred=${publicationDeferred}, invalidated=${invalidated}`, () => {
+  const h = harness({contractOfferWriteOperation: {pending, publicationDeferred, invalidated}});
+  if (pending && !invalidated) assertFrozen(h); else assertPainted(h);
+ });
+}
+for (const absent of [null, undefined]) test(`contract offers: absent ${absent} owner permits painting`, () => assertPainted(harness({contractOfferWriteOperation: absent})));
+for (const release of ['settled', 'cleared', 'invalidated']) test(`contract offers: ${release} resumes the same production painter`, () => {
+ const h = harness({contractOfferWriteOperation: {pending: true, publicationDeferred: true, invalidated: false}}); assertFrozen(h);
+ if (release === 'settled') h.context.contractOfferWriteOperation.pending = false;
+ else if (release === 'cleared') h.context.contractOfferWriteOperation = null;
+ else h.context.contractOfferWriteOperation.invalidated = true;
+ assertPainted(h);
+});
+test('contract-offer paint guard exactly matches its render ownership predicate', () => {
+ const render = app.slice(app.indexOf('function render(){'), app.indexOf('\nfunction mapHexGrid('));
+ const guard = 'if(contractOfferWriteOperation?.pending&&!contractOfferWriteOperation.invalidated)return;';
  assert.ok(source.includes(guard)); assert.ok(render.includes(guard));
 });

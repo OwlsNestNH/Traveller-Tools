@@ -1,7 +1,7 @@
 # Save-completion migration queue
 
-Inventory checked against UI 2026.10.11.51, repository merge
-`df9c43b79ba18ff1602885c4089a883241345b42` (2026-10-11).
+Inventory refreshed against UI 2026.10.11.54, repository merge
+`f9060754314ccf1e80198752d890d7059fceb9ee` (2026-10-11).
 This records the save-boundary work, not the earlier GUI-refit stages.
 
 ## Stage 2: finish save callers
@@ -112,46 +112,59 @@ routed. This is not a claim of complete 100-URL live-file verification.
   CI jobs passed. Ten prior proxy-denied variants remain excluded. The direct
   insurance caller inventory is complete, closing the purchase/insurance group.
 
+- **.54 Supplier/buyer contact search:** the sole search write caller now owns
+  its accepted generated snapshot, dice, review and completion. Final 2,815
+  native tests (334 focused), 227 rules checks, 63 exact-head CI jobs and 98
+  focused browser cases passed. All 196 image hashes/layout records and frames
+  were reviewed; 84 originals were individually inspected, including all 48
+  mobile images. Twenty-six independent ownership probes and 96 full original/
+  candidate state/period/LSS/Undo comparisons passed. The first browser run's
+  38 failures checked an Overview-only clock while correctly on Trade; a test-
+  only navigation correction retained all assertions, 98 cases and 196 frames.
+  Runtime was unchanged. The earlier 89-case plan expanded before publication
+  for construction-fault coverage. Exact merge/tree, Pages and all 90 permitted
+  live URLs matched, and all 63 duplicate jobs passed. Ten restricted variants
+  remain unverified. Mobile Sale handoff review covers title/cargo, not every
+  Sale scroll region; the separate Sale recovery assessment remains unproven.
+
 ### Remaining bounded groups
 
 These are scope groups, not a promise that each needs exactly one release.
 Further inventory findings must be recorded rather than declaring Stage 2 done.
-There are seven open scope groups after the purchase/insurance group's verified
-closure. The .54 candidate addresses supplier/buyer search only. Automatic policy
-updates in cargo, routes, arrival and Undo stay with their respective workflows;
-closing direct insurance does not declare those other groups complete.
+There are six open scope groups after the contact-search group's verified
+closure. The .55 candidate addresses freight/mail generation and draft editing
+only. Automatic policy updates in cargo, routes, arrival and Undo stay with
+those workflows; closing direct insurance and contact search does not declare
+other groups complete.
 
-1. **Supplier/buyer contact search: .54 candidate.** `app.mjs: searchDialog` previously discarded completion before choosing its
-   snapshot/tab or opening a sale. The candidate retains the accepted generated
-   snapshot/dice on known-unsaved retry and delays UI/buyer handoff until owned
-   completion. Preserve initial preview/cancel generation policy, search-period
-   penalties and exact elapsed time/LSS. Full gates and release verification are
-   required before closing the group; this is separate from Stage 3 caches.
-2. **Freight/mail generation and draft editing.** `app.mjs: contractSearch`,
-   `editDraft` discard completion while publishing/replacing local offers. Keep
-   check IDs, generated dice/offers and original audits across a safe retry;
-   never revive offers after authoritative foreign publication or Undo.
-3. **Freight/mail acceptance, cancellation and payout.** `app.mjs:
+1. **Freight/mail generation and draft editing: .55 candidate.** `app.mjs:
+   contractSearch`, `editDraft` previously discarded completion before publishing
+   or replacing local offers. The candidate owns accepted generated IDs/dice/
+   audits and edited terms through completion, without changing generation or
+   economics. Known-unsaved retry must retain prepared values; foreign publication,
+   Undo and reload must never revive actionable offers from History. Full review,
+   exact-head CI and release verification are required before closing this group.
+2. **Freight/mail acceptance, cancellation and payout.** `app.mjs:
    manualContract`, `accept`, `cancelMail`, `deliver`. Manual/generated acceptance
    discard completion; generated acceptance also removes its draft immediately.
    Cancellation/delivery return completion but still need full pending/terminal
    ownership. Preserve late-delivery dice, reservations and exact payouts.
-4. **Passenger workflows, preferably two batches.** `passenger-ui.mjs: setup`,
+3. **Passenger workflows, preferably two batches.** `passenger-ui.mjs: setup`,
    `search`, then `board`, `deliver`. Setup/search/boarding discard completion;
    search exposes offers and boarding renders immediately. Delivery returns
    the save but lacks full failure handling. Preserve capacity, accommodation,
    LSS/luggage and audited terms; History must not recreate actionable offers.
-5. **Legacy Accounts payments and inline rate.** `app.mjs: shipExpenses`,
+4. **Legacy Accounts payments and inline rate.** `app.mjs: shipExpenses`,
    `expenseForm` (including bank correction), `rollBerthingRate`. Payment forms
    remain generic; the rate path assumes a synchronous `next.revision` and
    removes its control early. Keep rate saving distinct from payment and preserve
    the remaining Accounts bundle despite completed dedicated fuel/LSS services.
-6. **Route/world/rounding confirmations.** `app.mjs: saveMapRoute`, `plotRoute`,
+5. **Route/world/rounding confirmations.** `app.mjs: saveMapRoute`, `plotRoute`,
    `clearPlannedRoute`, `overrideWorld`, `roundingPreview`. Clear-route discards
    completion and clears its draft; other returning callbacks still need the
    complete contract. Ordinary world override is distinct from completed World
    Changes reversion. Lookup/route calculations stay cancellable before saving.
-7. **Cargo adjustments and market controls.** `app.mjs: existingLot`,
+6. **Cargo adjustments and market controls.** `app.mjs: existingLot`,
     `correctCargo`, `reject`, `editOffer`, market-expiration checkbox and
     expire-all. Returning confirmations still need ownership/terminal handling;
     overrides/checkbox discard completion. Expire-all is a direct action without

@@ -829,5 +829,51 @@ Use cache-tagged production runtime and native Web Locks in exact-head Chromium,
 with synthetic data, source/commit provenance and per-image producer hashes.
 Inspect mobile warnings/footer, retained terms and saved search/time/accounting
 alongside desktop scenarios. Prior insurance, Purchase, Sale, grouped-search,
-life-support and all other regressions remain required. This is a candidate
-scope record; exact-head CI, actual pixels and live verification remain pending.
+life-support and all other regressions remain required. Completed .54 evidence
+follows; this scope did not expand into independent Sale recovery or Stage 3.
+
+
+### Contact-search .54 completed evidence
+
+Final 2,815 native tests (334 focused), 227 rules checks and 63 exact-head CI jobs
+passed. The final browser report passed 98 cases (80 desktop, 18 mobile) with all
+196 images. Independent review checked every producer digest/layout, scanned all
+frames and opened 84 originals, including all 48 mobile images. Twenty-six actual-
+function ownership probes and 96 complete baseline/candidate outcomes match.
+Strict browser records prove genuine Store bootstraps, actual map callbacks with
+zero pending DOM mutations, real newer Notes handlers and zero-provider partial
+construction failures. Mobile Sale handoff frames cover title/cargo in its
+existing scrollable layout, not every Sale scroll region.
+
+The initial 60/98 browser report and 158 images are retained: all 38 failures
+looked for the Overview-only clock while the successful UI was on Trade. A test-
+only sequence correction kept the Trade/handoff/dice/replay assertions, navigated
+Overview with unchanged bytes/provider/dice, then asserted/captured exact time.
+Runtime and all 98 case IDs/196 frame requirements were unchanged. Exact merge,
+Pages, all 90 permitted live URL variants and all duplicate CI jobs passed;
+ten known restricted variants remain unverified.
+
+## Freight/mail offer completion .55 verification scope
+
+Reproduce actual contractSearch and editDraft publication before delayed save
+completion. Compare complete original/candidate campaign and ephemeral draft/
+mail-check outcomes with generated IDs normalized only. Preserve automatic and
+manual dice/sequence consumption, freight/mail audits, available/no-mail outcomes,
+mail-only retained freight, direct distances, table limits/manual terms, referee
+deadlines, existing recordMailCheck/event data, unchanged bank/time and Undo.
+
+Cover immediate native and split write/publication/settlement; deliberate retry
+of immutable accepted generation/edit, changed accepted inputs, repeated/queued
+controls, durable same-revision drift/unreadability, provenance and saved/unknown
+outcomes, editor/foreign/newer modal ownership and construction/recovery callback
+reentry. Offer/check/editor publication must wait for owned completion. Reload,
+Undo and History cannot reconstruct actionable offers. Acceptance/cancellation/
+delivery/payment remain the next group.
+
+Actual exact-head Chromium must prove real tagged Store/Web Locks, completed
+bootstrap/cache callbacks before baselines, retained pending DOM/map/status and
+zero transient mutation through actual cache/ResizeObserver work, exact saved
+and retry/error guidance, readable mobile footer/warnings/success, unchanged
+state/dice on navigation, and exact producer hashes/layouts. Retain every existing
+regression job and assertion. This is candidate scope; final browser/pixel and
+release verification remain required.

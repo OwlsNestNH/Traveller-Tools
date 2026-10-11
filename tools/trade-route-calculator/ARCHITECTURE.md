@@ -657,7 +657,7 @@ updates remain with their own workflows. Stage 3 quote/preview lifecycle
 consolidation remains separate.
 
 
-## Stage 2 contact-search completion (.54 candidate)
+## Stage 2 contact-search completion (.54 released)
 
 A contact-search owner retains the accepted supplier/buyer snapshot, generated
 market/offers, dice and search audit, full campaign baseline, revision/publication,
@@ -689,5 +689,39 @@ Expected normal-buyer/illegal-cargo validation follows one saved search and
 reports the existing guidance without reload or a second search. Unexpected
 post-save presentation faults use saved/reload guidance. Independent full
 original/candidate comparisons must preserve prices, dice, search periods,
-elapsed time/life support, ledger, Undo and mulligan behavior. This is a candidate
-contract; full exact-head browser/pixel and deployment gates remain required.
+elapsed time/life support, ledger, Undo and mulligan behavior. This released
+contract passed full exact-head browser/pixel and exact merge/Pages verification,
+all 90 permitted live URL checks and terminal duplicate CI. Ten restricted URL
+variants remain unverified.
+
+## Stage 2 freight/mail offer completion (.55 candidate)
+
+Freight search, mail-only checks and draft editing share one caller-owned offer
+operation. It captures the campaign baseline, world, editor tenure, modal/form,
+current draft objects and mail-check identity before callback-capable preparation.
+Accepted normalized form values, generated offers/check IDs, dice/audits or the
+edited offer and its audit event are retained immutably. A deliberate retry of a
+known-unsaved operation reuses that accepted result and requires an equal readable
+durable baseline. Changed accepted terms require a fresh review.
+
+The owner claims pending intent before generation and provider entry. Repeated
+submissions, queued actions and background render/map callbacks cannot publish
+new actionable drafts early. One-use controller provenance is required; revision
+or value equality alone cannot authorize completion. Native synchronous saves
+remain immediate. The existing recordMailCheck transition and draft-edit event
+retain their data/economic semantics, including prior-check supersession and
+mail-only freight retention. Bank and campaign time do not change.
+
+Only current owned completion may close, reconcile and publish ephemeral offers
+and announce success. Search/check navigates to Contracts; editing preserves its
+originating tab. Persisted audits remain evidence,
+never actionable drafts restored from History, Undo or reload. Foreign campaign,
+editor or newer presentation intent retires the old operation. Saved, unknown,
+contradictory or missing-provenance failures retire duplicate-write authority
+before fallible reporting and require reload; pre-save construction failures
+retire only their partial form with close/reopen guidance. Recovery callbacks
+cannot resubmit automatically or overwrite a newer real dialog handler.
+
+Acceptance, manual contracts, cancellation and delivery payout remain in their
+separate completion group. This candidate still requires final full local gates,
+independent source review and exact-head browser/screenshot review before release.

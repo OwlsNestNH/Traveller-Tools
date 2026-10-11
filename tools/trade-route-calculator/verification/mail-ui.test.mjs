@@ -42,7 +42,7 @@ function domDouble(){
  return {ids,fields:()=>fields,buttons:()=>buttons,dispatch(type,target){for(const listener of listeners.get(type)||[])listener({type,target});},document:{createElement(){return {...element(),getContext(){return {measureText:t=>({width:String(t).length*6})};}};},getElementById:id=>ids.get(id)||null,addEventListener(type,listener){if(!listeners.has(type))listeners.set(type,[]);listeners.get(type).push(listener);},querySelector(){return null;},querySelectorAll(selector){
   if(selector!=='[data-mutate]')return [];
   buttons=[...ids.values()].flatMap(n=>[...(n.innerHTML||'').matchAll(/<button\b([^>]*)>/g)].map(m=>element(attrs(m[1])))).filter(n=>n.hasAttribute('data-mutate'));return buttons;
- }},FormData:class{constructor(){this.values=new Map([...fields].filter(([,n])=>!n.disabled&&n.attributes.type!=='checkbox').map(([k,n])=>[k,n.value]));for(const[k,n]of fields)if(n.attributes.type==='checkbox'&&n.checked)this.values.set(k,'on');}get(k){return this.values.get(k)??null;}has(k){return this.values.has(k);}}};
+ }},FormData:class{constructor(){this.values=new Map([...fields].filter(([,n])=>!n.disabled&&n.attributes.type!=='checkbox').map(([k,n])=>[k,n.value]));for(const[k,n]of fields)if(n.attributes.type==='checkbox'&&n.checked)this.values.set(k,'on');}get(k){return this.values.get(k)??null;}has(k){return this.values.has(k);}[Symbol.iterator](){return this.values[Symbol.iterator]();}}};
 }
 function campaign(){const s=S.initial();s.initialized=true;s.bank='100000';s.actual=origin.id;s.worlds=structuredClone({[origin.id]:origin,[destination.id]:destination,[far.id]:far});s.route=[origin.id,destination.id];s.ship.armed=true;s.trader.rank=2;s.trader.soc=1;return S.validate(s);}
 function harness(saved=campaign()){
@@ -156,7 +156,7 @@ test('accepted details collapse independently, survive renders and tabs, and nev
  toggle(false);h.api.state.actual=destination.id;h.api.deliver(h.api.state.contracts[0].id);await h.submit();
  const delivered=acceptedDetails(h);assert.equal(delivered.open,false,'Delivery renders keep the session disclosure preference');assert.equal(delivered.summary,'Delivered mail details · Cr 75,000 paid');assert.match(delivered.body,/Released after delivery/);assert.equal(expandedCardRoll(h),expected);assert.match(text(outsideInnerDetails(html(h))),/Mail delivered/);
  const deliveredSaved=h.persisted(),deliveredSaves=h.calls.saves;toggle(true);h.api.render();assert.equal(acceptedDetails(h).open,true);toggle(false);h.api.render();same(h.persisted(),deliveredSaved);assert.equal(h.calls.saves,deliveredSaves);
- h.api.state.actual=origin.id;await h.check();assert.doesNotMatch(html(h),/id="mail-accepted-details"/);h.api.accept(h.api.drafts[0].offerId);await h.submit();assert.equal(acceptedDetails(h).open,true,'A new check resets details to open for its accepted result');
+ h.store.save(S.transition(h.api.state,'Synthetic return to origin',s=>{s.actual=origin.id;}),h.api.state.revision);await h.check();assert.doesNotMatch(html(h),/id="mail-accepted-details"/);h.api.accept(h.api.drafts[0].offerId);await h.submit();assert.equal(acceptedDetails(h).open,true,'A new check resets details to open for its accepted result');
  const reload=harness(h.persisted());assert.equal(reload.api.check.historical,true);assert.match(html(reload),/id="mail-accepted-details"/);assert.equal(reload.api.drafts.length,0);assert.equal('mailAcceptedDetailsOpen'in reload.api.state,false,'Disclosure state is session-only');
 });
 test('read-only render disables mutations and still displays contract audits',async()=>{
@@ -171,7 +171,7 @@ test('Cancel invalidates original submit; reopening and repeated submits commit 
  h.api.contractSearch(true);h.fill({dice:8,mailAvailability:12,mailContainers:3});await Promise.all([h.submit(),h.submit()]);assert.equal(h.calls.saves,1);assert.equal(h.calls.mail,1);assert.equal(h.api.drafts.length,1);await h.submit();assert.equal(h.calls.saves,1);
 });
 test('stale revision and lost editing lock reject an open check without replacing drafts',async()=>{
- const h=harness();await h.check();const old=JSON.stringify(h.api.drafts),oldCheck=JSON.stringify(h.api.check);h.api.contractSearch(true);h.fill({dice:8,mailAvailability:12,mailContainers:1});h.api.state.revision++;await h.submit();assert.match(h.dom.ids.get('modal-error').textContent,/Campaign changed/);assert.equal(JSON.stringify(h.api.drafts),old);assert.equal(JSON.stringify(h.api.check),oldCheck);assert.equal(h.calls.saves,1);
+ const h=harness();await h.check();const old=JSON.stringify(h.api.drafts),oldCheck=JSON.stringify(h.api.check);h.api.contractSearch(true);h.fill({dice:8,mailAvailability:12,mailContainers:1});h.api.state.revision++;await h.submit();assert.equal(h.dom.ids.get('modal-error').textContent,'Campaign, offer or editing ownership changed. Close and review the current contract terms before continuing.');assert.equal(JSON.stringify(h.api.drafts),old);assert.equal(JSON.stringify(h.api.check),oldCheck);assert.equal(h.calls.saves,1);
  h.api.closeModal();h.api.contractSearch(true);h.store.editable=false;h.api.syncModalSubmit();assert.equal(h.dom.ids.get('modal-submit').disabled,true);await h.submit();assert.equal(h.calls.saves,1);
 });
 test('invalid manual rolls never save or replace session offers',async()=>{
@@ -204,7 +204,7 @@ test('repeated acceptance and delivery submit cannot duplicate capacity or payme
 });
 
 test('unavailable Mail result never matches unrelated legacy contracts without offer IDs',async()=>{
- const h=harness();h.api.state.contracts.push({id:'legacy-mail',kind:'mail',quantity:'5',payment:'25000',origin:origin.id,destination:destination.id,status:'accepted',dueHours:null});await h.check({dice:2,mailAvailability:2});assert.equal(h.api.check.available,false);assert.match(html(h),/No mail available/);assert.doesNotMatch(html(h),/Mail accepted/);assert.doesNotMatch(html(h),/5 t reserved/);
+ const saved=campaign();saved.contracts.push({id:'legacy-mail',kind:'mail',quantity:'5',payment:'25000',origin:origin.id,destination:destination.id,status:'accepted',dueHours:null});const h=harness(saved);await h.check({dice:2,mailAvailability:2});assert.equal(h.api.check.available,false);assert.match(html(h),/No mail available/);assert.doesNotMatch(html(h),/Mail accepted/);assert.doesNotMatch(html(h),/5 t reserved/);
 });
 
 test('blank optional rolls use generated dice; immutable history survives referee edits and later checks',async()=>{
