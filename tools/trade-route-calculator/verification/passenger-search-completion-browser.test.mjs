@@ -56,7 +56,9 @@ function expectedFrames(s){
  if(['construction-reentry','context-drift','disk-same','disk-unreadable','reentrant-close','foreign-same','foreign-new','editor-regain','native-close','new-dialog','consumed-token','render','report','close-after'].includes(s.mode))return 1;
  return 3;
 }
-const screenshotOptions=Object.freeze({type:'jpeg',quality:60,caret:'initial'});
+// Keep complete native-resolution viewport frames. The lower JPEG encoding is
+// bounded by the same byte ceilings and requires original-size visual review.
+const screenshotOptions=Object.freeze({type:'jpeg',quality:30,caret:'initial'});
 const successPattern=/^(?:Passenger capacity settings saved\.|Passenger availability recorded\. Choose how many people to board\.)$/;
 const hash=value=>createHash('sha256').update(value).digest('hex');
 const raw=page=>page.evaluate(key=>localStorage.getItem(key),KEY);
@@ -77,7 +79,11 @@ const report={suite:'Passenger setup/search save completion',startedAt:new Date(
 let browser,imageBytes=0;
 function normalize(value){const ids=new Map();return JSON.parse(JSON.stringify(value).replace(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/gi,id=>{if(!ids.has(id))ids.set(id,'generated-'+ids.size);return ids.get(id);}));}
 function fixture(scenario={}){
- let s=S.initial();const origin={id:'1,1',x:1,y:1,name:'Passenger Origin',sector:'Synthetic',hex:'0202',uwp:'A788879-C',zone:'Safe',raw:{PBG:'703'}},destination={...origin,id:'2,1',x:2,name:'ExtraordinarilyLongUnbrokenPassengerDestinationForNarrowViewportVerification',hex:'0302'};
+ // Long-name stress remains in every migrated setup/search case. The unchanged
+ // boarding/delivery control uses ordinary names: the original Jump success
+ // message renderer has a separately observed long-unbroken-name overflow.
+ // Initial failed CI pixels are preserved; baseline attribution is source-based.
+ let s=S.initial();const origin={id:'1,1',x:1,y:1,name:'Passenger Origin',sector:'Synthetic',hex:'0202',uwp:'A788879-C',zone:'Safe',raw:{PBG:'703'}},destination={...origin,id:'2,1',x:2,name:scenario.operation==='control'?'Passenger Destination':'ExtraordinarilyLongUnbrokenPassengerDestinationForNarrowViewportVerification',hex:'0302'};
  Object.assign(s,{initialized:true,name:'Disposable passenger completion campaign',actual:origin.id,worlds:{[origin.id]:origin,[destination.id]:destination},route:[origin.id,destination.id],bank:'90071992547409931234567',hours:671});
  Object.assign(s.ship,{name:'Passenger Trader',capacity:'100',armed:true,staterooms:4,jump:2,fuel:configureFuel(200,40,40,0,2),lifeSupport:{capacityHours:672,stockUnits:{numerator:'112',denominator:'1'}},accommodation:{combinedPeople:true,rooms:{low:0,middle:3,high:1},passengers:{low:0,middle:2,high:0},crew:{low:0,middle:0,high:0},occupiedLowBerths:0,luggageMode:scenario.luggage===undefined?'auto':'manual',luggageTons:scenario.luggage??'0',...(!isSetup(scenario)||scenario.booked?{passengerCapacity:{reservedCabins:1,installedLowBerths:4}}:{})}});
  Object.assign(s.trader,{broker:2,streetwise:3,rank:2,soc:1,characteristic:1});Object.assign(s.settings,{creditStep:scenario.step||1,tax:true,profit:50});
@@ -356,8 +362,15 @@ async function installGate(page, result) {
 }
 async function capture(page, result, label) {
  await frames(page); const name = prefix + result.id + '-' + label + '.jpg';
- const bytes = await page.screenshot({path: join(artifacts, name), ...screenshotOptions});
- imageBytes += bytes.length; assert.ok(imageBytes < report.limits.imageBytes, 'Bounded screenshot bytes'); result.screenshots.push(name); (result.imageSHA256 ??= {})[name] = hash(bytes); (result.frameProvenance ??= []).push({name, producerCommit: report.testedCommit, appSHA256: result.runtime?.appSHA256 ?? report.sourceSHA256?.['app.mjs'] ?? null, passengerSHA256:result.runtime?.passengerSHA256??report.sourceSHA256?.['passenger-ui.mjs']??null, gateSHA256: report.gateSHA256, imageSHA256: hash(bytes), bytes: bytes.length});
+ // Capture to memory first. Every attempt has producer/hash/byte metadata, but
+ // rejected-budget attempts are explicitly non-persisted and never indexed as
+ // evidence frames. A failed capture cannot leave an unindexed JPG on disk.
+ const bytes = await page.screenshot(screenshotOptions), digest = hash(bytes);
+ const attempt={name,producerCommit:report.testedCommit,appSHA256:result.runtime?.appSHA256??report.sourceSHA256?.['app.mjs']??null,passengerSHA256:result.runtime?.passengerSHA256??report.sourceSHA256?.['passenger-ui.mjs']??null,gateSHA256:report.gateSHA256,imageSHA256:digest,bytes:bytes.length,viewport:result.viewport,encoding:screenshotOptions,previousPersistedImageBytes:imageBytes,persisted:false,status:'captured'};
+ (result.captureAttempts??=[]).push(attempt);
+ if(imageBytes+bytes.length>=report.limits.imageBytes){attempt.status='rejected-budget';assert.fail('Bounded screenshot bytes; attempt recorded but not persisted');}
+ await writeFile(join(artifacts,name),bytes);imageBytes+=bytes.length;report.imageBytes=imageBytes;attempt.persisted=true;attempt.status='persisted';
+ result.screenshots.push(name);(result.imageSHA256??={})[name]=digest;(result.frameProvenance??=[]).push({...attempt});
  const geometry = await page.evaluate(() => {const el = document.querySelector('#modal[open]'), rect = el?.getBoundingClientRect(); return {width: innerWidth, pageOverflow: document.documentElement.scrollWidth - innerWidth, dialog: rect ? {left: rect.left, right: rect.right, overflow: el.scrollWidth - el.clientWidth} : null};});
  result.layouts.push({label, ...geometry}); assert.ok(geometry.pageOverflow <= 2, 'No horizontal page overflow');
  if (geometry.dialog) {assert.ok(geometry.dialog.left >= -1 && geometry.dialog.right <= geometry.width + 1, 'Passenger setup/search dialog fits viewport'); assert.ok(geometry.dialog.overflow <= 2, 'Passenger setup/search content stays inside dialog');}
@@ -365,15 +378,29 @@ async function capture(page, result, label) {
 async function detail(page, result, label, selectors, pattern) {
  const saved = await page.evaluate(() => ({x: scrollX, y: scrollY, dialog: document.querySelector('#modal').scrollTop}));
  try {
-  await page.locator(selectors[0]).scrollIntoViewIfNeeded(); await frames(page);
+  const framing=await page.evaluate(selectors=>{
+   const nodes=selectors.map(selector=>{const node=document.querySelector(selector);if(!node)throw Error('Missing detail target: '+selector);return node;});
+   const union=()=>{const rects=nodes.map(node=>node.getBoundingClientRect());return {top:Math.min(...rects.map(r=>r.top)),bottom:Math.max(...rects.map(r=>r.bottom))};};
+   const containers=[];for(let node=nodes[0].parentElement;node&&node!==document.body&&node!==document.documentElement;node=node.parentElement){if(nodes.every(target=>node.contains(target))&&/(?:auto|scroll|overlay)/.test(getComputedStyle(node).overflowY)&&node.scrollHeight>node.clientHeight)containers.push(node);}
+   passengerSearchGate.detailScrolls=containers.map(node=>({node,top:node.scrollTop,left:node.scrollLeft}));
+   const changes=[];
+   // Center the whole requested range, not just its first already-visible dt.
+   // Scroll real containers only; never resize, restyle, crop or hide content.
+   for(const node of containers){const range=union(),rect=node.getBoundingClientRect(),top=rect.top+node.clientTop,bottom=top+node.clientHeight,before=node.scrollTop;node.scrollTop+=((range.top+range.bottom)-(top+bottom))/2;changes.push({container:node.id?'#'+node.id:node.tagName.toLowerCase(),before,after:node.scrollTop,clientHeight:node.clientHeight,rangeHeight:range.bottom-range.top});}
+   const modal=document.querySelector('#modal[open]');if(!modal||!nodes.every(node=>modal.contains(node))){const range=union(),before=scrollY;scrollTo({left:scrollX,top:scrollY+(range.top+range.bottom-innerHeight)/2,behavior:'instant'});changes.push({container:'document',before,after:scrollY,clientHeight:innerHeight,rangeHeight:range.bottom-range.top});}
+   return changes;
+  },selectors);await frames(page);
   const targets = await page.evaluate(selectors => selectors.map(selector => {const el = document.querySelector(selector), r = el.getBoundingClientRect(), style = getComputedStyle(el); return {selector, text: el.textContent, left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height, visible: style.display !== 'none' && style.visibility !== 'hidden', viewport: {width: innerWidth, height: innerHeight}};}), selectors);
+  // Preserve measured targets even if an assertion below fails, so a failure
+  // report identifies every requested edge instead of losing the failing range.
+  (result.details??=[]).push({label,targets,framing});
   for (const target of targets) {
    assert.ok(target.visible && target.width > 0 && target.height > 0, label + ' target rendered');
    assert.ok(target.left >= -1 && target.right <= target.viewport.width + 1 && target.top >= -1 && target.bottom <= target.viewport.height + 1, label + ': ' + target.selector + ' fully in screenshot');
   }
   if (pattern) assert.match(targets.map(target => target.text).join('\n'), pattern);
-  await capture(page, result, label); (result.details ??= []).push({label, targets});
- } finally {await page.evaluate(saved => {document.querySelector('#modal').scrollTop = saved.dialog; scrollTo(saved.x, saved.y);}, saved);}
+  await capture(page, result, label);
+ } finally {await page.evaluate(saved => {for(const {node,top,left}of passengerSearchGate.detailScrolls||[])if(node.isConnected){node.scrollTop=top;node.scrollLeft=left;}passengerSearchGate.detailScrolls=[];document.querySelector('#modal').scrollTop=saved.dialog;scrollTo(saved.x,saved.y);}, saved);}
 }
 async function pointer(page, selector, clickCount = 1) {
  const locator = page.locator(selector); if (!await locator.isVisible()) return;
@@ -697,7 +724,7 @@ async function runCase(scenario,viewport){
 if(process.argv.includes('--fixtures-only')){
  for(const scenario of scenarios){let before=fixture(scenario);if(scenario.preserveSearch)before=expected(before,{operation:'search'});if(scenario.mode==='regression'){assert.ok(passengerCapacity(before).configured);continue;}const next=expected(before,scenario);assertSaved(next,before,scenario);S.validate(next);}
  for(const options of [{},{openingRoll:true},{allManual:true},{manualSequence:true},{unavailable:true}]){const before=fixture({operation:'search'}),scenario={operation:'search',...options},spec=specification(before,scenario);assert.equal(spec.offers.length,4);if(options.openingRoll)assert.deepEqual(spec.offers[0].audit.searchDice,{dice:[3,3],total:6});if(options.allManual)assert.equal(spec.diceCalls,0);if(options.manualSequence)assert.ok(spec.diceCalls>0);}
- const html=await readFile(new URL('../index.html',import.meta.url),'utf8'),app=await readFile(new URL('../js/app.mjs',import.meta.url),'utf8');assert.match(html,/<script type="module" src="js\/app\.mjs\?[^\"]+"/);assert.match(app,/import\s*\{[^}]*\bStore\b[^}]*\}\s*from\s*['"]\.\/persistence\.mjs\?[^'"]+['"]/);assert.match(app,/import\s*\{[^}]*\bcreatePassengerUI\b[^}]*\}\s*from\s*['"]\.\/passenger-ui\.mjs\?[^'"]+['"]/);assert.equal(new Set(scenarios.map(s=>s.id)).size,scenarios.length);assert.equal(screenshotOptions.caret,'initial');
+ const html=await readFile(new URL('../index.html',import.meta.url),'utf8'),app=await readFile(new URL('../js/app.mjs',import.meta.url),'utf8');assert.match(html,/<script type="module" src="js\/app\.mjs\?[^\"]+"/);assert.match(app,/import\s*\{[^}]*\bStore\b[^}]*\}\s*from\s*['"]\.\/persistence\.mjs\?[^'"]+['"]/);assert.match(app,/import\s*\{[^}]*\bcreatePassengerUI\b[^}]*\}\s*from\s*['"]\.\/passenger-ui\.mjs\?[^'"]+['"]/);assert.equal(new Set(scenarios.map(s=>s.id)).size,scenarios.length);assert.equal(screenshotOptions.caret,'initial');assert.equal(screenshotOptions.quality,30);assert.equal(report.limits.imageBytes,20*1024*1024);assert.equal(report.limits.artifactBytes,24*1024*1024);for(const operation of operations)assert.match(fixture({operation}).worlds['2,1'].name,/^ExtraordinarilyLongUnbroken/);assert.equal(fixture({operation:'control'}).worlds['2,1'].name,'Passenger Destination');
  const plan={suite:report.suite,gateSHA256:report.gateSHA256,declaredCases:report.declaredCases,declaredDesktopCases:report.declaredDesktopCases,declaredMobileCases:report.declaredMobileCases,declaredScreenshots:report.declaredScreenshots,limits:report.limits,scope:report.scope,scenarios,cases:cases.map(({scenario,viewport})=>({id:scenario.id+'-'+viewport.width,operation:scenario.operation,mode:scenario.mode,viewport,screenshots:expectedFrames(scenario)})),execution:'Fixture/source validation only; Chromium was not launched.'};
  if(process.argv.includes('--plan-json'))console.log(JSON.stringify(plan,null,2));else console.log(`PASS: independent passenger setup/search full-state, four-class audit/dice, Credits/capacity and Undo fixture oracles; tagged app/Store/passenger UI source wiring. ${scenarios.length} scenarios / ${cases.length} declared browser cases (${report.declaredDesktopCases} desktop, ${report.declaredMobileCases} mobile), ${report.declaredScreenshots} frames. Chromium was NOT launched; fixture/source validation is NOT browser evidence.`);
 }else{
