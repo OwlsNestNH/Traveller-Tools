@@ -687,3 +687,30 @@ warning/footer, receipt, success and large-money detail screenshots; use safe
 caret capture and bounded artifacts. Existing native/rules/catalog and all browser
 regressions remain mandatory. This entry records scope, not a browser or live
 deployment pass.
+
+
+## Shared-modal entry containment .51 verification scope
+
+Independent actual-callback probes on the released .50 tree reproduced one-shot
+initial control-setter faults leaving Deposit, Campaign time, Reset, legacy
+Settings, setup and location busy with zero writes/notifications and unchanged
+saved bytes. Setup/location performed no new picker or nearby calls; Deposit and
+Reset also rejected Close. These are injected DOM faults, not reports of ordinary
+storage failures.
+
+Cover partial initial synchronization through submit/Cancel/Close disabled
+setters and Jump hours.readOnly, zero callback/provider/lookup work, retained
+review/inputs/rounding and explicit retry/dismissal after the transient fault.
+Exercise current completed modal callers plus generic/read-only guards,
+reentrant submit, foreign/editor invalidation and native-close/newer-dialog
+replacement. Successful native/delayed retry must record exactly once with the
+same intended inputs/dice and normal Undo. Preserve existing Sale entry and all
+caller-specific committed/unknown terminal assertions.
+
+Ordinary normalization/FormData recovery and persistent cleanup faults are
+characterizations of existing behavior, not broader repair claims. Actual
+Chromium must use version-tagged production runtime/native locks and bounded
+synthetic fixtures, with desktop/mobile readable error, retry/dismiss and success
+frames. Full native/rules/catalog, all existing browser jobs and independent
+source plus actual pixel review remain required. This entry records scope only;
+it does not claim candidate browser success or deployment.

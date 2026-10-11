@@ -1,9 +1,9 @@
-import {maintenancePaymentQuote,MAINTENANCE_REFERENCE} from './maintenance.mjs?v=expense-completion-20261011-50';
-import {mortgagePaymentQuote,MORTGAGE_REFERENCE} from './mortgage.mjs?v=expense-completion-20261011-50';
-import {fuelPurchase,fuelReference} from './fuel.mjs?v=expense-completion-20261011-50';
-import {up} from './rounding.mjs?v=expense-completion-20261011-50';
+import {maintenancePaymentQuote,MAINTENANCE_REFERENCE} from './maintenance.mjs?v=modal-entry-20261011-51';
+import {mortgagePaymentQuote,MORTGAGE_REFERENCE} from './mortgage.mjs?v=modal-entry-20261011-51';
+import {fuelPurchase,fuelReference} from './fuel.mjs?v=modal-entry-20261011-51';
+import {up} from './rounding.mjs?v=modal-entry-20261011-51';
 import * as A from './amounts.mjs';
-import {monthlyRates,serviceRate,serviceLabel,personMonthlyRate,personRate} from './accommodation.mjs?v=expense-completion-20261011-50';
+import {monthlyRates,serviceRate,serviceLabel,personMonthlyRate,personRate} from './accommodation.mjs?v=modal-entry-20261011-51';
 
 export const berthMultipliers={A:1000,B:500,C:100,D:10,E:0,X:0};
 export function starport(world){return (world.overrideUWP||world.uwp).slice(0,1).toUpperCase();}

@@ -547,3 +547,27 @@ saving rotates its panel action identity so detached old rate controls cannot
 reroll or masquerade as the following payment. Existing state/controller/Store
 bodies, monetary calculations, schedules, ledger, audit and Undo remain intact.
 The general shared-modal entry-fault group and Stage 3 are separate work.
+
+
+## Stage 2 shared-modal initial-entry containment (.51)
+
+The shared submit handler must claim busy before synchronizing its controls, so
+a reentrant submit cannot start another callback. For non-sale callers, that
+initial synchronization now belongs inside the existing try, before normalization
+and FormData. The submitted flag remains false until callback invocation. An
+initial control error therefore follows the established pre-callback recovery
+path and current-session finally cleanup rather than escaping with busy set.
+
+Sale's existing typed entry catch remains outside that try. Moving it inside
+would add finally execution to its early return and alter its reviewed behavior.
+All other catch classification, saved/unknown reload handling, current-modal
+checks and cleanup branches are unchanged. This is a narrow entry boundary move,
+not a new modal ownership abstraction or another save-caller migration.
+
+Transient initial setter failures can leave the same review available with an
+error, cleared busy state and usable retry/dismissal controls. The guarantee does
+not extend to permanently failing DOM cleanup. Existing normalization followed
+by persistent control failure may leave controls disabled or invoke a caller's
+conservative reload fallback, even without writes. Such outcomes are separately
+characterized, not claimed repaired by this change. No accounting, persistence,
+calendar, jump/mulligan, price/dice or Undo mutation body changes.
