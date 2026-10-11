@@ -1,0 +1,1196 @@
+[
+  {
+    "name": "seven-kind full batch credit 1",
+    "kind": "bundle",
+    "selection": [
+      "berthing",
+      "fuel",
+      "staterooms",
+      "passengerSupport",
+      "salary",
+      "mortgage",
+      "maintenance"
+    ],
+    "values": {
+      "weeks": "3",
+      "fuelType": "refined",
+      "fuelTons": "12.5",
+      "stateroomsPeriod": "week",
+      "stateroomsUnits": "3",
+      "passengerSupportPeriod": "month",
+      "passengerSupportUnits": "2",
+      "salary": "12001.2",
+      "salaryMonths": "2",
+      "mortgagePayments": "3",
+      "maintenancePayments": "4",
+      "expenseNotes": "  Separate periods; exact charge proof.  "
+    },
+    "fixture": {
+      "step": 1
+    }
+  },
+  {
+    "name": "booked Low and awake plus legacy baseline credit 1",
+    "kind": "bundle",
+    "selection": [
+      "staterooms",
+      "passengerSupport"
+    ],
+    "values": {
+      "stateroomsPeriod": "month",
+      "stateroomsUnits": "2",
+      "passengerSupportPeriod": "week",
+      "passengerSupportUnits": "3"
+    },
+    "fixture": {
+      "step": 1,
+      "passengers": true
+    }
+  },
+  {
+    "name": "independent reversed periods credit 1",
+    "kind": "bundle",
+    "selection": [
+      "staterooms",
+      "passengerSupport"
+    ],
+    "values": {
+      "stateroomsPeriod": "week",
+      "stateroomsUnits": "1",
+      "passengerSupportPeriod": "month",
+      "passengerSupportUnits": "2"
+    },
+    "fixture": {
+      "step": 1
+    }
+  },
+  {
+    "name": "fixed mortgage maintenance exact credit 1",
+    "kind": "bundle",
+    "selection": [
+      "mortgage",
+      "maintenance"
+    ],
+    "values": {
+      "mortgagePayments": "3",
+      "maintenancePayments": "5"
+    },
+    "fixture": {
+      "step": 1
+    }
+  },
+  {
+    "name": "manual exact amount 10.1 step 1",
+    "kind": "manual",
+    "selection": [
+      "salary"
+    ],
+    "values": {
+      "amount": "10.1",
+      "reason": "  Receipt 11111111-2222-3333-4444-555555555555; version 2026.10.11.58 is my literal reason  "
+    },
+    "fixture": {
+      "step": 1
+    }
+  },
+  {
+    "name": "manual exact amount 90071992547409931.1 step 1",
+    "kind": "manual",
+    "selection": [
+      "salary"
+    ],
+    "values": {
+      "amount": "90071992547409931.1",
+      "reason": "  Exact untrimmed manual reason  "
+    },
+    "fixture": {
+      "step": 1
+    }
+  },
+  {
+    "name": "correction signed amount 10.1 step 1",
+    "kind": "correction",
+    "selection": [
+      "salary"
+    ],
+    "values": {
+      "amount": "10.1",
+      "reason": "  Exact untrimmed correction reason  "
+    },
+    "fixture": {
+      "step": 1
+    }
+  },
+  {
+    "name": "correction signed amount -10.1 step 1",
+    "kind": "correction",
+    "selection": [
+      "salary"
+    ],
+    "values": {
+      "amount": "-10.1",
+      "reason": "  Exact untrimmed correction reason  "
+    },
+    "fixture": {
+      "step": 1
+    }
+  },
+  {
+    "name": "correction signed amount 0 step 1",
+    "kind": "correction",
+    "selection": [
+      "salary"
+    ],
+    "values": {
+      "amount": "0",
+      "reason": "  Exact untrimmed correction reason  "
+    },
+    "fixture": {
+      "step": 1
+    }
+  },
+  {
+    "name": "correction signed amount -900719925474099399999.1 step 1",
+    "kind": "correction",
+    "selection": [
+      "salary"
+    ],
+    "values": {
+      "amount": "-900719925474099399999.1",
+      "reason": "  Exact untrimmed correction reason  "
+    },
+    "fixture": {
+      "step": 1
+    }
+  },
+  {
+    "name": "seven-kind full batch credit 100",
+    "kind": "bundle",
+    "selection": [
+      "berthing",
+      "fuel",
+      "staterooms",
+      "passengerSupport",
+      "salary",
+      "mortgage",
+      "maintenance"
+    ],
+    "values": {
+      "weeks": "3",
+      "fuelType": "refined",
+      "fuelTons": "12.5",
+      "stateroomsPeriod": "week",
+      "stateroomsUnits": "3",
+      "passengerSupportPeriod": "month",
+      "passengerSupportUnits": "2",
+      "salary": "12001.2",
+      "salaryMonths": "2",
+      "mortgagePayments": "3",
+      "maintenancePayments": "4",
+      "expenseNotes": "  Separate periods; exact charge proof.  "
+    },
+    "fixture": {
+      "step": 100
+    }
+  },
+  {
+    "name": "booked Low and awake plus legacy baseline credit 100",
+    "kind": "bundle",
+    "selection": [
+      "staterooms",
+      "passengerSupport"
+    ],
+    "values": {
+      "stateroomsPeriod": "month",
+      "stateroomsUnits": "2",
+      "passengerSupportPeriod": "week",
+      "passengerSupportUnits": "3"
+    },
+    "fixture": {
+      "step": 100,
+      "passengers": true
+    }
+  },
+  {
+    "name": "independent reversed periods credit 100",
+    "kind": "bundle",
+    "selection": [
+      "staterooms",
+      "passengerSupport"
+    ],
+    "values": {
+      "stateroomsPeriod": "week",
+      "stateroomsUnits": "1",
+      "passengerSupportPeriod": "month",
+      "passengerSupportUnits": "2"
+    },
+    "fixture": {
+      "step": 100
+    }
+  },
+  {
+    "name": "fixed mortgage maintenance exact credit 100",
+    "kind": "bundle",
+    "selection": [
+      "mortgage",
+      "maintenance"
+    ],
+    "values": {
+      "mortgagePayments": "3",
+      "maintenancePayments": "5"
+    },
+    "fixture": {
+      "step": 100
+    }
+  },
+  {
+    "name": "manual exact amount 10.1 step 100",
+    "kind": "manual",
+    "selection": [
+      "salary"
+    ],
+    "values": {
+      "amount": "10.1",
+      "reason": "  Exact untrimmed manual reason  "
+    },
+    "fixture": {
+      "step": 100
+    }
+  },
+  {
+    "name": "manual exact amount 90071992547409931.1 step 100",
+    "kind": "manual",
+    "selection": [
+      "salary"
+    ],
+    "values": {
+      "amount": "90071992547409931.1",
+      "reason": "  Exact untrimmed manual reason  "
+    },
+    "fixture": {
+      "step": 100
+    }
+  },
+  {
+    "name": "correction signed amount 10.1 step 100",
+    "kind": "correction",
+    "selection": [
+      "salary"
+    ],
+    "values": {
+      "amount": "10.1",
+      "reason": "  Calculator version: 2026.10.11.58; token aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee is user text  "
+    },
+    "fixture": {
+      "step": 100
+    }
+  },
+  {
+    "name": "correction signed amount -10.1 step 100",
+    "kind": "correction",
+    "selection": [
+      "salary"
+    ],
+    "values": {
+      "amount": "-10.1",
+      "reason": "  Exact untrimmed correction reason  "
+    },
+    "fixture": {
+      "step": 100
+    }
+  },
+  {
+    "name": "correction signed amount 0 step 100",
+    "kind": "correction",
+    "selection": [
+      "salary"
+    ],
+    "values": {
+      "amount": "0",
+      "reason": "  Exact untrimmed correction reason  "
+    },
+    "fixture": {
+      "step": 100
+    }
+  },
+  {
+    "name": "correction signed amount -900719925474099399999.1 step 100",
+    "kind": "correction",
+    "selection": [
+      "salary"
+    ],
+    "values": {
+      "amount": "-900719925474099399999.1",
+      "reason": "  Exact untrimmed correction reason  "
+    },
+    "fixture": {
+      "step": 100
+    }
+  },
+  {
+    "name": "saved berthing A",
+    "kind": "bundle",
+    "selection": [
+      "berthing"
+    ],
+    "values": {
+      "weeks": "3"
+    },
+    "fixture": {
+      "port": "A"
+    }
+  },
+  {
+    "name": "inline rate retains form then payment A",
+    "kind": "bundle",
+    "selection": [
+      "berthing",
+      "salary"
+    ],
+    "values": {
+      "weeks": "2",
+      "salary": "333.1",
+      "salaryMonths": "3",
+      "expenseNotes": "  Keep these edits across rate save  "
+    },
+    "fixture": {
+      "port": "A",
+      "rate": false
+    },
+    "rateFirst": true
+  },
+  {
+    "name": "fuel unrefined port A",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelType": "unrefined",
+      "fuelTons": "2.1",
+      "expenseNotes": "Source notes"
+    },
+    "fixture": {
+      "port": "A"
+    },
+    "reject": false
+  },
+  {
+    "name": "fuel water port A",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelType": "water",
+      "fuelTons": "2.1",
+      "expenseNotes": "Source notes"
+    },
+    "fixture": {
+      "port": "A"
+    },
+    "reject": false
+  },
+  {
+    "name": "saved berthing B",
+    "kind": "bundle",
+    "selection": [
+      "berthing"
+    ],
+    "values": {
+      "weeks": "3"
+    },
+    "fixture": {
+      "port": "B"
+    }
+  },
+  {
+    "name": "inline rate retains form then payment B",
+    "kind": "bundle",
+    "selection": [
+      "berthing",
+      "salary"
+    ],
+    "values": {
+      "weeks": "2",
+      "salary": "333.1",
+      "salaryMonths": "3",
+      "expenseNotes": "  Keep these edits across rate save  "
+    },
+    "fixture": {
+      "port": "B",
+      "rate": false
+    },
+    "rateFirst": true
+  },
+  {
+    "name": "fuel unrefined port B",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelType": "unrefined",
+      "fuelTons": "2.1",
+      "expenseNotes": "Source notes"
+    },
+    "fixture": {
+      "port": "B"
+    },
+    "reject": false
+  },
+  {
+    "name": "fuel water port B",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelType": "water",
+      "fuelTons": "2.1",
+      "expenseNotes": "Source notes"
+    },
+    "fixture": {
+      "port": "B"
+    },
+    "reject": false
+  },
+  {
+    "name": "saved berthing C",
+    "kind": "bundle",
+    "selection": [
+      "berthing"
+    ],
+    "values": {
+      "weeks": "3"
+    },
+    "fixture": {
+      "port": "C"
+    }
+  },
+  {
+    "name": "inline rate retains form then payment C",
+    "kind": "bundle",
+    "selection": [
+      "berthing",
+      "salary"
+    ],
+    "values": {
+      "weeks": "2",
+      "salary": "333.1",
+      "salaryMonths": "3",
+      "expenseNotes": "  Keep these edits across rate save  "
+    },
+    "fixture": {
+      "port": "C",
+      "rate": false
+    },
+    "rateFirst": true
+  },
+  {
+    "name": "fuel unrefined port C",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelType": "unrefined",
+      "fuelTons": "2.1",
+      "expenseNotes": "Source notes"
+    },
+    "fixture": {
+      "port": "C"
+    },
+    "reject": false
+  },
+  {
+    "name": "fuel water port C",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelType": "water",
+      "fuelTons": "2.1",
+      "expenseNotes": "Source notes"
+    },
+    "fixture": {
+      "port": "C"
+    },
+    "reject": false
+  },
+  {
+    "name": "saved berthing D",
+    "kind": "bundle",
+    "selection": [
+      "berthing"
+    ],
+    "values": {
+      "weeks": "3"
+    },
+    "fixture": {
+      "port": "D"
+    }
+  },
+  {
+    "name": "inline rate retains form then payment D",
+    "kind": "bundle",
+    "selection": [
+      "berthing",
+      "salary"
+    ],
+    "values": {
+      "weeks": "2",
+      "salary": "333.1",
+      "salaryMonths": "3",
+      "expenseNotes": "  Keep these edits across rate save  "
+    },
+    "fixture": {
+      "port": "D",
+      "rate": false
+    },
+    "rateFirst": true
+  },
+  {
+    "name": "fuel unrefined port D",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelType": "unrefined",
+      "fuelTons": "2.1",
+      "expenseNotes": "Source notes"
+    },
+    "fixture": {
+      "port": "D"
+    },
+    "reject": false
+  },
+  {
+    "name": "fuel water port D",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelType": "water",
+      "fuelTons": "2.1",
+      "expenseNotes": "Source notes"
+    },
+    "fixture": {
+      "port": "D"
+    },
+    "reject": false
+  },
+  {
+    "name": "saved berthing E",
+    "kind": "bundle",
+    "selection": [
+      "berthing"
+    ],
+    "values": {
+      "weeks": "3"
+    },
+    "fixture": {
+      "port": "E"
+    }
+  },
+  {
+    "name": "fuel unrefined port E",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelType": "unrefined",
+      "fuelTons": "2.1",
+      "expenseNotes": "Source notes"
+    },
+    "fixture": {
+      "port": "E"
+    },
+    "reject": true
+  },
+  {
+    "name": "fuel water port E",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelType": "water",
+      "fuelTons": "2.1",
+      "expenseNotes": "Source notes"
+    },
+    "fixture": {
+      "port": "E"
+    },
+    "reject": false
+  },
+  {
+    "name": "saved berthing X",
+    "kind": "bundle",
+    "selection": [
+      "berthing"
+    ],
+    "values": {
+      "weeks": "3"
+    },
+    "fixture": {
+      "port": "X"
+    }
+  },
+  {
+    "name": "fuel unrefined port X",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelType": "unrefined",
+      "fuelTons": "2.1",
+      "expenseNotes": "Source notes"
+    },
+    "fixture": {
+      "port": "X"
+    },
+    "reject": true
+  },
+  {
+    "name": "fuel water port X",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelType": "water",
+      "fuelTons": "2.1",
+      "expenseNotes": "Source notes"
+    },
+    "fixture": {
+      "port": "X"
+    },
+    "reject": false
+  },
+  {
+    "name": "optional dormant fuel-only refined true",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelTons": "3.1",
+      "expenseNotes": "  Optional fuel source  "
+    },
+    "fixture": {
+      "tracked": true
+    },
+    "fuelOnly": "refined"
+  },
+  {
+    "name": "optional dormant fuel-only unrefined true",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelTons": "3.1",
+      "expenseNotes": "  Optional fuel source  "
+    },
+    "fixture": {
+      "tracked": true
+    },
+    "fuelOnly": "unrefined"
+  },
+  {
+    "name": "optional dormant fuel-only water true",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelTons": "3.1",
+      "expenseNotes": "  Optional fuel source  "
+    },
+    "fixture": {
+      "tracked": true
+    },
+    "fuelOnly": "water"
+  },
+  {
+    "name": "optional dormant fuel-only refined false",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelTons": "3.1",
+      "expenseNotes": "  Optional fuel source  "
+    },
+    "fixture": {
+      "tracked": false
+    },
+    "fuelOnly": "refined"
+  },
+  {
+    "name": "optional dormant fuel-only unrefined false",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelTons": "3.1",
+      "expenseNotes": "  Optional fuel source  "
+    },
+    "fixture": {
+      "tracked": false
+    },
+    "fuelOnly": "unrefined"
+  },
+  {
+    "name": "optional dormant fuel-only water false",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelTons": "3.1",
+      "expenseNotes": "  Optional fuel source  "
+    },
+    "fixture": {
+      "tracked": false
+    },
+    "fuelOnly": "water"
+  },
+  {
+    "name": "zero fuel omitted salary persists",
+    "kind": "bundle",
+    "selection": [
+      "fuel",
+      "salary"
+    ],
+    "values": {
+      "fuelTons": "0",
+      "salary": "1301.5",
+      "salaryMonths": "2"
+    }
+  },
+  {
+    "name": "zero fuel only cannot pay",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelTons": "0"
+    },
+    "reject": true
+  },
+  {
+    "name": "empty selection cannot pay",
+    "kind": "bundle",
+    "selection": [],
+    "values": {
+      "salary": "1234",
+      "salaryMonths": "2",
+      "expenseNotes": "  Audit reason kept in quote as trimmed notes.  "
+    },
+    "reject": true
+  },
+  {
+    "name": "all zero-cost nonempty batch",
+    "kind": "bundle",
+    "selection": [
+      "berthing",
+      "fuel"
+    ],
+    "values": {
+      "weeks": "2",
+      "fuelType": "water",
+      "fuelTons": "1"
+    },
+    "fixture": {
+      "port": "X"
+    }
+  },
+  {
+    "name": "deselected invalid fields cannot block salary",
+    "kind": "bundle",
+    "selection": [
+      "salary"
+    ],
+    "values": {
+      "salary": "1234",
+      "salaryMonths": "1",
+      "fuelTons": "NaN",
+      "mortgagePayments": "0",
+      "maintenancePayments": "-1",
+      "weeks": "0"
+    }
+  },
+  {
+    "name": "combined insufficient funds no partial debit",
+    "kind": "bundle",
+    "selection": [
+      "berthing",
+      "salary"
+    ],
+    "values": {
+      "weeks": "1",
+      "salary": "1",
+      "salaryMonths": "1"
+    },
+    "reject": true
+  },
+  {
+    "name": "manual invalid 0",
+    "kind": "manual",
+    "selection": [
+      "salary"
+    ],
+    "values": {
+      "amount": "0",
+      "reason": "Reason"
+    },
+    "reject": true
+  },
+  {
+    "name": "manual invalid -1",
+    "kind": "manual",
+    "selection": [
+      "salary"
+    ],
+    "values": {
+      "amount": "-1",
+      "reason": "Reason"
+    },
+    "reject": true
+  },
+  {
+    "name": "manual invalid NaN",
+    "kind": "manual",
+    "selection": [
+      "salary"
+    ],
+    "values": {
+      "amount": "NaN",
+      "reason": "Reason"
+    },
+    "reject": true
+  },
+  {
+    "name": "manual invalid 900719925474099399999",
+    "kind": "manual",
+    "selection": [
+      "salary"
+    ],
+    "values": {
+      "amount": "900719925474099399999",
+      "reason": "Reason"
+    },
+    "reject": true
+  },
+  {
+    "name": "manual blank reason",
+    "kind": "manual",
+    "selection": [
+      "salary"
+    ],
+    "values": {
+      "amount": "1",
+      "reason": "   "
+    },
+    "reject": true
+  },
+  {
+    "name": "correction blank reason",
+    "kind": "correction",
+    "selection": [
+      "salary"
+    ],
+    "values": {
+      "amount": "1",
+      "reason": "   "
+    },
+    "reject": true
+  },
+  {
+    "name": "invalid fuel NaN",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelType": "refined",
+      "fuelTons": "NaN"
+    },
+    "reject": true
+  },
+  {
+    "name": "invalid fuel -1",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelType": "refined",
+      "fuelTons": "-1"
+    },
+    "reject": true
+  },
+  {
+    "name": "invalid fuel 1000",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelType": "refined",
+      "fuelTons": "1000"
+    },
+    "reject": true
+  },
+  {
+    "name": "bladder cargo boundary exact",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelType": "unrefined",
+      "fuelTons": "5"
+    }
+  },
+  {
+    "name": "bladder cargo overflow rejected",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelType": "unrefined",
+      "fuelTons": "6"
+    },
+    "reject": true
+  },
+  {
+    "name": "private refined supplier documented",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelType": "refined",
+      "fuelTons": "1",
+      "otherSupplier": true,
+      "expenseNotes": "  Approved private depot  "
+    },
+    "fixture": {
+      "port": "E"
+    }
+  },
+  {
+    "name": "private supplier needs notes",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelType": "refined",
+      "fuelTons": "1",
+      "otherSupplier": true,
+      "expenseNotes": "   "
+    },
+    "fixture": {
+      "port": "E"
+    },
+    "reject": true
+  },
+  {
+    "name": "unavailable water advisory stays permitted",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelType": "water",
+      "fuelTons": "1"
+    },
+    "fixture": {
+      "port": "X"
+    }
+  },
+  {
+    "name": "effective port override saved mismatch requires new rate",
+    "kind": "bundle",
+    "selection": [
+      "berthing"
+    ],
+    "values": {
+      "weeks": "3"
+    },
+    "rateFirst": true
+  },
+  {
+    "name": "browse other world bills actual",
+    "kind": "bundle",
+    "selection": [
+      "berthing",
+      "fuel"
+    ],
+    "values": {
+      "weeks": "1",
+      "fuelType": "refined",
+      "fuelTons": "1"
+    },
+    "view": "1,0"
+  },
+  {
+    "name": "legacy stock representation anchored unchanged amount",
+    "kind": "bundle",
+    "selection": [
+      "passengerSupport"
+    ],
+    "values": {
+      "passengerSupportPeriod": "week",
+      "passengerSupportUnits": "1"
+    },
+    "fixture": {
+      "legacy": true
+    }
+  },
+  {
+    "name": "committed bundle closes jump mulligan permanently",
+    "kind": "bundle",
+    "selection": [
+      "salary"
+    ],
+    "values": {
+      "salary": "13.1",
+      "salaryMonths": "2"
+    },
+    "fixture": {
+      "jump": true
+    }
+  },
+  {
+    "name": "committed manual closes jump mulligan permanently",
+    "kind": "manual",
+    "selection": [
+      "salary"
+    ],
+    "values": {
+      "amount": "0.1",
+      "reason": "Post-jump action"
+    },
+    "fixture": {
+      "jump": true
+    }
+  },
+  {
+    "name": "committed correction closes jump mulligan permanently",
+    "kind": "correction",
+    "selection": [
+      "salary"
+    ],
+    "values": {
+      "amount": "0.1",
+      "reason": "Post-jump action"
+    },
+    "fixture": {
+      "jump": true
+    }
+  },
+  {
+    "name": "rate then bundle closes prior mulligan",
+    "kind": "bundle",
+    "selection": [
+      "berthing"
+    ],
+    "values": {
+      "weeks": "2"
+    },
+    "fixture": {
+      "jump": true,
+      "rate": false
+    },
+    "rateFirst": true
+  },
+  {
+    "name": "cancel first no economic effects",
+    "kind": "bundle",
+    "selection": [
+      "salary"
+    ],
+    "values": {
+      "salary": "1234",
+      "salaryMonths": "2",
+      "expenseNotes": "  Audit reason kept in quote as trimmed notes.  "
+    },
+    "cancelAt": "first"
+  },
+  {
+    "name": "cancel review no economic effects",
+    "kind": "bundle",
+    "selection": [
+      "salary"
+    ],
+    "values": {
+      "salary": "1234",
+      "salaryMonths": "2",
+      "expenseNotes": "  Audit reason kept in quote as trimmed notes.  "
+    },
+    "cancelAt": "review"
+  },
+  {
+    "name": "select all helper retains seven kinds",
+    "kind": "bundle",
+    "selection": [
+      "berthing",
+      "fuel",
+      "staterooms",
+      "passengerSupport",
+      "salary",
+      "mortgage",
+      "maintenance"
+    ],
+    "values": {
+      "weeks": "3",
+      "fuelType": "refined",
+      "fuelTons": "12.5",
+      "stateroomsPeriod": "week",
+      "stateroomsUnits": "3",
+      "passengerSupportPeriod": "month",
+      "passengerSupportUnits": "2",
+      "salary": "12001.2",
+      "salaryMonths": "2",
+      "mortgagePayments": "3",
+      "maintenancePayments": "4",
+      "expenseNotes": "  Separate periods; exact charge proof.  "
+    },
+    "selectAll": true
+  },
+  {
+    "name": "fuel quantity shortcut next",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelType": "refined"
+    },
+    "shortcut": "next"
+  },
+  {
+    "name": "fuel quantity shortcut fill",
+    "kind": "bundle",
+    "selection": [
+      "fuel"
+    ],
+    "values": {
+      "fuelType": "refined"
+    },
+    "shortcut": "fill"
+  }
+]

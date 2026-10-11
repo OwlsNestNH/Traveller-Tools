@@ -1,11 +1,30 @@
 # Traveller Ship Operations — Handoff
 
-**Updated:** 2026-10-09
+**Updated:** 2026-10-11
 **Repository:** [OwlsNestNH/Traveller-Tools](https://github.com/OwlsNestNH/Traveller-Tools)  
 **Tool folder:** `tools/trade-route-calculator/`  
-**Current main reviewed:** `4ec6d71f91cd7428f85e7d760e85c82bb90dbecd`
+**Current main reviewed:** `81011e305aef7e8561b4b2f9f9417f4059676b44`
 
 Use the current GitHub files as the source of truth. This handoff summarizes continuity; it does not replace the requirements, rules decisions, verification record, or backlog.
+
+## Current save-completion checkpoint
+
+UI .58 passenger boarding/delivery is released. Exact reviewed tree, Pages,
+all 90 permitted live URL variants and all 67 ready-event duplicate CI jobs
+were verified; ten established proxy-restricted variants remain unverified.
+Prior Setup idle causes are still unknown after two clean diagnostic runs;
+the separately observed/inferred Cargo SVG focus race remains unfixed.
+
+Three Stage 2 scope groups remain, with concrete callers and release evidence in
+[COMPLETION_MIGRATION.md](COMPLETION_MIGRATION.md): legacy Accounts,
+route/world/rounding confirmations, and cargo/market controls. The .59 candidate
+addresses Accounts' four payment/rate branches. Its inline rate save must retain
+its first form through completion and hand it safely to a new payment attempt.
+Existing arithmetic, scheduler, State/controller/Store bodies and Undo remain the
+reference. Candidate code is not complete until source/native/exact-head browser/
+pixel review, every ready-event duplicate and post-merge deployment checks pass.
+Stage 3 quote/preview ownership has not started. Earlier sections below preserve
+historical checkpoints; use this queue and current exact GitHub checks for status.
 
 ## Current state
 

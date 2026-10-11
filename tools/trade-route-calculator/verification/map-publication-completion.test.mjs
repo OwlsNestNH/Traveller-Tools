@@ -12,6 +12,8 @@ const end = app.indexOf('\nfunction requestMapAreas(){', start);
 assert.ok(start >= 0 && end > start, 'Unique production paintMap extraction boundary');
 assert.equal(app.indexOf('function paintMap(){', start + 1), -1);
 const source = app.slice(start, end);
+const accountsGuard = app.match(/^function accountsBusy\(\).*$/m)?.[0];
+assert.ok(accountsGuard, 'Include the actual Accounts ownership predicate, not a false stub');
 
 function harness(owners = {}) {
  const calls = [], replacement = {kind: 'new map'}, status = {textContent: 'Original status'};
@@ -23,6 +25,7 @@ function harness(owners = {}) {
  // Insurance adds one lexical owner to the production painter; keep every
  // existing body/spy/assertion intact while supplying its absent default.
  const context = vm.createContext({
+  accountsWriteOperation: null,
   expenseServices: {publicationDeferred: () => false},
   worldWriteOperation: null, undoOperation: null, replacementReview: null, settingsOperation: null, purchaseWriteOperation: null, insuranceWriteOperation: null, contactSearchWriteOperation: null, contractOfferWriteOperation: null, contractLifecycleWriteOperation: null, passengerWriteOperation: null,
   mapDrag: null, tab: 'Overview', mapZoom: 1, showTerritories: false,
@@ -35,7 +38,7 @@ function harness(owners = {}) {
   $(id) {assert.equal(id, 'map-load-status'); calls.push('status'); return status;},
   ...owners
  });
- vm.runInContext(source + '\nglobalThis.paint = paintMap;', context, {filename: 'production paintMap'});
+ vm.runInContext(accountsGuard + '\n' + source + '\nglobalThis.paint = paintMap;', context, {filename: 'production paintMap'});
  return {context, calls, status, paint: () => context.paint()};
 }
 function assertFrozen(h) {
@@ -139,4 +142,15 @@ test('contract-offer paint guard exactly matches its render ownership predicate'
  const render = app.slice(app.indexOf('function render(){'), app.indexOf('\nfunction mapHexGrid('));
  const guard = 'if(contractOfferWriteOperation?.pending&&!contractOfferWriteOperation.invalidated)return;';
  assert.ok(source.includes(guard)); assert.ok(render.includes(guard));
+});
+
+// Execute the real predicate with each active retained-form phase. This is not
+// an absent-owner stub: pending and handoff must stop the complete painter.
+for(const flag of ['pending','constructing','handoff','recovering','updating'])for(const active of [false,true])for(const invalidated of [false,true])test(`Accounts map: ${flag}=${active}, invalidated=${invalidated}`,()=>{
+ const h=harness({accountsWriteOperation:{[flag]:active,invalidated}});
+ if(active&&!invalidated)assertFrozen(h);else assertPainted(h);
+});
+for(const absent of [null,undefined])test(`Accounts map: absent ${absent} owner permits existing painter`,()=>assertPainted(harness({accountsWriteOperation:absent})));
+for(const flag of ['pending','constructing','handoff','recovering','updating'])test(`Accounts map: clearing ${flag} resumes the same production painter`,()=>{
+ const owner={[flag]:true,invalidated:false},h=harness({accountsWriteOperation:owner});assertFrozen(h);owner[flag]=false;assertPainted(h);
 });

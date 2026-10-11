@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {depositHarness,campaign,S,same,ui,prepareDeposit,deferredSave,flush} from './deposit-save-harness.mjs';
+import {accountsHarness} from './accounts-save-harness.mjs';
 
 // Only Confirm deposit opts into completion-aware UI. These are actual-app
 // native tests with a delayed adapter around the real localStorage Store;
@@ -161,7 +162,7 @@ for(const delay of [false,true])test(`controller blocks reentrant writes during 
 });
 
 test('unmigrated expense, History Undo and reset callbacks still publish and report success synchronously',async()=>{
- const h=depositHarness();h.api.actions.expense();h.fill({amount:17,reason:'Synchronous compatibility'});
+ const h=accountsHarness(campaign());h.api.setTab('Trade');h.api.render();h.api.actions.expense();h.fill({amount:17,reason:'Synchronous compatibility'});
  const expense=h.submit();assert.equal(h.persisted().bank,'99983');assert.match(ui(h).message,/Manual expense saved\./);assert.equal(h.counters.writes,1);await expense;
  assert.equal(h.api.actions.undo(),undefined);assert.equal(h.persisted().bank,'100000');assert.equal(h.counters.writes,2);assert.match(ui(h).message,/undone/i);
  h.api.actions.reset();h.fill({backed:true});const replace=h.submit();assert.equal(h.counters.writes,3);assert.equal(h.persisted().initialized,false);assert.match(ui(h).message,/Campaign replaced\./);await replace;

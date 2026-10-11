@@ -789,7 +789,7 @@ release verification finish. Independent source/local/exact-head browser/pixel
 review, exact merge/tree, Pages, all 90 permitted live variants and all 66 ready-
 event duplicate jobs passed. Ten restricted live variants remain unverified.
 
-## Stage 2 passenger boarding/delivery completion (.58 candidate)
+## Stage 2 passenger boarding/delivery completion (.58 released)
 
 Extend the passenger-specific adapter to the two remaining saved operations.
 Boarding must own the first form and its side-effect-free preview/handoff before
@@ -814,5 +814,45 @@ before fallible reporting; preserve newer real dialogs and require reload when
 appropriate. Pending presentation remains owned through real nearby/map callbacks
 and publication/settlement. State, Store/controller, fares, rounding, capacity,
 LSS/luggage, payment, audit and Undo bodies remain outside this migration.
-Final implementation, full source/native/exact-head browser/pixel review and
-release verification are required before this candidate is called complete.
+The released implementation passed source/native/exact-head browser/pixel review,
+all ready-event duplicate jobs and exact merge/tree/Pages verification. All 90
+permitted live variants matched; ten established restrictions remain unverified.
+
+## Stage 2 legacy Accounts completion (.59 candidate)
+
+The Accounts-specific adapter covers exactly four saved branches: the final
+atomic ship-expense bundle, inline berthing-rate save, manual expense and referee
+bank correction. Existing expense/rate/fuel/calendar and State/controller/Store
+mutation bodies remain authoritative. The optional fuel-only bundle path remains
+compatibility coverage without a new production entry. Dedicated Expense, Fuel
+and LSS panels keep their existing adapters.
+
+A retained form owner captures campaign/revision/publication and editing tenure,
+actual location, presentation, independent durable bytes, exact form membership
+and authoritative control identities. A separate one-use attempt owns accepted
+arguments, quote, rounding and publication provenance. Informational rule buttons
+may be legitimately regenerated; actual data/action controls cannot be replaced
+by equal-looking nodes. Pending controls and display remain stable through real
+map/nearby callbacks and provider publication until settlement.
+
+The first bundle form and its Preview remain side-effect-free. Normalization is
+an expected owned transformation, not stale raw-input drift. Invalid manual form
+values remain correctable; a genuinely prepared, safely unwritten attempt retains
+its accepted terms for deliberate retry. Saved and unknown failures protect the
+whole campaign with accurate reload guidance even if presentation ownership was
+retired, without letting an old continuation overwrite a newer dialog.
+
+Inline rate saving is separate from payment. Its single accepted die survives a
+safe retry. Success retires that attempt and hands the same entered form to a
+fresh owner/session while still locked; refreshed rate/estimate and control state
+must finish before a new Preview/payment can begin. Old callbacks/finally blocks
+cannot reset or unlock a newer payment. Native writes and announcements stay
+synchronous, while final form closure retains the original submit continuation's
+microtask timing. The existing construction guard is reused through a neutral
+optional alias; this is not a new general transaction or modal framework.
+
+The candidate requires complete-state original-source parity, focused race and
+failure tests, every existing native/browser control, exact-head real-browser
+and original-image review, all ready-event duplicates and deployment verification.
+No Stage 3 quote-cache consolidation, ledger layout redesign or backend is part
+of this boundary.

@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=passenger-booking-completion-20261011-58';
+import {escapeHtml as esc} from './display.mjs?v=accounts-completion-20261011-59';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.

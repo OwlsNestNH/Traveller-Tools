@@ -1,7 +1,7 @@
 # Save-completion migration queue
 
-Inventory refreshed against UI 2026.10.11.57, repository merge
-`a9a9db438a6beca38cd8aad93a47078ff6ec8844` (2026-10-11).
+Inventory refreshed against UI 2026.10.11.58, repository merge
+`81011e305aef7e8561b4b2f9f9417f4059676b44` (2026-10-11).
 This records the save-boundary work, not the earlier GUI-refit stages.
 
 ## Stage 2: finish save callers
@@ -177,39 +177,55 @@ routed. This is not a claim of complete 100-URL live-file verification.
   Mobile booking tables remain horizontally scrollable and browser economic
   screenshots are representative. Boarding/delivery remain the next subbatch.
 
+- **.58 Passenger boarding/delivery:** both remaining saved callers and the
+  side-effect-free first boarding form/preview/handoff have owned completion.
+  Final 5,306 native tests across 78 files (676 new focused cases), 227 rules
+  checks, 67 exact-head CI jobs and 139 focused browser cases passed. All 260
+  frame hashes/layouts were checked and scanned; 99 originals were individually
+  reviewed (64 mobile, 35 desktop, 81 distinct hashes). The final diagnostic-only
+  head preserved those 260 image bytes exactly. Twenty-two complete original/
+  candidate outcomes and separate real-jump/Undo comparisons preserved economics.
+  Initial 131/139 browser evidence is retained: helper-local scroll bookkeeping,
+  exact saved-warning expectations and one dedicated first-boarding paragraph
+  wrapping rule corrected the evidenced failures without relaxing assertions.
+  Two unchanged Setup suites initially passed 159/160 with final 15-second idle
+  timeouts after save/reload/Undo; bounded passive request diagnostics then
+  observed two clean 160/160 runs. Their earlier causes remain unknown and
+  observer timing effects remain possible. One Cargo failure and its single
+  authorized unchanged-head rerun remain recorded; the separate inferred SVG/
+  keyboard-focus race is not fixed. All 67 ready-event duplicate jobs passed
+  before merge. Exact merge/tree, Pages and all 90 permitted live variants were
+  verified; ten established restricted variants remain unverified. Horizontal
+  mobile booking-table scrolling and extreme ledger-row text overlap remain
+  qualified, with inherited layout attribution based on source rather than
+  separate baseline pixels. All four passenger callers are now complete.
+
 ### Remaining bounded groups
 
 These are scope groups, not a promise that each needs exactly one release.
 Further inventory findings must be recorded rather than declaring Stage 2 done.
-There are four open scope groups after the verified passenger setup/search
-release. The .58 candidate addresses boarding/delivery, the second passenger
-subbatch. Automatic policy updates in cargo, routes, arrival
-and Undo stay with those workflows; closed groups do not establish completion
-of unrelated callers.
+There are three open scope groups after the verified passenger release.
+The .59 candidate targets the four legacy Accounts mutation branches. Automatic
+policy updates in cargo, routes, arrival and Undo stay with those workflows;
+closed groups do not establish completion of unrelated callers.
 
-1. **Passenger workflows: .57 setup/search released; .58 boarding/delivery candidate.**
-   Exactly four production UI write callers in passenger-ui.mjs: setup ->
-   S.configurePassengerCapacity; search -> S.recordPassengerSearch; board ->
-   S.acceptPassengers; deliver -> S.deliverPassengers. Setup/search are complete.
-   Boarding discards completion and renders immediately; delivery returns the
-   save but lacks full pending/terminal ownership in the .57 baseline. The .58
-   candidate also guards the side-effect-free first boarding form/preview/handoff;
-   this is not another save caller. S.deliver's compatibility fallback is not a
-   fifth dedicated UI caller. Preserve allocation, capacity, accommodation,
-   LSS/luggage and audited terms. Delivery must not replenish the original search
-   pool; History must not recreate actionable offers. Keep this group open until
-   both remaining callers, review and release verification finish.
-2. **Legacy Accounts payments and inline rate.** app.mjs: shipExpenses,
-   expenseForm (including bank correction), rollBerthingRate. Payment forms
-   remain generic; the rate path assumes a synchronous next.revision and
-   removes its control early. Keep rate saving distinct from payment and preserve
-   the remaining Accounts bundle despite completed dedicated fuel/LSS services.
-3. **Route/world/rounding confirmations.** app.mjs: saveMapRoute, plotRoute,
+1. **Legacy Accounts payments and inline rate (.59 candidate).** app.mjs has
+   exactly four write branches: final shipExpenses bundle, rollBerthingRate,
+   expenseForm(false) and expenseForm(true). Keep the separate inline rate save
+   and retained first form distinct from payment. Its completion must make a
+   locked handoff to fresh form authority before payment becomes available;
+   old continuations must not reset a newer attempt. Preserve monetary field
+   normalization, one accepted die on safe retry and exact atomic expense/
+   correction semantics. The optional fuel-only shipExpenses branch has no
+   current production caller but remains compatibility coverage. Dedicated
+   Expense, Fuel and LSS panels remain unchanged controls. This group stays open
+   until source/native/browser/pixel review and release verification finish.
+2. **Route/world/rounding confirmations.** app.mjs: saveMapRoute, plotRoute,
    clearPlannedRoute, overrideWorld, roundingPreview. Clear-route discards
    completion and clears its draft; other returning callbacks still need the
    complete contract. Ordinary world override is distinct from completed World
    Changes reversion. Lookup/route calculations stay cancellable before saving.
-4. **Cargo adjustments and market controls.** app.mjs: existingLot,
+3. **Cargo adjustments and market controls.** app.mjs: existingLot,
    correctCargo, reject, editOffer, market-expiration checkbox and expire-all.
    Returning confirmations still need ownership/terminal handling; overrides/
    checkbox discard completion. Expire-all is a direct action without an owned

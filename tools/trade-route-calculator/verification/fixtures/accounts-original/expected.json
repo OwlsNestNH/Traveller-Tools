@@ -1,0 +1,2678 @@
+{
+  "originalSource": {
+    "releasedMerge": "81011e305aef7e8561b4b2f9f9417f4059676b44",
+    "releasedTree": "3ce9475096d364f337569d833ab862a658418ba4",
+    "sourceManifestVerifiedFiles": 293,
+    "originalAppSha256": "add72aaf7dabcf60683fccff152c828b180e8d9186cf64a44923b1f8b1e7d0ba",
+    "functions": {
+      "expenseInput": {
+        "sha256": "84b2a3ccfaf03dc81a43b8ddb2588c095956479de9cdba632513f46d549b11bf",
+        "startLine": 2967,
+        "endExclusiveLine": 2971
+      },
+      "shipExpenses": {
+        "sha256": "aa1afc9ae99b24fa62ad535352df64b4a4ee73ffacae499c2325524dcc38fdd3",
+        "startLine": 3031,
+        "endExclusiveLine": 3050
+      },
+      "selectAllExpenses": {
+        "sha256": "5dab452322e09ac0e84da1f5023b7ee0c3452b059129d35ebc39637a3a48d0e7",
+        "startLine": 3050,
+        "endExclusiveLine": 3051
+      },
+      "rollBerthingRate": {
+        "sha256": "fc6d27c32f525897ca13e1bd08f04581276b1b6da6c7eaef77285adb3bc610cf",
+        "startLine": 3051,
+        "endExclusiveLine": 3055
+      },
+      "expenseForm": {
+        "sha256": "84e3a0b71bf9392fe7e4b0e025c4196f212793f26c362113557c2ed585bcf372",
+        "startLine": 3114,
+        "endExclusiveLine": 3115
+      },
+      "updateExpenseEstimate": {
+        "sha256": "434dc56c6986a78a76a4181e048ab9044cda9393a045d61429fba30e0001ae96",
+        "startLine": 3009,
+        "endExclusiveLine": 3021
+      }
+    },
+    "identityRule": "local synthetic HEAD is not release ancestry",
+    "oracleMethod": "Whole preserved original app with original imported controller, State, Store and economic modules under a native DOM fixture; candidate only supplies the reviewed fixture, never original production functions. Complete campaign and serialized durable bytes after consistent generated UUID identity mapping. No dropped business fields. Exact rejection bytes. Report text permits only explicit Calculator version line difference.",
+    "browserStatus": "Not run locally. Browser evidence will be exact-head CI artifacts only."
+  },
+  "productionSourceHashes": {
+    "assets/js/main.js": "be179fcf7bbc53ebd35461556b67f6c1c77272b540d511bb365a039d5a387cc0",
+    "assets/js/tool-visits.js": "e6219b5fc3d02715660d8321d19d51a3129fe381bed80e66340a8506dc47620b",
+    "tools/trade-route-calculator/js/accommodation.mjs": "3d64d731b1b91a1c8d14a81e34b760f50825deb401576d2c15ad4262188589ff",
+    "tools/trade-route-calculator/js/amounts.mjs": "8876a391fabc4f842678c9249aa2d9ad6797cca12e51d61c1ad88736ca997958",
+    "tools/trade-route-calculator/js/app.mjs": "add72aaf7dabcf60683fccff152c828b180e8d9186cf64a44923b1f8b1e7d0ba",
+    "tools/trade-route-calculator/js/calendar.mjs": "e774bc58a2b156c814bc020105974367e7dde15648df45fff9234b279a35a105",
+    "tools/trade-route-calculator/js/campaign-controller.mjs": "2128e123e680fa1b5857bbf3597378fafb0af3bdd642deb2f02378e7f811b471",
+    "tools/trade-route-calculator/js/cargo-hold.mjs": "30d5f63f27cd37d3c07ee6ae34c2107e4486ceca5e605e0a31f13f6a9f4a2c78",
+    "tools/trade-route-calculator/js/contact-search.mjs": "d01ff77a69f8cf4cc518c5f50355ee7cb4e5301d789229e1e9829fc336b4e9ca",
+    "tools/trade-route-calculator/js/dashboard-baseline.mjs": "8064fb4e5290224c1e2d49ca0b9210d308c3fa2afa24f3a0e1742f3f748c5195",
+    "tools/trade-route-calculator/js/dashboard-data.mjs": "e1b30f6235d7bd648e54dfd9b4b3df77da125dc63e0b0b7b21c5fd2111c3816e",
+    "tools/trade-route-calculator/js/dashboard-view.mjs": "38794a100589ba9f569bc69ba699202f933b752765eab414437df1c746162d21",
+    "tools/trade-route-calculator/js/display.mjs": "923f2153f60cde50aebe3b9e164ae996bbb640f9c448a30ad8c829077a08ea24",
+    "tools/trade-route-calculator/js/expense-panels.mjs": "451ab359062b4ba8c2e364b9c498e99106df5cd6b5c30141792e8b4286d24aa0",
+    "tools/trade-route-calculator/js/expenses.mjs": "6647faf0667e52e657bbe9aab66d017109c3b8f4471021b8352658e8de2aff4c",
+    "tools/trade-route-calculator/js/financial-summary.mjs": "9a23183abe0c617a01302a1b1021e81182deb3fca538c1dd173e32aaa30eca7c",
+    "tools/trade-route-calculator/js/form-values.mjs": "2b1036ba3e26092b85b2acfa9f3bf9b7694235cee933335aa6d632fc8a8ed822",
+    "tools/trade-route-calculator/js/fuel.mjs": "6fe764e4858489f7510994cfdf8086928fc0e2ee3534f9f0d93a0a0bdf6b3a21",
+    "tools/trade-route-calculator/js/global-world-search.mjs": "3468f56a1081d6ed88c23ae84f484cff897be1c08b3f0021cb1558704454f1b9",
+    "tools/trade-route-calculator/js/jump-attempts.mjs": "0b62422f992dde8f4561a7dabf4d77fce3cd38f4125c832cbef46028bdabd593",
+    "tools/trade-route-calculator/js/life-support.mjs": "80a598fdcbeb4187ad569bcdc36a015f44073623fc74d7acd2f366473db5438f",
+    "tools/trade-route-calculator/js/mail-history.mjs": "9b70d1cea57093bc390bb5bfe1de4a397bee10afc0451db857979eed1959c5d0",
+    "tools/trade-route-calculator/js/maintenance.mjs": "2d88f45c217cd932d32a7e66ed689c975cbe9bb74902905bb48f0c654942a986",
+    "tools/trade-route-calculator/js/map-geometry.mjs": "fbe595a6777bf60636c04574128b5683e5194b75b8fcef5e5b116f6591639a59",
+    "tools/trade-route-calculator/js/map-overview.mjs": "218f3835e32d8f9f234f0f85659651f6c901b35c279991b9d09efadb50cbb398",
+    "tools/trade-route-calculator/js/map-preferences.mjs": "24b7fce66b9ed649e3c9b06dfba1cac24d3a6bead093b15f75a03f25718c0523",
+    "tools/trade-route-calculator/js/map-territory.mjs": "07ab42365d6a22259b88634e96553d9e2511910b82e31f1889c1c3a09e8b042d",
+    "tools/trade-route-calculator/js/map-viewport.mjs": "cce2458cfd7dd92dd15f6063a213d9a393cb542b61293de46fcc0d081bc778a3",
+    "tools/trade-route-calculator/js/map.mjs": "1058d900cc55ddcbb24d751e0c183616b9225aee842fcfaf31e4f8f119239947",
+    "tools/trade-route-calculator/js/mortgage.mjs": "8224c1b7b99b91cfa9eed9455a89b9935b3ba31a6792c992ab958ea0c767984c",
+    "tools/trade-route-calculator/js/passenger-rules.mjs": "f49b76e65d7e5ac7d377d8909cdb49b63f2a8ca0aa6ed9b84d3677976d7c520c",
+    "tools/trade-route-calculator/js/passenger-ui.mjs": "df10f63afc58531dc3fdf9cd299a2d56c5841cb573e359304b7a311a038d249d",
+    "tools/trade-route-calculator/js/passengers.mjs": "362e3f568faec32f535e2f59f0007fe73e45f9a48e44b4a1cedcf7b58fbcac1f",
+    "tools/trade-route-calculator/js/payment-schedule.mjs": "702641e5516e1609f3374196b4523da8b61a11fe353da7ec0f3e48680ab6de7e",
+    "tools/trade-route-calculator/js/persistence.mjs": "85bca4b042a175874df05ebb20fc50bdacb523c542f0d1dfde19289e35775b01",
+    "tools/trade-route-calculator/js/planet-info.mjs": "38c9c7741051e032c574f612a3b22b094a9ab1a6ab71a5266027fb58ea9d628d",
+    "tools/trade-route-calculator/js/planet-tables.mjs": "cb321c596088215126e31503ed16ddd90c60f61cfc6a067f3c352e8b128c605c",
+    "tools/trade-route-calculator/js/report.mjs": "5754c6a528998a14e05752f67b4ea8012026fa00410336a598b9d61c9a2e882a",
+    "tools/trade-route-calculator/js/rounding.mjs": "646cf43e1b118d38da9c7d314dc9f0f75f166462a699045f6adebb155f124568",
+    "tools/trade-route-calculator/js/rule-popover.mjs": "ed2975d92de05ed30ff137e2889f7d3d1bedea575f591878580a12bdc614a447",
+    "tools/trade-route-calculator/js/rule-references.mjs": "5a69d55796803d858b1ab37fd45ff095d46f6783f7a789d362654808d4add480",
+    "tools/trade-route-calculator/js/rules.mjs": "1400cab5c0e5f74662b63956052497281dc70e9bfc472f83e78a468d9479358b",
+    "tools/trade-route-calculator/js/service-panels.mjs": "085d2252771bbb3196745b06d09584884a66fe05885a0b9f6b51ac29bf88af96",
+    "tools/trade-route-calculator/js/settings-layout.mjs": "cc96cbc7f47fe63b56009241bdc2d9d0df068cf6a064571c7a435f58689f00ee",
+    "tools/trade-route-calculator/js/state.mjs": "ccf004f370dc46b516822e783d4068dd60d541ac5f02ee5a267340da955800c8",
+    "tools/trade-route-calculator/js/world-change-history.mjs": "faa79313698a8e827458c9893147b03619a2b29113148dd375fb4f406bf0e2b9",
+    "tools/trade-route-calculator/js/world-picker.mjs": "e29121bb050f0340e084cdaa0e3504431185994b11abca3955536f4209f5b849",
+    "tools/trade-route-calculator/js/world-symbols.mjs": "5960221a536cda01db271bf32512788393d900127a767c28ffc9fb9b69d2fcd8",
+    "tools/trade-route-calculator/verification/app-harness.mjs": "eec0a5874aba03ba889c1451b16a0242fe2fab1e93c80b238f29b689387b286a",
+    "tools/trade-route-calculator/verification/deposit-save-harness.mjs": "1ffd8c4ecb792160764e8cd9d8548d2598eed577e201136c0fdd49211b0d310f"
+  },
+  "canonicalization": "Map only newly generated UUID identity/reference fields by explicit key, preserving seeded identity values and all user-authored reason/description/notes/HTML/field strings byte-for-byte. Saved JSON is transformed structurally with every field/order retained. Preserve every inverse, ledger row, event, revision, time, stock and amount. Only the exact Calculator version report field is replaced. No business field is omitted.",
+  "cases": [
+    {
+      "name": "seven-kind full batch credit 1",
+      "canonicalSha256": "e61c50f0cf27f60a07ddc126c676402f72488154540fc9dcc8c0d8eb57367dd8",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474098938357",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Berthing",
+            "amount": "-9000",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "berthing",
+            "expenseAmount": "9000"
+          },
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "-6500",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "6500"
+          },
+          {
+            "type": "Ship expense \u00b7 Stateroom expenses",
+            "amount": "-6477",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "staterooms",
+            "expenseAmount": "6477"
+          },
+          {
+            "type": "Ship expense \u00b7 Passenger & crew life support",
+            "amount": "-20000",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "passengerSupport",
+            "expenseAmount": "20000"
+          },
+          {
+            "type": "Ship expense \u00b7 Crew salaries",
+            "amount": "-24004",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "salary",
+            "expenseAmount": "24004"
+          },
+          {
+            "type": "Ship expense \u00b7 Mortgage payment",
+            "amount": "-300003",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "mortgage",
+            "expenseAmount": "300003"
+          },
+          {
+            "type": "Ship expense \u00b7 Monthly maintenance",
+            "amount": "-8004",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "maintenance",
+            "expenseAmount": "8004"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 7 ship expenses"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 23
+      }
+    },
+    {
+      "name": "booked Low and awake plus legacy baseline credit 1",
+      "canonicalSha256": "003017f6adef6748b79a2017f5566e59610f5da6f6d97e8a25ac31f1682d2d11",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099283673",
+        "revisionBefore": 4,
+        "revisionAfter": 5,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Stateroom expenses",
+            "amount": "-17272",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "staterooms",
+            "expenseAmount": "17272"
+          },
+          {
+            "type": "Ship expense \u00b7 Passenger & crew life support",
+            "amount": "-11400",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "passengerSupport",
+            "expenseAmount": "11400"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 2 ship expenses"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "independent reversed periods credit 1",
+      "canonicalSha256": "ea7c8968d534f0c53ff826635646749153722485db70aa3504849ea39011427d",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099290186",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Stateroom expenses",
+            "amount": "-2159",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "staterooms",
+            "expenseAmount": "2159"
+          },
+          {
+            "type": "Ship expense \u00b7 Passenger & crew life support",
+            "amount": "-20000",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "passengerSupport",
+            "expenseAmount": "20000"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 2 ship expenses"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "fixed mortgage maintenance exact credit 1",
+      "canonicalSha256": "33edf7903504b9db8b9cee9ed14e31811f6d427ff5592c100e340dce94fadc0f",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099002337",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Mortgage payment",
+            "amount": "-300003",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "mortgage",
+            "expenseAmount": "300003"
+          },
+          {
+            "type": "Ship expense \u00b7 Monthly maintenance",
+            "amount": "-10005",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "maintenance",
+            "expenseAmount": "10005"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 2 ship expenses"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "manual exact amount 10.1 step 1",
+      "canonicalSha256": "fdbe50cd96f9e4663b46f2715a267c92de90c01c3ed654f86dff4ed115d1d8ca",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312334",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Manual expense",
+            "amount": "-11",
+            "world": "0,0",
+            "hours": 1001,
+            "reason": "  Receipt 11111111-2222-3333-4444-555555555555; version 2026.10.11.58 is my literal reason  "
+          }
+        ],
+        "undoLabelsAdded": [
+          "Manual expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "manual exact amount 90071992547409931.1 step 1",
+      "canonicalSha256": "106bce834653031a8a68815a5109414ca2e84865e72c50a47e9d5c4018d9ffe1",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900629853481551902413",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Manual expense",
+            "amount": "-90071992547409932",
+            "world": "0,0",
+            "hours": 1001,
+            "reason": "  Exact untrimmed manual reason  "
+          }
+        ],
+        "undoLabelsAdded": [
+          "Manual expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "correction signed amount 10.1 step 1",
+      "canonicalSha256": "82bd4cab1a17e3bc130b3277750a64d01a83b70975f3fa5822fc3a48c4891db0",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312356",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Referee bank correction",
+            "amount": "11",
+            "world": "0,0",
+            "hours": 1001,
+            "reason": "  Exact untrimmed correction reason  "
+          }
+        ],
+        "undoLabelsAdded": [
+          "Bank correction"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "correction signed amount -10.1 step 1",
+      "canonicalSha256": "a34c13e724ee7fb8961a3e32f3846a419e8234c8036bb778e608666e967d1e12",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312335",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Referee bank correction",
+            "amount": "-10",
+            "world": "0,0",
+            "hours": 1001,
+            "reason": "  Exact untrimmed correction reason  "
+          }
+        ],
+        "undoLabelsAdded": [
+          "Bank correction"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "correction signed amount 0 step 1",
+      "canonicalSha256": "d97e9ed9fbeae6e4884e912d04de4f606453efe09d458647fd8a9fe59f0f7bea",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312345",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Referee bank correction",
+            "amount": "0",
+            "world": "0,0",
+            "hours": 1001,
+            "reason": "  Exact untrimmed correction reason  "
+          }
+        ],
+        "undoLabelsAdded": [
+          "Bank correction"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "correction signed amount -900719925474099399999.1 step 1",
+      "canonicalSha256": "c7451f2af5881c31a90a4bb330b868f5491eab4c8b78a759460a63e204343b22",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "-87654",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Referee bank correction",
+            "amount": "-900719925474099399999",
+            "world": "0,0",
+            "hours": 1001,
+            "reason": "  Exact untrimmed correction reason  "
+          }
+        ],
+        "undoLabelsAdded": [
+          "Bank correction"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "seven-kind full batch credit 100",
+      "canonicalSha256": "a0623380413281824b5b27430556193f344184769f5ff265caa313ddbcbebe97",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474098938138",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Berthing",
+            "amount": "-9000",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "berthing",
+            "expenseAmount": "9000"
+          },
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "-6500",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "6500"
+          },
+          {
+            "type": "Ship expense \u00b7 Stateroom expenses",
+            "amount": "-6500",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "staterooms",
+            "expenseAmount": "6500"
+          },
+          {
+            "type": "Ship expense \u00b7 Passenger & crew life support",
+            "amount": "-20000",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "passengerSupport",
+            "expenseAmount": "20000"
+          },
+          {
+            "type": "Ship expense \u00b7 Crew salaries",
+            "amount": "-24200",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "salary",
+            "expenseAmount": "24200"
+          },
+          {
+            "type": "Ship expense \u00b7 Mortgage payment",
+            "amount": "-300003",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "mortgage",
+            "expenseAmount": "300003"
+          },
+          {
+            "type": "Ship expense \u00b7 Monthly maintenance",
+            "amount": "-8004",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "maintenance",
+            "expenseAmount": "8004"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 7 ship expenses"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 23
+      }
+    },
+    {
+      "name": "booked Low and awake plus legacy baseline credit 100",
+      "canonicalSha256": "e3a581a5c804b8ce14da087993fc456adf01d82a8b2a8b97e0568ce73f31e834",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099283645",
+        "revisionBefore": 4,
+        "revisionAfter": 5,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Stateroom expenses",
+            "amount": "-17300",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "staterooms",
+            "expenseAmount": "17300"
+          },
+          {
+            "type": "Ship expense \u00b7 Passenger & crew life support",
+            "amount": "-11400",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "passengerSupport",
+            "expenseAmount": "11400"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 2 ship expenses"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "independent reversed periods credit 100",
+      "canonicalSha256": "e0574db817ab552f31c35aea5c005da320317bb51911e20e7d7aa659459b4b70",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099290145",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Stateroom expenses",
+            "amount": "-2200",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "staterooms",
+            "expenseAmount": "2200"
+          },
+          {
+            "type": "Ship expense \u00b7 Passenger & crew life support",
+            "amount": "-20000",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "passengerSupport",
+            "expenseAmount": "20000"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 2 ship expenses"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "fixed mortgage maintenance exact credit 100",
+      "canonicalSha256": "c9af814eb08d8e623916f25e6c83872f2156806725c1f0cb51224cfcdc2945bd",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099002337",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Mortgage payment",
+            "amount": "-300003",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "mortgage",
+            "expenseAmount": "300003"
+          },
+          {
+            "type": "Ship expense \u00b7 Monthly maintenance",
+            "amount": "-10005",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "maintenance",
+            "expenseAmount": "10005"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 2 ship expenses"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "manual exact amount 10.1 step 100",
+      "canonicalSha256": "506e901383ff218dde98f41786716865a4a762b4f4952e6248cfb7248ce04e9c",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312245",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Manual expense",
+            "amount": "-100",
+            "world": "0,0",
+            "hours": 1001,
+            "reason": "  Exact untrimmed manual reason  "
+          }
+        ],
+        "undoLabelsAdded": [
+          "Manual expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "manual exact amount 90071992547409931.1 step 100",
+      "canonicalSha256": "8901d2cbd7ab1b2a0b77cbe35910c3d5e4fac6c484a690ffbf5fedf45ed8f5f7",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900629853481551902345",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Manual expense",
+            "amount": "-90071992547410000",
+            "world": "0,0",
+            "hours": 1001,
+            "reason": "  Exact untrimmed manual reason  "
+          }
+        ],
+        "undoLabelsAdded": [
+          "Manual expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "correction signed amount 10.1 step 100",
+      "canonicalSha256": "1a6546719249da3d291868ffbdb3d3fc78576130bcd8c062beeb920cff75fa46",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312445",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Referee bank correction",
+            "amount": "100",
+            "world": "0,0",
+            "hours": 1001,
+            "reason": "  Calculator version: 2026.10.11.58; token aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee is user text  "
+          }
+        ],
+        "undoLabelsAdded": [
+          "Bank correction"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "correction signed amount -10.1 step 100",
+      "canonicalSha256": "8608dcafdca89a878599d883741ae7beab7af59616a62e45daf3bb2ebc38fc5c",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312345",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Referee bank correction",
+            "amount": "0",
+            "world": "0,0",
+            "hours": 1001,
+            "reason": "  Exact untrimmed correction reason  "
+          }
+        ],
+        "undoLabelsAdded": [
+          "Bank correction"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "correction signed amount 0 step 100",
+      "canonicalSha256": "afd13e6a56367d0d90244b9be29418bb7787f8a147ab3f65b7c1e9f02a1fdce3",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312345",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Referee bank correction",
+            "amount": "0",
+            "world": "0,0",
+            "hours": 1001,
+            "reason": "  Exact untrimmed correction reason  "
+          }
+        ],
+        "undoLabelsAdded": [
+          "Bank correction"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "correction signed amount -900719925474099399999.1 step 100",
+      "canonicalSha256": "6b55ec5dc9760eb51e6a3bd90db84e4183a4aff8d2ebb28b4cad92f489f6c41a",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "-87555",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Referee bank correction",
+            "amount": "-900719925474099399900",
+            "world": "0,0",
+            "hours": 1001,
+            "reason": "  Exact untrimmed correction reason  "
+          }
+        ],
+        "undoLabelsAdded": [
+          "Bank correction"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "saved berthing A",
+      "canonicalSha256": "9204c82a0b71110bedab04e0a61294a90b859e51f3e97027e7c95a50a2f94b8e",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099303345",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Berthing",
+            "amount": "-9000",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "berthing",
+            "expenseAmount": "9000"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "inline rate retains form then payment A",
+      "canonicalSha256": "6b61ae5fdd3f0c3acf70b9776ab00fc08208304b81f093de29076efd80242bbc",
+      "writes": 2,
+      "rolls": 1,
+      "checkpoints": [
+        "before",
+        "rate saved",
+        "preview",
+        "saved",
+        "undo payment",
+        "undo rate"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099305343",
+        "revisionBefore": 0,
+        "revisionAfter": 2,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Berthing",
+            "amount": "-6000",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "berthing",
+            "expenseAmount": "6000"
+          },
+          {
+            "type": "Ship expense \u00b7 Crew salaries",
+            "amount": "-1002",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "salary",
+            "expenseAmount": "1002"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Saved starport berthing rate",
+          "Paid 2 ship expenses"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "fuel unrefined port A",
+      "canonicalSha256": "46b601597a05b5c122253f6e1191c1d8d96909559c3397e3786fa86c99593e6f",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312045",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "-300",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "300"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 13
+      }
+    },
+    {
+      "name": "fuel water port A",
+      "canonicalSha256": "25ac826fc3a2c016ef868701896bee5e755603460cf284089b4d2d25d7d70ad3",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312345",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "0",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "0"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 13
+      }
+    },
+    {
+      "name": "saved berthing B",
+      "canonicalSha256": "a4ab6738d8aae4a41a344a3ccd38f7c7a04644d9c672fd9a1a894a8ce490de66",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099307845",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Berthing",
+            "amount": "-4500",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "berthing",
+            "expenseAmount": "4500"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "inline rate retains form then payment B",
+      "canonicalSha256": "98eb8dde44e58e5ec3333b11132e2826e25eeddef30e8ef49a46fe956f0316c1",
+      "writes": 2,
+      "rolls": 1,
+      "checkpoints": [
+        "before",
+        "rate saved",
+        "preview",
+        "saved",
+        "undo payment",
+        "undo rate"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099308343",
+        "revisionBefore": 0,
+        "revisionAfter": 2,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Berthing",
+            "amount": "-3000",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "berthing",
+            "expenseAmount": "3000"
+          },
+          {
+            "type": "Ship expense \u00b7 Crew salaries",
+            "amount": "-1002",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "salary",
+            "expenseAmount": "1002"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Saved starport berthing rate",
+          "Paid 2 ship expenses"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "fuel unrefined port B",
+      "canonicalSha256": "fdd22d2de9c1f17ca3c680f54ba13dfd814f5a76ee105dad1a52014243ae01c4",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312045",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "-300",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "300"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 13
+      }
+    },
+    {
+      "name": "fuel water port B",
+      "canonicalSha256": "245bca2d6b1f57dcf7d240b3af860ce567c2d4420a194dabb8005354c7bce740",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312345",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "0",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "0"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 13
+      }
+    },
+    {
+      "name": "saved berthing C",
+      "canonicalSha256": "2240c814ca7bda5af3ea660758e9652f89a1f85f90b1e5a4e49413d546712aa0",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099311445",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Berthing",
+            "amount": "-900",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "berthing",
+            "expenseAmount": "900"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "inline rate retains form then payment C",
+      "canonicalSha256": "7f02499bb72efe228ad7810d0f544e817381f81ae1f00b4c37658b7002ecfc3a",
+      "writes": 2,
+      "rolls": 1,
+      "checkpoints": [
+        "before",
+        "rate saved",
+        "preview",
+        "saved",
+        "undo payment",
+        "undo rate"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099310743",
+        "revisionBefore": 0,
+        "revisionAfter": 2,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Berthing",
+            "amount": "-600",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "berthing",
+            "expenseAmount": "600"
+          },
+          {
+            "type": "Ship expense \u00b7 Crew salaries",
+            "amount": "-1002",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "salary",
+            "expenseAmount": "1002"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Saved starport berthing rate",
+          "Paid 2 ship expenses"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "fuel unrefined port C",
+      "canonicalSha256": "de01adbeae07b0f4bf82bca2603d5edcbcae92b50d8fb5eb9c4dee7a59f3e648",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312045",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "-300",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "300"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 13
+      }
+    },
+    {
+      "name": "fuel water port C",
+      "canonicalSha256": "b3e6b4768ffded68479871ac46a566e62a7676a19ceae007de6f43d5c26a8cf1",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312345",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "0",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "0"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 13
+      }
+    },
+    {
+      "name": "saved berthing D",
+      "canonicalSha256": "68b623dc1b1757197a2cf3336d7e3ff4edae2faa7676e139fb98becfee11233c",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312255",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Berthing",
+            "amount": "-90",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "berthing",
+            "expenseAmount": "90"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "inline rate retains form then payment D",
+      "canonicalSha256": "e586c2838f189b73b8ce2e2aa9aef43ec4a3a1d85129db600d5c434ea85df248",
+      "writes": 2,
+      "rolls": 1,
+      "checkpoints": [
+        "before",
+        "rate saved",
+        "preview",
+        "saved",
+        "undo payment",
+        "undo rate"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099311283",
+        "revisionBefore": 0,
+        "revisionAfter": 2,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Berthing",
+            "amount": "-60",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "berthing",
+            "expenseAmount": "60"
+          },
+          {
+            "type": "Ship expense \u00b7 Crew salaries",
+            "amount": "-1002",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "salary",
+            "expenseAmount": "1002"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Saved starport berthing rate",
+          "Paid 2 ship expenses"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "fuel unrefined port D",
+      "canonicalSha256": "1d329fe6e58087d8c2b5620d9b6f4604c4bad8cd6a09d0942f5e1ccb719cb490",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312045",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "-300",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "300"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 13
+      }
+    },
+    {
+      "name": "fuel water port D",
+      "canonicalSha256": "e1924be6222840fafdf1edafe3fafb6ba5692260a701fa6d8a298cfa51e25d0a",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312345",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "0",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "0"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 13
+      }
+    },
+    {
+      "name": "saved berthing E",
+      "canonicalSha256": "effa6ebe2e2bc441dc404c7b0eae4143e83cee6005af09298b59f368586bfa20",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312345",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Berthing",
+            "amount": "0",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "berthing",
+            "expenseAmount": "0"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "fuel unrefined port E",
+      "canonicalSha256": "fe70e7251b6870d36ab72a6d8b7eb24e3b41dccc604851008466af7d496a09b9",
+      "writes": 0,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "rejected"
+      ]
+    },
+    {
+      "name": "fuel water port E",
+      "canonicalSha256": "c0f8134ed4b6de323fec02479741ac23dd51362aeebe9b8b825986b5d17a5c3e",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312345",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "0",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "0"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 13
+      }
+    },
+    {
+      "name": "saved berthing X",
+      "canonicalSha256": "5d60989702aefc20efad264c2911e564c1b2b54ee867b657efd384d3bed13581",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312345",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Berthing",
+            "amount": "0",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "berthing",
+            "expenseAmount": "0"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "fuel unrefined port X",
+      "canonicalSha256": "6eeecb3d35399bf276952d6e768781b7ea4a74c7cfeaeef26ee49a3a1e19a57a",
+      "writes": 0,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "rejected"
+      ]
+    },
+    {
+      "name": "fuel water port X",
+      "canonicalSha256": "9eb897fc751458f1bd0732e8be752701982f684bd8a5f7f5cbe327ad1e6b445f",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312345",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "0",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "0"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 13
+      }
+    },
+    {
+      "name": "optional dormant fuel-only refined true",
+      "canonicalSha256": "2af01033b3163dc603b9a85834ff2e931248827533ce837c08f78e04f6459082",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099310345",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "-2000",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "2000"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 14
+      }
+    },
+    {
+      "name": "optional dormant fuel-only unrefined true",
+      "canonicalSha256": "18b6214f887ed5c891d926e24dda47e9fc90211cdf4ec2b7e100e8fbb01cc4a0",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099311945",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "-400",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "400"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 14
+      }
+    },
+    {
+      "name": "optional dormant fuel-only water true",
+      "canonicalSha256": "463de0227599c3e240836fb9834989c2433c72966da8347f1f7b8bccd84ea7fa",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312345",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "0",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "0"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 14
+      }
+    },
+    {
+      "name": "optional dormant fuel-only refined false",
+      "canonicalSha256": "02e7c641dc71d0f0bc0765fd173a499a62c9557d47395ab2d2de68a297749541",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099310345",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "-2000",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "2000"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": null,
+        "fuelAfter": null
+      }
+    },
+    {
+      "name": "optional dormant fuel-only unrefined false",
+      "canonicalSha256": "eb83abca77c9bac95ea84658b5b0733346d43144fa664c28727e2a664bc8c6fc",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099311945",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "-400",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "400"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": null,
+        "fuelAfter": null
+      }
+    },
+    {
+      "name": "optional dormant fuel-only water false",
+      "canonicalSha256": "2fe7cd588db476e73edce99748f34adedd31ab19076040175deed7f893fd1e97",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312345",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "0",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "0"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": null,
+        "fuelAfter": null
+      }
+    },
+    {
+      "name": "zero fuel omitted salary persists",
+      "canonicalSha256": "040341fbda72cb57d8003c96ca4bdf98e76a85aca68fd70649702e543d1b0a4a",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099309741",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Crew salaries",
+            "amount": "-2604",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "salary",
+            "expenseAmount": "2604"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "zero fuel only cannot pay",
+      "canonicalSha256": "e0c00f56fe07267a091e4e6b022f5f91044813de0add7f623e596b286704a651",
+      "writes": 0,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "rejected"
+      ]
+    },
+    {
+      "name": "empty selection cannot pay",
+      "canonicalSha256": "9a91518c23c9b3d18e58693990f60eec6f0f7bbca9d24473bee52fd275afe090",
+      "writes": 0,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "rejected"
+      ]
+    },
+    {
+      "name": "all zero-cost nonempty batch",
+      "canonicalSha256": "b51d6232db879a9a41789a999c8205532ddda6970103479ce0ba1c5959f6caf2",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312345",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Berthing",
+            "amount": "0",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "berthing",
+            "expenseAmount": "0"
+          },
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "0",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "0"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 2 ship expenses"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 11
+      }
+    },
+    {
+      "name": "deselected invalid fields cannot block salary",
+      "canonicalSha256": "ff05e7b16c5f932f40ca58c9a1880cfe732051b6ef6aedcc1b2942b0ba7394b3",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099311111",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Crew salaries",
+            "amount": "-1234",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "salary",
+            "expenseAmount": "1234"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "combined insufficient funds no partial debit",
+      "canonicalSha256": "3a076ee5afc9da1e405971f8c5128aa63c78f14981828003354e215d13244d61",
+      "writes": 0,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "rejected"
+      ]
+    },
+    {
+      "name": "manual invalid 0",
+      "canonicalSha256": "e0d6fdf602daab11c3ccb5ee994841c34a2c5639af36859da134bc976da3a8ff",
+      "writes": 0,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "rejected"
+      ]
+    },
+    {
+      "name": "manual invalid -1",
+      "canonicalSha256": "2a3315fa53015549285b7463066c4e39b66dcc6c63c336819da82c6e8932b206",
+      "writes": 0,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "rejected"
+      ]
+    },
+    {
+      "name": "manual invalid NaN",
+      "canonicalSha256": "32ba43f76a32185314be5c5e7b7f3364d5d12cdee37102f13d0fca56afff7381",
+      "writes": 0,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "rejected"
+      ]
+    },
+    {
+      "name": "manual invalid 900719925474099399999",
+      "canonicalSha256": "f84fafa6a793fa0e217b620f9d7180eb60793723a2637562a721d60fe8db705b",
+      "writes": 0,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "rejected"
+      ]
+    },
+    {
+      "name": "manual blank reason",
+      "canonicalSha256": "1281e31aba0be6f59f8a8dd60c36f7345ad6983f735e4c33c494224930fc80dd",
+      "writes": 0,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "rejected"
+      ]
+    },
+    {
+      "name": "correction blank reason",
+      "canonicalSha256": "d748d0124c23b2815952ba387e4d0c1caca95ad3d756855e901924bbbe704bfe",
+      "writes": 0,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "rejected"
+      ]
+    },
+    {
+      "name": "invalid fuel NaN",
+      "canonicalSha256": "7cad93a0a507a08597c78a67a4df8d070890d69f9aa4d863dcde20c3c0dd7552",
+      "writes": 0,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "rejected"
+      ]
+    },
+    {
+      "name": "invalid fuel -1",
+      "canonicalSha256": "3bd318fc50e63cb3a5c46a1cfa0354ed70479aefad9cc366a22b60ca2865a498",
+      "writes": 0,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "rejected"
+      ]
+    },
+    {
+      "name": "invalid fuel 1000",
+      "canonicalSha256": "cfceac107c1cdbfdd1abee2d368742a17a800466cd117729e691e7371a55bb30",
+      "writes": 0,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "rejected"
+      ]
+    },
+    {
+      "name": "bladder cargo boundary exact",
+      "canonicalSha256": "21c05d17f6a0b0de9ef3ce0dd1248cba910a8f7fb445706df9c2e53e5d9ddf56",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099311845",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "-500",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "500"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 40,
+        "fuelAfter": 45
+      }
+    },
+    {
+      "name": "bladder cargo overflow rejected",
+      "canonicalSha256": "ff0547b0b204433e8f7ebb58ecc8ce5ad33be61bacc4114fe4774ff0949e3683",
+      "writes": 0,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "rejected"
+      ]
+    },
+    {
+      "name": "private refined supplier documented",
+      "canonicalSha256": "eafae3700f53df066d2ed626a8930437478d32964f76ca4c689522f4ce1c84fa",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099311845",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "-500",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "500"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 11
+      }
+    },
+    {
+      "name": "private supplier needs notes",
+      "canonicalSha256": "02356f87ddb0be0ebb090aba722896f25530c308c5935c25d3ac3be687d42786",
+      "writes": 0,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "rejected"
+      ]
+    },
+    {
+      "name": "unavailable water advisory stays permitted",
+      "canonicalSha256": "18330983e8dab03c4214884ed24e0ab5ea44d04803a0b69e6a586b44278e94e1",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312345",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "0",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "0"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 11
+      }
+    },
+    {
+      "name": "effective port override saved mismatch requires new rate",
+      "canonicalSha256": "aa8eed8d8c31ec944fae73fdb5b8289e1db6af0417dfd1e16ac1aea2501017d4",
+      "writes": 2,
+      "rolls": 1,
+      "checkpoints": [
+        "before",
+        "rate saved",
+        "preview",
+        "saved",
+        "undo payment",
+        "undo rate"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312255",
+        "revisionBefore": 0,
+        "revisionAfter": 2,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Berthing",
+            "amount": "-90",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "berthing",
+            "expenseAmount": "90"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Saved starport berthing rate",
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "browse other world bills actual",
+      "canonicalSha256": "232144c2168f92f72c20814c798a8dcedbe6f20b513784d64cef458938340f8f",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099308845",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Berthing",
+            "amount": "-3000",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "berthing",
+            "expenseAmount": "3000"
+          },
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "-500",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "500"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 2 ship expenses"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 11
+      }
+    },
+    {
+      "name": "legacy stock representation anchored unchanged amount",
+      "canonicalSha256": "35ec24797f1df3a3dc596b7aa8d7628dfa6177bf936e3833938e48388c4fe9b5",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099309845",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Passenger & crew life support",
+            "amount": "-2500",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "passengerSupport",
+            "expenseAmount": "2500"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 10
+      }
+    },
+    {
+      "name": "committed bundle closes jump mulligan permanently",
+      "canonicalSha256": "5078f816208300b7e57a650bf74a7825f738904f1b4eec34cf94dd3a6f9a3cea",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312317",
+        "revisionBefore": 2,
+        "revisionAfter": 3,
+        "hoursBefore": 1167,
+        "hoursAfter": 1167,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Crew salaries",
+            "amount": "-28",
+            "world": "1,0",
+            "hours": 1167,
+            "expenseKind": "salary",
+            "expenseAmount": "28"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 20,
+        "fuelAfter": 20
+      }
+    },
+    {
+      "name": "committed manual closes jump mulligan permanently",
+      "canonicalSha256": "6cb7dcebae092be46452f37130222bed3712a8ecfc5938a774a9dc51763075ce",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312344",
+        "revisionBefore": 2,
+        "revisionAfter": 3,
+        "hoursBefore": 1167,
+        "hoursAfter": 1167,
+        "newLedger": [
+          {
+            "type": "Manual expense",
+            "amount": "-1",
+            "world": "1,0",
+            "hours": 1167,
+            "reason": "Post-jump action"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Manual expense"
+        ],
+        "fuelBefore": 20,
+        "fuelAfter": 20
+      }
+    },
+    {
+      "name": "committed correction closes jump mulligan permanently",
+      "canonicalSha256": "988264033886826410b2195aa69e7dd303c042fa64dda7ce8ed63b99a4b15aae",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099312346",
+        "revisionBefore": 2,
+        "revisionAfter": 3,
+        "hoursBefore": 1167,
+        "hoursAfter": 1167,
+        "newLedger": [
+          {
+            "type": "Referee bank correction",
+            "amount": "1",
+            "world": "1,0",
+            "hours": 1167,
+            "reason": "Post-jump action"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Bank correction"
+        ],
+        "fuelBefore": 20,
+        "fuelAfter": 20
+      }
+    },
+    {
+      "name": "rate then bundle closes prior mulligan",
+      "canonicalSha256": "9df82e41cac2384ae22a6c2b922195b172e46844c1963a2d8a84c9ccc776b67e",
+      "writes": 2,
+      "rolls": 1,
+      "checkpoints": [
+        "before",
+        "rate saved",
+        "preview",
+        "saved",
+        "undo payment",
+        "undo rate"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099309345",
+        "revisionBefore": 2,
+        "revisionAfter": 4,
+        "hoursBefore": 1167,
+        "hoursAfter": 1167,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Berthing",
+            "amount": "-3000",
+            "world": "1,0",
+            "hours": 1167,
+            "expenseKind": "berthing",
+            "expenseAmount": "3000"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Saved starport berthing rate",
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 20,
+        "fuelAfter": 20
+      }
+    },
+    {
+      "name": "cancel first no economic effects",
+      "canonicalSha256": "eb0f1a46f94dde47ef35b30a42509795cdacb8fb82ec8c909a833e5c2b40a1e1",
+      "writes": 0,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "cancelled"
+      ]
+    },
+    {
+      "name": "cancel review no economic effects",
+      "canonicalSha256": "5aecb141bdeffa0307171183b38d739674be00d9d74c47b56163d700e6076106",
+      "writes": 0,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "cancelled"
+      ]
+    },
+    {
+      "name": "select all helper retains seven kinds",
+      "canonicalSha256": "e61c50f0cf27f60a07ddc126c676402f72488154540fc9dcc8c0d8eb57367dd8",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474098938357",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Berthing",
+            "amount": "-9000",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "berthing",
+            "expenseAmount": "9000"
+          },
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "-6500",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "6500"
+          },
+          {
+            "type": "Ship expense \u00b7 Stateroom expenses",
+            "amount": "-6477",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "staterooms",
+            "expenseAmount": "6477"
+          },
+          {
+            "type": "Ship expense \u00b7 Passenger & crew life support",
+            "amount": "-20000",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "passengerSupport",
+            "expenseAmount": "20000"
+          },
+          {
+            "type": "Ship expense \u00b7 Crew salaries",
+            "amount": "-24004",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "salary",
+            "expenseAmount": "24004"
+          },
+          {
+            "type": "Ship expense \u00b7 Mortgage payment",
+            "amount": "-300003",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "mortgage",
+            "expenseAmount": "300003"
+          },
+          {
+            "type": "Ship expense \u00b7 Monthly maintenance",
+            "amount": "-8004",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "maintenance",
+            "expenseAmount": "8004"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 7 ship expenses"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 23
+      }
+    },
+    {
+      "name": "fuel quantity shortcut next",
+      "canonicalSha256": "696e0a9da10126ef4b25b7770dd757a39f45068e1cc969530931eb263724f0e7",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099307345",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "-5000",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "5000"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 20
+      }
+    },
+    {
+      "name": "fuel quantity shortcut fill",
+      "canonicalSha256": "6ce0b9641e051d5b01e4d8c4ea1cfabbb5b04dd272977f08a844050e75fd6232",
+      "writes": 1,
+      "rolls": 0,
+      "checkpoints": [
+        "before",
+        "preview",
+        "saved",
+        "undo payment"
+      ],
+      "economics": {
+        "bankBefore": "900719925474099312345",
+        "bankAfter": "900719925474099287345",
+        "revisionBefore": 0,
+        "revisionAfter": 1,
+        "hoursBefore": 1001,
+        "hoursAfter": 1001,
+        "newLedger": [
+          {
+            "type": "Ship expense \u00b7 Fuel",
+            "amount": "-25000",
+            "world": "0,0",
+            "hours": 1001,
+            "expenseKind": "fuel",
+            "expenseAmount": "25000"
+          }
+        ],
+        "undoLabelsAdded": [
+          "Paid 1 ship expense"
+        ],
+        "fuelBefore": 10,
+        "fuelAfter": 60
+      }
+    }
+  ]
+}

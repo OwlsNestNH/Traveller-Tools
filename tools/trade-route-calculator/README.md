@@ -708,9 +708,15 @@ allocation and generated four-class results until owned save completion.
 Exact merge/Pages, all 90 permitted live URL variants and all 66 duplicate CI
 jobs were verified; ten prior proxy-restricted variants remain unverified.
 
-Four Stage 2 scope groups remain. The .58 candidate addresses boarding and
-completion of passenger passage, including ownership of the initial boarding
-form and its side-effect-free preview. Accepted terms, capacity, luggage/LSS,
-one delivery payment and Undo retain their existing calculations. The passenger
-group remains open pending both callers and complete release gates. Stage 3 has
-not started.
+Passenger boarding/delivery (.58 released) owns the initial form/preview,
+accepted terms, pending save and completion. Its reviewed release passed 5,306
+native tests, 139 focused browser cases and all 67 ready-event duplicate jobs;
+exact merge/tree, Pages and all 90 permitted live URL variants were verified.
+Ten established proxy-restricted variants remain unverified. Prior Setup idle
+causes and the separate Cargo focus race remain qualified in RULES_VERIFICATION.
+
+Three Stage 2 scope groups remain: legacy Accounts, route/world/rounding
+confirmations, and cargo/market controls. The .59 Accounts candidate targets its
+four remaining payment/rate mutation branches, preserving the inline rate form
+and atomic expense/correction calculations. It remains subject to all release
+gates. Stage 3 has not started.
