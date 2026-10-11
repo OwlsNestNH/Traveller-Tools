@@ -1,5 +1,5 @@
-import {dashboardData} from './dashboard-data.mjs?v=devlog-diagnostics-20261011-62';
-import {escapeHtml as esc,moneyHtml} from './display.mjs?v=devlog-diagnostics-20261011-62';
+import {dashboardData} from './dashboard-data.mjs?v=market-quote-labels-20261011-63';
+import {escapeHtml as esc,moneyHtml} from './display.mjs?v=market-quote-labels-20261011-63';
 
 // Read-only presentation. Exact Credits remain BigInts until bounded ratios are
 // converted to SVG coordinates; display values always use the shared formatter.

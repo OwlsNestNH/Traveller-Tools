@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=devlog-diagnostics-20261011-62';
+import {escapeHtml as esc} from './display.mjs?v=market-quote-labels-20261011-63';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.
