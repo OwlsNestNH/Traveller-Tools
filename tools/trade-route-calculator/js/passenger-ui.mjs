@@ -1,10 +1,10 @@
-import {ruleInfo} from './rule-references.mjs?v=contract-offer-completion-20261011-55';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=contract-offer-completion-20261011-55';
+import {ruleInfo} from './rule-references.mjs?v=contract-lifecycle-completion-20261011-56';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=contract-lifecycle-completion-20261011-56';
 import * as A from './amounts.mjs';
-import {manualLuggage} from './accommodation.mjs?v=contract-offer-completion-20261011-55';
-import * as P from './passengers.mjs?v=contract-offer-completion-20261011-55';
-import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=contract-offer-completion-20261011-55';
-import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=contract-offer-completion-20261011-55';
+import {manualLuggage} from './accommodation.mjs?v=contract-lifecycle-completion-20261011-56';
+import * as P from './passengers.mjs?v=contract-lifecycle-completion-20261011-56';
+import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=contract-lifecycle-completion-20261011-56';
+import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=contract-lifecycle-completion-20261011-56';
 import {displayDate} from './calendar.mjs';
 const esc=escapeHtml;
 const money=formatCreditsText,signed=x=>x>0?'+'+x:String(x);

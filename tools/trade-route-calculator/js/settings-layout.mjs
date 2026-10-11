@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=contract-offer-completion-20261011-55';
+import {ruleInfo} from './rule-references.mjs?v=contract-lifecycle-completion-20261011-56';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={

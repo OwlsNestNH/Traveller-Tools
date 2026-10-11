@@ -694,7 +694,7 @@ contract passed full exact-head browser/pixel and exact merge/Pages verification
 all 90 permitted live URL checks and terminal duplicate CI. Ten restricted URL
 variants remain unverified.
 
-## Stage 2 freight/mail offer completion (.55 candidate)
+## Stage 2 freight/mail offer completion (.55 released)
 
 Freight search, mail-only checks and draft editing share one caller-owned offer
 operation. It captures the campaign baseline, world, editor tenure, modal/form,
@@ -723,5 +723,43 @@ retire only their partial form with close/reopen guidance. Recovery callbacks
 cannot resubmit automatically or overwrite a newer real dialog handler.
 
 Acceptance, manual contracts, cancellation and delivery payout remain in their
-separate completion group. This candidate still requires final full local gates,
-independent source review and exact-head browser/screenshot review before release.
+separate completion group. This released boundary passed independent source,
+full native and exact-head browser/pixel review, exact merge/Pages, all 90 permitted
+live URLs and terminal duplicate CI. Ten restricted URL variants remain unverified.
+The existing wide-table and extreme synthetic-value layout qualifications are
+recorded in RULES_VERIFICATION.md; this release does not claim universal numeric
+column readability.
+
+## Stage 2 freight/mail lifecycle completion (.56 candidate)
+
+Manual acceptance, generated-offer acceptance, accepted-mail cancellation and
+freight/mail delivery share a lifecycle-specific owner. It captures the campaign
+object and durable baseline, revision/publication and editing epochs, actual world,
+modal/form and target draft/contract identity before fallible construction or the
+existing delivery opening roll. Accepted form/contract terms, manual offer ID,
+rounding and delivery die remain immutable through a deliberate known-unsaved
+retry. Changed accepted terms require a new review.
+
+Pending intent and its epoch begin before initial submit-control and normalization
+callbacks. The owner blocks repeated and queued entry, dismissal and premature
+render/map/status changes. Completion requires the existing controller's genuine
+one-use publication provenance and the accepted candidate; equal revision/value
+alone is insufficient. Native synchronous completion remains immediate. The
+existing state acceptance/cancellation/delivery bodies retain all capacity,
+departure-proof, late-payment, ledger, audit and Undo/mulligan semantics.
+
+Lifecycle publication differs from offer generation: after owned completion only
+generated acceptance removes its exact selected draft. Manual acceptance has no
+draft to remove. All four paths retain unrelated drafts and apply the existing
+mail reconciliation, while retaining their originating tab. Persisted history is
+not a source of revived actionable offers. Newer campaign/editor/modal intent wins
+across construction, recovery, close and reporting boundaries.
+
+Known-unsaved retry requires unchanged accepted input and an equal readable saved
+baseline. Saved, unknown, contradictory or missing-provenance outcomes retire
+save authority and latch reload before fallible reporting. Recovery callbacks
+cannot submit automatically; partial construction only retires its own review.
+These caller-specific safeguards do not replace or rewrite Store/controller or
+state economics. Passenger UI and the state's existing passenger delivery fallback
+retain their separate behavior. Final full local/exact-head browser/pixel and
+release gates remain required for this candidate.

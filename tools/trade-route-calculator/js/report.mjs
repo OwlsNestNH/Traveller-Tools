@@ -1,13 +1,13 @@
-import {recordedOperatingResult} from './financial-summary.mjs?v=contract-offer-completion-20261011-55';
-import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=contract-offer-completion-20261011-55';
-import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=contract-offer-completion-20261011-55';
-import {bladderSpace} from './fuel.mjs?v=contract-offer-completion-20261011-55';
+import {recordedOperatingResult} from './financial-summary.mjs?v=contract-lifecycle-completion-20261011-56';
+import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=contract-lifecycle-completion-20261011-56';
+import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=contract-lifecycle-completion-20261011-56';
+import {bladderSpace} from './fuel.mjs?v=contract-lifecycle-completion-20261011-56';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
-import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=contract-offer-completion-20261011-55';
-import {distance} from './map.mjs?v=contract-offer-completion-20261011-55';
+import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=contract-lifecycle-completion-20261011-56';
+import {distance} from './map.mjs?v=contract-lifecycle-completion-20261011-56';
 
-export const REPORT_VERSION='2026.10.11.55';
+export const REPORT_VERSION='2026.10.11.56';
 const clean=v=>String(v??'Not recorded').replace(/[\r\n\t\x00-\x1f]+/g,' ').trim();
 const number=v=>String(v).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const cr=v=>v==null?'Not recorded':'Cr '+number(v);

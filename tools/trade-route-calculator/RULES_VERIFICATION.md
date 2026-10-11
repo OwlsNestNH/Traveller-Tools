@@ -853,7 +853,7 @@ Runtime and all 98 case IDs/196 frame requirements were unchanged. Exact merge,
 Pages, all 90 permitted live URL variants and all duplicate CI jobs passed;
 ten known restricted variants remain unverified.
 
-## Freight/mail offer completion .55 verification scope
+## Freight/mail offer completion .55 verification scope (completed)
 
 Reproduce actual contractSearch and editDraft publication before delayed save
 completion. Compare complete original/candidate campaign and ephemeral draft/
@@ -875,5 +875,49 @@ bootstrap/cache callbacks before baselines, retained pending DOM/map/status and
 zero transient mutation through actual cache/ResizeObserver work, exact saved
 and retry/error guidance, readable mobile footer/warnings/success, unchanged
 state/dice on navigation, and exact producer hashes/layouts. Retain every existing
-regression job and assertion. This is candidate scope; final browser/pixel and
-release verification remain required.
+regression job and assertion. This scope completed with 3,267 native tests across
+75 test files (438 focused), 227 rules checks, 64 exact-head CI jobs and 102 focused
+browser cases. The first actual candidate browser run passed all cases and 225
+frames. Independent review verified all producer hashes/layouts, scanned every
+image and individually opened 105 originals, including all 68 mobile frames.
+Forty-two actual-function ownership probes and 36 complete UUID-normalized
+baseline/candidate outcomes passed. Five strict map cases covered 38 callback
+edges; eight real synchronous Notes-handler cases retained newer ownership.
+Exact merge/tree, Pages and all 90 permitted live URLs matched; 64 duplicate CI
+jobs passed. Ten known restricted variants remain excluded and unverified.
+
+Visual qualification: candidate desktop rows at synthetic Cr 9,007,199,254,740,993
+overlap rate/revenue/due text. Unchanged renderer/formatting/CSS supports existing
+behavior, without separately observed baseline browser pixels. Mobile horizontal
+scrolling exposes description/tons and right-edge actions in separate captures,
+not every middle column simultaneously. Neither is a completion-specific blocker;
+this evidence does not claim every extreme numeric column is readable.
+
+
+## Freight/mail lifecycle completion .56 verification scope
+
+Reproduce delayed completion in manualContract, accept, cancelMail and deliver.
+Compare complete original/candidate campaign, ledger, audit, ephemeral drafts and
+Undo outcomes after generated UUID normalization only. Acceptance reserves full
+rounded capacity and pays nothing; preserve manual freight deadlines and mail's
+null deadline, actual origin and duplicate offer rejection. Cancellation retains
+recorded/legacy departure proof and no income/penalty, including zero-hour jump
+and fail-closed cases. Delivery pays once at the destination, including zero-value
+ledger entries; preserve strict hours > dueHours lateness, all six dice, Cr1/Cr100
+rounding and huge Credits. Both bypass speculative tax/profit adjustment; mail
+ignores lateness. Test capacity
+including bladder fuel, life support and passenger luggage, and permanent jump
+mulligan closure despite later Undo.
+
+Require immediate native equivalence, split write/publication/settlement, retained
+accepted terms/delivery die on deliberate known-unsaved retry, changed-form/context
+rejection, equal readable durable baseline, genuine one-use provenance and terminal
+saved/unknown retirement. Cover repeated/queued actions, stale/foreign/editor/newer
+modal intent, construction/cleanup/reporting and control-recovery callbacks. Only
+generated acceptance removes its selected draft after owned completion; unrelated
+drafts and normal mail reconciliation remain correct. Reload/History cannot
+recreate actionable offers. Real desktop/mobile browser evidence must prove
+pending map/status retention, actual cache/ResizeObserver callbacks, real newer
+Notes handlers, correct warning/footer controls and saved contract/ledger outcomes.
+Keep every earlier regression. This is candidate scope; final source/local/browser/
+pixel and release gates remain required. Passenger workflows and Stage 3 are later.

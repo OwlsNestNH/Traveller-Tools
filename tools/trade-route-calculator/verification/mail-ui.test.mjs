@@ -54,7 +54,11 @@ function harness(saved=campaign()){
  api=sandbox.api;api.init(structuredClone(saved),core,mp,store);api.render();
  const fill=values=>{for(const[k,v]of Object.entries(values)){const n=dom.fields().get(k);assert.ok(n,`Expected form field ${k}`);if(n.attributes.type==='checkbox')n.checked=Boolean(v);else n.value=String(v);}};
  const submit=()=>dom.ids.get('modal-form').onsubmit({preventDefault(){},currentTarget:dom.ids.get('modal-form')});
- return {api,store,calls,dom,fill,submit,persisted:()=>structuredClone(persisted),button:action=>dom.buttons().find(b=>b.dataset.action===action),check:async(values={})=>{api.contractSearch(true);fill({dice:8,skill:0,characteristic:0,mailAvailability:12,mailContainers:3,...values});await submit();assert.equal(dom.ids.get('modal-error').textContent,'');return api.check;}};
+ // Seed the destination for delivery-only UI fixtures without inventing a
+ // journey or counted save. Live and durable fixtures must already agree;
+ // update only location in both, leaving Store.read independent of live state.
+ const fixtureLocation=id=>{assert.equal(JSON.stringify(api.state),JSON.stringify(persisted),'Location fixture begins from equal live/durable campaigns');assert.ok(api.state.worlds[id]);api.state.actual=id;persisted.actual=id;S.validate(api.state);S.validate(persisted);assert.equal(JSON.stringify(api.state),JSON.stringify(persisted),'Delivery review has an equal complete durable baseline');};
+ return {api,store,calls,dom,fill,submit,fixtureLocation,persisted:()=>structuredClone(persisted),button:action=>dom.buttons().find(b=>b.dataset.action===action),check:async(values={})=>{api.contractSearch(true);fill({dice:8,skill:0,characteristic:0,mailAvailability:12,mailContainers:3,...values});await submit();assert.equal(dom.ids.get('modal-error').textContent,'');return api.check;}};
 }
 const html=h=>h.api.mailPanel();
 const same=(a,b)=>assert.deepEqual(JSON.parse(JSON.stringify(a)),JSON.parse(JSON.stringify(b)));
@@ -135,7 +139,7 @@ test('whole-consignment capacity and wrong origin disable acceptance through ren
 });
 test('actual app acceptance/delivery submissions show correct status and reserve/release capacity',async()=>{
  const h=harness();await h.check();const id=h.api.drafts[0].offerId,bank=h.api.state.bank;h.api.accept(id);assert.match(h.dom.ids.get('modal-body').innerHTML,/does not pay you yet/);await h.submit();assert.equal(h.api.state.contracts.length,1);assert.equal(h.api.drafts.length,0);assert.equal(h.api.state.bank,bank);assert.equal(A.decimal(S.used(h.api.state)),'15');assert.match(html(h),/Mail accepted/);assert.match(html(h),/15 t reserved/);assert.doesNotMatch(html(h),/data-action="contract-accept"/);
- h.api.state.actual=destination.id;assert.match(html(h),/At destination/);h.api.deliver(h.api.state.contracts[0].id);await h.submit();assert.equal(h.api.state.contracts[0].status,'delivered');assert.equal(h.api.state.bank,'175000');assert.equal(A.decimal(S.used(h.api.state)),'0');assert.match(html(h),/Mail delivered/);assert.match(html(h),/Released after delivery/);
+ h.fixtureLocation(destination.id);assert.match(html(h),/At destination/);h.api.deliver(h.api.state.contracts[0].id);await h.submit();assert.equal(h.api.state.contracts[0].status,'delivered');assert.equal(h.api.state.bank,'175000');assert.equal(A.decimal(S.used(h.api.state)),'0');assert.match(html(h),/Mail delivered/);assert.match(html(h),/Released after delivery/);
 });
 test('accepted details collapse independently, survive renders and tabs, and never change campaign data',async()=>{
  const h=harness();assert.doesNotMatch(html(h),/id="mail-accepted-details"/);await h.check();assert.doesNotMatch(html(h),/id="mail-accepted-details"/);
@@ -153,7 +157,7 @@ test('accepted details collapse independently, survive renders and tabs, and nev
  h.api.actions['mail-audit']();assert.equal(h.dom.ids.get('modal-title').textContent,'Mail roll audit');assert.equal(h.dom.ids.get('modal-submit').hidden,true);h.api.closeModal();
  toggle(true);h.api.render();assert.equal(acceptedDetails(h).open,true);h.api.actions.tab('History');h.api.actions.tab('Contracts');assert.equal(acceptedDetails(h).open,true);
  same(h.persisted(),saved);same(h.api.state,live);assert.equal(h.calls.saves,saves);assert.equal(JSON.stringify(h.api.check),check);
- toggle(false);h.api.state.actual=destination.id;h.api.deliver(h.api.state.contracts[0].id);await h.submit();
+ toggle(false);h.fixtureLocation(destination.id);h.api.deliver(h.api.state.contracts[0].id);await h.submit();
  const delivered=acceptedDetails(h);assert.equal(delivered.open,false,'Delivery renders keep the session disclosure preference');assert.equal(delivered.summary,'Delivered mail details · Cr 75,000 paid');assert.match(delivered.body,/Released after delivery/);assert.equal(expandedCardRoll(h),expected);assert.match(text(outsideInnerDetails(html(h))),/Mail delivered/);
  const deliveredSaved=h.persisted(),deliveredSaves=h.calls.saves;toggle(true);h.api.render();assert.equal(acceptedDetails(h).open,true);toggle(false);h.api.render();same(h.persisted(),deliveredSaved);assert.equal(h.calls.saves,deliveredSaves);
  h.store.save(S.transition(h.api.state,'Synthetic return to origin',s=>{s.actual=origin.id;}),h.api.state.revision);await h.check();assert.doesNotMatch(html(h),/id="mail-accepted-details"/);h.api.accept(h.api.drafts[0].offerId);await h.submit();assert.equal(acceptedDetails(h).open,true,'A new check resets details to open for its accepted result');
@@ -200,7 +204,7 @@ test('replacement dialog invalidates former mail check and acceptance callbacks'
 
 test('repeated acceptance and delivery submit cannot duplicate capacity or payment',async()=>{
  const h=harness();await h.check();h.api.accept(h.api.drafts[0].offerId);await Promise.all([h.submit(),h.submit()]);assert.equal(h.api.state.contracts.length,1);assert.equal(h.calls.saves,2);assert.equal(A.decimal(S.used(h.api.state)),'15');
- h.api.state.actual=destination.id;h.api.deliver(h.api.state.contracts[0].id);await Promise.all([h.submit(),h.submit()]);assert.equal(h.api.state.bank,'175000');assert.equal(h.calls.saves,3);assert.equal(h.api.state.ledger.filter(e=>e.contractId).length,1);
+ h.fixtureLocation(destination.id);h.api.deliver(h.api.state.contracts[0].id);await Promise.all([h.submit(),h.submit()]);assert.equal(h.api.state.bank,'175000');assert.equal(h.calls.saves,3);assert.equal(h.api.state.ledger.filter(e=>e.contractId).length,1);
 });
 
 test('unavailable Mail result never matches unrelated legacy contracts without offer IDs',async()=>{
@@ -302,7 +306,7 @@ test('accepted and delivered cards and saved contract rows retain the visible ro
  const h=harness();await h.check();const expected=expandedCardRoll(h);h.api.accept(h.api.drafts[0].offerId);await h.submit();const id=h.api.state.contracts[0].id;
  assert.match(text(outsideInnerDetails(html(h))),/Mail accepted/);assert.equal(expandedCardRoll(h),expected);
  for(const status of ['accepted','delivered']){
-  if(status==='delivered'){h.api.state.actual=destination.id;h.api.deliver(id);await h.submit();assert.match(text(outsideInnerDetails(html(h))),/Mail delivered/);assert.equal(expandedCardRoll(h),expected);}
+  if(status==='delivered'){h.fixtureLocation(destination.id);h.api.deliver(id);await h.submit();assert.match(text(outsideInnerDetails(html(h))),/Mail delivered/);assert.equal(expandedCardRoll(h),expected);}
   const reload=harness(h.persisted());assert.equal(reload.api.check.historical,true);assert.match(html(reload),new RegExp('Mail '+status));assert.equal(expandedCardRoll(reload),expected);
   const row=contractRow(reload,id);assert.equal(summaryText(outsideInnerDetails(row)),expected);assert.equal(reload.api.state.contracts[0].status,status);
   assert.ok(row.indexOf('mail-roll-summary')<row.indexOf('</td>'),'Roll is in the description cell, not an audit popup');
@@ -410,7 +414,7 @@ test('jump cancellation saves dice only; committing even a zero-hour jump perman
 });
 
 test('delivered and unverified legacy Mail are not cancellable and their audits remain readable',async()=>{
- const h=harness(),id=await acceptMail(h);h.api.state.actual=destination.id;h.api.deliver(id);await h.submit();assert.doesNotMatch(contractRow(h,id),/data-action="mail-cancel"/);assert.throws(()=>h.api.actions['mail-cancel'](id),/Delivered mail/);
+ const h=harness(),id=await acceptMail(h);h.fixtureLocation(destination.id);h.api.deliver(id);await h.submit();assert.doesNotMatch(contractRow(h,id),/data-action="mail-cancel"/);assert.throws(()=>h.api.actions['mail-cancel'](id),/Delivered mail/);
  const saved=campaign();saved.contracts=[{id:'legacy-mail',kind:'mail',status:'accepted',origin:origin.id,destination:destination.id,quantity:'10',payment:'50000',dueHours:null}];const legacy=harness(saved);
  assert.equal('disabled'in cancelButton(legacy,'legacy-mail'),true);assert.match(contractRow(legacy,'legacy-mail'),/Travel history unverified/);assert.throws(()=>legacy.api.actions['mail-cancel']('legacy-mail'),/unverified/);assert.match(legacy.api.contractDetails(legacy.api.state.contracts[0]),/Not verified in this older contract/);
  const before=legacy.persisted();legacy.api.actions['contract-audit']('legacy-mail');await legacy.submit();same(legacy.persisted(),before);assert.equal(legacy.calls.saves,0);
@@ -446,7 +450,7 @@ test('collapsed summary reflects unavailability, current overrides, capacity gua
  h.api.editDraft(h.api.drafts[0].offerId);h.fill({description:'Compact override',quantity:10,payment:60000,due:'',reason:'Referee amendment'});await h.submit();assert.equal(outerDetails(h).summary,'Mail Mail available · 10 t · Cr 60,000 on delivery');
  const recorded=JSON.stringify(h.api.check.audit);h.api.accept(h.api.drafts[0].offerId);await h.submit();assert.equal(outerDetails(h).summary,'Mail Mail accepted · 10 t reserved · Cr 60,000 on delivery');assert.equal(outerDetails(h).open,false);
  const id=h.api.state.contracts[0].id;h.api.actions['mail-cancel'](id);await h.submit();assert.equal(outerDetails(h).summary,'Mail Mail cancelled · 10 t released · No payment');assert.equal(JSON.stringify(h.api.check.audit),recorded);
- h.api.actions.undo();assert.match(outerDetails(h).summary,/Mail accepted · 10 t reserved/);h.api.state.actual=destination.id;h.api.deliver(id);await h.submit();assert.equal(outerDetails(h).summary,'Mail Mail delivered · 10 t delivered · Cr 60,000 paid');assert.equal(JSON.stringify(h.api.check.audit),recorded);
+ h.api.actions.undo();assert.match(outerDetails(h).summary,/Mail accepted · 10 t reserved/);h.fixtureLocation(destination.id);h.api.deliver(id);await h.submit();assert.equal(outerDetails(h).summary,'Mail Mail delivered · 10 t delivered · Cr 60,000 paid');assert.equal(JSON.stringify(h.api.check.audit),recorded);
  const old=harness();await old.check();old.api.setDrafts([]);old.api.render();assert.equal(outerDetails(old).summary,'Mail Previous mail result · Offer no longer active');assert.doesNotMatch(outerDetails(old).summary,/Cr |reserved/);
 });
 
@@ -461,7 +465,7 @@ test('outer and accepted disclosures are independent in read-only mode and keep 
 test('cancelled Mail rows move to History while accepted freight and delivered Mail remain in the main table',async()=>{
  let saved=campaign();saved=S.transition(saved,'Accepted freight',s=>S.acceptContract(s,{offerId:'freight-archive-fixture',kind:'freight',origin:origin.id,destination:destination.id,quantity:'5',payment:'1000',dueHours:null}));
  const h=harness(saved),deliveredId=await acceptMail(h);await h.check({mailContainers:1});h.api.accept(h.api.drafts[0].offerId);await h.submit();const cancelledId=h.api.state.contracts.at(-1).id;
- h.api.actions['mail-cancel'](cancelledId);await h.submit();h.api.state.actual=destination.id;h.api.deliver(deliveredId);await h.submit();const before=h.persisted();
+ h.api.actions['mail-cancel'](cancelledId);await h.submit();h.fixtureLocation(destination.id);h.api.deliver(deliveredId);await h.submit();const before=h.persisted();
  assert.match(contractRow(h,deliveredId),/Delivered · paid/);assert.match(contractRow(h,saved.contracts[0].id),/Freight contract/);assert.doesNotMatch(h.api.contractsPanel(),new RegExp(cancelledId));
  h.api.actions.tab('History');const archive=h.api.cancelledMailHistory();assert.match(archive,/Cancelled mail archive/);assert.match(archive,new RegExp(cancelledId));assert.doesNotMatch(archive,new RegExp(deliveredId));assert.doesNotMatch(archive,/data-mutate|data-action="deliver"|data-action="mail-cancel"/);
  h.api.actions['contract-audit'](cancelledId);assert.equal(h.dom.ids.get('modal-submit').hidden,true);assert.match(h.dom.ids.get('modal-body').innerHTML,/Cancellation result|Manual roll total: 1/);h.api.closeModal();same(h.persisted(),before);same(h.api.state,before);
@@ -485,7 +489,7 @@ test('rechecking replaces one current result, marks the prior reference supersed
 test('a newer tab result invalidates the older session draft while saved checks remain read-only',async()=>{
  const h=harness();await h.check();const offer=h.api.drafts[0].offerId;h.api.accept(offer);const oldSubmit=h.dom.ids.get('modal-form').onsubmit;
  const other=harness(h.persisted());await other.check({mailContainers:1});h.api.setState(other.persisted());h.api.render();assert.equal(h.api.drafts.filter(c=>c.kind==='mail').length,0);assert.equal(h.api.check.historical,true);assert.equal(h.api.check.checkId,other.api.state.latestMailCheckId);assert.throws(()=>h.api.accept(offer),/no longer available/);
- await oldSubmit({preventDefault(){},currentTarget:h.dom.ids.get('modal-form')});assert.match(h.dom.ids.get('modal-error').textContent,/Campaign changed/);assert.equal(h.api.state.contracts.length,0);
+ await oldSubmit({preventDefault(){},currentTarget:h.dom.ids.get('modal-form')});assert.equal(h.dom.ids.get('modal-error').textContent,'Campaign, contract terms or editing ownership changed. Close and review the current contract before continuing.');assert.equal(h.api.state.contracts.length,0);
 });
 
 test('hidden-tab replacement and same-reference imports invalidate session offers before any later Undo can revive them',async()=>{
