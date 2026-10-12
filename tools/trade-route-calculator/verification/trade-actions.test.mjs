@@ -371,7 +371,7 @@ test('top-level toggles never undo or reapply confirmed fuel or life support',as
  for(const kind of ['refuel','refill-support']){
   const h=harness(recurringCampaign());h.api.setTab('Overview');h.api.toggleShipPanel(kind);
   const token=h.api.services.token();await h.api.services.action('service-confirm','',token);const paid=h.persisted();
-  assert.equal(paid.ledger.length,1);assert.equal(paid.undo.length,1);assert.deepEqual(selectedShipButton(h),[]);
+  assert.equal(paid.ledger.length,1);assert.equal(paid.undo.length,1);assert.deepEqual(selectedShipButton(h),[kind]);assert.equal(h.api.services.active(),false);assert.match(h.api.services.panel(),/service-saved/);
   h.api.toggleShipPanel(kind);h.api.toggleShipPanel(kind);await h.api.services.action('service-confirm','',token);same(h.persisted(),paid);
  }
 });
