@@ -1,4 +1,4 @@
-import {searchWorlds,loadWorld} from './map.mjs?v=freight-passengers-fuel-20261011-64';
+import {searchWorlds,loadWorld} from './map.mjs?v=fuel-life-support-mfd-20261012-65';
 
 export const planetSearchLabel=w=>[w.name,w.subsectorName,w.sector,w.hex].join(' — ');
 

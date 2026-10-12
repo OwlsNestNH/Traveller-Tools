@@ -1,4 +1,4 @@
-import {sectors,sectorCatalog,subsectorForHex,loadWorld} from './map.mjs?v=freight-passengers-fuel-20261011-64';
+import {sectors,sectorCatalog,subsectorForHex,loadWorld} from './map.mjs?v=fuel-life-support-mfd-20261012-65';
 
 const RECENTS_KEY='traveller-trade-route-calculator:recent-worlds:v1';
 let recentMemory=[];

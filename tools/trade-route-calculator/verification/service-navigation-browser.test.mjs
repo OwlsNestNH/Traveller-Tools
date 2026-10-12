@@ -61,12 +61,13 @@ async function geometry(page){
  return page.evaluate(()=>{
   const selectors={map:'.world-map',mapSlot:'.map-viewport',navigation:'.navigation-panel',right:'.navigation-layout > .world-screen',layout:'.navigation-layout',bezel:'.mfd-frame',screen:'.mfd-screen'};
   const box=el=>{const r=el.getBoundingClientRect();return {left:r.left+scrollX,top:r.top+scrollY,width:r.width,height:r.height};};
-  return Object.fromEntries(Object.entries(selectors).map(([name,selector])=>[name,box(document.querySelector(selector))]));
+  return {serviceMfd:!!document.querySelector('#service-panel.service-mfd'),...Object.fromEntries(Object.entries(selectors).map(([name,selector])=>[name,box(document.querySelector(selector))]))};
  });
 }
 function sameGeometry(actual,expected,label,{outer=true}={}){
- const parts=outer?Object.keys(expected):['map','mapSlot','navigation','right','layout'];
+ const parts=outer?Object.keys(expected).filter(key=>key!=='serviceMfd'):['map','mapSlot','navigation','right','layout'];
  for(const name of parts)for(const dimension of (outer?['left','top','width','height']:['width','height'])){
+  if(actual.serviceMfd!==expected.serviceMfd&&['map','mapSlot','navigation','right'].includes(name)&&['left','width'].includes(dimension))continue;
   assert.ok(Math.abs(actual[name][dimension]-expected[name][dimension])<=1,`${label}: ${name} ${dimension} remains fixed (${expected[name][dimension]} → ${actual[name][dimension]})`);
  }
 }

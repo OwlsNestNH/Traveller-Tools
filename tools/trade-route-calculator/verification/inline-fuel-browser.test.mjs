@@ -88,11 +88,11 @@ try{
   assert.equal(await field('fuelTons').inputValue(),'23');assert.deepEqual(await field('fuelType').locator('option').evaluateAll(els=>els.map(el=>el.value)),['refined','unrefined','water','custom']);
   assert.match(await page.locator('#service-panel').textContent(),/20 \/ 43 t/);assert.equal(await action('service-confirm').isEnabled(),true);
   await checkControls(page);await screenshot('initial');
-  for(const expected of ['13','3','0','0']){await click('service-fuel-step','-10');assert.equal(await field('fuelTons').inputValue(),expected);await unchanged('Minus ten');}
+  await fill('fuelTons','3');for(const expected of ['2','1','0','0']){await click('service-fuel-step','-1');assert.equal(await field('fuelTons').inputValue(),expected);await unchanged('Minus one');}
   assert.equal(await action('service-confirm').isDisabled(),true);
-  for(const expected of ['10','20','23','23']){await click('service-fuel-step','10');assert.equal(await field('fuelTons').inputValue(),expected);await unchanged('Plus ten');}
-  await fill('fuelTons','1.25');await click('service-fuel-step','10');assert.equal(await field('fuelTons').inputValue(),'11.25');
-  await click('service-fuel-step','-10');assert.equal(await field('fuelTons').inputValue(),'1.25');
+  for(const expected of ['1','2','3','4']){await click('service-fuel-step','1');assert.equal(await field('fuelTons').inputValue(),expected);await unchanged('Plus one');}
+  await fill('fuelTons','1.25');await click('service-fuel-step','1');assert.equal(await field('fuelTons').inputValue(),'2.25');
+  await click('service-fuel-step','-1');assert.equal(await field('fuelTons').inputValue(),'1.25');
   await click('service-fuel-topoff');assert.equal(await field('fuelTons').inputValue(),'23');await click('service-fuel-next');assert.equal(await field('fuelTons').inputValue(),'20');
   await fill('fuelTons','2.25');await field('fuelType').selectOption('custom');await field('customFuelType').selectOption('unrefined');await fill('customFuelRate','101.25');await fill('expenseNotes','Negotiated local price');
   assert.match(await page.locator('#service-quote').textContent(),/Entered 2\.25 t → 3 t/);assert.match(await page.locator('#service-quote .service-total strong').textContent(),/Cr 304/);await unchanged('All draft inputs');await sameCamera('Custom fields');await checkControls(page);await screenshot('custom');
@@ -122,7 +122,7 @@ try{
   await open();await fill('fuelTons','2.25');await field('fuelType').selectOption(source);
   if(grade){await field('customFuelType').selectOption(grade);await fill('customFuelRate','101.25');assert.equal(await h.action('service-confirm').isEnabled(),true,'Custom price note is optional at standard supply');}
   await fill('expenseNotes','Recorded '+source+' purchase');await unchanged('Before one explicit confirmation');
-  const token=await remember('#service-panel [data-action="service-confirm"]');await page.locator('#service-panel [data-action="service-confirm"]').evaluate(button=>{button.click();button.click();});await closed();
+  const token=await remember('#service-panel [data-action="service-confirm"]');await page.locator('#service-panel [data-action="service-confirm"]').evaluate(button=>{button.click();button.click();});await page.locator('#service-panel.service-saved').waitFor();
   const paid=await read(),paidBytes=await raw();assert.equal(paid.ship.fuel.aboardTons,23);assert.equal(paid.bank,String(100000n-BigInt(amount)));assert.equal(paid.revision,f.state.revision+1);assert.equal(paid.undo.length,1);assert.equal(paid.ledger.length,1);assert.equal(paid.actual,f.state.actual);assert.equal(paid.hours,f.state.hours);
   const expense=paid.ledger[0].expense,details=Object.fromEntries(expense.details);assert.equal(expense.amount,amount);assert.equal(expense.notes,'Recorded '+source+' purchase');assert.equal(details['Entered fuel tons'],'2.25');assert.equal(details['Fuel tons'],'3');assert.equal(details['Fuel type'],(grade||source)==='refined'?'Refined':'Unrefined');if(grade)assert.equal(details['Rate · Cr/ton'],'101.25');
   await replay(token);await unchanged('Repeated detached confirm',paidBytes);await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();assert.deepEqual(await read(),paid);
@@ -138,7 +138,7 @@ try{
  });
  for(const [aboard,bladders,cargo,maximum,label]of [[42,0,'120',1,'near-full odd tank'],[43,1,'120',40,'full fixed tank empty bladder'],[40,1,'0',3,'no spare cargo'],[43,1,'0',0,'bladder blocked by cargo'],[40,1,'5.2',8,'fractional cargo limit']])for(const width of (label==='full fixed tank empty bladder'?report.widths:[1440]))await run(label,{width,aboard,bladders,cargo},async h=>{
   const {page,field,fill,click,action,open,unchanged,read,screenshot}=h;await open();assert.equal(await field('fuelTons').inputValue(),String(maximum));assert.equal(await action('service-fuel-topoff').textContent(),'Top off · '+maximum+' t');
-  await click('service-fuel-step','10');assert.equal(await field('fuelTons').inputValue(),String(maximum));await fill('fuelTons',maximum+.01);assert.equal(await action('service-confirm').isDisabled(),true);assert.match(await page.locator('#service-quote').textContent(),/tank or cargo space/);await unchanged('Overfill is rejected');
+  await click('service-fuel-step','1');assert.equal(await field('fuelTons').inputValue(),String(maximum));await fill('fuelTons',maximum+.01);assert.equal(await action('service-confirm').isDisabled(),true);assert.match(await page.locator('#service-quote').textContent(),/tank or cargo space/);await unchanged('Overfill is rejected');
   await click('service-fuel-topoff');await field('fuelType').selectOption('water');await screenshot(label.replace(/ /g,'-'));await unchanged('Physical maximum top-off');
   if(maximum){await fill('fuelTons',maximum-.25);assert.equal(await action('service-confirm').isEnabled(),true);await click('service-confirm');assert.equal((await read()).ship.fuel.aboardTons,aboard+maximum);}else assert.equal(await action('service-confirm').isDisabled(),true);
  });
@@ -175,15 +175,15 @@ try{
 
  for(const width of report.widths)for(const kind of ['extra reserve','comfort only'])await run('full LSS '+kind,{width,fullSupport:true,frozen:2},async h=>{
   const {page,click,field,fill,action,unchanged,read,raw,screenshot,undo}=h;
-  await click('refill-support');await page.locator('#service-form').waitFor();assert.equal(await field('extraDays').inputValue(),'0');assert.equal(await action('service-review').isDisabled(),true);assert.equal(await action('service-confirm').count(),0);
+  await click('refill-support');await page.locator('#service-form').waitFor();assert.equal(await field('extraDays').inputValue(),'0');assert.equal(await action('service-review').isDisabled(),true);assert.equal(await action('service-confirm').isDisabled(),true);
   assert.match(await page.locator('#service-quote').textContent(),/Standard top-up/);assert.equal((await page.locator('#service-quote .service-total strong').textContent()).trim(),'Cr 0');await unchanged('Full LSS opens controls with zero baseline');
   if(kind==='extra reserve'){
    await fill('extraDays','14');assert.match(await page.locator('#service-quote').textContent(),/Cr 2,100/);assert.match(await page.locator('#service-quote').textContent(),/176\.4 LSS aboard/);
   }else{
    await page.locator('.service-comfort > summary').click();await fill('comfortCredits','2000');assert.equal(await action('service-review').isDisabled(),true);await fill('comfortNote','Better meals only');assert.match(await page.locator('#service-quote').textContent(),/Cr 2,000/);assert.match(await page.locator('#service-quote').textContent(),/117\.6 LSS aboard/);
   }
-  await checkControls(page);await screenshot('full-lss-'+kind.replace(/ /g,'-'));await unchanged('Full LSS extra draft');await click('service-review');await unchanged('Full LSS review');await click('service-confirm');await h.closed();
-  const paid=await read(),paidBytes=await raw(),stock=paid.ship.lifeSupport.stockUnits;assert.equal(Number(stock.numerator)/Number(stock.denominator),kind==='extra reserve'?176.4:117.6);assert.equal(paid.bank,kind==='extra reserve'?'97900':'98000');assert.equal(paid.ledger.length,1);assert.equal(paid.undo.length,1);assert.equal(paid.hours,h.f.state.hours);
+  await checkControls(page);await screenshot('full-lss-'+kind.replace(/ /g,'-'));await unchanged('Full LSS extra draft');await click('service-review');await unchanged('Full LSS review');await click('service-confirm');await page.locator('#service-panel.service-saved').waitFor();
+  const paid=await read(),paidBytes=await raw(),stock=paid.ship.lifeSupport.stockUnits;assert.equal(Number(stock.numerator)/Number(stock.denominator),kind==='extra reserve'?176.6:117.6);assert.equal(paid.bank,kind==='extra reserve'?'97900':'98000');assert.equal(paid.ledger.length,1);assert.equal(paid.undo.length,1);assert.equal(paid.hours,h.f.state.hours);
   await click('refill-support');await page.locator('#service-form').waitFor();assert.equal(await action('service-review').isDisabled(),true,'Reopening full baseline cannot double-charge');await click('service-cancel');await unchanged('Cancel after paid LSS',paidBytes);await undo();for(const key of ['bank','ship','ledger'])assert.deepEqual((await read())[key],h.f.state[key]);
  });
  for(const width of report.widths)await run('six compact expense buttons',{width,fixedExpenses:true},async h=>{

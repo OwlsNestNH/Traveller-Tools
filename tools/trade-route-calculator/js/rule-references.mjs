@@ -1,8 +1,8 @@
-import {escapeHtml as esc} from './display.mjs?v=freight-passengers-fuel-20261011-64';
+import {escapeHtml as esc} from './display.mjs?v=fuel-life-support-mfd-20261012-65';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.
-export const REFERENCE_VERSION='2026.10.11.2';
+export const REFERENCE_VERSION='2026.10.12.1';
 export const SOURCE_BOOKS=Object.freeze({
  core:Object.freeze({short:'Core 2022',title:'Traveller Core Rulebook Update 2022',edition:'Examined copyright 2024 revision'}),
  cluster:Object.freeze({short:'Cluster Truck',title:'Cluster Truck',edition:'Mongoose Publishing, ©2026; reviewed file dated 16 December 2025'}),
@@ -106,7 +106,7 @@ export const RULE_REFERENCES=Object.freeze({
  ]),
  'support-cost':entry('cabin and person support costs',[core('154')],[
   part('Published rule','The maintenance-period basis is Cr1,000 per stateroom, Cr1,000 per awake person and Cr100 per occupied low berth.'),
-  part('Home rule','This campaign keeps Middle/High cabin costs at Cr1,000 and charges Cr3,000 per High-service person. Legacy low-service cabins are separate from frozen berths; new booked Low passengers use Cr100 each.'),
+  part('Home rule','This campaign keeps Middle/High cabin costs at Cr1,000 and charges Cr3,000 total per High-service person, replacing the ordinary Cr1,000 person charge rather than adding another Cr3,000. Legacy low-service cabins are separate from frozen berths; new booked Low passengers use Cr100 each.'),
   part('Referee input','Custom cabin rates and baseline occupants remain entered terms. Booked people add their support needs automatically; do not enter them again as baseline occupants.')
  ]),
  'support-pricing':entry('life-support top-up and extra reserve',[core('154')],[
@@ -117,7 +117,8 @@ export const RULE_REFERENCES=Object.freeze({
  'support-stock':entry('life-support stock and comfort',[],[
   part('App convention','Hourly consumption keeps exact stock. Changing the complement recalculates endurance without refilling supplies. Unknown legacy stock stays unknown until reviewed. Comfort spending adds no LSS or endurance.'),
   part('Referee input','Opening stock and stock corrections are explicit records, not generated supply purchases.'),
-  part('Explanation','Better coffee does not count as extra oxygen.')
+  part('Home rule','When occupied frozen Low berths are aboard, round the pooled refill purchase UP once to whole 1 LSS (ten 0.1-LSS portions). Keep surplus aboard; existing period-based prices remain unchanged.'),
+ part('Explanation','Better coffee does not count as extra oxygen.')
  ]),
  'hold':entry('cargo reservations',[core('158, 238')],[
   part('App convention','Hold use combines owned cargo, accepted freight/mail, passenger baggage, fitted Basic accommodation, filled fuel bladders and life-support overflow. These reservations count once; an installed empty bladder reserves no cargo.'),

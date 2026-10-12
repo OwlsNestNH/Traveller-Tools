@@ -1,4 +1,4 @@
-import {up} from './rounding.mjs?v=freight-passengers-fuel-20261011-64';
+import {up} from './rounding.mjs?v=fuel-life-support-mfd-20261012-65';
 import {sum,mul,decimal,cmp,credit} from './amounts.mjs';
 
 export const tiers=['low','middle','high'];

@@ -51,11 +51,12 @@ async function run(name,options,test){
  const unchanged=async(label,expected=f.bytes)=>assert.equal(await raw(),expected,label+' must preserve every saved campaign byte');
  const frames=()=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
  const closed=()=>page.locator('#service-panel').waitFor({state:'hidden'});
+ const saved=()=>page.locator('#service-panel.service-saved').waitFor({state:'visible'});
  const open=async(type='refuel')=>{await click(type);await page.locator('#service-panel').waitFor({state:'visible'});assert.equal(await page.locator('#modal').isVisible(),false,'Service uses the right screen, not a blocking dialog');};
  const undo=async()=>{await click('tab','History');await click('undo');await click('tab','Overview');};
  try{
   await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();
-  await test({f,context,page,action,click,field,fill,raw,read,unchanged,frames,closed,open,undo});
+  await test({f,context,page,action,click,field,fill,raw,read,unchanged,frames,closed,saved,open,undo});
   assert.deepEqual(errors,[],name+' has no uncaught browser errors');results.push(name);console.log('PASS: '+name);
  }catch(error){await page.screenshot({path:artifacts+'/service-'+name.replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'-failure.png',fullPage:true}).catch(()=>{});throw error;}
  finally{await context.tracing.stop({path:artifacts+'/service-'+name.replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'-trace.zip'});await context.close();}
@@ -72,9 +73,9 @@ try{
   for(const name of ['refuel','refill-support','ship-expenses'])assert.equal(await action(name).isEnabled(),true,name+' remains available for direct navigation');
   assert.equal(await page.locator('#ship-actions [data-action="port-costs"]').count(),0);
   assert.equal(await field('fuelTons').inputValue(),'23','Odd tank top-off is exact');
-  await click('service-fuel-step','10');assert.equal(await field('fuelTons').inputValue(),'23','+10 clamps at 23 free tons');
-  for(const expected of ['13','3','0']){await click('service-fuel-step','-10');assert.equal(await field('fuelTons').inputValue(),expected);}
-  await click('service-fuel-step','-10');assert.equal(await field('fuelTons').inputValue(),'0','-10 clamps at zero');
+  await click('service-fuel-step','1');assert.equal(await field('fuelTons').inputValue(),'23','+1 clamps at 23 free tons');
+  await fill('fuelTons',3);for(const expected of ['2','1','0']){await click('service-fuel-step','-1');assert.equal(await field('fuelTons').inputValue(),expected);}
+  await click('service-fuel-step','-1');assert.equal(await field('fuelTons').inputValue(),'0','-1 clamps at zero');
   assert.equal(await action('service-confirm').isDisabled(),true,'Zero purchase cannot commit');
   await click('service-fuel-topoff');assert.equal(await field('fuelTons').inputValue(),'23');
   await click('service-fuel-next');assert.equal(await field('fuelTons').inputValue(),'20','J2 needs 40 aboard and buys only the missing 20');
@@ -118,7 +119,7 @@ try{
  await run('fuel commit exactly once and Undo',{},async h=>{
   const {f,page,click,field,read,open,closed,undo}=h;
   await open();await field('fuelType').selectOption('unrefined');
-  await page.locator('[data-action="service-confirm"]').evaluate(button=>{button.click();button.click();});await closed();
+  await page.locator('[data-action="service-confirm"]').evaluate(button=>{button.click();button.click();});await h.saved();
   const paid=await read();assert.equal(paid.ship.fuel.aboardTons,43);assert.equal(paid.bank,'97700');assert.equal(paid.revision,f.state.revision+1);assert.equal(paid.ledger.length,1);assert.equal(paid.undo.length,1);assert.equal(paid.hours,f.state.hours);
   assert.equal(paid.ledger[0].expense.kind,'fuel');assert.equal(paid.ledger[0].world,f.state.actual);
   await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();assert.deepEqual(await read(),paid,'Confirmed fuel persists');
@@ -131,7 +132,7 @@ try{
   await fill('fuelReason','Referee recorded a seven-ton leak');await fill('fuelRemaining',21);
   assert.equal(await action('service-review').isDisabled(),true,'Manual reduction cannot invent additional fuel');
   await fill('fuelRemaining',13);await click('service-review');await unchanged('Manual reduction review');
-  await click('service-confirm');await closed();const reduced=await read();
+  await click('service-confirm');await h.saved();const reduced=await read();
   assert.equal(reduced.ship.fuel.aboardTons,13);assert.equal(reduced.bank,f.state.bank);assert.deepEqual(reduced.ledger,f.state.ledger,'Manual reduction is not a fuel purchase');assert.equal(reduced.hours,f.state.hours);assert.match(JSON.stringify(reduced.events),/seven-ton leak/);
   const entry=reduced.events.find(e=>e.fuelCorrection);assert.ok(entry,'Correction has a recorded audit event');
   await click('tab','History');await click('event-audit',entry.id);
@@ -152,7 +153,7 @@ try{
   await field('otherSupplier').uncheck();await field('fuelType').selectOption('water');
   assert.equal(await page.locator('#fuel-availability').isVisible(),true,'Dry/unknown hydrographics remains visible as an advisory');
   assert.equal(await action('service-confirm').isEnabled(),true,'Water collection stays selectable with no override or note');
-  await unchanged('Water inline forecast');await click('service-confirm');await closed();
+  await unchanged('Water inline forecast');await click('service-confirm');await h.saved();
   const paid=await read();assert.equal(paid.bank,f.state.bank);assert.equal(paid.ship.fuel.aboardTons,23);assert.equal(paid.ledger.at(-1).expense.amount,'0');
  });
  await run('LSS extra supplies and comfort',{},async h=>{
@@ -162,7 +163,7 @@ try{
   assert.match(await page.locator('#service-quote').textContent(),/Cr 8,000/);await unchanged('LSS live forecast');
   await click('service-review');assert.match(await page.locator('#service-panel').textContent(),/42/);assert.match(await page.locator('#service-panel').textContent(),/168/);await unchanged('LSS review');
   await click('service-adjust');assert.equal(await field('extraDays').inputValue(),'14');assert.equal(await field('comfortCredits').inputValue(),'2000');assert.equal(await field('comfortNote').inputValue(),'Upgraded meals and cabin comforts');
-  await click('service-review');await click('service-confirm');await closed();const paid=await read();
+  await click('service-review');await click('service-confirm');await h.saved();const paid=await read();
   assert.equal(paid.bank,'92000');assert.equal(paid.hours,f.state.hours);assert.equal(Object.hasOwn(paid.ship.lifeSupport,'remainingHours'),false,'Physical stock replaces legacy hours');
   const stock=paid.ship.lifeSupport.stockUnits;assert.ok(stock,'Physical LSS stock is persisted');assert.equal(Number(stock.numerator)/Number(stock.denominator),168);
   assert.match(JSON.stringify(paid.ledger),/Upgraded meals and cabin comforts/);assert.equal(paid.undo.length,1,'One confirmation has one Undo transaction');
@@ -175,9 +176,30 @@ try{
   await fill('extraDays',10000);assert.equal(await action('service-review').isDisabled(),true,'Cargo-overflow / unaffordable reserve cannot be reviewed');
   await fill('extraDays',14);await page.locator('.service-comfort > summary').click();await fill('comfortCredits',2000);
   assert.equal(await action('service-review').isDisabled(),true,'Paid comfort requires its audit note');
-  await fill('comfortNote','Frozen berth pricing verification');await click('service-review');await unchanged('Frozen LSS review');await click('service-confirm');await closed();
-  const paid=await read(),stock=paid.ship.lifeSupport.stockUnits;assert.equal(Number(stock.numerator)/Number(stock.denominator),176.4);assert.equal(paid.bank,'91900');
-  await open('refill-support');assert.equal(await page.locator('#service-form').count(),1,'Full supplies still expose extra reserve and comfort controls');assert.equal(await action('service-review').isDisabled(),true,'No-op normal refill does not create another charge');await click('service-cancel');
+  await fill('comfortNote','Frozen berth pricing verification');await click('service-review');await unchanged('Frozen LSS review');await click('service-confirm');await h.saved();
+  const paid=await read(),stock=paid.ship.lifeSupport.stockUnits;assert.equal(Number(stock.numerator)/Number(stock.denominator),176.8);assert.equal(paid.bank,'91900');
+  await click('service-new');assert.equal(await page.locator('#service-form').count(),1,'Full supplies still expose extra reserve and comfort controls');assert.equal(await action('service-review').isDisabled(),true,'No-op normal refill does not create another charge');await click('service-cancel');
+ });
+ for(const width of [1440,390,320])await run('persistent MFD receipts '+width,{},async h=>{
+  const {page,click,fill,field,read,raw,open}=h;
+  await page.setViewportSize({width,height:1100});await open();await overviewGeometry(page);
+  assert.match(await page.locator('.mfd-metrics').textContent(),/Fuel aboard20 t.*Tank capacity43 t.*Bladder capacity0 t/);
+  await fill('fuelTons',1);const old=await h.action('service-confirm').evaluate(b=>({...b.dataset}));
+  await click('service-confirm');await h.saved();assert.equal((await read()).ship.fuel.aboardTons,21);
+  const bytes=await raw();await page.evaluate(data=>{const b=document.createElement('button');Object.assign(b.dataset,data);document.body.append(b);b.click();b.remove();},old);await h.unchanged('Retired confirmation',bytes);
+  await click('refuel');await h.saved();await click('service-audit');assert.equal(await page.locator('#service-panel > .service-audit').evaluate(d=>d.open),true);
+  await page.locator('#service-panel').evaluate(p=>p.scrollTop=0);await page.screenshot({path:artifacts+'/mfd-fuel-saved-'+width+'.png',fullPage:true});
+  await click('refill-support');assert.match(await page.locator('.mfd-complement').textContent(),/4 awake crew \+ 0 awake passengers/);
+  await click('service-reserve-step','1');assert.equal(await field('extraDays').inputValue(),'1');await fill('extraDays',7);
+  await page.locator('.service-comfort > summary').click();await click('service-comfort-step','1000');await fill('comfortNote','Synthetic comfort purchase');
+  assert.match(await page.locator('#service-quote').textContent(),/140 LSS aboard/);await overviewGeometry(page);
+  await page.locator('#service-panel').evaluate(p=>p.scrollTop=0);await page.screenshot({path:artifacts+'/mfd-support-draft-'+width+'.png',fullPage:true});
+  await click('service-confirm');await h.saved();const paid=await read(),stock=paid.ship.lifeSupport.stockUnits;
+  assert.equal(Number(stock.numerator)/Number(stock.denominator),140);assert.match(await page.locator('.mfd-metrics').textContent(),/Days supported35/);
+  const savedBytes=await raw();await click('refill-support');await h.saved();await h.unchanged('Same service retains saved receipt',savedBytes);
+  await page.locator('#service-panel').evaluate(p=>p.scrollTop=0);await page.screenshot({path:artifacts+'/mfd-support-saved-'+width+'.png',fullPage:true});
+  await click('service-new');assert.equal(await field('extraDays').inputValue(),'0');assert.equal(await field('comfortCredits').inputValue(),'0');assert.equal(await h.action('service-confirm').isDisabled(),true);
+  await click('service-back');await h.closed();await h.unchanged('Fresh no-op draft dismissed',savedBytes);
  });
  await run('unaffordable LSS summary',{bank:'3000'},async h=>{
   await h.open('refill-support');assert.equal(await h.action('service-confirm').isDisabled(),true);assert.match(await h.page.locator('#service-quote').textContent(),/Insufficient/i);await h.click('service-cancel');await h.unchanged('Unaffordable LSS cancellation');

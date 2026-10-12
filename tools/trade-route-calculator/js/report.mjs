@@ -1,13 +1,13 @@
-import {recordedOperatingResult} from './financial-summary.mjs?v=freight-passengers-fuel-20261011-64';
-import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=freight-passengers-fuel-20261011-64';
-import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=freight-passengers-fuel-20261011-64';
-import {bladderSpace} from './fuel.mjs?v=freight-passengers-fuel-20261011-64';
+import {recordedOperatingResult} from './financial-summary.mjs?v=fuel-life-support-mfd-20261012-65';
+import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=fuel-life-support-mfd-20261012-65';
+import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=fuel-life-support-mfd-20261012-65';
+import {bladderSpace} from './fuel.mjs?v=fuel-life-support-mfd-20261012-65';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
-import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=freight-passengers-fuel-20261011-64';
-import {distance} from './map.mjs?v=freight-passengers-fuel-20261011-64';
+import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=fuel-life-support-mfd-20261012-65';
+import {distance} from './map.mjs?v=fuel-life-support-mfd-20261012-65';
 
-export const REPORT_VERSION='2026.10.11.64';
+export const REPORT_VERSION='2026.10.12.65';
 const clean=v=>String(v??'Not recorded').replace(/[\r\n\t\x00-\x1f]+/g,' ').trim();
 const number=v=>String(v).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const cr=v=>v==null?'Not recorded':'Cr '+number(v);
