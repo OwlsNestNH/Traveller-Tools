@@ -276,6 +276,12 @@ async function runWidth(browser,width,report){
    await stable('Escape from '+name);await unlocked(page);
   }
 
+  for(const name of names){
+   await header(page,name).click();await draft(page,name);const old=await staleHandlers(page);
+   await page.locator('#tabs [data-arg="Overview"]').click();await selected(page,'world');
+   await replayHandlers(page,old);await stable('Overview discards '+name+' without saving');await unlocked(page);
+  }
+
   // The new controls remain standard keyboard buttons, including repeat Enter
   // and Space after a rerender, without accidentally confirming a payment.
   for(const name of names){

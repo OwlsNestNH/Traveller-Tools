@@ -26,7 +26,7 @@ for(const kind of ['map','auto','plot'])for(const seed of seeds)test(`independen
  const fresh=setup(h.store.read(),{source,kind,draft:false});checkpoints.push({phase:'reloaded',...observation(fresh)});
  await fresh.runAction('undo');checkpoints.push({phase:'ordinary Undo',...observation(fresh)});
  const value=canonical({kind,name:seed.name,reviewSHA256:sha(review),checkpoints,routeCalls:h.map.calls.filter(c=>c.kind==='loadWorld'||c.kind==='nearby')},seed.campaign);
- if(recording)captured.push(value);else same(value,expected.observations.find(item=>item.kind===kind&&item.name===seed.name));
+ if(recording)captured.push(value);else same(withoutHistoricalMain(value),withoutHistoricalMain(expected.observations.find(item=>item.kind===kind&&item.name===seed.name)));
  assert.equal(checkpoints[0].writes,1);assert.equal(checkpoints[0].interface.modalOpen,true);assert.equal(checkpoints[1].interface.modalOpen,false);assert.equal(checkpoints[2].routeDraft,null);
 });
 function body(h){const value=h.dom.ids.get('modal-body').innerHTML;if(!root){assert.ok(value.startsWith('<p class="planned-route-review">'),'Approved wrapping class is restricted to route-name paragraph and optional fuel notice');let normalized=value.replace('<p class="planned-route-review">','<p>');normalized=normalized.replace('<p class="notice planned-route-review" role="alert">','<p class="notice" role="alert">');assert.doesNotMatch(normalized,/planned-route-review/,'No other accepted markup changes are normalized');return normalized;}return value;}
@@ -36,3 +36,12 @@ test('full original observations retain source provenance, deterministic synthet
  if(recording){const sources=[...await manifest(root,'js'),...await manifest(root,'rules')];await writeFile(expectedURL,JSON.stringify({sourceCommit:commit,sourceTree:'3ea07e318412343f9cc986b096a6066dd195b16f',sourceAppSHA256:releasedAppSHA256,sources,seedsSHA256:sha(await readFile(seedURL,'utf8')),observations:captured}));}
  else{assert.equal(expected.sourceCommit,commit);assert.equal(expected.sourceAppSHA256,releasedAppSHA256);assert.equal(expected.seedsSHA256,sha(await readFile(seedURL,'utf8')));assert.equal(expected.observations.length,seeds.length*3);assert.ok(expected.sources.some(s=>s.path==='js/world-picker.mjs'));assert.ok(expected.sources.some(s=>s.path==='js/campaign-controller.mjs'));for(const seed of seeds){assert.equal(seed.campaign.lots[0].id,'11111111-2222-4333-8444-555555555555');same(seed.campaign,fixture({spent:seed.name.includes('spent=true'),legacy:seed.name.includes('legacy=true')}));}}
 });
+
+// The approved .68 layout removes the duplicate cargo section and moves route
+// controls. Its real DOM is checked in the focused route and navigation browser
+// suites; retain the frozen oracle for campaign economics and save protections.
+function withoutHistoricalMain(observation){
+ const copy=structuredClone(observation);
+ for(const checkpoint of copy.checkpoints)delete checkpoint.interface.renderedSHA256.main;
+ return copy;
+}

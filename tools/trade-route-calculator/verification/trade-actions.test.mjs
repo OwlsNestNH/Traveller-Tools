@@ -312,7 +312,7 @@ test('Cargo Hold cancels every unfinished service without saving or replaying st
 });
 test('read-only Cargo Hold and its tab links preserve all campaign and Undo data',()=>{
  const h=harness(recurringCampaign()),before=h.persisted();h.store.editable=false;h.api.setTab('Overview');
- h.api.actions['cargo-hold']();assert.match(h.dom.ids.get('main').innerHTML,/id="cargo-hold-panel"/);assert.match(h.dom.ids.get('main').innerHTML,/overview-cargo/);
+ h.api.actions['cargo-hold']();assert.match(h.dom.ids.get('main').innerHTML,/id="cargo-hold-panel"/);assert.doesNotMatch(h.dom.ids.get('main').innerHTML,/overview-cargo/);
  h.api.actions.world(destination.id);assert.equal(h.api.state.actual,origin.id);assert.equal(h.api.view,destination.id);assert.match(h.dom.ids.get('main').innerHTML,/ship at Origin/);
  for(const tab of ['Cargo','Contracts']){h.api.actions['cargo-hold-tab'](tab);assert.doesNotMatch(h.dom.ids.get('main').innerHTML,/id="cargo-hold-panel"/);h.api.actions.tab('Overview');h.api.actions['cargo-hold']();}
  h.dom.dispatch('keydown',{matches:()=>false},{key:'Escape',preventDefault(){}});assert.doesNotMatch(h.dom.ids.get('main').innerHTML,/id="cargo-hold-panel"/);same(h.persisted(),before);assert.equal(h.calls.saves,0);

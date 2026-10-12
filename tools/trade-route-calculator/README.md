@@ -804,3 +804,17 @@ Life Support starts with current supplies. Top off prepares at least 28 days wit
 Physical selected adoption: Cluster Truck p.14, one LSS/awake person/day and 0.1/occupied frozen Low berth/day. Cabins have monetary costs, with no physical consumption. Core Update 2022 p.154 supplies the cabin/person cost basis; campaign quality, reserve pricing and stock-total rounding are separate. The basic person rate is Cr1,000/28 days; cabin, High quality and comfort charges are cost only. Existing configured-target tariff boundaries and monetary rounding are retained, so equivalent purchases have equivalent prices. Top off 28 does not alter the saved standard target.
 
 Focused regression evidence and exact-head browser screenshots are recorded in the candidate PR. Only necessary local tests run; the unchanged existing repository workflows still run all required native/rules/browser/campaign gates. No new CI matrix, policy change, inventory-unit migration, local Chromium or live excluded-path probing is part of this correction.
+
+## Focused Overview batch (UI .68)
+
+Map and its controls remain above Route Preview, followed by the active Build
+Route / Auto plot editor. Each Build Route stop is a large removal button with
+world details and explicit Remove stop text. Clear Route beside Make current
+world uses the existing confirmation, save guards and Undo.
+
+Overview returns any Fuel, Life Support, Cargo Hold or Ship Expenses MFD to
+World Data, discarding unconfirmed service drafts. Completed transactions keep
+their saved receipt open with committed values; Prepare another explicitly
+starts a fresh stock-service cost preview. The duplicate bottom cargo table is
+removed. Trade/Cargo tabs and Cargo Hold MFD shortcuts retain trade and manage
+actions. Economic calculations and persistence/Undo behavior are unchanged.

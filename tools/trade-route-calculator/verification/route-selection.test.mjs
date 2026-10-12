@@ -20,7 +20,7 @@ test('Build route reserves empty-hex clicks before lookup, keeping reversed resp
  const h=setup(),before=bytes(h),first=h.api.mapEmpty('2,1'),second=h.api.mapEmpty('2,0');
  assert.deepEqual(ids(h),['2,1','2,0']);assert.equal(h.api.routeDraft.loading,true);
  assert.throws(()=>h.api.saveMapRoute(),/valid route/);
- assert.match(h.api.mapRouteControls(),/Hex 2,1 \(checking…\)/);
+ assert.match(h.api.mapRouteControls(),/Hex 2,1[\s\S]*Checking…/);
  assert.deepEqual(Array.from(h.api.routeDraft.selections,s=>s.sequence),[1,2]);
  await tick();h.requests[1].resolve(empty('2,0'));await second;
  assert.equal(h.api.routeDraft.loading,true);assert.throws(()=>h.api.saveMapRoute(),/valid route/);
@@ -62,7 +62,7 @@ test('A failed lookup remains an ordered, unsavable stop; Retry route restores t
  const h=setup(),before=bytes(h),failed=h.api.mapEmpty('2,0');await h.api.mapWorld(destination.id);await tick();
  h.requests[0].reject(Error('Synthetic offline response'));await assert.rejects(failed,/Synthetic offline response.*Retry route/);
  assert.deepEqual(ids(h),['2,0',destination.id]);assert.equal(h.api.routeDraft.loading,false);assert.match(h.api.routeDraft.error,/Could not check hex 2,0/);
- assert.match(h.api.mapRouteControls(),/lookup failed/);assert.throws(()=>h.api.saveMapRoute(),/valid route/);
+ assert.match(h.api.mapRouteControls(),/Lookup failed/);assert.throws(()=>h.api.saveMapRoute(),/valid route/);
  const retry=h.api.actions['route-retry']();await tick();assert.equal(h.api.routeDraft.loading,true);assert.equal(h.requests.length,2);
  h.requests[1].resolve(empty('2,0'));await retry;
  assert.deepEqual(path(h),[origin.id,'2,0',destination.id]);assert.equal(h.api.routeDraft.error,'');unchanged(h,before);

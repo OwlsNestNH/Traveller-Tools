@@ -1,4 +1,4 @@
-import {searchWorlds,loadWorld} from './map.mjs?v=route-editor-current-world-20261012-67';
+import {searchWorlds,loadWorld} from './map.mjs?v=focused-ui-20261012-68';
 
 export const planetSearchLabel=w=>[w.name,w.subsectorName,w.sector,w.hex].join(' — ');
 

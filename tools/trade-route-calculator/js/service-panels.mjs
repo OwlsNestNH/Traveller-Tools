@@ -1,14 +1,14 @@
-import {replaceReferenceContent} from './rule-popover.mjs?v=route-editor-current-world-20261012-67';
-import {ruleInfo} from './rule-references.mjs?v=route-editor-current-world-20261012-67';
-import {escapeHtml,formatDecimalCreditsText} from './display.mjs?v=route-editor-current-world-20261012-67';
-import {passengerShip} from './passengers.mjs?v=route-editor-current-world-20261012-67';
+import {replaceReferenceContent} from './rule-popover.mjs?v=focused-ui-20261012-68';
+import {ruleInfo} from './rule-references.mjs?v=focused-ui-20261012-68';
+import {escapeHtml,formatDecimalCreditsText} from './display.mjs?v=focused-ui-20261012-68';
+import {passengerShip} from './passengers.mjs?v=focused-ui-20261012-68';
 import * as A from './amounts.mjs';
-import {bladderSpace,fuelCapacities,fuelPurchase} from './fuel.mjs?v=route-editor-current-world-20261012-67';
-import {expenseQuote,fuelAvailability,fuelAvailabilityAdvice,fuelPricing,starport} from './expenses.mjs?v=route-editor-current-world-20261012-67';
-import {refillQuote,supportStock,supportCargo,supportAmount,supportDisplay,anchorSupport} from './life-support.mjs?v=route-editor-current-world-20261012-67';
-import {used,validate,shipExpense,refillLifeSupport,uid} from './state.mjs?v=route-editor-current-world-20261012-67';
-import {creditStep,up} from './rounding.mjs?v=route-editor-current-world-20261012-67';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=route-editor-current-world-20261012-67';
+import {bladderSpace,fuelCapacities,fuelPurchase} from './fuel.mjs?v=focused-ui-20261012-68';
+import {expenseQuote,fuelAvailability,fuelAvailabilityAdvice,fuelPricing,starport} from './expenses.mjs?v=focused-ui-20261012-68';
+import {refillQuote,supportStock,supportCargo,supportAmount,supportDisplay,anchorSupport} from './life-support.mjs?v=focused-ui-20261012-68';
+import {used,validate,shipExpense,refillLifeSupport,uid} from './state.mjs?v=focused-ui-20261012-68';
+import {creditStep,up} from './rounding.mjs?v=focused-ui-20261012-68';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=focused-ui-20261012-68';
 const esc=escapeHtml;
 const money=formatDecimalCreditsText,num=x=>x==null?'Unknown':String(Number(Number(x).toFixed(3)));
 const field=(name,label,value,type='number',extra='')=>`<label class="field">${label}<input name="${name}" type="${type}" value="${esc(value)}" ${extra}></label>`;
@@ -101,7 +101,7 @@ export function createServicePanels({document,getState,isEditable,commit,render,
  function showAudit(){const detail=document.querySelector('#service-panel .service-audit');if(detail){detail.open=true;detail.scrollIntoView?.({block:'nearest'});}return true;}
  function receiptPanel(){
   if(!receipt)return '';const base=getState(),title=receipt.kind==='fuel'?'Refuel':'Life support';
-  return '<aside id="service-panel" class="panel world-screen service-panel service-mfd service-saved" aria-label="Ship service" aria-busy="false"><div class="screen-topline"><span>● Ship service</span><span>Saved</span></div>'+button('← Back to world data','service-back')+'<div class="mfd-title"><h2>'+title+(receipt.kind==='support'?' '+ruleInfo('support-cost'):'')+'</h2>'+button('Audit','service-audit')+'</div><h3>'+esc(base.ship.name)+' · at '+esc(base.worlds[base.actual]?.name??base.actual)+'</h3><p id="service-status" class="notice" role="status">'+esc(receipt.savedLabel)+'</p>'+(receipt.kind==='fuel'&&base.settings.fuelAvailabilityAlert?'<p class="notice fuel-availability-advice" role="status">'+esc(fuelAvailabilityAdvice(base.worlds[base.actual]))+' '+ruleInfo('fuel-availability')+'</p>':'')+inventory(receipt.kind,base)+'<details class="service-audit"><summary>Audit · saved service</summary>'+receipt.audit+'</details><div class="service-actions">'+(isEditable()?button('Prepare another '+(receipt.kind==='fuel'?'refuel':'refill'),'service-new','',true):'<p class="help">Read-only: saved totals and audit remain available.</p>')+'</div><p class="help">This service is saved. Prepare another purchase to change supplies; viewing this screen never charges again.</p></aside>';
+  return '<aside id="service-panel" class="panel world-screen service-panel service-mfd service-saved" aria-label="Ship service" aria-busy="false"><div class="screen-topline"><span>● Ship service</span><span>Saved</span></div>'+button('← Back to world data','service-back')+'<div class="mfd-title"><h2>'+title+(receipt.kind==='support'?' '+ruleInfo('support-cost'):'')+'</h2>'+button('Audit','service-audit')+'</div><h3>'+esc(base.ship.name)+' · at '+esc(base.worlds[base.actual]?.name??base.actual)+'</h3><p id="service-status" class="notice" role="status">'+esc(receipt.savedLabel)+'</p>'+(receipt.kind==='fuel'&&base.settings.fuelAvailabilityAlert?'<p class="notice fuel-availability-advice" role="status">'+esc(fuelAvailabilityAdvice(base.worlds[base.actual]))+' '+ruleInfo('fuel-availability')+'</p>':'')+inventory(receipt.kind,base)+'<details class="service-audit"><summary>Audit · saved service</summary><p class="help">Completed transaction · no purchase pending.</p>'+receipt.audit+'</details><div class="service-actions">'+(isEditable()?button('Prepare another '+(receipt.kind==='fuel'?'refuel':'refill'),'service-new','',true):'<p class="help">Read-only: saved totals and audit remain available.</p>')+'</div><p class="help">This service is saved. Prepare another purchase to change supplies; viewing this screen never charges again.</p></aside>';
  }
  function panel(){
   if(!session)return receiptPanel();const f=forecast(),s=session.kind==='support'?supportStock(passengerShip(session.base)):null,inline=session.kind==='fuel'&&!session.correction,title=session.kind==='fuel'?(session.correction?'Adjust fuel aboard':'Refuel'):'Life support',editing=inline||session.mode==='adjust';

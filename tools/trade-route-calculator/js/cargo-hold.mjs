@@ -1,12 +1,12 @@
-import {ruleInfo} from './rule-references.mjs?v=route-editor-current-world-20261012-67';
-import {passengerShip,passengerSpace} from './passengers.mjs?v=route-editor-current-world-20261012-67';
+import {ruleInfo} from './rule-references.mjs?v=focused-ui-20261012-68';
+import {passengerShip,passengerSpace} from './passengers.mjs?v=focused-ui-20261012-68';
 // Read-only bridge manifest. Purchase facts come from each lot's frozen audit;
 // current price settings, contract revenue and insurance destinations are not inputs.
 import * as A from './amounts.mjs';
-import {used} from './state.mjs?v=route-editor-current-world-20261012-67';
-import {bladderSpace} from './fuel.mjs?v=route-editor-current-world-20261012-67';
-import {passengerLuggage} from './accommodation.mjs?v=route-editor-current-world-20261012-67';
-import {supportCargo,supportStock,supportDisplay} from './life-support.mjs?v=route-editor-current-world-20261012-67';
+import {used} from './state.mjs?v=focused-ui-20261012-68';
+import {bladderSpace} from './fuel.mjs?v=focused-ui-20261012-68';
+import {passengerLuggage} from './accommodation.mjs?v=focused-ui-20261012-68';
+import {supportCargo,supportStock,supportDisplay} from './life-support.mjs?v=focused-ui-20261012-68';
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=x=>{const [whole,fraction]=String(x).split('.');return 'Cr '+whole.replace(/\B(?=(\d{3})+(?!\d))/g,',')+(fraction===undefined?'':'.'+fraction);};
 const button=(label,action,arg='',extra='')=>'<button data-action="'+action+'" data-arg="'+esc(arg)+'" '+extra+'>'+esc(label)+'</button>';
@@ -48,5 +48,5 @@ export function cargoHoldPanel(state,core){
   '<section class="cargo-speculative" aria-labelledby="cargo-spec-heading"><div class="cargo-section-heading"><h3 id="cargo-spec-heading">Speculative goods</h3><span class="help">'+lots.length+' separate '+(lots.length===1?'lot':'lots')+'</span></div>'+(lots.length?table('Speculative goods; scroll for more lots and columns',['Cargo','Tons','Purchase Cr / t'],lots,'cargo-goods-scroll'):'<p class="cargo-empty help">No owned trade goods aboard.</p>')+
   '<div class="cargo-investment" tabindex="0" role="region" aria-label="Cargo investment"><div><strong>Cargo investment</strong><span class="mono">'+esc(money(m.investment))+'</span></div><p class="help">Remaining owned-goods cost basis only</p></div></section>'+
   '<section class="cargo-consignments" aria-labelledby="cargo-contract-heading"><div class="cargo-section-heading"><h3 id="cargo-contract-heading">Freight &amp; mail</h3><span class="help">'+contracts.length+' '+(contracts.length===1?'consignment':'consignments')+'</span></div>'+(contracts.length?table('Freight and mail; scroll for more consignments and columns',['Consignment','Tons','Destination'],contracts,'cargo-contract-scroll'):'<p class="cargo-empty help">No accepted freight or mail aboard.</p>')+'</section>'+
-  '<div class="cargo-panel-actions">'+button('Open Cargo →','cargo-hold-tab','Cargo','class="primary"')+button('Open Contracts','cargo-hold-tab','Contracts')+'</div><p class="help cargo-panel-footnote">Full table in Cargo · Base values and audit in Details</p></aside>';
+  '<div class="cargo-panel-actions">'+button('Open Trade','cargo-hold-tab','Trade')+button('Open Cargo →','cargo-hold-tab','Cargo','class="primary"')+button('Open Contracts','cargo-hold-tab','Contracts')+'</div><p class="help cargo-panel-footnote">Full table in Cargo · Base values and audit in Details</p></aside>';
 }

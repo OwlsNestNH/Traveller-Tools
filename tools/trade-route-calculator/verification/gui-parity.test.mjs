@@ -174,19 +174,13 @@ async function run(stops){
  try{
   await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();
   assert.deepEqual(await page.locator('#tabs [data-action="tab"]').allTextContents(),tabs);
-  assert.equal(await page.locator('.overview-cargo').count(),1,'Overview owns the compact cargo table');
+  assert.equal(await page.locator('.overview-cargo').count(),0,'Overview has no duplicate cargo table');
   assert.equal(await page.locator('#market-search').count(),0,'Full supplier trading belongs on Trade');
   await unchanged('Initial shell');
   const serviceStyles=await page.locator('.ship-actions > button').evaluateAll(buttons=>buttons.map(button=>{const s=getComputedStyle(button);return {action:button.dataset.action,style:{background:s.background,color:s.color,border:s.borderColor}};}));
   assert.equal(serviceStyles.length,4,'Four direct shortcuts include Cargo Hold; Port costs remains inside Expenses');
   assert.deepEqual(serviceStyles.map(item=>item.action),['refuel','refill-support','cargo-hold','ship-expenses']);
   assert.ok(serviceStyles.filter(item=>item.action!=='cargo-hold').every(item=>JSON.stringify(item.style)===JSON.stringify(serviceStyles[0].style)),'Ship expenses uses the same primary colors as the other ship services');
-  const compactRows=await page.locator('.overview-cargo tbody tr').evaluateAll(rows=>rows.map(row=>[...row.querySelectorAll('td')].map(td=>td.textContent)));
-  const recordedAudit=fixture.state.lots[0].audit.price.audit;
-  const recordedDM=recordedAudit.skill+recordedAudit.localDM-recordedAudit.counterparty+recordedAudit.purchase.selected-recordedAudit.sale.selected;
-  assert.deepEqual(compactRows[0].slice(3,7),['lot-recorded','12',(recordedDM>=0?'+':'')+recordedDM,recordedAudit.percent+'%'],'Compact cargo uses the original recorded price total, DM and percent');
-  assert.deepEqual(compactRows[1].slice(3,7),['lot-legacy','11','Not recorded','Not recorded'],'Legacy total-only purchase does not gain invented DMs or a percentage');
-  assert.deepEqual(compactRows[2].slice(3,7),['lot-opening','Not recorded','Not recorded','Not recorded'],'Opening cargo does not gain invented negotiation inputs');
   for(const size of sizes){
    await page.setViewportSize(size);await geometry();await shellReadability();await routeLayout();
    if(size.width===320){
@@ -308,7 +302,7 @@ async function run(stops){
   // The compact cargo links use the same original detailed audit flows. Missing
   // dice are deliberately absent in two fixture lots and must stay absent.
   for(const [id,pattern]of [['lot-recorded',/2 \+ 4 \+ 6 = 12/],['lot-legacy',/Entered total: 11 \(individual dice not recorded\)/],['lot-opening',/no dice or modifiers are inferred from its cost basis/]]){
-   await page.locator('.overview-cargo [data-action="lot-audit"][data-arg="'+id+'"]').click();
+   await tab('Cargo');await page.locator('[data-action="lot-audit"][data-arg="'+id+'"]').first().click();
    const body=await page.locator('#modal-body').textContent();assert.match(body,pattern);
    if(id==='lot-opening')assert.doesNotMatch(body,/3D price roll|2 \+ 4 \+ 6/);
    await dismiss('Close');
@@ -355,7 +349,7 @@ async function run(stops){
    assert.equal(await page.locator('#modal-submit').isDisabled(),true);await unchanged('Ownership handoff during modal request');await dismiss('Cancel');
    await tab('Overview');await current();await action('map-world',targetId).press('Enter');await unchanged('Read-only browsing');
    assert.equal(await action('set-location').isDisabled(),true);assert.equal(await action('jump').isDisabled(),true,'Read-only browsing never enables travel');
-   await page.locator('.overview-cargo [data-action="lot-audit"]').first().click();await dismiss('Close');
+   await tab('Cargo');await page.locator('[data-action="lot-audit"]').first().click();await dismiss('Close');
    await second.close();await page.locator('#takeover').click();await page.getByText('Editing in this tab',{exact:true}).waitFor();await unchanged('Editing reacquisition');
   }
   assert.deepEqual(unexpected,[],'No API endpoint is accidentally live');assert.deepEqual(errors,[],'No uncaught browser errors');
