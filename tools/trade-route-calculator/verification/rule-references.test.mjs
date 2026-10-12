@@ -5,7 +5,7 @@ import {REFERENCE_VERSION,SOURCE_BOOKS,RULE_REFERENCES,ruleInfo,ruleReference,re
 
 const plain=id=>RULE_REFERENCES[id].parts.map(part=>part.kind+': '+part.text).join(' ');
 test('all reference entries have frozen display-only classifications and printed-page provenance',()=>{
- assert.equal(REFERENCE_VERSION,'2026.10.12.1');assert.equal(Object.keys(RULE_REFERENCES).length,30);
+ assert.equal(REFERENCE_VERSION,'2026.10.12.2');assert.equal(Object.keys(RULE_REFERENCES).length,30);
  const allowed=/^(Published rule|Published context|Home rule|App convention|Referee input|Explanation)/;
  for(const [id,entry] of Object.entries(RULE_REFERENCES)){
   assert.equal(ruleReference(id),entry);assert.ok(entry.title);assert.ok(Object.isFrozen(entry));assert.ok(Object.isFrozen(entry.parts));assert.ok(entry.parts.length);
@@ -41,3 +41,5 @@ test('popover has an isolated presentation boundary and never calls campaign API
  assert.doesNotMatch(source,/localStorage|sessionStorage|\.save\(|\.commit\(|\.requestSubmit\(|fetch\(|data-mutate/);
  assert.match(source,/document\.createElement\('dialog'\)/);assert.match(source,/event\.key==='Escape'/);assert.match(source,/el\?\.isConnected/);assert.match(source,/candidates\[origin\?\.ordinal\]/);assert.match(source,/target\.focus\(\{preventScroll:true\}\)/);assert.match(source,/event\.stopImmediatePropagation/);
 });
+
+test('life-support information separates physical source, cabin money and whole-total house rounding',()=>{const cost=plain('support-cost');assert.match(cost,/One LSS supports one awake person/);assert.match(cost,/0.1 LSS per day/);assert.match(cost,/buys 28 LSS/);assert.match(cost,/no physical cabin consumption/);assert.match(cost,/Cluster Truck, p.14/);assert.match(cost,/Core Rulebook Update 2022, p.154/);assert.match(plain('support-stock'),/12.1 to 13 LSS, add 0.9/);assert.match(plain('support-stock'),/comfort-only spending leaves stock unchanged/);});

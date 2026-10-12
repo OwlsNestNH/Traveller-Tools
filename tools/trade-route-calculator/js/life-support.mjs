@@ -1,7 +1,7 @@
-import {passengerShip} from './passengers.mjs?v=fuel-life-support-mfd-20261012-65';
-import {tiers,roomCounts,serviceRate,occupants,personRate} from './accommodation.mjs?v=fuel-life-support-mfd-20261012-65';
+import {passengerShip} from './passengers.mjs?v=static-service-mfd-20261012-66';
+import {tiers,roomCounts,serviceRate,occupants,personRate} from './accommodation.mjs?v=static-service-mfd-20261012-66';
 import {add,sub,mul,div,cmp,dec,rat,decimal,auditNumber,credit,floor} from './amounts.mjs';
-import {up,creditStep} from './rounding.mjs?v=fuel-life-support-mfd-20261012-65';
+import {up,creditStep} from './rounding.mjs?v=static-service-mfd-20261012-66';
 
 export const supportReference='Cluster Truck, p. 14: awake occupants consume 1 LSS per day; occupied low berths consume 0.1. Internal storage holds 4 LSS per displacement ton; overflow uses 0.01 cargo tons per LSS.';
 export const extraSupportReference='Home rule: extra supplies cost Cr1,000 per person-equivalent per 28 days. An occupied low berth counts as 0.1 person-equivalent. Round the combined extra charge up once to Cr100.';
@@ -118,7 +118,7 @@ export function consumeSupport(ship,hours,{complementShip=ship}={}){
  const c=supportComplement(complementShip);if(!c.known)return;
  ship.lifeSupport.stockUnits=auditNumber(maxZero(sub(supportAmount(ship.lifeSupport.stockUnits),mul(c.dailyUnits,div(hours,24)))));
 }
-export function refillQuote(s,{extraDays='0',comfortCost='0',comfortNote=''}={}){
+export function refillQuote(s,{extraDays='0',addDays=null,topOffDays=null,comfortCost='0',comfortNote=''}={}){
  s={...s,ship:passengerShip(s)};
  validateSupport(s.ship);const x=s.ship.lifeSupport;if(!x)throw Error('Set life support supplies first.');
  const stock=unitsOf(s.ship),c=supportComplement(s.ship),internalCapacity=supportInternalCapacity(s.ship);
@@ -126,23 +126,39 @@ export function refillQuote(s,{extraDays='0',comfortCost='0',comfortNote=''}={})
  if(!c.known||cmp(c.dailyUnits,0)<=0)throw Error('Enter a positive awake / occupied-low-berth complement before buying supplies.');
  if(internalCapacity===null)throw Error('Enter ship displacement before buying life support supplies.');
  if(cmp(extraDays,0)<0)throw Error('Extra days cannot be negative.');
- extraDays=dec(extraDays);const targetDays=div(x.capacityHours,24),target=mul(c.dailyUnits,targetDays),standardUnits=maxZero(sub(target,stock));
- const afterStandard=add(stock,standardUnits),extraUnits=maxZero(sub(mul(c.dailyUnits,add(targetDays,extraDays)),afterStandard));
- // User-approved pooled Low purchase lots: ten 0.1-LSS portions form one LSS.
- // Round the combined physical purchase once; period-based prices stay unchanged.
- const nominalPurchase=add(standardUnits,extraUnits),lowLots=c.occupiedLowBerths>0;
- const purchased=lowLots?dec(up(nominalPurchase)):nominalPurchase,after=add(stock,purchased),standardDays=div(standardUnits,c.dailyUnits),extraPurchasedDays=div(extraUnits,c.dailyUnits),monthly=monthlySupport(s.ship),billingHeadcount=extraSupportHeadcount(s.ship);
+ extraDays=dec(extraDays);const targetDays=div(x.capacityHours,24),target=mul(c.dailyUnits,targetDays),standardNeed=maxZero(sub(target,stock));
+ const dayPurchase=addDays!==null||topOffDays!==null;
+ let standardUnits=standardNeed,extraUnits;
+ if(dayPurchase){
+  if(cmp(extraDays,0)!==0)throw Error('Choose either added days or legacy target reserve days.');
+  addDays=dec(addDays??0);if(cmp(addDays,0)<0)throw Error('Added days cannot be negative.');
+  if(topOffDays!==null){topOffDays=dec(topOffDays);if(cmp(topOffDays,0)<=0)throw Error('Top-off days must be positive.');}
+  const base=topOffDays===null?stock:cmp(stock,mul(c.dailyUnits,topOffDays))>0?stock:mul(c.dailyUnits,topOffDays);
+  const requested=add(sub(base,stock),mul(c.dailyUnits,addDays));
+  // Both shortcuts use the existing configured-target tariff boundary. The
+  // same quantity has the same price, and no second cabin charge is invented.
+  standardUnits=minimum(requested,standardNeed);extraUnits=sub(requested,standardUnits);
+ }else{
+  const afterStandard=add(stock,standardUnits);extraUnits=maxZero(sub(mul(c.dailyUnits,add(targetDays,extraDays)),afterStandard));
+ }
+ // User-approved stock-total rounding applies only when supplies are purchased.
+ // Existing fractional stock is retained: 12.1 -> 13 adds 0.9, not 1.
+ // Prices still use nominal period requirements; comfort never changes stock.
+ const nominalPurchase=add(standardUnits,extraUnits),roundPostPurchaseTotal=cmp(nominalPurchase,0)>0;
+ const after=roundPostPurchaseTotal?dec(up(add(stock,nominalPurchase))):stock,purchased=sub(after,stock),standardDays=div(standardUnits,c.dailyUnits),extraPurchasedDays=div(extraUnits,c.dailyUnits),monthly=monthlySupport(s.ship),billingHeadcount=extraSupportHeadcount(s.ship);
  if(cmp(standardUnits,0)>0&&monthly<=0n)throw Error('Enter cabin and person service charges before buying a standard top-up.');
  const standardExact=mul(monthly,div(standardDays,28)),extraExact=mul(mul(billingHeadcount,1000),div(extraPurchasedDays,28));
  const standardAmount=up(standardExact,creditStep(s)),extraAmount=up(extraExact,100);
  const comfort=credit(comfortCost);if(comfort<0n)throw Error('Comfort provisions cost cannot be negative.');
  if(typeof comfortNote!=='string'||comfort>0n&&!comfortNote.trim())throw Error('Add a note for optional comfort provisions.');
- const comfortAmount=up(comfort,creditStep(s)),beforeDays=div(stock,c.dailyUnits),afterDays=div(after,c.dailyUnits),beforeCargo=mul(maxZero(sub(stock,internalCapacity)),'0.01'),afterCargo=mul(maxZero(sub(after,internalCapacity)),'0.01');
- return {capacityHours:x.capacityHours,targetDays:supportDisplay(targetDays),beforeUnits:supportDisplay(stock),afterUnits:supportDisplay(after),beforeDays:supportDisplay(beforeDays),afterDays:supportDisplay(afterDays),
-  standardDays:supportDisplay(standardDays),extraDays:supportDisplay(extraDays),extraPurchasedDays:supportDisplay(extraPurchasedDays),standardUnits:supportDisplay(standardUnits),extraUnits:supportDisplay(extraUnits),purchasedUnits:supportDisplay(purchased),nominalPurchasedUnits:supportDisplay(nominalPurchase),lowPurchaseLots:lowLots,purchaseLotUnits:lowLots?'1':null,purchaseSurplusUnits:supportDisplay(sub(purchased,nominalPurchase)),
+ const rooms=roomCounts(s.ship),cabinMonthly=tiers.reduce((n,t)=>n+BigInt(rooms[t]??0)*BigInt(serviceRate(t,s.ship.accommodation?.roomService?.[t])),0n),highMonthly=BigInt((s.ship.accommodation?.passengers?.high??0)+(s.ship.accommodation?.crew?.high??0))*2000n;
+ const standardPeriod=div(standardDays,28),cabinExact=mul(cabinMonthly,standardPeriod),highExact=mul(highMonthly,standardPeriod),basicExact=add(mul(monthly-cabinMonthly-highMonthly,standardPeriod),extraExact);
+ const comfortAmount=up(comfort,creditStep(s)),priceRounding=sub(add(standardAmount,extraAmount),add(add(basicExact,cabinExact),highExact)),beforeDays=div(stock,c.dailyUnits),afterDays=div(after,c.dailyUnits),beforeCargo=mul(maxZero(sub(stock,internalCapacity)),'0.01'),afterCargo=mul(maxZero(sub(after,internalCapacity)),'0.01');
+ return {capacityHours:x.capacityHours,addedDays:dayPurchase?supportDisplay(addDays):null,topOffDays:topOffDays===null?null:supportDisplay(topOffDays),targetDays:supportDisplay(targetDays),beforeUnits:supportDisplay(stock),afterUnits:supportDisplay(after),beforeDays:supportDisplay(beforeDays),afterDays:supportDisplay(afterDays),
+  standardDays:supportDisplay(standardDays),extraDays:supportDisplay(extraDays),extraPurchasedDays:supportDisplay(extraPurchasedDays),standardUnits:supportDisplay(standardUnits),extraUnits:supportDisplay(extraUnits),purchasedUnits:supportDisplay(purchased),nominalPurchasedUnits:supportDisplay(nominalPurchase),roundPostPurchaseTotal,purchaseSurplusUnits:supportDisplay(sub(purchased,nominalPurchase)),
   internalCapacityUnits:supportDisplay(internalCapacity),afterInternalUnits:supportDisplay(minimum(after,internalCapacity)),beforeCargoTons:supportDisplay(beforeCargo),afterCargoTons:supportDisplay(afterCargo),
   beforeStockUnits:auditNumber(stock),afterStockUnits:auditNumber(after),purchasedStockUnits:auditNumber(purchased),beforeCargoExact:auditNumber(beforeCargo),afterCargoExact:auditNumber(afterCargo),
   monthly:String(monthly),standardAmount:String(standardAmount),extraAmount:String(extraAmount),comfortAmount:String(comfortAmount),comfortNote:comfortNote.trim(),amount:String(standardAmount+extraAmount+comfortAmount),
   standardExact:auditNumber(standardExact),extraExact:auditNumber(extraExact),extraHeadcount:supportDisplay(billingHeadcount),extraRate:'1000',extraBillingDays:28,extraRoundingStep:100,extraPricingLabel:'Home rule',
-  awakePeople:c.awakePeople,occupiedLowBerths:c.occupiedLowBerths,dailyUnits:supportDisplay(c.dailyUnits),reference:supportReference,extraReference:extraSupportReference};
+  awakeCrew:tiers.reduce((n,t)=>n+(s.ship.accommodation.crew[t]??0),0),awakePassengers:tiers.reduce((n,t)=>n+(s.ship.accommodation.passengers[t]??0),0),awakePeople:c.awakePeople,occupiedLowBerths:c.occupiedLowBerths,dailyUnits:supportDisplay(c.dailyUnits),nominalDaysPurchased:supportDisplay(add(standardDays,extraPurchasedDays)),actualDaysAdded:supportDisplay(div(purchased,c.dailyUnits)),basicSupplyCharge:supportDisplay(basicExact),cabinCharge:supportDisplay(cabinExact),highServiceCharge:supportDisplay(highExact),priceRounding:supportDisplay(priceRounding),chargeBreakdownExact:{basic:auditNumber(basicExact),cabins:auditNumber(cabinExact),high:auditNumber(highExact),rounding:auditNumber(priceRounding)},reference:supportReference,extraReference:extraSupportReference};
 }

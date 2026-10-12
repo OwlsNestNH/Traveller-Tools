@@ -236,7 +236,7 @@ async function navigationAndDrafts(page,f){
    assert.equal((await page.locator('#service-quote .service-total strong').textContent()).trim(),'Cr 0');
    oldNoopReview=await remember('#service-panel [data-action="service-review"]');
    await unchanged(page,f,'Opening full-stock support adjustments');
-   await page.locator('#service-form [name="extraDays"]').fill('200');
+   await page.locator('#service-form [name="extraDays"]').fill('38');
    assert.equal((await page.locator('#service-quote .service-total strong').textContent()).trim(),'Cr 6,800','Only the 38-day deficit beyond existing stock is billed');
    assert.match(await page.locator('#service-quote').textContent(),/1140 LSS aboard/);
    await click(page,'service-review');

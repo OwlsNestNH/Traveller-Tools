@@ -54,7 +54,7 @@ function fixture(variant){
 }
 function inputFor(variant){return {kind:'fuel',fuelType:variant==='water'?'water':variant==='custom'?'refined':'unrefined',tons:variant==='water'?'3':variant==='custom'?'7.25':'23',...(variant==='custom'?{customFuelRate:'101.25'}:{}),otherSupplier:false,notes:reason};}
 function candidateFor(before,variant){return S.transition(before,label(variant),state=>{
- if(support(variant))S.refillLifeSupport(state,variant==='extra'?{extraDays:'14',comfortCost:'2000',comfortNote:reason}:{extraDays:'0',comfortCost:'0',comfortNote:''});
+ if(support(variant))S.refillLifeSupport(state,variant==='extra'?{addDays:'14',topOffDays:'28',comfortCost:'2000',comfortNote:reason}:{addDays:'0',topOffDays:'28',comfortCost:'0',comfortNote:''});
  else if(variant==='correction')fuelCorrection(state,'13',reason);
  else S.shipExpense(state,inputFor(variant));
 });}
@@ -214,6 +214,7 @@ async function prepare(page,result,variant,{captureBefore=true,fromExpenses=fals
  await page.locator('#service-panel').waitFor({state:'visible'});
  assert.equal(await page.locator('#modal').isVisible(),false,'Actual service is an MFD, not a substitute modal');
  if(support(variant)){
+  await action(page,'service-support-topoff').click();
   await action(page,'service-adjust').click();await field(page,'extraDays').fill(variant==='extra'?'14':'0');
   if(variant==='extra'){await page.locator('.service-comfort > summary').click();await field(page,'comfortCredits').fill('2000');await field(page,'comfortNote').fill(reason);}
  }else if(variant==='correction'){

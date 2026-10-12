@@ -1,8 +1,8 @@
-import {escapeHtml as esc} from './display.mjs?v=fuel-life-support-mfd-20261012-65';
+import {escapeHtml as esc} from './display.mjs?v=static-service-mfd-20261012-66';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.
-export const REFERENCE_VERSION='2026.10.12.1';
+export const REFERENCE_VERSION='2026.10.12.2';
 export const SOURCE_BOOKS=Object.freeze({
  core:Object.freeze({short:'Core 2022',title:'Traveller Core Rulebook Update 2022',edition:'Examined copyright 2024 revision'}),
  cluster:Object.freeze({short:'Cluster Truck',title:'Cluster Truck',edition:'Mongoose Publishing, ©2026; reviewed file dated 16 December 2025'}),
@@ -104,10 +104,13 @@ export const RULE_REFERENCES=Object.freeze({
   part('Published rule · selected adoption','Consumption is 1 LSS per awake person per day, or 0.1 per occupied low berth. Internal storage holds 4 LSS per hull ton. Overflow occupies 0.01 cargo ton per LSS.'),
   part('Home rule','Only these physical consumption and storage mechanics are adopted. Refill and reserve prices use this campaign’s separate pricing policy; other Cluster Truck prices, overheads and consequences are not adopted.')
  ]),
- 'support-cost':entry('cabin and person support costs',[core('154')],[
+ 'support-cost':entry('cabin and person support costs',[core('154'),source('cluster','14')],[
+  part('Published rule · selected adoption','One LSS supports one awake person for one day; an occupied Low berth consumes 0.1 LSS per day.'),
+  part('Home rule','The basic Cr1,000 person charge buys 28 LSS, enough for one awake person for 28 days. The Cr1,000-per-cabin monthly charge is a separate monetary expense, with no physical cabin consumption. High-service quality and comfort add cost, not LSS consumption.'),
   part('Published rule','The maintenance-period basis is Cr1,000 per stateroom, Cr1,000 per awake person and Cr100 per occupied low berth.'),
   part('Home rule','This campaign keeps Middle/High cabin costs at Cr1,000 and charges Cr3,000 total per High-service person, replacing the ordinary Cr1,000 person charge rather than adding another Cr3,000. Legacy low-service cabins are separate from frozen berths; new booked Low passengers use Cr100 each.'),
-  part('Referee input','Custom cabin rates and baseline occupants remain entered terms. Booked people add their support needs automatically; do not enter them again as baseline occupants.')
+  part('Referee input','Custom cabin rates and baseline occupants remain entered terms. Booked people add their support needs automatically; do not enter them again as baseline occupants.'),
+  part('Published context','Source footnote: Cluster Truck, p.14 supplies the selected physical LSS consumption/storage model. Core Rulebook Update 2022, p.154 supplies cabin/person monetary costs. Campaign purchase rounding and quality adjustments are separate; Cluster Truck pricing and overheads are not adopted.')
  ]),
  'support-pricing':entry('life-support top-up and extra reserve',[core('154')],[
   part('Home rule','Standard top-up prices the supply deficit from current cabin/person costs prorated over 28 days. Extra reserve costs Cr1,000 × person-equivalents × extra days purchased ÷ 28; occupied low berths count as 0.1 person-equivalent. Round the combined extra charge UP once to Cr100.'),
@@ -117,7 +120,7 @@ export const RULE_REFERENCES=Object.freeze({
  'support-stock':entry('life-support stock and comfort',[],[
   part('App convention','Hourly consumption keeps exact stock. Changing the complement recalculates endurance without refilling supplies. Unknown legacy stock stays unknown until reviewed. Comfort spending adds no LSS or endurance.'),
   part('Referee input','Opening stock and stock corrections are explicit records, not generated supply purchases.'),
-  part('Home rule','When occupied frozen Low berths are aboard, round the pooled refill purchase UP once to whole 1 LSS (ten 0.1-LSS portions). Keep surplus aboard; existing period-based prices remain unchanged.'),
+  part('Home rule','When supplies are purchased, round the resulting LSS aboard UP once to a whole number. From 12.1 to 13 LSS, add 0.9 LSS. Keep surplus aboard; existing period-based prices remain unchanged. No purchase or comfort-only spending leaves stock unchanged.'),
  part('Explanation','Better coffee does not count as extra oxygen.')
  ]),
  'hold':entry('cargo reservations',[core('158, 238')],[
