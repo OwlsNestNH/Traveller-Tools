@@ -1,4 +1,4 @@
-import {up} from './rounding.mjs?v=static-service-mfd-20261012-66';
+import {up} from './rounding.mjs?v=route-editor-current-world-20261012-67';
 import {sum,mul,decimal,cmp,credit} from './amounts.mjs';
 
 export const tiers=['low','middle','high'];

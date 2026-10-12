@@ -34,6 +34,10 @@ test('the single light frame contains route heading, Jump/Undo and exactly the s
   assert.ok(html.indexOf('class="map-caption"')>html.indexOf('</ol></div>'));
  }
  assert.match(render(5,{preview:true}),/class="planned-route" role="group" aria-label="Route preview"/);
+ const preview=render(5,{preview:true});
+ assert.ok(preview.indexOf('class="planned-route"')<preview.indexOf('class="route-draft"'));
+ assert.ok(preview.indexOf('class="route-draft"')<preview.indexOf('class="map-caption"'));
+ assert.ok(preview.indexOf('class="map-hint"')<preview.indexOf('class="panel-body world-correction"'));
 });
 
 test('frame uses normal content height, thin border, no shadow and the preserved desktop/mobile content gutters',()=>{

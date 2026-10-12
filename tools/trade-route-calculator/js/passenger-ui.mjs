@@ -1,10 +1,10 @@
-import {ruleInfo} from './rule-references.mjs?v=static-service-mfd-20261012-66';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=static-service-mfd-20261012-66';
+import {ruleInfo} from './rule-references.mjs?v=route-editor-current-world-20261012-67';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=route-editor-current-world-20261012-67';
 import * as A from './amounts.mjs';
-import {manualLuggage} from './accommodation.mjs?v=static-service-mfd-20261012-66';
-import * as P from './passengers.mjs?v=static-service-mfd-20261012-66';
-import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=static-service-mfd-20261012-66';
-import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=static-service-mfd-20261012-66';
+import {manualLuggage} from './accommodation.mjs?v=route-editor-current-world-20261012-67';
+import * as P from './passengers.mjs?v=route-editor-current-world-20261012-67';
+import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=route-editor-current-world-20261012-67';
+import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=route-editor-current-world-20261012-67';
 import {displayDate} from './calendar.mjs';
 const esc=escapeHtml;
 const money=formatCreditsText,signed=x=>x>0?'+'+x:String(x);

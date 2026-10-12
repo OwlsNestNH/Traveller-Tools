@@ -1,5 +1,5 @@
 import {cmp} from './amounts.mjs';
-import {up} from './rounding.mjs?v=static-service-mfd-20261012-66';
+import {up} from './rounding.mjs?v=route-editor-current-world-20261012-67';
 
 // Normalize one entry without campaign, DOM, transaction or validation state.
 // The exact-remainder exception preserves historical fractional full sales.

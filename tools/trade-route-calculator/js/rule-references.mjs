@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=static-service-mfd-20261012-66';
+import {escapeHtml as esc} from './display.mjs?v=route-editor-current-world-20261012-67';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.

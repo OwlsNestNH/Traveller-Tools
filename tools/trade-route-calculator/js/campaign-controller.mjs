@@ -1,6 +1,6 @@
-import * as S from './state.mjs?v=static-service-mfd-20261012-66';
-import {creditStep} from './rounding.mjs?v=static-service-mfd-20261012-66';
-import {SaveNotCommittedError} from './persistence.mjs?v=static-service-mfd-20261012-66';
+import * as S from './state.mjs?v=route-editor-current-world-20261012-67';
+import {creditStep} from './rounding.mjs?v=route-editor-current-world-20261012-67';
+import {SaveNotCommittedError} from './persistence.mjs?v=route-editor-current-world-20261012-67';
 
 // Store remains synchronous. An injected provider may return a completion
 // Promise; that completion must include the durable write and publication.
