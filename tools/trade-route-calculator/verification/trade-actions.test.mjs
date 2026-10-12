@@ -351,7 +351,7 @@ test('toggling support adjust/review and fuel correction invalidates every old s
   const token=h.api.services.token();
   await h.api.services.action(kind==='refuel'?'service-fuel-correct':'service-adjust','',token);
   // A correction without reduced fuel cannot be reviewed; ordinary support can.
-  if(mode==='review'&&kind==='refill-support')await h.api.services.action('service-review','',token);
+  if(mode==='review'&&kind==='refill-support'){await h.api.services.action('service-support-topoff','',token);await h.api.services.action('service-review','',token);}
   h.api.toggleShipPanel(kind);h.api.toggleShipPanel(kind);const replacement=h.api.services.panel();
   for(const action of ['service-confirm','service-review','service-back','service-cancel','service-fuel-step'])await h.api.services.action(action,'10',token);
   assert.equal(h.api.services.panel(),replacement);same(h.persisted(),before);
@@ -370,7 +370,7 @@ test('Ship expenses stays selected on a draft or paid receipt; toggling only clo
 test('top-level toggles never undo or reapply confirmed fuel or life support',async()=>{
  for(const kind of ['refuel','refill-support']){
   const h=harness(recurringCampaign());h.api.setTab('Overview');h.api.toggleShipPanel(kind);
-  const token=h.api.services.token();await h.api.services.action('service-confirm','',token);const paid=h.persisted();
+  const token=h.api.services.token();if(kind==='refill-support')await h.api.services.action('service-support-topoff','',token);await h.api.services.action('service-confirm','',token);const paid=h.persisted();
   assert.equal(paid.ledger.length,1);assert.equal(paid.undo.length,1);assert.deepEqual(selectedShipButton(h),[kind]);assert.equal(h.api.services.active(),false);assert.match(h.api.services.panel(),/service-saved/);
   h.api.toggleShipPanel(kind);h.api.toggleShipPanel(kind);await h.api.services.action('service-confirm','',token);same(h.persisted(),paid);
  }

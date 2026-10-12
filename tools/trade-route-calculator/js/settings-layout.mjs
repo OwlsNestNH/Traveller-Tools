@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=fuel-life-support-mfd-20261012-65';
+import {ruleInfo} from './rule-references.mjs?v=static-service-mfd-20261012-66';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={

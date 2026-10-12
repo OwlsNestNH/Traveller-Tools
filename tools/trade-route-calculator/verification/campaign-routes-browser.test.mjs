@@ -83,7 +83,7 @@ async function refillLss(force=false){
  if(stock(s)>=140-1e-9||!force&&stock(s)>=105)return;
  const cost=Math.ceil((140-stock(s))*100-1e-7); // Cr14,000 /140 LSS, once.
  if(BigInt(s.bank)<BigInt(cost)){report.decisions.push({kind:'LSS unavailable: insufficient cash',world:s.actual,cost,bank:s.bank});throw Error('Expected operating cash shortfall stops this trip before unsupported travel.');}
- await tab('Overview');await click('refill-support');if(await page.locator('#service-panel.service-saved').count())await click('service-new');assert.equal(await action('service-confirm').isEnabled(),true);await click('service-confirm');await page.locator('#service-panel.service-saved').waitFor({state:'visible'});
+ await tab('Overview');await click('refill-support');if(await page.locator('#service-panel.service-saved').count())await click('service-new');await click('service-support-topoff');assert.equal(await action('service-confirm').isEnabled(),true);await click('service-confirm');await page.locator('#service-panel.service-saved').waitFor({state:'visible'});
  const after=await checkpoint('LSS normal refill');assert.equal(after.bank,String(BigInt(s.bank)-BigInt(cost)));assert.ok(Math.abs(stock(after)-140)<1e-9);assert.equal(after.ledger.length,s.ledger.length+1);check('normal LSS refill: exact prorating; no duplicate cabin/person payment',{world:s.worlds[s.actual].name,cost});
 }
 async function refuel(target){

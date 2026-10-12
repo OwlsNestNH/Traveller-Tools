@@ -67,9 +67,6 @@ async function geometry(page){
 function sameGeometry(actual,expected,label,{outer=true}={}){
  const parts=outer?Object.keys(expected).filter(key=>key!=='serviceMfd'):['map','mapSlot','navigation','right','layout'];
  for(const name of parts)for(const dimension of (outer?['left','top','width','height']:['width','height'])){
-  // The approved desktop column change wraps route controls above the map.
-  // Retain outer origin/width and compare all dimensions within each layout.
-  if(actual.serviceMfd!==expected.serviceMfd&&(dimension==='height'||(['map','mapSlot'].includes(name)&&dimension==='top')||(['map','mapSlot','navigation','right'].includes(name)&&['left','width'].includes(dimension))))continue;
   assert.ok(Math.abs(actual[name][dimension]-expected[name][dimension])<=1,`${label}: ${name} ${dimension} remains fixed (${expected[name][dimension]} → ${actual[name][dimension]})`);
  }
 }

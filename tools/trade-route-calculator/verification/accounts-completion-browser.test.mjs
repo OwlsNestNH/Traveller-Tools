@@ -81,7 +81,10 @@ const approvedTransportSources={
 // .65 adds saved-refill audit fields and user-approved pooled Low physical supply rounding.
 // Original released/.64 identities remain above; monetary oracle assertions remain intact.
 const approvedServiceSources={"state.mjs": "75973cea99ef3b90e0d79edfee4d54d68169d5cb21d7c7ef9ce4a69515b3bfe8", "life-support.mjs": "9aa49fbf1fb33e54f7c9e6fe519bf76c95f0877d8e8ae82df3d77297670f2b0e"};
-async function assertReleasedEconomics(){for(const[name,expectedHash]of Object.entries(releasedEconomics.sha256))assert.equal(hash(importTagNeutral(await readFile(new URL('../js/'+name,import.meta.url),'utf8'))),approvedServiceSources[name]||approvedServiceSources[name]||approvedTransportSources[name]||expectedHash,(approvedServiceSources[name]?'Reviewed .65 service source identity: ':approvedTransportSources[name]?'Reviewed .64 transport source identity: ':'Released economic source identity: ')+name);return {...releasedEconomics,approvedTransportSources};}
+// .66 changes only refill plans, stock-total rounding and saved purchase audit fields.
+// Released/.64/.65 identities remain retained; monetary inverse assertions remain.
+const approvedRefillSources={"state.mjs": "e805e57e710395d4e932fe8551af1c8cbc633a47fef9c491804714a0f293111c", "life-support.mjs": "823c1ca83ff188c78a9e07e7be3717bb8399b44d6ff4c778eaf7487d6e0e1c53"};
+async function assertReleasedEconomics(){for(const[name,expectedHash]of Object.entries(releasedEconomics.sha256))assert.equal(hash(importTagNeutral(await readFile(new URL('../js/'+name,import.meta.url),'utf8'))),approvedServiceSources[name]||approvedRefillSources[name]||approvedServiceSources[name]||approvedTransportSources[name]||expectedHash,(approvedRefillSources[name]?'Reviewed .66 refill source identity: ':approvedServiceSources[name]?'Reviewed .65 service source identity: ':approvedTransportSources[name]?'Reviewed .64 transport source identity: ':'Released economic source identity: ')+name);return {...releasedEconomics,approvedTransportSources,approvedServiceSources,approvedRefillSources};}
 const raw=page=>page.evaluate(key=>localStorage.getItem(key),KEY);
 const read=async page=>JSON.parse(await raw(page));
 const frames=page=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));

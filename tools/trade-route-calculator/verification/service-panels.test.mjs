@@ -75,19 +75,19 @@ test('legacy campaign baseline can preview, cancel, refuel bladders and undo wit
  assert.deepEqual(undone.events.slice(before.events.length).map(e=>e.label),['Refuelled','Undo: Refuelled']);
 });
 test('stale and read-only drafts cannot commit and keep frozen actual-world display',async()=>{for(const mode of ['revision','ownership']){const h=harness();h.services.open('fuel');if(mode==='revision'){const next=S.transition(h.state(),'Other change',s=>s.bank='99999');h.setState(next);}else h.readOnly();assert.match(h.services.panel(),/Campaign or editing ownership changed/);await assert.rejects(h.action('service-confirm',''),/Campaign or editing ownership changed/);assert.equal(h.commits,0);await h.action('service-cancel','');assert.equal(h.services.active(),false);}});
-test('LSS preview rejects funds and cargo overflow before offering payment',()=>{for(const kind of ['funds','cargo']){const s=campaign();s.ship.accommodation={rooms:{low:0,middle:4,high:0},passengers:{low:0,middle:4,high:0},crew:{low:0,middle:0,high:0}};s.ship.lifeSupport={capacityHours:672,stockUnits:{numerator:'56',denominator:'1'}};if(kind==='funds')s.bank='1';else{s.ship.fuel=configureFuel(10,4,2,0,2);s.ship.capacity='0';}const h=harness(s);h.services.open('support');assert.match(h.services.panel(),kind==='funds'?/Insufficient funds/:/exceed available cargo/);assert.equal(h.commits,0);}});
+test('LSS preview rejects funds and cargo overflow before offering payment',async()=>{for(const kind of ['funds','cargo']){const s=campaign();s.ship.accommodation={rooms:{low:0,middle:4,high:0},passengers:{low:0,middle:4,high:0},crew:{low:0,middle:0,high:0}};s.ship.lifeSupport={capacityHours:672,stockUnits:{numerator:'56',denominator:'1'}};if(kind==='funds')s.bank='1';else{s.ship.fuel=configureFuel(10,4,2,0,2);s.ship.capacity='0';}const h=harness(s);h.services.open('support');await h.action('service-support-topoff');assert.match(h.services.panel(),kind==='funds'?/Insufficient funds/:/exceed available cargo/);assert.equal(h.commits,0);}});
 
 for(const [from,to] of [['fuel','support'],['support','fuel']]){
  for(const mode of (from==='fuel'?['inline']:['summary','adjust','reviewed']))test(`${from} → ${to} from ${mode} discards only the draft and rejects its detached callbacks`,async()=>{
   const h=harness(withSupport({frozen:2})),before=h.bytes();
-  h.services.open(from);
+  h.services.open(from);if(from==='support')await h.action('service-support-topoff');
   if(mode!=='summary'){
    if(from==='support')await h.action('service-adjust');
    h.fill(from==='fuel'?{fuelType:'water',fuelTons:'7',expenseNotes:'Discard this fuel draft'}:{extraDays:'14',comfortCredits:'2000',comfortNote:'Discard this support draft'});
    if(mode==='reviewed')await h.action('service-review');
   }
   const oldToken=h.services.token(),callbacks=['service-confirm','service-review','service-adjust','service-fuel-correct','service-back','service-cancel','service-fuel-step','service-fuel-topoff','service-fuel-next'].map(name=>h.capture(name,'-10'));
-  h.services.open(to);
+  h.services.open(to);if(to==='support')await h.action('service-support-topoff');
   assert.notEqual(h.services.token(),oldToken,'Each switch has a fresh generation');
   const replacement=h.services.panel(),renders=h.renders;
   assert.match(replacement,to==='fuel'?/id="service-form"/:/Life support · Summary/);
@@ -109,7 +109,7 @@ for(const [from,to] of [['fuel','support'],['support','fuel']]){
    assert.match(editor,/Cr 4,000/,'Fresh standard LSS quote ignores discarded extras');
   }
   // Return directly once more: the original service also starts afresh.
-  h.services.open(from);if(from==='support')await h.action('service-adjust');
+  h.services.open(from);if(from==='support')await h.action('service-support-topoff');if(from==='support')await h.action('service-adjust');
   assert.match(h.services.panel(),from==='fuel'?/name="fuelTons"[^>]*value="23"/:/name="extraDays"[^>]*value="0"/);
   assert.doesNotMatch(h.services.panel(),/Discard this/);
   await h.action('service-cancel');assert.equal(h.services.active(),false);assert.equal(h.bytes(),before);
@@ -121,7 +121,7 @@ test('fuel correction draft is discarded by a direct switch without a refund, au
  await h.action('service-fuel-correct');
  h.fill({fuelRemaining:'13',fuelReason:'Unfinished correction'});await h.action('service-review');
  const confirm=h.capture('service-confirm');assert.match(h.services.panel(),/Adjust fuel aboard · Summary/);
- h.services.open('support');await confirm();assert.equal(h.bytes(),before);
+ h.services.open('support');await h.action('service-support-topoff');await confirm();assert.equal(h.bytes(),before);
  h.services.open('fuel');assert.match(h.services.panel(),/id="service-form"/);assert.doesNotMatch(h.services.panel(),/Unfinished correction/);
  assert.equal(h.state().ship.fuel.aboardTons,20);assert.equal(h.commits,0);
 });
@@ -152,9 +152,9 @@ test('missing or malformed tokens never authorize actions, including Cancel and 
 test('quiet close abandons the session without rendering and invalidates callbacks before reopening',async()=>{
  const h=harness(withSupport()),before=h.bytes();h.services.open('fuel');const callback=h.capture('service-confirm'),token=h.services.token(),renders=h.renders;
  assert.equal(h.services.close({render:false}),true);assert.equal(h.services.active(),false);assert.equal(h.services.token(),'');assert.equal(h.services.panel(),'');assert.equal(h.renders,renders);
- await callback();assert.equal(h.commits,0);h.services.open('support');assert.notEqual(h.services.token(),token);
+ await callback();assert.equal(h.commits,0);h.services.open('support');await h.action('service-support-topoff');assert.notEqual(h.services.token(),token);
  const panel=h.services.panel();await callback();assert.equal(h.services.panel(),panel);assert.equal(h.bytes(),before);
- h.services.close();assert.equal(h.renders,renders+2);assert.equal(h.bytes(),before);
+ h.services.close();assert.equal(h.renders,renders+3);assert.equal(h.bytes(),before);
 });
 
 test('the replacement session reads current revision, actual world and LSS stock instead of the abandoned base',async()=>{
@@ -166,12 +166,12 @@ test('the replacement session reads current revision, actual world and LSS stock
  });
  h.setState(next);const before=h.bytes(),expected=refillQuote(next);
  assert.match(h.services.panel(),/Actual origin/);assert.match(h.services.panel(),/Campaign or editing ownership changed/);
- h.services.open('support');assert.match(h.services.panel(),/New actual harbor/);assert.doesNotMatch(h.services.panel(),/Actual origin/);
+ h.services.open('support');await h.action('service-support-topoff');assert.match(h.services.panel(),/New actual harbor/);assert.doesNotMatch(h.services.panel(),/Actual origin/);
  assert.match(h.services.panel(),/13 days/);assert.match(h.services.panel(),/54\.6 LSS aboard/);
  assert.equal(h.bytes(),before);await oldConfirm();assert.equal(h.bytes(),before);
  const confirm=h.capture('service-confirm');await confirm();await confirm();
  assert.equal(h.commits,1);assert.equal(h.state().bank,String(BigInt(next.bank)-BigInt(expected.amount)));
- assert.equal(supportStock(h.state().ship).remainingUnits,'117.6');
+ assert.equal(supportStock(h.state().ship).remainingUnits,'118');
  assert.equal(h.state().ledger.at(-1).world,'1,0');assert.equal(h.state().revision,next.revision+1);
  assert.equal(h.state().ship.fuel.aboardTons,20);
 });
@@ -182,7 +182,7 @@ test('read-only switch cannot replace or commit a session, and ownership recover
  assert.throws(()=>h.services.open('support'),/read-only/);assert.equal(h.services.token(),token);
  await assert.rejects(h.action('service-review'),/Campaign or editing ownership changed/);assert.equal(h.bytes(),before);
  h.editable();await assert.rejects(oldConfirm(),/Campaign or editing ownership changed/);
- h.services.open('support');const panel=h.services.panel();await oldConfirm();assert.equal(h.services.panel(),panel);assert.equal(h.bytes(),before);
+ h.services.open('support');await h.action('service-support-topoff');const panel=h.services.panel();await oldConfirm();assert.equal(h.services.panel(),panel);assert.equal(h.bytes(),before);
  await h.action('service-confirm');assert.equal(h.commits,1);assert.equal(h.state().bank,'96000');
 });
 
@@ -196,23 +196,23 @@ test('an unavailable replacement leaves the original draft intact and never muta
 });
 
 test('an old form cannot overwrite fresh LSS inputs or amounts after a direct switch',async()=>{
- const h=harness(withSupport({frozen:2})),before=h.bytes();h.services.open('support');await h.action('service-adjust');
+ const h=harness(withSupport({frozen:2})),before=h.bytes();h.services.open('support');await h.action('service-support-topoff');await h.action('service-adjust');
  const oldToken=h.services.token();h.fill({extraDays:'14',comfortCredits:'2000',comfortNote:'Old form'});
- h.services.open('fuel');h.services.open('support');await h.action('service-adjust');
+ h.services.open('fuel');h.services.open('support');await h.action('service-support-topoff');await h.action('service-adjust');
  h.fill({extraDays:'999',comfortCredits:'99000',comfortNote:'Detached old form'},oldToken);
  assert.match(h.services.panel(),/name="extraDays"[^>]*value="0"/);assert.match(h.services.panel(),/Cr 4,000/);assert.equal(h.bytes(),before);
  h.fill({extraDays:'14',comfortCredits:'2000',comfortNote:'Fresh supplies'});await h.action('service-review');
- assert.match(h.services.panel(),/Cr 8,100/);assert.match(h.services.panel(),/176\.8 LSS aboard/);
+ assert.match(h.services.panel(),/Cr 8,100/);assert.match(h.services.panel(),/177 LSS aboard/);
  const confirm=h.capture('service-confirm');await confirm();await confirm();
- assert.equal(h.commits,1);assert.equal(h.state().bank,'91900');assert.equal(h.state().ledger.length,1);assert.equal(supportStock(h.state().ship).remainingUnits,'176.8');
+ assert.equal(h.commits,1);assert.equal(h.state().bank,'91900');assert.equal(h.state().ledger.length,1);assert.equal(supportStock(h.state().ship).remainingUnits,'177');
 });
 
 test('switching and Back preserve all previously recorded payments, audits and Undo entries',async()=>{
  const h=harness(withSupport());h.services.open('fuel');await h.action('service-confirm');
- h.services.open('support');await h.action('service-confirm');
+ h.services.open('support');await h.action('service-support-topoff');await h.action('service-confirm');
  const paid=h.bytes();assert.equal(h.commits,2);assert.equal(h.state().ledger.length,2);assert.equal(h.state().undo.length,2);
- h.services.open('support');await h.action('service-adjust');h.fill({extraDays:'14'});await h.action('service-review');
- h.services.open('fuel');h.services.open('support');await h.action('service-back');
+ h.services.open('support');await h.action('service-support-topoff');await h.action('service-adjust');h.fill({extraDays:'14'});await h.action('service-review');
+ h.services.open('fuel');h.services.open('support');await h.action('service-support-topoff');await h.action('service-back');
  assert.equal(h.bytes(),paid,'Draft navigation never rolls back an already recorded transaction');assert.equal(h.commits,2);
 });
 
@@ -231,17 +231,19 @@ test('a failed final save stays atomic, and reentrant switching is locked until 
 });
 
 for(const frozen of [0,2])for(const kind of ['extra','comfort'])test(`full LSS exposes ${kind} without charging baseline again (${frozen} frozen)`,async()=>{
- const s=withSupport({frozen});s.ship.lifeSupport.remainingHours=672;const before=structuredClone(s),h=harness(s);h.services.open('support');
+ const s=withSupport({frozen});s.ship.lifeSupport.remainingHours=672;const before=structuredClone(s),h=harness(s);h.services.open('support');await h.action('service-support-topoff');
  assert.match(h.services.panel(),/id="service-form"/);assert.match(h.services.panel(),/name="extraDays"[^>]*value="0"/);assert.match(h.services.panel(),/name="comfortCredits"[^>]*value="0"/);assert.match(h.services.panel(),/Standard top-up<\/dt><dd>\+0 days · Cr 0/);assert.match(h.services.panel(),/<strong>Cr 0<\/strong>/);assert.equal(h.bytes(),JSON.stringify(before));
  await h.action('service-confirm');assert.equal(h.commits,0,'Full initial draft still requires Review');
  h.fill(kind==='extra'?{extraDays:'14'}:{comfortCredits:'2000',comfortNote:'Comfort only, no physical stock'});
  const q=refillQuote(s,kind==='extra'?{extraDays:'14'}:{comfortCost:'2000',comfortNote:'Comfort only, no physical stock'});assert.equal(q.standardAmount,'0');assert.equal(q.extraAmount,kind==='extra'?(frozen?'2100':'2000'):'0');assert.equal(q.amount,kind==='comfort'?'2000':frozen?'2100':'2000');
  assert.equal(h.bytes(),JSON.stringify(before));await h.action('service-review');assert.equal(h.bytes(),JSON.stringify(before));const confirm=h.capture('service-confirm');await confirm();await confirm();
  assert.equal(h.commits,1);assert.equal(h.state().bank,String(100000n-BigInt(q.amount)));assert.equal(supportStock(h.state().ship).remainingUnits,q.afterUnits);assert.equal(h.state().ledger.length,1);assert.equal(h.state().undo.length,1);
- h.services.open('support');assert.match(h.services.panel(),/id="service-form"/);assert.match(h.services.panel(),/<strong>Cr 0<\/strong>/);assert.equal(h.commits,1);
+ h.services.open('support');await h.action('service-support-topoff');assert.match(h.services.panel(),/id="service-form"/);assert.match(h.services.panel(),/<strong>Cr 0<\/strong>/);assert.equal(h.commits,1);
  const undone=S.undo(h.state());for(const key of ['bank','ship','ledger','hours'])assert.deepEqual(undone[key],before[key]);
 });
 
 test('saved fuel screen retires the draft and detached confirmation while retaining totals and Audit',async()=>{const h=harness(),confirm=(()=>{h.services.open('fuel');return h.capture('service-confirm');})();await confirm();const bytes=h.bytes();assert.equal(h.services.active(),false);assert.equal(h.services.visible(),true);assert.match(h.services.panel(),/Refuel saved/);assert.match(h.services.panel(),/Fuel aboard[\s\S]*43 t/);assert.match(h.services.panel(),/Audit · saved service/);await confirm();assert.equal(h.bytes(),bytes);assert.equal(h.commits,1);h.readOnly();assert.match(h.services.panel(),/Read-only/);await h.action('service-back');assert.equal(h.services.visible(),false);});
-test('saved support screen keeps physical stock separate from comfort and starts a fresh purchase token',async()=>{const h=harness(withSupport());h.services.open('support');const original=h.capture('service-confirm');await original();assert.equal(h.services.active(),false);assert.equal(h.services.visible(),true);const first=h.bytes(),oldToken=h.services.token();await h.action('service-new');assert.notEqual(h.services.token(),oldToken);await original();assert.equal(h.bytes(),first);h.fill({comfortCredits:'2000',comfortNote:'Coffee only'});const units=supportStock(h.state().ship).remainingUnits;await h.action('service-confirm');assert.equal(supportStock(h.state().ship).remainingUnits,units);assert.equal(h.commits,2);assert.match(h.services.panel(),/Life support refill saved/);});
-test('reserve and comfort steppers edit only the draft and clamp removal at zero',async()=>{const h=harness(withSupport()),before=h.bytes();h.services.open('support');h.fill({extraDays:'0',comfortCredits:'0',comfortNote:''});await h.action('service-reserve-step','1');assert.match(h.services.panel(),/name="extraDays"[^>]*value="1"/);await h.action('service-comfort-step','1000');assert.match(h.services.panel(),/name="comfortCredits"[^>]*value="1000"/);assert.match(h.services.panel(),/Add a note/);await h.action('service-comfort-step','-1000');await h.action('service-comfort-step','-1000');assert.match(h.services.panel(),/name="comfortCredits"[^>]*value="0"/);assert.equal(h.bytes(),before);assert.equal(h.commits,0);});
+test('saved support screen keeps physical stock separate from comfort and starts a fresh purchase token',async()=>{const h=harness(withSupport());h.services.open('support');await h.action('service-support-topoff');const original=h.capture('service-confirm');await original();assert.equal(h.services.active(),false);assert.equal(h.services.visible(),true);const first=h.bytes(),oldToken=h.services.token();await h.action('service-new');assert.notEqual(h.services.token(),oldToken);await original();assert.equal(h.bytes(),first);h.fill({comfortCredits:'2000',comfortNote:'Coffee only'});const units=supportStock(h.state().ship).remainingUnits;await h.action('service-confirm');assert.equal(supportStock(h.state().ship).remainingUnits,units);assert.equal(h.commits,2);assert.match(h.services.panel(),/Life support refill saved/);});
+test('reserve and comfort steppers edit only the draft and clamp removal at zero',async()=>{const h=harness(withSupport()),before=h.bytes();h.services.open('support');await h.action('service-support-topoff');h.fill({extraDays:'0',comfortCredits:'0',comfortNote:''});await h.action('service-reserve-step','1');assert.match(h.services.panel(),/name="extraDays"[^>]*value="1"/);await h.action('service-comfort-step','1000');assert.match(h.services.panel(),/name="comfortCredits"[^>]*value="1000"/);assert.match(h.services.panel(),/Add a note/);await h.action('service-comfort-step','-1000');await h.action('service-comfort-step','-1000');assert.match(h.services.panel(),/name="comfortCredits"[^>]*value="0"/);assert.equal(h.bytes(),before);assert.equal(h.commits,0);});
+
+test('days-only and Top off 28 previews change no state until confirmation and freeze purchase audit',async()=>{const h=harness(withSupport()),before=h.bytes(),kind='support';h.services.open(kind);assert.match(h.services.panel(),/<strong>Cr 0<\/strong>/);h.fill({extraDays:'7'});assert.match(h.services.panel(),/21 days/);assert.match(h.services.panel(),/84 LSS aboard/);assert.match(h.services.panel(),/Cr 2,000/);assert.equal(h.bytes(),before);await h.action('service-support-topoff');assert.match(h.services.panel(),/112 LSS aboard/);h.fill({extraDays:'7'});assert.match(h.services.panel(),/140 LSS aboard/);assert.match(h.services.panel(),/Cr 5,000/);await h.action('service-confirm');assert.equal(supportStock(h.state().ship).remainingUnits,'140');assert.equal(h.state().bank,'95000');const audit=h.services.panel().split('Audit · saved service')[1],changed=structuredClone(h.state());changed.ship.accommodation.passengers.middle=8;h.setState(changed);assert.equal(h.services.panel().split('Audit · saved service')[1],audit,'Receipt audit retains purchased terms after later complement change');});

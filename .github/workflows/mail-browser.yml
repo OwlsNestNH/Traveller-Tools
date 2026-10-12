@@ -312,6 +312,7 @@ jobs:
           name: trade-service-mfd-visuals-${{ github.event.pull_request.head.sha }}
           path: |
             tools/trade-route-calculator/verification-artifacts/mfd-*.png
+            tools/trade-route-calculator/verification-artifacts/service-panels-report.json
             tools/trade-route-calculator/verification-artifacts/commit.txt
             tools/trade-route-calculator/verification-artifacts/service-panels-browser.txt
           if-no-files-found: error

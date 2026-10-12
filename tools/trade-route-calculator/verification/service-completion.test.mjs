@@ -9,7 +9,7 @@ import {campaignBaseline} from './fixtures/campaign-baseline.mjs';
 // Scope: actual Fuel/LSS app callbacks and real Store, with private storage and
 // a delayed completion adapter. This does not certify browser gestures, Web
 // Locks, arbitrary async providers, or other not-yet-migrated action groups.
-// Approved Low lot ceiling changes only the physical stock expectations below.
+// Approved resulting-stock ceiling changes only the physical stock expectations below.
 // Prices, time, consumption, accounting and Undo remain independently exact.
 const cases=[
  {id:'refined fuel',kind:'fuel',values:{fuelType:'refined',fuelTons:'7.25',expenseNotes:'Exact refined draft'},bank:'96000',fuel:28,amount:'4000'},
@@ -18,9 +18,9 @@ const cases=[
  {id:'custom refined whole credits',kind:'fuel',values:{fuelType:'custom',customFuelType:'refined',customFuelRate:'101.25',fuelTons:'2.25',expenseNotes:'Quoted local price'},bank:'99696',fuel:23,amount:'304'},
  {id:'custom unrefined Cr100',kind:'fuel',fixture:{creditStep:100},values:{fuelType:'custom',customFuelType:'unrefined',customFuelRate:'101.25',fuelTons:'2.25',expenseNotes:'Quoted local price'},bank:'99600',fuel:23,amount:'400'},
  {id:'no-refund fuel correction',kind:'fuel',correction:true,values:{fuelRemaining:'13',fuelReason:'Measured actual remaining'},bank:'100000',fuel:13,amount:null},
- {id:'standard life support',kind:'support',bank:'96000',stock:{numerator:'589',denominator:'5'},amount:'4000'},
- {id:'extra and comfort life support',kind:'support',values:{extraDays:'14',comfortCredits:'2000',comfortNote:'Fresh comfort provisions'},bank:'91900',stock:{numerator:'884',denominator:'5'},amount:'8100'},
- {id:'extra-only full life support',kind:'support',fixture:{full:true},values:{extraDays:'14',comfortCredits:'0',comfortNote:''},bank:'97900',stock:{numerator:'883',denominator:'5'},amount:'2100'},
+ {id:'standard life support',kind:'support',bank:'96000',stock:{numerator:'118',denominator:'1'},amount:'4000'},
+ {id:'extra and comfort life support',kind:'support',values:{extraDays:'14',comfortCredits:'2000',comfortNote:'Fresh comfort provisions'},bank:'91900',stock:{numerator:'177',denominator:'1'},amount:'8100'},
+ {id:'extra-only full life support',kind:'support',fixture:{full:true},values:{extraDays:'14',comfortCredits:'0',comfortNote:''},bank:'97900',stock:{numerator:'177',denominator:'1'},amount:'2100'},
  {id:'comfort-only full life support',kind:'support',fixture:{full:true},values:{extraDays:'0',comfortCredits:'2000',comfortNote:'Comfort only'},bank:'98000',stock:{numerator:'588',denominator:'5'},amount:'2000'}
 ];
 const representatives=[cases[0],cases[5],cases[7]];
@@ -28,7 +28,7 @@ const noSuccess=h=>assert.doesNotMatch(serviceUI(h).message,/Refuelled saved\.|A
 const material=s=>Object.fromEntries(Object.entries(s).filter(([key])=>!['revision','events'].includes(key)));
 const syntheticOffer={offerId:'service-retained-offer',kind:'freight',origin:'0,0',destination:'1,0',quantity:'2',payment:'2000',dueHours:null,audit:{manual:true}};
 async function prepare(h,c){
- h.api.services.open(c.kind);
+ h.api.services.open(c.kind);if(c.kind==='support')await h.serviceAction('service-support-topoff');
  if(c.correction)await h.serviceAction('service-fuel-correct');
  else if(c.kind==='support'&&c.values)await h.serviceAction('service-adjust');
  if(c.values?.fuelType==='custom')h.fillService({fuelType:'custom'});

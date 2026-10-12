@@ -30,7 +30,7 @@ try{
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   const button=name=>page.locator('[data-action="'+name+'"]:visible').first(),click=name=>button(name).click();
   const raw=()=>page.evaluate(key=>localStorage.getItem(key),campaignKey),read=async()=>JSON.parse(await raw());
-  const openService=async name=>{if(await button(name).getAttribute('aria-pressed')==='true')await click(name);await click(name);};
+  const openService=async name=>{if(await button(name).getAttribute('aria-pressed')==='true')await click(name);await click(name);if(name==='refill-support')await click('service-support-topoff');};
   const openExpense=async label=>{if(await button('ship-expenses').getAttribute('aria-pressed')==='true'){if(await page.locator('[data-action="expense-back"]').count())await click('expense-back');}else await click('ship-expenses');await page.getByRole('button',{name:label+' ›',exact:true}).click();};
   const remember=selector=>page.locator(selector).evaluate(el=>{window.detachedServiceAction={...el.dataset};});
   const replay=()=>page.evaluate(()=>{const b=document.createElement('button');Object.assign(b.dataset,window.detachedServiceAction);document.body.append(b);b.click();b.remove();});

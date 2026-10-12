@@ -1,14 +1,14 @@
-import {ruleInfo} from './rule-references.mjs?v=fuel-life-support-mfd-20261012-65';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=fuel-life-support-mfd-20261012-65';
-import {passengerShip} from './passengers.mjs?v=fuel-life-support-mfd-20261012-65';
+import {ruleInfo} from './rule-references.mjs?v=static-service-mfd-20261012-66';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=static-service-mfd-20261012-66';
+import {passengerShip} from './passengers.mjs?v=static-service-mfd-20261012-66';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=fuel-life-support-mfd-20261012-65';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=fuel-life-support-mfd-20261012-65';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=fuel-life-support-mfd-20261012-65';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=fuel-life-support-mfd-20261012-65';
-import {creditStep} from './rounding.mjs?v=fuel-life-support-mfd-20261012-65';
-import {roll} from './rules.mjs?v=fuel-life-support-mfd-20261012-65';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=fuel-life-support-mfd-20261012-65';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=static-service-mfd-20261012-66';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=static-service-mfd-20261012-66';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=static-service-mfd-20261012-66';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=static-service-mfd-20261012-66';
+import {creditStep} from './rounding.mjs?v=static-service-mfd-20261012-66';
+import {roll} from './rules.mjs?v=static-service-mfd-20261012-66';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=static-service-mfd-20261012-66';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

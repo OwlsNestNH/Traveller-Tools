@@ -35,8 +35,7 @@ export async function overviewGeometry(page,{markers=false,columns=true}={}){
  }
  if(columns&&result.right&&result.right.left>=result.nav.right-1){
   const ratio=result.nav.width/result.right.width;
-  if(result.serviceMfd)assert.ok(ratio>=.45&&ratio<=.55,`Fuel/Life Support MFD uses the approved one-third map balance (left/right=${ratio.toFixed(2)})`);
-  else assert.ok(ratio>=1.4&&ratio<=1.8,`Desktop columns retain the approved map-heavy balance (left/right=${ratio.toFixed(2)})`);
+  assert.ok(ratio>=1.4&&ratio<=1.8,`Desktop columns retain the approved map-heavy balance (left/right=${ratio.toFixed(2)})`);
   assert.ok(Math.abs(result.nav.bottom-result.right.bottom)<=2,'Navigation and right screen align along the bottom');
   assert.ok(Math.abs(result.nav.top-result.right.top)<=2,'Navigation and right screen align along the top');
  }
@@ -71,9 +70,7 @@ export function assertMapCameraUnchanged(actual,expected,label){
  const near=(a,b,tolerance,detail)=>assert.ok(Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a-b)<=tolerance,`${label}: ${detail} changed (${b} → ${a})`);
  assert.equal(actual.zoom,expected.zoom,label+': selected zoom is preserved');
  assert.equal(actual.pan,expected.pan,label+': nonzero pan is preserved');
- // Entering the approved narrower MFD column resizes the responsive map slot.
- // Within either layout, retain exact dimensions; camera geography stays strict.
- for(const key of ['width','height'])if(actual.serviceMfd===expected.serviceMfd)near(actual[key],expected[key],.15,'map '+key);
+ for(const key of ['width','height'])near(actual[key],expected[key],.15,'map '+key);
  for(const key of ['scaleX','scaleY'])near(actual[key],expected[key],.001,key);
  near(actual.spacing,expected.spacing,.15,'rendered world-to-world pixel distance');
  for(const axis of ['x','y']){
