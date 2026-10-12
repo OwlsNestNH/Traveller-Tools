@@ -75,7 +75,7 @@ async function insure(page){
 async function exported(page){
  await tab(page,'Settings');
  const downloaded=page.waitForEvent('download');
- await page.getByRole('button',{name:'Save campaign (JSON)',exact:true}).click();
+ {const utility=page.getByRole('button',{name:'Save campaign (JSON)',exact:true});for(const detail of await utility.locator('xpath=ancestor::details').all())if(!await detail.evaluate(el=>el.open))await detail.locator(':scope > summary').click({position:{x:8,y:8}});await utility.click();}
  const download=await downloaded,stream=await download.createReadStream();
  assert.ok(stream,'Export creates a real JSON download');
  const chunks=[];for await(const chunk of stream)chunks.push(chunk);

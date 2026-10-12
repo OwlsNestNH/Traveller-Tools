@@ -259,7 +259,7 @@ async function openReview(page, scenario, before, result) {
   await fill(page, 'amount', '10.1'); await fill(page, 'reason', reason);
   if (kind === 'deposit') {await page.locator('#modal-submit').click(); await page.locator('#modal-title').filter({hasText: 'Confirm deposit'}).waitFor(); assert.match(await page.locator('#modal-submit').textContent(), /11/);}
  } else if (['time', 'settings', 'reset', 'import'].includes(kind)) {
-  await tab(page, 'Settings');
+  await tab(page, 'Settings');for(const id of ['backup-data','rounding-time']){const group=page.locator('[data-settings-group="'+id+'"]');if(await group.count()&&!await group.evaluate(el=>el.open))await group.locator(':scope > summary').click({position:{x:8,y:8}});}
   if (kind === 'import') {
    const chooser = page.waitForEvent('filechooser'); await action(page, 'import').click();
    await (await chooser).setFiles({name: 'synthetic-entry-import.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(imported()))});

@@ -348,7 +348,7 @@ async function fill(page, form, name, value) {
 async function prepare(page, result, scenario) {
  if (scenario.id.startsWith('settings-')) {
   if (scenario.map) await page.locator('#ship-actions [data-action="refuel"]').click();
-  else await tab(page, 'Settings');
+  else await tab(page, 'Settings');for(const id of ['backup-data','rounding-time']){const group=page.locator('[data-settings-group="'+id+'"]');if(await group.count()&&!await group.evaluate(el=>el.open))await group.locator(':scope > summary').click({position:{x:8,y:8}});}
   const form = scenario.map ? '#modal-form' : '#settings-form';
   if (scenario.map) await page.locator('#modal-title').filter({hasText: 'Ship, trader & options'}).waitFor();
   for (const [name, value] of Object.entries({name: 'Settings audit candidate', ship: 'Candidate Trader', jump: 3, shipTons: 200, fuelCapacity: 60, fuelAboard: 45, bladderTons: 0})) await fill(page, form, name, value);
@@ -358,7 +358,7 @@ async function prepare(page, result, scenario) {
   await action(page, 'jump-undo').click();
   await page.locator('#modal-title').filter({hasText: /Undo Jump/}).waitFor();
  } else if (scenario.method === 'replace') {
-  await tab(page, 'Settings');
+  await tab(page, 'Settings');for(const id of ['backup-data','rounding-time']){const group=page.locator('[data-settings-group="'+id+'"]');if(await group.count()&&!await group.evaluate(el=>el.open))await group.locator(':scope > summary').click({position:{x:8,y:8}});}
   if (scenario.id.startsWith('import-')) {
    const chooser = page.waitForEvent('filechooser'); await action(page, 'import').click();
    result.submittedReplacement = imported();
