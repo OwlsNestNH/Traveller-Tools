@@ -78,7 +78,10 @@ const approvedTransportSources={
  'expenses.mjs':'3a5cd61dde41ed642a417137b73aab57802d00c86a93d07ec45c8ee8fe79fb33',
  'passengers.mjs':'07ee50885ba4ae917a06787578fd9c41fee8482ee8858e242812db541963e2b7'
 };
-async function assertReleasedEconomics(){for(const[name,expectedHash]of Object.entries(releasedEconomics.sha256))assert.equal(hash(importTagNeutral(await readFile(new URL('../js/'+name,import.meta.url),'utf8'))),approvedTransportSources[name]||expectedHash,(approvedTransportSources[name]?'Reviewed .64 transport source identity: ':'Released economic source identity: ')+name);return {...releasedEconomics,approvedTransportSources};}
+// .65 adds saved-refill audit fields and user-approved pooled Low physical supply rounding.
+// Original released/.64 identities remain above; monetary oracle assertions remain intact.
+const approvedServiceSources={"state.mjs": "75973cea99ef3b90e0d79edfee4d54d68169d5cb21d7c7ef9ce4a69515b3bfe8", "life-support.mjs": "9aa49fbf1fb33e54f7c9e6fe519bf76c95f0877d8e8ae82df3d77297670f2b0e"};
+async function assertReleasedEconomics(){for(const[name,expectedHash]of Object.entries(releasedEconomics.sha256))assert.equal(hash(importTagNeutral(await readFile(new URL('../js/'+name,import.meta.url),'utf8'))),approvedServiceSources[name]||approvedServiceSources[name]||approvedTransportSources[name]||expectedHash,(approvedServiceSources[name]?'Reviewed .65 service source identity: ':approvedTransportSources[name]?'Reviewed .64 transport source identity: ':'Released economic source identity: ')+name);return {...releasedEconomics,approvedTransportSources};}
 const raw=page=>page.evaluate(key=>localStorage.getItem(key),KEY);
 const read=async page=>JSON.parse(await raw(page));
 const frames=page=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));

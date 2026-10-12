@@ -5,7 +5,7 @@ import {REFERENCE_VERSION,SOURCE_BOOKS,RULE_REFERENCES,ruleInfo,ruleReference,re
 
 const plain=id=>RULE_REFERENCES[id].parts.map(part=>part.kind+': '+part.text).join(' ');
 test('all reference entries have frozen display-only classifications and printed-page provenance',()=>{
- assert.equal(REFERENCE_VERSION,'2026.10.11.2');assert.equal(Object.keys(RULE_REFERENCES).length,30);
+ assert.equal(REFERENCE_VERSION,'2026.10.12.1');assert.equal(Object.keys(RULE_REFERENCES).length,30);
  const allowed=/^(Published rule|Published context|Home rule|App convention|Referee input|Explanation)/;
  for(const [id,entry] of Object.entries(RULE_REFERENCES)){
   assert.equal(ruleReference(id),entry);assert.ok(entry.title);assert.ok(Object.isFrozen(entry));assert.ok(Object.isFrozen(entry.parts));assert.ok(entry.parts.length);

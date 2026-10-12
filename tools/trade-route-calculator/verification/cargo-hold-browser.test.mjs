@@ -230,7 +230,7 @@ async function navigationAndDrafts(page,f){
   let oldConfirm,oldNoopReview;
   if(from==='refill-support'){
    assert.equal(await page.locator('#service-form [name="extraDays"]').inputValue(),'0');
-   assert.equal(await page.locator('#service-panel [data-action="service-confirm"]').count(),0);
+   assert.equal(await page.locator('#service-panel [data-action="service-confirm"]').isDisabled(),true);
    assert.equal(await action(page,'service-review').isDisabled(),true,'Existing 190 days make the normal refill a no-op');
    assert.match(await page.locator('#service-quote').textContent(),/190 days/);
    assert.equal((await page.locator('#service-quote .service-total strong').textContent()).trim(),'Cr 0');

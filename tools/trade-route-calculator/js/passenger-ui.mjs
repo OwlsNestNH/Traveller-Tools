@@ -1,10 +1,10 @@
-import {ruleInfo} from './rule-references.mjs?v=freight-passengers-fuel-20261011-64';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=freight-passengers-fuel-20261011-64';
+import {ruleInfo} from './rule-references.mjs?v=fuel-life-support-mfd-20261012-65';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=fuel-life-support-mfd-20261012-65';
 import * as A from './amounts.mjs';
-import {manualLuggage} from './accommodation.mjs?v=freight-passengers-fuel-20261011-64';
-import * as P from './passengers.mjs?v=freight-passengers-fuel-20261011-64';
-import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=freight-passengers-fuel-20261011-64';
-import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=freight-passengers-fuel-20261011-64';
+import {manualLuggage} from './accommodation.mjs?v=fuel-life-support-mfd-20261012-65';
+import * as P from './passengers.mjs?v=fuel-life-support-mfd-20261012-65';
+import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=fuel-life-support-mfd-20261012-65';
+import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=fuel-life-support-mfd-20261012-65';
 import {displayDate} from './calendar.mjs';
 const esc=escapeHtml;
 const money=formatCreditsText,signed=x=>x>0?'+'+x:String(x);

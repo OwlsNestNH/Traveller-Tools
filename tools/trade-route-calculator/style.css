@@ -389,3 +389,28 @@ main{padding-top:18px}
 
 /* Accepted planned-route names wrap without changing other dialogs. */
 .planned-route-review{overflow-wrap:anywhere}
+
+/* Fuel and Life Support share the right MFD; other ship expense screens retain their layout. */
+.navigation-layout:has(>.service-mfd){grid-template-columns:minmax(0,1fr) minmax(0,2fr)}
+.service-mfd{border:1px solid #345a70;background:linear-gradient(145deg,#102536,#091b2a 45%);box-shadow:inset 0 0 0 4px #102738,inset 0 0 0 5px #27485b;color:#d8e7f0;padding:22px;gap:14px}
+.service-mfd h2{color:#7cdee7;letter-spacing:.04em}.service-mfd h3{font-size:14px;font-weight:500;color:#a9c3d0}
+.mfd-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:16px 0;border-block:1px solid #345a70}
+.mfd-metrics>div{min-width:0;display:grid;gap:8px}.mfd-metrics span{font-size:12px;color:#a9c3d0}.mfd-metrics strong{font:600 clamp(20px,2.6vw,34px)/1.2 ui-monospace,monospace;color:#90e5ee;overflow-wrap:anywhere}
+.mfd-complement{padding:12px;border:1px solid #345a70;background:#0b1c2a;font-size:14px;line-height:1.55}
+.service-mfd .service-quantity input{min-width:0}.service-mfd .service-actions{justify-content:flex-end;border-top:1px solid #345a70;padding-top:14px}
+.service-mfd .service-actions button{min-height:44px}.service-mfd .service-actions .primary{min-width:160px}
+.service-mfd .service-comfort{border:1px solid #345a70;border-radius:7px;padding:12px;background:#0b1c2a}.service-mfd .service-comfort summary{font-weight:600;margin-bottom:10px}
+.service-mfd .service-comfort .service-quantity{margin:12px 0}.service-mfd .rule-info{border-radius:50%;width:24px;height:24px;min-width:24px;min-height:24px;font-size:12px;vertical-align:middle}
+.service-saved #service-status{border:1px solid #36776a;background:#123b35;color:#bdf3df;padding:12px}
+@media(max-width:1099px){.navigation-layout:has(>.service-mfd){grid-template-columns:minmax(0,1fr)}}
+@media(max-width:620px){.service-mfd{padding:15px}.mfd-metrics{gap:9px}.mfd-metrics span{font-size:11px}.mfd-metrics strong{font-size:22px}.service-mfd .service-quantity button{font-size:12px;padding:8px}.service-mfd .service-comfort .service-quantity{grid-template-columns:76px minmax(0,1fr) 76px}.service-mfd .service-actions .primary{flex:1 0 100%;min-width:0;white-space:nowrap;overflow-wrap:normal}}
+
+.service-mfd .mfd-title{display:flex;align-items:center;justify-content:space-between;gap:12px}.service-mfd .mfd-title>h2{min-width:0}.service-mfd .mfd-title>button{flex:0 0 auto;white-space:nowrap;overflow-wrap:normal;min-height:40px;color:#90e5ee;border-color:#345a70;background:#0b1c2a}
+
+.service-mfd{overflow-wrap:anywhere}.service-mfd .service-quantity .field,.service-mfd .service-comparison>div{min-width:0}.service-mfd .service-quantity input{width:100%;box-sizing:border-box}
+
+/* Narrow desktop navigation keeps the Jump control readable beside a service MFD. */
+@media(min-width:1100px){
+ .navigation-layout:has(>.service-mfd) .navigation-panel .route-jump{flex-basis:100%;max-width:100%}
+ .navigation-layout:has(>.service-mfd) .navigation-panel .route-next{grid-template-columns:minmax(0,1fr)}
+}

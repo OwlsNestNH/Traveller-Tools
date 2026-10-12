@@ -778,3 +778,12 @@ E/X no starport retail fuel. A/B unrefined offers depend on referee discretion o
 local policy. Where no starport supply is listed, water collection and roleplay
 arrangements remain possible. The information icon cites that table. The toggle
 changes no purchase restrictions, prices, existing supply policy or route rules.
+
+
+## Fuel and Life Support MFD candidate (.65)
+
+Fuel and Life Support occupy the right-hand screen beside a one-third-width map on desktop. Confirmed services remain visible with updated inventory, saved feedback and Audit; another purchase requires an explicit fresh draft. Fuel uses 1-ton controls and separate tank/bladder capacity metrics. Life Support exposes reserve days beyond the existing standard refill target, comfort spending with its own required note, actual awake/frozen complement, internal stores and cargo overflow. Comfort changes money only. Ship Expenses retain their existing screen and behavior.
+
+User-approved home rule: when occupied frozen Low berths are present, round the combined new physical LSS purchase up once to whole 1-LSS lots (ten 0.1-LSS portions). Zero need stays zero; retain surplus aboard and show actual endurance. Consumption remains 0.1 LSS per frozen berth/day; existing period-based charges and Cr100 extra-reserve rounding remain unchanged. This purchase rounding is not attributed to the Core rules. Core baseline and campaign High pricing remain distinguished; Cr3,000 is the total High person charge replacing ordinary Cr1,000.
+
+Focused native and browser verification covers saved-screen persistence, retired confirmation tokens, clean repeated purchases, standard-target-plus-reserve semantics, Low rounding boundaries, comfort separation, save failures and Undo. Original released economic fixtures and .64 source hashes remain retained; separate .65 source identities cover physical rounding and audit fields. Browser screenshots and required release gates run in GitHub CI; no local Chromium or live deployed-site verification is part of candidate creation. Results are recorded against the exact candidate revision in its draft PR.

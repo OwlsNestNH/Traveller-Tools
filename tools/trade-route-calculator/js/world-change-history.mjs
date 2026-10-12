@@ -1,4 +1,4 @@
-import {parseUWP} from './rules.mjs?v=freight-passengers-fuel-20261011-64';
+import {parseUWP} from './rules.mjs?v=fuel-life-support-mfd-20261012-65';
 
 // Audit only the editable world fields. A selective correction must never
 // replay an old world object, campaign inverse, price quote or transaction.

@@ -140,8 +140,8 @@ async function installGate(page,result){
   // the service. Actual receiveCampaign still renders the busy service first.
   const innerHTML=Object.getOwnPropertyDescriptor(Element.prototype,'innerHTML');
   Object.defineProperty(Element.prototype,'innerHTML',{...innerHTML,set(value){
-   if(g.cleanupFault&&this.id==='main'&&!String(value).includes('id="service-panel"')){
-    g.cleanupFault=false;g.cleanupThrows++;g.cleanupObservations.push({point:'after-fulfilled-save-before-dismissal-render',settlement:g.settlements.at(-1)?.kind,actualPublication:g.publications.at(-1)?.actualCallback,durableCandidate:localStorage.getItem(KEY)===g.candidates.at(-1),message:document.querySelector('#message')?.textContent||''});
+   if(g.cleanupFault&&this.id==='main'&&String(value).includes('service-saved')){
+    g.cleanupFault=false;g.cleanupThrows++;g.cleanupObservations.push({point:'after-fulfilled-save-before-saved-receipt-render',settlement:g.settlements.at(-1)?.kind,actualPublication:g.publications.at(-1)?.actualCallback,durableCandidate:localStorage.getItem(KEY)===g.candidates.at(-1),message:document.querySelector('#message')?.textContent||''});
     throw Error('Synthetic DOM render failure after fulfilled service save');
    }
    return Reflect.apply(innerHTML.set,this,[value]);
@@ -376,7 +376,7 @@ async function runService(page,result,scenario,context){
   else assert.deepEqual(await draftValues(page),result.draft,'Failed fuel keeps all exact draft values');
   assert.equal((await gate(page)).settlements[0].code,'SAVE_NOT_COMMITTED');assert.equal((await gate(page)).settlements[0].committed,false);
   assert.doesNotMatch(await page.locator('#message').textContent(),successPattern);await capture(page,result,'retryable-failure');
-  await arm(page);await beginPending(page,result,beforeBytes);await release(page);await panelClosed(page);await frames(page);
+  await arm(page);await beginPending(page,result,beforeBytes);await release(page);await page.locator('#service-panel.service-saved').waitFor();await frames(page);
   assert.match(await page.locator('#message').textContent(),successPattern);assertService(await read(page),before,scenario.variant);
   await assertGateAccounting(page,result,{calls:2,executions:2,writes:1,beforeWrites,committed:true});await capture(page,result,'saved');
   result.checks.push('Native atomic setItem rejection preserves exact bytes, quote and editable draft; deliberate retry records one service only');await restored(page,result,before);return;
@@ -389,7 +389,7 @@ async function runService(page,result,scenario,context){
   await page.evaluate(()=>{serviceGate.cleanupFault=true;});await release(page);await terminal(page,result,before,{committed:true});
   await assertGateAccounting(page,result,{calls:1,executions:1,writes:1,beforeWrites,committed:true});
   const snapshot=await gate(page);assert.equal(snapshot.cleanupThrows,1,'Fault fires in actual dismissal render, never a no-op injection');assert.equal(snapshot.settlements[0].kind,'native-fulfilled');assert.equal(snapshot.publications.at(-1).actualCallback,true);
-  assert.deepEqual(snapshot.cleanupObservations,[{point:'after-fulfilled-save-before-dismissal-render',settlement:'native-fulfilled',actualPublication:true,durableCandidate:true,message:'Refilled life support saved.'}],'Fault stage is after durable candidate, actual publication and fulfilled application success, not an earlier notification failure');
+  assert.deepEqual(snapshot.cleanupObservations,[{point:'after-fulfilled-save-before-saved-receipt-render',settlement:'native-fulfilled',actualPublication:true,durableCandidate:true,message:'Refilled life support saved.'}],'Fault stage is after durable candidate, actual publication and fulfilled application success, not an earlier notification failure');
   result.checks.push('Actual DOM cleanup throws after fulfilled native save and receiveCampaign; saved/reload guidance blocks payment retry');await restored(page,result,before);return;
  }
  if(scenario.mode.startsWith('notification-')){
@@ -400,7 +400,7 @@ async function runService(page,result,scenario,context){
   result.checks.push(after?'Fault after actual receiveCampaign plus a secondary role callback throw cannot hide durable completion':'Fault before actual receiveCampaign follows durable setItem and is never called a safe retry');await restored(page,result,before);return;
  }
  if(scenario.mode==='takeover'){await takeover(page,result,before,context,beforeWrites);return;}
- await release(page);await panelClosed(page);await frames(page);assert.match(await page.locator('#message').textContent(),successPattern);assertService(await read(page),before,scenario.variant);
+ await release(page);await page.locator('#service-panel.service-saved').waitFor();await frames(page);assert.match(await page.locator('#message').textContent(),successPattern);assertService(await read(page),before,scenario.variant);
  const retried=scenario.mode==='tokenless';await assertGateAccounting(page,result,{calls:retried?2:1,executions:retried?2:1,writes:1,beforeWrites,committed:true});
  assert.equal((await gate(page)).publications.at(-1).tokenMatchesSave,true,'Native publication preserves the exact ephemeral token');
  await capture(page,result,'saved');result.checks.push('Exact original service economics, stock, audit, cargo and one inverse transaction after delayed native completion');await restored(page,result,before);

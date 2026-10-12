@@ -13,7 +13,7 @@ export async function overviewGeometry(page,{markers=false,columns=true}={}){
   const svg=document.querySelector('.world-map'),b=svg.getBoundingClientRect(),v=svg.viewBox.baseVal,m=svg.getScreenCTM();
   const box=el=>{if(!el)return null;const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height,overflow:el.scrollWidth-el.clientWidth};};
   const nav=document.querySelector('.navigation-panel'),right=document.querySelector('#service-panel')||document.querySelector('.world-screen'),toolbar=document.querySelector('.map-toolbar');
-  return {map:box(svg),nav:box(nav),right:box(right),toolbar:box(toolbar),toolbarChildren:[...toolbar.querySelectorAll('button,summary,input,.map-zoom-hint')].map(box),logicalWidth:v.width,logicalHeight:v.height,backgroundWidth:Number(svg.querySelector(':scope > rect').getAttribute('width')),backgroundHeight:Number(svg.querySelector(':scope > rect').getAttribute('height')),scaleX:Math.hypot(m.a,m.b),scaleY:Math.hypot(m.c,m.d),circles:[...svg.querySelectorAll('[data-action="map-world"] circle')].map(box),viewport:innerWidth,overflow:document.documentElement.scrollWidth-innerWidth};
+  return {serviceMfd:!!right?.classList.contains('service-mfd'),map:box(svg),nav:box(nav),right:box(right),toolbar:box(toolbar),toolbarChildren:[...toolbar.querySelectorAll('button,summary,input,.map-zoom-hint')].map(box),logicalWidth:v.width,logicalHeight:v.height,backgroundWidth:Number(svg.querySelector(':scope > rect').getAttribute('width')),backgroundHeight:Number(svg.querySelector(':scope > rect').getAttribute('height')),scaleX:Math.hypot(m.a,m.b),scaleY:Math.hypot(m.c,m.d),circles:[...svg.querySelectorAll('[data-action="map-world"] circle')].map(box),viewport:innerWidth,overflow:document.documentElement.scrollWidth-innerWidth};
  });
  assert.ok(Math.abs(result.logicalWidth-result.map.width)<.1,'Logical width follows the measured CSS-pixel viewport');
  assert.ok(Math.abs(result.logicalHeight-result.map.height)<.1,'Logical height follows the measured CSS-pixel viewport');
@@ -35,7 +35,8 @@ export async function overviewGeometry(page,{markers=false,columns=true}={}){
  }
  if(columns&&result.right&&result.right.left>=result.nav.right-1){
   const ratio=result.nav.width/result.right.width;
-  assert.ok(ratio>=1.4&&ratio<=1.8,`Desktop columns retain the approved map-heavy balance (left/right=${ratio.toFixed(2)})`);
+  if(result.serviceMfd)assert.ok(ratio>=.45&&ratio<=.55,`Fuel/Life Support MFD uses the approved one-third map balance (left/right=${ratio.toFixed(2)})`);
+  else assert.ok(ratio>=1.4&&ratio<=1.8,`Desktop columns retain the approved map-heavy balance (left/right=${ratio.toFixed(2)})`);
   assert.ok(Math.abs(result.nav.bottom-result.right.bottom)<=2,'Navigation and right screen align along the bottom');
   assert.ok(Math.abs(result.nav.top-result.right.top)<=2,'Navigation and right screen align along the top');
  }
@@ -62,7 +63,7 @@ export async function mapCameraSnapshot(page,worldIds){
   const [a,b]=markers,vector={x:b.offset.x-a.offset.x,y:b.offset.y-a.offset.y};
   const spacing=Math.hypot(vector.x,vector.y),worldSpacing=Math.hypot((b.x-a.x)*Math.sqrt(3)/2,b.y-a.y),pixelsPerParsec=spacing/worldSpacing;
   const scaleX=Math.hypot(matrix.a,matrix.b),scaleY=Math.hypot(matrix.c,matrix.d);
-  return {zoom:document.querySelector('.map-zoom-controls .help').textContent,pan:svg.querySelector('.map-content').getAttribute('transform'),scaleX,scaleY,spacing,vector,markers,center:{x:a.x-a.offset.x/(pixelsPerParsec*Math.sqrt(3)/2),y:a.y-(a.offset.y+2*scaleY)/pixelsPerParsec},width:box.width,height:box.height};
+  return {serviceMfd:!!document.querySelector('#service-panel.service-mfd'),zoom:document.querySelector('.map-zoom-controls .help').textContent,pan:svg.querySelector('.map-content').getAttribute('transform'),scaleX,scaleY,spacing,vector,markers,center:{x:a.x-a.offset.x/(pixelsPerParsec*Math.sqrt(3)/2),y:a.y-(a.offset.y+2*scaleY)/pixelsPerParsec},width:box.width,height:box.height};
  },worldIds);
 }
 
@@ -70,7 +71,9 @@ export function assertMapCameraUnchanged(actual,expected,label){
  const near=(a,b,tolerance,detail)=>assert.ok(Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a-b)<=tolerance,`${label}: ${detail} changed (${b} → ${a})`);
  assert.equal(actual.zoom,expected.zoom,label+': selected zoom is preserved');
  assert.equal(actual.pan,expected.pan,label+': nonzero pan is preserved');
- for(const key of ['width','height'])near(actual[key],expected[key],.15,'map '+key);
+ // Entering the approved narrower MFD column resizes the responsive map slot.
+ // Within either layout, retain exact dimensions; camera geography stays strict.
+ for(const key of ['width','height'])if(actual.serviceMfd===expected.serviceMfd)near(actual[key],expected[key],.15,'map '+key);
  for(const key of ['scaleX','scaleY'])near(actual[key],expected[key],.001,key);
  near(actual.spacing,expected.spacing,.15,'rendered world-to-world pixel distance');
  for(const axis of ['x','y']){

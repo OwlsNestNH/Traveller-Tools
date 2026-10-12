@@ -20,7 +20,7 @@ function harness(s=campaign()){
  h.quoteWrites=0;h.quote={auditOpen:false,set innerHTML(html){this.html=html;this.auditOpen=false;h.quoteWrites++;}};
  const document={
   getElementById(id){return id==='service-form'?form:id==='service-quote'?h.quote:null;},
-  querySelector(selector){return selector==='#service-form [name="fuelTons"]'?form?.elements.find(el=>el.name==='fuelTons'):null;},
+  querySelector(selector){return selector.startsWith('#service-form [name=')?form?.elements.find(el=>el.name===selector.match(/name="([^"]+)"/)?.[1]):null;},
   querySelectorAll(selector){return selector==='#service-panel [data-action="service-confirm"],#service-panel [data-action="service-review"]'?[h.confirmControl]:[];}
  };
  h.services=createServicePanels({document,getState:()=>state,isEditable:()=>editable,
@@ -133,8 +133,8 @@ test('every service action and form carries its session token while references r
   assert.ok(tags.length);
   for(const tag of tags){if(tag.includes('data-rule-info=')){assert.match(tag,/type="button"/);assert.doesNotMatch(tag,/data-action=|data-mutate/);}else assert.match(tag,new RegExp('data-service-token="'+h.services.token()+'"'));}
  }
- assert.match(h.services.panel(),/data-action="service-fuel-step" data-arg="-10"/);
- assert.match(h.services.panel(),/data-action="service-fuel-step" data-arg="10"/);
+ assert.match(h.services.panel(),/data-action="service-fuel-step" data-arg="-1"/);
+ assert.match(h.services.panel(),/data-action="service-fuel-step" data-arg="1"/);
  h.fill({fuelTons:'23'});await h.action('service-fuel-step','-10');
  assert.match(h.services.panel(),/name="fuelTons"[^>]*value="13"/);
  await h.action('service-fuel-step','10');assert.match(h.services.panel(),/name="fuelTons"[^>]*value="23"/);
@@ -202,9 +202,9 @@ test('an old form cannot overwrite fresh LSS inputs or amounts after a direct sw
  h.fill({extraDays:'999',comfortCredits:'99000',comfortNote:'Detached old form'},oldToken);
  assert.match(h.services.panel(),/name="extraDays"[^>]*value="0"/);assert.match(h.services.panel(),/Cr 4,000/);assert.equal(h.bytes(),before);
  h.fill({extraDays:'14',comfortCredits:'2000',comfortNote:'Fresh supplies'});await h.action('service-review');
- assert.match(h.services.panel(),/Cr 8,100/);assert.match(h.services.panel(),/176\.4 LSS aboard/);
+ assert.match(h.services.panel(),/Cr 8,100/);assert.match(h.services.panel(),/176\.8 LSS aboard/);
  const confirm=h.capture('service-confirm');await confirm();await confirm();
- assert.equal(h.commits,1);assert.equal(h.state().bank,'91900');assert.equal(h.state().ledger.length,1);assert.equal(supportStock(h.state().ship).remainingUnits,'176.4');
+ assert.equal(h.commits,1);assert.equal(h.state().bank,'91900');assert.equal(h.state().ledger.length,1);assert.equal(supportStock(h.state().ship).remainingUnits,'176.8');
 });
 
 test('switching and Back preserve all previously recorded payments, audits and Undo entries',async()=>{
@@ -241,3 +241,7 @@ for(const frozen of [0,2])for(const kind of ['extra','comfort'])test(`full LSS e
  h.services.open('support');assert.match(h.services.panel(),/id="service-form"/);assert.match(h.services.panel(),/<strong>Cr 0<\/strong>/);assert.equal(h.commits,1);
  const undone=S.undo(h.state());for(const key of ['bank','ship','ledger','hours'])assert.deepEqual(undone[key],before[key]);
 });
+
+test('saved fuel screen retires the draft and detached confirmation while retaining totals and Audit',async()=>{const h=harness(),confirm=(()=>{h.services.open('fuel');return h.capture('service-confirm');})();await confirm();const bytes=h.bytes();assert.equal(h.services.active(),false);assert.equal(h.services.visible(),true);assert.match(h.services.panel(),/Refuel saved/);assert.match(h.services.panel(),/Fuel aboard[\s\S]*43 t/);assert.match(h.services.panel(),/Audit · saved service/);await confirm();assert.equal(h.bytes(),bytes);assert.equal(h.commits,1);h.readOnly();assert.match(h.services.panel(),/Read-only/);await h.action('service-back');assert.equal(h.services.visible(),false);});
+test('saved support screen keeps physical stock separate from comfort and starts a fresh purchase token',async()=>{const h=harness(withSupport());h.services.open('support');const original=h.capture('service-confirm');await original();assert.equal(h.services.active(),false);assert.equal(h.services.visible(),true);const first=h.bytes(),oldToken=h.services.token();await h.action('service-new');assert.notEqual(h.services.token(),oldToken);await original();assert.equal(h.bytes(),first);h.fill({comfortCredits:'2000',comfortNote:'Coffee only'});const units=supportStock(h.state().ship).remainingUnits;await h.action('service-confirm');assert.equal(supportStock(h.state().ship).remainingUnits,units);assert.equal(h.commits,2);assert.match(h.services.panel(),/Life support refill saved/);});
+test('reserve and comfort steppers edit only the draft and clamp removal at zero',async()=>{const h=harness(withSupport()),before=h.bytes();h.services.open('support');h.fill({extraDays:'0',comfortCredits:'0',comfortNote:''});await h.action('service-reserve-step','1');assert.match(h.services.panel(),/name="extraDays"[^>]*value="1"/);await h.action('service-comfort-step','1000');assert.match(h.services.panel(),/name="comfortCredits"[^>]*value="1000"/);assert.match(h.services.panel(),/Add a note/);await h.action('service-comfort-step','-1000');await h.action('service-comfort-step','-1000');assert.match(h.services.panel(),/name="comfortCredits"[^>]*value="0"/);assert.equal(h.bytes(),before);assert.equal(h.commits,0);});
