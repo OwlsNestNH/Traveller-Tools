@@ -121,13 +121,13 @@ async function deposit(page,amount=7){
  await submit(page,'Preview deposit','Confirm deposit');await submit(page,'Deposit Cr '+amount,null,{double:true});
 }
 async function exportBytes(page){
- await tab(page,'Settings');const target=action(page,'export');await reveal(target);
+ await tab(page,'Settings');const target=page.locator('#main [data-action="export"]');await reveal(target);
  const ready=page.waitForEvent('download');await target.click();const download=await ready;
  assert.equal(await download.failure(),null);const path=await download.path();assert.ok(path,'Real backup download exists');
  return readFile(path,'utf8');
 }
 async function importBytes(page,bytes,{cancel=false}={}){
- await tab(page,'Settings');const target=action(page,'import');await reveal(target);
+ await tab(page,'Settings');const target=page.locator('#main [data-action="import"]');await reveal(target);
  const ready=page.waitForEvent('filechooser');await target.click();await(await ready).setFiles({name:'synthetic-stress-backup.json',mimeType:'application/json',buffer:Buffer.from(bytes)});
  await heading(page,'Load campaign (JSON)');
  if(cancel)return dismiss(page);

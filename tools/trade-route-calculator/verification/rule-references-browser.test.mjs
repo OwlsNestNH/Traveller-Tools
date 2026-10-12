@@ -69,7 +69,7 @@ try{
   await closeModal();assert.equal(await saved(),original);
   // Closed Settings summaries expose their source controls without changing
   // their disclosure state, values or the draft. Save and Revert remain intact.
-  await tab('Settings');await page.locator('[name="ship"]').fill('Unsaved info-popup draft');
+  await tab('Settings');await page.locator('[data-settings-group="campaign"] > summary').click({position:{x:8,y:8}});await page.locator('[name="ship"]').fill('Unsaved info-popup draft');
   const mortgageGroup=page.locator('[data-settings-group="mortgage"]');assert.equal(await mortgageGroup.evaluate(el=>el.open),false);
   await info(mortgageGroup.locator('summary [data-rule-info="mortgage"]'),'mortgage',{method:viewport.width<500?'tap':'Enter'});
   assert.equal(await mortgageGroup.evaluate(el=>el.open),false);assert.equal(await page.locator('[name="ship"]').inputValue(),'Unsaved info-popup draft');
