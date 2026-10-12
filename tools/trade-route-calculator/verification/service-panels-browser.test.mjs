@@ -29,6 +29,14 @@ function fixture({port='A',hydro='8',aboard=20,bank='100000',frozen=0}={}){
  f.sec='Hex\tName\n'+f.apiWorlds.map(w=>w.Hex+'\t'+w.Name).join('\n');
  validate(s);f.bytes=JSON.stringify(s);return f;
 }
+async function checkMfdLabels(page){
+ const labels=await page.locator('#service-panel .mfd-title>[data-action="service-audit"],#service-panel [data-action="service-confirm"]').evaluateAll(buttons=>buttons.map(button=>{const range=document.createRange();range.selectNodeContents(button);return {label:button.textContent.trim(),lines:[...range.getClientRects()].filter(r=>r.width&&r.height).length};}));
+ for(const label of labels)assert.equal(label.lines,1,'Audit and confirmation labels stay on one rendered line: '+JSON.stringify(label));
+ if(await page.evaluate(()=>innerWidth>=1100)){
+  const jump=page.locator('.navigation-panel .route-next>button');
+  assert.ok((await jump.boundingBox()).width>=130,'The narrow desktop MFD navigation retains a usable Jump control width');
+ }
+}
 async function run(name,options,test){
  const f=fixture(options),context=await browser.newContext({viewport:{width:1440,height:1100},acceptDownloads:true}),errors=[];
  context.setDefaultTimeout(12000);await context.tracing.start({screenshots:true,snapshots:true,sources:true});
@@ -188,16 +196,16 @@ try{
   await click('service-confirm');await h.saved();assert.equal((await read()).ship.fuel.aboardTons,21);
   const bytes=await raw();await page.evaluate(data=>{const b=document.createElement('button');Object.assign(b.dataset,data);document.body.append(b);b.click();b.remove();},old);await h.unchanged('Retired confirmation',bytes);
   await click('refuel');await h.saved();await click('service-audit');assert.equal(await page.locator('#service-panel > .service-audit').evaluate(d=>d.open),true);
-  await page.locator('#service-panel').evaluate(p=>p.scrollTop=0);await page.screenshot({path:artifacts+'/mfd-fuel-saved-'+width+'.png',fullPage:true});
+  await checkMfdLabels(page);await page.locator('#service-panel').evaluate(p=>p.scrollTop=0);await page.screenshot({path:artifacts+'/mfd-fuel-saved-'+width+'.png',fullPage:true});
   await click('refill-support');assert.match(await page.locator('.mfd-complement').textContent(),/4 awake crew \+ 0 awake passengers/);
   await click('service-reserve-step','1');assert.equal(await field('extraDays').inputValue(),'1');await fill('extraDays',7);
   await page.locator('.service-comfort > summary').click();await click('service-comfort-step','1000');await fill('comfortNote','Synthetic comfort purchase');
   assert.match(await page.locator('#service-quote').textContent(),/140 LSS aboard/);await overviewGeometry(page);
-  await page.locator('#service-panel').evaluate(p=>p.scrollTop=0);await page.screenshot({path:artifacts+'/mfd-support-draft-'+width+'.png',fullPage:true});
+  await checkMfdLabels(page);await page.locator('#service-panel').evaluate(p=>p.scrollTop=0);await page.screenshot({path:artifacts+'/mfd-support-draft-'+width+'.png',fullPage:true});
   await click('service-confirm');await h.saved();const paid=await read(),stock=paid.ship.lifeSupport.stockUnits;
   assert.equal(Number(stock.numerator)/Number(stock.denominator),140);assert.match(await page.locator('.mfd-metrics').textContent(),/Days supported35/);
   const savedBytes=await raw();await click('refill-support');await h.saved();await h.unchanged('Same service retains saved receipt',savedBytes);
-  await page.locator('#service-panel').evaluate(p=>p.scrollTop=0);await page.screenshot({path:artifacts+'/mfd-support-saved-'+width+'.png',fullPage:true});
+  await checkMfdLabels(page);await page.locator('#service-panel').evaluate(p=>p.scrollTop=0);await page.screenshot({path:artifacts+'/mfd-support-saved-'+width+'.png',fullPage:true});
   await click('service-new');assert.equal(await field('extraDays').inputValue(),'0');assert.equal(await field('comfortCredits').inputValue(),'0');assert.equal(await h.action('service-confirm').isDisabled(),true);
   await click('service-back');await h.closed();await h.unchanged('Fresh no-op draft dismissed',savedBytes);
  });
@@ -255,7 +263,7 @@ try{
      await label.click({position:{x:b.width-4,y:b.height/2}});assert.equal(await checkbox.isChecked(),!before,'Associated-label edge toggles its checkbox');
      await label.click({position:{x:b.width-4,y:b.height/2}});assert.equal(await checkbox.isChecked(),before);
     }
-    await unchanged(type+' responsive layout '+width);
+    await checkMfdLabels(page);await unchanged(type+' responsive layout '+width);
     await page.screenshot({path:artifacts+'/service-'+type+'-'+width+'.png',fullPage:true});
    }
    await page.locator('[data-action="service-cancel"]').focus();await page.keyboard.press('Enter');await closed();await unchanged('Keyboard Cancel '+type);
