@@ -53,7 +53,7 @@ export function mountSettingsLayout(form,openGroups=new Map()){
  const columns=node('div','settings-columns'),left=node('div','settings-column'),right=node('div','settings-column');columns.append(left,right);
  for(const group of settingsGroups){
   const section=node('details','settings-section'),heading=node('summary','settings-section-heading'),title=node('div'),chevron=node('span','settings-disclosure','▸');
-  section.dataset.settingsGroup=group.id;section.open=openGroups.get(group.id)??!group.advanced;
+  section.dataset.settingsGroup=group.id;section.open=openGroups.get(group.id)??false;
   const caption=node('h3','',group.title);caption.setAttribute('aria-label',group.title);for(const id of groupReferences[group.id]||[])caption.insertAdjacentHTML('beforeend',ruleInfo(id));title.append(caption,node('p','',group.description));chevron.setAttribute('aria-hidden','true');heading.append(title,chevron);heading.setAttribute('aria-label',group.title);
   section.append(heading);
   for(const name of group.names){if(name.startsWith('rooms-'))section.append(node('div','settings-band',name.slice(6)+' service'));section.append(settingRow(inputs.get(name)));}
@@ -66,6 +66,10 @@ export function mountSettingsLayout(form,openGroups=new Map()){
   if(group.id==='optional')section.append(node('p','settings-note','Turning insurance off hides open-policy panels. Policies reappear when enabled; closed policies remain in History.'));
   (['campaign','fuel','mortgage','maintenance','trader','pricing'].includes(group.id)?left:right).append(section);
  }
+ // Move the utility disclosure into the existing left column. Its buttons stay
+ // type="button" and use the existing action/save owners.
+ const roundingTime=form.parentElement?.querySelector('[data-settings-group="rounding-time"]');
+ if(roundingTime)left.append(roundingTime);
  source.replaceChildren(columns);
 }
 export function syncSettingsControls(form,readOnly=false){

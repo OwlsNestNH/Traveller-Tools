@@ -1,4 +1,4 @@
-import {APP_BUILD,createDebugLog} from './debug-log.mjs?v=focused-ui-20261012-68';
+import {APP_BUILD,createDebugLog} from './debug-log.mjs?v=focused-settings-20261012';
 import {dashboardPanel} from './dashboard-view.mjs?v=focused-ui-20261012-68';
 import {recordWorldOverride,revertWorldField,worldFieldRevertEligibility,worldChangeFields,worldFieldValue,isWorldChangeAudit} from './world-change-history.mjs?v=focused-ui-20261012-68';
 import {createCampaignController} from './campaign-controller.mjs?v=focused-ui-20261012-68';
@@ -16,7 +16,7 @@ import {createServicePanels} from './service-panels.mjs?v=focused-ui-20261012-68
 import {cargoHoldPanel} from './cargo-hold.mjs?v=focused-ui-20261012-68';
 import {createExpensePanels} from './expense-panels.mjs?v=focused-ui-20261012-68';
 import {currentJumpAttempt} from './jump-attempts.mjs';
-import {mountSettingsLayout,syncSettingsControls,stepSetting} from './settings-layout.mjs?v=focused-ui-20261012-68';
+import {mountSettingsLayout,syncSettingsControls,stepSetting} from './settings-layout.mjs?v=focused-settings-20261012';
 import {configureFuel,fuelCapacities,bladderSpace,validateFuel,jumpFuel} from './fuel.mjs?v=focused-ui-20261012-68';
 import {refillQuote,supportStock,supportCargo,supportDisplay,anchorSupport,configureSupport} from './life-support.mjs?v=focused-ui-20261012-68';
 import {campaignReport} from './report.mjs?v=focused-ui-20261012-68';
@@ -1285,7 +1285,7 @@ let settingsDraft=null,settingsFormRevision=0,settingsRounding=[];
 // events can still be queued when Save, Revert or navigation replaces the DOM.
 const settingsOpenGroups=new Map();
 function captureSettingsDisclosures(){for(const section of document.querySelectorAll('#main details[data-settings-group]'))settingsOpenGroups.set(section.dataset.settingsGroup,section.open);}
-function settingsUtilityPanel(id,title,body){return `<details class="panel settings-section" data-settings-group="${id}" ${(settingsOpenGroups.get(id)??true)?'open':''}><summary class="panel-head settings-section-heading" aria-label="${esc(title)}"><div><h2>${esc(title)}</h2></div><span class="settings-disclosure" aria-hidden="true">▸</span></summary>${body}</details>`;}
+function settingsUtilityPanel(id,title,body){return `<details class="panel settings-section" data-settings-group="${id}" ${(settingsOpenGroups.get(id)??false)?'open':''}><summary class="panel-head settings-section-heading" aria-label="${esc(title)}"><div><h2>${esc(title)}</h2></div><span class="settings-disclosure" aria-hidden="true">▸</span></summary>${body}</details>`;}
 function settingsPanel(){return `<form id="settings-form" novalidate><div class="settings-heading"><div><h2>Campaign settings</h2><p class="help">One setting per row. Save changes to apply your edits.</p></div><div class="row"><button id="settings-reset" type="button" data-mutate>Revert changes</button><button id="settings-save" type="submit" class="primary" data-mutate>Save changes</button></div></div><p id="settings-error" role="alert" tabindex="-1"></p><div id="settings-fields">${settingsFields()}</div><div id="settings-rounding-note">${roundingFootnote(settingsRounding)}</div></form>`+
  settingsUtilityPanel('rounding-time','Rounding & time',`<div class="settings-aux-row"><div>Round existing Credits & tons<p class="help">Credits up to 100; tons up to whole. Review before applying.</p></div>${btn('Round up Credits to 100 & tons to whole','rounding-preview','',true)}</div><div class="settings-aux-row"><div>Campaign time<p class="help">${esc(displayDate(state.dateLabel,state.hours))}</p></div>${btn('Advance / correct time','time','',true)}</div>`)+
  settingsUtilityPanel('backup-data','Backup & data',`<div class="panel-body"><p class="help">Browser storage is local to this device and browser. Save a JSON backup before moving devices or clearing browser data.</p><div class="settings-data-actions">${btn('Save campaign (JSON)','export')}${btn('Load campaign (JSON)','import','',true)}${btn('Export report (TXT)','report')}${btn('Rules & Notes','notes')}${btn('Reset campaign','reset','',true,'danger')}</div><div class="settings-legacy-actions">${btn('Ship, trader & options','settings-edit','',true)}${btn('TEMPORARY DEV TOOLS','dev-tools')}</div></div>`);}

@@ -237,12 +237,16 @@ try{
   assert.ok(inventory.every(x=>x.label&&x.row),'Every field has a label and a compact setting row');
   assert.ok(await page.locator('#settings-form .settings-section').count()>1,'Settings are grouped into sections');
   const sections=page.locator('#main details[data-settings-group]');
-  const defaults={campaign:true,fuel:true,mortgage:false,maintenance:false,trader:false,pricing:false,cabins:true,people:true,support:true,optional:false,rounding:false,'rounding-time':true,'backup-data':true};
+  const defaults={campaign:false,fuel:false,mortgage:false,maintenance:false,trader:false,pricing:false,cabins:false,people:false,support:false,optional:false,rounding:false,'rounding-time':false,'backup-data':false};
   const disclosureStates=()=>sections.evaluateAll(nodes=>Object.fromEntries(nodes.map(el=>[el.dataset.settingsGroup,el.open])));
   const closeAll=async()=>{for(const section of await sections.all())if(await section.evaluate(el=>el.open))await section.locator(':scope > summary').click({position:{x:8,y:8}});};
   const allClosed=Object.fromEntries(Object.keys(defaults).map(id=>[id,false]));
   assert.equal(await sections.count(),13,'Every field group and both utility panels can collapse');
-  assert.deepEqual(await disclosureStates(),defaults,'Previously visible groups start open; advanced groups start closed');
+  assert.deepEqual(await disclosureStates(),defaults,'Every Settings section starts collapsed');
+  const utility=page.locator('[data-settings-group="rounding-time"]');
+  assert.equal(await utility.evaluate(el=>el.parentElement===document.querySelector('.settings-column')),true,'Rounding & time belongs to the left column');
+  const widths=await utility.evaluate(el=>({utility:el.getBoundingClientRect().width,columns:el.closest('.settings-columns').getBoundingClientRect().width}));
+  assert.ok(size.width>1050?widths.utility<widths.columns*.55:Math.abs(widths.utility-widths.columns)<2,'Rounding & time follows the desktop half-width and mobile stack');
   await layout(page,'default sections '+size.width);
   await page.screenshot({path:artifacts+`/settings-default-${size.width}.png`,fullPage:true});
   const beforeToggles=await values();
@@ -265,6 +269,7 @@ try{
   const fuel=page.locator('[data-settings-group="fuel"]'),fuelNotes=fuel.locator('details.settings-notes');
   assert.equal(await fuel.locator(':scope > summary').getAttribute('aria-label'),'Ship size & fuel');
   assert.equal(await fuel.getByLabel('Base fuel tank capacity',{exact:true}).count(),1);
+  await reveal(fuelNotes);
   await fuelNotes.locator(':scope > summary').click({position:{x:8,y:8}});
   assert.match(await fuelNotes.textContent(),/including any power-plant or small-craft allowance/);
   assert.match(await fuelNotes.textContent(),/Optional bladders are added separately/);

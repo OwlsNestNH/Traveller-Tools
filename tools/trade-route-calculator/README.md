@@ -279,8 +279,10 @@ numeric typing and visible up/down buttons share the original bounds and roundin
 checkbox switches and dropdowns retain their existing values and choices. Every
 section heading, including Rounding & time and Backup & data, expands or collapses
 its section by click, Enter or Space. Common settings and the two utility panels
-start open; trader modifiers, optional pricing rules, taxes/insurance and credit
-rounding start collapsed. Open/closed choices survive Save, Revert and tab changes
+start collapsed, as do trader modifiers, optional pricing rules, taxes/insurance
+and credit rounding. Rounding & time sits in the left desktop column and stacks
+with the other sections on narrow screens. Open/closed choices survive Save,
+Revert and tab changes
 for this visit without changing campaign data; reload restores the defaults.
 Collapsing a section preserves unsaved values, and Save includes hidden fields. An
 invalid hidden field is opened and focused for correction. Cross-field errors
