@@ -217,6 +217,8 @@ const end = app.indexOf('\nfunction requestMapAreas(){', start);
 assert.ok(start >= 0 && end > start, 'Unique production paintMap extraction boundary');
 assert.equal(app.indexOf('function paintMap(){', start + 1), -1);
 const source = app.slice(start, end);
+const focusHelpers=app.slice(app.indexOf('function captureMapFocus(){'),app.indexOf('function render(){'));
+assert.ok(focusHelpers.includes('function restoreMapFocus('),'Load actual map focus dependencies');
 const accountsGuard = app.match(/^function accountsBusy\(\).*$/m)?.[0];
 assert.ok(accountsGuard, 'Actual Accounts ownership predicate remains part of extracted paintMap');
 const plannedRouteGuard=app.match(/^function plannedRoutePresentationHeld\(\).*$/m)?.[0];
@@ -248,7 +250,7 @@ function mapHarness(owners = {}) {
   $(id) {assert.equal(id, 'map-load-status'); calls.push('status'); return status;},
   ...owners
  });
- vm.runInContext(accountsGuard + '\n' + clearRouteGuard + '\n' + plannedRouteGuard + '\n' + source + '\nglobalThis.paint = paintMap;', context, {filename: 'production paintMap'});
+ vm.runInContext(accountsGuard + '\n' + clearRouteGuard + '\n' + plannedRouteGuard + '\n' + focusHelpers + '\n' + source + '\nglobalThis.paint = paintMap;', context, {filename: 'production paintMap'});
  return {context, calls, status, paint: () => context.paint()};
 }
 function assertFrozen(h) {
