@@ -1,10 +1,10 @@
-import {ruleInfo} from './rule-references.mjs?v=focused-settings-20261012-72';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=focused-settings-20261012-72';
+import {ruleInfo} from './rule-references.mjs?v=focused-settings-20261012-73';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=focused-settings-20261012-73';
 import * as A from './amounts.mjs';
-import {manualLuggage} from './accommodation.mjs?v=focused-settings-20261012-72';
-import * as P from './passengers.mjs?v=focused-settings-20261012-72';
-import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=focused-settings-20261012-72';
-import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=focused-settings-20261012-72';
+import {manualLuggage} from './accommodation.mjs?v=focused-settings-20261012-73';
+import * as P from './passengers.mjs?v=focused-settings-20261012-73';
+import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=focused-settings-20261012-73';
+import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=focused-settings-20261012-73';
 import {displayDate} from './calendar.mjs';
 const esc=escapeHtml;
 const money=formatCreditsText,signed=x=>x>0?'+'+x:String(x);

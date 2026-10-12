@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=focused-settings-20261012-72';
+import {escapeHtml as esc} from './display.mjs?v=focused-settings-20261012-73';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.

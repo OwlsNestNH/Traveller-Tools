@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=focused-settings-20261012-72';
+import {ruleInfo} from './rule-references.mjs?v=focused-settings-20261012-73';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={
