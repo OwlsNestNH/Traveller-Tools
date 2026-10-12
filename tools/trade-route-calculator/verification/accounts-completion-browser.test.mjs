@@ -84,7 +84,11 @@ const approvedServiceSources={"state.mjs": "75973cea99ef3b90e0d79edfee4d54d68169
 // .66 changes only refill plans, stock-total rounding and saved purchase audit fields.
 // Released/.64/.65 identities remain retained; monetary inverse assertions remain.
 const approvedRefillSources={"state.mjs": "e805e57e710395d4e932fe8551af1c8cbc633a47fef9c491804714a0f293111c", "life-support.mjs": "823c1ca83ff188c78a9e07e7be3717bb8399b44d6ff4c778eaf7487d6e0e1c53"};
-async function assertReleasedEconomics(){for(const[name,expectedHash]of Object.entries(releasedEconomics.sha256))assert.equal(hash(importTagNeutral(await readFile(new URL('../js/'+name,import.meta.url),'utf8'))),approvedRefillSources[name]||approvedServiceSources[name]||approvedTransportSources[name]||expectedHash,(approvedRefillSources[name]?'Reviewed .66 refill source identity: ':approvedServiceSources[name]?'Reviewed .65 service source identity: ':approvedTransportSources[name]?'Reviewed .64 transport source identity: ':'Released economic source identity: ')+name);return {...releasedEconomics,approvedTransportSources,approvedServiceSources,approvedRefillSources};}
+// .72 adds only the independently reviewed optional characteristic-DM validator
+// and its rules import (d28cdfc). Economic/Undo code is otherwise byte-identical
+// after release tags; retain every earlier pin and all monetary oracle checks.
+const approvedSettingsSources={"state.mjs": "1109f9cfbb020083bb8a24dee75fbeaa65ab47bfeab5f63d93fb35298b423e37"};
+async function assertReleasedEconomics(){for(const[name,expectedHash]of Object.entries(releasedEconomics.sha256))assert.equal(hash(importTagNeutral(await readFile(new URL('../js/'+name,import.meta.url),'utf8'))),approvedSettingsSources[name]||approvedRefillSources[name]||approvedServiceSources[name]||approvedTransportSources[name]||expectedHash,(approvedSettingsSources[name]?'Reviewed .72 characteristic validation source identity: ':approvedRefillSources[name]?'Reviewed .66 refill source identity: ':approvedServiceSources[name]?'Reviewed .65 service source identity: ':approvedTransportSources[name]?'Reviewed .64 transport source identity: ':'Released economic source identity: ')+name);return {...releasedEconomics,approvedTransportSources,approvedServiceSources,approvedRefillSources,approvedSettingsSources};}
 const raw=page=>page.evaluate(key=>localStorage.getItem(key),KEY);
 const read=async page=>JSON.parse(await raw(page));
 const frames=page=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
