@@ -121,6 +121,9 @@ jobs:
           done
           curl --fail --silent "$TRAVELLER_TEST_URL" > /dev/null
           node "verification/$SCRIPT.test.mjs" "$RUNNER_TEMP/trade-playwright/node_modules/playwright" | tee "verification-artifacts/$SUITE.txt"
+          if [[ "$SUITE" == 'click-route' ]]; then
+            node verification/route-editor-current-world-browser.test.mjs "$RUNNER_TEMP/trade-playwright/node_modules/playwright" | tee verification-artifacts/route-editor-current-world-browser.txt
+          fi
           if [[ "$SUITE" == 'browser' ]]; then
             node verification/devtools-browser.test.mjs "$RUNNER_TEMP/trade-playwright/node_modules/playwright" | tee verification-artifacts/devtools-browser.txt
             node verification/market-quote-browser.test.mjs "$RUNNER_TEMP/trade-playwright/node_modules/playwright" | tee verification-artifacts/market-quote-browser.txt

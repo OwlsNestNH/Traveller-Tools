@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile,writeFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {fixture,setup,loadClearRouteHarness,canonical,ui,display,same} from './clear-route-save-harness.mjs';
+import {legacyRouteEditorMarkup} from './route-editor-legacy-markup.mjs';
 
 // Independent full-source .59 oracle. The recording run loads its app, Store,
 // controller, state and helper imports from the preserved released tree. CI
@@ -20,7 +21,7 @@ let seeds;
 try{seeds=JSON.parse(await readFile(seedURL,'utf8'));}catch(error){if(!recording)throw error;seeds=[false,true].flatMap(spent=>[false,true].map(legacy=>({name:`spent=${spent}, legacy=${legacy}`,campaign:fixture({spent,legacy})})));await writeFile(seedURL,JSON.stringify(seeds));}
 const expected=recording?null:JSON.parse(await readFile(expectedURL,'utf8'));
 const captured=[];
-function observation(h){same(h.api.state,h.persisted());return {campaign:h.persisted(),routeDraft:h.api.routeDraft,interface:{...ui(h),tab:h.api.tab,view:h.api.view,renderedSHA256:Object.fromEntries(Object.entries(display(h)).map(([key,value])=>[key,createHash('sha256').update(value).digest('hex')]))},writes:h.counters.writes};}
+function observation(h){same(h.api.state,h.persisted());return {campaign:h.persisted(),routeDraft:h.api.routeDraft,interface:{...ui(h),tab:h.api.tab,view:h.api.view,renderedSHA256:Object.fromEntries(Object.entries(display(h)).map(([key,value])=>[key,createHash('sha256').update(key==='main'?legacyRouteEditorMarkup(value):value).digest('hex')]))},writes:h.counters.writes};}
 for(const seed of seeds)test(`independent full .59 clear/close/reload/Undo observation: ${seed.name}`,async()=>{
  const h=setup(seed.campaign,{factory});h.open();const checkpoints=[];
  const operation=h.submit();checkpoints.push({phase:'submit stack',...observation(h)});

@@ -1,14 +1,14 @@
-import {ruleInfo} from './rule-references.mjs?v=static-service-mfd-20261012-66';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=static-service-mfd-20261012-66';
-import {passengerShip} from './passengers.mjs?v=static-service-mfd-20261012-66';
+import {ruleInfo} from './rule-references.mjs?v=route-editor-current-world-20261012-67';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=route-editor-current-world-20261012-67';
+import {passengerShip} from './passengers.mjs?v=route-editor-current-world-20261012-67';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=static-service-mfd-20261012-66';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=static-service-mfd-20261012-66';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=static-service-mfd-20261012-66';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=static-service-mfd-20261012-66';
-import {creditStep} from './rounding.mjs?v=static-service-mfd-20261012-66';
-import {roll} from './rules.mjs?v=static-service-mfd-20261012-66';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=static-service-mfd-20261012-66';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=route-editor-current-world-20261012-67';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=route-editor-current-world-20261012-67';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=route-editor-current-world-20261012-67';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=route-editor-current-world-20261012-67';
+import {creditStep} from './rounding.mjs?v=route-editor-current-world-20261012-67';
+import {roll} from './rules.mjs?v=route-editor-current-world-20261012-67';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=route-editor-current-world-20261012-67';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

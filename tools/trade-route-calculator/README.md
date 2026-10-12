@@ -79,6 +79,12 @@ The main browser test uses deterministic API fixtures based on a checked live re
 
 **Clear planned route** clears future stops and resets the plan to the ship's current actual world. It does not move the ship back to its original campaign starting world. Time, bank, cargo, insurance terms and completed travel history remain unchanged; Undo restores the previous plan. Only the explicit **COMMIT JUMP** confirmation travels one leg along the route.
 
+The active **Build route** or **Auto plot** editor sits directly below Route Preview and above the map, with its selected stops and save/remove/cancel controls together. **Planning active** distinguishes it from the saved plan.
+
+**Make current world** at the bottom of navigation uses the highlighted world as a GM location correction. Its confirmation names the world, warns that the planned route will be cleared, and requires a reason. Cancel changes nothing. Confirmation does not advance time or consume fuel; bank, cargo, contract payments and existing history remain intact. Active insurance requires a route amendment. **History → Undo latest change** restores the prior location, route and policy state; the correction audit remains visible and a closed jump mulligan stays closed.
+
+Run `node verification/route-editor-current-world-browser.test.mjs` for focused desktop/mobile order, keyboard planning, correction/Cancel/Undo, fixed MFD and explicit map expansion checks with synthetic data and actual screenshots.
+
 Run `node verification/click-route.test.mjs` for map route planning, removing stops, save/cancel, clear after travel, Undo, request failures and mobile layout checks.
 
 Pending hex lookups reserve their clicked position immediately and block Save until checked. A failed lookup stays in the plan for **Retry route** or **Remove stop**. Auto plot uses only the newest selected destination; late responses cannot replace it. Enter and Space on map controls report lookup failures through the same visible error path as mouse clicks. Run `node --test verification/route-selection.test.mjs` for source-executed ordering/lifecycle checks and `node verification/route-selection-browser.test.mjs` for deterministic Chromium interaction regressions.

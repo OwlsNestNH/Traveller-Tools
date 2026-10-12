@@ -21,7 +21,7 @@ harnessSource=replace(harnessSource,'clearTimeout:cancel=clearTimeout}={}','$MAP
 harnessSource=harnessSource.replace('$MAP$','clearTimeout:cancel=clearTimeout,mapControl}={}');
 harnessSource=replace(harnessSource,'...bindings,R:rules,document:dom.document','...bindings,M:{...bindings.M,nearby:(...args)=>mapControl.nearby(...args)},createWorldPicker:(...args)=>mapControl.createPicker(...args),createGlobalWorldSearch:()=>({}),R:rules,document:dom.document');
 harnessSource=replace(harnessSource,"'takeover','import-file'","'takeover','setup-world','find-world','global-world-search','choose-starting-world','import-file'");
-harnessSource=replace(harnessSource,'globalThis.api={setStore','globalThis.api={setup,setLocation,findWorld,paintMap,roleChange:'+roleCallback+',setStore');
+harnessSource=replace(harnessSource,'globalThis.api={setStore','globalThis.api={setup,setLocation,makeCurrentWorld,get routeDraft(){return routeDraft;},findWorld,paintMap,roleChange:'+roleCallback+',setStore');
 const harnessModule='data:text/javascript;base64,'+Buffer.from(harnessSource).toString('base64');
 let storageSource=absolutize(await readFile(storageURL,'utf8'),storageURL);
 storageSource=replace(storageSource,JSON.stringify(harnessURL.href),JSON.stringify(harnessModule));
@@ -184,4 +184,33 @@ for(const resolution of ['completion','foreign publication'])test(`actual map re
  gate.entries[0].fulfill();await operation;
  if(resolution==='completion'){assert.equal(ui(h).modalOpen,false);h.api.paintMap();assert.equal(replacements,2,'Completed operation permits repaint of the authoritative route');assert.equal(statusWrites,2);economics(h,before);}
  else noSuccess(h);
+});
+test('map GM correction binds the highlighted selection and rejects stale or read-only activation',()=>{
+ const h=setup(),bytes=h.bytes();
+ assert.equal(h.api.makeCurrentWorld(target.id),false);
+ assert.equal(ui(h).modalOpen,false);
+ h.api.setView(target.id);h.store.editable=false;
+ assert.equal(h.api.makeCurrentWorld(target.id),false);
+ assert.equal(ui(h).modalOpen,false);assert.equal(h.bytes(),bytes);
+ h.store.editable=true;h.api.makeCurrentWorld(target.id);
+ assert.equal(ui(h).modalTitle,'Make current world');
+ h.api.closeModal();assert.equal(h.bytes(),bytes);
+});
+
+test('map correction saves through the existing guarded owner and Undo restores location, route and insurance without reopening mulligans',async()=>{
+ const h=setup(),before=h.persisted();
+ h.api.setView(target.id);h.api.setRouteDraft({mode:'build',origin:before.actual,stops:[target.id],path:[before.actual,target.id]});
+ h.api.makeCurrentWorld(target.id);h.fill({reason});
+ await h.submit();const after=h.persisted();
+ assert.equal(after.actual,target.id);same(after.route,[target.id]);assert.equal(after.routeIndex,0);same(after.mandatoryStops,[]);
+ for(const key of ['hours','bank','lots','contracts','ledger','snapshots'])same(after[key],before[key]);
+ same(after.ship.fuel,before.ship.fuel);assert.equal(h.api.routeDraft,null);
+ assert.ok(before.events.every(e=>after.events.some(x=>x.id===e.id)));
+ assert.equal(after.policies[0].status,'amendment-required');
+ assert.ok(after.events.some(e=>e.label==='Starting-world / location correction'&&e.from===before.actual&&e.to===target.id&&e.reason===reason));
+ assert.ok(after.jumpAttempts.every(a=>a.closed));
+ const undone=S.undo(after);
+ for(const key of ['actual','route','routeIndex','mandatoryStops','policies','hours','bank','lots','contracts','ledger','snapshots'])assert.equal(JSON.stringify(undone[key]),JSON.stringify(before[key]),key);
+ same(undone.jumpAttempts,after.jumpAttempts);
+ assert.ok(undone.events.some(e=>e.label==='Starting-world / location correction'));
 });
