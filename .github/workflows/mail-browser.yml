@@ -305,6 +305,17 @@ jobs:
             tools/trade-route-calculator/verification-artifacts/commit.txt
           if-no-files-found: error
           retention-days: 14
+      - name: Upload compact Fuel and Life Support MFD screenshots
+        if: ${{ always() && matrix.suite == 'service-panels-browser' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: trade-service-mfd-visuals-${{ github.event.pull_request.head.sha }}
+          path: |
+            tools/trade-route-calculator/verification-artifacts/mfd-*.png
+            tools/trade-route-calculator/verification-artifacts/commit.txt
+            tools/trade-route-calculator/verification-artifacts/service-panels-browser.txt
+          if-no-files-found: error
+          retention-days: 14
       - name: Upload compact service-navigation screenshots and report
         if: ${{ always() && matrix.suite == 'service-navigation-browser' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
