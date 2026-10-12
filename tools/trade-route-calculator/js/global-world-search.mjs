@@ -1,4 +1,4 @@
-import {searchWorlds,loadWorld} from './map.mjs?v=focused-settings-20261012-71';
+import {searchWorlds,loadWorld} from './map.mjs?v=focused-settings-20261012-72';
 
 export const planetSearchLabel=w=>[w.name,w.subsectorName,w.sector,w.hex].join(' — ');
 

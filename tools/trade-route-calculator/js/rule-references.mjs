@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=focused-settings-20261012-71';
+import {escapeHtml as esc} from './display.mjs?v=focused-settings-20261012-72';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.
@@ -19,7 +19,7 @@ export const RULE_REFERENCES=Object.freeze({
   part('Referee input','Exotics and manually entered goods need referee-defined terms. A citation does not supply missing rolls or validate an entered price.')
  ]),
  'contact-search':entry('supplier and buyer searches',[core('241–243')],[
-  part('Published rule','A 2D skill check and a separate 1D duration determine a supplier or buyer search. Legal, black-market and online methods use their relevant skills and port modifiers. Online searches require TL8+. The source applies a penalty for earlier attempts in the same month.'),
+  part('Published rule','A 2D skill check and a separate 1D duration determine a supplier or buyer search. Legal, black-market and online methods use their relevant skills and port modifiers. Broker and Streetwise trade searches use EDU or SOC; online Admin uses EDU and requires TL8+. The separate general Streetwise INT example is not used for these trade searches. The source applies a penalty for earlier attempts in the same month.'),
   part('Home rule · campaign interpretation','Each planet has one 28-day (672-hour) period, starting with its first committed supplier or buyer search. Earlier committed attempts each give DM −1 across all counterparties and methods. All penalties clear together after 28 days; the next committed search starts a new period. Core does not specify this grouped 28-day clock.'),
   part('App convention','Previews and cancelled searches do not count. Search duration advances time only on commit. Recorded legacy results retain their original inputs and totals; current penalty periods are reconstructed in committed-search order. Rejecting an offer uses the separate recorded 30-day counterparty cooldown.')
  ]),

@@ -1,11 +1,11 @@
-import {ruleInfo} from './rule-references.mjs?v=focused-settings-20261012-71';
+import {ruleInfo} from './rule-references.mjs?v=focused-settings-20261012-72';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={
  mortgageOriginal:['Original mortgage amount · Cr'],mortgagePayment:['Fixed payment · Cr','', 'Every 4 weeks (28 days)'],mortgageRemaining:['Payments remaining'],mortgagePaid:['Total paid so far · Cr'],mortgageDueDate:['First / next unpaid due date'],maintenancePayment:['Maintenance · Cr','', 'Every 4 weeks (28 days)'],maintenanceDueDate:['First / next unpaid due date'],
  name:['Campaign'],ship:['Ship name'],capacity:['Cargo capacity','tons'],jump:['Jump rating'],scoops:['Fuel scoops fitted'],armed:['Ship is armed','','Mail modifier'],
  fuelAvailabilityAlert:['Show fuel-availability information','','Advisory only; purchases and prices are unchanged'],shipTons:['Ship displacement','tons'],fuelCapacity:['Base fuel tank capacity','tons'],bladderTons:['Fuel bladder capacity','tons'],fuelAboard:['Fuel aboard','tons'],
- broker:['Broker skill'],streetwise:['Streetwise skill'],admin:['Admin skill'],characteristic:['Default EDU / SOC DM'],rank:['Highest Naval / Scout rank'],soc:['Highest SOC DM'],
+ broker:['Broker skill'],streetwise:['Streetwise skill'],admin:['Admin skill'],characteristic:['Freight / passenger search DM','', 'Retained separately from supplier/buyer defaults'],rank:['Highest Naval / Scout rank'],soc:['Mail · highest SOC DM','', 'Independent of the trader’s SOC DM'],intDM:['INT DM','', 'Stored; unused by trade searches and price negotiation'],eduDM:['EDU DM'],tradeSocDM:['SOC DM · trade'],
  mode:['Profit mode'],custom:['Custom profit','%','Only used in Custom mode'],reducedProfitLimitsEnabled:['Enable reduced-profit price limits'],minPurchasePercent:['Minimum buy','%','Percentage of base retail'],maxSalePercent:['Maximum sell','%','Percentage of base retail'],maxBaseRetailEnabled:['Cap commodity base retail price'],maxBaseRetail:['Maximum base retail','Cr / ton'],useRawIllegalPrices:['Use original RAW base prices for illegal goods'],
  'rooms-low':['Low service · cabins'],'roomService-low':['Low cabin running-cost rate'],'roomCustom-low':['Custom low cabin cost','Cr / month','Per cabin; only in Custom mode'],
  'rooms-middle':['Middle service · cabins'],'roomService-middle':['Middle cabin running-cost rate'],'roomCustom-middle':['Custom middle cabin cost','Cr / month','Per cabin; only in Custom mode'],
@@ -18,7 +18,7 @@ export const settingsGroups=[
  {id:'fuel',title:'Ship size & fuel',description:'Total configured fuel capacity; no separate tank tracking',names:['shipTons','fuelCapacity','bladderTons','fuelAboard','fuelAvailabilityAlert']},
  {id:'mortgage',title:'Mortgage',description:'Original amount, fixed installments and payments made',advanced:true,names:['mortgageOriginal','mortgagePayment','mortgageRemaining','mortgagePaid','mortgageDueDate']},
  {id:'maintenance',title:'Monthly maintenance',description:'A separate four-week payment schedule',advanced:true,names:['maintenancePayment','maintenanceDueDate']},
- {id:'trader',title:'Trader & mail modifiers',description:'Whole-number skills and DMs',advanced:true,names:['broker','streetwise','admin','characteristic','rank','soc']},
+ {id:'trader',title:'Trader & mail modifiers',description:'Whole-number skills and DMs',advanced:true,names:['broker','streetwise','admin','characteristic','rank','soc','intDM','eduDM','tradeSocDM']},
  {id:'pricing',title:'Trade rules & pricing',description:'Optional limits and profit settings for new transactions',advanced:true,names:['mode','custom','reducedProfitLimitsEnabled','minPurchasePercent','maxSalePercent','maxBaseRetailEnabled','maxBaseRetail','useRawIllegalPrices']},
  {id:'cabins',title:'Cabins & running costs',description:'All installed cabins, including crew and empty cabins',names:['rooms-low','roomService-low','roomCustom-low','rooms-middle','roomService-middle','roomCustom-middle','rooms-high','roomService-high','roomCustom-high']},
  {id:'people',title:'People & luggage',description:'Awake people include crew; frozen occupants are separate',names:['people-middle','people-high','occupiedLowBerths','luggageOverride','luggageTons']},
@@ -56,7 +56,12 @@ export function mountSettingsLayout(form,openGroups=new Map()){
   section.dataset.settingsGroup=group.id;section.open=openGroups.get(group.id)??false;
   const caption=node('h3','',group.title);caption.setAttribute('aria-label',group.title);for(const id of groupReferences[group.id]||[])caption.insertAdjacentHTML('beforeend',ruleInfo(id));title.append(caption,node('p','',group.description));chevron.setAttribute('aria-hidden','true');heading.append(title,chevron);heading.setAttribute('aria-label',group.title);
   section.append(heading);
-  for(const name of group.names){if(name.startsWith('rooms-'))section.append(node('div','settings-band',name.slice(6)+' service'));section.append(settingRow(inputs.get(name)));}
+  for(const name of group.names.filter(name=>!['intDM','eduDM','tradeSocDM'].includes(name))){if(name.startsWith('rooms-'))section.append(node('div','settings-band',name.slice(6)+' service'));section.append(settingRow(inputs.get(name)));}
+  if(group.id==='trader'){
+   const characteristic=node('details','settings-notes');characteristic.dataset.settingsGroup='characteristic-dms';characteristic.open=openGroups.get('characteristic-dms')??false;
+   characteristic.append(node('summary','','Characteristic DMs'),...['intDM','eduDM','tradeSocDM'].map(name=>settingRow(inputs.get(name))),...[...(source.querySelector('#characteristic-dms')?.querySelectorAll?.(':scope > p')||[])]);
+   section.append(characteristic);
+  }
   if(group.id==='fuel'){fuelEstimate.className='settings-note';section.append(fuelEstimate,notes('Fuel tracking details & rules',fuelNotes));}
   if(group.id==='cabins')section.append(notes('Cabin charges — rules & campaign assumptions',accommodationNotes));
   if(group.id==='people'){luggageEstimate.className='settings-note';section.append(luggageEstimate);}

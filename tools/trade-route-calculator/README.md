@@ -289,6 +289,22 @@ invalid hidden field is opened and focused for correction. Cross-field errors
 reveal all field groups and focus the error message so the related values can be
 reviewed together. Fuel and cabin rule details remain in independent disclosures.
 
+**Trader & mail modifiers** retains Broker, Streetwise and Admin skills. Its
+nested **Characteristic DMs** section stores separate INT, EDU and trade SOC DMs.
+Supplier/buyer searches default to the higher of EDU or trade SOC, and online
+Admin defaults to EDU (Core pp. 241/243). Each search DM is still editable; a typed
+override survives method changes. INT is stored without affecting these searches
+or 3D price negotiation. Mail's highest SOC DM is a separate setting.
+
+Old schema-1 saves remain readable without migration writes. Their shared search
+DM supplies both EDU and trade SOC as explicitly labelled compatibility defaults,
+not reconstructed attributes; INT defaults to zero. Saving Settings records the
+three values in one undoable action. Existing mail SOC, freight/passenger search
+DM, overrides, offers and historical audits are retained independently. Reload
+and JSON export/import retain saved split values. Malformed or partial split
+values are rejected rather than replaced. Undo can restore the original legacy
+save shape. No new crew-name or other skill/characteristic fields are added.
+
 Select **Save changes** to commit the full form as one undoable settings action, or
 **Revert changes** to reload the saved values. Draft edits survive tab navigation in
 the current page but are not saved until submitted. If another action or tab changes
