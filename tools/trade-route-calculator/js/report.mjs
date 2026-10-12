@@ -1,13 +1,13 @@
-import {recordedOperatingResult} from './financial-summary.mjs?v=focused-settings-20261012-73';
-import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=focused-settings-20261012-73';
-import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=focused-settings-20261012-73';
-import {bladderSpace} from './fuel.mjs?v=focused-settings-20261012-73';
+import {recordedOperatingResult} from './financial-summary.mjs?v=player-briefing-20261012-74';
+import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=player-briefing-20261012-74';
+import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=player-briefing-20261012-74';
+import {bladderSpace} from './fuel.mjs?v=player-briefing-20261012-74';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
-import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=focused-settings-20261012-73';
-import {distance} from './map.mjs?v=focused-settings-20261012-73';
+import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=player-briefing-20261012-74';
+import {distance} from './map.mjs?v=player-briefing-20261012-74';
 
-export const REPORT_VERSION='2026.10.12.73';
+export const REPORT_VERSION='2026.10.12.74';
 const clean=v=>String(v??'Not recorded').replace(/[\r\n\t\x00-\x1f]+/g,' ').trim();
 const number=v=>String(v).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const cr=v=>v==null?'Not recorded':'Cr '+number(v);

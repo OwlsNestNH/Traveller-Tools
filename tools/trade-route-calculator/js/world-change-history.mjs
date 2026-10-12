@@ -1,4 +1,4 @@
-import {parseUWP} from './rules.mjs?v=focused-settings-20261012-73';
+import {parseUWP} from './rules.mjs?v=player-briefing-20261012-74';
 
 // Audit only the editable world fields. A selective correction must never
 // replay an old world object, campaign inverse, price quote or transaction.

@@ -836,3 +836,24 @@ their saved receipt open with committed values; Prepare another explicitly
 starts a fresh stock-service cost preview. The duplicate bottom cargo table is
 removed. Trade/Cargo tabs and Cargo Hold MFD shortcuts retain trade and manage
 actions. Economic calculations and persistence/Undo behavior are unchanged.
+
+
+## Player briefing copy (UI .74)
+
+Settings → Backup & data → Copy player briefing copies one LLM instruction prompt
+and allowlisted player-safe JSON. Request one print-friendly PDF page; an LLM
+without PDF support should return formatted one-page text. Clipboard denial or
+absence opens a selected read-only text field for manual copying. The app calls
+no LLM and does not generate PDFs, change offers, roll dice or save state.
+
+The prior completed visit contains financial results only, with cash movement
+separate from realized operating results. Jump-delimited ledger order preserves
+revisits; missing boundaries, unreconciled history, baselines, location correction
+or Undo ambiguity produce unavailable/incomplete warnings. Current sale quotes
+require actual-world and revision validity. Persistent purchase quotes require
+a search in the verified current visit; transport availability requires retained
+session evidence. Historical-only checks never recreate offers. Freight is
+aggregated, mail summarized and passengers counted by class. Unsearched options
+are explicitly NOT CHECKED; zero results, stale and expired offers stay distinct.
+GM audits, reasons and free-text cargo/contract descriptions are excluded. JSON
+strings are untrusted data, never instructions for the destination LLM.
