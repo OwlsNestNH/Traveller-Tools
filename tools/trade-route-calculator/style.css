@@ -406,3 +406,6 @@ main{padding-top:18px}
 .service-mfd .mfd-title{display:flex;align-items:center;justify-content:space-between;gap:12px}.service-mfd .mfd-title>h2{min-width:0}.service-mfd .mfd-title>button{flex:0 0 auto;white-space:nowrap;overflow-wrap:normal;min-height:40px;color:#90e5ee;border-color:#345a70;background:#0b1c2a}
 
 .service-mfd{overflow-wrap:anywhere}.service-mfd .service-quantity .field,.service-mfd .service-comparison>div{min-width:0}.service-mfd .service-quantity input{width:100%;box-sizing:border-box}
+
+/* Service completion notices remain visible without resizing the fixed MFD. */
+.mfd-screen:has(.service-mfd) #message.visible{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);width:min(640px,calc(100% - 32px));z-index:20;border:1px solid #396048;border-radius:6px;box-shadow:0 4px 16px #0008}
