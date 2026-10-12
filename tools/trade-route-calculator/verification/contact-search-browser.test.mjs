@@ -68,7 +68,7 @@ try{
   const audit=after.events.findLast(e=>e.contactSearch);await tab('History');await page.locator('[data-action="event-audit"][data-arg="'+audit.id+'"]').click();await title('History entry');
   assert.match(await page.locator('#modal-body').textContent(),/Home Rule \/ campaign interpretation/);assert.match(await page.locator('#modal-body').textContent(),/same month/);assert.ok((await page.locator('#modal-body').textContent()).includes(displayDate(s.dateLabel,1344)));await cancel();
   // Export and re-import through the real browser file controls, then Undo.
-  await tab('Settings');const downloading=page.waitForEvent('download');await page.getByRole('button',{name:'Save campaign (JSON)',exact:true}).click();
+  await tab('Settings');const downloading=page.waitForEvent('download');{const utility=page.getByRole('button',{name:'Save campaign (JSON)',exact:true,includeHidden:true});for(const detail of await utility.locator('xpath=ancestor::details').all())if(!await detail.evaluate(el=>el.open))await detail.locator(':scope > summary').click({position:{x:8,y:8}});await utility.click();}
   const download=await downloading,stream=await download.createReadStream(),chunks=[];for await(const chunk of stream)chunks.push(chunk);const bytes=Buffer.concat(chunks);assert.deepEqual(JSON.parse(bytes.toString()),after);
   await page.locator('#import-file').setInputFiles({name:'contact-search-periods.json',mimeType:'application/json',buffer:bytes});await title('Load campaign (JSON)');await page.locator('[name="backed"]').check();await page.locator('#modal-submit').click();await closed();
   assert.deepEqual((await read()).snapshots,after.snapshots);assert.equal(contactSearchStatus(await read()).previous,2);

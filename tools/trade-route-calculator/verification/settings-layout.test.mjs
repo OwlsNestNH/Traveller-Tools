@@ -5,10 +5,10 @@ import vm from 'node:vm';
 import {SaveNotCommittedError} from '../js/persistence.mjs';
 import {settingsGroups,mountSettingsLayout,stepSetting,syncSettingsControls} from '../js/settings-layout.mjs';
 
-const names=['name','ship','capacity','jump','broker','streetwise','admin','characteristic','rank','soc','mode','custom','shipTons','fuelCapacity','bladderTons','fuelAboard','rooms-low','roomService-low','roomCustom-low','rooms-middle','roomService-middle','roomCustom-middle','rooms-high','roomService-high','roomCustom-high','people-middle','people-high','occupiedLowBerths','luggageOverride','luggageTons','supportCapacity','supportRemaining','supportUnits','creditStep','scoops','armed','reducedProfitLimitsEnabled','minPurchasePercent','maxSalePercent','maxBaseRetailEnabled','maxBaseRetail','useRawIllegalPrices','tax','insurance','mortgageOriginal','mortgagePayment','mortgageRemaining','mortgagePaid','mortgageDueDate','maintenancePayment','maintenanceDueDate','fuelAvailabilityAlert'];
-test('compact Settings groups retain all 52 controls once, with existing disclosure defaults',()=>{
+const names=['name','ship','capacity','jump','broker','streetwise','admin','characteristic','rank','soc','intDM','eduDM','tradeSocDM','mode','custom','shipTons','fuelCapacity','bladderTons','fuelAboard','rooms-low','roomService-low','roomCustom-low','rooms-middle','roomService-middle','roomCustom-middle','rooms-high','roomService-high','roomCustom-high','people-middle','people-high','occupiedLowBerths','luggageOverride','luggageTons','supportCapacity','supportRemaining','supportUnits','creditStep','scoops','armed','reducedProfitLimitsEnabled','minPurchasePercent','maxSalePercent','maxBaseRetailEnabled','maxBaseRetail','useRawIllegalPrices','tax','insurance','mortgageOriginal','mortgagePayment','mortgageRemaining','mortgagePaid','mortgageDueDate','maintenancePayment','maintenanceDueDate','fuelAvailabilityAlert'];
+test('compact Settings groups retain all 55 controls once, with collapsed disclosure defaults',()=>{
  const grouped=settingsGroups.flatMap(group=>group.names);
- assert.equal(grouped.length,52);assert.deepEqual([...grouped].sort(),[...names].sort());
+ assert.equal(grouped.length,55);assert.deepEqual([...grouped].sort(),[...names].sort());
  assert.deepEqual(settingsGroups.filter(group=>group.advanced).map(group=>group.id),['mortgage','maintenance','trader','pricing','optional','rounding']);
 });
 test('numeric arrows retain native bounds and preserve fractional custom input',()=>{
@@ -65,8 +65,8 @@ test('all eleven Settings groups mount as labelled native disclosures without re
     assert.equal(section.tagName,'DETAILS');assert.equal(summary.tagName,'SUMMARY');
     assert.equal(summary.attributes['aria-label'],definition.title);
     assert.equal(summary.children.at(-1).attributes['aria-hidden'],'true');
-    assert.equal(section.open,override?.get(definition.id)??!definition.advanced);
-    const preserved=section.children.filter(child=>child.className==='setting-row').map(row=>row.children[1].children[0]);
+    assert.equal(section.open,override?.get(definition.id)??false);
+    const rows=section.children.flatMap(child=>child.tagName==='DETAILS'?child.children:child);const preserved=rows.filter(child=>child.className==='setting-row').map(row=>row.children[1].children[0]);
     assert.deepEqual(preserved,definition.names.map(name=>fixture.inputs.find(input=>input.name===name)));
    }
    assert.deepEqual(fixture.inputs.map(input=>input.value),names.map((_,i)=>'preserved-'+i));

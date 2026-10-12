@@ -1,6 +1,22 @@
-import {up} from './rounding.mjs?v=focused-ui-20261012-68';
+import {up} from './rounding.mjs?v=focused-settings-20261012-73';
 import {dec,rat,add,sub,mul,div,cmp,floor,sum,decimal,auditNumber,allocate,credit} from './amounts.mjs';
 export const VERSION='0.1.0';
+// Legacy search DM is a compatibility default, not a reconstructed attribute.
+// Mail uses trader.soc independently. Reading old saves never migrates them.
+export function characteristicDMs(trader){
+ const d=trader.characteristics===undefined?{int:0,edu:trader.characteristic,soc:trader.characteristic}:trader.characteristics;
+ if(!d||typeof d!=='object'||Array.isArray(d)||!['int','edu','soc'].every(key=>Number.isInteger(d[key])))throw Error('Characteristic DMs must contain separate whole-number INT, EDU and SOC values.');
+ return {int:d.int,edu:d.edu,soc:d.soc};
+}
+export function tradeSearchCharacteristic(trader,method){
+ const d=characteristicDMs(trader);
+ if(method==='online')return d.edu;
+ if(!['normal','blackMarket'].includes(method))throw Error('Unknown trade search method.');
+ // Core pp.241/243: either EDU or SOC. Higher allowed DM is the editable default.
+ // INT is stored only; the 3D negotiation formula has no characteristic term.
+ return Math.max(d.edu,d.soc);
+}
+
 export function die(){const a=new Uint32Array(1);let x;do{crypto.getRandomValues(a);x=a[0];}while(x>=4294967292);return x%6+1;}
 export function roll(n,rng=die){const dice=Array.from({length:n},rng);if(dice.some(x=>!Number.isInteger(x)||x<1||x>6))throw Error('Invalid die');return {dice,total:dice.reduce((a,b)=>a+b,0)};}
 // Campaign house rule: inspect only the three natural price dice, never a total or DM.

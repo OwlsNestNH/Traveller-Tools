@@ -18,8 +18,8 @@ const raw=page=>page.evaluate(key=>localStorage.getItem(key),campaignKey);
 const closed=page=>page.locator('#modal').waitFor({state:'hidden'});
 const action=(page,name)=>page.locator('[data-action="'+name+'"]');
 async function openBuild(page){await page.locator('#route-menu>summary').click();await action(page,'route-build').click();}
-async function choose(page,id,key='Enter'){const world=page.locator('svg [data-action="map-world"][data-arg="'+id+'"]');await world.focus();await world.press(key);}
-async function ready(page){await page.waitForFunction(()=>!document.querySelector('[data-action="route-save"]')?.disabled);}
+async function choose(page,id,key='Enter'){const world=page.locator('svg [data-action="map-world"][data-arg="'+id+'"]');await world.focus();assert.equal(await page.evaluate(id=>document.activeElement?.dataset.action==='map-world'&&document.activeElement?.dataset.arg===id,id),true,'Selected world owns keyboard focus');await page.keyboard.press(key);}
+async function ready(page,count){await page.waitForFunction(count=>document.querySelectorAll('.route-draft>ol>li').length===count&&!document.querySelector('[data-action="route-save"]')?.disabled,count);}
 try{
  for(const width of [1440,390,320]){
   const f=guiFixture();f.state.ship.fuel=configureFuel(200,80,60,0,2);
@@ -29,11 +29,13 @@ try{
   f.bytes=JSON.stringify(f.state);
   const ctx=await browser.newContext({viewport:{width,height:1100}});ctx.setDefaultTimeout(15000);
   await ctx.addInitScript(({key,bytes})=>{if(!localStorage.getItem(key))localStorage.setItem(key,bytes);},{key:campaignKey,bytes:f.bytes});
+  let releaseStartup,markStartup;const startupResponse=new Promise(resolve=>releaseStartup=resolve),startupRequested=new Promise(resolve=>markStartup=resolve);let startupHeld=false;
   await ctx.route('https://travellermap.com/api/**',async route=>{
    const u=new URL(route.request().url());
    if(u.pathname.endsWith('/universe'))return route.fulfill({json:f.universe});
    if(u.pathname.endsWith('/metadata'))return route.fulfill({json:f.metadata});
    if(u.pathname.endsWith('/sec'))return route.fulfill({json:f.sec});
+   if(u.pathname.endsWith('/jumpworlds')&&u.searchParams.get('jump')!=='0'&&!startupHeld){startupHeld=true;markStartup();await startupResponse;}
    if(u.pathname.endsWith('/jumpworlds'))return route.fulfill({json:{Worlds:u.searchParams.get('jump')==='0'?f.apiWorlds.filter(w=>u.searchParams.has('hex')?w.Hex===u.searchParams.get('hex'):w.WorldX===Number(u.searchParams.get('x'))&&w.WorldY===Number(u.searchParams.get('y'))):f.apiWorlds}});
    return route.fulfill({json:{Sectors:[]}});
   });
@@ -42,8 +44,19 @@ try{
   try{
    await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();
    const before=await read(page),bytes=await raw(page),ids=[before.actual,before.route[before.routeIndex+1]];
+   await startupRequested;
+   const startupWorld=page.locator('svg [data-action="map-world"][data-arg="'+ids[1]+'"]');
+   await startupWorld.focus();await page.evaluate(()=>globalThis.focusedMapBeforeRefresh=document.activeElement);releaseStartup();
+   await page.waitForFunction(()=>!globalThis.focusedMapBeforeRefresh.isConnected);
+   assert.equal(await page.evaluate(id=>document.activeElement?.dataset.arg===id,ids[1]),true,'Startup nearby refresh preserves world keyboard focus');
+   // Geometry-driven background paint replaces only the SVG, not the page.
+   await startupWorld.focus();await page.evaluate(()=>globalThis.focusedMapBeforePaint=document.activeElement);
+   await page.setViewportSize({width:width+10,height:1100});
+   await page.waitForFunction(()=>!globalThis.focusedMapBeforePaint.isConnected);
+   assert.equal(await page.evaluate(id=>document.activeElement?.dataset.arg===id,ids[1]),true,'Map repaint preserves world keyboard focus');
+   await page.setViewportSize({width,height:1100});
    const camera=await mapCameraSnapshot(page,ids);await openBuild(page);
-   await choose(page,ids[1]);await ready(page);await choose(page,before.route[before.routeIndex+2],' ');await ready(page);
+   await choose(page,ids[1]);await ready(page,1);await choose(page,before.route[before.routeIndex+2],' ');await ready(page,2);
    const order=await page.evaluate(()=>{const box=s=>document.querySelector(s).getBoundingClientRect();return {preview:box('.planned-route').bottom,editorTop:box('.route-draft').top,editorBottom:box('.route-draft').bottom,controlsBottom:box('.world-correction').bottom};});
    assert.ok(order.preview<=order.editorTop+.1);assert.ok(await page.locator('.planned-route').evaluate(el=>el.getBoundingClientRect().top>=document.querySelector('.world-correction').getBoundingClientRect().bottom-.1));
    assert.equal(await page.locator('.overview-cargo').count(),0);
@@ -53,12 +66,12 @@ try{
    assert.match(await page.locator('.route-draft h3').textContent(),/Build route.*Planning active/);
    assert.equal(await page.locator('.route-draft>ol>li').count(),2);
    for(const name of ['route-remove','route-save','route-last','route-cancel'])assert.ok(await page.locator('.route-draft [data-action="'+name+'"]').count());
-   const remove=page.locator('.route-draft>ol>li').last().locator('button');await remove.focus();await remove.press('Enter');await ready(page);
+   const remove=page.locator('.route-draft>ol>li').last().locator('button');await remove.focus();await remove.press('Enter');await ready(page,1);
    await action(page,'route-last').click();assert.equal(await page.locator('.route-draft>ol>li').count(),0);
-   await choose(page,ids[1]);await ready(page);await screenshot('planning');
+   await choose(page,ids[1]);await ready(page,1);await screenshot('planning');
    assertMapCameraUnchanged(await mapCameraSnapshot(page,ids),camera,'Planning retains fixed map geometry');
    await action(page,'route-cancel').focus();await action(page,'route-cancel').press('Enter');assert.equal(await raw(page),bytes);
-   await openBuild(page);await choose(page,ids[1]);await ready(page);await action(page,'route-save').click();await page.locator('#modal-submit').click();await closed(page);
+   await openBuild(page);await choose(page,ids[1]);await ready(page,1);await action(page,'route-save').click();await page.locator('#modal-submit').click();await closed(page);
    const planned=await read(page);assert.deepEqual(planned.route.slice(planned.routeIndex),[before.actual,ids[1]]);assert.equal(planned.actual,before.actual);
    await choose(page,ids[1]);const correction=action(page,'make-current-world');assert.equal(await correction.isDisabled(),false);
    await correction.focus();await correction.press('Enter');

@@ -292,7 +292,7 @@ async function pointer(page, selector, clickCount = 1) {
 }
 async function prepare(page, scenario, before) {
  if (scenario.path !== 'form') return;
- await tab(page, 'Settings');
+ await tab(page, 'Settings');for(const id of ['backup-data','rounding-time']){const group=page.locator('[data-settings-group="'+id+'"]');if(await group.count()&&!await group.evaluate(el=>el.open))await group.locator(':scope > summary').click({position:{x:8,y:8}});}
  if (scenario.mode === 'dirty-settings') {
   const input = page.locator('#settings-form [name="name"]');
   await input.locator('xpath=ancestor::details').evaluateAll(nodes => nodes.forEach(el => {el.open = true;}));

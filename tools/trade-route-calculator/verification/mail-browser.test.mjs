@@ -245,7 +245,7 @@ async function committedJump(page, hours=168) {
 async function exportCampaign(page) {
   await tab(page, 'Settings');
   const downloadReady = page.waitForEvent('download');
-  await page.getByRole('button', {name:'Save campaign (JSON)', exact:true}).click();
+  {const utility=page.getByRole('button',{name:'Save campaign (JSON)',exact:true,includeHidden:true});for(const detail of await utility.locator('xpath=ancestor::details').all())if(!await detail.evaluate(el=>el.open))await detail.locator(':scope > summary').click({position:{x:8,y:8}});await utility.click();}
   const download = await downloadReady;
   const stream = await download.createReadStream();
   assert.ok(stream, 'A real JSON backup is downloaded');
@@ -549,7 +549,7 @@ try {
     await submit(page, 'Save');
     assert.match(await mail(page).textContent(), /armed ship Yes \(\+2\).*Naval \/ Scout rank 2.*SOC DM \+1/);
     await tab(page, 'Settings');
-    await page.getByRole('button', {name:'Ship, trader & options', exact:true}).click();
+    {const utility=page.getByRole('button',{name:'Ship, trader & options',exact:true,includeHidden:true});for(const detail of await utility.locator('xpath=ancestor::details').all())if(!await detail.evaluate(el=>el.open))await detail.locator(':scope > summary').click({position:{x:8,y:8}});await utility.click();}
     assert.equal(await modal(page).locator('[name="armed"]').isChecked(), true);
     assert.equal(await modal(page).locator('[name="rank"]').inputValue(), '2');
     assert.equal(await modal(page).locator('[name="soc"]').inputValue(), '1');
@@ -1144,7 +1144,7 @@ try {
     assert.deepEqual(contract(await read(page), id).firstDeparture, marker, 'Later jumps never replace the first departure');
     await assertCancelBlocked(page, id, /first.*jump|depart|already.*jump/i);
     await tab(page, 'Settings');
-    await page.getByRole('button', {name:'Advance / correct time', exact:true}).click();
+    {const utility=page.getByRole('button',{name:'Advance / correct time',exact:true,includeHidden:true});for(const detail of await utility.locator('xpath=ancestor::details').all())if(!await detail.evaluate(el=>el.open))await detail.locator(':scope > summary').click({position:{x:8,y:8}});await utility.click();}
     await fill(page, 'date', '001-1104');
     await fill(page, 'hours', 0);
     await fill(page, 'reason', 'Synthetic referee date correction after return');
