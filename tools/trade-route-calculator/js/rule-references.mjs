@@ -104,7 +104,7 @@ export const RULE_REFERENCES=Object.freeze({
   part('Published rule · selected adoption','Consumption is 1 LSS per awake person per day, or 0.1 per occupied low berth. Internal storage holds 4 LSS per hull ton. Overflow occupies 0.01 cargo ton per LSS.'),
   part('Home rule','Only these physical consumption and storage mechanics are adopted. Refill and reserve prices use this campaign’s separate pricing policy; other Cluster Truck prices, overheads and consequences are not adopted.')
  ]),
- 'support-cost':entry('life-support consumption and costs',[core('154'),source('cluster','14')],[
+ 'support-cost':entry('cabin and person support costs',[core('154'),source('cluster','14')],[
   part('Published rule · selected adoption','One LSS supports one awake person for one day; an occupied Low berth consumes 0.1 LSS per day.'),
   part('Home rule','The basic Cr1,000 person charge buys 28 LSS, enough for one awake person for 28 days. The Cr1,000-per-cabin monthly charge is a separate monetary expense, with no physical cabin consumption. High-service quality and comfort add cost, not LSS consumption.'),
   part('Published rule','The maintenance-period basis is Cr1,000 per stateroom, Cr1,000 per awake person and Cr100 per occupied low berth.'),
