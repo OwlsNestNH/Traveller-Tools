@@ -407,5 +407,5 @@ main{padding-top:18px}
 
 .service-mfd{overflow-wrap:anywhere}.service-mfd .service-quantity .field,.service-mfd .service-comparison>div{min-width:0}.service-mfd .service-quantity input{width:100%;box-sizing:border-box}
 
-/* Service completion notices remain visible without resizing the fixed MFD. */
-.mfd-screen:has(.service-mfd) #message.visible{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);width:min(640px,calc(100% - 32px));z-index:20;border:1px solid #396048;border-radius:6px;box-shadow:0 4px 16px #0008}
+/* The saved receipt owns visible service confirmation inside its scroll area. */
+.mfd-screen:has(.service-saved) #message.visible:not(.error){display:none}

@@ -27,6 +27,7 @@ export function createServicePanels({document,getState,isEditable,commit,render,
  const quoteContent=new WeakMap();
  const active=()=>!!session,visible=()=>!!session||!!receipt,token=()=>session?.token??receipt?.token??'';
  const button=(text,action,arg='',primary=false)=>`<button type="button" data-action="${action}" data-arg="${esc(arg)}" data-service-token="${token()}" class="${primary?'primary':''}">${esc(text)}</button>`;
+ function clearServiceSuccess(){const notice=document.getElementById('message');if(notice&&!/\berror\b/.test(notice.className||'')&&/^(Refuelled|Adjusted fuel aboard|Refilled life support) saved\.$/.test(notice.textContent)){notice.textContent='';notice.className='';}}
  function open(kind){
   if(session?.busy)throw Error('Wait for the current service to finish saving.');
   if(reloadMessage)throw Error(reloadMessage);
@@ -37,7 +38,7 @@ export function createServicePanels({document,getState,isEditable,commit,render,
   if(w.emptySpace&&kind==='support')throw Error('No local supplies in empty space. Continue to a world first.');
   let mode=kind==='fuel'?'inline':'summary';
   if(kind==='support'){try{const q=refillQuote(base,{addDays:'0'});if(A.cmp(supportAmount(q.purchasedStockUnits),0)===0)mode='adjust';}catch{/* Existing setup or pricing errors remain visible and editable. */}}
-  receipt=null;session={token:'stock-'+(++generation),kind,mode,revision:base.revision,base,world:w,draft:kind==='fuel'?{fuelType:['A','B'].includes(starport(w))?'refined':'unrefined',fuelTons:String(maxFuelAddition(base)),customFuelType:['A','B'].includes(starport(w))?'refined':'unrefined',customFuelRate:'',otherSupplier:false,expenseNotes:'',fuelRemaining:String(base.ship.fuel.aboardTons),fuelReason:''}:{topOff28:false,extraDays:'0',comfortCredits:'0',comfortNote:''},correction:false,busy:false};
+  clearServiceSuccess();receipt=null;session={token:'stock-'+(++generation),kind,mode,revision:base.revision,base,world:w,draft:kind==='fuel'?{fuelType:['A','B'].includes(starport(w))?'refined':'unrefined',fuelTons:String(maxFuelAddition(base)),customFuelType:['A','B'].includes(starport(w))?'refined':'unrefined',customFuelRate:'',otherSupplier:false,expenseNotes:'',fuelRemaining:String(base.ship.fuel.aboardTons),fuelReason:''}:{topOff28:false,extraDays:'0',comfortCredits:'0',comfortNote:''},correction:false,busy:false};
   showOverview();render();if(document.defaultView?.matchMedia('(max-width:1099px)').matches)document.getElementById('service-panel')?.scrollIntoView({block:'start',behavior:'instant'});
  }
  function stale(){return !session||session.invalidated||!isEditable()||session.revision!==getState().revision||session.base.actual!==getState().actual;}
@@ -152,7 +153,7 @@ export function createServicePanels({document,getState,isEditable,commit,render,
   try{onTerminalFailure(error,guidance);}catch{/* The local terminal guard remains latched even if reporting fails. */}
   return new Error(guidance,{cause:error});
  }
- function close({render:shouldRender=true}={}){if(session?.busy)return false;session=null;receipt=null;if(shouldRender)render();return true;}
+ function close({render:shouldRender=true}={}){if(session?.busy)return false;session=null;receipt=null;clearServiceSuccess();if(shouldRender)render();return true;}
  async function action(name,arg,actionToken){if(!name.startsWith('service-'))return false;
   // Every DOM action carries the generation it was rendered for. Detached
   // buttons and forms must never change or confirm a replacement draft.

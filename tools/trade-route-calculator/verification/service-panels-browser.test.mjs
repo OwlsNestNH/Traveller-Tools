@@ -200,10 +200,11 @@ try{
   assert.match(await page.locator('.mfd-metrics').textContent(),/Fuel aboard20 t.*Tank capacity43 t.*Bladder capacity0 t/);
   await fill('fuelTons',1);const old=await h.action('service-confirm').evaluate(b=>({...b.dataset}));
   await click('service-confirm');await h.saved();assert.equal((await read()).ship.fuel.aboardTons,21);
+  assert.equal(await page.locator('#message').isVisible(),false,'Saved service confirmation is presented inside the receipt, not over controls');assert.equal(await page.locator('#service-status').isVisible(),true,'Saved receipt retains visible success feedback');await h.action('service-new').click({trial:true});
   const bytes=await raw();await page.evaluate(data=>{const b=document.createElement('button');Object.assign(b.dataset,data);document.body.append(b);b.click();b.remove();},old);await h.unchanged('Retired confirmation',bytes);
   await click('refuel');await h.saved();await fixedFrame(page,boxes,'Saved Fuel');await click('service-audit');await fixedFrame(page,boxes,'Fuel Audit');assert.equal(await page.locator('#service-panel > .service-audit').evaluate(d=>d.open),true);
   await checkMfdLabels(page);await page.locator('#service-panel').evaluate(p=>p.scrollTop=0);await page.screenshot({path:artifacts+'/mfd-fuel-saved-'+width+'.png',fullPage:true});
-  await click('refill-support');await fixedFrame(page,boxes,'Fuel to Life Support');await click('service-support-topoff');assert.match(await page.locator('.mfd-complement').textContent(),/4 awake crew \+ 0 awake passengers/);
+  await click('refill-support');assert.equal(await page.locator('#message').textContent(),'','New service clears only the prior service success');await fixedFrame(page,boxes,'Fuel to Life Support');await click('service-support-topoff');assert.match(await page.locator('.mfd-complement').textContent(),/4 awake crew \+ 0 awake passengers/);
   await click('service-reserve-step','1');assert.equal(await field('extraDays').inputValue(),'1');await fill('extraDays',7);
   await page.locator('.service-comfort > summary').click();await click('service-comfort-step','1000');await fill('comfortNote','Synthetic comfort purchase');
   assert.match(await page.locator('#service-quote').textContent(),/140 LSS aboard/);await fixedFrame(page,boxes,'Life Support draft');await click('service-audit');await fixedFrame(page,boxes,'Life Support Audit');await page.locator('#service-panel .service-audit').evaluate(d=>d.open=false);
@@ -213,7 +214,8 @@ try{
   await fixedFrame(page,boxes,'Saved Life Support');await click('service-audit');await fixedFrame(page,boxes,'Saved Life Support Audit');await page.locator('#service-panel > .service-audit').evaluate(d=>d.open=false);const savedBytes=await raw();await click('refill-support');await h.saved();await h.unchanged('Same service retains saved receipt',savedBytes);
   await checkMfdLabels(page);await page.locator('#service-panel').evaluate(p=>p.scrollTop=0);await page.screenshot({path:artifacts+'/mfd-support-saved-'+width+'.png',fullPage:true});
   await click('service-new');assert.equal(await field('extraDays').inputValue(),'0');assert.equal(await field('comfortCredits').inputValue(),'0');assert.equal(await h.action('service-confirm').isDisabled(),true);
-  await click('service-back');await h.closed();await h.unchanged('Fresh no-op draft dismissed',savedBytes);
+  assert.equal(await page.locator('#message').textContent(),'','Prepare another clears stale service success');await page.locator('#message').evaluate(n=>{n.className='visible error';n.textContent='Synthetic unrelated error';});
+  await click('service-back');await h.closed();await h.unchanged('Fresh no-op draft dismissed',savedBytes);assert.equal(await page.locator('#message').isVisible(),true,'Unrelated error remains visible');assert.equal(await page.locator('#message').textContent(),'Synthetic unrelated error','Service navigation does not clear unrelated errors');
  });
  await run('fractional day purchase actual stock',{awake:1,stockUnits:'12.1'},async h=>{
   const {page,click,fill,read}=h;
