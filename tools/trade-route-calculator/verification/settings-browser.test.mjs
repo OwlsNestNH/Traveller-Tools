@@ -382,9 +382,9 @@ try{
   await other.locator('#tabs [data-arg="Settings"]').click();
   assert.equal(await other.locator('#settings-save').isDisabled(),true,'Read-only tabs cannot save');
   const readOnlyGroup=other.locator('[data-settings-group="campaign"]');await readOnlyGroup.locator(':scope > summary').click({position:{x:8,y:8}});
-  assert.equal(await readOnlyGroup.evaluate(el=>el.open),false,'Read-only users can collapse settings');
+  assert.equal(await readOnlyGroup.evaluate(el=>el.open),true,'Read-only users can expand settings');
   await readOnlyGroup.locator(':scope > summary').focus();await other.keyboard.press('Space');
-  assert.equal(await readOnlyGroup.evaluate(el=>el.open),true,'Read-only users can expand by keyboard');
+  assert.equal(await readOnlyGroup.evaluate(el=>el.open),false,'Read-only users can collapse by keyboard');
   assert.ok((await other.locator('#settings-form [name]').evaluateAll(fields=>fields.map(el=>el.disabled))).every(Boolean),'Every settings field respects the editing lock');
   assert.ok((await other.locator('#settings-form [data-setting-step]').evaluateAll(buttons=>buttons.map(el=>el.disabled))).every(Boolean),'Read-only steppers cannot edit drafts');
   await other.locator('#settings-form').evaluate(form=>form.requestSubmit());await unchanged(beforeReadOnly,'Programmatic submit in a read-only tab');
