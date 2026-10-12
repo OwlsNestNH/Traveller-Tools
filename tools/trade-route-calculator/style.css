@@ -400,9 +400,11 @@ main{padding-top:18px}
 .service-mfd .service-quantity input{min-width:0}.service-mfd .service-actions{justify-content:flex-end;border-top:1px solid #345a70;padding-top:14px}
 .service-mfd .service-actions button{min-height:44px}.service-mfd .service-actions .primary{min-width:160px}
 .service-mfd .service-comfort{border:1px solid #345a70;border-radius:7px;padding:12px;background:#0b1c2a}.service-mfd .service-comfort summary{font-weight:600;margin-bottom:10px}
-.service-mfd .service-comfort .service-quantity{margin:12px 0}.service-mfd .rule-info{border-radius:50%;width:19px;height:19px;font-size:12px;vertical-align:middle}
+.service-mfd .service-comfort .service-quantity{margin:12px 0}.service-mfd .rule-info{border-radius:50%;width:24px;height:24px;min-width:24px;min-height:24px;font-size:12px;vertical-align:middle}
 .service-saved #service-status{border:1px solid #36776a;background:#123b35;color:#bdf3df;padding:12px}
 @media(max-width:1099px){.navigation-layout:has(>.service-mfd){grid-template-columns:minmax(0,1fr)}}
 @media(max-width:620px){.service-mfd{padding:15px}.mfd-metrics{gap:9px}.mfd-metrics span{font-size:11px}.mfd-metrics strong{font-size:22px}.service-mfd .service-quantity button{font-size:12px;padding:8px}.service-mfd .service-comfort .service-quantity{grid-template-columns:76px minmax(0,1fr) 76px}.service-mfd .service-actions .primary{flex:1;min-width:0}}
 
 .service-mfd .mfd-title{display:flex;align-items:center;justify-content:space-between;gap:12px}.service-mfd .mfd-title>button{min-height:40px;color:#90e5ee;border-color:#345a70;background:#0b1c2a}
+
+.service-mfd{overflow-wrap:anywhere}.service-mfd .service-quantity .field,.service-mfd .service-comparison>div{min-width:0}.service-mfd .service-quantity input{width:100%;box-sizing:border-box}

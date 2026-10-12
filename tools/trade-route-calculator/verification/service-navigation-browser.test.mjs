@@ -67,7 +67,9 @@ async function geometry(page){
 function sameGeometry(actual,expected,label,{outer=true}={}){
  const parts=outer?Object.keys(expected).filter(key=>key!=='serviceMfd'):['map','mapSlot','navigation','right','layout'];
  for(const name of parts)for(const dimension of (outer?['left','top','width','height']:['width','height'])){
-  if(actual.serviceMfd!==expected.serviceMfd&&['map','mapSlot','navigation','right'].includes(name)&&['left','width'].includes(dimension))continue;
+  // The approved desktop column change wraps route controls above the map.
+  // Retain outer origin/width and compare all dimensions within each layout.
+  if(actual.serviceMfd!==expected.serviceMfd&&(dimension==='height'||(['map','mapSlot'].includes(name)&&dimension==='top')||(['map','mapSlot','navigation','right'].includes(name)&&['left','width'].includes(dimension))))continue;
   assert.ok(Math.abs(actual[name][dimension]-expected[name][dimension])<=1,`${label}: ${name} ${dimension} remains fixed (${expected[name][dimension]} → ${actual[name][dimension]})`);
  }
 }
@@ -214,9 +216,9 @@ async function runWidth(browser,width,report){
  try{
   await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();
   await selected(page,'world');await unchanged('Initial load');
-  let camera=await primeCamera(page,f.cameraIds),baseline=await geometry(page);
+  let camera=await primeCamera(page,f.cameraIds),baseline=await geometry(page),mfdBaseline=null;
   const stable=async(label,{bytes=f.bytes}={})=>{
-   const measured=await geometry(page);sameGeometry(measured,baseline,label);
+   const measured=await geometry(page);sameGeometry(measured,baseline,label);if(measured.serviceMfd){mfdBaseline??=measured;sameGeometry(measured,mfdBaseline,label+' within MFD');}
    assertMapCameraUnchanged(await mapCameraSnapshot(page,f.cameraIds),camera,label);
    await unchanged(label,bytes);result.checks.push({label,mapHeight:measured.map.height,rightHeight:measured.right.height,bezelHeight:measured.bezel.height});
   };
@@ -315,11 +317,11 @@ async function runWidth(browser,width,report){
   await selected(page,'ship-expenses');sameGeometry(await geometry(page),beforePay,'Payment replaces form with receipt',{outer:false});
   // A real save adds the global status banner, so establish its new outer-shell
   // baseline; later service-only navigation must preserve it exactly.
-  baseline=await geometry(page);camera=await mapCameraSnapshot(page,f.cameraIds);
+  baseline=await geometry(page),mfdBaseline=null;camera=await mapCameraSnapshot(page,f.cameraIds);
   await replayHandlers(page,paidHandlers);await stable('Repeated saved payment callbacks',{bytes:paidBytes});await screenshot('paid-receipt');
   await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();await page.locator('.expense-receipt').waitFor();
   await selected(page,'ship-expenses');await unchanged('Receipt reload',paidBytes);sameGeometry(await geometry(page),baseline,'Receipt reload screen dimensions',{outer:false});
-  baseline=await geometry(page);camera=await mapCameraSnapshot(page,f.cameraIds);
+  baseline=await geometry(page),mfdBaseline=null;camera=await mapCameraSnapshot(page,f.cameraIds);
   await header(page,'ship-expenses').click();await selected(page,'world');await unlocked(page);await stable('Paid receipt toggles to World data',{bytes:paidBytes});
   for(const name of names){
    await header(page,name).click();await selected(page,name);await stable('Paid campaign opens '+name,{bytes:paidBytes});
