@@ -1512,7 +1512,11 @@ lookup labels. Historical .59/.60 source fixtures remain unchanged; their main
 HTML hash is excluded from candidate comparison because this approved batch
 removes/reorders that content. All campaign, write, modal/control and non-main
 UI observations remain compared. New layout has real browser assertions.
-Final full native and required CI results are recorded in the candidate PR.
-An expense browser drag timeout is being checked and is not claimed as passed.
+Final local Node 22 run passed all 6,384 native tests. The expense browser
+suite passed on a follow-up run; its initial drag timeout remains recorded.
+Route-frame browser checks passed 0/1/5/12/30 stops at 1440/1100/390/320 px.
+The first CI candidate failed only the Dev Tools build assertion (.67 versus
+.68) among jobs completed at that checkpoint; the assertion is corrected in
+the follow-up candidate. Required final CI results are recorded in the PR.
 Live Pages and app assets were not requested: prior access denials remain in
 force. No merge/deployment performed.
