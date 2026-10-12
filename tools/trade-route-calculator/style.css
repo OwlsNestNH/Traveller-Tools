@@ -409,3 +409,10 @@ main{padding-top:18px}
 
 /* The saved receipt owns visible service confirmation inside its scroll area. */
 .mfd-screen:has(.service-saved) #message.visible:not(.error){display:none}
+
+/* Route editor stops use the same tile grid and hit area as the preview. */
+.route-draft>.route-edit-stops{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(170px,100%),1fr));list-style:none;padding:6px 10px 8px;margin:0;gap:6px}
+.navigation-panel .route-edit-stops button{min-height:112px;text-align:left;align-self:stretch}
+.route-world-details,.route-remove-label{display:block;margin-top:5px;font-size:11px;line-height:1.4}
+.route-remove-label{color:var(--cyan)}
+@media(max-width:620px){.route-draft>.route-edit-stops{grid-template-columns:repeat(2,minmax(0,1fr));padding:6px;gap:5px}}

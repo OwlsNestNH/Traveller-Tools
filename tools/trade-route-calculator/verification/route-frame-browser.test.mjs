@@ -9,7 +9,7 @@ import {overviewGeometry,mapCameraSnapshot,assertMapCameraUnchanged} from './ove
 const base=process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/';
 const artifacts=fileURLToPath(new URL('../verification-artifacts/',import.meta.url));
 const widths=[1440,1100,390,320],counts=[0,1,5,12,30];
-const action=(page,name,arg)=>page.locator('[data-action="'+name+'"]'+(arg===undefined?'':'[data-arg="'+arg+'"]'));
+const action=(page,name,arg)=>page.locator('[data-action="'+name+'"]'+(arg===undefined?'':'[data-arg="'+arg+'"]')).filter({visible:true}).first();
 const click=(page,name,arg)=>action(page,name,arg).filter({visible:true}).first().click();
 const raw=page=>page.evaluate(key=>localStorage.getItem(key),campaignKey);
 const closed=page=>page.locator('#modal').waitFor({state:'hidden'});
@@ -32,7 +32,7 @@ async function geometry(page,count,{preview=false}={}){
  assert.equal(await page.locator('.planned-route [data-action="jump"]').count(),1);assert.equal(await page.locator('.planned-route [data-action="jump-undo"]').count(),1);
  assert.ok(g.heading.bottom<=g.list.top+1,'Jump/Undo remain above the stop list');
  assert.ok(g.list.bottom<=g.route.bottom-1+.1&&g.route.bottom-g.list.bottom<=2,'Border ends directly after its content with no vacant height');
- assert.ok(g.caption.top>=g.route.bottom-1&&g.map.top>=g.route.bottom-1,'Caption/map stay outside and below the frame');assert.ok(g.overflow<=2,'Long names never widen the page');
+ assert.ok(g.caption.bottom<=g.route.top+1&&g.map.bottom<=g.route.top+1,'Caption/map stay outside and above the frame');assert.ok(g.overflow<=2,'Long names never widen the page');
  for(const part of g.parts){assert.ok(part.overflow<=2,'Route text wraps without clipping');assert.ok(part.left>=g.route.left-.1&&part.right<=g.route.right+.1,'Every route control stays inside the frame');}
  return g;
 }

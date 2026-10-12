@@ -30,10 +30,19 @@ for(const seed of seeds)test(`independent full .59 clear/close/reload/Undo obser
  const fresh=setup(h.store.read(),{factory,draft:false});checkpoints.push({phase:'reloaded',...observation(fresh)});
  await fresh.runAction('undo');checkpoints.push({phase:'ordinary Undo',...observation(fresh)});
  const value=canonical({name:seed.name,checkpoints},seed.campaign);
- if(recording)captured.push(value);else same(value,expected.observations.find(item=>item.name===seed.name));
+ if(recording)captured.push(value);else same(withoutHistoricalMain(value),withoutHistoricalMain(expected.observations.find(item=>item.name===seed.name)));
  assert.equal(checkpoints[0].writes,1);assert.equal(checkpoints[0].interface.modalOpen,true);assert.equal(checkpoints[1].interface.modalOpen,false);assert.equal(checkpoints[2].routeDraft,null);
 });
 test('full original capture provenance and seed identities are independently recorded',async()=>{
  if(recording){const source=await readFile(root.replace(/\/$/,'')+'/js/app.mjs','utf8');await writeFile(expectedURL,JSON.stringify({sourceCommit:'ae68a384318581131f6575c38c147e34411bf120',sourceAppSHA256:createHash('sha256').update(source).digest('hex'),observations:captured}));}
  else{assert.equal(expected.sourceCommit,'ae68a384318581131f6575c38c147e34411bf120');assert.equal(expected.sourceAppSHA256,releasedAppSHA256);assert.equal(expected.observations.length,seeds.length);for(const seed of seeds)assert.equal(seed.campaign.lots[0].id,'11111111-2222-4333-8444-555555555555');}
 });
+
+// The approved .68 layout removes the duplicate cargo section and moves route
+// controls. Its real DOM is checked in the focused route and navigation browser
+// suites; retain the frozen oracle for campaign economics and save protections.
+function withoutHistoricalMain(observation){
+ const copy=structuredClone(observation);
+ for(const checkpoint of copy.checkpoints)delete checkpoint.interface.renderedSHA256.main;
+ return copy;
+}

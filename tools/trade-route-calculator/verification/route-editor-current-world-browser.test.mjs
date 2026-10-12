@@ -44,8 +44,12 @@ try{
    const before=await read(page),bytes=await raw(page),ids=[before.actual,before.route[before.routeIndex+1]];
    const camera=await mapCameraSnapshot(page,ids);await openBuild(page);
    await choose(page,ids[1]);await ready(page);await choose(page,before.route[before.routeIndex+2],' ');await ready(page);
-   const order=await page.evaluate(()=>{const box=s=>document.querySelector(s).getBoundingClientRect();return {preview:box('.planned-route').bottom,editorTop:box('.route-draft').top,editorBottom:box('.route-draft').bottom,mapTop:box('.map-viewport').top};});
-   assert.ok(order.preview<=order.editorTop+.1&&order.editorBottom<=order.mapTop+.1);
+   const order=await page.evaluate(()=>{const box=s=>document.querySelector(s).getBoundingClientRect();return {preview:box('.planned-route').bottom,editorTop:box('.route-draft').top,editorBottom:box('.route-draft').bottom,controlsBottom:box('.world-correction').bottom};});
+   assert.ok(order.preview<=order.editorTop+.1);assert.ok(await page.locator('.planned-route').evaluate(el=>el.getBoundingClientRect().top>=document.querySelector('.world-correction').getBoundingClientRect().bottom-.1));
+   assert.equal(await page.locator('.overview-cargo').count(),0);
+   assert.match(await page.locator('.route-edit-stops button').first().textContent(),/Remove stop/);assert.ok(await page.locator('.route-world-details').first().textContent());
+   const tiles=await page.evaluate(()=>{const box=s=>{const r=document.querySelector(s).getBoundingClientRect();return {width:r.width,height:r.height}};return {preview:box('.route-list button'),editor:box('.route-edit-stops button')}});assert.ok(tiles.editor.width>=tiles.preview.width-2&&tiles.editor.height>=tiles.preview.height,JSON.stringify({width,tiles}));
+   assert.equal(await page.locator('.world-correction [data-action="route-clear"]').textContent(),'Clear Route');
    assert.match(await page.locator('.route-draft h3').textContent(),/Build route.*Planning active/);
    assert.equal(await page.locator('.route-draft>ol>li').count(),2);
    for(const name of ['route-remove','route-save','route-last','route-cancel'])assert.ok(await page.locator('.route-draft [data-action="'+name+'"]').count());
@@ -80,6 +84,15 @@ try{
    assertMapCameraUnchanged(await mapCameraSnapshot(page,ids),restored,'Restore panels retains map geometry');
    const frame=await page.locator('.navigation-layout').boundingBox();for(const name of ['refuel','refill-support','cargo-hold','ship-expenses']){await page.locator('#ship-actions [data-action="'+name+'"]').click();assertMapCameraUnchanged(await mapCameraSnapshot(page,ids),restored,'Fixed MFD '+name);const next=await page.locator('.navigation-layout').boundingBox();assert.ok(Math.abs(next.width-frame.width)<.2&&Math.abs(next.height-frame.height)<.2,'MFD frame stable');await page.locator('#ship-actions [data-action="'+name+'"]').click();}
    await screenshot('restored');await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();assert.deepEqual((await read(page)).route,planned.route);
+   const clear=page.locator('.world-correction [data-action="route-clear"]'),beforeClear=await read(page);
+   await clear.click();assert.equal(await page.locator('#modal-title').textContent(),'Clear planned route');
+   await page.locator('#modal-cancel').click();assert.deepEqual(await read(page),beforeClear);
+   await clear.click();await page.locator('#modal-submit').click();await closed(page);
+   const cleared=await read(page);assert.deepEqual(cleared.route,[beforeClear.actual]);assert.equal(cleared.actual,beforeClear.actual);
+   for(const key of ['bank','hours','lots','ledger','contracts'])assert.deepEqual(cleared[key],beforeClear[key]);
+   await action(page,'tab').filter({hasText:'History'}).click();await action(page,'undo').click();
+   await page.waitForFunction(({key,revision})=>JSON.parse(localStorage.getItem(key)).revision===revision,{key:campaignKey,revision:cleared.revision+1});
+   assert.deepEqual((await read(page)).route,beforeClear.route);
    assert.deepEqual(errors,[]);report.results.push({width,pass:true,checks:['preview/editor/map order','keyboard add/remove/cancel','route save','correction confirmation/cancel/reason/save','state preservation','History Undo restores route/location/insurance','mulligan remains closed','fixed MFD','explicit map expansion/restoration','reload']});
   }catch(error){await screenshot('failure').catch(()=>{});throw error;}finally{await ctx.close();}
  }

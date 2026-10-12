@@ -1,14 +1,14 @@
-import {ruleInfo} from './rule-references.mjs?v=route-editor-current-world-20261012-67';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=route-editor-current-world-20261012-67';
-import {passengerShip} from './passengers.mjs?v=route-editor-current-world-20261012-67';
+import {ruleInfo} from './rule-references.mjs?v=focused-ui-20261012-68';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=focused-ui-20261012-68';
+import {passengerShip} from './passengers.mjs?v=focused-ui-20261012-68';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=route-editor-current-world-20261012-67';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=route-editor-current-world-20261012-67';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=route-editor-current-world-20261012-67';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=route-editor-current-world-20261012-67';
-import {creditStep} from './rounding.mjs?v=route-editor-current-world-20261012-67';
-import {roll} from './rules.mjs?v=route-editor-current-world-20261012-67';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=route-editor-current-world-20261012-67';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=focused-ui-20261012-68';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=focused-ui-20261012-68';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=focused-ui-20261012-68';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=focused-ui-20261012-68';
+import {creditStep} from './rounding.mjs?v=focused-ui-20261012-68';
+import {roll} from './rules.mjs?v=focused-ui-20261012-68';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=focused-ui-20261012-68';
 
 const esc=escapeHtml;
 const money=formatCreditsText;
@@ -162,7 +162,7 @@ export function createExpensePanels({document,getState,isEditable,commit,render,
   const q=entry.expense,schedule=q.mortgage||q.maintenance;
   const rows=[['Paid amount',money(q.amount)],['Paid on',recordedPaymentDate(getState(),entry)]];
   if(schedule){rows.push(['Payments recorded',String(schedule.periods)],['Next unpaid due',q.kind==='mortgage'&&!schedule.after.remainingPayments?'None · all scheduled payments paid':schedule.after.nextDueDate]);if(q.kind==='mortgage')rows.push(['Payments remaining',String(schedule.after.remainingPayments)]);}
-  return '<section class="expense-receipt" role="status" data-receipt-id="'+esc(entry.id)+'"><h3>✓ Payment recorded</h3>'+facts(rows)+'</section>'+coveredExpensePayments(q)+details(q);
+  return '<section class="expense-receipt" role="status" data-receipt-id="'+esc(entry.id)+'"><h3>Saved · ✓ Payment recorded</h3>'+facts(rows)+'</section>'+coveredExpensePayments(q)+details(q);
  }
  function panel(){
   if(!session)return '';

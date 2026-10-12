@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=route-editor-current-world-20261012-67';
+import {escapeHtml as esc} from './display.mjs?v=focused-ui-20261012-68';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.

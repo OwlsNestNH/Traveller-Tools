@@ -1483,3 +1483,40 @@ Make current world at the bottom of navigation reuses the existing guarded Set L
 Focused native cases cover route-editor order, stale/read-only activation, Cancel, correction save, route/location/policy Undo and preserved mulligan policy. Deterministic browser coverage at desktop and mobile widths captures actual candidate screenshots and checks keyboard planning, add/remove/save/cancel, correction confirmation/reason/save/Undo/reload, fixed MFD geometry and explicit map expand/restore. Exact test results are recorded in the candidate PR; all existing release workflows remain required before merge. No excluded live-site paths are accessed.
 
 Reference-image comparison remains unavailable on this Windows consumer: current Library preparation returned authorized transfers, but its unmodified materialization helper failed because Windows Python lacks os.setxattr. No reference pixels were available for comparison. Candidate screenshots are captured separately from the local test workflow.
+
+## Approved focused Overview UI batch (.68 candidate, 2026-10-12)
+
+Based on main `4784bf3852b4b35b94641be9407404b153b2f793` (.67 / PR69).
+Map/controls now precede Route Preview and the route editor. Integrated stop
+buttons retain route-remove and include sector/hex/UWP plus Remove stop. Clear
+Route beside Make current world delegates to the unchanged guarded clear route
+confirmation. Removed the entire duplicate bottom cargo table; retained Cargo
+Hold MFD and main Trade/Cargo tabs, with Open Trade also available in the MFD.
+Overview and active navigation toggles dismiss unconfirmed MFD drafts. Fuel/LSS
+saved receipts remain open with committed inventory, Saved feedback and explicit
+completed-audit wording; expense receipts explicitly show Saved. No economic,
+persistence, token retirement or Undo code changed.
+
+Local checks: 464 focused service/expense/clear/save guard cases passed; 52 route
+selection/frame and historical economic/save observation cases passed; 227
+rules-data assertions and shared tool counter checks passed. Focused route editor
+checks pass at 1440/390/320 px, including new Clear Route cancel/save/Undo. Service
+receipt checks pass, and service navigation passes at 1440/1100/390/320 px. GUI
+parity passes 12/30-stop fixtures across desktop/mobile widths. Desktop/mobile
+route and saved-service screenshots inspected; independent working-diff and
+image review found no blocking defect. Local browser: Playwright 1.58.2 with
+system Chromium; CI uses its pinned installed Chromium.
+
+Initial all-native run exposed old presentation expectations. Updated frame and
+lookup labels. Historical .59/.60 source fixtures remain unchanged; their main
+HTML hash is excluded from candidate comparison because this approved batch
+removes/reorders that content. All campaign, write, modal/control and non-main
+UI observations remain compared. New layout has real browser assertions.
+Final local Node 22 run passed all 6,384 native tests. The expense browser
+suite passed on a follow-up run; its initial drag timeout remains recorded.
+Route-frame browser checks passed 0/1/5/12/30 stops at 1440/1100/390/320 px.
+The first CI candidate failed only the Dev Tools build assertion (.67 versus
+.68) among jobs completed at that checkpoint; the assertion is corrected in
+the follow-up candidate. Required final CI results are recorded in the PR.
+Live Pages and app assets were not requested: prior access denials remain in
+force. No merge/deployment performed.
