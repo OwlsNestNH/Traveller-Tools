@@ -23,6 +23,8 @@ const choose=id=>page.locator('svg [data-action="map-world"][data-arg="'+id+'"]'
 const ready=()=>page.getByRole('button',{name:'Save planned route',exact:true}).waitFor({state:'visible'}).then(()=>page.waitForFunction(()=>!document.querySelector('[data-action="route-save"]').disabled));
 try{
  await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();await click('Set up campaign');await page.locator('#setup-world .picker-selection').getByText(/Hex 1910/).waitFor();await fill('jump',1);await click('Start campaign');await closed();
+ // Setup and reload start on Overview; this audit belongs to the Trade screen.
+ await click('Trade');
 
  assert.equal(await page.getByRole('button',{name:'Availability audit',exact:true}).isDisabled(),true);
  await click('Find supplier');await page.locator('[name="success"]').check();await click('Preview search');await click('Commit search');await closed();
@@ -31,12 +33,12 @@ try{
  assert.ok(snap.availability.defaults.some(g=>g.reason.includes('Common goods')));
  assert.equal(await page.getByRole('button',{name:'Availability audit',exact:true}).isDisabled(),false);
  await click('Availability audit');await page.getByRole('heading',{name:'Market availability audit',exact:true}).waitFor();
- await page.getByRole('heading',{name:'Default goods and why they qualify',exact:true}).waitFor();
+ await page.getByRole('heading',{name:/^Default goods and why they qualify\b/}).waitFor();
  assert.ok((await page.locator('#modal-body').textContent()).includes('Additional rolls recorded'));
  await click('Close');assert.deepEqual(await read(),initial);
  // Historical snapshot remains tied to the saved world, including legacy records.
  await page.evaluate(()=>{const k='traveller-trade-route-calculator:v1',s=JSON.parse(localStorage.getItem(k));delete s.snapshots[0].availability;s.worlds[s.actual].overrideUWP='B777777-A';localStorage.setItem(k,JSON.stringify(s));});
- await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();await click('Availability audit');
+ await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();await click('Trade');await click('Availability audit');
  assert.ok((await page.locator('#modal-body').textContent()).includes('Older snapshot'));
  assert.ok((await page.locator('#modal-body').textContent()).includes('A788899-C'));
  await page.screenshot({path:join(artifacts,'market-availability.png'),fullPage:true});

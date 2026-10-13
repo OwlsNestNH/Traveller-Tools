@@ -53,6 +53,7 @@ Implemented native modules require no build step:
 | js/persistence.mjs | localStorage, Web Locks, revisions, backups/import and recovery |
 | js/display.mjs | Explicit plain-text Credit formatting and HTML escaping |
 | js/form-values.mjs | Exact entry normalization and ordered rounding annotations |
+| js/contact-search.mjs | Search outcome arithmetic, grouped-period history and authoritative contact-search commit validation; outcome preparation generates no dice or writes |
 | js/insurance-terms.mjs | Plain-input optional insurance quote/route terms; no goods-value preparation, policy lifecycle or campaign writes |
 | js/purchase-amounts.mjs | Plain-input purchase preview quantity, fee percentage, goods cost and broker fee; no insurance or campaign writes |
 | js/sale-line.mjs | One plain-input sale line: legality, same-roll repricing and manual-override audit; no DOM, campaign writes or caches |
@@ -101,6 +102,21 @@ const terms = prepareInsuranceTerms({requested:true, enabled:true,
 ```
 
 This extracts quote/term preparation, not the entire optional insurance feature. The existing OFF toggle, controls, estimates, policy audits, claims/amendments, state validation, persistence and Undo remain with their current owners. `verification/insurance-terms.test.mjs` contains exact output/error/immutability comparisons and a headless held-cargo consumer; run it with `node --test verification/insurance-terms.test.mjs` from this tool folder.
+
+`prepareContactSearchOutcome` in `js/contact-search.mjs` takes already-parsed integer `skill`, `rolled`, `duration`, `characteristic` and `counterparty`, plus `starport`, `starportDM` table, `previous` committed-attempt count, `durationUnit` and boolean `successOverride`. It returns numeric `{port, total, hours}` and boolean `success`. Search roll is restricted to 2–12 and duration die to 1–6; all five numeric entry fields must be integers. Counterparty is validated but does not contribute to the search DM. Skill/characteristic/counterparty receive no new range limits.
+
+Numeric validation throws the existing `Invalid search input` before starport lookup. Missing/falsy starport DM falls back to zero. Total is roll + skill + characteristic + port − previous; success requires total at least 8 or the referee override. Only `durationUnit === 'days'` multiplies duration by 24; other units retain the existing one-hour multiplier. No dice, rounding, elapsed campaign mutation or period changes occur here. The screen retains method/TL eligibility, identity/cooldown checks, local/trader skill selection, original dice, pricing/market generation, IDs, periods/snapshot audits, state validation, modal ownership, persistence and Undo.
+
+```js
+import {prepareContactSearchOutcome, contactSearchStatus} from './js/contact-search.mjs';
+// core is the bundled rules data; campaign is the caller's current campaign.
+const outcome = prepareContactSearchOutcome({skill:0, rolled:2, duration:2,
+  characteristic:0, counterparty:2, starport:'A', starportDM:core.search.starportDM,
+  previous:contactSearchStatus(campaign).previous, durationUnit:'days', successOverride:false});
+const proposedEndHours = campaign.hours + outcome.hours; // No save or dice generation.
+```
+
+`verification/contact-search-outcome.test.mjs` contains exact equivalence/range/error tests, a headless consumer and production eligibility-before-numeric checks. Run it with `node --test verification/contact-search-outcome.test.mjs` from this tool folder. Existing period/commit validation remains independent and unchanged.
 
 Complete synthetic headless consumers and exact output/error comparisons are in `verification/purchase-amounts.test.mjs` and `verification/sale-line.test.mjs`. Run them from this tool folder with `node --test verification/purchase-amounts.test.mjs verification/sale-line.test.mjs`. The purchase example uses existing `S.buy` on synthetic state; the sale example feeds existing `R.salePreview` without fresh dice.
 
