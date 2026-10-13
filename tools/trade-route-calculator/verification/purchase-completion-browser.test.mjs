@@ -353,6 +353,12 @@ async function prepare(page, scenario, before, {loops = false, select = true, ne
    await page.locator('#modal [name="insure"]').check(); await page.locator('#modal [name="coverage"]').selectOption('70'); await page.locator('#modal [name="insuranceLegs"]').selectOption('1');
    await fill(page, 'insuranceDistance', spec.args.insurance.distance);
    if (scenario.rounded) {await fill(page, 'distanceReason', spec.args.insurance.distanceOverrideReason); await fill(page, 'manualPremium', '100.1');}
+   await page.waitForFunction(expected => {
+    const target = document.querySelector('#insurance-estimate');
+    const label = [...(target?.querySelectorAll('dt') || [])].find(dt => dt.textContent === 'Projected insurance premium');
+    return label?.nextElementSibling?.textContent.replace(/\D/g, '') === expected;
+   }, spec.args.insurance.premium);
+   assert.deepEqual(await read(page), before, 'Live purchase premium estimate never saves');
   }
   // Real input blur/normalization precedes both preview and the no-entry baseline.
   await page.locator('#modal-submit').focus(); await pointer(page, '#modal-submit');

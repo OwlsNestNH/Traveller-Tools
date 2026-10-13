@@ -61,12 +61,16 @@ async function insure(page){
  await tab(page,'Cargo');const before=await read(page);
  await page.locator('[data-action="lot-insure"][data-arg="insured-lot"]').click();
  await modal(page).locator('[name="coverage"]').selectOption('70');
+ const projected=modal(page).getByText('Projected insurance premium',{exact:true});await projected.waitFor();
+ const projectedPremium=BigInt((await projected.locator('xpath=following-sibling::dd[1]').innerText()).replace(/\D/g,''));
+ assert.deepEqual(await read(page),before,'Live premium estimate does not save');
  await submit(page,'Preview insurance','Confirm cargo insurance');
  await page.getByRole('dialog',{name:'Confirm cargo insurance',exact:true}).waitFor();
  assert.deepEqual(await read(page),before,'Insurance preview does not persist a debit');
  await submit(page,'COMMIT INSURANCE');
  const after=await read(page),policy=after.policies[0];
  assert.equal(policy.status,'active');assert.equal(policy.coverage,70);
+ assert.equal(BigInt(policy.premium),projectedPremium,'Live held-cargo estimate matches accepted premium');
  assert.equal(after.bank,String(BigInt(before.bank)-BigInt(policy.premium)));
  assert.equal(after.lots[0].basis,String(BigInt(before.lots[0].basis)+BigInt(policy.premium)));
  assert.equal(after.lots[0].goodsValue,before.lots[0].goodsValue);assert.equal(after.lots[0].quantity,before.lots[0].quantity);
