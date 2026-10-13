@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=contact-outcome-20261013-80';
+import {ruleInfo} from './rule-references.mjs?v=insurance-action-20261013-81';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={

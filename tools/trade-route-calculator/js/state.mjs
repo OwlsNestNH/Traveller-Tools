@@ -1,20 +1,20 @@
-import {createDashboardBaseline,validateDashboardBaseline} from './dashboard-baseline.mjs?v=contact-outcome-20261013-80';
-import {validateWorldChangeHistory,isWorldChangeAudit} from './world-change-history.mjs?v=contact-outcome-20261013-80';
-import {validateContactSearchHistory,commitContactSearch} from './contact-search.mjs?v=contact-outcome-20261013-80';
+import {createDashboardBaseline,validateDashboardBaseline} from './dashboard-baseline.mjs?v=insurance-action-20261013-81';
+import {validateWorldChangeHistory,isWorldChangeAudit} from './world-change-history.mjs?v=insurance-action-20261013-81';
+import {validateContactSearchHistory,commitContactSearch} from './contact-search.mjs?v=insurance-action-20261013-81';
 export {commitContactSearch};
-import {passengerShip,passengerSpace,passengerTotals,passengerCapacity,validatePassengerContract,validatePassengerHistory,latestPassengerSearch,passengerOfferRemaining} from './passengers.mjs?v=contact-outcome-20261013-80';
-import {validateMaintenance,validateMaintenancePaymentRecord} from './maintenance.mjs?v=contact-outcome-20261013-80';
-import {validateMortgage,validateMortgagePaymentRecord} from './mortgage.mjs?v=contact-outcome-20261013-80';
+import {passengerShip,passengerSpace,passengerTotals,passengerCapacity,validatePassengerContract,validatePassengerHistory,latestPassengerSearch,passengerOfferRemaining} from './passengers.mjs?v=insurance-action-20261013-81';
+import {validateMaintenance,validateMaintenancePaymentRecord} from './maintenance.mjs?v=insurance-action-20261013-81';
+import {validateMortgage,validateMortgagePaymentRecord} from './mortgage.mjs?v=insurance-action-20261013-81';
 import {validateJumpAttempts,currentJumpAttempt,lastJump,savedJumpAttempt,departureKey,jumpPreparationBridge} from './jump-attempts.mjs';
-import {distance as jumpDistance} from './map.mjs?v=contact-outcome-20261013-80';
+import {distance as jumpDistance} from './map.mjs?v=insurance-action-20261013-81';
 import {validateMailHistory} from './mail-history.mjs?v=mail-history-1';
-import {bladderSpace,validateFuel,fuelPurchase,consumeJumpFuel} from './fuel.mjs?v=contact-outcome-20261013-80';
-import {validateSupport,refillQuote,consumeSupport,anchorSupport,supportCargo,supportAmount,supportReference,extraSupportReference} from './life-support.mjs?v=contact-outcome-20261013-80';
-import {up,creditStep,roundExisting} from './rounding.mjs?v=contact-outcome-20261013-80';
-import {validateAccommodation,passengerLuggage,roomCounts} from './accommodation.mjs?v=contact-outcome-20261013-80';
+import {bladderSpace,validateFuel,fuelPurchase,consumeJumpFuel} from './fuel.mjs?v=insurance-action-20261013-81';
+import {validateSupport,refillQuote,consumeSupport,anchorSupport,supportCargo,supportAmount,supportReference,extraSupportReference} from './life-support.mjs?v=insurance-action-20261013-81';
+import {up,creditStep,roundExisting} from './rounding.mjs?v=insurance-action-20261013-81';
+import {validateAccommodation,passengerLuggage,roomCounts} from './accommodation.mjs?v=insurance-action-20261013-81';
 import {add,sub,mul,div,cmp,floor,sum,decimal,credit} from './amounts.mjs';
-import {VERSION,priceLimits,characteristicDMs} from './rules.mjs?v=contact-outcome-20261013-80';
-import {expenseQuote,starport,berthMultipliers,payableExpenses} from './expenses.mjs?v=contact-outcome-20261013-80';
+import {VERSION,priceLimits,characteristicDMs} from './rules.mjs?v=insurance-action-20261013-81';
+import {expenseQuote,starport,berthMultipliers,payableExpenses} from './expenses.mjs?v=insurance-action-20261013-81';
 export const SCHEMA=1;
 export const uid=()=>crypto.randomUUID();
 export function initial(){return {schema:SCHEMA,revision:0,rulesVersion:VERSION,initialized:false,name:'My trading campaign',bank:'0',hours:0,dateLabel:'001-1105',ship:{name:'Independent trader',capacity:'60',staterooms:0,jump:2,scoops:true,armed:false},trader:{broker:0,streetwise:0,admin:0,characteristic:0,rank:0,soc:0},settings:{reducedProfitLimitsEnabled:false,minPurchasePercent:85,maxSalePercent:115,profit:100,tax:false,insurance:false,creditStep:1,maxBaseRetailEnabled:false,maxBaseRetail:'100000',useRawIllegalPrices:false},worlds:{},actual:null,route:[],routeIndex:0,snapshots:[],lots:[],contracts:[],policies:[],ledger:[],cooldowns:{},undo:[],events:[],jumpAttempts:[],latestMailCheckId:null};}
@@ -354,6 +354,28 @@ export function cancelMail(s,id){
 }
 
 export function deliver(s,id,penaltyDie=1){const c=s.contracts.find(c=>c.id===id);if(c?.kind==='passenger')return deliverPassengers(s,id);if(!c||c.status!=='accepted')throw Error('Contract is not awaiting delivery');assertWorld(s,c.destination);let amount=credit(c.payment);const late=c.kind==='freight'&&c.dueHours!==null&&s.hours>c.dueHours;if(late){if(!Number.isInteger(penaltyDie)||penaltyDie<1||penaltyDie>6)throw Error('Invalid late-penalty die');amount=up(div(mul(amount,100-(penaltyDie+4)*10),100),creditStep(s));}c.status='delivered';c.deliveredHours=s.hours;c.payout=String(amount);c.late=late;c.penaltyDie=late?penaltyDie:null;note(s,c.kind==='mail'?'Mail delivery':'Freight delivery',amount,{contractId:id,late,penaltyDie:c.penaltyDie});}
+
+// Apply already-accepted amendment/closure terms to a caller-owned draft state.
+// Inputs: existing policy id, mode ('amend'/'close'), BigInt whole-Credit
+// adjustment (negative refunds), unchanged reason string, and accepted route IDs.
+// This mutation returns undefined: update bank/basis, append one amendment and
+// ledger record, then replace the route or close remaining coverage. Existing
+// errors/order and omitted legacy amendment history are retained; no re-rounding.
+// Existing policies may be amended/closed while new insurance is OFF.
+// Caller owns approval, route choice, normalization, accepted-input freezing,
+// stale/modal guards and persistence. Use transition() for validated state/Undo.
+// See ARCHITECTURE.md and verification/insurance-amendment.test.mjs.
+export function amendInsurancePolicy(s,{id,adjustment,route,mode,reason}){
+ const policy=s.policies.find(x=>x.id===id),lot=s.lots.find(x=>x.id===policy.lotId);
+ if(!lot||cmp(policy.remainingQuantity,0)<=0)throw Error('No remaining insured cargo');
+ if(credit(s.bank)<adjustment||credit(lot.basis)+adjustment<0n)throw Error('Invalid premium adjustment');
+ if(policy.amendments===undefined)policy.amendments=[];
+ policy.amendments.push({hours:s.hours,reason,previous:{route:policy.route,destination:policy.destination,status:policy.status},adjustment:String(adjustment)});
+ s.bank=String(credit(s.bank)-adjustment);lot.basis=String(credit(lot.basis)+adjustment);
+ s.ledger.push({id:uid(),type:'Insurance amendment',amount:String(-adjustment),policyId:id,reason,hours:s.hours,world:s.actual});
+ if(mode==='close'){policy.status='closed';policy.remainingQuantity='0';policy.remainingValue='0';}
+ else{policy.route=route;policy.routeProgress=0;policy.destination=route.at(-1);policy.status='active';}
+}
 
 export function insureLot(s,lotId,quote){
  if(!s.settings.insurance)throw Error('Insurance is disabled');

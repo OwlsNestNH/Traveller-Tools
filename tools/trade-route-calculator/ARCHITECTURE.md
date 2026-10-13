@@ -48,7 +48,7 @@ Implemented native modules require no build step:
 | js/amounts.mjs | Exact rational quantities/money and deterministic allocation |
 | js/rules.mjs | Pure rule calculations, prices, market, freight/mail, insurance and tax |
 | js/map.mjs | Public API normalization, coordinates, fuel checks and bounded route search |
-| js/state.mjs | Validated campaign transitions, accounting and inverse-change undo |
+| js/state.mjs | Validated campaign transitions, accounting (including accepted insurance amendment/closure), and inverse-change undo |
 | js/campaign-controller.mjs | Synchronous write orchestration with caller-supplied revisions; distinct transition, prepared jump, Undo, mulligan and replacement paths |
 | js/persistence.mjs | localStorage, Web Locks, revisions, backups/import and recovery |
 | js/display.mjs | Explicit plain-text Credit formatting and HTML escaping |
@@ -117,6 +117,22 @@ const proposedEndHours = campaign.hours + outcome.hours; // No save or dice gene
 ```
 
 `verification/contact-search-outcome.test.mjs` contains exact equivalence/range/error tests, a headless consumer and production eligibility-before-numeric checks. Run it with `node --test verification/contact-search-outcome.test.mjs` from this tool folder. Existing period/commit validation remains independent and unchanged.
+
+`amendInsurancePolicy` in `js/state.mjs` applies already-accepted amendment/closure terms to a caller-owned draft campaign. Inputs are `{id, mode, adjustment, reason, route}`: policy ID, `amend`/`close` mode, BigInt whole-Credit adjustment (negative refunds), the accepted reason string, and accepted route IDs. It returns undefined and mutates the draft: bank is reduced by adjustment, lot basis increased by it, one amendment-history record and one `Insurance amendment` ledger entry are appended, then the route is replaced or remaining coverage closed. Closing leaves cargo quantity/goods value intact. Original quote terms, premium and claims remain recorded.
+
+The existing remaining-cargo and adjustment-bounds errors retain their order; no new normalization, approval/routing rules, or rounding is introduced. Omitted legacy amendment history is initialized at the same point after cargo/funds checks; a failed transition does not publish its draft. Existing policies remain amendable/closable while new insurance is OFF. Approval, route choice, field normalization, accepted-input freezing, stale/modal guards and persistence belong to callers. Use existing `transition`/`undo` and validated drafts rather than writing a live campaign directly; this action does not save or advance revisions itself.
+
+```js
+import {transition, amendInsurancePolicy} from './js/state.mjs';
+// campaign is current; terms have already been approved, normalized and accepted.
+const terms = {id:policyId, mode:'amend', adjustment:200n,
+  reason:'Approved route change', route:acceptedRoute};
+const next = transition(campaign, 'Insurance amended',
+  draft => amendInsurancePolicy(draft, terms));
+// Existing persistence/controller owns publishing next and checking the revision.
+```
+
+`verification/insurance-amendment.test.mjs` compares the frozen prior action with this state action, including exact debit/refund/ledger/history/error behavior, OFF state, legacy arrays, and headless transition → JSON reload/import → Undo. Run it with `node --test verification/insurance-amendment.test.mjs` from this tool folder. Existing insurance save/ownership and browser gates remain required.
 
 Complete synthetic headless consumers and exact output/error comparisons are in `verification/purchase-amounts.test.mjs` and `verification/sale-line.test.mjs`. Run them from this tool folder with `node --test verification/purchase-amounts.test.mjs verification/sale-line.test.mjs`. The purchase example uses existing `S.buy` on synthetic state; the sale example feeds existing `R.salePreview` without fresh dice.
 

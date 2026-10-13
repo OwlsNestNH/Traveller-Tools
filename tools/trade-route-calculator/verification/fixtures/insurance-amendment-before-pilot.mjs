@@ -1,0 +1,6 @@
+// Frozen accounting branch of applyInsuranceWrite at 1a8b0b9b328278b742f060e4c6a5a6952a2ed50a.
+// Differential oracle only; never imported by the application.
+function beforeInsuranceAmendment(s,args){
+ const {id,adjustment,route}=args,f={get:key=>args.form[key]??null,has:key=>Object.hasOwn(args.form,key)};
+ const policy=s.policies.find(x=>x.id===id),lot=s.lots.find(x=>x.id===policy.lotId);if(!lot||A.cmp(policy.remainingQuantity,0)<=0)throw Error('No remaining insured cargo');if(A.credit(s.bank)<adjustment||A.credit(lot.basis)+adjustment<0n)throw Error('Invalid premium adjustment');if(policy.amendments===undefined)policy.amendments=[];policy.amendments.push({hours:s.hours,reason:f.get('reason'),previous:{route:policy.route,destination:policy.destination,status:policy.status},adjustment:String(adjustment)});s.bank=String(A.credit(s.bank)-adjustment);lot.basis=String(A.credit(lot.basis)+adjustment);s.ledger.push({id:S.uid(),type:'Insurance amendment',amount:String(-adjustment),policyId:id,reason:f.get('reason'),hours:s.hours,world:s.actual});if(f.get('mode')==='close'){policy.status='closed';policy.remainingQuantity='0';policy.remainingValue='0';}else{policy.route=route;policy.routeProgress=0;policy.destination=route.at(-1);policy.status='active';}
+}
