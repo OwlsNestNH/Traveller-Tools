@@ -54,6 +54,7 @@ Implemented native modules require no build step:
 | js/display.mjs | Explicit plain-text Credit formatting and HTML escaping |
 | js/form-values.mjs | Exact entry normalization and ordered rounding annotations |
 | js/contact-search.mjs | Search outcome arithmetic, grouped-period history and authoritative contact-search commit validation; outcome preparation generates no dice or writes |
+| js/contact-search-result.mjs | Proposed buyer/supplier snapshot assembly, supplier goods and availability records; explicit rules/ID sources, no campaign writes |
 | js/insurance-terms.mjs | Plain-input optional insurance quote/route terms; no goods-value preparation, policy lifecycle or campaign writes |
 | js/purchase-amounts.mjs | Plain-input purchase preview quantity, fee percentage, goods cost and broker fee; no insurance or campaign writes |
 | js/sale-line.mjs | One plain-input sale line: legality, same-roll repricing and manual-override audit; no DOM, campaign writes or caches |
@@ -117,6 +118,25 @@ const proposedEndHours = campaign.hours + outcome.hours; // No save or dice gene
 ```
 
 `verification/contact-search-outcome.test.mjs` contains exact equivalence/range/error tests, a headless consumer and production eligibility-before-numeric checks. Run it with `node --test verification/contact-search-outcome.test.mjs` from this tool folder. Existing period/commit validation remains independent and unchanged.
+
+`prepareContactSearchResult` in `js/contact-search-result.mjs` assembles an already-eligible buyer/supplier outcome into a proposed snapshot. Supply `{kind, party, partyName, worldId, world, startedHours, dateLabel, snapshots, options, core, success, search}`. `world` is the existing rules context; `snapshots` is committed history; `options` is the accepted pricing/local-broker configuration. `search` supplies `{method, generatedDice, effectiveTotal, skill, characteristic, port, previous, total, successOverride, durationDie, hours, useLocal, localSkillDice}` from existing outcome arithmetic and original entry rolls. This helper does not redo eligibility, numeric outcome checks or rounding.
+
+Returns the existing full snapshot shape, with enriched supplier offers, IDs, original terms, availability and search/period audits. Successful supplier searches call the existing market generator once; buyers and failed searches consume no market dice and receive empty offers/null availability. Ordering remains market generation → offer IDs in generated order → snapshot ID → period validation → availability. Dice/errors, timestamps, field order and original audit/context/options references are preserved. Optional `{rules, uid}` bindings support controlled headless generation: `rules.market(world, options, core)` and `rules.VERSION`, plus a UUID factory. Defaults use existing rules and `crypto.randomUUID`. `marketAvailabilityRecord(world, options, offers, core)` and `tradeCodeLabel(code)` retain the existing saved availability facts and legacy audit display fallback.
+
+The caller owns initial rolls, eligibility/cooldowns, method/skill/options selection, outcome preparation, current-revision/stale checks, accepted snapshot freezing and persistence. No campaign is mutated or time advanced during assembly. Apply using the existing authoritative `commitContactSearch` inside `transition`; failed/cancelled previews remain uncommitted. Do not bypass its revision/period/identity checks.
+
+```js
+import {prepareContactSearchResult} from './js/contact-search-result.mjs';
+import {commitContactSearch} from './js/contact-search.mjs';
+import {transition} from './js/state.mjs';
+// input contains the explicit accepted fields above, including current history.
+const snapshot = prepareContactSearchResult(input);
+const next = transition(campaign, 'Contact search', draft =>
+  commitContactSearch(draft, snapshot, {revision:campaign.revision}));
+// Existing owner publishes/persists next after checking the current revision.
+```
+
+`verification/contact-search-result.test.mjs` checks 1,152 exact snapshot and dice/UUID traces against frozen PR80 assembly, error ordering, retained references, and headless supplier/buyer success/failure → commit → validated JSON reload → Undo. Run `node --test verification/contact-search-result.test.mjs`. Existing contact-search completion and availability browser gates remain required.
 
 `amendInsurancePolicy` in `js/state.mjs` applies already-accepted amendment/closure terms to a caller-owned draft campaign. Inputs are `{id, mode, adjustment, reason, route}`: policy ID, `amend`/`close` mode, BigInt whole-Credit adjustment (negative refunds), the accepted reason string, and accepted route IDs. It returns undefined and mutates the draft: bank is reduced by adjustment, lot basis increased by it, one amendment-history record and one `Insurance amendment` ledger entry are appended, then the route is replaced or remaining coverage closed. Closing leaves cargo quantity/goods value intact. Original quote terms, premium and claims remain recorded.
 
