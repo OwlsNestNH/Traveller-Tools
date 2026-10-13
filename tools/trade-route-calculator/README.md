@@ -849,10 +849,10 @@ no LLM and does not generate PDFs, change offers, roll dice or save state.
 The prior completed visit contains financial results only, with cash movement
 separate from realized operating results. Jump-delimited ledger order preserves
 revisits; missing boundaries, unreconciled history, baselines, location correction
-or Undo ambiguity produce unavailable/incomplete warnings. Current sale quotes
-require actual-world and revision validity. Persistent purchase quotes require
-a search in the verified current visit; transport availability requires retained
-session evidence. Historical-only checks never recreate offers. Freight is
+or Undo ambiguity produce unavailable/incomplete warnings. Current completed
+purchases/sales use verified visit boundaries and saved ledger details; cargo
+in hold retains each lot’s recorded purchase evidence. Transport availability
+requires retained session evidence. Historical-only checks never recreate offers. Freight is
 aggregated, mail summarized and passengers counted by class. Unsearched options
 are explicitly NOT CHECKED; zero results, stale and expired offers stay distinct.
 GM audits, reasons and free-text cargo/contract descriptions are excluded. JSON
