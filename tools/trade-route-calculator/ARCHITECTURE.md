@@ -53,6 +53,7 @@ Implemented native modules require no build step:
 | js/persistence.mjs | localStorage, Web Locks, revisions, backups/import and recovery |
 | js/display.mjs | Explicit plain-text Credit formatting and HTML escaping |
 | js/form-values.mjs | Exact entry normalization and ordered rounding annotations |
+| js/insurance-terms.mjs | Plain-input optional insurance quote/route terms; no goods-value preparation, policy lifecycle or campaign writes |
 | js/purchase-amounts.mjs | Plain-input purchase preview quantity, fee percentage, goods cost and broker fee; no insurance or campaign writes |
 | js/sale-line.mjs | One plain-input sale line: legality, same-roll repricing and manual-override audit; no DOM, campaign writes or caches |
 | js/app.mjs | Views, forms, previews, explicit actions and Rules & Notes |
@@ -62,7 +63,7 @@ Route searches load an area up to 12 parsecs around each requested stop, with a 
 
 ## Headless trade preparation
 
-These two preparation APIs use ordinary inputs and can run without DOM or FormData. They reuse existing arithmetic/rules; callers retain normalization, state validation, insurance orchestration, persistence and Undo. They do not commit transactions.
+These preparation APIs use ordinary inputs and can run without DOM or FormData. They reuse existing arithmetic/rules; callers retain normalization, state validation, insurance orchestration, persistence and Undo. They do not commit transactions.
 
 `preparePurchaseAmounts` in `js/purchase-amounts.mjs` takes normalized quantity/fee entry strings, the saved offer's `unitPrice`, and `creditStep` (1 or 100). It returns a decimal-string `quantity`, numeric `feePercent`, and BigInt `cost`/`fee`. Goods cost rounds up first; broker fee uses that rounded cost and rounds up next. Positive-quantity and arithmetic errors keep their existing order. Fee-range, stock, capacity and funds checks remain in `S.buy`; insurance stays in its existing preparation flow. Do not pass raw fractional tons expecting this API to normalize them.
 
@@ -83,6 +84,23 @@ import {prepareSaleLine} from './js/sale-line.mjs';
 const line = prepareSaleLine(input);
 // Existing R.salePreview accepts [line] along with lots/options/core/optional rules.
 ```
+
+`prepareInsuranceTerms` in `js/insurance-terms.mjs` takes `{requested, enabled, insuredValue, remainingRoute, creditStep, mp, values}`. The caller computes the whole-Credit insured goods value first, using the existing purchase or held-cargo path. Resolve remaining route stops into `{id, world:{x,y,zone}}` with the existing lookup precedence (saved campaign world, then known world, then map-area world). Entry strings in `values` are `{legs, distance, distanceReason, coverage, manualPremium}`; form normalization stays with the caller.
+
+The result is `null` when unrequested. Otherwise it contains the existing premium quote fields (including decimal-string insured value, whole-Credit premium/payout strings, numeric coverage/distance, zones and provenance), plus route IDs, destination, `routeProgress:0`, numeric `plannedDistance` and a trimmed override reason or null. Only the selected route prefix contributes distance/zones. Disabled, leg-selection, route-distance, distance/reason and quote errors retain that order; missing-world behavior is unchanged. Coverage/rates, zone deduplication, manual-premium rules and Cr1/Cr100 rounding still come from `R.insuranceQuote`. No dice are generated.
+
+```js
+import {prepareInsuranceTerms} from './js/insurance-terms.mjs';
+const terms = prepareInsuranceTerms({requested:true, enabled:true,
+  insuredValue:'100000', creditStep:1, mp,
+  remainingRoute:[{id:'0,0', world:{x:0,y:0,zone:'Safe'}},
+                  {id:'1,0', world:{x:1,y:0,zone:'Amber'}}],
+  values:{legs:'1', distance:'1', distanceReason:'', coverage:'70', manualPremium:''}});
+// Existing S.insureLot accepts these terms for a held lot; S.buy accepts
+// them as its insurance argument. State validation/ownership still apply.
+```
+
+This extracts quote/term preparation, not the entire optional insurance feature. The existing OFF toggle, controls, estimates, policy audits, claims/amendments, state validation, persistence and Undo remain with their current owners. `verification/insurance-terms.test.mjs` contains exact output/error/immutability comparisons and a headless held-cargo consumer; run it with `node --test verification/insurance-terms.test.mjs` from this tool folder.
 
 Complete synthetic headless consumers and exact output/error comparisons are in `verification/purchase-amounts.test.mjs` and `verification/sale-line.test.mjs`. Run them from this tool folder with `node --test verification/purchase-amounts.test.mjs verification/sale-line.test.mjs`. The purchase example uses existing `S.buy` on synthetic state; the sale example feeds existing `R.salePreview` without fresh dice.
 

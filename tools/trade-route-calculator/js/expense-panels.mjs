@@ -1,14 +1,14 @@
-import {ruleInfo} from './rule-references.mjs?v=purchase-amounts-20261013-78';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=purchase-amounts-20261013-78';
-import {passengerShip} from './passengers.mjs?v=purchase-amounts-20261013-78';
+import {ruleInfo} from './rule-references.mjs?v=insurance-terms-20261013-79';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=insurance-terms-20261013-79';
+import {passengerShip} from './passengers.mjs?v=insurance-terms-20261013-79';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=purchase-amounts-20261013-78';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=purchase-amounts-20261013-78';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=purchase-amounts-20261013-78';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=purchase-amounts-20261013-78';
-import {creditStep} from './rounding.mjs?v=purchase-amounts-20261013-78';
-import {roll} from './rules.mjs?v=purchase-amounts-20261013-78';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=purchase-amounts-20261013-78';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=insurance-terms-20261013-79';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=insurance-terms-20261013-79';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=insurance-terms-20261013-79';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=insurance-terms-20261013-79';
+import {creditStep} from './rounding.mjs?v=insurance-terms-20261013-79';
+import {roll} from './rules.mjs?v=insurance-terms-20261013-79';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=insurance-terms-20261013-79';
 
 const esc=escapeHtml;
 const money=formatCreditsText;
