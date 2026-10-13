@@ -1,6 +1,6 @@
-import {recordedOperatingResult} from './financial-summary.mjs?v=briefing-cargo-20261013-76';
+import {recordedOperatingResult} from './financial-summary.mjs?v=sale-line-20261013-77';
 import {latestMailCheck} from './mail-history.mjs';
-import {latestPassengerSearch,passengerOfferRemaining,passengerTotals} from './passengers.mjs?v=briefing-cargo-20261013-76';
+import {latestPassengerSearch,passengerOfferRemaining,passengerTotals} from './passengers.mjs?v=sale-line-20261013-77';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
 

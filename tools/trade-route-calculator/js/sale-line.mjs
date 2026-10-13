@@ -1,0 +1,20 @@
+import * as R from './rules.mjs?v=sale-line-20261013-77';
+
+// Prepare one sale line from plain inputs. The caller owns form normalization,
+// quote/dice caches, previews and campaign writes. Repricing reuses the quote.
+// An optional rules binding lets application harnesses observe existing calls.
+export function prepareSaleLine({lot,buyer,context,quote,commodity,pricing,creditStep,core,values},rules=R){
+ const threshold=values.ban.trim(),banThreshold=threshold===''?null:Number(threshold);
+ const legality=rules.tradeLegality(context,{illegalGood:lot.illegal,banThreshold});
+ if(legality.illegal&&!buyer.criminal)throw Error(legality.locallyBanned?'Locally banned cargo needs a black-market buyer.':'Illegal cargo needs a black-market buyer.');
+ let price=values.price,benchmark=values.benchmark,priced=quote;
+ const originalBenchmark=String(rules.effectiveBasePrice(commodity,{...pricing,illegalGood:!!lot.illegal}).effective),effectiveBenchmark=String(rules.effectiveBasePrice(commodity,{...pricing,illegalGood:!!legality.illegal}).effective);
+ if(banThreshold!==null){
+  priced=rules.repriceQuote(commodity,context,{...buyer.options,creditStep,side:'sell',banThreshold,...pricing,illegalGood:!!legality.illegal},core,quote);
+  if(price===quote.unitPrice)price=priced.unitPrice;
+  if(benchmark===originalBenchmark)benchmark=effectiveBenchmark;
+ }
+ const manual=price!==priced.unitPrice||benchmark!==effectiveBenchmark||(values.taxRate||'').trim()||priced.audit.manualRequired;
+ if(manual&&!values.reason.trim())throw Error('Add a reason for manual values');
+ return {lotId:lot.id,quantity:values.quantity,unitPrice:price,benchmarkPrice:benchmark,audit:{...priced.audit,effectiveIllegal:legality.illegal,locallyBanned:legality.locallyBanned,manualPrice:price!==priced.unitPrice?price:null,overrideReason:values.reason,banThreshold:threshold||null}};
+}

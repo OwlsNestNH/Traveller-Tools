@@ -53,6 +53,7 @@ Implemented native modules require no build step:
 | js/persistence.mjs | localStorage, Web Locks, revisions, backups/import and recovery |
 | js/display.mjs | Explicit plain-text Credit formatting and HTML escaping |
 | js/form-values.mjs | Exact entry normalization and ordered rounding annotations |
+| js/sale-line.mjs | One plain-input sale line: legality, same-roll repricing and manual-override audit; no DOM, campaign writes or caches |
 | js/app.mjs | Views, forms, previews, explicit actions and Rules & Notes |
 | rules/decisions.json | Bundled approved interpretation register |
 

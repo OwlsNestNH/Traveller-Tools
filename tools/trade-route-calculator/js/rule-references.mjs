@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=briefing-cargo-20261013-76';
+import {escapeHtml as esc} from './display.mjs?v=sale-line-20261013-77';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.
