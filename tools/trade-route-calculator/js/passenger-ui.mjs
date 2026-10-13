@@ -1,10 +1,10 @@
-import {ruleInfo} from './rule-references.mjs?v=focused-settings-20261012-73';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=focused-settings-20261012-73';
+import {ruleInfo} from './rule-references.mjs?v=player-briefing-20261012-74';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=player-briefing-20261012-74';
 import * as A from './amounts.mjs';
-import {manualLuggage} from './accommodation.mjs?v=focused-settings-20261012-73';
-import * as P from './passengers.mjs?v=focused-settings-20261012-73';
-import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=focused-settings-20261012-73';
-import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=focused-settings-20261012-73';
+import {manualLuggage} from './accommodation.mjs?v=player-briefing-20261012-74';
+import * as P from './passengers.mjs?v=player-briefing-20261012-74';
+import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=player-briefing-20261012-74';
+import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=player-briefing-20261012-74';
 import {displayDate} from './calendar.mjs';
 const esc=escapeHtml;
 const money=formatCreditsText,signed=x=>x>0?'+'+x:String(x);
@@ -20,6 +20,7 @@ export function createPassengerUI({getState,getCore,getWorld,getWorlds,getView,m
  const state=()=>getState(),world=id=>getWorld(id),date=h=>h==null?'Not recorded':displayDate(state().dateLabel,h);
  function clear(){drafts=[];searchId=null;}
  function activeDrafts(){const s=state();return searchId===s.latestPassengerSearchId&&drafts[0]?.origin===s.actual?drafts:[];}
+ function briefingSession(){return {searchId,offers:structuredClone(activeDrafts())};}
  function details(c){
   const a=c.audit||{},dm=a.dm||{},s=state(),source=c.status?c.status==='accepted'?'Aboard; unpaid':'Delivered and paid':'Available search result';
   let html=facts([['Passage',passageLabel(c.passageClass)],['People',c.count],['Status',source],['Origin',world(c.origin)?.name||c.origin],['Destination',world(c.destination)?.name||c.destination],['Fare per person',money(c.fare)],['Agreed total',money(c.payment)],['Accommodation',c.cabinMode?modeLabel(c.cabinMode):'Choose on boarding'],['Baggage allowance per person',P.bookingLuggage[c.passageClass]+' t before the whole-ship override / aggregate rounding'],['Accepted',date(c.acceptedHours)],['Delivered',date(c.deliveredHours)]]);
@@ -171,5 +172,5 @@ export function createPassengerUI({getState,getCore,getWorld,getWorlds,getView,m
   });
  }
  function auditOffer(id){const c=activeDrafts().find(o=>o.offerId===id);if(!c)throw Error('Offer is no longer active. Find its read-only result in History.');modal('Passenger availability audit',details(c),null);}
- return {panel,details,setup,search,manual,board,deliver,auditOffer,clear};
+ return {panel,details,setup,search,manual,board,deliver,auditOffer,clear,briefingSession};
 }
