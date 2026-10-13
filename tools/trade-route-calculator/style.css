@@ -436,3 +436,9 @@ main{padding-top:18px}
 .route-title{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px}.route-title>strong{flex:1 1 150px}.route-title>button{flex:0 1 auto;max-width:100%;white-space:normal}.route-title>.help{flex-basis:100%;margin-top:0}
 
 .briefing-actions{display:inline-flex;align-items:center;gap:2px;max-width:100%}
+/* Buy presentation is session-only. Supplier expands in normal document flow. */
+.trade-subtabs{display:flex;gap:6px;margin:12px 0}.trade-subtabs button{min-width:110px}.trade-subtabs .active{background:var(--cyan);color:#06131b}
+.supplier-inline{margin:12px 0;border:1px solid var(--cyan);border-radius:6px}.supplier-inline h3{margin:0}.supplier-inline form{margin-top:14px}.supplier-inline details{margin:12px 0}.supplier-inline summary{cursor:pointer}
+.supplier-inline .split{grid-template-columns:repeat(3,minmax(0,1fr))}.supplier-inline input,.supplier-inline select{max-width:100%;min-width:0}
+.market-expand-control{display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-top:12px}.market-goods>.scroll{max-height:420px;overflow:auto}.market-goods.expanded>.scroll{max-height:none}
+@media(max-width:620px){.supplier-inline .split{grid-template-columns:1fr}.market-expand-control{justify-content:flex-start;flex-wrap:wrap}.supplier-inline .dialog-actions{flex-wrap:wrap}.supplier-inline .dialog-actions button{flex:1}.market-goods>.scroll{max-height:420px}}
