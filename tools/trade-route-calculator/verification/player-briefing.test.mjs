@@ -53,3 +53,9 @@ test('copy action writes one full instruction/data block without saving, quotes 
 test('clipboard denied or missing exposes escaped, selectable complete text fallback',async()=>{
  for(const navigator of [undefined,{clipboard:{writeText:async()=>{throw Error('denied');}}}]){const s=campaign();s.name='</textarea><script>doBadThings()</script>';const h=harness(s,[],{navigator}),before=JSON.stringify(h.api.state);await h.api.actions['player-briefing']();assert.equal(h.dom.ids.get('modal-title').textContent,'Copy player briefing');assert.match(h.dom.ids.get('modal-body').innerHTML,/readonly aria-label="Player briefing prompt and data"/);assert.match(h.dom.ids.get('modal-body').innerHTML,/&lt;\/textarea&gt;&lt;script&gt;/);assert.doesNotMatch(h.dom.ids.get('modal-body').innerHTML,/<script>/);assert.equal(JSON.stringify(h.api.state),before);assert.equal(h.calls.saves,0);}
 });
+test('new actual-world searches after a location correction stay usable while prior results stay unavailable',()=>{
+ const s=visit();s.events.push({label:'Starting-world / location correction',to:s.actual});s.snapshots=[{id:'new',kind:'supplier',worldId:s.actual,party:'new',offers:[]}];s.events.push({label:'Contact search audit',snapshotId:'new',world:s.actual});const r=data(s);assert.equal(r.previousCompletedVisit.status,'UNAVAILABLE / INCOMPLETE');assert.equal(r.currentOptions.purchases.status,'CHECKED');
+});
+test('missing financial history with an unreconciled bank suppresses previous results',()=>{
+ const s=visit();s.ledger=s.ledger.filter(e=>e.id!=='expense');assert.equal(data(s).previousCompletedVisit.status,'UNAVAILABLE / INCOMPLETE');
+});
