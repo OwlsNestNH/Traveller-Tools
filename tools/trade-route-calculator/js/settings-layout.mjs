@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=search-result-20261013-83';
+import {ruleInfo} from './rule-references.mjs?v=route-layout-20261013-84';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={

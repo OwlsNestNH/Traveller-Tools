@@ -410,12 +410,27 @@ main{padding-top:18px}
 /* The saved receipt owns visible service confirmation inside its scroll area. */
 .mfd-screen:has(.service-saved) #message.visible:not(.error){display:none}
 
-/* Route editor stops use the same tile grid and hit area as the preview. */
-.route-draft>.route-edit-stops{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(170px,100%),1fr));list-style:none;padding:6px 10px 8px;margin:0;gap:6px}
-.navigation-panel .route-edit-stops button{min-height:112px;text-align:left;align-self:stretch}
-.route-world-details,.route-remove-label{display:block;margin-top:5px;font-size:11px;line-height:1.4}
-.route-remove-label{color:var(--cyan)}
-@media(max-width:620px){.route-draft>.route-edit-stops{grid-template-columns:repeat(2,minmax(0,1fr));padding:6px;gap:5px}}
+/* Future stops remain ordered rows; only the separate action removes a stop. */
+.route-draft>.route-edit-stops{display:flex;flex-direction:column;list-style:none;padding:0;margin:0;gap:0}
+.route-draft>.route-edit-stops>li{display:block;width:100%}
+.route-edit-head,.route-edit-row{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,.85fr) auto;align-items:center;gap:12px;padding:10px 0}
+.route-edit-head{color:var(--muted);font-size:11px;border-bottom:1px solid var(--line)}
+.route-edit-row{border-bottom:1px solid var(--line);font-size:12px}
+.route-edit-row>*{min-width:0;overflow-wrap:anywhere}
+.route-planet>.help{display:block;margin-top:4px}
+.route-world-details,.route-uwp{font-size:12px;line-height:1.5}
+.route-field-label{display:none;font-family:system-ui,sans-serif;color:var(--muted);font-size:10px}
+.route-edit-row>button{min-height:44px;max-width:100%;white-space:normal;color:var(--cyan)}
+.route-origin-note{margin:0}
+@media(max-width:620px){
+ .route-edit-head{display:none}
+ .route-edit-row{grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;padding:10px 0}
+ .route-planet{grid-column:1/-1}
+ .route-world-details{grid-column:1;grid-row:2}
+ .route-uwp{grid-column:1;grid-row:3}
+ .route-field-label{display:block}
+ .route-edit-row>button,.route-origin-note{grid-column:2;grid-row:2/4}
+}
 
 /* Player briefing sits beside the route title and wraps within narrow screens. */
 .route-title{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px}.route-title>strong{flex:1 1 150px}.route-title>button{flex:0 1 auto;max-width:100%;white-space:normal}.route-title>.help{flex-basis:100%;margin-top:0}

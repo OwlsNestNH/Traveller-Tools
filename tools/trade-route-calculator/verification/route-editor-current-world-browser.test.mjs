@@ -57,11 +57,19 @@ try{
    await page.setViewportSize({width,height:1100});
    const camera=await mapCameraSnapshot(page,ids);await openBuild(page);
    await choose(page,ids[1]);await ready(page,1);await choose(page,before.route[before.routeIndex+2],' ');await ready(page,2);
-   const order=await page.evaluate(()=>{const box=s=>document.querySelector(s).getBoundingClientRect();return {preview:box('.planned-route').bottom,editorTop:box('.route-draft').top,editorBottom:box('.route-draft').bottom,controlsBottom:box('.world-correction').bottom};});
-   assert.ok(order.preview<=order.editorTop+.1);assert.ok(await page.locator('.planned-route').evaluate(el=>el.getBoundingClientRect().top>=document.querySelector('.world-correction').getBoundingClientRect().bottom-.1));
+   const order=await page.evaluate(()=>{const box=s=>document.querySelector(s).getBoundingClientRect();return {previewTop:box('.planned-route').top,editorTop:box('.route-draft').top,editorBottom:box('.route-draft').bottom,controlsBottom:box('.world-correction').bottom};});
+   assert.ok(order.editorBottom<=order.previewTop+.1,'Build Route precedes the separate Route Preview');assert.ok(order.controlsBottom<=order.editorTop+.1,'Editor follows map controls');assert.ok(await page.locator('.planned-route').evaluate(el=>el.getBoundingClientRect().top>=document.querySelector('.world-correction').getBoundingClientRect().bottom-.1));
    assert.equal(await page.locator('.overview-cargo').count(),0);
    assert.match(await page.locator('.route-edit-stops button').first().textContent(),/Remove stop/);assert.ok(await page.locator('.route-world-details').first().textContent());
-   const tiles=await page.evaluate(()=>{const box=s=>{const r=document.querySelector(s).getBoundingClientRect();return {width:r.width,height:r.height}};return {preview:box('.route-list button'),editor:box('.route-edit-stops button')}});assert.ok(tiles.editor.width>=tiles.preview.width-2&&tiles.editor.height>=tiles.preview.height,JSON.stringify({width,tiles}));
+   assert.equal(await page.locator('.route-edit-origin button').count(),0,'Current origin cannot be removed');
+   assert.match(await page.locator('.route-edit-origin').textContent(),/Current.*Fixed origin/);
+   const rows=await page.locator('.route-edit-stops>li').evaluateAll(nodes=>nodes.map(node=>{const r=node.getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left,width:r.width}}));
+   assert.ok(rows[0].bottom<=rows[1].top+.1,'Future stops stack vertically');
+   assert.ok(Math.abs(rows[0].left-rows[1].left)<.1&&Math.abs(rows[0].width-rows[1].width)<.1,'Rows fill the same width');
+   assert.equal(await page.locator('.route-edit-stops [data-action="route-remove"]').first().getAttribute('data-arg'),'0');
+   assert.equal(await page.locator('.route-edit-stops [data-action="route-remove"]').last().getAttribute('data-arg'),'1');
+   assert.ok(await page.locator('.route-edit-stops .route-uwp').first().textContent());
+   assert.ok(await page.locator('.route-edit-stops button').first().evaluate(el=>el.getBoundingClientRect().height>=44),'Remove stop remains a touch-sized action');
    assert.equal(await page.locator('.world-correction [data-action="route-clear"]').textContent(),'Clear Route');
    assert.match(await page.locator('.route-draft h3').textContent(),/Build route.*Planning active/);
    assert.equal(await page.locator('.route-draft>ol>li').count(),2);
@@ -70,6 +78,18 @@ try{
    await action(page,'route-last').click();assert.equal(await page.locator('.route-draft>ol>li').count(),0);
    await choose(page,ids[1]);await ready(page,1);await screenshot('planning');
    assertMapCameraUnchanged(await mapCameraSnapshot(page,ids),camera,'Planning retains fixed map geometry');
+   // Many repeated occurrences and long synthetic names must remain full rows.
+   for(let i=0;i<12;i++){await choose(page,ids[i%2]);await ready(page,i+2);}
+   const many=await page.locator('.route-edit-stops>li').evaluateAll(nodes=>nodes.map(node=>{const r=node.getBoundingClientRect();return {top:r.top,bottom:r.bottom,width:r.width}}));
+   for(let i=1;i<many.length;i++)assert.ok(many[i-1].bottom<=many[i].top+.1,'Many stops retain vertical order');
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Long names and many rows do not widen the page');
+   const previewBefore=await page.locator('.planned-route [data-action="world"]').evaluateAll(nodes=>nodes.map(node=>node.dataset.arg));
+   await page.locator('.route-edit-stops [data-action="route-remove"]').nth(3).click();await ready(page,12);
+   assert.deepEqual(await page.locator('.planned-route [data-action="world"]').evaluateAll(nodes=>nodes.map(node=>node.dataset.arg)),previewBefore.filter((_,index)=>index!==4),'Remove selects the exact repeated occurrence');
+   await screenshot('many-stops');
+   await action(page,'map-expand').click();await screenshot('planning-expanded');
+   assert.equal(await page.locator('.route-edit-origin button').count(),0);assert.equal(await page.locator('.route-edit-stops>li').count(),12);
+   await action(page,'map-expand').click();
    await action(page,'route-cancel').focus();await action(page,'route-cancel').press('Enter');assert.equal(await raw(page),bytes);
    await openBuild(page);await choose(page,ids[1]);await ready(page,1);await action(page,'route-save').click();await page.locator('#modal-submit').click();await closed(page);
    const planned=await read(page);assert.deepEqual(planned.route.slice(planned.routeIndex),[before.actual,ids[1]]);assert.equal(planned.actual,before.actual);
