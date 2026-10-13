@@ -134,6 +134,27 @@ const next = transition(campaign, 'Insurance amended',
 
 `verification/insurance-amendment.test.mjs` compares the frozen prior action with this state action, including exact debit/refund/ledger/history/error behavior, OFF state, legacy arrays, and headless transition → JSON reload/import → Undo. Run it with `node --test verification/insurance-amendment.test.mjs` from this tool folder. Existing insurance save/ownership and browser gates remain required.
 
+`js/market-offer.mjs` separates one referee market override from screen layout. `prepareMarketOfferOverride({values, commodity, world, options, creditStep, core})` accepts the saved commodity ID, snapshot pricing context/options, current Credit step and core rules, plus normalized plain values `{quantity, price, reason, roll, useRoll, illegal, expirationNote, description}`. Amount/roll/reason/text fields are strings; checkbox flags are booleans. It returns `{values, recalculated}` after the existing nonnegative amount/reason checks and optional `R.quote` using the entered roll and submitted legality. Manual price retains the old pricing audit; repricing appends it to previous audits and merges the new audit while retaining quantity rolls/random draws. No fresh dice, extra rounding, rules or schema changes are introduced.
+
+`applyMarketOfferOverride(offer, hours, prepared)` mutates a caller-owned offer draft and returns undefined: append the before/after override record, update remaining tons/price/text/legality and clear manual-required. Reason whitespace and original quote/history references remain unchanged. Prepare before entering the transition; apply only inside its validated draft. The module owns no lookup, approval, stale/modal guards, revision, save or Undo. Callers retain accepted normalized values through application; errors and legacy history initialization preserve their prior order. Preparation does not mutate campaign state; malformed draft history may partly mutate before failing, so use the existing transition to discard failures.
+
+```js
+import {prepareMarketOfferOverride, applyMarketOfferOverride} from './js/market-offer.mjs';
+import {transition} from './js/state.mjs';
+const snapshot = campaign.snapshots.find(x => x.id === snapshotId);
+const offer = snapshot.offers.find(x => x.id === offerId);
+const prepared = prepareMarketOfferOverride({values:acceptedValues,
+  commodity:offer.commodity, world:snapshot.world, options:snapshot.options,
+  creditStep:campaign.settings.creditStep, core});
+const next = transition(campaign, 'Market override', draft => {
+  const target = draft.snapshots.find(x => x.id === snapshotId).offers.find(x => x.id === offerId);
+  applyMarketOfferOverride(target, draft.hours, prepared);
+});
+// Existing owner checks the revision and publishes/persists next.
+```
+
+`verification/market-offer.test.mjs` compares 3,072 cases against the frozen checkpoint callback, including exact errors/draft bytes, manual/recalculated prices, submitted legality, history, large decimals and a headless transition → validated JSON reload → Undo. Run `node --test verification/market-offer.test.mjs`. Existing trade-action and trade-audit browser gates exercise the actual form/save path.
+
 Complete synthetic headless consumers and exact output/error comparisons are in `verification/purchase-amounts.test.mjs` and `verification/sale-line.test.mjs`. Run them from this tool folder with `node --test verification/purchase-amounts.test.mjs verification/sale-line.test.mjs`. The purchase example uses existing `S.buy` on synthetic state; the sale example feeds existing `R.salePreview` without fresh dice.
 
 ## Responsive list views

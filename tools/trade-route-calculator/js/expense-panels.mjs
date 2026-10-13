@@ -1,14 +1,14 @@
-import {ruleInfo} from './rule-references.mjs?v=insurance-action-20261013-81';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=insurance-action-20261013-81';
-import {passengerShip} from './passengers.mjs?v=insurance-action-20261013-81';
+import {ruleInfo} from './rule-references.mjs?v=market-offer-20261013-82';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=market-offer-20261013-82';
+import {passengerShip} from './passengers.mjs?v=market-offer-20261013-82';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=insurance-action-20261013-81';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=insurance-action-20261013-81';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=insurance-action-20261013-81';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=insurance-action-20261013-81';
-import {creditStep} from './rounding.mjs?v=insurance-action-20261013-81';
-import {roll} from './rules.mjs?v=insurance-action-20261013-81';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=insurance-action-20261013-81';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=market-offer-20261013-82';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=market-offer-20261013-82';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=market-offer-20261013-82';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=market-offer-20261013-82';
+import {creditStep} from './rounding.mjs?v=market-offer-20261013-82';
+import {roll} from './rules.mjs?v=market-offer-20261013-82';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=market-offer-20261013-82';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

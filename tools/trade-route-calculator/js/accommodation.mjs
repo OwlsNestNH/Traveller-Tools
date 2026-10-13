@@ -1,4 +1,4 @@
-import {up} from './rounding.mjs?v=insurance-action-20261013-81';
+import {up} from './rounding.mjs?v=market-offer-20261013-82';
 import {sum,mul,decimal,cmp,credit} from './amounts.mjs';
 
 export const tiers=['low','middle','high'];

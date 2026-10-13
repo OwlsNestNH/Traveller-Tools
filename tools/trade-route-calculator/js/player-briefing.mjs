@@ -1,6 +1,6 @@
-import {recordedOperatingResult} from './financial-summary.mjs?v=insurance-action-20261013-81';
+import {recordedOperatingResult} from './financial-summary.mjs?v=market-offer-20261013-82';
 import {latestMailCheck} from './mail-history.mjs';
-import {latestPassengerSearch,passengerOfferRemaining,passengerTotals} from './passengers.mjs?v=insurance-action-20261013-81';
+import {latestPassengerSearch,passengerOfferRemaining,passengerTotals} from './passengers.mjs?v=market-offer-20261013-82';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
 
