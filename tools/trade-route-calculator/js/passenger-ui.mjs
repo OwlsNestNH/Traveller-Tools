@@ -20,6 +20,7 @@ export function createPassengerUI({getState,getCore,getWorld,getWorlds,getView,m
  const state=()=>getState(),world=id=>getWorld(id),date=h=>h==null?'Not recorded':displayDate(state().dateLabel,h);
  function clear(){drafts=[];searchId=null;}
  function activeDrafts(){const s=state();return searchId===s.latestPassengerSearchId&&drafts[0]?.origin===s.actual?drafts:[];}
+ function briefingSession(){return {searchId,offers:structuredClone(activeDrafts())};}
  function details(c){
   const a=c.audit||{},dm=a.dm||{},s=state(),source=c.status?c.status==='accepted'?'Aboard; unpaid':'Delivered and paid':'Available search result';
   let html=facts([['Passage',passageLabel(c.passageClass)],['People',c.count],['Status',source],['Origin',world(c.origin)?.name||c.origin],['Destination',world(c.destination)?.name||c.destination],['Fare per person',money(c.fare)],['Agreed total',money(c.payment)],['Accommodation',c.cabinMode?modeLabel(c.cabinMode):'Choose on boarding'],['Baggage allowance per person',P.bookingLuggage[c.passageClass]+' t before the whole-ship override / aggregate rounding'],['Accepted',date(c.acceptedHours)],['Delivered',date(c.deliveredHours)]]);
@@ -171,5 +172,5 @@ export function createPassengerUI({getState,getCore,getWorld,getWorlds,getView,m
   });
  }
  function auditOffer(id){const c=activeDrafts().find(o=>o.offerId===id);if(!c)throw Error('Offer is no longer active. Find its read-only result in History.');modal('Passenger availability audit',details(c),null);}
- return {panel,details,setup,search,manual,board,deliver,auditOffer,clear,briefingSession:()=>({searchId,offers:structuredClone(activeDrafts())})};
+ return {panel,details,setup,search,manual,board,deliver,auditOffer,clear,briefingSession};
 }

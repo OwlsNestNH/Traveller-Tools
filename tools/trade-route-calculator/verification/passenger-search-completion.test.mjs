@@ -28,7 +28,7 @@ const uri=source=>'data:text/javascript;base64,'+Buffer.from(source).toString('b
 async function loadHarness(source,moduleSource){
  // Expose the real closure only to inspect retained draft identity and to inject
  // adversarial mutations. Production functions and all state transitions run unchanged.
- moduleSource=replace(moduleSource,'return {panel,details,setup,search,manual,board,deliver,auditOffer,clear};','return {testSnapshot:()=>({drafts,searchId}),testSet:(d,id)=>{drafts=d;searchId=id;},panel,details,setup,search,manual,board,deliver,auditOffer,clear};');
+ moduleSource=replace(moduleSource,'return {panel,details,setup,search,manual,board,deliver,auditOffer,clear,briefingSession};','return {testSnapshot:()=>({drafts,searchId}),testSet:(d,id)=>{drafts=d;searchId=id;},panel,details,setup,search,manual,board,deliver,auditOffer,clear,briefingSession};');
  const pu=uri(absolutize(moduleSource,passengerURL));
  source=source.replace(/^import \{createPassengerUI\} from '[^']+';/m,"import {createPassengerUI} from '"+pu+"';");
  let hs=await readFile(harnessURL,'utf8');

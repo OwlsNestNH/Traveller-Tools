@@ -62,3 +62,6 @@ test('missing financial history with an unreconciled bank suppresses previous re
 test('a repeated world visit excludes income from the earlier visit to that same world',()=>{
  const s=visit();s.ledger.push({id:'new-sale',type:'Sale',world:'0,0',amount:'5000',hours:201,audit:{adjusted:'300'}},{id:'jc',type:'Jump',eventId:'c',from:'0,0',to:'1,0',world:'1,0',amount:'0',hours:300});s.events.push({id:'c',label:'Jump audit',from:'0,0',to:'1,0',hours:300});s.actual='1,0';s.bank='114650';assert.equal(data(s).previousCompletedVisit.world.name,'Origin');assert.equal(data(s).previousCompletedVisit.realizedTradingProfitCr,'300');assert.equal(data(s).previousCompletedVisit.cashMovementCr,'5000');
 });
+test('retained current freight stays aggregate after a later mail-only check',async()=>{
+ const h=harness();h.api.contractSearch(false);h.fill({dice:8,skill:0,characteristic:0,days:14,mailAvailability:12,mailContainers:3});await h.submit();const count=h.api.drafts.filter(c=>c.kind==='freight').length;assert.ok(count>0);await h.check();const r=data(h.api.state,{mailCheck:h.api.check,contractDrafts:h.api.drafts});assert.equal(r.currentOptions.freight.status,'CHECKED');assert.equal(r.currentOptions.freight.availableContracts,count);
+});
