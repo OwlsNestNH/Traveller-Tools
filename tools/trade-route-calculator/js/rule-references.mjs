@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=player-briefing-20261012-74';
+import {escapeHtml as esc} from './display.mjs?v=briefing-refinements-20261013-75';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.
@@ -12,6 +12,10 @@ const source=(book,pages)=>Object.freeze({book,pages});
 const part=(kind,text)=>Object.freeze({kind,text});
 const entry=(title,sources,parts)=>Object.freeze({title,sources:Object.freeze(sources),parts:Object.freeze(parts)});
 const core=pages=>source('core',pages),merchant=pages=>source('merchant',pages);
+const playerBriefingInfo=entry('player briefing',[],[
+  part('Copy & paste','Copies a prompt plus player-safe data to paste into an LLM for a one-page PDF captain/player handout. Nothing is automatically sent to an LLM.'),
+  part('Included data','Previous completed visit: financial results only. Current buy/sell options, summarized freight/mail and passengers by class. Missing checks remain warnings.')
+ ]);
 export const RULE_REFERENCES=Object.freeze({
  'commodity':entry('commodity availability and trade codes',[core('242, 244–245, 260')],[
   part('Published rule','Commodity prices, availability, quantity dice and UWP trade-code conditions come from these tables. Population modifies generated quantity; repeated goods draws add stock.'),
@@ -165,8 +169,8 @@ export const RULE_REFERENCES=Object.freeze({
  ])
 });
 
-export function ruleReference(id){const value=RULE_REFERENCES[id];if(!value)throw Error('Unknown rules reference: '+id);return value;}
-export function ruleInfo(id){const reference=ruleReference(id);return '<button type="button" class="rule-info" data-rule-info="'+esc(id)+'" aria-label="Rules reference for '+esc(reference.title)+'" aria-haspopup="dialog"><span aria-hidden="true">i</span></button>';}
+export function ruleReference(id){const value=id==='player-briefing'?playerBriefingInfo:RULE_REFERENCES[id];if(!value)throw Error('Unknown rules reference: '+id);return value;}
+export function ruleInfo(id){const reference=ruleReference(id);return '<button type="button" class="rule-info" data-rule-info="'+esc(id)+'" aria-label="'+(id==='player-briefing'?'About ':'Rules reference for ')+esc(reference.title)+'" aria-haspopup="dialog"><span aria-hidden="true">i</span></button>';}
 export function referenceMarkup(id){
  const reference=ruleReference(id);
  return reference.sources.map(({book,pages})=>{const b=SOURCE_BOOKS[book];return '<p class="rule-source"><strong>'+esc(b.short)+(/^[0-9]+$/.test(pages)?' p. ':' pp. ')+esc(pages)+'</strong><br>'+esc(b.title)+' · '+esc(b.edition)+' · printed page'+(/^[0-9]+$/.test(pages)?' ':'s ')+esc(pages)+'</p>';}).join('')+reference.parts.map(({kind,text})=>'<section class="rule-reference-part"><h3>'+esc(kind)+'</h3><p>'+esc(text)+'</p></section>').join('');

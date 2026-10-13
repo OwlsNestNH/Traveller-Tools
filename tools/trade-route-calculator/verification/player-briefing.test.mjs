@@ -65,3 +65,17 @@ test('a repeated world visit excludes income from the earlier visit to that same
 test('retained current freight stays aggregate after a later mail-only check',async()=>{
  const h=harness();h.api.contractSearch(false);h.fill({dice:8,skill:0,characteristic:0,days:14,mailAvailability:12,mailContainers:3});await h.submit();const count=h.api.drafts.filter(c=>c.kind==='freight').length;assert.ok(count>0);await h.check();const r=data(h.api.state,{mailCheck:h.api.check,contractDrafts:h.api.drafts});assert.equal(r.currentOptions.freight.status,'CHECKED');assert.equal(r.currentOptions.freight.availableContracts,count);
 });
+
+function fresh(){const s=campaign();s.events=[{id:'setup',label:'Campaign setup',world:s.actual,hours:0}];s.ledger=[{id:'opening',type:'Opening bank',world:s.actual,hours:0,amount:s.bank}];return s;}
+test('verified first visit has a clear message and no invented financial zero results',()=>{
+ const s=fresh(),before=JSON.stringify(s),r=data(s).previousCompletedVisit;
+ assert.deepEqual(r,{status:'NO PREVIOUS VISIT',message:'No previous visit yet',warnings:[]});
+ assert.equal(data(s).currentOptions.mail.status,'NOT CHECKED');assert.equal(data(s).currentOptions.passengers.availableByClass,null);assert.equal(JSON.stringify(s),before);
+ s.events.push({label:'Contact search audit',world:s.actual});assert.equal(data(s).previousCompletedVisit.status,'NO PREVIOUS VISIT');
+});
+test('no jumps with missing or ambiguous history cannot confirm a fresh run',()=>{
+ for(const mutate of [s=>s.events=[],s=>s.ledger=[],s=>s.bank='1',s=>s.actual='1,0',s=>s.events.push({label:'Jump audit'}),s=>s.events.push({label:'Saved jump'}),s=>s.events.push({label:'Starting-world / location correction'}),s=>s.events.push({label:'Undo: Saved jump'}),s=>s.jumpAttempts=[{closed:true}],s=>s.dashboardBaseline={origin:'current',hours:0,excludedLedgerIds:[]},s=>s.dashboardBaseline={origin:'opening',hours:0,excludedLedgerIds:['missing']},s=>s.ledger.push({type:'Opening bank',amount:'0',world:s.actual,hours:0})]){const s=fresh();mutate(s);assert.equal(data(s).previousCompletedVisit.status,'UNAVAILABLE / INCOMPLETE');assert.equal(data(s).previousCompletedVisit.netOperatingOutcomeCr,undefined);}
+});
+test('PDF prompt always requests three compact readable buy/sell columns and preserves warnings',()=>{
+ const out=playerBriefing(fresh(),core).split('PLAYER-SAFE JSON DATA')[0];assert.match(out,/THREE columns.*compact, readable entries/);assert.doesNotMatch(out,/18|two.column/i);assert.match(out,/No previous visit yet.*without financial zeros/);assert.match(out,/white background, pale blue.*green.*amber/);assert.match(out,/FINANCIAL RESULTS ONLY/);assert.match(out,/NOT CHECKED.*STALE.*EXPIRED.*HISTORICAL ONLY/);
+});
