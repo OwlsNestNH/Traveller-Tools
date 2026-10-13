@@ -416,3 +416,6 @@ main{padding-top:18px}
 .route-world-details,.route-remove-label{display:block;margin-top:5px;font-size:11px;line-height:1.4}
 .route-remove-label{color:var(--cyan)}
 @media(max-width:620px){.route-draft>.route-edit-stops{grid-template-columns:repeat(2,minmax(0,1fr));padding:6px;gap:5px}}
+
+/* Player briefing sits beside the route title and wraps within narrow screens. */
+.route-title{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px}.route-title>strong{flex:1 1 150px}.route-title>button{flex:0 1 auto;max-width:100%;white-space:normal}.route-title>.help{flex-basis:100%;margin-top:0}

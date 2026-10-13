@@ -25,8 +25,10 @@ try{
    errors.push('Unexpected external request '+url.origin);return route.abort('blockedbyclient');
   });
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(base);
-  await page.getByText('Editing in this tab',{exact:true}).waitFor();await page.locator('#tabs').getByRole('button',{name:'Settings',exact:true}).click();
-  const button=page.getByRole('button',{name:'Copy player briefing',exact:true});await button.waitFor();const before=await page.evaluate(key=>localStorage.getItem(key),key);
+  await page.getByText('Editing in this tab',{exact:true}).waitFor();await page.locator('#tabs').getByRole('button',{name:'Overview',exact:true}).click();
+  const button=page.locator('.planned-route .route-title').getByRole('button',{name:'Copy Player Briefing',exact:true});await button.waitFor();assert.equal(await button.getAttribute('data-mutate'),null);
+  const bounds=await button.boundingBox();assert.ok(bounds.x>=0&&bounds.x+bounds.width<=viewport.width,'Button fits viewport');
+  const before=await page.evaluate(key=>localStorage.getItem(key),key);
   await button.click();let prompt;
   if(mode==='success'){
    await page.getByText('Player briefing prompt and data copied.',{exact:false}).waitFor();prompt=await page.evaluate(()=>briefingCopies[0]);assert.equal(await page.locator('#modal').isVisible(),false);

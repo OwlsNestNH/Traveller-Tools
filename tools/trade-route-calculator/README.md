@@ -840,7 +840,7 @@ actions. Economic calculations and persistence/Undo behavior are unchanged.
 
 ## Player briefing copy (UI .74)
 
-Settings → Backup & data → Copy player briefing copies one LLM instruction prompt
+Overview → beside the Route Preview / Planned route heading → Copy Player Briefing copies one LLM instruction prompt
 and allowlisted player-safe JSON. Request one print-friendly PDF page; an LLM
 without PDF support should return formatted one-page text. Clipboard denial or
 absence opens a selected read-only text field for manual copying. The app calls
