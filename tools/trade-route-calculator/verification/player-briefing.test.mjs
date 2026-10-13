@@ -59,3 +59,6 @@ test('new actual-world searches after a location correction stay usable while pr
 test('missing financial history with an unreconciled bank suppresses previous results',()=>{
  const s=visit();s.ledger=s.ledger.filter(e=>e.id!=='expense');assert.equal(data(s).previousCompletedVisit.status,'UNAVAILABLE / INCOMPLETE');
 });
+test('a repeated world visit excludes income from the earlier visit to that same world',()=>{
+ const s=visit();s.ledger.push({id:'new-sale',type:'Sale',world:'0,0',amount:'5000',hours:201,audit:{adjusted:'300'}},{id:'jc',type:'Jump',eventId:'c',from:'0,0',to:'1,0',world:'1,0',amount:'0',hours:300});s.events.push({id:'c',label:'Jump audit',from:'0,0',to:'1,0',hours:300});s.actual='1,0';s.bank='114650';assert.equal(data(s).previousCompletedVisit.world.name,'Origin');assert.equal(data(s).previousCompletedVisit.realizedTradingProfitCr,'300');assert.equal(data(s).previousCompletedVisit.cashMovementCr,'5000');
+});
