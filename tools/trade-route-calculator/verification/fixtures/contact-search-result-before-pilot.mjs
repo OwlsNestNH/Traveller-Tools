@@ -1,0 +1,12 @@
+// Frozen assembly and availability helpers from checkpoint 4596193f754f209b15e667b37bd46d388ff3e1aa.
+function tradeCodeLabel(code){const names={Ag:'Agricultural',As:'Asteroid',Ba:'Barren',De:'Desert',Fl:'Fluid oceans',Ga:'Garden',Hi:'High population',Ht:'High technology',Ic:'Ice-capped',In:'Industrial',Lo:'Low population',Lt:'Low technology',Na:'Non-agricultural',Ni:'Non-industrial',Po:'Poor',Ri:'Rich',Va:'Vacuum',Wa:'Water world',Amber:'Amber travel zone',Red:'Red travel zone',Safe:'Safe travel zone'};return (names[code]||code)+' ('+code+')';}
+function marketAvailabilityRecord(c,options,offers,core){
+ const defaults=core.commodities.filter(g=>!g.refereeDefined&&(g.common||((options.illegal?g.universallyIllegal:!g.universallyIllegal)&&g.availabilityAny.some(code=>c.codes.includes(code))))).map(g=>({id:g.id,name:g.name,reason:g.common?'Common goods: available on all worlds':g.availabilityAny.filter(code=>c.codes.includes(code)).map(tradeCodeLabel).join(', ')}));
+ const draws=offers.find(o=>Array.isArray(o.audit?.randomDraws))?.audit.randomDraws;
+ return {defaults,population:c.uwp.population,uwp:c.uwp.raw,codes:[...c.codes],draws:draws??null};
+}
+function beforeContactSearchResult({state,c,options,core,kind,key,partyName,method,dice,brokerDice,useLocal,rolled,skill,characteristic,port,previous,total,duration,hours,success,successOverride},R,S){const good=id=>core.commodities.find(g=>g.id===id);const illegal=method==='blackMarket';const f={has:()=>successOverride};
+  const offers=success&&kind==='supplier'?R.market(c,options,core).map(o=>({...o,id:S.uid(),remaining:o.quantity,expired:false,illegal:!!good(o.commodity).universallyIllegal,description:good(o.commodity).name,original:{quantity:o.quantity,unitPrice:o.unitPrice}})):[];
+  const id=S.uid(),contactPeriod=contactSearchPeriod(state,id);
+  const snap={id,kind,party:key,partyName,worldId:state.actual,world:c,startedHours:state.hours,hours:state.hours+hours,criminal:illegal,options,offers,availability:success&&kind==='supplier'?marketAvailabilityRecord(c,options,offers,core):null,success,rulesVersion:R.VERSION,interpretationVersion:2,search:{method,contactPeriod,dateLabel:state.dateLabel,generatedDice:dice,effectiveTotal:rolled,skill,characteristic,port,previous,total,difficulty:8,successOverride:f.has('success'),durationDie:duration,hours,localSkillDice:useLocal?brokerDice:null,fixerWarning:useLocal&&illegal&&brokerDice.total===2}};
+return snap;}
