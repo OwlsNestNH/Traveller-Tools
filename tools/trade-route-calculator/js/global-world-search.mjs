@@ -1,4 +1,4 @@
-import {searchWorlds,loadWorld} from './map.mjs?v=briefing-refinements-20261013-75';
+import {searchWorlds,loadWorld} from './map.mjs?v=briefing-cargo-20261013-76';
 
 export const planetSearchLabel=w=>[w.name,w.subsectorName,w.sector,w.hex].join(' — ');
 

@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=briefing-refinements-20261013-75';
+import {escapeHtml as esc} from './display.mjs?v=briefing-cargo-20261013-76';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.
@@ -14,7 +14,7 @@ const entry=(title,sources,parts)=>Object.freeze({title,sources:Object.freeze(so
 const core=pages=>source('core',pages),merchant=pages=>source('merchant',pages);
 const playerBriefingInfo=entry('player briefing',[],[
   part('Copy & paste','Copies a prompt plus player-safe data to paste into an LLM for a one-page PDF captain/player handout. Nothing is automatically sent to an LLM.'),
-  part('Included data','Previous completed visit: financial results only. Current buy/sell options, summarized freight/mail and passengers by class. Missing checks remain warnings.')
+  part('Included data','Previous completed visit: financial results only. Completed cargo purchases and sales at the current visit, cargo in hold with recorded retail percentages, summarized freight/mail and passengers by class. Missing checks remain warnings.')
  ]);
 export const RULE_REFERENCES=Object.freeze({
  'commodity':entry('commodity availability and trade codes',[core('242, 244–245, 260')],[

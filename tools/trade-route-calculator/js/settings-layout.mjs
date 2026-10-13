@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=briefing-refinements-20261013-75';
+import {ruleInfo} from './rule-references.mjs?v=briefing-cargo-20261013-76';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={
