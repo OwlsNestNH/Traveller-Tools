@@ -53,11 +53,38 @@ Implemented native modules require no build step:
 | js/persistence.mjs | localStorage, Web Locks, revisions, backups/import and recovery |
 | js/display.mjs | Explicit plain-text Credit formatting and HTML escaping |
 | js/form-values.mjs | Exact entry normalization and ordered rounding annotations |
+| js/purchase-amounts.mjs | Plain-input purchase preview quantity, fee percentage, goods cost and broker fee; no insurance or campaign writes |
 | js/sale-line.mjs | One plain-input sale line: legality, same-roll repricing and manual-override audit; no DOM, campaign writes or caches |
 | js/app.mjs | Views, forms, previews, explicit actions and Rules & Notes |
 | rules/decisions.json | Bundled approved interpretation register |
 
 Route searches load an area up to 12 parsecs around each requested stop, with a 1600-world cap; an unconnected bounded search fails explicitly. The displayed date is an Imperial calendar date and hour, derived from the campaign starting date and elapsed hours (24-hour days, 365-day years). Freight prices use direct endpoint distance, while insurance uses the agreed planned-route distance. Contract deadlines remain referee-entered; the UI's editable suggested deadline is not a source rule.
+
+## Headless trade preparation
+
+These two preparation APIs use ordinary inputs and can run without DOM or FormData. They reuse existing arithmetic/rules; callers retain normalization, state validation, insurance orchestration, persistence and Undo. They do not commit transactions.
+
+`preparePurchaseAmounts` in `js/purchase-amounts.mjs` takes normalized quantity/fee entry strings, the saved offer's `unitPrice`, and `creditStep` (1 or 100). It returns a decimal-string `quantity`, numeric `feePercent`, and BigInt `cost`/`fee`. Goods cost rounds up first; broker fee uses that rounded cost and rounds up next. Positive-quantity and arithmetic errors keep their existing order. Fee-range, stock, capacity and funds checks remain in `S.buy`; insurance stays in its existing preparation flow. Do not pass raw fractional tons expecting this API to normalize them.
+
+```js
+import {normalizeAmount} from './js/form-values.mjs';
+import {preparePurchaseAmounts} from './js/purchase-amounts.mjs';
+const quantity = normalizeAmount('1.1', {unit:'tons'}).value;
+const amounts = preparePurchaseAmounts({quantity, fee:'7', unitPrice:'1001', creditStep:1});
+// {quantity:'2', feePercent:7, cost:2002n, fee:141n}
+// Existing S.buy accepts amounts.quantity and amounts.feePercent in its arguments.
+```
+
+`prepareSaleLine` in `js/sale-line.mjs` takes `{lot, buyer, context, quote, commodity, pricing, creditStep, core, values}`. Supply the saved quote, current pricing flags, and normalized `values` strings `{ban, price, benchmark, quantity, taxRate, reason}`; absent tax rate may be null. It returns `{lotId, quantity, unitPrice, benchmarkPrice, audit}` for existing `R.salePreview`. It checks effective legality, reprices a local ban using the original dice and existing Credit rounding, then requires reasons for manual values. It preserves entered strings and exact errors, and leaves quantity validation and tax-dice generation with the existing preview flow.
+
+```js
+import {prepareSaleLine} from './js/sale-line.mjs';
+// input contains the explicit fields above, including the saved quote.
+const line = prepareSaleLine(input);
+// Existing R.salePreview accepts [line] along with lots/options/core/optional rules.
+```
+
+Complete synthetic headless consumers and exact output/error comparisons are in `verification/purchase-amounts.test.mjs` and `verification/sale-line.test.mjs`. Run them from this tool folder with `node --test verification/purchase-amounts.test.mjs verification/sale-line.test.mjs`. The purchase example uses existing `S.buy` on synthetic state; the sale example feeds existing `R.salePreview` without fresh dice.
 
 ## Responsive list views
 
