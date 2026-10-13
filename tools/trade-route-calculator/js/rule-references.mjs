@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=insurance-terms-20261013-79';
+import {escapeHtml as esc} from './display.mjs?v=contact-outcome-20261013-80';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.

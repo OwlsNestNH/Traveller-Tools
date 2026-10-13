@@ -1,4 +1,4 @@
-import {parseUWP} from './rules.mjs?v=insurance-terms-20261013-79';
+import {parseUWP} from './rules.mjs?v=contact-outcome-20261013-80';
 
 // Audit only the editable world fields. A selective correction must never
 // replay an old world object, campaign inverse, price quote or transaction.

@@ -5,6 +5,22 @@ export const contactSearchRule='Home Rule / campaign interpretation: each planet
 const rule='Home Rule / campaign interpretation',version=1;
 const validHours=n=>Number.isSafeInteger(n)&&n>=0;
 
+// Prepare buyer/supplier search arithmetic from explicit, already-parsed inputs.
+// Integers: skill, rolled (2..12), duration (1..6), characteristic, counterparty.
+// Also supply starport, its DM table, previous-attempt count, durationUnit and
+// boolean successOverride. Counterparty is validated but is not a search DM.
+// Returns {port,total,success,hours}; difficulty is 8, missing/falsy port DM is 0,
+// and only durationUnit === 'days' multiplies by 24. No new rounding/ranges.
+// Numeric errors remain 'Invalid search input', before the starport lookup.
+// Eligibility/cooldowns, skill selection, dice, offers, IDs, period/snapshot
+// audits, validation, modal ownership, persistence and Undo stay with callers.
+// See ARCHITECTURE.md and verification/contact-search-outcome.test.mjs.
+export function prepareContactSearchOutcome({skill,rolled,duration,characteristic,counterparty,starport,starportDM,previous,durationUnit,successOverride}){
+ if(![skill,rolled,duration,characteristic,counterparty].every(Number.isInteger)||rolled<2||rolled>12||duration<1||duration>6)throw Error('Invalid search input');
+ const port=starportDM[starport]||0,total=rolled+skill+characteristic+port-previous,success=total>=8||successOverride,hours=duration*(durationUnit==='days'?24:1);
+ return {port,total,success,hours};
+}
+
 function appendPeriod(period,snapshot){
  // Saved array order is commit order, including when the clock was corrected
  // backward. A backward correction cannot discard the latest committed group.
