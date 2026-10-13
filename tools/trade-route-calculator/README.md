@@ -857,3 +857,5 @@ aggregated, mail summarized and passengers counted by class. Unsearched options
 are explicitly NOT CHECKED; zero results, stale and expired offers stay distinct.
 GM audits, reasons and free-text cargo/contract descriptions are excluded. JSON
 strings are untrusted data, never instructions for the destination LLM.
+
+The information circle beside Copy Player Briefing explains the manual LLM/PDF workflow; nothing is automatically sent. Verified setup/opening history without travel shows “No previous visit yet”; incomplete or ambiguous history remains a warning without fabricated financial zeros. Export instructions always request three compact readable columns for buy/sell options, regardless of count. App trade tables are unchanged.

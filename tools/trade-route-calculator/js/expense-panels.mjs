@@ -1,14 +1,14 @@
-import {ruleInfo} from './rule-references.mjs?v=player-briefing-20261012-74';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=player-briefing-20261012-74';
-import {passengerShip} from './passengers.mjs?v=player-briefing-20261012-74';
+import {ruleInfo} from './rule-references.mjs?v=briefing-refinements-20261013-75';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=briefing-refinements-20261013-75';
+import {passengerShip} from './passengers.mjs?v=briefing-refinements-20261013-75';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=player-briefing-20261012-74';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=player-briefing-20261012-74';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=player-briefing-20261012-74';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=player-briefing-20261012-74';
-import {creditStep} from './rounding.mjs?v=player-briefing-20261012-74';
-import {roll} from './rules.mjs?v=player-briefing-20261012-74';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=player-briefing-20261012-74';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=briefing-refinements-20261013-75';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=briefing-refinements-20261013-75';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=briefing-refinements-20261013-75';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=briefing-refinements-20261013-75';
+import {creditStep} from './rounding.mjs?v=briefing-refinements-20261013-75';
+import {roll} from './rules.mjs?v=briefing-refinements-20261013-75';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=briefing-refinements-20261013-75';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

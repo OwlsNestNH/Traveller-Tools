@@ -419,3 +419,5 @@ main{padding-top:18px}
 
 /* Player briefing sits beside the route title and wraps within narrow screens. */
 .route-title{display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px}.route-title>strong{flex:1 1 150px}.route-title>button{flex:0 1 auto;max-width:100%;white-space:normal}.route-title>.help{flex-basis:100%;margin-top:0}
+
+.briefing-actions{display:inline-flex;align-items:center;gap:2px;max-width:100%}
