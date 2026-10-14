@@ -6,7 +6,7 @@ function fixture(){
  const s=campaign();s.ship.capacity='100';
  s.lots=[{id:'one',commodity:'11',description:'Same commodity — first lot',quantity:'2.5',basis:'1001',goodsValue:'900'},
   {id:'two',commodity:'11',description:'Same commodity — second lot',quantity:'5',basis:'3001',goodsValue:'2800'}];
- s.snapshots=[{id:'buyer',kind:'buyer',worldId:s.actual,party:'synthetic|buyer',partyName:'Synthetic buyer',hours:0,success:true,criminal:false,options:{skill:1,counterparty:2},offers:[]}];
+ s.snapshots=[{id:'buyer',kind:'buyer',worldId:s.actual,party:'synthetic|buyer',partyName:'Synthetic buyer',hours:0,startedHours:0,success:true,criminal:false,options:{skill:1,counterparty:2},offers:[]}];
  return s;
 }
 test('Sell keeps separate lots, maximum defaults, unknown history and review-only actions',()=>{
@@ -44,4 +44,10 @@ test('turning automatic taxes off retires an open review and reopens with a visi
 test('same-reference campaign drift cannot replace or commit a previously reviewed sale',async()=>{
  const h=harness(fixture());h.api.setSelected(['one']);h.api.beginSale();h.api.state.bank='999';
  await h.submit();assert.equal(h.calls.saves,0);assert.match(h.dom.ids.get('modal-error').textContent,/Campaign changed|ownership changed/);
+});
+test('live GM price and benchmark rounding matches Enter commitment before a blur event',async()=>{
+ const s=fixture();s.settings.creditStep=100;const h=harness(s);h.api.setSelected(['two']);h.api.beginSale();
+ h.fill({qty_two:'1',price_two:'50000.1',benchmark_two:'20000.1',reason:'Synthetic fractional GM amounts'});h.api.updateSaleReview();
+ const p=structuredClone(h.api.modalSession.saleOwner.preview);assert.equal(p.lines[0].unitPrice,'50100');assert.equal(p.lines[0].benchmarkPrice,'20100');
+ await h.submit();assert.equal(h.dom.ids.get('modal-error').textContent,'');assert.equal(h.calls.saves,1);assert.equal(h.persisted().ledger.find(e=>e.type==='Sale').audit.unitPrice,p.lines[0].unitPrice);assert.equal(h.persisted().bank,String(BigInt(s.bank)+BigInt(p.bankDelta)));
 });

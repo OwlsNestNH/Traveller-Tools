@@ -10,6 +10,7 @@ try{for(const width of [1440,390,320])for(const mode of ['off','manual','automat
  const f=guiFixture();f.state.worlds[f.state.actual].uwp='A788879-C';f.state.settings.tax=['automatic','criminal'].includes(mode);f.state.settings.insurance=true;
  f.state.lots[0].description='Synthetic long independently audited electronics cargo lot for combined sale review';
  f.state.snapshots.push({id:'sell-buyer',kind:'buyer',worldId:f.state.actual,world:f.state.snapshots[0].world,party:'synthetic|buyer',partyName:'Synthetic long buyer name — independently reviewed legal or criminal market',startedHours:f.state.hours,hours:f.state.hours,success:true,criminal:mode==='criminal',options:{side:'sell',skill:1,counterparty:2},offers:[]});
+ if(mode==='automatic')f.state.snapshots.at(-1).partyName='SyntheticBuyer'+('X'.repeat(120));
  const bytes=JSON.stringify(f.state),context=await browser.newContext({viewport:{width,height:900}});
  await context.addInitScript(({key,bytes})=>{if(!localStorage.getItem(key))localStorage.setItem(key,bytes);globalThis.saleDiceCalls=0;const random=crypto.getRandomValues.bind(crypto);crypto.getRandomValues=array=>{if(array instanceof Uint32Array&&array.length===1){saleDiceCalls++;array[0]=2;return array;}return random(array);};},{key:campaignKey,bytes});
  await context.route('https://travellermap.com/api/**',r=>{const u=new URL(r.request().url());return r.fulfill({json:u.pathname.endsWith('/universe')?f.universe:u.pathname.endsWith('/metadata')?f.metadata:u.pathname.endsWith('/sec')?f.sec:{Worlds:f.apiWorlds}});});
@@ -29,6 +30,7 @@ try{for(const width of [1440,390,320])for(const mode of ['off','manual','automat
   await fill('qty_lot-recorded','1');assert.equal(await dice(),5);assert.equal(await page.locator('#modal-submit').isDisabled(),false);
  }else{assert.equal(await dice(),3);assert.equal(await page.locator('#sale-tax-action').isVisible(),false);}
  const expectedTax=mode==='automatic'?'Tax — 3%':mode==='manual'?'Tax — 8%':'Tax — 0%';assert.match(await page.locator('#sale-live-preview').textContent(),new RegExp(expectedTax));
+ assert.match(await page.locator('#sale-live-preview').textContent(),/125%/,'Manual offer shows its actual percentage of retained retail');
  assert.match(await page.locator('#sale-live-preview').textContent(),mode==='manual'?/GM percentage override/:mode==='criminal'?/exemption \(house rule\)/:mode==='off'?/Automatic taxes off/:/Merchant Prince/);
  const count=await dice();await fill('qty_lot-recorded','999');assert.equal(await page.locator('#modal-submit').isDisabled(),true);assert.equal(await raw(),bytes);assert.equal(await dice(),count);await fill('qty_lot-recorded','1');
  await page.locator('#modal').evaluate(el=>el.scrollTop=0);await page.screenshot({path:artifacts+'sell-review-'+mode+'-'+width+'.png'});

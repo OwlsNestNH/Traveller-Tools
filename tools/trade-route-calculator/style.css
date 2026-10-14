@@ -454,6 +454,9 @@ main{padding-top:18px}
 .sale-table th:nth-child(6),.sale-table td:nth-child(3),.sale-table input[type=number]{text-align:right}
 .sale-review .scroll table{min-width:760px}.sale-review .scroll{max-width:100%}
 .sale-review .trade-complication{overflow-wrap:anywhere;max-width:100%}.sale-review #sale-live-preview table{min-width:1080px}
+.sale-table .trade-complication{overflow-wrap:anywhere}
+#modal-form:has(.sale-review) .dialog-heading h2{min-width:0;overflow-wrap:anywhere}#modal-form:has(.sale-review) .dialog-heading button{flex:none}
+.sale-review .scroll:focus-visible,.sell-cargo-scroll:focus-visible{outline:2px solid var(--cyan);outline-offset:-2px}
 #sale-selection-preview{overflow-wrap:anywhere;margin-top:14px}#sale-selection-preview dl{margin:0}
 #sale-selection-preview .preview{padding:0;border:0;background:none}#sale-selection-preview dl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:10px 14px}#sale-selection-preview dt,#sale-selection-preview dd{min-width:0;white-space:normal;margin:0}
 @media(max-width:620px){#sale-selection-preview dl{grid-template-columns:minmax(0,1fr);gap:5px}#sale-selection-preview dd{text-align:left;margin-bottom:12px}}
