@@ -1,6 +1,6 @@
 // Session-only diagnostics. Detailed entries stay local; safeReport constructs
 // an explicit allowlist instead of redacting a campaign/debug-report object.
-export const APP_BUILD = '2026.10.13.85';
+export const APP_BUILD = '2026.10.14.86';
 
 const ACTIONS = new Set([
   'runtime', 'action', 'modal-submit', 'window-error', 'unhandled-rejection',

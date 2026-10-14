@@ -22,6 +22,21 @@ The supplied worked example contains an arithmetic error: an Cr80800 purchase pl
 
 ## Tax decisions approved 2026-10-03
 
+### Sell review clarification — 2026-10-14
+
+Merchant Prince “Pay Taxes” is printed p.86; the government/bracket table is
+printed p.87. Seller liability follows that procedure. Automatic tax remains
+optional. OFF defaults the visible GM percentage to zero and generates no tax
+dice; a deliberately entered GM percentage applies to this sale without changing
+the global setting. Manual percentages require a reason and retain override
+provenance. ON uses the applicable table rate unless overridden. Resolve required
+table dice explicitly during review; quantity edits reuse cached faces and never
+generate new ones. A bracket needing more faces requires explicit resolution.
+The existing criminal-market automatic exemption is deliberately retained by the
+owner; it replaces the book’s criminal surcharge and is a house rule. GM rates
+remain available for criminal sales. Batch aggregation and benchmark allocation
+below remain the approved app adaptations; they are not labelled unmodified RAW.
+
 | Decision | Agreed behavior | Classification |
 | --- | --- | --- |
 | INT-007 | Calculate taxable profit against normal market value, separately from profit measured against actual acquisition cost. Display both measures; do not substitute purchase cost for the tax benchmark. | Adopted supplementary-rule definition |

@@ -37,7 +37,7 @@ function setup(saved=fixture()){
  h.store.onRole=(editable,text)=>{h.roles.push([editable,text]);h.hooks.onRole?.(editable,text);h.api.roleChange(editable,text);};return h;
 }
 function modalButtons(h){return [...h.dom.ids.get('modal-body').innerHTML.matchAll(/<button\b([^>]*)>/g)].map(m=>element(attrs(m[1])));}
-function prepare(h,edits={}){h.api.setSelected(h.api.state.lots.map(l=>l.id));h.api.saleForm(h.api.state.snapshots.find(x=>x.kind==='buyer'));h.fill({fee:5,...edits});return h.submit();}
+function prepare(h,edits={}){h.api.setSelected(h.api.state.lots.map(l=>l.id));h.api.saleForm(h.api.state.snapshots.find(x=>x.kind==='buyer'));h.fill({fee:5,...edits});return h.api.stageSale();}
 const preview=h=>structuredClone(h.api.previewSale);
 const cache=h=>({quotes:[...h.api.saleQuotes],tax:[...h.api.saleTaxDice]});
 const count=h=>({quotes:h.calls.quotes,priceDice:h.calls.priceDice,taxDice:h.calls.taxDice,previews:h.calls.previews,reprices:h.calls.reprices});
@@ -49,7 +49,7 @@ function terminal(h){assert.equal(h.store.reloadRequired,true);assert.equal(h.st
 function canonical(state){const ids=new Map();return JSON.parse(JSON.stringify(state,(_key,value)=>{if(typeof value==='string'&&/^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i.test(value)){if(!ids.has(value))ids.set(value,'generated-'+ids.size);return ids.get(value);}return value;}));}
 function exact(h,before,entry){same(h.persisted(),entry.args[0]);same(h.api.state,entry.args[0]);assert.equal(h.bytes(),JSON.stringify(entry.args[0]));assert.equal(h.persisted().revision,before.revision+1);assert.equal(h.persisted().undo.length,before.undo.length+1);assert.equal(h.counters.writes,1);assert.equal(entry.args[1],before.revision);assert.ok(entry.args[2]);assert.doesNotMatch(h.bytes(),/saveToken|replacementToken/);}
 async function pending(t,h=setup(),edits={}){
- const before=structuredClone(h.api.state),raw=h.bytes();await prepare(h,edits);assert.equal(ui(h).modalTitle,'Confirm sale');assert.equal(ui(h).modalError,'');
+ const before=structuredClone(h.api.state),raw=h.bytes();await prepare(h,edits);assert.equal(ui(h).modalTitle,'Review sale — Synthetic buyer');assert.equal(ui(h).modalError,'');
  const p=preview(h),rounding=structuredClone(h.api.inputRounding),counts=count(h),cached=structuredClone(cache(h)),selection=h.api.selected,session=h.api.modalSession,review=body(h),gate=serviceSaveGate(h.store),detached=h.dom.ids.get('modal-form').onsubmit,operation=h.submit();
  await flush();assert.equal(gate.entries.length,1,'One production SALE COMMIT reached the delayed provider');
  t.after(async()=>{for(const e of gate.entries)if(!e.settled)e.fulfill();await operation;gate.restore();});return {h,before,raw,p,rounding,counts,cached,selection,session,review,gate,detached,operation};
@@ -123,9 +123,11 @@ test('known-unsaved retry remains valid after a benign background render with id
  const {h,raw,p,counts,cached,rounding,selection,gate,operation}=await pending(t,setup(),{'qty_sale-0':1,'price_sale-0':25000,reason:'Retained price'});h.failNext();gate.entries[0].fulfill();await operation;h.api.render();same(h.api.selected,selection);same(preview(h),p);same(cache(h),cached);same(count(h),counts);same(h.api.inputRounding,rounding);assert.equal(h.bytes(),raw);
  const retry=h.submit();await flush();assert.equal(gate.entries.length,2);gate.entries[1].fulfill();await retry;assert.equal(h.counters.writes,1);assert.equal(ui(h).modalError,'');assert.equal(ui(h).modalOpen,false);same(count(h),counts);
 });
-test('prewrite validation uses the captured preview and revision, remains editable, then correct retry clears warning',async()=>{
- const h=setup();await prepare(h);const counts=count(h),original=h.api.previewSale.lines[0].quantity;h.api.previewSale.lines[0].quantity='999';const gate=serviceSaveGate(h.store),raw=h.bytes();await h.submit();assert.equal(gate.entries.length,0);assert.equal(h.bytes(),raw);assert.match(ui(h).modalError,/stale|quantity/i);assert.equal(ui(h).submitDisabled,false);assert.equal(h.store.reloadRequired??false,false);
- h.api.previewSale.lines[0].quantity=original;h.api.setPreviewSale({revision:999,lines:[]});const retry=h.submit();assert.equal(gate.entries.length,1,'Submission uses the confirmation-owned p and revision rather than mutable previewSale');gate.entries[0].fulfill();await retry;assert.equal(h.counters.writes,1);same(count(h),counts);assert.equal(ui(h).modalError,'');assert.equal(ui(h).modalOpen,false);gate.restore();
+test('accepted preview and revision are isolated from mutable public preview display',async()=>{
+ const h=setup();await prepare(h);const p=preview(h),counts=count(h),gate=serviceSaveGate(h.store);
+ h.api.previewSale.lines[0].quantity='999';h.api.setPreviewSale({revision:999,lines:[]});
+ const operation=h.submit();assert.equal(gate.entries.length,1);gate.entries[0].fulfill();await operation;
+ assert.equal(h.counters.writes,1);assert.equal(h.persisted().lots.length,0);same(count(h),counts);assert.equal(ui(h).modalError,'');gate.restore();
 });
 test('throwing prewrite confirmation control freeze is known-unsaved and exact retry stays warning-free',async()=>{
  const h=setup();await prepare(h);const form=h.dom.ids.get('modal-form'),query=form.querySelectorAll,raw=h.bytes(),p=preview(h),counts=count(h);let faults=0,disabled=false;
@@ -139,18 +141,22 @@ for(const cause of ['cancel','replacement','foreign','editor'])test(`unsubmitted
 // Existing Stage 2 cache promises only. Cancellation/reopening retains eligible
 // price rolls. Edits rerun the preview but consume only missing tax faces.
 // Other buyers replace per-lot price caches; revision changes invalidate them.
-test('cancel, reopen, edit, retry and ordinary revision invalidation retain the existing explicit quote/tax call counts',async()=>{
- const h=setup(),buyer=h.api.state.snapshots[0];h.api.setSelected(['sale-0']);h.api.saleForm(buyer);same(count(h),{quotes:1,priceDice:3,taxDice:0,previews:0,reprices:0});const quoted=structuredClone(h.api.currentQuote('sale-0'));
- h.api.closeModal();h.api.saleForm(buyer);same(count(h),{quotes:1,priceDice:3,taxDice:0,previews:0,reprices:0});h.fill({'qty_sale-0':1,'price_sale-0':25000,reason:'Tax bracket proof',fee:0});await h.submit();same(count(h),{quotes:1,priceDice:3,taxDice:1,previews:1,reprices:0});assert.deepEqual(h.api.previewSale.tax.dice.dice,[3]);
- h.api.actions['sale-edit']();assert.equal(h.dom.fields().get('price_sale-0').value,'25000');h.fill({'qty_sale-0':3});await h.submit();same(count(h),{quotes:1,priceDice:3,taxDice:2,previews:2,reprices:0});assert.deepEqual(h.api.previewSale.tax.dice.dice,[3,3]);
- h.api.actions['sale-edit']();h.fill({'qty_sale-0':1});await h.submit();same(count(h),{quotes:1,priceDice:3,taxDice:2,previews:3,reprices:0});same(h.api.currentQuote('sale-0'),quoted);const p=preview(h),cached=structuredClone(cache(h)),gate=serviceSaveGate(h.store);h.failNext();const first=h.submit();gate.entries[0].fulfill();await first;const retry=h.submit();gate.entries[1].fulfill();await retry;gate.restore();same(count(h),{quotes:1,priceDice:3,taxDice:2,previews:3,reprices:0});same(cache(h),cached);same(preview(h),p);assert.equal(ui(h).modalError,'');assert.equal(h.api.currentQuote('sale-0'),null,'Saved revision invalidates eligible quotes without a Stage 3 cache redesign');
- await h.runAction('undo');h.api.setSelected(['sale-0']);h.api.saleForm(h.api.state.snapshots[0]);same(count(h),{quotes:2,priceDice:6,taxDice:2,previews:3,reprices:0});h.fill({'qty_sale-0':1,'price_sale-0':25000,reason:'New revision tax',fee:0});await h.submit();same(count(h),{quotes:2,priceDice:6,taxDice:3,previews:4,reprices:0});
+test('quantity changes require explicit missing tax dice and reuse cached faces without rendering rolls',async()=>{
+ const h=setup(),buyer=h.api.state.snapshots[0];h.api.setSelected(['sale-0']);h.api.saleForm(buyer);
+ assert.equal(h.calls.quotes,1);assert.equal(h.calls.taxDice,0);
+ h.fill({'qty_sale-0':1,'price_sale-0':25000,reason:'Tax bracket proof',fee:0});h.api.updateSaleReview();assert.equal(h.calls.taxDice,0);
+ h.api.actions['sale-tax-roll']();assert.equal(h.calls.taxDice,1);assert.deepEqual(h.api.previewSale.tax.dice.dice,[3]);
+ h.fill({'qty_sale-0':3});h.api.updateSaleReview();assert.equal(h.calls.taxDice,1);assert.equal(h.api.previewSale,null);
+ h.api.actions['sale-tax-roll']();assert.equal(h.calls.taxDice,2);assert.deepEqual(h.api.previewSale.tax.dice.dice,[3,3]);
+ h.fill({'qty_sale-0':1});h.api.updateSaleReview();assert.equal(h.calls.taxDice,2);assert.deepEqual(h.api.previewSale.tax.dice.dice,[3]);
+ h.api.closeModal();h.api.saleForm(buyer);assert.equal(h.calls.quotes,1);assert.equal(h.calls.taxDice,2);assert.equal(h.counters.writes,0);
 });
-test('buyer changes, editor handoff, modal replacement and actual-world changes preserve only existing cache eligibility',async()=>{
- const s=fixture();s.snapshots.push({...structuredClone(s.snapshots[0]),id:'buyer-two',party:'second',partyName:'Second buyer'});const h=setup(s),[first,second]=h.api.state.snapshots;h.api.setSelected(['sale-0']);h.api.saleForm(first);h.api.closeModal();h.api.saleForm(second);h.api.closeModal();h.api.saleForm(first);assert.equal(h.calls.quotes,3);assert.equal(h.calls.priceDice,9,'Returning to an earlier buyer is allowed to replace and reroll the per-lot quote');
- h.fill({'qty_sale-0':1,'price_sale-0':25000,reason:'Buyer tax'});await h.submit();assert.equal(h.calls.taxDice,1);h.api.modal('Unrelated','No cache clearing',null);h.api.closeModal();h.api.saleForm(first);assert.equal(h.calls.quotes,3);h.fill({'qty_sale-0':1,'price_sale-0':25000,reason:'Reopened'});await h.submit();assert.equal(h.calls.taxDice,1);
- h.store.yield();h.store.editable=true;h.store.onRole(true,'Editing again');h.api.closeModal();h.api.saleForm(first);assert.equal(h.calls.quotes,3,'Editor loss invalidates the owner, not eligible quote caches');h.fill({'qty_sale-0':1,'price_sale-0':25000,reason:'New owned review'});await h.submit();assert.equal(h.calls.taxDice,1);
- h.api.closeModal();const moved=structuredClone(h.api.state);moved.actual='1,0';h.external(moved);assert.equal(h.api.currentQuote('sale-0'),null,'Actual world remains part of quote eligibility');
+test('buyer changes, editor handoff and actual-world changes preserve existing quote eligibility',async()=>{
+ const s=fixture();s.snapshots.push({...structuredClone(s.snapshots[0]),id:'buyer-two',party:'second',partyName:'Second buyer'});const h=setup(s),[first,second]=h.api.state.snapshots;
+ h.api.setSelected(['sale-0']);h.api.saleForm(first);h.api.closeModal();h.api.saleForm(second);h.api.closeModal();h.api.saleForm(first);assert.equal(h.calls.quotes,3);assert.equal(h.calls.priceDice,9);assert.equal(h.calls.taxDice,0);
+ h.fill({'qty_sale-0':1,'price_sale-0':25000,reason:'Buyer tax'});h.api.actions['sale-tax-roll']();assert.equal(h.calls.taxDice,1);
+ h.store.yield();h.store.editable=true;h.store.onRole(true,'Editing again');h.api.closeModal();h.api.saleForm(first);assert.equal(h.calls.quotes,3);assert.equal(h.calls.taxDice,1);
+ h.api.closeModal();const moved=structuredClone(h.api.state);moved.actual='1,0';h.external(moved);assert.equal(h.api.currentQuote('sale-0'),null);
 });
 
 defineEconomics();
@@ -178,7 +184,7 @@ function defineEconomics(){
    else{assert.equal(remaining.quantity,A.decimal(A.sub(lot.quantity,line.quantity)));assert.equal(remaining.basis,String(BigInt(lot.basis)-BigInt(line.basis)));const value=String(BigInt(lot.goodsValue)-A.floor(A.mul(lot.goodsValue,A.div(line.quantity,lot.quantity))));assert.equal(remaining.goodsValue,value);assert.equal(policy.remainingQuantity,remaining.quantity);assert.equal(policy.remainingValue,value);assert.equal(policy.status,'active');}
   }
   if(scenario.expected){const expected=scenario.expected,line=p.lines[0];for(const key of ['gross','basis','fee','tax','adjustment'])assert.equal(line[key],expected[key],key+' has its independent expected value');assert.equal(p.bankDelta,expected.bank);assert.equal(h.calls.taxDice,expected.taxCalls);if(expected.basisLeft)assert.equal(saved.lots[0].basis,expected.basisLeft);if(expected.goodsLeft)assert.equal(saved.lots[0].goodsValue,expected.goodsLeft);}
-  if(scenario.name.startsWith('local-ban')){assert.equal(h.calls.reprices,1);assert.equal(h.calls.quotes,1);assert.equal(h.calls.priceDice,3);assert.equal(p.lines[0].audit.sale.localIllegalDM,7);same(p.lines[0].audit.dice,h.api.saleQuotes.get('sale-0').audit.dice);}
+  if(scenario.name.startsWith('local-ban')){assert.equal(h.calls.reprices,2);assert.equal(h.calls.quotes,1);assert.equal(h.calls.priceDice,3);assert.equal(p.lines[0].audit.sale.localIllegalDM,7);same(p.lines[0].audit.dice,h.api.saleQuotes.get('sale-0').audit.dice);}
   if(delayed){const sync=setup(before);await prepare(sync,scenario.edits);await sync.submit();same(canonical(saved),canonical(sync.persisted()),'The delayed completion preserves the complete canonical synchronous campaign');}
   if(scenario.options.huge){assert.ok(BigInt(saved.bank)>BigInt(Number.MAX_SAFE_INTEGER));assert.equal(p.lines[0].unitPrice,'90071992547409931234567');}
   for(const key of ['hours','actual','route','routeIndex','snapshots','contracts','trader','settings','ship'])same(saved[key],before[key]);assert.match(h.api.historyPanel(),/Sale to Synthetic buyer/);h.api.ledgerAudit(sales[0].id);assert.match(body(h),/Synthetic cargo/);h.api.closeModal();const fresh=setup(h.store.read());await fresh.runAction('undo');for(const key of ['bank','lots','policies','ledger','snapshots','contracts'])same(fresh.persisted()[key],before[key]);
@@ -221,8 +227,11 @@ test('fulfilled provider without any durable write or expected publication requi
 test('synchronous known-unsaved sale stays retryable and does not regenerate its review',async()=>{
  const h=setup();await prepare(h,{'qty_sale-0':1,'price_sale-0':25000,reason:'Exact retry'});const raw=h.bytes(),p=preview(h),counts=count(h),cached=structuredClone(cache(h));h.failNext();await h.submit();assert.equal(h.bytes(),raw);assert.match(ui(h).modalError,/quota/);assert.equal(ui(h).submitDisabled,false);same(preview(h),p);same(count(h),counts);same(cache(h),cached);await h.submit();assert.equal(h.counters.writes,1);assert.equal(ui(h).modalError,'');same(count(h),counts);
 });
-test('known-unsaved sale permits the existing edit/cancel/reopen loop while reusing eligible price and tax dice',async()=>{
- const h=setup();await prepare(h,{'qty_sale-0':1,'price_sale-0':25000,reason:'Retained typed price',fee:7});const p=preview(h);h.failNext();await h.submit();h.api.actions['sale-edit']();assert.match(ui(h).modalTitle,/Prepare sale/);assert.equal(h.dom.fields().get('price_sale-0').value,'25000');assert.equal(h.dom.fields().get('qty_sale-0').value,'1');assert.equal(h.dom.fields().get('fee').value,'7');h.fill({fee:8});await h.submit();assert.equal(h.calls.quotes,1);assert.equal(h.calls.priceDice,3);assert.equal(h.calls.taxDice,1);assert.equal(h.calls.previews,2);assert.notEqual(h.api.previewSale.fee,p.fee);h.api.closeModal();h.api.beginSale();assert.equal(h.calls.quotes,1);assert.equal(h.calls.taxDice,1);assert.equal(h.counters.writes,0);assert.equal(ui(h).modalError,'');
+test('known-unsaved retry locks accepted fields and close/reopen permits a new editable review without price rerolls',async()=>{
+ const h=setup();await prepare(h,{'qty_sale-0':1,'price_sale-0':25000,reason:'Retained typed price',fee:7});const p=preview(h);h.failNext();await h.submit();
+ assert.equal(h.dom.fields().get('qty_sale-0').readOnly,true);assert.equal(h.dom.fields().get('fee').readOnly,true);
+ const dice=h.calls.taxDice;h.api.closeModal();h.api.beginSale();assert.equal(h.calls.quotes,1);assert.equal(h.calls.taxDice,dice);assert.equal(h.counters.writes,0);
+ assert.equal(h.dom.fields().get('fee').readOnly,undefined);assert.equal(ui(h).modalError,'');
 });
 test('known-unsaved control restoration failure latches reload before reporting and blocks all retry',async t=>{
  const {h,raw,gate,operation,detached}=await pending(t),submit=h.dom.ids.get('modal-submit');let faults=0,disabled=submit.disabled;Object.defineProperty(submit,'disabled',{get:()=>disabled,set(next){if(!next&&!faults++){throw Error('Injected unsaved control restore failure');}disabled=next;}});h.failNext();gate.entries[0].fulfill();await operation;assert.ok(faults);terminal(h);assert.equal(h.bytes(),raw);assert.equal(h.counters.writes,0);await detached(submitEvent(h));assert.equal(gate.entries.length,1);

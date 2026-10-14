@@ -163,7 +163,7 @@ async function purchaseCase(page,context,result,f){
  await diceUsed(page,[]);
  const purchased=await read(page);await reload(page);assert.deepEqual(await read(page),purchased,'Saved offer/lot/ledger flags survive reload');
  await tab(page,'Cargo');
- assert.equal(await page.locator('.cargo-table .trade-complication').count(),0,'Acquisition flags are not misrepresented as unnegotiated sale flags');
+ assert.equal(await page.locator('.sale-table .trade-complication').count(),0,'Acquisition flags are not misrepresented as unnegotiated sale flags');
  for(const {lot,entry,outcome}of bought){
   await tab(page,'Cargo');await action(page,'lot-audit',lot.id).click();await audit(page,lot.audit.price.audit.dice.dice,outcome);await dismiss(page);
   await ledgerAudit(page,entry.id,lot.audit.price.audit.dice.dice,outcome);
@@ -238,8 +238,8 @@ async function saleCase(page,context,result,f){
  await tab(page,'History');await action(page,'undo').click();
  const undone=await read(page);assert.deepEqual(campaignData(undone),campaignData(before),'Undo restores cargo, bank, snapshots and all pre-sale campaign fields');
  await reload(page);assert.deepEqual(await read(page),undone);await tab(page,'Cargo');
- assert.equal(await page.locator('.cargo-table .trade-complication').count(),0,'Reload and Undo do not resurrect an invalidated current quote');
- assert.equal(await page.locator('.cargo-table').getByText('Not negotiated',{exact:true}).count(),2);
+ assert.equal(await page.locator('.sale-table .trade-complication').count(),0,'Reload and Undo do not resurrect an invalidated current quote');
+ assert.equal(await page.locator('.sale-table').getByText('Not negotiated',{exact:true}).count(),2);
  // A real campaign mutation invalidates a cached quote and permits exactly
  // one fresh 3D roll. The old purchase/sale audits remain independent.
  await armDice(page,distinct);await action(page,'lot-sell','sale-pair').click();assert.equal(await page.locator('#modal').evaluate(el=>el.open),false,'Lot sell navigates without negotiating');await action(page,'sale').click();await title(page,'Prepare sale · Deterministic buyer');await flags(modal(page),'none');await dismiss(page);await diceUsed(page,distinct);

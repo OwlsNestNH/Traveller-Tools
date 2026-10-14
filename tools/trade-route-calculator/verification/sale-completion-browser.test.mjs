@@ -334,23 +334,23 @@ async function prepare(page, scenario, before, {select = true, loops = false} = 
  assert.equal(await page.evaluate(() => saleDiceCalls), 9, 'Three natural price dice per selected lot, once');
  for (const [name, value] of Object.entries(spec.fields)) await fill(page, name, value);
  if (scenario.mode === 'validation') {
-  await fill(page, 'reason', ''); await pointer(page, '#modal-submit');
-  await page.locator('#modal-error').filter({hasText: 'Add a reason'}).waitFor();
+  await fill(page, 'reason', ''); assert.equal(await page.locator('#modal-submit').isDisabled(),true);
+  await page.locator('#sale-review-error').filter({hasText: 'Add a reason'}).waitFor();
   assert.equal((await gate(page)).totalCalls, 0); assert.deepEqual(await read(page), before);
   await fill(page, 'reason', reason);
  }
- await pointer(page, '#modal-submit'); await page.locator('#modal-title').filter({hasText: /^Confirm sale$/}).waitFor(); await frames(page);
+ await tradeLabel(page,'Preview sale'); await page.locator('#modal-title').filter({hasText: /^Review sale/}).waitFor(); await frames(page);
  assert.equal(await page.locator('#modal-error').textContent(), ''); assert.equal(await page.evaluate(() => saleDiceCalls), spec.diceCalls);
  if (loops) {
   const review = await page.locator('#modal-body').textContent();
-  await action(page, 'sale-edit').click(); await page.locator('#modal-title').filter({hasText: /^Prepare sale/}).waitFor();
+  await tradeLabel(page,'Edit quantities / fees'); await page.locator('#modal-title').filter({hasText: /^Review sale/}).waitFor();
   for (const [name, value] of Object.entries(spec.fields)) assert.equal(await page.locator('#modal [name="' + name + '"]').inputValue(), value, 'Edit retains ' + name);
-  await pointer(page, '#modal-submit'); await page.locator('#modal-title').filter({hasText: /^Confirm sale$/}).waitFor();
+  await tradeLabel(page,'Preview sale'); await page.locator('#modal-title').filter({hasText: /^Review sale/}).waitFor();
   assert.equal(await page.locator('#modal-body').textContent(), review, 'Edit reuses original tax dice, prices and totals');
   await pointer(page, '#modal-cancel'); await closed(page);
-  await action(page, 'sale').click(); await page.locator('#modal-title').filter({hasText: /^Prepare sale/}).waitFor();
+  await action(page, 'sale').click(); await page.locator('#modal-title').filter({hasText: /^Review sale/}).waitFor();
   for (const [name, value] of Object.entries(spec.fields)) await fill(page, name, value);
-  await pointer(page, '#modal-submit'); await page.locator('#modal-title').filter({hasText: /^Confirm sale$/}).waitFor();
+  await tradeLabel(page,'Preview sale'); await page.locator('#modal-title').filter({hasText: /^Review sale/}).waitFor();
   assert.equal(await page.locator('#modal-body').textContent(), review, 'Cancel/reopen reuses eligible quote and tax caches');
   assert.equal(await page.evaluate(() => saleDiceCalls), spec.diceCalls); assert.deepEqual(await read(page), before);
  }
@@ -405,7 +405,7 @@ async function reloadUndo(page, result, before, scenario, {committed = true} = {
   // A fresh session after reload and real Undo negotiates exactly once;
   // opening and cancelling the form never writes another campaign change.
   await tab(page, 'Cargo'); await action(page, 'sale-all').click(); await existingSell(page);await action(page, 'sale').click();
-  await page.locator('#modal-title').filter({hasText: /^Prepare sale/}).waitFor(); assert.equal(await page.evaluate(() => saleDiceCalls), 9);
+  await page.locator('#modal-title').filter({hasText: /^Review sale/}).waitFor(); assert.equal(await page.evaluate(() => saleDiceCalls), 9);
   await pointer(page, '#modal-cancel'); await closed(page);
  }
  result.checks.push('Authoritative reload retains exact sale bytes; actual History Undo restores bank, partial basis/goods, policies and ledger');

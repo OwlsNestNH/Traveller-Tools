@@ -446,3 +446,14 @@ main{padding-top:18px}
 #modal-form:has(#purchase-totals) fieldset{min-width:0;max-width:100%}
 #modal-form:has(#purchase-totals) #insurance-estimate .help{overflow-wrap:anywhere}
 @media(max-width:620px){.summary :is(.fuel-counter,.life-support-counter)>.help{min-height:3.1em}}
+
+/* Sell entries keep each lot separate; only the table scrolls horizontally. */
+.sale-table .field{margin:0;min-width:0;font-size:11px}.sale-table input[type=number]{width:100%;min-width:0;max-width:120px;font-size:15px;min-height:42px}
+.sale-table .check{align-items:flex-start;white-space:normal}.sale-table .check input{flex:none}.sale-table td:first-child{overflow-wrap:anywhere}
+.sale-table [data-action=lot-sell]{border-color:var(--cyan);color:var(--cyan);min-height:40px}.sell-cargo-scroll{max-height:430px}
+#sale-selection-preview{overflow-wrap:anywhere;margin-top:14px}#sale-selection-preview dl{margin:0}
+#sale-selection-preview .preview{padding:0;border:0;background:none}#sale-selection-preview dl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:10px 14px}#sale-selection-preview dt,#sale-selection-preview dd{min-width:0;white-space:normal;margin:0}
+@media(max-width:620px){#sale-selection-preview dl{grid-template-columns:minmax(0,1fr);gap:5px}#sale-selection-preview dd{text-align:left;margin-bottom:12px}}
+@media(max-width:620px){.sell-cargo-scroll{max-height:none}.sale-table .table-actions button{min-height:42px}.selected-preview{flex-wrap:wrap}}
+.sale-review{min-width:0;overflow-wrap:anywhere}.sale-review>.scroll table{min-width:760px}.sale-review .field{min-width:0}.sale-review input{max-width:100%;min-width:0}.sale-review details{margin:12px 0}.sale-review #sale-live-preview .preview{border:0;padding:0;background:none}.sale-review #sale-live-preview dl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 14px}.sale-review #sale-live-preview dt,.sale-review #sale-live-preview dd{min-width:0;margin:0;white-space:normal}.sale-review #sale-live-preview>.scroll{max-height:280px}
+@media(max-width:620px){.sale-review .split{grid-template-columns:minmax(0,1fr)}.sale-review #sale-live-preview dl{grid-template-columns:minmax(0,1fr);gap:4px}.sale-review #sale-live-preview dd{margin-bottom:10px;text-align:left}}

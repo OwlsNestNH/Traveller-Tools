@@ -1,4 +1,4 @@
-import * as R from './rules.mjs?v=buy-page-20261013-85';
+import * as R from './rules.mjs?v=sell-page-20261014-86';
 
 // Prepare one sale line from explicit lot/buyer/context/quote/commodity/core,
 // current pricing flags and creditStep, plus caller-normalized values:
@@ -17,7 +17,7 @@ export function prepareSaleLine({lot,buyer,context,quote,commodity,pricing,credi
  let price=values.price,benchmark=values.benchmark,priced=quote;
  const originalBenchmark=String(rules.effectiveBasePrice(commodity,{...pricing,illegalGood:!!lot.illegal}).effective),effectiveBenchmark=String(rules.effectiveBasePrice(commodity,{...pricing,illegalGood:!!legality.illegal}).effective);
  if(banThreshold!==null){
-  priced=rules.repriceQuote(commodity,context,{...buyer.options,creditStep,side:'sell',banThreshold,...pricing,illegalGood:!!legality.illegal},core,quote);
+  priced=rules.repriceQuote(commodity,context,{...buyer.options,criminalMarket:!!buyer.criminal,creditStep,side:'sell',banThreshold,...pricing,illegalGood:!!legality.illegal},core,quote);
   if(price===quote.unitPrice)price=priced.unitPrice;
   if(benchmark===originalBenchmark)benchmark=effectiveBenchmark;
  }

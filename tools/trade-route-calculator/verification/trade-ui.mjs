@@ -2,6 +2,10 @@
 // Navigation and the single Buy review are separately asserted in buy-page-browser.
 // Each helper uses real UI controls; no application/state mutation is injected.
 export async function tradeLabel(page,label){
+ if(label==='Preview sale'||label==='Edit quantities / fees'){
+  await page.locator('#sale-live-preview').waitFor();await page.evaluate(()=>document.activeElement?.blur());
+  const roll=page.locator('#sale-tax-action [data-action="sale-tax-roll"]');if(await roll.isVisible())await roll.click();return true;
+ }
  if(label==='Preview purchase'){
   await page.locator('#purchase-totals').waitFor();await page.evaluate(()=>document.activeElement?.blur());return true;
  }
@@ -13,6 +17,7 @@ export async function tradeLabel(page,label){
  if(label==='Find buyer'||label==='Get sale offers'){
   const sell=page.locator('.trade-subtabs [data-action="trade-side"][data-arg="sell"]');
   if(await sell.count()&&!await sell.evaluate(el=>el.classList.contains('active')))await sell.click();
+  if(label==='Get sale offers'){await page.locator('[data-action="sale"]').filter({visible:true}).first().click();return true;}
  }
  if(label==='Find supplier'&&await page.locator('#supplier-form').count())return true;
  if(['Cancel','Close'].includes(label)&&!await page.locator('#modal').evaluate(el=>el.open)&&await page.locator('#supplier-form').count()){
