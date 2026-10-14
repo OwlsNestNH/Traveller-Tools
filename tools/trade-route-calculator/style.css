@@ -443,3 +443,5 @@ main{padding-top:18px}
 .market-expand-control{display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-top:12px}.market-goods>.scroll{max-height:420px;overflow:auto}.market-goods.expanded>.scroll{max-height:none}
 @media(max-width:620px){.supplier-inline .split{grid-template-columns:minmax(0,1fr)}.market-expand-control{justify-content:flex-start;flex-wrap:wrap}.supplier-inline .dialog-actions{flex-wrap:wrap}.supplier-inline .dialog-actions button{flex:1}.market-goods>.scroll{max-height:420px}}
 .purchase-table [data-action="buy"]{min-height:36px;min-width:64px;background:var(--cyan);color:#06131b;border-color:var(--cyan);font-weight:650}
+#modal-form:has(#purchase-totals) fieldset{min-width:0;max-width:100%}
+@media(max-width:620px){.summary :is(.fuel-counter,.life-support-counter)>.help{min-height:3.1em}}

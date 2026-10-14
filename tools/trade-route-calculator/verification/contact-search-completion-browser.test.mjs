@@ -213,6 +213,7 @@ async function installGate(page, result) {
   Object.defineProperty(Element.prototype, 'innerHTML', {...html, set(value) {
    if (settled() && g.cleanupFault === 'render' && this.id === 'main') fault('render');
    const result=Reflect.apply(html.set,this,[value]);
+   if(g.constructionFault==='supplier-entry'&&this.id==='main'&&value.includes('id="supplier-form"'))g.replaceConstruction();
    if(g.constructionThrow?.point==='body'&&this.id==='modal-body'&&/^Review (?:supplier|buyer) search$/.test(document.querySelector('#modal-title').textContent))g.throwConstruction();
    if(g.handoffFault==='render'&&this.id==='main'&&contactStorage.writes>0){g.handoffRenderCount=(g.handoffRenderCount||0)+1;if(g.handoffRenderCount===2){g.handoffFault=null;g.constructionFault='handoff-render';g.replaceConstruction();}}
    if(g.handoffFault==='body'&&this.id==='modal-body'&&/^Prepare sale/.test(document.querySelector('#modal-title').textContent)){g.handoffFault=null;g.constructionFault='handoff-body';g.replaceConstruction();}
@@ -364,13 +365,13 @@ async function fillSearch(page, before, scenario) {
  for (const [name, value] of Object.entries(inputs)) {if (name === 'method') await (await tradeField(page,'method')).selectOption(value); else await fill(page, name, value);}
  if (scenario.local) await (await tradeField(page,'local')).check();
 }
-async function openSearchEntry(page,scenario){
+async function openSearchEntry(page,scenario,{wait=true}={}){
  if(scenario.map){await page.evaluate(kind=>contactGate.dispatch('buyer-search'),scenario.kind);}
  else{
   await tab(page,'Trade');await page.locator('[data-action="trade-side"][data-arg="'+(scenario.kind==='buyer'?'sell':'buy')+'"]').click();
   if(scenario.kind==='buyer'||!await page.locator('#supplier-form').count())await action(page,scenario.kind==='buyer'?'buyer-search':'search').click();
  }
- await page.getByRole('heading',{name:'Find a '+scenario.kind,exact:true}).waitFor();
+ if(wait)await page.getByRole('heading',{name:'Find a '+scenario.kind,exact:true}).waitFor();
 }
 async function prepare(page, scenario, before, {loops = false, network = null} = {}) {
  if (scenario.selected) {await tab(page, 'Cargo'); await action(page, 'sale-all').click();}
@@ -583,11 +584,11 @@ async function runBody(page, result, scenario, context) {
  }
  if (['entry-title-reentry','review-body-reentry'].includes(mode)) {
   await tab(page,'Trade');
-  if (mode === 'entry-title-reentry') await page.evaluate(() => {contactGate.constructionFault='title';});
-  await openSearchEntry(page,scenario);
+  if (mode === 'entry-title-reentry') await page.evaluate(kind => {contactGate.constructionFault=kind==='supplier'?'supplier-entry':'title';},scenario.kind);
+  await openSearchEntry(page,scenario,{wait:mode!=='entry-title-reentry'});
   if (mode === 'review-body-reentry') {
    await page.getByRole('heading',{name:'Find a '+scenario.kind,exact:true}).waitFor(); await fillSearch(page,before,scenario);
-   await page.evaluate(() => {contactGate.oldSubmit=document.querySelector('#modal-form').onsubmit;contactGate.constructionFault='body';}); await pointer(page,'#modal-submit');
+   await page.evaluate(() => {contactGate.oldSubmit=document.querySelector('#modal-form').onsubmit;contactGate.constructionFault='body';}); await pointer(page,scenario.kind==='supplier'?'#supplier-form button[type="submit"]':'#modal-submit');
   }
   await page.locator('#modal-title').filter({hasText:/^Rules & Notes$/}).waitFor(); await frames(page);
   const snapshot=await gate(page); assert.equal(snapshot.constructionChecks.length,1); assert.equal(snapshot.constructionChecks[0].handlerChanged,true); assert.equal(await page.locator('#modal-body').innerHTML(),snapshot.newer.body);

@@ -404,7 +404,7 @@ async function reloadUndo(page, result, before, scenario, {committed = true} = {
  if (scenario.mode === 'success') {
   // A fresh session after reload and real Undo negotiates exactly once;
   // opening and cancelling the form never writes another campaign change.
-  await tab(page, 'Cargo'); await action(page, 'sale-all').click(); await action(page, 'sale').click();
+  await tab(page, 'Cargo'); await action(page, 'sale-all').click(); await existingSell(page);await action(page, 'sale').click();
   await page.locator('#modal-title').filter({hasText: /^Prepare sale/}).waitFor(); assert.equal(await page.evaluate(() => saleDiceCalls), 9);
   await pointer(page, '#modal-cancel'); await closed(page);
  }

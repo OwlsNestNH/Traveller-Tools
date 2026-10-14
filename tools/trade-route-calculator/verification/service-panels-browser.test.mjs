@@ -125,10 +125,10 @@ try{
    const old=await action(mode==='adjust'?'service-review':'service-confirm').evaluate(el=>({...el.dataset}));
    await click('tab','Trade');await closed();await click('trade-side','buy');assert.equal(await action('search').isEnabled(),true);await existingSell(page);assert.equal(await action('buyer-search').isEnabled(),true);await click('sale');assert.match(await page.locator('#message').textContent(),/Select cargo first/);assert.equal(await page.locator('#modal').isVisible(),false,'No selected cargo still prevents a sale preview');
    await page.evaluate(data=>{const b=document.createElement('button');Object.assign(b.dataset,data);document.body.append(b);b.click();b.remove();},old);await unchanged(kind+' '+mode+' → Trade discards only draft');
-   await click('search');await page.getByRole('heading',{name:'Find a supplier',exact:true}).waitFor();await click('supplier-cancel');
+   await click('trade-side','buy');await click('search');await page.getByRole('heading',{name:'Find a supplier',exact:true}).waitFor();await click('supplier-cancel');await existingSell(page);
    await click('buyer-search');await page.getByRole('heading',{name:'Find a buyer',exact:true}).waitFor();await page.locator('#modal-cancel').click();await unchanged('Opening available searches never commits');
   }
-  await click('tab','Overview');await click('ship-expenses');await page.locator('#expense-panel').waitFor();await click('tab','Trade');assert.equal(await page.locator('#expense-panel').count(),0);assert.equal(await action('search').isEnabled(),true);assert.equal(await action('buyer-search').isEnabled(),true);await unchanged('Expenses → Trade');
+  await click('tab','Overview');await click('ship-expenses');await page.locator('#expense-panel').waitFor();await click('tab','Trade');assert.equal(await page.locator('#expense-panel').count(),0);await click('trade-side','buy');assert.equal(await action('search').isEnabled(),true);await existingSell(page);assert.equal(await action('buyer-search').isEnabled(),true);await unchanged('Expenses → Trade');
   await click('tab','Overview');await open();await click('tab','Accounts');assert.equal(await action('deposit').isEnabled(),true);assert.equal(await action('ship-expenses').isEnabled(),true);await click('tab','Overview');await closed();await unchanged('Accounts tab discards hidden service draft');
  });
  await run('fuel commit exactly once and Undo',{},async h=>{

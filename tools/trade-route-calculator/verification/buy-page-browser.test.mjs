@@ -63,6 +63,17 @@ try{
   // inputs, visibly locked; it never accepts a second transaction accidentally.
   await click('buy',original.id);await page.locator('#modal [name="quantity"]').fill('2');await page.locator('#modal [name="fee"]').fill('10');await page.locator('#modal [name="insure"]').check();
   await page.locator('#modal [name="insuranceLegs"]').selectOption('1');await page.locator('#modal [name="manualPremium"]').fill('100');await page.locator('#modal [name="manualPremium"]').blur();
+  const insuranceNames=['quantity','fee','description','insure','coverage','insuranceLegs','insuranceDistance','distanceReason','manualPremium'];
+  await page.locator('#modal [name="quantity"]').focus();
+  for(const name of insuranceNames){
+   assert.equal(await page.evaluate(()=>document.activeElement?.name),name,'Tab reaches each purchase and insurance field');
+   const bounds=await page.locator('#modal [name="'+name+'"]').boundingBox(),dialog=await page.locator('#modal').boundingBox();
+   assert.ok(bounds.x>=dialog.x&&bounds.x+bounds.width<=dialog.x+dialog.width,'Insurance '+name+' fits within the dialog');
+   await page.keyboard.press('Tab');
+  }
+  await screenshot('purchase-insured');await page.locator('#modal-submit').scrollIntoViewIfNeeded();
+  for(const id of ['modal-cancel','modal-submit']){const r=await page.locator('#'+id).boundingBox();assert.ok(r.y>=0&&r.y+r.height<=900,'Insured purchase '+id+' reachable in viewport');}
+  await page.screenshot({path:artifacts+'buy-purchase-insured-footer-'+width+'.png'});
   const retryBefore=await raw(),totals=await page.locator('#purchase-totals').textContent();
   await page.evaluate(key=>{const original=Storage.prototype.setItem;let fail=true;Storage.prototype.setItem=function(k,v){if(k===key&&fail){fail=false;throw new DOMException('Synthetic known-unwritten failure','QuotaExceededError');}return original.call(this,k,v);};},campaignKey);
   await page.locator('#modal-submit').click();await page.locator('#purchase-accepted-note').waitFor();assert.equal(await raw(),retryBefore);
@@ -70,7 +81,7 @@ try{
   assert.equal(await page.locator('#modal [name="insure"]').isDisabled(),true);assert.equal(await page.locator('#modal [name="coverage"]').isDisabled(),true);assert.equal(await page.locator('#purchase-totals').textContent(),totals);
   await screenshot('purchase-retry');await page.locator('#modal-submit').dblclick();await page.locator('#modal').waitFor({state:'hidden'});
   const retried=JSON.parse(await raw());assert.equal(retried.revision,JSON.parse(retryBefore).revision+1);assert.equal(retried.lots.at(-1).quantity,'2');assert.equal(retried.policies.at(-1).premium,'100');
-  assert.deepEqual(errors,[]);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),'No page overflow');report.push({width,screenshots:8,revision:retried.revision});await context.close();
+  assert.deepEqual(errors,[]);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),'No page overflow');report.push({width,screenshots:10,revision:retried.revision});await context.close();
  }
  await writeFile(artifacts+'buy-page-report.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));
 }finally{await browser.close();}

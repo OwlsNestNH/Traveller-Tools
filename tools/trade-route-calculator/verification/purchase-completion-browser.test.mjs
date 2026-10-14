@@ -562,7 +562,7 @@ async function runBody(page, result, scenario, context) {
   result.checks.push('Two deliberate purchases consume one saved offer without rerolling, create distinct lots/policies, and reverse independently through actual Undo'); return;
  }
  if (['offer-change', 'world-change'].includes(scenario.mode)) {
-  if (scenario.mode === 'offer-change') assert.equal((await page.locator('#modal-body .preview dd').last().textContent()).replace(/[^0-9]/g, ''), '1050', 'Accepted review is exactly Cr1,050 before the same-revision price doubles');
+  if (scenario.mode === 'offer-change') assert.equal((await page.locator('#purchase-totals dt').filter({hasText:/^Total debit$/}).locator('xpath=following-sibling::dd[1]').textContent()).replace(/[^0-9]/g, ''), '1050', 'Accepted review is exactly Cr1,050 before the same-revision price doubles');
   await page.evaluate(mode => {if (mode === 'offer-change') purchaseGate.lastState.snapshots[0].offers[0].unitPrice = '2000'; else purchaseGate.lastState.actual = '2,1';}, scenario.mode);
   await pointer(page, '#modal-submit'); await frames(page);
   assert.equal((await gate(page)).totalCalls, 0, 'Changed accepted terms cannot reach provider'); assert.equal(await raw(page), bytes);
