@@ -124,6 +124,23 @@ try{
  assert.ok(await page.locator('main').evaluate(el=>el.scrollWidth<=el.clientWidth+2));
  await drag();assert.deepEqual(await read(),before);await page.screenshot({fullPage:true,path:artifacts+'/map-sectors-mobile.png'});
  await click('Reset view');assert.equal(await level(),'world');assert.deepEqual(await read(),before);
+ // Names remain available in the clickable world layer with Political off.
+ await page.getByLabel('Political territory',{exact:true}).uncheck();
+ for(const width of [1440,390]){
+  await page.setViewportSize({width,height:width===390?844:1100});
+  await click('Reset view');assert.equal(await page.locator('.world-subsector-labels').count(),0);
+  await click('-');assert.equal(await page.locator('.world-subsector-labels').count(),0,'83% is above the name band');
+  await click('-');
+  await page.locator('.world-subsector-labels .subsector-name').first().waitFor({state:'attached'});
+  assert.equal(await level(),'world');assert.ok(await page.locator('[data-action="map-world"]').count()>0);
+  await page.screenshot({fullPage:true,path:artifacts+`/map-world-subsectors-${width}.png`});
+  await reach('20%');
+  await page.locator('.world-subsector-labels .subsector-name').first().waitFor({state:'attached'});
+  assert.equal(await level(),'world');assert.equal(await page.locator('.overview-grid').count(),0);
+  assert.equal(await page.locator('.world-subsector-labels [data-action]').count(),0);
+  await page.screenshot({fullPage:true,path:artifacts+`/map-world-subsectors-boundary-${width}.png`});
+  assert.deepEqual(await read(),before);
+ }
  assert.deepEqual(errors,[]);
  console.log('PASS: default-on and all-zoom territory toggle, preserved world/UWP layers, subsectors and dots, sector names/letters, API retry, bounded requests, pan/cancel/reset, mobile and campaign immutability.');
 }finally{await context.tracing.stop({path:artifacts+'/map-overview-trace.zip'});await browser.close();}
