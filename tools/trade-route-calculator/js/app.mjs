@@ -2256,7 +2256,7 @@ function openContactSearchWriteModal(owner,title,body){
   owner.retired=true;owner.invalidated=true;owner.constructing=false;owner.session.cancelled=true;owner.session.terminal=true;owner.session.busy=false;owner.session.awaitSave=false;
   const current=()=>contactSearchWriteOperation===owner&&activeModal===owner.session&&modalGeneration===owner.generation&&$('modal-form')===owner.form;
   const guidance='This contact search was not saved. The review could not be prepared. Close and reopen a new search.';
-  for(const report of [()=>{$('modal-submit').disabled=true;},()=>{$('modal-cancel').disabled=false;},()=>{$('modal-close').disabled=false;},()=>{$('modal-cancel').textContent='Close';},()=>{$('modal-error').textContent=guidance;}]){
+  for(const report of [()=>{$('modal-submit').disabled=true;},()=>{$('modal-cancel').disabled=false;},()=>{$('modal-close').disabled=false;},()=>{$('modal-cancel').textContent='Close';},()=>{$('modal-error').textContent=guidance;},()=>{if(!$('modal').open)$('modal').showModal();}]){
    if(!current())return false;
    try{report();}catch{/* Retired authority survives a second presentation fault. */}
   }
@@ -2383,7 +2383,7 @@ const prepare=f=>{
   const partyName=f.get('party').trim();if(!partyName)throw Error('Counterparty identity required');
   const key=partyKey(state.actual,partyName);if((state.cooldowns[key]||0)>state.hours)throw Error('This counterparty is still in rejection cooldown.');
   const chosenLocalSkill=String(f.get('localSkill')??'').trim()===''?localSkill:Number(f.get('localSkill'));
-  const useLocal=f.has('local'),skill=useLocal&&method!=='online'?chosenLocalSkill:Number(state.trader[m.skill.toLowerCase()]),rolled=Number(f.get('dice')||dice.total),duration=Number(f.get('duration')||time.total),characteristic=String(f.get('characteristic')||'').trim()!==''?Number(f.get('characteristic')):method==='online'?R.characteristicDMs(state.trader).edu:R.characteristicDMs(state.trader)[f.get('characteristicChoice')||'edu'],counterparty=Number(f.get('counterparty'));
+  const useLocal=f.has('local'),skill=useLocal&&method!=='online'?chosenLocalSkill:Number(state.trader[m.skill.toLowerCase()]),rolled=Number(f.get('dice')||dice.total),duration=Number(f.get('duration')||time.total),characteristic=String(f.get('characteristic')||'').trim()!==''?Number(f.get('characteristic')):method==='online'?R.characteristicDMs(state.trader).edu:f.get('characteristicChoice')?R.characteristicDMs(state.trader)[f.get('characteristicChoice')]:R.tradeSearchCharacteristic(state.trader,method),counterparty=Number(f.get('counterparty'));
   const {port,total,success,hours}=prepareContactSearchOutcome({skill,rolled,duration,characteristic,counterparty,starport:c.uwp.starport,starportDM:core.search.starportDM,previous,durationUnit:m.durationUnit,successOverride:f.has('success')});
   const illegal=method==='blackMarket';
   const options={creditStep:creditStep(state),illegal,skill:useLocal?chosenLocalSkill:state.trader.broker,local:useLocal,counterparty,...pricingOptions(false)};

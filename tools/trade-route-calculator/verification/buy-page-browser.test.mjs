@@ -63,6 +63,7 @@ try{
   // inputs, visibly locked; it never accepts a second transaction accidentally.
   await click('buy',original.id);await page.locator('#modal [name="quantity"]').fill('2');await page.locator('#modal [name="fee"]').fill('10');await page.locator('#modal [name="insure"]').check();
   await page.locator('#modal [name="insuranceLegs"]').selectOption('1');await page.locator('#modal [name="manualPremium"]').fill('100');await page.locator('#modal [name="manualPremium"]').blur();
+  assert.ok(await page.locator('#insurance-estimate .help').evaluate(el=>el.scrollWidth<=el.clientWidth+1),'Long insured destination names wrap within the estimate');
   const insuranceNames=['quantity','fee','description','insure','coverage','insuranceLegs','insuranceDistance','distanceReason','manualPremium'];
   await page.locator('#modal [name="quantity"]').focus();
   for(const name of insuranceNames){

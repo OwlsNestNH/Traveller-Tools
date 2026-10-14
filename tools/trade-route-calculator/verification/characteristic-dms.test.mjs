@@ -48,3 +48,15 @@ test('actual supplier search records an explicit characteristic override and pre
  const saved=h.persisted(),snapshot=saved.snapshots.at(-1);assert.equal(snapshot.search.characteristic,-4);assert.equal(snapshot.search.method,'blackMarket');assert.equal(snapshot.search.hours,24);
  assert.deepEqual(saved.snapshots.slice(0,-1),before.snapshots);assert.deepEqual(saved.trader,before.trader);
 });
+
+for(const method of ['normal','blackMarket','online'])for(const override of ['', '0'])test(`actual buyer ${method} search uses ${override===''?'permitted characteristic default':'explicit zero'} when reviewing`,async()=>{
+ const s=guiFixture().state;s.trader.characteristics={int:20,edu:-2,soc:3};
+ const before=structuredClone(s),h=harness(s);h.api.searchDialog('buyer');
+ h.fill({party:'Synthetic characteristic buyer',method,dice:'12',duration:'1',characteristic:override});
+ await h.submit();assert.deepEqual(h.persisted(),before,'Reviewing never saves');await h.submit();
+ const saved=h.persisted(),snapshot=saved.snapshots.at(-1);
+ assert.equal(snapshot.search.characteristic,override==='0'?0:method==='online'?-2:3);
+ assert.equal(snapshot.search.method,method);assert.equal(snapshot.search.hours,method==='online'?1:24);
+ assert.deepEqual(saved.trader,before.trader);assert.deepEqual(saved.snapshots.slice(0,-1),before.snapshots);
+ assert.equal(saved.bank,before.bank);assert.deepEqual(saved.lots,before.lots);
+});
