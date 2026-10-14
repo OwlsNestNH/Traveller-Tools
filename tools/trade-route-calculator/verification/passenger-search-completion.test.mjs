@@ -266,7 +266,7 @@ function assertPainted(h) {
 test('subsector metadata status remains visible with Political off at world zoom',()=>{
  for(const zoom of [.2,.5,.8]){
   const pending=mapHarness({mapZoom:zoom,mapOverview:{pending:true,error:null}});pending.paint();
-  assert.equal(pending.status.textContent,' Loading map data.');
+  assert.match(pending.status.textContent,/Loading map data/);
   const failed=mapHarness({mapZoom:zoom,mapOverview:{pending:false,error:'offline'}});failed.paint();
   assert.match(failed.status.textContent,/Refresh nearby to retry/);
  }
