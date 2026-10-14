@@ -95,7 +95,7 @@ function specification(before, scenario) {
   const ban = scenario.mode === 'prewrite' ? 0 : null;
   const priced = ban === null ? original : R.repriceQuote(good, world, {...options, banThreshold: ban, illegalGood: true}, core, original);
   let price = priced.unitPrice;
-  if (scenario.mode === 'prewrite' && lot.id === 'sale-partial') {price = '50100'; rounding.push({label: 'Sale price / ton · Cr', before: '50000.1', after: price});}
+  if (scenario.mode === 'prewrite' && lot.id === 'sale-partial') {price = '50100'; rounding.push({label: 'Sale price / ton — Cr', before: '50000.1', after: price});}
   if (scenario.mode === 'huge-credits' && lot.id === 'sale-partial') price = '9007199254740993';
   if (scenario.mode === 'validation' && lot.id === 'sale-partial') price = String(BigInt(price) + 123n);
   const overrideReason = ['prewrite', 'validation', 'huge-credits'].includes(scenario.mode) ? reason : '';
