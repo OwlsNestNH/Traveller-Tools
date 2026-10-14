@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=sell-page-20261014-86';
+import {escapeHtml as esc} from './display.mjs?v=status-strip-20261014-87';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.

@@ -1,49 +1,50 @@
-import {prepareContactSearchResult,marketAvailabilityRecord,tradeCodeLabel} from './contact-search-result.mjs?v=sell-page-20261014-86';
-import {prepareMarketOfferOverride,applyMarketOfferOverride} from './market-offer.mjs?v=sell-page-20261014-86';
-import {prepareInsuranceTerms} from './insurance-terms.mjs?v=sell-page-20261014-86';
-import {preparePurchaseAmounts} from './purchase-amounts.mjs?v=sell-page-20261014-86';
-import {prepareSaleLine} from './sale-line.mjs?v=sell-page-20261014-86';
-import {APP_BUILD,createDebugLog} from './debug-log.mjs?v=sell-page-20261014-86';
-import {dashboardPanel} from './dashboard-view.mjs?v=sell-page-20261014-86';
-import {recordWorldOverride,revertWorldField,worldFieldRevertEligibility,worldChangeFields,worldFieldValue,isWorldChangeAudit} from './world-change-history.mjs?v=sell-page-20261014-86';
-import {createCampaignController} from './campaign-controller.mjs?v=sell-page-20261014-86';
-import {ruleInfo,referenceIndex,REFERENCE_VERSION} from './rule-references.mjs?v=sell-page-20261014-86';
-import {mountRulePopover,replaceReferenceContent} from './rule-popover.mjs?v=sell-page-20261014-86';
-import {escapeHtml,moneyHtml} from './display.mjs?v=sell-page-20261014-86';
-import {normalizeAmount,normalizeAmountFields} from './form-values.mjs?v=sell-page-20261014-86';
-import {contactSearchStatus,contactSearchPeriod,contactSearchRule,prepareContactSearchOutcome} from './contact-search.mjs?v=sell-page-20261014-86';
-import {createPassengerUI} from './passenger-ui.mjs?v=sell-page-20261014-86';
-import {passengerShip,passengerTotals,passengerSpace,passengerCapacity} from './passengers.mjs?v=sell-page-20261014-86';
-import {advancePaymentDate,recordedPaymentDate} from './payment-schedule.mjs?v=sell-page-20261014-86';
-import {configureMortgage,mortgageStatus} from './mortgage.mjs?v=sell-page-20261014-86';
-import {configureMaintenance,maintenanceStatus} from './maintenance.mjs?v=sell-page-20261014-86';
-import {createServicePanels} from './service-panels.mjs?v=sell-page-20261014-86';
-import {cargoHoldPanel} from './cargo-hold.mjs?v=sell-page-20261014-86';
-import {createExpensePanels} from './expense-panels.mjs?v=sell-page-20261014-86';
+import {statusGaugeValues,fuelGaugeValues} from './status-gauges.mjs?v=status-strip-20261014-87';
+import {prepareContactSearchResult,marketAvailabilityRecord,tradeCodeLabel} from './contact-search-result.mjs?v=status-strip-20261014-87';
+import {prepareMarketOfferOverride,applyMarketOfferOverride} from './market-offer.mjs?v=status-strip-20261014-87';
+import {prepareInsuranceTerms} from './insurance-terms.mjs?v=status-strip-20261014-87';
+import {preparePurchaseAmounts} from './purchase-amounts.mjs?v=status-strip-20261014-87';
+import {prepareSaleLine} from './sale-line.mjs?v=status-strip-20261014-87';
+import {APP_BUILD,createDebugLog} from './debug-log.mjs?v=status-strip-20261014-87';
+import {dashboardPanel} from './dashboard-view.mjs?v=status-strip-20261014-87';
+import {recordWorldOverride,revertWorldField,worldFieldRevertEligibility,worldChangeFields,worldFieldValue,isWorldChangeAudit} from './world-change-history.mjs?v=status-strip-20261014-87';
+import {createCampaignController} from './campaign-controller.mjs?v=status-strip-20261014-87';
+import {ruleInfo,referenceIndex,REFERENCE_VERSION} from './rule-references.mjs?v=status-strip-20261014-87';
+import {mountRulePopover,replaceReferenceContent} from './rule-popover.mjs?v=status-strip-20261014-87';
+import {escapeHtml,moneyHtml} from './display.mjs?v=status-strip-20261014-87';
+import {normalizeAmount,normalizeAmountFields} from './form-values.mjs?v=status-strip-20261014-87';
+import {contactSearchStatus,contactSearchPeriod,contactSearchRule,prepareContactSearchOutcome} from './contact-search.mjs?v=status-strip-20261014-87';
+import {createPassengerUI} from './passenger-ui.mjs?v=status-strip-20261014-87';
+import {passengerShip,passengerTotals,passengerSpace,passengerCapacity} from './passengers.mjs?v=status-strip-20261014-87';
+import {advancePaymentDate,recordedPaymentDate} from './payment-schedule.mjs?v=status-strip-20261014-87';
+import {configureMortgage,mortgageStatus} from './mortgage.mjs?v=status-strip-20261014-87';
+import {configureMaintenance,maintenanceStatus} from './maintenance.mjs?v=status-strip-20261014-87';
+import {createServicePanels} from './service-panels.mjs?v=status-strip-20261014-87';
+import {cargoHoldPanel} from './cargo-hold.mjs?v=status-strip-20261014-87';
+import {createExpensePanels} from './expense-panels.mjs?v=status-strip-20261014-87';
 import {currentJumpAttempt} from './jump-attempts.mjs';
-import {mountSettingsLayout,syncSettingsControls,stepSetting} from './settings-layout.mjs?v=sell-page-20261014-86';
-import {configureFuel,fuelCapacities,bladderSpace,validateFuel,jumpFuel} from './fuel.mjs?v=sell-page-20261014-86';
-import {refillQuote,supportStock,supportCargo,supportDisplay,anchorSupport,configureSupport} from './life-support.mjs?v=sell-page-20261014-86';
-import {playerBriefing} from './player-briefing.mjs?v=sell-page-20261014-86';
-import {campaignReport} from './report.mjs?v=sell-page-20261014-86';
-import {up,creditStep,roundExisting} from './rounding.mjs?v=sell-page-20261014-86';
-import {tiers,luggageAllowance,occupants,passengerLuggage,manualLuggage,serviceRate,serviceLabel,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=sell-page-20261014-86';
+import {mountSettingsLayout,syncSettingsControls,stepSetting} from './settings-layout.mjs?v=status-strip-20261014-87';
+import {configureFuel,fuelCapacities,bladderSpace,validateFuel,jumpFuel} from './fuel.mjs?v=status-strip-20261014-87';
+import {refillQuote,supportStock,supportCargo,supportDisplay,anchorSupport,configureSupport} from './life-support.mjs?v=status-strip-20261014-87';
+import {playerBriefing} from './player-briefing.mjs?v=status-strip-20261014-87';
+import {campaignReport} from './report.mjs?v=status-strip-20261014-87';
+import {up,creditStep,roundExisting} from './rounding.mjs?v=status-strip-20261014-87';
+import {tiers,luggageAllowance,occupants,passengerLuggage,manualLuggage,serviceRate,serviceLabel,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=status-strip-20261014-87';
 import * as A from './amounts.mjs';
 import {parseDate,displayDate} from './calendar.mjs';
-import * as R from './rules.mjs?v=sell-page-20261014-86';
-import * as S from './state.mjs?v=sell-page-20261014-86';
+import * as R from './rules.mjs?v=status-strip-20261014-87';
+import * as S from './state.mjs?v=status-strip-20261014-87';
 import {latestMailCheck,recordMailCheck,mailCheckHistoryStatus} from './mail-history.mjs?v=mail-history-1';
-import * as E from './expenses.mjs?v=sell-page-20261014-86';
-import {planetInformation,worldSheetURL} from './planet-info.mjs?v=sell-page-20261014-86';
-import {worldMapFacts,worldSymbols,selectedWorldHex,mapKeyMarkup} from './world-symbols.mjs?v=sell-page-20261014-86';
-import * as M from './map.mjs?v=sell-page-20261014-86';
+import * as E from './expenses.mjs?v=status-strip-20261014-87';
+import {planetInformation,worldSheetURL} from './planet-info.mjs?v=status-strip-20261014-87';
+import {worldMapFacts,worldSymbols,selectedWorldHex,mapKeyMarkup} from './world-symbols.mjs?v=status-strip-20261014-87';
+import * as M from './map.mjs?v=status-strip-20261014-87';
 import {MAP_GEOMETRY,setMapGeometry,visibleMapWorlds} from './map-geometry.mjs?v=map-first-1';
 import {camera,viewportTiles,MapAreaCache} from './map-viewport.mjs?v=map-first-1';
-import {MAP_ZOOM_STEP,nextMapZoom,mapLevel,MapOverviewCache,overviewMarkup,mapTerritories} from './map-overview.mjs?v=sell-page-20261014-86';
+import {MAP_ZOOM_STEP,nextMapZoom,mapLevel,MapOverviewCache,overviewMarkup,mapTerritories} from './map-overview.mjs?v=status-strip-20261014-87';
 import {readPoliticalTerritory,savePoliticalTerritory} from './map-preferences.mjs';
-import {createGlobalWorldSearch} from './global-world-search.mjs?v=sell-page-20261014-86';
-import {createWorldPicker,rememberWorld} from './world-picker.mjs?v=sell-page-20261014-86';
-import {Store,KEY,SaveNotCommittedError,SaveCommittedPublicationError} from './persistence.mjs?v=sell-page-20261014-86';
+import {createGlobalWorldSearch} from './global-world-search.mjs?v=status-strip-20261014-87';
+import {createWorldPicker,rememberWorld} from './world-picker.mjs?v=status-strip-20261014-87';
+import {Store,KEY,SaveNotCommittedError,SaveCommittedPublicationError} from './persistence.mjs?v=status-strip-20261014-87';
 const $=id=>document.getElementById(id),esc=escapeHtml;
 const ROOT='https://github.com/OwlsNestNH/Traveller-Tools/blob/main/tools/trade-route-calculator/';
 let inputRounding=[];
@@ -594,13 +595,16 @@ function holdBreakdown(){
  return [['Owned trade goods',A.decimal(A.sum(state.lots.map(l=>l.quantity)))],['Freight / mail aboard',A.decimal(A.sum(state.contracts.filter(c=>c.status==='accepted'&&c.kind!=='passenger').map(c=>c.quantity)))],['Passenger luggage',passengerLuggage(passengerShip(state))],['Basic passenger accommodation',A.decimal(passengerSpace(state))],['Fuel in bladders',bladderSpace(state.ship)],['Life support overflow',supportStock(passengerShip(state)).cargoTons==null?'Unknown':supportDisplay(supportCargo(passengerShip(state)))]];
 }
 function holdCounter(){
- return '<div class="stat" id="hold-summary"><details class="hold-details"><summary><span class="label">Cargo</span><span class="value">'+esc(supportDisplay(S.used(state)))+' / '+esc(state.ship.capacity)+' t</span></summary><div class="hold-breakdown"><p class="help">'+holdBreakdown().map(([label,tons])=>esc(label)+': '+esc(tons)+' t').join('<br>')+'</p>'+bladderStatus()+btn('View freight / mail','tab','Contracts',false,'small')+'</div></details></div>';
+ const g=statusGaugeValues(state.ship,S.used(state)).cargo,description=g.total+' t occupied · '+g.free+' t free; '+g.ordinary+' t other cargo, '+g.bladder+' t actual bladder fuel';
+ return '<div class="stat cargo-counter" id="hold-summary"><details class="hold-details"><summary><span class="label">Cargo</span><span class="value">'+esc(supportDisplay(S.used(state)))+' / '+esc(state.ship.capacity)+' t</span></summary><div class="hold-breakdown"><p class="help">'+holdBreakdown().map(([label,tons])=>esc(label)+': '+esc(tons)+' t').join('<br>')+'</p>'+bladderStatus()+btn('View freight / mail','tab','Contracts',false,'small')+'</div></details>'+(g.overCapacity?'<span class="help cargo-overcapacity">Over capacity by '+esc(A.decimal(A.sub(g.total,g.capacity)))+' t</span>':'')+'<div class="status-cargo-gauge" role="img" aria-label="Cargo occupancy: '+esc(description)+'" title="'+esc(description)+'"><span class="status-cargo-other" style="width:'+esc(g.ordinaryPercent)+'%"></span>'+(g.bladder>=1?'<span class="status-cargo-bladder" style="width:'+esc(g.bladderPercent)+'%"></span>':'')+'</div></div>';
 }
+
 function bladderStatus(){const f=state.ship.fuel&&{...state.ship.fuel,...fuelCapacities(state.ship)};if(!f?.bladderTons)return '';const used=bladderSpace(state.ship);return '<p class="help"><strong>'+(used?'Bladders in use: '+used+' / '+f.bladderTons+' t':'Bladders empty - no cargo space used')+'</strong><br>Base tank: '+Math.min(f.aboardTons,f.baseCapacityTons)+' / '+f.baseCapacityTons+' t. Cargo occupied by bladder fuel: '+used+' t.</p>';}
 function fuelCounter(){
- const f=state.ship.fuel&&{...state.ship.fuel,...fuelCapacities(state.ship)};
- return `<div class="stat fuel-counter"><span class="label">Jump fuel</span><span class="value">${f?'Aboard '+f.aboardTons+'t · Tank '+f.baseCapacityTons+'t · Bladder '+f.bladderTons+'t'+(f.aboardTons===0?' · EMPTY':''):'Set in Settings'}</span>${f?`<progress max="${f.capacityTons}" value="${f.aboardTons}" aria-label="Jump fuel aboard" aria-valuetext="${f.aboardTons} tons aboard of ${f.capacityTons} tons total capacity"></progress>`:''}</div>`;
+ const f=fuelGaugeValues(state.ship);
+ return `<div class="stat fuel-counter"><span class="label">Jump fuel</span><span class="value">${f?'Aboard '+f.aboardTons+'t · Tank '+f.baseCapacityTons+'t · Bladder '+f.bladderTons+'t'+(f.aboardTons===0?' · EMPTY':''):'Set in Settings'}</span>${f?`<span class="help status-fuel-numbers">Main fuel ${f.mainTons}t · Bladder fuel ${f.bladderFuel}t</span>${f.showBladder?`<div class="status-bladder-gauge"><span>Bladder fuel ${f.bladderFuel} / ${f.bladderTons} t</span><progress max="${f.bladderTons}" value="${f.bladderFuel}" aria-label="Actual bladder fuel aboard"></progress></div>`:''}<progress class="status-main-fuel" max="${f.baseCapacityTons}" value="${f.mainTons}" aria-label="Jump fuel aboard" aria-valuetext="${f.aboardTons} tons total aboard; ${f.mainTons} of ${f.baseCapacityTons} tons in main tank; ${f.bladderFuel} of ${f.bladderTons} tons in bladders"></progress>`:''}</div>`;
 }
+
 function shipActions(){
  if(!state.initialized||tab!=='Overview')return '';
  const selected=tab==='Overview'?(services.selected()||(cargoHoldOpen?'cargo':null)):null;
@@ -4263,7 +4267,7 @@ $('import-file').onchange=safely(importCampaignFile);
 if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{if(tab==='Overview'&&viewed()&&updateMapGeometry()){scheduleMapPaint();scheduleMapAreas();}}).observe($('main'));
 window.addEventListener('error',e=>recordDebugError(e.error||e.message,'window-error'));
 window.addEventListener('unhandledrejection',e=>recordDebugError(e.reason,'unhandled-rejection'));
-async function boot(){mountRulePopover(document);[core,mp,decisions]=await Promise.all(['rules/core-2022.json?v=sell-page-20261014-86','rules/merchant-prince-1e.json','rules/decisions.json'].map(async url=>{const r=await fetch(url);if(!r.ok)throw Error('Could not load '+url);return r.json();}));store=new Store(receiveCampaign,(editable,text)=>{if(!editable){worldNearbyRequest=null;invalidateRoutePlanOperation();invalidatePlannedRouteWriteOperation();invalidateClearRouteWriteOperation();invalidateAccountsWriteOperation();invalidatePassengerWriteOperation();invalidateContractLifecycleWriteOperation();invalidateContractOfferWriteOperation();invalidateContactSearchWriteOperation();invalidateInsuranceWriteOperation();invalidatePurchaseWriteOperation();invalidateSaleWriteOperation();invalidateWorldWriteOperation();invalidateTimeWriteOperation();invalidateSettingsOperation(true);invalidateJumpPreparation();invalidateUndoOperation();invalidateReplacementEditing();stockServices.invalidate();expenseServices.invalidate();}$('save-status').textContent=campaignReloadRequired?campaignReloadMessage:text;$('save-status').className=editable&&!campaignReloadRequired?'muted':'readonly';$('takeover').hidden=editable||campaignReloadRequired;$('takeover').disabled=campaignReloadRequired;if(!editable&&activeModal?.mutates){activeModal.cancelled=true;$('modal-error').textContent=campaignReloadRequired?campaignReloadMessage:'Editing moved to another tab. Reopen this dialog after taking over editing.';}syncModalSubmit();render();});try{state=store.read();}catch(error){recordDebugError(error,'startup-read',{screen:'Startup',newOccurrence:true});store.recovery=true;store.recoveryMessage=error.message;state=S.initial();}store.onDiagnostic=(error,context)=>recordDebugError(error,context,{screen:'Startup',newOccurrence:true});known={...state.worlds};view=state.actual;render();await store.acquire();if(state.initialized)restoreExpenseReceipt();if(state.initialized)refreshNearby(false).catch(e=>message('Could not load nearby worlds: '+e.message+'. Use Refresh nearby to retry.',true));}
+async function boot(){mountRulePopover(document);[core,mp,decisions]=await Promise.all(['rules/core-2022.json?v=status-strip-20261014-87','rules/merchant-prince-1e.json','rules/decisions.json'].map(async url=>{const r=await fetch(url);if(!r.ok)throw Error('Could not load '+url);return r.json();}));store=new Store(receiveCampaign,(editable,text)=>{if(!editable){worldNearbyRequest=null;invalidateRoutePlanOperation();invalidatePlannedRouteWriteOperation();invalidateClearRouteWriteOperation();invalidateAccountsWriteOperation();invalidatePassengerWriteOperation();invalidateContractLifecycleWriteOperation();invalidateContractOfferWriteOperation();invalidateContactSearchWriteOperation();invalidateInsuranceWriteOperation();invalidatePurchaseWriteOperation();invalidateSaleWriteOperation();invalidateWorldWriteOperation();invalidateTimeWriteOperation();invalidateSettingsOperation(true);invalidateJumpPreparation();invalidateUndoOperation();invalidateReplacementEditing();stockServices.invalidate();expenseServices.invalidate();}$('save-status').textContent=campaignReloadRequired?campaignReloadMessage:text;$('save-status').className=editable&&!campaignReloadRequired?'muted':'readonly';$('takeover').hidden=editable||campaignReloadRequired;$('takeover').disabled=campaignReloadRequired;if(!editable&&activeModal?.mutates){activeModal.cancelled=true;$('modal-error').textContent=campaignReloadRequired?campaignReloadMessage:'Editing moved to another tab. Reopen this dialog after taking over editing.';}syncModalSubmit();render();});try{state=store.read();}catch(error){recordDebugError(error,'startup-read',{screen:'Startup',newOccurrence:true});store.recovery=true;store.recoveryMessage=error.message;state=S.initial();}store.onDiagnostic=(error,context)=>recordDebugError(error,context,{screen:'Startup',newOccurrence:true});known={...state.worlds};view=state.actual;render();await store.acquire();if(state.initialized)restoreExpenseReceipt();if(state.initialized)refreshNearby(false).catch(e=>message('Could not load nearby worlds: '+e.message+'. Use Refresh nearby to retry.',true));}
 boot().catch(e=>{recordDebugError(e,'startup',{screen:'Startup',newOccurrence:true});message(e.message,true);$('main').innerHTML=empty('The calculator could not start. Your saved campaign has not been replaced. Reload after checking the error above.')+'<div class="wide-actions">'+btn('Copy Error Report','dev-copy-errors')+'</div>';});
 
 document.addEventListener('change',e=>{if(e.target.id==='hide-high-prices'){hideHighPrices=e.target.checked;render();}if(e.target.closest('#supplier-form')&&e.target.name==='method'){const f=$('supplier-form'),choice=f.elements.namedItem('characteristicChoice');const wasOnline=choice.disabled;choice.disabled=e.target.value==='online';if(choice.disabled)choice.value='edu';else if(wasOnline)choice.value=R.characteristicDMs(state.trader).edu>=R.characteristicDMs(state.trader).soc?'edu':'soc';}});

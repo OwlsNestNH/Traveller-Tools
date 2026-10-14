@@ -1,3 +1,4 @@
+import {fuelGaugeValues} from '../js/status-gauges.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -90,9 +91,9 @@ test('real persistence preserves legacy Undo through migration, save, import, re
 
 test('compact Overview labels base tanks and bladders distinctly, including old tank-only campaigns',()=>{
  for(const state of [legacy(),{ship:{fuel:{displacementTons:200,capacityTons:40,aboardTons:10}}}]){
-  const sandbox={state,fuelCapacities};const fn=app.slice(app.indexOf('function fuelCounter(){'),app.indexOf('\nfunction shipActions()'));
+  const sandbox={state,fuelCapacities,fuelGaugeValues};const fn=app.slice(app.indexOf('function fuelCounter(){'),app.indexOf('\nfunction shipActions()'));
   vm.runInNewContext(fn+';globalThis.markup=fuelCounter();',sandbox);
   assert.match(sandbox.markup,/Tank 40t/);assert.match(sandbox.markup,state.ship.fuel.bladderJumps?/Aboard 40t · Tank 40t · Bladder 80t/:/Aboard 10t · Tank 40t · Bladder 0t/);
-  assert.match(sandbox.markup,/tons total capacity/);assert.doesNotMatch(sandbox.markup,/Tank 120t/);
+  assert.match(sandbox.markup,/tons total aboard/);assert.doesNotMatch(sandbox.markup,/Tank 120t/);
  }
 });

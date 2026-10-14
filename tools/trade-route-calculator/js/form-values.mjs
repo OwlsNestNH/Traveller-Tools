@@ -1,5 +1,5 @@
 import {cmp} from './amounts.mjs';
-import {up} from './rounding.mjs?v=sell-page-20261014-86';
+import {up} from './rounding.mjs?v=status-strip-20261014-87';
 
 // Normalize one entry without campaign, DOM, transaction or validation state.
 // The exact-remainder exception preserves historical fractional full sales.

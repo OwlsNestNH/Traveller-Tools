@@ -2,6 +2,8 @@
 
 A free static ship-computer interface for campaign trading, routes, cargo, accounts, freight/mail, and optional cargo insurance and taxes.
 
+The top status strip shows aligned main-fuel, life-support and cargo bars when six fields fit (1100px and wider). Actual bladder fuel of at least 1 ton adds a cyan fuel line and fills the cargo bar from the right; other occupied cargo fills from the left. Empty installed bladders reserve no cargo. Below 1100px the strip shows numbers only, including actual main/bladder fuel amounts.
+
 Open `index.html` through an HTTP server or GitHub Pages. No build, paid service, account, PDF access, or backend is required. Direct `file://` loading is unsupported because the app loads local JSON and JavaScript modules.
 
 ## Start a campaign

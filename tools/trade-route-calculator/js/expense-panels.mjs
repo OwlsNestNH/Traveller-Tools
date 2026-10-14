@@ -1,14 +1,14 @@
-import {ruleInfo} from './rule-references.mjs?v=sell-page-20261014-86';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=sell-page-20261014-86';
-import {passengerShip} from './passengers.mjs?v=sell-page-20261014-86';
+import {ruleInfo} from './rule-references.mjs?v=status-strip-20261014-87';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=status-strip-20261014-87';
+import {passengerShip} from './passengers.mjs?v=status-strip-20261014-87';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=sell-page-20261014-86';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=sell-page-20261014-86';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=sell-page-20261014-86';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=sell-page-20261014-86';
-import {creditStep} from './rounding.mjs?v=sell-page-20261014-86';
-import {roll} from './rules.mjs?v=sell-page-20261014-86';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=sell-page-20261014-86';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=status-strip-20261014-87';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=status-strip-20261014-87';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=status-strip-20261014-87';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=status-strip-20261014-87';
+import {creditStep} from './rounding.mjs?v=status-strip-20261014-87';
+import {roll} from './rules.mjs?v=status-strip-20261014-87';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=status-strip-20261014-87';
 
 const esc=escapeHtml;
 const money=formatCreditsText;
