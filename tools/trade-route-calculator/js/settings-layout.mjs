@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=sell-page-20261014-86';
+import {ruleInfo} from './rule-references.mjs?v=status-strip-20261014-87';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={

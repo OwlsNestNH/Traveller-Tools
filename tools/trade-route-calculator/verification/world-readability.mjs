@@ -33,14 +33,16 @@ export async function worldReadability(page,{oneLineFacts=false}={}){
 export async function resourceBarGeometry(page){
  const result=await page.locator('#summary').evaluate(summary=>{
   const box=el=>{if(!el)return null;const b=el.getBoundingClientRect();return {left:b.left,right:b.right,top:b.top,bottom:b.bottom,width:b.width,height:b.height};};
-  const counter=selector=>{const el=summary.querySelector(selector),progress=el.querySelector('progress');return {box:box(el),label:box(el.querySelector('.label')),value:box(el.querySelector('.value')),note:box(el.querySelector('.help')),bar:box(progress),max:progress?.max,fill:progress?.value};};
+  const counter=selector=>{const el=summary.querySelector(selector),progress=el.querySelector(':scope>progress'),note=el.querySelector('.help');return {box:box(el),label:box(el.querySelector('.label')),value:box(el.querySelector('.value')),note:note?.getClientRects().length?box(note):null,bar:box(progress),visible:!!progress?.getClientRects().length,max:progress?.max,fill:progress?.value};};
   return {viewport:innerWidth,box:box(summary),fuel:counter('.fuel-counter'),support:counter('.life-support-counter'),overflow:summary.scrollWidth-summary.clientWidth};
  });
  assert.ok(result.overflow<=1,'Summary tracks fit the viewport');
- assert.ok(result.fuel.bar&&result.support.bar,'Both configured resource counters retain their progress indicators');
+ assert.ok(result.fuel.bar&&result.support.bar,'Both configured resource counters retain their progress data');
+ if(result.viewport<1100){assert.equal(result.fuel.visible,false);assert.equal(result.support.visible,false);return result;}
+ assert.equal(result.fuel.visible,true);assert.equal(result.support.visible,true);
  for(const [name,counter]of [['fuel',result.fuel],['support',result.support]]){
   if(!counter.bar)continue;
-  assert.ok(counter.bar.top>=Math.max(counter.value.bottom,counter.note?.bottom??-Infinity),'The '+name+' bar follows all wrapped text');
+  assert.ok(counter.bar.top>=Math.max(counter.value.bottom,counter.note?.bottom??-Infinity),'The '+name+' bar follows all wrapped text: '+JSON.stringify(result));
   assert.ok(counter.bar.bottom<=counter.box.bottom,'The '+name+' bar stays inside its counter');
  }
  if(Math.abs(result.fuel.box.top-result.support.box.top)<1&&result.fuel.bar&&result.support.bar){

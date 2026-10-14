@@ -458,6 +458,13 @@ main{padding-top:18px}
 #modal-form:has(.sale-review) .dialog-heading h2{min-width:0;overflow-wrap:anywhere}#modal-form:has(.sale-review) .dialog-heading button{flex:none}
 .sale-review .scroll:focus-visible,.sell-cargo-scroll:focus-visible{outline:2px solid var(--cyan);outline-offset:-2px}
 /* Long counterparty names must also fit the post-save notice. */
+/* Six status fields fit at 1100px. Below that, retain facts and hide all gauges. */
+.summary .cargo-counter{display:grid;grid-template-rows:subgrid;row-gap:0}.summary .cargo-counter>.hold-details{grid-row:1/4;align-self:start}.summary .cargo-overcapacity{grid-row:3;color:var(--amber);margin:0}
+.summary .status-cargo-gauge{grid-row:4;align-self:end;position:relative;height:7px;margin:5px 0 0;border-radius:5px;background:#16394b;overflow:hidden}
+.status-cargo-gauge>span{position:absolute;top:0;bottom:0}.status-cargo-other{left:0;background:var(--green)}.status-cargo-bladder{right:0;background:var(--cyan)}
+.summary .status-fuel-numbers{display:none}.summary .status-bladder-gauge{grid-row:3;align-self:end;min-width:0;color:var(--cyan);font-size:9px;line-height:1.1;padding-bottom:3px}
+.summary .status-bladder-gauge>progress{height:3px;margin:2px 0 0}.summary .status-bladder-gauge>progress::-webkit-progress-value{background:var(--cyan)}.summary .status-bladder-gauge>progress::-moz-progress-bar{background:var(--cyan)}
+@media(max-width:1099px){.summary progress,.summary .status-bladder-gauge,.summary .status-cargo-gauge{display:none}.summary .status-fuel-numbers{display:block;margin:0;font-size:11px;line-height:1.5}.summary .cargo-overcapacity{grid-row:3}}
 #message{overflow-wrap:anywhere}
 .sale-review>.scroll>table{table-layout:fixed;min-width:800px}.sale-review>.scroll th:nth-child(1){width:32%}.sale-review>.scroll th:nth-child(2){width:9%}.sale-review>.scroll th:nth-child(3){width:15%}.sale-review>.scroll th:nth-child(4){width:25%}.sale-review>.scroll th:nth-child(5){width:19%}.sale-review>.scroll th:nth-child(2),.sale-review>.scroll th:nth-child(4),.sale-review>.scroll th:nth-child(5){text-align:right}.sale-review input[name^=qty_]{text-align:right}
 .sale-review #sale-live-preview table{table-layout:fixed;min-width:1120px}.sale-review #sale-live-preview th:first-child{width:240px}.sale-review #sale-live-preview th:nth-child(2){width:70px}.sale-review #sale-live-preview td.number{white-space:normal;overflow-wrap:anywhere}

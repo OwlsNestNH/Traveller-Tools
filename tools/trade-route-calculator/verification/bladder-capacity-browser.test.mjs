@@ -35,14 +35,14 @@ try{
   const tab=name=>page.locator('#tabs [data-arg="'+name+'"]').click();
   const field=name=>page.locator('#settings-form [name="'+name+'"]');
   async function set(name,value){
-   const input=field(name);for(const detail of await input.locator('xpath=ancestor::details').all())if(!await detail.evaluate(el=>el.open))await detail.locator(':scope > summary').click();
+   const input=field(name);for(const detail of await input.locator('xpath=ancestor::details').all())if(!await detail.evaluate(el=>el.open))await detail.locator(':scope > summary').click({position:{x:8,y:8}});
    await input.fill(String(value));
   }
   const save=()=>page.locator('#settings-save').click();
   const undo=async()=>{await tab('History');await page.locator('[data-action="undo"]').click();};
   async function checkSummary(aboard,baseTank,bladder){
    await tab('Overview');assert.equal(await page.locator('.fuel-counter .value').textContent(),`Aboard ${aboard}t · Tank ${baseTank}t · Bladder ${bladder}t`+(aboard===0?' · EMPTY':''));
-   const geometry=await resourceBarGeometry(page);assert.equal(geometry.fuel.max,baseTank+bladder);assert.equal(geometry.fuel.fill,aboard);
+   const geometry=await resourceBarGeometry(page);assert.equal(geometry.fuel.max,baseTank);assert.equal(geometry.fuel.fill,Math.min(aboard,baseTank));
    const display=await page.locator('.fuel-counter .value').evaluate(el=>({font:parseFloat(getComputedStyle(el).fontSize),height:el.getBoundingClientRect().height,overflow:el.scrollWidth-el.clientWidth}));
    assert.ok(display.font<=14&&display.height<=65&&display.overflow<=1,'Distinct quantities retain the compact summary at '+width+'px');
   }

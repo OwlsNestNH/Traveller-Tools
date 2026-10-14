@@ -1,4 +1,4 @@
-import {up} from './rounding.mjs?v=sell-page-20261014-86';
+import {up} from './rounding.mjs?v=status-strip-20261014-87';
 import {sum,mul,decimal,cmp,credit} from './amounts.mjs';
 
 export const tiers=['low','middle','high'];

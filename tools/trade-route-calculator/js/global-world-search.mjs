@@ -1,4 +1,4 @@
-import {searchWorlds,loadWorld} from './map.mjs?v=sell-page-20261014-86';
+import {searchWorlds,loadWorld} from './map.mjs?v=status-strip-20261014-87';
 
 export const planetSearchLabel=w=>[w.name,w.subsectorName,w.sector,w.hex].join(' — ');
 
