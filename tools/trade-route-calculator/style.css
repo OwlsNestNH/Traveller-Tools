@@ -468,6 +468,10 @@ main{padding-top:18px}
 .sale-review{min-width:0;overflow-wrap:anywhere}.sale-review>.scroll table{min-width:760px}.sale-review .field{min-width:0}.sale-review input{max-width:100%;min-width:0}.sale-review details{margin:12px 0}.sale-review #sale-live-preview .preview{border:0;padding:0;background:none}.sale-review #sale-live-preview dl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 14px}.sale-review #sale-live-preview dt,.sale-review #sale-live-preview dd{min-width:0;margin:0;white-space:normal}.sale-review #sale-live-preview>.scroll{max-height:280px}
 @media(max-width:620px){.sale-review .split{grid-template-columns:minmax(0,1fr)}.sale-review #sale-live-preview dl{grid-template-columns:minmax(0,1fr);gap:4px}.sale-review #sale-live-preview dd{margin-bottom:10px;text-align:left}}
 /* Sell quantities and reviewed prices stay in view without sideways navigation. */
+.sale-cargo-gauges{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;margin-top:18px}
+.sale-cargo-gauge{min-width:0}.sale-cargo-gauge>div{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:13px}.sale-cargo-gauge strong{font-weight:500}.sale-cargo-gauge meter{display:block;width:100%;height:22px;margin-top:10px;background:#0b2230;border:1px solid var(--cyan);border-radius:5px;overflow:hidden}
+.sale-cargo-gauge meter::-webkit-meter-bar{height:100%;background:#0b2230;border:0;border-radius:3px}.sale-cargo-gauge meter::-webkit-meter-optimum-value{background:linear-gradient(90deg,#6ce8ef,#00bddb)}.sale-cargo-gauge meter::-moz-meter-bar{background:#35d5e6}
+@media(max-width:620px){.sale-cargo-gauges{grid-template-columns:minmax(0,1fr);gap:18px}}
 .sale-review #sale-live-preview table{min-width:0;width:100%;table-layout:fixed}
 .sale-review #sale-live-preview th:first-child{width:27%}.sale-review #sale-live-preview th:nth-child(2){width:7%}
 @media(max-width:900px){

@@ -2,6 +2,8 @@
 
 A free static ship-computer interface for campaign trading, routes, cargo, accounts, freight/mail, and optional cargo insurance and taxes.
 
+Sell previews include current and projected cargo gauges with occupied/free tonnage. Editing selected quantities updates the projection without changing saved cargo; hidden selected lots remain included.
+
 Open `index.html` through an HTTP server or GitHub Pages. No build, paid service, account, PDF access, or backend is required. Direct `file://` loading is unsupported because the app loads local JSON and JavaScript modules.
 
 ## Start a campaign

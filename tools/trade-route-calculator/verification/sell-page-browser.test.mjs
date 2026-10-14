@@ -31,8 +31,18 @@ try{
    assert.ok(await page.locator('.sell-cargo-scroll').evaluate(el=>el.scrollWidth<=el.clientWidth+2));
    await page.screenshot({path:artifacts+'sell-selection-quantity-'+width+'.png'});
   }
-  assert.match(await page.locator('#sale-selection-preview').textContent(),/Cargo projected/);assert.equal(await raw(),bytes);
+  assert.match(await page.locator('#sale-selection-preview').textContent(),/Cargo \(projected\)/);assert.equal(await raw(),bytes);
+  const gauges=page.locator('#sale-selection-preview meter');assert.equal(await gauges.count(),2);
+  const current=page.locator('[data-sale-cargo="current"]'),projected=page.locator('[data-sale-cargo="projected"]');
+  const before=Number(await current.getAttribute('value')),after=Number(await projected.getAttribute('value'));
+  assert.equal(await current.getAttribute('max'),f.state.ship.capacity);assert.equal(await projected.getAttribute('max'),f.state.ship.capacity);
+  assert.equal(before-after,await page.locator('[data-sale-quantity]').evaluateAll(nodes=>nodes.reduce((n,el)=>n+Number(el.value),0)),'Only selected quantities free cargo');
+  assert.match(await projected.getAttribute('aria-valuetext'),/occupied.*free/);
+  await page.locator('#sale-selection-preview').scrollIntoViewIfNeeded();
+  assert.ok(await gauges.evaluateAll(nodes=>nodes.every(el=>{const r=el.getBoundingClientRect();return r.width>100&&r.height>=18&&r.left>=0&&r.right<=innerWidth;})),'Actual visible bars fit the viewport');
+  await page.screenshot({path:artifacts+'sell-cargo-gauges-'+width+'.png'});
   await page.locator('#cargo-search').fill('not present');assert.equal(await page.locator('.sale-table').count(),0);
+  assert.equal(Number(await projected.getAttribute('value')),after,'Hidden selected lots remain in projected cargo');
   assert.match(await page.locator('#sale-selection-preview').textContent(),new RegExp(f.state.lots.length+' of '+f.state.lots.length+' held lots'));
   await page.locator('#cargo-search').fill('');assert.equal(await page.locator('[data-sale-quantity]').first().inputValue(),'1');
   await click('sale-clear');await click('lot-sell',f.state.lots[0].id);
