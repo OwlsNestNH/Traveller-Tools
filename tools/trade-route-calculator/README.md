@@ -8,7 +8,7 @@ Open `index.html` through an HTTP server or GitHub Pages. No build, paid service
 
 1. Choose **Set up campaign**, select your current sector, subsector and world, then enter ship, bank and starting date label.
 2. Add existing cargo from **Cargo** without debiting the opening bank again.
-3. Open **Trade**. **Find supplier** creates a market after an explicit search commit. Buy and sell through previews and explicit commits.
+3. Open **Trade → Buy**. **Find supplier** expands in page flow; rolls are generated only when you review the search. Commit the reviewed search to create a market. A purchase has one editable review with live totals and one **COMMIT PURCHASE**. Owned cargo's Sell/Get sale offers controls navigate to **Trade → Sell** without rolling or transacting; use Get sale offers there to begin the existing buyer/sale workflow.
 4. **Plot route** accepts mandatory stops in order. Clicking the map or Previous/Next only browses; **Jump to [next destination]** above the route opens the existing **COMMIT JUMP** confirmation, which moves the ship one leg and advances elapsed hours.
 5. Use **Settings** for trader skills, profit mode, insurance and taxes. Both Merchant Prince options start off.
 6. Export JSON backups regularly. The campaign is stored in this browser; it is not uploaded to GitHub or Traveller Map.

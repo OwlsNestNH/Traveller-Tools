@@ -1,3 +1,4 @@
+import {tradeLabel,tradeField,existingSell} from './trade-ui.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,readFile} from 'node:fs/promises';
@@ -15,8 +16,8 @@ await ctx.route('https://travellermap.com/api/universe?*',route=>route.fulfill({
 await ctx.route('https://travellermap.com/api/metadata?*',route=>route.fulfill({json:{Subsectors:[{Index:'C',Name:'Regina'},{Index:'A',Name:'Cronor'}]}}));
 await ctx.route('https://travellermap.com/api/sec?*',route=>route.fulfill({json:'Hex\tName\r\n'+sample.map(w=>w.Hex+'\t'+w.Name).join('\r\n')}));
 const page=await ctx.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
-const click=async label=>{const modal=page.locator('#modal[open]');const target=modal.getByRole('button',{name:label,exact:true});if(await target.count())return target.click();return page.getByRole('button',{name:label,exact:true}).click();};
-const fill=(name,value)=>page.locator('[name="'+name+'"]').fill(String(value));
+const click=async label=>{if(await tradeLabel(page,label))return;const modal=page.locator('#modal[open]');const target=modal.getByRole('button',{name:label,exact:true});if(await target.count())return target.click();return page.getByRole('button',{name:label,exact:true}).click();};
+const fill=async(name,value)=>{const input=await page.locator('#supplier-form').count()&&!await page.locator('#modal').evaluate(el=>el.open)?await tradeField(page,name):page.locator('[name="'+name+'"]');await input.fill(String(value));};
 const read=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('traveller-trade-route-calculator:v1')));
 const closed=()=>page.locator('#modal').waitFor({state:'hidden'});
 const choose=id=>page.locator('svg [data-action="map-world"][data-arg="'+id+'"]').click();
@@ -27,7 +28,7 @@ try{
  await click('Trade');
 
  assert.equal(await page.getByRole('button',{name:'Availability audit',exact:true}).isDisabled(),true);
- await click('Find supplier');await page.locator('[name="success"]').check();await click('Preview search');await click('Commit search');await closed();
+ await click('Find supplier');await (await tradeField(page,'success')).check();await click('Preview search');await click('Commit search');await closed();
  const initial=await read(),snap=initial.snapshots.at(-1);
  assert.equal(snap.availability.draws.length,8);
  assert.ok(snap.availability.defaults.some(g=>g.reason.includes('Common goods')));
@@ -43,7 +44,7 @@ try{
  assert.ok((await page.locator('#modal-body').textContent()).includes('A788899-C'));
  await page.screenshot({path:join(artifacts,'market-availability.png'),fullPage:true});
  await click('Close');
- await click('Find supplier');await page.locator('[name="method"]').selectOption('blackMarket');await page.locator('[name="success"]').check();await click('Preview search');await click('Commit search');await closed();
+ await click('Find supplier');await page.locator('[name="method"]').selectOption('blackMarket');await (await tradeField(page,'success')).check();await click('Preview search');await click('Commit search');await closed();
  const black=(await read()).snapshots.at(-1);assert.ok(black.availability.draws.every(id=>id.startsWith('6')));assert.ok(black.availability.defaults.some(g=>g.reason.includes('Common goods')));
  await click('Availability audit');assert.ok((await page.locator('#modal-body').textContent()).includes('Black market (includes common legal goods'));
  assert.deepEqual(errors,[]);console.log('PASS: disabled/active audit, saved defaults and population draws, read-only display, legacy snapshot and original UWP, black-market common stock and illegal draws.');

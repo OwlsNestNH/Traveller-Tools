@@ -1,3 +1,4 @@
+import {tradeLabel,tradeField,existingSell,purchaseTitle} from './trade-ui.mjs';
 // Real Chromium regression for optional imported insurance amendment history.
 // Only the initial synthetic campaign is seeded. Policy purchases, JSON downloads and
 // file imports, claims, policy changes, settings and Undo use the rendered app.
@@ -37,20 +38,22 @@ const read=page=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)),KEY);
 const raw=page=>page.evaluate(key=>localStorage.getItem(key),KEY);
 const modal=page=>page.locator('#modal[open]');
 const tab=(page,name)=>page.locator('#tabs').getByRole('button',{name,exact:true}).click();
-const fill=(page,name,value)=>modal(page).locator('[name="'+name+'"]').fill(String(value));
+const fill=async(page,name,value)=>(await tradeField(page,name)).fill(String(value));
 const campaignData=state=>Object.fromEntries(Object.entries(state).filter(([key])=>!['revision','events','undo'].includes(key)));
 function restored(actual,expected){
  assert.deepEqual(campaignData(actual),campaignData(expected),'Undo restores all campaign fields except its append-only audit metadata');
  assert.deepEqual(actual.undo,expected.undo,'Undo restores the complete prior undo stack');
 }
 async function submit(page,label,nextTitle=null){
+ if(await tradeLabel(page,label)){if(label==='Preview purchase')return;}
+ else
  await modal(page).getByRole('button',{name:label,exact:true}).click();
  await page.waitForFunction(next=>{
   const dialog=document.querySelector('#modal');
   return !dialog.open||Boolean(document.querySelector('#modal-error').textContent)||(next&&document.querySelector('#modal-title').textContent===next);
  },nextTitle);
  assert.equal(await page.locator('#modal-error').textContent(),'','The actual UI callback must finish without an error');
- if(nextTitle)await page.getByRole('heading',{name:nextTitle,exact:true}).waitFor();
+ if(nextTitle)await page.getByRole('heading',{name:purchaseTitle(nextTitle),exact:true}).waitFor();
  else await page.locator('#modal').waitFor({state:'hidden'});
 }
 async function cancel(page){await modal(page).getByRole('button',{name:'Cancel',exact:true}).click();await page.locator('#modal').waitFor({state:'hidden'});}
@@ -230,9 +233,9 @@ try{
   assert.equal((await read(page)).settings.insurance,false);assert.equal(await page.locator('[data-action="lot-insure"]').count(),0);
   await tab(page,'Trade');await page.getByRole('button',{name:'Find supplier',exact:true}).click();await fill(page,'dice',12);await fill(page,'duration',1);
   await submit(page,'Preview search','Review supplier search');await submit(page,'Commit search');
-  await page.getByRole('button',{name:'Buy',exact:true}).first().click();
+  await page.locator('.purchase-table [data-action="buy"]').first().click();
   assert.equal(await modal(page).locator('[name="insure"],#purchase-insurance-options').count(),0,'OFF purchase has no insurance controls');
-  await fill(page,'quantity',1);await submit(page,'Preview purchase','Confirm purchase');
+  await fill(page,'quantity',1);await submit(page,'Preview purchase',/^Review purchase/);
   assert.doesNotMatch(await modal(page).innerText(),/Insurance premium/);await screenshot(page,result,'insurance-off-purchase-'+size+'.png');
   const beforeBuy=await read(page);await submit(page,'COMMIT PURCHASE');
   assert.equal((await read(page)).settings.insurance,false);assert.deepEqual((await read(page)).policies,beforeBuy.policies);

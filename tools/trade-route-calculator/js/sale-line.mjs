@@ -1,4 +1,4 @@
-import * as R from './rules.mjs?v=route-layout-20261013-84';
+import * as R from './rules.mjs?v=buy-page-20261013-85';
 
 // Prepare one sale line from explicit lot/buyer/context/quote/commodity/core,
 // current pricing flags and creditStep, plus caller-normalized values:

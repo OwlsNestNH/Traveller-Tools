@@ -1,3 +1,4 @@
+import {existingSell,purchaseTitle} from './trade-ui.mjs';
 // Real Chromium coverage for Trade actions after browsing away from the ship.
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
@@ -30,18 +31,18 @@ try{
   const raw=()=>page.evaluate(key=>localStorage.getItem(key),campaignKey);
   const read=async()=>JSON.parse(await raw());
   const closed=()=>page.locator('#modal').waitFor({state:'hidden'});
-  const title=async text=>{await page.getByRole('heading',{name:text,exact:true}).waitFor();};
+  const title=async text=>{await page.getByRole('heading',{name:purchaseTitle(text),exact:true}).waitFor();};
   const dismiss=async()=>{await page.locator('#modal-cancel').click();await closed();};
   const browse=async()=>{await tab('Overview');await page.locator('.route-list [data-action="world"][data-arg="'+remote+'"]').click();await tab('Trade');};
   const preview=async kind=>{
    await page.locator('[name="party"]').fill(kind+' regression');
    await page.locator('[name="method"]').selectOption('online');
    await page.locator('[name="dice"]').fill('12');await page.locator('[name="duration"]').fill('1');
-   await page.locator('#modal-submit').click();await title('Review '+kind+' search');
+   if(kind==='supplier')await page.locator('#supplier-form button[type="submit"]').click();else await page.locator('#modal-submit').click();await title('Review '+kind+' search');
   };
   await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();
   for(const [name,kind] of [['search','supplier'],['buyer-search','buyer']]){
-   const before=await raw();await browse();await action(name).click();await title('Trade at the current system');
+   const before=await raw();await browse();await page.locator('[data-action="trade-side"][data-arg="'+(kind==='supplier'?'buy':'sell')+'"]').click();await action(name).click();await title('Trade at the current system');
    assert.match(await page.locator('#modal-body').textContent(),/does not move the ship, advance time or spend Credits/);
    assert.ok((await page.locator('#modal-body').textContent()).includes(fixture.state.worlds[actual].name));
    const recoveryLayout=await page.locator('#modal').evaluate(dialog=>{
@@ -56,7 +57,7 @@ try{
    await page.locator('#modal-submit').click();await title('Find a '+kind);assert.equal(await raw(),before);
    await preview(kind);assert.equal(await raw(),before);await dismiss();assert.equal(await raw(),before);
    // Repeat the same action at the now-current trading view, then commit once.
-   await action(name).click();await title('Find a '+kind);await preview(kind);
+   if(kind==='supplier')await action('supplier-close').click();await action(name).click();await title('Find a '+kind);await preview(kind);
    await page.locator('#modal-submit').click();await closed();
    const after=await read(),old=JSON.parse(before),snap=after.snapshots.at(-1);
    assert.equal(after.snapshots.length,old.snapshots.length+1);assert.equal(snap.kind,kind);assert.equal(snap.worldId,actual);
@@ -66,7 +67,7 @@ try{
   }
   // Related row/selection paths use the same recovery rather than a hidden error.
   for(const name of ['lot-sell','sale']){
-   const before=await raw();await browse();
+   const before=await raw();await browse();await existingSell(page);
    if(name==='sale'){await action('sale-all').click();await action('sale').click();}
    else await action(name,'lot-recorded').click();
    await title('Trade at the current system');await page.locator('#modal-submit').click();
@@ -75,7 +76,7 @@ try{
   }
   // Buy, edit and audit still open against the local saved supplier. Canceling
   // these forms and changing filters/selection does not buy, sell or reroll.
-  const beforeControls=await raw();
+  const beforeControls=await raw();await page.locator('[data-action="trade-side"][data-arg="buy"]').click();
   await page.locator('#snapshot-select').selectOption('snapshot-recorded');
   for(const [name,expected] of [['buy','Purchase · Recorded electronics'],['offer-edit','Referee market override']]){
    await action(name,'offer-recorded').click();await title(expected);await dismiss();

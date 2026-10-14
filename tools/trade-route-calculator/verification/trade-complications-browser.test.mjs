@@ -1,3 +1,4 @@
+import {tradeLabel,tradeField,existingSell,purchaseTitle} from './trade-ui.mjs';
 // Real Chromium regression for natural-3D trade-complication flags. Synthetic
 // campaigns and map fixtures only. Seeded purchases exercise saved/legacy data;
 // sale negotiations use the actual UI and a counted crypto dice queue. No app
@@ -57,7 +58,7 @@ const raw=page=>page.evaluate(key=>localStorage.getItem(key),campaignKey);
 const modal=page=>page.locator('#modal[open]');
 const action=(page,name,arg)=>page.locator('#main [data-action="'+name+'"]'+(arg===undefined?'':'[data-arg="'+arg+'"]'));
 const tab=(page,name)=>page.locator('#tabs [data-arg="'+name+'"]').click();
-const title=(page,text)=>page.getByRole('heading',{name:text,exact:true}).waitFor();
+const title=(page,text)=>page.getByRole('heading',{name:purchaseTitle(text),exact:true}).waitFor();
 const row=(page,kind,id)=>page.locator('.'+kind+'-table tbody tr').filter({has:page.locator('[data-arg="'+id+'"]')});
 const campaignData=state=>Object.fromEntries(Object.entries(state).filter(([key])=>!['revision','events'].includes(key)));
 async function fill(page,name,value){
@@ -66,6 +67,8 @@ async function fill(page,name,value){
  await input.fill(String(value));
 }
 async function submit(page,label,nextTitle=null){
+ if(await tradeLabel(page,label)){if(label==='Preview purchase')return;}
+ else
  await modal(page).getByRole('button',{name:label,exact:true}).click();
  await page.waitForFunction(next=>!document.querySelector('#modal').open||Boolean(document.querySelector('#modal-error').textContent)||(next&&document.querySelector('#modal-title').textContent===next),nextTitle);
  assert.equal(await page.locator('#modal-error').textContent(),'','Actual UI submit must finish without a validation/runtime error');
@@ -166,7 +169,7 @@ async function purchaseCase(page,context,result,f){
   await ledgerAudit(page,entry.id,lot.audit.price.audit.dice.dice,outcome);
  }
  // Fully removing a bought lot must not erase its original purchase audit.
- const removed=bought[0];await armDice(page,[6,6,6]);await tab(page,'Cargo');await action(page,'lot-sell',removed.lot.id).click();
+ const removed=bought[0];await armDice(page,[6,6,6]);await tab(page,'Cargo');await tab(page,'Trade');await existingSell(page);await action(page,'lot-sell',removed.lot.id).click();
  await flags(modal(page),'severe');await submit(page,'Preview sale','Confirm sale');await submit(page,'COMMIT SALE');
  assert.equal((await read(page)).lots.some(l=>l.id===removed.lot.id),false);
  const sold=await read(page);await diceUsed(page,[6,6,6]);await reload(page);assert.deepEqual(await read(page),sold);
@@ -176,7 +179,7 @@ async function purchaseCase(page,context,result,f){
 
 async function saleCase(page,context,result,f){
  const initial=await raw(page),before=JSON.parse(initial),rolled=[...pair,...triple];
- await armDice(page,rolled);await tab(page,'Cargo');await action(page,'sale-all').click();await action(page,'sale').click();await title(page,'Prepare sale · Deterministic buyer');
+ await armDice(page,rolled);await tab(page,'Cargo');await action(page,'sale-all').click();await existingSell(page);await action(page,'sale').click();await title(page,'Prepare sale · Deterministic buyer');
  const prepLot=id=>modal(page).locator('.preview').filter({has:page.locator('[name="qty_'+id+'"]')});
  await flags(prepLot('sale-pair'),'complication');await flags(prepLot('sale-severe'),'severe');
  const initialPrices={pair:await modal(page).locator('[name="price_sale-pair"]').inputValue(),severe:await modal(page).locator('[name="price_sale-severe"]').inputValue()};
@@ -192,7 +195,7 @@ async function saleCase(page,context,result,f){
  assert.equal(await raw(page),initial,'Negotiation and cancelled confirmation never write a campaign change');
  // Cancel/reopen, editing quantities/fees, then cancel again must reuse both
  // original per-lot offers rather than rolling once for each UI callback.
- await action(page,'sale').click();await title(page,'Prepare sale · Deterministic buyer');
+ await existingSell(page);await action(page,'sale').click();await title(page,'Prepare sale · Deterministic buyer');
  await fill(page,'qty_sale-pair',1);await fill(page,'qty_sale-severe',2);await fill(page,'fee',7);
  await submit(page,'Preview sale','Confirm sale');await modal(page).getByRole('button',{name:'Edit quantities / fees',exact:true}).click();await title(page,'Prepare sale · Deterministic buyer');
  assert.equal(await modal(page).locator('[name="qty_sale-pair"]').inputValue(),'1');assert.equal(await modal(page).locator('[name="qty_sale-severe"]').inputValue(),'2');assert.equal(await modal(page).locator('[name="fee"]').inputValue(),'7');
@@ -203,7 +206,7 @@ async function saleCase(page,context,result,f){
   assert.equal(await saleRow.locator('.trade-complication').count(),1,'Each Sale Price cell shows its own cached lot flag');
   await action(page,'lot-audit',id).click();await audit(page,id==='sale-pair'?pair:triple,outcome);await dismiss(page);
  }
- assert.equal(await raw(page),initial);await action(page,'sale').click();await title(page,'Prepare sale · Deterministic buyer');
+ assert.equal(await raw(page),initial);await existingSell(page);await action(page,'sale').click();await title(page,'Prepare sale · Deterministic buyer');
  assert.equal(await modal(page).locator('[name="price_sale-pair"]').inputValue(),initialPrices.pair);
  assert.equal(await modal(page).locator('[name="price_sale-severe"]').inputValue(),initialPrices.severe);
  // Both local-ban repricing paths preserve faces. One lot additionally gets
@@ -239,10 +242,10 @@ async function saleCase(page,context,result,f){
  assert.equal(await page.locator('.cargo-table').getByText('Not negotiated',{exact:true}).count(),2);
  // A real campaign mutation invalidates a cached quote and permits exactly
  // one fresh 3D roll. The old purchase/sale audits remain independent.
- await armDice(page,distinct);await action(page,'lot-sell','sale-pair').click();await flags(modal(page),'none');await dismiss(page);await diceUsed(page,distinct);
+ await armDice(page,distinct);await action(page,'lot-sell','sale-pair').click();assert.equal(await page.locator('#modal').evaluate(el=>el.open),false,'Lot sell navigates without negotiating');await action(page,'sale').click();await title(page,'Prepare sale · Deterministic buyer');await flags(modal(page),'none');await dismiss(page);await diceUsed(page,distinct);
  await tab(page,'Accounts');await action(page,'bank-correct').click();await fill(page,'amount',1);await fill(page,'reason','Synthetic revision invalidation');await submit(page,'Save');
  await tab(page,'Cargo');const invalid=row(page,'cargo','sale-pair');await flags(invalid,'none');assert.match(await invalid.locator('td').nth(4).innerText(),/Not negotiated/);
- const revised=await raw(page);await armDice(page,[4,4,4]);await action(page,'lot-sell','sale-pair').click();await flags(modal(page),'severe');await dismiss(page);await diceUsed(page,[...distinct,4,4,4]);assert.equal(await raw(page),revised);
+ const revised=await raw(page);await armDice(page,[4,4,4]);await action(page,'lot-sell','sale-pair').click();assert.equal(await page.locator('#modal').evaluate(el=>el.open),false,'Lot sell navigates without negotiating');await action(page,'sale').click();await title(page,'Prepare sale · Deterministic buyer');await flags(modal(page),'severe');await dismiss(page);await diceUsed(page,[...distinct,4,4,4]);assert.equal(await raw(page),revised);
  await layout(page);await screenshot(page,result,'trade-complications-restored-'+result.id+'.png');
 }
 

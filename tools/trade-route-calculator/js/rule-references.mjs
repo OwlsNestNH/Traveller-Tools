@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=route-layout-20261013-84';
+import {escapeHtml as esc} from './display.mjs?v=buy-page-20261013-85';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.

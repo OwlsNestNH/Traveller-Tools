@@ -42,7 +42,7 @@ test('actual Settings save persists all three DMs without merging mail/legacy va
 });
 test('actual supplier search records an explicit characteristic override and preserves existing audits',async()=>{
  const s=guiFixture().state;s.trader.characteristic=2;s.trader.soc=-1;s.trader.characteristics={int:20,edu:-2,soc:3};
- const before=structuredClone(s),h=harness(s);h.api.actions.search();
+ const before=structuredClone(s),h=harness(s);h.api.searchDialog();
  assert.equal(h.dom.fields().get('characteristic').value,'-2','Online initial default is EDU');
  h.fill({party:'Synthetic overridden search',method:'blackMarket',dice:'12',duration:'1',characteristic:'-4'});await h.submit();await h.submit();
  const saved=h.persisted(),snapshot=saved.snapshots.at(-1);assert.equal(snapshot.search.characteristic,-4);assert.equal(snapshot.search.method,'blackMarket');assert.equal(snapshot.search.hours,24);

@@ -346,7 +346,7 @@ async function prepare(page, scenario, before, {loops = false, select = true, ne
  const initialCalls = (await gate(page)).totalCalls;
  const spec = specification(before, scenario);
  const enter = async () => {
-  if (scenario.map) await page.evaluate(() => purchaseGate.dispatch('buy', 'purchase-offer')); else await action(page, 'buy', 'purchase-offer').click(); await page.locator('#modal-title').filter({hasText: /^Purchase ·/}).waitFor();
+  if (scenario.map) await page.evaluate(() => purchaseGate.dispatch('buy', 'purchase-offer')); else await action(page, 'buy', 'purchase-offer').click(); await page.locator('#modal-title').filter({hasText: /^Review purchase ·/}).waitFor();
   assert.equal(await page.locator('#modal [name="fee"]').inputValue(), String(before.snapshots[0].options.local ? (scenario.illegal ? 20 : 10) : 0), 'Saved local-broker legality sets default fee');
   await fill(page, 'quantity', scenario.rounded ? '1.2' : spec.quantity); await fill(page, 'fee', spec.args.feePercent); await fill(page, 'description', spec.args.description);
   if (scenario.insured) {
@@ -361,8 +361,8 @@ async function prepare(page, scenario, before, {loops = false, select = true, ne
    assert.deepEqual(await read(page), before, 'Live purchase premium estimate never saves');
   }
   // Real input blur/normalization precedes both preview and the no-entry baseline.
-  await page.locator('#modal-submit').focus(); await pointer(page, '#modal-submit');
-  await page.locator('#modal-title').filter({hasText: /^Confirm purchase$/}).waitFor(); await frames(page);
+  await page.locator('#modal-submit').focus();
+  await page.locator('#purchase-totals').waitFor(); await frames(page);
   assert.equal(await page.locator('#modal-error').textContent(), '');
   assert.equal(await page.evaluate(() => purchaseDiceCalls), 0, 'Preparation uses saved original price dice without rerolling');
   assert.equal((await gate(page)).totalCalls, initialCalls); assert.deepEqual(await read(page), before, 'Preparation and preview write nothing');

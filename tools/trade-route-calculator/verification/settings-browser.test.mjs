@@ -1,3 +1,4 @@
+import {existingSell} from './trade-ui.mjs';
 // Standalone deterministic Chromium regression for the compact Settings page.
 // TRAVELLER_TEST_URL=http://127.0.0.1:8765/ node verification/settings-browser.test.mjs [playwright-module]
 // Only synthetic campaigns and intercepted Traveller Map responses are used.
@@ -422,11 +423,15 @@ try{
   await set('intDM','5');await set('eduDM','-2');await set('tradeSocDM','3');await page.locator('#settings-save').click();await page.waitForFunction(key=>JSON.parse(localStorage.getItem(key)).trader.characteristics?.int===5,campaignKey);
   const saved=await read();assert.deepEqual(saved.trader.characteristics,{int:5,edu:-2,soc:3});assert.equal(saved.trader.soc,-1);assert.equal(saved.trader.characteristic,2);
   for(const kind of ['search','buyer-search']){
-   await tab('Trade');await page.locator('#main [data-action="'+kind+'"]').click();
-   const method=page.locator('#modal [name="method"]'),dm=page.locator('#modal [name="characteristic"]');
-   assert.equal(await dm.inputValue(),'-2','TL8+ online search uses EDU');
-   await method.selectOption('normal');assert.equal(await dm.inputValue(),'3','Broker defaults to one allowed DM');await method.selectOption('blackMarket');assert.equal(await dm.inputValue(),'3','Streetwise uses EDU/SOC, excluding higher stored INT');
-   await dm.fill('-4');await method.selectOption('online');assert.equal(await dm.inputValue(),'-4','Method change retains explicit override');await page.locator('#modal-cancel').click();
+   await tab('Trade');await page.locator('[data-action="trade-side"][data-arg="'+(kind==='search'?'buy':'sell')+'"]').click();await page.locator('#main [data-action="'+kind+'"]').click();
+   const root=kind==='search'?'#supplier-form':'#modal',method=page.locator(root+' [name="method"]'),dm=page.locator(root+' [name="characteristic"]');
+   if(kind==='search'){
+    const choice=page.locator(root+' [name="characteristicChoice"]');assert.equal(await choice.inputValue(),'edu');assert.equal(await choice.isDisabled(),true);assert.match(await choice.locator('option:checked').textContent(),/-2/);assert.equal(await dm.inputValue(),'');
+    await method.selectOption('normal');assert.equal(await choice.inputValue(),'soc');assert.match(await choice.locator('option:checked').textContent(),/\+3/);await method.selectOption('blackMarket');assert.equal(await choice.inputValue(),'soc');
+   }else{
+    assert.equal(await dm.inputValue(),'-2','TL8+ online uses EDU');await method.selectOption('normal');assert.equal(await dm.inputValue(),'3','Broker defaults to allowed DM');await method.selectOption('blackMarket');assert.equal(await dm.inputValue(),'3','Streetwise excludes INT');
+   }
+   await dm.fill('-4');await method.selectOption('online');assert.equal(await dm.inputValue(),'-4','Method change retains explicit override');if(kind==='search')await page.locator('[data-action="supplier-cancel"]').click();else await page.locator('#modal-cancel').click();
   }
   await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();assert.deepEqual((await read()).trader,saved.trader);await tab('History');await page.locator('#main [data-action="undo"]').click();const undone=await read();assert.equal('characteristics' in undone.trader,false);assert.equal(undone.trader.characteristic,2);assert.equal(undone.trader.soc,-1);
   await h.finish('characteristics-'+width);console.log('PASS: '+width+'px legacy characteristic migration, separate mail SOC, INT exclusion, supplier/buyer method defaults, manual overrides, reload and Undo.');

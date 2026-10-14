@@ -1,3 +1,4 @@
+import {tradeLabel,tradeField,existingSell,purchaseTitle} from './trade-ui.mjs';
 // Bounded Stage 2 SALE COMMIT gate. Production app/controller/rules/Store run
 // unchanged with the discovered version-tagged Store and native Web Locks.
 // Test-owned wrappers hold provider invocation separately from completion and
@@ -328,7 +329,7 @@ async function fill(page, name, value) {
 }
 async function prepare(page, scenario, before, {select = true, loops = false} = {}) {
  if (select) {await tab(page, 'Cargo'); await action(page, 'sale-all').click();}
- await action(page, 'sale').click(); await page.locator('#modal-title').filter({hasText: 'Prepare sale · Synthetic buyer'}).waitFor();
+ await existingSell(page);await action(page, 'sale').click(); await page.locator('#modal-title').filter({hasText: 'Prepare sale · Synthetic buyer'}).waitFor();
  const spec = specification(before, scenario);
  assert.equal(await page.evaluate(() => saleDiceCalls), 9, 'Three natural price dice per selected lot, once');
  for (const [name, value] of Object.entries(spec.fields)) await fill(page, name, value);
