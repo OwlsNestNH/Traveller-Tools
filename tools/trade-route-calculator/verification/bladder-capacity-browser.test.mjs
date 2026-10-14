@@ -35,7 +35,7 @@ try{
   const tab=name=>page.locator('#tabs [data-arg="'+name+'"]').click();
   const field=name=>page.locator('#settings-form [name="'+name+'"]');
   async function set(name,value){
-   const input=field(name);for(const detail of await input.locator('xpath=ancestor::details').all())if(!await detail.evaluate(el=>el.open))await detail.locator(':scope > summary').click();
+   const input=field(name);for(const detail of await input.locator('xpath=ancestor::details').all())if(!await detail.evaluate(el=>el.open))await detail.locator(':scope > summary').click({position:{x:8,y:8}});
    await input.fill(String(value));
   }
   const save=()=>page.locator('#settings-save').click();
