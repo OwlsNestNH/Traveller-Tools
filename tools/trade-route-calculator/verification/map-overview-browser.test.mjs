@@ -129,8 +129,8 @@ try{
  for(const width of [1440,390]){
   await page.setViewportSize({width,height:width===390?844:1100});
   await click('Reset view');assert.equal(await page.locator('.world-subsector-labels').count(),0);
-  await click('-');assert.equal(await page.locator('.world-subsector-labels').count(),0,'83% is above the name band');
-  await click('-');
+  await click('Zoom out');await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));assert.equal(await page.locator('.world-subsector-labels').count(),0,'83% is above the name band');
+  await click('Zoom out');await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
   await page.locator('.world-subsector-labels .subsector-name').first().waitFor({state:'attached'});
   assert.equal(await level(),'world');assert.ok(await page.locator('[data-action="map-world"]').count()>0);
   await page.screenshot({fullPage:true,path:artifacts+`/map-world-subsectors-${width}.png`});
