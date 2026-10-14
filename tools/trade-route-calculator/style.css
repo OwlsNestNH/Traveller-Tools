@@ -488,3 +488,17 @@ main{padding-top:18px}
  .sale-table td:nth-child(3)::before{display:none}
  .sale-review input[name^=qty_],.sale-table input[type=number]{max-width:160px;min-height:44px}
 }
+
+/* Compact Sell rows: primary values share one center line; details wrap. */
+.sale-table{min-width:0!important}.sale-table td{vertical-align:top;padding:12px 10px}.sale-table th{vertical-align:top}.sale-table .cell-primary{min-height:42px;margin:0;line-height:1.4;display:flex;align-items:flex-start;justify-content:flex-start}.sale-table .cell-primary.number{justify-content:flex-end;white-space:normal}.sale-table .cargo-name{gap:9px}.sale-table .cargo-name input{flex:none;width:16px;height:16px;margin:2px 0 0;min-height:0}.sale-table .help{margin-top:7px;line-height:1.5}.sale-table td:nth-child(4) .help,.sale-table td:nth-child(5) .help{text-align:right}.sale-table input[type=number]{width:95px;min-height:40px;max-width:100%;padding:8px}.sale-table .row-actions{display:flex;gap:5px;flex-wrap:wrap}.sale-table button{min-height:36px;margin:0}.sale-table .sell{border-color:var(--cyan);color:var(--cyan)}
+@media(max-width:900px){.sale-table .cell-primary{min-height:0}.sale-table .cell-primary.number{justify-content:flex-start}.sale-table td:nth-child(4) .help,.sale-table td:nth-child(5) .help{text-align:left}.sale-table td:nth-child(3)::before{display:block}.sale-table td{padding:9px}.sale-table .row-actions button{min-height:42px}}
+
+.sale-table td{padding:4px 8px}.sale-table .cell-primary{min-height:32px;line-height:16px;font-size:12px;align-items:center;gap:6px}.sale-table .price{flex-wrap:wrap;gap:2px 8px}.sale-table .price small{font-size:10px;color:var(--muted);white-space:nowrap}.sale-table input[type=number]{min-height:32px;height:32px;font-size:12px;line-height:18px;padding:5px 6px;width:68px}.sale-table button{min-height:28px;height:28px;font-size:11px;padding:4px 6px}.sale-table .row-actions{min-height:32px;align-items:center;gap:4px}.sale-table .cargo-name input{margin:0}
+@media(max-width:900px){.sale-table td{padding:5px 8px}.sale-table .cell-primary{min-height:28px;justify-content:flex-start}.sale-table .price{justify-content:flex-start}.sale-table tr{padding:5px;margin:8px 0}.sale-table .row-actions button{min-height:38px;height:38px}.sale-table input[type=number]{min-height:40px;height:40px}.sale-table td::before{margin-bottom:2px}.sale-table .cell-primary.number{justify-content:flex-start}}
+
+@media(max-width:900px){.sale-table td:nth-child(3)::before{display:block}}
+
+.sale-table .table-actions button{margin:0!important;min-height:28px;height:28px}
+.sale-table .cargo-name{align-items:flex-start}.sale-table .cargo-name>span{padding:8px 0}.sale-table .cargo-name input{margin-top:8px}
+@media(max-width:900px){.sale-table .table-actions button{min-height:38px;height:38px}}
+.sale-table .price>span{display:flex;align-items:center;min-height:32px}.sale-table .price{align-content:flex-start}

@@ -10,7 +10,7 @@ await mkdir(artifacts,{recursive:true});
 const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BROWSER_CHANNEL?{channel:process.env.TRAVELLER_BROWSER_CHANNEL}:{})}),report=[];
 try{
  for(const width of [1440,1100,768,390,320]){
-  const f=guiFixture();f.state.settings.insurance=true;
+  const f=guiFixture();f.state.settings.insurance=true;f.state.lots[2].description=f.state.lots[1].description;
   f.state.lots[0].description='Synthetic long cargo name — precision electronics held as a separately audited lot';
   const bytes=JSON.stringify(f.state),context=await browser.newContext({viewport:{width,height:900}});
   await context.addInitScript(({key,bytes})=>{if(!localStorage.getItem(key))localStorage.setItem(key,bytes);},{key:campaignKey,bytes});
@@ -24,6 +24,23 @@ try{
   assert.equal(await page.locator('[data-action="lot-audit"]').count(),f.state.lots.length);
   assert.equal(await page.locator('[data-action="lot-correct"]').count(),f.state.lots.length);
   assert.equal(await page.locator('[data-action="lot-insure"]').count(),f.state.lots.length);
+  if(width>=1100){
+   const alignment=await page.locator('.sale-table tbody tr').evaluateAll(rows=>rows.map(row=>{
+    const textCenter=el=>{const range=document.createRange();range.selectNodeContents(el);const r=range.getClientRects()[0];return r.y+r.height/2;};
+    const input=row.querySelector('[data-sale-quantity]').getBoundingClientRect();
+    const values=[...row.querySelectorAll('td:nth-child(1) .cargo-name>span,td:nth-child(2) .cell-primary,td:nth-child(4) .price>span,td:nth-child(5) .price>span,td:nth-child(6) .cell-primary,.row-actions button:first-child')].map(textCenter);
+    values.push(input.y+input.height/2);return {spread:Math.max(...values)-Math.min(...values),height:row.getBoundingClientRect().height};
+   }));
+   for(const row of alignment)assert.ok(row.spread<=3,'Primary text and quantity numerals share a visual center line: '+JSON.stringify(row));
+   if(width>=1440)assert.ok(alignment.some(row=>row.height<=43),'Ordinary rows retain approved compact density');
+  }
+  // Same-description lots stay distinguishable through the existing keyboard/touch Audit action.
+  for(const lot of f.state.lots.slice(1)){
+   const audit=page.locator('[data-action="lot-audit"][data-arg="'+lot.id+'"]');
+   await audit.focus();await audit.press('Enter');
+   assert.equal(await page.locator('#modal-body dt').filter({hasText:/^Lot ID$/}).locator('xpath=following-sibling::dd[1]').textContent(),lot.id);
+   assert.equal(await raw(),bytes,'Audit identity is read-only');await page.locator('#modal-cancel').click();
+  }
   await click('sale-all');await page.locator('[data-sale-quantity]').first().fill('1');
   if(width<=390){
    const quantity=page.locator('[data-sale-quantity]').first();await quantity.scrollIntoViewIfNeeded();
@@ -44,3 +61,5 @@ try{
  }
  await writeFile(artifacts+'sell-page-report.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));
 }finally{await browser.close();}
+
+

@@ -206,3 +206,14 @@ tax off; a deliberate manual rate needs a reason and is audited. The criminal
 automatic exemption and ten-point criminal price-limit widening are house rules.
 The focused browser suites cover desktop and narrow layouts; full exact-head CI
 and independent source/pixel review remain release gates.
+
+## Compact Sell rows — UI .88 candidate
+
+The approved compact layout aligns primary text, quantities, prices and row Sell
+on one visual center line. Historical paid and sale percentages remain inline
+when space permits; details and secondary actions wrap naturally. Long lot IDs
+and the repeated commodity category remain available in each lot's Audit, with
+identity retained in the row tooltip. Rows have no count or height cap. Below
+900px the existing labelled-card presentation retains readable quantity inputs
+and all row actions. The selection summary remains text. This presentation-only
+change preserves the combined sale review and transaction protections above.
