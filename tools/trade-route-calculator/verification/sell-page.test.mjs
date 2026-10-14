@@ -33,3 +33,15 @@ test('new revision retires unsaved quantities and read-only edits do not change 
  const next=structuredClone(h.api.state);next.revision++;h.api.setState(next);
  assert.match(h.api.cargoPanel(false),/data-sale-quantity="one" value="2.5"/);assert.equal(h.calls.saves,0);
 });
+test('turning automatic taxes off retires an open review and reopens with a visible zero GM rate',async()=>{
+ const s=fixture();s.settings.tax=true;s.worlds[s.actual].uwp='A788879-C';const h=harness(s);h.api.setSelected(['two']);h.api.beginSale();
+ h.fill({qty_two:'1',price_two:'25000',reason:'Synthetic GM quote'});h.api.updateSaleReview();
+ const next=structuredClone(h.api.state);next.revision++;next.settings.tax=false;h.api.setState(next);
+ assert.equal(h.dom.ids.get('modal-submit').disabled,true);await h.submit();assert.equal(h.calls.saves,0);
+ h.api.closeModal();h.api.beginSale();assert.equal(h.dom.fields().get('taxRate').value,'0');assert.equal(h.api.modalSession.saleOwner.preview.tax.amount,'0');
+ assert.match(h.api.modalSession.saleOwner.preview.tax.provenance,/Automatic taxes off/);assert.equal(h.calls.saves,0);
+});
+test('same-reference campaign drift cannot replace or commit a previously reviewed sale',async()=>{
+ const h=harness(fixture());h.api.setSelected(['one']);h.api.beginSale();h.api.state.bank='999';
+ await h.submit();assert.equal(h.calls.saves,0);assert.match(h.dom.ids.get('modal-error').textContent,/Campaign changed|ownership changed/);
+});
