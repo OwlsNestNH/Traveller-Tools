@@ -38,13 +38,13 @@ const raw=page=>page.evaluate(key=>localStorage.getItem(key),campaignKey);
 const modal=page=>page.locator('#modal[open]');
 const action=(page,name,arg)=>page.locator('#main [data-action="'+name+'"]'+(arg===undefined?'':'[data-arg="'+arg+'"]'));
 const tab=(page,name)=>page.locator('#tabs [data-arg="'+name+'"]').click();
-const title=(page,text)=>page.getByRole('heading',{name:text,exact:true}).waitFor();
+const title=(page,text)=>page.getByRole('heading',{name:purchaseTitle(text),exact:true}).waitFor();
 async function fill(page,name,value){
  const input=modal(page).locator('[name="'+name+'"]');
  for(const details of await input.locator('xpath=ancestor::details').all())if(!await details.evaluate(el=>el.open))await details.locator(':scope > summary').click();
  await input.fill(String(value));
 }
-async function submit(page,label,nextTitle=null){
+async function submit(page,label,nextTitle=null){if(await tradeLabel(page,label))return;
  await modal(page).getByRole('button',{name:label,exact:true}).click();
  await page.waitForFunction(next=>!document.querySelector('#modal').open||Boolean(document.querySelector('#modal-error').textContent)||(next&&document.querySelector('#modal-title').textContent===next),nextTitle);
  assert.equal(await page.locator('#modal-error').textContent(),'','No form validation/runtime error');
@@ -77,15 +77,15 @@ async function priceCase(page,context,result,f){
  await reload(page);await undo(page);await openSale(page);await fill(page,'ban_legacy',5);await fill(page,'price_legacy',123456);await fill(page,'benchmark_legacy',234567);await fill(page,'reason','Synthetic special terms');await submit(page,'Preview sale','Confirm sale');await submit(page,'COMMIT SALE');line=sales(await read(page)).at(-1).audit;assert.equal(line.unitPrice,'123456');assert.equal(line.benchmarkPrice,'234567');assert.equal(line.audit.manualPrice,'123456');
 }
 async function noncriminalCase(page,context,result,f){
- const before=await raw(page);await openSale(page);await fill(page,'ban_legacy',5);await modal(page).getByRole('button',{name:'Preview sale',exact:true}).click();
- await page.waitForFunction(()=>document.querySelector('#modal-error').textContent.includes('Locally banned cargo needs a black-market buyer'));
+ const before=await raw(page);await openSale(page);await fill(page,'ban_legacy',5);await modal(page).locator('[name=fee]').blur();assert.equal(await page.locator('#modal-submit').isDisabled(),true);
+ await page.waitForFunction(()=>document.querySelector('#sale-review-error').textContent.includes('Locally banned cargo needs a black-market buyer'));
  assert.equal(await raw(page),before);await screenshot(page,result,'blocked-local-ban');await dismiss(page);
 }
 async function fractionalCase(page,context,result,f){
  const before=await read(page),beforeBytes=await raw(page),quantity=before.lots[0].quantity;
  await openSale(page);const input=modal(page).locator('[name="qty_legacy"]');assert.equal(await input.inputValue(),quantity);assert.equal(await input.getAttribute('step'),'any');assert.equal(await input.evaluate(el=>el.checkValidity()),true);
  await submit(page,'Preview sale','Confirm sale');assert.equal(await raw(page),beforeBytes);assert.match(await modal(page).innerText(),new RegExp(quantity.replace('.','\\.')+'\\s'));
- await modal(page).getByRole('button',{name:'Edit quantities / fees',exact:true}).click();await title(page,'Prepare sale · Audit buyer');assert.equal(await modal(page).locator('[name="qty_legacy"]').inputValue(),quantity);
+ await tradeLabel(page,'Edit quantities / fees');await title(page,'Prepare sale · Audit buyer');assert.equal(await modal(page).locator('[name="qty_legacy"]').inputValue(),quantity);
  await submit(page,'Preview sale','Confirm sale');await screenshot(page,result,'exact-quantity-preview');await dismiss(page);assert.equal(await raw(page),beforeBytes);
  await openSale(page);await submit(page,'Preview sale','Confirm sale');await submit(page,'COMMIT SALE');const sold=await read(page);assert.equal(sold.lots.length,0);assert.equal(sales(sold)[0].audit.quantity,quantity);assert.equal(sales(sold)[0].audit.basis,'1001');
  await reload(page);assert.equal((await read(page)).lots.length,0);await undo(page);const restored=await read(page);assert.deepEqual(restored.lots,before.lots);assert.equal(restored.bank,before.bank);await screenshot(page,result,'restored');

@@ -36,4 +36,4 @@ export async function existingSell(page){
  const sell=page.locator('.trade-subtabs [data-action="trade-side"][data-arg="sell"]');
  if(await sell.count()&&!await sell.evaluate(el=>el.classList.contains('active')))await sell.click();
 }
-export function purchaseTitle(text){return text==='Confirm purchase'?/^Review purchase/:typeof text==='string'&&text.startsWith('Purchase · ')?text.replace('Purchase · ','Review purchase · '):text;}
+export function purchaseTitle(text){if(text==='Confirm sale')return /^Review sale/;if(typeof text==='string'&&text.startsWith('Prepare sale'))return 'Review sale — '+text.replace(/^Prepare sale[^\p{L}\p{N}]*/u,'');return text==='Confirm purchase'?/^Review purchase/:typeof text==='string'&&text.startsWith('Purchase · ')?text.replace('Purchase · ','Review purchase · '):text;}

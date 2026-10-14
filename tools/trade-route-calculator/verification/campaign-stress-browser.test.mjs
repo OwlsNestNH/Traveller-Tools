@@ -56,7 +56,7 @@ const action=(page,name,arg)=>page.locator('[data-action="'+name+'"]'+(arg===und
 const tab=(page,name)=>page.locator('#tabs [data-arg="'+name+'"]').click();
 const modal=page=>page.locator('#modal[open]');
 const closed=page=>page.locator('#modal').waitFor({state:'hidden'});
-const heading=(page,name)=>page.getByRole('heading',{name,exact:true}).waitFor();
+const heading=(page,name)=>page.getByRole('heading',{name:purchaseTitle(name),exact:true}).waitFor();
 const frames=page=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
 const comparable=s=>Object.fromEntries(Object.entries(s).filter(([key])=>!['revision','events','jumpAttempts'].includes(key)));
 const accounting=s=>({bank:s.bank,hours:s.hours,lots:s.lots,ledger:s.ledger,ship:s.ship,actual:s.actual,route:s.route,routeIndex:s.routeIndex});
@@ -174,7 +174,7 @@ async function tradingCase(page,context,result){
  await saleDraft(page);const diceBefore=await page.evaluate(()=>globalThis.stressDice.calls);
  await submit(page,'Preview sale','Confirm sale');await layout(page,result,'partial-sale-review');await dismiss(page,'Escape');await unchanged(page,beforeSale,'Cancelled mixed-basis partial sale');
  await saleDraft(page);assert.equal(await page.evaluate(()=>globalThis.stressDice.calls),diceBefore,'Cancel/reopen reuses the buyer quotes');
- await submit(page,'Preview sale','Confirm sale');await action(page,'sale-edit').click();await heading(page,'Prepare sale · Stress buyer');
+ await submit(page,'Preview sale','Confirm sale');await tradeLabel(page,'Edit quantities / fees');await heading(page,'Prepare sale · Stress buyer');
  assert.equal(await modal(page).locator('[name="qty_stress-low"]').inputValue(),'1');assert.equal(await modal(page).locator('[name="qty_stress-high"]').inputValue(),'2');
  await submit(page,'Preview sale','Confirm sale');await submit(page,'COMMIT SALE',null,{double:true});
  const sold=await read(page),entries=sold.ledger.slice(bought.ledger.length),sales=entries.filter(e=>e.type==='Sale');
@@ -215,8 +215,8 @@ async function invalidCase(page,context,result){
  }
  for(const [name,value]of [['qty_stress-low','5'],['fee','101'],['price_stress-low','-1'],['price_stress-low','1e309']]){
   await saleDraft(page);const field=modal(page).locator('[name="'+name+'"]');await reveal(field);await field.fill('');await field.pressSequentially(value);
-  await modal(page).getByRole('button',{name:'Preview sale',exact:true}).click();await frames(page);
-  assert.equal(await page.locator('#modal-title').innerText(),'Prepare sale · Stress buyer','Invalid sale never reaches commit');
+  await field.blur();await frames(page);assert.equal(await page.locator('#modal-submit').isDisabled(),true);
+  assert.match(await page.locator('#modal-title').innerText(),/^Review sale/,'Invalid sale never reaches commit');
   result.invalidInputs.push({form:'sale',field:name,attempt:value,value:await field.inputValue(),error:await page.locator('#modal-error').innerText()});
   await unchanged(page,initial,'Invalid sale '+name+'='+value);await dismiss(page);
  }

@@ -435,7 +435,7 @@ async function reloadUndo(page, result, before, scenario, {committed = true} = {
 async function successful(page, result, before, scenario) {
  const legalMismatch=scenario.illegalCargo&&scenario.method!=='blackMarket';
  const handoff = scenario.kind === 'buyer' && !scenario.unsuccessful && scenario.selected&&!legalMismatch;
- if (handoff) await page.locator('#modal-title').filter({hasText: /^Prepare sale · Synthetic buyer$/}).waitFor(); else await closed(page);
+ if (handoff) await page.locator('#modal-title').filter({hasText: /^Review sale.*Synthetic buyer$/}).waitFor(); else await closed(page);
  await frames(page); assertSearch(await read(page), before, scenario);
  const snapshot = await gate(page), saved = await read(page), snap = saved.snapshots.at(-1);
  assert.equal(await raw(page), snapshot.candidates.at(-1)); assert.equal(snapshot.storage.writes, 1); assert.equal(snapshot.durableToken, false); assert.equal(snapshot.reloadRequired, false); assert.equal(await page.locator('#modal-error').textContent(), '');
@@ -643,7 +643,7 @@ async function runBody(page, result, scenario, context) {
   assert.equal(immediate.writes,1,'Native Store saves before any added microtask');
   const handoff=!!scenario.selected&&!(scenario.illegalCargo&&scenario.method!=='blackMarket');
   assert.equal(immediate.open,handoff,'Native same-turn completion closes review or opens requested buyer handoff');
-  if(handoff)assert.equal(immediate.title,'Prepare sale · Synthetic buyer'); await frames(page); assert.equal((await gate(page)).totalCalls,1);
+  if(handoff)assert.match(immediate.title,/^Review sale.*Synthetic buyer$/); await frames(page); assert.equal((await gate(page)).totalCalls,1);
   if(mode==='reentrant')assert.ok((await gate(page)).reentrantChecks.every(item=>item.sameTitle&&item.sameOpen)); await successful(page,result,before,scenario); return;
  }
  await page.evaluate(mode=>{
