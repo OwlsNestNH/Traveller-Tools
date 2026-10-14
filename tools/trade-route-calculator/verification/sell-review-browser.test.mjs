@@ -24,6 +24,10 @@ try{for(const width of [1440,390,320])for(const mode of ['off','manual','automat
  await fill('qty_lot-recorded','1');await fill('price_lot-recorded','25000');await fill('fee','10');await fill('reason','Synthetic explicit GM price and optional tax');
  if(mode==='manual')await fill('taxRate','8');
  if(mode==='off')assert.equal(await page.locator('[name="taxRate"]').inputValue(),'0');
+ if(mode==='off'||mode==='manual'){
+  const tax=page.locator('#modal [name="taxRate"]');assert.equal(await tax.isEditable(),true);
+  await tax.evaluate(el=>el.scrollIntoView({block:'center'}));await page.screenshot({path:artifacts+'sell-review-gm-'+mode+'-'+width+'.png'});
+ }
  if(mode==='automatic'){
   assert.equal(await dice(),3);assert.equal(await page.locator('#modal-submit').isDisabled(),true);await click('sale-tax-roll');assert.equal(await dice(),4);
   await fill('qty_lot-recorded','3');assert.equal(await dice(),4);assert.equal(await page.locator('#modal-submit').isDisabled(),true);await click('sale-tax-roll');assert.equal(await dice(),5);
@@ -34,8 +38,16 @@ try{for(const width of [1440,390,320])for(const mode of ['off','manual','automat
  assert.match(await page.locator('#sale-live-preview').textContent(),mode==='manual'?/GM percentage override/:mode==='criminal'?/exemption \(house rule\)/:mode==='off'?/Automatic taxes off/:/Merchant Prince/);
  const count=await dice();await fill('qty_lot-recorded','999');assert.equal(await page.locator('#modal-submit').isDisabled(),true);assert.equal(await raw(),bytes);assert.equal(await dice(),count);await fill('qty_lot-recorded','1');
  const gm=page.locator('.sale-review > details').first();if(await gm.evaluate(el=>el.open))await gm.locator(':scope > summary').click();
+ if(width<=390){
+  for(const selector of ['.sale-review > .scroll',' #sale-live-preview > .scroll'])assert.ok(await page.locator(selector.trim()).evaluate(el=>el.scrollWidth<=el.clientWidth+2),'All review fields fit without horizontal scrolling');
+  const quantity=page.locator('[name="qty_lot-recorded"]');await quantity.scrollIntoViewIfNeeded();
+  assert.ok(await quantity.evaluate(el=>{const r=el.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth;}),'Quantity fully visible');
+  await quantity.fill('2');await quantity.blur();assert.match(await page.locator('#sale-live-preview').textContent(),/50,000/);await quantity.fill('1');await quantity.blur();assert.equal(await dice(),count);
+  await quantity.locator('..').evaluate(el=>el.scrollIntoView({block:'start'}));await page.screenshot({path:artifacts+'sell-review-quantity-'+mode+'-'+width+'.png'});
+ }
  await page.locator('#modal .scroll').evaluateAll(nodes=>nodes.forEach(el=>el.scrollLeft=0));await page.locator('#modal').evaluate(el=>el.scrollTop=0);await page.screenshot({path:artifacts+'sell-review-'+mode+'-'+width+'.png'});
  await page.locator('#modal-submit').scrollIntoViewIfNeeded();await page.screenshot({path:artifacts+'sell-review-footer-'+mode+'-'+width+'.png'});
+ if(width===1440){await page.locator('#sale-live-preview').evaluate(el=>el.scrollIntoView({block:'start'}));await page.screenshot({path:artifacts+'sell-review-prices-'+mode+'-'+width+'.png'});}
  await page.evaluate(key=>{const original=Storage.prototype.setItem;let fail=true;Storage.prototype.setItem=function(k,v){if(k===key&&fail){fail=false;throw new DOMException('Synthetic prewrite failure','QuotaExceededError');}return original.call(this,k,v);};},campaignKey);
  await page.locator('#modal-submit').click();await page.locator('#modal-error').filter({hasText:/Synthetic prewrite/}).waitFor();assert.equal(await raw(),bytes);assert.equal(await page.locator('[name="qty_lot-recorded"]').evaluate(el=>el.readOnly),true);
  await page.locator('#modal-submit').dblclick();await page.locator('#modal').waitFor({state:'hidden'});const saved=JSON.parse(await raw());assert.equal(saved.revision,f.state.revision+1);assert.equal(saved.lots.find(l=>l.id==='lot-recorded').quantity,'3');assert.equal(await dice(),count);assert.equal(saved.undo.length,f.state.undo.length+1);

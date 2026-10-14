@@ -467,3 +467,17 @@ main{padding-top:18px}
 @media(max-width:620px){.sell-cargo-scroll{max-height:none}.sale-table .table-actions button{min-height:42px}.selected-preview{flex-wrap:wrap}}
 .sale-review{min-width:0;overflow-wrap:anywhere}.sale-review>.scroll table{min-width:760px}.sale-review .field{min-width:0}.sale-review input{max-width:100%;min-width:0}.sale-review details{margin:12px 0}.sale-review #sale-live-preview .preview{border:0;padding:0;background:none}.sale-review #sale-live-preview dl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 14px}.sale-review #sale-live-preview dt,.sale-review #sale-live-preview dd{min-width:0;margin:0;white-space:normal}.sale-review #sale-live-preview>.scroll{max-height:280px}
 @media(max-width:620px){.sale-review .split{grid-template-columns:minmax(0,1fr)}.sale-review #sale-live-preview dl{grid-template-columns:minmax(0,1fr);gap:4px}.sale-review #sale-live-preview dd{margin-bottom:10px;text-align:left}}
+/* Sell quantities and reviewed prices stay in view without sideways navigation. */
+.sale-review #sale-live-preview table{min-width:0;width:100%;table-layout:fixed}
+.sale-review #sale-live-preview th:first-child{width:27%}.sale-review #sale-live-preview th:nth-child(2){width:7%}
+@media(max-width:900px){
+ .sell-cargo-scroll,.sale-review .sale-review-fields,.sale-review #sale-live-preview>.scroll{overflow:visible;max-height:none}
+ .sale-table,.sale-review .sale-review-fields table{display:block;min-width:0!important;width:100%;table-layout:auto}
+ .sale-table colgroup,.sale-table thead,.sale-review .sale-review-fields thead{display:none}
+ .sale-table tbody,.sale-review .sale-review-fields tbody{display:block}
+ .sale-table tr,.sale-review .sale-review-fields tr{display:block;margin:12px 0;border:1px solid var(--line);border-radius:6px;padding:8px}
+ .sale-table td,.sale-review .sale-review-fields td{display:block;width:auto!important;min-width:0;text-align:left!important;white-space:normal;overflow-wrap:anywhere;padding:8px}
+ .sale-table td::before,.sale-review .sale-review-fields td::before{content:attr(data-sale-label);display:block;font-size:11px;color:var(--muted);margin-bottom:5px}
+ .sale-table td:nth-child(3)::before{display:none}
+ .sale-review input[name^=qty_],.sale-table input[type=number]{max-width:160px;min-height:44px}
+}

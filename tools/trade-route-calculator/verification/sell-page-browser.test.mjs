@@ -25,6 +25,12 @@ try{
   assert.equal(await page.locator('[data-action="lot-correct"]').count(),f.state.lots.length);
   assert.equal(await page.locator('[data-action="lot-insure"]').count(),f.state.lots.length);
   await click('sale-all');await page.locator('[data-sale-quantity]').first().fill('1');
+  if(width<=390){
+   const quantity=page.locator('[data-sale-quantity]').first();await quantity.scrollIntoViewIfNeeded();
+   assert.ok(await quantity.evaluate(el=>{const r=el.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth;}),'Quantity fully visible without sideways navigation');
+   assert.ok(await page.locator('.sell-cargo-scroll').evaluate(el=>el.scrollWidth<=el.clientWidth+2));
+   await page.screenshot({path:artifacts+'sell-selection-quantity-'+width+'.png'});
+  }
   assert.match(await page.locator('#sale-selection-preview').textContent(),/Cargo projected/);assert.equal(await raw(),bytes);
   await page.locator('#cargo-search').fill('not present');assert.equal(await page.locator('.sale-table').count(),0);
   assert.match(await page.locator('#sale-selection-preview').textContent(),new RegExp(f.state.lots.length+' of '+f.state.lots.length+' held lots'));
