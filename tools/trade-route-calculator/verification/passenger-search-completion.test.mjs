@@ -7,6 +7,7 @@ import {campaign,attrs,element,A} from './app-harness.mjs';
 import {S,same,ui,flush} from './deposit-save-harness.mjs';
 import {serviceSaveGate} from './service-save-harness.mjs';
 import {SaveNotCommittedError} from '../js/persistence.mjs';
+import {showSubsectorNames} from '../js/map-overview.mjs';
 
 // Native full-app/controller/Store tests with private DOM/storage doubles.
 // Native Web Locks, bootstrap, map/observer callbacks and pixel evidence are
@@ -240,7 +241,7 @@ function mapHarness(owners = {}) {
   accountsWriteOperation: null,
   expenseServices: {publicationDeferred: () => false},
   worldWriteOperation: null, undoOperation: null, replacementReview: null, settingsOperation: null, purchaseWriteOperation: null, insuranceWriteOperation: null, contactSearchWriteOperation: null, contractOfferWriteOperation: null, contractLifecycleWriteOperation: null, passengerWriteOperation: null,
-  mapDrag: null, tab: 'Overview', mapZoom: 1, showTerritories: false,
+  showSubsectorNames,mapDrag: null, tab: 'Overview', mapZoom: 1, showTerritories: false,
   mapAreas: {error: null, pending: false}, mapOverview: {error: null, pending: false},
   document: {querySelector(selector) {assert.equal(selector, '.world-map'); calls.push('query'); return old;},
    createElement(tag) {assert.equal(tag, 'div'); calls.push('holder'); return holder;}},
@@ -261,6 +262,16 @@ function assertPainted(h) {
  h.paint(); assert.deepEqual(h.calls, ['query', 'viewed', 'holder', 'panel', 'markup', 'replace', 'level', 'status']);
  assert.equal(h.status.textContent, '', 'Normal painting resumes with current cache status');
 }
+
+test('subsector metadata status remains visible with Political off at world zoom',()=>{
+ for(const zoom of [.2,.5,.8]){
+  const pending=mapHarness({mapZoom:zoom,mapOverview:{pending:true,error:null}});pending.paint();
+  assert.match(pending.status.textContent,/Loading map data/);
+  const failed=mapHarness({mapZoom:zoom,mapOverview:{pending:false,error:'offline'}});failed.paint();
+  assert.match(failed.status.textContent,/Refresh nearby to retry/);
+ }
+ const close=mapHarness({mapZoom:1,mapOverview:{pending:false,error:'offline'}});assertPainted(close);
+});
 
 
 for(const pending of [false,true])for(const publicationDeferred of [false,true])for(const invalidated of [false,true])test(`passenger map: pending=${pending}, deferred=${publicationDeferred}, invalidated=${invalidated}`,()=>{const h=mapHarness({passengerWriteOperation:{pending,publicationDeferred,invalidated}});if(pending&&!invalidated)assertFrozen(h);else assertPainted(h);});

@@ -1,4 +1,4 @@
-import * as R from './rules.mjs?v=sell-compact-20261014-88';
+import * as R from './rules.mjs?v=subsector-labels-20261014-89';
 
 // Prepare one sale line from explicit lot/buyer/context/quote/commodity/core,
 // current pricing flags and creditStep, plus caller-normalized values:

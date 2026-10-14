@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
+import {showSubsectorNames} from '../js/map-overview.mjs';
 
 // Execute the complete production paintMap body. DOM/map dependencies are
 // spies, not copied guards; the companion browser suite owns real callbacks,
@@ -35,7 +36,7 @@ function harness(owners = {}) {
   clearRouteWriteOperation: null, clearRouteSaveOperation: null, plannedRouteWriteOperation: null, plannedRouteSaveOperation: null,
   expenseServices: {publicationDeferred: () => false},
   worldWriteOperation: null, undoOperation: null, replacementReview: null, settingsOperation: null, purchaseWriteOperation: null, insuranceWriteOperation: null, contactSearchWriteOperation: null, contractOfferWriteOperation: null, contractLifecycleWriteOperation: null, passengerWriteOperation: null,
-  mapDrag: null, tab: 'Overview', mapZoom: 1, showTerritories: false,
+  showSubsectorNames,mapDrag: null, tab: 'Overview', mapZoom: 1, showTerritories: false,
   mapAreas: {error: null, pending: false}, mapOverview: {error: null, pending: false},
   document: {querySelector(selector) {assert.equal(selector, '.world-map'); calls.push('query'); return old;},
    createElement(tag) {assert.equal(tag, 'div'); calls.push('holder'); return holder;}},

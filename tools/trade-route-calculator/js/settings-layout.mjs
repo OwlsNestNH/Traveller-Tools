@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=sell-compact-20261014-88';
+import {ruleInfo} from './rule-references.mjs?v=subsector-labels-20261014-89';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={

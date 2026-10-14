@@ -9,6 +9,7 @@ export const MAP_ZOOM_STEP=1.2;
 export const CLOSE_MAP_ZOOM=2.4;
 export const MAX_MAP_ZOOM=CLOSE_MAP_ZOOM*MAP_ZOOM_STEP;
 export function mapLevel(zoom){return zoom>=.2?'world':zoom>=.16?'subsector':'sector';}
+export function showSubsectorNames(zoom){return zoom>=.16&&zoom<=.8;}
 export function nextMapZoom(zoom,factor){
  const next=Math.max(MIN_MAP_ZOOM,Math.min(MAX_MAP_ZOOM,zoom*factor));
  // Preserve the 20% layer boundary and the old 240% close view as reachable
@@ -35,7 +36,7 @@ export class MapOverviewCache{
  request(anchor,pan,zoom,territories=false){
   this.view={anchor,pan:{...pan},zoom,territories};this.failed.clear();this.universeError='';
   this.updateWanted();
-  if(mapLevel(zoom)==='world'&&!territories)return;
+  if(mapLevel(zoom)==='world'&&!territories&&!showSubsectorNames(zoom))return;
   if(!this.sectors&&!this.loading){
    this.loading=true;
    Promise.resolve().then(()=>this.fetchSectors()).then(rows=>{
@@ -46,7 +47,7 @@ export class MapOverviewCache{
   this.onChange();
  }
  updateWanted(){
-  this.wanted=this.view&&(mapLevel(this.view.zoom)==='subsector'||this.view.territories)?this.visible:[];
+  this.wanted=this.view&&(showSubsectorNames(this.view.zoom)||this.view.territories)?this.visible:[];
   for(const s of this.wanted)if(this.cache.has(s.name)){const data=this.cache.get(s.name);this.cache.delete(s.name);this.cache.set(s.name,data);}
   this.pump();
  }
@@ -130,7 +131,8 @@ export function mapTerritories({anchor,pan,zoom,sectors,catalogs}){
 
 // Returned layers live inside the same translated group as the original map.
 // Labels are inert: overview browsing never selects a world or changes a route.
-export function overviewMarkup({anchor,pan,zoom,sectors,catalogs,measure,showTerritories=false}){
+export function overviewMarkup({anchor,pan,zoom,sectors,catalogs,measure,showTerritories=false,labelsOnly=false}){
+ if(labelsOnly&&!showSubsectorNames(zoom))return '';
  const level=mapLevel(zoom),scale=50*zoom,dx=scale*Math.sqrt(3)/2,ay=anchor.y+((anchor.x%2+2)%2)*.5;
  const project=(x,y)=>[MAP_GEOMETRY.originX+(x-anchor.x)*dx,MAP_GEOMETRY.originY+(y-ay)*scale];
  const visible=visibleSectors(sectors,anchor,pan,zoom),grid=[],dots=[],labels=[];
@@ -147,11 +149,13 @@ export function overviewMarkup({anchor,pan,zoom,sectors,catalogs,measure,showTer
   for(let i=0;i<16;i++){
    const letter=String.fromCharCode(65+i),left=x+(i%4)*cw,top=y+Math.floor(i/4)*ch;
    if(left+pan.x+cw<0||left+pan.x>MAP_GEOMETRY.width||top+pan.y+ch<0||top+pan.y>MAP_GEOMETRY.height)continue;
-   const name=data?.subsectors.find(ss=>ss.index===letter)?.mapName;
+   const name=data?.subsectors?.find(ss=>ss.index===letter)?.mapName;
+   if(labelsOnly&&!name)continue;
    if(level==='sector'){const [lx,ly]=sectorLetterPosition(left,top,cw,ch,x+width/2,y+height/2,sectorLabel,Math.floor(i/4));labels.push(`<text class="subsector-letter" x="${lx}" y="${ly}" style="font-size:9px">${letter}</text>`);}
    else labels.push(`<g class="subsector-label" data-sector="${esc(s.name)}" data-subsector="${letter}"><title>${esc(s.name)} · ${letter}${name?' · '+esc(name):''}</title>${label(overviewLabelLayout(name||letter,cw-8,Math.min(12,Math.max(9,cw/4.8)),measure,name?-45:0),left+cw/2,top+ch/2,'subsector-name')}</g>`);
   }
   if(level==='sector')labels.push(`<g class="sector-label" data-sector="${esc(s.name)}"><title>${esc(s.name)}</title>${label(sectorLabel,x+width/2,y+height/2,'sector-name')}</g>`);
  }
+ if(labelsOnly)return `<g class="overview-labels world-subsector-labels">${labels.join('')}</g>`;
  return `${territory}<g class="overview-grid ${level}-grid" aria-hidden="true">${grid.join('')}</g><g class="overview-worlds" aria-hidden="true">${dots.join('')}</g><g class="overview-labels">${labels.join('')}</g>`;
 }
