@@ -130,7 +130,7 @@ async function search(kind,useLocal=false){
 async function sellCargo(){
  const before=await read();if(!before.lots.length)return;
  const buyer=await search('buyer');if(!buyer.success){report.decisions.push({kind:'buyer search failed naturally',world:before.actual});return;}
- await modalButton('Preview sale').click();await modalButton('COMMIT SALE').click();await closed();
+ await tradeLabel(page,'Preview sale');await modalButton('COMMIT SALE').click();await closed();
  const s=await checkpoint('sold carried cargo');assert.equal(s.lots.length,0);const added=s.ledger.slice(before.ledger.length);assert.ok(added.some(e=>e.type==='Sale'));for(const e of added.filter(e=>e.type==='Sale')){assert.equal(e.audit.tax,'0');assert.equal(e.audit.profitPercent,100);assert.equal(e.audit.adjustment,'0');priceOracle(e.audit.audit,e.audit.commodity,e.audit.unitPrice);assert.equal(e.amount,String(BigInt(e.audit.unitPrice)*BigInt(e.audit.quantity)));}
  check('natural sale commits once and removes all sold cargo',{world:s.worlds[s.actual].name,bank:s.bank});
 }
