@@ -9,7 +9,7 @@ await mkdir(artifacts,{recursive:true});const browser=await chromium.launch({hea
 try{for(const width of [1440,390,320])for(const mode of ['off','manual','automatic','criminal']){
  const f=guiFixture();f.state.worlds[f.state.actual].uwp='A788879-C';f.state.settings.tax=['automatic','criminal'].includes(mode);f.state.settings.insurance=true;
  f.state.lots[0].description='Synthetic long independently audited electronics cargo lot for combined sale review';
- f.state.snapshots.push({id:'sell-buyer',kind:'buyer',worldId:f.state.actual,party:'synthetic|buyer',partyName:'Synthetic long buyer name — independently reviewed legal or criminal market',hours:f.state.hours,success:true,criminal:mode==='criminal',options:{side:'sell',skill:1,counterparty:2},offers:[]});
+ f.state.snapshots.push({id:'sell-buyer',kind:'buyer',worldId:f.state.actual,world:f.state.snapshots[0].world,party:'synthetic|buyer',partyName:'Synthetic long buyer name — independently reviewed legal or criminal market',startedHours:f.state.hours,hours:f.state.hours,success:true,criminal:mode==='criminal',options:{side:'sell',skill:1,counterparty:2},offers:[]});
  const bytes=JSON.stringify(f.state),context=await browser.newContext({viewport:{width,height:900}});
  await context.addInitScript(({key,bytes})=>{if(!localStorage.getItem(key))localStorage.setItem(key,bytes);globalThis.saleDiceCalls=0;const random=crypto.getRandomValues.bind(crypto);crypto.getRandomValues=array=>{if(array instanceof Uint32Array&&array.length===1){saleDiceCalls++;array[0]=2;return array;}return random(array);};},{key:campaignKey,bytes});
  await context.route('https://travellermap.com/api/**',r=>{const u=new URL(r.request().url());return r.fulfill({json:u.pathname.endsWith('/universe')?f.universe:u.pathname.endsWith('/metadata')?f.metadata:u.pathname.endsWith('/sec')?f.sec:{Worlds:f.apiWorlds}});});
@@ -31,7 +31,7 @@ try{for(const width of [1440,390,320])for(const mode of ['off','manual','automat
  const expectedTax=mode==='automatic'?'Tax — 3%':mode==='manual'?'Tax — 8%':'Tax — 0%';assert.match(await page.locator('#sale-live-preview').textContent(),new RegExp(expectedTax));
  assert.match(await page.locator('#sale-live-preview').textContent(),mode==='manual'?/GM percentage override/:mode==='criminal'?/exemption \(house rule\)/:mode==='off'?/Automatic taxes off/:/Merchant Prince/);
  const count=await dice();await fill('qty_lot-recorded','999');assert.equal(await page.locator('#modal-submit').isDisabled(),true);assert.equal(await raw(),bytes);assert.equal(await dice(),count);await fill('qty_lot-recorded','1');
- await page.screenshot({path:artifacts+'sell-review-'+mode+'-'+width+'.png',fullPage:true});
+ await page.locator('#modal').evaluate(el=>el.scrollTop=0);await page.screenshot({path:artifacts+'sell-review-'+mode+'-'+width+'.png'});
  await page.locator('#modal-submit').scrollIntoViewIfNeeded();await page.screenshot({path:artifacts+'sell-review-footer-'+mode+'-'+width+'.png'});
  await page.evaluate(key=>{const original=Storage.prototype.setItem;let fail=true;Storage.prototype.setItem=function(k,v){if(k===key&&fail){fail=false;throw new DOMException('Synthetic prewrite failure','QuotaExceededError');}return original.call(this,k,v);};},campaignKey);
  await page.locator('#modal-submit').click();await page.locator('#modal-error').filter({hasText:/Synthetic prewrite/}).waitFor();assert.equal(await raw(),bytes);assert.equal(await page.locator('[name="qty_lot-recorded"]').evaluate(el=>el.readOnly),true);

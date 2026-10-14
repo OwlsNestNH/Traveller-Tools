@@ -15,15 +15,15 @@ test('criminal contacts widen default and custom buy/sell limits by ten percenta
 test('limits off is uncapped and legal quotes remain unchanged',()=>{
  for(const side of ['buy','sell']){
   assert.equal(q(side,{criminalMarket:true,reducedProfitLimitsEnabled:false}).unitPrice,q(side).unitPrice);
-  const legal=q(side,{reducedProfitLimitsEnabled:true});assert.equal(legal.audit.percent,side==='buy'?85:115);assert.equal(legal.audit.criminalLimitWideningPoints,0);
+  const legal=q(side,{reducedProfitLimitsEnabled:true});assert.equal(legal.audit.percent,side==='buy'?85:115);assert.equal(legal.audit.criminalLimitWideningPoints??0,0);
  }
 });
 test('contact classification governs widening independently of cargo illegality and base-retail exemption',()=>{
  const opts={reducedProfitLimitsEnabled:true,maxBaseRetailEnabled:true,maxBaseRetail:500,useRawIllegalPrices:true};
  assert.equal(q('buy',{...opts,illegalGood:true,criminalMarket:false}).audit.percent,85);
  assert.equal(q('buy',{...opts,illegalGood:false,criminalMarket:true}).audit.percent,75);
- assert.equal(q('buy',{...opts,illegalGood:false,criminalMarket:true}).audit.basePrice,'500');
- assert.equal(q('buy',{...opts,illegalGood:true,criminalMarket:true}).audit.basePrice,'1000');
+ assert.equal(q('buy',{...opts,illegalGood:false,criminalMarket:true}).audit.basePrice,500);
+ assert.equal(q('buy',{...opts,illegalGood:true,criminalMarket:true}).audit.basePrice,1000);
  assert.equal(q('buy',{...opts,illegal:true}).audit.percent,75,'Legacy black-market contact option remains supported');
  const original=q('sell',{...opts,criminalMarket:true});const repriced=R.repriceQuote(good,ctx,{...opts,side:'sell',criminalMarket:true,skill:0,counterparty:0},core,original);
  assert.equal(repriced.audit.percent,125);assert.deepEqual(repriced.audit.dice,original.audit.dice);

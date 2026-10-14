@@ -191,3 +191,18 @@ Supplier no longer opens as an Overview overlay; the bounded map-completion
 observations exercise the existing buyer modal, while Buy navigation is verified
 at 1440/1100/390/320 pixels. Merge requires completed exact-head checks and
 independent review.
+
+
+## Sell page — UI .86 candidate
+
+The approved Sell reference has been inspected as pixels. Separate held lots have
+maximum-default editable quantities and explicit row/batch review paths. One
+combined editable review exposes financial/cargo before-and-after totals and one
+COMMIT SALE. GM adjustments stay collapsed and available. Existing buyer search,
+selection, rejection, audit/edit/insurance and atomic save/Undo remain.
+Automatic tax dice require an explicit action and never run on rendering, tab
+navigation or quantity edits. The visible GM rate defaults to zero with automatic
+tax off; a deliberate manual rate needs a reason and is audited. The criminal
+automatic exemption and ten-point criminal price-limit widening are house rules.
+The focused browser suites cover desktop and narrow layouts; full exact-head CI
+and independent source/pixel review remain release gates.

@@ -451,6 +451,8 @@ main{padding-top:18px}
 .sale-table .field{margin:0;min-width:0;font-size:11px}.sale-table input[type=number]{width:100%;min-width:0;max-width:120px;font-size:15px;min-height:42px}
 .sale-table .check{align-items:flex-start;white-space:normal}.sale-table .check input{flex:none}.sale-table td:first-child{overflow-wrap:anywhere}
 .sale-table [data-action=lot-sell]{border-color:var(--cyan);color:var(--cyan);min-height:40px}.sell-cargo-scroll{max-height:430px}
+.sale-table th:nth-child(6),.sale-table td:nth-child(3),.sale-table input[type=number]{text-align:right}
+.sale-review .scroll table{min-width:760px}.sale-review .scroll{max-width:100%}
 #sale-selection-preview{overflow-wrap:anywhere;margin-top:14px}#sale-selection-preview dl{margin:0}
 #sale-selection-preview .preview{padding:0;border:0;background:none}#sale-selection-preview dl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:10px 14px}#sale-selection-preview dt,#sale-selection-preview dd{min-width:0;white-space:normal;margin:0}
 @media(max-width:620px){#sale-selection-preview dl{grid-template-columns:minmax(0,1fr);gap:5px}#sale-selection-preview dd{text-align:left;margin-bottom:12px}}

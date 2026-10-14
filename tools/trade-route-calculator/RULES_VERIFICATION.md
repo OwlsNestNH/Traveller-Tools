@@ -1520,3 +1520,27 @@ The first CI candidate failed only the Dev Tools build assertion (.67 versus
 the follow-up candidate. Required final CI results are recorded in the PR.
 Live Pages and app assets were not requested: prior access denials remain in
 force. No merge/deployment performed.
+
+
+## UI .86 Sell candidate — 2026-10-14
+
+One editable sale review retains the existing atomic batch engine and save owner.
+Maximum held defaults support partial and exact fractional remainder sales. The
+selected-only preview shows basis/profit, fees, tax provenance, net/bank and cargo
+before/after; unknown purchase history remains unknown. Accepted retries retain
+terms, while stale or uncertain outcomes fail closed.
+
+Owner-approved clarifications: the GM tax field stays visible/default-zero with
+automatic tax off and can apply a reasoned manual percentage per sale. Automatic
+criminal exemption stays a house rule. Legal automatic tax uses the existing
+Merchant Prince government/bracket table, with missing dice resolved explicitly.
+Criminal-market contacts widen enabled configured purchase/sale limits by minus10
+and plus10 percentage points respectively. Commodity illegality, base-retail caps
+and profit-retention arithmetic remain separate; disabled limits remain uncapped.
+
+Local native checkpoint: 6,462 tests passed. Focused review browsers passed twelve
+desktop/mobile tax-mode cases including zero-roll edits, explicit missing dice,
+manual-off tax, exemption, invalid quantities, failed save/retry and double-click.
+Exact final commit, full browser CI and independent source/pixel review remain
+pending and must be checked in the candidate PR before release. No deployment is
+claimed by this entry.

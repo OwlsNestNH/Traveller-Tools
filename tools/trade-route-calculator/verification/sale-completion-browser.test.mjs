@@ -90,7 +90,7 @@ function specification(before, scenario) {
  const rounding = [], lines = before.lots.map(lot => {
   const good = core.commodities.find(g => g.id === lot.commodity);
   const priceOptions = {...R.priceLimits(before.settings), maxBaseRetailEnabled: false, maxBaseRetail: before.settings.maxBaseRetail, useRawIllegalPrices: false, illegalGood: false};
-  const options = {...buyer.options, creditStep: before.settings.creditStep, side: 'sell', ...priceOptions};
+  const options = {...buyer.options, criminalMarket:!!buyer.criminal, creditStep: before.settings.creditStep, side: 'sell', ...priceOptions};
   const original = R.quote(good, world, options, core, () => 3);
   const ban = scenario.mode === 'prewrite' ? 0 : null;
   const priced = ban === null ? original : R.repriceQuote(good, world, {...options, banThreshold: ban, illegalGood: true}, core, original);
@@ -108,6 +108,7 @@ function specification(before, scenario) {
  fields.fee = '7'; fields.reason = ['prewrite', 'validation', 'huge-credits'].includes(scenario.mode) ? reason : '';
  if (before.settings.tax) fields.taxRate = scenario.mode === 'validation' ? '17' : '';
  const preview = R.salePreview(before.lots, lines, {creditStep: before.settings.creditStep, percent: before.settings.profit, feePercent: 7, government: '7', criminal: buyer.criminal, taxEnabled: before.settings.tax, manualTaxRate: scenario.mode === 'validation' ? 17 : null}, core, mp, () => 3);
+ preview.tax.provenance=scenario.mode==='validation'?'GM percentage override':before.settings.tax?(buyer.criminal?'Existing criminal-market exemption (house rule)':'Merchant Prince government / taxable-profit table'):'Automatic taxes off; zero tax';
  return {buyer, fields, preview, rounding, diceCalls: before.lots.length * 3 + (preview.tax.dice?.dice.length || 0)};
 }
 function expected(before, scenario) {
@@ -329,7 +330,7 @@ async function fill(page, name, value) {
 }
 async function prepare(page, scenario, before, {select = true, loops = false} = {}) {
  if (select) {await tab(page, 'Cargo'); await action(page, 'sale-all').click();}
- await existingSell(page);await action(page, 'sale').click(); await page.locator('#modal-title').filter({hasText: 'Prepare sale · Synthetic buyer'}).waitFor();
+ await existingSell(page);await action(page, 'sale').click(); await page.locator('#modal-title').filter({hasText: /^Review sale/}).waitFor();
  const spec = specification(before, scenario);
  assert.equal(await page.evaluate(() => saleDiceCalls), 9, 'Three natural price dice per selected lot, once');
  for (const [name, value] of Object.entries(spec.fields)) await fill(page, name, value);
@@ -360,7 +361,7 @@ async function replay(page, {physical = true, navigation = true} = {}) {
  if (physical) {
   for (const id of ['modal-submit', 'modal-cancel', 'modal-close']) await pointer(page, '#' + id, 2);
   await page.keyboard.press('Enter'); await page.keyboard.press('Escape');
-  await pointer(page, '[data-action="sale-edit"]', 2);
+  await pointer(page, '[name="fee"]', 2);
  }
  await page.evaluate(navigation => {
   const form = document.querySelector('#modal-form');
@@ -383,7 +384,7 @@ async function assertPending(page, result, scenario, bytes) {
  assert.equal(await raw(page), bytes, 'Held native write leaves exact durable bytes alone');
  let snapshot = await gate(page); assert.deepEqual(snapshot.semantic, snapshot.baseline, 'Pending review, selection, prices and tax dice retain exact pre-submit semantics');
  assert.equal(snapshot.reviewNodeRetained, true);
- for (const selector of ['#modal-submit', '#modal-cancel', '#modal-close', '[data-action="sale-edit"]']) assert.equal(await page.locator(selector).isDisabled(), true, selector + ' frozen synchronously');
+ for (const selector of ['#modal-submit', '#modal-cancel', '#modal-close', '[name="fee"]']) assert.equal(await page.locator(selector).isDisabled(), true, selector + ' frozen synchronously');
  assert.doesNotMatch(await page.locator('#message').textContent(), successPattern);
  await replay(page); snapshot = await gate(page);
  assert.equal(snapshot.totalCalls, 1); assert.equal(snapshot.calls, 1); assert.equal(await raw(page), bytes);
@@ -512,7 +513,7 @@ async function runBody(page, result, scenario, context) {
  if (scenario.mode === 'prewrite') {
   await release(page); await page.locator('#modal-error').filter({hasText: 'Synthetic known sale prewrite'}).waitFor();
   let snapshot = await gate(page); assert.equal(await raw(page), bytes); assert.equal(snapshot.reloadRequired, false); assert.equal(snapshot.editable, true); assert.deepEqual(snapshot.semantic, snapshot.baseline); assert.equal(snapshot.reviewNodeRetained, true);
-  for (const selector of ['#modal-submit', '#modal-cancel', '#modal-close', '[data-action="sale-edit"]']) assert.equal(await page.locator(selector).isEnabled(), true);
+  for (const selector of ['#modal-submit', '#modal-cancel', '#modal-close', '[name="fee"]']) assert.equal(await page.locator(selector).isEnabled(), true);
   await capture(page, result, 'known-unsaved-retained'); const candidate = uuidNormal(JSON.parse(snapshot.candidates[0]));
   await pointer(page, '#modal-submit'); await page.waitForFunction(() => !!saleGate.pending);
   snapshot = await gate(page); assert.equal(snapshot.calls, 2); assert.deepEqual(uuidNormal(JSON.parse(snapshot.candidates[1])), candidate, 'Retry retains the exact p, fee/tax/price dice, selection and rounding audit'); assert.deepEqual(snapshot.semantic, snapshot.baseline);
