@@ -7,6 +7,18 @@ const spin={name:'Spinward Marches',x:-4,y:-1},regina={x:-110,y:-70};
 const sectors=Array.from({length:81},(_,i)=>({name:'Sector '+i,x:i%9-8,y:Math.floor(i/9)-4}));
 const measure=(text,size)=>text.length*size*.55;
 
+test('world-scale subsector names use metadata with Political off and preserve world controls',async()=>{
+ const calls=[];
+ const cache=new MapOverviewCache(async()=>[spin],async(name,options)=>{calls.push(options);return {subsectors:[{index:'C',mapName:'Regina'}],metadata:{}};},()=>{});
+ cache.request(regina,{x:0,y:0},.5,false);await tick();await tick();
+ assert.equal(calls.length,1);assert.equal(calls[0].includeWorlds,false);assert.equal(cache.pending,false);
+ for(const zoom of [.2,.5,.8]){
+  const markup=overviewMarkup({anchor:regina,pan:{x:0,y:0},zoom,sectors:[spin],catalogs:cache.cache,measure,labelsOnly:true});
+  assert.match(markup,/>Regina</);assert.doesNotMatch(markup,/overview-grid|overview-worlds|data-action|tabindex|NaN/);
+ }
+ for(const zoom of [.159,.801,1,2.88])assert.equal(overviewMarkup({anchor:regina,pan:{x:0,y:0},zoom,sectors:[spin],catalogs:cache.cache,measure,labelsOnly:true}),'');
+});
+
 test('new layers live below the preserved world range and stop at a readable widest scale',()=>{
  assert.equal(MIN_MAP_ZOOM,.06);
  for(const zoom of [.2,.5,1,2.4])assert.equal(mapLevel(zoom),'world');
