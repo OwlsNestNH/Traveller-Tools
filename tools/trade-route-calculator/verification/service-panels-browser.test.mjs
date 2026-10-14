@@ -1,3 +1,4 @@
+import {existingSell} from './trade-ui.mjs';
 // Real Chromium, deterministic map responses, synthetic campaigns only.
 // Run: node verification/service-panels-browser.test.mjs [playwright-module]
 import assert from 'node:assert/strict';
@@ -57,7 +58,7 @@ async function run(name,options,test){
  });
  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
  const action=(name,arg)=>page.locator('[data-action="'+name+'"]'+(arg===undefined?'':'[data-arg="'+arg+'"]')).filter({visible:true}).first();
- const click=async(name,arg)=>{if(name==='service-cancel'&&!await action(name).count())name='service-back';return action(name,arg).click();};
+ const click=async(name,arg)=>{if(name==='search')await page.locator('[data-action="trade-side"][data-arg="buy"]').click();if(['buyer-search','sale'].includes(name))await existingSell(page);if(name==='service-cancel'&&!await action(name).count())name='service-back';return action(name,arg).click();};
  const field=name=>page.locator('#service-form [name="'+name+'"]');
  const fill=(name,value)=>field(name).fill(String(value));
  const raw=()=>page.evaluate(key=>localStorage.getItem(key),campaignKey);
@@ -122,12 +123,12 @@ try{
   for(const kind of ['refuel','refill-support'])for(const mode of (kind==='refuel'?['inline']:['summary','adjust','review'])){
    await click('tab','Overview');await open(kind);if(mode==='adjust'||mode==='review')await click('service-adjust');if(mode==='review')await click('service-review');
    const old=await action(mode==='adjust'?'service-review':'service-confirm').evaluate(el=>({...el.dataset}));
-   await click('tab','Trade');await closed();assert.equal(await action('search').isEnabled(),true);assert.equal(await action('buyer-search').isEnabled(),true);await click('sale');assert.match(await page.locator('#message').textContent(),/Select cargo first/);assert.equal(await page.locator('#modal').isVisible(),false,'No selected cargo still prevents a sale preview');
+   await click('tab','Trade');await closed();await click('trade-side','buy');assert.equal(await action('search').isEnabled(),true);await existingSell(page);assert.equal(await action('buyer-search').isEnabled(),true);await click('sale');assert.match(await page.locator('#message').textContent(),/Select cargo first/);assert.equal(await page.locator('#modal').isVisible(),false,'No selected cargo still prevents a sale preview');
    await page.evaluate(data=>{const b=document.createElement('button');Object.assign(b.dataset,data);document.body.append(b);b.click();b.remove();},old);await unchanged(kind+' '+mode+' → Trade discards only draft');
-   await click('search');await page.getByRole('heading',{name:'Find a supplier',exact:true}).waitFor();await page.locator('#modal-cancel').click();
+   await click('trade-side','buy');await click('search');await page.getByRole('heading',{name:'Find a supplier',exact:true}).waitFor();await click('supplier-cancel');await existingSell(page);
    await click('buyer-search');await page.getByRole('heading',{name:'Find a buyer',exact:true}).waitFor();await page.locator('#modal-cancel').click();await unchanged('Opening available searches never commits');
   }
-  await click('tab','Overview');await click('ship-expenses');await page.locator('#expense-panel').waitFor();await click('tab','Trade');assert.equal(await page.locator('#expense-panel').count(),0);assert.equal(await action('search').isEnabled(),true);assert.equal(await action('buyer-search').isEnabled(),true);await unchanged('Expenses → Trade');
+  await click('tab','Overview');await click('ship-expenses');await page.locator('#expense-panel').waitFor();await click('tab','Trade');assert.equal(await page.locator('#expense-panel').count(),0);await click('trade-side','buy');assert.equal(await action('search').isEnabled(),true);await existingSell(page);assert.equal(await action('buyer-search').isEnabled(),true);await unchanged('Expenses → Trade');
   await click('tab','Overview');await open();await click('tab','Accounts');assert.equal(await action('deposit').isEnabled(),true);assert.equal(await action('ship-expenses').isEnabled(),true);await click('tab','Overview');await closed();await unchanged('Accounts tab discards hidden service draft');
  });
  await run('fuel commit exactly once and Undo',{},async h=>{

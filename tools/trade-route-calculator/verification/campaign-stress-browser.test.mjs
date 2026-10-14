@@ -1,3 +1,4 @@
+import {tradeLabel,tradeField,existingSell,purchaseTitle} from './trade-ui.mjs';
 // Bounded compound-flow Chromium stress gate. Only fresh synthetic campaigns,
 // deterministic dice and intercepted map responses are used. After initial
 // fixture seeding, campaign changes use rendered UI controls/file import only.
@@ -72,6 +73,7 @@ async function choose(page,name,value,scope='#modal'){
  const field=page.locator(scope+' [name="'+name+'"]');await reveal(field);await field.selectOption(String(value));
 }
 async function submit(page,label,next=null,{double=false}={}){
+ if(await tradeLabel(page,label))return;
  const button=modal(page).getByRole('button',{name:label,exact:true});
  // Real pointer events, rather than invoking application callbacks or injecting
  // a stale synthetic button. The follow-up click must not reach a background
@@ -112,7 +114,7 @@ async function layout(page,result,label){
  for(const cell of geometry.auditCells){assert.ok(cell.overflow<=2,label+': audit value wraps without clipping: '+cell.text);assert.ok(cell.left>=geometry.dialog.left&&cell.right<=geometry.dialog.right,label+': complete audit value stays inside dialog: '+cell.text);}
 }
 async function buy(page,{quantity=1,fee=0,double=false,cancel=false}={}){
- await tab(page,'Trade');await action(page,'buy','stress-offer').click();
+ await tab(page,'Trade');await action(page,'trade-side','buy').click();await action(page,'buy','stress-offer').click();
  await fill(page,'quantity',quantity);await fill(page,'fee',fee);await submit(page,'Preview purchase','Confirm purchase');
  if(cancel)await dismiss(page);else await submit(page,'COMMIT PURCHASE',null,{double});
 }
@@ -136,7 +138,7 @@ async function importBytes(page,bytes,{cancel=false}={}){
 async function saleDraft(page){
  await tab(page,'Cargo');await action(page,'sale-clear').click();
  for(const id of ['stress-low','stress-high'])await page.locator('[data-lot="'+id+'"]').check();
- await action(page,'sale').click();await heading(page,'Prepare sale · Stress buyer');
+ await existingSell(page);await action(page,'sale').click();await heading(page,'Prepare sale · Stress buyer');
  await fill(page,'qty_stress-low',1);await fill(page,'qty_stress-high',2);
  await fill(page,'price_stress-low',20000);await fill(page,'price_stress-high',20000);await fill(page,'fee',0);await fill(page,'reason','Synthetic fixed sale price for independent cost-basis arithmetic');
 }
@@ -198,9 +200,9 @@ async function tradingCase(page,context,result){
 async function invalidCase(page,context,result){
  const initial=await raw(page);
  for(const value of ['-1','0','13','9007199254740993','1e309']){
-  await tab(page,'Trade');await action(page,'buy','stress-offer').click();const field=modal(page).locator('[name="quantity"]');
-  await field.fill('');await field.pressSequentially(value);await modal(page).getByRole('button',{name:'Preview purchase',exact:true}).click();await frames(page);
-  assert.equal(await page.locator('#modal-title').innerText(),'Purchase · Fixed-price stress electronics','Invalid quantity never reaches commit');
+  await tab(page,'Trade');await action(page,'trade-side','buy').click();await action(page,'buy','stress-offer').click();const field=modal(page).locator('[name="quantity"]');
+  await field.fill('');await field.pressSequentially(value);await modal(page).getByRole('button',{name:'COMMIT PURCHASE',exact:true}).click();await frames(page);
+  assert.equal(await page.locator('#modal-title').innerText(),'Review purchase · Fixed-price stress electronics','Invalid quantity never reaches commit');
   const validity=await field.evaluate(el=>({value:el.value,badInput:el.validity.badInput,rangeOverflow:el.validity.rangeOverflow,rangeUnderflow:el.validity.rangeUnderflow,valid:el.validity.valid}));
   result.invalidInputs.push({form:'purchase',attempt:value,...validity,error:await page.locator('#modal-error').innerText()});
   await unchanged(page,initial,'Invalid purchase '+value);await dismiss(page);
@@ -229,7 +231,7 @@ async function invalidCase(page,context,result){
 
 async function previewRepeatCase(page,context,result){
  const before=await raw(page);
- await tab(page,'Trade');await action(page,'buy','stress-offer').click();await fill(page,'quantity',2);await fill(page,'fee',10);
+ await tab(page,'Trade');await action(page,'trade-side','buy').click();await action(page,'buy','stress-offer').click();await fill(page,'quantity',2);await fill(page,'fee',10);
  await submit(page,'Preview purchase','Confirm purchase',{double:true});await unchanged(page,before,'Repeated purchase Preview');await dismiss(page);
  await saleDraft(page);await submit(page,'Preview sale','Confirm sale',{double:true});await unchanged(page,before,'Repeated sale Preview');await dismiss(page);
  await tab(page,'Accounts');await action(page,'deposit').click();await fill(page,'amount',7);await fill(page,'reason','Synthetic repeated-preview boundary');
@@ -246,7 +248,7 @@ async function settingsCase(page,context,result,f){
  assert.equal(await page.locator('#service-form [name="fuelTons"]').inputValue(),'3','World browsing retains the same uncommitted service draft');
  await action(page,'cargo-hold').click();assert.equal(await page.locator('#service-form').count(),0);await unchanged(page,initial,'Cargo Hold abandons fuel draft');
  await tab(page,'Settings');await fill(page,'name','Stale draft must never win','#settings-form');await tab(page,'Trade');
- await action(page,'buyer-search').click();await heading(page,'Trade at the current system');await submit(page,'Continue at current system','Find a buyer');await dismiss(page);
+ await existingSell(page);await action(page,'buyer-search').click();await heading(page,'Trade at the current system');await submit(page,'Continue at current system','Find a buyer');await dismiss(page);
  await unchanged(page,initial,'World-recovery form cancellation');await buy(page,{quantity:1,double:true});const changed=await read(page),changedBytes=await raw(page);
  await tab(page,'Settings');assert.equal(await page.locator('#settings-form [name="name"]').inputValue(),'Stale draft must never win');
  await page.locator('#settings-save').click();assert.match(await page.locator('#settings-error').innerText(),/Campaign changed.*Revert changes/);await unchanged(page,changedBytes,'Stale settings after purchase');
@@ -297,9 +299,9 @@ async function contractsCase(page,context,result,f){
 }
 
 async function ownershipCase(page,context,result){
- await tab(page,'Trade');await action(page,'buy','stress-offer').click();await fill(page,'quantity',2);await fill(page,'fee',10);await submit(page,'Preview purchase','Confirm purchase');
+ await tab(page,'Trade');await action(page,'trade-side','buy').click();await action(page,'buy','stress-offer').click();await fill(page,'quantity',2);await fill(page,'fee',10);await submit(page,'Preview purchase','Confirm purchase');
  const before=await raw(page),other=await context.newPage();await other.goto(base);await other.getByText('Read-only: campaign open in another tab.',{exact:true}).waitFor();
- await tab(other,'Trade');assert.equal(await action(other,'buy','stress-offer').isDisabled(),true);await unchanged(other,before,'Read-only trade browsing');
+ await tab(other,'Trade');await action(other,'trade-side','buy').click();assert.equal(await action(other,'buy','stress-offer').isDisabled(),true);await unchanged(other,before,'Read-only trade browsing');
  await other.locator('#takeover').click({clickCount:2,delay:20});await other.getByText('Editing in this tab',{exact:true}).waitFor();
  await page.waitForFunction(()=>document.querySelector('#modal-submit').disabled);assert.match(await page.locator('#modal-error').innerText(),/Editing moved/);await unchanged(page,before,'Takeover invalidates pending purchase');
  await tab(other,'Settings');await fill(other,'name','New editor campaign','#settings-form');await other.locator('#settings-save').click();

@@ -5,22 +5,22 @@ import {harness,campaign,core,origin,destination,far,bindings,S,A,same,attrs} fr
 
 for(const [action,kind] of [['search','supplier'],['buyer-search','buyer']]){
  test(`${kind} search opens at actual world, preview/cancel does not save, commit advances only search time`,async()=>{
-  const h=harness(),before=h.persisted();h.api.actions[action]();
+  const h=harness(),before=h.persisted();h.api.searchDialog(kind);
   assert.equal(h.dom.ids.get('modal-title').textContent,'Find a '+kind);
   same(h.persisted(),before);h.fill({dice:12,duration:1});await h.submit();
   assert.equal(h.dom.ids.get('modal-title').textContent,'Review '+kind+' search');
   same(h.persisted(),before);h.api.closeModal();same(h.persisted(),before);
-  h.api.actions[action]();h.fill({dice:12,duration:1});await h.submit();await h.submit();
+  h.api.searchDialog(kind);h.fill({dice:12,duration:1});await h.submit();await h.submit();
   const after=h.persisted();assert.equal(after.snapshots.length,1);assert.equal(after.snapshots[0].kind,kind);
   assert.equal(after.snapshots[0].worldId,origin.id);assert.equal(after.actual,origin.id);assert.equal(after.hours,before.hours+1);
   assert.equal(after.bank,before.bank);same(after.lots,before.lots);same(after.route,before.route);
  });
  test(`${kind} search recovers explicitly from browsed world without moving ship or saving a preview`,async()=>{
   const h=harness(),before=h.persisted();h.api.setView(destination.id);h.api.render();
-  h.api.actions[action]();assert.equal(h.dom.ids.get('modal-title').textContent,'Trade at the current system');
+  h.api.searchDialog(kind);assert.equal(h.dom.ids.get('modal-title').textContent,'Trade at the current system');
   assert.match(h.dom.ids.get('modal-body').innerHTML,/Destination/);assert.match(h.dom.ids.get('modal-body').innerHTML,/Origin/);
   h.api.closeModal();assert.equal(h.api.view,destination.id);same(h.persisted(),before);
-  h.api.actions[action]();await h.submit();assert.equal(h.api.view,origin.id);
+  h.api.searchDialog(kind);await h.submit();assert.equal(h.api.view,origin.id);
   assert.equal(h.dom.ids.get('modal-title').textContent,'Find a '+kind);same(h.persisted(),before);
   h.fill({dice:12,duration:1});await h.submit();same(h.persisted(),before);await h.submit();
   assert.equal(h.persisted().snapshots[0].worldId,origin.id);assert.equal(h.persisted().actual,origin.id);
@@ -49,7 +49,7 @@ test('a saved remote offer is still rejected before a purchase dialog or commit'
  assert.equal(h.dom.ids.get('modal').open,false);same(h.persisted(),before);
 });
 test('recovery submission is inert after editing ownership is lost',async()=>{
- const h=harness(),before=h.persisted();h.api.setView(destination.id);h.api.actions.search();
+ const h=harness(),before=h.persisted();h.api.setView(destination.id);h.api.searchDialog();
  h.store.editable=false;h.api.syncModalSubmit();assert.equal(h.dom.ids.get('modal-submit').disabled,true);
  await h.submit();assert.equal(h.api.view,destination.id);same(h.persisted(),before);
 });
@@ -70,7 +70,7 @@ test('complication purchase warnings keep one offer roll across cancel, previews
  assert.match(h.api.marketPanel(),/data-complication="complication"/);
  h.api.buyForm('paired-offer');assert.match(modalText(h),/GM decides the issue and consequences/);h.api.closeModal();same(h.persisted(),before);
  for(let i=0;i<2;i++){
-  h.api.buyForm('paired-offer');h.fill({quantity:1});await h.submit();noError(h);assert.match(modalText(h),/data-complication="complication"/);await h.submit();noError(h);
+  h.api.buyForm('paired-offer');h.fill({quantity:1});assert.match(modalText(h),/data-complication="complication"/);await h.submit();noError(h);
  }
  assert.equal(h.calls.priceDice,0);assert.equal(h.persisted().lots.length,2);assert.equal(h.persisted().hours,before.hours);
  for(const l of h.persisted().lots){assert.equal(l.audit.price.audit.tradeComplication.result,'complication');h.api.actions['lot-audit'](l.id);assert.match(modalText(h),/Trade complication · house rule/);h.api.closeModal();}
@@ -289,13 +289,13 @@ test('expense fuel and life support names use existing setup guards for legacy c
 test('leaving Overview closes unfinished service views and restores current-world Trade and Accounts controls',async()=>{
  for(const kind of ['fuel','support','expenses','mortgage','maintenance','salary','berthing']){
   const h=harness(recurringCampaign()),before=h.persisted();h.api.services.open(kind,{fresh:true});const token=h.api.services.token();
-  h.api.actions.tab('Trade');assert.equal(h.api.services.active(),false,kind+' leaves no hidden lock');assert.equal(h.button('search').disabled,false);assert.equal(h.button('buyer-search').disabled,false);same(h.persisted(),before);
+  h.api.actions.tab('Trade');assert.equal(h.api.services.active(),false,kind+' leaves no hidden lock');assert.equal(h.button('buyer-search').disabled,false);h.api.actions['trade-side']('buy');assert.equal(h.button('search').disabled,false);same(h.persisted(),before);
   await h.api.services.action('service-confirm','',token);same(h.persisted(),before);
   h.api.services.open(kind,{fresh:true});h.api.actions.tab('Accounts');assert.equal(h.button('ship-expenses').disabled,false);assert.equal(h.button('deposit').disabled,false);same(h.persisted(),before);
  }
 });
 test('leaving a service retains editor ownership guards on Trade',()=>{
- const h=harness(recurringCampaign()),before=h.persisted();h.api.refuelShortcut();h.store.editable=false;h.api.actions.tab('Trade');assert.equal(h.api.services.active(),false);assert.equal(h.button('search').disabled,true);assert.equal(h.button('buyer-search').disabled,true);same(h.persisted(),before);
+ const h=harness(recurringCampaign()),before=h.persisted();h.api.refuelShortcut();h.store.editable=false;h.api.actions.tab('Trade');assert.equal(h.api.services.active(),false);assert.equal(h.button('buyer-search').disabled,true);h.api.actions['trade-side']('buy');assert.equal(h.button('search').disabled,true);same(h.persisted(),before);
 });
 
 
@@ -450,7 +450,7 @@ test('the historical remainder exception preserves ordinary upward entry roundin
  for(const entered of ['0','1.6']){
   const h=harness(auditTradeCampaign()),before=h.persisted();h.api.setSelected(['legacy']);h.api.beginSale();h.fill({qty_legacy:entered});await h.submit();assert.match(h.dom.ids.get('modal-error').textContent,/Invalid sale quantity/);same(h.persisted(),before);
  }
- const h=harness(auditTradeCampaign());h.api.buyForm('radio-offer');h.fill({quantity:'0.5'});await h.submit();noError(h);assert.match(modalText(h),/<dd>1 t<\/dd>/);assert.match(modalText(h),/0.5 → 1/);
+ const h=harness(auditTradeCampaign());h.api.buyForm('radio-offer');h.fill({quantity:'0.5'});h.api.stagePurchase();assert.equal(h.api.modalSession.purchaseOwner.args.quantity,'1');assert.equal(h.dom.fields().get('quantity').value,'1');assert.equal(h.api.inputRounding[0].before,'0.5');assert.equal(h.api.inputRounding[0].after,'1');
 });
 
 
@@ -461,7 +461,7 @@ test('saved insurance OFF hides new coverage and omits irrelevant purchase premi
  assert.doesNotMatch(h.api.cargoPanel(true),/lot-insure/);
  assert.throws(()=>h.api.actions['lot-insure']('held'),/Insurance is disabled/);same(h.persisted(),before);
  h.api.buyForm('off-offer');assert.equal(h.dom.fields().has('insure'),false);assert.equal(h.dom.fields().has('coverage'),false);
- h.fill({quantity:1,fee:0});await h.submit();assert.equal(h.dom.ids.get('modal-title').textContent,'Confirm purchase');
+ h.fill({quantity:1,fee:0});h.api.updatePurchaseTotals();assert.equal(h.dom.ids.get('modal-title').textContent,'Review purchase · New goods');
  assert.doesNotMatch(h.dom.ids.get('modal-body').innerHTML,/Insurance premium/);same(h.persisted(),before);
  await h.submit();assert.equal(h.persisted().settings.insurance,false);assert.equal(h.persisted().policies.length,0);assert.equal(h.persisted().bank,'99900');
 });
@@ -470,7 +470,7 @@ test('saved insurance ON exposes both new coverage controls and zero-cost policy
  const s=campaign();s.settings.insurance=true;s.lots=[{id:'held',commodity:'11',description:'Held goods',quantity:'1',basis:'100',goodsValue:'100'}];
  s.snapshots=[{id:'on-supplier',kind:'supplier',party:'supplier',partyName:'Supplier',worldId:origin.id,world:bindings.R.context(origin,core),startedHours:0,hours:0,success:true,criminal:false,options:{local:false},offers:[{id:'on-offer',commodity:'11',name:'Common Electronics',description:'New goods',quantity:'10',remaining:'10',unitPrice:'100',expired:false,illegal:false,audit:{percent:100}}]}];
  const h=harness(s);assert.match(h.api.cargoPanel(true),/lot-insure/);h.api.buyForm('on-offer');assert.equal(h.dom.fields().has('insure'),true);
- h.fill({quantity:1,fee:0,insure:true,insuranceLegs:1,insuranceDistance:1,coverage:70,manualPremium:0});await h.submit();
- assert.equal(h.dom.ids.get('modal-error').textContent,'');assert.match(h.dom.ids.get('modal-body').innerHTML,/<dt>Insurance premium<\/dt><dd>Cr 0<\/dd>/);
+ h.fill({quantity:1,fee:0,insure:true,insuranceLegs:1,insuranceDistance:1,coverage:70,manualPremium:0});h.api.updatePurchaseTotals();
+ assert.equal(h.dom.ids.get('modal-error').textContent,'');assert.match(h.dom.ids.get('purchase-totals').innerHTML,/<dt>Insurance<\/dt><dd>Cr 0<\/dd>/);
  await h.submit();assert.equal(h.persisted().settings.insurance,true);assert.equal(h.persisted().policies.length,1);
 });

@@ -172,3 +172,22 @@ The shared status strip and seven-view navigation, Overview-only services/day co
 Geometry is a shared measured descriptor: 440 logical vertical pixels, about 8.8 hex rows at 100%, and width matched to the displayed aspect ratio. Area fetches, culling, projections, clipping and pointer transforms follow it. The original 520×320 descriptor remains the non-Overview module baseline.
 
 Verification for this slice adds the GUI-parity browser job (synthetic campaigns only), alongside all seven existing Chromium jobs. It covers tab/filter/audit byte stability, compact audit missingness, 12/30-stop wrapping, desktop/tablet/narrow/landscape viewports, keyboard route/world/empty-hex controls, modal interruption and ownership transfer. Actual 200% browser zoom is distinct from the suite's reduced-viewport equivalent. The unchecked full matrix above remains the acceptance inventory for the later refit; it is not a claim that every item has been implemented or reverified.
+# Buy page · UI .85 candidate
+
+Trade has adjacent Buy and Sell views, defaulting to Buy. Supplier entry expands
+above the market in document flow; its explicit search review/commit remains.
+Opening entry, collapsing it, or navigating to Sell does not roll dice or save.
+Market expansion preserves the owned-cargo section beneath it. The optional
+above-retail filter uses the saved percentage and retains unknown percentages.
+Owned cargo on Buy shows its retained original goods quote and percentage;
+fees/insurance stay in the all-in basis and audit. Missing history is explicit.
+
+Purchase entry and totals share one review and explicit commit. Provably unwritten
+retries visibly lock their accepted terms; unknown outcomes remain reload-only.
+The existing Sell preparation, quote, tax, insurance, ledger and Undo engines remain.
+Legacy engine browser suites use real Buy/Sell controls through `trade-ui.mjs`;
+the dedicated Buy suite separately asserts navigation, geometry and no-write entry.
+Supplier no longer opens as an Overview overlay; the bounded map-completion
+observations exercise the existing buyer modal, while Buy navigation is verified
+at 1440/1100/390/320 pixels. Merge requires completed exact-head checks and
+independent review.

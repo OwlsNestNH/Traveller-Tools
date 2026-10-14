@@ -1,4 +1,4 @@
-import {parseUWP} from './rules.mjs?v=route-layout-20261013-84';
+import {parseUWP} from './rules.mjs?v=buy-page-20261013-85';
 
 // Audit only the editable world fields. A selective correction must never
 // replay an old world object, campaign inverse, price quote or transaction.

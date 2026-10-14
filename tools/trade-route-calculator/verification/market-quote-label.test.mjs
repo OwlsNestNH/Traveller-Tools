@@ -71,11 +71,11 @@ test('current retail explains a Settings cap change while the saved supplier quo
  h.api.actions.buy('cap-offer');
  assert.match(h.dom.ids.get('modal-body').innerHTML,/Price: Cr 85,000 per ton/);
  h.fill({quantity:'1',fee:'10',description:'Preserved cap offer'});
- await h.submit();
- assert.equal(h.dom.ids.get('modal-title').textContent,'Confirm purchase');
+ h.api.updatePurchaseTotals();
+ assert.equal(h.dom.ids.get('modal-title').textContent,'Review purchase · Preserved cap offer');
  assert.equal(h.dom.ids.get('modal-error').textContent,'');
- const confirmation=facts(h.dom.ids.get('modal-body').innerHTML);
- assert.equal(confirmation.Cargo,'1 t');
+ const confirmation=facts(h.dom.ids.get('purchase-totals').innerHTML);
+ assert.equal(h.dom.fields().get('quantity').value,'1');
  assert.equal(confirmation.Goods,'Cr 85,000');
  assert.equal(confirmation['Broker fee'],'Cr 8,500');
  assert.equal(confirmation['Total debit'],'Cr 93,500');

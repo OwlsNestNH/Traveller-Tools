@@ -204,12 +204,12 @@ async function runBody(page, result, f) {
  await capture(page, result, 'original-audit-basis', [basis, basis + ' + dd']);
  await closeModal(page);
  assert.equal(await raw(page), JSON.stringify(afterSettings), 'Audit and Market viewing do not write');
- await action(page, 'buy', OFFER).click(); await page.getByRole('heading', {name: 'Purchase · ' + DESCRIPTION, exact: true}).waitFor();
+ await action(page, 'buy', OFFER).click(); await page.getByRole('heading', {name: 'Review purchase · ' + DESCRIPTION, exact: true}).waitFor();
  assert.match(await page.locator('#modal-body').textContent(), /Price: Cr 85,000 per ton/);
  await page.locator('#modal [name="quantity"]').fill('1'); await page.locator('#modal [name="fee"]').fill('10');
- await page.locator('#modal-submit').click(); await page.getByRole('heading', {name: 'Confirm purchase', exact: true}).waitFor();
+ await page.locator('#modal [name="fee"]').blur();await page.locator('#purchase-totals').waitFor();assert.equal(await page.locator('#modal [name="quantity"]').inputValue(),'1');
  const confirmation = await facts(page);
- assert.deepEqual(confirmation, {Cargo: '1 t', Goods: 'Cr 85,000', 'Broker fee': 'Cr 8,500', 'Total debit': 'Cr 93,500'});
+ assert.deepEqual(Object.fromEntries(['Goods','Broker fee','Total debit'].map(key=>[key,confirmation[key]])), {Goods: 'Cr 85,000', 'Broker fee': 'Cr 8,500', 'Total debit': 'Cr 93,500'});
  assert.equal(await raw(page), JSON.stringify(afterSettings), 'Purchase preview is nonmutating');
  await capture(page, result, 'purchase-confirmation', ['#modal-title', '#modal-body .preview']);
  await page.locator('#modal-submit').click(); await page.locator('#modal').waitFor({state: 'hidden'});

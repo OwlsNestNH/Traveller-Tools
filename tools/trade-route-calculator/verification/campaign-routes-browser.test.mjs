@@ -1,3 +1,4 @@
+import {tradeLabel,tradeField,existingSell} from './trade-ui.mjs';
 // Real rendered Chromium journeys. Only initial baseline is seeded; every subsequent
 // campaign mutation is a visible UI action. World API answers are pinned public M1105
 // snapshots, not live API coverage. Natural dice use a recorded, repeatable PRNG stream.
@@ -13,7 +14,7 @@ const destination=process.env.TRAVELLER_ROUTE||'Theev',trip=routePlan.routes.fin
 const index=routePlan.routes.indexOf(trip),seed=11052223+index*1009,base=process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/';
 const artifacts=fileURLToPath(new URL('../verification-artifacts/',import.meta.url));await mkdir(artifacts,{recursive:true});
 const report={destination,seed,commit:process.env.TRAVELLER_COMMIT||'local',fixtureSource:routePlan.source,milieu:'M1105',liveAPI:false,route:trip,baseline:campaignBaseline(),strategy:'Each world: deliver, sell existing legal lots, one natural local-broker supplier search until a local-broker purchase is recorded (at most two attempts at Drinax), buy <=8t and <=Cr40,000 while retaining Cr60,000 operating reserve, accept available next-stop freight/mail within 20t and fuel-space limits. Natural dice only; no price/market success overrides. Refined A/B; unrefined C/D. Refill only missing fuel to40t, except60t atNoricum. Refill normal LSS as needed. Pay salary/maintenance when due and affordable; defer mortgage unless Cr60,000 remains. Salary firstdue028 is a test assumption; no automatic salary schedule exists.',checks:[],checkpoints:[],decisions:[],localBrokerProof:[],runtimeErrors:[],apiRequests:[]};
-const browser=await chromium.launch({headless:true});
+const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BROWSER_CHANNEL?{channel:process.env.TRAVELLER_BROWSER_CHANNEL}:{})});
 const context=await browser.newContext({viewport:{width:1440,height:1100},acceptDownloads:true});context.setDefaultTimeout(15000);
 await context.tracing.start({screenshots:true,snapshots:false,sources:false});
 await context.addInitScript(({state,key,seed,origin})=>{
@@ -116,13 +117,15 @@ async function recurring(){
  }
 }
 async function search(kind,useLocal=false){
- if(kind==='supplier'){await tab('Trade');await page.getByRole('button',{name:'Find supplier',exact:true}).click();}
- else {await tab('Cargo');await page.getByRole('button',{name:'Select all cargo',exact:true}).click();await page.getByRole('button',{name:'Get sale offers',exact:true}).click();}
- await page.getByRole('heading',{name:'Find a '+kind,exact:true}).waitFor();if(useLocal)await field('local').check();
- await modalButton('Preview search').click();await modalButton('Commit search').click();
- const s=await checkpoint(kind+' natural search'),snap=s.snapshots.at(-1);assert.equal(snap.search.effectiveTotal,snap.search.generatedDice.total);assert.equal(snap.search.successOverride,false);
- if(snap.success&&kind==='buyer'){await page.getByRole('heading',{name:/Prepare sale/}).waitFor();}
- else await closed();return snap;
+ await tab('Trade');await page.locator('[data-action="trade-side"][data-arg="'+(kind==='supplier'?'buy':'sell')+'"]').click();
+ if(kind==='supplier'){if(!await page.locator('#supplier-form').count())await page.getByRole('button',{name:'Find supplier',exact:true}).click();}
+ else{await page.getByRole('button',{name:'Select all cargo',exact:true}).click();await page.getByRole('button',{name:'Find buyer',exact:true}).click();}
+ if(await page.getByRole('heading',{name:'Trade at the current system',exact:true}).isVisible())await page.locator('#modal-submit').click();
+ await page.getByRole('heading',{name:'Find a '+kind,exact:true}).waitFor();const local=await tradeField(page,'local');if(useLocal)await local.check();else await local.uncheck();
+ if(kind==='supplier')await page.locator('#supplier-form button[type="submit"]').click();else await page.locator('#modal-submit').click();
+ await modalButton('Commit search').click();
+ const state=await checkpoint(kind+' natural search'),snap=state.snapshots.at(-1);assert.equal(snap.search.effectiveTotal,snap.search.generatedDice.total);assert.equal(snap.search.successOverride,false);
+ if(snap.success&&kind==='buyer')await page.getByRole('heading',{name:/Prepare sale/}).waitFor();else await closed();return snap;
 }
 async function sellCargo(){
  const before=await read();if(!before.lots.length)return;
@@ -139,7 +142,7 @@ async function buyCargo(){
  const offers=snap.offers.filter(o=>!o.illegal&&!o.manualRequired&&!o.expired&&Number(o.remaining)>0&&Number(o.unitPrice)>0).sort((a,b)=>Number(a.unitPrice)-Number(b.unitPrice)||a.commodity.localeCompare(b.commodity));
  const offer=offers.find(o=>Math.ceil(Number(o.unitPrice)*(snap.options.local?1.1:1))<=Math.min(40000,Number(s.bank)-60000));if(!offer){report.decisions.push({kind:'no affordable legal offer',world:s.actual});return;}
  const quantity=Math.min(8,Number(offer.remaining),Math.floor(limit-used(s)+1),Math.floor(Math.min(40000,Number(s.bank)-60000)/(Number(offer.unitPrice)*(snap.options.local?1.1:1))));if(quantity<1)return;
- await page.locator('[data-action="buy"][data-arg="'+offer.id+'"]').click();await field('quantity').fill(String(quantity));const feePercent=Number(await field('fee').inputValue());assert.equal(feePercent,snap.options.local?10:0);await modalButton('Preview purchase').click();await modalButton('COMMIT PURCHASE').click();await closed();
+ await page.locator('[data-action="buy"][data-arg="'+offer.id+'"]').click();await field('quantity').fill(String(quantity));const feePercent=Number(await field('fee').inputValue());assert.equal(feePercent,snap.options.local?10:0);await page.locator('#purchase-totals').waitFor();await modalButton('COMMIT PURCHASE').click();await closed();
  const after=await checkpoint('bought '+quantity+'t '+offer.description),lot=after.lots.at(-1),goods=BigInt(offer.unitPrice)*BigInt(quantity),fee=(goods*BigInt(feePercent)+99n)/100n;
  assert.equal(after.bank,String(BigInt(s.bank)-goods-fee));assert.equal(lot.basis,String(goods+fee));assert.equal(lot.quantity,String(quantity));assert.equal(after.snapshots.find(x=>x.id===snap.id).offers.find(o=>o.id===offer.id).remaining,String(Number(offer.remaining)-quantity));
  priceOracle(offer.audit,offer.commodity,offer.unitPrice);assert.equal(offer.audit.dice.dice.length,3);assert.equal(offer.audit.dice.manual,undefined);assert.equal(offer.audit.tradeComplication.result,new Set(offer.audit.dice.dice).size===1?'severe':new Set(offer.audit.dice.dice).size===2?'complication':'none');

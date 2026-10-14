@@ -81,10 +81,10 @@ try{
   // A source popup over a supplier form leaves its exact inputs and its normal
   // revision/submit boundary intact. Escape closes only the topmost dialog.
   await tab('Trade');await page.locator('#main [data-action="search"]').click();
-  await page.locator('#modal [name="party"]').fill('Uncommitted search draft');
-  await info(page.locator('#modal [data-rule-info="contact-search"]'),'contact-search',{method:'Space',close:'double'});
-  assert.equal(await page.locator('#modal [name="party"]').inputValue(),'Uncommitted search draft');
-  await info(page.locator('#modal [data-rule-info="broker"]'),'broker',{close:'button'});await closeModal();assert.equal(await saved(),original);
+  await page.locator('#supplier-form [name="party"]').fill('Uncommitted search draft');
+  await info(page.locator('#supplier-form [data-rule-info="contact-search"]'),'contact-search',{method:'Space',close:'double'});
+  assert.equal(await page.locator('#supplier-form [name="party"]').inputValue(),'Uncommitted search draft');
+  await page.locator('#supplier-form details').first().locator('summary').click();await info(page.locator('#supplier-form [data-rule-info="broker"]'),'broker',{close:'button'});await page.locator('[data-action="supplier-cancel"]').click();assert.equal(await saved(),original);
   // Generated and legacy audits retain all evidence; the reference does not
   // create faces, values or extra controls when historical data is missing.
   await page.locator('#main [data-action="offer-audit"][data-arg="offer-recorded"]').click();

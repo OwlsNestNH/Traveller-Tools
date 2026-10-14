@@ -1,4 +1,4 @@
-import {up} from './rounding.mjs?v=route-layout-20261013-84';
+import {up} from './rounding.mjs?v=buy-page-20261013-85';
 import {sum,mul,decimal,cmp,credit} from './amounts.mjs';
 
 export const tiers=['low','middle','high'];

@@ -1,3 +1,4 @@
+import {tradeField,existingSell} from './trade-ui.mjs';
 // Bounded Stage 2 supplier/buyer contact-search completion verification.
 // Production tagged app, controller, rules, S.commitContactSearch, Store and native
 // Web Locks are executed unchanged. Only provider/publication/DOM boundaries are
@@ -35,6 +36,9 @@ for (const kind of ['supplier', 'buyer']) scenarios.push({id: kind + '-unsuccess
 scenarios.push({id:'buyer-illegal-legal-guidance',kind:'buyer',mode:'native',selected:true,illegalCargo:true,dual:true}, {id:'buyer-illegal-black-market-handoff',kind:'buyer',mode:'native',selected:true,illegalCargo:true,method:'blackMarket',dual:true});
 for(const phase of ['render','title','body'])scenarios.push({id:'buyer-handoff-'+phase+'-reentry',kind:'buyer',mode:'handoff-reentry',selected:true,phase});
 for(const kind of ['supplier','buyer'])for(const point of ['title','body'])for(const newer of [false,true])scenarios.push({id:kind+'-review-'+point+'-throw'+(newer?'-after-notes':''),kind,mode:'construction-throw',point,newer,dual:kind==='supplier'&&point==='body'&&!newer});
+// Supplier entry is now inline under Trade; map-overlay completion belongs to
+// the existing buyer modal. Four-width Buy tests assert the supplier navigation.
+for(const scenario of scenarios)if(scenario.kind==='supplier'&&scenario.map){scenario.kind='buyer';scenario.id='buyer-map-after-buy-navigation-'+scenario.mode;}
 const cases = scenarios.flatMap(scenario => sizes.filter(size => size.width === 1440 || scenario.dual).map(viewport => ({scenario, viewport})));
 function expectedFrames(s) {
  if (s.mode === 'construction-throw') return s.newer?1:2;
@@ -209,6 +213,7 @@ async function installGate(page, result) {
   Object.defineProperty(Element.prototype, 'innerHTML', {...html, set(value) {
    if (settled() && g.cleanupFault === 'render' && this.id === 'main') fault('render');
    const result=Reflect.apply(html.set,this,[value]);
+   if(g.constructionFault==='supplier-entry'&&this.id==='main'&&value.includes('id="supplier-form"'))g.replaceConstruction();
    if(g.constructionThrow?.point==='body'&&this.id==='modal-body'&&/^Review (?:supplier|buyer) search$/.test(document.querySelector('#modal-title').textContent))g.throwConstruction();
    if(g.handoffFault==='render'&&this.id==='main'&&contactStorage.writes>0){g.handoffRenderCount=(g.handoffRenderCount||0)+1;if(g.handoffRenderCount===2){g.handoffFault=null;g.constructionFault='handoff-render';g.replaceConstruction();}}
    if(g.handoffFault==='body'&&this.id==='modal-body'&&/^Prepare sale/.test(document.querySelector('#modal-title').textContent)){g.handoffFault=null;g.constructionFault='handoff-body';g.replaceConstruction();}
@@ -349,24 +354,32 @@ async function detail(page, result, label, selectors, pattern) {
  } finally {await page.evaluate(saved => {document.querySelector('#modal').scrollTop = saved.dialog; scrollTo(saved.x, saved.y);}, saved);}
 }
 async function pointer(page, selector, clickCount = 1) {
+ if(!await page.locator('#modal').evaluate(el=>el.open)&&await page.locator('#supplier-form').count()){if(selector==='#modal-submit')selector='#supplier-form button[type="submit"]';else if(selector==='#modal-cancel')selector='[data-action="supplier-cancel"]';}
  const locator = page.locator(selector); if (!await locator.isVisible()) return;
  await locator.scrollIntoViewIfNeeded(); const box = await locator.boundingBox(); assert.ok(box);
  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2, {clickCount, delay: 20});
 }
-async function fill(page, name, value) {const input = page.locator('#modal [name="' + name + '"]'); await input.fill(String(value)); await input.blur();}
+async function fill(page, name, value) {const input = await tradeField(page,name); await input.fill(String(value)); await input.blur();}
 async function fillSearch(page, before, scenario) {
  const {inputs} = specification(before, scenario);
- for (const [name, value] of Object.entries(inputs)) {if (name === 'method') await page.locator('#modal [name="method"]').selectOption(value); else await fill(page, name, value);}
- if (scenario.local) await page.locator('#modal [name="local"]').check();
+ for (const [name, value] of Object.entries(inputs)) {if (name === 'method') await (await tradeField(page,'method')).selectOption(value); else await fill(page, name, value);}
+ if (scenario.local) await (await tradeField(page,'local')).check();
+}
+async function openSearchEntry(page,scenario,{wait=true}={}){
+ if(scenario.map){await page.evaluate(kind=>contactGate.dispatch('buyer-search'),scenario.kind);}
+ else{
+  await tab(page,'Trade');await page.locator('[data-action="trade-side"][data-arg="'+(scenario.kind==='buyer'?'sell':'buy')+'"]').click();
+  if(scenario.kind==='buyer'||!await page.locator('#supplier-form').count())await action(page,scenario.kind==='buyer'?'buyer-search':'search').click();
+ }
+ if(wait)await page.getByRole('heading',{name:'Find a '+scenario.kind,exact:true}).waitFor();
 }
 async function prepare(page, scenario, before, {loops = false, network = null} = {}) {
  if (scenario.selected) {await tab(page, 'Cargo'); await action(page, 'sale-all').click();}
  await tab(page, scenario.map ? 'Overview' : 'Trade');
  const open = async () => {
   const priorDice = await page.evaluate(() => contactDiceCalls);
-  if (scenario.map) await page.evaluate(kind => contactGate.dispatch(kind === 'buyer' ? 'buyer-search' : 'search'), scenario.kind); else await action(page, scenario.kind === 'buyer' ? 'buyer-search' : 'search').click();
-  await page.locator('#modal-title').filter({hasText: new RegExp('^Find a ' + scenario.kind + '$')}).waitFor();
-  assert.equal(await page.evaluate(() => contactDiceCalls), priorDice + 5, 'Each fresh entry keeps original search/time/local-skill generation policy');
+  await openSearchEntry(page,scenario);
+  assert.equal(await page.evaluate(()=>contactDiceCalls),priorDice,'Opening entry rolls no dice');
   await fillSearch(page, before, scenario); await pointer(page, '#modal-submit');
   await page.locator('#modal-title').filter({hasText: new RegExp('^Review ' + scenario.kind + ' search$')}).waitFor(); await frames(page);
   assert.equal((await gate(page)).totalCalls, 0); assert.deepEqual(await read(page), before, 'Search input and generated preview write nothing');
@@ -552,7 +565,7 @@ async function runBody(page, result, scenario, context) {
  assert.equal(await page.evaluate(() => contactStorage.writes), 0, 'Complete synthetic seed needs no migration write');
  await installGate(page,result); const before = await read(page), bytes = await raw(page), mode = scenario.mode;
  if(mode==='construction-throw') {
-  await tab(page,'Trade');await action(page,scenario.kind==='buyer'?'buyer-search':'search').click();await page.locator('#modal-title').filter({hasText:new RegExp('^Find a '+scenario.kind+'$')}).waitFor();await fillSearch(page,before,scenario);
+  await openSearchEntry(page,scenario);await page.getByRole('heading',{name:'Find a '+scenario.kind,exact:true}).waitFor();await fillSearch(page,before,scenario);
   const priorMessage=await page.locator('#message').textContent();
   await page.evaluate(({point,newer})=>{contactGate.oldSubmit=document.querySelector('#modal-form').onsubmit;contactGate.constructionThrow={point,newer};},scenario);
   await pointer(page,'#modal-submit');await frames(page);
@@ -566,16 +579,16 @@ async function runBody(page, result, scenario, context) {
   await replay(page,{physical:false,navigation:false});assert.equal((await gate(page)).totalCalls,0);assert.equal(await raw(page),bytes);assert.equal(await page.evaluate(()=>contactDiceCalls),dice,'Retired partial review and detached handler cannot regenerate or retry');
   if(scenario.newer){assert.equal(await page.locator('#modal-body').innerHTML(),snapshot.newer.body);assert.equal(await page.locator('#modal-error').textContent(),snapshot.newer.error);assert.equal(await page.locator('#message').textContent(),snapshot.constructionFailures[0].message);assert.equal(await page.evaluate(()=>document.querySelector('#modal-form').onsubmit===contactGate.newerSubmit),true);await detail(page,result,'throw-after-newer-notes',['#modal-body .notes-list article:first-child'],/Rules and verification/);}
   else{await detail(page,result,'partial-review-not-saved',['#modal-error'],/not saved[\s\S]*Close[\s\S]*reopen/i);await detail(page,result,'partial-review-close-controls',['#modal-cancel','#modal-submit']);}
-  await pointer(page,'#modal-cancel');await closed(page);await action(page,scenario.kind==='buyer'?'buyer-search':'search').click();await page.locator('#modal-title').filter({hasText:new RegExp('^Find a '+scenario.kind+'$')}).waitFor();assert.equal(await page.evaluate(()=>contactDiceCalls),dice+5,'Only deliberate fresh entry generates new preparation rolls');await pointer(page,'#modal-cancel');await closed(page);assert.equal((await gate(page)).totalCalls,0);assert.equal(await raw(page),bytes);
+  await pointer(page,'#modal-cancel');await closed(page);await openSearchEntry(page,scenario);await page.getByRole('heading',{name:'Find a '+scenario.kind,exact:true}).waitFor();assert.equal(await page.evaluate(()=>contactDiceCalls),dice,'Fresh entry generates no rolls until explicit review');await pointer(page,'#modal-cancel');await closed(page);assert.equal((await gate(page)).totalCalls,0);assert.equal(await raw(page),bytes);
   result.gate=safeReport(await gate(page));result.checks.push('Actual final-review '+scenario.point+' setter '+(scenario.newer?'installs synchronous newer Notes then throws; newer DOM/handler/message stay owned':'throws after owner binding; partial review retires with accurate no-save Close/reopen guidance')+'; zero provider, no retry/reroll, explicit later reopen remains usable');return;
  }
  if (['entry-title-reentry','review-body-reentry'].includes(mode)) {
   await tab(page,'Trade');
-  if (mode === 'entry-title-reentry') await page.evaluate(() => {contactGate.constructionFault='title';});
-  await action(page,scenario.kind === 'buyer'?'buyer-search':'search').click();
+  if (mode === 'entry-title-reentry') await page.evaluate(kind => {contactGate.constructionFault=kind==='supplier'?'supplier-entry':'title';},scenario.kind);
+  await openSearchEntry(page,scenario,{wait:mode!=='entry-title-reentry'});
   if (mode === 'review-body-reentry') {
-   await page.locator('#modal-title').filter({hasText:new RegExp('^Find a '+scenario.kind+'$')}).waitFor(); await fillSearch(page,before,scenario);
-   await page.evaluate(() => {contactGate.oldSubmit=document.querySelector('#modal-form').onsubmit;contactGate.constructionFault='body';}); await pointer(page,'#modal-submit');
+   await page.getByRole('heading',{name:'Find a '+scenario.kind,exact:true}).waitFor(); await fillSearch(page,before,scenario);
+   await page.evaluate(() => {contactGate.oldSubmit=document.querySelector('#modal-form').onsubmit;contactGate.constructionFault='body';}); await pointer(page,scenario.kind==='supplier'?'#supplier-form button[type="submit"]':'#modal-submit');
   }
   await page.locator('#modal-title').filter({hasText:/^Rules & Notes$/}).waitFor(); await frames(page);
   const snapshot=await gate(page); assert.equal(snapshot.constructionChecks.length,1); assert.equal(snapshot.constructionChecks[0].handlerChanged,true); assert.equal(await page.locator('#modal-body').innerHTML(),snapshot.newer.body);
