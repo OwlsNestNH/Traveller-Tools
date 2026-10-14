@@ -19,7 +19,7 @@ function input(extra={}){
 const json=x=>JSON.parse(JSON.stringify(x));
 function outcome(call){try{return {value:json(call())};}catch(e){return {error:e.message};}}
 function legacy(i){
- const sandbox={R,core,state:{},good:()=>i.commodity,creditStep:()=>i.creditStep,pricingOptions:illegal=>({...i.pricing,illegalGood:!!illegal}),effectiveRetailValue:(_id,illegal)=>R.effectiveBasePrice(i.commodity,{...i.pricing,illegalGood:!!illegal}).effective};
+ const sandbox={R:{...R,repriceQuote:(g,c,o,d,q)=>R.repriceQuote(g,c,{...o,criminalMarket:!!i.buyer.criminal},d,q)},core,state:{},good:()=>i.commodity,creditStep:()=>i.creditStep,pricingOptions:illegal=>({...i.pricing,illegalGood:!!illegal}),effectiveRetailValue:(_id,illegal)=>R.effectiveBasePrice(i.commodity,{...i.pricing,illegalGood:!!illegal}).effective};
  const fn=vm.runInNewContext(before+'\nprepareSaleLine',sandbox);
  const entries=new Map(Object.entries({['ban_'+i.lot.id]:i.values.ban,['price_'+i.lot.id]:i.values.price,['benchmark_'+i.lot.id]:i.values.benchmark,['qty_'+i.lot.id]:i.values.quantity,taxRate:i.values.taxRate,reason:i.values.reason}));
  return fn(i.lot,i.buyer,i.context,i.quote,{get:k=>entries.get(k)});

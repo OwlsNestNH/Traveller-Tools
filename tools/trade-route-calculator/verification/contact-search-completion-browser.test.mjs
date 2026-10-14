@@ -205,7 +205,7 @@ async function installGate(page, result) {
    if (settled() && g.cleanupFault === 'terminal-report' && this.id === 'message' && /Reload/.test(value)) fault('terminal-report');
    const result = Reflect.apply(text.set, this, [value]);
    if(g.constructionThrow?.point==='title'&&this.id==='modal-title'&&/^Review (?:supplier|buyer) search$/.test(value))g.throwConstruction();
-   if (g.handoffFault === 'title' && this.id === 'modal-title' && /^Prepare sale/.test(value)) {g.handoffFault=null;g.constructionFault='handoff-title';g.replaceConstruction();}
+   if (g.handoffFault === 'title' && this.id === 'modal-title' && /^Review sale/.test(value)) {g.handoffFault=null;g.constructionFault='handoff-title';g.replaceConstruction();}
    if (g.constructionFault === 'title' && this.id === 'modal-title') g.replaceConstruction();
    return result;
   }});
@@ -216,7 +216,7 @@ async function installGate(page, result) {
    if(g.constructionFault==='supplier-entry'&&this.id==='main'&&value.includes('id="supplier-form"'))g.replaceConstruction();
    if(g.constructionThrow?.point==='body'&&this.id==='modal-body'&&/^Review (?:supplier|buyer) search$/.test(document.querySelector('#modal-title').textContent))g.throwConstruction();
    if(g.handoffFault==='render'&&this.id==='main'&&contactStorage.writes>0){g.handoffRenderCount=(g.handoffRenderCount||0)+1;if(g.handoffRenderCount===2){g.handoffFault=null;g.constructionFault='handoff-render';g.replaceConstruction();}}
-   if(g.handoffFault==='body'&&this.id==='modal-body'&&/^Prepare sale/.test(document.querySelector('#modal-title').textContent)){g.handoffFault=null;g.constructionFault='handoff-body';g.replaceConstruction();}
+   if(g.handoffFault==='body'&&this.id==='modal-body'&&/^Review sale/.test(document.querySelector('#modal-title').textContent)){g.handoffFault=null;g.constructionFault='handoff-body';g.replaceConstruction();}
    if(g.constructionFault==='body'&&this.id==='modal-body')g.replaceConstruction();return result;
   }});
   const close = HTMLDialogElement.prototype.close;
@@ -435,7 +435,7 @@ async function reloadUndo(page, result, before, scenario, {committed = true} = {
 async function successful(page, result, before, scenario) {
  const legalMismatch=scenario.illegalCargo&&scenario.method!=='blackMarket';
  const handoff = scenario.kind === 'buyer' && !scenario.unsuccessful && scenario.selected&&!legalMismatch;
- if (handoff) await page.locator('#modal-title').filter({hasText: /^Prepare sale · Synthetic buyer$/}).waitFor(); else await closed(page);
+ if (handoff) await page.locator('#modal-title').filter({hasText: /^Review sale.*Synthetic buyer$/}).waitFor(); else await closed(page);
  await frames(page); assertSearch(await read(page), before, scenario);
  const snapshot = await gate(page), saved = await read(page), snap = saved.snapshots.at(-1);
  assert.equal(await raw(page), snapshot.candidates.at(-1)); assert.equal(snapshot.storage.writes, 1); assert.equal(snapshot.durableToken, false); assert.equal(snapshot.reloadRequired, false); assert.equal(await page.locator('#modal-error').textContent(), '');
@@ -450,7 +450,7 @@ async function successful(page, result, before, scenario) {
  const bytes = await raw(page), calls = snapshot.totalCalls, title = await page.locator('#modal-title').textContent();
  await page.evaluate(() => {void contactGate.oldSubmit({preventDefault(){},currentTarget:document.querySelector('#modal-form')});}); await frames(page);
  assert.equal(await raw(page), bytes); assert.equal((await gate(page)).totalCalls, calls); assert.equal(await page.locator('#modal-title').textContent(), title, 'Detached commit handler cannot close newer sale preparation');
- if (handoff) {await detail(page,result,'saved-buyer-handoff',['#modal-title'],/^Prepare sale/); await pointer(page,'#modal-cancel'); await closed(page);}
+ if (handoff) {await detail(page,result,'saved-buyer-handoff',['#modal-title'],/^Review sale/); await pointer(page,'#modal-cancel'); await closed(page);}
  else await detail(page,result,'saved-success',['#message'],legalMismatch?/^Illegal cargo needs a black-market buyer\.$/:successPattern);
  // Campaign time is an Overview-only control in both released and current UI.
  // First prove the owned Trade/handoff result above, then inspect its saved clock.
@@ -643,7 +643,7 @@ async function runBody(page, result, scenario, context) {
   assert.equal(immediate.writes,1,'Native Store saves before any added microtask');
   const handoff=!!scenario.selected&&!(scenario.illegalCargo&&scenario.method!=='blackMarket');
   assert.equal(immediate.open,handoff,'Native same-turn completion closes review or opens requested buyer handoff');
-  if(handoff)assert.equal(immediate.title,'Prepare sale · Synthetic buyer'); await frames(page); assert.equal((await gate(page)).totalCalls,1);
+  if(handoff)assert.match(immediate.title,/^Review sale.*Synthetic buyer$/); await frames(page); assert.equal((await gate(page)).totalCalls,1);
   if(mode==='reentrant')assert.ok((await gate(page)).reentrantChecks.every(item=>item.sameTitle&&item.sameOpen)); await successful(page,result,before,scenario); return;
  }
  await page.evaluate(mode=>{

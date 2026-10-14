@@ -67,7 +67,7 @@ async function fill(page,name,value){
  await input.fill(String(value));
 }
 async function submit(page,label,nextTitle=null){
- if(await tradeLabel(page,label)){if(label==='Preview purchase')return;}
+ if(await tradeLabel(page,label))return;
  else
  await modal(page).getByRole('button',{name:label,exact:true}).click();
  await page.waitForFunction(next=>!document.querySelector('#modal').open||Boolean(document.querySelector('#modal-error').textContent)||(next&&document.querySelector('#modal-title').textContent===next),nextTitle);
@@ -180,13 +180,13 @@ async function purchaseCase(page,context,result,f){
 async function saleCase(page,context,result,f){
  const initial=await raw(page),before=JSON.parse(initial),rolled=[...pair,...triple];
  await armDice(page,rolled);await tab(page,'Cargo');await action(page,'sale-all').click();await existingSell(page);await action(page,'sale').click();await title(page,'Prepare sale · Deterministic buyer');
- const prepLot=id=>modal(page).locator('.preview').filter({has:page.locator('[name="qty_'+id+'"]')});
+ const prepLot=id=>modal(page).locator('tr').filter({has:page.locator('[name="qty_'+id+'"]')});
  await flags(prepLot('sale-pair'),'complication');await flags(prepLot('sale-severe'),'severe');
  const initialPrices={pair:await modal(page).locator('[name="price_sale-pair"]').inputValue(),severe:await modal(page).locator('[name="price_sale-severe"]').inputValue()};
  assert.equal(initialPrices.pair,initialPrices.severe,'Equal totals/modifiers price pair and triple identically');
  await diceUsed(page,rolled);await layout(page);assert.equal(await raw(page),initial);
  await submit(page,'Preview sale','Confirm sale');
- const confirmationRows=()=>modal(page).locator('.sale-complications .sale-complication');
+ const confirmationRows=()=>modal(page).locator('.sale-review > .scroll tbody tr');
  await flags(confirmationRows().nth(0),'complication');await flags(confirmationRows().nth(1),'severe');
  await modal(page).locator('details').filter({has:page.locator('summary',{hasText:'Price rolls and modifiers'})}).locator(':scope > summary').click();
  assert.deepEqual(await facts(page,'3D price roll'),['2 + 2 + 5 = 9','3 + 3 + 3 = 9']);
@@ -197,7 +197,7 @@ async function saleCase(page,context,result,f){
  // original per-lot offers rather than rolling once for each UI callback.
  await existingSell(page);await action(page,'sale').click();await title(page,'Prepare sale · Deterministic buyer');
  await fill(page,'qty_sale-pair',1);await fill(page,'qty_sale-severe',2);await fill(page,'fee',7);
- await submit(page,'Preview sale','Confirm sale');await modal(page).getByRole('button',{name:'Edit quantities / fees',exact:true}).click();await title(page,'Prepare sale · Deterministic buyer');
+ await submit(page,'Preview sale','Confirm sale');await tradeLabel(page,'Edit quantities / fees');await title(page,'Prepare sale · Deterministic buyer');
  assert.equal(await modal(page).locator('[name="qty_sale-pair"]').inputValue(),'1');assert.equal(await modal(page).locator('[name="qty_sale-severe"]').inputValue(),'2');assert.equal(await modal(page).locator('[name="fee"]').inputValue(),'7');
  await flags(prepLot('sale-pair'),'complication');await flags(prepLot('sale-severe'),'severe');await dismiss(page);await diceUsed(page,rolled);
  await tab(page,'Trade');await tab(page,'Cargo');

@@ -31,6 +31,23 @@ The campaign clock displays an Imperial day-year date and hour, starting at 001-
 
 ## Development and verification
 
+Trade → Sell keeps separate cargo lots with editable quantities defaulting to the
+maximum held amount. Row Sell and Sell Selected open one editable review with
+live financial and cargo totals; only COMMIT SALE records the entire valid batch.
+Accepted save attempts retain their terms for retry. Cancel/reopen allows edits.
+GM adjustments retain price, benchmark, local-ban, tax-percentage and reason controls.
+Automatic taxes off defaults the visible GM rate to zero, with no table rolls;
+a deliberate GM percentage can still apply to that sale. Automatic rates follow
+the government/bracket table, with explicit resolution of required dice and no
+rolls on rendering, navigation or quantity edits. Criminal-market automatic tax
+exemption remains an identified house rule. Historical audits remain unchanged.
+
+When optional price limits are enabled, criminal-market contacts use the configured
+buy floor minus ten percentage points and sell ceiling plus ten points (house rule):
+85/115 becomes 75/125; 90/110 becomes 80/120. Commodity illegality alone does not
+select this widening. Limits off leaves prices uncapped. The base-retail Credit
+cap, illegal-goods cap exception and profit-retention calculation are separate.
+
 [GUI_PARITY.md](GUI_PARITY.md) tracks the existing controls, future homes and acceptance checks for the planned GUI refit. Stage 1 implements the shared status/navigation shell and map-first Overview. The later Trade and secondary-page visual refits remain separate work.
 
 From this folder, serve the files with any static server, for example:
