@@ -91,6 +91,9 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
+      - name: Fetch pinned status footprint baseline
+        if: matrix.suite == 'status-gauges-browser'
+        run: git fetch --no-tags --depth=1 origin cd1291f1d02519bc976012171b14c21c8347b728
       - name: Set up Node
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:

@@ -42,7 +42,7 @@ try{
   const undo=async()=>{await tab('History');await page.locator('[data-action="undo"]').click();};
   async function checkSummary(aboard,baseTank,bladder){
    await tab('Overview');assert.equal(await page.locator('.fuel-counter .value').textContent(),`Aboard ${aboard}t · Tank ${baseTank}t · Bladder ${bladder}t`+(aboard===0?' · EMPTY':''));
-   const geometry=await resourceBarGeometry(page);assert.equal(geometry.fuel.max,baseTank+bladder);assert.equal(geometry.fuel.fill,aboard);
+   const geometry=await resourceBarGeometry(page);assert.equal(geometry.fuel.max,baseTank);assert.equal(geometry.fuel.fill,Math.min(aboard,baseTank));
    const display=await page.locator('.fuel-counter .value').evaluate(el=>({font:parseFloat(getComputedStyle(el).fontSize),height:el.getBoundingClientRect().height,overflow:el.scrollWidth-el.clientWidth}));
    assert.ok(display.font<=14&&display.height<=65&&display.overflow<=1,'Distinct quantities retain the compact summary at '+width+'px');
   }
