@@ -33,7 +33,8 @@ try{for(const width of [1440,390,320])for(const mode of ['off','manual','automat
  assert.match(await page.locator('#sale-live-preview').textContent(),/125%/,'Manual offer shows its actual percentage of retained retail');
  assert.match(await page.locator('#sale-live-preview').textContent(),mode==='manual'?/GM percentage override/:mode==='criminal'?/exemption \(house rule\)/:mode==='off'?/Automatic taxes off/:/Merchant Prince/);
  const count=await dice();await fill('qty_lot-recorded','999');assert.equal(await page.locator('#modal-submit').isDisabled(),true);assert.equal(await raw(),bytes);assert.equal(await dice(),count);await fill('qty_lot-recorded','1');
- await page.locator('#modal').evaluate(el=>el.scrollTop=0);await page.screenshot({path:artifacts+'sell-review-'+mode+'-'+width+'.png'});
+ const gm=page.locator('.sale-review > details').first();if(await gm.evaluate(el=>el.open))await gm.locator(':scope > summary').click();
+ await page.locator('#modal .scroll').evaluateAll(nodes=>nodes.forEach(el=>el.scrollLeft=0));await page.locator('#modal').evaluate(el=>el.scrollTop=0);await page.screenshot({path:artifacts+'sell-review-'+mode+'-'+width+'.png'});
  await page.locator('#modal-submit').scrollIntoViewIfNeeded();await page.screenshot({path:artifacts+'sell-review-footer-'+mode+'-'+width+'.png'});
  await page.evaluate(key=>{const original=Storage.prototype.setItem;let fail=true;Storage.prototype.setItem=function(k,v){if(k===key&&fail){fail=false;throw new DOMException('Synthetic prewrite failure','QuotaExceededError');}return original.call(this,k,v);};},campaignKey);
  await page.locator('#modal-submit').click();await page.locator('#modal-error').filter({hasText:/Synthetic prewrite/}).waitFor();assert.equal(await raw(),bytes);assert.equal(await page.locator('[name="qty_lot-recorded"]').evaluate(el=>el.readOnly),true);

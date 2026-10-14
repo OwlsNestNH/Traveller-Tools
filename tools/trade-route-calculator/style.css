@@ -459,6 +459,8 @@ main{padding-top:18px}
 .sale-review .scroll:focus-visible,.sell-cargo-scroll:focus-visible{outline:2px solid var(--cyan);outline-offset:-2px}
 /* Long counterparty names must also fit the post-save notice. */
 #message{overflow-wrap:anywhere}
+.sale-review>.scroll>table{table-layout:fixed;min-width:800px}.sale-review>.scroll th:nth-child(1){width:32%}.sale-review>.scroll th:nth-child(2){width:9%}.sale-review>.scroll th:nth-child(3){width:15%}.sale-review>.scroll th:nth-child(4){width:25%}.sale-review>.scroll th:nth-child(5){width:19%}.sale-review>.scroll th:nth-child(2),.sale-review>.scroll th:nth-child(4),.sale-review>.scroll th:nth-child(5){text-align:right}.sale-review input[name^=qty_]{text-align:right}
+.sale-review #sale-live-preview table{table-layout:fixed;min-width:1120px}.sale-review #sale-live-preview th:first-child{width:240px}.sale-review #sale-live-preview th:nth-child(2){width:70px}.sale-review #sale-live-preview td.number{white-space:normal;overflow-wrap:anywhere}
 #sale-selection-preview{overflow-wrap:anywhere;margin-top:14px}#sale-selection-preview dl{margin:0}
 #sale-selection-preview .preview{padding:0;border:0;background:none}#sale-selection-preview dl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:10px 14px}#sale-selection-preview dt,#sale-selection-preview dd{min-width:0;white-space:normal;margin:0}
 @media(max-width:620px){#sale-selection-preview dl{grid-template-columns:minmax(0,1fr);gap:5px}#sale-selection-preview dd{text-align:left;margin-bottom:12px}}
