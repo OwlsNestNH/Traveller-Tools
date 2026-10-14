@@ -1,50 +1,50 @@
-import {statusGaugeValues,fuelGaugeValues} from './status-gauges.mjs?v=status-strip-20261014-87';
-import {prepareContactSearchResult,marketAvailabilityRecord,tradeCodeLabel} from './contact-search-result.mjs?v=status-strip-20261014-87';
-import {prepareMarketOfferOverride,applyMarketOfferOverride} from './market-offer.mjs?v=status-strip-20261014-87';
-import {prepareInsuranceTerms} from './insurance-terms.mjs?v=status-strip-20261014-87';
-import {preparePurchaseAmounts} from './purchase-amounts.mjs?v=status-strip-20261014-87';
-import {prepareSaleLine} from './sale-line.mjs?v=status-strip-20261014-87';
-import {APP_BUILD,createDebugLog} from './debug-log.mjs?v=status-strip-20261014-87';
-import {dashboardPanel} from './dashboard-view.mjs?v=status-strip-20261014-87';
-import {recordWorldOverride,revertWorldField,worldFieldRevertEligibility,worldChangeFields,worldFieldValue,isWorldChangeAudit} from './world-change-history.mjs?v=status-strip-20261014-87';
-import {createCampaignController} from './campaign-controller.mjs?v=status-strip-20261014-87';
-import {ruleInfo,referenceIndex,REFERENCE_VERSION} from './rule-references.mjs?v=status-strip-20261014-87';
-import {mountRulePopover,replaceReferenceContent} from './rule-popover.mjs?v=status-strip-20261014-87';
-import {escapeHtml,moneyHtml} from './display.mjs?v=status-strip-20261014-87';
-import {normalizeAmount,normalizeAmountFields} from './form-values.mjs?v=status-strip-20261014-87';
-import {contactSearchStatus,contactSearchPeriod,contactSearchRule,prepareContactSearchOutcome} from './contact-search.mjs?v=status-strip-20261014-87';
-import {createPassengerUI} from './passenger-ui.mjs?v=status-strip-20261014-87';
-import {passengerShip,passengerTotals,passengerSpace,passengerCapacity} from './passengers.mjs?v=status-strip-20261014-87';
-import {advancePaymentDate,recordedPaymentDate} from './payment-schedule.mjs?v=status-strip-20261014-87';
-import {configureMortgage,mortgageStatus} from './mortgage.mjs?v=status-strip-20261014-87';
-import {configureMaintenance,maintenanceStatus} from './maintenance.mjs?v=status-strip-20261014-87';
-import {createServicePanels} from './service-panels.mjs?v=status-strip-20261014-87';
-import {cargoHoldPanel} from './cargo-hold.mjs?v=status-strip-20261014-87';
-import {createExpensePanels} from './expense-panels.mjs?v=status-strip-20261014-87';
+import {statusGaugeValues,fuelGaugeValues} from './status-gauges.mjs?v=sell-compact-20261014-88';
+import {prepareContactSearchResult,marketAvailabilityRecord,tradeCodeLabel} from './contact-search-result.mjs?v=sell-compact-20261014-88';
+import {prepareMarketOfferOverride,applyMarketOfferOverride} from './market-offer.mjs?v=sell-compact-20261014-88';
+import {prepareInsuranceTerms} from './insurance-terms.mjs?v=sell-compact-20261014-88';
+import {preparePurchaseAmounts} from './purchase-amounts.mjs?v=sell-compact-20261014-88';
+import {prepareSaleLine} from './sale-line.mjs?v=sell-compact-20261014-88';
+import {APP_BUILD,createDebugLog} from './debug-log.mjs?v=sell-compact-20261014-88';
+import {dashboardPanel} from './dashboard-view.mjs?v=sell-compact-20261014-88';
+import {recordWorldOverride,revertWorldField,worldFieldRevertEligibility,worldChangeFields,worldFieldValue,isWorldChangeAudit} from './world-change-history.mjs?v=sell-compact-20261014-88';
+import {createCampaignController} from './campaign-controller.mjs?v=sell-compact-20261014-88';
+import {ruleInfo,referenceIndex,REFERENCE_VERSION} from './rule-references.mjs?v=sell-compact-20261014-88';
+import {mountRulePopover,replaceReferenceContent} from './rule-popover.mjs?v=sell-compact-20261014-88';
+import {escapeHtml,moneyHtml} from './display.mjs?v=sell-compact-20261014-88';
+import {normalizeAmount,normalizeAmountFields} from './form-values.mjs?v=sell-compact-20261014-88';
+import {contactSearchStatus,contactSearchPeriod,contactSearchRule,prepareContactSearchOutcome} from './contact-search.mjs?v=sell-compact-20261014-88';
+import {createPassengerUI} from './passenger-ui.mjs?v=sell-compact-20261014-88';
+import {passengerShip,passengerTotals,passengerSpace,passengerCapacity} from './passengers.mjs?v=sell-compact-20261014-88';
+import {advancePaymentDate,recordedPaymentDate} from './payment-schedule.mjs?v=sell-compact-20261014-88';
+import {configureMortgage,mortgageStatus} from './mortgage.mjs?v=sell-compact-20261014-88';
+import {configureMaintenance,maintenanceStatus} from './maintenance.mjs?v=sell-compact-20261014-88';
+import {createServicePanels} from './service-panels.mjs?v=sell-compact-20261014-88';
+import {cargoHoldPanel} from './cargo-hold.mjs?v=sell-compact-20261014-88';
+import {createExpensePanels} from './expense-panels.mjs?v=sell-compact-20261014-88';
 import {currentJumpAttempt} from './jump-attempts.mjs';
-import {mountSettingsLayout,syncSettingsControls,stepSetting} from './settings-layout.mjs?v=status-strip-20261014-87';
-import {configureFuel,fuelCapacities,bladderSpace,validateFuel,jumpFuel} from './fuel.mjs?v=status-strip-20261014-87';
-import {refillQuote,supportStock,supportCargo,supportDisplay,anchorSupport,configureSupport} from './life-support.mjs?v=status-strip-20261014-87';
-import {playerBriefing} from './player-briefing.mjs?v=status-strip-20261014-87';
-import {campaignReport} from './report.mjs?v=status-strip-20261014-87';
-import {up,creditStep,roundExisting} from './rounding.mjs?v=status-strip-20261014-87';
-import {tiers,luggageAllowance,occupants,passengerLuggage,manualLuggage,serviceRate,serviceLabel,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=status-strip-20261014-87';
+import {mountSettingsLayout,syncSettingsControls,stepSetting} from './settings-layout.mjs?v=sell-compact-20261014-88';
+import {configureFuel,fuelCapacities,bladderSpace,validateFuel,jumpFuel} from './fuel.mjs?v=sell-compact-20261014-88';
+import {refillQuote,supportStock,supportCargo,supportDisplay,anchorSupport,configureSupport} from './life-support.mjs?v=sell-compact-20261014-88';
+import {playerBriefing} from './player-briefing.mjs?v=sell-compact-20261014-88';
+import {campaignReport} from './report.mjs?v=sell-compact-20261014-88';
+import {up,creditStep,roundExisting} from './rounding.mjs?v=sell-compact-20261014-88';
+import {tiers,luggageAllowance,occupants,passengerLuggage,manualLuggage,serviceRate,serviceLabel,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=sell-compact-20261014-88';
 import * as A from './amounts.mjs';
 import {parseDate,displayDate} from './calendar.mjs';
-import * as R from './rules.mjs?v=status-strip-20261014-87';
-import * as S from './state.mjs?v=status-strip-20261014-87';
+import * as R from './rules.mjs?v=sell-compact-20261014-88';
+import * as S from './state.mjs?v=sell-compact-20261014-88';
 import {latestMailCheck,recordMailCheck,mailCheckHistoryStatus} from './mail-history.mjs?v=mail-history-1';
-import * as E from './expenses.mjs?v=status-strip-20261014-87';
-import {planetInformation,worldSheetURL} from './planet-info.mjs?v=status-strip-20261014-87';
-import {worldMapFacts,worldSymbols,selectedWorldHex,mapKeyMarkup} from './world-symbols.mjs?v=status-strip-20261014-87';
-import * as M from './map.mjs?v=status-strip-20261014-87';
+import * as E from './expenses.mjs?v=sell-compact-20261014-88';
+import {planetInformation,worldSheetURL} from './planet-info.mjs?v=sell-compact-20261014-88';
+import {worldMapFacts,worldSymbols,selectedWorldHex,mapKeyMarkup} from './world-symbols.mjs?v=sell-compact-20261014-88';
+import * as M from './map.mjs?v=sell-compact-20261014-88';
 import {MAP_GEOMETRY,setMapGeometry,visibleMapWorlds} from './map-geometry.mjs?v=map-first-1';
 import {camera,viewportTiles,MapAreaCache} from './map-viewport.mjs?v=map-first-1';
-import {MAP_ZOOM_STEP,nextMapZoom,mapLevel,MapOverviewCache,overviewMarkup,mapTerritories} from './map-overview.mjs?v=status-strip-20261014-87';
+import {MAP_ZOOM_STEP,nextMapZoom,mapLevel,MapOverviewCache,overviewMarkup,mapTerritories} from './map-overview.mjs?v=sell-compact-20261014-88';
 import {readPoliticalTerritory,savePoliticalTerritory} from './map-preferences.mjs';
-import {createGlobalWorldSearch} from './global-world-search.mjs?v=status-strip-20261014-87';
-import {createWorldPicker,rememberWorld} from './world-picker.mjs?v=status-strip-20261014-87';
-import {Store,KEY,SaveNotCommittedError,SaveCommittedPublicationError} from './persistence.mjs?v=status-strip-20261014-87';
+import {createGlobalWorldSearch} from './global-world-search.mjs?v=sell-compact-20261014-88';
+import {createWorldPicker,rememberWorld} from './world-picker.mjs?v=sell-compact-20261014-88';
+import {Store,KEY,SaveNotCommittedError,SaveCommittedPublicationError} from './persistence.mjs?v=sell-compact-20261014-88';
 const $=id=>document.getElementById(id),esc=escapeHtml;
 const ROOT='https://github.com/OwlsNestNH/Traveller-Tools/blob/main/tools/trade-route-calculator/';
 let inputRounding=[];
@@ -959,7 +959,7 @@ function tradeLocation(){return '<div class="trade-location"><span>Trading view:
 
 function tradeTable(kind,headers,widths,rows,cls=''){
  if(kind==='sale')rows=labelSaleCells(headers,rows);
- return '<div class="scroll '+cls+'"'+(kind==='sale'?' role="region" tabindex="0" aria-label="Cargo sale lots, quantities and actions"':'')+'><table class="trade-table '+kind+'-table"><colgroup>'+widths.map(w=>'<col style="width:'+w+'px">').join('')+'</colgroup><thead><tr>'+headers.map((h,i)=>'<th scope="col" class="'+([1,2,3,4].includes(i)&&kind!=='freight'||kind==='freight'&&[1,3,4].includes(i)?'number':'')+'">'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table></div>';
+ return '<div class="scroll '+cls+'"'+(kind==='sale'?' role="region" tabindex="0" aria-label="Cargo sale lots, quantities and actions"':'')+'><table class="trade-table '+kind+'-table"><colgroup>'+widths.map(w=>'<col style="width:'+w+(typeof w==='number'?'px':'')+'">').join('')+'</colgroup><thead><tr>'+headers.map((h,i)=>'<th scope="col" class="'+([1,2,3,4].includes(i)&&kind!=='freight'||kind==='freight'&&[1,3,4].includes(i)?'number':'')+'">'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table></div>';
 }
 // Narrow Sell tables expose every field as a labelled card, preserving table DOM.
 function labelSaleCells(headers,rows){return rows.map(row=>{let i=0;return row.replace(/<td(?=[ >])/g,()=>'<td data-sale-label="'+esc(headers[i++])+'"');});}
@@ -1052,8 +1052,8 @@ function sellCargoPanel(){
  const lots=state.lots.filter(l=>(l.description+' '+good(l.commodity)?.name).toLowerCase().includes(cargoSearch.toLowerCase()));
  lots.sort((a,b)=>cargoSort==='quantity'?-A.cmp(a.quantity,b.quantity):a.description.localeCompare(b.description));
  const rows=lots.map(l=>{const q=currentQuote(l.id),paid=historicalPurchase(l);let gross='Not negotiated';try{if(q)gross=money(up(A.mul(saleEntryQuantity(l),q.unitPrice),creditStep(state)));}catch{gross='Invalid quantity';}
- return `<tr><td><label class="check"><input type="checkbox" aria-label="Select ${esc(l.description)}" data-lot="${esc(l.id)}" ${selected.has(l.id)?'checked':''}>${esc(l.description)}</label><div class="help">${esc(good(l.commodity)?.name)} · Lot ${esc(l.id)}</div>${l.illegal?'<span class="tag illegal">Illegal</span>':''}</td><td class="number">${esc(l.quantity)} t</td><td><label class="field">Sell quantity — t<input type="number" aria-label="Sell quantity for ${esc(l.description)}" data-sale-quantity="${esc(l.id)}" value="${esc(saleQuantity(l))}" min="0" max="${esc(l.quantity)}" step="any" ${!store?.editable?'disabled':''}></label></td><td class="number">${retail(l.commodity,l.illegal)}<div class="help">Paid: ${paid.percent==null?'Not recorded':esc(paid.percent)+'% retail'}</div></td><td class="number">${q?money(q.unitPrice)+' / t':'Not negotiated'}<div class="help">${q?.audit?.percent==null?'Sale % not recorded':esc(q.audit.percent)+'% retail'}</div>${tradeComplicationFlag(q?.audit)}</td><td class="number" data-sale-gross="${esc(l.id)}">${gross}</td><td class="table-actions">${btn('Sell','lot-sell',l.id,true,'small')}${btn('Audit','lot-audit',l.id,false,'small')}${btn('Edit','lot-correct',l.id,true,'small')}${state.settings.insurance?btn('Insure cargo','lot-insure',l.id,true,'small'):''}</td></tr>`;});
- return panel('Cargo aboard',`<div class="panel-body toolbar"><input id="cargo-search" aria-label="Search cargo" placeholder="Search cargo lots." value="${esc(cargoSearch)}"><select id="cargo-sort" aria-label="Sort cargo"><option value="name">Name</option><option value="quantity" ${cargoSort==='quantity'?'selected':''}>Quantity</option></select><span class="help">${lots.length} / ${state.lots.length} lots shown</span></div>${rows.length?tradeTable('sale',['Cargo / lot','Onboard','Sell quantity','Retail / historical paid','Offer / sale % retail','Gross proceeds','Actions'],[240,100,150,170,180,150,190],rows,'sell-cargo-scroll'):empty(state.lots.length?'No cargo matches this search.':'No owned cargo aboard.')}<div class="panel-body"><p class="help">Defaults to maximum held. Edit for a partial sale; other new fractional entries round up to whole tons. Only selected lots enter the batch, including selected lots hidden by this search.</p><div class="selected-preview row"><span>${selected.size} selected</span>${btn('Select all cargo','sale-all','',true)}${btn('Clear selection','sale-clear','',true)}${btn('Sell Selected','sale','',true,'primary')}${btn('Add existing / referee cargo','add-lot','',true)}</div><div id="sale-selection-preview" class="preview" role="status" aria-live="polite">${saleSelectionSummary()}</div></div>`);
+ return `<tr><td><label class="check cell-primary cargo-name" title="${esc(good(l.commodity)?.name)} · Lot ${esc(l.id)}"><input type="checkbox" aria-label="Select ${esc(l.description)}" data-lot="${esc(l.id)}" ${selected.has(l.id)?'checked':''}><span>${esc(l.description)}</span></label>${l.illegal?'<span class="tag illegal">Illegal</span>':''}</td><td class="number"><div class="cell-primary number">${esc(l.quantity)} t</div></td><td><div class="cell-primary"><input type="number" aria-label="Sell quantity for ${esc(l.description)}" data-sale-quantity="${esc(l.id)}" value="${esc(saleQuantity(l))}" min="0" max="${esc(l.quantity)}" step="any" ${!store?.editable?'disabled':''}></div></td><td class="number"><div class="cell-primary price number"><span>${retail(l.commodity,l.illegal)}</span><small>Paid: ${paid.percent==null?'Not recorded':esc(paid.percent)+'% retail'}</small></div></td><td class="number"><div class="cell-primary price number"><span>${q?money(q.unitPrice)+' / t':'Not negotiated'}</span>${q?'<small>'+(q.audit?.percent==null?'Sale % not recorded':esc(q.audit.percent)+'% retail')+'</small>':''}</div>${tradeComplicationFlag(q?.audit)}</td><td class="number"><div class="cell-primary number" data-sale-gross="${esc(l.id)}">${gross}</div></td><td class="table-actions"><div class="row-actions">${btn('Sell','lot-sell',l.id,true,'small')}${btn('Audit','lot-audit',l.id,false,'small')}${btn('Edit','lot-correct',l.id,true,'small')}${state.settings.insurance?btn('Insure cargo','lot-insure',l.id,true,'small'):''}</div></td></tr>`;});
+ return panel('Cargo aboard',`<div class="panel-body toolbar"><input id="cargo-search" aria-label="Search cargo" placeholder="Search cargo lots." value="${esc(cargoSearch)}"><select id="cargo-sort" aria-label="Sort cargo"><option value="name">Name</option><option value="quantity" ${cargoSort==='quantity'?'selected':''}>Quantity</option></select><span class="help">${lots.length} / ${state.lots.length} lots shown</span></div>${rows.length?tradeTable('sale',['Cargo / lot','Onboard','Sell qty — t','Retail / paid','Offer / retail %','Gross proceeds','Actions'],['19%','5%','7%','19%','18%','12%','20%'],rows,'sell-cargo-scroll'):empty(state.lots.length?'No cargo matches this search.':'No owned cargo aboard.')}<div class="panel-body"><p class="help">Defaults to maximum held. Edit for a partial sale; other new fractional entries round up to whole tons. Only selected lots enter the batch, including selected lots hidden by this search.</p><div class="selected-preview row"><span>${selected.size} selected</span>${btn('Select all cargo','sale-all','',true)}${btn('Clear selection','sale-clear','',true)}${btn('Sell Selected','sale','',true,'primary')}${btn('Add existing / referee cargo','add-lot','',true)}</div><div id="sale-selection-preview" class="preview" role="status" aria-live="polite">${saleSelectionSummary()}</div></div>`);
 }
 function saleSelectionSummary(){
  const lots=state.lots.filter(l=>selected.has(l.id));let tons=A.rat(0),gross=0n,negotiated=true;const buyers=new Set();
@@ -4267,7 +4267,7 @@ $('import-file').onchange=safely(importCampaignFile);
 if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{if(tab==='Overview'&&viewed()&&updateMapGeometry()){scheduleMapPaint();scheduleMapAreas();}}).observe($('main'));
 window.addEventListener('error',e=>recordDebugError(e.error||e.message,'window-error'));
 window.addEventListener('unhandledrejection',e=>recordDebugError(e.reason,'unhandled-rejection'));
-async function boot(){mountRulePopover(document);[core,mp,decisions]=await Promise.all(['rules/core-2022.json?v=status-strip-20261014-87','rules/merchant-prince-1e.json','rules/decisions.json'].map(async url=>{const r=await fetch(url);if(!r.ok)throw Error('Could not load '+url);return r.json();}));store=new Store(receiveCampaign,(editable,text)=>{if(!editable){worldNearbyRequest=null;invalidateRoutePlanOperation();invalidatePlannedRouteWriteOperation();invalidateClearRouteWriteOperation();invalidateAccountsWriteOperation();invalidatePassengerWriteOperation();invalidateContractLifecycleWriteOperation();invalidateContractOfferWriteOperation();invalidateContactSearchWriteOperation();invalidateInsuranceWriteOperation();invalidatePurchaseWriteOperation();invalidateSaleWriteOperation();invalidateWorldWriteOperation();invalidateTimeWriteOperation();invalidateSettingsOperation(true);invalidateJumpPreparation();invalidateUndoOperation();invalidateReplacementEditing();stockServices.invalidate();expenseServices.invalidate();}$('save-status').textContent=campaignReloadRequired?campaignReloadMessage:text;$('save-status').className=editable&&!campaignReloadRequired?'muted':'readonly';$('takeover').hidden=editable||campaignReloadRequired;$('takeover').disabled=campaignReloadRequired;if(!editable&&activeModal?.mutates){activeModal.cancelled=true;$('modal-error').textContent=campaignReloadRequired?campaignReloadMessage:'Editing moved to another tab. Reopen this dialog after taking over editing.';}syncModalSubmit();render();});try{state=store.read();}catch(error){recordDebugError(error,'startup-read',{screen:'Startup',newOccurrence:true});store.recovery=true;store.recoveryMessage=error.message;state=S.initial();}store.onDiagnostic=(error,context)=>recordDebugError(error,context,{screen:'Startup',newOccurrence:true});known={...state.worlds};view=state.actual;render();await store.acquire();if(state.initialized)restoreExpenseReceipt();if(state.initialized)refreshNearby(false).catch(e=>message('Could not load nearby worlds: '+e.message+'. Use Refresh nearby to retry.',true));}
+async function boot(){mountRulePopover(document);[core,mp,decisions]=await Promise.all(['rules/core-2022.json?v=sell-compact-20261014-88','rules/merchant-prince-1e.json','rules/decisions.json'].map(async url=>{const r=await fetch(url);if(!r.ok)throw Error('Could not load '+url);return r.json();}));store=new Store(receiveCampaign,(editable,text)=>{if(!editable){worldNearbyRequest=null;invalidateRoutePlanOperation();invalidatePlannedRouteWriteOperation();invalidateClearRouteWriteOperation();invalidateAccountsWriteOperation();invalidatePassengerWriteOperation();invalidateContractLifecycleWriteOperation();invalidateContractOfferWriteOperation();invalidateContactSearchWriteOperation();invalidateInsuranceWriteOperation();invalidatePurchaseWriteOperation();invalidateSaleWriteOperation();invalidateWorldWriteOperation();invalidateTimeWriteOperation();invalidateSettingsOperation(true);invalidateJumpPreparation();invalidateUndoOperation();invalidateReplacementEditing();stockServices.invalidate();expenseServices.invalidate();}$('save-status').textContent=campaignReloadRequired?campaignReloadMessage:text;$('save-status').className=editable&&!campaignReloadRequired?'muted':'readonly';$('takeover').hidden=editable||campaignReloadRequired;$('takeover').disabled=campaignReloadRequired;if(!editable&&activeModal?.mutates){activeModal.cancelled=true;$('modal-error').textContent=campaignReloadRequired?campaignReloadMessage:'Editing moved to another tab. Reopen this dialog after taking over editing.';}syncModalSubmit();render();});try{state=store.read();}catch(error){recordDebugError(error,'startup-read',{screen:'Startup',newOccurrence:true});store.recovery=true;store.recoveryMessage=error.message;state=S.initial();}store.onDiagnostic=(error,context)=>recordDebugError(error,context,{screen:'Startup',newOccurrence:true});known={...state.worlds};view=state.actual;render();await store.acquire();if(state.initialized)restoreExpenseReceipt();if(state.initialized)refreshNearby(false).catch(e=>message('Could not load nearby worlds: '+e.message+'. Use Refresh nearby to retry.',true));}
 boot().catch(e=>{recordDebugError(e,'startup',{screen:'Startup',newOccurrence:true});message(e.message,true);$('main').innerHTML=empty('The calculator could not start. Your saved campaign has not been replaced. Reload after checking the error above.')+'<div class="wide-actions">'+btn('Copy Error Report','dev-copy-errors')+'</div>';});
 
 document.addEventListener('change',e=>{if(e.target.id==='hide-high-prices'){hideHighPrices=e.target.checked;render();}if(e.target.closest('#supplier-form')&&e.target.name==='method'){const f=$('supplier-form'),choice=f.elements.namedItem('characteristicChoice');const wasOnline=choice.disabled;choice.disabled=e.target.value==='online';if(choice.disabled)choice.value='edu';else if(wasOnline)choice.value=R.characteristicDMs(state.trader).edu>=R.characteristicDMs(state.trader).soc?'edu':'soc';}});
