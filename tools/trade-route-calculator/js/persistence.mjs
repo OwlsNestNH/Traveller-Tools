@@ -1,5 +1,5 @@
-import {createDashboardBaseline,sameDashboardBaseline} from './dashboard-baseline.mjs?v=map-scroll-spinners-20261015-93';
-import {initial,validate} from './state.mjs?v=map-scroll-spinners-20261015-93';
+import {createDashboardBaseline,sameDashboardBaseline} from './dashboard-baseline.mjs?v=referee-cargo-20261015-94';
+import {initial,validate} from './state.mjs?v=referee-cargo-20261015-94';
 export const KEY='traveller-trade-route-calculator:v1';
 const LOCK=KEY+':writer';
 // Only the provider can distinguish a rejected write from failed publication.

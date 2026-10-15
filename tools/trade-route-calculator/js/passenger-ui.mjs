@@ -1,10 +1,10 @@
-import {ruleInfo} from './rule-references.mjs?v=map-scroll-spinners-20261015-93';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=map-scroll-spinners-20261015-93';
+import {ruleInfo} from './rule-references.mjs?v=referee-cargo-20261015-94';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=referee-cargo-20261015-94';
 import * as A from './amounts.mjs';
-import {manualLuggage} from './accommodation.mjs?v=map-scroll-spinners-20261015-93';
-import * as P from './passengers.mjs?v=map-scroll-spinners-20261015-93';
-import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=map-scroll-spinners-20261015-93';
-import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=map-scroll-spinners-20261015-93';
+import {manualLuggage} from './accommodation.mjs?v=referee-cargo-20261015-94';
+import * as P from './passengers.mjs?v=referee-cargo-20261015-94';
+import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=referee-cargo-20261015-94';
+import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=referee-cargo-20261015-94';
 import {displayDate} from './calendar.mjs';
 const esc=escapeHtml;
 const money=formatCreditsText,signed=x=>x>0?'+'+x:String(x);
@@ -130,14 +130,14 @@ export function createPassengerUI({getState,getCore,getWorld,getWorlds,getView,m
    },apply:(n,args)=>S.recordPassengerSearch(n,args.event),success:'Passenger availability recorded. Choose how many people to board.'
   });
  }
- function manual(initialDestination=''){
+ function manual(initialDestination='',{header=''}={}){
   return completion.open({kind:'manual',preview:true,title:'Manual passenger contract',label:'Preview boarding',reviewTitle:'Confirm manual passenger booking',reviewLabel:'Board passengers',capture:captureReview,
    body:owner=>{
     const s=owner.campaign,worlds=owner.context.worlds;
     const destinations=Object.values(worlds).filter(w=>w.id!==s.actual&&!w.emptySpace&&M.distance(worlds[s.actual],w)<=s.ship.jump);
     if(!destinations.length)throw Error('Load nearby worlds within the ship’s jump rating first.');
     owner.destination=destinations.some(w=>w.id===initialDestination)?initialDestination:destinations[0].id;
-    return '<p class="help">Referee terms '+ruleInfo('booking')+' · Accommodation '+ruleInfo('accommodation')+'</p>'+select('destination','Single-jump destination',destinations.map(w=>[w.id,w.name]),owner.destination)+select('passageClass','Passage class',PASSAGE_CLASSES.map(c=>[c,passageLabel(c)]),'middle')+field('count','People to board',1,'type="number" min="1" step="1" required')+field('fare','Agreed fare per person · Cr','1000','type="number" min="0" step="1" required')+select('cabinMode','Accommodation',[['private','Private cabins'],['shared','Shared, two per cabin'],['cargo','Basic fitted spare space · 2 t per person'],['low','Installed Low berth']],'private')+check('serviceConfirmed','Steward service is available (required for High / Middle).')+check('spaceConfirmed','Selected spare space is fitted for Basic passengers (if used).')+field('reason','Referee terms / reason','','type="text" required')+'<p class="help">Capacity, luggage and life support use the existing booking rules. Payment is recorded once on destination delivery; no automatic lateness penalty. Low revival is resolved in play.</p>';
+    return header+'<p class="help">Referee terms '+ruleInfo('booking')+' · Accommodation '+ruleInfo('accommodation')+'</p>'+select('destination','Single-jump destination',destinations.map(w=>[w.id,w.name]),owner.destination)+select('passageClass','Passage class',PASSAGE_CLASSES.map(c=>[c,passageLabel(c)]),'middle')+field('count','People to board',1,'type="number" min="1" step="1" required')+field('fare','Agreed fare per person · Cr','1000','type="number" min="0" step="1" required')+select('cabinMode','Accommodation',[['private','Private cabins'],['shared','Shared, two per cabin'],['cargo','Basic fitted spare space · 2 t per person'],['low','Installed Low berth']],'private')+check('serviceConfirmed','Steward service is available (required for High / Middle).')+check('spaceConfirmed','Selected spare space is fitted for Basic passengers (if used).')+field('reason','Referee terms / reason','','type="text" required')+'<p class="help">Capacity, luggage and life support use the existing booking rules. Payment is recorded once on destination delivery; no automatic lateness penalty. Low revival is resolved in play.</p>';
    },prepare:(f,owner)=>{
     const reason=String(f.get('reason')||'').trim(),count=Number(f.get('count')),passageClass=f.get('passageClass'),fare=String(A.credit(f.get('fare')));
     if(!reason||!PASSAGE_CLASSES.includes(passageClass)||!Number.isSafeInteger(count)||count<1||A.cmp(fare,0)<0)throw Error('Enter a passage class, whole passenger count, nonnegative fare and referee reason.');

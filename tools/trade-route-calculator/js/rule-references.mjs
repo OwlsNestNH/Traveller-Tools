@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=map-scroll-spinners-20261015-93';
+import {escapeHtml as esc} from './display.mjs?v=referee-cargo-20261015-94';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.

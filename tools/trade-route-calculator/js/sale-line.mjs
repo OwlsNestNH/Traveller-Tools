@@ -1,4 +1,4 @@
-import * as R from './rules.mjs?v=map-scroll-spinners-20261015-93';
+import * as R from './rules.mjs?v=referee-cargo-20261015-94';
 
 // Prepare one sale line from explicit lot/buyer/context/quote/commodity/core,
 // current pricing flags and creditStep, plus caller-normalized values:

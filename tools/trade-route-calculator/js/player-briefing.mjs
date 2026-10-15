@@ -1,6 +1,6 @@
-import {recordedOperatingResult} from './financial-summary.mjs?v=map-scroll-spinners-20261015-93';
+import {recordedOperatingResult} from './financial-summary.mjs?v=referee-cargo-20261015-94';
 import {latestMailCheck} from './mail-history.mjs';
-import {latestPassengerSearch,passengerOfferRemaining,passengerTotals} from './passengers.mjs?v=map-scroll-spinners-20261015-93';
+import {latestPassengerSearch,passengerOfferRemaining,passengerTotals} from './passengers.mjs?v=referee-cargo-20261015-94';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
 
@@ -85,6 +85,7 @@ function cargoInHold(s,core){
   if(l.audit?.price?.audit?.baseRetailCapApplied&&r.rawRetailPerTonCr===null)warnings.push('Historical RAW retail comparison unavailable; capped effective retail is labelled separately.');
   return {commodity:cargoName(core,l.commodity),tons:amount(l.quantity,{positive:true}),recordedUnitPurchasePricePerTonCr:price,remainingGoodsCostCr:amount(l.goodsValue,{whole:true}),remainingCostBasisCr:amount(l.basis,{whole:true}),...r,warnings};
  });
+ for(const item of s.otherCargo??[])items.push({type:'Other cargo',itemRef:text(item.id),tons:amount(item.quantity,{positive:true}),saleValueWholeLotCr:item.saleValue??null,warnings:item.saleValue===undefined?['Whole-lot sale value is unspecified; an explicit value is required before sale.']:[]});
  return {title:'Cargo in Hold',status:items.length?items.some(i=>i.warnings.length)?'INCOMPLETE':'RECORDED CARGO':'NO CARGO',items,warnings:['Separate held lots retain their recorded purchase prices and remaining carrying costs; unsold cargo is not realized income. Missing historical retail bases are unavailable, never filled from current settings.']};
 }
 export function playerBriefingData(s,core,{contractDrafts=[],mailCheck=null,passengerSession={searchId:null,offers:[]}}={}){
