@@ -374,6 +374,7 @@ async function prepare(page, scenario, before, {loops = false, network = null} =
  await existingSell(page); await action(page, 'sale-all').click();
  // Only the unrelated lot stays selected, including when a full claim removes its peer.
  await page.locator('[data-lot="insured-lot"]').uncheck();
+ await tab(page, 'Cargo');
  if (scenario.map) await tab(page, 'Overview');
  const initialCalls = (await gate(page)).totalCalls, spec = specification(before, scenario);
  const enter = async () => {
