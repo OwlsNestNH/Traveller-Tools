@@ -131,8 +131,8 @@ export function mapTerritories({anchor,pan,zoom,sectors,catalogs}){
 
 // Returned layers live inside the same translated group as the original map.
 // Labels are inert: overview browsing never selects a world or changes a route.
-export function overviewMarkup({anchor,pan,zoom,sectors,catalogs,measure,showTerritories=false,labelsOnly=false}){
- if(labelsOnly&&!showSubsectorNames(zoom))return '';
+export function overviewMarkup({anchor,pan,zoom,sectors,catalogs,measure,showTerritories=false,worldOverlay=false}){
+ if(worldOverlay&&!showSubsectorNames(zoom))return '';
  const level=mapLevel(zoom),scale=50*zoom,dx=scale*Math.sqrt(3)/2,ay=anchor.y+((anchor.x%2+2)%2)*.5;
  const project=(x,y)=>[MAP_GEOMETRY.originX+(x-anchor.x)*dx,MAP_GEOMETRY.originY+(y-ay)*scale];
  const visible=visibleSectors(sectors,anchor,pan,zoom),grid=[],dots=[],labels=[];
@@ -140,8 +140,8 @@ export function overviewMarkup({anchor,pan,zoom,sectors,catalogs,measure,showTer
  for(const s of visible){
   const b=sectorBounds(s),[x,y]=project(b.x,b.y),width=32*dx,height=40*scale,cw=width/4,ch=height/4,data=catalogs.get(s.name);
   const sectorLabel=level==='sector'?overviewLabelLayout(s.name,width-12,Math.min(13,width/7),measure):null;
-  grid.push(`<rect class="sector-border" x="${x}" y="${y}" width="${width}" height="${height}"/>`);
-  for(let i=1;i<4;i++)grid.push(`<path class="subsector-border" d="M${x+i*cw},${y}v${height} M${x},${y+i*ch}h${width}"/>`);
+  grid.push(`<rect class="sector-border" data-sector="${esc(s.name)}" x="${x}" y="${y}" width="${width}" height="${height}"/>`);
+  if(showSubsectorNames(zoom))for(let i=1;i<4;i++)grid.push(`<path class="subsector-border" d="M${x+i*cw},${y}v${height} M${x},${y+i*ch}h${width}"/>`);
   if(level==='subsector'&&data?.worlds)for(const w of data.worlds){
    const wx=32*s.x+Number(w.hex.slice(0,2))-1,wy=40*s.y+Number(w.hex.slice(2))-40;
    const [p,q]=project(wx,wy+((wx%2+2)%2)*.5);dots.push(`<circle cx="${p}" cy="${q}" r=".8"/>`);
@@ -150,12 +150,13 @@ export function overviewMarkup({anchor,pan,zoom,sectors,catalogs,measure,showTer
    const letter=String.fromCharCode(65+i),left=x+(i%4)*cw,top=y+Math.floor(i/4)*ch;
    if(left+pan.x+cw<0||left+pan.x>MAP_GEOMETRY.width||top+pan.y+ch<0||top+pan.y>MAP_GEOMETRY.height)continue;
    const name=data?.subsectors?.find(ss=>ss.index===letter)?.mapName;
-   if(labelsOnly&&!name)continue;
+   if(worldOverlay&&!name)continue;
    if(level==='sector'){const [lx,ly]=sectorLetterPosition(left,top,cw,ch,x+width/2,y+height/2,sectorLabel,Math.floor(i/4));labels.push(`<text class="subsector-letter" x="${lx}" y="${ly}" style="font-size:9px">${letter}</text>`);}
    else labels.push(`<g class="subsector-label" data-sector="${esc(s.name)}" data-subsector="${letter}"><title>${esc(s.name)} · ${letter}${name?' · '+esc(name):''}</title>${label(overviewLabelLayout(name||letter,cw-8,Math.min(12,Math.max(9,cw/4.8)),measure,name?-45:0),left+cw/2,top+ch/2,'subsector-name')}</g>`);
   }
   if(level==='sector')labels.push(`<g class="sector-label" data-sector="${esc(s.name)}"><title>${esc(s.name)}</title>${label(sectorLabel,x+width/2,y+height/2,'sector-name')}</g>`);
  }
- if(labelsOnly)return `<g class="overview-labels world-subsector-labels">${labels.join('')}</g>`;
- return `${territory}<g class="overview-grid ${level}-grid" aria-hidden="true">${grid.join('')}</g><g class="overview-worlds" aria-hidden="true">${dots.join('')}</g><g class="overview-labels">${labels.join('')}</g>`;
+ const boundaries=`<g class="overview-grid ${showSubsectorNames(zoom)?'subsector':'sector'}-grid" aria-hidden="true">${grid.join('')}</g>`;
+ if(worldOverlay)return `${boundaries}<g class="overview-labels world-subsector-labels">${labels.join('')}</g>`;
+ return `${territory}${boundaries}<g class="overview-worlds" aria-hidden="true">${dots.join('')}</g><g class="overview-labels">${labels.join('')}</g>`;
 }

@@ -1,5 +1,5 @@
-import * as R from './rules.mjs?v=lss-refill-20261015-90';
-import {distance as worldDistance} from './map.mjs?v=lss-refill-20261015-90';
+import * as R from './rules.mjs?v=subsector-boundaries-20261015-91';
+import {distance as worldDistance} from './map.mjs?v=subsector-boundaries-20261015-91';
 
 // Prepare optional coverage terms from plain inputs, not FormData/campaign state.
 // remainingRoute is the current untravelled route: [{id, world:{x,y,zone}}].

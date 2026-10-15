@@ -1,16 +1,16 @@
-import {ruleInfo} from './rule-references.mjs?v=lss-refill-20261015-90';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=lss-refill-20261015-90';
-import {passengerShip} from './passengers.mjs?v=lss-refill-20261015-90';
+import {ruleInfo} from './rule-references.mjs?v=subsector-boundaries-20261015-91';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=subsector-boundaries-20261015-91';
+import {passengerShip} from './passengers.mjs?v=subsector-boundaries-20261015-91';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=lss-refill-20261015-90';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=lss-refill-20261015-90';
-import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=lss-refill-20261015-90';
-import {roomCounts} from './accommodation.mjs?v=lss-refill-20261015-90';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=lss-refill-20261015-90';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=lss-refill-20261015-90';
-import {creditStep} from './rounding.mjs?v=lss-refill-20261015-90';
-import {roll} from './rules.mjs?v=lss-refill-20261015-90';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=lss-refill-20261015-90';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=subsector-boundaries-20261015-91';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=subsector-boundaries-20261015-91';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=subsector-boundaries-20261015-91';
+import {roomCounts} from './accommodation.mjs?v=subsector-boundaries-20261015-91';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=subsector-boundaries-20261015-91';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=subsector-boundaries-20261015-91';
+import {creditStep} from './rounding.mjs?v=subsector-boundaries-20261015-91';
+import {roll} from './rules.mjs?v=subsector-boundaries-20261015-91';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=subsector-boundaries-20261015-91';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

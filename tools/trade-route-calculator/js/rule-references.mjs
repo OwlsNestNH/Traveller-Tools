@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=lss-refill-20261015-90';
+import {escapeHtml as esc} from './display.mjs?v=subsector-boundaries-20261015-91';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.

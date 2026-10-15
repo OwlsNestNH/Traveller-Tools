@@ -1,7 +1,7 @@
 import * as A from './amounts.mjs';
-import {campaignRefillDraft,editRefillDraft} from './lss-refill-draft.mjs?v=lss-refill-20261015-90';
-import {consumableRefillQuote} from './lss-refill-pricing.mjs?v=lss-refill-20261015-90';
-import {supportAmount} from './life-support.mjs?v=lss-refill-20261015-90';
+import {campaignRefillDraft,editRefillDraft} from './lss-refill-draft.mjs?v=subsector-boundaries-20261015-91';
+import {consumableRefillQuote} from './lss-refill-pricing.mjs?v=subsector-boundaries-20261015-91';
+import {supportAmount} from './life-support.mjs?v=subsector-boundaries-20261015-91';
 export function compartmentRefillQuote(state,draft,{gm=false}={}){
  const original=campaignRefillDraft(state).draft;
  let checked=original,purchased=A.rat(0),discarded=A.rat(0),changed=false;

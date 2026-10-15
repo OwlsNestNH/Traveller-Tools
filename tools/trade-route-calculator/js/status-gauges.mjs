@@ -1,6 +1,6 @@
 // Presentation only: empty installed bladders never reserve cargo space.
-import * as A from './amounts.mjs?v=lss-refill-20261015-90';
-import {fuelCapacities,bladderSpace} from './fuel.mjs?v=lss-refill-20261015-90';
+import * as A from './amounts.mjs?v=subsector-boundaries-20261015-91';
+import {fuelCapacities,bladderSpace} from './fuel.mjs?v=subsector-boundaries-20261015-91';
 const positive=value=>A.cmp(value,0)>0?value:'0';
 const percent=(value,total)=>A.cmp(total,0)>0?String(Number(A.floor(A.mul(A.div(value,total),100000000)))/1000000):'0';
 export function fuelGaugeValues(ship){const c=fuelCapacities(ship),f=ship.fuel;if(!f)return null;const bladder=bladderSpace(ship);return {...c,aboardTons:f.aboardTons,mainTons:Math.min(f.aboardTons,c.baseCapacityTons),bladderFuel:bladder,showBladder:bladder>=1};}

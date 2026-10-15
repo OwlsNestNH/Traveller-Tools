@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "ee77f6d7a95928bb02da59cf76faf73ebbc35b56",
+  "sourceCommit": "b1a98ba53c04789c2da94440018b3a27da930ba9",
   "sectors": [
     {
       "name": "Spinward Marches",
@@ -83,7 +83,7 @@
         "y": 0
       },
       "zoom": 0.06,
-      "sha256": "d7d89d80731ea49aba66992fc3f4389acf735ea291f011b1afebb65d1c491778"
+      "sha256": "7cc00de8c136893d81eb04e52257d7b26850a8c06aead155cfdaba0227d85872"
     },
     {
       "anchor": {
@@ -95,7 +95,7 @@
         "y": 0
       },
       "zoom": 0.16,
-      "sha256": "7f39f0930eb2b9c98044f61219e4680723f4287f145c3979eebf54b908ec5025"
+      "sha256": "64bab8904f03146b993a4b641257521f6e27f451ef4e41aa0e4fab018c383052"
     },
     {
       "anchor": {
@@ -107,7 +107,7 @@
         "y": 0
       },
       "zoom": 0.199,
-      "sha256": "f729cf6569bd42a7acbd0a67a103d3cf5c5207d8b3161b13966534de7873ab22"
+      "sha256": "8c0c02a6ce46e9be709ee5d650227dfd4266468b68fd8adca1f80bb18f595ec9"
     },
     {
       "anchor": {
@@ -191,7 +191,7 @@
         "y": 0
       },
       "zoom": 0.06,
-      "sha256": "be3fd6351a689d220cd3788b0a89f00d6c97eb1cda32508d9c0ee8e4afccedc4"
+      "sha256": "34f461b767eea42bc3d63f002073e0b0cd45222841d486fc079fae3818ed48b3"
     },
     {
       "anchor": {
@@ -203,7 +203,7 @@
         "y": 0
       },
       "zoom": 0.16,
-      "sha256": "86a4ad941ce9d65ea439108a321bfccbd3a0db80cd3f524d28519fc9804d8be9"
+      "sha256": "16ea3bc470c116cde10c4d9f17ce71e7fed933f01eeea12322eae7e4a5cba7bb"
     },
     {
       "anchor": {
@@ -215,7 +215,7 @@
         "y": 0
       },
       "zoom": 0.199,
-      "sha256": "c0c0de1569b404423e0b1ee273a995ffc3615f1937a7f6ed8fb2360da3bc9b58"
+      "sha256": "e8e7febfd1c647c6a869a9af7aa3fd98d9e25c5f9295726aa58cc09b6b1c5c86"
     },
     {
       "anchor": {
@@ -289,5 +289,6 @@
       "zoom": 0.199,
       "sha256": "239c4968a5bea9d6b5f26b97d6c64496f922e3af8a3ce9ed389b8e5c0c733ba3"
     }
-  ]
+  ],
+  "note": "Boundary-scale update: all label/dot geometry compared unchanged against previous snapshots; sector-scale internal subsector paths removed."
 }

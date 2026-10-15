@@ -31,11 +31,12 @@ test('overview load radii remain the original viewport plus 20 logical pixels',(
   assert.deepEqual(visibleSectors(sectors,anchor,pan,zoom),expected);
  }
 });
-test('overview projection and label clipping match exact pre-preparation SVG snapshots',()=>{
+test('overview projection and label clipping match reviewed scale-aware boundary snapshots',()=>{
  const {sectors,catalogs,scenarios}=golden;
  for(const scenario of scenarios){
   const svg=overviewMarkup({...scenario,sectors,catalogs:new Map(catalogs),measure:(text,size)=>text.length*size*.55});
   assert.equal(createHash('sha256').update(svg).digest('hex'),scenario.sha256,JSON.stringify(scenario));
+  assert.equal(svg.includes('class="subsector-border"'),scenario.zoom>=.16&&svg.includes('class="sector-border"'),'Internal boundaries follow the subsector scale');
  }
 });
 
