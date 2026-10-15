@@ -67,7 +67,7 @@ async function run(name,options,test){
  const frames=()=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
  const closed=()=>page.locator('#service-panel').waitFor({state:'hidden'});
  const saved=()=>page.locator('#service-panel.service-saved').waitFor({state:'visible'});
- const open=async(type='refuel')=>{await click(type);await page.locator('#service-panel').waitFor({state:'visible'});if(type==='refill-support')await click('service-support-topoff');assert.equal(await page.locator('#modal').isVisible(),false,'Service uses the right screen, not a blocking dialog');};
+ const open=async(type='refuel')=>{await click(type);await page.locator('#service-panel').waitFor({state:'visible'});assert.equal(await page.locator('#modal').isVisible(),false,'Service uses the right screen, not a blocking dialog');};
  const undo=async()=>{await click('tab','History');await click('undo');await click('tab','Overview');};
  try{
   await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();
@@ -120,9 +120,9 @@ try{
  });
  await run('leaving services restores current-world Trade controls without applying drafts',{},async h=>{
   const {page,action,click,unchanged,open,closed}=h;
-  for(const kind of ['refuel','refill-support'])for(const mode of (kind==='refuel'?['inline']:['summary','adjust','review'])){
-   await click('tab','Overview');await open(kind);if(mode==='adjust'||mode==='review')await click('service-adjust');if(mode==='review')await click('service-review');
-   const old=await action(mode==='adjust'?'service-review':'service-confirm').evaluate(el=>({...el.dataset}));
+  for(const kind of ['refuel','refill-support'])for(const mode of (kind==='refuel'?['inline']:['draft','edited'])){
+   await click('tab','Overview');await open(kind);if(mode==='edited')await page.locator('#service-form [name="cargo"]').fill('100');
+   const old=await action('service-confirm').evaluate(el=>({...el.dataset}));
    await click('tab','Trade');await closed();await click('trade-side','buy');assert.equal(await action('search').isEnabled(),true);await existingSell(page);assert.equal(await action('buyer-search').isEnabled(),true);await click('sale');assert.match(await page.locator('#message').textContent(),/Select cargo first/);assert.equal(await page.locator('#modal').isVisible(),false,'No selected cargo still prevents a sale preview');
    await page.evaluate(data=>{const b=document.createElement('button');Object.assign(b.dataset,data);document.body.append(b);b.click();b.remove();},old);await unchanged(kind+' '+mode+' → Trade discards only draft');
    await click('trade-side','buy');await click('search');await page.getByRole('heading',{name:'Find a supplier',exact:true}).waitFor();await click('supplier-cancel');await existingSell(page);
@@ -173,27 +173,27 @@ try{
  });
  await run('LSS extra supplies and comfort',{},async h=>{
   const {f,page,click,field,fill,read,unchanged,open,closed,undo}=h;
-  await open('refill-support');assert.match(await page.locator('#service-panel').textContent(),/Cr 4,000/,'Normal 14-day top-up retains the existing cabin/person bundle');
-  await click('service-adjust');await fill('extraDays',14);await page.locator('.service-comfort > summary').click();await fill('comfortCredits',2000);await fill('comfortNote','Upgraded meals and cabin comforts');
-  assert.match(await page.locator('#service-quote').textContent(),/Cr 8,000/);await unchanged('LSS live forecast');
-  await click('service-review');assert.match(await page.locator('#service-panel').textContent(),/42/);assert.match(await page.locator('#service-panel').textContent(),/168/);await unchanged('LSS review');
-  await click('service-adjust');assert.equal(await field('extraDays').inputValue(),'14');assert.equal(await field('comfortCredits').inputValue(),'2000');assert.equal(await field('comfortNote').inputValue(),'Upgraded meals and cabin comforts');
-  await click('service-review');await click('service-confirm');await h.saved();const paid=await read();
-  assert.equal(paid.bank,'92000');assert.equal(paid.hours,f.state.hours);assert.equal(Object.hasOwn(paid.ship.lifeSupport,'remainingHours'),false,'Physical stock replaces legacy hours');
+  await open('refill-support');await fill('internal',112);assert.match(await page.locator('#service-panel').textContent(),/Cr 2,000/,'Normal top-up charges consumables only');
+  await fill('internal',168);await page.locator('.lss-comfort > summary').click();await fill('comfortCredits',2000);await fill('comfortNote','Upgraded meals and cabin comforts');
+  assert.match(await page.locator('.lss-total').textContent(),/Cr 6,000/);await unchanged('LSS live forecast');
+  assert.match(await page.locator('#service-panel').textContent(),/42/);assert.match(await page.locator('#service-panel').textContent(),/168/);await unchanged('LSS review');
+  assert.equal(await field('internal').inputValue(),'168');assert.equal(await field('comfortCredits').inputValue(),'2000');assert.equal(await field('comfortNote').inputValue(),'Upgraded meals and cabin comforts');
+  await click('service-confirm');await h.saved();const paid=await read();
+  assert.equal(paid.bank,'94000');assert.equal(paid.hours,f.state.hours);assert.equal(Object.hasOwn(paid.ship.lifeSupport,'remainingHours'),false,'Physical stock replaces legacy hours');
   const stock=paid.ship.lifeSupport.stockUnits;assert.ok(stock,'Physical LSS stock is persisted');assert.equal(Number(stock.numerator)/Number(stock.denominator),168);
   assert.match(JSON.stringify(paid.ledger),/Upgraded meals and cabin comforts/);assert.equal(paid.undo.length,1,'One confirmation has one Undo transaction');
   await undo();const undone=await read();assert.equal(undone.bank,f.state.bank);assert.deepEqual(undone.ship.lifeSupport,f.state.ship.lifeSupport,'Undo restores even legacy inventory representation');assert.deepEqual(undone.ledger,f.state.ledger);
  });
  await run('LSS frozen billing and invalid drafts',{frozen:2},async h=>{
   const {page,action,click,fill,read,unchanged,open,closed}=h;
-  await open('refill-support');await click('service-adjust');await fill('extraDays',14);
-  assert.match(await page.locator('#service-quote').textContent(),/Cr 6,100/,'Extra billing uses 4.2 person-equivalents, Cr2100 for 14 days');
-  await fill('extraDays',10000);assert.equal(await action('service-review').isDisabled(),true,'Cargo-overflow / unaffordable reserve cannot be reviewed');
-  await fill('extraDays',14);await page.locator('.service-comfort > summary').click();await fill('comfortCredits',2000);
-  assert.equal(await action('service-review').isDisabled(),true,'Paid comfort requires its audit note');
-  await fill('comfortNote','Frozen berth pricing verification');await click('service-review');await unchanged('Frozen LSS review');await click('service-confirm');await h.saved();
-  const paid=await read(),stock=paid.ship.lifeSupport.stockUnits;assert.equal(Number(stock.numerator)/Number(stock.denominator),177);assert.equal(paid.bank,'91900');
-  await click('service-new');assert.equal(await page.locator('#service-form').count(),1,'Full supplies still expose extra reserve and comfort controls');assert.equal(await action('service-review').isDisabled(),true,'No-op normal refill does not create another charge');await click('service-cancel');
+  await open('refill-support');await fill('internal',177);
+  assert.match(await page.locator('.lss-total').textContent(),/Cr 4,250/,'All four awake and two frozen occupants are billed');
+  await fill('cargo',100000);assert.equal(await action('service-confirm').isDisabled(),true,'Cargo-overflow / unaffordable reserve cannot be reviewed');
+  await fill('cargo',0);await fill('internal',177);await page.locator('.lss-comfort > summary').click();await fill('comfortCredits',2000);
+  assert.equal(await action('service-confirm').isDisabled(),true,'Paid comfort requires its audit note');
+  await fill('comfortNote','Frozen berth pricing verification');await unchanged('Frozen LSS review');await click('service-confirm');await h.saved();
+  const paid=await read(),stock=paid.ship.lifeSupport.stockUnits;assert.equal(Number(stock.numerator)/Number(stock.denominator),177);assert.equal(paid.bank,'93750');
+  await click('service-new');assert.equal(await page.locator('#service-form').count(),1,'Full supplies still expose extra reserve and comfort controls');assert.equal(await action('service-confirm').isDisabled(),true,'No-op normal refill does not create another charge');await click('service-cancel');
  });
  for(const width of [1440,390,320])await run('persistent MFD receipts '+width,{},async h=>{
   const {page,click,fill,field,read,raw,open}=h;
@@ -205,26 +205,26 @@ try{
   const bytes=await raw();await page.evaluate(data=>{const b=document.createElement('button');Object.assign(b.dataset,data);document.body.append(b);b.click();b.remove();},old);await h.unchanged('Retired confirmation',bytes);
   await fixedFrame(page,boxes,'Saved Fuel');await click('service-audit');await fixedFrame(page,boxes,'Fuel Audit');assert.equal(await page.locator('#service-panel > .service-audit').evaluate(d=>d.open),true);
   await checkMfdLabels(page);await page.locator('#service-panel').evaluate(p=>p.scrollTop=0);await page.screenshot({path:artifacts+'/mfd-fuel-saved-'+width+'.png',fullPage:true});
-  await click('refill-support');assert.equal(await page.locator('#message').textContent(),'','New service clears only the prior service success');await fixedFrame(page,boxes,'Fuel to Life Support');await click('service-support-topoff');assert.match(await page.locator('.mfd-complement').textContent(),/4 awake crew \+ 0 awake passengers/);
-  await click('service-reserve-step','1');assert.equal(await field('extraDays').inputValue(),'1');await fill('extraDays',7);
-  await page.locator('.service-comfort > summary').click();await click('service-comfort-step','1000');await fill('comfortNote','Synthetic comfort purchase');
-  assert.match(await page.locator('#service-quote').textContent(),/140 LSS aboard/);await fixedFrame(page,boxes,'Life Support draft');await click('service-audit');await fixedFrame(page,boxes,'Life Support Audit');await page.locator('#service-panel .service-audit').evaluate(d=>d.open=false);
+  await click('refill-support');assert.equal(await page.locator('#message').textContent(),'','New service clears only the prior service success');await fixedFrame(page,boxes,'Fuel to Life Support');assert.equal(await field('internal').inputValue(),'56');
+  await fill('internal',140);
+  await page.locator('.lss-comfort > summary').click();await click('service-lss-comfort-plus');await fill('comfortNote','Synthetic comfort purchase');
+  assert.match(await page.locator('.lss-aboard').textContent(),/140/);await fixedFrame(page,boxes,'Life Support draft');await click('service-audit');await fixedFrame(page,boxes,'Life Support Audit');await page.locator('#service-panel .lss-audit').evaluate(d=>d.open=false);
   await checkMfdLabels(page);await page.locator('#service-panel').evaluate(p=>p.scrollTop=0);await page.screenshot({path:artifacts+'/mfd-support-draft-'+width+'.png',fullPage:true});
   await click('service-confirm');await h.saved();const paid=await read(),stock=paid.ship.lifeSupport.stockUnits;
-  assert.equal(Number(stock.numerator)/Number(stock.denominator),140);assert.match(await page.locator('.mfd-metrics').textContent(),/Days supported35/);
+  assert.equal(Number(stock.numerator)/Number(stock.denominator),140);assert.match(await page.locator('.lss-metrics').textContent(),/Days supported35/);
   await fixedFrame(page,boxes,'Saved Life Support');await click('service-audit');await fixedFrame(page,boxes,'Saved Life Support Audit');await page.locator('#service-panel > .service-audit').evaluate(d=>d.open=false);const savedBytes=await raw();await h.unchanged('Saved receipt remains open',savedBytes);
   await checkMfdLabels(page);await page.locator('#service-panel').evaluate(p=>p.scrollTop=0);await page.screenshot({path:artifacts+'/mfd-support-saved-'+width+'.png',fullPage:true});
-  await click('service-new');assert.equal(await field('extraDays').inputValue(),'0');assert.equal(await field('comfortCredits').inputValue(),'0');assert.equal(await h.action('service-confirm').isDisabled(),true);
+  await click('service-new');assert.equal(await field('internal').inputValue(),'140');assert.equal(await field('comfortCredits').inputValue(),'0');assert.equal(await h.action('service-confirm').isDisabled(),true);
   assert.equal(await page.locator('#message').textContent(),'','Prepare another clears stale service success');await page.locator('#message').evaluate(n=>{n.className='visible error';n.textContent='Synthetic unrelated error';});
   await click('service-back');await h.closed();await h.unchanged('Fresh no-op draft dismissed',savedBytes);assert.equal(await page.locator('#message').isVisible(),true,'Unrelated error remains visible');assert.equal(await page.locator('#message').textContent(),'Synthetic unrelated error','Service navigation does not clear unrelated errors');
  });
  await run('fractional day purchase actual stock',{awake:1,stockUnits:'12.1'},async h=>{
   const {page,click,fill,read}=h;
-  const before=await h.raw(),boxes=await frameBoxes(page);await h.open('refill-support');await click('service-support-current');await fill('extraDays','0.9');await fixedFrame(page,boxes,'Fractional purchase');
-  assert.match(await page.locator('#service-quote').textContent(),/0.9 LSS/);assert.match(await page.locator('#service-quote').textContent(),/13 LSS aboard/);await h.unchanged('Fractional preview only',before);await click('service-confirm');await h.saved();const stock=(await read()).ship.lifeSupport.stockUnits;assert.equal(Number(stock.numerator)/Number(stock.denominator),13);await h.undo();assert.equal(Number((await read()).ship.lifeSupport.stockUnits.numerator)/Number((await read()).ship.lifeSupport.stockUnits.denominator),12.1);
+  const before=await h.raw(),boxes=await frameBoxes(page);await h.open('refill-support');await fill('internal','13');await fixedFrame(page,boxes,'Fractional purchase');
+  assert.match(await page.locator('.lss-total').textContent(),/Cr 36/);assert.match(await page.locator('.lss-aboard').textContent(),/13/);await h.unchanged('Fractional preview only',before);await click('service-confirm');await h.saved();const stock=(await read()).ship.lifeSupport.stockUnits;assert.equal(Number(stock.numerator)/Number(stock.denominator),13);await h.undo();assert.equal(Number((await read()).ship.lifeSupport.stockUnits.numerator)/Number((await read()).ship.lifeSupport.stockUnits.denominator),12.1);
  });
  await run('unaffordable LSS summary',{bank:'3000'},async h=>{
-  await h.open('refill-support');assert.equal(await h.action('service-confirm').isDisabled(),true);assert.match(await h.page.locator('#service-quote').textContent(),/Insufficient/i);await h.click('service-cancel');await h.unchanged('Unaffordable LSS cancellation');
+  await h.open('refill-support');await h.fill('internal',800);assert.equal(await h.action('service-confirm').isDisabled(),true);assert.match(await h.page.locator('.lss-blocked').textContent(),/Insufficient/i);await h.click('service-cancel');await h.unchanged('Unaffordable LSS cancellation');
  });
  await run('service refresh import stale and ownership',{},async h=>{
   const {f,context,page,click,fill,read,raw,unchanged,open,closed}=h;
@@ -250,8 +250,8 @@ try{
  await run('service layout and keyboard accessibility',{},async h=>{
   const {page,click,fill,unchanged,frames,open,closed}=h;
   for(const type of ['refuel','refill-support']){
-   await open(type);if(type==='refill-support'){await page.locator('[data-action="service-adjust"]').focus();await page.keyboard.press('Enter');}
-   if(type==='refuel')await fill('expenseNotes','LongUnbrokenServiceNote'.repeat(12));else{await page.locator('.service-comfort > summary').click();await fill('comfortNote','LongUnbrokenComfortNote'.repeat(12));}
+   await open(type);if(type==='refill-support'){await page.locator('#lss-internal').focus();await page.keyboard.press('ArrowRight');}
+   if(type==='refuel')await fill('expenseNotes','LongUnbrokenServiceNote'.repeat(12));else{await page.locator('.lss-comfort > summary').click();await fill('comfortNote','LongUnbrokenComfortNote'.repeat(12));}
    for(const width of [2160,1440,768,390,320]){
     await page.setViewportSize({width,height:1100});await frames();await overviewGeometry(page);
     const a11y=await page.locator('#service-panel').evaluate(panel=>{

@@ -24,8 +24,8 @@ test('custom cabin rates affect upkeep only; stock location and old refill targe
 test('precise purchased fractions remain exact; only final money uses configured rounding',()=>{
  const s=campaign();s.ship.accommodation.crew.middle=1;const units=A.auditNumber(A.rat(1,24)),q=quote(s,units);assert.deepEqual(q.purchasedUnits,units);assert.deepEqual(q.exactAmount,A.auditNumber(A.rat(1000,672)));assert.equal(q.amount,'2');s.settings.creditStep=100;assert.equal(quote(s,units).amount,'100');assert.equal(quote(s,0).amount,'0');
 });
-test('unsettled manual frozen Low, negative quantities and missing complement fail without mutation',()=>{
- const s=campaign();s.ship.accommodation.crew.middle=1;s.ship.accommodation.occupiedLowBerths=1;const bytes=JSON.stringify(s);assert.throws(()=>quote(s,28),/manually recorded/);assert.equal(JSON.stringify(s),bytes);s.ship.accommodation.occupiedLowBerths=0;assert.throws(()=>quote(s,-1));s.ship.accommodation.crew.middle=0;assert.throws(()=>quote(s,1),/positive complement/);
+test('manual frozen Low is billed and invalid quantities fail without mutation',()=>{
+ const s=campaign();s.ship.accommodation.crew.middle=1;s.ship.accommodation.occupiedLowBerths=1;const bytes=JSON.stringify(s);assert.equal(quote(s,'30.8').amount,'1100');assert.equal(JSON.stringify(s),bytes);s.ship.accommodation.occupiedLowBerths=0;assert.throws(()=>quote(s,-1));s.ship.accommodation.crew.middle=0;assert.throws(()=>quote(s,1),/positive complement/);
 });
 test('one-time comfort spending is charged exactly once and supplies/days stay unchanged',()=>{
  const s=campaign();s.ship.accommodation.crew.middle=1;const plain=quote(s,28),q=consumableRefillQuote(s,{purchasedUnits:28,comfortCost:'2000',comfortNote:'  Fresh fruit  '});

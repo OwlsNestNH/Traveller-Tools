@@ -993,3 +993,9 @@ saved or uncertain outcomes require reload and cannot be repeated. Newer drafts
 and dialogs cannot be changed by old cleanup. Preserve the original synchronous
 save/announcement and microtask close timing. This does not migrate route saving,
 Plot route lookup, world overrides or rounding Apply.
+
+## Independent LSS allocation
+
+Physical lifeSupport.stockUnits remains the authoritative exact rational total. Optional lifeSupport.cargoUnits is an exact subset; internal stock is total minus cargo, bounded by hull storage. Missing cargoUnits retains the legacy internal-first allocation without a load-time migration. Successful independent refill/GM transitions persist the allocation. Travel subtracts consumption from cargo first and from total, preserving exact fractions. Validation rejects negative/out-of-total allocations and internal overcapacity; existing used() includes exact cargo tonnage.
+
+lss-refill-draft owns detached targets; lss-refill-pricing owns person-only cost; lss-refill-transaction revalidates targets and computes explicit before/after, purchase and discard audits. state.refillCompartments applies the result inside the existing undoable transition. service-panels retains its existing completion/token/owner protections and is enabled with redesignedSupport in app. separateCabinUpkeep is enabled at the same boundary. Legacy calculators remain available for historical compatibility tests, not the active app refill UI.

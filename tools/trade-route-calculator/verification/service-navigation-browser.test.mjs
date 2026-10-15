@@ -124,10 +124,10 @@ async function draft(page,name,{review=false}={}){
   await field(page,'fuelTons').fill('7.25');await field(page,'fuelType').selectOption('custom');
   await field(page,'customFuelRate').fill('101.25');await field(page,'expenseNotes').fill('UnconfirmedLongNavigationDraft'.repeat(8));
  }else if(name==='refill-support'){
-  await click(page,'service-adjust');await field(page,'extraDays').fill('14');
-  await page.locator('.service-comfort > summary').click();await field(page,'comfortCredits').fill('1000');
+  await field(page,'cargo').fill('100');
+  await page.locator('.lss-comfort > summary').click();await field(page,'comfortCredits').fill('1000');
   await field(page,'comfortNote').fill('Unconfirmed comfort provisions');
-  if(review)await click(page,'service-review');
+  if(review)await click(page,'service-audit');
  }else if(name==='ship-expenses'){
   await openMortgage(page);await field(page,'payments').fill('24');
   await page.locator('.covered-payments > summary').click();
@@ -140,7 +140,7 @@ async function defaultDraft(page,name){
   assert.equal(await field(page,'fuelTons').inputValue(),'23');assert.equal(await field(page,'expenseNotes').inputValue(),'');
   assert.equal(await field(page,'fuelType').inputValue(),'refined');
  }else if(name==='refill-support'){
-  await click(page,'service-adjust');assert.equal(await field(page,'extraDays').inputValue(),'0');assert.equal(await field(page,'comfortCredits').inputValue(),'0');
+  assert.equal(await field(page,'cargo').inputValue(),'0');assert.equal(await field(page,'comfortCredits').inputValue(),'0');
  }else if(name==='ship-expenses'){
   await openMortgage(page);assert.equal(await field(page,'payments').inputValue(),'1');
  }
@@ -183,7 +183,7 @@ async function internalScroll(page,name){
    await panel.evaluate(el=>{el.scrollTop=el.scrollHeight;});
    assert.ok(await panel.evaluate(el=>el.scrollTop>0),'Overflowing service content really scrolls internally');
   }else assert.ok(before.content<=before.height+20,'Service content fits the available screen');
-  await reachable(page,name==='refuel'?'#service-panel [data-action="service-confirm"]':'#service-panel [data-action="service-review"]');
+  await reachable(page,'#service-panel [data-action="service-confirm"]');
  }else if(name==='cargo-hold'){
   const goods=page.locator('.cargo-goods-scroll');
   assert.ok(await goods.evaluate(el=>el.scrollHeight>el.clientHeight+100),'The long manifest scrolls inside its own region');

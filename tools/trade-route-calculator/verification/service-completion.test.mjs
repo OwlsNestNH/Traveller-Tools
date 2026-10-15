@@ -18,23 +18,23 @@ const cases=[
  {id:'custom refined whole credits',kind:'fuel',values:{fuelType:'custom',customFuelType:'refined',customFuelRate:'101.25',fuelTons:'2.25',expenseNotes:'Quoted local price'},bank:'99696',fuel:23,amount:'304'},
  {id:'custom unrefined Cr100',kind:'fuel',fixture:{creditStep:100},values:{fuelType:'custom',customFuelType:'unrefined',customFuelRate:'101.25',fuelTons:'2.25',expenseNotes:'Quoted local price'},bank:'99600',fuel:23,amount:'400'},
  {id:'no-refund fuel correction',kind:'fuel',correction:true,values:{fuelRemaining:'13',fuelReason:'Measured actual remaining'},bank:'100000',fuel:13,amount:null},
- {id:'standard life support',kind:'support',bank:'96000',stock:{numerator:'118',denominator:'1'},amount:'4000'},
- {id:'extra and comfort life support',kind:'support',values:{extraDays:'14',comfortCredits:'2000',comfortNote:'Fresh comfort provisions'},bank:'91900',stock:{numerator:'177',denominator:'1'},amount:'8100'},
- {id:'extra-only full life support',kind:'support',fixture:{full:true},values:{extraDays:'14',comfortCredits:'0',comfortNote:''},bank:'97900',stock:{numerator:'177',denominator:'1'},amount:'2100'},
- {id:'comfort-only full life support',kind:'support',fixture:{full:true},values:{extraDays:'0',comfortCredits:'2000',comfortNote:'Comfort only'},bank:'98000',stock:{numerator:'588',denominator:'5'},amount:'2000'}
+ {id:'standard life support',kind:'support',values:{internal:'118'},bank:'97857',stock:{numerator:'118',denominator:'1'},amount:'2143'},
+ {id:'extra and comfort life support',kind:'support',values:{internal:'177',comfortCredits:'2000',comfortNote:'Fresh comfort provisions'},bank:'93750',stock:{numerator:'177',denominator:'1'},amount:'6250'},
+ {id:'extra-only full life support',kind:'support',fixture:{full:true},values:{internal:'177',comfortCredits:'0',comfortNote:''},bank:'97857',stock:{numerator:'177',denominator:'1'},amount:'2143'},
+ {id:'comfort-only full life support',kind:'support',fixture:{full:true},values:{comfortCredits:'2000',comfortNote:'Comfort only'},bank:'98000',stock:{numerator:'588',denominator:'5'},amount:'2000'}
 ];
 const representatives=[cases[0],cases[5],cases[7]];
 const noSuccess=h=>assert.doesNotMatch(serviceUI(h).message,/Refuelled saved\.|Adjusted fuel aboard saved\.|Refilled life support saved\./i);
 const material=s=>Object.fromEntries(Object.entries(s).filter(([key])=>!['revision','events'].includes(key)));
 const syntheticOffer={offerId:'service-retained-offer',kind:'freight',origin:'0,0',destination:'1,0',quantity:'2',payment:'2000',dueHours:null,audit:{manual:true}};
 async function prepare(h,c){
- h.api.services.open(c.kind);if(c.kind==='support')await h.serviceAction('service-support-topoff');
+ h.api.services.open(c.kind);
  if(c.correction)await h.serviceAction('service-fuel-correct');
- else if(c.kind==='support'&&c.values)await h.serviceAction('service-adjust');
+
  if(c.values?.fuelType==='custom')h.fillService({fuelType:'custom'});
  if(c.values)h.fillService(c.values);
  const editorForm=h.serviceForm();
- if(c.correction||(c.kind==='support'&&c.values))await h.serviceAction('service-review');
+ if(c.correction)await h.serviceAction('service-review');
  assert.equal(h.api.services.active(),true,'Actual service draft is ready');
  assert.equal(h.serviceButton('service-confirm')?.disabled,false,'Actual Confirm is enabled for a valid draft');
  return editorForm;

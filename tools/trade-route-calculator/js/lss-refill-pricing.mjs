@@ -1,6 +1,6 @@
 import * as A from './amounts.mjs';
-import {tiers,roomCounts,serviceRate} from './accommodation.mjs?v=subsector-labels-20261014-89';
-import {passengerShip,passengerTotals} from './passengers.mjs?v=subsector-labels-20261014-89';
+import {tiers,roomCounts,serviceRate,refillPersonRate} from './accommodation.mjs?v=subsector-labels-20261014-89';
+import {passengerShip} from './passengers.mjs?v=subsector-labels-20261014-89';
 import {supportAmount,supportComplement} from './life-support.mjs?v=subsector-labels-20261014-89';
 import {up,creditStep} from './rounding.mjs?v=subsector-labels-20261014-89';
 
@@ -10,13 +10,12 @@ export function monthlyCabinUpkeep(ship){
  return tiers.reduce((total,tier)=>total+BigInt(rooms[tier]??0)*BigInt(serviceRate(tier,ship.accommodation?.roomService?.[tier])),0n);
 }
 export function consumableRefillBasis(state){
- const ship=passengerShip(state),complement=supportComplement(ship),bookedLow=passengerTotals(state).low;
+ const ship=passengerShip(state),complement=supportComplement(ship);
  if(!complement.known)throw Error('Enter the awake complement before quoting consumable supplies.');
- if(complement.occupiedLowBerths!==bookedLow)throw Error('Consumable pricing for manually recorded frozen Low occupants awaits a campaign decision.');
  const high=['passengers','crew'].reduce((n,role)=>n+(ship.accommodation[role].high??0),0);
  // Legacy awake low-service occupants remain awake, never frozen berths.
- const middle=complement.awakePeople-high,low=bookedLow;
- return {middle,high,low,dailyUnits:A.auditNumber(complement.dailyUnits),monthly:String(BigInt(middle)*1000n+BigInt(high)*3000n+BigInt(low)*100n),rates:{middle:'1000',high:'3000',low:'100'},billingDays:28};
+ const middle=complement.awakePeople-high,low=complement.occupiedLowBerths,rates={middle:refillPersonRate(ship,'middle'),high:refillPersonRate(ship,'high'),low:'100'};
+ return {middle,high,low,dailyUnits:A.auditNumber(complement.dailyUnits),monthly:String(BigInt(middle)*BigInt(rates.middle)+BigInt(high)*BigInt(rates.high)+BigInt(low)*100n),rates,billingDays:28};
 }
 // The owner supplies exact purchased LSS after the separately approved disposal
 // policy. This calculator neither rounds nor mutates stock, allocation or money.

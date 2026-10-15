@@ -2,7 +2,7 @@ import {escapeHtml as esc} from './display.mjs?v=subsector-labels-20261014-89';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.
-export const REFERENCE_VERSION='2026.10.12.2';
+export const REFERENCE_VERSION='2026.10.15.1';
 export const SOURCE_BOOKS=Object.freeze({
  core:Object.freeze({short:'Core 2022',title:'Traveller Core Rulebook Update 2022',edition:'Examined copyright 2024 revision'}),
  cluster:Object.freeze({short:'Cluster Truck',title:'Cluster Truck',edition:'Mongoose Publishing, ©2026; reviewed file dated 16 December 2025'}),
@@ -116,6 +116,12 @@ export const RULE_REFERENCES=Object.freeze({
   part('Referee input','Custom cabin rates and baseline occupants remain entered terms. Booked people add their support needs automatically; do not enter them again as baseline occupants.'),
   part('Published context','Source footnote: Cluster Truck, p.14 supplies the selected physical LSS consumption/storage model. Core Rulebook Update 2022, p.154 supplies cabin/person monetary costs. Campaign purchase rounding and quality adjustments are separate; Cluster Truck pricing and overheads are not adopted.')
  ]),
+ 'support-refill':entry('independent life-support refill',[core('154'),source('cluster','14')],[
+  part('Home rule','Consumables use Middle Cr1,000 and High Cr3,000 per person per 28 days by default, editable in Settings. Every occupied frozen Low berth costs Cr100 per 28 days, including manual occupants. Middle and High consume the same LSS; Low uses 0.1 LSS/day without a second price discount.'),
+  part('Home rule','Internal and cargo supplies use the same prorated consumable tariff. Cabin upkeep is paid separately under Ship expenses. There is no extra-reserve tariff. Comfort spending is a separate one-time charge and adds no supplies.'),
+  part('App convention','Cargo supplies are consumed first. Hourly travel remains exact. A successful paid refill discards only the fraction in each compartment actually receiving supplies, then loads whole LSS. Viewing, Cancel, failed saves and comfort-only purchases retain stock. GM Adjustment changes compartment quantities without a purchase.'),
+  part('App convention','Supply and comfort charges each use the configured Credit rounding once. The audit records the rates, headcounts, exact quantities, discarded fractions and duration used. Legacy saved refills retain their original pricing explanation.')
+ ]),
  'support-pricing':entry('life-support top-up and extra reserve',[core('154')],[
   part('Home rule','Standard top-up prices the supply deficit from current cabin/person costs prorated over 28 days. Extra reserve costs Cr1,000 × person-equivalents × extra days purchased ÷ 28; occupied low berths count as 0.1 person-equivalent. Round the combined extra charge UP once to Cr100.'),
   part('Published context','Core supplies the cabin/person cost basis. These refill prices are campaign choices, not Cluster Truck supply prices.'),
@@ -124,7 +130,8 @@ export const RULE_REFERENCES=Object.freeze({
  'support-stock':entry('life-support stock and comfort',[],[
   part('App convention','Hourly consumption keeps exact stock. Changing the complement recalculates endurance without refilling supplies. Unknown legacy stock stays unknown until reviewed. Comfort spending adds no LSS or endurance.'),
   part('Referee input','Opening stock and stock corrections are explicit records, not generated supply purchases.'),
-  part('Home rule','When supplies are purchased, round the resulting LSS aboard UP once to a whole number. From 12.1 to 13 LSS, add 0.9 LSS. Keep surplus aboard; existing period-based prices remain unchanged. No purchase or comfort-only spending leaves stock unchanged.'),
+  part('App convention','Historical refills rounded the resulting LSS aboard UP once to a whole number. From 12.1 to 13 LSS, add 0.9 LSS. Keep surplus aboard; existing period-based prices remain unchanged. No purchase or comfort-only spending leaves stock unchanged.'),
+ part('Home rule','Current independent refill discards only the existing fraction in a compartment receiving purchased supplies. Untouched stock and hourly travel retain exact fractions; cargo is consumed first.'),
  part('Explanation','Better coffee does not count as extra oxygen.')
  ]),
  'hold':entry('cargo reservations',[core('158, 238')],[

@@ -4,7 +4,7 @@ import {passengerShip} from './passengers.mjs?v=subsector-labels-20261014-89';
 import {credit} from './amounts.mjs';
 import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=subsector-labels-20261014-89';
 import {monthlySupport,supportComplement} from './life-support.mjs?v=subsector-labels-20261014-89';
-import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=subsector-labels-20261014-89';
 import {roomCounts} from './accommodation.mjs?v=subsector-labels-20261014-89';
 import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=subsector-labels-20261014-89';
 import {recordedPaymentDate} from './payment-schedule.mjs?v=subsector-labels-20261014-89';
@@ -33,7 +33,7 @@ export function expenseOverview(state,{separateCabinUpkeep=false}={}){
  const supportKnown=!!ship.accommodation&&supportComplement(ship).known;
  if(separateCabinUpkeep){
  rows.push({kind:'staterooms',label:labels.staterooms,amount:ship.accommodation?String(monthlyCabinUpkeep(ship)):null,due:'Manually selected'});
- let consumables=null;try{if(supportKnown)consumables=consumableRefillBasis(state).monthly;}catch{/* Unsettled manual frozen-Low pricing stays unknown. */}
+ let consumables=null;try{if(supportKnown)consumables=consumableRefillBasis(state).monthly;}catch{/* Invalid or unknown complement stays unknown. */}
  rows.push({kind:'support',label:labels.support,amount:consumables,due:'As used'});
  }else rows.push({kind:'support',label:labels.support,amount:supportKnown?String(monthlySupport(ship)):null,due:'As used'});
  rows.push({kind:'fuel',label:labels.fuel,amount:null,variable:true,due:'As needed'},{kind:'berthing',label:labels.berthing,amount:null,variable:true,due:'Weekly'});

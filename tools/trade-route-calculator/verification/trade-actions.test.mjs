@@ -370,7 +370,7 @@ test('Ship expenses stays selected on a draft or paid receipt; toggling only clo
 test('top-level toggles never undo or reapply confirmed fuel or life support',async()=>{
  for(const kind of ['refuel','refill-support']){
   const h=harness(recurringCampaign());h.api.setTab('Overview');h.api.toggleShipPanel(kind);
-  const token=h.api.services.token();if(kind==='refill-support')await h.api.services.action('service-support-topoff','',token);await h.api.services.action('service-confirm','',token);const paid=h.persisted();
+  const token=h.api.services.token();if(kind==='refill-support')await h.api.services.action('service-lss-plus','',token);await h.api.services.action('service-confirm','',token);const paid=h.persisted();
   assert.equal(paid.ledger.length,1);assert.equal(paid.undo.length,1);assert.deepEqual(selectedShipButton(h),[kind]);assert.equal(h.api.services.active(),false);assert.match(h.api.services.panel(),/service-saved/);
   h.api.toggleShipPanel(kind);h.api.toggleShipPanel(kind);await h.api.services.action('service-confirm','',token);same(h.persisted(),paid);
  }

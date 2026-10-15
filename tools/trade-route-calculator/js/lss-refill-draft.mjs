@@ -71,15 +71,16 @@ export function refillDraftTotals(draft){
 
 // quote is supplied by the owning transaction adapter, not invented by the UI.
 // Unresolved pricing remains unavailable and cannot expose a confirmation action.
-export function renderRefillDraft(draft,{shipLabel='',quote=null,audit='',blocked='Payment and GM adjustment integration await the storage and fractional-stock decisions.'}={}){
- const totals=refillDraftTotals(draft),cost=quote?.amount==null?null:nonnegative(quote.amount,'Refill cost');
+export function renderRefillDraft(draft,{shipLabel='',quote=null,audit='',gmBlocked=null,blocked='Payment and GM adjustment integration await the storage and fractional-stock decisions.'}={}){
+ const projected=quote?.compartments?{...draft,internal:quote.compartments.internal.after,cargo:quote.compartments.cargo.after}:draft;
+ const totals=refillDraftTotals(projected),cost=quote?.amount==null?null:nonnegative(quote.amount,'Refill cost');
  const button=(label,action,extra='')=>`<button type="button" data-refill-action="${action}" ${extra}>${label}</button>`;
  const value=key=>wholeSupport(draft[key]);
  return `<section class="lss-refill" aria-label="Life support refill draft">
- <div class="lss-top">${button('← Back to Overview','cancel')}${button('Audit','audit')}</div>
+ <div class="lss-top">${button('← Back to Overview','back')}${button('Audit','audit')}</div>
  <h2>Life support</h2><p>${esc(shipLabel)}</p>
  <div class="lss-aboard"><span>LSS aboard</span><strong>${wholeSupport(totals.total)}</strong></div>
- <div class="lss-metrics"><div><span>Internal / max</span><strong>${value('internal')} / ${value('internalCapacity')}</strong></div><div><span>Days supported / max</span><strong>${wholeSupport(totals.days)} / ${wholeSupport(totals.maxDays)}</strong></div></div>
+ <div class="lss-metrics"><div><span>Internal / max</span><strong>${wholeSupport(projected.internal)} / ${value('internalCapacity')}</strong></div><div><span>Days supported / max</span><strong>${wholeSupport(totals.days)} / ${wholeSupport(totals.maxDays)}</strong></div></div>
  <h3>Refill supplies</h3><label for="lss-internal">Normal storage <span>Set normal storage target</span></label>
  <div class="lss-target"><input id="lss-internal" data-refill-input="internal" type="range" min="0" max="${value('internalCapacity')}" step="1" value="${value('internal')}"><output for="lss-internal">${value('internal')} LSS</output></div>
  <div class="lss-range-labels"><span>0 LSS</span><span>${value('internalCapacity')} LSS</span></div>
@@ -89,9 +90,9 @@ export function renderRefillDraft(draft,{shipLabel='',quote=null,audit='',blocke
  <label for="lss-reason">Reason (optional)</label><input id="lss-reason" data-refill-input="reason" value="${esc(draft.reason)}">
  <details class="lss-comfort" ${A.credit(draft.comfortCredits)>0n?'open':''}><summary>Extra provisions — comfort spending</summary><div class="lss-stepper">${button('−Cr 1,000','comfort-minus')}<label for="lss-comfort-cost">One-time comfort cost — Cr<input id="lss-comfort-cost" data-refill-input="comfortCredits" type="number" min="0" step="1" value="${esc(draft.comfortCredits)}"></label>${button('+Cr 1,000','comfort-plus')}</div><label for="lss-comfort-note">Comfort provisions note (required when spending)</label><input id="lss-comfort-note" data-refill-input="comfortNote" value="${esc(draft.comfortNote)}"><p>Cost only. No additional LSS, days or cargo space.</p></details>
  <div class="lss-total" aria-live="polite"><span>TOTAL refill cost</span><strong>${cost===null?'Unavailable':formatCreditsText(String(A.floor(A.add(cost,'0.5'))))}</strong><small>Updates with normal storage and cargo</small></div>
- ${blocked?'<p class="lss-blocked" role="status">'+esc(blocked)+'</p>':''}
- <div class="lss-actions">${button('Cancel','cancel')}${button('Confirm Refill','confirm',blocked||cost===null?'disabled':'class="primary"')}</div>
- ${button('GM Adjustment','gm',blocked?'disabled':'')}<p>Change supplies aboard — no purchase</p>
+ <p class="lss-blocked" role="status" ${blocked?'':'hidden'}>${esc(blocked)}</p>
+ <div class="lss-actions">${button('Cancel','cancel')}${button('Confirm Refill','confirm',(blocked||cost===null?'disabled ':'')+'class="primary"')}</div>
+ ${button('GM Adjustment','gm',(gmBlocked??!!blocked)?'disabled':'')}<p>Change supplies aboard — no purchase</p>
  <details class="lss-audit"><summary>Audit</summary>${audit||'<p>Draft targets only. Existing campaign quantities and Credits are unchanged.</p>'}</details>
  </section>`;
 }
