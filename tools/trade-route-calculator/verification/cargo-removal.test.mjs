@@ -92,3 +92,11 @@ for(const mode of ['rejected','unknown','publication-failed'])test('save '+mode+
  else{assert.equal(h.unknown,1);assert.equal(h.completed,0);assert.equal(h.session.current(),null);}
 });
 test('cancel discards every preview change without writing',()=>{const h=sessionHarness(),before=JSON.stringify(h.state);h.session.set('luggage','0');h.session.cancel();assert.equal(h.writes,0);assert.equal(h.session.current(),null);assert.equal(JSON.stringify(h.state),before);});
+
+test('valid legacy days overflow requires physical-stock confirmation instead of an endless stale retry',()=>{
+ const s=guiFixture().state;s.ship.lifeSupport={capacityHours:672,remainingHours:672,elapsedHours:0};s.ship.accommodation.passengers.middle=28;s.ship.accommodation.crew.middle=2;
+ S.validate(s);const before=JSON.stringify(s),d=createCargoRemoval(s);assert.match(d.precondition,/Confirm physical supplies.*0.4 t/);
+ const requested=setCargoRemaining(d,'lot:lot-recorded','3');assert.throws(()=>commit(s,requested),/Confirm physical supplies in Life Support settings/);assert.equal(JSON.stringify(s),before);
+ const html=cargoManagementPanel(s,{commodities:[]});assert.match(html,/Confirm physical supplies/);assert.match(html,/data-action="cargo-confirm" data-mutate disabled data-unavailable/);assert.doesNotMatch(html,/Cargo changed/);
+ const confirmed=structuredClone(s);confirmed.ship.lifeSupport={capacityHours:672,stockUnits:'840'};S.validate(confirmed);assert.equal(createCargoRemoval(confirmed).precondition,undefined);assert.doesNotThrow(()=>commit(confirmed,setCargoRemaining(createCargoRemoval(confirmed),'lot:lot-recorded','3')));
+});

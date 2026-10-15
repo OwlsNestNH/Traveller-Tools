@@ -3,7 +3,7 @@ import {supportCompartments} from './lss-compartments.mjs?v=subsector-boundaries
 import * as A from './amounts.mjs';
 import {passengerShip,passengerSpace,luggageSources} from './passengers.mjs?v=subsector-boundaries-20261015-91';
 import {passengerLuggage} from './accommodation.mjs?v=subsector-boundaries-20261015-91';
-import {supportCargo,supportAmount} from './life-support.mjs?v=subsector-boundaries-20261015-91';
+import {supportCargo,supportAmount,anchorSupport,supportDisplay} from './life-support.mjs?v=subsector-boundaries-20261015-91';
 import {bladderSpace} from './fuel.mjs?v=subsector-boundaries-20261015-91';
 export const cargoNumber=value=>supportAmount(value);
 const exact=value=>{try{return A.decimal(value);}catch{return A.auditNumber(value);}};
@@ -18,7 +18,9 @@ export function cargoRemovalEntries(s){
 export function createCargoRemoval(s){
  const entries=cargoRemovalEntries(s),remaining=Object.fromEntries(entries.map(e=>[e.key,e.original]));
  const occupied=exact(A.add(A.sum(entries.map(e=>cargoNumber(e.quantity))),passengerSpace(s)));
- return {revision:s.revision,entries,remaining,occupied,capacity:String(s.ship.capacity)};
+ let precondition='';
+ if(s.ship.lifeSupport&&s.ship.lifeSupport.stockUnits===undefined){const detached=structuredClone(s.ship);anchorSupport(detached,{complementShip:passengerShip(s)});const overflow=supportCargo(detached);if(A.cmp(overflow,0)>0)precondition='Confirm physical supplies in Life Support settings (Ship, trader & options) before removing cargo. Converting this legacy days record would introduce '+supportDisplay(overflow)+' t of cargo LSS; the recorded manifest is unchanged.';}
+ return {revision:s.revision,entries,remaining,occupied,capacity:String(s.ship.capacity),...(precondition?{precondition}:{})};
 }
 export function setCargoRemaining(draft,key,value){
  const entry=draft.entries.find(e=>e.key===key);
@@ -33,6 +35,7 @@ export function cargoRemovalSummary(draft){
 }
 export function applyCargoRemoval(s,draft,{reducePolicy,uid}){
  const fresh=createCargoRemoval(s);
+ if(draft.precondition||fresh.precondition)throw Error(draft.precondition||fresh.precondition);
  if(draft.revision!==s.revision||JSON.stringify(fresh.entries)!==JSON.stringify(draft.entries)||JSON.stringify(fresh.occupied)!==JSON.stringify(draft.occupied)||fresh.capacity!==draft.capacity)throw Error('Cargo changed. Cancel and reopen the removal preview.');
  const summary=cargoRemovalSummary(draft);
  if(!summary.changed)throw Error('No cargo changes to confirm.');

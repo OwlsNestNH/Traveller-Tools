@@ -13,7 +13,7 @@ navigation discards the local draft. Only Confirm Removal writes the campaign.
 The footer shows original and revised cargo totals, tons removed, upward rounding
 and capacity impact. Over-capacity candidates cannot commit. Existing fractional
 trade/transport/luggage quantities normalize upward once, inside that same audited,
-undoable transaction. No load/render/import migration runs implicitly.
+undoable transaction. No load/render/import migration runs implicitly. Legacy day-based stock that would introduce cargo overflow during conversion must first be confirmed in Life Support settings (Ship, trader & options); Cargo shows this concrete precondition instead of a stale-preview retry loop.
 
 Trade goods retain their separate lots, frozen purchase quotes and historical
 cost until removed. Partial removal proportionally writes off remaining basis and
