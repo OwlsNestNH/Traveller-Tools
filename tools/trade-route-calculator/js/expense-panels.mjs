@@ -1,14 +1,14 @@
-import {ruleInfo} from './rule-references.mjs?v=subsector-labels-20261014-89';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=subsector-labels-20261014-89';
-import {passengerShip} from './passengers.mjs?v=subsector-labels-20261014-89';
+import {ruleInfo} from './rule-references.mjs?v=subsector-boundaries-20261015-91';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=subsector-boundaries-20261015-91';
+import {passengerShip} from './passengers.mjs?v=subsector-boundaries-20261015-91';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=subsector-labels-20261014-89';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=subsector-labels-20261014-89';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=subsector-labels-20261014-89';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=subsector-labels-20261014-89';
-import {creditStep} from './rounding.mjs?v=subsector-labels-20261014-89';
-import {roll} from './rules.mjs?v=subsector-labels-20261014-89';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=subsector-labels-20261014-89';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=subsector-boundaries-20261015-91';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=subsector-boundaries-20261015-91';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=subsector-boundaries-20261015-91';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=subsector-boundaries-20261015-91';
+import {creditStep} from './rounding.mjs?v=subsector-boundaries-20261015-91';
+import {roll} from './rules.mjs?v=subsector-boundaries-20261015-91';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=subsector-boundaries-20261015-91';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

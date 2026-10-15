@@ -1,4 +1,4 @@
-import {ruleReference,referenceMarkup} from './rule-references.mjs?v=subsector-labels-20261014-89';
+import {ruleReference,referenceMarkup} from './rule-references.mjs?v=subsector-boundaries-20261015-91';
 
 // Refresh an audit's text while retaining its existing reference buttons. This
 // keeps a pointer/Tab target alive when a form's ordinary blur handler rerenders
