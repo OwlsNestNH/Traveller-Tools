@@ -4098,7 +4098,7 @@ function zoomMap(factor,reset=false){
  mapPan=reset?{x:0,y:0}:{x:mapPan.x*mapZoom/previousZoom,y:mapPan.y*mapZoom/previousZoom};
  // Keep the existing map slot and tapped controls mounted: replacing the whole
  // Overview lets mobile focus/scroll anchoring move the page during zoom.
- if(!mapZoomFrame)mapZoomFrame=requestAnimationFrame(()=>{mapZoomFrame=0;if(!paintMap())return;const controls=document.querySelector('.map-zoom-controls');if(controls){controls.querySelector('.help').textContent=Math.round(mapZoom*100)+'%';const level=mapLevel(mapZoom);controls.querySelector('.map-level-label').textContent=level==='world'?(showUwp&&mapZoom>=2.4?'Worlds + UWP':'Worlds'):level==='subsector'?'Subsectors':'Sectors';}});
+ if(!mapZoomFrame)mapZoomFrame=requestAnimationFrame(()=>{mapZoomFrame=0;if(cargoRemoval.pending||saleWriteOperation?.pending&&!saleWriteOperation.invalidated||timeWriteOperation?.publicationDeferred&&!timeWriteOperation.invalidated||settingsOperation&&!settingsOperation.invalidated&&(settingsOperation.pending||settingsOperation.publicationDeferred))return;if(!paintMap())return;const controls=document.querySelector('.map-zoom-controls');if(controls){controls.querySelector('.help').textContent=Math.round(mapZoom*100)+'%';const level=mapLevel(mapZoom);controls.querySelector('.map-level-label').textContent=level==='world'?(showUwp&&mapZoom>=2.4?'Worlds + UWP':'Worlds'):level==='subsector'?'Subsectors':'Sectors';}});
 }
 function makeCurrentWorld(id){
  // Bind this action to the highlighted world at activation, not a detached
@@ -4126,7 +4126,6 @@ function setLocation(w,{mapCorrection=false}={}){
  owner=createWorldWriteOwner(activeModal);
 }
 function paintMap(){
- if(cargoRemoval.pending||saleWriteOperation?.pending&&!saleWriteOperation.invalidated||timeWriteOperation?.publicationDeferred&&!timeWriteOperation.invalidated||settingsOperation&&!settingsOperation.invalidated&&(settingsOperation.pending||settingsOperation.publicationDeferred))return;
  if(accountsBusy()||plannedRoutePresentationHeld()||clearRoutePresentationHeld())return;
  if(passengerWriteOperation?.pending&&!passengerWriteOperation.invalidated)return;if(contractLifecycleWriteOperation?.pending&&!contractLifecycleWriteOperation.invalidated)return;
  if(contractOfferWriteOperation?.pending&&!contractOfferWriteOperation.invalidated)return;
