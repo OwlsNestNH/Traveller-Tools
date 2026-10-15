@@ -211,7 +211,7 @@ try{
   assert.match(await page.locator('.lss-aboard').textContent(),/140/);await fixedFrame(page,boxes,'Life Support draft');await click('service-audit');await fixedFrame(page,boxes,'Life Support Audit');await page.locator('#service-panel .lss-audit').evaluate(d=>d.open=false);
   await checkMfdLabels(page);await page.locator('#service-panel').evaluate(p=>p.scrollTop=0);await page.screenshot({path:artifacts+'/mfd-support-draft-'+width+'.png',fullPage:true});
   await click('service-confirm');await h.saved();const paid=await read(),stock=paid.ship.lifeSupport.stockUnits;
-  assert.equal(Number(stock.numerator)/Number(stock.denominator),140);assert.match(await page.locator('.lss-metrics').textContent(),/Days supported35/);
+  assert.equal(Number(stock.numerator)/Number(stock.denominator),140);assert.match(await page.locator('.lss-metrics').textContent(),/Days supported \/ max35/);
   await fixedFrame(page,boxes,'Saved Life Support');await click('service-audit');await fixedFrame(page,boxes,'Saved Life Support Audit');await page.locator('#service-panel > .service-audit').evaluate(d=>d.open=false);const savedBytes=await raw();await h.unchanged('Saved receipt remains open',savedBytes);
   await checkMfdLabels(page);await page.locator('#service-panel').evaluate(p=>p.scrollTop=0);await page.screenshot({path:artifacts+'/mfd-support-saved-'+width+'.png',fullPage:true});
   await click('service-new');assert.equal(await field('internal').inputValue(),'140');assert.equal(await field('comfortCredits').inputValue(),'0');assert.equal(await h.action('service-confirm').isDisabled(),true);

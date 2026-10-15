@@ -4,7 +4,7 @@ import {passengerShip} from './passengers.mjs?v=subsector-labels-20261014-89';
 import {supportAmount,supportComplement} from './life-support.mjs?v=subsector-labels-20261014-89';
 import {up,creditStep} from './rounding.mjs?v=subsector-labels-20261014-89';
 
-export const consumableRefillReference='Campaign decision 2026-10-15: consumable LSS costs Cr1,000 per Middle person, Cr3,000 per High person and Cr100 per frozen Low person per 28 days, prorated by supported duration. Internal and cargo supplies use the same tariff. Cabin upkeep is a separate operating expense.';
+export const consumableRefillReference='Campaign decision 2026-10-15: consumable LSS defaults to Cr1,000 per Middle person and Cr3,000 per High person per 28 days; the saved audit records configured rates. Frozen Low costs Cr100 per person per 28 days. Costs are prorated by supported duration. Internal and cargo supplies use the same tariff. Cabin upkeep is a separate operating expense.';
 export function monthlyCabinUpkeep(ship){
  const rooms=roomCounts(ship);
  return tiers.reduce((total,tier)=>total+BigInt(rooms[tier]??0)*BigInt(serviceRate(tier,ship.accommodation?.roomService?.[tier])),0n);

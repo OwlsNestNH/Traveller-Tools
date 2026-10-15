@@ -16,13 +16,14 @@ const artifacts=fileURLToPath(new URL('../verification-artifacts/',import.meta.u
 await mkdir(artifacts,{recursive:true});
 const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BROWSER_CHANNEL?{channel:process.env.TRAVELLER_BROWSER_CHANNEL}:{})});
 const results=[],frameEvidence=[];
-function fixture({port='A',hydro='8',aboard=20,bank='100000',frozen=0,awake=4,stockUnits=null}={}){
+function fixture({port='A',hydro='8',aboard=20,bank='100000',frozen=0,awake=4,stockUnits=null,cargoUnits=null}={}){
  const f=guiFixture(12),s=f.state;
  s.name='Service screen verification';s.ship.name='Synthetic service trader';s.bank=bank;s.hours=48;
  s.ship.fuel=configureFuel(200,43,aboard,0,2);
  s.ship.accommodation={occupiedLowBerths:frozen,rooms:{low:0,middle:4,high:0},passengers:{low:0,middle:0,high:0},crew:{low:0,middle:awake,high:0}};
  // Deliberately legacy inventory: reading/browsing must not serialize migration.
  s.ship.lifeSupport=stockUnits===null?{capacityHours:672,remainingHours:336,elapsedHours:0}:configureSupport(s.ship,{targetDays:28,stockUnits});
+ if(cargoUnits!==null)s.ship.lifeSupport.cargoUnits={numerator:String(Math.round(cargoUnits*10)),denominator:'10'};
  s.lots=[];s.contracts=[];s.snapshots=[];s.ledger=[];s.events=[];s.undo=[];s.jumpAttempts=[];
  s.route=[s.actual,s.route[3]];s.routeIndex=0;
  const w=s.worlds[s.actual];w.name='Actual Service Harbor';w.uwp=port+'77'+hydro+'777-A';Object.assign(w.raw,{Name:w.name,UWP:w.uwp});
@@ -84,9 +85,13 @@ try{
   assert.equal(await h.action('service-confirm').isEnabled(),true);assert.match(await page.locator('.lss-total').innerText(),/3,572/);
   await click('service-audit');assert.equal(await page.locator('.lss-audit').getAttribute('open'),'');await click('service-cancel');await unchanged('Cancel');
   await h.open('refill-support');await fill('cargo',100);await page.locator('.lss-comfort summary').click();await fill('comfortCredits',777);assert.equal(await h.action('service-confirm').isDisabled(),true);await fill('comfortNote','Fresh provisions');
-  assert.match(await page.locator('.lss-total').innerText(),/4,349/);await page.screenshot({path:artifacts+'/lss-integrated-'+width+'.png',fullPage:true});
+  assert.match(await page.locator('.lss-total').innerText(),/4,349/);assert.equal(await page.locator('.lss-aboard strong').innerText(),'112');await h.frames();await page.locator('#service-panel').evaluate(p=>p.scrollTop=0);await page.screenshot({path:artifacts+'/lss-integrated-top-'+width+'.png',fullPage:true});await page.locator('.lss-total').scrollIntoViewIfNeeded();await page.screenshot({path:artifacts+'/lss-integrated-total-'+width+'.png',fullPage:true});
   await click('service-confirm');await h.saved();const paid=await read();assert.equal(paid.bank,'95651');assert.deepEqual(paid.ship.lifeSupport.stockUnits,{numerator:'564',denominator:'5'});assert.deepEqual(paid.ship.lifeSupport.cargoUnits,{numerator:'100',denominator:'1'});assert.equal(paid.ledger.length,1);
   await click('service-new');assert.equal(await h.action('service-confirm').isDisabled(),true);await fill('cargo',0);assert.equal(await h.action('service-confirm').isDisabled(),true);assert.equal(await h.action('service-gm').isEnabled(),true);await click('service-gm');await h.saved();const adjusted=await read();assert.equal(adjusted.bank,paid.bank);assert.deepEqual(adjusted.ship.lifeSupport.stockUnits,{numerator:'64',denominator:'5'});assert.equal(adjusted.ledger.length,1);
+ });
+ await run('retained fractions and validity restoration',{awake:1,stockUnits:'16.2',cargoUnits:3.4},async h=>{
+  await h.open('refill-support');await h.fill('internal',13);await h.fill('internal',12);await h.page.locator('.lss-comfort summary').click();await h.fill('comfortCredits',777);await h.fill('comfortNote','Comfort only');
+  assert.match(await h.page.locator('.lss-aboard').innerText(),/16/);await h.fill('cargo',100000);assert.equal(await h.action('service-confirm').isDisabled(),true);await h.fill('cargo',3);assert.equal(await h.field('cargo').evaluate(e=>e.validity.valid),true);assert.equal(await h.action('service-confirm').isEnabled(),true);await h.click('service-cancel');await h.unchanged('Restored invalid target and Cancel');
  });
  await run('settings rates preserve exact compartment inventory',{awake:1,stockUnits:'12.8'},async h=>{
   const {page,click,fill,read}=h;await h.open('refill-support');await fill('cargo',10);await click('service-gm');await h.saved();const before=await read();await click('tab','Settings');

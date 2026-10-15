@@ -64,7 +64,7 @@ let salaryDue=648,localUsed=false;
 async function checkpoint(label){
  const s=await read();validate(s);assert.equal(s.bank,String(s.ledger.reduce((n,e)=>n+BigInt(e.amount),0n)),'Cash equals signed ledger at '+label);assert.ok(BigInt(s.bank)>=0n);assert.ok(used(s)<=50+1e-9);assert.equal(s.settings.profit,100);assert.equal(s.settings.tax,false);assert.equal(s.settings.insurance,false);assert.equal(s.settings.reducedProfitLimitsEnabled,false);assert.equal(s.settings.maxBaseRetailEnabled,false);assert.equal(s.trader.broker,2);assert.equal(s.ship.fuel.capacityTons,80);
  let expectedN=3360n-BigInt(s.hours)*5n,expectedD=24n;
- for(const e of s.ledger.filter(e=>e.expense?.kind==='lifeSupportRefill')){const q=e.expense.purchasedStockUnits,n=BigInt(q.numerator),d=BigInt(q.denominator);expectedN=expectedN*d+n*expectedD;expectedD*=d;}
+ for(const e of s.ledger.filter(e=>e.expense?.kind==='lifeSupportRefill')){for(const [q,sign] of [[e.expense.purchasedUnits??e.expense.purchasedStockUnits,1n],[e.expense.discardedUnits??{numerator:'0',denominator:'1'},-1n]]){const n=BigInt(q.numerator),d=BigInt(q.denominator);expectedN=expectedN*d+sign*n*expectedD;expectedD*=d;}}
  // Exact independent person-hour oracle, without supportStock/used/refillQuote imports.
  assert.equal(BigInt(s.ship.lifeSupport.stockUnits.numerator)*expectedD,expectedN*BigInt(s.ship.lifeSupport.stockUnits.denominator),'Five people consume exactly 5 LSS/day at '+label);
  for(const rows of [s.lots,s.contracts,s.ledger])assert.equal(new Set(rows.map(x=>x.id)).size,rows.length);

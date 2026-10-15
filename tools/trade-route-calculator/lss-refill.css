@@ -4,3 +4,5 @@
 
 
 .lss-actions{flex-wrap:wrap}.lss-actions button{white-space:nowrap;flex-shrink:0}.lss-refill input[type=range]{min-height:40px}.lss-top button{min-height:40px}
+
+.lss-cargo .lss-stepper{flex-shrink:0;white-space:nowrap}
