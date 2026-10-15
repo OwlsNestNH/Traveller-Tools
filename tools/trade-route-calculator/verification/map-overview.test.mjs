@@ -13,10 +13,10 @@ test('world-scale subsector names use metadata with Political off and preserve w
  cache.request(regina,{x:0,y:0},.5,false);await tick();await tick();
  assert.equal(calls.length,1);assert.equal(calls[0].includeWorlds,false);assert.equal(cache.pending,false);
  for(const zoom of [.2,.5,.8]){
-  const markup=overviewMarkup({anchor:regina,pan:{x:0,y:0},zoom,sectors:[spin],catalogs:cache.cache,measure,labelsOnly:true});
-  assert.match(markup,/>Regina</);assert.doesNotMatch(markup,/overview-grid|overview-worlds|data-action|tabindex|NaN/);
+  const markup=overviewMarkup({anchor:regina,pan:{x:0,y:0},zoom,sectors:[spin],catalogs:cache.cache,measure,worldOverlay:true});
+  assert.match(markup,/>Regina</);assert.match(markup,/overview-grid subsector-grid/);assert.match(markup,/class="subsector-border"/);assert.doesNotMatch(markup,/overview-worlds|data-action|tabindex|NaN/);
  }
- for(const zoom of [.159,.801,1,2.88])assert.equal(overviewMarkup({anchor:regina,pan:{x:0,y:0},zoom,sectors:[spin],catalogs:cache.cache,measure,labelsOnly:true}),'');
+ for(const zoom of [.159,.801,1,2.88])assert.equal(overviewMarkup({anchor:regina,pan:{x:0,y:0},zoom,sectors:[spin],catalogs:cache.cache,measure,worldOverlay:true}),'');
 });
 
 test('new layers live below the preserved world range and stop at a readable widest scale',()=>{
@@ -73,7 +73,7 @@ test('overview uses catalog names and exact world hex coordinates, then letters 
  assert.equal((svg.match(/r=".8"/g)||[]).length,4);
  assert.doesNotMatch(svg,/data-action|tabindex|NaN|undefined|Subsector A/);
  const far=overviewMarkup({anchor:regina,pan:{x:0,y:0},zoom:.06,sectors:[spin],catalogs,measure});
- assert.match(far,/class="sector-name"/);assert.match(far,/Spinward/);assert.match(far,/Marches/);
+ assert.match(far,/class="sector-border"/);assert.doesNotMatch(far,/class="subsector-border"/);assert.match(far,/class="sector-name"/);assert.match(far,/Spinward/);assert.match(far,/Marches/);
  assert.equal((far.match(/class="subsector-letter"/g)||[]).length,16);assert.doesNotMatch(far,/r=".8"/);
  const hostile=overviewMarkup({anchor:regina,pan:{x:0,y:0},zoom:.06,sectors:[{...spin,name:'<img onload="evil">'}],catalogs,measure});
  assert.doesNotMatch(hostile,/<img/);assert.match(hostile,/&lt;img/);

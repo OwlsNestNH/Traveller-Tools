@@ -107,7 +107,7 @@ try{
  await drag();assert.notEqual(await transform(),'translate(0 0)');assert.deepEqual(await read(),before);
  const pan=await transform();assert.equal(await page.locator('#map-hexes').count(),0,'The visible hex toggle is intentionally removed');await page.getByLabel('Show UWP',{exact:true}).uncheck();assert.equal(await transform(),pan);await page.getByLabel('Show UWP',{exact:true}).check();assert.equal(await transform(),pan);
  await reach('6%');assert.equal(await level(),'sector');await geometry(320);
- assert.ok(await page.locator('.sector-name').count()>0);assert.ok(await page.locator('.subsector-letter').count()>0);
+ assert.ok(await page.locator('.sector-border').count()>0);assert.equal(await page.locator('.subsector-border').count(),0);assert.ok(await page.locator('.sector-name').count()>0);assert.ok(await page.locator('.subsector-letter').count()>0);
  assert.equal(await page.locator('.overview-worlds circle').count(),0);
  const name=page.locator('.sector-label[data-sector="Spinward Marches"]');assert.equal(await name.count(),1);
  await page.screenshot({fullPage:true,path:artifacts+'/map-sectors.png'});
@@ -136,11 +136,56 @@ try{
   await page.screenshot({fullPage:true,path:artifacts+`/map-world-subsectors-${width}.png`});
   await reach('20%');
   await page.locator('.world-subsector-labels .subsector-name').first().waitFor({state:'attached'});
-  assert.equal(await level(),'world');assert.equal(await page.locator('.overview-grid').count(),0);
+  assert.equal(await level(),'world');assert.equal(await page.locator('.overview-grid.subsector-grid').count(),1);assert.ok(await page.locator('.subsector-border').count()>0);
   assert.equal(await page.locator('.world-subsector-labels [data-action]').count(),0);
   await page.screenshot({fullPage:true,path:artifacts+`/map-world-subsectors-boundary-${width}.png`});
   assert.deepEqual(await read(),before);
  }
+ // Exact wheel-zoom boundaries, including both sides of each label transition.
+ for(const width of [1440,390])for(const political of [false,true]){
+  await page.setViewportSize({width,height:width===390?844:1100});
+  await page.getByLabel('Political territory',{exact:true}).setChecked(political);
+  await click('Reset view');let current=1;
+  for(const target of [.801,.8,.6,.5,.34,.23,.2,.16,.159,.11,.075,.06]){
+   await page.locator('.world-map').dispatchEvent('wheel',{ctrlKey:true,deltaY:-Math.log(target/current)/.002,deltaMode:0});
+   await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));current=target;
+   assert.equal(await zoom(),Math.round(target*100)+'%');
+   if(![.801,.8,.5,.2,.16,.159,.06].includes(target))continue;
+   const subsectors=target>=.16&&target<=.8,sector=target<.16;
+   if(subsectors)await page.locator('.subsector-name').first().waitFor({state:'attached'});
+   assert.equal(await page.locator('.overview-grid').count(),target<=.8?1:0);
+   assert.equal((await page.locator('.subsector-border').count())>0,subsectors);
+   assert.equal((await page.locator('.sector-name').count())>0,sector);
+   assert.equal((await page.locator('.subsector-name').count())>0,subsectors);
+   assert.equal((await page.locator('.map-territories').count())>0,political);
+   if(target<=.8){
+    const grid=await page.locator('.overview-grid').evaluate(el=>{
+     const rect=el.querySelector('rect'),style=getComputedStyle(rect);
+     return {width:+rect.getAttribute('width'),pointer:getComputedStyle(el).pointerEvents,stroke:parseFloat(style.strokeWidth),opacity:+style.opacity,parent:el.parentElement.classList.contains('map-content')};
+    });
+    assert.ok(Math.abs(grid.width-32*50*target*Math.sqrt(3)/2)<.001,'Boundary projection follows exact zoom');
+    assert.equal(grid.pointer,'none');assert.equal(grid.parent,true);assert.ok(grid.stroke>=1&&grid.opacity>=.65);
+   }
+   if(target===.5||target===.16){
+    const alignment=()=>page.evaluate(()=>{
+     const rect=document.querySelector('.sector-border[data-sector="Spinward Marches"]'),label=document.querySelector('.subsector-label[data-sector="Spinward Marches"][data-subsector="C"] text');
+     const r=rect.getBoundingClientRect(),l=label.getBoundingClientRect();
+     return {x:l.x-r.x,y:l.y-r.y};
+    });
+    const a=await alignment();await drag();const b=await alignment();
+    assert.ok(Math.abs(a.x-b.x)<.01&&Math.abs(a.y-b.y)<.01,'Boundaries and labels retain alignment after pan');
+   }
+   await page.locator('.world-map').scrollIntoViewIfNeeded();
+   await page.screenshot({path:artifacts+`/map-boundaries-${width}-${political?'political':'plain'}-${Math.round(target*1000)/10}.png`});
+   assert.deepEqual(await read(),before);
+  }
+ }
+ // Added inert boundaries must preserve real world browsing in their zoom band.
+ await page.setViewportSize({width:1440,height:1100});await click('Reset view');
+ await page.locator('.world-map').dispatchEvent('wheel',{ctrlKey:true,deltaY:-Math.log(.8)/.002,deltaMode:0});
+ await page.locator('.subsector-border').first().waitFor({state:'attached'});
+ await page.locator('svg [data-arg="-111,-70"]').click();
+ assert.equal(await page.locator('.world-info strong').first().textContent(),'Jenghe');assert.deepEqual(await read(),before);
  assert.deepEqual(errors,[]);
  console.log('PASS: default-on and all-zoom territory toggle, preserved world/UWP layers, subsectors and dots, sector names/letters, API retry, bounded requests, pan/cancel/reset, mobile and campaign immutability.');
 }finally{await context.tracing.stop({path:artifacts+'/map-overview-trace.zip'});await browser.close();}
