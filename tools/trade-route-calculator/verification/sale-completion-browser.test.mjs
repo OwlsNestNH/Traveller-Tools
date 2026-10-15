@@ -329,7 +329,7 @@ async function fill(page, name, value) {
  await locator.fill(value); await locator.blur();
 }
 async function prepare(page, scenario, before, {select = true, loops = false} = {}) {
- if (select) {await tab(page, 'Cargo'); await action(page, 'sale-all').click();}
+ if (select) {await existingSell(page); await action(page, 'sale-all').click();}
  await existingSell(page);await action(page, 'sale').click(); await page.locator('#modal-title').filter({hasText: /^Review sale/}).waitFor();
  const spec = specification(before, scenario);
  assert.equal(await page.evaluate(() => saleDiceCalls), 9, 'Three natural price dice per selected lot, once');
@@ -405,7 +405,7 @@ async function reloadUndo(page, result, before, scenario, {committed = true} = {
  if (scenario.mode === 'success') {
   // A fresh session after reload and real Undo negotiates exactly once;
   // opening and cancelling the form never writes another campaign change.
-  await tab(page, 'Cargo'); await action(page, 'sale-all').click(); await existingSell(page);await action(page, 'sale').click();
+  await existingSell(page); await action(page, 'sale-all').click(); await existingSell(page);await action(page, 'sale').click();
   await page.locator('#modal-title').filter({hasText: /^Review sale/}).waitFor(); assert.equal(await page.evaluate(() => saleDiceCalls), 9);
   await pointer(page, '#modal-cancel'); await closed(page);
  }

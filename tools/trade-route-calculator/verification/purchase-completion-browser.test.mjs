@@ -1,3 +1,4 @@
+import {existingSell} from './trade-ui.mjs';
 // Bounded Stage 2 PURCHASE-ONLY completion gate, including atomic optional insurance.
 // Production app/controller/S.buy/rules/native Store and Web Locks are unchanged.
 // Only named provider/publication/DOM boundaries are wrapped; application bodies
@@ -342,7 +343,7 @@ async function pointer(page, selector, clickCount = 1) {
 }
 async function fill(page, name, value) {const input = page.locator('#modal [name="' + name + '"]'); await input.fill(String(value)); await input.blur();}
 async function prepare(page, scenario, before, {loops = false, select = true, network = null} = {}) {
- if (select) {await tab(page, 'Cargo'); await action(page, 'sale-all').click(); await tab(page, scenario.map ? 'Overview' : 'Trade');}
+ if (select) {await existingSell(page); await action(page, 'sale-all').click(); await tab(page, scenario.map ? 'Overview' : 'Trade'); if(!scenario.map)await action(page, 'trade-side', 'buy').click();}
  const initialCalls = (await gate(page)).totalCalls;
  const spec = specification(before, scenario);
  const enter = async () => {
@@ -445,7 +446,7 @@ async function successful(page, result, before, scenario) {
   await credits.evaluate(node => {node.dataset.purchaseCredits = 'true';});
   await detail(page, result, 'saved-exact-credits', ['#summary [data-purchase-credits]']);
  }
- await tab(page, 'Cargo'); assert.deepEqual(await page.locator('#main [data-lot]:checked').evaluateAll(nodes => nodes.map(el => el.dataset.lot)), ['existing-lot'], 'Purchase does not clear unrelated selected cargo');
+ await existingSell(page); assert.deepEqual(await page.locator('#main [data-lot]:checked').evaluateAll(nodes => nodes.map(el => el.dataset.lot)), ['existing-lot'], 'Purchase does not clear unrelated selected cargo');
  if (scenario.id === 'native-insured' || scenario.id === 'huge-credits') await accountingDetail(page, result, before, scenario);
  result.gate = safeReport(await gate(page)); await reloadUndo(page, result, before, scenario);
 }
