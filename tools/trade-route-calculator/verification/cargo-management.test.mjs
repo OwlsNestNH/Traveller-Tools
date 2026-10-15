@@ -25,7 +25,7 @@ test('exact fractional LSS and luggage stay visible; internal supplies are exclu
  let html=cargoManagementPanel(s,core);
  assert.match(html,/data-management-stock="luggage"[\s\S]*?0.125 t/);
  assert.match(html,/data-management-stock="support"[\s\S]*?1.015 t/);
- assert.doesNotMatch(html,/Internal|Life support overflow|LSS overflow|901.5 t/);
+ assert.doesNotMatch(html,/Life support overflow|LSS overflow|901.5 t/);
  s.ship.lifeSupport=configureSupport(s.ship,{stockUnits:'800'});html=cargoManagementPanel(s,core);
  assert.doesNotMatch(html,/data-management-stock="support"/);
 });

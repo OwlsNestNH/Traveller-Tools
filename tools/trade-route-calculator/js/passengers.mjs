@@ -13,8 +13,18 @@ export const passengerBookings=s=>s.contracts.filter(c=>c.kind==='passenger');
 export const activePassengers=s=>passengerBookings(s).filter(c=>c.status==='accepted');
 export function passengerTotals(s){const counts={low:0,basic:0,middle:0,high:0};for(const c of activePassengers(s)){if(!PASSAGE_CLASSES.includes(c.passageClass)||!whole(c.count,1))throw Error('Invalid passenger count or class.');counts[c.passageClass]+=c.count;}if(!Object.values(counts).every(n=>whole(n)))throw Error('Passenger count is too large.');return {...counts,awake:counts.basic+counts.middle+counts.high,total:Object.values(counts).reduce((a,b)=>a+b,0)};}
 export const passengerSpace=s=>A.sum(activePassengers(s).filter(c=>c.cabinMode==='cargo').map(c=>A.mul(c.count,2)));
+// Loss belongs to its original baseline or booking, so later bookings receive
+// their own allowance and delivering a booking cannot resurrect lost baggage.
+export function luggageSources(s){
+ const base=s.ship.accommodation;if(!base)return [];
+ const booked=activePassengers(s),manual=manualLuggage(s.ship);
+ const baseline=manual?base.luggageTons:base.combinedPeople?String((base.passengers?.high||0)+(base.crew?.high||0)):booked.length?luggageAllowance(s.ship):(base.luggageTons??luggageAllowance(s.ship));
+ const net=(value,owner)=>{const total=A.add(value,owner.cargoLuggageRounding??0),lost=owner.cargoLuggageLost??0;return A.decimal(A.cmp(value,0)>0&&A.cmp(total,lost)>0?A.sub(total,lost):0);};
+ return [{kind:'baseline',quantity:net(baseline,base)},
+  ...(!manual?booked.map(c=>({kind:'booking',id:c.id,quantity:net(A.mul(c.count,bookingLuggage[c.passageClass]),c)})):[])];
+}
 export function passengerShip(s){
- const booked=passengerTotals(s);if(!booked.total)return s.ship;
+ const booked=passengerTotals(s);if(!booked.total&&!s.ship.accommodation?.cargoLuggageLost&&!s.ship.accommodation?.cargoLuggageRounding)return s.ship;
  const base=s.ship.accommodation;if(!base)throw Error('Review the existing crew and people aboard before boarding passengers.');
  const a={...base,passengers:{...base.passengers,middle:(base.passengers.middle||0)+booked.basic+booked.middle,high:(base.passengers.high||0)+booked.high},crew:{...base.crew},occupiedLowBerths:(base.occupiedLowBerths||0)+booked.low};
  // Preserve an explicit whole-ship total, including zero. Otherwise combine the
@@ -22,7 +32,7 @@ export function passengerShip(s){
  Object.defineProperty(a,'bookedLowSupport',{value:booked.low,enumerable:false});
  const manual=manualLuggage(s.ship);
  const baseline=base.combinedPeople?String((base.passengers.high||0)+(base.crew.high||0)):luggageAllowance(s.ship);
- a.luggageMode='manual';a.luggageTons=manual?base.luggageTons:A.decimal(A.sum([baseline,...PASSAGE_CLASSES.map(t=>A.mul(booked[t],bookingLuggage[t]))]));
+ a.luggageMode='manual';a.luggageTons=A.decimal(A.sum(luggageSources(s).map(x=>x.quantity)));
  return {...s.ship,accommodation:a};
 }
 export function passengerCapacity(s){

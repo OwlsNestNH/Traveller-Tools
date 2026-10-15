@@ -1,7 +1,7 @@
 // Draft-only refill editor. No campaign writes or payment actions belong here.
 // Integration awaits the recorded fractional-stock and storage decisions.
 import * as A from './amounts.mjs';
-import {supportAmount,supportStock,supportComplement,anchorSupport} from './life-support.mjs?v=subsector-boundaries-20261015-91';
+import {supportAmount,supportStock,supportComplement,anchorSupport,supportCargo,supportDisplay} from './life-support.mjs?v=subsector-boundaries-20261015-91';
 import {passengerShip} from './passengers.mjs?v=subsector-boundaries-20261015-91';
 import {used} from './state.mjs?v=subsector-boundaries-20261015-91';
 import {escapeHtml as esc,formatCreditsText} from './display.mjs?v=subsector-boundaries-20261015-91';
@@ -20,8 +20,9 @@ export function campaignRefillDraft(state){
  if(stock.stockUnits===null)throw Error(stock.migration.reason||'Record actual LSS aboard first.');
  if(stock.internalCapacityUnits===null)throw Error('Enter ship displacement before preparing a refill.');
  const cargoTons=supportAmount(stock.cargoExact),cargo=A.mul(cargoTons,100);
- const available=A.add(A.sub(copy.ship.capacity,used(copy)),cargoTons);
+ const available=A.add(A.sub(copy.ship.capacity,used(copy)),supportCargo(copy.ship));
  const draft=createRefillDraft({internal:A.sub(supportAmount(stock.stockUnits),cargo),cargo,internalCapacity:stock.internalCapacityUnits,cargoCapacity:A.mul(available,100),dailyUnits:supportComplement(ship).dailyUnits});
+ draft.cargoBatches=copy.ship.lifeSupport?.roundCargoSpace===true;
  return {revision:state.revision,actual:state.actual,draft};
 }
 
@@ -43,6 +44,21 @@ export function editRefillDraft(draft,action,value){
   next.comfortCredits=String(amount<0n?0n:amount);return next;
  }
  const key=action==='internal'?'internal':'cargo';
+ if(key==='cargo'&&draft.cargoBatches){
+  const current=supportAmount(draft.cargo),tail=A.sub(current,A.mul(A.floor(A.div(current,100)),100)),capacity=supportAmount(draft.cargoCapacity),maxBatches=A.floor(A.div(A.sub(capacity,tail),100));
+  let target;
+  if(action==='cargo-step'){
+   if(![-1,1].includes(Number(value)))throw Error('Choose a one-ton reserve step.');
+   let batches=A.floor(A.div(current,100))+BigInt(value);if(batches<0n)batches=0n;if(batches>maxBatches)batches=maxBatches;
+   target=A.add(tail,A.mul(batches,100));
+   if(Number(value)>0&&A.cmp(target,current)<=0)return next;
+  }else if(action==='fill-cargo'){target=A.add(tail,A.mul(maxBatches,100));if(A.cmp(target,current)<=0)return next;}
+  else if(action==='cargo')target=A.dec(value);else throw Error('Unknown refill control.');
+  const batches=A.div(A.sub(target,tail),100);
+  if(batches.d!==1n||A.cmp(batches,0)<0)throw Error('Cargo reserves change in whole tons (100 LSS). Existing legacy fractions stay unchanged.');
+  if(A.cmp(target,capacity)>0)throw Error('The requested cargo LSS exceeds available capacity.');
+  next.cargo=A.auditNumber(target);next.changed.cargo=true;return next;
+ }
  let target;
  if(action==='fill-cargo'){
   target=A.floor(supportAmount(draft.cargoCapacity));
@@ -65,8 +81,8 @@ export function editRefillDraft(draft,action,value){
 }
 
 export function refillDraftTotals(draft){
- const internal=supportAmount(draft.internal),cargo=supportAmount(draft.cargo),total=A.add(internal,cargo),daily=supportAmount(draft.dailyUnits);
- return {total:A.auditNumber(total),days:A.cmp(daily,0)>0?A.auditNumber(A.div(total,daily)):null,maxDays:A.cmp(daily,0)>0?A.auditNumber(A.div(supportAmount(draft.internalCapacity),daily)):null,cargoTons:A.auditNumber(A.mul(cargo,'0.01'))};
+ const internal=supportAmount(draft.internal),cargo=supportAmount(draft.cargo),total=A.add(internal,cargo),daily=supportAmount(draft.dailyUnits),usable=draft.cargoBatches?A.add(internal,A.cmp(supportAmount(draft.internalCapacity),100)>=0?A.mul(A.floor(A.div(cargo,100)),100):0):total;
+ return {total:A.auditNumber(total),days:A.cmp(daily,0)>0?A.auditNumber(A.div(usable,daily)):null,maxDays:A.cmp(daily,0)>0?A.auditNumber(A.div(supportAmount(draft.internalCapacity),daily)):null,cargoTons:A.auditNumber(A.mul(cargo,'0.01'))};
 }
 
 // quote is supplied by the owning transaction adapter, not invented by the UI.
@@ -75,7 +91,8 @@ export function renderRefillDraft(draft,{shipLabel='',quote=null,audit='',gmBloc
  const projected=quote?.compartments?{...draft,internal:quote.compartments.internal.after,cargo:quote.compartments.cargo.after}:draft;
  const totals=refillDraftTotals(projected),cost=quote?.amount==null?null:nonnegative(quote.amount,'Refill cost');
  const button=(label,action,extra='')=>`<button type="button" data-refill-action="${action}" ${extra}>${label}</button>`;
- const value=key=>wholeSupport(draft[key]);
+ const value=key=>key==='cargo'&&draft.cargoBatches?supportDisplay(draft[key]):wholeSupport(draft[key]);
+ const cargoMinimum=draft.cargoBatches?supportDisplay(A.sub(supportAmount(draft.cargo),A.mul(A.floor(A.div(supportAmount(draft.cargo),100)),100))):'0';
  return `<section class="lss-refill" aria-label="Life support refill draft">
  <div class="lss-top">${button('← Back to Overview','back')}${button('Audit','audit')}</div>
  <h2>Life support</h2><p>${esc(shipLabel)}</p>
@@ -84,9 +101,10 @@ export function renderRefillDraft(draft,{shipLabel='',quote=null,audit='',gmBloc
  <h3>Refill supplies</h3><label for="lss-internal">Normal storage <span>Set normal storage target</span></label>
  <div class="lss-target"><input id="lss-internal" data-refill-input="internal" type="range" min="0" max="${value('internalCapacity')}" step="1" value="${value('internal')}"><output for="lss-internal">${value('internal')} LSS</output></div>
  <div class="lss-range-labels"><span>0 LSS</span><span>${value('internalCapacity')} LSS</span></div>
- <div class="lss-cargo"><label for="lss-cargo">Cargo LSS<span>Independent of normal storage</span></label><div class="lss-stepper">${button('−','minus','aria-label="Remove one cargo LSS from draft"')}<input id="lss-cargo" data-refill-input="cargo" type="number" min="0" max="${value('cargoCapacity')}" step="1" value="${value('cargo')}">${button('+','plus','aria-label="Add one cargo LSS to draft"')}<span>LSS</span></div></div>
+ <div class="lss-cargo"><label for="lss-cargo">Cargo LSS<span>Independent of normal storage</span></label><div class="lss-stepper">${button('−','minus','aria-label="Remove '+(draft.cargoBatches?'one ton of reserve':'one cargo LSS')+' from draft"')}<input id="lss-cargo" data-refill-input="cargo" type="number" min="${cargoMinimum}" max="${value('cargoCapacity')}" step="${draft.cargoBatches?100:1}" value="${value('cargo')}">${button('+','plus','aria-label="Add '+(draft.cargoBatches?'one ton of reserve':'one cargo LSS')+' to draft"')}<span>LSS</span></div></div>
+ ${draft.cargoBatches?'<p>100 LSS per reserve ton. Supplies are used internally; a full reserve transfers only when internal storage has room for 100 LSS. Any legacy fractional reserve stays exact aboard.</p>':''}
  <div class="lss-capacity"><span>Cargo available ${nearestSupportTon(A.mul(A.sub(supportAmount(draft.cargoCapacity),supportAmount(draft.cargo)),'0.01'))} t</span>${button('Fill available cargo','fill-cargo')}</div>
- <p class="lss-overflow">Cargo overflow <strong>${nearestSupportTon(totals.cargoTons)} t</strong></p>
+ <p class="lss-overflow">Cargo overflow <strong>${draft.cargoBatches?String(-A.floor(A.mul(supportAmount(totals.cargoTons),-1))):nearestSupportTon(totals.cargoTons)} t</strong></p>
  <label for="lss-reason">Reason (optional)</label><input id="lss-reason" data-refill-input="reason" value="${esc(draft.reason)}">
  <details class="lss-comfort" ${A.credit(draft.comfortCredits)>0n?'open':''}><summary>Extra provisions — comfort spending</summary><div class="lss-stepper">${button('−Cr 1,000','comfort-minus')}<label for="lss-comfort-cost">One-time comfort cost — Cr<input id="lss-comfort-cost" data-refill-input="comfortCredits" type="number" min="0" step="1" value="${esc(draft.comfortCredits)}"></label>${button('+Cr 1,000','comfort-plus')}</div><label for="lss-comfort-note">Comfort provisions note (required when spending)</label><input id="lss-comfort-note" data-refill-input="comfortNote" value="${esc(draft.comfortNote)}"><p>Cost only. No additional LSS, days or cargo space.</p></details>
  <div class="lss-total" aria-live="polite"><span>TOTAL refill cost</span><strong>${cost===null?'Unavailable':formatCreditsText(String(A.floor(A.add(cost,'0.5'))))}</strong><small>Updates with normal storage and cargo</small></div>
