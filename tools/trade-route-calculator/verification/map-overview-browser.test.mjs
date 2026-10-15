@@ -175,7 +175,7 @@ try{
     const a=await alignment();await drag();const b=await alignment();
     assert.ok(Math.abs(a.x-b.x)<.01&&Math.abs(a.y-b.y)<.01,'Boundaries and labels retain alignment after pan');
    }
-   await page.locator('.world-map').scrollIntoViewIfNeeded();
+   await page.evaluate(()=>document.querySelector('.world-map').scrollIntoView({behavior:'instant',block:'center'}));
    await page.screenshot({path:artifacts+`/map-boundaries-${width}-${political?'political':'plain'}-${Math.round(target*1000)/10}.png`});
    assert.deepEqual(await read(),before);
   }
