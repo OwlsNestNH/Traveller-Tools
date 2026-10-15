@@ -11,6 +11,7 @@ test('Cargo retains separate lots, descriptions and actual recorded prices indep
  s.lots.push({...structuredClone(a),id:'second-lot',description:'Separate consignment',quantity:'2.25',basis:'5000',audit:{price:{unitPrice:'2000'}}});
  const before=JSON.stringify(s),html=cargoManagementPanel(s,core,{retail:()=>100});
  assert.equal((html.match(/data-management-lot=/g)||[]).length,4);
+ assert.doesNotMatch(html,/\ufffd/,'Lot text renders without replacement glyphs');
  assert.match(html,/Recorded electronics/);assert.match(html,/Separate consignment/);
  assert.match(html,/2.25 t/);assert.match(html,/Cr 100 \/ t/);
  assert.match(html,/Cr 1,234.56789 \/ t/);assert.match(html,/Cr 2,000 \/ t/);

@@ -29,6 +29,8 @@ try{
   assert.match(await page.locator('[data-management-stock="support"]').textContent(),/1.015 t/);
   assert.match(await page.locator('[data-management-stock="luggage"]').textContent(),/0.125 t/);
   assert.equal(await page.locator('.cargo-management').getByText(/overflow/i).count(),0);
+  assert.doesNotMatch(await page.locator('#hold-summary').textContent(),/Life support overflow/);
+  assert.equal(await page.locator('#hold-summary .value').textContent(),'13.39 / 120 t','Header total still includes cargo LSS');
   await unchanged();
   await click('lot-audit','lot-recorded');await page.locator('#modal-cancel').click();await unchanged();
   for(let i=0;i<2;i++){
