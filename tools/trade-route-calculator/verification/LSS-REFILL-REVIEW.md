@@ -12,11 +12,12 @@ All accounting choices are settled; see RULES_REVIEW.md. Total-inventory correct
 
 ## Evidence and remaining release checks
 
-- Baseline:6477 native tests passed. Integrated checkpoint:6515 native tests passed before the final audit-reference additions.
+- Baseline:6477 native tests passed. Integrated final native run:6517 passed; zero failures. Rules227 and shared-tool checks passed.
 - Actual browser: paid and GM flows passed at1440/390/320px; rate-only Settings save preserved exact allocation. All30 desktop/mobile real service-completion cases passed, including delayed/prewrite/uncertain/publication failures, repeated clicks, locking, reload and History Undo.
 - Updated full service-panel browser suite passed, including responsive layout, keyboard labels, price/Low/comfort/fraction cases, receipts, navigation and Undo. Combined-cabins and day-controls browser suites passed with new economics.
-- Independent source review and99 focused tests passed; reported forecast, validity, preview-total and pricing-reference defects were corrected. Final source/pixel and CI review is in progress.
+- Independent source review and99 focused tests passed; reported forecast, validity, preview-total and pricing-reference defects were corrected. Final independent source review found no transaction/save blocker. Top and total screenshots were inspected at desktop and narrow widths; the final review wording correction identifies configurable rates as defaults.
 - Some local Edge broader suites encounter startup or reload editing-lock timeouts; these remain recorded and require exact-head CI assessment. Earlier failed runs are retained outside the repo. No assertions or application ownership guards were weakened to bypass them.
-- Required final native/rules/shared checks and exact-head CI will be recorded before completion. This document does not yet claim final CI success.
+- Homestead completed6 jumps and79 exact accounting checkpoints. Legacy Accounts, Clear Route and Route Save fixture gates passed with original monetary/Undo oracles retained and reviewed compartment-module source pins added.
+- CI initially identified stale controls, ledger schema assumptions and source pins in broader tests; these were updated without weakening economic or save assertions. The new Settings rate unit moved to existing help text to fit compact mobile controls. Exact-head CI status and final run links are tracked on draft PR89; this source record does not claim a pending run passed.
 
 Fixtures and screenshots contain synthetic campaign data only. Approved Library mockup metadata/extracted labels were read; its pixel download was blocked by a Windows extended-attribute helper error. Existing app and synthetic preview screenshots were inspected directly.
