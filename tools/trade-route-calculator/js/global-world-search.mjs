@@ -1,4 +1,4 @@
-import {searchWorlds,loadWorld} from './map.mjs?v=subsector-labels-20261014-89';
+import {searchWorlds,loadWorld} from './map.mjs?v=lss-refill-20261015-90';
 
 export const planetSearchLabel=w=>[w.name,w.subsectorName,w.sector,w.hex].join(' — ');
 

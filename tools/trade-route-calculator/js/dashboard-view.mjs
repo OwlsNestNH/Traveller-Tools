@@ -1,5 +1,5 @@
-import {dashboardData} from './dashboard-data.mjs?v=subsector-labels-20261014-89';
-import {escapeHtml as esc,moneyHtml} from './display.mjs?v=subsector-labels-20261014-89';
+import {dashboardData} from './dashboard-data.mjs?v=lss-refill-20261015-90';
+import {escapeHtml as esc,moneyHtml} from './display.mjs?v=lss-refill-20261015-90';
 
 // Read-only presentation. Exact Credits remain BigInts until bounded ratios are
 // converted to SVG coordinates; display values always use the shared formatter.

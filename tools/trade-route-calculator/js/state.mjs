@@ -1,20 +1,21 @@
-import {createDashboardBaseline,validateDashboardBaseline} from './dashboard-baseline.mjs?v=subsector-labels-20261014-89';
-import {validateWorldChangeHistory,isWorldChangeAudit} from './world-change-history.mjs?v=subsector-labels-20261014-89';
-import {validateContactSearchHistory,commitContactSearch} from './contact-search.mjs?v=subsector-labels-20261014-89';
+import {compartmentRefillQuote,refillPricingAudit} from './lss-refill-transaction.mjs?v=lss-refill-20261015-90';
+import {createDashboardBaseline,validateDashboardBaseline} from './dashboard-baseline.mjs?v=lss-refill-20261015-90';
+import {validateWorldChangeHistory,isWorldChangeAudit} from './world-change-history.mjs?v=lss-refill-20261015-90';
+import {validateContactSearchHistory,commitContactSearch} from './contact-search.mjs?v=lss-refill-20261015-90';
 export {commitContactSearch};
-import {passengerShip,passengerSpace,passengerTotals,passengerCapacity,validatePassengerContract,validatePassengerHistory,latestPassengerSearch,passengerOfferRemaining} from './passengers.mjs?v=subsector-labels-20261014-89';
-import {validateMaintenance,validateMaintenancePaymentRecord} from './maintenance.mjs?v=subsector-labels-20261014-89';
-import {validateMortgage,validateMortgagePaymentRecord} from './mortgage.mjs?v=subsector-labels-20261014-89';
+import {passengerShip,passengerSpace,passengerTotals,passengerCapacity,validatePassengerContract,validatePassengerHistory,latestPassengerSearch,passengerOfferRemaining} from './passengers.mjs?v=lss-refill-20261015-90';
+import {validateMaintenance,validateMaintenancePaymentRecord} from './maintenance.mjs?v=lss-refill-20261015-90';
+import {validateMortgage,validateMortgagePaymentRecord} from './mortgage.mjs?v=lss-refill-20261015-90';
 import {validateJumpAttempts,currentJumpAttempt,lastJump,savedJumpAttempt,departureKey,jumpPreparationBridge} from './jump-attempts.mjs';
-import {distance as jumpDistance} from './map.mjs?v=subsector-labels-20261014-89';
+import {distance as jumpDistance} from './map.mjs?v=lss-refill-20261015-90';
 import {validateMailHistory} from './mail-history.mjs?v=mail-history-1';
-import {bladderSpace,validateFuel,fuelPurchase,consumeJumpFuel} from './fuel.mjs?v=subsector-labels-20261014-89';
-import {validateSupport,refillQuote,consumeSupport,anchorSupport,supportCargo,supportAmount,supportReference,extraSupportReference} from './life-support.mjs?v=subsector-labels-20261014-89';
-import {up,creditStep,roundExisting} from './rounding.mjs?v=subsector-labels-20261014-89';
-import {validateAccommodation,passengerLuggage,roomCounts} from './accommodation.mjs?v=subsector-labels-20261014-89';
+import {bladderSpace,validateFuel,fuelPurchase,consumeJumpFuel} from './fuel.mjs?v=lss-refill-20261015-90';
+import {validateSupport,refillQuote,consumeSupport,anchorSupport,supportCargo,supportAmount,supportDisplay,supportReference,extraSupportReference} from './life-support.mjs?v=lss-refill-20261015-90';
+import {up,creditStep,roundExisting} from './rounding.mjs?v=lss-refill-20261015-90';
+import {validateAccommodation,passengerLuggage,roomCounts} from './accommodation.mjs?v=lss-refill-20261015-90';
 import {add,sub,mul,div,cmp,floor,sum,decimal,credit} from './amounts.mjs';
-import {VERSION,priceLimits,characteristicDMs} from './rules.mjs?v=subsector-labels-20261014-89';
-import {expenseQuote,starport,berthMultipliers,payableExpenses} from './expenses.mjs?v=subsector-labels-20261014-89';
+import {VERSION,priceLimits,characteristicDMs} from './rules.mjs?v=lss-refill-20261015-90';
+import {expenseQuote,starport,berthMultipliers,payableExpenses} from './expenses.mjs?v=lss-refill-20261015-90';
 export const SCHEMA=1;
 export const uid=()=>crypto.randomUUID();
 export function initial(){return {schema:SCHEMA,revision:0,rulesVersion:VERSION,initialized:false,name:'My trading campaign',bank:'0',hours:0,dateLabel:'001-1105',ship:{name:'Independent trader',capacity:'60',staterooms:0,jump:2,scoops:true,armed:false},trader:{broker:0,streetwise:0,admin:0,characteristic:0,rank:0,soc:0},settings:{reducedProfitLimitsEnabled:false,minPurchasePercent:85,maxSalePercent:115,profit:100,tax:false,insurance:false,creditStep:1,maxBaseRetailEnabled:false,maxBaseRetail:'100000',useRawIllegalPrices:false},worlds:{},actual:null,route:[],routeIndex:0,snapshots:[],lots:[],contracts:[],policies:[],ledger:[],cooldowns:{},undo:[],events:[],jumpAttempts:[],latestMailCheckId:null};}
@@ -395,6 +396,14 @@ export function applyRounding(s){
  validate(s);return changes;
 }
 
+export function refillCompartments(s,draft,{gm=false}={}){
+ const q=compartmentRefillQuote(s,draft,{gm});if(!q.changed)throw Error('No supply adjustment or purchase selected.');
+ s.ship.lifeSupport={capacityHours:q.capacityHours,stockUnits:q.afterStockUnits,cargoUnits:q.afterCargoUnits};
+ const details=[['Internal before',supportDisplay(q.compartments.internal.before)],['Internal after',supportDisplay(q.compartments.internal.after)],['Cargo before',supportDisplay(q.compartments.cargo.before)],['Cargo after',supportDisplay(q.compartments.cargo.after)],['Purchased LSS',supportDisplay(q.purchasedUnits)],['Discarded fraction LSS',supportDisplay(q.discardedUnits)],['Reason',q.reason],['Comfort provisions Cr',q.comfortAmount],['Comfort note',q.comfortNote??''],['Cabin upkeep','Separate operating expense; not charged here'],...refillPricingAudit(q)];
+ if(gm)s.events.push({id:uid(),label:'Life support GM adjustment audit',hours:s.hours,world:s.actual,lifeSupportAdjustment:{...q,details,bankChange:'0'}});
+ else note(s,'Ship expense - Life support refill',-credit(q.amount),{expense:{kind:'lifeSupportRefill',label:'Life support refill',worldId:s.actual,worldName:s.worlds[s.actual]?.name||s.actual,...q,details}});
+ return q;
+}
 export function refillLifeSupport(s,options={}){
  const q=refillQuote(s,options);
  if(cmp(supportAmount(q.purchasedStockUnits),0)===0&&credit(q.comfortAmount)===0n)throw Error('Life support is already full for the requested target.');

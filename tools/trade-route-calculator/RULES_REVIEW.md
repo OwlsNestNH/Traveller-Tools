@@ -89,3 +89,13 @@ Initial data and reproducible checks are now checked in; see [rules review evide
 ## Completed version 0.1.0 source/data review
 
 The initial pending statuses above describe the historical review phase. Version 0.1.0 has now completed the source/data gate, with 198 passing data and independent expected-result assertions. See [current verification record](RULES_VERIFICATION.md). INT-022 fixes the exact owner-supplied Merchant Prince tables as the adaptation baseline; this does not claim that unknown printing/errata changes were checked. Application verification remains separate.
+
+## Independent LSS refill decision - approved 2026-10-15
+
+This decision supersedes the earlier combined cabin/person top-up and extra-reserve tariff for new independent refills. Historical ledger entries retain their recorded calculation and reference.
+
+- Internal and cargo LSS use one consumable tariff: Middle Cr1,000 and High Cr3,000 per person per 28 days by default, both editable in the existing Settings layout. Middle and High consume 1 LSS/person/day. Every occupied frozen Low berth, manual or booked, costs Cr100/person/28 days and consumes 0.1 LSS/person/day. Prorate cost by supported duration; do not apply the 0.1 factor to price again.
+- Installed-cabin upkeep is a separate operating expense at existing cabin rates. New refill purchases charge no cabin surcharge and no separate reserve tariff. Legacy Accounts payments remain payments only; do not record the same expense twice.
+- Whole LSS targets control internal and cargo independently. Only a compartment receiving purchased supplies discards its existing fractional remainder at successful confirmation, then loads whole LSS. Example: internal12.8/cargo3.4, cargo target100 leaves internal12.8, discards cargo0.4 and buys97. A target equal to current displayed whole stock does not constitute a refill. Reductions use explicit GM Adjustment.
+- Travel retains exact rational stock and consumes cargo supplies first. Cancel, viewing, previews and failed saves never discard stock. GM Adjustment changes quantities without payment and records an audit. Undo restores exact prior allocations.
+- Comfort spending remains optional and collapsible; a positive amount requires a note, adds once to total, and adds no supplies, days or cargo. Existing configured Credit rounding applies to supply and comfort charges individually. Visible LSS/days truncate; Credit/ton display rounding never changes stored precision.

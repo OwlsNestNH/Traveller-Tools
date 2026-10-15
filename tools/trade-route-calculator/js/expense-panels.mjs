@@ -1,26 +1,28 @@
-import {ruleInfo} from './rule-references.mjs?v=subsector-labels-20261014-89';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=subsector-labels-20261014-89';
-import {passengerShip} from './passengers.mjs?v=subsector-labels-20261014-89';
+import {ruleInfo} from './rule-references.mjs?v=lss-refill-20261015-90';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=lss-refill-20261015-90';
+import {passengerShip} from './passengers.mjs?v=lss-refill-20261015-90';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=subsector-labels-20261014-89';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=subsector-labels-20261014-89';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=subsector-labels-20261014-89';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=subsector-labels-20261014-89';
-import {creditStep} from './rounding.mjs?v=subsector-labels-20261014-89';
-import {roll} from './rules.mjs?v=subsector-labels-20261014-89';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=subsector-labels-20261014-89';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=lss-refill-20261015-90';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=lss-refill-20261015-90';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=lss-refill-20261015-90';
+import {roomCounts} from './accommodation.mjs?v=lss-refill-20261015-90';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=lss-refill-20261015-90';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=lss-refill-20261015-90';
+import {creditStep} from './rounding.mjs?v=lss-refill-20261015-90';
+import {roll} from './rules.mjs?v=lss-refill-20261015-90';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=lss-refill-20261015-90';
 
 const esc=escapeHtml;
 const money=formatCreditsText;
-const labels={mortgage:'Mortgage',maintenance:'Monthly maintenance',salary:'Crew salaries',support:'Life support',fuel:'Fuel',berthing:'Port costs'};
-const payableKinds=['mortgage','maintenance','salary','berthing'];
+const labels={mortgage:'Mortgage',maintenance:'Monthly maintenance',salary:'Crew salaries',staterooms:'Cabin upkeep',support:'Life support',fuel:'Fuel',berthing:'Port costs'};
+const payableKinds=['mortgage','maintenance','salary','staterooms','berthing'];
 const fixed=kind=>kind==='mortgage'||kind==='maintenance';
 const facts=rows=>'<dl class="expense-facts service-facts">'+rows.map(([name,value])=>'<dt>'+esc(name)+'</dt><dd>'+esc(value)+'</dd>').join('')+'</dl>';
 const field=(name,label,value,extra='')=>`<label class="field">${esc(label)}<input name="${esc(name)}" type="number" value="${esc(value)}" ${extra}></label>`;
 
 // MonthlySupport is the existing cabin/person billing calculator. A missing
 // complement is unknown, even if the legacy billing helper could return zero.
-export function expenseOverview(state){
+export function expenseOverview(state,{separateCabinUpkeep=false}={}){
  const ship=passengerShip(state),rows=[];
  for(const kind of ['mortgage','maintenance']){
   const value=ship[kind],complete=kind==='mortgage'&&value?.remainingPayments===0;
@@ -29,7 +31,11 @@ export function expenseOverview(state){
  const salary=ship.expenses?.salary;
  rows.push({kind:'salary',label:labels.salary,amount:salary===undefined?null:String(salary),due:'Manually selected'});
  const supportKnown=!!ship.accommodation&&supportComplement(ship).known;
- rows.push({kind:'support',label:labels.support,amount:supportKnown?String(monthlySupport(ship)):null,due:'As used'});
+ if(separateCabinUpkeep){
+ rows.push({kind:'staterooms',label:labels.staterooms,amount:ship.accommodation?String(monthlyCabinUpkeep(ship)):null,due:'Manually selected'});
+ let consumables=null;try{if(supportKnown)consumables=consumableRefillBasis(state).monthly;}catch{/* Invalid or unknown complement stays unknown. */}
+ rows.push({kind:'support',label:labels.support,amount:consumables,due:'As used'});
+ }else rows.push({kind:'support',label:labels.support,amount:supportKnown?String(monthlySupport(ship)):null,due:'As used'});
  rows.push({kind:'fuel',label:labels.fuel,amount:null,variable:true,due:'As needed'},{kind:'berthing',label:labels.berthing,amount:null,variable:true,due:'Weekly'});
  const recurring=rows.filter(row=>!row.variable),missing=recurring.filter(row=>row.amount===null).map(row=>row.label);
  return {rows,total:String(recurring.reduce((sum,row)=>sum+(row.amount===null?0n:credit(row.amount)),0n)),missing};
@@ -55,7 +61,7 @@ export function latestExpenseReceipt(state,kind,receiptId){
  * fresh draft. Persist route() / onNavigate to recover a particular receipt.
  * The host must forward each rendered data-arg unchanged to action().
  */
-export function createExpensePanels({document,getState,isEditable,commit,render,showOverview,message=()=>{},openService,showSettings,onNavigate=()=>{},rollDie=()=>roll(1).total,onTerminalFailure=()=>{},onDiagnostic=()=>{},onComplete=()=>{},canRetry=()=>true,captureContext=()=>()=>true}){
+export function createExpensePanels({document,separateCabinUpkeep=false,getState,isEditable,commit,render,showOverview,message=()=>{},openService,showSettings,onNavigate=()=>{},rollDie=()=>roll(1).total,onTerminalFailure=()=>{},onDiagnostic=()=>{},onComplete=()=>{},canRetry=()=>true,captureContext=()=>()=>true}){
  let session=null,operation=null,generation=0,reloadMessage='';
  const active=()=>!!session;
  const route=()=>session?{kind:session.kind,...(session.mode==='receipt'?{receiptId:session.receiptId}:{})}:null;
@@ -64,6 +70,7 @@ export function createExpensePanels({document,getState,isEditable,commit,render,
  function open(kind='expenses',{fresh=false,receiptId}={}){
   if(session?.busy){message('Wait for the current expense to finish saving.');return false;}
   if(reloadMessage)throw Error(reloadMessage);
+  if(kind==='staterooms'&&!separateCabinUpkeep)throw Error('Separate cabin upkeep is not enabled.');
   if(!['expenses',...payableKinds,'fuel','support'].includes(kind))throw Error('Choose a ship expense.');
   if(kind==='fuel'||kind==='support'){
    if(typeof openService!=='function')throw Error('Ship service navigation is unavailable.');
@@ -112,7 +119,7 @@ export function createExpensePanels({document,getState,isEditable,commit,render,
  }
  function inputFor(current,state=current.base){
   const {kind,draft}=current;
-  return {kind,creditStep:creditStep(state),recurringShip:state.ship,...(fixed(kind)?{[kind+'Payments']:draft.payments}:kind==='salary'?{monthly:draft.monthly,months:draft.payments}:{weeks:draft.weeks})};
+  return {kind,creditStep:creditStep(state),recurringShip:state.ship,...(fixed(kind)?{[kind+'Payments']:draft.payments}:kind==='salary'?{monthly:draft.monthly,months:draft.payments}:kind==='staterooms'?{period:'month',units:draft.payments,rooms:roomCounts(state.ship),roomService:state.ship.accommodation?.roomService}:{weeks:draft.weeks})};
  }
  function quote(current=session,state=current.base){
   const input=inputFor(current,state),q=expenseQuote(state.worlds[state.actual],input);
@@ -123,16 +130,16 @@ export function createExpensePanels({document,getState,isEditable,commit,render,
   try{return {...quote(),valid:true};}catch(error){return {valid:false,error:error.message};}
  }
  function details(expense){
-  return `<details class="expense-audit service-audit"><summary>${expense.kind==='mortgage'?'Mortgage details / audit':expense.kind==='maintenance'?'Maintenance details / audit':'Calculation / audit'} ${ruleInfo(expense.kind)}</summary>${facts(recurringExpenseDetails(expense))}<p class="help rule-footnote">${esc(expense.reference)}</p></details>`;
+  return `<details class="expense-audit service-audit"><summary>${expense.kind==='mortgage'?'Mortgage details / audit':expense.kind==='maintenance'?'Maintenance details / audit':'Calculation / audit'} ${ruleInfo(expense.kind==='staterooms'?'support-cost':expense.kind)}</summary>${facts(recurringExpenseDetails(expense))}<p class="help rule-footnote">${esc(expense.reference)}</p></details>`;
  }
  function overview(){
-  const s=getState(),q=expenseOverview(s);
+  const s=getState(),q=expenseOverview(s,{separateCabinUpkeep});
   return `<h2>Expenses</h2><h3>${esc(s.ship.name)}</h3><p class="help">Recurring costs use a 4-week (28-day) month. Select an expense name to open its controls.</p><table class="expense-table"><thead><tr><th scope="col">Expense</th><th scope="col" class="number">4-week cost</th><th scope="col">Next due</th></tr></thead><tbody>${q.rows.map(row=>'<tr><th scope="row">'+button(row.label+' ›','expense-open',row.kind).replace('class=""','class="expense-name"')+'</th><td class="number">'+esc(row.variable?'Variable':row.amount===null?'Not configured':money(row.amount))+'</td><td>'+esc(row.due)+'</td></tr>').join('')}</tbody><tfoot><tr><th scope="row">Regular 4-week total</th><td class="number">${money(q.total)}</td><td>${q.missing.length?'Partial total':''}</td></tr></tfoot></table><p class="help">Variable costs are excluded.${q.missing.length?' Not configured and excluded: '+esc(q.missing.join(', '))+'.':''}</p><p class="help">Payments are recorded only when you select Pay. Opening an expense changes only this view.</p>`;
  }
  function previewMarkup(f){
   if(!f.valid)return '<p class="notice" role="alert">'+esc(f.error)+'</p>';
   const q=f.expense,schedule=q.mortgage||q.maintenance;
-  const rows=schedule?[['Next unpaid due',q.kind==='mortgage'&&!schedule.after.remainingPayments?'None · all scheduled payments paid':schedule.after.nextDueDate]]:q.kind==='salary'?[['Payments selected',session.draft.payments+' × 4 weeks']]:[['Weeks selected',session.draft.weeks]];
+  const rows=schedule?[['Next unpaid due',q.kind==='mortgage'&&!schedule.after.remainingPayments?'None · all scheduled payments paid':schedule.after.nextDueDate]]:['salary','staterooms'].includes(q.kind)?[['Payments selected',session.draft.payments+' × 4 weeks']]:[['Weeks selected',session.draft.weeks]];
   return coveredExpensePayments(q)+facts([...rows,['Cash remaining after payment',money(String(credit(session.base.bank)-credit(q.amount)))]])+`<div class="expense-total service-total"><span>Total to pay</span><strong>${money(q.amount)}</strong></div>`+details(q);
  }
  function form(){
@@ -145,6 +152,7 @@ export function createExpensePanels({document,getState,isEditable,commit,render,
   let fields;
   if(fixed(kind))fields=facts([['Fixed cost / 4 weeks',money(m.payment)],['First unpaid due',m.nextDueDate]])+field('payments','Number of payments',draft.payments,`min="1" step="1" required${kind==='mortgage'?' max="'+m.remainingPayments+'"':''}${extra}`);
   else if(kind==='salary')fields=field('monthly','Crew salaries · Cr / 4 weeks',draft.monthly,'min="1" step="1" required'+extra)+field('payments','Number of payments',draft.payments,'min="1" step="1" required'+extra)+'<p class="help">The entered monthly salary is saved only when this payment is recorded.</p>';
+  else if(kind==='staterooms')fields=facts([['Cabin upkeep / 4 weeks',money(String(monthlyCabinUpkeep(base.ship)))]])+field('payments','Number of 4-week periods',draft.payments,'min="1" step="1" required'+extra)+'<p class="help">Uses existing cabin counts and custom cabin rates in Settings. This payment covers cabin upkeep only; it adds no consumable LSS. Do not pay the same period again through Accounts.</p>';
   else{
    let rate;
    try{rate=berthRate(session.world);}catch(error){

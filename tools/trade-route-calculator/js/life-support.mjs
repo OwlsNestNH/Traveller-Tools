@@ -1,7 +1,7 @@
-import {passengerShip} from './passengers.mjs?v=subsector-labels-20261014-89';
-import {tiers,roomCounts,serviceRate,occupants,personRate} from './accommodation.mjs?v=subsector-labels-20261014-89';
+import {passengerShip} from './passengers.mjs?v=lss-refill-20261015-90';
+import {tiers,roomCounts,serviceRate,occupants,personRate} from './accommodation.mjs?v=lss-refill-20261015-90';
 import {add,sub,mul,div,cmp,dec,rat,decimal,auditNumber,credit,floor} from './amounts.mjs';
-import {up,creditStep} from './rounding.mjs?v=subsector-labels-20261014-89';
+import {up,creditStep} from './rounding.mjs?v=lss-refill-20261015-90';
 
 export const supportReference='Cluster Truck, p. 14: awake occupants consume 1 LSS per day; occupied low berths consume 0.1. Internal storage holds 4 LSS per displacement ton; overflow uses 0.01 cargo tons per LSS.';
 export const extraSupportReference='Home rule: extra supplies cost Cr1,000 per person-equivalent per 28 days. An occupied low berth counts as 0.1 person-equivalent. Round the combined extra charge up once to Cr100.';
@@ -39,7 +39,9 @@ export function validateSupport(ship){
  supportComplement(ship);
  const x=ship.lifeSupport;if(x===undefined)return;
  if(!x||!Number.isSafeInteger(x.capacityHours)||x.capacityHours<1)throw Error('Life support refill target must be positive, in whole hours.');
+ if(x.cargoUnits!==undefined&&x.stockUnits===undefined)throw Error('Compartment allocation requires physical LSS.');
  if(x.stockUnits!==undefined){
+  if(x.cargoUnits!==undefined){const cargo=supportAmount(x.cargoUnits),internal=sub(supportAmount(x.stockUnits),cargo),capacity=supportInternalCapacity(ship);if(capacity===null||cmp(cargo,0)<0||cmp(internal,0)<0||cmp(internal,capacity)>0)throw Error('Invalid life support compartment allocation.');}
   if(cmp(supportAmount(x.stockUnits),0)<0)throw Error('Life support stock cannot be negative.');
   if(x.remainingHours!==undefined||x.elapsedHours!==undefined||x.migrationRequired!==undefined)throw Error('Physical life support must have one stock balance.');
   return;
@@ -70,6 +72,7 @@ export function supportCargo(ship){
  // Unconverted legacy records retain their old capacity contract until a
  // reversible transition adopts the physical model; validation never migrates.
  if(ship.lifeSupport?.stockUnits===undefined)return rat(0);
+ if(ship.lifeSupport.cargoUnits!==undefined)return mul(supportAmount(ship.lifeSupport.cargoUnits),'0.01');
  const capacity=supportInternalCapacity(ship);if(capacity===null)return rat(0);
  return mul(maxZero(sub(unitsOf(ship),capacity)),'0.01');
 }
@@ -78,8 +81,8 @@ export function supportStock(ship){
  const x=ship.lifeSupport,c=supportComplement(ship),units=unitsOf(ship),capacity=supportInternalCapacity(ship);
  const targetDays=x?supportDisplay(div(x.capacityHours,24)):'28';
  const days=units!==null&&c.known&&cmp(c.dailyUnits,0)>0?div(units,c.dailyUnits):null;
- const internal=units!==null&&capacity!==null?minimum(units,capacity):null;
- const cargo=units!==null&&capacity!==null?mul(maxZero(sub(units,capacity)),'0.01'):null;
+ const cargo=units!==null&&capacity!==null?(x?.cargoUnits!==undefined?mul(supportAmount(x.cargoUnits),'0.01'):mul(maxZero(sub(units,capacity)),'0.01')):null;
+ const internal=cargo===null?null:sub(units,mul(cargo,100));
  return {tracked:!!x,legacy:!!x&&x.stockUnits===undefined,complementKnown:c.known,awakePeople:c.awakePeople,occupiedLowBerths:c.occupiedLowBerths,dailyUnits:supportDisplay(c.dailyUnits),
   remainingUnits:units===null?null:supportDisplay(units),remainingDays:days===null?null:supportDisplay(days),targetDays,capacityDays:targetDays,
   legacyDays:x&&x.stockUnits===undefined?supportDisplay(div(legacyHours(x),24)):null,
@@ -116,7 +119,9 @@ export function consumeSupport(ship,hours,{complementShip=ship}={}){
  anchorSupport(ship,{complementShip});
  if(ship.lifeSupport.stockUnits===undefined)return; // Unknown legacy quantity is preserved, never invented.
  const c=supportComplement(complementShip);if(!c.known)return;
- ship.lifeSupport.stockUnits=auditNumber(maxZero(sub(supportAmount(ship.lifeSupport.stockUnits),mul(c.dailyUnits,div(hours,24)))));
+ const consumed=mul(c.dailyUnits,div(hours,24));
+ if(ship.lifeSupport.cargoUnits!==undefined)ship.lifeSupport.cargoUnits=auditNumber(maxZero(sub(supportAmount(ship.lifeSupport.cargoUnits),consumed)));
+ ship.lifeSupport.stockUnits=auditNumber(maxZero(sub(supportAmount(ship.lifeSupport.stockUnits),consumed)));
 }
 export function refillQuote(s,{extraDays='0',addDays=null,topOffDays=null,comfortCost='0',comfortNote=''}={}){
  s={...s,ship:passengerShip(s)};

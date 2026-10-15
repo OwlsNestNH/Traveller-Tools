@@ -175,28 +175,28 @@ try{
 
  for(const width of report.widths)for(const kind of ['extra reserve','comfort only'])await run('full LSS '+kind,{width,fullSupport:true,frozen:2},async h=>{
   const {page,click,field,fill,action,unchanged,read,raw,screenshot,undo}=h;
-  await click('refill-support');await page.locator('#service-form').waitFor();assert.equal(await field('extraDays').inputValue(),'0');assert.equal(await action('service-review').isDisabled(),true);assert.equal(await action('service-confirm').isDisabled(),true);
-  assert.match(await page.locator('#service-quote').textContent(),/Standard top-up/);assert.equal((await page.locator('#service-quote .service-total strong').textContent()).trim(),'Cr 0');await unchanged('Full LSS opens controls with zero baseline');
+  await click('refill-support');await page.locator('#service-form').waitFor();assert.equal(await field('cargo').inputValue(),'0');assert.equal(await action('service-review').count(),0);assert.equal(await action('service-confirm').isDisabled(),true);
+  assert.equal((await page.locator('.lss-total strong').textContent()).trim(),'Cr 0');await unchanged('Full LSS opens controls with zero baseline');
   if(kind==='extra reserve'){
-   await fill('extraDays','14');assert.match(await page.locator('#service-quote').textContent(),/Cr 2,100/);assert.match(await page.locator('#service-quote').textContent(),/177 LSS aboard/);
+   await fill('cargo','59');assert.match(await page.locator('.lss-total').textContent(),/Cr 2,108/);assert.equal(await page.locator('.lss-aboard strong').textContent(),'176');
   }else{
-   await page.locator('.service-comfort > summary').click();await fill('comfortCredits','2000');assert.equal(await action('service-review').isDisabled(),true);await fill('comfortNote','Better meals only');assert.match(await page.locator('#service-quote').textContent(),/Cr 2,000/);assert.match(await page.locator('#service-quote').textContent(),/117\.6 LSS aboard/);
+   await page.locator('.lss-comfort > summary').click();await fill('comfortCredits','2000');assert.equal(await action('service-confirm').isDisabled(),true);await fill('comfortNote','Better meals only');assert.match(await page.locator('.lss-total').textContent(),/Cr 2,000/);assert.equal(await page.locator('.lss-aboard strong').textContent(),'117');
   }
-  await checkControls(page);await screenshot('full-lss-'+kind.replace(/ /g,'-'));await unchanged('Full LSS extra draft');await click('service-review');await unchanged('Full LSS review');await click('service-confirm');await page.locator('#service-panel.service-saved').waitFor();
-  const paid=await read(),paidBytes=await raw(),stock=paid.ship.lifeSupport.stockUnits;assert.equal(Number(stock.numerator)/Number(stock.denominator),kind==='extra reserve'?177:117.6);assert.equal(paid.bank,kind==='extra reserve'?'97900':'98000');assert.equal(paid.ledger.length,1);assert.equal(paid.undo.length,1);assert.equal(paid.hours,h.f.state.hours);
-  await click('service-new');await page.locator('#service-form').waitFor();assert.equal(await action('service-review').isDisabled(),true,'Reopening full baseline cannot double-charge');await click('service-cancel');await unchanged('Cancel after paid LSS',paidBytes);await undo();for(const key of ['bank','ship','ledger'])assert.deepEqual((await read())[key],h.f.state[key]);
+  await checkControls(page);await screenshot('full-lss-'+kind.replace(/ /g,'-'));await unchanged('Full LSS extra draft');await click('service-confirm');await page.locator('#service-panel.service-saved').waitFor();
+  const paid=await read(),paidBytes=await raw(),stock=paid.ship.lifeSupport.stockUnits;assert.equal(Number(stock.numerator)/Number(stock.denominator),kind==='extra reserve'?176.6:117.6);assert.equal(paid.bank,kind==='extra reserve'?'97892':'98000');assert.equal(paid.ledger.length,1);assert.equal(paid.undo.length,1);assert.equal(paid.hours,h.f.state.hours);
+  await click('service-new');await page.locator('#service-form').waitFor();assert.equal(await action('service-confirm').isDisabled(),true,'Reopening full baseline cannot double-charge');await click('service-cancel');await unchanged('Cancel after paid LSS',paidBytes);await undo();for(const key of ['bank','ship','ledger'])assert.deepEqual((await read())[key],h.f.state[key]);
  });
- for(const width of report.widths)await run('six compact expense buttons',{width,fixedExpenses:true},async h=>{
+ for(const width of report.widths)await run('seven compact expense buttons',{width,fixedExpenses:true},async h=>{
   const {page,click,unchanged,screenshot}=h;await click('ship-expenses');await page.locator('.expense-table').waitFor();
-  const buttons=page.locator('.expense-table [data-action="expense-open"]');assert.equal(await buttons.count(),6);
-  const labels=await buttons.allTextContents();assert.deepEqual(labels,['Mortgage ›','Monthly maintenance ›','Crew salaries ›','Life support ›','Fuel ›','Port costs ›']);
+  const buttons=page.locator('.expense-table [data-action="expense-open"]');assert.equal(await buttons.count(),7);
+  const labels=await buttons.allTextContents();assert.deepEqual(labels,['Mortgage ›','Monthly maintenance ›','Crew salaries ›','Cabin upkeep ›','Life support ›','Fuel ›','Port costs ›']);
   const appearance=await buttons.evaluateAll(els=>els.map(el=>{const style=getComputedStyle(el),r=el.getBoundingClientRect(),rgb=style.backgroundColor.match(/[\d.]+/g).map(Number);return {name:el.textContent,tag:el.tagName,background:style.backgroundColor,border:style.borderStyle,rgb,height:r.height,width:r.width,left:r.left,right:r.right,viewport:innerWidth};}));
   // Allow one tenth of a pixel for Chromium's fractional line-box rounding.
   for(const item of appearance){assert.equal(item.tag,'BUTTON');assert.ok(item.rgb.length===3||item.rgb[3]>0,'Visible button fill: '+JSON.stringify(item));assert.ok(item.rgb[2]>item.rgb[0]&&item.rgb[2]>=item.rgb[1]&&item.rgb[2]>=160,'Light-blue fill: '+JSON.stringify(item));assert.notEqual(item.border,'none');assert.ok(item.height>=24&&item.height<=56.1&&item.left>=-1&&item.right<=item.viewport+1,'Compact in-viewport button: '+JSON.stringify(item));}
   await overviewGeometry(page);await screenshot('expense-buttons');await unchanged('Expense buttons overview');
-  for(const [label,fieldName]of [['Mortgage','payments'],['Monthly maintenance','payments'],['Crew salaries','payments'],['Life support',null],['Fuel','fuelTons'],['Port costs','weeks']]){
+  for(const [label,fieldName]of [['Mortgage','payments'],['Monthly maintenance','payments'],['Crew salaries','payments'],['Life support',null],['Cabin upkeep','payments'],['Fuel','fuelTons'],['Port costs','weeks']]){
    await page.getByRole('button',{name:label+' ›',exact:true}).click();
-   if(label==='Life support'){await page.locator('#service-panel').waitFor();await click('service-adjust');assert.equal(await page.locator('#service-form [name="extraDays"]').isEditable(),true);}
+   if(label==='Life support'){await page.locator('#service-panel').waitFor();assert.equal(await page.locator('#service-form [name="cargo"]').isEditable(),true);}
    else assert.equal(await page.locator((label==='Fuel'?'#service-form':'#expense-form')+' [name="'+fieldName+'"]').isEditable(),true,label+' opens working controls');
    assert.equal(await page.locator('#modal').isVisible(),false);await unchanged('Expense destination '+label);if(await page.locator('#expense-panel').count())await click('expense-back');else await click('ship-expenses');
   }

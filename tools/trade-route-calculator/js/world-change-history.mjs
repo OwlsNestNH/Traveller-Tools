@@ -1,4 +1,4 @@
-import {parseUWP} from './rules.mjs?v=subsector-labels-20261014-89';
+import {parseUWP} from './rules.mjs?v=lss-refill-20261015-90';
 
 // Audit only the editable world fields. A selective correction must never
 // replay an old world object, campaign inverse, price quote or transaction.

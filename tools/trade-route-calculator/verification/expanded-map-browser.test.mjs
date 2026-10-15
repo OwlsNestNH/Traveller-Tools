@@ -145,9 +145,9 @@ async function openDraft(page,name){
   await page.getByRole('button',{name:'Mortgage ›',exact:true}).click();await field(page,'payments').fill('3');
   await page.locator('.covered-payments > summary').click();await page.locator('.covered-payments tbody tr').nth(2).waitFor();
  }else if(stock){
-  await click(page,'service-adjust');await field(page,'extraDays').fill('14');
-  await page.locator('.service-comfort > summary').click();await field(page,'comfortCredits').fill('1000');await field(page,'comfortNote').fill('Keep this unsaved reserve');
-  if(name==='support-review')await click(page,'service-review');
+  await field(page,'cargo').fill('100');
+  await page.locator('.lss-comfort > summary').click();await field(page,'comfortCredits').fill('1000');await field(page,'comfortNote').fill('Keep this unsaved reserve');
+  if(name==='support-review')await click(page,'service-audit');
  }else{
   await field(page,'fuelTons').fill('7.25');await field(page,'fuelType').selectOption('custom');
   await field(page,'customFuelRate').fill('101.25');await field(page,'expenseNotes').fill('Keep this unsaved fuel draft');
@@ -156,7 +156,7 @@ async function openDraft(page,name){
 async function defaultDraft(page,name){
  await header(page,name.startsWith('support')?'refill-support':name==='mortgage'?'ship-expenses':'refuel').click();
  if(name==='mortgage'){await page.getByRole('button',{name:'Mortgage ›',exact:true}).click();assert.equal(await field(page,'payments').inputValue(),'1');}
- else if(name.startsWith('support')){await click(page,'service-adjust');assert.equal(await field(page,'extraDays').inputValue(),'0');assert.equal(await field(page,'comfortCredits').inputValue(),'0');assert.equal(await field(page,'comfortNote').inputValue(),'');}
+ else if(name.startsWith('support')){assert.equal(await field(page,'cargo').inputValue(),'0');assert.equal(await field(page,'comfortCredits').inputValue(),'0');assert.equal(await field(page,'comfortNote').inputValue(),'');}
  else{assert.equal(await field(page,'fuelTons').inputValue(),'23');assert.equal(await field(page,'fuelType').inputValue(),'refined');assert.equal(await field(page,'expenseNotes').inputValue(),'');}
 }
 async function routeSnapshot(page){

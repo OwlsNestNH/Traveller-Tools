@@ -20,12 +20,12 @@ const fieldNames=[
  'name','ship','capacity','jump','broker','streetwise','admin','characteristic','rank','soc','intDM','eduDM','tradeSocDM','mode','custom',
  'fuelAvailabilityAlert','shipTons','fuelCapacity','bladderTons','fuelAboard',
  'rooms-low','roomService-low','roomCustom-low','rooms-middle','roomService-middle','roomCustom-middle','rooms-high','roomService-high','roomCustom-high',
- 'people-middle','people-high','occupiedLowBerths','luggageOverride','luggageTons','supportCapacity','supportRemaining','supportUnits',
+ 'people-middle','people-high','occupiedLowBerths','luggageOverride','luggageTons','supportCapacity','supportRemaining','supportUnits','refillRate-middle','refillRate-high',
  'creditStep','scoops','armed','reducedProfitLimitsEnabled','minPurchasePercent','maxSalePercent',
  'maxBaseRetailEnabled','maxBaseRetail','useRawIllegalPrices','tax','insurance','mortgageOriginal','mortgagePayment','mortgageRemaining','mortgagePaid','mortgageDueDate','maintenancePayment','maintenanceDueDate'
 ];
-assert.equal(fieldNames.length,55);
-assert.equal(new Set(fieldNames).size,55);
+assert.equal(fieldNames.length,57);
+assert.equal(new Set(fieldNames).size,57);
 const draft={
  mortgageOriginal:'24000000',mortgagePayment:'100001',mortgageRemaining:'360',mortgagePaid:'12000000',mortgageDueDate:'029-1105',maintenancePayment:'2001',maintenanceDueDate:'015-1105',
  name:'Compact Settings verification',ship:'Synthetic Settings Trader',capacity:'160',jump:'3',
@@ -35,7 +35,7 @@ const draft={
  'rooms-middle':'5','roomService-middle':'custom','roomCustom-middle':'1300',
  'rooms-high':'2','roomService-high':'custom','roomCustom-high':'1700',
  'people-middle':'6','people-high':'3',occupiedLowBerths:'2',luggageOverride:true,luggageTons:'7',supportCapacity:'35',supportRemaining:'13.75',supportUnits:'',
- creditStep:'100',scoops:false,armed:true,reducedProfitLimitsEnabled:true,minPurchasePercent:'90',maxSalePercent:'110',
+ 'refillRate-middle':'1000','refillRate-high':'3000',creditStep:'100',scoops:false,armed:true,reducedProfitLimitsEnabled:true,minPurchasePercent:'90',maxSalePercent:'110',
  maxBaseRetailEnabled:true,maxBaseRetail:'50000',useRawIllegalPrices:true,tax:true,insurance:true,fuelAvailabilityAlert:true
 };
 assert.deepEqual(Object.keys(draft).sort(),[...fieldNames].sort(),'Every preserved setting has an explicit edited value');
@@ -139,7 +139,7 @@ function savedValues(state,before){
  assert.deepEqual(state.ship.fuel,configureFuel(300,60,65,90,3));
  assert.equal(state.ship.staterooms,8);
  assert.deepEqual(state.ship.accommodation,{
-  passengers:{low:0,middle:6,high:3},crew:{low:0,middle:0,high:0},combinedPeople:true,
+  passengers:{low:0,middle:6,high:3},crew:{low:0,middle:0,high:0},combinedPeople:true,refillRates:{middle:'1000',high:'3000'},
   rooms:{low:1,middle:5,high:2},roomService:{low:{level:'custom',monthly:'200'},middle:{level:'custom',monthly:'1300'},high:{level:'custom',monthly:'1700'}},
   luggageMode:'manual',luggageTons:'7',occupiedLowBerths:2
  });

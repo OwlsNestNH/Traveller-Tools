@@ -5,10 +5,10 @@ import vm from 'node:vm';
 import {SaveNotCommittedError} from '../js/persistence.mjs';
 import {settingsGroups,mountSettingsLayout,stepSetting,syncSettingsControls} from '../js/settings-layout.mjs';
 
-const names=['name','ship','capacity','jump','broker','streetwise','admin','characteristic','rank','soc','intDM','eduDM','tradeSocDM','mode','custom','shipTons','fuelCapacity','bladderTons','fuelAboard','rooms-low','roomService-low','roomCustom-low','rooms-middle','roomService-middle','roomCustom-middle','rooms-high','roomService-high','roomCustom-high','people-middle','people-high','occupiedLowBerths','luggageOverride','luggageTons','supportCapacity','supportRemaining','supportUnits','creditStep','scoops','armed','reducedProfitLimitsEnabled','minPurchasePercent','maxSalePercent','maxBaseRetailEnabled','maxBaseRetail','useRawIllegalPrices','tax','insurance','mortgageOriginal','mortgagePayment','mortgageRemaining','mortgagePaid','mortgageDueDate','maintenancePayment','maintenanceDueDate','fuelAvailabilityAlert'];
-test('compact Settings groups retain all 55 controls once, with collapsed disclosure defaults',()=>{
+const names=['name','ship','capacity','jump','broker','streetwise','admin','characteristic','rank','soc','intDM','eduDM','tradeSocDM','mode','custom','shipTons','fuelCapacity','bladderTons','fuelAboard','rooms-low','roomService-low','roomCustom-low','rooms-middle','roomService-middle','roomCustom-middle','rooms-high','roomService-high','roomCustom-high','people-middle','people-high','occupiedLowBerths','luggageOverride','luggageTons','supportCapacity','supportRemaining','supportUnits','refillRate-middle','refillRate-high','creditStep','scoops','armed','reducedProfitLimitsEnabled','minPurchasePercent','maxSalePercent','maxBaseRetailEnabled','maxBaseRetail','useRawIllegalPrices','tax','insurance','mortgageOriginal','mortgagePayment','mortgageRemaining','mortgagePaid','mortgageDueDate','maintenancePayment','maintenanceDueDate','fuelAvailabilityAlert'];
+test('compact Settings groups retain all 57 controls once, with collapsed disclosure defaults',()=>{
  const grouped=settingsGroups.flatMap(group=>group.names);
- assert.equal(grouped.length,55);assert.deepEqual([...grouped].sort(),[...names].sort());
+ assert.equal(grouped.length,57);assert.deepEqual([...grouped].sort(),[...names].sort());
  assert.deepEqual(settingsGroups.filter(group=>group.advanced).map(group=>group.id),['mortgage','maintenance','trader','pricing','optional','rounding']);
 });
 test('numeric arrows retain native bounds and preserve fractional custom input',()=>{
