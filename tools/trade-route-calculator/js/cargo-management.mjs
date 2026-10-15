@@ -1,9 +1,9 @@
-import {createCargoRemoval,cargoRemovalSummary,cargoNumber} from './cargo-removal.mjs?v=subsector-boundaries-20261015-91';
-import {supportCompartments} from './lss-compartments.mjs?v=subsector-boundaries-20261015-91';
-import {supportAmount} from './life-support.mjs?v=subsector-boundaries-20261015-91';
-import {cargoManifest,purchaseFacts} from './cargo-hold.mjs?v=subsector-boundaries-20261015-91';
-import {supportDisplay} from './life-support.mjs?v=subsector-boundaries-20261015-91';
-import {escapeHtml as esc,formatDecimalCreditsText} from './display.mjs?v=subsector-boundaries-20261015-91';
+import {createCargoRemoval,cargoRemovalSummary,cargoNumber} from './cargo-removal.mjs?v=cargo-management-20261015-92';
+import {supportCompartments} from './lss-compartments.mjs?v=cargo-management-20261015-92';
+import {supportAmount} from './life-support.mjs?v=cargo-management-20261015-92';
+import {cargoManifest,purchaseFacts} from './cargo-hold.mjs?v=cargo-management-20261015-92';
+import {supportDisplay} from './life-support.mjs?v=cargo-management-20261015-92';
+import {escapeHtml as esc,formatDecimalCreditsText} from './display.mjs?v=cargo-management-20261015-92';
 import * as A from './amounts.mjs';
 
 const tons=value=>esc(supportDisplay(value))+' t';

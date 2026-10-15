@@ -1,16 +1,16 @@
-import {ruleInfo} from './rule-references.mjs?v=subsector-boundaries-20261015-91';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=subsector-boundaries-20261015-91';
-import {passengerShip} from './passengers.mjs?v=subsector-boundaries-20261015-91';
+import {ruleInfo} from './rule-references.mjs?v=cargo-management-20261015-92';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=cargo-management-20261015-92';
+import {passengerShip} from './passengers.mjs?v=cargo-management-20261015-92';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=subsector-boundaries-20261015-91';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=subsector-boundaries-20261015-91';
-import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=subsector-boundaries-20261015-91';
-import {roomCounts} from './accommodation.mjs?v=subsector-boundaries-20261015-91';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=subsector-boundaries-20261015-91';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=subsector-boundaries-20261015-91';
-import {creditStep} from './rounding.mjs?v=subsector-boundaries-20261015-91';
-import {roll} from './rules.mjs?v=subsector-boundaries-20261015-91';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=subsector-boundaries-20261015-91';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=cargo-management-20261015-92';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=cargo-management-20261015-92';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=cargo-management-20261015-92';
+import {roomCounts} from './accommodation.mjs?v=cargo-management-20261015-92';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=cargo-management-20261015-92';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=cargo-management-20261015-92';
+import {creditStep} from './rounding.mjs?v=cargo-management-20261015-92';
+import {roll} from './rules.mjs?v=cargo-management-20261015-92';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=cargo-management-20261015-92';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

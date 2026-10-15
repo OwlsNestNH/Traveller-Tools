@@ -1,4 +1,4 @@
-import {up} from './rounding.mjs?v=subsector-boundaries-20261015-91';
+import {up} from './rounding.mjs?v=cargo-management-20261015-92';
 import {sum,mul,decimal,cmp,credit} from './amounts.mjs';
 
 export const tiers=['low','middle','high'];

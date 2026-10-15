@@ -1,8 +1,8 @@
-import {consumeReserveCompartments} from './lss-compartments.mjs?v=subsector-boundaries-20261015-91';
+import {consumeReserveCompartments} from './lss-compartments.mjs?v=cargo-management-20261015-92';
 import * as A from './amounts.mjs';
-import {campaignRefillDraft,editRefillDraft} from './lss-refill-draft.mjs?v=subsector-boundaries-20261015-91';
-import {consumableRefillQuote} from './lss-refill-pricing.mjs?v=subsector-boundaries-20261015-91';
-import {supportAmount} from './life-support.mjs?v=subsector-boundaries-20261015-91';
+import {campaignRefillDraft,editRefillDraft} from './lss-refill-draft.mjs?v=cargo-management-20261015-92';
+import {consumableRefillQuote} from './lss-refill-pricing.mjs?v=cargo-management-20261015-92';
+import {supportAmount} from './life-support.mjs?v=cargo-management-20261015-92';
 export function compartmentRefillQuote(state,draft,{gm=false}={}){
  const original=campaignRefillDraft(state).draft;
  let checked=original,purchased=A.rat(0),discarded=A.rat(0),changed=false;
