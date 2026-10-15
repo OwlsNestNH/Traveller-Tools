@@ -6,3 +6,8 @@
 .lss-actions{flex-wrap:wrap}.lss-actions button{white-space:nowrap;flex-shrink:0}.lss-refill input[type=range]{min-height:40px}.lss-top button{min-height:40px}
 
 .lss-cargo .lss-stepper{flex-shrink:0;white-space:nowrap}
+
+.lss-top{flex-wrap:wrap;gap:8px}.lss-top button{white-space:nowrap;flex-shrink:0}.lss-total strong{white-space:nowrap}
+@media(max-width:540px){.lss-total{padding:16px}.lss-total strong{font-size:clamp(24px,7.5vw,36px)}}
+
+#lss-comfort-note+p{margin-top:12px}
