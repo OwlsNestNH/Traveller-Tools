@@ -1,13 +1,29 @@
 // Draft-only refill editor. No campaign writes or payment actions belong here.
 // Integration awaits the recorded fractional-stock and storage decisions.
 import * as A from './amounts.mjs';
-import {supportAmount} from './life-support.mjs?v=subsector-labels-20261014-89';
+import {supportAmount,supportStock,supportComplement,anchorSupport} from './life-support.mjs?v=subsector-labels-20261014-89';
+import {passengerShip} from './passengers.mjs?v=subsector-labels-20261014-89';
+import {used} from './state.mjs?v=subsector-labels-20261014-89';
 import {escapeHtml as esc,formatCreditsText} from './display.mjs?v=subsector-labels-20261014-89';
 
 export const wholeSupport=value=>value==null?'Unknown':String(A.floor(supportAmount(value)));
 export const nearestSupportTon=value=>value==null?'Unknown':String(A.floor(A.add(supportAmount(value),'0.5')));
 const exact=value=>A.auditNumber(supportAmount(value));
 const nonnegative=(value,label)=>{const n=supportAmount(value);if(A.cmp(n,0)<0)throw Error(label+' cannot be negative.');return n;};
+
+// Read-only boundary for the future session owner. Convert legacy days only in
+// this detached copy; booked people are derived once, never persisted to ship.
+export function campaignRefillDraft(state){
+ const copy=structuredClone(state);
+ anchorSupport(copy.ship,{complementShip:passengerShip(copy)});
+ const ship=passengerShip(copy),stock=supportStock(ship);
+ if(stock.stockUnits===null)throw Error(stock.migration.reason||'Record actual LSS aboard first.');
+ if(stock.internalCapacityUnits===null)throw Error('Enter ship displacement before preparing a refill.');
+ const cargoTons=supportAmount(stock.cargoExact),cargo=A.mul(cargoTons,100);
+ const available=A.add(A.sub(copy.ship.capacity,used(copy)),cargoTons);
+ const draft=createRefillDraft({internal:A.sub(supportAmount(stock.stockUnits),cargo),cargo,internalCapacity:stock.internalCapacityUnits,cargoCapacity:A.mul(available,100),dailyUnits:supportComplement(ship).dailyUnits});
+ return {revision:state.revision,actual:state.actual,draft};
+}
 
 export function createRefillDraft({internal,cargo,internalCapacity,cargoCapacity,dailyUnits}){
  const draft={internal:exact(nonnegative(internal,'Internal LSS')),cargo:exact(nonnegative(cargo,'Cargo LSS')),internalCapacity:exact(nonnegative(internalCapacity,'Internal capacity')),cargoCapacity:exact(nonnegative(cargoCapacity,'Cargo capacity')),dailyUnits:exact(nonnegative(dailyUnits,'Daily consumption')),reason:'',changed:{internal:false,cargo:false}};

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createRefillDraft,editRefillDraft,refillDraftTotals,renderRefillDraft,wholeSupport,nearestSupportTon} from '../js/lss-refill-draft.mjs';
+import {campaignRefillDraft,createRefillDraft,editRefillDraft,refillDraftTotals,renderRefillDraft,wholeSupport,nearestSupportTon} from '../js/lss-refill-draft.mjs';
+import {campaignBaseline} from './fixtures/campaign-baseline.mjs';
 import {consumeSupport,supportAmount} from '../js/life-support.mjs';
 import * as A from '../js/amounts.mjs';
 const make=()=>createRefillDraft({internal:'12.8',cargo:'3.4',internalCapacity:'800',cargoCapacity:'603.75',dailyUnits:'4.1'});
@@ -54,4 +55,26 @@ test('unknown days remain unknown with zero consumption; invalid initial allocat
 test('read-only draft rendering does not alter exact hourly travel arithmetic',()=>{
  const ship={fuel:{displacementTons:200},accommodation:{passengers:{low:0,middle:1,high:0},crew:{low:0,middle:0,high:0},occupiedLowBerths:0},lifeSupport:{capacityHours:672,stockUnits:A.auditNumber('12.8')}};
  renderRefillDraft(make());consumeSupport(ship,1);assert.deepEqual(ship.lifeSupport.stockUnits,A.auditNumber(A.sub('12.8',A.rat(1,24))));
+});
+test('campaign adapter includes fuel, lots, contracts and luggage without any campaign writes',()=>{
+ const s=campaignBaseline();s.ship.fuel.aboardTons=45;s.lots=[{quantity:'2.25'}];s.contracts=[{kind:'freight',status:'accepted',quantity:'3.125'}];s.ship.accommodation.luggageMode='manual';s.ship.accommodation.luggageTons='1';
+ s.ship.lifeSupport.stockUnits=A.auditNumber('812.8');const bytes=JSON.stringify(s),result=campaignRefillDraft(s);
+ // 50 - 5 fuel - 2.25 lots - 3.125 freight - 1 luggage = 38.625 t for all cargo LSS.
+ assert.deepEqual(result.draft.cargoCapacity,A.auditNumber('3862.5'));assert.deepEqual(result.draft.cargo,A.auditNumber('12.8'));assert.equal(wholeSupport(result.draft.internal),'800');
+ assert.equal(result.revision,s.revision);assert.equal(result.actual,s.actual);assert.equal(JSON.stringify(s),bytes);
+});
+test('legacy adapter includes booked awake/frozen people once and never migrates the caller',()=>{
+ const s=campaignBaseline();s.ship.lifeSupport={capacityHours:672,remainingHours:24};s.contracts=[{kind:'passenger',status:'accepted',passageClass:'middle',count:2,cabinMode:'cargo'},{kind:'passenger',status:'accepted',passageClass:'low',count:3,cabinMode:'low'}];
+ const bytes=JSON.stringify(s),{draft}=campaignRefillDraft(s);assert.deepEqual(draft.dailyUnits,A.auditNumber('7.3'));assert.deepEqual(draft.internal,A.auditNumber('7.3'));assert.equal(JSON.stringify(s),bytes);
+ // Existing passenger/luggage rules reserve 4 cargo cabin tons and 2 luggage tons.
+ assert.equal(wholeSupport(draft.cargoCapacity),'4400');
+});
+test('campaign adapter preserves repeating exact stock, and draft Cancel cannot affect it',()=>{
+ const s=campaignBaseline();s.ship.lifeSupport.stockUnits=A.auditNumber(A.rat(307,24));const bytes=JSON.stringify(s),{draft}=campaignRefillDraft(s);
+ assert.deepEqual(draft.internal,s.ship.lifeSupport.stockUnits);editRefillDraft(draft,'fill-cargo');renderRefillDraft(draft);assert.equal(JSON.stringify(s),bytes);
+});
+test('campaign adapter rejects unknown legacy stock, missing hull and overcommitted holds without writes',()=>{
+ for(const change of [s=>{s.ship.lifeSupport={capacityHours:672,remainingHours:24,migrationRequired:true};},s=>{delete s.ship.fuel.displacementTons;},s=>{s.lots=[{quantity:'100'}];}]){
+  const s=campaignBaseline();change(s);const bytes=JSON.stringify(s);assert.throws(()=>campaignRefillDraft(s));assert.equal(JSON.stringify(s),bytes);
+ }
 });

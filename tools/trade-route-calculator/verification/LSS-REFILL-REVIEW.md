@@ -10,7 +10,9 @@ The UI does not invent a price. The total remains unavailable until a transactio
 
 1. With 12.8 internal LSS and 3.4 cargo LSS, a cargo-only refill could discard only the cargo fraction, both compartment fractions, or a pooled fraction. Which is intended? Existing payment logic rounds resulting total stock upward. No destructive truncation has been implemented.
 2. Preserve the configured-target tariff boundary: cabin plus person charges for standard supply, then the existing fixed reserve tariff? Physical internal capacity is not that pricing boundary. Middle and High person rates are hardcoded; existing Settings adjusts cabin rates. Low frozen passenger billing is separate from awake low-service occupants.
-3. Preserve cargo-first travel consumption when independent allocation is persisted? This matches current overflow-first behavior. A separate exact cargo allocation is needed because the existing single stock total implicitly fills internal stores before cargo.
+Cargo-first travel consumption is settled: preserve the existing overflow-first behavior. A separate exact cargo allocation is needed because the existing single stock total implicitly fills internal stores before cargo. No new consumption policy is proposed.
+
+The read-only campaign adapter now captures revision/location, exact internal/cargo stock and available cargo after fuel, freight, lots and passenger reservations. Legacy conversion occurs only in its detached copy; booked people contribute once. Unknown stock, missing hull capacity and overcommitted holds fail closed. This adapter is not yet connected to a transaction or live screen.
 
 ## Remaining implementation and verification
 
