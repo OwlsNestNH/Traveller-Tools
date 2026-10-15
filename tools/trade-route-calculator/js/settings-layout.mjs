@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=subsector-labels-20261014-89';
+import {ruleInfo} from './rule-references.mjs?v=lss-refill-20261015-90';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={

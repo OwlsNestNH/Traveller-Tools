@@ -1,10 +1,10 @@
-import {ruleInfo} from './rule-references.mjs?v=subsector-labels-20261014-89';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=subsector-labels-20261014-89';
+import {ruleInfo} from './rule-references.mjs?v=lss-refill-20261015-90';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=lss-refill-20261015-90';
 import * as A from './amounts.mjs';
-import {manualLuggage} from './accommodation.mjs?v=subsector-labels-20261014-89';
-import * as P from './passengers.mjs?v=subsector-labels-20261014-89';
-import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=subsector-labels-20261014-89';
-import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=subsector-labels-20261014-89';
+import {manualLuggage} from './accommodation.mjs?v=lss-refill-20261015-90';
+import * as P from './passengers.mjs?v=lss-refill-20261015-90';
+import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=lss-refill-20261015-90';
+import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=lss-refill-20261015-90';
 import {displayDate} from './calendar.mjs';
 const esc=escapeHtml;
 const money=formatCreditsText,signed=x=>x>0?'+'+x:String(x);

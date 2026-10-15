@@ -1,13 +1,13 @@
-import {recordedOperatingResult} from './financial-summary.mjs?v=subsector-labels-20261014-89';
-import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=subsector-labels-20261014-89';
-import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=subsector-labels-20261014-89';
-import {bladderSpace} from './fuel.mjs?v=subsector-labels-20261014-89';
+import {recordedOperatingResult} from './financial-summary.mjs?v=lss-refill-20261015-90';
+import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=lss-refill-20261015-90';
+import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=lss-refill-20261015-90';
+import {bladderSpace} from './fuel.mjs?v=lss-refill-20261015-90';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
-import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=subsector-labels-20261014-89';
-import {distance} from './map.mjs?v=subsector-labels-20261014-89';
+import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=lss-refill-20261015-90';
+import {distance} from './map.mjs?v=lss-refill-20261015-90';
 
-export const REPORT_VERSION='2026.10.14.89';
+export const REPORT_VERSION='2026.10.15.90';
 const clean=v=>String(v??'Not recorded').replace(/[\r\n\t\x00-\x1f]+/g,' ').trim();
 const number=v=>String(v).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const cr=v=>v==null?'Not recorded':'Cr '+number(v);
