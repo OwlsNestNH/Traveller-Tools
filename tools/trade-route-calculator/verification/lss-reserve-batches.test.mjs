@@ -63,3 +63,9 @@ test('recurring legacy tails use exact batch buttons instead of incompatible nat
 test('physical supply consumption without a recorded hull still works before compartment setup',()=>{
  const s=ship();delete s.ship.fuel;s.ship.lifeSupport={capacityHours:672,stockUnits:'1000',roundCargoSpace:true};consumeSupport(s.ship,24);equal(s.ship.lifeSupport.stockUnits,998);assert.equal(s.ship.lifeSupport.cargoUnits,undefined);
 });
+
+test('fractional free capacity cannot offer a whole reserve that only fits by raw weight',()=>{
+ const s=ship();s.ship.capacity='16.8';s.ship.lifeSupport={capacityHours:672,stockUnits:'940',cargoUnits:'140',roundCargoSpace:true};S.validate(s);
+ const d=campaignRefillDraft(s).draft;equal(d.cargoCapacity,200);assert.deepEqual(editRefillDraft(d,'cargo-step',1),d);assert.deepEqual(editRefillDraft(d,'fill-cargo'),d);assert.throws(()=>editRefillDraft(d,'cargo','240'),/capacity/);assert.match(renderRefillDraft(d),/Cargo available 0 t/);
+ const integer=ship();integer.ship.capacity='17';integer.lots[0].quantity='4.2';integer.ship.lifeSupport=structuredClone(s.ship.lifeSupport);S.validate(integer);equal(campaignRefillDraft(integer).draft.cargoCapacity,200);
+});
