@@ -20,7 +20,7 @@ try{for(const width of [320,390,768,820,1024,1440]){
   const original=await snapshot(page);assert.ok(original.scrollY>0,'Scrolled positive control '+width);
   for(const name of ['map-zoom-in','map-zoom-in','map-zoom-out','map-zoom-out','map-zoom-reset']){
    const before=await snapshot(page),control=page.locator('[data-action="'+name+'"]');await page.evaluate(name=>{window.__zoomControl=document.querySelector('[data-action="'+name+'"]');window.__zoomViewport=document.querySelector('.map-viewport');},name);await control.tap();await settle(page);await page.waitForTimeout(60);const after=await snapshot(page);const expected=name==='map-zoom-reset'?'100%':String(Math.round(Number(before.zoom.slice(0,-1))*(name==='map-zoom-in'?1.2:1/1.2)))+'%';assert.equal(after.zoom,expected,'Zoom updates the displayed scale');
-   assert.equal(await page.evaluate(name=>window.__zoomControl===document.querySelector('[data-action="'+name+'"]')&&window.__zoomViewport===document.querySelector('.map-viewport')),true,'Zoom retains the touched control and map viewport DOM');
+   assert.equal(await page.evaluate(name=>window.__zoomControl===document.querySelector('[data-action="'+name+'"]')&&window.__zoomViewport===document.querySelector('.map-viewport'),name),true,'Zoom retains the touched control and map viewport DOM');
    for(const key of ['top','left','width','height','scrollY'])assert.ok(Math.abs(after[key]-before[key])<=2,'Zoom keeps '+key+' at '+width+' '+name+': '+before[key]+' -> '+after[key]);
   }
   assert.equal(await page.evaluate(key=>localStorage.getItem(key),campaignKey),f.bytes,'Zoom is display-only');
