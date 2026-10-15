@@ -1,9 +1,9 @@
-import {createCargoRemoval,cargoRemovalSummary,cargoNumber} from './cargo-removal.mjs?v=cargo-management-20261015-92';
-import {supportCompartments} from './lss-compartments.mjs?v=cargo-management-20261015-92';
-import {supportAmount} from './life-support.mjs?v=cargo-management-20261015-92';
-import {cargoManifest,purchaseFacts} from './cargo-hold.mjs?v=cargo-management-20261015-92';
-import {supportDisplay} from './life-support.mjs?v=cargo-management-20261015-92';
-import {escapeHtml as esc,formatDecimalCreditsText} from './display.mjs?v=cargo-management-20261015-92';
+import {createCargoRemoval,cargoRemovalSummary,cargoNumber} from './cargo-removal.mjs?v=map-scroll-spinners-20261015-93';
+import {supportCompartments} from './lss-compartments.mjs?v=map-scroll-spinners-20261015-93';
+import {supportAmount} from './life-support.mjs?v=map-scroll-spinners-20261015-93';
+import {cargoManifest,purchaseFacts} from './cargo-hold.mjs?v=map-scroll-spinners-20261015-93';
+import {supportDisplay} from './life-support.mjs?v=map-scroll-spinners-20261015-93';
+import {escapeHtml as esc,formatDecimalCreditsText} from './display.mjs?v=map-scroll-spinners-20261015-93';
 import * as A from './amounts.mjs';
 
 const tons=value=>esc(supportDisplay(value))+' t';
@@ -13,7 +13,7 @@ const price=value=>value===null?'Not recorded':esc(formatDecimalCreditsText(valu
 // Recorded rows stay visible throughout a preview, including pending zeroes.
 export function cargoManagementPanel(state,core,{retail=()=>null,search='',sort='name',removal=null,busy=false,error=''}={}){
  const draft=removal??createCargoRemoval(state),summary=cargoRemovalSummary(draft),blocked=!!draft.precondition;
- const spinner=key=>{const e=draft.entries.find(e=>e.key===key);return e?'<div class="cargo-remaining"><button class="small" data-action="cargo-step" data-arg="'+esc(key)+'|-1" aria-label="Remove one ton from '+esc(key)+'" data-mutate'+(busy||blocked||A.cmp(draft.remaining[key],0)===0?' disabled data-unavailable':'')+'>&minus;</button><input type="number" min="0" max="'+e.original+'" step="1" value="'+draft.remaining[key]+'" data-cargo-remaining="'+esc(key)+'" aria-label="Tons remaining aboard '+esc(key)+'" data-mutate'+(busy||blocked?' disabled data-unavailable':'')+'><button class="small" data-action="cargo-step" data-arg="'+esc(key)+'|1" aria-label="Restore one ton to '+esc(key)+'" data-mutate'+(busy||blocked||A.cmp(draft.remaining[key],e.original)===0?' disabled data-unavailable':'')+'>+</button></div>':'';};
+ const spinner=key=>{const e=draft.entries.find(e=>e.key===key);return e?'<div class="cargo-remaining"><input type="number" min="0" max="'+e.original+'" step="1" value="'+draft.remaining[key]+'" data-cargo-remaining="'+esc(key)+'" aria-label="Tons remaining aboard '+esc(key)+'" data-mutate'+(busy||blocked?' disabled data-unavailable':'')+'></div>':'';};
  const m=cargoManifest(state),name=lot=>core.commodities.find(g=>g.id===lot.commodity)?.name||lot.commodity;
  // Visibility follows the recorded manifest, never a future removal draft: a
  // pending zero must remain restorable until its removal is confirmed.

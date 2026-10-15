@@ -1,4 +1,4 @@
-import {createCargoRemoval,setCargoRemaining,cargoRemovalSummary} from './cargo-removal.mjs?v=cargo-management-20261015-92';
+import {createCargoRemoval,setCargoRemaining,cargoRemovalSummary} from './cargo-removal.mjs?v=map-scroll-spinners-20261015-93';
 // One accepted intent owns its save through asynchronous provider settlement.
 export function createCargoRemovalSession({getState,readSaved,save,onBusy=()=>{},onComplete=()=>{},onFailure=()=>{},onUnknown=()=>{}}){
  let draft=null,operation=null,error='';

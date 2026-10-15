@@ -1,8 +1,8 @@
-import {consumeReserveCompartments} from './lss-compartments.mjs?v=cargo-management-20261015-92';
+import {consumeReserveCompartments} from './lss-compartments.mjs?v=map-scroll-spinners-20261015-93';
 import * as A from './amounts.mjs';
-import {campaignRefillDraft,editRefillDraft} from './lss-refill-draft.mjs?v=cargo-management-20261015-92';
-import {consumableRefillQuote} from './lss-refill-pricing.mjs?v=cargo-management-20261015-92';
-import {supportAmount} from './life-support.mjs?v=cargo-management-20261015-92';
+import {campaignRefillDraft,editRefillDraft} from './lss-refill-draft.mjs?v=map-scroll-spinners-20261015-93';
+import {consumableRefillQuote} from './lss-refill-pricing.mjs?v=map-scroll-spinners-20261015-93';
+import {supportAmount} from './life-support.mjs?v=map-scroll-spinners-20261015-93';
 export function compartmentRefillQuote(state,draft,{gm=false}={}){
  const original=campaignRefillDraft(state).draft;
  let checked=original,purchased=A.rat(0),discarded=A.rat(0),changed=false;

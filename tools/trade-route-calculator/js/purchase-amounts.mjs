@@ -1,5 +1,5 @@
 import * as A from './amounts.mjs';
-import {up} from './rounding.mjs?v=cargo-management-20261015-92';
+import {up} from './rounding.mjs?v=map-scroll-spinners-20261015-93';
 
 // Prepare preview amounts from caller-normalized entry strings. Inputs:
 // {quantity, fee, unitPrice: saved offer price, creditStep: 1 or 100}.

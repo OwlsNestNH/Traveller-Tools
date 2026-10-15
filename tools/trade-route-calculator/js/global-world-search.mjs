@@ -1,4 +1,4 @@
-import {searchWorlds,loadWorld} from './map.mjs?v=cargo-management-20261015-92';
+import {searchWorlds,loadWorld} from './map.mjs?v=map-scroll-spinners-20261015-93';
 
 export const planetSearchLabel=w=>[w.name,w.subsectorName,w.sector,w.hex].join(' — ');
 
