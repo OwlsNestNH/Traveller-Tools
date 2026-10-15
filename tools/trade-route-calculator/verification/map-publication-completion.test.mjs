@@ -35,7 +35,7 @@ function harness(owners = {}) {
   accountsWriteOperation: null,
   clearRouteWriteOperation: null, clearRouteSaveOperation: null, plannedRouteWriteOperation: null, plannedRouteSaveOperation: null,
   expenseServices: {publicationDeferred: () => false},
-  worldWriteOperation: null, undoOperation: null, replacementReview: null, settingsOperation: null, purchaseWriteOperation: null, insuranceWriteOperation: null, contactSearchWriteOperation: null, contractOfferWriteOperation: null, contractLifecycleWriteOperation: null, passengerWriteOperation: null,
+  cargoRemoval: {pending: false}, saleWriteOperation: null, timeWriteOperation: null, worldWriteOperation: null, undoOperation: null, replacementReview: null, settingsOperation: null, purchaseWriteOperation: null, insuranceWriteOperation: null, contactSearchWriteOperation: null, contractOfferWriteOperation: null, contractLifecycleWriteOperation: null, passengerWriteOperation: null,
   showSubsectorNames,mapDrag: null, tab: 'Overview', mapZoom: 1, showTerritories: false,
   mapAreas: {error: null, pending: false}, mapOverview: {error: null, pending: false},
   document: {querySelector(selector) {assert.equal(selector, '.world-map'); calls.push('query'); return old;},
