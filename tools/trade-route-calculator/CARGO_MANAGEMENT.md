@@ -48,7 +48,7 @@ Complete batches may transfer; the residual fraction is never silently transferr
 consumed from cargo, discarded or converted into extra supplies. Unsupported legacy
 residual stock does not inflate usable endurance. Batch-mode refill adds/removes
 100-LSS lots while retaining that residual; its native input step starts from the
-residual. Fill respects whole reserved-space capacity. Refill previews include any
+residual. Nonterminating legacy fractions use exact batch buttons with a read-only approximate numeric display. Fill respects whole reserved-space capacity. Refill previews include any
 complete-batch transfer into internal space. Existing payment, comfort spending,
 internal refill fraction policy and explicit GM adjustment boundaries remain.
 

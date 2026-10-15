@@ -38,7 +38,8 @@ export function createServicePanels({document,redesignedSupport=false,getState,i
   if(form?.dataset?.serviceToken!==session.token)return;
   session.inputError='';
   for(const el of form.elements){if(!['internal','cargo','reason','comfortCredits','comfortNote'].includes(el.name))continue;
-   const current=['internal','cargo'].includes(el.name)?wholeSupport(session.draft[el.name]):session.draft[el.name];
+   if(el.name==='cargo'&&session.draft.cargoBatches&&el.readOnly){el.setCustomValidity?.('');continue;}
+   const current=el.name==='cargo'&&session.draft.cargoBatches?supportDisplay(session.draft.cargo):['internal','cargo'].includes(el.name)?wholeSupport(session.draft[el.name]):session.draft[el.name];
    if(el.value===current){el.setCustomValidity?.('');continue;}
    try{session.draft=editRefillDraft(session.draft,el.name,el.value);el.setCustomValidity?.('');}catch(error){session.inputError=error.message;el.setCustomValidity?.(error.message);}
   }

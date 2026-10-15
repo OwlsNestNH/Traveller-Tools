@@ -52,3 +52,10 @@ test('refill available space uses rounded reserved cargo rather than double char
  const s=ship();s.ship.lifeSupport={capacityHours:672,stockUnits:'901.5',cargoUnits:'101.5',roundCargoSpace:true};
  const d=campaignRefillDraft(s).draft,full=editRefillDraft(d,'fill-cargo'),q=compartmentRefillQuote(s,full);const n=S.transition(s,'Life support refill',v=>S.refillCompartments(v,full));S.validate(n);assert.ok(A.cmp(S.used(n),n.ship.capacity)<=0);equal(q.discardedUnits,0);
 });
+
+test('recurring legacy tails use exact batch buttons instead of incompatible native decimal editing',()=>{
+ const s=ship();s.ship.lifeSupport={capacityHours:672,stockUnits:{numerator:'2701',denominator:'3'},cargoUnits:{numerator:'301',denominator:'3'},roundCargoSpace:true};
+ const original=campaignRefillDraft(s).draft,plus=editRefillDraft(original,'cargo-step',1),q=compartmentRefillQuote(s,plus);equal(q.purchasedUnits,100);equal(q.discardedUnits,0);equal(q.afterCargoUnits,{numerator:'601',denominator:'3'});
+ assert.match(renderRefillDraft(original,{quote:q,blocked:''}),/readonly aria-label="Approximate cargo LSS; use exact reserve buttons"/);
+ const restored=editRefillDraft(plus,'cargo-step',-1);assert.deepEqual(restored.cargo,original.cargo);
+});

@@ -92,6 +92,7 @@ export function renderRefillDraft(draft,{shipLabel='',quote=null,audit='',gmBloc
  const totals=refillDraftTotals(projected),cost=quote?.amount==null?null:nonnegative(quote.amount,'Refill cost');
  const button=(label,action,extra='')=>`<button type="button" data-refill-action="${action}" ${extra}>${label}</button>`;
  const value=key=>key==='cargo'&&draft.cargoBatches?supportDisplay(draft[key]):wholeSupport(draft[key]);
+ let exactCargoInput=true;try{A.decimal(supportAmount(draft.cargo));}catch{exactCargoInput=false;}
  const cargoMinimum=draft.cargoBatches?supportDisplay(A.sub(supportAmount(draft.cargo),A.mul(A.floor(A.div(supportAmount(draft.cargo),100)),100))):'0';
  return `<section class="lss-refill" aria-label="Life support refill draft">
  <div class="lss-top">${button('← Back to Overview','back')}${button('Audit','audit')}</div>
@@ -101,7 +102,8 @@ export function renderRefillDraft(draft,{shipLabel='',quote=null,audit='',gmBloc
  <h3>Refill supplies</h3><label for="lss-internal">Normal storage <span>Set normal storage target</span></label>
  <div class="lss-target"><input id="lss-internal" data-refill-input="internal" type="range" min="0" max="${value('internalCapacity')}" step="1" value="${value('internal')}"><output for="lss-internal">${value('internal')} LSS</output></div>
  <div class="lss-range-labels"><span>0 LSS</span><span>${value('internalCapacity')} LSS</span></div>
- <div class="lss-cargo"><label for="lss-cargo">Cargo LSS<span>Independent of normal storage</span></label><div class="lss-stepper">${button('−','minus','aria-label="Remove '+(draft.cargoBatches?'one ton of reserve':'one cargo LSS')+' from draft"')}<input id="lss-cargo" data-refill-input="cargo" type="number" min="${cargoMinimum}" max="${value('cargoCapacity')}" step="${draft.cargoBatches?100:1}" value="${value('cargo')}">${button('+','plus','aria-label="Add '+(draft.cargoBatches?'one ton of reserve':'one cargo LSS')+' to draft"')}<span>LSS</span></div></div>
+ <div class="lss-cargo"><label for="lss-cargo">Cargo LSS<span>Independent of normal storage</span></label><div class="lss-stepper">${button('−','minus','aria-label="Remove '+(draft.cargoBatches?'one ton of reserve':'one cargo LSS')+' from draft"')}<input id="lss-cargo" data-refill-input="cargo" type="number" min="${cargoMinimum}" max="${value('cargoCapacity')}" step="${draft.cargoBatches?100:1}" value="${value('cargo')}"${draft.cargoBatches&&!exactCargoInput?' readonly aria-label="Approximate cargo LSS; use exact reserve buttons"':''}>${button('+','plus','aria-label="Add '+(draft.cargoBatches?'one ton of reserve':'one cargo LSS')+' to draft"')}<span>LSS</span></div></div>
+ ${draft.cargoBatches&&!exactCargoInput?'<p>Exact legacy fraction retained. This numeric display is approximate; use the minus and plus buttons to change exact full-ton reserves.</p>':''}
  ${draft.cargoBatches?'<p>100 LSS per reserve ton. Supplies are used internally; a full reserve transfers only when internal storage has room for 100 LSS. Any legacy fractional reserve stays exact aboard.</p>':''}
  <div class="lss-capacity"><span>Cargo available ${nearestSupportTon(A.mul(A.sub(supportAmount(draft.cargoCapacity),supportAmount(draft.cargo)),'0.01'))} t</span>${button('Fill available cargo','fill-cargo')}</div>
  <p class="lss-overflow">Cargo overflow <strong>${draft.cargoBatches?String(-A.floor(A.mul(supportAmount(totals.cargoTons),-1))):nearestSupportTon(totals.cargoTons)} t</strong></p>
