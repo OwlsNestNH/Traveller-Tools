@@ -26,7 +26,7 @@ export function campaignRefillDraft(state){
 }
 
 export function createRefillDraft({internal,cargo,internalCapacity,cargoCapacity,dailyUnits}){
- const draft={internal:exact(nonnegative(internal,'Internal LSS')),cargo:exact(nonnegative(cargo,'Cargo LSS')),internalCapacity:exact(nonnegative(internalCapacity,'Internal capacity')),cargoCapacity:exact(nonnegative(cargoCapacity,'Cargo capacity')),dailyUnits:exact(nonnegative(dailyUnits,'Daily consumption')),reason:'',changed:{internal:false,cargo:false}};
+ const draft={internal:exact(nonnegative(internal,'Internal LSS')),cargo:exact(nonnegative(cargo,'Cargo LSS')),internalCapacity:exact(nonnegative(internalCapacity,'Internal capacity')),cargoCapacity:exact(nonnegative(cargoCapacity,'Cargo capacity')),dailyUnits:exact(nonnegative(dailyUnits,'Daily consumption')),reason:'',comfortCredits:'0',comfortNote:'',changed:{internal:false,cargo:false}};
  for(const key of ['internal','cargo'])if(A.cmp(supportAmount(draft[key]),supportAmount(draft[key+'Capacity']))>0)throw Error(key+' stock exceeds capacity.');
  return draft;
 }
@@ -35,7 +35,13 @@ export function createRefillDraft({internal,cargo,internalCapacity,cargoCapacity
 // Edits are requested targets, never a decision to discard stock or charge money.
 export function editRefillDraft(draft,action,value){
  const next=structuredClone(draft);
- if(action==='reason'){next.reason=String(value);return next;}
+ if(action==='reason'||action==='comfortNote'){next[action]=String(value);return next;}
+ if(action==='comfortCredits'||action==='comfort-step'){
+  if(action==='comfort-step'&&![-1000,1000].includes(Number(value)))throw Error('Choose a Cr1,000 comfort step.');
+  const amount=action==='comfort-step'?A.credit(draft.comfortCredits)+BigInt(value):A.credit(value);
+  if(action==='comfortCredits'&&amount<0n)throw Error('Comfort provisions cost cannot be negative.');
+  next.comfortCredits=String(amount<0n?0n:amount);return next;
+ }
  const key=action==='internal'?'internal':'cargo';
  let target;
  if(action==='fill-cargo'){
@@ -81,6 +87,7 @@ export function renderRefillDraft(draft,{shipLabel='',quote=null,audit='',blocke
  <div class="lss-capacity"><span>Cargo available ${nearestSupportTon(A.mul(A.sub(supportAmount(draft.cargoCapacity),supportAmount(draft.cargo)),'0.01'))} t</span>${button('Fill available cargo','fill-cargo')}</div>
  <p class="lss-overflow">Cargo overflow <strong>${nearestSupportTon(totals.cargoTons)} t</strong></p>
  <label for="lss-reason">Reason (optional)</label><input id="lss-reason" data-refill-input="reason" value="${esc(draft.reason)}">
+ <details class="lss-comfort" ${A.credit(draft.comfortCredits)>0n?'open':''}><summary>Extra provisions — comfort spending</summary><div class="lss-stepper">${button('−Cr 1,000','comfort-minus')}<label for="lss-comfort-cost">One-time comfort cost — Cr<input id="lss-comfort-cost" data-refill-input="comfortCredits" type="number" min="0" step="1" value="${esc(draft.comfortCredits)}"></label>${button('+Cr 1,000','comfort-plus')}</div><label for="lss-comfort-note">Comfort provisions note (required when spending)</label><input id="lss-comfort-note" data-refill-input="comfortNote" value="${esc(draft.comfortNote)}"><p>Cost only. No additional LSS, days or cargo space.</p></details>
  <div class="lss-total" aria-live="polite"><span>TOTAL refill cost</span><strong>${cost===null?'Unavailable':formatCreditsText(String(A.floor(A.add(cost,'0.5'))))}</strong><small>Updates with normal storage and cargo</small></div>
  ${blocked?'<p class="lss-blocked" role="status">'+esc(blocked)+'</p>':''}
  <div class="lss-actions">${button('Cancel','cancel')}${button('Confirm Refill','confirm',blocked||cost===null?'disabled':'class="primary"')}</div>

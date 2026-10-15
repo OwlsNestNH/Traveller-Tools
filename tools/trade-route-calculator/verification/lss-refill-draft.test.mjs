@@ -78,3 +78,9 @@ test('campaign adapter rejects unknown legacy stock, missing hull and overcommit
   const s=campaignBaseline();change(s);const bytes=JSON.stringify(s);assert.throws(()=>campaignRefillDraft(s));assert.equal(JSON.stringify(s),bytes);
  }
 });
+test('comfort spending and its note remain draft-only and never alter supplies or supported days',()=>{
+ const draft=make(),totals=refillDraftTotals(draft);let next=editRefillDraft(draft,'comfort-step',1000);next=editRefillDraft(next,'comfortNote','Fresh fruit');
+ assert.equal(next.comfortCredits,'1000');assert.equal(next.comfortNote,'Fresh fruit');assert.deepEqual(refillDraftTotals(next),totals);assert.equal(draft.comfortCredits,'0');
+ assert.match(renderRefillDraft(next),/<details class="lss-comfort" open>/);assert.match(renderRefillDraft(next),/Extra provisions — comfort spending/);
+ assert.equal(editRefillDraft(next,'comfort-step',-1000).comfortCredits,'0');assert.throws(()=>editRefillDraft(next,'comfortCredits','1.5'));assert.throws(()=>editRefillDraft(next,'comfortCredits','-1'));
+});
