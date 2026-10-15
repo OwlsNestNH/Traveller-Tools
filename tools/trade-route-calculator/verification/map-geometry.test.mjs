@@ -36,7 +36,7 @@ test('overview projection and label clipping match reviewed scale-aware boundary
  for(const scenario of scenarios){
   const svg=overviewMarkup({...scenario,sectors,catalogs:new Map(catalogs),measure:(text,size)=>text.length*size*.55});
   assert.equal(createHash('sha256').update(svg).digest('hex'),scenario.sha256,JSON.stringify(scenario));
-  assert.equal(svg.includes('class="subsector-border"'),scenario.zoom>=.16,'Internal boundaries follow the subsector scale');
+  assert.equal(svg.includes('class="subsector-border"'),scenario.zoom>=.16&&svg.includes('class="sector-border"'),'Internal boundaries follow the subsector scale');
  }
 });
 
