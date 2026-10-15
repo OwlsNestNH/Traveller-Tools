@@ -1,16 +1,16 @@
-import {campaignRefillDraft,editRefillDraft,renderRefillDraft,wholeSupport,nearestSupportTon} from './lss-refill-draft.mjs?v=subsector-boundaries-20261015-91';
-import {compartmentRefillQuote,refillPricingAudit} from './lss-refill-transaction.mjs?v=subsector-boundaries-20261015-91';
-import {replaceReferenceContent} from './rule-popover.mjs?v=subsector-boundaries-20261015-91';
-import {ruleInfo} from './rule-references.mjs?v=subsector-boundaries-20261015-91';
-import {escapeHtml,formatDecimalCreditsText} from './display.mjs?v=subsector-boundaries-20261015-91';
-import {passengerShip} from './passengers.mjs?v=subsector-boundaries-20261015-91';
+import {campaignRefillDraft,editRefillDraft,renderRefillDraft,wholeSupport,nearestSupportTon} from './lss-refill-draft.mjs?v=cargo-management-20261015-92';
+import {compartmentRefillQuote,refillPricingAudit} from './lss-refill-transaction.mjs?v=cargo-management-20261015-92';
+import {replaceReferenceContent} from './rule-popover.mjs?v=cargo-management-20261015-92';
+import {ruleInfo} from './rule-references.mjs?v=cargo-management-20261015-92';
+import {escapeHtml,formatDecimalCreditsText} from './display.mjs?v=cargo-management-20261015-92';
+import {passengerShip} from './passengers.mjs?v=cargo-management-20261015-92';
 import * as A from './amounts.mjs';
-import {bladderSpace,fuelCapacities,fuelPurchase} from './fuel.mjs?v=subsector-boundaries-20261015-91';
-import {expenseQuote,fuelAvailability,fuelAvailabilityAdvice,fuelPricing,starport} from './expenses.mjs?v=subsector-boundaries-20261015-91';
-import {refillQuote,supportStock,supportCargo,supportAmount,supportDisplay,anchorSupport} from './life-support.mjs?v=subsector-boundaries-20261015-91';
-import {used,validate,shipExpense,refillLifeSupport,refillCompartments,uid} from './state.mjs?v=subsector-boundaries-20261015-91';
-import {creditStep,up} from './rounding.mjs?v=subsector-boundaries-20261015-91';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=subsector-boundaries-20261015-91';
+import {bladderSpace,fuelCapacities,fuelPurchase} from './fuel.mjs?v=cargo-management-20261015-92';
+import {expenseQuote,fuelAvailability,fuelAvailabilityAdvice,fuelPricing,starport} from './expenses.mjs?v=cargo-management-20261015-92';
+import {refillQuote,supportStock,supportCargo,supportAmount,supportDisplay,anchorSupport} from './life-support.mjs?v=cargo-management-20261015-92';
+import {used,validate,shipExpense,refillLifeSupport,refillCompartments,uid} from './state.mjs?v=cargo-management-20261015-92';
+import {creditStep,up} from './rounding.mjs?v=cargo-management-20261015-92';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=cargo-management-20261015-92';
 const esc=escapeHtml;
 const money=formatDecimalCreditsText,num=x=>x==null?'Unknown':String(Number(Number(x).toFixed(3)));
 const field=(name,label,value,type='number',extra='')=>`<label class="field">${label}<input name="${name}" type="${type}" value="${esc(value)}" ${extra}></label>`;
@@ -38,7 +38,8 @@ export function createServicePanels({document,redesignedSupport=false,getState,i
   if(form?.dataset?.serviceToken!==session.token)return;
   session.inputError='';
   for(const el of form.elements){if(!['internal','cargo','reason','comfortCredits','comfortNote'].includes(el.name))continue;
-   const current=['internal','cargo'].includes(el.name)?wholeSupport(session.draft[el.name]):session.draft[el.name];
+   if(el.name==='cargo'&&session.draft.cargoBatches&&el.readOnly){el.setCustomValidity?.('');continue;}
+   const current=el.name==='cargo'&&session.draft.cargoBatches?supportDisplay(session.draft.cargo):['internal','cargo'].includes(el.name)?wholeSupport(session.draft[el.name]):session.draft[el.name];
    if(el.value===current){el.setCustomValidity?.('');continue;}
    try{session.draft=editRefillDraft(session.draft,el.name,el.value);el.setCustomValidity?.('');}catch(error){session.inputError=error.message;el.setCustomValidity?.(error.message);}
   }

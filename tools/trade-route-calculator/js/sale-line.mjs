@@ -1,4 +1,4 @@
-import * as R from './rules.mjs?v=subsector-boundaries-20261015-91';
+import * as R from './rules.mjs?v=cargo-management-20261015-92';
 
 // Prepare one sale line from explicit lot/buyer/context/quote/commodity/core,
 // current pricing flags and creditStep, plus caller-normalized values:

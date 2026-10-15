@@ -163,7 +163,7 @@ async function purchaseCase(page,context,result,f){
  await diceUsed(page,[]);
  const purchased=await read(page);await reload(page);assert.deepEqual(await read(page),purchased,'Saved offer/lot/ledger flags survive reload');
  await tab(page,'Cargo');
- assert.equal(await page.locator('.cargo-table .trade-complication').count(),0,'Acquisition flags are not misrepresented as unnegotiated sale flags');
+ assert.equal(await page.locator('.sale-table .trade-complication').count(),0,'Acquisition flags are not misrepresented as unnegotiated sale flags');
  for(const {lot,entry,outcome}of bought){
   await tab(page,'Cargo');await action(page,'lot-audit',lot.id).click();await audit(page,lot.audit.price.audit.dice.dice,outcome);await dismiss(page);
   await ledgerAudit(page,entry.id,lot.audit.price.audit.dice.dice,outcome);
@@ -179,7 +179,7 @@ async function purchaseCase(page,context,result,f){
 
 async function saleCase(page,context,result,f){
  const initial=await raw(page),before=JSON.parse(initial),rolled=[...pair,...triple];
- await armDice(page,rolled);await tab(page,'Cargo');await action(page,'sale-all').click();await existingSell(page);await action(page,'sale').click();await title(page,'Prepare sale · Deterministic buyer');
+ await armDice(page,rolled);await existingSell(page);await action(page,'sale-all').click();await action(page,'sale').click();await title(page,'Prepare sale · Deterministic buyer');
  const prepLot=id=>modal(page).locator('tr').filter({has:page.locator('[name="qty_'+id+'"]')});
  await flags(prepLot('sale-pair'),'complication');await flags(prepLot('sale-severe'),'severe');
  const initialPrices={pair:await modal(page).locator('[name="price_sale-pair"]').inputValue(),severe:await modal(page).locator('[name="price_sale-severe"]').inputValue()};
@@ -200,9 +200,9 @@ async function saleCase(page,context,result,f){
  await submit(page,'Preview sale','Confirm sale');await tradeLabel(page,'Edit quantities / fees');await title(page,'Prepare sale · Deterministic buyer');
  assert.equal(await modal(page).locator('[name="qty_sale-pair"]').inputValue(),'1');assert.equal(await modal(page).locator('[name="qty_sale-severe"]').inputValue(),'2');assert.equal(await modal(page).locator('[name="fee"]').inputValue(),'7');
  await flags(prepLot('sale-pair'),'complication');await flags(prepLot('sale-severe'),'severe');await dismiss(page);await diceUsed(page,rolled);
- await tab(page,'Trade');await tab(page,'Cargo');
+ await existingSell(page);
  for(const [id,outcome]of [['sale-pair','complication'],['sale-severe','severe']]){
-  const saleRow=row(page,'cargo',id);await flags(saleRow.locator('td').nth(4),outcome);
+  const saleRow=row(page,'sale',id);await flags(saleRow.locator('td').nth(4),outcome);
   assert.equal(await saleRow.locator('.trade-complication').count(),1,'Each Sale Price cell shows its own cached lot flag');
   await action(page,'lot-audit',id).click();await audit(page,id==='sale-pair'?pair:triple,outcome);await dismiss(page);
  }
@@ -237,15 +237,15 @@ async function saleCase(page,context,result,f){
  for(const entry of sales)await ledgerAudit(page,entry.id,entry.lotId==='sale-pair'?pair:triple,entry.lotId==='sale-pair'?'complication':'severe');
  await tab(page,'History');await action(page,'undo').click();
  const undone=await read(page);assert.deepEqual(campaignData(undone),campaignData(before),'Undo restores cargo, bank, snapshots and all pre-sale campaign fields');
- await reload(page);assert.deepEqual(await read(page),undone);await tab(page,'Cargo');
- assert.equal(await page.locator('.cargo-table .trade-complication').count(),0,'Reload and Undo do not resurrect an invalidated current quote');
- assert.equal(await page.locator('.cargo-table').getByText('Not negotiated',{exact:true}).count(),2);
+ await reload(page);assert.deepEqual(await read(page),undone);await existingSell(page);
+ assert.equal(await page.locator('.sale-table .trade-complication').count(),0,'Reload and Undo do not resurrect an invalidated current quote');
+ for(const id of ['sale-pair','sale-severe'])assert.match(await row(page,'sale',id).locator('td').nth(4).innerText(),/Not negotiated/);
  // A real campaign mutation invalidates a cached quote and permits exactly
  // one fresh 3D roll. The old purchase/sale audits remain independent.
- await armDice(page,distinct);await action(page,'lot-sell','sale-pair').click();assert.equal(await page.locator('#modal').evaluate(el=>el.open),false,'Lot sell navigates without negotiating');await action(page,'sale').click();await title(page,'Prepare sale · Deterministic buyer');await flags(modal(page),'none');await dismiss(page);await diceUsed(page,distinct);
+ await tab(page,'Cargo');await armDice(page,distinct);await action(page,'lot-sell','sale-pair').click();assert.equal(await page.locator('#modal').evaluate(el=>el.open),false,'Lot sell navigates without negotiating');await action(page,'sale').click();await title(page,'Prepare sale · Deterministic buyer');await flags(modal(page),'none');await dismiss(page);await diceUsed(page,distinct);
  await tab(page,'Accounts');await action(page,'bank-correct').click();await fill(page,'amount',1);await fill(page,'reason','Synthetic revision invalidation');await submit(page,'Save');
- await tab(page,'Cargo');const invalid=row(page,'cargo','sale-pair');await flags(invalid,'none');assert.match(await invalid.locator('td').nth(4).innerText(),/Not negotiated/);
- const revised=await raw(page);await armDice(page,[4,4,4]);await action(page,'lot-sell','sale-pair').click();assert.equal(await page.locator('#modal').evaluate(el=>el.open),false,'Lot sell navigates without negotiating');await action(page,'sale').click();await title(page,'Prepare sale · Deterministic buyer');await flags(modal(page),'severe');await dismiss(page);await diceUsed(page,[...distinct,4,4,4]);assert.equal(await raw(page),revised);
+ await existingSell(page);const invalid=row(page,'sale','sale-pair');await flags(invalid,'none');assert.match(await invalid.locator('td').nth(4).innerText(),/Not negotiated/);
+ const revised=await raw(page);await tab(page,'Cargo');await armDice(page,[4,4,4]);await action(page,'lot-sell','sale-pair').click();assert.equal(await page.locator('#modal').evaluate(el=>el.open),false,'Lot sell navigates without negotiating');await action(page,'sale').click();await title(page,'Prepare sale · Deterministic buyer');await flags(modal(page),'severe');await dismiss(page);await diceUsed(page,[...distinct,4,4,4]);assert.equal(await raw(page),revised);
  await layout(page);await screenshot(page,result,'trade-complications-restored-'+result.id+'.png');
 }
 

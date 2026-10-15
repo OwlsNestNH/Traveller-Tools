@@ -374,7 +374,7 @@ async function openSearchEntry(page,scenario,{wait=true}={}){
  if(wait)await page.getByRole('heading',{name:'Find a '+scenario.kind,exact:true}).waitFor();
 }
 async function prepare(page, scenario, before, {loops = false, network = null} = {}) {
- if (scenario.selected) {await tab(page, 'Cargo'); await action(page, 'sale-all').click();}
+ if (scenario.selected) {await existingSell(page); await action(page, 'sale-all').click();}
  await tab(page, scenario.map ? 'Overview' : 'Trade');
  const open = async () => {
   const priorDice = await page.evaluate(() => contactDiceCalls);

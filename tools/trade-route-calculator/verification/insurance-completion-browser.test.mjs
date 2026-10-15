@@ -1,3 +1,4 @@
+import {existingSell} from './trade-ui.mjs';
 // Bounded Stage 2 held-cargo insurance, claims, amendment and close completion gate.
 // Production app/controller/rules/native Store/Web Locks remain unchanged. Only
 // named provider/publication/DOM boundaries are wrapped; no app body is replaced.
@@ -370,9 +371,10 @@ async function pointer(page, selector, clickCount = 1) {
 }
 async function fill(page, name, value) {const input = page.locator('#modal [name="' + name + '"]'); await input.fill(String(value)); await input.blur();}
 async function prepare(page, scenario, before, {loops = false, network = null} = {}) {
- await tab(page, 'Cargo'); await action(page, 'sale-all').click();
+ await existingSell(page); await action(page, 'sale-all').click();
  // Only the unrelated lot stays selected, including when a full claim removes its peer.
  await page.locator('[data-lot="insured-lot"]').uncheck();
+ await tab(page, 'Cargo');
  if (scenario.map) await tab(page, 'Overview');
  const initialCalls = (await gate(page)).totalCalls, spec = specification(before, scenario);
  const enter = async () => {
@@ -461,7 +463,7 @@ async function successful(page, result, before, scenario) {
  const bytes = await raw(page), calls = snapshot.totalCalls;
  await page.evaluate(() => {void insuranceGate.oldSubmit({preventDefault() {}, currentTarget: document.querySelector('#modal-form')});}); await frames(page); assert.equal(await raw(page), bytes); assert.equal((await gate(page)).totalCalls, calls);
  await detail(page, result, 'saved-success', ['#message'], successPattern);
- await tab(page, 'Cargo'); assert.deepEqual(await page.locator('#main [data-lot]:checked').evaluateAll(nodes => nodes.map(el => el.dataset.lot)), ['unrelated-lot'], 'Insurance write preserves unrelated cargo selection');
+ await existingSell(page); assert.deepEqual(await page.locator('#main [data-lot]:checked').evaluateAll(nodes => nodes.map(el => el.dataset.lot)), ['unrelated-lot'], 'Insurance write preserves unrelated cargo selection');
  if (scenario.mode === 'native') await accountingDetail(page, result, before, scenario);
  result.gate = safeReport(await gate(page)); await reloadUndo(page, result, before, scenario);
 }

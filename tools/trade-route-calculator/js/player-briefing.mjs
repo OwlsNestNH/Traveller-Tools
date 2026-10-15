@@ -1,6 +1,6 @@
-import {recordedOperatingResult} from './financial-summary.mjs?v=subsector-boundaries-20261015-91';
+import {recordedOperatingResult} from './financial-summary.mjs?v=cargo-management-20261015-92';
 import {latestMailCheck} from './mail-history.mjs';
-import {latestPassengerSearch,passengerOfferRemaining,passengerTotals} from './passengers.mjs?v=subsector-boundaries-20261015-91';
+import {latestPassengerSearch,passengerOfferRemaining,passengerTotals} from './passengers.mjs?v=cargo-management-20261015-92';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
 

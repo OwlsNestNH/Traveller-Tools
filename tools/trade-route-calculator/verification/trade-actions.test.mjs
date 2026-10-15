@@ -82,7 +82,7 @@ test('sale pair and severe flags survive cancel/reopen, quantity/fee edit, local
  const h=harness(S.validate(s),[5,5,2,5,5,5]),before=h.persisted();h.api.setSelected(['pair','triple']);h.api.beginSale();
  assert.equal(h.calls.priceDice,6);assert.equal(h.calls.quotes,2);assert.match(modalText(h),/data-complication="complication"/);assert.match(modalText(h),/data-complication="severe"/);same(h.persisted(),before);
  const original=JSON.parse(JSON.stringify([h.api.currentQuote('pair'),h.api.currentQuote('triple')]));
- h.api.closeModal();assert.match(h.api.cargoPanel(true),/data-complication="severe"/);h.api.beginSale();assert.equal(h.calls.priceDice,6);
+ h.api.closeModal();assert.doesNotMatch(h.api.cargoPanel(true),/data-complication=/);assert.match(h.api.cargoPanel(false),/data-complication="severe"/);h.api.beginSale();assert.equal(h.calls.priceDice,6);
  h.fill({qty_pair:1,qty_triple:2,ban_pair:2,ban_triple:2,price_triple:12345,reason:'Referee price',fee:5});h.api.updateSaleReview();noError(h);
  assert.equal(h.dom.ids.get('modal-title').textContent,'Review sale — Buyer');assert.match(modalText(h),/data-complication="complication"/);assert.match(modalText(h),/data-complication="severe"/);
  const first=JSON.parse(JSON.stringify(h.api.previewSale));

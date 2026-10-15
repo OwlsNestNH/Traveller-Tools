@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=subsector-boundaries-20261015-91';
+import {escapeHtml as esc} from './display.mjs?v=cargo-management-20261015-92';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.

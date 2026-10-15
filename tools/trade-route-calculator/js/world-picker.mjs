@@ -1,4 +1,4 @@
-import {sectors,sectorCatalog,subsectorForHex,loadWorld} from './map.mjs?v=subsector-boundaries-20261015-91';
+import {sectors,sectorCatalog,subsectorForHex,loadWorld} from './map.mjs?v=cargo-management-20261015-92';
 
 const RECENTS_KEY='traveller-trade-route-calculator:recent-worlds:v1';
 let recentMemory=[];

@@ -136,7 +136,7 @@ async function importBytes(page,bytes,{cancel=false}={}){
  await modal(page).locator('[name="backed"]').check();await submit(page,'Replace campaign');
 }
 async function saleDraft(page){
- await tab(page,'Cargo');await action(page,'sale-clear').click();
+ await existingSell(page);await action(page,'sale-clear').click();
  for(const id of ['stress-low','stress-high'])await page.locator('[data-lot="'+id+'"]').check();
  await existingSell(page);await action(page,'sale').click();await heading(page,'Prepare sale · Stress buyer');
  await fill(page,'qty_stress-low',1);await fill(page,'qty_stress-high',2);

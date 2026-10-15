@@ -98,15 +98,17 @@ async function manifestFacts(page,f){
  const panel=page.locator('#cargo-hold-panel'),e=f.expected;
  assert.equal(await panel.locator('[data-cargo-lot]').count(),e.lots);
  assert.equal(await panel.locator('[data-cargo-contract]').count(),e.lots?2:0);
- assert.equal(await panel.locator('.cargo-investment .mono').textContent(),e.investment,'Investment is only remaining owned-goods cost basis; freight/mail income is excluded');
+ if(e.lots)assert.equal(await panel.locator('.cargo-investment .mono').textContent(),e.investment,'Investment is only remaining owned-goods cost basis; freight/mail income is excluded');
+ else assert.equal(await panel.locator('.cargo-investment').count(),0,'No empty speculative investment category');
  assert.equal(await panel.locator('.cargo-capacity-values strong').textContent(),e.occupied+' / 120 t');
  assert.equal(await panel.locator('.cargo-capacity-values > span').textContent(),e.free+' t free');
- assert.equal(await panel.locator('.cargo-capacity > .help').textContent(),'Goods '+e.goods+' t · Freight '+e.freight+' t · Mail '+e.mail+' t');
+ if(e.lots)assert.equal(await panel.locator('.cargo-capacity > .help').textContent(),'Goods '+e.goods+' t · Freight '+e.freight+' t · Mail '+e.mail+' t');
+ else assert.equal(await panel.locator('.cargo-capacity > .help').count(),0,'No zero goods/freight/mail summary placeholders');
  assert.equal(await panel.locator('progress').getAttribute('aria-valuetext'),e.occupied+' of 120 tons');
  assert.match(await panel.locator('.cargo-other summary').textContent(),/Other hold use: 14\.5 t/);
- await panel.locator('.cargo-other summary').click();
+ await panel.locator('.cargo-other summary').focus();await panel.locator('.cargo-other summary').press('Enter');
  assert.deepEqual(await panel.locator('.cargo-other dd').allTextContents(),['3 t','10 t','1.5 t'],'Luggage, occupied fuel bladders and physical LSS overflow each count once');
- await panel.locator('.cargo-other summary').click();
+ await panel.locator('.cargo-other summary').focus();await panel.locator('.cargo-other summary').press('Enter');
  assert.match(await panel.locator('.cargo-location').textContent(),new RegExp('ship at '+f.state.worlds[f.state.actual].name));
  assert.equal(await panel.locator('[data-mutate],input,select').count(),0,'Quick manifest has no mutating or editing inputs');
  if(e.lots){
@@ -120,7 +122,8 @@ async function manifestFacts(page,f){
   assert.equal(await row('lot-purchase-unknown').locator('td').nth(2).textContent(),'Not recordedBase not recorded','Unknown paid price is not reconstructed from cost basis');
   assert.deepEqual(await panel.locator('[data-cargo-contract]').evaluateAll(rows=>rows.map(row=>row.dataset.cargoContract)),['freight-accepted','mail-accepted'],'Delivered freight and cancelled mail do not appear aboard');
  }else{
-  assert.match(await panel.textContent(),/No owned trade goods aboard/);assert.match(await panel.textContent(),/No accepted freight or mail aboard/);
+  assert.doesNotMatch(await panel.textContent(),/No owned trade goods aboard|No accepted freight or mail aboard/);
+  assert.equal(await panel.locator('.cargo-speculative,.cargo-consignments').count(),0);
   assert.equal(await panel.locator('.cargo-manifest-scroll').count(),0);
  }
  await unchanged(page,f,'Reading the complete manifest');
@@ -184,8 +187,8 @@ async function cargoCameraStability(page,f){
  for(const action of ['cargo-hold-close','cargo-hold','ship-expenses','cargo-hold','refuel','cargo-hold','refill-support','cargo-hold']){
   await click(page,action);await same('Cargo camera through '+action);await unchanged(page,f,'Cargo camera through '+action);
  }
- await page.locator('.cargo-other > summary').click();await same('Expanded Cargo capacity breakdown');
- await page.locator('.cargo-other > summary').click();await same('Collapsed Cargo capacity breakdown');
+ await page.locator('.cargo-other > summary').focus();await page.locator('.cargo-other > summary').press('Enter');await same('Expanded Cargo capacity breakdown');
+ await page.locator('.cargo-other > summary').focus();await page.locator('.cargo-other > summary').press('Enter');await same('Collapsed Cargo capacity breakdown');
  await click(page,'map-zoom-reset');await page.waitForFunction(()=>document.querySelector('.map-zoom-controls .help')?.textContent==='100%');
  return {baseline,checks};
 }
