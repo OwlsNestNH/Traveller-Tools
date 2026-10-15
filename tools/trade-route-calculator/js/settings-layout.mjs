@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=map-scroll-spinners-20261015-93';
+import {ruleInfo} from './rule-references.mjs?v=referee-cargo-20261015-94';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={

@@ -63,17 +63,38 @@ normalization, cancellation/restoration, capacity, separate costs, partial/full
 loss, passenger retention, repeat clicks, navigation/reload, quota failure/retry,
 whole reserve transfer boundaries and native fractional-tail spinner stepping.
 
-## Existing referee entry behavior
+## Referee Add / Adjust
 
-“Add existing / referee cargo” already creates a separate speculative lot with
-explicit quantity, remaining actual basis including fees/premium, goods purchase
-value excluding fees, reason and illegal flag. It does not debit the bank and
-does not invent a historical purchase quote. New quantities are currently rounded
-up by `state.addLot`; existing fractional quantities are still valid.
+Cargo opens one Type dropdown: Trade Goods, Freight, Mail, Passengers, Other.
+Trade Goods uses the existing add-lot operation with explicit whole tons and
+purchase cost per ton (whole Credits; 0 means free). The per-ton reference and
+exact whole-lot basis are recorded without charging the bank or applying the
+campaign's 100-Credit convenience rounding. Each addition remains a separate lot;
+normal buyer negotiation and confirmation remain in Trade Sell.
 
-Manual transport contracts already offer Freight/Mail/Passengers with quantity,
-delivery payment, due days and reason. Passenger selection opens the existing
-passenger form with destination, class, whole people, fare/person and accommodation
-confirmations, then previews normal boarding accounting. Delivery revenue is not
-an acquisition cost. A unified Trade/Freight/Mail/Passenger Add control, optional
-typed cost and hundreds/thousands spinner are unresolved and unchanged.
+Freight and Mail reuse manual contract acceptance. Passengers reuse the existing
+capacity checks, boarding preview and confirmation. They retain normal delivery
+payment timing, luggage and LSS rules. Type changes and modal cancellation do not
+save. New cargo operations reuse the established owned contract-lifecycle save
+boundary for repeat-click, stale-state, rejected-write and uncertain-publication
+protection; no duplicate persistence path is introduced.
+
+Other cargo is an optional separate `otherCargo` array, never a commodity mapping.
+Its first addition atomically adopts campaign format 2 so older calculators reject
+the file rather than ignoring hold occupancy. Untouched legacy campaigns remain
+format 1; current validation accepts 1 and 2 without migrating or downgrading.
+Sale/full loss retains format 2, including retained audit/Undo. Undoing the original
+addition restores format 1 and field absence. The storage key is unchanged.
+Item/description, whole cargo-space tons and optional whole-lot sale value are
+separate fields. Missing price stays unspecified; zero means free. Whole-lot sale
+requires an explicit total and confirmation, removes the entire item once and
+posts only that total as `Other cargo sale`. It does not generate commodity rolls,
+fees, tax or invented speculative profit. Add, adjust and disposal do not pay.
+Partial loss clears the previous sale value and retains it in the loss audit,
+requiring a new explicit value before selling the remainder. Nothing prorates an
+arbitrary item's whole-lot price by its cargo space.
+
+Other quantities participate in capacity, both manifests, removal and reports.
+Player-safe briefing keeps a neutral item reference and quantity/value while
+preserving the existing exclusion of free-text cargo descriptions and GM reasons.
+JSON backups and inverse Undo retain records, values and absence exactly.

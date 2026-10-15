@@ -1,15 +1,15 @@
-import {supportCompartments} from './lss-compartments.mjs?v=map-scroll-spinners-20261015-93';
+import {supportCompartments} from './lss-compartments.mjs?v=referee-cargo-20261015-94';
 // Explicit whole-ton Cargo previews. Nothing here runs during load or render.
 import * as A from './amounts.mjs';
-import {passengerShip,passengerSpace,luggageSources} from './passengers.mjs?v=map-scroll-spinners-20261015-93';
-import {passengerLuggage} from './accommodation.mjs?v=map-scroll-spinners-20261015-93';
-import {supportCargo,supportAmount,anchorSupport,supportDisplay} from './life-support.mjs?v=map-scroll-spinners-20261015-93';
-import {bladderSpace} from './fuel.mjs?v=map-scroll-spinners-20261015-93';
+import {passengerShip,passengerSpace,luggageSources} from './passengers.mjs?v=referee-cargo-20261015-94';
+import {passengerLuggage} from './accommodation.mjs?v=referee-cargo-20261015-94';
+import {supportCargo,supportAmount,anchorSupport,supportDisplay} from './life-support.mjs?v=referee-cargo-20261015-94';
+import {bladderSpace} from './fuel.mjs?v=referee-cargo-20261015-94';
 export const cargoNumber=value=>supportAmount(value);
 const exact=value=>{try{return A.decimal(value);}catch{return A.auditNumber(value);}};
 export const wholeCargo=value=>String(-A.floor(A.mul(cargoNumber(value),-1)));
 export function cargoRemovalEntries(s){
- const rows=[...s.lots.map(l=>({key:'lot:'+l.id,kind:'lot',id:l.id,quantity:l.quantity})),...s.contracts.filter(c=>c.kind!=='passenger'&&c.status==='accepted').map(c=>({key:'contract:'+c.id,kind:'contract',id:c.id,quantity:c.quantity})),
+ const rows=[...(s.otherCargo??[]).map(l=>({key:'other:'+l.id,kind:'other',id:l.id,quantity:l.quantity})),...s.lots.map(l=>({key:'lot:'+l.id,kind:'lot',id:l.id,quantity:l.quantity})),...s.contracts.filter(c=>c.kind!=='passenger'&&c.status==='accepted').map(c=>({key:'contract:'+c.id,kind:'contract',id:c.id,quantity:c.quantity})),
   {key:'luggage',kind:'luggage',quantity:A.decimal(passengerLuggage(passengerShip(s)))},
   {key:'support',kind:'support',quantity:exact(supportCargo(s.ship))},
   {key:'bladders',kind:'bladders',quantity:String(bladderSpace(s.ship))}];
@@ -51,6 +51,9 @@ export function applyCargoRemoval(s,draft,{reducePolicy,uid}){
     reducePolicy(s,lot.id,removed);
    }
    lot.quantity=remaining;
+  }else if(e.kind==='other'){
+   const item=s.otherCargo.find(x=>x.id===e.id);item.quantity=remaining;
+   if(A.cmp(removed,0)>0){record.previousSaleValue=item.saleValue??null;delete item.saleValue;(item.losses??=[]).push({...record,hours:s.hours});}
   }else if(e.kind==='contract'){
    const contract=s.contracts.find(c=>c.id===e.id);contract.quantity=remaining;
    if(A.cmp(removed,0)>0){(contract.cargoLosses??=[]).push({...record,hours:s.hours});if(A.cmp(remaining,0)===0)contract.status='lost';}
@@ -74,6 +77,7 @@ export function applyCargoRemoval(s,draft,{reducePolicy,uid}){
   if(A.cmp(cargoNumber(e.quantity),remaining)!==0)changes.push(record);
  }
  s.lots=s.lots.filter(l=>A.cmp(l.quantity,0)>0);
+ if(s.otherCargo)s.otherCargo=s.otherCargo.filter(l=>A.cmp(l.quantity,0)>0);
  s.events.push({id:uid(),label:'Cargo removal audit',hours:s.hours,world:s.actual,...summary,changes});
  return summary;
 }

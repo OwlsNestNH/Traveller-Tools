@@ -1,16 +1,16 @@
-import {ruleInfo} from './rule-references.mjs?v=map-scroll-spinners-20261015-93';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=map-scroll-spinners-20261015-93';
-import {passengerShip} from './passengers.mjs?v=map-scroll-spinners-20261015-93';
+import {ruleInfo} from './rule-references.mjs?v=referee-cargo-20261015-94';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=referee-cargo-20261015-94';
+import {passengerShip} from './passengers.mjs?v=referee-cargo-20261015-94';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=map-scroll-spinners-20261015-93';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=map-scroll-spinners-20261015-93';
-import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=map-scroll-spinners-20261015-93';
-import {roomCounts} from './accommodation.mjs?v=map-scroll-spinners-20261015-93';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=map-scroll-spinners-20261015-93';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=map-scroll-spinners-20261015-93';
-import {creditStep} from './rounding.mjs?v=map-scroll-spinners-20261015-93';
-import {roll} from './rules.mjs?v=map-scroll-spinners-20261015-93';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=map-scroll-spinners-20261015-93';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=referee-cargo-20261015-94';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=referee-cargo-20261015-94';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=referee-cargo-20261015-94';
+import {roomCounts} from './accommodation.mjs?v=referee-cargo-20261015-94';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=referee-cargo-20261015-94';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=referee-cargo-20261015-94';
+import {creditStep} from './rounding.mjs?v=referee-cargo-20261015-94';
+import {roll} from './rules.mjs?v=referee-cargo-20261015-94';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=referee-cargo-20261015-94';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

@@ -1,6 +1,6 @@
-import * as S from './state.mjs?v=map-scroll-spinners-20261015-93';
-import {creditStep} from './rounding.mjs?v=map-scroll-spinners-20261015-93';
-import {SaveNotCommittedError} from './persistence.mjs?v=map-scroll-spinners-20261015-93';
+import * as S from './state.mjs?v=referee-cargo-20261015-94';
+import {creditStep} from './rounding.mjs?v=referee-cargo-20261015-94';
+import {SaveNotCommittedError} from './persistence.mjs?v=referee-cargo-20261015-94';
 
 // Store remains synchronous. An injected provider may return a completion
 // Promise; that completion must include the durable write and publication.

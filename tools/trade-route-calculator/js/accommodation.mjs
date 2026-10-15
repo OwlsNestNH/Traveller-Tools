@@ -1,4 +1,4 @@
-import {up} from './rounding.mjs?v=map-scroll-spinners-20261015-93';
+import {up} from './rounding.mjs?v=referee-cargo-20261015-94';
 import {sum,mul,decimal,cmp,credit} from './amounts.mjs';
 
 export const tiers=['low','middle','high'];

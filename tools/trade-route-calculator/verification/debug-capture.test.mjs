@@ -33,7 +33,7 @@ const fields=h=>[...h.dom.fields()].map(([name,node])=>[name,node.value]);
 const material=state=>Object.fromEntries(Object.entries(state).filter(([key])=>!['revision','events','jumpAttempts'].includes(key)));
 function openCargo(h){
  h.api.setTab('Cargo');h.api.actions['add-lot']();
- h.fill({description:'Synthetic diagnostic cargo',quantity:'2',basis:'123',goods:'100',reason:'Synthetic opening cargo'});
+ h.fill({description:'Synthetic diagnostic cargo',quantity:'2',purchasePrice:'50',reason:'Synthetic opening cargo'});
 }
 function openTime(h){
  h.api.actions.time();h.fill({date:h.api.state.dateLabel,hours:25,reason:'Synthetic time correction'});
@@ -63,7 +63,7 @@ test('plain cargo caught storage rejection logs once, retains input and retries 
  assert.doesNotMatch(JSON.stringify(safe),/Synthetic diagnostic cargo|quota|stack|campaign|cargoUsed/);
  await h.submit();assert.equal(h.counters.attempts,2);assert.equal(h.counters.writes,1);assert.equal(h.counters.notifications,1);
  const saved=h.persisted();assert.equal(saved.bank,before.bank);assert.equal(saved.revision,before.revision+1);assert.equal(saved.undo.length,before.undo.length+1);
- assert.equal(saved.lots.length,before.lots.length+1);assert.equal(saved.lots[0].quantity,'2');assert.equal(saved.lots[0].basis,'123');assert.equal(saved.lots[0].goodsValue,'100');
+ assert.equal(saved.lots.length,before.lots.length+1);assert.equal(saved.lots[0].quantity,'2');assert.equal(saved.lots[0].basis,'100');assert.equal(saved.lots[0].goodsValue,'100');
  same(saved.ledger,before.ledger);same(material(S.undo(saved)),material(before));
  assert.equal(h.api.debugErrors.length,1);assert.equal(ui(h).modalOpen,false);
 });

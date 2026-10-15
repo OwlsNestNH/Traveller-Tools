@@ -1,12 +1,12 @@
-import {ruleInfo} from './rule-references.mjs?v=map-scroll-spinners-20261015-93';
-import {passengerShip,passengerSpace} from './passengers.mjs?v=map-scroll-spinners-20261015-93';
+import {ruleInfo} from './rule-references.mjs?v=referee-cargo-20261015-94';
+import {passengerShip,passengerSpace} from './passengers.mjs?v=referee-cargo-20261015-94';
 // Read-only bridge manifest. Purchase facts come from each lot's frozen audit;
 // current price settings, contract revenue and insurance destinations are not inputs.
 import * as A from './amounts.mjs';
-import {used} from './state.mjs?v=map-scroll-spinners-20261015-93';
-import {bladderSpace} from './fuel.mjs?v=map-scroll-spinners-20261015-93';
-import {passengerLuggage} from './accommodation.mjs?v=map-scroll-spinners-20261015-93';
-import {supportCargo,supportStock,supportDisplay} from './life-support.mjs?v=map-scroll-spinners-20261015-93';
+import {used} from './state.mjs?v=referee-cargo-20261015-94';
+import {bladderSpace} from './fuel.mjs?v=referee-cargo-20261015-94';
+import {passengerLuggage} from './accommodation.mjs?v=referee-cargo-20261015-94';
+import {supportCargo,supportStock,supportDisplay} from './life-support.mjs?v=referee-cargo-20261015-94';
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=x=>{const [whole,fraction]=String(x).split('.');return 'Cr '+whole.replace(/\B(?=(\d{3})+(?!\d))/g,',')+(fraction===undefined?'':'.'+fraction);};
 const button=(label,action,arg='',extra='')=>'<button data-action="'+action+'" data-arg="'+esc(arg)+'" '+extra+'>'+esc(label)+'</button>';
@@ -26,8 +26,8 @@ export function cargoManifest(state){
  const accepted=state.contracts.filter(c=>c.status==='accepted'&&c.kind!=='passenger'),sum=rows=>A.sum(rows.map(r=>r.quantity));
  const goods=sum(state.lots),freight=sum(accepted.filter(c=>c.kind==='freight')),mail=sum(accepted.filter(c=>c.kind==='mail'));
  const luggage=passengerLuggage(passengerShip(state)),bladders=bladderSpace(state.ship),support=supportCargo(state.ship),stock=supportStock(passengerShip(state));
- const occupied=used(state),free=A.sub(state.ship.capacity,occupied),passengerAccommodation=passengerSpace(state),other=A.sum([luggage,bladders,support,passengerAccommodation]);
- return {lots:state.lots,contracts:accepted,goods,freight,mail,luggage,bladders,support,passengerAccommodation,occupied,free,other,capacity:state.ship.capacity,
+ const occupied=used(state),free=A.sub(state.ship.capacity,occupied),passengerAccommodation=passengerSpace(state),other=A.sum([...(state.otherCargo??[]).map(item=>item.quantity),luggage,bladders,support,passengerAccommodation]);
+ return {lots:state.lots,otherCargo:state.otherCargo??[],contracts:accepted,goods,freight,mail,luggage,bladders,support,passengerAccommodation,occupied,free,other,capacity:state.ship.capacity,
   investment:String(state.lots.reduce((total,lot)=>total+A.credit(lot.basis),0n)),
   supportNote:stock.tracked&&stock.legacy?'Legacy life support: recorded capacity accounting is preserved until stock is confirmed.':stock.tracked&&stock.cargoTons===null?'Life support cargo use is not known; confirm stock and hull in Settings.':null};
 }
@@ -44,7 +44,7 @@ export function cargoHoldPanel(state,core){
  });
  const contracts=m.contracts.filter(c=>A.cmp(c.quantity,0)>0).map(c=>'<tr data-cargo-contract="'+esc(c.id)+'"><td><strong>'+esc(c.description||(c.kind==='mail'?'Mail containers':'Freight'))+'</strong><div class="cargo-row-meta"><span class="tag">'+(c.kind==='mail'?'Mail':'Freight')+'</span><span>'+esc(c.id)+'</span></div></td><td class="number">'+tons(c.quantity)+'</td><td class="number">'+esc(state.worlds[c.destination]?.name||'Not recorded')+'<div class="cargo-row-meta">'+button('Details','contract-audit',c.id,'aria-label="Details for '+esc(c.kind)+' '+esc(c.id)+'"')+'</div></td></tr>');
  const summary=[['Goods',m.goods],['Freight',m.freight],['Mail',m.mail]].filter(([,q])=>A.cmp(q,0)>0).map(([label,q])=>label+' '+tons(q)+' t').join(' &middot; ');
- const other=[['Passenger luggage',m.luggage],['Basic passenger accommodation',m.passengerAccommodation],['Fuel in bladders '+ruleInfo('bladders'),m.bladders],['Life support overflow',m.support]].filter(([,q])=>A.cmp(q,0)>0).map(([label,q])=>'<dt>'+label+'</dt><dd>'+tons(q)+' t</dd>').join('');
+ const other=[...m.otherCargo.map(item=>[esc(item.description)+' (Other)',item.quantity]),['Passenger luggage',m.luggage],['Basic passenger accommodation',m.passengerAccommodation],['Fuel in bladders '+ruleInfo('bladders'),m.bladders],['Life support overflow',m.support]].filter(([,q])=>A.cmp(q,0)>0).map(([label,q])=>'<dt>'+label+'</dt><dd>'+tons(q)+' t</dd>').join('');
  const ratio=A.cmp(m.capacity,0)>0?Math.max(0,Math.min(100,Number(supportDisplay(A.mul(A.div(m.occupied,m.capacity),100))))):0;
  return '<aside id="cargo-hold-panel" class="panel world-screen cargo-hold-panel" aria-label="Cargo hold quick manifest">'+
   '<div class="screen-topline"><span>● Cargo Hold</span>'+button('← World data','cargo-hold-close')+'</div><h2 tabindex="-1">Cargo aboard</h2><p class="help cargo-location">'+esc(state.ship.name)+' · ship at '+esc(actual?.name||'Not set')+'</p>'+

@@ -1,13 +1,13 @@
-import {recordedOperatingResult} from './financial-summary.mjs?v=map-scroll-spinners-20261015-93';
-import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=map-scroll-spinners-20261015-93';
-import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=map-scroll-spinners-20261015-93';
-import {bladderSpace} from './fuel.mjs?v=map-scroll-spinners-20261015-93';
+import {recordedOperatingResult} from './financial-summary.mjs?v=referee-cargo-20261015-94';
+import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=referee-cargo-20261015-94';
+import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=referee-cargo-20261015-94';
+import {bladderSpace} from './fuel.mjs?v=referee-cargo-20261015-94';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
-import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=map-scroll-spinners-20261015-93';
-import {distance} from './map.mjs?v=map-scroll-spinners-20261015-93';
+import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=referee-cargo-20261015-94';
+import {distance} from './map.mjs?v=referee-cargo-20261015-94';
 
-export const REPORT_VERSION='2026.10.15.93';
+export const REPORT_VERSION='2026.10.15.94';
 const clean=v=>String(v??'Not recorded').replace(/[\r\n\t\x00-\x1f]+/g,' ').trim();
 const number=v=>String(v).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const cr=v=>v==null?'Not recorded':'Cr '+number(v);
@@ -32,9 +32,9 @@ export function campaignReport(s,core,{exportedAt=new Date()}={}){
  line('Campaign',s.name);line('Ship',s.ship.name);line('Campaign date',date(s.hours));line('Current system',world(s.actual));
  line('Exported',exportedAt.toISOString());line('Calculator version',REPORT_VERSION);
  section('SHIP & OCCUPANTS');
- const cargo=A.sum(s.lots.map(l=>l.quantity)),freight=A.sum(s.contracts.filter(c=>c.status==='accepted'&&c.kind!=='passenger').map(c=>c.quantity)),luggage=passengerLuggage(s.ship);
+ const otherCargo=A.sum((s.otherCargo??[]).map(l=>l.quantity)),cargo=A.sum(s.lots.map(l=>l.quantity)),freight=A.sum(s.contracts.filter(c=>c.status==='accepted'&&c.kind!=='passenger').map(c=>c.quantity)),luggage=passengerLuggage(s.ship);
  line('Cargo capacity',s.ship.capacity+' tons');line('Speculative cargo aboard',A.decimal(cargo)+' tons');line('Freight / mail aboard',A.decimal(freight)+' tons');line('Passenger luggage',luggage+' tons');line('Basic passenger accommodation',A.decimal(passengerAccommodation)+' tons');if(booked.total)line('Booked passengers aboard',booked.total+' ('+booked.high+' High, '+booked.middle+' Middle, '+booked.basic+' Basic, '+booked.low+' Low; already included in support totals)');
- line('Cargo space used by fuel in bladders',bladderSpace(s.ship)+' tons');line('Cargo space used by life support',supportStock(s.ship).cargoTons===null?'Unknown until stock and hull are recorded':supportDisplay(supportCargo(s.ship))+' tons');line('Space available',supportDisplay(A.sub(s.ship.capacity,A.sum([cargo,freight,luggage,passengerAccommodation,bladderSpace(s.ship),supportCargo(s.ship)])))+' tons');
+ line('Cargo space used by fuel in bladders',bladderSpace(s.ship)+' tons');line('Cargo space used by life support',supportStock(s.ship).cargoTons===null?'Unknown until stock and hull are recorded':supportDisplay(supportCargo(s.ship))+' tons');line('Space available',supportDisplay(A.sub(s.ship.capacity,A.sum([cargo,otherCargo,freight,luggage,passengerAccommodation,bladderSpace(s.ship),supportCargo(s.ship)])))+' tons');
  line('Jump rating',s.ship.jump);if(s.ship.fuel){line('Ship displacement',s.ship.fuel.displacementTons+' tons');line('Jump fuel aboard / capacity',s.ship.fuel.aboardTons+' / '+s.ship.fuel.capacityTons+' tons');line('Fuel scope','Jump fuel only; power-plant fuel excluded.');}line('Staterooms (all, including empty)',roomTotal(s.ship));
  for(const tier of ['low','middle','high']){const service=s.ship.accommodation?.roomService?.[tier];line('  '+tier+' staterooms',roomCounts(s.ship)[tier]+'; '+serviceLabel(tier,service)+' service; '+cr(serviceRate(tier,service))+'/room/month');}
  line('Cost basis','Campaign rates; weekly charges are one quarter of monthly rates.');
@@ -100,6 +100,8 @@ export function campaignReport(s,core,{exportedAt=new Date()}={}){
   const active=s.policies.filter(p=>p.lotId===l.id&&p.status==='active');
   line('Insurance',active.length?active.map(p=>p.coverage+'% on '+p.remainingQuantity+' tons').join('; '):'No active policy');
  });
+ if((s.otherCargo??[]).length){section('OTHER CARGO ABOARD');for(const item of s.otherCargo){line('Item / description',item.description);line('Cargo space',item.quantity+' tons');line('Sale value — whole lot',item.saleValue===undefined?'Not recorded':cr(item.saleValue));}}
+ const otherSales=s.ledger.filter(e=>e.type==='Other cargo sale');if(otherSales.length){section('OTHER WHOLE-LOT SALES');for(const sale of otherSales){line('Item',sale.audit?.description);line('Proceeds (not calculated profit)',cr(sale.amount));}}
  section('COMPLETED CARGO SALES');
  if(!sales.length)out.push('None.');
  sales.forEach((e,i)=>{
