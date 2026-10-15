@@ -119,7 +119,7 @@ try{
   assert.equal(await fuelAudit.evaluate(el=>el.open),false);assert.equal(await page.locator('#service-form [name="fuelTons"]').inputValue(),'3');
   await page.locator('#service-panel [data-action="service-cancel"]').click();assert.equal(await saved(),original);
   await page.locator('#ship-actions [data-action="refill-support"]').click();
-  await info(page.locator('#service-panel [data-rule-info="lss"]'),'lss');await info(page.locator('#service-panel [data-rule-info="support-pricing"]'),'support-pricing');
+  await page.locator('#service-panel [data-action="service-audit"]').click();await info(page.locator('#service-panel [data-rule-info="lss"]'),'lss');await info(page.locator('#service-panel [data-rule-info="support-refill"]'),'support-refill');
   await page.locator('#service-panel [data-action="service-back"]').click();
   await page.locator('#ship-actions [data-action="ship-expenses"]').click();await page.locator('#expense-panel [data-action="expense-open"][data-arg$=":mortgage"]').click();
   await info(page.locator('#expense-panel [data-rule-info="mortgage"]'),'mortgage');await page.locator('#expense-panel [data-action="expense-cancel"]').click();await page.locator('#expense-panel [data-action="expense-close"]').click();

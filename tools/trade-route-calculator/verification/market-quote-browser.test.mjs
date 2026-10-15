@@ -25,7 +25,7 @@ const OFFER = 'cap-offer', DESCRIPTION = 'Preserved cap offer';
 const sizes = [{width: 1440, height: 1100}, {width: 390, height: 844}];
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const screenshotOptions = {type: 'jpeg', quality: 82, fullPage: false, scale: 'css'};
-const sources = ['index.html', 'style.css', 'dashboard.css', 'rule-references.css', 'js/app.mjs', 'js/state.mjs', 'js/rules.mjs', 'js/persistence.mjs', 'js/campaign-controller.mjs', 'rules/core-2022.json', 'verification/fixtures/gui-parity.mjs', 'verification/market-quote-browser.test.mjs'];
+const sources = ['index.html', 'style.css', 'dashboard.css', 'rule-references.css', 'lss-refill.css', 'js/app.mjs', 'js/state.mjs', 'js/rules.mjs', 'js/persistence.mjs', 'js/campaign-controller.mjs', 'rules/core-2022.json', 'verification/fixtures/gui-parity.mjs', 'verification/market-quote-browser.test.mjs'];
 const report = {suite: 'Market current retail / saved supplier quote', startedAt: new Date().toISOString(), requestedCommit: process.env.TRAVELLER_COMMIT || null, declaredCases: 2, declaredScreenshots: 10, cases: [], errors: [], scope: 'One synthetic preserved-offer/current-cap scenario at 1440px and 390px. Actual Settings save, Market, original Audit, purchase confirmation, native persisted debit and reload. Full viewport images target named visible sections; horizontally clipped tables are never described as full-table evidence. No fault matrix, repricing, layout changes or live API data.'};
 let browser;
 

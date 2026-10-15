@@ -13,6 +13,7 @@ export function serviceRate(tier,service){
 export function serviceLabel(tier,service){const level=service?.level??tier;return level[0].toUpperCase()+level.slice(1);}
 export const personMonthlyRate=1000;
 export const personRate=tier=>tier==='high'?3000:1000;
+export function refillPersonRate(ship,tier){const rate=credit(ship.accommodation?.refillRates?.[tier]??String(personRate(tier)));if(rate<0n)throw Error('Refill person rates must be non-negative whole Credits.');return String(rate);}
 // Old totals excluded low rooms. Preserve them as middle until the user reviews setup.
 export function roomCounts(ship){return ship.accommodation?.rooms??{low:ship.accommodation?.lowBerths??0,middle:ship.staterooms??0,high:0};}
 export function roomTotal(ship){return tiers.reduce((n,t)=>n+(roomCounts(ship)[t]??0),0);}
@@ -20,6 +21,7 @@ export function occupants(ship){return ship.accommodation||ship.supportOccupants
 export function validateAccommodation(ship){
  const a=ship.accommodation;if(a===undefined)return;
  if(!a||Object.hasOwn(a,'bookedLowSupport'))throw Error('Invalid accommodation.');
+ for(const tier of ['middle','high'])refillPersonRate(ship,tier);
  for(const tier of tiers){
   const n=roomCounts(ship)[tier];if(!Number.isSafeInteger(n)||n<0)throw Error('Stateroom counts must be non-negative whole numbers.');
   serviceRate(tier,a.roomService?.[tier]);

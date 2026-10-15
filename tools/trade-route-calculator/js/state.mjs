@@ -1,3 +1,4 @@
+import {compartmentRefillQuote,refillPricingAudit} from './lss-refill-transaction.mjs?v=subsector-boundaries-20261015-91';
 import {createDashboardBaseline,validateDashboardBaseline} from './dashboard-baseline.mjs?v=subsector-boundaries-20261015-91';
 import {validateWorldChangeHistory,isWorldChangeAudit} from './world-change-history.mjs?v=subsector-boundaries-20261015-91';
 import {validateContactSearchHistory,commitContactSearch} from './contact-search.mjs?v=subsector-boundaries-20261015-91';
@@ -9,7 +10,7 @@ import {validateJumpAttempts,currentJumpAttempt,lastJump,savedJumpAttempt,depart
 import {distance as jumpDistance} from './map.mjs?v=subsector-boundaries-20261015-91';
 import {validateMailHistory} from './mail-history.mjs?v=mail-history-1';
 import {bladderSpace,validateFuel,fuelPurchase,consumeJumpFuel} from './fuel.mjs?v=subsector-boundaries-20261015-91';
-import {validateSupport,refillQuote,consumeSupport,anchorSupport,supportCargo,supportAmount,supportReference,extraSupportReference} from './life-support.mjs?v=subsector-boundaries-20261015-91';
+import {validateSupport,refillQuote,consumeSupport,anchorSupport,supportCargo,supportAmount,supportDisplay,supportReference,extraSupportReference} from './life-support.mjs?v=subsector-boundaries-20261015-91';
 import {up,creditStep,roundExisting} from './rounding.mjs?v=subsector-boundaries-20261015-91';
 import {validateAccommodation,passengerLuggage,roomCounts} from './accommodation.mjs?v=subsector-boundaries-20261015-91';
 import {add,sub,mul,div,cmp,floor,sum,decimal,credit} from './amounts.mjs';
@@ -395,6 +396,14 @@ export function applyRounding(s){
  validate(s);return changes;
 }
 
+export function refillCompartments(s,draft,{gm=false}={}){
+ const q=compartmentRefillQuote(s,draft,{gm});if(!q.changed)throw Error('No supply adjustment or purchase selected.');
+ s.ship.lifeSupport={capacityHours:q.capacityHours,stockUnits:q.afterStockUnits,cargoUnits:q.afterCargoUnits};
+ const details=[['Internal before',supportDisplay(q.compartments.internal.before)],['Internal after',supportDisplay(q.compartments.internal.after)],['Cargo before',supportDisplay(q.compartments.cargo.before)],['Cargo after',supportDisplay(q.compartments.cargo.after)],['Purchased LSS',supportDisplay(q.purchasedUnits)],['Discarded fraction LSS',supportDisplay(q.discardedUnits)],['Reason',q.reason],['Comfort provisions Cr',q.comfortAmount],['Comfort note',q.comfortNote??''],['Cabin upkeep','Separate operating expense; not charged here'],...refillPricingAudit(q)];
+ if(gm)s.events.push({id:uid(),label:'Life support GM adjustment audit',hours:s.hours,world:s.actual,lifeSupportAdjustment:{...q,details,bankChange:'0'}});
+ else note(s,'Ship expense - Life support refill',-credit(q.amount),{expense:{kind:'lifeSupportRefill',label:'Life support refill',worldId:s.actual,worldName:s.worlds[s.actual]?.name||s.actual,...q,details}});
+ return q;
+}
 export function refillLifeSupport(s,options={}){
  const q=refillQuote(s,options);
  if(cmp(supportAmount(q.purchasedStockUnits),0)===0&&credit(q.comfortAmount)===0n)throw Error('Life support is already full for the requested target.');

@@ -154,7 +154,7 @@ async function recordServiceFrames(page,result,f){
   result.knownVisualFollowup.measurements.push({label,...boxes,camera,frameHeightDeltaFromWorld:camera.height-baseline.height});
  };
  await capture('Overview world');await action(page,'refuel').click();await capture('Refuel');
- await action(page,'refill-support').click();await action(page,'service-adjust').click();await capture('LSS adjust');
+ await action(page,'refill-support').click();await capture('LSS adjust');
  await action(page,'ship-expenses').click();await capture('Expenses');
  await action(page,'cargo-hold').click();await capture('Cargo Hold');await action(page,'cargo-hold-close').click();await capture('Overview restored');
  // A changing decorative frame height is recorded as the user's deferred

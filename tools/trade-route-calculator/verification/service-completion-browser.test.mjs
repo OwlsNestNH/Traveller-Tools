@@ -1,3 +1,4 @@
+import {campaignRefillDraft,editRefillDraft} from '../js/lss-refill-draft.mjs';
 // Actual rendered Fuel/Life Support MFD completion checks, synthetic data only.
 // Run through Chromium: node verification/service-completion-browser.test.mjs [playwright-module]
 // --fixtures-only checks fixture economics/source wiring without launching Chromium.
@@ -54,22 +55,22 @@ function fixture(variant){
 }
 function inputFor(variant){return {kind:'fuel',fuelType:variant==='water'?'water':variant==='custom'?'refined':'unrefined',tons:variant==='water'?'3':variant==='custom'?'7.25':'23',...(variant==='custom'?{customFuelRate:'101.25'}:{}),otherSupplier:false,notes:reason};}
 function candidateFor(before,variant){return S.transition(before,label(variant),state=>{
- if(support(variant))S.refillLifeSupport(state,variant==='extra'?{addDays:'14',topOffDays:'28',comfortCost:'2000',comfortNote:reason}:{addDays:'0',topOffDays:'28',comfortCost:'0',comfortNote:''});
+ if(support(variant))S.refillCompartments(state,{...editRefillDraft(campaignRefillDraft(state).draft,'internal',variant==='extra'?168:112),comfortCredits:variant==='extra'?'2000':'0',comfortNote:variant==='extra'?reason:''});
  else if(variant==='correction')fuelCorrection(state,'13',reason);
  else S.shipExpense(state,inputFor(variant));
 });}
 function assertService(saved,before,variant){
- const cost={standard:'2300',custom:'810',water:'0',correction:'0',support:'4000',extra:'8000'}[variant];
+ const cost={standard:'2300',custom:'810',water:'0',correction:'0',support:'2000',extra:'6000'}[variant];
  assert.equal(saved.revision,before.revision+1,'Exactly one campaign revision');assert.equal(saved.bank,String(BigInt(before.bank)-BigInt(cost)),'Existing exact service price');
  assert.equal(saved.undo.length,before.undo.length+1,'Exactly one inverse transaction');
  assert.equal(saved.events.filter(entry=>entry.label===label(variant)).length,before.events.filter(entry=>entry.label===label(variant)).length+1,'Exactly one transition event');
  for(const key of Object.keys(before).filter(key=>!['revision','bank','ship','ledger','undo','events'].includes(key)))assert.deepEqual(saved[key],before[key],'Unrelated campaign field '+key+' is unchanged');
  const ship=structuredClone(before.ship);
  if(support(variant)){
-  ship.lifeSupport={capacityHours:672,stockUnits:{numerator:variant==='extra'?'168':'112',denominator:'1'}};
+  ship.lifeSupport={capacityHours:672,stockUnits:{numerator:variant==='extra'?'168':'112',denominator:'1'},cargoUnits:{numerator:'0',denominator:'1'}};
   const q=saved.ledger.at(-1).expense;
-  assert.equal(q.kind,'lifeSupportRefill');assert.equal(q.standardAmount,'4000');assert.equal(q.extraAmount,variant==='extra'?'2000':'0');assert.equal(q.comfortAmount,variant==='extra'?'2000':'0');
-  assert.equal(q.afterUnits,variant==='extra'?'168':'112');assert.equal(q.afterDays,variant==='extra'?'42':'28');
+  assert.equal(q.kind,'lifeSupportRefill');assert.equal(q.supplyAmount,variant==='extra'?'4000':'2000');assert.equal(q.comfortAmount,variant==='extra'?'2000':'0');
+  assert.equal(q.afterStockUnits.numerator,variant==='extra'?'168':'112');
   if(variant==='extra')assert.equal(q.comfortNote,reason,'Comfort cost records its note and adds no separate stock');
  }else ship.fuel.aboardTons=variant==='correction'?13:variant==='water'?23:variant==='custom'?28:43;
  assert.deepEqual(saved.ship,ship,'Only the selected service stock changes');
@@ -214,9 +215,8 @@ async function prepare(page,result,variant,{captureBefore=true,fromExpenses=fals
  await page.locator('#service-panel').waitFor({state:'visible'});
  assert.equal(await page.locator('#modal').isVisible(),false,'Actual service is an MFD, not a substitute modal');
  if(support(variant)){
-  await action(page,'service-support-topoff').click();
-  await action(page,'service-adjust').click();await field(page,'extraDays').fill(variant==='extra'?'14':'0');
-  if(variant==='extra'){await page.locator('.service-comfort > summary').click();await field(page,'comfortCredits').fill('2000');await field(page,'comfortNote').fill(reason);}
+  await field(page,'internal').fill(variant==='extra'?'168':'112');
+  if(variant==='extra'){await page.locator('.lss-comfort > summary').click();await field(page,'comfortCredits').fill('2000');await field(page,'comfortNote').fill(reason);}
  }else if(variant==='correction'){
   await action(page,'service-fuel-correct').click();await field(page,'fuelRemaining').fill('21');assert.equal(await action(page,'service-review').isDisabled(),true,'Correction cannot create fuel or refund');
   await field(page,'fuelRemaining').fill('13');await field(page,'fuelReason').fill(reason);
@@ -227,10 +227,10 @@ async function prepare(page,result,variant,{captureBefore=true,fromExpenses=fals
   if(variant==='water'){assert.equal(await field(page,'otherSupplier').isChecked(),false);assert.match(await page.locator('#fuel-availability').textContent(),/advisory/i);}
  }
  result.draft=await draftValues(page);result.formHTML=await page.locator('#service-form').evaluate(form=>form.outerHTML);
- if(support(variant)||variant==='correction'){
+ if(variant==='correction'){
   if(captureBefore)await capture(page,result,'before-editor');await action(page,'service-review').click();
  }
- result.review=await page.locator('#service-quote').textContent();result.token=await action(page,'service-confirm').getAttribute('data-service-token');
+ result.review=await page.locator('.lss-total,#service-quote').textContent();result.token=await action(page,'service-confirm').getAttribute('data-service-token');
  result.confirmData=await action(page,'service-confirm').evaluate(button=>({...button.dataset}));
  assert.equal(await action(page,'service-confirm').isEnabled(),true,'Every planned scenario has a payable/recordable positive control');
  await layout(page,result,'before');if(captureBefore)await capture(page,result,'before');
@@ -245,7 +245,7 @@ async function beginPending(page,result,before,{navigation=false}={}){
  const expectedCalls=(await gate(page)).calls;
  assert.equal(await raw(page),before,'Deferred provider has not touched any saved byte');assert.doesNotMatch(await page.locator('#message').textContent(),successPattern,'No premature success');
  assert.equal(await page.locator('#service-panel').getAttribute('aria-busy'),'true');assert.match(await page.locator('#service-status').textContent(),/saving/i);
- assert.equal(await page.locator('#service-quote').textContent(),result.review,'Pending quote remains exact');
+ assert.equal(await page.locator('.lss-total,#service-quote').textContent(),result.review,'Pending quote remains exact');
  assert.equal(await page.locator('#service-panel [data-action]:enabled').count(),0,'Every service action is disabled while saving');
  assert.equal(await page.locator('#service-panel input:enabled,#service-panel select:enabled').count(),0,'Every displayed service field is frozen');
  await physicalClick(page,'#service-panel [data-action="service-confirm"]',{clickCount:2,delay:20});await page.keyboard.press('Enter');await page.keyboard.press('Enter');
@@ -284,7 +284,7 @@ async function beginPending(page,result,before,{navigation=false}={}){
   await frames(page);assert.deepEqual(await draftValues(page),beforeValues,'Pending input/change cannot change frozen session values after actual map rerender');
  }
  await frames(page);assert.equal((await gate(page)).calls,expectedCalls,'Repeated pointer, Enter, tokened confirmation and native form submission reach one provider call');
- assert.equal(await raw(page),before);assert.equal(await page.locator('#service-panel').isVisible(),true);assert.equal(await page.locator('#service-quote').textContent(),result.review);
+ assert.equal(await raw(page),before);assert.equal(await page.locator('#service-panel').isVisible(),true);assert.equal(await page.locator('.lss-total,#service-quote').textContent(),result.review);
  assert.doesNotMatch(await page.locator('#message').textContent(),successPattern);await layout(page,result,'pending-'+expectedCalls);await capture(page,result,'pending-'+expectedCalls);
  if(navigation)await capture(page,result,'pending-controls',{controls:true});
  result.checks.push('Delayed exact-byte preservation, no premature success, frozen service fields/actions, repeated activation and native form submission');
@@ -372,8 +372,8 @@ async function runService(page,result,scenario,context){
  }
  if(scenario.mode==='prewrite'){
   await release(page);await page.locator('#service-status').filter({hasText:'Synthetic known prewrite storage rejection'}).waitFor();await frames(page);
-  assert.equal(await raw(page),beforeBytes);assert.equal(await page.locator('#service-quote').textContent(),result.review);assert.equal(await action(page,'service-confirm').isEnabled(),true);assert.equal(await action(page,'service-back').isEnabled(),true);
-  if(support(scenario.variant)){await action(page,'service-adjust').click();assert.deepEqual(await draftValues(page),result.draft,'Failed support review retains all editable draft values');await capture(page,result,'failed-draft-editor');await action(page,'service-review').click();}
+  assert.equal(await raw(page),beforeBytes);assert.equal(await page.locator('.lss-total,#service-quote').textContent(),result.review);assert.equal(await action(page,'service-confirm').isEnabled(),true);assert.equal(await action(page,'service-back').isEnabled(),true);
+  if(support(scenario.variant)){assert.deepEqual(await draftValues(page),result.draft,'Failed support retains all editable draft values');await capture(page,result,'failed-draft-editor');}
   else assert.deepEqual(await draftValues(page),result.draft,'Failed fuel keeps all exact draft values');
   assert.equal((await gate(page)).settlements[0].code,'SAVE_NOT_COMMITTED');assert.equal((await gate(page)).settlements[0].committed,false);
   assert.doesNotMatch(await page.locator('#message').textContent(),successPattern);await capture(page,result,'retryable-failure');

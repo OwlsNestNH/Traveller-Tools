@@ -403,3 +403,7 @@ Keep the existing 240% close view reachable and add one further ×1.2 step to 28
 - Derive all views from saved campaign records. Reuse the report's realized-trading/transport/operating-cost semantics; distinguish cash flow, capital adjustments and incomplete evidence. Do not add a second ledger or external chart dependency.
 - Undo and ownership retain their existing protections. A baseline-crossing Undo must visibly reconcile the current bank without shifting the starting point or inventing profit.
 - Render exact Credits in accessible tables, adapt to narrow displays, and verify source/native/browser behavior before release.
+
+## Independent Life Support refill - approved 2026-10-15
+
+Use the approved internal/cargo layout with Back to Overview, Audit, prominent whole LSS totals, equal-weight current/max metrics, independent internal slider and cargo quantity/step/fill controls, optional Reason and one live total. Confirm Refill performs the paid transaction; GM Adjustment records a bank-neutral inventory change. Preserve the completion-aware save owner, stale-token/revision checks, pending lock, failure recovery, receipt and Undo. Retain comfort amount/note in a collapsed section. Add only Middle/High person-rate fields to the existing Life support Settings group; do not reorganize Settings. See RULES_REVIEW for the approved tariff and fraction policy.

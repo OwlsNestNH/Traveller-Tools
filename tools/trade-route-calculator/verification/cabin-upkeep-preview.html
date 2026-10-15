@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cabin upkeep integration fixture</title><link rel="stylesheet" href="../style.css?v=lss-refill-20261015-90">
+<style>body{padding:16px}main{max-width:720px;margin:auto}#expense-panel{height:auto;max-height:none}#message{max-width:720px;margin:16px auto}</style>
+<main id="fixture"></main><p id="message" role="status"></p><p>Synthetic integration fixture. Payments affect this page's memory only; no saved campaign is read or written.</p>
+<script type="module">
+import * as S from '../js/state.mjs?v=lss-refill-20261015-90';
+import {createExpensePanels} from '../js/expense-panels.mjs';
+let state=S.initial();state.initialized=true;state.bank='100000';state.actual='0,0';state.route=['0,0'];state.worlds={'0,0':{id:'0,0',name:'Sample Anchorage',x:0,y:0,sector:'Test',hex:'0101',uwp:'A788899-C',zone:'Safe'}};
+state.ship.fuel={displacementTons:200,baseCapacityTons:40,capacityTons:40,aboardTons:20,bladderTons:0,bladderJumps:0};state.ship.accommodation={rooms:{low:0,middle:4,high:0},passengers:{low:0,middle:4,high:0},crew:{low:0,middle:0,high:0},occupiedLowBerths:0,luggageMode:'manual',luggageTons:'0',roomService:{middle:{level:'custom',monthly:'1234'}}};state.ship.lifeSupport={capacityHours:672,stockUnits:{numerator:'128',denominator:'10'}};
+const root=document.getElementById('fixture'),render=()=>{root.innerHTML=panels.panel();panels.syncControls();};
+const panels=createExpensePanels({separateCabinUpkeep:true,document,getState:()=>state,isEditable:()=>true,commit(label,fn,revision,contract){if(state.revision!==revision)throw Error('Stale fixture');const next=S.transition(state,label,fn);contract.onPrepared?.();panels.receiveCampaign(next,true);state=next;},render,showOverview(){},message(text){document.getElementById('message').textContent=text;}});
+root.addEventListener('input',()=>panels.sync());root.addEventListener('click',async event=>{const button=event.target.closest('[data-action]');if(button)try{await panels.action(button.dataset.action,button.dataset.arg);}catch(error){document.getElementById('message').textContent=error.message;}});
+panels.open('staterooms',{fresh:true});
+window.cabinFixtureSnapshot=()=>structuredClone(state);
+</script></html>

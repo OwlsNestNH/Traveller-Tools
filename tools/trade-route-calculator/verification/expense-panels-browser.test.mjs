@@ -30,7 +30,7 @@ try{
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   const button=name=>page.locator('[data-action="'+name+'"]:visible').first(),click=name=>button(name).click();
   const raw=()=>page.evaluate(key=>localStorage.getItem(key),campaignKey),read=async()=>JSON.parse(await raw());
-  const openService=async name=>{if(await button(name).getAttribute('aria-pressed')==='true')await click(name);await click(name);if(name==='refill-support')await click('service-support-topoff');};
+  const openService=async name=>{if(await button(name).getAttribute('aria-pressed')==='true')await click(name);await click(name);};
   const openExpense=async label=>{if(await button('ship-expenses').getAttribute('aria-pressed')==='true'){if(await page.locator('[data-action="expense-back"]').count())await click('expense-back');}else await click('ship-expenses');await page.getByRole('button',{name:label+' ›',exact:true}).click();};
   const remember=selector=>page.locator(selector).evaluate(el=>{window.detachedServiceAction={...el.dataset};});
   const replay=()=>page.evaluate(()=>{const b=document.createElement('button');Object.assign(b.dataset,window.detachedServiceAction);document.body.append(b);b.click();b.remove();});
@@ -56,18 +56,18 @@ try{
    await click('map-zoom-in');await page.waitForFunction(()=>document.querySelector('.map-zoom-controls .help')?.textContent==='120%');await panMap();const preservedCamera=await camera(),mapHeights=[preservedCamera.height];let cameraChecks=0;
    assert.notEqual(preservedCamera.zoom,'100%');assert.notEqual(preservedCamera.pan,'translate(0 0)');
    const sameCamera=async label=>{const measured=await camera();assertMapCameraUnchanged(measured,preservedCamera,label);mapHeights.push(measured.height);cameraChecks++;};
-   await click('ship-expenses');await sameCamera('Open Ship expenses');assert.equal(await page.locator('.expense-table tbody tr').count(),6);assert.match(await page.locator('.expense-table tfoot').textContent(),/Cr 122,000/);assert.equal(await raw(),bytes);
+   await click('ship-expenses');await sameCamera('Open Ship expenses');assert.equal(await page.locator('.expense-table tbody tr').count(),7);assert.match(await page.locator('.expense-table tfoot').textContent(),/Cr 122,000/);assert.equal(await raw(),bytes);
    await page.screenshot({path:artifacts+`/expenses-summary-${width}.png`,fullPage:true});await overviewGeometry(page);
    // Every remaining top-level service switches directly in every stock mode.
-   for(const from of ['refuel','refill-support'])for(const mode of (from==='refuel'?['inline']:['summary','adjust','review']))for(const to of ['refuel','refill-support','ship-expenses']){
+   for(const from of ['refuel','refill-support'])for(const mode of (from==='refuel'?['inline']:['draft','edited']))for(const to of ['refuel','refill-support','ship-expenses']){
     await openService(from);await sameCamera('Open '+from+' for '+mode);
-    if(mode==='adjust'||mode==='review'){await click('service-adjust');await sameCamera(from+' Adjust');}
-    if(mode==='review'){await click('service-review');await sameCamera(from+' Review');}
-    await remember('[data-action="'+(mode==='adjust'?'service-review':'service-confirm')+'"]');await click(to);await replay();assert.equal(await raw(),bytes,from+'/'+mode+' → '+to+' and old callback are inert');
+    if(mode==='edited'){await page.locator('#service-form [name="cargo"]').fill('100');await sameCamera(from+' edit');}
+
+    await remember('[data-action="'+'service-confirm'+'"]');await click(to);await replay();assert.equal(await raw(),bytes,from+'/'+mode+' → '+to+' and old callback are inert');
     await sameCamera(from+'/'+mode+' → '+to);if(from===to)assert.equal(await page.locator('#service-panel,#expense-panel').count(),0,'The active button returns to World data');
    }
    for(const [service,dismiss] of [['refuel','service-back'],['refill-support','service-cancel']]){
-    await openService(service);if(service==='refill-support')await click('service-adjust');await sameCamera(service+' before dismissal');
+    await openService(service);await sameCamera(service+' before dismissal');
     await click(dismiss);await sameCamera(service+' '+dismiss);assert.equal(await raw(),bytes);
    }
    for(const label of ['Mortgage','Monthly maintenance','Crew salaries','Port costs']){

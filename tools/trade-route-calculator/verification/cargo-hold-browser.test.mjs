@@ -225,35 +225,35 @@ async function navigationAndDrafts(page,f){
  // are interrupted without commit, and their detached callbacks stay inert.
  assert.equal(f.state.ship.lifeSupport.stockUnits,'950');
  assert.equal(f.state.ship.lifeSupport.capacityHours,672);
- for(const from of ['refuel','refill-support'])for(const mode of (from==='refuel'?['inline']:['adjust','review'])){
+ for(const from of ['refuel','refill-support'])for(const mode of (from==='refuel'?['inline']:['draft','edited'])){
   await click(page,from);await page.locator('#service-panel').waitFor();
   let oldConfirm,oldNoopReview;
   if(from==='refill-support'){
-   assert.equal(await page.locator('#service-form [name="extraDays"]').inputValue(),'0');
+   assert.equal(await page.locator('#service-form [name="cargo"]').inputValue(),'150');
    assert.equal(await page.locator('#service-panel [data-action="service-confirm"]').isDisabled(),true);
-   assert.equal(await action(page,'service-review').isDisabled(),true,'Existing 190 days make the normal refill a no-op');
-   assert.match(await page.locator('#service-quote').textContent(),/190 days/);
-   assert.equal((await page.locator('#service-quote .service-total strong').textContent()).trim(),'Cr 0');
-   oldNoopReview=await remember('#service-panel [data-action="service-review"]');
+   assert.equal(await action(page,'service-confirm').isDisabled(),true,'Unchanged target is a no-op');
+   assert.match(await page.locator('.lss-metrics').textContent(),/190/);
+   assert.equal((await page.locator('.lss-total strong').textContent()).trim(),'Cr 0');
+   oldNoopReview=await remember('#service-panel [data-action="service-confirm"]');
    await unchanged(page,f,'Opening full-stock support adjustments');
-   await page.locator('#service-form [name="extraDays"]').fill('38');
-   assert.equal((await page.locator('#service-quote .service-total strong').textContent()).trim(),'Cr 6,800','Only the 38-day deficit beyond existing stock is billed');
-   assert.match(await page.locator('#service-quote').textContent(),/1140 LSS aboard/);
-   await click(page,'service-review');
+   await page.locator('#service-form [name="cargo"]').fill('340');
+   assert.equal((await page.locator('.lss-total strong').textContent()).trim(),'Cr 9,500','The same consumable tariff applies to cargo supplies');
+   assert.match(await page.locator('.lss-aboard').textContent(),/1140/);
+
    oldConfirm=await remember('#service-panel [data-action="service-confirm"]');
-   if(mode==='adjust')await click(page,'service-adjust');
+
   }else{
    oldConfirm=await remember('#service-panel [data-action="service-confirm"]');
    await page.locator('#service-form [name="fuelTons"]').fill('2');
   }
-  const oldAction=await remember('#service-panel [data-action="'+(mode==='adjust'?'service-review':'service-confirm')+'"]');
+  const oldAction=await remember('#service-panel [data-action="'+'service-confirm'+'"]');
   await click(page,'cargo-hold');await opened(page);
   assert.equal(await page.locator('#service-panel,#expense-panel,#service-form').count(),0);
   await replay(oldAction);await replay(oldConfirm);if(oldNoopReview)await replay(oldNoopReview);await opened(page);await unchanged(page,f,from+'/'+mode+' → Cargo with detached callbacks');
   await click(page,from);await replay(oldAction);await replay(oldConfirm);if(oldNoopReview)await replay(oldNoopReview);
-  const reset=await page.locator('#service-form [name="'+(from==='refuel'?'fuelTons':'extraDays')+'"]').inputValue();
-  assert.equal(reset,from==='refuel'?'15':'0','Discarded service draft is not resurrected');
-  if(from==='refill-support')assert.equal(await action(page,'service-review').isDisabled(),true,'Reopened full-stock draft remains a no-op');
+  const reset=await page.locator('#service-form [name="'+(from==='refuel'?'fuelTons':'cargo')+'"]').inputValue();
+  assert.equal(reset,from==='refuel'?'15':'150','Discarded service draft is not resurrected');
+  if(from==='refill-support')assert.equal(await action(page,'service-confirm').isDisabled(),true,'Reopened full-stock draft remains a no-op');
   await unchanged(page,f,'Reopening '+from+' with stale callbacks');
   await click(page,'cargo-hold');await opened(page);
  }
