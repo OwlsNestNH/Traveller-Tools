@@ -124,7 +124,7 @@ export function consumeSupport(ship,hours,{complementShip=ship}={}){
  if(ship.lifeSupport.stockUnits===undefined)return; // Unknown legacy quantity is preserved, never invented.
  const c=supportComplement(complementShip);if(!c.known)return;
  const consumed=mul(c.dailyUnits,div(hours,24));
- if(ship.lifeSupport.roundCargoSpace){const next=consumeReserveCompartments(supportCompartments(ship),consumed,supportInternalCapacity(ship));ship.lifeSupport.cargoUnits=next.cargo;ship.lifeSupport.stockUnits=next.total;return;}
+ if(ship.lifeSupport.roundCargoSpace&&supportInternalCapacity(ship)!==null){const next=consumeReserveCompartments(supportCompartments(ship),consumed,supportInternalCapacity(ship));ship.lifeSupport.cargoUnits=next.cargo;ship.lifeSupport.stockUnits=next.total;return;}
  if(ship.lifeSupport.cargoUnits!==undefined)ship.lifeSupport.cargoUnits=auditNumber(maxZero(sub(supportAmount(ship.lifeSupport.cargoUnits),consumed)));
  ship.lifeSupport.stockUnits=auditNumber(maxZero(sub(supportAmount(ship.lifeSupport.stockUnits),consumed)));
 }

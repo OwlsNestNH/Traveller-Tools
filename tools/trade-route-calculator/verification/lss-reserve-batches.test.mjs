@@ -59,3 +59,7 @@ test('recurring legacy tails use exact batch buttons instead of incompatible nat
  assert.match(renderRefillDraft(original,{quote:q,blocked:''}),/readonly aria-label="Approximate cargo LSS; use exact reserve buttons"/);
  const restored=editRefillDraft(plus,'cargo-step',-1);assert.deepEqual(restored.cargo,original.cargo);
 });
+
+test('physical supply consumption without a recorded hull still works before compartment setup',()=>{
+ const s=ship();delete s.ship.fuel;s.ship.lifeSupport={capacityHours:672,stockUnits:'1000',roundCargoSpace:true};consumeSupport(s.ship,24);equal(s.ship.lifeSupport.stockUnits,998);assert.equal(s.ship.lifeSupport.cargoUnits,undefined);
+});
