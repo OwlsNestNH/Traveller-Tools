@@ -37,7 +37,7 @@ test('panel is read-only, escaped and destination-free for owned goods',()=>{
  const scroll=html.indexOf('cargo-goods-scroll'),footer=html.indexOf('class="cargo-investment"'),freight=html.indexOf('class="cargo-consignments"');assert.ok(scroll<footer&&footer<freight);assert.match(html.slice(scroll,footer),/<\/tbody><\/table><\/div><div $/);assert.match(html,/tabindex="0" role="region" aria-label="Speculative goods/);
 });
 test('empty and large manifests retain every lot and independent scroll region',()=>{
- const s=fixture();s.lots=[];s.contracts=[];let html=cargoHoldPanel(s,core);assert.match(html,/No owned trade goods aboard/);assert.match(html,/No accepted freight or mail aboard/);assert.match(html,/Cr 0/);assert.doesNotMatch(html,/cargo-goods-scroll/);
+ const s=fixture();s.lots=[];s.contracts=[];let html=cargoHoldPanel(s,core);assert.doesNotMatch(html,/cargo-speculative|cargo-consignments|cargo-investment|cargo-goods-scroll|No owned|No accepted|<dt>Passenger luggage|<dt>Life support overflow/);
  const lot=fixture().lots[0];s.lots=Array.from({length:1000},(_,i)=>({...structuredClone(lot),id:'lot-'+i}));s.ship.capacity='10000';html=cargoHoldPanel(s,core);assert.equal((html.match(/data-cargo-lot=/g)||[]).length,1000);assert.match(html,/1000 separate lots/);assert.equal((html.match(/class="cargo-investment"/g)||[]).length,1);
 });
 test('legacy LSS uses recorded zero cargo reservation and explicitly explains uncertainty',()=>{

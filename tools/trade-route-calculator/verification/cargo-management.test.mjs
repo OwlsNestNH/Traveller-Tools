@@ -52,8 +52,15 @@ test('Sell routes exact lot identity to the existing action; every user-controll
 test('search affects speculative rows only, and empty cargo remains usable',()=>{
  const s=guiFixture().state;
  let html=cargoManagementPanel(s,core,{search:'no such lot'});
- assert.match(html,/No owned trade goods match/);assert.match(html,/data-management-contract=/);
+ assert.doesNotMatch(html,/data-management-lot=|Speculative goods|No owned/);assert.match(html,/data-management-contract=/);
  s.lots=[];s.contracts=[];html=cargoManagementPanel(s,core);
- assert.match(html,/No owned trade goods aboard/);assert.match(html,/No other cargo aboard/);
+ assert.doesNotMatch(html,/data-management-|<h3>|cargo-investment|No owned|No other|cargo-search/);
  assert.match(html,/data-action="add-lot"/);
+});
+
+test('zero recorded lots and transport cargo have no rows or empty category placeholders',()=>{
+ const s=guiFixture().state;s.lots.forEach(l=>l.quantity='0');s.contracts[0].quantity='0';
+ const before=JSON.stringify(s),html=cargoManagementPanel(s,core);
+ assert.doesNotMatch(html,/data-management-|<h3>|cargo-investment|No owned|No other/);
+ assert.equal(JSON.stringify(s),before,'Visibility never deletes stored records');
 });

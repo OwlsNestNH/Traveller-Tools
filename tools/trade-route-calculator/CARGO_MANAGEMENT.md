@@ -6,6 +6,10 @@ tons held, current retail reference, original recorded purchase price, and a Sel
 action that opens the existing Trade Sell flow. Accepted freight/mail and other
 physical hold use appear separately. Cargo LSS appears only when nonzero; internal
 supplies remain on Life Support. No cargo checkboxes appear on the Cargo page.
+Empty rows and categories are hidden on Cargo and the quick manifest, including
+passenger luggage. There are no empty-category placeholders. Future removal
+previews must retain membership from the original manifest so pending zero rows
+remain restorable until confirmation; removal itself is still paused.
 
 ## Concrete incompatibility with integer remaining controls
 

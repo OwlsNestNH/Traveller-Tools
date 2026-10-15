@@ -4,6 +4,7 @@ import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {guiFixture,campaignKey} from './fixtures/gui-parity.mjs';
+import {validate} from '../js/state.mjs';
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const base=process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/';
 const artifacts=fileURLToPath(new URL('../verification-artifacts/',import.meta.url));
@@ -46,6 +47,35 @@ try{
   await click('lot-sell','lot-legacy');await page.getByRole('heading',{name:'Find a buyer',exact:true}).waitFor();
   await page.locator('#modal-cancel').click();await unchanged();
   await click('tab','Cargo');assert.equal(await page.locator('[data-management-lot]').count(),3);await unchanged();
+  for(const kind of ['empty','speculative','freight','mail','luggage','support']){
+   const sample=structuredClone(s);sample.lots=[];sample.contracts=[];sample.ship.accommodation.luggageTons='0';sample.ship.lifeSupport={capacityHours:672,stockUnits:'800'};
+   if(kind==='speculative')sample.lots=[structuredClone(s.lots[0])];
+   if(kind==='freight'||kind==='mail')sample.contracts=[{...structuredClone(s.contracts[0]),kind,description:'Synthetic '+kind,quantity:'1',...(kind==='mail'?{firstDeparture:null,dueHours:null}:{})}];
+   if(kind==='luggage')sample.ship.accommodation.luggageTons='0.125';
+   if(kind==='support')sample.ship.lifeSupport.stockUnits='901.5';
+   validate(sample);
+   const sampleBytes=JSON.stringify(sample),visibleContext=await browser.newContext({viewport:{width,height:900}});
+   await visibleContext.addInitScript(({key,bytes})=>{if(!localStorage.getItem(key))localStorage.setItem(key,bytes);},{key:campaignKey,bytes:sampleBytes});
+   await visibleContext.route('https://travellermap.com/api/**',r=>{const u=new URL(r.request().url());return r.fulfill({json:u.pathname.endsWith('/universe')?f.universe:u.pathname.endsWith('/metadata')?f.metadata:u.pathname.endsWith('/sec')?f.sec:{Worlds:f.apiWorlds}});});
+   const visiblePage=await visibleContext.newPage();visiblePage.on('pageerror',e=>errors.push(e.message));
+   const sampleClick=(name,arg)=>visiblePage.locator('[data-action="'+name+'"]'+(arg===undefined?'':'[data-arg="'+arg+'"]')).filter({visible:true}).first().click();
+   await visiblePage.goto(base);await visiblePage.getByText('Editing in this tab',{exact:true}).waitFor();await sampleClick('tab','Cargo');
+   const panel=visiblePage.locator('.cargo-management');
+   assert.equal(await panel.locator('[data-management-lot]').count(),kind==='speculative'?1:0,kind+' lot visibility');
+   assert.equal(await panel.locator('[data-management-contract]').count(),['freight','mail'].includes(kind)?1:0,kind+' transport visibility');
+   assert.equal(await panel.locator('[data-management-stock]').count(),['luggage','support'].includes(kind)?1:0,kind+' stock visibility');
+   assert.equal(await panel.locator('h3').count(),kind==='empty'?0:1,'Empty categories disappear');
+   assert.doesNotMatch(await panel.textContent(),/No owned|No accepted|No other cargo/);
+   await sampleClick('tab','Overview');await sampleClick('cargo-hold');
+   const quick=visiblePage.locator('#cargo-hold-panel');await quick.waitFor({state:'visible'});
+   assert.equal(await quick.locator('.cargo-speculative').count(),kind==='speculative'?1:0);
+   assert.equal(await quick.locator('.cargo-consignments').count(),['freight','mail'].includes(kind)?1:0);
+   assert.equal(await quick.locator('.cargo-other dt').count(),['luggage','support'].includes(kind)?1:0);
+   assert.doesNotMatch(await quick.textContent(),/No owned|No accepted/);
+   assert.equal(await visiblePage.evaluate(key=>localStorage.getItem(key),campaignKey),sampleBytes,'Hide-empty rendering preserves every campaign byte');
+   if(kind==='empty')await quick.screenshot({path:artifacts+'cargo-empty-'+width+'.png'});
+   await visibleContext.close();
+  }
   assert.deepEqual(errors,[]);report.push({width,exactQuantities:true,separateLots:true,sellContext:true,cancelPreservesBytes:true,navigationPreservesBytes:true});
   await context.close();
  }
