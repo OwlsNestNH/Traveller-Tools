@@ -1,8 +1,8 @@
 import * as A from './amounts.mjs';
-import {tiers,roomCounts,serviceRate,refillPersonRate} from './accommodation.mjs?v=cargo-management-20261015-92';
-import {passengerShip} from './passengers.mjs?v=cargo-management-20261015-92';
-import {supportAmount,supportComplement} from './life-support.mjs?v=cargo-management-20261015-92';
-import {up,creditStep} from './rounding.mjs?v=cargo-management-20261015-92';
+import {tiers,roomCounts,serviceRate,refillPersonRate} from './accommodation.mjs?v=map-scroll-spinners-20261015-93';
+import {passengerShip} from './passengers.mjs?v=map-scroll-spinners-20261015-93';
+import {supportAmount,supportComplement} from './life-support.mjs?v=map-scroll-spinners-20261015-93';
+import {up,creditStep} from './rounding.mjs?v=map-scroll-spinners-20261015-93';
 
 export const consumableRefillReference='Campaign decision 2026-10-15: consumable LSS defaults to Cr1,000 per Middle person and Cr3,000 per High person per 28 days; the saved audit records configured rates. Frozen Low costs Cr100 per person per 28 days. Costs are prorated by supported duration. Internal and cargo supplies use the same tariff. Cabin upkeep is a separate operating expense.';
 export function monthlyCabinUpkeep(ship){

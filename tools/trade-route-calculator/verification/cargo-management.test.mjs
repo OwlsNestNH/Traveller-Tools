@@ -64,3 +64,11 @@ test('zero recorded lots and transport cargo have no rows or empty category plac
  assert.doesNotMatch(html,/data-management-|<h3>|cargo-investment|No owned|No other/);
  assert.equal(JSON.stringify(s),before,'Visibility never deletes stored records');
 });
+
+test('Cargo uses only labelled native whole-ton spinners, retaining bounds and busy disablement',()=>{
+ const state=guiFixture().state,html=cargoManagementPanel(state,core);
+ assert.doesNotMatch(html,/data-action="cargo-step"/);
+ const inputs=[...html.matchAll(/<input type="number"[^>]*data-cargo-remaining[^>]*>/g)].map(m=>m[0]);assert.ok(inputs.length>=3);
+ for(const input of inputs){assert.match(input,/min="0" max="\d+" step="1"/);assert.match(input,/aria-label="Tons remaining aboard [^"]+"/);}
+ const busy=cargoManagementPanel(state,core,{busy:true});for(const input of busy.matchAll(/<input type="number"[^>]*data-cargo-remaining[^>]*>/g))assert.match(input[0],/disabled data-unavailable/);
+});

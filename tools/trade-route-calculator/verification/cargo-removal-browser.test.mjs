@@ -24,14 +24,15 @@ async function open(width,legacyReserve=false){
 try{
  for(const width of [1440,390,320]){
   const h=await open(width),{page,click,field}=h;
-  assert.equal(await field('lot:lot-recorded').inputValue(),'4');assert.equal(await page.locator('[data-action="cargo-step"][data-arg="lot:lot-recorded|1"]').isDisabled(),true);
-  await click('cargo-step','lot:lot-recorded|-1');await click('cargo-step','lot:lot-recorded|-1');assert.equal(await field('lot:lot-recorded').inputValue(),'2');
-  await click('cargo-step','lot:lot-recorded|1');assert.equal(await field('lot:lot-recorded').inputValue(),'3');await h.unchanged();
+  assert.equal(await field('lot:lot-recorded').inputValue(),'4');assert.equal(await page.locator('[data-action="cargo-step"]').count(),0);await field('lot:lot-recorded').press('ArrowUp');assert.equal(await field('lot:lot-recorded').inputValue(),'4');
+  await field('lot:lot-recorded').press('ArrowDown');await field('lot:lot-recorded').press('ArrowDown');assert.equal(await field('lot:lot-recorded').inputValue(),'2');assert.equal(await field('lot:lot-recorded').evaluate(el=>el===document.activeElement),true,'Native stepping retains keyboard focus');
+  await field('lot:lot-recorded').press('ArrowUp');assert.equal(await field('lot:lot-recorded').inputValue(),'3');await h.unchanged();
   await click('cargo-cancel');assert.equal(await field('lot:lot-recorded').inputValue(),'4');await h.unchanged();
-  await click('cargo-step','luggage|-1');await click('tab','Overview');await click('tab','Cargo');assert.equal(await field('luggage').inputValue(),'2');await h.unchanged();
+  await field('lot:lot-recorded').fill('3');await field('lot:lot-recorded').press('Tab');assert.equal(await field('lot:lot-recorded').evaluate(el=>el===document.activeElement),false,'Tab after typing leaves the field');await click('cargo-cancel');await h.unchanged();
+  await field('luggage').press('ArrowDown');await click('tab','Overview');await click('tab','Cargo');assert.equal(await field('luggage').inputValue(),'2');await h.unchanged();
   await field('lot:lot-recorded').fill('0');await field('lot:lot-recorded').press('Tab');await field('luggage').fill('0');await field('luggage').press('Tab');
   await field('contract:contract-fixture').fill('3');await field('contract:contract-fixture').press('Tab');await field('contract:mail-removal').fill('0');await field('contract:mail-removal').press('Tab');
-  await click('cargo-step','support|-1');
+  await field('support').press('ArrowDown');
   assert.equal(await page.locator('[data-management-lot="lot-recorded"]').count(),1,'Pending zero remains restorable');assert.equal(await page.locator('[data-management-stock="luggage"]').count(),1);
   assert.match(await page.locator('.cargo-removal-footer').innerText(),/Total removed: 10 t/);assert.match(await page.locator('.cargo-removal-footer').innerText(),/blocks ordinary delivery and payment/);await h.unchanged();
   await page.locator('.cargo-management').screenshot({path:artifacts+'cargo-removal-preview-'+width+'.png'});
@@ -45,7 +46,7 @@ try{
   await click('tab','Contracts');assert.equal(await page.locator('[data-action="deliver"][data-arg="contract-fixture"]').count(),0);assert.match(await page.locator('#main').innerText(),/Cargo loss - delivery\/payment blocked/);
   await click('tab','Cargo');await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();await click('tab','Cargo');assert.equal(await page.locator('[data-management-stock="luggage"]').count(),0);assert.deepEqual(await h.read(),saved);
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),'No page overflow');assert.deepEqual(h.errors,[]);await h.context.close();
-  const failure=await open(width);await failure.click('cargo-step','lot:lot-recorded|-1');
+  const failure=await open(width);await failure.field('lot:lot-recorded').press('ArrowDown');
   await failure.page.evaluate(key=>{window.__cargoSet=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k===key)throw new DOMException('Synthetic quota failure','QuotaExceededError');return window.__cargoSet.call(this,k,v);};},campaignKey);
   await failure.click('cargo-confirm');await failure.page.getByText('Synthetic quota failure',{exact:false}).waitFor();await failure.unchanged();assert.equal(await failure.field('lot:lot-recorded').inputValue(),'3');
   await failure.page.evaluate(()=>Storage.prototype.setItem=window.__cargoSet);await failure.click('cargo-confirm');await failure.page.waitForFunction(({key,revision})=>JSON.parse(localStorage.getItem(key)).revision===revision+1,{key:campaignKey,revision:failure.s.revision});assert.equal((await failure.read()).lots[0].quantity,'3');assert.deepEqual(failure.errors,[]);await failure.context.close();
@@ -58,7 +59,7 @@ try{
   const legacy=await open(width,'legacy-days');assert.match(await legacy.page.locator('.cargo-removal-footer').innerText(),/Confirm physical supplies.*0.4 t/);assert.equal(await legacy.field('lot:lot-recorded').isDisabled(),true);assert.equal(await legacy.page.locator('[data-action="cargo-confirm"]').isDisabled(),true);await legacy.unchanged();
   await legacy.click('tab','Settings');const stockField=legacy.page.locator('#settings-form [name="supportUnits"]');for(const detail of await stockField.locator('xpath=ancestor::details').all())if(!await detail.evaluate(el=>el.open))await detail.locator(':scope > summary').click({position:{x:8,y:8}});await stockField.fill('840');await legacy.page.locator('#settings-save').click();await legacy.page.waitForFunction(({key,revision})=>JSON.parse(localStorage.getItem(key)).revision===revision+1,{key:campaignKey,revision:legacy.s.revision});await legacy.click('tab','Cargo');assert.doesNotMatch(await legacy.page.locator('.cargo-removal-footer').innerText(),/Confirm physical supplies/);assert.equal(await legacy.field('lot:lot-recorded').isEnabled(),true);assert.equal((await legacy.read()).bank,legacy.s.bank);assert.deepEqual(legacy.errors,[]);await legacy.context.close();
   const fractional=await open(width,'fractional-capacity');await fractional.click('tab','Overview');await fractional.click('refill-support');assert.equal(await fractional.page.locator('#lss-cargo').getAttribute('max'),'200');assert.match(await fractional.page.locator('.lss-capacity').innerText(),/Cargo available 0 t/);await fractional.click('service-lss-plus');assert.equal(await fractional.page.locator('#lss-cargo').inputValue(),'140');assert.equal(await fractional.page.locator('[data-action="service-confirm"]').isDisabled(),true);await fractional.unchanged();await fractional.click('service-cancel');assert.deepEqual(fractional.errors,[]);await fractional.context.close();
-  report.push({width,fractionalCapacityPacking:true,legacyDaysConfirmation:true,recurringTailExactControls:true,legacyReserveNativeStep:true,previewCancel:true,navigationCancel:true,restorationCap:true,pendingZero:true,onceOnly:true,lossProtection:true,passengersPreserved:true,reload:true,quotaFailureRetry:true});
+  report.push({width,fractionalCapacityPacking:true,legacyDaysConfirmation:true,recurringTailExactControls:true,legacyReserveNativeStep:true,nativeSpinnerOnly:true,keyboardFocusRetained:true,previewCancel:true,navigationCancel:true,restorationCap:true,pendingZero:true,onceOnly:true,lossProtection:true,passengersPreserved:true,reload:true,quotaFailureRetry:true});
  }
  await writeFile(artifacts+'cargo-removal-report.json',JSON.stringify({commit:process.env.TRAVELLER_COMMIT??null,report},null,2));console.log(JSON.stringify(report));
 }finally{await browser.close();}

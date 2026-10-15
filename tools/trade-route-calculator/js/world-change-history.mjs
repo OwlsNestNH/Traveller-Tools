@@ -1,4 +1,4 @@
-import {parseUWP} from './rules.mjs?v=cargo-management-20261015-92';
+import {parseUWP} from './rules.mjs?v=map-scroll-spinners-20261015-93';
 
 // Audit only the editable world fields. A selective correction must never
 // replay an old world object, campaign inverse, price quote or transaction.
