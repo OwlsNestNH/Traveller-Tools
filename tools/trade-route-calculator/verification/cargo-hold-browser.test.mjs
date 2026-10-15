@@ -187,8 +187,8 @@ async function cargoCameraStability(page,f){
  for(const action of ['cargo-hold-close','cargo-hold','ship-expenses','cargo-hold','refuel','cargo-hold','refill-support','cargo-hold']){
   await click(page,action);await same('Cargo camera through '+action);await unchanged(page,f,'Cargo camera through '+action);
  }
- await page.locator('.cargo-other > summary').click();await same('Expanded Cargo capacity breakdown');
- await page.locator('.cargo-other > summary').click();await same('Collapsed Cargo capacity breakdown');
+ await page.locator('.cargo-other > summary').focus();await page.locator('.cargo-other > summary').press('Enter');await same('Expanded Cargo capacity breakdown');
+ await page.locator('.cargo-other > summary').focus();await page.locator('.cargo-other > summary').press('Enter');await same('Collapsed Cargo capacity breakdown');
  await click(page,'map-zoom-reset');await page.waitForFunction(()=>document.querySelector('.map-zoom-controls .help')?.textContent==='100%');
  return {baseline,checks};
 }
