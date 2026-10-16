@@ -25,8 +25,8 @@ try {
  for(const radius of [1,2,3,4]){await page.locator('#radius').selectOption(String(radius));assert.equal(await page.locator('.hex-grid polygon').count(),1+3*radius*(radius+1));}
  await page.setViewportSize({width:390,height:844});
  assert.equal(await page.locator('.hex-grid').evaluate(el=>getComputedStyle(el).pointerEvents),'none');
- await page.locator('[data-world="1,0"] circle').click();assert.equal((await read()).destination.id,'1,0');
- await page.locator('[data-world="4,2"]').focus();await page.keyboard.press('Enter');assert.equal((await read()).destination.id,'4,2');
+ await page.locator('[data-world="1,0"] circle').click();await page.waitForFunction(k=>JSON.parse(localStorage.getItem(k)).destination?.id==='1,0',key);assert.equal((await read()).destination.id,'1,0');
+ await page.locator('[data-world="4,2"]').focus();await page.keyboard.press('Enter');await page.waitForFunction(k=>JSON.parse(localStorage.getItem(k)).destination?.id==='4,2',key);assert.equal((await read()).destination.id,'4,2');
  const label=page.locator('[data-world="4,2"] text');assert.equal(await label.getAttribute('text-anchor'),'end');
  const bounds=await label.evaluate(el=>{const b=el.getBBox();return {x:b.x,right:b.x+b.width};});assert.ok(bounds.x>=0&&bounds.right<=500);
  await page.screenshot({path:new URL('mobile-grid.png',artifacts).pathname.replace(/^\/(.:)/,'$1'),fullPage:true});
