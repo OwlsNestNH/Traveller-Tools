@@ -20,7 +20,18 @@ const read=()=>page.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);
 const click=async name=>{await page.getByRole('button',{name,exact:true}).click();await page.waitForFunction(()=>document.querySelector('main')?.getAttribute('aria-busy')!=='true');};
 const saved=async()=>page.waitForFunction(()=>!document.querySelector('#message').classList.contains('error')&&document.querySelector('#recovery').hidden);
 try {
- await page.goto(base);await click('Start playtest');await page.locator('[data-world="1,0"]').waitFor();
+ await page.goto(base);await page.locator('main[aria-busy="false"]').waitFor();await click('Start playtest');await page.locator('[data-world="1,0"]').waitFor();
+ assert.equal(await page.locator('.hex-grid polygon').count(),61);
+ for(const radius of [1,2,3,4]){await page.locator('#radius').selectOption(String(radius));assert.equal(await page.locator('.hex-grid polygon').count(),1+3*radius*(radius+1));}
+ await page.setViewportSize({width:390,height:844});
+ assert.equal(await page.locator('.hex-grid').evaluate(el=>getComputedStyle(el).pointerEvents),'none');
+ await page.locator('[data-world="1,0"] circle').click();assert.equal((await read()).destination.id,'1,0');
+ await page.locator('[data-world="4,2"]').focus();await page.keyboard.press('Enter');assert.equal((await read()).destination.id,'4,2');
+ const label=page.locator('[data-world="4,2"] text');assert.equal(await label.getAttribute('text-anchor'),'end');
+ const bounds=await label.evaluate(el=>{const b=el.getBBox();return {x:b.x,right:b.x+b.width};});assert.ok(bounds.x>=0&&bounds.right<=500);
+ await page.screenshot({path:new URL('mobile-grid.png',artifacts).pathname.replace(/^\/(.:)/,'$1'),fullPage:true});
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);checks.push('parsec grid radii, mobile labels, pointer and keyboard destination selection');
+ await page.setViewportSize({width:1280,height:1100});
  await click('Confirm supplier (GM)');
  assert.equal((await read()).cash.numerator,'600000');checks.push('setup fields and isolated save');
  assert.equal(await page.locator('[data-world="4,2"]').count(),1);assert.equal(await page.locator('[data-world="5,2"]').count(),0);checks.push('four-parsec API map filter');

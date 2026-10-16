@@ -31,7 +31,7 @@ function renderMap() {
   if(s.current.sourceKind==='manual'){$('map').innerHTML='<text x="35" y="240" fill="#d4e2ea">Manual world · no map coordinates supplied</text>';$('map-source').textContent='Manual · distance must be entered explicitly';return;}
   const points=Map.positions(worlds,s.current,Number($('radius').value));
   $('map-source').textContent=worlds[0]?.dataSource||'No nearby data loaded. Refresh to retry.';
-  $('map').innerHTML='<circle cx="250" cy="250" r="216" fill="none" stroke="#2b4056" stroke-dasharray="3 6"/>'+points.map(p=>`<g class="world" role="button" tabindex="0" data-world="${esc(p.world.id)}" aria-label="${esc(p.world.name)}, ${p.distance} parsecs" aria-pressed="${s.destination?.id===p.world.id}"><title>${esc(p.world.name)} · ${esc(p.world.uwp)} · ${p.distance} pc</title><circle cx="${p.x}" cy="${p.y}" r="9"/><text x="${p.x+12}" y="${p.y+4}">${esc(p.world.name)}</text></g>`).join('');
+  $('map').innerHTML='<g class="hex-grid" aria-hidden="true">'+Map.hexGrid(s.current,Number($('radius').value)).map(cell=>`<polygon points="${cell.vertices.map(v=>v.join(',')).join(' ')}"/>`).join('')+'</g>'+points.map(p=>`<g class="world" role="button" tabindex="0" data-world="${esc(p.world.id)}" aria-label="${esc(p.world.name)}, ${p.distance} parsecs" aria-pressed="${s.destination?.id===p.world.id}"><title>${esc(p.world.name)} · ${esc(p.world.uwp)} · ${p.distance} pc</title><circle cx="${p.x}" cy="${p.y}" r="9"/><text text-anchor="${p.x>375?'end':'start'}" x="${p.x+(p.x>375?-12:12)}" y="${p.y+4}">${esc(p.world.name)}</text></g>`).join('');
 }
 function render() {
   document.querySelector('main').setAttribute('aria-busy',String(busy));
