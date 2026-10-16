@@ -12,7 +12,7 @@ const fields=form=>Object.fromEntries(new FormData(form));
 const validateSession=s=>S.validate(s,core);
 const selectedDistance=s=>s.destination&&(s.current?.sourceKind==='manual'||s.destination.sourceKind==='manual')?s.destination.manualDistance:s.destination?Map.distance(s.current,s.destination):0;
 const message=(text,error=false)=>{$('message').textContent=text;$('message').className=error?'error':'';};
-let store,chart,core,worlds=[],busy=false,review=null,governmentWorld=null,targetBoundary=null,mapUnavailable=false,editingWorld=null;
+let store,chart,core,worlds=[],busy=false,review=null,governmentWorld=null,targetBoundary=null,mapUnavailable=false,editingWorld=null,lastRenderedPhase=null,settingsCommand=null,newCommand=null;
 try {
   const response=await fetch('../trade-route-calculator/rules/merchant-prince-1e.json');
   if(!response.ok)throw Error('Verified tax data could not load. Reload to try again.');
@@ -23,7 +23,7 @@ try {
   store=new SaveBoundary({storage:localStorage,initial:S.initial(),validate:validateSession,exclusive:browserExclusive(navigator)});
   mapUnavailable=!!store.snapshot().current?.dataOutage;
   render();message('Ready. Working alpha rules; keep an exported backup.');
-  if(store.snapshot().current)await refreshMap();
+  if(store.snapshot().current)void refreshMap();
 }catch(error){message(error.message+' Export the retained save or import a valid alpha backup to recover.',true);$('setup').hidden=true;$('recovery').hidden=false;$('retry').hidden=true;}
 
 function renderMap() {
@@ -36,12 +36,21 @@ function renderMap() {
 function render() {
   document.querySelector('main').setAttribute('aria-busy',String(busy));
   const s=store.snapshot(),buying=s.phase==='buy',arrived=s.phase==='arrived';
+  if(s.phase==='setup'&&lastRenderedPhase&&lastRenderedPhase!=='setup'){
+    worlds=[];mapUnavailable=false;governmentWorld=null;targetBoundary=null;$('gm-view').checked=false;
+    for(const form of document.querySelectorAll('form'))form.reset();
+    $('roll-mode').value='auto';$('die1').value='3';$('die2').value='4';$('radius').value='4';
+    for(const input of $('admin-fields').querySelectorAll('input'))input.value=input.defaultValue;
+    $('admin-rush').checked=false;$('admin-confirm').checked=false;
+    $('roll-mode').dispatchEvent(new Event('change'));$('map').innerHTML='';
+  }
+  lastRenderedPhase=s.phase;
   const manualSession=s.current?.sourceKind==='manual';
   $('map-outage').hidden=!mapUnavailable&&!manualSession;$('manual-origin-panel').hidden=!mapUnavailable;$('manual-destination-panel').hidden=(!mapUnavailable&&!manualSession)||!buying;
   $('outage-caption').textContent=mapUnavailable?'Traveller Map connection unavailable. Manual world data is available below; the backup is partial.':'Manual world session retained. Retrying live data will not replace these records or saved quotes.';
   $('setup').hidden=s.phase!=='setup';$('play').hidden=s.phase==='setup';
   $('recovery').hidden=!store.pending&&!store.uncertain;$('retry').hidden=!store.pending||store.uncertain;
-  const gm=$('gm-view').checked;$('gm-details').hidden=!gm;
+  const gm=$('gm-view').checked;$('gm-details').hidden=!gm;$('open-settings').hidden=!gm;
   $('backup-section').hidden=s.phase!=='setup'&&!gm;
   $('summary').innerHTML=`<div>Cash<strong>${money(s.cash)}</strong></div><div>Unpaid bills<strong>${money(s.unpaid)}</strong></div><div>Month ${s.month} · jump ${s.jumps}<strong>${esc(s.current?.name||'Setup')}</strong></div>${gm?`<div>GM target / month<strong>${money(s.settings.monthlyTarget)}</strong></div>`:''}`;
   $('next-form').elements.monthlyTarget.parentElement.hidden=!gm;
@@ -63,6 +72,8 @@ function render() {
   $('zero-trial').checked=s.settings.zeroLossTrial;
   $('audit').textContent=JSON.stringify(s,(key,value)=>key==='raw'&&typeof value==='object'?undefined:value,2);renderMap();
   for(const button of document.querySelectorAll('button'))if(!['retry','reload','export'].includes(button.id))button.disabled=button.id==='accept-sale'?!review||busy||!!store.pending||store.uncertain:busy||!!store.pending||store.uncertain;
+  $('settings-fields').disabled=!S.canEditSettings(s);
+  $('save-settings').disabled=busy||!!store.pending||store.uncertain||!S.canEditSettings(s);
   if(s.phase==='stopped')message('Playtest stopped: monthly bills remain unpaid. Cash and liability are recorded separately.',true);
 }
 async function execute(id,transition,success='Saved.',options={}) {
@@ -153,7 +164,28 @@ $('gm-view').addEventListener('change',render);
 $('close-audit').addEventListener('click',()=>$('audit-dialog').close());
 $('next-form').addEventListener('submit',event=>{event.preventDefault();const s=store.snapshot(),f=fields(event.currentTarget);execute('next:'+s.jumps,draft=>S.nextDeparture(draft,f),'Visit finished; monthly bills assessed when due.');});
 $('zero-trial').addEventListener('change',()=>{const enabled=$('zero-trial').checked;execute('zero-trial:'+crypto.randomUUID(),s=>{s.settings.zeroLossTrial=enabled;return s;});});
-$('retry').addEventListener('click',async()=>{if(busy||!store)return;busy=true;try{await store.retry();review=null;message('Prepared result saved without rerolling.');}catch(error){message(error.message,true);}finally{busy=false;render();}});
+$('retry').addEventListener('click',async()=>{if(busy||!store)return;busy=true;render();try{await store.retry();review=null;message('Prepared result saved without rerolling.');}catch(error){message(error.message,true);}finally{busy=false;render();}});
 $('reload').addEventListener('click',()=>location.reload());
 $('export').addEventListener('click',()=>{try{const raw=store?JSON.stringify(store.snapshot(),null,2):localStorage.getItem('traveller.speculative-trade.alpha.v1');if(raw===null)throw Error('No alpha save available');const blob=new Blob([raw],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='speculative-trade-alpha.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch(error){message(error.message,true);}});
 $('import').addEventListener('change',async event=>{const file=event.target.files[0];if(!file)return;try{if(file.size>10*1024*1024)throw Error('Alpha save exceeds 10 MB');const imported=JSON.parse(await file.text());validateSession(imported);if(!store)store=new SaveBoundary({storage:localStorage,initial:S.initial(),validate:validateSession,exclusive:browserExclusive(navigator),allowInvalidExisting:true});const restored=await execute('import:'+crypto.randomUUID(),()=>imported,'Alpha save imported.',{replaceHistory:true});if(restored){$('next-form').elements.monthlyTarget.value=imported.settings.monthlyTarget;governmentWorld=null;worlds=[];render();await refreshMap();}}catch(error){message(error.message,true);}event.target.value='';});
+
+$('open-settings').addEventListener('click',()=>{
+  if(!$('gm-view').checked)return;
+  const s=store.snapshot();settingsCommand='settings:'+crypto.randomUUID();
+  for(const [key,value] of Object.entries(s.settings)){const input=$('settings-form').elements.namedItem(key);if(input)input.value=value;}
+  $('settings-form').elements.monthlyTarget.disabled=s.jumps%2!==0;
+  $('settings-timing').textContent=S.canEditSettings(s)?(s.jumps%2===0?'Save changes before generating or buying cargo. Monthly target is editable at this month start.':'Save changes before generating or buying cargo. Current month target stays fixed; use the next-month target at the end of a visit.'):'Read-only during this trade. Finish selling and prepare the next departure before saving changes, or use New playtest to start over.';
+  render();$('settings-dialog').showModal();
+});
+$('cancel-settings').addEventListener('click',()=>$('settings-dialog').close());
+$('settings-form').addEventListener('submit',async event=>{
+  event.preventDefault();const values=fields(event.currentTarget),id=settingsCommand;$('settings-dialog').close();
+  await execute(id,s=>S.editSettings(s,values),'Settings saved for future departures and monthly bills; previous records retained.');
+});
+$('open-new').addEventListener('click',()=>{newCommand='new:'+crypto.randomUUID();$('new-form').reset();$('new-dialog').showModal();});
+$('cancel-new').addEventListener('click',()=>$('new-dialog').close());
+$('new-export').addEventListener('click',()=>$('export').click());
+$('new-form').addEventListener('submit',async event=>{
+  event.preventDefault();if(!$('confirm-new').checked)return;const id=newCommand;$('new-dialog').close();
+  await execute(id,s=>S.newPlaytest(s,{confirmed:true}),'New playtest prepared. Enter initial settings and choose Start playtest.',{replaceHistory:true});
+});
