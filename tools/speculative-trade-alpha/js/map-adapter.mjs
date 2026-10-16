@@ -20,9 +20,26 @@ export function worldData({load=liveLoad,nearby=liveNearby,backup=bundledBackup}
 const adapter=worldData();
 export const loadWorld=(...args)=>adapter.loadWorld(...args);
 export const loadNearby=(...args)=>adapter.loadNearby(...args);
-export function positions(worlds,center,radius=4) {
-  if(!Number.isInteger(radius)||radius<1||radius>4)throw Error('Map radius must be 1–4 parsecs');
+// Flat-top hexes: adjacent centers are exactly 54 SVG units (one parsec).
+const spacing=54,hexRadius=spacing/Math.sqrt(3);
+function checkRadius(radius){if(!Number.isInteger(radius)||radius<1||radius>4)throw Error('Map radius must be 1–4 parsecs');}
+function project(world,center){
   const offset=w=>w.y+((w.x%2+2)%2)*0.5;
-  return worlds.filter(w=>distance(center,w)<=radius).map(w=>({world:w,distance:distance(center,w),
-    x:250+(w.x-center.x)*46.8,y:250+(offset(w)-offset(center))*54}));
+  return {x:250+(world.x-center.x)*hexRadius*1.5,y:250+(offset(world)-offset(center))*spacing};
+}
+export function positions(worlds,center,radius=4) {
+  checkRadius(radius);
+  return worlds.filter(w=>distance(center,w)<=radius).map(world=>({world,distance:distance(center,world),...project(world,center)}));
+}
+export function hexGrid(center,radius=4){
+  checkRadius(radius);const cells=[];
+  for(let x=center.x-radius;x<=center.x+radius;x++)for(let y=center.y-radius-1;y<=center.y+radius+1;y++){
+    const world={x,y};if(distance(center,world)>radius)continue;
+    const point=project(world,center);
+    const vertices=Array.from({length:6},(_,i)=>{
+      const angle=i*Math.PI/3;return [point.x+hexRadius*Math.cos(angle),point.y+hexRadius*Math.sin(angle)];
+    });
+    cells.push({...point,world,vertices});
+  }
+  return cells;
 }
