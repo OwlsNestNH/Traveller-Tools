@@ -1,0 +1,344 @@
+[
+  {
+    "case_id": "positive_gap_reference",
+    "operation": "baseline",
+    "inputs": {
+      "P": 100000,
+      "k": 100000,
+      "H": 50,
+      "C": 233000,
+      "S": 50000,
+      "f": 40000,
+      "q": 1.25,
+      "premium_active": false,
+      "lot_t": 25,
+      "freight_rate": 1600
+    },
+    "expected_A": {
+      "exact": "226875/1",
+      "decimal": 226875.0
+    }
+  },
+  {
+    "case_id": "zero_target_mortgaged40",
+    "operation": "baseline",
+    "inputs": {
+      "P": 80000,
+      "k": 80000,
+      "H": 40,
+      "C": 233000,
+      "S": 0,
+      "f": 32000,
+      "q": 1.25,
+      "premium_active": false,
+      "lot_t": 20,
+      "freight_rate": 1600
+    },
+    "expected_A": {
+      "exact": "185625/1",
+      "decimal": 185625.0
+    }
+  },
+  {
+    "case_id": "nonpositive_gap_free60",
+    "operation": "baseline",
+    "inputs": {
+      "P": 120000,
+      "k": 120000,
+      "H": 60,
+      "C": 83000,
+      "S": 0,
+      "f": 48000,
+      "q": 1.25,
+      "premium_active": false,
+      "lot_t": 30,
+      "freight_rate": 1600
+    },
+    "expected_A": {
+      "exact": "120000/1",
+      "decimal": 120000.0
+    }
+  },
+  {
+    "case_id": "tiny_lot_floor",
+    "operation": "baseline",
+    "inputs": {
+      "P": 4000,
+      "k": 4000,
+      "H": 50,
+      "C": 233000,
+      "S": 50000,
+      "f": 78400,
+      "q": 1.25,
+      "premium_active": false,
+      "lot_t": 1,
+      "freight_rate": 1600
+    },
+    "expected_A": {
+      "exact": "7155/1",
+      "decimal": 7155.0
+    }
+  },
+  {
+    "case_id": "premium_shared_free50",
+    "operation": "baseline",
+    "inputs": {
+      "P": 100000,
+      "k": 100000,
+      "H": 50,
+      "C": 83000,
+      "S": 50000,
+      "f": 40000,
+      "q": 1.25,
+      "premium_active": true,
+      "lot_t": 25,
+      "freight_rate": 1600
+    },
+    "expected_A": {
+      "exact": "2880000/19",
+      "decimal": 151578.94736842104
+    }
+  },
+  {
+    "case_id": "reference_moderate_low",
+    "operation": "sale_quote",
+    "inputs": {
+      "A": 226875,
+      "raw": 2,
+      "risk": "moderate",
+      "base_skill": 2,
+      "stat_dm": 1,
+      "expertise_sale_dm": 0,
+      "opponent_broker_skill": 3,
+      "local_dm": 2,
+      "trade_dm": 0
+    },
+    "expected_modified_roll": 0,
+    "expected_negotiation_pp": -10,
+    "expected_risk_percent": 50,
+    "expected_gross_sale": {
+      "exact": "90750/1",
+      "decimal": 90750.0
+    }
+  },
+  {
+    "case_id": "skill3_working_bonus",
+    "operation": "sale_quote",
+    "inputs": {
+      "A": 226875,
+      "raw": 7,
+      "risk": "moderate",
+      "base_skill": 3,
+      "stat_dm": 2,
+      "expertise_sale_dm": 1,
+      "opponent_broker_skill": 3,
+      "local_dm": 2,
+      "trade_dm": 0
+    },
+    "expected_modified_roll": 8,
+    "expected_negotiation_pp": 6,
+    "expected_risk_percent": 100,
+    "expected_gross_sale": {
+      "exact": "480975/2",
+      "decimal": 240487.5
+    }
+  },
+  {
+    "case_id": "skill4_working_bonus",
+    "operation": "sale_quote",
+    "inputs": {
+      "A": 226875,
+      "raw": 7,
+      "risk": "moderate",
+      "base_skill": 4,
+      "stat_dm": 2,
+      "expertise_sale_dm": 2,
+      "opponent_broker_skill": 3,
+      "local_dm": 2,
+      "trade_dm": 0
+    },
+    "expected_modified_roll": 10,
+    "expected_negotiation_pp": 10,
+    "expected_risk_percent": 100,
+    "expected_gross_sale": {
+      "exact": "499125/2",
+      "decimal": 249562.5
+    }
+  },
+  {
+    "case_id": "skill4_saturated",
+    "operation": "sale_quote",
+    "inputs": {
+      "A": 226875,
+      "raw": 12,
+      "risk": "moderate",
+      "base_skill": 4,
+      "stat_dm": 2,
+      "expertise_sale_dm": 2,
+      "opponent_broker_skill": 3,
+      "local_dm": 2,
+      "trade_dm": 0
+    },
+    "expected_modified_roll": 15,
+    "expected_negotiation_pp": 10,
+    "expected_risk_percent": 150,
+    "expected_gross_sale": {
+      "exact": "363000/1",
+      "decimal": 363000.0
+    }
+  },
+  {
+    "case_id": "high_risk_zero_quote",
+    "operation": "sale_quote",
+    "inputs": {
+      "A": 100000,
+      "raw": 2,
+      "risk": "high",
+      "base_skill": 0,
+      "stat_dm": 0,
+      "expertise_sale_dm": 0,
+      "opponent_broker_skill": 3,
+      "local_dm": 2,
+      "trade_dm": 0
+    },
+    "expected_modified_roll": -3,
+    "expected_negotiation_pp": -10,
+    "expected_risk_percent": 10,
+    "expected_gross_sale": {
+      "exact": "0/1",
+      "decimal": 0.0
+    }
+  },
+  {
+    "case_id": "low_risk_reference",
+    "operation": "sale_quote",
+    "inputs": {
+      "A": 100000,
+      "raw": 7,
+      "risk": "low",
+      "base_skill": 2,
+      "stat_dm": 1,
+      "expertise_sale_dm": 0,
+      "opponent_broker_skill": 3,
+      "local_dm": 2,
+      "trade_dm": 0
+    },
+    "expected_modified_roll": 5,
+    "expected_negotiation_pp": 0,
+    "expected_risk_percent": 95,
+    "expected_gross_sale": {
+      "exact": "95000/1",
+      "decimal": 95000.0
+    }
+  },
+  {
+    "case_id": "representative_tax_0",
+    "operation": "port_profit_tax",
+    "inputs": {
+      "positive_or_negative_gain_after_purchase_fees": 0,
+      "government": "Representative Democracy"
+    },
+    "expected_rate_percent": 0,
+    "expected_tax": {
+      "exact": "0/1",
+      "decimal": 0.0
+    }
+  },
+  {
+    "case_id": "representative_tax_-100",
+    "operation": "port_profit_tax",
+    "inputs": {
+      "positive_or_negative_gain_after_purchase_fees": -100,
+      "government": "Representative Democracy"
+    },
+    "expected_rate_percent": 0,
+    "expected_tax": {
+      "exact": "0/1",
+      "decimal": 0.0
+    }
+  },
+  {
+    "case_id": "representative_tax_1000",
+    "operation": "port_profit_tax",
+    "inputs": {
+      "positive_or_negative_gain_after_purchase_fees": 1000,
+      "government": "Representative Democracy"
+    },
+    "expected_rate_percent": 5,
+    "expected_tax": {
+      "exact": "50/1",
+      "decimal": 50.0
+    }
+  },
+  {
+    "case_id": "representative_tax_1001",
+    "operation": "port_profit_tax",
+    "inputs": {
+      "positive_or_negative_gain_after_purchase_fees": 1001,
+      "government": "Representative Democracy"
+    },
+    "expected_rate_percent": 6,
+    "expected_tax": {
+      "exact": "3003/50",
+      "decimal": 60.06
+    }
+  },
+  {
+    "case_id": "representative_tax_75000",
+    "operation": "port_profit_tax",
+    "inputs": {
+      "positive_or_negative_gain_after_purchase_fees": 75000,
+      "government": "Representative Democracy"
+    },
+    "expected_rate_percent": 14,
+    "expected_tax": {
+      "exact": "10500/1",
+      "decimal": 10500.0
+    }
+  },
+  {
+    "case_id": "representative_tax_75001",
+    "operation": "port_profit_tax",
+    "inputs": {
+      "positive_or_negative_gain_after_purchase_fees": 75001,
+      "government": "Representative Democracy"
+    },
+    "expected_rate_percent": 18,
+    "expected_tax": {
+      "exact": "675009/50",
+      "decimal": 13500.18
+    }
+  },
+  {
+    "case_id": "representative_tax_43000",
+    "operation": "port_profit_tax",
+    "inputs": {
+      "positive_or_negative_gain_after_purchase_fees": 43000,
+      "government": "Representative Democracy"
+    },
+    "expected_rate_percent": 12,
+    "expected_tax": {
+      "exact": "5160/1",
+      "decimal": 5160.0
+    }
+  },
+  {
+    "case_id": "fractional_bracket_unresolved",
+    "operation": "port_profit_tax",
+    "inputs": {
+      "positive_or_negative_gain_after_purchase_fees": 1000.5,
+      "government": "Representative Democracy"
+    },
+    "expected_status": "unresolved_fractional_bracket"
+  },
+  {
+    "case_id": "all_freight_no_division",
+    "operation": "baseline",
+    "inputs": {
+      "k": 0,
+      "normal_hold_t": 50,
+      "freight": 80000
+    },
+    "expected_status": "no_speculative_lot"
+  }
+]

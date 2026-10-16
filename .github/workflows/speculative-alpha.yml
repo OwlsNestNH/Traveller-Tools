@@ -1,0 +1,48 @@
+name: Speculative trade alpha checks
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'tools/speculative-trade-alpha/**'
+      - 'tools/trade-route-calculator/js/**'
+      - 'tools/trade-route-calculator/rules/**'
+      - 'index.html'
+      - '.github/workflows/speculative-alpha.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - name: Alpha syntax and golden/workflow checks
+        run: |
+          for file in tools/speculative-trade-alpha/js/*.mjs tools/speculative-trade-alpha/verification/*.mjs; do node --check "$file"; done
+          node --test tools/speculative-trade-alpha/verification/*.test.mjs
+          node --test tests/tool-visits.test.cjs
+          python3 tools/trade-route-calculator/verification/check_rules.py
+      - name: Existing calculator native regression
+        working-directory: tools/trade-route-calculator
+        run: node verification/run-native.mjs
+      - name: Install pinned browser runner
+        run: |
+          npm install --prefix "$RUNNER_TEMP/alpha-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
+          node "$RUNNER_TEMP/alpha-playwright/node_modules/playwright/cli.js" install --with-deps chromium
+      - name: Browser journeys
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 > "$RUNNER_TEMP/alpha-server.log" 2>&1 &
+          node tools/speculative-trade-alpha/verification/browser.mjs "$RUNNER_TEMP/alpha-playwright/node_modules/playwright"
+      - name: Save browser evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: speculative-alpha-${{ github.event.pull_request.head.sha }}
+          path: tools/speculative-trade-alpha/verification-artifacts/
+          if-no-files-found: warn

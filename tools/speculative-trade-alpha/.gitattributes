@@ -1,0 +1,2 @@
+# Retain byte-identical externally checked golden fixtures on every platform.
+verification/fixtures/*.json -text

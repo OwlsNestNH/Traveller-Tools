@@ -1,0 +1,193 @@
+{
+  "contract_id": "traveller-working-first-playtest-2026-10-16",
+  "status": "Working first-playtest selections: q1.25 and base-skill3/4 sale expertise1/2. Historical test labels remain historical. Not a universal balance guarantee.",
+  "scope": "Pure money/quote/settlement mechanics and reproducible conditional cash-flow tests. This is a math handoff, not application code or permission for unrelated engineering.",
+  "units": {
+    "currency": "Cr",
+    "capacity": "cargo-hold tonnes, not total ship displacement",
+    "distance": "parsecs",
+    "percentage": "percentage points where explicitly named; do not mix with fractions"
+  },
+  "reference": {
+    "player_base_skill": 2,
+    "player_stat_dm": 1,
+    "opponent_broker_skill": 3,
+    "opponent_local_dm": 2,
+    "sale_center": 5,
+    "purchase_density_per_t": 4000,
+    "planned_jumps_per_month": 2,
+    "normal_target": 50000
+  },
+  "settings": {
+    "monthly_target": "GM-defined at month beginning; negative values allowed",
+    "monthly_costs": "Configured independently; tested233000 mortgageon or83000off",
+    "opponent_broker_skill": "GM-variable static negative DM",
+    "opponent_local_dm": "GM-variable static negative DM; no automatic familiarity counter policy invented",
+    "trade_dm": "Additional sale-roll DM input; neutral0 in fixtures. Trade-code mapping belongs to frozen gameplay snapshot, not these tests.",
+    "normal_hold_t": "Positive cargo capacity used for the floor; actual inventory does not redefine it",
+    "positive_gap_coefficient": 1.25,
+    "capital_floor_per_normal_hold_t": 2000,
+    "baseline_reference_center": 5
+  },
+  "expertise": {
+    "qualification": "BASE Broker skill only, excluding statDM",
+    "working_mapping": {
+      "0": 0,
+      "1": 0,
+      "2": 0,
+      "3": 1,
+      "4": 2
+    },
+    "above_skill4": "Unspecified; require explicit configuration or ruling rather than silently extrapolating",
+    "sale_only": true,
+    "search_total": "base skill plus normal applicable stat/other search modifiers; never add the sale expertise bonus",
+    "reference_not_recentered": true
+  },
+  "departure_price": [
+    "Let B=(monthlyCosts+monthlyTarget)/plannedJumpsPerMonth. Tests use2. Do not chase actual accumulated profit or loss.",
+    "Let f be the selected jump freight receipts, k the sum of actual speculative purchase principals, Kmin=2000*normalHoldT, and P the individual lot purchase principal.",
+    "If k=0, there is no speculative lot quote and no division; freight-only cash uses actual freight receipts.",
+    "Let g=B-f. If g>0, A0=P*(1+1.25*g/max(k,Kmin)); if g<=0, A0=P. The coefficient applies to the positive gap, not the principal or entire sale quote.",
+    "Apply any explicitly enabled provisional premium floor after A0. Otherwise A=A0. Freeze the lot/jump pricing inputs; do not retrospectively reprice carried/purchased lots from a changed manifest."
+  ],
+  "provisional_premium": {
+    "formula": "A=max(A0,(P+1.10*displacedFreight)/0.95)",
+    "shared_across_risks": true,
+    "displacedFreight": "lotTonnes*actualDistanceFreightRate",
+    "activation": "Explicit setting. Prior tests enable at+50000 and disable atzero/negative; general threshold remains unchosen. All supplied current zero-target sequence fixtures disable it.",
+    "fees": "The original floor is before selling fees/tax and does not guarantee110% freight profit after those charges."
+  },
+  "sale": {
+    "raw_roll": "Two physical d6; preserve individual dice and sum2..12",
+    "modified_roll": "raw + baseBroker + statDM + expertiseSaleDM + otherSaleDM + tradeDM - opposingBroker - localDM",
+    "negotiation_pp": "clamp(2*(modifiedRoll-5),-10,+10)",
+    "risk_raw_lookup": {
+      "low": [
+        70,
+        75,
+        80,
+        85,
+        90,
+        95,
+        100,
+        105,
+        110,
+        115,
+        120
+      ],
+      "moderate": [
+        50,
+        60,
+        70,
+        80,
+        90,
+        100,
+        110,
+        120,
+        130,
+        140,
+        150
+      ],
+      "high": [
+        10,
+        20,
+        40,
+        60,
+        80,
+        100,
+        125,
+        150,
+        175,
+        200,
+        225
+      ]
+    },
+    "risk_index": "raw-2; never index raw risk by the modified roll",
+    "gross_sale": "A*(riskPercent+negotiationPP)/100",
+    "note": "Risk and negotiation are additive percentage points. With these tables the minimum factor is0; no hidden clipping or recentering is needed. Negative DMs literally modify the player sale roll. Search TN8 is separate from sale center5."
+  },
+  "fees_and_tax": {
+    "port_gain": "sum(grossSales)-sum(actualPurchaseCostsOfSoldLots)-applicableCargoSellingFees",
+    "aggregation": "Combined cargo sales per port visit; whole-profit bracket rate, not marginal slices",
+    "deductions": "Cargo selling fees deducted; monthly ship bills are not deducted from port tax base",
+    "cargo_ownership": "Carrier freight revenue is not assessed as owned commodity value. Cargo-owner charges and ship expenses are separate.",
+    "handling_fixture": "max(500,20*speculativeTonnesSold) once per consolidated destination visit if any owned cargo is sold, otherwise0; aggregation is a test assumption",
+    "wharfage_fixture": "20*speculativeTonnesSold for one visit within30days; no repeated storage period charges in tests",
+    "duty": "No gross import duty stacked with profit tax in these tests",
+    "government_fixture": "Representative Democracy (code4)",
+    "bracket_lower_inclusive": [
+      1,
+      1001,
+      5001,
+      10001,
+      25001,
+      50001,
+      75001,
+      100001,
+      250001,
+      1000001
+    ],
+    "bracket_upper_inclusive": [
+      1000,
+      5000,
+      10000,
+      25000,
+      50000,
+      75000,
+      100000,
+      250000,
+      1000000,
+      null
+    ],
+    "representative_rates_percent": [
+      5,
+      6,
+      8,
+      10,
+      12,
+      14,
+      18,
+      20,
+      22,
+      25
+    ],
+    "house_gap_fix": "Next bracket begins75001; the published76001 gap is intentionally corrected.",
+    "nonpositive_gain": "Zero tax/no refund in these tests; final cross-port loss policy remains open.",
+    "missing_government": "Do not silently treat a missing chart mapping as zero tax. Full government table must come from the verified adopted chart/snapshot.",
+    "fractional_boundaries": "No credit-rounding rule was adopted. A value strictly between the integer endpoints of adjacent brackets needs an explicit ruling; return unresolved rather than silently rounding or interpolating. Supplied fixtures avoid those gaps."
+  },
+  "cash_flow_fixture_policy": [
+    "Starting bank cash is supplied once, independent of reference purchase density. No monthly reset.",
+    "Before departure, require cash sufficient for the whole planned lot. Fixture fallback uses full-hold guaranteed freight if not affordable; no partial purchase or negative spending.",
+    "At arrival, add sale and freight receipts, deduct cargo fees and port profit tax before the next purchase. Every fixture lot is sold; no retained inventory.",
+    "After each second jump, assess the configured monthly bill. Pay available cash. If cash is insufficient, stop the series immediately, bank cash0, and record remaining unpaid liability. Do not continue with a free ship.",
+    "Debt-adjusted balance=physical cash-unpaid liability. Net change=debt-adjusted balance-starting cash. Report bank cash and unpaid separately.",
+    "Every test assumes buyers found and accepts every quote. Search delays, rejected quotes and holding strategy are not calibrated by these fixtures."
+  ],
+  "precision": {
+    "calculation": "Do not introduce intermediate rounding. Decimal/rational arithmetic or adequate precision is required.",
+    "fixture_comparison_absolute_tolerance_cr": 0.000001,
+    "display": "Display rounding is distinct from actual tax/ledger rounding, which remains unchosen.",
+    "golden_rational_format": "Atomic fixtures include exact numerator/denominator strings and a convenience decimal."
+  },
+  "not_frozen_here": [
+    "above-skill4 expertise mapping",
+    "general premium activation threshold",
+    "held-over cargo pricing lifecycle",
+    "cross-port loss offsets/refunds",
+    "fractional-credit bracket rounding",
+    "unmapped government rates",
+    "buyer-search retry horizon and full acquisition/market generation workflow"
+  ],
+  "sources": {
+    "tax_chart": "Merchant Prince (2010), pp86–87, adopted purchase-cost/fee/per-visit adaptation",
+    "fees": "Far Trader pp40,66; per-call minimum aggregation is a fixture assumption"
+  },
+  "fixture_counts": {
+    "preselected_dice_paths": 12,
+    "working_configuration_definitions": 3,
+    "hold_mortgage_settings": 6,
+    "working_sequence_cases": 216,
+    "new_simulations_in_this_package": 0
+  }
+}
