@@ -1,0 +1,67 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {mkdir,writeFile} from 'node:fs/promises';
+const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
+const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BROWSER_CHANNEL?{channel:process.env.TRAVELLER_BROWSER_CHANNEL}:{})});
+const context=await browser.newContext({viewport:{width:1280,height:1100}});
+const errors=[];const checks=[];
+const artifacts=new URL('../verification-artifacts/',import.meta.url);await mkdir(artifacts,{recursive:true});
+const sample=[{Name:'Regina',Hex:'1910',UWP:'A788899-C',PBG:'703',Zone:'',WorldX:0,WorldY:0,Sector:'Spinward Marches'},
+  {Name:'Destination',Hex:'2010',UWP:'A788899-C',PBG:'703',Zone:'',WorldX:1,WorldY:0,Sector:'Spinward Marches'},
+  {Name:'Four parsecs',Hex:'2312',UWP:'A788899-C',PBG:'703',Zone:'',WorldX:4,WorldY:2,Sector:'Spinward Marches'},
+  {Name:'Outside radius',Hex:'2412',UWP:'A788899-C',PBG:'703',Zone:'',WorldX:5,WorldY:2,Sector:'Spinward Marches'}];
+await context.route('https://travellermap.com/api/jumpworlds?*',route=>{
+  const url=new URL(route.request().url());return route.fulfill({json:{Worlds:url.searchParams.get('jump')==='0'?[sample[0]]:sample}});
+});
+const page=await context.newPage();page.on('pageerror',error=>errors.push(error.message));
+const base=process.env.TRAVELLER_ALPHA_URL||'http://127.0.0.1:8765/tools/speculative-trade-alpha/';
+const key='traveller.speculative-trade.alpha.v1';
+const read=()=>page.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);
+const click=async name=>page.getByRole('button',{name,exact:true}).click();
+const saved=async()=>page.waitForFunction(()=>!document.querySelector('#message').classList.contains('error')&&document.querySelector('#recovery').hidden);
+try {
+ await page.goto(base);await click('Start playtest');await page.locator('[data-world="1,0"]').waitFor();
+ assert.equal((await read()).cash.numerator,'600000');checks.push('setup fields and isolated save');
+ assert.equal(await page.locator('[data-world="4,2"]').count(),1);assert.equal(await page.locator('[data-world="5,2"]').count(),0);checks.push('four-parsec API map filter');
+ await page.locator('[data-world="1,0"]').click();await click('Generate offering');await click('Buy lot');
+ assert.equal((await read()).cash.numerator,'500000');checks.push('whole-lot cost purchase');
+ await click('Confirm departure & arrival');await page.locator('#sales [data-search]').waitFor();
+ await page.locator('#roll-mode').selectOption('manual');await page.locator('#die1').fill('0');await page.locator('#die2').fill('6');
+ await click('Find buyer');assert.equal((await read()).lots[0].search,null);checks.push('invalid individual dice rejected');
+ await page.locator('#die1').fill('6');await click('Find buyer');await page.locator('#sales [data-quote]').waitFor();
+ assert.equal((await read()).lots[0].search.raw,12);assert.equal((await read()).lots[0].quote,null);checks.push('buyer roll separate from sale');
+ await page.locator('#die1').fill('3');await page.locator('#die2').fill('4');await click('Roll sale quote');await saved();
+ const quote=(await read()).lots[0].quote;assert.equal(quote.gross.numerator,'226875');
+ await page.reload();await page.getByText('Saved quote:',{exact:false}).waitFor();assert.deepEqual((await read()).lots[0].quote,quote);checks.push('reload retains quote and individual dice');
+ await click('Review settlement');await click('Cancel review / hold cargo');assert.deepEqual((await read()).lots[0].quote,quote);assert.equal((await read()).cash.numerator,'540000');checks.push('cancel retains cash/cargo/quote');
+ await page.goto(new URL('../../',base).href);await page.goBack();await page.getByText('Saved quote:',{exact:false}).waitFor();assert.deepEqual((await read()).lots[0].quote,quote);checks.push('back-forward navigation preserves quote');
+ await page.screenshot({path:new URL('desktop.png',artifacts).pathname.replace(/^\/(.:)/,'$1'),fullPage:true});
+ await page.setViewportSize({width:390,height:844});await page.screenshot({path:new URL('mobile.png',artifacts).pathname.replace(/^\/(.:)/,'$1'),fullPage:true});
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);checks.push('390px layout has no horizontal overflow');
+ assert.equal(await page.locator('#government').inputValue(),'9');await page.locator('#government').selectOption('4');checks.push('government defaults to destination UWP and permits GM override');
+ const beforeAudit=await read();await click('Audit sale quote');await click('Close audit');assert.deepEqual(await read(),beforeAudit);checks.push('contextual audit reads saved inputs without mutation');
+ assert.equal(await page.locator('#gm-details').isVisible(),false);assert.equal(await page.locator('#backup-section').isVisible(),false);assert.ok(!(await page.locator('#summary').innerText()).includes('Target'));
+ await click('Audit sale quote');const playerAudit=await page.locator('#audit-content').innerText();assert.ok(playerAudit.includes('Broker 2'));assert.ok(!/gap|floor|monthlyTarget|calibration|226875\//i.test(playerAudit));await click('Close audit');checks.push('player arithmetic audit excludes private target and calibration');
+ await click('Review settlement');await click('Accept all quoted sales');await page.locator('#next-section').waitFor();assert.equal((await read()).cash.numerator,'740700');checks.push('consolidated settlement exact cash');
+ await page.reload();assert.equal((await read()).cash.numerator,'740700');checks.push('reload does not double credit settlement');
+ await click('Finish visit & prepare next departure');await page.locator('#lot-form').waitFor();
+ await page.evaluate(()=>{const write=Storage.prototype.setItem;window.restoreWrite=()=>{Storage.prototype.setItem=write;};Storage.prototype.setItem=function(k,v){if(k==='traveller.speculative-trade.alpha.v1')throw Error('quota fixture');return write.call(this,k,v);};});
+ await click('Generate offering');await page.getByRole('button',{name:'Retry save',exact:true}).waitFor();assert.equal((await read()).offers.length,0);checks.push('failed save does not publish candidate');
+ await page.evaluate(()=>window.restoreWrite());await click('Retry save');await saved();assert.equal((await read()).offers.length,1);checks.push('retry saves retained candidate once');
+ await page.reload();assert.equal((await read()).offers.length,1);
+ await page.evaluate(()=>{const write=Storage.prototype.setItem,read=Storage.prototype.getItem;Storage.prototype.setItem=function(k,v){write.call(this,k,v);Storage.prototype.getItem=function(key){if(key===k)throw Error('readback fixture');return read.call(this,key);};};});
+ await click('Buy lot');await page.getByRole('button',{name:'Reload saved state',exact:true}).waitFor();
+ assert.equal(await page.getByRole('button',{name:'Retry save',exact:true}).isVisible(),false);checks.push('uncertain write requires reload, blocks retry');
+ await page.reload();assert.equal((await read()).lots.length,1);assert.equal((await read()).cash.numerator,'640700');checks.push('reload recovers actual successful write once');
+ const backup=await read();backup.settings.monthlyTarget='0';
+ await page.locator('#gm-view').check();await page.locator('#next-form [name=monthlyTarget]').evaluate(el=>{el.value='-50000';el.dispatchEvent(new Event('input',{bubbles:true}));});
+ await page.locator('#import').setInputFiles({name:'alpha.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))});await saved();assert.equal(await page.locator('#next-form [name=monthlyTarget]').inputValue(),'0');checks.push('import resets stale edited target');
+ await page.evaluate(k=>localStorage.setItem(k,'broken-json'),key);await page.reload();await page.locator('#import').setInputFiles({name:'restore.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(backup))});await saved();assert.equal((await read()).settings.monthlyTarget,'0');assert.equal(await page.locator('#government option').count(),14);checks.push('corrupt save restores validated backup and usable tax controls');
+ const offlineContext=await browser.newContext();await offlineContext.route('https://travellermap.com/api/**',route=>route.abort());const offline=await offlineContext.newPage();
+ await offline.goto(base);await offline.locator('[name=sector]').fill('Trojan Reach');await offline.locator('[name=hex]').fill('2211');await offline.getByRole('button',{name:'Start playtest',exact:true}).click();await offline.locator('#map-source').filter({hasText:'Backup'}).waitFor();
+ assert.ok((await offline.locator('#map-source').innerText()).includes('2026-10-09'));assert.ok((await offline.locator('#map-source').innerText()).includes('partial'));checks.push('API failure uses actual dated partial world backup');
+ await offline.locator('[data-world="-108,-27"]').click();await offline.getByRole('button',{name:'Generate offering',exact:true}).click();await offline.getByRole('button',{name:'Buy lot',exact:true}).click();await offline.getByRole('button',{name:'Confirm departure & arrival',exact:true}).click();await offline.getByRole('button',{name:'Find buyer',exact:true}).click();
+ const auto=await offline.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);assert.equal(auto.lots[0].search.rollMode,'Auto');assert.equal(auto.lots[0].search.raw,auto.lots[0].search.dice.reduce((a,b)=>a+b,0));checks.push('Auto mode retains individual dice and provenance');await offlineContext.close();
+ assert.deepEqual(errors,[]);checks.push('no browser page errors');
+ await writeFile(new URL('browser-report.json',artifacts),JSON.stringify({checks,errors},null,2));console.log(JSON.stringify({passed:checks.length,checks},null,2));
+}finally{await browser.close();}

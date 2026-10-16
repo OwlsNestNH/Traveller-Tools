@@ -1,0 +1,34 @@
+{
+  "created_utc": "2026-10-16T02:49:03.367982+00:00",
+  "contract_id": "traveller-working-first-playtest-2026-10-16",
+  "files": {
+    "README.txt": {
+      "sha256": "1660bf599374c477960b997619463a4629bc2b2e810d6770f35df25a9f92912f",
+      "bytes": 2658
+    },
+    "dice_fixtures.json": {
+      "sha256": "c684c7d12ad938fba9f93915b67b6ffa1136859e43ba511e306154465caceddf",
+      "bytes": 6507
+    },
+    "golden_sequence_cases.json": {
+      "sha256": "fbe28db6182c6f716c1cdc34c9ea077cf8b50eb5d1111bea193f9799efec55a2",
+      "bytes": 2645794
+    },
+    "golden_atomic_cases.json": {
+      "sha256": "5fd66322ca4351b570a5b7b2d6eb8ceaccdca8f2c65680e1b14eac8cbfe6f9bc",
+      "bytes": 7654
+    },
+    "math_contract.json": {
+      "sha256": "c291974c024fd5775b0ca47d1cdad36a53f66eec490d103cbd30a70df46703ef",
+      "bytes": 8920
+    },
+    "golden_sequence_cases.json.gz": {
+      "sha256": "de1b4b45ea479b86e4c278b3059030a5f7f2d78c71fa7fe9162f2d0647c5c357",
+      "bytes": 98599
+    }
+  },
+  "source_hashes": {
+    "traveller_zero_scaled_cash_same12_q125_results.json": "fd775e3ca37bd33d07bf09056e609c73044b220b512c6bd9c40d03a766636e53",
+    "traveller_zero_broker4_extra_same12_q125_results.json": "ad67a1c57a6d8d917b7005d6058f9ee15095c937b1db817be7533828d058496b"
+  }
+}
