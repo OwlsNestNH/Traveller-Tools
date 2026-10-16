@@ -17,10 +17,11 @@ const page=await context.newPage();page.on('pageerror',error=>errors.push(error.
 const base=process.env.TRAVELLER_ALPHA_URL||'http://127.0.0.1:8765/tools/speculative-trade-alpha/';
 const key='traveller.speculative-trade.alpha.v1';
 const read=()=>page.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);
-const click=async name=>page.getByRole('button',{name,exact:true}).click();
+const click=async name=>{await page.getByRole('button',{name,exact:true}).click();await page.waitForFunction(()=>document.querySelector('main')?.getAttribute('aria-busy')!=='true');};
 const saved=async()=>page.waitForFunction(()=>!document.querySelector('#message').classList.contains('error')&&document.querySelector('#recovery').hidden);
 try {
  await page.goto(base);await click('Start playtest');await page.locator('[data-world="1,0"]').waitFor();
+ await click('Confirm supplier (GM)');
  assert.equal((await read()).cash.numerator,'600000');checks.push('setup fields and isolated save');
  assert.equal(await page.locator('[data-world="4,2"]').count(),1);assert.equal(await page.locator('[data-world="5,2"]').count(),0);checks.push('four-parsec API map filter');
  await page.locator('[data-world="1,0"]').click();await click('Generate offering');await click('Buy lot');
@@ -44,7 +45,7 @@ try {
  await click('Audit sale quote');const playerAudit=await page.locator('#audit-content').innerText();assert.ok(playerAudit.includes('Broker 2'));assert.ok(!/gap|floor|monthlyTarget|calibration|226875\//i.test(playerAudit));await click('Close audit');checks.push('player arithmetic audit excludes private target and calibration');
  await click('Review settlement');await click('Accept all quoted sales');await page.locator('#next-section').waitFor();assert.equal((await read()).cash.numerator,'740700');checks.push('consolidated settlement exact cash');
  await page.reload();assert.equal((await read()).cash.numerator,'740700');checks.push('reload does not double credit settlement');
- await click('Finish visit & prepare next departure');await page.locator('#lot-form').waitFor();
+ await click('Finish visit & prepare next departure');await click('Confirm supplier (GM)');await page.locator('#lot-form').waitFor();
  await page.evaluate(()=>{const write=Storage.prototype.setItem;window.restoreWrite=()=>{Storage.prototype.setItem=write;};Storage.prototype.setItem=function(k,v){if(k==='traveller.speculative-trade.alpha.v1')throw Error('quota fixture');return write.call(this,k,v);};});
  await click('Generate offering');await page.getByRole('button',{name:'Retry save',exact:true}).waitFor();assert.equal((await read()).offers.length,0);checks.push('failed save does not publish candidate');
  await page.evaluate(()=>window.restoreWrite());await click('Retry save');await saved();assert.equal((await read()).offers.length,1);checks.push('retry saves retained candidate once');
@@ -60,8 +61,12 @@ try {
  const offlineContext=await browser.newContext();await offlineContext.route('https://travellermap.com/api/**',route=>route.abort());const offline=await offlineContext.newPage();
  await offline.goto(base);await offline.locator('[name=sector]').fill('Trojan Reach');await offline.locator('[name=hex]').fill('2211');await offline.getByRole('button',{name:'Start playtest',exact:true}).click();await offline.locator('#map-source').filter({hasText:'Backup'}).waitFor();
  assert.ok((await offline.locator('#map-source').innerText()).includes('2026-10-09'));assert.ok((await offline.locator('#map-source').innerText()).includes('partial'));checks.push('API failure uses actual dated partial world backup');
- await offline.locator('[data-world="-108,-27"]').click();await offline.getByRole('button',{name:'Generate offering',exact:true}).click();await offline.getByRole('button',{name:'Buy lot',exact:true}).click();await offline.getByRole('button',{name:'Confirm departure & arrival',exact:true}).click();await offline.getByRole('button',{name:'Find buyer',exact:true}).click();
- const auto=await offline.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);assert.equal(auto.lots[0].search.rollMode,'Auto');assert.equal(auto.lots[0].search.raw,auto.lots[0].search.dice.reduce((a,b)=>a+b,0));checks.push('Auto mode retains individual dice and provenance');await offlineContext.close();
+ await offline.getByRole('button',{name:'Confirm supplier (GM)',exact:true}).click();await offline.locator('[data-world="-108,-27"]').click();await offline.getByRole('button',{name:'Generate offering',exact:true}).click();await offline.getByRole('button',{name:'Buy lot',exact:true}).click();await offline.getByRole('button',{name:'Confirm departure & arrival',exact:true}).click();await offline.getByRole('button',{name:'Find buyer',exact:true}).click();
+ await offline.waitForFunction(()=>document.querySelector('main')?.getAttribute('aria-busy')!=='true');const auto=await offline.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);assert.equal(auto.lots[0].search.rollMode,'Auto');assert.equal(auto.lots[0].search.raw,auto.lots[0].search.dice.reduce((a,b)=>a+b,0));checks.push('Auto mode retains individual dice and provenance');await offlineContext.close();
+ await page.locator('[data-world="0,0"]').click();await click('Confirm departure & arrival');await page.getByText('Admin / Data Net buyer alternative · TL8+',{exact:true}).click();
+ await page.locator('#admin-skill').fill('2');await page.locator('#admin-stat').fill('1');await page.locator('#admin-other').fill('0');await page.locator('#admin-discount').fill('10');await page.locator('#admin-confirm').check();await page.locator('#roll-mode').selectOption('manual');await page.locator('#die1').fill('3');await page.locator('#die2').fill('4');
+ await click('Data Net buyer');await page.locator('#sales [data-quote]').waitFor();assert.equal((await read()).lots[0].search.method,'Admin');assert.equal((await read()).lots[0].quote,null);
+ await click('Roll sale quote');await saved();const adminQuote=(await read()).lots[0].quote;assert.equal(adminQuote.normalGross.numerator,'195625');assert.equal(adminQuote.gross.numerator,'372125');assert.equal(adminQuote.gross.denominator,'2');checks.push('Admin buyer and sale stay separate with retained surplus-only reduction');
  assert.deepEqual(errors,[]);checks.push('no browser page errors');
  await writeFile(new URL('browser-report.json',artifacts),JSON.stringify({checks,errors},null,2));console.log(JSON.stringify({passed:checks.length,checks},null,2));
 }finally{await browser.close();}

@@ -6,7 +6,7 @@ import * as E from '../js/engine.mjs';
 import {positions,worldData} from '../js/map-adapter.mjs';
 const chart=JSON.parse(await readFile(new URL('../../trade-route-calculator/rules/merchant-prince-1e.json',import.meta.url))).tax;
 const origin={id:'0,0',name:'Origin',x:0,y:0,uwp:'A788899-C'},dest={id:'1,0',name:'Destination',x:1,y:0,uwp:'A788899-C'};
-const start=()=>S.setup(S.initial(),{...S.defaults,bank:'600000'},origin);
+const start=()=>S.confirmSupplier(S.setup(S.initial(),{...S.defaults,bank:'600000'},origin));
 const load=s=>JSON.parse(JSON.stringify(s));
 test('purchase, separate search/quote, reload, cancellation/hold and consolidated sale retain exact cost and dice',()=>{
   let s=start();s=S.offer(s,{id:'l1',name:'Cargo',tonnes:'25',purchase:'100000',risk:'moderate'});s=S.buy(s,'l1');
@@ -54,4 +54,25 @@ test('same adapter provides a labeled dated partial backup and refuses unsupport
   const neighbors=await adapter.loadNearby(world);assert.ok(neighbors.length>0);assert.ok(neighbors.every(w=>w.dataSource.includes('partial')));
   await assert.rejects(adapter.loadWorld('Spinward Marches','1910'),/no matching world/);
   await assert.rejects(adapter.loadNearby(origin),/no verified local coverage/);
+});
+test('supplier confirmation is separate from whole-lot purchase and creates no price discount or dice',()=>{
+  let s=S.setup(S.initial(),{...S.defaults,bank:'600000'},origin),seed=s.seed;
+  assert.throws(()=>S.offer(s,{id:'l',name:'Cargo',tonnes:'25',purchase:'100000',risk:'moderate'}),/supplier/);
+  s=S.confirmSupplier(s);assert.equal(s.seed,seed);assert.equal(E.approximate(s.cash),600000);
+  s=S.offer(s,{id:'l',name:'Cargo',tonnes:'25',purchase:'100000',risk:'moderate'});assert.equal(E.approximate(s.cash),600000);
+  s=S.buy(s,'l');assert.equal(E.approximate(s.cash),500000);
+});
+test('Admin has explicit GM modifiers, one saved attempt, separate sale and positive-surplus reduction',()=>{
+  let s=start();s=S.offer(s,{id:'l',name:'Cargo',tonnes:'25',purchase:'100000',risk:'moderate'});s=S.buy(s,'l');s=S.destination(s,dest);s=S.arrive(s,{freight:'40000',freightTonnes:'25'});
+  const inputs={adminSkill:2,statDM:1,otherDM:0,durationDie:1,discountPercent:10,rushed:false,gmConfirmed:true};
+  s=S.admin(s,'l',inputs,[3,4]);assert.equal(s.lots[0].search.total,10);assert.equal(s.lots[0].quote,null);
+  const search=JSON.stringify(s.lots[0].search);s=S.admin(s,'l',inputs,[6,6]);assert.equal(JSON.stringify(s.lots[0].search),search);
+  s=S.value(s,'l',[3,4]);assert.equal(E.approximate(s.lots[0].quote.normalGross),226875);assert.equal(E.approximate(s.lots[0].quote.gross),214187.5);S.validate(load(s));
+  const mismatched=load(s);mismatched.lots[0].quote=E.quote({...s.lots[0].quote,departure:s.lots[0].departure,dataNetDiscount:null});assert.throws(()=>S.validate(mismatched),/selected Admin/);
+  const wrongTL=load(s);wrongTL.current.uwp='A788899-7';assert.throws(()=>S.validate(wrongTL),/Admin search/);
+});
+test('failed one-hour Admin search allows independent conventional search without price roll',()=>{
+  let s=start();s=S.offer(s,{id:'l',name:'Cargo',tonnes:'25',purchase:'100000',risk:'moderate'});s=S.buy(s,'l');s=S.destination(s,dest);s=S.arrive(s,{});
+  s=S.admin(s,'l',{adminSkill:0,statDM:0,otherDM:0,durationDie:1,discountPercent:5,rushed:false,gmConfirmed:true},[1,1]);
+  s=S.search(s,'l',[6,6]);assert.equal(s.lots[0].priorAdminSearch.success,false);assert.equal(s.lots[0].search.success,true);assert.equal(s.lots[0].quote,null);
 });

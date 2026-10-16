@@ -76,6 +76,15 @@ export function buyerSearch({dice,baseBroker,statDM,risk,population}) {
   const total=raw+baseBroker+statDM+riskDM+populationDM;
   return {dice:[...dice],raw,baseBroker,statDM,riskDM,populationDM,total,success:total>=8,duration:'one working day'};
 }
+export function adminSearch({dice,adminSkill,statDM,otherDM,durationDie,rushed=false,techLevel,discountPercent}) {
+  integer(techLevel,'tech level',0,33);if(techLevel<8)throw new UnresolvedRule('Data Net requires TL8 or higher.');
+  integer(adminSkill,'Admin skill',0,100);integer(statDM,'GM-selected Admin stat DM');integer(otherDM,'GM-selected Admin search DMs');
+  integer(durationDie,'duration d6',1,6);integer(discountPercent,'surplus reduction',5,20);
+  if(typeof rushed!=='boolean')throw Error('Rush must be explicit');const raw=diceTotal(dice),rushDM=rushed?-2:0;
+  const total=raw+adminSkill+statDM+otherDM+rushDM;
+  return {method:'Admin',dice:[...dice],raw,adminSkill,statDM,otherDM,rushDM,total,success:total>=8,durationDie,rushed,
+    durationMinutes:durationDie*(rushed?10:60),discountPercent,techLevel,gmModifierSelection:true};
+}
 export function fixtureFees(tonnes) {
   const t=nonnegative(tonnes,'Sold tonnes');
   return packed(t.n?M.add(max(M.rat(500),M.mul(t,20)),M.mul(t,20)):0);
@@ -110,4 +119,8 @@ export function roll2d6(seed) {
   integer(seed,'dice seed',1,4294967295);const dice=[];let next=seed;
   for(let i=0;i<2;i++){next=(Math.imul(next,1664525)+1013904223)>>>0;dice.push(Math.floor(next/4294967296*6)+1);}
   return {dice,seed:next||1};
+}
+export function rollD6(seed) {
+  integer(seed,'dice seed',1,4294967295);const next=(Math.imul(seed,1664525)+1013904223)>>>0;
+  return {die:Math.floor(next/4294967296*6)+1,seed:next||1};
 }

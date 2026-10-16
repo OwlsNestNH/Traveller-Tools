@@ -30,6 +30,7 @@ function renderMap() {
   $('map').innerHTML='<circle cx="250" cy="250" r="216" fill="none" stroke="#2b4056" stroke-dasharray="3 6"/>'+points.map(p=>`<g class="world" role="button" tabindex="0" data-world="${esc(p.world.id)}" aria-label="${esc(p.world.name)}, ${p.distance} parsecs" aria-pressed="${s.destination?.id===p.world.id}"><title>${esc(p.world.name)} · ${esc(p.world.uwp)} · ${p.distance} pc</title><circle cx="${p.x}" cy="${p.y}" r="9"/><text x="${p.x+12}" y="${p.y+4}">${esc(p.world.name)}</text></g>`).join('');
 }
 function render() {
+  document.querySelector('main').setAttribute('aria-busy',String(busy));
   const s=store.snapshot(),buying=s.phase==='buy',arrived=s.phase==='arrived';
   $('setup').hidden=s.phase!=='setup';$('play').hidden=s.phase==='setup';
   $('recovery').hidden=!store.pending&&!store.uncertain;$('retry').hidden=!store.pending||store.uncertain;
@@ -47,9 +48,9 @@ function render() {
     try{codes=context(w,core).codes.join(' ')||'None';}catch{codes='Unknown — UWP needs review';}
     return `<div class="planet"><strong>${esc(w.name)} · ${esc(w.hex||'')} · ${esc(w.uwp)}</strong><p>Trade codes: <strong>${esc(codes)}</strong></p><dl>${p.decoded.map(([name,code,description])=>`<dt>${esc(name)} ${esc(code)}</dt><dd>${esc(description)}</dd>`).join('')}</dl></div>`;
   }).join('');
-  $('lot-form').hidden=!buying;$('travel-form').hidden=!buying;$('sale-section').hidden=!arrived;$('next-section').hidden=s.phase!=='closed';
+  $('lot-form').hidden=!buying||!s.supplierConfirmed;$('confirm-supplier').hidden=!buying||!!s.supplierConfirmed;$('travel-form').hidden=!buying;$('sale-section').hidden=!arrived;$('next-section').hidden=s.phase!=='closed';
   $('lots').innerHTML=s.offers.map(l=>`<article class="lot"><strong>${esc(l.name)}</strong><p>${esc(l.tonnes)} t · ${money(l.purchase)} whole lot · ${esc(l.risk)} risk</p><button data-buy="${esc(l.id)}">Buy lot</button><button data-audit="lot:${esc(l.id)}">Audit lot</button></article>`).join('')+s.lots.map(l=>`<article class="lot"><strong>${esc(l.name)} · aboard</strong><p>${esc(l.tonnes)} t · original cost ${money(l.purchase)} · ${esc(l.risk)} risk</p><button data-audit="lot:${esc(l.id)}">Audit lot</button></article>`).join('');
-  $('sales').innerHTML=s.lots.map(l=>`<article class="lot"><strong>${esc(l.name)}</strong><p>${l.search?'Buyer search: '+esc(l.search.dice.join(' + '))+' → '+esc(l.search.total)+' · '+(l.search.success?'buyer found':'no buyer; retry policy unresolved'):'Buyer not searched'}</p>${!l.search?`<button data-search="${esc(l.id)}">Find buyer</button>`:`<button data-audit="search:${esc(l.id)}">Audit search</button>`}${l.search?.success&&!l.quote?`<button data-quote="${esc(l.id)}">Roll sale quote</button>`:''}${l.quote?`<p>Saved quote: <strong>${money(l.quote.gross)}</strong> · dice ${esc(l.quote.dice.join(' + '))} · negotiation ${l.quote.negotiationPP>0?'+':''}${esc(l.quote.negotiationPP)} pp</p><button data-audit="quote:${esc(l.id)}">Audit sale quote</button>`:''}</article>`).join('');
+  $('sales').innerHTML=s.lots.map(l=>`<article class="lot"><strong>${esc(l.name)}</strong><p>${l.search?'Buyer search: '+esc(l.search.dice.join(' + '))+' → '+esc(l.search.total)+' · '+(l.search.success?'buyer found':'no buyer; retry policy unresolved'):'Buyer not searched'}</p>${!l.search?`<button data-search="${esc(l.id)}">Find buyer</button><button data-admin="${esc(l.id)}">Data Net buyer</button>`:`<button data-audit="search:${esc(l.id)}">Audit search</button>${l.search.method==='Admin'&&!l.search.success&&l.search.durationMinutes<=60?`<button data-search="${esc(l.id)}">Find buyer</button>`:''}`}${l.search?.success&&!l.quote?`<button data-quote="${esc(l.id)}">Roll sale quote</button>`:''}${l.quote?`<p>Saved quote: <strong>${money(l.quote.gross)}</strong> · dice ${esc(l.quote.dice.join(' + '))} · negotiation ${l.quote.negotiationPP>0?'+':''}${esc(l.quote.negotiationPP)} pp</p><button data-audit="quote:${esc(l.id)}">Audit sale quote</button>`:''}</article>`).join('');
   $('accept-sale').disabled=!review||busy||!!store.pending||store.uncertain;
   $('zero-trial').checked=s.settings.zeroLossTrial;
   $('audit').textContent=JSON.stringify(s,(key,value)=>key==='raw'&&typeof value==='object'?undefined:value,2);renderMap();
@@ -81,6 +82,7 @@ $('setup-form').addEventListener('submit',async event=>{
   await execute('setup',s=>S.setup(s,settings,world),'Playtest started.');await refreshMap();
 });
 $('lot-form').addEventListener('submit',event=>{event.preventDefault();const f=fields(event.currentTarget),id=crypto.randomUUID();execute('offer:'+id,s=>S.offer(s,{id,...f}),'Offering saved from GM inputs.');});
+$('confirm-supplier').addEventListener('click',()=>execute('supplier:'+store.snapshot().jumps,s=>S.confirmSupplier(s),'Supplier availability manually confirmed by the GM; purchase remains separate.'));
 $('lots').addEventListener('click',event=>{const id=event.target.closest('[data-buy]')?.dataset.buy;if(id)execute('buy:'+id,s=>S.buy(s,id),'Lot purchased; original cost retained.');});
 async function selectWorld(event) {
   const id=event.target.closest('[data-world]')?.dataset.world;if(!id||store.snapshot().phase!=='buy')return;
@@ -101,6 +103,12 @@ $('sales').addEventListener('click',event=>{
   const search=event.target.closest('[data-search]')?.dataset.search,quote=event.target.closest('[data-quote]')?.dataset.quote;
   if(search)execute(`search:${store.snapshot().visit}:${search}`,s=>S.search(s,search,manualDice()),'Buyer search saved.');
   if(quote)execute(`quote:${store.snapshot().visit}:${quote}`,s=>S.value(s,quote,manualDice()),'Sale quote saved.');
+  const admin=event.target.closest('[data-admin]')?.dataset.admin;
+  if(admin){
+    const required=['admin-stat','admin-other','admin-discount'];if(required.some(id=>$(id).value==='')){message('The GM must select Admin stat, other search modifiers and surplus reduction first.',true);return;}
+    const inputs={adminSkill:Number($('admin-skill').value),statDM:Number($('admin-stat').value),otherDM:Number($('admin-other').value),durationDie:Number($('admin-duration').value),discountPercent:Number($('admin-discount').value),rushed:$('admin-rush').checked,gmConfirmed:$('admin-confirm').checked};
+    execute(`admin:${store.snapshot().visit}:${admin}`,s=>S.admin(s,admin,inputs,manualDice()),'Admin buyer search saved separately from sale negotiation.');
+  }
 });
 const settlementInputs=()=>({...fields($('settlement-form')),zeroLossTrial:store.snapshot().settings.zeroLossTrial});
 $('review-sale').addEventListener('click',()=>{
@@ -118,9 +126,10 @@ document.addEventListener('click',event=>{
   if(!data){message('Review the retained calculation first; no dice or transaction were generated.');return;}
   let explanation;
   if(kind==='lot')explanation=`${lot.name}: ${lot.tonnes} tonnes, ${money(lot.purchase)} for the whole lot, ${lot.risk} risk.\nThe GM supplied size, value and risk. No offering dice were rolled; random offering tables remain unresolved. Original cost is retained after purchase.`;
-  if(kind==='search')explanation=`${data.rollMode||'Recorded'} dice: ${data.dice.join(' + ')} = ${data.raw}.\n${data.raw} + Broker ${data.baseBroker} + stat ${data.statDM} + risk ${data.riskDM} + population ${data.populationDM} = ${data.total}.\nNeed 8+: ${data.success?'buyer found':'no buyer found'}. One working day. Sale expertise does not apply to buyer search. This is a retained result; opening this explanation rolls nothing.`;
+  if(kind==='search')explanation=data.method==='Admin'?`${data.rollMode} dice: ${data.dice.join(' + ')} = ${data.raw}.\n${data.raw} + Admin ${data.adminSkill} + GM-selected stat ${data.statDM} + GM-selected other modifiers ${data.otherDM} + rush ${data.rushDM} = ${data.total}. Need8+: ${data.success?'buyer found':'no buyer found'}.\nDuration die ${data.durationDie}: ${data.durationMinutes} minutes. Positive-surplus reduction ${data.discountPercent}%, selected by the GM. No sale expertise or rushing sale DM applies.`:`${data.rollMode||'Recorded'} dice: ${data.dice.join(' + ')} = ${data.raw}.\n${data.raw} + Broker ${data.baseBroker} + stat ${data.statDM} + risk ${data.riskDM} + population ${data.populationDM} = ${data.total}.\nNeed 8+: ${data.success?'buyer found':'no buyer found'}. One working day. Sale expertise does not apply to buyer search. This is a retained result; opening this explanation rolls nothing.`;
   if(kind==='quote')explanation=`${data.rollMode||'Recorded'} dice: ${data.dice.join(' + ')} = ${data.raw}.\n${data.raw} + Broker ${data.baseBroker} + stat ${data.statDM} + sale expertise ${data.expertise} + other ${data.otherSaleDM} + trade ${data.tradeDM} − opposing Broker ${data.opposingBroker} − local knowledge ${data.localDM} = ${data.modified}.\nNegotiation: 2 × (${data.modified} − 5), limited to ±10 = ${data.negotiationPP} percentage points.\n${data.risk} risk at raw ${data.raw}: ${data.riskPercent}%. Add negotiation ${data.negotiationPP} = ${data.riskPercent+data.negotiationPP}% of the established lot valuation.\nSaved gross quote: ${money(data.gross)}. Original cost: ${money(lot.purchase)}. Fees and tax are reviewed separately. Keeping this quote does not reroll its value.`;
   if(kind==='settlement'){const a=data.settlement;explanation=`Combined gross sales ${money(a.gross)} − original purchase costs ${money(a.principal)} − selling fees ${money(a.fees)} = visit gain ${money(a.gain)}.\nWhole-profit tax rate ${a.rate}%${a.bracket===null?' (explicit zero-tax trial for nonpositive gain)':', bracket '+(a.bracket+1)}: ${money(a.tax)}.\nGross ${money(a.gross)} − fees ${money(a.fees)} − tax ${money(a.tax)} = bank credit ${money(a.cashCredit)}.\nBank ${money(data.bankBefore)} + credit ${money(a.cashCredit)} = ${money(data.bankAfter)}.\nRealized lot profit after original cost, fees and tax: ${money(a.profit)}. Freight and monthly ship expenses are separate.`;}
+  if(kind==='quote'&&data.dataNetDiscount)explanation+=`\nData Net: normal quote ${money(data.normalGross)} less ${E.approximate(data.dataNetDiscount)*100}% of its positive surplus above original cost = ${money(data.gross)}. Principal and loss quotes are preserved.`;
   if($('gm-view').checked&&kind==='quote')explanation+='\n\nGM ONLY · departure calibration\n'+JSON.stringify(lot.departure,null,2);
   $('audit-title').textContent=kind==='settlement'?'Fees, tax and bank explanation':kind+' explanation';$('audit-content').textContent=explanation;$('audit-dialog').showModal();
 });
