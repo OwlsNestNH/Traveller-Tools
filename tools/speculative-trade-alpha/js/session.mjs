@@ -175,3 +175,19 @@ export function nextDeparture(s,{monthlyTarget=s.settings.monthlyTarget}={}) {
   }
   s.phase='buy';s.supplierConfirmed=false;return s;
 }
+
+// Settings edits are prospective, at an empty departure boundary only.
+export const canEditSettings=s=>s.phase==='buy'&&!s.offers.length&&!s.lots.length;
+export function editSettings(s,values){
+  requireThat(canEditSettings(s),'Finish the current trade and prepare an empty departure before saving settings.');
+  const keys=['normalHold','mortgage','otherExpenses','monthlyTarget','baseBroker','statDM','opposingBroker','localDM'];
+  requireThat(Object.keys(values).every(k=>keys.includes(k)),'Starting cash and world require a new playtest.');
+  if(s.jumps%2!==0&&'monthlyTarget' in values)requireThat(E.compare(values.monthlyTarget,s.settings.monthlyTarget)===0,'Monthly target changes only at month start.');
+  const before=structuredClone(s.settings);
+  for(const key of keys)if(key in values)s.settings[key]=['baseBroker','statDM','opposingBroker','localDM'].includes(key)?Number(values[key]):values[key];
+  validate(s);log(s,'Settings changed',{before,after:structuredClone(s.settings),timing:'Future departure calculations and future monthly bills only; existing records retained'});return s;
+}
+export function newPlaytest(s,{confirmed=false}={}){
+  requireThat(confirmed===true,'Confirm replacement of the current playtest first.');
+  return initial();
+}

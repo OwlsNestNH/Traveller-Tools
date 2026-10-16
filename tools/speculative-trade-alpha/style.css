@@ -2,3 +2,5 @@
 
 .hex-grid{pointer-events:none;fill:none;stroke:#476078;stroke-width:1;stroke-opacity:.65}.hex-grid polygon{vector-effect:non-scaling-stroke}
 @media(max-width:760px){.world text{font-size:20px}}
+
+#settings-dialog,#new-dialog{max-width:min(650px,calc(100vw - 32px));max-height:90vh;overflow:auto;background:#141f2c;color:#e1e8ed;border:1px solid #526172;border-radius:12px;padding:22px}dialog::backdrop{background:#0009}fieldset{min-width:0;border:0;padding:0;margin:0}fieldset:disabled{opacity:.7}.run-controls{margin-bottom:16px}
