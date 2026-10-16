@@ -23,7 +23,7 @@ try {
   store=new SaveBoundary({storage:localStorage,initial:S.initial(),validate:validateSession,exclusive:browserExclusive(navigator)});
   mapUnavailable=!!store.snapshot().current?.dataOutage;
   render();message('Ready. Working alpha rules; keep an exported backup.');
-  if(store.snapshot().current)await refreshMap();
+  if(store.snapshot().current)void refreshMap();
 }catch(error){message(error.message+' Export the retained save or import a valid alpha backup to recover.',true);$('setup').hidden=true;$('recovery').hidden=false;$('retry').hidden=true;}
 
 function renderMap() {
