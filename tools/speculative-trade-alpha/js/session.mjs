@@ -1,14 +1,24 @@
 import * as E from './engine.mjs';
+import {parseUWP,tradeCodes} from '../../trade-route-calculator/js/rules.mjs';
 
 export const defaults = Object.freeze({normalHold:'50',mortgage:'150000',otherExpenses:'83000',monthlyTarget:'50000',baseBroker:2,statDM:1,opposingBroker:3,localDM:2,premiumEnabled:false,zeroLossTrial:true});
 export function initial(seed=20261016) {
   return {schemaVersion:1,settingsVersion:E.SETTINGS_VERSION,revision:0,appliedCommands:[],seed,
     cash:E.packed(600000),unpaid:E.packed(0),settings:{...defaults},month:1,jumps:0,visit:0,
-    current:null,destination:null,offers:[],lots:[],history:[],phase:'setup',supplierConfirmed:false};
+    current:null,destination:null,offers:[],lots:[],history:[],phase:'setup',supplierConfirmed:false,worldOverrides:{}};
 }
 const requireThat=(condition,message)=>{if(!condition)throw Error(message);};
-const validWorld=w=>w&&typeof w.id==='string'&&typeof w.name==='string'&&Number.isSafeInteger(w.x)&&Number.isSafeInteger(w.y)&&typeof w.uwp==='string';
-export function validate(s) {
+const validWorld=w=>w&&typeof w.id==='string'&&typeof w.name==='string'&&typeof w.uwp==='string'&&
+  (w.sourceKind==='manual'?/^[ABCDEFGHXY][0123456789ABCDEFGHJKLMNPQRSTUVWXYZ]{6}-[0123456789ABCDEFGHJKLMNPQRSTUVWXYZ]$/.test(w.uwp):Number.isSafeInteger(w.x)&&Number.isSafeInteger(w.y));
+export function manualWorld({id,name,uwp,additionalCodes='',manualDistance},core) {
+  const parsed=parseUWP(uwp,core);requireThat(Object.values(parsed).every(v=>v!==null),'Manual UWP must specify every field');
+  const extras=String(additionalCodes).trim().split(/\s+/).filter(Boolean);
+  requireThat(extras.every(c=>/^[A-Za-z][A-Za-z0-9]{0,7}$/.test(c)),'Additional manual codes must be short letters/numbers');
+  if(manualDistance!==undefined)requireThat(E.compare(manualDistance,0)>0,'Enter an actual distance greater than zero; UWP cannot supply distance');
+  return {id,name:String(name).trim()||'Manual world',uwp:parsed.raw,sector:'Manual',hex:'Manual',sourceKind:'manual',
+    dataSource:'Manual · GM-entered UWP',additionalCodes:extras,derivedCodes:tradeCodes(parsed,core).codes,...(manualDistance===undefined?{}:{manualDistance})};
+}
+export function validate(s,core=null) {
   requireThat(s?.schemaVersion===1&&s.settingsVersion===E.SETTINGS_VERSION,'Unsupported alpha save version');
   requireThat(Number.isSafeInteger(s.revision)&&s.revision>=0&&Array.isArray(s.appliedCommands)&&s.appliedCommands.every(x=>typeof x==='string')&&new Set(s.appliedCommands).size===s.appliedCommands.length,'Invalid save revision/commands');
   requireThat(Number.isSafeInteger(s.seed)&&s.seed>0&&s.seed<=4294967295,'Invalid dice seed');
@@ -18,6 +28,8 @@ export function validate(s) {
   requireThat(Array.isArray(s.offers)&&Array.isArray(s.lots)&&Array.isArray(s.history),'Invalid saved records');
   requireThat(s.current===null||validWorld(s.current),'Invalid current world');
   requireThat(s.destination===null||validWorld(s.destination),'Invalid destination');
+  if(core)for(const world of [s.current,s.destination].filter(Boolean))parseUWP(world.uwp,core);
+  if(s.destination?.sourceKind==='manual')requireThat(E.compare(s.destination.manualDistance,0)>0,'Manual destination needs actual distance');
   requireThat(s.phase==='setup'||validWorld(s.current),'Active session needs a current world');
   requireThat(s.phase!=='arrived'||s.lots.length>0,'Arrived session needs cargo');
   const p=s.settings;E.expertise(p.baseBroker);
@@ -29,8 +41,10 @@ export function validate(s) {
     requireThat(typeof l.id==='string'&&typeof l.name==='string'&&l.name.length<=100&&Object.hasOwn(E.RISK,l.risk),'Invalid lot identity/risk');
     requireThat(E.compare(l.purchase,0)>0&&E.compare(l.tonnes,1)>=0,'Invalid lot size/value');
     const validateAdmin=a=>{
-      const techLevel='0123456789ABCDEFGHJKLMNPQRSTUVWXYZ'.indexOf(s.current?.uwp[8]);
-      requireThat(a.method==='Admin'&&a.techLevel===techLevel&&JSON.stringify(E.adminSearch(a))===JSON.stringify(Object.fromEntries(Object.entries(a).filter(([k])=>k!=='rollMode'))),'Invalid saved Admin search');
+      const preserved=l.worldReviewRequired||l.worldReviewAcknowledged===s.current?.uwp;
+      const worldUWP=preserved?(a.worldUWP||s.current?.originalUWP||s.current?.uwp):s.current?.uwp;
+      const techLevel='0123456789ABCDEFGHJKLMNPQRSTUVWXYZ'.indexOf(worldUWP?.[8]);
+      requireThat(a.method==='Admin'&&a.techLevel===techLevel&&JSON.stringify(E.adminSearch(a))===JSON.stringify(Object.fromEntries(Object.entries(a).filter(([k])=>!['rollMode','worldUWP'].includes(k)))),'Invalid saved Admin search');
     };
     if(l.priorAdminSearch)validateAdmin(l.priorAdminSearch);
     if(l.search){
@@ -54,7 +68,7 @@ const log=(s,type,data)=>s.history.push({type,month:s.month,visit:s.visit,...dat
 export function setup(s,values,world) {
   requireThat(s.phase==='setup','Setup is already saved');requireThat(validWorld(world),'Load a current world first');
   s.settings={...defaults,...values};s.cash=E.packed(values.bank);delete s.settings.bank;
-  s.current=structuredClone(world);s.phase='buy';validate(s);log(s,'Setup',{settings:structuredClone(s.settings),cash:s.cash,world:s.current});return s;
+  s.current=structuredClone(world);s.lookupAnchor=world.lookupAnchor||{sector:world.sector,hex:world.hex};s.phase='buy';validate(s);log(s,'Setup',{settings:structuredClone(s.settings),cash:s.cash,world:s.current});return s;
 }
 export function offer(s,{id,name,tonnes,purchase,risk}) {
   requireThat(s.phase==='buy','Offerings are prepared at departure');
@@ -77,17 +91,20 @@ export function buy(s,id) {
 }
 export function destination(s,world) {
   requireThat(s.phase==='buy','Destination selection is available before departure');requireThat(validWorld(world),'Invalid destination');
-  requireThat(world.id!==s.current.id,'Choose another world');s.destination=structuredClone(world);return s;
+  requireThat(world.id!==s.current.id,'Choose another world');
+  if(world.sourceKind==='manual')requireThat(E.compare(world.manualDistance,0)>0,'Manual destination needs actual distance');
+  s.destination=structuredClone(s.worldOverrides?.[world.id]||world);return s;
 }
-export function arrive(s,{freight=0,freightTonnes=0,freightRate=0}) {
+export function arrive(s,{freight=0,freightTonnes=0,freightRate=0,actualDistance=null}) {
   requireThat(s.phase==='buy'&&s.destination,'Select a destination first');
   requireThat(E.compare(freight,0)>=0&&E.compare(freightTonnes,0)>=0&&E.compare(freightRate,0)>=0,'Freight inputs cannot be negative');
+  if(s.current.sourceKind==='manual'||s.destination.sourceKind==='manual')requireThat(actualDistance!==null&&E.compare(actualDistance,0)>0,'Manual travel needs explicit actual distance');
   const used=s.lots.reduce((sum,l)=>E.add(sum,l.tonnes),E.packed(0));
   requireThat(E.compare(E.add(used,freightTonnes),s.settings.normalHold)<=0,'Freight and speculation exceed hold capacity');
   const investment=s.lots.reduce((sum,l)=>E.add(sum,l.purchase),E.packed(0));
   const monthlyCosts=E.add(s.settings.mortgage,s.settings.otherExpenses);
   for(const lot of s.lots)lot.departure=E.baseline({purchase:lot.purchase,tonnes:lot.tonnes,investment,normalHold:s.settings.normalHold,monthlyCosts,monthlyTarget:s.settings.monthlyTarget,freight,premiumEnabled:s.settings.premiumEnabled,freightRate});
-  log(s,'Departure',{origin:s.current,destination:s.destination,freight,freightTonnes,investment});
+  log(s,'Departure',{origin:s.current,destination:s.destination,actualDistance,freight,freightTonnes,investment});
   s.current=s.destination;s.destination=null;s.visit++;s.jumps++;s.offers=[];
   s.cash=E.add(s.cash,freight);s.phase=s.lots.length?'arrived':'closed';
   log(s,'Arrival',{world:s.current,freight,cash:s.cash});return s;
@@ -113,6 +130,7 @@ export function admin(s,id,inputs,manual) {
   const dice=diceFor(s,manual);let durationDie=inputs.durationDie;
   if(!manual){const duration=E.rollD6(s.seed);durationDie=duration.die;s.seed=duration.seed;}
   lot.search=E.adminSearch({...inputs,durationDie,dice,techLevel});lot.search.rollMode=manual?'Manual':'Auto';
+  lot.search.worldUWP=s.current.uwp;
   log(s,'Admin buyer search',{lot:id,result:structuredClone(lot.search)});return s;
 }
 export function value(s,id,manual,tradeDM=0) {
@@ -126,7 +144,21 @@ export function value(s,id,manual,tradeDM=0) {
 export function preview(s,taxChart,{fees,government,zeroLossTrial=s.settings.zeroLossTrial}) {
   requireThat(s.phase==='arrived'&&s.lots.length,'No unsettled owned cargo');
   requireThat(s.lots.every(l=>l.quote),'Every lot needs a buyer and saved quote for the consolidated port settlement');
+  requireThat(!s.lots.some(l=>l.worldReviewRequired),'World UWP changed: GM review of retained quotes is required before settlement');
   return E.settle({lines:s.lots.map(l=>({gross:l.quote.gross,purchase:l.purchase})),fees,government,taxChart,zeroLossTrial});
+}
+export function overrideWorld(s,target,uwp,core) {
+  requireThat(['current','destination'].includes(target)&&s[target],'Select a world first');const parsed=parseUWP(uwp,core),prior=s[target];
+  const world={...structuredClone(prior),originalUWP:prior.originalUWP||prior.uwp,uwp:parsed.raw,overrideUWP:parsed.raw,derivedCodes:tradeCodes(parsed,core).codes,
+    originalDataSource:prior.originalDataSource||prior.dataSource||'Recorded world',dataSource:(prior.originalDataSource||prior.dataSource||'Recorded world')+' · locally overridden'};
+  s[target]=world;s.worldOverrides??={};s.worldOverrides[world.id]=structuredClone(world);
+  if(target==='current')for(const lot of s.lots)if(lot.search||lot.quote){lot.worldReviewRequired=true;lot.worldReviewAcknowledged=null;}
+  log(s,'Local UWP override',{target,world:world.id,before:prior.uwp,after:world.uwp,quotes:'Retained unchanged; explicit GM review required'});return s;
+}
+export function acknowledgeWorldReview(s,id) {
+  const lot=s.lots.find(l=>l.id===id);requireThat(lot?.worldReviewRequired,'No stale world inputs to review');
+  lot.worldReviewRequired=false;lot.worldReviewAcknowledged=s.current.uwp;
+  log(s,'GM retained quote review',{lot:id,worldUWP:s.current.uwp,quote:structuredClone(lot.quote)});return s;
 }
 export function sell(s,taxChart,inputs) {
   const settlement=preview(s,taxChart,inputs),next=E.add(s.cash,settlement.cashCredit);
