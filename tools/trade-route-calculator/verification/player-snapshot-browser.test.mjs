@@ -26,6 +26,22 @@ try {
   await page.setViewportSize({width:390,height:844});
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   await page.screenshot({path:artifacts + 'player-snapshot-mobile.png', fullPage:true});
+  for (const width of [320, 390, 700, 701, 1440]) {
+    await page.setViewportSize({width,height:844});
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'Overflow at ' + width);
+  }
+  await page.setViewportSize({width:320,height:844});
+  await page.evaluate(async () => {
+    const {renderPlayerSnapshot} = await import('./js/player-snapshot-view.mjs');
+    const {playerSnapshotFixture} = await import('./js/player-snapshot-fixture.mjs');
+    const data = structuredClone(playerSnapshotFixture);
+    data.world.name = data.cargo[0].name = data.buy.offers[0].name = 'W'.repeat(240);
+    data.cargo[0].tons = data.buy.offers[0].creditsPerTon = '999999999999999.999999';
+    renderPlayerSnapshot(document.getElementById('snapshot'), data);
+  });
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'Maximum fields at 320px');
+  // Restore the fixture before same-document hash navigation (which does not rerun modules).
+  await page.reload(); await page.getByText('Port Meridian', {exact:true}).waitFor();
   // Navigation and malformed/oversized fragments never load or import URL state in stage one.
   await page.goto(url + '#invalid=%ZZ'); await page.getByText('Port Meridian', {exact:true}).waitFor();
   await page.goto(url + '#snapshot=' + 'x'.repeat(16000)); await page.getByText('Port Meridian', {exact:true}).waitFor();
