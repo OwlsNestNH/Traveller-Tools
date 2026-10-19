@@ -68,7 +68,7 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
   const cash = node('div'); cash.className = 'resource'; cash.append(node('h3', 'Shipboard cash'), node('strong', credits(data.ship.cashCredits)), node('p', 'Current balance · expenses below are not deducted again.')); resourceGrid.append(cash);
   const gauge = (title, resource, unit, description) => {
     const panel = node('div'); panel.className = 'resource'; panel.append(node('h3', title));
-    const format = unit==='t' ? formatSnapshotWholeDown : quantity;
+    const format = unit==='t'||unit==='days' ? formatSnapshotWholeDown : quantity;
     const label = format(resource.current) + (resource.current === null ? '' : ' ' + unit) + ' / ' + format(resource.capacity) + (resource.capacity === null ? ' capacity' : ' ' + unit + ' capacity');
     panel.append(node('strong', label));
     if (resource.current !== null && resource.capacity !== null && Number(resource.capacity) > 0) {
@@ -78,7 +78,7 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
     panel.append(node('p', description)); resourceGrid.append(panel);
   };
   gauge('Fuel tanks', data.ship.fuel, 't', 'Fuel aboard / total tank capacity');
-  gauge('Life support · internal days remaining', {current:data.ship.lifeSupport.daysRemaining,capacity:data.ship.lifeSupport.daysCapacity}, 'days', data.ship.lifeSupport.daysRemaining===null ? 'Days unknown: duration for the current crew and passengers was not supplied. Supply stock has not been converted into days.' : 'Internal supplies only, at this snapshot’s crew and passenger consumption. Cargo reserve is shown separately.');
+  gauge('Life support · internal days remaining', {current:data.ship.lifeSupport.daysRemaining,capacity:data.ship.lifeSupport.daysCapacity}, 'days', data.ship.lifeSupport.daysRemaining===null ? 'Days unknown: duration for the current crew and passengers was not supplied. Supply stock has not been converted into days.' : 'Whole completed days, rounded down; the bar retains the exact duration. Internal supplies only, at this snapshot’s crew and passenger consumption. Cargo reserve is shown separately.');
   const expensePanel = section('Current-system expenses'); expensePanel.className = 'wide';
   expensePanel.append(node('p', data.expenses.visitLabel));
   const totals = summarizePlayerExpenses(data.expenses), totalGrid = node('div'); totalGrid.className = 'expense-totals';

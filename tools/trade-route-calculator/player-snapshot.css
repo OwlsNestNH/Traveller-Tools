@@ -16,8 +16,10 @@ dd, td, th, p { overflow-wrap: anywhere; } footer { color: #a9bfcd; font-size: .
 @media print { :root { color-scheme: light; color: #111; background: white; } body { padding: 0; } section { background: white; break-inside: avoid; } h2, dt, th, footer { color: #222; } }
 
 h3 { font-size: .95rem; font-weight: 600; margin: 0 0 8px; color: #b4ccd9; }
-.resource-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
-.resource { min-width: 0; } .resource strong, .expense-totals strong { display: block; font-size: 1.25rem; overflow-wrap: anywhere; }
+.resource-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 24px; row-gap: 0; }
+.resource { min-width: 0; display:grid; grid-template-rows:subgrid; grid-row:span 4; row-gap:0; }
+.resource > h3 { grid-row:1; } .resource > strong { grid-row:2; }
+.resource > meter { grid-row:3; } .resource > p:last-child { grid-row:4; } .resource strong, .expense-totals strong { display: block; font-size: 1.25rem; overflow-wrap: anywhere; }
 .resource p, .expense-totals p { font-size: .85rem; color: #b4ccd9; }
 meter { display: block; width: 100%; height: 22px; margin: 8px 0; accent-color: #69cddd; }
 meter::-webkit-meter-bar { background: #273b4b; border: 0; border-radius: 8px; }
@@ -28,7 +30,7 @@ meter::-moz-meter-bar { background: #69cddd; }
 summary { cursor: pointer; padding: 12px 0; color: #8fdae8; font-weight: 600; }
 summary:focus-visible { outline: 2px solid #ffe3a0; outline-offset: 3px; }
 .expense-table th:first-child { width: 52%; } .expense-table small { display: block; font-weight: 400; font-size: .8rem; color: #b4ccd9; margin-top: 4px; }
-@media (max-width: 700px) { .resource-grid { grid-template-columns: 1fr; gap: 18px; } .expense-totals { gap: 12px; } .expense-totals strong { font-size: 1.1rem; } .expense-table th:first-child { width: 46%; } }
+@media (max-width: 700px) { .resource-grid { grid-template-columns: 1fr; gap: 18px; } .resource {display:block;grid-row:auto;} .expense-totals { gap: 12px; } .expense-totals strong { font-size: 1.1rem; } .expense-table th:first-child { width: 46%; } }
 
 input[type="text"] { display:block; width:100%; max-width:18rem; min-width:0; box-sizing:border-box; padding:.5rem; border:1px solid #64748b; border-radius:.3rem; font:inherit; }
 

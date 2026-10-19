@@ -51,6 +51,33 @@ try {
   assert.match(displayChecks.text,/31 t \/ 40 t capacity/);assert.match(displayChecks.text,/150 LSS of reserve stock/);assert.doesNotMatch(displayChecks.text,/31\.5 t|40\.25 t|150\.75 LSS|3\.5 t/);
   assert.match(displayChecks.text,/Planned 3 t refined top-up at Cr500\/t/);assert.match(displayChecks.text,/21 days \/ 100 days capacity/);assert.match(displayChecks.text,/Display rounding may make amounts differ/);
   assert.match(displayChecks.values[0],/0 t \/ 0 t capacity/);assert.match(displayChecks.values[1],/32 t \/ 40 t capacity/);assert.match(displayChecks.values[2],/Unknown \/ Unknown capacity/);assert.doesNotMatch(displayChecks.values[2],/Unknown t/);
+  // Whole completed days are labels only, including sub-day and unknown states.
+  await page.setViewportSize({width:320,height:844});
+  const dayChecks=await page.evaluate(async()=>{
+    const {renderPlayerSnapshot}=await import('./js/player-snapshot-view.mjs');
+    const {playerSnapshotFixture}=await import('./js/player-snapshot-fixture.mjs');
+    const root=document.getElementById('snapshot'),results=[];
+    for(const days of ['133.333333','0.999999','0',null]){
+      const data=structuredClone(playerSnapshotFixture);data.ship.cashCredits='4565913';data.ship.lifeSupport.daysRemaining=days;data.ship.lifeSupport.daysCapacity=days===null?null:'133.333333';
+      const before=JSON.stringify(data);renderPlayerSnapshot(root,data);const card=[...root.querySelectorAll('.resource')].find(e=>e.querySelector('h3').textContent.includes('days remaining')),meter=card.querySelector('meter');
+      results.push({label:card.querySelector('strong').textContent,meter:meter?{value:meter.value,max:meter.max}:null,unchanged:before===JSON.stringify(data),fits:document.documentElement.scrollWidth<=innerWidth,cash:root.textContent.includes('Cr 4,565,913')});
+    }
+    renderPlayerSnapshot(root,playerSnapshotFixture);return results;
+  });
+  assert.deepEqual(dayChecks.map(x=>x.label),['133 days / 133 days capacity','0 days / 133 days capacity','0 days / 133 days capacity','Unknown / Unknown capacity']);
+  assert.deepEqual(dayChecks.map(x=>x.meter),[{value:133.333333,max:133.333333},{value:0.999999,max:133.333333},{value:0,max:133.333333},null]);
+  for(const check of dayChecks){assert.equal(check.unchanged,true);assert.equal(check.fits,true);assert.equal(check.cash,true);}
+  for(const width of [1440,900,701,390,320]){
+    await page.setViewportSize({width,height:1100});
+    const alignment=await page.evaluate(async()=>{
+      const {renderPlayerSnapshot}=await import('./js/player-snapshot-view.mjs');const {playerSnapshotFixture}=await import('./js/player-snapshot-fixture.mjs');
+      const root=document.getElementById('snapshot'),data=structuredClone(playerSnapshotFixture);data.ship.lifeSupport.daysRemaining='999999999999.333333';data.ship.lifeSupport.daysCapacity='999999999999.333333';renderPlayerSnapshot(root,data);
+      const cards=[...root.querySelectorAll('.resource')],meters=[...root.querySelectorAll('meter')];return {tops:meters.map(e=>e.getBoundingClientRect().top),values:cards.slice(1).map(e=>e.querySelector('strong').getBoundingClientRect().height),fits:document.documentElement.scrollWidth<=innerWidth};
+    });
+    assert.equal(alignment.fits,true);if(width>700){assert.ok(Math.abs(alignment.tops[0]-alignment.tops[1])<=1,'Bars share baseline even with long wrapped values at '+width);assert.equal(alignment.values[0],alignment.values[1]);}
+  }
+  await page.evaluate(async()=>{const {renderPlayerSnapshot}=await import('./js/player-snapshot-view.mjs');const {playerSnapshotFixture}=await import('./js/player-snapshot-fixture.mjs');renderPlayerSnapshot(document.getElementById('snapshot'),playerSnapshotFixture);});
+  await page.setViewportSize({width:1440,height:1100});
   assert.equal(await page.locator('details').getAttribute('open'), null);
   await page.getByText('Cr 40,250', {exact:true}).waitFor();
   await page.getByText('Cr 26,750', {exact:true}).waitFor();

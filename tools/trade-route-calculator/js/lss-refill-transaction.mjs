@@ -1,8 +1,8 @@
-import {consumeReserveCompartments} from './lss-compartments.mjs?v=player-link-20261019-95';
+import {consumeReserveCompartments} from './lss-compartments.mjs?v=buy-zoom-20261019-96';
 import * as A from './amounts.mjs';
-import {campaignRefillDraft,editRefillDraft} from './lss-refill-draft.mjs?v=player-link-20261019-95';
-import {consumableRefillQuote} from './lss-refill-pricing.mjs?v=player-link-20261019-95';
-import {supportAmount} from './life-support.mjs?v=player-link-20261019-95';
+import {campaignRefillDraft,editRefillDraft} from './lss-refill-draft.mjs?v=buy-zoom-20261019-96';
+import {consumableRefillQuote} from './lss-refill-pricing.mjs?v=buy-zoom-20261019-96';
+import {supportAmount} from './life-support.mjs?v=buy-zoom-20261019-96';
 export function compartmentRefillQuote(state,draft,{gm=false}={}){
  const original=campaignRefillDraft(state).draft;
  let checked=original,purchased=A.rat(0),discarded=A.rat(0),changed=false;

@@ -890,3 +890,31 @@ the selected saved route visit. Current visits refresh when copied; newly comple
 visits retain their departure figures. Older visits without a complete capture
 report unavailable. The recipient cannot transact or change a saved campaign.
 See [player link data, history and limits](PLAYER_LINK_INTEGRATION.md).
+
+## Buy price filter and map zoom
+
+Buy’s optional **95% retail or less** checkbox replaces the former 100% filter
+and starts off. It compares the actual saved purchase price with the quote’s
+recorded effective retail basis, exactly; manual overrides and retail caps use
+that same basis. Exactly 95% remains visible; anything greater is hidden. Unknown
+or unresolved percentages remain visible and are labelled Unknown. Turning the
+filter off restores every matching offer and permits 100%+ purchases. This is a
+display preference, not a transaction restriction or a profit guarantee. It does
+not edit saved offers or the campaign.
+
+A keyboard-accessible **Zoom** slider sits directly above the main map and uses
+the existing 6%–288% range. Buttons, Ctrl+scroll, Reset view and the slider stay
+synchronized; selected worlds, pan center, expanded mode and campaign data retain
+their existing behavior. Arrow keys and Home/End work on the slider.
+
+Player snapshots display life-support remaining days and day capacity as whole
+completed days, rounded down. Exact stock, consumption, meter values and cash
+remain unchanged; less than one day displays 0 days and missing duration stays
+Unknown. Supply cards share heading/value rows so their bars remain aligned even
+when valid values wrap; stacked phone layouts retain their natural flow.
+
+Verification: `buy-offer-filter.test.mjs`, `map-zoom-publication.test.mjs`, and the
+existing `buy-page-browser`, `map-zoom-scroll-browser`, and
+`player-snapshot-browser` suites cover thresholds, overrides, unknown values,
+unchanged campaign data, zoom synchronization, keyboard/touch input, responsive
+placement and fractional-day presentation.
