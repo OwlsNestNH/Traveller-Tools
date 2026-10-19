@@ -31,7 +31,7 @@ frame.addEventListener('pointercancel',()=>{drag=null;suppressClick=false;});
 frame.addEventListener('click',event=>{if(suppressClick){event.preventDefault();event.stopPropagation();}},true);
 let previousWidth=0;new ResizeObserver(()=>{if(frame.clientWidth!==previousWidth){previousWidth=frame.clientWidth;centerMap();}}).observe(frame);
 function draw(radius) {
- const scale=72,size=(radius*2+3)*scale,[cx,cy]=stagger(anchor);project=(x,y)=>[size/2+(x-cx)*scale*Math.sqrt(3)/2,size/2+(y-cy)*scale];
+ const scale=radius<=2?112:72,size=(radius*2+3)*scale,[cx,cy]=stagger(anchor);project=(x,y)=>[size/2+(x-cx)*scale*Math.sqrt(3)/2,size/2+(y-cy)*scale];
  svg=svgNode('svg',{viewBox:`0 0 ${size} ${size}`,width:size,height:size,role:'group','aria-label':'Nearby systems reference map'});
  const cells=[],vertices=[];
  for(let x=anchor.x-radius;x<=anchor.x+radius;x++)for(let y=anchor.y-radius-1;y<=anchor.y+radius+1;y++)if(hexDistance(anchor,{x,y})<=radius){const [px,py]=project(...stagger({x,y})),r=scale/Math.sqrt(3);const corners=Array.from({length:6},(_,i)=>[px+r*Math.cos(i*Math.PI/3),py+r*Math.sin(i*Math.PI/3)]);vertices.push(...corners);cells.push(corners.map(p=>p.join(',')).join(' '));}
@@ -42,11 +42,11 @@ function draw(radius) {
  const territories=svgNode('g');territories.innerHTML=territoryMarkup({sectors,metadata,project});footprint.append(territories);
  for(const points of cells)footprint.append(svgNode('polygon',{points,class:'hex-grid'}));svg.append(footprint);
  for(const world of worlds){const [x,y]=project(...stagger(world)),g=svgNode('g',{transform:`translate(${x} ${y})`,role:'button',tabindex:0,'aria-label':'Inspect '+world.name,'aria-pressed':'false','data-world':world.id,class:'world-target'});
-  g.append(svgNode('circle',{r:22,class:world.id===anchor.id?'origin-disc':'world-disc'}));
-  const detailed=radius<=2,facts=referenceFacts(world),name=svgNode('text',{y:detailed?-14:-8,'text-anchor':'middle'});name.textContent=world.name.length>10?world.name.slice(0,9)+'…':world.name;
-  const code=svgNode('text',{y:detailed?13:7,'text-anchor':'middle',class:'allegiance-label'});code.textContent=(world.raw.Allegiance||'?').slice(0,8);g.append(name,code);
-  if(detailed){const uwp=svgNode('text',{y:0,'text-anchor':'middle',class:'world-uwp'});uwp.textContent=world.uwp;g.append(uwp);}
-  const symbols=svgNode('text',{y:detailed?26:22,'text-anchor':'middle',class:'world-symbols'});symbols.textContent=(world.raw.Bases===undefined?'B?':world.raw.Bases?'B'+world.raw.Bases.slice(0,4):'B–')+' G'+(facts.gasGiants==='Unknown'?'?':facts.gasGiants)+(world.raw.Zone==='A'?' A':world.raw.Zone==='R'?' R':'');g.append(symbols);
+  g.append(svgNode('circle',{r:radius<=2?32:22,class:world.id===anchor.id?'origin-disc':'world-disc'}));
+  const detailed=radius<=2,facts=referenceFacts(world),name=svgNode('text',{y:detailed?-20:-8,'text-anchor':'middle'});name.textContent=world.name.length>10?world.name.slice(0,9)+'…':world.name;
+  const code=svgNode('text',{y:detailed?8:7,'text-anchor':'middle',class:'allegiance-label'});code.textContent=(world.raw.Allegiance||'?').slice(0,8);g.append(name,code);
+  if(detailed){const uwp=svgNode('text',{y:-6,'text-anchor':'middle',class:'world-uwp'});uwp.textContent=world.uwp;g.append(uwp);}
+  const symbols=svgNode('text',{y:detailed?23:22,'text-anchor':'middle',class:'world-symbols'});symbols.textContent=(world.raw.Bases===undefined?'B?':world.raw.Bases?'B'+world.raw.Bases.slice(0,4):'B–')+' G'+(facts.gasGiants==='Unknown'?'?':facts.gasGiants)+(world.raw.Zone==='A'?' A':world.raw.Zone==='R'?' R':'');g.append(symbols);
   const title=svgNode('title');title.textContent=world.name+' · '+referenceFacts(world).allegiance;g.append(title);
   g.addEventListener('click',()=>showWorld(world));g.addEventListener('keydown',event=>{if(['Enter',' '].includes(event.key)){event.preventDefault();showWorld(world);}});svg.append(g);
  }

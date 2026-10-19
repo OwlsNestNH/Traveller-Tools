@@ -29,4 +29,4 @@ button { padding:.6rem 1rem; margin-top:1rem; font:inherit; }
 #map-frame svg {width:auto;max-width:none;height:auto;margin:auto;user-select:none;}
 @media(max-width:760px){#map-frame {max-height:470px;} #map-frame svg {width:auto;max-width:none;height:auto;}}
 
-.world-target {font-size:10px;} .world-uwp,.world-symbols {font-size:8.5px;}
+.world-target {font-size:11px;} .world-uwp {font-size:10px;} .world-symbols {font-size:9px;}
