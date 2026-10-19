@@ -1,0 +1,105 @@
+// Immutable prototype catalog 1. Never edit existing IDs; publish a new version.
+// Commodity names copied from rules/core-2022.json; no campaign data.
+export const CATALOG_VERSION = 1;
+export const COMMODITIES = Object.freeze({
+  "11": "Common Electronics",
+  "12": "Common Industrial Goods",
+  "13": "Common Manufactured Goods",
+  "14": "Common Raw Materials",
+  "15": "Common Consumables",
+  "16": "Common Ore",
+  "21": "Advanced Electronics",
+  "22": "Advanced Machine Parts",
+  "23": "Advanced Manufactured Goods",
+  "24": "Advanced Weapons",
+  "25": "Advanced Vehicles",
+  "26": "Biochemicals",
+  "31": "Crystals & Gems",
+  "32": "Cybernetics",
+  "33": "Live Animals",
+  "34": "Luxury Consumables",
+  "35": "Luxury Goods",
+  "36": "Medical Supplies",
+  "41": "Petrochemicals",
+  "42": "Pharmaceuticals",
+  "43": "Polymers",
+  "44": "Precious Metals",
+  "45": "Radioactives",
+  "46": "Robots",
+  "51": "Spices",
+  "52": "Textiles",
+  "53": "Uncommon Ore",
+  "54": "Uncommon Raw Materials",
+  "55": "Wood",
+  "56": "Vehicles",
+  "61": "Illegal Biochemicals",
+  "62": "Cybernetics, Illegal",
+  "63": "Drugs, Illegal",
+  "64": "Luxuries, Illegal",
+  "65": "Weapons, Illegal",
+  "66": "Exotics",
+  "0": "Other"
+});
+// Synthetic world reference for bounded prototype tests only.
+export const WORLDS = Object.freeze({1:Object.freeze({name:"Port Meridian",location:"Example Reach / 1824",uwp:"B867A74-C",tradeCodes:"Hi Ga",travelZone:"Amber — caution advised",starport:"B · refined fuel available"})});
+
+// Immutable shared display fragments. Variable dates, amounts and names stay inline.
+export const TEXT_FRAGMENTS = Object.freeze([
+  'One ', ' week at the saved local berth rate',
+  'Planned ', ' t refined top-up at Cr', '/t',
+  '28-day ', 'crew salary period selected for this stop',
+  'scheduled ', 'installment paid here',
+  'Illustrative standard refill quote; supplies and service charges',
+  'Recorded spending so far; further incidentals not estimated',
+  ' · this stop, ', ' planned', ' UTC (example)'
+]);
+
+export const BASE_PRICES = Object.freeze({
+  "11": 20000,
+  "12": 10000,
+  "13": 20000,
+  "14": 5000,
+  "15": 500,
+  "16": 1000,
+  "21": 100000,
+  "22": 75000,
+  "23": 100000,
+  "24": 150000,
+  "25": 180000,
+  "26": 50000,
+  "31": 20000,
+  "32": 250000,
+  "33": 10000,
+  "34": 20000,
+  "35": 200000,
+  "36": 50000,
+  "41": 10000,
+  "42": 100000,
+  "43": 7000,
+  "44": 50000,
+  "45": 1000000,
+  "46": 400000,
+  "51": 6000,
+  "52": 3000,
+  "53": 5000,
+  "54": 20000,
+  "55": 1000,
+  "56": 15000,
+  "61": 50000,
+  "62": 250000,
+  "63": 100000,
+  "64": 50000,
+  "65": 150000,
+  "66": null
+});
+
+// Codec-2 additions: exact canned UI explanations, never arbitrary campaign text.
+// Existing catalog-1 entries above remain immutable for old links.
+export const STATIC_TEXT_V2=Object.freeze([
+ 'One week at the saved local berth rate',
+ 'One 28-day crew salary period selected for this stop',
+ 'One scheduled 28-day installment paid here',
+ 'Illustrative standard refill quote; supplies and service charges',
+ 'Recorded spending so far; further incidentals not estimated'
+]);
+export const DESTINATIONS_V2=Object.freeze(['New Dawn / 1924']); // synthetic reference
