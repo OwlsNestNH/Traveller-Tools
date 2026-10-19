@@ -1,8 +1,8 @@
 // Standalone browser codec prototype. No DOM, storage, network or production adapter.
 import {projectPlayerSnapshot, EXPENSE_KINDS, SNAPSHOT_VERSION} from './player-snapshot.mjs';
-import {CATALOG_VERSION, COMMODITIES, WORLDS, TEXT_FRAGMENTS, BASE_PRICES} from './player-snapshot-catalog.mjs';
+import {CATALOG_VERSION, COMMODITIES, WORLDS, TEXT_FRAGMENTS, BASE_PRICES, STATIC_TEXT_V2, DESTINATIONS_V2} from './player-snapshot-catalog.mjs';
 export const PROPOSED_PREFIX = 'https://owlsnestnh.github.io/Traveller-Tools/p#'; // NOT DEPLOYED
-export const CODEC_VERSION = 1;
+export const CODEC_VERSION = 2;
 const MAX_BYTES = 65536, MAX_URL = 100000;
 const worldKeys = ['name','location','uwp','tradeCodes','travelZone','starport'];
 const statuses = ['available','not-checked','expired'];
@@ -26,7 +26,7 @@ export function prepareSnapshotForLink(input, {rounding=100}={}) {
   }
   return projectPlayerSnapshot(data);
 }
-function packet(input, bytes, rounding, percentages=true) {
+function packet(input, bytes, rounding, percentages=true, codecVersion=CODEC_VERSION) {
   const reading = bytes !== undefined, output = []; let position = 0;
   const byte = value => {
     if (reading) {if (position >= bytes.length) invalid(); return bytes[position++];}
@@ -35,7 +35,7 @@ function packet(input, bytes, rounding, percentages=true) {
   const uint = value => {
     if (reading) {
       let result=0n;
-      for (let i=0;i<10;i++) {const next=byte(); result |= BigInt(next&127)<<BigInt(i*7); if (!(next&128)) {if (i && next===0) invalid(); return result;} }
+      for (let i=0;i<(codecVersion===2?11:10);i++) {const next=byte(); result |= BigInt(next&127)<<BigInt(i*7); if (!(next&128)) {if (i && next===0) invalid(); return result;} }
       invalid();
     }
     let n=BigInt(value); do {const next=Number(n&127n); n >>= 7n; byte(next | (n ? 128 : 0));} while(n);
@@ -48,7 +48,7 @@ function packet(input, bytes, rounding, percentages=true) {
     if (!value.isWellFormed()) throw new Error('Snapshot text contains an invalid Unicode surrogate.');
     const encoded=new TextEncoder().encode(value); uint(encoded.length); for (const n of encoded) byte(n); return value;
   };
-  const string = value => {
+  const legacyString = value => {
     if (reading) {
       const count=small(undefined,241); let result='';
       for(let i=0;i<count;i++) {const token=small(undefined,TEXT_FRAGMENTS.length); result+=token ? TEXT_FRAGMENTS[token-1] : rawString(); if(result.length>240) invalid();}
@@ -64,8 +64,39 @@ function packet(input, bytes, rounding, percentages=true) {
     flush(); uint(parts.length); for(const [token,text] of parts){uint(token);if(!token)rawString(text);} return value;
   };
   const decimal = value => {
+    if(codecVersion===2) {
+      if(reading){const code=uint();if(code===0n)return null;const tag=Number(code&7n);if(tag===0)invalid();const places=tag-1,digits=String(code>>3n).padStart(places+1,'0');return places?digits.slice(0,-places)+'.'+digits.slice(-places):digits;}
+      if(value===null){uint(0);return null;}const [a,b='']=value.split('.');uint((BigInt(a+b)<<3n)|BigInt(b.length+1));return value;
+    }
     if (reading) {const tag=byte(); if (!tag) return null; if (tag>7) invalid(); const places=tag-1, digits=String(uint()).padStart(places+1,'0'); return places ? digits.slice(0,-places)+'.'+digits.slice(-places) : digits;}
     if (value===null) {byte(0); return null;} const [a,b='']=value.split('.'); byte(b.length+1); uint(BigInt(a+b)); return value;
+  };
+  const string = (value,context={}) => {
+    if(codecVersion===1)return legacyString(value);
+    const pad=(n,width)=>String(n).padStart(width,'0');
+    if(reading) {
+      const tag=small(undefined,12);
+      if(tag===0)return rawString();
+      if(tag<=5)return STATIC_TEXT_V2[tag-1];
+      if(tag===6){const minutes=small(undefined,4223371679),iso=new Date(minutes*60000).toISOString();return iso.slice(0,10)+' '+iso.slice(11,16)+' UTC (example)';}
+      if(tag===7)return new Date(small(undefined,253402300799999)).toISOString();
+      if(tag===8){const year=small(undefined,9999),day=small(undefined,999),minute=small(undefined,1439);return pad(day,3)+'-'+pad(year,4)+', '+pad(Math.floor(minute/60),2)+':'+pad(minute%60,2);}
+      if(tag===9||tag===10){if(typeof context.worldName!=='string')invalid();const year=tag===9?context.year:pad(small(undefined,9999),4);if(typeof year!=='string'||!/^\d{4}$/.test(year))invalid();return context.worldName+' · this stop, '+pad(small(undefined,999),3)+'–'+pad(small(undefined,999),3)+'-'+year+' planned';}
+      if(tag===11)return DESTINATIONS_V2[small(undefined,DESTINATIONS_V2.length-1)];
+      const tons=decimal(),rate=decimal();if(tons===null||rate===null)invalid();return 'Planned '+tons+' t refined top-up at Cr'+rate+'/t';
+    }
+    const fixed=STATIC_TEXT_V2.indexOf(value);if(fixed>=0){uint(fixed+1);return value;}
+    let match=/^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}) UTC \(example\)$/.exec(value);
+    if(match){const ms=Date.parse(match[1]+'T'+match[2]+':00.000Z');if(Number.isFinite(ms)&&ms>=0&&new Date(ms).toISOString().slice(0,16)===match[1]+'T'+match[2]){uint(6);uint(ms/60000);return value;}}
+    if(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)){const ms=Date.parse(value);if(Number.isFinite(ms)&&ms>=0&&new Date(ms).toISOString()===value){uint(7);uint(ms);return value;}}
+    match=/^(\d{3})-(\d{4}), (\d{2}):(\d{2})$/.exec(value);
+    if(match&&Number(match[3])<24&&Number(match[4])<60){uint(8);uint(Number(match[2]));uint(Number(match[1]));uint(Number(match[3])*60+Number(match[4]));return value;}
+    const prefix=context.worldName+' · this stop, ';match=typeof context.worldName==='string'&&value.startsWith(prefix)?/^(\d{3})–(\d{3})-(\d{4}) planned$/.exec(value.slice(prefix.length)):null;
+    if(match){const same=match[3]===context.year;uint(same?9:10);if(!same)uint(Number(match[3]));uint(Number(match[1]));uint(Number(match[2]));return value;}
+    const destination=DESTINATIONS_V2.indexOf(value);if(destination>=0){uint(11);uint(destination);return value;}
+    match=/^Planned ((?:0|[1-9]\d{0,14})(?:\.\d{1,6})?) t refined top-up at Cr((?:0|[1-9]\d{0,14})(?:\.\d{1,6})?)\/t$/.exec(value);
+    if(match){uint(12);decimal(match[1]);decimal(match[2]);return value;}
+    uint(0);rawString(value);return value;
   };
   const money = value => {
     if (reading) {const n=uint(); return n===0n ? null : String((n-1n)*BigInt(rounding));}
@@ -84,7 +115,8 @@ function packet(input, bytes, rounding, percentages=true) {
     }
     uint(code);return value;
   };
-  for (const value of [80,CODEC_VERSION,SNAPSHOT_VERSION,CATALOG_VERSION]) if (byte(value)!==value) invalid();
+  if(byte(80)!==80)invalid();codecVersion=byte(codecVersion);if(![1,2].includes(codecVersion))invalid();
+  if(byte(SNAPSHOT_VERSION)!==SNAPSHOT_VERSION||byte(CATALOG_VERSION)!==CATALOG_VERSION)invalid();
   const mode=byte((rounding===1000?1:0)|(percentages?2:0)); if (mode>3) invalid(); rounding=mode&1 ? 1000 : 100; percentages=Boolean(mode&2);
   const source=input ?? {}, result={version:SNAPSHOT_VERSION};
   result.capturedAt=string(source.capturedAt); result.campaignDate=string(source.campaignDate);
@@ -97,7 +129,7 @@ function packet(input, bytes, rounding, percentages=true) {
   const ship=source.ship ?? {}; result.ship={name:string(ship.name),cargoCapacityTons:decimal(ship.cargoCapacityTons),cashCredits:decimal(ship.cashCredits),fuel:{},lifeSupport:{}};
   for (const key of ['fuel','lifeSupport']) for (const field of ['current','capacity']) result.ship[key][field]=decimal(ship[key]?.[field]);
   result.ship.lifeSupport.cargoLss=decimal(ship.lifeSupport?.cargoLss); result.ship.destination=string(ship.destination);
-  result.expenses={visitLabel:string(source.expenses?.visitLabel)};
+  result.expenses={visitLabel:string(source.expenses?.visitLabel,{worldName:result.world.name,year:/^\d{3}-(\d{4}), \d{2}:\d{2}$/.exec(result.campaignDate)?.[1]})};
   for (const kind of EXPENSE_KINDS) {const row=source.expenses?.[kind]; result.expenses[kind]={expected:money(row?.expected),paid:money(row?.paid),basis:string(row?.basis)};}
   const rows = (list, priced) => Array.from({length:small(list?.length,200)},(_,i)=>{
     const row=list?.[i], id=small(reading ? undefined : commodityIds.get(row.name),255);
@@ -111,8 +143,9 @@ function packet(input, bytes, rounding, percentages=true) {
 }
 const base64 = bytes => btoa(Array.from(bytes,n=>String.fromCharCode(n)).join('')).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 function budget(value) {if (!Number.isInteger(value) || value<PROPOSED_PREFIX.length || value>MAX_URL) throw new Error('Invalid URL character budget.'); return value;}
-export function measureSnapshotLink(input, {rounding=100,percentages=true}={}) {
-  const snapshot=prepareSnapshotForLink(input,{rounding}), plain=packet(snapshot,undefined,rounding,false), candidate=percentages?packet(snapshot,undefined,rounding,true):plain;
+export function measureSnapshotLink(input, {rounding=100,percentages=true,codecVersion=CODEC_VERSION}={}) {
+  if(![1,2].includes(codecVersion))invalid();
+  const snapshot=prepareSnapshotForLink(input,{rounding}), plain=packet(snapshot,undefined,rounding,false,codecVersion), candidate=percentages?packet(snapshot,undefined,rounding,true,codecVersion):plain;
   const bytes=candidate.length<plain.length?candidate:plain, payload=base64(bytes);
   return Object.freeze({bytes:bytes.length,characters:PROPOSED_PREFIX.length+payload.length,payload,snapshot,rounding,prefix:PROPOSED_PREFIX});
 }

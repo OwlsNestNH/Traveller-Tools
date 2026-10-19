@@ -25,10 +25,11 @@ test('world overrides, Unicode, markup and exact decimal representation survive'
   d.world.location='Custom sector / 0101'; assert.deepEqual(decode(link(d)),prepareSnapshotForLink(d));
 });
 test('budget has no truncation or alternative delivery and reports exact size',()=>{
-  const m=measureSnapshotLink(fixture); assert.equal(m.characters,PROPOSED_PREFIX.length+m.payload.length);
-  assert.throws(()=>encodeSnapshotLink(fixture),new RegExp('needs '+m.characters));
-  assert.equal(encodeSnapshotLink(fixture,{maxUrlLength:m.characters}).length,m.characters);
-  assert.throws(()=>decodeSnapshotLink(link(fixture)),/Invalid/);
+  const oversized=clone();oversized.expenses.berth.basis='Unique public explanation '.repeat(8);
+  const m=measureSnapshotLink(oversized); assert.equal(m.characters,PROPOSED_PREFIX.length+m.payload.length);
+  assert.throws(()=>encodeSnapshotLink(oversized),new RegExp('needs '+m.characters));
+  assert.equal(encodeSnapshotLink(oversized,{maxUrlLength:m.characters}).length,m.characters);
+  assert.throws(()=>decodeSnapshotLink(link(oversized)),/Invalid/);
   for(const n of [NaN,-1,Infinity,1.5,100001]) assert.throws(()=>encodeSnapshotLink(fixture,{maxUrlLength:n}));
 });
 test('invalid versions, IDs, lengths, UTF-8, base64, truncation and trailing bytes reject',()=>{
@@ -37,7 +38,7 @@ test('invalid versions, IDs, lengths, UTF-8, base64, truncation and trailing byt
   for(let i=PROPOSED_PREFIX.length;i<encoded.length;i++) assert.throws(()=>decode(encoded.slice(0,i)),/Invalid/);
   for(const tail of ['=','%20','!','\n']) assert.throws(()=>decode(encoded+tail),/Invalid/);
   assert.throws(()=>decode(mutate(encoded,b=>Buffer.concat([b,Buffer.from([0])]))),/Invalid/);
-  assert.throws(()=>decode(mutate(encoded,b=>{b[6]=255;})),/Invalid/);
+  const unicode=clone();unicode.capturedAt='X';assert.throws(()=>decode(mutate(link(unicode),b=>{b[7]=255;})),/Invalid/);
   assert.throws(()=>decode(encoded.replace('https:','http:')),/Invalid/);
   assert.throws(()=>decode(PROPOSED_PREFIX+'A'.repeat(99999)),/Invalid/);
 });
@@ -59,7 +60,7 @@ test('deterministic hostile packet fuzz either rejects or yields validated data'
 });
 
 test('codec 1 catalog 1 wire format stays stable',()=>{
- assert.equal(createHash('sha256').update(measureSnapshotLink(fixture).payload).digest('hex'),'5eb946e635c903b3309416120bfa9e6406036c30088edcfad063930a8d63fc1b');
+ assert.equal(createHash('sha256').update(measureSnapshotLink(fixture,{codecVersion:1}).payload).digest('hex'),'5eb946e635c903b3309416120bfa9e6406036c30088edcfad063930a8d63fc1b');
 });
 test('percentage rows reconstruct exact quotes; noncanonical prices use explicit escape',()=>{
  const d=clone();d.buy.offers=Array.from({length:50},(_,i)=>({name:'Common Electronics',tons:String(i+1),creditsPerTon:String(10000+i%5*1000)}));d.sell.offers=structuredClone(d.buy.offers);
@@ -72,4 +73,18 @@ test('forged percent price cannot contradict the declared rounding quantum',()=>
  const d=clone();d.buy.offers=Array.from({length:50},()=>({name:'Advanced Electronics',tons:'1',creditsPerTon:'100000'}));d.sell.offers=[{name:'Common Consumables',tons:'1',creditsPerTon:'500'}];
  const encoded=link(d);assert.equal(Buffer.from(encoded.slice(PROPOSED_PREFIX.length),'base64url')[4]&2,2);
  assert.throws(()=>decode(mutate(encoded,b=>{b[b.length-1]=43;})),/Invalid/); // 105% of Cr500 = Cr525, not a Cr100 increment.
+});
+
+test('codec 2 compact templates preserve exact labels, custom text and codec 1 links',()=>{
+ assert.deepEqual(decode(PROPOSED_PREFIX+measureSnapshotLink(fixture,{codecVersion:1}).payload),prepareSnapshotForLink(fixture));
+ for(const capturedAt of ['2026-10-19T15:00:00.123Z','9999-12-31T23:59:59.999Z','1960-01-01T00:00:00.000Z','2026-02-30 15:00 UTC (example)','custom captain date 🪐']) {
+  const d=clone();d.capturedAt=capturedAt;d.expenses.salary.basis='Custom crew agreement — 12 days';d.expenses.visitLabel='A custom visit';assert.deepEqual(decode(link(d)),prepareSnapshotForLink(d));
+ }
+ const d=clone();d.world.name='Custom world';d.expenses.visitLabel='Custom world · this stop, 001–365-1200 planned';d.expenses.fuel.basis='Planned 3.500000 t refined top-up at Cr500.000000/t';assert.deepEqual(decode(link(d)),prepareSnapshotForLink(d));
+ assert.equal(measureSnapshotLink(fixture).characters,197);
+});
+
+test('compact decimal packets preserve maximum precision and every trailing zero',()=>{
+ const d=clone();d.ship.cashCredits='999999999999999.999999';d.ship.fuel.current='0.000000';d.ship.lifeSupport.cargoLss='0.0';d.cargo[0].tons='999999999999999.999999';assert.deepEqual(decode(link(d)),prepareSnapshotForLink(d));
+ assert.deepEqual(decodeSnapshotLink(encodeSnapshotLink(fixture)),prepareSnapshotForLink(fixture));
 });

@@ -15,8 +15,8 @@ rejecting actual URLs over 8,192 characters. Invalid links replace stale content
 
 ## Public contract and protocol
 
-The first bytes identify magic 80, codec 1, snapshot contract 2, immutable catalog 1
-and flags (bit 0 selects Cr1000 instead of Cr100; bit 1 enables percentage prices). Unknown versions fail closed. Versioned
+The first bytes identify magic 80, codec 2, snapshot contract 2, immutable catalog 1
+and flags (bit 0 selects Cr1000 instead of Cr100; bit 1 enables percentage prices). Codec 1 links remain readable; other unknown versions fail closed. Versioned
 commodity names, synthetic world fields and shared public display fragments are
 frozen in `player-snapshot-catalog.mjs`; existing IDs must never be repurposed. A wire
 fingerprint regression test guards this prototype mapping. Production-wide stable
@@ -43,7 +43,7 @@ percentage packet only if the entire packet is smaller, so this optimization nev
 increases the link. Cargo, buy and sell remain separate lists; ownership is never
 inferred from a buy/sell flag. The decoder rejects percentages inconsistent with
 the declared rounding. The 4 cargo / 50 buy / 50 sell canonical comparison reduces
-666 bytes / 935 characters to 626 bytes / 882 characters at Cr100. The mixed examples
+498 bytes / 711 characters to 458 bytes / 658 characters at Cr100. The mixed examples
 below remain unchanged because explicit prices are already smaller.
 
 Unknown/custom commodity names map to reserved ID 0, Other. Quantities, prices,
@@ -74,26 +74,20 @@ Custom names become Other by the approved rule. No rows are discarded.
 
 | Cargo / buy / sell rows | Cr100 bytes | Cr100 URL characters | Cr1000 bytes | Cr1000 URL characters |
 | --- | ---: | ---: | ---: | ---: |
-| 4 / 3 / 3 | 252 | 383 | 248 | 378 |
-| 0 / 0 / 0 | 214 | 333 | 212 | 330 |
-| 50 / 50 / 50 | 860 | 1,194 | 830 | 1,154 |
-| 200 / 200 / 200 | 3,029 | 4,086 | 2,999 | 4,046 |
+| 4 / 3 / 3 | 112 | 197 | 108 | 191 |
+| 0 / 0 / 0 | 79 | 153 | 77 | 150 |
+| 50 / 50 / 50 | 677 | 950 | 647 | 910 |
+| 200 / 200 / 200 | 2,630 | 3,554 | 2,600 | 3,514 |
 
-None of these full fixtures fits 200. Even the full fixed briefing with no rows is
-333 characters at Cr100, so its realistic row capacity at 200 is zero. Custom
-worlds, overrides or unrecognized prose increase the result. Shared display
-fragments reduce this particular fixture from an earlier 726 to 383 characters;
-this is not a claim of equally good compression for arbitrary campaign wording.
-
-Earlier estimates of 195/198 characters for six/seven rows and 213/207 for ten rows
-used a normalized experimental model with typed dates and expense bases. They did
-not preserve the full current prose contract and are **not** this implemented
-codec's capacity. The result supports evaluating a slightly longer single link;
-it does not justify silently sacrificing required information to reach 200.
+The full synthetic ten-row fixture fits 200 with this proposed prefix. Adding one
+one-ton Other cargo lot gives 199 characters at Cr100; adding two gives 202 and
+rejects. At Cr1000, three extra such lots give 199; four give 202. These are fixture
+measurements, not universal capacity guarantees. Custom worlds, text, overrides,
+quantities and prices change capacity. No required fields are dropped to fit.
 
 ## Verification
 
-`node --test verification/player-snapshot.test.mjs verification/player-snapshot-codec.test.mjs`
+`node --test verification/player-snapshot.test.mjs verification/player-snapshot-codec.test.mjs verification/player-snapshot-storage.test.mjs`
 checks immutable allowlisting, round trips after approved quantization, exact cash
 and quantities, Unicode/markup, world overrides, incompatible versions, truncation,
 limits, maximum distinct lots, hostile byte mutations and the stable wire format.
@@ -114,7 +108,7 @@ Open `http://127.0.0.1:8765/player-snapshot-generator.html`, generate a syntheti
 example, and follow **Open player snapshot**. The test screen defaults to an
 explicit 500-character budget; selecting 200 demonstrates safe rejection. It stamps
 a fresh capture time and uses the real current-server preview path. One local run
-produced a **397-character** working URL at Cr100; exact length varies with hosting
+produced a **203-character** working URL at Cr100; exact length varies with hosting
 prefix. A link to localhost is usable only on that same machine, not a public
 preview deployment. The draft PR/source and screenshots are remotely reviewable.
 
@@ -135,29 +129,34 @@ browser data removes retention; storage does not synchronize across browsers/dev
 [Decoded phone](verification/player-snapshot-review/decoded-phone.png) ·
 [Other popup](verification/player-snapshot-review/other-popup-phone.png).
 
-## Why 213/207 became 383/378
+## Static references and exact derivation
 
-The earlier packet was a normalized design experiment, not the full screen contract.
-It used numeric dates/visit bounds, a destination ID and typed expense basis fields.
-The implemented packet preserves the original labels and complete expense wording,
-including text not reconstructible from those few numbers. At Cr100:
+Codec 1 preserved the complete prose contract in 252/248 bytes (383/378 URL
+characters). Codec 2 preserves the same contract after the approved cost rounding
+in 112/108 bytes (197/191 characters), saving 140 binary bytes in this fixture.
+Earlier 213/207-character estimates used a different normalized experimental model;
+they are historical estimates, not the current implementation.
 
-| Field group | Earlier design bytes | Full implemented bytes | Difference |
-| --- | ---: | ---: | ---: |
-| Version/header | 7 | 5 | -2 |
-| Capture and campaign date | 8 | 38 | +30 |
-| Current world reference | 3 | 2 | -1 |
-| Ship, exact resources/cash, destination | 34 | 51 | +17 |
-| Visit label / bounds | 6 | 34 | +28 |
-| Expense values and explanation/basis | 23 | 79 | +56 |
-| Cargo/offer rows and remaining framing | 43 | 43 | 0 |
-| Total | 124 | 252 | +128 |
+| Field group | Codec 1 bytes, Cr100 | Codec 2 bytes, Cr100 | Representation |
+| --- | ---: | ---: | --- |
+| Header | 5 | 5 | Explicit versions and flags |
+| Capture/campaign labels | 38 | 11 | Exact recognized format plus numeric date/time |
+| World | 2 | 2 | Immutable reference and override mask |
+| Ship/resources/cash/destination | 51 | 29 | Exact decimal values; known destination reference |
+| Visit label | 34 | 3 | Derive matching world/year; carry day bounds |
+| Expenses and basis | 79 | 24 | Five exact canned-text references; numeric fuel basis |
+| Cargo | 13 | 10 | IDs and compact exact decimals |
+| Buy/sell status and rows | 30 | 28 | IDs, quantities, quantized authoritative quotes |
+| Total | 252 | 112 | All contract fields retained |
 
-At Cr1000 the corresponding totals are 120 and 248 bytes, again +128. Base64url
-rounding plus the same 47-character prefix yields 213 → 383 and 207 → 378. These
-figures compare the synthetic fixtures, not arbitrary campaigns or a hard minimum.
-The recipient persistence added later does not put annotations or saved browser
-records into the link and therefore does not increase encoded size.
+References apply only to exact known text. Recognized capture, campaign and visit
+formats reconstruct byte-for-byte; differing visit years are carried explicitly.
+The fuel explanation carries its exact decimal quantity/rate, including trailing
+zeroes. Unrecognized dates, custom labels, explanations, destinations and overrides
+use raw UTF-8 fallback without normalization. Static templates are codec-2-specific;
+existing catalog IDs and codec-1 decoding remain unchanged and regression tested.
+Physical quantities and cash use a combined mantissa/scale varint, preserving null,
+known zero and trailing fractional zeroes. Recipient annotations never enter links.
 
 ## Recipient storage boundary
 

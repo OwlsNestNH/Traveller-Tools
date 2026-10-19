@@ -92,3 +92,14 @@ export const BASE_PRICES = Object.freeze({
   "65": 150000,
   "66": null
 });
+
+// Codec-2 additions: exact canned UI explanations, never arbitrary campaign text.
+// Existing catalog-1 entries above remain immutable for old links.
+export const STATIC_TEXT_V2=Object.freeze([
+ 'One week at the saved local berth rate',
+ 'One 28-day crew salary period selected for this stop',
+ 'One scheduled 28-day installment paid here',
+ 'Illustrative standard refill quote; supplies and service charges',
+ 'Recorded spending so far; further incidentals not estimated'
+]);
+export const DESTINATIONS_V2=Object.freeze(['New Dawn / 1924']); // synthetic reference
