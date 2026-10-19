@@ -65,7 +65,7 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
     panel.append(node('p', description)); resourceGrid.append(panel);
   };
   gauge('Main fuel tank', data.ship.fuel, 't', 'Fuel aboard / main tank capacity');
-  gauge('Life support · internal stores', data.ship.lifeSupport, 'LSS', 'Physical supplies / internal capacity. Cargo-stored supplies: ' + quantity(data.ship.lifeSupport.cargoLss) + (data.ship.lifeSupport.cargoLss === null ? '' : ' LSS') + '.');
+  gauge('Life support · internal days remaining', {current:data.ship.lifeSupport.daysRemaining,capacity:data.ship.lifeSupport.daysCapacity}, 'days', data.ship.lifeSupport.daysRemaining===null ? 'Days unknown: duration for the current crew and passengers was not supplied. Supply stock has not been converted into days.' : 'Internal supplies only, at this snapshot’s crew and passenger consumption. Cargo reserve is shown separately.');
   const expensePanel = section('Current-system expenses'); expensePanel.className = 'wide';
   expensePanel.append(node('p', data.expenses.visitLabel));
   const totals = summarizePlayerExpenses(data.expenses), totalGrid = node('div'); totalGrid.className = 'expense-totals';
@@ -87,6 +87,11 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
   expenseTable.append(head, body); details.append(expenseTable); expensePanel.append(details);
   const cargo = section('Cargo aboard'); cargo.className = 'wide';
   table(cargo, ['Cargo lot', 'Tons'], data.cargo.map((row,i) => [localName(row,'cargo',i), row.tons]), 'No cargo aboard.');
+  const support=data.ship.lifeSupport;
+  if((support.cargoLss!==null&&Number(support.cargoLss)>0)||(support.cargoReservedTons!==null&&Number(support.cargoReservedTons)>0)) {
+    facts(cargo,[['Life support overflow · reserved space',quantity(support.cargoReservedTons)+(support.cargoReservedTons===null?'':' t')]]);
+    cargo.append(node('p',quantity(support.cargoLss)+(support.cargoLss===null?'':' LSS')+' of exact reserve stock. Reserved space is separate from cargo lots; it is not extra supply stock or an addition to internal days.'));
+  }
   for (const [key, title] of [['buy', 'Buy offers · crew purchases'], ['sell', 'Sell offers · crew sales']]) {
     const panel = section(title), market = data[key];
     panel.append(node('p', 'Prices in Credits per ton. Quotes only; no transactions.'));

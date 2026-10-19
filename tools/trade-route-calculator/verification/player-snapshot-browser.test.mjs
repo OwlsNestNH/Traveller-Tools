@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {legacyPackets} from './player-snapshot-legacy-fixtures.mjs';
 import {createRequire} from 'node:module';
 import {mkdir} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
@@ -24,6 +25,9 @@ try {
   assert.equal(await page.locator('select,textarea,form,input').count(), 0);
   assert.equal(await page.getByRole('button', {name:/Edit local details/}).count(), 4);
   assert.equal(await page.locator('meter').count(), 2);
+  await page.getByText('21 days / 100 days capacity',{exact:true}).waitFor();
+  await page.getByText('Life support overflow · reserved space',{exact:true}).waitFor();
+  await page.getByText(/150 LSS of exact reserve stock/).waitFor();
   assert.equal(await page.locator('details').getAttribute('open'), null);
   await page.getByText('Cr 40,250', {exact:true}).waitFor();
   await page.getByText('Cr 26,750', {exact:true}).waitFor();
@@ -46,11 +50,18 @@ try {
     const {playerSnapshotFixture} = await import('./js/player-snapshot-fixture.mjs');
     const data = structuredClone(playerSnapshotFixture);
     data.world.name = data.cargo[0].name = data.buy.offers[0].name = 'W'.repeat(240);
-    data.cargo[0].tons = data.buy.offers[0].creditsPerTon = data.ship.cashCredits = data.expenses.fuel.expected = '999999999999999.999999';
+    data.cargo[0].tons = '999999999999999'; data.buy.offers[0].creditsPerTon = data.ship.cashCredits = data.expenses.fuel.expected = '999999999999999.999999';
     data.expenses.fuel.basis = 'W'.repeat(240);
     renderPlayerSnapshot(document.getElementById('snapshot'), data); document.querySelector('details').open = true;
   });
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'Maximum fields at 320px');
+  for(const payload of legacyPackets.fractional) {
+    await page.goto(url+'#'+payload);await page.getByRole('alert').filter({hasText:'No inventory was rounded or changed'}).waitFor();
+    assert.equal(await page.getByRole('heading',{name:'Cargo aboard',exact:true}).count(),0);
+  }
+  await page.goto(url+'#'+legacyPackets.whole[1]);await page.getByText(/Days unknown: duration/).waitFor();
+  assert.equal(await page.locator('meter').count(),1);
+  await page.goto(url);
   // Restore the fixture before same-document hash navigation (which does not rerun modules).
   await page.reload(); await page.getByText('Port Meridian', {exact:true}).waitFor();
   // Invalid/oversize links replace stale data, then back/forward restores snapshots.
@@ -73,7 +84,7 @@ try {
     const literal = root.textContent.includes(input.world.name), injected = root.querySelectorAll('img,script').length;
     for (let i=0;i<5;i++) renderPlayerSnapshot(root, playerSnapshotFixture);
     const sections = root.querySelectorAll('section').length;
-    renderPlayerSnapshot(root, {...input, version:3}); const rejected = root.querySelector('[role=alert]')?.textContent.includes('Unsupported');
+    renderPlayerSnapshot(root, {...input, version:4}); const rejected = root.querySelector('[role=alert]')?.textContent.includes('Unsupported');
     const stale = root.textContent.includes('Port Meridian');
     input.buy = {status:'not-checked', offers:[]}; input.sell = {status:'expired', offers:[]}; input.cargo = [];
     renderPlayerSnapshot(root, input);
@@ -84,7 +95,7 @@ try {
     const {renderPlayerSnapshot} = await import('./js/player-snapshot-view.mjs');
     const {playerSnapshotFixture} = await import('./js/player-snapshot-fixture.mjs');
     const data = structuredClone(playerSnapshotFixture);
-    data.ship.cashCredits = null; data.ship.fuel.current = '0'; data.ship.fuel.capacity = '0.000000'; data.ship.lifeSupport.capacity = null;
+    data.ship.cashCredits = null; data.ship.fuel.current = '0'; data.ship.fuel.capacity = '0.000000'; data.ship.lifeSupport.capacity = null; data.ship.lifeSupport.daysRemaining = null; data.ship.lifeSupport.daysCapacity = null;
     for (const kind of ['berth', 'fuel', 'salary', 'mortgage', 'lss', 'incidentals']) data.expenses[kind].expected = null;
     renderPlayerSnapshot(document.getElementById('snapshot'), data);
     return {meters:document.querySelectorAll('meter').length, expected:document.querySelector('.expense-totals strong').textContent, detailOpen:document.querySelector('details').open, zeroCapacity:document.body.textContent.includes('No capacity configured.')};
@@ -120,6 +131,9 @@ try {
   await recipient.goto(nextLink);await recipient.getByText('Cr 123',{exact:true}).waitFor();assert.equal(await recipient.getByText('Retained lot',{exact:true}).count(),0);
   await recipient.goto(generated);await recipient.getByText('Retained lot',{exact:true}).waitFor();await recipient.getByRole('button',{name:'Edit local details for cargo lot 3'}).click();assert.equal(await recipient.getByLabel('Name unknown',{exact:true}).isChecked(),true);await recipient.keyboard.press('Escape');
   await recipient.goto(url);await recipient.getByText('Retained lot',{exact:true}).waitFor();
+  const priorStorage=await recipient.evaluate(()=>JSON.stringify({...localStorage}));
+  await recipient.goto(url+'#'+legacyPackets.fractional[1]);await recipient.getByRole('alert').filter({hasText:'whole tons'}).waitFor();
+  assert.equal(await recipient.evaluate(()=>JSON.stringify({...localStorage})),priorStorage);
   await persistent.close();
   console.log('Player snapshot browser checks passed: desktop/mobile, inert markup, versions, repeated rendering, navigation, storage isolation.');
 } finally { await browser.close(); }

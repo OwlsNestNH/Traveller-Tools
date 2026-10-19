@@ -6,16 +6,47 @@ standalone generator/viewer modules now exercise its URL round trip. No producti
 share button, short path, hosted storage, two-link assembly or HTML-file fallback is added.
 
 The proposed prefix `https://owlsnestnh.github.io/Traveller-Tools/p#` is **47 characters
-and UNDEPLOYED**. The codec measurement prefix is not a working route. The standalone generator
+and UNDEPLOYED**. The codec measurement prefix is not a working route; the full standalone Pages routes are published. The standalone generator
 instead uses the actual same-server `player-snapshot-preview.html` path. Both encoding and decoding default to an 8,192-character safety limit. Links have variable length; 200 characters is no longer a product target. Encoding
 reports required/allowed length and rejects oversize input without truncating rows.
 Explicit smaller budgets are available for diagnostic rejection checks. The standalone viewer validates fragment data on initial load and hash navigation,
 rejecting actual URLs over 8,192 characters. Invalid links replace stale content.
 
+## Current whole-ton and life-support contract
+
+New links use codec 3 / contract 3. Cargo lots (including Other) and cargo capacity
+must be canonical nonnegative whole-ton strings. Fractional inventory is never
+rounded. Old codec-1/2 links with fractional cargo show a clear fresh-snapshot
+message, replace stale content and do not write recipient storage. Their saved
+records remain untouched, including when restoring the last opened snapshot.
+Old whole-ton links remain readable; missing duration/reservation values are unknown.
+
+Life support carries explicit `daysRemaining` and `daysCapacity` for **internal**
+supplies at the snapshot's crew/passenger consumption. The display uses days and a
+fill bar when both are known. It does not divide LSS stock by an assumed occupancy.
+The synthetic example explicitly supplies 21 / 100 internal days, based on
+168 / 800 internal LSS at 8 LSS/day. Unknown days display clearly with no fill bar.
+Fuel quantities and exact stock/cash/market quantities retain their previous precision.
+
+Positive cargo LSS is shown separately as “Life support overflow · reserved space”.
+`cargoReservedTons` is an explicit whole-ton reservation; `cargoLss` preserves exact
+physical stock. The production rule inspected read-only is 100 LSS per physical
+ton, with whole-space reservation rounding up when enabled (`life-support.mjs`
+`supportCargo`). Thus 150 exact LSS reserves 2 tons, not 200 LSS. The contract checks
+known reservation values against this rule. Missing reservation values stay unknown;
+no legacy inventory or production setting is migrated. The reservation is separate
+from trade lots and is not added to an existing total or to internal days.
+
+Current Cr100 full Pages-path measurements, retaining three buy and three sell
+offers and the new LSS fields: **275 characters for 10 cargo lots; 281 for 12**.
+Earlier measurement tables below are historical codec-2 fixtures with fractional
+sample cargo and no explicit days/reservation fields; rerun the measurement script
+for current values. Sample changes create fresh synthetic data, not converted inventory.
+
 ## Public contract and protocol
 
-The first bytes identify magic 80, codec 2, snapshot contract 2, immutable catalog 1
-and flags (bit 0 selects Cr1000 instead of Cr100; bit 1 enables percentage prices). Codec 1 links remain readable; other unknown versions fail closed. Versioned
+The first bytes identify magic 80, codec 3, snapshot contract 3, immutable catalog 1
+and flags (bit 0 selects Cr1000 instead of Cr100; bit 1 enables percentage prices). Codec 1/2 whole-ton links remain readable with unknown duration/reservation fields; fractional cargo links reject explicitly. Other unknown versions fail closed. Versioned
 commodity names, synthetic world fields and shared public display fragments are
 frozen in `player-snapshot-catalog.mjs`; existing IDs must never be repurposed. A wire
 fingerprint regression test guards this prototype mapping. Production-wide stable
@@ -64,9 +95,9 @@ projection reconstructs its allowlist before encoding, but a future adapter must
 still deliberately select public content rather than inserting referee text into
 approved public string fields.
 
-## Implemented measurements
+## Historical codec-2 measurements
 
-Run `node verification/player-snapshot-measure.mjs`. Each result includes the full
+Run `node verification/player-snapshot-measure.mjs`. Current output includes the full
 47-character proposed prefix, all current public fields and expense explanations.
 The larger fixtures vary quantities, prices and canonical/custom commodity names.
 Custom names become Other by the approved rule. No rows are discarded.
