@@ -1,0 +1,8 @@
+main { max-width:1100px; margin:auto; display:grid; grid-template-columns:minmax(0,640px) minmax(200px,1fr); gap:1rem; padding:1rem; }
+main section { min-width:0; padding:1rem; border:1px solid #64748b; border-radius:.5rem; }
+#radius { display:block; width:100%; margin:1rem 0; }
+#map-frame { overflow:auto; max-height:620px; background:#fff; border:1px solid #64748b; }
+#map-frame:empty { display:none; }
+#map-frame img { display:block; max-width:none; margin:auto; }
+button { padding:.6rem 1rem; margin-top:1rem; font:inherit; }
+@media(max-width:760px) {main {grid-template-columns:minmax(0,1fr);} #map-frame {max-height:470px;} }

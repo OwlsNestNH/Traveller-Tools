@@ -29,3 +29,17 @@ summary { cursor: pointer; padding: 12px 0; color: #8fdae8; font-weight: 600; }
 summary:focus-visible { outline: 2px solid #ffe3a0; outline-offset: 3px; }
 .expense-table th:first-child { width: 52%; } .expense-table small { display: block; font-weight: 400; font-size: .8rem; color: #b4ccd9; margin-top: 4px; }
 @media (max-width: 700px) { .resource-grid { grid-template-columns: 1fr; gap: 18px; } .expense-totals { gap: 12px; } .expense-totals strong { font-size: 1.1rem; } .expense-table th:first-child { width: 46%; } }
+
+input[type="text"] { display:block; width:100%; max-width:18rem; min-width:0; box-sizing:border-box; padding:.5rem; border:1px solid #64748b; border-radius:.3rem; font:inherit; }
+
+td button {margin-left:.6rem;padding:.2rem .5rem;font:inherit;font-size:.8rem;}
+td small {display:block;font-size:.8rem;margin-top:.3rem;}
+dialog {width:min(28rem,calc(100vw - 3rem));max-height:85vh;overflow:auto;border:1px solid #64748b;border-radius:.7rem;padding:1.5rem;color:#172033;background:#fff;}
+dialog::backdrop {background:#10182799;}
+dialog label {display:block;margin:1rem 0 .4rem;}
+dialog button {margin:.5rem .5rem 0 0;padding:.6rem;font:inherit;}
+
+textarea {width:100%;box-sizing:border-box;overflow-wrap:anywhere;}
+
+dialog h2 {color:#172033;}
+dialog button {color:#fff;background:#245f76;border:0;border-radius:.3rem;}

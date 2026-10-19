@@ -17,7 +17,8 @@ vertical scrolling when needed, not multiple tabs or a transaction interface.
 - `js/player-snapshot-view.mjs` renders that contract using text nodes. Invalid
   input replaces the old display with a safe error. Unknown versions fail closed.
 - `js/player-snapshot-fixture.mjs` is synthetic review data. The separate preview
-  bootstrap loads it directly; it ignores URL query/fragment data entirely.
+  bootstrap loads it directly when no fragment is present; shared fragments now
+  pass through the separate codec before rendering. Query parameters do not import state.
 
 The contract contains capture/campaign dates; public world name, location, UWP,
 trade codes, zone and starport information; ship name, cargo capacity, player-approved cash, main fuel tank amounts,
@@ -52,10 +53,9 @@ empty states, repeat rendering, stale-display replacement, mobile overflow,
 back/forward/reload and saved-storage isolation. Desktop/mobile screenshots are
 synthetic; no private campaign or credentials are included.
 
-Production adapter, share button, link serialization/decoding, realistic encoded
-URL size/Unicode/compression tests, invalid-link presentation and GitHub Pages
-integration are deferred until screen review. The preview does not claim to
-accept shared snapshots, and offers no HTML-file delivery fallback. Existing
+Production adapter, production share button and GitHub Pages deployment remain deferred. A separate headless codec prototype is now implemented;
+see [codec results and limits](PLAYER_SNAPSHOT_CODEC.md). The standalone generator/viewer exercises shared snapshots without production
+integration and offers no HTML-file delivery fallback. Existing
 calculations, save/import paths, Speculative Trade Alpha and Abstract Free Trader
 Rules are unchanged. No deployment or merge is part of this stage.
 
@@ -80,7 +80,7 @@ even though the visit is shorter; berth covers the stated number of weeks.
 The snapshot neither prorates nor synthesizes those payments. The six row basis
 labels must be deliberately composed by a future adapter, never copied from GM
 notes/audits. Totals remain visible while a native details/summary control toggles
-the rows. All data remains synthetic and read-only.
+the rows. All data remains synthetic. The later local Other-label demonstration is the sole display-editing exception.
 
 ## Later link and retention requirement (not implemented here)
 
@@ -88,8 +88,7 @@ Each GM-generated link opens a fixed information snapshot and retains that
 snapshot locally in the player's browser, in storage separate from campaign
 saves. Creating a new link must not update an existing recipient snapshot. The
 recipient must open the new link to obtain the new snapshot; old links continue
-to represent old snapshots. No live synchronization, serialization or local
-snapshot storage is added during this mockup stage.
+to represent old snapshots. No live synchronization or local snapshot storage is implemented. The standalone viewer now decodes URL fragments through the codec.
 
 ## Bounded encoding feasibility measurement
 
@@ -108,3 +107,39 @@ Unicode. Repeated vocabulary compresses well; long, less repetitive names may
 produce much larger links. The 200-row contract limit per list is not a safe URL
 limit. No production serializer, decoder, compression library, link generation
 button or recipient persistence is implemented by this measurement.
+
+## Local Other labels and separate map preview
+
+The synthetic preview substitutes unknown commodity names with Other, keeping every
+lot separate. Only Other entries expose an on-demand popup for an 80-character local display
+name and optional estimated base price, each with an explicit Unknown choice. Labels
+are in memory, scoped to the exact projected snapshot plus list and row index. They
+survive repeat rendering of that same snapshot and clear on snapshot replacement
+or reload. They are not encoded, persisted, sent to the GM or synchronized. Known transmitted
+quotes stay authoritative; a local base estimate never creates or replaces a quote. Persistent
+recipient snapshots/labels still need a separate, explicitly isolated storage design.
+The preview bootstrap does not round the original mockup amounts; codec rounding
+is independently tested and disclosed in its API.
+
+Open `player-map-preview.html` separately for a canonical Regina reference experiment.
+Radius is 0–5, default 2; 0 requests only the selected hex. Radii 0–3 request detailed
+128-pixel/parsec rendering, and 4–5 request a simpler 48-pixel/parsec overview. Detailed
+images retain native pixels and scroll on narrow panels; selected-system reference
+details remain alongside/below. Radius is not saved or encoded. TravellerMap requests
+contain only the public canonical identity and rendering options. Snapshot data and
+GM overrides never enter this page or get replaced by its live data.
+
+The [TravellerMap API](https://travellermap.com/doc/api) documents jumpmaps, render
+scales, hex labels and border options. The preview requests print style, numbered
+hexes, major/minor borders and filled regions. Actual symbols depend on API rendering
+and source data. Live image/data requests from this environment failed with proxy
+HTTP 403, including retries; a separate web fetch also failed. Consequently **in-hex
+UWP, gas-giant/base symbols, political borders and radius-3 readability have not been
+visually verified**. Do not treat mocked test images as visual candidates.
+
+[Live attempt desktop](verification/player-snapshot-review/map-live-attempt-desktop.png)
+and [phone](verification/player-snapshot-review/map-live-attempt-phone.png) show the
+actual unavailable state. Automated browser tests use a tiny test image solely to
+verify radius requests and success/failure/retry behavior, plus storage isolation and
+phone overflow. Requests time out after 12 seconds, stale responses are ignored, and
+no unavailable reference is silently substituted with snapshot or invented data.

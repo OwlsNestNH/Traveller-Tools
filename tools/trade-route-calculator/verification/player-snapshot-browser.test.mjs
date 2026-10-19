@@ -21,7 +21,8 @@ try {
     indexedDB.open = () => {throw Error('Viewer opened database');};
   });
   await page.reload(); await page.getByRole('heading', {name:'Cargo aboard'}).waitFor();
-  assert.equal(await page.locator('button,input,select,textarea,form').count(), 0);
+  assert.equal(await page.locator('select,textarea,form,input').count(), 0);
+  assert.equal(await page.getByRole('button', {name:/Edit local details/}).count(), 4);
   assert.equal(await page.locator('meter').count(), 2);
   assert.equal(await page.locator('details').getAttribute('open'), null);
   await page.getByText('Cr 40,250', {exact:true}).waitFor();
@@ -52,11 +53,17 @@ try {
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'Maximum fields at 320px');
   // Restore the fixture before same-document hash navigation (which does not rerun modules).
   await page.reload(); await page.getByText('Port Meridian', {exact:true}).waitFor();
-  // Navigation and malformed/oversized fragments never load or import URL state in stage one.
-  await page.goto(url + '#invalid=%ZZ'); await page.getByText('Port Meridian', {exact:true}).waitFor();
-  await page.goto(url + '#snapshot=' + 'x'.repeat(16000)); await page.getByText('Port Meridian', {exact:true}).waitFor();
-  await page.goBack(); await page.goForward(); await page.reload();
-  await page.getByText('Port Meridian', {exact:true}).waitFor();
+  // Invalid/oversize links replace stale data, then back/forward restores snapshots.
+  await page.goto(url+'#invalid=%ZZ');await page.getByRole('alert').waitFor();assert.equal(await page.getByText('Port Meridian',{exact:true}).count(),0);
+  await page.goto(url+'#'+'x'.repeat(16000));await page.getByRole('alert').waitFor();
+  await page.goto(url);await page.getByText('Port Meridian',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'Edit local details for cargo lot 2'}).click();
+  await page.getByLabel('Name unknown',{exact:true}).uncheck();await page.getByLabel('Local goods name',{exact:true}).fill('<img src=x onerror=alert(1)>');
+  await page.getByLabel('Base price unknown',{exact:true}).uncheck();await page.getByLabel('Local estimated base price',{exact:true}).fill('0');
+  await page.getByRole('button',{name:'Save local details'}).click();await page.getByText('Local base: Cr 0 / t · player estimate',{exact:true}).waitFor();assert.equal(await page.locator('img').count(),0);
+  await page.getByRole('button',{name:'Edit local details for cargo lot 3'}).click();assert.equal(await page.getByLabel('Name unknown',{exact:true}).isChecked(),true);assert.equal(await page.getByLabel('Base price unknown',{exact:true}).isChecked(),true);await page.getByRole('button',{name:'Cancel',exact:true}).click();
+  await page.getByRole('button',{name:'Edit local details for cargo lot 2'}).click();assert.equal(await page.getByLabel('Local goods name',{exact:true}).inputValue(),'<img src=x onerror=alert(1)>');await page.getByLabel('Name unknown',{exact:true}).check();await page.getByLabel('Base price unknown',{exact:true}).check();await page.getByRole('button',{name:'Save local details'}).click();assert.equal(await page.getByText('Local base: Cr 0 / t · player estimate',{exact:true}).count(),0);
+  await page.reload();await page.getByRole('button',{name:'Edit local details for cargo lot 2'}).click();assert.equal(await page.getByLabel('Name unknown',{exact:true}).isChecked(),true);await page.keyboard.press('Escape');
   const results = await page.evaluate(async () => {
     const {renderPlayerSnapshot} = await import('./js/player-snapshot-view.mjs');
     const {playerSnapshotFixture} = await import('./js/player-snapshot-fixture.mjs');
@@ -83,6 +90,11 @@ try {
     return {meters:document.querySelectorAll('meter').length, expected:document.querySelector('.expense-totals strong').textContent, detailOpen:document.querySelector('details').open, zeroCapacity:document.body.textContent.includes('No capacity configured.')};
   });
   assert.deepEqual(unknowns, {meters:0, expected:'Unknown', detailOpen:false, zeroCapacity:true});
+  await page.goto(new URL('player-snapshot-generator.html',base).href);
+  await page.locator('#budget').selectOption('200');await page.getByRole('button',{name:'Generate snapshot'}).click();await page.getByText(/No link generated and no data omitted/).waitFor();assert.equal(await page.locator('#link').inputValue(),'');
+  await page.locator('#budget').selectOption('500');await page.getByRole('button',{name:'Generate snapshot'}).click();const generated=await page.locator('#link').inputValue();assert.ok(generated.length<=500);assert.ok(generated.startsWith(url+'#'));
+  await page.getByRole('link',{name:'Open player snapshot'}).click();await page.getByText('Cr 127,450',{exact:true}).waitFor();await page.getByText('Cr 40,300',{exact:true}).waitFor();
+  await page.goto(url+'#bad');await page.getByRole('alert').waitFor();await page.goBack();await page.getByText('Cr 127,450',{exact:true}).waitFor();await page.goForward();await page.getByRole('alert').waitFor();await page.goBack();await page.reload();await page.getByText('Cr 127,450',{exact:true}).waitFor();
   assert.deepEqual(errors, []);
   assert.ok(requests.every(request => new URL(request).origin === new URL(base).origin));
   // A separate page without access traps confirms saved bytes remain intact.
