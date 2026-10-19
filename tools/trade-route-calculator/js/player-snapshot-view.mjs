@@ -100,11 +100,16 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
   expenseTable.append(head, body); details.append(expenseTable); expensePanel.append(details);
   const cargo = section('Cargo aboard'); cargo.className = 'wide cargo-section';
   table(cargo, ['Cargo lot', 'Tons', 'Retail / ton', 'Purchase % of retail', 'Paid / ton', 'Paid / lot'], data.cargo.map((row,i) => [localName(row,'cargo',i), formatSnapshotTons(row.tons), credits(row.purchase?.retailPerTon ?? null), row.purchase?.percent == null ? 'Unknown' : quantity(row.purchase.percent)+'%', credits(row.purchase?.paidPerTon ?? null), credits(row.purchase?.paidTotal ?? null)]), 'No cargo aboard.');
-  if(data.cargo.length)cargo.append(node('p','Retail is the recorded base price per ton. Purchase % is the actual recorded percentage before credit rounding. Paid / lot covers the tons shown. Unit and lot costs round independently, so multiplying the displayed unit price may differ from the displayed lot total. Missing purchase history stays Unknown; local estimates do not fill it in.'));
+  const cargoInfo=node('button','i');cargoInfo.type='button';cargoInfo.className='cargo-info-button';cargoInfo.setAttribute('aria-label','About cargo values and reserve supplies');cargoInfo.setAttribute('aria-haspopup','dialog');const cargoHeading=node('div');cargoHeading.className='cargo-heading';cargoHeading.append(cargo.querySelector('h2'),cargoInfo);cargo.prepend(cargoHeading);
+  cargoInfo.addEventListener('click',()=>{
+    const dialog=node('dialog'),heading=node('h2','Cargo values and reserve supplies');heading.id='cargo-information-title';dialog.setAttribute('aria-labelledby',heading.id);
+    dialog.append(heading,node('p','Retail is the recorded base price per ton. Purchase % is the actual recorded percentage before credit rounding. Paid / lot covers the tons shown. Unit and lot costs round independently, so multiplying the displayed unit price may differ from the displayed lot total. Missing purchase history stays Unknown; local estimates do not fill it in.'),node('p','Reserve LSS stock is displayed rounded down. Reserved space is separate from cargo lots; it is not extra supply stock or an addition to internal days.'));
+    const close=node('button','Close');close.type='button';close.addEventListener('click',()=>dialog.close());dialog.append(close);dialog.addEventListener('close',()=>{dialog.remove();if(cargoInfo.isConnected)cargoInfo.focus();});dialog.addEventListener('click',event=>{const b=dialog.getBoundingClientRect();if(event.target===dialog&&(event.clientX<b.left||event.clientX>b.right||event.clientY<b.top||event.clientY>b.bottom))dialog.close();});root.append(dialog);dialog.showModal();close.focus();
+  });
   const support=data.ship.lifeSupport;
   if((support.cargoLss!==null&&Number(support.cargoLss)>0)||(support.cargoReservedTons!==null&&Number(support.cargoReservedTons)>0)) {
     facts(cargo,[['Life support overflow · reserved space',formatSnapshotTons(support.cargoReservedTons)+(support.cargoReservedTons===null?'':' t')]]);
-    cargo.append(node('p',formatSnapshotLss(support.cargoLss)+(support.cargoLss===null?'':' LSS')+' of reserve stock (display rounded down). Reserved space is separate from cargo lots; it is not extra supply stock or an addition to internal days.'));
+    cargo.append(node('p',formatSnapshotLss(support.cargoLss)+(support.cargoLss===null?'':' LSS')+' of reserve stock.'));
   }
   for (const [key, title] of [['buy', 'Buy offers · crew purchases'], ['sell', 'Sell offers · crew sales']]) {
     const panel = section(title), market = data[key];

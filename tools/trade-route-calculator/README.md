@@ -911,7 +911,10 @@ Player snapshots display life-support remaining days and day capacity as whole
 completed days, rounded down. Exact stock, consumption, meter values and cash
 remain unchanged; less than one day displays 0 days and missing duration stays
 Unknown. Supply cards share heading/value rows so their bars remain aligned even
-when valid values wrap; stacked phone layouts retain their natural flow.
+when valid values wrap; stacked phone layouts retain their natural flow. Cargo
+price/rounding explanations are behind the circled “i” button, with keyboard
+and touch access, Escape/Close dismissal and focus return. Cargo values and
+reserved-space/stock readings stay visible.
 
 Verification: `buy-offer-filter.test.mjs`, `map-zoom-publication.test.mjs`, and the
 existing `buy-page-browser`, `map-zoom-scroll-browser`, and
