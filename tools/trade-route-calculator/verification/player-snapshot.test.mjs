@@ -7,7 +7,7 @@ test('allowlist strips GM and unrelated fields recursively; detached immutable o
   const input = fresh(); input.gm = 'secret'; input.world.audit = 'secret'; input.ship.bank = 'secret';
   input.cargo[0].reason = 'secret'; input.buy.reason = 'secret'; input.buy.offers[0].audit = 'secret';
   const result = projectPlayerSnapshot(input);
-  assert.deepEqual(result, fixture); assert.ok(!JSON.stringify(result).includes('secret'));
+  assert.deepEqual(result, {...fixture,cargo:fixture.cargo.map(row=>({...row,purchase:null}))}); assert.ok(!JSON.stringify(result).includes('secret'));
   input.cargo[0].name = 'changed'; assert.equal(result.cargo[0].name, fixture.cargo[0].name);
   assert.throws(() => {result.buy.offers[0].tons = '0';}, TypeError);
 });
@@ -80,4 +80,12 @@ test('LSS overflow reserves whole space without changing exact stock or internal
  }
  for(const reserved of ['0','1','3']){const d=fresh();d.ship.lifeSupport.cargoReservedTons=reserved;assert.throws(()=>projectPlayerSnapshot(d),/Invalid/);}
  const d=fresh();d.ship.lifeSupport.cargoReservedTons=null;assert.equal(projectPlayerSnapshot(d).ship.lifeSupport.cargoReservedTons,null);
+});
+
+test('purchase history is a nested detached allowlist, independently unknown and bounded',()=>{
+ const input=fresh();input.cargo[0].purchase={retailPerTon:'1000',percent:'62.500000',paidPerTon:'625',gm:'secret'};
+ const result=projectPlayerSnapshot(input);assert.deepEqual(result.cargo[0].purchase,{retailPerTon:'1000',percent:'62.500000',paidPerTon:'625'});assert.ok(Object.isFrozen(result.cargo[0].purchase));
+ input.cargo[0].purchase.percent='90';assert.equal(result.cargo[0].purchase.percent,'62.500000');
+ input.cargo[0].purchase={};assert.deepEqual(projectPlayerSnapshot(input).cargo[0].purchase,{retailPerTon:null,percent:null,paidPerTon:null});
+ for(const value of ['<img>','-1','Infinity','1e3','1.1234567',7,[],{}]){input.cargo[0].purchase={paidPerTon:value};assert.throws(()=>projectPlayerSnapshot(input));}
 });

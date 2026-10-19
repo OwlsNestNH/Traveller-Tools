@@ -29,7 +29,7 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
       const field=(label,value,aria)=>{const unknown=node('input');unknown.type='checkbox';unknown.checked=value===null;const unknownLabel=node('label',label+' unknown');unknownLabel.prepend(unknown);const input=node('input');input.type='text';input.value=value??'';input.disabled=unknown.checked;input.setAttribute('aria-label',aria);const name=node('label',label);name.append(input);unknown.addEventListener('change',()=>{input.disabled=unknown.checked;});dialog.append(unknownLabel,name);return {unknown,input};};
       const name=field('Name',entry.name,'Local goods name');name.input.maxLength=80;
       const base=field('Base price',entry.base,'Local estimated base price');base.input.maxLength=22;base.input.inputMode='decimal';
-      dialog.append(node('p',row.creditsPerTon!==undefined?'The operator’s quoted price stays unchanged. This base price is a separate player estimate in Credits per ton.':'No quote was supplied for this cargo lot. A base estimate does not create a quote.'));
+      dialog.append(node('p',row.creditsPerTon!==undefined?'The operator’s quoted price stays unchanged. This base price is a separate player estimate in Credits per ton.':'Local estimates do not change the operator’s recorded retail, purchase percentage or paid price.'));
       const error=node('p');error.setAttribute('role','alert');const save=node('button','Save local details'),cancel=node('button','Cancel');save.type=cancel.type='button';
       save.addEventListener('click',()=>{
         const validName=name.unknown.checked||(name.input.value.trim().length>0&&name.input.value.length<=80&&name.input.value.isWellFormed()&&!/[\u0000-\u001f\u007f]/u.test(name.input.value));
@@ -49,7 +49,7 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
     const element = node('table'), head = node('thead'), header = node('tr'), body = node('tbody');
     for (const heading of headings) { const th = node('th', heading); th.scope = 'col'; header.append(th); }
     head.append(header);
-    for (const values of rows) { const row = node('tr'); for (const value of values) {const cell=node('td'); if (typeof value==='string') cell.textContent=value; else cell.append(value); row.append(cell);} body.append(row); }
+    for (const values of rows) { const row = node('tr'); for (const value of values) {const cell=node('td');cell.dataset.label=headings[row.children.length]; if (typeof value==='string') cell.textContent=value; else cell.append(value); row.append(cell);} body.append(row); }
     element.append(head, body); parent.append(element);
   };
   const planet = section('Planetary information');
@@ -98,8 +98,9 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
     row.append(name, node('td', credits(entry.expected)), node('td', credits(entry.paid))); body.append(row);
   }
   expenseTable.append(head, body); details.append(expenseTable); expensePanel.append(details);
-  const cargo = section('Cargo aboard'); cargo.className = 'wide';
-  table(cargo, ['Cargo lot', 'Tons'], data.cargo.map((row,i) => [localName(row,'cargo',i), formatSnapshotTons(row.tons)]), 'No cargo aboard.');
+  const cargo = section('Cargo aboard'); cargo.className = 'wide cargo-section';
+  table(cargo, ['Cargo lot', 'Tons', 'Retail / ton', 'Purchase % of retail', 'Paid / ton'], data.cargo.map((row,i) => [localName(row,'cargo',i), formatSnapshotTons(row.tons), credits(row.purchase?.retailPerTon ?? null), row.purchase?.percent == null ? 'Unknown' : quantity(row.purchase.percent)+'%', credits(row.purchase?.paidPerTon ?? null)]), 'No cargo aboard.');
+  if(data.cargo.length)cargo.append(node('p','Retail is the recorded base price per ton. Purchase % is the actual recorded percentage before credit rounding. Paid is per ton, not the lot total, and follows this link’s credit rounding. Missing purchase history stays Unknown; local estimates do not fill it in.'));
   const support=data.ship.lifeSupport;
   if((support.cargoLss!==null&&Number(support.cargoLss)>0)||(support.cargoReservedTons!==null&&Number(support.cargoReservedTons)>0)) {
     facts(cargo,[['Life support overflow · reserved space',formatSnapshotTons(support.cargoReservedTons)+(support.cargoReservedTons===null?'':' t')]]);

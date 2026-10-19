@@ -135,7 +135,7 @@ try {
     await page.goBack();
   }
   await page.locator('#budget').selectOption('200');await page.getByRole('button',{name:'Generate snapshot'}).click();await page.getByText(/No link generated and no data omitted/).waitFor();assert.equal(await page.locator('#link').inputValue(),'');
-  await page.locator('#budget').selectOption('500');await page.getByRole('button',{name:'Generate snapshot'}).click();const generated=await page.locator('#link').inputValue();assert.ok(generated.length<=500);assert.ok(generated.startsWith(url+'#'));
+  await page.locator('#budget').selectOption('500');await page.getByRole('button',{name:'Generate snapshot'}).click();const limited=await page.locator('#link').inputValue();if(!limited)await page.getByText(/No link generated and no data omitted/).waitFor();else assert.ok(limited.length<=500);await page.locator('#budget').selectOption('8192');await page.getByRole('button',{name:'Generate snapshot'}).click();const generated=await page.locator('#link').inputValue();assert.ok(generated.length<=8192);assert.ok(generated.startsWith(url+'#'));
   await page.getByRole('link',{name:'Open player snapshot'}).click();await page.getByText('Cr 127,450',{exact:true}).waitFor();await page.getByText('Cr 40,300',{exact:true}).waitFor();
   await page.goto(url+'#bad');await page.getByRole('alert').waitFor();await page.goBack();await page.getByText('Cr 127,450',{exact:true}).waitFor();await page.goForward();await page.getByRole('alert').waitFor();await page.goBack();await page.reload();await page.getByText('Cr 127,450',{exact:true}).waitFor();
   assert.deepEqual(errors, []);
@@ -158,5 +158,29 @@ try {
   await recipient.goto(url+'#'+legacyPackets.fractional[1]);await recipient.getByRole('alert').filter({hasText:'whole tons'}).waitFor();
   assert.equal(await recipient.evaluate(()=>JSON.stringify({...localStorage})),priorStorage);
   await persistent.close();
+  // Cargo prices are per-lot transmitted provenance, independent of local estimates.
+  await page.goto(url);
+  const cargoInput=await page.evaluate(async()=>{
+    const {playerSnapshotFixture}=await import('./js/player-snapshot-fixture.mjs');const {measureSnapshotLink}=await import('./js/player-snapshot-codec.mjs');
+    const data=structuredClone(playerSnapshotFixture);data.cargo=[
+      {name:'Advanced Electronics',tons:'2',purchase:{retailPerTon:'1000',percent:'62.5',paidPerTon:'625'}},
+      {name:'Advanced Electronics',tons:'3',purchase:{retailPerTon:'1000',percent:'80',paidPerTon:'800'}},
+      {name:'Other',tons:'1',purchase:{retailPerTon:null,percent:null,paidPerTon:'0'}},
+      {name:'Other',tons:'4'}];
+    return location.href.split('#')[0]+'#'+measureSnapshotLink(data).payload;
+  });await page.goto(cargoInput);await page.getByRole('heading',{name:'Cargo aboard',exact:true}).waitFor();
+  const cargoRows=page.locator('.cargo-section tbody tr');
+  assert.deepEqual(await cargoRows.nth(0).locator('td').allTextContents(),['Advanced Electronics','2','Cr 1,000','62.5%','Cr 700']);
+  assert.deepEqual((await cargoRows.nth(1).locator('td').allTextContents()).slice(2),['Cr 1,000','80%','Cr 800']);
+  assert.deepEqual((await cargoRows.nth(2).locator('td').allTextContents()).slice(2),['Unknown','Unknown','Cr 0']);
+  assert.deepEqual((await cargoRows.nth(3).locator('td').allTextContents()).slice(2),['Unknown','Unknown','Unknown']);
+  const valuesBefore=await cargoRows.nth(2).locator('td').allTextContents();
+  await page.getByRole('button',{name:'Edit local details for cargo lot 3',exact:true}).click();
+  await page.getByLabel('Base price unknown',{exact:true}).uncheck();await page.getByRole('textbox',{name:'Local estimated base price'}).fill('999');await page.getByRole('button',{name:'Save local details',exact:true}).click();
+  assert.deepEqual((await cargoRows.nth(2).locator('td').allTextContents()).slice(2),valuesBefore.slice(2));assert.equal(page.url(),cargoInput);
+  for(const width of [320,390,700,701,1440]){await page.setViewportSize({width,height:1000});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'Cargo values overflow at '+width);assert.equal(await cargoRows.nth(0).locator('td').nth(4).getAttribute('data-label'),'Paid / ton');if(width===390||width===1440)await page.locator('.cargo-section').screenshot({path:artifacts+'cargo-purchase-'+width+'.png'});}
+  const older=await page.evaluate(async()=>{const {playerSnapshotFixture}=await import('./js/player-snapshot-fixture.mjs');const {measureSnapshotLink}=await import('./js/player-snapshot-codec.mjs');return location.href.split('#')[0]+'#'+measureSnapshotLink(playerSnapshotFixture,{codecVersion:4}).payload;});
+  await page.goto(older);await page.getByRole('heading',{name:'Cargo aboard',exact:true}).waitFor();assert.deepEqual((await page.locator('.cargo-section tbody tr').first().locator('td').allTextContents()).slice(2),['Unknown','Unknown','Unknown']);
+  await page.goBack();await page.getByRole('heading',{name:'Cargo aboard',exact:true}).waitFor();assert.equal(await page.locator('.cargo-section tbody tr').first().locator('td').nth(3).textContent(),'62.5%');
   console.log('Player snapshot browser checks passed: desktop/mobile, inert markup, versions, repeated rendering, navigation, storage isolation.');
 } finally { await browser.close(); }

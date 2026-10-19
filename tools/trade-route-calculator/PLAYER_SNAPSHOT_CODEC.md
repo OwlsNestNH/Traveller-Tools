@@ -14,7 +14,7 @@ rejecting actual URLs over 8,192 characters. Invalid links replace stale content
 
 ## Current whole-ton and life-support contract
 
-New links use codec 4 / contract 4. Cargo lots (including Other) and cargo capacity
+New links use codec 5 / additive contract 4. Cargo lots (including Other) and cargo capacity
 must be canonical nonnegative whole-ton strings. Fractional inventory is never
 rounded. Old codec-1/2 links with fractional cargo show a clear fresh-snapshot
 message, replace stale content and do not write recipient storage. Their saved
@@ -55,7 +55,7 @@ The map's radius and current selection never enter this packet.
 
 ## Public contract and protocol
 
-The first bytes identify magic 80, codec 4, snapshot contract 4, immutable catalog 1
+The first bytes identify magic 80, codec 5, wire schema revision 5, immutable catalog 1
 and flags (bit 0 selects Cr1000 instead of Cr100; bit 1 enables percentage prices). Codec 1/2 whole-ton links remain readable with unknown duration/reservation fields; fractional cargo links reject explicitly. Other unknown versions fail closed. Versioned
 commodity names, synthetic world fields and shared public display fragments are
 frozen in `player-snapshot-catalog.mjs`; existing IDs must never be repurposed. A wire
@@ -67,7 +67,7 @@ encoded explicitly, including GM-approved public overrides.
 Fields follow contract order, with explicit counts for lists, string tokens and
 inline UTF-8 byte strings. Unsigned canonical varints encode integers. Decimal
 scale and mantissa preserve physical quantities and cash exactly, including trailing
-fractional zeroes. Costs (expense expected/paid and offer unit prices) round UP to
+fractional zeroes. Costs (expense expected/paid, cargo paid-per-ton and offer unit prices) round UP to
 Cr100 by default or explicitly Cr1000, using BigInt arithmetic. Null has a separate
 marker from known zero. The original object is never changed. Expense basis text
 is preserved verbatim; explanatory rates in that text remain explanatory source
@@ -245,3 +245,35 @@ remains a transient demonstration until a generated link is opened.
 
 Production integration, cross-device synchronization and a retention-management
 screen remain deferred; **recipient persistence itself is now implemented**.
+
+## Codec 5: cargo purchase provenance
+
+Cargo rows now allow `purchase: {retailPerTon, percent, paidPerTon}`. The object
+may be null; each field may independently be null. Retail is the recorded base
+price in Credits per ton; percent is the actual purchase percentage recorded by
+the operator before rounding; paidPerTon is the actual unit purchase cost before
+link preparation. All three use bounded nonnegative decimal strings. There is
+no catalog-price, current-market, or local-annotation fallback, including for Other.
+A future production adapter must explicitly supply actual purchase provenance.
+This standalone change does not add that adapter or infer missing percentages.
+
+Preparation preserves retail and percentage exactly, and rounds paidPerTon up to
+the selected Cr100/Cr1000 quantum, like existing expense/offer costs. Thus a known
+62.5% purchase of Cr1,000 retail can display Cr700 paid/ton after Cr100 rounding;
+the percentage remains 62.5%, not a fabricated 70%. Paid is never labeled as a lot
+total. Missing history stays Unknown; zero remains distinct from unknown.
+
+Each codec-5 cargo row appends a presence flag, two exact decimals (retail and
+percent), and an optional quantized paid cost. Codecs 1–4 decode with purchase=null;
+existing bytes/catalog meanings stay unchanged. Encoding known purchase history
+with an older codec fails explicitly instead of dropping fields. The public
+headless contract remains version 4 with this optional additive allowlist field;
+the binary header's schema revision is 5. No campaign or recipient-storage schema
+migration is performed.
+
+New synthetic generator examples contain explicit purchase history, including
+separate prices for repeated goods and unknown Other lots. Full deployed-path
+lengths at Cr100 are 453/519/535 characters for 4/10/12 lots. Earlier measurement
+tables in this document describe historical codecs/fixtures without this history.
+The default 8,192-character budget is unchanged; selecting 500 for a larger example
+now rejects with its required size, without truncation or alternative delivery.

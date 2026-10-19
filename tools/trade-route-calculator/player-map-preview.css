@@ -1,9 +1,9 @@
-main {max-width:1100px;margin:auto;display:grid;grid-template-columns:minmax(0,640px) minmax(200px,1fr);gap:1rem;padding:1rem;}
+main {max-width:1100px;margin:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;padding:1rem;}
 main section {min-width:0;padding:1rem;border:1px solid #64748b;border-radius:.5rem;}
 #radius {display:block;width:100%;margin:1rem 0;}
-#map-frame {background:transparent;border:0;cursor:grab;}
+#map-frame {background:transparent;border:0;}
 #map-frame:empty {display:none;}
-#map-frame:active {cursor:grabbing;}
+
 #map-frame svg {display:block;margin:auto;user-select:none;}
 button {padding:.6rem 1rem;margin-top:1rem;font:inherit;}
 .hex-grid {fill:none;pointer-events:none;}
@@ -13,14 +13,14 @@ button {padding:.6rem 1rem;margin-top:1rem;font:inherit;}
 .uwp-fields dt,.reference-facts dt {font-size:.78rem;font-weight:700;color:#a8cfdf;}
 .uwp-fields dd,.reference-facts dd {margin:.15rem 0 .45rem;font-size:.85rem;overflow-wrap:anywhere;}
 .reference-facts {margin:0;}.world-panel h2 {margin-top:0;font-size:1.2rem;}.world-panel p {font-size:.85rem;overflow-wrap:anywhere;}
-.reference-note {color:#aebdca;}.world-panel {align-self:start;}
+.reference-note {color:#aebdca;}.world-panel {align-self:stretch;}
 @media(max-width:760px){main {grid-template-columns:minmax(0,1fr);padding:.6rem;}main section {padding:.75rem;}}
 body.embedded-reference {padding:0;margin:0;max-width:none;}
 .embedded-reference > header,.embedded-reference > footer {display:none;}
 .embedded-reference main {padding:0;max-width:none;}
 
 /* One fixed viewport: the complete footprint is fitted at every ring count. */
-#map-frame {height:580px;max-height:none;overflow:hidden;touch-action:none;}
+#map-frame {height:580px;max-height:none;overflow:hidden;touch-action:auto;}
 #map-frame svg {width:100%;height:100%;max-width:100%;}
 .hex-grid {stroke:#66717d;stroke-width:.7;}
 .world-target {fill:#fff;font-family:Arial,sans-serif;}

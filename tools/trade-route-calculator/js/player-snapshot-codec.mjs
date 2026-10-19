@@ -2,7 +2,7 @@
 import {projectPlayerSnapshot, EXPENSE_KINDS, SNAPSHOT_VERSION, CargoTonnageError} from './player-snapshot.mjs';
 import {CATALOG_VERSION, COMMODITIES, WORLDS, TEXT_FRAGMENTS, BASE_PRICES, STATIC_TEXT_V2, DESTINATIONS_V2} from './player-snapshot-catalog.mjs';
 export const PROPOSED_PREFIX = 'https://owlsnestnh.github.io/Traveller-Tools/p#'; // NOT DEPLOYED
-export const CODEC_VERSION = 4;
+export const CODEC_VERSION = 5;
 const MAX_BYTES = 65536, MAX_URL = 100000;
 const worldKeys = ['name','location','uwp','tradeCodes','travelZone','starport'];
 const statuses = ['available','not-checked','expired'];
@@ -22,6 +22,7 @@ export function prepareSnapshotForLink(input, {rounding=100}={}) {
   for (const kind of EXPENSE_KINDS) for (const key of ['expected','paid']) data.expenses[kind][key] = rounded(data.expenses[kind][key],rounding);
   for (const list of [data.cargo,data.buy.offers,data.sell.offers]) for (const row of list) {
     row.name = COMMODITIES[commodityIds.get(row.name) ?? 0];
+    if(row.purchase)row.purchase.paidPerTon=rounded(row.purchase.paidPerTon,rounding);
     if ('creditsPerTon' in row) row.creditsPerTon = rounded(row.creditsPerTon,rounding);
   }
   return projectPlayerSnapshot(data);
@@ -115,7 +116,7 @@ function packet(input, bytes, rounding, percentages=true, codecVersion=CODEC_VER
     }
     uint(code);return value;
   };
-  if(byte(80)!==80)invalid();codecVersion=byte(codecVersion);if(![1,2,3,4].includes(codecVersion))invalid();
+  if(byte(80)!==80)invalid();codecVersion=byte(codecVersion);if(![1,2,3,4,5].includes(codecVersion))invalid();
   if(byte(codecVersion>=3?codecVersion:2)!==(codecVersion>=3?codecVersion:2)||byte(CATALOG_VERSION)!==CATALOG_VERSION)invalid();
   const mode=byte((rounding===1000?1:0)|(percentages?2:0)); if (mode>3) invalid(); rounding=mode&1 ? 1000 : 100; percentages=Boolean(mode&2);
   const source=input ?? {}, result={version:SNAPSHOT_VERSION};
@@ -138,7 +139,9 @@ function packet(input, bytes, rounding, percentages=true, codecVersion=CODEC_VER
   const rows = (list, priced) => Array.from({length:small(list?.length,200)},(_,i)=>{
     const row=list?.[i], id=small(reading ? undefined : commodityIds.get(row.name),255);
     if (!Object.hasOwn(COMMODITIES,id)) invalid();
-    const next={name:COMMODITIES[id],tons:decimal(row?.tons)}; if (priced) next.creditsPerTon=price(row?.creditsPerTon,id); return next;
+    const next={name:COMMODITIES[id],tons:decimal(row?.tons)}; if (priced) next.creditsPerTon=price(row?.creditsPerTon,id);
+    else {next.purchase=null;if(codecVersion>=5 && small(reading?undefined:Number(row.purchase!==null),1))next.purchase={retailPerTon:decimal(row?.purchase?.retailPerTon),percent:decimal(row?.purchase?.percent),paidPerTon:money(row?.purchase?.paidPerTon)};}
+    return next;
   });
   result.cargo=rows(source.cargo,false);
   for (const key of ['buy','sell']) {const status=small(reading ? undefined : statuses.indexOf(source[key].status),2); result[key]={status:statuses[status],offers:rows(source[key]?.offers,true)};}
@@ -148,8 +151,9 @@ function packet(input, bytes, rounding, percentages=true, codecVersion=CODEC_VER
 const base64 = bytes => btoa(Array.from(bytes,n=>String.fromCharCode(n)).join('')).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 function budget(value) {if (!Number.isInteger(value) || value<PROPOSED_PREFIX.length || value>MAX_URL) throw new Error('Invalid URL character budget.'); return value;}
 export function measureSnapshotLink(input, {rounding=100,percentages=true,codecVersion=CODEC_VERSION}={}) {
-  if(![1,2,3,4].includes(codecVersion))invalid();
+  if(![1,2,3,4,5].includes(codecVersion))invalid();
   const snapshot=prepareSnapshotForLink(input,{rounding});
+  if(codecVersion<5 && snapshot.cargo.some(row=>row.purchase!==null))throw Error('Older codecs cannot represent cargo purchase history.');
   if(codecVersion<4 && snapshot.world.mapReference!==null)throw Error('Older codecs cannot represent the map reference.');
   if(codecVersion<3 && [snapshot.ship.lifeSupport.daysRemaining,snapshot.ship.lifeSupport.daysCapacity,snapshot.ship.lifeSupport.cargoReservedTons].some(value=>value!==null))throw Error('Older codecs cannot represent explicit life-support days or reserved cargo space.');
   const plain=packet(snapshot,undefined,rounding,false,codecVersion), candidate=percentages?packet(snapshot,undefined,rounding,true,codecVersion):plain;
