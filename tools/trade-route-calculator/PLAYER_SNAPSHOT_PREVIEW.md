@@ -11,7 +11,7 @@ vertical scrolling when needed, not multiple tabs or a transaction interface.
 
 ## Separation and contract
 
-- `js/player-snapshot.mjs` is the headless version-2 data contract and allowlist
+- `js/player-snapshot.mjs` is the headless version-3 data contract and allowlist
   projection. It returns a detached, deeply frozen value. It has no imports,
   DOM, storage, transaction, networking or URL dependencies.
 - `js/player-snapshot-view.mjs` renders that contract using text nodes. Invalid
@@ -24,7 +24,7 @@ The contract contains capture/campaign dates; public world name, location, UWP,
 trade codes, zone and starport information; ship name, cargo capacity, player-approved cash, main fuel tank amounts,
 internal LSS stores/capacity, cargo-stored LSS and planned destination; separate cargo lots; buy/sell quote name, tons and
 Credits per ton. Known amounts are nonnegative decimal strings, with at most 15
-integer and 6 fractional digits; cash, supplies and expense amounts may be null
+integer and 6 fractional digits except cargo lots/capacity, which require whole tons; cash, supplies and expense amounts may be null
 when unknown. Each list allows at most 200 rows, and each text
 field at most 240 UTF-16 code units. These are defensive contract limits, **not a
 validated share-link budget**. Quote states distinguish available (including
@@ -62,12 +62,12 @@ Rules are unchanged. No deployment or merge is part of this stage.
 ## Revised cash, supplies and expenses mockup
 
 Version 2 adds player-approved shipboard cash (Credits), main tank fuel in tons,
-internal life-support supplies in physical LSS and separately stated cargo-stored
-LSS. Gauges compare known current quantities against known positive capacities.
-Unknown values have no fill bar; zero capacity is labelled. Neither physical LSS
-stock nor capacity is a count of days. Production's internal LSS capacity is
-4 LSS per displacement ton; cargo supplies are separate. No resource calculation
-or bank deduction occurs in the preview. Version 1 is explicitly incompatible.
+explicit internal life-support days and a fill bar. Unknown duration is shown as
+unknown rather than inferred from stock or occupancy. Positive cargo-stored LSS
+appears separately as whole-ton reserved space with exact LSS stock. The sample
+uses 21 / 100 internal days and 150 reserve LSS in 2 reserved tons; reserve stock
+is not added to internal days or counted twice as trade cargo. See
+`PLAYER_SNAPSHOT_CODEC.md` for whole-ton validation and legacy-link compatibility.
 
 Six fixed expense categories are berth, fuel, salary, mortgage, LSS and
 incidentals. Each carries allowlisted expected and paid amounts plus a public

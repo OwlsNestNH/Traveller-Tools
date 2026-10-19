@@ -1,4 +1,5 @@
 // Recipient-only persistence. Never enumerate, import or write campaign storage.
+import {CargoTonnageError} from './player-snapshot.mjs';
 import {decodeSnapshotEnvelope,PROPOSED_PREFIX} from './player-snapshot-codec.mjs';
 export const RECIPIENT_PREFIX='traveller-player-snapshot:v1:';
 const warning='Browser storage is unavailable or full. Changes may not survive closing this page.';
@@ -9,7 +10,7 @@ export function createRecipientStore(getStorage) {
   return {
     last() {
       try {const payload=getStorage().getItem(RECIPIENT_PREFIX+'last');if(payload===null)return {payload:null};if(typeof payload!=='string'||payload.length>8192)throw Error();decode(payload);return {payload};}
-      catch {return {payload:null,warning};}
+      catch(error) {if(error instanceof CargoTonnageError)throw error;return {payload:null,warning};}
     },
     open(payload,onNotice=()=>{}) {
       // Validate before any storage access. Exact canonical payload is the snapshot identity.

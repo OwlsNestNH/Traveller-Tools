@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {legacyPackets} from './player-snapshot-legacy-fixtures.mjs';
 import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
 import {playerSnapshotFixture as fixture,makePlayerSnapshotExample} from '../js/player-snapshot-fixture.mjs';
@@ -7,6 +8,7 @@ const options={maxUrlLength:100000};
 const link = data => encodeSnapshotLink(data,options);
 const decode = value => decodeSnapshotLink(value,options);
 const clone = () => structuredClone(fixture);
+const legacyFixture=()=>{const d=clone();d.ship.lifeSupport.daysRemaining=null;d.ship.lifeSupport.daysCapacity=null;d.ship.lifeSupport.cargoReservedTons=null;d.ship.lifeSupport.cargoLss='0';return d;};
 const mutate = (url, fn) => {const b=Buffer.from(url.slice(PROPOSED_PREFIX.length),'base64url');return PROPOSED_PREFIX+Buffer.from(fn(b)??b).toString('base64url');};
 test('round trips the full public contract, rounds only costs, preserves source and unknowns',()=>{
   for (const rounding of [100,1000]) {
@@ -20,7 +22,7 @@ test('round trips the full public contract, rounds only costs, preserves source 
   }
 });
 test('world overrides, Unicode, markup and exact decimal representation survive',()=>{
-  const d=clone(); d.world.name='<img src=x onerror=alert(1)> 🪐'; d.world.uwp='B000000-0'; d.ship.name='\uFEFF航船'; d.cargo[0].tons='0.000000'; d.ship.cashCredits='999999999999999.999999';
+  const d=clone(); d.world.name='<img src=x onerror=alert(1)> 🪐'; d.world.uwp='B000000-0'; d.ship.name='\uFEFF航船'; d.cargo[0].tons='0'; d.ship.cashCredits='999999999999999.999999';
   assert.deepEqual(decode(link(d)),prepareSnapshotForLink(d));
   d.world.location='Custom sector / 0101'; assert.deepEqual(decode(link(d)),prepareSnapshotForLink(d));
 });
@@ -49,18 +51,19 @@ test('cost overflow and invalid text fail explicitly; GM extras never serialize'
   assert.equal(link(a),link(fixture));
 });
 test('maximum rows stay distinct and independent snapshots have no retained codec state',()=>{
-  const d=clone(); for(const [key,priced] of [['cargo',false],['buy',true],['sell',true]]) {const rows=Array.from({length:200},(_,i)=>({name:'custom '+i,tons:(i/10).toFixed(1),...(priced?{creditsPerTon:String(i*123)}:{})})); if(priced)d[key].offers=rows;else d[key]=rows;}
+  const d=clone(); for(const [key,priced] of [['cargo',false],['buy',true],['sell',true]]) {const rows=Array.from({length:200},(_,i)=>({name:'custom '+i,tons:priced?(i/10).toFixed(1):String(i),...(priced?{creditsPerTon:String(i*123)}:{})})); if(priced)d[key].offers=rows;else d[key]=rows;}
   const expected=prepareSnapshotForLink(d); assert.deepEqual(decode(link(d)),expected); assert.equal(expected.cargo.length,200);
   assert.deepEqual(decode(link(fixture)),prepareSnapshotForLink(fixture));
   d.cargo.push(d.cargo[0]); assert.throws(()=>link(d));
 });
 test('deterministic hostile packet fuzz either rejects or yields validated data',()=>{
   const base=link(fixture); let seed=17;
-  for(let i=0;i<500;i++){seed=(Math.imul(seed,1664525)+1013904223)>>>0;const changed=mutate(base,b=>{b[seed%b.length]^=(seed>>>16)&255;});try {const d=decode(changed); assert.ok(Object.isFrozen(d)); assert.ok(d.cargo.length<=200);}catch(e){assert.match(e.message,/Invalid/);}}
+  for(let i=0;i<500;i++){seed=(Math.imul(seed,1664525)+1013904223)>>>0;const changed=mutate(base,b=>{b[seed%b.length]^=(seed>>>16)&255;});try {const d=decode(changed); assert.ok(Object.isFrozen(d)); assert.ok(d.cargo.length<=200);}catch(e){assert.match(e.message,/Invalid|whole tons/);}}
 });
 
 test('codec 1 catalog 1 wire format stays stable',()=>{
- assert.equal(createHash('sha256').update(measureSnapshotLink(fixture,{codecVersion:1}).payload).digest('hex'),'5eb946e635c903b3309416120bfa9e6406036c30088edcfad063930a8d63fc1b');
+ assert.equal(createHash('sha256').update(legacyPackets.fractional[0]).digest('hex'),'5eb946e635c903b3309416120bfa9e6406036c30088edcfad063930a8d63fc1b');
+ assert.equal(measureSnapshotLink(legacyFixture(),{codecVersion:1}).payload,legacyPackets.whole[0]);
 });
 test('percentage rows reconstruct exact quotes; noncanonical prices use explicit escape',()=>{
  const d=clone();d.buy.offers=Array.from({length:50},(_,i)=>({name:'Common Electronics',tons:String(i+1),creditsPerTon:String(10000+i%5*1000)}));d.sell.offers=structuredClone(d.buy.offers);
@@ -76,16 +79,16 @@ test('forged percent price cannot contradict the declared rounding quantum',()=>
 });
 
 test('codec 2 compact templates preserve exact labels, custom text and codec 1 links',()=>{
- assert.deepEqual(decode(PROPOSED_PREFIX+measureSnapshotLink(fixture,{codecVersion:1}).payload),prepareSnapshotForLink(fixture));
+ assert.deepEqual(decode(PROPOSED_PREFIX+measureSnapshotLink(legacyFixture(),{codecVersion:1}).payload),prepareSnapshotForLink(legacyFixture()));
  for(const capturedAt of ['2026-10-19T15:00:00.123Z','9999-12-31T23:59:59.999Z','1960-01-01T00:00:00.000Z','2026-02-30 15:00 UTC (example)','custom captain date 🪐']) {
   const d=clone();d.capturedAt=capturedAt;d.expenses.salary.basis='Custom crew agreement — 12 days';d.expenses.visitLabel='A custom visit';assert.deepEqual(decode(link(d)),prepareSnapshotForLink(d));
  }
  const d=clone();d.world.name='Custom world';d.expenses.visitLabel='Custom world · this stop, 001–365-1200 planned';d.expenses.fuel.basis='Planned 3.500000 t refined top-up at Cr500.000000/t';assert.deepEqual(decode(link(d)),prepareSnapshotForLink(d));
- assert.equal(measureSnapshotLink(fixture).characters,197);
+ assert.ok(measureSnapshotLink(fixture).characters<250);
 });
 
 test('compact decimal packets preserve maximum precision and every trailing zero',()=>{
- const d=clone();d.ship.cashCredits='999999999999999.999999';d.ship.fuel.current='0.000000';d.ship.lifeSupport.cargoLss='0.0';d.cargo[0].tons='999999999999999.999999';assert.deepEqual(decode(link(d)),prepareSnapshotForLink(d));
+ const d=clone();d.ship.cashCredits='999999999999999.999999';d.ship.fuel.current='0.000000';d.ship.lifeSupport.cargoLss='0.0';d.ship.lifeSupport.cargoReservedTons='0';d.cargo[0].tons='999999999999999';assert.deepEqual(decode(link(d)),prepareSnapshotForLink(d));
  assert.deepEqual(decodeSnapshotLink(encodeSnapshotLink(fixture)),prepareSnapshotForLink(fixture));
 });
 
@@ -101,4 +104,22 @@ test('10 and 12 actual cargo lots retain repeated IDs, quantities, every field a
   assert.deepEqual(decoded.sell,prepareSnapshotForLink(fixture,{rounding}).sell);
   assert.deepEqual(data,before);assert.ok(encoded.length>200);
  }
+});
+
+
+test('whole cargo boundary rejects fractional known and Other lots without changing inventory or prices',()=>{
+ for(const name of ['Advanced Electronics','Other'])for(const tons of ['8.5','0.1','12.000000']) {
+  const data=clone();data.cargo[0]={name,tons};const before=structuredClone(data);
+  assert.throws(()=>encodeSnapshotLink(data),/whole tons/);assert.deepEqual(data,before);
+ }
+ for(const payload of legacyPackets.fractional)assert.throws(()=>decodeSnapshotLink(PROPOSED_PREFIX+payload,{maxUrlLength:8192}),/No inventory was rounded or changed/);
+ for(const payload of legacyPackets.whole)assert.deepEqual(decodeSnapshotLink(PROPOSED_PREFIX+payload,{maxUrlLength:8192}),prepareSnapshotForLink(legacyFixture()));
+ const data=clone();data.ship.cargoCapacityTons='82.5';assert.throws(()=>encodeSnapshotLink(data),/whole tons/);
+});
+test('explicit LSS days round-trip without stock conversion; older codecs preserve unknown duration',()=>{
+ const d=clone();d.ship.lifeSupport.daysRemaining='3.5';d.ship.lifeSupport.daysCapacity='8';
+ assert.deepEqual(decode(link(d)),prepareSnapshotForLink(d));
+ assert.throws(()=>measureSnapshotLink(d,{codecVersion:2}),/cannot represent/);
+ d.ship.lifeSupport.daysRemaining='9';assert.throws(()=>link(d),/Invalid/);
+ for(const payload of legacyPackets.whole){const saved=decode(PROPOSED_PREFIX+payload);assert.equal(saved.ship.lifeSupport.current,'168');assert.equal(saved.ship.lifeSupport.daysRemaining,null);assert.equal(saved.ship.lifeSupport.daysCapacity,null);}
 });

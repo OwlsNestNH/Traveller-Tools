@@ -12,7 +12,7 @@ test('allowlist strips GM and unrelated fields recursively; detached immutable o
   assert.throws(() => {result.buy.offers[0].tons = '0';}, TypeError);
 });
 test('unknown, absent and legacy versions fail closed', () => {
-  for (const version of [undefined, 0, 1, 3, '2', null]) assert.throws(() => projectPlayerSnapshot({...fresh(), version}), /Unsupported/);
+  for (const version of [undefined, 0, 1, 2, 4, '3', null]) assert.throws(() => projectPlayerSnapshot({...fresh(), version}), /Unsupported/);
 });
 test('malformed shape, nonfinite or excessive amounts and bounded text rejected', () => {
   for (const value of [null, [], 'snapshot']) assert.throws(() => projectPlayerSnapshot(value));
@@ -31,7 +31,7 @@ test('Unicode and hostile markup remain inert data; prototype fields not copied'
   assert.equal({}.polluted, undefined);
 });
 test('row bounds and market availability are explicit', () => {
-  const input = fresh(); input.cargo = Array.from({length:MAX_SNAPSHOT_ROWS}, () => ({name:'Lot', tons:'0.1'}));
+  const input = fresh(); input.cargo = Array.from({length:MAX_SNAPSHOT_ROWS}, () => ({name:'Lot', tons:'1'}));
   assert.equal(projectPlayerSnapshot(input).cargo.length, MAX_SNAPSHOT_ROWS);
   input.cargo.push({name:'one too many', tons:'1'}); assert.throws(() => projectPlayerSnapshot(input));
   for (const status of ['not-checked', 'expired']) {
@@ -71,4 +71,13 @@ test('expense totals use exact arithmetic and disclose unknowns separately from 
   assert.deepEqual(summarizePlayerExpenses(data.expenses), {expected:{knownTotal:'0',unknownCount:6},paid:{knownTotal:'0',unknownCount:0}});
   data.expenses.berth.expected = '999999999999999.999999'; data.expenses.fuel.expected = '0.000001';
   assert.deepEqual(summarizePlayerExpenses(data.expenses).expected, {knownTotal:'1000000000000000',unknownCount:4});
+});
+
+test('LSS overflow reserves whole space without changing exact stock or internal duration',()=>{
+ for(const [stock,reserved] of [['0','0'],['0.1','1'],['100','1'],['150','2'],['200.000001','3']]){
+  const d=fresh();d.ship.lifeSupport.cargoLss=stock;d.ship.lifeSupport.cargoReservedTons=reserved;
+  const result=projectPlayerSnapshot(d);assert.equal(result.ship.lifeSupport.cargoLss,stock);assert.equal(result.ship.lifeSupport.cargoReservedTons,reserved);assert.equal(result.ship.lifeSupport.daysRemaining,'21');
+ }
+ for(const reserved of ['0','1','3']){const d=fresh();d.ship.lifeSupport.cargoReservedTons=reserved;assert.throws(()=>projectPlayerSnapshot(d),/Invalid/);}
+ const d=fresh();d.ship.lifeSupport.cargoReservedTons=null;assert.equal(projectPlayerSnapshot(d).ship.lifeSupport.cargoReservedTons,null);
 });

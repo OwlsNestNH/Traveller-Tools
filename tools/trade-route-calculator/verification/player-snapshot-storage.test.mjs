@@ -1,3 +1,4 @@
+import {legacyPackets} from './player-snapshot-legacy-fixtures.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';
 import {createRecipientStore,RECIPIENT_PREFIX} from '../js/player-snapshot-storage.mjs';
 import {measureSnapshotLink} from '../js/player-snapshot-codec.mjs';
@@ -21,4 +22,13 @@ test('hostile or mismatched saved records never alter transmitted data or partia
  data.set(key,JSON.stringify({version:1,payload,annotations}));const notes=[];const result=store.open(payload,n=>notes.push(n));assert.equal(result.labels.size,0);assert.ok(notes.length);assert.equal(result.snapshot.cargo[0].name,'Advanced Electronics');
  }
  data.set(RECIPIENT_PREFIX+'last','bad');assert.equal(store.last().payload,null);assert.throws(()=>store.open('bad'));
+});
+
+test('last-opened fractional legacy snapshot fails honestly without overwriting saved data',()=>{
+ const records=new Map([[RECIPIENT_PREFIX+'last',legacyPackets.fractional[1]]]);
+ const storage={getItem:key=>records.get(key)??null,setItem:()=>{throw Error('Unexpected mutation');}};
+ const store=createRecipientStore(()=>storage);
+ assert.throws(()=>store.last(),/No inventory was rounded or changed/);
+ assert.throws(()=>store.open(legacyPackets.fractional[1]),/whole tons/);
+ assert.equal(records.get(RECIPIENT_PREFIX+'last'),legacyPackets.fractional[1]);
 });
