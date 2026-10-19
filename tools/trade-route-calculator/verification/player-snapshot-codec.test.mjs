@@ -131,3 +131,27 @@ test('canonical map reference round-trips separately from public world text; old
  for(const hex of ['0000','3341','<img>']){const d=clone();d.world.mapReference.hex=hex;assert.throws(()=>link(d));}
  const d=clone();d.world.mapReference.secret='GM';assert.deepEqual(decode(link(d)).world.mapReference,current.world.mapReference);
 });
+
+test('codec5 carries each lot purchase provenance without inferring from catalog or rounded costs',()=>{
+ const source=clone();source.cargo=[
+  {name:'Advanced Electronics',tons:'2',purchase:{retailPerTon:'1000',percent:'62.5',paidPerTon:'625'}},
+  {name:'Advanced Electronics',tons:'3',purchase:{retailPerTon:'1000',percent:'80',paidPerTon:'800'}},
+  {name:'Other',tons:'1',purchase:{retailPerTon:'0',percent:null,paidPerTon:'0'}},
+  {name:'Other',tons:'7'},
+  {name:'Textiles',tons:'5',purchase:{retailPerTon:null,percent:null,paidPerTon:'123.45'}}];
+ const before=structuredClone(source);
+ for(const rounding of [100,1000]){const encoded=encodeSnapshotLink(source,{rounding}),result=decodeSnapshotLink(encoded);assert.deepEqual(result,prepareSnapshotForLink(source,{rounding}));assert.equal(result.cargo[0].purchase.percent,'62.5');assert.equal(result.cargo[0].purchase.retailPerTon,'1000');assert.equal(result.cargo[0].purchase.paidPerTon,rounding===100?'700':'1000');assert.equal(result.cargo[1].purchase.percent,'80');assert.equal(result.cargo[2].purchase.paidPerTon,'0');assert.equal(result.cargo[2].purchase.percent,null);assert.equal(result.cargo[3].purchase,null);assert.equal(result.cargo[4].purchase.retailPerTon,null);}
+ assert.deepEqual(source,before);assert.throws(()=>measureSnapshotLink(source,{codecVersion:4}),/cannot represent cargo/);
+ const overflow=clone();overflow.cargo[0].purchase={paidPerTon:'999999999999999.999999'};assert.throws(()=>encodeSnapshotLink(overflow),/numeric range/);
+});
+test('older codecs never fabricate cargo purchase history and codec4 bytes stay stable',()=>{
+ for(const version of [1,2,3,4]){const input=clone();if(version<4)input.world.mapReference=null;if(version<3){input.ship.lifeSupport.daysRemaining=null;input.ship.lifeSupport.daysCapacity=null;input.ship.lifeSupport.cargoReservedTons=null;}
+  const packet=measureSnapshotLink(input,{codecVersion:version});const old=decodeSnapshotLink(PROPOSED_PREFIX+packet.payload);assert.ok(old.cargo.every(row=>row.purchase===null));assert.equal(measureSnapshotLink(old,{codecVersion:version}).payload,packet.payload);
+ }
+});
+
+test('lot totals round exact unit cost times shown tons, independently of unit rounding',()=>{
+ const source=clone();source.cargo=[{name:'Other',tons:'2',purchase:{retailPerTon:'1000',percent:'62.5',paidPerTon:'625'}},{name:'Other',tons:'4',purchase:{paidTotal:'1001'}},{name:'Other',tons:'0',purchase:{paidPerTon:'0'}},{name:'Other',tons:'3'}];
+ for(const rounding of [100,1000]){const result=decodeSnapshotLink(encodeSnapshotLink(source,{rounding}));assert.equal(result.cargo[0].purchase.paidTotal,rounding===100?'1300':'2000');assert.equal(result.cargo[0].purchase.paidPerTon,rounding===100?'700':'1000');assert.equal(result.cargo[1].purchase.paidTotal,rounding===100?'1100':'2000');assert.equal(result.cargo[1].purchase.paidPerTon,null);assert.equal(result.cargo[2].purchase.paidTotal,'0');assert.equal(result.cargo[3].purchase,null);assert.deepEqual(prepareSnapshotForLink(result,{rounding}),result);}
+ source.cargo[0].tons='999999999999999';assert.throws(()=>encodeSnapshotLink(source),/numeric range/);
+});

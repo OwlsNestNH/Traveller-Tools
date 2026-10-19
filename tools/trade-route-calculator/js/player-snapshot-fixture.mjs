@@ -23,5 +23,7 @@ export function makePlayerSnapshotExample(cargoLots=4) {
     name:playerSnapshotFixture.cargo[i%playerSnapshotFixture.cargo.length].name,
     tons:String(i+1)
   }));
+  // Explicit synthetic purchase provenance; never infer it from current offers.
+  data.cargo.forEach((row,i)=>{row.purchase=i%4===0?{retailPerTon:'100000',percent:String(80+i),paidPerTon:String(80000+i*1000)}:i%4===1?{retailPerTon:'20000',percent:'62.5',paidPerTon:'12500'}:i%4===3?{retailPerTon:'3000',percent:'85',paidPerTon:'2550'}:null;});
   return data;
 }

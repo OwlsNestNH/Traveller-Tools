@@ -12,10 +12,12 @@ await context.route('https://travellermap.com/**',async route=>{const url=new UR
 const loaded=()=>page.getByText(/Reference map loaded · radius/).waitFor();
 try{
  await page.goto(new URL('player-map-preview.html?sector=Spinward+Marches&hex=1910',base).href);await loaded();
+ const panelBounds=await Promise.all([page.locator('.map-panel').boundingBox(),page.locator('.world-panel').boundingBox()]);assert.ok(Math.abs(panelBounds[0].width-panelBounds[1].width)<=1);assert.ok(Math.abs(panelBounds[0].height-panelBounds[1].height)<=1);assert.equal(panelBounds[0].y,panelBounds[1].y);
  assert.equal(await page.locator('#radius').getAttribute('type'),'range');assert.equal(await page.locator('#radius').getAttribute('step'),'1');assert.equal(await page.locator('#radius').getAttribute('max'),'6');assert.equal(await page.locator('#radius').inputValue(),'2');
  assert.equal(await page.locator('.gas-giant').count(),1);assert.equal(await page.locator('.zone-A').count(),1);assert.equal(await page.locator('.world-starport').first().textContent(),'A');assert.equal(await page.locator('.world-hex').first().textContent(),'1910');assert.deepEqual(await page.locator('[data-world]').first().locator('.base-symbol').allTextContents(),['★','▲']);
  assert.equal(await page.locator('.territory-border').count()>0,true);assert.equal(await page.locator('[data-world]').count(),2);
- await page.getByRole('button',{name:'Inspect Test neighbour <img src=x>',exact:true}).click();
+ const centeredView=await page.locator('#map-frame svg').getAttribute('viewBox');
+ await page.getByRole('button',{name:'Inspect Test neighbour <img src=x>',exact:true}).click();assert.equal(await page.locator('#map-frame svg').getAttribute('viewBox'),centeredView);
  assert.equal(await page.locator('#world-details h2').textContent(),nearby.Name);assert.equal(await page.locator('#world-details img').count(),0);
  assert.deepEqual(await page.locator('.uwp-fields dt').allTextContents(),['Starport','Size','Atmosphere','Hydrographics','Population','Government','Law Level','Tech Level']);
  await page.getByText(/Amber — Caution/).waitFor();await page.getByText(/Scout Base/).waitFor();assert.equal(await page.getByText('Importance',{exact:true}).count(),0);
@@ -32,21 +34,24 @@ try{
  await page.locator('#radius').fill('5');await page.locator('#radius').dispatchEvent('change');await page.getByText(/Reference map loaded · radius 5\./).waitFor();await page.waitForTimeout(50);
  const panBefore=await page.locator('#map-frame').evaluate(el=>el.querySelector('svg').getAttribute('viewBox')),mapBox=await page.locator('#map-frame').boundingBox();
  await page.mouse.move(mapBox.x+mapBox.width/2,mapBox.y+mapBox.height/2);await page.mouse.down();await page.mouse.move(mapBox.x+mapBox.width/2-90,mapBox.y+mapBox.height/2-90,{steps:8});await page.mouse.up();
- const panAfter=await page.locator('#map-frame').evaluate(el=>el.querySelector('svg').getAttribute('viewBox'));assert.notEqual(panAfter,panBefore);assert.equal(await page.locator('#radius').inputValue(),'5');
+ const panAfter=await page.locator('#map-frame').evaluate(el=>el.querySelector('svg').getAttribute('viewBox'));assert.equal(panAfter,panBefore);assert.equal(await page.locator('#radius').inputValue(),'5');
  await page.getByRole('button',{name:'Current World',exact:true}).click();assert.deepEqual(await page.locator('#map-frame').evaluate(el=>el.querySelector('svg').getAttribute('viewBox')),panBefore);
- // Real touch input pans the same bounded viewBox, without changing selection.
- const cdp=await context.newCDPSession(page),touchBox=await page.locator('#map-frame').boundingBox();
- await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:touchBox.x+100,y:touchBox.y+100}]});
- await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:touchBox.x+160,y:touchBox.y+160}]});
- await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
- assert.notEqual(await page.locator('#map-frame svg').getAttribute('viewBox'),panBefore);await page.getByRole('button',{name:'Current World',exact:true}).click();assert.equal(await page.locator('#map-frame svg').getAttribute('viewBox'),panBefore);await cdp.detach();
  const edgeBox=await page.locator('#map-frame').boundingBox();await page.mouse.move(edgeBox.x+1,edgeBox.y+10);await page.mouse.down();await page.mouse.move(edgeBox.x-2,edgeBox.y+10);await page.mouse.up();await page.mouse.move(edgeBox.x+30,edgeBox.y+10);assert.deepEqual(await page.locator('#map-frame').evaluate(el=>el.querySelector('svg').getAttribute('viewBox')),panBefore);
  await page.locator('#radius').fill('2');await page.locator('#radius').dispatchEvent('change');await page.getByText(/Reference map loaded · radius 2\./).waitFor();
  await page.getByRole('button',{name:'Inspect Test neighbour <img src=x>',exact:true}).focus();await page.keyboard.press('Enter');assert.equal(await page.locator('#world-details h2').textContent(),nearby.Name);
  await page.screenshot({path:artifacts+'player-map-reference-desktop.png',fullPage:true});
  for(const width of [390,320]){await page.setViewportSize({width,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);}
  await page.screenshot({path:artifacts+'player-map-reference-phone.png',fullPage:true});
- mode='delay';await page.locator('#radius').fill('5');await page.locator('#radius').dispatchEvent('change');await page.waitForFunction(()=>document.querySelector('#map-status').textContent.includes('Loading'));while(!release)await new Promise(r=>setTimeout(r,10));await page.locator('#radius').fill('0');await page.locator('#radius').dispatchEvent('change');await page.getByText(/Reference map loaded · radius 0\./).waitFor();release();await page.waitForTimeout(50);assert.equal(await page.locator('[data-world]').count(),1);
+ // Arrow keys emit input and update immediately without a change/blur event.
+ await page.locator('#radius').focus();await page.keyboard.press('ArrowRight');assert.equal(await page.locator('#radius-value').textContent(),'3');assert.equal(await page.locator('.hex-grid').count(),37);await page.getByText(/Reference map loaded · radius 3\./).waitFor();
+ await page.locator('#map-frame').scrollIntoViewIfNeeded();const wheelBox=await page.locator('#map-frame').boundingBox(),scrollBefore=await page.evaluate(()=>scrollY),fixedView=await page.locator('#map-frame svg').getAttribute('viewBox');
+ await page.mouse.move(wheelBox.x+wheelBox.width/2,wheelBox.y+wheelBox.height/2);await page.mouse.wheel(0,120);await page.waitForFunction(before=>scrollY>before,scrollBefore);assert.equal(await page.locator('#map-frame svg').getAttribute('viewBox'),fixedView);
+ assert.equal(await page.locator('#map-frame').evaluate(el=>getComputedStyle(el).touchAction),'auto');
+ await page.locator('#map-frame').scrollIntoViewIfNeeded();const touchBox=await page.locator('#map-frame').boundingBox(),touchStart=await page.evaluate(()=>scrollY),cdp=await context.newCDPSession(page);
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:touchBox.x+touchBox.width/2,y:touchBox.y+touchBox.height*.7}]});
+ for(let i=1;i<=5;i++)await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:touchBox.x+touchBox.width/2,y:touchBox.y+touchBox.height*.7-i*15}]});
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await page.waitForFunction(before=>scrollY>before,touchStart);await cdp.detach();assert.equal(await page.locator('#map-frame svg').getAttribute('viewBox'),fixedView);
+ mode='delay';await page.locator('#radius').fill('5');assert.equal(await page.locator('.hex-grid').count(),91);await page.locator('#radius').dispatchEvent('change');await page.waitForFunction(()=>document.querySelector('#map-status').textContent.includes('Loading'));while(!release)await new Promise(r=>setTimeout(r,10));await page.locator('#radius').fill('0');await page.locator('#radius').dispatchEvent('change');await page.getByText(/Reference map loaded · radius 0\./).waitFor();release();await page.waitForTimeout(50);assert.equal(await page.locator('[data-world]').count(),1);
  mode='no-borders';await page.getByRole('button',{name:'Retry map and details'}).click();await page.getByText(/Political borders unavailable/).waitFor();assert.equal(await page.locator('.territory-border').count(),0);
  mode='failure';await page.goto('about:blank');await page.goto(new URL('player-map-preview.html',base).href);await page.getByText(/Reference map unavailable/).waitFor();assert.equal(await page.locator('#map-frame svg').count(),0);
  mode='success';await page.getByRole('button',{name:'Retry map and details'}).click();await loaded();assert.equal(await page.locator('#radius').inputValue(),'2');assert.deepEqual(errors,[]);
@@ -62,5 +67,5 @@ try{
  mode='edge';await page.goto(new URL('player-map-preview.html?sector=Spinward+Marches&hex=3210',base).href);await loaded();assert.ok(requests.some(url=>url.pathname.endsWith('/metadata')&&url.searchParams.get('sector')==='Deneb'));
  mode='unknown-hydro';await page.goto(new URL('player-map-preview.html',base).href);await loaded();assert.equal(await page.locator('.unknown-disc').count(),1);assert.equal(await page.locator('.water-disc').count(),0);
  mode='mismatch';await page.goto(new URL('player-map-preview.html',base).href);await page.getByText(/Reference map unavailable/).waitFor();await page.getByRole('button',{name:'Retry map and details'}).click();await page.getByText(/Reference map unavailable/).waitFor();assert.equal(await page.locator('[data-world]').count(),0);
- console.log('Interactive reference map passed: radius0–6, all UWP fields, borders/allegiance, selection/reset, race/failure handling, mobile layout and storage isolation. Mocked API data; not live-source certification.');
+ console.log('Interactive reference map passed: radius0–6, all UWP fields, borders/allegiance, fixed center/input updates/page scrolling, selection/reset, race/failure handling, mobile layout and storage isolation. Mocked API data; not live-source certification.');
 }finally{release?.();await browser.close();}

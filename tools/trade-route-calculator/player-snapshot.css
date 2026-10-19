@@ -45,3 +45,15 @@ dialog h2 {color:#172033;}
 dialog button {color:#fff;background:#245f76;border:0;border-radius:.3rem;}
 
 .snapshot-map iframe {display:block;width:100%;border:0;margin-top:1rem;background:#101e2a;}
+
+.cargo-section th:first-child,.cargo-section td:first-child {width:25%;}
+.cargo-section th:nth-child(2) {width:10%;}
+.cargo-section > p {font-size:.85rem;color:#b4ccd9;}
+@media(max-width:700px) {
+ .cargo-section thead {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);}
+ .cargo-section tbody,.cargo-section tr {display:block;}
+ .cargo-section tr {padding:.6rem 0;border-bottom:1px solid #395263;}
+ .cargo-section td,.cargo-section td:first-child {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:12px;width:auto;text-align:right;border:0;padding:5px 0;}
+ .cargo-section td::before {content:attr(data-label);text-align:left;color:#b4ccd9;font-size:.85rem;}
+ .cargo-section td > div {min-width:0;}
+}

@@ -20,17 +20,7 @@ function showWorld(world) {
  for(const el of frame.querySelectorAll('[data-world]'))el.setAttribute('aria-pressed',String(el.dataset.world===world.id));
 }
 function centerMap(){if(svg&&homeBox)svg.setAttribute('viewBox',homeBox.join(' '));}
-function panMap(dx,dy,start){if(!svg||!homeBox)return;const factor=Math.max(homeBox[2]/svg.clientWidth,homeBox[3]/svg.clientHeight);const clamp=(n,base,span)=>Math.max(base-span*.45,Math.min(base+span*.45,n));svg.setAttribute('viewBox',[clamp(start[0]-dx*factor,homeBox[0],homeBox[2]),clamp(start[1]-dy*factor,homeBox[1],homeBox[3]),...homeBox.slice(2)].join(' '));}
 function centerOrigin(){if(!anchor)return;showWorld(anchor);centerMap();}
-// Bounded panning only scrolls already loaded rings; it never changes the origin.
-let drag=null,suppressClick=false;
-frame.addEventListener('pointerdown',event=>{if(event.button!==0||!svg||!homeBox)return;drag={id:event.pointerId,x:event.clientX,y:event.clientY,box:[svg.viewBox.baseVal.x,svg.viewBox.baseVal.y],moved:false};});
-frame.addEventListener('pointermove',event=>{if(!drag||drag.id!==event.pointerId)return;if(!(event.buttons&1)){drag=null;return;}const dx=event.clientX-drag.x,dy=event.clientY-drag.y;if(!drag.moved&&Math.hypot(dx,dy)>5){drag.moved=true;frame.setPointerCapture(event.pointerId);}if(drag.moved){panMap(dx,dy,drag.box);}});
-frame.addEventListener('pointerup',event=>{if(!drag||drag.id!==event.pointerId)return;suppressClick=drag.moved;drag=null;if(frame.hasPointerCapture(event.pointerId))frame.releasePointerCapture(event.pointerId);setTimeout(()=>{suppressClick=false;},0);});
-frame.addEventListener('pointerleave',()=>{if(drag&&!drag.moved)drag=null;});
-frame.addEventListener('lostpointercapture',()=>{drag=null;});
-frame.addEventListener('pointercancel',()=>{drag=null;suppressClick=false;});
-frame.addEventListener('click',event=>{if(suppressClick){event.preventDefault();event.stopPropagation();}},true);
 let previousWidth=0;new ResizeObserver(()=>{if(frame.clientWidth!==previousWidth){previousWidth=frame.clientWidth;centerMap();}}).observe(frame);
 function draw(radius) {
  const scale=200,size=(radius*2+3)*scale,[cx,cy]=stagger(anchor);project=(x,y)=>[size/2+(x-cx)*scale*Math.sqrt(3)/2,size/2+(y-cy)*scale];
@@ -43,7 +33,8 @@ function draw(radius) {
  const footprint=svgNode('g',{'clip-path':'url(#reference-footprint)',class:'map-footprint'});footprint.append(svgNode('rect',{x:left,y:top,width,height,fill:'#080b10'}));
  const territories=svgNode('g');territories.innerHTML=territoryMarkup({sectors,metadata,project});footprint.append(territories);
  for(const points of cells)footprint.append(svgNode('polygon',{points,class:'hex-grid'}));svg.append(footprint);
- for(const world of worlds){const [x,y]=project(...stagger(world)),g=svgNode('g',{transform:`translate(${x} ${y})`,role:'button',tabindex:0,'aria-label':'Inspect '+world.name,'aria-pressed':'false','data-world':world.id,class:'world-target'});
+ const visible=worlds.filter(world=>hexDistance(anchor,world)<=radius);
+ for(const world of visible){const [x,y]=project(...stagger(world)),g=svgNode('g',{transform:`translate(${x} ${y})`,role:'button',tabindex:0,'aria-label':'Inspect '+world.name,'aria-pressed':'false','data-world':world.id,class:'world-target'});
   // Original SVG primitives following Traveller Map's conventional label positions.
   // Data alone determines symbols; unsupported base codes remain literal codes.
   const facts=referenceFacts(world),label=(text,x,y,cls)=>{const t=svgNode('text',{x,y,'text-anchor':'middle',class:cls});t.textContent=text;g.append(t);return t;};
@@ -69,11 +60,11 @@ function draw(radius) {
   const title=svgNode('title');title.textContent=world.name+' · '+referenceFacts(world).allegiance;g.append(title);
   g.addEventListener('click',()=>showWorld(world));g.addEventListener('keydown',event=>{if(['Enter',' '].includes(event.key)){event.preventDefault();showWorld(world);}});svg.append(g);
  }
- frame.replaceChildren(svg);showWorld(worlds.find(w=>w.id===selected?.id)||anchor);requestAnimationFrame(()=>{const keep=selected;centerOrigin();if(keep)showWorld(keep);});
+ frame.replaceChildren(svg);showWorld(visible.find(w=>w.id===selected?.id)||anchor);requestAnimationFrame(()=>{const keep=selected;centerOrigin();if(keep)showWorld(keep);});
 }
 async function load() {
  const radius=Number(control.value);if(!Number.isInteger(radius)||radius<0||radius>6)return;output.value=String(radius);const current=++generation;controller?.abort();controller=new AbortController();const requestController=controller,signal=requestController.signal,timer=setTimeout(()=>requestController.abort(),12000);
- status.textContent='Loading nearby systems…';frame.replaceChildren();details.replaceChildren(node('p','Loading reference data…'));document.getElementById('current-world').disabled=true;
+ status.textContent='Loading nearby systems…';if(anchor)draw(radius);else {frame.replaceChildren();details.replaceChildren(node('p','Loading reference data…'));}document.getElementById('current-world').disabled=!anchor;
  try {
   if(!anchor){const data=await read('jumpworlds',{...origin,jump:0},signal);if(!Array.isArray(data.Worlds)||data.Worlds.length!==1)throw Error('Origin unavailable.');const candidate=referenceWorld(data.Worlds[0]);if(candidate.hex!==origin.hex||candidate.sector.toLowerCase()!==origin.sector.toLowerCase())throw Error('Origin mismatch.');anchor=candidate;document.getElementById('origin-label').textContent='Snapshot reference origin: '+anchor.name+' · '+anchor.sector+' / '+anchor.hex;}
   const data=radius===0?{Worlds:[]} : await read('jumpworlds',{x:anchor.x,y:anchor.y,jump:radius},signal);if(!Array.isArray(data.Worlds)||data.Worlds.length>127)throw Error('Invalid world list.');
@@ -92,6 +83,6 @@ async function load() {
  }catch{if(current===generation){frame.replaceChildren();details.replaceChildren(node('p','World reference unavailable. Frozen snapshot data is unchanged.'));status.textContent='Reference map unavailable. Check your connection and retry. Snapshot information is unaffected.';}}
  finally{clearTimeout(timer);}
 }
-control.addEventListener('input',()=>{output.value=control.value;});control.addEventListener('change',load);
+control.addEventListener('input',load);
 document.getElementById('map-retry').addEventListener('click',load);document.getElementById('current-world').addEventListener('click',centerOrigin);
 try{origin=referenceOrigin(new URLSearchParams(location.search));load();}catch(error){status.textContent=error.message;control.disabled=true;document.getElementById('map-retry').disabled=true;}

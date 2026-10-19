@@ -174,9 +174,7 @@ unchanged. For example 31.5 / 40.25 fuel displays 31 / 40 t while the bar still 
 31.5 / 40.25. No new snapshot link or data migration is needed.
 
 The map footprint follows complete hex rings, with transparent corners and source
-territory clipped to those cells. The map stays in its own visible area. Mouse and touch dragging pan within
-the already loaded rings; Current World recenters the origin. Panning never fetches
-a new region or changes radius, selection or snapshot state. Radius remains 0–6 with 0 as origin only.
+territory clipped to those cells. The map stays in its own visible area. The map stays centered on the snapshot origin. Slider input immediately refits the footprint while reference requests load. Selecting a world changes only its detail panel; Current World restores the origin details. Radius remains 0–6 with 0 as origin only.
 
 All radii retain hex numbers, starport letters, UWP, world names and source-backed symbols. Fewer rings enlarge the entire map, including labels and discs. Dense 5–6-ring views, especially on phones, require selecting a world for readable details.
 
@@ -205,9 +203,7 @@ Political boundaries and shading still come from the existing source metadata en
 no trade or communication routes are invented or copied from the screenshots.
 
 The complete hex footprint fits a fixed 580px desktop panel (responsive phone height)
-at every radius. SVG viewBox panning is bounded, works with mouse/touch, and Current
-World resets it. Touch gestures inside the map pan it; scroll the surrounding page
-outside the map. No wheel zoom is added: the ring selector controls the fitted scale.
+at every radius. Panning has been removed by the subsequent approved revision. Touch and wheel gestures scroll the surrounding page normally. No wheel zoom is added: the ring selector controls the fitted scale.
 
 Traveller Map's renderer and symbol table were checked in RenderContext.cs,
 RenderUtil.cs and Stylesheet.cs; its source is Apache-2.0, with separate game/data
@@ -216,7 +212,30 @@ code, not a copied screenshot or server-rendered image. See licenses/traveller-m
 
 Validation: 38 focused native tests and both player browser suites pass. Map tests
 cover all seven radii at 1100/760/390/320px widths, constant panel height, increasing
-disc size with fewer rings, mouse/touch pan/reset, source-backed symbols and unknown
+disc size with fewer rings, fixed-center selection/reset and normal page scrolling, source-backed symbols and unknown
 hydrographics, request failures/races, inert hostile names, and frozen snapshot/storage
 isolation. Screenshots use mocked source data; live Traveller Map transport remains
 blocked in this environment and is not certified by these tests.
+
+## Cargo values and fixed map candidate
+
+Cargo aboard now shows each separate lot's tons, recorded retail/base Credits per
+ton, recorded actual purchase percentage, and paid Credits per ton plus paid lot total for the tons shown. Paid unit/lot costs
+follow link rounding; retail and percentage are not reconstructed from those rounded
+amounts. Missing provenance, including old links and Other goods, displays Unknown.
+Other local estimates cannot fill or overwrite these fields. Desktop uses six
+columns; phones show labeled rows per lot. See PLAYER_SNAPSHOT_CODEC.md for codec 5.
+
+The map no longer pans or scrolls internally. The input event immediately refits the
+0–6-ring footprint using known worlds while fresh reference data loads; aborted or
+stale responses cannot replace a newer selection. World clicks and keyboard selection
+leave the center fixed. Wheel/touch gestures scroll the page. Desktop map/control
+and world-details panels have equal outer widths and heights, with aligned edges;
+phones retain natural stacked panels.
+
+Validation: 42 focused native tests, snapshot and map browser suites, and independent
+review. New coverage includes purchase rounding/unknown/Other/legacy round trips,
+local-annotation separation, 320–1440px cargo layout, immediate keyboard/input ring
+updates during delayed requests, fixed viewBox after clicks/drags, real touch/wheel
+page scrolling, and equal desktop panel geometry. Screenshots use synthetic cargo
+and mocked map data; no private campaign information is included.
