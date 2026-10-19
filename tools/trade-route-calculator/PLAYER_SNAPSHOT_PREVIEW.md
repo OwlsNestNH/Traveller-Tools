@@ -125,10 +125,10 @@ is independently tested and disclosed in its API.
 
 The fresh synthetic example now uses **Regina, Spinward Marches / 1910**. Other ship,
 cargo and expense data remain synthetic. An explicit canonical `world.mapReference`
-allows the viewer to open a separate map tab. Old links retain their original world
+allows the viewer to show the map inline, with an optional separate-page link. Old links retain their original world
 and have no inferred map reference: Port Meridian is never silently relocated.
 
-The slider has integer steps 0–5, default 2. Radius 0 shows the snapshot origin only.
+The slider has integer steps 0–6, default 2. Radius 0 shows the snapshot origin only.
 Click or keyboard-activate any displayed system for all eight UWP fields in standard
 order, readable meanings, trade codes, travel zone, bases, gas giants and allegiance.
 Current World restores the immutable origin selection/view without resetting radius.
@@ -158,7 +158,38 @@ and [mocked phone](verification/player-snapshot-review/map-reference-mocked-phon
 show interactions and layout. The live-attempt screenshots show the actual unavailable
 state. No invented map is substituted when requests fail.
 
-The focused suite has 34 native tests. Both browser suites cover snapshot navigation,
+The focused suite has 38 native tests. Both browser suites cover snapshot navigation,
 isolation, all map radii, selection/reset, malformed text, request races, partial
 metadata, empty neighboring sectors and invalid-origin retries. Independent review
 found the empty-sector edge case, now fixed and regression tested.
+
+## Whole-unit display rounding
+
+Fuel quantities and tank-capacity labels round **down**. Cargo, offers and reserved
+space labels round **up** using exact decimal-string arithmetic. LSS stock labels round **down**;
+internal days keep their existing presentation. Explicit quantities in expense
+basis text follow these rules, while credit rates and LSS consumption rates remain
+unchanged. A notice explains that rounded labels may not add up or match costs.
+Underlying snapshot data, link bytes, prices, inventory and meter values remain
+unchanged. For example 31.5 / 40.25 fuel displays 31 / 40 t while the bar still uses
+31.5 / 40.25. No new snapshot link or data migration is needed.
+
+The map footprint follows complete hex rings, with transparent corners and source
+territory clipped to those cells. The map stays in its own visible area. Mouse drag and native scrolling pan within
+the already loaded rings; Current World recenters the origin. Panning never fetches
+a new region or changes radius, selection or snapshot state. Radius remains 0–6 with 0 as origin only.
+
+In-hex UWP labels appear at radii 0–2. Radii 3–6 use compact names and base/gas-giant/zone symbols; every radius retains the full decoded click panel.
+
+## Always-visible snapshot map area
+
+Snapshots with an explicit canonical reference now show the map directly in a
+dedicated, always-visible section of the player screen. The same map page is reused
+in a same-origin frame; it receives only public sector/hex identity, never cargo,
+prices, annotations or campaign data. Its selected-world panel stays adjacent on
+desktop and below on phones. The optional separate-page link remains available.
+The frame resizes to its content with a bounded height; observers disconnect on
+snapshot replacement, and invalid/legacy snapshots without a reference do not
+retain a stale map. All existing read-only and storage boundaries remain intact.
+
+[Inline desktop (mocked map source)](verification/player-snapshot-review/inline-map-mocked-desktop.png) · [Inline phone (mocked map source)](verification/player-snapshot-review/inline-map-mocked-phone.png).

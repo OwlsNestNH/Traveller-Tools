@@ -8,6 +8,7 @@ const browser = await chromium.launch({headless:true, ...(process.env.TRAVELLER_
 const artifacts = fileURLToPath(new URL('../verification-artifacts/', import.meta.url));
 await mkdir(artifacts, {recursive:true});
 const context = await browser.newContext({viewport:{width:1440,height:1100}});
+await context.route('https://travellermap.com/**',route=>route.abort('failed'));
 const page = await context.newPage(), errors = [], requests = [];
 page.on('pageerror', error => errors.push(error.message));
 page.on('request', request => requests.push(request.url()));
@@ -28,7 +29,28 @@ try {
   await page.getByText('21 days / 100 days capacity',{exact:true}).waitFor();
   const mapLink=new URL(await page.getByRole('link',{name:'Open nearby-world reference'}).getAttribute('href'));assert.equal(mapLink.searchParams.get('sector'),'Spinward Marches');assert.equal(mapLink.searchParams.get('hex'),'1910');
   await page.getByText('Life support overflow · reserved space',{exact:true}).waitFor();
-  await page.getByText(/150 LSS of exact reserve stock/).waitFor();
+  await page.getByText(/150 LSS of reserve stock/).waitFor();
+  // Presentation rounding cannot alter exact source quantities or meter ratios.
+  const displayChecks=await page.evaluate(async()=>{
+    const {renderPlayerSnapshot}=await import('./js/player-snapshot-view.mjs');
+    const {playerSnapshotFixture}=await import('./js/player-snapshot-fixture.mjs');
+    const root=document.getElementById('snapshot'),data=structuredClone(playerSnapshotFixture);
+    data.ship.fuel={current:'31.5',capacity:'40.25'};data.ship.lifeSupport.cargoLss='150.75';
+    data.buy.offers[0].tons='0.000001';data.sell.offers[0].tons='8.5';
+    const before=JSON.stringify(data);renderPlayerSnapshot(root,data);
+    const unchanged=before===JSON.stringify(data),text=root.textContent,meter=root.querySelector('meter'),exact={value:meter.value,max:meter.max};
+    const tonCells=[...root.querySelectorAll('section')].filter(s=>/^(Cargo aboard|Buy offers|Sell offers)/.test(s.querySelector('h2').textContent)).map(s=>[...s.querySelectorAll('tbody tr')].map(row=>row.children[1].textContent));
+    const values=[];
+    for(const fuel of [{current:'0.0',capacity:'0'},{current:'32.000000',capacity:'40'},{current:null,capacity:null}]){
+      data.ship.fuel=fuel;renderPlayerSnapshot(root,data);values.push(root.textContent);
+    }
+    renderPlayerSnapshot(root,playerSnapshotFixture);
+    return {text,exact,values,unchanged,tonCells};
+  });
+  assert.deepEqual(displayChecks.tonCells,[['12','8','4','6'],['1','13','30'],['9','9','6']]);assert.equal(displayChecks.unchanged,true);assert.deepEqual(displayChecks.exact,{value:31.5,max:40.25});
+  assert.match(displayChecks.text,/31 t \/ 40 t capacity/);assert.match(displayChecks.text,/150 LSS of reserve stock/);assert.doesNotMatch(displayChecks.text,/31\.5 t|40\.25 t|150\.75 LSS|3\.5 t/);
+  assert.match(displayChecks.text,/Planned 3 t refined top-up at Cr500\/t/);assert.match(displayChecks.text,/21 days \/ 100 days capacity/);assert.match(displayChecks.text,/Display rounding may make amounts differ/);
+  assert.match(displayChecks.values[0],/0 t \/ 0 t capacity/);assert.match(displayChecks.values[1],/32 t \/ 40 t capacity/);assert.match(displayChecks.values[2],/Unknown \/ Unknown capacity/);assert.doesNotMatch(displayChecks.values[2],/Unknown t/);
   assert.equal(await page.locator('details').getAttribute('open'), null);
   await page.getByText('Cr 40,250', {exact:true}).waitFor();
   await page.getByText('Cr 26,750', {exact:true}).waitFor();
@@ -91,7 +113,7 @@ try {
     renderPlayerSnapshot(root, input);
     return {literal, injected, sections, rejected, stale, empty:root.textContent.includes('No cargo aboard.'), unchecked:root.textContent.includes('Not checked.'), expired:root.textContent.includes('Expired.')};
   });
-  assert.deepEqual(results, {literal:true,injected:0,sections:7,rejected:true,stale:false,empty:true,unchecked:true,expired:true});
+  assert.deepEqual(results, {literal:true,injected:0,sections:8,rejected:true,stale:false,empty:true,unchecked:true,expired:true});
   const unknowns = await page.evaluate(async () => {
     const {renderPlayerSnapshot} = await import('./js/player-snapshot-view.mjs');
     const {playerSnapshotFixture} = await import('./js/player-snapshot-fixture.mjs');
@@ -117,7 +139,7 @@ try {
   await page.getByRole('link',{name:'Open player snapshot'}).click();await page.getByText('Cr 127,450',{exact:true}).waitFor();await page.getByText('Cr 40,300',{exact:true}).waitFor();
   await page.goto(url+'#bad');await page.getByRole('alert').waitFor();await page.goBack();await page.getByText('Cr 127,450',{exact:true}).waitFor();await page.goForward();await page.getByRole('alert').waitFor();await page.goBack();await page.reload();await page.getByText('Cr 127,450',{exact:true}).waitFor();
   assert.deepEqual(errors, []);
-  assert.ok(requests.every(request => new URL(request).origin === new URL(base).origin));
+  assert.ok(requests.every(request => new URL(request).origin === new URL(base).origin || new URL(request).origin==='https://travellermap.com'));
   // A separate page without access traps confirms saved bytes remain intact.
   const checker = await context.newPage(); await checker.goto(url);
   assert.deepEqual(await checker.evaluate(() => ({local:localStorage['traveller-trade-route-calculator:v1'], session:sessionStorage.sentinel})), {local:'synthetic-sentinel',session:undefined});

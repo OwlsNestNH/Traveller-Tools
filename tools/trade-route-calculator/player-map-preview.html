@@ -13,8 +13,8 @@
 <main>
 <section class="map-panel">
 <label for="radius">Hex radius <output id="radius-value" for="radius">2</output></label>
-<input id="radius" type="range" min="0" max="5" step="1" value="2">
-<p>Click a system for a small reference panel. Radius 0 shows the current world only. Scroll the map to inspect the outer hexes.</p><p id="map-status" role="status">Loading reference map…</p>
+<input id="radius" type="range" min="0" max="6" step="1" value="2">
+<p>Click a system for a small reference panel. Radius 0 shows the current world only; each step adds one complete hex ring. The map stays visible in its own area. Drag or scroll within the loaded rings to inspect outer hexes. Current World recenters the map.</p><p class="reference-note">UWP labels appear at radii 0–2; larger views use names and symbols. B: base codes · G: gas giants · A/R: travel zone · ?: unknown. Select any system for full details.</p><p id="map-status" role="status">Loading reference map…</p>
 <div id="map-frame" aria-label="Reference map"></div>
 <button id="current-world" type="button" disabled>Current World</button>
 <button id="map-retry" type="button">Retry map and details</button>
