@@ -4,7 +4,7 @@ import {territoryMarkup} from './map-territory.mjs';
 const control=document.getElementById('radius'),output=document.getElementById('radius-value'),status=document.getElementById('map-status'),frame=document.getElementById('map-frame'),details=document.getElementById('world-details');
 const node=(tag,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
 const svgNode=(tag,attrs={})=>{const n=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [k,v]of Object.entries(attrs))n.setAttribute(k,String(v));return n;};
-let origin,anchor,selected,worlds=[],metadata=new Map(),sectors=[],generation=0,controller,project,svg;
+let origin,anchor,selected,worlds=[],metadata=new Map(),sectors=[],generation=0,controller,project,svg,homeBox;
 async function read(path,params,signal,limit=1000000) {
  const url=new URL('https://travellermap.com/api/'+path);url.search=new URLSearchParams({...params,milieu:'M1105'});
  const response=await fetch(url,{signal,credentials:'omit',referrerPolicy:'no-referrer',headers:{Accept:'application/json'}});if(!response.ok)throw Error('Reference request failed.');
@@ -19,12 +19,13 @@ function showWorld(world) {
  const extra=node('dl');extra.className='reference-facts';for(const [label,value]of [['Travel zone',facts.zone],['Bases',facts.bases],['Gas giants',facts.gasGiants==='0'?'None recorded':facts.gasGiants],['Trade codes',facts.tradeCodes],['Allegiance',facts.allegiance]])extra.append(node('dt',label),node('dd',value));details.append(extra);
  for(const el of frame.querySelectorAll('[data-world]'))el.setAttribute('aria-pressed',String(el.dataset.world===world.id));
 }
-function centerMap(){if(!anchor||!project)return;const [x,y]=project(...stagger(anchor)),box=svg?.viewBox.baseVal;if(!box)return;const scale=svg.clientWidth/box.width;frame.scrollLeft=Math.max(0,(x-box.x)*scale-frame.clientWidth/2);frame.scrollTop=Math.max(0,(y-box.y)*scale-frame.clientHeight/2);}
+function centerMap(){if(svg&&homeBox)svg.setAttribute('viewBox',homeBox.join(' '));}
+function panMap(dx,dy,start){if(!svg||!homeBox)return;const factor=Math.max(homeBox[2]/svg.clientWidth,homeBox[3]/svg.clientHeight);const clamp=(n,base,span)=>Math.max(base-span*.45,Math.min(base+span*.45,n));svg.setAttribute('viewBox',[clamp(start[0]-dx*factor,homeBox[0],homeBox[2]),clamp(start[1]-dy*factor,homeBox[1],homeBox[3]),...homeBox.slice(2)].join(' '));}
 function centerOrigin(){if(!anchor)return;showWorld(anchor);centerMap();}
 // Bounded panning only scrolls already loaded rings; it never changes the origin.
 let drag=null,suppressClick=false;
-frame.addEventListener('pointerdown',event=>{if(event.pointerType!=='mouse'||event.button!==0)return;drag={id:event.pointerId,x:event.clientX,y:event.clientY,left:frame.scrollLeft,top:frame.scrollTop,moved:false};});
-frame.addEventListener('pointermove',event=>{if(!drag||drag.id!==event.pointerId)return;if(!(event.buttons&1)){drag=null;return;}const dx=event.clientX-drag.x,dy=event.clientY-drag.y;if(!drag.moved&&Math.hypot(dx,dy)>5){drag.moved=true;frame.setPointerCapture(event.pointerId);}if(drag.moved){frame.scrollLeft=drag.left-dx;frame.scrollTop=drag.top-dy;}});
+frame.addEventListener('pointerdown',event=>{if(event.button!==0||!svg||!homeBox)return;drag={id:event.pointerId,x:event.clientX,y:event.clientY,box:[svg.viewBox.baseVal.x,svg.viewBox.baseVal.y],moved:false};});
+frame.addEventListener('pointermove',event=>{if(!drag||drag.id!==event.pointerId)return;if(!(event.buttons&1)){drag=null;return;}const dx=event.clientX-drag.x,dy=event.clientY-drag.y;if(!drag.moved&&Math.hypot(dx,dy)>5){drag.moved=true;frame.setPointerCapture(event.pointerId);}if(drag.moved){panMap(dx,dy,drag.box);}});
 frame.addEventListener('pointerup',event=>{if(!drag||drag.id!==event.pointerId)return;suppressClick=drag.moved;drag=null;if(frame.hasPointerCapture(event.pointerId))frame.releasePointerCapture(event.pointerId);setTimeout(()=>{suppressClick=false;},0);});
 frame.addEventListener('pointerleave',()=>{if(drag&&!drag.moved)drag=null;});
 frame.addEventListener('lostpointercapture',()=>{drag=null;});
@@ -32,22 +33,39 @@ frame.addEventListener('pointercancel',()=>{drag=null;suppressClick=false;});
 frame.addEventListener('click',event=>{if(suppressClick){event.preventDefault();event.stopPropagation();}},true);
 let previousWidth=0;new ResizeObserver(()=>{if(frame.clientWidth!==previousWidth){previousWidth=frame.clientWidth;centerMap();}}).observe(frame);
 function draw(radius) {
- const scale=radius<=2?112:72,size=(radius*2+3)*scale,[cx,cy]=stagger(anchor);project=(x,y)=>[size/2+(x-cx)*scale*Math.sqrt(3)/2,size/2+(y-cy)*scale];
+ const scale=200,size=(radius*2+3)*scale,[cx,cy]=stagger(anchor);project=(x,y)=>[size/2+(x-cx)*scale*Math.sqrt(3)/2,size/2+(y-cy)*scale];
  svg=svgNode('svg',{viewBox:`0 0 ${size} ${size}`,width:size,height:size,role:'group','aria-label':'Nearby systems reference map'});
  const cells=[],vertices=[];
  for(let x=anchor.x-radius;x<=anchor.x+radius;x++)for(let y=anchor.y-radius-1;y<=anchor.y+radius+1;y++)if(hexDistance(anchor,{x,y})<=radius){const [px,py]=project(...stagger({x,y})),r=scale/Math.sqrt(3);const corners=Array.from({length:6},(_,i)=>[px+r*Math.cos(i*Math.PI/3),py+r*Math.sin(i*Math.PI/3)]);vertices.push(...corners);cells.push(corners.map(p=>p.join(',')).join(' '));}
  const left=Math.min(...vertices.map(p=>p[0]))-2,top=Math.min(...vertices.map(p=>p[1]))-2,width=Math.max(...vertices.map(p=>p[0]))-left+2,height=Math.max(...vertices.map(p=>p[1]))-top+2;
- svg.setAttribute('viewBox',`${left} ${top} ${width} ${height}`);svg.setAttribute('width',width);svg.setAttribute('height',height);
+ homeBox=[left,top,width,height];svg.setAttribute('viewBox',homeBox.join(' '));svg.setAttribute('width',width);svg.setAttribute('height',height);
  const defs=svgNode('defs'),clip=svgNode('clipPath',{id:'reference-footprint'});for(const points of cells)clip.append(svgNode('polygon',{points}));defs.append(clip);svg.append(defs);
- const footprint=svgNode('g',{'clip-path':'url(#reference-footprint)',class:'map-footprint'});footprint.append(svgNode('rect',{x:left,y:top,width,height,fill:'#f8fafc'}));
+ const footprint=svgNode('g',{'clip-path':'url(#reference-footprint)',class:'map-footprint'});footprint.append(svgNode('rect',{x:left,y:top,width,height,fill:'#080b10'}));
  const territories=svgNode('g');territories.innerHTML=territoryMarkup({sectors,metadata,project});footprint.append(territories);
  for(const points of cells)footprint.append(svgNode('polygon',{points,class:'hex-grid'}));svg.append(footprint);
  for(const world of worlds){const [x,y]=project(...stagger(world)),g=svgNode('g',{transform:`translate(${x} ${y})`,role:'button',tabindex:0,'aria-label':'Inspect '+world.name,'aria-pressed':'false','data-world':world.id,class:'world-target'});
-  g.append(svgNode('circle',{r:radius<=2?32:22,class:world.id===anchor.id?'origin-disc':'world-disc'}));
-  const detailed=radius<=2,facts=referenceFacts(world),name=svgNode('text',{y:detailed?-20:-8,'text-anchor':'middle'});name.textContent=world.name.length>10?world.name.slice(0,9)+'…':world.name;
-  const code=svgNode('text',{y:detailed?8:7,'text-anchor':'middle',class:'allegiance-label'});code.textContent=(world.raw.Allegiance||'?').slice(0,8);g.append(name,code);
-  if(detailed){const uwp=svgNode('text',{y:-6,'text-anchor':'middle',class:'world-uwp'});uwp.textContent=world.uwp;g.append(uwp);}
-  const symbols=svgNode('text',{y:detailed?23:22,'text-anchor':'middle',class:'world-symbols'});symbols.textContent=(world.raw.Bases===undefined?'B?':world.raw.Bases?'B'+world.raw.Bases.slice(0,4):'B–')+' G'+(facts.gasGiants==='Unknown'?'?':facts.gasGiants)+(world.raw.Zone==='A'?' A':world.raw.Zone==='R'?' R':'');g.append(symbols);
+  // Original SVG primitives following Traveller Map's conventional label positions.
+  // Data alone determines symbols; unsupported base codes remain literal codes.
+  const facts=referenceFacts(world),label=(text,x,y,cls)=>{const t=svgNode('text',{x,y,'text-anchor':'middle',class:cls});t.textContent=text;g.append(t);return t;};
+  g.append(svgNode('circle',{r:86,class:'world-hit'}));
+  if(['A','R'].includes(world.raw.Zone))g.append(svgNode('path',{d:'M -75 29 A 80 80 0 1 1 75 29',class:'zone-arc zone-'+world.raw.Zone}));
+  const hydro=world.uwp[3],sizeCode=world.uwp[1];
+  if(sizeCode==='0'){
+   const belt=svgNode('g',{class:'world-belt'});for(const [bx,by]of [[-14,-8],[0,-10],[13,-7],[-20,4],[-6,4],[9,7],[21,3]])belt.append(svgNode('circle',{cx:bx,cy:by,r:3}));g.append(belt);
+  }else g.append(svgNode('circle',{r:20,class:'world-disc '+(hydro==='0'?'dry-disc':/^[1-9A]$/.test(hydro)?'water-disc':'unknown-disc')}));
+  label(world.hex,0,-88,'world-hex');label(world.uwp[0],0,-43,'world-starport');
+  label(world.uwp,0,48,'world-uwp');
+  const capital=/(?:^|\s)(?:Cp|Cs|Cx)(?:\s|$)/.test(world.raw.Remarks||'');
+  const name=label(world.name,0,78,'world-name'+(capital?' capital-name':''));
+  // Keep long names inside their cell without changing their underlying text.
+  if(world.name.length>12){name.setAttribute('textLength','150');name.setAttribute('lengthAdjust','spacingAndGlyphs');}
+  const symbols=svgNode('g',{class:'world-symbols'});g.append(symbols);
+  const bases=world.raw.Bases;
+  for(const [code,bx,by]of [['N',-50,-36],['S',-50,27]])if(bases?.includes(code)){const t=svgNode('text',{x:bx,y:by,'text-anchor':'middle',class:'base-symbol'});t.textContent=code==='N'?'★':'▲';symbols.append(t);}
+  const other=bases===undefined?'?':bases.replace(/[NS]/g,'');if(other){const t=svgNode('text',{x:-54,y:0,'text-anchor':'middle',class:'base-code'});t.textContent=other.slice(0,4);symbols.append(t);}
+  if(facts.gasGiants!=='Unknown'&&Number(facts.gasGiants)>0){const gas=svgNode('g',{transform:'translate(50 -35) rotate(-25)',class:'gas-giant'});gas.append(svgNode('circle',{r:8}),svgNode('ellipse',{rx:16,ry:5,fill:'none','stroke-width':2}));symbols.append(gas);}
+  if(facts.gasGiants==='Unknown')label('G?',51,-30,'base-code');
+  label((world.raw.Allegiance||'?').slice(0,8),53,15,'allegiance-label');
   const title=svgNode('title');title.textContent=world.name+' · '+referenceFacts(world).allegiance;g.append(title);
   g.addEventListener('click',()=>showWorld(world));g.addEventListener('keydown',event=>{if(['Enter',' '].includes(event.key)){event.preventDefault();showWorld(world);}});svg.append(g);
  }

@@ -1,36 +1,38 @@
-main { max-width:1100px; margin:auto; display:grid; grid-template-columns:minmax(0,640px) minmax(200px,1fr); gap:1rem; padding:1rem; }
-main section { min-width:0; padding:1rem; border:1px solid #64748b; border-radius:.5rem; }
-#radius { display:block; width:100%; margin:1rem 0; }
-#map-frame { overflow:auto; max-height:620px; background:#fff; border:1px solid #64748b; }
-#map-frame:empty { display:none; }
-#map-frame img { display:block; max-width:none; margin:auto; }
-button { padding:.6rem 1rem; margin-top:1rem; font:inherit; }
-@media(max-width:760px) {main {grid-template-columns:minmax(0,1fr);} #map-frame {max-height:470px;} }
-
-#map-frame {max-height:440px;background:#f8fafc;color:#172033;}
-#map-frame svg {display:block;max-width:none;}
-.hex-grid {fill:none;stroke:#a7b2c3;stroke-width:.6;pointer-events:none;}
-.world-target {cursor:pointer;font:11px system-ui;fill:#172033;}
-.world-disc {fill:#e9f0f8;stroke:#61718a;stroke-width:1;}
-.origin-disc {fill:#d3f3ee;stroke:#13675b;stroke-width:2;}
-.world-target[aria-pressed="true"] circle,.world-target:focus circle {stroke:#1755c7;stroke-width:3;fill:#d4e6ff;}
+main {max-width:1100px;margin:auto;display:grid;grid-template-columns:minmax(0,640px) minmax(200px,1fr);gap:1rem;padding:1rem;}
+main section {min-width:0;padding:1rem;border:1px solid #64748b;border-radius:.5rem;}
+#radius {display:block;width:100%;margin:1rem 0;}
+#map-frame {background:transparent;border:0;cursor:grab;}
+#map-frame:empty {display:none;}
+#map-frame:active {cursor:grabbing;}
+#map-frame svg {display:block;margin:auto;user-select:none;}
+button {padding:.6rem 1rem;margin-top:1rem;font:inherit;}
+.hex-grid {fill:none;pointer-events:none;}
+.world-target {cursor:pointer;}
 .world-target:focus {outline:none;}
-.allegiance-label {font-size:10px;}
 .uwp-fields {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem;margin:1rem 0;}
 .uwp-fields dt,.reference-facts dt {font-size:.78rem;font-weight:700;color:#a8cfdf;}
 .uwp-fields dd,.reference-facts dd {margin:.15rem 0 .45rem;font-size:.85rem;overflow-wrap:anywhere;}
 .reference-facts {margin:0;}.world-panel h2 {margin-top:0;font-size:1.2rem;}.world-panel p {font-size:.85rem;overflow-wrap:anywhere;}
 .reference-note {color:#aebdca;}.world-panel {align-self:start;}
-@media(max-width:760px){#map-frame {max-height:360px;} main {padding:.6rem;} main section {padding:.75rem;}}
-
-/* The map itself is the union of complete hex rings, with transparent corners. */
-#map-frame {background:transparent;border:0;max-height:620px;cursor:grab;}
-#map-frame:active {cursor:grabbing;}
-#map-frame svg {width:auto;max-width:none;height:auto;margin:auto;user-select:none;}
-@media(max-width:760px){#map-frame {max-height:470px;} #map-frame svg {width:auto;max-width:none;height:auto;}}
-
-.world-target {font-size:11px;} .world-uwp {font-size:10px;} .world-symbols {font-size:9px;}
-
+@media(max-width:760px){main {grid-template-columns:minmax(0,1fr);padding:.6rem;}main section {padding:.75rem;}}
 body.embedded-reference {padding:0;margin:0;max-width:none;}
 .embedded-reference > header,.embedded-reference > footer {display:none;}
 .embedded-reference main {padding:0;max-width:none;}
+
+/* One fixed viewport: the complete footprint is fitted at every ring count. */
+#map-frame {height:580px;max-height:none;overflow:hidden;touch-action:none;}
+#map-frame svg {width:100%;height:100%;max-width:100%;}
+.hex-grid {stroke:#66717d;stroke-width:.7;}
+.world-target {fill:#fff;font-family:Arial,sans-serif;}
+.world-hit {fill:transparent;stroke:none;}
+.world-disc {stroke:none;}.water-disc {fill:#00b9ed;}.dry-disc {fill:#fff;}.unknown-disc {fill:#88929e;}
+.world-belt {fill:#fff;}
+.world-target[aria-pressed="true"] .world-disc,.world-target:focus .world-disc {stroke:#fff;stroke-width:2;}
+.world-target[aria-pressed="true"] .world-hit,.world-target:focus .world-hit {fill:none;stroke:#a3c9ff;stroke-width:1;stroke-dasharray:3 4;}
+.world-target .gas-giant {fill:#fff;stroke:#fff;}
+.world-target .gas-giant circle {stroke:none;}
+.world-hex {font-size:14px;fill:#ccd1d9;}.world-starport {font-size:21px;font-weight:bold;}
+.world-uwp {font-size:15px;}.world-name {font-size:21px;font-weight:bold;}.capital-name {fill:#ff3045;}
+.base-symbol {font-size:24px;}.base-code,.allegiance-label {font-size:13px;}
+.zone-arc {fill:none;stroke-width:2.5;}.zone-A {stroke:#ffe000;}.zone-R {stroke:#ff3045;}
+@media(max-width:760px){#map-frame {height: min(470px, 100vw);max-height:none;}#map-frame svg {width:100%;height:100%;}}
