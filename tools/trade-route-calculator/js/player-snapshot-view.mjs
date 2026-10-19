@@ -50,6 +50,7 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
   };
   const planet = section('Planetary information');
   facts(planet, [['World', data.world.name], ['Location', data.world.location], ['UWP', data.world.uwp], ['Trade codes', data.world.tradeCodes], ['Travel zone', data.world.travelZone], ['Starport', data.world.starport]]);
+  if(data.world.mapReference){const link=node('a','Open nearby-world reference');const url=new URL('player-map-preview.html',document.baseURI);url.search=new URLSearchParams(data.world.mapReference);link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';planet.append(link);}
   facts(section('Ship & journey'), [['Ship', data.ship.name], ['Cargo capacity', quantity(data.ship.cargoCapacityTons) + ' t'], ['Planned destination', data.ship.destination], ['Campaign date', data.campaignDate]]);
   const resources = section('Shipboard cash & supplies'); resources.className = 'wide';
   const resourceGrid = node('div'); resourceGrid.className = 'resource-grid'; resources.append(resourceGrid);

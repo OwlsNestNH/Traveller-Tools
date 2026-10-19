@@ -26,6 +26,7 @@ try {
   assert.equal(await page.getByRole('button', {name:/Edit local details/}).count(), 4);
   assert.equal(await page.locator('meter').count(), 2);
   await page.getByText('21 days / 100 days capacity',{exact:true}).waitFor();
+  const mapLink=new URL(await page.getByRole('link',{name:'Open nearby-world reference'}).getAttribute('href'));assert.equal(mapLink.searchParams.get('sector'),'Spinward Marches');assert.equal(mapLink.searchParams.get('hex'),'1910');
   await page.getByText('Life support overflow · reserved space',{exact:true}).waitFor();
   await page.getByText(/150 LSS of exact reserve stock/).waitFor();
   assert.equal(await page.locator('details').getAttribute('open'), null);
@@ -63,11 +64,11 @@ try {
   assert.equal(await page.locator('meter').count(),1);
   await page.goto(url);
   // Restore the fixture before same-document hash navigation (which does not rerun modules).
-  await page.reload(); await page.getByText('Port Meridian', {exact:true}).waitFor();
+  await page.reload(); await page.getByText('Regina', {exact:true}).waitFor();
   // Invalid/oversize links replace stale data, then back/forward restores snapshots.
-  await page.goto(url+'#invalid=%ZZ');await page.getByRole('alert').waitFor();assert.equal(await page.getByText('Port Meridian',{exact:true}).count(),0);
+  await page.goto(url+'#invalid=%ZZ');await page.getByRole('alert').waitFor();assert.equal(await page.getByText('Regina',{exact:true}).count(),0);
   await page.goto(url+'#'+'x'.repeat(16000));await page.getByRole('alert').waitFor();
-  await page.goto(url);await page.getByText('Port Meridian',{exact:true}).waitFor();
+  await page.goto(url);await page.getByText('Regina',{exact:true}).waitFor();
   await page.getByRole('button',{name:'Edit local details for cargo lot 2'}).click();
   await page.getByLabel('Name unknown',{exact:true}).uncheck();await page.getByLabel('Local goods name',{exact:true}).fill('<img src=x onerror=alert(1)>');
   await page.getByLabel('Base price unknown',{exact:true}).uncheck();await page.getByLabel('Local estimated base price',{exact:true}).fill('0');
@@ -84,8 +85,8 @@ try {
     const literal = root.textContent.includes(input.world.name), injected = root.querySelectorAll('img,script').length;
     for (let i=0;i<5;i++) renderPlayerSnapshot(root, playerSnapshotFixture);
     const sections = root.querySelectorAll('section').length;
-    renderPlayerSnapshot(root, {...input, version:4}); const rejected = root.querySelector('[role=alert]')?.textContent.includes('Unsupported');
-    const stale = root.textContent.includes('Port Meridian');
+    renderPlayerSnapshot(root, {...input, version:5}); const rejected = root.querySelector('[role=alert]')?.textContent.includes('Unsupported');
+    const stale = root.textContent.includes('Regina');
     input.buy = {status:'not-checked', offers:[]}; input.sell = {status:'expired', offers:[]}; input.cargo = [];
     renderPlayerSnapshot(root, input);
     return {literal, injected, sections, rejected, stale, empty:root.textContent.includes('No cargo aboard.'), unchecked:root.textContent.includes('Not checked.'), expired:root.textContent.includes('Expired.')};

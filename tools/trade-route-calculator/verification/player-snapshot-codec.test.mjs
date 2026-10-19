@@ -1,5 +1,5 @@
 import test from 'node:test';
-import {legacyPackets} from './player-snapshot-legacy-fixtures.mjs';
+import {legacyPackets,wholeCodec3} from './player-snapshot-legacy-fixtures.mjs';
 import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
 import {playerSnapshotFixture as fixture,makePlayerSnapshotExample} from '../js/player-snapshot-fixture.mjs';
@@ -8,7 +8,7 @@ const options={maxUrlLength:100000};
 const link = data => encodeSnapshotLink(data,options);
 const decode = value => decodeSnapshotLink(value,options);
 const clone = () => structuredClone(fixture);
-const legacyFixture=()=>{const d=clone();d.ship.lifeSupport.daysRemaining=null;d.ship.lifeSupport.daysCapacity=null;d.ship.lifeSupport.cargoReservedTons=null;d.ship.lifeSupport.cargoLss='0';return d;};
+const legacyFixture=()=>decodeSnapshotLink(PROPOSED_PREFIX+legacyPackets.whole[1],{maxUrlLength:8192});
 const mutate = (url, fn) => {const b=Buffer.from(url.slice(PROPOSED_PREFIX.length),'base64url');return PROPOSED_PREFIX+Buffer.from(fn(b)??b).toString('base64url');};
 test('round trips the full public contract, rounds only costs, preserves source and unknowns',()=>{
   for (const rounding of [100,1000]) {
@@ -84,7 +84,7 @@ test('codec 2 compact templates preserve exact labels, custom text and codec 1 l
   const d=clone();d.capturedAt=capturedAt;d.expenses.salary.basis='Custom crew agreement — 12 days';d.expenses.visitLabel='A custom visit';assert.deepEqual(decode(link(d)),prepareSnapshotForLink(d));
  }
  const d=clone();d.world.name='Custom world';d.expenses.visitLabel='Custom world · this stop, 001–365-1200 planned';d.expenses.fuel.basis='Planned 3.500000 t refined top-up at Cr500.000000/t';assert.deepEqual(decode(link(d)),prepareSnapshotForLink(d));
- assert.ok(measureSnapshotLink(fixture).characters<250);
+ assert.ok(measureSnapshotLink(fixture).characters<500);
 });
 
 test('compact decimal packets preserve maximum precision and every trailing zero',()=>{
@@ -122,4 +122,12 @@ test('explicit LSS days round-trip without stock conversion; older codecs preser
  assert.throws(()=>measureSnapshotLink(d,{codecVersion:2}),/cannot represent/);
  d.ship.lifeSupport.daysRemaining='9';assert.throws(()=>link(d),/Invalid/);
  for(const payload of legacyPackets.whole){const saved=decode(PROPOSED_PREFIX+payload);assert.equal(saved.ship.lifeSupport.current,'168');assert.equal(saved.ship.lifeSupport.daysRemaining,null);assert.equal(saved.ship.lifeSupport.daysCapacity,null);}
+});
+
+test('canonical map reference round-trips separately from public world text; old codec3 snapshots keep their origin',()=>{
+ const before=decode(PROPOSED_PREFIX+wholeCodec3);assert.equal(before.world.name,'Port Meridian');assert.equal(before.world.mapReference,null);assert.equal(before.ship.lifeSupport.daysRemaining,'21');
+ const current=decode(link(fixture));assert.equal(current.world.name,'Regina');assert.deepEqual(current.world.mapReference,{sector:'Spinward Marches',hex:'1910'});
+ assert.throws(()=>measureSnapshotLink(fixture,{codecVersion:3}),/cannot represent/);
+ for(const hex of ['0000','3341','<img>']){const d=clone();d.world.mapReference.hex=hex;assert.throws(()=>link(d));}
+ const d=clone();d.world.mapReference.secret='GM';assert.deepEqual(decode(link(d)).world.mapReference,current.world.mapReference);
 });
