@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {projectPlayerSnapshot, MAX_SNAPSHOT_ROWS} from '../js/player-snapshot.mjs';
+import {projectPlayerSnapshot, summarizePlayerExpenses, MAX_SNAPSHOT_ROWS} from '../js/player-snapshot.mjs';
 import {playerSnapshotFixture as fixture} from '../js/player-snapshot-fixture.mjs';
 const fresh = () => structuredClone(fixture);
 test('allowlist strips GM and unrelated fields recursively; detached immutable output', () => {
@@ -12,7 +12,7 @@ test('allowlist strips GM and unrelated fields recursively; detached immutable o
   assert.throws(() => {result.buy.offers[0].tons = '0';}, TypeError);
 });
 test('unknown, absent and legacy versions fail closed', () => {
-  for (const version of [undefined, 0, 2, '1', null]) assert.throws(() => projectPlayerSnapshot({...fresh(), version}), /Unsupported/);
+  for (const version of [undefined, 0, 1, 3, '2', null]) assert.throws(() => projectPlayerSnapshot({...fresh(), version}), /Unsupported/);
 });
 test('malformed shape, nonfinite or excessive amounts and bounded text rejected', () => {
   for (const value of [null, [], 'snapshot']) assert.throws(() => projectPlayerSnapshot(value));
@@ -44,4 +44,31 @@ test('row bounds and market availability are explicit', () => {
 test('sparse lists fail closed instead of surviving validation', () => {
   const input = fresh(); input.cargo = new Array(2);
   assert.throws(() => projectPlayerSnapshot(input), /Invalid/);
+});
+
+test('cash, reservoir and expense allowlists exclude notes and preserve unknowns', () => {
+  const input = fresh(); input.ship.fuel.audit = 'secret'; input.ship.lifeSupport.reason = 'secret';
+  input.expenses.berth.gmReason = 'secret'; input.expenses.hiddenFee = 'secret'; input.ship.cashCredits = null;
+  const output = projectPlayerSnapshot(input); assert.equal(output.ship.cashCredits, null);
+  assert.equal(output.expenses.incidentals.expected, null); assert.ok(!JSON.stringify(output).includes('secret'));
+  assert.throws(() => {output.expenses.fuel.paid = '1';}, TypeError);
+});
+test('resource bounds reject overcapacity and malformed or missing fields; unknown capacity stays unknown', () => {
+  for (const key of ['fuel', 'lifeSupport']) {
+    const data = fresh(); data.ship[key].current = '801'; data.ship[key].capacity = '800'; assert.throws(() => projectPlayerSnapshot(data));
+    data.ship[key].capacity = null; assert.equal(projectPlayerSnapshot(data).ship[key].capacity, null);
+    data.ship[key].current = null; assert.equal(projectPlayerSnapshot(data).ship[key].current, null);
+    data.ship[key].current = '0'; data.ship[key].capacity = '0'; assert.equal(projectPlayerSnapshot(data).ship[key].capacity, '0');
+  }
+  for (const value of [undefined, '-1', 'NaN', Infinity, 42]) {
+    const data = fresh(); data.ship.cashCredits = value; assert.throws(() => projectPlayerSnapshot(data));
+    data.ship.cashCredits = '1'; data.expenses.fuel.expected = value; assert.throws(() => projectPlayerSnapshot(data));
+  }
+});
+test('expense totals use exact arithmetic and disclose unknowns separately from zero', () => {
+  assert.deepEqual(summarizePlayerExpenses(fresh().expenses), {expected:{knownTotal:'40250',unknownCount:1},paid:{knownTotal:'26750',unknownCount:0}});
+  const data = fresh(); for (const key of ['berth', 'fuel', 'salary', 'mortgage', 'lss', 'incidentals']) {data.expenses[key].expected = null; data.expenses[key].paid = '0';}
+  assert.deepEqual(summarizePlayerExpenses(data.expenses), {expected:{knownTotal:'0',unknownCount:6},paid:{knownTotal:'0',unknownCount:0}});
+  data.expenses.berth.expected = '999999999999999.999999'; data.expenses.fuel.expected = '0.000001';
+  assert.deepEqual(summarizePlayerExpenses(data.expenses).expected, {knownTotal:'1000000000000000',unknownCount:4});
 });

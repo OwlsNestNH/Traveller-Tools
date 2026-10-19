@@ -22,10 +22,19 @@ try {
   });
   await page.reload(); await page.getByRole('heading', {name:'Cargo aboard'}).waitFor();
   assert.equal(await page.locator('button,input,select,textarea,form').count(), 0);
+  assert.equal(await page.locator('meter').count(), 2);
+  assert.equal(await page.locator('details').getAttribute('open'), null);
+  await page.getByText('Cr 40,250', {exact:true}).waitFor();
+  await page.getByText('Cr 26,750', {exact:true}).waitFor();
+  await page.screenshot({path:artifacts + 'player-snapshot-desktop-collapsed.png', fullPage:true});
+  const toggle = page.locator('summary'); await toggle.focus(); await page.keyboard.press('Enter');
+  await page.getByText('One scheduled 28-day installment paid here', {exact:true}).waitFor();
+  await toggle.evaluate(element => element.blur());
   await page.screenshot({path:artifacts + 'player-snapshot-desktop.png', fullPage:true});
   await page.setViewportSize({width:390,height:844});
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   await page.screenshot({path:artifacts + 'player-snapshot-mobile.png', fullPage:true});
+  await toggle.click(); await page.getByText('Cr 40,250', {exact:true}).waitFor(); await toggle.click();
   for (const width of [320, 390, 700, 701, 1440]) {
     await page.setViewportSize({width,height:844});
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'Overflow at ' + width);
@@ -36,8 +45,9 @@ try {
     const {playerSnapshotFixture} = await import('./js/player-snapshot-fixture.mjs');
     const data = structuredClone(playerSnapshotFixture);
     data.world.name = data.cargo[0].name = data.buy.offers[0].name = 'W'.repeat(240);
-    data.cargo[0].tons = data.buy.offers[0].creditsPerTon = '999999999999999.999999';
-    renderPlayerSnapshot(document.getElementById('snapshot'), data);
+    data.cargo[0].tons = data.buy.offers[0].creditsPerTon = data.ship.cashCredits = data.expenses.fuel.expected = '999999999999999.999999';
+    data.expenses.fuel.basis = 'W'.repeat(240);
+    renderPlayerSnapshot(document.getElementById('snapshot'), data); document.querySelector('details').open = true;
   });
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'Maximum fields at 320px');
   // Restore the fixture before same-document hash navigation (which does not rerun modules).
@@ -56,13 +66,23 @@ try {
     const literal = root.textContent.includes(input.world.name), injected = root.querySelectorAll('img,script').length;
     for (let i=0;i<5;i++) renderPlayerSnapshot(root, playerSnapshotFixture);
     const sections = root.querySelectorAll('section').length;
-    renderPlayerSnapshot(root, {...input, version:2}); const rejected = root.querySelector('[role=alert]')?.textContent.includes('Unsupported');
+    renderPlayerSnapshot(root, {...input, version:3}); const rejected = root.querySelector('[role=alert]')?.textContent.includes('Unsupported');
     const stale = root.textContent.includes('Port Meridian');
     input.buy = {status:'not-checked', offers:[]}; input.sell = {status:'expired', offers:[]}; input.cargo = [];
     renderPlayerSnapshot(root, input);
     return {literal, injected, sections, rejected, stale, empty:root.textContent.includes('No cargo aboard.'), unchecked:root.textContent.includes('Not checked.'), expired:root.textContent.includes('Expired.')};
   });
-  assert.deepEqual(results, {literal:true,injected:0,sections:5,rejected:true,stale:false,empty:true,unchecked:true,expired:true});
+  assert.deepEqual(results, {literal:true,injected:0,sections:7,rejected:true,stale:false,empty:true,unchecked:true,expired:true});
+  const unknowns = await page.evaluate(async () => {
+    const {renderPlayerSnapshot} = await import('./js/player-snapshot-view.mjs');
+    const {playerSnapshotFixture} = await import('./js/player-snapshot-fixture.mjs');
+    const data = structuredClone(playerSnapshotFixture);
+    data.ship.cashCredits = null; data.ship.fuel.current = '0'; data.ship.fuel.capacity = '0.000000'; data.ship.lifeSupport.capacity = null;
+    for (const kind of ['berth', 'fuel', 'salary', 'mortgage', 'lss', 'incidentals']) data.expenses[kind].expected = null;
+    renderPlayerSnapshot(document.getElementById('snapshot'), data);
+    return {meters:document.querySelectorAll('meter').length, expected:document.querySelector('.expense-totals strong').textContent, detailOpen:document.querySelector('details').open, zeroCapacity:document.body.textContent.includes('No capacity configured.')};
+  });
+  assert.deepEqual(unknowns, {meters:0, expected:'Unknown', detailOpen:false, zeroCapacity:true});
   assert.deepEqual(errors, []);
   assert.ok(requests.every(request => new URL(request).origin === new URL(base).origin));
   // A separate page without access traps confirms saved bytes remain intact.
