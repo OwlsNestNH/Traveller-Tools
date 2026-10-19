@@ -34,7 +34,7 @@ try {
   assert.equal(await page.getByText('Retail is the recorded base price per ton.',{exact:false}).count(),0,'Technical explanation starts hidden');
   await cargoInfo.focus();await page.keyboard.press('Enter');await page.getByRole('dialog',{name:'Cargo values and reserve supplies'}).waitFor();await page.getByText('Retail is the recorded base price per ton.',{exact:false}).waitFor();
   await page.keyboard.press('Escape');assert.equal(await page.getByRole('dialog').count(),0);assert.equal(await cargoInfo.evaluate(e=>document.activeElement===e),true);
-  await page.setViewportSize({width:320,height:844});await cargoInfo.click();const infoDialog=page.getByRole('dialog',{name:'Cargo values and reserve supplies'});assert.equal(await infoDialog.evaluate(e=>e.scrollWidth<=e.clientWidth),true);await infoDialog.getByRole('button',{name:'Close',exact:true}).click();assert.equal(await cargoInfo.evaluate(e=>document.activeElement===e),true);await page.setViewportSize({width:1440,height:1100});
+  await page.setViewportSize({width:320,height:844});await cargoInfo.click();const infoDialog=page.getByRole('dialog',{name:'Cargo values and reserve supplies'});assert.equal(await infoDialog.evaluate(e=>e.scrollWidth<=e.clientWidth),true);await page.screenshot({path:artifacts+'player-cargo-information-mobile.png',fullPage:false});await infoDialog.getByRole('button',{name:'Close',exact:true}).click();assert.equal(await cargoInfo.evaluate(e=>document.activeElement===e),true);await page.setViewportSize({width:1440,height:1100});
   // Presentation rounding cannot alter exact source quantities or meter ratios.
   const displayChecks=await page.evaluate(async()=>{
     const {renderPlayerSnapshot}=await import('./js/player-snapshot-view.mjs');
