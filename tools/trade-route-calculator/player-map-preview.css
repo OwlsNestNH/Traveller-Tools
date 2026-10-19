@@ -30,3 +30,7 @@ button { padding:.6rem 1rem; margin-top:1rem; font:inherit; }
 @media(max-width:760px){#map-frame {max-height:470px;} #map-frame svg {width:auto;max-width:none;height:auto;}}
 
 .world-target {font-size:11px;} .world-uwp {font-size:10px;} .world-symbols {font-size:9px;}
+
+body.embedded-reference {padding:0;margin:0;max-width:none;}
+.embedded-reference > header,.embedded-reference > footer {display:none;}
+.embedded-reference main {padding:0;max-width:none;}

@@ -1,3 +1,4 @@
+if(new URLSearchParams(location.search).get('embedded')==='1')document.body.classList.add('embedded-reference');
 import {referenceOrigin,referenceWorld,referenceFacts,hexDistance,stagger,referenceSectorAreas} from './player-map-reference.mjs';
 import {territoryMarkup} from './map-territory.mjs';
 const control=document.getElementById('radius'),output=document.getElementById('radius-value'),status=document.getElementById('map-status'),frame=document.getElementById('map-frame'),details=document.getElementById('world-details');

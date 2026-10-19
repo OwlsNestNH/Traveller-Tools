@@ -1,9 +1,10 @@
 import {COMMODITIES} from './player-snapshot-catalog.mjs';
 import {playerSnapshotFixture} from './player-snapshot-fixture.mjs';
-import {renderPlayerSnapshot} from './player-snapshot-view.mjs';
+import {renderPlayerSnapshot,clearPlayerSnapshotMap} from './player-snapshot-view.mjs';
 import {createRecipientStore} from './player-snapshot-storage.mjs';
 const root=document.getElementById('snapshot'),store=createRecipientStore(()=>localStorage);
 function display() {
+  clearPlayerSnapshotMap(root);
   try {
     let payload=location.hash.slice(1),notice='';
     if(location.href.length>8192)throw Error('This snapshot link is too long. Ask the operator for a shorter link.');

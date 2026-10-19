@@ -4,8 +4,11 @@ import {projectPlayerSnapshot, summarizePlayerExpenses, EXPENSE_KINDS} from './p
 // Immutable transmitted data and local annotations remain separate.
 // Persistence is supplied by the standalone recipient adapter, never campaign storage.
 const labelsByRoot = new WeakMap();
+const mapObservers = new WeakMap();
+export function clearPlayerSnapshotMap(root) {mapObservers.get(root)?.disconnect();mapObservers.delete(root);}
 // Render only validated, detached data. All untrusted strings become text nodes.
 export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChange}={}) {
+  clearPlayerSnapshotMap(root);
   const document = root.ownerDocument;
   const node = (tag, content) => { const element = document.createElement(tag); if (content !== undefined) element.textContent = content; return element; };
   let data;
@@ -53,6 +56,13 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
   facts(planet, [['World', data.world.name], ['Location', data.world.location], ['UWP', data.world.uwp], ['Trade codes', data.world.tradeCodes], ['Travel zone', data.world.travelZone], ['Starport', data.world.starport]]);
   if(data.world.mapReference){const link=node('a','Open nearby-world reference');const url=new URL('player-map-preview.html',document.baseURI);url.search=new URLSearchParams(data.world.mapReference);link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';planet.append(link);}
   facts(section('Ship & journey'), [['Ship', data.ship.name], ['Cargo capacity', formatSnapshotTons(data.ship.cargoCapacityTons) + (data.ship.cargoCapacityTons===null?'':' t')], ['Planned destination', data.ship.destination], ['Campaign date', data.campaignDate]]);
+  if(data.world.mapReference){
+    const map=section('Nearby-world reference');map.className='wide snapshot-map';
+    map.append(node('p','Live reference for '+data.world.mapReference.sector+' / '+data.world.mapReference.hex+'. Browsing does not change the frozen ship, cargo or offers.'));
+    const frame=node('iframe'),url=new URL('player-map-preview.html',document.baseURI);url.search=new URLSearchParams({...data.world.mapReference,embedded:'1'});
+    frame.title='Nearby-world reference map';frame.src=url.href;frame.referrerPolicy='no-referrer';frame.setAttribute('sandbox','allow-scripts allow-same-origin');frame.height='1000';
+    frame.addEventListener('load',()=>{if(!frame.isConnected)return;const body=frame.contentDocument?.body;if(!body)return;const resize=()=>{if(frame.isConnected)frame.height=String(Math.min(2400,Math.max(320,Math.ceil(body.scrollHeight)+24)));};const observer=new ResizeObserver(resize);mapObservers.set(root,observer);observer.observe(body);resize();});map.append(frame);
+  }
   const resources = section('Shipboard cash & supplies'); resources.className = 'wide';
   const resourceGrid = node('div'); resourceGrid.className = 'resource-grid'; resources.append(resourceGrid);
   const cash = node('div'); cash.className = 'resource'; cash.append(node('h3', 'Shipboard cash'), node('strong', credits(data.ship.cashCredits)), node('p', 'Current balance · expenses below are not deducted again.')); resourceGrid.append(cash);

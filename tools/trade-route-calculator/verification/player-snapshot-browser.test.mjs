@@ -8,6 +8,7 @@ const browser = await chromium.launch({headless:true, ...(process.env.TRAVELLER_
 const artifacts = fileURLToPath(new URL('../verification-artifacts/', import.meta.url));
 await mkdir(artifacts, {recursive:true});
 const context = await browser.newContext({viewport:{width:1440,height:1100}});
+await context.route('https://travellermap.com/**',route=>route.abort('failed'));
 const page = await context.newPage(), errors = [], requests = [];
 page.on('pageerror', error => errors.push(error.message));
 page.on('request', request => requests.push(request.url()));
@@ -112,7 +113,7 @@ try {
     renderPlayerSnapshot(root, input);
     return {literal, injected, sections, rejected, stale, empty:root.textContent.includes('No cargo aboard.'), unchecked:root.textContent.includes('Not checked.'), expired:root.textContent.includes('Expired.')};
   });
-  assert.deepEqual(results, {literal:true,injected:0,sections:7,rejected:true,stale:false,empty:true,unchecked:true,expired:true});
+  assert.deepEqual(results, {literal:true,injected:0,sections:8,rejected:true,stale:false,empty:true,unchecked:true,expired:true});
   const unknowns = await page.evaluate(async () => {
     const {renderPlayerSnapshot} = await import('./js/player-snapshot-view.mjs');
     const {playerSnapshotFixture} = await import('./js/player-snapshot-fixture.mjs');
@@ -138,7 +139,7 @@ try {
   await page.getByRole('link',{name:'Open player snapshot'}).click();await page.getByText('Cr 127,450',{exact:true}).waitFor();await page.getByText('Cr 40,300',{exact:true}).waitFor();
   await page.goto(url+'#bad');await page.getByRole('alert').waitFor();await page.goBack();await page.getByText('Cr 127,450',{exact:true}).waitFor();await page.goForward();await page.getByRole('alert').waitFor();await page.goBack();await page.reload();await page.getByText('Cr 127,450',{exact:true}).waitFor();
   assert.deepEqual(errors, []);
-  assert.ok(requests.every(request => new URL(request).origin === new URL(base).origin));
+  assert.ok(requests.every(request => new URL(request).origin === new URL(base).origin || new URL(request).origin==='https://travellermap.com'));
   // A separate page without access traps confirms saved bytes remain intact.
   const checker = await context.newPage(); await checker.goto(url);
   assert.deepEqual(await checker.evaluate(() => ({local:localStorage['traveller-trade-route-calculator:v1'], session:sessionStorage.sentinel})), {local:'synthetic-sentinel',session:undefined});
