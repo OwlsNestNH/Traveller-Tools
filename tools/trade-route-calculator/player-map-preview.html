@@ -9,18 +9,18 @@
 <script type="module" src="js/player-map-preview.mjs"></script>
 </head>
 <body>
-<header><p class="eyebrow">STANDALONE MAP REVIEW</p><h1>Nearby systems</h1><p>Canonical example: Regina · Spinward Marches / 1910</p><p class="notice">Live reference from TravellerMap. Separate from frozen snapshot prices, transactions and GM world overrides.</p></header>
+<header><p class="eyebrow">STANDALONE MAP REVIEW</p><h1>Nearby systems</h1><p id="origin-label">Sample reference origin: Regina · Spinward Marches / 1910</p><p class="notice">Live reference from TravellerMap. Separate from frozen snapshot prices, transactions and GM world overrides.</p></header>
 <main>
 <section class="map-panel">
 <label for="radius">Hex radius <output id="radius-value" for="radius">2</output></label>
 <input id="radius" type="range" min="0" max="5" step="1" value="2">
-<p id="map-detail-mode"></p><p id="map-status" role="status">Loading reference map…</p>
+<p>Click a system for a small reference panel. Radius 0 shows the current world only. Scroll the map to inspect the outer hexes.</p><p id="map-status" role="status">Loading reference map…</p>
 <div id="map-frame" aria-label="Reference map"></div>
+<button id="current-world" type="button" disabled>Current World</button>
 <button id="map-retry" type="button">Retry map and details</button>
 </section>
-<section><h2>Selected system reference</h2><p id="world-details" role="status">Loading system details…</p>
-<p>Map symbols and borders follow TravellerMap’s source data and rendering style. A gas giant symbol is an image marker, not a transaction control.</p>
-<a href="https://travellermap.com/?sector=spin&amp;hex=1910" target="_blank" rel="noopener noreferrer">Open Regina in TravellerMap</a>
+<section class="world-panel" aria-label="Selected world reference"><div id="world-details" aria-live="polite"><p>Loading system details…</p></div>
+<p class="reference-note">Live reference only. Browsing does not move the ship or change frozen cargo, prices or offers. Political borders are allegiance territory, not travel zones.</p>
 </section>
 </main>
 <footer>Radius changes this preview only. It is not saved or included in a snapshot URL. No campaign storage is accessed.</footer>

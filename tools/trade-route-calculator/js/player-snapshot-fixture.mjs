@@ -1,9 +1,9 @@
 // Synthetic review fixture only. Internal LSS duration explicitly assumes 8 stock units/day; 150 reserve LSS occupies 2 whole reserved tons, excluded from internal days. No campaign imports or storage dependencies.
 export const playerSnapshotFixture = {
-  version:3, capturedAt:'2026-10-19 15:00 UTC (example)', campaignDate:'042-1105, 14:00',
-  world:{name:'Port Meridian', location:'Example Reach / 1824', uwp:'B867A74-C', tradeCodes:'Hi Ga', travelZone:'Amber — caution advised', starport:'B · refined fuel available'},
+  version:4, capturedAt:'2026-10-19 15:00 UTC (example)', campaignDate:'042-1105, 14:00',
+  world:{name:'Regina', location:'Spinward Marches / 1910', uwp:'A788899-C', tradeCodes:'Ri Pa Ph An Cp', travelZone:'Normal', starport:'A · refined fuel available', mapReference:{sector:'Spinward Marches',hex:'1910'}},
   ship:{name:'Far Horizon', cargoCapacityTons:'82', cashCredits:'127450', fuel:{current:'36.5', capacity:'40'}, lifeSupport:{current:'168', capacity:'800', cargoLss:'150', daysRemaining:'21', daysCapacity:'100', cargoReservedTons:'2'}, destination:'New Dawn / 1924'},
-  expenses:{visitLabel:'Port Meridian · this stop, 040–047-1105 planned',
+  expenses:{visitLabel:'Regina · this stop, 040–047-1105 planned',
     berth:{expected:'1500', paid:'1500', basis:'One week at the saved local berth rate'},
     fuel:{expected:'1750', paid:'0', basis:'Planned 3.5 t refined top-up at Cr500/t'},
     salary:{expected:'6000', paid:'0', basis:'One 28-day crew salary period selected for this stop'},

@@ -11,7 +11,7 @@ vertical scrolling when needed, not multiple tabs or a transaction interface.
 
 ## Separation and contract
 
-- `js/player-snapshot.mjs` is the headless version-3 data contract and allowlist
+- `js/player-snapshot.mjs` is the headless version-4 data contract and allowlist
   projection. It returns a detached, deeply frozen value. It has no imports,
   DOM, storage, transaction, networking or URL dependencies.
 - `js/player-snapshot-view.mjs` renders that contract using text nodes. Invalid
@@ -53,11 +53,11 @@ empty states, repeat rendering, stale-display replacement, mobile overflow,
 back/forward/reload and saved-storage isolation. Desktop/mobile screenshots are
 synthetic; no private campaign or credentials are included.
 
-Production adapter, production share button and GitHub Pages deployment remain deferred. A separate headless codec prototype is now implemented;
+Production adapter and production share button remain deferred; the standalone preview is published on GitHub Pages. A separate headless codec prototype is now implemented;
 see [codec results and limits](PLAYER_SNAPSHOT_CODEC.md). The standalone generator/viewer exercises shared snapshots without production
 integration and offers no HTML-file delivery fallback. Existing
 calculations, save/import paths, Speculative Trade Alpha and Abstract Free Trader
-Rules are unchanged. No deployment or merge is part of this stage.
+Rules are unchanged. Production trading behavior is unchanged.
 
 ## Revised cash, supplies and expenses mockup
 
@@ -92,7 +92,7 @@ to represent old snapshots. The standalone viewer decodes URL fragments through 
 snapshot and its separate local annotations in recipient-only browser storage.
 No live synchronization is implemented.
 
-## Bounded encoding feasibility measurement
+## Historical encoding feasibility measurement
 
 Measured revised synthetic data with Node gzip; these are not tested browser or
 messaging-app limits. Each hypothetical URL uses a 112-character prefix (the
@@ -107,8 +107,7 @@ existing preview URL plus `#snapshot=`); the preview does not decode that field.
 Fuller fixtures vary names, lot/quote numbers, quantities and prices and include
 Unicode. Repeated vocabulary compresses well; long, less repetitive names may
 produce much larger links. The 200-row contract limit per list is not a safe URL
-limit. No production serializer, decoder, compression library, link generation
-button or recipient persistence is implemented by this measurement.
+limit. This historical measurement preceded the implemented standalone codec, generator and recipient persistence; see current codec documentation.
 
 ## Local Other labels and separate map preview
 
@@ -122,25 +121,44 @@ quotes stay authoritative; a local base estimate never creates or replaces a quo
 The preview bootstrap does not round the original mockup amounts; codec rounding
 is independently tested and disclosed in its API.
 
-Open `player-map-preview.html` separately for a canonical Regina reference experiment.
-Radius is 0–5, default 2; 0 requests only the selected hex. Radii 0–3 request detailed
-128-pixel/parsec rendering, and 4–5 request a simpler 48-pixel/parsec overview. Detailed
-images retain native pixels and scroll on narrow panels; selected-system reference
-details remain alongside/below. Radius is not saved or encoded. TravellerMap requests
-contain only the public canonical identity and rendering options. Snapshot data and
-GM overrides never enter this page or get replaced by its live data.
+## Interactive nearby-world reference
 
-The [TravellerMap API](https://travellermap.com/doc/api) documents jumpmaps, render
-scales, hex labels and border options. The preview requests print style, numbered
-hexes, major/minor borders and filled regions. Actual symbols depend on API rendering
-and source data. Live image/data requests from this environment failed with proxy
-HTTP 403, including retries; a separate web fetch also failed. Consequently **in-hex
-UWP, gas-giant/base symbols, political borders and radius-3 readability have not been
-visually verified**. Do not treat mocked test images as visual candidates.
+The fresh synthetic example now uses **Regina, Spinward Marches / 1910**. Other ship,
+cargo and expense data remain synthetic. An explicit canonical `world.mapReference`
+allows the viewer to open a separate map tab. Old links retain their original world
+and have no inferred map reference: Port Meridian is never silently relocated.
 
-[Live attempt desktop](verification/player-snapshot-review/map-live-attempt-desktop.png)
-and [phone](verification/player-snapshot-review/map-live-attempt-phone.png) show the
-actual unavailable state. Automated browser tests use a tiny test image solely to
-verify radius requests and success/failure/retry behavior, plus storage isolation and
-phone overflow. Requests time out after 12 seconds, stale responses are ignored, and
-no unavailable reference is silently substituted with snapshot or invented data.
+The slider has integer steps 0–5, default 2. Radius 0 shows the snapshot origin only.
+Click or keyboard-activate any displayed system for all eight UWP fields in standard
+order, readable meanings, trade codes, travel zone, bases, gas giants and allegiance.
+Current World restores the immutable origin selection/view without resetting radius.
+The compact panel is beside the map on desktop and below it on phones. The native
+SVG scrolls to outer hexes and recenters when the panel width changes.
+
+`player-map-reference.mjs` contains pure normalization, coordinate and fact helpers.
+The UI reuses existing read-only `planet-info.mjs` and `map-territory.mjs`; neither
+production module is modified. Political borders/fill use source metadata for every
+sector intersecting the covered hexes, including empty neighboring sectors. Missing
+coverage is disclosed. Allegiance codes appear on map targets and readable labels
+appear in the panel when supplied. Missing facts stay unknown. No importance or
+extended report is included.
+
+TravellerMap requests contain only canonical sector/hex or public coordinates,
+radius and milieu M1105. Radius and selected system are local view state, never
+serialized or stored. The map reads/writes no campaign or recipient storage and
+cannot change snapshot cargo, offers, prices, GM overrides or ship location.
+Requests have a 12-second timeout, streamed byte limits, bounded rows and stale
+response protection. Invalid origins never become reusable anchors on retry.
+
+**Live-source limitation:** this environment's proxy rejects TravellerMap and public
+Pages requests with HTTP 403/CONNECT errors. Browser interaction evidence uses
+labelled synthetic API responses; it does not certify live source rendering.
+[Mocked desktop](verification/player-snapshot-review/map-reference-mocked-desktop.png)
+and [mocked phone](verification/player-snapshot-review/map-reference-mocked-phone.png)
+show interactions and layout. The live-attempt screenshots show the actual unavailable
+state. No invented map is substituted when requests fail.
+
+The focused suite has 34 native tests. Both browser suites cover snapshot navigation,
+isolation, all map radii, selection/reset, malformed text, request races, partial
+metadata, empty neighboring sectors and invalid-origin retries. Independent review
+found the empty-sector edge case, now fixed and regression tested.

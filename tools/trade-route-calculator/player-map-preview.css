@@ -6,3 +6,19 @@ main section { min-width:0; padding:1rem; border:1px solid #64748b; border-radiu
 #map-frame img { display:block; max-width:none; margin:auto; }
 button { padding:.6rem 1rem; margin-top:1rem; font:inherit; }
 @media(max-width:760px) {main {grid-template-columns:minmax(0,1fr);} #map-frame {max-height:470px;} }
+
+#map-frame {max-height:440px;background:#f8fafc;color:#172033;}
+#map-frame svg {display:block;max-width:none;}
+.hex-grid {fill:none;stroke:#a7b2c3;stroke-width:.6;pointer-events:none;}
+.world-target {cursor:pointer;font:11px system-ui;fill:#172033;}
+.world-disc {fill:#e9f0f8;stroke:#61718a;stroke-width:1;}
+.origin-disc {fill:#d3f3ee;stroke:#13675b;stroke-width:2;}
+.world-target[aria-pressed="true"] circle,.world-target:focus circle {stroke:#1755c7;stroke-width:3;fill:#d4e6ff;}
+.world-target:focus {outline:none;}
+.allegiance-label {font-size:10px;}
+.uwp-fields {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem;margin:1rem 0;}
+.uwp-fields dt,.reference-facts dt {font-size:.78rem;font-weight:700;color:#a8cfdf;}
+.uwp-fields dd,.reference-facts dd {margin:.15rem 0 .45rem;font-size:.85rem;overflow-wrap:anywhere;}
+.reference-facts {margin:0;}.world-panel h2 {margin-top:0;font-size:1.2rem;}.world-panel p {font-size:.85rem;overflow-wrap:anywhere;}
+.reference-note {color:#aebdca;}.world-panel {align-self:start;}
+@media(max-width:760px){#map-frame {max-height:360px;} main {padding:.6rem;} main section {padding:.75rem;}}

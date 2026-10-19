@@ -1,6 +1,6 @@
 // Headless, versioned player-data boundary. Never pass a raw campaign here.
 // A future adapter must deliberately select approved public fields first.
-export const SNAPSHOT_VERSION = 3;
+export const SNAPSHOT_VERSION = 4;
 export const MAX_SNAPSHOT_ROWS = 200;
 const fail = () => { throw new Error('Invalid player snapshot. Ask the operator for a fresh snapshot.'); };
 const object = value => { if (!value || typeof value !== 'object' || Array.isArray(value)) fail(); return value; };
@@ -10,6 +10,7 @@ export class CargoTonnageError extends Error {
   constructor() { super('This snapshot contains cargo-hold quantities that are not whole tons. No inventory was rounded or changed. Ask the operator for a fresh whole-ton snapshot.'); this.name='CargoTonnageError'; }
 }
 const wholeTons = value => { amount(value); if (!/^(0|[1-9]\d{0,14})$/.test(value)) throw new CargoTonnageError(); return value; };
+const mapReference = value => { if(value == null)return null; object(value); const sector=text(value.sector),hex=text(value.hex); if(!sector.trim()||sector.length>80||!/^\d{4}$/.test(hex)||Number(hex.slice(0,2))<1||Number(hex.slice(0,2))>32||Number(hex.slice(2))<1||Number(hex.slice(2))>40)fail();return {sector,hex}; };
 const optionalAmount = value => value === null ? null : amount(value);
 const scaled = value => { const [whole, fraction = ''] = value.split('.'); return BigInt(whole) * 1000000n + BigInt(fraction.padEnd(6, '0')); };
 const decimal = value => { const whole = value / 1000000n, fraction = String(value % 1000000n).padStart(6, '0').replace(/0+$/, ''); return String(whole) + (fraction ? '.' + fraction : ''); };
@@ -56,7 +57,7 @@ export function projectPlayerSnapshot(source) {
   if(cargoLss!==null && reserved!==null && BigInt(reserved)!==(scaled(cargoLss)+99999999n)/100000000n) fail();
   // Explicit allowlist at every depth; the reservoir spread contains only validated public amounts.
   return freeze({version:SNAPSHOT_VERSION, capturedAt:text(source.capturedAt), campaignDate:text(source.campaignDate),
-    world:{name:text(world.name), location:text(world.location), uwp:text(world.uwp), tradeCodes:text(world.tradeCodes), travelZone:text(world.travelZone), starport:text(world.starport)},
+    world:{name:text(world.name), location:text(world.location), uwp:text(world.uwp), tradeCodes:text(world.tradeCodes), travelZone:text(world.travelZone), starport:text(world.starport), mapReference:mapReference(world.mapReference)},
     ship:{name:text(ship.name), cargoCapacityTons:wholeTons(ship.cargoCapacityTons), cashCredits:optionalAmount(ship.cashCredits), fuel:reservoir(fuel.current, fuel.capacity), lifeSupport:{...reservoir(support.current, support.capacity), cargoLss, daysRemaining:days.current, daysCapacity:days.capacity, cargoReservedTons:reserved}, destination:text(ship.destination)},
     expenses:expenses(source.expenses),
     cargo:rows(source.cargo, row => ({name:text(row.name), tons:wholeTons(row.tons)})),

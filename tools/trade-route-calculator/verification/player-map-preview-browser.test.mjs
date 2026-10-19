@@ -1,37 +1,38 @@
-import assert from 'node:assert/strict';
-import {createRequire} from 'node:module';
-import {mkdir} from 'node:fs/promises';
-import {fileURLToPath} from 'node:url';
+import assert from 'node:assert/strict';import {createRequire} from 'node:module';import {mkdir} from 'node:fs/promises';import {fileURLToPath} from 'node:url';
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BROWSER_EXECUTABLE?{executablePath:process.env.TRAVELLER_BROWSER_EXECUTABLE}:{})});
-const base=process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/';
-const artifacts=fileURLToPath(new URL('../verification-artifacts/',import.meta.url)); await mkdir(artifacts,{recursive:true});
-const context=await browser.newContext({viewport:{width:1100,height:900}}), page=await context.newPage(), requests=[];
+const base=process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/',artifacts=fileURLToPath(new URL('../verification-artifacts/',import.meta.url));await mkdir(artifacts,{recursive:true});
+const context=await browser.newContext({viewport:{width:1100,height:900}}),page=await context.newPage(),requests=[],errors=[];
+page.on('pageerror',error=>errors.push(error.message));
 await context.addInitScript(()=>{for(const method of ['getItem','setItem','removeItem','clear','key'])Storage.prototype[method]=()=>{throw Error('Map touched storage');};indexedDB.open=()=>{throw Error('Map touched database');};});
-// A tiny test response exercises image loading only; it is not a map or visual evidence.
-const pixel=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a3ioAAAAASUVORK5CYII=','base64');
-let mode='success';
-await context.route('https://travellermap.com/**',async route=>{
- const url=new URL(route.request().url()); requests.push(url);
- if(mode==='failure')return route.abort('failed');
- if(url.pathname==='/api/jumpmap')return route.fulfill({contentType:'image/png',body:pixel});
- return route.fulfill({contentType:'application/json',body:JSON.stringify({Worlds:[{Hex:'1910',UWP:'A788899-C',Bases:'NS',Allegiance:'ImDd',PBG:'703',Name:'<img src=x>'}]})});
-});
-try {
- await page.goto(new URL('player-map-preview.html',base).href); await page.getByText('Reference map loaded · radius 2.',{exact:true}).waitFor();
- await page.getByText(/Hex 1910 · UWP A788899-C/).waitFor();
- for(const radius of [0,1,2,3,4,5,2]) {
-  await page.locator('#radius').fill(String(radius)); await page.locator('#radius').dispatchEvent('change');
-  await page.getByText('Reference map loaded · radius '+radius+'.',{exact:true}).waitFor();
-  const request=new URL(await page.locator('#map-frame img').getAttribute('src')); assert.equal(request.searchParams.get('jump'),String(radius));assert.equal(request.searchParams.get('scale'),radius<=3?'128':'48');assert.equal(request.searchParams.get('hex'),'1910');
-  assert.equal(await page.locator('#map-frame img').count(),1); assert.equal(new URL(page.url()).hash,'');
- }
- mode='failure'; await page.goto('about:blank'); await page.goto(new URL('player-map-preview.html',base).href);
- await page.getByText(/Reference map unavailable/).waitFor(); await page.getByText(/System details unavailable/).waitFor(); assert.equal(await page.locator('#map-frame img').count(),0);
- await page.screenshot({path:artifacts+'player-map-failure-desktop.png',fullPage:true});
- await page.setViewportSize({width:390,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
- await page.screenshot({path:artifacts+'player-map-failure-phone.png',fullPage:true});
- mode='success'; await page.getByRole('button',{name:'Retry map and details'}).click();await page.getByText('Reference map loaded · radius 2.',{exact:true}).waitFor();
- await page.reload();await page.getByText('Reference map loaded · radius 2.',{exact:true}).waitFor();assert.equal(await page.locator('#radius').inputValue(),'2');
- console.log('Map preview controls 0–5, reference isolation, bounded failure/retry and mobile layout passed. Mocked transport; no live map readability claim.');
-} finally {await browser.close();}
+const origin={Name:'Regina',Sector:'Spinward Marches',Hex:'1910',WorldX:-110,WorldY:-70,UWP:'A788899-C',Bases:'NS',Zone:'',PBG:'703',Remarks:'Ri Pa Ph',Allegiance:'ImDd'};
+const nearby={...origin,Name:'Test neighbour <img src=x>',Hex:'1911',WorldY:-69,UWP:'B563679-8',Bases:'S',Zone:'A',PBG:'100',Remarks:'Ni',Allegiance:'Na'};
+const metadata={Borders:[{Allegiance:'ImDd',Path:'1910 2010 2011 1911'}],Allegiances:[{Code:'ImDd',Name:'Third Imperium'}]};let mode='success',release;
+await context.route('https://travellermap.com/**',async route=>{const url=new URL(route.request().url());requests.push(url);if(mode==='failure')return route.abort('failed');if(url.pathname.endsWith('/universe'))return route.fulfill({json:{Sectors:[{X:-3,Y:-1,Names:[{Text:'Deneb'}]}]}});if(url.pathname.endsWith('/metadata')){if(mode==='no-borders')return route.abort('failed');return route.fulfill({json:metadata});}if(mode==='delay'&&url.searchParams.get('jump')==='5')await new Promise(r=>release=r);if(mode==='edge')return route.fulfill({json:{Worlds:[{...origin,Hex:'3210',WorldX:-97}]}});if(mode==='mismatch')return route.fulfill({json:{Worlds:[nearby]}});return route.fulfill({json:{Worlds:url.searchParams.get('jump')==='0'?[origin]:[origin,nearby]}}).catch(()=>{});});
+const loaded=()=>page.getByText(/Reference map loaded · radius/).waitFor();
+try{
+ await page.goto(new URL('player-map-preview.html?sector=Spinward+Marches&hex=1910',base).href);await loaded();
+ assert.equal(await page.locator('#radius').getAttribute('type'),'range');assert.equal(await page.locator('#radius').getAttribute('step'),'1');assert.equal(await page.locator('#radius').inputValue(),'2');
+ assert.equal(await page.locator('.territory-border').count()>0,true);assert.equal(await page.locator('[data-world]').count(),2);
+ await page.getByRole('button',{name:'Inspect Test neighbour <img src=x>',exact:true}).click();
+ assert.equal(await page.locator('#world-details h2').textContent(),nearby.Name);assert.equal(await page.locator('#world-details img').count(),0);
+ assert.deepEqual(await page.locator('.uwp-fields dt').allTextContents(),['Starport','Size','Atmosphere','Hydrographics','Population','Government','Law Level','Tech Level']);
+ await page.getByText(/Amber — Caution/).waitFor();await page.getByText(/Scout Base/).waitFor();assert.equal(await page.getByText('Importance',{exact:true}).count(),0);
+ await page.getByRole('button',{name:'Current World',exact:true}).click();assert.equal(await page.locator('#world-details h2').textContent(),'Regina');await page.getByText('Third Imperium (ImDd)',{exact:true}).waitFor();
+ for(const radius of [0,1,2,3,4,5,2]){await page.locator('#radius').fill(String(radius));await page.locator('#radius').dispatchEvent('change');await page.getByText(new RegExp('Reference map loaded · radius '+radius+'\\.')).waitFor();assert.equal(await page.locator('#radius-value').textContent(),String(radius));assert.equal(await page.locator('.hex-grid').count(),1+3*radius*(radius+1));assert.equal(await page.locator('[data-world]').count(),radius===0?1:2);}
+ await page.getByRole('button',{name:'Inspect Test neighbour <img src=x>',exact:true}).focus();await page.keyboard.press('Enter');assert.equal(await page.locator('#world-details h2').textContent(),nearby.Name);
+ await page.screenshot({path:artifacts+'player-map-reference-desktop.png',fullPage:true});
+ for(const width of [390,320]){await page.setViewportSize({width,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);}
+ await page.screenshot({path:artifacts+'player-map-reference-phone.png',fullPage:true});
+ mode='delay';await page.locator('#radius').fill('5');await page.locator('#radius').dispatchEvent('change');await page.waitForFunction(()=>document.querySelector('#map-status').textContent.includes('Loading'));while(!release)await new Promise(r=>setTimeout(r,10));await page.locator('#radius').fill('0');await page.locator('#radius').dispatchEvent('change');await page.getByText(/Reference map loaded · radius 0\./).waitFor();release();await page.waitForTimeout(50);assert.equal(await page.locator('[data-world]').count(),1);
+ mode='no-borders';await page.getByRole('button',{name:'Retry map and details'}).click();await page.getByText(/Political borders unavailable/).waitFor();assert.equal(await page.locator('.territory-border').count(),0);
+ mode='failure';await page.goto('about:blank');await page.goto(new URL('player-map-preview.html',base).href);await page.getByText(/Reference map unavailable/).waitFor();assert.equal(await page.locator('#map-frame svg').count(),0);
+ mode='success';await page.getByRole('button',{name:'Retry map and details'}).click();await loaded();assert.equal(await page.locator('#radius').inputValue(),'2');assert.deepEqual(errors,[]);
+ await page.goto(new URL('player-map-preview.html?sector=Spin&hex=9999',base).href);await page.getByText(/Invalid map origin/).waitFor();assert.equal(await page.locator('#radius').isDisabled(),true);
+ const snapshot=await context.newPage();await snapshot.goto(new URL('player-snapshot-generator.html',base).href);await snapshot.locator('#generate').click();await snapshot.locator('#open').click();await snapshot.getByRole('heading',{name:'Cargo aboard',exact:true}).waitFor();
+ const frozen=await snapshot.locator('#snapshot').textContent(),frozenUrl=snapshot.url();
+ const [reference]=await Promise.all([context.waitForEvent('page'),snapshot.getByRole('link',{name:'Open nearby-world reference'}).click()]);await reference.getByText(/Reference map loaded/).waitFor();await reference.getByRole('button',{name:'Inspect Test neighbour <img src=x>',exact:true}).click();await reference.getByRole('button',{name:'Current World',exact:true}).click();assert.equal(snapshot.url(),frozenUrl);assert.equal(await snapshot.locator('#snapshot').textContent(),frozen);await reference.close();await snapshot.close();
+ mode='edge';await page.goto(new URL('player-map-preview.html?sector=Spinward+Marches&hex=3210',base).href);await loaded();assert.ok(requests.some(url=>url.pathname.endsWith('/metadata')&&url.searchParams.get('sector')==='Deneb'));
+ mode='mismatch';await page.goto(new URL('player-map-preview.html',base).href);await page.getByText(/Reference map unavailable/).waitFor();await page.getByRole('button',{name:'Retry map and details'}).click();await page.getByText(/Reference map unavailable/).waitFor();assert.equal(await page.locator('[data-world]').count(),0);
+ console.log('Interactive reference map passed: radius0–5, all UWP fields, borders/allegiance, selection/reset, race/failure handling, mobile layout and storage isolation. Mocked API data; not live-source certification.');
+}finally{release?.();await browser.close();}

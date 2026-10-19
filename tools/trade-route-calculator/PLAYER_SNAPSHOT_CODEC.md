@@ -14,7 +14,7 @@ rejecting actual URLs over 8,192 characters. Invalid links replace stale content
 
 ## Current whole-ton and life-support contract
 
-New links use codec 3 / contract 3. Cargo lots (including Other) and cargo capacity
+New links use codec 4 / contract 4. Cargo lots (including Other) and cargo capacity
 must be canonical nonnegative whole-ton strings. Fractional inventory is never
 rounded. Old codec-1/2 links with fractional cargo show a clear fresh-snapshot
 message, replace stale content and do not write recipient storage. Their saved
@@ -38,14 +38,24 @@ no legacy inventory or production setting is migrated. The reservation is separa
 from trade lots and is not added to an existing total or to internal days.
 
 Current Cr100 full Pages-path measurements, retaining three buy and three sell
-offers and the new LSS fields: **275 characters for 10 cargo lots; 281 for 12**.
+offers and the explicit Regina canonical reference: **438 characters for 10 cargo lots; 443 for 12**.
 Earlier measurement tables below are historical codec-2 fixtures with fractional
 sample cargo and no explicit days/reservation fields; rerun the measurement script
 for current values. Sample changes create fresh synthetic data, not converted inventory.
 
+## Explicit map identity and codec-3 compatibility
+
+Codec 4 adds an optional canonical sector/hex reference after the public world fields.
+It is distinct from public display labels and GM overrides. Fresh synthetic examples
+use Regina with an inline public world record and `Spinward Marches / 1910` reference.
+The immutable catalog's old Port Meridian ID is unchanged. Old codec-3 links retain
+all their values and decode with no map reference; no old snapshot is migrated.
+Older encoders reject a supplied reference rather than silently discarding it.
+The map's radius and current selection never enter this packet.
+
 ## Public contract and protocol
 
-The first bytes identify magic 80, codec 3, snapshot contract 3, immutable catalog 1
+The first bytes identify magic 80, codec 4, snapshot contract 4, immutable catalog 1
 and flags (bit 0 selects Cr1000 instead of Cr100; bit 1 enables percentage prices). Codec 1/2 whole-ton links remain readable with unknown duration/reservation fields; fractional cargo links reject explicitly. Other unknown versions fail closed. Versioned
 commodity names, synthetic world fields and shared public display fragments are
 frozen in `player-snapshot-catalog.mjs`; existing IDs must never be repurposed. A wire
@@ -131,8 +141,7 @@ the complete prepared contract, and browser tests count the rendered cargo rows.
 | 12 | Cr100 | 139 | 233 | 289 |
 | 12 | Cr1000 | 135 | 227 | 283 |
 
-These full URLs include their respective prefixes. Neither Pages preview path is
-deployed in this task. The full path measured is
+These full URLs include their respective prefixes. The standalone Pages paths are published; this table records historical codec-2 values. The full path measured is
 `https://owlsnestnh.github.io/Traveller-Tools/tools/trade-route-calculator/player-snapshot-preview.html#`.
 The generator uses the actual server URL and a fresh timestamp, so its measured
 length can differ. Custom world/text cases remain longer; all data must fit the
