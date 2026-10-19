@@ -46,7 +46,7 @@ dialog button {color:#fff;background:#245f76;border:0;border-radius:.3rem;}
 
 .snapshot-map iframe {display:block;width:100%;border:0;margin-top:1rem;background:#101e2a;}
 
-.cargo-section th:first-child,.cargo-section td:first-child {width:30%;}
+.cargo-section th:first-child,.cargo-section td:first-child {width:25%;}
 .cargo-section th:nth-child(2) {width:10%;}
 .cargo-section > p {font-size:.85rem;color:#b4ccd9;}
 @media(max-width:700px) {

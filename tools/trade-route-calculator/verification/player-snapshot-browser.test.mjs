@@ -170,17 +170,17 @@ try {
     return location.href.split('#')[0]+'#'+measureSnapshotLink(data).payload;
   });await page.goto(cargoInput);await page.getByRole('heading',{name:'Cargo aboard',exact:true}).waitFor();
   const cargoRows=page.locator('.cargo-section tbody tr');
-  assert.deepEqual(await cargoRows.nth(0).locator('td').allTextContents(),['Advanced Electronics','2','Cr 1,000','62.5%','Cr 700']);
-  assert.deepEqual((await cargoRows.nth(1).locator('td').allTextContents()).slice(2),['Cr 1,000','80%','Cr 800']);
-  assert.deepEqual((await cargoRows.nth(2).locator('td').allTextContents()).slice(2),['Unknown','Unknown','Cr 0']);
-  assert.deepEqual((await cargoRows.nth(3).locator('td').allTextContents()).slice(2),['Unknown','Unknown','Unknown']);
+  assert.deepEqual(await cargoRows.nth(0).locator('td').allTextContents(),['Advanced Electronics','2','Cr 1,000','62.5%','Cr 700','Cr 1,300']);
+  assert.deepEqual((await cargoRows.nth(1).locator('td').allTextContents()).slice(2),['Cr 1,000','80%','Cr 800','Cr 2,400']);
+  assert.deepEqual((await cargoRows.nth(2).locator('td').allTextContents()).slice(2),['Unknown','Unknown','Cr 0','Cr 0']);
+  assert.deepEqual((await cargoRows.nth(3).locator('td').allTextContents()).slice(2),['Unknown','Unknown','Unknown','Unknown']);
   const valuesBefore=await cargoRows.nth(2).locator('td').allTextContents();
   await page.getByRole('button',{name:'Edit local details for cargo lot 3',exact:true}).click();
   await page.getByLabel('Base price unknown',{exact:true}).uncheck();await page.getByRole('textbox',{name:'Local estimated base price'}).fill('999');await page.getByRole('button',{name:'Save local details',exact:true}).click();
   assert.deepEqual((await cargoRows.nth(2).locator('td').allTextContents()).slice(2),valuesBefore.slice(2));assert.equal(page.url(),cargoInput);
   for(const width of [320,390,700,701,1440]){await page.setViewportSize({width,height:1000});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'Cargo values overflow at '+width);assert.equal(await cargoRows.nth(0).locator('td').nth(4).getAttribute('data-label'),'Paid / ton');if(width===390||width===1440)await page.locator('.cargo-section').screenshot({path:artifacts+'cargo-purchase-'+width+'.png'});}
   const older=await page.evaluate(async()=>{const {playerSnapshotFixture}=await import('./js/player-snapshot-fixture.mjs');const {measureSnapshotLink}=await import('./js/player-snapshot-codec.mjs');return location.href.split('#')[0]+'#'+measureSnapshotLink(playerSnapshotFixture,{codecVersion:4}).payload;});
-  await page.goto(older);await page.getByRole('heading',{name:'Cargo aboard',exact:true}).waitFor();assert.deepEqual((await page.locator('.cargo-section tbody tr').first().locator('td').allTextContents()).slice(2),['Unknown','Unknown','Unknown']);
+  await page.goto(older);await page.getByRole('heading',{name:'Cargo aboard',exact:true}).waitFor();assert.deepEqual((await page.locator('.cargo-section tbody tr').first().locator('td').allTextContents()).slice(2),['Unknown','Unknown','Unknown','Unknown']);
   await page.goBack();await page.getByRole('heading',{name:'Cargo aboard',exact:true}).waitFor();assert.equal(await page.locator('.cargo-section tbody tr').first().locator('td').nth(3).textContent(),'62.5%');
   console.log('Player snapshot browser checks passed: desktop/mobile, inert markup, versions, repeated rendering, navigation, storage isolation.');
 } finally { await browser.close(); }

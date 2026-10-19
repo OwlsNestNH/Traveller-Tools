@@ -67,7 +67,7 @@ encoded explicitly, including GM-approved public overrides.
 Fields follow contract order, with explicit counts for lists, string tokens and
 inline UTF-8 byte strings. Unsigned canonical varints encode integers. Decimal
 scale and mantissa preserve physical quantities and cash exactly, including trailing
-fractional zeroes. Costs (expense expected/paid, cargo paid-per-ton and offer unit prices) round UP to
+fractional zeroes. Costs (expense expected/paid, cargo paid unit/lot costs and offer unit prices) round UP to
 Cr100 by default or explicitly Cr1000, using BigInt arithmetic. Null has a separate
 marker from known zero. The original object is never changed. Expense basis text
 is preserved verbatim; explanatory rates in that text remain explanatory source
@@ -248,11 +248,11 @@ screen remain deferred; **recipient persistence itself is now implemented**.
 
 ## Codec 5: cargo purchase provenance
 
-Cargo rows now allow `purchase: {retailPerTon, percent, paidPerTon}`. The object
+Cargo rows now allow `purchase: {retailPerTon, percent, paidPerTon, paidTotal}`. The object
 may be null; each field may independently be null. Retail is the recorded base
 price in Credits per ton; percent is the actual purchase percentage recorded by
 the operator before rounding; paidPerTon is the actual unit purchase cost before
-link preparation. All three use bounded nonnegative decimal strings. There is
+link preparation. All four use bounded nonnegative decimal strings. There is
 no catalog-price, current-market, or local-annotation fallback, including for Other.
 A future production adapter must explicitly supply actual purchase provenance.
 This standalone change does not add that adapter or infer missing percentages.
@@ -260,11 +260,13 @@ This standalone change does not add that adapter or infer missing percentages.
 Preparation preserves retail and percentage exactly, and rounds paidPerTon up to
 the selected Cr100/Cr1000 quantum, like existing expense/offer costs. Thus a known
 62.5% purchase of Cr1,000 retail can display Cr700 paid/ton after Cr100 rounding;
-the percentage remains 62.5%, not a fabricated 70%. Paid is never labeled as a lot
-total. Missing history stays Unknown; zero remains distinct from unknown.
+the percentage remains 62.5%, not a fabricated 70%. Paid / ton and Paid / lot are separate columns. The lot total covers the shown
+tons: preserve an explicit total when supplied, otherwise multiply the exact
+pre-rounding paid-per-ton by whole tons and then round that total independently.
+Never multiply an already-rounded unit cost to invent an actual total. Missing history stays Unknown; zero remains distinct from unknown.
 
 Each codec-5 cargo row appends a presence flag, two exact decimals (retail and
-percent), and an optional quantized paid cost. Codecs 1–4 decode with purchase=null;
+percent), and optional quantized paid unit and lot costs. Codecs 1–4 decode with purchase=null;
 existing bytes/catalog meanings stay unchanged. Encoding known purchase history
 with an older codec fails explicitly instead of dropping fields. The public
 headless contract remains version 4 with this optional additive allowlist field;
@@ -273,7 +275,7 @@ migration is performed.
 
 New synthetic generator examples contain explicit purchase history, including
 separate prices for repeated goods and unknown Other lots. Full deployed-path
-lengths at Cr100 are 453/519/535 characters for 4/10/12 lots. Earlier measurement
+lengths at Cr100 are 461/539/558 characters for 4/10/12 lots. Earlier measurement
 tables in this document describe historical codecs/fixtures without this history.
 The default 8,192-character budget is unchanged; selecting 500 for a larger example
 now rejects with its required size, without truncation or alternative delivery.

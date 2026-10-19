@@ -22,7 +22,14 @@ export function prepareSnapshotForLink(input, {rounding=100}={}) {
   for (const kind of EXPENSE_KINDS) for (const key of ['expected','paid']) data.expenses[kind][key] = rounded(data.expenses[kind][key],rounding);
   for (const list of [data.cargo,data.buy.offers,data.sell.offers]) for (const row of list) {
     row.name = COMMODITIES[commodityIds.get(row.name) ?? 0];
-    if(row.purchase)row.purchase.paidPerTon=rounded(row.purchase.paidPerTon,rounding);
+    if(row.purchase){
+      const purchase=row.purchase;
+      // Cost of the tons in this lot, from exact unit cost BEFORE rounding.
+      let total=purchase.paidTotal;
+      if(total===null && purchase.paidPerTon!==null){const digits=String(scale(purchase.paidPerTon)*BigInt(row.tons)).padStart(7,'0');total=digits.slice(0,-6)+'.'+digits.slice(-6);}
+      purchase.paidTotal=rounded(total,rounding);
+      purchase.paidPerTon=rounded(purchase.paidPerTon,rounding);
+    }
     if ('creditsPerTon' in row) row.creditsPerTon = rounded(row.creditsPerTon,rounding);
   }
   return projectPlayerSnapshot(data);
@@ -140,7 +147,7 @@ function packet(input, bytes, rounding, percentages=true, codecVersion=CODEC_VER
     const row=list?.[i], id=small(reading ? undefined : commodityIds.get(row.name),255);
     if (!Object.hasOwn(COMMODITIES,id)) invalid();
     const next={name:COMMODITIES[id],tons:decimal(row?.tons)}; if (priced) next.creditsPerTon=price(row?.creditsPerTon,id);
-    else {next.purchase=null;if(codecVersion>=5 && small(reading?undefined:Number(row.purchase!==null),1))next.purchase={retailPerTon:decimal(row?.purchase?.retailPerTon),percent:decimal(row?.purchase?.percent),paidPerTon:money(row?.purchase?.paidPerTon)};}
+    else {next.purchase=null;if(codecVersion>=5 && small(reading?undefined:Number(row.purchase!==null),1))next.purchase={retailPerTon:decimal(row?.purchase?.retailPerTon),percent:decimal(row?.purchase?.percent),paidPerTon:money(row?.purchase?.paidPerTon),paidTotal:money(row?.purchase?.paidTotal)};}
     return next;
   });
   result.cargo=rows(source.cargo,false);

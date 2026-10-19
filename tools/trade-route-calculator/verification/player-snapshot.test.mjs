@@ -84,8 +84,8 @@ test('LSS overflow reserves whole space without changing exact stock or internal
 
 test('purchase history is a nested detached allowlist, independently unknown and bounded',()=>{
  const input=fresh();input.cargo[0].purchase={retailPerTon:'1000',percent:'62.500000',paidPerTon:'625',gm:'secret'};
- const result=projectPlayerSnapshot(input);assert.deepEqual(result.cargo[0].purchase,{retailPerTon:'1000',percent:'62.500000',paidPerTon:'625'});assert.ok(Object.isFrozen(result.cargo[0].purchase));
+ const result=projectPlayerSnapshot(input);assert.deepEqual(result.cargo[0].purchase,{retailPerTon:'1000',percent:'62.500000',paidPerTon:'625',paidTotal:null});assert.ok(Object.isFrozen(result.cargo[0].purchase));
  input.cargo[0].purchase.percent='90';assert.equal(result.cargo[0].purchase.percent,'62.500000');
- input.cargo[0].purchase={};assert.deepEqual(projectPlayerSnapshot(input).cargo[0].purchase,{retailPerTon:null,percent:null,paidPerTon:null});
+ input.cargo[0].purchase={};assert.deepEqual(projectPlayerSnapshot(input).cargo[0].purchase,{retailPerTon:null,percent:null,paidPerTon:null,paidTotal:null});
  for(const value of ['<img>','-1','Infinity','1e3','1.1234567',7,[],{}]){input.cargo[0].purchase={paidPerTon:value};assert.throws(()=>projectPlayerSnapshot(input));}
 });

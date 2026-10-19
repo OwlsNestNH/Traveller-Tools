@@ -220,10 +220,10 @@ blocked in this environment and is not certified by these tests.
 ## Cargo values and fixed map candidate
 
 Cargo aboard now shows each separate lot's tons, recorded retail/base Credits per
-ton, recorded actual purchase percentage, and paid Credits per ton. Paid unit costs
+ton, recorded actual purchase percentage, and paid Credits per ton plus paid lot total for the tons shown. Paid unit/lot costs
 follow link rounding; retail and percentage are not reconstructed from those rounded
 amounts. Missing provenance, including old links and Other goods, displays Unknown.
-Other local estimates cannot fill or overwrite these fields. Desktop uses five
+Other local estimates cannot fill or overwrite these fields. Desktop uses six
 columns; phones show labeled rows per lot. See PLAYER_SNAPSHOT_CODEC.md for codec 5.
 
 The map no longer pans or scrolls internally. The input event immediately refits the
@@ -233,7 +233,7 @@ leave the center fixed. Wheel/touch gestures scroll the page. Desktop map/contro
 and world-details panels have equal outer widths and heights, with aligned edges;
 phones retain natural stacked panels.
 
-Validation: 41 focused native tests, snapshot and map browser suites, and independent
+Validation: 42 focused native tests, snapshot and map browser suites, and independent
 review. New coverage includes purchase rounding/unknown/Other/legacy round trips,
 local-annotation separation, 320–1440px cargo layout, immediate keyboard/input ring
 updates during delayed requests, fixed viewBox after clicks/drags, real touch/wheel

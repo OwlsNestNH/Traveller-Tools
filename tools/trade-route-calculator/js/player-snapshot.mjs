@@ -38,7 +38,7 @@ export function summarizePlayerExpenses(input) {
   }
   return freeze(result);
 }
-const purchase = value => { if(value == null)return null; const p=object(value); return {retailPerTon:optionalAmount(p.retailPerTon ?? null),percent:optionalAmount(p.percent ?? null),paidPerTon:optionalAmount(p.paidPerTon ?? null)}; };
+const purchase = value => { if(value == null)return null; const p=object(value); return {retailPerTon:optionalAmount(p.retailPerTon ?? null),percent:optionalAmount(p.percent ?? null),paidPerTon:optionalAmount(p.paidPerTon ?? null),paidTotal:optionalAmount(p.paidTotal ?? null)}; };
 const rows = (value, project) => { if (!Array.isArray(value) || value.length > MAX_SNAPSHOT_ROWS) fail(); return Array.from(value, row => project(object(row))); };
 const freeze = value => { if (value && typeof value === 'object') { Object.values(value).forEach(freeze); Object.freeze(value); } return value; };
 const status = value => { if (!['available', 'not-checked', 'expired'].includes(value)) fail(); return value; };

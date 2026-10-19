@@ -99,8 +99,8 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
   }
   expenseTable.append(head, body); details.append(expenseTable); expensePanel.append(details);
   const cargo = section('Cargo aboard'); cargo.className = 'wide cargo-section';
-  table(cargo, ['Cargo lot', 'Tons', 'Retail / ton', 'Purchase % of retail', 'Paid / ton'], data.cargo.map((row,i) => [localName(row,'cargo',i), formatSnapshotTons(row.tons), credits(row.purchase?.retailPerTon ?? null), row.purchase?.percent == null ? 'Unknown' : quantity(row.purchase.percent)+'%', credits(row.purchase?.paidPerTon ?? null)]), 'No cargo aboard.');
-  if(data.cargo.length)cargo.append(node('p','Retail is the recorded base price per ton. Purchase % is the actual recorded percentage before credit rounding. Paid is per ton, not the lot total, and follows this link’s credit rounding. Missing purchase history stays Unknown; local estimates do not fill it in.'));
+  table(cargo, ['Cargo lot', 'Tons', 'Retail / ton', 'Purchase % of retail', 'Paid / ton', 'Paid / lot'], data.cargo.map((row,i) => [localName(row,'cargo',i), formatSnapshotTons(row.tons), credits(row.purchase?.retailPerTon ?? null), row.purchase?.percent == null ? 'Unknown' : quantity(row.purchase.percent)+'%', credits(row.purchase?.paidPerTon ?? null), credits(row.purchase?.paidTotal ?? null)]), 'No cargo aboard.');
+  if(data.cargo.length)cargo.append(node('p','Retail is the recorded base price per ton. Purchase % is the actual recorded percentage before credit rounding. Paid / lot covers the tons shown. Unit and lot costs round independently, so multiplying the displayed unit price may differ from the displayed lot total. Missing purchase history stays Unknown; local estimates do not fill it in.'));
   const support=data.ship.lifeSupport;
   if((support.cargoLss!==null&&Number(support.cargoLss)>0)||(support.cargoReservedTons!==null&&Number(support.cargoReservedTons)>0)) {
     facts(cargo,[['Life support overflow · reserved space',formatSnapshotTons(support.cargoReservedTons)+(support.cargoReservedTons===null?'':' t')]]);

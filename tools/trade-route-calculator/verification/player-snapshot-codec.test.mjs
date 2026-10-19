@@ -149,3 +149,9 @@ test('older codecs never fabricate cargo purchase history and codec4 bytes stay 
   const packet=measureSnapshotLink(input,{codecVersion:version});const old=decodeSnapshotLink(PROPOSED_PREFIX+packet.payload);assert.ok(old.cargo.every(row=>row.purchase===null));assert.equal(measureSnapshotLink(old,{codecVersion:version}).payload,packet.payload);
  }
 });
+
+test('lot totals round exact unit cost times shown tons, independently of unit rounding',()=>{
+ const source=clone();source.cargo=[{name:'Other',tons:'2',purchase:{retailPerTon:'1000',percent:'62.5',paidPerTon:'625'}},{name:'Other',tons:'4',purchase:{paidTotal:'1001'}},{name:'Other',tons:'0',purchase:{paidPerTon:'0'}},{name:'Other',tons:'3'}];
+ for(const rounding of [100,1000]){const result=decodeSnapshotLink(encodeSnapshotLink(source,{rounding}));assert.equal(result.cargo[0].purchase.paidTotal,rounding===100?'1300':'2000');assert.equal(result.cargo[0].purchase.paidPerTon,rounding===100?'700':'1000');assert.equal(result.cargo[1].purchase.paidTotal,rounding===100?'1100':'2000');assert.equal(result.cargo[1].purchase.paidPerTon,null);assert.equal(result.cargo[2].purchase.paidTotal,'0');assert.equal(result.cargo[3].purchase,null);assert.deepEqual(prepareSnapshotForLink(result,{rounding}),result);}
+ source.cargo[0].tons='999999999999999';assert.throws(()=>encodeSnapshotLink(source),/numeric range/);
+});
