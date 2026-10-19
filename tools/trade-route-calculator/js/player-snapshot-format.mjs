@@ -6,14 +6,16 @@ export function formatSnapshotTons(value) {
   return String(rounded).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
-export function formatSnapshotLss(value) {
+export function formatSnapshotWholeDown(value) {
   return value === null ? 'Unknown' : value.split('.')[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 // Expense basis text may contain explicitly labelled tonnage. Prices (/t),
 // dates and other numbers remain verbatim. Explicit LSS stock rounds down.
-export function formatSnapshotQuantityText(value) {
+export const formatSnapshotLss = formatSnapshotWholeDown;
+
+export function formatSnapshotQuantityText(value, {fuel=false}={}) {
   return value.replace(/(?<![\w.,+\-])(\d+(?:,\d{3})*(?:\.\d+)?)(\s*(?:tonnes?|tons?|t))\b/gi,
-    (_, amount, unit) => formatSnapshotTons(amount.replaceAll(',', '')) + unit).replace(/(?<![\w.,+\-])(\d+(?:,\d{3})*(?:\.\d+)?)(\s*LSS)\b(?!\s*(?:\/|per\b))/gi,
+    (_, amount, unit) => (fuel ? formatSnapshotWholeDown : formatSnapshotTons)(amount.replaceAll(',', '')) + unit).replace(/(?<![\w.,+\-])(\d+(?:,\d{3})*(?:\.\d+)?)(\s*LSS)\b(?!\s*(?:\/|per\b))/gi,
     (_, amount, unit) => formatSnapshotLss(amount.replaceAll(',', '')) + unit);
 }

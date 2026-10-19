@@ -47,8 +47,8 @@ try {
     return {text,exact,values,unchanged,tonCells};
   });
   assert.deepEqual(displayChecks.tonCells,[['12','8','4','6'],['1','13','30'],['9','9','6']]);assert.equal(displayChecks.unchanged,true);assert.deepEqual(displayChecks.exact,{value:31.5,max:40.25});
-  assert.match(displayChecks.text,/32 t \/ 41 t capacity/);assert.match(displayChecks.text,/150 LSS of reserve stock/);assert.doesNotMatch(displayChecks.text,/31\.5 t|40\.25 t|150\.75 LSS|3\.5 t/);
-  assert.match(displayChecks.text,/Planned 4 t refined top-up at Cr500\/t/);assert.match(displayChecks.text,/21 days \/ 100 days capacity/);assert.match(displayChecks.text,/Rounded amounts may not add up/);
+  assert.match(displayChecks.text,/31 t \/ 40 t capacity/);assert.match(displayChecks.text,/150 LSS of reserve stock/);assert.doesNotMatch(displayChecks.text,/31\.5 t|40\.25 t|150\.75 LSS|3\.5 t/);
+  assert.match(displayChecks.text,/Planned 3 t refined top-up at Cr500\/t/);assert.match(displayChecks.text,/21 days \/ 100 days capacity/);assert.match(displayChecks.text,/Display rounding may make amounts differ/);
   assert.match(displayChecks.values[0],/0 t \/ 0 t capacity/);assert.match(displayChecks.values[1],/32 t \/ 40 t capacity/);assert.match(displayChecks.values[2],/Unknown \/ Unknown capacity/);assert.doesNotMatch(displayChecks.values[2],/Unknown t/);
   assert.equal(await page.locator('details').getAttribute('open'), null);
   await page.getByText('Cr 40,250', {exact:true}).waitFor();

@@ -24,6 +24,9 @@ button { padding:.6rem 1rem; margin-top:1rem; font:inherit; }
 @media(max-width:760px){#map-frame {max-height:360px;} main {padding:.6rem;} main section {padding:.75rem;}}
 
 /* The map itself is the union of complete hex rings, with transparent corners. */
-#map-frame {background:transparent;border:0;max-height:none;}
-#map-frame svg {width:auto;max-width:100%;height:auto;margin:auto;}
+#map-frame {background:transparent;border:0;max-height:620px;cursor:grab;}
+#map-frame:active {cursor:grabbing;}
+#map-frame svg {width:auto;max-width:none;height:auto;margin:auto;user-select:none;}
 @media(max-width:760px){#map-frame {max-height:470px;} #map-frame svg {width:auto;max-width:none;height:auto;}}
+
+.world-target {font-size:10px;} .world-uwp,.world-symbols {font-size:8.5px;}
