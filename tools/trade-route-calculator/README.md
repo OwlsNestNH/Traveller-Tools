@@ -902,7 +902,8 @@ filter off restores every matching offer and permits 100%+ purchases. This is a
 display preference, not a transaction restriction or a profit guarantee. It does
 not edit saved offers or the campaign.
 
-A keyboard-accessible **Zoom** slider sits directly above the main map and uses
+A keyboard-accessible **Zoom** slider sits in the header above the main map,
+between the location label and Expand map on desktop (stacked on phones), and uses
 the existing 6%–288% range. Buttons, Ctrl+scroll, Reset view and the slider stay
 synchronized; selected worlds, pan center, expanded mode and campaign data retain
 their existing behavior. Arrow keys and Home/End work on the slider.
