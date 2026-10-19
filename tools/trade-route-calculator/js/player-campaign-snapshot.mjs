@@ -4,7 +4,7 @@ import {projectPlayerSnapshot,SNAPSHOT_VERSION,EXPENSE_KINDS} from './player-sna
 import {playerBriefingData} from './player-briefing.mjs?v=player-link-20261019-95';
 import {context} from './rules.mjs?v=player-link-20261019-95';
 import {displayDate} from './calendar.mjs';
-import {supportStock,supportDisplay} from './life-support.mjs?v=player-link-20261019-95';
+import {supportStock,supportDisplay,supportAmount} from './life-support.mjs?v=player-link-20261019-95';
 import {passengerShip} from './passengers.mjs?v=player-link-20261019-95';
 import {fuelAvailabilityAdvice} from './expenses.mjs?v=player-link-20261019-95';
 import * as A from './amounts.mjs';
@@ -39,8 +39,10 @@ export function campaignPlayerSnapshot(s,core,{saleQuotes=new Map(),capturedAt=n
  const sales=[];
  for(const l of s.lots){const q=saleQuotes.get(l.id);if(q&&q.revision===s.revision&&q.worldId===s.actual&&!q.audit?.manualRequired)sales.push({name:name(core,l.commodity),tons:amount(l.quantity),creditsPerTon:amount(q.unitPrice)});}
  const daily=support.dailyUnits,days=units=>units!==null&&support.complementKnown&&A.cmp(daily,0)>0?supportDisplay(A.div(units,daily)):null;
- const reserve=support.cargoTons===null?null:amount(A.mul(support.cargoTons,100));
- const reserved=reserve===null?null:String(-A.floor(A.mul(A.div(reserve,100),-1)));
+ const exactCargo=support.cargoExact===null?null:supportAmount(support.cargoExact);
+ const reserve=exactCargo===null?null:supportDisplay(A.mul(exactCargo,100));
+ const reserved=exactCargo===null?null:String(-A.floor(A.mul(exactCargo,-1)));
+ if(reserve!==null&&reserved!==String(-A.floor(A.mul(A.div(reserve,100),-1))))throw Error('This life-support reserve cannot be represented accurately in a player link. Its fractional balance is too close to a cargo-space boundary.');
  return projectPlayerSnapshot({version:SNAPSHOT_VERSION,capturedAt,campaignDate:displayDate(s.dateLabel,s.hours),
   world:{name:text(w.name),location:text(w.sector+' / '+w.hex),uwp:text(c.uwp.raw),tradeCodes:text(c.codes.join(' ')),travelZone:text(c.zone),starport:text(w.emptySpace?'No starport':fuelAvailabilityAdvice(w)),mapReference:w.emptySpace||!w.sector?null:{sector:w.sector,hex:w.hex}},
   ship:{name:text(s.ship.name),cargoCapacityTons:amount(s.ship.capacity),cashCredits:s.bank,fuel:{current:amount(s.ship.fuel?.aboardTons),capacity:amount(s.ship.fuel?.capacityTons)},lifeSupport:{current:support.internalUnits,capacity:support.internalCapacityUnits,cargoLss:reserve,cargoReservedTons:reserved,daysRemaining:days(support.internalUnits),daysCapacity:days(support.internalCapacityUnits)},destination:text(s.worlds[s.route[s.routeIndex+1]]?.name??'No planned destination')},

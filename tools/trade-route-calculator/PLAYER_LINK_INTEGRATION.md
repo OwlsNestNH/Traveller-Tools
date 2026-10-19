@@ -56,7 +56,9 @@ that visit remains explicitly unavailable. Subsequent supported departures work.
   show Unknown rather than zero. GM expense notes are excluded.
 - Internal LSS days require a known positive consumption complement. Missing
   tracking stays Unknown. Exact rational LSS is represented at the existing
-  six-decimal display precision. Cargo reserve space uses whole physical tons.
+  six-decimal display precision. Cargo reserve space uses whole physical tons computed from the exact balance.
+  Fractional balances too close to a whole-ton boundary to preserve that space
+  at snapshot precision are explicitly refused, never understated.
 
 ## Limits and isolation
 

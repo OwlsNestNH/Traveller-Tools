@@ -86,3 +86,10 @@ test('an older application retaining unknown archive fields cannot resurrect a p
  const p=S.prepareJump(s,()=>({dice:[1,1,1,1,1,1],total:6}));s=S.transition(p.state,'Jump: legacy caller',x=>S.commitJump(x,{attemptId:p.attempt.id,elapsed:154}));
  s.playerDepartures=old;assert.throws(()=>playerSnapshotForVisit(s,core,0),/No complete departure/);
 });
+
+for(const numerator of ['2400000001','2700000001'])test(`fractional life-support reserve ${numerator}/3000000 refuses understated cargo space`,()=>{
+ const s=fresh();s.ship.lifeSupport={capacityHours:672,stockUnits:{numerator,denominator:'3000000'}};
+ S.validate(s);const before=JSON.stringify(s);
+ assert.throws(()=>campaignPlayerSnapshot(s,core,clock),/life-support reserve cannot be represented accurately/);
+ assert.equal(JSON.stringify(s),before);
+});
