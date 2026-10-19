@@ -132,8 +132,7 @@ The slider has integer steps 0–6, default 2. Radius 0 shows the snapshot origi
 Click or keyboard-activate any displayed system for all eight UWP fields in standard
 order, readable meanings, trade codes, travel zone, bases, gas giants and allegiance.
 Current World restores the immutable origin selection/view without resetting radius.
-The compact panel is beside the map on desktop and below it on phones. The native
-SVG scrolls to outer hexes and recenters when the panel width changes.
+The compact panel is beside the map on desktop and below it on phones. The SVG fits all selected rings into a fixed panel and recenters when the panel width changes.
 
 `player-map-reference.mjs` contains pure normalization, coordinate and fact helpers.
 The UI reuses existing read-only `planet-info.mjs` and `map-territory.mjs`; neither
@@ -175,11 +174,11 @@ unchanged. For example 31.5 / 40.25 fuel displays 31 / 40 t while the bar still 
 31.5 / 40.25. No new snapshot link or data migration is needed.
 
 The map footprint follows complete hex rings, with transparent corners and source
-territory clipped to those cells. The map stays in its own visible area. Mouse drag and native scrolling pan within
+territory clipped to those cells. The map stays in its own visible area. Mouse and touch dragging pan within
 the already loaded rings; Current World recenters the origin. Panning never fetches
 a new region or changes radius, selection or snapshot state. Radius remains 0–6 with 0 as origin only.
 
-In-hex UWP labels appear at radii 0–2. Radii 3–6 use compact names and base/gas-giant/zone symbols; every radius retains the full decoded click panel.
+All radii retain hex numbers, starport letters, UWP, world names and source-backed symbols. Fewer rings enlarge the entire map, including labels and discs. Dense 5–6-ring views, especially on phones, require selecting a world for readable details.
 
 ## Always-visible snapshot map area
 
@@ -193,3 +192,31 @@ snapshot replacement, and invalid/legacy snapshots without a reference do not
 retain a stale map. All existing read-only and storage boundaries remain intact.
 
 [Inline desktop (mocked map source)](verification/player-snapshot-review/inline-map-mocked-desktop.png) · [Inline phone (mocked map source)](verification/player-snapshot-review/inline-map-mocked-phone.png).
+
+## Map visual revision (draft, 2026-10-19)
+
+Both user-supplied reference images were inspected directly after attachment in the
+conversation; earlier Library downloads were blocked by the environment proxy.
+The original SVG rendering follows Traveller Map's established world-label layout:
+water/dry/unknown discs, naval stars, scout triangles, ringed gas giants, and amber/red
+zone arcs. Size-zero worlds show a belt. Capital highlighting comes only from explicit
+Cp/Cs/Cx remarks. Other base types retain literal codes rather than guessed symbols.
+Political boundaries and shading still come from the existing source metadata engine;
+no trade or communication routes are invented or copied from the screenshots.
+
+The complete hex footprint fits a fixed 580px desktop panel (responsive phone height)
+at every radius. SVG viewBox panning is bounded, works with mouse/touch, and Current
+World resets it. Touch gestures inside the map pan it; scroll the surrounding page
+outside the map. No wheel zoom is added: the ring selector controls the fitted scale.
+
+Traveller Map's renderer and symbol table were checked in RenderContext.cs,
+RenderUtil.cs and Stylesheet.cs; its source is Apache-2.0, with separate game/data
+notices. This revision uses original SVG primitives and existing attributed territory
+code, not a copied screenshot or server-rendered image. See licenses/traveller-map-territory-notice.txt.
+
+Validation: 38 focused native tests and both player browser suites pass. Map tests
+cover all seven radii at 1100/760/390/320px widths, constant panel height, increasing
+disc size with fewer rings, mouse/touch pan/reset, source-backed symbols and unknown
+hydrographics, request failures/races, inert hostile names, and frozen snapshot/storage
+isolation. Screenshots use mocked source data; live Traveller Map transport remains
+blocked in this environment and is not certified by these tests.

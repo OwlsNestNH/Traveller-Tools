@@ -16,3 +16,10 @@ https://github.com/inexorabletash/travellermap/blob/main/server/RenderContext.cs
 https://github.com/inexorabletash/travellermap/blob/main/server/SectorStylesheet.cs
 https://github.com/inexorabletash/travellermap/blob/main/res/styles/otu.css
 https://github.com/inexorabletash/travellermap/blob/main/LICENSE.md
+
+The standalone player-map-preview.mjs visual revision (2026-10-19) uses original
+SVG primitives following the established label placement and N/S base-symbol
+conventions inspected in RenderContext.cs, RenderUtil.cs and Stylesheet.cs.
+No map screenshot, font asset, or server-rendered tile is bundled by this revision.
+Additional reference:
+https://github.com/inexorabletash/travellermap/blob/main/server/Stylesheet.cs
