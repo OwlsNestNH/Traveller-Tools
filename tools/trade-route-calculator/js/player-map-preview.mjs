@@ -18,14 +18,20 @@ function showWorld(world) {
  const extra=node('dl');extra.className='reference-facts';for(const [label,value]of [['Travel zone',facts.zone],['Bases',facts.bases],['Gas giants',facts.gasGiants==='0'?'None recorded':facts.gasGiants],['Trade codes',facts.tradeCodes],['Allegiance',facts.allegiance]])extra.append(node('dt',label),node('dd',value));details.append(extra);
  for(const el of frame.querySelectorAll('[data-world]'))el.setAttribute('aria-pressed',String(el.dataset.world===world.id));
 }
-function centerMap(){if(!anchor||!project)return;const [x,y]=project(...stagger(anchor));frame.scrollLeft=Math.max(0,x-frame.clientWidth/2);frame.scrollTop=Math.max(0,y-frame.clientHeight/2);}
+function centerMap(){if(!anchor||!project)return;const [x,y]=project(...stagger(anchor)),box=svg?.viewBox.baseVal;if(!box)return;const scale=svg.clientWidth/box.width;frame.scrollLeft=Math.max(0,(x-box.x)*scale-frame.clientWidth/2);frame.scrollTop=Math.max(0,(y-box.y)*scale-frame.clientHeight/2);}
 function centerOrigin(){if(!anchor)return;showWorld(anchor);centerMap();}
 let previousWidth=0;new ResizeObserver(()=>{if(frame.clientWidth!==previousWidth){previousWidth=frame.clientWidth;centerMap();}}).observe(frame);
 function draw(radius) {
  const scale=72,size=(radius*2+3)*scale,[cx,cy]=stagger(anchor);project=(x,y)=>[size/2+(x-cx)*scale*Math.sqrt(3)/2,size/2+(y-cy)*scale];
  svg=svgNode('svg',{viewBox:`0 0 ${size} ${size}`,width:size,height:size,role:'group','aria-label':'Nearby systems reference map'});
- const territories=svgNode('g');territories.innerHTML=territoryMarkup({sectors,metadata,project});svg.append(territories);
- for(let x=anchor.x-radius;x<=anchor.x+radius;x++)for(let y=anchor.y-radius-1;y<=anchor.y+radius+1;y++)if(hexDistance(anchor,{x,y})<=radius){const [px,py]=project(...stagger({x,y})),r=scale/Math.sqrt(3);svg.append(svgNode('polygon',{points:Array.from({length:6},(_,i)=>`${px+r*Math.cos(i*Math.PI/3)},${py+r*Math.sin(i*Math.PI/3)}`).join(' '),class:'hex-grid'}));}
+ const cells=[],vertices=[];
+ for(let x=anchor.x-radius;x<=anchor.x+radius;x++)for(let y=anchor.y-radius-1;y<=anchor.y+radius+1;y++)if(hexDistance(anchor,{x,y})<=radius){const [px,py]=project(...stagger({x,y})),r=scale/Math.sqrt(3);const corners=Array.from({length:6},(_,i)=>[px+r*Math.cos(i*Math.PI/3),py+r*Math.sin(i*Math.PI/3)]);vertices.push(...corners);cells.push(corners.map(p=>p.join(',')).join(' '));}
+ const left=Math.min(...vertices.map(p=>p[0]))-2,top=Math.min(...vertices.map(p=>p[1]))-2,width=Math.max(...vertices.map(p=>p[0]))-left+2,height=Math.max(...vertices.map(p=>p[1]))-top+2;
+ svg.setAttribute('viewBox',`${left} ${top} ${width} ${height}`);svg.setAttribute('width',width);svg.setAttribute('height',height);
+ const defs=svgNode('defs'),clip=svgNode('clipPath',{id:'reference-footprint'});for(const points of cells)clip.append(svgNode('polygon',{points}));defs.append(clip);svg.append(defs);
+ const footprint=svgNode('g',{'clip-path':'url(#reference-footprint)',class:'map-footprint'});footprint.append(svgNode('rect',{x:left,y:top,width,height,fill:'#f8fafc'}));
+ const territories=svgNode('g');territories.innerHTML=territoryMarkup({sectors,metadata,project});footprint.append(territories);
+ for(const points of cells)footprint.append(svgNode('polygon',{points,class:'hex-grid'}));svg.append(footprint);
  for(const world of worlds){const [x,y]=project(...stagger(world)),g=svgNode('g',{transform:`translate(${x} ${y})`,role:'button',tabindex:0,'aria-label':'Inspect '+world.name,'aria-pressed':'false','data-world':world.id,class:'world-target'});
   g.append(svgNode('circle',{r:22,class:world.id===anchor.id?'origin-disc':'world-disc'}));
   const name=svgNode('text',{y:-6,'text-anchor':'middle'});name.textContent=world.name.length>12?world.name.slice(0,11)+'…':world.name;const code=svgNode('text',{y:10,'text-anchor':'middle',class:'allegiance-label'});code.textContent=world.raw.Allegiance||'?';g.append(name,code);

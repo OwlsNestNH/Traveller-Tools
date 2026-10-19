@@ -1,3 +1,4 @@
+import {formatSnapshotTons, formatSnapshotLss, formatSnapshotQuantityText} from './player-snapshot-format.mjs';
 import {projectPlayerSnapshot, summarizePlayerExpenses, EXPENSE_KINDS} from './player-snapshot.mjs';
 
 // Immutable transmitted data and local annotations remain separate.
@@ -51,13 +52,14 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
   const planet = section('Planetary information');
   facts(planet, [['World', data.world.name], ['Location', data.world.location], ['UWP', data.world.uwp], ['Trade codes', data.world.tradeCodes], ['Travel zone', data.world.travelZone], ['Starport', data.world.starport]]);
   if(data.world.mapReference){const link=node('a','Open nearby-world reference');const url=new URL('player-map-preview.html',document.baseURI);url.search=new URLSearchParams(data.world.mapReference);link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';planet.append(link);}
-  facts(section('Ship & journey'), [['Ship', data.ship.name], ['Cargo capacity', quantity(data.ship.cargoCapacityTons) + ' t'], ['Planned destination', data.ship.destination], ['Campaign date', data.campaignDate]]);
+  facts(section('Ship & journey'), [['Ship', data.ship.name], ['Cargo capacity', formatSnapshotTons(data.ship.cargoCapacityTons) + (data.ship.cargoCapacityTons===null?'':' t')], ['Planned destination', data.ship.destination], ['Campaign date', data.campaignDate]]);
   const resources = section('Shipboard cash & supplies'); resources.className = 'wide';
   const resourceGrid = node('div'); resourceGrid.className = 'resource-grid'; resources.append(resourceGrid);
   const cash = node('div'); cash.className = 'resource'; cash.append(node('h3', 'Shipboard cash'), node('strong', credits(data.ship.cashCredits)), node('p', 'Current balance · expenses below are not deducted again.')); resourceGrid.append(cash);
   const gauge = (title, resource, unit, description) => {
     const panel = node('div'); panel.className = 'resource'; panel.append(node('h3', title));
-    const label = quantity(resource.current) + (resource.current === null ? '' : ' ' + unit) + ' / ' + quantity(resource.capacity) + (resource.capacity === null ? ' capacity' : ' ' + unit + ' capacity');
+    const format = unit==='t' ? formatSnapshotTons : quantity;
+    const label = format(resource.current) + (resource.current === null ? '' : ' ' + unit) + ' / ' + format(resource.capacity) + (resource.capacity === null ? ' capacity' : ' ' + unit + ' capacity');
     panel.append(node('strong', label));
     if (resource.current !== null && resource.capacity !== null && Number(resource.capacity) > 0) {
       const meter = node('meter'); meter.min = 0; meter.max = Number(resource.capacity); meter.value = Number(resource.current);
@@ -82,22 +84,22 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
   for (const label of ['Expense / basis', 'Expected', 'Paid']) { const cell = node('th', label); cell.scope = 'col'; heading.append(cell); } head.append(heading);
   const body = node('tbody'), labels = {berth:'Berth', fuel:'Fuel', salary:'Salary', mortgage:'Mortgage', lss:'Life support (LSS)', incidentals:'Incidentals'};
   for (const kind of EXPENSE_KINDS) {
-    const entry = data.expenses[kind], row = node('tr'), name = node('th'); name.scope = 'row'; name.append(node('span', labels[kind]), node('small', entry.basis));
+    const entry = data.expenses[kind], row = node('tr'), name = node('th'); name.scope = 'row'; name.append(node('span', labels[kind]), node('small', formatSnapshotQuantityText(entry.basis)));
     row.append(name, node('td', credits(entry.expected)), node('td', credits(entry.paid))); body.append(row);
   }
   expenseTable.append(head, body); details.append(expenseTable); expensePanel.append(details);
   const cargo = section('Cargo aboard'); cargo.className = 'wide';
-  table(cargo, ['Cargo lot', 'Tons'], data.cargo.map((row,i) => [localName(row,'cargo',i), row.tons]), 'No cargo aboard.');
+  table(cargo, ['Cargo lot', 'Tons'], data.cargo.map((row,i) => [localName(row,'cargo',i), formatSnapshotTons(row.tons)]), 'No cargo aboard.');
   const support=data.ship.lifeSupport;
   if((support.cargoLss!==null&&Number(support.cargoLss)>0)||(support.cargoReservedTons!==null&&Number(support.cargoReservedTons)>0)) {
-    facts(cargo,[['Life support overflow · reserved space',quantity(support.cargoReservedTons)+(support.cargoReservedTons===null?'':' t')]]);
-    cargo.append(node('p',quantity(support.cargoLss)+(support.cargoLss===null?'':' LSS')+' of exact reserve stock. Reserved space is separate from cargo lots; it is not extra supply stock or an addition to internal days.'));
+    facts(cargo,[['Life support overflow · reserved space',formatSnapshotTons(support.cargoReservedTons)+(support.cargoReservedTons===null?'':' t')]]);
+    cargo.append(node('p',formatSnapshotLss(support.cargoLss)+(support.cargoLss===null?'':' LSS')+' of reserve stock (display rounded down). Reserved space is separate from cargo lots; it is not extra supply stock or an addition to internal days.'));
   }
   for (const [key, title] of [['buy', 'Buy offers · crew purchases'], ['sell', 'Sell offers · crew sales']]) {
     const panel = section(title), market = data[key];
     panel.append(node('p', 'Prices in Credits per ton. Quotes only; no transactions.'));
-    table(panel, ['Goods', 'Tons quoted', 'Cr / ton'], market.offers.map((row,i) => [localName(row,key,i), row.tons, row.creditsPerTon]), {'available':'Checked: no current offers.', 'not-checked':'Not checked. No prices available.', 'expired':'Expired. Ask the operator for fresh offers.'}[market.status]);
+    table(panel, ['Goods', 'Tons quoted', 'Cr / ton'], market.offers.map((row,i) => [localName(row,key,i), formatSnapshotTons(row.tons), row.creditsPerTon]), {'available':'Checked: no current offers.', 'not-checked':'Not checked. No prices available.', 'expired':'Expired. Ask the operator for fresh offers.'}[market.status]);
   }
-  root.replaceChildren(node('p', 'Snapshot captured: ' + data.capturedAt + ' · Fixed information; does not update live.'), container);
+  root.replaceChildren(node('p', 'Snapshot captured: ' + data.capturedAt + ' · Fixed information; does not update live.'), node('p', 'Tonnage labels round up to whole tons for display only. Rounded amounts may not add up or match costs. LSS stock labels round down to whole units. Stored amounts, prices and fill bars remain exact.'), container);
   return true;
 }

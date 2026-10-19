@@ -28,7 +28,28 @@ try {
   await page.getByText('21 days / 100 days capacity',{exact:true}).waitFor();
   const mapLink=new URL(await page.getByRole('link',{name:'Open nearby-world reference'}).getAttribute('href'));assert.equal(mapLink.searchParams.get('sector'),'Spinward Marches');assert.equal(mapLink.searchParams.get('hex'),'1910');
   await page.getByText('Life support overflow · reserved space',{exact:true}).waitFor();
-  await page.getByText(/150 LSS of exact reserve stock/).waitFor();
+  await page.getByText(/150 LSS of reserve stock/).waitFor();
+  // Presentation rounding cannot alter exact source quantities or meter ratios.
+  const displayChecks=await page.evaluate(async()=>{
+    const {renderPlayerSnapshot}=await import('./js/player-snapshot-view.mjs');
+    const {playerSnapshotFixture}=await import('./js/player-snapshot-fixture.mjs');
+    const root=document.getElementById('snapshot'),data=structuredClone(playerSnapshotFixture);
+    data.ship.fuel={current:'31.5',capacity:'40.25'};data.ship.lifeSupport.cargoLss='150.75';
+    data.buy.offers[0].tons='0.000001';data.sell.offers[0].tons='8.5';
+    const before=JSON.stringify(data);renderPlayerSnapshot(root,data);
+    const unchanged=before===JSON.stringify(data),text=root.textContent,meter=root.querySelector('meter'),exact={value:meter.value,max:meter.max};
+    const tonCells=[...root.querySelectorAll('section')].filter(s=>/^(Cargo aboard|Buy offers|Sell offers)/.test(s.querySelector('h2').textContent)).map(s=>[...s.querySelectorAll('tbody tr')].map(row=>row.children[1].textContent));
+    const values=[];
+    for(const fuel of [{current:'0.0',capacity:'0'},{current:'32.000000',capacity:'40'},{current:null,capacity:null}]){
+      data.ship.fuel=fuel;renderPlayerSnapshot(root,data);values.push(root.textContent);
+    }
+    renderPlayerSnapshot(root,playerSnapshotFixture);
+    return {text,exact,values,unchanged,tonCells};
+  });
+  assert.deepEqual(displayChecks.tonCells,[['12','8','4','6'],['1','13','30'],['9','9','6']]);assert.equal(displayChecks.unchanged,true);assert.deepEqual(displayChecks.exact,{value:31.5,max:40.25});
+  assert.match(displayChecks.text,/32 t \/ 41 t capacity/);assert.match(displayChecks.text,/150 LSS of reserve stock/);assert.doesNotMatch(displayChecks.text,/31\.5 t|40\.25 t|150\.75 LSS|3\.5 t/);
+  assert.match(displayChecks.text,/Planned 4 t refined top-up at Cr500\/t/);assert.match(displayChecks.text,/21 days \/ 100 days capacity/);assert.match(displayChecks.text,/Rounded amounts may not add up/);
+  assert.match(displayChecks.values[0],/0 t \/ 0 t capacity/);assert.match(displayChecks.values[1],/32 t \/ 40 t capacity/);assert.match(displayChecks.values[2],/Unknown \/ Unknown capacity/);assert.doesNotMatch(displayChecks.values[2],/Unknown t/);
   assert.equal(await page.locator('details').getAttribute('open'), null);
   await page.getByText('Cr 40,250', {exact:true}).waitFor();
   await page.getByText('Cr 26,750', {exact:true}).waitFor();

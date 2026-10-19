@@ -162,3 +162,18 @@ The focused suite has 34 native tests. Both browser suites cover snapshot naviga
 isolation, all map radii, selection/reset, malformed text, request races, partial
 metadata, empty neighboring sectors and invalid-origin retries. Independent review
 found the empty-sector edge case, now fixed and regression tested.
+
+## Whole-unit display rounding
+
+Tonnage labels (fuel/current capacity, cargo, offers and reserved overflow space)
+round **up** using exact decimal-string arithmetic. LSS stock labels round **down**;
+internal days keep their existing presentation. Explicit quantities in expense
+basis text follow these rules, while credit rates and LSS consumption rates remain
+unchanged. A notice explains that rounded labels may not add up or match costs.
+Underlying snapshot data, link bytes, prices, inventory and meter values remain
+unchanged. For example 31.5 / 40.25 fuel displays 32 / 41 t while the bar still uses
+31.5 / 40.25. No new snapshot link or data migration is needed.
+
+The map footprint follows complete hex rings, with transparent corners and source
+territory clipped to those cells. Desktop fits the complete footprint in its own
+visible map area; phones retain scrolling. Radius remains 0–5 with 0 as origin only.
