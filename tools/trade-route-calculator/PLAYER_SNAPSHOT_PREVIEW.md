@@ -82,13 +82,15 @@ labels must be deliberately composed by a future adapter, never copied from GM
 notes/audits. Totals remain visible while a native details/summary control toggles
 the rows. All data remains synthetic. The later local Other-label demonstration is the sole display-editing exception.
 
-## Later link and retention requirement (not implemented here)
+## Link and recipient retention
 
 Each GM-generated link opens a fixed information snapshot and retains that
 snapshot locally in the player's browser, in storage separate from campaign
 saves. Creating a new link must not update an existing recipient snapshot. The
 recipient must open the new link to obtain the new snapshot; old links continue
-to represent old snapshots. No live synchronization or local snapshot storage is implemented. The standalone viewer now decodes URL fragments through the codec.
+to represent old snapshots. The standalone viewer decodes URL fragments through the codec and retains each
+snapshot and its separate local annotations in recipient-only browser storage.
+No live synchronization is implemented.
 
 ## Bounded encoding feasibility measurement
 
@@ -113,11 +115,10 @@ button or recipient persistence is implemented by this measurement.
 The synthetic preview substitutes unknown commodity names with Other, keeping every
 lot separate. Only Other entries expose an on-demand popup for an 80-character local display
 name and optional estimated base price, each with an explicit Unknown choice. Labels
-are in memory, scoped to the exact projected snapshot plus list and row index. They
-survive repeat rendering of that same snapshot and clear on snapshot replacement
-or reload. They are not encoded, persisted, sent to the GM or synchronized. Known transmitted
-quotes stay authoritative; a local base estimate never creates or replaces a quote. Persistent
-recipient snapshots/labels still need a separate, explicitly isolated storage design.
+are scoped to the exact snapshot plus list and row index and persist with generated
+snapshots in a separate recipient namespace. They are not encoded in links, sent
+to the GM or synchronized. Known transmitted
+quotes stay authoritative; a local base estimate never creates or replaces a quote. Blocked/full browser storage displays a warning; the original snapshot remains usable.
 The preview bootstrap does not round the original mockup amounts; codec rounding
 is independently tested and disclosed in its API.
 

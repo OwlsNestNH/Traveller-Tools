@@ -123,10 +123,56 @@ for name and local base price. Zero remains a known zero; estimates are visibly
 labelled and never replace known transmitted quotes. A cargo lot without a quote
 still has no quote after a base estimate. This codec always transmits authoritative
 prices for offers (including Other); it does not infer a missing quote from a
-player-entered base or silently create one. Annotations clear on reload or snapshot
-replacement. Persistent snapshots/annotations remain deferred.
+player-entered base or silently create one. Recipient snapshots and annotations now persist in a dedicated browser namespace,
+separate from campaign saves. Reopening an old link restores its own annotations;
+opening a new link creates a separate record and does not update an existing view.
+Opening the viewer without a fragment restores the last opened recipient snapshot.
+A blocked/full store leaves the snapshot usable and displays a warning. Clearing
+browser data removes retention; storage does not synchronize across browsers/devices.
 
 [Synthetic generator](verification/player-snapshot-review/generator.png) ·
 [Decoded desktop](verification/player-snapshot-review/decoded-desktop.png) ·
 [Decoded phone](verification/player-snapshot-review/decoded-phone.png) ·
 [Other popup](verification/player-snapshot-review/other-popup-phone.png).
+
+## Why 213/207 became 383/378
+
+The earlier packet was a normalized design experiment, not the full screen contract.
+It used numeric dates/visit bounds, a destination ID and typed expense basis fields.
+The implemented packet preserves the original labels and complete expense wording,
+including text not reconstructible from those few numbers. At Cr100:
+
+| Field group | Earlier design bytes | Full implemented bytes | Difference |
+| --- | ---: | ---: | ---: |
+| Version/header | 7 | 5 | -2 |
+| Capture and campaign date | 8 | 38 | +30 |
+| Current world reference | 3 | 2 | -1 |
+| Ship, exact resources/cash, destination | 34 | 51 | +17 |
+| Visit label / bounds | 6 | 34 | +28 |
+| Expense values and explanation/basis | 23 | 79 | +56 |
+| Cargo/offer rows and remaining framing | 43 | 43 | 0 |
+| Total | 124 | 252 | +128 |
+
+At Cr1000 the corresponding totals are 120 and 248 bytes, again +128. Base64url
+rounding plus the same 47-character prefix yields 213 → 383 and 207 → 378. These
+figures compare the synthetic fixtures, not arbitrary campaigns or a hard minimum.
+The recipient persistence added later does not put annotations or saved browser
+records into the link and therefore does not increase encoded size.
+
+## Recipient storage boundary
+
+`player-snapshot-storage.mjs` uses only keys beginning
+`traveller-player-snapshot:v1:`. Each record is keyed by the exact validated canonical
+payload; the separate `last` key points to the most recently opened payload. Records
+contain that original payload plus separately validated local annotations keyed by
+list and row index. No storage enumeration, campaign key read/write, import, engine
+mutation or storage-event synchronization occurs. The immutable snapshot is decoded
+again on restore. Stored annotation records are bounded, version checked and fully
+validated before any labels are accepted; unknowns remain null, while zero remains
+a decimal string. Corrupt annotations cannot change transmitted numbers or rename
+known catalog goods. There is no automatic eviction: quota failures are disclosed
+instead of silently deleting old snapshots. The no-link synthetic example alone
+remains a transient demonstration until a generated link is opened.
+
+Production integration, cross-device synchronization and a retention-management
+screen remain deferred; **recipient persistence itself is now implemented**.

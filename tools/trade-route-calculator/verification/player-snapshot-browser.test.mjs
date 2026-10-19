@@ -101,5 +101,16 @@ try {
   const checker = await context.newPage(); await checker.goto(url);
   assert.deepEqual(await checker.evaluate(() => ({local:localStorage['traveller-trade-route-calculator:v1'], session:sessionStorage.sentinel})), {local:'synthetic-sentinel',session:undefined});
   assert.equal(await page.evaluate(() => sessionStorage.sentinel), 'unchanged');
+  // Separate context permits only recipient namespace writes; campaign bytes remain unchanged.
+  const persistent=await browser.newContext();
+  await persistent.addInitScript(()=>{const original=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(!key.startsWith('traveller-player-snapshot:v1:'))throw Error('Unexpected storage write: '+key);return original.call(this,key,value);};});
+  const recipient=await persistent.newPage();await recipient.goto(generated);await recipient.getByRole('button',{name:'Edit local details for cargo lot 2'}).click();
+  await recipient.getByLabel('Name unknown',{exact:true}).uncheck();await recipient.getByLabel('Local goods name',{exact:true}).fill('Retained lot');await recipient.getByLabel('Base price unknown',{exact:true}).uncheck();await recipient.getByLabel('Local estimated base price',{exact:true}).fill('0');await recipient.getByRole('button',{name:'Save local details'}).click();
+  await recipient.reload();await recipient.getByText('Retained lot',{exact:true}).waitFor();await recipient.getByText('Local base: Cr 0 / t · player estimate',{exact:true}).waitFor();
+  const nextLink=await recipient.evaluate(async()=>{const {playerSnapshotFixture}=await import('./js/player-snapshot-fixture.mjs');const {measureSnapshotLink}=await import('./js/player-snapshot-codec.mjs');const data=structuredClone(playerSnapshotFixture);data.capturedAt='Different retained snapshot';data.ship.cashCredits='123';return location.href.split('#')[0]+'#'+measureSnapshotLink(data).payload;});
+  await recipient.goto(nextLink);await recipient.getByText('Cr 123',{exact:true}).waitFor();assert.equal(await recipient.getByText('Retained lot',{exact:true}).count(),0);
+  await recipient.goto(generated);await recipient.getByText('Retained lot',{exact:true}).waitFor();await recipient.getByRole('button',{name:'Edit local details for cargo lot 3'}).click();assert.equal(await recipient.getByLabel('Name unknown',{exact:true}).isChecked(),true);await recipient.keyboard.press('Escape');
+  await recipient.goto(url);await recipient.getByText('Retained lot',{exact:true}).waitFor();
+  await persistent.close();
   console.log('Player snapshot browser checks passed: desktop/mobile, inert markup, versions, repeated rendering, navigation, storage isolation.');
 } finally { await browser.close(); }

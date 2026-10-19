@@ -1,10 +1,10 @@
 import {projectPlayerSnapshot, summarizePlayerExpenses, EXPENSE_KINDS} from './player-snapshot.mjs';
 
-// Preview-only labels: immutable snapshot data stays separate. Bounded memory only;
-// reload clears labels. Exact canonical snapshot identity plus list/index prevents collisions.
+// Immutable transmitted data and local annotations remain separate.
+// Persistence is supplied by the standalone recipient adapter, never campaign storage.
 const labelsByRoot = new WeakMap();
 // Render only validated, detached data. All untrusted strings become text nodes.
-export function renderPlayerSnapshot(root, input) {
+export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChange}={}) {
   const document = root.ownerDocument;
   const node = (tag, content) => { const element = document.createElement(tag); if (content !== undefined) element.textContent = content; return element; };
   let data;
@@ -13,6 +13,7 @@ export function renderPlayerSnapshot(root, input) {
   const identity = JSON.stringify(data);
   let state = labelsByRoot.get(root);
   if (!state || state.identity !== identity) {state = {identity, labels:new Map()}; labelsByRoot.set(root,state);}
+  if(annotations) state.labels=annotations;
   const localName = (row, list, index) => {
     if(row.name!=='Other') return row.name;
     const key=list+':'+index, wrap=node('div'), title=node('span'), note=node('small'), edit=node('button','Edit');
@@ -20,7 +21,7 @@ export function renderPlayerSnapshot(root, input) {
     const refresh=()=>{const entry=state.labels.get(key);title.textContent=entry?.name||'Other';note.textContent=entry?.base!=null?'Local base: Cr '+entry.base+' / t · player estimate':'';};refresh();
     edit.addEventListener('click',()=>{
       const entry=state.labels.get(key)??{name:null,base:null}, dialog=node('dialog'), heading=node('h2','Other goods');heading.id='other-dialog-title';dialog.setAttribute('aria-labelledby',heading.id);
-      dialog.append(heading,node('p','Local details only. They clear when this snapshot changes or you reload.'));
+      dialog.append(heading,node('p',annotations?'Local to this snapshot, saved in this browser when storage is available.':'Example only. These local details clear when you reload.'));
       const field=(label,value,aria)=>{const unknown=node('input');unknown.type='checkbox';unknown.checked=value===null;const unknownLabel=node('label',label+' unknown');unknownLabel.prepend(unknown);const input=node('input');input.type='text';input.value=value??'';input.disabled=unknown.checked;input.setAttribute('aria-label',aria);const name=node('label',label);name.append(input);unknown.addEventListener('change',()=>{input.disabled=unknown.checked;});dialog.append(unknownLabel,name);return {unknown,input};};
       const name=field('Name',entry.name,'Local goods name');name.input.maxLength=80;
       const base=field('Base price',entry.base,'Local estimated base price');base.input.maxLength=22;base.input.inputMode='decimal';
@@ -30,7 +31,7 @@ export function renderPlayerSnapshot(root, input) {
         const validName=name.unknown.checked||(name.input.value.trim().length>0&&name.input.value.length<=80&&name.input.value.isWellFormed()&&!/[\u0000-\u001f\u007f]/u.test(name.input.value));
         const validBase=base.unknown.checked||/^(0|[1-9]\d{0,14})(\.\d{1,6})?$/.test(base.input.value);
         if(!validName||!validBase){error.textContent='Enter a name and a nonnegative decimal price, or choose Unknown.';return;}
-        state.labels.set(key,{name:name.unknown.checked?null:name.input.value,base:base.unknown.checked?null:base.input.value});refresh();dialog.close();
+        state.labels.set(key,{name:name.unknown.checked?null:name.input.value,base:base.unknown.checked?null:base.input.value});onAnnotationsChange?.();refresh();dialog.close();
       });cancel.addEventListener('click',()=>dialog.close());dialog.addEventListener('close',()=>{dialog.remove();edit.focus();});dialog.append(error,save,cancel);root.append(dialog);dialog.showModal();
     });wrap.append(title,edit,note);return wrap;
   };
