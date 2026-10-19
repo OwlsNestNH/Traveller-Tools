@@ -1,4 +1,4 @@
-import * as R from './rules.mjs?v=player-link-20261019-95';
+import * as R from './rules.mjs?v=buy-zoom-20261019-96';
 
 // Prepare one sale line from explicit lot/buyer/context/quote/commodity/core,
 // current pricing flags and creditStep, plus caller-normalized values:

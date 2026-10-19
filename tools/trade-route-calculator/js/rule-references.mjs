@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=player-link-20261019-95';
+import {escapeHtml as esc} from './display.mjs?v=buy-zoom-20261019-96';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.

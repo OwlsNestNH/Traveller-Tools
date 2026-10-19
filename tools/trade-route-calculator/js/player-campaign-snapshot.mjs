@@ -1,12 +1,12 @@
 // Read-only campaign adapter. Only explicit public values cross this boundary.
 // No DOM, persistence, random rolls, network access or URL serialization.
 import {projectPlayerSnapshot,SNAPSHOT_VERSION,EXPENSE_KINDS} from './player-snapshot.mjs';
-import {playerBriefingData} from './player-briefing.mjs?v=player-link-20261019-95';
-import {context} from './rules.mjs?v=player-link-20261019-95';
+import {playerBriefingData} from './player-briefing.mjs?v=buy-zoom-20261019-96';
+import {context} from './rules.mjs?v=buy-zoom-20261019-96';
 import {displayDate} from './calendar.mjs';
-import {supportStock,supportDisplay,supportAmount} from './life-support.mjs?v=player-link-20261019-95';
-import {passengerShip} from './passengers.mjs?v=player-link-20261019-95';
-import {fuelAvailabilityAdvice} from './expenses.mjs?v=player-link-20261019-95';
+import {supportStock,supportDisplay,supportAmount} from './life-support.mjs?v=buy-zoom-20261019-96';
+import {passengerShip} from './passengers.mjs?v=buy-zoom-20261019-96';
+import {fuelAvailabilityAdvice} from './expenses.mjs?v=buy-zoom-20261019-96';
 import * as A from './amounts.mjs';
 
 const text=value=>String(value??'').replace(/[\x00-\x1f\x7f]/g,' ').slice(0,240);

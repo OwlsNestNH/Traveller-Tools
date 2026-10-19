@@ -1,16 +1,16 @@
-import {ruleInfo} from './rule-references.mjs?v=player-link-20261019-95';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=player-link-20261019-95';
-import {passengerShip} from './passengers.mjs?v=player-link-20261019-95';
+import {ruleInfo} from './rule-references.mjs?v=buy-zoom-20261019-96';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=buy-zoom-20261019-96';
+import {passengerShip} from './passengers.mjs?v=buy-zoom-20261019-96';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=player-link-20261019-95';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=player-link-20261019-95';
-import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=player-link-20261019-95';
-import {roomCounts} from './accommodation.mjs?v=player-link-20261019-95';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=player-link-20261019-95';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=player-link-20261019-95';
-import {creditStep} from './rounding.mjs?v=player-link-20261019-95';
-import {roll} from './rules.mjs?v=player-link-20261019-95';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=player-link-20261019-95';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=buy-zoom-20261019-96';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=buy-zoom-20261019-96';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=buy-zoom-20261019-96';
+import {roomCounts} from './accommodation.mjs?v=buy-zoom-20261019-96';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=buy-zoom-20261019-96';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=buy-zoom-20261019-96';
+import {creditStep} from './rounding.mjs?v=buy-zoom-20261019-96';
+import {roll} from './rules.mjs?v=buy-zoom-20261019-96';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=buy-zoom-20261019-96';
 
 const esc=escapeHtml;
 const money=formatCreditsText;
