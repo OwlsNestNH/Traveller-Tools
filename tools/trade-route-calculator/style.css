@@ -532,3 +532,5 @@ main{padding-top:18px}
  .cargo-management .cargo-remaining{display:grid;grid-template-columns:82px;justify-content:end;gap:3px}
  .cargo-management .cargo-remaining::before{content:'Remaining (t)';grid-column:1 / -1;font-size:11px;color:var(--muted);text-align:center}
 }
+
+.player-link-controls{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;padding:.75rem 1rem;border:1px solid #376076;border-radius:.6rem;margin:.5rem 0}.player-link-controls button{font-size:1rem;min-height:44px;background:#62d3dd;color:#061b25;border-color:#62d3dd;font-weight:700}.player-link-controls .help{flex:1;min-width:160px}

@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=referee-cargo-20261015-94';
+import {escapeHtml as esc} from './display.mjs?v=player-link-20261019-95';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.

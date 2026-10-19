@@ -77,7 +77,7 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
     } else panel.append(node('p', resource.capacity !== null && Number(resource.capacity) === 0 ? 'No capacity configured.' : 'Fill level unavailable.'));
     panel.append(node('p', description)); resourceGrid.append(panel);
   };
-  gauge('Main fuel tank', data.ship.fuel, 't', 'Fuel aboard / main tank capacity');
+  gauge('Fuel tanks', data.ship.fuel, 't', 'Fuel aboard / total tank capacity');
   gauge('Life support · internal days remaining', {current:data.ship.lifeSupport.daysRemaining,capacity:data.ship.lifeSupport.daysCapacity}, 'days', data.ship.lifeSupport.daysRemaining===null ? 'Days unknown: duration for the current crew and passengers was not supplied. Supply stock has not been converted into days.' : 'Internal supplies only, at this snapshot’s crew and passenger consumption. Cargo reserve is shown separately.');
   const expensePanel = section('Current-system expenses'); expensePanel.className = 'wide';
   expensePanel.append(node('p', data.expenses.visitLabel));

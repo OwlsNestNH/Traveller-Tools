@@ -1,0 +1,44 @@
+[
+  {
+    "width": 1440,
+    "mode": "success",
+    "pass": true,
+    "currentCharacters": 1135,
+    "pastCharacters": 1122
+  },
+  {
+    "width": 1440,
+    "mode": "denied",
+    "pass": true,
+    "currentCharacters": 1135,
+    "pastCharacters": 1122
+  },
+  {
+    "width": 390,
+    "mode": "success",
+    "pass": true,
+    "currentCharacters": 1135,
+    "pastCharacters": 1122
+  },
+  {
+    "width": 390,
+    "mode": "denied",
+    "pass": true,
+    "currentCharacters": 1135,
+    "pastCharacters": 1122
+  },
+  {
+    "width": 320,
+    "mode": "success",
+    "pass": true,
+    "currentCharacters": 1135,
+    "pastCharacters": 1122
+  },
+  {
+    "width": 320,
+    "mode": "denied",
+    "pass": true,
+    "currentCharacters": 1135,
+    "pastCharacters": 1122
+  }
+]

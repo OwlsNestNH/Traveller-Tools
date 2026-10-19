@@ -882,3 +882,11 @@ The information circle beside Copy Player Briefing explains the manual LLM/PDF w
 ## Captain briefing cargo (UI .76)
 
 The captain briefing lists completed purchases and sales at the verified current visit, plus each separate cargo lot currently in the hold. It does not export unaccepted buy/sell quotes. Each item retains recorded tons, purchase cost or gross sale price, historical unit price and percentage of recorded effective retail. Capped effective retail is labelled; recorded RAW comparison is retained separately. Percentages round to 0.01% using exact arithmetic, excluding fees and insurance. Carrying cost basis, remaining goods cost and recorded realized sale profit remain distinct. Missing retail, price or profit evidence is unavailable; today's settings never backfill it. Legacy/opening cargo retains its recorded remaining costs even without a historical price audit. Missing or ambiguous current-visit history never becomes “no completed transactions.” Previous completed visit remains financial results only. Freight/mail/passenger summaries retain their existing behavior.
+
+## Copy Player Link
+
+Use **Copy Player Link** below the ship controls to share a read-only snapshot of
+the selected saved route visit. Current visits refresh when copied; newly completed
+visits retain their departure figures. Older visits without a complete capture
+report unavailable. The recipient cannot transact or change a saved campaign.
+See [player link data, history and limits](PLAYER_LINK_INTEGRATION.md).
