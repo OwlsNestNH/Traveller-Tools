@@ -1,5 +1,5 @@
-import * as R from './rules.mjs?v=referee-cargo-20261015-94';
-import {contactSearchPeriod} from './contact-search.mjs?v=referee-cargo-20261015-94';
+import * as R from './rules.mjs?v=player-link-20261019-95';
+import {contactSearchPeriod} from './contact-search.mjs?v=player-link-20261019-95';
 
 export function tradeCodeLabel(code){const names={Ag:'Agricultural',As:'Asteroid',Ba:'Barren',De:'Desert',Fl:'Fluid oceans',Ga:'Garden',Hi:'High population',Ht:'High technology',Ic:'Ice-capped',In:'Industrial',Lo:'Low population',Lt:'Low technology',Na:'Non-agricultural',Ni:'Non-industrial',Po:'Poor',Ri:'Rich',Va:'Vacuum',Wa:'Water world',Amber:'Amber travel zone',Red:'Red travel zone',Safe:'Safe travel zone'};return (names[code]||code)+' ('+code+')';}
 

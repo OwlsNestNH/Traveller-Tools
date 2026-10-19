@@ -1,0 +1,44 @@
+[
+  {
+    "width": 1440,
+    "mode": "success",
+    "pass": true,
+    "currentCharacters": 1279,
+    "pastCharacters": 1266
+  },
+  {
+    "width": 1440,
+    "mode": "denied",
+    "pass": true,
+    "currentCharacters": 1279,
+    "pastCharacters": 1266
+  },
+  {
+    "width": 390,
+    "mode": "success",
+    "pass": true,
+    "currentCharacters": 1279,
+    "pastCharacters": 1266
+  },
+  {
+    "width": 390,
+    "mode": "denied",
+    "pass": true,
+    "currentCharacters": 1279,
+    "pastCharacters": 1266
+  },
+  {
+    "width": 320,
+    "mode": "success",
+    "pass": true,
+    "currentCharacters": 1279,
+    "pastCharacters": 1266
+  },
+  {
+    "width": 320,
+    "mode": "denied",
+    "pass": true,
+    "currentCharacters": 1279,
+    "pastCharacters": 1266
+  }
+]

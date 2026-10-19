@@ -1,16 +1,16 @@
-import {ruleInfo} from './rule-references.mjs?v=referee-cargo-20261015-94';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=referee-cargo-20261015-94';
-import {passengerShip} from './passengers.mjs?v=referee-cargo-20261015-94';
+import {ruleInfo} from './rule-references.mjs?v=player-link-20261019-95';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=player-link-20261019-95';
+import {passengerShip} from './passengers.mjs?v=player-link-20261019-95';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=referee-cargo-20261015-94';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=referee-cargo-20261015-94';
-import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=referee-cargo-20261015-94';
-import {roomCounts} from './accommodation.mjs?v=referee-cargo-20261015-94';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=referee-cargo-20261015-94';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=referee-cargo-20261015-94';
-import {creditStep} from './rounding.mjs?v=referee-cargo-20261015-94';
-import {roll} from './rules.mjs?v=referee-cargo-20261015-94';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=referee-cargo-20261015-94';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=player-link-20261019-95';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=player-link-20261019-95';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=player-link-20261019-95';
+import {roomCounts} from './accommodation.mjs?v=player-link-20261019-95';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=player-link-20261019-95';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=player-link-20261019-95';
+import {creditStep} from './rounding.mjs?v=player-link-20261019-95';
+import {roll} from './rules.mjs?v=player-link-20261019-95';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=player-link-20261019-95';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

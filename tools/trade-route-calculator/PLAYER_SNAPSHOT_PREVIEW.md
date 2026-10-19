@@ -1,3 +1,5 @@
+> Production integration is described in [PLAYER_LINK_INTEGRATION.md](PLAYER_LINK_INTEGRATION.md). Earlier prototype-only notes below record the staged design history.
+
 # Player snapshot: first-stage review
 
 This standalone screen uses synthetic fixtures only. Open `player-snapshot-preview.html`

@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=referee-cargo-20261015-94';
+import {ruleInfo} from './rule-references.mjs?v=player-link-20261019-95';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={

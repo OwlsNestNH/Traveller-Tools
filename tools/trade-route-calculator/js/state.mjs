@@ -1,23 +1,24 @@
-import {validateOtherCargo,addOtherCargo as addOther,adjustOtherCargo as adjustOther,sellOtherCargo as sellOther,refereeTradeInput} from './referee-cargo.mjs?v=referee-cargo-20261015-94';
-import {applyCargoRemoval} from './cargo-removal.mjs?v=referee-cargo-20261015-94';
-import {compartmentRefillQuote,refillPricingAudit} from './lss-refill-transaction.mjs?v=referee-cargo-20261015-94';
-import {createDashboardBaseline,validateDashboardBaseline} from './dashboard-baseline.mjs?v=referee-cargo-20261015-94';
-import {validateWorldChangeHistory,isWorldChangeAudit} from './world-change-history.mjs?v=referee-cargo-20261015-94';
-import {validateContactSearchHistory,commitContactSearch} from './contact-search.mjs?v=referee-cargo-20261015-94';
+import {validateOtherCargo,addOtherCargo as addOther,adjustOtherCargo as adjustOther,sellOtherCargo as sellOther,refereeTradeInput} from './referee-cargo.mjs?v=player-link-20261019-95';
+import {applyCargoRemoval} from './cargo-removal.mjs?v=player-link-20261019-95';
+import {compartmentRefillQuote,refillPricingAudit} from './lss-refill-transaction.mjs?v=player-link-20261019-95';
+import {createDashboardBaseline,validateDashboardBaseline} from './dashboard-baseline.mjs?v=player-link-20261019-95';
+import {validateWorldChangeHistory,isWorldChangeAudit} from './world-change-history.mjs?v=player-link-20261019-95';
+import {validateContactSearchHistory,commitContactSearch} from './contact-search.mjs?v=player-link-20261019-95';
+import {projectPlayerSnapshot} from './player-snapshot.mjs';
 export {commitContactSearch};
-import {passengerShip,passengerSpace,passengerTotals,passengerCapacity,validatePassengerContract,validatePassengerHistory,latestPassengerSearch,passengerOfferRemaining} from './passengers.mjs?v=referee-cargo-20261015-94';
-import {validateMaintenance,validateMaintenancePaymentRecord} from './maintenance.mjs?v=referee-cargo-20261015-94';
-import {validateMortgage,validateMortgagePaymentRecord} from './mortgage.mjs?v=referee-cargo-20261015-94';
+import {passengerShip,passengerSpace,passengerTotals,passengerCapacity,validatePassengerContract,validatePassengerHistory,latestPassengerSearch,passengerOfferRemaining} from './passengers.mjs?v=player-link-20261019-95';
+import {validateMaintenance,validateMaintenancePaymentRecord} from './maintenance.mjs?v=player-link-20261019-95';
+import {validateMortgage,validateMortgagePaymentRecord} from './mortgage.mjs?v=player-link-20261019-95';
 import {validateJumpAttempts,currentJumpAttempt,lastJump,savedJumpAttempt,departureKey,jumpPreparationBridge} from './jump-attempts.mjs';
-import {distance as jumpDistance} from './map.mjs?v=referee-cargo-20261015-94';
+import {distance as jumpDistance} from './map.mjs?v=player-link-20261019-95';
 import {validateMailHistory} from './mail-history.mjs?v=mail-history-1';
-import {bladderSpace,validateFuel,fuelPurchase,consumeJumpFuel} from './fuel.mjs?v=referee-cargo-20261015-94';
-import {validateSupport,refillQuote,consumeSupport,anchorSupport,supportCargo,supportAmount,supportDisplay,supportReference,extraSupportReference} from './life-support.mjs?v=referee-cargo-20261015-94';
-import {up,creditStep,roundExisting} from './rounding.mjs?v=referee-cargo-20261015-94';
-import {validateAccommodation,passengerLuggage,roomCounts} from './accommodation.mjs?v=referee-cargo-20261015-94';
+import {bladderSpace,validateFuel,fuelPurchase,consumeJumpFuel} from './fuel.mjs?v=player-link-20261019-95';
+import {validateSupport,refillQuote,consumeSupport,anchorSupport,supportCargo,supportAmount,supportDisplay,supportReference,extraSupportReference} from './life-support.mjs?v=player-link-20261019-95';
+import {up,creditStep,roundExisting} from './rounding.mjs?v=player-link-20261019-95';
+import {validateAccommodation,passengerLuggage,roomCounts} from './accommodation.mjs?v=player-link-20261019-95';
 import {add,sub,mul,div,cmp,floor,sum,decimal,credit} from './amounts.mjs';
-import {VERSION,priceLimits,characteristicDMs} from './rules.mjs?v=referee-cargo-20261015-94';
-import {expenseQuote,starport,berthMultipliers,payableExpenses} from './expenses.mjs?v=referee-cargo-20261015-94';
+import {VERSION,priceLimits,characteristicDMs} from './rules.mjs?v=player-link-20261019-95';
+import {expenseQuote,starport,berthMultipliers,payableExpenses} from './expenses.mjs?v=player-link-20261019-95';
 export const SCHEMA=1;
 export const uid=()=>crypto.randomUUID();
 export function initial(){return {schema:SCHEMA,revision:0,rulesVersion:VERSION,initialized:false,name:'My trading campaign',bank:'0',hours:0,dateLabel:'001-1105',ship:{name:'Independent trader',capacity:'60',staterooms:0,jump:2,scoops:true,armed:false},trader:{broker:0,streetwise:0,admin:0,characteristic:0,rank:0,soc:0},settings:{reducedProfitLimitsEnabled:false,minPurchasePercent:85,maxSalePercent:115,profit:100,tax:false,insurance:false,creditStep:1,maxBaseRetailEnabled:false,maxBaseRetail:'100000',useRawIllegalPrices:false},worlds:{},actual:null,route:[],routeIndex:0,snapshots:[],lots:[],contracts:[],policies:[],ledger:[],cooldowns:{},undo:[],events:[],jumpAttempts:[],latestMailCheckId:null};}
@@ -26,6 +27,14 @@ const validId=x=>typeof x==='string'&&/^[A-Za-z0-9_,.:-]{1,100}$/.test(x);
 const record=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);
 function validateStructure(s){
  if(!record(s))throw Error('Invalid campaign record');
+ if(s.playerDepartures!==undefined){
+  if(!Array.isArray(s.playerDepartures))throw Error('Invalid player departure history');
+  const seen=new Set();
+  for(const r of s.playerDepartures){
+   if(!record(r)||!Number.isSafeInteger(r.index)||r.index<0||seen.has(r.index)||!validId(r.eventId)||!Array.isArray(r.prefix)||r.prefix.length!==r.index+1||r.prefix.some(id=>!validId(id))||r.snapshot!==null&&!record(r.snapshot))throw Error('Invalid player departure record');
+   seen.add(r.index);
+  }
+ }
  if(s.settings?.fuelAvailabilityAlert!==undefined&&typeof s.settings.fuelAvailabilityAlert!=='boolean')throw Error('Invalid fuel-availability alert setting.');
  for(const key of ['ship','trader','settings','worlds','cooldowns'])if(!record(s[key]))throw Error('Invalid campaign '+key);
  if(s.trader.characteristics!==undefined)characteristicDMs(s.trader);
@@ -141,13 +150,17 @@ export function prepareJump(original,roll){
  s.events.push({id:uid(),label:'Jump roll prepared',preparedRevision:s.revision,jumpAttemptId:attempt.id,mulliganUsed:attempt.mulliganUsed,rollIndex:attempt.rolls.length-1,hours:s.hours,world:s.actual});
  validate(s);return {state:s,attempt,roll:attempt.rolls.at(-1)};
 }
-export function commitJump(s,{attemptId,elapsed}){
+export function commitJump(s,{attemptId,elapsed,playerSnapshot}){
  const attempt=currentJumpAttempt(s),from=s.worlds[s.actual],to=s.worlds[s.route[s.routeIndex+1]];
  if(!attempt||attempt.id!==attemptId||!to||attempt.mulliganUsed&&attempt.rolls.length!==2)throw Error('Jump preview is stale. Reopen it before committing.');
  if(!Number.isSafeInteger(elapsed)||elapsed<0)throw Error('Enter whole nonnegative hours');
  const distance=jumpDistance(from,to);if(distance>s.ship.jump)throw Error('Route leg exceeds this ship’s jump rating.');
  const dice=structuredClone(attempt.rolls.at(-1));
  const event={id:uid(),label:'Jump audit',from:from.id,to:to.id,dice,generatedHours:148+dice.total,effectiveHours:elapsed,hours:s.hours+elapsed,jumpAttemptId:attempt.id,mulliganUsed:attempt.mulliganUsed};
+ // Optional public evidence belongs to the same undoable candidate as the jump.
+ // Missing/unsupported snapshots never block existing travel workflows.
+ let snapshot=null;try{if(playerSnapshot)snapshot=projectPlayerSnapshot(playerSnapshot);}catch{/* Explicitly unavailable on export. */}
+ if(playerSnapshot!==undefined||s.playerDepartures!==undefined)s.playerDepartures=[...(s.playerDepartures??[]).filter(r=>r.index<s.routeIndex),{index:s.routeIndex,prefix:s.route.slice(0,s.routeIndex+1),eventId:event.id,snapshot}];
  recordMailDeparture(s,event);event.fuel=consumeJumpFuel(s.ship,distance);
  s.actual=to.id;s.routeIndex++;s.hours+=elapsed;s.events.push(event);
  s.ledger.push({id:uid(),type:'Jump',amount:'0',hours:s.hours,world:to.id,from:from.id,to:to.id,eventId:event.id,reason:from.name+' → '+to.name});

@@ -1,6 +1,6 @@
 import {COMMODITIES} from './player-snapshot-catalog.mjs';
 import {playerSnapshotFixture} from './player-snapshot-fixture.mjs';
-import {renderPlayerSnapshot,clearPlayerSnapshotMap} from './player-snapshot-view.mjs';
+import {renderPlayerSnapshot,clearPlayerSnapshotMap} from './player-snapshot-view.mjs?v=player-link-20261019-95';
 import {createRecipientStore} from './player-snapshot-storage.mjs';
 const root=document.getElementById('snapshot'),store=createRecipientStore(()=>localStorage);
 function display() {
@@ -9,6 +9,7 @@ function display() {
     let payload=location.hash.slice(1),notice='';
     if(location.href.length>8192)throw Error('This snapshot link is too long. Ask the operator for a shorter link.');
     if(!payload){const last=store.last();payload=last.payload;notice=last.warning||'';}
+    document.getElementById('snapshot-mode').textContent=payload?'Read-only snapshot · no transactions':'Synthetic example · no campaign data';
     const status=document.createElement('p');status.setAttribute('role','status');
     const onNotice=message=>{notice=message;status.textContent=message;};
     if(payload) {

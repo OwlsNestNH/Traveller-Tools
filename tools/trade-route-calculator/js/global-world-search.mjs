@@ -1,4 +1,4 @@
-import {searchWorlds,loadWorld} from './map.mjs?v=referee-cargo-20261015-94';
+import {searchWorlds,loadWorld} from './map.mjs?v=player-link-20261019-95';
 
 export const planetSearchLabel=w=>[w.name,w.subsectorName,w.sector,w.hex].join(' — ');
 
