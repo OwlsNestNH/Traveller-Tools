@@ -81,3 +81,8 @@ test('headless jumps without capture invalidate old archive after identical rout
  const p=S.prepareJump(s,()=>({dice:[1,1,1,1,1,1],total:6}));s=S.transition(p.state,'Jump: headless',x=>S.commitJump(x,{attemptId:p.attempt.id,elapsed:154}));
  assert.equal(s.playerDepartures.length,1);assert.equal(s.playerDepartures[0].snapshot,null);assert.throws(()=>playerSnapshotForVisit(s,core,0),/No complete departure/);
 });
+test('an older application retaining unknown archive fields cannot resurrect a prior journey',()=>{
+ let s=jump(jump(fresh()));const old=structuredClone(s.playerDepartures);s=S.transition(s,'Clear and replan',x=>{x.route=['0,0','1,0'];x.routeIndex=0;});
+ const p=S.prepareJump(s,()=>({dice:[1,1,1,1,1,1],total:6}));s=S.transition(p.state,'Jump: legacy caller',x=>S.commitJump(x,{attemptId:p.attempt.id,elapsed:154}));
+ s.playerDepartures=old;assert.throws(()=>playerSnapshotForVisit(s,core,0),/No complete departure/);
+});

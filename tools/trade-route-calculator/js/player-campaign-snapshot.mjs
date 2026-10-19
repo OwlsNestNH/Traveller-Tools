@@ -52,7 +52,11 @@ export function playerSnapshotForVisit(s,core,index,options){
  if(index===s.routeIndex&&s.route[index]===s.actual)return campaignPlayerSnapshot(s,core,options);
  if(index>s.routeIndex)throw Error('This visit has not happened yet. Select the current or a completed visit.');
  const record=s.playerDepartures?.find(r=>r.index===index&&JSON.stringify(r.prefix)===JSON.stringify(s.route.slice(0,index+1)));
- const jump=record&&s.ledger.find(e=>e.type==='Jump'&&e.eventId===record.eventId&&e.from===s.route[index]);
+ // Old app versions can retain unknown archive fields while starting a new
+ // journey. Match this route's active jump suffix, not any surviving old jump.
+ const journey=s.ledger.filter(e=>e.type==='Jump').slice(-s.routeIndex);
+ const validJourney=journey.length===s.routeIndex&&journey.every((e,i)=>e.from===s.route[i]&&e.to===s.route[i+1]);
+ const jump=record&&validJourney&&journey[index]?.eventId===record.eventId;
  if(!jump||!record.snapshot)throw Error('No complete departure snapshot was saved for this visit. Older visits cannot be reconstructed; new departures will retain player snapshots.');
  return projectPlayerSnapshot(record.snapshot);
 }
