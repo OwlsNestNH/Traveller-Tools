@@ -14,3 +14,14 @@ export const playerSnapshotFixture = {
   buy:{status:'available', offers:[{name:'Common Consumables', tons:'25', creditsPerTon:'420'},{name:'Industrial Components', tons:'12.5', creditsPerTon:'8500'},{name:'Polymers', tons:'30', creditsPerTon:'6200'}]},
   sell:{status:'available', offers:[{name:'Advanced Electronics', tons:'12', creditsPerTon:'125000'},{name:'Machine Parts', tons:'8.5', creditsPerTon:'13500'},{name:'Textiles', tons:'6', creditsPerTon:'2300'}]}
 };
+
+// Synthetic generator profiles retain every non-cargo field and all offers.
+export function makePlayerSnapshotExample(cargoLots=4) {
+  if (![4,10,12].includes(cargoLots)) throw new Error('Choose 4, 10 or 12 cargo lots.');
+  const data=structuredClone(playerSnapshotFixture);
+  if(cargoLots!==4) data.cargo=Array.from({length:cargoLots},(_,i)=>({
+    name:playerSnapshotFixture.cargo[i%playerSnapshotFixture.cargo.length].name,
+    tons:String(i+1.25)
+  }));
+  return data;
+}

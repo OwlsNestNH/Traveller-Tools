@@ -91,6 +91,15 @@ try {
   });
   assert.deepEqual(unknowns, {meters:0, expected:'Unknown', detailOpen:false, zeroCapacity:true});
   await page.goto(new URL('player-snapshot-generator.html',base).href);
+  assert.equal(await page.locator('#budget').inputValue(),'8192');
+  for(const count of [10,12]) {
+    await page.locator('#cargo-lots').selectOption(String(count));await page.getByRole('button',{name:'Generate snapshot'}).click();
+    const exampleLink=await page.locator('#link').inputValue();assert.ok(exampleLink.length>200 && exampleLink.length<=8192);
+    await page.getByRole('link',{name:'Open player snapshot'}).click();
+    await page.getByText('Cr 127,450',{exact:true}).waitFor();
+    assert.equal(await page.locator('section').filter({has:page.getByRole('heading',{name:'Cargo aboard',exact:true})}).locator('tbody tr').count(),count);
+    await page.goBack();
+  }
   await page.locator('#budget').selectOption('200');await page.getByRole('button',{name:'Generate snapshot'}).click();await page.getByText(/No link generated and no data omitted/).waitFor();assert.equal(await page.locator('#link').inputValue(),'');
   await page.locator('#budget').selectOption('500');await page.getByRole('button',{name:'Generate snapshot'}).click();const generated=await page.locator('#link').inputValue();assert.ok(generated.length<=500);assert.ok(generated.startsWith(url+'#'));
   await page.getByRole('link',{name:'Open player snapshot'}).click();await page.getByText('Cr 127,450',{exact:true}).waitFor();await page.getByText('Cr 40,300',{exact:true}).waitFor();

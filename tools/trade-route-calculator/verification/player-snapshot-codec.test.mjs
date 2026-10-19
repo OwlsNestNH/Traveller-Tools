@@ -1,7 +1,7 @@
 import test from 'node:test';
 import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
-import {playerSnapshotFixture as fixture} from '../js/player-snapshot-fixture.mjs';
+import {playerSnapshotFixture as fixture,makePlayerSnapshotExample} from '../js/player-snapshot-fixture.mjs';
 import {prepareSnapshotForLink,measureSnapshotLink,encodeSnapshotLink,decodeSnapshotLink,PROPOSED_PREFIX} from '../js/player-snapshot-codec.mjs';
 const options={maxUrlLength:100000};
 const link = data => encodeSnapshotLink(data,options);
@@ -27,9 +27,9 @@ test('world overrides, Unicode, markup and exact decimal representation survive'
 test('budget has no truncation or alternative delivery and reports exact size',()=>{
   const oversized=clone();oversized.expenses.berth.basis='Unique public explanation '.repeat(8);
   const m=measureSnapshotLink(oversized); assert.equal(m.characters,PROPOSED_PREFIX.length+m.payload.length);
-  assert.throws(()=>encodeSnapshotLink(oversized),new RegExp('needs '+m.characters));
+  assert.throws(()=>encodeSnapshotLink(oversized,{maxUrlLength:200}),new RegExp('needs '+m.characters));
   assert.equal(encodeSnapshotLink(oversized,{maxUrlLength:m.characters}).length,m.characters);
-  assert.throws(()=>decodeSnapshotLink(link(oversized)),/Invalid/);
+  assert.throws(()=>decodeSnapshotLink(link(oversized),{maxUrlLength:200}),/Invalid/);
   for(const n of [NaN,-1,Infinity,1.5,100001]) assert.throws(()=>encodeSnapshotLink(fixture,{maxUrlLength:n}));
 });
 test('invalid versions, IDs, lengths, UTF-8, base64, truncation and trailing bytes reject',()=>{
@@ -87,4 +87,18 @@ test('codec 2 compact templates preserve exact labels, custom text and codec 1 l
 test('compact decimal packets preserve maximum precision and every trailing zero',()=>{
  const d=clone();d.ship.cashCredits='999999999999999.999999';d.ship.fuel.current='0.000000';d.ship.lifeSupport.cargoLss='0.0';d.cargo[0].tons='999999999999999.999999';assert.deepEqual(decode(link(d)),prepareSnapshotForLink(d));
  assert.deepEqual(decodeSnapshotLink(encodeSnapshotLink(fixture)),prepareSnapshotForLink(fixture));
+});
+
+test('10 and 12 actual cargo lots retain repeated IDs, quantities, every field and both offer lists',()=>{
+ for(const count of [10,12]) for(const rounding of [100,1000]) {
+  const data=makePlayerSnapshotExample(count),before=structuredClone(data);
+  const encoded=encodeSnapshotLink(data,{rounding}),decoded=decodeSnapshotLink(encoded);
+  assert.deepEqual(decoded,prepareSnapshotForLink(data,{rounding}));
+  assert.equal(decoded.cargo.length,count);
+  assert.equal(decoded.cargo[0].name,decoded.cargo[4].name);
+  assert.notEqual(decoded.cargo[0].tons,decoded.cargo[4].tons);
+  assert.deepEqual(decoded.buy,prepareSnapshotForLink(fixture,{rounding}).buy);
+  assert.deepEqual(decoded.sell,prepareSnapshotForLink(fixture,{rounding}).sell);
+  assert.deepEqual(data,before);assert.ok(encoded.length>200);
+ }
 });

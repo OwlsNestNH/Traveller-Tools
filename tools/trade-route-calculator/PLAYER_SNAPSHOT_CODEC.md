@@ -7,10 +7,9 @@ share button, short path, hosted storage, two-link assembly or HTML-file fallbac
 
 The proposed prefix `https://owlsnestnh.github.io/Traveller-Tools/p#` is **47 characters
 and UNDEPLOYED**. The codec measurement prefix is not a working route. The standalone generator
-instead uses the actual same-server `player-snapshot-preview.html` path. Both encoding and decoding default to a 200-character total budget. Encoding
+instead uses the actual same-server `player-snapshot-preview.html` path. Both encoding and decoding default to an 8,192-character safety limit. Links have variable length; 200 characters is no longer a product target. Encoding
 reports required/allowed length and rejects oversize input without truncating rows.
-An explicit larger budget is available for tests and measurement, not an automatic
-fallback. The standalone viewer validates fragment data on initial load and hash navigation,
+Explicit smaller budgets are available for diagnostic rejection checks. The standalone viewer validates fragment data on initial load and hash navigation,
 rejecting actual URLs over 8,192 characters. Invalid links replace stale content.
 
 ## Public contract and protocol
@@ -85,6 +84,37 @@ rejects. At Cr1000, three extra such lots give 199; four give 202. These are fix
 measurements, not universal capacity guarantees. Custom worlds, text, overrides,
 quantities and prices change capacity. No required fields are dropped to fit.
 
+## Ten and twelve cargo lots
+
+The generator offers 10 or 12 actual cargo lots (default 12), plus the original
+four-lot example. Repeated commodity IDs remain separate ordered lots with their
+own quantities. A bounded list count frames cargo, buy and sell independently;
+extra begin/end characters are unnecessary. Every other current field and all
+three buy plus three sell offers remain present. Both rounding modes round-trip
+the complete prepared contract, and browser tests count the rendered cargo rows.
+
+| Cargo lots (plus 3 buy / 3 sell) | Rounding | Bytes | Proposed short URL | Full Pages-path URL |
+| --- | ---: | ---: | ---: | ---: |
+| 10 | Cr100 | 133 | 225 | 281 |
+| 10 | Cr1000 | 129 | 219 | 275 |
+| 12 | Cr100 | 139 | 233 | 289 |
+| 12 | Cr1000 | 135 | 227 | 283 |
+
+These full URLs include their respective prefixes. Neither Pages preview path is
+deployed in this task. The full path measured is
+`https://owlsnestnh.github.io/Traveller-Tools/tools/trade-route-calculator/player-snapshot-preview.html#`.
+The generator uses the actual server URL and a fresh timestamp, so its measured
+length can differ. Custom world/text cases remain longer; all data must fit the
+safety limit or the generator rejects clearly without dropping lots.
+
+The original 197/191 result benefits from sample-specific Port Meridian world and
+New Dawn destination references. No ship name, cash balance, cargo quantity or
+quoted price is baked into the dictionary. A different synthetic Copper Kestrel /
+Greyhaven / Haven case with changed cash, fuel and cargo quantities measures
+339/334 characters; custom visit and berth prose raises it to 489/483. All four
+variants passed exact prepared-contract round trips. These comparisons use the
+same proposed short prefix; 197 is not a general campaign capacity claim.
+
 ## Verification
 
 `node --test verification/player-snapshot.test.mjs verification/player-snapshot-codec.test.mjs verification/player-snapshot-storage.test.mjs`
@@ -105,10 +135,10 @@ python3 -m http.server 8765 --bind 127.0.0.1 --directory tools/trade-route-calcu
 ```
 
 Open `http://127.0.0.1:8765/player-snapshot-generator.html`, generate a synthetic
-example, and follow **Open player snapshot**. The test screen defaults to an
-explicit 500-character budget; selecting 200 demonstrates safe rejection. It stamps
+example, and follow **Open player snapshot**. The test screen defaults to 12 actual cargo lots and the 8,192-character safety
+limit; selecting 200 demonstrates safe rejection. It stamps
 a fresh capture time and uses the real current-server preview path. One local run
-produced a **203-character** working URL at Cr100; exact length varies with hosting
+of the original four-lot fixture produced a **203-character** working URL at Cr100; exact length varies with hosting
 prefix. A link to localhost is usable only on that same machine, not a public
 preview deployment. The draft PR/source and screenshots are remotely reviewable.
 

@@ -149,12 +149,12 @@ export function measureSnapshotLink(input, {rounding=100,percentages=true,codecV
   const bytes=candidate.length<plain.length?candidate:plain, payload=base64(bytes);
   return Object.freeze({bytes:bytes.length,characters:PROPOSED_PREFIX.length+payload.length,payload,snapshot,rounding,prefix:PROPOSED_PREFIX});
 }
-export function encodeSnapshotLink(input, {rounding=100,maxUrlLength=200}={}) {
+export function encodeSnapshotLink(input, {rounding=100,maxUrlLength=8192}={}) {
   budget(maxUrlLength); const result=measureSnapshotLink(input,{rounding});
   if (result.characters>maxUrlLength) throw new Error(`Snapshot needs ${result.characters} URL characters; limit is ${maxUrlLength}. No link generated and no rows omitted.`);
   return PROPOSED_PREFIX+result.payload;
 }
-export function decodeSnapshotLink(url, {maxUrlLength=200}={}) {
+export function decodeSnapshotLink(url, {maxUrlLength=8192}={}) {
   budget(maxUrlLength);
   if (typeof url!=='string' || url.length>maxUrlLength || !url.startsWith(PROPOSED_PREFIX)) invalid();
   const payload=url.slice(PROPOSED_PREFIX.length);
