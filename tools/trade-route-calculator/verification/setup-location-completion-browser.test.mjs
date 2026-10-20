@@ -248,10 +248,12 @@ async function capture(page,result,label){
  assert.ok(geometry.pageOverflow<=2,'No horizontal page overflow');if(geometry.dialog){assert.ok(geometry.dialog.left>=-1&&geometry.dialog.right<=geometry.width+1,'Dialog remains in viewport');assert.ok(geometry.dialog.overflow<=2,'No horizontal dialog clipping');}
  // Keep the state matrix and every geometry assertion. Repeated healthy
  // saving/reload screens add no evidence to distinct terminal/retirement views.
- const core=['sync','success','validation','prewrite','lookup-delay','lookup-failure','freeze-fault','second-baseline','rounding-snapshot','picker-retry'];
+ // Retain representative completed views; every mode still records geometry,
+ // state assertions and its distinct warning, failure or recovery screenshots.
+ const completedViews=['sync','success','prewrite'];
  if(label==='saving'&&!['success','prewrite','ancillary-failure'].includes(result.mode))return;
  if(label==='lookup'&&!['lookup-delay','lookup-foreign'].includes(result.mode))return;
- if(label==='completed'&&!core.includes(result.mode))return;
+ if(label==='completed'&&!completedViews.includes(result.mode))return;
  if(['reload-and-history-undo','authoritative-reload'].includes(label)&&!['sync','success','unknown-before','unknown-after','second-baseline'].includes(result.mode))return;
  const bytes=await page.screenshot({type:'jpeg',quality:70});assert.ok(evidenceBytes+bytes.length<20*1024*1024,'Readable JPEG evidence leaves 4 MiB for report within 24 MiB total');
  const name=prefix+result.id+'-'+label+'.jpg';await writeFile(join(artifacts,name),bytes);evidenceBytes+=bytes.length;result.screenshots.push({name,bytes:bytes.length});
