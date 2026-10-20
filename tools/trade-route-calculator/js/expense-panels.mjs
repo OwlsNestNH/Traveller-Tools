@@ -1,16 +1,16 @@
-import {ruleInfo} from './rule-references.mjs?v=map-details-20261020-101';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=map-details-20261020-101';
-import {passengerShip} from './passengers.mjs?v=map-details-20261020-101';
+import {ruleInfo} from './rule-references.mjs?v=hex-labels-20261020-102';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=hex-labels-20261020-102';
+import {passengerShip} from './passengers.mjs?v=hex-labels-20261020-102';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=map-details-20261020-101';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=map-details-20261020-101';
-import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=map-details-20261020-101';
-import {roomCounts} from './accommodation.mjs?v=map-details-20261020-101';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=map-details-20261020-101';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=map-details-20261020-101';
-import {creditStep} from './rounding.mjs?v=map-details-20261020-101';
-import {roll} from './rules.mjs?v=map-details-20261020-101';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=map-details-20261020-101';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=hex-labels-20261020-102';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=hex-labels-20261020-102';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=hex-labels-20261020-102';
+import {roomCounts} from './accommodation.mjs?v=hex-labels-20261020-102';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=hex-labels-20261020-102';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=hex-labels-20261020-102';
+import {creditStep} from './rounding.mjs?v=hex-labels-20261020-102';
+import {roll} from './rules.mjs?v=hex-labels-20261020-102';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=hex-labels-20261020-102';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

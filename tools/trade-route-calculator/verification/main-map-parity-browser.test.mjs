@@ -45,6 +45,15 @@ try{
   await page.setViewportSize({width,height:1000});await frame();await setZoom(200);
   for(const expanded of [false,true]){
    if(expanded){await click('map-expand');await frame();}
+   for(const zoom of [79,80,81,100,199,200,240,288]){
+    await setZoom(zoom);assert.equal(await page.locator('.hex-grid text').count()>0,zoom>=80,`${width}/${expanded}/${zoom}: hex visibility`);
+    if(zoom>=80){
+     const labels=await page.evaluate(({id,hex})=>{const el=[...document.querySelectorAll('.hex-grid text')].find(x=>x.textContent===hex),style=getComputedStyle(el),r=el.getBoundingClientRect(),world=document.querySelector('[data-action="map-world"][data-arg="'+id+'"]');const overlaps=[...world.querySelectorAll('.world-disc,.world-name,.world-uwp,.symbol-starport')].filter(x=>{const b=x.getBoundingClientRect();return r.left<b.right&&r.right>b.left&&r.top<b.bottom&&r.bottom>b.top;}).map(x=>x.getAttribute('class'));return {size:style.fontSize,weight:style.fontWeight,fill:style.fill,stroke:style.stroke,halo:style.strokeWidth,paint:style.paintOrder,pointer:style.pointerEvents,width:r.width,overlaps};},{id:home.id,hex:home.hex});
+     assert.equal(labels.size,'11px');assert.equal(labels.weight,'700');assert.equal(labels.fill,'rgb(245, 248, 252)');assert.equal(labels.stroke,'rgb(8, 11, 16)');assert.equal(labels.halo,'3px');assert.equal(labels.paint,'stroke');assert.equal(labels.pointer,'none');assert.ok(labels.width<50*zoom/100*Math.sqrt(3)/2);assert.deepEqual(labels.overlaps,[],`${width}/${expanded}/${zoom}: hex clear of world details`);
+     assert.ok((await planned()).split(' ').length===12);assert.equal(await stored(),f.bytes);
+     if(zoom===80||zoom===200)await page.locator('.map-viewport').screenshot({path:artifacts+`hex-labels-${zoom}-${width}-${expanded?'expanded':'normal'}.png`});
+    }
+   }
    for(const zoom of [199,200,201]){
     await setZoom(zoom);const detailed=zoom>=200;
     for(const cls of ['symbol-starport','allegiance-label','world-uwp'])assert.equal(await marker(home.id).locator('.'+cls).count(),detailed?1:0,`${width}/${expanded}/${zoom}: ${cls}`);

@@ -1,4 +1,4 @@
-import {up} from './rounding.mjs?v=map-details-20261020-101';
+import {up} from './rounding.mjs?v=hex-labels-20261020-102';
 import {sum,mul,decimal,cmp,credit} from './amounts.mjs';
 
 export const tiers=['low','middle','high'];
