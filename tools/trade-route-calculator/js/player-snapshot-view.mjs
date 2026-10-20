@@ -1,3 +1,4 @@
+import {informationButton} from './player-info.mjs?v=maintenance-20261020-98';
 import {formatSnapshotTons, formatSnapshotWholeDown, formatSnapshotLss, formatSnapshotQuantityText} from './player-snapshot-format.mjs';
 import {projectPlayerSnapshot, summarizePlayerExpenses, EXPENSE_KINDS} from './player-snapshot.mjs?v=maintenance-20261020-98';
 
@@ -7,7 +8,7 @@ const labelsByRoot = new WeakMap();
 const mapObservers = new WeakMap();
 export function clearPlayerSnapshotMap(root) {mapObservers.get(root)?.disconnect();mapObservers.delete(root);}
 // Render only validated, detached data. All untrusted strings become text nodes.
-export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChange}={}) {
+export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChange,rounding}={}) {
   clearPlayerSnapshotMap(root);
   const document = root.ownerDocument;
   const node = (tag, content) => { const element = document.createElement(tag); if (content !== undefined) element.textContent = content; return element; };
@@ -75,7 +76,7 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
       const meter = node('meter'); meter.min = 0; meter.max = Number(resource.capacity); meter.value = Number(resource.current);
       meter.setAttribute('aria-label', title + ': ' + label); panel.append(meter);
     } else panel.append(node('p', resource.capacity !== null && Number(resource.capacity) === 0 ? 'No capacity configured.' : 'Fill level unavailable.'));
-    panel.append(node('p', description)); resourceGrid.append(panel);
+    if(title.startsWith('Life support')){panel.querySelector('h3').append(informationButton(document,'Life support',[description],root));if(resource.current===null)panel.append(node('p',description));}else panel.append(node('p',description)); resourceGrid.append(panel);
   };
   gauge('Fuel tanks', data.ship.fuel, 't', 'Fuel aboard / total tank capacity');
   gauge('Life support · internal days remaining', {current:data.ship.lifeSupport.daysRemaining,capacity:data.ship.lifeSupport.daysCapacity}, 'days', data.ship.lifeSupport.daysRemaining===null ? 'Days unknown: duration for the current crew and passengers was not supplied. Supply stock has not been converted into days.' : 'Whole completed days, rounded down; the bar retains the exact duration. Internal supplies only, at this snapshot’s crew and passenger consumption. Cargo reserve is shown separately.');
@@ -87,7 +88,7 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
     card.append(node('p', total.unknownCount ? 'Known subtotal · ' + total.unknownCount + ' of '+EXPENSE_KINDS.length+' amounts unknown' : 'Total · all '+EXPENSE_KINDS.length+' amounts known'));
     totalGrid.append(card);
   }
-  expensePanel.append(totalGrid, node('p', 'Expected includes amounts already paid; it is a visit plan, not a balance due. Unknown amounts are excluded from subtotals.'));
+  expensePanel.append(totalGrid);expensePanel.querySelector('h2').append(informationButton(document,'Current-system expenses',['Expected includes amounts already paid; it is a visit plan, not a balance due. Unknown amounts are excluded from subtotals.'],root));
   const details = node('details'), summary = node('summary', 'Show expense details · '+EXPENSE_KINDS.length+' categories'); details.append(summary);
   const expenseTable = node('table'); expenseTable.className = 'expense-table';
   const head = node('thead'), heading = node('tr');
@@ -96,12 +97,7 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
   for (const kind of EXPENSE_KINDS) {
     const entry = data.expenses[kind], row = node('tr'), name = node('th'); name.scope = 'row'; name.append(node('span', labels[kind]));
     if(kind==='maintenance'){
-      const info=node('button','i');info.type='button';info.className='cargo-info-button';info.setAttribute('aria-label','About Ship Maintenance');info.setAttribute('aria-haspopup','dialog');name.append(info);
-      info.addEventListener('click',()=>{
-        const dialog=node('dialog'),title=node('h2','Ship Maintenance');title.id='maintenance-information-title';dialog.setAttribute('aria-labelledby',title.id);
-        dialog.append(title,node('p','Recorded maintenance payments are counted here once and excluded from Incidentals. They are already reflected in cash; displaying them does not charge again. The existing 28-day payment schedule is unchanged.'),node('p',entry.basis),node('p','Older snapshots retain their combined Incidentals amount and show maintenance as Unknown. Generate a fresh link to separate recorded maintenance.'));
-        const close=node('button','Close');close.type='button';close.addEventListener('click',()=>dialog.close());dialog.append(close);dialog.addEventListener('close',()=>{dialog.remove();if(info.isConnected)info.focus();});dialog.addEventListener('click',event=>{const b=dialog.getBoundingClientRect();if(event.target===dialog&&(event.clientX<b.left||event.clientX>b.right||event.clientY<b.top||event.clientY>b.bottom))dialog.close();});root.append(dialog);dialog.showModal();close.focus();
-      });
+      name.append(informationButton(document,'Ship Maintenance',['Recorded maintenance payments are counted here once and excluded from Incidentals. They are already reflected in cash; displaying them does not charge again. The existing 28-day payment schedule is unchanged.',entry.basis,'Older snapshots retain their combined Incidentals amount and show maintenance as Unknown. Generate a fresh link to separate recorded maintenance.'],root));
     }else name.append(node('small',formatSnapshotQuantityText(entry.basis,{fuel:kind==='fuel'})));
     row.append(name, node('td', credits(entry.expected)), node('td', credits(entry.paid))); body.append(row);
   }
@@ -124,6 +120,12 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
     panel.append(node('p', 'Prices in Credits per ton. Quotes only; no transactions.'));
     table(panel, ['Goods', 'Tons quoted', 'Cr / ton'], market.offers.map((row,i) => [localName(row,key,i), formatSnapshotTons(row.tons), row.creditsPerTon]), {'available':'Checked: no current offers.', 'not-checked':'Not checked. No prices available.', 'expired':'Expired. Ask the operator for fresh offers.'}[market.status]);
   }
-  root.replaceChildren(node('p', 'Snapshot captured: ' + data.capturedAt + ' · Fixed information; does not update live.'), node('p', 'Fuel quantities and tank capacities round down to whole tons; cargo and reserved space round up. LSS stock rounds down to whole units. Display rounding may make amounts differ from totals or costs. Stored amounts, prices and fill bars remain exact.'), container);
+  const freshness=node('p','Captured: '+data.capturedAt+' · Fixed snapshot');
+  freshness.append(informationButton(document,'Snapshot information',[
+    ...(rounding?[`Costs shown rounded up to Cr${rounding}.`]:[]),
+    'The capture timestamp identifies this fixed snapshot. It does not update live; ask the operator for a fresh link when information changes.',
+    'Fuel quantities and tank capacities round down to whole tons; cargo and reserved space round up. LSS stock rounds down to whole units. Display rounding may make amounts differ from totals or costs. Stored amounts, prices and fill bars remain exact.'
+  ],root));
+  root.replaceChildren(freshness,container);
   return true;
 }

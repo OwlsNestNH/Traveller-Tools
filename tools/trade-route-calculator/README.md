@@ -932,3 +932,10 @@ and codec-1–5 links remain readable: their original combined Incidentals amoun
 is preserved and maintenance is Unknown. Generate a fresh link from the current
 campaign to separate maintenance; archived older departures cannot be split
 without their original payment data. Existing link Credit rounding is unchanged.
+
+Player snapshot rounding/freshness details, ordinary LSS-day explanations,
+expected-expense guidance, and nearby-map controls/legend/attribution live in
+circle-i dialogs. Capture time and fixed-snapshot status remain visible. Missing
+LSS duration, map failures, incomplete political data, invalid links and storage
+warnings remain visible. Dialogs support keyboard dismissal, focus return and
+mobile scrolling; replacing a snapshot clears its open explanations.

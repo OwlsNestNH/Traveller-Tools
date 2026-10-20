@@ -1,6 +1,8 @@
+import {informationButton} from './player-info.mjs?v=maintenance-20261020-98';
 if(new URLSearchParams(location.search).get('embedded')==='1')document.body.classList.add('embedded-reference');
 import {referenceOrigin,referenceWorld,referenceFacts,hexDistance,stagger,referenceSectorAreas} from './player-map-reference.mjs';
 import {territoryMarkup} from './map-territory.mjs';
+document.getElementById('map-help').append(informationButton(document,'Map reference', ['Choose 0–6 rings. Fewer rings enlarge the map’s worlds and labels. Move the slider to update the rings. Select a world for details; the map stays centered on the current system. Current World restores its details.', '★ naval · ▲ scout · ringed planet: gas giants · yellow/red arc: travel zone. Other base codes appear literally; ?: unknown.', 'Live reference and political borders use TravellerMap source data. Political borders are allegiance territory, not travel zones. Browsing does not move the ship or change frozen cargo, prices, offers or GM world overrides.', 'Radius changes this preview only. It is not saved or included in a snapshot URL. No campaign storage is accessed.']));
 const control=document.getElementById('radius'),output=document.getElementById('radius-value'),status=document.getElementById('map-status'),frame=document.getElementById('map-frame'),details=document.getElementById('world-details');
 const node=(tag,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
 const svgNode=(tag,attrs={})=>{const n=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [k,v]of Object.entries(attrs))n.setAttribute(k,String(v));return n;};
@@ -79,7 +81,7 @@ async function load() {
   const incomplete=nextSectors.length!==covered.length;
   const results=await Promise.allSettled(nextSectors.map(async sector=>{const raw=await read('metadata',{sector:sector.name},signal,2000000);if(!Array.isArray(raw.Borders)||raw.Borders.length>256)throw Error('Borders unavailable.');if(raw.Borders.some(b=>typeof b.Path!=='string'||b.Path.length>65536))throw Error('Invalid borders.');return [sector.name,{Borders:raw.Borders,Stylesheet:typeof raw.Stylesheet==='string'?raw.Stylesheet.slice(0,65536):'',Allegiances:Array.isArray(raw.Allegiances)?raw.Allegiances.slice(0,256):[]}];}));
   if(current!==generation)return;worlds=next;sectors=nextSectors;metadata=new Map(results.filter(r=>r.status==='fulfilled').map(r=>r.value));draw(radius);document.getElementById('current-world').disabled=false;
-  status.textContent='Reference map loaded · radius '+radius+'. '+(incomplete||results.some(r=>r.status==='rejected')?'Political borders unavailable; world allegiance codes remain shown.':'Political borders use TravellerMap source data.');
+  status.textContent='Reference map loaded · radius '+radius+'. '+(incomplete||results.some(r=>r.status==='rejected')?'Political borders unavailable; world allegiance codes remain shown.':'');
  }catch{if(current===generation){frame.replaceChildren();details.replaceChildren(node('p','World reference unavailable. Frozen snapshot data is unchanged.'));status.textContent='Reference map unavailable. Check your connection and retry. Snapshot information is unaffected.';}}
  finally{clearTimeout(timer);}
 }

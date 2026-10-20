@@ -14,8 +14,7 @@ function display() {
     const onNotice=message=>{notice=message;status.textContent=message;};
     if(payload) {
       const saved=store.open(payload,onNotice);
-      renderPlayerSnapshot(root,saved.snapshot,{annotations:saved.labels,onAnnotationsChange:saved.save});
-      const note=document.createElement('p');note.textContent='Costs shown rounded up to Cr'+saved.rounding+'.';root.prepend(note);
+      renderPlayerSnapshot(root,saved.snapshot,{annotations:saved.labels,onAnnotationsChange:saved.save,rounding:saved.rounding});
     } else {
       const demo=structuredClone(playerSnapshotFixture);
       for(const rows of [demo.cargo,demo.buy.offers,demo.sell.offers])for(const row of rows)if(!Object.values(COMMODITIES).includes(row.name))row.name='Other';

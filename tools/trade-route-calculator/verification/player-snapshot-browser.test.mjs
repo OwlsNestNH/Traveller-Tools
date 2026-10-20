@@ -35,6 +35,13 @@ try {
   await cargoInfo.focus();await page.keyboard.press('Enter');await page.getByRole('dialog',{name:'Cargo values and reserve supplies'}).waitFor();await page.getByText('Retail is the recorded base price per ton.',{exact:false}).waitFor();
   await page.keyboard.press('Escape');assert.equal(await page.getByRole('dialog').count(),0);assert.equal(await cargoInfo.evaluate(e=>document.activeElement===e),true);
   await page.setViewportSize({width:320,height:844});await cargoInfo.click();const infoDialog=page.getByRole('dialog',{name:'Cargo values and reserve supplies'});assert.equal(await infoDialog.evaluate(e=>e.scrollWidth<=e.clientWidth),true);await page.screenshot({path:artifacts+'player-cargo-information-mobile.png',fullPage:false});await infoDialog.getByRole('button',{name:'Close',exact:true}).click();assert.equal(await cargoInfo.evaluate(e=>document.activeElement===e),true);await page.setViewportSize({width:1440,height:1100});
+  for(const [title,copy]of [['Snapshot information','Stored amounts, prices and fill bars remain exact'],['Life support','Internal supplies only'],['Current-system expenses','not a balance due']]){
+    assert.equal(await page.getByText(copy,{exact:false}).count(),0);
+    const trigger=page.getByRole('button',{name:'About '+title,exact:true});await trigger.focus();await page.keyboard.press('Enter');
+    const dialog=page.getByRole('dialog',{name:title,exact:true});await dialog.waitFor();assert.match(await dialog.textContent(),new RegExp(copy));
+    await page.setViewportSize({width:320,height:844});assert.equal(await dialog.evaluate(e=>e.scrollWidth<=e.clientWidth),true);await page.keyboard.press('Escape');await dialog.waitFor({state:'detached'});assert.equal(await trigger.evaluate(e=>document.activeElement===e),true);
+    await trigger.click();await dialog.getByRole('button',{name:'Close',exact:true}).click();await dialog.waitFor({state:'detached'});assert.equal(await page.getByRole('dialog').count(),0);await page.setViewportSize({width:1440,height:1100});
+  }
   // Presentation rounding cannot alter exact source quantities or meter ratios.
   const displayChecks=await page.evaluate(async()=>{
     const {renderPlayerSnapshot}=await import('./js/player-snapshot-view.mjs');
@@ -54,7 +61,7 @@ try {
   });
   assert.deepEqual(displayChecks.tonCells,[['12','8','4','6'],['1','13','30'],['9','9','6']]);assert.equal(displayChecks.unchanged,true);assert.deepEqual(displayChecks.exact,{value:31.5,max:40.25});
   assert.match(displayChecks.text,/31 t \/ 40 t capacity/);assert.match(displayChecks.text,/150 LSS of reserve stock/);assert.doesNotMatch(displayChecks.text,/31\.5 t|40\.25 t|150\.75 LSS|3\.5 t/);
-  assert.match(displayChecks.text,/Planned 3 t refined top-up at Cr500\/t/);assert.match(displayChecks.text,/21 days \/ 100 days capacity/);assert.match(displayChecks.text,/Display rounding may make amounts differ/);
+  assert.match(displayChecks.text,/Planned 3 t refined top-up at Cr500\/t/);assert.match(displayChecks.text,/21 days \/ 100 days capacity/);assert.doesNotMatch(displayChecks.text,/Display rounding may make amounts differ/);
   assert.match(displayChecks.values[0],/0 t \/ 0 t capacity/);assert.match(displayChecks.values[1],/32 t \/ 40 t capacity/);assert.match(displayChecks.values[2],/Unknown \/ Unknown capacity/);assert.doesNotMatch(displayChecks.values[2],/Unknown t/);
   // Whole completed days are labels only, including sub-day and unknown states.
   await page.setViewportSize({width:320,height:844});
