@@ -1,6 +1,6 @@
-import * as S from './state.mjs?v=zone-zoom-20261020-105';
-import {creditStep} from './rounding.mjs?v=zone-zoom-20261020-105';
-import {SaveNotCommittedError} from './persistence.mjs?v=zone-zoom-20261020-105';
+import * as S from './state.mjs?v=hex-quiet-20261020-106';
+import {creditStep} from './rounding.mjs?v=hex-quiet-20261020-106';
+import {SaveNotCommittedError} from './persistence.mjs?v=hex-quiet-20261020-106';
 
 // Store remains synchronous. An injected provider may return a completion
 // Promise; that completion must include the durable write and publication.

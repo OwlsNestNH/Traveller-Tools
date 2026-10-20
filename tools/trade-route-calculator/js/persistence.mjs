@@ -1,5 +1,5 @@
-import {createDashboardBaseline,sameDashboardBaseline} from './dashboard-baseline.mjs?v=zone-zoom-20261020-105';
-import {initial,validate} from './state.mjs?v=zone-zoom-20261020-105';
+import {createDashboardBaseline,sameDashboardBaseline} from './dashboard-baseline.mjs?v=hex-quiet-20261020-106';
+import {initial,validate} from './state.mjs?v=hex-quiet-20261020-106';
 export const KEY='traveller-trade-route-calculator:v1';
 const LOCK=KEY+':writer';
 // Only the provider can distinguish a rejected write from failed publication.

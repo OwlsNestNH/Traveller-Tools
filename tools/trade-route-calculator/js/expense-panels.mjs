@@ -1,16 +1,16 @@
-import {ruleInfo} from './rule-references.mjs?v=zone-zoom-20261020-105';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=zone-zoom-20261020-105';
-import {passengerShip} from './passengers.mjs?v=zone-zoom-20261020-105';
+import {ruleInfo} from './rule-references.mjs?v=hex-quiet-20261020-106';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=hex-quiet-20261020-106';
+import {passengerShip} from './passengers.mjs?v=hex-quiet-20261020-106';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=zone-zoom-20261020-105';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=zone-zoom-20261020-105';
-import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=zone-zoom-20261020-105';
-import {roomCounts} from './accommodation.mjs?v=zone-zoom-20261020-105';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=zone-zoom-20261020-105';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=zone-zoom-20261020-105';
-import {creditStep} from './rounding.mjs?v=zone-zoom-20261020-105';
-import {roll} from './rules.mjs?v=zone-zoom-20261020-105';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=zone-zoom-20261020-105';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=hex-quiet-20261020-106';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=hex-quiet-20261020-106';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=hex-quiet-20261020-106';
+import {roomCounts} from './accommodation.mjs?v=hex-quiet-20261020-106';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=hex-quiet-20261020-106';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=hex-quiet-20261020-106';
+import {creditStep} from './rounding.mjs?v=hex-quiet-20261020-106';
+import {roll} from './rules.mjs?v=hex-quiet-20261020-106';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=hex-quiet-20261020-106';
 
 const esc=escapeHtml;
 const money=formatCreditsText;
