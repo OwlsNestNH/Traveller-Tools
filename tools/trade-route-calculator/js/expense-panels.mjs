@@ -1,16 +1,16 @@
-import {ruleInfo} from './rule-references.mjs?v=commission-20261020-99';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=commission-20261020-99';
-import {passengerShip} from './passengers.mjs?v=commission-20261020-99';
+import {ruleInfo} from './rule-references.mjs?v=map-parity-20261020-100';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=map-parity-20261020-100';
+import {passengerShip} from './passengers.mjs?v=map-parity-20261020-100';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=commission-20261020-99';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=commission-20261020-99';
-import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=commission-20261020-99';
-import {roomCounts} from './accommodation.mjs?v=commission-20261020-99';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=commission-20261020-99';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=commission-20261020-99';
-import {creditStep} from './rounding.mjs?v=commission-20261020-99';
-import {roll} from './rules.mjs?v=commission-20261020-99';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=commission-20261020-99';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=map-parity-20261020-100';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=map-parity-20261020-100';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=map-parity-20261020-100';
+import {roomCounts} from './accommodation.mjs?v=map-parity-20261020-100';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=map-parity-20261020-100';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=map-parity-20261020-100';
+import {creditStep} from './rounding.mjs?v=map-parity-20261020-100';
+import {roll} from './rules.mjs?v=map-parity-20261020-100';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=map-parity-20261020-100';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

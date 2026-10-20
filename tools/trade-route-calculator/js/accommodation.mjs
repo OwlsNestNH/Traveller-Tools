@@ -1,4 +1,4 @@
-import {up} from './rounding.mjs?v=commission-20261020-99';
+import {up} from './rounding.mjs?v=map-parity-20261020-100';
 import {sum,mul,decimal,cmp,credit} from './amounts.mjs';
 
 export const tiers=['low','middle','high'];

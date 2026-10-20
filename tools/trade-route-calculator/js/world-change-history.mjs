@@ -1,4 +1,4 @@
-import {parseUWP} from './rules.mjs?v=commission-20261020-99';
+import {parseUWP} from './rules.mjs?v=map-parity-20261020-100';
 
 // Audit only the editable world fields. A selective correction must never
 // replay an old world object, campaign inverse, price quote or transaction.
