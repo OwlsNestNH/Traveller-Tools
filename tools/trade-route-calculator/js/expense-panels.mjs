@@ -1,16 +1,16 @@
-import {ruleInfo} from './rule-references.mjs?v=hex-tone-20261020-104';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=hex-tone-20261020-104';
-import {passengerShip} from './passengers.mjs?v=hex-tone-20261020-104';
+import {ruleInfo} from './rule-references.mjs?v=zone-zoom-20261020-105';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=zone-zoom-20261020-105';
+import {passengerShip} from './passengers.mjs?v=zone-zoom-20261020-105';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=hex-tone-20261020-104';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=hex-tone-20261020-104';
-import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=hex-tone-20261020-104';
-import {roomCounts} from './accommodation.mjs?v=hex-tone-20261020-104';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=hex-tone-20261020-104';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=hex-tone-20261020-104';
-import {creditStep} from './rounding.mjs?v=hex-tone-20261020-104';
-import {roll} from './rules.mjs?v=hex-tone-20261020-104';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=hex-tone-20261020-104';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=zone-zoom-20261020-105';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=zone-zoom-20261020-105';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=zone-zoom-20261020-105';
+import {roomCounts} from './accommodation.mjs?v=zone-zoom-20261020-105';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=zone-zoom-20261020-105';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=zone-zoom-20261020-105';
+import {creditStep} from './rounding.mjs?v=zone-zoom-20261020-105';
+import {roll} from './rules.mjs?v=zone-zoom-20261020-105';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=zone-zoom-20261020-105';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

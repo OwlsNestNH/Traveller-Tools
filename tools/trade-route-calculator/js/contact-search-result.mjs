@@ -1,5 +1,5 @@
-import * as R from './rules.mjs?v=hex-tone-20261020-104';
-import {contactSearchPeriod} from './contact-search.mjs?v=hex-tone-20261020-104';
+import * as R from './rules.mjs?v=zone-zoom-20261020-105';
+import {contactSearchPeriod} from './contact-search.mjs?v=zone-zoom-20261020-105';
 
 export function tradeCodeLabel(code){const names={Ag:'Agricultural',As:'Asteroid',Ba:'Barren',De:'Desert',Fl:'Fluid oceans',Ga:'Garden',Hi:'High population',Ht:'High technology',Ic:'Ice-capped',In:'Industrial',Lo:'Low population',Lt:'Low technology',Na:'Non-agricultural',Ni:'Non-industrial',Po:'Poor',Ri:'Rich',Va:'Vacuum',Wa:'Water world',Amber:'Amber travel zone',Red:'Red travel zone',Safe:'Safe travel zone'};return (names[code]||code)+' ('+code+')';}
 

@@ -134,3 +134,16 @@ test('shared symbols retain literal unfamiliar bases, allegiance, aliases and in
  const hostile=publishedWorldSymbols(make({Bases:'<x>',Allegiance:'<img>&"'}));assert.doesNotMatch(hostile,/<img|<x>/);assert.match(hostile,/&lt;img&gt;&amp;&quot;/);
  assert.match(publishedWorldSymbols(make()),/>G\?</);assert.deepEqual(w,before);
 });
+
+ test('compact travel zones are explicit and do not reveal full-detail symbols',()=>{
+  for(const [source,zone] of [['A','A'],['U','A'],['R','R'],['F','R']]){
+   const w=make({Zone:source});const before=structuredClone(w);
+   assert.ok(!worldSymbols(w,0,0,{close:false}).includes('zone-arc'));
+   const compact=worldSymbols(w,0,0,{zones:true,scale:70});
+   assert.match(compact,new RegExp('zone-'+zone));assert.match(compact,/compact-zone/);
+   assert.ok(!compact.includes('symbol-starport'));assert.ok(!compact.includes('allegiance-label'));
+   assert.equal((worldSymbols(w,0,0,{close:true,zones:true,scale:100}).match(/zone-arc/g)||[]).length,1);
+   assert.deepEqual(w,before);
+  }
+  for(const Zone of ['','G','-','?'])assert.ok(!worldSymbols(make({Zone}),0,0,{zones:true}).includes('zone-arc'));
+ });
