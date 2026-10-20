@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=maintenance-20261020-98';
+import {escapeHtml as esc} from './display.mjs?v=commission-20261020-99';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.

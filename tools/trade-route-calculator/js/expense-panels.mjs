@@ -1,16 +1,16 @@
-import {ruleInfo} from './rule-references.mjs?v=maintenance-20261020-98';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=maintenance-20261020-98';
-import {passengerShip} from './passengers.mjs?v=maintenance-20261020-98';
+import {ruleInfo} from './rule-references.mjs?v=commission-20261020-99';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=commission-20261020-99';
+import {passengerShip} from './passengers.mjs?v=commission-20261020-99';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=maintenance-20261020-98';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=maintenance-20261020-98';
-import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=maintenance-20261020-98';
-import {roomCounts} from './accommodation.mjs?v=maintenance-20261020-98';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=maintenance-20261020-98';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=maintenance-20261020-98';
-import {creditStep} from './rounding.mjs?v=maintenance-20261020-98';
-import {roll} from './rules.mjs?v=maintenance-20261020-98';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=maintenance-20261020-98';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=commission-20261020-99';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=commission-20261020-99';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=commission-20261020-99';
+import {roomCounts} from './accommodation.mjs?v=commission-20261020-99';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=commission-20261020-99';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=commission-20261020-99';
+import {creditStep} from './rounding.mjs?v=commission-20261020-99';
+import {roll} from './rules.mjs?v=commission-20261020-99';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=commission-20261020-99';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

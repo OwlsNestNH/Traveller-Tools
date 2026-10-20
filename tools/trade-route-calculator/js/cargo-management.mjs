@@ -1,9 +1,9 @@
-import {createCargoRemoval,cargoRemovalSummary,cargoNumber} from './cargo-removal.mjs?v=maintenance-20261020-98';
-import {supportCompartments} from './lss-compartments.mjs?v=maintenance-20261020-98';
-import {supportAmount} from './life-support.mjs?v=maintenance-20261020-98';
-import {cargoManifest,purchaseFacts} from './cargo-hold.mjs?v=maintenance-20261020-98';
-import {supportDisplay} from './life-support.mjs?v=maintenance-20261020-98';
-import {escapeHtml as esc,formatDecimalCreditsText} from './display.mjs?v=maintenance-20261020-98';
+import {createCargoRemoval,cargoRemovalSummary,cargoNumber} from './cargo-removal.mjs?v=commission-20261020-99';
+import {supportCompartments} from './lss-compartments.mjs?v=commission-20261020-99';
+import {supportAmount} from './life-support.mjs?v=commission-20261020-99';
+import {cargoManifest,purchaseFacts} from './cargo-hold.mjs?v=commission-20261020-99';
+import {supportDisplay} from './life-support.mjs?v=commission-20261020-99';
+import {escapeHtml as esc,formatDecimalCreditsText} from './display.mjs?v=commission-20261020-99';
 import * as A from './amounts.mjs';
 
 const tons=value=>esc(supportDisplay(value))+' t';

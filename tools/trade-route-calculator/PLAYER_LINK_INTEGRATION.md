@@ -51,7 +51,7 @@ that visit remains explicitly unavailable. Subsequent supported departures work.
   is generated for sharing.
 - Expense plans are not saved per visit, so expected amounts remain Unknown.
   Paid amounts use a verified current-visit ledger boundary and reconciled bank.
-  Ship/manual expenses are categorized; maintenance, other ship/manual expenses,
+  Ship/manual expenses are categorized; maintenance has its own category. Other ship/manual expenses,
   broker fees, tax and insurance payments are incidentals. Unverified histories
   show Unknown rather than zero. GM expense notes are excluded.
 - Internal LSS days require a known positive consumption complement. Missing
@@ -62,7 +62,7 @@ that visit remains explicitly unavailable. Subsequent supported departures work.
 
 ## Limits and isolation
 
-The existing codec preserves supported legacy versions 1–4 and writes codec 5.
+The existing codec preserves supported legacy versions 1–6 and writes codec 7.
 Costs round upward to Cr100 for production links, disclosed in both operator and
 viewer UI; paid unit and lot amounts round independently. There is no hosted
 backend, SQL, paid service, live synchronization or automatic transmission.
@@ -98,3 +98,22 @@ history while checking campaign bytes remain unchanged. Existing snapshot tests
 cover hostile payloads, versions, repeated use, annotations and storage failure.
 All fixtures are synthetic. Live Traveller Map access is blocked in this cloud
 environment; browser map responses are mocked.
+
+## Broker commission in Playerreadout
+
+Schema 6 / codec 7 carries the recorded original-purchase Broker commission
+separately from goods prices and the original purchase percentage. It comes only
+from the lot’s explicit saved fee; a basis difference, insurance amount, default
+broker rate or missing ledger entry never supplies it. Zero is shown only when
+explicitly recorded. The original fee remains the full original purchase amount
+after partial sales or losses; it is not apportioned to the tons still aboard.
+
+Current buy/sell quotes do not retain a confirmed commission. Their readout
+therefore says Unknown and explains this in a circle-i dialog. Transaction forms,
+negotiation, cash, goods cost, expense totals and accounting are unchanged.
+
+Schema 4–5 snapshots and codec 1–6 links remain readable, with commission Unknown.
+A fresh current-visit capture is needed to include a recorded fee. Frozen old
+visits are not backfilled. Commission uses the existing independent upward
+Cr100 link rounding; original percentages remain exact as recorded. Legacy codec
+encoding refuses a known commission (including zero), rather than dropping it.

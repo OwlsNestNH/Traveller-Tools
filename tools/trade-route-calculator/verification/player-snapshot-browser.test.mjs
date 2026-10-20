@@ -32,12 +32,12 @@ try {
   await page.getByText(/150 LSS of reserve stock/).waitFor();
   const cargoInfo=page.getByRole('button',{name:'About cargo values and reserve supplies',exact:true});
   assert.equal(await page.getByText('Retail is the recorded base price per ton.',{exact:false}).count(),0,'Technical explanation starts hidden');
-  await cargoInfo.focus();await page.keyboard.press('Enter');await page.getByRole('dialog',{name:'Cargo values and reserve supplies'}).waitFor();await page.getByText('Retail is the recorded base price per ton.',{exact:false}).waitFor();
-  await page.keyboard.press('Escape');assert.equal(await page.getByRole('dialog').count(),0);assert.equal(await cargoInfo.evaluate(e=>document.activeElement===e),true);
-  await page.setViewportSize({width:320,height:844});await cargoInfo.click();const infoDialog=page.getByRole('dialog',{name:'Cargo values and reserve supplies'});assert.equal(await infoDialog.evaluate(e=>e.scrollWidth<=e.clientWidth),true);await page.screenshot({path:artifacts+'player-cargo-information-mobile.png',fullPage:false});await infoDialog.getByRole('button',{name:'Close',exact:true}).click();assert.equal(await cargoInfo.evaluate(e=>document.activeElement===e),true);await page.setViewportSize({width:1440,height:1100});
+  await cargoInfo.press('Enter');await page.getByRole('dialog',{name:'Cargo values and reserve supplies'}).waitFor();await page.getByText('Retail is the recorded base price per ton.',{exact:false}).waitFor();
+  await page.keyboard.press('Escape');await page.getByRole('dialog',{name:'Cargo values and reserve supplies'}).waitFor({state:'detached'});assert.equal(await page.getByRole('dialog').count(),0);assert.equal(await cargoInfo.evaluate(e=>document.activeElement===e),true);
+  await page.setViewportSize({width:320,height:844});await cargoInfo.click();const infoDialog=page.getByRole('dialog',{name:'Cargo values and reserve supplies'});assert.equal(await infoDialog.evaluate(e=>e.scrollWidth<=e.clientWidth),true);await page.screenshot({path:artifacts+'player-cargo-information-mobile.png',fullPage:false});await infoDialog.getByRole('button',{name:'Close',exact:true}).click();await infoDialog.waitFor({state:'detached'});assert.equal(await cargoInfo.evaluate(e=>document.activeElement===e),true);await page.setViewportSize({width:1440,height:1100});
   for(const [title,copy]of [['Snapshot information','Stored amounts, prices and fill bars remain exact'],['Life support','Internal supplies only'],['Current-system expenses','not a balance due']]){
     assert.equal(await page.getByText(copy,{exact:false}).count(),0);
-    const trigger=page.getByRole('button',{name:'About '+title,exact:true});await trigger.focus();await page.keyboard.press('Enter');
+    const trigger=page.getByRole('button',{name:'About '+title,exact:true});await trigger.press('Enter');
     const dialog=page.getByRole('dialog',{name:title,exact:true});await dialog.waitFor();assert.match(await dialog.textContent(),new RegExp(copy));
     await page.setViewportSize({width:320,height:844});assert.equal(await dialog.evaluate(e=>e.scrollWidth<=e.clientWidth),true);await page.keyboard.press('Escape');await dialog.waitFor({state:'detached'});assert.equal(await trigger.evaluate(e=>document.activeElement===e),true);
     await trigger.click();await dialog.getByRole('button',{name:'Close',exact:true}).click();await dialog.waitFor({state:'detached'});assert.equal(await page.getByRole('dialog').count(),0);await page.setViewportSize({width:1440,height:1100});
@@ -157,7 +157,7 @@ try {
     const literal = root.textContent.includes(input.world.name), injected = root.querySelectorAll('img,script').length;
     for (let i=0;i<5;i++) renderPlayerSnapshot(root, playerSnapshotFixture);
     const sections = root.querySelectorAll('section').length;
-    renderPlayerSnapshot(root, {...input, version:6}); const rejected = root.querySelector('[role=alert]')?.textContent.includes('Unsupported');
+    renderPlayerSnapshot(root, {...input, version:7}); const rejected = root.querySelector('[role=alert]')?.textContent.includes('Unsupported');
     const stale = root.textContent.includes('Regina');
     input.buy = {status:'not-checked', offers:[]}; input.sell = {status:'expired', offers:[]}; input.cargo = [];
     renderPlayerSnapshot(root, input);
@@ -213,24 +213,33 @@ try {
   const cargoInput=await page.evaluate(async()=>{
     const {playerSnapshotFixture}=await import('./js/player-snapshot-fixture.mjs');const {measureSnapshotLink}=await import('./js/player-snapshot-codec.mjs');
     const data=structuredClone(playerSnapshotFixture);data.cargo=[
-      {name:'Advanced Electronics',tons:'2',purchase:{retailPerTon:'1000',percent:'62.5',paidPerTon:'625'}},
+      {name:'Advanced Electronics',tons:'2',purchase:{retailPerTon:'1000',percent:'62.5',paidPerTon:'625',originalBrokerCommission:'125'}},
       {name:'Advanced Electronics',tons:'3',purchase:{retailPerTon:'1000',percent:'80',paidPerTon:'800'}},
       {name:'Other',tons:'1',purchase:{retailPerTon:null,percent:null,paidPerTon:'0'}},
       {name:'Other',tons:'4'}];
     return location.href.split('#')[0]+'#'+measureSnapshotLink(data).payload;
   });await page.goto(cargoInput);await page.getByRole('heading',{name:'Cargo aboard',exact:true}).waitFor();
   const cargoRows=page.locator('.cargo-section tbody tr');
-  assert.deepEqual(await cargoRows.nth(0).locator('td').allTextContents(),['Advanced Electronics','2','Cr 1,000','62.5%','Cr 700','Cr 1,300']);
-  assert.deepEqual((await cargoRows.nth(1).locator('td').allTextContents()).slice(2),['Cr 1,000','80%','Cr 800','Cr 2,400']);
-  assert.deepEqual((await cargoRows.nth(2).locator('td').allTextContents()).slice(2),['Unknown','Unknown','Cr 0','Cr 0']);
-  assert.deepEqual((await cargoRows.nth(3).locator('td').allTextContents()).slice(2),['Unknown','Unknown','Unknown','Unknown']);
+  assert.deepEqual(await cargoRows.nth(0).locator('td').allTextContents(),['Advanced Electronics','2','Cr 1,000','62.5%','Cr 700','Cr 1,300','Cr 200Original purchasei']);
+  assert.deepEqual((await cargoRows.nth(1).locator('td').allTextContents()).slice(2),['Cr 1,000','80%','Cr 800','Cr 2,400','UnknownOriginal purchasei']);
+  assert.deepEqual((await cargoRows.nth(2).locator('td').allTextContents()).slice(2),['Unknown','Unknown','Cr 0','Cr 0','UnknownOriginal purchasei']);
+  assert.deepEqual((await cargoRows.nth(3).locator('td').allTextContents()).slice(2),['Unknown','Unknown','Unknown','Unknown','UnknownOriginal purchasei']);
   const valuesBefore=await cargoRows.nth(2).locator('td').allTextContents();
   await page.getByRole('button',{name:'Edit local details for cargo lot 3',exact:true}).click();
   await page.getByLabel('Base price unknown',{exact:true}).uncheck();await page.getByRole('textbox',{name:'Local estimated base price'}).fill('999');await page.getByRole('button',{name:'Save local details',exact:true}).click();
   assert.deepEqual((await cargoRows.nth(2).locator('td').allTextContents()).slice(2),valuesBefore.slice(2));assert.equal(page.url(),cargoInput);
   for(const width of [320,390,700,701,1440]){await page.setViewportSize({width,height:1000});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'Cargo values overflow at '+width);assert.equal(await cargoRows.nth(0).locator('td').nth(4).getAttribute('data-label'),'Paid / ton');if(width===390||width===1440)await page.locator('.cargo-section').screenshot({path:artifacts+'cargo-purchase-'+width+'.png'});}
+  await page.getByRole('button',{name:'About Broker commission · Advanced Electronics',exact:true}).first().click();
+  await page.getByRole('dialog').getByText(/total commission on the original purchase/).waitFor();
+  await page.keyboard.press('Escape');await page.getByRole('dialog').waitFor({state:'detached'});
   const older=await page.evaluate(async()=>{const {playerSnapshotFixture}=await import('./js/player-snapshot-fixture.mjs');const {measureSnapshotLink}=await import('./js/player-snapshot-codec.mjs');return location.href.split('#')[0]+'#'+measureSnapshotLink(playerSnapshotFixture,{codecVersion:4}).payload;});
-  await page.goto(older);await page.getByRole('heading',{name:'Cargo aboard',exact:true}).waitFor();assert.deepEqual((await page.locator('.cargo-section tbody tr').first().locator('td').allTextContents()).slice(2),['Unknown','Unknown','Unknown','Unknown']);
+  await page.goto(older);await page.getByRole('heading',{name:'Cargo aboard',exact:true}).waitFor();assert.deepEqual((await page.locator('.cargo-section tbody tr').first().locator('td').allTextContents()).slice(2),['Unknown','Unknown','Unknown','Unknown','UnknownOriginal purchasei']);
   await page.goBack();await page.getByRole('heading',{name:'Cargo aboard',exact:true}).waitFor();assert.equal(await page.locator('.cargo-section tbody tr').first().locator('td').nth(3).textContent(),'62.5%');
+  await page.locator('.cargo-section tbody tr').first().getByText('Cr 200',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'About Broker commission · Advanced Electronics',exact:true}).first().click();
+  await page.getByRole('dialog').waitFor();await page.goForward();
+  await page.getByRole('dialog').waitFor({state:'detached'});
+  assert.match(await page.locator('.cargo-section tbody tr').first().locator('td').last().textContent(),/^Unknown/);
+  for(const kind of ['buy','sell']){await page.getByRole('button',{name:'About Broker commission · '+kind+' offers',exact:true}).click();await page.getByRole('dialog').getByText(/do not retain a confirmed Broker commission/).waitFor();await page.keyboard.press('Escape');await page.getByRole('dialog').waitFor({state:'detached'});}
   console.log('Player snapshot browser checks passed: desktop/mobile, inert markup, versions, repeated rendering, navigation, storage isolation.');
 } finally { await browser.close(); }

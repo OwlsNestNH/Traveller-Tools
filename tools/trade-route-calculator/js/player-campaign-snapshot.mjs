@@ -1,16 +1,17 @@
 // Read-only campaign adapter. Only explicit public values cross this boundary.
 // No DOM, persistence, random rolls, network access or URL serialization.
-import {projectPlayerSnapshot,SNAPSHOT_VERSION,EXPENSE_KINDS} from './player-snapshot.mjs?v=maintenance-20261020-98';
-import {playerBriefingData} from './player-briefing.mjs?v=maintenance-20261020-98';
-import {context} from './rules.mjs?v=maintenance-20261020-98';
+import {projectPlayerSnapshot,SNAPSHOT_VERSION,EXPENSE_KINDS} from './player-snapshot.mjs?v=commission-20261020-99';
+import {playerBriefingData} from './player-briefing.mjs?v=commission-20261020-99';
+import {context} from './rules.mjs?v=commission-20261020-99';
 import {displayDate} from './calendar.mjs';
-import {supportStock,supportDisplay,supportAmount} from './life-support.mjs?v=maintenance-20261020-98';
-import {passengerShip} from './passengers.mjs?v=maintenance-20261020-98';
-import {fuelAvailabilityAdvice} from './expenses.mjs?v=maintenance-20261020-98';
+import {supportStock,supportDisplay,supportAmount} from './life-support.mjs?v=commission-20261020-99';
+import {passengerShip} from './passengers.mjs?v=commission-20261020-99';
+import {fuelAvailabilityAdvice} from './expenses.mjs?v=commission-20261020-99';
 import * as A from './amounts.mjs';
 
 const text=value=>String(value??'').replace(/[\x00-\x1f\x7f]/g,' ').slice(0,240);
 const amount=value=>value==null?null:A.decimal(value);
+const recordedCommission=value=>{if(typeof value!=='string'&&typeof value!=='number')return null;try{return A.cmp(value,0)<0?null:amount(value);}catch{return null;}};
 const name=(core,id)=>core.commodities.find(g=>g.id===id)?.name??'Other';
 function visitBoundary(s){
  const last=s.ledger.findLast(e=>e.type==='Jump');
@@ -23,7 +24,7 @@ export function campaignPlayerSnapshot(s,core,{saleQuotes=new Map(),capturedAt=n
  if(!s.initialized||!s.worlds[s.actual])throw Error('Set up a campaign before copying a player link.');
  if(A.cmp(s.bank,0)<0)throw Error('Player links cannot yet represent a negative bank balance. No link generated.');
  const w=s.worlds[s.actual],c=context(w,core),support=supportStock(passengerShip(s)),boundary=visitBoundary(s);
- const briefing=playerBriefingData(s,core),cargo=briefing.cargoInHold.items.map(l=>({name:l.type==='Other cargo'?'Other':l.commodity,tons:l.tons,purchase:l.type==='Other cargo'?null:{retailPerTon:l.retailPerTonCr,percent:l.percentOfRetail,paidPerTon:l.recordedUnitPurchasePricePerTonCr,paidTotal:l.remainingGoodsCostCr}}));
+ const briefing=playerBriefingData(s,core),cargo=briefing.cargoInHold.items.map((l,index)=>({name:l.type==='Other cargo'?'Other':l.commodity,tons:l.tons,purchase:l.type==='Other cargo'?null:{retailPerTon:l.retailPerTonCr,percent:l.percentOfRetail,paidPerTon:l.recordedUnitPurchasePricePerTonCr,paidTotal:l.remainingGoodsCostCr,originalBrokerCommission:recordedCommission(s.lots[index]?.audit?.fee)}}));
  // Accepted transport cargo is physically aboard too; private descriptions stay out.
  for(const contract of s.contracts.filter(x=>x.status==='accepted'&&x.kind!=='passenger'))cargo.push({name:'Other',tons:amount(contract.quantity),purchase:null});
  const expenses={visitLabel:text(w.name)+' · visit '+(s.routeIndex+1)+' · recorded payments'};

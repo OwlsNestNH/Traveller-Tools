@@ -1,4 +1,4 @@
-import * as R from './rules.mjs?v=maintenance-20261020-98';
+import * as R from './rules.mjs?v=commission-20261020-99';
 
 // Prepare one sale line from explicit lot/buyer/context/quote/commodity/core,
 // current pricing flags and creditStep, plus caller-normalized values:

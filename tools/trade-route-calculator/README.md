@@ -939,3 +939,11 @@ circle-i dialogs. Capture time and fixed-snapshot status remain visible. Missing
 LSS duration, map failures, incomplete political data, invalid links and storage
 warnings remain visible. Dialogs support keyboard dismissal, focus return and
 mobile scrolling; replacing a snapshot clears its open explanations.
+
+Playerreadout shows **Broker commission** separately from cargo goods prices.
+It is the recorded total for the original purchase, including after a partial
+sale; it is not an allocated cost for the remaining tons. Unknown fees and older
+links stay Unknown. Buy/sell quotes currently retain no confirmed commission,
+so the viewer explains that limitation beside their prices. Schema 6 / codec 7
+preserves older links and the existing independent Cr100 cost rounding. No
+MainTradeRouteCalculator transactions or SpeculativeTradeAlpha behavior change.
