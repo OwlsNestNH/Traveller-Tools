@@ -64,6 +64,7 @@ try{
   }
   for(const zoom of [20,80,199,200,201,240,288]){
    await setZoom(zoom);
+   await page.waitForFunction(()=>document.querySelector('.territory-fill')&&document.querySelector('.territory-border'));
    const paints=await page.evaluate(()=>{const fill=document.querySelector('.territory-fill'),border=document.querySelector('.territory-border');return {fill:fill&&getComputedStyle(fill).fillOpacity,border:border&&getComputedStyle(border).strokeOpacity,width:border&&getComputedStyle(border).strokeWidth,outline:border&&getComputedStyle(border).filter};});
    assert.equal(paints.fill,'0.24');assert.equal(paints.border,'1');assert.equal(paints.width,'1.8px');assert.match(paints.outline,/drop-shadow/);
    assert.ok((await planned()).split(' ').length===12);
