@@ -1,12 +1,12 @@
 // Read-only campaign adapter. Only explicit public values cross this boundary.
 // No DOM, persistence, random rolls, network access or URL serialization.
-import {projectPlayerSnapshot,SNAPSHOT_VERSION,EXPENSE_KINDS} from './player-snapshot.mjs?v=map-details-20261020-101';
-import {playerBriefingData} from './player-briefing.mjs?v=map-details-20261020-101';
-import {context} from './rules.mjs?v=map-details-20261020-101';
+import {projectPlayerSnapshot,SNAPSHOT_VERSION,EXPENSE_KINDS} from './player-snapshot.mjs?v=campaign-politics-20261020-103';
+import {playerBriefingData} from './player-briefing.mjs?v=campaign-politics-20261020-103';
+import {context} from './rules.mjs?v=campaign-politics-20261020-103';
 import {displayDate} from './calendar.mjs';
-import {supportStock,supportDisplay,supportAmount} from './life-support.mjs?v=map-details-20261020-101';
-import {passengerShip} from './passengers.mjs?v=map-details-20261020-101';
-import {fuelAvailabilityAdvice} from './expenses.mjs?v=map-details-20261020-101';
+import {supportStock,supportDisplay,supportAmount} from './life-support.mjs?v=campaign-politics-20261020-103';
+import {passengerShip} from './passengers.mjs?v=campaign-politics-20261020-103';
+import {fuelAvailabilityAdvice} from './expenses.mjs?v=campaign-politics-20261020-103';
 import * as A from './amounts.mjs';
 
 const text=value=>String(value??'').replace(/[\x00-\x1f\x7f]/g,' ').slice(0,240);
@@ -44,7 +44,7 @@ export function campaignPlayerSnapshot(s,core,{saleQuotes=new Map(),capturedAt=n
  const reserve=exactCargo===null?null:supportDisplay(A.mul(exactCargo,100));
  const reserved=exactCargo===null?null:String(-A.floor(A.mul(exactCargo,-1)));
  if(reserve!==null&&reserved!==String(-A.floor(A.mul(A.div(reserve,100),-1))))throw Error('This life-support reserve cannot be represented accurately in a player link. Its fractional balance is too close to a cargo-space boundary.');
- return projectPlayerSnapshot({version:SNAPSHOT_VERSION,capturedAt,campaignDate:displayDate(s.dateLabel,s.hours),
+ return projectPlayerSnapshot({version:SNAPSHOT_VERSION,campaignPolitics:s.campaignPolitics,capturedAt,campaignDate:displayDate(s.dateLabel,s.hours),
   world:{name:text(w.name),location:text(w.sector+' / '+w.hex),uwp:text(c.uwp.raw),tradeCodes:text(c.codes.join(' ')),travelZone:text(c.zone),starport:text(w.emptySpace?'No starport':fuelAvailabilityAdvice(w)),mapReference:w.emptySpace||!w.sector?null:{sector:w.sector,hex:w.hex}},
   ship:{name:text(s.ship.name),cargoCapacityTons:amount(s.ship.capacity),cashCredits:s.bank,fuel:{current:amount(s.ship.fuel?.aboardTons),capacity:amount(s.ship.fuel?.capacityTons)},lifeSupport:{current:support.internalUnits,capacity:support.internalCapacityUnits,cargoLss:reserve,cargoReservedTons:reserved,daysRemaining:days(support.internalUnits),daysCapacity:days(support.internalCapacityUnits)},destination:text(s.worlds[s.route[s.routeIndex+1]]?.name??'No planned destination')},
   cargo,expenses,buy:{status:offers.length?'available':suppliers.length?'available':'not-checked',offers},sell:{status:sales.length?'available':'not-checked',offers:sales}});

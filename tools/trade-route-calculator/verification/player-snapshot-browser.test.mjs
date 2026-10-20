@@ -157,7 +157,7 @@ try {
     const literal = root.textContent.includes(input.world.name), injected = root.querySelectorAll('img,script').length;
     for (let i=0;i<5;i++) renderPlayerSnapshot(root, playerSnapshotFixture);
     const sections = root.querySelectorAll('section').length;
-    renderPlayerSnapshot(root, {...input, version:7}); const rejected = root.querySelector('[role=alert]')?.textContent.includes('Unsupported');
+    renderPlayerSnapshot(root, {...input, version:8}); const rejected = root.querySelector('[role=alert]')?.textContent.includes('Unsupported');
     const stale = root.textContent.includes('Regina');
     input.buy = {status:'not-checked', offers:[]}; input.sell = {status:'expired', offers:[]}; input.cargo = [];
     renderPlayerSnapshot(root, input);

@@ -1,6 +1,7 @@
-import {informationButton} from './player-info.mjs?v=map-details-20261020-101';
+import {campaignPoliticsFragment} from './campaign-politics-codec.mjs';
+import {informationButton} from './player-info.mjs?v=campaign-politics-20261020-103';
 import {formatSnapshotTons, formatSnapshotWholeDown, formatSnapshotLss, formatSnapshotQuantityText} from './player-snapshot-format.mjs';
-import {projectPlayerSnapshot, summarizePlayerExpenses, EXPENSE_KINDS} from './player-snapshot.mjs?v=map-details-20261020-101';
+import {projectPlayerSnapshot, summarizePlayerExpenses, EXPENSE_KINDS} from './player-snapshot.mjs?v=campaign-politics-20261020-103';
 
 // Immutable transmitted data and local annotations remain separate.
 // Persistence is supplied by the standalone recipient adapter, never campaign storage.
@@ -55,12 +56,14 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
   };
   const planet = section('Planetary information');
   facts(planet, [['World', data.world.name], ['Location', data.world.location], ['UWP', data.world.uwp], ['Trade codes', data.world.tradeCodes], ['Travel zone', data.world.travelZone], ['Starport', data.world.starport]]);
-  if(data.world.mapReference){const link=node('a','Open nearby-world reference');const url=new URL('player-map-preview.html',document.baseURI);url.search=new URLSearchParams(data.world.mapReference);link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';planet.append(link);}
+  if(data.world.mapReference){const link=node('a','Open nearby-world reference');const url=new URL('player-map-preview.html',document.baseURI);url.search=new URLSearchParams(data.world.mapReference);if(data.campaignPolitics)url.hash='politics='+campaignPoliticsFragment(data.campaignPolitics);link.href=url.href;link.target='_blank';link.rel='noopener noreferrer';planet.append(link);}
   facts(section('Ship & journey'), [['Ship', data.ship.name], ['Cargo capacity', formatSnapshotTons(data.ship.cargoCapacityTons) + (data.ship.cargoCapacityTons===null?'':' t')], ['Planned destination', data.ship.destination], ['Campaign date', data.campaignDate]]);
   if(data.world.mapReference){
     const map=section('Nearby-world reference');map.className='wide snapshot-map';
+    if(data.campaignPolitics)map.append(node('p','Violet territory and lavender borders are frozen campaign claims from this player link. Published allegiance is unchanged.'));
     map.append(node('p','Live reference for '+data.world.mapReference.sector+' / '+data.world.mapReference.hex+'. Browsing does not change the frozen ship, cargo or offers.'));
     const frame=node('iframe'),url=new URL('player-map-preview.html',document.baseURI);url.search=new URLSearchParams({...data.world.mapReference,embedded:'1'});
+    if(data.campaignPolitics)url.hash='politics='+campaignPoliticsFragment(data.campaignPolitics);
     frame.title='Nearby-world reference map';frame.src=url.href;frame.referrerPolicy='no-referrer';frame.setAttribute('sandbox','allow-scripts allow-same-origin');frame.height='1000';
     frame.addEventListener('load',()=>{if(!frame.isConnected)return;const body=frame.contentDocument?.body;if(!body)return;const resize=()=>{if(frame.isConnected)frame.height=String(Math.min(2400,Math.max(320,Math.ceil(body.scrollHeight)+24)));};const observer=new ResizeObserver(resize);mapObservers.set(root,observer);observer.observe(body);resize();});map.append(frame);
   }

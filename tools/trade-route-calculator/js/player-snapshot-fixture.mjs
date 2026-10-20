@@ -1,6 +1,6 @@
 // Synthetic review fixture only. Internal LSS duration explicitly assumes 8 stock units/day; 150 reserve LSS occupies 2 whole reserved tons, excluded from internal days. No campaign imports or storage dependencies.
 export const playerSnapshotFixture = {
-  version:6, capturedAt:'2026-10-19 15:00 UTC (example)', campaignDate:'042-1105, 14:00',
+  version:7, campaignPolitics:null, capturedAt:'2026-10-19 15:00 UTC (example)', campaignDate:'042-1105, 14:00',
   world:{name:'Regina', location:'Spinward Marches / 1910', uwp:'A788899-C', tradeCodes:'Ri Pa Ph An Cp', travelZone:'Normal', starport:'A · refined fuel available', mapReference:{sector:'Spinward Marches',hex:'1910'}},
   ship:{name:'Far Horizon', cargoCapacityTons:'82', cashCredits:'127450', fuel:{current:'36.5', capacity:'40'}, lifeSupport:{current:'168', capacity:'800', cargoLss:'150', daysRemaining:'21', daysCapacity:'100', cargoReservedTons:'2'}, destination:'New Dawn / 1924'},
   expenses:{maintenance:{expected:null,paid:null,basis:'Maintenance not recorded in this example'},visitLabel:'Regina · this stop, 040–047-1105 planned',

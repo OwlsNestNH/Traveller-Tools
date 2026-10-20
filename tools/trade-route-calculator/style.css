@@ -579,3 +579,5 @@ main{padding-top:18px}
 /* Main-map political contrast; shared player presentation stays unchanged. */
 .world-map .territory-fill{fill-opacity:.24}
 .world-map .territory-border{stroke-opacity:1;stroke-width:1.8;filter:drop-shadow(0 0 1px #000)}
+.campaign-editor{border:0;padding:0;min-width:0}.campaign-editor-map{display:block;width:100%;max-height:65vh;background:#080b10;border:1px solid #64748b}.campaign-editor-map text{fill:#f8fafc;font:10px ui-monospace,monospace;pointer-events:none;paint-order:stroke;stroke:#080b10;stroke-width:2px}.campaign-editor-map g[role=button]{cursor:pointer}.campaign-editor-map g[role=button]:focus polygon,.campaign-editor-map g[role=button]:hover polygon{stroke:#fff;stroke-width:2}.campaign-editor-map circle{pointer-events:none}.campaign-allegiances{display:flex;flex-direction:column;gap:.4rem}.campaign-allegiances [aria-pressed=true]{border-color:#d8b4ff;background:#513879}.campaign-allegiance{color:#d8b4ff}.campaign-editor:disabled{opacity:.65}
+#modal:has(.campaign-editor){width:min(95vw,1000px)}

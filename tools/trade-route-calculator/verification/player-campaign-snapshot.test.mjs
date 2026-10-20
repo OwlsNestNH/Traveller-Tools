@@ -95,7 +95,7 @@ for(const numerator of ['2400000001','2700000001'])test(`fractional life-support
 });
 test('archived version4 departure remains readable with unknown separate maintenance',()=>{
  const s=structuredClone(jump(fresh()));const record=s.playerDepartures[0];record.snapshot.version=4;delete record.snapshot.expenses.maintenance;
- const before=structuredClone(s),view=playerSnapshotForVisit(s,core,0,clock);assert.equal(view.version,6);assert.equal(view.expenses.maintenance.paid,null);assert.equal(view.expenses.incidentals.paid,record.snapshot.expenses.incidentals.paid);assert.deepEqual(s,before);
+ const before=structuredClone(s),view=playerSnapshotForVisit(s,core,0,clock);assert.equal(view.version,7);assert.equal(view.expenses.maintenance.paid,null);assert.equal(view.expenses.incidentals.paid,record.snapshot.expenses.incidentals.paid);assert.deepEqual(s,before);
 });
 
 test('Broker commission comes only from recorded original purchase, never basis differences or default rates',()=>{
