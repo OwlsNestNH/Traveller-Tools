@@ -1,7 +1,7 @@
 import {campaignPoliticsFragment} from './campaign-politics-codec.mjs';
-import {informationButton} from './player-info.mjs?v=hex-tone-20261020-104';
+import {informationButton} from './player-info.mjs?v=zone-zoom-20261020-105';
 import {formatSnapshotTons, formatSnapshotWholeDown, formatSnapshotLss, formatSnapshotQuantityText} from './player-snapshot-format.mjs';
-import {projectPlayerSnapshot, summarizePlayerExpenses, EXPENSE_KINDS} from './player-snapshot.mjs?v=hex-tone-20261020-104';
+import {projectPlayerSnapshot, summarizePlayerExpenses, EXPENSE_KINDS} from './player-snapshot.mjs?v=zone-zoom-20261020-105';
 
 // Immutable transmitted data and local annotations remain separate.
 // Persistence is supplied by the standalone recipient adapter, never campaign storage.

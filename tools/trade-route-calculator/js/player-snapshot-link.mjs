@@ -1,4 +1,4 @@
-import {measureSnapshotLink} from './player-snapshot-codec.mjs?v=hex-tone-20261020-104';
+import {measureSnapshotLink} from './player-snapshot-codec.mjs?v=zone-zoom-20261020-105';
 // Budget the actual deployed URL, not the codec's proposed short prefix.
 export function playerSnapshotUrl(snapshot,pageUrl,{maxUrlLength=8192}={}){
  if(!Number.isSafeInteger(maxUrlLength)||maxUrlLength<100||maxUrlLength>8192)throw Error('Invalid player link size limit.');

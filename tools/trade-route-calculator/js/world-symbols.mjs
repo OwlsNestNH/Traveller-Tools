@@ -47,9 +47,13 @@ export function selectedWorldHex(x,y,scale=50){
  const radius=scale/Math.sqrt(3),factor=Math.min(1,scale/50);
  return `<g class="selected-world-hex" aria-hidden="true"><polygon class="selection-hex-fill" points="${hexPoints(x,y,radius-2*factor)}" fill="#245d94" fill-opacity="0.42" stroke="none"/><polygon class="selection-hex-outline" points="${hexPoints(x,y,radius-3*factor)}" fill="none" stroke="#80beff" stroke-width="${2*factor}" stroke-linejoin="round"/></g>`;
 }
-export function worldSymbols(world,x,y,{close=false,selected=false,actual=false,scale=50}={}){
+export function worldSymbols(world,x,y,{close=false,zones=false,selected=false,actual=false,scale=50}={}){
  const parts=[];
  if(close)parts.push(publishedWorldSymbols(world,x,y,{spacing:Math.min(120,scale)}));
+ else if(zones&&!world.emptySpace){
+  const zone=worldMapFacts(world).zone;
+  if(zone){const r=10;parts.push(`<path class="symbol-zone zone-arc compact-zone zone-${zone} ${zone==='A'?'zone-amber':'zone-red'}" d="M ${x-r*.94} ${y+r*.36} A ${r} ${r} 0 1 1 ${x+r*.94} ${y+r*.36}" fill="none" stroke="${zone==='A'?'#ffe000':'#ff3045'}" stroke-width="1.5"/>`);}
+ }
  if(selected&&scale>=24)parts.push(bracket(x,y));
  if(actual)parts.push(`<path class="symbol-ship" d="M ${x+(close?36:13)} ${y+(close?29:8)} l -4 9 4 -3 4 3 Z" fill="#62d3dd"/>`);
  return '<g class="world-symbols" aria-hidden="true">'+parts.join('')+'</g>';

@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=hex-tone-20261020-104';
+import {escapeHtml as esc} from './display.mjs?v=zone-zoom-20261020-105';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.
