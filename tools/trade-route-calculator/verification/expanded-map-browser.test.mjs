@@ -70,7 +70,7 @@ async function visibleWorlds(page){
   if(!svg?.isConnected)throw Error('The current map SVG is unavailable');
   const b=svg.getBoundingClientRect();
   if(!b.width||!b.height)throw Error('The current map SVG has no rendered bounds');
-  return [...svg.querySelectorAll('[data-action="map-world"] > circle')].filter(circle=>{
+  return [...svg.querySelectorAll('[data-action="map-world"] > .world-hit')].filter(circle=>{
    const p=new DOMPoint(circle.cx.baseVal.value,circle.cy.baseVal.value).matrixTransform(circle.getScreenCTM());
    return p.x>b.left+4&&p.x<b.right-4&&p.y>b.top+4&&p.y<b.bottom-4;
   }).map(circle=>circle.parentElement.dataset.arg).sort();
@@ -260,14 +260,14 @@ async function runWidth(browser,width,report){
   // Route drafts are view state too: keep a chosen stop and its usable Save /
   // Cancel controls through both layouts, then add/remove a stop while expanded.
   await page.locator('#route-menu > summary').click();await click(page,'route-build');
-  await page.locator('.world-map [data-action="map-world"][data-arg="'+f.state.route[2]+'"] > circle').click();
+  await page.locator('.world-map [data-action="map-world"][data-arg="'+f.state.route[2]+'"] > .world-hit').click();
   await page.waitForFunction(()=>document.querySelector('[data-action="route-save"]')?.disabled===false);
   const planned=await routeSnapshot(page),routeCamera=await camera();
   await click(page,'map-expand');await mode(page,true);const expandedPlan=await routeSnapshot(page);
   assert.deepEqual({...expandedPlan,path:planned.path},planned,'Expansion preserves route draft text, selected worlds and validity');
   sameCamera(await camera(),routeCamera,'Expand route draft');await fullNavigation(page,true);
   for(const name of ['route-save','route-cancel','route-last'])await reachable(page,'[data-action="'+name+'"]');
-  await page.locator('.world-map [data-action="map-world"][data-arg="'+f.state.route[0]+'"] > circle').click();
+  await page.locator('.world-map [data-action="map-world"][data-arg="'+f.state.route[0]+'"] > .world-hit').click();
   await page.waitForFunction(()=>document.querySelectorAll('.route-draft > ol > li').length===2);
   await click(page,'route-last');await page.waitForFunction(()=>document.querySelectorAll('.route-draft > ol > li').length===1);
   await click(page,'map-expand');await mode(page,false);assert.deepEqual(await routeSnapshot(page),planned,'Restored route draft keeps the original path');

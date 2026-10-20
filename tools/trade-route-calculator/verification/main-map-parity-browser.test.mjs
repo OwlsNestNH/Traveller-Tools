@@ -23,11 +23,11 @@ const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message)
 const marker=id=>page.locator('[data-action="map-world"][data-arg="'+id+'"]');
 const click=action=>page.locator('[data-action="'+action+'"]').filter({visible:true}).first().click();
 const setZoom=async value=>{await page.locator('#map-zoom-range').fill(String(value));await page.locator('#map-zoom-range').dispatchEvent('input');await frame();};
-const clickBody=async id=>{const p=await marker(id).evaluate(el=>{const body=el.querySelector('.world-disc,.world-belt'),r=body.getBoundingClientRect();const x=(r.left+r.right)/2,y=(r.top+r.bottom)/2,target=document.elementFromPoint(x,y);return {x,y,target:target?.outerHTML?.slice(0,250),action:target?.closest('[data-action]')?.dataset.action,arg:target?.closest('[data-action]')?.dataset.arg};});assert.equal(p.action,'map-world','Body target: '+JSON.stringify(p));assert.equal(p.arg,id);await page.mouse.click(p.x,p.y);await frame();};
+const clickBody=async id=>{const p=await page.evaluate(id=>{const el=document.querySelector('[data-action="map-world"][data-arg="'+id+'"]');const body=el.querySelector('.world-disc,.world-belt'),r=body.getBoundingClientRect();const x=(r.left+r.right)/2,y=(r.top+r.bottom)/2,target=document.elementFromPoint(x,y);return {x,y,target:target?.outerHTML?.slice(0,250),action:target?.closest('[data-action]')?.dataset.action,arg:target?.closest('[data-action]')?.dataset.arg};},id);assert.equal(p.action,'map-world','Body target: '+JSON.stringify(p));assert.equal(p.arg,id);await page.mouse.click(p.x,p.y);await frame();};
 const stored=()=>page.evaluate(key=>localStorage.getItem(key),campaignKey);
 try{
  await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();await frame();
- assert.deepEqual(await page.locator('.world-map').evaluate(el=>({color:getComputedStyle(el).backgroundColor,image:getComputedStyle(el).backgroundImage})),{color:'rgb(8, 11, 16)',image:'none'});
+ assert.deepEqual(await page.evaluate(()=>{const el=document.querySelector('.world-map');return {color:getComputedStyle(el).backgroundColor,image:getComputedStyle(el).backgroundImage};}),{color:'rgb(8, 11, 16)',image:'none'});
  const planned=()=>page.locator('.planned-route-line').getAttribute('points');const original=await planned();assert.ok(original.split(' ').length===12);
  assert.equal(await marker(home.id).locator('.water-disc').count(),1);assert.equal(await page.locator('.symbol-ship').count(),1);
  await setZoom(240);
@@ -39,7 +39,7 @@ try{
   for(const cls of ['water-disc','dry-disc','world-belt','symbol-naval','symbol-scout','gas-giant','zone-A','zone-R'])assert.equal(await main.locator('.'+cls).count(),await player.locator('.'+cls).count(),w.name+' '+cls);
   assert.equal(await main.locator('.allegiance-label').textContent(),await player.locator('.allegiance-label').textContent());
  }
- assert.equal(await marker(home.id).locator('.world-name').evaluate(el=>getComputedStyle(el).fill),'rgb(255, 48, 69)','Selected capitals retain the player map red name');assert.equal(await marker(home.id).locator('.world-uwp').textContent(),'B777777-A');assert.equal(await marker(home.id).locator('.symbol-starport').textContent(),'A');
+ assert.equal(await page.evaluate(id=>getComputedStyle(document.querySelector('[data-action="map-world"][data-arg="'+id+'"] .world-name')).fill,home.id),'rgb(255, 48, 69)','Selected capitals retain the player map red name');assert.equal(await marker(home.id).locator('.world-uwp').textContent(),'B777777-A');assert.equal(await marker(home.id).locator('.symbol-starport').textContent(),'A');
  assert.equal(await reference.locator('[data-world="'+home.id+'"] .world-uwp').textContent(),'A788899-C');await reference.close();
  for(const width of [1440,390,320]){
   await page.setViewportSize({width,height:1000});await frame();await setZoom(240);

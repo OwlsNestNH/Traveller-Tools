@@ -242,7 +242,7 @@ async function run(stops){
 
   // Browse is not travel. Keyboard activation and the persistent ship position
   // are verified independently; no mutation button is submitted here.
-  await action('map-world',targetId).locator('circle').click();await unchanged('Pointer world browsing');await current();
+  await action('map-world',targetId).locator('.world-hit').click();await unchanged('Pointer world browsing');await current();
   await action('map-world',targetId).press('Enter');
   await page.waitForFunction(name=>document.querySelector('.world-info')?.textContent.includes(name),fixture.state.worlds[targetId].name);
   assert.ok((await page.locator('#summary').textContent()).includes(fixture.state.worlds[fixture.state.actual].name));

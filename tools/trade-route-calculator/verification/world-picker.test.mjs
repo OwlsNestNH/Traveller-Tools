@@ -38,7 +38,7 @@ try{
  await page.getByRole('button',{name:'Close',exact:true}).click();assert.deepEqual(await read(),before);
 
  assert.ok(await page.locator('.hex-grid polygon').count()>0);assert.ok(await page.locator('.hex-grid polygon').count()<=469);
- const aligned=await page.evaluate(()=>{const polygon=document.querySelector('.hex-grid [data-hex="1910"]');const points=Array.from(polygon.points);const x=points.reduce((n,p)=>n+p.x,0)/6,y=points.reduce((n,p)=>n+p.y,0)/6;const circle=document.querySelector('svg [data-arg="-110,-70"] circle');return Math.abs(x-Number(circle.getAttribute('cx')))<0.01&&Math.abs(y-Number(circle.getAttribute('cy')))<0.01;});assert.ok(aligned);
+ const aligned=await page.evaluate(()=>{const polygon=document.querySelector('.hex-grid [data-hex="1910"]');const points=Array.from(polygon.points);const x=points.reduce((n,p)=>n+p.x,0)/6,y=points.reduce((n,p)=>n+p.y,0)/6;const circle=document.querySelector('svg [data-arg="-110,-70"] .world-hit');return Math.abs(x-Number(circle.getAttribute('cx')))<0.01&&Math.abs(y-Number(circle.getAttribute('cy')))<0.01;});assert.ok(aligned);
  await page.getByLabel('Show hexes',{exact:true}).uncheck();assert.equal(await page.locator('.hex-grid').count(),0);await page.getByLabel('Show hexes',{exact:true}).check();
  await page.locator('svg [data-arg="-111,-70"]').click();assert.deepEqual(await read(),before);await click('Current system');
  const map=page.locator('.world-map');
@@ -46,7 +46,7 @@ try{
  // Dragging pans the shared world/route/grid layer without browsing or mutating the campaign.
  const transform=()=>page.locator('.map-content').getAttribute('transform');
  const worldBefore=await page.locator('.world-info strong').first().textContent();
- const dot=await page.locator('svg [data-arg="-111,-70"] circle').boundingBox();
+ const dot=await page.locator('svg [data-arg="-111,-70"] .world-hit').boundingBox();
  await page.mouse.move(dot.x+dot.width/2,dot.y+dot.height/2);await page.mouse.down();await page.mouse.move(dot.x+90,dot.y+45,{steps:8});await page.mouse.up();
  assert.notEqual(await transform(),'translate(0 0)');assert.equal(await page.locator('.world-info strong').first().textContent(),worldBefore);assert.deepEqual(await read(),before);
  const pan=await transform();await page.getByLabel('Show hexes',{exact:true}).uncheck();assert.equal(await transform(),pan);await page.getByLabel('Show hexes',{exact:true}).check();
@@ -55,7 +55,7 @@ try{
  await map.dispatchEvent('pointerdown',{pointerId:41,pointerType:'touch',isPrimary:true,button:0,clientX:200,clientY:200});
  await map.dispatchEvent('pointercancel',{pointerId:41,pointerType:'touch',isPrimary:true});
  await page.locator('svg [data-arg="-111,-70"]').click();assert.equal(await page.locator('.world-info strong').first().textContent(),'Jenghe');assert.equal(await transform(),'translate(0 0)');assert.deepEqual(await read(),before);await click('Current system');
- const separation=()=>page.evaluate(()=>{const a=document.querySelector('svg [data-arg="-110,-70"] circle'),b=document.querySelector('svg [data-arg="-111,-70"] circle');return Math.abs(Number(a.getAttribute('cx'))-Number(b.getAttribute('cx')));});
+ const separation=()=>page.evaluate(()=>{const a=document.querySelector('svg [data-arg="-110,-70"] .world-hit'),b=document.querySelector('svg [data-arg="-111,-70"] .world-hit');return Math.abs(Number(a.getAttribute('cx'))-Number(b.getAttribute('cx')));});
  assert.equal(await page.evaluate(async()=>{const m=await import('./js/map.mjs');return m.distance({x:0,y:0},{x:12,y:6});}),12);
  const initialSpacing=await separation();await map.hover();const scrollBefore=await page.evaluate(()=>scrollY);await page.keyboard.down('Control');await page.mouse.wheel(0,-150);await page.keyboard.up('Control');await page.waitForFunction(()=>document.querySelector('.map-zoom-controls span').textContent!=='100%');assert.ok(await separation()>initialSpacing);assert.equal(await page.evaluate(()=>scrollY),scrollBefore);
  await page.keyboard.down('Control');await page.mouse.wheel(0,150);await page.keyboard.up('Control');await page.waitForFunction(()=>document.querySelector('.map-zoom-controls span').textContent==='100%');
