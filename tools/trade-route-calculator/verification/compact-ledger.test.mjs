@@ -1,3 +1,4 @@
+import {ruleInfo} from '../js/rule-references.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -18,7 +19,7 @@ function render(){
  ]};
  const before=structuredClone(state),result={};
  runInNewContext(renderer+'\nbankLedger();',{
-  state,A:{credit:BigInt},esc:escape,money,recordedPaymentDate,displayDate:(_label,hours)=>hours+'h',world:()=>({name:'Regina'}),good:()=>null,
+  state,ruleInfo,A:{credit:BigInt},esc:escape,money,recordedPaymentDate,displayDate:(_label,hours)=>hours+'h',world:()=>({name:'Regina'}),good:()=>null,
   btn:(label,action,id,_mutates,style)=>'<button class="'+style+'" data-action="'+action+'" data-arg="'+id+'">'+label+'</button>',
   auditFacts:rows=>{result.totals=Array.from(rows,pair=>Array.from(pair));return '';},
   table:(headers,rows,className)=>{result.headers=Array.from(headers);result.rows=Array.from(rows);result.className=className;return rows.join('');},

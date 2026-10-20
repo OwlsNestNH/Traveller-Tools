@@ -1,5 +1,5 @@
-import * as R from './rules.mjs?v=cargo-sell-20261020-97';
-import {distance as worldDistance} from './map.mjs?v=cargo-sell-20261020-97';
+import * as R from './rules.mjs?v=maintenance-20261020-98';
+import {distance as worldDistance} from './map.mjs?v=maintenance-20261020-98';
 
 // Prepare optional coverage terms from plain inputs, not FormData/campaign state.
 // remainingRoute is the current untravelled route: [{id, world:{x,y,zone}}].

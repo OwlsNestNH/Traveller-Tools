@@ -12,7 +12,7 @@ test('allowlist strips GM and unrelated fields recursively; detached immutable o
   assert.throws(() => {result.buy.offers[0].tons = '0';}, TypeError);
 });
 test('unknown, absent and legacy versions fail closed', () => {
-  for (const version of [undefined, 0, 1, 2, 3, 5, '4', null]) assert.throws(() => projectPlayerSnapshot({...fresh(), version}), /Unsupported/);
+  for (const version of [undefined, 0, 1, 2, 3, 6, '4', null]) assert.throws(() => projectPlayerSnapshot({...fresh(), version}), /Unsupported/);
 });
 test('malformed shape, nonfinite or excessive amounts and bounded text rejected', () => {
   for (const value of [null, [], 'snapshot']) assert.throws(() => projectPlayerSnapshot(value));
@@ -66,11 +66,11 @@ test('resource bounds reject overcapacity and malformed or missing fields; unkno
   }
 });
 test('expense totals use exact arithmetic and disclose unknowns separately from zero', () => {
-  assert.deepEqual(summarizePlayerExpenses(fresh().expenses), {expected:{knownTotal:'40250',unknownCount:1},paid:{knownTotal:'26750',unknownCount:0}});
-  const data = fresh(); for (const key of ['berth', 'fuel', 'salary', 'mortgage', 'lss', 'incidentals']) {data.expenses[key].expected = null; data.expenses[key].paid = '0';}
-  assert.deepEqual(summarizePlayerExpenses(data.expenses), {expected:{knownTotal:'0',unknownCount:6},paid:{knownTotal:'0',unknownCount:0}});
+  assert.deepEqual(summarizePlayerExpenses(fresh().expenses), {expected:{knownTotal:'40250',unknownCount:2},paid:{knownTotal:'26750',unknownCount:1}});
+  const data = fresh(); for (const key of ['berth', 'fuel', 'salary', 'mortgage', 'lss', 'incidentals', 'maintenance']) {data.expenses[key].expected = null; data.expenses[key].paid = '0';}
+  assert.deepEqual(summarizePlayerExpenses(data.expenses), {expected:{knownTotal:'0',unknownCount:7},paid:{knownTotal:'0',unknownCount:0}});
   data.expenses.berth.expected = '999999999999999.999999'; data.expenses.fuel.expected = '0.000001';
-  assert.deepEqual(summarizePlayerExpenses(data.expenses).expected, {knownTotal:'1000000000000000',unknownCount:4});
+  assert.deepEqual(summarizePlayerExpenses(data.expenses).expected, {knownTotal:'1000000000000000',unknownCount:5});
 });
 
 test('LSS overflow reserves whole space without changing exact stock or internal duration',()=>{

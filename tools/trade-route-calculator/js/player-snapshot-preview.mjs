@@ -1,7 +1,7 @@
 import {COMMODITIES} from './player-snapshot-catalog.mjs';
-import {playerSnapshotFixture} from './player-snapshot-fixture.mjs';
-import {renderPlayerSnapshot,clearPlayerSnapshotMap} from './player-snapshot-view.mjs?v=cargo-sell-20261020-97';
-import {createRecipientStore} from './player-snapshot-storage.mjs';
+import {playerSnapshotFixture} from './player-snapshot-fixture.mjs?v=maintenance-20261020-98';
+import {renderPlayerSnapshot,clearPlayerSnapshotMap} from './player-snapshot-view.mjs?v=maintenance-20261020-98';
+import {createRecipientStore} from './player-snapshot-storage.mjs?v=maintenance-20261020-98';
 const root=document.getElementById('snapshot'),store=createRecipientStore(()=>localStorage);
 function display() {
   clearPlayerSnapshotMap(root);
@@ -14,8 +14,7 @@ function display() {
     const onNotice=message=>{notice=message;status.textContent=message;};
     if(payload) {
       const saved=store.open(payload,onNotice);
-      renderPlayerSnapshot(root,saved.snapshot,{annotations:saved.labels,onAnnotationsChange:saved.save});
-      const note=document.createElement('p');note.textContent='Costs shown rounded up to Cr'+saved.rounding+'.';root.prepend(note);
+      renderPlayerSnapshot(root,saved.snapshot,{annotations:saved.labels,onAnnotationsChange:saved.save,rounding:saved.rounding});
     } else {
       const demo=structuredClone(playerSnapshotFixture);
       for(const rows of [demo.cargo,demo.buy.offers,demo.sell.offers])for(const row of rows)if(!Object.values(COMMODITIES).includes(row.name))row.name='Other';

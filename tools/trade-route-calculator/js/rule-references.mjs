@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=cargo-sell-20261020-97';
+import {escapeHtml as esc} from './display.mjs?v=maintenance-20261020-98';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.
@@ -145,6 +145,7 @@ export const RULE_REFERENCES=Object.freeze({
   part('Referee input','Existing entered terms stay fixed. Confirming payment debits the bank; elapsed time alone does not. Fixed mortgage payments retain their entered Credit amount.')
  ]),
  'maintenance':entry('maintenance costs',[core('153–154')],[
+  part('App convention','The Ship Maintenance field totals recorded maintenance payments in the available ledger. It is included once in Total expenses, not added again. Fresh player links separate the current visit’s maintenance from Incidentals; older links retain their original combined amount and show maintenance as unknown.'),
   part('Published context','Core provides ship-maintenance guidance.'),
   part('Referee input','The app uses an entered fixed maintenance amount. It does not calculate annual overhaul or missed-maintenance checks.'),
   part('App convention','Confirmed payment advances its own 28-day schedule and debits the bank. Time alone makes no payment. Fixed maintenance payments retain their entered Credit amount.')

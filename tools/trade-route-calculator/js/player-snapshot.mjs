@@ -1,6 +1,6 @@
 // Headless, versioned player-data boundary. Never pass a raw campaign here.
 // A future adapter must deliberately select approved public fields first.
-export const SNAPSHOT_VERSION = 4;
+export const SNAPSHOT_VERSION = 5;
 export const MAX_SNAPSHOT_ROWS = 200;
 const fail = () => { throw new Error('Invalid player snapshot. Ask the operator for a fresh snapshot.'); };
 const object = value => { if (!value || typeof value !== 'object' || Array.isArray(value)) fail(); return value; };
@@ -19,7 +19,8 @@ const reservoir = (current, capacity) => {
   if (result.current !== null && result.capacity !== null && scaled(result.current) > scaled(result.capacity)) fail();
   return result;
 };
-export const EXPENSE_KINDS = Object.freeze(['berth', 'fuel', 'salary', 'mortgage', 'lss', 'incidentals']);
+export const EXPENSE_KINDS = Object.freeze(['berth', 'fuel', 'salary', 'mortgage', 'lss', 'incidentals', 'maintenance']);
+export const LEGACY_MAINTENANCE = Object.freeze({expected:null, paid:null, basis:'Older snapshot: maintenance was not separated from Incidentals. Ask for a fresh link.'});
 const expenses = value => {
   object(value);
   const result = {visitLabel:text(value.visitLabel)};
@@ -50,7 +51,7 @@ const market = value => {
 };
 export function projectPlayerSnapshot(source) {
   object(source);
-  if (source.version !== SNAPSHOT_VERSION) throw new Error('Unsupported player snapshot version. Ask the operator for a compatible snapshot.');
+  if (![4, SNAPSHOT_VERSION].includes(source.version)) throw new Error('Unsupported player snapshot version. Ask the operator for a compatible snapshot.');
   const world = object(source.world), ship = object(source.ship), fuel = object(ship.fuel), support = object(ship.lifeSupport);
   const days=reservoir(support.daysRemaining ?? null,support.daysCapacity ?? null);
   const cargoLss=optionalAmount(support.cargoLss), reserved=support.cargoReservedTons == null ? null : wholeTons(support.cargoReservedTons);
@@ -60,7 +61,7 @@ export function projectPlayerSnapshot(source) {
   return freeze({version:SNAPSHOT_VERSION, capturedAt:text(source.capturedAt), campaignDate:text(source.campaignDate),
     world:{name:text(world.name), location:text(world.location), uwp:text(world.uwp), tradeCodes:text(world.tradeCodes), travelZone:text(world.travelZone), starport:text(world.starport), mapReference:mapReference(world.mapReference)},
     ship:{name:text(ship.name), cargoCapacityTons:wholeTons(ship.cargoCapacityTons), cashCredits:optionalAmount(ship.cashCredits), fuel:reservoir(fuel.current, fuel.capacity), lifeSupport:{...reservoir(support.current, support.capacity), cargoLss, daysRemaining:days.current, daysCapacity:days.capacity, cargoReservedTons:reserved}, destination:text(ship.destination)},
-    expenses:expenses(source.expenses),
+    expenses:expenses(source.version===4?{...object(source.expenses),maintenance:LEGACY_MAINTENANCE}:source.expenses),
     cargo:rows(source.cargo, row => ({name:text(row.name), tons:wholeTons(row.tons), purchase:purchase(row.purchase)})),
     buy:market(source.buy), sell:market(source.sell)});
 }

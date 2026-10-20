@@ -922,3 +922,20 @@ existing `buy-page-browser`, `map-zoom-scroll-browser`, and
 `player-snapshot-browser` suites cover thresholds, overrides, unknown values,
 unchanged campaign data, zoom synchronization, keyboard/touch input, responsive
 placement and fractional-day presentation.
+
+Ship Maintenance is shown separately in Accounts (recorded ledger total) and
+fresh player snapshots (recorded current-visit payments). It remains included
+once in expense totals; cash and the existing 28-day schedule do not change.
+Use the circle-i button beside the field for accounting and compatibility details.
+Snapshot schema 5 / link codec 6 adds this category. Existing schema-4 snapshots
+and codec-1–5 links remain readable: their original combined Incidentals amount
+is preserved and maintenance is Unknown. Generate a fresh link from the current
+campaign to separate maintenance; archived older departures cannot be split
+without their original payment data. Existing link Credit rounding is unchanged.
+
+Player snapshot rounding/freshness details, ordinary LSS-day explanations,
+expected-expense guidance, and nearby-map controls/legend/attribution live in
+circle-i dialogs. Capture time and fixed-snapshot status remain visible. Missing
+LSS duration, map failures, incomplete political data, invalid links and storage
+warnings remain visible. Dialogs support keyboard dismissal, focus return and
+mobile scrolling; replacing a snapshot clears its open explanations.

@@ -5,23 +5,23 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src https://travellermap.com; connect-src https://travellermap.com; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <title>Player map · standalone preview</title>
-<link rel="stylesheet" href="player-snapshot.css"><link rel="stylesheet" href="player-map-preview.css">
-<script type="module" src="js/player-map-preview.mjs"></script>
+<link rel="stylesheet" href="player-snapshot.css?v=maintenance-20261020-98"><link rel="stylesheet" href="player-map-preview.css">
+<script type="module" src="js/player-map-preview.mjs?v=maintenance-20261020-98"></script>
 </head>
 <body>
-<header><p class="eyebrow">STANDALONE MAP REVIEW</p><h1>Nearby systems</h1><p id="origin-label">Sample reference origin: Regina · Spinward Marches / 1910</p><p class="notice">Live reference from TravellerMap. Separate from frozen snapshot prices, transactions and GM world overrides.</p></header>
+<header><p class="eyebrow">STANDALONE MAP REVIEW</p><h1>Nearby systems</h1><p id="origin-label">Sample reference origin: Regina · Spinward Marches / 1910</p></header>
 <main>
 <section class="map-panel">
 <label for="radius">Hex radius <output id="radius-value" for="radius">2</output></label>
 <input id="radius" type="range" min="0" max="6" step="1" value="2">
-<p>Choose 0–6 rings. Fewer rings enlarge the map's worlds and labels. Move the slider to update the rings. Select a world for details; the map stays centered on the current system. Current World restores its details.</p><p class="reference-note">★ naval · ▲ scout · ringed planet: gas giants · yellow/red arc: travel zone. Other base codes appear literally; ?: unknown.</p><p id="map-status" role="status">Loading reference map…</p>
+<span id="map-help"></span><p id="map-status" role="status">Loading reference map…</p>
 <div id="map-frame" aria-label="Reference map"></div>
 <button id="current-world" type="button" disabled>Current World</button>
 <button id="map-retry" type="button">Retry map and details</button>
 </section>
 <section class="world-panel" aria-label="Selected world reference"><div id="world-details" aria-live="polite"><p>Loading system details…</p></div>
-<p class="reference-note">Live reference only. Browsing does not move the ship or change frozen cargo, prices or offers. Political borders are allegiance territory, not travel zones.</p>
+
 </section>
 </main>
-<footer>Radius changes this preview only. It is not saved or included in a snapshot URL. No campaign storage is accessed.</footer>
+
 </body></html>

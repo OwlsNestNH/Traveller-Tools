@@ -12,6 +12,10 @@ await context.route('https://travellermap.com/**',async route=>{const url=new UR
 const loaded=()=>page.getByText(/Reference map loaded · radius/).waitFor();
 try{
  await page.goto(new URL('player-map-preview.html?sector=Spinward+Marches&hex=1910',base).href);await loaded();
+ const mapHelp=page.getByRole('button',{name:'About Map reference'});assert.equal(await page.getByText('Choose 0–6 rings.',{exact:false}).count(),0);
+ await mapHelp.focus();await page.keyboard.press('Enter');const help=page.getByRole('dialog',{name:'Map reference'});await help.waitFor();assert.match(await help.textContent(),/Political borders are allegiance territory/);assert.match(await help.textContent(),/naval.*scout/);
+ await page.setViewportSize({width:320,height:844});assert.equal(await help.evaluate(e=>e.scrollWidth<=e.clientWidth),true);await page.keyboard.press('Escape');await help.waitFor({state:'detached'});assert.equal(await mapHelp.evaluate(e=>document.activeElement===e),true);await mapHelp.click();await help.getByRole('button',{name:'Close',exact:true}).click();await help.waitFor({state:'detached'});assert.equal(await page.getByRole('dialog').count(),0);await page.setViewportSize({width:1100,height:900});
+
  const panelBounds=await Promise.all([page.locator('.map-panel').boundingBox(),page.locator('.world-panel').boundingBox()]);assert.ok(Math.abs(panelBounds[0].width-panelBounds[1].width)<=1);assert.ok(Math.abs(panelBounds[0].height-panelBounds[1].height)<=1);assert.equal(panelBounds[0].y,panelBounds[1].y);
  assert.equal(await page.locator('#radius').getAttribute('type'),'range');assert.equal(await page.locator('#radius').getAttribute('step'),'1');assert.equal(await page.locator('#radius').getAttribute('max'),'6');assert.equal(await page.locator('#radius').inputValue(),'2');
  assert.equal(await page.locator('.gas-giant').count(),1);assert.equal(await page.locator('.zone-A').count(),1);assert.equal(await page.locator('.world-starport').first().textContent(),'A');assert.equal(await page.locator('.world-hex').first().textContent(),'1910');assert.deepEqual(await page.locator('[data-world]').first().locator('.base-symbol').allTextContents(),['★','▲']);
