@@ -27,7 +27,7 @@ try{
  const initial=await read();
  assert.equal(await page.locator('#map-uwp').isChecked(),true);
  assert.equal(await page.locator('.world-uwp').count(),0);
- for(let i=0;i<6;i++){await click('+');await page.waitForTimeout(60);}
+ for(let i=0;i<6;i++){await click('Zoom in');await page.waitForTimeout(60);}
  await page.locator('.map-zoom-controls').getByText('288%',{exact:true}).waitFor();
  const marker=page.locator('svg [data-action="map-world"]').filter({has:page.locator('.world-name',{hasText:'Regina'})});
  assert.equal(await marker.locator('.world-uwp').textContent(),'A788899-C');
@@ -37,12 +37,12 @@ try{
  assert.ok(await page.locator('.hex-grid text').count()>0);
  await page.screenshot({path:join(artifacts,'map-uwp-desktop.png'),fullPage:true});
  await page.locator('#map-uwp').uncheck();assert.equal(await page.locator('.world-uwp').count(),0);
- await page.locator('#map-uwp').check();await click('−');assert.equal(await page.locator('.world-uwp').count(),0);
+ await page.locator('#map-uwp').check();await click('Zoom out');await page.waitForFunction(()=>document.querySelector('#map-zoom-value').textContent==='240%');assert.ok(await page.locator('.world-uwp').count()>0);await click('Zoom out');await page.waitForFunction(()=>document.querySelector('#map-zoom-value').textContent==='200%');assert.equal(await page.locator('.world-uwp').count(),0);
  assert.deepEqual(await read(),initial);
  // Verify effective world overrides without changing the user's campaign.
  await page.evaluate(()=>{const key='traveller-trade-route-calculator:v1',s=JSON.parse(localStorage.getItem(key));s.worlds[s.actual].overrideUWP='B777777-A';localStorage.setItem(key,JSON.stringify(s));});
  await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();
- for(let i=0;i<6;i++){await click('+');await page.waitForTimeout(60);}
+ for(let i=0;i<6;i++){await click('Zoom in');await page.waitForTimeout(60);}
  assert.equal(await page.locator('svg [data-action="map-world"] .world-uwp').first().textContent(),'B777777-A');
  await page.setViewportSize({width:390,height:844});await page.screenshot({path:join(artifacts,'map-uwp-mobile.png'),fullPage:true});
  assert.deepEqual(errors,[]);console.log('PASS: maximum-zoom UWP, default checkbox, toggle, zoom hiding, name/UWP/marker separation, visible hexes, effective override, no campaign mutation.');

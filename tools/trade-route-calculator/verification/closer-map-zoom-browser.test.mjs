@@ -171,12 +171,12 @@ async function closeReadability(page,f){
    const matrix=element.getScreenCTM();
    return {text,font:parseFloat(style.fontSize),fill:style.fill,typography,intrinsic,scaleX:Math.hypot(matrix.a,matrix.b),scaleY:Math.hypot(matrix.c,matrix.d),...box(element)};
   };
-  return {selectedId:selected.dataset.arg,actualId:actual.dataset.arg,map:box(svg),marker:box(selected.querySelector(':scope > circle')),
+  return {selectedId:selected.dataset.arg,actualId:actual.dataset.arg,map:box(svg),marker:box(selected.querySelector('.world-disc')),
    name:measure(selected.querySelector('.world-name')),uwp:measure(selected.querySelector('.world-uwp')),title:selected.querySelector('title').textContent,
    icons:Object.fromEntries(['symbol-starport','symbol-gas-giant','symbol-naval','symbol-scout','zone-amber','symbol-selection'].map(name=>[name,measure(selected.querySelector('.'+name))])),
-   actualFill:actual.querySelector(':scope > circle').getAttribute('fill'),shipFill:actual.querySelector('.symbol-ship').getAttribute('fill'),shipCount:svg.querySelectorAll('.symbol-ship').length,
+   actualFill:actual.querySelector('.world-disc').getAttribute('fill'),shipFill:actual.querySelector('.symbol-ship').getAttribute('fill'),shipCount:svg.querySelectorAll('.symbol-ship').length,
    selectedFill:svg.querySelector('.selection-hex-fill').getAttribute('fill'),selectedOutline:svg.querySelector('.selection-hex-outline').getAttribute('stroke'),selectedCount:svg.querySelectorAll('.selected-world-hex').length,
-   selectedStroke:selected.querySelector(':scope > circle').getAttribute('stroke'),level:svg.dataset.mapLevel,hexes:svg.querySelectorAll('.hex-grid text').length,
+   selectedStroke:selected.querySelector('.world-disc').getAttribute('stroke'),level:svg.dataset.mapLevel,hexes:svg.querySelectorAll('.hex-grid text').length,
    uwpCount:svg.querySelectorAll('.world-uwp').length,nameCount:svg.querySelectorAll('.world-name').length};
  },{viewedId:viewed.id,actualId});
  assert.equal(result.selectedId,viewed.id);assert.notEqual(result.selectedId,result.actualId,'The browsed world remains distinct from the ship');

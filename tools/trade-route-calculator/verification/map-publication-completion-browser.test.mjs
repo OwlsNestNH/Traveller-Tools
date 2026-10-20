@@ -264,13 +264,13 @@ async function installGate(page, result) {
     const circle = node.querySelector(':scope > circle');
     return {id: node.dataset.arg, label: node.getAttribute('aria-label'), title: node.querySelector('title')?.textContent,
      name: node.querySelector('.world-name')?.textContent, uwp: node.querySelector('.world-uwp')?.textContent || null,
-     selected: node.classList.contains('selected-world'), radius: circle?.getAttribute('r'), fill: circle?.getAttribute('fill'),
+     actual: !!node.querySelector('.symbol-ship'), selected: node.classList.contains('selected-world'), radius: circle?.getAttribute('r'), fill: circle?.getAttribute('fill'),
      x: Number(circle?.getAttribute('cx')), y: Number(circle?.getAttribute('cy'))};
    });
    const pointList = svg.querySelector('polyline')?.points;
    const points = Array.from({length: pointList?.numberOfItems || 0}, (_, index) => {const point = pointList.getItem(index); return {x: point.x, y: point.y};});
    const routeIds = points.map(point => worlds.find(world => Math.abs(world.x - point.x) < 0.001 && Math.abs(world.y - point.y) < 0.001)?.id || 'unmatched');
-   return {actualIds: worlds.filter(world => world.fill === '#62d3dd').map(world => world.id).sort(), routeIds,
+   return {actualIds: worlds.filter(world => world.actual).map(world => world.id).sort(), routeIds,
     worlds: worlds.map(({x, y, ...world}) => world).sort((a, b) => a.id.localeCompare(b.id)),
     selectedIds: worlds.filter(world => world.selected).map(world => world.id).sort(),
     overviewLocation: svg.querySelector('.overview-location title')?.textContent || null};

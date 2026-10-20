@@ -61,8 +61,8 @@ export function mapKeyMarkup(){
   [icon('<text y="6" text-anchor="middle">★</text>'),'Naval base'],
   [icon('<path d="M 0 -7 L -6 5 H 6 Z"/>'),'Scout base'],
   [icon(ringed(0,0)),'Gas giant(s)'],
-  [icon('<path d="M -8 5 A 9 9 0 1 1 8 5" fill="none" stroke="#f5bd6c" stroke-width="2"/>'),'Amber zone'],
-  [icon('<path d="M -8 5 A 9 9 0 1 1 8 5" fill="none" stroke="#ff959e" stroke-width="2"/>'),'Red zone'],
+  [icon('<path d="M -8 5 A 9 9 0 1 1 8 5" fill="none" stroke="#ffe000" stroke-width="2"/>'),'Amber zone'],
+  [icon('<path d="M -8 5 A 9 9 0 1 1 8 5" fill="none" stroke="#ff3045" stroke-width="2"/>'),'Red zone'],
   [icon('<circle r="3" fill="#62d3dd"/><path d="M 6 3 l -3 7 3 -2 3 2 Z" fill="#62d3dd"/>'),'Ship location'],
   [icon(`<polygon points="${hexPoints(0,0,10)}" fill="#245d94" fill-opacity="0.42" stroke="#80beff" stroke-width="1.8"/>`,'key-selected-world'),'Selected world']
  ];
