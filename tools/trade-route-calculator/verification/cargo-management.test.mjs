@@ -13,7 +13,7 @@ test('Cargo retains separate lots, descriptions and actual recorded prices indep
  assert.equal((html.match(/data-management-lot=/g)||[]).length,4);
  assert.doesNotMatch(html,/\ufffd/,'Lot text renders without replacement glyphs');
  assert.match(html,/Recorded electronics/);assert.match(html,/Separate consignment/);
- assert.match(html,/2.25 t/);assert.match(html,/Cr 100 \/ t/);
+ assert.match(html,/2.25 t/);assert.doesNotMatch(html,/Cr 100 \/ t/);
  assert.match(html,/Cr 1,234.56789 \/ t/);assert.match(html,/Cr 2,000 \/ t/);
  assert.match(html,/Not recorded/);assert.doesNotMatch(html,/type="checkbox"|Sale Price|Not negotiated/);
  assert.equal(JSON.stringify(s),before,'Rendering cannot change quantities, bank, audits or basis');
@@ -45,7 +45,7 @@ test('only accepted freight/mail appear, and passenger bookings are never repres
 test('Sell routes exact lot identity to the existing action; every user-controlled display is escaped',()=>{
  const s=guiFixture().state;s.lots[0].id='lot-"unsafe';s.lots[0].description='<img src=x onerror=alert(1)>';
  const html=cargoManagementPanel(s,core);
- assert.match(html,/data-action="lot-sell" data-arg="lot-&quot;unsafe" data-mutate/);
+ assert.match(html,/data-action="lot-correct" data-arg="lot-&quot;unsafe" data-mutate/);
  assert.match(html,/&lt;img src=x/);assert.doesNotMatch(html,/<img|<script|data-action="sale-commit"/);
 });
 

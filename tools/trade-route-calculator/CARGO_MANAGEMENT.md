@@ -172,3 +172,21 @@ campaign clock, debit cash or backdate a ledger transaction.
 Manual acquisition location/date remain Not recorded unless explicitly supplied;
 the automatic addition world/time is shown separately in Record details. It is
 not evidence of when or where previously owned cargo was actually acquired.
+
+
+### Approved workflow consolidation
+
+Cargo's trade rows now show commodity, a distinct description when useful, tons,
+recorded price paid, Edit and Details. Optional insurance stays available. Other
+cargo's explicit whole-lot sale is available from Details. Sell rows show the
+selection, tons, sale quantity, recorded price paid and current offer; one primary
+Find buyer / Review sale action follows the current buyer state. Fees, warnings
+and final proceeds remain in the commit review. Manage cargo links back to Cargo.
+
+Add and Edit share commodity, description, tons and price-paid presentation, with
+live current retail, derived percentage and price-times-tons reference. Existing
+commodity and historical purchase quote are read-only on Edit: a different
+commodity requires Add; unknown purchase price stays unknown. Editable remaining
+goods cost and fee-inclusive total cost remain explicitly separate in More
+details. The reference total does not overwrite those amounts, cash or a frozen
+quote. This is a deliberate accounting boundary, not a hidden missing field.

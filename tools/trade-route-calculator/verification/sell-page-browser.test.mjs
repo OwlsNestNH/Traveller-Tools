@@ -22,8 +22,8 @@ try{
   assert.equal(await raw(),bytes);assert.equal(await page.locator('.sale-table tbody tr').count(),f.state.lots.length);
   for(const lot of f.state.lots)assert.equal(await page.locator('[data-sale-quantity="'+lot.id+'"]').inputValue(),lot.quantity);
   assert.equal(await page.locator('[data-action="lot-audit"]').count(),f.state.lots.length);
-  assert.equal(await page.locator('[data-action="lot-correct"]').count(),f.state.lots.length);
-  assert.equal(await page.locator('[data-action="lot-insure"]').count(),f.state.lots.length);
+  assert.equal(await page.locator('[data-action="lot-correct"]').count(),0);
+  assert.equal(await page.locator('[data-action="lot-insure"]').count(),0);
   if(width>=1100){
    const alignment=await page.locator('.sale-table tbody tr').evaluateAll(rows=>rows.map(row=>{
     const textCenter=el=>{const range=document.createRange();range.selectNodeContents(el);const r=range.getClientRects()[0];return r.y+r.height/2;};
@@ -32,7 +32,7 @@ try{
     values.push(input.y+input.height/2);return {spread:Math.max(...values)-Math.min(...values),height:row.getBoundingClientRect().height};
    }));
    for(const row of alignment)assert.ok(row.spread<=3,'Primary text and quantity numerals share a visual center line: '+JSON.stringify(row));
-   if(width>=1440)assert.ok(alignment.some(row=>row.height<=43),'Ordinary rows retain approved compact density');
+   if(width>=1440)assert.ok(alignment.some(row=>row.height<=64),'Compact rows allow one distinct description beneath the commodity');
   }
   // Same-description lots stay distinguishable through the existing keyboard/touch Audit action.
   for(const lot of f.state.lots.slice(1)){
@@ -52,7 +52,7 @@ try{
   await page.locator('#cargo-search').fill('not present');assert.equal(await page.locator('.sale-table').count(),0);
   assert.match(await page.locator('.selected-preview').textContent(),new RegExp(f.state.lots.length+' selected.*'+f.state.lots.length+' hidden by search'));
   await page.locator('#cargo-search').fill('');assert.equal(await page.locator('[data-sale-quantity]').first().inputValue(),'1');
-  await click('sale-clear');await click('lot-sell',f.state.lots[0].id);
+  await click('sale-clear');await page.locator('[data-lot="'+f.state.lots[0].id+'"]').check();await click('sale');
   await page.getByRole('heading',{name:'Find a buyer',exact:true}).waitFor();assert.equal(await page.locator('[data-lot]:checked').count(),1);assert.equal(await raw(),bytes);
   await page.locator('#modal-cancel').click();
   await page.screenshot({path:artifacts+'sell-selection-'+width+'.png',fullPage:true});
