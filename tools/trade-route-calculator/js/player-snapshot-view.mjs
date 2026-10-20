@@ -1,6 +1,6 @@
-import {informationButton} from './player-info.mjs?v=map-details-20261020-101';
+import {informationButton} from './player-info.mjs?v=hex-labels-20261020-102';
 import {formatSnapshotTons, formatSnapshotWholeDown, formatSnapshotLss, formatSnapshotQuantityText} from './player-snapshot-format.mjs';
-import {projectPlayerSnapshot, summarizePlayerExpenses, EXPENSE_KINDS} from './player-snapshot.mjs?v=map-details-20261020-101';
+import {projectPlayerSnapshot, summarizePlayerExpenses, EXPENSE_KINDS} from './player-snapshot.mjs?v=hex-labels-20261020-102';
 
 // Immutable transmitted data and local annotations remain separate.
 // Persistence is supplied by the standalone recipient adapter, never campaign storage.

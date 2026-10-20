@@ -1,7 +1,7 @@
 import {COMMODITIES} from './player-snapshot-catalog.mjs';
-import {playerSnapshotFixture} from './player-snapshot-fixture.mjs?v=map-details-20261020-101';
-import {renderPlayerSnapshot,clearPlayerSnapshotMap} from './player-snapshot-view.mjs?v=map-details-20261020-101';
-import {createRecipientStore} from './player-snapshot-storage.mjs?v=map-details-20261020-101';
+import {playerSnapshotFixture} from './player-snapshot-fixture.mjs?v=hex-labels-20261020-102';
+import {renderPlayerSnapshot,clearPlayerSnapshotMap} from './player-snapshot-view.mjs?v=hex-labels-20261020-102';
+import {createRecipientStore} from './player-snapshot-storage.mjs?v=hex-labels-20261020-102';
 const root=document.getElementById('snapshot'),store=createRecipientStore(()=>localStorage);
 function display() {
   clearPlayerSnapshotMap(root);

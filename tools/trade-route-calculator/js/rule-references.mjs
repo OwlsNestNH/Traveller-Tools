@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=map-details-20261020-101';
+import {escapeHtml as esc} from './display.mjs?v=hex-labels-20261020-102';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.

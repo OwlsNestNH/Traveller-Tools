@@ -968,3 +968,5 @@ preserves older links and the existing independent Cr100 cost rounding. No
 MainTradeRouteCalculator transactions or SpeculativeTradeAlpha behavior change.
 
 Main-map details begin at 200% (UWP still requires its switch). Political territory uses stronger shading and thicker outlined borders; the Political switch still controls the overlay. The player radius map and existing zoom steps are unchanged.
+
+Main-map hex numbers retain their 80% visibility threshold and use bold 11px near-white monospace text with a dark halo for contrast over political shading. Label spacing keeps them separate from world details; the player map is unchanged.
