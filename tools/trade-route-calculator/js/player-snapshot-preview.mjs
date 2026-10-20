@@ -1,6 +1,6 @@
 import {COMMODITIES} from './player-snapshot-catalog.mjs';
 import {playerSnapshotFixture} from './player-snapshot-fixture.mjs';
-import {renderPlayerSnapshot,clearPlayerSnapshotMap} from './player-snapshot-view.mjs?v=buy-zoom-20261019-96';
+import {renderPlayerSnapshot,clearPlayerSnapshotMap} from './player-snapshot-view.mjs?v=cargo-sell-20261020-97';
 import {createRecipientStore} from './player-snapshot-storage.mjs';
 const root=document.getElementById('snapshot'),store=createRecipientStore(()=>localStorage);
 function display() {

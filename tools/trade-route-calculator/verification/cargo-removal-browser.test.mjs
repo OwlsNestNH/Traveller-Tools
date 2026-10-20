@@ -17,7 +17,7 @@ async function open(width,legacyReserve=false){
  await context.addInitScript(({key,bytes})=>{if(!localStorage.getItem(key))localStorage.setItem(key,bytes);},{key:campaignKey,bytes});
  await context.route('https://travellermap.com/api/**',r=>{const u=new URL(r.request().url());return r.fulfill({json:u.pathname.endsWith('/universe')?f.universe:u.pathname.endsWith('/metadata')?f.metadata:u.pathname.endsWith('/sec')?f.sec:{Worlds:f.apiWorlds}});});
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(base);try{await page.getByText('Editing in this tab',{exact:true}).waitFor();}catch(error){throw Error('Cargo browser startup failed: '+JSON.stringify({width,legacyReserve,errors,text:await page.locator('body').innerText()}),{cause:error});}
- const click=(action,arg)=>page.locator('[data-action="'+action+'"]'+(arg===undefined?'':'[data-arg="'+arg+'"]')).filter({visible:true}).first().click();
+ const click=async(action,arg)=>{await page.locator('[data-action="'+action+'"]'+(arg===undefined?'':'[data-arg="'+arg+'"]')).filter({visible:true}).first().click();if(action==='tab'&&arg==='Cargo'||action==='cargo-cancel')await page.locator('[data-action="cargo-remove-mode"]').click();};
  await click('tab','Cargo');
  return {s,bytes,context,page,errors,click,read:()=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)),campaignKey),unchanged:async()=>assert.equal(await page.evaluate(key=>localStorage.getItem(key),campaignKey),bytes),field:key=>page.locator('[data-cargo-remaining="'+key+'"]')};
 }

@@ -40,11 +40,11 @@ function domDouble(){
   for(const id of ['mail-dm-preview','rounding-input-note'])ids.delete(id);
   for(const[,id]of html.matchAll(/id="(mail-dm-preview|rounding-input-note)"/g))ids.set(id,element());
  }});
- const form=ids.get('modal-form');form.elements=new Proxy({namedItem:n=>fields.get(n)},{get:(target,key)=>key in target?target[key]:fields.get(key)});form.querySelectorAll=selector=>selector==='[data-round]'?[...fields.values()].filter(n=>n.hasAttribute('data-round')):[];
+ const form=ids.get('modal-form');form.elements=new Proxy({namedItem:n=>fields.get(n)},{get:(target,key)=>key in target?target[key]:fields.get(key)});form.querySelectorAll=selector=>selector==='[data-round]'?[...fields.values()].filter(n=>n.hasAttribute('data-round')):selector==='input,select,textarea'?[...fields.values()]:[];
  return {ids,fields:()=>fields,buttons:()=>buttons,dispatch(type,target){for(const listener of listeners.get(type)||[])listener({type,target});},document:{body:{append(){}},createElement(){return {...element(),getContext(){return {measureText:t=>({width:String(t).length*6})};}};},getElementById:id=>ids.get(id)||null,addEventListener(type,listener){if(!listeners.has(type))listeners.set(type,[]);listeners.get(type).push(listener);},querySelector(){return null;},querySelectorAll(selector){
   if(selector!=='[data-mutate]')return [];
   buttons=[...ids.values()].flatMap(n=>[...(n.innerHTML||'').matchAll(/<button\b([^>]*)>/g)].map(m=>element(attrs(m[1])))).filter(n=>n.hasAttribute('data-mutate'));return buttons;
- }},FormData:class{constructor(){this.values=new Map([...fields].filter(([,n])=>!n.disabled&&n.attributes.type!=='checkbox').map(([k,n])=>[k,n.value]));for(const[k,n]of fields)if(n.attributes.type==='checkbox'&&n.checked)this.values.set(k,'on');}get(k){return this.values.get(k)??null;}has(k){return this.values.has(k);}}};
+ }},FormData:class{constructor(){this.values=new Map([...fields].filter(([,n])=>!n.disabled&&n.attributes.type!=='checkbox').map(([k,n])=>[k,n.value]));for(const[k,n]of fields)if(n.attributes.type==='checkbox'&&n.checked)this.values.set(k,'on');}get(k){return this.values.get(k)??null;}has(k){return this.values.has(k);}[Symbol.iterator](){return this.values[Symbol.iterator]();}}};
 }
 function campaign(){const s=S.initial();s.settings.insurance=true;s.initialized=true;s.bank='1000000';s.actual=origin.id;s.worlds=structuredClone({[origin.id]:origin,[destination.id]:destination,[far.id]:far});s.route=[origin.id,destination.id];s.lots=[{id:'insured-lot',commodity:'11',description:'Synthetic insured goods',quantity:'10',basis:'110000',goodsValue:'100000'}];return S.validate(s);}
 function harness(saved=campaign()){
@@ -319,4 +319,14 @@ test('production persistence keeps insurance OFF and rejects unavailable held-ca
  assert.throws(()=>h.api.insureHeldCargo('insured-lot'),/Insurance is disabled/);assert.equal(h.persisted().settings.insurance,false);
  await h.settings({insurance:true});assert.match(h.api.cargoPanel(true),/lot-insure/);await h.insure();assert.equal(h.persisted().policies.length,1);
  h.api.actions.undo();assert.equal(h.persisted().policies.length,0);h.api.actions.undo();assert.equal(h.persisted().settings.insurance,false);
+});
+
+
+test('Edit Delete confirms one insured lot and retains policy safeguards',async()=>{
+ for(const arrived of [false,true]){
+  const h=harness();await h.insure();if(arrived){h.api.jump();h.fill({hours:0});await h.submit();}
+  const before=h.persisted();h.api.actions['lot-correct']('insured-lot');h.api.actions['lot-delete']('insured-lot');await h.submit();
+  if(!arrived){assert.match(error(h),/Close\/amend active insurance/);same(h.persisted(),before);}
+  else{assert.equal(error(h),'');const after=h.persisted();assert.equal(after.lots.length,0);assert.equal(after.bank,before.bank);same(after.ledger,before.ledger);assert.equal(after.policies[0].status,'closed');assert.equal(after.policies[0].remainingQuantity,'0');h.api.actions.undo();same(financial(h.persisted()),financial(before));}
+ }
 });

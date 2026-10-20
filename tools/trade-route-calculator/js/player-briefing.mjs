@@ -1,6 +1,6 @@
-import {recordedOperatingResult} from './financial-summary.mjs?v=buy-zoom-20261019-96';
+import {recordedOperatingResult} from './financial-summary.mjs?v=cargo-sell-20261020-97';
 import {latestMailCheck} from './mail-history.mjs';
-import {latestPassengerSearch,passengerOfferRemaining,passengerTotals} from './passengers.mjs?v=buy-zoom-20261019-96';
+import {latestPassengerSearch,passengerOfferRemaining,passengerTotals} from './passengers.mjs?v=cargo-sell-20261020-97';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
 

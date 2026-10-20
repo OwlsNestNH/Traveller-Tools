@@ -48,9 +48,9 @@ try{
    assert.ok(await page.locator('.sell-cargo-scroll').evaluate(el=>el.scrollWidth<=el.clientWidth+2));
    await page.screenshot({path:artifacts+'sell-selection-quantity-'+width+'.png'});
   }
-  assert.match(await page.locator('#sale-selection-preview').textContent(),/Cargo projected/);assert.equal(await raw(),bytes);
+  assert.equal(await page.locator('#sale-selection-preview').count(),0);assert.equal(await raw(),bytes);
   await page.locator('#cargo-search').fill('not present');assert.equal(await page.locator('.sale-table').count(),0);
-  assert.match(await page.locator('#sale-selection-preview').textContent(),new RegExp(f.state.lots.length+' of '+f.state.lots.length+' held lots'));
+  assert.match(await page.locator('.selected-preview').textContent(),new RegExp(f.state.lots.length+' selected.*'+f.state.lots.length+' hidden by search'));
   await page.locator('#cargo-search').fill('');assert.equal(await page.locator('[data-sale-quantity]').first().inputValue(),'1');
   await click('sale-clear');await click('lot-sell',f.state.lots[0].id);
   await page.getByRole('heading',{name:'Find a buyer',exact:true}).waitFor();assert.equal(await page.locator('[data-lot]:checked').count(),1);assert.equal(await raw(),bytes);

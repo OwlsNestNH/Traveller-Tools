@@ -14,7 +14,7 @@ test('Sell keeps separate lots, maximum defaults, unknown history and review-onl
  assert.match(html,/data-sale-quantity="one" value="2.5"/);assert.match(html,/data-sale-quantity="two" value="5"/);
  assert.match(html,/Paid: Not recorded/);assert.match(html,/Sell Selected/);assert.match(html,/Select all cargo/);
  assert.match(html,/data-action="lot-audit"/);assert.match(html,/data-action="lot-correct"/);
- assert.match(html,/including selected lots hidden by this search/);
+ assert.doesNotMatch(html,/sale-selection-preview|Cargo projected/);
  assert.equal(JSON.stringify(h.persisted()),before);assert.equal(h.calls.priceDice,0);assert.equal(h.calls.saves,0);
 });
 test('quantity edits are session-only and follow the same lot into review without rolling',()=>{

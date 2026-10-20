@@ -1,24 +1,24 @@
-import {validateOtherCargo,addOtherCargo as addOther,adjustOtherCargo as adjustOther,sellOtherCargo as sellOther,refereeTradeInput} from './referee-cargo.mjs?v=buy-zoom-20261019-96';
-import {applyCargoRemoval} from './cargo-removal.mjs?v=buy-zoom-20261019-96';
-import {compartmentRefillQuote,refillPricingAudit} from './lss-refill-transaction.mjs?v=buy-zoom-20261019-96';
-import {createDashboardBaseline,validateDashboardBaseline} from './dashboard-baseline.mjs?v=buy-zoom-20261019-96';
-import {validateWorldChangeHistory,isWorldChangeAudit} from './world-change-history.mjs?v=buy-zoom-20261019-96';
-import {validateContactSearchHistory,commitContactSearch} from './contact-search.mjs?v=buy-zoom-20261019-96';
+import {validateOtherCargo,addOtherCargo as addOther,adjustOtherCargo as adjustOther,sellOtherCargo as sellOther,deleteOtherCargo as deleteOther,refereeTradeInput} from './referee-cargo.mjs?v=cargo-sell-20261020-97';
+import {applyCargoRemoval} from './cargo-removal.mjs?v=cargo-sell-20261020-97';
+import {compartmentRefillQuote,refillPricingAudit} from './lss-refill-transaction.mjs?v=cargo-sell-20261020-97';
+import {createDashboardBaseline,validateDashboardBaseline} from './dashboard-baseline.mjs?v=cargo-sell-20261020-97';
+import {validateWorldChangeHistory,isWorldChangeAudit} from './world-change-history.mjs?v=cargo-sell-20261020-97';
+import {validateContactSearchHistory,commitContactSearch} from './contact-search.mjs?v=cargo-sell-20261020-97';
 import {projectPlayerSnapshot} from './player-snapshot.mjs';
 export {commitContactSearch};
-import {passengerShip,passengerSpace,passengerTotals,passengerCapacity,validatePassengerContract,validatePassengerHistory,latestPassengerSearch,passengerOfferRemaining} from './passengers.mjs?v=buy-zoom-20261019-96';
-import {validateMaintenance,validateMaintenancePaymentRecord} from './maintenance.mjs?v=buy-zoom-20261019-96';
-import {validateMortgage,validateMortgagePaymentRecord} from './mortgage.mjs?v=buy-zoom-20261019-96';
+import {passengerShip,passengerSpace,passengerTotals,passengerCapacity,validatePassengerContract,validatePassengerHistory,latestPassengerSearch,passengerOfferRemaining} from './passengers.mjs?v=cargo-sell-20261020-97';
+import {validateMaintenance,validateMaintenancePaymentRecord} from './maintenance.mjs?v=cargo-sell-20261020-97';
+import {validateMortgage,validateMortgagePaymentRecord} from './mortgage.mjs?v=cargo-sell-20261020-97';
 import {validateJumpAttempts,currentJumpAttempt,lastJump,savedJumpAttempt,departureKey,jumpPreparationBridge} from './jump-attempts.mjs';
-import {distance as jumpDistance} from './map.mjs?v=buy-zoom-20261019-96';
+import {distance as jumpDistance} from './map.mjs?v=cargo-sell-20261020-97';
 import {validateMailHistory} from './mail-history.mjs?v=mail-history-1';
-import {bladderSpace,validateFuel,fuelPurchase,consumeJumpFuel} from './fuel.mjs?v=buy-zoom-20261019-96';
-import {validateSupport,refillQuote,consumeSupport,anchorSupport,supportCargo,supportAmount,supportDisplay,supportReference,extraSupportReference} from './life-support.mjs?v=buy-zoom-20261019-96';
-import {up,creditStep,roundExisting} from './rounding.mjs?v=buy-zoom-20261019-96';
-import {validateAccommodation,passengerLuggage,roomCounts} from './accommodation.mjs?v=buy-zoom-20261019-96';
+import {bladderSpace,validateFuel,fuelPurchase,consumeJumpFuel} from './fuel.mjs?v=cargo-sell-20261020-97';
+import {validateSupport,refillQuote,consumeSupport,anchorSupport,supportCargo,supportAmount,supportDisplay,supportReference,extraSupportReference} from './life-support.mjs?v=cargo-sell-20261020-97';
+import {up,creditStep,roundExisting} from './rounding.mjs?v=cargo-sell-20261020-97';
+import {validateAccommodation,passengerLuggage,roomCounts} from './accommodation.mjs?v=cargo-sell-20261020-97';
 import {add,sub,mul,div,cmp,floor,sum,decimal,credit} from './amounts.mjs';
-import {VERSION,priceLimits,characteristicDMs} from './rules.mjs?v=buy-zoom-20261019-96';
-import {expenseQuote,starport,berthMultipliers,payableExpenses} from './expenses.mjs?v=buy-zoom-20261019-96';
+import {VERSION,priceLimits,characteristicDMs} from './rules.mjs?v=cargo-sell-20261020-97';
+import {expenseQuote,starport,berthMultipliers,payableExpenses} from './expenses.mjs?v=cargo-sell-20261020-97';
 export const SCHEMA=1;
 export const uid=()=>crypto.randomUUID();
 export function initial(){return {schema:SCHEMA,revision:0,rulesVersion:VERSION,initialized:false,name:'My trading campaign',bank:'0',hours:0,dateLabel:'001-1105',ship:{name:'Independent trader',capacity:'60',staterooms:0,jump:2,scoops:true,armed:false},trader:{broker:0,streetwise:0,admin:0,characteristic:0,rank:0,soc:0},settings:{reducedProfitLimitsEnabled:false,minPurchasePercent:85,maxSalePercent:115,profit:100,tax:false,insurance:false,creditStep:1,maxBaseRetailEnabled:false,maxBaseRetail:'100000',useRawIllegalPrices:false},worlds:{},actual:null,route:[],routeIndex:0,snapshots:[],lots:[],contracts:[],policies:[],ledger:[],cooldowns:{},undo:[],events:[],jumpAttempts:[],latestMailCheckId:null};}
@@ -496,3 +496,5 @@ export function addRefereeTradeCargo(s,input){const lot=refereeTradeInput(input)
 export function addOtherCargo(s,input){return addOther(s,input,{uid});}
 export function adjustOtherCargo(s,id,input){return adjustOther(s,id,input,{uid});}
 export function sellOtherCargo(s,id,value){return sellOther(s,id,value,{uid,note});}
+
+export function deleteOtherCargo(s,id,reason){return deleteOther(s,id,reason,{uid});}

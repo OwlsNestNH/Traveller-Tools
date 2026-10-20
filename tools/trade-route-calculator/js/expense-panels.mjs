@@ -1,16 +1,16 @@
-import {ruleInfo} from './rule-references.mjs?v=buy-zoom-20261019-96';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=buy-zoom-20261019-96';
-import {passengerShip} from './passengers.mjs?v=buy-zoom-20261019-96';
+import {ruleInfo} from './rule-references.mjs?v=cargo-sell-20261020-97';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=cargo-sell-20261020-97';
+import {passengerShip} from './passengers.mjs?v=cargo-sell-20261020-97';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=buy-zoom-20261019-96';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=buy-zoom-20261019-96';
-import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=buy-zoom-20261019-96';
-import {roomCounts} from './accommodation.mjs?v=buy-zoom-20261019-96';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=buy-zoom-20261019-96';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=buy-zoom-20261019-96';
-import {creditStep} from './rounding.mjs?v=buy-zoom-20261019-96';
-import {roll} from './rules.mjs?v=buy-zoom-20261019-96';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=buy-zoom-20261019-96';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=cargo-sell-20261020-97';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=cargo-sell-20261020-97';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=cargo-sell-20261020-97';
+import {roomCounts} from './accommodation.mjs?v=cargo-sell-20261020-97';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=cargo-sell-20261020-97';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=cargo-sell-20261020-97';
+import {creditStep} from './rounding.mjs?v=cargo-sell-20261020-97';
+import {roll} from './rules.mjs?v=cargo-sell-20261020-97';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=cargo-sell-20261020-97';
 
 const esc=escapeHtml;
 const money=formatCreditsText;
