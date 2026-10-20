@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=campaign-politics-20261020-103';
+import {escapeHtml as esc} from './display.mjs?v=hex-tone-20261020-104';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.

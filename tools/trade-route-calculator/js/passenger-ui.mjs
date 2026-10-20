@@ -1,10 +1,10 @@
-import {ruleInfo} from './rule-references.mjs?v=campaign-politics-20261020-103';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=campaign-politics-20261020-103';
+import {ruleInfo} from './rule-references.mjs?v=hex-tone-20261020-104';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=hex-tone-20261020-104';
 import * as A from './amounts.mjs';
-import {manualLuggage} from './accommodation.mjs?v=campaign-politics-20261020-103';
-import * as P from './passengers.mjs?v=campaign-politics-20261020-103';
-import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=campaign-politics-20261020-103';
-import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=campaign-politics-20261020-103';
+import {manualLuggage} from './accommodation.mjs?v=hex-tone-20261020-104';
+import * as P from './passengers.mjs?v=hex-tone-20261020-104';
+import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=hex-tone-20261020-104';
+import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=hex-tone-20261020-104';
 import {displayDate} from './calendar.mjs';
 const esc=escapeHtml;
 const money=formatCreditsText,signed=x=>x>0?'+'+x:String(x);

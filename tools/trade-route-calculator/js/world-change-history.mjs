@@ -1,4 +1,4 @@
-import {parseUWP} from './rules.mjs?v=campaign-politics-20261020-103';
+import {parseUWP} from './rules.mjs?v=hex-tone-20261020-104';
 
 // Audit only the editable world fields. A selective correction must never
 // replay an old world object, campaign inverse, price quote or transaction.
