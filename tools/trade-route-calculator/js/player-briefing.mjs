@@ -1,6 +1,6 @@
-import {recordedOperatingResult} from './financial-summary.mjs?v=campaign-politics-20261020-103';
+import {recordedOperatingResult} from './financial-summary.mjs?v=hex-tone-20261020-104';
 import {latestMailCheck} from './mail-history.mjs';
-import {latestPassengerSearch,passengerOfferRemaining,passengerTotals} from './passengers.mjs?v=campaign-politics-20261020-103';
+import {latestPassengerSearch,passengerOfferRemaining,passengerTotals} from './passengers.mjs?v=hex-tone-20261020-104';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
 

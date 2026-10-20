@@ -1,13 +1,13 @@
-import {recordedOperatingResult} from './financial-summary.mjs?v=campaign-politics-20261020-103';
-import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=campaign-politics-20261020-103';
-import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=campaign-politics-20261020-103';
-import {bladderSpace} from './fuel.mjs?v=campaign-politics-20261020-103';
+import {recordedOperatingResult} from './financial-summary.mjs?v=hex-tone-20261020-104';
+import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=hex-tone-20261020-104';
+import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=hex-tone-20261020-104';
+import {bladderSpace} from './fuel.mjs?v=hex-tone-20261020-104';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
-import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=campaign-politics-20261020-103';
-import {distance} from './map.mjs?v=campaign-politics-20261020-103';
+import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=hex-tone-20261020-104';
+import {distance} from './map.mjs?v=hex-tone-20261020-104';
 
-export const REPORT_VERSION='2026.10.20.103';
+export const REPORT_VERSION='2026.10.20.104';
 const clean=v=>String(v??'Not recorded').replace(/[\r\n\t\x00-\x1f]+/g,' ').trim();
 const number=v=>String(v).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const cr=v=>v==null?'Not recorded':'Cr '+number(v);

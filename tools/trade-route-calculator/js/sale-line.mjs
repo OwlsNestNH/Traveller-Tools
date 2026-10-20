@@ -1,4 +1,4 @@
-import * as R from './rules.mjs?v=campaign-politics-20261020-103';
+import * as R from './rules.mjs?v=hex-tone-20261020-104';
 
 // Prepare one sale line from explicit lot/buyer/context/quote/commodity/core,
 // current pricing flags and creditStep, plus caller-normalized values:

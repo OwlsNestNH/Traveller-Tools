@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=campaign-politics-20261020-103';
+import {ruleInfo} from './rule-references.mjs?v=hex-tone-20261020-104';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={

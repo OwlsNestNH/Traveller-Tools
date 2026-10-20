@@ -1,5 +1,5 @@
 import {credit} from './amounts.mjs';
-import {PAYMENT_DAYS,paymentCount,canonicalPaymentDate,validatePaymentDate,advancePaymentDate,duePaymentCount} from './payment-schedule.mjs?v=campaign-politics-20261020-103';
+import {PAYMENT_DAYS,paymentCount,canonicalPaymentDate,validatePaymentDate,advancePaymentDate,duePaymentCount} from './payment-schedule.mjs?v=hex-tone-20261020-104';
 
 export const MORTGAGE_DAYS=PAYMENT_DAYS;
 export const MORTGAGE_REFERENCE='Campaign installment tracking: a fixed payment every 4 weeks (28 days). A new 40-year mortgage has 480 payments, with each payment normally equal to the original financed amount divided by 240. This tracks scheduled payments and total paid, not principal, equity or an early-payoff value. Time passing never charges the bank.';
