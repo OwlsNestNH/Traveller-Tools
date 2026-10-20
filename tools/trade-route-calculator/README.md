@@ -204,7 +204,7 @@ Run the focused checks with `node --test verification/price-limits.test.mjs`, al
 
 ## Wide map layers
 
-The existing world views at **20–240%** are unchanged, including the close-view UWP labels; the additional 288% step extends that same presentation. Zooming below 20% adds a **subsector view** with real subsector names and faint world dots. Below 16%, the **sector view** prioritizes sector names, readable A–P subsector letters and a subtle subdivision grid. Sector and subsector names tilt 45° to use the diagonal space; A–P letters remain upright and avoid the name. Long names fit or wrap within their cell. The widest scale is 6%; the 20% boundary remains a reachable step on the + / − controls. Reset view still returns to the centered 100% world view.
+The world views span **20–288%**, with detailed source symbols and optional UWP labels at 240–288%. Zooming below 20% adds a **subsector view** with real subsector names and faint world dots. Below 16%, the **sector view** prioritizes sector names, readable A–P subsector letters and a subtle subdivision grid. Sector and subsector names tilt 45° to use the diagonal space; A–P letters remain upright and avoid the name. Long names fit or wrap within their cell. The widest scale is 6%; the 20% boundary remains a reachable step on the + / − controls. Reset view still returns to the centered 100% world view.
 
 Both wide layers use the same drag-to-pan camera. They are orientation views: zoom back in to select worlds or route stops. They do not change the ship, route, clock, bank, cargo or saved campaign. Sector coordinates and names come from Traveller Map's M1105 universe; named subsectors and world dots come from its metadata and sector tables. Unnamed subsectors show their official letter only. Failed requests remain retryable with Refresh nearby.
 
@@ -401,8 +401,8 @@ Planet information still opens the full system/remarks view and its existing ref
 Reading the screen makes no additional per-world API requests.
 
 At 240–288% zoom, published starport letters, gas giants, Naval/Scout bases and
-amber/red zone arcs appear at the actual hex coordinates. Only the documented
-subset is drawn: other bases remain identified in the data screen. Long names
+amber/red zone arcs appear at the actual hex coordinates. The documented
+Naval/Scout subset is drawn; other base codes remain literal on the map and identified in the data screen. Long names
 are ellipsized within the hex; their full name remains in the accessible label,
 hover title and selected-world screen. The optional UWP label retains calculator
 overrides. The cyan ship marker stays distinct from the dark translucent blue selected hex, bright inset outline and small white center brackets. The selected name/UWP stays white; the inset leaves political borders readable, while routes and symbols draw above the fill.
@@ -420,6 +420,25 @@ borders from travel zones. Unknown data stays unknown, including missing bases,
 gas-giant counts and unknown-world population. No Wiki or generated-world links
 are added. Source definitions: [Traveller Map Second Survey](https://travellermap.com/doc/secondsurvey)
 and its [renderer](https://github.com/inexorabletash/travellermap/blob/main/server/Stylesheet.cs).
+
+The Main Trade Route Calculator shares published planet bodies and symbol rendering
+with the Player readout: cyan water worlds, white dry worlds, asteroid belts,
+grey unknown worlds, red capital names and allegiance codes. The main map keeps
+its pan/zoom camera, slider, browsing and route controls; it does not adopt the
+readout's radius-only viewport. Close-view UWP sits above the world name as in the
+readout; main-tool UWP overrides still apply to that label only. Source facts use
+the existing tested Second Survey interpretation, including U/F zone aliases,
+modern base codes and eHex gas-giant counts. Both maps retain explicit unknowns.
+Political-border geometry and source attribution are unchanged.
+
+The saved cyan planned-route line stays visible when Political or UWP is off,
+and while editing a route. The unsaved route preview is a separate white dashed
+line. No published trade-route overlay is introduced. Existing offline saved
+worlds remain viewable, and failed live requests retain their retry behavior.
+
+Run `node verification/main-map-parity-browser.test.mjs` for synthetic main/player
+parity, route visibility, filter, keyboard, slider, expansion, desktop/mobile and
+campaign-storage regression coverage. Screenshots are retained as CI artifacts.
 
 Run `node --test verification/world-symbols.test.mjs` and
 `node verification/world-screen-browser.test.mjs` for focused verification.

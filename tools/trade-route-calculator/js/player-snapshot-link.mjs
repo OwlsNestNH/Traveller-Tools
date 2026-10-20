@@ -1,4 +1,4 @@
-import {measureSnapshotLink} from './player-snapshot-codec.mjs?v=commission-20261020-99';
+import {measureSnapshotLink} from './player-snapshot-codec.mjs?v=map-parity-20261020-100';
 // Budget the actual deployed URL, not the codec's proposed short prefix.
 export function playerSnapshotUrl(snapshot,pageUrl,{maxUrlLength=8192}={}){
  if(!Number.isSafeInteger(maxUrlLength)||maxUrlLength<100||maxUrlLength>8192)throw Error('Invalid player link size limit.');

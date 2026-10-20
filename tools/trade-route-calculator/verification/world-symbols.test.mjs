@@ -4,7 +4,7 @@ import {ruleInfo} from '../js/rule-references.mjs';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
-import {worldMapFacts,worldSymbols,selectedWorldHex,mapKeyMarkup} from '../js/world-symbols.mjs';
+import {worldMapFacts,publishedWorldBody,publishedWorldSymbols,worldSymbols,selectedWorldHex,mapKeyMarkup} from '../js/world-symbols.mjs';
 import {planetInformation} from '../js/planet-info.mjs';
 const make=(raw={})=>({name:'Test',sector:'Test',hex:'0101',uwp:'C774622-5',zone:'Safe',gasGiants:3,raw});
 test('published symbol data preserves unknown, explicit absence, and eHex counts',()=>{
@@ -83,7 +83,7 @@ test('actual map rendering keeps the selection below routes, on the browsed worl
   queueMapGeometry(){},updateMapGeometry(){},scheduleMapAreas(){},camera:()=>({x:1,y:1}),visibleMapWorlds:worlds=>worlds,
   mapLevel:zoom=>zoom<.2?'sector':'world',overviewMarkup:()=>'<g class="overview-grid"></g>',mapTerritories:()=>'<g class="map-territories"></g>',
   esc:value=>String(value),mapLabelMeasure:{font:'',measureText:text=>({width:text.length*7})},R:{context:world=>({uwp:{raw:world.uwp}})},
-  worldSymbols,selectedWorldHex,mapRouteControls:()=>'',routeJumpControl:()=>'',routeStops:()=>'',routeFuelAlert:()=>'',btn:()=>'<button></button>'
+  worldMapFacts,publishedWorldBody,worldSymbols,selectedWorldHex,mapRouteControls:()=>'',routeJumpControl:()=>'',routeStops:()=>'',routeFuelAlert:()=>'',btn:()=>'<button></button>'
  };
  const code=app.slice(app.indexOf('function mapHexGrid('),app.indexOf('const mapLabelMeasure='))+
   app.slice(app.indexOf('function mapWorldLabel('),app.indexOf('function worldScreen('))+
@@ -96,17 +96,41 @@ test('actual map rendering keeps the selection below routes, on the browsed worl
  assert.ok(highlight>0&&highlight<route&&route<marker,'Selection paints below the route and every world marker');
  assert.equal((svg.match(/class="selected-world-hex"/g)||[]).length,1);
  assert.match(svg,/<g class="selected-world" role="button"[^>]*data-arg="1,1"/);
- assert.match(svg,/<g class="" role="button"[^>]*data-arg="0,1"[^]*?fill="#62d3dd"/);
+ assert.match(svg,/<g class="" role="button"[^>]*data-arg="0,1"[^]*?class="symbol-ship"[^>]*fill="#62d3dd"/);
  assert.equal((svg.match(/class="symbol-ship"/g)||[]).length,1);
  context.view=ship.id;
  const returned=render();
  assert.match(returned,/<g class="selected-world" role="button"[^>]*data-arg="0,1"/);
  assert.equal((returned.match(/class="symbol-ship"/g)||[]).length,1);
- context.mapZoom=.16;
+ const savedLine=render().match(/class="planned-route-line" points="([^"]*)"/)[1];
+ context.routeDraft={path:[selected.id]};context.showTerritories=false;
+ const draftPaint=render();assert.equal(draftPaint.match(/class="planned-route-line" points="([^"]*)"/)[1],savedLine);
+ assert.match(draftPaint,/class="draft-route-line"/);assert.match(draftPaint,/stroke-dasharray="5 3"/);
+ context.routeDraft=null;context.mapZoom=.16;
  assert.doesNotMatch(render(),/class="selected-world-hex"/,'Sector overview keeps its own location treatment');
  assert.deepEqual(state,before,'Browsing, selecting the current world and overview zoom never mutate campaign state');
  const css=await readFile(new URL('../style.css',import.meta.url),'utf8');
  assert.match(css,/\.world-map \.selected-world-hex,\.world-map \.selected-world-hex \*\{pointer-events:none;cursor:inherit\}/);
  assert.match(css,/\.world-map \.selected-world \.world-name,\.world-map \.selected-world \.world-uwp\{fill:#fff\}/);
  assert.match(css,/\.world-map \.world-name,\.world-map \.world-uwp\{paint-order:stroke;stroke:#091b2a;stroke-width:2\.5px;stroke-linejoin:round\}/);
+});
+
+test('shared map glyphs distinguish water, dry, belt and unknown without interpreting overrides',()=>{
+ for(const [uwp,body] of [['A788899-C','water'],['C200423-7','dry'],['A000000-0','belt'],['A78F899-C','unknown'],['???????-?','unknown']]){
+  const w={...make({UWP:uwp}),overrideUWP:'A788899-C'};
+  assert.equal(worldMapFacts(w).body,body);
+  assert.match(publishedWorldBody(w),new RegExp(body==='belt'?'world-belt':body+'-disc'));
+ }
+ const empty={...make(),emptySpace:true};assert.equal(publishedWorldSymbols(empty),'');assert.match(publishedWorldBody(empty),/fill="none"/);
+});
+test('shared symbols retain literal unfamiliar bases, allegiance, aliases and inert hostile text',()=>{
+ const w=make({UWP:'A788899-C',Bases:'NSD',Zone:'U',PBG:'103',Remarks:'Ri Cp',Allegiance:'ImDd'}),before=structuredClone(w);
+ const glyph=publishedWorldSymbols(w);for(const cls of ['symbol-naval','symbol-scout','gas-giant','zone-A','allegiance-label'])assert.ok(glyph.includes(cls));
+ assert.match(glyph,/>D<\/text>/);assert.match(glyph,/>ImDd<\/text>/);assert.equal(worldMapFacts(w).capital,true);
+ assert.equal(worldMapFacts(make({Remarks:'XCpp'})).capital,false);
+ assert.match(publishedWorldSymbols(make({Bases:'KM',Allegiance:'ZhCo',Zone:'F'})),/>KM<\/text>/);
+ assert.match(publishedWorldSymbols(make({Bases:'',PBG:'000',Allegiance:'Na'})),/>Na<\/text>/);
+ assert.doesNotMatch(publishedWorldSymbols(make({Bases:'',PBG:'000'})),/gas-giant|>G\?</);
+ const hostile=publishedWorldSymbols(make({Bases:'<x>',Allegiance:'<img>&"'}));assert.doesNotMatch(hostile,/<img|<x>/);assert.match(hostile,/&lt;img&gt;&amp;&quot;/);
+ assert.match(publishedWorldSymbols(make()),/>G\?</);assert.deepEqual(w,before);
 });

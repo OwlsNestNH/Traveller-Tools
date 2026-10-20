@@ -561,3 +561,17 @@ main{padding-top:18px}
 
 .cargo-management .cargo-table{min-width:0;table-layout:auto}
 .sell-cargo-scroll td:first-child>.help{margin-top:4px}
+
+/* Shared Player readout map treatment; navigation and ship/selection overlays stay local. */
+.world-map .world-symbols,.world-map .world-symbols *{fill:#fff;color:#fff}
+.world-map .world-symbols .symbol-selection,.world-map .world-symbols .symbol-zone,.world-map .world-symbols ellipse{fill:none}
+.world-map .world-symbols .symbol-ship{fill:#62d3dd}
+.world-map .capital-name{fill:#ff3045}
+.map-viewport>.world-map{background:#080b10}
+.world-map .world-name,.world-map .world-uwp{font-family:Arial,sans-serif;fill:#fff}
+.world-map .world-name.capital-name{fill:#ff3045}
+.world-map .selected-world .world-name{fill:#fff}
+.world-map .world-symbols .gas-giant circle{stroke:none}
+.world-map .planned-route-line,.world-map .draft-route-line{pointer-events:none}
+.world-map .selected-world .world-name.capital-name{fill:#ff3045}
+.world-map g[data-action]:hover .world-hit,.world-map g[data-action]:focus .world-hit{stroke:none}

@@ -1,10 +1,10 @@
-import {ruleInfo} from './rule-references.mjs?v=commission-20261020-99';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=commission-20261020-99';
+import {ruleInfo} from './rule-references.mjs?v=map-parity-20261020-100';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=map-parity-20261020-100';
 import * as A from './amounts.mjs';
-import {manualLuggage} from './accommodation.mjs?v=commission-20261020-99';
-import * as P from './passengers.mjs?v=commission-20261020-99';
-import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=commission-20261020-99';
-import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=commission-20261020-99';
+import {manualLuggage} from './accommodation.mjs?v=map-parity-20261020-100';
+import * as P from './passengers.mjs?v=map-parity-20261020-100';
+import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=map-parity-20261020-100';
+import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=map-parity-20261020-100';
 import {displayDate} from './calendar.mjs';
 const esc=escapeHtml;
 const money=formatCreditsText,signed=x=>x>0?'+'+x:String(x);

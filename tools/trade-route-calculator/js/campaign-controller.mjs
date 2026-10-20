@@ -1,6 +1,6 @@
-import * as S from './state.mjs?v=commission-20261020-99';
-import {creditStep} from './rounding.mjs?v=commission-20261020-99';
-import {SaveNotCommittedError} from './persistence.mjs?v=commission-20261020-99';
+import * as S from './state.mjs?v=map-parity-20261020-100';
+import {creditStep} from './rounding.mjs?v=map-parity-20261020-100';
+import {SaveNotCommittedError} from './persistence.mjs?v=map-parity-20261020-100';
 
 // Store remains synchronous. An injected provider may return a completion
 // Promise; that completion must include the durable write and publication.

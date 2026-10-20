@@ -1,6 +1,7 @@
-import {informationButton} from './player-info.mjs?v=commission-20261020-99';
+import {informationButton} from './player-info.mjs?v=map-parity-20261020-100';
 if(new URLSearchParams(location.search).get('embedded')==='1')document.body.classList.add('embedded-reference');
 import {referenceOrigin,referenceWorld,referenceFacts,hexDistance,stagger,referenceSectorAreas} from './player-map-reference.mjs';
+import {publishedWorldBody,publishedWorldSymbols,worldMapFacts} from './world-symbols.mjs?v=map-parity-20261020-100';
 import {territoryMarkup} from './map-territory.mjs';
 document.getElementById('map-help').append(informationButton(document,'Map reference', ['Choose 0–6 rings. Fewer rings enlarge the map’s worlds and labels. Move the slider to update the rings. Select a world for details; the map stays centered on the current system. Current World restores its details.', '★ naval · ▲ scout · ringed planet: gas giants · yellow/red arc: travel zone. Other base codes appear literally; ?: unknown.', 'Live reference and political borders use TravellerMap source data. Political borders are allegiance territory, not travel zones. Browsing does not move the ship or change frozen cargo, prices, offers or GM world overrides.', 'Radius changes this preview only. It is not saved or included in a snapshot URL. No campaign storage is accessed.']));
 const control=document.getElementById('radius'),output=document.getElementById('radius-value'),status=document.getElementById('map-status'),frame=document.getElementById('map-frame'),details=document.getElementById('world-details');
@@ -39,26 +40,17 @@ function draw(radius) {
  for(const world of visible){const [x,y]=project(...stagger(world)),g=svgNode('g',{transform:`translate(${x} ${y})`,role:'button',tabindex:0,'aria-label':'Inspect '+world.name,'aria-pressed':'false','data-world':world.id,class:'world-target'});
   // Original SVG primitives following Traveller Map's conventional label positions.
   // Data alone determines symbols; unsupported base codes remain literal codes.
-  const facts=referenceFacts(world),label=(text,x,y,cls)=>{const t=svgNode('text',{x,y,'text-anchor':'middle',class:cls});t.textContent=text;g.append(t);return t;};
+  const label=(text,x,y,cls)=>{const t=svgNode('text',{x,y,'text-anchor':'middle',class:cls});t.textContent=text;g.append(t);return t;};
   g.append(svgNode('circle',{r:86,class:'world-hit'}));
-  if(['A','R'].includes(world.raw.Zone))g.append(svgNode('path',{d:'M -75 29 A 80 80 0 1 1 75 29',class:'zone-arc zone-'+world.raw.Zone}));
-  const hydro=world.uwp[3],sizeCode=world.uwp[1];
-  if(sizeCode==='0'){
-   const belt=svgNode('g',{class:'world-belt'});for(const [bx,by]of [[-14,-8],[0,-10],[13,-7],[-20,4],[-6,4],[9,7],[21,3]])belt.append(svgNode('circle',{cx:bx,cy:by,r:3}));g.append(belt);
-  }else g.append(svgNode('circle',{r:20,class:'world-disc '+(hydro==='0'?'dry-disc':/^[1-9A]$/.test(hydro)?'water-disc':'unknown-disc')}));
-  label(world.hex,0,-88,'world-hex');label(world.uwp[0],0,-43,'world-starport');
+  const body=svgNode('g');body.innerHTML=publishedWorldBody(world);g.append(body);
+  label(world.hex,0,-88,'world-hex');
   label(world.uwp,0,48,'world-uwp');
-  const capital=/(?:^|\s)(?:Cp|Cs|Cx)(?:\s|$)/.test(world.raw.Remarks||'');
+  const capital=worldMapFacts(world).capital;
   const name=label(world.name,0,78,'world-name'+(capital?' capital-name':''));
   // Keep long names inside their cell without changing their underlying text.
   if(world.name.length>12){name.setAttribute('textLength','150');name.setAttribute('lengthAdjust','spacingAndGlyphs');}
   const symbols=svgNode('g',{class:'world-symbols'});g.append(symbols);
-  const bases=world.raw.Bases;
-  for(const [code,bx,by]of [['N',-50,-36],['S',-50,27]])if(bases?.includes(code)){const t=svgNode('text',{x:bx,y:by,'text-anchor':'middle',class:'base-symbol'});t.textContent=code==='N'?'★':'▲';symbols.append(t);}
-  const other=bases===undefined?'?':bases.replace(/[NS]/g,'');if(other){const t=svgNode('text',{x:-54,y:0,'text-anchor':'middle',class:'base-code'});t.textContent=other.slice(0,4);symbols.append(t);}
-  if(facts.gasGiants!=='Unknown'&&Number(facts.gasGiants)>0){const gas=svgNode('g',{transform:'translate(50 -35) rotate(-25)',class:'gas-giant'});gas.append(svgNode('circle',{r:8}),svgNode('ellipse',{rx:16,ry:5,fill:'none','stroke-width':2}));symbols.append(gas);}
-  if(facts.gasGiants==='Unknown')label('G?',51,-30,'base-code');
-  label((world.raw.Allegiance||'?').slice(0,8),53,15,'allegiance-label');
+  symbols.innerHTML=publishedWorldSymbols(world);
   const title=svgNode('title');title.textContent=world.name+' · '+referenceFacts(world).allegiance;g.append(title);
   g.addEventListener('click',()=>showWorld(world));g.addEventListener('keydown',event=>{if(['Enter',' '].includes(event.key)){event.preventDefault();showWorld(world);}});svg.append(g);
  }

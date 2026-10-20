@@ -171,12 +171,12 @@ async function closeReadability(page,f){
    const matrix=element.getScreenCTM();
    return {text,font:parseFloat(style.fontSize),fill:style.fill,typography,intrinsic,scaleX:Math.hypot(matrix.a,matrix.b),scaleY:Math.hypot(matrix.c,matrix.d),...box(element)};
   };
-  return {selectedId:selected.dataset.arg,actualId:actual.dataset.arg,map:box(svg),marker:box(selected.querySelector(':scope > circle')),
+  return {selectedId:selected.dataset.arg,actualId:actual.dataset.arg,map:box(svg),marker:box(selected.querySelector('.world-disc')),
    name:measure(selected.querySelector('.world-name')),uwp:measure(selected.querySelector('.world-uwp')),title:selected.querySelector('title').textContent,
    icons:Object.fromEntries(['symbol-starport','symbol-gas-giant','symbol-naval','symbol-scout','zone-amber','symbol-selection'].map(name=>[name,measure(selected.querySelector('.'+name))])),
-   actualFill:actual.querySelector(':scope > circle').getAttribute('fill'),shipFill:actual.querySelector('.symbol-ship').getAttribute('fill'),shipCount:svg.querySelectorAll('.symbol-ship').length,
+   actualFill:actual.querySelector('.world-disc').getAttribute('fill'),shipFill:actual.querySelector('.symbol-ship').getAttribute('fill'),shipCount:svg.querySelectorAll('.symbol-ship').length,
    selectedFill:svg.querySelector('.selection-hex-fill').getAttribute('fill'),selectedOutline:svg.querySelector('.selection-hex-outline').getAttribute('stroke'),selectedCount:svg.querySelectorAll('.selected-world-hex').length,
-   selectedStroke:selected.querySelector(':scope > circle').getAttribute('stroke'),level:svg.dataset.mapLevel,hexes:svg.querySelectorAll('.hex-grid text').length,
+   selectedStroke:selected.querySelector('.world-disc').getAttribute('stroke'),level:svg.dataset.mapLevel,hexes:svg.querySelectorAll('.hex-grid text').length,
    uwpCount:svg.querySelectorAll('.world-uwp').length,nameCount:svg.querySelectorAll('.world-name').length};
  },{viewedId:viewed.id,actualId});
  assert.equal(result.selectedId,viewed.id);assert.notEqual(result.selectedId,result.actualId,'The browsed world remains distinct from the ship');
@@ -186,7 +186,7 @@ async function closeReadability(page,f){
  assert.ok(result.name.width<=90&&result.name.width>0,'Long names remain bounded and measurable');
  assert.ok(result.title.includes(viewed.name),'The full synthetic world name remains available in its title');
  assert.ok(result.name.top>result.marker.bottom,'Name stays below the world marker');
- assert.ok(result.name.bottom<result.uwp.top,'World name and UWP do not overlap');
+ assert.ok(result.uwp.bottom<result.name.top,'World name and UWP do not overlap');
  for(const text of [result.name,result.uwp]){
   assert.ok(Number.isFinite(text.width)&&Number.isFinite(text.height)&&text.width>0&&text.height>0,'Live name/UWP glyph boxes have finite positive dimensions');
   assert.ok(text.left>=result.map.left&&text.right<=result.map.right&&text.top>=result.map.top&&text.bottom<=result.map.bottom,'The centered selected label stays fully readable inside the map');
@@ -194,10 +194,10 @@ async function closeReadability(page,f){
  assert.ok(result.name.font*result.name.scaleY>=12&&result.uwp.font*result.uwp.scaleY>=9,'Physical world/UWP type retains the existing 12px/9px readability floors');
  for(const [name,icon]of Object.entries(result.icons))assert.ok(icon.width>0&&icon.height>0,'Existing close-detail icon stays measurable: '+name);
  for(const detail of [result.name,result.uwp,...Object.values(result.icons)])for(const axis of ['scaleX','scaleY'])near(detail[axis],1,.001,'Close labels/icons retain their actual CSS-pixel scale');
- assert.equal(result.icons['symbol-starport'].font,15);assert.equal(result.icons['symbol-naval'].font,12);
+ assert.equal(result.icons['symbol-starport'].font,12.6);assert.equal(result.icons['symbol-naval'].font,14.4);
  assert.equal(result.icons['symbol-starport'].text,'A','Published starport remains separate from the effective UWP override');
  assert.equal(result.shipCount,1);assert.equal(result.selectedCount,1);
- assert.equal(result.actualFill,'#62d3dd');assert.equal(result.shipFill,'#62d3dd');
+ assert.equal(result.actualFill,'#00b9ed','Water-world colour is independent of the cyan ship indicator');assert.equal(result.shipFill,'#62d3dd');
  assert.equal(result.selectedFill,'#245d94');assert.equal(result.selectedOutline,'#80beff');assert.equal(result.selectedStroke,'#fff');
  near(result.marker.width,result.marker.height,.1,'World marker remains round');
  assert.equal(result.level,'world');assert.ok(result.hexes>0);assert.equal(result.uwpCount,result.nameCount,'Every rendered world keeps its UWP at close zoom');

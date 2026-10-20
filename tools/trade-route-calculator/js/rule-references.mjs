@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=commission-20261020-99';
+import {escapeHtml as esc} from './display.mjs?v=map-parity-20261020-100';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.
