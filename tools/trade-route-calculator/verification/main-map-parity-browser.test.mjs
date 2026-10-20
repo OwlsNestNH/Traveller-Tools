@@ -49,14 +49,14 @@ try{
     await setZoom(zoom);assert.equal(await page.locator('.hex-grid text').count()>0,zoom>=100,`${width}/${expanded}/${zoom}: hex visibility`);
     if(zoom>=100){
      const labels=await page.evaluate(({id,hex})=>{const el=[...document.querySelectorAll('.hex-grid text')].find(x=>x.textContent===hex),style=getComputedStyle(el),r=el.getBoundingClientRect(),world=document.querySelector('[data-action="map-world"][data-arg="'+id+'"]');const overlaps=[...world.querySelectorAll('.world-disc,.world-name,.world-uwp,.symbol-starport')].filter(x=>{const b=x.getBoundingClientRect();return r.left<b.right&&r.right>b.left&&r.top<b.bottom&&r.bottom>b.top;}).map(x=>x.getAttribute('class'));return {size:style.fontSize,weight:style.fontWeight,fill:style.fill,stroke:style.stroke,halo:style.strokeWidth,paint:style.paintOrder,pointer:style.pointerEvents,width:r.width,overlaps};},{id:home.id,hex:home.hex});
-     assert.equal(labels.size,'11px');assert.equal(labels.weight,'400');assert.equal(labels.fill,'rgb(168, 182, 197)');assert.equal(labels.stroke,'rgb(8, 11, 16)');assert.equal(labels.halo,'3px');assert.equal(labels.paint,'stroke');assert.equal(labels.pointer,'none');assert.ok(labels.width<50*zoom/100*Math.sqrt(3)/2);assert.deepEqual(labels.overlaps,[],`${width}/${expanded}/${zoom}: hex clear of world details`);
+     assert.equal(labels.size,'10px');assert.equal(labels.weight,'400');assert.equal(labels.fill,'rgb(127, 144, 159)');assert.equal(labels.stroke,'rgb(8, 11, 16)');assert.equal(labels.halo,'2px');assert.equal(labels.paint,'stroke');assert.equal(labels.pointer,'none');assert.ok(labels.width<50*zoom/100*Math.sqrt(3)/2);assert.deepEqual(labels.overlaps,[],`${width}/${expanded}/${zoom}: hex clear of world details`);
      assert.ok((await planned()).split(' ').length===12);assert.equal(await stored(),f.bytes);
      if(zoom===100||zoom===200){
       const routeAtZoom=await planned();
       for(const political of [true,false]){
        const control=page.getByRole('switch',{name:'Political territory',exact:true});await control.setChecked(political);await frame();
        await page.locator('.map-viewport').screenshot({path:artifacts+`hex-tone-${zoom}-${width}-${expanded?'expanded':'normal'}-${political?'political':'plain'}.png`});
-       if(width===1440&&!expanded&&zoom===200&&political){const old=await page.addStyleTag({content:'.world-map .hex-grid text{font-weight:700;fill:#f5f8fc}'});await page.locator('.map-viewport').screenshot({path:artifacts+'hex-tone-before.png'});await old.evaluate(el=>el.remove());}
+       if(width===1440&&!expanded&&zoom===200&&political){const old=await page.addStyleTag({content:'.world-map .hex-grid text{font-size:11px;font-weight:400;fill:#a8b6c5;stroke-width:3px}'});await page.locator('.map-viewport').screenshot({path:artifacts+'hex-tone-before.png'});await old.evaluate(el=>el.remove());}
        assert.equal(await planned(),routeAtZoom);assert.equal(await stored(),f.bytes);
       }
       await page.getByRole('switch',{name:'Political territory',exact:true}).check();await frame();

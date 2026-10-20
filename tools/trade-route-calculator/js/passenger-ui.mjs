@@ -1,10 +1,10 @@
-import {ruleInfo} from './rule-references.mjs?v=zone-zoom-20261020-105';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=zone-zoom-20261020-105';
+import {ruleInfo} from './rule-references.mjs?v=hex-quiet-20261020-106';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=hex-quiet-20261020-106';
 import * as A from './amounts.mjs';
-import {manualLuggage} from './accommodation.mjs?v=zone-zoom-20261020-105';
-import * as P from './passengers.mjs?v=zone-zoom-20261020-105';
-import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=zone-zoom-20261020-105';
-import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=zone-zoom-20261020-105';
+import {manualLuggage} from './accommodation.mjs?v=hex-quiet-20261020-106';
+import * as P from './passengers.mjs?v=hex-quiet-20261020-106';
+import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=hex-quiet-20261020-106';
+import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=hex-quiet-20261020-106';
 import {displayDate} from './calendar.mjs';
 const esc=escapeHtml;
 const money=formatCreditsText,signed=x=>x>0?'+'+x:String(x);

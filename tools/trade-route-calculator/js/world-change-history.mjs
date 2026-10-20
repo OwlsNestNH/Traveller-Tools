@@ -1,4 +1,4 @@
-import {parseUWP} from './rules.mjs?v=zone-zoom-20261020-105';
+import {parseUWP} from './rules.mjs?v=hex-quiet-20261020-106';
 
 // Audit only the editable world fields. A selective correction must never
 // replay an old world object, campaign inverse, price quote or transaction.
