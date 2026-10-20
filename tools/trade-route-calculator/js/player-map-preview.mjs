@@ -82,4 +82,12 @@ async function load() {
 }
 control.addEventListener('input',load);
 document.getElementById('map-retry').addEventListener('click',load);document.getElementById('current-world').addEventListener('click',centerOrigin);
-try{if(location.hash){if(!location.hash.startsWith('#politics='))throw Error('Invalid campaign territory link.');campaignPolitics=campaignPoliticsFromFragment(location.hash.slice(10));if(campaignPolitics)document.getElementById('map-help').append(node('p','Violet / lavender: frozen Drinax campaign territory. Claims do not alter published world allegiance.'));}origin=referenceOrigin(new URLSearchParams(location.search));load();}catch(error){status.textContent=error.message;control.disabled=true;document.getElementById('map-retry').disabled=true;}
+function readCampaignLayer(){
+ generation++;controller?.abort();campaignPolitics=null;document.getElementById('campaign-map-legend')?.remove();
+ try{
+  if(location.hash){if(!location.hash.startsWith('#politics='))throw Error('Invalid campaign territory link.');campaignPolitics=campaignPoliticsFromFragment(location.hash.slice(10));}
+  if(campaignPolitics){const legend=node('p','Violet / lavender: frozen Drinax campaign territory. Claims do not alter published world allegiance.');legend.id='campaign-map-legend';document.getElementById('map-help').append(legend);}
+  origin=referenceOrigin(new URLSearchParams(location.search));control.disabled=false;document.getElementById('map-retry').disabled=false;load();
+ }catch(error){frame.replaceChildren();details.replaceChildren();status.textContent=error.message;control.disabled=true;document.getElementById('map-retry').disabled=true;document.getElementById('current-world').disabled=true;}
+}
+window.addEventListener('hashchange',readCampaignLayer);readCampaignLayer();
