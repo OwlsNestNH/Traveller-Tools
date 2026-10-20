@@ -90,6 +90,17 @@ try {
   const toggle = page.locator('summary'); await toggle.focus(); await page.keyboard.press('Enter');
   await page.getByText('One scheduled 28-day installment paid here', {exact:true}).waitFor();
   await toggle.evaluate(element => element.blur());
+  const maintenanceInfo=page.getByRole('button',{name:'About Ship Maintenance'});
+  await maintenanceInfo.focus();await page.keyboard.press('Enter');
+  const maintenanceDialog=page.getByRole('dialog',{name:'Ship Maintenance',exact:true});
+  await maintenanceDialog.waitFor();assert.match(await maintenanceDialog.textContent(),/counted here once/);
+  await page.keyboard.press('Escape');assert.equal(await maintenanceInfo.evaluate(e=>document.activeElement===e),true);
+  await page.setViewportSize({width:320,height:844});await maintenanceInfo.click();
+  assert.equal(await maintenanceDialog.evaluate(e=>e.scrollWidth<=e.clientWidth),true);
+  await maintenanceDialog.getByRole('button',{name:'Close',exact:true}).click();
+  assert.equal(await maintenanceInfo.evaluate(e=>document.activeElement===e),true);
+  await page.setViewportSize({width:1440,height:1100});
+
   await page.screenshot({path:artifacts + 'player-snapshot-desktop.png', fullPage:true});
   await page.setViewportSize({width:390,height:844});
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
@@ -139,7 +150,7 @@ try {
     const literal = root.textContent.includes(input.world.name), injected = root.querySelectorAll('img,script').length;
     for (let i=0;i<5;i++) renderPlayerSnapshot(root, playerSnapshotFixture);
     const sections = root.querySelectorAll('section').length;
-    renderPlayerSnapshot(root, {...input, version:5}); const rejected = root.querySelector('[role=alert]')?.textContent.includes('Unsupported');
+    renderPlayerSnapshot(root, {...input, version:6}); const rejected = root.querySelector('[role=alert]')?.textContent.includes('Unsupported');
     const stale = root.textContent.includes('Regina');
     input.buy = {status:'not-checked', offers:[]}; input.sell = {status:'expired', offers:[]}; input.cargo = [];
     renderPlayerSnapshot(root, input);

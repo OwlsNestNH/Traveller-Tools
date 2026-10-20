@@ -1,12 +1,12 @@
 // Read-only campaign adapter. Only explicit public values cross this boundary.
 // No DOM, persistence, random rolls, network access or URL serialization.
-import {projectPlayerSnapshot,SNAPSHOT_VERSION,EXPENSE_KINDS} from './player-snapshot.mjs';
-import {playerBriefingData} from './player-briefing.mjs?v=cargo-sell-20261020-97';
-import {context} from './rules.mjs?v=cargo-sell-20261020-97';
+import {projectPlayerSnapshot,SNAPSHOT_VERSION,EXPENSE_KINDS} from './player-snapshot.mjs?v=maintenance-20261020-98';
+import {playerBriefingData} from './player-briefing.mjs?v=maintenance-20261020-98';
+import {context} from './rules.mjs?v=maintenance-20261020-98';
 import {displayDate} from './calendar.mjs';
-import {supportStock,supportDisplay,supportAmount} from './life-support.mjs?v=cargo-sell-20261020-97';
-import {passengerShip} from './passengers.mjs?v=cargo-sell-20261020-97';
-import {fuelAvailabilityAdvice} from './expenses.mjs?v=cargo-sell-20261020-97';
+import {supportStock,supportDisplay,supportAmount} from './life-support.mjs?v=maintenance-20261020-98';
+import {passengerShip} from './passengers.mjs?v=maintenance-20261020-98';
+import {fuelAvailabilityAdvice} from './expenses.mjs?v=maintenance-20261020-98';
 import * as A from './amounts.mjs';
 
 const text=value=>String(value??'').replace(/[\x00-\x1f\x7f]/g,' ').slice(0,240);
@@ -29,7 +29,7 @@ export function campaignPlayerSnapshot(s,core,{saleQuotes=new Map(),capturedAt=n
  const expenses={visitLabel:text(w.name)+' · visit '+(s.routeIndex+1)+' · recorded payments'};
  const entries=boundary?s.ledger.slice(boundary.ledgerIndex+1):null;
  const reconciled=entries&&s.ledger[0]?.type==='Opening bank'&&s.ledger.filter(e=>e.type==='Opening bank').length===1&&s.ledger.reduce((n,e)=>n+BigInt(e.amount),0n)===BigInt(s.bank)&&entries.every(e=>e.world===s.actual);
- const kinds={berthing:'berth',fuel:'fuel',salary:'salary',salaries:'salary',mortgage:'mortgage',lifeSupport:'lss',lifeSupportRefill:'lss',staterooms:'lss',passengerSupport:'lss'};
+ const kinds={maintenance:'maintenance',berthing:'berth',fuel:'fuel',salary:'salary',salaries:'salary',mortgage:'mortgage',lifeSupport:'lss',lifeSupportRefill:'lss',staterooms:'lss',passengerSupport:'lss'};
  const sums=Object.fromEntries(EXPENSE_KINDS.map(k=>[k,0n]));
  if(reconciled)for(const e of entries)if(BigInt(e.amount)<0n&&(e.type.startsWith('Ship expense')||['Manual expense','Broker fee','Tax','Insurance premium','Insurance amendment'].includes(e.type)))sums[kinds[e.expense?.kind]??'incidentals']-=BigInt(e.amount);
  for(const kind of EXPENSE_KINDS)expenses[kind]={expected:null,paid:reconciled?String(sums[kind]):null,basis:'No saved visit plan. '+(reconciled?'Recorded payments only; unrecorded activity is unknown.':'Payment history unavailable for this visit.')};

@@ -1,16 +1,16 @@
-import {ruleInfo} from './rule-references.mjs?v=cargo-sell-20261020-97';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=cargo-sell-20261020-97';
-import {passengerShip} from './passengers.mjs?v=cargo-sell-20261020-97';
+import {ruleInfo} from './rule-references.mjs?v=maintenance-20261020-98';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=maintenance-20261020-98';
+import {passengerShip} from './passengers.mjs?v=maintenance-20261020-98';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=cargo-sell-20261020-97';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=cargo-sell-20261020-97';
-import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=cargo-sell-20261020-97';
-import {roomCounts} from './accommodation.mjs?v=cargo-sell-20261020-97';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=cargo-sell-20261020-97';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=cargo-sell-20261020-97';
-import {creditStep} from './rounding.mjs?v=cargo-sell-20261020-97';
-import {roll} from './rules.mjs?v=cargo-sell-20261020-97';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=cargo-sell-20261020-97';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=maintenance-20261020-98';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=maintenance-20261020-98';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=maintenance-20261020-98';
+import {roomCounts} from './accommodation.mjs?v=maintenance-20261020-98';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=maintenance-20261020-98';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=maintenance-20261020-98';
+import {creditStep} from './rounding.mjs?v=maintenance-20261020-98';
+import {roll} from './rules.mjs?v=maintenance-20261020-98';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=maintenance-20261020-98';
 
 const esc=escapeHtml;
 const money=formatCreditsText;
@@ -134,7 +134,7 @@ export function createExpensePanels({document,separateCabinUpkeep=false,getState
  }
  function overview(){
   const s=getState(),q=expenseOverview(s,{separateCabinUpkeep});
-  return `<h2>Expenses</h2><h3>${esc(s.ship.name)}</h3><p class="help">Recurring costs use a 4-week (28-day) month. Select an expense name to open its controls.</p><table class="expense-table"><thead><tr><th scope="col">Expense</th><th scope="col" class="number">4-week cost</th><th scope="col">Next due</th></tr></thead><tbody>${q.rows.map(row=>'<tr><th scope="row">'+button(row.label+' ›','expense-open',row.kind).replace('class=""','class="expense-name"')+'</th><td class="number">'+esc(row.variable?'Variable':row.amount===null?'Not configured':money(row.amount))+'</td><td>'+esc(row.due)+'</td></tr>').join('')}</tbody><tfoot><tr><th scope="row">Regular 4-week total</th><td class="number">${money(q.total)}</td><td>${q.missing.length?'Partial total':''}</td></tr></tfoot></table><p class="help">Variable costs are excluded.${q.missing.length?' Not configured and excluded: '+esc(q.missing.join(', '))+'.':''}</p><p class="help">Payments are recorded only when you select Pay. Opening an expense changes only this view.</p>`;
+  return `<h2>Expenses</h2><h3>${esc(s.ship.name)}</h3><p class="help">Recurring costs use a 4-week (28-day) month. Select an expense name to open its controls.</p><table class="expense-table"><thead><tr><th scope="col">Expense</th><th scope="col" class="number">4-week cost</th><th scope="col">Next due</th></tr></thead><tbody>${q.rows.map(row=>'<tr><th scope="row">'+button(row.label+' ›','expense-open',row.kind).replace('class=""','class="expense-name"')+(row.kind==='maintenance'?ruleInfo('maintenance'):'')+'</th><td class="number">'+esc(row.variable?'Variable':row.amount===null?'Not configured':money(row.amount))+'</td><td>'+esc(row.due)+'</td></tr>').join('')}</tbody><tfoot><tr><th scope="row">Regular 4-week total</th><td class="number">${money(q.total)}</td><td>${q.missing.length?'Partial total':''}</td></tr></tfoot></table><p class="help">Variable costs are excluded.${q.missing.length?' Not configured and excluded: '+esc(q.missing.join(', '))+'.':''}</p><p class="help">Payments are recorded only when you select Pay. Opening an expense changes only this view.</p>`;
  }
  function previewMarkup(f){
   if(!f.valid)return '<p class="notice" role="alert">'+esc(f.error)+'</p>';

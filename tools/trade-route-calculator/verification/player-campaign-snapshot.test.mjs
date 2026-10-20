@@ -93,3 +93,7 @@ for(const numerator of ['2400000001','2700000001'])test(`fractional life-support
  assert.throws(()=>campaignPlayerSnapshot(s,core,clock),/life-support reserve cannot be represented accurately/);
  assert.equal(JSON.stringify(s),before);
 });
+test('archived version4 departure remains readable with unknown separate maintenance',()=>{
+ const s=structuredClone(jump(fresh()));const record=s.playerDepartures[0];record.snapshot.version=4;delete record.snapshot.expenses.maintenance;
+ const before=structuredClone(s),view=playerSnapshotForVisit(s,core,0,clock);assert.equal(view.version,5);assert.equal(view.expenses.maintenance.paid,null);assert.equal(view.expenses.incidentals.paid,record.snapshot.expenses.incidentals.paid);assert.deepEqual(s,before);
+});

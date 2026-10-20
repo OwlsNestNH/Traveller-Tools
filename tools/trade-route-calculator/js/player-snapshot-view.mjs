@@ -1,5 +1,5 @@
 import {formatSnapshotTons, formatSnapshotWholeDown, formatSnapshotLss, formatSnapshotQuantityText} from './player-snapshot-format.mjs';
-import {projectPlayerSnapshot, summarizePlayerExpenses, EXPENSE_KINDS} from './player-snapshot.mjs';
+import {projectPlayerSnapshot, summarizePlayerExpenses, EXPENSE_KINDS} from './player-snapshot.mjs?v=maintenance-20261020-98';
 
 // Immutable transmitted data and local annotations remain separate.
 // Persistence is supplied by the standalone recipient adapter, never campaign storage.
@@ -83,18 +83,26 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
   expensePanel.append(node('p', data.expenses.visitLabel));
   const totals = summarizePlayerExpenses(data.expenses), totalGrid = node('div'); totalGrid.className = 'expense-totals';
   for (const [column, label] of [['expected', 'Expected for this stop'], ['paid', 'Already paid this stop']]) {
-    const total = totals[column], card = node('div'); card.append(node('h3', label), node('strong', credits(total.unknownCount === 6 ? null : total.knownTotal)));
-    card.append(node('p', total.unknownCount ? 'Known subtotal · ' + total.unknownCount + ' of 6 amounts unknown' : 'Total · all 6 amounts known'));
+    const total = totals[column], card = node('div'); card.append(node('h3', label), node('strong', credits(total.unknownCount === EXPENSE_KINDS.length ? null : total.knownTotal)));
+    card.append(node('p', total.unknownCount ? 'Known subtotal · ' + total.unknownCount + ' of '+EXPENSE_KINDS.length+' amounts unknown' : 'Total · all '+EXPENSE_KINDS.length+' amounts known'));
     totalGrid.append(card);
   }
   expensePanel.append(totalGrid, node('p', 'Expected includes amounts already paid; it is a visit plan, not a balance due. Unknown amounts are excluded from subtotals.'));
-  const details = node('details'), summary = node('summary', 'Show expense details · 6 categories'); details.append(summary);
+  const details = node('details'), summary = node('summary', 'Show expense details · '+EXPENSE_KINDS.length+' categories'); details.append(summary);
   const expenseTable = node('table'); expenseTable.className = 'expense-table';
   const head = node('thead'), heading = node('tr');
   for (const label of ['Expense / basis', 'Expected', 'Paid']) { const cell = node('th', label); cell.scope = 'col'; heading.append(cell); } head.append(heading);
-  const body = node('tbody'), labels = {berth:'Berth', fuel:'Fuel', salary:'Salary', mortgage:'Mortgage', lss:'Life support (LSS)', incidentals:'Incidentals'};
+  const body = node('tbody'), labels = {berth:'Berth', fuel:'Fuel', salary:'Salary', mortgage:'Mortgage', lss:'Life support (LSS)', incidentals:'Incidentals', maintenance:'Ship Maintenance'};
   for (const kind of EXPENSE_KINDS) {
-    const entry = data.expenses[kind], row = node('tr'), name = node('th'); name.scope = 'row'; name.append(node('span', labels[kind]), node('small', formatSnapshotQuantityText(entry.basis,{fuel:kind==='fuel'})));
+    const entry = data.expenses[kind], row = node('tr'), name = node('th'); name.scope = 'row'; name.append(node('span', labels[kind]));
+    if(kind==='maintenance'){
+      const info=node('button','i');info.type='button';info.className='cargo-info-button';info.setAttribute('aria-label','About Ship Maintenance');info.setAttribute('aria-haspopup','dialog');name.append(info);
+      info.addEventListener('click',()=>{
+        const dialog=node('dialog'),title=node('h2','Ship Maintenance');title.id='maintenance-information-title';dialog.setAttribute('aria-labelledby',title.id);
+        dialog.append(title,node('p','Recorded maintenance payments are counted here once and excluded from Incidentals. They are already reflected in cash; displaying them does not charge again. The existing 28-day payment schedule is unchanged.'),node('p',entry.basis),node('p','Older snapshots retain their combined Incidentals amount and show maintenance as Unknown. Generate a fresh link to separate recorded maintenance.'));
+        const close=node('button','Close');close.type='button';close.addEventListener('click',()=>dialog.close());dialog.append(close);dialog.addEventListener('close',()=>{dialog.remove();if(info.isConnected)info.focus();});dialog.addEventListener('click',event=>{const b=dialog.getBoundingClientRect();if(event.target===dialog&&(event.clientX<b.left||event.clientX>b.right||event.clientY<b.top||event.clientY>b.bottom))dialog.close();});root.append(dialog);dialog.showModal();close.focus();
+      });
+    }else name.append(node('small',formatSnapshotQuantityText(entry.basis,{fuel:kind==='fuel'})));
     row.append(name, node('td', credits(entry.expected)), node('td', credits(entry.paid))); body.append(row);
   }
   expenseTable.append(head, body); details.append(expenseTable); expensePanel.append(details);

@@ -1,5 +1,5 @@
-import {makePlayerSnapshotExample} from './player-snapshot-fixture.mjs';
-import {measureSnapshotLink} from './player-snapshot-codec.mjs';
+import {makePlayerSnapshotExample} from './player-snapshot-fixture.mjs?v=maintenance-20261020-98';
+import {measureSnapshotLink} from './player-snapshot-codec.mjs?v=maintenance-20261020-98';
 const result=document.getElementById('result'),link=document.getElementById('link'),open=document.getElementById('open');
 document.getElementById('generate').addEventListener('click',()=>{
   link.value='';open.hidden=true;open.removeAttribute('href');

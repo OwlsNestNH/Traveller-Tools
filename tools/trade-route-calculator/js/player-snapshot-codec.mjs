@@ -1,8 +1,8 @@
 // Standalone browser codec prototype. No DOM, storage, network or production adapter.
-import {projectPlayerSnapshot, EXPENSE_KINDS, SNAPSHOT_VERSION, CargoTonnageError} from './player-snapshot.mjs';
+import {projectPlayerSnapshot, EXPENSE_KINDS, SNAPSHOT_VERSION, LEGACY_MAINTENANCE, CargoTonnageError} from './player-snapshot.mjs?v=maintenance-20261020-98';
 import {CATALOG_VERSION, COMMODITIES, WORLDS, TEXT_FRAGMENTS, BASE_PRICES, STATIC_TEXT_V2, DESTINATIONS_V2} from './player-snapshot-catalog.mjs';
 export const PROPOSED_PREFIX = 'https://owlsnestnh.github.io/Traveller-Tools/p#'; // NOT DEPLOYED
-export const CODEC_VERSION = 5;
+export const CODEC_VERSION = 6;
 const MAX_BYTES = 65536, MAX_URL = 100000;
 const worldKeys = ['name','location','uwp','tradeCodes','travelZone','starport'];
 const statuses = ['available','not-checked','expired'];
@@ -123,7 +123,7 @@ function packet(input, bytes, rounding, percentages=true, codecVersion=CODEC_VER
     }
     uint(code);return value;
   };
-  if(byte(80)!==80)invalid();codecVersion=byte(codecVersion);if(![1,2,3,4,5].includes(codecVersion))invalid();
+  if(byte(80)!==80)invalid();codecVersion=byte(codecVersion);if(![1,2,3,4,5,6].includes(codecVersion))invalid();
   if(byte(codecVersion>=3?codecVersion:2)!==(codecVersion>=3?codecVersion:2)||byte(CATALOG_VERSION)!==CATALOG_VERSION)invalid();
   const mode=byte((rounding===1000?1:0)|(percentages?2:0)); if (mode>3) invalid(); rounding=mode&1 ? 1000 : 100; percentages=Boolean(mode&2);
   const source=input ?? {}, result={version:SNAPSHOT_VERSION};
@@ -141,8 +141,8 @@ function packet(input, bytes, rounding, percentages=true, codecVersion=CODEC_VER
   result.ship.lifeSupport.cargoLss=decimal(ship.lifeSupport?.cargoLss);
   for(const field of ['daysRemaining','daysCapacity','cargoReservedTons'])result.ship.lifeSupport[field]=codecVersion>=3?decimal(ship.lifeSupport?.[field]):null;
   result.ship.destination=string(ship.destination);
-  result.expenses={visitLabel:string(source.expenses?.visitLabel,{worldName:result.world.name,year:/^\d{3}-(\d{4}), \d{2}:\d{2}$/.exec(result.campaignDate)?.[1]})};
-  for (const kind of EXPENSE_KINDS) {const row=source.expenses?.[kind]; result.expenses[kind]={expected:money(row?.expected),paid:money(row?.paid),basis:string(row?.basis)};}
+  result.expenses={maintenance:LEGACY_MAINTENANCE,visitLabel:string(source.expenses?.visitLabel,{worldName:result.world.name,year:/^\d{3}-(\d{4}), \d{2}:\d{2}$/.exec(result.campaignDate)?.[1]})};
+  for (const kind of EXPENSE_KINDS.filter(k=>codecVersion>=6||k!=='maintenance')) {const row=source.expenses?.[kind]; result.expenses[kind]={expected:money(row?.expected),paid:money(row?.paid),basis:string(row?.basis)};}
   const rows = (list, priced) => Array.from({length:small(list?.length,200)},(_,i)=>{
     const row=list?.[i], id=small(reading ? undefined : commodityIds.get(row.name),255);
     if (!Object.hasOwn(COMMODITIES,id)) invalid();
@@ -158,8 +158,9 @@ function packet(input, bytes, rounding, percentages=true, codecVersion=CODEC_VER
 const base64 = bytes => btoa(Array.from(bytes,n=>String.fromCharCode(n)).join('')).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 function budget(value) {if (!Number.isInteger(value) || value<PROPOSED_PREFIX.length || value>MAX_URL) throw new Error('Invalid URL character budget.'); return value;}
 export function measureSnapshotLink(input, {rounding=100,percentages=true,codecVersion=CODEC_VERSION}={}) {
-  if(![1,2,3,4,5].includes(codecVersion))invalid();
+  if(![1,2,3,4,5,6].includes(codecVersion))invalid();
   const snapshot=prepareSnapshotForLink(input,{rounding});
+  if(codecVersion<6 && (snapshot.expenses.maintenance.expected!==null||snapshot.expenses.maintenance.paid!==null))throw Error('Older codecs cannot represent separate maintenance.');
   if(codecVersion<5 && snapshot.cargo.some(row=>row.purchase!==null))throw Error('Older codecs cannot represent cargo purchase history.');
   if(codecVersion<4 && snapshot.world.mapReference!==null)throw Error('Older codecs cannot represent the map reference.');
   if(codecVersion<3 && [snapshot.ship.lifeSupport.daysRemaining,snapshot.ship.lifeSupport.daysCapacity,snapshot.ship.lifeSupport.cargoReservedTons].some(value=>value!==null))throw Error('Older codecs cannot represent explicit life-support days or reserved cargo space.');
