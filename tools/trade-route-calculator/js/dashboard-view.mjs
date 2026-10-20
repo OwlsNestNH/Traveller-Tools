@@ -1,5 +1,5 @@
-import {dashboardData} from './dashboard-data.mjs?v=hex-labels-20261020-102';
-import {escapeHtml as esc,moneyHtml} from './display.mjs?v=hex-labels-20261020-102';
+import {dashboardData} from './dashboard-data.mjs?v=campaign-politics-20261020-103';
+import {escapeHtml as esc,moneyHtml} from './display.mjs?v=campaign-politics-20261020-103';
 
 // Read-only presentation. Exact Credits remain BigInts until bounded ratios are
 // converted to SVG coordinates; display values always use the shared formatter.

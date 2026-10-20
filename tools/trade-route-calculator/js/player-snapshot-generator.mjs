@@ -1,5 +1,5 @@
-import {makePlayerSnapshotExample} from './player-snapshot-fixture.mjs?v=hex-labels-20261020-102';
-import {measureSnapshotLink} from './player-snapshot-codec.mjs?v=hex-labels-20261020-102';
+import {makePlayerSnapshotExample} from './player-snapshot-fixture.mjs?v=campaign-politics-20261020-103';
+import {measureSnapshotLink} from './player-snapshot-codec.mjs?v=campaign-politics-20261020-103';
 const result=document.getElementById('result'),link=document.getElementById('link'),open=document.getElementById('open');
 document.getElementById('generate').addEventListener('click',()=>{
   link.value='';open.hidden=true;open.removeAttribute('href');

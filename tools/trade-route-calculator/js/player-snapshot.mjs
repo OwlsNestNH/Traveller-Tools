@@ -1,6 +1,7 @@
+import {projectCampaignPolitics} from './campaign-politics.mjs';
 // Headless, versioned player-data boundary. Never pass a raw campaign here.
 // A future adapter must deliberately select approved public fields first.
-export const SNAPSHOT_VERSION = 6;
+export const SNAPSHOT_VERSION = 7;
 export const MAX_SNAPSHOT_ROWS = 200;
 const fail = () => { throw new Error('Invalid player snapshot. Ask the operator for a fresh snapshot.'); };
 const object = value => { if (!value || typeof value !== 'object' || Array.isArray(value)) fail(); return value; };
@@ -51,14 +52,14 @@ const market = value => {
 };
 export function projectPlayerSnapshot(source) {
   object(source);
-  if (![4, 5, SNAPSHOT_VERSION].includes(source.version)) throw new Error('Unsupported player snapshot version. Ask the operator for a compatible snapshot.');
+  if (![4, 5, 6, SNAPSHOT_VERSION].includes(source.version)) throw new Error('Unsupported player snapshot version. Ask the operator for a compatible snapshot.');
   const world = object(source.world), ship = object(source.ship), fuel = object(ship.fuel), support = object(ship.lifeSupport);
   const days=reservoir(support.daysRemaining ?? null,support.daysCapacity ?? null);
   const cargoLss=optionalAmount(support.cargoLss), reserved=support.cargoReservedTons == null ? null : wholeTons(support.cargoReservedTons);
   // Existing reserve semantics: 100 exact LSS per physical ton, whole reserved space.
   if(cargoLss!==null && reserved!==null && BigInt(reserved)!==(scaled(cargoLss)+99999999n)/100000000n) fail();
   // Explicit allowlist at every depth; the reservoir spread contains only validated public amounts.
-  return freeze({version:SNAPSHOT_VERSION, capturedAt:text(source.capturedAt), campaignDate:text(source.campaignDate),
+  return freeze({version:SNAPSHOT_VERSION, campaignPolitics:source.version>=7?projectCampaignPolitics(source.campaignPolitics):null, capturedAt:text(source.capturedAt), campaignDate:text(source.campaignDate),
     world:{name:text(world.name), location:text(world.location), uwp:text(world.uwp), tradeCodes:text(world.tradeCodes), travelZone:text(world.travelZone), starport:text(world.starport), mapReference:mapReference(world.mapReference)},
     ship:{name:text(ship.name), cargoCapacityTons:wholeTons(ship.cargoCapacityTons), cashCredits:optionalAmount(ship.cashCredits), fuel:reservoir(fuel.current, fuel.capacity), lifeSupport:{...reservoir(support.current, support.capacity), cargoLss, daysRemaining:days.current, daysCapacity:days.capacity, cargoReservedTons:reserved}, destination:text(ship.destination)},
     expenses:expenses(source.version===4?{...object(source.expenses),maintenance:LEGACY_MAINTENANCE}:source.expenses),

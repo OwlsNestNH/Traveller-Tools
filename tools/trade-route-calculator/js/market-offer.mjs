@@ -1,5 +1,5 @@
 import * as A from './amounts.mjs';
-import * as R from './rules.mjs?v=hex-labels-20261020-102';
+import * as R from './rules.mjs?v=campaign-politics-20261020-103';
 
 // One referee override boundary: validate normalized entries and optionally
 // quote using the submitted roll/legality, then apply to a caller-owned offer.

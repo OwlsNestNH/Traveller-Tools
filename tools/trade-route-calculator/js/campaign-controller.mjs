@@ -1,6 +1,6 @@
-import * as S from './state.mjs?v=hex-labels-20261020-102';
-import {creditStep} from './rounding.mjs?v=hex-labels-20261020-102';
-import {SaveNotCommittedError} from './persistence.mjs?v=hex-labels-20261020-102';
+import * as S from './state.mjs?v=campaign-politics-20261020-103';
+import {creditStep} from './rounding.mjs?v=campaign-politics-20261020-103';
+import {SaveNotCommittedError} from './persistence.mjs?v=campaign-politics-20261020-103';
 
 // Store remains synchronous. An injected provider may return a completion
 // Promise; that completion must include the durable write and publication.

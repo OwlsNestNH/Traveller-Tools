@@ -1,7 +1,7 @@
 import {COMMODITIES} from './player-snapshot-catalog.mjs';
-import {playerSnapshotFixture} from './player-snapshot-fixture.mjs?v=hex-labels-20261020-102';
-import {renderPlayerSnapshot,clearPlayerSnapshotMap} from './player-snapshot-view.mjs?v=hex-labels-20261020-102';
-import {createRecipientStore} from './player-snapshot-storage.mjs?v=hex-labels-20261020-102';
+import {playerSnapshotFixture} from './player-snapshot-fixture.mjs?v=campaign-politics-20261020-103';
+import {renderPlayerSnapshot,clearPlayerSnapshotMap} from './player-snapshot-view.mjs?v=campaign-politics-20261020-103';
+import {createRecipientStore} from './player-snapshot-storage.mjs?v=campaign-politics-20261020-103';
 const root=document.getElementById('snapshot'),store=createRecipientStore(()=>localStorage);
 function display() {
   clearPlayerSnapshotMap(root);

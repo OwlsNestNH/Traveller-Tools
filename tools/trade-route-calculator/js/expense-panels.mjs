@@ -1,16 +1,16 @@
-import {ruleInfo} from './rule-references.mjs?v=hex-labels-20261020-102';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=hex-labels-20261020-102';
-import {passengerShip} from './passengers.mjs?v=hex-labels-20261020-102';
+import {ruleInfo} from './rule-references.mjs?v=campaign-politics-20261020-103';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=campaign-politics-20261020-103';
+import {passengerShip} from './passengers.mjs?v=campaign-politics-20261020-103';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=hex-labels-20261020-102';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=hex-labels-20261020-102';
-import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=hex-labels-20261020-102';
-import {roomCounts} from './accommodation.mjs?v=hex-labels-20261020-102';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=hex-labels-20261020-102';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=hex-labels-20261020-102';
-import {creditStep} from './rounding.mjs?v=hex-labels-20261020-102';
-import {roll} from './rules.mjs?v=hex-labels-20261020-102';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=hex-labels-20261020-102';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=campaign-politics-20261020-103';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=campaign-politics-20261020-103';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=campaign-politics-20261020-103';
+import {roomCounts} from './accommodation.mjs?v=campaign-politics-20261020-103';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=campaign-politics-20261020-103';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=campaign-politics-20261020-103';
+import {creditStep} from './rounding.mjs?v=campaign-politics-20261020-103';
+import {roll} from './rules.mjs?v=campaign-politics-20261020-103';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=campaign-politics-20261020-103';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

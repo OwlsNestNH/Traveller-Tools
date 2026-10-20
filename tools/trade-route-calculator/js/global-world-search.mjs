@@ -1,4 +1,4 @@
-import {searchWorlds,loadWorld} from './map.mjs?v=hex-labels-20261020-102';
+import {searchWorlds,loadWorld} from './map.mjs?v=campaign-politics-20261020-103';
 
 export const planetSearchLabel=w=>[w.name,w.subsectorName,w.sector,w.hex].join(' — ');
 

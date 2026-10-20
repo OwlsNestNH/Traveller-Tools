@@ -1,8 +1,8 @@
-import {supportCompartments,consumeReserveCompartments} from './lss-compartments.mjs?v=hex-labels-20261020-102';
-import {passengerShip} from './passengers.mjs?v=hex-labels-20261020-102';
-import {tiers,roomCounts,serviceRate,occupants,personRate} from './accommodation.mjs?v=hex-labels-20261020-102';
+import {supportCompartments,consumeReserveCompartments} from './lss-compartments.mjs?v=campaign-politics-20261020-103';
+import {passengerShip} from './passengers.mjs?v=campaign-politics-20261020-103';
+import {tiers,roomCounts,serviceRate,occupants,personRate} from './accommodation.mjs?v=campaign-politics-20261020-103';
 import {add,sub,mul,div,cmp,dec,rat,decimal,auditNumber,credit,floor} from './amounts.mjs';
-import {up,creditStep} from './rounding.mjs?v=hex-labels-20261020-102';
+import {up,creditStep} from './rounding.mjs?v=campaign-politics-20261020-103';
 
 export const supportReference='Cluster Truck, p. 14: awake occupants consume 1 LSS per day; occupied low berths consume 0.1. Internal storage holds 4 LSS per displacement ton; overflow uses 0.01 cargo tons per LSS.';
 export const extraSupportReference='Home rule: extra supplies cost Cr1,000 per person-equivalent per 28 days. An occupied low berth counts as 0.1 person-equivalent. Round the combined extra charge up once to Cr100.';

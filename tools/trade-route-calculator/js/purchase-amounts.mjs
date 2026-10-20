@@ -1,5 +1,5 @@
 import * as A from './amounts.mjs';
-import {up} from './rounding.mjs?v=hex-labels-20261020-102';
+import {up} from './rounding.mjs?v=campaign-politics-20261020-103';
 
 // Prepare preview amounts from caller-normalized entry strings. Inputs:
 // {quantity, fee, unitPrice: saved offer price, creditStep: 1 or 100}.

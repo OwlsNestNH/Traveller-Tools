@@ -1,12 +1,15 @@
-import {informationButton} from './player-info.mjs?v=hex-labels-20261020-102';
+import {campaignPoliticsFromFragment} from './campaign-politics-codec.mjs';
+import {campaignTerritoryMarkup,campaignAllegiance} from './campaign-politics.mjs';
+import {informationButton} from './player-info.mjs?v=campaign-politics-20261020-103';
 if(new URLSearchParams(location.search).get('embedded')==='1')document.body.classList.add('embedded-reference');
 import {referenceOrigin,referenceWorld,referenceFacts,hexDistance,stagger,referenceSectorAreas} from './player-map-reference.mjs';
-import {publishedWorldBody,publishedWorldSymbols,worldMapFacts} from './world-symbols.mjs?v=hex-labels-20261020-102';
+import {publishedWorldBody,publishedWorldSymbols,worldMapFacts} from './world-symbols.mjs?v=campaign-politics-20261020-103';
 import {territoryMarkup} from './map-territory.mjs';
 document.getElementById('map-help').append(informationButton(document,'Map reference', ['Choose 0–6 rings. Fewer rings enlarge the map’s worlds and labels. Move the slider to update the rings. Select a world for details; the map stays centered on the current system. Current World restores its details.', '★ naval · ▲ scout · ringed planet: gas giants · yellow/red arc: travel zone. Other base codes appear literally; ?: unknown.', 'Live reference and political borders use TravellerMap source data. Political borders are allegiance territory, not travel zones. Browsing does not move the ship or change frozen cargo, prices, offers or GM world overrides.', 'Radius changes this preview only. It is not saved or included in a snapshot URL. No campaign storage is accessed.']));
 const control=document.getElementById('radius'),output=document.getElementById('radius-value'),status=document.getElementById('map-status'),frame=document.getElementById('map-frame'),details=document.getElementById('world-details');
 const node=(tag,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
 const svgNode=(tag,attrs={})=>{const n=document.createElementNS('http://www.w3.org/2000/svg',tag);for(const [k,v]of Object.entries(attrs))n.setAttribute(k,String(v));return n;};
+let campaignPolitics=null;
 let origin,anchor,selected,worlds=[],metadata=new Map(),sectors=[],generation=0,controller,project,svg,homeBox;
 async function read(path,params,signal,limit=1000000) {
  const url=new URL('https://travellermap.com/api/'+path);url.search=new URLSearchParams({...params,milieu:'M1105'});
@@ -19,7 +22,7 @@ function showWorld(world) {
  const names=new Map();for(const data of metadata.values())for(const item of data.Allegiances??[])if(typeof item.Code==='string'&&typeof item.Name==='string'&&item.Name.length<=120)names.set(item.Code,item.Name);
  const facts=referenceFacts(world,names),grid=node('dl');grid.className='uwp-fields';
  for(const [label,code,meaning]of facts.fields){const box=node('div');box.append(node('dt',label),node('dd',code+' · '+meaning));grid.append(box);}details.append(grid);
- const extra=node('dl');extra.className='reference-facts';for(const [label,value]of [['Travel zone',facts.zone],['Bases',facts.bases],['Gas giants',facts.gasGiants==='0'?'None recorded':facts.gasGiants],['Trade codes',facts.tradeCodes],['Allegiance',facts.allegiance]])extra.append(node('dt',label),node('dd',value));details.append(extra);
+ const extra=node('dl');extra.className='reference-facts';for(const [label,value]of [['Travel zone',facts.zone],['Bases',facts.bases],['Gas giants',facts.gasGiants==='0'?'None recorded':facts.gasGiants],['Trade codes',facts.tradeCodes],['Allegiance',facts.allegiance]])extra.append(node('dt',label),node('dd',value));details.append(extra);if(campaignAllegiance(campaignPolitics,world.x,world.y))details.append(node('p','Campaign allegiance: Drinax. Published allegiance remains '+facts.allegiance+'.'));
  for(const el of frame.querySelectorAll('[data-world]'))el.setAttribute('aria-pressed',String(el.dataset.world===world.id));
 }
 function centerMap(){if(svg&&homeBox)svg.setAttribute('viewBox',homeBox.join(' '));}
@@ -34,7 +37,7 @@ function draw(radius) {
  homeBox=[left,top,width,height];svg.setAttribute('viewBox',homeBox.join(' '));svg.setAttribute('width',width);svg.setAttribute('height',height);
  const defs=svgNode('defs'),clip=svgNode('clipPath',{id:'reference-footprint'});for(const points of cells)clip.append(svgNode('polygon',{points}));defs.append(clip);svg.append(defs);
  const footprint=svgNode('g',{'clip-path':'url(#reference-footprint)',class:'map-footprint'});footprint.append(svgNode('rect',{x:left,y:top,width,height,fill:'#080b10'}));
- const territories=svgNode('g');territories.innerHTML=territoryMarkup({sectors,metadata,project});footprint.append(territories);
+ const territories=svgNode('g');territories.innerHTML=territoryMarkup({sectors,metadata,project});footprint.append(territories);const campaign=svgNode('g');campaign.innerHTML=campaignTerritoryMarkup(campaignPolitics,project);footprint.append(campaign);
  for(const points of cells)footprint.append(svgNode('polygon',{points,class:'hex-grid'}));svg.append(footprint);
  const visible=worlds.filter(world=>hexDistance(anchor,world)<=radius);
  for(const world of visible){const [x,y]=project(...stagger(world)),g=svgNode('g',{transform:`translate(${x} ${y})`,role:'button',tabindex:0,'aria-label':'Inspect '+world.name,'aria-pressed':'false','data-world':world.id,class:'world-target'});
@@ -79,4 +82,12 @@ async function load() {
 }
 control.addEventListener('input',load);
 document.getElementById('map-retry').addEventListener('click',load);document.getElementById('current-world').addEventListener('click',centerOrigin);
-try{origin=referenceOrigin(new URLSearchParams(location.search));load();}catch(error){status.textContent=error.message;control.disabled=true;document.getElementById('map-retry').disabled=true;}
+function readCampaignLayer(){
+ generation++;controller?.abort();campaignPolitics=null;document.getElementById('campaign-map-legend')?.remove();
+ try{
+  if(location.hash){if(!location.hash.startsWith('#politics='))throw Error('Invalid campaign territory link.');campaignPolitics=campaignPoliticsFromFragment(location.hash.slice(10));}
+  if(campaignPolitics){const legend=node('p','Violet / lavender: frozen Drinax campaign territory. Claims do not alter published world allegiance.');legend.id='campaign-map-legend';document.getElementById('map-help').append(legend);}
+  origin=referenceOrigin(new URLSearchParams(location.search));control.disabled=false;document.getElementById('map-retry').disabled=false;load();
+ }catch(error){frame.replaceChildren();details.replaceChildren();status.textContent=error.message;control.disabled=true;document.getElementById('map-retry').disabled=true;document.getElementById('current-world').disabled=true;}
+}
+window.addEventListener('hashchange',readCampaignLayer);readCampaignLayer();

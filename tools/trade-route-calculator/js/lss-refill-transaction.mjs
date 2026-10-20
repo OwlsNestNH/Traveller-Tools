@@ -1,8 +1,8 @@
-import {consumeReserveCompartments} from './lss-compartments.mjs?v=hex-labels-20261020-102';
+import {consumeReserveCompartments} from './lss-compartments.mjs?v=campaign-politics-20261020-103';
 import * as A from './amounts.mjs';
-import {campaignRefillDraft,editRefillDraft} from './lss-refill-draft.mjs?v=hex-labels-20261020-102';
-import {consumableRefillQuote} from './lss-refill-pricing.mjs?v=hex-labels-20261020-102';
-import {supportAmount} from './life-support.mjs?v=hex-labels-20261020-102';
+import {campaignRefillDraft,editRefillDraft} from './lss-refill-draft.mjs?v=campaign-politics-20261020-103';
+import {consumableRefillQuote} from './lss-refill-pricing.mjs?v=campaign-politics-20261020-103';
+import {supportAmount} from './life-support.mjs?v=campaign-politics-20261020-103';
 export function compartmentRefillQuote(state,draft,{gm=false}={}){
  const original=campaignRefillDraft(state).draft;
  let checked=original,purchased=A.rat(0),discarded=A.rat(0),changed=false;

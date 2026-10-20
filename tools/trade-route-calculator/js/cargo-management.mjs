@@ -1,9 +1,9 @@
-import {createCargoRemoval,cargoRemovalSummary,cargoNumber} from './cargo-removal.mjs?v=hex-labels-20261020-102';
-import {supportCompartments} from './lss-compartments.mjs?v=hex-labels-20261020-102';
-import {supportAmount} from './life-support.mjs?v=hex-labels-20261020-102';
-import {cargoManifest,purchaseFacts} from './cargo-hold.mjs?v=hex-labels-20261020-102';
-import {supportDisplay} from './life-support.mjs?v=hex-labels-20261020-102';
-import {escapeHtml as esc,formatDecimalCreditsText} from './display.mjs?v=hex-labels-20261020-102';
+import {createCargoRemoval,cargoRemovalSummary,cargoNumber} from './cargo-removal.mjs?v=campaign-politics-20261020-103';
+import {supportCompartments} from './lss-compartments.mjs?v=campaign-politics-20261020-103';
+import {supportAmount} from './life-support.mjs?v=campaign-politics-20261020-103';
+import {cargoManifest,purchaseFacts} from './cargo-hold.mjs?v=campaign-politics-20261020-103';
+import {supportDisplay} from './life-support.mjs?v=campaign-politics-20261020-103';
+import {escapeHtml as esc,formatDecimalCreditsText} from './display.mjs?v=campaign-politics-20261020-103';
 import * as A from './amounts.mjs';
 
 const tons=value=>esc(supportDisplay(value))+' t';

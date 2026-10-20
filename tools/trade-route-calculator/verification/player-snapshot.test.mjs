@@ -12,7 +12,7 @@ test('allowlist strips GM and unrelated fields recursively; detached immutable o
   assert.throws(() => {result.buy.offers[0].tons = '0';}, TypeError);
 });
 test('unknown, absent and legacy versions fail closed', () => {
-  for (const version of [undefined, 0, 1, 2, 3, 7, '4', null]) assert.throws(() => projectPlayerSnapshot({...fresh(), version}), /Unsupported/);
+  for (const version of [undefined, 0, 1, 2, 3, 8, '4', null]) assert.throws(() => projectPlayerSnapshot({...fresh(), version}), /Unsupported/);
 });
 test('malformed shape, nonfinite or excessive amounts and bounded text rejected', () => {
   for (const value of [null, [], 'snapshot']) assert.throws(() => projectPlayerSnapshot(value));
