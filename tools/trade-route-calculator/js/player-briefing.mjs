@@ -1,6 +1,6 @@
-import {recordedOperatingResult} from './financial-summary.mjs?v=map-parity-20261020-100';
+import {recordedOperatingResult} from './financial-summary.mjs?v=map-details-20261020-101';
 import {latestMailCheck} from './mail-history.mjs';
-import {latestPassengerSearch,passengerOfferRemaining,passengerTotals} from './passengers.mjs?v=map-parity-20261020-100';
+import {latestPassengerSearch,passengerOfferRemaining,passengerTotals} from './passengers.mjs?v=map-details-20261020-101';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
 

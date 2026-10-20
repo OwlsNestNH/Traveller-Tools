@@ -575,3 +575,7 @@ main{padding-top:18px}
 .world-map .planned-route-line,.world-map .draft-route-line{pointer-events:none}
 .world-map .selected-world .world-name.capital-name{fill:#ff3045}
 .world-map g[data-action]:hover .world-hit,.world-map g[data-action]:focus .world-hit{stroke:none}
+
+/* Main-map political contrast; shared player presentation stays unchanged. */
+.world-map .territory-fill{fill-opacity:.24}
+.world-map .territory-border{stroke-opacity:1;stroke-width:1.8;filter:drop-shadow(0 0 1px #000)}

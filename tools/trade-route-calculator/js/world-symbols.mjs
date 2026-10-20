@@ -49,7 +49,7 @@ export function selectedWorldHex(x,y,scale=50){
 }
 export function worldSymbols(world,x,y,{close=false,selected=false,actual=false,scale=50}={}){
  const parts=[];
- if(close)parts.push(publishedWorldSymbols(world,x,y,{spacing:120}));
+ if(close)parts.push(publishedWorldSymbols(world,x,y,{spacing:Math.min(120,scale)}));
  if(selected&&scale>=24)parts.push(bracket(x,y));
  if(actual)parts.push(`<path class="symbol-ship" d="M ${x+(close?36:13)} ${y+(close?29:8)} l -4 9 4 -3 4 3 Z" fill="#62d3dd"/>`);
  return '<g class="world-symbols" aria-hidden="true">'+parts.join('')+'</g>';
@@ -66,5 +66,5 @@ export function mapKeyMarkup(){
   [icon('<circle r="3" fill="#62d3dd"/><path d="M 6 3 l -3 7 3 -2 3 2 Z" fill="#62d3dd"/>'),'Ship location'],
   [icon(`<polygon points="${hexPoints(0,0,10)}" fill="#245d94" fill-opacity="0.42" stroke="#80beff" stroke-width="1.8"/>`,'key-selected-world'),'Selected world']
  ];
- return '<section class="map-key" aria-label="Map key"><h3>Map key <span>Symbols at 240–288%</span></h3><ul>'+entries.map(([symbol,label])=>'<li>'+symbol+'<span>'+label+'</span></li>').join('')+'</ul><p class="help">The blue hex marks the selected world; the cyan ship marks your actual location. Browsing never moves the ship.</p><p class="help">Shown symbols use published data. Other base codes appear literally and are listed above. Water worlds are cyan, dry worlds white, unknown worlds grey, and asteroid belts use clustered dots. Red names mark capitals; the code beside a world is its allegiance. Missing data is not proof of absence. Political borders show allegiance territory, not travel zones.</p></section>';
+ return '<section class="map-key" aria-label="Map key"><h3>Map key <span>Symbols at 200–288%</span></h3><ul>'+entries.map(([symbol,label])=>'<li>'+symbol+'<span>'+label+'</span></li>').join('')+'</ul><p class="help">The blue hex marks the selected world; the cyan ship marks your actual location. Browsing never moves the ship.</p><p class="help">Shown symbols use published data. Other base codes appear literally and are listed above. Water worlds are cyan, dry worlds white, unknown worlds grey, and asteroid belts use clustered dots. Red names mark capitals; the code beside a world is its allegiance. Missing data is not proof of absence. Political borders show allegiance territory, not travel zones.</p></section>';
 }

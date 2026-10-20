@@ -30,7 +30,7 @@ try{
  assert.deepEqual(await page.evaluate(()=>{const el=document.querySelector('.world-map');return {color:getComputedStyle(el).backgroundColor,image:getComputedStyle(el).backgroundImage};}),{color:'rgb(8, 11, 16)',image:'none'});
  const planned=()=>page.locator('.planned-route-line').getAttribute('points');const original=await planned();assert.ok(original.split(' ').length===12);
  assert.equal(await marker(home.id).locator('.water-disc').count(),1);assert.equal(await page.locator('.symbol-ship').count(),1);
- await setZoom(240);
+ await setZoom(200);
  for(const w of rows.slice(0,3)){await page.locator('.map-viewport').scrollIntoViewIfNeeded();await clickBody(w.id);assert.equal(await page.locator('.selected-world').getAttribute('data-arg'),w.id,'Clicking the visible body browses '+w.name);}
  await click('world');await frame();
  const reference=await context.newPage();await reference.goto(new URL('player-map-preview.html?sector=Verification+Reach&hex='+home.hex,base).href);await reference.getByText(/Reference map loaded/).waitFor();
@@ -41,8 +41,35 @@ try{
  }
  assert.equal(await page.evaluate(id=>getComputedStyle(document.querySelector('[data-action="map-world"][data-arg="'+id+'"] .world-name')).fill,home.id),'rgb(255, 48, 69)','Selected capitals retain the player map red name');assert.equal(await marker(home.id).locator('.world-uwp').textContent(),'B777777-A');assert.equal(await marker(home.id).locator('.symbol-starport').textContent(),'A');
  assert.equal(await reference.locator('[data-world="'+home.id+'"] .world-uwp').textContent(),'A788899-C');await reference.close();
- for(const width of [1440,390,320]){
-  await page.setViewportSize({width,height:1000});await frame();await setZoom(240);
+ for(const width of [1440,1100,390,320]){
+  await page.setViewportSize({width,height:1000});await frame();await setZoom(200);
+  for(const expanded of [false,true]){
+   if(expanded){await click('map-expand');await frame();}
+   for(const zoom of [199,200,201]){
+    await setZoom(zoom);const detailed=zoom>=200;
+    for(const cls of ['symbol-starport','allegiance-label','world-uwp'])assert.equal(await marker(home.id).locator('.'+cls).count(),detailed?1:0,`${width}/${expanded}/${zoom}: ${cls}`);
+    for(const cls of ['symbol-naval','symbol-scout','gas-giant'])assert.equal(await marker(home.id).locator('.'+cls).count(),detailed?1:0);
+    assert.equal(await marker(rows[2].id).locator('.zone-A').count(),detailed?1:0);
+    assert.equal(await marker(rows[0].id).locator('.zone-R').count(),detailed?1:0);
+    assert.equal(await page.locator('.map-level-label').textContent(),detailed?'Worlds + UWP':'Worlds');
+    assert.ok((await planned()).split(' ').length===12);assert.equal(await stored(),f.bytes);
+    if(detailed){
+     await page.locator('.map-viewport').scrollIntoViewIfNeeded();await clickBody(home.id);
+     const layout=await marker(home.id).evaluate(el=>{const box=s=>el.querySelector(s).getBoundingClientRect(),body=box('.world-disc'),name=box('.world-name'),uwp=box('.world-uwp'),port=box('.symbol-starport');return {bodyUwp:body.bottom<=uwp.top,uwpName:uwp.bottom<=name.top,portBody:port.bottom<=body.top};});
+     assert.deepEqual(layout,{bodyUwp:true,uwpName:true,portBody:true},`${width}/${expanded}/${zoom}: readable detail rows`);
+    }
+   }
+   await setZoom(200);await page.locator('.map-viewport').screenshot({path:artifacts+`main-map-200-${width}-${expanded?'expanded':'normal'}.png`});
+   if(expanded){await click('map-expand');await frame();}
+  }
+  for(const zoom of [20,80,199,200,201,240,288]){
+   await setZoom(zoom);
+   await page.waitForFunction(()=>document.querySelector('.territory-fill')&&document.querySelector('.territory-border'));
+   const paints=await page.evaluate(()=>{const fill=document.querySelector('.territory-fill'),border=document.querySelector('.territory-border');return {fill:fill&&getComputedStyle(fill).fillOpacity,border:border&&getComputedStyle(border).strokeOpacity,width:border&&getComputedStyle(border).strokeWidth,outline:border&&getComputedStyle(border).filter};});
+   assert.equal(paints.fill,'0.24');assert.equal(paints.border,'1');assert.equal(paints.width,'1.8px');assert.match(paints.outline,/drop-shadow/);
+   assert.ok((await planned()).split(' ').length===12);
+  }
+  await setZoom(200);
   const routeBefore=await planned();await page.getByRole('switch',{name:'Political territory',exact:true}).uncheck();await frame();assert.equal(await planned(),routeBefore);assert.equal(await page.locator('.territory-border').count(),0);
   await page.getByRole('switch',{name:'Political territory',exact:true}).check();await frame();assert.equal(await planned(),routeBefore);
   await page.getByRole('switch',{name:'Show UWP',exact:true}).uncheck();assert.equal(await page.locator('.world-uwp').count(),0);assert.equal(await planned(),routeBefore);await page.getByRole('switch',{name:'Show UWP',exact:true}).check();

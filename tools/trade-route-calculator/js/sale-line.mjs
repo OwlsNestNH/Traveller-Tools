@@ -1,4 +1,4 @@
-import * as R from './rules.mjs?v=map-parity-20261020-100';
+import * as R from './rules.mjs?v=map-details-20261020-101';
 
 // Prepare one sale line from explicit lot/buyer/context/quote/commodity/core,
 // current pricing flags and creditStep, plus caller-normalized values:

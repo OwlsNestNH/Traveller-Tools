@@ -1,16 +1,16 @@
-import {ruleInfo} from './rule-references.mjs?v=map-parity-20261020-100';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=map-parity-20261020-100';
-import {passengerShip} from './passengers.mjs?v=map-parity-20261020-100';
+import {ruleInfo} from './rule-references.mjs?v=map-details-20261020-101';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=map-details-20261020-101';
+import {passengerShip} from './passengers.mjs?v=map-details-20261020-101';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=map-parity-20261020-100';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=map-parity-20261020-100';
-import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=map-parity-20261020-100';
-import {roomCounts} from './accommodation.mjs?v=map-parity-20261020-100';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=map-parity-20261020-100';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=map-parity-20261020-100';
-import {creditStep} from './rounding.mjs?v=map-parity-20261020-100';
-import {roll} from './rules.mjs?v=map-parity-20261020-100';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=map-parity-20261020-100';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=map-details-20261020-101';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=map-details-20261020-101';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=map-details-20261020-101';
+import {roomCounts} from './accommodation.mjs?v=map-details-20261020-101';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=map-details-20261020-101';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=map-details-20261020-101';
+import {creditStep} from './rounding.mjs?v=map-details-20261020-101';
+import {roll} from './rules.mjs?v=map-details-20261020-101';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=map-details-20261020-101';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

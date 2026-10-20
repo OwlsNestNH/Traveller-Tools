@@ -37,7 +37,7 @@ try{
  assert.ok(await page.locator('.hex-grid text').count()>0);
  await page.screenshot({path:join(artifacts,'map-uwp-desktop.png'),fullPage:true});
  await page.locator('#map-uwp').uncheck();assert.equal(await page.locator('.world-uwp').count(),0);
- await page.locator('#map-uwp').check();await click('Zoom out');await page.waitForFunction(()=>document.querySelector('#map-zoom-value').textContent==='240%');assert.ok(await page.locator('.world-uwp').count()>0);await click('Zoom out');await page.waitForFunction(()=>document.querySelector('#map-zoom-value').textContent==='200%');assert.equal(await page.locator('.world-uwp').count(),0);
+ await page.locator('#map-uwp').check();await click('Zoom out');await page.waitForFunction(()=>document.querySelector('#map-zoom-value').textContent==='240%');assert.ok(await page.locator('.world-uwp').count()>0);await click('Zoom out');await page.waitForFunction(()=>document.querySelector('#map-zoom-value').textContent==='200%');assert.ok(await page.locator('.world-uwp').count()>0);await click('Zoom out');await page.waitForFunction(()=>document.querySelector('#map-zoom-value').textContent==='167%');assert.equal(await page.locator('.world-uwp').count(),0);
  assert.deepEqual(await read(),initial);
  // Verify effective world overrides without changing the user's campaign.
  await page.evaluate(()=>{const key='traveller-trade-route-calculator:v1',s=JSON.parse(localStorage.getItem(key));s.worlds[s.actual].overrideUWP='B777777-A';localStorage.setItem(key,JSON.stringify(s));});
