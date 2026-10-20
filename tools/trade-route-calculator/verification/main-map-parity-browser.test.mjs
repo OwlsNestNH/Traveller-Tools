@@ -27,6 +27,7 @@ const clickBody=async id=>{const p=await marker(id).evaluate(el=>{const body=el.
 const stored=()=>page.evaluate(key=>localStorage.getItem(key),campaignKey);
 try{
  await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();await frame();
+ assert.deepEqual(await page.locator('.world-map').evaluate(el=>({color:getComputedStyle(el).backgroundColor,image:getComputedStyle(el).backgroundImage})),{color:'rgb(8, 11, 16)',image:'none'});
  const planned=()=>page.locator('.planned-route-line').getAttribute('points');const original=await planned();assert.ok(original.split(' ').length===12);
  assert.equal(await marker(home.id).locator('.water-disc').count(),1);assert.equal(await page.locator('.symbol-ship').count(),1);
  await setZoom(240);

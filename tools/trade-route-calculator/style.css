@@ -567,7 +567,7 @@ main{padding-top:18px}
 .world-map .world-symbols .symbol-selection,.world-map .world-symbols .symbol-zone,.world-map .world-symbols ellipse{fill:none}
 .world-map .world-symbols .symbol-ship{fill:#62d3dd}
 .world-map .capital-name{fill:#ff3045}
-.world-map{background:#080b10}
+.map-viewport>.world-map{background:#080b10}
 .world-map .world-name,.world-map .world-uwp{font-family:Arial,sans-serif;fill:#fff}
 .world-map .world-name.capital-name{fill:#ff3045}
 .world-map .selected-world .world-name{fill:#fff}
