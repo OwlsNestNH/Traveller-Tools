@@ -558,3 +558,6 @@ main{padding-top:18px}
  .cargo-management .cargo-table td:nth-child(4)::before{content:none}
  .cargo-management .cargo-table td:nth-child(5){grid-column:2;grid-row:1 / 4;display:block;margin:0}
 }
+
+.cargo-management .cargo-table{min-width:0;table-layout:auto}
+.sell-cargo-scroll td:first-child>.help{margin-top:4px}
