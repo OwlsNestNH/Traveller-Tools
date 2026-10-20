@@ -104,6 +104,7 @@ async function flags(scope,result,count=1){
 }
 async function facts(page,label){return modal(page).locator('dt').evaluateAll((nodes,label)=>nodes.filter(node=>node.textContent===label).map(node=>node.nextElementSibling.textContent),label);}
 async function audit(page,dice,result){
+ for(const detail of await modal(page).locator('details').all())if(!await detail.evaluate(el=>el.open))await detail.locator(':scope > summary').click();
  const values=await facts(page,'Trade complication · house rule');
  assert.equal(values.length,1,'One saved price complication audit is shown');
  const labels={complication:'COMPLICATION',severe:'SEVERE COMPLICATION',none:'None (no matching dice)',unknown:'Unknown · natural dice not recorded',legacy:'Not recorded for this quote'};

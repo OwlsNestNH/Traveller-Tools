@@ -201,7 +201,7 @@ async function auditDetails(page,f){
  assert.match(await page.locator('#modal-body').textContent(),/Cr 26,000/);
  await page.locator('#modal-close').click();await opened(page);
  await panel.locator('[data-action="lot-audit"][data-arg="lot-purchase-unknown"]').click();
- assert.match(await page.locator('#modal-body').textContent(),/no saved generated purchase calculation/);
+ assert.match(await page.locator('#modal-body').textContent(),/Detailed purchase history was not recorded/);
  await page.locator('#modal-close').click();
  for(const id of ['freight-accepted','mail-accepted']){
   await panel.locator('[data-action="contract-audit"][data-arg="'+id+'"]').click();

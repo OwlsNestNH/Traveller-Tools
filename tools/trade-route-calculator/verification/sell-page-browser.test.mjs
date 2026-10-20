@@ -52,7 +52,7 @@ try{
   await page.locator('#cargo-search').fill('not present');assert.equal(await page.locator('.sale-table').count(),0);
   assert.match(await page.locator('.selected-preview').textContent(),new RegExp(f.state.lots.length+' selected.*'+f.state.lots.length+' hidden by search'));
   await page.locator('#cargo-search').fill('');assert.equal(await page.locator('[data-sale-quantity]').first().inputValue(),'1');
-  await click('sale-clear');await page.locator('[data-lot="'+f.state.lots[0].id+'"]').check();await click('sale');
+  await click('sale-clear');await page.locator('[data-lot="'+f.state.lots[0].id+'"]').check();await click('buyer-search');
   await page.getByRole('heading',{name:'Find a buyer',exact:true}).waitFor();assert.equal(await page.locator('[data-lot]:checked').count(),1);assert.equal(await raw(),bytes);
   await page.locator('#modal-cancel').click();
   await page.screenshot({path:artifacts+'sell-selection-'+width+'.png',fullPage:true});
