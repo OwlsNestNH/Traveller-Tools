@@ -1,7 +1,7 @@
-import {informationButton} from './player-info.mjs?v=map-parity-20261020-100';
+import {informationButton} from './player-info.mjs?v=map-details-20261020-101';
 if(new URLSearchParams(location.search).get('embedded')==='1')document.body.classList.add('embedded-reference');
 import {referenceOrigin,referenceWorld,referenceFacts,hexDistance,stagger,referenceSectorAreas} from './player-map-reference.mjs';
-import {publishedWorldBody,publishedWorldSymbols,worldMapFacts} from './world-symbols.mjs?v=map-parity-20261020-100';
+import {publishedWorldBody,publishedWorldSymbols,worldMapFacts} from './world-symbols.mjs?v=map-details-20261020-101';
 import {territoryMarkup} from './map-territory.mjs';
 document.getElementById('map-help').append(informationButton(document,'Map reference', ['Choose 0–6 rings. Fewer rings enlarge the map’s worlds and labels. Move the slider to update the rings. Select a world for details; the map stays centered on the current system. Current World restores its details.', '★ naval · ▲ scout · ringed planet: gas giants · yellow/red arc: travel zone. Other base codes appear literally; ?: unknown.', 'Live reference and political borders use TravellerMap source data. Political borders are allegiance territory, not travel zones. Browsing does not move the ship or change frozen cargo, prices, offers or GM world overrides.', 'Radius changes this preview only. It is not saved or included in a snapshot URL. No campaign storage is accessed.']));
 const control=document.getElementById('radius'),output=document.getElementById('radius-value'),status=document.getElementById('map-status'),frame=document.getElementById('map-frame'),details=document.getElementById('world-details');

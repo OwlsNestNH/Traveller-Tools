@@ -1,5 +1,5 @@
-import {dashboardData} from './dashboard-data.mjs?v=map-parity-20261020-100';
-import {escapeHtml as esc,moneyHtml} from './display.mjs?v=map-parity-20261020-100';
+import {dashboardData} from './dashboard-data.mjs?v=map-details-20261020-101';
+import {escapeHtml as esc,moneyHtml} from './display.mjs?v=map-details-20261020-101';
 
 // Read-only presentation. Exact Credits remain BigInts until bounded ratios are
 // converted to SVG coordinates; display values always use the shared formatter.
