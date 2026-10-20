@@ -1,6 +1,6 @@
-import {informationButton} from './player-info.mjs?v=maintenance-20261020-98';
+import {informationButton} from './player-info.mjs?v=commission-20261020-99';
 import {formatSnapshotTons, formatSnapshotWholeDown, formatSnapshotLss, formatSnapshotQuantityText} from './player-snapshot-format.mjs';
-import {projectPlayerSnapshot, summarizePlayerExpenses, EXPENSE_KINDS} from './player-snapshot.mjs?v=maintenance-20261020-98';
+import {projectPlayerSnapshot, summarizePlayerExpenses, EXPENSE_KINDS} from './player-snapshot.mjs?v=commission-20261020-99';
 
 // Immutable transmitted data and local annotations remain separate.
 // Persistence is supplied by the standalone recipient adapter, never campaign storage.
@@ -103,11 +103,19 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
   }
   expenseTable.append(head, body); details.append(expenseTable); expensePanel.append(details);
   const cargo = section('Cargo aboard'); cargo.className = 'wide cargo-section';
-  table(cargo, ['Cargo lot', 'Tons', 'Retail / ton', 'Purchase % of retail', 'Paid / ton', 'Paid / lot'], data.cargo.map((row,i) => [localName(row,'cargo',i), formatSnapshotTons(row.tons), credits(row.purchase?.retailPerTon ?? null), row.purchase?.percent == null ? 'Unknown' : quantity(row.purchase.percent)+'%', credits(row.purchase?.paidPerTon ?? null), credits(row.purchase?.paidTotal ?? null)]), 'No cargo aboard.');
+  const commissionCell = row => {
+    const cell=node('div'), value=row.purchase?.originalBrokerCommission ?? null;
+    cell.append(node('span',credits(value)),node('small','Original purchase'),informationButton(document,'Broker commission · '+row.name,[
+      'Recorded Broker commission: '+credits(value)+'. This is the total commission on the original purchase, not a per-ton charge or an allocation to the tons remaining aboard.',
+      'Goods prices and purchase percentages exclude commission. Commission is already reflected in the campaign accounts; displaying it does not charge again. Missing history and older links stay Unknown.',
+      ...(rounding?[`Commission and goods costs round up independently to Cr${rounding} in this link.`]:[])
+    ],root));return cell;
+  };
+  table(cargo, ['Cargo lot', 'Tons', 'Retail / ton', 'Purchase % of retail', 'Paid / ton', 'Paid / lot', 'Broker commission'], data.cargo.map((row,i) => [localName(row,'cargo',i), formatSnapshotTons(row.tons), credits(row.purchase?.retailPerTon ?? null), row.purchase?.percent == null ? 'Unknown' : quantity(row.purchase.percent)+'%', credits(row.purchase?.paidPerTon ?? null), credits(row.purchase?.paidTotal ?? null), commissionCell(row)]), 'No cargo aboard.');
   const cargoInfo=node('button','i');cargoInfo.type='button';cargoInfo.className='cargo-info-button';cargoInfo.setAttribute('aria-label','About cargo values and reserve supplies');cargoInfo.setAttribute('aria-haspopup','dialog');const cargoHeading=node('div');cargoHeading.className='cargo-heading';cargoHeading.append(cargo.querySelector('h2'),cargoInfo);cargo.prepend(cargoHeading);
   cargoInfo.addEventListener('click',()=>{
     const dialog=node('dialog'),heading=node('h2','Cargo values and reserve supplies');heading.id='cargo-information-title';dialog.setAttribute('aria-labelledby',heading.id);
-    dialog.append(heading,node('p','Retail is the recorded base price per ton. Purchase % is the actual recorded percentage before credit rounding. Paid / lot covers the tons shown. Unit and lot costs round independently, so multiplying the displayed unit price may differ from the displayed lot total. Missing purchase history stays Unknown; local estimates do not fill it in.'),node('p','Reserve LSS stock is displayed rounded down. Reserved space is separate from cargo lots; it is not extra supply stock or an addition to internal days.'));
+    dialog.append(heading,node('p','Retail is the recorded base price per ton. Purchase % is the actual recorded percentage before credit rounding. Paid / lot is goods cost only and covers the tons shown. Broker commission is shown separately for the original whole purchase; it is not allocated to remaining cargo. Unit and lot costs round independently, so multiplying the displayed unit price may differ from the displayed lot total. Missing purchase history stays Unknown; local estimates do not fill it in.'),node('p','Reserve LSS stock is displayed rounded down. Reserved space is separate from cargo lots; it is not extra supply stock or an addition to internal days.'));
     const close=node('button','Close');close.type='button';close.addEventListener('click',()=>dialog.close());dialog.append(close);dialog.addEventListener('close',()=>{dialog.remove();if(cargoInfo.isConnected)cargoInfo.focus();});dialog.addEventListener('click',event=>{const b=dialog.getBoundingClientRect();if(event.target===dialog&&(event.clientX<b.left||event.clientX>b.right||event.clientY<b.top||event.clientY>b.bottom))dialog.close();});root.append(dialog);dialog.showModal();close.focus();
   });
   const support=data.ship.lifeSupport;
@@ -117,7 +125,8 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
   }
   for (const [key, title] of [['buy', 'Buy offers · crew purchases'], ['sell', 'Sell offers · crew sales']]) {
     const panel = section(title), market = data[key];
-    panel.append(node('p', 'Prices in Credits per ton. Quotes only; no transactions.'));
+    panel.append(node('p', 'Negotiated goods prices in Credits per ton. Quotes only; no transactions.'));
+    const commissionNote=node('p','Broker commission: Unknown');commissionNote.append(informationButton(document,'Broker commission · '+(key==='buy'?'buy offers':'sell offers'),['These saved quotes do not retain a confirmed Broker commission. A default broker rate is not a recorded charge. Ask the operator for the reviewed commission; it is separate from the goods price.'],root));panel.append(commissionNote);
     table(panel, ['Goods', 'Tons quoted', 'Cr / ton'], market.offers.map((row,i) => [localName(row,key,i), formatSnapshotTons(row.tons), row.creditsPerTon]), {'available':'Checked: no current offers.', 'not-checked':'Not checked. No prices available.', 'expired':'Expired. Ask the operator for fresh offers.'}[market.status]);
   }
   const freshness=node('p','Captured: '+data.capturedAt+' · Fixed snapshot');

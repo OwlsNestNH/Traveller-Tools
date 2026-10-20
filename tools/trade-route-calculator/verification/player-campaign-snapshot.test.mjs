@@ -95,5 +95,22 @@ for(const numerator of ['2400000001','2700000001'])test(`fractional life-support
 });
 test('archived version4 departure remains readable with unknown separate maintenance',()=>{
  const s=structuredClone(jump(fresh()));const record=s.playerDepartures[0];record.snapshot.version=4;delete record.snapshot.expenses.maintenance;
- const before=structuredClone(s),view=playerSnapshotForVisit(s,core,0,clock);assert.equal(view.version,5);assert.equal(view.expenses.maintenance.paid,null);assert.equal(view.expenses.incidentals.paid,record.snapshot.expenses.incidentals.paid);assert.deepEqual(s,before);
+ const before=structuredClone(s),view=playerSnapshotForVisit(s,core,0,clock);assert.equal(view.version,6);assert.equal(view.expenses.maintenance.paid,null);assert.equal(view.expenses.incidentals.paid,record.snapshot.expenses.incidentals.paid);assert.deepEqual(s,before);
+});
+
+test('Broker commission comes only from recorded original purchase, never basis differences or default rates',()=>{
+ const s=fresh();s.lots=[lot('paid'),lot('free'),lot('unknown')];
+ s.lots[0].audit.fee='125';s.lots[0].audit.premium='40';s.lots[0].basis='1415';
+ s.lots[1].audit.fee='0';s.lots[2].basis='1500';
+ s.snapshots=[{kind:'supplier',worldId:s.actual,party:'dealer',options:{local:true},offers:[{commodity:'11',remaining:'2',unitPrice:'625'}]}];
+ const session={...clock,saleQuotes:new Map([['paid',{revision:s.revision,worldId:s.actual,unitPrice:'700',audit:{localDM:2}}]])};
+ const before=structuredClone(s),view=campaignPlayerSnapshot(s,core,session);
+ assert.deepEqual(view.cargo.map(x=>x.purchase.originalBrokerCommission),['125','0',null]);
+ assert.equal(view.cargo[0].purchase.percent,'62.50');assert.equal(view.cargo[0].purchase.paidTotal,'1250');
+ assert.deepEqual(view.buy.offers,[{name:'Common Electronics',tons:'2',creditsPerTon:'625'}]);
+ assert.deepEqual(view.sell.offers,[{name:'Common Electronics',tons:'2',creditsPerTon:'700'}]);assert.deepEqual(s,before);
+ // Partial sales/losses reduce goods aboard, not the recorded original fee.
+ s.lots[0].quantity='1';s.lots[0].goodsValue='625';s.lots[0].basis='708';
+ const partial=campaignPlayerSnapshot(s,core,clock).cargo[0];assert.equal(partial.purchase.originalBrokerCommission,'125');assert.equal(partial.purchase.paidTotal,'625');
+ for(const value of [undefined,null,'-1','not money',{},false]){s.lots[0].audit.fee=value;assert.equal(campaignPlayerSnapshot(s,core,clock).cargo[0].purchase.originalBrokerCommission,null);}
 });

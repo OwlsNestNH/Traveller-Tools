@@ -12,7 +12,7 @@ test('allowlist strips GM and unrelated fields recursively; detached immutable o
   assert.throws(() => {result.buy.offers[0].tons = '0';}, TypeError);
 });
 test('unknown, absent and legacy versions fail closed', () => {
-  for (const version of [undefined, 0, 1, 2, 3, 6, '4', null]) assert.throws(() => projectPlayerSnapshot({...fresh(), version}), /Unsupported/);
+  for (const version of [undefined, 0, 1, 2, 3, 7, '4', null]) assert.throws(() => projectPlayerSnapshot({...fresh(), version}), /Unsupported/);
 });
 test('malformed shape, nonfinite or excessive amounts and bounded text rejected', () => {
   for (const value of [null, [], 'snapshot']) assert.throws(() => projectPlayerSnapshot(value));
@@ -84,8 +84,16 @@ test('LSS overflow reserves whole space without changing exact stock or internal
 
 test('purchase history is a nested detached allowlist, independently unknown and bounded',()=>{
  const input=fresh();input.cargo[0].purchase={retailPerTon:'1000',percent:'62.500000',paidPerTon:'625',gm:'secret'};
- const result=projectPlayerSnapshot(input);assert.deepEqual(result.cargo[0].purchase,{retailPerTon:'1000',percent:'62.500000',paidPerTon:'625',paidTotal:null});assert.ok(Object.isFrozen(result.cargo[0].purchase));
+ const result=projectPlayerSnapshot(input);assert.deepEqual(result.cargo[0].purchase,{retailPerTon:'1000',percent:'62.500000',paidPerTon:'625',paidTotal:null,originalBrokerCommission:null});assert.ok(Object.isFrozen(result.cargo[0].purchase));
  input.cargo[0].purchase.percent='90';assert.equal(result.cargo[0].purchase.percent,'62.500000');
- input.cargo[0].purchase={};assert.deepEqual(projectPlayerSnapshot(input).cargo[0].purchase,{retailPerTon:null,percent:null,paidPerTon:null,paidTotal:null});
+ input.cargo[0].purchase={};assert.deepEqual(projectPlayerSnapshot(input).cargo[0].purchase,{retailPerTon:null,percent:null,paidPerTon:null,paidTotal:null,originalBrokerCommission:null});
  for(const value of ['<img>','-1','Infinity','1e3','1.1234567',7,[],{}]){input.cargo[0].purchase={paidPerTon:value};assert.throws(()=>projectPlayerSnapshot(input));}
+});
+
+test('commission allowlist rejects hostile values and never invents data for old schemas',()=>{
+ const input=fresh();input.cargo[0].purchase={paidPerTon:'625',percent:'62.5',originalBrokerCommission:'125',privateReason:'SECRET'};
+ const result=projectPlayerSnapshot(input);assert.equal(result.cargo[0].purchase.originalBrokerCommission,'125');assert.equal(result.cargo[0].purchase.percent,'62.5');assert.ok(!JSON.stringify(result).includes('SECRET'));assert.ok(Object.isFrozen(result.cargo[0].purchase));
+ for(const version of [4,5]){input.version=version;assert.equal(projectPlayerSnapshot(input).cargo[0].purchase.originalBrokerCommission,null);}
+ input.version=6;for(const value of ['<img onerror=alert(1)>','-1','1e5','1.0000001',true,{},[],10]){input.cargo[0].purchase.originalBrokerCommission=value;assert.throws(()=>projectPlayerSnapshot(input),/Invalid/);}
+ input.cargo[0].purchase.originalBrokerCommission='0';assert.equal(projectPlayerSnapshot(input).cargo[0].purchase.originalBrokerCommission,'0');
 });

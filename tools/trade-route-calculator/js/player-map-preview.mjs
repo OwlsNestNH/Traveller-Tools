@@ -1,4 +1,4 @@
-import {informationButton} from './player-info.mjs?v=maintenance-20261020-98';
+import {informationButton} from './player-info.mjs?v=commission-20261020-99';
 if(new URLSearchParams(location.search).get('embedded')==='1')document.body.classList.add('embedded-reference');
 import {referenceOrigin,referenceWorld,referenceFacts,hexDistance,stagger,referenceSectorAreas} from './player-map-reference.mjs';
 import {territoryMarkup} from './map-territory.mjs';

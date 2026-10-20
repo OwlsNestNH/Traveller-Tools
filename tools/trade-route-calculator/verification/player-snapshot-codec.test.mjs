@@ -155,3 +155,16 @@ test('lot totals round exact unit cost times shown tons, independently of unit r
  for(const rounding of [100,1000]){const result=decodeSnapshotLink(encodeSnapshotLink(source,{rounding}));assert.equal(result.cargo[0].purchase.paidTotal,rounding===100?'1300':'2000');assert.equal(result.cargo[0].purchase.paidPerTon,rounding===100?'700':'1000');assert.equal(result.cargo[1].purchase.paidTotal,rounding===100?'1100':'2000');assert.equal(result.cargo[1].purchase.paidPerTon,null);assert.equal(result.cargo[2].purchase.paidTotal,'0');assert.equal(result.cargo[3].purchase,null);assert.deepEqual(prepareSnapshotForLink(result,{rounding}),result);}
  source.cargo[0].tons='999999999999999';assert.throws(()=>encodeSnapshotLink(source),/numeric range/);
 });
+
+test('codec7 carries independent original commission; old codecs preserve unknown without silent loss',()=>{
+ const input=clone();input.cargo=[{name:'Common Electronics',tons:'2',purchase:{retailPerTon:'1000',percent:'62.5',paidPerTon:'625',paidTotal:'1250',originalBrokerCommission:'125'}}];
+ const before=structuredClone(input),decoded=decodeSnapshotLink(encodeSnapshotLink(input));
+ assert.equal(decoded.cargo[0].purchase.originalBrokerCommission,'200');assert.equal(decoded.cargo[0].purchase.paidTotal,'1300');assert.equal(decoded.cargo[0].purchase.percent,'62.5');assert.deepEqual(input,before);
+ assert.throws(()=>measureSnapshotLink(input,{codecVersion:6}),/cannot represent Broker commission/);
+ input.cargo[0].purchase.originalBrokerCommission='0';assert.equal(decodeSnapshotLink(encodeSnapshotLink(input)).cargo[0].purchase.originalBrokerCommission,'0');assert.throws(()=>measureSnapshotLink(input,{codecVersion:6}),/cannot represent Broker commission/);
+ delete input.cargo[0].purchase.originalBrokerCommission;
+ for(const codecVersion of [5,6]){const packet=measureSnapshotLink(input,{codecVersion});const old=decodeSnapshotLink(PROPOSED_PREFIX+packet.payload);assert.equal(old.cargo[0].purchase.originalBrokerCommission,null);assert.equal(measureSnapshotLink(old,{codecVersion}).payload,packet.payload);}
+ input.cargo=Array.from({length:12},(_,i)=>({name:'Common Electronics',tons:String(i+1),purchase:{retailPerTon:'1000',percent:'62.5',paidPerTon:'625',originalBrokerCommission:String(i*125)}}));
+ input.buy.offers=Array.from({length:50},(_,i)=>({name:'Common Electronics',tons:String(i+1),creditsPerTon:'625'}));input.sell.offers=structuredClone(input.buy.offers);
+ const link=encodeSnapshotLink(input);assert.ok(link.length<8192);assert.deepEqual(decodeSnapshotLink(link),prepareSnapshotForLink(input));assert.throws(()=>encodeSnapshotLink(input,{maxUrlLength:500}),/No link generated/);
+});
