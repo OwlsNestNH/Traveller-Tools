@@ -9,3 +9,12 @@ test('projection validates hostile/oversized data and excludes non-public fields
 test('shared SVG is inert and deterministic for main and player projections',()=>{const p=value([[0,0],[1,0]]),before=structuredClone(p),project=(x,y)=>[x*100,y*100];const s=campaignTerritoryMarkup(p,project);assert.match(s,/pointer-events="none"/);assert.match(s,/#8754c9/);assert.match(s,/#d8b4ff/);assert.doesNotMatch(s,/data-action|onclick|script/);assert.equal(s,campaignTerritoryMarkup(value([[1,0],[0,0]]),project));assert.deepEqual(p,before);});
 
 test('sparse claim lists and sparse coordinates are rejected',()=>{for(const claims of [new Array(2),[[,1]],[[0,]]])assert.throws(()=>projectCampaignPolitics({version:1,claims,allegiances:[]}));});
+
+test('territory validator is the only non-cache change to released economic state source',async()=>{
+ const {readFile}=await import('node:fs/promises'),{createHash}=await import('node:crypto'),{withoutCampaignPoliticsValidation}=await import('./campaign-politics-source-guard.mjs');
+ const source=await readFile(new URL('../js/state.mjs',import.meta.url),'utf8');
+ const hash=s=>createHash('sha256').update(s.replace(/(^import [^\n]*?)\?v=[^'"]+/gm,'$1?v=<release>')).digest('hex');
+ const released='52005db750ee3a281b1c02e0ccd644d7c0b873178fe6d3037f539cbfd2252dc0';
+ assert.equal(hash(withoutCampaignPoliticsValidation(source)),released);
+ assert.notEqual(hash(withoutCampaignPoliticsValidation(source.replace('s.bank=','s.bank ='))),released,'Economic edits cannot bypass the existing source guard');
+});
