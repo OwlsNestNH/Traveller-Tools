@@ -1,5 +1,5 @@
-import {dashboardData} from './dashboard-data.mjs?v=buy-zoom-20261019-96';
-import {escapeHtml as esc,moneyHtml} from './display.mjs?v=buy-zoom-20261019-96';
+import {dashboardData} from './dashboard-data.mjs?v=cargo-sell-20261020-97';
+import {escapeHtml as esc,moneyHtml} from './display.mjs?v=cargo-sell-20261020-97';
 
 // Read-only presentation. Exact Credits remain BigInts until bounded ratios are
 // converted to SVG coordinates; display values always use the shared formatter.

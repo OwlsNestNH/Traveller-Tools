@@ -1,5 +1,5 @@
 import * as A from './amounts.mjs';
-import * as R from './rules.mjs?v=buy-zoom-20261019-96';
+import * as R from './rules.mjs?v=cargo-sell-20261020-97';
 
 // One referee override boundary: validate normalized entries and optionally
 // quote using the submitted roll/legality, then apply to a caller-owned offer.

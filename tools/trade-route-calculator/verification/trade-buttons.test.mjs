@@ -66,10 +66,10 @@ try{
    await page.screenshot({path:artifacts+`/trade-search-${kind}-${size.width}.png`,fullPage:true});
   }
   // Related row/selection paths use the same recovery rather than a hidden error.
-  for(const name of ['lot-sell','sale']){
+  for(const name of ['single','sale']){
    const before=await raw();await browse();await existingSell(page);
    if(name==='sale'){await action('sale-all').click();await action('sale').click();}
-   else await action(name,'lot-recorded').click();
+   else {await page.locator('[data-lot="lot-recorded"]').check();await action('sale').click();}
    await title('Trade at the current system');await page.locator('#modal-submit').click();
    await title('Prepare sale · buyer regression');await dismiss();assert.equal(await raw(),before);
    await action('sale-clear').click();

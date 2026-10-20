@@ -12,9 +12,12 @@ function fixture(){
 test('Sell keeps separate lots, maximum defaults, unknown history and review-only actions',()=>{
  const h=harness(fixture()),before=JSON.stringify(h.persisted()),html=h.api.cargoPanel(false);
  assert.match(html,/data-sale-quantity="one" value="2.5"/);assert.match(html,/data-sale-quantity="two" value="5"/);
- assert.match(html,/Paid: Not recorded/);assert.match(html,/Sell Selected/);assert.match(html,/Select all cargo/);
- assert.match(html,/data-action="lot-audit"/);assert.match(html,/data-action="lot-correct"/);
- assert.match(html,/including selected lots hidden by this search/);
+ assert.match(html,/Not recorded/);assert.match(html,/data-action="buyer-search"[^>]*>Find buyer/);assert.match(html,/Select all cargo/);assert.match(html,/Clear selection/);
+ assert.doesNotMatch(html,/data-action="sale"/);
+ h.api.setSelected(['one']);const selectedHtml=h.api.cargoPanel(false);
+ assert.match(selectedHtml,/data-action="sale"[^>]*>Review sale/);assert.doesNotMatch(selectedHtml,/data-action="buyer-search"/);
+ assert.match(html,/data-action="lot-audit"/);assert.doesNotMatch(html,/data-action="lot-correct"|data-action="lot-sell"/);
+ assert.doesNotMatch(html,/sale-selection-preview|Cargo projected/);
  assert.equal(JSON.stringify(h.persisted()),before);assert.equal(h.calls.priceDice,0);assert.equal(h.calls.saves,0);
 });
 test('quantity edits are session-only and follow the same lot into review without rolling',()=>{

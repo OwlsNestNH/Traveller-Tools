@@ -1,5 +1,6 @@
 // Arbitrary referee cargo is deliberately separate from commodity trade lots.
 import * as A from './amounts.mjs';
+import {parseDate} from './calendar.mjs';
 const whole=(value,label,{positive=false}={})=>{const text=String(value??'');if(!/^\d+$/.test(text)||positive&&BigInt(text)===0n)throw Error(label+' must be '+(positive?'positive ':'nonnegative ')+'whole numbers.');return String(BigInt(text));};
 const description=value=>{const text=String(value??'').trim();if(!text)throw Error('Item / description required.');return text;};
 export function otherCargoRows(state){return state.otherCargo??[];}
@@ -19,8 +20,10 @@ export function validateOtherCargo(state){
 export function refereeTradeInput(input){
  const quantity=whole(input.quantity,'Tons',{positive:true}),unitPrice=whole(input.purchasePrice,'Purchase cost per ton');
  if(!/^[1-6][1-6]$/.test(input.commodity))throw Error('Choose a trade commodity.');
- const total=String(BigInt(quantity)*BigInt(unitPrice));
- return {commodity:input.commodity,description:description(input.description),quantity,basis:total,goodsValue:total,illegal:!!input.illegal,audit:{manual:true,price:{unitPrice,audit:{referee:true}},reason:String(input.reason??'').trim()}};
+ const total=String(BigInt(quantity)*BigInt(unitPrice)),worldName=String(input.acquisitionWorld??'').trim(),dateLabel=String(input.acquisitionDate??'').trim();
+ if(worldName.length>200)throw Error('Acquisition location is too long.');if(dateLabel)parseDate(dateLabel);
+ const acquisition={...(worldName?{worldName}:{}),...(dateLabel?{dateLabel}:{})};
+ return {commodity:input.commodity,description:description(input.description),quantity,basis:total,goodsValue:total,illegal:!!input.illegal,audit:{manual:true,...(Object.keys(acquisition).length?{acquisition}:{}),price:{unitPrice,audit:{referee:true}},reason:String(input.reason??'').trim()}};
 }
 export function addOtherCargo(state,input,{uid}){
  const reason=String(input.reason??'').trim();if(!reason)throw Error('Referee reason required.');
@@ -40,4 +43,12 @@ export function sellOtherCargo(state,id,saleValue,{uid,note}){
  const total=whole(saleValue,'Sale value');state.otherCargo=state.otherCargo.filter(x=>x.id!==id);
  note(state,'Other cargo sale',BigInt(total),{otherCargoId:id,audit:{description:item.description,quantity:item.quantity,saleValue:total,wholeLot:true}});
  state.events.push({id:uid(),label:'Other cargo sale audit',hours:state.hours,world:state.actual,item:structuredClone(item),saleValue:total});return total;
+}
+
+// Per-item deletion deliberately bypasses bulk normalization and all sale paths.
+export function deleteOtherCargo(state,id,reason,{uid}){
+ const item=otherCargoRows(state).find(x=>x.id===id);if(!item)throw Error('Other cargo no longer aboard.');
+ reason=String(reason??'').trim();if(!reason)throw Error('Deletion reason required.');
+ state.otherCargo=state.otherCargo.filter(x=>x.id!==id);
+ state.events.push({id:uid(),label:'Other cargo deletion',hours:state.hours,world:state.actual,reason,before:structuredClone(item),after:null});
 }

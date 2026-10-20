@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=buy-zoom-20261019-96';
+import {ruleInfo} from './rule-references.mjs?v=cargo-sell-20261020-97';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={

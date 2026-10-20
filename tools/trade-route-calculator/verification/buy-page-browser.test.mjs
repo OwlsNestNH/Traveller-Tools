@@ -44,7 +44,7 @@ try{
   await page.locator('#modal-submit').scrollIntoViewIfNeeded();for(const id of ['modal-cancel','modal-submit']){const r=await page.locator('#'+id).boundingBox();assert.ok(r.y>=0&&r.y+r.height<=900,'Purchase '+id+' reachable in viewport');}await page.screenshot({path:artifacts+'buy-purchase-footer-'+width+'.png'});
   assert.equal(await raw(),bytes);await page.locator('#modal-close').click();
   await click('lot-sell','lot-recorded');assert.equal(await page.locator('.trade-subtabs .active').textContent(),'Sell');assert.equal(await page.locator('#modal').evaluate(el=>el.open),false);assert.equal(await page.locator('[data-lot="lot-recorded"]').isChecked(),true);assert.equal(await raw(),bytes);await screenshot('sell-navigation');
-  await click('sale');await page.getByRole('heading',{name:'Find a buyer',exact:true}).waitFor();assert.equal(await raw(),bytes);await page.locator('#modal-cancel').click();await click('trade-side','buy');
+  await click('buyer-search');await page.getByRole('heading',{name:'Find a buyer',exact:true}).waitFor();assert.equal(await raw(),bytes);await page.locator('#modal-cancel').click();await click('trade-side','buy');
   await click('buy',original.id);await page.locator('#modal [name="quantity"]').fill('1');await page.locator('#modal-submit').dblclick();await page.locator('#modal').waitFor({state:'hidden'});
   const purchased=JSON.parse(await raw());assert.equal(purchased.revision,f.state.revision+1);assert.equal(purchased.lots.length,f.state.lots.length+1);assert.equal(purchased.snapshots[0].offers[0].remaining,'11');
   // A blank local override uses the generated skill in both search and prices;

@@ -52,7 +52,7 @@ async function submit(page,label,nextTitle=null){if(await tradeLabel(page,label)
 }
 async function dismiss(page){await page.locator('#modal-cancel').click();await page.locator('#modal').waitFor({state:'hidden'});}
 async function reload(page){await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();assert.equal(await page.getByRole('heading',{name:'Recover saved campaign',exact:true}).count(),0);}
-async function openSale(page){await tab(page,'Trade');await existingSell(page);await action(page,'lot-sell','legacy').click();await title(page,'Prepare sale · Audit buyer');}
+async function openSale(page){await tab(page,'Trade');await existingSell(page);await page.locator('[data-lot="legacy"]').check();await action(page,'sale').click();await title(page,'Prepare sale · Audit buyer');}
 async function undo(page){await tab(page,'History');await action(page,'undo').click();}
 const sales=state=>state.ledger.filter(e=>e.type==='Sale');
 async function screenshot(page,result,label){const name='trade-audit-'+result.id+'-'+label+'.png';await page.screenshot({path:join(artifacts,name),fullPage:true});result.screenshots.push(name);}

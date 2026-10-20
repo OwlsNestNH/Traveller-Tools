@@ -17,7 +17,7 @@ export async function tradeLabel(page,label){
  if(label==='Find buyer'||label==='Get sale offers'){
   const sell=page.locator('.trade-subtabs [data-action="trade-side"][data-arg="sell"]');
   if(await sell.count()&&!await sell.evaluate(el=>el.classList.contains('active')))await sell.click();
-  if(label==='Get sale offers'){await page.locator('[data-action="sale"]').filter({visible:true}).first().click();return true;}
+  if(label==='Get sale offers'){await page.locator('[data-action="sale"],[data-action="buyer-search"]').filter({visible:true}).first().click();return true;}
  }
  if(label==='Find supplier'&&await page.locator('#supplier-form').count())return true;
  if(['Cancel','Close'].includes(label)&&!await page.locator('#modal').evaluate(el=>el.open)&&await page.locator('#supplier-form').count()){

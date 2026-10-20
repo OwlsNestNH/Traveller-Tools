@@ -301,7 +301,7 @@ async function run(stops){
 
   // The compact cargo links use the same original detailed audit flows. Missing
   // dice are deliberately absent in two fixture lots and must stay absent.
-  for(const [id,pattern]of [['lot-recorded',/2 \+ 4 \+ 6 = 12/],['lot-legacy',/Entered total: 11 \(individual dice not recorded\)/],['lot-opening',/no dice or modifiers are inferred from its cost basis/]]){
+  for(const [id,pattern]of [['lot-recorded',/2 \+ 4 \+ 6 = 12/],['lot-legacy',/Entered total: 11 \(individual dice not recorded\)/],['lot-opening',/No price rolls or modifiers are inferred from remaining costs/]]){
    await tab('Cargo');await page.locator('[data-action="lot-audit"][data-arg="'+id+'"]').first().click();
    const body=await page.locator('#modal-body').textContent();assert.match(body,pattern);
    if(id==='lot-opening')assert.doesNotMatch(body,/3D price roll|2 \+ 4 \+ 6/);

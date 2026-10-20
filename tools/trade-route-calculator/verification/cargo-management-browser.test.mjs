@@ -40,11 +40,11 @@ try{
   }
   await page.locator('.cargo-management').screenshot({path:artifacts+'cargo-management-'+width+'.png'});
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),'No page-level overflow at '+width);
-  await click('lot-sell','lot-legacy');
+  await click('tab','Trade');await click('trade-side','sell');await page.locator('[data-lot="lot-legacy"]').check();
   assert.equal(await page.locator('[data-lot]:checked').count(),1);
   assert.equal(await page.locator('[data-lot]:checked').getAttribute('data-lot'),'lot-legacy');
   assert.equal(await page.locator('#modal').evaluate(el=>el.open),false,'Cargo Sell only opens Trade Sell');await unchanged();
-  await click('lot-sell','lot-legacy');await page.getByRole('heading',{name:'Find a buyer',exact:true}).waitFor();
+  await click('buyer-search');await page.getByRole('heading',{name:'Find a buyer',exact:true}).waitFor();
   await page.locator('#modal-cancel').click();await unchanged();
   await click('tab','Cargo');assert.equal(await page.locator('[data-management-lot]').count(),3);await unchanged();
   for(const kind of ['empty','speculative','freight','mail','luggage','support']){
