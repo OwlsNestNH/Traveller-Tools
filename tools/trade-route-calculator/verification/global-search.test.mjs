@@ -192,3 +192,13 @@ test('Escape in the search input dismisses once and suppresses native search-fie
   assert.equal(dismissed,1);assert.equal(prevented,1);assert.equal(stopped,1);
  }finally{globalThis.document=original;}
 });
+test('world lookup distinguishes successful empty result, unsupported data and transport failure',async()=>{
+ const good={Name:'Synthetic',Sector:'Synthetic',Hex:'0101',WorldX:0,WorldY:0,UWP:'A788899-C',PBG:'703'};
+ for(const [data,code]of [[{Worlds:[]},'not-found'],[{},'unsupported'],[null,'unsupported'],[{Worlds:{}},'unsupported'],[{Worlds:[{...good,Hex:'0202'}]},'unsupported'],[{Worlds:[{Hex:'0101'}]},'unsupported'],[{Worlds:[good,good]},'unsupported']])await withFetch(async()=>response(data),async m=>{await assert.rejects(m.loadWorld('Synthetic','0101'),e=>e.code===code&&e.message.includes(code==='not-found'?'lookup succeeded':'unsupported'));});
+ await withFetch(async()=>response({Worlds:[good]}),async m=>assert.equal((await m.loadWorld('Synthetic','0101')).id,'0,0'));
+ for(const mock of [async()=>({ok:false,status:503}),async()=>{throw TypeError('Network unavailable');}])await withFetch(mock,async m=>{await assert.rejects(m.loadWorld('Synthetic','0101'),e=>e.code==='failed');await assert.rejects(m.searchWorlds('Synthetic'),e=>e.code==='failed');});
+ await withFetch(async()=>({ok:true,json:async()=>{throw new SyntaxError('Invalid JSON');}}),async m=>assert.rejects(m.loadWorld('Synthetic','0101'),e=>e.code==='unsupported'));
+});
+test('nonempty unsupported search results cannot masquerade as no matching world',async()=>{
+ for(const Items of [[{Sector:{Name:'Only a sector'}}],[null],[{}]])await withFetch(async()=>response({Results:{Items}}),async m=>assert.rejects(m.searchWorlds('Unsupported'),e=>e.code==='unsupported'));
+});

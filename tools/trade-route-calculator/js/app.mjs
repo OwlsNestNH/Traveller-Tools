@@ -1690,7 +1690,7 @@ function editCampaignTerritory(){
 function findWorld(){
  let picker,selectionVersion=0;
  const claimIntent=()=>{const version=++selectionVersion;return()=>version===selectionVersion;};
- const opened=modal('Find a world','<div id="global-world-search"></div><div id="find-world"></div><p class="help">Browse to inspect this world, or use it as your ship’s starting position.</p><button type="button" id="choose-starting-world">Use as starting world</button>',async(f,isCurrent)=>{
+ const opened=modal('Find a world','<div id="global-world-search"></div><div id="find-world"></div><p class="help">Browse to inspect this world, or use it as your ship’s starting position. For a loaded world, World override still allows manual entry of its effective UWP.</p><button type="button" id="choose-starting-world">Use as starting world</button>',async(f,isCurrent)=>{
   const ownsIntent=claimIntent(),current=()=>isCurrent()&&ownsIntent();
   try{const w=await picker.resolve();if(!current())return false;const rows=await M.nearby(w,12);if(!current())return false;
    rows.forEach(x=>known[x.id]=x);known[w.id]=w;view=w.id;render();scheduleMapAreas();

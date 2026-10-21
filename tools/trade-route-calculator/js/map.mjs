@@ -5,7 +5,17 @@ async function get(path,params,{signal}={}){const url=new URL(path,API);url.sear
 // Traveller Map World.cs treats Unabsorbed (U) as Amber and Forbidden (F) as Red.
 // Normalize API data only; saved referee overrides and historical audits stay intact.
 export function normalize(w){if(!Number.isInteger(w.WorldX)||!Number.isInteger(w.WorldY)||!w.Sector||!/^\d{4}$/.test(w.Hex))throw Error('Traveller Map world is missing coordinates');return {id:w.WorldX+','+w.WorldY,name:w.Name||w.Hex,sector:w.Sector,hex:w.Hex,x:w.WorldX,y:w.WorldY,uwp:w.UWP,zone:['A','U'].includes(String(w.Zone||'').toUpperCase())?'Amber':['R','F'].includes(String(w.Zone||'').toUpperCase())?'Red':'Safe',gasGiants:w.PBG&&w.PBG[2]!=='?'?parseInt(w.PBG[2],16):null,raw:structuredClone(w)};}
-export async function loadWorld(sector,hex){if(!sector.trim()||!/^\d{4}$/.test(hex))throw Error('Enter a sector and four-digit hex');const data=await get('jumpworlds',{sector,hex,jump:0});if(!Array.isArray(data.Worlds)||!data.Worlds.length)throw Error('No world at that location');return normalize(data.Worlds[0]);}
+export class WorldLookupError extends Error{constructor(code,message){super(message);this.name='WorldLookupError';this.code=code;}}
+const unsupported=message=>new WorldLookupError('unsupported',message+' (unsupported response). Retry the lookup; no world was selected.');
+async function lookupData(path,params,options){try{return await get(path,params,options);}catch(error){if(error?.name==='AbortError')throw error;if(error instanceof SyntaxError)throw unsupported('Traveller Map did not return readable world data');throw new WorldLookupError('failed','World lookup failed: '+(error?.message||'network unavailable')+'. Check the connection and retry.');}}
+export async function loadWorld(sector,hex){
+ if(!sector.trim()||!/^\d{4}$/.test(hex))throw Error('Enter a sector and four-digit hex');
+ const data=await lookupData('jumpworlds',{sector,hex,jump:0});
+ if(!Array.isArray(data?.Worlds))throw unsupported('Invalid world-list format');
+ if(!data.Worlds.length)throw new WorldLookupError('not-found','No world at that location. The lookup succeeded; check the sector and hex.');
+ if(data.Worlds.length!==1||data.Worlds[0]?.Hex!==hex)throw unsupported('World result does not match the requested hex');
+ try{return normalize(data.Worlds[0]);}catch{throw unsupported('World result is missing usable coordinates');}
+}
 export async function nearby(world,radius=6){const data=await get('jumpworlds',{x:world.x,y:world.y,jump:radius});if(!Array.isArray(data.Worlds))throw Error('Invalid world-list response');return data.Worlds.map(normalize);}
 export function distance(a,b){const az=a.y-Math.floor(a.x/2),bz=b.y-Math.floor(b.x/2),dx=a.x-b.x,dz=az-bz;return Math.max(Math.abs(dx),Math.abs(dz),Math.abs(dx+dz));}
 export function fuel(world,ship,data){if(world.emptySpace)return false;if(world.fuelOverride===true)return true;if(world.fuelOverride===false)return false;try{const u=parseUWP(world.overrideUWP||world.uwp,data);if(['A','B','C','D'].includes(u.starport))return true;return !!ship.scoops&&(world.gasGiants>0||world.accessibleWater===true||(['D','E'].includes(u.starport)&&u.hydrographics>0));}catch{return false;}}
@@ -70,15 +80,16 @@ export async function loadMapHex(x,y,anchor){
 export async function searchWorlds(query,{signal}={}){
  query=String(query).trim();
  if(!query)return {worlds:[],limited:false,missingNames:0};
- const data=await get('search',{q:query,types:'worlds'},{signal});
- if(!Array.isArray(data.Results?.Items))throw Error('Invalid planet-search response');
+ const data=await lookupData('search',{q:query,types:'worlds'},{signal});
+ if(!Array.isArray(data?.Results?.Items))throw unsupported('Invalid planet-search response');
  const unique=new Map();
  for(const item of data.Results.Items){
-  const w=item.World;if(!w)continue;
-  if(typeof w.Name!=='string'||typeof w.Sector!=='string'||!w.Name.trim()||!w.Sector.trim()||!Number.isInteger(w.SectorX)||!Number.isInteger(w.SectorY)||!Number.isInteger(w.HexX)||!Number.isInteger(w.HexY))throw Error('Invalid planet-search location');
-  const hex=String(w.HexX).padStart(2,'0')+String(w.HexY).padStart(2,'0'),subsector=subsectorForHex(hex),sector=w.Sector.trim();
+  const w=item?.World;if(!w)continue;
+  if(typeof w.Name!=='string'||typeof w.Sector!=='string'||!w.Name.trim()||!w.Sector.trim()||!Number.isInteger(w.SectorX)||!Number.isInteger(w.SectorY)||!Number.isInteger(w.HexX)||!Number.isInteger(w.HexY))throw unsupported('Invalid planet-search location');
+  const hex=String(w.HexX).padStart(2,'0')+String(w.HexY).padStart(2,'0');let subsector;try{subsector=subsectorForHex(hex);}catch{throw unsupported('Invalid planet-search hex outside sector bounds');}const sector=w.Sector.trim();
   unique.set(w.SectorX+','+w.SectorY+'|'+hex,{name:w.Name,sector,hex,subsector,sectorX:w.SectorX,sectorY:w.SectorY});
  }
+ if(data.Results.Items.length&&!unique.size)throw unsupported('Planet search returned no supported world records');
  const worlds=[...unique.values()],names=new Map(),key=w=>w.sectorX+','+w.sectorY,pending=[...new Map(worlds.map(w=>[key(w),w])).values()];
  // Keep global searches polite even when a broad name spans many sectors.
  async function worker(){while(pending.length){

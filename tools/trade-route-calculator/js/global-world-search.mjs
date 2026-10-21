@@ -20,9 +20,10 @@ export function createPlanetSearchSession({search=searchWorlds,resolve=loadWorld
   render({rows,busy,message:'Searching all sectors…'});
   try{
    const result=await search(query,{signal:controller.signal});if(retired(version,ownsIntent))return;
+   if(!Array.isArray(result?.worlds))throw Error('Unsupported planet-search response');
    rows=result.worlds;busy=false;
    const count=rows.length;
-   render({rows,busy,message:(count?count+' planet'+(count===1?'':'s')+' found. Select one to browse.':'No planets found. Try another name.')+(result.limited?' Showing up to 160 matches; refine the name for a more complete result.':'')+(result.missingNames?' Some subsector names are unavailable; their letter is shown.':'')});
+   render({rows,busy,message:(count?count+' planet'+(count===1?'':'s')+' found. Select one to browse.':'No planets found for this name. The lookup succeeded; try another name.')+(result.limited?' Showing up to 160 matches; refine the name for a more complete result.':'')+(result.missingNames?' Some subsector names are unavailable; their letter is shown.':'')});
   }catch(e){if(retired(version,ownsIntent))return;busy=false;render({rows:[],busy,message:'Could not search planets: '+e.message+'. Try Search planets again.',error:true});}
  }
  function input(value){const ownsIntent=invalidate();query=String(value).trim();rows=[];if(!isCurrent())return;prompt();if(query.length>=2){render({rows:[],busy:false,message:'Ready to search all sectors…'});timer=setTimeout(()=>{if(ownsIntent())void run();},delay);}}
