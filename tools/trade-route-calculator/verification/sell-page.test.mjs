@@ -9,14 +9,14 @@ function fixture(){
  s.snapshots=[{id:'buyer',kind:'buyer',worldId:s.actual,party:'synthetic|buyer',partyName:'Synthetic buyer',hours:0,startedHours:0,success:true,criminal:false,options:{skill:1,counterparty:2},offers:[]}];
  return s;
 }
-test('Sell keeps separate lots, maximum defaults, unknown history and review-only actions',()=>{
- const h=harness(fixture()),before=JSON.stringify(h.persisted()),html=h.api.tradeToolbar()+h.api.cargoPanel(false);
- assert.match(html,/data-sale-quantity="one" value="2.5"/);assert.match(html,/data-sale-quantity="two" value="5"/);
- assert.match(html,/Not recorded/);assert.match(html,/data-action="buyer-search"[^>]*>Find buyer/);assert.match(html,/Select all cargo/);assert.match(html,/Clear selection/);
+test('Sell keeps separate lots, maximum defaults, unknown quotes and explicit inline actions',()=>{
+ const h=harness(fixture()),before=JSON.stringify(h.persisted()),html=h.api.tradeToolbar()+h.api.sellPanel();
+ assert.match(html,/data-sale-quantity="one"[^>]*value="2.5"/);assert.match(html,/data-sale-quantity="two"[^>]*value="5"/);
+ assert.match(html,/Not negotiated/);assert.match(html,/data-action="buyer-search"[^>]*>Find buyer/);assert.match(html,/Select all cargo/);assert.match(html,/Clear selection/);
  assert.doesNotMatch(html,/data-action="sale"/);
- h.api.setSelected(['one']);const selectedHtml=h.api.tradeToolbar()+h.api.cargoPanel(false);
+ h.api.setSelected(['one']);const selectedHtml=h.api.tradeToolbar()+h.api.sellPanel();
  assert.match(selectedHtml,/data-action="sale"[^>]*>Review sale/);assert.doesNotMatch(selectedHtml,/data-action="buyer-search"/);
- assert.match(html,/data-action="lot-audit"/);assert.doesNotMatch(html,/data-action="lot-correct"|data-action="lot-sell"/);
+ assert.match(html,/data-action="inline-sale-info"/);assert.match(html,/data-action="inline-sell"/);assert.match(html,/data-action="lot-sell"/);assert.doesNotMatch(html,/data-action="lot-correct"/);
  assert.doesNotMatch(html,/sale-selection-preview|Cargo projected/);
  assert.equal(JSON.stringify(h.persisted()),before);assert.equal(h.calls.priceDice,0);assert.equal(h.calls.saves,0);
 });
@@ -30,11 +30,11 @@ test('quantity edits are session-only and follow the same lot into review withou
 });
 test('new revision retires unsaved quantities and read-only edits do not change them',()=>{
  const h=harness(fixture());h.dom.dispatch('input',element({'data-sale-quantity':'one',value:'1'}));
- assert.match(h.api.cargoPanel(false),/data-sale-quantity="one" value="1"/);
+ assert.match(h.api.sellPanel(),/data-sale-quantity="one"[^>]*value="1"/);
  h.store.editable=false;h.dom.dispatch('input',element({'data-sale-quantity':'one',value:'2'}));
- assert.match(h.api.cargoPanel(false),/data-sale-quantity="one" value="1"/);
+ assert.match(h.api.sellPanel(),/data-sale-quantity="one"[^>]*value="1"/);
  const next=structuredClone(h.api.state);next.revision++;h.api.setState(next);
- assert.match(h.api.cargoPanel(false),/data-sale-quantity="one" value="2.5"/);assert.equal(h.calls.saves,0);
+ assert.match(h.api.sellPanel(),/data-sale-quantity="one"[^>]*value="2.5"/);assert.equal(h.calls.saves,0);
 });
 test('turning automatic taxes off retires an open review and reopens with a visible zero GM rate',async()=>{
  const s=fixture();s.settings.tax=true;s.worlds[s.actual].uwp='A788879-C';const h=harness(s);h.api.setSelected(['two']);h.api.beginSale();
