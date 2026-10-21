@@ -341,14 +341,14 @@ async function pointer(page, selector, clickCount = 1) {
  await locator.scrollIntoViewIfNeeded(); const box = await locator.boundingBox(); assert.ok(box);
  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2, {clickCount, delay: 20});
 }
-async function fill(page, name, value) {const input = page.locator('#modal [name="' + name + '"]'); await input.fill(String(value)); await input.blur();}
+async function fill(page, name, value) {const input = page.locator('#modal [name="' + name + '"]'); if(name==='fee'&&await input.getAttribute('type')==='hidden'){assert.equal(Number(value),0,'Only a zero commission may be hidden');assert.equal(await input.inputValue(),'0');return;}await input.fill(String(value)); await input.blur();}
 async function prepare(page, scenario, before, {loops = false, select = true, network = null} = {}) {
  if (select) {await existingSell(page); await action(page, 'sale-all').click(); await tab(page, scenario.map ? 'Overview' : 'Trade'); if(!scenario.map)await action(page, 'trade-side', 'buy').click();}
  const initialCalls = (await gate(page)).totalCalls;
  const spec = specification(before, scenario);
  const enter = async () => {
   if (scenario.map) await page.evaluate(() => purchaseGate.dispatch('buy', 'purchase-offer')); else await action(page, 'buy', 'purchase-offer').click(); await page.locator('#modal-title').filter({hasText: /^Review purchase ·/}).waitFor();
-  assert.equal(await page.locator('#modal [name="fee"]').inputValue(), String(before.snapshots[0].options.local ? (scenario.illegal ? 20 : 10) : 0), 'Saved local-broker legality sets default fee');
+  assert.equal(await page.locator('#modal [name="fee"]').inputValue(), String(before.snapshots[0].options.local ? 10 : 0), 'Saved local-broker legality sets default fee');
   await fill(page, 'quantity', scenario.rounded ? '1.2' : spec.quantity); await fill(page, 'fee', spec.args.feePercent); await fill(page, 'description', spec.args.description);
   if (scenario.insured) {
    await page.locator('#modal [name="insure"]').check(); await page.locator('#modal [name="coverage"]').selectOption('70'); await page.locator('#modal [name="insuranceLegs"]').selectOption('1');

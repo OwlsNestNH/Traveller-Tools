@@ -37,7 +37,7 @@ function fixture(){
  s.name='Disposable trade complication verification';
  s.settings={...s.settings,profit:100,tax:false,insurance:false,creditStep:1};
  s.contracts=[];s.policies=[];s.undo=[];
- const options={side:'buy',skill:2,counterparty:1,creditStep:1};
+ const options={side:'buy',local:true,skill:2,counterparty:1,creditStep:1};
  const make=(id,description,dice,result)=>{
   let index=0;
   const q=R.quote(good,world,{...options,...(dice?{}:{rollTotal:9})},core,()=>dice[index++]);

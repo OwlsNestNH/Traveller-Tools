@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
+import * as S from '../js/state.mjs';
 import {createRequire} from 'node:module';
 import {mkdir,readFile} from 'node:fs/promises';
 import {guiFixture,campaignKey} from './fixtures/gui-parity.mjs';
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const browser=await chromium.launch({headless:true}),base=process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/';
 try{for(const width of [1440,390,320]){
- const f=guiFixture();f.state.snapshots[0].options.local=true;f.state.bank='10000000';f.state.ship.capacity='1000';
+ const f=guiFixture();f.state.snapshots[0].options.local=true;f.state.bank='10000000';f.state.ship.capacity='1000';S.addOtherCargo(f.state,{description:'Synthetic spare fittings',quantity:'1',saleValue:'300',reason:'Synthetic fixture'});f.state.otherCargo[0].id='synthetic-other';S.validate(f.state);
  const context=await browser.newContext({viewport:{width,height:1000}});
  await context.addInitScript(({key,bytes})=>{if(!localStorage.getItem(key))localStorage.setItem(key,bytes);const native=Storage.prototype.setItem;globalThis.failBuy=false;Storage.prototype.setItem=function(k,v){if(k===key&&globalThis.failBuy){globalThis.failBuy=false;throw Error('Synthetic prewrite failure');}return Reflect.apply(native,this,[k,v]);};},{key:campaignKey,bytes:JSON.stringify(f.state)});
  await context.route('https://travellermap.com/**',r=>{const u=new URL(r.request().url());return r.fulfill({json:u.pathname.endsWith('/universe')?f.universe:u.pathname.endsWith('/metadata')?f.metadata:u.pathname.endsWith('/sec')?f.sec:{Worlds:f.apiWorlds}});});
@@ -17,7 +18,7 @@ try{for(const width of [1440,390,320]){
  await page.evaluate(()=>globalThis.failBuy=true);await row.locator('[data-action="inline-buy"]').click();await row.locator('[role="status"]').filter({hasText:/fixed/}).waitFor();assert.deepEqual(await read(),before);assert.equal(await qty.getAttribute('readonly'),'');
  await row.locator('[data-action="inline-buy"]').click();await page.waitForFunction(({key,revision})=>JSON.parse(localStorage.getItem(key)).revision===revision+1,{key:campaignKey,revision:before.revision});
  const saved=await read(),lot=saved.lots.at(-1);assert.equal(lot.quantity,'2');assert.equal(lot.audit.feePercent,7.5);assert.equal(saved.lots.length,before.lots.length+1);assert.equal(saved.actual,before.actual);assert.equal(saved.ledger.filter(x=>x.type==='Purchase').length,before.ledger.filter(x=>x.type==='Purchase').length+1);
- assert.ok(await page.locator('.cargo-table').count());await page.locator('[data-action="trade-side"][data-arg="sell"]').click();assert.ok(await page.locator('.sale-table').count());await page.locator('#tabs [data-action="tab"][data-arg="Cargo"]').click();assert.ok(await page.locator('.cargo-management-scroll').count());
+ assert.ok(await page.locator('.cargo-table').count());assert.equal(await page.locator('[data-trade-other="synthetic-other"]').count(),1);await page.locator('[data-action="trade-side"][data-arg="sell"]').click();assert.ok(await page.locator('.sale-table').count());assert.equal(await page.locator('[data-trade-other="synthetic-other"]').count(),1);await page.locator('#tabs [data-action="tab"][data-arg="Cargo"]').click();assert.ok(await page.locator('.cargo-management-scroll').count());assert.equal(await page.locator('[data-management-other="synthetic-other"]').count(),1);
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);assert.deepEqual(errors,[]);
  await mkdir(new URL('../verification-artifacts/',import.meta.url),{recursive:true});await page.locator('[data-action="tab"][data-arg="Trade"]').click();await page.locator('[data-action="trade-side"][data-arg="buy"]').click();await page.screenshot({path:new URL(`../verification-artifacts/inline-buy-${width}.png`,import.meta.url).pathname,fullPage:true});await context.close();console.log('Inline purchase passed '+width);
 }
