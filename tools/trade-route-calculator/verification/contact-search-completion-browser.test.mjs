@@ -54,7 +54,7 @@ function expectedFrames(s) {
  return 2;
 }
 const screenshotOptions = Object.freeze({type: 'jpeg', quality: 65, caret: 'initial'});
-const successPattern = /^(?:(?:supplier|buyer) search: Synthetic (?:supplier|buyer) saved\.|Buyer found\. Select cargo, then Get sale offers\.)$/;
+const successPattern = /^(?:(?:supplier|buyer) search: Synthetic (?:supplier|buyer) saved\.|Buyer found\. Offers are ready for eligible cargo; choose a quantity and Sell to confirm\.)$/;
 const hash = value => createHash('sha256').update(value).digest('hex');
 const raw = page => page.evaluate(key => localStorage.getItem(key), KEY);
 const read = async page => JSON.parse(await raw(page));
@@ -440,7 +440,7 @@ async function successful(page, result, before, scenario) {
  const snapshot = await gate(page), saved = await read(page), snap = saved.snapshots.at(-1);
  assert.equal(await raw(page), snapshot.candidates.at(-1)); assert.equal(snapshot.storage.writes, 1); assert.equal(snapshot.durableToken, false); assert.equal(snapshot.reloadRequired, false); assert.equal(await page.locator('#modal-error').textContent(), '');
  assert.equal(await page.locator('#tabs [aria-current="page"]').textContent(), 'Trade', 'Owned completion publishes the Trade tab');
- assert.equal(snapshot.semantic.dice, snapshot.baseline.dice + (handoff ? 3 : 0), 'Accepted save/retry never rerolls; only requested buyer sale quote rolls once after success');
+ assert.equal(snapshot.semantic.dice, snapshot.baseline.dice + (scenario.kind==='buyer'&&!scenario.unsuccessful&&!legalMismatch ? 3 : 0), 'Accepted search terms never reroll; each eligible lot gets one quote only after successful save');
  if (scenario.kind === 'supplier') assert.equal(await page.locator('#snapshot-select').inputValue(), snap.id, 'Correct saved supplier snapshot is selected');
  if(legalMismatch){assert.equal(await page.locator('#message').textContent(),'Illegal cargo needs a black-market buyer.');assert.equal(snapshot.reloadRequired,false);assert.equal(snapshot.editable,true);}
  else if (!handoff) assert.match(await page.locator('#message').textContent(), successPattern);

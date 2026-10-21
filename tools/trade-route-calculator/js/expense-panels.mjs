@@ -1,16 +1,16 @@
-import {ruleInfo} from './rule-references.mjs?v=world-search-20261021-117';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=world-search-20261021-117';
-import {passengerShip} from './passengers.mjs?v=world-search-20261021-117';
+import {ruleInfo} from './rule-references.mjs?v=compact-trade-20261021-118';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=compact-trade-20261021-118';
+import {passengerShip} from './passengers.mjs?v=compact-trade-20261021-118';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=world-search-20261021-117';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=world-search-20261021-117';
-import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=world-search-20261021-117';
-import {roomCounts} from './accommodation.mjs?v=world-search-20261021-117';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=world-search-20261021-117';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=world-search-20261021-117';
-import {creditStep} from './rounding.mjs?v=world-search-20261021-117';
-import {roll} from './rules.mjs?v=world-search-20261021-117';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=world-search-20261021-117';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=compact-trade-20261021-118';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=compact-trade-20261021-118';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=compact-trade-20261021-118';
+import {roomCounts} from './accommodation.mjs?v=compact-trade-20261021-118';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=compact-trade-20261021-118';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=compact-trade-20261021-118';
+import {creditStep} from './rounding.mjs?v=compact-trade-20261021-118';
+import {roll} from './rules.mjs?v=compact-trade-20261021-118';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=compact-trade-20261021-118';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

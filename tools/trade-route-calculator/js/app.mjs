@@ -1,59 +1,59 @@
 import {playerTradePrint,gmTradePrint,marketCsv,openTradePrint} from './trade-exports.mjs';
-import {localBrokerFeePercent} from './local-broker-fee.mjs?v=world-search-20261021-117';
+import {localBrokerFeePercent} from './local-broker-fee.mjs?v=compact-trade-20261021-118';
 import {projectCampaignPolitics,campaignTerritoryMarkup,campaignAllegiance} from './campaign-politics.mjs';
-import {mountPoliticsEditor} from './campaign-politics-editor.mjs?v=world-search-20261021-117';
-import {matchesBuyRetailFilter,matchesSellRetailFilter,buyOfferRetailLabel} from './buy-offer-filter.mjs?v=world-search-20261021-117';
-import {campaignPlayerSnapshot,campaignPlayerMarketSnapshot,playerSnapshotForVisit} from './player-campaign-snapshot.mjs?v=world-search-20261021-117';
-import {playerSnapshotUrl} from './player-snapshot-link.mjs?v=world-search-20261021-117';
-import {createCargoRemovalSession} from './cargo-removal-session.mjs?v=world-search-20261021-117';
-import {statusGaugeValues,fuelGaugeValues} from './status-gauges.mjs?v=world-search-20261021-117';
-import {prepareContactSearchResult,marketAvailabilityRecord,tradeCodeLabel} from './contact-search-result.mjs?v=world-search-20261021-117';
-import {prepareMarketOfferOverride,applyMarketOfferOverride} from './market-offer.mjs?v=world-search-20261021-117';
-import {prepareInsuranceTerms} from './insurance-terms.mjs?v=world-search-20261021-117';
-import {preparePurchaseAmounts} from './purchase-amounts.mjs?v=world-search-20261021-117';
-import {prepareSaleLine} from './sale-line.mjs?v=world-search-20261021-117';
-import {APP_BUILD,createDebugLog} from './debug-log.mjs?v=world-search-20261021-117';
-import {dashboardPanel} from './dashboard-view.mjs?v=world-search-20261021-117';
-import {recordWorldOverride,revertWorldField,worldFieldRevertEligibility,worldChangeFields,worldFieldValue,isWorldChangeAudit} from './world-change-history.mjs?v=world-search-20261021-117';
-import {createCampaignController} from './campaign-controller.mjs?v=world-search-20261021-117';
-import {ruleInfo,referenceIndex,REFERENCE_VERSION} from './rule-references.mjs?v=world-search-20261021-117';
-import {mountRulePopover,replaceReferenceContent} from './rule-popover.mjs?v=world-search-20261021-117';
-import {escapeHtml,moneyHtml} from './display.mjs?v=world-search-20261021-117';
-import {normalizeAmount,normalizeAmountFields} from './form-values.mjs?v=world-search-20261021-117';
-import {contactSearchStatus,contactSearchPeriod,contactSearchRule,prepareContactSearchOutcome} from './contact-search.mjs?v=world-search-20261021-117';
-import {createPassengerUI} from './passenger-ui.mjs?v=world-search-20261021-117';
-import {passengerShip,passengerTotals,passengerSpace,passengerCapacity} from './passengers.mjs?v=world-search-20261021-117';
-import {advancePaymentDate,recordedPaymentDate} from './payment-schedule.mjs?v=world-search-20261021-117';
-import {configureMortgage,mortgageStatus} from './mortgage.mjs?v=world-search-20261021-117';
-import {configureMaintenance,maintenanceStatus} from './maintenance.mjs?v=world-search-20261021-117';
-import {createServicePanels} from './service-panels.mjs?v=world-search-20261021-117';
-import {cargoHoldPanel,purchaseFacts} from './cargo-hold.mjs?v=world-search-20261021-117';
-import {cargoManagementPanel} from './cargo-management.mjs?v=world-search-20261021-117';
-import {createExpensePanels} from './expense-panels.mjs?v=world-search-20261021-117';
+import {mountPoliticsEditor} from './campaign-politics-editor.mjs?v=compact-trade-20261021-118';
+import {matchesBuyRetailFilter,matchesSellRetailFilter,buyOfferRetailLabel} from './buy-offer-filter.mjs?v=compact-trade-20261021-118';
+import {campaignPlayerSnapshot,campaignPlayerMarketSnapshot,playerSnapshotForVisit} from './player-campaign-snapshot.mjs?v=compact-trade-20261021-118';
+import {playerSnapshotUrl} from './player-snapshot-link.mjs?v=compact-trade-20261021-118';
+import {createCargoRemovalSession} from './cargo-removal-session.mjs?v=compact-trade-20261021-118';
+import {statusGaugeValues,fuelGaugeValues} from './status-gauges.mjs?v=compact-trade-20261021-118';
+import {prepareContactSearchResult,marketAvailabilityRecord,tradeCodeLabel} from './contact-search-result.mjs?v=compact-trade-20261021-118';
+import {prepareMarketOfferOverride,applyMarketOfferOverride} from './market-offer.mjs?v=compact-trade-20261021-118';
+import {prepareInsuranceTerms} from './insurance-terms.mjs?v=compact-trade-20261021-118';
+import {preparePurchaseAmounts} from './purchase-amounts.mjs?v=compact-trade-20261021-118';
+import {prepareSaleLine} from './sale-line.mjs?v=compact-trade-20261021-118';
+import {APP_BUILD,createDebugLog} from './debug-log.mjs?v=compact-trade-20261021-118';
+import {dashboardPanel} from './dashboard-view.mjs?v=compact-trade-20261021-118';
+import {recordWorldOverride,revertWorldField,worldFieldRevertEligibility,worldChangeFields,worldFieldValue,isWorldChangeAudit} from './world-change-history.mjs?v=compact-trade-20261021-118';
+import {createCampaignController} from './campaign-controller.mjs?v=compact-trade-20261021-118';
+import {ruleInfo,referenceIndex,REFERENCE_VERSION} from './rule-references.mjs?v=compact-trade-20261021-118';
+import {mountRulePopover,replaceReferenceContent} from './rule-popover.mjs?v=compact-trade-20261021-118';
+import {escapeHtml,moneyHtml} from './display.mjs?v=compact-trade-20261021-118';
+import {normalizeAmount,normalizeAmountFields} from './form-values.mjs?v=compact-trade-20261021-118';
+import {contactSearchStatus,contactSearchPeriod,contactSearchRule,prepareContactSearchOutcome} from './contact-search.mjs?v=compact-trade-20261021-118';
+import {createPassengerUI} from './passenger-ui.mjs?v=compact-trade-20261021-118';
+import {passengerShip,passengerTotals,passengerSpace,passengerCapacity} from './passengers.mjs?v=compact-trade-20261021-118';
+import {advancePaymentDate,recordedPaymentDate} from './payment-schedule.mjs?v=compact-trade-20261021-118';
+import {configureMortgage,mortgageStatus} from './mortgage.mjs?v=compact-trade-20261021-118';
+import {configureMaintenance,maintenanceStatus} from './maintenance.mjs?v=compact-trade-20261021-118';
+import {createServicePanels} from './service-panels.mjs?v=compact-trade-20261021-118';
+import {cargoHoldPanel,purchaseFacts} from './cargo-hold.mjs?v=compact-trade-20261021-118';
+import {cargoManagementPanel} from './cargo-management.mjs?v=compact-trade-20261021-118';
+import {createExpensePanels} from './expense-panels.mjs?v=compact-trade-20261021-118';
 import {currentJumpAttempt} from './jump-attempts.mjs';
-import {mountSettingsLayout,syncSettingsControls,stepSetting} from './settings-layout.mjs?v=world-search-20261021-117';
-import {configureFuel,fuelCapacities,bladderSpace,validateFuel,jumpFuel} from './fuel.mjs?v=world-search-20261021-117';
-import {refillQuote,supportStock,supportCargo,supportDisplay,anchorSupport,configureSupport} from './life-support.mjs?v=world-search-20261021-117';
-import {playerBriefing} from './player-briefing.mjs?v=world-search-20261021-117';
-import {campaignReport} from './report.mjs?v=world-search-20261021-117';
-import {up,creditStep,roundExisting} from './rounding.mjs?v=world-search-20261021-117';
-import {tiers,luggageAllowance,occupants,passengerLuggage,manualLuggage,serviceRate,serviceLabel,roomCounts,roomTotal,personMonthlyRate,personRate,refillPersonRate} from './accommodation.mjs?v=world-search-20261021-117';
+import {mountSettingsLayout,syncSettingsControls,stepSetting} from './settings-layout.mjs?v=compact-trade-20261021-118';
+import {configureFuel,fuelCapacities,bladderSpace,validateFuel,jumpFuel} from './fuel.mjs?v=compact-trade-20261021-118';
+import {refillQuote,supportStock,supportCargo,supportDisplay,anchorSupport,configureSupport} from './life-support.mjs?v=compact-trade-20261021-118';
+import {playerBriefing} from './player-briefing.mjs?v=compact-trade-20261021-118';
+import {campaignReport} from './report.mjs?v=compact-trade-20261021-118';
+import {up,creditStep,roundExisting} from './rounding.mjs?v=compact-trade-20261021-118';
+import {tiers,luggageAllowance,occupants,passengerLuggage,manualLuggage,serviceRate,serviceLabel,roomCounts,roomTotal,personMonthlyRate,personRate,refillPersonRate} from './accommodation.mjs?v=compact-trade-20261021-118';
 import * as A from './amounts.mjs';
 import {parseDate,displayDate} from './calendar.mjs';
-import * as R from './rules.mjs?v=world-search-20261021-117';
-import * as S from './state.mjs?v=world-search-20261021-117';
+import * as R from './rules.mjs?v=compact-trade-20261021-118';
+import * as S from './state.mjs?v=compact-trade-20261021-118';
 import {latestMailCheck,recordMailCheck,mailCheckHistoryStatus} from './mail-history.mjs?v=mail-history-1';
-import * as E from './expenses.mjs?v=world-search-20261021-117';
-import {planetInformation,worldSheetURL} from './planet-info.mjs?v=world-search-20261021-117';
-import {worldMapFacts,publishedWorldBody,worldSymbols,selectedWorldHex,mapKeyMarkup} from './world-symbols.mjs?v=world-search-20261021-117';
-import * as M from './map.mjs?v=world-search-20261021-117';
+import * as E from './expenses.mjs?v=compact-trade-20261021-118';
+import {planetInformation,worldSheetURL} from './planet-info.mjs?v=compact-trade-20261021-118';
+import {worldMapFacts,publishedWorldBody,worldSymbols,selectedWorldHex,mapKeyMarkup} from './world-symbols.mjs?v=compact-trade-20261021-118';
+import * as M from './map.mjs?v=compact-trade-20261021-118';
 import {MAP_GEOMETRY,setMapGeometry,visibleMapWorlds} from './map-geometry.mjs?v=map-first-1';
 import {camera,viewportTiles,MapAreaCache} from './map-viewport.mjs?v=map-first-1';
-import {MIN_MAP_ZOOM,MAX_MAP_ZOOM,MAP_ZOOM_STEP,nextMapZoom,mapLevel,showSubsectorNames,MapOverviewCache,overviewMarkup,mapTerritories} from './map-overview.mjs?v=world-search-20261021-117';
+import {MIN_MAP_ZOOM,MAX_MAP_ZOOM,MAP_ZOOM_STEP,nextMapZoom,mapLevel,showSubsectorNames,MapOverviewCache,overviewMarkup,mapTerritories} from './map-overview.mjs?v=compact-trade-20261021-118';
 import {readPoliticalTerritory,savePoliticalTerritory} from './map-preferences.mjs';
-import {createGlobalWorldSearch} from './global-world-search.mjs?v=world-search-20261021-117';
-import {createWorldPicker,rememberWorld} from './world-picker.mjs?v=world-search-20261021-117';
-import {Store,KEY,SaveNotCommittedError,SaveCommittedPublicationError} from './persistence.mjs?v=world-search-20261021-117';
+import {createGlobalWorldSearch} from './global-world-search.mjs?v=compact-trade-20261021-118';
+import {createWorldPicker,rememberWorld} from './world-picker.mjs?v=compact-trade-20261021-118';
+import {Store,KEY,SaveNotCommittedError,SaveCommittedPublicationError} from './persistence.mjs?v=compact-trade-20261021-118';
 const $=id=>document.getElementById(id),esc=escapeHtml;
 const ROOT='https://github.com/OwlsNestNH/Traveller-Tools/blob/main/tools/trade-route-calculator/';
 let inputRounding=[];
@@ -1103,7 +1103,7 @@ function sellCargoPanel(){
  const lots=state.lots.filter(l=>matchesSaleDisplay(l)&&(l.description+' '+good(l.commodity)?.name).toLowerCase().includes(cargoSearch.toLowerCase()));
  lots.sort((a,b)=>cargoSort==='quantity'?-A.cmp(a.quantity,b.quantity):a.description.localeCompare(b.description));
  const rows=lots.map(l=>{const q=currentQuote(l.id),name=good(l.commodity)?.name||l.commodity;return `<tr><td><label class="check cargo-name"><input type="checkbox" aria-label="Select ${esc(l.description)}" data-lot="${esc(l.id)}" ${selected.has(l.id)?'checked':''}><span>${esc(name)}</span></label>${btn('ⓘ','inline-sale-info',l.id,false,'small commodity-info').replace('<button','<button aria-label="'+esc('Information and audit for '+l.description)+'"')}<div class="help">${esc(l.description)} · Lot ${esc(l.id)}</div>${tradeComplicationFlag(q?.audit)}</td><td class="number">${esc(l.quantity)} t</td><td class="number">${q?.audit?.basePrice==null?'Unknown':money(q.audit.basePrice)}</td><td class="number">${esc(buyOfferRetailLabel(q))}</td><td class="number">${q?money(q.unitPrice)+' / t':'Not negotiated'}</td><td>${inlineSaleControls(l,q)}</td></tr>`;});
- return panel('Sale offers',`<div class="panel-body toolbar"><input id="cargo-search" aria-label="Search cargo" placeholder="Search cargo lots." value="${esc(cargoSearch)}"><select id="cargo-sort" aria-label="Sort cargo"><option value="name">Name</option><option value="quantity" ${cargoSort==='quantity'?'selected':''}>Quantity</option></select><label class="check"><input id="hide-low-sale-prices" type="checkbox" ${hideLowSalePrices?'checked':''}>100% retail or more</label><span class="help">${lots.length} / ${state.lots.length} lots shown</span></div>${rows.length?tradeTable('sale',['Cargo / lot','Aboard','Effective retail / t','Price %','Offer / t','Sell'],[230,80,110,80,110,330],rows,'sell-cargo-scroll'):empty('No cargo matches this search or price filter.')}<div class="panel-body help">Quantity changes do not sell cargo. Sell commits only that row at the displayed net amount. Options retains batch review and referee overrides. The price filter excludes commission; unknown quotes stay visible and hidden selections remain selected. Owned cargo remains below.</div>`);
+ return panel('Sale offers',`<div class="panel-body toolbar"><input id="cargo-search" aria-label="Search cargo" placeholder="Search cargo lots." value="${esc(cargoSearch)}"><select id="cargo-sort" aria-label="Sort cargo"><option value="name">Name</option><option value="quantity" ${cargoSort==='quantity'?'selected':''}>Quantity</option></select><label class="check"><input id="hide-low-sale-prices" type="checkbox" ${hideLowSalePrices?'checked':''}>100% retail or more</label><span class="help">${lots.length} / ${state.lots.length} lots shown</span></div>${rows.length?tradeTable('sale',['Cargo / lot','Aboard','Effective retail / t','Price %','Offer / t','Sell'],[230,80,110,80,110,330],rows,'sell-cargo-scroll'):empty('No cargo matches this search or price filter.')}<div class="panel-body help">Get sale offers quotes every eligible trade-good lot, including lots hidden by filters; selection is only for batch review. Quantity changes do not sell cargo. Sell commits only that row at the displayed net amount. Options retains batch review and referee overrides. The price filter excludes commission; unknown quotes stay visible and hidden selections remain selected. Owned cargo remains below.</div>`);
 }
 
 function policyPanel(){const policies=state.policies.filter(p=>p.status!=='closed');if(!policies.length)return '';return panel('Cargo insurance',policies.length?policies.map(p=>`<article class="contract-card"><div class="row"><h3>${esc(state.lots.find(l=>l.id===p.lotId)?.description||'Former cargo lot')}</h3><span class="tag">${esc(p.status)}</span></div><p>${esc(p.coverage)}% coverage · ${esc(p.remainingQuantity)} t remaining · destination ${esc(world(p.destination)?.name)} · premium ${money(p.premium)}</p><div class="row">${btn('Policy audit','policy-audit',p.id)}${btn('Loss / claim','claim',p.id,true)}${btn('Amend / close','amend',p.id,true)}</div></article>`).join(''):empty('Insurance is optional. Select Insurance in the purchase window to choose coverage and see the projected premium.'));}
@@ -2415,7 +2415,9 @@ function finishContactSearchWrite(owner){
  snapshotId=installed.id;tab='Trade';owner.presentationCommitted=true;
  render();if(!completedCurrent())return false;
  if(installed.kind==='buyer'&&installed.success){
-  if(!selected.size){message('Buyer found. Select cargo, then Get sale offers.');return false;}
+  // Quote every eligible hold lot independently of batch-sale selection.
+  saleForm(installed,null,completedCurrent,true);if(!completedCurrent())return false;
+  if(!selected.size){message('Buyer found. Offers are ready for eligible cargo; choose a quantity and Sell to confirm.');return false;}
   // A normal buyer cannot buy illegal cargo. This expected validation does
   // not undo the saved search or turn it into an uncertain save/retry.
   if(!installed.criminal&&state.lots.some(lot=>selected.has(lot.id)&&lot.illegal)){message('Illegal cargo needs a black-market buyer.',true);return false;}
@@ -2659,7 +2661,7 @@ function inlinePurchaseDraft(snap,offer){
 }
 function inlinePurchaseControls(snap,offer){
  const d=inlinePurchaseDraft(snap,offer),disabled=offer.expired||offer.manualRequired||!store.editable;
- return `<div class="inline-purchase" id="purchase-row-${esc(offer.id)}" data-purchase-row="${esc(offer.id)}"><label>Buy tons<input aria-label="Buy tons of ${esc(offer.description)}" name="quantity" data-round="tons" data-round-label="Buy tons" type="number" min="0" max="${esc(offer.remaining)}" step="any" value="${esc(d.quantity)}" ${disabled?'disabled':''}></label>${snap.options?.local?`<label>Broker commission · %<input name="fee" aria-label="Broker commission for ${esc(offer.description)}" type="number" min="0" max="100" step="any" value="${esc(d.fee)}" ${disabled?'disabled':''}></label>`:''}<span id="purchase-row-total-${esc(offer.id)}" class="help">${inlinePurchaseSummary(snap,offer,d)}</span>${btn('Buy','inline-buy',offer.id,true,'small').replace('<button','<button '+(disabled?'data-unavailable disabled':''))}${btn(state.settings.insurance?'Insurance / options':'Options','buy',offer.id,true,'small')}${btn('Edit','offer-edit',offer.id,true,'small')}<span id="purchase-row-error-${esc(offer.id)}" role="status" class="help"></span></div>`;
+ return `<div class="inline-purchase" id="purchase-row-${esc(offer.id)}" data-purchase-row="${esc(offer.id)}"><label>Buy tons<input aria-label="Buy tons of ${esc(offer.description)}" name="quantity" data-round="tons" data-round-label="Buy tons" type="number" min="0" max="${esc(offer.remaining)}" step="any" value="${esc(d.quantity)}" ${disabled?'disabled':''}></label>${snap.options?.local?`<label title="Local broker commission percentage">Broker %<input name="fee" aria-label="Broker commission for ${esc(offer.description)}" type="number" min="0" max="100" step="any" value="${esc(d.fee)}" ${disabled?'disabled':''}></label>`:''}<span id="purchase-row-total-${esc(offer.id)}" class="help">${inlinePurchaseSummary(snap,offer,d)}</span>${btn('Buy','inline-buy',offer.id,true,'small').replace('<button','<button '+(disabled?'data-unavailable disabled':''))}${btn(state.settings.insurance?'Insurance / options':'Options','buy',offer.id,true,'small')}${btn('Edit','offer-edit',offer.id,true,'small')}<span id="purchase-row-error-${esc(offer.id)}" role="status" class="help"></span></div>`;
 }
 function inlinePurchaseSummary(snap,offer,draft){
  try{const q=String(up(draft.quantity)),{cost,fee}=preparePurchaseAmounts({quantity:q,fee:localBrokerFeePercent(snap,draft.fee),unitPrice:offer.unitPrice,creditStep:creditStep(state)});return esc(q+' t · Goods '+money(cost)+' + broker '+money(fee)+' = '+money(cost+fee));}catch(error){return esc(error.message);}
@@ -2875,7 +2877,7 @@ function inlineSaleSummary(lot,quote,d){
 }
 function inlineSaleControls(lot,quote){
  const d=inlineSaleDraft(lot,quote),buyer=state.snapshots.find(s=>s.id===quote?.buyerId),result=inlineSaleSummary(lot,quote,d),disabled=!store.editable||!!result.error;
- return `<div class="inline-sale" id="sale-row-${esc(lot.id)}" data-inline-sale="${esc(lot.id)}"><label>Sell tons<input name="quantity" data-sale-quantity="${esc(lot.id)}" aria-label="Sell quantity for ${esc(lot.description)}" type="number" min="0" max="${esc(lot.quantity)}" step="any" data-round="tons" data-round-exact="${esc(lot.quantity)}" value="${esc(saleQuantity(lot))}" ${!store.editable?'disabled':''}></label>${buyer?.options?.local?`<label>Broker commission · %<input name="fee" aria-label="Broker commission for ${esc(lot.description)}" type="number" min="0" max="100" step="any" value="${esc(d.fee)}" ${!store.editable?'disabled':''}></label>`:''}<span class="help" data-inline-sale-total>${esc(result.text)}</span>${btn('Sell','inline-sell',lot.id,true,'small').replace('<button','<button '+(disabled?'data-unavailable disabled':''))}${btn('Resolve tax dice','inline-sale-tax',lot.id,true,'small').replace('<button','<button '+(result.error?.code==='SALE_TAX_DICE_REQUIRED'?'':'hidden'))}${btn('Options','lot-sell',lot.id,true,'small')}<span class="help" role="status" data-inline-sale-error></span></div>`;
+ return `<div class="inline-sale" id="sale-row-${esc(lot.id)}" data-inline-sale="${esc(lot.id)}"><label>Sell tons<input name="quantity" data-sale-quantity="${esc(lot.id)}" aria-label="Sell quantity for ${esc(lot.description)}" type="number" min="0" max="${esc(lot.quantity)}" step="any" data-round="tons" data-round-exact="${esc(lot.quantity)}" value="${esc(saleQuantity(lot))}" ${!store.editable?'disabled':''}></label>${buyer?.options?.local?`<label title="Local broker commission percentage">Broker %<input name="fee" aria-label="Broker commission for ${esc(lot.description)}" type="number" min="0" max="100" step="any" value="${esc(d.fee)}" ${!store.editable?'disabled':''}></label>`:''}<span class="help" data-inline-sale-total>${esc(result.text)}</span>${btn('Sell','inline-sell',lot.id,true,'small').replace('<button','<button '+(disabled?'data-unavailable disabled':''))}${btn('Resolve tax dice','inline-sale-tax',lot.id,true,'small').replace('<button','<button '+(result.error?.code==='SALE_TAX_DICE_REQUIRED'?'':'hidden'))}${btn('Options','lot-sell',lot.id,true,'small')}<span class="help" role="status" data-inline-sale-error></span></div>`;
 }
 function updateInlineSale(row,allowRoll=false){
  if(!row||!store.editable||campaignReloadRequired||saleWriteOperation?.pending)return;
@@ -3021,8 +3023,8 @@ function completeSaleWrite(owner){
 function saleForm(buyer,draft=null,contactSearchGuard=null,offersOnly=false){
  if(contactSearchGuard&&!contactSearchGuard())return false;
  if(cargoRemoval.pending||plannedRouteBusy()||clearRouteBusy()||accountsBusy()||saleWriteOperation?.pending||contactSearchWriteOperation?.pending||passengerWriteOperation?.pending||contractLifecycleWriteOperation?.pending||contractOfferWriteOperation?.pending)return false;
- if(!selected.size)throw Error('Select at least one cargo lot');S.assertWorld(state,buyer.worldId);
- const c=ctx(state.actual),lots=state.lots.filter(l=>selected.has(l.id)),quotes={};
+ if(!offersOnly&&!selected.size)throw Error('Select at least one cargo lot');S.assertWorld(state,buyer.worldId);
+ const c=ctx(state.actual),lots=state.lots.filter(l=>offersOnly?A.cmp(l.quantity,0)>0&&(!l.illegal||buyer.criminal):selected.has(l.id)),quotes={};
  if(lots.some(l=>l.illegal)&&!buyer.criminal)throw Error('Illegal cargo needs a black-market buyer.');
  for(const l of lots){if(contactSearchGuard&&!contactSearchGuard())return false;try{const previous=currentQuote(l.id);quotes[l.id]=previous?.buyerId===buyer.id?previous:R.quote(good(l.commodity),c,{...buyer.options,criminalMarket:!!buyer.criminal,creditStep:creditStep(state),side:'sell',...pricingOptions(l.illegal)},core);}catch(e){quotes[l.id]={unitPrice:'0',audit:{manualRequired:true,reason:e.message}};}}
  if(contactSearchGuard&&!contactSearchGuard())return false;
@@ -3067,7 +3069,7 @@ function acceptSaleReview(owner,f){
   if(!saleWriteOwnerCurrent(owner))throw Error('Campaign changed. Reopen this sale.');if($('sale-accepted-note'))$('sale-accepted-note').hidden=false;
  }catch(error){throw new SaveNotCommittedError(error);}
 }
-function beginSale(offersOnly=false){if(cargoRemoval.pending||plannedRouteBusy()||clearRouteBusy()||accountsBusy()||saleWriteOperation?.pending||contactSearchWriteOperation?.pending||passengerWriteOperation?.pending||contractLifecycleWriteOperation?.pending||contractOfferWriteOperation?.pending)return false;if(actual()?.emptySpace)throw Error('No local market or supplies in empty space. Continue to a world first.');if(!selected.size)throw Error('Select cargo first');const buyers=state.snapshots.filter(s=>s.kind==='buyer'&&s.worldId===state.actual&&s.success&&(state.cooldowns[s.party]||0)<=state.hours);if(!buyers.length){searchDialog('buyer');return;}if(buyers.length===1){saleForm(buyers[0],null,null,offersOnly);return;}modal('Choose a buyer',`${select('buyer','Previous buyer',buyers.map(b=>[b.id,b.partyName+' · hour '+b.hours]),buyers.at(-1).id)}<p class="help">Previously found buyers remain usable unless rejected. Existing offers retain their prices while the campaign is unchanged.</p>${btn('Find another buyer','buyer-search','',true)}`,f=>{const chooser=activeModal,current=()=>modalCurrent(chooser);const generated=saleForm(buyers.find(b=>b.id===f.get('buyer')),null,current,offersOnly);return offersOnly&&generated===true&&current();},'Negotiate sale');}
+function beginSale(offersOnly=false){if(cargoRemoval.pending||plannedRouteBusy()||clearRouteBusy()||accountsBusy()||saleWriteOperation?.pending||contactSearchWriteOperation?.pending||passengerWriteOperation?.pending||contractLifecycleWriteOperation?.pending||contractOfferWriteOperation?.pending)return false;if(actual()?.emptySpace)throw Error('No local market or supplies in empty space. Continue to a world first.');if(!offersOnly&&!selected.size)throw Error('Select cargo first');const buyers=state.snapshots.filter(s=>s.kind==='buyer'&&s.worldId===state.actual&&s.success&&(state.cooldowns[s.party]||0)<=state.hours);if(!buyers.length){searchDialog('buyer');return;}if(buyers.length===1){saleForm(buyers[0],null,null,offersOnly);return;}modal('Choose a buyer',`${select('buyer','Previous buyer',buyers.map(b=>[b.id,b.partyName+' · hour '+b.hours]),buyers.at(-1).id)}<p class="help">Previously found buyers remain usable unless rejected. Existing offers retain their prices while the campaign is unchanged.</p>${btn('Find another buyer','buyer-search','',true)}`,f=>{const chooser=activeModal,current=()=>modalCurrent(chooser);const generated=saleForm(buyers.find(b=>b.id===f.get('buyer')),null,current,offersOnly);return offersOnly&&generated===true&&current();},'Negotiate sale');}
 function reject(snapId){const snap=state.snapshots.find(s=>s.id===snapId);modal('Reject this deal?',`<p>${esc(snap.partyName)} will be unavailable for 30 days (720 hours). Browsing away does not trigger this restriction.</p>`,()=>act('Rejected '+snap.partyName,s=>{s.cooldowns[snap.party]=s.hours+720;}),'Reject deal');}
 const refereeTypes=[['trade','Trade Goods'],['freight','Freight'],['mail','Mail'],['passenger','Passengers'],['other','Other']];
 function refereeTypeField(type){return select('refereeType','Type',refereeTypes.map(([key,label])=>[key,key==='trade'?'Standard commodity (catalog)':key==='other'?'Other (custom item)':label]),type);}
@@ -4536,7 +4538,7 @@ $('import-file').onchange=safely(importCampaignFile);
 if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{if(tab==='Overview'&&viewed()&&updateMapGeometry()){scheduleMapPaint();scheduleMapAreas();}}).observe($('main'));
 window.addEventListener('error',e=>recordDebugError(e.error||e.message,'window-error'));
 window.addEventListener('unhandledrejection',e=>recordDebugError(e.reason,'unhandled-rejection'));
-async function boot(){mountRulePopover(document);[core,mp,decisions]=await Promise.all(['rules/core-2022.json?v=world-search-20261021-117','rules/merchant-prince-1e.json','rules/decisions.json'].map(async url=>{const r=await fetch(url);if(!r.ok)throw Error('Could not load '+url);return r.json();}));store=new Store(receiveCampaign,(editable,text)=>{if(!editable){worldNearbyRequest=null;invalidateRoutePlanOperation();invalidatePlannedRouteWriteOperation();invalidateClearRouteWriteOperation();invalidateAccountsWriteOperation();invalidatePassengerWriteOperation();invalidateContractLifecycleWriteOperation();invalidateContractOfferWriteOperation();invalidateContactSearchWriteOperation();invalidateInsuranceWriteOperation();invalidatePurchaseWriteOperation();invalidateSaleWriteOperation();invalidateWorldWriteOperation();invalidateTimeWriteOperation();invalidateSettingsOperation(true);invalidateJumpPreparation();invalidateUndoOperation();invalidateReplacementEditing();stockServices.invalidate();expenseServices.invalidate();}$('save-status').textContent=campaignReloadRequired?campaignReloadMessage:text;$('save-status').className=editable&&!campaignReloadRequired?'muted':'readonly';$('takeover').hidden=editable||campaignReloadRequired;$('takeover').disabled=campaignReloadRequired;if(!editable&&activeModal?.mutates){activeModal.cancelled=true;$('modal-error').textContent=campaignReloadRequired?campaignReloadMessage:'Editing moved to another tab. Reopen this dialog after taking over editing.';}syncModalSubmit();render();});try{state=store.read();}catch(error){recordDebugError(error,'startup-read',{screen:'Startup',newOccurrence:true});store.recovery=true;store.recoveryMessage=error.message;state=S.initial();}store.onDiagnostic=(error,context)=>recordDebugError(error,context,{screen:'Startup',newOccurrence:true});known={...state.worlds};view=state.actual;render();await store.acquire();if(state.initialized)restoreExpenseReceipt();if(state.initialized)refreshNearby(false).catch(e=>message('Could not load nearby worlds: '+e.message+'. Use Refresh nearby to retry.',true));}
+async function boot(){mountRulePopover(document);[core,mp,decisions]=await Promise.all(['rules/core-2022.json?v=compact-trade-20261021-118','rules/merchant-prince-1e.json','rules/decisions.json'].map(async url=>{const r=await fetch(url);if(!r.ok)throw Error('Could not load '+url);return r.json();}));store=new Store(receiveCampaign,(editable,text)=>{if(!editable){worldNearbyRequest=null;invalidateRoutePlanOperation();invalidatePlannedRouteWriteOperation();invalidateClearRouteWriteOperation();invalidateAccountsWriteOperation();invalidatePassengerWriteOperation();invalidateContractLifecycleWriteOperation();invalidateContractOfferWriteOperation();invalidateContactSearchWriteOperation();invalidateInsuranceWriteOperation();invalidatePurchaseWriteOperation();invalidateSaleWriteOperation();invalidateWorldWriteOperation();invalidateTimeWriteOperation();invalidateSettingsOperation(true);invalidateJumpPreparation();invalidateUndoOperation();invalidateReplacementEditing();stockServices.invalidate();expenseServices.invalidate();}$('save-status').textContent=campaignReloadRequired?campaignReloadMessage:text;$('save-status').className=editable&&!campaignReloadRequired?'muted':'readonly';$('takeover').hidden=editable||campaignReloadRequired;$('takeover').disabled=campaignReloadRequired;if(!editable&&activeModal?.mutates){activeModal.cancelled=true;$('modal-error').textContent=campaignReloadRequired?campaignReloadMessage:'Editing moved to another tab. Reopen this dialog after taking over editing.';}syncModalSubmit();render();});try{state=store.read();}catch(error){recordDebugError(error,'startup-read',{screen:'Startup',newOccurrence:true});store.recovery=true;store.recoveryMessage=error.message;state=S.initial();}store.onDiagnostic=(error,context)=>recordDebugError(error,context,{screen:'Startup',newOccurrence:true});known={...state.worlds};view=state.actual;render();await store.acquire();if(state.initialized)restoreExpenseReceipt();if(state.initialized)refreshNearby(false).catch(e=>message('Could not load nearby worlds: '+e.message+'. Use Refresh nearby to retry.',true));}
 document.addEventListener('input',safely(e=>{const row=e.target.closest?.('[data-purchase-row]');if(row)updateInlinePurchase(row);}));
 
 boot().catch(e=>{recordDebugError(e,'startup',{screen:'Startup',newOccurrence:true});message(e.message,true);$('main').innerHTML=empty('The calculator could not start. Your saved campaign has not been replaced. Reload after checking the error above.')+'<div class="wide-actions">'+btn('Copy Error Report','dev-copy-errors')+'</div>';});
