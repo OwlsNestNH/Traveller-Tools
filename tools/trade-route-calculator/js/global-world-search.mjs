@@ -1,4 +1,4 @@
-import {searchWorlds,loadWorld} from './map.mjs?v=trade-filters-20261021-111';
+import {searchWorlds,loadWorld} from './map.mjs?v=territory-resize-20261021-112';
 
 export const planetSearchLabel=w=>[w.name,w.subsectorName,w.sector,w.hex].join(' — ');
 

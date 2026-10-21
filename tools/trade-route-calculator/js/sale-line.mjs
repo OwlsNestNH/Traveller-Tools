@@ -1,4 +1,4 @@
-import * as R from './rules.mjs?v=trade-filters-20261021-111';
+import * as R from './rules.mjs?v=territory-resize-20261021-112';
 
 // Prepare one sale line from explicit lot/buyer/context/quote/commodity/core,
 // current pricing flags and creditStep, plus caller-normalized values:
