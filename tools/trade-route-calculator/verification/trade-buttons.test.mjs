@@ -37,24 +37,13 @@ try{
   const preview=async kind=>{
    await page.locator('[name="party"]').fill(kind+' regression');
    await page.locator('[name="method"]').selectOption('online');
-   await page.locator('[name="dice"]').fill('12');await page.locator('[name="duration"]').fill('1');
+   if(await page.locator('.supplier-overrides').count())await page.locator('.supplier-overrides').evaluate(el=>el.open=true);await page.locator('[name="dice"]').fill('12');await page.locator('[name="duration"]').fill('1');
    if(kind==='supplier')await page.locator('#supplier-form button[type="submit"]').click();else await page.locator('#modal-submit').click();await title('Review '+kind+' search');
   };
   await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();
   for(const [name,kind] of [['search','supplier'],['buyer-search','buyer']]){
-   const before=await raw();await browse();await page.locator('[data-action="trade-side"][data-arg="'+(kind==='supplier'?'buy':'sell')+'"]').click();await action(name).click();await title('Trade at the current system');
-   assert.match(await page.locator('#modal-body').textContent(),/does not move the ship, advance time or spend Credits/);
-   assert.ok((await page.locator('#modal-body').textContent()).includes(fixture.state.worlds[actual].name));
-   const recoveryLayout=await page.locator('#modal').evaluate(dialog=>{
-    const body=dialog.querySelector('#modal-body'),text=dialog.querySelector('.trade-recovery');
-    return {dialog:dialog.scrollWidth-dialog.clientWidth,body:body.scrollWidth-body.clientWidth,text:text.scrollWidth-text.clientWidth};
-   });
-   assert.ok(Object.values(recoveryLayout).every(excess=>excess<=1),'Recovery names and actions wrap without horizontal clipping');
-   await page.screenshot({path:artifacts+`/trade-recovery-${kind}-${size.width}.png`});
-   // Dismissal/reopening and keyboard activation do not change the campaign.
-   await page.keyboard.press('Escape');await closed();assert.equal(await raw(),before);
-   await action(name).press('Enter');await title('Trade at the current system');
-   await page.locator('#modal-submit').click();await title('Find a '+kind);assert.equal(await raw(),before);
+   const before=await raw();await browse();await page.locator('[data-action="trade-side"][data-arg="'+(kind==='supplier'?'buy':'sell')+'"]').click();await action(name).click();await title('Find a '+kind);assert.equal(await raw(),before);
+   assert.ok((await page.locator('.trade-location').textContent()).includes(fixture.state.worlds[actual].name));
    await preview(kind);assert.equal(await raw(),before);await dismiss();assert.equal(await raw(),before);
    // Repeat the same action at the now-current trading view, then commit once.
    if(kind==='supplier')await action('supplier-close').click();await action(name).click();await title('Find a '+kind);await preview(kind);
@@ -63,14 +52,14 @@ try{
    assert.equal(after.snapshots.length,old.snapshots.length+1);assert.equal(snap.kind,kind);assert.equal(snap.worldId,actual);
    assert.equal(after.actual,old.actual);assert.equal(after.hours,old.hours+1);assert.equal(after.bank,old.bank);
    assert.deepEqual(after.lots,old.lots);assert.deepEqual(after.route,old.route);assert.deepEqual(after.ledger,old.ledger);
+   await tab('Overview');assert.equal(await page.locator('.selected-world').getAttribute('data-arg'),remote);await tab('Trade');
    await page.screenshot({path:artifacts+`/trade-search-${kind}-${size.width}.png`,fullPage:true});
   }
-  // Related row/selection paths use the same recovery rather than a hidden error.
+  // Related row/selection paths also use the actual world without redirecting.
   for(const name of ['single','sale']){
    const before=await raw();await browse();await existingSell(page);
    if(name==='sale'){await action('sale-all').click();await action('sale').click();}
    else {await page.locator('[data-lot="lot-recorded"]').check();await action('sale').click();}
-   await title('Trade at the current system');await page.locator('#modal-submit').click();
    await title('Prepare sale · buyer regression');await dismiss();assert.equal(await raw(),before);
    await action('sale-clear').click();
   }
@@ -87,7 +76,7 @@ try{
   assert.equal(await raw(),beforeControls);
   assert.deepEqual(errors,[],'No browser runtime errors');
   await context.tracing.stop({path:artifacts+`/trade-buttons-${size.width}-trace.zip`});await context.close();context=null;
-  console.log('PASS: '+size.width+'px supplier/buyer recovery, repeated/cancelled previews, exact local commits, Sell/Get sale offers, Buy/Edit/Audit and filters without incidental changes.');
+  console.log('PASS: '+size.width+'px supplier/buyer current-world trading, repeated/cancelled previews, exact local commits, Sell/Get sale offers, Buy/Edit/Audit and filters without incidental changes.');
  }
 }catch(error){
  if(context){const pages=context.pages();await pages[0]?.screenshot({path:artifacts+'/trade-buttons-failure.png',fullPage:true}).catch(()=>{});await context.tracing.stop({path:artifacts+'/trade-buttons-failure-trace.zip'}).catch(()=>{});}

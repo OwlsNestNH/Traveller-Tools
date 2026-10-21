@@ -1,4 +1,4 @@
-import * as R from './rules.mjs?v=snapshot-lss-20261021-107';
+import * as R from './rules.mjs?v=trade-current-20261021-108';
 
 // Prepare one sale line from explicit lot/buyer/context/quote/commodity/core,
 // current pricing flags and creditStep, plus caller-normalized values:

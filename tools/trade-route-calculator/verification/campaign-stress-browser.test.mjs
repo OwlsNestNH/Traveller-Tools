@@ -248,8 +248,8 @@ async function settingsCase(page,context,result,f){
  assert.equal(await page.locator('#service-form [name="fuelTons"]').inputValue(),'3','World browsing retains the same uncommitted service draft');
  await action(page,'cargo-hold').click();assert.equal(await page.locator('#service-form').count(),0);await unchanged(page,initial,'Cargo Hold abandons fuel draft');
  await tab(page,'Settings');await fill(page,'name','Stale draft must never win','#settings-form');await tab(page,'Trade');
- await existingSell(page);await action(page,'buyer-search').click();await heading(page,'Trade at the current system');await submit(page,'Continue at current system','Find a buyer');await dismiss(page);
- await unchanged(page,initial,'World-recovery form cancellation');await buy(page,{quantity:1,double:true});const changed=await read(page),changedBytes=await raw(page);
+ await existingSell(page);await action(page,'buyer-search').click();await heading(page,'Find a buyer');await dismiss(page);
+ await unchanged(page,initial,'Remote-focus buyer form cancellation');await buy(page,{quantity:1,double:true});const changed=await read(page),changedBytes=await raw(page);
  await tab(page,'Settings');assert.equal(await page.locator('#settings-form [name="name"]').inputValue(),'Stale draft must never win');
  await page.locator('#settings-save').click();assert.match(await page.locator('#settings-error').innerText(),/Campaign changed.*Revert changes/);await unchanged(page,changedBytes,'Stale settings after purchase');
  await page.locator('#settings-reset').click();assert.equal(await page.locator('#settings-form [name="name"]').inputValue(),changed.name);

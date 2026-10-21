@@ -1,10 +1,10 @@
-import {ruleInfo} from './rule-references.mjs?v=snapshot-lss-20261021-107';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=snapshot-lss-20261021-107';
+import {ruleInfo} from './rule-references.mjs?v=trade-current-20261021-108';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=trade-current-20261021-108';
 import * as A from './amounts.mjs';
-import {manualLuggage} from './accommodation.mjs?v=snapshot-lss-20261021-107';
-import * as P from './passengers.mjs?v=snapshot-lss-20261021-107';
-import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=snapshot-lss-20261021-107';
-import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=snapshot-lss-20261021-107';
+import {manualLuggage} from './accommodation.mjs?v=trade-current-20261021-108';
+import * as P from './passengers.mjs?v=trade-current-20261021-108';
+import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=trade-current-20261021-108';
+import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=trade-current-20261021-108';
 import {displayDate} from './calendar.mjs';
 const esc=escapeHtml;
 const money=formatCreditsText,signed=x=>x>0?'+'+x:String(x);

@@ -1,5 +1,5 @@
 import {credit} from './amounts.mjs';
-import {paymentCount,canonicalPaymentDate,validatePaymentDate,advancePaymentDate,duePaymentCount} from './payment-schedule.mjs?v=snapshot-lss-20261021-107';
+import {paymentCount,canonicalPaymentDate,validatePaymentDate,advancePaymentDate,duePaymentCount} from './payment-schedule.mjs?v=trade-current-20261021-108';
 export const MAINTENANCE_REFERENCE='Campaign monthly maintenance: the entered fixed cost every 4 weeks (28 days), payable in advance. Each confirmed payment advances this expense’s own next-unpaid date. No annual overhaul, penalties or automatic bank charges are simulated.';
 export function validateMaintenance(m){
  if(m===undefined)return;

@@ -247,7 +247,7 @@ async function run(stops){
   await page.waitForFunction(name=>document.querySelector('.world-info')?.textContent.includes(name),fixture.state.worlds[targetId].name);
   assert.ok((await page.locator('#summary').textContent()).includes(fixture.state.worlds[fixture.state.actual].name));
   assert.equal(JSON.parse(await raw()).actual,fixture.state.actual);
-  await tab('Trade');assert.equal(await page.locator('.purchase-table tbody tr').count(),0,'Browsing another world does not show the actual world supplier');
+  await tab('Trade');assert.ok(await page.locator('.purchase-table tbody tr').count()>0,'Inspecting another world retains actual-world supplier offers');assert.match(await page.locator('.trade-location').textContent(),new RegExp(fixture.state.worlds[fixture.state.actual].name));await unchanged('Inspecting another world retains current-world trade');
   await tab('Overview');await current();
   assert.equal(await page.locator('#map-hexes').count(),0,'Hexes remain available without a toolbar toggle');
   for(const control of ['#map-uwp','#map-territories']){
