@@ -1,4 +1,4 @@
-import {createCargoRemoval,setCargoRemaining,cargoRemovalSummary} from './cargo-removal.mjs?v=snapshot-lss-20261021-107';
+import {createCargoRemoval,setCargoRemaining,cargoRemovalSummary} from './cargo-removal.mjs?v=trade-current-20261021-108';
 // One accepted intent owns its save through asynchronous provider settlement.
 export function createCargoRemovalSession({getState,readSaved,save,onBusy=()=>{},onComplete=()=>{},onFailure=()=>{},onUnknown=()=>{}}){
  let draft=null,operation=null,error='';

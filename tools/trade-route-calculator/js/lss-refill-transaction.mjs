@@ -1,8 +1,8 @@
-import {consumeReserveCompartments} from './lss-compartments.mjs?v=snapshot-lss-20261021-107';
+import {consumeReserveCompartments} from './lss-compartments.mjs?v=trade-current-20261021-108';
 import * as A from './amounts.mjs';
-import {campaignRefillDraft,editRefillDraft} from './lss-refill-draft.mjs?v=snapshot-lss-20261021-107';
-import {consumableRefillQuote} from './lss-refill-pricing.mjs?v=snapshot-lss-20261021-107';
-import {supportAmount} from './life-support.mjs?v=snapshot-lss-20261021-107';
+import {campaignRefillDraft,editRefillDraft} from './lss-refill-draft.mjs?v=trade-current-20261021-108';
+import {consumableRefillQuote} from './lss-refill-pricing.mjs?v=trade-current-20261021-108';
+import {supportAmount} from './life-support.mjs?v=trade-current-20261021-108';
 export function compartmentRefillQuote(state,draft,{gm=false}={}){
  const original=campaignRefillDraft(state).draft;
  let checked=original,purchased=A.rat(0),discarded=A.rat(0),changed=false;

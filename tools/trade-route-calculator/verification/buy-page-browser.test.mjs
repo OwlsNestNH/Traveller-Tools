@@ -21,18 +21,22 @@ try{
   const raw=()=>page.evaluate(key=>localStorage.getItem(key),campaignKey),click=(name,arg)=>page.locator('[data-action="'+name+'"]'+(arg===undefined?'':'[data-arg="'+arg+'"]')).filter({visible:true}).first().click();
   const screenshot=async name=>{await page.screenshot({path:artifacts+'buy-'+name+'-'+width+'.png',fullPage:true});};
   await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();await click('tab','Trade');
-  // Browsing recovery retires its modal before opening the inline form. A
-  // repeated Continue cannot toggle or replace the newly presented supplier.
+
+  const toolbar=page.getByRole('group',{name:'Trade actions',exact:true});await toolbar.waitFor();
+  for(const action of ['search','market-availability','sale-all','sale-clear','sale','add-lot'])assert.equal(await page.locator('[data-action="'+action+'"]').count(),1,'one global handler/control: '+action);
+  const layout=await toolbar.evaluate(el=>({overflow:document.documentElement.scrollWidth-innerWidth,rows:[...el.querySelectorAll('button')].map(b=>Math.round(b.getBoundingClientRect().top)),bottom:el.getBoundingClientRect().bottom}));assert.ok(layout.overflow<=1);if(width>=1400)assert.equal(new Set(layout.rows).size,1,'desktop controls share one plane');assert.ok(layout.bottom<=(await page.locator('.purchase-table').boundingBox()).y);
+  await click('sale-all');assert.match(await toolbar.textContent(),/selected/);await click('sale-clear');assert.match(await toolbar.textContent(),/0 selected/);assert.equal(await raw(),bytes);
+  // Map browsing does not redirect trading or require a recovery modal.
   await click('tab','Overview');await click('world',f.state.route[2]);await click('tab','Trade');await click('search');
-  await page.getByRole('heading',{name:'Trade at the current system',exact:true}).waitFor();await page.locator('#modal-submit').dblclick();
   assert.equal(await page.locator('#modal').evaluate(el=>el.open),false);await page.locator('#supplier-form').waitFor();assert.equal(await raw(),bytes);await click('supplier-cancel');
   assert.equal(await raw(),bytes);assert.equal(await page.locator('.purchase-table tbody tr').count(),12);assert.equal(await page.locator('.cargo-table th').nth(4).textContent(),'Price paid / t');
   assert.equal(await page.locator('[data-action="buyer-search"]').count(),0);await screenshot('normal-collapsed');
   const before=await page.locator('.purchase-table').boundingBox();await click('search');await page.locator('#supplier-form').waitFor();
   const after=await page.locator('.purchase-table').boundingBox();assert.ok(after.y>before.y+100,'Inline supplier pushes goods down');assert.equal(await page.locator('#modal').evaluate(el=>el.open),false);assert.equal(await raw(),bytes);await screenshot('normal-supplier');
-  const supplierGeometry=await page.locator('.supplier-inline').evaluate(card=>{const c=card.getBoundingClientRect();return [...card.querySelectorAll('input:not([type="checkbox"]),select')].map(el=>{const r=el.getBoundingClientRect();return {name:el.name,left:r.left,right:r.right,cardLeft:c.left,cardRight:c.right};});});
+  assert.equal(await page.locator('.supplier-overrides').evaluate(el=>el.open),false);assert.ok((await page.locator('.supplier-inline').boundingBox()).width<=820);
+  const supplierGeometry=await page.locator('.supplier-inline').evaluate(card=>{const c=card.getBoundingClientRect();return [...card.querySelectorAll('input:not([type="checkbox"]),select')].filter(el=>el.getClientRects().length&&el.getBoundingClientRect().width).map(el=>{const r=el.getBoundingClientRect();return {name:el.name,left:r.left,right:r.right,cardLeft:c.left,cardRight:c.right};});});
   for(const field of supplierGeometry)assert.ok(field.left>=field.cardLeft&&field.right<=field.cardRight-2,'Supplier field fits the card at '+width+': '+field.name);
-  await page.locator('#supplier-form [name="party"]').fill('Synthetic review supplier');await page.locator('#supplier-form [name="dice"]').fill('12');await page.locator('#supplier-form [name="duration"]').fill('1');
+  await page.locator('#supplier-form [name="party"]').fill('Synthetic review supplier');await page.locator('.supplier-overrides summary').click();await page.locator('#supplier-form [name="dice"]').fill('12');await page.locator('#supplier-form [name="duration"]').fill('1');
   assert.equal(await page.locator('#supplier-form [data-action="supplier-cancel"]').getAttribute('type'),'button');
   await page.locator('#supplier-form [name="party"]').press('Enter');try{await page.getByRole('heading',{name:'Review supplier search',exact:true}).waitFor({timeout:5000});}catch(error){console.log('Supplier error',await page.locator('#supplier-error').textContent(),errors);await screenshot('supplier-error');throw error;}assert.equal(await raw(),bytes);await page.locator('#modal-cancel').click();
   await click('supplier-close');assert.equal(await raw(),bytes);await click('market-expand');await screenshot('expanded-collapsed');
@@ -52,8 +56,8 @@ try{
   for(const override of ['', '0']){
    if(!await page.locator('#supplier-form').count())await click('search');const form=page.locator('#supplier-form');
    await form.locator('[name="party"]').fill('Synthetic broker '+(override===''?'rolled':'zero'));await form.locator('[name="method"]').selectOption('normal');
-   const details=form.locator('details').first();if(!await details.evaluate(el=>el.open))await details.locator('summary').click();
-   await form.locator('[name="local"]').check();await form.locator('[name="localSkill"]').fill(override);await form.locator('[name="dice"]').fill('12');await form.locator('[name="duration"]').fill('1');
+   const details=form.locator('details').filter({has:page.getByText('Local broker / fixer (optional)',{exact:true})});if(!await details.evaluate(el=>el.open))await details.locator('summary').click();
+   await form.locator('[name="local"]').check();await form.locator('[name="localSkill"]').fill(override);await form.locator('.supplier-overrides').evaluate(el=>el.open=true);await form.locator('[name="dice"]').fill('12');await form.locator('[name="duration"]').fill('1');
    await form.locator('button[type="submit"]').click();await page.locator('#modal-submit').click();await page.locator('#modal').waitFor({state:'hidden'});
    const saved=JSON.parse(await raw()),snap=saved.snapshots.at(-1),expected=override===''?Math.floor(snap.search.localSkillDice.total/3):0;
    assert.equal(snap.search.skill,expected);assert.equal(snap.options.skill,expected);assert.equal(saved.bank,purchased.bank);assert.deepEqual(saved.lots,purchased.lots);

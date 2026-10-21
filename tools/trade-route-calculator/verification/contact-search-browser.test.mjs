@@ -42,7 +42,7 @@ try{
   const preview=async(kind,method='online')=>{
    await page.locator('[name="party"]').fill('Contact '+method+' '+kind);
    await page.locator('[name="method"]').selectOption(method);
-   await page.locator('[name="dice"]').fill('12');await page.locator('[name="duration"]').fill('1');
+   if(await page.locator('.supplier-overrides').count())await page.locator('.supplier-overrides').evaluate(el=>el.open=true);await page.locator('[name="dice"]').fill('12');await page.locator('[name="duration"]').fill('1');
    if(kind==='supplier')await page.locator('#supplier-form button[type="submit"]').click();else await page.locator('#modal-submit').click();await title('Review '+kind+' search');
   };
   const commit=async()=>{

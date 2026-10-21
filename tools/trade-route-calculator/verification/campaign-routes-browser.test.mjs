@@ -120,7 +120,6 @@ async function search(kind,useLocal=false){
  await tab('Trade');await page.locator('[data-action="trade-side"][data-arg="'+(kind==='supplier'?'buy':'sell')+'"]').click();
  if(kind==='supplier'){if(!await page.locator('#supplier-form').count())await page.getByRole('button',{name:'Find supplier',exact:true}).click();}
  else{await page.getByRole('button',{name:'Select all cargo',exact:true}).click();await page.getByRole('button',{name:'Find buyer',exact:true}).click();}
- if(await page.getByRole('heading',{name:'Trade at the current system',exact:true}).isVisible())await page.locator('#modal-submit').click();
  await page.getByRole('heading',{name:'Find a '+kind,exact:true}).waitFor();const local=await tradeField(page,'local');if(useLocal)await local.check();else await local.uncheck();
  if(kind==='supplier')await page.locator('#supplier-form button[type="submit"]').click();else await page.locator('#modal-submit').click();
  await modalButton('Commit search').click();

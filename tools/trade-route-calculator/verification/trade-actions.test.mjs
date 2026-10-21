@@ -15,26 +15,20 @@ for(const [action,kind] of [['search','supplier'],['buyer-search','buyer']]){
   assert.equal(after.snapshots[0].worldId,origin.id);assert.equal(after.actual,origin.id);assert.equal(after.hours,before.hours+1);
   assert.equal(after.bank,before.bank);same(after.lots,before.lots);same(after.route,before.route);
  });
- test(`${kind} search recovers explicitly from browsed world without moving ship or saving a preview`,async()=>{
+ test(`${kind} search ignores map inspection and preserves focus through commit`,async()=>{
   const h=harness(),before=h.persisted();h.api.setView(destination.id);h.api.render();
-  h.api.searchDialog(kind);assert.equal(h.dom.ids.get('modal-title').textContent,'Trade at the current system');
-  assert.match(h.dom.ids.get('modal-body').innerHTML,/Destination/);assert.match(h.dom.ids.get('modal-body').innerHTML,/Origin/);
-  h.api.closeModal();assert.equal(h.api.view,destination.id);same(h.persisted(),before);
-  h.api.searchDialog(kind);await h.submit();assert.equal(h.api.view,origin.id);
-  assert.equal(h.dom.ids.get('modal-title').textContent,'Find a '+kind);same(h.persisted(),before);
-  h.fill({dice:12,duration:1});await h.submit();same(h.persisted(),before);await h.submit();
-  assert.equal(h.persisted().snapshots[0].worldId,origin.id);assert.equal(h.persisted().actual,origin.id);
-  assert.equal(h.persisted().bank,before.bank);same(h.persisted().lots,before.lots);
+  h.api.searchDialog(kind);assert.equal(h.dom.ids.get('modal-title').textContent,'Find a '+kind);same(h.persisted(),before);
+  h.fill({dice:12,duration:1});await h.submit();await h.submit();
+  assert.equal(h.api.view,destination.id);assert.equal(h.persisted().snapshots[0].worldId,origin.id);assert.equal(h.persisted().actual,origin.id);same(h.persisted().lots,before.lots);
  });
 }
-test('row Sell and Get sale offers recover from map browsing and still require an actual-world buyer',async()=>{
+test('row Sell and Get sale offers ignore map inspection and still require an actual-world buyer',async()=>{
  for(const action of ['lot-sell','sale']){
   const s=campaign();s.lots.push({id:'owned',commodity:'11',description:'Owned goods',quantity:'2',basis:'10000',goodsValue:'10000',world:origin.id,hours:0});
   const h=harness(S.validate(s)),before=h.persisted();h.api.setView(destination.id);h.api.setSelected(['owned']);
-  h.api.actions[action]('owned');assert.equal(h.dom.ids.get('modal-title').textContent,'Trade at the current system');
-  await h.submit();assert.equal(h.dom.ids.get('modal-title').textContent,'Find a buyer');same(h.persisted(),before);
+  h.api.actions[action]('owned');assert.equal(h.dom.ids.get('modal-title').textContent,'Find a buyer');same(h.persisted(),before);
   h.fill({dice:12,duration:1});await h.submit();await h.submit();
-  assert.match(h.dom.ids.get('modal-title').textContent,/Review sale/);same(h.persisted().lots,before.lots);assert.equal(h.persisted().bank,before.bank);
+  assert.equal(h.api.view,destination.id);assert.match(h.dom.ids.get('modal-title').textContent,/Review sale/);same(h.persisted().lots,before.lots);assert.equal(h.persisted().bank,before.bank);
  }
 });
 test('empty-space searches stay blocked and do not create a world market',()=>{
@@ -48,7 +42,7 @@ test('a saved remote offer is still rejected before a purchase dialog or commit'
  assert.throws(()=>h.api.actions.buy('remote-offer'),/ship must be at this world/);
  assert.equal(h.dom.ids.get('modal').open,false);same(h.persisted(),before);
 });
-test('recovery submission is inert after editing ownership is lost',async()=>{
+test('remote-focus search submission is inert after editing ownership is lost',async()=>{
  const h=harness(),before=h.persisted();h.api.setView(destination.id);h.api.searchDialog();
  h.store.editable=false;h.api.syncModalSubmit();assert.equal(h.dom.ids.get('modal-submit').disabled,true);
  await h.submit();assert.equal(h.api.view,destination.id);same(h.persisted(),before);
@@ -473,4 +467,19 @@ test('saved insurance ON exposes both new coverage controls and zero-cost policy
  h.fill({quantity:1,fee:0,insure:true,insuranceLegs:1,insuranceDistance:1,coverage:70,manualPremium:0});h.api.updatePurchaseTotals();
  assert.equal(h.dom.ids.get('modal-error').textContent,'');assert.match(h.dom.ids.get('purchase-totals').innerHTML,/<dt>Insurance<\/dt><dd>Cr 0<\/dd>/);
  await h.submit();assert.equal(h.persisted().settings.insurance,true);assert.equal(h.persisted().policies.length,1);
+});
+
+test('remote map UWP and codes cannot affect current-world purchase or sale audit and balances',async()=>{
+ const base=tradeCampaign();base.worlds[destination.id].uwp='E000000-0';base.worlds[destination.id].overrideUWP='AFFFFFF-F';
+ const local=harness(structuredClone(base),[3,4,5]),remote=harness(structuredClone(base),[3,4,5]);remote.api.setView(destination.id);
+ for(const h of [local,remote]){h.api.actions['trade-side']('buy');assert.match(h.api.marketPanel(),/Market · Origin/);assert.doesNotMatch(h.api.marketPanel(),/Market · Destination/);h.api.buyForm('paired-offer');h.fill({quantity:1});await h.submit();noError(h);}
+ assert.equal(remote.api.view,destination.id);assert.equal(remote.persisted().actual,origin.id);assert.equal(remote.persisted().bank,local.persisted().bank);same(remote.persisted().lots[0].audit,local.persisted().lots[0].audit);
+ for(const h of [local,remote]){h.api.setSelected([h.persisted().lots[0].id]);h.api.beginSale();}
+ const lq=local.api.currentQuote(local.persisted().lots[0].id),rq=remote.api.currentQuote(remote.persisted().lots[0].id);same(rq.audit,lq.audit);assert.equal(rq.unitPrice,lq.unitPrice);
+ for(const h of [local,remote]){await h.submit();noError(h);}
+ assert.equal(remote.api.view,destination.id);assert.equal(remote.persisted().actual,origin.id);assert.equal(remote.persisted().bank,local.persisted().bank);assert.equal(remote.persisted().lots.length,local.persisted().lots.length);
+});
+test('remote empty-space inspection does not hide the actual-world market or supplier form',()=>{
+ const s=tradeCampaign();s.worlds[destination.id].emptySpace=true;const h=harness(s);h.api.setView(destination.id);h.api.actions['trade-side']('buy');h.api.actions.search();
+ assert.match(h.api.marketPanel(),/Market · Origin/);assert.match(h.api.marketPanel(),/id="supplier-form"/);assert.equal(h.api.view,destination.id);assert.equal(h.calls.saves,0);
 });

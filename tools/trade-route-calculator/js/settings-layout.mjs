@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=snapshot-lss-20261021-107';
+import {ruleInfo} from './rule-references.mjs?v=trade-current-20261021-108';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={
