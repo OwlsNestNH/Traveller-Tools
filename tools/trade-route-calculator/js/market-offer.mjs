@@ -1,5 +1,5 @@
 import * as A from './amounts.mjs';
-import * as R from './rules.mjs?v=stock-provenance-20261021-115';
+import * as R from './rules.mjs?v=trade-exports-20261021-116';
 
 // One referee override boundary: validate normalized entries and optionally
 // quote using the submitted roll/legality, then apply to a caller-owned offer.

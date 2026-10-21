@@ -1,5 +1,5 @@
-import {makePlayerSnapshotExample} from './player-snapshot-fixture.mjs?v=stock-provenance-20261021-115';
-import {measureSnapshotLink} from './player-snapshot-codec.mjs?v=stock-provenance-20261021-115';
+import {makePlayerSnapshotExample} from './player-snapshot-fixture.mjs?v=trade-exports-20261021-116';
+import {measureSnapshotLink} from './player-snapshot-codec.mjs?v=trade-exports-20261021-116';
 const result=document.getElementById('result'),link=document.getElementById('link'),open=document.getElementById('open');
 document.getElementById('generate').addEventListener('click',()=>{
   link.value='';open.hidden=true;open.removeAttribute('href');

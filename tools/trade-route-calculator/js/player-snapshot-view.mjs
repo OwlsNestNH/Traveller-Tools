@@ -1,8 +1,9 @@
+import {playerTradePrint,openTradePrint} from './trade-exports.mjs';
 import {derivedRetailPercent} from './player-retail-percent.mjs';
 import {campaignPoliticsFragment} from './campaign-politics-codec.mjs';
-import {informationButton} from './player-info.mjs?v=stock-provenance-20261021-115';
+import {informationButton} from './player-info.mjs?v=trade-exports-20261021-116';
 import {formatSnapshotTons, formatSnapshotWholeDown, formatSnapshotLss, formatSnapshotQuantityText} from './player-snapshot-format.mjs';
-import {projectPlayerSnapshot, summarizePlayerExpenses, EXPENSE_KINDS} from './player-snapshot.mjs?v=stock-provenance-20261021-115';
+import {projectPlayerSnapshot, summarizePlayerExpenses, EXPENSE_KINDS} from './player-snapshot.mjs?v=trade-exports-20261021-116';
 
 // Immutable transmitted data and local annotations remain separate.
 // Persistence is supplied by the standalone recipient adapter, never campaign storage.
@@ -139,6 +140,7 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
     'The capture timestamp identifies this fixed snapshot. It does not update live; ask the operator for a fresh link when information changes.',
     'Fuel quantities and tank capacities round down to whole tons; cargo and reserved space round up. LSS stock rounds down to whole units. Display rounding may make amounts differ from totals or costs. Snapshot LSS stock and days retain up to six decimal places, rounded down; fill bars use that snapshot precision. The operator’s saved campaign values are unchanged.'
   ],root));
-  root.replaceChildren(freshness,container);
+  const print=node('button','Print / Save as PDF');print.type='button';print.className='player-print-button';print.addEventListener('click',()=>{try{openTradePrint(playerTradePrint(data),document.defaultView);}catch(error){const notice=node('p',error.message);notice.setAttribute('role','alert');root.prepend(notice);}});
+  root.replaceChildren(freshness,print,container);
   return true;
 }
