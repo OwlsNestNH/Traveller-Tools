@@ -1,4 +1,4 @@
-import {sectors,sectorCatalog,subsectorForHex,loadWorld} from './map.mjs?v=trade-exports-20261021-116';
+import {sectors,sectorCatalog,subsectorForHex,loadWorld} from './map.mjs?v=world-search-20261021-117';
 
 const RECENTS_KEY='traveller-trade-route-calculator:recent-worlds:v1';
 let recentMemory=[];

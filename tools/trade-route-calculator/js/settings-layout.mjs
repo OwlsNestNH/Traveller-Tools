@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=trade-exports-20261021-116';
+import {ruleInfo} from './rule-references.mjs?v=world-search-20261021-117';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={
