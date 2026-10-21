@@ -203,8 +203,8 @@ async function saleCase(page,context,result,f){
  await flags(prepLot('sale-pair'),'complication');await flags(prepLot('sale-severe'),'severe');await dismiss(page);await diceUsed(page,rolled);
  await existingSell(page);
  for(const [id,outcome]of [['sale-pair','complication'],['sale-severe','severe']]){
-  const saleRow=row(page,'sale',id);await flags(saleRow.locator('td').nth(4),outcome);
-  assert.equal(await saleRow.locator('.trade-complication').count(),1,'Each Sale Price cell shows its own cached lot flag');
+  const saleRow=row(page,'sale',id);await flags(saleRow.locator('td').nth(0),outcome);
+  assert.equal(await saleRow.locator('.trade-complication').count(),1,'Each commodity cell shows its own cached lot flag');
   await action(page,'lot-audit',id).click();await audit(page,id==='sale-pair'?pair:triple,outcome);await dismiss(page);
  }
  assert.equal(await raw(page),initial);await existingSell(page);await action(page,'sale').click();await title(page,'Prepare sale · Deterministic buyer');
