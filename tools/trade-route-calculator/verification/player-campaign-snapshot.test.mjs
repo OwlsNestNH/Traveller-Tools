@@ -95,7 +95,7 @@ for(const numerator of ['2400000001','2700000001'])test(`fractional life-support
 });
 test('archived version4 departure remains readable with unknown separate maintenance',()=>{
  const s=structuredClone(jump(fresh()));const record=s.playerDepartures[0];record.snapshot.version=4;delete record.snapshot.expenses.maintenance;
- const before=structuredClone(s),view=playerSnapshotForVisit(s,core,0,clock);assert.equal(view.version,7);assert.equal(view.expenses.maintenance.paid,null);assert.equal(view.expenses.incidentals.paid,record.snapshot.expenses.incidentals.paid);assert.deepEqual(s,before);
+ const before=structuredClone(s),view=playerSnapshotForVisit(s,core,0,clock);assert.equal(view.version,8);assert.equal(view.expenses.maintenance.paid,null);assert.equal(view.expenses.incidentals.paid,record.snapshot.expenses.incidentals.paid);assert.deepEqual(s,before);
 });
 
 test('Broker commission comes only from recorded original purchase, never basis differences or default rates',()=>{
@@ -107,8 +107,8 @@ test('Broker commission comes only from recorded original purchase, never basis 
  const before=structuredClone(s),view=campaignPlayerSnapshot(s,core,session);
  assert.deepEqual(view.cargo.map(x=>x.purchase.originalBrokerCommission),['125','0',null]);
  assert.equal(view.cargo[0].purchase.percent,'62.50');assert.equal(view.cargo[0].purchase.paidTotal,'1250');
- assert.deepEqual(view.buy.offers,[{name:'Common Electronics',tons:'2',creditsPerTon:'625'}]);
- assert.deepEqual(view.sell.offers,[{name:'Common Electronics',tons:'2',creditsPerTon:'700'}]);assert.deepEqual(s,before);
+ assert.deepEqual(view.buy.offers,[{name:'Common Electronics',tons:'2',creditsPerTon:'625',retailPerTon:null}]);
+ assert.deepEqual(view.sell.offers,[{name:'Common Electronics',tons:'2',creditsPerTon:'700',retailPerTon:null}]);assert.deepEqual(s,before);
  // Partial sales/losses reduce goods aboard, not the recorded original fee.
  s.lots[0].quantity='1';s.lots[0].goodsValue='625';s.lots[0].basis='708';
  const partial=campaignPlayerSnapshot(s,core,clock).cargo[0];assert.equal(partial.purchase.originalBrokerCommission,'125');assert.equal(partial.purchase.paidTotal,'625');
@@ -139,4 +139,11 @@ test('normal exact consumption and duration division can produce more than six t
  // An ordinary integer capacity divided by a tenths-based complement can do it too.
  s.ship.fuel.displacementTons=201;s.ship.accommodation.crew.middle=102;s.ship.accommodation.occupiedLowBerths=4;S.validate(s);
  assert.equal(campaignPlayerSnapshot(s,core,clock).ship.lifeSupport.daysCapacity,'7.851562'); // 804/102.4 = 7.8515625
+});
+test('offer retail basis comes from saved quote audit, independent of current caps or map focus',()=>{
+ const s=fresh();s.lots=[lot()];s.snapshots=[{id:'supplier',kind:'supplier',worldId:s.actual,party:'p',offers:[{id:'offer',commodity:'11',remaining:'2',unitPrice:'850',audit:{basePrice:'1000',secret:'GM SECRET'}}]}];
+ const saleQuotes=new Map([['lot',{revision:s.revision,worldId:s.actual,unitPrice:'17000',audit:{basePrice:'20000'}}]]);
+ const before=JSON.stringify(s),view=campaignPlayerSnapshot(s,core,{...clock,saleQuotes});
+ assert.equal(view.buy.offers[0].retailPerTon,'1000');assert.equal(view.sell.offers[0].retailPerTon,'20000');assert.equal(JSON.stringify(s),before);assert.ok(!JSON.stringify(view).includes('GM SECRET'));
+ for(const value of [undefined,'0','-1','1/3','9999999999999999']){s.snapshots[0].offers[0].audit.basePrice=value;assert.equal(campaignPlayerSnapshot(s,core,clock).buy.offers[0].retailPerTon,null);}
 });

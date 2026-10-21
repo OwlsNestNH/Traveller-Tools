@@ -1,12 +1,12 @@
 // Read-only campaign adapter. Only explicit public values cross this boundary.
 // No DOM, persistence, random rolls, network access or URL serialization.
-import {projectPlayerSnapshot,SNAPSHOT_VERSION,EXPENSE_KINDS} from './player-snapshot.mjs?v=inline-sell-20261021-113';
-import {playerBriefingData} from './player-briefing.mjs?v=inline-sell-20261021-113';
-import {context} from './rules.mjs?v=inline-sell-20261021-113';
+import {projectPlayerSnapshot,SNAPSHOT_VERSION,EXPENSE_KINDS} from './player-snapshot.mjs?v=player-retail-20261021-114';
+import {playerBriefingData} from './player-briefing.mjs?v=player-retail-20261021-114';
+import {context} from './rules.mjs?v=player-retail-20261021-114';
 import {displayDate} from './calendar.mjs';
-import {supportStock,supportAmount} from './life-support.mjs?v=inline-sell-20261021-113';
-import {passengerShip} from './passengers.mjs?v=inline-sell-20261021-113';
-import {fuelAvailabilityAdvice} from './expenses.mjs?v=inline-sell-20261021-113';
+import {supportStock,supportAmount} from './life-support.mjs?v=player-retail-20261021-114';
+import {passengerShip} from './passengers.mjs?v=player-retail-20261021-114';
+import {fuelAvailabilityAdvice} from './expenses.mjs?v=player-retail-20261021-114';
 import * as A from './amounts.mjs';
 
 const text=value=>String(value??'').replace(/[\x00-\x1f\x7f]/g,' ').slice(0,240);
@@ -15,6 +15,8 @@ const amount=value=>value==null?null:A.decimal(value);
 // LSS/day values; campaign rationals and shared life-support calculations stay exact.
 const snapshotSupport=value=>value===null?null:A.decimal(A.div(A.floor(A.mul(supportAmount(value),1000000)),1000000));
 const recordedCommission=value=>{if(typeof value!=='string'&&typeof value!=='number')return null;try{return A.cmp(value,0)<0?null:amount(value);}catch{return null;}};
+// A missing or unsupported historical basis is unknown, never inferred from current settings.
+const recordedRetail=value=>{try{const n=amount(value);return n!==null&&/^(0|[1-9]\d{0,14})(\.\d{1,6})?$/.test(n)&&A.cmp(n,0)>0?n:null;}catch{return null;}};
 const name=(core,id)=>core.commodities.find(g=>g.id===id)?.name??'Other';
 function visitBoundary(s){
  const last=s.ledger.findLast(e=>e.type==='Jump');
@@ -39,9 +41,9 @@ export function campaignPlayerSnapshot(s,core,{saleQuotes=new Map(),capturedAt=n
  for(const kind of EXPENSE_KINDS)expenses[kind]={expected:null,paid:reconciled?String(sums[kind]):null,basis:'No saved visit plan. '+(reconciled?'Recorded payments only; unrecorded activity is unknown.':'Payment history unavailable for this visit.')};
  // Saved offers stay usable across visits until expired or rejected, exactly as buy().
  const suppliers=s.snapshots.filter(x=>x.worldId===s.actual&&x.kind==='supplier');
- const offers=suppliers.flatMap(x=>(s.cooldowns[x.party]??0)>s.hours?[]:x.offers.filter(o=>!o.expired&&!o.manualRequired&&A.cmp(o.remaining,0)>0).map(o=>({name:name(core,o.commodity),tons:amount(o.remaining),creditsPerTon:amount(o.unitPrice)})));
+ const offers=suppliers.flatMap(x=>(s.cooldowns[x.party]??0)>s.hours?[]:x.offers.filter(o=>!o.expired&&!o.manualRequired&&A.cmp(o.remaining,0)>0).map(o=>({name:name(core,o.commodity),tons:amount(o.remaining),creditsPerTon:amount(o.unitPrice),retailPerTon:recordedRetail(o.audit?.basePrice)})));
  const sales=[];
- for(const l of s.lots){const q=saleQuotes.get(l.id);if(q&&q.revision===s.revision&&q.worldId===s.actual&&!q.audit?.manualRequired)sales.push({name:name(core,l.commodity),tons:amount(l.quantity),creditsPerTon:amount(q.unitPrice)});}
+ for(const l of s.lots){const q=saleQuotes.get(l.id);if(q&&q.revision===s.revision&&q.worldId===s.actual&&!q.audit?.manualRequired)sales.push({name:name(core,l.commodity),tons:amount(l.quantity),creditsPerTon:amount(q.unitPrice),retailPerTon:recordedRetail(q.audit?.basePrice)});}
  const daily=support.dailyUnits,days=units=>units!==null&&support.complementKnown&&A.cmp(daily,0)>0?snapshotSupport(A.div(units,daily)):null;
  const exactCargo=support.cargoExact===null?null:supportAmount(support.cargoExact);
  const reserve=exactCargo===null?null:snapshotSupport(A.mul(exactCargo,100));

@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=inline-sell-20261021-113';
+import {ruleInfo} from './rule-references.mjs?v=player-retail-20261021-114';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={

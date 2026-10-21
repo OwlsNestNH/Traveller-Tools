@@ -1,16 +1,16 @@
-import {ruleInfo} from './rule-references.mjs?v=inline-sell-20261021-113';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=inline-sell-20261021-113';
-import {passengerShip} from './passengers.mjs?v=inline-sell-20261021-113';
+import {ruleInfo} from './rule-references.mjs?v=player-retail-20261021-114';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=player-retail-20261021-114';
+import {passengerShip} from './passengers.mjs?v=player-retail-20261021-114';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=inline-sell-20261021-113';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=inline-sell-20261021-113';
-import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=inline-sell-20261021-113';
-import {roomCounts} from './accommodation.mjs?v=inline-sell-20261021-113';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=inline-sell-20261021-113';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=inline-sell-20261021-113';
-import {creditStep} from './rounding.mjs?v=inline-sell-20261021-113';
-import {roll} from './rules.mjs?v=inline-sell-20261021-113';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=inline-sell-20261021-113';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=player-retail-20261021-114';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=player-retail-20261021-114';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=player-retail-20261021-114';
+import {roomCounts} from './accommodation.mjs?v=player-retail-20261021-114';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=player-retail-20261021-114';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=player-retail-20261021-114';
+import {creditStep} from './rounding.mjs?v=player-retail-20261021-114';
+import {roll} from './rules.mjs?v=player-retail-20261021-114';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=player-retail-20261021-114';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

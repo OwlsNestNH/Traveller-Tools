@@ -1,5 +1,5 @@
-import {makePlayerSnapshotExample} from './player-snapshot-fixture.mjs?v=inline-sell-20261021-113';
-import {measureSnapshotLink} from './player-snapshot-codec.mjs?v=inline-sell-20261021-113';
+import {makePlayerSnapshotExample} from './player-snapshot-fixture.mjs?v=player-retail-20261021-114';
+import {measureSnapshotLink} from './player-snapshot-codec.mjs?v=player-retail-20261021-114';
 const result=document.getElementById('result'),link=document.getElementById('link'),open=document.getElementById('open');
 document.getElementById('generate').addEventListener('click',()=>{
   link.value='';open.hidden=true;open.removeAttribute('href');

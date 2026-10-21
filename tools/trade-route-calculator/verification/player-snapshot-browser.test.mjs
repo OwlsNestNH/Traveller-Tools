@@ -42,6 +42,18 @@ try {
     await page.setViewportSize({width:320,height:844});assert.equal(await dialog.evaluate(e=>e.scrollWidth<=e.clientWidth),true);await page.keyboard.press('Escape');await dialog.waitFor({state:'detached'});assert.equal(await trigger.evaluate(e=>document.activeElement===e),true);
     await trigger.click();await dialog.getByRole('button',{name:'Close',exact:true}).click();await dialog.waitFor({state:'detached'});assert.equal(await page.getByRole('dialog').count(),0);await page.setViewportSize({width:1440,height:1100});
   }
+  const retailChecks=await page.evaluate(async()=>{
+    const {renderPlayerSnapshot}=await import('./js/player-snapshot-view.mjs');
+    const {playerSnapshotFixture}=await import('./js/player-snapshot-fixture.mjs');
+    const root=document.getElementById('snapshot'),data=structuredClone(playerSnapshotFixture);data.version=8;
+    data.buy.offers=[{name:'Common Electronics',tons:'2',creditsPerTon:'17000',retailPerTon:'20000'},{name:'Other',tons:'1',creditsPerTon:'10000',retailPerTon:null}];
+    data.sell.offers=[{name:'Common Electronics',tons:'2',creditsPerTon:'17100',retailPerTon:'10000'}];
+    const before=JSON.stringify(data);renderPlayerSnapshot(root,data,{rounding:100});
+    const sections=[...root.querySelectorAll('section')].filter(s=>/^(Buy offers|Sell offers)/.test(s.querySelector('h2').textContent));
+    const cells=sections.map(s=>[...s.querySelectorAll('tbody tr')].map(r=>({value:r.children[3].textContent,title:r.children[3].firstChild.title})));
+    renderPlayerSnapshot(root,playerSnapshotFixture);return {cells,unchanged:before===JSON.stringify(data)};
+  });
+  assert.equal(retailChecks.unchanged,true);assert.deepEqual(retailChecks.cells.map(s=>s.map(c=>c.value)),[['85%','Unknown'],['171%']]);assert.match(retailChecks.cells[0][0].title,/20000/);assert.match(retailChecks.cells[0][0].title,/not the original dice/);
   // Presentation rounding cannot alter exact source quantities or meter ratios.
   const displayChecks=await page.evaluate(async()=>{
     const {renderPlayerSnapshot}=await import('./js/player-snapshot-view.mjs');
@@ -157,7 +169,7 @@ try {
     const literal = root.textContent.includes(input.world.name), injected = root.querySelectorAll('img,script').length;
     for (let i=0;i<5;i++) renderPlayerSnapshot(root, playerSnapshotFixture);
     const sections = root.querySelectorAll('section').length;
-    renderPlayerSnapshot(root, {...input, version:8}); const rejected = root.querySelector('[role=alert]')?.textContent.includes('Unsupported');
+    renderPlayerSnapshot(root, {...input, version:9}); const rejected = root.querySelector('[role=alert]')?.textContent.includes('Unsupported');
     const stale = root.textContent.includes('Regina');
     input.buy = {status:'not-checked', offers:[]}; input.sell = {status:'expired', offers:[]}; input.cargo = [];
     renderPlayerSnapshot(root, input);

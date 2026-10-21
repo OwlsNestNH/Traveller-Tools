@@ -1,6 +1,6 @@
 // Recipient-only persistence. Never enumerate, import or write campaign storage.
-import {CargoTonnageError} from './player-snapshot.mjs?v=inline-sell-20261021-113';
-import {decodeSnapshotEnvelope,PROPOSED_PREFIX} from './player-snapshot-codec.mjs?v=inline-sell-20261021-113';
+import {CargoTonnageError} from './player-snapshot.mjs?v=player-retail-20261021-114';
+import {decodeSnapshotEnvelope,PROPOSED_PREFIX} from './player-snapshot-codec.mjs?v=player-retail-20261021-114';
 export const RECIPIENT_PREFIX='traveller-player-snapshot:v1:';
 const warning='Browser storage is unavailable or full. Changes may not survive closing this page.';
 const decode=payload=>decodeSnapshotEnvelope(PROPOSED_PREFIX+payload,{maxUrlLength:8192});

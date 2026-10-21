@@ -74,7 +74,7 @@ test('percentage rows reconstruct exact quotes; noncanonical prices use explicit
 });
 test('forged percent price cannot contradict the declared rounding quantum',()=>{
  const d=clone();d.buy.offers=Array.from({length:50},()=>({name:'Advanced Electronics',tons:'1',creditsPerTon:'100000'}));d.sell.offers=[{name:'Common Consumables',tons:'1',creditsPerTon:'500'}];
- const encoded=link(d);assert.equal(Buffer.from(encoded.slice(PROPOSED_PREFIX.length),'base64url')[4]&2,2);
+ const encoded=PROPOSED_PREFIX+measureSnapshotLink(d,{codecVersion:7}).payload;assert.equal(Buffer.from(encoded.slice(PROPOSED_PREFIX.length),'base64url')[4]&2,2);
  assert.throws(()=>decode(mutate(encoded,b=>{b[b.length-1]=43;})),/Invalid/); // 105% of Cr500 = Cr525, not a Cr100 increment.
 });
 

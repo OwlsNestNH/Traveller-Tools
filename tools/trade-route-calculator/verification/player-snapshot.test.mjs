@@ -7,12 +7,12 @@ test('allowlist strips GM and unrelated fields recursively; detached immutable o
   const input = fresh(); input.gm = 'secret'; input.world.audit = 'secret'; input.ship.bank = 'secret';
   input.cargo[0].reason = 'secret'; input.buy.reason = 'secret'; input.buy.offers[0].audit = 'secret';
   const result = projectPlayerSnapshot(input);
-  assert.deepEqual(result, {...fixture,cargo:fixture.cargo.map(row=>({...row,purchase:null}))}); assert.ok(!JSON.stringify(result).includes('secret'));
+  assert.deepEqual(result, {...fixture,version:8,cargo:fixture.cargo.map(row=>({...row,purchase:null})),...Object.fromEntries(['buy','sell'].map(key=>[key,{...fixture[key],offers:fixture[key].offers.map(row=>({...row,retailPerTon:null}))}]))}); assert.ok(!JSON.stringify(result).includes('secret'));
   input.cargo[0].name = 'changed'; assert.equal(result.cargo[0].name, fixture.cargo[0].name);
   assert.throws(() => {result.buy.offers[0].tons = '0';}, TypeError);
 });
 test('unknown, absent and legacy versions fail closed', () => {
-  for (const version of [undefined, 0, 1, 2, 3, 8, '4', null]) assert.throws(() => projectPlayerSnapshot({...fresh(), version}), /Unsupported/);
+  for (const version of [undefined, 0, 1, 2, 3, 9, '4', null]) assert.throws(() => projectPlayerSnapshot({...fresh(), version}), /Unsupported/);
 });
 test('malformed shape, nonfinite or excessive amounts and bounded text rejected', () => {
   for (const value of [null, [], 'snapshot']) assert.throws(() => projectPlayerSnapshot(value));

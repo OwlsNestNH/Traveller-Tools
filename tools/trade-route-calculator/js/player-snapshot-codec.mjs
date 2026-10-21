@@ -1,9 +1,9 @@
 import {encodeCampaignPolitics,decodeCampaignPolitics} from './campaign-politics-codec.mjs';
 // Standalone browser codec prototype. No DOM, storage, network or production adapter.
-import {projectPlayerSnapshot, EXPENSE_KINDS, SNAPSHOT_VERSION, LEGACY_MAINTENANCE, CargoTonnageError} from './player-snapshot.mjs?v=inline-sell-20261021-113';
+import {projectPlayerSnapshot, EXPENSE_KINDS, SNAPSHOT_VERSION, LEGACY_MAINTENANCE, CargoTonnageError} from './player-snapshot.mjs?v=player-retail-20261021-114';
 import {CATALOG_VERSION, COMMODITIES, WORLDS, TEXT_FRAGMENTS, BASE_PRICES, STATIC_TEXT_V2, DESTINATIONS_V2} from './player-snapshot-catalog.mjs';
 export const PROPOSED_PREFIX = 'https://owlsnestnh.github.io/Traveller-Tools/p#'; // NOT DEPLOYED
-export const CODEC_VERSION = 8;
+export const CODEC_VERSION = 9;
 const MAX_BYTES = 65536, MAX_URL = 100000;
 const worldKeys = ['name','location','uwp','tradeCodes','travelZone','starport'];
 const statuses = ['available','not-checked','expired'];
@@ -32,7 +32,7 @@ export function prepareSnapshotForLink(input, {rounding=100}={}) {
       purchase.paidPerTon=rounded(purchase.paidPerTon,rounding);
       purchase.originalBrokerCommission=rounded(purchase.originalBrokerCommission,rounding);
     }
-    if ('creditsPerTon' in row) row.creditsPerTon = rounded(row.creditsPerTon,rounding);
+    if ('creditsPerTon' in row) {row.creditsPerTon = rounded(row.creditsPerTon,rounding);if(row.retailPerTon!==null&&scale(row.retailPerTon)===0n)row.retailPerTon=null;}
   }
   return projectPlayerSnapshot(data);
 }
@@ -125,9 +125,12 @@ function packet(input, bytes, rounding, percentages=true, codecVersion=CODEC_VER
     }
     uint(code);return value;
   };
-  if(byte(80)!==80)invalid();codecVersion=byte(codecVersion);if(![1,2,3,4,5,6,7,8].includes(codecVersion))invalid();
+  if(byte(80)!==80)invalid();codecVersion=byte(codecVersion);if(![1,2,3,4,5,6,7,8,9].includes(codecVersion))invalid();
   if(byte(codecVersion>=3?codecVersion:2)!==(codecVersion>=3?codecVersion:2)||byte(CATALOG_VERSION)!==CATALOG_VERSION)invalid();
-  const mode=byte((rounding===1000?1:0)|(percentages?2:0)); if (mode>3) invalid(); rounding=mode&1 ? 1000 : 100; percentages=Boolean(mode&2);
+  // New links may omit the basis block only when every basis is verified catalog retail.
+  const catalogBasis=row=>{const n=BASE_PRICES[commodityIds.get(row.name)];return Number.isSafeInteger(n)&&n>0?String(n):null;};
+  const explicitBases=!reading&&codecVersion>=9&&[...input.buy.offers,...input.sell.offers].some(row=>row.retailPerTon!==catalogBasis(row));
+  const mode=byte((rounding===1000?1:0)|(percentages?2:0)|(explicitBases?4:0)); if (mode>(codecVersion>=9?7:3)) invalid(); rounding=mode&1 ? 1000 : 100; percentages=Boolean(mode&2);
   const source=input ?? {}, result={version:SNAPSHOT_VERSION};
   result.capturedAt=string(source.capturedAt); result.campaignDate=string(source.campaignDate);
   // Reference by stable location, then explicitly carry EVERY differing world field.
@@ -159,13 +162,29 @@ function packet(input, bytes, rounding, percentages=true, codecVersion=CODEC_VER
     if(reading){const length=small(undefined,4000);if(position+length>bytes.length)invalid();result.campaignPolitics=decodeCampaignPolitics(bytes.subarray(position,position+length));position+=length;}
     else {const politics=encodeCampaignPolitics(source.campaignPolitics);uint(politics.length);for(const n of politics)byte(n);}
   }
+  for(const key of ['buy','sell'])for(let i=0;i<result[key].offers.length;i++){
+    const row=result[key].offers[i];row.retailPerTon=null;
+    if(codecVersion>=9){
+      if(mode&4){
+        // Decimal tags use low bits 1..7; reserve code 8 for verified catalog retail.
+        if(reading){
+          const code=uint();
+          if(code===8n){row.retailPerTon=catalogBasis(row);if(row.retailPerTon===null)invalid();}
+          else if(code!==0n){const tag=Number(code&7n);if(tag===0)invalid();const places=tag-1,digits=String(code>>3n).padStart(places+1,'0');row.retailPerTon=places?digits.slice(0,-places)+'.'+digits.slice(-places):digits;if(scale(row.retailPerTon)===0n)invalid();}
+        }else {
+          const basis=source[key].offers[i].retailPerTon;
+          if(basis===catalogBasis(row)&&basis!==null)uint(8);else decimal(basis);
+        }
+      }else row.retailPerTon=catalogBasis(row);
+    }
+  }
   if (reading) {if (position!==bytes.length) invalid(); return projectPlayerSnapshot(result);}
   return Uint8Array.from(output);
 }
 const base64 = bytes => btoa(Array.from(bytes,n=>String.fromCharCode(n)).join('')).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 function budget(value) {if (!Number.isInteger(value) || value<PROPOSED_PREFIX.length || value>MAX_URL) throw new Error('Invalid URL character budget.'); return value;}
 export function measureSnapshotLink(input, {rounding=100,percentages=true,codecVersion=CODEC_VERSION}={}) {
-  if(![1,2,3,4,5,6,7,8].includes(codecVersion))invalid();
+  if(![1,2,3,4,5,6,7,8,9].includes(codecVersion))invalid();
   const snapshot=prepareSnapshotForLink(input,{rounding});
   if(codecVersion<8 && snapshot.campaignPolitics!==null)throw Error('Older codecs cannot represent campaign territory.');
   if(codecVersion<7 && snapshot.cargo.some(row=>row.purchase?.originalBrokerCommission!=null))throw Error('Older codecs cannot represent Broker commission.');

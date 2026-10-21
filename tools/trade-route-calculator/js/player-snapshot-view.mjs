@@ -1,7 +1,8 @@
+import {derivedRetailPercent} from './player-retail-percent.mjs';
 import {campaignPoliticsFragment} from './campaign-politics-codec.mjs';
-import {informationButton} from './player-info.mjs?v=inline-sell-20261021-113';
+import {informationButton} from './player-info.mjs?v=player-retail-20261021-114';
 import {formatSnapshotTons, formatSnapshotWholeDown, formatSnapshotLss, formatSnapshotQuantityText} from './player-snapshot-format.mjs';
-import {projectPlayerSnapshot, summarizePlayerExpenses, EXPENSE_KINDS} from './player-snapshot.mjs?v=inline-sell-20261021-113';
+import {projectPlayerSnapshot, summarizePlayerExpenses, EXPENSE_KINDS} from './player-snapshot.mjs?v=player-retail-20261021-114';
 
 // Immutable transmitted data and local annotations remain separate.
 // Persistence is supplied by the standalone recipient adapter, never campaign storage.
@@ -130,7 +131,7 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
     const panel = section(title), market = data[key];
     panel.append(node('p', 'Negotiated goods prices in Credits per ton. Quotes only; no transactions.'));
     const commissionNote=node('p','Broker commission: Unknown');commissionNote.append(informationButton(document,'Broker commission · '+(key==='buy'?'buy offers':'sell offers'),['These saved quotes do not retain a confirmed Broker commission. A default broker rate is not a recorded charge. Ask the operator for the reviewed commission; it is separate from the goods price.'],root));panel.append(commissionNote);
-    table(panel, ['Goods', 'Tons quoted', 'Cr / ton'], market.offers.map((row,i) => [localName(row,key,i), formatSnapshotTons(row.tons), row.creditsPerTon]), {'available':'Checked: no current offers.', 'not-checked':'Not checked. No prices available.', 'expired':'Expired. Ask the operator for fresh offers.'}[market.status]);
+    table(panel, ['Goods', 'Tons quoted', 'Cr / ton', '≈ % retail'], market.offers.map((row,i) => [localName(row,key,i), formatSnapshotTons(row.tons), row.creditsPerTon, (()=>{const cell=node('span',derivedRetailPercent(row));cell.title=row.retailPerTon===null?'Effective retail was not recorded in this snapshot.':'Displayed price ÷ recorded effective retail Cr '+row.retailPerTon+' per ton. Approximate: link prices are rounded; this is not the original dice/table percentage. Broker commission is separate.';return cell;})()]), {'available':'Checked: no current offers.', 'not-checked':'Not checked. No prices available.', 'expired':'Expired. Ask the operator for fresh offers.'}[market.status]);
   }
   const freshness=node('p','Captured: '+data.capturedAt+' · Fixed snapshot');
   freshness.append(informationButton(document,'Snapshot information',[
