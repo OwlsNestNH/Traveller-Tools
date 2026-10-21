@@ -1,58 +1,58 @@
-import {localBrokerFeePercent} from './local-broker-fee.mjs?v=player-retail-20261021-114';
+import {localBrokerFeePercent} from './local-broker-fee.mjs?v=stock-provenance-20261021-115';
 import {projectCampaignPolitics,campaignTerritoryMarkup,campaignAllegiance} from './campaign-politics.mjs';
-import {mountPoliticsEditor} from './campaign-politics-editor.mjs?v=player-retail-20261021-114';
-import {matchesBuyRetailFilter,matchesSellRetailFilter,buyOfferRetailLabel} from './buy-offer-filter.mjs?v=player-retail-20261021-114';
-import {campaignPlayerSnapshot,playerSnapshotForVisit} from './player-campaign-snapshot.mjs?v=player-retail-20261021-114';
-import {playerSnapshotUrl} from './player-snapshot-link.mjs?v=player-retail-20261021-114';
-import {createCargoRemovalSession} from './cargo-removal-session.mjs?v=player-retail-20261021-114';
-import {statusGaugeValues,fuelGaugeValues} from './status-gauges.mjs?v=player-retail-20261021-114';
-import {prepareContactSearchResult,marketAvailabilityRecord,tradeCodeLabel} from './contact-search-result.mjs?v=player-retail-20261021-114';
-import {prepareMarketOfferOverride,applyMarketOfferOverride} from './market-offer.mjs?v=player-retail-20261021-114';
-import {prepareInsuranceTerms} from './insurance-terms.mjs?v=player-retail-20261021-114';
-import {preparePurchaseAmounts} from './purchase-amounts.mjs?v=player-retail-20261021-114';
-import {prepareSaleLine} from './sale-line.mjs?v=player-retail-20261021-114';
-import {APP_BUILD,createDebugLog} from './debug-log.mjs?v=player-retail-20261021-114';
-import {dashboardPanel} from './dashboard-view.mjs?v=player-retail-20261021-114';
-import {recordWorldOverride,revertWorldField,worldFieldRevertEligibility,worldChangeFields,worldFieldValue,isWorldChangeAudit} from './world-change-history.mjs?v=player-retail-20261021-114';
-import {createCampaignController} from './campaign-controller.mjs?v=player-retail-20261021-114';
-import {ruleInfo,referenceIndex,REFERENCE_VERSION} from './rule-references.mjs?v=player-retail-20261021-114';
-import {mountRulePopover,replaceReferenceContent} from './rule-popover.mjs?v=player-retail-20261021-114';
-import {escapeHtml,moneyHtml} from './display.mjs?v=player-retail-20261021-114';
-import {normalizeAmount,normalizeAmountFields} from './form-values.mjs?v=player-retail-20261021-114';
-import {contactSearchStatus,contactSearchPeriod,contactSearchRule,prepareContactSearchOutcome} from './contact-search.mjs?v=player-retail-20261021-114';
-import {createPassengerUI} from './passenger-ui.mjs?v=player-retail-20261021-114';
-import {passengerShip,passengerTotals,passengerSpace,passengerCapacity} from './passengers.mjs?v=player-retail-20261021-114';
-import {advancePaymentDate,recordedPaymentDate} from './payment-schedule.mjs?v=player-retail-20261021-114';
-import {configureMortgage,mortgageStatus} from './mortgage.mjs?v=player-retail-20261021-114';
-import {configureMaintenance,maintenanceStatus} from './maintenance.mjs?v=player-retail-20261021-114';
-import {createServicePanels} from './service-panels.mjs?v=player-retail-20261021-114';
-import {cargoHoldPanel,purchaseFacts} from './cargo-hold.mjs?v=player-retail-20261021-114';
-import {cargoManagementPanel} from './cargo-management.mjs?v=player-retail-20261021-114';
-import {createExpensePanels} from './expense-panels.mjs?v=player-retail-20261021-114';
+import {mountPoliticsEditor} from './campaign-politics-editor.mjs?v=stock-provenance-20261021-115';
+import {matchesBuyRetailFilter,matchesSellRetailFilter,buyOfferRetailLabel} from './buy-offer-filter.mjs?v=stock-provenance-20261021-115';
+import {campaignPlayerSnapshot,playerSnapshotForVisit} from './player-campaign-snapshot.mjs?v=stock-provenance-20261021-115';
+import {playerSnapshotUrl} from './player-snapshot-link.mjs?v=stock-provenance-20261021-115';
+import {createCargoRemovalSession} from './cargo-removal-session.mjs?v=stock-provenance-20261021-115';
+import {statusGaugeValues,fuelGaugeValues} from './status-gauges.mjs?v=stock-provenance-20261021-115';
+import {prepareContactSearchResult,marketAvailabilityRecord,tradeCodeLabel} from './contact-search-result.mjs?v=stock-provenance-20261021-115';
+import {prepareMarketOfferOverride,applyMarketOfferOverride} from './market-offer.mjs?v=stock-provenance-20261021-115';
+import {prepareInsuranceTerms} from './insurance-terms.mjs?v=stock-provenance-20261021-115';
+import {preparePurchaseAmounts} from './purchase-amounts.mjs?v=stock-provenance-20261021-115';
+import {prepareSaleLine} from './sale-line.mjs?v=stock-provenance-20261021-115';
+import {APP_BUILD,createDebugLog} from './debug-log.mjs?v=stock-provenance-20261021-115';
+import {dashboardPanel} from './dashboard-view.mjs?v=stock-provenance-20261021-115';
+import {recordWorldOverride,revertWorldField,worldFieldRevertEligibility,worldChangeFields,worldFieldValue,isWorldChangeAudit} from './world-change-history.mjs?v=stock-provenance-20261021-115';
+import {createCampaignController} from './campaign-controller.mjs?v=stock-provenance-20261021-115';
+import {ruleInfo,referenceIndex,REFERENCE_VERSION} from './rule-references.mjs?v=stock-provenance-20261021-115';
+import {mountRulePopover,replaceReferenceContent} from './rule-popover.mjs?v=stock-provenance-20261021-115';
+import {escapeHtml,moneyHtml} from './display.mjs?v=stock-provenance-20261021-115';
+import {normalizeAmount,normalizeAmountFields} from './form-values.mjs?v=stock-provenance-20261021-115';
+import {contactSearchStatus,contactSearchPeriod,contactSearchRule,prepareContactSearchOutcome} from './contact-search.mjs?v=stock-provenance-20261021-115';
+import {createPassengerUI} from './passenger-ui.mjs?v=stock-provenance-20261021-115';
+import {passengerShip,passengerTotals,passengerSpace,passengerCapacity} from './passengers.mjs?v=stock-provenance-20261021-115';
+import {advancePaymentDate,recordedPaymentDate} from './payment-schedule.mjs?v=stock-provenance-20261021-115';
+import {configureMortgage,mortgageStatus} from './mortgage.mjs?v=stock-provenance-20261021-115';
+import {configureMaintenance,maintenanceStatus} from './maintenance.mjs?v=stock-provenance-20261021-115';
+import {createServicePanels} from './service-panels.mjs?v=stock-provenance-20261021-115';
+import {cargoHoldPanel,purchaseFacts} from './cargo-hold.mjs?v=stock-provenance-20261021-115';
+import {cargoManagementPanel} from './cargo-management.mjs?v=stock-provenance-20261021-115';
+import {createExpensePanels} from './expense-panels.mjs?v=stock-provenance-20261021-115';
 import {currentJumpAttempt} from './jump-attempts.mjs';
-import {mountSettingsLayout,syncSettingsControls,stepSetting} from './settings-layout.mjs?v=player-retail-20261021-114';
-import {configureFuel,fuelCapacities,bladderSpace,validateFuel,jumpFuel} from './fuel.mjs?v=player-retail-20261021-114';
-import {refillQuote,supportStock,supportCargo,supportDisplay,anchorSupport,configureSupport} from './life-support.mjs?v=player-retail-20261021-114';
-import {playerBriefing} from './player-briefing.mjs?v=player-retail-20261021-114';
-import {campaignReport} from './report.mjs?v=player-retail-20261021-114';
-import {up,creditStep,roundExisting} from './rounding.mjs?v=player-retail-20261021-114';
-import {tiers,luggageAllowance,occupants,passengerLuggage,manualLuggage,serviceRate,serviceLabel,roomCounts,roomTotal,personMonthlyRate,personRate,refillPersonRate} from './accommodation.mjs?v=player-retail-20261021-114';
+import {mountSettingsLayout,syncSettingsControls,stepSetting} from './settings-layout.mjs?v=stock-provenance-20261021-115';
+import {configureFuel,fuelCapacities,bladderSpace,validateFuel,jumpFuel} from './fuel.mjs?v=stock-provenance-20261021-115';
+import {refillQuote,supportStock,supportCargo,supportDisplay,anchorSupport,configureSupport} from './life-support.mjs?v=stock-provenance-20261021-115';
+import {playerBriefing} from './player-briefing.mjs?v=stock-provenance-20261021-115';
+import {campaignReport} from './report.mjs?v=stock-provenance-20261021-115';
+import {up,creditStep,roundExisting} from './rounding.mjs?v=stock-provenance-20261021-115';
+import {tiers,luggageAllowance,occupants,passengerLuggage,manualLuggage,serviceRate,serviceLabel,roomCounts,roomTotal,personMonthlyRate,personRate,refillPersonRate} from './accommodation.mjs?v=stock-provenance-20261021-115';
 import * as A from './amounts.mjs';
 import {parseDate,displayDate} from './calendar.mjs';
-import * as R from './rules.mjs?v=player-retail-20261021-114';
-import * as S from './state.mjs?v=player-retail-20261021-114';
+import * as R from './rules.mjs?v=stock-provenance-20261021-115';
+import * as S from './state.mjs?v=stock-provenance-20261021-115';
 import {latestMailCheck,recordMailCheck,mailCheckHistoryStatus} from './mail-history.mjs?v=mail-history-1';
-import * as E from './expenses.mjs?v=player-retail-20261021-114';
-import {planetInformation,worldSheetURL} from './planet-info.mjs?v=player-retail-20261021-114';
-import {worldMapFacts,publishedWorldBody,worldSymbols,selectedWorldHex,mapKeyMarkup} from './world-symbols.mjs?v=player-retail-20261021-114';
-import * as M from './map.mjs?v=player-retail-20261021-114';
+import * as E from './expenses.mjs?v=stock-provenance-20261021-115';
+import {planetInformation,worldSheetURL} from './planet-info.mjs?v=stock-provenance-20261021-115';
+import {worldMapFacts,publishedWorldBody,worldSymbols,selectedWorldHex,mapKeyMarkup} from './world-symbols.mjs?v=stock-provenance-20261021-115';
+import * as M from './map.mjs?v=stock-provenance-20261021-115';
 import {MAP_GEOMETRY,setMapGeometry,visibleMapWorlds} from './map-geometry.mjs?v=map-first-1';
 import {camera,viewportTiles,MapAreaCache} from './map-viewport.mjs?v=map-first-1';
-import {MIN_MAP_ZOOM,MAX_MAP_ZOOM,MAP_ZOOM_STEP,nextMapZoom,mapLevel,showSubsectorNames,MapOverviewCache,overviewMarkup,mapTerritories} from './map-overview.mjs?v=player-retail-20261021-114';
+import {MIN_MAP_ZOOM,MAX_MAP_ZOOM,MAP_ZOOM_STEP,nextMapZoom,mapLevel,showSubsectorNames,MapOverviewCache,overviewMarkup,mapTerritories} from './map-overview.mjs?v=stock-provenance-20261021-115';
 import {readPoliticalTerritory,savePoliticalTerritory} from './map-preferences.mjs';
-import {createGlobalWorldSearch} from './global-world-search.mjs?v=player-retail-20261021-114';
-import {createWorldPicker,rememberWorld} from './world-picker.mjs?v=player-retail-20261021-114';
-import {Store,KEY,SaveNotCommittedError,SaveCommittedPublicationError} from './persistence.mjs?v=player-retail-20261021-114';
+import {createGlobalWorldSearch} from './global-world-search.mjs?v=stock-provenance-20261021-115';
+import {createWorldPicker,rememberWorld} from './world-picker.mjs?v=stock-provenance-20261021-115';
+import {Store,KEY,SaveNotCommittedError,SaveCommittedPublicationError} from './persistence.mjs?v=stock-provenance-20261021-115';
 const $=id=>document.getElementById(id),esc=escapeHtml;
 const ROOT='https://github.com/OwlsNestNH/Traveller-Tools/blob/main/tools/trade-route-calculator/';
 let inputRounding=[];
@@ -1017,7 +1017,12 @@ function priceAudit(a={},effective,commodity,snap){
  ['Trader / broker skill DM',signedDM(a.skill)],['Local broker bonus DM',signedDM(a.localDM)],['Counterparty skill DM (subtracted)',a.counterparty==null?'Not recorded':signedDM(-a.counterparty)],['Total price DM',signedDM(total)],['Modified price roll',a.modified],['Table lookup result (after table limits)',a.tableResult],['Price table percentage',tablePercent==null?'Not recorded':tablePercent+'%'],['Reduced-profit price limits',a.reducedProfitLimitsEnabled?'On · minimum buy '+a.minPurchasePercent+'% / maximum sell '+a.maxSalePercent+'%':'Off'],['Effective limits for this market',a.effectiveMinPurchasePercent==null?'Not recorded':a.effectiveMinPurchasePercent+'% buy / '+a.effectiveMaxSalePercent+'% sell'],['Criminal-market limit house rule',a.criminalLimitWideningPoints?'-10 buy / +10 sell percentage points':'Not applied'],['Price limit applied',a.priceLimitApplied?'Yes':'No'],['Effective price percentage before fees',a.percent==null?'Not recorded':a.percent+'%'],['Base retail price',base==null?'Referee-defined':money(base)+' / ton'],['Calculated table price',tablePrice],['Effective '+(sell?'sale':'purchase')+' price',effective==null?'Not recorded':money(effective)+' / ton'],['Manual price override',a.manualPrice!=null?money(a.manualPrice)+' / ton':effective!=null&&base!=null&&a.percent!=null&&A.cmp(effective,A.mul(base,A.div(a.percent,100)))!==0?'Effective price differs from table; see recorded adjustments':'None recorded'],['Override reason',a.overrideReason||'None recorded']
  ])+((a.maxBaseRetail!=null||a.reducedProfitLimitsEnabled||a.illegalRawPriceExempt)?'<p class="help">Applied campaign price controls '+ruleInfo('profit')+'</p>':'')+(a.rounding?roundingFootnote([{label:'Price per ton',before:a.rounding.before,after:a.rounding.after}],a.rounding.creditStep):'')+(snap?.search?.localSkillDice?'<h3>Local broker skill roll '+ruleInfo('broker')+'</h3>'+auditFacts([['Broker 2D roll',(snap.search.localSkillDice.dice||[]).join(' + ')+' = '+snap.search.localSkillDice.total],['Applied broker skill',a.skill]]):'');
 }
-function availabilityAudit(offer,commodity){const a=offer.audit||{},g=good(commodity),codes=a.world?.codes||[];return '<h3>Availability and quantity '+ruleInfo('commodity')+'</h3><p class="help">'+esc(g?.common?'Common stock':((g?.availabilityAny||[]).filter(c=>codes.includes(c)).map(tradeCodeLabel).join(', ')||'Random goods or referee entry'))+'. Additional random draws for this commodity: '+(a.randomDraws||[]).filter(id=>id===commodity).length+'.</p>'+((a.quantityRolls||[]).length?table(['Quantity dice','Population DM','Tonnage multiplier','Tons added'],a.quantityRolls.map(q=>'<tr><td>'+esc(q.dice.join(' + ')+' = '+q.dice.reduce((x,y)=>x+y,0))+'</td><td class="number">'+esc(signedDM(q.populationDM))+'</td><td class="number">× '+esc(q.multiplier)+'</td><td class="number">'+esc(q.tons)+' t</td></tr>')):'<p class="help">No generated quantity rolls recorded.</p>');}
+function availabilityAudit(offer,commodity){
+ const a=offer.audit||{},rolls=Array.isArray(a.quantityRolls)?a.quantityRolls:[];
+ const origin=source=>source?.kind==='common'?'Common stock':source?.kind==='trade-code'&&Array.isArray(source.codes)?'World trade codes: '+source.codes.map(tradeCodeLabel).join(', '):source?.kind==='random'&&Number.isInteger(source.draw)?'Random draw '+source.draw+' · d66 '+source.id:'Not recorded';
+ const recorded=rolls.some(q=>q.source)||a.stockSource;
+ return '<h3>Availability and quantity '+ruleInfo('commodity')+'</h3><p class="help">'+esc(recorded?'Stock origins below were recorded when this market was generated.':'Historical stock origin was not recorded; no origin is inferred from current world data.')+(Array.isArray(a.randomDraws)?' Recorded random results for this commodity: '+a.randomDraws.filter(id=>id===commodity).length+'.':'')+'</p>'+(rolls.length?table(['Stock source','Quantity dice','Population DM','Tonnage multiplier','Tons added'],rolls.map(q=>'<tr><td>'+esc(origin(q.source))+'</td><td>'+esc(q.dice.join(' + ')+' = '+q.dice.reduce((x,y)=>x+y,0))+'</td><td class="number">'+esc(signedDM(q.populationDM))+'</td><td class="number">× '+esc(q.multiplier)+'</td><td class="number">'+esc(q.tons)+' t</td></tr>')):'<p class="help">'+esc(origin(a.stockSource))+'. No generated quantity rolls recorded.</p>');
+}
 function offerAdjustments(offer){return '<h3>Recorded adjustments '+ruleInfo('rounding')+'</h3>'+((offer.overrides||[]).length?offer.overrides.map(o=>auditFacts([['When',displayDate(state.dateLabel,o.hours)],['Reason',o.reason],['Price before',o.before?.unitPrice==null?'Not recorded':money(o.before.unitPrice)+' / ton'],['Entered price after',o.after?.unitPrice==null?'Not recorded':money(o.after.unitPrice)+' / ton'],['Quantity before',o.before?.remaining==null?'Not recorded':o.before.remaining+' t'],['Quantity after',o.after?.remaining==null?'Not recorded':o.after.remaining+' t']])).join(''):'<p class="help">No offer adjustments recorded.</p>')+(offer.previousAudits||[]).map((a,i)=>'<details><summary>Earlier price calculation '+(i+1)+'</summary>'+priceAudit(a,null,offer.commodity)+'</details>').join('');}
 
 function lotAudit(id){
@@ -4517,7 +4522,7 @@ $('import-file').onchange=safely(importCampaignFile);
 if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{if(tab==='Overview'&&viewed()&&updateMapGeometry()){scheduleMapPaint();scheduleMapAreas();}}).observe($('main'));
 window.addEventListener('error',e=>recordDebugError(e.error||e.message,'window-error'));
 window.addEventListener('unhandledrejection',e=>recordDebugError(e.reason,'unhandled-rejection'));
-async function boot(){mountRulePopover(document);[core,mp,decisions]=await Promise.all(['rules/core-2022.json?v=player-retail-20261021-114','rules/merchant-prince-1e.json','rules/decisions.json'].map(async url=>{const r=await fetch(url);if(!r.ok)throw Error('Could not load '+url);return r.json();}));store=new Store(receiveCampaign,(editable,text)=>{if(!editable){worldNearbyRequest=null;invalidateRoutePlanOperation();invalidatePlannedRouteWriteOperation();invalidateClearRouteWriteOperation();invalidateAccountsWriteOperation();invalidatePassengerWriteOperation();invalidateContractLifecycleWriteOperation();invalidateContractOfferWriteOperation();invalidateContactSearchWriteOperation();invalidateInsuranceWriteOperation();invalidatePurchaseWriteOperation();invalidateSaleWriteOperation();invalidateWorldWriteOperation();invalidateTimeWriteOperation();invalidateSettingsOperation(true);invalidateJumpPreparation();invalidateUndoOperation();invalidateReplacementEditing();stockServices.invalidate();expenseServices.invalidate();}$('save-status').textContent=campaignReloadRequired?campaignReloadMessage:text;$('save-status').className=editable&&!campaignReloadRequired?'muted':'readonly';$('takeover').hidden=editable||campaignReloadRequired;$('takeover').disabled=campaignReloadRequired;if(!editable&&activeModal?.mutates){activeModal.cancelled=true;$('modal-error').textContent=campaignReloadRequired?campaignReloadMessage:'Editing moved to another tab. Reopen this dialog after taking over editing.';}syncModalSubmit();render();});try{state=store.read();}catch(error){recordDebugError(error,'startup-read',{screen:'Startup',newOccurrence:true});store.recovery=true;store.recoveryMessage=error.message;state=S.initial();}store.onDiagnostic=(error,context)=>recordDebugError(error,context,{screen:'Startup',newOccurrence:true});known={...state.worlds};view=state.actual;render();await store.acquire();if(state.initialized)restoreExpenseReceipt();if(state.initialized)refreshNearby(false).catch(e=>message('Could not load nearby worlds: '+e.message+'. Use Refresh nearby to retry.',true));}
+async function boot(){mountRulePopover(document);[core,mp,decisions]=await Promise.all(['rules/core-2022.json?v=stock-provenance-20261021-115','rules/merchant-prince-1e.json','rules/decisions.json'].map(async url=>{const r=await fetch(url);if(!r.ok)throw Error('Could not load '+url);return r.json();}));store=new Store(receiveCampaign,(editable,text)=>{if(!editable){worldNearbyRequest=null;invalidateRoutePlanOperation();invalidatePlannedRouteWriteOperation();invalidateClearRouteWriteOperation();invalidateAccountsWriteOperation();invalidatePassengerWriteOperation();invalidateContractLifecycleWriteOperation();invalidateContractOfferWriteOperation();invalidateContactSearchWriteOperation();invalidateInsuranceWriteOperation();invalidatePurchaseWriteOperation();invalidateSaleWriteOperation();invalidateWorldWriteOperation();invalidateTimeWriteOperation();invalidateSettingsOperation(true);invalidateJumpPreparation();invalidateUndoOperation();invalidateReplacementEditing();stockServices.invalidate();expenseServices.invalidate();}$('save-status').textContent=campaignReloadRequired?campaignReloadMessage:text;$('save-status').className=editable&&!campaignReloadRequired?'muted':'readonly';$('takeover').hidden=editable||campaignReloadRequired;$('takeover').disabled=campaignReloadRequired;if(!editable&&activeModal?.mutates){activeModal.cancelled=true;$('modal-error').textContent=campaignReloadRequired?campaignReloadMessage:'Editing moved to another tab. Reopen this dialog after taking over editing.';}syncModalSubmit();render();});try{state=store.read();}catch(error){recordDebugError(error,'startup-read',{screen:'Startup',newOccurrence:true});store.recovery=true;store.recoveryMessage=error.message;state=S.initial();}store.onDiagnostic=(error,context)=>recordDebugError(error,context,{screen:'Startup',newOccurrence:true});known={...state.worlds};view=state.actual;render();await store.acquire();if(state.initialized)restoreExpenseReceipt();if(state.initialized)refreshNearby(false).catch(e=>message('Could not load nearby worlds: '+e.message+'. Use Refresh nearby to retry.',true));}
 document.addEventListener('input',safely(e=>{const row=e.target.closest?.('[data-purchase-row]');if(row)updateInlinePurchase(row);}));
 
 boot().catch(e=>{recordDebugError(e,'startup',{screen:'Startup',newOccurrence:true});message(e.message,true);$('main').innerHTML=empty('The calculator could not start. Your saved campaign has not been replaced. Reload after checking the error above.')+'<div class="wide-actions">'+btn('Copy Error Report','dev-copy-errors')+'</div>';});
