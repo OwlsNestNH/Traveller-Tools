@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {mkdir} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import {guiFixture,campaignKey} from './fixtures/gui-parity.mjs';
+const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
+const base=process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/';
+const artifacts=fileURLToPath(new URL('../verification-artifacts/',import.meta.url));await mkdir(artifacts,{recursive:true});
+const browser=await chromium.launch({headless:true});
+try{for(const width of [1440,390,320]){
+ const f=guiFixture(),bytes=JSON.stringify(f.state),context=await browser.newContext({viewport:{width,height:1000}});
+ await context.addInitScript(({key,bytes})=>localStorage.setItem(key,bytes),{key:campaignKey,bytes});
+ await context.route('https://travellermap.com/**',r=>{const u=new URL(r.request().url());return r.fulfill({json:u.pathname.endsWith('/universe')?f.universe:u.pathname.endsWith('/metadata')?f.metadata:u.pathname.endsWith('/sec')?f.sec:{Worlds:f.apiWorlds}});});
+ const page=await context.newPage();await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();
+ const click=async(a,arg)=>page.locator('[data-action="'+a+'"]'+(arg===undefined?'':'[data-arg="'+arg+'"]')).filter({visible:true}).first().click();
+ const bands=async selector=>{await page.mouse.move(0,0);const colors=await page.locator(selector+' tbody>tr').evaluateAll(rs=>rs.slice(0,2).map(r=>getComputedStyle(r).backgroundColor));assert.equal(colors.length,2,selector+' has separate rows');assert.notEqual(colors[0],colors[1],selector+' visually separates adjacent records');assert.ok(!colors.includes('rgba(0, 0, 0, 0)'));};
+ await click('tab','Trade');await bands('.purchase-table');await bands('.cargo-table');
+ await page.screenshot({path:artifacts+'row-bands-buy-'+width+'.png',fullPage:true});
+ await click('sale-all');const selected=await page.locator('.cargo-table tbody>tr').first().evaluate(r=>getComputedStyle(r).backgroundColor);assert.equal(selected,'rgb(37, 75, 93)','selection remains distinct');await click('sale-clear');
+ await page.locator('.purchase-table tbody tr').first().evaluate(r=>r.classList.add('expired-row'));await page.locator('.purchase-table tbody tr').first().hover();assert.equal(await page.locator('.purchase-table tbody tr').first().evaluate(r=>getComputedStyle(r).backgroundColor),'rgb(12, 22, 34)','expired status overrides bands and hover');await page.locator('.purchase-table tbody tr').first().evaluate(r=>r.classList.remove('expired-row'));
+ await page.emulateMedia({media:'print'});assert.equal(await page.locator('.cargo-table tbody tr').first().evaluate(r=>getComputedStyle(r).backgroundColor),'rgba(0, 0, 0, 0)');await page.emulateMedia({media:'screen'});
+ await click('offer-audit');await page.locator('#modal').waitFor();const facts=page.locator('.preview>dl').first();assert.ok(await facts.count());const pair=await facts.evaluate(e=>[...e.children].slice(0,4).map(x=>getComputedStyle(x).backgroundColor));assert.equal(pair[0],pair[1]);assert.equal(pair[2],pair[3]);assert.notEqual(pair[0],pair[2]);await page.screenshot({path:artifacts+'row-bands-audit-'+width+'.png',fullPage:true});await page.keyboard.press('Escape');
+ await click('trade-side','sell');await bands('.sale-table');await page.screenshot({path:artifacts+'row-bands-sell-'+width+'.png',fullPage:true});
+ await click('tab','Cargo');await bands('.cargo-table');
+ await click('tab','Accounts');await page.screenshot({path:artifacts+'row-bands-accounts-'+width+'.png',fullPage:true});const ledger=page.locator('.bank-ledger table tbody>tr');assert.ok(await ledger.count());assert.notEqual(await ledger.first().evaluate(r=>getComputedStyle(r).backgroundColor),'rgba(0, 0, 0, 0)');
+ await click('tab','Dashboard');await page.screenshot({path:artifacts+'row-bands-dashboard-'+width+'.png',fullPage:true});
+ await click('tab','Contracts');await page.screenshot({path:artifacts+'row-bands-contracts-'+width+'.png',fullPage:true});
+ await click('tab','History');await bands('#main .scroll>table');await page.screenshot({path:artifacts+'row-bands-history-'+width+'.png',fullPage:true});
+ assert.equal(await page.evaluate(key=>localStorage.getItem(key),campaignKey),bytes,'view styling and selection never change campaign bytes');
+ assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'no page overflow');
+ await page.goto(new URL('player-snapshot-preview.html',base).href);await page.getByRole('heading',{name:'Planetary information'}).waitFor();await bands('.cargo-section table');await page.screenshot({path:artifacts+'row-bands-player-'+width+'.png',fullPage:true});
+ await context.close();console.log('PASS: '+width+'px Buy/Sell/cargo/history/audit/player rows, paired facts, selected state, unchanged campaign and page width');
+}}finally{await browser.close();}

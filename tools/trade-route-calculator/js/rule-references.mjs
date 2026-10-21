@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=trade-current-20261021-108';
+import {escapeHtml as esc} from './display.mjs?v=row-bands-20261021-109';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.
