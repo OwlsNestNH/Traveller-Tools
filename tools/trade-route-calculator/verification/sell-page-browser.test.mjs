@@ -20,6 +20,7 @@ try{
   const raw=()=>page.evaluate(key=>localStorage.getItem(key),campaignKey);
   await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();await click('tab','Trade');await click('trade-side','sell');
   assert.equal(await raw(),bytes);assert.equal(await page.locator('.sale-table tbody tr').count(),f.state.lots.length);
+  await page.locator('#hide-low-sale-prices').check();assert.equal(await page.locator('.sale-table tbody tr').count(),f.state.lots.length,'Unnegotiated cargo stays visible');assert.equal(await raw(),bytes,'Filter never saves');await page.locator('#hide-low-sale-prices').uncheck();
   for(const lot of f.state.lots)assert.equal(await page.locator('[data-sale-quantity="'+lot.id+'"]').inputValue(),lot.quantity);
   assert.equal(await page.locator('[data-action="lot-audit"]').count(),f.state.lots.length);
   assert.equal(await page.locator('[data-action="lot-correct"]').count(),0);

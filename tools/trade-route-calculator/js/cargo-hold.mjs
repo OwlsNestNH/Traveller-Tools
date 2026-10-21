@@ -1,12 +1,12 @@
-import {ruleInfo} from './rule-references.mjs?v=inline-buy-20261021-110';
-import {passengerShip,passengerSpace} from './passengers.mjs?v=inline-buy-20261021-110';
+import {ruleInfo} from './rule-references.mjs?v=trade-filters-20261021-111';
+import {passengerShip,passengerSpace} from './passengers.mjs?v=trade-filters-20261021-111';
 // Read-only bridge manifest. Purchase facts come from each lot's frozen audit;
 // current price settings, contract revenue and insurance destinations are not inputs.
 import * as A from './amounts.mjs';
-import {used} from './state.mjs?v=inline-buy-20261021-110';
-import {bladderSpace} from './fuel.mjs?v=inline-buy-20261021-110';
-import {passengerLuggage} from './accommodation.mjs?v=inline-buy-20261021-110';
-import {supportCargo,supportStock,supportDisplay} from './life-support.mjs?v=inline-buy-20261021-110';
+import {used} from './state.mjs?v=trade-filters-20261021-111';
+import {bladderSpace} from './fuel.mjs?v=trade-filters-20261021-111';
+import {passengerLuggage} from './accommodation.mjs?v=trade-filters-20261021-111';
+import {supportCargo,supportStock,supportDisplay} from './life-support.mjs?v=trade-filters-20261021-111';
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=x=>{const [whole,fraction]=String(x).split('.');return 'Cr '+whole.replace(/\B(?=(\d{3})+(?!\d))/g,',')+(fraction===undefined?'':'.'+fraction);};
 const button=(label,action,arg='',extra='')=>'<button data-action="'+action+'" data-arg="'+esc(arg)+'" '+extra+'>'+esc(label)+'</button>';

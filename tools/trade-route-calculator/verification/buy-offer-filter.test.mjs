@@ -15,3 +15,12 @@ test('unknown or unresolved retail percentages stay visible and explicitly unkno
   assert.equal(matchesBuyRetailFilter(o,true),true);assert.equal(buyOfferRetailLabel(o),'Unknown');
  }
 });
+
+test('Sell 100% filter is exact, display-only and uses capped effective retail',async()=>{
+ const {matchesSellRetailFilter}=await import('../js/buy-offer-filter.mjs');
+ for(const [price,keep] of [['0',false],['999.999999',false],['1000',true],['1000.000001',true],['1100',true]]){
+  const q=offer(price),before=JSON.stringify(q);assert.equal(matchesSellRetailFilter(q,true),keep);assert.equal(matchesSellRetailFilter(q,false),true);assert.equal(JSON.stringify(q),before);
+ }
+ assert.equal(matchesSellRetailFilter({...offer('1000'),audit:{basePrice:'1000',rawBasePrice:'10000',percent:10}},true),true);
+ for(const q of [undefined,offer(null),offer('1','0'),offer('1','bad'),{...offer('1'),audit:{basePrice:'1000',manualRequired:true}}])assert.equal(matchesSellRetailFilter(q,true),true);
+});

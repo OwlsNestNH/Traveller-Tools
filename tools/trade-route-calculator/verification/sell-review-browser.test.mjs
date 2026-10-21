@@ -20,6 +20,13 @@ try{for(const width of [1440,390,320])for(const mode of ['off','manual','automat
  const fill=async(name,value)=>{const input=page.locator('#modal [name="'+name+'"]');for(const details of await input.locator('xpath=ancestor::details').all())if(!await details.evaluate(el=>el.open))await details.locator(':scope>summary').click();await input.fill(value);await input.blur();};
  await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();await click('tab','Trade');await click('trade-side','sell');assert.equal(await dice(),0);
  await page.locator('[data-lot="lot-recorded"]').check();await click('sale');await page.getByRole('heading',{name:/^Review sale/}).waitFor();assert.equal(await dice(),3,'Explicit lot negotiation generates only its natural price dice');
+ const quotedPrice=Number(await page.locator('#modal [name="price_lot-recorded"]').inputValue()),quoteDice=await dice();
+ await page.locator('#modal-cancel').click();await page.locator('#hide-low-sale-prices').check();
+ assert.equal(await page.locator('[data-sale-quantity="lot-recorded"]').count(),quotedPrice>=20000?1:0,'Sell filter uses negotiated price over effective retail');
+ assert.equal(await raw(),bytes);assert.equal(await dice(),quoteDice,'Filtering never rerolls');
+ assert.match(await page.locator('.trade-selected-count').textContent(),/^1 selected/,'Hidden lot stays selected');
+ await page.locator('#hide-low-sale-prices').uncheck();await click('sale');await page.getByRole('heading',{name:/^Review sale/}).waitFor();
+ assert.equal(await dice(),quoteDice,'Reopening filtered quote preserves dice');
  assert.equal(await page.locator('#modal-submit').textContent(),'COMMIT SALE');assert.equal(await page.locator('#modal details').first().evaluate(el=>el.open),false,'GM adjustments start collapsed');
  await fill('qty_lot-recorded','1');await fill('price_lot-recorded','25000');await fill('fee','10');await fill('reason','Synthetic explicit GM price and optional tax');
  if(mode==='manual')await fill('taxRate','8');

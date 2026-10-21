@@ -1,4 +1,4 @@
-import * as R from './rules.mjs?v=inline-buy-20261021-110';
+import * as R from './rules.mjs?v=trade-filters-20261021-111';
 
 // Prepare one sale line from explicit lot/buyer/context/quote/commodity/core,
 // current pricing flags and creditStep, plus caller-normalized values:
