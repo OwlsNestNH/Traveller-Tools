@@ -1,13 +1,13 @@
-import {recordedOperatingResult} from './financial-summary.mjs?v=territory-resize-20261021-112';
-import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=territory-resize-20261021-112';
-import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=territory-resize-20261021-112';
-import {bladderSpace} from './fuel.mjs?v=territory-resize-20261021-112';
+import {recordedOperatingResult} from './financial-summary.mjs?v=inline-sell-20261021-113';
+import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=inline-sell-20261021-113';
+import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=inline-sell-20261021-113';
+import {bladderSpace} from './fuel.mjs?v=inline-sell-20261021-113';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
-import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=territory-resize-20261021-112';
-import {distance} from './map.mjs?v=territory-resize-20261021-112';
+import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=inline-sell-20261021-113';
+import {distance} from './map.mjs?v=inline-sell-20261021-113';
 
-export const REPORT_VERSION='2026.10.21.112';
+export const REPORT_VERSION='2026.10.21.113';
 const clean=v=>String(v??'Not recorded').replace(/[\r\n\t\x00-\x1f]+/g,' ').trim();
 const number=v=>String(v).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const cr=v=>v==null?'Not recorded':'Cr '+number(v);

@@ -1,6 +1,6 @@
-import * as S from './state.mjs?v=territory-resize-20261021-112';
-import {creditStep} from './rounding.mjs?v=territory-resize-20261021-112';
-import {SaveNotCommittedError} from './persistence.mjs?v=territory-resize-20261021-112';
+import * as S from './state.mjs?v=inline-sell-20261021-113';
+import {creditStep} from './rounding.mjs?v=inline-sell-20261021-113';
+import {SaveNotCommittedError} from './persistence.mjs?v=inline-sell-20261021-113';
 
 // Store remains synchronous. An injected provider may return a completion
 // Promise; that completion must include the durable write and publication.

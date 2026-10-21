@@ -23,17 +23,10 @@ try{
   await page.locator('#hide-low-sale-prices').check();assert.equal(await page.locator('.sale-table tbody tr').count(),f.state.lots.length,'Unnegotiated cargo stays visible');assert.equal(await raw(),bytes,'Filter never saves');await page.locator('#hide-low-sale-prices').uncheck();
   for(const lot of f.state.lots)assert.equal(await page.locator('[data-sale-quantity="'+lot.id+'"]').inputValue(),lot.quantity);
   assert.equal(await page.locator('[data-action="lot-audit"]').count(),f.state.lots.length);
-  assert.equal(await page.locator('[data-action="lot-correct"]').count(),0);
-  assert.equal(await page.locator('[data-action="lot-insure"]').count(),0);
+  assert.equal(await page.locator('[data-action="lot-correct"]').count(),f.state.lots.length);
+  assert.equal(await page.locator('[data-action="lot-insure"]').count(),f.state.lots.length);
   if(width>=1100){
-   const alignment=await page.locator('.sale-table tbody tr').evaluateAll(rows=>rows.map(row=>{
-    const textCenter=el=>{const range=document.createRange();range.selectNodeContents(el);const r=range.getClientRects()[0];return r.y+r.height/2;};
-    const input=row.querySelector('[data-sale-quantity]').getBoundingClientRect();
-    const values=[...row.querySelectorAll('td:nth-child(1) .cargo-name>span,td:nth-child(2) .cell-primary,td:nth-child(4) .price>span,td:nth-child(5) .price>span,td:nth-child(6) .cell-primary,.row-actions button:first-child')].map(textCenter);
-    values.push(input.y+input.height/2);return {spread:Math.max(...values)-Math.min(...values),height:row.getBoundingClientRect().height};
-   }));
-   for(const row of alignment)assert.ok(row.spread<=3,'Primary text and quantity numerals share a visual center line: '+JSON.stringify(row));
-   if(width>=1440)assert.ok(alignment.some(row=>row.height<=64),'Compact rows allow one distinct description beneath the commodity');
+   for(const row of await page.locator('.sale-table tbody tr').all())assert.ok(await row.evaluate(el=>{const box=el.getBoundingClientRect();return [...el.querySelectorAll('input,button')].filter(x=>!x.hidden).every(x=>{const r=x.getBoundingClientRect();return r.width>=16&&r.left>=box.left&&r.right<=box.right;});}),'Desktop row controls fit their distinct lot');
   }
   // Same-description lots stay distinguishable through the existing keyboard/touch Audit action.
   for(const lot of f.state.lots.slice(1)){

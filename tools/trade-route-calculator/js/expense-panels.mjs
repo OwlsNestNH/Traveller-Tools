@@ -1,16 +1,16 @@
-import {ruleInfo} from './rule-references.mjs?v=territory-resize-20261021-112';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=territory-resize-20261021-112';
-import {passengerShip} from './passengers.mjs?v=territory-resize-20261021-112';
+import {ruleInfo} from './rule-references.mjs?v=inline-sell-20261021-113';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=inline-sell-20261021-113';
+import {passengerShip} from './passengers.mjs?v=inline-sell-20261021-113';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=territory-resize-20261021-112';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=territory-resize-20261021-112';
-import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=territory-resize-20261021-112';
-import {roomCounts} from './accommodation.mjs?v=territory-resize-20261021-112';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=territory-resize-20261021-112';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=territory-resize-20261021-112';
-import {creditStep} from './rounding.mjs?v=territory-resize-20261021-112';
-import {roll} from './rules.mjs?v=territory-resize-20261021-112';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=territory-resize-20261021-112';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=inline-sell-20261021-113';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=inline-sell-20261021-113';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=inline-sell-20261021-113';
+import {roomCounts} from './accommodation.mjs?v=inline-sell-20261021-113';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=inline-sell-20261021-113';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=inline-sell-20261021-113';
+import {creditStep} from './rounding.mjs?v=inline-sell-20261021-113';
+import {roll} from './rules.mjs?v=inline-sell-20261021-113';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=inline-sell-20261021-113';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

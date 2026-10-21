@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=territory-resize-20261021-112';
+import {escapeHtml as esc} from './display.mjs?v=inline-sell-20261021-113';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.
