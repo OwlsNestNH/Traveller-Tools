@@ -22,7 +22,7 @@ await context.route('https://travellermap.com/api/**',async route=>{
   if(name==='Deneb'&&failSector){failSector=false;return route.fulfill({status:503,body:'Temporary map failure'});}
   return route.fulfill({json:fixtures.catalogs[name]?.sec||'Hex\tName\n'});
  }
- if(url.pathname.endsWith('/jumpworlds'))return route.fulfill({json:{Worlds:fixtures.worlds}});
+ if(url.pathname.endsWith('/jumpworlds'))return route.fulfill({json:{Worlds:url.searchParams.get('jump')==='0'?fixtures.worlds.filter(w=>url.searchParams.has('hex')?w.Hex===url.searchParams.get('hex')&&w.Sector===name:w.WorldX===Number(url.searchParams.get('x'))&&w.WorldY===Number(url.searchParams.get('y'))):fixtures.worlds}});
  throw Error('Unexpected API request: '+url);
 });
 // Capture the page, not a retained SVG element: async map redraws replace that
