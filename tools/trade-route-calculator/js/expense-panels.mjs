@@ -1,16 +1,16 @@
-import {ruleInfo} from './rule-references.mjs?v=hex-quiet-20261020-106';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=hex-quiet-20261020-106';
-import {passengerShip} from './passengers.mjs?v=hex-quiet-20261020-106';
+import {ruleInfo} from './rule-references.mjs?v=snapshot-lss-20261021-107';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=snapshot-lss-20261021-107';
+import {passengerShip} from './passengers.mjs?v=snapshot-lss-20261021-107';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=hex-quiet-20261020-106';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=hex-quiet-20261020-106';
-import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=hex-quiet-20261020-106';
-import {roomCounts} from './accommodation.mjs?v=hex-quiet-20261020-106';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=hex-quiet-20261020-106';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=hex-quiet-20261020-106';
-import {creditStep} from './rounding.mjs?v=hex-quiet-20261020-106';
-import {roll} from './rules.mjs?v=hex-quiet-20261020-106';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=hex-quiet-20261020-106';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=snapshot-lss-20261021-107';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=snapshot-lss-20261021-107';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=snapshot-lss-20261021-107';
+import {roomCounts} from './accommodation.mjs?v=snapshot-lss-20261021-107';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=snapshot-lss-20261021-107';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=snapshot-lss-20261021-107';
+import {creditStep} from './rounding.mjs?v=snapshot-lss-20261021-107';
+import {roll} from './rules.mjs?v=snapshot-lss-20261021-107';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=snapshot-lss-20261021-107';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

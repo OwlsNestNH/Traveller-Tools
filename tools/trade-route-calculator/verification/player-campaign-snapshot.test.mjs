@@ -114,3 +114,29 @@ test('Broker commission comes only from recorded original purchase, never basis 
  const partial=campaignPlayerSnapshot(s,core,clock).cargo[0];assert.equal(partial.purchase.originalBrokerCommission,'125');assert.equal(partial.purchase.paidTotal,'625');
  for(const value of [undefined,null,'-1','not money',{},false]){s.lots[0].audit.fee=value;assert.equal(campaignPlayerSnapshot(s,core,clock).cargo[0].purchase.originalBrokerCommission,null);}
 });
+
+// Exact campaign LSS may terminate beyond the link's six-place decimal format.
+// Projection must be conservative without changing campaign values or the codec.
+for(const [stock,current,reserve,reserved] of [
+ ['123.1234567','123.123456','0','0'],
+ ['900.1234567','800','100.123456','2'],
+ ['0.0000001','0','0','0'],
+ ['123.123456','123.123456','0','0']
+])test(`high precision LSS ${stock} exports conservatively and remains unchanged`,async()=>{
+ const s=fresh();s.ship.lifeSupport={capacityHours:672,stockUnits:stock};S.validate(s);const before=JSON.stringify(s);
+ const data=campaignPlayerSnapshot(s,core,clock),support=data.ship.lifeSupport;
+ assert.equal(support.current,current);assert.equal(support.cargoLss,reserve);assert.equal(support.cargoReservedTons,reserved);
+ const url=playerSnapshotUrl(data,'https://example.org/tools/trade-route-calculator/');assert.deepEqual(decodeSnapshotLink(PROPOSED_PREFIX+new URL(url).hash.slice(1)),prepareSnapshotForLink(data));
+ const copied=[],h=harness(s,[],{navigator:{clipboard:{writeText:async x=>copied.push(x)}}});await h.api.actions['player-link']();await h.api.actions['player-link']();assert.equal(copied.length,2);assert.equal(h.calls.saves,0);assert.equal(JSON.stringify(h.persisted()),before);assert.equal(JSON.stringify(s),before);
+});
+test('normal exact consumption and duration division can produce more than six terminating places',async()=>{
+ const {configureSupport,consumeSupport}=await import('../js/life-support.mjs');
+ const s=fresh();s.ship.accommodation={rooms:{low:0,middle:128,high:0},passengers:{low:0,middle:0,high:0},crew:{low:0,middle:128,high:0}};
+ s.ship.lifeSupport=configureSupport(s.ship,{stockUnits:'123'});consumeSupport(s.ship,3);S.validate(s);
+ const before=JSON.stringify(s),support=campaignPlayerSnapshot(s,core,clock).ship.lifeSupport;
+ assert.equal(support.current,'107');assert.equal(support.daysRemaining,'0.835937'); // exact 107/128 = 0.8359375
+ assert.equal(support.daysCapacity,'6.25');assert.equal(JSON.stringify(s),before);
+ // An ordinary integer capacity divided by a tenths-based complement can do it too.
+ s.ship.fuel.displacementTons=201;s.ship.accommodation.crew.middle=102;s.ship.accommodation.occupiedLowBerths=4;S.validate(s);
+ assert.equal(campaignPlayerSnapshot(s,core,clock).ship.lifeSupport.daysCapacity,'7.851562'); // 804/102.4 = 7.8515625
+});

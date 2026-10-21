@@ -1,16 +1,19 @@
 // Read-only campaign adapter. Only explicit public values cross this boundary.
 // No DOM, persistence, random rolls, network access or URL serialization.
-import {projectPlayerSnapshot,SNAPSHOT_VERSION,EXPENSE_KINDS} from './player-snapshot.mjs?v=hex-quiet-20261020-106';
-import {playerBriefingData} from './player-briefing.mjs?v=hex-quiet-20261020-106';
-import {context} from './rules.mjs?v=hex-quiet-20261020-106';
+import {projectPlayerSnapshot,SNAPSHOT_VERSION,EXPENSE_KINDS} from './player-snapshot.mjs?v=snapshot-lss-20261021-107';
+import {playerBriefingData} from './player-briefing.mjs?v=snapshot-lss-20261021-107';
+import {context} from './rules.mjs?v=snapshot-lss-20261021-107';
 import {displayDate} from './calendar.mjs';
-import {supportStock,supportDisplay,supportAmount} from './life-support.mjs?v=hex-quiet-20261020-106';
-import {passengerShip} from './passengers.mjs?v=hex-quiet-20261020-106';
-import {fuelAvailabilityAdvice} from './expenses.mjs?v=hex-quiet-20261020-106';
+import {supportStock,supportAmount} from './life-support.mjs?v=snapshot-lss-20261021-107';
+import {passengerShip} from './passengers.mjs?v=snapshot-lss-20261021-107';
+import {fuelAvailabilityAdvice} from './expenses.mjs?v=snapshot-lss-20261021-107';
 import * as A from './amounts.mjs';
 
 const text=value=>String(value??'').replace(/[\x00-\x1f\x7f]/g,' ').slice(0,240);
 const amount=value=>value==null?null:A.decimal(value);
+// Snapshot decimals support six places. Conservatively truncate only exported
+// LSS/day values; campaign rationals and shared life-support calculations stay exact.
+const snapshotSupport=value=>value===null?null:A.decimal(A.div(A.floor(A.mul(supportAmount(value),1000000)),1000000));
 const recordedCommission=value=>{if(typeof value!=='string'&&typeof value!=='number')return null;try{return A.cmp(value,0)<0?null:amount(value);}catch{return null;}};
 const name=(core,id)=>core.commodities.find(g=>g.id===id)?.name??'Other';
 function visitBoundary(s){
@@ -39,14 +42,14 @@ export function campaignPlayerSnapshot(s,core,{saleQuotes=new Map(),capturedAt=n
  const offers=suppliers.flatMap(x=>(s.cooldowns[x.party]??0)>s.hours?[]:x.offers.filter(o=>!o.expired&&!o.manualRequired&&A.cmp(o.remaining,0)>0).map(o=>({name:name(core,o.commodity),tons:amount(o.remaining),creditsPerTon:amount(o.unitPrice)})));
  const sales=[];
  for(const l of s.lots){const q=saleQuotes.get(l.id);if(q&&q.revision===s.revision&&q.worldId===s.actual&&!q.audit?.manualRequired)sales.push({name:name(core,l.commodity),tons:amount(l.quantity),creditsPerTon:amount(q.unitPrice)});}
- const daily=support.dailyUnits,days=units=>units!==null&&support.complementKnown&&A.cmp(daily,0)>0?supportDisplay(A.div(units,daily)):null;
+ const daily=support.dailyUnits,days=units=>units!==null&&support.complementKnown&&A.cmp(daily,0)>0?snapshotSupport(A.div(units,daily)):null;
  const exactCargo=support.cargoExact===null?null:supportAmount(support.cargoExact);
- const reserve=exactCargo===null?null:supportDisplay(A.mul(exactCargo,100));
+ const reserve=exactCargo===null?null:snapshotSupport(A.mul(exactCargo,100));
  const reserved=exactCargo===null?null:String(-A.floor(A.mul(exactCargo,-1)));
  if(reserve!==null&&reserved!==String(-A.floor(A.mul(A.div(reserve,100),-1))))throw Error('This life-support reserve cannot be represented accurately in a player link. Its fractional balance is too close to a cargo-space boundary.');
  return projectPlayerSnapshot({version:SNAPSHOT_VERSION,campaignPolitics:s.campaignPolitics,capturedAt,campaignDate:displayDate(s.dateLabel,s.hours),
   world:{name:text(w.name),location:text(w.sector+' / '+w.hex),uwp:text(c.uwp.raw),tradeCodes:text(c.codes.join(' ')),travelZone:text(c.zone),starport:text(w.emptySpace?'No starport':fuelAvailabilityAdvice(w)),mapReference:w.emptySpace||!w.sector?null:{sector:w.sector,hex:w.hex}},
-  ship:{name:text(s.ship.name),cargoCapacityTons:amount(s.ship.capacity),cashCredits:s.bank,fuel:{current:amount(s.ship.fuel?.aboardTons),capacity:amount(s.ship.fuel?.capacityTons)},lifeSupport:{current:support.internalUnits,capacity:support.internalCapacityUnits,cargoLss:reserve,cargoReservedTons:reserved,daysRemaining:days(support.internalUnits),daysCapacity:days(support.internalCapacityUnits)},destination:text(s.worlds[s.route[s.routeIndex+1]]?.name??'No planned destination')},
+  ship:{name:text(s.ship.name),cargoCapacityTons:amount(s.ship.capacity),cashCredits:s.bank,fuel:{current:amount(s.ship.fuel?.aboardTons),capacity:amount(s.ship.fuel?.capacityTons)},lifeSupport:{current:snapshotSupport(support.internalUnits),capacity:snapshotSupport(support.internalCapacityUnits),cargoLss:reserve,cargoReservedTons:reserved,daysRemaining:days(support.internalUnits),daysCapacity:days(support.internalCapacityUnits)},destination:text(s.worlds[s.route[s.routeIndex+1]]?.name??'No planned destination')},
   cargo,expenses,buy:{status:offers.length?'available':suppliers.length?'available':'not-checked',offers},sell:{status:sales.length?'available':'not-checked',offers:sales}});
 }
 

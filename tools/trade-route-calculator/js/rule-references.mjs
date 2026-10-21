@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=hex-quiet-20261020-106';
+import {escapeHtml as esc} from './display.mjs?v=snapshot-lss-20261021-107';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.
