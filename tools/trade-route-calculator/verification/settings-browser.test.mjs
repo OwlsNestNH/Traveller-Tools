@@ -431,6 +431,7 @@ try{
    }else{
     assert.equal(await dm.inputValue(),'-2','TL8+ online uses EDU');await method.selectOption('normal');assert.equal(await dm.inputValue(),'3','Broker defaults to allowed DM');await method.selectOption('blackMarket');assert.equal(await dm.inputValue(),'3','Streetwise excludes INT');
    }
+   if(kind==='search')await page.locator('.supplier-overrides summary').click();
    await dm.fill('-4');await method.selectOption('online');assert.equal(await dm.inputValue(),'-4','Method change retains explicit override');if(kind==='search')await page.locator('[data-action="supplier-cancel"]').click();else await page.locator('#modal-cancel').click();
   }
   await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();assert.deepEqual((await read()).trader,saved.trader);await tab('History');await page.locator('#main [data-action="undo"]').click();const undone=await read();assert.equal('characteristics' in undone.trader,false);assert.equal(undone.trader.characteristic,2);assert.equal(undone.trader.soc,-1);
