@@ -1,4 +1,4 @@
-import {up} from './rounding.mjs?v=world-search-20261021-117';
+import {up} from './rounding.mjs?v=compact-trade-20261021-118';
 import {dec,rat,add,sub,mul,div,cmp,floor,sum,decimal,auditNumber,allocate,credit} from './amounts.mjs';
 export const VERSION='0.1.0';
 // Legacy search DM is a compatibility default, not a reconstructed attribute.

@@ -1,4 +1,4 @@
-import {measureSnapshotLink} from './player-snapshot-codec.mjs?v=world-search-20261021-117';
+import {measureSnapshotLink} from './player-snapshot-codec.mjs?v=compact-trade-20261021-118';
 // Budget the actual deployed URL, not the codec's proposed short prefix.
 export function playerSnapshotUrl(snapshot,pageUrl,{maxUrlLength=8192}={}){
  if(!Number.isSafeInteger(maxUrlLength)||maxUrlLength<100||maxUrlLength>8192)throw Error('Invalid player link size limit.');

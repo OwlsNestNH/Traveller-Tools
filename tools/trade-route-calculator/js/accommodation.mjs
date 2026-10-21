@@ -1,4 +1,4 @@
-import {up} from './rounding.mjs?v=world-search-20261021-117';
+import {up} from './rounding.mjs?v=compact-trade-20261021-118';
 import {sum,mul,decimal,cmp,credit} from './amounts.mjs';
 
 export const tiers=['low','middle','high'];

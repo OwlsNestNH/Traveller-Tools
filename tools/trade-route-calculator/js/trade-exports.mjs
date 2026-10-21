@@ -1,6 +1,6 @@
 import {formatSnapshotTons,formatSnapshotWholeDown,formatSnapshotLss,formatSnapshotQuantityText} from './player-snapshot-format.mjs';
 // Static, read-only exports. Player output receives only the public snapshot contract.
-import {projectPlayerSnapshot,projectPlayerMarketSnapshot,EXPENSE_KINDS} from './player-snapshot.mjs?v=world-search-20261021-117';
+import {projectPlayerSnapshot,projectPlayerMarketSnapshot,EXPENSE_KINDS} from './player-snapshot.mjs?v=compact-trade-20261021-118';
 import {derivedRetailPercent} from './player-retail-percent.mjs';
 const MAX_EXPORT_BYTES=2*1024*1024;
 const esc=value=>String(value??'Unknown').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

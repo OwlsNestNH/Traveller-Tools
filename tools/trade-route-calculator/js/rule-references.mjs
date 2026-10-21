@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=world-search-20261021-117';
+import {escapeHtml as esc} from './display.mjs?v=compact-trade-20261021-118';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.
