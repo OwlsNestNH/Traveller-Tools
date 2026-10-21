@@ -1,16 +1,16 @@
-import {ruleInfo} from './rule-references.mjs?v=row-bands-20261021-109';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=row-bands-20261021-109';
-import {passengerShip} from './passengers.mjs?v=row-bands-20261021-109';
+import {ruleInfo} from './rule-references.mjs?v=inline-buy-20261021-110';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=inline-buy-20261021-110';
+import {passengerShip} from './passengers.mjs?v=inline-buy-20261021-110';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=row-bands-20261021-109';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=row-bands-20261021-109';
-import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=row-bands-20261021-109';
-import {roomCounts} from './accommodation.mjs?v=row-bands-20261021-109';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=row-bands-20261021-109';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=row-bands-20261021-109';
-import {creditStep} from './rounding.mjs?v=row-bands-20261021-109';
-import {roll} from './rules.mjs?v=row-bands-20261021-109';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=row-bands-20261021-109';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=inline-buy-20261021-110';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=inline-buy-20261021-110';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=inline-buy-20261021-110';
+import {roomCounts} from './accommodation.mjs?v=inline-buy-20261021-110';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=inline-buy-20261021-110';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=inline-buy-20261021-110';
+import {creditStep} from './rounding.mjs?v=inline-buy-20261021-110';
+import {roll} from './rules.mjs?v=inline-buy-20261021-110';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=inline-buy-20261021-110';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

@@ -35,7 +35,7 @@ const scenarios = [
  {id: 'deferred-insured', mode: 'deferred', insured: true, dual: true},
  {id: 'retry-rounded-insured', mode: 'retry', insured: true, rounded: true, dual: true},
  {id: 'full-legal-default', mode: 'native', insured: true, full: true, fee: 10},
- {id: 'illegal-default', mode: 'native', insured: false, illegal: true, fee: 20},
+ {id: 'illegal-default', mode: 'native', insured: false, illegal: true, fee: 10},
  {id: 'huge-credits', mode: 'deferred', insured: false, huge: true, dual: true}
 ];
 for (const mode of ['entry-controls', 'freeze-controls', 'restore-controls', 'recovery-reentry', 'disk-same', 'disk-unreadable', 'queued-pending', 'queued-settled', 'reentrant', 'unknown-before', 'unknown-after', 'contradictory', 'notification-before', 'notification-after', 'missing', 'missing-token', 'wrong-token', 'wrong-revision', 'consumed-token', 'fulfilled-no-publication', 'foreign-same', 'foreign-new', 'editor-regain', 'offer-change', 'world-change', 'native-close', 'new-dialog', 'render', 'report', 'terminal-report', 'close-before', 'close-after', 'clear-error', 'controls', 'reentrant-close']) scenarios.push({id: mode, mode, insured: mode !== 'offer-change', rounded: mode === 'recovery-reentry', dual: ['entry-controls', 'disk-same', 'unknown-before', 'contradictory', 'foreign-same', 'render'].includes(mode)});

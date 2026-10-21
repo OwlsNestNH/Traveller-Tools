@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=row-bands-20261021-109';
+import {escapeHtml as esc} from './display.mjs?v=inline-buy-20261021-110';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.

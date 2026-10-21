@@ -1,7 +1,7 @@
 import {COMMODITIES} from './player-snapshot-catalog.mjs';
-import {playerSnapshotFixture} from './player-snapshot-fixture.mjs?v=row-bands-20261021-109';
-import {renderPlayerSnapshot,clearPlayerSnapshotMap} from './player-snapshot-view.mjs?v=row-bands-20261021-109';
-import {createRecipientStore} from './player-snapshot-storage.mjs?v=row-bands-20261021-109';
+import {playerSnapshotFixture} from './player-snapshot-fixture.mjs?v=inline-buy-20261021-110';
+import {renderPlayerSnapshot,clearPlayerSnapshotMap} from './player-snapshot-view.mjs?v=inline-buy-20261021-110';
+import {createRecipientStore} from './player-snapshot-storage.mjs?v=inline-buy-20261021-110';
 const root=document.getElementById('snapshot'),store=createRecipientStore(()=>localStorage);
 function display() {
   clearPlayerSnapshotMap(root);
