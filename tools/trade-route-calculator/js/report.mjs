@@ -7,7 +7,7 @@ import {displayDate} from './calendar.mjs';
 import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=player-retail-20261021-114';
 import {distance} from './map.mjs?v=player-retail-20261021-114';
 
-export const REPORT_VERSION='2026.10.21.113';
+export const REPORT_VERSION='2026.10.21.114';
 const clean=v=>String(v??'Not recorded').replace(/[\r\n\t\x00-\x1f]+/g,' ').trim();
 const number=v=>String(v).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const cr=v=>v==null?'Not recorded':'Cr '+number(v);
