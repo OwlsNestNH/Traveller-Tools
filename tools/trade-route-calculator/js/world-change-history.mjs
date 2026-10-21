@@ -1,4 +1,4 @@
-import {parseUWP} from './rules.mjs?v=territory-resize-20261021-112';
+import {parseUWP} from './rules.mjs?v=inline-sell-20261021-113';
 
 // Audit only the editable world fields. A selective correction must never
 // replay an old world object, campaign inverse, price quote or transaction.

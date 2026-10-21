@@ -1,6 +1,6 @@
-import {recordedOperatingResult} from './financial-summary.mjs?v=territory-resize-20261021-112';
+import {recordedOperatingResult} from './financial-summary.mjs?v=inline-sell-20261021-113';
 import {latestMailCheck} from './mail-history.mjs';
-import {latestPassengerSearch,passengerOfferRemaining,passengerTotals} from './passengers.mjs?v=territory-resize-20261021-112';
+import {latestPassengerSearch,passengerOfferRemaining,passengerTotals} from './passengers.mjs?v=inline-sell-20261021-113';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
 

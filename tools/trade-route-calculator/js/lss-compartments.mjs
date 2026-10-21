@@ -1,6 +1,6 @@
 // Exact allocation scaffolding. No migration or campaign write occurs on read.
 import * as A from './amounts.mjs';
-import {supportAmount,supportInternalCapacity,supportStock} from './life-support.mjs?v=territory-resize-20261021-112';
+import {supportAmount,supportInternalCapacity,supportStock} from './life-support.mjs?v=inline-sell-20261021-113';
 const exact=A.auditNumber;
 const min=(a,b)=>A.cmp(a,b)<0?a:b;
 export function supportCompartments(ship){

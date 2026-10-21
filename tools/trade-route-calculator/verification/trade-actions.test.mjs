@@ -1,7 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {serviceSaveGate} from './service-save-harness.mjs';
-import {harness,campaign,core,origin,destination,far,bindings,S,A,same,attrs} from './app-harness.mjs';
+import {harness as appHarness,campaign,core,origin,destination,far,bindings,S,A,same,attrs} from './app-harness.mjs';
+
+// These tests exercise trade/actions with synthetic worlds. Map fetching has its
+// own browser/cache suites; a zoom action must not start live API traffic here.
+const harness=(saved,dice,options={})=>appHarness(saved,dice,{...options,setTimeout:options.setTimeout||((callback,delay,...args)=>callback.name==='requestMapAreas'?0:setTimeout(callback,delay,...args))});
 
 for(const [action,kind] of [['search','supplier'],['buyer-search','buyer']]){
  test(`${kind} search opens at actual world, preview/cancel does not save, commit advances only search time`,async()=>{
