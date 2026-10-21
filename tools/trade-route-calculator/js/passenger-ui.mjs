@@ -1,10 +1,10 @@
-import {ruleInfo} from './rule-references.mjs?v=inline-buy-20261021-110';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=inline-buy-20261021-110';
+import {ruleInfo} from './rule-references.mjs?v=trade-filters-20261021-111';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=trade-filters-20261021-111';
 import * as A from './amounts.mjs';
-import {manualLuggage} from './accommodation.mjs?v=inline-buy-20261021-110';
-import * as P from './passengers.mjs?v=inline-buy-20261021-110';
-import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=inline-buy-20261021-110';
-import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=inline-buy-20261021-110';
+import {manualLuggage} from './accommodation.mjs?v=trade-filters-20261021-111';
+import * as P from './passengers.mjs?v=trade-filters-20261021-111';
+import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=trade-filters-20261021-111';
+import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=trade-filters-20261021-111';
 import {displayDate} from './calendar.mjs';
 const esc=escapeHtml;
 const money=formatCreditsText,signed=x=>x>0?'+'+x:String(x);

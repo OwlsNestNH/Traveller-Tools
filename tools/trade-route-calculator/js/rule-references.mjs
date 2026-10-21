@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=inline-buy-20261021-110';
+import {escapeHtml as esc} from './display.mjs?v=trade-filters-20261021-111';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.
