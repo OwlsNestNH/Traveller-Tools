@@ -20,3 +20,11 @@ test('CSV keeps distinct rows, exact prices, unknown commission and effective re
 test('oversized reports and blocked print windows fail without partial output',()=>{
  const d=fixture(),gm=[{side:'buy',name:'Other',audit:{large:'x'.repeat(2*1024*1024)}}];assert.throws(()=>gmTradePrint(d,gm),/2 MiB/);assert.throws(()=>marketCsv(d,{gmRows:gm}),/2 MiB/);assert.throws(()=>openTradePrint(playerTradePrint(d),{open:()=>null}),/Allow popups/);
 });
+test('market-only output does not require ship, cargo, cash or life-support validity',()=>{
+ const d=fixture();d.ship.cashCredits='-100';d.cargo[0].tons='1.5';d.ship.lifeSupport.current='1/3';
+ assert.ok(marketCsv(d).includes('PLAYER'));assert.ok(playerTradePrint(d,{marketOnly:true}).includes('Player market sheet'));assert.throws(()=>playerTradePrint(d));
+});
+test('printed resource values follow the player whole-unit display without changing snapshot values',()=>{
+ const d=fixture();d.ship.fuel.current='31.75';d.ship.lifeSupport.current='168.75';d.ship.lifeSupport.daysRemaining='21.75';const before=JSON.stringify(d),html=playerTradePrint(d);
+ assert.ok(html.includes('31 / 40'));assert.ok(html.includes('168 / 800'));assert.ok(html.includes('21 / 100'));assert.ok(!html.includes('31.75'));assert.equal(JSON.stringify(d),before);
+});

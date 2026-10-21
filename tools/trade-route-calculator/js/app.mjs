@@ -3,7 +3,7 @@ import {localBrokerFeePercent} from './local-broker-fee.mjs?v=trade-exports-2026
 import {projectCampaignPolitics,campaignTerritoryMarkup,campaignAllegiance} from './campaign-politics.mjs';
 import {mountPoliticsEditor} from './campaign-politics-editor.mjs?v=trade-exports-20261021-116';
 import {matchesBuyRetailFilter,matchesSellRetailFilter,buyOfferRetailLabel} from './buy-offer-filter.mjs?v=trade-exports-20261021-116';
-import {campaignPlayerSnapshot,playerSnapshotForVisit} from './player-campaign-snapshot.mjs?v=trade-exports-20261021-116';
+import {campaignPlayerSnapshot,campaignPlayerMarketSnapshot,playerSnapshotForVisit} from './player-campaign-snapshot.mjs?v=trade-exports-20261021-116';
 import {playerSnapshotUrl} from './player-snapshot-link.mjs?v=trade-exports-20261021-116';
 import {createCargoRemovalSession} from './cargo-removal-session.mjs?v=trade-exports-20261021-116';
 import {statusGaugeValues,fuelGaugeValues} from './status-gauges.mjs?v=trade-exports-20261021-116';
@@ -4445,7 +4445,7 @@ function tradeReports(){
 }
 function tradeExport(kind){
  const saved=store.read();if(campaignReloadRequired||JSON.stringify(saved)!==JSON.stringify(state))throw Error('Reload the saved campaign before exporting trade details.');
- const snapshot=campaignPlayerSnapshot(saved,core,{saleQuotes}),gm=[];
+ const marketOnly=kind.endsWith('-csv')||kind==='market-print',snapshot=(marketOnly?campaignPlayerMarketSnapshot:campaignPlayerSnapshot)(saved,core,{saleQuotes}),gm=[];
  if(kind.startsWith('gm-')){
   for(const snap of saved.snapshots.filter(x=>x.kind==='supplier'&&x.worldId===saved.actual&&(saved.cooldowns[x.party]??0)<=saved.hours))for(const o of snap.offers.filter(x=>!x.expired&&!x.manualRequired&&A.cmp(x.remaining,0)>0))gm.push({side:'buy',id:o.id,name:good(o.commodity)?.name||'Other',tons:o.remaining,creditsPerTon:o.unitPrice,retailPerTon:o.audit?.basePrice??null,broker:snap.options,audit:o.audit});
   for(const l of saved.lots){const q=saleQuotes.get(l.id);if(q&&q.revision===saved.revision&&q.worldId===saved.actual&&!q.audit?.manualRequired)gm.push({side:'sell',id:l.id,name:good(l.commodity)?.name||'Other',tons:l.quantity,creditsPerTon:q.unitPrice,retailPerTon:q.audit?.basePrice??null,broker:saved.snapshots.find(x=>x.id===q.buyerId)?.options,audit:q.audit});}
