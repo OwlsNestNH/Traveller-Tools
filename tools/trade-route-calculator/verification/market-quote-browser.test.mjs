@@ -40,7 +40,7 @@ function fixture() {
  s.ledger = [{id: 'cap-opening', type: 'Opening bank', amount: '1000000', hours: 0, world: s.actual}];
  const good = core.commodities.find(g => g.baseCreditsPerTon === 1000000 && !g.universallyIllegal);
  assert.ok(good, 'Existing legal Cr1,000,000 base commodity');
- const world = worldContext(s.worlds[s.actual], core), options = {...s.settings, skill: 6, counterparty: 0, local: false, side: 'buy'};
+ const world = worldContext(s.worlds[s.actual], core), options = {...s.settings, skill: 6, counterparty: 0, local: true, side: 'buy'};
  const savedQuote = quote(good, world, options, core, () => 6);
  s.snapshots = [{id: 'cap-supplier', kind: 'supplier', worldId: s.actual, world, party: 'cap|supplier', partyName: 'Cap supplier', hours: s.hours, startedHours: s.hours, success: true, options, offers: [{...savedQuote, id: OFFER, commodity: good.id, description: DESCRIPTION, remaining: '5', expired: false, illegal: false}]}];
  s.dashboardBaseline = createDashboardBaseline(s);

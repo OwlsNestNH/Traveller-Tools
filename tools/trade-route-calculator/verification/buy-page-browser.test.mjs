@@ -11,7 +11,7 @@ const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BRO
 const report=[];
 try{
  for(const width of [1440,1100,390,320]){
-  const f=guiFixture();f.state.settings.insurance=true;f.state.bank='10000000';f.state.ledger[0].amount=f.state.bank;
+  const f=guiFixture();f.state.snapshots[0].options.local=true;f.state.settings.insurance=true;f.state.bank='10000000';f.state.ledger[0].amount=f.state.bank;
   const original=f.state.snapshots[0].offers[0];f.state.snapshots[0].offers=Array.from({length:12},(_,i)=>({...structuredClone(original),id:i?'offer-'+i:original.id,description:'Synthetic commodity lot '+(i+1),unitPrice:i===1?String(Number(original.audit.basePrice)*1.1):original.unitPrice,audit:{...structuredClone(original.audit),basePrice:i===2?null:original.audit.basePrice,percent:i===1?10:i===2?null:90}}));
   for(const [i,price] of [[3,'950'],[4,'950.000001'],[5,'1000']])Object.assign(f.state.snapshots[0].offers[i],{unitPrice:price,audit:{...original.audit,basePrice:'1000',percent:10}});
   const bytes=JSON.stringify(f.state),context=await browser.newContext({viewport:{width,height:900}}),errors=[];

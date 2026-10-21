@@ -31,7 +31,7 @@ function fixture(kind='ordinary'){
  s.ship.fuel.aboardTons=40;
  s.trader.rank=2;s.trader.soc=1;
  s.settings={...s.settings,profit:75,tax:false,insurance:false,creditStep:1};
- const world=structuredClone(s.snapshots[0].world),options={side:'buy',skill:0,counterparty:0,creditStep:1};
+ const world=structuredClone(s.snapshots[0].world),options={side:'buy',local:true,skill:0,counterparty:0,creditStep:1};
  s.snapshots=[
   {id:'stress-supplier',kind:'supplier',worldId:s.actual,world,party:'stress|supplier',partyName:'Stress supplier',hours:s.hours,startedHours:s.hours,criminal:false,options,offers:[{id:'stress-offer',commodity:'11',description:'Fixed-price stress electronics',remaining:'12',unitPrice:'12345',expired:false,illegal:false,audit:{manual:true,reason:'Synthetic opening quote'}}]},
   {id:'stress-buyer',kind:'buyer',worldId:s.actual,world,party:'stress|buyer',partyName:'Stress buyer',hours:s.hours,startedHours:s.hours,criminal:false,success:true,options:{...options,side:'sell'},offers:[]}
