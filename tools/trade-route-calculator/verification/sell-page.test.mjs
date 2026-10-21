@@ -10,11 +10,11 @@ function fixture(){
  return s;
 }
 test('Sell keeps separate lots, maximum defaults, unknown history and review-only actions',()=>{
- const h=harness(fixture()),before=JSON.stringify(h.persisted()),html=h.api.cargoPanel(false);
+ const h=harness(fixture()),before=JSON.stringify(h.persisted()),html=h.api.tradeToolbar()+h.api.cargoPanel(false);
  assert.match(html,/data-sale-quantity="one" value="2.5"/);assert.match(html,/data-sale-quantity="two" value="5"/);
  assert.match(html,/Not recorded/);assert.match(html,/data-action="buyer-search"[^>]*>Find buyer/);assert.match(html,/Select all cargo/);assert.match(html,/Clear selection/);
  assert.doesNotMatch(html,/data-action="sale"/);
- h.api.setSelected(['one']);const selectedHtml=h.api.cargoPanel(false);
+ h.api.setSelected(['one']);const selectedHtml=h.api.tradeToolbar()+h.api.cargoPanel(false);
  assert.match(selectedHtml,/data-action="sale"[^>]*>Review sale/);assert.doesNotMatch(selectedHtml,/data-action="buyer-search"/);
  assert.match(html,/data-action="lot-audit"/);assert.doesNotMatch(html,/data-action="lot-correct"|data-action="lot-sell"/);
  assert.doesNotMatch(html,/sale-selection-preview|Cargo projected/);

@@ -53,20 +53,21 @@ try{
   await page.goto(base);await page.getByText('Editing in this tab',{exact:true}).waitFor();
   const initial=await raw();assert.deepEqual((await read()).snapshots,beforeSnapshots,'Loading does not rewrite legacy snapshots');
   for(const kind of ['supplier','buyer']){
-   await open(kind);assert.match(await (await searchBody()).textContent(),/[Pp]revious attempts in this period: 2 \(DM −2\)/);
+   await open(kind);assert.match(await (await searchBody()).textContent(),kind==='supplier'?/Attempts: 2 · Search penalty: −2 DM/:/[Pp]revious attempts in this period: 2 \(DM −2\)/);
    assert.ok((await (await searchBody()).textContent()).includes(displayDate(s.dateLabel,672)));
+   if(kind==='supplier')await page.locator('.supplier-search-help').evaluate(el=>el.open=true);
    await (await searchBody()).locator('[data-rule-info="contact-search"]').click();assert.match(await page.locator('#rule-reference-popup').textContent(),/same month/);await page.keyboard.press('Escape');assert.equal(await page.locator('#modal').evaluate(el=>el.open),kind==='buyer');
    await preview(kind);assert.equal(await raw(),initial);await cancel();assert.equal(await raw(),initial);
    await open(kind);await page.keyboard.press('Escape');await closed();assert.equal(await raw(),initial);
   }
   await open('buyer');await preview('buyer');await commit();
   const atBoundary=await read();assert.equal(atBoundary.snapshots.length,3);assert.equal(atBoundary.hours,672);assert.equal(atBoundary.snapshots.at(-1).search.previous,2);assert.equal(contactSearchStatus(atBoundary).previous,0);assert.deepEqual(atBoundary.snapshots.slice(0,2),beforeSnapshots);
-  await open('supplier');assert.match(await (await searchBody()).textContent(),/All penalties cleared/);assert.match(await (await searchBody()).textContent(),/[Pp]revious attempts in this period: 0/);await preview('supplier','normal');await commit();
+  await open('supplier');assert.match(await (await searchBody()).textContent(),/All penalties cleared/);assert.match(await (await searchBody()).textContent(),/Attempts: 0 · Search penalty: −0 DM/);await preview('supplier','normal');await commit();
   const nextPeriod=await read();assert.equal(nextPeriod.hours,696);assert.equal(nextPeriod.snapshots.at(-1).search.contactPeriod.startedHours,672);assert.equal(nextPeriod.snapshots.at(-1).search.contactPeriod.resetsHours,1344);
   await open('buyer');assert.match(await (await searchBody()).textContent(),/[Pp]revious attempts in this period: 1/);await preview('buyer','blackMarket');await commit();
   const after=await read();assert.equal(after.hours,720);assert.equal(after.snapshots.at(-1).search.previous,1);assert.equal(contactSearchStatus(after).previous,2);assert.deepEqual(after.snapshots.slice(0,2),beforeSnapshots);
   await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();assert.deepEqual(await read(),after);
-  await open('supplier');assert.match(await (await searchBody()).textContent(),/[Pp]revious attempts in this period: 2/);await page.screenshot({path:artifacts+`/contact-search-period-${viewport.width}.png`});await cancel();
+  await open('supplier');assert.match(await (await searchBody()).textContent(),/Attempts: 2 · Search penalty: −2 DM/);await page.screenshot({path:artifacts+`/contact-search-period-${viewport.width}.png`});await cancel();
   const audit=after.events.findLast(e=>e.contactSearch);await tab('History');await page.locator('[data-action="event-audit"][data-arg="'+audit.id+'"]').click();await title('History entry');
   assert.match(await (await searchBody()).textContent(),/Home Rule \/ campaign interpretation/);assert.match(await (await searchBody()).textContent(),/same month/);assert.ok((await (await searchBody()).textContent()).includes(displayDate(s.dateLabel,1344)));await cancel();
   // Export and re-import through the real browser file controls, then Undo.
