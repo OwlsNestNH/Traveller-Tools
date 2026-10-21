@@ -29,7 +29,7 @@ try{
   // Map browsing does not redirect trading or require a recovery modal.
   await click('tab','Overview');await click('world',f.state.route[2]);await click('tab','Trade');await click('search');
   assert.equal(await page.locator('#modal').evaluate(el=>el.open),false);await page.locator('#supplier-form').waitFor();assert.equal(await raw(),bytes);await click('supplier-cancel');
-  assert.equal(await raw(),bytes);assert.equal(await page.locator('.purchase-table tbody tr').count(),12);assert.equal(await page.locator('.cargo-table th').nth(4).textContent(),'Price paid / t');
+  assert.equal(await raw(),bytes);assert.equal(await page.locator('.purchase-table tbody tr').count(),12);assert.equal(await page.locator('.purchase-table input[type=checkbox]').count(),0,'Buy rows have no expiration checkbox');assert.equal(await page.locator('.cargo-table th').nth(4).textContent(),'Price paid / t');
   assert.equal(await page.locator('[data-action="buyer-search"]').count(),0);await screenshot('normal-collapsed');
   const before=await page.locator('.purchase-table').boundingBox();await click('search');await page.locator('#supplier-form').waitFor();
   const after=await page.locator('.purchase-table').boundingBox();assert.ok(after.y>before.y+100,'Inline supplier pushes goods down');assert.equal(await page.locator('#modal').evaluate(el=>el.open),false);assert.equal(await raw(),bytes);await screenshot('normal-supplier');
