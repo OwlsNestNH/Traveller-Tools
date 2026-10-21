@@ -40,3 +40,10 @@ test('measured basis overhead stays compact at 1, 10 and 30 offers',()=>{
   console.log(JSON.stringify({count,basis,characters:current.characters,extra}));
  }
 });
+test('nearest valid encodings around the production 8192-character boundary accept or reject without truncation',()=>{
+ const d=fixture(),row=offer('999999999999999.999999','999999999999900','Other');row.tons='999';
+ d.buy.offers=Array.from({length:200},()=>({...row}));d.sell.offers=Array.from({length:76},()=>({...row}));d.world.name='x'.repeat(10);
+ // Base64url lengths skip 8192 for this fixed prefix: adjacent valid lengths are 8191 and 8193.
+ assert.equal(measureSnapshotLink(d).characters,8191);const link=encodeSnapshotLink(d);assert.equal(decodeSnapshotLink(link).sell.offers.length,76);
+ d.world.name+='x';assert.equal(measureSnapshotLink(d).characters,8193);assert.throws(()=>encodeSnapshotLink(d),/limit is 8192/);assert.equal(d.buy.offers.length,200);assert.equal(d.sell.offers.length,76);
+});
