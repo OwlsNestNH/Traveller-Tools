@@ -1,13 +1,13 @@
-import {recordedOperatingResult} from './financial-summary.mjs?v=world-search-20261021-117';
-import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=world-search-20261021-117';
-import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=world-search-20261021-117';
-import {bladderSpace} from './fuel.mjs?v=world-search-20261021-117';
+import {recordedOperatingResult} from './financial-summary.mjs?v=compact-trade-20261021-118';
+import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=compact-trade-20261021-118';
+import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=compact-trade-20261021-118';
+import {bladderSpace} from './fuel.mjs?v=compact-trade-20261021-118';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
-import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=world-search-20261021-117';
-import {distance} from './map.mjs?v=world-search-20261021-117';
+import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=compact-trade-20261021-118';
+import {distance} from './map.mjs?v=compact-trade-20261021-118';
 
-export const REPORT_VERSION='2026.10.21.117';
+export const REPORT_VERSION='2026.10.21.118';
 const clean=v=>String(v??'Not recorded').replace(/[\r\n\t\x00-\x1f]+/g,' ').trim();
 const number=v=>String(v).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const cr=v=>v==null?'Not recorded':'Cr '+number(v);
