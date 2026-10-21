@@ -147,3 +147,6 @@ test('offer retail basis comes from saved quote audit, independent of current ca
  assert.equal(view.buy.offers[0].retailPerTon,'1000');assert.equal(view.sell.offers[0].retailPerTon,'20000');assert.equal(JSON.stringify(s),before);assert.ok(!JSON.stringify(view).includes('GM SECRET'));
  for(const value of [undefined,'0','-1','1/3','9999999999999999']){s.snapshots[0].offers[0].audit.basePrice=value;assert.equal(campaignPlayerSnapshot(s,core,clock).buy.offers[0].retailPerTon,null);}
 });
+test('market handouts remain available with legacy fractional cargo or negative cash',async()=>{
+ const {campaignPlayerMarketSnapshot}=await import('../js/player-campaign-snapshot.mjs');const s=fresh();s.lots=[lot()];s.lots[0].quantity='1.5';s.bank='-100';const before=JSON.stringify(s),market=campaignPlayerMarketSnapshot(s,core,clock);assert.equal(market.world.name,s.worlds[s.actual].name);assert.ok(!('cargo' in market));assert.ok(!('ship' in market));assert.equal(JSON.stringify(s),before);
+});

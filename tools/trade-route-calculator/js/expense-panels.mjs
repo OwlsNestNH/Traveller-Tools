@@ -1,16 +1,16 @@
-import {ruleInfo} from './rule-references.mjs?v=stock-provenance-20261021-115';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=stock-provenance-20261021-115';
-import {passengerShip} from './passengers.mjs?v=stock-provenance-20261021-115';
+import {ruleInfo} from './rule-references.mjs?v=trade-exports-20261021-116';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=trade-exports-20261021-116';
+import {passengerShip} from './passengers.mjs?v=trade-exports-20261021-116';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=stock-provenance-20261021-115';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=stock-provenance-20261021-115';
-import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=stock-provenance-20261021-115';
-import {roomCounts} from './accommodation.mjs?v=stock-provenance-20261021-115';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=stock-provenance-20261021-115';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=stock-provenance-20261021-115';
-import {creditStep} from './rounding.mjs?v=stock-provenance-20261021-115';
-import {roll} from './rules.mjs?v=stock-provenance-20261021-115';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=stock-provenance-20261021-115';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=trade-exports-20261021-116';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=trade-exports-20261021-116';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=trade-exports-20261021-116';
+import {roomCounts} from './accommodation.mjs?v=trade-exports-20261021-116';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=trade-exports-20261021-116';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=trade-exports-20261021-116';
+import {creditStep} from './rounding.mjs?v=trade-exports-20261021-116';
+import {roll} from './rules.mjs?v=trade-exports-20261021-116';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=trade-exports-20261021-116';
 
 const esc=escapeHtml;
 const money=formatCreditsText;
