@@ -254,4 +254,8 @@ try {
   assert.match(await page.locator('.cargo-section tbody tr').first().locator('td').last().textContent(),/^Unknown/);
   for(const kind of ['buy','sell']){await page.getByRole('button',{name:'About Broker commission · '+kind+' offers',exact:true}).click();await page.getByRole('dialog').getByText(/do not retain a confirmed Broker commission/).waitFor();await page.keyboard.press('Escape');await page.getByRole('dialog').waitFor({state:'detached'});}
   console.log('Player snapshot browser checks passed: desktop/mobile, inert markup, versions, repeated rendering, navigation, storage isolation.');
+} catch(error) {
+  console.error('Snapshot failure diagnostics',JSON.stringify({errors,ui:await page.evaluate(()=>({active:document.activeElement?.outerHTML,dialogs:[...document.querySelectorAll('dialog')].map(d=>d.outerHTML),viewport:{width:innerWidth,height:innerHeight}}))}));
+  await page.screenshot({path:artifacts+'player-snapshot-failure.png',fullPage:true});
+  throw error;
 } finally { await browser.close(); }
