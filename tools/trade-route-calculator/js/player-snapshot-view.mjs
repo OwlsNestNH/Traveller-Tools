@@ -1,7 +1,7 @@
 import {campaignPoliticsFragment} from './campaign-politics-codec.mjs';
-import {informationButton} from './player-info.mjs?v=hex-quiet-20261020-106';
+import {informationButton} from './player-info.mjs?v=snapshot-lss-20261021-107';
 import {formatSnapshotTons, formatSnapshotWholeDown, formatSnapshotLss, formatSnapshotQuantityText} from './player-snapshot-format.mjs';
-import {projectPlayerSnapshot, summarizePlayerExpenses, EXPENSE_KINDS} from './player-snapshot.mjs?v=hex-quiet-20261020-106';
+import {projectPlayerSnapshot, summarizePlayerExpenses, EXPENSE_KINDS} from './player-snapshot.mjs?v=snapshot-lss-20261021-107';
 
 // Immutable transmitted data and local annotations remain separate.
 // Persistence is supplied by the standalone recipient adapter, never campaign storage.
@@ -82,7 +82,7 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
     if(title.startsWith('Life support')){panel.querySelector('h3').append(informationButton(document,'Life support',[description],root));if(resource.current===null)panel.append(node('p',description));}else panel.append(node('p',description)); resourceGrid.append(panel);
   };
   gauge('Fuel tanks', data.ship.fuel, 't', 'Fuel aboard / total tank capacity');
-  gauge('Life support · internal days remaining', {current:data.ship.lifeSupport.daysRemaining,capacity:data.ship.lifeSupport.daysCapacity}, 'days', data.ship.lifeSupport.daysRemaining===null ? 'Days unknown: duration for the current crew and passengers was not supplied. Supply stock has not been converted into days.' : 'Whole completed days, rounded down; the bar retains the exact duration. Internal supplies only, at this snapshot’s crew and passenger consumption. Cargo reserve is shown separately.');
+  gauge('Life support · internal days remaining', {current:data.ship.lifeSupport.daysRemaining,capacity:data.ship.lifeSupport.daysCapacity}, 'days', data.ship.lifeSupport.daysRemaining===null ? 'Days unknown: duration for the current crew and passengers was not supplied. Supply stock has not been converted into days.' : 'Whole completed days, rounded down; the bar uses the snapshot duration. Internal supplies only, at this snapshot’s crew and passenger consumption. Cargo reserve is shown separately.');
   const expensePanel = section('Current-system expenses'); expensePanel.className = 'wide';
   expensePanel.append(node('p', data.expenses.visitLabel));
   const totals = summarizePlayerExpenses(data.expenses), totalGrid = node('div'); totalGrid.className = 'expense-totals';
@@ -136,7 +136,7 @@ export function renderPlayerSnapshot(root, input, {annotations,onAnnotationsChan
   freshness.append(informationButton(document,'Snapshot information',[
     ...(rounding?[`Costs shown rounded up to Cr${rounding}.`]:[]),
     'The capture timestamp identifies this fixed snapshot. It does not update live; ask the operator for a fresh link when information changes.',
-    'Fuel quantities and tank capacities round down to whole tons; cargo and reserved space round up. LSS stock rounds down to whole units. Display rounding may make amounts differ from totals or costs. Stored amounts, prices and fill bars remain exact.'
+    'Fuel quantities and tank capacities round down to whole tons; cargo and reserved space round up. LSS stock rounds down to whole units. Display rounding may make amounts differ from totals or costs. Snapshot LSS stock and days retain up to six decimal places, rounded down; fill bars use that snapshot precision. The operator’s saved campaign values are unchanged.'
   ],root));
   root.replaceChildren(freshness,container);
   return true;

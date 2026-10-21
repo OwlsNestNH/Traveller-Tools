@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=hex-quiet-20261020-106';
+import {ruleInfo} from './rule-references.mjs?v=snapshot-lss-20261021-107';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={

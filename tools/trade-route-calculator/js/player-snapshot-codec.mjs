@@ -1,6 +1,6 @@
 import {encodeCampaignPolitics,decodeCampaignPolitics} from './campaign-politics-codec.mjs';
 // Standalone browser codec prototype. No DOM, storage, network or production adapter.
-import {projectPlayerSnapshot, EXPENSE_KINDS, SNAPSHOT_VERSION, LEGACY_MAINTENANCE, CargoTonnageError} from './player-snapshot.mjs?v=hex-quiet-20261020-106';
+import {projectPlayerSnapshot, EXPENSE_KINDS, SNAPSHOT_VERSION, LEGACY_MAINTENANCE, CargoTonnageError} from './player-snapshot.mjs?v=snapshot-lss-20261021-107';
 import {CATALOG_VERSION, COMMODITIES, WORLDS, TEXT_FRAGMENTS, BASE_PRICES, STATIC_TEXT_V2, DESTINATIONS_V2} from './player-snapshot-catalog.mjs';
 export const PROPOSED_PREFIX = 'https://owlsnestnh.github.io/Traveller-Tools/p#'; // NOT DEPLOYED
 export const CODEC_VERSION = 8;

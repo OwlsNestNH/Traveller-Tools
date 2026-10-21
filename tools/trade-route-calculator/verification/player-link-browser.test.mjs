@@ -41,5 +41,16 @@ try{
   await page.goto(past);await page.getByRole('heading',{name:'Cargo aboard',exact:true}).waitFor();await page.goBack();await page.getByRole('heading',{name:'Cargo aboard',exact:true}).waitFor();await page.goForward();assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),before);
   assert.deepEqual(errors,[]);report.push({width,mode,pass:true,currentCharacters:current.length,pastCharacters:past.length});await context.close();
  }
+ for(const width of [1440,390]){
+  const precise=structuredClone(fixture);precise.ship.lifeSupport={capacityHours:672,stockUnits:'900.1234567'};S.validate(precise);const bytes=JSON.stringify(precise);
+  const context=await browser.newContext({viewport:{width,height:900}});await context.addInitScript(({key,bytes})=>{if(!localStorage.getItem(key))localStorage.setItem(key,bytes);globalThis.playerCopies=[];Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async text=>playerCopies.push(text)}});},{key,bytes});
+  await context.route('**/*',route=>new URL(route.request().url()).origin===origin?route.continue():route.fulfill({json:{Worlds:[]},headers:{'Access-Control-Allow-Origin':'*'}}));
+  const page=await context.newPage();await page.goto(base+'#not-a-player-snapshot');await page.getByText('Editing in this tab',{exact:true}).waitFor();assert.equal(await page.locator('#message').textContent(),'');
+  for(let i=0;i<2;i++){await page.getByRole('button',{name:'Copy Player Link',exact:true}).click();await page.getByText(/Player link copied for visit/).waitFor();}
+  const links=await page.evaluate(()=>playerCopies);assert.equal(links.length,2);const decoded=decodeSnapshotLink(PROPOSED_PREFIX+new URL(links[0]).hash.slice(1));assert.equal(decoded.ship.lifeSupport.cargoLss,'100.123456');assert.equal(decoded.ship.lifeSupport.cargoReservedTons,'2');
+  assert.equal(await page.evaluate(k=>localStorage.getItem(k),key),bytes);await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();assert.equal(await page.locator('#message').textContent(),'');
+  await page.goto(links[0]);await page.getByRole('heading',{name:'Cargo aboard',exact:true}).waitFor();assert.equal(await page.evaluate(k=>localStorage.getItem(k),key),bytes);await page.goBack();await page.getByText('Editing in this tab',{exact:true}).waitFor();await page.goForward();await page.getByRole('heading',{name:'Cargo aboard',exact:true}).waitFor();assert.equal(await page.evaluate(k=>localStorage.getItem(k),key),bytes);
+  report.push({width,highPrecisionLss:true,pass:true});await context.close();
+ }
  console.log('PASS: production current/completed/repeated visits, clipboard fallback, desktop/mobile and recipient storage isolation.');
 }finally{await writeFile(new URL('player-link-report.json',artifacts),JSON.stringify(report,null,2));await browser.close();}

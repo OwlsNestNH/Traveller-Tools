@@ -1,7 +1,7 @@
 import {COMMODITIES} from './player-snapshot-catalog.mjs';
-import {playerSnapshotFixture} from './player-snapshot-fixture.mjs?v=hex-quiet-20261020-106';
-import {renderPlayerSnapshot,clearPlayerSnapshotMap} from './player-snapshot-view.mjs?v=hex-quiet-20261020-106';
-import {createRecipientStore} from './player-snapshot-storage.mjs?v=hex-quiet-20261020-106';
+import {playerSnapshotFixture} from './player-snapshot-fixture.mjs?v=snapshot-lss-20261021-107';
+import {renderPlayerSnapshot,clearPlayerSnapshotMap} from './player-snapshot-view.mjs?v=snapshot-lss-20261021-107';
+import {createRecipientStore} from './player-snapshot-storage.mjs?v=snapshot-lss-20261021-107';
 const root=document.getElementById('snapshot'),store=createRecipientStore(()=>localStorage);
 function display() {
   clearPlayerSnapshotMap(root);
