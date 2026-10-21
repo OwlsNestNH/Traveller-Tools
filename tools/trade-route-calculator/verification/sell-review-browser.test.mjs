@@ -9,7 +9,7 @@ await mkdir(artifacts,{recursive:true});const browser=await chromium.launch({hea
 try{for(const width of [1440,390,320])for(const mode of ['off','manual','automatic','criminal']){
  const f=guiFixture();f.state.worlds[f.state.actual].uwp='A788879-C';f.state.settings.tax=['automatic','criminal'].includes(mode);f.state.settings.insurance=true;
  f.state.lots[0].description='Synthetic long independently audited electronics cargo lot for combined sale review';
- f.state.snapshots.push({id:'sell-buyer',kind:'buyer',worldId:f.state.actual,world:f.state.snapshots[0].world,party:'synthetic|buyer',partyName:'Synthetic long buyer name — independently reviewed legal or criminal market',startedHours:f.state.hours,hours:f.state.hours,success:true,criminal:mode==='criminal',options:{side:'sell',skill:1,counterparty:2},offers:[]});
+ f.state.snapshots.push({id:'sell-buyer',kind:'buyer',worldId:f.state.actual,world:f.state.snapshots[0].world,party:'synthetic|buyer',partyName:'Synthetic long buyer name — independently reviewed legal or criminal market',startedHours:f.state.hours,hours:f.state.hours,success:true,criminal:mode==='criminal',options:{side:'sell',local:true,skill:1,counterparty:2},offers:[]});
  if(mode==='automatic')f.state.snapshots.at(-1).partyName='SyntheticBuyer'+('X'.repeat(120));
  const bytes=JSON.stringify(f.state),context=await browser.newContext({viewport:{width,height:900}});
  await context.addInitScript(({key,bytes})=>{if(!localStorage.getItem(key))localStorage.setItem(key,bytes);globalThis.saleDiceCalls=0;const random=crypto.getRandomValues.bind(crypto);crypto.getRandomValues=array=>{if(array instanceof Uint32Array&&array.length===1){saleDiceCalls++;array[0]=2;return array;}return random(array);};},{key:campaignKey,bytes});

@@ -1,4 +1,4 @@
-import {up} from './rounding.mjs?v=row-bands-20261021-109';
+import {up} from './rounding.mjs?v=inline-buy-20261021-110';
 import {sum,mul,decimal,cmp,credit} from './amounts.mjs';
 
 export const tiers=['low','middle','high'];

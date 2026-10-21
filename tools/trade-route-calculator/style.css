@@ -605,3 +605,17 @@ main{padding-top:18px}
 /* Expired status takes precedence over bands and hover. */
 .scroll>table>tbody>tr.expired-row{background:#0c1622}
 @media print{.scroll>table>tbody>tr,.cargo-management-scroll>table>tbody>tr,.cargo-manifest-scroll>table>tbody>tr,.dashboard-table-scroll>table>tbody>tr,.covered-payments-scroll>table>tbody>tr,.expense-table>tbody>tr,.preview>dl>dt,.preview>dl>dd,.contract-card{background:transparent!important}}
+
+/* Purchase inputs stay beside their saved quote; only explicit Buy saves. */
+.inline-purchase{display:flex;align-items:center;flex-wrap:wrap;gap:.4rem;max-width:26rem}
+.inline-purchase label{display:flex;flex-direction:column;gap:.15rem;font-size:.8rem}
+.inline-purchase input{width:6rem;min-width:0;padding:.35rem}
+.inline-purchase .help{flex-basis:100%;margin:0}
+.commodity-info{display:inline-flex;align-items:center;justify-content:center;min-width:2rem;min-height:2rem;padding:.15rem}
+.inline-purchase{display:grid;grid-template-columns:5.5rem 7rem 4rem;width:18rem;max-width:none;gap:.3rem}
+.inline-purchase input{width:100%;box-sizing:border-box}
+.inline-purchase [data-action="inline-buy"]{grid-column:3;grid-row:1;align-self:end;min-height:2rem;background:var(--cyan);color:#06131b}
+.inline-purchase .help{grid-column:1/-1;white-space:normal}
+.inline-purchase [role="status"]:empty{display:none}
+.inline-purchase [data-action="buy"]{grid-column:1/3;justify-self:start;background:transparent;color:var(--text);border-color:var(--line);min-height:28px;font-weight:400}
+.inline-purchase [data-action="offer-edit"]{grid-column:3;justify-self:start;min-height:28px}

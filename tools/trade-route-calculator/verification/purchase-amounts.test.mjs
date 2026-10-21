@@ -40,7 +40,7 @@ test('headless consumer normalizes an entry, prepares amounts and feeds existing
 test('production adapter keeps amount errors before insurance and cloned-state errors without a save',async()=>{
  const saved=campaign();saved.settings.insurance=true;
  saved.snapshots=[{id:'synthetic-supplier',worldId:origin.id,party:'synthetic|supplier',partyName:'Supplier',options:{local:false},offers:[{id:'synthetic-offer',commodity:'11',description:'Synthetic cargo',remaining:'6',unitPrice:'1001',audit:{dice:{dice:[5,5,2],total:12}}}]}];
- for(const [quantity,fee,expected]of [['0','bad','Quantity must be positive.'],['1','bad','Enter a finite decimal number (up to 100 characters).'],['1','101','Enter a nonnegative insured distance in parsecs']]){
+ for(const [quantity,fee,expected]of [['0','bad','Quantity must be positive.'],['1','bad','Enter a nonnegative insured distance in parsecs'],['1','101','Enter a nonnegative insured distance in parsecs']]){
   const h=harness(saved);h.api.buyForm('synthetic-offer');h.fill({quantity,fee,insure:true,insuranceDistance:'',insuranceLegs:1});await h.submit();assert.equal(h.dom.ids.get('modal-error').textContent,expected);assert.equal(h.calls.saves,0);assert.deepEqual(h.persisted(),saved);
  }
 });

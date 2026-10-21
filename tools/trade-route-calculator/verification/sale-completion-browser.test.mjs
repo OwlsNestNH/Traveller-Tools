@@ -80,7 +80,7 @@ function fixture(scenario = {mode: 'success'}) {
  ];
  s.contracts = [{id: 'sale-mail', kind: 'mail', status: 'accepted', firstDeparture: null, origin: origin.id, destination: destination.id, quantity: '5', payment: '1000', dueHours: null}];
  s.policies = s.lots.map(lot => ({id: 'policy-' + lot.id, lotId: lot.id, claims: [], status: 'active', initialQuantity: lot.quantity, remainingQuantity: lot.quantity, insuredValue: lot.goodsValue, remainingValue: lot.goodsValue, coverage: 70, route: [origin.id, destination.id], routeProgress: 0, destination: destination.id}));
- s.snapshots = [{id: 'sale-buyer', kind: 'buyer', worldId: origin.id, world: R.context(origin, core), party: 'synthetic|buyer', partyName: 'Synthetic buyer', hours: s.hours, startedHours: s.hours, criminal: scenario.mode === 'prewrite', success: true, options: {side: 'sell', skill: 12, counterparty: 1, creditStep: s.settings.creditStep}, offers: []}];
+ s.snapshots = [{id: 'sale-buyer', kind: 'buyer', worldId: origin.id, world: R.context(origin, core), party: 'synthetic|buyer', partyName: 'Synthetic buyer', hours: s.hours, startedHours: s.hours, criminal: scenario.mode === 'prewrite', success: true, options: {side: 'sell', local: true, skill: 12, counterparty: 1, creditStep: s.settings.creditStep}, offers: []}];
  s.ledger = [{id: 'sale-opening', type: 'Opening bank', amount: s.bank, hours: 0, world: origin.id}];
  s.dashboardBaseline = createDashboardBaseline(s); return S.validate(s);
 }

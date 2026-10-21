@@ -1,10 +1,10 @@
-import {supportCompartments} from './lss-compartments.mjs?v=row-bands-20261021-109';
+import {supportCompartments} from './lss-compartments.mjs?v=inline-buy-20261021-110';
 // Explicit whole-ton Cargo previews. Nothing here runs during load or render.
 import * as A from './amounts.mjs';
-import {passengerShip,passengerSpace,luggageSources} from './passengers.mjs?v=row-bands-20261021-109';
-import {passengerLuggage} from './accommodation.mjs?v=row-bands-20261021-109';
-import {supportCargo,supportAmount,anchorSupport,supportDisplay} from './life-support.mjs?v=row-bands-20261021-109';
-import {bladderSpace} from './fuel.mjs?v=row-bands-20261021-109';
+import {passengerShip,passengerSpace,luggageSources} from './passengers.mjs?v=inline-buy-20261021-110';
+import {passengerLuggage} from './accommodation.mjs?v=inline-buy-20261021-110';
+import {supportCargo,supportAmount,anchorSupport,supportDisplay} from './life-support.mjs?v=inline-buy-20261021-110';
+import {bladderSpace} from './fuel.mjs?v=inline-buy-20261021-110';
 export const cargoNumber=value=>supportAmount(value);
 const exact=value=>{try{return A.decimal(value);}catch{return A.auditNumber(value);}};
 export const wholeCargo=value=>String(-A.floor(A.mul(cargoNumber(value),-1)));

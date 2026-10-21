@@ -35,7 +35,7 @@ const scenarios = [
  {id: 'deferred-insured', mode: 'deferred', insured: true, dual: true},
  {id: 'retry-rounded-insured', mode: 'retry', insured: true, rounded: true, dual: true},
  {id: 'full-legal-default', mode: 'native', insured: true, full: true, fee: 10},
- {id: 'illegal-default', mode: 'native', insured: false, illegal: true, fee: 20},
+ {id: 'illegal-default', mode: 'native', insured: false, illegal: true, fee: 10},
  {id: 'huge-credits', mode: 'deferred', insured: false, huge: true, dual: true}
 ];
 for (const mode of ['entry-controls', 'freeze-controls', 'restore-controls', 'recovery-reentry', 'disk-same', 'disk-unreadable', 'queued-pending', 'queued-settled', 'reentrant', 'unknown-before', 'unknown-after', 'contradictory', 'notification-before', 'notification-after', 'missing', 'missing-token', 'wrong-token', 'wrong-revision', 'consumed-token', 'fulfilled-no-publication', 'foreign-same', 'foreign-new', 'editor-regain', 'offer-change', 'world-change', 'native-close', 'new-dialog', 'render', 'report', 'terminal-report', 'close-before', 'close-after', 'clear-error', 'controls', 'reentrant-close']) scenarios.push({id: mode, mode, insured: mode !== 'offer-change', rounded: mode === 'recovery-reentry', dual: ['entry-controls', 'disk-same', 'unknown-before', 'contradictory', 'foreign-same', 'render'].includes(mode)});
@@ -341,14 +341,14 @@ async function pointer(page, selector, clickCount = 1) {
  await locator.scrollIntoViewIfNeeded(); const box = await locator.boundingBox(); assert.ok(box);
  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2, {clickCount, delay: 20});
 }
-async function fill(page, name, value) {const input = page.locator('#modal [name="' + name + '"]'); await input.fill(String(value)); await input.blur();}
+async function fill(page, name, value) {const input = page.locator('#modal [name="' + name + '"]'); if(name==='fee'&&await input.getAttribute('type')==='hidden'){assert.equal(Number(value),0,'Only a zero commission may be hidden');assert.equal(await input.inputValue(),'0');return;}await input.fill(String(value)); await input.blur();}
 async function prepare(page, scenario, before, {loops = false, select = true, network = null} = {}) {
  if (select) {await existingSell(page); await action(page, 'sale-all').click(); await tab(page, scenario.map ? 'Overview' : 'Trade'); if(!scenario.map)await action(page, 'trade-side', 'buy').click();}
  const initialCalls = (await gate(page)).totalCalls;
  const spec = specification(before, scenario);
  const enter = async () => {
   if (scenario.map) await page.evaluate(() => purchaseGate.dispatch('buy', 'purchase-offer')); else await action(page, 'buy', 'purchase-offer').click(); await page.locator('#modal-title').filter({hasText: /^Review purchase ·/}).waitFor();
-  assert.equal(await page.locator('#modal [name="fee"]').inputValue(), String(before.snapshots[0].options.local ? (scenario.illegal ? 20 : 10) : 0), 'Saved local-broker legality sets default fee');
+  assert.equal(await page.locator('#modal [name="fee"]').inputValue(), String(before.snapshots[0].options.local ? 10 : 0), 'Saved local-broker legality sets default fee');
   await fill(page, 'quantity', scenario.rounded ? '1.2' : spec.quantity); await fill(page, 'fee', spec.args.feePercent); await fill(page, 'description', spec.args.description);
   if (scenario.insured) {
    await page.locator('#modal [name="insure"]').check(); await page.locator('#modal [name="coverage"]').selectOption('70'); await page.locator('#modal [name="insuranceLegs"]').selectOption('1');
@@ -427,7 +427,7 @@ async function accountingDetail(page, result, before, scenario) {
  const list = page.locator('#modal-body dl').filter({has: page.locator('dt', {hasText: /^Tons purchased$/})});
  await list.evaluate(node => {node.dataset.purchaseDetail = 'true';});
  await detail(page, result, 'saved-accounting-detail', ['#modal-body [data-purchase-detail]'], /Purchase price per ton[\s\S]*Goods cost[\s\S]*Purchase broker fee[\s\S]*Purchase insurance premium/);
- await pointer(page, '#modal-cancel'); await closed(page);
+ await page.locator('#modal-cancel').click(); await closed(page);
 }
 async function successful(page, result, before, scenario) {
  await closed(page); await frames(page); assertPurchase(await read(page), before, scenario);

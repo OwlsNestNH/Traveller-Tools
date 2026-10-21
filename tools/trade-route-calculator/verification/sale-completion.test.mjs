@@ -25,7 +25,7 @@ const {depositHarness}=await import('data:text/javascript;base64,'+Buffer.from(s
 const success=/Sale to Synthetic buyer saved\./;
 function fixture({lots=1,fractional=false,tax=true,criminal=false,creditStep=1,huge=false,insurance=true}={}){
  const s=campaign();s.worlds[s.actual].uwp='A788879-C';s.bank=huge?'9007199254740993123456789':'1000000';s.settings={...s.settings,tax,insurance,profit:75,creditStep};
- const world=bindings.R.context(s.worlds[s.actual],core),options={skill:1,counterparty:2,local:false};
+ const world=bindings.R.context(s.worlds[s.actual],core),options={skill:1,counterparty:2,local:true};
  s.snapshots=[{id:'buyer',kind:'buyer',worldId:s.actual,party:'synthetic|buyer',partyName:'Synthetic buyer',hours:0,startedHours:0,success:true,criminal,world,options,offers:[]}];
  s.lots=Array.from({length:lots},(_,i)=>({id:'sale-'+i,commodity:'11',description:'Synthetic cargo '+i,quantity:fractional&&i===0?'1.5':'3',basis:huge?'90071992547409931234567':'30001',goodsValue:huge?'90071992547409931234001':'27001',world:s.actual,hours:0}));
  if(insurance)s.policies=s.lots.map(l=>({id:'policy-'+l.id,lotId:l.id,claims:[],status:'active',initialQuantity:l.quantity,remainingQuantity:l.quantity,insuredValue:l.goodsValue,remainingValue:l.goodsValue,coverage:70,route:s.route,routeProgress:0,destination:s.route.at(-1)}));
@@ -178,7 +178,7 @@ function defineEconomics(){
   const sales=saved.ledger.filter(e=>e.type==='Sale');assert.equal(sales.length,p.lines.length);
   for(const [i,line]of p.lines.entries()){
    const lot=before.lots.find(l=>l.id===line.lotId),remaining=saved.lots.find(l=>l.id===line.lotId),policy=saved.policies.find(x=>x.lotId===line.lotId),full=A.cmp(lot.quantity,line.quantity)===0;
-   assert.equal(sales[i].amount,line.gross);same(sales[i].audit,{...line,commodity:lot.commodity,profitPercent:p.options.percent});
+   assert.equal(sales[i].amount,line.gross);same(sales[i].audit,{...line,commodity:lot.commodity,feePercent:p.options.feePercent,profitPercent:p.options.percent});
    for(const [type,amount]of [['Broker fee',String(-BigInt(line.fee))],['Tax',String(-BigInt(line.tax))],['Profit adjustment',line.adjustment]]){const record=saved.ledger.find(e=>e.type===type&&e.lotId===line.lotId);if(BigInt(amount)!==0n)assert.equal(record?.amount,amount);else assert.equal(record,undefined);}
    if(full){assert.equal(remaining,undefined);assert.equal(policy?.remainingQuantity,'0');assert.equal(policy?.remainingValue,'0');assert.equal(policy?.status,'closed');}
    else{assert.equal(remaining.quantity,A.decimal(A.sub(lot.quantity,line.quantity)));assert.equal(remaining.basis,String(BigInt(lot.basis)-BigInt(line.basis)));const value=String(BigInt(lot.goodsValue)-A.floor(A.mul(lot.goodsValue,A.div(line.quantity,lot.quantity))));assert.equal(remaining.goodsValue,value);assert.equal(policy.remainingQuantity,remaining.quantity);assert.equal(policy.remainingValue,value);assert.equal(policy.status,'active');}

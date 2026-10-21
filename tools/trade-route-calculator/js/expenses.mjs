@@ -1,9 +1,9 @@
-import {maintenancePaymentQuote,MAINTENANCE_REFERENCE} from './maintenance.mjs?v=row-bands-20261021-109';
-import {mortgagePaymentQuote,MORTGAGE_REFERENCE} from './mortgage.mjs?v=row-bands-20261021-109';
-import {fuelPurchase,fuelReference} from './fuel.mjs?v=row-bands-20261021-109';
-import {up} from './rounding.mjs?v=row-bands-20261021-109';
+import {maintenancePaymentQuote,MAINTENANCE_REFERENCE} from './maintenance.mjs?v=inline-buy-20261021-110';
+import {mortgagePaymentQuote,MORTGAGE_REFERENCE} from './mortgage.mjs?v=inline-buy-20261021-110';
+import {fuelPurchase,fuelReference} from './fuel.mjs?v=inline-buy-20261021-110';
+import {up} from './rounding.mjs?v=inline-buy-20261021-110';
 import * as A from './amounts.mjs';
-import {monthlyRates,serviceRate,serviceLabel,personMonthlyRate,personRate} from './accommodation.mjs?v=row-bands-20261021-109';
+import {monthlyRates,serviceRate,serviceLabel,personMonthlyRate,personRate} from './accommodation.mjs?v=inline-buy-20261021-110';
 
 export const berthMultipliers={A:1000,B:500,C:100,D:10,E:0,X:0};
 export function starport(world){return (world.overrideUWP||world.uwp).slice(0,1).toUpperCase();}

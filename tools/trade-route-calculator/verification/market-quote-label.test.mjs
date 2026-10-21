@@ -17,7 +17,7 @@ test('current retail explains a Settings cap change while the saved supplier quo
  const good=core.commodities.find(g=>g.baseCreditsPerTon===1000000&&!g.universallyIllegal);
  assert.ok(good,'Use an existing legal Cr1,000,000 base commodity');
  const world=bindings.R.context(seed.worlds[seed.actual],core);
- const options={...seed.settings,skill:seed.trader.broker,counterparty:0,local:false,side:'buy'};
+ const options={...seed.settings,skill:seed.trader.broker,counterparty:0,local:true,side:'buy'};
  const quoted=bindings.R.quote(good,world,options,core,()=>6);
  assert.equal(quoted.audit.rawBasePrice,1000000);
  assert.equal(quoted.audit.basePrice,100000);

@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=row-bands-20261021-109';
+import {ruleInfo} from './rule-references.mjs?v=inline-buy-20261021-110';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={
