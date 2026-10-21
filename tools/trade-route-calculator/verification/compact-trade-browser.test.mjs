@@ -8,8 +8,11 @@ try{for(const width of [1440,1280,390,320]){const f=guiFixture();f.state.snapsho
 const controls=page.locator(side==='buy'?'[data-purchase-row]':'#sale-row-lot-recorded').first();
 const qty=controls.locator('[name=quantity]');await qty.fill('2');
 assert.equal(await page.evaluate(k=>localStorage.getItem(k),campaignKey),before,'Changing draft quantity must not save');
-const dimensions=await controls.evaluate(el=>({row:el.closest('tr').getBoundingClientRect().height,boxes:[...el.querySelectorAll('input,button:not([hidden])')].map(x=>({bottom:x.getBoundingClientRect().bottom,height:x.getBoundingClientRect().height,width:x.getBoundingClientRect().width}))}));
-if(width>900){assert.ok(dimensions.row<=115,'Desktop rows remain compact');const bottoms=dimensions.boxes.map(x=>x.bottom);assert.ok(Math.max(...bottoms)-Math.min(...bottoms)<3,'Desktop quantity, fee and action controls share one line');}
+const dimensions=await controls.evaluate(el=>({row:el.closest('tr').getBoundingClientRect().height,warning:el.closest('tr').querySelector('.trade-complication')?.getBoundingClientRect().height||0,controls:el.getBoundingClientRect().height,boxes:[...el.querySelectorAll('input,button:not([hidden])')].map(x=>({bottom:x.getBoundingClientRect().bottom,height:x.getBoundingClientRect().height,width:x.getBoundingClientRect().width}))}));
+console.log(JSON.stringify({width,side,dimensions}));
+// A prominent warning may wrap with platform fonts; measure the control layout
+// independently instead of forcing warning text into a fixed-height row.
+if(width>900){assert.ok(dimensions.controls<=100,'Desktop controls remain compact');assert.ok(dimensions.row-dimensions.warning<=100,'Desktop row stays compact apart from its readable warning');const bottoms=dimensions.boxes.map(x=>x.bottom);assert.ok(Math.max(...bottoms)-Math.min(...bottoms)<3,'Desktop quantity, fee and action controls share one line');}
 else for(const box of dimensions.boxes){assert.ok(box.height>=44&&box.width>=44,'Mobile transaction controls retain touch targets '+JSON.stringify({width,side,box}));}
 assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No page horizontal overflow');
 const info=page.locator(side==='buy'?'[data-action="offer-audit"]':'[data-action="inline-sale-info"][data-arg="lot-recorded"]').first();await info.click();await page.keyboard.press('Escape');assert.equal(await qty.inputValue(),'2');assert.equal(await info.evaluate(el=>el===document.activeElement),true);assert.equal(await page.evaluate(k=>localStorage.getItem(k),campaignKey),before,'Information popup is inert');
