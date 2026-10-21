@@ -54,3 +54,24 @@ test('live GM price and benchmark rounding matches Enter commitment before a blu
  const p=structuredClone(h.api.modalSession.saleOwner.preview);assert.equal(p.lines[0].unitPrice,'50100');assert.equal(p.lines[0].benchmarkPrice,'20100');
  await h.submit();assert.equal(h.dom.ids.get('modal-error').textContent,'');assert.equal(h.calls.saves,1);assert.equal(h.persisted().ledger.find(e=>e.type==='Sale').audit.unitPrice,p.lines[0].unitPrice);assert.equal(h.persisted().bank,String(BigInt(s.bank)+BigInt(p.bankDelta)));
 });
+
+test('one offers action quotes every eligible lot without selecting or selling, and reuses prices',()=>{
+ const s=fixture();s.lots.push({...s.lots[0],id:'illegal',commodity:'61',illegal:true});
+ const h=harness(s),before=JSON.stringify(h.persisted());
+ h.api.beginSale(true);
+ assert.ok(h.api.currentQuote('one'));assert.ok(h.api.currentQuote('two'));assert.equal(h.api.currentQuote('illegal'),null);
+ const first=structuredClone(h.api.currentQuote('one')),second=structuredClone(h.api.currentQuote('two')),dice=h.calls.priceDice;
+ assert.equal(dice,6);assert.equal(h.calls.saves,0);assert.equal(JSON.stringify(h.persisted()),before);
+ h.api.setSelected(['one']);h.api.beginSale(true);
+ assert.equal(JSON.stringify(h.api.currentQuote('one')),JSON.stringify(first));assert.equal(JSON.stringify(h.api.currentQuote('two')),JSON.stringify(second));assert.equal(h.calls.priceDice,dice);
+ h.api.beginSale();assert.equal(h.dom.fields().get('qty_one').value,'2.5');assert.equal(h.dom.fields().has('qty_two'),false);
+ assert.equal(JSON.stringify(h.persisted()),before);
+ const next=structuredClone(h.api.state);next.revision++;h.api.setState(next);assert.equal(h.api.currentQuote('one'),null);
+});
+
+test('black-market offers include legal and illegal lots without preselection',()=>{
+ const s=fixture();s.snapshots[0].criminal=true;s.lots.push({...s.lots[0],id:'illegal',commodity:'61',illegal:true});
+ const h=harness(s);h.api.beginSale(true);
+ for(const id of ['one','two','illegal'])assert.ok(h.api.currentQuote(id));
+ assert.equal(h.calls.priceDice,9);assert.equal(h.calls.saves,0);assert.equal(h.dom.ids.get('modal').open,false);
+});

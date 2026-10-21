@@ -54,7 +54,7 @@ function expectedFrames(s) {
  return 2;
 }
 const screenshotOptions = Object.freeze({type: 'jpeg', quality: 65, caret: 'initial'});
-const successPattern = /^(?:(?:supplier|buyer) search: Synthetic (?:supplier|buyer) saved\.|Buyer found\. Select cargo, then Get sale offers\.)$/;
+const successPattern = /^(?:(?:supplier|buyer) search: Synthetic (?:supplier|buyer) saved\.|Buyer found\. Offers are ready for eligible cargo; choose a quantity and Sell to confirm\.)$/;
 const hash = value => createHash('sha256').update(value).digest('hex');
 const raw = page => page.evaluate(key => localStorage.getItem(key), KEY);
 const read = async page => JSON.parse(await raw(page));

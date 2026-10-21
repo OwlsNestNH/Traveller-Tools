@@ -33,6 +33,14 @@ The campaign clock displays an Imperial day-year date and hour, starting at 001-
 
 ## Development and verification
 
+Get sale offers quotes every eligible trade-good lot in the hold, independent of
+selection and display filters. A successful buyer search generates those quotes
+after its save completes. Legal buyers skip illegal lots; black-market buyers can
+quote them. Each lot retains its own price and quantity. Selection still controls
+only explicit batch review; row sales, stale-quote checks and save ownership are
+unchanged. Local-broker commission defaults to an adjustable 10% only for a local
+broker; otherwise its input is hidden and commission is zero.
+
 Trade → Sell keeps separate cargo lots with editable quantities defaulting to the
 maximum held amount. Row Sell and Sell Selected open one editable review with
 live financial and cargo totals; only COMMIT SALE records the entire valid batch.
