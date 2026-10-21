@@ -1,5 +1,5 @@
-import * as R from './rules.mjs?v=trade-filters-20261021-111';
-import {contactSearchPeriod} from './contact-search.mjs?v=trade-filters-20261021-111';
+import * as R from './rules.mjs?v=territory-resize-20261021-112';
+import {contactSearchPeriod} from './contact-search.mjs?v=territory-resize-20261021-112';
 
 export function tradeCodeLabel(code){const names={Ag:'Agricultural',As:'Asteroid',Ba:'Barren',De:'Desert',Fl:'Fluid oceans',Ga:'Garden',Hi:'High population',Ht:'High technology',Ic:'Ice-capped',In:'Industrial',Lo:'Low population',Lt:'Low technology',Na:'Non-agricultural',Ni:'Non-industrial',Po:'Poor',Ri:'Rich',Va:'Vacuum',Wa:'Water world',Amber:'Amber travel zone',Red:'Red travel zone',Safe:'Safe travel zone'};return (names[code]||code)+' ('+code+')';}
 

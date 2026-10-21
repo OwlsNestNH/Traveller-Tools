@@ -1,6 +1,6 @@
-import {recordedOperatingResult} from './financial-summary.mjs?v=trade-filters-20261021-111';
+import {recordedOperatingResult} from './financial-summary.mjs?v=territory-resize-20261021-112';
 import {latestMailCheck} from './mail-history.mjs';
-import {latestPassengerSearch,passengerOfferRemaining,passengerTotals} from './passengers.mjs?v=trade-filters-20261021-111';
+import {latestPassengerSearch,passengerOfferRemaining,passengerTotals} from './passengers.mjs?v=territory-resize-20261021-112';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
 

@@ -15,7 +15,7 @@ import {guiFixture,campaignKey as KEY} from './fixtures/gui-parity.mjs';
 const base=process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/';
 const root=fileURLToPath(new URL('../../../',import.meta.url));
 const artifacts=fileURLToPath(new URL('../verification-artifacts/',import.meta.url));
-const BUILD='2026.10.21.111',PREFIX='DEVTOOLS_PRIVATE_';
+const BUILD='2026.10.21.112',PREFIX='DEVTOOLS_PRIVATE_';
 const privateValues={campaign:PREFIX+'CAMPAIGN',ship:PREFIX+'SHIP',cargo:PREFIX+'CARGO',input:PREFIX+'INPUT',window:PREFIX+'WINDOW',rejection:PREFIX+'REJECTION',shared:PREFIX+'SHARED',wrapper:PREFIX+'WRAPPER',storage:PREFIX+'STORAGE',publication:PREFIX+'PUBLICATION',stack:PREFIX+'STACK',denial:PREFIX+'DENIAL'};
 const sizes=[{width:1440,height:1100},{width:390,height:844}];
 const cases=['runtime-capture','dedupe-clear','sync-failure-retry','committed-publication','safe-copy','clipboard-denial','full-report-disclosure','fatal-startup'];

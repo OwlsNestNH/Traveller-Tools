@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=trade-filters-20261021-111';
+import {escapeHtml as esc} from './display.mjs?v=territory-resize-20261021-112';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.
