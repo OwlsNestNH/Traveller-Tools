@@ -1,16 +1,16 @@
-import {ruleInfo} from './rule-references.mjs?v=trade-exports-20261021-116';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=trade-exports-20261021-116';
-import {passengerShip} from './passengers.mjs?v=trade-exports-20261021-116';
+import {ruleInfo} from './rule-references.mjs?v=world-search-20261021-117';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=world-search-20261021-117';
+import {passengerShip} from './passengers.mjs?v=world-search-20261021-117';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=trade-exports-20261021-116';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=trade-exports-20261021-116';
-import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=trade-exports-20261021-116';
-import {roomCounts} from './accommodation.mjs?v=trade-exports-20261021-116';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=trade-exports-20261021-116';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=trade-exports-20261021-116';
-import {creditStep} from './rounding.mjs?v=trade-exports-20261021-116';
-import {roll} from './rules.mjs?v=trade-exports-20261021-116';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=trade-exports-20261021-116';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=world-search-20261021-117';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=world-search-20261021-117';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=world-search-20261021-117';
+import {roomCounts} from './accommodation.mjs?v=world-search-20261021-117';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=world-search-20261021-117';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=world-search-20261021-117';
+import {creditStep} from './rounding.mjs?v=world-search-20261021-117';
+import {roll} from './rules.mjs?v=world-search-20261021-117';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=world-search-20261021-117';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

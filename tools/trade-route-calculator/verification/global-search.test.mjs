@@ -192,3 +192,26 @@ test('Escape in the search input dismisses once and suppresses native search-fie
   assert.equal(dismissed,1);assert.equal(prevented,1);assert.equal(stopped,1);
  }finally{globalThis.document=original;}
 });
+test('world lookup distinguishes successful empty result, unsupported data and transport failure',async()=>{
+ const good={Name:'Synthetic',Sector:'Synthetic',Hex:'0101',WorldX:0,WorldY:0,UWP:'A788899-C',PBG:'703'};
+ for(const [data,code]of [[{Worlds:[]},'not-found'],[{},'unsupported'],[null,'unsupported'],[{Worlds:{}},'unsupported'],[{Worlds:[{...good,Hex:'0202'}]},'unsupported'],[{Worlds:[{Hex:'0101'}]},'unsupported'],[{Worlds:[good,good]},'unsupported']])await withFetch(async()=>response(data),async m=>{await assert.rejects(m.loadWorld('Synthetic','0101'),e=>e.code===code&&e.message.includes(code==='not-found'?'lookup succeeded':'unsupported'));});
+ await withFetch(async()=>response({Worlds:[good]}),async m=>assert.equal((await m.loadWorld('Synthetic','0101')).id,'0,0'));
+ for(const mock of [async()=>({ok:false,status:503}),async()=>{throw TypeError('Network unavailable');}])await withFetch(mock,async m=>{await assert.rejects(m.loadWorld('Synthetic','0101'),e=>e.code==='failed');await assert.rejects(m.searchWorlds('Synthetic'),e=>e.code==='failed');});
+ await withFetch(async()=>({ok:true,json:async()=>{throw new SyntaxError('Invalid JSON');}}),async m=>assert.rejects(m.loadWorld('Synthetic','0101'),e=>e.code==='unsupported'));
+});
+test('nonempty unsupported search results cannot masquerade as no matching world',async()=>{
+ for(const Items of [[{Sector:{Name:'Only a sector'}}],[null],[{}]])await withFetch(async()=>response({Results:{Items}}),async m=>assert.rejects(m.searchWorlds('Unsupported'),e=>e.code==='unsupported'));
+});
+
+// Shared consumers identify network outages by the established transport type
+// or HTTP prefix. Clearer main-tool feedback must preserve that contract.
+test('lookup failure feedback preserves shared transport outage classification',async()=>{
+ const {connectionFailure}=await import('../../speculative-trade-alpha/js/map-adapter.mjs');
+ for(const [mock,outage]of [[async()=>{throw new TypeError('Failed to fetch');},true],[async()=>({ok:false,status:503}),true],[async()=>({ok:false,status:429}),true],[async()=>({ok:false,status:404}),false]])await withFetch(mock,async m=>{
+  for(const run of [()=>m.loadWorld('Synthetic','0101'),()=>m.searchWorlds('Synthetic')])await assert.rejects(run(),e=>e.code==='failed'&&connectionFailure(e)===outage&&e.message.includes('World lookup failed'));
+ });
+});
+
+test('lookup preserves abort and timeout identities for shared consumers',async()=>{
+ for(const name of ['AbortError','TimeoutError']){const error=Object.assign(new Error('Synthetic cancellation'),{name});await withFetch(async()=>{throw error;},async m=>{await assert.rejects(m.loadWorld('Synthetic','0101'),e=>e===error);await assert.rejects(m.searchWorlds('Synthetic'),e=>e===error);});}
+});

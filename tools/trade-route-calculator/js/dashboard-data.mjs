@@ -1,7 +1,7 @@
 import {credit} from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=trade-exports-20261021-116';
-import {recordedOperatingResult} from './financial-summary.mjs?v=trade-exports-20261021-116';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=world-search-20261021-117';
+import {recordedOperatingResult} from './financial-summary.mjs?v=world-search-20261021-117';
 
 const operatingCategories={berthing:'Berthing',fuel:'Fuel',lifeSupport:'Life support',lifeSupportRefill:'Life support refill',salary:'Crew salaries',staterooms:'Stateroom expenses',passengerSupport:'Passenger & crew life support',mortgage:'Mortgage payments',maintenance:'Maintenance'};
 const categories={'Sale':'Cargo sales','Purchase':'Cargo purchases','Freight delivery':'Freight','Mail delivery':'Mail','Passenger delivery':'Passengers','Broker fee':'Broker fees','Tax':'Sale taxes','Profit adjustment':'Profit adjustments','Insurance premium':'Insurance premiums','Insurance claim':'Insurance claims','Insurance amendment':'Insurance amendments / refunds','Manual expense':'Manual expenses'};

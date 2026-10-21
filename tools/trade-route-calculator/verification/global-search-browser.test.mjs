@@ -288,7 +288,14 @@ try{
  await search('Retry');await status().filter({hasText:/Could not search.*503/}).waitFor();assert.equal(await results().count(),0);
  await host.getByRole('button',{name:'Search planets',exact:true}).click();await result(haven).waitFor();assert.equal(retryCount,2);
  await search('No match');await status().filter({hasText:/No planets found/}).waitFor();assert.equal(await results().count(),0);
- await preserved('Search API error retries and empty results replace prior results');await dismiss();
+ await preserved('Search API error retries and empty results replace prior results');
+ searchHandler=async(route,url)=>{if(url.searchParams.get('q')!=='Unsupported')return false;await route.fulfill({json:{Results:{Items:[{Sector:{Name:'Not a world'}}]}}});return true;};
+ await search('Unsupported');await status().filter({hasText:/unsupported response/}).waitFor();assert.equal(await results().count(),0);assert.doesNotMatch(await status().textContent(),/No planets found/);await preserved('Unsupported response is not an empty successful search');await dismiss();
+ for(const [answer,expected]of [[{json:{Worlds:[]}},/No world at that location.*lookup succeeded/],[{json:{Worlds:{}}},/unsupported response/]]){
+  await begin();await search('Haven');await result(haven).waitFor();jumpHandler=async(route,url)=>{if(url.searchParams.get('jump')!=='0'||url.searchParams.get('sector')!==haven.sector)return false;await route.fulfill(answer);return true;};
+  await result(haven).click();await status().filter({hasText:expected}).waitFor();await preserved('Failed or empty resolution preserves ship and campaign');jumpHandler=null;await result(haven).click();await browsed(haven);await current();
+ }
+
 
  await begin();let metadataAttempts=0;
  metadataHandler=async(route,url)=>{if(metadataSector(url)!==missing.sector)return false;metadataAttempts++;await route.fulfill(metadataAttempts===1?failure:{json:metadataFor(missing.sector)});return true;};
