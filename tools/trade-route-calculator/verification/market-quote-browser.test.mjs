@@ -211,7 +211,9 @@ async function runBody(page, result, f) {
  const confirmation = await facts(page);
  assert.deepEqual(Object.fromEntries(['Goods','Broker fee','Total debit'].map(key=>[key,confirmation[key]])), {Goods: 'Cr 85,000', 'Broker fee': 'Cr 8,500', 'Total debit': 'Cr 93,500'});
  assert.equal(await raw(page), JSON.stringify(afterSettings), 'Purchase preview is nonmutating');
- await capture(page, result, 'purchase-confirmation', ['#modal-title', '#modal-body .preview']);
+ // The editable fields and totals need separate vertical space on narrow screens.
+ // Capture the full financial review, not a title-to-footer span larger than the viewport.
+ await capture(page, result, 'purchase-confirmation', ['#purchase-totals']);
  await page.locator('#modal-submit').click(); await page.locator('#modal').waitFor({state: 'hidden'});
  const purchased = await saved(page), lot = purchased.lots[0], entries = purchased.ledger.slice(afterSettings.ledger.length);
  assert.equal(purchased.bank, '906500'); assert.equal(BigInt(afterSettings.bank) - BigInt(purchased.bank), 93500n);

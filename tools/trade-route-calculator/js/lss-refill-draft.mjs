@@ -1,10 +1,10 @@
 // Draft-only refill editor. No campaign writes or payment actions belong here.
 // Integration awaits the recorded fractional-stock and storage decisions.
 import * as A from './amounts.mjs';
-import {supportAmount,supportStock,supportComplement,anchorSupport,supportCargo,supportDisplay} from './life-support.mjs?v=trade-current-20261021-108';
-import {passengerShip} from './passengers.mjs?v=trade-current-20261021-108';
-import {used} from './state.mjs?v=trade-current-20261021-108';
-import {escapeHtml as esc,formatCreditsText} from './display.mjs?v=trade-current-20261021-108';
+import {supportAmount,supportStock,supportComplement,anchorSupport,supportCargo,supportDisplay} from './life-support.mjs?v=row-bands-20261021-109';
+import {passengerShip} from './passengers.mjs?v=row-bands-20261021-109';
+import {used} from './state.mjs?v=row-bands-20261021-109';
+import {escapeHtml as esc,formatCreditsText} from './display.mjs?v=row-bands-20261021-109';
 
 export const wholeSupport=value=>value==null?'Unknown':String(A.floor(supportAmount(value)));
 export const nearestSupportTon=value=>value==null?'Unknown':String(A.floor(A.add(supportAmount(value),'0.5')));

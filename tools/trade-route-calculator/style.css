@@ -585,3 +585,23 @@ main{padding-top:18px}
 .trade-action-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:10px 0 14px;min-width:0}.trade-action-toolbar button{font-size:12px;min-height:36px;max-width:100%;white-space:normal}.trade-selected-count{font-size:12px;overflow-wrap:anywhere}.trade-action-toolbar [role=status]{flex:0 1 auto}
 
 .supplier-inline{max-width:820px}.supplier-inline .supplier-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px}.supplier-inline .field{margin-bottom:0;min-width:0}.supplier-inline input:not([type=checkbox]),.supplier-inline select{width:100%;min-width:0;padding:6px 8px;min-height:36px}.supplier-inline details{margin:8px 0}.supplier-inline .help{margin:6px 0}.supplier-inline .dialog-actions{padding-top:10px}.supplier-inline .supplier-search-help{font-size:12px}@media(max-width:520px){.supplier-inline .supplier-fields{grid-template-columns:minmax(0,1fr)}}
+
+/* Opt-in data rows: do not stripe forms, navigation, maps or prose. */
+:root{--data-row-dark:#101f2d;--data-row-light:#192e40;--data-row-hover:#254257;--data-row-selected:#254b5d}
+:where(.scroll>table,.cargo-management-scroll>table,.cargo-manifest-scroll>table,.dashboard-table-scroll>table,.covered-payments-scroll>table,.expense-table)>tbody>tr:nth-child(odd){background:var(--data-row-dark)}
+:where(.scroll>table,.cargo-management-scroll>table,.cargo-manifest-scroll>table,.dashboard-table-scroll>table,.covered-payments-scroll>table,.expense-table)>tbody>tr:nth-child(even){background:var(--data-row-light)}
+:where(.scroll>table,.cargo-management-scroll>table,.cargo-manifest-scroll>table,.dashboard-table-scroll>table,.covered-payments-scroll>table,.expense-table)>tbody>tr:hover{background:var(--data-row-hover)}
+:where(.scroll>table,.cargo-management-scroll>table,.cargo-manifest-scroll>table,.dashboard-table-scroll>table,.covered-payments-scroll>table,.expense-table)>tbody>tr:has(input[data-lot]:checked),:where(.scroll>table,.cargo-management-scroll>table,.cargo-manifest-scroll>table,.dashboard-table-scroll>table,.covered-payments-scroll>table,.expense-table)>tbody>tr[aria-selected="true"]{background:var(--data-row-selected)}
+@media print{:where(.scroll>table,.cargo-management-scroll>table,.cargo-manifest-scroll>table,.dashboard-table-scroll>table,.covered-payments-scroll>table,.expense-table)>tbody>tr:nth-child(n){background:transparent}}
+
+/* Paired read-only audit facts and explicitly named repeated cards. */
+.preview>dl>:nth-child(4n+1),.preview>dl>:nth-child(4n+2){background:var(--data-row-dark)}
+.preview>dl>:nth-child(4n+3),.preview>dl>:nth-child(4n+4){background:var(--data-row-light)}
+.contract-card:nth-of-type(odd){background:var(--data-row-dark)}
+.contract-card:nth-of-type(even){background:var(--data-row-light)}
+
+:where(.scroll>table,.cargo-management-scroll>table,.cargo-manifest-scroll>table,.dashboard-table-scroll>table,.covered-payments-scroll>table,.expense-table)>tbody>tr>th[scope="row"]{background:transparent}
+
+/* Expired status takes precedence over bands and hover. */
+.scroll>table>tbody>tr.expired-row{background:#0c1622}
+@media print{.scroll>table>tbody>tr,.cargo-management-scroll>table>tbody>tr,.cargo-manifest-scroll>table>tbody>tr,.dashboard-table-scroll>table>tbody>tr,.covered-payments-scroll>table>tbody>tr,.expense-table>tbody>tr,.preview>dl>dt,.preview>dl>dd,.contract-card{background:transparent!important}}

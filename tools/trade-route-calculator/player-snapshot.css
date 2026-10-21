@@ -62,3 +62,14 @@ dialog button {color:#fff;background:#245f76;border:0;border-radius:.3rem;}
 
 .cargo-info-button{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;margin-left:10px;padding:0;border:1px solid currentColor;border-radius:50%;background:transparent;color:inherit;font:italic 600 1rem Georgia,serif;cursor:pointer;vertical-align:middle}.cargo-info-button:focus-visible{outline:2px solid #ffe3a0;outline-offset:3px}
 .cargo-heading{display:flex;align-items:center;gap:10px;margin-bottom:16px}.cargo-heading h2{margin:0}.cargo-heading .cargo-info-button{flex:none;margin:0}
+
+/* Opt-in data rows: do not stripe forms, navigation, maps or prose. */
+:root{--data-row-dark:#101f2d;--data-row-light:#192e40;--data-row-hover:#254257;--data-row-selected:#254b5d}
+:where(.snapshot-grid>section>table,.cargo-section table,.expense-table)>tbody>tr:nth-child(odd){background:var(--data-row-dark)}
+:where(.snapshot-grid>section>table,.cargo-section table,.expense-table)>tbody>tr:nth-child(even){background:var(--data-row-light)}
+:where(.snapshot-grid>section>table,.cargo-section table,.expense-table)>tbody>tr:hover{background:var(--data-row-hover)}
+:where(.snapshot-grid>section>table,.cargo-section table,.expense-table)>tbody>tr:has(input[data-lot]:checked),:where(.snapshot-grid>section>table,.cargo-section table,.expense-table)>tbody>tr[aria-selected="true"]{background:var(--data-row-selected)}
+@media print{:where(.snapshot-grid>section>table,.cargo-section table,.expense-table)>tbody>tr:nth-child(n){background:transparent}}
+
+:where(.snapshot-grid>section>table,.cargo-section table,.expense-table)>tbody>tr>th[scope="row"]{background:transparent}
+@media print{.snapshot-grid>section>table>tbody>tr,.cargo-section table>tbody>tr,.expense-table>tbody>tr{background:transparent!important}}
