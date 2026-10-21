@@ -617,4 +617,5 @@ main{padding-top:18px}
 .inline-purchase [data-action="inline-buy"]{grid-column:3;grid-row:1;align-self:end;min-height:2rem;background:var(--cyan);color:#06131b}
 .inline-purchase .help{grid-column:1/-1;white-space:normal}
 .inline-purchase [role="status"]:empty{display:none}
-.inline-purchase [data-action="buy"]{grid-column:1/-1}
+.inline-purchase [data-action="buy"]{grid-column:1/3;justify-self:start;background:transparent;color:var(--text);border-color:var(--line);min-height:28px;font-weight:400}
+.inline-purchase [data-action="offer-edit"]{grid-column:3;justify-self:start;min-height:28px}

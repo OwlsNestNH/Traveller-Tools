@@ -427,7 +427,7 @@ async function accountingDetail(page, result, before, scenario) {
  const list = page.locator('#modal-body dl').filter({has: page.locator('dt', {hasText: /^Tons purchased$/})});
  await list.evaluate(node => {node.dataset.purchaseDetail = 'true';});
  await detail(page, result, 'saved-accounting-detail', ['#modal-body [data-purchase-detail]'], /Purchase price per ton[\s\S]*Goods cost[\s\S]*Purchase broker fee[\s\S]*Purchase insurance premium/);
- await pointer(page, '#modal-cancel'); await closed(page);
+ await page.locator('#modal-cancel').click(); await closed(page);
 }
 async function successful(page, result, before, scenario) {
  await closed(page); await frames(page); assertPurchase(await read(page), before, scenario);

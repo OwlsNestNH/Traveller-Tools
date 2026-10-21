@@ -37,7 +37,7 @@ function fixture(){
  s.name='Disposable trade complication verification';
  s.settings={...s.settings,profit:100,tax:false,insurance:false,creditStep:1};
  s.contracts=[];s.policies=[];s.undo=[];
- const options={side:'buy',local:true,skill:2,counterparty:1,creditStep:1};
+ const options={side:'buy',local:false,skill:2,counterparty:1,creditStep:1};
  const make=(id,description,dice,result)=>{
   let index=0;
   const q=R.quote(good,world,{...options,...(dice?{}:{rollTotal:9})},core,()=>dice[index++]);
@@ -48,7 +48,7 @@ function fixture(){
  const legacy=structuredClone(offers[1]);legacy.id='offer-legacy';legacy.description='Legacy triple electronics';delete legacy.audit.tradeComplication;
  offers.push(legacy);
  assert.equal(new Set(offers.map(o=>o.unitPrice)).size,1,'Matching total and modifiers retain identical prices for every flag');
- s.snapshots=[{id:'supplier-complications',kind:'supplier',worldId:s.actual,world,party:'complications|supplier',partyName:'Deterministic supplier',hours:s.hours,startedHours:s.hours,criminal:false,options,offers},{id:'buyer-complications',kind:'buyer',worldId:s.actual,world,party:'complications|buyer',partyName:'Deterministic buyer',hours:s.hours,startedHours:s.hours,criminal:true,success:true,options:{...options,side:'sell'},offers:[]}];
+ s.snapshots=[{id:'supplier-complications',kind:'supplier',worldId:s.actual,world,party:'complications|supplier',partyName:'Deterministic supplier',hours:s.hours,startedHours:s.hours,criminal:false,options,offers},{id:'buyer-complications',kind:'buyer',worldId:s.actual,world,party:'complications|buyer',partyName:'Deterministic buyer',hours:s.hours,startedHours:s.hours,criminal:true,success:true,options:{...options,local:true,side:'sell'},offers:[]}];
  s.lots=[{id:'sale-pair',commodity:good.id,description:'Pair sale lot',quantity:'3',basis:'30000',goodsValue:'30000',world:s.actual,hours:s.hours},{id:'sale-severe',commodity:good.id,description:'Triple sale lot',quantity:'3',basis:'30000',goodsValue:'30000',world:s.actual,hours:s.hours}];
  S.validate(s);f.bytes=JSON.stringify(s);return f;
 }
@@ -215,7 +215,7 @@ async function saleCase(page,context,result,f){
  const expectedBan=R.quote(good,R.context(before.worlds[before.actual],core),{...before.snapshots[1].options,rollTotal:9,banThreshold:0},core).unitPrice;
  assert.notEqual(expectedBan,initialPrices.pair,'The fixture actually exercises a changed local-ban price');
  const manual=String(BigInt(initialPrices.severe)+123n);
- await fill(page,'ban_sale-pair',0);await fill(page,'ban_sale-severe',0);await fill(page,'price_sale-severe',manual);await fill(page,'reason','Synthetic approved manual price; natural dice retained');
+ await fill(page,'fee',0);await fill(page,'ban_sale-pair',0);await fill(page,'ban_sale-severe',0);await fill(page,'price_sale-severe',manual);await fill(page,'reason','Synthetic approved manual price; natural dice retained');
  await submit(page,'Preview sale','Confirm sale');
  await flags(confirmationRows().nth(0),'complication');await flags(confirmationRows().nth(1),'severe');
  await modal(page).locator('details').filter({has:page.locator('summary',{hasText:'Price rolls and modifiers'})}).locator(':scope > summary').click();
