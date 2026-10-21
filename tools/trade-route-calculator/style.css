@@ -595,8 +595,6 @@ main{padding-top:18px}
 @media print{:where(.scroll>table,.cargo-management-scroll>table,.cargo-manifest-scroll>table,.dashboard-table-scroll>table,.covered-payments-scroll>table,.expense-table)>tbody>tr:nth-child(n){background:transparent}}
 
 /* Paired read-only audit facts and explicitly named repeated cards. */
-.preview>dl{column-gap:0!important;row-gap:0!important}
-.preview>dl>dt,.preview>dl>dd{padding:7px 9px;margin:0}
 .preview>dl>:nth-child(4n+1),.preview>dl>:nth-child(4n+2){background:var(--data-row-dark)}
 .preview>dl>:nth-child(4n+3),.preview>dl>:nth-child(4n+4){background:var(--data-row-light)}
 .contract-card:nth-of-type(odd){background:var(--data-row-dark)}
