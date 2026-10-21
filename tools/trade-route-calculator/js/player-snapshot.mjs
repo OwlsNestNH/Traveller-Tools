@@ -66,3 +66,10 @@ export function projectPlayerSnapshot(source) {
     cargo:rows(source.cargo, row => ({name:text(row.name), tons:wholeTons(row.tons), purchase:purchase(row.purchase,source.version)})),
     buy:market(source.buy,source.version), sell:market(source.sell,source.version)});
 }
+
+// Market handouts do not require ship/cargo data or inherit cargo-link restrictions.
+export function projectPlayerMarketSnapshot(source){
+ object(source);if(![4,5,6,7,SNAPSHOT_VERSION].includes(source.version))throw Error('Unsupported player snapshot version.');
+ const w=object(source.world);
+ return freeze({version:SNAPSHOT_VERSION,capturedAt:text(source.capturedAt),campaignDate:text(source.campaignDate),world:{name:text(w.name),location:text(w.location),uwp:text(w.uwp),tradeCodes:text(w.tradeCodes),travelZone:text(w.travelZone),starport:text(w.starport)},buy:market(source.buy,source.version),sell:market(source.sell,source.version)});
+}

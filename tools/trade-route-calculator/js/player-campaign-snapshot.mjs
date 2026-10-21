@@ -1,6 +1,6 @@
 // Read-only campaign adapter. Only explicit public values cross this boundary.
 // No DOM, persistence, random rolls, network access or URL serialization.
-import {projectPlayerSnapshot,SNAPSHOT_VERSION,EXPENSE_KINDS} from './player-snapshot.mjs?v=trade-exports-20261021-116';
+import {projectPlayerSnapshot,projectPlayerMarketSnapshot,SNAPSHOT_VERSION,EXPENSE_KINDS} from './player-snapshot.mjs?v=trade-exports-20261021-116';
 import {playerBriefingData} from './player-briefing.mjs?v=trade-exports-20261021-116';
 import {context} from './rules.mjs?v=trade-exports-20261021-116';
 import {displayDate} from './calendar.mjs';
@@ -25,6 +25,19 @@ function visitBoundary(s){
  if(index<0||s.events.slice(index+1).some(e=>e.label==='Starting-world / location correction'||e.label.startsWith('Undo: ')))return null;
  return {eventIndex:index,ledgerIndex:last?s.ledger.indexOf(last):0};
 }
+function currentPlayerMarkets(s,core,saleQuotes){
+ // Saved offers stay usable across visits until expired or rejected, exactly as buy().
+ const suppliers=s.snapshots.filter(x=>x.worldId===s.actual&&x.kind==='supplier');
+ const offers=suppliers.flatMap(x=>(s.cooldowns[x.party]??0)>s.hours?[]:x.offers.filter(o=>!o.expired&&!o.manualRequired&&A.cmp(o.remaining,0)>0).map(o=>({name:name(core,o.commodity),tons:amount(o.remaining),creditsPerTon:amount(o.unitPrice),retailPerTon:recordedRetail(o.audit?.basePrice)})));
+ const sales=[];
+ for(const l of s.lots){const q=saleQuotes.get(l.id);if(q&&q.revision===s.revision&&q.worldId===s.actual&&!q.audit?.manualRequired)sales.push({name:name(core,l.commodity),tons:amount(l.quantity),creditsPerTon:amount(q.unitPrice),retailPerTon:recordedRetail(q.audit?.basePrice)});}
+ return {buy:{status:offers.length?'available':suppliers.length?'available':'not-checked',offers},sell:{status:sales.length?'available':'not-checked',offers:sales}};
+}
+export function campaignPlayerMarketSnapshot(s,core,{saleQuotes=new Map(),capturedAt=new Date().toISOString()}={}){
+ if(!s.initialized||!s.worlds[s.actual])throw Error('Set up a campaign before exporting a market.');
+ const w=s.worlds[s.actual],c=context(w,core);
+ return projectPlayerMarketSnapshot({version:SNAPSHOT_VERSION,capturedAt,campaignDate:displayDate(s.dateLabel,s.hours),world:{name:text(w.name),location:text(w.sector+' / '+w.hex),uwp:text(c.uwp.raw),tradeCodes:text(c.codes.join(' ')),travelZone:text(c.zone),starport:text(w.emptySpace?'No starport':fuelAvailabilityAdvice(w))},...currentPlayerMarkets(s,core,saleQuotes)});
+}
 export function campaignPlayerSnapshot(s,core,{saleQuotes=new Map(),capturedAt=new Date().toISOString()}={}){
  if(!s.initialized||!s.worlds[s.actual])throw Error('Set up a campaign before copying a player link.');
  if(A.cmp(s.bank,0)<0)throw Error('Player links cannot yet represent a negative bank balance. No link generated.');
@@ -39,11 +52,7 @@ export function campaignPlayerSnapshot(s,core,{saleQuotes=new Map(),capturedAt=n
  const sums=Object.fromEntries(EXPENSE_KINDS.map(k=>[k,0n]));
  if(reconciled)for(const e of entries)if(BigInt(e.amount)<0n&&(e.type.startsWith('Ship expense')||['Manual expense','Broker fee','Tax','Insurance premium','Insurance amendment'].includes(e.type)))sums[kinds[e.expense?.kind]??'incidentals']-=BigInt(e.amount);
  for(const kind of EXPENSE_KINDS)expenses[kind]={expected:null,paid:reconciled?String(sums[kind]):null,basis:'No saved visit plan. '+(reconciled?'Recorded payments only; unrecorded activity is unknown.':'Payment history unavailable for this visit.')};
- // Saved offers stay usable across visits until expired or rejected, exactly as buy().
- const suppliers=s.snapshots.filter(x=>x.worldId===s.actual&&x.kind==='supplier');
- const offers=suppliers.flatMap(x=>(s.cooldowns[x.party]??0)>s.hours?[]:x.offers.filter(o=>!o.expired&&!o.manualRequired&&A.cmp(o.remaining,0)>0).map(o=>({name:name(core,o.commodity),tons:amount(o.remaining),creditsPerTon:amount(o.unitPrice),retailPerTon:recordedRetail(o.audit?.basePrice)})));
- const sales=[];
- for(const l of s.lots){const q=saleQuotes.get(l.id);if(q&&q.revision===s.revision&&q.worldId===s.actual&&!q.audit?.manualRequired)sales.push({name:name(core,l.commodity),tons:amount(l.quantity),creditsPerTon:amount(q.unitPrice),retailPerTon:recordedRetail(q.audit?.basePrice)});}
+ const marketData=currentPlayerMarkets(s,core,saleQuotes);
  const daily=support.dailyUnits,days=units=>units!==null&&support.complementKnown&&A.cmp(daily,0)>0?snapshotSupport(A.div(units,daily)):null;
  const exactCargo=support.cargoExact===null?null:supportAmount(support.cargoExact);
  const reserve=exactCargo===null?null:snapshotSupport(A.mul(exactCargo,100));
@@ -52,7 +61,7 @@ export function campaignPlayerSnapshot(s,core,{saleQuotes=new Map(),capturedAt=n
  return projectPlayerSnapshot({version:SNAPSHOT_VERSION,campaignPolitics:s.campaignPolitics,capturedAt,campaignDate:displayDate(s.dateLabel,s.hours),
   world:{name:text(w.name),location:text(w.sector+' / '+w.hex),uwp:text(c.uwp.raw),tradeCodes:text(c.codes.join(' ')),travelZone:text(c.zone),starport:text(w.emptySpace?'No starport':fuelAvailabilityAdvice(w)),mapReference:w.emptySpace||!w.sector?null:{sector:w.sector,hex:w.hex}},
   ship:{name:text(s.ship.name),cargoCapacityTons:amount(s.ship.capacity),cashCredits:s.bank,fuel:{current:amount(s.ship.fuel?.aboardTons),capacity:amount(s.ship.fuel?.capacityTons)},lifeSupport:{current:snapshotSupport(support.internalUnits),capacity:snapshotSupport(support.internalCapacityUnits),cargoLss:reserve,cargoReservedTons:reserved,daysRemaining:days(support.internalUnits),daysCapacity:days(support.internalCapacityUnits)},destination:text(s.worlds[s.route[s.routeIndex+1]]?.name??'No planned destination')},
-  cargo,expenses,buy:{status:offers.length?'available':suppliers.length?'available':'not-checked',offers},sell:{status:sales.length?'available':'not-checked',offers:sales}});
+  cargo,expenses,...marketData});
 }
 
 export function playerSnapshotForVisit(s,core,index,options){
