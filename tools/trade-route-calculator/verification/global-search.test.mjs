@@ -202,3 +202,16 @@ test('world lookup distinguishes successful empty result, unsupported data and t
 test('nonempty unsupported search results cannot masquerade as no matching world',async()=>{
  for(const Items of [[{Sector:{Name:'Only a sector'}}],[null],[{}]])await withFetch(async()=>response({Results:{Items}}),async m=>assert.rejects(m.searchWorlds('Unsupported'),e=>e.code==='unsupported'));
 });
+
+// Shared consumers identify network outages by the established transport type
+// or HTTP prefix. Clearer main-tool feedback must preserve that contract.
+test('lookup failure feedback preserves shared transport outage classification',async()=>{
+ const {connectionFailure}=await import('../../speculative-trade-alpha/js/map-adapter.mjs');
+ for(const [mock,outage]of [[async()=>{throw new TypeError('Failed to fetch');},true],[async()=>({ok:false,status:503}),true],[async()=>({ok:false,status:429}),true],[async()=>({ok:false,status:404}),false]])await withFetch(mock,async m=>{
+  for(const run of [()=>m.loadWorld('Synthetic','0101'),()=>m.searchWorlds('Synthetic')])await assert.rejects(run(),e=>e.code==='failed'&&connectionFailure(e)===outage&&e.message.includes('World lookup failed'));
+ });
+});
+
+test('lookup preserves abort and timeout identities for shared consumers',async()=>{
+ for(const name of ['AbortError','TimeoutError']){const error=Object.assign(new Error('Synthetic cancellation'),{name});await withFetch(async()=>{throw error;},async m=>{await assert.rejects(m.loadWorld('Synthetic','0101'),e=>e===error);await assert.rejects(m.searchWorlds('Synthetic'),e=>e===error);});}
+});
