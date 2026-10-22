@@ -983,3 +983,5 @@ Main-map details begin at 200% (UWP still requires its switch). Political territ
 Main-map hex numbers retain their 80% visibility threshold and use bold 11px near-white monospace text with a dark halo for contrast over political shading. Label spacing keeps them separate from world details; the player map is unchanged.
 
 Main Sell uses aligned quantity, exact net proceeds and action columns, with 14px desktop rows targeting 40px (warnings, long content and errors may expand). Info retains lot identity and the full fee/tax/adjustment breakdown; Audit retains acquisition details and cost basis. Local-broker percentage remains editable only for local brokers. Narrow screens use labelled cards and 44px controls. The transaction preview and save pipeline are unchanged.
+
+The Main toolbar includes Backup and Load shortcuts beside Copy Player Link. They reuse the Settings JSON export/import actions and the single file input; Settings originals and campaign replacement safeguards remain unchanged.
