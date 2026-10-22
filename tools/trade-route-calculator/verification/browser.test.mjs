@@ -163,7 +163,7 @@ try{
  await click('Cancel');assert.equal((await read()).settings.tax,false);assert.equal((await read()).lots.length,0);
  await page.locator('.purchase-table [data-action="buy"]').first().click();await page.screenshot({path:join(artifacts,'purchase-optional.png')});await fill('quantity','0.5');await click('Preview purchase');await click('COMMIT PURCHASE');await closed();
  let saved=await read();assert.equal(saved.settings.tax,false);assert.equal(saved.settings.insurance,false);assert.equal(saved.lots[0].quantity,'1');const afterBuy=saved.bank;
- await existingSell(page);assert.deepEqual(await page.locator('.sale-table th').allTextContents(),['Cargo / lot','Aboard','Effective retail / t','Price %','Offer / t','Sell']);
+ await existingSell(page);assert.deepEqual(await page.locator('.sale-table th').allTextContents(),['Commodity / Info','Aboard','Retail / t','Price %','Offer / t','Qty (t)','Net total','Actions']);
  await assertGrid('.sale-table');assert.match(await page.locator('.sale-table tbody').textContent(),/Not negotiated/);
  await click('Cargo');await page.locator('.cargo-table [data-action="lot-correct"]').first().click();await fill('description','Independent cargo lot');await fill('reason','Table edit verification');await click('Save');await closed();assert.equal((await read()).lots[0].description,'Independent cargo lot');
  // Browsing a real map node changes neither location nor economic state.
