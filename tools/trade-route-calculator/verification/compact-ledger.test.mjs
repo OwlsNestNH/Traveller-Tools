@@ -1,3 +1,4 @@
+import {projectAccountingPeriod} from '../js/accounting-period.mjs';
 import {ruleInfo} from '../js/rule-references.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -19,7 +20,7 @@ function render(){
  ]};
  const before=structuredClone(state),result={};
  runInNewContext(renderer+'\nbankLedger();',{
-  state,ruleInfo,A:{credit:BigInt},esc:escape,money,recordedPaymentDate,displayDate:(_label,hours)=>hours+'h',world:()=>({name:'Regina'}),good:()=>null,
+  state,accountingPeriod:{mode:'all'},projectAccountingPeriod,accountingSummaryHtml:r=>{result.totals=[['Opening balance',money(r.openingBalance)],['Period income',money(r.income)],['Period expenses',money(r.expenses)],['Closing balance',money(r.closingBalance)]];return '';},ruleInfo,A:{credit:BigInt},esc:escape,money,recordedPaymentDate,displayDate:(_label,hours)=>hours+'h',world:()=>({name:'Regina'}),good:()=>null,
   btn:(label,action,id,_mutates,style)=>'<button class="'+style+'" data-action="'+action+'" data-arg="'+id+'">'+label+'</button>',
   auditFacts:rows=>{result.totals=Array.from(rows,pair=>Array.from(pair));return '';},
   table:(headers,rows,className)=>{result.headers=Array.from(headers);result.rows=Array.from(rows);result.className=className;return rows.join('');},
@@ -45,6 +46,6 @@ test('compact presentation leaves ledger order, all seven columns, amounts and c
  assert.match(rows[0],/<td class="number bad">Cr 5<\/td><td class="number good">—<\/td><td class="number"><strong>Cr 99,820<\/strong>/);
  assert.match(rows[1],/<td class="number bad">—<\/td><td class="number good">Cr 75<\/td><td class="number"><strong>Cr 99,825<\/strong>/);
  assert.match(rows[2],/<td class="number bad">Cr 250<\/td><td class="number good">—<\/td><td class="number"><strong>Cr 99,750<\/strong>/);
- assert.deepEqual(totals,[['Total expenses','Cr 255'],['Total deposits (including opening funds)','Cr 100,075'],['Current balance','Cr 99,820']]);
+ assert.deepEqual(totals,[['Opening balance','Cr 0'],['Period income','Cr 100,075'],['Period expenses','Cr 255'],['Closing balance','Cr 99,820']]);
  assert.deepEqual(state,before);
 });
