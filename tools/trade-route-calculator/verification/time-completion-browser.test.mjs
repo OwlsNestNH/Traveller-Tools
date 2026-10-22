@@ -18,6 +18,7 @@ import {configureFuel} from '../js/fuel.mjs';
 import {createDashboardBaseline} from '../js/dashboard-baseline.mjs';
 import {displayDate} from '../js/calendar.mjs';
 import {supportStock} from '../js/life-support.mjs';
+import {floor} from '../js/amounts.mjs';
 import {POLITICAL_TERRITORY_KEY} from '../js/map-preferences.mjs';
 
 const base = process.env.TRAVELLER_TEST_URL || 'http://127.0.0.1:8765/';
@@ -378,7 +379,7 @@ async function successful(page, result, before, scenario, {fresh = false} = {}) 
  assert.equal(snapshot.storage.writes, 1); assert.equal(snapshot.durableToken, false); assert.match(await page.locator('#message').textContent(), successPattern);
  const saved = await read(page), date = displayDate(saved.dateLabel, saved.hours), stock = supportStock(saved.ship);
  assert.equal(scenario.path === 'form' ? snapshot.semantic.settingsDate : snapshot.semantic.time, date, 'Settled UI displays the committed date');
- if (stock.tracked) {assert.ok(snapshot.semantic.support.includes(String(Number(Number(stock.remainingUnits).toFixed(2))) + ' LSS aboard')); assert.ok(snapshot.semantic.support.includes(String(Number(Number(stock.remainingDays).toFixed(2))) + ' days'));}
+ if (stock.tracked) {assert.ok(snapshot.semantic.support.includes(String(Number(Number(stock.remainingUnits).toFixed(2))) + ' LSS aboard')); assert.ok(snapshot.semantic.support.includes((stock.remainingDays===null?'Unknown':String(floor(stock.remainingDays))) + ' days'));}
  for (const item of [...snapshot.observations, ...snapshot.storage.observations]) assert.doesNotMatch(item.message, successPattern, 'No success announcement before settlement');
  assert.equal(snapshot.publications.filter(p => p.tokenMatches && p.snapshotMatches && p.actualCallback).length, 1);
  const bytes = await raw(page), total = snapshot.totalCalls;
