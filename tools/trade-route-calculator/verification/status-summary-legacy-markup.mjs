@@ -1,8 +1,16 @@
+import {floor} from '../js/amounts.mjs';
 import {supportCargo,supportStock,supportDisplay} from '../js/life-support.mjs';
 import {passengerShip} from '../js/passengers.mjs';
 // Normalize approved presentation changes for the frozen route oracles.
 // All pre-existing summary numbers and route/economic observations remain checked.
 export function legacyStatusSummaryMarkup(html,state){
+ // Restore only the approved whole-day text to the old display for frozen hashes.
+ // Keep the precise gauge, stock, campaign and economic observations untouched.
+ const remaining=state?.ship.lifeSupport?supportStock(passengerShip(state)).remainingDays:null;
+ if(remaining!==null){
+  const prefix='<div class="stat life-support-counter"><span class="label">Life support</span><span class="value">';
+  html=html.replace(prefix+String(floor(remaining))+' days',prefix+String(Number(Number(remaining).toFixed(2)))+' days');
+ }
  // Restore only the removed header label for the historical rendered hash.
  // Its exact value still comes from the observed state; frozen evidence stays intact.
  if(state&&!html.includes('Life support overflow:')){
