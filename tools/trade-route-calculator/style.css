@@ -642,7 +642,7 @@ main{padding-top:18px}
 /* Main Sell: align quantity, exact net proceeds and commitment in one row. */
 .sale-table .compact-sale-row td,.owned-sale-table td{padding:4px 8px;vertical-align:middle;font-size:14px;line-height:20px}
 .sale-table .sale-identity{display:flex;align-items:center;gap:4px;min-width:0}
-.sale-table .cargo-name{align-items:center;min-width:0;margin:0}
+.sale-table .cargo-name{align-items:center;min-width:0;margin:0;font-size:14px}
 .sale-table .cargo-name>span{padding:0;overflow-wrap:anywhere}
 .sale-table .cargo-name input{margin:0}
 .sale-table .commodity-info{flex:none;margin:0}
@@ -666,7 +666,7 @@ main{padding-top:18px}
  .sale-table .compact-sale-row,.owned-sale-table tr{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;padding:8px;margin:8px 0;border:1px solid var(--line);border-radius:6px}
  .sale-table .compact-sale-row td,.owned-sale-table td{display:block;min-width:0;width:auto!important;text-align:left!important;padding:4px;overflow-wrap:anywhere}
  .sale-table .compact-sale-row td::before,.owned-sale-table td::before{content:attr(data-sale-label);display:block;color:var(--muted);font-size:13px;margin-bottom:3px}
- .sale-table .compact-sale-row td:first-child,.sale-table .compact-sale-row td:nth-child(6),.sale-table .compact-sale-row td:nth-child(7),.sale-table .compact-sale-row td:nth-child(8),.owned-sale-table td:first-child,.owned-sale-table td:last-child{grid-column:1/-1}
+ .sale-table .compact-sale-row td:first-child,.sale-table .compact-sale-row td:nth-child(6),.sale-table .compact-sale-row td:nth-child(7),.sale-table .compact-sale-row td:nth-child(8),.owned-sale-table td:first-child,.owned-sale-table td:nth-child(5),.owned-sale-table td:last-child{grid-column:1/-1}
  .sale-table .compact-sale-row button,.owned-sale-table button,.sale-table .sale-inputs input{min-height:44px;height:auto;min-width:44px}
  .sale-table .sale-inputs{flex-wrap:wrap}
  .sell-cargo-scroll{max-height:none}

@@ -10,6 +10,7 @@ const qty=controls.locator('[name=quantity]');await qty.fill('2');
 assert.equal(await page.evaluate(k=>localStorage.getItem(k),campaignKey),before,'Changing draft quantity must not save');
 const dimensions=await controls.evaluate(el=>({row:el.closest('tr').getBoundingClientRect().height,warning:el.closest('tr').querySelector('.trade-complication')?.getBoundingClientRect().height||0,controls:el.getBoundingClientRect().height,boxes:[...el.querySelectorAll('input:not([type=checkbox]),button:not([hidden]):not(.commodity-info)')].map(x=>({bottom:x.getBoundingClientRect().bottom,height:x.getBoundingClientRect().height,width:x.getBoundingClientRect().width}))}));
 console.log(JSON.stringify({width,plain,side,dimensions}));
+if(side==='sell')assert.equal(await controls.locator('.cargo-name>span').evaluate(el=>getComputedStyle(el).fontSize),'14px','Commodity names retain the approved 14px size');
 if(plain&&side==='sell'){assert.ok(dimensions.row<=41,'Ordinary desktop offer row is 40px plus table border');for(const h of await page.locator('.owned-sale-table tbody tr').evaluateAll(rows=>rows.map(r=>r.getBoundingClientRect().height)))assert.ok(h<=41,'Owned goods use compact rows');assert.equal(await page.locator('.sale-table thead th').count(),8);assert.ok(await controls.locator('[data-inline-sale-total]').evaluate(el=>parseFloat(getComputedStyle(el).fontSize)>=14));}
 // A prominent warning may wrap with platform fonts; measure the control layout
 // independently instead of forcing warning text into a fixed-height row.
