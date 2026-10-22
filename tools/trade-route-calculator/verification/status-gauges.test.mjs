@@ -22,3 +22,20 @@ test('nonterminating Life Support overflow renders through advance, reload and U
  const reloaded=harness(JSON.parse(JSON.stringify(first.persisted()))),model=statusGaugeValues(reloaded.api.state.ship,S.used(reloaded.api.state));assert.equal(A.cmp(model.cargo.total,A.rat(23,2400)),0);assert.equal(A.cmp(model.cargo.free,A.sub(65,A.rat(23,2400))),0);
  await reloaded.api.actions.undo();assert.equal(A.cmp(S.used(reloaded.persisted()),'0.01'),0);assert.deepEqual(reloaded.persisted().ship,s.ship);
 });
+
+for(const [stock,shown] of [['29.96','29'],['27.96','27'],['0','0'],['0.99','0'],['28','28'],['29.999999999999999999','29']])test(`Main life-support remaining days rounds down: ${stock} → ${shown}`,()=>{
+ const s=campaign();s.ship.accommodation={rooms:{low:0,middle:4,high:0},passengers:{low:0,middle:0,high:0},crew:{low:0,middle:1,high:0}};
+ s.ship.lifeSupport=configureSupport(s.ship,{stockUnits:stock,targetDays:28});
+ const before=JSON.stringify(s),h=harness(s),summary=h.dom.ids.get('summary').innerHTML;
+ assert.match(summary,new RegExp('class="value">'+shown+' days'));
+ assert.match(summary,new RegExp('value="'+stock.replaceAll('.','\\.')+'" aria-label="Life support endurance'));
+ assert.equal(JSON.stringify(s),before);assert.equal(JSON.stringify(h.persisted()),before);assert.equal(h.calls.saves,0);
+});
+test('Main life-support keeps unknown endurance and unconfigured guidance',()=>{
+ const s=campaign();delete s.ship.lifeSupport;
+ assert.match(harness(s).dom.ids.get('summary').innerHTML,/Set in Settings/);
+ s.ship.accommodation={rooms:{low:0,middle:4,high:0},passengers:{low:0,middle:0,high:0},crew:{low:0,middle:0,high:0}};
+ s.ship.lifeSupport=configureSupport(s.ship,{stockUnits:'10',targetDays:28});
+ const h=harness(s),summary=h.dom.ids.get('summary').innerHTML;
+ assert.match(summary,/Unknown days/);assert.doesNotMatch(summary,/aria-label="Life support endurance/);assert.equal(h.calls.saves,0);
+});
