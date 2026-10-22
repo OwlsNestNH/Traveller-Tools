@@ -39,8 +39,9 @@ try {
     assert.equal(await page.getByText(copy,{exact:false}).count(),0);
     const trigger=page.getByRole('button',{name:'About '+title,exact:true});await trigger.press('Enter');
     const dialog=page.getByRole('dialog',{name:title,exact:true});await dialog.waitFor();assert.match(await dialog.textContent(),new RegExp(copy));
-    await page.setViewportSize({width:320,height:844});assert.equal(await dialog.evaluate(e=>e.scrollWidth<=e.clientWidth),true);await page.keyboard.press('Escape');await dialog.waitFor({state:'detached'});assert.equal(await trigger.evaluate(e=>document.activeElement===e),true);
-    await trigger.click();await dialog.getByRole('button',{name:'Close',exact:true}).click();await dialog.waitFor({state:'detached'});assert.equal(await page.getByRole('dialog').count(),0);await page.setViewportSize({width:1440,height:1100});
+    // A closed dialog stops matching its role before the close handler removes it and restores focus.
+    await page.setViewportSize({width:320,height:844});assert.equal(await dialog.evaluate(e=>e.scrollWidth<=e.clientWidth),true);await page.keyboard.press('Escape');await page.locator('dialog').waitFor({state:'detached'});assert.equal(await trigger.evaluate(e=>document.activeElement===e),true);
+    await trigger.click();await dialog.getByRole('button',{name:'Close',exact:true}).click();await page.locator('dialog').waitFor({state:'detached'});assert.equal(await page.getByRole('dialog').count(),0);await page.setViewportSize({width:1440,height:1100});
   }
   const retailChecks=await page.evaluate(async()=>{
     const {renderPlayerSnapshot}=await import('./js/player-snapshot-view.mjs');

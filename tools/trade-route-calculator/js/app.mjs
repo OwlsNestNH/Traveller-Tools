@@ -4424,7 +4424,7 @@ function browsePlayerVisit(delta){const current=selectedPlayerVisit()??state.rou
 function playerLinkControls(){
  if(!state.initialized||store?.recovery)return '';
  const i=selectedPlayerVisit(),label=i===null?'Select a route visit':('Visit '+(i+1)+' · '+(world(state.route[i])?.name??'Unknown')+' · '+(i<state.routeIndex?'departure':i===state.routeIndex?'current':'not yet visited'));
- return '<div class="player-link-controls">'+btn('Copy Player Link','player-link','',false,'primary')+'<span class="help">'+esc(label)+' · Read-only snapshot; create a new link after changes.</span></div>';
+ return '<div class="player-link-controls">'+btn('Copy Player Link','player-link','',false,'primary')+btn('Backup','export')+btn('Load','import','',true)+'<span class="help">'+esc(label)+' · Read-only snapshot; create a new link after changes.</span></div>';
 }
 async function copyPlayerLink(){
  const saved=store.read();
