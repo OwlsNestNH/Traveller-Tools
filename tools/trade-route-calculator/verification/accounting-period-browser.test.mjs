@@ -4,7 +4,7 @@ import {guiFixture,campaignKey} from './fixtures/gui-parity.mjs';
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const artifacts=fileURLToPath(new URL('../verification-artifacts/',import.meta.url));await mkdir(artifacts,{recursive:true});
 const browser=await chromium.launch({headless:true}),base=process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/';
-function fixture({unknown=false,long=false}={}){
+function fixture({unknown=false,long=false,backdatedVisit=false}={}){
  const f=guiFixture(),s=f.state,w=s.actual;
  const entry=(id,type,amount,day,note)=>({id,type,amount,hours:(day-1)*24+(day===66?23:0),world:w,reason:note});
  s.dateLabel='001-1105';s.hours=66*24-1;s.bank='117000';
@@ -12,6 +12,7 @@ function fixture({unknown=false,long=false}={}){
  s.events=[{id:'account-setup',label:'Campaign setup',world:w,hours:0}];
  if(unknown)s.ledger.shift();
  if(long){for(let i=0;i<48;i++)s.ledger.push(entry('long-'+i,'Manual deposit','1',66,'Long synthetic transaction '+i+' - '+('Recorded accounting detail with wrapping and safe text. '.repeat(3))));const huge='9999999999999999999999999999999999999999';s.ledger.push(entry('huge-in','Manual deposit',huge,66,'Exact large credit'),entry('huge-out','Manual expense','-'+huge,66,'Exact large debit'));s.bank='117048';}
+ if(backdatedVisit){s.hours=144;s.bank='100010';s.ledger=[s.ledger[0],{id:'arrival',type:'Jump',amount:'0',hours:168,world:w,from:'previous-world',to:w,eventId:'arrival-event'},{id:'backdated',type:'Manual deposit',amount:'10',hours:144,world:w}];s.events.push({id:'arrival-event',label:'Jump audit',from:'previous-world',to:w,hours:168});}
  return f;
 }
 async function open(width,options={}){
@@ -44,6 +45,7 @@ try{
    console.log('PASS accounting filters, private preview, print and unchanged campaign '+width);
   }finally{await context.close();}
  }
+ const backwards=await open(390,{backdatedVisit:true});try{await backwards.page.getByRole('button',{name:'Current visit',exact:true}).click();assert.match(await backwards.page.locator('#accounting-active').textContent(),/All dates/);assert.match(await backwards.page.locator('#accounting-error').textContent(),/boundary is not recorded reliably/);const report=await preview(backwards.page,backwards.context);assert.match(await report.locator('.period').textContent(),/All dates/);assert.ok(!(await report.locator('body').textContent()).includes('Current visit:'));await report.close();assert.equal(await backwards.raw(),backwards.bytes);}finally{await backwards.context.close();}
  const imported=await open(390,{unknown:true});try{await range(imported.page);assert.deepEqual(await values(imported.page),['Unknown','Cr 25,000','Cr 8,000','Unknown']);assert.match(await imported.page.locator('#accounting-summary').locator('..').textContent(),/history is incomplete/);assert.equal(await imported.raw(),imported.bytes);}finally{await imported.context.close();}
  const long=await open(390,{long:true});try{await range(long.page);await long.page.locator('#accounting-detail').check();const report=await preview(long.page,long.context);await savePdf(report,join(artifacts,'accounting-detail.pdf'));assert.equal(await report.locator('tbody tr').count(),54);assert.equal(await long.raw(),long.bytes);await report.close();}finally{await long.context.close();}
  console.log('PASS unknown opening history and paginated accounting PDF evidence');

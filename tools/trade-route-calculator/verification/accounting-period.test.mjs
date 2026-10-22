@@ -32,6 +32,14 @@ test('current visit uses a verified ledger boundary, including same-hour return 
  s.events.push({id:'correct',label:'Starting-world / location correction',hours:0,world:'a'});assert.equal(currentAccountingVisit(s),null);assert.throws(()=>projectAccountingPeriod(s,{mode:'visit'}),/boundary/);
  s.events=[];assert.throws(()=>projectAccountingPeriod(s,{mode:'visit'}),/boundary/);
 });
+test('current visit rejects a clock or later-recorded transaction before arrival without inventing a valid period',()=>{
+ const s=fixture();s.hours=144;s.ledger=[s.ledger[0],row('arrival','0',168,{type:'Jump',from:'b',to:'a',eventId:'arrival-event'}),row('backdated','10',144)];s.bank='100010';s.events.push({id:'arrival-event',label:'Jump audit',from:'b',to:'a',hours:168});
+ const before=JSON.stringify(s);assert.equal(currentAccountingVisit(s),null);assert.throws(()=>projectAccountingPeriod(s,{mode:'visit'}),/boundary/);
+ const all=projectAccountingPeriod(s);assert.equal(all.label,'All dates');assert.ok(!accountingPrint(all).includes('Current visit:'));assert.equal(all.closingBalance,s.bank);assert.equal(JSON.stringify(s),before);
+ s.hours=192;assert.equal(currentAccountingVisit(s),null,'Restoring the clock does not validate a transaction before arrival');
+ s.ledger.at(-1).hours=168;assert.equal(currentAccountingVisit(s).from,'008-1105');assert.equal(projectAccountingPeriod(s,{mode:'visit'}).closingBalance,'100010');
+});
+
 test('saved receipt calendar anchors are respected; invalid legacy dates cannot silently enter a range',()=>{
  const s=fixture();s.ledger[1].paidAt={dateLabel:'001-1106',hours:0};assert.equal(projectAccountingPeriod(s,accountingRange('001-1106','001-1106')).rows.length,1);
  s.dateLabel='unrecorded';assert.equal(projectAccountingPeriod(s).historyKnown,false);assert.throws(()=>projectAccountingPeriod(s,accountingRange('001-1106','001-1106')),/dates/);

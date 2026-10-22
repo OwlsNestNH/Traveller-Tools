@@ -16,6 +16,9 @@ export function currentAccountingVisit(s){
  let event,index;
  if(last>=0){const jump=ledger[last];event=events.find(e=>e.id===jump.eventId&&e.label==='Jump audit'&&e.from===jump.from&&e.to===jump.to&&e.hours===jump.hours);index=last+1;if(!event||jump.to!==s.actual)return null;}
  else{event=events.find(e=>e.label==='Campaign setup');index=0;if(!event||events.indexOf(event)!==0||event.hours!==0||event.world!==s.actual||events.filter(e=>e.label==='Campaign setup').length!==1)return null;}
+ // Campaign time can be edited backwards. Arrival must precede both now and
+ // every transaction attributed to this visit; index order alone is not proof.
+ if(!Number.isSafeInteger(event.hours)||event.hours<0||!Number.isSafeInteger(s.hours)||s.hours<event.hours||ledger.slice(index).some(e=>!Number.isSafeInteger(e.hours)||e.hours<event.hours))return null;
  const after=events.slice(events.indexOf(event)+1);
  if(after.some(e=>e.label==='Starting-world / location correction'||e.label==='Jump audit'||String(e.label).startsWith('Undo: ')||e.world&&e.world!==s.actual)||ledger.slice(index).some(e=>e.world&&e.world!==s.actual||e.hours>s.hours))return null;
  return {index,from:labelAt(dateAt(s.dateLabel,event.hours)),to:labelAt(dateAt(s.dateLabel,s.hours)),boundaryId:event.id};
