@@ -4,9 +4,28 @@ import {createState,applyCommand} from '../engine.mjs';
 import {beginSetup,editSetup,saveSetup} from '../setup-session.mjs';
 import {crewContribution,effectiveDesign} from '../setup.mjs';
 import {remainingPower} from '../ship-record.mjs';
+import {beginConsoleDraft,commitConsoleDraft,conditionLimits} from '../console-draft.mjs';
 const position={q:1,r:2},velocity={q:0,r:0};
 const template={name:'Manual hull',tons:400,thrust:3,hull:100,armour:0,record:{className:'Custom escort',tl:12,ratedPower:150,fuelCapacity:42.5,jump:2,sensors:'Military',computer:'Computer/10',software:'Manoeuvre; Library',requirements:[{name:'Basic systems',power:80},{name:'Sensors',power:null}],weapons:[{id:'turret-1',name:'Dorsal turret',type:'Beam laser',count:2,ammunition:null}]}};
 const add=s=>applyCommand(s,{type:'add-ship',name:'A1',template,position,velocity});
+
+test('console previews commit atomically to their original ship and revision only',()=>{
+ const s=add(add(createState({ships:[]}))),before=JSON.stringify(s),draft=beginConsoleDraft(s,'ship-1');draft.values.hull='40';draft.values.fuel='12.75';draft.values.powerOutput='90';
+ assert.equal(JSON.stringify(s),before);assert.throws(()=>commitConsoleDraft(s,draft,'ship-2'),/Return to the draft ship/);
+ const next=commitConsoleDraft(s,draft,'ship-1');assert.equal(next.revision,s.revision+1);assert.deepEqual(next.ships[1],s.ships[1]);assert.deepEqual(next.ships[0].template,s.ships[0].template);assert.equal(next.ships[0].condition.fuel,12.75);
+ assert.throws(()=>commitConsoleDraft(applyCommand(s,{type:'advance-round'}),draft,'ship-1'),/State changed/);assert.equal(JSON.stringify(s),before);
+});
+test('manual usable capacities distinguish damage from quantities without repair, refill or allocation changes',()=>{
+ let s=add(createState({ships:[]}));s=applyCommand(s,{type:'set-condition',shipId:'ship-1',condition:{hull:60,powerOutput:100,powerUsed:90,fuel:12.25,usableHull:80,usablePower:120,usableFuel:30}});
+ assert.deepEqual(conditionLimits(s.ships[0],'fuel'),{rated:42.5,original:42.5,usable:30,scale:42.5,lost:12.5});assert.equal(s.ships[0].template.hull,100);
+ const before=JSON.stringify(s);for(const c of [{...s.ships[0].condition,usableFuel:12},{...s.ships[0].condition,usableHull:59},{...s.ships[0].condition,usablePower:99},{...s.ships[0].condition,usableFuel:43}])assert.throws(()=>applyCommand(s,{type:'set-condition',shipId:'ship-1',condition:c}));assert.equal(JSON.stringify(s),before);
+ const d=beginConsoleDraft(s,'ship-1');d.values.usableHull='';d.values.usablePower='';d.values.usableFuel='';const n=commitConsoleDraft(s,d,'ship-1');assert.deepEqual([n.ships[0].condition.hull,n.ships[0].condition.powerOutput,n.ships[0].condition.powerUsed,n.ships[0].condition.fuel],[60,100,90,12.25]);assert.equal(conditionLimits(n.ships[0],'hull').usable,100);assert.deepEqual(createState(JSON.parse(JSON.stringify(n))).ships,n.ships);
+});
+test('unknown capacity remains unknown and empty fuel or used power never implies capacity damage',()=>{
+ let s=applyCommand(createState({ships:[]}),{type:'add-ship',name:'Unknown',template:{name:'Unknown',tons:1,thrust:0},position,velocity});assert.equal(conditionLimits(s.ships[0],'fuel').usable,null);
+ let d=beginConsoleDraft(s,'ship-1');d.values.fuel='0';d.values.usableFuel='2.5';s=commitConsoleDraft(s,d,'ship-1');assert.equal(conditionLimits(s.ships[0],'fuel').rated,null);assert.equal(conditionLimits(s.ships[0],'fuel').usable,2.5);
+ const known=applyCommand(add(createState({ships:[]})),{type:'set-condition',shipId:'ship-1',condition:{hull:50,fuel:0,powerOutput:150,powerUsed:149}}).ships[0];assert.equal(conditionLimits(known,'fuel').lost,0);assert.equal(conditionLimits(known,'powerOutput').lost,0);assert.equal(conditionLimits(known,'hull').usable,100);
+});
 test('extended setup distinguishes absent facts, zero values and explicitly empty equipment lists',()=>{
  const s=add(createState({ships:[]})),t=s.ships[0].template;
  assert.equal(t.record.fuelCapacity,42.5);assert.equal(t.armour,0);assert.equal(t.record.weapons[0].count,2);assert.equal(t.record.weapons[0].ammunition,null);assert.equal(t.record.requirements[1].power,null);
