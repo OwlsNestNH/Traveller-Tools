@@ -32,7 +32,7 @@
     main {
       padding: 2rem;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
       gap: 1.5rem;
     }
     .tool-card {
@@ -66,6 +66,8 @@
     .tool-card a:hover {
       background: #3b5cff;
     }
+    .archive-button { display:inline-block; padding:0.65rem 1rem; margin:0 1rem 0.5rem 0; background:#2b4cff; color:#fff; border-radius:4px; text-decoration:none; font-weight:600; }
+    .archive-button:focus-visible { outline:3px solid #b9c7ff; outline-offset:3px; }
     .tool-visits { margin-top: 0.75rem; min-height: 20px; }
     .tool-visits img { max-width: 100%; }
     footer {
@@ -88,7 +90,7 @@
       Browser-based utilities for running Traveller campaigns.
       Built to reduce table arguments and speed up bad decisions.
     </p>
-    <a href="#copyright-notice">Copyright &amp; usage notice</a>
+    <nav aria-label="Site navigation"><a class="archive-button" href="archive/">Archive</a> <a href="#copyright-notice">Copyright &amp; usage notice</a></nav>
   </header>
 
   <main>
@@ -123,11 +125,7 @@
       <a href="tools/trade-route-calculator/" target="_blank" rel="noopener">Launch Tool</a>
     </section>
 
-    <section class="tool-card">
-      <h2>Speculative Trade — Alpha · Under Construction</h2>
-      <p>This tool simplifies speculative trading for Mongoose Traveller 2e, using house rules inspired by GURPS Far Trader. Buy cargo lots, compare nearby markets on a clickable map, and use Broker rolls to find buyers and resolve sales. It tracks cargo, cash, fees, and government-based taxes. The GM sets the intended average financial pressure; player choices, skill, and risk can produce better returns or losses. The target is never a guaranteed payout. Alpha: under construction.</p>
-      <a href="tools/speculative-trade-alpha/" target="_blank" rel="noopener">Try the Alpha</a>
-    </section>
+
 
     <section class="tool-card">
       <h2>Ship Combat Alpha</h2>
