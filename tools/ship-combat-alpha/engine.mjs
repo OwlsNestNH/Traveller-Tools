@@ -55,7 +55,7 @@ export function applyCommand(input,command){
   const template=normalizeTemplate(command.presetId?preset(command.presetId):command.template),designOverrides=normalizeOverrides(command.designOverrides,template),effective=effectiveDesign({template,designOverrides});
   if(!template)throw Error('Choose a preset or enter a custom design.');
   let n=1;while(state.ships.some(s=>s.id==='ship-'+n))n++;
-  state.ships.push(ship({id:'ship-'+n,name:command.name,template,designOverrides,appearance:command.appearance,crew:{},condition:{hull:effective.hull,...(command.presetId?preset(command.presetId).initialCondition:undefined)},capabilities:{thrust:effective.thrust},motion:{position:command.position,velocity:command.velocity}}));break;
+  state.ships.push(ship({id:'ship-'+n,name:command.name,template,designOverrides,appearance:command.appearance,crew:command.crew??{},condition:{hull:effective.hull,...(command.presetId?preset(command.presetId).initialCondition:undefined)},capabilities:{thrust:effective.thrust},motion:{position:command.position,velocity:command.velocity}}));break;
  }
  case 'set-crew':{const s=getShip(state,command.shipId);s.crew=normalizeCrew(command.crew);s.situational=normalizeSituational(command.situational);break;}
  case 'set-condition':{const s=getShip(state,command.shipId);s.condition=normalizeCondition(command.condition,effectiveDesign(s));break;}
