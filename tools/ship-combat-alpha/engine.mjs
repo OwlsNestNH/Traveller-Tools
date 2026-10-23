@@ -1,3 +1,4 @@
+import {normalizeSystems} from './systems.mjs';
 import {reducedVelocity,ROUND_MINUTES} from './movement-rules.mjs';
 import {normalizeAppearance,velocityHeading} from './appearance.mjs';
 import {MAX_SHIPS,normalizeTemplate,normalizeCrew,normalizeCondition,normalizeSituational,effectiveDesign,normalizeOverrides} from './setup.mjs';
@@ -22,7 +23,8 @@ function ship(value){
  if(hexDistance(impulse)>thrust-plan.evasion-plan.gunners)throw Error('Planned velocity change exceeds this ship\'s thrust budget.');
  const appearance=normalizeAppearance(value.appearance);appearance.heading=velocityHeading(vector(value.motion?.velocity,'Velocity'),appearance.heading);
  const template=normalizeTemplate(value.template),designOverrides=normalizeOverrides(value.designOverrides,template),effective=effectiveDesign({template,designOverrides});
- return {id:value.id,name:name(value.name),template,designOverrides,appearance,crew:normalizeCrew(value.crew),condition:normalizeCondition(value.condition,effective),situational:normalizeSituational(value.situational),capabilities:{thrust},flight:plan,motion};
+ const condition=normalizeCondition(value.condition,effective),systems=normalizeSystems(value.systems,effective,thrust);
+ return {id:value.id,name:name(value.name),template,designOverrides,appearance,crew:normalizeCrew(value.crew),condition,systems,situational:normalizeSituational(value.situational),capabilities:{thrust},flight:plan,motion};
 }
 function checked(state){
  if(state?.version!==API_VERSION)throw Error('Unsupported movement state version.');
@@ -64,10 +66,11 @@ export function applyCommand(input,command){
   const template=normalizeTemplate(command.presetId?preset(command.presetId):command.template),designOverrides=normalizeOverrides(command.designOverrides,template),effective=effectiveDesign({template,designOverrides});
   if(!template)throw Error('Choose a preset or enter a custom design.');
   let n=1;while(state.ships.some(s=>s.id==='ship-'+n))n++;
-  state.ships.push(ship({id:'ship-'+n,name:command.name,template,designOverrides,appearance:command.appearance,crew:command.crew??{},condition:{hull:effective.hull,...(command.presetId?preset(command.presetId).initialCondition:undefined)},capabilities:{thrust:effective.thrust},motion:{position:command.position,velocity:command.velocity}}));break;
+  state.ships.push(ship({id:'ship-'+n,name:command.name,template,designOverrides,appearance:command.appearance,crew:command.crew??{},systems:command.systems??{mode:'allocated'},condition:{hull:effective.hull,...(command.presetId?preset(command.presetId).initialCondition:undefined)},capabilities:{thrust:effective.thrust},motion:{position:command.position,velocity:command.velocity}}));break;
  }
  case 'set-crew':{const s=getShip(state,command.shipId);s.crew=normalizeCrew(command.crew);s.situational=normalizeSituational(command.situational);break;}
- case 'set-condition':{const s=getShip(state,command.shipId);s.condition=normalizeCondition(command.condition,effectiveDesign(s));break;}
+ case 'set-condition':{const s=getShip(state,command.shipId),next=normalizeCondition(command.condition,effectiveDesign(s));if(next.powerUsed!==s.condition.powerUsed)s.systems.mode='manual';s.condition=next;break;}
+ case 'set-systems':{const s=getShip(state,command.shipId);s.systems=normalizeSystems(command.systems,effectiveDesign(s),s.capabilities.thrust);break;}
  case 'record-initiatives':{assertSetup(state);if(!Array.isArray(command.entries)||command.entries.length!==state.ships.length||new Set(command.entries.map(e=>e.shipId)).size!==state.ships.length)throw Error('Record one initiative entry for every current ship.');for(const entry of command.entries){const s=getShip(state,entry.shipId);s.flight=flight({...s.flight,initiative:entry.initiative,tie:entry.tie},s.capabilities.thrust);}break;}
  case 'set-flight-plan':{if(!command.flight||typeof command.flight!=='object'||Array.isArray(command.flight)||Object.hasOwn(command.flight,'braking'))throw Error('Enter a flight-planning record; use brake/coast to change stop intent.');const s=getShip(state,command.shipId);assertPlanning(state,s.id);const next=flight({...s.flight,...command.flight},s.capabilities.thrust);if(state.acceleration&&(next.initiative!==s.flight.initiative||next.tie!==s.flight.tie))throw Error('Cancel declarations before changing initiative order.');s.flight=next;break;}
  case 'begin-acceleration':if(state.acceleration)throw Error('Acceleration declarations already started.');if(!state.ships.length)throw Error('Add a ship before declaring acceleration.');if(state.roundMinutes!==ROUND_MINUTES)throw Error('Companion declarations require six-minute rounds.');state.acceleration={order:accelerationOrder(state),declared:[]};break;

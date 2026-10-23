@@ -1,3 +1,4 @@
+import {createSystemsEditor} from './systems-editor.mjs';
 import {createFlightControls} from './flight-controls.mjs';
 import {rangeInfo} from './movement-rules.mjs';
 import {createConsoleControls} from './console-controls.mjs';
@@ -12,7 +13,7 @@ const $=id=>document.getElementById(id),svg=$('map'),scene=$('scene'),sideColor=
 svg.querySelector('defs').insertAdjacentHTML('beforeend',Object.entries(SIDES).map(([side,value])=>`<filter id="silhouette-${side}" x="-5%" y="-5%" width="110%" height="110%"><feComponentTransfer in="SourceAlpha" result="solid-alpha"><feFuncA type="discrete" tableValues="0 1"/></feComponentTransfer><feFlood flood-color="${value.color}"/><feComposite in2="solid-alpha" operator="in"/></filter>`).join(''));
 function fitShipsCamera(ships){return fitCamera(ships.map(s=>s.motion.position),1200,mapHeight(),Math.max(100,36*1200/Math.max(240,svg.clientWidth)));}
 function mapHeight(){return 1200*svg.clientHeight/Math.max(1,svg.clientWidth);}
-let state=createState(),selected=state.ships[0].id,camera=fitShipsCamera(state.ships),drag=null,frame=0,editors=null,flightControls=null,consoleControls=null,placementCamera=null;
+let state=createState(),selected=state.ships[0].id,camera=fitShipsCamera(state.ships),drag=null,frame=0,editors=null,flightControls=null,consoleControls=null,systemsEditor=null,placementCamera=null;
 const canPlan=id=>!state.acceleration||state.acceleration.order[state.acceleration.declared.length]===id;
 const rangeLabel=(a,b)=>{const v=rangeInfo(a,b);return `${v.band} · ${v.km.toLocaleString(undefined,{maximumFractionDigits:2})} km (${v.spaces.toLocaleString(undefined,{maximumFractionDigits:4})} spaces)`;};
 const selectedShip=()=>getShip(state,selected),pair=p=>`${p.q}, ${p.r}`,number=id=>Number($(id).value),color=sideColor;
@@ -71,6 +72,8 @@ editors=createEditors({getState:()=>state,getSelected:()=>selected,onCommit:(nex
 flightControls=createFlightControls({root:$('flight-controls'),getState:()=>state,getSelected:()=>selected,dispatch,onSelect:select,isLocked:()=>editors.isPlacing()});
 $('add-ship-main').addEventListener('click',editors.openAdd);$('open-setup').addEventListener('click',editors.open);$('use-placement').addEventListener('click',editors.acceptPlacement);$('cancel-placement').addEventListener('click',editors.cancelPlacement);
 for(const id of ['ship-console','ship-identity'])$(id).addEventListener('click',event=>{if(event.target.closest('[data-console-setup]'))editors.open();if(event.target.closest('[data-console-condition]'))editors.openCondition();});
+systemsEditor=createSystemsEditor({dialog:$('systems-dialog'),getState:()=>state,getSelected:()=>selected,isLocked:()=>editors.isPlacing(),onCommit:next=>{state=next;render();feedback('Systems committed for this ship only. Saved output and manual used Power are retained.');}});
+$('ship-console').addEventListener('click',event=>{if(event.target.closest('[data-open-systems]'))systemsEditor.open();});
 consoleControls=createConsoleControls({root:$('ship-console'),getState:()=>state,getSelected:()=>selected,isLocked:()=>editors.isPlacing(),onCommit:next=>{state=next;render();feedback('Condition changes committed for this ship only.');}});
 const identityMedia=matchMedia('(max-width:780px)');$('selected-identity').open=!identityMedia.matches;identityMedia.addEventListener('change',e=>$('selected-identity').open=!e.matches);
 let expandedPage=null;
