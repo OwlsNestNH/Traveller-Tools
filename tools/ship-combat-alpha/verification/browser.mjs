@@ -1,3 +1,4 @@
+import {verifySystems} from './systems-browser.mjs';
 import {verifyFlight} from './flight-browser.mjs';
 import {verifyConsole,verifyResetDraft} from './console-browser.mjs';
 import assert from 'node:assert/strict';
@@ -66,6 +67,7 @@ for(const width of [1440,1100,390,320]){
  await open(page);await clearDraft(page);await save(page);assert.equal(await page.locator('.ship-node').count(),0);assert.equal(await page.locator('#advance').isDisabled(),true);assert.match(await page.locator('#ship-console').textContent(),/No ship selected/);await page.locator('#reset').click();await page.locator('#brake').click();assert.match(await page.locator('#braking-plan-status').textContent(),/Continuing stop active/);await page.locator('#advance').click();assert.equal((await motion(page,'merchant')).vq,1);await page.locator('#advance').click();assert.equal((await motion(page,'merchant')).vq,0);await page.locator('#reset').click();await edit(page,{thrust:2});await page.locator('#brake').click();assert.equal((await motion(page,'merchant')).vq,2);await page.locator('#advance').click();assert.deepEqual(await motion(page,'merchant'),{q:-5,r:2,vq:0,vr:0});
  await verifyFlight(page,width,artifacts,edit);
  await verifyResetDraft(page);
+ await verifySystems(page,width,artifacts);
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.deepEqual(await page.evaluate(()=>window.__storageAccesses),[]);assert.equal(await page.evaluate(()=>window.__rawSentinel()),'synthetic-protected-campaign');assert.deepEqual(errors,[]);report.views.push({width,passed:true});console.log('PASS '+width+'px: movement/icons, draft Save/Cancel, placement, full custom records, generic/detailed crew, manual gauges/criticals/fuel, immutable overrides, Harrier, cap and storage isolation');
  }catch(error){await page.screenshot({path:artifacts+'failure-'+width+'.png',fullPage:true}).catch(()=>{});throw error;}finally{await context.close();}
 }
