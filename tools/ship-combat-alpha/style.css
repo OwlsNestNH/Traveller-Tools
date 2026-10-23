@@ -18,3 +18,5 @@ dialog{background:#122330;color:#e6eff5;border:1px solid #537081;border-radius:1
 .override-notice{font-size:.8rem;color:#e4c88e;line-height:1.5}.overridden-field{border-color:#dbb95e!important}.override-flag{color:#e4c88e;font-size:.7rem}
 
 #scene .cell.placement-cell{fill:transparent;pointer-events:all}
+
+#setup-dialog.quick-add .setup-roster,#setup-dialog.quick-add #save-setup{display:none}#setup-dialog.quick-add .setup-body{grid-template-columns:minmax(0,1fr)}#setup-dialog.quick-add{max-width:760px}
