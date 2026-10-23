@@ -123,3 +123,6 @@ Pirate Carrier has explicit loaded/unloaded profiles; auxiliary craft are refere
 
 ### Custom Harrier artwork
 `assets/ships/harrier-custom.svg` is a custom simplified reconstruction from the user-supplied Harrier outline, approved by the user. It is not an official supplied token or a Samuel Penn/CC0 asset. Bow points up in the source SVG; its cosmetic rotation offset is -90 degrees. Private reference images and provenance locations are not distributed.
+
+### Staged catalogue expansion: Traders and Gunboats
+33 eligible statblocks from **Traders and Gunboats (Mongoose Publishing, 2024)**, each cited by printed page; no numbered edition asserted. [Publisher product](https://www.mongoosepublishing.com/products/traders-and-gunboats). Distinct source variants remain separate; base names are not deduplication keys. Minimum setup records omit weapons/software rather than pretending a full combat fit. Current loads and crew skill remain user-controlled/unknown. Quvar Hull and Noql crew default are unknown because of flagged source conflicts; Keldyx armour remains base 6 with conditional 10 noted. Ifteaa budget is M-drive 2 only, not summed with its separate reaction drive. Blockade Runner cargo 65 t is explicitly derived from 53 t ordinary + 12 t concealed. Missing power rows stay null.
