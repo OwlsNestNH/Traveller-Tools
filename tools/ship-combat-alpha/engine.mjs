@@ -26,7 +26,7 @@ export function getShip(state,id){const found=state.ships.find(s=>s.id===id);if(
 export function coastTarget(ship){return add(ship.motion.position,ship.motion.velocity);}
 export function plannedTarget(ship){return add(coastTarget(ship),ship.motion.impulse);}
 export function reachableCount(thrust){integer(thrust,'Thrust',0,MAX_THRUST);return 1+3*thrust*(thrust+1);}
-export function plotCost(ship,target){return hexDistance(vector(target,'Target'),coastTarget(ship));}
+export function plotCost(ship,target){target=vector(target,'Target');vector(subtract(target,ship.motion.position),'Resulting velocity');return hexDistance(target,coastTarget(ship));}
 export function canPlot(ship,target){try{return plotCost(ship,target)<=ship.capabilities.thrust;}catch{return false;}}
 // JSON command contract. Successful commands return a new normalized state;
 // rejected commands leave the caller's original state untouched.

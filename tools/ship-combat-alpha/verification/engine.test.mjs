@@ -47,6 +47,14 @@ test('invalid, stale, fractional, nonfinite and oversized commands reject atomic
  for(const thrust of [-1,.5,NaN,Infinity,MAX_THRUST+1,'9'])commands.push({type:'edit-ship',shipId:'test',name:'test',thrust,position:{q:0,r:0},velocity:{q:0,r:0}});
  for(const command of commands){assert.throws(()=>applyCommand(s,command));assert.equal(JSON.stringify(s),before);}
 });
+test('plot legality rejects impossible resulting velocity on either signed axis and accepts exact limits',()=>{
+ for(const axis of ['q','r'])for(const sign of [-1,1]){
+  const position={q:0,r:0},velocity={q:0,r:0},target={q:0,r:0};position[axis]=-sign;velocity[axis]=sign*COORDINATE_LIMIT;target[axis]=sign*COORDINATE_LIMIT;
+  const s=deepFreeze(state(vessel('edge',1,position,velocity))),before=JSON.stringify(s);assert.equal(canPlot(s.ships[0],target),false);assert.throws(()=>applyCommand(s,{type:'plot',shipId:'edge',target}),/Resulting velocity/);assert.equal(JSON.stringify(s),before);
+  target[axis]-=sign;assert.equal(canPlot(s.ships[0],target),true);const moved=applyCommand(applyCommand(s,{type:'plot',shipId:'edge',target}),{type:'advance-round'});assert.deepEqual(moved.ships[0].motion.position,target);assert.equal(moved.ships[0].motion.velocity[axis],sign*COORDINATE_LIMIT);
+ }
+});
+
 test('a round that would exceed coordinate limits leaves every ship unchanged',()=>{
  const s=deepFreeze(state(vessel('one',1,{q:0,r:0},{q:1,r:0}),vessel('edge',1,{q:COORDINATE_LIMIT,r:0},{q:1,r:0}))),before=JSON.stringify(s);
  assert.throws(()=>applyCommand(s,{type:'advance-round'}),/Resulting position/);assert.equal(JSON.stringify(s),before);
