@@ -11,9 +11,14 @@ const selectedShip=()=>getShip(state,selected),pair=p=>`${p.q}, ${p.r}`,number=i
 function feedback(text='',error=''){$('message').textContent=text;$('error').textContent=error;}
 function dispatch(command,message){try{state=applyCommand(state,{...command,expectedRevision:state.revision});feedback(message);render();return true;}catch(error){feedback('',error.message);return false;}}
 function populate(){
- const s=selectedShip(),m=s.motion,target=plannedTarget(s),cost=hexDistance(m.impulse);
+ const s=state.ships.find(s=>s.id===selected)??state.ships[0];selected=s?.id??null;
  $('round').textContent='Round '+(state.round+1);$('elapsed').textContent=(state.round*state.roundMinutes)+' minutes elapsed';svg.dataset.completedRounds=state.round;svg.dataset.revision=state.revision;
  $('ships').innerHTML=state.ships.map((ship,i)=>`<button class="ship-choice" data-select="${ship.id}" aria-pressed="${ship.id===selected}"><span class="ship-dot" style="background:${colors[i%colors.length]}" aria-hidden="true"></span><span><strong>${esc(ship.name)}</strong><small>Thrust ${ship.capabilities.thrust} · velocity ${esc(pair(ship.motion.velocity))}</small></span></button>`).join('');
+ $('ship-count').textContent=`${state.ships.length} / ${MAX_SHIPS} ships on map`;
+ $('selected-controls').hidden=!s;$('empty-encounter').hidden=!!s;
+ for(const id of ['remove-ship','clear-ships','advance','fit'])$(id).disabled=!s;
+ if(!s)return;
+ const m=s.motion,target=plannedTarget(s),cost=hexDistance(m.impulse);
  $('selected-name').textContent=s.name;populateSetup(s);
  const facts=[['Position Q, R',pair(m.position)],['Velocity Q, R',pair(m.velocity)+' hex / round'],['Coast target',pair(coastTarget(s))],['Planned Δv',pair(m.impulse)],['Next position',pair(target)]];
  $('motion-facts').innerHTML=facts.map(([key,value])=>`<dt>${esc(key)}</dt><dd>${esc(value)}</dd>`).join('');
@@ -27,7 +32,7 @@ function populate(){
 function select(id){selected=id;feedback('Selected '+selectedShip().name+'. Plot a target or let it coast.');render();}
 function hexPolygon(center,size=HEX_SIZE){return Array.from({length:6},(_,i)=>{const angle=(60*i-30)*Math.PI/180;return `${center.x+size*Math.cos(angle)},${center.y+size*Math.sin(angle)}`;}).join(' ');}
 function drawMap(){
- frame=0;svg.setAttribute('viewBox','-600 '+(-mapHeight()/2)+' 1200 '+mapHeight());const s=selectedShip(),m=s.motion,coast=coastTarget(s),p=toWorld(m.position),c=toWorld(coast),budget=s.capabilities.thrust;
+ frame=0;if(!state.ships.length){scene.removeAttribute('transform');scene.innerHTML='<text x="0" y="0" text-anchor="middle" fill="#a6b7c7">Add a ship to begin</text>';$('map-detail').textContent='Empty encounter. No ships have been replaced.';return;}svg.setAttribute('viewBox','-600 '+(-mapHeight()/2)+' 1200 '+mapHeight());const s=selectedShip(),m=s.motion,coast=coastTarget(s),p=toWorld(m.position),c=toWorld(coast),budget=s.capabilities.thrust;
  const unit=1200/Math.max(240,svg.clientWidth),screen=unit/camera.zoom,grid=visibleGrid(camera,1200,mapHeight()),showGrid=$('grid-toggle').checked&&!grid.limited;
  const thin=screen,focusedShip=document.activeElement?.closest?.('[data-ship]')?.dataset.ship;
  let html='';
@@ -47,7 +52,7 @@ function render(){populate();drawMap();}
 function rootPoint(event){return new DOMPoint(event.clientX,event.clientY).matrixTransform(svg.getScreenCTM().inverse());}
 function worldPoint(event){const point=rootPoint(event);return {x:(point.x-camera.x)/camera.zoom,y:(point.y-camera.y)/camera.zoom};}
 function zoom(factor,anchor={x:0,y:0}){const before={x:(anchor.x-camera.x)/camera.zoom,y:(anchor.y-camera.y)/camera.zoom},next=Math.min(8,Math.max(.000001,camera.zoom*factor));camera={zoom:next,x:anchor.x-before.x*next,y:anchor.y-before.y*next};scheduleMap();}
-function plot(target){dispatch({type:'plot',shipId:selected,target},'Target plotted. Advance round to apply every ship’s movement.');}
+function plot(target){if(!selected){feedback('Add a ship before plotting.');return;}dispatch({type:'plot',shipId:selected,target},'Target plotted. Advance round to apply every ship’s movement.');}
 $('ships').addEventListener('click',event=>{const button=event.target.closest('[data-select]');if(button){select(button.dataset.select);$("ships").querySelector(`[data-select="${selected}"]`)?.focus({preventScroll:true});}});
 $('plot-form').addEventListener('submit',event=>{event.preventDefault();if(event.currentTarget.reportValidity())plot({q:number('target-q'),r:number('target-r')});});
 $('ship-form').addEventListener('submit',event=>{event.preventDefault();if(!event.currentTarget.reportValidity())return;dispatch({type:'edit-ship',shipId:selected,name:$('ship-name').value,thrust:number('thrust'),position:{q:number('position-q'),r:number('position-r')},velocity:{q:number('velocity-q'),r:number('velocity-r')}},'Ship values applied; its plot was cleared. Camera position is unchanged.');});
@@ -75,7 +80,7 @@ function populateSetup(s){
  $('current-hull').value=s.condition.hull??'';$('current-hull').max=s.template?.hull??1000000;
  showCrewMode();
 }
-function showCrewMode(){const quick=$('crew-mode').value==='quick';$('rating-label').hidden=!quick;document.querySelectorAll('[data-quick]').forEach(e=>{e.hidden=!quick;});document.querySelectorAll('[data-detailed]').forEach(e=>{e.hidden=quick;});}
+function showCrewMode(){const quick=$('crew-mode').value==='quick';$('rating-label').hidden=!quick;$('crew-rating').disabled=!quick;document.querySelectorAll('[data-quick]').forEach(e=>{e.hidden=!quick;e.querySelectorAll('input').forEach(i=>i.disabled=!quick);});document.querySelectorAll('[data-detailed]').forEach(e=>{e.hidden=quick;e.querySelectorAll('input').forEach(i=>i.disabled=quick);});}
 function showDesign(){const id=$('design-select').value,custom=id==='custom',p=PRESETS.find(p=>p.id===id);$('custom-fields').hidden=!custom;$('custom-fields').querySelectorAll('input').forEach(e=>e.disabled=!custom);$('preset-source').textContent=custom?'Custom setup; no sourced facts inferred. Blank hull or armour stays unknown.':designLabel(p);}
 $('design-select').insertAdjacentHTML('beforeend',['Core Rulebook Update 2022','High Guard Update 2022'].map(book=>`<optgroup label="${book}">${PRESETS.filter(p=>p.source.book===book).map(p=>`<option value="${p.id}">${esc(p.name)} — ${p.tons}t — p. ${p.source.page}</option>`).join('')}</optgroup>`).join(''));
 $('design-select').addEventListener('change',showDesign);showDesign();
@@ -90,9 +95,12 @@ $('add-form').addEventListener('submit',event=>{
 $('crew-mode').addEventListener('change',showCrewMode);
 $('crew-form').addEventListener('submit',event=>{
  event.preventDefault();if(!event.currentTarget.reportValidity())return;
- const overrides={},details={},situational={};
- for(const role of ROLES){overrides[role]=optionalNumber(`crew-${role}-override`);const label=$(`crew-${role}-name`).value.trim();details[role]=label?{name:label,skillName:$(`crew-${role}-skillname`).value,skill:number(`crew-${role}-skill`),characteristicDM:number(`crew-${role}-dm`)}:null;situational[role]=number(`crew-${role}-situational`);}
- dispatch({type:'set-crew',shipId:selected,crew:{mode:$('crew-mode').value,rating:$('crew-rating').value,overrides,details},situational},'Crew setup applied to this ship only. No movement or checks were resolved.');
+ const current=selectedShip().crew,quick=$('crew-mode').value==='quick',overrides=structuredClone(current.overrides),details=structuredClone(current.details),situational={};
+ for(const role of ROLES){if(quick)overrides[role]=optionalNumber(`crew-${role}-override`);const label=$(`crew-${role}-name`).value.trim();if(!quick)details[role]=label?{name:label,skillName:$(`crew-${role}-skillname`).value,skill:number(`crew-${role}-skill`),characteristicDM:number(`crew-${role}-dm`)}:null;situational[role]=number(`crew-${role}-situational`);}
+ dispatch({type:'set-crew',shipId:selected,crew:{mode:$('crew-mode').value,rating:quick?$('crew-rating').value:current.rating,overrides,details},situational},'Crew setup applied to this ship only. No movement or checks were resolved.');
 });
 $('condition-form').addEventListener('submit',event=>{event.preventDefault();if(event.currentTarget.reportValidity())dispatch({type:'set-condition',shipId:selected,condition:{hull:optionalNumber('current-hull')}},'Condition recorded for this ship only.');});
 $('brake').addEventListener('click',()=>dispatch({type:'brake',shipId:selected},'Stop plotted within this ship’s thrust budget. Advance round to apply it.'));
+
+$('remove-ship').addEventListener('click',()=>{const s=selectedShip();if(window.confirm(`Remove ${s.name} from this unsaved encounter? Its crew, condition and plot will be removed. Other ships are preserved.`))dispatch({type:'remove-ship',shipId:selected},'Selected ship removed. Remaining ships were preserved.');});
+$('clear-ships').addEventListener('click',()=>{if(window.confirm(`Clear all ${state.ships.length} ships from this unsaved encounter? Their crew, condition and plots will be removed. Saved campaign data is not affected.`))dispatch({type:'clear-ships'},'Encounter cleared. Add your own ships; the sample was not reloaded.');});

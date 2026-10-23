@@ -17,7 +17,7 @@ function ship(value){
 }
 function checked(state){
  if(state?.version!==API_VERSION)throw Error('Unsupported movement state version.');
- if(!Array.isArray(state.ships)||state.ships.length<1||state.ships.length>MAX_SHIPS)throw Error(`The alpha supports 1 to ${MAX_SHIPS} ships (usability limit).`);
+ if(!Array.isArray(state.ships)||state.ships.length>MAX_SHIPS)throw Error(`The alpha supports 0 to ${MAX_SHIPS} ships (usability limit).`);
  const ships=Array.from(state.ships,ship);if(new Set(ships.map(s=>s.id)).size!==ships.length)throw Error('Ship IDs must be unique.');
  return {version:API_VERSION,revision:integer(state.revision,'Revision',0,1000000),round:integer(state.round,'Completed rounds',0,1000000),roundMinutes:integer(state.roundMinutes,'Round duration',1,60),ships};
 }
@@ -43,6 +43,8 @@ export function applyCommand(input,command){
   if(cost>s.capabilities.thrust)throw Error(`Target needs ${cost} thrust; ${s.capabilities.thrust} available. Choose a reachable hex.`);
   s.motion.impulse=subtract(target,coastTarget(s));break;
  }
+ case 'remove-ship':{getShip(state,command.shipId);state.ships=state.ships.filter(s=>s.id!==command.shipId);break;}
+ case 'clear-ships':state.ships=[];break;
  case 'add-ship':{
   if(state.ships.length>=MAX_SHIPS)throw Error(`Encounter full: the alpha limit is ${MAX_SHIPS} ships. No ship was added or replaced.`);
   const template=normalizeTemplate(command.presetId?preset(command.presetId):command.template);
@@ -64,6 +66,7 @@ export function applyCommand(input,command){
   s.motion={position:vector(command.position,'Position'),velocity:vector(command.velocity,'Velocity'),impulse:{q:0,r:0}};break;
  }
  case 'advance-round':
+  if(!state.ships.length)throw Error('Add a ship before advancing the round.');
   if(state.round===1000000)throw Error('Prototype round limit reached. Reset the sample.');
   for(const s of state.ships){s.motion.velocity=vector(add(s.motion.velocity,s.motion.impulse),'Resulting velocity');s.motion.position=vector(add(s.motion.position,s.motion.velocity),'Resulting position');s.motion.impulse={q:0,r:0};}
   state.round++;break;

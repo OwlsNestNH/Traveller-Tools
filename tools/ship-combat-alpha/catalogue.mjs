@@ -1,6 +1,7 @@
 // Minimum setup facts verified from the user-supplied PDFs. Printed pages, not PDF offsets.
 // No rule text, deck plans, weapon tables or costs are reproduced.
 const rows=[
+ {"id":"highguard-158","name":"Express Boat","tons":100,"thrust":0,"hull":40,"armour":null,"source":{"book":"High Guard Update 2022","page":158},"notes":"No manoeuvre drive is installed in this source design. Zero thrust permits coasting only; the jump drive is not a movement budget. Armour not listed."},
  {
   "id": "core-190",
   "name": "Scout/Courier",

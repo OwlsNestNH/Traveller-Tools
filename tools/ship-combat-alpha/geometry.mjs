@@ -14,6 +14,7 @@ export function visibleGrid(camera,width=1200,height=760){
  const cells=[];for(let q=q0;q<=q1;q++)for(let r=r0;r<=r1;r++)cells.push({q,r});return {cells,limited:false};
 }
 export function fitCamera(points,width=1200,height=760){
+ if(!points.length)return {zoom:1,x:0,y:0};
  const pixels=points.map(toWorld),xs=pixels.map(p=>p.x),ys=pixels.map(p=>p.y),left=Math.min(...xs),right=Math.max(...xs),top=Math.min(...ys),bottom=Math.max(...ys);
  const zoom=Math.min(2,Math.max(.000001,Math.min((width-200)/Math.max(260,right-left),(height-200)/Math.max(260,bottom-top))));
  return {zoom,x:-(left+right)/2*zoom,y:-(top+bottom)/2*zoom};

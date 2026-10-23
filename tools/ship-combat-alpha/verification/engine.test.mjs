@@ -62,7 +62,7 @@ test('a round that would exceed coordinate limits leaves every ship unchanged',(
 test('JSON command replay is deterministic and normalized state has no crew/private extras',()=>{
  const initial=createState(),commands=[{type:'plot',shipId:'merchant',target:{q:-2,r:2}},{type:'advance-round'},{type:'coast',shipId:'fighter'},{type:'advance-round'}],run=s=>commands.reduce((next,c)=>applyCommand(next,c),s);
  assert.deepEqual(run(initial),run(JSON.parse(JSON.stringify(initial))));const hostile=structuredClone(initial);hostile.privateCampaign='DO NOT KEEP';hostile.ships[0].crew={privateNotes:'DO NOT KEEP'};assert.ok(!JSON.stringify(applyCommand(hostile,{type:'coast',shipId:'merchant'})).includes('DO NOT KEEP'));
- assert.throws(()=>createState({ships:[vessel('same'),vessel('same')]}),/unique/);assert.throws(()=>createState({ships:new Array(2)}),/Ship ID/);assert.throws(()=>createState({ships:Array.from({length:11},(_,i)=>vessel('s'+i))}),/1 to 10/);
+ assert.throws(()=>createState({ships:[vessel('same'),vessel('same')]}),/unique/);assert.throws(()=>createState({ships:new Array(2)}),/Ship ID/);assert.throws(()=>createState({ships:Array.from({length:11},(_,i)=>vessel('s'+i))}),/0 to 10/);
 });
 test('hex projection round-trips negative, near and very distant coordinates',()=>{
  for(const q of [-1000000,-17,-1,0,1,18,1000000])for(const r of [-1000000,-19,-1,0,1,23,1000000])assert.deepEqual(fromWorld(toWorld({q,r})),{q,r});
@@ -81,7 +81,7 @@ import {PRESETS,preset} from '../catalogue.mjs';
 import {crewContribution,MAX_SHIPS,ROLES} from '../setup.mjs';
 const addPreset=(s,id='core-194',name='Added trader')=>applyCommand(s,{type:'add-ship',presetId:id,name,position:{q:2,r:1},velocity:{q:0,r:0}});
 test('catalogue keeps <=400-ton source variants and printed citations without inferred armour',()=>{
- assert.equal(PRESETS.length,54);assert.equal(new Set(PRESETS.map(p=>p.id)).size,54);
+ assert.equal(PRESETS.length,55);assert.equal(new Set(PRESETS.map(p=>p.id)).size,55);
  for(const p of PRESETS){assert.ok(p.tons>0&&p.tons<=400);assert.ok(p.source.page>0);assert.ok(p.source.book.endsWith('Update 2022'));assert.equal(preset(p.id).thrust,p.thrust);}
  assert.deepEqual(['tons','thrust','hull','armour'].map(k=>preset('core-218')[k]),[10,6,4,2]);
  assert.deepEqual(['tons','thrust','hull','armour'].map(k=>preset('highguard-148')[k]),[50,9,22,15]);
@@ -114,4 +114,15 @@ test('crew modes and optional TOTAL overrides remain independent of templates, m
 test('braking to zero costs velocity-change thrust and applies only on advance; zero thrust coasts',()=>{
  const s=state(vessel('one',3,{q:5,r:2},{q:3,r:0})),plotted=applyCommand(s,{type:'brake',shipId:'one'});assert.deepEqual(plotted.ships[0].motion.velocity,{q:3,r:0});assert.deepEqual(plotted.ships[0].motion.impulse,{q:-3,r:0});const stopped=applyCommand(plotted,{type:'advance-round'});assert.deepEqual(stopped.ships[0].motion.position,{q:5,r:2});assert.deepEqual(stopped.ships[0].motion.velocity,{q:0,r:0});
  const fast=state(vessel('fast',0,{q:1,r:1},{q:1,r:0})),before=JSON.stringify(fast);assert.throws(()=>applyCommand(fast,{type:'brake',shipId:'fast'}),/Stopping needs 1 thrust; 0 available/);assert.equal(JSON.stringify(fast),before);assert.equal(applyCommand(fast,{type:'advance-round'}).ships[0].motion.position.q,2);
+});
+
+test('remove and clear preserve remaining IDs and setup; empty encounter can add ten real ships',()=>{
+ let s=addPreset(createState()),before=structuredClone(s),kept=structuredClone(s.ships.filter(x=>x.id!=='merchant'));
+ s=applyCommand(s,{type:'remove-ship',shipId:'merchant'});assert.deepEqual(s.ships,kept);assert.deepEqual(before.ships[0].id,'merchant');assert.throws(()=>applyCommand(s,{type:'remove-ship',shipId:'missing'}),/existing ship/);
+ const empty=applyCommand(s,{type:'clear-ships'});assert.equal(empty.ships.length,0);assert.equal(empty.round,s.round);assert.throws(()=>applyCommand(empty,{type:'advance-round'}),/Add a ship/);assert.deepEqual(fitCamera([]),{zoom:1,x:0,y:0});
+ s=empty;for(let i=0;i<10;i++)s=addPreset(s);assert.equal(s.ships.length,10);assert.equal(new Set(s.ships.map(x=>x.id)).size,10);assert.throws(()=>addPreset(s),/Encounter full/);assert.equal(createState({ships:[]}).ships.length,0);
+});
+test('Express Boat explicitly has no manoeuvre drive and coasts at zero thrust',()=>{
+ const p=preset('highguard-158');assert.deepEqual([p.tons,p.thrust,p.hull,p.source.page],[100,0,40,158]);assert.match(p.notes,/No manoeuvre drive/);
+ let s=applyCommand(createState({ships:[]}),{type:'add-ship',presetId:p.id,name:'X-boat',position:{q:0,r:0},velocity:{q:2,r:0}});assert.equal(canPlot(s.ships[0],{q:3,r:0}),false);s=applyCommand(s,{type:'advance-round'});assert.deepEqual(s.ships[0].motion.position,{q:2,r:0});assert.deepEqual(s.ships[0].motion.velocity,{q:2,r:0});
 });
