@@ -1,3 +1,5 @@
+import {PRESETS} from './catalogue.mjs';
+import {ROLES,MAX_SHIPS,crewContribution} from './setup.mjs';
 import {createState,applyCommand,getShip,coastTarget,plannedTarget,hexDistance,reachableCount,canPlot} from './engine.mjs';
 import {HEX_SIZE,toWorld,fromWorld,visibleGrid,fitCamera} from './geometry.mjs';
 const $=id=>document.getElementById(id),svg=$('map'),scene=$('scene');
@@ -12,7 +14,7 @@ function populate(){
  const s=selectedShip(),m=s.motion,target=plannedTarget(s),cost=hexDistance(m.impulse);
  $('round').textContent='Round '+(state.round+1);$('elapsed').textContent=(state.round*state.roundMinutes)+' minutes elapsed';svg.dataset.completedRounds=state.round;svg.dataset.revision=state.revision;
  $('ships').innerHTML=state.ships.map((ship,i)=>`<button class="ship-choice" data-select="${ship.id}" aria-pressed="${ship.id===selected}"><span class="ship-dot" style="background:${colors[i%colors.length]}" aria-hidden="true"></span><span><strong>${esc(ship.name)}</strong><small>Thrust ${ship.capabilities.thrust} · velocity ${esc(pair(ship.motion.velocity))}</small></span></button>`).join('');
- $('selected-name').textContent=s.name;
+ $('selected-name').textContent=s.name;populateSetup(s);
  const facts=[['Position Q, R',pair(m.position)],['Velocity Q, R',pair(m.velocity)+' hex / round'],['Coast target',pair(coastTarget(s))],['Planned Δv',pair(m.impulse)],['Next position',pair(target)]];
  $('motion-facts').innerHTML=facts.map(([key,value])=>`<dt>${esc(key)}</dt><dd>${esc(value)}</dd>`).join('');
  $('budget').textContent=`${cost} / ${s.capabilities.thrust} thrust plotted · ${reachableCount(s.capabilities.thrust).toLocaleString()} hexes in the thrust region. Prototype coordinate limits also apply.`;
@@ -62,3 +64,35 @@ svg.addEventListener('pointerup',event=>{if(!drag||event.pointerId!==drag.pointe
 svg.addEventListener('pointercancel',()=>{drag=null;svg.classList.remove('dragging');});
 svg.addEventListener('keydown',event=>{const ship=event.target.closest('[data-ship]');if(ship&&['Enter',' '].includes(event.key)){event.preventDefault();select(ship.dataset.ship);scene.querySelector(`[data-ship="${selected}"]`)?.focus({preventScroll:true});return;}const delta={ArrowLeft:[40,0],ArrowRight:[-40,0],ArrowUp:[0,40],ArrowDown:[0,-40]}[event.key];if(delta){event.preventDefault();camera.x+=delta[0];camera.y+=delta[1];scheduleMap();}});
 let lastMapSize='';new ResizeObserver(()=>{const size=svg.clientWidth+':'+svg.clientHeight;if(size!==lastMapSize){lastMapSize=size;scheduleMap();}}).observe(svg);render();
+
+function sourceLabel(t){return t?.source?`${t.source.book}, printed p${t.source.endPage?'p':''}. ${t.source.page}${t.source.endPage?'–'+t.source.endPage:''}`:'User-entered / synthetic; no book citation';}
+function designLabel(t){return t?`${t.name} · ${t.tons} tons · design thrust ${t.thrust} · hull ${t.hull??'unknown'} · armour ${t.armour??'not listed / unknown'}. ${sourceLabel(t)}. ${t.notes??''}`:'Synthetic sample; design statistics unknown. No book citation.';}
+function populateSetup(s){
+ $('ship-count').textContent=`${state.ships.length} / ${MAX_SHIPS} ships on map`;
+ $('design-facts').textContent=designLabel(s.template)+(s.template&&s.capabilities.thrust!==s.template.thrust?' Current thrust has been manually adjusted.':'');
+ $('crew-mode').value=s.crew.mode;$('crew-rating').value=s.crew.rating;
+ $('crew-fields').innerHTML=ROLES.map(role=>{const d=s.crew.details[role],base=crewContribution(s.crew,role),situational=s.situational[role];return `<fieldset class="crew-role"><legend>${role}</legend><label data-quick>Total override (blank uses rating)<input id="crew-${role}-override" type="number" min="-10" max="20" step="1" value="${s.crew.overrides[role]??''}"></label><div data-detailed><label>Name / station holder (blank = unassigned)<input id="crew-${role}-name" maxlength="60" value="${esc(d?.name??'')}"></label><label>Skill / specialty<input id="crew-${role}-skillname" maxlength="60" value="${esc(d?.skillName??role)}"></label><div class="coordinate-fields"><label>Skill level<input id="crew-${role}-skill" required type="number" min="0" max="10" step="1" value="${d?.skill??0}"></label><label>Characteristic DM<input id="crew-${role}-dm" required type="number" min="-5" max="5" step="1" value="${d?.characteristicDM??0}"></label></div></div><label>Separate situational DM<input id="crew-${role}-situational" required type="number" min="-20" max="20" step="1" value="${situational}"></label><p data-contribution="${role}">Applied crew contribution: ${base===null?'unassigned':(base>=0?'+':'')+base}; situational ${situational>=0?'+':''}${situational} (separate).</p></fieldset>`;}).join('');
+ $('current-hull').value=s.condition.hull??'';$('current-hull').max=s.template?.hull??1000000;
+ showCrewMode();
+}
+function showCrewMode(){const quick=$('crew-mode').value==='quick';$('rating-label').hidden=!quick;document.querySelectorAll('[data-quick]').forEach(e=>{e.hidden=!quick;});document.querySelectorAll('[data-detailed]').forEach(e=>{e.hidden=quick;});}
+function showDesign(){const id=$('design-select').value,custom=id==='custom',p=PRESETS.find(p=>p.id===id);$('custom-fields').hidden=!custom;$('custom-fields').querySelectorAll('input').forEach(e=>e.disabled=!custom);$('preset-source').textContent=custom?'Custom setup; no sourced facts inferred. Blank hull or armour stays unknown.':designLabel(p);}
+$('design-select').insertAdjacentHTML('beforeend',['Core Rulebook Update 2022','High Guard Update 2022'].map(book=>`<optgroup label="${book}">${PRESETS.filter(p=>p.source.book===book).map(p=>`<option value="${p.id}">${esc(p.name)} — ${p.tons}t — p. ${p.source.page}</option>`).join('')}</optgroup>`).join(''));
+$('design-select').addEventListener('change',showDesign);showDesign();
+const optionalNumber=id=>$(id).value.trim()===''?null:Number($(id).value);
+$('add-form').addEventListener('submit',event=>{
+ event.preventDefault();if(!event.currentTarget.reportValidity())return;
+ const custom=$('design-select').value==='custom',template=custom?{name:$('design-name').value,tons:number('design-tons'),thrust:number('design-thrust'),hull:optionalNumber('design-hull'),armour:optionalNumber('design-armour')}:undefined;
+ if(dispatch({type:'add-ship',presetId:custom?undefined:$('design-select').value,template,name:$('instance-name').value,position:{q:number('add-q'),r:number('add-r')},velocity:{q:number('add-vq'),r:number('add-vr')}},'Independent ship added. Crew and condition belong only to this instance.')){
+  selected=state.ships.at(-1).id;camera=fitCamera(state.ships.map(s=>s.motion.position),1200,mapHeight());render();
+ }
+});
+$('crew-mode').addEventListener('change',showCrewMode);
+$('crew-form').addEventListener('submit',event=>{
+ event.preventDefault();if(!event.currentTarget.reportValidity())return;
+ const overrides={},details={},situational={};
+ for(const role of ROLES){overrides[role]=optionalNumber(`crew-${role}-override`);const label=$(`crew-${role}-name`).value.trim();details[role]=label?{name:label,skillName:$(`crew-${role}-skillname`).value,skill:number(`crew-${role}-skill`),characteristicDM:number(`crew-${role}-dm`)}:null;situational[role]=number(`crew-${role}-situational`);}
+ dispatch({type:'set-crew',shipId:selected,crew:{mode:$('crew-mode').value,rating:$('crew-rating').value,overrides,details},situational},'Crew setup applied to this ship only. No movement or checks were resolved.');
+});
+$('condition-form').addEventListener('submit',event=>{event.preventDefault();if(event.currentTarget.reportValidity())dispatch({type:'set-condition',shipId:selected,condition:{hull:optionalNumber('current-hull')}},'Condition recorded for this ship only.');});
+$('brake').addEventListener('click',()=>dispatch({type:'brake',shipId:selected},'Stop plotted within this ship’s thrust budget. Advance round to apply it.'));

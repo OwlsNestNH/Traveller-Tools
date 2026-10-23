@@ -2,3 +2,5 @@
 .ship-choice span:last-child{min-width:0}.ship-choice strong,.panel h2{overflow-wrap:anywhere}.panel dl{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}dt,dd{overflow-wrap:anywhere}
 .map-tools label{flex-direction:row}
 #scene .range,#scene .velocity,#scene .reach-boundary,#scene .coast,#scene .plan-line,#scene .planned,#scene text{pointer-events:none}#scene .ship-node text{pointer-events:auto}
+
+select{font:inherit;width:100%;max-width:100%;background:#0b1724;color:#e6eff5;border:1px solid #49677b;border-radius:5px;padding:9px;min-height:42px}select:focus-visible{outline:3px solid #6ee5db;outline-offset:3px}.crew-role{border:1px solid var(--line);border-radius:6px;margin:12px 0;padding:10px;min-width:0}.crew-role legend{text-transform:capitalize}.crew-role p{font-size:.85rem;margin:8px 0}.panel form{margin-top:12px}.panel[hidden], [hidden]{display:none!important}.crew-role input{width:100%}#preset-source,#design-facts{overflow-wrap:anywhere}button:disabled{opacity:.6;cursor:default}
