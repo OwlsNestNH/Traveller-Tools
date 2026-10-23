@@ -143,6 +143,15 @@ test('Euclidean ranges use 648 km centres and explicit continuous/outward band b
  const diagonal=rangeInfo({q:1,r:1},o);assert.equal(diagonal.spaces,Math.sqrt(3));assert.equal(diagonal.outwardSpaces,2);assert.equal(diagonal.band,'Medium');assert.equal(rangeInfo({q:45,r:45},o).band,'Distant');assert.equal(rangeInfo({q:77+1e-10,r:0},o).band,'Distant');assert.deepEqual(rangeInfo({q:-4,r:-3},o),rangeInfo(o,{q:-4,r:-3}));
 });
 
+test('initiative batch is atomic and malformed guided states cannot bypass order or profile guards',()=>{
+ let s=state(vessel('a'),vessel('b')),before=JSON.stringify(s);for(const entries of [[],[{shipId:'a',initiative:2,tie:0},{shipId:'a',initiative:4,tie:0}],[{shipId:'a',initiative:2,tie:0},{shipId:'unknown',initiative:4,tie:0}],[{shipId:'a',initiative:2,tie:0},{shipId:'b',initiative:4.5,tie:0}]]){assert.throws(()=>applyCommand(s,{type:'record-initiatives',entries}));assert.equal(JSON.stringify(s),before);}
+ s=applyCommand(s,{type:'record-initiatives',entries:[{shipId:'a',initiative:0,tie:0},{shipId:'b',initiative:0,tie:0}]});assert.deepEqual(accelerationOrder(s),['a','b']);s=applyCommand(s,{type:'begin-acceleration'});for(const acceleration of [{order:['b','a'],declared:[]},{order:['a','b'],declared:['b']},{order:['a','b'],declared:['a','b','a']}])assert.throws(()=>normalizeState({...s,acceleration}));assert.throws(()=>normalizeState({...s,roundMinutes:12}),/six-minute/);assert.throws(()=>applyCommand(s,{type:'record-initiatives',entries:[]}),/Finish or cancel/);
+});
+test('braking retains zero-thrust intent until an explicit thrust recovery and rejects overflow atomically',()=>{
+ let s=applyCommand(state(vessel('one',0,{q:0,r:0},{q:5,r:-2})),{type:'brake',shipId:'one'});s=applyCommand(s,{type:'advance-round'});assert.deepEqual(s.ships[0].motion.velocity,{q:5,r:-2});s=applyCommand(s,{type:'edit-ship',shipId:'one',name:'one',thrust:3,position:s.ships[0].motion.position,velocity:s.ships[0].motion.velocity});assert.equal(s.ships[0].flight.braking,true);s=applyCommand(s,{type:'advance-round'});assert.equal(hexDistance(s.ships[0].motion.velocity),2);
+ const edge=applyCommand(state(vessel('edge',1,{q:COORDINATE_LIMIT,r:0},{q:3,r:0})),{type:'brake',shipId:'edge'}),before=JSON.stringify(edge);assert.throws(()=>applyCommand(edge,{type:'advance-round'}),/Resulting position/);assert.equal(JSON.stringify(edge),before);
+});
+
 test('remove and clear preserve remaining IDs and setup; empty encounter can add ten real ships',()=>{
  let s=addPreset(createState()),before=structuredClone(s),kept=structuredClone(s.ships.filter(x=>x.id!=='merchant'));
  s=applyCommand(s,{type:'remove-ship',shipId:'merchant'});assert.deepEqual(s.ships,kept);assert.deepEqual(before.ships[0].id,'merchant');assert.throws(()=>applyCommand(s,{type:'remove-ship',shipId:'missing'}),/existing ship/);

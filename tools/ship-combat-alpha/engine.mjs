@@ -28,7 +28,7 @@ function checked(state){
  if(state?.version!==API_VERSION)throw Error('Unsupported movement state version.');
  if(!Array.isArray(state.ships)||state.ships.length>MAX_SHIPS)throw Error(`The alpha supports 0 to ${MAX_SHIPS} ships (usability limit).`);
  const ships=Array.from(state.ships,ship);if(new Set(ships.map(s=>s.id)).size!==ships.length)throw Error('Ship IDs must be unique.');
- let acceleration=null;if(state.acceleration!=null){const order=accelerationOrder({ships}),v=state.acceleration;if(!Array.isArray(v.order)||JSON.stringify(v.order)!==JSON.stringify(order)||!Array.isArray(v.declared)||JSON.stringify(v.declared)!==JSON.stringify(order.slice(0,v.declared.length))||v.declared.length>order.length)throw Error('Invalid acceleration declaration sequence.');acceleration={order,declared:[...v.declared]};}
+ let acceleration=null;if(state.acceleration!=null){if(state.roundMinutes!==ROUND_MINUTES)throw Error('Companion declarations require six-minute rounds.');const order=accelerationOrder({ships}),v=state.acceleration;if(!Array.isArray(v.order)||JSON.stringify(v.order)!==JSON.stringify(order)||!Array.isArray(v.declared)||JSON.stringify(v.declared)!==JSON.stringify(order.slice(0,v.declared.length))||v.declared.length>order.length)throw Error('Invalid acceleration declaration sequence.');acceleration={order,declared:[...v.declared]};}
  return {version:API_VERSION,acceleration,revision:integer(state.revision,'Revision',0,1000000),round:integer(state.round,'Completed rounds',0,1000000),roundMinutes:integer(state.roundMinutes,'Round duration',1,60),ships};
 }
 export function sampleShips(){return [
