@@ -1,5 +1,5 @@
 import {normalizeAppearance} from './appearance.mjs';
-import {MAX_SHIPS,normalizeTemplate,normalizeCrew,normalizeCondition,normalizeSituational} from './setup.mjs';
+import {MAX_SHIPS,normalizeTemplate,normalizeCrew,normalizeCondition,normalizeSituational,effectiveDesign,normalizeOverrides} from './setup.mjs';
 import {preset} from './catalogue.mjs';
 // Pure prototype engine: no DOM, storage, network, clocks, or random numbers.
 export const API_VERSION=1,MAX_THRUST=10000,COORDINATE_LIMIT=1000000;
@@ -13,8 +13,8 @@ function ship(value){
  if(typeof value?.id!=='string'||!/^[-a-z0-9]{1,32}$/.test(value.id))throw Error('Ship ID must use 1 to 32 lowercase letters, digits or hyphens.');
  const thrust=integer(value.capabilities?.thrust,'Thrust',0,MAX_THRUST),impulse=vector(value.motion?.impulse??{q:0,r:0},'Planned thrust');
  if(hexDistance(impulse)>thrust)throw Error('Planned velocity change exceeds this ship\'s thrust budget.');
- const template=normalizeTemplate(value.template);
- return {id:value.id,name:name(value.name),template,appearance:normalizeAppearance(value.appearance),crew:normalizeCrew(value.crew),condition:normalizeCondition(value.condition,template),situational:normalizeSituational(value.situational),capabilities:{thrust},motion:{position:vector(value.motion?.position,'Position'),velocity:vector(value.motion?.velocity,'Velocity'),impulse}};
+ const template=normalizeTemplate(value.template),designOverrides=normalizeOverrides(value.designOverrides,template),effective=effectiveDesign({template,designOverrides});
+ return {id:value.id,name:name(value.name),template,designOverrides,appearance:normalizeAppearance(value.appearance),crew:normalizeCrew(value.crew),condition:normalizeCondition(value.condition,effective),situational:normalizeSituational(value.situational),capabilities:{thrust},motion:{position:vector(value.motion?.position,'Position'),velocity:vector(value.motion?.velocity,'Velocity'),impulse}};
 }
 function checked(state){
  if(state?.version!==API_VERSION)throw Error('Unsupported movement state version.');
@@ -45,19 +45,19 @@ export function applyCommand(input,command){
   s.motion.impulse=subtract(target,coastTarget(s));break;
  }
  case 'replace-ships':state.ships=command.ships;break;
- case 'set-design':{const s=getShip(state,command.shipId);s.template=normalizeTemplate(command.template);if(!s.template)throw Error('Enter a design record.');if(command.useDesignThrust===true){s.capabilities.thrust=s.template.thrust;s.motion.impulse={q:0,r:0};}break;}
+ case 'set-design':{const s=getShip(state,command.shipId),next=normalizeTemplate(command.template);if(!next)throw Error('Enter a design record.');if(s.template)s.designOverrides=normalizeOverrides(next,s.template);else{s.template=next;s.designOverrides=null;}if(command.useDesignThrust===true){s.capabilities.thrust=effectiveDesign(s).thrust;s.motion.impulse={q:0,r:0};}break;}
  case 'set-appearance':{getShip(state,command.shipId).appearance=normalizeAppearance(command.appearance);break;}
  case 'remove-ship':{getShip(state,command.shipId);state.ships=state.ships.filter(s=>s.id!==command.shipId);break;}
  case 'clear-ships':state.ships=[];break;
  case 'add-ship':{
   if(state.ships.length>=MAX_SHIPS)throw Error(`Encounter full: the alpha limit is ${MAX_SHIPS} ships. No ship was added or replaced.`);
-  const template=normalizeTemplate(command.presetId?preset(command.presetId):command.template);
+  const template=normalizeTemplate(command.presetId?preset(command.presetId):command.template),designOverrides=normalizeOverrides(command.designOverrides,template),effective=effectiveDesign({template,designOverrides});
   if(!template)throw Error('Choose a preset or enter a custom design.');
   let n=1;while(state.ships.some(s=>s.id==='ship-'+n))n++;
-  state.ships.push(ship({id:'ship-'+n,name:command.name,template,appearance:command.appearance,crew:{},condition:{hull:template.hull},capabilities:{thrust:template.thrust},motion:{position:command.position,velocity:command.velocity}}));break;
+  state.ships.push(ship({id:'ship-'+n,name:command.name,template,designOverrides,appearance:command.appearance,crew:{},condition:{hull:effective.hull,...(command.presetId?preset(command.presetId).initialCondition:undefined)},capabilities:{thrust:effective.thrust},motion:{position:command.position,velocity:command.velocity}}));break;
  }
  case 'set-crew':{const s=getShip(state,command.shipId);s.crew=normalizeCrew(command.crew);s.situational=normalizeSituational(command.situational);break;}
- case 'set-condition':{const s=getShip(state,command.shipId);s.condition=normalizeCondition(command.condition,s.template);break;}
+ case 'set-condition':{const s=getShip(state,command.shipId);s.condition=normalizeCondition(command.condition,effectiveDesign(s));break;}
  case 'brake':{
   const s=getShip(state,command.shipId),speed=hexDistance(s.motion.velocity);
   if(speed>s.capabilities.thrust)throw Error(`Stopping needs ${speed} thrust; ${s.capabilities.thrust} available. Plot a smaller velocity change over multiple rounds.`);

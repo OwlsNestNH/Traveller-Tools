@@ -32,3 +32,13 @@ export function normalizeCondition(v,template){
  const hull=optional(v?.hull,'Current hull',0,template?.hull??1000000);
  return {hull,...normalizeManualCondition(v,template?.record)};
 }
+
+export function effectiveDesign(ship){const base=ship.template;if(!base)return null;const o=ship.designOverrides??{};return normalizeTemplate({...base,...o,record:{...base.record,...o.record},source:base.source,notes:base.notes});}
+export function normalizeOverrides(value,base){
+ if(value==null)return null;if(typeof value!=='object'||Array.isArray(value))throw Error('Design overrides must be a record.');if(!base)throw Error('Define a base design before applying overrides.');
+ const merged=normalizeTemplate({...base,...value,record:{...base.record,...value.record},source:base.source,notes:base.notes}),out={};
+ for(const key of ['name','tons','thrust','hull','armour'])if(JSON.stringify(merged[key])!==JSON.stringify(base[key]))out[key]=merged[key];
+ const record={};for(const key of Object.keys(base.record))if(JSON.stringify(merged.record[key])!==JSON.stringify(base.record[key]))record[key]=merged.record[key];if(Object.keys(record).length)out.record=record;
+ return Object.keys(out).length?out:null;
+}
+export function overrideFields(ship){return Object.entries(ship.designOverrides??{}).flatMap(([key,v])=>key==='record'?Object.keys(v).map(k=>'record.'+k):[key]);}
