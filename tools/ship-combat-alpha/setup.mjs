@@ -29,8 +29,9 @@ export function crewContribution(crew,role){
  const d=c.details[role];return d?d.skill+d.characteristicDM:null;
 }
 export function normalizeCondition(v,template){
- const hull=optional(v?.hull,'Current hull',0,template?.hull??1000000);
- return {hull,...normalizeManualCondition(v,template?.record)};
+ const manual=normalizeManualCondition(v,template?.record,template?.hull);
+ const hull=optional(v?.hull,'Current hull',0,manual.usableHull??template?.hull??1000000);
+ return {hull,...manual};
 }
 
 export function effectiveDesign(ship){const base=ship.template;if(!base)return null;const o=ship.designOverrides??{};return normalizeTemplate({...base,...o,record:{...base.record,...o.record},source:base.source,notes:base.notes});}
