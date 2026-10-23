@@ -1,7 +1,7 @@
 /* Shared page-open counters. Only canonical published tool pages send a hit. */
 (() => {
   'use strict';
-  const tools = ['nav-calculator', 'traveller_ship_logger_v2', 'traveller_tools_buttons', 'trade-route-calculator', 'vehicle-builder'];
+  const tools = ['nav-calculator', 'traveller_ship_logger_v2', 'traveller_tools_buttons', 'trade-route-calculator', 'vehicle-builder', 'ship-combat-alpha'];
   const prefix = '/Traveller-Tools/tools/';
   if (location.hostname !== 'owlsnestnh.github.io' || !location.pathname.startsWith(prefix)) return;
   const rest = location.pathname.slice(prefix.length);
