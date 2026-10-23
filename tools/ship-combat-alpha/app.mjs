@@ -1,3 +1,5 @@
+import {PRESETS} from './catalogue.mjs';
+import {ROLES,MAX_SHIPS,crewContribution} from './setup.mjs';
 import {createState,applyCommand,getShip,coastTarget,plannedTarget,hexDistance,reachableCount,canPlot} from './engine.mjs';
 import {HEX_SIZE,toWorld,fromWorld,visibleGrid,fitCamera} from './geometry.mjs';
 const $=id=>document.getElementById(id),svg=$('map'),scene=$('scene');
@@ -9,10 +11,15 @@ const selectedShip=()=>getShip(state,selected),pair=p=>`${p.q}, ${p.r}`,number=i
 function feedback(text='',error=''){$('message').textContent=text;$('error').textContent=error;}
 function dispatch(command,message){try{state=applyCommand(state,{...command,expectedRevision:state.revision});feedback(message);render();return true;}catch(error){feedback('',error.message);return false;}}
 function populate(){
- const s=selectedShip(),m=s.motion,target=plannedTarget(s),cost=hexDistance(m.impulse);
+ const s=state.ships.find(s=>s.id===selected)??state.ships[0];selected=s?.id??null;
  $('round').textContent='Round '+(state.round+1);$('elapsed').textContent=(state.round*state.roundMinutes)+' minutes elapsed';svg.dataset.completedRounds=state.round;svg.dataset.revision=state.revision;
  $('ships').innerHTML=state.ships.map((ship,i)=>`<button class="ship-choice" data-select="${ship.id}" aria-pressed="${ship.id===selected}"><span class="ship-dot" style="background:${colors[i%colors.length]}" aria-hidden="true"></span><span><strong>${esc(ship.name)}</strong><small>Thrust ${ship.capabilities.thrust} · velocity ${esc(pair(ship.motion.velocity))}</small></span></button>`).join('');
- $('selected-name').textContent=s.name;
+ $('ship-count').textContent=`${state.ships.length} / ${MAX_SHIPS} ships on map`;
+ $('selected-controls').hidden=!s;$('empty-encounter').hidden=!!s;
+ for(const id of ['remove-ship','clear-ships','advance','fit'])$(id).disabled=!s;
+ if(!s)return;
+ const m=s.motion,target=plannedTarget(s),cost=hexDistance(m.impulse);
+ $('selected-name').textContent=s.name;populateSetup(s);
  const facts=[['Position Q, R',pair(m.position)],['Velocity Q, R',pair(m.velocity)+' hex / round'],['Coast target',pair(coastTarget(s))],['Planned Δv',pair(m.impulse)],['Next position',pair(target)]];
  $('motion-facts').innerHTML=facts.map(([key,value])=>`<dt>${esc(key)}</dt><dd>${esc(value)}</dd>`).join('');
  $('budget').textContent=`${cost} / ${s.capabilities.thrust} thrust plotted · ${reachableCount(s.capabilities.thrust).toLocaleString()} hexes in the thrust region. Prototype coordinate limits also apply.`;
@@ -25,7 +32,7 @@ function populate(){
 function select(id){selected=id;feedback('Selected '+selectedShip().name+'. Plot a target or let it coast.');render();}
 function hexPolygon(center,size=HEX_SIZE){return Array.from({length:6},(_,i)=>{const angle=(60*i-30)*Math.PI/180;return `${center.x+size*Math.cos(angle)},${center.y+size*Math.sin(angle)}`;}).join(' ');}
 function drawMap(){
- frame=0;svg.setAttribute('viewBox','-600 '+(-mapHeight()/2)+' 1200 '+mapHeight());const s=selectedShip(),m=s.motion,coast=coastTarget(s),p=toWorld(m.position),c=toWorld(coast),budget=s.capabilities.thrust;
+ frame=0;if(!state.ships.length){scene.removeAttribute('transform');scene.innerHTML='<text x="0" y="0" text-anchor="middle" fill="#a6b7c7">Add a ship to begin</text>';$('map-detail').textContent='Empty encounter. No ships have been replaced.';return;}svg.setAttribute('viewBox','-600 '+(-mapHeight()/2)+' 1200 '+mapHeight());const s=selectedShip(),m=s.motion,coast=coastTarget(s),p=toWorld(m.position),c=toWorld(coast),budget=s.capabilities.thrust;
  const unit=1200/Math.max(240,svg.clientWidth),screen=unit/camera.zoom,grid=visibleGrid(camera,1200,mapHeight()),showGrid=$('grid-toggle').checked&&!grid.limited;
  const thin=screen,focusedShip=document.activeElement?.closest?.('[data-ship]')?.dataset.ship;
  let html='';
@@ -45,7 +52,7 @@ function render(){populate();drawMap();}
 function rootPoint(event){return new DOMPoint(event.clientX,event.clientY).matrixTransform(svg.getScreenCTM().inverse());}
 function worldPoint(event){const point=rootPoint(event);return {x:(point.x-camera.x)/camera.zoom,y:(point.y-camera.y)/camera.zoom};}
 function zoom(factor,anchor={x:0,y:0}){const before={x:(anchor.x-camera.x)/camera.zoom,y:(anchor.y-camera.y)/camera.zoom},next=Math.min(8,Math.max(.000001,camera.zoom*factor));camera={zoom:next,x:anchor.x-before.x*next,y:anchor.y-before.y*next};scheduleMap();}
-function plot(target){dispatch({type:'plot',shipId:selected,target},'Target plotted. Advance round to apply every ship’s movement.');}
+function plot(target){if(!selected){feedback('Add a ship before plotting.');return;}dispatch({type:'plot',shipId:selected,target},'Target plotted. Advance round to apply every ship’s movement.');}
 $('ships').addEventListener('click',event=>{const button=event.target.closest('[data-select]');if(button){select(button.dataset.select);$("ships").querySelector(`[data-select="${selected}"]`)?.focus({preventScroll:true});}});
 $('plot-form').addEventListener('submit',event=>{event.preventDefault();if(event.currentTarget.reportValidity())plot({q:number('target-q'),r:number('target-r')});});
 $('ship-form').addEventListener('submit',event=>{event.preventDefault();if(!event.currentTarget.reportValidity())return;dispatch({type:'edit-ship',shipId:selected,name:$('ship-name').value,thrust:number('thrust'),position:{q:number('position-q'),r:number('position-r')},velocity:{q:number('velocity-q'),r:number('velocity-r')}},'Ship values applied; its plot was cleared. Camera position is unchanged.');});
@@ -62,3 +69,38 @@ svg.addEventListener('pointerup',event=>{if(!drag||event.pointerId!==drag.pointe
 svg.addEventListener('pointercancel',()=>{drag=null;svg.classList.remove('dragging');});
 svg.addEventListener('keydown',event=>{const ship=event.target.closest('[data-ship]');if(ship&&['Enter',' '].includes(event.key)){event.preventDefault();select(ship.dataset.ship);scene.querySelector(`[data-ship="${selected}"]`)?.focus({preventScroll:true});return;}const delta={ArrowLeft:[40,0],ArrowRight:[-40,0],ArrowUp:[0,40],ArrowDown:[0,-40]}[event.key];if(delta){event.preventDefault();camera.x+=delta[0];camera.y+=delta[1];scheduleMap();}});
 let lastMapSize='';new ResizeObserver(()=>{const size=svg.clientWidth+':'+svg.clientHeight;if(size!==lastMapSize){lastMapSize=size;scheduleMap();}}).observe(svg);render();
+
+function sourceLabel(t){return t?.source?`${t.source.book}, printed p${t.source.endPage?'p':''}. ${t.source.page}${t.source.endPage?'–'+t.source.endPage:''}`:'User-entered / synthetic; no book citation';}
+function designLabel(t){return t?`${t.name} · ${t.tons} tons · design thrust ${t.thrust} · hull ${t.hull??'unknown'} · armour ${t.armour??'not listed / unknown'}. ${sourceLabel(t)}. ${t.notes??''}`:'Synthetic sample; design statistics unknown. No book citation.';}
+function populateSetup(s){
+ $('ship-count').textContent=`${state.ships.length} / ${MAX_SHIPS} ships on map`;
+ $('design-facts').textContent=designLabel(s.template)+(s.template&&s.capabilities.thrust!==s.template.thrust?' Current thrust has been manually adjusted.':'');
+ $('crew-mode').value=s.crew.mode;$('crew-rating').value=s.crew.rating;
+ $('crew-fields').innerHTML=ROLES.map(role=>{const d=s.crew.details[role],base=crewContribution(s.crew,role),situational=s.situational[role];return `<fieldset class="crew-role"><legend>${role}</legend><label data-quick>Total override (blank uses rating)<input id="crew-${role}-override" type="number" min="-10" max="20" step="1" value="${s.crew.overrides[role]??''}"></label><div data-detailed><label>Name / station holder (blank = unassigned)<input id="crew-${role}-name" maxlength="60" value="${esc(d?.name??'')}"></label><label>Skill / specialty<input id="crew-${role}-skillname" maxlength="60" value="${esc(d?.skillName??role)}"></label><div class="coordinate-fields"><label>Skill level<input id="crew-${role}-skill" required type="number" min="0" max="10" step="1" value="${d?.skill??0}"></label><label>Characteristic DM<input id="crew-${role}-dm" required type="number" min="-5" max="5" step="1" value="${d?.characteristicDM??0}"></label></div></div><label>Separate situational DM<input id="crew-${role}-situational" required type="number" min="-20" max="20" step="1" value="${situational}"></label><p data-contribution="${role}">Applied crew contribution: ${base===null?'unassigned':(base>=0?'+':'')+base}; situational ${situational>=0?'+':''}${situational} (separate).</p></fieldset>`;}).join('');
+ $('current-hull').value=s.condition.hull??'';$('current-hull').max=s.template?.hull??1000000;
+ showCrewMode();
+}
+function showCrewMode(){const quick=$('crew-mode').value==='quick';$('rating-label').hidden=!quick;$('crew-rating').disabled=!quick;document.querySelectorAll('[data-quick]').forEach(e=>{e.hidden=!quick;e.querySelectorAll('input').forEach(i=>i.disabled=!quick);});document.querySelectorAll('[data-detailed]').forEach(e=>{e.hidden=quick;e.querySelectorAll('input').forEach(i=>i.disabled=quick);});}
+function showDesign(){const id=$('design-select').value,custom=id==='custom',p=PRESETS.find(p=>p.id===id);$('custom-fields').hidden=!custom;$('custom-fields').querySelectorAll('input').forEach(e=>e.disabled=!custom);$('preset-source').textContent=custom?'Custom setup; no sourced facts inferred. Blank hull or armour stays unknown.':designLabel(p);}
+$('design-select').insertAdjacentHTML('beforeend',['Core Rulebook Update 2022','High Guard Update 2022'].map(book=>`<optgroup label="${book}">${PRESETS.filter(p=>p.source.book===book).map(p=>`<option value="${p.id}">${esc(p.name)} — ${p.tons}t — p. ${p.source.page}</option>`).join('')}</optgroup>`).join(''));
+$('design-select').addEventListener('change',showDesign);showDesign();
+const optionalNumber=id=>$(id).value.trim()===''?null:Number($(id).value);
+$('add-form').addEventListener('submit',event=>{
+ event.preventDefault();if(!event.currentTarget.reportValidity())return;
+ const custom=$('design-select').value==='custom',template=custom?{name:$('design-name').value,tons:number('design-tons'),thrust:number('design-thrust'),hull:optionalNumber('design-hull'),armour:optionalNumber('design-armour')}:undefined;
+ if(dispatch({type:'add-ship',presetId:custom?undefined:$('design-select').value,template,name:$('instance-name').value,position:{q:number('add-q'),r:number('add-r')},velocity:{q:number('add-vq'),r:number('add-vr')}},'Independent ship added. Crew and condition belong only to this instance.')){
+  selected=state.ships.at(-1).id;camera=fitCamera(state.ships.map(s=>s.motion.position),1200,mapHeight());render();
+ }
+});
+$('crew-mode').addEventListener('change',showCrewMode);
+$('crew-form').addEventListener('submit',event=>{
+ event.preventDefault();if(!event.currentTarget.reportValidity())return;
+ const current=selectedShip().crew,quick=$('crew-mode').value==='quick',overrides=structuredClone(current.overrides),details=structuredClone(current.details),situational={};
+ for(const role of ROLES){if(quick)overrides[role]=optionalNumber(`crew-${role}-override`);const label=$(`crew-${role}-name`).value.trim();if(!quick)details[role]=label?{name:label,skillName:$(`crew-${role}-skillname`).value,skill:number(`crew-${role}-skill`),characteristicDM:number(`crew-${role}-dm`)}:null;situational[role]=number(`crew-${role}-situational`);}
+ dispatch({type:'set-crew',shipId:selected,crew:{mode:$('crew-mode').value,rating:quick?$('crew-rating').value:current.rating,overrides,details},situational},'Crew setup applied to this ship only. No movement or checks were resolved.');
+});
+$('condition-form').addEventListener('submit',event=>{event.preventDefault();if(event.currentTarget.reportValidity())dispatch({type:'set-condition',shipId:selected,condition:{hull:optionalNumber('current-hull')}},'Condition recorded for this ship only.');});
+$('brake').addEventListener('click',()=>dispatch({type:'brake',shipId:selected},'Stop plotted within this ship’s thrust budget. Advance round to apply it.'));
+
+$('remove-ship').addEventListener('click',()=>{const s=selectedShip();if(window.confirm(`Remove ${s.name} from this unsaved encounter? Its crew, condition and plot will be removed. Other ships are preserved.`))dispatch({type:'remove-ship',shipId:selected},'Selected ship removed. Remaining ships were preserved.');});
+$('clear-ships').addEventListener('click',()=>{if(window.confirm(`Clear all ${state.ships.length} ships from this unsaved encounter? Their crew, condition and plots will be removed. Saved campaign data is not affected.`))dispatch({type:'clear-ships'},'Encounter cleared. Add your own ships; the sample was not reloaded.');});
