@@ -303,6 +303,7 @@ main{padding-top:18px}
 .expense-maintenance-action{display:flex;align-items:center;gap:2px}
 .expense-maintenance-action .expense-name{flex:1;min-width:0;width:auto;overflow-wrap:anywhere}
 .expense-maintenance-action .rule-info{margin:0;flex:none}
+@media(max-width:500px){.expense-table th:first-child{width:60%}.expense-table th:nth-child(2){width:23%}}
 .expense-panel .field{margin:.65rem 0}.expense-panel input{min-width:0;max-width:100%}
 .expense-panel .expense-total{padding:.7rem;gap:.5rem}.expense-panel .expense-total strong{font-size:1.3rem}
 .expense-panel>button{min-height:32px}.expense-panel .expense-facts{font-size:.8rem}
