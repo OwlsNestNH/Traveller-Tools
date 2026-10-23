@@ -1,6 +1,7 @@
 // Presentation metadata only: symbols do not imply facing, allegiance rules or scale.
 export const SIDES=Object.freeze({A:{label:'Side A',color:'#75e0d4'},B:{label:'Side B',color:'#ffad86'},C:{label:'Side C',color:'#d3afff'}});
 export const ICONS=Object.freeze({
+ harrier:{label:'Harrier custom simplified reference-derived outline; not official token or CC0',file:'harrier-custom.svg',bowDegrees:-90},
  auto:{label:'Automatic from design'},
  "close-escort":{label:"Gazelle Close Escort family token \u2014 illustrated attachments do not specify current configuration",file:"close_escort.webp",bowDegrees:90},
  "far-trader":{label:"Type A2 / Hero Far Trader family token",file:"far_trader.webp",bowDegrees:90},
@@ -36,9 +37,46 @@ export function normalizeAppearance(value={}){
  return {side,icon,heading};
 }
 // Explicit source identity avoids guessing hulls from broad class names or tonnage.
-// All 56 presets are covered; missing variants stay custom instead of borrowing a different ship.
+// All catalogue source pages are covered; missing variants stay custom instead of borrowing a different ship.
 export const PRESET_ICONS=Object.freeze({
- "The Pirates of Drinax — Book 2: The Trojan Reach (Updated)/10": "other",
+ "Adventure Class Ships (2023)/6":'other',
+ "Adventure Class Ships (2023)/8":'other',
+ "Adventure Class Ships (2023)/10":'other',
+ "Adventure Class Ships (2023)/12":'other',
+ "Adventure Class Ships (2023)/14":'other',
+ "Adventure Class Ships (2023)/22":'other',
+ "Adventure Class Ships (2023)/24":'other',
+ "Adventure Class Ships (2023)/26":'other',
+ "Adventure Class Ships (2023)/28":'other',
+ "Adventure Class Ships (2023)/30":'other',
+ "Adventure Class Ships (2023)/32":'other',
+ "Adventure Class Ships (2023)/34":'other',
+ "Adventure Class Ships (2023)/58":'other',
+ "Adventure Class Ships (2023)/78":'other',
+ "Adventure Class Ships (2023)/80":'other',
+ "Adventure Class Ships (2023)/82":'other',
+ "Adventure Class Ships (2023)/84":'other',
+ "Adventure Class Ships (2023)/86":'other',
+ "Adventure Class Ships (2023)/88":'other',
+ "Adventure Class Ships (2023)/98":'other',
+ "Adventure Class Ships (2023)/100":'other',
+ "Adventure Class Ships (2023)/102":'other',
+ "Adventure Class Ships (2023)/104":'other',
+ "Adventure Class Ships (2023)/106":'other',
+ "Adventure Class Ships (2023)/116":'other',
+ "Adventure Class Ships (2023)/118":'other',
+ "Adventure Class Ships (2023)/120":'other',
+ "Adventure Class Ships (2023)/122":'other',
+ "Adventure Class Ships (2023)/124":'other',
+ "Adventure Class Ships (2023)/126":'other',
+ "Adventure Class Ships (2023)/134":'other',
+ "Adventure Class Ships (2023)/136":'other',
+ "Adventure Class Ships (2023)/142":'other',
+ "Adventure Class Ships (2023)/144":'other',
+ "Adventure Class Ships (2023)/150":'other',
+ "Adventure Class Ships (2023)/152":'other',
+
+ "The Pirates of Drinax — Book 2: The Trojan Reach (Updated)/10": "harrier",
  "Core Rulebook Update 2022/190": "scout",
  "Core Rulebook Update 2022/192": "seeker",
  "Core Rulebook Update 2022/194": "trader",

@@ -49,3 +49,8 @@ The complete source-page mapping is explicit in appearance.mjs. A user can overr
 | survey_scout.webp | `47bf9eb8efe891908a1ff6813680eab00ed2552e0cabda611ef3fa4d9b458603` |
 | system_defence_boat.webp | `4a8c43277ce4dcb09aa1f4607b2bff7c0347ba81c3888f1186369908f70f7391` |
 | yacht.webp | `d52f2e2999ef350d231a8688ce41726aafd96e11e3b3a8ca2a416601ca6c16e2` |
+
+## Harrier custom outline
+`harrier-custom.svg`: custom simplified reconstruction from user-supplied Harrier reference artwork, approved for this tool. Not an official supplied token, not a Samuel Penn token, and not represented as CC0. Bow axis: up (-90 degrees). Original supplied SVG retained; only runtime tint/transform applies.
+
+SHA-256 of the approved supplied Harrier SVG: `eff09a034151a568c5bef4ac2b9224c96eb467c6561dca36d1152f6499c96985`.

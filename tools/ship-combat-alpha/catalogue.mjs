@@ -1,3 +1,4 @@
+import {ACS2023} from './catalogue-acs2023.mjs';
 // Minimum setup facts verified from the user-supplied PDFs. Printed pages, not PDF offsets.
 // No rule text, deck plans, weapon tables or costs are reproduced.
 const rows=[
@@ -707,5 +708,5 @@ const rows=[
   "notes": ""
  }
 ];
-export const PRESETS=Object.freeze(rows.map(row=>Object.freeze({...row,source:Object.freeze(row.source)})));
+export const PRESETS=Object.freeze([...rows,...ACS2023].map(row=>Object.freeze({...row,source:Object.freeze(row.source)})));
 export function preset(id){const p=PRESETS.find(p=>p.id===id);if(!p)throw Error("Choose an existing ship preset.");return structuredClone(p);}

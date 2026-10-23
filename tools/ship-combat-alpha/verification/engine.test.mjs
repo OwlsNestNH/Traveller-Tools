@@ -81,8 +81,8 @@ import {PRESETS,preset} from '../catalogue.mjs';
 import {crewContribution,MAX_SHIPS,ROLES} from '../setup.mjs';
 const addPreset=(s,id='core-194',name='Added trader')=>applyCommand(s,{type:'add-ship',presetId:id,name,position:{q:2,r:1},velocity:{q:0,r:0}});
 test('catalogue keeps <=400-ton source variants and printed citations without inferred armour',()=>{
- assert.equal(PRESETS.length,56);assert.equal(new Set(PRESETS.map(p=>p.id)).size,56);
- for(const p of PRESETS){assert.ok(p.tons>0&&p.tons<=400);assert.ok(p.source.page>0);assert.ok(p.source.book.endsWith('Update 2022')||p.id==='drinax-harrier-restored');assert.equal(preset(p.id).thrust,p.thrust);}
+ assert.equal(PRESETS.length,93);assert.equal(new Set(PRESETS.map(p=>p.id)).size,93);
+ for(const p of PRESETS){assert.ok(p.tons>0&&p.tons<=400);assert.ok(p.source.page>0);assert.ok(p.source.book.endsWith('Update 2022')||p.source.book==='Adventure Class Ships (2023)'||p.id==='drinax-harrier-restored');assert.equal(preset(p.id).thrust,p.thrust);}
  assert.deepEqual(['tons','thrust','hull','armour'].map(k=>preset('core-218')[k]),[10,6,4,2]);
  assert.deepEqual(['tons','thrust','hull','armour'].map(k=>preset('highguard-148')[k]),[50,9,22,15]);
  assert.equal(preset('highguard-181').thrust,5);assert.equal(preset('core-204').thrust,6);
@@ -143,13 +143,13 @@ test('automatic symbols distinguish Marava and custom ring/corsair and keep unkn
  for(const p of PRESETS)assert.ok(Object.hasOwn(ICONS,iconFor({template:p})));
 });
 
-test('all 56 source identities explicitly map matching available hulls or honest missing-variant fallbacks',()=>{
- assert.equal(Object.keys(PRESET_ICONS).length,56);
+test('all 92 source identities explicitly map matching available hulls or honest missing-variant fallbacks',()=>{
+ assert.equal(Object.keys(PRESET_ICONS).length,92);
  for(const p of PRESETS)assert.ok(Object.hasOwn(PRESET_ICONS,p.source.book+'/'+p.source.page),p.id);
  for(const [id,icon,file] of [
  ['core-202','yacht','yacht.webp'],['highguard-179','yacht','yacht.webp'],['core-220','launch','launch.webp'],['highguard-139','launch','launch.webp'],['core-204','close-escort','close_escort.webp'],['highguard-181','close-escort','close_escort.webp'],['core-196','far-trader','far_trader.webp'],['highguard-169','far-trader','far_trader.webp'],['highguard-138','military-gig','military_gig.webp'],['core-219','gig','gig.webp'],['core-192','seeker','seeker.webp'],['core-210','subsidised-merchant','subsidised_merchant.webp'],['highguard-191','survey-scout','survey_scout.webp'],['core-227','passenger-shuttle','passenger_shuttle.webp']]){assert.equal(iconFor({template:preset(id)}),icon,id);assert.equal(ICONS[icon].file,file);}
  for(const id of ['highguard-136','highguard-148','highguard-150','highguard-152','highguard-158','highguard-165','highguard-177','highguard-183','highguard-193'])assert.equal(iconFor({template:preset(id)}),'other',id+' must not borrow a different variant');
- assert.equal(Object.values(ICONS).filter(x=>x.file).length,23);
+ assert.equal(Object.values(ICONS).filter(x=>x.file).length,24);
 });
 
 
@@ -168,4 +168,13 @@ test('Side C survives JSON and cosmetic heading follows actual velocity, retaini
  s=applyCommand(s,{type:'set-appearance',shipId:id,appearance:{side:'A',icon:'scout'}});assert.equal(s.ships[0].appearance.heading,before);
  const old=JSON.parse(JSON.stringify(s));for(const ship of old.ships)delete ship.appearance.heading;assert.equal(createState(old).ships[0].appearance.heading,-90);
  for(const heading of [NaN,Infinity,181,'90'])assert.throws(()=>normalizeAppearance({heading}),/heading/);
+});
+
+
+test('ACS first batch retains source conflicts and conditional profiles without invented loads',()=>{
+ const batch=PRESETS.filter(p=>p.id.startsWith('acs2023-'));assert.equal(batch.length,37);
+ for(const p of batch){const s=applyCommand(createState(),{type:'add-ship',presetId:p.id,name:p.name,position:{q:0,r:0},velocity:{q:0,r:0}}).ships.at(-1);assert.equal(s.template.source.book,'Adventure Class Ships (2023)');assert.equal(s.condition.fuel,null);assert.equal(s.condition.powerOutput,null);assert.equal(s.condition.weapons,null);assert.equal(iconFor(s),'other');}
+ assert.equal(preset('acs2023-p116').record.fuelCapacity,null);assert.match(preset('acs2023-p116').notes,/221/);assert.equal(preset('acs2023-p30').hull,80);assert.equal(preset('acs2023-p78').hull,80);
+ assert.equal(preset('acs2023-p102').thrust,3);assert.equal(preset('acs2023-p102-unloaded').thrust,4);assert.match(preset('acs2023-p102').name,/fighters carried/);assert.equal(preset('acs2023-p124').thrust,6);assert.match(preset('acs2023-p124').notes,/reaction Thrust 4/);
+ assert.equal(iconFor({template:preset('drinax-harrier-restored')}),'harrier');assert.equal(ICONS.harrier.bowDegrees,-90);assert.match(ICONS.harrier.label,/not official.*CC0/);
 });
