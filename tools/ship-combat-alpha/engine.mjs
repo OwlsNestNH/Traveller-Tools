@@ -1,4 +1,4 @@
-import {normalizeAppearance} from './appearance.mjs';
+import {normalizeAppearance,velocityHeading} from './appearance.mjs';
 import {MAX_SHIPS,normalizeTemplate,normalizeCrew,normalizeCondition,normalizeSituational,effectiveDesign,normalizeOverrides} from './setup.mjs';
 import {preset} from './catalogue.mjs';
 // Pure prototype engine: no DOM, storage, network, clocks, or random numbers.
@@ -13,8 +13,9 @@ function ship(value){
  if(typeof value?.id!=='string'||!/^[-a-z0-9]{1,32}$/.test(value.id))throw Error('Ship ID must use 1 to 32 lowercase letters, digits or hyphens.');
  const thrust=integer(value.capabilities?.thrust,'Thrust',0,MAX_THRUST),impulse=vector(value.motion?.impulse??{q:0,r:0},'Planned thrust');
  if(hexDistance(impulse)>thrust)throw Error('Planned velocity change exceeds this ship\'s thrust budget.');
+ const appearance=normalizeAppearance(value.appearance);appearance.heading=velocityHeading(vector(value.motion?.velocity,'Velocity'),appearance.heading);
  const template=normalizeTemplate(value.template),designOverrides=normalizeOverrides(value.designOverrides,template),effective=effectiveDesign({template,designOverrides});
- return {id:value.id,name:name(value.name),template,designOverrides,appearance:normalizeAppearance(value.appearance),crew:normalizeCrew(value.crew),condition:normalizeCondition(value.condition,effective),situational:normalizeSituational(value.situational),capabilities:{thrust},motion:{position:vector(value.motion?.position,'Position'),velocity:vector(value.motion?.velocity,'Velocity'),impulse}};
+ return {id:value.id,name:name(value.name),template,designOverrides,appearance,crew:normalizeCrew(value.crew),condition:normalizeCondition(value.condition,effective),situational:normalizeSituational(value.situational),capabilities:{thrust},motion:{position:vector(value.motion?.position,'Position'),velocity:vector(value.motion?.velocity,'Velocity'),impulse}};
 }
 function checked(state){
  if(state?.version!==API_VERSION)throw Error('Unsupported movement state version.');
@@ -46,7 +47,7 @@ export function applyCommand(input,command){
  }
  case 'replace-ships':state.ships=command.ships;break;
  case 'set-design':{const s=getShip(state,command.shipId),next=normalizeTemplate(command.template);if(!next)throw Error('Enter a design record.');if(s.template)s.designOverrides=normalizeOverrides(next,s.template);else{s.template=next;s.designOverrides=null;}if(command.useDesignThrust===true){s.capabilities.thrust=effectiveDesign(s).thrust;s.motion.impulse={q:0,r:0};}break;}
- case 'set-appearance':{getShip(state,command.shipId).appearance=normalizeAppearance(command.appearance);break;}
+ case 'set-appearance':{const s=getShip(state,command.shipId);s.appearance=normalizeAppearance({...s.appearance,...command.appearance});break;}
  case 'remove-ship':{getShip(state,command.shipId);state.ships=state.ships.filter(s=>s.id!==command.shipId);break;}
  case 'clear-ships':state.ships=[];break;
  case 'add-ship':{

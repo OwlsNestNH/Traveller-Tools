@@ -130,9 +130,9 @@ test('Express Boat explicitly has no manoeuvre drive and coasts at zero thrust',
 import {ICONS,PRESET_ICONS,iconFor,normalizeAppearance} from '../appearance.mjs';
 test('side and silhouette are independent presentation data; edits never alter movement or crew',()=>{
  const s=addPreset(createState()),id=s.ships.at(-1).id,original=structuredClone(s),next=applyCommand(s,{type:'set-appearance',shipId:id,appearance:{side:'B',icon:'research'}});
- assert.deepEqual(next.ships.at(-1).appearance,{side:'B',icon:'research'});const expected=structuredClone(original.ships.at(-1));expected.appearance={side:'B',icon:'research'};assert.deepEqual(next.ships.at(-1),expected);assert.deepEqual(next.ships.slice(0,-1),original.ships.slice(0,-1));assert.deepEqual(s,original);
- for(const appearance of [{side:'C'},{icon:'../../private'},{icon:'__proto__'}])assert.throws(()=>applyCommand(s,{type:'set-appearance',shipId:id,appearance}),/Choose Side/);
- assert.deepEqual(normalizeAppearance(),{side:'A',icon:'auto'});
+ assert.deepEqual(next.ships.at(-1).appearance,{side:'B',icon:'research',heading:-90});const expected=structuredClone(original.ships.at(-1));expected.appearance={side:'B',icon:'research',heading:-90};assert.deepEqual(next.ships.at(-1),expected);assert.deepEqual(next.ships.slice(0,-1),original.ships.slice(0,-1));assert.deepEqual(s,original);
+ for(const appearance of [{side:'D'},{icon:'../../private'},{icon:'__proto__'}])assert.throws(()=>applyCommand(s,{type:'set-appearance',shipId:id,appearance}),/Choose Side/);
+ assert.deepEqual(normalizeAppearance(),{side:'A',icon:'auto',heading:-90});
  const run=x=>applyCommand(applyCommand(x,{type:'set-appearance',shipId:id,appearance:{side:'B',icon:'trader'}}),{type:'advance-round'});assert.deepEqual(run(s),run(JSON.parse(JSON.stringify(s))));
 });
 test('automatic symbols distinguish Marava and custom ring/corsair and keep unknown hulls generic',()=>{
@@ -150,4 +150,22 @@ test('all 56 source identities explicitly map matching available hulls or honest
  ['core-202','yacht','yacht.webp'],['highguard-179','yacht','yacht.webp'],['core-220','launch','launch.webp'],['highguard-139','launch','launch.webp'],['core-204','close-escort','close_escort.webp'],['highguard-181','close-escort','close_escort.webp'],['core-196','far-trader','far_trader.webp'],['highguard-169','far-trader','far_trader.webp'],['highguard-138','military-gig','military_gig.webp'],['core-219','gig','gig.webp'],['core-192','seeker','seeker.webp'],['core-210','subsidised-merchant','subsidised_merchant.webp'],['highguard-191','survey-scout','survey_scout.webp'],['core-227','passenger-shuttle','passenger_shuttle.webp']]){assert.equal(iconFor({template:preset(id)}),icon,id);assert.equal(ICONS[icon].file,file);}
  for(const id of ['highguard-136','highguard-148','highguard-150','highguard-152','highguard-158','highguard-165','highguard-177','highguard-183','highguard-193'])assert.equal(iconFor({template:preset(id)}),'other',id+' must not borrow a different variant');
  assert.equal(Object.values(ICONS).filter(x=>x.file).length,23);
+});
+
+
+test('Side C survives JSON and cosmetic heading follows actual velocity, retaining zero-speed history',async()=>{
+ const {velocityHeading,glyphRotation,SIDES}=await import('../appearance.mjs');
+ assert.equal(SIDES.C.label,'Side C');assert.equal(SIDES.C.color,'#d3afff');
+ for(const [v,angle]of [[{q:1,r:0},0],[{q:0,r:1},60],[{q:-1,r:0},180],[{q:0,r:-1},-120]])assert.ok(Math.abs(velocityHeading(v)-angle)<1e-9);
+ assert.equal(glyphRotation('trader',0),-90);assert.equal(glyphRotation('small-craft',0),90);assert.equal(glyphRotation('research',60),0);
+ let s=createState();const id=s.ships[0].id;
+ s=applyCommand(s,{type:'set-appearance',shipId:id,appearance:{side:'C',icon:'trader'}});
+ assert.equal(s.ships[0].appearance.heading,0);
+ const restored=createState(JSON.parse(JSON.stringify(s)));assert.deepEqual(restored.ships,s.ships);
+ s=applyCommand(s,{type:'edit-ship',shipId:id,name:s.ships[0].name,thrust:s.ships[0].capabilities.thrust,position:s.ships[0].motion.position,velocity:{q:0,r:1}});
+ const before=s.ships[0].appearance.heading;assert.ok(Math.abs(before-60)<1e-9);
+ s=applyCommand(s,{type:'edit-ship',shipId:id,name:s.ships[0].name,thrust:s.ships[0].capabilities.thrust,position:s.ships[0].motion.position,velocity:{q:0,r:0}});assert.equal(s.ships[0].appearance.heading,before);
+ s=applyCommand(s,{type:'set-appearance',shipId:id,appearance:{side:'A',icon:'scout'}});assert.equal(s.ships[0].appearance.heading,before);
+ const old=JSON.parse(JSON.stringify(s));for(const ship of old.ships)delete ship.appearance.heading;assert.equal(createState(old).ships[0].appearance.heading,-90);
+ for(const heading of [NaN,Infinity,181,'90'])assert.throws(()=>normalizeAppearance({heading}),/heading/);
 });

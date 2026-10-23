@@ -1,38 +1,39 @@
 // Presentation metadata only: symbols do not imply facing, allegiance rules or scale.
-export const SIDES=Object.freeze({A:{label:'Side A',color:'#75e0d4'},B:{label:'Side B',color:'#ffad86'}});
+export const SIDES=Object.freeze({A:{label:'Side A',color:'#75e0d4'},B:{label:'Side B',color:'#ffad86'},C:{label:'Side C',color:'#d3afff'}});
 export const ICONS=Object.freeze({
  auto:{label:'Automatic from design'},
- "close-escort":{label:"Gazelle Close Escort family token \u2014 illustrated attachments do not specify current configuration",file:"close_escort.webp"},
- "far-trader":{label:"Type A2 / Hero Far Trader family token",file:"far_trader.webp"},
- "gig":{label:"Gig token",file:"gig.webp"},
- "launch":{label:"Launch token",file:"launch.webp"},
- "military-gig":{label:"Military Gig token",file:"military_gig.webp"},
- "modular-cutter":{label:"Modular Cutter token",file:"modular_cutter.webp"},
- "passenger-shuttle":{label:"Passenger Shuttle token",file:"passenger_shuttle.webp"},
- "pinnace":{label:"Pinnace token",file:"pinnace.webp"},
- "safari":{label:"Safari Ship token",file:"safari_ship.webp"},
- "seeker":{label:"Seeker Mining Ship token",file:"seeker.webp"},
- "shuttle":{label:"Shuttle token",file:"shuttle.webp"},
- "slow-boat":{label:"Slow Boat token",file:"slow_boat.webp"},
- "slow-pinnace":{label:"Slow Pinnace token",file:"slow_pinnace.webp"},
- "subsidised-merchant":{label:"Subsidised Merchant token",file:"subsidised_merchant.webp"},
- "survey-scout":{label:"Donosev Survey Scout family token",file:"survey_scout.webp"},
- "yacht":{label:"Type Y Yacht token",file:"yacht.webp"},
- marava:{label:'Empress Marava token',file:'empress_marava.webp'},
- trader:{label:'Trader — Free Trader token (representative)',file:'free_trader.webp'},
- scout:{label:'Scout — Scout token (representative)',file:'scout.webp'},
- fighter:{label:'Fighter — Light Fighter token (representative)',file:'light_fighter.webp'},
- 'small-craft':{label:'Small craft — Ship’s Boat token (representative)',file:'ships_boat.webp'},
- sdb:{label:'SDB — System Defence Boat token (representative)',file:'system_defence_boat.webp'},
- corvette:{label:'Corvette / escort — Patrol Corvette token (representative)',file:'patrol_corvette.webp'},
- research:{label:'Research ship — custom toroid symbol, not a canonical hull'},
- corsair:{label:'Corsair — custom fallback symbol, not a canonical hull'},
- other:{label:'Other — custom generic symbol, not a canonical hull'}
+ "close-escort":{label:"Gazelle Close Escort family token \u2014 illustrated attachments do not specify current configuration",file:"close_escort.webp",bowDegrees:90},
+ "far-trader":{label:"Type A2 / Hero Far Trader family token",file:"far_trader.webp",bowDegrees:90},
+ "gig":{label:"Gig token",file:"gig.webp",bowDegrees:90},
+ "launch":{label:"Launch token",file:"launch.webp",bowDegrees:90},
+ "military-gig":{label:"Military Gig token",file:"military_gig.webp",bowDegrees:90},
+ "modular-cutter":{label:"Modular Cutter token",file:"modular_cutter.webp",bowDegrees:90},
+ "passenger-shuttle":{label:"Passenger Shuttle token",file:"passenger_shuttle.webp",bowDegrees:90},
+ "pinnace":{label:"Pinnace token",file:"pinnace.webp",bowDegrees:-90},
+ "safari":{label:"Safari Ship token",file:"safari_ship.webp",bowDegrees:90},
+ "seeker":{label:"Seeker Mining Ship token",file:"seeker.webp",bowDegrees:90},
+ "shuttle":{label:"Shuttle token",file:"shuttle.webp",bowDegrees:90},
+ "slow-boat":{label:"Slow Boat token",file:"slow_boat.webp",bowDegrees:-90},
+ "slow-pinnace":{label:"Slow Pinnace token",file:"slow_pinnace.webp",bowDegrees:-90},
+ "subsidised-merchant":{label:"Subsidised Merchant token",file:"subsidised_merchant.webp",bowDegrees:90},
+ "survey-scout":{label:"Donosev Survey Scout family token",file:"survey_scout.webp",bowDegrees:90},
+ "yacht":{label:"Type Y Yacht token",file:"yacht.webp",bowDegrees:90},
+ marava:{label:'Empress Marava token',file:'empress_marava.webp',bowDegrees:90},
+ trader:{label:'Trader — Free Trader token (representative)',file:'free_trader.webp',bowDegrees:90},
+ scout:{label:'Scout — Scout token (representative)',file:'scout.webp',bowDegrees:90},
+ fighter:{label:'Fighter — Light Fighter token (representative)',file:'light_fighter.webp',bowDegrees:90},
+ 'small-craft':{label:'Small craft — Ship’s Boat token (representative)',file:'ships_boat.webp',bowDegrees:-90},
+ sdb:{label:'SDB — System Defence Boat token (representative)',file:'system_defence_boat.webp',bowDegrees:90},
+ corvette:{label:'Corvette / escort — Patrol Corvette token (representative)',file:'patrol_corvette.webp',bowDegrees:90},
+ research:{rotates:false,label:'Research ship — custom toroid symbol, not a canonical hull'},
+ corsair:{bowDegrees:-90,label:'Corsair — custom fallback symbol, not a canonical hull'},
+ other:{bowDegrees:-90,label:'Other — custom generic symbol, not a canonical hull'}
 });
 export function normalizeAppearance(value={}){
  const side=value.side??'A',icon=value.icon??'auto';
- if(!Object.hasOwn(SIDES,side)||!Object.hasOwn(ICONS,icon))throw Error('Choose Side A or B and an available map symbol.');
- return {side,icon};
+ if(!Object.hasOwn(SIDES,side)||!Object.hasOwn(ICONS,icon))throw Error('Choose Side A, B or C and an available map symbol.');
+ const heading=value.heading??-90;if(!Number.isFinite(heading)||heading < -180||heading > 180)throw Error('Visual heading must be a finite angle from -180 to 180.');
+ return {side,icon,heading};
 }
 // Explicit source identity avoids guessing hulls from broad class names or tonnage.
 // All 56 presets are covered; missing variants stay custom instead of borrowing a different ship.
@@ -105,3 +106,7 @@ export function fallbackGlyph(icon,color){
  if(icon==='corsair')return `<path fill="${color}" d="M 0 -21 L 8 -7 L 20 -13 L 15 8 L 7 12 L 4 20 H -4 L -7 12 L -15 8 L -20 -13 L -8 -7 Z"/>`;
  return `<path fill="${color}" d="M 0 -20 L 15 -8 L 15 9 L 6 19 H -6 L -15 9 L -15 -8 Z"/>`;
 }
+
+// Cosmetic world-space bearing only. Axial projection matches the map; no facing rule.
+export function velocityHeading(velocity,previous=-90){return velocity.q===0&&velocity.r===0?previous:Math.atan2(1.5*velocity.r,Math.sqrt(3)*(velocity.q+velocity.r/2))*180/Math.PI;}
+export function glyphRotation(icon,heading){const art=ICONS[icon];return art.rotates===false?0:heading-(art.bowDegrees??-90);}
