@@ -64,3 +64,13 @@ Normalized ships now include `template` (nullable design snapshot and source), `
 - `clear-ships`: clears all ships while retaining encounter timing. The frontend confirms both removal commands before sending them; engine callers must supply their own user confirmation policy. Empty ship arrays are valid, with a neutral fit camera.
 
 All existing expected-revision and atomic rejection guarantees still apply. Templates and crew do not supply implicit movement bonuses. Pure `setup.mjs` validates these records; `catalogue.mjs` contains the cited minimum design facts. No server, storage or external runtime dependency was added.
+
+## Map silhouettes and sides
+
+Ship map dots are replaced by fixed-orientation, solid silhouettes. The seven unmodified Samuel Penn CC0 WebPs are bundled locally; the browser turns their alpha into a solid side-coloured mask using an SVG filter. No external asset fetches occur at runtime. Provenance, the pinned upstream revision and SHA-256 hashes are in [assets/ships/PROVENANCE.md](assets/ships/PROVENANCE.md). No other source artwork or repository code was copied.
+
+Side A is teal and Side B is orange; visible A/B labels and a dashed selection ring supplement colour. Side is presentation metadata only and does not introduce allegiance rules. Velocity arrows remain independent and are never used to rotate the hull symbol. Silhouettes and hit targets keep a readable screen size through zoom; they are not physical ship scale. The map coordinates, range lines, camera and motion remain proportional.
+
+The Empress Marava design has its corresponding source token. Other class mappings use representative Free Trader, Scout, Light Fighter, Ship’s Boat, System Defence Boat or Patrol Corvette tokens; the interface says representative rather than claiming an exact depiction of every variant. Research ships use a custom top-down toroid symbol instead of the unwanted edge-on lab_ship token. Corsair and Other use original custom fallback shapes, explicitly labelled noncanonical. Automatic mapping can be overridden under Map symbol and side without editing design facts, crew, condition, velocity or plots. Custom ships begin with a generic symbol; the user can choose a representative class symbol.
+
+State adds `appearance:{side:'A'|'B',icon:'auto'|<available symbol key>}`. Legacy ship inputs default to A/auto. `add-ship` optionally accepts appearance; `set-appearance` changes it for one `shipId` only, with normal revision/atomic-validation guarantees. `appearance.mjs` owns presentation choices and fallback glyphs; movement math has no facing or icon-dependent modifiers.

@@ -1,25 +1,29 @@
+import {SIDES,ICONS,iconFor,fallbackGlyph} from './appearance.mjs';
 import {PRESETS} from './catalogue.mjs';
 import {ROLES,MAX_SHIPS,crewContribution} from './setup.mjs';
 import {createState,applyCommand,getShip,coastTarget,plannedTarget,hexDistance,reachableCount,canPlot} from './engine.mjs';
 import {HEX_SIZE,toWorld,fromWorld,visibleGrid,fitCamera} from './geometry.mjs';
 const $=id=>document.getElementById(id),svg=$('map'),scene=$('scene');
 const esc=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const colors=['#75e0d4','#9dc6ff','#f3c773','#deacff','#f59eac'];
+const sideColor=ship=>SIDES[ship.appearance.side].color;
+// Alpha threshold removes translucent texture/shadow; the source WebPs stay unmodified.
+svg.querySelector('defs').insertAdjacentHTML('beforeend',Object.entries(SIDES).map(([side,value])=>`<filter id="silhouette-${side}" x="-5%" y="-5%" width="110%" height="110%"><feComponentTransfer in="SourceAlpha" result="solid-alpha"><feFuncA type="discrete" tableValues="0 1"/></feComponentTransfer><feFlood flood-color="${value.color}"/><feComposite in2="solid-alpha" operator="in"/></filter>`).join(''));
+function fitShipsCamera(ships){return fitCamera(ships.map(s=>s.motion.position),1200,mapHeight(),Math.max(100,36*1200/Math.max(240,svg.clientWidth)));}
 function mapHeight(){return 1200*svg.clientHeight/Math.max(1,svg.clientWidth);}
-let state=createState(),selected=state.ships[0].id,camera=fitCamera(state.ships.map(s=>s.motion.position),1200,mapHeight()),drag=null,frame=0;
-const selectedShip=()=>getShip(state,selected),pair=p=>`${p.q}, ${p.r}`,number=id=>Number($(id).value),color=s=>colors[state.ships.indexOf(s)%colors.length];
+let state=createState(),selected=state.ships[0].id,camera=fitShipsCamera(state.ships),drag=null,frame=0;
+const selectedShip=()=>getShip(state,selected),pair=p=>`${p.q}, ${p.r}`,number=id=>Number($(id).value),color=sideColor;
 function feedback(text='',error=''){$('message').textContent=text;$('error').textContent=error;}
 function dispatch(command,message){try{state=applyCommand(state,{...command,expectedRevision:state.revision});feedback(message);render();return true;}catch(error){feedback('',error.message);return false;}}
 function populate(){
  const s=state.ships.find(s=>s.id===selected)??state.ships[0];selected=s?.id??null;
  $('round').textContent='Round '+(state.round+1);$('elapsed').textContent=(state.round*state.roundMinutes)+' minutes elapsed';svg.dataset.completedRounds=state.round;svg.dataset.revision=state.revision;
- $('ships').innerHTML=state.ships.map((ship,i)=>`<button class="ship-choice" data-select="${ship.id}" aria-pressed="${ship.id===selected}"><span class="ship-dot" style="background:${colors[i%colors.length]}" aria-hidden="true"></span><span><strong>${esc(ship.name)}</strong><small>Thrust ${ship.capabilities.thrust} · velocity ${esc(pair(ship.motion.velocity))}</small></span></button>`).join('');
+ $('ships').innerHTML=state.ships.map((ship,i)=>`<button class="ship-choice" data-select="${ship.id}" aria-pressed="${ship.id===selected}"><span class="ship-dot" style="background:${color(ship)}" aria-hidden="true"></span><span><strong>${esc(ship.name)}</strong><small>${SIDES[ship.appearance.side].label} · Thrust ${ship.capabilities.thrust} · velocity ${esc(pair(ship.motion.velocity))}</small></span></button>`).join('');
  $('ship-count').textContent=`${state.ships.length} / ${MAX_SHIPS} ships on map`;
  $('selected-controls').hidden=!s;$('empty-encounter').hidden=!!s;
  for(const id of ['remove-ship','clear-ships','advance','fit'])$(id).disabled=!s;
  if(!s)return;
  const m=s.motion,target=plannedTarget(s),cost=hexDistance(m.impulse);
- $('selected-name').textContent=s.name;populateSetup(s);
+ $('selected-name').textContent=s.name;populateSetup(s);populateAppearance(s);
  const facts=[['Position Q, R',pair(m.position)],['Velocity Q, R',pair(m.velocity)+' hex / round'],['Coast target',pair(coastTarget(s))],['Planned Δv',pair(m.impulse)],['Next position',pair(target)]];
  $('motion-facts').innerHTML=facts.map(([key,value])=>`<dt>${esc(key)}</dt><dd>${esc(value)}</dd>`).join('');
  $('budget').textContent=`${cost} / ${s.capabilities.thrust} thrust plotted · ${reachableCount(s.capabilities.thrust).toLocaleString()} hexes in the thrust region. Prototype coordinate limits also apply.`;
@@ -42,7 +46,7 @@ function drawMap(){
  for(const ship of state.ships){const pos=toWorld(ship.motion.position),next=toWorld(coastTarget(ship));if(hexDistance(ship.motion.velocity)>0)html+=`<line class="velocity" x1="${pos.x}" y1="${pos.y}" x2="${next.x}" y2="${next.y}" style="stroke-width:${1.8*screen}"/>`;}
  html+=`<g transform="translate(${c.x} ${c.y}) scale(${screen})"><circle class="coast" r="9" stroke-width="1.5"/><text x="12" y="24" font-size="12">coast</text></g>`;
  if(hexDistance(m.impulse)>0){const target=toWorld(plannedTarget(s));html+=`<line class="plan-line" x1="${p.x}" y1="${p.y}" x2="${target.x}" y2="${target.y}" stroke-width="${1.5*screen}"/><polygon class="planned" points="${hexPolygon(target,10*screen)}" stroke-width="${thin}"/>`;}
- html+=state.ships.map(ship=>{const pos=toWorld(ship.motion.position),active=ship.id===selected,labelLeft=pos.x*camera.zoom+camera.x>0,label=ship.name.length>18?ship.name.slice(0,15)+'...':ship.name;return `<g class="ship-node" data-ship="${ship.id}" data-q="${ship.motion.position.q}" data-r="${ship.motion.position.r}" data-vq="${ship.motion.velocity.q}" data-vr="${ship.motion.velocity.r}" role="button" tabindex="0" aria-label="Select ${esc(ship.name)}" aria-pressed="${active}" transform="translate(${pos.x} ${pos.y}) scale(${screen})"><circle r="${active?10:8}" fill="${color(ship)}" stroke="${active?'#fff':'#152a3b'}" stroke-width="2"/><text class="ship-label" x="${labelLeft?-14:14}" text-anchor="${labelLeft?'end':'start'}" y="-9" font-size="14">${esc(label)}</text></g>`;}).join('');
+ html+=state.ships.map(ship=>{const pos=toWorld(ship.motion.position),active=ship.id===selected,labelLeft=pos.x*camera.zoom+camera.x>0,label=ship.name.length>18?ship.name.slice(0,15)+'...':ship.name,icon=iconFor(ship),asset=ICONS[icon],tint=color(ship),symbol=asset.file?`<image class="ship-silhouette" href="assets/ships/${asset.file}" x="-24" y="-24" width="48" height="48" filter="url(#silhouette-${ship.appearance.side})"/>`:fallbackGlyph(icon,tint);return `<g class="ship-node" data-ship="${ship.id}" data-icon="${icon}" data-side="${ship.appearance.side}" data-q="${ship.motion.position.q}" data-r="${ship.motion.position.r}" data-vq="${ship.motion.velocity.q}" data-vr="${ship.motion.velocity.r}" role="button" tabindex="0" aria-label="Select ${esc(ship.name)}" aria-description="${esc(asset.label)}. ${SIDES[ship.appearance.side].label}. Fixed orientation, not facing." aria-pressed="${active}" transform="translate(${pos.x} ${pos.y}) scale(${screen})"><title>${esc(asset.label)} · ${SIDES[ship.appearance.side].label} · not facing</title><circle class="ship-hit" r="25" fill="transparent" stroke="none" pointer-events="all"/>${active?'<circle class="selection-ring" r="27" fill="none" stroke="#e6faff" stroke-width="1.5" stroke-dasharray="5 4"/>':''}${symbol}<text class="ship-label" x="${labelLeft?-32:32}" text-anchor="${labelLeft?'end':'start'}" y="-13" font-size="13" style="fill:${tint}">${ship.appearance.side} · ${esc(label)}</text></g>`;}).join('');
  scene.setAttribute('transform',`translate(${camera.x} ${camera.y}) scale(${camera.zoom})`);scene.innerHTML=html;if(focusedShip)scene.querySelector(`[data-ship="${focusedShip}"]`)?.focus({preventScroll:true});svg.dataset.gridVisible=String(showGrid);svg.dataset.zoom=camera.zoom;
  $('zoom-level').textContent=(camera.zoom*100<1?(camera.zoom*100).toPrecision(2):Math.round(camera.zoom*100))+'%';
  $('map-detail').textContent=!$('grid-toggle').checked?'Hex grid off. Positions and target legality are unchanged.':grid.limited?'Hex detail hidden at distant zoom. The map and reach boundary remain proportional; zoom in for individual hexes.':'Reachable hexes are highlighted around the selected ship’s coast target. Ranges use abstract hex steps.';
@@ -58,8 +62,8 @@ $('plot-form').addEventListener('submit',event=>{event.preventDefault();if(event
 $('ship-form').addEventListener('submit',event=>{event.preventDefault();if(!event.currentTarget.reportValidity())return;dispatch({type:'edit-ship',shipId:selected,name:$('ship-name').value,thrust:number('thrust'),position:{q:number('position-q'),r:number('position-r')},velocity:{q:number('velocity-q'),r:number('velocity-r')}},'Ship values applied; its plot was cleared. Camera position is unchanged.');});
 $('coast').addEventListener('click',()=>dispatch({type:'coast',shipId:selected},'Plot cleared. Existing velocity persists.'));
 $('advance').addEventListener('click',()=>dispatch({type:'advance-round'},'Round advanced. Every ship moved; unplotted ships coasted.'));
-$('reset').addEventListener('click',()=>{$('ship-form').closest('details').open=false;state=createState();selected=state.ships[0].id;camera=fitCamera(state.ships.map(s=>s.motion.position),1200,mapHeight());feedback('Sample reset. No saved campaign data was read or changed.');render();});
-$('fit').addEventListener('click',()=>{camera=fitCamera(state.ships.map(s=>s.motion.position),1200,mapHeight());scheduleMap();});
+$('reset').addEventListener('click',()=>{$('ship-form').closest('details').open=false;state=createState();selected=state.ships[0].id;camera=fitShipsCamera(state.ships);feedback('Sample reset. No saved campaign data was read or changed.');render();});
+$('fit').addEventListener('click',()=>{camera=fitShipsCamera(state.ships);scheduleMap();});
 $('zoom-in').addEventListener('click',()=>zoom(1.4));$('zoom-out').addEventListener('click',()=>zoom(1/1.4));
 $('grid-toggle').addEventListener('change',scheduleMap);$('ranges-toggle').addEventListener('change',scheduleMap);
 svg.addEventListener('wheel',event=>{event.preventDefault();zoom(event.deltaY<0?1.15:1/1.15,rootPoint(event));},{passive:false});
@@ -88,8 +92,8 @@ const optionalNumber=id=>$(id).value.trim()===''?null:Number($(id).value);
 $('add-form').addEventListener('submit',event=>{
  event.preventDefault();if(!event.currentTarget.reportValidity())return;
  const custom=$('design-select').value==='custom',template=custom?{name:$('design-name').value,tons:number('design-tons'),thrust:number('design-thrust'),hull:optionalNumber('design-hull'),armour:optionalNumber('design-armour')}:undefined;
- if(dispatch({type:'add-ship',presetId:custom?undefined:$('design-select').value,template,name:$('instance-name').value,position:{q:number('add-q'),r:number('add-r')},velocity:{q:number('add-vq'),r:number('add-vr')}},'Independent ship added. Crew and condition belong only to this instance.')){
-  selected=state.ships.at(-1).id;camera=fitCamera(state.ships.map(s=>s.motion.position),1200,mapHeight());render();
+ if(dispatch({type:'add-ship',presetId:custom?undefined:$('design-select').value,template,appearance:{side:$('add-side').value,icon:'auto'},name:$('instance-name').value,position:{q:number('add-q'),r:number('add-r')},velocity:{q:number('add-vq'),r:number('add-vr')}},'Independent ship added. Crew and condition belong only to this instance.')){
+  selected=state.ships.at(-1).id;camera=fitShipsCamera(state.ships);render();
  }
 });
 $('crew-mode').addEventListener('change',showCrewMode);
@@ -104,3 +108,7 @@ $('brake').addEventListener('click',()=>dispatch({type:'brake',shipId:selected},
 
 $('remove-ship').addEventListener('click',()=>{const s=selectedShip();if(window.confirm(`Remove ${s.name} from this unsaved encounter? Its crew, condition and plot will be removed. Other ships are preserved.`))dispatch({type:'remove-ship',shipId:selected},'Selected ship removed. Remaining ships were preserved.');});
 $('clear-ships').addEventListener('click',()=>{if(window.confirm(`Clear all ${state.ships.length} ships from this unsaved encounter? Their crew, condition and plots will be removed. Saved campaign data is not affected.`))dispatch({type:'clear-ships'},'Encounter cleared. Add your own ships; the sample was not reloaded.');});
+
+function populateAppearance(ship){$('ship-side').value=ship.appearance.side;$('ship-icon').value=ship.appearance.icon;$('symbol-facts').textContent=`${SIDES[ship.appearance.side].label}. ${ICONS[iconFor(ship)].label}. Fixed orientation; velocity arrows do not indicate facing.`;}
+$('ship-icon').innerHTML=Object.entries(ICONS).map(([key,value])=>`<option value="${key}">${esc(value.label)}</option>`).join('');populateAppearance(selectedShip());
+$('appearance-form').addEventListener('submit',event=>{event.preventDefault();dispatch({type:'set-appearance',shipId:selected,appearance:{side:$('ship-side').value,icon:$('ship-icon').value}},'Map appearance updated. Ship statistics, crew, condition and movement are unchanged.');});

@@ -126,3 +126,19 @@ test('Express Boat explicitly has no manoeuvre drive and coasts at zero thrust',
  const p=preset('highguard-158');assert.deepEqual([p.tons,p.thrust,p.hull,p.source.page],[100,0,40,158]);assert.match(p.notes,/No manoeuvre drive/);
  let s=applyCommand(createState({ships:[]}),{type:'add-ship',presetId:p.id,name:'X-boat',position:{q:0,r:0},velocity:{q:2,r:0}});assert.equal(canPlot(s.ships[0],{q:3,r:0}),false);s=applyCommand(s,{type:'advance-round'});assert.deepEqual(s.ships[0].motion.position,{q:2,r:0});assert.deepEqual(s.ships[0].motion.velocity,{q:2,r:0});
 });
+
+import {ICONS,iconFor,normalizeAppearance} from '../appearance.mjs';
+test('side and silhouette are independent presentation data; edits never alter movement or crew',()=>{
+ const s=addPreset(createState()),id=s.ships.at(-1).id,original=structuredClone(s),next=applyCommand(s,{type:'set-appearance',shipId:id,appearance:{side:'B',icon:'research'}});
+ assert.deepEqual(next.ships.at(-1).appearance,{side:'B',icon:'research'});const expected=structuredClone(original.ships.at(-1));expected.appearance={side:'B',icon:'research'};assert.deepEqual(next.ships.at(-1),expected);assert.deepEqual(next.ships.slice(0,-1),original.ships.slice(0,-1));assert.deepEqual(s,original);
+ for(const appearance of [{side:'C'},{icon:'../../private'},{icon:'__proto__'}])assert.throws(()=>applyCommand(s,{type:'set-appearance',shipId:id,appearance}),/Choose Side/);
+ assert.deepEqual(normalizeAppearance(),{side:'A',icon:'auto'});
+ const run=x=>applyCommand(applyCommand(x,{type:'set-appearance',shipId:id,appearance:{side:'B',icon:'trader'}}),{type:'advance-round'});assert.deepEqual(run(s),run(JSON.parse(JSON.stringify(s))));
+});
+test('automatic symbols distinguish Marava and custom ring/corsair and keep unknown hulls generic',()=>{
+ const symbol=id=>iconFor({template:preset(id)});
+ assert.equal(symbol('highguard-167'),'marava');assert.equal(symbol('core-194'),'trader');assert.equal(symbol('core-206'),'research');assert.equal(symbol('highguard-196'),'corsair');assert.equal(symbol('highguard-158'),'other');assert.equal(symbol('core-218'),'fighter');assert.equal(symbol('core-220'),'small-craft');
+ assert.match(ICONS.research.label,/custom toroid.*not a canonical/);assert.match(ICONS.corsair.label,/custom fallback.*not a canonical/);
+ assert.equal(iconFor({template:{name:'Custom mystery',tons:400},appearance:{side:'A',icon:'auto'}}),'other');
+ for(const p of PRESETS)assert.ok(Object.hasOwn(ICONS,iconFor({template:p})));
+});
