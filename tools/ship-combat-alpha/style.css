@@ -44,3 +44,5 @@ body.map-expanded .map-footer{flex:none;max-height:24dvh;overflow:auto}
 body.map-expanded .placement-bar{flex:none}
 body.map-expanded .tactical-column{container-type:normal}
 body.map-expanded .map-panel{height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));align-self:stretch}
+
+#flight-controls fieldset{min-width:0;border:1px solid var(--line);border-radius:5px;margin:10px 0;padding:10px}#flight-controls legend{font-size:.8rem;overflow-wrap:anywhere}#flight-controls form{display:grid;gap:10px}#flight-controls ol{padding-left:22px;font-size:.8rem;line-height:1.7;overflow-wrap:anywhere}#flight-phase,#braking-plan-status{font-size:.85rem;line-height:1.6;color:#bdeee4}#flight-controls summary{line-height:1.5;min-height:44px}
