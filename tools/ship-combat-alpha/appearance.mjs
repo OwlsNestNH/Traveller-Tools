@@ -102,7 +102,7 @@ export function iconFor(ship){
 }
 // Original code-native fallback glyphs, deliberately not copied ship artwork.
 export function fallbackGlyph(icon,color){
- if(icon==='research')return `<g fill="${color}"><path fill-rule="evenodd" d="M 0 -19 A 19 19 0 1 1 0 19 A 19 19 0 1 1 0 -19 M 0 -12 A 12 12 0 1 0 0 12 A 12 12 0 1 0 0 -12"/><circle r="4"/><path d="M -2 -14 H 2 V 0 H -2 Z M -1 0 L -12 8 L -10 11 L 1 2 Z M 1 0 L 12 8 L 10 11 L -1 2 Z"/></g>`;
+ if(icon==='research')return `<g fill="${color}" data-custom-toroid="offset"><path fill-rule="evenodd" d="M -23 0 A 23 16 0 1 1 23 0 A 23 16 0 1 1 -23 0 M -11 -2 A 15 9 0 1 0 19 -2 A 15 9 0 1 0 -11 -2"/><path d="M -18 8 L -23 14 L -17 17 L -12 12 Z"/></g>`;
  if(icon==='corsair')return `<path fill="${color}" d="M 0 -21 L 8 -7 L 20 -13 L 15 8 L 7 12 L 4 20 H -4 L -7 12 L -15 8 L -20 -13 L -8 -7 Z"/>`;
  return `<path fill="${color}" d="M 0 -20 L 15 -8 L 15 9 L 6 19 H -6 L -15 9 L -15 -8 Z"/>`;
 }
