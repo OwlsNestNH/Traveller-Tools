@@ -1,3 +1,4 @@
+import {normalizeAppearance} from './appearance.mjs';
 import {MAX_SHIPS,normalizeTemplate,normalizeCrew,normalizeCondition,normalizeSituational} from './setup.mjs';
 import {preset} from './catalogue.mjs';
 // Pure prototype engine: no DOM, storage, network, clocks, or random numbers.
@@ -13,7 +14,7 @@ function ship(value){
  const thrust=integer(value.capabilities?.thrust,'Thrust',0,MAX_THRUST),impulse=vector(value.motion?.impulse??{q:0,r:0},'Planned thrust');
  if(hexDistance(impulse)>thrust)throw Error('Planned velocity change exceeds this ship\'s thrust budget.');
  const template=normalizeTemplate(value.template);
- return {id:value.id,name:name(value.name),template,crew:normalizeCrew(value.crew),condition:normalizeCondition(value.condition,template),situational:normalizeSituational(value.situational),capabilities:{thrust},motion:{position:vector(value.motion?.position,'Position'),velocity:vector(value.motion?.velocity,'Velocity'),impulse}};
+ return {id:value.id,name:name(value.name),template,appearance:normalizeAppearance(value.appearance),crew:normalizeCrew(value.crew),condition:normalizeCondition(value.condition,template),situational:normalizeSituational(value.situational),capabilities:{thrust},motion:{position:vector(value.motion?.position,'Position'),velocity:vector(value.motion?.velocity,'Velocity'),impulse}};
 }
 function checked(state){
  if(state?.version!==API_VERSION)throw Error('Unsupported movement state version.');
@@ -23,7 +24,7 @@ function checked(state){
 }
 export function sampleShips(){return [
  ['merchant','Merchant',1,-5,2,2,0],['courier','Courier',3,3,-3,-1,1],['escort','Escort',6,-2,-4,1,1],['scout','Scout',2,1,4,0,-1],['fighter','Fighter',9,6,2,-2,-1]
-].map(([id,label,thrust,q,r,vq,vr])=>({id,name:label,capabilities:{thrust},motion:{position:{q,r},velocity:{q:vq,r:vr},impulse:{q:0,r:0}}}));}
+].map(([id,label,thrust,q,r,vq,vr])=>({id,name:label,appearance:{side:['escort','fighter'].includes(id)?'B':'A',icon:({merchant:'trader',courier:'scout',escort:'corvette',scout:'scout',fighter:'fighter'})[id]},capabilities:{thrust},motion:{position:{q,r},velocity:{q:vq,r:vr},impulse:{q:0,r:0}}}));}
 export function createState({ships=sampleShips(),roundMinutes=6}={}){return checked({version:API_VERSION,revision:0,round:0,roundMinutes,ships});}
 export function getShip(state,id){const found=state.ships.find(s=>s.id===id);if(!found)throw Error('Select an existing ship.');return found;}
 export function coastTarget(ship){return add(ship.motion.position,ship.motion.velocity);}
@@ -43,6 +44,7 @@ export function applyCommand(input,command){
   if(cost>s.capabilities.thrust)throw Error(`Target needs ${cost} thrust; ${s.capabilities.thrust} available. Choose a reachable hex.`);
   s.motion.impulse=subtract(target,coastTarget(s));break;
  }
+ case 'set-appearance':{getShip(state,command.shipId).appearance=normalizeAppearance(command.appearance);break;}
  case 'remove-ship':{getShip(state,command.shipId);state.ships=state.ships.filter(s=>s.id!==command.shipId);break;}
  case 'clear-ships':state.ships=[];break;
  case 'add-ship':{
@@ -50,7 +52,7 @@ export function applyCommand(input,command){
   const template=normalizeTemplate(command.presetId?preset(command.presetId):command.template);
   if(!template)throw Error('Choose a preset or enter a custom design.');
   let n=1;while(state.ships.some(s=>s.id==='ship-'+n))n++;
-  state.ships.push(ship({id:'ship-'+n,name:command.name,template,crew:{},condition:{hull:template.hull},capabilities:{thrust:template.thrust},motion:{position:command.position,velocity:command.velocity}}));break;
+  state.ships.push(ship({id:'ship-'+n,name:command.name,template,appearance:command.appearance,crew:{},condition:{hull:template.hull},capabilities:{thrust:template.thrust},motion:{position:command.position,velocity:command.velocity}}));break;
  }
  case 'set-crew':{const s=getShip(state,command.shipId);s.crew=normalizeCrew(command.crew);s.situational=normalizeSituational(command.situational);break;}
  case 'set-condition':{const s=getShip(state,command.shipId);s.condition=normalizeCondition(command.condition,s.template);break;}
