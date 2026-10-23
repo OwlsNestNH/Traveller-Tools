@@ -671,3 +671,16 @@ main{padding-top:18px}
  .sale-table .sale-inputs{flex-wrap:wrap}
  .sell-cargo-scroll{max-height:none}
 }
+/* Accounting periods are view state; compact controls do not change the campaign. */
+.accounting-period .toolbar{align-items:end;gap:10px;flex-wrap:wrap}
+.accounting-period .field{flex:0 1 140px;min-width:0}
+.accounting-period input{width:100%;min-width:0}
+.accounting-period button,.accounting-pdf button,.accounting-pdf .check{min-height:44px}
+.accounting-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}
+.accounting-summary .stat{min-width:0;padding:14px;border:1px solid var(--line);border-radius:6px;background:var(--panel2,#102a37)}
+.accounting-summary .value{font-size:clamp(18px,2vw,28px);overflow-wrap:anywhere}
+.accounting-summary [data-accounting=closing]{border-color:var(--accent,#45c9da)}
+.accounting-pdf{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;border-top:1px solid var(--line)}
+.accounting-pdf h3,.accounting-pdf p{margin:0 0 6px}
+@media(max-width:700px){.accounting-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.accounting-period .field{flex:1 1 120px}}
+@media(max-width:380px){.accounting-summary{grid-template-columns:minmax(0,1fr)}.accounting-pdf button{width:100%}}
