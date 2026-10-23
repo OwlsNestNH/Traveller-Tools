@@ -64,3 +64,10 @@ test('edited source software ratings become manual overrides and retain authorit
  s=allocate(s,x=>{x.software.installed.find(p=>p.id==='evade').installed=3;});let p=s.ships[0].systems.software.installed.find(p=>p.id==='evade');assert.equal(p.origin,'manual');assert.equal(p.sourceReference.installed,1);assert.equal(p.sourceReference.fit,fit);assert.deepEqual(p.sourceReference.source,s.ships[0].template.source);
  s=createState(JSON.parse(JSON.stringify(s)));p=s.ships[0].systems.software.installed.find(p=>p.id==='evade');assert.equal(p.origin,'manual');assert.equal(p.installed,3);assert.equal(p.sourceReference.installed,1);assert.equal(s.ships[0].template.record.software,fit);
 });
+
+test('manual design fit never becomes cited original software provenance',()=>{
+ let s=applyCommand(createState({ships:[]}),{type:'add-ship',name:'Harrier',presetId:'drinax-harrier-restored',position:{q:0,r:0},velocity:{q:0,r:0}});const original=structuredClone(s.ships[0].template);
+ s=applyCommand(s,{type:'set-design',shipId:'ship-1',template:{...original,record:{...original.record,software:'Evade/3'}}});
+ for(let i=0;i<2;i++){const ship=s.ships[0],p=ship.systems.software.installed.find(p=>p.id==='evade');assert.equal(p.sourceReference.installed,1);assert.equal(p.sourceReference.fit,original.record.software);assert.deepEqual(p.sourceReference.source,original.source);assert.equal(p.origin,'manual');assert.equal(ship.systems.software.manualFit,'Evade/3');assert.deepEqual(ship.template,original);s=createState(JSON.parse(JSON.stringify(s)));}
+ s=allocate(s,x=>{x.software.installed.find(p=>p.id==='evade').installed=3;});s=createState(JSON.parse(JSON.stringify(s)));const p=s.ships[0].systems.software.installed.find(p=>p.id==='evade');assert.equal(p.installed,3);assert.equal(p.origin,'manual');assert.equal(p.sourceReference.installed,1);assert.equal(p.sourceReference.fit,original.record.software);
+});
