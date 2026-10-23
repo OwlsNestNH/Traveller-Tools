@@ -10,6 +10,16 @@ Edit the selected ship to enter a name, position, velocity and thrust budget. Th
 
 The map is a single proportional axial-hex projection. Pan and zoom never compress separate pair distances. Fit ships frames their actual positions. Range lines join the selected ship to the others; the sidebar lists Euclidean centre distances, kilometres and range bands under the explicit policy below. Hex detail automatically disappears at distant zoom and can also be toggled off. Grid enumeration is bounded to 1,800 cells; target legality uses an analytic distance check even when grid detail is hidden. Large thrust never enumerates its millions of reachable targets.
 
+## Workspace and quick placement
+
+The tactical workspace uses the available page width. The selected-ship card sits at the left edge; the map reserves the remaining viewport height after the compact header. Rules and map explanations are available through expandable help. Expand map preserves the camera, selection and drafts; Restore map returns to the previous page scroll.
+
+Add Ship opens a searchable preset picker with a suggested short name, side and generic crew experience. Place ship arms one map click/tap; Escape returns to the unchanged draft and Cancel adds nothing. Source variants remain separate choices, and the selected citation is shown independently. After placement, Ship setup retains the full optional design/crew editor. Custom/manual design remains available from the picker.
+
+Hull and the Power/Fuel crescents are direct controls with exact numeric entry and nearby Commit/Cancel actions. All changed condition fields belong to one pending ship draft and commit together. Unknown maxima explicitly disable the corresponding gauge and offer Set capacity; entering capacity does not invent a current quantity, repair or refill the ship. Unknown quantities with known capacity show a handle at zero as an input affordance, not a recorded zero value.
+
+Browser regressions include 1366x768 and 320x700 viewport bounds, search and placement cancellation, keyboard focus, reduced viewport height, and actual mouse/touch drags on the visible gauges. A reduced viewport is a keyboard-layout proxy; it does not claim to emulate every physical phone keyboard.
+
 ## Movement profile and limits
 
 The app uses Traveller Companion Update 2024, printed pp.173–175: six-minute rounds, 648 km hex spacing, thrust changing the vector before simultaneous movement, and reverse recorded initiative for acceleration declarations. The continuous range-boundary and deterministic braking policies are documented below. Reaction-engine fuel/performance, mixed six-minute/six-second dogfights, weapons, damage resolution and missiles remain outside scope. Legacy API consumers may retain other manual round durations; guided Companion declarations require six minutes. No source prose, scans or artwork from the books is included.
