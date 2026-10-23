@@ -34,3 +34,13 @@ body.map-expanded>header,body.map-expanded>footer,body.map-expanded main>aside,b
 input.hull-slider{height:44px;min-height:44px;padding:13px 0;border:0;border-radius:0;background-clip:content-box;margin:18px 0}
 
 .gauge-handle{fill:#efffff;stroke:#245c69;stroke-width:3;pointer-events:none}
+
+/* Expanded map owns the viewport, not a sticky child of an overflow ancestor. */
+body.map-expanded{overflow:hidden}
+body.map-expanded .map-panel{position:fixed;inset:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px);z-index:20;display:flex;flex-direction:column;border-radius:0;overflow:hidden}
+body.map-expanded .map-heading{position:static;flex:none;z-index:auto}
+body.map-expanded #map{flex:1 1 0;height:auto;min-height:100px}
+body.map-expanded .map-footer{flex:none;max-height:24dvh;overflow:auto}
+body.map-expanded .placement-bar{flex:none}
+body.map-expanded .tactical-column{container-type:normal}
+body.map-expanded .map-panel{height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));align-self:stretch}
