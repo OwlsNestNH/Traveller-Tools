@@ -20,3 +20,5 @@ dialog{background:#122330;color:#e6eff5;border:1px solid #537081;border-radius:1
 #scene .cell.placement-cell{fill:transparent;pointer-events:all}
 
 #setup-dialog.quick-add .setup-roster,#setup-dialog.quick-add #save-setup{display:none}#setup-dialog.quick-add .setup-body{grid-template-columns:minmax(0,1fr)}#setup-dialog.quick-add{max-width:760px}
+
+#flight-controls fieldset{min-width:0;border:1px solid var(--line);border-radius:5px;margin:10px 0;padding:10px}#flight-controls legend{font-size:.8rem;overflow-wrap:anywhere}#flight-controls form{display:grid;gap:10px}#flight-controls ol{padding-left:22px;font-size:.8rem;line-height:1.7;overflow-wrap:anywhere}#flight-phase,#braking-plan-status{font-size:.85rem;line-height:1.6;color:#bdeee4}#flight-controls summary{line-height:1.5;min-height:44px}

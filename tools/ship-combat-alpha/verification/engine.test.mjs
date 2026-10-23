@@ -1,6 +1,7 @@
+import {rangeInfo,HEX_KM,reducedVelocity} from '../movement-rules.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createState,applyCommand,sampleShips,getShip,coastTarget,plannedTarget,hexDistance,canPlot,reachableCount,MAX_THRUST,COORDINATE_LIMIT} from '../engine.mjs';
+import {createState,applyCommand,sampleShips,getShip,coastTarget,plannedTarget,hexDistance,canPlot,reachableCount,MAX_THRUST,COORDINATE_LIMIT,availableThrust,accelerationOrder,normalizeState} from '../engine.mjs';
 import {toWorld,fromWorld,visibleGrid,fitCamera,GRID_LIMIT} from '../geometry.mjs';
 const vessel=(id='test',thrust=2,position={q:0,r:0},velocity={q:0,r:0})=>({id,name:id,capabilities:{thrust},motion:{position,velocity,impulse:{q:0,r:0}}});
 const state=(...ships)=>createState({ships:ships.length?ships:[vessel()]});
@@ -113,7 +114,33 @@ test('crew modes and optional TOTAL overrides remain independent of templates, m
 });
 test('braking to zero costs velocity-change thrust and applies only on advance; zero thrust coasts',()=>{
  const s=state(vessel('one',3,{q:5,r:2},{q:3,r:0})),plotted=applyCommand(s,{type:'brake',shipId:'one'});assert.deepEqual(plotted.ships[0].motion.velocity,{q:3,r:0});assert.deepEqual(plotted.ships[0].motion.impulse,{q:-3,r:0});const stopped=applyCommand(plotted,{type:'advance-round'});assert.deepEqual(stopped.ships[0].motion.position,{q:5,r:2});assert.deepEqual(stopped.ships[0].motion.velocity,{q:0,r:0});
- const fast=state(vessel('fast',0,{q:1,r:1},{q:1,r:0})),before=JSON.stringify(fast);assert.throws(()=>applyCommand(fast,{type:'brake',shipId:'fast'}),/Stopping needs 1 thrust; 0 available/);assert.equal(JSON.stringify(fast),before);assert.equal(applyCommand(fast,{type:'advance-round'}).ships[0].motion.position.q,2);
+ const fast=state(vessel('fast',0,{q:1,r:1},{q:1,r:0})),before=JSON.stringify(fast),waiting=applyCommand(fast,{type:'brake',shipId:'fast'});assert.equal(waiting.ships[0].flight.braking,true);assert.deepEqual(waiting.ships[0].motion.impulse,{q:0,r:0});assert.equal(JSON.stringify(fast),before);assert.equal(applyCommand(waiting,{type:'advance-round'}).ships[0].motion.position.q,2);
+});
+
+test('continuing braking advances one round at a time, recomputes reservations, and never overshoots',()=>{
+ let s=applyCommand(state(vessel('one',2,{q:0,r:0},{q:7,r:0})),{type:'brake',shipId:'one'});assert.equal(s.round,0);assert.deepEqual(s.ships[0].motion.velocity,{q:7,r:0});
+ s=applyCommand(s,{type:'advance-round'});assert.equal(s.round,1);assert.equal(s.ships[0].motion.velocity.q,5);assert.equal(s.ships[0].motion.position.q,5);assert.equal(s.ships[0].flight.braking,true);
+ s=applyCommand(s,{type:'set-flight-plan',shipId:'one',flight:{evasion:1}});assert.equal(availableThrust(s.ships[0]),1);s=applyCommand(s,{type:'advance-round'});assert.equal(s.ships[0].motion.velocity.q,4);assert.equal(s.ships[0].motion.position.q,9);
+ s=applyCommand(s,{type:'set-flight-plan',shipId:'one',flight:{evasion:0}});s=applyCommand(s,{type:'advance-round'});assert.equal(s.ships[0].motion.velocity.q,2);s=applyCommand(s,{type:'advance-round'});assert.equal(s.ships[0].motion.velocity.q,0);assert.equal(s.ships[0].flight.braking,false);assert.equal(s.round,4);const p=s.ships[0].motion.position;s=applyCommand(s,{type:'advance-round'});assert.deepEqual(s.ships[0].motion.position,p);
+});
+test('braking is legal in every axial direction and editable/cancellable without hidden movement',()=>{
+ for(let q=-12;q<=12;q++)for(let r=-12;r<=12;r++)for(let b=0;b<=6;b++){const n=reducedVelocity({q,r},b);assert.equal(hexDistance(n),Math.max(0,hexDistance({q,r})-b));assert.ok(hexDistance(n,{q,r})<=b);assert.ok(!q||!n.q||Math.sign(q)===Math.sign(n.q));assert.ok(!r||!n.r||Math.sign(r)===Math.sign(n.r));}
+ let s=applyCommand(state(vessel('one',2,{q:0,r:0},{q:8,r:-3})),{type:'brake',shipId:'one'});const c=applyCommand(s,{type:'coast',shipId:'one'});assert.equal(c.ships[0].flight.braking,false);assert.deepEqual(c.ships[0].motion.impulse,{q:0,r:0});assert.deepEqual(c.ships[0].motion.velocity,{q:8,r:-3});s=applyCommand(s,{type:'plot',shipId:'one',target:{q:9,r:-3}});assert.equal(s.ships[0].flight.braking,false);assert.deepEqual(s.ships[0].motion.impulse,{q:1,r:0});
+});
+test('reservations constrain targets and existing plots atomically, including zero movement budget',()=>{
+ let s=state(vessel('one',6));s=applyCommand(s,{type:'set-flight-plan',shipId:'one',flight:{evasion:2,gunners:3}});assert.equal(availableThrust(s.ships[0]),1);assert.equal(canPlot(s.ships[0],{q:2,r:0}),false);s=applyCommand(s,{type:'plot',shipId:'one',target:{q:1,r:0}});const before=JSON.stringify(s);assert.throws(()=>applyCommand(s,{type:'set-flight-plan',shipId:'one',flight:{gunners:4}}));assert.throws(()=>applyCommand(s,{type:'set-flight-plan',shipId:'one',flight:{evasion:7}}));assert.equal(JSON.stringify(s),before);s=applyCommand(s,{type:'coast',shipId:'one'});s=applyCommand(s,{type:'set-flight-plan',shipId:'one',flight:{gunners:4}});assert.equal(availableThrust(s.ships[0]),0);assert.equal(canPlot(s.ships[0],{q:0,r:0}),true);
+});
+test('declarations use recorded initiative, stable referee ties, and simultaneous guarded resolution',()=>{
+ let s=state(vessel('slow',9),vessel('fast',1),vessel('tie',4));assert.throws(()=>applyCommand(s,{type:'begin-acceleration'}),/Record initiative/);for(const [shipId,initiative,tie]of [['slow',2,0],['fast',9,0],['tie',2,-1]])s=applyCommand(s,{type:'set-flight-plan',shipId,flight:{initiative,tie}});assert.deepEqual(accelerationOrder(s),['tie','slow','fast']);
+ s=applyCommand(s,{type:'begin-acceleration'});const before=JSON.stringify(s);assert.throws(()=>applyCommand(s,{type:'declare-acceleration',shipId:'fast'}),/first/);assert.throws(()=>applyCommand(s,{type:'advance-round'}),/Every ship/);assert.throws(()=>applyCommand(s,{type:'plot',shipId:'fast',target:{q:1,r:0}}),/first/);assert.equal(JSON.stringify(s),before);
+ s=applyCommand(s,{type:'plot',shipId:'tie',target:{q:2,r:0}});s=applyCommand(s,{type:'declare-acceleration',shipId:'tie'});assert.deepEqual(s.ships[2].motion.position,{q:0,r:0});assert.throws(()=>applyCommand(s,{type:'coast',shipId:'tie'}),/first/);assert.throws(()=>applyCommand(s,{type:'set-flight-plan',shipId:'slow',flight:{initiative:10}}),/Cancel declarations/);s=applyCommand(s,{type:'declare-acceleration',shipId:'slow'});s=applyCommand(s,{type:'plot',shipId:'fast',target:{q:0,r:1}});s=applyCommand(s,{type:'declare-acceleration',shipId:'fast'});assert.throws(()=>applyCommand(s,{type:'declare-acceleration',shipId:'fast'}),/All accelerations/);s=applyCommand(s,{type:'advance-round'});assert.deepEqual(s.ships[2].motion.position,{q:2,r:0});assert.deepEqual(s.ships[1].motion.position,{q:0,r:1});assert.equal(s.round,1);assert.equal(s.acceleration,null);assert.equal(s.ships[1].flight.initiative,9);
+});
+test('legacy records retain manual movement, unknown initiative, deterministic replay and cancellation',()=>{
+ const old={version:1,revision:0,round:0,roundMinutes:6,ships:[vessel('one')]};let s=normalizeState(old);assert.equal(s.acceleration,null);assert.equal(s.ships[0].flight.initiative,null);assert.equal(availableThrust(s.ships[0]),2);s=applyCommand(s,{type:'set-flight-plan',shipId:'one',flight:{initiative:0}});s=applyCommand(s,{type:'begin-acceleration'});assert.throws(()=>applyCommand(s,{type:'remove-ship',shipId:'one'}),/Finish or cancel/);s=applyCommand(s,{type:'cancel-acceleration'});s=applyCommand(s,{type:'advance-round'});assert.equal(s.round,1);assert.deepEqual(normalizeState(JSON.parse(JSON.stringify(s))),s);
+});
+test('Euclidean ranges use 648 km centres and explicit continuous/outward band boundaries',()=>{
+ const o={q:0,r:0};assert.equal(HEX_KM,648);for(const [q,band]of [[0,'Adjacent / Close'],[1,'Short'],[2,'Medium'],[15,'Medium'],[16,'Long'],[38,'Long'],[39,'Very Long'],[77,'Very Long'],[78,'Distant']]){const info=rangeInfo({q,r:0},o);assert.equal(info.band,band);assert.equal(info.km,q*648);assert.equal(info.outwardSpaces,q);}
+ const diagonal=rangeInfo({q:1,r:1},o);assert.equal(diagonal.spaces,Math.sqrt(3));assert.equal(diagonal.outwardSpaces,2);assert.equal(diagonal.band,'Medium');assert.equal(rangeInfo({q:45,r:45},o).band,'Distant');assert.equal(rangeInfo({q:77+1e-10,r:0},o).band,'Distant');assert.deepEqual(rangeInfo({q:-4,r:-3},o),rangeInfo(o,{q:-4,r:-3}));
 });
 
 test('remove and clear preserve remaining IDs and setup; empty encounter can add ten real ships',()=>{
