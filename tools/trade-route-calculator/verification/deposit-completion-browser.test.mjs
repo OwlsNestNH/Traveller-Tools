@@ -334,23 +334,17 @@ async function runDeposit(page,result,scenario,context){
 async function catalogCase(page,result){
  await page.goto(new URL('verification/deposit-catalog/index.html',base).href);
  const cards=page.locator('main .tool-card'),headings=await cards.locator('h2').allTextContents();
- assert.deepEqual(headings,['Nav Calculator','Ship’s Log & Ledger','Traveller Tool Locker','Traveller Ship Operations — Beta','Speculative Trade — Alpha · Under Construction','Traveller Vehicle Builder']);
+ assert.deepEqual(headings,["Nav Calculator", "Ship\u2019s Log & Ledger", "Traveller Tool Locker", "Traveller Ship Operations \u2014 Beta", "Ship Combat Alpha", "Traveller Vehicle Builder"]);
  const card=cards.filter({has:page.getByRole('heading',{name:'Traveller Ship Operations — Beta',exact:true})});await card.scrollIntoViewIfNeeded();
  assert.equal(await card.getByRole('heading',{name:'Traveller Ship Operations — Beta',exact:true}).isVisible(),true);
  assert.equal(await card.getByRole('link',{name:'Launch Tool',exact:true}).getAttribute('href'),'tools/trade-route-calculator/');
  assert.equal(await page.getByRole('heading',{name:/Traveller Ship Operations.*Alpha/}).count(),0);
- assert.deepEqual(await cards.locator('a').evaluateAll(elements=>elements.map(el=>el.getAttribute('href'))),['tools/nav-calculator/','tools/traveller_ship_logger_v2/','tools/traveller_tools_buttons/','tools/trade-route-calculator/','tools/speculative-trade-alpha/','tools/vehicle-builder/']);
- assert.deepEqual(await cards.locator('p').allTextContents(),[
-  'Work out travel times before the captain promises delivery by lunch. Space is big. Your fuel budget isn’t.',
-  'Track cargo, passengers, jumps and the bills that follow you across the stars. The mortgage survives every adventure.',
-  'A stash of Traveller tools and generators for when the crew ignores your carefully prepared adventure. Again.',
-  'Buy low, sell somewhere else, and discover what taxes did to your brilliant plan. Plot routes, trade goods and track cargo, fuel, life support and accounts.',
-  'This tool simplifies speculative trading for Mongoose Traveller 2e, using house rules inspired by GURPS Far Trader. Buy cargo lots, compare nearby markets on a clickable map, and use Broker rolls to find buyers and resolve sales. It tracks cargo, cash, fees, and government-based taxes. The GM sets the intended average financial pressure; player choices, skill, and risk can produce better returns or losses. The target is never a guaranteed payout. Alpha: under construction.',
-  'Build the ride your crew deserves—or the one they can afford. Add armour, weapons and seats, then see what still fits.'
- ]);
- assert.equal(result.blockedCounters.length,5,'All five external counter images are isolated test fixtures');
+ assert.deepEqual(await cards.locator('a').evaluateAll(elements=>elements.map(el=>el.getAttribute('href'))),["tools/nav-calculator/", "tools/traveller_ship_logger_v2/", "tools/traveller_tools_buttons/", "tools/trade-route-calculator/", "tools/ship-combat-alpha/", "tools/vehicle-builder/"]);
+ assert.deepEqual(await cards.locator('p').allTextContents(),["Work out travel times before the captain promises delivery by lunch. Space is big. Your fuel budget isn\u2019t.", "Track cargo, passengers, jumps and the bills that follow you across the stars. The mortgage survives every adventure.", "A stash of Traveller tools and generators for when the crew ignores your carefully prepared adventure. Again.", "Buy low, sell somewhere else, and discover what taxes did to your brilliant plan. Plot routes, trade goods and track cargo, fuel, life support and accounts.", "Under construction \u2014 Try a working vector movement prototype with persistent velocity, configurable thrust, reachable hexes, and a proportional map. Movement assumptions are explicit and not verified Traveller rules; weapons and damage are not implemented.", "Build the ride your crew deserves\u2014or the one they can afford. Add armour, weapons and seats, then see what still fits."]);
+ assert.equal(await page.getByRole('link',{name:'Archive',exact:true}).getAttribute('href'),'archive/');
+ assert.equal(result.blockedCounters.length,6,'All six external counter images are isolated test fixtures');
  await frames(page);await layout(page,result,'catalog');await capture(page,result,'beta-catalog',{fullPage:true});
- result.checks.push('Actual root catalog source shows the exact Beta heading, unchanged Launch Tool path, five neighboring card headings/paths (including the existing separate Alpha card) and unchanged description; external counters intercepted');
+ result.checks.push('Actual root catalog source shows the exact Beta heading, unchanged Launch Tool path, five neighboring active card headings/paths (including Ship Combat Alpha; speculative alpha is archived) and unchanged description; external counters intercepted');
 }
 async function writeReport(){await writeFile(join(artifacts,'deposit-completion-report.json'),JSON.stringify(report,null,2)+'\n');}
 async function runCase(id,kind,viewport,scenario){
