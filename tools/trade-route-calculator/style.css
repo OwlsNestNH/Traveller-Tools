@@ -300,6 +300,10 @@ main{padding-top:18px}
 .expense-table .number{font-variant-numeric:tabular-nums;text-align:right;white-space:normal}
 .expense-table .expense-name{width:100%;border:1px solid #76c8e8;border-radius:4px;background:#b8e7f7;color:#083148;padding:.4rem .45rem;text-align:left;min-height:36px;font-size:inherit;font-weight:650;line-height:1.25;white-space:normal;overflow-wrap:normal;word-break:normal}.expense-table .expense-name:hover{background:#d6f3ff;border-color:#a9e5fb;color:#05283b}.expense-table .expense-name:focus-visible{outline:2px solid #fff;outline-offset:2px}
 .expense-table tfoot th,.expense-table tfoot td{border-top:1px solid var(--line);font-weight:700}
+.expense-maintenance-action{display:flex;align-items:center;gap:2px}
+.expense-maintenance-action .expense-name{flex:1;min-width:0;width:auto;overflow-wrap:anywhere}
+.expense-maintenance-action .rule-info{margin:0;flex:none}
+@media(max-width:500px){.expense-table th:first-child{width:60%}.expense-table th:nth-child(2){width:23%}}
 .expense-panel .field{margin:.65rem 0}.expense-panel input{min-width:0;max-width:100%}
 .expense-panel .expense-total{padding:.7rem;gap:.5rem}.expense-panel .expense-total strong{font-size:1.3rem}
 .expense-panel>button{min-height:32px}.expense-panel .expense-facts{font-size:.8rem}

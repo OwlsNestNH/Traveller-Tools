@@ -121,7 +121,13 @@ try{
   await page.locator('#ship-actions [data-action="refill-support"]').click();
   await page.locator('#service-panel [data-action="service-audit"]').click();await info(page.locator('#service-panel [data-rule-info="lss"]'),'lss');await info(page.locator('#service-panel [data-rule-info="support-refill"]'),'support-refill');
   await page.locator('#service-panel [data-action="service-back"]').click();
-  await page.locator('#ship-actions [data-action="ship-expenses"]').click();await page.locator('#expense-panel [data-action="expense-open"][data-arg$=":mortgage"]').click();
+  await page.locator('#ship-actions [data-action="ship-expenses"]').click();
+  const maintenanceInfo=page.locator('.expense-table [data-rule-info="maintenance"]');
+  const maintenanceGeometry=await maintenanceInfo.evaluate(info=>{const button=info.parentElement.querySelector('[data-action="expense-open"]'),a=button.getBoundingClientRect(),b=info.getBoundingClientRect(),cell=info.closest('th').getBoundingClientRect();return{a:{left:a.left,right:a.right,top:a.top,bottom:a.bottom},b:{left:b.left,right:b.right,top:b.top,bottom:b.bottom},cellRight:cell.right,overflow:button.scrollWidth>button.clientWidth+1};});
+  assert.ok(maintenanceGeometry.b.left>=maintenanceGeometry.a.right&&maintenanceGeometry.b.right<=maintenanceGeometry.cellRight+1,'Maintenance info stays beside its action within the expense column');
+  assert.ok(maintenanceGeometry.b.top<maintenanceGeometry.a.bottom&&maintenanceGeometry.b.bottom>maintenanceGeometry.a.top,'Maintenance controls share a row at every width');assert.equal(maintenanceGeometry.overflow,false);assert.ok(maintenanceGeometry.a.bottom-maintenanceGeometry.a.top<=56.1,'Maintenance action retains its compact height');
+  await info(maintenanceInfo,'maintenance',{method:viewport.width<500?'tap':'Enter',screenshot:'maintenance-inline'});await info(maintenanceInfo,'maintenance',{method:'Space',close:'button'});
+  await page.locator('#expense-panel [data-action="expense-open"][data-arg$=":mortgage"]').click();
   await info(page.locator('#expense-panel [data-rule-info="mortgage"]'),'mortgage');await page.locator('#expense-panel [data-action="expense-cancel"]').click();await page.locator('#expense-panel [data-action="expense-close"]').click();
   // Expanded-map state is view-only and must survive reference Escape.
   await page.locator('#main [data-action="map-expand"]').click();
