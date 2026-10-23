@@ -1,0 +1,63 @@
+name: Ship combat alpha checks
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'tools/ship-combat-alpha/**'
+      - 'index.html'
+      - '.github/workflows/ship-combat-alpha.yml'
+permissions:
+  contents: read
+concurrency:
+  group: ship-combat-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  engine:
+    name: Movement engine and command contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - name: Syntax, engine, replay and proportional geometry
+        run: |
+          for file in tools/ship-combat-alpha/*.mjs tools/ship-combat-alpha/verification/*.mjs; do node --check "$file"; done
+          node --test tools/ship-combat-alpha/verification/engine.test.mjs tests/tool-visits.test.cjs
+  browser:
+    name: Movement UI desktop and mobile
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      SHIP_COMBAT_TEST_ROOT: http://127.0.0.1:8767/
+      SHIP_COMBAT_COMMIT: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - name: Install pinned Chromium runner
+        run: |
+          npm install --prefix "$RUNNER_TEMP/ship-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
+          node "$RUNNER_TEMP/ship-playwright/node_modules/playwright/cli.js" install --with-deps chromium
+      - name: Exercise synthetic movement without campaign storage
+        run: |
+          python3 -m http.server 8767 --bind 127.0.0.1 > "$RUNNER_TEMP/ship-server.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..30}; do if curl --fail --silent "$SHIP_COMBAT_TEST_ROOT" > /dev/null; then break; fi; sleep 1; done
+          node tools/ship-combat-alpha/verification/browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
+      - name: Upload bounded movement evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ship-combat-${{ github.event.pull_request.head.sha }}
+          path: tools/ship-combat-alpha/verification-artifacts/
+          if-no-files-found: warn
