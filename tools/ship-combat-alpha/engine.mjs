@@ -44,6 +44,8 @@ export function applyCommand(input,command){
   if(cost>s.capabilities.thrust)throw Error(`Target needs ${cost} thrust; ${s.capabilities.thrust} available. Choose a reachable hex.`);
   s.motion.impulse=subtract(target,coastTarget(s));break;
  }
+ case 'replace-ships':state.ships=command.ships;break;
+ case 'set-design':{const s=getShip(state,command.shipId);s.template=normalizeTemplate(command.template);if(!s.template)throw Error('Enter a design record.');if(command.useDesignThrust===true){s.capabilities.thrust=s.template.thrust;s.motion.impulse={q:0,r:0};}break;}
  case 'set-appearance':{getShip(state,command.shipId).appearance=normalizeAppearance(command.appearance);break;}
  case 'remove-ship':{getShip(state,command.shipId);state.ships=state.ships.filter(s=>s.id!==command.shipId);break;}
  case 'clear-ships':state.ships=[];break;
@@ -76,3 +78,5 @@ export function applyCommand(input,command){
  }
  state.revision++;return checked(state);
 }
+
+export function normalizeState(input){return checked(input);}
