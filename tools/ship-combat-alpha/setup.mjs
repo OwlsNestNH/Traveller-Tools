@@ -1,3 +1,4 @@
+import {normalizeRecord,normalizeManualCondition,optionalName} from './ship-record.mjs';
 // Setup data is independent of motion. No storage, I/O, dice or combat resolution.
 export const MAX_SHIPS=10;
 export const ROLES=Object.freeze(['captain','pilot','astrogator','sensors','engineer','gunner','medic','steward']);
@@ -8,7 +9,7 @@ const optional=(v,label,min,max)=>v===null||v===undefined?null:int(v,label,min,m
 export function normalizeTemplate(v){
  if(v==null)return null;
  if(!Number.isFinite(v.tons)||v.tons<=0||v.tons>400)throw Error('Ship displacement must be greater than zero and at most 400 tons.');
- return {name:text(v.name,'Design name'),tons:v.tons,thrust:int(v.thrust,'Design thrust',0,10000),hull:optional(v.hull,'Design hull',1,1000000),armour:optional(v.armour,'Armour',0,1000),notes:v.notes==null?'':String(v.notes).slice(0,240),source:v.source==null?null:{book:text(v.source.book,'Source book',100),page:int(v.source.page,'Printed page',1,1000),endPage:optional(v.source.endPage,'Last printed page',v.source.page,1000)}};
+ return {name:text(v.name,'Design name'),tons:v.tons,thrust:int(v.thrust,'Design thrust',0,10000),hull:optional(v.hull,'Design hull',1,1000000),armour:optional(v.armour,'Armour',0,1000),record:normalizeRecord(v.record),notes:v.notes==null?'':String(v.notes).slice(0,240),source:v.source==null?null:{book:text(v.source.book,'Source book',100),page:int(v.source.page,'Printed page',1,1000),endPage:optional(v.source.endPage,'Last printed page',v.source.page,1000)}};
 }
 export function normalizeCrew(v={}){
  const mode=v.mode??'quick',rating=v.rating??'Green';
@@ -16,18 +17,28 @@ export function normalizeCrew(v={}){
  const overrides={},details={};
  for(const role of ROLES){
   overrides[role]=optional(v.overrides?.[role],role+' total override',-10,20);
-  const d=v.details?.[role];details[role]=d==null?null:{name:text(d.name,'Crew name'),skillName:text(d.skillName,'Skill / specialty'),skill:int(d.skill,'Skill level',0,10),characteristicDM:int(d.characteristicDM,'Characteristic DM',-5,5)};
+  const d=v.details?.[role];details[role]=d==null?null:{name:optionalName(d.name),skillName:text(d.skillName,'Skill / specialty'),skill:int(d.skill,'Skill level',0,10),characteristicDM:int(d.characteristicDM,'Characteristic DM',-5,5)};
  }
- return {mode,rating,overrides,details};
+ return {mode,rating,bonus:optional(v.bonus,'General crew contribution',-10,20),overrides,details};
 }
 export function normalizeSituational(v={}){return Object.fromEntries(ROLES.map(role=>[role,int(v[role]??0,role+' situational DM',-20,20)]));}
 export function crewContribution(crew,role){
  if(!ROLES.includes(role))throw Error('Unknown crew role.');
  const c=normalizeCrew(crew);
- if(c.mode==='quick')return c.overrides[role]??RATINGS[c.rating];
+ if(c.mode==='quick')return c.overrides[role]??c.bonus??RATINGS[c.rating];
  const d=c.details[role];return d?d.skill+d.characteristicDM:null;
 }
 export function normalizeCondition(v,template){
  const hull=optional(v?.hull,'Current hull',0,template?.hull??1000000);
- return {hull};
+ return {hull,...normalizeManualCondition(v,template?.record)};
 }
+
+export function effectiveDesign(ship){const base=ship.template;if(!base)return null;const o=ship.designOverrides??{};return normalizeTemplate({...base,...o,record:{...base.record,...o.record},source:base.source,notes:base.notes});}
+export function normalizeOverrides(value,base){
+ if(value==null)return null;if(typeof value!=='object'||Array.isArray(value))throw Error('Design overrides must be a record.');if(!base)throw Error('Define a base design before applying overrides.');
+ const merged=normalizeTemplate({...base,...value,record:{...base.record,...value.record},source:base.source,notes:base.notes}),out={};
+ for(const key of ['name','tons','thrust','hull','armour'])if(JSON.stringify(merged[key])!==JSON.stringify(base[key]))out[key]=merged[key];
+ const record={};for(const key of Object.keys(base.record))if(JSON.stringify(merged.record[key])!==JSON.stringify(base.record[key]))record[key]=merged.record[key];if(Object.keys(record).length)out.record=record;
+ return Object.keys(out).length?out:null;
+}
+export function overrideFields(ship){return Object.entries(ship.designOverrides??{}).flatMap(([key,v])=>key==='record'?Object.keys(v).map(k=>'record.'+k):[key]);}

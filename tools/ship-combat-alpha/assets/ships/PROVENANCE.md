@@ -20,6 +20,8 @@ Core Type-A / High Guard Beowulf use free_trader; Type-A2 / Hero use far_trader,
 
 No matching pinned token was found for Ultralight Fighter, Heavy Fighter, Troop Transport, Torpedo Boat, Express Boat, Serpent Scout, Jump Shuttle, Fleet Courier or Dragon SDB: these use the labelled custom generic symbol, never Light Fighter/Scout/SDB merely because they share a class. Nishemani Corsair uses the labelled custom Corsair fallback. Laboratory ships deliberately retain the user's custom top-down toroid preference; the available edge-on lab_ship asset is not imported. Mercenary cruiser, subsidised liner and planetoid tokens are outside this preset scope and are not imported.
 
+The Drinax Harrier has no matching token in this pinned directory and also uses the labelled custom generic symbol.
+
 The complete source-page mapping is explicit in appearance.mjs. A user can override a symbol manually; the choice remains presentation only.
 
 | Source file | SHA-256 |

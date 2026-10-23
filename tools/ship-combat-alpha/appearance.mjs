@@ -35,8 +35,9 @@ export function normalizeAppearance(value={}){
  return {side,icon};
 }
 // Explicit source identity avoids guessing hulls from broad class names or tonnage.
-// All 55 presets are covered; missing variants stay custom instead of borrowing a different ship.
+// All 56 presets are covered; missing variants stay custom instead of borrowing a different ship.
 export const PRESET_ICONS=Object.freeze({
+ "The Pirates of Drinax — Book 2: The Trojan Reach (Updated)/10": "other",
  "Core Rulebook Update 2022/190": "scout",
  "Core Rulebook Update 2022/192": "seeker",
  "Core Rulebook Update 2022/194": "trader",
