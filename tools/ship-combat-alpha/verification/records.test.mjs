@@ -5,9 +5,33 @@ import {beginSetup,editSetup,saveSetup} from '../setup-session.mjs';
 import {crewContribution,effectiveDesign} from '../setup.mjs';
 import {remainingPower} from '../ship-record.mjs';
 import {beginConsoleDraft,commitConsoleDraft,conditionLimits} from '../console-draft.mjs';
+import {normalizeState} from '../engine.mjs';
+import {normalizeIdentity} from '../ship-identity.mjs';
+import {sheetRows} from '../ship-sheet.mjs';
 const position={q:1,r:2},velocity={q:0,r:0};
 const template={name:'Manual hull',tons:400,thrust:3,hull:100,armour:0,record:{className:'Custom escort',tl:12,ratedPower:150,fuelCapacity:42.5,jump:2,sensors:'Military',computer:'Computer/10',software:'Manoeuvre; Library',requirements:[{name:'Basic systems',power:80},{name:'Sensors',power:null}],weapons:[{id:'turret-1',name:'Dorsal turret',type:'Beam laser',count:2,ammunition:null}]}};
 const add=s=>applyCommand(s,{type:'add-ship',name:'A1',template,position,velocity});
+
+test('ship sheet identity, Side D and manual specials survive replay without changing template, motion, crew or systems',()=>{
+ const initial=add(createState({ships:[]})),before=structuredClone(initial),s=initial.ships[0];
+ const next=applyCommand(initial,{type:'set-identity',shipId:s.id,name:'Resolute <script>',identity:{allegiance:'Independent / Drinax',specials:[{name:'Manual stealth fit',detail:'Effect unverified; no automatic modifier'}]},side:'D',expectedRevision:initial.revision});
+ assert.equal(next.ships[0].appearance.side,'D');assert.equal(next.ships[0].identity.allegiance,'Independent / Drinax');
+ for(const key of ['template','designOverrides','motion','crew','systems','condition','capabilities','flight'])assert.deepEqual(next.ships[0][key],before.ships[0][key]);
+ assert.deepEqual(initial,before);assert.deepEqual(normalizeState(JSON.parse(JSON.stringify(next))),next);
+ assert.throws(()=>applyCommand(next,{type:'set-identity',shipId:s.id,name:'bad',identity:{allegiance:'x'.repeat(81)},side:'A'}),/Allegiance/);
+ assert.throws(()=>applyCommand(next,{type:'set-identity',shipId:s.id,name:'bad',identity:{},side:'E'}),/Choose Side/);
+ assert.throws(()=>applyCommand(next,{type:'set-identity',shipId:s.id,name:'stale',identity:{},side:'A',expectedRevision:initial.revision}),/State changed/);
+ assert.match(sheetRows(next.ships[0]).rows.find(r=>r[0]==='Manoeuvre drive')[1],/^Available thrust 3 \/ design 3/);
+});
+
+test('legacy ship identity remains unknown, special records stay bounded and missing source stats never become mockup values',()=>{
+ const old=createState();for(const s of old.ships)delete s.identity;
+ const normalized=normalizeState(JSON.parse(JSON.stringify(old)));assert.deepEqual(normalized.ships[0].identity,{allegiance:'',specials:null});
+ assert.deepEqual(normalizeIdentity({specials:[]}),{allegiance:'',specials:[]});
+ assert.throws(()=>normalizeIdentity({specials:Array.from({length:17},()=>({name:'x'}))}),/16/);
+ assert.throws(()=>normalizeIdentity({specials:[{name:'',detail:'x'}]}),/required/);
+ const {rows}=sheetRows(normalized.ships[0]);assert.match(rows[0][1],/Unknown/);assert.equal(normalized.ships[0].condition.powerOutput,null);
+});
 
 test('console previews commit atomically to their original ship and revision only',()=>{
  const s=add(add(createState({ships:[]}))),before=JSON.stringify(s),draft=beginConsoleDraft(s,'ship-1');draft.values.hull='40';draft.values.fuel='12.75';draft.values.powerOutput='90';

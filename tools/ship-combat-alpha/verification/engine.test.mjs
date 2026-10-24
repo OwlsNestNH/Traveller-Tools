@@ -167,7 +167,7 @@ import {ICONS,PRESET_ICONS,iconFor,normalizeAppearance} from '../appearance.mjs'
 test('side and silhouette are independent presentation data; edits never alter movement or crew',()=>{
  const s=addPreset(createState()),id=s.ships.at(-1).id,original=structuredClone(s),next=applyCommand(s,{type:'set-appearance',shipId:id,appearance:{side:'B',icon:'research'}});
  assert.deepEqual(next.ships.at(-1).appearance,{side:'B',icon:'research',heading:-90});const expected=structuredClone(original.ships.at(-1));expected.appearance={side:'B',icon:'research',heading:-90};assert.deepEqual(next.ships.at(-1),expected);assert.deepEqual(next.ships.slice(0,-1),original.ships.slice(0,-1));assert.deepEqual(s,original);
- for(const appearance of [{side:'D'},{icon:'../../private'},{icon:'__proto__'}])assert.throws(()=>applyCommand(s,{type:'set-appearance',shipId:id,appearance}),/Choose Side/);
+ for(const appearance of [{side:'E'},{icon:'../../private'},{icon:'__proto__'}])assert.throws(()=>applyCommand(s,{type:'set-appearance',shipId:id,appearance}),/Choose Side/);
  assert.deepEqual(normalizeAppearance(),{side:'A',icon:'auto',heading:-90});
  const run=x=>applyCommand(applyCommand(x,{type:'set-appearance',shipId:id,appearance:{side:'B',icon:'trader'}}),{type:'advance-round'});assert.deepEqual(run(s),run(JSON.parse(JSON.stringify(s))));
 });
