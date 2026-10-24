@@ -1,3 +1,4 @@
+import {normalizeIdentity} from './ship-identity.mjs';
 import {normalizeSystems} from './systems.mjs';
 import {reducedVelocity,ROUND_MINUTES} from './movement-rules.mjs';
 import {normalizeAppearance,velocityHeading} from './appearance.mjs';
@@ -24,7 +25,7 @@ function ship(value){
  const appearance=normalizeAppearance(value.appearance);appearance.heading=velocityHeading(vector(value.motion?.velocity,'Velocity'),appearance.heading);
  const template=normalizeTemplate(value.template),designOverrides=normalizeOverrides(value.designOverrides,template),effective=effectiveDesign({template,designOverrides});
  const condition=normalizeCondition(value.condition,effective),systems=normalizeSystems(value.systems,effective,thrust,template);
- return {id:value.id,name:name(value.name),template,designOverrides,appearance,crew:normalizeCrew(value.crew),condition,systems,situational:normalizeSituational(value.situational),capabilities:{thrust},flight:plan,motion};
+ return {id:value.id,name:name(value.name),identity:normalizeIdentity(value.identity),template,designOverrides,appearance,crew:normalizeCrew(value.crew),condition,systems,situational:normalizeSituational(value.situational),capabilities:{thrust},flight:plan,motion};
 }
 function checked(state){
  if(state?.version!==API_VERSION)throw Error('Unsupported movement state version.');
@@ -57,6 +58,7 @@ export function applyCommand(input,command){
  }
  case 'replace-ships':assertSetup(state);state.ships=command.ships;break;
  case 'set-design':{assertSetup(state);const s=getShip(state,command.shipId),next=normalizeTemplate(command.template);if(!next)throw Error('Enter a design record.');if(s.template)s.designOverrides=normalizeOverrides(next,s.template);else{s.template=next;s.designOverrides=null;}if(command.useDesignThrust===true){s.capabilities.thrust=effectiveDesign(s).thrust;s.motion.impulse={q:0,r:0};}break;}
+ case 'set-identity':{const s=getShip(state,command.shipId);s.name=name(command.name);s.identity=normalizeIdentity(command.identity);s.appearance=normalizeAppearance({...s.appearance,side:command.side});break;}
  case 'set-appearance':{const s=getShip(state,command.shipId);s.appearance=normalizeAppearance({...s.appearance,...command.appearance});break;}
  case 'remove-ship':{assertSetup(state);getShip(state,command.shipId);state.ships=state.ships.filter(s=>s.id!==command.shipId);break;}
  case 'clear-ships':assertSetup(state);state.ships=[];break;

@@ -1,5 +1,5 @@
 // Presentation metadata only: symbols do not imply facing, allegiance rules or scale.
-export const SIDES=Object.freeze({A:{label:'Side A',color:'#75e0d4'},B:{label:'Side B',color:'#ffad86'},C:{label:'Side C',color:'#d3afff'}});
+export const SIDES=Object.freeze({A:{label:'Side A',color:'#75e0d4'},B:{label:'Side B',color:'#ffad86'},C:{label:'Side C',color:'#d3afff'},D:{label:'Side D',color:'#f6d66f'}});
 export const ICONS=Object.freeze({
  harrier:{label:'Harrier custom simplified reference-derived outline; not official token or CC0',file:'harrier-custom.svg',bowDegrees:-90},
  auto:{label:'Automatic from design'},
@@ -32,7 +32,7 @@ export const ICONS=Object.freeze({
 });
 export function normalizeAppearance(value={}){
  const side=value.side??'A',icon=value.icon??'auto';
- if(!Object.hasOwn(SIDES,side)||!Object.hasOwn(ICONS,icon))throw Error('Choose Side A, B or C and an available map symbol.');
+ if(!Object.hasOwn(SIDES,side)||!Object.hasOwn(ICONS,icon))throw Error('Choose Side A, B, C or D and an available map symbol.');
  const heading=value.heading??-90;if(!Number.isFinite(heading)||heading < -180||heading > 180)throw Error('Visual heading must be a finite angle from -180 to 180.');
  return {side,icon,heading};
 }
