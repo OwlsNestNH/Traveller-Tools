@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 
 export async function verifyFlight(page,width,artifacts,edit){
+ await page.locator('#round-planning').evaluate(e=>e.open=true);
  const openDetails=async id=>{if(!await page.locator('#'+id).evaluate(e=>e.open))await page.locator('#'+id+' summary').click();};
  const rev=()=>page.locator('#map').getAttribute('data-revision'),motion=id=>page.locator('[data-ship="'+id+'"]').evaluate(e=>({q:Number(e.dataset.q),r:Number(e.dataset.r),vq:Number(e.dataset.vq),vr:Number(e.dataset.vr)}));
  await page.locator('#reset').click();let before=await rev();await page.locator('#begin-acceleration').click();assert.match(await page.locator('#error').textContent(),/Record initiative/);assert.equal(await rev(),before);

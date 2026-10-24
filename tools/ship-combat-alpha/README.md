@@ -12,13 +12,9 @@ The map is a single proportional axial-hex projection. Pan and zoom never compre
 
 ## Workspace and quick placement
 
-The tactical workspace uses the available page width. The selected-ship card sits at the left edge; the map reserves the remaining viewport height after the compact header. Rules and map explanations are available through expandable help. Expand map preserves the camera, selection and drafts; Restore map returns to the previous page scroll.
+The encounter roster is the only side rail (a horizontal strip on phones). The map and a shallow selected-ship Hull/Power/Fuel/critical strip share the main workspace. Click or keyboard-activate a stat to adjust it inline. Switching or closing an adjustment preserves pending values; one shared Commit/Cancel pair applies or discards that ship draft. Unknown values and capacities remain unknown until explicitly recorded.
 
-Add Ship opens a searchable preset picker with a suggested short name, side and generic crew experience. Place ship arms one map click/tap; Escape returns to the unchanged draft and Cancel adds nothing. Source variants remain separate choices, and the selected citation is shown independently. After placement, Ship setup retains the full optional design/crew editor. Custom/manual design remains available from the picker.
-
-Hull and the Power/Fuel crescents are direct controls with exact numeric entry and nearby Commit/Cancel actions. All changed condition fields belong to one pending ship draft and commit together. Unknown maxima explicitly disable the corresponding gauge and offer Set capacity; entering capacity does not invent a current quantity, repair or refill the ship. Unknown quantities with known capacity show a handle at zero as an input affordance, not a recorded zero value.
-
-Browser regressions include 1366x768 and 320x700 viewport bounds, search and placement cancellation, keyboard focus, reduced viewport height, and actual mouse/touch drags on the visible gauges. A reduced viewport is a keyboard-layout proxy; it does not claim to emulate every physical phone keyboard.
+Condition/critical and Power/software records expand in place, with Cancel/Escape and repeat-open protection. Condition saves reject a different selected ship or an authoritative revision change; no stale form can overwrite later commands. The advanced encounter setup remains one optional dialog, and Quick Add remains a compact placement picker. Motion/range references, initiative/reservations, source details and all prior controls remain available through their in-place disclosures. No engine rules, source presets, ownership or storage behavior changes.
 
 ## Movement profile and limits
 
