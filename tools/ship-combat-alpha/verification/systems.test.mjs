@@ -1,3 +1,5 @@
+import {beginConsoleDraft,commitConsoleDraft} from '../console-draft.mjs';
+import {beginSetup,saveSetup} from '../setup-session.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createState,applyCommand} from '../engine.mjs';
@@ -70,4 +72,8 @@ test('manual design fit never becomes cited original software provenance',()=>{
  s=applyCommand(s,{type:'set-design',shipId:'ship-1',template:{...original,record:{...original.record,software:'Evade/3'}}});
  for(let i=0;i<2;i++){const ship=s.ships[0],p=ship.systems.software.installed.find(p=>p.id==='evade');assert.equal(p.sourceReference.installed,1);assert.equal(p.sourceReference.fit,original.record.software);assert.deepEqual(p.sourceReference.source,original.source);assert.equal(p.origin,'manual');assert.equal(ship.systems.software.manualFit,'Evade/3');assert.deepEqual(ship.template,original);s=createState(JSON.parse(JSON.stringify(s)));}
  s=allocate(s,x=>{x.software.installed.find(p=>p.id==='evade').installed=3;});s=createState(JSON.parse(JSON.stringify(s)));const p=s.ships[0].systems.software.installed.find(p=>p.id==='evade');assert.equal(p.installed,3);assert.equal(p.origin,'manual');assert.equal(p.sourceReference.installed,1);assert.equal(p.sourceReference.fit,original.record.software);
+});
+
+test('encounter replacement keeps revisions monotonic and rejects all previous editor snapshots for reused ship IDs',()=>{
+ const s=createState(),systems=beginSystemsDraft(s,'merchant'),consoleDraft=beginConsoleDraft(s,'merchant'),setup=beginSetup(s),replaced=applyCommand(s,{type:'replace-ships',ships:structuredClone(s.ships),expectedRevision:s.revision});const before=JSON.stringify(replaced);assert.equal(replaced.revision,s.revision+1);assert.equal(replaced.ships[0].id,s.ships[0].id);assert.throws(()=>commitSystemsDraft(replaced,systems,'merchant'),/State changed/);assert.throws(()=>commitConsoleDraft(replaced,consoleDraft,'merchant'),/State changed/);assert.throws(()=>saveSetup(replaced,setup),/State changed/);assert.throws(()=>applyCommand(replaced,{type:'set-condition',shipId:'merchant',condition:{fuel:5},expectedRevision:s.revision}),/State changed/);assert.equal(JSON.stringify(replaced),before);
 });
