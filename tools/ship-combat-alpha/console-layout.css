@@ -8,3 +8,5 @@ body.station-console.map-expanded{overflow:auto}body.station-console.map-expande
 
 .mobile-stations{display:none}@media(max-width:700px){.station-console .station-regions{display:none}.station-console .tactical-viewport{inset:0}.station-console .mobile-stations{display:block;margin:6px 0;padding:0;border:0}.mobile-stations>summary{min-height:44px;padding:12px 0}.mobile-stations>div{display:grid;grid-template-columns:1fr 1fr;gap:6px}.mobile-stations button{min-height:44px}.map-expanded .mobile-stations{display:none!important}}
 body.station-console.map-expanded .map-panel{position:static;inset:auto;z-index:auto;overflow:visible;align-self:start}
+
+.load-source{display:block;font-size:.7rem;line-height:1.4;color:#bdd0db;margin-top:3px}
