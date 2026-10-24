@@ -20,3 +20,9 @@ body.unified-combat.map-expanded .map-tools #open-setup{display:block}
 .unified-combat .arc-gauge{margin:0}.unified-combat .round-controls p{font-size:.75rem}.unified-combat .stat-strip button>span{font-size:.75rem}.unified-combat .stat-strip small{font-size:.7rem}@media(max-width:780px){.unified-combat .stat-strip button>span{font-size:.7rem}.unified-combat .stat-strip strong{font-size:.8rem}.unified-combat .stat-strip small{font-size:.65rem}}
 
 .unified-combat .roster-side{font-size:.65rem;border:1px solid #617b8b;border-radius:3px;padding:0 3px;margin-right:3px;color:#d8e9f2}
+
+/* Narrow phones need readable values rather than four compressed columns. */
+@media(max-width:500px){.unified-combat .map-heading>div:first-child{flex:1 0 100%;min-width:0;justify-content:space-between;gap:6px}.unified-combat .map-heading h2{font-size:.9rem;white-space:nowrap}.unified-combat .map-heading>div:first-child p{font-size:.65rem;white-space:nowrap}.unified-combat #elapsed{margin-left:4px}}
+@media(max-width:380px){.unified-combat .stat-strip{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.unified-combat .stat-strip button{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto;gap:2px 6px;min-height:44px;padding:4px 6px}.unified-combat .stat-strip button>span{grid-column:1;grid-row:1;font-size:.7rem}.unified-combat .stat-strip strong{grid-column:2;grid-row:1;white-space:nowrap;text-align:right;font-size:.85rem}.unified-combat .stat-strip small{grid-column:1/-1;grid-row:2;font-size:.65rem;line-height:1.2}}
+
+@media(max-width:500px){.unified-combat>header .back{font-size:.65rem;line-height:14px}.unified-combat>header .heading>div{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 8px}.unified-combat>header .heading h1{order:1}.unified-combat>header .heading .eyebrow{order:2;font-size:.6rem;letter-spacing:0}.unified-combat .profile-help>summary{min-height:16px;line-height:16px;font-size:.65rem}}
