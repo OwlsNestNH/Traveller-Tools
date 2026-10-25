@@ -117,9 +117,9 @@ test('fresh/reset samples hydrate full existing presets with citations and wider
  const next=createState();fresh.ships[0].template.record.ratedPower=1;assert.equal(next.ships[0].template.record.ratedPower,preset(ids.merchant).record.ratedPower);assert.equal(createState().ships[0].template.record.ratedPower,next.ships[0].template.record.ratedPower);
 });
 
-test('sample-only representative silhouettes retain catalogue identity and saved icon overrides',()=>{
- const defaults=createState(),mapping={merchant:'trader',courier:'corvette',scout:'scout',fighter:'fighter'};
- for(const [id,icon]of Object.entries(mapping)){const s=getShip(defaults,id);assert.equal(s.appearance.icon,icon);assert.equal(iconFor(s),icon);assert.match(ICONS[icon].label,/representative/i);assert.equal(iconFor({...s,appearance:{...s.appearance,icon:'auto'}}),'other','exact source mapping remains unknown');}
+test('approved source silhouettes retain catalogue identity and saved icon overrides',()=>{
+ const defaults=createState(),mapping={merchant:'armed-trader',courier:'hunting-ship',scout:'stealth-scout',fighter:'kashu-fighter'};
+ for(const [id,icon]of Object.entries(mapping)){const s=getShip(defaults,id);assert.equal(s.appearance.icon,'auto');assert.equal(iconFor(s),icon);assert.match(ICONS[icon].label,/interpreted deckplan/i);assert.equal(iconFor({...s,appearance:{...s.appearance,icon:'trader'}}),'trader','saved manual representative choices remain honored');}
  const harrier=getShip(defaults,'escort');assert.equal(harrier.appearance.icon,'auto');assert.equal(iconFor(harrier),'harrier');assert.equal(ICONS.harrier.file,'harrier-custom.svg');
  const edited=applyCommand(defaults,{type:'set-appearance',shipId:'merchant',appearance:{icon:'research'}}),saved=JSON.stringify(edited);sampleShips();createState();assert.equal(JSON.stringify(edited),saved);assert.deepEqual(normalizeState(JSON.parse(saved)),edited);assert.equal(iconFor(getShip(normalizeState(JSON.parse(saved)),'merchant')),'research');
  for(let i=0;i<defaults.ships.length;i++){const a=defaults.ships[i],b=edited.ships[i];assert.deepEqual(a.template,b.template);assert.deepEqual(a.motion,b.motion);assert.deepEqual(a.condition,b.condition);assert.deepEqual(a.systems,b.systems);}
@@ -232,7 +232,7 @@ test('all 194 source identities explicitly map matching available hulls or hones
  for(const [id,icon,file] of [
  ['core-202','yacht','yacht.webp'],['highguard-179','yacht','yacht.webp'],['core-220','launch','launch.webp'],['highguard-139','launch','launch.webp'],['core-204','close-escort','close_escort.webp'],['highguard-181','close-escort','close_escort.webp'],['core-196','far-trader','far_trader.webp'],['highguard-169','far-trader','far_trader.webp'],['highguard-138','military-gig','military_gig.webp'],['core-219','gig','gig.webp'],['core-192','seeker','seeker.webp'],['core-210','subsidised-merchant','subsidised_merchant.webp'],['highguard-191','survey-scout','survey_scout.webp'],['core-227','passenger-shuttle','passenger_shuttle.webp']]){assert.equal(iconFor({template:preset(id)}),icon,id);assert.equal(ICONS[icon].file,file);}
  for(const id of ['highguard-136','highguard-148','highguard-150','highguard-152','highguard-158','highguard-165','highguard-177','highguard-183','highguard-193'])assert.equal(iconFor({template:preset(id)}),'other',id+' must not borrow a different variant');
- assert.equal(Object.values(ICONS).filter(x=>x.file).length,24);
+ assert.equal(Object.values(ICONS).filter(x=>x.file).length,29);
 });
 
 
@@ -256,7 +256,7 @@ test('Side C survives JSON and cosmetic heading follows actual velocity, retaini
 
 test('ACS first batch retains source conflicts and conditional profiles without invented loads',()=>{
  const batch=PRESETS.filter(p=>p.id.startsWith('acs2023-'));assert.equal(batch.length,37);
- for(const p of batch){const s=applyCommand(createState(),{type:'add-ship',presetId:p.id,name:p.name,position:{q:0,r:0},velocity:{q:0,r:0}}).ships.at(-1);assert.equal(s.template.source.book,'Adventure Class Ships (2023)');assert.equal(s.condition.fuel,null);assert.equal(s.condition.powerOutput,null);assert.equal(s.condition.weapons,null);assert.equal(iconFor(s),'other');}
+ for(const p of batch){const s=applyCommand(createState(),{type:'add-ship',presetId:p.id,name:p.name,position:{q:0,r:0},velocity:{q:0,r:0}}).ships.at(-1);assert.equal(s.template.source.book,'Adventure Class Ships (2023)');assert.equal(s.condition.fuel,null);assert.equal(s.condition.powerOutput,null);assert.equal(s.condition.weapons,null);assert.equal(iconFor(s),({'acs2023-p6':'stealth-scout','acs2023-p8':'extended-scout','acs2023-p22':'armed-trader','acs2023-p136':'hunting-ship'})[p.id]??'other');}
  assert.equal(preset('acs2023-p116').record.fuelCapacity,null);assert.match(preset('acs2023-p116').notes,/221/);assert.equal(preset('acs2023-p30').hull,80);assert.equal(preset('acs2023-p78').hull,80);
  assert.equal(preset('acs2023-p102').thrust,3);assert.equal(preset('acs2023-p102-unloaded').thrust,4);assert.match(preset('acs2023-p102').name,/fighters carried/);assert.equal(preset('acs2023-p124').thrust,6);assert.match(preset('acs2023-p124').notes,/reaction Thrust 4/);
  assert.equal(iconFor({template:preset('drinax-harrier-restored')}),'harrier');assert.equal(ICONS.harrier.bowDegrees,-90);assert.match(ICONS.harrier.label,/not official.*CC0/);
