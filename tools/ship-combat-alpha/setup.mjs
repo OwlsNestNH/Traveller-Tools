@@ -2,7 +2,9 @@ import {normalizeRecord,normalizeManualCondition,optionalName} from './ship-reco
 // Setup data is independent of motion. No storage, I/O, dice or combat resolution.
 export const MAX_SHIPS=10;
 export const ROLES=Object.freeze(['captain','pilot','astrogator','sensors','engineer','gunner','medic','steward']);
-export const RATINGS=Object.freeze({Green:1,Veteran:2,Elite:3});
+export const RATINGS=Object.freeze({Green:1,Regular:2,Veteran:3,Elite:4,Heroic:5});
+const LEGACY_RATINGS=Object.freeze({Green:1,Veteran:2,Elite:3});
+export const CREW_RATING_VERSION=2;
 const text=(v,label,max=60)=>{if(typeof v!=='string'||!v.trim()||v.length>max)throw Error(`${label} must contain 1 to ${max} characters.`);return v.trim();};
 const int=(v,label,min,max)=>{if(!Number.isSafeInteger(v)||v<min||v>max)throw Error(`${label} must be a whole number from ${min} to ${max}.`);return v;};
 const optional=(v,label,min,max)=>v===null||v===undefined?null:int(v,label,min,max);
@@ -12,14 +14,15 @@ export function normalizeTemplate(v){
  return {name:text(v.name,'Design name'),tons:v.tons,thrust:int(v.thrust,'Design thrust',0,10000),hull:optional(v.hull,'Design hull',1,1000000),armour:optional(v.armour,'Armour',0,1000),record:normalizeRecord(v.record),notes:v.notes==null?'':String(v.notes).slice(0,240),source:v.source==null?null:{book:text(v.source.book,'Source book',100),page:int(v.source.page,'Printed page',1,1000),endPage:optional(v.source.endPage,'Last printed page',v.source.page,1000)}};
 }
 export function normalizeCrew(v={}){
- const mode=v.mode??'quick',rating=v.rating??'Green';
- if(!['quick','detailed'].includes(mode)||!Object.hasOwn(RATINGS,rating))throw Error('Choose a crew mode and Green, Veteran or Elite rating.');
+ const mode=v.mode??'quick',rawRating=v.rating??'Green',version=v.ratingVersion??(Object.hasOwn(LEGACY_RATINGS,rawRating)?1:2);
+ if(![1,2].includes(version)||!['quick','detailed'].includes(mode)||!Object.hasOwn(version===1?LEGACY_RATINGS:RATINGS,rawRating))throw Error('Choose a valid crew mode and experience rating.');
+ const rating=version===1?Object.keys(RATINGS).find(k=>RATINGS[k]===LEGACY_RATINGS[rawRating]):rawRating;
  const overrides={},details={};
  for(const role of ROLES){
   overrides[role]=optional(v.overrides?.[role],role+' total override',-10,20);
   const d=v.details?.[role];details[role]=d==null?null:{name:optionalName(d.name),skillName:text(d.skillName,'Skill / specialty'),skill:int(d.skill,'Skill level',0,10),characteristicDM:int(d.characteristicDM,'Characteristic DM',-5,5)};
  }
- return {mode,rating,bonus:optional(v.bonus,'General crew contribution',-10,20),overrides,details};
+ return {mode,rating,ratingVersion:CREW_RATING_VERSION,bonus:optional(v.bonus,'General crew contribution',-10,20),overrides,details};
 }
 export function normalizeSituational(v={}){return Object.fromEntries(ROLES.map(role=>[role,int(v[role]??0,role+' situational DM',-20,20)]));}
 export function crewContribution(crew,role){

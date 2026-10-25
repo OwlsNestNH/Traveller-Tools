@@ -8,6 +8,30 @@ import {beginConsoleDraft,commitConsoleDraft,conditionLimits} from '../console-d
 import {normalizeState} from '../engine.mjs';
 import {normalizeIdentity} from '../ship-identity.mjs';
 import {sheetRows} from '../ship-sheet.mjs';
+import {normalizeCrew,RATINGS} from '../setup.mjs';
+import {bandRadii,renderRangeOverlay,SPACE_RADIUS} from '../range-overlay.mjs';
+import {rangeInfo,RANGE_BANDS,HEX_KM} from '../movement-rules.mjs';
+import {toWorld} from '../geometry.mjs';
+
+test('five-level crew scale is explicit and unversioned legacy totals migrate without inflation',()=>{
+ assert.deepEqual(RATINGS,{Green:1,Regular:2,Veteran:3,Elite:4,Heroic:5});
+ for(const [rating,total] of Object.entries(RATINGS)){const c=normalizeCrew({mode:'quick',ratingVersion:2,rating});assert.equal(crewContribution(c,'pilot'),total);assert.deepEqual(normalizeCrew(JSON.parse(JSON.stringify(c))),c);}
+ for(const [rating,newRating,total] of [['Green','Green',1],['Veteran','Regular',2],['Elite','Veteran',3]]){
+  const old={mode:'quick',rating,bonus:null,overrides:{pilot:0},details:{engineer:{name:'Existing',skillName:'Engineer',skill:2,characteristicDM:1}}};
+  const c=normalizeCrew(JSON.parse(JSON.stringify(old)));assert.equal(c.rating,newRating);assert.equal(c.ratingVersion,2);assert.equal(crewContribution(c,'sensors'),total);assert.equal(crewContribution(c,'pilot'),0);assert.equal(c.details.engineer.name,'Existing');assert.deepEqual(normalizeCrew(c),c);
+  const manual=normalizeCrew({...old,bonus:5});assert.equal(crewContribution(manual,'sensors'),5);assert.equal(manual.bonus,5);
+  const detailed=normalizeCrew({...old,mode:'detailed'});assert.equal(crewContribution(detailed,'engineer'),3);
+ }
+ const s=createState();s.ships[0].crew={mode:'quick',rating:'Elite',overrides:{pilot:-1},bonus:null};const imported=normalizeState(JSON.parse(JSON.stringify(s)));assert.equal(crewContribution(imported.ships[0].crew,'sensors'),3);assert.equal(imported.ships[0].crew.rating,'Veteran');assert.deepEqual(normalizeState(JSON.parse(JSON.stringify(imported))),imported);
+ assert.throws(()=>normalizeCrew({rating:'Elite',ratingVersion:3}),/rating/);
+});
+
+test('range overlays share verified Euclidean band boundaries and never change the ship',()=>{
+ assert.deepEqual(RANGE_BANDS.map(b=>b.max),[1,15,38,77]);const s=createState().ships[0],before=structuredClone(s),bands=bandRadii();
+ for(const b of bands){const p=toWorld({q:b.max,r:0});assert.ok(Math.abs(Math.hypot(p.x,p.y)-b.radius)<1e-9);assert.equal(b.km,b.max*HEX_KM);assert.equal(rangeInfo({q:0,r:0},{q:b.max,r:0}).band,b.name);assert.ok(Math.abs(b.radius/b.max-SPACE_RADIUS)<1e-9);}
+ const rings=renderRangeOverlay(s,'rings',2),shaded=renderRangeOverlay(s,'shaded',2);assert.equal(rings.shade,'');assert.equal((rings.rings.match(/<circle /g)||[]).length,4);assert.equal((shaded.shade.match(/fill-rule="evenodd"/g)||[]).length,4);assert.equal(shaded.rings,rings.rings.replaceAll('data-mode="rings"','data-mode="shaded"'));assert.deepEqual(renderRangeOverlay(s,'off'),{shade:'',rings:''});assert.deepEqual(renderRangeOverlay(null,'shaded'),{shade:'',rings:''});assert.deepEqual(s,before);
+ assert.throws(()=>renderRangeOverlay(s,'invalid'),/Invalid/);
+});
 const position={q:1,r:2},velocity={q:0,r:0};
 const template={name:'Manual hull',tons:400,thrust:3,hull:100,armour:0,record:{className:'Custom escort',tl:12,ratedPower:150,fuelCapacity:42.5,jump:2,sensors:'Military',computer:'Computer/10',software:'Manoeuvre; Library',requirements:[{name:'Basic systems',power:80},{name:'Sensors',power:null}],weapons:[{id:'turret-1',name:'Dorsal turret',type:'Beam laser',count:2,ammunition:null}]}};
 const add=s=>applyCommand(s,{type:'add-ship',name:'A1',template,position,velocity});
