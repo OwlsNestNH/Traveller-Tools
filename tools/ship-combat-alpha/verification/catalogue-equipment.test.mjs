@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {PRESETS,preset} from '../catalogue.mjs';
 import {normalizeTemplate,effectiveDesign} from '../setup.mjs';
-import {normalizePublished} from '../catalogue-provenance.mjs';
+import {normalizePublished,editedRequirement} from '../catalogue-provenance.mjs';
 import {renderPublishedInventory} from '../published-inventory.mjs';
 import {createState,normalizeState,applyCommand} from '../engine.mjs';
 import {powerReport} from '../systems.mjs';
@@ -67,4 +67,32 @@ test('enhancement multipliers are not fitted weapon counts and Moray wrapped row
  assert.ok(r.published.inventory.some(x=>/Fuel Scoops/.test(x.detail)));
  const mixed=renderPublishedInventory(preset('scc2023-p088').record.published);
  assert.match(mixed,/beam laser/i);assert.match(mixed,/autocannon/i);assert.match(mixed,/Unknown/);
+});
+test('power extraction excludes deckplan legends and total-price lines across the catalogue',()=>{
+ for(const p of PRESETS){
+  assert.doesNotMatch(p.record.software??'',/Total:|MCr|\\n|LEGEND|Order #/i,p.id);
+  for(const row of p.record.published.inventory)assert.doesNotMatch(row.detail,/Total:|MCr|\\n|LEGEND|Order #/i,p.id);
+ }
+ for(const id of ['highguard-137','highguard-138','highguard-140','highguard-144','scc2023-p036','scc2023-p038','scc2023-p053','scc2023-p058','scc2023-p061','scc2023-p099']){
+  const names=preset(id).record.requirements.map(r=>r.name);assert.equal(new Set(names).size,names.length,id);
+ }
+ assert.equal(preset('highguard-173').record.requirements.find(r=>r.name==='Multi-Environment Equipment').power,1);
+ assert.equal(preset('scc2023-p048').record.software,'Manoeuvre');
+});
+test('manual power amounts retain visible original provenance and separate jump activation rule',()=>{
+ const state=applyCommand(createState({ships:[]}),{type:'add-ship',presetId:'drinax-harrier-restored',name:'Test',position:{q:0,r:0},velocity:{q:0,r:0}}),ship=state.ships[0];
+ const design=effectiveDesign(ship);design.record.requirements=design.record.requirements.map(r=>/^(Manoeuvre drive|Jump drive)$/i.test(r.name)?editedRequirement(r,r.name,r.power+1):r);
+ ship.systems.jumpEnabled=true;
+ const report=powerReport(ship,ship.systems,ship.condition,design);
+ for(const id of ['drive','jump']){const row=report.rows.find(r=>r.id===id);assert.equal(row.source,null);assert.match(row.note,/Manual design/);assert.match(row.note,/Retained original/);assert.match(row.note,/Drinax/);}
+ assert.doesNotMatch(report.rows.find(r=>r.id==='drive').note,/Published rated load/);
+ assert.match(report.rows.find(r=>r.id==='jump').note,/Activation rule: Core/);
+});
+test('audited omissions and calculated fits retain their distinct evidence',()=>{
+ for(const [id,category,tons] of [['core-200','Cargo','22.85'],['core-206','Common Areas','15'],['core-225','Cargo','3'],['scc2023-p069','Common Areas','12.5'],['scc2023-p077','Cargo','2'],['scc2023-p105','Common Areas','2'],['scc2023-p106','Cargo','7.5']])assert.equal(preset(id).record.published.inventory.find(r=>r.category===category).tonnage,tons);
+ assert.match(preset('scc2023-p018').record.published.inventory.find(r=>r.category==='Cargo').detail,/Concealed Compartment/);
+ assert.equal(preset('tng2024-seaho').record.published.mounts[0].fittedCount,3);
+ assert.equal(preset('tng2024-brimansh').record.published.mounts[1].fittedCount,2);
+ for(const id of ['highguard-167','highguard-175','highguard-181','highguard-183','highguard-187'])assert.ok(preset(id).record.published.mounts.some(m=>m.fittedCountBasis?.startsWith('Calculated')));
+ for(const [id,name] of [['tng2024-akhtael','Biosphere'],['tng2024-backwater-trader','Low Berths'],['highguard-193','Training Facilities'],['core-198','Multi-Environment Space']])assert.equal(preset(id).record.requirements.find(r=>r.name===name).power,null);
 });

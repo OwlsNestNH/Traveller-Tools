@@ -12,8 +12,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -29,12 +29,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -47,12 +47,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -65,8 +65,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "explicit-none",
       "unresolved": [
         "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
@@ -83,8 +83,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "explicit-none",
       "unresolved": [
         "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
@@ -101,12 +101,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -119,13 +119,13 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
         "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -138,8 +138,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "explicit-none",
       "unresolved": []
     },
@@ -153,12 +153,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -171,8 +171,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "explicit-none",
       "unresolved": []
     },
@@ -186,13 +186,13 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -205,8 +205,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "explicit-none",
       "unresolved": [
         "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
@@ -223,8 +223,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "explicit-none",
       "unresolved": [
         "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
@@ -240,8 +240,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -255,8 +255,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -270,8 +270,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "explicit-none",
       "unresolved": []
     },
@@ -285,11 +285,11 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -302,11 +302,11 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -319,11 +319,11 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -336,11 +336,11 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -353,11 +353,11 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -370,11 +370,11 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -387,8 +387,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -404,8 +404,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -419,8 +419,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -434,8 +434,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -449,8 +449,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -466,8 +466,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -481,8 +481,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -496,8 +496,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -511,10 +511,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
-      "unresolved": []
+      "unresolved": [
+        "Source inconsistency: Printed manoeuvre draw 9 despite Thrust3/40t; retain 9 as published, do not silently replace with formula12."
+      ]
     },
     {
       "id": "highguard-144",
@@ -526,8 +528,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -541,8 +543,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
@@ -558,8 +560,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
@@ -575,12 +577,11 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
       ]
     },
     {
@@ -593,10 +594,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
-      "unresolved": []
+      "unresolved": [
+        "Source inconsistency: Printed plant output48 with TL12 fusion3tons; retain48 rather than rule arithmetic45."
+      ]
     },
     {
       "id": "highguard-156",
@@ -608,8 +611,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -625,8 +628,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -640,8 +643,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -655,10 +658,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
-      "unresolved": []
+      "unresolved": [
+        "Source inconsistency: Printed Weapons draw1 despite an explicitly empty double turret. Preserve both and flag source inconsistency; no fitted weapon inferred."
+      ]
     },
     {
       "id": "highguard-167",
@@ -670,12 +675,10 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
-      "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
-      ]
+      "unresolved": []
     },
     {
       "id": "highguard-169",
@@ -687,8 +690,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -704,8 +707,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -721,8 +724,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -736,12 +739,11 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
       ]
     },
     {
@@ -754,8 +756,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -771,8 +773,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -788,12 +790,10 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
-      "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
-      ]
+      "unresolved": []
     },
     {
       "id": "highguard-183",
@@ -805,12 +805,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated.",
+        "Source inconsistency: Printed Fuel Processor draw56 despite12 installed tons; printed J-6 fuel row and J-drive Jump5 also conflict. Preserve source figures.",
         "Published power figures may conflict with equipment/rating arithmetic; printed values retained pending edition-specific errata review."
       ]
     },
@@ -824,8 +824,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -841,12 +841,11 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
       ]
     },
     {
@@ -859,8 +858,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
@@ -878,11 +877,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
+        "Source inconsistency: Printed manoeuvre draw80 despite Thrust3/400t; preserve80 rather than formula120."
       ]
     },
     {
@@ -895,12 +895,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -913,8 +913,8 @@
         "endPage": 196,
         "pdfEndPage": 197
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -928,8 +928,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -943,8 +943,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -958,8 +958,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -973,8 +973,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -988,8 +988,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -1003,8 +1003,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
@@ -1020,11 +1020,11 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -1037,8 +1037,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
@@ -1054,8 +1054,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
@@ -1072,12 +1072,11 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
       ]
     },
     {
@@ -1090,8 +1089,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
@@ -1108,12 +1107,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -1126,8 +1125,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -1143,8 +1142,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -1160,8 +1159,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -1177,8 +1176,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
@@ -1195,8 +1194,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -1212,8 +1211,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -1229,12 +1228,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -1247,11 +1246,11 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -1264,12 +1263,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -1282,12 +1281,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -1300,13 +1299,13 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
         "Unloaded variant excludes the ten carried fighters; published conditional drive values remain those retained by this preset.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -1319,12 +1318,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -1337,12 +1336,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -1355,11 +1354,11 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -1372,12 +1371,10 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
-      "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
-      ]
+      "unresolved": []
     },
     {
       "id": "acs2023-p120",
@@ -1389,11 +1386,11 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -1406,8 +1403,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -1423,12 +1420,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -1441,8 +1438,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -1458,12 +1455,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -1476,8 +1473,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
@@ -1493,8 +1490,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -1510,12 +1507,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -1528,11 +1525,11 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -1545,12 +1542,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -1563,8 +1560,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
@@ -1580,8 +1577,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -1597,8 +1594,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
@@ -1614,12 +1611,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -1632,12 +1629,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -1650,12 +1647,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -1668,12 +1665,11 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
       ]
     },
     {
@@ -1686,8 +1682,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -1703,8 +1699,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
@@ -1721,12 +1717,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -1739,8 +1735,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -1756,8 +1752,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -1773,12 +1769,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -1791,8 +1787,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
@@ -1809,11 +1805,11 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -1826,8 +1822,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -1841,8 +1837,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
@@ -1859,12 +1855,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated.",
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending.",
         "Published power figures may conflict with equipment/rating arithmetic; printed values retained pending edition-specific errata review."
       ]
     },
@@ -1878,8 +1874,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -1895,8 +1891,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
@@ -1913,13 +1909,13 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Grav Screen installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -1932,13 +1928,13 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -1951,12 +1947,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -1969,8 +1965,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
@@ -1987,8 +1983,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
@@ -2004,8 +2000,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2021,8 +2017,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
@@ -2040,8 +2036,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
@@ -2058,12 +2054,12 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -2076,8 +2072,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
@@ -2094,11 +2090,11 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -2111,11 +2107,11 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -2128,11 +2124,11 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -2145,8 +2141,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2162,8 +2158,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2179,8 +2175,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2196,8 +2192,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2213,8 +2209,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2230,8 +2226,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2247,8 +2243,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2264,8 +2260,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2281,8 +2277,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2298,8 +2294,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2315,8 +2311,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2332,8 +2328,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2349,8 +2345,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2366,8 +2362,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -2381,8 +2377,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -2396,8 +2392,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2413,8 +2409,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2430,8 +2426,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2447,8 +2443,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2464,8 +2460,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2481,11 +2477,11 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     {
@@ -2498,8 +2494,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -2513,8 +2509,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
@@ -2531,8 +2527,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
@@ -2549,8 +2545,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -2564,8 +2560,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -2579,8 +2575,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -2594,8 +2590,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -2609,8 +2605,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -2624,8 +2620,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
@@ -2641,8 +2637,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -2656,8 +2652,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -2671,8 +2667,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
@@ -2689,8 +2685,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2706,8 +2702,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -2721,8 +2717,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -2736,8 +2732,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -2751,8 +2747,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -2766,8 +2762,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -2781,8 +2777,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
@@ -2798,8 +2794,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
@@ -2815,8 +2811,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -2830,8 +2826,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -2845,8 +2841,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -2860,8 +2856,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
@@ -2877,8 +2873,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2894,8 +2890,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -2909,8 +2905,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2926,8 +2922,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2943,8 +2939,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2960,8 +2956,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -2975,8 +2971,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -2990,8 +2986,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -3005,8 +3001,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -3020,8 +3016,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Plural mount quantity is not explicit; quantity remains unknown, not one."
@@ -3037,8 +3033,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -3052,8 +3048,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -3067,12 +3063,10 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
-      "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
-      ]
+      "unresolved": []
     },
     {
       "id": "scc2023-p095",
@@ -3084,12 +3078,11 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
       ]
     },
     {
@@ -3102,8 +3095,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -3119,8 +3112,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -3134,8 +3127,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -3149,8 +3142,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -3164,8 +3157,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -3179,8 +3172,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -3194,8 +3187,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
@@ -3211,8 +3204,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -3228,8 +3221,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -3245,8 +3238,8 @@
         "endPage": null,
         "pdfEndPage": null
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -3262,8 +3255,8 @@
         "endPage": 11,
         "pdfEndPage": 12
       },
-      "equipment": "extracted; field verification pending",
-      "power": "published-bundles",
+      "equipment": "source-table-compared",
+      "power": "published-bundles; separate consumer rule audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Rack load and missile type remain unknown; storage capacity is not current ammunition.",

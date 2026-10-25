@@ -319,7 +319,7 @@ export const CATALOGUE_EQUIPMENT={
       "ammunitionStorage": [],
       "unresolved": [
         "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p190; PDF p191. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -511,7 +511,7 @@ export const CATALOGUE_EQUIPMENT={
       "ammunitionStorage": [],
       "unresolved": [
         "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p192; PDF p193. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -974,6 +974,19 @@ export const CATALOGUE_EQUIPMENT={
           "pdfEndPage": null
         },
         "basis": "unknown: installed or listed system draw not published in the sidebar"
+      },
+      {
+        "name": "Multi-Environment Space",
+        "power": null,
+        "source": {
+          "book": "Core Rulebook Update 2022",
+          "edition": "2022",
+          "page": 198,
+          "pdfPage": 199,
+          "endPage": null,
+          "pdfEndPage": null
+        },
+        "basis": "unknown: installed or listed system draw not published in the sidebar"
       }
     ],
     "fuelCapacity": 41.0,
@@ -1077,7 +1090,7 @@ export const CATALOGUE_EQUIPMENT={
       "ammunitionStorage": [],
       "unresolved": [
         "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p198; PDF p199. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -1256,17 +1269,17 @@ export const CATALOGUE_EQUIPMENT={
         {
           "category": "Staterooms",
           "detail": "Standard x15",
-          "tonnage": ""
+          "tonnage": "60"
         },
         {
           "category": "Common Areas",
           "detail": "",
-          "tonnage": ""
+          "tonnage": "4"
         },
         {
           "category": "Cargo",
           "detail": "",
-          "tonnage": ""
+          "tonnage": "22.85"
         }
       ],
       "mounts": [
@@ -1298,11 +1311,12 @@ export const CATALOGUE_EQUIPMENT={
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
         "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p200; PDF p201. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
-    "weapons": null
+    "weapons": null,
+    "cargoCapacity": 22.85
   },
   "core-202": {
     "ratedPower": 90.0,
@@ -1647,7 +1661,8 @@ export const CATALOGUE_EQUIPMENT={
           "capacity": null,
           "fit": "Particle Barbettes",
           "fittedCount": null,
-          "capacityBasis": "Not transcribed; source fit retained"
+          "capacityBasis": "Not applicable: complete weapon assembly, not a turret with interchangeable weapon slots.",
+          "fittedCountBasis": "Not applicable to internal turret slots; installed assembly quantity and named weapon are retained source facts."
         },
         {
           "id": "mount-2",
@@ -1662,7 +1677,7 @@ export const CATALOGUE_EQUIPMENT={
       "ammunitionStorage": [],
       "unresolved": [
         "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p204; PDF p205. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -1805,12 +1820,12 @@ export const CATALOGUE_EQUIPMENT={
         {
           "category": "Common Areas",
           "detail": "",
-          "tonnage": ""
+          "tonnage": "15"
         },
         {
           "category": "Cargo",
           "detail": "",
-          "tonnage": ""
+          "tonnage": "3"
         }
       ],
       "mounts": [],
@@ -1818,7 +1833,8 @@ export const CATALOGUE_EQUIPMENT={
       "unresolved": []
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p206; PDF p207. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
-    "weapons": []
+    "weapons": [],
+    "cargoCapacity": 3.0
   },
   "core-208": {
     "ratedPower": 405.0,
@@ -2034,7 +2050,7 @@ export const CATALOGUE_EQUIPMENT={
       "unresolved": [
         "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p208; PDF p209. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -2993,7 +3009,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p221; PDF p222. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -3148,7 +3164,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p222; PDF p223. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -3303,7 +3319,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p223; PDF p224. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -3458,7 +3474,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p224; PDF p225. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -3596,7 +3612,7 @@ export const CATALOGUE_EQUIPMENT={
         {
           "category": "Cargo",
           "detail": "",
-          "tonnage": ""
+          "tonnage": "3"
         }
       ],
       "mounts": [
@@ -3612,11 +3628,12 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p225; PDF p226. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
-    "weapons": null
+    "weapons": null,
+    "cargoCapacity": 3.0
   },
   "core-226": {
     "ratedPower": 60.0,
@@ -3767,7 +3784,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p226; PDF p227. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -4128,32 +4145,6 @@ export const CATALOGUE_EQUIPMENT={
           "pdfEndPage": null
         },
         "basis": "published"
-      },
-      {
-        "name": "Sensors",
-        "power": 4.0,
-        "source": {
-          "book": "High Guard Update 2022",
-          "edition": "2022",
-          "page": 137,
-          "pdfPage": 138,
-          "endPage": null,
-          "pdfEndPage": null
-        },
-        "basis": "published"
-      },
-      {
-        "name": "Manoeuvre Drive",
-        "power": 1.0,
-        "source": {
-          "book": "High Guard Update 2022",
-          "edition": "2022",
-          "page": 137,
-          "pdfPage": 138,
-          "endPage": null,
-          "pdfEndPage": null
-        },
-        "basis": "published"
       }
     ],
     "fuelCapacity": 1.0,
@@ -4306,19 +4297,6 @@ export const CATALOGUE_EQUIPMENT={
       {
         "name": "Emergency Low Berths",
         "power": 3.0,
-        "source": {
-          "book": "High Guard Update 2022",
-          "edition": "2022",
-          "page": 138,
-          "pdfPage": 139,
-          "endPage": null,
-          "pdfEndPage": null
-        },
-        "basis": "published"
-      },
-      {
-        "name": "Low Berths",
-        "power": 6.0,
         "source": {
           "book": "High Guard Update 2022",
           "edition": "2022",
@@ -4589,19 +4567,6 @@ export const CATALOGUE_EQUIPMENT={
       {
         "name": "Manoeuvre Drive",
         "power": 15.0,
-        "source": {
-          "book": "High Guard Update 2022",
-          "edition": "2022",
-          "page": 140,
-          "pdfPage": 141,
-          "endPage": null,
-          "pdfEndPage": null
-        },
-        "basis": "published"
-      },
-      {
-        "name": "Manoeuvre Drive",
-        "power": 7.0,
         "source": {
           "book": "High Guard Update 2022",
           "edition": "2022",
@@ -5167,7 +5132,9 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "ammunitionStorage": [],
-      "unresolved": []
+      "unresolved": [
+        "Source inconsistency: Printed manoeuvre draw 9 despite Thrust3/40t; retain 9 as published, do not silently replace with formula12."
+      ]
     },
     "reference": "Published stat table: High Guard Update 2022, printed p143; PDF p144. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
     "weapons": []
@@ -5194,19 +5161,6 @@ export const CATALOGUE_EQUIPMENT={
       {
         "name": "Manoeuvre Drive",
         "power": 20.0,
-        "source": {
-          "book": "High Guard Update 2022",
-          "edition": "2022",
-          "page": 144,
-          "pdfPage": 145,
-          "endPage": null,
-          "pdfEndPage": null
-        },
-        "basis": "published"
-      },
-      {
-        "name": "Manoeuvre Drive",
-        "power": 8.0,
         "source": {
           "book": "High Guard Update 2022",
           "edition": "2022",
@@ -5884,7 +5838,8 @@ export const CATALOGUE_EQUIPMENT={
           "capacity": null,
           "fit": "Torpedo Barbette",
           "fittedCount": null,
-          "capacityBasis": "Not transcribed; source fit retained"
+          "capacityBasis": "Not applicable: complete weapon assembly, not a turret with interchangeable weapon slots.",
+          "fittedCountBasis": "Not applicable to internal turret slots; installed assembly quantity and named weapon are retained source facts."
         }
       ],
       "ammunitionStorage": [
@@ -5894,8 +5849,7 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
       ]
     },
     "reference": "Published stat table: High Guard Update 2022, printed p152; PDF p153. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -6044,7 +5998,9 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "ammunitionStorage": [],
-      "unresolved": []
+      "unresolved": [
+        "Source inconsistency: Printed plant output48 with TL12 fusion3tons; retain48 rather than rule arithmetic45."
+      ]
     },
     "reference": "Published stat table: High Guard Update 2022, printed p154; PDF p155. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
     "weapons": []
@@ -6758,7 +6714,9 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "ammunitionStorage": [],
-      "unresolved": []
+      "unresolved": [
+        "Source inconsistency: Printed Weapons draw1 despite an explicitly empty double turret. Preserve both and flag source inconsistency; no fitted weapon inferred."
+      ]
     },
     "reference": "Published stat table: High Guard Update 2022, printed p165; PDF p166. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
     "weapons": []
@@ -6973,17 +6931,31 @@ export const CATALOGUE_EQUIPMENT={
           "quantity": 2,
           "capacity": 2,
           "fit": "beam lasers",
-          "fittedCount": null,
-          "capacityBasis": "High Guard Update 2022, printed pp26,28; PDF pp27,29"
+          "fittedCount": 2,
+          "capacityBasis": "High Guard Update 2022, printed pp26,28; PDF pp27,29",
+          "fittedCountBasis": "Calculated from identical mount group construction costs: (3 - 2*0.5) / 0.5 / 2 = 2 beam lasers per double turret. Ship table p167 / PDF p168; High Guard Update 2022 weapon/mount rules p28 / PDF29."
         }
       ],
       "ammunitionStorage": [],
-      "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
-      ]
+      "unresolved": []
     },
     "reference": "Published stat table: High Guard Update 2022, printed p167; PDF p168. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
-    "weapons": null
+    "weapons": [
+      {
+        "id": "mount-1-1",
+        "name": "Double Turrets",
+        "type": "beam lasers",
+        "count": 2,
+        "ammunition": null
+      },
+      {
+        "id": "mount-1-2",
+        "name": "Double Turrets",
+        "type": "beam lasers",
+        "count": 2,
+        "ammunition": null
+      }
+    ]
   },
   "highguard-169": {
     "ratedPower": 75.0,
@@ -7406,6 +7378,19 @@ export const CATALOGUE_EQUIPMENT={
         "basis": "published"
       },
       {
+        "name": "Multi-Environment Equipment",
+        "power": 1.0,
+        "source": {
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 173,
+          "pdfPage": 174,
+          "endPage": null,
+          "pdfEndPage": null
+        },
+        "basis": "published"
+      },
+      {
         "name": "Weapons",
         "power": null,
         "source": {
@@ -7717,8 +7702,9 @@ export const CATALOGUE_EQUIPMENT={
           "quantity": 1,
           "capacity": 3,
           "fit": "beam lasers",
-          "fittedCount": null,
-          "capacityBasis": "High Guard Update 2022, printed pp26,28; PDF pp27,29"
+          "fittedCount": 3,
+          "capacityBasis": "High Guard Update 2022, printed pp26,28; PDF pp27,29",
+          "fittedCountBasis": "Calculated from identical mount group construction costs: (2.5 - 1) / 0.5 = 3 beam lasers. Ship table p175 / PDF p176; High Guard Update 2022 weapon/mount rules p28 / PDF29."
         },
         {
           "id": "mount-2",
@@ -7726,8 +7712,9 @@ export const CATALOGUE_EQUIPMENT={
           "quantity": 1,
           "capacity": 3,
           "fit": "missile racks",
-          "fittedCount": null,
-          "capacityBasis": "High Guard Update 2022, printed pp26,28; PDF pp27,29"
+          "fittedCount": 3,
+          "capacityBasis": "High Guard Update 2022, printed pp26,28; PDF pp27,29",
+          "fittedCountBasis": "Calculated from identical mount group construction costs: (3.25 - 1) / 0.75 = 3 missile racks. Ship table p175 / PDF p176; High Guard Update 2022 weapon/mount rules p28 / PDF29."
         }
       ],
       "ammunitionStorage": [
@@ -7737,12 +7724,26 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
       ]
     },
     "reference": "Published stat table: High Guard Update 2022, printed p175; PDF p176. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
-    "weapons": null
+    "weapons": [
+      {
+        "id": "mount-1-1",
+        "name": "Triple Turret",
+        "type": "beam lasers",
+        "count": 3,
+        "ammunition": null
+      },
+      {
+        "id": "mount-2-1",
+        "name": "Triple Turret",
+        "type": "missile racks",
+        "count": 3,
+        "ammunition": null
+      }
+    ]
   },
   "highguard-177": {
     "ratedPower": 105.0,
@@ -8301,7 +8302,8 @@ export const CATALOGUE_EQUIPMENT={
           "capacity": null,
           "fit": "Particle Barbettes",
           "fittedCount": null,
-          "capacityBasis": "Not transcribed; source fit retained"
+          "capacityBasis": "Not applicable: complete weapon assembly, not a turret with interchangeable weapon slots.",
+          "fittedCountBasis": "Not applicable to internal turret slots; installed assembly quantity and named weapon are retained source facts."
         },
         {
           "id": "mount-2",
@@ -8309,14 +8311,13 @@ export const CATALOGUE_EQUIPMENT={
           "quantity": 2,
           "capacity": 3,
           "fit": "Beam Lasers",
-          "fittedCount": null,
-          "capacityBasis": "High Guard Update 2022, printed pp26,28; PDF pp27,29"
+          "fittedCount": 3,
+          "capacityBasis": "High Guard Update 2022, printed pp26,28; PDF pp27,29",
+          "fittedCountBasis": "Calculated from identical mount group construction costs: (5 - 2*1) / 0.5 / 2 = 3 beam lasers per triple turret. Ship table p181 / PDF p182; High Guard Update 2022 weapon/mount rules p28 / PDF29."
         }
       ],
       "ammunitionStorage": [],
-      "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
-      ]
+      "unresolved": []
     },
     "reference": "Published stat table: High Guard Update 2022, printed p181; PDF p182. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
     "weapons": null
@@ -8505,8 +8506,9 @@ export const CATALOGUE_EQUIPMENT={
           "quantity": 2,
           "capacity": 3,
           "fit": "beam lasers",
-          "fittedCount": null,
-          "capacityBasis": "High Guard Update 2022, printed pp26,28; PDF pp27,29"
+          "fittedCount": 3,
+          "capacityBasis": "High Guard Update 2022, printed pp26,28; PDF pp27,29",
+          "fittedCountBasis": "Calculated from identical mount group construction costs: (5 - 2*1) / 0.5 / 2 = 3 beam lasers per triple turret. Ship table p183 / PDF p184; High Guard Update 2022 weapon/mount rules p28 / PDF29."
         },
         {
           "id": "mount-2",
@@ -8514,8 +8516,9 @@ export const CATALOGUE_EQUIPMENT={
           "quantity": 2,
           "capacity": 3,
           "fit": "sandcasters",
-          "fittedCount": null,
-          "capacityBasis": "High Guard Update 2022, printed pp26,28; PDF pp27,29"
+          "fittedCount": 3,
+          "capacityBasis": "High Guard Update 2022, printed pp26,28; PDF pp27,29",
+          "fittedCountBasis": "Calculated from identical mount group construction costs: (3.5 - 2*1) / 0.25 / 2 = 3 sandcasters per triple turret. Ship table p183 / PDF p184; High Guard Update 2022 weapon/mount rules p28 / PDF29."
         }
       ],
       "ammunitionStorage": [
@@ -8526,12 +8529,41 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated.",
+        "Source inconsistency: Printed Fuel Processor draw56 despite12 installed tons; printed J-6 fuel row and J-drive Jump5 also conflict. Preserve source figures.",
         "Published power figures may conflict with equipment/rating arithmetic; printed values retained pending edition-specific errata review."
       ]
     },
     "reference": "Published stat table: High Guard Update 2022, printed p183; PDF p184. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
-    "weapons": null
+    "weapons": [
+      {
+        "id": "mount-1-1",
+        "name": "Triple Turrets",
+        "type": "beam lasers",
+        "count": 3,
+        "ammunition": null
+      },
+      {
+        "id": "mount-1-2",
+        "name": "Triple Turrets",
+        "type": "beam lasers",
+        "count": 3,
+        "ammunition": null
+      },
+      {
+        "id": "mount-2-1",
+        "name": "Triple Turret",
+        "type": "sandcasters",
+        "count": 3,
+        "ammunition": null
+      },
+      {
+        "id": "mount-2-2",
+        "name": "Triple Turret",
+        "type": "sandcasters",
+        "count": 3,
+        "ammunition": null
+      }
+    ]
   },
   "highguard-185": {
     "ratedPower": 180.0,
@@ -8890,8 +8922,9 @@ export const CATALOGUE_EQUIPMENT={
           "quantity": 2,
           "capacity": 3,
           "fit": "pulse lasers",
-          "fittedCount": null,
-          "capacityBasis": "High Guard Update 2022, printed pp26,28; PDF pp27,29"
+          "fittedCount": 3,
+          "capacityBasis": "High Guard Update 2022, printed pp26,28; PDF pp27,29",
+          "fittedCountBasis": "Calculated from identical mount group construction costs: (8 - 2*1) / 1 / 2 = 3 pulse lasers per triple turret. Ship table p187 / PDF p188; High Guard Update 2022 weapon/mount rules p28 / PDF29."
         },
         {
           "id": "mount-2",
@@ -8899,18 +8932,47 @@ export const CATALOGUE_EQUIPMENT={
           "quantity": 2,
           "capacity": 3,
           "fit": "missile racks",
-          "fittedCount": null,
-          "capacityBasis": "High Guard Update 2022, printed pp26,28; PDF pp27,29"
+          "fittedCount": 3,
+          "capacityBasis": "High Guard Update 2022, printed pp26,28; PDF pp27,29",
+          "fittedCountBasis": "Calculated from identical mount group construction costs: (6.5 - 2*1) / 0.75 / 2 = 3 missile racks per triple turret. Ship table p187 / PDF p188; High Guard Update 2022 weapon/mount rules p28 / PDF29."
         }
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
       ]
     },
     "reference": "Published stat table: High Guard Update 2022, printed p187; PDF p188. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
-    "weapons": null
+    "weapons": [
+      {
+        "id": "mount-1-1",
+        "name": "Triple Turrets",
+        "type": "pulse lasers",
+        "count": 3,
+        "ammunition": null
+      },
+      {
+        "id": "mount-1-2",
+        "name": "Triple Turrets",
+        "type": "pulse lasers",
+        "count": 3,
+        "ammunition": null
+      },
+      {
+        "id": "mount-2-1",
+        "name": "Triple Turrets",
+        "type": "missile racks",
+        "count": 3,
+        "ammunition": null
+      },
+      {
+        "id": "mount-2-2",
+        "name": "Triple Turrets",
+        "type": "missile racks",
+        "count": 3,
+        "ammunition": null
+      }
+    ]
   },
   "highguard-189": {
     "ratedPower": 135.0,
@@ -9257,7 +9319,8 @@ export const CATALOGUE_EQUIPMENT={
       "mounts": [],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
+        "Source inconsistency: Printed manoeuvre draw80 despite Thrust3/400t; preserve80 rather than formula120."
       ]
     },
     "reference": "Published stat table: High Guard Update 2022, printed p191; PDF p192. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -9346,6 +9409,19 @@ export const CATALOGUE_EQUIPMENT={
           "pdfEndPage": null
         },
         "basis": "published"
+      },
+      {
+        "name": "Training Facilities",
+        "power": null,
+        "source": {
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 193,
+          "pdfPage": 194,
+          "endPage": null,
+          "pdfEndPage": null
+        },
+        "basis": "unknown: installed or listed system draw not published in the sidebar"
       }
     ],
     "fuelCapacity": 12.0,
@@ -9453,7 +9529,8 @@ export const CATALOGUE_EQUIPMENT={
           "capacity": null,
           "fit": "size reduction x3",
           "fittedCount": null,
-          "capacityBasis": "Not transcribed; source fit retained"
+          "capacityBasis": "Not applicable: complete weapon assembly, not a turret with interchangeable weapon slots.",
+          "fittedCountBasis": "Not applicable to internal turret slots; installed assembly quantity and named weapon are retained source facts."
         },
         {
           "id": "mount-2",
@@ -9462,7 +9539,8 @@ export const CATALOGUE_EQUIPMENT={
           "capacity": null,
           "fit": "Particle Barbettes",
           "fittedCount": null,
-          "capacityBasis": "Not transcribed; source fit retained"
+          "capacityBasis": "Not applicable: complete weapon assembly, not a turret with interchangeable weapon slots.",
+          "fittedCountBasis": "Not applicable to internal turret slots; installed assembly quantity and named weapon are retained source facts."
         },
         {
           "id": "mount-3",
@@ -9482,7 +9560,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "reference": "Published stat table: High Guard Update 2022, printed p193; PDF p194. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -11206,7 +11284,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -11829,8 +11907,9 @@ export const CATALOGUE_EQUIPMENT={
           "quantity": 3,
           "capacity": 2,
           "fit": "beam laser, sandcaster",
-          "fittedCount": null,
-          "capacityBasis": "High Guard Update 2022, printed pp26,28; PDF pp27,29"
+          "fittedCount": 2,
+          "capacityBasis": "High Guard Update 2022, printed pp26,28; PDF pp27,29",
+          "fittedCountBasis": "Source table explicitly enumerates two singular weapons; not assumed full turret capacity."
         }
       ],
       "ammunitionStorage": [
@@ -11840,11 +11919,32 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
       ]
     },
-    "weapons": null
+    "weapons": [
+      {
+        "id": "mount-1-1",
+        "name": "Double Turrets",
+        "type": "beam laser, sandcaster",
+        "count": 2,
+        "ammunition": null
+      },
+      {
+        "id": "mount-1-2",
+        "name": "Double Turrets",
+        "type": "beam laser, sandcaster",
+        "count": 2,
+        "ammunition": null
+      },
+      {
+        "id": "mount-1-3",
+        "name": "Double Turrets",
+        "type": "beam laser, sandcaster",
+        "count": 2,
+        "ammunition": null
+      }
+    ]
   },
   "acs2023-p32": {
     "tl": 9,
@@ -12251,7 +12351,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -13500,7 +13600,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -13685,7 +13785,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -13889,7 +13989,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -14093,7 +14193,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -14298,7 +14398,7 @@ export const CATALOGUE_EQUIPMENT={
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
         "Unloaded variant excludes the ten carried fighters; published conditional drive values remain those retained by this preset.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -14496,7 +14596,8 @@ export const CATALOGUE_EQUIPMENT={
           "capacity": null,
           "fit": "Small Fusion Gun Bay",
           "fittedCount": null,
-          "capacityBasis": "Not transcribed; source fit retained"
+          "capacityBasis": "Not applicable: complete weapon assembly, not a turret with interchangeable weapon slots.",
+          "fittedCountBasis": "Not applicable to internal turret slots; installed assembly quantity and named weapon are retained source facts."
         },
         {
           "id": "mount-2",
@@ -14534,7 +14635,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -14730,7 +14831,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -14923,7 +15024,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -15128,16 +15229,23 @@ export const CATALOGUE_EQUIPMENT={
           "quantity": 1,
           "capacity": 2,
           "fit": "sandcaster, pulse laser",
-          "fittedCount": null,
-          "capacityBasis": "High Guard Update 2022, printed pp26,28; PDF pp27,29"
+          "fittedCount": 2,
+          "capacityBasis": "High Guard Update 2022, printed pp26,28; PDF pp27,29",
+          "fittedCountBasis": "Source table explicitly enumerates two singular weapons; not assumed full turret capacity."
         }
       ],
       "ammunitionStorage": [],
-      "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
-      ]
+      "unresolved": []
     },
-    "weapons": null
+    "weapons": [
+      {
+        "id": "mount-1-1",
+        "name": "Double Turret",
+        "type": "sandcaster, pulse laser",
+        "count": 2,
+        "ammunition": null
+      }
+    ]
   },
   "acs2023-p120": {
     "tl": 15,
@@ -15358,7 +15466,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -15769,7 +15877,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -16188,7 +16296,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -16786,7 +16894,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -16984,7 +17092,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -17193,7 +17301,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -17866,7 +17974,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -17960,6 +18068,19 @@ export const CATALOGUE_EQUIPMENT={
           "pdfEndPage": null
         },
         "basis": "published"
+      },
+      {
+        "name": "Biosphere",
+        "power": null,
+        "source": {
+          "book": "Traders and Gunboats (2024)",
+          "edition": "2024",
+          "page": 12,
+          "pdfPage": 13,
+          "endPage": null,
+          "pdfEndPage": null
+        },
+        "basis": "unknown: installed or listed system draw not published in the sidebar"
       }
     ],
     "software": "Manoeuvre; Jump Control/2; Library; Intellect",
@@ -18080,7 +18201,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -18302,7 +18423,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -18486,7 +18607,7 @@ export const CATALOGUE_EQUIPMENT={
           "quantity": 4,
           "capacity": 3,
           "fit": "pulse laser, missile rack, sandcaster",
-          "fittedCount": null,
+          "fittedCount": 3,
           "capacityBasis": "High Guard Update 2022, printed pp26,28; PDF pp27,29"
         }
       ],
@@ -18501,11 +18622,39 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
       ]
     },
-    "weapons": null
+    "weapons": [
+      {
+        "id": "mount-1-1",
+        "name": "Triple Turrets",
+        "type": "pulse laser, missile rack, sandcaster",
+        "count": 3,
+        "ammunition": null
+      },
+      {
+        "id": "mount-1-2",
+        "name": "Triple Turrets",
+        "type": "pulse laser, missile rack, sandcaster",
+        "count": 3,
+        "ammunition": null
+      },
+      {
+        "id": "mount-1-3",
+        "name": "Triple Turrets",
+        "type": "pulse laser, missile rack, sandcaster",
+        "count": 3,
+        "ammunition": null
+      },
+      {
+        "id": "mount-1-4",
+        "name": "Triple Turrets",
+        "type": "pulse laser, missile rack, sandcaster",
+        "count": 3,
+        "ammunition": null
+      }
+    ]
   },
   "tng2024-ewa": {
     "tl": 12,
@@ -19017,7 +19166,7 @@ export const CATALOGUE_EQUIPMENT={
       "ammunitionStorage": [],
       "unresolved": [
         "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -19514,7 +19663,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -19893,7 +20042,8 @@ export const CATALOGUE_EQUIPMENT={
           "capacity": null,
           "fit": "size reduction x3",
           "fittedCount": null,
-          "capacityBasis": "Not transcribed; source fit retained"
+          "capacityBasis": "Not applicable: complete weapon assembly, not a turret with interchangeable weapon slots.",
+          "fittedCountBasis": "Not applicable to internal turret slots; installed assembly quantity and named weapon are retained source facts."
         },
         {
           "id": "mount-2",
@@ -19907,7 +20057,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -20456,7 +20606,7 @@ export const CATALOGUE_EQUIPMENT={
       "ammunitionStorage": [],
       "unresolved": [
         "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated.",
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending.",
         "Published power figures may conflict with equipment/rating arithmetic; printed values retained pending edition-specific errata review."
       ]
     },
@@ -21042,7 +21192,7 @@ export const CATALOGUE_EQUIPMENT={
       "unresolved": [
         "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Grav Screen installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -21282,7 +21432,7 @@ export const CATALOGUE_EQUIPMENT={
       "unresolved": [
         "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -21502,7 +21652,7 @@ export const CATALOGUE_EQUIPMENT={
       "ammunitionStorage": [],
       "unresolved": [
         "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -22272,6 +22422,19 @@ export const CATALOGUE_EQUIPMENT={
           "pdfEndPage": null
         },
         "basis": "published"
+      },
+      {
+        "name": "Low Berths",
+        "power": null,
+        "source": {
+          "book": "Traders and Gunboats (2024)",
+          "edition": "2024",
+          "page": 134,
+          "pdfPage": 135,
+          "endPage": null,
+          "pdfEndPage": null
+        },
+        "basis": "unknown: installed or listed system draw not published in the sidebar"
       }
     ],
     "software": "Intellect; Manoeuvre; Jump Control/2; Library",
@@ -22551,7 +22714,8 @@ export const CATALOGUE_EQUIPMENT={
           "capacity": null,
           "fit": "increased size",
           "fittedCount": null,
-          "capacityBasis": "Not transcribed; source fit retained"
+          "capacityBasis": "Not applicable: complete weapon assembly, not a turret with interchangeable weapon slots.",
+          "fittedCountBasis": "Not applicable to internal turret slots; installed assembly quantity and named weapon are retained source facts."
         }
       ],
       "ammunitionStorage": [
@@ -22562,7 +22726,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -22961,7 +23125,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -23154,7 +23318,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -23355,13 +23519,13 @@ export const CATALOGUE_EQUIPMENT={
           "quantity": 1,
           "capacity": 2,
           "fit": "sandcaster, missile rack",
-          "fittedCount": null,
+          "fittedCount": 2,
           "capacityBasis": "High Guard Update 2022, printed pp26,28; PDF pp27,29"
         }
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -23883,8 +24047,8 @@ export const CATALOGUE_EQUIPMENT={
         },
         {
           "category": "Cargo",
-          "detail": "—",
-          "tonnage": "16"
+          "detail": "—\nConcealed Compartment (2 tons)",
+          "tonnage": "16\n2"
         }
       ],
       "mounts": [],
@@ -25745,19 +25909,6 @@ export const CATALOGUE_EQUIPMENT={
           "pdfEndPage": null
         },
         "basis": "published"
-      },
-      {
-        "name": "Low Berths",
-        "power": 13.0,
-        "source": {
-          "book": "Small Craft Catalogue (2023)",
-          "edition": "2023",
-          "page": 36,
-          "pdfPage": 37,
-          "endPage": null,
-          "pdfEndPage": null
-        },
-        "basis": "published"
       }
     ],
     "software": "Manoeuvre; Library; Intellect",
@@ -26021,19 +26172,6 @@ export const CATALOGUE_EQUIPMENT={
           "pdfEndPage": null
         },
         "basis": "published"
-      },
-      {
-        "name": "Manoeuvre Drive",
-        "power": 2.0,
-        "source": {
-          "book": "Small Craft Catalogue (2023)",
-          "edition": "2023",
-          "page": 38,
-          "pdfPage": 39,
-          "endPage": null,
-          "pdfEndPage": null
-        },
-        "basis": "published"
       }
     ],
     "software": "Manoeuvre; Library; Intellect",
@@ -26275,7 +26413,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
     "weapons": null
@@ -27235,7 +27373,7 @@ export const CATALOGUE_EQUIPMENT={
         "basis": "published"
       }
     ],
-    "software": "Manoeuvre\\nTotal: MCr3.4",
+    "software": "Manoeuvre",
     "published": {
       "version": 1,
       "source": {
@@ -27300,7 +27438,7 @@ export const CATALOGUE_EQUIPMENT={
         },
         {
           "category": "Software",
-          "detail": "Manoeuvre\\nTotal: MCr3.4",
+          "detail": "Manoeuvre",
           "tonnage": "—"
         }
       ],
@@ -28063,32 +28201,6 @@ export const CATALOGUE_EQUIPMENT={
           "pdfEndPage": null
         },
         "basis": "published"
-      },
-      {
-        "name": "Manoeuvre Drive",
-        "power": 2.0,
-        "source": {
-          "book": "Small Craft Catalogue (2023)",
-          "edition": "2023",
-          "page": 53,
-          "pdfPage": 54,
-          "endPage": null,
-          "pdfEndPage": null
-        },
-        "basis": "published"
-      },
-      {
-        "name": "Sensors",
-        "power": 5.0,
-        "source": {
-          "book": "Small Craft Catalogue (2023)",
-          "edition": "2023",
-          "page": 53,
-          "pdfPage": 54,
-          "endPage": null,
-          "pdfEndPage": null
-        },
-        "basis": "published"
       }
     ],
     "software": "Manoeuvre; Intellect; Fire Control/3; Evade/2",
@@ -28731,32 +28843,6 @@ export const CATALOGUE_EQUIPMENT={
           "pdfEndPage": null
         },
         "basis": "published"
-      },
-      {
-        "name": "Manoeuvre Drive",
-        "power": 2.0,
-        "source": {
-          "book": "Small Craft Catalogue (2023)",
-          "edition": "2023",
-          "page": 58,
-          "pdfPage": 59,
-          "endPage": null,
-          "pdfEndPage": null
-        },
-        "basis": "published"
-      },
-      {
-        "name": "Sensors",
-        "power": 5.0,
-        "source": {
-          "book": "Small Craft Catalogue (2023)",
-          "edition": "2023",
-          "page": 58,
-          "pdfPage": 59,
-          "endPage": null,
-          "pdfEndPage": null
-        },
-        "basis": "published"
       }
     ],
     "software": "Manoeuvre; Library; Intellect",
@@ -29229,32 +29315,6 @@ export const CATALOGUE_EQUIPMENT={
       {
         "name": "Weapons",
         "power": 0.0,
-        "source": {
-          "book": "Small Craft Catalogue (2023)",
-          "edition": "2023",
-          "page": 61,
-          "pdfPage": 62,
-          "endPage": null,
-          "pdfEndPage": null
-        },
-        "basis": "published"
-      },
-      {
-        "name": "Manoeuvre Drive",
-        "power": 2.0,
-        "source": {
-          "book": "Small Craft Catalogue (2023)",
-          "edition": "2023",
-          "page": 61,
-          "pdfPage": 62,
-          "endPage": null,
-          "pdfEndPage": null
-        },
-        "basis": "published"
-      },
-      {
-        "name": "Sensors",
-        "power": 5.0,
         "source": {
           "book": "Small Craft Catalogue (2023)",
           "edition": "2023",
@@ -30296,7 +30356,7 @@ export const CATALOGUE_EQUIPMENT={
         {
           "category": "Common Areas",
           "detail": "",
-          "tonnage": ""
+          "tonnage": "12.5"
         }
       ],
       "mounts": [
@@ -30823,7 +30883,7 @@ export const CATALOGUE_EQUIPMENT={
     "className": "In-System Sailing Yacht",
     "ratedPower": 30.0,
     "fuelCapacity": 0.9,
-    "cargoCapacity": 2,
+    "cargoCapacity": 2.0,
     "jump": 0,
     "sensors": "Civilian Grade",
     "computer": "Computer/10",
@@ -30959,7 +31019,7 @@ export const CATALOGUE_EQUIPMENT={
         {
           "category": "Cargo",
           "detail": "",
-          "tonnage": ""
+          "tonnage": "2"
         }
       ],
       "mounts": [],
@@ -32513,13 +32573,12 @@ export const CATALOGUE_EQUIPMENT={
           "capacity": null,
           "fit": "Fusion Barbette",
           "fittedCount": null,
-          "capacityBasis": "Not transcribed; source fit retained"
+          "capacityBasis": "Not applicable: complete weapon assembly, not a turret with interchangeable weapon slots.",
+          "fittedCountBasis": "Not applicable to internal turret slots; installed assembly quantity and named weapon are retained source facts."
         }
       ],
       "ammunitionStorage": [],
-      "unresolved": [
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
-      ]
+      "unresolved": []
     },
     "weapons": null
   },
@@ -32680,7 +32739,8 @@ export const CATALOGUE_EQUIPMENT={
           "capacity": null,
           "fit": "Missile Barbette",
           "fittedCount": null,
-          "capacityBasis": "Not transcribed; source fit retained"
+          "capacityBasis": "Not applicable: complete weapon assembly, not a turret with interchangeable weapon slots.",
+          "fittedCountBasis": "Not applicable to internal turret slots; installed assembly quantity and named weapon are retained source facts."
         }
       ],
       "ammunitionStorage": [
@@ -32690,8 +32750,7 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
       ]
     },
     "weapons": null
@@ -32851,32 +32910,6 @@ export const CATALOGUE_EQUIPMENT={
       {
         "name": "Weapons",
         "power": 3.0,
-        "source": {
-          "book": "Small Craft Catalogue (2023)",
-          "edition": "2023",
-          "page": 99,
-          "pdfPage": 100,
-          "endPage": null,
-          "pdfEndPage": null
-        },
-        "basis": "published"
-      },
-      {
-        "name": "Manoeuvre Drive",
-        "power": 2.0,
-        "source": {
-          "book": "Small Craft Catalogue (2023)",
-          "edition": "2023",
-          "page": 99,
-          "pdfPage": 100,
-          "endPage": null,
-          "pdfEndPage": null
-        },
-        "basis": "published"
-      },
-      {
-        "name": "Sensors",
-        "power": 6.0,
         "source": {
           "book": "Small Craft Catalogue (2023)",
           "edition": "2023",
@@ -33786,7 +33819,7 @@ export const CATALOGUE_EQUIPMENT={
         {
           "category": "Common Areas",
           "detail": "",
-          "tonnage": ""
+          "tonnage": "2"
         }
       ],
       "mounts": [
@@ -33964,7 +33997,7 @@ export const CATALOGUE_EQUIPMENT={
         {
           "category": "Cargo",
           "detail": "",
-          "tonnage": ""
+          "tonnage": "7.5"
         }
       ],
       "mounts": [],
@@ -34513,7 +34546,7 @@ export const CATALOGUE_EQUIPMENT={
           "capacity": null,
           "fit": "Particle beam (accurate, high yield)",
           "fittedCount": 1,
-          "capacityBasis": "Published single barbette; turret-slot capacity not applicable"
+          "capacityBasis": "Not applicable: complete weapon assembly, not a turret with interchangeable weapon slots."
         },
         {
           "id": "missile-turret",
