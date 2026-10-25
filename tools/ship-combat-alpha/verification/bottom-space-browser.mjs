@@ -14,6 +14,7 @@ export async function verifyBottomSpace(page,width,artifacts){
   await writeFile(artifacts+'bottom-space-metrics-'+width+'.json',JSON.stringify({before,after:restored},null,2));
  }
  if(width===1876){assert.ok(after.extra>0,'requested desktop uses additional bottom space');assert.ok(Math.abs(after.frame.bottom-Math.min(page.viewportSize().height,after.rightBottom))<2,'console bottom aligns with the visible right pane');}
+ const revision=await page.locator('#map').getAttribute('data-revision');await page.locator('input[name=range-mode][value=on]').check();await settle();assert.equal(await page.locator('.range-band-fill').count(),4);assert.equal(await page.locator('#map').getAttribute('data-revision'),revision);
  await page.screenshot({path:artifacts+'bottom-space-'+width+'.png'});
  for(const selector of ['.map-footer summary','.assumptions summary','body>footer']){await page.locator(selector).scrollIntoViewIfNeeded();assert.equal(await page.locator(selector).isVisible(),true);}
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));

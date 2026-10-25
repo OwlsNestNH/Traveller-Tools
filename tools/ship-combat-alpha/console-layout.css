@@ -11,10 +11,10 @@ body.station-console.map-expanded .map-panel{position:static;inset:auto;z-index:
 
 .load-source{display:block;font-size:.7rem;line-height:1.4;color:#bdd0db;margin-top:3px}
 
-.range-shading,.range-rings,.range-shading *,.range-rings *{pointer-events:none!important}.range-band-fill{stroke:none}.band-tone-0{fill:#78a9c6;fill-opacity:.04}.band-tone-1{fill:#b3d7c7;fill-opacity:.018}.range-ring{stroke:#94b8ce;stroke-opacity:.65;stroke-dasharray:5 4}.range-band-label{fill:#cfdfeb!important;stroke:#06131c!important;stroke-width:4px!important;font-weight:600}
+.range-shading,.range-rings,.range-shading *,.range-rings *{pointer-events:none!important}.range-band-fill{stroke:none}.band-tone-0{fill:#78a9c6;fill-opacity:.12}.band-tone-1{fill:#b3d7c7;fill-opacity:.035}.range-ring{stroke:#94b8ce;stroke-opacity:.8;stroke-dasharray:5 4}.range-band-label{fill:#cfdfeb!important;stroke:#06131c!important;stroke-width:4px!important;font-weight:600}
 
 .station-console .map-footer{padding:0}.station-console .map-footer>summary{min-height:28px}@media(max-width:700px){.station-console .map-footer>summary{min-height:44px}}
 
 .range-mode-control{border:0;padding:0;margin:0;min-width:0}.range-mode-control legend{font-size:.7rem;color:#b8cdd8;padding:0 0 3px}.range-switch{display:flex;border:1px solid #638494;border-radius:6px;overflow:hidden}.range-switch label{position:relative;display:block!important;margin:0;min-height:0!important;cursor:pointer}.range-switch label+label{border-left:1px solid #638494}.range-switch span{display:flex;align-items:center;justify-content:center;min-height:36px;width:64px;min-width:64px;padding:4px 8px;background:#142c3c;color:#dcebf4;font-size:.8rem}.range-switch input[type=radio]{position:absolute;inset:0;width:100%;height:100%;min-height:0;margin:0;padding:0;border:0;opacity:0;z-index:1;cursor:pointer}.range-switch input:checked+span{background:#75e0d4;color:#082a2c;font-weight:750}.range-switch input:focus-visible+span{outline:3px solid #ffe08a;outline-offset:-4px}@media(max-width:700px){.range-switch span{min-height:44px;min-width:54px}}
 
-.range-caption-leader{stroke:#94b8ce;stroke-opacity:.65;fill:none}
+.range-caption-leader{stroke:#94b8ce;stroke-opacity:.8;fill:none}
