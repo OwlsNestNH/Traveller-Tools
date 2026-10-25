@@ -40,6 +40,28 @@ export async function verifyUnknownValues(page,width,artifacts){
   await reused.locator('[data-remove-row]').click();await p.locator('[data-add-weapon=new]').click();reused=p.locator('#new-weapons [data-mount-id="'+reusedId+'"]');await reused.locator('[id^="mount-type-"]').fill('Beam laser');assert.equal(await reused.locator('[id^="mount-ammo-"]').inputValue(),'');assert.equal(await p.locator('#add-preview [data-unknown-ammo="'+reusedId+'"]').count(),1);
   await reused.locator('[id^="mount-ammo-"]').fill('7');await p.locator('#place-on-map').click();await p.locator('#map').scrollIntoViewIfNeeded();await p.locator('.ship-node').first().evaluate(e=>e.focus({preventScroll:true}));await p.keyboard.press('Enter');assert.equal((await state()).ships.at(-1).designOverrides.record.weapons.find(w=>w.id===reusedId).ammunition,7);
   if([1440,320].includes(width)){await p.locator('[data-details=ship-1]').click();await p.locator('#ship-sheet .numeric-records').scrollIntoViewIfNeeded();await p.locator('#ship-sheet').screenshot({path:artifacts+'unknown-records-'+width+'.png'});await p.locator('#sheet-close').click();}
+  // Calculated source provenance stays calculated in the rendered sheet, including restore.
+  await p.evaluate(async()=>{
+   const {createState,applyCommand}=await import('./engine.mjs');
+   const s=applyCommand(createState({ships:[]}),{type:'add-ship',presetId:'core-190',name:'Provenance audit',position:{q:0,r:0},velocity:{q:0,r:0}});
+   s.ships[0].systems.loads.forEach(l=>l.enabled=true);window.__unknownReload(s);window.__unknownSelect(s.ships[0].id);
+  });
+  for(const amount of [null,'3','2']){
+   if(amount!==null)await p.evaluate(async amount=>{
+    const {designFields,readDesign}=await import('./editor.mjs'),{applyCommand}=await import('./engine.mjs'),s=window.__unknownState(),ship=s.ships[0],host=document.createElement('section');
+    host.innerHTML='<form id="provenance-form">'+designFields('provenance',ship.template)+'</form>';document.body.append(host);
+    [...host.querySelectorAll('[data-requirement-row]')].find(r=>r.querySelector('input').value==='Fuel Processor').querySelectorAll('input')[1].value=amount;
+    const design=readDesign('provenance',ship.template);host.remove();window.__unknownReload(applyCommand(s,{type:'set-design',shipId:ship.id,template:design}));
+   },amount);
+   await p.locator('[data-details=ship-1]').click();const text=await p.locator('#ship-sheet .sheet-summary').textContent();
+   if(amount==='3')assert.match(text,/Manual design override/);else{assert.match(text,/calculated rated load/);assert.doesNotMatch(text,/Manual design override/);}
+   assert.match(text,/High Guard Update 2022/);await p.locator('#sheet-close').click();
+  }
+  const derived=await p.evaluate(async()=>{const audit=await (await fetch('./catalogue-rated-power-audit.json')).json();return audit.fields;});
+  for(const f of derived){
+   await p.evaluate(async id=>{const {createState,applyCommand}=await import('./engine.mjs');const s=applyCommand(createState({ships:[]}),{type:'add-ship',presetId:id,name:'Derived audit',position:{q:0,r:0},velocity:{q:0,r:0}});s.ships[0].systems.loads.forEach(l=>l.enabled=true);window.__unknownReload(s);window.__unknownSelect(s.ships[0].id);},f.id);
+   await p.locator('[data-details=ship-1]').click();const text=await p.locator('#ship-sheet .sheet-summary').textContent();assert.ok(text.includes(f.basis),f.id+'/'+f.name);assert.doesNotMatch(text,/Manual design override/);await p.locator('#sheet-close').click();
+  }
   assert.deepEqual(errors,[]);assert.deepEqual(await p.evaluate(()=>window.__storageAccesses),[]);await writeFile(artifacts+'unknown-checks-'+width+'.json',JSON.stringify({width,passed:true,templatePreserved:true,zeroDistinct:true,failedSaveRetry:true,storageAccesses:[]},null,2));
  }finally{await p.close();}
 }

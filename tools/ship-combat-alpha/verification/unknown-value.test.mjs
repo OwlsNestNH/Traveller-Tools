@@ -24,3 +24,17 @@ test('operating draw overrides retain the installed record and do not invent unk
  const command=systemValueCommand(ship,'test-extra',0,state.revision),next=applyCommand(state,command);assert.equal(next.ships[0].systems.extra.at(-1).power,0);assert.equal(next.ships[0].systems.extra.at(-1).quantity,null);assert.equal(next.ships[0].systems.extra.at(-1).reference,'Retained manual reference');assert.deepEqual(next.ships[0].template,ship.template);
  assert.equal(systemOverrideTarget({...ship,systems:{...ship.systems,driveKind:'unknown'}},'drive'),null);assert.throws(()=>systemValueCommand(ship,'unidentified-weapon',4,state.revision));
 });
+
+import {readFileSync} from 'node:fs';
+import {powerReport} from '../systems.mjs';
+test('all audited calculated defaults retain basis and references through manual zero and roundtrip',()=>{
+ const audit=JSON.parse(readFileSync(new URL('../catalogue-rated-power-audit.json',import.meta.url)));
+ for(const f of audit.fields){
+  let state=applyCommand(createState({ships:[]}),{type:'add-ship',presetId:f.id,name:'Provenance',position:{q:0,r:0},velocity:{q:0,r:0}});
+  let ship=state.ships[0];ship.systems.loads.forEach(l=>l.enabled=true);ship.systems.jumpEnabled=true;
+  state=normalizeState(JSON.parse(JSON.stringify(state)));ship=state.ships[0];
+  const row=powerReport(ship).rows.find(r=>r.name===f.name||(f.name==='Sensors'&&r.id==='sensors'));assert.ok(row,f.id+'/'+f.name);assert.equal(row.power,f.power);assert.ok(row.note.includes(f.basis));assert.doesNotMatch(row.note,/Manual (design|operating) override/);assert.deepEqual(row.source,f.rule);assert.match(row.note,/Retained original/);
+  state=normalizeState(JSON.parse(JSON.stringify(applyCommand(state,systemValueCommand(ship,row.id,0,state.revision)))));
+  const zero=powerReport(state.ships[0]).rows.find(r=>r.id===row.id);assert.equal(zero.power,0);assert.match(zero.note,/Manual operating override/);assert.ok(zero.note.includes(f.basis));assert.deepEqual(state.ships[0].template,ship.template);
+ }
+});
