@@ -1,0 +1,1568 @@
+{
+  "status": "71 independently reviewed rule-derived rated loads; not occupancy, switch state or actual consumption. Further component/errata reconciliation remains incomplete.",
+  "fields": [
+    {
+      "id": "core-190",
+      "name": "Fuel Processor",
+      "power": 2,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 49,
+        "pdfPage": 50,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 190,
+        "pdfPage": 191,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Installed processor tons × 1 Power/ton."
+    },
+    {
+      "id": "core-192",
+      "name": "Fuel Processor",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 49,
+        "pdfPage": 50,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 192,
+        "pdfPage": 193,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Installed processor tons × 1 Power/ton."
+    },
+    {
+      "id": "core-194",
+      "name": "Fuel Processor",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 49,
+        "pdfPage": 50,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 194,
+        "pdfPage": 195,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Installed processor tons × 1 Power/ton."
+    },
+    {
+      "id": "core-194",
+      "name": "Low Berths",
+      "power": 2,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 24,
+        "pdfPage": 25,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 194,
+        "pdfPage": 195,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: ceil(20 installed berths / 10). Rated installed load, not occupancy or switched state."
+    },
+    {
+      "id": "core-196",
+      "name": "Fuel Processor",
+      "power": 2,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 49,
+        "pdfPage": 50,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 196,
+        "pdfPage": 197,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Installed processor tons × 1 Power/ton."
+    },
+    {
+      "id": "core-196",
+      "name": "Low Berths",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 24,
+        "pdfPage": 25,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 196,
+        "pdfPage": 197,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: ceil(6 installed berths / 10). Rated installed load, not occupancy or switched state."
+    },
+    {
+      "id": "core-198",
+      "name": "Fuel Processor",
+      "power": 2,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 49,
+        "pdfPage": 50,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 198,
+        "pdfPage": 199,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Installed processor tons × 1 Power/ton."
+    },
+    {
+      "id": "core-200",
+      "name": "Medical Bay",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 62,
+        "pdfPage": 63,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 200,
+        "pdfPage": 201,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Installed 4-ton medical bay × 1 Power."
+    },
+    {
+      "id": "core-204",
+      "name": "Fuel Processor",
+      "power": 6,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 49,
+        "pdfPage": 50,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 204,
+        "pdfPage": 205,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Installed processor tons × 1 Power/ton."
+    },
+    {
+      "id": "core-208",
+      "name": "Fuel Processor",
+      "power": 4,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 49,
+        "pdfPage": 50,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 208,
+        "pdfPage": 209,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Installed processor tons × 1 Power/ton."
+    },
+    {
+      "id": "core-208",
+      "name": "Low Berths",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 24,
+        "pdfPage": 25,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 208,
+        "pdfPage": 209,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: ceil(4 installed berths / 10). Rated installed load, not occupancy or switched state."
+    },
+    {
+      "id": "core-210",
+      "name": "Fuel Processor",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 49,
+        "pdfPage": 50,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 210,
+        "pdfPage": 211,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Installed processor tons × 1 Power/ton."
+    },
+    {
+      "id": "core-210",
+      "name": "Low Berths",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 24,
+        "pdfPage": 25,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 210,
+        "pdfPage": 211,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: ceil(9 installed berths / 10). Rated installed load, not occupancy or switched state."
+    },
+    {
+      "id": "core-212",
+      "name": "Fuel Processor",
+      "power": 6,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 49,
+        "pdfPage": 50,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 212,
+        "pdfPage": 213,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Installed processor tons × 1 Power/ton."
+    },
+    {
+      "id": "core-219",
+      "name": "Sensors",
+      "power": 0,
+      "rule": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 181,
+        "pdfPage": 182,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 219,
+        "pdfPage": 220,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Basic sensor suite rated draw = 0."
+    },
+    {
+      "id": "core-220",
+      "name": "Sensors",
+      "power": 0,
+      "rule": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 181,
+        "pdfPage": 182,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 220,
+        "pdfPage": 221,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Basic sensor suite rated draw = 0."
+    },
+    {
+      "id": "core-221",
+      "name": "Sensors",
+      "power": 0,
+      "rule": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 181,
+        "pdfPage": 182,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 221,
+        "pdfPage": 222,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Basic sensor suite rated draw = 0."
+    },
+    {
+      "id": "core-222",
+      "name": "Sensors",
+      "power": 0,
+      "rule": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 181,
+        "pdfPage": 182,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 222,
+        "pdfPage": 223,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Basic sensor suite rated draw = 0."
+    },
+    {
+      "id": "core-223",
+      "name": "Sensors",
+      "power": 0,
+      "rule": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 181,
+        "pdfPage": 182,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 223,
+        "pdfPage": 224,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Basic sensor suite rated draw = 0."
+    },
+    {
+      "id": "core-224",
+      "name": "Sensors",
+      "power": 0,
+      "rule": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 181,
+        "pdfPage": 182,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 224,
+        "pdfPage": 225,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Basic sensor suite rated draw = 0."
+    },
+    {
+      "id": "core-225",
+      "name": "Sensors",
+      "power": 0,
+      "rule": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 181,
+        "pdfPage": 182,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 225,
+        "pdfPage": 226,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Basic sensor suite rated draw = 0."
+    },
+    {
+      "id": "core-226",
+      "name": "Sensors",
+      "power": 0,
+      "rule": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 181,
+        "pdfPage": 182,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 226,
+        "pdfPage": 227,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Basic sensor suite rated draw = 0."
+    },
+    {
+      "id": "highguard-138",
+      "name": "Sensors",
+      "power": 0,
+      "rule": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 181,
+        "pdfPage": 182,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 138,
+        "pdfPage": 139,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Basic sensor suite rated draw = 0."
+    },
+    {
+      "id": "highguard-139",
+      "name": "Sensors",
+      "power": 0,
+      "rule": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 181,
+        "pdfPage": 182,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 139,
+        "pdfPage": 140,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Basic sensor suite rated draw = 0."
+    },
+    {
+      "id": "highguard-140",
+      "name": "Weapons",
+      "power": 0,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 28,
+        "pdfPage": 29,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 140,
+        "pdfPage": 141,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged."
+    },
+    {
+      "id": "highguard-140",
+      "name": "Sensors",
+      "power": 0,
+      "rule": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 181,
+        "pdfPage": 182,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 140,
+        "pdfPage": 141,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Basic sensor suite rated draw = 0."
+    },
+    {
+      "id": "highguard-141",
+      "name": "Weapons",
+      "power": 0,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 28,
+        "pdfPage": 29,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 141,
+        "pdfPage": 142,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged."
+    },
+    {
+      "id": "highguard-141",
+      "name": "Sensors",
+      "power": 0,
+      "rule": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 181,
+        "pdfPage": 182,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 141,
+        "pdfPage": 142,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Basic sensor suite rated draw = 0."
+    },
+    {
+      "id": "highguard-142",
+      "name": "Weapons",
+      "power": 0,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 28,
+        "pdfPage": 29,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 142,
+        "pdfPage": 143,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged."
+    },
+    {
+      "id": "highguard-142",
+      "name": "Sensors",
+      "power": 0,
+      "rule": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 181,
+        "pdfPage": 182,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 142,
+        "pdfPage": 143,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Basic sensor suite rated draw = 0."
+    },
+    {
+      "id": "highguard-143",
+      "name": "Weapons",
+      "power": 0,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 28,
+        "pdfPage": 29,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 143,
+        "pdfPage": 144,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged."
+    },
+    {
+      "id": "highguard-143",
+      "name": "Sensors",
+      "power": 0,
+      "rule": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 181,
+        "pdfPage": 182,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 143,
+        "pdfPage": 144,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Basic sensor suite rated draw = 0."
+    },
+    {
+      "id": "highguard-144",
+      "name": "Weapons",
+      "power": 0,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 28,
+        "pdfPage": 29,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 144,
+        "pdfPage": 145,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged."
+    },
+    {
+      "id": "highguard-144",
+      "name": "Sensors",
+      "power": 0,
+      "rule": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 181,
+        "pdfPage": 182,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 144,
+        "pdfPage": 145,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Basic sensor suite rated draw = 0."
+    },
+    {
+      "id": "highguard-154",
+      "name": "Weapons",
+      "power": 0,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 28,
+        "pdfPage": 29,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 154,
+        "pdfPage": 155,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged."
+    },
+    {
+      "id": "highguard-154",
+      "name": "Sensors",
+      "power": 0,
+      "rule": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 181,
+        "pdfPage": 182,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 154,
+        "pdfPage": 155,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Basic sensor suite rated draw = 0."
+    },
+    {
+      "id": "highguard-160",
+      "name": "Weapons",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 28,
+        "pdfPage": 29,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 160,
+        "pdfPage": 161,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged."
+    },
+    {
+      "id": "highguard-162",
+      "name": "Weapons",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 28,
+        "pdfPage": 29,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 162,
+        "pdfPage": 163,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged."
+    },
+    {
+      "id": "highguard-173",
+      "name": "Weapons",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 28,
+        "pdfPage": 29,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 173,
+        "pdfPage": 174,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged."
+    },
+    {
+      "id": "highguard-187",
+      "name": "Low Berths",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 24,
+        "pdfPage": 25,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 187,
+        "pdfPage": 188,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: ceil(4 installed berths / 10). Rated installed load, not occupancy or switched state."
+    },
+    {
+      "id": "highguard-189",
+      "name": "Fuel Processor",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 49,
+        "pdfPage": 50,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 189,
+        "pdfPage": 190,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Installed processor tons × 1 Power/ton."
+    },
+    {
+      "id": "highguard-189",
+      "name": "Low Berths",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 24,
+        "pdfPage": 25,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 189,
+        "pdfPage": 190,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: ceil(9 installed berths / 10). Rated installed load, not occupancy or switched state."
+    },
+    {
+      "id": "acs2023-p26",
+      "name": "Loading Belt",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 53,
+        "pdfPage": 54,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Adventure Class Ships (2023)",
+        "edition": "2023",
+        "page": 26,
+        "pdfPage": 27,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: 1 explicitly singular or quantified installed belts × 1 Power; not weapon fallback count."
+    },
+    {
+      "id": "acs2023-p28",
+      "name": "Loading Belt",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 53,
+        "pdfPage": 54,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Adventure Class Ships (2023)",
+        "edition": "2023",
+        "page": 28,
+        "pdfPage": 29,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: 1 explicitly singular or quantified installed belts × 1 Power; not weapon fallback count."
+    },
+    {
+      "id": "acs2023-p32",
+      "name": "Loading Belt",
+      "power": 3,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 53,
+        "pdfPage": 54,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Adventure Class Ships (2023)",
+        "edition": "2023",
+        "page": 32,
+        "pdfPage": 33,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: 3 explicitly singular or quantified installed belts × 1 Power; not weapon fallback count."
+    },
+    {
+      "id": "acs2023-p32",
+      "name": "Sensors",
+      "power": 0,
+      "rule": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 181,
+        "pdfPage": 182,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Adventure Class Ships (2023)",
+        "edition": "2023",
+        "page": 32,
+        "pdfPage": 33,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Basic sensor suite rated draw = 0."
+    },
+    {
+      "id": "tng2024-iysa",
+      "name": "Weapons",
+      "power": 0,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 28,
+        "pdfPage": 29,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Traders and Gunboats (2024)",
+        "edition": "2024",
+        "page": 6,
+        "pdfPage": 7,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged."
+    },
+    {
+      "id": "tng2024-orssiryu",
+      "name": "Loading Belt",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 53,
+        "pdfPage": 54,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Traders and Gunboats (2024)",
+        "edition": "2024",
+        "page": 28,
+        "pdfPage": 29,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: 1 explicitly singular or quantified installed belts × 1 Power; not weapon fallback count."
+    },
+    {
+      "id": "tng2024-koydeayss",
+      "name": "Loading Belt",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 53,
+        "pdfPage": 54,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Traders and Gunboats (2024)",
+        "edition": "2024",
+        "page": 30,
+        "pdfPage": 31,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: 1 explicitly singular or quantified installed belts × 1 Power; not weapon fallback count."
+    },
+    {
+      "id": "tng2024-enuna",
+      "name": "Medical Bay",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 62,
+        "pdfPage": 63,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Traders and Gunboats (2024)",
+        "edition": "2024",
+        "page": 44,
+        "pdfPage": 45,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Installed 4-ton medical bay × 1 Power."
+    },
+    {
+      "id": "tng2024-lone-trader",
+      "name": "Loading Belt",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 53,
+        "pdfPage": 54,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Traders and Gunboats (2024)",
+        "edition": "2024",
+        "page": 80,
+        "pdfPage": 81,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: 1 explicitly singular or quantified installed belts × 1 Power; not weapon fallback count."
+    },
+    {
+      "id": "tng2024-deep-trader",
+      "name": "Loading Belt",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 53,
+        "pdfPage": 54,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Traders and Gunboats (2024)",
+        "edition": "2024",
+        "page": 82,
+        "pdfPage": 83,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: 1 explicitly singular or quantified installed belts × 1 Power; not weapon fallback count."
+    },
+    {
+      "id": "tng2024-free-trader-plus",
+      "name": "Low Berths",
+      "power": 2,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 24,
+        "pdfPage": 25,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Traders and Gunboats (2024)",
+        "edition": "2024",
+        "page": 86,
+        "pdfPage": 87,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: ceil(20 installed berths / 10). Rated installed load, not occupancy or switched state."
+    },
+    {
+      "id": "tng2024-blockade-runner",
+      "name": "Low Berths",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 24,
+        "pdfPage": 25,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Traders and Gunboats (2024)",
+        "edition": "2024",
+        "page": 88,
+        "pdfPage": 89,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: ceil(4 installed berths / 10). Rated installed load, not occupancy or switched state."
+    },
+    {
+      "id": "tng2024-blockade-runner",
+      "name": "Grav Screen",
+      "power": 2.4,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 61,
+        "pdfPage": 62,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Traders and Gunboats (2024)",
+        "edition": "2024",
+        "page": 88,
+        "pdfPage": 89,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: 1.2 installed tons × 2 Power/ton = 2.4; rule states no rounding."
+    },
+    {
+      "id": "tng2024-the-draco-occursum",
+      "name": "Low Berths",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 24,
+        "pdfPage": 25,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Traders and Gunboats (2024)",
+        "edition": "2024",
+        "page": 90,
+        "pdfPage": 91,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: ceil(6 installed berths / 10). Rated installed load, not occupancy or switched state."
+    },
+    {
+      "id": "tng2024-the-draco-occursum",
+      "name": "Medical Bay",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 62,
+        "pdfPage": 63,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Traders and Gunboats (2024)",
+        "edition": "2024",
+        "page": 90,
+        "pdfPage": 91,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Installed 4-ton medical bay × 1 Power."
+    },
+    {
+      "id": "tng2024-space-liner",
+      "name": "Medical Bay",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 62,
+        "pdfPage": 63,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Traders and Gunboats (2024)",
+        "edition": "2024",
+        "page": 92,
+        "pdfPage": 93,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Installed 4-ton medical bay × 1 Power."
+    },
+    {
+      "id": "tng2024-tramp-merchant",
+      "name": "Loading Belt",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 53,
+        "pdfPage": 54,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Traders and Gunboats (2024)",
+        "edition": "2024",
+        "page": 94,
+        "pdfPage": 95,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: 1 explicitly singular or quantified installed belts × 1 Power; not weapon fallback count."
+    },
+    {
+      "id": "tng2024-prasad",
+      "name": "Weapons",
+      "power": 0,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 28,
+        "pdfPage": 29,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Traders and Gunboats (2024)",
+        "edition": "2024",
+        "page": 130,
+        "pdfPage": 131,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged."
+    },
+    {
+      "id": "tng2024-solomani-gig",
+      "name": "Sensors",
+      "power": 0,
+      "rule": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 181,
+        "pdfPage": 182,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Traders and Gunboats (2024)",
+        "edition": "2024",
+        "page": 131,
+        "pdfPage": 132,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Basic sensor suite rated draw = 0."
+    },
+    {
+      "id": "tng2024-laoshi",
+      "name": "Low Berths",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 24,
+        "pdfPage": 25,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Traders and Gunboats (2024)",
+        "edition": "2024",
+        "page": 132,
+        "pdfPage": 133,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: ceil(10 installed berths / 10). Rated installed load, not occupancy or switched state."
+    },
+    {
+      "id": "tng2024-laoshi",
+      "name": "Loading Belt",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 53,
+        "pdfPage": 54,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Traders and Gunboats (2024)",
+        "edition": "2024",
+        "page": 132,
+        "pdfPage": 133,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: 1 explicitly singular or quantified installed belts × 1 Power; not weapon fallback count."
+    },
+    {
+      "id": "tng2024-backwater-trader",
+      "name": "Low Berths",
+      "power": 2,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 24,
+        "pdfPage": 25,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Traders and Gunboats (2024)",
+        "edition": "2024",
+        "page": 134,
+        "pdfPage": 135,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: ceil(12 installed berths / 10). Rated installed load, not occupancy or switched state."
+    },
+    {
+      "id": "tng2024-mariama",
+      "name": "Medical Bay",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 62,
+        "pdfPage": 63,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Traders and Gunboats (2024)",
+        "edition": "2024",
+        "page": 138,
+        "pdfPage": 139,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Installed 4-ton medical bay × 1 Power."
+    },
+    {
+      "id": "scc2023-p035",
+      "name": "Sensors",
+      "power": 0,
+      "rule": {
+        "book": "Core Rulebook Update 2022",
+        "edition": "2022",
+        "page": 181,
+        "pdfPage": 182,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Small Craft Catalogue (2023)",
+        "edition": "2023",
+        "page": 35,
+        "pdfPage": 36,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Basic sensor suite rated draw = 0."
+    },
+    {
+      "id": "scc2023-p040",
+      "name": "Weapons",
+      "power": 0,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 28,
+        "pdfPage": 29,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Small Craft Catalogue (2023)",
+        "edition": "2023",
+        "page": 40,
+        "pdfPage": 41,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged."
+    },
+    {
+      "id": "scc2023-p041",
+      "name": "Loading Belt",
+      "power": 1,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 53,
+        "pdfPage": 54,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Small Craft Catalogue (2023)",
+        "edition": "2023",
+        "page": 41,
+        "pdfPage": 42,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: 1 explicitly singular or quantified installed belts × 1 Power; not weapon fallback count."
+    },
+    {
+      "id": "scc2023-p043",
+      "name": "Weapons",
+      "power": 0,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 28,
+        "pdfPage": 29,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Small Craft Catalogue (2023)",
+        "edition": "2023",
+        "page": 43,
+        "pdfPage": 44,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged."
+    },
+    {
+      "id": "scc2023-p059",
+      "name": "Weapons",
+      "power": 0,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 28,
+        "pdfPage": 29,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Small Craft Catalogue (2023)",
+        "edition": "2023",
+        "page": 59,
+        "pdfPage": 60,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged."
+    },
+    {
+      "id": "scc2023-p104",
+      "name": "Weapons",
+      "power": 0,
+      "rule": {
+        "book": "High Guard Update 2022",
+        "edition": "2022",
+        "page": 28,
+        "pdfPage": 29,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "shipSource": {
+        "book": "Small Craft Catalogue (2023)",
+        "edition": "2023",
+        "page": 104,
+        "pdfPage": 105,
+        "endPage": null,
+        "pdfEndPage": null
+      },
+      "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged."
+    }
+  ],
+  "unchangedFactsSha256": "de1c114dab57e0388354eaf10c605175c6dc1765492b03d06656d57c0cbd9809"
+}

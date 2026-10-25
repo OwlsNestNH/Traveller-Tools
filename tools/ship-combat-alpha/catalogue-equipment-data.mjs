@@ -193,16 +193,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Fuel Processor",
-        "power": null,
+        "power": 2.0,
         "source": {
-          "book": "Core Rulebook Update 2022",
+          "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 190,
-          "pdfPage": 191,
+          "page": 49,
+          "pdfPage": 50,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Installed processor tons × 1 Power/ton.",
+        "sourceReference": {
+          "name": "Fuel Processor",
+          "power": null,
+          "source": {
+            "book": "Core Rulebook Update 2022",
+            "edition": "2022",
+            "page": 190,
+            "pdfPage": 191,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       },
       {
         "name": "Weapons",
@@ -318,7 +331,6 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -385,16 +397,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Fuel Processor",
-        "power": null,
+        "power": 1.0,
         "source": {
-          "book": "Core Rulebook Update 2022",
+          "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 192,
-          "pdfPage": 193,
+          "page": 49,
+          "pdfPage": 50,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Installed processor tons × 1 Power/ton.",
+        "sourceReference": {
+          "name": "Fuel Processor",
+          "power": null,
+          "source": {
+            "book": "Core Rulebook Update 2022",
+            "edition": "2022",
+            "page": 192,
+            "pdfPage": 193,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       },
       {
         "name": "Weapons",
@@ -510,7 +535,6 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -577,29 +601,55 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Fuel Processor",
-        "power": null,
+        "power": 1.0,
         "source": {
-          "book": "Core Rulebook Update 2022",
+          "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 194,
-          "pdfPage": 195,
+          "page": 49,
+          "pdfPage": 50,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Installed processor tons × 1 Power/ton.",
+        "sourceReference": {
+          "name": "Fuel Processor",
+          "power": null,
+          "source": {
+            "book": "Core Rulebook Update 2022",
+            "edition": "2022",
+            "page": 194,
+            "pdfPage": 195,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       },
       {
         "name": "Low Berths",
-        "power": null,
+        "power": 2,
         "source": {
-          "book": "Core Rulebook Update 2022",
+          "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 194,
-          "pdfPage": 195,
+          "page": 24,
+          "pdfPage": 25,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: ceil(20 installed berths / 10). Rated installed load, not occupancy or switched state.",
+        "sourceReference": {
+          "name": "Low Berths",
+          "power": null,
+          "source": {
+            "book": "Core Rulebook Update 2022",
+            "edition": "2022",
+            "page": 194,
+            "pdfPage": 195,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 21.0,
@@ -696,10 +746,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "mounts": [],
       "ammunitionStorage": [],
-      "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
-      ]
+      "unresolved": []
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p194; PDF p195. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
     "weapons": []
@@ -764,29 +811,55 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Fuel Processor",
-        "power": null,
+        "power": 2.0,
         "source": {
-          "book": "Core Rulebook Update 2022",
+          "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 196,
-          "pdfPage": 197,
+          "page": 49,
+          "pdfPage": 50,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Installed processor tons × 1 Power/ton.",
+        "sourceReference": {
+          "name": "Fuel Processor",
+          "power": null,
+          "source": {
+            "book": "Core Rulebook Update 2022",
+            "edition": "2022",
+            "page": 196,
+            "pdfPage": 197,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       },
       {
         "name": "Low Berths",
-        "power": null,
+        "power": 1,
         "source": {
-          "book": "Core Rulebook Update 2022",
+          "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 196,
-          "pdfPage": 197,
+          "page": 24,
+          "pdfPage": 25,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: ceil(6 installed berths / 10). Rated installed load, not occupancy or switched state.",
+        "sourceReference": {
+          "name": "Low Berths",
+          "power": null,
+          "source": {
+            "book": "Core Rulebook Update 2022",
+            "edition": "2022",
+            "page": 196,
+            "pdfPage": 197,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 41.0,
@@ -883,10 +956,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "mounts": [],
       "ammunitionStorage": [],
-      "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
-      ]
+      "unresolved": []
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p196; PDF p197. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
     "weapons": []
@@ -951,16 +1021,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Fuel Processor",
-        "power": null,
+        "power": 2.0,
         "source": {
-          "book": "Core Rulebook Update 2022",
+          "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 198,
-          "pdfPage": 199,
+          "page": 49,
+          "pdfPage": 50,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Installed processor tons × 1 Power/ton.",
+        "sourceReference": {
+          "name": "Fuel Processor",
+          "power": null,
+          "source": {
+            "book": "Core Rulebook Update 2022",
+            "edition": "2022",
+            "page": 198,
+            "pdfPage": 199,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       },
       {
         "name": "Weapons",
@@ -1089,7 +1172,6 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -1156,16 +1238,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Medical Bay",
-        "power": null,
+        "power": 1.0,
         "source": {
-          "book": "Core Rulebook Update 2022",
+          "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 200,
-          "pdfPage": 201,
+          "page": 62,
+          "pdfPage": 63,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Installed 4-ton medical bay × 1 Power.",
+        "sourceReference": {
+          "name": "Medical Bay",
+          "power": null,
+          "source": {
+            "book": "Core Rulebook Update 2022",
+            "edition": "2022",
+            "page": 200,
+            "pdfPage": 201,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       },
       {
         "name": "Weapons",
@@ -1310,7 +1405,6 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -1531,16 +1625,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Fuel Processor",
-        "power": null,
+        "power": 6.0,
         "source": {
-          "book": "Core Rulebook Update 2022",
+          "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 204,
-          "pdfPage": 205,
+          "page": 49,
+          "pdfPage": 50,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Installed processor tons × 1 Power/ton.",
+        "sourceReference": {
+          "name": "Fuel Processor",
+          "power": null,
+          "source": {
+            "book": "Core Rulebook Update 2022",
+            "edition": "2022",
+            "page": 204,
+            "pdfPage": 205,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       },
       {
         "name": "Weapons",
@@ -1676,7 +1783,6 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -1909,29 +2015,55 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Fuel Processor",
-        "power": null,
+        "power": 4.0,
         "source": {
-          "book": "Core Rulebook Update 2022",
+          "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 208,
-          "pdfPage": 209,
+          "page": 49,
+          "pdfPage": 50,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Installed processor tons × 1 Power/ton.",
+        "sourceReference": {
+          "name": "Fuel Processor",
+          "power": null,
+          "source": {
+            "book": "Core Rulebook Update 2022",
+            "edition": "2022",
+            "page": 208,
+            "pdfPage": 209,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       },
       {
         "name": "Low Berths",
-        "power": null,
+        "power": 1,
         "source": {
-          "book": "Core Rulebook Update 2022",
+          "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 208,
-          "pdfPage": 209,
+          "page": 24,
+          "pdfPage": 25,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: ceil(4 installed berths / 10). Rated installed load, not occupancy or switched state.",
+        "sourceReference": {
+          "name": "Low Berths",
+          "power": null,
+          "source": {
+            "book": "Core Rulebook Update 2022",
+            "edition": "2022",
+            "page": 208,
+            "pdfPage": 209,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 124.0,
@@ -2048,8 +2180,6 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -2116,29 +2246,55 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Fuel Processor",
-        "power": null,
+        "power": 1.0,
         "source": {
-          "book": "Core Rulebook Update 2022",
+          "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 210,
-          "pdfPage": 211,
+          "page": 49,
+          "pdfPage": 50,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Installed processor tons × 1 Power/ton.",
+        "sourceReference": {
+          "name": "Fuel Processor",
+          "power": null,
+          "source": {
+            "book": "Core Rulebook Update 2022",
+            "edition": "2022",
+            "page": 210,
+            "pdfPage": 211,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       },
       {
         "name": "Low Berths",
-        "power": null,
+        "power": 1,
         "source": {
-          "book": "Core Rulebook Update 2022",
+          "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 210,
-          "pdfPage": 211,
+          "page": 24,
+          "pdfPage": 25,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: ceil(9 installed berths / 10). Rated installed load, not occupancy or switched state.",
+        "sourceReference": {
+          "name": "Low Berths",
+          "power": null,
+          "source": {
+            "book": "Core Rulebook Update 2022",
+            "edition": "2022",
+            "page": 210,
+            "pdfPage": 211,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 41.0,
@@ -2230,10 +2386,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "mounts": [],
       "ammunitionStorage": [],
-      "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
-      ]
+      "unresolved": []
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p210; PDF p211. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
     "weapons": []
@@ -2298,16 +2451,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Fuel Processor",
-        "power": null,
+        "power": 6.0,
         "source": {
-          "book": "Core Rulebook Update 2022",
+          "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 212,
-          "pdfPage": 213,
+          "page": 49,
+          "pdfPage": 50,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Installed processor tons × 1 Power/ton.",
+        "sourceReference": {
+          "name": "Fuel Processor",
+          "power": null,
+          "source": {
+            "book": "Core Rulebook Update 2022",
+            "edition": "2022",
+            "page": 212,
+            "pdfPage": 213,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 124.0,
@@ -2404,9 +2570,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "mounts": [],
       "ammunitionStorage": [],
-      "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
-      ]
+      "unresolved": []
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p212; PDF p213. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
     "weapons": []
@@ -2624,16 +2788,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Sensors",
-        "power": null,
+        "power": 0,
         "source": {
           "book": "Core Rulebook Update 2022",
           "edition": "2022",
-          "page": 219,
-          "pdfPage": 220,
+          "page": 181,
+          "pdfPage": 182,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Basic sensor suite rated draw = 0.",
+        "sourceReference": {
+          "name": "Sensors",
+          "power": null,
+          "source": {
+            "book": "Core Rulebook Update 2022",
+            "edition": "2022",
+            "page": 219,
+            "pdfPage": 220,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 1.0,
@@ -2764,16 +2941,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Sensors",
-        "power": null,
+        "power": 0,
         "source": {
           "book": "Core Rulebook Update 2022",
           "edition": "2022",
-          "page": 220,
-          "pdfPage": 221,
+          "page": 181,
+          "pdfPage": 182,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Basic sensor suite rated draw = 0.",
+        "sourceReference": {
+          "name": "Sensors",
+          "power": null,
+          "source": {
+            "book": "Core Rulebook Update 2022",
+            "edition": "2022",
+            "page": 220,
+            "pdfPage": 221,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 1.0,
@@ -2907,16 +3097,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Sensors",
-        "power": null,
+        "power": 0,
         "source": {
           "book": "Core Rulebook Update 2022",
           "edition": "2022",
-          "page": 221,
-          "pdfPage": 222,
+          "page": 181,
+          "pdfPage": 182,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Basic sensor suite rated draw = 0.",
+        "sourceReference": {
+          "name": "Sensors",
+          "power": null,
+          "source": {
+            "book": "Core Rulebook Update 2022",
+            "edition": "2022",
+            "page": 221,
+            "pdfPage": 222,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 1.0,
@@ -3062,16 +3265,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Sensors",
-        "power": null,
+        "power": 0,
         "source": {
           "book": "Core Rulebook Update 2022",
           "edition": "2022",
-          "page": 222,
-          "pdfPage": 223,
+          "page": 181,
+          "pdfPage": 182,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Basic sensor suite rated draw = 0.",
+        "sourceReference": {
+          "name": "Sensors",
+          "power": null,
+          "source": {
+            "book": "Core Rulebook Update 2022",
+            "edition": "2022",
+            "page": 222,
+            "pdfPage": 223,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 1.0,
@@ -3217,16 +3433,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Sensors",
-        "power": null,
+        "power": 0,
         "source": {
           "book": "Core Rulebook Update 2022",
           "edition": "2022",
-          "page": 223,
-          "pdfPage": 224,
+          "page": 181,
+          "pdfPage": 182,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Basic sensor suite rated draw = 0.",
+        "sourceReference": {
+          "name": "Sensors",
+          "power": null,
+          "source": {
+            "book": "Core Rulebook Update 2022",
+            "edition": "2022",
+            "page": 223,
+            "pdfPage": 224,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 1.0,
@@ -3372,16 +3601,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Sensors",
-        "power": null,
+        "power": 0,
         "source": {
           "book": "Core Rulebook Update 2022",
           "edition": "2022",
-          "page": 224,
-          "pdfPage": 225,
+          "page": 181,
+          "pdfPage": 182,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Basic sensor suite rated draw = 0.",
+        "sourceReference": {
+          "name": "Sensors",
+          "power": null,
+          "source": {
+            "book": "Core Rulebook Update 2022",
+            "edition": "2022",
+            "page": 224,
+            "pdfPage": 225,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 1.0,
@@ -3527,16 +3769,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Sensors",
-        "power": null,
+        "power": 0,
         "source": {
           "book": "Core Rulebook Update 2022",
           "edition": "2022",
-          "page": 225,
-          "pdfPage": 226,
+          "page": 181,
+          "pdfPage": 182,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Basic sensor suite rated draw = 0.",
+        "sourceReference": {
+          "name": "Sensors",
+          "power": null,
+          "source": {
+            "book": "Core Rulebook Update 2022",
+            "edition": "2022",
+            "page": 225,
+            "pdfPage": 226,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 1.0,
@@ -3682,16 +3937,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Sensors",
-        "power": null,
+        "power": 0,
         "source": {
           "book": "Core Rulebook Update 2022",
           "edition": "2022",
-          "page": 226,
-          "pdfPage": 227,
+          "page": 181,
+          "pdfPage": 182,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Basic sensor suite rated draw = 0.",
+        "sourceReference": {
+          "name": "Sensors",
+          "power": null,
+          "source": {
+            "book": "Core Rulebook Update 2022",
+            "edition": "2022",
+            "page": 226,
+            "pdfPage": 227,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 1.0,
@@ -4309,16 +4577,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Sensors",
-        "power": null,
+        "power": 0,
         "source": {
-          "book": "High Guard Update 2022",
+          "book": "Core Rulebook Update 2022",
           "edition": "2022",
-          "page": 138,
-          "pdfPage": 139,
+          "page": 181,
+          "pdfPage": 182,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Basic sensor suite rated draw = 0.",
+        "sourceReference": {
+          "name": "Sensors",
+          "power": null,
+          "source": {
+            "book": "High Guard Update 2022",
+            "edition": "2022",
+            "page": 138,
+            "pdfPage": 139,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 1.0,
@@ -4457,16 +4738,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Sensors",
-        "power": null,
+        "power": 0,
         "source": {
-          "book": "High Guard Update 2022",
+          "book": "Core Rulebook Update 2022",
           "edition": "2022",
-          "page": 139,
-          "pdfPage": 140,
+          "page": 181,
+          "pdfPage": 182,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Basic sensor suite rated draw = 0.",
+        "sourceReference": {
+          "name": "Sensors",
+          "power": null,
+          "source": {
+            "book": "High Guard Update 2022",
+            "edition": "2022",
+            "page": 139,
+            "pdfPage": 140,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 1.0,
@@ -4579,29 +4873,55 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Weapons",
-        "power": null,
+        "power": 0,
         "source": {
           "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 140,
-          "pdfPage": 141,
+          "page": 28,
+          "pdfPage": 29,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged.",
+        "sourceReference": {
+          "name": "Weapons",
+          "power": null,
+          "source": {
+            "book": "High Guard Update 2022",
+            "edition": "2022",
+            "page": 140,
+            "pdfPage": 141,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       },
       {
         "name": "Sensors",
-        "power": null,
+        "power": 0,
         "source": {
-          "book": "High Guard Update 2022",
+          "book": "Core Rulebook Update 2022",
           "edition": "2022",
-          "page": 140,
-          "pdfPage": 141,
+          "page": 181,
+          "pdfPage": 182,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Basic sensor suite rated draw = 0.",
+        "sourceReference": {
+          "name": "Sensors",
+          "power": null,
+          "source": {
+            "book": "High Guard Update 2022",
+            "edition": "2022",
+            "page": 140,
+            "pdfPage": 141,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 1.0,
@@ -4727,29 +5047,55 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Weapons",
-        "power": null,
+        "power": 0,
         "source": {
           "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 141,
-          "pdfPage": 142,
+          "page": 28,
+          "pdfPage": 29,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged.",
+        "sourceReference": {
+          "name": "Weapons",
+          "power": null,
+          "source": {
+            "book": "High Guard Update 2022",
+            "edition": "2022",
+            "page": 141,
+            "pdfPage": 142,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       },
       {
         "name": "Sensors",
-        "power": null,
+        "power": 0,
         "source": {
-          "book": "High Guard Update 2022",
+          "book": "Core Rulebook Update 2022",
           "edition": "2022",
-          "page": 141,
-          "pdfPage": 142,
+          "page": 181,
+          "pdfPage": 182,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Basic sensor suite rated draw = 0.",
+        "sourceReference": {
+          "name": "Sensors",
+          "power": null,
+          "source": {
+            "book": "High Guard Update 2022",
+            "edition": "2022",
+            "page": 141,
+            "pdfPage": 142,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 1.0,
@@ -4875,29 +5221,55 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Weapons",
-        "power": null,
+        "power": 0,
         "source": {
           "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 142,
-          "pdfPage": 143,
+          "page": 28,
+          "pdfPage": 29,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged.",
+        "sourceReference": {
+          "name": "Weapons",
+          "power": null,
+          "source": {
+            "book": "High Guard Update 2022",
+            "edition": "2022",
+            "page": 142,
+            "pdfPage": 143,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       },
       {
         "name": "Sensors",
-        "power": null,
+        "power": 0,
         "source": {
-          "book": "High Guard Update 2022",
+          "book": "Core Rulebook Update 2022",
           "edition": "2022",
-          "page": 142,
-          "pdfPage": 143,
+          "page": 181,
+          "pdfPage": 182,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Basic sensor suite rated draw = 0.",
+        "sourceReference": {
+          "name": "Sensors",
+          "power": null,
+          "source": {
+            "book": "High Guard Update 2022",
+            "edition": "2022",
+            "page": 142,
+            "pdfPage": 143,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 1.0,
@@ -5023,29 +5395,55 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Weapons",
-        "power": null,
+        "power": 0,
         "source": {
           "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 143,
-          "pdfPage": 144,
+          "page": 28,
+          "pdfPage": 29,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged.",
+        "sourceReference": {
+          "name": "Weapons",
+          "power": null,
+          "source": {
+            "book": "High Guard Update 2022",
+            "edition": "2022",
+            "page": 143,
+            "pdfPage": 144,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       },
       {
         "name": "Sensors",
-        "power": null,
+        "power": 0,
         "source": {
-          "book": "High Guard Update 2022",
+          "book": "Core Rulebook Update 2022",
           "edition": "2022",
-          "page": 143,
-          "pdfPage": 144,
+          "page": 181,
+          "pdfPage": 182,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Basic sensor suite rated draw = 0.",
+        "sourceReference": {
+          "name": "Sensors",
+          "power": null,
+          "source": {
+            "book": "High Guard Update 2022",
+            "edition": "2022",
+            "page": 143,
+            "pdfPage": 144,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 1.0,
@@ -5173,29 +5571,55 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Weapons",
-        "power": null,
+        "power": 0,
         "source": {
           "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 144,
-          "pdfPage": 145,
+          "page": 28,
+          "pdfPage": 29,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged.",
+        "sourceReference": {
+          "name": "Weapons",
+          "power": null,
+          "source": {
+            "book": "High Guard Update 2022",
+            "edition": "2022",
+            "page": 144,
+            "pdfPage": 145,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       },
       {
         "name": "Sensors",
-        "power": null,
+        "power": 0,
         "source": {
-          "book": "High Guard Update 2022",
+          "book": "Core Rulebook Update 2022",
           "edition": "2022",
-          "page": 144,
-          "pdfPage": 145,
+          "page": 181,
+          "pdfPage": 182,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Basic sensor suite rated draw = 0.",
+        "sourceReference": {
+          "name": "Sensors",
+          "power": null,
+          "source": {
+            "book": "High Guard Update 2022",
+            "edition": "2022",
+            "page": 144,
+            "pdfPage": 145,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 1.0,
@@ -5889,29 +6313,55 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Weapons",
-        "power": null,
+        "power": 0,
         "source": {
           "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 154,
-          "pdfPage": 155,
+          "page": 28,
+          "pdfPage": 29,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged.",
+        "sourceReference": {
+          "name": "Weapons",
+          "power": null,
+          "source": {
+            "book": "High Guard Update 2022",
+            "edition": "2022",
+            "page": 154,
+            "pdfPage": 155,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       },
       {
         "name": "Sensors",
-        "power": null,
+        "power": 0,
         "source": {
-          "book": "High Guard Update 2022",
+          "book": "Core Rulebook Update 2022",
           "edition": "2022",
-          "page": 154,
-          "pdfPage": 155,
+          "page": 181,
+          "pdfPage": 182,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Basic sensor suite rated draw = 0.",
+        "sourceReference": {
+          "name": "Sensors",
+          "power": null,
+          "source": {
+            "book": "High Guard Update 2022",
+            "edition": "2022",
+            "page": 154,
+            "pdfPage": 155,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 1.0,
@@ -6205,16 +6655,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Weapons",
-        "power": null,
+        "power": 1,
         "source": {
           "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 160,
-          "pdfPage": 161,
+          "page": 28,
+          "pdfPage": 29,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged.",
+        "sourceReference": {
+          "name": "Weapons",
+          "power": null,
+          "source": {
+            "book": "High Guard Update 2022",
+            "edition": "2022",
+            "page": 160,
+            "pdfPage": 161,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 23.0,
@@ -6399,16 +6862,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Weapons",
-        "power": null,
+        "power": 1,
         "source": {
           "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 162,
-          "pdfPage": 163,
+          "page": 28,
+          "pdfPage": 29,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged.",
+        "sourceReference": {
+          "name": "Weapons",
+          "power": null,
+          "source": {
+            "book": "High Guard Update 2022",
+            "edition": "2022",
+            "page": 162,
+            "pdfPage": 163,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 21.0,
@@ -7392,16 +7868,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Weapons",
-        "power": null,
+        "power": 1,
         "source": {
           "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 173,
-          "pdfPage": 174,
+          "page": 28,
+          "pdfPage": 29,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged.",
+        "sourceReference": {
+          "name": "Weapons",
+          "power": null,
+          "source": {
+            "book": "High Guard Update 2022",
+            "edition": "2022",
+            "page": 173,
+            "pdfPage": 174,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 41.0,
@@ -8806,16 +9295,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Low Berths",
-        "power": null,
+        "power": 1,
         "source": {
           "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 187,
-          "pdfPage": 188,
+          "page": 24,
+          "pdfPage": 25,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: ceil(4 installed berths / 10). Rated installed load, not occupancy or switched state.",
+        "sourceReference": {
+          "name": "Low Berths",
+          "power": null,
+          "source": {
+            "book": "High Guard Update 2022",
+            "edition": "2022",
+            "page": 187,
+            "pdfPage": 188,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 122.0,
@@ -8938,9 +9440,7 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "ammunitionStorage": [],
-      "unresolved": [
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
-      ]
+      "unresolved": []
     },
     "reference": "Published stat table: High Guard Update 2022, printed p187; PDF p188. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
     "weapons": [
@@ -9034,29 +9534,55 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Fuel Processor",
-        "power": null,
+        "power": 1.0,
         "source": {
           "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 189,
-          "pdfPage": 190,
+          "page": 49,
+          "pdfPage": 50,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Installed processor tons × 1 Power/ton.",
+        "sourceReference": {
+          "name": "Fuel Processor",
+          "power": null,
+          "source": {
+            "book": "High Guard Update 2022",
+            "edition": "2022",
+            "page": 189,
+            "pdfPage": 190,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       },
       {
         "name": "Low Berths",
-        "power": null,
+        "power": 1,
         "source": {
           "book": "High Guard Update 2022",
           "edition": "2022",
-          "page": 189,
-          "pdfPage": 190,
+          "page": 24,
+          "pdfPage": 25,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: ceil(9 installed berths / 10). Rated installed load, not occupancy or switched state.",
+        "sourceReference": {
+          "name": "Low Berths",
+          "power": null,
+          "source": {
+            "book": "High Guard Update 2022",
+            "edition": "2022",
+            "page": 189,
+            "pdfPage": 190,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "fuelCapacity": 41.0,
@@ -9149,9 +9675,7 @@ export const CATALOGUE_EQUIPMENT={
       "mounts": [],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     "reference": "Published stat table: High Guard Update 2022, printed p189; PDF p190. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -11381,16 +11905,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Loading Belt",
-        "power": null,
+        "power": 1,
         "source": {
-          "book": "Adventure Class Ships (2023)",
-          "edition": "2023",
-          "page": 26,
-          "pdfPage": 27,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 53,
+          "pdfPage": 54,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: 1 explicitly singular or quantified installed belts × 1 Power; not weapon fallback count.",
+        "sourceReference": {
+          "name": "Loading Belt",
+          "power": null,
+          "source": {
+            "book": "Adventure Class Ships (2023)",
+            "edition": "2023",
+            "page": 26,
+            "pdfPage": 27,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "software": "Manoeuvre; Jump Control/2; Intellect; Library",
@@ -11494,9 +12031,7 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "ammunitionStorage": [],
-      "unresolved": [
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
-      ]
+      "unresolved": []
     },
     "weapons": []
   },
@@ -11605,16 +12140,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Loading Belt",
-        "power": null,
+        "power": 1,
         "source": {
-          "book": "Adventure Class Ships (2023)",
-          "edition": "2023",
-          "page": 28,
-          "pdfPage": 29,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 53,
+          "pdfPage": 54,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: 1 explicitly singular or quantified installed belts × 1 Power; not weapon fallback count.",
+        "sourceReference": {
+          "name": "Loading Belt",
+          "power": null,
+          "source": {
+            "book": "Adventure Class Ships (2023)",
+            "edition": "2023",
+            "page": 28,
+            "pdfPage": 29,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "software": "Manoeuvre; Jump Control/2; Intellect; Library; Evade/2",
@@ -11704,8 +12252,7 @@ export const CATALOGUE_EQUIPMENT={
       "mounts": [],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     "weapons": null
@@ -12012,29 +12559,55 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Loading Belt",
-        "power": null,
+        "power": 3,
         "source": {
-          "book": "Adventure Class Ships (2023)",
-          "edition": "2023",
-          "page": 32,
-          "pdfPage": 33,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 53,
+          "pdfPage": 54,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: 3 explicitly singular or quantified installed belts × 1 Power; not weapon fallback count.",
+        "sourceReference": {
+          "name": "Loading Belt",
+          "power": null,
+          "source": {
+            "book": "Adventure Class Ships (2023)",
+            "edition": "2023",
+            "page": 32,
+            "pdfPage": 33,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       },
       {
         "name": "Sensors",
-        "power": null,
+        "power": 0,
         "source": {
-          "book": "Adventure Class Ships (2023)",
-          "edition": "2023",
-          "page": 32,
-          "pdfPage": 33,
+          "book": "Core Rulebook Update 2022",
+          "edition": "2022",
+          "page": 181,
+          "pdfPage": 182,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Basic sensor suite rated draw = 0.",
+        "sourceReference": {
+          "name": "Sensors",
+          "power": null,
+          "source": {
+            "book": "Adventure Class Ships (2023)",
+            "edition": "2023",
+            "page": 32,
+            "pdfPage": 33,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "software": "Manoeuvre; Jump Control/1",
@@ -12119,8 +12692,7 @@ export const CATALOGUE_EQUIPMENT={
       "mounts": [],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     "weapons": null
@@ -17359,16 +17931,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Weapons",
-        "power": null,
+        "power": 0,
         "source": {
-          "book": "Traders and Gunboats (2024)",
-          "edition": "2024",
-          "page": 6,
-          "pdfPage": 7,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 28,
+          "pdfPage": 29,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged.",
+        "sourceReference": {
+          "name": "Weapons",
+          "power": null,
+          "source": {
+            "book": "Traders and Gunboats (2024)",
+            "edition": "2024",
+            "page": 6,
+            "pdfPage": 7,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "software": "Manoeuvre; Intellect; Library; Evade/1",
@@ -18887,16 +19472,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Loading Belt",
-        "power": null,
+        "power": 1,
         "source": {
-          "book": "Traders and Gunboats (2024)",
-          "edition": "2024",
-          "page": 28,
-          "pdfPage": 29,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 53,
+          "pdfPage": 54,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: 1 explicitly singular or quantified installed belts × 1 Power; not weapon fallback count.",
+        "sourceReference": {
+          "name": "Loading Belt",
+          "power": null,
+          "source": {
+            "book": "Traders and Gunboats (2024)",
+            "edition": "2024",
+            "page": 28,
+            "pdfPage": 29,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "software": "Manoeuvre; Jump Control/1; Library; Intellect; Virtual Crew/0",
@@ -18976,8 +19574,7 @@ export const CATALOGUE_EQUIPMENT={
       "mounts": [],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     "weapons": null
@@ -19061,16 +19658,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Loading Belt",
-        "power": null,
+        "power": 1,
         "source": {
-          "book": "Traders and Gunboats (2024)",
-          "edition": "2024",
-          "page": 30,
-          "pdfPage": 31,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 53,
+          "pdfPage": 54,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: 1 explicitly singular or quantified installed belts × 1 Power; not weapon fallback count.",
+        "sourceReference": {
+          "name": "Loading Belt",
+          "power": null,
+          "source": {
+            "book": "Traders and Gunboats (2024)",
+            "edition": "2024",
+            "page": 30,
+            "pdfPage": 31,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "software": "Manoeuvre; Jump Control/2; Library; Intellect; Virtual Crew/0",
@@ -19165,7 +19775,6 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -19747,16 +20356,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Medical Bay",
-        "power": null,
+        "power": 1.0,
         "source": {
-          "book": "Traders and Gunboats (2024)",
-          "edition": "2024",
-          "page": 44,
-          "pdfPage": 45,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 62,
+          "pdfPage": 63,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Installed 4-ton medical bay × 1 Power.",
+        "sourceReference": {
+          "name": "Medical Bay",
+          "power": null,
+          "source": {
+            "book": "Traders and Gunboats (2024)",
+            "edition": "2024",
+            "page": 44,
+            "pdfPage": 45,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "software": "Manoeuvre; Jump Control/2; Library; Intellect",
@@ -19856,8 +20478,7 @@ export const CATALOGUE_EQUIPMENT={
       "mounts": [],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     "weapons": null
@@ -20304,16 +20925,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Loading Belt",
-        "power": null,
+        "power": 1,
         "source": {
-          "book": "Traders and Gunboats (2024)",
-          "edition": "2024",
-          "page": 80,
-          "pdfPage": 81,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 53,
+          "pdfPage": 54,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: 1 explicitly singular or quantified installed belts × 1 Power; not weapon fallback count.",
+        "sourceReference": {
+          "name": "Loading Belt",
+          "power": null,
+          "source": {
+            "book": "Traders and Gunboats (2024)",
+            "edition": "2024",
+            "page": 80,
+            "pdfPage": 81,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "software": "Manoeuvre; Jump Control/1; Library",
@@ -20393,8 +21027,7 @@ export const CATALOGUE_EQUIPMENT={
       "mounts": [],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     "weapons": null
@@ -20491,16 +21124,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Loading Belt",
-        "power": null,
+        "power": 1,
         "source": {
-          "book": "Traders and Gunboats (2024)",
-          "edition": "2024",
-          "page": 82,
-          "pdfPage": 83,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 53,
+          "pdfPage": 54,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: 1 explicitly singular or quantified installed belts × 1 Power; not weapon fallback count.",
+        "sourceReference": {
+          "name": "Loading Belt",
+          "power": null,
+          "source": {
+            "book": "Traders and Gunboats (2024)",
+            "edition": "2024",
+            "page": 82,
+            "pdfPage": 83,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "software": "Manoeuvre; Jump Control/3; Library; Intellect",
@@ -20605,7 +21251,6 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending.",
         "Published power figures may conflict with equipment/rating arithmetic; printed values retained pending edition-specific errata review."
       ]
@@ -20861,16 +21506,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Low Berths",
-        "power": null,
+        "power": 2,
         "source": {
-          "book": "Traders and Gunboats (2024)",
-          "edition": "2024",
-          "page": 86,
-          "pdfPage": 87,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 24,
+          "pdfPage": 25,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: ceil(20 installed berths / 10). Rated installed load, not occupancy or switched state.",
+        "sourceReference": {
+          "name": "Low Berths",
+          "power": null,
+          "source": {
+            "book": "Traders and Gunboats (2024)",
+            "edition": "2024",
+            "page": 86,
+            "pdfPage": 87,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "software": "Manoeuvre; Jump Control/1; Library; Intellect",
@@ -20960,8 +21618,7 @@ export const CATALOGUE_EQUIPMENT={
       "mounts": [],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     "weapons": null
@@ -21058,29 +21715,55 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Low Berths",
-        "power": null,
+        "power": 1,
         "source": {
-          "book": "Traders and Gunboats (2024)",
-          "edition": "2024",
-          "page": 88,
-          "pdfPage": 89,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 24,
+          "pdfPage": 25,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: ceil(4 installed berths / 10). Rated installed load, not occupancy or switched state.",
+        "sourceReference": {
+          "name": "Low Berths",
+          "power": null,
+          "source": {
+            "book": "Traders and Gunboats (2024)",
+            "edition": "2024",
+            "page": 88,
+            "pdfPage": 89,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       },
       {
         "name": "Grav Screen",
-        "power": null,
+        "power": 2.4,
         "source": {
-          "book": "Traders and Gunboats (2024)",
-          "edition": "2024",
-          "page": 88,
-          "pdfPage": 89,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 61,
+          "pdfPage": 62,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: 1.2 installed tons × 2 Power/ton = 2.4; rule states no rounding.",
+        "sourceReference": {
+          "name": "Grav Screen",
+          "power": null,
+          "source": {
+            "book": "Traders and Gunboats (2024)",
+            "edition": "2024",
+            "page": 88,
+            "pdfPage": 89,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "software": "Manoeuvre; Jump Control/2; Library; Intellect; Evade/2",
@@ -21190,8 +21873,6 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Grav Screen installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -21289,29 +21970,55 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Low Berths",
-        "power": null,
+        "power": 1,
         "source": {
-          "book": "Traders and Gunboats (2024)",
-          "edition": "2024",
-          "page": 90,
-          "pdfPage": 91,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 24,
+          "pdfPage": 25,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: ceil(6 installed berths / 10). Rated installed load, not occupancy or switched state.",
+        "sourceReference": {
+          "name": "Low Berths",
+          "power": null,
+          "source": {
+            "book": "Traders and Gunboats (2024)",
+            "edition": "2024",
+            "page": 90,
+            "pdfPage": 91,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       },
       {
         "name": "Medical Bay",
-        "power": null,
+        "power": 1.0,
         "source": {
-          "book": "Traders and Gunboats (2024)",
-          "edition": "2024",
-          "page": 90,
-          "pdfPage": 91,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 62,
+          "pdfPage": 63,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Installed 4-ton medical bay × 1 Power.",
+        "sourceReference": {
+          "name": "Medical Bay",
+          "power": null,
+          "source": {
+            "book": "Traders and Gunboats (2024)",
+            "edition": "2024",
+            "page": 90,
+            "pdfPage": 91,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "software": "Manoeuvre; Jump Control/3; Library; Intellect; Virtual Gunner/0; Evade/2; Fire Control/2",
@@ -21430,8 +22137,6 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -21542,16 +22247,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Medical Bay",
-        "power": null,
+        "power": 1.0,
         "source": {
-          "book": "Traders and Gunboats (2024)",
-          "edition": "2024",
-          "page": 92,
-          "pdfPage": 93,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 62,
+          "pdfPage": 63,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Installed 4-ton medical bay × 1 Power.",
+        "sourceReference": {
+          "name": "Medical Bay",
+          "power": null,
+          "source": {
+            "book": "Traders and Gunboats (2024)",
+            "edition": "2024",
+            "page": 92,
+            "pdfPage": 93,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "software": "Manoeuvre; Jump Control/2; Library; Intellect",
@@ -21651,7 +22369,6 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -21749,16 +22466,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Loading Belt",
-        "power": null,
+        "power": 1,
         "source": {
-          "book": "Traders and Gunboats (2024)",
-          "edition": "2024",
-          "page": 94,
-          "pdfPage": 95,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 53,
+          "pdfPage": 54,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: 1 explicitly singular or quantified installed belts × 1 Power; not weapon fallback count.",
+        "sourceReference": {
+          "name": "Loading Belt",
+          "power": null,
+          "source": {
+            "book": "Traders and Gunboats (2024)",
+            "edition": "2024",
+            "page": 94,
+            "pdfPage": 95,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "software": "Manoeuvre; Jump Control/2; Library; Intellect",
@@ -21843,8 +22573,7 @@ export const CATALOGUE_EQUIPMENT={
       "mounts": [],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     "weapons": null
@@ -21902,16 +22631,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Weapons",
-        "power": null,
+        "power": 0,
         "source": {
-          "book": "Traders and Gunboats (2024)",
-          "edition": "2024",
-          "page": 130,
-          "pdfPage": 131,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 28,
+          "pdfPage": 29,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged.",
+        "sourceReference": {
+          "name": "Weapons",
+          "power": null,
+          "source": {
+            "book": "Traders and Gunboats (2024)",
+            "edition": "2024",
+            "page": 130,
+            "pdfPage": 131,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "software": "Manoeuvre; Library; Intellect; Fire Control/1",
@@ -22059,16 +22801,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Sensors",
-        "power": null,
+        "power": 0,
         "source": {
-          "book": "Traders and Gunboats (2024)",
-          "edition": "2024",
-          "page": 131,
-          "pdfPage": 132,
+          "book": "Core Rulebook Update 2022",
+          "edition": "2022",
+          "page": 181,
+          "pdfPage": 182,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Basic sensor suite rated draw = 0.",
+        "sourceReference": {
+          "name": "Sensors",
+          "power": null,
+          "source": {
+            "book": "Traders and Gunboats (2024)",
+            "edition": "2024",
+            "page": 131,
+            "pdfPage": 132,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "software": "Manoeuvre; Library; Intellect",
@@ -22232,29 +22987,55 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Low Berths",
-        "power": null,
+        "power": 1,
         "source": {
-          "book": "Traders and Gunboats (2024)",
-          "edition": "2024",
-          "page": 132,
-          "pdfPage": 133,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 24,
+          "pdfPage": 25,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: ceil(10 installed berths / 10). Rated installed load, not occupancy or switched state.",
+        "sourceReference": {
+          "name": "Low Berths",
+          "power": null,
+          "source": {
+            "book": "Traders and Gunboats (2024)",
+            "edition": "2024",
+            "page": 132,
+            "pdfPage": 133,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       },
       {
         "name": "Loading Belt",
-        "power": null,
+        "power": 1,
         "source": {
-          "book": "Traders and Gunboats (2024)",
-          "edition": "2024",
-          "page": 132,
-          "pdfPage": 133,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 53,
+          "pdfPage": 54,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: 1 explicitly singular or quantified installed belts × 1 Power; not weapon fallback count.",
+        "sourceReference": {
+          "name": "Loading Belt",
+          "power": null,
+          "source": {
+            "book": "Traders and Gunboats (2024)",
+            "edition": "2024",
+            "page": 132,
+            "pdfPage": 133,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "software": "Intellect; Manoeuvre; Jump Control/1; Library",
@@ -22339,9 +23120,7 @@ export const CATALOGUE_EQUIPMENT={
       "mounts": [],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     "weapons": null
@@ -22425,16 +23204,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Low Berths",
-        "power": null,
+        "power": 2,
         "source": {
-          "book": "Traders and Gunboats (2024)",
-          "edition": "2024",
-          "page": 134,
-          "pdfPage": 135,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 24,
+          "pdfPage": 25,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: ceil(12 installed berths / 10). Rated installed load, not occupancy or switched state.",
+        "sourceReference": {
+          "name": "Low Berths",
+          "power": null,
+          "source": {
+            "book": "Traders and Gunboats (2024)",
+            "edition": "2024",
+            "page": 134,
+            "pdfPage": 135,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "software": "Intellect; Manoeuvre; Jump Control/2; Library",
@@ -22810,16 +23602,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Medical Bay",
-        "power": null,
+        "power": 1.0,
         "source": {
-          "book": "Traders and Gunboats (2024)",
-          "edition": "2024",
-          "page": 138,
-          "pdfPage": 139,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 62,
+          "pdfPage": 63,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Installed 4-ton medical bay × 1 Power.",
+        "sourceReference": {
+          "name": "Medical Bay",
+          "power": null,
+          "source": {
+            "book": "Traders and Gunboats (2024)",
+            "edition": "2024",
+            "page": 138,
+            "pdfPage": 139,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "software": "Manoeuvre; Jump Control/3; Library; Intellect",
@@ -22904,8 +23709,7 @@ export const CATALOGUE_EQUIPMENT={
       "mounts": [],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     "weapons": null
@@ -25744,16 +26548,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Sensors",
-        "power": null,
+        "power": 0,
         "source": {
-          "book": "Small Craft Catalogue (2023)",
-          "edition": "2023",
-          "page": 35,
-          "pdfPage": 36,
+          "book": "Core Rulebook Update 2022",
+          "edition": "2022",
+          "page": 181,
+          "pdfPage": 182,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Basic sensor suite rated draw = 0.",
+        "sourceReference": {
+          "name": "Sensors",
+          "power": null,
+          "source": {
+            "book": "Small Craft Catalogue (2023)",
+            "edition": "2023",
+            "page": 35,
+            "pdfPage": 36,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "software": "Manoeuvre; Library; Intellect",
@@ -26471,16 +27288,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Weapons",
-        "power": null,
+        "power": 0,
         "source": {
-          "book": "Small Craft Catalogue (2023)",
-          "edition": "2023",
-          "page": 40,
-          "pdfPage": 41,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 28,
+          "pdfPage": 29,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged.",
+        "sourceReference": {
+          "name": "Weapons",
+          "power": null,
+          "source": {
+            "book": "Small Craft Catalogue (2023)",
+            "edition": "2023",
+            "page": 40,
+            "pdfPage": 41,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "software": "Manoeuvre; Library; Intellect",
@@ -26626,16 +27456,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Loading Belt",
-        "power": null,
+        "power": 1,
         "source": {
-          "book": "Small Craft Catalogue (2023)",
-          "edition": "2023",
-          "page": 41,
-          "pdfPage": 42,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 53,
+          "pdfPage": 54,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: 1 explicitly singular or quantified installed belts × 1 Power; not weapon fallback count.",
+        "sourceReference": {
+          "name": "Loading Belt",
+          "power": null,
+          "source": {
+            "book": "Small Craft Catalogue (2023)",
+            "edition": "2023",
+            "page": 41,
+            "pdfPage": 42,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "software": "Manoeuvre; Library",
@@ -26715,8 +27558,7 @@ export const CATALOGUE_EQUIPMENT={
       "mounts": [],
       "ammunitionStorage": [],
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     "weapons": null
@@ -26914,16 +27756,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Weapons",
-        "power": null,
+        "power": 0,
         "source": {
-          "book": "Small Craft Catalogue (2023)",
-          "edition": "2023",
-          "page": 43,
-          "pdfPage": 44,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 28,
+          "pdfPage": 29,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged.",
+        "sourceReference": {
+          "name": "Weapons",
+          "power": null,
+          "source": {
+            "book": "Small Craft Catalogue (2023)",
+            "edition": "2023",
+            "page": 43,
+            "pdfPage": 44,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "software": "Manoeuvre; Library; Intellect",
@@ -28996,16 +29851,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Weapons",
-        "power": null,
+        "power": 0,
         "source": {
-          "book": "Small Craft Catalogue (2023)",
-          "edition": "2023",
-          "page": 59,
-          "pdfPage": 60,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 28,
+          "pdfPage": 29,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged.",
+        "sourceReference": {
+          "name": "Weapons",
+          "power": null,
+          "source": {
+            "book": "Small Craft Catalogue (2023)",
+            "edition": "2023",
+            "page": 59,
+            "pdfPage": 60,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "software": "Manoeuvre; Library; Intellect",
@@ -33566,16 +34434,29 @@ export const CATALOGUE_EQUIPMENT={
       },
       {
         "name": "Weapons",
-        "power": null,
+        "power": 0,
         "source": {
-          "book": "Small Craft Catalogue (2023)",
-          "edition": "2023",
-          "page": 104,
-          "pdfPage": 105,
+          "book": "High Guard Update 2022",
+          "edition": "2022",
+          "page": 28,
+          "pdfPage": 29,
           "endPage": null,
           "pdfEndPage": null
         },
-        "basis": "unknown: installed or listed system draw not published in the sidebar"
+        "basis": "calculated rated load: Empty or missile-only fixed mount: 0; empty turret mechanism: 1 per turret. HG26 firmpoint reduction leaves zero unchanged.",
+        "sourceReference": {
+          "name": "Weapons",
+          "power": null,
+          "source": {
+            "book": "Small Craft Catalogue (2023)",
+            "edition": "2023",
+            "page": 104,
+            "pdfPage": 105,
+            "endPage": null,
+            "pdfEndPage": null
+          },
+          "basis": "unknown: installed or listed system draw not published in the sidebar"
+        }
       }
     ],
     "software": "Manoeuvre; Intellect; Evade/2",
