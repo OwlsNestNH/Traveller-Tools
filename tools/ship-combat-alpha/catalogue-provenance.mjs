@@ -4,7 +4,16 @@ const text=(v,max)=>{if(typeof v!=='string'||v.length>max)throw Error('Invalid c
 const num=v=>{if(v==null)return null;if(typeof v!=='number'||!Number.isFinite(v)||v<0||v>1000000)throw Error('Invalid catalogue source number.');return v;};
 const list=(v,max,fn)=>{if(!Array.isArray(v)||v.length>max)throw Error('Invalid catalogue source list.');return v.map(fn);};
 export function normalizeCitation(s){return {book:text(s.book,100),edition:text(s.edition,80),page:num(s.page),pdfPage:num(s.pdfPage),endPage:num(s.endPage),pdfEndPage:num(s.pdfEndPage)};}
-export function powerProvenance(r){return r.source==null?{}:{source:normalizeCitation(r.source),basis:text(r.basis,300)};}
+export function powerProvenance(r){
+ if(r.source==null&&r.basis!=='manual override')return {};
+ const result={source:r.source==null?null:normalizeCitation(r.source),basis:text(r.basis,300)};
+ if(r.sourceReference)result.sourceReference={name:text(r.sourceReference.name,60),power:num(r.sourceReference.power),...powerProvenance({...r.sourceReference,sourceReference:null})};
+ return result;
+}
+export function editedRequirement(original,name,power){
+ if(original&&original.name===name&&original.power===power)return {...original};
+ return {name,power,source:null,basis:'manual override',...(original?{sourceReference:original.sourceReference??{name:original.name,power:original.power,...powerProvenance(original)}}:{})};
+}
 export function normalizePublished(v){
  if(v==null)return null;
  if(v.version!==1)throw Error('Unsupported published inventory version.');

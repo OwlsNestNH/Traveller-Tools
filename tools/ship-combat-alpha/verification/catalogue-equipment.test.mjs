@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 import {PRESETS,preset} from '../catalogue.mjs';
 import {normalizeTemplate,effectiveDesign} from '../setup.mjs';
 import {normalizePublished} from '../catalogue-provenance.mjs';
+import {renderPublishedInventory} from '../published-inventory.mjs';
 import {createState,normalizeState,applyCommand} from '../engine.mjs';
 import {powerReport} from '../systems.mjs';
 import {legacySampleShips} from './legacy-sample-fixture.mjs';
@@ -53,4 +54,17 @@ test('installed consumers with unpublished draw remain overridable unknown loads
  s.systems.inventoryConfirmed=true;const load=s.systems.loads.find(x=>x.id.startsWith('source-fuel-processor'));assert.ok(load);load.enabled=true;
  assert.equal(powerReport(s).total,null);assert.equal(powerReport(s).rows.find(x=>x.id===load.id).power,null);
  load.override=2;assert.equal(powerReport(s).rows.find(x=>x.id===load.id).power,2);assert.equal(s.template.record.requirements.find(x=>x.name==='Fuel Processor').power,null);
+});
+test('enhancement multipliers are not fitted weapon counts and Moray wrapped rows survive',()=>{
+ for(const id of ['highguard-193','tng2024-keldyx']){
+  const mounts=preset(id).record.published.mounts.filter(m=>/size reduction x3/i.test(m.fit));
+  assert.ok(mounts.length);assert.ok(mounts.every(m=>m.fittedCount===null));
+  assert.equal(preset(id).record.weapons,null);
+ }
+ const r=preset('scc2023-p048').record;
+ assert.match(r.published.mounts[0].name,/Fixed Mount/);assert.match(r.published.mounts[0].fit,/missile rack/i);
+ assert.equal(r.weapons[0].count,1);assert.match(r.software,/Manoeuvre/);
+ assert.ok(r.published.inventory.some(x=>/Fuel Scoops/.test(x.detail)));
+ const mixed=renderPublishedInventory(preset('scc2023-p088').record.published);
+ assert.match(mixed,/beam laser/i);assert.match(mixed,/autocannon/i);assert.match(mixed,/Unknown/);
 });

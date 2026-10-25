@@ -318,8 +318,8 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p190; PDF p191. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -510,8 +510,8 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p192; PDF p193. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -1076,8 +1076,8 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p198; PDF p199. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -1296,9 +1296,9 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p200; PDF p201. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -1661,8 +1661,8 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p204; PDF p205. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -2032,9 +2032,9 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
         "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p208; PDF p209. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -2993,7 +2993,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately."
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p221; PDF p222. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -3148,7 +3148,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately."
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p222; PDF p223. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -3303,7 +3303,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately."
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p223; PDF p224. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -3458,7 +3458,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately."
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p224; PDF p225. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -3612,7 +3612,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately."
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p225; PDF p226. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -3767,7 +3767,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately."
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "reference": "Published stat table: Core Rulebook Update 2022, printed p226; PDF p227. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -3987,7 +3987,7 @@ export const CATALOGUE_EQUIPMENT={
       "inventory": [
         {
           "category": "Hull",
-          "detail": "6 tons, Streamlined",
+          "detail": "6 tons, Streamlined\nStealth (Improved)",
           "tonnage": "—"
         },
         {
@@ -4075,7 +4075,7 @@ export const CATALOGUE_EQUIPMENT={
     "ratedPower": 15.0,
     "computer": "Computer/5",
     "sensors": "Improved",
-    "software": "Fire Control/1",
+    "software": "Fire Control/1; Intellect; Library; Manoeuvre",
     "requirements": [
       {
         "name": "Basic Ship Systems",
@@ -4224,7 +4224,7 @@ export const CATALOGUE_EQUIPMENT={
         },
         {
           "category": "Software",
-          "detail": "Fire Control/1",
+          "detail": "Fire Control/1\nIntellect\nLibrary\nManoeuvre",
           "tonnage": "—\n—\n—\n—"
         },
         {
@@ -5894,8 +5894,8 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "reference": "Published stat table: High Guard Update 2022, printed p152; PDF p153. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -6979,7 +6979,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately."
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "reference": "Published stat table: High Guard Update 2022, printed p167; PDF p168. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -7737,8 +7737,8 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "reference": "Published stat table: High Guard Update 2022, printed p175; PDF p176. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -8315,7 +8315,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately."
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "reference": "Published stat table: High Guard Update 2022, printed p181; PDF p182. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -8525,8 +8525,8 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated.",
         "Published power figures may conflict with equipment/rating arithmetic; printed values retained pending edition-specific errata review."
       ]
     },
@@ -8905,8 +8905,8 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "reference": "Published stat table: High Guard Update 2022, printed p187; PDF p188. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -9452,7 +9452,7 @@ export const CATALOGUE_EQUIPMENT={
           "quantity": 1,
           "capacity": null,
           "fit": "size reduction x3",
-          "fittedCount": 3,
+          "fittedCount": null,
           "capacityBasis": "Not transcribed; source fit retained"
         },
         {
@@ -9481,8 +9481,8 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "reference": "Published stat table: High Guard Update 2022, printed p193; PDF p194. Power bundles retained as printed. See published inventory for omissions and mount capacity provenance.",
@@ -11206,7 +11206,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately."
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -11840,8 +11840,8 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -12250,8 +12250,8 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -13499,8 +13499,8 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -13685,7 +13685,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately."
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -13888,8 +13888,8 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -14092,8 +14092,8 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -14296,9 +14296,9 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Unloaded variant excludes the ten carried fighters; published conditional drive values remain those retained by this preset."
+        "Unloaded variant excludes the ten carried fighters; published conditional drive values remain those retained by this preset.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -14533,8 +14533,8 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -14729,8 +14729,8 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -14923,7 +14923,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately."
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -15134,7 +15134,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately."
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -15358,7 +15358,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately."
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -15768,8 +15768,8 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -16187,8 +16187,8 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -16785,8 +16785,8 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -16984,7 +16984,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately."
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -17192,8 +17192,8 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -17865,8 +17865,8 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -18079,8 +18079,8 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -18301,8 +18301,8 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -18501,8 +18501,8 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -19016,8 +19016,8 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -19513,8 +19513,8 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -19892,7 +19892,7 @@ export const CATALOGUE_EQUIPMENT={
           "quantity": 2,
           "capacity": null,
           "fit": "size reduction x3",
-          "fittedCount": 3,
+          "fittedCount": null,
           "capacityBasis": "Not transcribed; source fit retained"
         },
         {
@@ -19907,7 +19907,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately."
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -20455,8 +20455,8 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
         "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated.",
         "Published power figures may conflict with equipment/rating arithmetic; printed values retained pending edition-specific errata review."
       ]
     },
@@ -21040,9 +21040,9 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
         "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Grav Screen installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Grav Screen installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -21280,9 +21280,9 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
         "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -21501,8 +21501,8 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -22561,8 +22561,8 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -22961,7 +22961,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately."
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -23154,7 +23154,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately."
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -23361,7 +23361,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately."
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -26275,7 +26275,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately."
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -27235,7 +27235,7 @@ export const CATALOGUE_EQUIPMENT={
         "basis": "published"
       }
     ],
-    "software": "Manoeuv",
+    "software": "Manoeuvre\\nTotal: MCr3.4",
     "published": {
       "version": 1,
       "source": {
@@ -27286,41 +27286,47 @@ export const CATALOGUE_EQUIPMENT={
         {
           "category": "Sensors",
           "detail": "Basic",
-          "tonnage": ""
+          "tonnage": "—"
         },
         {
           "category": "Weapons",
-          "detail": "Fixed Mo",
-          "tonnage": ""
+          "detail": "Fixed Mount (missile rack)",
+          "tonnage": "—"
         },
         {
           "category": "Systems",
-          "detail": "Fuel Sco",
-          "tonnage": ""
+          "detail": "Fuel Scoops",
+          "tonnage": "—"
         },
         {
           "category": "Software",
-          "detail": "Manoeuv",
-          "tonnage": ""
+          "detail": "Manoeuvre\\nTotal: MCr3.4",
+          "tonnage": "—"
         }
       ],
       "mounts": [
         {
           "id": "mount-1",
-          "name": "Fixed Mo",
+          "name": "Fixed Mount",
           "quantity": 1,
-          "capacity": null,
-          "fit": "Unspecified",
-          "fittedCount": null,
-          "capacityBasis": "Not transcribed; source fit retained"
+          "capacity": 1,
+          "fit": "missile rack",
+          "fittedCount": 1,
+          "capacityBasis": "High Guard Update 2022, printed pp26,28; PDF pp27,29"
         }
       ],
       "ammunitionStorage": [],
-      "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately."
-      ]
+      "unresolved": []
     },
-    "weapons": null
+    "weapons": [
+      {
+        "id": "mount-1-1",
+        "name": "Fixed Mount",
+        "type": "missile rack",
+        "count": 1,
+        "ammunition": null
+      }
+    ]
   },
   "scc2023-p049": {
     "tl": 10,
@@ -32512,7 +32518,7 @@ export const CATALOGUE_EQUIPMENT={
       ],
       "ammunitionStorage": [],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately."
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
@@ -32684,8 +32690,8 @@ export const CATALOGUE_EQUIPMENT={
         }
       ],
       "unresolved": [
-        "One or more weapon counts are not explicit; named fits and mount capacities are retained separately.",
-        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
+        "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
+        "Weapon counts remain parser-unresolved; source verification is required before treating them as source-unstated."
       ]
     },
     "weapons": null
