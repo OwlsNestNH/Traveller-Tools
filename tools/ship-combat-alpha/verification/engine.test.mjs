@@ -232,7 +232,7 @@ test('all 194 source identities explicitly map matching available hulls or hones
  for(const [id,icon,file] of [
  ['core-202','yacht','yacht.webp'],['highguard-179','yacht','yacht.webp'],['core-220','launch','launch.webp'],['highguard-139','launch','launch.webp'],['core-204','close-escort','close_escort.webp'],['highguard-181','close-escort','close_escort.webp'],['core-196','far-trader','far_trader.webp'],['highguard-169','far-trader','far_trader.webp'],['highguard-138','military-gig','military_gig.webp'],['core-219','gig','gig.webp'],['core-192','seeker','seeker.webp'],['core-210','subsidised-merchant','subsidised_merchant.webp'],['highguard-191','survey-scout','survey_scout.webp'],['core-227','passenger-shuttle','passenger_shuttle.webp']]){assert.equal(iconFor({template:preset(id)}),icon,id);assert.equal(ICONS[icon].file,file);}
  for(const id of ['highguard-136','highguard-148','highguard-150','highguard-152','highguard-158','highguard-165','highguard-177','highguard-183','highguard-193'])assert.equal(iconFor({template:preset(id)}),'other',id+' must not borrow a different variant');
- assert.equal(Object.values(ICONS).filter(x=>x.file).length,94);
+ assert.equal(Object.values(ICONS).filter(x=>x.file).length,116);
 });
 
 
@@ -300,4 +300,8 @@ test('batch06 source-specific mapping preserves explicit presentation choices',(
 
 test('batch07 source-specific mapping preserves explicit presentation choices',()=>{
  for(const [id,icon] of [["scc2023-p039","customs-patrol-boat"],["scc2023-p040","fast-cutter"],["scc2023-p041","ship-to-ship-shuttle"],["scc2023-p042","traffic-control-router"],["scc2023-p043","heavy-modular-cutter"],["scc2023-p046","homeshield-mini-fighter"],["scc2023-p047","cyclone-attack-fighter"],["scc2023-p048","moray-antique-fighter"],["scc2023-p049","sentinel-escort-fighter"],["scc2023-p050","junker-fighter"],["scc2023-p052","jester-covert-fighter"],["scc2023-p053","vanguard-assault-fighter"]]){const template=preset(id);assert.equal(iconFor({template}),icon);assert.equal(iconFor({template,appearance:{icon:'scout'}}),'scout');assert.equal(ICONS[icon].bowDegrees,-90);}
+});
+
+test('batch08 source-specific mapping preserves explicit presentation choices',()=>{
+ for(const [id,icon] of [["scc2023-p055","space-surveillance-boat"],["scc2023-p056","carrier-support-craft"],["scc2023-p057","fast-launch"],["scc2023-p058","fighting-launch"],["scc2023-p059","covert-insertion-boat"],["scc2023-p060","sew-boat"],["scc2023-p061","strike-boat"],["scc2023-p062","system-defence-rock"],["scc2023-p063","boarding-shuttle"],["scc2023-p065","cargo-transport"],["scc2023-p067","planetary-assault-barge"],["scc2023-p069","system-defence-craft"],["scc2023-p072","runabout"],["scc2023-p073","protective-shuttle"],["scc2023-p075","pressurised-yacht"],["scc2023-p077","in-system-sailing-yacht"],["scc2023-p079","luxury-shuttle"],["scc2023-p082","yeawel-light-fighter"],["scc2023-p083","khuilrakh-light-fighter"],["scc2023-p084","yaeai-reconnaissance-pinnace"],["scc2023-p086","akhoilaw-shrine-ship"],["scc2023-p088","faiyh-assault-craft"]]){const template=preset(id);assert.equal(iconFor({template}),icon);assert.equal(iconFor({template,appearance:{icon:'scout'}}),'scout');assert.equal(ICONS[icon].bowDegrees,-90);}
 });
