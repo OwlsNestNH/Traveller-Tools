@@ -119,6 +119,13 @@ for(const node of document.querySelectorAll('[data-console-station]')){node.addE
 
 let lastMapSize='';new ResizeObserver(()=>{const size=svg.clientWidth+':'+svg.clientHeight;if(size!==lastMapSize){lastMapSize=size;scheduleMap();}}).observe(svg);render();
 
+function alignRightPane(){
+ const pane=$('combat-right');
+ if(innerWidth<=700){pane.style.removeProperty('--right-pane-offset');pane.style.removeProperty('--right-pane-height');return;}
+ const box=pane.getBoundingClientRect(),style=getComputedStyle(pane),card=$('selected-workspace'),baseTop=box.top-(parseFloat(style.marginTop)||0),cardInset=card.getClientRects().length?card.getBoundingClientRect().top-box.top+pane.scrollTop:(parseFloat(style.paddingTop)||0),offset=Math.max(0,svg.getBoundingClientRect().top-baseTop-cardInset),visibleTop=visualViewport?.offsetTop??0;
+ pane.style.setProperty('--right-pane-offset',offset+'px');
+ pane.style.setProperty('--right-pane-height',Math.max(200,(visualViewport?.height??innerHeight)+visibleTop-Math.max(visibleTop,baseTop+offset))+'px');
+}
 function sizeTacticalMap(){
  const frame=$('console-frame'),width=frame.parentElement.clientWidth,top=frame.getBoundingClientRect().top+scrollY,available=(visualViewport?.height??innerHeight)-top-Math.max(28,document.querySelector('.map-footer>summary').getBoundingClientRect().height),base=Math.max(240,Math.min(width,available)),expanded=document.body.classList.contains('map-expanded');
  frame.style.setProperty('--expanded-height',Math.max(200,available)+'px');
@@ -134,7 +141,7 @@ function sizeTacticalMap(){
   // stop growing so scrolling can reach Help and the footer rather than chase them.
   height=Math.max(200,((visualViewport?.height??innerHeight)+visibleTop-Math.max(visibleTop,box.top)+fixed)/(1-ratio));
  }else{frame.style.setProperty('--console-size',base+'px');if(projectionBasis===null)projectionBasis=Math.max(1,Math.min(svg.clientWidth,svg.clientHeight));}
- frame.style.setProperty('--console-size',height+'px');frame.dataset.heightExtension=String(Math.max(0,height-base));scheduleMap();
+ frame.style.setProperty('--console-size',height+'px');frame.dataset.heightExtension=String(Math.max(0,height-base));alignRightPane();scheduleMap();
 }
 let pendingTacticalSize=false;function scheduleTacticalSize(){if(pendingTacticalSize)return;pendingTacticalSize=true;requestAnimationFrame(()=>{pendingTacticalSize=false;sizeTacticalMap();});}
 for(const el of [document.querySelector('body>header'),document.querySelector('.map-heading'),$('console-frame').parentElement])new ResizeObserver(sizeTacticalMap).observe(el);window.addEventListener('resize',sizeTacticalMap);window.addEventListener('scroll',scheduleTacticalSize,{passive:true});sizeTacticalMap();
