@@ -124,3 +124,11 @@ jobs:
           name: switches-review-${{ github.event.pull_request.head.sha }}
           path: tools/ship-combat-alpha/verification-artifacts/switches-*
           if-no-files-found: warn
+
+      - name: Upload small map stability evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: map-stability-review-${{ github.event.pull_request.head.sha }}
+          path: tools/ship-combat-alpha/verification-artifacts/map-stability-*
+          if-no-files-found: warn
