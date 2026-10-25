@@ -232,7 +232,7 @@ test('all 194 source identities explicitly map matching available hulls or hones
  for(const [id,icon,file] of [
  ['core-202','yacht','yacht.webp'],['highguard-179','yacht','yacht.webp'],['core-220','launch','launch.webp'],['highguard-139','launch','launch.webp'],['core-204','close-escort','close_escort.webp'],['highguard-181','close-escort','close_escort.webp'],['core-196','far-trader','far_trader.webp'],['highguard-169','far-trader','far_trader.webp'],['highguard-138','military-gig','military_gig.webp'],['core-219','gig','gig.webp'],['core-192','seeker','seeker.webp'],['core-210','subsidised-merchant','subsidised_merchant.webp'],['highguard-191','survey-scout','survey_scout.webp'],['core-227','passenger-shuttle','passenger_shuttle.webp']]){assert.equal(iconFor({template:preset(id)}),icon,id);assert.equal(ICONS[icon].file,file);}
  for(const id of ['highguard-136','highguard-148','highguard-150','highguard-152','highguard-158','highguard-165','highguard-177','highguard-183','highguard-193'])assert.equal(iconFor({template:preset(id)}),'other',id+' must not borrow a different variant');
- assert.equal(Object.values(ICONS).filter(x=>x.file).length,29);
+ assert.equal(Object.values(ICONS).filter(x=>x.file).length,34);
 });
 
 
@@ -256,7 +256,7 @@ test('Side C survives JSON and cosmetic heading follows actual velocity, retaini
 
 test('ACS first batch retains source conflicts and conditional profiles without invented loads',()=>{
  const batch=PRESETS.filter(p=>p.id.startsWith('acs2023-'));assert.equal(batch.length,37);
- for(const p of batch){const s=applyCommand(createState(),{type:'add-ship',presetId:p.id,name:p.name,position:{q:0,r:0},velocity:{q:0,r:0}}).ships.at(-1);assert.equal(s.template.source.book,'Adventure Class Ships (2023)');assert.equal(s.condition.fuel,null);assert.equal(s.condition.powerOutput,null);assert.equal(s.condition.weapons,null);assert.equal(iconFor(s),({'acs2023-p6':'stealth-scout','acs2023-p8':'extended-scout','acs2023-p22':'armed-trader','acs2023-p136':'hunting-ship'})[p.id]??'other');}
+ for(const p of batch){const s=applyCommand(createState(),{type:'add-ship',presetId:p.id,name:p.name,position:{q:0,r:0},velocity:{q:0,r:0}}).ships.at(-1);assert.equal(s.template.source.book,'Adventure Class Ships (2023)');assert.equal(s.condition.fuel,null);assert.equal(s.condition.powerOutput,null);assert.equal(s.condition.weapons,null);assert.equal(iconFor(s),({'acs2023-p6':'stealth-scout','acs2023-p8':'extended-scout','acs2023-p22':'armed-trader','acs2023-p136':'hunting-ship','acs2023-p10':'frontiersman','acs2023-p12':'far-scout','acs2023-p24':'free-smuggler','acs2023-p26':'volitant-far-trader'})[p.id]??'other');}
  assert.equal(preset('acs2023-p116').record.fuelCapacity,null);assert.match(preset('acs2023-p116').notes,/221/);assert.equal(preset('acs2023-p30').hull,80);assert.equal(preset('acs2023-p78').hull,80);
  assert.equal(preset('acs2023-p102').thrust,3);assert.equal(preset('acs2023-p102-unloaded').thrust,4);assert.match(preset('acs2023-p102').name,/fighters carried/);assert.equal(preset('acs2023-p124').thrust,6);assert.match(preset('acs2023-p124').notes,/reaction Thrust 4/);
  assert.equal(iconFor({template:preset('drinax-harrier-restored')}),'harrier');assert.equal(ICONS.harrier.bowDegrees,-90);assert.match(ICONS.harrier.label,/not official.*CC0/);
@@ -275,4 +275,8 @@ test('Small Craft source profiles separate operational caps, reaction propulsion
  for(const p of rows){const s=applyCommand(createState(),{type:'add-ship',presetId:p.id,name:p.name,position:{q:0,r:0},velocity:{q:0,r:0}}).ships.at(-1);assert.equal(s.template.source.book,'Small Craft Catalogue (2023)');assert.equal(s.condition.fuel,null);assert.equal(s.condition.powerOutput,null);assert.equal(s.condition.weapons,null);}
  assert.equal(preset('scc2023-p029').thrust,1);assert.match(preset('scc2023-p029').notes,/installed M-drive rating 6/);assert.equal(preset('scc2023-p042').record.ratedPower,30);assert.match(preset('scc2023-p042').notes,/backup 5/);
  const reaction=rows.filter(p=>p.name.endsWith('(reaction-only)'));assert.equal(reaction.length,4);for(const p of reaction){assert.match(p.notes,/no grav drive/);assert.match(p.record.reference,/not a manoeuvre drive/);}assert.equal(preset('scc2023-p046').thrust,3);assert.equal(preset('scc2023-p046').record.sensors,null);assert.equal(preset('scc2023-p053').record.ratedPower,20);assert.equal(preset('scc2023-p075').record.ratedPower,30);
+});
+
+test('batch02 source-specific mapping preserves explicit presentation choices',()=>{
+ for(const [id,icon] of [["tng2024-ifteaa","ifteaa"],["acs2023-p10","frontiersman"],["acs2023-p12","far-scout"],["acs2023-p24","free-smuggler"],["acs2023-p26","volitant-far-trader"]]){const template=preset(id);assert.equal(iconFor({template}),icon);assert.equal(iconFor({template,appearance:{icon:'scout'}}),'scout');assert.equal(ICONS[icon].bowDegrees,-90);}
 });

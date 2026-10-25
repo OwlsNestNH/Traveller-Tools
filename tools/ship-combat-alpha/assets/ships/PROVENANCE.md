@@ -65,4 +65,16 @@ Five original simplified vector hull envelopes approved for use by the user. Not
 - **kashu-fighter.svg**: Small Craft Catalogue (2023), Mongoose Traveller (no numbered edition stated), printed pp. 51; PDF pp. 52 (1-based). Same-page deckplan and illustration. Narrow bow, unswept plan wings, small wingtip projections and central aft drive envelope retained. Floating weapon key icons excluded; no perspective-derived weapons added.
 - **extended-scout.svg**: Adventure Class Ships (2023), Mongoose Traveller (no numbered edition stated), printed pp. 8-9; PDF pp. 9-10 (1-based). Upper-deck envelope contains lower deck. Broad straight trailing wing edges and long rounded forward fuselage retained. Perspective illustration confirms fins; no extra vertical-fin projection invented.
 
-These mappings apply to the five source identities only. Fresh samples now use automatic mapping. Explicit icons in existing encounters remain user choices and are not migrated. Ifteaa is preview-only and is not included.
+These mappings apply to the five source identities only. Fresh samples now use automatic mapping. Explicit icons in existing encounters remain user choices and are not migrated. The following section documents later source-specific additions.
+
+## Source-grounded batch 02
+
+Original vector interpretations under the user-approved representation-level accuracy standard. Independent visual review found no required fixes. No private source links, book images or purchaser identifiers are included.
+
+- **ifteaa.svg**: Traders and Gunboats (2024), printed pp. 8-9; PDF pp. 9-10 (1-based). Central hull from plan; broad lateral fins reasonably inferred from illustration. Fin span, sweep and placement are approximate, simplified for small tokens.
+- **frontiersman.svg**: Adventure Class Ships (2023), printed pp. 10-11; PDF pp. 11-12 (1-based). Lower-deck exterior dominates; upper deck is contained. Long narrow forebody expands into broad aft wedge. Two stern notches retained, interior machinery omitted. Illustration confirms elongated scout wedge.
+- **far-scout.svg**: Adventure Class Ships (2023), printed pp. 12-13; PDF pp. 13-14 (1-based). Largest middle-deck envelope with broad aft tank and terminal drive. Other decks aligned along longitudinal centreline rather than placed beside it. Illustration corroborates enlarged aft body and narrow forward section. Chamfered tank corners simplify the rounded exterior.
+- **free-smuggler.svg**: Adventure Class Ships (2023), printed pp. 24-25; PDF pp. 25-26 (1-based). Rendered plan and illustration show the same outer hull family/proportions as Armed Trader: narrow rounded nose, broad aft shoulders, twin stern corners. Reuses that approved contour as a source-corroborated exterior family match; interior conversion does not alter silhouette.
+- **volitant-far-trader.svg**: Adventure Class Ships (2023), printed pp. 26-27; PDF pp. 27-28 (1-based). Single-deck exterior: rounded cockpit lobe, narrow neck, widening centre hull, broad swept wings and two aft blocks. Illustration corroborates fins. Distinct from Core Type A2/Hero and Empress Marava silhouettes.
+
+Far Scout is intentionally slender (roughly 4px wide at a 24px token); preserve proportions and use labels rather than arbitrarily widening it. Each asset has one white path, no scripts or external references, and bow up (-90 degrees). Existing explicit user choices remain untouched.
