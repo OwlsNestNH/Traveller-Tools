@@ -81,4 +81,5 @@ jobs:
           path: |
             tools/ship-combat-alpha/verification-artifacts/sample-encounter-*.json
             tools/ship-combat-alpha/verification-artifacts/sample-encounter-*.png
+            tools/ship-combat-alpha/verification-artifacts/sample-silhouettes-*.png
           if-no-files-found: warn
