@@ -136,13 +136,13 @@ function sizeTacticalMap(){
  if(!expanded&&innerWidth>700){
   // Size the actual SVG content edge, not the wrapper: the oval has percentage
   // insets and a border inside that wrapper. Help and footer follow below the fold.
-  const box=frame.getBoundingClientRect(),mapBox=svg.getBoundingClientRect(),style=getComputedStyle(svg.parentElement),inset=parseFloat(style.bottom)||0,upper=parseFloat(style.top)||0,fixed=box.bottom-mapBox.bottom-inset,topFixed=mapBox.top-box.top-upper,ratio=inset/box.height,visibleTop=visualViewport?.offsetTop??0;
+  const box=frame.getBoundingClientRect(),mapBox=svg.getBoundingClientRect(),style=getComputedStyle(svg.parentElement),inset=parseFloat(style.bottom)||0,upper=parseFloat(style.top)||0,fixed=box.bottom-mapBox.bottom-inset,topFixed=mapBox.top-box.top-upper,ratio=inset/box.height;
   // Derive the old reference scale without temporarily shrinking the document:
   // doing so would clamp scrollY while the user tries to reach below-fold Help.
   if(projectionBasis===null)projectionBasis=Math.max(1,Math.min(svg.clientWidth,Math.round(base*(1-ratio-upper/box.height)-fixed-topFixed)));
-  // Extend while the map top is visible. Once it scrolls above the viewport,
-  // stop growing so scrolling can reach Help and the footer rather than chase them.
-  height=Math.max(200,((visualViewport?.height??innerHeight)+visibleTop-Math.max(visibleTop,box.top)+fixed)/(1-ratio));
+  // Fill the initial viewport using document coordinates. Scrolling to side-panel
+  // content must not resize the map or move its document-space frame.
+  height=Math.max(200,((visualViewport?.height??innerHeight)-top+fixed)/(1-ratio));
  }else{frame.style.setProperty('--console-size',base+'px');if(projectionBasis===null)projectionBasis=Math.max(1,Math.min(svg.clientWidth,svg.clientHeight));}
  frame.style.setProperty('--console-size',height+'px');frame.dataset.heightExtension=String(Math.max(0,height-base));alignRightPane();scheduleMap();
 }
