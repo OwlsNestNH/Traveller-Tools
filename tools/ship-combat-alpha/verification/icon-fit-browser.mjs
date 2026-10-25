@@ -44,4 +44,5 @@ async function verifyIconGroup(page,width,artifacts,icons){
 }
 
 
-export async function verifyIconFit(page,width,artifacts){for(const [i,icons] of [["automated-lifeboat","freight-handler-pod","transporter","utility-pod","harrier","research","other","tradesmans-gig"],["belter-launch","customs-launch","lifeboat","medical-launch","harrier","research","other","rescue-boat"],["modular-skiff","harrier","research","other","scout","trader","research-pinnace"]].entries())await verifyIconGroup(page,width,artifacts+"batch06-"+i+"-",icons); }
+export async function verifyIconFit(page,width,artifacts){for(const [i,icons] of [["automated-lifeboat","freight-handler-pod","transporter","utility-pod","harrier","research","other","tradesmans-gig"],["belter-launch","customs-launch","lifeboat","medical-launch","harrier","research","other","rescue-boat"],["modular-skiff","harrier","research","other","scout","trader","sdb","research-pinnace"]].entries())await verifyIconGroup(page,width,artifacts+"batch06-"+i+"-",icons); }
+
