@@ -1,0 +1,221 @@
+{
+  "merge": "5692f60e2bab74235429db7ad0bd8560dc79d37e",
+  "assets": [
+    {
+      "path": "tools/ship-combat-alpha/add-loadout.mjs",
+      "sha256": "32bea8bc4c4b2b8b3765947bb61202b7220f5bcbb78beae2e8db0e8604d11d7d"
+    },
+    {
+      "path": "tools/ship-combat-alpha/add-screen.css",
+      "sha256": "ed1d497083021939b041b74a005bf43aabb0e467780f6e301797e1d666c4c7c9"
+    },
+    {
+      "path": "tools/ship-combat-alpha/add-screen.mjs",
+      "sha256": "16a848d79922895be9def037889873a3c27faa63f90cd5fab7780b4aed12747b"
+    },
+    {
+      "path": "tools/ship-combat-alpha/app.mjs",
+      "sha256": "0ae16c2d45459368c9507c52572e31a5071059aed9f219349f1e6e7dbb933a68"
+    },
+    {
+      "path": "tools/ship-combat-alpha/appearance.mjs",
+      "sha256": "4084305e7f09662cbb6d3050ffd104e9d7c93ff0174a208a2177a70200db159b"
+    },
+    {
+      "path": "tools/ship-combat-alpha/catalogue-acs2023.mjs",
+      "sha256": "fca9da3b22d02a33227770327ea24acf818e6133d95bcd02349a8d0b3493a704"
+    },
+    {
+      "path": "tools/ship-combat-alpha/catalogue-equipment-data.mjs",
+      "sha256": "25785f1ed4bc7a1902ef4fecb1ee29822839c0fe4728d2591a66687bad3df15e"
+    },
+    {
+      "path": "tools/ship-combat-alpha/catalogue-provenance.mjs",
+      "sha256": "a3cdea2d19319a0ddd6b06ad56e71c31ffae3ff2dabbdd43012d16c8ae195e81"
+    },
+    {
+      "path": "tools/ship-combat-alpha/catalogue-scc2023.mjs",
+      "sha256": "fa73249800e2339aef8dc1e535fcbd02581566a076249ca8774af204482d0550"
+    },
+    {
+      "path": "tools/ship-combat-alpha/catalogue-tng2024.mjs",
+      "sha256": "4d30483c80f24264703fe88b4a8e869a5774050865a665e8fed10ac5f4bf3796"
+    },
+    {
+      "path": "tools/ship-combat-alpha/catalogue.mjs",
+      "sha256": "80398b90e91c5963125c8306d22add0b07eac29fae8cc41c1d9210b4bc5ce6a3"
+    },
+    {
+      "path": "tools/ship-combat-alpha/console-controls.mjs",
+      "sha256": "c58d1acb938aae05783f6f688fa7e8833cd9c9c57235212b4b791092200b0e9f"
+    },
+    {
+      "path": "tools/ship-combat-alpha/console-draft.mjs",
+      "sha256": "8f88f57e6dd751f160158a8bc197159249d755d06a0dfdcce3f02534cb811402"
+    },
+    {
+      "path": "tools/ship-combat-alpha/console-layout.css",
+      "sha256": "47b58addc4d65eaf5b2c0bb0782d03d98bb71f5e0a0041aa034d85b19f76198d"
+    },
+    {
+      "path": "tools/ship-combat-alpha/console-layout.mjs",
+      "sha256": "93e0844f7b8c4071bc72c1aa14f4051cbfc6b7a12bf9e9072bdae3f1de9d1583"
+    },
+    {
+      "path": "tools/ship-combat-alpha/editor.mjs",
+      "sha256": "41e060578a246f230c38e30d5f17ea8035eae6ffb92eab7dbb99c874e4bb1d03"
+    },
+    {
+      "path": "tools/ship-combat-alpha/engine.mjs",
+      "sha256": "c341edc049e6226e90e6ab4aff936bf71497b2d297f52d19a71be8edf25872d8"
+    },
+    {
+      "path": "tools/ship-combat-alpha/flight-controls.mjs",
+      "sha256": "fca27ae349f40d24f67564cd9a32c50d3b96fd4fe4e885b175bd26f8a2d0a017"
+    },
+    {
+      "path": "tools/ship-combat-alpha/geometry.mjs",
+      "sha256": "e3866411ce436a769c077ddef7ab081f27a69a8e0dd9b5fc05f91615f9f550f5"
+    },
+    {
+      "path": "tools/ship-combat-alpha/icon-bounds.mjs",
+      "sha256": "6ee82904ff0268731a79e92525fe8da023f546b98aed8cbb1ccea29a61596819"
+    },
+    {
+      "path": "tools/ship-combat-alpha/index.html",
+      "sha256": "25418368e7d19114550d0ca79904e557fcb7234c2db4ca4f5776c6e9af216cdb"
+    },
+    {
+      "path": "tools/ship-combat-alpha/movement-rules.mjs",
+      "sha256": "4f93dd5381ecccb3cec6019cfdd3ad304ae7dcd124c92d850d1a59b9d45bd844"
+    },
+    {
+      "path": "tools/ship-combat-alpha/power-arithmetic.mjs",
+      "sha256": "9ba58c2a877a6363ff4f4cc0e7b5d6a672e6179d2fa1e5b2226f12fda0012383"
+    },
+    {
+      "path": "tools/ship-combat-alpha/power-catalogue.mjs",
+      "sha256": "3c4c8c5c6ccfd6f86d5732dfafa78e8bc195453a04213b3660ea175d1bb63d97"
+    },
+    {
+      "path": "tools/ship-combat-alpha/published-inventory.mjs",
+      "sha256": "f5684248f24eccbd8fbcb4f32dac4bf8f3dbc80ebe25181a32f965ebb7b0d0d4"
+    },
+    {
+      "path": "tools/ship-combat-alpha/range-overlay.mjs",
+      "sha256": "a75eb413930d1c270be1c9922e802ef964c19bbe91b6bb13fed5fd4b2cb1108f"
+    },
+    {
+      "path": "tools/ship-combat-alpha/setup-session.mjs",
+      "sha256": "221903a469f7187eb13802d5a61dbca70091ffb22d37b2f5a8b68c5ca6853c24"
+    },
+    {
+      "path": "tools/ship-combat-alpha/setup.mjs",
+      "sha256": "d62338acb3c6ae460ba9ac8ffb20c8bb14aa3dc1c95f105db0ec1948bb937625"
+    },
+    {
+      "path": "tools/ship-combat-alpha/ship-identity.mjs",
+      "sha256": "eef93afd95fc5cfc53b1657a1057b43a5787f3c0cd5f641315d7c5b9c7d00922"
+    },
+    {
+      "path": "tools/ship-combat-alpha/ship-record.mjs",
+      "sha256": "d9754db382aa8459816277411c1181a0001941f087c3d34f86f769fa1b2291e9"
+    },
+    {
+      "path": "tools/ship-combat-alpha/ship-sheet.mjs",
+      "sha256": "618807e4f5cadf772769095677e21f205a7db48d49845c45d5966b8de9cdf0c3"
+    },
+    {
+      "path": "tools/ship-combat-alpha/software-catalogue.mjs",
+      "sha256": "20a21fb29c3c4a483e331a829dae03abfde4fac605de19828e101987d05fcb66"
+    },
+    {
+      "path": "tools/ship-combat-alpha/station-pane.css",
+      "sha256": "61240c30eed5ed6d0e03528ceea24386ee25a3eb36aaa2196f61867448433df8"
+    },
+    {
+      "path": "tools/ship-combat-alpha/station-pane.mjs",
+      "sha256": "b3ea46ae5153c1b05039617e3356c3853a264265f6df0fdc65bdd0b13c200061"
+    },
+    {
+      "path": "tools/ship-combat-alpha/station-power.mjs",
+      "sha256": "fc1292d72c4522e6937f80ba30863dc5fe415b3b09c9324a3b0b6c433b76f704"
+    },
+    {
+      "path": "tools/ship-combat-alpha/status-console.mjs",
+      "sha256": "d5ac4e9a658dfd56a052c588f3146cf8077b030c967b634e935c211a2c9f8d6a"
+    },
+    {
+      "path": "tools/ship-combat-alpha/style.css",
+      "sha256": "d1da3738d76208e91d8a0e695aaa8c92aafd1cb4e4c2acf4ad7b66196d3ab51d"
+    },
+    {
+      "path": "tools/ship-combat-alpha/switches.css",
+      "sha256": "0c4a08611ac28f10ab2e059991c91fbbc729149fdb306333655dac7aae952191"
+    },
+    {
+      "path": "tools/ship-combat-alpha/systems-draft.mjs",
+      "sha256": "b92211e935ed3c91bdf8692798248b4975ac6f114c69115c74aff1008397d0de"
+    },
+    {
+      "path": "tools/ship-combat-alpha/systems-editor.mjs",
+      "sha256": "0c2fea6a75946a0d92050b5f38083c0aff7593d01e29b9d75a1407b6ce52db07"
+    },
+    {
+      "path": "tools/ship-combat-alpha/systems.mjs",
+      "sha256": "735f7df34711a24cd64476d451eb91cedbf634893ea42b18024f1eabd5f2acd4"
+    },
+    {
+      "path": "tools/ship-combat-alpha/toolbar-layout.css",
+      "sha256": "f5dcf5b5b90a3884e6596a48960d4f55ec2601a243215b2a0306e00fe56da563"
+    },
+    {
+      "path": "tools/ship-combat-alpha/ui-format.mjs",
+      "sha256": "6b51f184034307f2eb1f3f14d3474c368e01c1eac757f2d439bde020772e7b55"
+    },
+    {
+      "path": "tools/ship-combat-alpha/unknown-fields.mjs",
+      "sha256": "08cc4115994272f4cc6661f1ecdddc47ca7aa9a66d0217eca29b73f76749b3f6"
+    },
+    {
+      "path": "tools/ship-combat-alpha/unknown-value.css",
+      "sha256": "17e1bd508eda89a32f8191297b1a1637e766ef2b5279a8ed4878c2b6d8b19df8"
+    },
+    {
+      "path": "tools/ship-combat-alpha/unknown-value.mjs",
+      "sha256": "951787d5d620568eb917624d392027c2c7121b6c21a8b652b8dfeb1f624708a7"
+    },
+    {
+      "path": "tools/ship-combat-alpha/workspace.css",
+      "sha256": "e4e29e64d8ec7a8232e56d6d1308f85bd14ad0a14837e186ba74f487d9912849"
+    },
+    {
+      "path": "tools/ship-combat-alpha/wreck.mjs",
+      "sha256": "6931d672d090251d968f48a3b0af6842896d9612a1d220680ff7989d9b804351"
+    }
+  ],
+  "views": [
+    {
+      "width": 1440,
+      "passed": true,
+      "syntheticVisible": true,
+      "advancedVisible": true,
+      "keyboardFocus": true,
+      "disabledLock": true,
+      "cancelPreserved": true,
+      "sentinelPreserved": true,
+      "storageAccesses": []
+    },
+    {
+      "width": 320,
+      "passed": true,
+      "syntheticVisible": true,
+      "advancedVisible": true,
+      "keyboardFocus": true,
+      "disabledLock": true,
+      "cancelPreserved": true,
+      "sentinelPreserved": true,
+      "storageAccesses": []
+    }
+  ]
+}
