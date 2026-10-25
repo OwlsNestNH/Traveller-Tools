@@ -188,6 +188,8 @@ Ship-sheet systems and power references show retained facts/known allocation row
 
 The normal console fills the available left workspace horizontally. Its border/corner regions become elliptical while station labels remain unscaled. Map world bounds grow with viewport width at a uniform pixel scale: more space appears left/right at the same zoom, rather than stretching hexes, art or existing positions. The reference-square Fit framing retains the previous initial zoom, and resizing does not refit or change the selected ship/view centre.
 
+On desktop, the right pane's first card aligns with the actual map top rather than the toolbar. Its offset follows measured layout changes and its independently scrollable height ends at the visible viewport bottom. Pane scroll is retained during resize; narrow screens retain the existing stacked layout and gap. This positioning changes no encounter state or map camera.
+
 
 ## Crew scale and selected-ship view aids
 New crew records use `ratingVersion: 2`: Green +1, Regular +2, Veteran +3, Elite +4, Heroic +5. The top-level state/command version stays 1. Unversioned old Green/Veteran/Elite records are interpreted using their original +1/+2/+3 totals and relabelled Green/Regular/Veteran, then marked version 2. Explicit general bonuses, zero/other role overrides, detailed crew and situational DMs are retained. Re-normalization/JSON export and import do not apply migration again. API callers choosing the new meaning of Veteran or Elite must supply `ratingVersion: 2`; all UI creation/edit paths do so. There is no campaign-storage access or new campaign import screen.
