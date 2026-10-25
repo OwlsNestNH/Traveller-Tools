@@ -8,7 +8,7 @@ Select one of five sample ships. Side-coloured arrows show velocity and the next
 
 Edit the selected ship to enter a name, position, velocity and thrust budget. The sample fighter has thrust 9; there is no ceiling of six. Integer budgets from 0 to 10,000 are supported. This is a prototype input bound, not a Traveller rule. Edits clear that ship's plot and leave the camera fixed. Reset or reload starts a fresh sample.
 
-The map is a single proportional axial-hex projection. Pan and zoom never compress separate pair distances. Fit ships frames their actual positions. Range lines join the selected ship to the others; the sidebar lists Euclidean centre distances, kilometres and range bands under the explicit policy below. Hex detail automatically disappears at distant zoom and can also be toggled off. Grid enumeration is bounded to 1,800 cells; target legality uses an analytic distance check even when grid detail is hidden. Large thrust never enumerates its millions of reachable targets.
+The map is a single proportional axial-hex projection. Pan and zoom never compress separate pair distances. Fit ships frames their actual positions. Range lines join the selected ship to the others; the sidebar lists Euclidean centre distances, kilometres and range bands under the explicit policy below. Hex detail automatically disappears at distant zoom and can also be toggled off. Grid enumeration is bounded to 1,800 cells below 100% map zoom and 3,600 cells at 100% and above; exceptionally large views can still hit that safety cap. The below-100% behavior is unchanged; target legality uses an analytic distance check even when grid detail is hidden. Large thrust never enumerates its millions of reachable targets.
 
 ## Workspace and quick placement
 

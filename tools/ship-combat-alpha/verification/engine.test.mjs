@@ -2,7 +2,7 @@ import {rangeInfo,HEX_KM,reducedVelocity} from '../movement-rules.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createState,applyCommand,sampleShips,getShip,coastTarget,plannedTarget,hexDistance,canPlot,reachableCount,MAX_THRUST,COORDINATE_LIMIT,availableThrust,accelerationOrder,normalizeState} from '../engine.mjs';
-import {toWorld,fromWorld,visibleGrid,fitCamera,GRID_LIMIT} from '../geometry.mjs';
+import {toWorld,fromWorld,visibleGrid,fitCamera,GRID_LIMIT,GRID_LIMIT_AT_100} from '../geometry.mjs';
 const vessel=(id='test',thrust=2,position={q:0,r:0},velocity={q:0,r:0})=>({id,name:id,capabilities:{thrust},motion:{position,velocity,impulse:{q:0,r:0}}});
 const state=(...ships)=>createState({ships:ships.length?ships:[vessel()]});
 const deepFreeze=x=>{if(x&&typeof x==='object'){Object.freeze(x);Object.values(x).forEach(deepFreeze);}return x;};
@@ -75,6 +75,15 @@ test('one affine camera preserves pair-distance ratios; fit covers far ships wit
 test('visible grid enumeration is bounded at normal and extremely distant zoom',()=>{
  for(const camera of [{x:0,y:0,zoom:1},{x:500000,y:-1000000,zoom:.000001},{x:0,y:0,zoom:8}])assert.ok(visibleGrid(camera).cells.length<=GRID_LIMIT);
  const far=visibleGrid({x:0,y:0,zoom:.000001});assert.equal(far.limited,true);assert.equal(far.cells.length,0);
+});
+test('100 percent grid detail has a bounded budget while lower zoom keeps its previous cutoff',()=>{
+ const camera={x:0,y:0,zoom:1},before=structuredClone(camera),wide={width:2183.35,height:1263};
+ for(const zoom of [1,1+Number.EPSILON,1.01,1.4]){const g=visibleGrid({...camera,zoom},wide.width,wide.height);assert.equal(g.limited,false);assert.ok(g.cells.length>0&&g.cells.length<=GRID_LIMIT_AT_100);}
+ assert.equal(visibleGrid({...camera,zoom:1-Number.EPSILON},wide.width,wide.height).limited,true);
+ assert.equal(visibleGrid({...camera,zoom:.99},wide.width,wide.height).limited,true);
+ assert.equal(visibleGrid({...camera,zoom:.99},1200,1200).cells.length,1645,'below-100 phone grid retains its old bounded behavior');
+ assert.equal(visibleGrid({...camera,zoom:.3199},100,100).limited,true);
+ assert.ok(GRID_LIMIT_AT_100===3600&&GRID_LIMIT===1800);const huge=visibleGrid(camera,1000000,1000000);assert.equal(huge.limited,true);assert.deepEqual(huge.cells,[]);assert.deepEqual(camera,before);
 });
 
 // Setup additions exercise independent instances, exact source variants and atomic errors.
