@@ -1,0 +1,954 @@
+{
+  "width": 1440,
+  "icons": [
+    "harrier",
+    "armed-trader",
+    "stealth-scout",
+    "hunting-ship",
+    "kashu-fighter",
+    "extended-scout",
+    "close-escort",
+    "far-trader",
+    "gig",
+    "launch",
+    "military-gig",
+    "modular-cutter",
+    "passenger-shuttle",
+    "pinnace",
+    "safari",
+    "seeker",
+    "shuttle",
+    "slow-boat",
+    "slow-pinnace",
+    "subsidised-merchant",
+    "survey-scout",
+    "yacht",
+    "marava",
+    "trader",
+    "scout",
+    "fighter",
+    "small-craft",
+    "sdb",
+    "corvette",
+    "research",
+    "corsair",
+    "other"
+  ],
+  "records": [
+    {
+      "group": [
+        "harrier",
+        "armed-trader",
+        "stealth-scout",
+        "hunting-ship",
+        "kashu-fighter"
+      ],
+      "zoom": 0.33,
+      "measurements": [
+        {
+          "icon": "harrier",
+          "scale": 0.21199907847408112,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.991607666015625,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "armed-trader",
+          "scale": 0.20135597726557503,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "stealth-scout",
+          "scale": 0.20081101382105956,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.991607666015625,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "hunting-ship",
+          "scale": 0.1978658006163422,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "kashu-fighter",
+          "scale": 0.18840376144340598,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        }
+      ]
+    },
+    {
+      "group": [
+        "harrier",
+        "armed-trader",
+        "stealth-scout",
+        "hunting-ship",
+        "kashu-fighter"
+      ],
+      "zoom": 1,
+      "measurements": [
+        {
+          "icon": "harrier",
+          "scale": 0.6424214594486783,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "armed-trader",
+          "scale": 0.610169543415707,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "stealth-scout",
+          "scale": 0.6085182945161719,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.991607666015625,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "hunting-ship",
+          "scale": 0.5995932787195728,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.9915771484375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "kashu-fighter",
+          "scale": 0.5709204393128239,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        }
+      ]
+    },
+    {
+      "group": [
+        "harrier",
+        "armed-trader",
+        "stealth-scout",
+        "hunting-ship",
+        "kashu-fighter"
+      ],
+      "zoom": 4,
+      "measurements": [
+        {
+          "icon": "harrier",
+          "scale": 2.5696855994160646,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.99151611328125,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "armed-trader",
+          "scale": 2.440678173662828,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.991546630859375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "stealth-scout",
+          "scale": 2.4340729396860388,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.991607666015625,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "hunting-ship",
+          "scale": 2.398373114878291,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.991455078125,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "kashu-fighter",
+          "scale": 2.283681518872647,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.9915771484375,
+          "hitHeight": 49.99169921875
+        }
+      ]
+    },
+    {
+      "group": [
+        "extended-scout",
+        "close-escort",
+        "far-trader",
+        "gig",
+        "launch"
+      ],
+      "zoom": 0.33,
+      "measurements": [
+        {
+          "icon": "extended-scout",
+          "scale": 0.1901743190393986,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.991607666015625,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "close-escort",
+          "scale": 0.16901976124472057,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "far-trader",
+          "scale": 0.1863533323862831,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.991607666015625,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "gig",
+          "scale": 0.16895560758426664,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "launch",
+          "scale": 0.194409637624057,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        }
+      ]
+    },
+    {
+      "group": [
+        "extended-scout",
+        "close-escort",
+        "far-trader",
+        "gig",
+        "launch"
+      ],
+      "zoom": 1,
+      "measurements": [
+        {
+          "icon": "extended-scout",
+          "scale": 0.576285687153745,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "close-escort",
+          "scale": 0.5121810201350478,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "far-trader",
+          "scale": 0.5647069806451711,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.991607666015625,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "gig",
+          "scale": 0.5119866819416963,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.9915771484375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "launch",
+          "scale": 0.5891199935996764,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        }
+      ]
+    },
+    {
+      "group": [
+        "extended-scout",
+        "close-escort",
+        "far-trader",
+        "gig",
+        "launch"
+      ],
+      "zoom": 4,
+      "measurements": [
+        {
+          "icon": "extended-scout",
+          "scale": 2.3051429869936286,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.99151611328125,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "close-escort",
+          "scale": 2.04872431891884,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.991546630859375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "far-trader",
+          "scale": 2.258827684202036,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.991607666015625,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "gig",
+          "scale": 2.047946727766785,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.991455078125,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "launch",
+          "scale": 2.3564802127773543,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.9915771484375,
+          "hitHeight": 49.99169921875
+        }
+      ]
+    },
+    {
+      "group": [
+        "military-gig",
+        "modular-cutter",
+        "passenger-shuttle",
+        "pinnace",
+        "safari"
+      ],
+      "zoom": 0.33,
+      "measurements": [
+        {
+          "icon": "military-gig",
+          "scale": 0.18419448572880645,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.991607666015625,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "modular-cutter",
+          "scale": 0.1949203192356174,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "passenger-shuttle",
+          "scale": 0.14591872239314885,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.991607666015625,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "pinnace",
+          "scale": 0.18208513244337535,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "safari",
+          "scale": 0.20440682201990182,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        }
+      ]
+    },
+    {
+      "group": [
+        "military-gig",
+        "modular-cutter",
+        "passenger-shuttle",
+        "pinnace",
+        "safari"
+      ],
+      "zoom": 1,
+      "measurements": [
+        {
+          "icon": "military-gig",
+          "scale": 0.5581650361996118,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "modular-cutter",
+          "scale": 0.5906676669763519,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "passenger-shuttle",
+          "scale": 0.4421779416302842,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.991607666015625,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "pinnace",
+          "scale": 0.5517730319240837,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.9915771484375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "safari",
+          "scale": 0.6194145825481838,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        }
+      ]
+    },
+    {
+      "group": [
+        "military-gig",
+        "modular-cutter",
+        "passenger-shuttle",
+        "pinnace",
+        "safari"
+      ],
+      "zoom": 4,
+      "measurements": [
+        {
+          "icon": "military-gig",
+          "scale": 2.232660144798447,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.99151611328125,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "modular-cutter",
+          "scale": 2.362670429526759,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.991546630859375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "passenger-shuttle",
+          "scale": 1.7687117665211367,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.991607666015625,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "pinnace",
+          "scale": 2.2070918893176863,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.991455078125,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "safari",
+          "scale": 2.4776583301927353,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.9915771484375,
+          "hitHeight": 49.99169921875
+        }
+      ]
+    },
+    {
+      "group": [
+        "seeker",
+        "shuttle",
+        "slow-boat",
+        "slow-pinnace",
+        "subsidised-merchant"
+      ],
+      "zoom": 0.33,
+      "measurements": [
+        {
+          "icon": "seeker",
+          "scale": 0.18872320376430532,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.991607666015625,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "shuttle",
+          "scale": 0.14591872239314885,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "slow-boat",
+          "scale": 0.19107212761641063,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.991607666015625,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "slow-pinnace",
+          "scale": 0.18208513244337535,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "subsidised-merchant",
+          "scale": 0.18038820406010062,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        }
+      ]
+    },
+    {
+      "group": [
+        "seeker",
+        "shuttle",
+        "slow-boat",
+        "slow-pinnace",
+        "subsidised-merchant"
+      ],
+      "zoom": 1,
+      "measurements": [
+        {
+          "icon": "seeker",
+          "scale": 0.5718883758158645,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "shuttle",
+          "scale": 0.4421779416302842,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "slow-boat",
+          "scale": 0.579006362266004,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.991607666015625,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "slow-pinnace",
+          "scale": 0.5517730319240837,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.9915771484375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "subsidised-merchant",
+          "scale": 0.5466309064983446,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        }
+      ]
+    },
+    {
+      "group": [
+        "seeker",
+        "shuttle",
+        "slow-boat",
+        "slow-pinnace",
+        "subsidised-merchant"
+      ],
+      "zoom": 4,
+      "measurements": [
+        {
+          "icon": "seeker",
+          "scale": 2.2875539800207556,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.99151611328125,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "shuttle",
+          "scale": 1.7687117665211367,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.991546630859375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "slow-boat",
+          "scale": 2.316025687442665,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.991607666015625,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "slow-pinnace",
+          "scale": 2.2070918893176863,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.991455078125,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "subsidised-merchant",
+          "scale": 2.1865233876147294,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.9915771484375,
+          "hitHeight": 49.99169921875
+        }
+      ]
+    },
+    {
+      "group": [
+        "survey-scout",
+        "yacht",
+        "marava",
+        "trader",
+        "scout"
+      ],
+      "zoom": 0.33,
+      "measurements": [
+        {
+          "icon": "survey-scout",
+          "scale": 0.18381424194754659,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.991607666015625,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "yacht",
+          "scale": 0.1906629804210122,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "marava",
+          "scale": 0.18888334953676683,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.991607666015625,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "trader",
+          "scale": 0.1863533323862831,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "scout",
+          "scale": 0.18872320376430532,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        }
+      ]
+    },
+    {
+      "group": [
+        "survey-scout",
+        "yacht",
+        "marava",
+        "trader",
+        "scout"
+      ],
+      "zoom": 1,
+      "measurements": [
+        {
+          "icon": "survey-scout",
+          "scale": 0.5570128330011271,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "yacht",
+          "scale": 0.5777666145087849,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "marava",
+          "scale": 0.5723737147446148,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.991607666015625,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "trader",
+          "scale": 0.5647069806451711,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.9915771484375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "scout",
+          "scale": 0.5718883758158645,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        }
+      ]
+    },
+    {
+      "group": [
+        "survey-scout",
+        "yacht",
+        "marava",
+        "trader",
+        "scout"
+      ],
+      "zoom": 4,
+      "measurements": [
+        {
+          "icon": "survey-scout",
+          "scale": 2.2280510936258597,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.99151611328125,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "yacht",
+          "scale": 2.311066219656491,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.991546630859375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "marava",
+          "scale": 2.2894948589784594,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.991607666015625,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "trader",
+          "scale": 2.258827684202036,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.991455078125,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "scout",
+          "scale": 2.2875539800207556,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.9915771484375,
+          "hitHeight": 49.99169921875
+        }
+      ]
+    },
+    {
+      "group": [
+        "fighter",
+        "small-craft",
+        "sdb",
+        "corvette",
+        "research"
+      ],
+      "zoom": 0.33,
+      "measurements": [
+        {
+          "icon": "fighter",
+          "scale": 0.16838050413624486,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.991607666015625,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "small-craft",
+          "scale": 0.19115418947469678,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "sdb",
+          "scale": 0.18928491331062064,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.991607666015625,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "corvette",
+          "scale": 0.1942400014006644,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "research",
+          "scale": 0.16488816718028518,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        }
+      ]
+    },
+    {
+      "group": [
+        "fighter",
+        "small-craft",
+        "sdb",
+        "corvette",
+        "research"
+      ],
+      "zoom": 1,
+      "measurements": [
+        {
+          "icon": "fighter",
+          "scale": 0.510243895641061,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "small-craft",
+          "scale": 0.5792550507912588,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "sdb",
+          "scale": 0.5735905185568967,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.991607666015625,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "corvette",
+          "scale": 0.5886059300437579,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.9915771484375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "research",
+          "scale": 0.49966104573475656,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        }
+      ]
+    },
+    {
+      "group": [
+        "fighter",
+        "small-craft",
+        "sdb",
+        "corvette",
+        "research"
+      ],
+      "zoom": 4,
+      "measurements": [
+        {
+          "icon": "fighter",
+          "scale": 2.040975582564244,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.99151611328125,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "small-craft",
+          "scale": 2.3170199647863865,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.991546630859375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "sdb",
+          "scale": 2.2943620742275868,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.991607666015625,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "corvette",
+          "scale": 2.3544239585536806,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.991455078125,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "research",
+          "scale": 1.9986443021283506,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.9915771484375,
+          "hitHeight": 49.99169921875
+        }
+      ]
+    },
+    {
+      "group": [
+        "corsair",
+        "other"
+      ],
+      "zoom": 0.33,
+      "measurements": [
+        {
+          "icon": "corsair",
+          "scale": 0.1854991769038205,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.991607666015625,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "other",
+          "scale": 0.22259901824405146,
+          "apothem": 4.946644948289278,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        }
+      ]
+    },
+    {
+      "group": [
+        "corsair",
+        "other"
+      ],
+      "zoom": 1,
+      "measurements": [
+        {
+          "icon": "corsair",
+          "scale": 0.562118665277602,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "other",
+          "scale": 0.6745425056035143,
+          "apothem": 14.989832580991747,
+          "hitWidth": 49.99163818359375,
+          "hitHeight": 49.99169921875
+        }
+      ]
+    },
+    {
+      "group": [
+        "corsair",
+        "other"
+      ],
+      "zoom": 4,
+      "measurements": [
+        {
+          "icon": "corsair",
+          "scale": 2.248474899489057,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.99151611328125,
+          "hitHeight": 49.99169921875
+        },
+        {
+          "icon": "other",
+          "scale": 2.6981697840354086,
+          "apothem": 59.95933032396699,
+          "hitWidth": 49.991546630859375,
+          "hitHeight": 49.99169921875
+        }
+      ]
+    }
+  ]
+}
