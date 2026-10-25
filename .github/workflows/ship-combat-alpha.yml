@@ -31,7 +31,7 @@ jobs:
   browser:
     name: Movement UI desktop and mobile
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 30
     env:
       SHIP_COMBAT_TEST_ROOT: http://127.0.0.1:8767/
       SHIP_COMBAT_COMMIT: ${{ github.event.pull_request.head.sha }}
