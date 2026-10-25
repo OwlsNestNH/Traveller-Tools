@@ -39,7 +39,7 @@ export function createStationPane({getState,getSelected,isLocked,onCommit,onSele
  root.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
   if(b.hasAttribute('data-station-cancel')){draft=null;error='';onRefresh();}
   if(b.hasAttribute('data-station-return')){onSelect(draft.shipId);choose('engineer');}
-  if(b.hasAttribute('data-station-commit')){try{if(isLocked())throw Error('Finish the other editor first.');const next=commitSystemsDraft(getState(),draft,getSelected());onCommit(next);draft=null;error='';render();}catch(err){error=err.message+' Nothing was committed.';render();}}
+  if(b.hasAttribute('data-station-commit')){try{if(isLocked())throw Error('Finish the other editor first.');const next=commitSystemsDraft(getState(),draft,getSelected());onCommit(next);draft=null;error='';onRefresh();}catch(err){error=err.message+' Nothing was committed.';render();}}
   if(b.dataset.pilotAction)$(b.dataset.pilotAction).click();
   if(b.hasAttribute('data-station-details'))onDetails();if(b.hasAttribute('data-station-condition'))onCondition();if(b.hasAttribute('data-station-advanced'))onAdvanced();
  });

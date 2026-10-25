@@ -93,7 +93,7 @@ $('add-ship-main').addEventListener('click',editors.openAdd);$('open-setup').add
 for(const id of ['ship-console','ship-identity'])$(id).addEventListener('click',event=>{if(event.target.closest('[data-console-setup]'))editors.open();if(event.target.closest('[data-console-condition]'))editors.openCondition();});
 systemsEditor=createSystemsEditor({dialog:$('systems-dialog'),getState:()=>state,getSelected:()=>selected,isLocked:()=>stationPane?.hasDraft()||editors.isPlacing()||editors.hasConditionDraft()||editors.hasSetupDraft(),onCommit:next=>{state=next;render();feedback('Systems committed for this ship only. Saved output and manual used Power are retained.');}});
 $('ship-console').addEventListener('click',event=>{if(event.target.closest('[data-open-systems]')){if(editors.hasConditionDraft()||editors.hasSetupDraft())feedback('Finish or cancel the open editor first.');else systemsEditor.open();}});
-consoleControls=createConsoleControls({root:$('ship-console'),getState:()=>state,getSelected:()=>selected,isLocked:()=>stationPane?.hasDraft()||editors.isPlacing(),onCommit:next=>{state=next;render();feedback('Condition changes committed for this ship only.');}});
+consoleControls=createConsoleControls({onDraftChange:()=>stationPane?.render(),root:$('ship-console'),getState:()=>state,getSelected:()=>selected,isLocked:()=>stationPane?.hasDraft()||editors.isPlacing(),onCommit:next=>{state=next;render();feedback('Condition changes committed for this ship only.');}});
 for(const id of ['condition-dialog','systems-dialog'])$('advanced-workspace').append($(id));
 for(const id of ['brake','coast']){$(id).textContent=id==='brake'?'Stop':'Coast';$('advance').after($(id));}
 let expandedPage=null;
