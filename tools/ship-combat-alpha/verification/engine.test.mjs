@@ -117,6 +117,14 @@ test('fresh/reset samples hydrate full existing presets with citations and wider
  const next=createState();fresh.ships[0].template.record.ratedPower=1;assert.equal(next.ships[0].template.record.ratedPower,preset(ids.merchant).record.ratedPower);assert.equal(createState().ships[0].template.record.ratedPower,next.ships[0].template.record.ratedPower);
 });
 
+test('sample-only representative silhouettes retain catalogue identity and saved icon overrides',()=>{
+ const defaults=createState(),mapping={merchant:'trader',courier:'corvette',scout:'scout',fighter:'fighter'};
+ for(const [id,icon]of Object.entries(mapping)){const s=getShip(defaults,id);assert.equal(s.appearance.icon,icon);assert.equal(iconFor(s),icon);assert.match(ICONS[icon].label,/representative/i);assert.equal(iconFor({...s,appearance:{...s.appearance,icon:'auto'}}),'other','exact source mapping remains unknown');}
+ const harrier=getShip(defaults,'escort');assert.equal(harrier.appearance.icon,'auto');assert.equal(iconFor(harrier),'harrier');assert.equal(ICONS.harrier.file,'harrier-custom.svg');
+ const edited=applyCommand(defaults,{type:'set-appearance',shipId:'merchant',appearance:{icon:'research'}}),saved=JSON.stringify(edited);sampleShips();createState();assert.equal(JSON.stringify(edited),saved);assert.deepEqual(normalizeState(JSON.parse(saved)),edited);assert.equal(iconFor(getShip(normalizeState(JSON.parse(saved)),'merchant')),'research');
+ for(let i=0;i<defaults.ships.length;i++){const a=defaults.ships[i],b=edited.ships[i];assert.deepEqual(a.template,b.template);assert.deepEqual(a.motion,b.motion);assert.deepEqual(a.condition,b.condition);assert.deepEqual(a.systems,b.systems);}
+});
+
 test('default sample changes never hydrate or overwrite explicit legacy/imported/custom encounters',()=>{
  const legacy=createState({ships:legacySampleShips()}),saved=JSON.stringify(legacy),restored=normalizeState(JSON.parse(saved));assert.deepEqual(restored,legacy);assert.equal(restored.ships[0].template,null);const custom=createState({ships:[vessel('private-custom',4,{q:999,r:-123},{q:0,r:0})]}),copy=JSON.stringify(custom);createState();createState();assert.equal(JSON.stringify(custom),copy);assert.equal(JSON.stringify(legacy),saved);assert.deepEqual(normalizeState(JSON.parse(copy)),custom);
 });
