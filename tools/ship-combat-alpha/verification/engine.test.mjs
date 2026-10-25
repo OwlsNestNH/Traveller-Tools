@@ -108,6 +108,16 @@ test('100 percent grid detail has a bounded budget while lower zoom keeps its pr
 
 // Setup additions exercise independent instances, exact source variants and atomic errors.
 import {PRESETS,preset} from '../catalogue.mjs';
+
+test('all published catalogue entries resolve to named artwork and retain explicit overrides',()=>{
+ assert.equal(PRESETS.length,195);
+ for(const template of PRESETS){
+  const icon=iconFor({template});
+  if(['core-206','highguard-185'].includes(template.id))assert.equal(icon,'research');else assert.ok(ICONS[icon]?.file,`${template.id} still uses generic ${icon}`);
+  assert.equal(iconFor({template,appearance:{icon:'other'}}),'other');
+  assert.equal(iconFor({template,appearance:{icon:'corsair'}}),'corsair');
+ }
+});
 import {crewContribution,MAX_SHIPS,ROLES} from '../setup.mjs';
 const addPreset=(s,id='core-194',name='Added trader')=>applyCommand(s,{type:'add-ship',presetId:id,name,position:{q:2,r:1},velocity:{q:0,r:0}});
 
@@ -220,7 +230,7 @@ test('side and silhouette are independent presentation data; edits never alter m
 });
 test('automatic symbols distinguish Marava and custom ring/corsair and keep unknown hulls generic',()=>{
  const symbol=id=>iconFor({template:preset(id)});
- assert.equal(symbol('highguard-167'),'marava');assert.equal(symbol('core-194'),'trader');assert.equal(symbol('core-206'),'research');assert.equal(symbol('highguard-196'),'corsair');assert.equal(symbol('highguard-158'),'other');assert.equal(symbol('core-218'),'fighter');assert.equal(symbol('core-220'),'launch');
+ assert.equal(symbol('highguard-167'),'marava');assert.equal(symbol('core-194'),'trader');assert.equal(symbol('core-206'),'research');assert.equal(symbol('highguard-196'),'nishemani-corsair');assert.equal(symbol('highguard-158'),'express-boat');assert.equal(symbol('core-218'),'fighter');assert.equal(symbol('core-220'),'launch');
  assert.match(ICONS.research.label,/custom toroid.*not a canonical/);assert.match(ICONS.corsair.label,/custom fallback.*not a canonical/);
  assert.equal(iconFor({template:{name:'Custom mystery',tons:400},appearance:{side:'A',icon:'auto'}}),'other');
  for(const p of PRESETS)assert.ok(Object.hasOwn(ICONS,iconFor({template:p})));
@@ -231,8 +241,8 @@ test('all 194 source identities explicitly map matching available hulls or hones
  for(const p of PRESETS)assert.ok(Object.hasOwn(PRESET_ICONS,p.source.book+'/'+p.source.page),p.id);
  for(const [id,icon,file] of [
  ['core-202','yacht','yacht.webp'],['highguard-179','yacht','yacht.webp'],['core-220','launch','launch.webp'],['highguard-139','launch','launch.webp'],['core-204','close-escort','close_escort.webp'],['highguard-181','close-escort','close_escort.webp'],['core-196','far-trader','far_trader.webp'],['highguard-169','far-trader','far_trader.webp'],['highguard-138','military-gig','military_gig.webp'],['core-219','gig','gig.webp'],['core-192','seeker','seeker.webp'],['core-210','subsidised-merchant','subsidised_merchant.webp'],['highguard-191','survey-scout','survey_scout.webp'],['core-227','passenger-shuttle','passenger_shuttle.webp']]){assert.equal(iconFor({template:preset(id)}),icon,id);assert.equal(ICONS[icon].file,file);}
- for(const id of ['highguard-136','highguard-148','highguard-150','highguard-152','highguard-158','highguard-165','highguard-177','highguard-183','highguard-193'])assert.equal(iconFor({template:preset(id)}),'other',id+' must not borrow a different variant');
- assert.equal(Object.values(ICONS).filter(x=>x.file).length,139);
+ for(const [id,icon] of [['highguard-136','ultralight-fighter'],['highguard-148','heavy-fighter'],['highguard-150','troop-transport'],['highguard-152','torpedo-boat'],['highguard-158','express-boat'],['highguard-165','serpent-scout'],['highguard-177','jump-shuttle'],['highguard-183','fleet-courier'],['highguard-193','dragon-system-defence-boat']])assert.equal(iconFor({template:preset(id)}),icon,id+' must retain its source-specific variant');
+ assert.equal(Object.values(ICONS).filter(x=>x.file).length,172);
 });
 
 
@@ -308,4 +318,8 @@ test('batch08 source-specific mapping preserves explicit presentation choices',(
 
 test('batch09 source-specific mapping preserves explicit presentation choices',()=>{
  for(const [id,icon] of [["scc2023-p091","sword-worlds-ships-boat"],["scc2023-p092","baldr-attack-fighter"],["scc2023-p093","vanguard-fusion-boat"],["scc2023-p095","vanguard-m-missile-boat"],["scc2023-p098","belt-racer"],["scc2023-p099","gothta-ambush-fighter"],["scc2023-p100","nolrrgarrai-strike-fighter"],["scc2023-p101","corsair-pinnace"],["scc2023-p103","tlatl-light-fighter"],["scc2023-p104","estal-intrusion-shuttle"],["scc2023-p105","kia-heavy-fighter"],["scc2023-p106","brechatsnech-belt-survey-vessel"],["scc2023-p108","nieshetsienz-gas-giant-survey-vessel"],["scc2023-p110","drabr-chtor-terrestrial-survey-vessel"],["tng2024-iysa","iysa-light-fighter"],["tng2024-sakhal","sakhal-launch"],["tng2024-hoeywea","hoeywea-troop-carrier"],["tng2024-akhtael","akhtael-hunting-yacht"],["tng2024-eyekei","eyekei-freighter"],["tng2024-seaho","seaho-armed-scout"],["tng2024-ewa","ewa-freighter"],["tng2024-orssiryu","orssiryu-droyne-trader"],["tng2024-koydeayss","koydeayss-armed-trader"]]){const template=preset(id);assert.equal(iconFor({template}),icon);assert.equal(iconFor({template,appearance:{icon:'scout'}}),'scout');assert.equal(ICONS[icon].bowDegrees,-90);}
+});
+
+test('batch10 source-specific mapping preserves explicit presentation choices',()=>{
+ for(const [id,icon] of [["tng2024-ninnup","ninnup-ships-boat"],["tng2024-quvar","quvar-shuttle"],["tng2024-arospi","arospi-escort"],["tng2024-enuna","enuna-federation-merchant"],["tng2024-keldyx","keldyx-system-defence-boat"],["tng2024-darlene","darlene-gig"],["tng2024-lone-trader","lone-trader"],["tng2024-deep-trader","deep-trader"],["tng2024-advanced-far-trader","advanced-far-trader"],["tng2024-free-trader-plus","free-trader-plus"],["tng2024-blockade-runner","tng-blockade-runner"],["tng2024-the-draco-occursum","draco-occursum"],["tng2024-space-liner","space-liner"],["tng2024-tramp-merchant","tramp-merchant"],["tng2024-prasad","prasad-light-fighter"],["tng2024-solomani-gig","solomani-gig"],["tng2024-laoshi","laoshi-mains-trader"],["tng2024-backwater-trader","backwater-trader"],["tng2024-guo","guo-system-defence-boat"],["tng2024-mariama","mariama-liner"],["tng2024-speculative-trader","speculative-trader"],["tng2024-noql","noql-free-trader"],["tng2024-brimansh","brimansh-frontier-trader"],["highguard-136","ultralight-fighter"],["highguard-148","heavy-fighter"],["highguard-150","troop-transport"],["highguard-152","torpedo-boat"],["highguard-158","express-boat"],["highguard-165","serpent-scout"],["highguard-177","jump-shuttle"],["highguard-183","fleet-courier"],["highguard-193","dragon-system-defence-boat"],["highguard-196","nishemani-corsair"]]){const template=preset(id);assert.equal(iconFor({template}),icon);assert.equal(iconFor({template,appearance:{icon:'scout'}}),'scout');assert.equal(ICONS[icon].bowDegrees,-90);}
 });
