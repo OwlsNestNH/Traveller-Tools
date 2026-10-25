@@ -2,6 +2,19 @@
 // Measured from all nonzero source-alpha pixels plus a native-pixel interpolation guard;
 // no assets are cropped or altered. Unknown art retains the complete-box fallback.
 export const ICON_RADII=Object.freeze({
+ "extended-passenger-shuttle.svg":28.14,
+ "trade-shuttle.svg":20.93,
+ "fast-shuttle.svg":21.01,
+ "short-shuttle.svg":20.91,
+ "smugglers-pinnace.svg":23.79,
+ "cargo-shuttle.svg":21.5,
+ "advertising-boat.svg":20.33,
+ "civilian-hopper.svg":22.78,
+ "nguksu-fast-trader.svg":25.3,
+ "rokkghiok-stealth-runner.svg":21.26,
+ "sleipnir-patroller.svg":21.44,
+ "sceaf-personal-yacht.svg":22.74,
+ "stayaow-combat-scout.svg":24.06,
  "touring-ship.svg":22.56,
  "blockade-runner.svg":20.98,
  "desiree-keah-yacht.svg":21.44,
