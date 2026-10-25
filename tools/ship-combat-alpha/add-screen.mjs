@@ -45,8 +45,10 @@ export function mountAddScreen({source,readDesign,setWeapons}){
   if(e.target.closest('#new-design-fields'))custom=true;
   refresh();
  });
- form.addEventListener('change',e=>{if(e.target.id==='design-select'){choice='keep';sand=false;custom=!source();form.querySelector('[name="add-loadout"][value="keep"]').checked=true;$('add-sand').checked=false;refresh();}});
+ // The editor calls this after replacing the source and its design controls.
+ // A bubbling form change listener would still see the previous source.
+ function sourceChanged(){choice='keep';sand=false;custom=!source();form.querySelector('[name="add-loadout"][value="keep"]').checked=true;$('add-sand').checked=false;refresh();}
  form.addEventListener('click',e=>{if(e.target.closest('[data-add-weapon],[data-remove-row]')){custom=true;queueMicrotask(refresh);}});
- refresh();return {design,readCrew,refresh};
+ refresh();return {design,readCrew,refresh,sourceChanged};
 }
 
