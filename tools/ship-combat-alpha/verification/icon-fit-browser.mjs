@@ -44,4 +44,4 @@ async function verifyIconGroup(page,width,artifacts,icons){
 }
 
 
-export async function verifyIconFit(page,width,artifacts){for(const [i,icons] of [["medical-scout","shadow-trader","merchant-trader","antique-trader","harrier","research","other","fast-smuggler"],["fast-luxury-transport","express-packet","jump-cutter","long-range-courier","harrier","research","other","hospice-boat"]].entries())await verifyIconGroup(page,width,artifacts+"batch03-"+i+"-",icons); }
+export async function verifyIconFit(page,width,artifacts){for(const [i,icons] of [["prison-ferry","prospector","strike-scout","light-reconnaissance","harrier","research","other","pirate-carrier"],["assault-gunship","valour-missile-corvette","executive-yacht","huntress-warrant-ship","harrier","research","other","custom-safari-ship"],["desiree-keah-yacht","blockade-runner","harrier","research","other","scout","trader","touring-ship"]].entries())await verifyIconGroup(page,width,artifacts+"batch04-"+i+"-",icons); }
