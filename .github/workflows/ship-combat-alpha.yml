@@ -76,11 +76,11 @@ jobs:
         with:
           name: icon-growth-review-${{ github.event.pull_request.head.sha }}
           path: |
-            tools/ship-combat-alpha/verification-artifacts/icon-fit-*.json
-            tools/ship-combat-alpha/verification-artifacts/icon-fit-*-normal-1876.png
-            tools/ship-combat-alpha/verification-artifacts/icon-fit-*-expanded-1876.png
-            tools/ship-combat-alpha/verification-artifacts/icon-fit-*-normal-320.png
-            tools/ship-combat-alpha/verification-artifacts/icon-fit-*-expanded-320.png
+            tools/ship-combat-alpha/verification-artifacts/*icon-fit-*.json
+            tools/ship-combat-alpha/verification-artifacts/*icon-fit-*-normal-1876.png
+            tools/ship-combat-alpha/verification-artifacts/*icon-fit-*-expanded-1876.png
+            tools/ship-combat-alpha/verification-artifacts/*icon-fit-*-normal-320.png
+            tools/ship-combat-alpha/verification-artifacts/*icon-fit-*-expanded-320.png
           if-no-files-found: warn
       - name: Upload small sample encounter review evidence
         if: always()
@@ -100,3 +100,4 @@ jobs:
           name: wreck-review-${{ github.event.pull_request.head.sha }}
           path: tools/ship-combat-alpha/verification-artifacts/wreck-*
           if-no-files-found: warn
+

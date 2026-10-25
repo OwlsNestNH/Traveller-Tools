@@ -2,6 +2,16 @@
 // Measured from all nonzero source-alpha pixels plus a native-pixel interpolation guard;
 // no assets are cropped or altered. Unknown art retains the complete-box fallback.
 export const ICON_RADII=Object.freeze({
+ "hospice-boat.svg":23.97,
+ "long-range-courier.svg":21.62,
+ "jump-cutter.svg":22.12,
+ "express-packet.svg":22.36,
+ "fast-luxury-transport.svg":23.02,
+ "fast-smuggler.svg":21.42,
+ "antique-trader.svg":21.11,
+ "merchant-trader.svg":22.02,
+ "shadow-trader.svg":22.11,
+ "medical-scout.svg":21.4,
  "volitant-far-trader.svg":23.68,
  "free-smuggler.svg":22.11,
  "far-scout.svg":21.19,
