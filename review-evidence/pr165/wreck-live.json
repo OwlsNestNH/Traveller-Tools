@@ -1,0 +1,71 @@
+{
+  "merge": "5c65911d3220ee44d14f3433579c79e98be55d5e",
+  "assets": [
+    {
+      "file": "app.mjs",
+      "sha256": "a4573d57e1002e194d81503b85be275a59edc48e3debd54c17792686fc043a87"
+    },
+    {
+      "file": "wreck.mjs",
+      "sha256": "6931d672d090251d968f48a3b0af6842896d9612a1d220680ff7989d9b804351"
+    },
+    {
+      "file": "appearance.mjs",
+      "sha256": "5655653e5d7769fe3fcc1100a071dc91fa1676cf5c2b91d73a2ddebac2f2261c"
+    },
+    {
+      "file": "icon-bounds.mjs",
+      "sha256": "5eb05f84aff5dbb3f1f38a12a65d8766b21ff5260e93ab6678bd21412b781907"
+    }
+  ],
+  "views": [
+    {
+      "width": 1440,
+      "results": [
+        {
+          "hull": "1",
+          "wrecked": false
+        },
+        {
+          "hull": "0",
+          "wrecked": true
+        },
+        {
+          "hull": "unknown",
+          "wrecked": false
+        },
+        {
+          "hull": "1",
+          "wrecked": false
+        }
+      ],
+      "motionPreserved": true,
+      "storageAccesses": [],
+      "sentinelPreserved": true
+    },
+    {
+      "width": 320,
+      "results": [
+        {
+          "hull": "1",
+          "wrecked": false
+        },
+        {
+          "hull": "0",
+          "wrecked": true
+        },
+        {
+          "hull": "unknown",
+          "wrecked": false
+        },
+        {
+          "hull": "1",
+          "wrecked": false
+        }
+      ],
+      "motionPreserved": true,
+      "storageAccesses": [],
+      "sentinelPreserved": true
+    }
+  ]
+}

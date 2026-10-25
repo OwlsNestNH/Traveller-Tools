@@ -1,0 +1,1 @@
+Independent review approved the release. Nonblocking follow-up: correct the debris bound comment (actual maximum radius approximately 21.47, not 20) and extend the geometry test oracle to include debris. Reviewer verified worst-case extent remains within the hex at approximately 96.6% of its apothem. Do not change the approved release for this follow-up.
