@@ -1,16 +1,16 @@
 import assert from 'node:assert/strict';
-import {writeFile} from 'node:fs/promises';
+import {readFile,writeFile} from 'node:fs/promises';
 import {visibleGrid,GRID_LIMIT,GRID_LIMIT_AT_100} from '../geometry.mjs';
 export async function verifyGridZoom(page,width,artifacts){
- const records=[];
+ const records=[],source=await readFile(new URL('../app.mjs',import.meta.url),'utf8'),marker='camera=fitShipsCamera(state.ships),drag=null';assert.equal(source.split(marker).length,2);
  for(const zoom of [.99,1,1.01]){
   const p=await page.context().newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));p.setDefaultTimeout(15000);await p.setViewportSize({width,height:width===1876?982:width<500?700:1000});
   // Fixture changes only the initial view camera, because the public controls use
   // multiplicative steps and cannot select an exact numerical 100% value.
   // The production renderer, geometry, engine and controls remain unmodified.
-  await p.route('**/app.mjs',async route=>{const response=await route.fetch(),source=await response.text(),marker='camera=fitShipsCamera(state.ships),drag=null';assert.equal(source.split(marker).length,2);await route.fulfill({response,body:source.replace(marker,'camera={x:0,y:0,zoom:'+zoom+'},drag=null')});});
+  await p.route('**/app.mjs',route=>route.fulfill({contentType:'text/javascript',body:source.replace(marker,'camera={x:0,y:0,zoom:'+zoom+'},drag=null')}));
   try{
-   await p.goto(page.url());await p.locator('.ship-node').first().waitFor();await p.waitForLoadState('networkidle');
+   await p.goto(page.url(),{waitUntil:'domcontentloaded'});await p.locator('.ship-node').first().waitFor();
    for(const expanded of [false,true]){
     if(expanded)await p.locator('#expand-map').click();await p.waitForFunction(z=>Number(document.querySelector('#map').dataset.zoom)===z,zoom);await p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
     const m=await p.locator('#map').evaluate(e=>({zoom:Number(e.dataset.zoom),grid:e.dataset.gridVisible==='true',width:e.viewBox.baseVal.width,height:e.viewBox.baseVal.height,cells:e.querySelectorAll('.cell').length,revision:e.dataset.revision})),expected=visibleGrid({x:0,y:0,zoom},m.width,m.height),limit=zoom>=1?GRID_LIMIT_AT_100:GRID_LIMIT;
