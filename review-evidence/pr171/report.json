@@ -1,0 +1,25 @@
+{
+  "head": "0a0262e615e1aa6137eab67c92f48f2f2e068e7f",
+  "views": [
+    {
+      "width": 1876,
+      "passed": true
+    },
+    {
+      "width": 1440,
+      "passed": true
+    },
+    {
+      "width": 1100,
+      "passed": true
+    },
+    {
+      "width": 390,
+      "passed": true
+    },
+    {
+      "width": 320,
+      "passed": true
+    }
+  ]
+}
