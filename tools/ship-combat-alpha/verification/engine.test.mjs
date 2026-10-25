@@ -1,3 +1,4 @@
+import {ICON_RADII,iconRadius} from '../icon-bounds.mjs';
 import {rangeInfo,HEX_KM,reducedVelocity} from '../movement-rules.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -10,12 +11,19 @@ const deepFreeze=x=>{if(x&&typeof x==='object'){Object.freeze(x);Object.values(x
 test('complete ship artwork stays inside its hex at every travel rotation and view scale',()=>{
  const apothem=HEX_SIZE*Math.sqrt(3)/2;
  for(const screen of [.000001,.1,.5,1,2,10,1000000]){
-  const scale=shipGlyphScale(screen);assert.ok(scale>0&&scale<=1);
+  const scale=shipGlyphScale(screen);assert.ok(scale>0);
   for(let degrees=0;degrees<360;degrees+=5)for(const [x,y]of [[-24,-24],[-24,24],[24,-24],[24,24]]){
    const a=degrees*Math.PI/180,px=screen*scale*(x*Math.cos(a)-y*Math.sin(a)),py=screen*scale*(x*Math.sin(a)+y*Math.cos(a));
    assert.ok(Math.hypot(px,py)<=.9*apothem+1e-9,'rotation-safe 10% hex inset');
   }
  }
+});
+
+test('visible-art sizing grows with zoom beyond the old cap without a screen minimum',()=>{
+ for(const radius of [...Object.values(ICON_RADII),iconRadius('research'),iconRadius('corsair'),iconRadius('other'),Math.hypot(24,24)]){
+  let previous=0;for(const zoom of [.01,.33,1,2,4,16]){const screen=1/zoom,scale=shipGlyphScale(screen,radius);assert.ok(scale>previous);assert.ok(Math.abs(scale*screen*radius-.9*HEX_SIZE*Math.sqrt(3)/2)<1e-10);previous=scale;}
+ }
+ assert.equal(iconRadius('unknown','new-art.webp'),Math.hypot(24,24));
 });
 
 test('coasting preserves velocity for every ship over repeated six-minute rounds',()=>{

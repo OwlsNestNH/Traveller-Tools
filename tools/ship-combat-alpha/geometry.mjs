@@ -1,8 +1,9 @@
 // Rendering geometry only. A single affine camera preserves proportional space.
 export const HEX_SIZE=26,GRID_LIMIT=1800,GRID_LIMIT_AT_100=3600;
-// The complete 48px artwork box must fit inside the hex's inscribed circle,
-// even after rotation. Keep a 10% inset; hit targets and labels scale separately.
-export function shipGlyphScale(screen){return Math.min(1,.9*HEX_SIZE*Math.sqrt(3)/2/(Math.hypot(24,24)*screen));}
+// Visible artwork fits inside the hex's inscribed circle at every rotation.
+// No screen-size cap: the glyph grows with its hex as zoom increases.
+// Unknown artwork retains the conservative complete 48-unit box radius.
+export function shipGlyphScale(screen,radius=Math.hypot(24,24)){return .9*HEX_SIZE*Math.sqrt(3)/2/(radius*screen);}
 export const toWorld=({q,r})=>({x:HEX_SIZE*Math.sqrt(3)*(q+r/2),y:HEX_SIZE*1.5*r});
 export function fromWorld({x,y}){
  const q=(Math.sqrt(3)/3*x-y/3)/HEX_SIZE,r=2*y/(3*HEX_SIZE),cube=[q,-q-r,r],rounded=cube.map(Math.round),delta=cube.map((n,i)=>Math.abs(n-rounded[i]));

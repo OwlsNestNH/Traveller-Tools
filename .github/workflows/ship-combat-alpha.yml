@@ -61,3 +61,15 @@ jobs:
           name: ship-combat-${{ github.event.pull_request.head.sha }}
           path: tools/ship-combat-alpha/verification-artifacts/
           if-no-files-found: warn
+      - name: Upload small icon growth review evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: icon-growth-review-${{ github.event.pull_request.head.sha }}
+          path: |
+            tools/ship-combat-alpha/verification-artifacts/icon-fit-*.json
+            tools/ship-combat-alpha/verification-artifacts/icon-fit-*-normal-1876.png
+            tools/ship-combat-alpha/verification-artifacts/icon-fit-*-expanded-1876.png
+            tools/ship-combat-alpha/verification-artifacts/icon-fit-*-normal-320.png
+            tools/ship-combat-alpha/verification-artifacts/icon-fit-*-expanded-320.png
+          if-no-files-found: warn
