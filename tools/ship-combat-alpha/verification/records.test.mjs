@@ -9,7 +9,7 @@ import {normalizeState} from '../engine.mjs';
 import {normalizeIdentity} from '../ship-identity.mjs';
 import {sheetRows} from '../ship-sheet.mjs';
 import {normalizeCrew,RATINGS} from '../setup.mjs';
-import {bandRadii,renderRangeOverlay,SPACE_RADIUS} from '../range-overlay.mjs';
+import {bandRadii,renderRangeOverlay,SPACE_RADIUS,normalizeRangeMode,RANGE_MODES} from '../range-overlay.mjs';
 import {rangeInfo,RANGE_BANDS,HEX_KM} from '../movement-rules.mjs';
 import {toWorld} from '../geometry.mjs';
 
@@ -29,7 +29,8 @@ test('five-level crew scale is explicit and unversioned legacy totals migrate wi
 test('range overlays share verified Euclidean band boundaries and never change the ship',()=>{
  assert.deepEqual(RANGE_BANDS.map(b=>b.max),[1,15,38,77]);const s=createState().ships[0],before=structuredClone(s),bands=bandRadii();
  for(const b of bands){const p=toWorld({q:b.max,r:0});assert.ok(Math.abs(Math.hypot(p.x,p.y)-b.radius)<1e-9);assert.equal(b.km,b.max*HEX_KM);assert.equal(rangeInfo({q:0,r:0},{q:b.max,r:0}).band,b.name);assert.ok(Math.abs(b.radius/b.max-SPACE_RADIUS)<1e-9);}
- const rings=renderRangeOverlay(s,'rings',2),shaded=renderRangeOverlay(s,'shaded',2);assert.equal(rings.shade,'');assert.equal((rings.rings.match(/<circle /g)||[]).length,4);assert.equal((shaded.shade.match(/fill-rule="evenodd"/g)||[]).length,4);assert.equal(shaded.rings,rings.rings.replaceAll('data-mode="rings"','data-mode="shaded"'));assert.deepEqual(renderRangeOverlay(s,'off'),{shade:'',rings:''});assert.deepEqual(renderRangeOverlay(null,'shaded'),{shade:'',rings:''});assert.deepEqual(s,before);
+ assert.deepEqual(RANGE_MODES,['off','on']);assert.equal(normalizeRangeMode('off'),'off');for(const old of ['rings','shaded'])assert.equal(normalizeRangeMode(old),'on');
+ const on=renderRangeOverlay(s,'on',2);assert.equal((on.rings.match(/<circle /g)||[]).length,4);assert.equal((on.shade.match(/fill-rule="evenodd"/g)||[]).length,4);for(const old of ['rings','shaded'])assert.deepEqual(renderRangeOverlay(s,old,2),on);assert.deepEqual(renderRangeOverlay(s,'off'),{shade:'',rings:''});assert.deepEqual(renderRangeOverlay(null,'on'),{shade:'',rings:''});assert.deepEqual(s,before);
  assert.throws(()=>renderRangeOverlay(s,'invalid'),/Invalid/);
 });
 const position={q:1,r:2},velocity={q:0,r:0};
