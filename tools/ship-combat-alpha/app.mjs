@@ -124,8 +124,12 @@ function sizeTacticalMap(){
  // Measure the previous reference footprint before adding genuine spare height.
  // A taller viewport then exposes more world without changing zoom or pixel scale.
  frame.style.setProperty('--console-size',base+'px');frame.style.setProperty('--expanded-height',Math.max(200,available)+'px');projectionBasis=Math.max(1,Math.min(svg.clientWidth,svg.clientHeight));
- const extra=!expanded&&innerWidth>700?Math.min(64,Math.max(0,available-base)):0;frame.style.setProperty('--console-size',(base+extra)+'px');frame.dataset.heightExtension=String(extra);scheduleMap();
+ const right=document.getElementById('combat-right').getBoundingClientRect(),help=document.querySelector('.map-footer>summary').getBoundingClientRect().height;
+ // Align the left map/help footprint with the adjacent pane, bounded by the visible map.
+ // Help remains directly below and scrollable; no arbitrary extra-height ceiling.
+ const aligned=Math.min((visualViewport?.height??innerHeight)-top,right.bottom+scrollY-help-top);
+ const extra=!expanded&&innerWidth>700?Math.max(0,aligned-base):0;frame.style.setProperty('--console-size',(base+extra)+'px');frame.dataset.heightExtension=String(extra);scheduleMap();
 }
-for(const el of [document.querySelector('body>header'),document.querySelector('.map-heading'),$('console-frame').parentElement])new ResizeObserver(sizeTacticalMap).observe(el);window.addEventListener('resize',sizeTacticalMap);sizeTacticalMap();
+for(const el of [document.querySelector('body>header'),document.querySelector('.map-heading'),$('console-frame').parentElement,$('combat-right')])new ResizeObserver(sizeTacticalMap).observe(el);window.addEventListener('resize',sizeTacticalMap);sizeTacticalMap();
 visualViewport?.addEventListener('resize',sizeTacticalMap);
 function visibleViewport(){document.documentElement.style.setProperty('--visible-height',(visualViewport?.height??innerHeight)+'px');document.documentElement.style.setProperty('--visible-top',(visualViewport?.offsetTop??0)+'px');}visualViewport?.addEventListener('resize',visibleViewport);visualViewport?.addEventListener('scroll',visibleViewport);window.addEventListener('resize',visibleViewport);visibleViewport();
