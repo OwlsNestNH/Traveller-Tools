@@ -5,7 +5,7 @@ import {ICONS} from '../appearance.mjs';
 export async function verifyIconFit(page,width,artifacts){
  const source=await readFile(new URL('../app.mjs',import.meta.url),'utf8'),marker='state=createState(),selected=',cameraMarker='camera=fitShipsCamera(state.ships),drag=null',records=[];
  assert.equal(source.split(marker).length,2);assert.equal(source.split(cameraMarker).length,2);
- const icons=['armed-trader','stealth-scout','hunting-ship','kashu-fighter','harrier','research','other','extended-scout'],ships=icons.map((icon,i)=>({id:'fit-'+i,name:icon,appearance:{icon,side:i%2?'B':'A',heading:i*43-150},capabilities:{thrust:1},motion:{position:{q:i===7?0:(i%4)*2-3,r:i===7?0:i<4?-1:1},velocity:{q:0,r:0},impulse:{q:0,r:0}}}));
+ const icons=['ifteaa','frontiersman','far-scout','free-smuggler','harrier','research','other','volitant-far-trader'],ships=icons.map((icon,i)=>({id:'fit-'+i,name:icon,appearance:{icon,side:i%2?'B':'A',heading:i*43-150},capabilities:{thrust:1},motion:{position:{q:i===7?0:(i%4)*2-3,r:i===7?0:i<4?-1:1},velocity:{q:0,r:0},impulse:{q:0,r:0}}}));
  const p=await page.context().newPage();p.setDefaultTimeout(15000);await p.setViewportSize({width,height:width<500?700:982});
   // Synthetic encounter and view-camera adapter only; production sizing and interaction paths are untouched.
   await p.route('**/app.mjs',r=>r.fulfill({contentType:'text/javascript',body:source.replace(marker,'state=createState({ships:'+JSON.stringify(ships)+'}),selected=').replace(cameraMarker,'camera={x:0,y:0,zoom:.33},drag=null')+"\nwindow.__iconFitZoom=z=>{camera={...camera,zoom:z};scheduleMap();};"}));
