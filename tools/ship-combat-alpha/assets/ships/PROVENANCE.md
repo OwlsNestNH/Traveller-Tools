@@ -20,7 +20,7 @@ Core Type-A / High Guard Beowulf use free_trader; Type-A2 / Hero use far_trader,
 
 No matching pinned token was found for Ultralight Fighter, Heavy Fighter, Troop Transport, Torpedo Boat, Express Boat, Serpent Scout, Jump Shuttle, Fleet Courier or Dragon SDB: these use the labelled custom generic symbol, never Light Fighter/Scout/SDB merely because they share a class. Nishemani Corsair uses the labelled custom Corsair fallback. Laboratory ships deliberately retain the user's custom top-down toroid preference; the available edge-on lab_ship asset is not imported. Mercenary cruiser, subsidised liner and planetoid tokens are outside this preset scope and are not imported.
 
-The Drinax Harrier has no matching token in this pinned directory and also uses the labelled custom generic symbol.
+The Drinax Harrier has no matching token in this pinned directory and uses the separately approved custom outline documented below.
 
 The complete source-page mapping is explicit in appearance.mjs. A user can override a symbol manually; the choice remains presentation only.
 
@@ -54,3 +54,15 @@ The complete source-page mapping is explicit in appearance.mjs. A user can overr
 `harrier-custom.svg`: custom simplified reconstruction from user-supplied Harrier reference artwork, approved for this tool. Not an official supplied token, not a Samuel Penn token, and not represented as CC0. Bow axis: up (-90 degrees). Original supplied SVG retained; only runtime tint/transform applies.
 
 SHA-256 of the approved supplied Harrier SVG: `eff09a034151a568c5bef4ac2b9224c96eb467c6561dca36d1152f6499c96985`.
+
+## Approved deckplan interpretations (2026-10-25)
+
+Five original simplified vector hull envelopes approved for use by the user. Not official art, not certified exact projections, and not CC0. Each uses one white filled path; no page art, raster images, scripts or external resources. Bow is up (-90 degrees). Dimensions and fit use the existing 48-unit image box.
+
+- **armed-trader.svg**: Adventure Class Ships (2023), Mongoose Traveller (no numbered edition stated), printed pp. 22-23; PDF pp. 23-24 (1-based). Lower-deck hull contains upper deck. Rounded narrow bow, broad aft shoulders and stern recess retained. Detached turret key symbols omitted.
+- **stealth-scout.svg**: Adventure Class Ships (2023), Mongoose Traveller (no numbered edition stated), printed pp. 6-7; PDF pp. 7-8 (1-based). Upper-deck envelope contains lower deck. Blunt wedge tip and shallow aft notches retained. Small visible drive ends follow the plan; no detached turret or door swings.
+- **hunting-ship.svg**: Adventure Class Ships (2023), Mongoose Traveller (no numbered edition stated), printed pp. 136-137; PDF pp. 137-138 (1-based). Lower-deck envelope combines circular hull, long lateral fins and paired aft projections; upper deck fits inside it after centre alignment. Illustration corroborates disc and fins. Plan faces right; normalized bow points up. Fin outlines and front docking contour remain interpreted, not exact.
+- **kashu-fighter.svg**: Small Craft Catalogue (2023), Mongoose Traveller (no numbered edition stated), printed pp. 51; PDF pp. 52 (1-based). Same-page deckplan and illustration. Narrow bow, unswept plan wings, small wingtip projections and central aft drive envelope retained. Floating weapon key icons excluded; no perspective-derived weapons added.
+- **extended-scout.svg**: Adventure Class Ships (2023), Mongoose Traveller (no numbered edition stated), printed pp. 8-9; PDF pp. 9-10 (1-based). Upper-deck envelope contains lower deck. Broad straight trailing wing edges and long rounded forward fuselage retained. Perspective illustration confirms fins; no extra vertical-fin projection invented.
+
+These mappings apply to the five source identities only. Fresh samples now use automatic mapping. Explicit icons in existing encounters remain user choices and are not migrated. Ifteaa is preview-only and is not included.
