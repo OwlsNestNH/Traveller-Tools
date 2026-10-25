@@ -50,10 +50,10 @@ test('saved snapshots never acquire catalog enrichment and all manual overrides 
  }
 });
 test('installed consumers with unpublished draw remain overridable unknown loads, not omitted zero',()=>{
- const state=applyCommand(createState({ships:[]}),{type:'add-ship',presetId:'core-190',name:'Test',position:{q:0,r:0},velocity:{q:0,r:0}}),s=state.ships[0];
- s.systems.inventoryConfirmed=true;const load=s.systems.loads.find(x=>x.id.startsWith('source-fuel-processor'));assert.ok(load);load.enabled=true;
+ const state=applyCommand(createState({ships:[]}),{type:'add-ship',presetId:'tng2024-akhtael',name:'Test',position:{q:0,r:0},velocity:{q:0,r:0}}),s=state.ships[0];
+ s.systems.inventoryConfirmed=true;const load=s.systems.loads.find(x=>x.id.startsWith('source-biosphere'));assert.ok(load);load.enabled=true;
  assert.equal(powerReport(s).total,null);assert.equal(powerReport(s).rows.find(x=>x.id===load.id).power,null);
- load.override=2;assert.equal(powerReport(s).rows.find(x=>x.id===load.id).power,2);assert.equal(s.template.record.requirements.find(x=>x.name==='Fuel Processor').power,null);
+ load.override=2;assert.equal(powerReport(s).rows.find(x=>x.id===load.id).power,2);assert.equal(s.template.record.requirements.find(x=>x.name==='Biosphere').power,null);
 });
 test('enhancement multipliers are not fitted weapon counts and Moray wrapped rows survive',()=>{
  for(const id of ['highguard-193','tng2024-keldyx']){
@@ -94,5 +94,27 @@ test('audited omissions and calculated fits retain their distinct evidence',()=>
  assert.equal(preset('tng2024-seaho').record.published.mounts[0].fittedCount,3);
  assert.equal(preset('tng2024-brimansh').record.published.mounts[1].fittedCount,2);
  for(const id of ['highguard-167','highguard-175','highguard-181','highguard-183','highguard-187'])assert.ok(preset(id).record.published.mounts.some(m=>m.fittedCountBasis?.startsWith('Calculated')));
- for(const [id,name] of [['tng2024-akhtael','Biosphere'],['tng2024-backwater-trader','Low Berths'],['highguard-193','Training Facilities'],['core-198','Multi-Environment Space']])assert.equal(preset(id).record.requirements.find(r=>r.name===name).power,null);
+ for(const [id,name] of [['tng2024-akhtael','Biosphere'],['highguard-193','Training Facilities'],['core-198','Multi-Environment Space']])assert.equal(preset(id).record.requirements.find(r=>r.name===name).power,null);
+});
+
+// Approved rule-derived batch: independently audited values, retained source and snapshot safety.
+import {createHash} from 'node:crypto';
+import {CATALOGUE_EQUIPMENT} from '../catalogue-equipment-data.mjs';
+const ratedAudit=JSON.parse(readFileSync(new URL('../catalogue-rated-power-audit.json',import.meta.url)));
+test('exact 71 approved rated loads preserve rule and original ship evidence',()=>{
+ assert.equal(ratedAudit.fields.length,71);assert.equal(new Set(ratedAudit.fields.map(f=>f.id+'/'+f.name)).size,71);
+ for(const f of ratedAudit.fields){const r=preset(f.id).record.requirements.find(r=>r.name===f.name);assert.equal(r.power,f.power);assert.deepEqual(r.source,f.rule);assert.equal(r.basis,f.basis);assert.match(r.basis,/calculated rated load/);assert.equal(r.sourceReference.power,null);assert.deepEqual(r.sourceReference.source,f.shipSource);}
+ assert.equal(PRESETS.flatMap(p=>p.record.requirements).filter(r=>r.power===null).length,17);
+ const get=(id,name)=>preset(id).record.requirements.find(r=>r.name===name).power;
+ assert.equal(get('tng2024-blockade-runner','Grav Screen'),2.4);assert.equal(get('core-194','Low Berths'),2);assert.equal(get('core-196','Low Berths'),1);assert.equal(get('tng2024-backwater-trader','Low Berths'),2);assert.equal(get('acs2023-p32','Loading Belt'),3);assert.equal(get('highguard-160','Weapons'),1);assert.equal(get('highguard-140','Weapons'),0);
+ const untouched=structuredClone(CATALOGUE_EQUIPMENT);for(const [id,r]of Object.entries(untouched)){r.requirements=r.requirements.filter(q=>!ratedAudit.fields.some(f=>f.id===id&&f.name===q.name));delete r.published.unresolved;}
+ assert.equal(createHash('sha256').update(JSON.stringify(untouched)).digest('hex'),ratedAudit.unchangedFactsSha256);
+});
+test('rated defaults never backfill saved unknowns or replace custom requirement values',()=>{
+ for(const f of ratedAudit.fields){const state=applyCommand(createState({ships:[]}),{type:'add-ship',presetId:f.id,name:'Snapshot',position:{q:0,r:0},velocity:{q:0,r:0}});
+  const s=state.ships[0],row=s.template.record.requirements.find(r=>r.name===f.name);Object.assign(row,row.sourceReference);delete row.sourceReference;
+  assert.equal(normalizeState(JSON.parse(JSON.stringify(state))).ships[0].template.record.requirements.find(r=>r.name===f.name).power,null);
+  const custom=structuredClone(s.template);const ix=custom.record.requirements.findIndex(r=>r.name===f.name);custom.record.requirements[ix]=editedRequirement(custom.record.requirements[ix],f.name,7.25);
+  const saved=normalizeState(JSON.parse(JSON.stringify(applyCommand(state,{type:'set-design',shipId:s.id,template:custom}))));const r=effectiveDesign(saved.ships[0]).record.requirements.find(r=>r.name===f.name);assert.equal(r.power,7.25);assert.equal(r.basis,'manual override');assert.deepEqual(r.sourceReference.source,f.shipSource);
+ }
 });

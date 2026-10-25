@@ -5,7 +5,7 @@
     "presets": 195,
     "renderedPageChecked": 121,
     "extractionWithoutFullVisualCheck": 74,
-    "powerUnknown": 88,
+    "powerUnknown": 17,
     "mountCountUnknown": 53,
     "mountInternalCountNotApplicable": 10,
     "ruleDerivedFittedCounts": 8,
@@ -13,7 +13,7 @@
     "mountCapacityNotTranscribedOrNotApplicable": 12,
     "ammunitionStorageCapacityUnknown": 0,
     "operationalWeaponFitUnknown": 114,
-    "ruleDerivedPowerFields": 1,
+    "ruleDerivedPowerFields": 72,
     "ruleDerivedMountCapacities": 156
   },
   "weaponSectionStatuses": {
@@ -22,24 +22,19 @@
     "explicit-none": 7
   },
   "unresolvedNoteOccurrences": {
-    "Rack load and missile type remain unknown; storage capacity is not current ammunition.": 1,
-    "Fuel Processor draw 2 is rule-derived: 2 installed tons (Book 2 p10 / PDF11) x1 Power/ton (High Guard Update 2022 p49 / PDF50); not a printed Harrier sidebar value.": 1,
     "Weapon section absent from source stat table; no explicit unarmed declaration inferred.": 65,
-    "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.": 10,
     "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending.": 44,
-    "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.": 10,
     "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.": 37,
-    "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.": 5,
     "Source inconsistency: Printed manoeuvre draw 9 despite Thrust3/40t; retain 9 as published, do not silently replace with formula12.": 1,
     "Source inconsistency: Printed plant output48 with TL12 fusion3tons; retain48 rather than rule arithmetic45.": 1,
     "Source inconsistency: Printed Weapons draw1 despite an explicitly empty double turret. Preserve both and flag source inconsistency; no fitted weapon inferred.": 1,
     "Source inconsistency: Printed Fuel Processor draw56 despite12 installed tons; printed J-6 fuel row and J-drive Jump5 also conflict. Preserve source figures.": 1,
     "Published power figures may conflict with equipment/rating arithmetic; printed values retained pending edition-specific errata review.": 6,
     "Source inconsistency: Printed manoeuvre draw80 despite Thrust3/400t; preserve80 rather than formula120.": 1,
-    "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.": 10,
     "Unloaded variant excludes the ten carried fighters; published conditional drive values remain those retained by this preset.": 1,
-    "Grav Screen installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.": 1,
-    "Plural mount quantity is not explicit; quantity remains unknown, not one.": 1
+    "Plural mount quantity is not explicit; quantity remains unknown, not one.": 1,
+    "Rack load and missile type remain unknown; storage capacity is not current ammunition.": 1,
+    "Fuel Processor draw 2 is rule-derived: 2 installed tons (Book 2 p10 / PDF11) x1 Power/ton (High Guard Update 2022 p49 / PDF50); not a printed Harrier sidebar value.": 1
   },
   "ruleDerivedFits": [
     {
@@ -186,11 +181,9 @@
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
       "unknownPower": [
-        "Fuel Processor",
         "Weapons"
       ],
       "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -219,11 +212,9 @@
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
       "unknownPower": [
-        "Fuel Processor",
         "Weapons"
       ],
       "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -250,14 +241,8 @@
         "method": "Manual comparison of complete PDF page text, table-cell and independent coordinate extraction; rendered-page check for flagged layout discrepancies",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Fuel Processor",
-        "Low Berths"
-      ],
-      "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
-      ]
+      "unknownPower": [],
+      "unresolved": []
     },
     {
       "id": "core-196",
@@ -282,14 +267,8 @@
         "method": "Manual comparison of complete PDF page text, table-cell and independent coordinate extraction; rendered-page check for flagged layout discrepancies",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Fuel Processor",
-        "Low Berths"
-      ],
-      "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
-      ]
+      "unknownPower": [],
+      "unresolved": []
     },
     {
       "id": "core-198",
@@ -317,12 +296,10 @@
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
       "unknownPower": [
-        "Fuel Processor",
         "Weapons",
         "Multi-Environment Space"
       ],
       "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -352,12 +329,10 @@
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
       "unknownPower": [
-        "Medical Bay",
         "Weapons"
       ],
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -411,11 +386,9 @@
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
       "unknownPower": [
-        "Fuel Processor",
         "Weapons"
       ],
       "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -467,13 +440,8 @@
         "method": "Manual comparison of complete PDF page text, table-cell and independent coordinate extraction; rendered-page check for flagged layout discrepancies",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Fuel Processor",
-        "Low Berths"
-      ],
+      "unknownPower": [],
       "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -500,14 +468,8 @@
         "method": "Manual comparison of complete PDF page text, table-cell and independent coordinate extraction; rendered-page check for flagged layout discrepancies",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Fuel Processor",
-        "Low Berths"
-      ],
-      "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
-      ]
+      "unknownPower": [],
+      "unresolved": []
     },
     {
       "id": "core-212",
@@ -531,12 +493,8 @@
         "method": "Manual comparison of complete PDF page text, table-cell and independent coordinate extraction; rendered-page check for flagged layout discrepancies",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Fuel Processor"
-      ],
-      "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
-      ]
+      "unknownPower": [],
+      "unresolved": []
     },
     {
       "id": "core-218",
@@ -583,9 +541,7 @@
         "method": "Manual comparison of complete PDF page text, table-cell and independent coordinate extraction; rendered-page check for flagged layout discrepancies",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Sensors"
-      ],
+      "unknownPower": [],
       "unresolved": []
     },
     {
@@ -610,9 +566,7 @@
         "method": "Manual comparison of complete PDF page text, table-cell and independent coordinate extraction; rendered-page check for flagged layout discrepancies",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Sensors"
-      ],
+      "unknownPower": [],
       "unresolved": []
     },
     {
@@ -640,8 +594,7 @@
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
       "unknownPower": [
-        "Weapons",
-        "Sensors"
+        "Weapons"
       ],
       "unresolved": [
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
@@ -672,8 +625,7 @@
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
       "unknownPower": [
-        "Weapons",
-        "Sensors"
+        "Weapons"
       ],
       "unresolved": [
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
@@ -704,8 +656,7 @@
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
       "unknownPower": [
-        "Weapons",
-        "Sensors"
+        "Weapons"
       ],
       "unresolved": [
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
@@ -736,8 +687,7 @@
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
       "unknownPower": [
-        "Weapons",
-        "Sensors"
+        "Weapons"
       ],
       "unresolved": [
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
@@ -768,8 +718,7 @@
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
       "unknownPower": [
-        "Weapons",
-        "Sensors"
+        "Weapons"
       ],
       "unresolved": [
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
@@ -800,8 +749,7 @@
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
       "unknownPower": [
-        "Weapons",
-        "Sensors"
+        "Weapons"
       ],
       "unresolved": [
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
@@ -900,9 +848,7 @@
         "method": "Fresh pdfplumber extraction and visual review of all34 rendered pages at90DPI; compared every retained inventory category/detail, power sidebar row, plant output, computer/software, weapons and storage. Did not verify every construction rule or infer source-unstated quantities. No repo modifications.",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Sensors"
-      ],
+      "unknownPower": [],
       "unresolved": []
     },
     {
@@ -927,9 +873,7 @@
         "method": "Fresh pdfplumber extraction and visual review of all34 rendered pages at90DPI; compared every retained inventory category/detail, power sidebar row, plant output, computer/software, weapons and storage. Did not verify every construction rule or infer source-unstated quantities. No repo modifications.",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Sensors"
-      ],
+      "unknownPower": [],
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
@@ -957,10 +901,7 @@
         "method": "Fresh pdfplumber extraction and visual review of all34 rendered pages at90DPI; compared every retained inventory category/detail, power sidebar row, plant output, computer/software, weapons and storage. Did not verify every construction rule or infer source-unstated quantities. No repo modifications.",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Weapons",
-        "Sensors"
-      ],
+      "unknownPower": [],
       "unresolved": []
     },
     {
@@ -986,10 +927,7 @@
         "method": "Fresh pdfplumber extraction and visual review of all34 rendered pages at90DPI; compared every retained inventory category/detail, power sidebar row, plant output, computer/software, weapons and storage. Did not verify every construction rule or infer source-unstated quantities. No repo modifications.",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Weapons",
-        "Sensors"
-      ],
+      "unknownPower": [],
       "unresolved": []
     },
     {
@@ -1015,10 +953,7 @@
         "method": "Fresh pdfplumber extraction and visual review of all34 rendered pages at90DPI; compared every retained inventory category/detail, power sidebar row, plant output, computer/software, weapons and storage. Did not verify every construction rule or infer source-unstated quantities. No repo modifications.",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Weapons",
-        "Sensors"
-      ],
+      "unknownPower": [],
       "unresolved": []
     },
     {
@@ -1044,10 +979,7 @@
         "method": "Fresh pdfplumber extraction and visual review of all34 rendered pages at90DPI; compared every retained inventory category/detail, power sidebar row, plant output, computer/software, weapons and storage. Did not verify every construction rule or infer source-unstated quantities. No repo modifications.",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Weapons",
-        "Sensors"
-      ],
+      "unknownPower": [],
       "unresolved": [
         "Source inconsistency: Printed manoeuvre draw 9 despite Thrust3/40t; retain 9 as published, do not silently replace with formula12."
       ]
@@ -1075,10 +1007,7 @@
         "method": "Fresh pdfplumber extraction and visual review of all34 rendered pages at90DPI; compared every retained inventory category/detail, power sidebar row, plant output, computer/software, weapons and storage. Did not verify every construction rule or infer source-unstated quantities. No repo modifications.",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Weapons",
-        "Sensors"
-      ],
+      "unknownPower": [],
       "unresolved": []
     },
     {
@@ -1181,10 +1110,7 @@
         "method": "Fresh pdfplumber extraction and visual review of all34 rendered pages at90DPI; compared every retained inventory category/detail, power sidebar row, plant output, computer/software, weapons and storage. Did not verify every construction rule or infer source-unstated quantities. No repo modifications.",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Weapons",
-        "Sensors"
-      ],
+      "unknownPower": [],
       "unresolved": [
         "Source inconsistency: Printed plant output48 with TL12 fusion3tons; retain48 rather than rule arithmetic45."
       ]
@@ -1236,9 +1162,7 @@
         "method": "Fresh pdfplumber extraction and visual review of all34 rendered pages at90DPI; compared every retained inventory category/detail, power sidebar row, plant output, computer/software, weapons and storage. Did not verify every construction rule or infer source-unstated quantities. No repo modifications.",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Weapons"
-      ],
+      "unknownPower": [],
       "unresolved": []
     },
     {
@@ -1263,9 +1187,7 @@
         "method": "Fresh pdfplumber extraction and visual review of all34 rendered pages at90DPI; compared every retained inventory category/detail, power sidebar row, plant output, computer/software, weapons and storage. Did not verify every construction rule or infer source-unstated quantities. No repo modifications.",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Weapons"
-      ],
+      "unknownPower": [],
       "unresolved": []
     },
     {
@@ -1388,9 +1310,7 @@
         "method": "Fresh pdfplumber extraction and visual review of all34 rendered pages at90DPI; compared every retained inventory category/detail, power sidebar row, plant output, computer/software, weapons and storage. Did not verify every construction rule or infer source-unstated quantities. No repo modifications.",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Weapons"
-      ],
+      "unknownPower": [],
       "unresolved": []
     },
     {
@@ -1567,12 +1487,8 @@
         "method": "Fresh pdfplumber extraction and visual review of all34 rendered pages at90DPI; compared every retained inventory category/detail, power sidebar row, plant output, computer/software, weapons and storage. Did not verify every construction rule or infer source-unstated quantities. No repo modifications.",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Low Berths"
-      ],
-      "unresolved": [
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
-      ]
+      "unknownPower": [],
+      "unresolved": []
     },
     {
       "id": "highguard-189",
@@ -1597,14 +1513,9 @@
         "method": "Fresh pdfplumber extraction and visual review of all34 rendered pages at90DPI; compared every retained inventory category/detail, power sidebar row, plant output, computer/software, weapons and storage. Did not verify every construction rule or infer source-unstated quantities. No repo modifications.",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Fuel Processor",
-        "Low Berths"
-      ],
+      "unknownPower": [],
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     {
@@ -1879,12 +1790,8 @@
         "method": "Manual reading of complete actual PDF table/sidebar text; compared generated rows against table-cell and coordinate extractions; rendered-page inspection on pages30,118,144",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Loading Belt"
-      ],
-      "unresolved": [
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
-      ]
+      "unknownPower": [],
+      "unresolved": []
     },
     {
       "id": "acs2023-p28",
@@ -1908,12 +1815,9 @@
         "method": "Manual reading of complete actual PDF table/sidebar text; compared generated rows against table-cell and coordinate extractions; rendered-page inspection on pages30,118,144",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Loading Belt"
-      ],
+      "unknownPower": [],
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     {
@@ -1964,13 +1868,9 @@
         "method": "Manual reading of complete actual PDF table/sidebar text; compared generated rows against table-cell and coordinate extractions; rendered-page inspection on pages30,118,144",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Loading Belt",
-        "Sensors"
-      ],
+      "unknownPower": [],
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     {
@@ -2693,9 +2593,7 @@
         "method": "manual comparison of complete stat-table text and sidebar to generated inventory/software/plant/power/mount rows",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Weapons"
-      ],
+      "unknownPower": [],
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
       ]
@@ -2909,12 +2807,9 @@
         "method": "manual comparison of complete stat-table text and sidebar to generated inventory/software/plant/power/mount rows",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Loading Belt"
-      ],
+      "unknownPower": [],
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     {
@@ -2940,11 +2835,8 @@
         "method": "manual comparison of complete stat-table text and sidebar to generated inventory/software/plant/power/mount rows",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Loading Belt"
-      ],
+      "unknownPower": [],
       "unresolved": [
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -3049,12 +2941,9 @@
         "method": "manual comparison of complete stat-table text and sidebar to generated inventory/software/plant/power/mount rows",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Medical Bay"
-      ],
+      "unknownPower": [],
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     {
@@ -3131,12 +3020,9 @@
         "method": "manual comparison of complete stat-table text and sidebar to generated inventory/software/plant/power/mount rows",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Loading Belt"
-      ],
+      "unknownPower": [],
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     {
@@ -3162,11 +3048,8 @@
         "method": "manual comparison of complete stat-table text and sidebar to generated inventory/software/plant/power/mount rows; rendered full page inspected",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Loading Belt"
-      ],
+      "unknownPower": [],
       "unresolved": [
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending.",
         "Published power figures may conflict with equipment/rating arithmetic; printed values retained pending edition-specific errata review."
       ]
@@ -3218,12 +3101,9 @@
         "method": "manual comparison of complete stat-table text and sidebar to generated inventory/software/plant/power/mount rows",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Low Berths"
-      ],
+      "unknownPower": [],
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     {
@@ -3250,13 +3130,8 @@
         "method": "manual comparison of complete stat-table text and sidebar to generated inventory/software/plant/power/mount rows; rendered full page inspected",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Low Berths",
-        "Grav Screen"
-      ],
+      "unknownPower": [],
       "unresolved": [
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Grav Screen installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -3285,13 +3160,8 @@
         "method": "manual comparison of complete stat-table text and sidebar to generated inventory/software/plant/power/mount rows",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Low Berths",
-        "Medical Bay"
-      ],
+      "unknownPower": [],
       "unresolved": [
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -3318,11 +3188,8 @@
         "method": "manual comparison of complete stat-table text and sidebar to generated inventory/software/plant/power/mount rows",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Medical Bay"
-      ],
+      "unknownPower": [],
       "unresolved": [
-        "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -3348,12 +3215,9 @@
         "method": "manual comparison of complete stat-table text and sidebar to generated inventory/software/plant/power/mount rows",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Loading Belt"
-      ],
+      "unknownPower": [],
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     {
@@ -3378,9 +3242,7 @@
         "method": "manual comparison of complete stat-table text and sidebar to generated inventory/software/plant/power/mount rows",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Weapons"
-      ],
+      "unknownPower": [],
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
       ]
@@ -3407,9 +3269,7 @@
         "method": "manual comparison of complete stat-table text and sidebar to generated inventory/software/plant/power/mount rows",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Sensors"
-      ],
+      "unknownPower": [],
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
@@ -3437,14 +3297,9 @@
         "method": "manual comparison of complete stat-table text and sidebar to generated inventory/software/plant/power/mount rows",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Low Berths",
-        "Loading Belt"
-      ],
+      "unknownPower": [],
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     {
@@ -3469,9 +3324,7 @@
         "method": "manual comparison of complete stat-table text and sidebar to generated inventory/software/plant/power/mount rows; rendered full page inspected",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Low Berths"
-      ],
+      "unknownPower": [],
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
         "Published power figures may conflict with equipment/rating arithmetic; printed values retained pending edition-specific errata review."
@@ -3529,12 +3382,9 @@
         "method": "manual comparison of complete stat-table text and sidebar to generated inventory/software/plant/power/mount rows",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Medical Bay"
-      ],
+      "unknownPower": [],
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     {
@@ -4039,9 +3889,7 @@
         "method": "rendered-page-and-extracted-table-compared",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Sensors"
-      ],
+      "unknownPower": [],
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
@@ -4170,9 +4018,7 @@
         "method": "rendered-page-and-extracted-table-compared",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Weapons"
-      ],
+      "unknownPower": [],
       "unresolved": []
     },
     {
@@ -4197,12 +4043,9 @@
         "method": "rendered-page-and-extracted-table-compared",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Loading Belt"
-      ],
+      "unknownPower": [],
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     {
@@ -4253,9 +4096,7 @@
         "method": "rendered-page-and-extracted-table-compared",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Weapons"
-      ],
+      "unknownPower": [],
       "unresolved": []
     },
     {
@@ -4567,9 +4408,7 @@
         "method": "rendered-page-and-extracted-table-compared",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Weapons"
-      ],
+      "unknownPower": [],
       "unresolved": []
     },
     {
@@ -5216,9 +5055,7 @@
         "method": "rendered-page-and-extracted-table-compared",
         "limitations": "Source table verification does not establish complete component rule coverage or resolve printed inconsistencies."
       },
-      "unknownPower": [
-        "Weapons"
-      ],
+      "unknownPower": [],
       "unresolved": []
     },
     {
@@ -5321,5 +5158,11 @@
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     }
-  ]
+  ],
+  "ratedPowerFollowUp": {
+    "applied": 71,
+    "remainingUnknown": 17,
+    "manifest": "catalogue-rated-power-audit.json",
+    "scope": "Rated installed loads only; no published values overwritten; full component/errata reconciliation incomplete."
+  }
 }
