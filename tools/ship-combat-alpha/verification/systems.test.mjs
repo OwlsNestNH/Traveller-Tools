@@ -1,3 +1,4 @@
+import {legacySampleShips} from './legacy-sample-fixture.mjs';
 import {beginConsoleDraft,commitConsoleDraft} from '../console-draft.mjs';
 import {beginSetup,saveSetup} from '../setup-session.mjs';
 import test from 'node:test';
@@ -42,7 +43,7 @@ test('/bis allowance is jump-only, source software is installed but not silently
  x.software.installed=x.software.installed.filter(p=>p.id!=='jump-control');x.software.installed[0]={id:'evade',installed:2,running:2,origin:'manual'};assert.equal(softwareReport(ship,x).overCapacity,true);assert.throws(()=>normalizeSystems(x,d,6),/exceeds active computer/);assert.equal(softwareReport({template:{...d,record:{...d.record,computer:'Unverified backup mix'}}},x).processing,null);
 });
 test('legacy manual used Power is preserved, explicit overrides switch to manual, and allocations never change crew, motion or supply',()=>{
- let s=createState(),ship=s.ships[0];assert.equal(ship.systems.mode,'manual');s=applyCommand(s,{type:'set-condition',shipId:'merchant',condition:{powerOutput:100,powerUsed:40}});const before=structuredClone(s.ships[0]);const systems={...s.ships[0].systems,mode:'allocated',basic:0,driveEnabled:false,sensorsEnabled:false,inventoryConfirmed:true};s=applyCommand(s,{type:'set-systems',shipId:'merchant',systems});assert.equal(powerReport(s.ships[0]).used,0);assert.equal(s.ships[0].condition.powerUsed,40);assert.deepEqual(s.ships[0].motion,before.motion);assert.deepEqual(s.ships[0].crew,before.crew);assert.equal(s.ships[0].condition.powerOutput,100);s=applyCommand(s,{type:'set-condition',shipId:'merchant',condition:{...s.ships[0].condition,powerUsed:35}});assert.equal(s.ships[0].systems.mode,'manual');assert.equal(powerReport(s.ships[0]).used,35);
+ let s=createState({ships:legacySampleShips()}),ship=s.ships[0];assert.equal(ship.systems.mode,'manual');s=applyCommand(s,{type:'set-condition',shipId:'merchant',condition:{powerOutput:100,powerUsed:40}});const before=structuredClone(s.ships[0]);const systems={...s.ships[0].systems,mode:'allocated',basic:0,driveEnabled:false,sensorsEnabled:false,inventoryConfirmed:true};s=applyCommand(s,{type:'set-systems',shipId:'merchant',systems});assert.equal(powerReport(s.ships[0]).used,0);assert.equal(s.ships[0].condition.powerUsed,40);assert.deepEqual(s.ships[0].motion,before.motion);assert.deepEqual(s.ships[0].crew,before.crew);assert.equal(s.ships[0].condition.powerOutput,100);s=applyCommand(s,{type:'set-condition',shipId:'merchant',condition:{...s.ships[0].condition,powerUsed:35}});assert.equal(s.ships[0].systems.mode,'manual');assert.equal(powerReport(s.ships[0]).used,35);
 });
 
 test('systems drafts are isolated and reject a different ship, stale revision, duplicate equipment or unsafe software',()=>{

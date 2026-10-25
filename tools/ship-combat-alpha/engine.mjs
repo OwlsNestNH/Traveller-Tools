@@ -34,9 +34,12 @@ function checked(state){
  let acceleration=null;if(state.acceleration!=null){if(state.roundMinutes!==ROUND_MINUTES)throw Error('Companion declarations require six-minute rounds.');const order=accelerationOrder({ships}),v=state.acceleration;if(!Array.isArray(v.order)||JSON.stringify(v.order)!==JSON.stringify(order)||!Array.isArray(v.declared)||JSON.stringify(v.declared)!==JSON.stringify(order.slice(0,v.declared.length))||v.declared.length>order.length)throw Error('Invalid acceleration declaration sequence.');acceleration={order,declared:[...v.declared]};}
  return {version:API_VERSION,acceleration,revision:integer(state.revision,'Revision',0,1000000),round:integer(state.round,'Completed rounds',0,1000000),roundMinutes:integer(state.roundMinutes,'Round duration',1,60),ships};
 }
+// Fresh/reset demonstration only: retain each complete catalogue record and its citation.
+// Positions, velocities, sides and Green crew are scenario choices, not published ship facts.
+// Current condition follows ordinary preset creation, including explicit published initial values.
 export function sampleShips(){return [
- ['merchant','Merchant',1,-5,2,2,0],['courier','Courier',3,3,-3,-1,1],['escort','Escort',6,-2,-4,1,1],['scout','Scout',2,1,4,0,-1],['fighter','Fighter',9,6,2,-2,-1]
-].map(([id,label,thrust,q,r,vq,vr])=>({id,name:label,appearance:{side:['escort','fighter'].includes(id)?'B':'A',icon:({merchant:'trader',courier:'scout',escort:'corvette',scout:'scout',fighter:'fighter'})[id]},capabilities:{thrust},motion:{position:{q,r},velocity:{q:vq,r:vr},impulse:{q:0,r:0}}}));}
+ ['merchant','acs2023-p22',-15,6,2,0],['courier','acs2023-p136',9,-9,-1,1],['escort','drinax-harrier-restored',-6,-12,1,1],['scout','acs2023-p6',3,12,0,-1],['fighter','scc2023-p051',18,6,-2,-1]
+].map(([id,presetId,q,r,vq,vr])=>{const template=preset(presetId);return {id,name:template.name,template,appearance:{side:['escort','fighter'].includes(id)?'B':'A',icon:'auto'},crew:{mode:'quick',rating:'Green',ratingVersion:2},systems:{mode:'allocated'},condition:{hull:template.hull,...template.initialCondition},capabilities:{thrust:template.thrust},motion:{position:{q,r},velocity:{q:vq,r:vr},impulse:{q:0,r:0}}};});}
 export function createState({ships=sampleShips(),roundMinutes=ROUND_MINUTES}={}){return checked({version:API_VERSION,revision:0,round:0,roundMinutes,ships});}
 export function getShip(state,id){const found=state.ships.find(s=>s.id===id);if(!found)throw Error('Select an existing ship.');return found;}
 export function coastTarget(ship){return add(ship.motion.position,ship.motion.velocity);}

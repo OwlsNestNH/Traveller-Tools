@@ -1,3 +1,4 @@
+import {legacySampleShips} from './legacy-sample-fixture.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createState,applyCommand} from '../engine.mjs';
@@ -50,7 +51,7 @@ test('ship sheet identity, Side D and manual specials survive replay without cha
 });
 
 test('legacy ship identity remains unknown, special records stay bounded and missing source stats never become mockup values',()=>{
- const old=createState();for(const s of old.ships)delete s.identity;
+ const old=createState({ships:legacySampleShips()});for(const s of old.ships)delete s.identity;
  const normalized=normalizeState(JSON.parse(JSON.stringify(old)));assert.deepEqual(normalized.ships[0].identity,{allegiance:'',specials:null});
  assert.deepEqual(normalizeIdentity({specials:[]}),{allegiance:'',specials:[]});
  assert.throws(()=>normalizeIdentity({specials:Array.from({length:17},()=>({name:'x'}))}),/16/);
