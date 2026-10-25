@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
-import {writeFile} from 'node:fs/promises';
+import {readFile,writeFile} from 'node:fs/promises';
 export async function verifySwitches(page,width,artifacts){
  const p=await page.context().newPage(),inventory=[];
+ // Use current catalogue samples, independently of the parent suite's legacy movement fixture.
+ const source=await readFile(new URL('../app.mjs',import.meta.url),'utf8');
+ await p.route('**/app.mjs',r=>r.fulfill({contentType:'text/javascript',body:source}));
  const capture=async name=>{if(![1440,320].includes(width))return;for(const before of [true,false]){await p.locator('link[href="switches.css"]').evaluate((e,disabled)=>e.sheet.disabled=disabled,before);await p.evaluate(async()=>{await document.fonts.ready;await Promise.all([...document.querySelectorAll('image')].map(async e=>{const i=new Image();i.src=e.href.baseVal;await i.decode().catch(()=>{});}));await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));});await p.screenshot({path:artifacts+'switches-'+name+'-'+(before?'before':'after')+'-'+width+'.png'});}};
  const inspect=async context=>{
   const rows=await p.locator('input[type=checkbox]').evaluateAll(es=>es.map(e=>{const s=getComputedStyle(e),knob=getComputedStyle(e,'::after');return {id:e.id||e.outerHTML,appearance:s.appearance,width:s.width,height:s.height,radius:s.borderRadius,knob:knob.width,left:knob.left,checked:e.checked,disabled:e.disabled};}));
