@@ -32,7 +32,7 @@ export async function verifyWrecks(page,width,artifacts){
    const repaired=await p.evaluate(()=>window.__wreckState());const expected=structuredClone(initial.ships);expected[0].condition.hull=1;assert.deepEqual(repaired.ships,expected);
    await p.locator('[data-open-stat=hull]').click();await p.locator('#console-hull').fill('');await p.locator('#console-commit').click();assert.equal(await p.locator('[data-ship="wreck-0"] .wreck-hull').count(),0);
    await p.evaluate(s=>window.__wreckReload(s),initial);assert.equal(await p.locator('.wrecked').count(),ships.length);
-   if(start===0&&[1440,320].includes(width)){await p.locator('#map').scrollIntoViewIfNeeded();await p.locator('.map-panel').screenshot({path:artifacts+'wreck-map-'+width+'.png'});}
+   if(start===0&&[1440,320].includes(width)){await p.locator('#expand-map').click();await p.evaluate(()=>window.__wreckZoom(4));await p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));await p.locator('#map').scrollIntoViewIfNeeded();await p.locator('.map-panel').screenshot({path:artifacts+'wreck-map-'+width+'.png'});}
    assert.deepEqual(errors,[]);assert.deepEqual(await p.evaluate(()=>window.__storageAccesses),[]);
   }finally{await p.close();}
  }
