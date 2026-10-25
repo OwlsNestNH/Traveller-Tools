@@ -30,10 +30,9 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -48,10 +47,9 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -66,12 +64,9 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "explicit-none",
-      "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
-      ]
+      "unresolved": []
     },
     {
       "id": "core-196",
@@ -84,12 +79,9 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "explicit-none",
-      "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
-      ]
+      "unresolved": []
     },
     {
       "id": "core-198",
@@ -102,10 +94,9 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -120,11 +111,10 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated.",
-        "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -154,10 +144,9 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -187,11 +176,9 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -206,12 +193,9 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "explicit-none",
-      "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
-      ]
+      "unresolved": []
     },
     {
       "id": "core-212",
@@ -224,11 +208,9 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "explicit-none",
-      "unresolved": [
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
-      ]
+      "unresolved": []
     },
     {
       "id": "core-218",
@@ -256,7 +238,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -271,7 +253,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "explicit-none",
       "unresolved": []
     },
@@ -286,7 +268,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
@@ -303,7 +285,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
@@ -320,7 +302,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
@@ -337,7 +319,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
@@ -354,7 +336,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
@@ -371,7 +353,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
@@ -435,7 +417,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -450,7 +432,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -467,7 +449,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -482,7 +464,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -497,7 +479,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -512,7 +494,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Source inconsistency: Printed manoeuvre draw 9 despite Thrust3/40t; retain 9 as published, do not silently replace with formula12."
@@ -529,7 +511,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -595,7 +577,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Source inconsistency: Printed plant output48 with TL12 fusion3tons; retain48 rather than rule arithmetic45."
@@ -629,7 +611,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -644,7 +626,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -725,7 +707,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -842,11 +824,9 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
-      "unresolved": [
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
-      ]
+      "unresolved": []
     },
     {
       "id": "highguard-189",
@@ -859,12 +839,10 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Fuel Processor installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     {
@@ -1038,11 +1016,9 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
-      "unresolved": [
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
-      ]
+      "unresolved": []
     },
     {
       "id": "acs2023-p28",
@@ -1055,11 +1031,10 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     {
@@ -1090,11 +1065,10 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     {
@@ -1561,7 +1535,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
@@ -1700,11 +1674,10 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     {
@@ -1718,10 +1691,9 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -1788,11 +1760,10 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     {
@@ -1838,11 +1809,10 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     {
@@ -1856,10 +1826,9 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending.",
         "Published power figures may conflict with equipment/rating arithmetic; printed values retained pending edition-specific errata review."
       ]
@@ -1892,11 +1861,10 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     {
@@ -1910,11 +1878,9 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Grav Screen installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -1929,11 +1895,9 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -1948,10 +1912,9 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
-        "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
         "Exact fitted weapon counts are not numerically stated; named fits are preserved. Further construction-rule derivation remains pending."
       ]
     },
@@ -1966,11 +1929,10 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     {
@@ -1984,7 +1946,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": [
         "Ammunition storage is capacity; rack load, current ammunition and warhead types remain unknown unless separately stated."
@@ -2001,7 +1963,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2018,12 +1980,10 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Low Berths installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant.",
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     {
@@ -2037,7 +1997,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
@@ -2073,11 +2033,10 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Medical Bay installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     {
@@ -2410,7 +2369,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
         "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
@@ -2495,7 +2454,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -2510,11 +2469,10 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "not-listed",
       "unresolved": [
-        "Weapon section absent from source stat table; no explicit unarmed declaration inferred.",
-        "Loading Belt installed but draw omitted from published sidebar; rule-derived draw not yet verified for this variant."
+        "Weapon section absent from source stat table; no explicit unarmed declaration inferred."
       ]
     },
     {
@@ -2546,7 +2504,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -2748,7 +2706,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
@@ -3173,7 +3131,7 @@
         "pdfEndPage": null
       },
       "equipment": "source-table-compared",
-      "power": "published-bundles; separate consumer rule audit incomplete",
+      "power": "published values retained; approved calculated rated loads; remaining component/errata audit incomplete",
       "weaponStatus": "listed",
       "unresolved": []
     },
