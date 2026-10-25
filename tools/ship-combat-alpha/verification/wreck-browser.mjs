@@ -22,9 +22,9 @@ export async function verifyWrecks(page,width,artifacts){
    // The renderer enumerates only the supplied visible encounter, never contacts elsewhere.
    assert.deepEqual(await p.locator('.ship-node').evaluateAll(es=>es.map(e=>e.dataset.ship)),ships.map(s=>s.id));
    for(const zoom of [.33,1,4]){
-    await p.evaluate(z=>window.__wreckZoom(z),zoom);
+    await p.evaluate(z=>window.__wreckZoom(z),zoom);await p.waitForFunction(z=>Number(document.querySelector('#map').dataset.zoom)===z,zoom);await p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
     const measurements=await p.locator('.ship-node').evaluateAll(es=>es.map(e=>{const art=e.querySelector('.ship-art'),m=art.getScreenCTM(),world=document.querySelector('#scene').getScreenCTM(),hit=e.querySelector('.ship-hit').getBoundingClientRect();return {icon:e.dataset.icon,scale:Math.hypot(m.a,m.b),apothem:26*Math.sqrt(3)/2*Math.hypot(world.a,world.b),hitWidth:hit.width,hitHeight:hit.height};}));
-    for(const m of measurements){assert.ok(iconRadius(m.icon,ICONS[m.icon].file)*m.scale<=m.apothem*.91+.01);assert.ok(Math.abs(m.hitWidth-50)<1);assert.ok(Math.abs(m.hitHeight-50)<1);}records.push({group,zoom,measurements});
+    for(const m of measurements){assert.ok(iconRadius(m.icon,ICONS[m.icon].file)*m.scale<=m.apothem*.91+.01,JSON.stringify({width,zoom,...m}));assert.ok(Math.abs(m.hitWidth-50)<1);assert.ok(Math.abs(m.hitHeight-50)<1);}records.push({group,zoom,measurements});
    }
    await p.evaluate(()=>window.__wreckZoom(1));await p.locator('#map').scrollIntoViewIfNeeded();const node=p.locator('[data-ship="wreck-2"]');if(group.length>2){if(width<500)await node.locator('.ship-hit').tap();else{await node.focus();await p.keyboard.press('Enter');}assert.equal(await node.getAttribute('aria-pressed'),'true');assert.match(await node.getAttribute('aria-description'),/Wrecked/);}
    await p.locator('[data-select="wreck-0"]').click();await p.locator('[data-open-stat=hull]').click();await p.locator('#console-hull').fill('1');assert.equal(await p.locator('.wrecked').count(),ships.length);await p.locator('#console-cancel').click();assert.deepEqual(await p.evaluate(()=>window.__wreckState()),initial);
