@@ -2,10 +2,21 @@ import {rangeInfo,HEX_KM,reducedVelocity} from '../movement-rules.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createState,applyCommand,sampleShips,getShip,coastTarget,plannedTarget,hexDistance,canPlot,reachableCount,MAX_THRUST,COORDINATE_LIMIT,availableThrust,accelerationOrder,normalizeState} from '../engine.mjs';
-import {toWorld,fromWorld,visibleGrid,fitCamera,GRID_LIMIT,GRID_LIMIT_AT_100} from '../geometry.mjs';
+import {toWorld,fromWorld,visibleGrid,fitCamera,GRID_LIMIT,GRID_LIMIT_AT_100,HEX_SIZE,shipGlyphScale} from '../geometry.mjs';
 const vessel=(id='test',thrust=2,position={q:0,r:0},velocity={q:0,r:0})=>({id,name:id,capabilities:{thrust},motion:{position,velocity,impulse:{q:0,r:0}}});
 const state=(...ships)=>createState({ships:ships.length?ships:[vessel()]});
 const deepFreeze=x=>{if(x&&typeof x==='object'){Object.freeze(x);Object.values(x).forEach(deepFreeze);}return x;};
+
+test('complete ship artwork stays inside its hex at every travel rotation and view scale',()=>{
+ const apothem=HEX_SIZE*Math.sqrt(3)/2;
+ for(const screen of [.000001,.1,.5,1,2,10,1000000]){
+  const scale=shipGlyphScale(screen);assert.ok(scale>0&&scale<=1);
+  for(let degrees=0;degrees<360;degrees+=5)for(const [x,y]of [[-24,-24],[-24,24],[24,-24],[24,24]]){
+   const a=degrees*Math.PI/180,px=screen*scale*(x*Math.cos(a)-y*Math.sin(a)),py=screen*scale*(x*Math.sin(a)+y*Math.cos(a));
+   assert.ok(Math.hypot(px,py)<=.9*apothem+1e-9,'rotation-safe 10% hex inset');
+  }
+ }
+});
 
 test('coasting preserves velocity for every ship over repeated six-minute rounds',()=>{
  const initial=deepFreeze(state(vessel('one',1,{q:-8,r:4},{q:3,r:-1}),vessel('two',9,{q:12,r:0},{q:-2,r:2})));let s=initial;
