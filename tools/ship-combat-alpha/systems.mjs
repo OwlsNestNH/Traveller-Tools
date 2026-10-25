@@ -53,10 +53,12 @@ export function powerReport(ship,systems=ship.systems,condition=ship.condition,d
  const p=systemProfile(design),s=systems,rows=[],warnings=[],unknown=[];let sum=decimal(0);
  const requirement=kind=>design?.record?.requirements?.find(r=>category(r.name)===kind);
  const provenance=(r,override)=>{
-  const ref=r?.sourceReference??(override!=null?r:null);
-  if(!ref)return r?.basis==='manual override'?'Manual design override.':'';
+  const manual=override!=null||r?.basis==='manual override',ref=override!=null?r:manual?(ship.template?.record?.requirements?.find(x=>x.name===r?.sourceReference?.name)??r?.sourceReference):r?.sourceReference;
+  const label=manual?`Manual ${override!=null?'operating':'design'} override.`:r?.basis??'';
+  if(!ref)return label;
   const citation=ref.source?`${ref.source.book}, printed p${ref.source.page}${ref.source.pdfPage!=null?', PDF p'+ref.source.pdfPage:''}`:'uncited original record';
-  return `Manual ${override!=null?'operating':'design'} override. Retained original: ${ref.name}, ${ref.power??'Unknown'} Power (${citation}; ${ref.basis??'basis unstated'}).`;
+  const original=ref.sourceReference,originalNote=original?` Original ship record: ${original.name}, ${original.power??'Unknown'} Power (${original.source?.book??'uncited'}, printed p${original.source?.page??'?'}; ${original.basis??'basis unstated'}).`:'';
+  return `${label} Retained original: ${ref.name}, ${ref.power??'Unknown'} Power (${citation}; ${ref.basis??'basis unstated'}).${originalNote}`;
  };
  const add=(id,name,enabled,power,source,note='')=>{if(!enabled)return;const q=power==null?null:typeof power==='number'?decimal(power):power;rows.push({id,name,power:q==null?null:numeric(q),exactPower:q==null?null:exact(q),source,note});if(q==null)unknown.push(name);else sum=addPower(sum,q);};
  add('basic','Basic ship systems '+s.basic+'%',s.basic!==0,(s.basicOverride??p.basic)==null?null:multiply(s.basicOverride!=null?decimal(s.basicOverride):p.basicFromFormula?multiply(decimal(design.tons),decimal(.2)):decimal(p.basic),divide(decimal(s.basic),decimal(100))),s.basicOverride!=null?null:p.basicSource,provenance(requirement('basic'),s.basicOverride));
