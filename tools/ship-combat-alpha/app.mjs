@@ -121,15 +121,22 @@ let lastMapSize='';new ResizeObserver(()=>{const size=svg.clientWidth+':'+svg.cl
 
 function sizeTacticalMap(){
  const frame=$('console-frame'),width=frame.parentElement.clientWidth,top=frame.getBoundingClientRect().top+scrollY,available=(visualViewport?.height??innerHeight)-top-Math.max(28,document.querySelector('.map-footer>summary').getBoundingClientRect().height),base=Math.max(240,Math.min(width,available)),expanded=document.body.classList.contains('map-expanded');
- // Measure the previous reference footprint before adding genuine spare height.
- // A taller viewport then exposes more world without changing zoom or pixel scale.
- frame.style.setProperty('--console-size',base+'px');frame.style.setProperty('--expanded-height',Math.max(200,available)+'px');projectionBasis=Math.max(1,Math.min(svg.clientWidth,svg.clientHeight));
- const right=document.getElementById('combat-right').getBoundingClientRect();
- // Align the console's bottom edge with the adjacent pane, bounded by the visible map.
- // Help remains directly below and scrollable; no arbitrary extra-height ceiling.
- const aligned=Math.min((visualViewport?.height??innerHeight)-top,right.bottom+scrollY-top);
- const extra=!expanded&&innerWidth>700?Math.max(0,aligned-base):0;frame.style.setProperty('--console-size',(base+extra)+'px');frame.dataset.heightExtension=String(extra);scheduleMap();
+ frame.style.setProperty('--expanded-height',Math.max(200,available)+'px');
+ let height=base;
+ if(!expanded&&innerWidth>700){
+  // Size the actual SVG content edge, not the wrapper: the oval has percentage
+  // insets and a border inside that wrapper. Help and footer follow below the fold.
+  const box=frame.getBoundingClientRect(),mapBox=svg.getBoundingClientRect(),style=getComputedStyle(svg.parentElement),inset=parseFloat(style.bottom)||0,upper=parseFloat(style.top)||0,fixed=box.bottom-mapBox.bottom-inset,topFixed=mapBox.top-box.top-upper,ratio=inset/box.height,visibleTop=visualViewport?.offsetTop??0;
+  // Derive the old reference scale without temporarily shrinking the document:
+  // doing so would clamp scrollY while the user tries to reach below-fold Help.
+  if(projectionBasis===null)projectionBasis=Math.max(1,Math.min(svg.clientWidth,Math.round(base*(1-ratio-upper/box.height)-fixed-topFixed)));
+  // Extend while the map top is visible. Once it scrolls above the viewport,
+  // stop growing so scrolling can reach Help and the footer rather than chase them.
+  height=Math.max(200,((visualViewport?.height??innerHeight)+visibleTop-Math.max(visibleTop,box.top)+fixed)/(1-ratio));
+ }else{frame.style.setProperty('--console-size',base+'px');if(projectionBasis===null)projectionBasis=Math.max(1,Math.min(svg.clientWidth,svg.clientHeight));}
+ frame.style.setProperty('--console-size',height+'px');frame.dataset.heightExtension=String(Math.max(0,height-base));scheduleMap();
 }
-for(const el of [document.querySelector('body>header'),document.querySelector('.map-heading'),$('console-frame').parentElement,$('combat-right')])new ResizeObserver(sizeTacticalMap).observe(el);window.addEventListener('resize',sizeTacticalMap);sizeTacticalMap();
-visualViewport?.addEventListener('resize',sizeTacticalMap);
+let pendingTacticalSize=false;function scheduleTacticalSize(){if(pendingTacticalSize)return;pendingTacticalSize=true;requestAnimationFrame(()=>{pendingTacticalSize=false;sizeTacticalMap();});}
+for(const el of [document.querySelector('body>header'),document.querySelector('.map-heading'),$('console-frame').parentElement])new ResizeObserver(sizeTacticalMap).observe(el);window.addEventListener('resize',sizeTacticalMap);window.addEventListener('scroll',scheduleTacticalSize,{passive:true});sizeTacticalMap();
+visualViewport?.addEventListener('resize',sizeTacticalMap);visualViewport?.addEventListener('scroll',scheduleTacticalSize);
 function visibleViewport(){document.documentElement.style.setProperty('--visible-height',(visualViewport?.height??innerHeight)+'px');document.documentElement.style.setProperty('--visible-top',(visualViewport?.offsetTop??0)+'px');}visualViewport?.addEventListener('resize',visibleViewport);visualViewport?.addEventListener('scroll',visibleViewport);window.addEventListener('resize',visibleViewport);visibleViewport();
