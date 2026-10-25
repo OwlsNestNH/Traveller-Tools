@@ -1,4 +1,5 @@
 import {ICON_RADII,iconRadius} from '../icon-bounds.mjs';
+import {legacySampleShips} from './legacy-sample-fixture.mjs';
 import {rangeInfo,HEX_KM,reducedVelocity} from '../movement-rules.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -80,7 +81,7 @@ test('a round that would exceed coordinate limits leaves every ship unchanged',(
  assert.throws(()=>applyCommand(s,{type:'advance-round'}),/Resulting position/);assert.equal(JSON.stringify(s),before);
 });
 test('JSON command replay is deterministic and normalized state has no crew/private extras',()=>{
- const initial=createState(),commands=[{type:'plot',shipId:'merchant',target:{q:-2,r:2}},{type:'advance-round'},{type:'coast',shipId:'fighter'},{type:'advance-round'}],run=s=>commands.reduce((next,c)=>applyCommand(next,c),s);
+ const initial=createState({ships:legacySampleShips()}),commands=[{type:'plot',shipId:'merchant',target:{q:-2,r:2}},{type:'advance-round'},{type:'coast',shipId:'fighter'},{type:'advance-round'}],run=s=>commands.reduce((next,c)=>applyCommand(next,c),s);
  assert.deepEqual(run(initial),run(JSON.parse(JSON.stringify(initial))));const hostile=structuredClone(initial);hostile.privateCampaign='DO NOT KEEP';hostile.ships[0].crew={privateNotes:'DO NOT KEEP'};assert.ok(!JSON.stringify(applyCommand(hostile,{type:'coast',shipId:'merchant'})).includes('DO NOT KEEP'));
  assert.throws(()=>createState({ships:[vessel('same'),vessel('same')]}),/unique/);assert.throws(()=>createState({ships:new Array(2)}),/Ship ID/);assert.throws(()=>createState({ships:Array.from({length:11},(_,i)=>vessel('s'+i))}),/0 to 10/);
 });
@@ -109,6 +110,16 @@ test('100 percent grid detail has a bounded budget while lower zoom keeps its pr
 import {PRESETS,preset} from '../catalogue.mjs';
 import {crewContribution,MAX_SHIPS,ROLES} from '../setup.mjs';
 const addPreset=(s,id='core-194',name='Added trader')=>applyCommand(s,{type:'add-ship',presetId:id,name,position:{q:2,r:1},velocity:{q:0,r:0}});
+
+test('fresh/reset samples hydrate full existing presets with citations and wider scenario spacing',()=>{
+ const ids={merchant:'acs2023-p22',courier:'acs2023-p136',escort:'drinax-harrier-restored',scout:'acs2023-p6',fighter:'scc2023-p051'},fresh=createState(),old=legacySampleShips();assert.equal(fresh.ships.length,5);
+ for(const s of fresh.ships){const p=preset(ids[s.id]);assert.equal(s.name,p.name);const added=applyCommand(createState({ships:[]}),{type:'add-ship',presetId:ids[s.id],name:s.name,position:s.motion.position,velocity:s.motion.velocity,appearance:s.appearance}).ships[0];assert.deepEqual({...s,id:added.id},added);const before=old.find(x=>x.id===s.id);assert.deepEqual(s.motion.position,{q:before.motion.position.q*3,r:before.motion.position.r*3});assert.equal(s.condition.fuel,null);assert.equal(s.condition.weapons,null);assert.equal(s.condition.powerOutput,p.initialCondition?.powerOutput??null);}
+ const next=createState();fresh.ships[0].template.record.ratedPower=1;assert.equal(next.ships[0].template.record.ratedPower,preset(ids.merchant).record.ratedPower);assert.equal(createState().ships[0].template.record.ratedPower,next.ships[0].template.record.ratedPower);
+});
+
+test('default sample changes never hydrate or overwrite explicit legacy/imported/custom encounters',()=>{
+ const legacy=createState({ships:legacySampleShips()}),saved=JSON.stringify(legacy),restored=normalizeState(JSON.parse(saved));assert.deepEqual(restored,legacy);assert.equal(restored.ships[0].template,null);const custom=createState({ships:[vessel('private-custom',4,{q:999,r:-123},{q:0,r:0})]}),copy=JSON.stringify(custom);createState();createState();assert.equal(JSON.stringify(custom),copy);assert.equal(JSON.stringify(legacy),saved);assert.deepEqual(normalizeState(JSON.parse(copy)),custom);
+});
 test('catalogue keeps <=400-ton source variants and printed citations without inferred armour',()=>{
  assert.equal(PRESETS.length,195);assert.equal(new Set(PRESETS.map(p=>p.id)).size,195);
  for(const p of PRESETS){assert.ok(p.tons>0&&p.tons<=400);assert.ok(p.source.page>0);assert.ok(p.source.book.endsWith('Update 2022')||p.source.book==='Adventure Class Ships (2023)'||p.source.book==='Traders and Gunboats (2024)'||p.source.book==='Small Craft Catalogue (2023)'||p.id==='drinax-harrier-restored');assert.equal(preset(p.id).thrust,p.thrust);}

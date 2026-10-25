@@ -1,3 +1,5 @@
+import {legacySampleShips} from './legacy-sample-fixture.mjs';
+import {verifySamples} from './samples-browser.mjs';
 import {verifyIconFit} from './icon-fit-browser.mjs';
 import {verifyGridZoom} from './grid-zoom-browser.mjs';
 import {verifyToolbar} from './toolbar-browser.mjs';
@@ -13,11 +15,12 @@ import {verifyFlight} from './flight-browser.mjs';
 import {verifyConsole,verifyResetDraft} from './console-browser.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
-import {mkdir,writeFile} from 'node:fs/promises';
+import {mkdir,writeFile,readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {ICONS} from '../appearance.mjs';
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const root=process.env.SHIP_COMBAT_TEST_ROOT||'http://127.0.0.1:8767/',base=new URL('tools/ship-combat-alpha/',root).href;
+const appSource=await readFile(new URL('../app.mjs',import.meta.url),'utf8');assert.equal(appSource.split('createState()').length,3);
 const artifacts=fileURLToPath(new URL('../verification-artifacts/',import.meta.url));await mkdir(artifacts,{recursive:true});
 const browser=await chromium.launch({headless:true}),report={head:process.env.SHIP_COMBAT_COMMIT??null,views:[]};
 const motion=(page,id)=>page.locator('[data-ship="'+id+'"]').evaluate(e=>({q:Number(e.dataset.q),r:Number(e.dataset.r),vq:Number(e.dataset.vq),vr:Number(e.dataset.vr)}));
@@ -35,6 +38,7 @@ for(const width of [1876,1440,1100,390,320]){
  await context.addInitScript(()=>{const nativeRead=Storage.prototype.getItem;localStorage.setItem('traveller-trade-route-calculator:v1','synthetic-protected-campaign');window.__storageAccesses=[];window.__rawSentinel=()=>nativeRead.call(localStorage,'traveller-trade-route-calculator:v1');for(const method of ['getItem','setItem','removeItem','clear','key'])Storage.prototype[method]=()=>{window.__storageAccesses.push(method);throw Error('Ship prototype touched storage');};indexedDB.open=()=>{window.__storageAccesses.push('database');throw Error('Ship prototype opened storage');};});
  await context.route('**/*',route=>new URL(route.request().url()).origin===new URL(root).origin?route.continue():route.abort());
  try{
+ await context.route('**/app.mjs',r=>r.fulfill({contentType:'text/javascript',body:appSource.replaceAll('createState()','createState({ships:'+JSON.stringify(legacySampleShips())+'})')}));
  await page.goto(base);await page.locator('.ship-node').first().waitFor();assert.equal(await page.locator('.ship-choice').count(),5);assert.equal(await page.getByText('Under construction',{exact:true}).count(),1);assert.equal(await page.locator('.range').count(),4);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
  assert.equal(await page.locator('#status-fuel-current').textContent(),'Unknown');assert.equal(await page.locator('#status-power-output').textContent(),'Unknown');const mapBox=await page.locator('.map-panel').boundingBox(),consoleBox=await page.locator('#ship-console').boundingBox();assert.ok(width>700?consoleBox.x>=mapBox.x+mapBox.width:consoleBox.y>=mapBox.y+mapBox.height);
  const original=await motion(page,'merchant');await page.locator('#advance').click();await page.locator('#advance').click();assert.deepEqual(await motion(page,'merchant'),{...original,q:original.q+4});await page.locator('#reset').click();
@@ -77,7 +81,7 @@ for(const width of [1876,1440,1100,390,320]){
  await open(page);await clearDraft(page);await save(page);assert.equal(await page.locator('.ship-node').count(),0);assert.equal(await page.locator('#advance').isDisabled(),true);assert.match(await page.locator('#ship-console').textContent(),/No ship selected/);await page.locator('#reset').click();await page.locator('#brake').click();assert.match(await page.locator('#braking-plan-status').textContent(),/Continuing stop active/);await page.locator('#advance').click();assert.equal((await motion(page,'merchant')).vq,1);await page.locator('#advance').click();assert.equal((await motion(page,'merchant')).vq,0);await page.locator('#reset').click();await edit(page,{thrust:2});await page.locator('#brake').click();assert.equal((await motion(page,'merchant')).vq,2);await page.locator('#advance').click();assert.deepEqual(await motion(page,'merchant'),{q:-5,r:2,vq:0,vr:0});
  await verifyFlight(page,width,artifacts,edit);
  await verifyResetDraft(page);
- await verifySystems(page,width,artifacts);await verifyUsability(page,width,artifacts);await verifyUnified(page,width,artifacts);await verifyWideConsole(page,width,artifacts);await verifySheet(page,width,artifacts);await verifyRangeCrew(page,width,artifacts);await verifyBottomSpace(page,width,artifacts);await verifyRightPane(page,width,artifacts);await verifyToolbar(page,width,artifacts);await verifyGridZoom(page,width,artifacts);await verifyIconFit(page,width,artifacts);
+ await verifySystems(page,width,artifacts);await verifyUsability(page,width,artifacts);await verifyUnified(page,width,artifacts);await verifyWideConsole(page,width,artifacts);await verifySheet(page,width,artifacts);await verifyRangeCrew(page,width,artifacts);await verifyBottomSpace(page,width,artifacts);await verifyRightPane(page,width,artifacts);await verifyToolbar(page,width,artifacts);await verifyGridZoom(page,width,artifacts);await verifySamples(page,width,artifacts);await verifyIconFit(page,width,artifacts);
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.deepEqual(await page.evaluate(()=>window.__storageAccesses),[]);assert.equal(await page.evaluate(()=>window.__rawSentinel()),'synthetic-protected-campaign');assert.deepEqual(errors,[]);report.views.push({width,passed:true});console.log('PASS '+width+'px: movement/icons, draft Save/Cancel, placement, full custom records, generic/detailed crew, manual gauges/criticals/fuel, immutable overrides, Harrier, cap and storage isolation');
  }catch(error){await page.screenshot({path:artifacts+'failure-'+width+'.png',fullPage:true}).catch(()=>{});throw error;}finally{await context.close();}
 }
