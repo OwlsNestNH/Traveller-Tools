@@ -1,0 +1,11 @@
+/* Shared control geometry; each logical group wraps as a unit where possible. */
+body.station-console .map-tools{--map-control-height:36px;gap:6px;align-items:center}
+body.station-console .map-tool-group{display:flex;align-items:center;flex-wrap:wrap;gap:6px;min-width:0;max-width:100%}
+body.station-console .map-zoom-group{flex-wrap:nowrap;flex-shrink:0}
+body.station-console .map-tools button{height:var(--map-control-height);min-height:var(--map-control-height);box-sizing:border-box;line-height:1.1;white-space:nowrap}
+body.station-console #zoom-level{display:flex;align-items:center;justify-content:center;height:var(--map-control-height);min-width:4ch;font-variant-numeric:tabular-nums}
+body.station-console .range-mode-control{position:relative;display:flex;align-items:center;gap:6px;flex:0 0 auto;height:var(--map-control-height);padding:0;margin:0;max-width:100%}
+body.station-console .range-mode-control legend{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+body.station-console .range-inline-label{font-size:.75rem;line-height:1.1;color:#b8cdd8;white-space:nowrap}
+body.station-console .range-switch span{height:calc(var(--map-control-height) - 2px);min-height:calc(var(--map-control-height) - 2px);box-sizing:border-box}
+@media(max-width:700px){body.station-console .map-tools{--map-control-height:44px}}
