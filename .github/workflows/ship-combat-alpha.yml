@@ -116,3 +116,11 @@ jobs:
           name: unknown-review-${{ github.event.pull_request.head.sha }}
           path: tools/ship-combat-alpha/verification-artifacts/unknown-*
           if-no-files-found: warn
+
+      - name: Upload small switch review evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: switches-review-${{ github.event.pull_request.head.sha }}
+          path: tools/ship-combat-alpha/verification-artifacts/switches-*
+          if-no-files-found: warn

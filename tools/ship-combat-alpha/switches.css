@@ -1,0 +1,39 @@
+/* Native checkbox behavior, with the Trade Tool's rounded cyan switch treatment.
+   One rule covers existing and dynamically rendered combat controls. */
+body input[type="checkbox"] {
+  appearance: none;
+  position: relative;
+  flex: none;
+  box-sizing: border-box;
+  width: 42px;
+  min-width: 42px;
+  max-width: 42px;
+  height: 24px;
+  min-height: 24px;
+  padding: 0;
+  margin: 0;
+  border: 1px solid #38647c;
+  border-radius: 24px;
+  background: #133549;
+  cursor: pointer;
+  vertical-align: middle;
+}
+body input[type="checkbox"]::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #8ba5b7;
+}
+body input[type="checkbox"]:checked { background: #0a4c59; border-color: #62d3dd; }
+body input[type="checkbox"]:checked::after { left: 21px; background: #62d3dd; }
+body input[type="checkbox"]:focus-visible { outline: 3px solid #62d3dd; outline-offset: 3px; }
+body input[type="checkbox"]:disabled { opacity: .5; cursor: not-allowed; }
+body label:has(input[type="checkbox"]) { min-height: 44px; }
+@media (forced-colors: active) {
+  body input[type="checkbox"] { appearance: auto; }
+  body input[type="checkbox"]::after { display: none; }
+}
