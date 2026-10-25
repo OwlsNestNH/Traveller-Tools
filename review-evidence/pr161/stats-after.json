@@ -1,0 +1,84 @@
+[
+  {
+    "width": 1440,
+    "stats": [
+      {
+        "value": "35",
+        "label": "Tons",
+        "valueAlign": "center",
+        "labelAlign": "center",
+        "width": 85.46875,
+        "valueCenter": 1044.8515625,
+        "labelCenter": 1044.859375
+      },
+      {
+        "value": "2",
+        "label": "Thrust",
+        "valueAlign": "center",
+        "labelAlign": "center",
+        "width": 85.46875,
+        "valueCenter": 1138.328125,
+        "labelCenter": 1138.328125
+      },
+      {
+        "value": "12",
+        "label": "Hull",
+        "valueAlign": "center",
+        "labelAlign": "center",
+        "width": 85.46875,
+        "valueCenter": 1231.7890625,
+        "labelCenter": 1231.796875
+      },
+      {
+        "value": "10",
+        "label": "Armour",
+        "valueAlign": "center",
+        "labelAlign": "center",
+        "width": 85.46875,
+        "valueCenter": 1325.2578125,
+        "labelCenter": 1325.265625
+      }
+    ]
+  },
+  {
+    "width": 320,
+    "stats": [
+      {
+        "value": "35",
+        "label": "Tons",
+        "valueAlign": "center",
+        "labelAlign": "center",
+        "width": 60.5,
+        "valueCenter": 57.2421875,
+        "labelCenter": 57.25
+      },
+      {
+        "value": "2",
+        "label": "Thrust",
+        "valueAlign": "center",
+        "labelAlign": "center",
+        "width": 60.5,
+        "valueCenter": 125.75,
+        "labelCenter": 125.75
+      },
+      {
+        "value": "12",
+        "label": "Hull",
+        "valueAlign": "center",
+        "labelAlign": "center",
+        "width": 60.5,
+        "valueCenter": 194.2421875,
+        "labelCenter": 194.25
+      },
+      {
+        "value": "10",
+        "label": "Armour",
+        "valueAlign": "center",
+        "labelAlign": "center",
+        "width": 60.5,
+        "valueCenter": 262.7421875,
+        "labelCenter": 262.75
+      }
+    ]
+  }
+]
