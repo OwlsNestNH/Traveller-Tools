@@ -1,0 +1,32 @@
+// Conservative visible-art radii in the existing 48-unit image box.
+// Measured from all nonzero source-alpha pixels plus a native-pixel interpolation guard;
+// no assets are cropped or altered. Unknown art retains the complete-box fallback.
+export const ICON_RADII=Object.freeze({
+ "harrier-custom.svg":21,
+ "close_escort.webp": 26.34,
+ "empress_marava.webp": 23.57,
+ "far_trader.webp": 23.89,
+ "free_trader.webp": 23.89,
+ "gig.webp": 26.35,
+ "launch.webp": 22.9,
+ "light_fighter.webp": 26.44,
+ "military_gig.webp": 24.17,
+ "modular_cutter.webp": 22.84,
+ "passenger_shuttle.webp": 30.51,
+ "patrol_corvette.webp": 22.92,
+ "pinnace.webp": 24.45,
+ "safari_ship.webp": 21.78,
+ "scout.webp": 23.59,
+ "seeker.webp": 23.59,
+ "ships_boat.webp": 23.29,
+ "shuttle.webp": 30.51,
+ "slow_boat.webp": 23.3,
+ "slow_pinnace.webp": 24.45,
+ "subsidised_merchant.webp": 24.68,
+ "survey_scout.webp": 24.22,
+ "system_defence_boat.webp": 23.52,
+ "yacht.webp": 23.35
+});
+
+// Custom vector radii conservatively bound their path/control points.
+export function iconRadius(icon,file){return ICON_RADII[file]??({research:27,corsair:24,other:20}[icon]??Math.hypot(24,24));}
