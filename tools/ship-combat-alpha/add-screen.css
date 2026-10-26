@@ -44,3 +44,4 @@
 .software-setup-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;margin-bottom:10px}.software-setup-row small{grid-column:1/-1}.software-setup-row select{max-width:100%;min-width:0}.software-setup>button{margin:6px 0}.sheet-help{margin:10px 0}#ship-sheet .numeric-records{gap:0;border-top:1px solid #416070;border-left:1px solid #416070;align-items:stretch}#ship-sheet .numeric-records dt,#ship-sheet .numeric-records dd{border-right:1px solid #416070;border-bottom:1px solid #416070;padding:8px;margin:0;display:flex;flex-direction:column;justify-content:center}
 
 @media(max-width:700px){.software-setup-row{grid-template-columns:minmax(0,1fr)}.software-setup-row button{justify-self:end;padding:5px 10px;min-height:36px}.software-setup-row small{grid-column:1}.software-setup-row select{font-size:12px}}
+@media(max-width:700px){#ship-sheet .setup-systems th:last-child{width:28%}#ship-sheet .setup-systems th:first-child{width:25%}}
