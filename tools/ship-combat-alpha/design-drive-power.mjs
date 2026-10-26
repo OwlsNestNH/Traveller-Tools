@@ -42,7 +42,7 @@ export function recordedDrivePower(design){
 }
 export function initialManoeuvre(design){
  if(design?.record?.manoeuvre)return structuredClone(design.record.manoeuvre);
- return {version:1,mode:design?'recorded':'auto',kind:design?'unknown':'mdrive',manualPower:null,mdriveThrust:null,tech:{profile:design?'unknown':'standard',options:[],repeatApproved:false}};
+ return {version:1,mode:'recorded',kind:'unknown',manualPower:null,mdriveThrust:null,tech:{profile:'unknown',options:[],repeatApproved:false}};
 }
 export function designDrivePower(design){
  const raw=design?.record?.manoeuvre;

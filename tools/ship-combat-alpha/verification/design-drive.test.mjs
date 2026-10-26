@@ -5,7 +5,7 @@ import {normalizeTemplate,effectiveDesign} from '../setup.mjs';
 import {createState,applyCommand,normalizeState} from '../engine.mjs';
 import {applySetupFields} from '../setup-session.mjs';
 import {powerReport} from '../systems.mjs';
-const config=(overrides={})=>({...initialManoeuvre(null),...overrides});
+const config=(overrides={})=>({...initialManoeuvre(null),mode:'auto',kind:'mdrive',tech:{profile:'standard',options:[],repeatApproved:false},...overrides});
 const design=(c=config(),overrides={})=>({name:'Synthetic drive',tons:200,thrust:6,hull:80,armour:0,...overrides,record:{tl:15,...overrides.record,manoeuvre:c}});
 test('rated design thrust recalculates exact Power; ship TL alone selects no tech effects',()=>{
  assert.equal(designDrivePower(design()).value,120);
@@ -59,3 +59,5 @@ test('explicit unknown efficiency does not fall back to an invented operational 
  assert.equal(powerReport(ship).rows.find(r=>r.id==='drive').power,null);
  const d=effectiveDesign(ship);ship.systems.driveThrust=1;assert.equal(designDrivePower(d).value,null);
 });
+
+test('unconfigured Custom Ship does not invent an installed M-drive or verified tech profile',()=>{const c=initialManoeuvre(null);assert.equal(c.kind,'unknown');assert.equal(c.mode,'recorded');assert.equal(c.tech.profile,'unknown');});

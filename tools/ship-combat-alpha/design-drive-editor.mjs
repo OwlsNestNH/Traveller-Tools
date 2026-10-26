@@ -5,7 +5,7 @@ const drafts=new WeakMap();
 export const readDriveSetup=input=>drafts.get(input)?.read();
 export function mountDriveSetup(root,prefix,template,cell,powerCell){
  const thrust=root.querySelector('#'+prefix+'-design-thrust');
- let config=initialManoeuvre(template),touched=!template;
+ let config=initialManoeuvre(template),touched=false;
  const host=document.createElement('details');host.className='drive-design-controls';
  const options=(rows,value)=>rows.map(([v,label])=>`<option value="${esc(v)}" ${v===value?'selected':''}>${esc(label)}</option>`).join('');
  host.innerHTML=`<summary>Design Power &amp; tech</summary><div class="setup-field-options">
