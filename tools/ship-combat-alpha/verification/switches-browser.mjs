@@ -25,7 +25,7 @@ export async function verifySwitches(page,width,artifacts){
   await p.locator('#add-sand').scrollIntoViewIfNeeded();await capture('add');
   await p.locator('#cancel-setup').click();await p.locator('#open-setup').click();await inspect('loaded design, synthetic movement and crew');await p.locator('#cancel-setup').click();
   await p.locator('#selected-identity').evaluate(e=>e.open=true);await p.locator('[data-console-condition]').click();await inspect('current condition critical status');await p.locator('#cancel-condition').click();
-  await p.locator('[data-details]').first().click();await p.locator('#sheet-crew').click();await p.locator('#cs-mode').selectOption('detailed');await inspect('details crew');await p.locator('#cs-cancel').click();await p.locator('#sheet-close').click();
+  await p.locator('[data-details]').first().click();await p.locator('#sheet-crew').click();await p.locator('[data-edit-crew=pilot]').click();await inspect('details crew');await p.locator('#cs-cancel').click();await p.locator('#sheet-close').click();
   assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   await writeFile(artifacts+'switches-checks-'+width+'.json',JSON.stringify({width,passed:true,inventory},null,2));
  }finally{await p.close();}
