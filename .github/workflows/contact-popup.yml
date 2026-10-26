@@ -8,13 +8,15 @@ on:
       - 'tools/ship-combat-alpha/index.html'
       - 'tools/trade-route-calculator/index.html'
       - 'tests/contact-browser.mjs'
+      - 'tools/trade-route-calculator/contact-me.js'
+      - 'tools/trade-route-calculator/contact-me.css'
       - '.github/workflows/contact-popup.yml'
 permissions:
   contents: read
 jobs:
   contact:
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
@@ -34,6 +36,8 @@ jobs:
           CONTACT_HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
           node --check assets/js/contact-me.js
+          cmp assets/js/contact-me.js tools/trade-route-calculator/contact-me.js
+          cmp assets/css/contact-me.css tools/trade-route-calculator/contact-me.css
           python3 -m http.server 8780 --bind 127.0.0.1 > "$RUNNER_TEMP/contact-server.log" 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT

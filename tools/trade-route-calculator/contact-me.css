@@ -1,0 +1,11 @@
+#contact-me-dialog{box-sizing:border-box;width:min(420px,calc(100vw - 24px));height:fit-content;max-height:calc(100dvh - 24px);margin:auto;padding:22px;overflow:auto;border:1px solid #6790a3;border-radius:10px;background:#102936;color:#e6f1f8;font:16px/1.5 system-ui,sans-serif;box-shadow:0 12px 40px #0008}
+#contact-me-dialog::backdrop{background:#031019b8}
+#contact-me-dialog h2{margin:0 0 12px;font-size:1.25rem}
+#contact-me-dialog p{margin:12px 0}
+#contact-me-dialog a{color:#8ce5ed;overflow-wrap:anywhere}
+#contact-me-dialog button{min-height:44px;padding:8px 18px;border:1px solid #6790a3;border-radius:6px;background:#203d4c;color:#e6f1f8;font:inherit;cursor:pointer}
+#contact-me-dialog :focus-visible,[data-contact-open]:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.unified-combat>header{position:relative}
+.unified-combat>header>[data-contact-open]{position:absolute;top:6px;right:12px;min-height:44px;padding:6px 10px;font-size:12px}
+.unified-combat>header .status{margin-right:100px}
+@media(max-width:500px){.unified-combat>header .heading .eyebrow{position:absolute;top:13px;left:110px;margin:0;font-size:8px}}
