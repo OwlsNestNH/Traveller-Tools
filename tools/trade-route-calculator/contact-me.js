@@ -6,7 +6,7 @@
  dialog.id='contact-me-dialog';
  dialog.setAttribute('aria-labelledby','contact-me-title');
  dialog.setAttribute('aria-describedby','contact-me-note');
- dialog.innerHTML='<h2 id="contact-me-title">Contact Me</h2><p id="contact-me-note">Feel free to send any Bug Notes, Questions, or Feedback. Thanks!</p><p><a href="mailto:bows_cosmic.7e@icloud.com">bows_cosmic.7e@icloud.com</a></p><button type="button" data-contact-close autofocus>Close</button>';
+ dialog.innerHTML='<h2 id="contact-me-title">Contact Me</h2><p id="contact-me-note">Feel free to send any Bug Notes, Questions, Suggestions, or Feedback. Thanks!</p><p><a href="mailto:bows_cosmic.7e@icloud.com">bows_cosmic.7e@icloud.com</a></p><button type="button" data-contact-close autofocus>Close</button>';
  document.body.append(dialog);
  opener.setAttribute('aria-haspopup','dialog');
  opener.setAttribute('aria-controls',dialog.id);
