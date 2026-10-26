@@ -32,7 +32,7 @@ export function createStationPane({getState,getSelected,isLocked,onCommit,onSele
    return;
   }
   const crewRole={captain:'captain',comms:'sensors',astrogator:'astrogator',damage:'engineer',gunnery:'gunner',sensors:'sensors'}[station];
-  const crew=ship.crew.details?.[crewRole];
+  const crew=crewSkill(ship.crew,crewRole)==null?null:ship.crew.details?.[crewRole];
   let text='';
   if(station==='captain')text=`<p>Side ${esc(ship.appearance.side)} · Allegiance: ${esc(ship.identity.allegiance||'Unrecorded')}</p><p>Command checks are not implemented.</p>`;
   if(station==='comms')text='<p>Communications actions and transmissions are not implemented.</p>';

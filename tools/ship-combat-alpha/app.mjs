@@ -9,7 +9,7 @@ import {createFlightControls} from './flight-controls.mjs';
 import {rangeInfo} from './movement-rules.mjs';
 import {createConsoleControls} from './console-controls.mjs';
 import {SIDES,ICONS,iconFor,fallbackGlyph,glyphRotation} from './appearance.mjs';
-import {ROLES,RATINGS,crewContribution,effectiveDesign,overrideFields} from './setup.mjs';
+import {ROLES,RATINGS,crewSkill,crewContribution,effectiveDesign,overrideFields} from './setup.mjs';
 import {createState,applyCommand,getShip,coastTarget,plannedTarget,hexDistance,reachableCount,canPlot,availableThrust} from './engine.mjs';
 import {HEX_SIZE,toWorld,fromWorld,visibleGrid,fitCamera,shipGlyphScale} from './geometry.mjs';
 import {createEditors} from './editor.mjs';
@@ -51,7 +51,7 @@ function populate(){
  $('target-q').value=target.q;$('target-r').value=target.r;
  const design=effectiveDesign(s);$('design-facts').textContent=design?`${classLabel(s)} · ${design.tons} tons · design thrust ${design.thrust} · hull ${design.hull??'Unknown'} · armour ${design.armour??'Unknown'}. ${sourceLabel(s.template)}. ${s.template.notes??''} ${overrideFields(s).length?'Instance overrides: '+overrideFields(s).join(', ')+'. Source applies to retained original values.':''}`:'Synthetic sample: base hull/equipment facts unknown.';
  $('symbol-facts').textContent=ICONS[iconFor(s)].label+'. Bow follows current velocity for appearance only; no facing rules. At zero speed the last visual heading is retained.';
- const overrides=ROLES.filter(r=>s.crew.overrides[r]!=null);$('crew-reference').textContent=s.crew.mode==='quick'?`Generic crew total ${signed(s.crew.bonus??RATINGS[s.crew.rating])}. ${overrides.length?'Active overrides: '+overrides.map(r=>r+' '+signed(s.crew.overrides[r])).join(', '):'No role overrides.'}`:'Detailed crew: '+ROLES.filter(r=>s.crew.details[r]).map(r=>r+' '+signed(crewContribution(s.crew,r))+(s.crew.details[r].name?' · '+s.crew.details[r].name:' · unnamed')).join('; ');
+ const overrides=ROLES.filter(r=>s.crew.overrides[r]!=null);$('crew-reference').textContent=s.crew.mode==='quick'?`Generic crew total ${signed(s.crew.bonus??RATINGS[s.crew.rating])}. ${overrides.length?'Active overrides: '+overrides.map(r=>r+' '+signed(s.crew.overrides[r])).join(', '):'No role overrides.'}`:(s.crew.mode==='compact'?'Active crew overrides: ':'Detailed crew: ')+ROLES.filter(r=>crewSkill(s.crew,r)!=null).map(r=>r+' '+signed(crewContribution(s.crew,r))+(s.crew.details[r].name?' · '+s.crew.details[r].name:' · unnamed')).join('; ');
  let ranges=$('range-facts');if(!ranges){const h=document.createElement('h3');h.textContent='Ranges from selected ship';ranges=document.createElement('dl');ranges.id='range-facts';$('motion-facts').after(h,ranges);}ranges.innerHTML=state.ships.filter(other=>other.id!==selected).map(other=>`<dt>${esc(other.name)}</dt><dd>${rangeLabel(m.position,other.motion.position)}</dd>`).join('');
 }
 function select(id){selected=id;feedback('Selected '+selectedShip().name+'. Plot a target or let it coast.');render();}
