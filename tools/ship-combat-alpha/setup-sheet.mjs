@@ -5,6 +5,7 @@ const bindings=new WeakMap();
 // Reuses the existing draft controls: this is a layout, not another save path.
 export function arrangeSetupSheet(root,prefix,template,condition={hull:template?.hull,...template?.initialCondition},systems={basic:100}){
  if(root.querySelector('.setup-systems'))return;bindings.get(root)?.abort();const controller=new AbortController();bindings.set(root,controller);const listen=(type,handler)=>root.addEventListener(type,handler,{signal:controller.signal});
+ root.addEventListener('invalid',e=>{for(let d=e.target.closest('details');d;d=d.parentElement.closest('details'))d.open=true;},{capture:true,signal:controller.signal});
  const get=s=>root.querySelector('#'+prefix+'-'+s),take=s=>get(s)?.closest('label'),r=template?.record??{};
  const fields={};for(const key of ['design-name','class','tons','design-thrust','hull','armour','tl','jump','rated-power','fuel-capacity','cargo-capacity','crew-total','sensors','computer','software','reference'])fields[key]=take(key);
  const table=document.createElement('table');table.className='setup-systems';table.innerHTML='<caption>Installed combat systems</caption><thead><tr><th>System</th><th>Equipment / capability</th><th>Power</th></tr></thead><tbody></tbody>';
