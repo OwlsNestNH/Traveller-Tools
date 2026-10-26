@@ -29,3 +29,5 @@ body.station-console.map-expanded .map-panel{position:static;inset:auto;z-index:
 
 #scene .shared-half:focus .ship-hit{stroke:#fff;stroke-width:1}#scene .shared-stack:focus .ship-hit{stroke-width:1}
 #shared-hex-chooser{height:fit-content;min-height:0;max-height:85dvh;margin:auto;inset:0}#scene .shared-count{fill:#fff!important;stroke:#153b4a!important;font-size:14px}.shared-count-hit{fill:#153b4a}
+
+.shared-chooser-actions{display:flex;flex-wrap:wrap;gap:8px}.shared-chooser-actions .primary{flex:1}
