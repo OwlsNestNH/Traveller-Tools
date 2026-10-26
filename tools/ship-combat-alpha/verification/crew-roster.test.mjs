@@ -4,6 +4,7 @@ import {normalizeCrew,crewContribution,crewSkill} from '../setup.mjs';
 import {rosterDraft,assignMember,projectRoster} from '../crew-roster.mjs';
 import {createState,applyCommand,normalizeState} from '../engine.mjs';
 import {beginSetup,editSetup,saveSetup} from '../setup-session.mjs';
+import {renderCompactCrew} from '../compact-crew.mjs';
 const legacy=()=>normalizeCrew({mode:'detailed',details:{pilot:{name:'',skillName:'Pilot (spacecraft)',skill:0,characteristicDM:2}}});
 test('identity migration retains unnamed level zero and unknown aggregate modifier',()=>{
  const c=rosterDraft(legacy()),m=c.roster.members[0];assert.equal(m.name,'');assert.deepEqual(m.skills[0],{id:'skill-1',name:'Pilot (spacecraft)',level:0,stat:null,other:2});assert.equal(crewSkill(c,'pilot'),0);assert.equal(crewContribution(c,'pilot'),2);assert.deepEqual(normalizeCrew(c),c);
@@ -17,6 +18,9 @@ test('roster persists through commands and old encounters remain unchanged',()=>
 });
 test('unassigning a legacy station retains its crew identity and training',()=>{
  const c=rosterDraft(legacy());c.details.pilot=null;const saved=normalizeCrew(c);assert.equal(saved.details.pilot,null);assert.equal(saved.roster.assignments.pilot,undefined);assert.equal(saved.roster.members[0].skills[0].level,0);
+});
+test('out-of-menu legacy skill and Other values remain visible and roundtrip',()=>{
+ const ship=createState().ships[0];ship.crew=normalizeCrew({mode:'detailed',details:{pilot:{name:'',skillName:'Pilot (retained specialty)',skill:9,characteristicDM:-5}}});const html=renderCompactCrew(ship);assert.match(html,/value="9" selected>9 · retained/);assert.match(html,/value="-5" selected>-5 · retained/);assert.match(html,/Pilot \(retained specialty\)/);const c=normalizeCrew(rosterDraft(ship.crew));assert.equal(c.details.pilot.skill,9);assert.equal(c.details.pilot.characteristicDM,-5);assert.equal(c.roster.members[0].skills[0].stat,null);
 });
 test('setup current quantities and basic allocation are transactional and capacity checked',()=>{
  const state=createState(),before=structuredClone(state);let draft=beginSetup(state);
