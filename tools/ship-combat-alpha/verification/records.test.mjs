@@ -123,3 +123,25 @@ test('Harrier is repaired design, with unknown fuel/ammo condition and no campai
 test('malformed record/override shapes reject before altering live state',()=>{
  const s=add(createState({ships:[]})),before=JSON.stringify(s);for(const record of [[],5,'equipment'])assert.throws(()=>applyCommand(s,{type:'set-design',shipId:'ship-1',template:{...template,record}}));const bad=structuredClone(s);bad.ships[0].designOverrides=[];assert.throws(()=>beginSetup(bad),/overrides must be a record/);assert.equal(JSON.stringify(s),before);
 });
+
+test('setup software edits preserve independent allocations and source records',async()=>{
+ const {softwareSetupSystems}=await import('../software-setup.mjs');
+ const systems={basicOverride:17,software:{processingOverride:99,installed:[{id:'evade',installed:2,running:1,origin:'source-record'},{id:'library',installed:0,running:0,origin:'manual'}]}};
+ const ship={template:{record:{software:'Evade / 2'}},designOverrides:null,systems};
+ assert.equal(softwareSetupSystems(ship,{record:{software:'Evade / 2'}}),systems);
+ assert.equal(softwareSetupSystems(ship,{record:{software:'Evade / 3'}}),systems);
+ const changed=softwareSetupSystems(ship,{record:{software:'Evade / 3; Fire Control / 1; Library / 0'}},{explicit:true});
+ assert.equal(changed.basicOverride,17);assert.equal(changed.software.processingOverride,99);
+ assert.deepEqual(changed.software.installed.map(p=>[p.id,p.installed,p.running]),[['evade',3,1],['fire-control',1,null],['library',0,0]]);
+ assert.equal(ship.template.record.software,'Evade / 2');assert.equal(ship.systems.software.installed[0].installed,2);
+ const unknown={...ship,designOverrides:{record:{software:null}}};assert.equal(softwareSetupSystems(unknown,{record:{software:null}}),systems);
+});
+
+test('setup validates changed capacity and current quantity in one transaction',async()=>{
+ const {applySetupFields}=await import('../setup-session.mjs');
+ const initial=applyCommand(createState(),{type:'add-ship',presetId:'core-194',name:'Synthetic capacity',position:{q:0,r:0},velocity:{q:0,r:0}}),ship=initial.ships.at(-1),design=structuredClone(effectiveDesign(ship));design.hull=40;
+ const next=applySetupFields(initial,ship.id,{design,condition:{...ship.condition,hull:35},basic:ship.systems.basic});
+ assert.equal(next.ships.at(-1).condition.hull,35);assert.equal(effectiveDesign(next.ships.at(-1)).hull,40);assert.deepEqual(next.ships.at(-1).template,ship.template);assert.equal(ship.condition.hull,80);assert.equal(next.revision,initial.revision+1);
+ assert.throws(()=>applySetupFields(initial,ship.id,{design,condition:{...ship.condition,hull:41}}),/hull|Hull|capacity/);
+ assert.throws(()=>applySetupFields(next,ship.id,{design:{...design,hull:45}},initial.revision),/revision|stale|changed/i);
+});
