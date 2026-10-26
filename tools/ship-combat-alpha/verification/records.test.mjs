@@ -129,7 +129,8 @@ test('setup software edits preserve independent allocations and source records',
  const systems={basicOverride:17,software:{processingOverride:99,installed:[{id:'evade',installed:2,running:1,origin:'source-record'},{id:'library',installed:0,running:0,origin:'manual'}]}};
  const ship={template:{record:{software:'Evade / 2'}},designOverrides:null,systems};
  assert.equal(softwareSetupSystems(ship,{record:{software:'Evade / 2'}}),systems);
- const changed=softwareSetupSystems(ship,{record:{software:'Evade / 3; Fire Control / 1'}});
+ assert.equal(softwareSetupSystems(ship,{record:{software:'Evade / 3'}}),systems);
+ const changed=softwareSetupSystems(ship,{record:{software:'Evade / 3; Fire Control / 1; Library / 0'}},{explicit:true});
  assert.equal(changed.basicOverride,17);assert.equal(changed.software.processingOverride,99);
  assert.deepEqual(changed.software.installed.map(p=>[p.id,p.installed,p.running]),[['evade',3,1],['fire-control',1,null],['library',0,0]]);
  assert.equal(ship.template.record.software,'Evade / 2');assert.equal(ship.systems.software.installed[0].installed,2);

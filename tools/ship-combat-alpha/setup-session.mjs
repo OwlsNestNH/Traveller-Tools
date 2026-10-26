@@ -8,10 +8,10 @@ export function editSetup(session,command){if(!EDITS.has(command?.type))throw Er
 export function saveSetup(live,session){if(!Number.isSafeInteger(session?.baseRevision))throw Error('Open a setup draft before saving.');return applyCommand(live,{type:'replace-ships',ships:session.draft.ships,expectedRevision:session.baseRevision});}
 
 // Validate related capacity/current edits together, never against an intermediate draft.
-export function applySetupFields(state,shipId,{design,condition,basic},expectedRevision=state.revision){
+export function applySetupFields(state,shipId,{design,condition,basic,softwareEdits},expectedRevision=state.revision){
  const original=state.ships.find(s=>s.id===shipId);if(!original)throw Error('Selected ship is no longer present.');
  const ship=structuredClone(original);
- if(design){ship.systems=softwareSetupSystems(original,design);if(ship.template)ship.designOverrides=normalizeOverrides(design,ship.template);else{ship.template=design;ship.designOverrides=null;}}
+ if(design){ship.systems=softwareSetupSystems(original,design,softwareEdits);if(ship.template)ship.designOverrides=normalizeOverrides(design,ship.template);else{ship.template=design;ship.designOverrides=null;}}
  if(condition)ship.condition=condition;
  if(basic!=null)ship.systems={...ship.systems,basic};
  if(JSON.stringify(ship)===JSON.stringify(original))return state;

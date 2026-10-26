@@ -1,4 +1,4 @@
-import {validateSoftwareSetup} from './software-setup.mjs';
+import {validateSoftwareSetup,readSoftwareSetupChanges} from './software-setup.mjs';
 import {renderCompactCrew,readCompactCrew,bindCompactCrew,validateCompactCrew} from './compact-crew.mjs';
 import {powerReport} from './systems.mjs';
 import {arrangeSetupSheet,readSheetCondition} from './setup-sheet.mjs';
@@ -43,7 +43,7 @@ export function createEditors({getState,getSelected,onCommit,onCondition,onPlace
  function modeFields(){if(!$('crew-mode'))return;const quick=value('crew-mode')==='quick';$('generic-fields').hidden=!quick;$('detailed-fields').hidden=quick;$('generic-fields').querySelectorAll('input,select').forEach(e=>e.disabled=!quick);$('detailed-fields').querySelectorAll('input').forEach(e=>e.disabled=quick);for(const role of ROLES)$('detailed-fields').querySelector(`[data-station="${role}"]`).querySelectorAll('input').forEach(e=>e.disabled=quick||!$('crew-'+role+'-assigned').checked);}
  function applyCurrent(){const s=current();if(newMode||!s)return;for(const id of ['edit-form','crew-form','appearance-form'])if(!$(id).reportValidity())throw Error('Complete the active setup fields before saving or changing ships.');
   const t=s.template||$('define-synthetic')?.checked?readDesign('edit',effectiveDesign(s)):null;
-  session={...session,draft:applySetupFields(session.draft,s.id,{design:t,condition:readSheetCondition($('edit-form'),'edit',s.condition),basic:$('edit-basic-allocation')?Number($('edit-basic-allocation').value):null})};
+  session={...session,draft:applySetupFields(session.draft,s.id,{design:t,softwareEdits:readSoftwareSetupChanges($('edit-software')),condition:readSheetCondition($('edit-form'),'edit',s.condition),basic:$('edit-basic-allocation')?Number($('edit-basic-allocation').value):null})};
   const motion={position:{q:number('position-q'),r:number('position-r')},velocity:{q:number('velocity-q'),r:number('velocity-r')}};
   if(value('ship-name')!==s.name||number('thrust')!==s.capabilities.thrust||JSON.stringify(motion.position)!==JSON.stringify(s.motion.position)||JSON.stringify(motion.velocity)!==JSON.stringify(s.motion.velocity))command({type:'edit-ship',shipId:s.id,name:value('ship-name'),thrust:number('thrust'),...motion});
   const quick=value('crew-mode')==='quick',crew=structuredClone(s.crew),situational={};crew.mode=value('crew-mode');if(quick){crew.rating=value('crew-rating');crew.bonus=number('crew-bonus');for(const role of ROLES)crew.overrides[role]=number('crew-'+role+'-override');}else for(const role of ROLES)crew.details[role]=$('crew-'+role+'-assigned').checked?{name:value('crew-'+role+'-name'),skillName:value('crew-'+role+'-skillname'),skill:number('crew-'+role+'-skill'),characteristicDM:number('crew-'+role+'-dm')}:crew.mode==='compact'?crew.details[role]:null;
