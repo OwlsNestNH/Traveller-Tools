@@ -125,7 +125,7 @@ let lastMapSize='';new ResizeObserver(()=>{const size=svg.clientWidth+':'+svg.cl
 function alignRightPane(){
  const pane=$('combat-right');
  if(innerWidth<=700){pane.style.removeProperty('--right-pane-offset');pane.style.removeProperty('--right-pane-height');return;}
- const box=pane.getBoundingClientRect(),style=getComputedStyle(pane),card=$('selected-workspace'),baseTop=box.top-(parseFloat(style.marginTop)||0),cardInset=card.getClientRects().length?card.getBoundingClientRect().top-box.top+pane.scrollTop:(parseFloat(style.paddingTop)||0),offset=Math.max(0,svg.getBoundingClientRect().top-baseTop-cardInset),visibleTop=visualViewport?.offsetTop??0;
+ const box=pane.getBoundingClientRect(),style=getComputedStyle(pane),card=$('ship-rail'),baseTop=box.top-(parseFloat(style.marginTop)||0),cardInset=card.getClientRects().length?card.getBoundingClientRect().top-box.top+pane.scrollTop:(parseFloat(style.paddingTop)||0),offset=Math.max(0,svg.getBoundingClientRect().top-baseTop-cardInset),visibleTop=visualViewport?.offsetTop??0;
  pane.style.setProperty('--right-pane-offset',offset+'px');
  pane.style.setProperty('--right-pane-height',Math.max(200,(visualViewport?.height??innerHeight)+visibleTop-Math.max(visibleTop,baseTop+offset))+'px');
 }

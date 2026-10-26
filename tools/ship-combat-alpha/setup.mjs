@@ -15,21 +15,31 @@ export function normalizeTemplate(v){
 }
 export function normalizeCrew(v={}){
  const mode=v.mode??'quick',rawRating=v.rating??'Green',version=v.ratingVersion??(Object.hasOwn(LEGACY_RATINGS,rawRating)?1:2);
- if(![1,2].includes(version)||!['quick','detailed'].includes(mode)||!Object.hasOwn(version===1?LEGACY_RATINGS:RATINGS,rawRating))throw Error('Choose a valid crew mode and experience rating.');
+ if(![1,2].includes(version)||!['quick','detailed','compact'].includes(mode)||!Object.hasOwn(version===1?LEGACY_RATINGS:RATINGS,rawRating))throw Error('Choose a valid crew mode and experience rating.');
  const rating=version===1?Object.keys(RATINGS).find(k=>RATINGS[k]===LEGACY_RATINGS[rawRating]):rawRating;
  const overrides={},details={};
  for(const role of ROLES){
   overrides[role]=optional(v.overrides?.[role],role+' total override',-10,20);
   const d=v.details?.[role];details[role]=d==null?null:{name:optionalName(d.name),skillName:text(d.skillName,'Skill / specialty'),skill:int(d.skill,'Skill level',0,10),characteristicDM:int(d.characteristicDM,'Characteristic DM',-5,5)};
  }
- return {mode,rating,ratingVersion:CREW_RATING_VERSION,bonus:optional(v.bonus,'General crew contribution',-10,20),overrides,details};
+ const extra={};
+ if(mode==='compact'||v.activeDetails!=null){
+  if(!Array.isArray(v.activeDetails)||v.activeDetails.some(r=>!ROLES.includes(r)))throw Error('Choose valid detailed roles.');
+  extra.activeDetails=[...new Set(v.activeDetails)];
+ }
+ if(v.gunnerStations!=null){
+  if(!Array.isArray(v.gunnerStations)||v.gunnerStations.length>32)throw Error('Record at most 32 gunner stations.');
+  extra.gunnerStations=v.gunnerStations.map(d=>{if(!/^[-a-z0-9]{1,32}$/.test(d.mountId))throw Error('Choose a valid weapon mount ID.');return {mountId:d.mountId,name:optionalName(d.name),skillName:text(d.skillName,'Skill / specialty'),skill:int(d.skill,'Skill level',0,10),characteristicDM:int(d.characteristicDM,'Other modifier',-5,5)};});
+  if(new Set(extra.gunnerStations.map(d=>d.mountId)).size!==extra.gunnerStations.length)throw Error('Gunner stations must have unique mount IDs.');
+ }
+ return {mode,rating,ratingVersion:CREW_RATING_VERSION,bonus:optional(v.bonus,'General crew contribution',-10,20),overrides,details,...extra};
 }
 export function normalizeSituational(v={}){return Object.fromEntries(ROLES.map(role=>[role,int(v[role]??0,role+' situational DM',-20,20)]));}
 export function crewContribution(crew,role){
  if(!ROLES.includes(role))throw Error('Unknown crew role.');
  const c=normalizeCrew(crew);
- if(c.mode==='quick')return c.overrides[role]??c.bonus??RATINGS[c.rating];
- const d=c.details[role];return d?d.skill+d.characteristicDM:null;
+ if(c.mode==='quick'||c.mode==='compact'&&!c.activeDetails.includes(role))return c.overrides[role]??c.bonus??RATINGS[c.rating];
+ const d=c.details[role];return d?d.skill+d.characteristicDM:c.mode==='compact'?(c.overrides[role]??c.bonus??RATINGS[c.rating]):null;
 }
 export function normalizeCondition(v,template){
  const manual=normalizeManualCondition(v,template?.record,template?.hull);
@@ -46,3 +56,9 @@ export function normalizeOverrides(value,base){
  return Object.keys(out).length?out:null;
 }
 export function overrideFields(ship){return Object.entries(ship.designOverrides??{}).flatMap(([key,v])=>key==='record'?Object.keys(v).map(k=>'record.'+k):[key]);}
+
+// A total crew rating never implies training or an actual skill level.
+export function crewSkill(crew,role){
+ if(!ROLES.includes(role))throw Error('Unknown crew role.');
+ const c=normalizeCrew(crew);return c.mode==='detailed'||c.mode==='compact'&&c.activeDetails.includes(role)?c.details[role]?.skill??null:null;
+}

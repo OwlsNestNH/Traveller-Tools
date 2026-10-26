@@ -1,3 +1,4 @@
+import {verifyCompactCrew} from './compact-crew-browser.mjs';
 import {verifyMapStability} from './map-stability-browser.mjs';
 import {verifySwitches} from './switches-browser.mjs';
 import {verifyStationPane} from './station-pane-browser.mjs';
@@ -28,7 +29,7 @@ import {ICONS} from '../appearance.mjs';
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const root=process.env.SHIP_COMBAT_TEST_ROOT||'http://127.0.0.1:8767/',base=new URL('tools/ship-combat-alpha/',root).href;
 const appSource=await readFile(new URL('../app.mjs',import.meta.url),'utf8');assert.equal(appSource.split('createState()').length,3);
-const artifacts=fileURLToPath(new URL('../verification-artifacts/',import.meta.url));await mkdir(artifacts,{recursive:true});
+const artifacts=process.env.SHIP_COMBAT_ARTIFACT_DIR||fileURLToPath(new URL('../verification-artifacts/',import.meta.url));await mkdir(artifacts,{recursive:true});
 const browser=await chromium.launch({headless:true}),report={head:process.env.SHIP_COMBAT_COMMIT??null,views:[]};
 const motion=(page,id)=>page.locator('[data-ship="'+id+'"]').evaluate(e=>({q:Number(e.dataset.q),r:Number(e.dataset.r),vq:Number(e.dataset.vq),vr:Number(e.dataset.vr)}));
 const revision=page=>page.locator('#map').getAttribute('data-revision');
@@ -40,7 +41,8 @@ async function target(page,q,r){await page.locator('#coordinate-fallback').evalu
 async function newPreset(page,id,name='Synthetic instance'){await page.locator('#new-ship').click();await page.locator('#design-select').selectOption(id);await page.locator('#instance-name').fill(name);await page.getByRole('button',{name:'Add to draft',exact:true}).click();}
 async function clearDraft(page){page.once('dialog',d=>d.accept());await page.locator('#clear-ships').click();}
 try{
-for(const width of [1876,1440,1100,390,320]){
+const widths=process.env.SHIP_COMBAT_TEST_WIDTHS?process.env.SHIP_COMBAT_TEST_WIDTHS.split(',').map(Number):[1876,1440,1100,390,320];assert.ok(widths.length&&widths.every(w=>[1876,1440,1100,390,320].includes(w)));
+for(const width of widths){
  const context=await browser.newContext({viewport:{width,height:1000},hasTouch:width<500}),page=await context.newPage(),errors=[];page.setDefaultTimeout(15000);page.on('pageerror',e=>errors.push(e.message));
  await context.addInitScript(()=>{const nativeRead=Storage.prototype.getItem;localStorage.setItem('traveller-trade-route-calculator:v1','synthetic-protected-campaign');window.__storageAccesses=[];window.__rawSentinel=()=>nativeRead.call(localStorage,'traveller-trade-route-calculator:v1');for(const method of ['getItem','setItem','removeItem','clear','key'])Storage.prototype[method]=()=>{window.__storageAccesses.push(method);throw Error('Ship prototype touched storage');};indexedDB.open=()=>{window.__storageAccesses.push('database');throw Error('Ship prototype opened storage');};});
  await context.route('**/*',route=>new URL(route.request().url()).origin===new URL(root).origin?route.continue():route.abort());
@@ -88,7 +90,7 @@ for(const width of [1876,1440,1100,390,320]){
  await open(page);await clearDraft(page);await save(page);assert.equal(await page.locator('.ship-node').count(),0);assert.equal(await page.locator('#advance').isDisabled(),true);assert.match(await page.locator('#ship-console').textContent(),/No ship selected/);await page.locator('#reset').click();await page.locator('#brake').click();assert.match(await page.locator('#braking-plan-status').textContent(),/Continuing stop active/);await page.locator('#advance').click();assert.equal((await motion(page,'merchant')).vq,1);await page.locator('#advance').click();assert.equal((await motion(page,'merchant')).vq,0);await page.locator('#reset').click();await edit(page,{thrust:2});await page.locator('#brake').click();assert.equal((await motion(page,'merchant')).vq,2);await page.locator('#advance').click();assert.deepEqual(await motion(page,'merchant'),{q:-5,r:2,vq:0,vr:0});
  await verifyFlight(page,width,artifacts,edit);
  await verifyResetDraft(page);
- await verifySystems(page,width,artifacts);await verifyUsability(page,width,artifacts);await verifyUnified(page,width,artifacts);await verifyWideConsole(page,width,artifacts);await verifySheet(page,width,artifacts);await verifyRangeCrew(page,width,artifacts);await verifyBottomSpace(page,width,artifacts);await verifyRightPane(page,width,artifacts);await verifyToolbar(page,width,artifacts);await verifyGridZoom(page,width,artifacts);await verifyAddScreen(page,width,artifacts);await verifySamples(page,width,artifacts);await verifyIconFit(page,width,artifacts);await verifyCatalogueEquipment(page);await verifyWrecks(page,width,artifacts);await verifyUnknownValues(page,width,artifacts);await verifyStationPane(page,width,artifacts);await verifySwitches(page,width,artifacts);await verifyMapStability(page,width,artifacts);
+ await verifySystems(page,width,artifacts);await verifyUsability(page,width,artifacts);await verifyUnified(page,width,artifacts);await verifyWideConsole(page,width,artifacts);await verifySheet(page,width,artifacts);await verifyRangeCrew(page,width,artifacts);await verifyBottomSpace(page,width,artifacts);await verifyRightPane(page,width,artifacts);await verifyToolbar(page,width,artifacts);await verifyGridZoom(page,width,artifacts);await verifyAddScreen(page,width,artifacts);await verifySamples(page,width,artifacts);await verifyIconFit(page,width,artifacts);await verifyCatalogueEquipment(page);await verifyWrecks(page,width,artifacts);await verifyUnknownValues(page,width,artifacts);await verifyStationPane(page,width,artifacts);await verifyCompactCrew(page,width,artifacts);await verifySwitches(page,width,artifacts);await verifyMapStability(page,width,artifacts);
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.deepEqual(await page.evaluate(()=>window.__storageAccesses),[]);assert.equal(await page.evaluate(()=>window.__rawSentinel()),'synthetic-protected-campaign');assert.deepEqual(errors,[]);report.views.push({width,passed:true});console.log('PASS '+width+'px: movement/icons, draft Save/Cancel, placement, full custom records, generic/detailed crew, manual gauges/criticals/fuel, immutable overrides, Harrier, cap and storage isolation');
  }catch(error){await page.screenshot({path:artifacts+'failure-'+width+'.png',fullPage:true}).catch(()=>{});throw error;}finally{await context.close();}
 }
