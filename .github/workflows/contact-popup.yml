@@ -1,0 +1,45 @@
+name: Contact popup checks
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'assets/js/contact-me.js'
+      - 'assets/css/contact-me.css'
+      - 'tools/ship-combat-alpha/index.html'
+      - 'tools/trade-route-calculator/index.html'
+      - 'tests/contact-browser.mjs'
+      - '.github/workflows/contact-popup.yml'
+permissions:
+  contents: read
+jobs:
+  contact:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - name: Install browser
+        run: |
+          npm install --prefix "$RUNNER_TEMP/contact-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
+          node "$RUNNER_TEMP/contact-playwright/node_modules/playwright/cli.js" install --with-deps chromium
+      - name: Verify both tools at five widths
+        env:
+          CONTACT_ROOT: http://127.0.0.1:8780/
+          CONTACT_ARTIFACTS: contact-evidence
+          CONTACT_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          node --check assets/js/contact-me.js
+          python3 -m http.server 8780 --bind 127.0.0.1 > "$RUNNER_TEMP/contact-server.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          node tests/contact-browser.mjs "$RUNNER_TEMP/contact-playwright/node_modules/playwright"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: contact-popup-${{ github.event.pull_request.head.sha }}
+          path: contact-evidence/
