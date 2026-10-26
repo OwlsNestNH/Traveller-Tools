@@ -18,3 +18,5 @@
 .station-console #station-pane #drive-status{margin:5px 0 0;padding:0;border:0;font-size:12px}
 .station-console #station-pane .station-crew-summary{margin:10px 0}
 @media(max-width:360px){.station-console #station-pane #selected-workspace .stat-strip strong{font-size:12px}}
+
+.pilot-check{margin:10px 0}.pilot-difficulties{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}.pilot-difficulties button{min-width:0;min-height:40px;padding:4px;font-size:13px}.pilot-difficulties button[aria-pressed=true]{background:#7dd3df;color:#071c29;border-color:#7dd3df;font-weight:750}.pilot-check>[data-pilot-check]{width:100%;min-height:44px;margin-top:5px}.station-console #station-pane .pilot-check-breakdown{display:block;color:#b4c9d5;font-size:12px;line-height:1.5;margin:5px 0}.pilot-check-result{font-size:13px;margin:5px 0}.pilot-check-result:empty{display:none}
