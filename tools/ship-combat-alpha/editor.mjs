@@ -1,6 +1,7 @@
 import {validateSoftwareSetup,readSoftwareSetupChanges} from './software-setup.mjs';
 import {renderCompactCrew,readCompactCrew,bindCompactCrew,validateCompactCrew} from './compact-crew.mjs';
 import {powerReport} from './systems.mjs';
+import {readDriveSetup} from './design-drive-editor.mjs';
 import {arrangeSetupSheet,readSheetCondition} from './setup-sheet.mjs';
 import {weaponRow,readWeaponRow,bindWeaponRows} from './weapon-fit-editor.mjs';
 import {isEnergyWeapon,recordedWeaponPower} from './weapon-supply.mjs';
@@ -27,6 +28,7 @@ export function designFields(prefix,t){const r=t?.record??{},locked=!!t?.source,
 export function readDesign(prefix,original){const form=$(prefix+'-form'),r={tl:number(prefix+'-tl'),className:nullable(prefix+'-class'),reference:nullable(prefix+'-reference'),ratedPower:number(prefix+'-rated-power'),fuelCapacity:number(prefix+'-fuel-capacity'),cargoCapacity:number(prefix+'-cargo-capacity'),crewTotal:number(prefix+'-crew-total'),jump:number(prefix+'-jump'),sensors:nullable(prefix+'-sensors'),computer:nullable(prefix+'-computer'),software:nullable(prefix+'-software'),published:original?.record?.published??null};
  const weapons=$(prefix+'-weapons'),requirements=$(prefix+'-requirements');r.weapons=$(prefix+'-no-weapons').checked?[]:weapons.dataset.known==='true'?[...weapons.querySelectorAll('[data-weapon-row]')].map(readWeaponRow):null;
  r.requirements=requirements.dataset.known==='true'?[...requirements.querySelectorAll('[data-requirement-row]')].map(row=>{const ins=row.querySelectorAll('input');const i=row.dataset.originIndex;return editedRequirement(i===''?null:original?.record?.requirements?.[Number(i)],ins[0].value,ins[1].value===''?null:Number(ins[1].value));}):null;
+ const drive=readDriveSetup($(prefix+'-design-thrust'))??original?.record?.manoeuvre;if(drive)r.manoeuvre=drive;
  validateSoftwareSetup(r.software,original?.record?.software);
  return normalizeTemplate({...original,name:value(prefix+'-design-name'),tons:number(prefix+'-tons'),thrust:number(prefix+'-design-thrust'),hull:number(prefix+'-hull'),armour:number(prefix+'-armour'),record:r});
 }

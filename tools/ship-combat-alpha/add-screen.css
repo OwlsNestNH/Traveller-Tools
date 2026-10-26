@@ -48,3 +48,5 @@
 
 /* Bottom-align paired fields so wrapped capacity labels do not offset Current. */
 :is(#setup-dialog,#ship-sheet) .setup-systems .setup-numeric-pair td{vertical-align:bottom}
+
+.drive-design-controls>summary{cursor:pointer;margin-top:8px}.drive-tech-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px}.drive-tech-row small{grid-column:1/-1}.drive-design-controls .check{display:flex;align-items:center;gap:8px}.drive-design-controls .check input{width:auto!important}.drive-design-controls [hidden]{display:none!important}@media(max-width:700px){.drive-tech-row{grid-template-columns:minmax(0,1fr)}.drive-tech-row button{justify-self:end}.drive-tech-row small{grid-column:1}}
