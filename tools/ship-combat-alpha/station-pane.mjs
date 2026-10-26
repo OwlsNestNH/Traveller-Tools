@@ -1,3 +1,4 @@
+import {isEnergyWeapon,recordedWeaponPower} from './weapon-supply.mjs';
 import {PILOT_DIFFICULTIES,pilotCheckProfile,resolvePilotCheck,rollPilotDice} from './pilot-check.mjs';
 import {availableThrust,plannedTarget,coastTarget,hexDistance} from './engine.mjs';
 import {STATIONS} from './console-layout.mjs';
@@ -7,7 +8,7 @@ import {powerReport,systemProfile} from './systems.mjs';
 import {stationPowerRows,setStationSystem} from './station-power.mjs';
 import {escapeHTML as esc,shown,sourceLabel,signed} from './ui-format.mjs';
 
-export function createStationPane({getState,getSelected,isLocked,onCommit,onSelect,onRefresh,onDetails,onCondition,onAdvanced,onRoleChange=()=>{}}){
+export function createStationPane({getState,getSelected,isLocked,onCommit,onSelect,onRefresh,onDetails,onCondition,onAdvanced,onRoleChange=()=>{},onAmmunition=()=>{}}){
  const $=id=>document.getElementById(id),root=$('station-pane'),content=$('station-records'),pilot=$('selected-controls');
  let station='pilot',draft=null,error='',checkDifficulty=8,checkResult=null,checkContext='',checkError='';
  const selected=()=>getState().ships.find(s=>s.id===getSelected());
@@ -43,7 +44,7 @@ export function createStationPane({getState,getSelected,isLocked,onCommit,onSele
   if(station==='astrogator')text=`<p>Recorded jump rating: ${esc(shown(r.jump))}</p><p>Jump plotting and astrogation checks are not implemented.</p>`;
   if(station==='damage')text=`<p>Current hull: ${esc(shown(ship.condition.hull))} · Design hull: ${esc(shown(design?.hull))}</p><p>Condition and criticals are manual records. No damage or repair rolls are implemented.</p><button type="button" data-station-condition>Condition / criticals</button>`;
   if(station==='sensors')text=`<p>Recorded sensors: ${esc(r.sensors??'Unknown')}</p><p>Detection and sensor checks are not implemented.</p>`;
-  if(station==='gunnery')text=`<ul>${r.weapons==null?'<li>Weapon fit unknown / untranscribed.</li>':r.weapons.length?r.weapons.map(w=>`<li>${esc(w.name)}: ${w.count} × ${esc(w.type)}; initial ammunition ${esc(shown(w.ammunition))}</li>`).join(''):'<li>Explicitly unarmed.</li>'}</ul><p>Firing and damage are not implemented.</p>`;
+  if(station==='gunnery')text=`<ul>${r.weapons==null?'<li>Weapon fit unknown / untranscribed.</li>':r.weapons.length?r.weapons.map(w=>`<li>${esc(w.name)}: ${w.fit?esc(shown(w.fit.quantity))+' mount(s) · ':w.count+' × '}${esc(w.type)}; ${isEnergyWeapon(w)?'Power '+esc(shown(recordedWeaponPower(design,w))):ship.condition.ammunition?'loaded/reserve counts in inventory':'initial loaded '+esc(shown(w.ammunition))}</li>`).join(''):'<li>Explicitly unarmed.</li>'}</ul><p>Firing and damage are not implemented.</p><button type="button" data-station-ammunition ${locked||draft||getState().acceleration?'disabled':''}>Ammunition inventory</button>`;
   content.innerHTML=`${text}${station!=='comms'?`<p>Crew: ${esc(crew?.name||'No individual name recorded')} · contribution ${esc(signed(crewContribution(ship.crew,crewRole)))}</p>`:''}<p class="help">${esc(sourceLabel(ship.template))}</p><button type="button" data-station-details>Ship details / crew</button>`;
  }
  function choose(id){if(!STATIONS.some(([key])=>key===id))return;onRoleChange();station=id;render();if(innerWidth>700){const pane=$('combat-right');pane.scrollTop+=root.getBoundingClientRect().top-pane.getBoundingClientRect().top;}$('station-pane-title').focus({preventScroll:true});}
@@ -61,6 +62,7 @@ export function createStationPane({getState,getSelected,isLocked,onCommit,onSele
   if(b.dataset.pilotAction)$(b.dataset.pilotAction).click();
   if(b.dataset.pilotReserve){if(isLocked())return;const field=$('reserved-'+b.dataset.pilotReserve);if(!field||field.disabled)return;$('round-planning').open=true;$('reservation-editor').open=true;field.focus();field.scrollIntoView({block:'nearest'});}
   if(b.dataset.pilotCommit)$(b.dataset.pilotCommit)?.click();
+  if(b.hasAttribute('data-station-ammunition'))onAmmunition();
   if(b.hasAttribute('data-station-details'))onDetails();if(b.hasAttribute('data-station-condition'))onCondition();if(b.hasAttribute('data-station-advanced'))onAdvanced();
  });
  return {render,choose,hasDraft:()=>!!draft,clear:()=>{draft=null;error='';station='pilot';checkDifficulty=8;checkResult=null;checkContext='';checkError='';render();}};

@@ -1,3 +1,5 @@
+import {validateInventoryFit} from './ammunition.mjs';
+import {validateWeaponFits} from './weapon-fit.mjs';
 import {normalizeRecord,normalizeManualCondition,optionalName} from './ship-record.mjs';
 // Setup data is independent of motion. No storage, I/O, dice or combat resolution.
 export const MAX_SHIPS=10;
@@ -11,7 +13,7 @@ const optional=(v,label,min,max)=>v===null||v===undefined?null:int(v,label,min,m
 export function normalizeTemplate(v){
  if(v==null)return null;
  if(!Number.isFinite(v.tons)||v.tons<=0||v.tons>400)throw Error('Ship displacement must be greater than zero and at most 400 tons.');
- return {name:text(v.name,'Design name'),tons:v.tons,thrust:int(v.thrust,'Design thrust',0,10000),hull:optional(v.hull,'Design hull',1,1000000),armour:optional(v.armour,'Armour',0,1000),record:normalizeRecord(v.record),notes:v.notes==null?'':String(v.notes).slice(0,240),source:v.source==null?null:{book:text(v.source.book,'Source book',100),page:int(v.source.page,'Printed page',1,1000),endPage:optional(v.source.endPage,'Last printed page',v.source.page,1000)}};
+ const result={name:text(v.name,'Design name'),tons:v.tons,thrust:int(v.thrust,'Design thrust',0,10000),hull:optional(v.hull,'Design hull',1,1000000),armour:optional(v.armour,'Armour',0,1000),record:normalizeRecord(v.record),notes:v.notes==null?'':String(v.notes).slice(0,240),source:v.source==null?null:{book:text(v.source.book,'Source book',100),page:int(v.source.page,'Printed page',1,1000),endPage:optional(v.source.endPage,'Last printed page',v.source.page,1000)}};validateWeaponFits(result);return result;
 }
 export function normalizeCrew(v={}){
  const mode=v.mode??'quick',rawRating=v.rating??'Green',version=v.ratingVersion??(Object.hasOwn(LEGACY_RATINGS,rawRating)?1:2);
@@ -42,7 +44,7 @@ export function crewContribution(crew,role){
  const d=c.details[role];return d?d.skill+d.characteristicDM:c.mode==='compact'?(c.overrides[role]??c.bonus??RATINGS[c.rating]):null;
 }
 export function normalizeCondition(v,template){
- const manual=normalizeManualCondition(v,template?.record,template?.hull);
+ const manual=normalizeManualCondition(v,template?.record,template?.hull);validateInventoryFit(manual.ammunition,template);
  const hull=optional(v?.hull,'Current hull',0,manual.usableHull??template?.hull??1000000);
  return {hull,...manual};
 }

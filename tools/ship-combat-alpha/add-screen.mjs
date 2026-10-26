@@ -40,6 +40,7 @@ export function mountAddScreen({source,readDesign,setWeapons}){
  $('add-customize').addEventListener('click',customize);
  preview.addEventListener('click',e=>{const field=e.target.closest('[data-unknown-value]'),ammo=e.target.closest('[data-unknown-ammo]');if(field){const input=$('new-'+field.dataset.unknownValue);editUnknownInput(input,{fallbackFocus:()=>$('design-select'),label:field.dataset.unknownValue==='hull'?'Maximum hull points':'Armour',reference:'Save to this Add Ship draft only. Published source retained: '+sourceLabel(source()),onSave:refresh});}if(ammo){const id=ammo.dataset.unknownAmmo,src=source(),fit=design().record.weapons,w=fit?.find(w=>w.id===id);if(!w||isEnergyWeapon(w))return;openUnknownNumber({fallbackFocus:()=>$('design-select'),label:w.name+' initial ammunition',step:1,reference:'Manual initial count for this existing mount, not storage capacity. Save to this Add Ship draft only.',onSave:value=>{if(!form.isConnected||source()!==src||!design().record.weapons?.some(x=>x.id===id&&x.type===w.type))throw Error('The ship or mount changed. Cancel and reopen.');if(custom){setWeapons(design().record.weapons.map(x=>x.id===id?{...x,ammunition:value}:x));}else manualAmmo[id]=value;refresh();}});}});
 
+ form.addEventListener('weapon-fit-change',()=>{custom=true;refresh();});
  form.addEventListener('input',e=>{
   if(e.target.name==='add-side-card')$('add-side').value=e.target.value;
   if(e.target.name==='add-rating')$('add-crew-rating').value=e.target.value;
