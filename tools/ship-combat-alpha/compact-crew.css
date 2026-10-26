@@ -4,3 +4,17 @@
 
 #crew-sheet .crew-default{flex-direction:row;justify-content:flex-start}#crew-sheet .crew-row-editor>.check,#crew-sheet [data-gunner-mount]>.check{flex-direction:row;align-items:center;justify-content:flex-start;gap:10px}#crew-sheet .crew-row-editor details{padding-top:8px}#crew-sheet .sheet-body>p:first-child{margin-top:0}
 @media(max-width:700px){#crew-sheet .crew-default{flex-direction:column;align-items:stretch}}
+
+/* Shared station status stays one compact row, including the 320px sidebar. */
+.station-console #station-pane #selected-workspace{padding:0;margin:8px 0;background:transparent;border:0}
+.station-console #station-pane #selected-workspace .stat-strip{grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border-block:1px solid #35505e;padding:5px 0}
+.station-console #station-pane #selected-workspace .stat-strip button{min-width:0;min-height:48px;padding:4px 2px;gap:3px;background:transparent;border:0;border-radius:0;text-align:center;align-items:center;overflow-wrap:normal}
+.station-console #station-pane #selected-workspace .stat-strip button+button{border-left:1px solid #35505e}
+.station-console #station-pane #selected-workspace .stat-strip button[aria-expanded=true]{background:#21434c}
+.station-console #station-pane #selected-workspace .stat-strip button>span{font-size:12px;line-height:16px;white-space:nowrap}
+.station-console #station-pane #selected-workspace .stat-strip strong{font-size:13px;line-height:18px;white-space:nowrap}
+.station-console #station-pane #selected-workspace .stat-strip small{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.station-console #station-pane #selected-workspace #stat-editor{padding:8px;margin-top:6px;border:1px solid #35505e;border-radius:6px}
+.station-console #station-pane #drive-status{margin:5px 0 0;padding:0;border:0;font-size:12px}
+.station-console #station-pane .station-crew-summary{margin:10px 0}
+@media(max-width:360px){.station-console #station-pane #selected-workspace .stat-strip strong{font-size:12px}}
