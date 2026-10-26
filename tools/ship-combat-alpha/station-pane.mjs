@@ -6,7 +6,7 @@ import {powerReport,systemProfile} from './systems.mjs';
 import {stationPowerRows,setStationSystem} from './station-power.mjs';
 import {escapeHTML as esc,shown,sourceLabel,signed} from './ui-format.mjs';
 
-export function createStationPane({getState,getSelected,isLocked,onCommit,onSelect,onRefresh,onDetails,onCondition,onAdvanced}){
+export function createStationPane({getState,getSelected,isLocked,onCommit,onSelect,onRefresh,onDetails,onCondition,onAdvanced,onRoleChange=()=>{}}){
  const $=id=>document.getElementById(id),root=$('station-pane'),content=$('station-records'),pilot=$('selected-controls');
  let station='pilot',draft=null,error='';
  const selected=()=>getState().ships.find(s=>s.id===getSelected());
@@ -14,7 +14,7 @@ export function createStationPane({getState,getSelected,isLocked,onCommit,onSele
   const ship=selected(),own=draft?.shipId===ship?.id,locked=isLocked();
   root.dataset.station=station;$('station-pane-title').textContent=STATIONS.find(([id])=>id===station)[1]+(ship?' — '+ship.name:'');
   document.querySelectorAll('[data-console-station]').forEach(e=>e.setAttribute('aria-pressed',String(e.dataset.consoleStation===station)));
-  pilot.hidden=station!=='pilot'||!ship;$('round-planning').hidden=station!=='pilot'||!ship;
+  $('drive-status').hidden=station!=='pilot'||!ship;pilot.hidden=station!=='pilot'||!ship;$('round-planning').hidden=station!=='pilot'||!ship;
   $('station-pending').innerHTML=draft?`<p>Pending Engineer changes for ${esc(draft.name)}. ${own?'':'Select that ship to continue.'}</p><button type="button" data-station-return>Return to Engineer draft</button> <button type="button" data-station-cancel>Cancel Engineer changes</button>`:'';
   if(!ship){content.innerHTML='<p>Select or add a ship.</p>';return;}
   const design=effectiveDesign(ship),r=design?.record??{};
@@ -42,7 +42,7 @@ export function createStationPane({getState,getSelected,isLocked,onCommit,onSele
   if(station==='gunnery')text=`<ul>${r.weapons==null?'<li>Weapon fit unknown / untranscribed.</li>':r.weapons.length?r.weapons.map(w=>`<li>${esc(w.name)}: ${w.count} × ${esc(w.type)}; initial ammunition ${esc(shown(w.ammunition))}</li>`).join(''):'<li>Explicitly unarmed.</li>'}</ul><p>Firing and damage are not implemented.</p>`;
   content.innerHTML=`${text}${station!=='comms'?`<p>Crew: ${esc(crew?.name||'No individual name recorded')} · contribution ${esc(signed(crewContribution(ship.crew,crewRole)))}</p>`:''}<p class="help">${esc(sourceLabel(ship.template))}</p><button type="button" data-station-details>Ship details / crew</button>`;
  }
- function choose(id){if(!STATIONS.some(([key])=>key===id))return;station=id;render();if(innerWidth>700){const pane=$('combat-right');pane.scrollTop+=root.getBoundingClientRect().top-pane.getBoundingClientRect().top;}$('station-pane-title').focus({preventScroll:true});}
+ function choose(id){if(!STATIONS.some(([key])=>key===id))return;onRoleChange();station=id;render();if(innerWidth>700){const pane=$('combat-right');pane.scrollTop+=root.getBoundingClientRect().top-pane.getBoundingClientRect().top;}$('station-pane-title').focus({preventScroll:true});}
  root.addEventListener('change',e=>{const key=e.target.dataset.stationSystem;if(!key)return;if(isLocked()||draft&&draft.shipId!==getSelected())return;try{draft??=beginSystemsDraft(getState(),getSelected());draft.systems=setStationSystem(draft.systems,key,key==='basic'?Number(e.target.value):e.target.checked);error='';onRefresh();root.querySelector(`[data-station-system="${key}"]`)?.focus({preventScroll:true});}catch(err){error=err.message;render();}});
  root.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
   if(b.hasAttribute('data-station-cancel')){draft=null;error='';onRefresh();}
