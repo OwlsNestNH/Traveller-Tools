@@ -31,3 +31,5 @@ body.station-console.map-expanded .map-panel{position:static;inset:auto;z-index:
 #shared-hex-chooser{height:fit-content;min-height:0;max-height:85dvh;margin:auto;inset:0}#scene .shared-count{fill:#fff!important;stroke:#153b4a!important;font-size:14px}.shared-count-hit{fill:#153b4a}
 
 .shared-chooser-actions{display:flex;flex-wrap:wrap;gap:8px}.shared-chooser-actions .primary{flex:1}
+
+.shared-stack.shared-selected .shared-count-hit{stroke:#75e0d4;stroke-width:2}.shared-stack:focus .shared-count-hit{stroke:#fff;stroke-width:3}
