@@ -61,3 +61,5 @@ test('explicit unknown efficiency does not fall back to an invented operational 
 });
 
 test('unconfigured Custom Ship does not invent an installed M-drive or verified tech profile',()=>{const c=initialManoeuvre(null);assert.equal(c.kind,'unknown');assert.equal(c.mode,'recorded');assert.equal(c.tech.profile,'unknown');});
+
+test('manual requirement provenance never inherits the ship publication citation',()=>{const d={thrust:2,source:{book:'Synthetic source',page:1},record:{requirements:[{name:'Manoeuvre drive',power:87,source:null,basis:'manual override'}]}};const r=designDrivePower(d);assert.equal(r.source,null);assert.equal(r.basis,'Manual recorded');});

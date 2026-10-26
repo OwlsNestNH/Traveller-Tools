@@ -38,7 +38,7 @@ export const isDriveRequirement=name=>['manoeuvre','manoeuvredrive'].includes((n
 export function recordedDrivePower(design){
  const rows=(design?.record?.requirements??[]).filter(r=>isDriveRequirement(r.name));
  if(rows.length!==1)return {value:null,reason:rows.length?'Multiple drive requirement records need review.':'No recorded M-drive Power requirement.',source:null,basis:'Recorded'};
- const r=rows[0];return {value:r.power??null,reason:r.power==null?'Recorded M-drive Power is unknown.':'',source:r.source??design?.source??null,basis:r.basis==='manual override'?'Manual recorded':'Recorded',record:r};
+ const r=rows[0];return {value:r.power??null,reason:r.power==null?'Recorded M-drive Power is unknown.':'',source:Object.hasOwn(r,'source')?r.source:design?.source??null,basis:r.basis==='manual override'?'Manual recorded':'Recorded',record:r};
 }
 export function initialManoeuvre(design){
  if(design?.record?.manoeuvre)return structuredClone(design.record.manoeuvre);
