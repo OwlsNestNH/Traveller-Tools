@@ -45,3 +45,6 @@
 
 @media(max-width:700px){.software-setup-row{grid-template-columns:minmax(0,1fr)}.software-setup-row button{justify-self:end;padding:5px 10px;min-height:36px}.software-setup-row small{grid-column:1}.software-setup-row select{font-size:12px}}
 @media(max-width:700px){#ship-sheet .setup-systems th:last-child{width:28%}#ship-sheet .setup-systems th:first-child{width:25%}}
+
+/* Bottom-align paired fields so wrapped capacity labels do not offset Current. */
+:is(#setup-dialog,#ship-sheet) .setup-systems .setup-numeric-pair td{vertical-align:bottom}
