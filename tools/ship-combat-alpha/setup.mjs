@@ -1,3 +1,4 @@
+import {synchronizeRoster} from './crew-roster.mjs';
 import {validateInventoryFit} from './ammunition.mjs';
 import {validateWeaponFits} from './weapon-fit.mjs';
 import {normalizeRecord,normalizeManualCondition,optionalName} from './ship-record.mjs';
@@ -34,7 +35,7 @@ export function normalizeCrew(v={}){
   extra.gunnerStations=v.gunnerStations.map(d=>{if(!/^[-a-z0-9]{1,32}$/.test(d.mountId))throw Error('Choose a valid weapon mount ID.');return {mountId:d.mountId,name:optionalName(d.name),skillName:text(d.skillName,'Skill / specialty'),skill:int(d.skill,'Skill level',0,10),characteristicDM:int(d.characteristicDM,'Other modifier',-5,5)};});
   if(new Set(extra.gunnerStations.map(d=>d.mountId)).size!==extra.gunnerStations.length)throw Error('Gunner stations must have unique mount IDs.');
  }
- return {mode,rating,ratingVersion:CREW_RATING_VERSION,bonus:optional(v.bonus,'General crew contribution',-10,20),overrides,details,...extra};
+ return synchronizeRoster({mode,rating,ratingVersion:CREW_RATING_VERSION,bonus:optional(v.bonus,'General crew contribution',-10,20),overrides,details,...extra,...(v.roster==null?{}:{roster:v.roster})},ROLES);
 }
 export function normalizeSituational(v={}){return Object.fromEntries(ROLES.map(role=>[role,int(v[role]??0,role+' situational DM',-20,20)]));}
 export function crewContribution(crew,role){

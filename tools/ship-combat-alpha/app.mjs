@@ -76,10 +76,11 @@ function drawMap(){
  $('map-detail').textContent=!$('grid-toggle').checked?'Hex grid off. Positions and target legality are unchanged.':grid.limited?'Hex detail hidden at distant zoom. The map and reach boundary remain proportional; zoom in for individual hexes.':'Reachable hexes are highlighted around the selected ship’s coast target. Ranges use Euclidean centres at 648 km per space. Hex steps measure thrust, not physical range.';
 }
 function drawPlacementMap(){
+ const focusedShip=scene.contains(document.activeElement)?document.activeElement.closest('[data-ship]')?.dataset.ship:null;
  const placement=editors.getPlacement(),grid=visibleGrid(camera,mapWidth(),mapHeight()),screen=mapUnit()/camera.zoom;svg.setAttribute('viewBox',(-mapWidth()/2)+' '+(-mapHeight()/2)+' '+mapWidth()+' '+mapHeight());
  let html=!grid.limited?grid.cells.map(cell=>`<polygon class="cell placement-cell" data-q="${cell.q}" data-r="${cell.r}" points="${hexPolygon(toWorld(cell))}" style="stroke-width:${.65*screen}"/>`).join(''):'';
  html+=shipNodes(placement.draft.ships,screen,null);if(placement.preview){const point=toWorld(placement.preview);html+=`<polygon class="placement-preview" points="${hexPolygon(point)}" stroke-width="${2*screen}"/><text x="${point.x}" y="${point.y-20*screen}" text-anchor="middle" font-size="${13*screen}">Placement ${pair(placement.preview)}</text>`;}
- scene.setAttribute('transform',`translate(${camera.x} ${camera.y}) scale(${camera.zoom})`);scene.innerHTML=html;$('map-detail').textContent='PLACEMENT PREVIEW · drag to pan, click/tap a hex, then Use this position. No ship or movement is committed.';$('zoom-level').textContent=Math.round(camera.zoom*100)+'%';
+ scene.setAttribute('transform',`translate(${camera.x} ${camera.y}) scale(${camera.zoom})`);scene.innerHTML=html;if(focusedShip)scene.querySelector(`[data-ship="${focusedShip}"]`)?.focus({preventScroll:true});$('map-detail').textContent='PLACEMENT PREVIEW · drag to pan, click/tap a hex, then Use this position. No ship or movement is committed.';$('zoom-level').textContent=Math.round(camera.zoom*100)+'%';
 }
 function scheduleMap(){if(!frame)frame=requestAnimationFrame(drawMap);}
 function render(){populate();stationPane?.render();drawMap();}
