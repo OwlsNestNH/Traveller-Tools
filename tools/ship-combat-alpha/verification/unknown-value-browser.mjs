@@ -27,7 +27,7 @@ export async function verifyUnknownValues(page,width,artifacts){
    await p.locator('#add-ship-main').click();await p.locator('#design-select').selectOption('drinax-harrier-restored');
    if(customFirst)await p.locator('#add-customize').click();
    const id=await p.locator('#add-preview [data-unknown-ammo]').first().getAttribute('data-unknown-ammo');
-   await p.locator('#add-preview [data-unknown-ammo]').first().click();await p.locator('#unknown-number').fill('3');await save();
+   await p.locator('#add-preview [data-unknown-ammo]').first().click();await p.locator('#unknown-number').fill('13');await save();assert.equal(await p.locator('#unknown-number').isVisible(),true);await p.locator('#unknown-number').fill('3');await save();
    if(!customFirst)await p.locator('#add-customize').click();
    const mount=p.locator('#new-weapons [data-mount-id="'+id+'"]');assert.equal(await mount.locator('[id^="mount-ammo-"]').inputValue(),'3');
    await mount.locator('details').evaluate(e=>e.open=true);await mount.locator('[id^="mount-ammo-"]').fill('5');assert.match(await p.locator('.add-fit').textContent(),/Initial ammunition: 5/);
