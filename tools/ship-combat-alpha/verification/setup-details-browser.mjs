@@ -7,7 +7,7 @@ export async function verifySetupDetails(page,width,artifacts){
  const state=()=>p.evaluate(()=>window.__detailsState());
  try{
   await p.goto(page.url());await p.locator('#add-ship-main').click();await p.locator('#design-select').selectOption('core-194');await p.locator('#instance-name').fill('Synthetic details test');
-  await p.locator('[data-setup-view=detailed]').click();const originalText=await p.locator('#new-software').inputValue();
+  await p.locator('[data-setup-view=detailed]').click();assert.equal(await p.locator('.sheet-help[open]').count(),0);const originalText=await p.locator('#new-software').inputValue();
   await p.locator('.software-setup [data-add-software]').click();const added=p.locator('.software-setup select').last();await added.selectOption('Library / 0');assert.match(await p.locator('#new-software').inputValue(),/Library/);
   await p.locator('#cancel-setup').click();await p.locator('#add-ship-main').click();await p.locator('#design-select').selectOption('core-194');assert.equal(await p.locator('#new-software').inputValue(),originalText);
   await p.locator('#instance-name').fill('Synthetic details test');await p.locator('#place-on-map').click();await p.locator('.ship-node').first().focus();await p.keyboard.press('Enter');await p.waitForFunction(()=>window.__detailsState().ships.length===6);

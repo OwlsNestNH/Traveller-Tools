@@ -5,7 +5,7 @@ export const readSoftwareSetupChanges=input=>drafts.get(input)??null;
 // Keep the original string byte-for-byte until the user changes a row.
 export function mountSoftwareSetup(input,systems){
  const container=document.createElement('div');container.className='software-setup';
- const rawLabel=input.closest('label'),help=document.createElement('details');help.innerHTML='<summary>Software notes and original text</summary><p>Installed package records only. Dropdown rows edit installed packages. Legacy text edits retain independent operating packages. Running allocations remain separate. Unknown/source-specific entries are retained. New choices use the cited catalogue requirements; no combat effect is automated.</p>';rawLabel.before(container,help);help.append(rawLabel);
+ const rawLabel=input.closest('label'),help=document.createElement('details');help.className='sheet-help';help.innerHTML='<summary>Software notes and original text</summary><p>Installed package records only. Dropdown rows edit installed packages. Legacy text edits retain independent operating packages. Running allocations remain separate. Unknown/source-specific entries are retained. New choices use the cited catalogue requirements; no combat effect is automated.</p>';rawLabel.before(container,help);help.append(rawLabel);
  const choices=SOFTWARE.flatMap(p=>p.variants.map(v=>({value:p.name+' / '+v.rating,label:p.name+' / '+v.rating+' · '+v.bandwidth+' BW · TL '+v.tl,source:p.source,note:p.note})));
  const key=value=>value.toLowerCase().replace(/\s*\/\s*/g,'/');
  const match=value=>choices.find(c=>key(c.value)===key(value)||key(c.value.replace(' / 0',''))===key(value));
