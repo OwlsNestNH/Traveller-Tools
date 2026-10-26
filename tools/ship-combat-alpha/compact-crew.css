@@ -17,3 +17,4 @@
 .station-console #station-pane #selected-workspace #stat-editor{padding:8px;margin-top:6px;border:1px solid #35505e;border-radius:6px}
 .station-console #station-pane #drive-status{margin:5px 0 0;padding:0;border:0;font-size:12px}
 .station-console #station-pane .station-crew-summary{margin:10px 0}
+@media(max-width:360px){.station-console #station-pane #selected-workspace .stat-strip strong{font-size:12px}}
