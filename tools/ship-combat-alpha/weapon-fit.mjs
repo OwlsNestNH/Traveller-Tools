@@ -1,3 +1,5 @@
+import {normalizeWeaponTech,weaponTechReason,WEAPON_TECH_OPTIONS,WEAPON_TECH_PROFILES} from './weapon-tech.mjs';
+import {decimal,add,multiply,numeric} from './power-arithmetic.mjs';
 // Bounded setup facts. High Guard Update 2022 pp26,28–31,36,81; Core Update2022 pp167–168,184.
 // No attack, damage, reload timing or salvo resolution.
 export const WEAPON_TYPES=Object.freeze([
@@ -20,7 +22,9 @@ export function normalizeWeaponFit(v){
  const max=v.kind==='turret'?4:v.kind==='fixed'?3:1;if(count>max)throw Error('This mount class does not support that many slots.');
  if(!MISSILE_TYPES.includes(v.missileType??'Unknown'))throw Error('Choose a listed missile type.');
  const quantity=v.quantity==null?null:v.quantity;if(quantity!=null&&(!Number.isSafeInteger(quantity)||quantity<1||quantity>32))throw Error('Mount quantity must be 1 to 32, or unknown.');
- return {version:1,kind:v.kind,rules:v.rules,slots,quantity,powerOverride:optionalNumber(v.powerOverride,'Mount Power override'),missileType:v.missileType??'Unknown'};
+ const extra={};if(v.tech!==undefined){if(!Array.isArray(v.tech)||v.tech.length!==4)throw Error('Record tech options for four slots.');extra.tech=v.tech.map(normalizeWeaponTech);if(extra.tech.some((t,i)=>t&&!slots[i]))throw Error('An empty slot cannot have tech options.');}
+ if(v.powerMode!==undefined){if(!['recorded','calculated'].includes(v.powerMode))throw Error('Choose a valid weapon Power basis.');extra.powerMode=v.powerMode;extra.recordedPower=optionalNumber(v.recordedPower,'Recorded weapon Power');}
+ return {...extra,version:1,kind:v.kind,rules:v.rules,slots,quantity,powerOverride:optionalNumber(v.powerOverride,'Mount Power override'),missileType:v.missileType??'Unknown'};
 }
 export function turretName(count){return ['','Single turret','Double turret','Triple turret','Quad turret'][count]??'Turret';}
 export function validateWeaponFits(design){
@@ -28,20 +32,32 @@ export function validateWeaponFits(design){
  for(const w of fits){const f=w.fit,count=f.slots.filter(Boolean).length;if(small&&['fixed','turret'].includes(f.kind)&&count>1)throw Error('A Firmpoint supports one weapon; small craft cannot fit double, triple or quad turrets.');if(small&&f.kind==='turret')upgraded+=f.quantity??1;if(small&&f.kind==='barbette'&&design.tons<70)throw Error('A barbette requires three Firmpoints.');
   const pools=weaponPools(w,design);if(pools.length===1&&pools[0].capacity!=null&&w.ammunition!=null&&w.ammunition>pools[0].capacity)throw Error('Initial loaded ammunition exceeds fitted capacity.');
   const tl=f.kind==='turret'?[0,7,8,9,12][count]:0;if(design.record.tl!=null&&design.record.tl<tl)throw Error(turretName(count)+' requires TL'+tl+'.');
-  for(const type of f.slots.filter(Boolean)){const fact=weaponFact(type,f.kind);if(fact&&design.record.tl!=null&&design.record.tl<fact.tl)throw Error(type+' requires TL'+fact.tl+'.');}
+  for(const [i,type] of f.slots.entries()){if(!type)continue;const fact=weaponFact(type,f.kind),tech=f.tech?.[i],profile=tech?WEAPON_TECH_PROFILES[tech.profile]:null,required=fact?fact.tl+(profile?.tl??0):null;if(fact&&design.record.tl!=null&&design.record.tl<required)throw Error(type+' requires TL'+required+'.');}
  }
  if(small&&upgraded>1)throw Error('Only one Firmpoint may be upgraded to a turret.');
  if(fits.length){const costs=(design.record.weapons??[]).map(w=>{const m=publishedMount(w,design),kind=mountKind(w),quantity=w.fit?w.fit.quantity:m?.quantity;if(quantity==null||kind==='unknown'||kind==='bay')return null;return quantity*(small&&kind==='barbette'?3:1);});if(costs.every(x=>x!=null)&&costs.reduce((a,b)=>a+b,0)>(small?design.tons<35?1:design.tons<70?2:3:Math.floor(design.tons/100)))throw Error('Weapon mounts exceed available '+(small?'Firmpoints.':'Hardpoints.'));}
 
 }
-export function mountPower(w,design){
- const f=w.fit;if(!f)return null;if(f.powerOverride!=null)return f.powerOverride;
- if(!['turret','fixed','barbette'].includes(f.kind)||f.quantity==null)return null;
- const small=design?.tons<100;if(small&&f.rules!=='highguard2022')return null;
- const facts=f.slots.filter(Boolean).map(x=>weaponFact(x,f.kind));if(facts.some(x=>!x))return null;
- const base=f.kind==='turret'?(facts.length===4?2:1):0;
- return f.quantity*(base+facts.reduce((sum,x)=>sum+(small?Math.ceil(x.power*.75):x.power),0));
+export function mountPowerReport(w,design){
+ const unknown=reason=>({value:null,reason}),f=w.fit;if(!f)return unknown('No structured weapon fit is recorded.');
+ if(f.powerOverride!=null)return {value:f.powerOverride,reason:'Manual total Power override retained.'};
+ if(f.powerMode==='recorded')return {value:f.recordedPower??null,reason:f.recordedPower==null?'Recorded Power is unknown; choose calculated fit or enter a verified override.':'Recorded Power retained; choose calculated fit to apply changed options.'};
+ if(!['turret','fixed','barbette'].includes(f.kind))return unknown('Power for this mount class needs a verified record or manual override.');
+ if(f.quantity==null)return unknown('Number of mounts in this group is unknown.');
+ if(design?.tons==null)return unknown('Hull tonnage is unknown; Hardpoint / Firmpoint basis is unresolved.');
+ const small=design.tons<100;if(small&&f.rules!=='highguard2022')return unknown('Small-craft Power needs the High Guard Firmpoint rules basis.');
+ let sum=decimal(f.kind==='turret'?(f.slots.filter(Boolean).length===4?2:1):0);
+ for(const [i,type] of f.slots.entries()){
+  if(!type)continue;const fact=weaponFact(type,f.kind);if(!fact)return unknown('Slot '+(i+1)+': Power for “'+type+'” is unverified.');
+  const tech=f.tech?.[i],reason=weaponTechReason(tech,fact,f.kind);if(reason)return unknown('Slot '+(i+1)+': '+reason);
+  const adjustment=(tech?.options??[]).reduce((n,id)=>n+(WEAPON_TECH_OPTIONS.find(o=>o.id===id)?.power??0),0);
+  if(small&&adjustment)return unknown('Slot '+(i+1)+': combined Firmpoint and tech Power rounding is unverified; use a recorded value or manual override.');
+  const power=small?decimal(Math.ceil(fact.power*.75)):multiply(decimal(fact.power),add(decimal(1),decimal(adjustment)));
+  sum=add(sum,power);
+ }
+ return {value:numeric(multiply(decimal(f.quantity),sum)),reason:'Calculated mount baseline plus fitted weapon Power. High Guard 2022 pp26–31,70–72; tech adjustments are additive.'};
 }
+export function mountPower(w,design){return mountPowerReport(w,design).value;}
 export function weaponPools(w,design){
  const kind=mountKind(w),f=w.fit,types=f?f.slots.filter(Boolean):[w.type],rules=f?.rules??(/High Guard/i.test(design?.source?.book??'')?'highguard2022':/Core Rulebook/i.test(design?.source?.book??'')?'core2022':'unknown'),small=design?.tons<100,counts={};
  for(const t of types){const k=ammoKind(t);if(k)counts[k]=(counts[k]??0)+(f?1:publishedMount(w,design)?.fittedCount??w.count??1);}
