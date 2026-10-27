@@ -1,0 +1,9 @@
+# Weapon component options
+
+Scope: setup/inventory records only. High Guard Update 2022 printed pp70–72 supplies explicit component profiles, weighted option limits, one-sided advantages/disadvantages, referee-approved repetition and additive Power modifiers. Existing weapon facts retain their pp26–31 citations. No attack, damage, missile, range, repair, cost or size resolution is added.
+
+Per-slot tech is optional on the existing version-1 fit. Old fits normalize unchanged. Known legacy suffixes can be edited separately, while their exact original description is retained. Unrecognized descriptions remain custom; no guessed modifiers. Opening and saving an untouched legacy row keeps its original data. Barbettes remain a single dedicated installation.
+
+A tech edit to an existing recorded fit retains its recorded Power (including unknown) until the user explicitly chooses calculation. Manual total overrides remain authoritative. Calculation changes weapon draw, not the turret baseline. Missing quantity, unverified weapon/profile, incompatible option and unresolved small-craft rounding have specific explanations. Firmpoint plus tech Power rounding is deliberately unresolved pending a verified ordering; use an authoritative record or explicit override. Fixed-mounted turret weapons retain the turret-weapon restrictions on Size Reduction/Energy Inefficient. Bay/custom Power remains manual/recorded.
+
+Tests cover profile points and compatibility, additive adjustments, manual and unknown records, legacy text, save/import round trips, dedicated barbettes, keyboard add/remove, Cancel/reopen, failed-save retry and duplicate Save. The full browser suite additionally covers shared-sheet transactions, declaration locks, stale drafts, ammunition inventory, five viewports and map stability. Synthetic fixtures only.

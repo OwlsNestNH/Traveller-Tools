@@ -40,3 +40,19 @@ test('new fit loads require an explicit draft operating choice and retain proven
  const row=fittedRequirement({name:'Weapons',power:3,source:{book:'Synthetic source',page:1}},d);assert.equal(row.source,null);assert.equal(row.sourceReference.power,3);
 });
 test('expanded catalogue groups retain per-mount capacities without multiplying twice',()=>{const w={id:'mount-1-2',name:'Triple turret',type:'Missile rack',count:3,ammunition:null},d=design(w);d.record.published={mounts:[{id:'mount-1',name:w.name,fit:w.type,fittedCount:3,quantity:2}]};assert.equal(weaponPools(w,d)[0].capacity,12);w.type='Custom missile fit';assert.equal(weaponPools(w,d)[0].capacity,null);});
+
+test('weapon tech uses explicit additive profiles, preserves records and identifies unresolved components',async()=>{
+ const {normalizeWeaponTech,legacyWeaponTech,WEAPON_TECH_OPTIONS}=await import('../weapon-tech.mjs');const {mountPowerReport,BARBETTE_TYPES}=await import('../weapon-fit.mjs');
+ const tech=(profile,options,repeatApproved=false)=>({profile,options,repeatApproved,legacyText:null});
+ const withTech=(type,t,extra={})=>weapon(fit([type],{tech:[t,null,null,null],...extra}));
+ let w=withTech('Particle barbette',tech('veryAdvanced',['efficient','efficient'],true),{kind:'barbette'});assert.equal(mountPower(w,{tons:400}),7.5);assert.deepEqual(normalizeWeaponFit(JSON.parse(JSON.stringify(w.fit))),w.fit);const saved=applyCommand(createState({ships:[]}),{type:'add-ship',name:'Synthetic tech import',template:normalizeTemplate(design(w)),position:{q:0,r:0},velocity:{q:0,r:0}});assert.deepEqual(normalizeState(JSON.parse(JSON.stringify(saved))),saved);
+ w=withTech('Particle barbette',tech('early',['inefficient','inefficient'],true),{kind:'barbette'});assert.equal(mountPower(w,{tons:400}),24);
+ w=withTech('Pulse laser',tech('advanced',['efficient']));assert.equal(mountPower(w,{tons:400}),4);assert.match(mountPowerReport(w,{tons:50}).reason,/rounding is unverified/);
+ w.fit.powerOverride=19;assert.equal(mountPower(w,{tons:50}),19);w.fit.powerOverride=null;w.fit.powerMode='recorded';w.fit.recordedPower=null;assert.equal(mountPower(w,{tons:400}),null);assert.match(mountPowerReport(w,{tons:400}).reason,/Recorded Power/);w.fit.recordedPower=7;assert.equal(mountPower(w,{tons:400}),7);
+ assert.throws(()=>normalizeWeaponTech(tech('advanced',['accurate'])),/exceed/);assert.throws(()=>normalizeWeaponTech(tech('unknown',['efficient','inaccurate'])),/mix/);assert.throws(()=>normalizeWeaponTech(tech('veryAdvanced',['efficient','efficient'])),/referee/);assert.throws(()=>normalizeWeaponTech(tech('unknown',['range','range'],true)),/once/);
+ for(const [type,kind,id]of [['Missile rack','turret','yield'],['Sandcaster','turret','focus'],['Pulse laser','turret','inefficient'],['Pulse laser','fixed','smaller']]){w=withTech(type,tech('unknown',[id]),{kind});assert.equal(mountPower(w,{tons:400}),null);assert.match(mountPowerReport(w,{tons:400}).reason,/not verified/);}
+ w=withTech('Pulse laser',tech('veryAdvanced',['efficient']));assert.match(mountPowerReport(w,{tons:400}).reason,/all options/);w.fit.quantity=null;assert.match(mountPowerReport(w,{tons:400}).reason,/Number of mounts/);
+ const legacy='Particle beam — Accurate, High Yield',parsed=legacyWeaponTech(legacy,'barbette',BARBETTE_TYPES);assert.equal(parsed.base,'Particle barbette');assert.equal(parsed.tech.legacyText,legacy);assert.deepEqual(parsed.tech.options,['accurate','yield']);assert.equal(parsed.tech.profile,'unknown');assert.equal(legacyWeaponTech('Particle beam — Mystery','barbette',BARBETTE_TYPES),null);
+ assert.equal(WEAPON_TECH_OPTIONS.find(o=>o.id==='larger').note,'20% larger; no size automation');
+ const d=design(withTech('Pulse laser',tech('prototype',['inaccurate'])));d.record.tl=8;validateWeaponFits(d);d.record.tl=7;assert.throws(()=>validateWeaponFits(d),/TL8/);
+});
