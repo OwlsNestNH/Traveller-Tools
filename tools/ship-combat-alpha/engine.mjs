@@ -1,3 +1,4 @@
+import {normalizeWorkflow,canPlanWorkflow} from './workflow.mjs';
 import {normalizeIdentity} from './ship-identity.mjs';
 import {normalizeSystems} from './systems.mjs';
 import {reducedVelocity,ROUND_MINUTES} from './movement-rules.mjs';
@@ -16,8 +17,8 @@ export const availableThrust=s=>s.capabilities.thrust-(s.flight?.evasion??0)-(s.
 function flight(v={},thrust){if(!v||typeof v!=='object'||Array.isArray(v))throw Error('Flight planning must be a record.');const initiative=v.initiative==null?null:integer(v.initiative,'Recorded initiative'),tie=integer(v.tie??0,'Initiative tie order'),evasion=integer(v.evasion??0,'Reserved evasion thrust',0,thrust),gunners=integer(v.gunners??0,'Reserved gunnery thrust',0,thrust);if(evasion+gunners>thrust)throw Error('Thrust reservations exceed current available thrust.');if(v.braking!=null&&typeof v.braking!=='boolean')throw Error('Braking intent must be true or false.');return {initiative,tie,evasion,gunners,braking:v.braking??false};}
 export function brakingImpulse(s){return subtract(reducedVelocity(s.motion.velocity,availableThrust(s)),s.motion.velocity);}
 export function accelerationOrder(state){if(state.ships.some(s=>s.flight.initiative==null))throw Error('Record initiative for every ship before starting declarations. No initiative is rolled automatically.');return [...state.ships].sort((a,b)=>a.flight.initiative-b.flight.initiative||a.flight.tie-b.flight.tie||(a.id<b.id?-1:a.id>b.id?1:0)).map(s=>s.id);}
-function assertPlanning(state,id){if(state.acceleration){const next=state.acceleration.order[state.acceleration.declared.length];if(next!==id)throw Error(next?'Declare acceleration for '+getShip(state,next).name+' first.':'All accelerations declared. Resolve movement or cancel declarations.');}}
-function assertSetup(state){if(state.acceleration)throw Error('Finish or cancel acceleration declarations before changing encounter setup.');}
+function assertPlanning(state,id){if(!canPlanWorkflow(state))throw Error('Plot movement during the Thrust phase.');if(state.acceleration){const next=state.acceleration.order[state.acceleration.declared.length];if(next!==id)throw Error(next?'Declare acceleration for '+getShip(state,next).name+' first.':'All accelerations declared. Resolve movement or cancel declarations.');}}
+function assertSetup(state){if(state.workflow)throw Error('Leave battle workflow before changing encounter setup or confirmed initiative.');if(state.acceleration)throw Error('Finish or cancel acceleration declarations before changing encounter setup.');}
 function ship(value){
  if(typeof value?.id!=='string'||!/^[-a-z0-9]{1,32}$/.test(value.id))throw Error('Ship ID must use 1 to 32 lowercase letters, digits or hyphens.');
  const thrust=integer(value.capabilities?.thrust,'Thrust',0,MAX_THRUST),plan=flight(value.flight,thrust),motion={position:vector(value.motion?.position,'Position'),velocity:vector(value.motion?.velocity,'Velocity'),impulse:vector(value.motion?.impulse??{q:0,r:0},'Planned thrust')};if(plan.braking){motion.impulse=brakingImpulse({flight:plan,capabilities:{thrust},motion});if(!hexDistance(motion.velocity))plan.braking=false;}const impulse=motion.impulse;
@@ -32,7 +33,7 @@ function checked(state){
  if(!Array.isArray(state.ships)||state.ships.length>MAX_SHIPS)throw Error(`The alpha supports 0 to ${MAX_SHIPS} ships (usability limit).`);
  const ships=Array.from(state.ships,ship);if(new Set(ships.map(s=>s.id)).size!==ships.length)throw Error('Ship IDs must be unique.');
  let acceleration=null;if(state.acceleration!=null){if(state.roundMinutes!==ROUND_MINUTES)throw Error('Companion declarations require six-minute rounds.');const order=accelerationOrder({ships}),v=state.acceleration;if(!Array.isArray(v.order)||JSON.stringify(v.order)!==JSON.stringify(order)||!Array.isArray(v.declared)||JSON.stringify(v.declared)!==JSON.stringify(order.slice(0,v.declared.length))||v.declared.length>order.length)throw Error('Invalid acceleration declaration sequence.');acceleration={order,declared:[...v.declared]};}
- return {version:API_VERSION,acceleration,revision:integer(state.revision,'Revision',0,1000000),round:integer(state.round,'Completed rounds',0,1000000),roundMinutes:integer(state.roundMinutes,'Round duration',1,60),ships};
+ return {version:API_VERSION,acceleration,workflow:normalizeWorkflow(state.workflow,ships,acceleration),revision:integer(state.revision,'Revision',0,1000000),round:integer(state.round,'Completed rounds',0,1000000),roundMinutes:integer(state.roundMinutes,'Round duration',1,60),ships};
 }
 // Fresh/reset demonstration only: retain each complete catalogue record and its citation.
 // Positions, velocities, sides and Green crew are scenario choices, not published ship facts.
@@ -79,10 +80,13 @@ export function applyCommand(input,command){
  case 'set-condition':{const s=getShip(state,command.shipId),next=normalizeCondition(command.condition,effectiveDesign(s));if(next.powerUsed!==s.condition.powerUsed)s.systems.mode='manual';s.condition=next;break;}
  case 'set-systems':{const s=getShip(state,command.shipId);s.systems=normalizeSystems(command.systems,effectiveDesign(s),s.capabilities.thrust,s.template);break;}
  case 'record-initiatives':{assertSetup(state);if(!Array.isArray(command.entries)||command.entries.length!==state.ships.length||new Set(command.entries.map(e=>e.shipId)).size!==state.ships.length)throw Error('Record one initiative entry for every current ship.');for(const entry of command.entries){const s=getShip(state,entry.shipId);s.flight=flight({...s.flight,initiative:entry.initiative,tie:entry.tie},s.capabilities.thrust);}break;}
- case 'set-flight-plan':{if(!command.flight||typeof command.flight!=='object'||Array.isArray(command.flight)||Object.hasOwn(command.flight,'braking'))throw Error('Enter a flight-planning record; use brake/coast to change stop intent.');const s=getShip(state,command.shipId);assertPlanning(state,s.id);const next=flight({...s.flight,...command.flight},s.capabilities.thrust);if(state.acceleration&&(next.initiative!==s.flight.initiative||next.tie!==s.flight.tie))throw Error('Cancel declarations before changing initiative order.');s.flight=next;break;}
- case 'begin-acceleration':if(state.acceleration)throw Error('Acceleration declarations already started.');if(!state.ships.length)throw Error('Add a ship before declaring acceleration.');if(state.roundMinutes!==ROUND_MINUTES)throw Error('Companion declarations require six-minute rounds.');state.acceleration={order:accelerationOrder(state),declared:[]};break;
- case 'declare-acceleration':{if(!state.acceleration)throw Error('Begin acceleration declarations first.');const s=getShip(state,command.shipId);assertPlanning(state,s.id);state.acceleration.declared.push(s.id);break;}
- case 'cancel-acceleration':state.acceleration=null;break;
+ case 'set-flight-plan':{if(!command.flight||typeof command.flight!=='object'||Array.isArray(command.flight)||Object.hasOwn(command.flight,'braking'))throw Error('Enter a flight-planning record; use brake/coast to change stop intent.');const s=getShip(state,command.shipId);assertPlanning(state,s.id);const next=flight({...s.flight,...command.flight},s.capabilities.thrust);if((state.acceleration||state.workflow)&&(next.initiative!==s.flight.initiative||next.tie!==s.flight.tie))throw Error('Cancel declarations before changing initiative order.');s.flight=next;break;}
+ case 'begin-acceleration':if(state.workflow)throw Error('Use the active battle workflow.');if(state.acceleration)throw Error('Acceleration declarations already started.');if(!state.ships.length)throw Error('Add a ship before declaring acceleration.');if(state.roundMinutes!==ROUND_MINUTES)throw Error('Companion declarations require six-minute rounds.');state.acceleration={order:accelerationOrder(state),declared:[]};break;
+ case 'declare-acceleration':{if(!state.acceleration)throw Error('Begin acceleration declarations first.');const s=getShip(state,command.shipId);assertPlanning(state,s.id);state.acceleration.declared.push(s.id);if(state.workflow&&state.acceleration.declared.length===state.ships.length)state.workflow.phase='movement';break;}
+ case 'cancel-acceleration':if(state.workflow){if(!['thrust','movement'].includes(state.workflow.phase))throw Error('Movement has already been committed.');state.workflow.phase='thrust';state.acceleration={order:accelerationOrder(state),declared:[]};}else state.acceleration=null;break;
+ case 'start-battle':{assertSetup(state);if(state.roundMinutes!==ROUND_MINUTES)throw Error('Battle workflow requires six-minute rounds.');if(!state.ships.length)throw Error('Add a ship before starting battle workflow.');const order=accelerationOrder(state);state.workflow={version:1,phase:'thrust',initiatives:state.ships.map(s=>({shipId:s.id,initiative:s.flight.initiative,tie:s.flight.tie}))};state.acceleration={order,declared:[]};break;}
+ case 'leave-battle':if(!state.workflow)throw Error('No active battle workflow.');state.workflow=null;state.acceleration=null;break;
+ case 'next-battle-phase':if(!state.workflow||command.phase!==state.workflow.phase)throw Error('Battle phase changed; review the current phase.');if(state.workflow.phase==='attacks')state.workflow.phase='crew';else if(state.workflow.phase==='crew'){state.workflow.phase='thrust';state.acceleration={order:accelerationOrder(state),declared:[]};}else throw Error('Commit all plots and movement before acknowledging actions.');break;
  case 'brake':{const s=getShip(state,command.shipId);assertPlanning(state,s.id);s.flight.braking=hexDistance(s.motion.velocity)>0;s.motion.impulse=brakingImpulse(s);break;}
  case 'coast':{const s=getShip(state,command.shipId);assertPlanning(state,s.id);s.flight.braking=false;s.motion.impulse={q:0,r:0};break;}
  case 'edit-ship':{
@@ -90,11 +94,12 @@ export function applyCommand(input,command){
   const velocity=vector(command.velocity,'Velocity');if(velocity.q!==s.motion.velocity.q||velocity.r!==s.motion.velocity.r)s.flight.braking=false;s.motion={position:vector(command.position,'Position'),velocity,impulse:{q:0,r:0}};break;
  }
  case 'advance-round':
+  if(state.workflow&&state.workflow.phase!=='movement')throw Error('Use the Movement phase to move all ships once.');
   if(state.acceleration&&state.acceleration.declared.length!==state.acceleration.order.length)throw Error('Every ship must declare acceleration before simultaneous movement.');
   if(!state.ships.length)throw Error('Add a ship before advancing the round.');
   if(state.round===1000000)throw Error('Prototype round limit reached. Reset the sample.');
   for(const s of state.ships){s.motion.velocity=vector(add(s.motion.velocity,s.motion.impulse),'Resulting velocity');s.motion.position=vector(add(s.motion.position,s.motion.velocity),'Resulting position');s.motion.impulse={q:0,r:0};if(!hexDistance(s.motion.velocity))s.flight.braking=false;}
-  state.acceleration=null;state.round++;break;
+  state.acceleration=null;state.round++;if(state.workflow)state.workflow.phase='attacks';break;
  default:throw Error('Unknown movement command.');
  }
  state.revision++;return checked(state);

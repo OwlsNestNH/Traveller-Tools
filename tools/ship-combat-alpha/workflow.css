@@ -1,0 +1,8 @@
+.workflow-phases{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;list-style:none;padding:0;margin:8px 0;font-size:.78rem}
+.workflow-phases li{padding:7px 3px;border:1px solid #365362;border-radius:4px;text-align:center;overflow-wrap:normal}
+.workflow-phases [aria-current]{background:#245361;color:#b9f6ff;border-color:#7ed6df;font-weight:bold}
+#battle-workflow{min-width:0}
+#battle-workflow h2{font-size:1rem;margin:0}
+#battle-workflow p{margin:8px 0}
+#battle-workflow details{margin-top:8px}
+#battle-workflow button{max-width:100%;white-space:normal}
