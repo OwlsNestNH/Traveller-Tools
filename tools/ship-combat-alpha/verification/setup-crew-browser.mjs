@@ -7,7 +7,7 @@ export async function verifySetupCrew(page,width,artifacts){
  await p.route('**/app.mjs',r=>r.fulfill({contentType:'text/javascript',body:source.replaceAll('createState()','setupCrewFixture()')+fixture}));
  const state=()=>p.evaluate(()=>window.__setupCrewState()),edit=role=>p.locator('#crew-sheet [data-edit-crew='+role+']').click();
  try{
-  await p.goto(page.url());await p.locator('[data-details]').first().click();await p.locator('#sheet-crew').click();await edit('pilot');
+  await p.goto(page.url());await p.locator('[data-details]').first().click();await p.locator('#sheet-edit').click();await p.locator('#sheet-crew').click();await edit('pilot');
   assert.equal(await p.locator('#cc-pilot-skill').inputValue(),'0');assert.match(await p.locator('#cc-pilot-editor').textContent(),/Other · retained/);
   await p.locator('[data-add-skill=cc-pilot]').click();const row=p.locator('#cc-pilot-editor [data-person-skill]').last();await row.locator('select').nth(0).selectOption('Mechanic');await row.locator('select').nth(1).selectOption('3');await row.locator('select').nth(2).selectOption('1');
   if([1440,390,320].includes(width))await p.locator('#crew-sheet').screenshot({path:artifacts+'crew-skill-rows-'+width+'.png'});
