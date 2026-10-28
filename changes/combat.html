@@ -14,7 +14,7 @@
 </nav>
 <h1>Ship Combat Alpha changelog
 </h1>
-<p class="muted">Updated <time datetime="2026-10-27">October 27, 2026</time> · Dates shown in UTC.
+<p class="muted">Updated <time datetime="2026-10-28">October 28, 2026</time> · Dates shown in UTC.
 </p>
 </header>
 <main>
@@ -31,8 +31,15 @@
 </h2>
 <p class="muted">Published updates.
 </p>
+<h3><time datetime="2026-10-28">October 28, 2026</time></h3>
+<ul>
+<li>Captain opening initiative now guides each ship through explicit rolls and commits, followed by GM confirmation into Pilot movement. Simplified crews use their experience rating as skill; detailed crews use recorded skills. Missing naval Tactics requires an explicit modifier, recorded Effect or Skip choice. Committed rolls retain their original dice and inputs, with a warning after crew or thrust changes; legacy/manual totals are identified without inventing a breakdown. <a href="https://github.com/OwlsNestNH/Traveller-Tools/pull/196">Release #196</a></li>
+<li>Wider Ship Details gives equipment and Crew/Power more room while keeping Save and Cancel accessible. Evasive action and Help gunners use numbered thrust sliders sharing the available budget; Apply reservations remains explicit. <a href="https://github.com/OwlsNestNH/Traveller-Tools/pull/194">Release #194</a></li>
+<li>Major setup sections use full-width Expand/Collapse bars. Read-only explanations and source information open in dismissible information popups, including Ship Details and Add Ship Preview, without committing edits. <a href="https://github.com/OwlsNestNH/Traveller-Tools/pull/193">Release #193</a></li>
+<li>Encounter ships appear above the command toolbar with Details, Focus Ship and Add Ship controls. The oval map has station sectors, with selected Ship Status and station commands alongside it. Condition and Power popups preserve drafts during resizing; crew setup remains available. Sensor mode is recorded in setup and defaults to Active. <a href="https://github.com/OwlsNestNH/Traveller-Tools/pull/192">Release #192</a></li>
+</ul>
 <h3><time datetime="2026-10-27">October 27, 2026</time></h3>
-<ul><li>Weapon tech advantages and disadvantages can be edited separately from the base weapon, with compatibility checks, legacy/manual Power preservation and specific unknown-Power explanations. <a href="https://github.com/OwlsNestNH/Traveller-Tools/pull/190">Release #190</a></li><li>Roster Details now edits the selected ship in the shared setup sheet, with compact silhouettes, a centered draft preview, and side selection beside Preview. Save and Cancel preserve existing ship state. <a href="https://github.com/OwlsNestNH/Traveller-Tools/pull/189">Release #189</a></li><li>M-drive design Power calculation with explicit tech options, recorded/manual overrides and unknown-value preservation. Numeric edits retain the chosen quick weapon loadout. <a href="https://github.com/OwlsNestNH/Traveller-Tools/pull/188">Release #188</a></li></ul>
+<ul><li>Optional battle phases now confirm recorded initiative, commit thrust plots lowest-first and move ships together, followed by manual Attacks and Crew Actions acknowledgements. Those acknowledgements do not apply combat effects. <a href="https://github.com/OwlsNestNH/Traveller-Tools/pull/191">Release #191</a></li><li>Weapon tech advantages and disadvantages can be edited separately from the base weapon, with compatibility checks, legacy/manual Power preservation and specific unknown-Power explanations. <a href="https://github.com/OwlsNestNH/Traveller-Tools/pull/190">Release #190</a></li><li>Roster Details now edits the selected ship in the shared setup sheet, with compact silhouettes, a centered draft preview, and side selection beside Preview. Save and Cancel preserve existing ship state. <a href="https://github.com/OwlsNestNH/Traveller-Tools/pull/189">Release #189</a></li><li>M-drive design Power calculation with explicit tech options, recorded/manual overrides and unknown-value preservation. Numeric edits retain the chosen quick weapon loadout. <a href="https://github.com/OwlsNestNH/Traveller-Tools/pull/188">Release #188</a></li></ul>
 <h3><time datetime="2026-10-26">October 26, 2026</time>
 </h3>
 <ul>
@@ -50,16 +57,17 @@
 </ul>
 </section>
 <section aria-labelledby="planned-heading">
-<h2 id="planned-heading">Planned Changes
+<h2 id="planned-heading">Still to come
 </h2>
-<p class="muted">Approved next work, not released. No release dates are promised.
+<p class="muted">Approved remaining work, not released. Some underlying mechanics already exist; these are workflow integration and testing tasks. No release dates are promised.
 </p>
 <ul>
-
-<li>Add initial initiative and explicit combat phases while preserving the movement engine.
-</li>
-<li>Later, add source-verified attacks, defences, missiles and special effects in tested stages.
-</li>
+<li>Next planned slice: gunnery declarations, including cycling turrets, selecting mixed weapons, committing attacks and reserving defensive actions.</li>
+<li>Attack resolution workflow: automatic defenses, missiles, damage, separate stacked criticals and a results display.</li>
+<li>Remaining crew actions: sensors and electronic warfare, engineering, damage control and changing stations.</li>
+<li>Complete the end-of-round flow and add printable/saveable after-action reports.</li>
+<li>Reinforcements that join without resetting committed combat declarations, the Companion Short-range choice of one or two hexes, and deferred layout cleanup. Currently, Add Ship during confirmed combat requires explicitly leaving the workflow, which clears its declaration sequence.</li>
+<li>Multiplayer and dogfighting remain later stages.</li>
 </ul>
 </section>
 </main>
