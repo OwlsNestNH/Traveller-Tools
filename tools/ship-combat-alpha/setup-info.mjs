@@ -8,7 +8,7 @@ export function mountSetupInfo(){
  popup.addEventListener('click',event=>{const box=popup.getBoundingClientRect();if(event.target.closest('[data-close-info]')||event.target===popup&&(event.clientX<box.left||event.clientX>box.right||event.clientY<box.top||event.clientY>box.bottom))close();});
  const enhance=()=>{
   if(popup.open&&!trigger?.isConnected)close();
-  for(const detail of document.querySelectorAll(':is(#setup-dialog,#ship-sheet) details[data-setup-info],:is(#setup-dialog,#ship-sheet) details[data-published-inventory]')){
+  for(const detail of document.querySelectorAll(':is(#setup-dialog,#ship-sheet,.ship-preview-dialog) details[data-setup-info],:is(#setup-dialog,#ship-sheet,.ship-preview-dialog) details[data-published-inventory]')){
    const summary=detail.querySelector(':scope > summary'),button=document.createElement('button');button.type='button';button.className='setup-info-button';button.textContent='ⓘ '+summary.textContent;button.setAttribute('aria-label',summary.textContent+' information');button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-controls',popup.id);
    const content=document.createDocumentFragment();for(const child of [...detail.childNodes])if(child!==summary)content.append(child);
    for(const nested of content.querySelectorAll('details')){const heading=document.createElement('h3'),label=nested.querySelector(':scope > summary');heading.textContent=label.textContent;label.replaceWith(heading);const section=document.createElement('section');section.append(...nested.childNodes);nested.replaceWith(section);}
