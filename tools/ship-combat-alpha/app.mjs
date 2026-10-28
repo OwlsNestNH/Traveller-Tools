@@ -1,3 +1,4 @@
+import {mountSetupInfo} from './setup-info.mjs';
 import {mountInterfaceShell} from './interface-shell.mjs';
 import {createWorkflowControls} from './workflow-controls.mjs';
 import {canPlanWorkflow,workflowRound} from './workflow.mjs';
@@ -170,3 +171,5 @@ visualViewport?.addEventListener('resize',sizeTacticalMap);visualViewport?.addEv
 function visibleViewport(){document.documentElement.style.setProperty('--visible-height',(visualViewport?.height??innerHeight)+'px');document.documentElement.style.setProperty('--visible-top',(visualViewport?.offsetTop??0)+'px');}visualViewport?.addEventListener('resize',visibleViewport);visualViewport?.addEventListener('scroll',visibleViewport);window.addEventListener('resize',visibleViewport);visibleViewport();
 
 const interfaceShell=mountInterfaceShell({getState:()=>state,canOpen:()=>{const locked=editors.isPlacing()||editors.hasSetupDraft()||editors.hasConditionDraft()||stationPane.hasDraft()||ammunitionEditor.hasDraft()||consoleControls.hasDraft()||flightControls.hasDraft()||shipSheet.isOpen()||!$('systems-dialog').hidden;if(locked)feedback('Finish or cancel pending edits before adding a ship.');return !locked;},onAdd:()=>editors.openAdd(),onLeave:()=>dispatch({type:state.workflow?'leave-battle':'cancel-acceleration'},'Workflow left; ship records retained.'),onFocus:()=>{const s=selectedShip();if(!s)return;const p=toWorld(s.motion.position);camera={...camera,x:-p.x*camera.zoom,y:-p.y*camera.zoom};scheduleMap();}});sizeTacticalMap();
+
+mountSetupInfo();
