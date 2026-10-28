@@ -16,9 +16,15 @@ The map is a single proportional axial-hex projection. Pan and zoom never compre
 
 ## Workspace and quick placement
 
-The tactical viewport and mirrored station controls occupy the left workspace. The right pane keeps the ship roster and Details buttons, followed by the selected crew-position panel. Every position shares the selected ship’s Hull/Power/Fuel/critical controls and M-Drive/movement thrust; the former four status boxes above the roster are relocated, not duplicated. It stacks below the map on phones. Click or keyboard-activate a stat to adjust it inline. Switching or closing an adjustment preserves pending values; one shared Commit/Cancel pair applies or discards that ship draft. Unknown values and capacities remain unknown until explicitly recorded.
+The encounter-only ship row sits above the command controls and supports up to ten ships. Each name field contains a Details button. Add Ship is beside the row; Focus Ship centres the selected ship without changing zoom or motion. Saved setup edits refresh the row and selected status immediately; unsaved changes remain drafts.
 
-Condition/critical and Power/software records expand in place, with Cancel/Escape and repeat-open protection. Condition saves reject a different selected ship or an authoritative revision change; no stale form can overwrite later commands. The advanced encounter setup remains one optional dialog, and Quick Add remains a compact placement picker. Motion/range references, initiative/reservations, source details and all prior controls remain available through their in-place disclosures. No engine rules, source presets, ownership or storage behavior changes.
+The oval map retains filled corner station sectors. The top-right Ship Status display is separate from the lower station commands, with independent bounded scrolling on desktop and stacked displays on phones. The map remains available for spatial decisions. Condition and Power/software editors use large rounded popups; Close, Cancel and Escape discard their drafts without committing resources or rerolling. Their original revision and selected-ship guards remain active. Details and encounter setup retain their guarded transactions.
+
+Sensor mode belongs to each ship's setup and defaults to Active. Passive is a manual setup record; neither mode automates detection, electronic warfare or different power consumption. The existing sensor power switch remains separate and can turn the system off. Older states without a mode load as Active while retaining their existing enabled/disabled state and all other records.
+
+**First-stage reinforcement limit:** Add Ship remains accessible during the workflow, but the current engine requires an explicit **Leave workflow and add ship** confirmation before changing membership. Cancel leaves the workflow unchanged. Leaving clears the workflow declaration sequence but keeps ship records, initiative, vectors and resources; after adding ships, manually record their initiative and confirm the workflow again. This does not implement reinforcement rolls, first-action timing, or automatic continuation of an interrupted phase. These rules remain later work.
+
+No new combat resolution, multiplayer, dogfight, camera-relative ship view or campaign storage is introduced. The reviewed mockups guide the shell; their illustrative rule controls are not claims of implemented mechanics.
 
 ## Movement profile and limits
 

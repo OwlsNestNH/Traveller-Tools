@@ -1,0 +1,38 @@
+/* Approved first interface stage: encounter row, oval and two right displays. */
+body.interface-shell main{grid-template-columns:minmax(0,2.3fr) minmax(300px,1fr)}
+body.interface-shell #encounter-header{grid-column:1/-1;min-width:0}
+body.interface-shell #ship-rail{display:flex!important;flex-direction:row;align-items:center;gap:10px;padding:10px;border:1px solid #365362;border-radius:9px;background:#102532}
+body.interface-shell #ship-rail>.panel{flex:1;min-width:0}
+body.interface-shell #ship-rail h2{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+body.interface-shell #ships{display:flex;flex-direction:row;flex-wrap:nowrap;overflow-x:auto;padding-bottom:5px;gap:8px}
+body.interface-shell .ship-row{position:relative;flex:0 0 260px;min-width:180px;border:1px solid #466a7c;border-radius:7px;background:#193440}
+body.interface-shell .ship-choice{border:0;background:transparent;min-height:54px;padding-right:78px;border-radius:6px;width:100%;text-align:left}
+body.interface-shell .ship-choice[aria-pressed=true]{background:#28515a;box-shadow:inset 0 0 0 1px #9be5da}
+body.interface-shell .ship-choice strong{font-size:.95rem;overflow-wrap:anywhere}
+body.interface-shell .ship-choice small{display:none!important}
+body.interface-shell .ship-details{position:absolute;right:6px;top:50%;transform:translateY(-50%);min-height:36px;max-width:68px;padding:5px 8px;background:#102936;border-radius:5px}
+.encounter-add{display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:0 0 auto;font-size:.8rem;color:#b8cdd8}
+body.interface-shell .map-heading{padding:12px 0 0;flex-wrap:wrap;align-items:center}
+body.interface-shell .map-heading>div:first-child{order:2;margin-left:auto}
+body.interface-shell #combat-right{margin-top:0;max-height:none;overflow:visible;padding:0;gap:16px}
+body.interface-shell #selected-workspace{border:1px solid #365362;border-radius:10px;max-height:47dvh;overflow:auto;padding:14px}
+body.interface-shell #movement-workspace{min-width:0;max-height:var(--station-height,68dvh);overflow:auto;border:1px solid #365362;border-radius:10px;background:#102532;padding:14px}
+body.interface-shell #station-pane{margin:0;padding:0;border:0;background:transparent}
+body.interface-shell .display-title{font-size:.85rem;text-transform:uppercase;color:#b8d1dd;margin:0 0 14px}
+body.interface-shell .console-frame{background:#1b3747;border:1px solid #528797}
+body.interface-shell .station-shape{fill:#1b3747;stroke:#69b6c8}
+body.interface-shell .station-shape[aria-pressed=true]{fill:#345e65;stroke:#9de7dd}
+body.interface-shell dialog{border-radius:18px;border-color:#6a9aaa;background:#091c27;color:#deedf4}
+body.interface-shell dialog::backdrop{background:#03101985}
+body.interface-shell .action-popup{position:fixed;inset:auto;left:var(--action-left);top:var(--action-top);margin:0;z-index:20;box-shadow:0 16px 80px #000a;width:var(--action-width);max-height:var(--action-height);padding:0}
+body.interface-shell .action-popup>section{margin:0;border:0;padding:0;background:transparent;max-height:none}
+body.interface-shell .action-popup .dialog-shell{display:flex;flex-direction:column;max-height:var(--action-height);overflow:hidden}
+body.interface-shell .action-popup form{padding:18px;overflow:auto;min-height:0}body.interface-shell .action-popup .dialog-header,body.interface-shell .action-popup .dialog-footer{flex-shrink:0}
+body.interface-shell #reinforcement-dialog{width:min(640px,calc(100vw - 32px));padding:0}
+@media(max-width:950px){body.interface-shell main{grid-template-columns:minmax(0,1.6fr) minmax(265px,1fr)}body.interface-shell .ship-row{flex-basis:220px}}
+@media(max-width:700px){body.interface-shell #encounter-header{width:100%}body.interface-shell #ship-rail{align-items:stretch;flex-direction:column}body.interface-shell .ship-row{flex:1 1 220px;min-width:0}body.interface-shell .ship-details{min-height:44px}body.interface-shell #selected-workspace,body.interface-shell #movement-workspace{max-height:none;overflow:visible}body.interface-shell .map-heading>div:first-child{margin:0}body.interface-shell dialog{border-radius:12px}body.interface-shell .encounter-add{justify-content:space-between}}
+@media(max-width:700px){body.interface-shell #ship-rail>.panel{width:100%}body.interface-shell #ships{flex-wrap:nowrap;overflow-x:auto;padding-bottom:5px}body.interface-shell .ship-row{flex:0 0 220px}body.interface-shell #ship-rail{align-items:stretch}}
+body.interface-shell .action-popup #condition-dialog,body.interface-shell .action-popup #systems-dialog{border:0;max-height:none;height:auto;overflow:visible;padding:0}
+body.interface-shell .action-popup #condition-dialog .dialog-shell,body.interface-shell .action-popup #systems-dialog .dialog-shell{height:var(--action-height);max-height:var(--action-height);overflow:hidden}
+body.interface-shell .action-popup #condition-form,body.interface-shell .action-popup #systems-form{flex:1 1 auto;overflow:auto;min-height:0}
+@media(max-width:700px){body.interface-shell.map-expanded>header{display:none}}
