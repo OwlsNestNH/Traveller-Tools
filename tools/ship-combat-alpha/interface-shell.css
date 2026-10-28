@@ -49,3 +49,18 @@ body.interface-shell #ship-sheet .sheet-body{flex:1;min-height:0}
 .reservation-slider output{font-weight:700;font-variant-numeric:tabular-nums}
 .reservation-ticks{grid-column:1/-1;display:flex;justify-content:space-between;font-size:.75rem}
 .reservation-slider small{grid-column:1/-1}
+
+#captain-initiative{width:min(850px,calc(100vw - 24px));max-height:calc(100dvh - 24px);padding:0}
+#captain-initiative .dialog-shell{max-height:calc(100dvh - 26px);overflow:hidden}
+#captain-initiative form{padding:16px;overflow:auto;min-height:0}
+.captain-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.captain-fields input,.captain-fields select{width:100%;min-width:0}
+#captain-initiative .dialog-footer{flex-wrap:wrap;padding:12px 0 0}
+@media(max-width:500px){.captain-fields{grid-template-columns:1fr}#captain-initiative .dialog-footer button{flex:1 1 100px}}
+
+#captain-initiative{height:min(820px,calc(100dvh - 24px));margin:auto;inset:0}
+#captain-initiative .dialog-shell{height:100%}
+#captain-initiative form{display:flex;flex-direction:column;flex:1;overflow:hidden;padding:0}
+#captain-initiative .captain-body{padding:16px;overflow:auto;min-height:0;flex:1}
+#captain-initiative .dialog-header,#captain-initiative .dialog-footer{flex-shrink:0}
+#captain-initiative .dialog-footer{padding:12px;margin:0}

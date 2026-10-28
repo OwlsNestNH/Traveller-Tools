@@ -9,7 +9,7 @@ import {powerReport,systemProfile} from './systems.mjs';
 import {stationPowerRows,setStationSystem} from './station-power.mjs';
 import {escapeHTML as esc,shown,sourceLabel,signed} from './ui-format.mjs';
 
-export function createStationPane({getState,getSelected,isLocked,onCommit,onSelect,onRefresh,onDetails,onCondition,onAdvanced,onRoleChange=()=>{},onAmmunition=()=>{}}){
+export function createStationPane({getState,getSelected,isLocked,onCommit,onSelect,onRefresh,onDetails,onCondition,onAdvanced,onRoleChange=()=>{},onAmmunition=()=>{},onInitiative=()=>{}}){
  const $=id=>document.getElementById(id),root=$('station-pane'),content=$('station-records'),pilot=$('selected-controls');
  let station='pilot',draft=null,error='',checkDifficulty=8,checkResult=null,checkContext='',checkError='';
  const selected=()=>getState().ships.find(s=>s.id===getSelected());
@@ -40,7 +40,7 @@ export function createStationPane({getState,getSelected,isLocked,onCommit,onSele
   const crewRole={captain:'captain',comms:'sensors',astrogator:'astrogator',damage:'engineer',gunnery:'gunner',sensors:'sensors'}[station];
   const crew=crewSkill(ship.crew,crewRole)==null?null:ship.crew.details?.[crewRole];
   let text='';
-  if(station==='captain')text=`<p>Side ${esc(ship.appearance.side)} · Allegiance: ${esc(ship.identity.allegiance||'Unrecorded')}</p><p>Command checks are not implemented.</p>`;
+  if(station==='captain')text=`<p>Side ${esc(ship.appearance.side)} · Allegiance: ${esc(ship.identity.allegiance||'Unrecorded')}</p><button type="button" data-captain-initiative ${locked||getState().workflow||getState().acceleration?'disabled':''}>Opening initiative</button><p>${getState().workflow?'Initiative confirmed for this battle.':'Roll and commit each ship, then GM confirms the order before Pilot movement.'}</p>`;
   if(station==='comms')text='<p>Communications actions and transmissions are not implemented.</p>';
   if(station==='astrogator')text=`<p>Recorded jump rating: ${esc(shown(r.jump))}</p><p>Jump plotting and astrogation checks are not implemented.</p>`;
   if(station==='damage')text=`<p>Current hull: ${esc(shown(ship.condition.hull))} · Design hull: ${esc(shown(design?.hull))}</p><p>Condition and criticals are manual records. No damage or repair rolls are implemented.</p><button type="button" data-station-condition>Condition / criticals</button>`;
@@ -64,7 +64,7 @@ export function createStationPane({getState,getSelected,isLocked,onCommit,onSele
   if(b.dataset.pilotReserve){if(isLocked())return;const field=$('reserved-'+b.dataset.pilotReserve);if(!field||field.disabled)return;$('round-planning').open=true;$('reservation-editor').open=true;field.focus();field.scrollIntoView({block:'nearest'});}
   if(b.dataset.pilotCommit)$(b.dataset.pilotCommit)?.click();
   if(b.hasAttribute('data-station-ammunition'))onAmmunition();
-  if(b.hasAttribute('data-station-details'))onDetails();if(b.hasAttribute('data-station-condition'))onCondition();if(b.hasAttribute('data-station-advanced'))onAdvanced();
+  if(b.hasAttribute('data-captain-initiative'))onInitiative();if(b.hasAttribute('data-station-details'))onDetails();if(b.hasAttribute('data-station-condition'))onCondition();if(b.hasAttribute('data-station-advanced'))onAdvanced();
  });
  return {render,choose,hasDraft:()=>!!draft,clear:()=>{draft=null;error='';station='pilot';checkDifficulty=8;checkResult=null;checkContext='';checkError='';render();}};
 }

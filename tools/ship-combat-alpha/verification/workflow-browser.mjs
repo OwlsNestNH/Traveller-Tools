@@ -10,7 +10,7 @@ export async function verifyWorkflow(page,width,artifacts){
  try{
   await p.goto(page.url());await p.locator('.ship-node').first().waitFor();const original=await state(),map=await geometry();
   assert.equal(await p.locator('[data-workflow=start]').isDisabled(),true);
-  await click('initiative');await p.locator('#initiative-0').fill('20');await p.locator('[data-select=scout]').click();assert.equal(await p.locator('#initiative-0').inputValue(),'20');assert.deepEqual(await state(),original);
+  await choose('pilot');await p.locator('#round-planning').evaluate(e=>e.open=true);await p.locator('#initiative-editor').evaluate(e=>e.open=true);await p.locator('#initiative-0').fill('20');await p.locator('[data-select=scout]').click();assert.equal(await p.locator('#initiative-0').inputValue(),'20');assert.deepEqual(await state(),original);
   await p.locator('#cancel-initiative-draft').click();assert.equal(await p.locator('#initiative-0').inputValue(),'');
   for(let i=0;i<5;i++)await p.locator('#initiative-'+i).fill(String(i+1));
   await p.evaluate(()=>window.__failWorkflow=true);await p.locator('#initiative-form button').click();assert.match(await p.locator('#error').textContent(),/Injected/);assert.deepEqual(await state(),original);assert.equal(await p.locator('#initiative-4').inputValue(),'5');
@@ -19,7 +19,7 @@ export async function verifyWorkflow(page,width,artifacts){
   await click('start');assert.equal((await state()).workflow.phase,'thrust');assert.equal(await p.locator('#advance').isDisabled(),true);
   assert.equal(await p.locator('[data-pilot-commit]').isVisible(),false);assert.equal(await p.locator('#begin-acceleration').isVisible(),false);
   await choose('gunnery');assert.match(await p.locator('#station-records').textContent(),/Firing and damage are not implemented/);await choose('pilot');
-  await click('select');await p.locator('[data-workflow=plot]').focus();await p.keyboard.press('Enter');
+  if(await p.locator('[data-workflow=select]').count())await click('select');await p.locator('[data-workflow=plot]').focus();await p.keyboard.press('Enter');
   const once=await state();assert.deepEqual(once.acceleration.declared,['merchant']);assert.deepEqual(once.ships.map(s=>s.motion),original.ships.map(s=>s.motion));
   await p.locator('#battle-workflow details').evaluate(e=>e.open=true);await click('reopen');assert.deepEqual((await state()).acceleration.declared,[]);
   // Existing Engineer draft survives navigation and blocks workflow mutation until Cancel.
