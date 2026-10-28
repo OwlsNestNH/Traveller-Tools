@@ -1,5 +1,6 @@
 export function reservationSlider(label,id,value,total){
- const ticks=[...new Set(Array.from({length:Math.min(total,10)+1},(_,i)=>Math.round(i*total/Math.min(total||1,10))))];
+ const intervals=Math.min(total,total>99?4:10);
+ const ticks=[...new Set(Array.from({length:intervals+1},(_,i)=>Math.round(i*total/(intervals||1))))];
  return `<label class="reservation-slider" for="${id}">${label}<output id="${id}-value" for="${id}">${value}</output><input id="${id}" type="range" min="0" max="${total}" step="1" value="${value}" aria-describedby="${id}-limit"><span class="reservation-ticks" aria-hidden="true">${ticks.map(n=>`<span>${n}</span>`).join('')}</span><small id="${id}-limit"></small></label>`;
 }
 export function syncReservationSliders(root,total,changed=null){
