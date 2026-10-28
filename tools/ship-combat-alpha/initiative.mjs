@@ -17,3 +17,15 @@ export function openingInitiative({pilot,thrust,tacticsModifier=null,recordedEff
  if(tacticsModifier!==null){integer(tacticsModifier,'Tactics modifier',-30,40);tactics=dice(tacticsDice);effect=tactics[0]+tactics[1]+tacticsModifier-8;}
  return {baseDice:base,tacticsDice:tactics,pilot,thrust,tacticsModifier,tacticsEffect:effect,total:base[0]+base[1]+pilot+thrust+effect};
 }
+
+// Optional provenance: legacy/manual totals deliberately have no invented breakdown.
+export function normalizeInitiativeRecord(value){
+ if(value==null)return null;
+ if(value.version!==1||!value.profile)throw Error('Unsupported initiative record.');
+ const p=value.profile,pilot=p.pilot==null?null:integer(p.pilot,'Snapshot Pilot',0,10),tactics=p.tactics==null?null:integer(p.tactics,'Snapshot Tactics',-30,40);
+ if(typeof p.pilotSimple!=='boolean'||typeof p.tacticsSimple!=='boolean'||!Object.hasOwn(RATINGS,p.rating))throw Error('Invalid initiative crew snapshot.');
+ const profile={pilot,tactics,pilotSimple:p.pilotSimple,tacticsSimple:p.tacticsSimple,rating:p.rating,thrust:integer(p.thrust,'Snapshot thrust',0,10000)};
+ const result=openingInitiative({...value.result,recordedEffect:value.result.tacticsEffect});
+ return {version:1,profile,result};
+}
+export const initiativeInputsChanged=ship=>!!ship.flight.initiativeRecord&&JSON.stringify(initiativeProfile(ship))!==JSON.stringify(ship.flight.initiativeRecord.profile);
