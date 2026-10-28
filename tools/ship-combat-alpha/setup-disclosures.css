@@ -1,0 +1,14 @@
+/* Only major setup sections: keep native details keyboard/state semantics. */
+:is(#setup-dialog,#ship-sheet) details[data-setup-section]>summary{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;padding:10px 12px;border:1px solid #608393;border-radius:6px;background:#203d4b;color:#e6f4fa;font-weight:650;list-style:none;cursor:pointer;overflow-wrap:anywhere}
+:is(#setup-dialog,#ship-sheet) details[data-setup-section]>summary::-webkit-details-marker{display:none}
+:is(#setup-dialog,#ship-sheet) details[data-setup-section]>summary::after{content:'Expand';margin-left:auto;flex:none;font-size:12px;font-weight:500;color:#bce5eb}
+:is(#setup-dialog,#ship-sheet) details[data-setup-section][open]>summary{background:#2b505a;border-color:#91d5d8}
+:is(#setup-dialog,#ship-sheet) details[data-setup-section][open]>summary::after{content:'Collapse'}
+:is(#setup-dialog,#ship-sheet) details[data-setup-section]>summary:hover{background:#345967}
+:is(#setup-dialog,#ship-sheet) details[data-setup-section]>summary:focus-visible{outline:3px solid #6ee5db;outline-offset:2px}
+.setup-info-button{display:inline-flex;align-items:center;min-height:44px;max-width:100%;padding:7px 10px;font-size:.82rem;background:transparent;color:#a6e5ee;border-color:#456776;text-align:left}
+#setup-info-dialog{height:auto;margin:auto;inset:0;border:1px solid #608393;width:min(720px,calc(100vw - 24px));max-height:calc(100dvh - 24px);padding:0}
+#setup-info-dialog .dialog-shell{height:auto;max-height:calc(100dvh - 26px)}
+#setup-info-dialog .sheet-body{overflow:auto;min-height:0;line-height:1.5}
+#setup-info-dialog .dialog-header h2{font-size:1.1rem}
+#setup-info-dialog .dialog-footer{padding:10px}
