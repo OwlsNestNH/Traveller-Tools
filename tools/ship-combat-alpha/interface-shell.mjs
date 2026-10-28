@@ -26,7 +26,15 @@ export function mountInterfaceShell({getState,onAdd,onLeave,onFocus,canOpen}){
  // the editor transaction, including stale-save rejection.
  for(const [id,cancel] of [['condition-dialog','cancel-condition'],['systems-dialog','cancel-systems']]){
   const section=$(id),modal=document.createElement('dialog');modal.id=id+'-popup';modal.className='action-popup';modal.setAttribute('aria-labelledby',section.getAttribute('aria-labelledby'));section.before(modal);modal.append(section);
-  new MutationObserver(()=>{if(!section.hidden&&!modal.open){const frame=$('console-frame').getBoundingClientRect(),desktop=innerWidth>700,left=desktop?frame.left+24:8,top=desktop?Math.max(16,Math.min(frame.top+24,innerHeight-320)):16;modal.style.setProperty('--action-left',left+'px');modal.style.setProperty('--action-top',top+'px');modal.style.setProperty('--action-width',(desktop?Math.max(280,frame.width-48):innerWidth-16)+'px');modal.style.setProperty('--action-height',(innerHeight-top-16)+'px');modal.show();}else if(section.hidden&&modal.open)modal.close();}).observe(section,{attributes:true,attributeFilter:['hidden']});
+  const placePopup=()=>{
+   const frame=$('console-frame').getBoundingClientRect(),view=visualViewport,viewLeft=view?.offsetLeft??0,viewTop=view?.offsetTop??0,viewWidth=view?.width??innerWidth,viewHeight=view?.height??innerHeight,desktop=innerWidth>700;
+   const width=Math.max(0,Math.min(viewWidth-16,desktop?Math.max(280,frame.width-48):viewWidth-16)),left=Math.max(viewLeft+8,Math.min(desktop?frame.left+24:viewLeft+8,viewLeft+viewWidth-width-8)),top=Math.max(viewTop+16,Math.min(desktop?frame.top+24:viewTop+16,viewTop+viewHeight-320));
+   modal.style.setProperty('--action-left',left+'px');modal.style.setProperty('--action-top',top+'px');modal.style.setProperty('--action-width',width+'px');modal.style.setProperty('--action-height',Math.max(0,viewTop+viewHeight-top-16)+'px');
+  };
+  // Keep the same draft and scrollable form when the available space changes.
+  let pendingSize=false;const resizePopup=()=>{if(!modal.open||pendingSize)return;pendingSize=true;requestAnimationFrame(()=>{pendingSize=false;if(modal.open)placePopup();});};
+  new ResizeObserver(resizePopup).observe($('console-frame'));window.addEventListener('resize',resizePopup);window.addEventListener('scroll',resizePopup,{passive:true});visualViewport?.addEventListener('resize',resizePopup);visualViewport?.addEventListener('scroll',resizePopup);
+  new MutationObserver(()=>{if(!section.hidden&&!modal.open){placePopup();modal.show();}else if(section.hidden&&modal.open)modal.close();}).observe(section,{attributes:true,attributeFilter:['hidden']});
   modal.addEventListener('cancel',event=>{event.preventDefault();$(cancel).click();});
  }
  return {openAdd};
