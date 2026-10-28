@@ -35,7 +35,7 @@ export async function verifyWorkflow(page,width,artifacts){
   await p.locator('#battle-workflow').screenshot({path:artifacts+'workflow-attacks-'+width+'.png'});
   await click('next');assert.equal((await state()).workflow.phase,'crew');
   await p.locator('#battle-workflow').screenshot({path:artifacts+'workflow-crew-'+width+'.png'});
-  await click('next');const second=await state();assert.equal(second.workflow.phase,'thrust');assert.equal(await p.locator('#open-setup').isDisabled(),true);assert.equal(await p.locator('#add-ship-main').isDisabled(),true);assert.equal(second.round,1);assert.deepEqual(second.workflow.initiatives,beforeMove.workflow.initiatives);assert.equal(await p.locator('#round').textContent(),'Round 2');
+  await click('next');const second=await state();assert.equal(second.workflow.phase,'thrust');assert.equal(await p.locator('#open-setup').isDisabled(),true);assert.equal(await p.locator('#add-ship-main').isDisabled(),false);assert.equal(second.round,1);assert.deepEqual(second.workflow.initiatives,beforeMove.workflow.initiatives);assert.equal(await p.locator('#round').textContent(),'Round 2');
   const after=await geometry();assert.equal(after.width,map.width);assert.equal(after.height,map.height);assert.equal(after.transform,map.transform);
   assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await p.screenshot({path:artifacts+'workflow-page-'+width+'.png',fullPage:true});
   await p.locator('#battle-workflow details').evaluate(e=>e.open=true);await click('leave');assert.equal((await state()).workflow,null);assert.deepEqual((await state()).ships,second.ships);
