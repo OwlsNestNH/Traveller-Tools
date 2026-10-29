@@ -37,7 +37,7 @@ export async function verifyWorkflow(page,width,artifacts){
   while((await state()).workflow.gunnery.declarations.length<(await state()).workflow.gunnery.order.length){await click('gunnery');await p.locator('[data-gunnery=commit]').click();}
   await click('next');assert.equal((await state()).workflow.phase,'crew');
   await p.locator('#battle-workflow').screenshot({path:artifacts+'workflow-crew-'+width+'.png'});
-  await click('next');const second=await state();assert.equal(second.workflow.phase,'thrust');assert.equal(await p.locator('#open-setup').isDisabled(),true);assert.equal(await p.locator('#add-ship-main').isDisabled(),false);assert.equal(second.round,1);assert.deepEqual(second.workflow.initiatives,beforeMove.workflow.initiatives);assert.equal(await p.locator('#round').textContent(),'Round 2');
+  await click('round-review');await p.locator('[data-report=advance]').click();const second=await state();assert.equal(second.workflow.phase,'thrust');assert.equal(await p.locator('#open-setup').isDisabled(),true);assert.equal(await p.locator('#add-ship-main').isDisabled(),false);assert.equal(second.round,1);assert.deepEqual(second.workflow.initiatives,beforeMove.workflow.initiatives);assert.equal(await p.locator('#round').textContent(),'Round 2');
   assert.equal(await p.locator('#station-pane').getAttribute('data-station'),'pilot');assert.equal(await p.locator('[data-select=merchant]').getAttribute('aria-pressed'),'true');
   await p.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));const stripBox=await p.locator('#workflow-strip').boundingBox();assert.ok(stripBox.y>=-1&&stripBox.y<1000);
   const after=await geometry();assert.equal(after.width,map.width);assert.equal(after.height,map.height);assert.equal(after.transform,map.transform);
