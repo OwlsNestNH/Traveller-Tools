@@ -11,7 +11,7 @@ export async function verifyStationPane(page,width,artifacts){
   assert.equal(await p.locator('#coordinate-fallback').evaluate(e=>e.open),false);assert.equal(await p.locator('#target-q').isVisible(),false);
   await choose('engineer');assert.equal(await p.locator('#selected-controls').isVisible(),false);assert.equal(await p.locator('#ships').isVisible(),true);assert.match(await p.locator('#station-records').textContent(),/Weapons/);
   const basic=p.locator('[data-station-system=basic]');await basic.selectOption('50');assert.deepEqual(await state(),initial);assert.match(await p.locator('#station-pending').textContent(),/Pending Engineer/);
-  await choose('sensors');assert.match(await p.locator('#station-records').textContent(),/Detection and sensor checks are not implemented/);assert.deepEqual(await state(),initial);
+  await choose('sensors');assert.match(await p.locator('#station-records').textContent(),/Missiles · Sensors.*General ship-contact detection remains manual/);assert.deepEqual(await state(),initial);
   await p.locator('[data-select=scout]').click();await choose('engineer');assert.equal(await basic.isDisabled(),true);await p.locator('[data-station-return]').click();assert.equal(await basic.inputValue(),'50');await p.locator('[data-station-cancel]').first().click();assert.deepEqual(await state(),initial);
   for(const v of ['0','50','100']){await basic.selectOption(v);assert.deepEqual(await state(),initial);}await basic.selectOption('50');
   const weapons=p.locator('.engineer-row').filter({has:p.getByText('Weapons',{exact:true})}).getByRole('switch');assert.equal(await weapons.isChecked(),false);if(width<500)await weapons.tap();else await weapons.check();assert.deepEqual(await state(),initial);

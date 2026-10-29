@@ -11,7 +11,7 @@ export function combatCrew(ship,role,mountId=null){
  const detailed=!!station||c.mode==='detailed'||c.mode==='compact'&&c.activeDetails.includes(role);
  if(!detailed)return {skill:RATINGS[c.rating],modifier:c.overrides[role]??c.bonus??RATINGS[c.rating],simple:true,source:c.rating+' crew; rating as skill'};
  const d=station??c.details[role],key=station?'mount:'+mountId:role,a=assignedSkill(c,key);
- const tons=effectiveDesign(ship)?.tons,valid=role==='gunner'?/^gunner\s*\(turret\)$/i:tons==null?/^$/:tons<100?/^pilot\s*\(small craft\)$/i:tons<=5000?/^pilot\s*\(spacecraft\)$/i:/^pilot\s*\(capital ships\)$/i;
+ const tons=effectiveDesign(ship)?.tons,valid=role==='sensors'?/^electronics\s*\(sensors\)$/i:role==='gunner'?/^gunner\s*\(turret\)$/i:tons==null?/^$/:tons<100?/^pilot\s*\(small craft\)$/i:tons<=5000?/^pilot\s*\(spacecraft\)$/i:/^pilot\s*\(capital ships\)$/i;
  if(!d||!valid.test(d.skillName.trim()))return {skill:null,modifier:null,simple:false,source:'Required '+role+' skill not recorded'};
  return {skill:d.skill,modifier:d.skill+d.characteristicDM,simple:false,source:d.skillName,breakdown:{skill:d.skill,stat:a?.stat??null,other:a?.stat==null?d.characteristicDM:a.other}};
 }

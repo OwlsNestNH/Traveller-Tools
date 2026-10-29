@@ -1,3 +1,4 @@
+import {missileQueue,missileLaunchProfile,launchMissiles,detectSalvo,normalizeMissiles,freshMissiles} from './missiles.mjs';
 import {effectiveDesign} from './setup.mjs';
 import {normalizeWorkflow} from './workflow.mjs';
 import {directFireQueue,directFireProfile,combatCrew,unresolvedDeclarations} from './direct-fire-profile.mjs';
@@ -35,13 +36,14 @@ function eligibility(state,entry){
 }
 export function directFirePreview(state){return directFireQueue(state).map(entry=>({entry,profile:eligibility(state,entry)}));}
 function allocation(state,queue){
- const plan={},rank=queue.map((entry,index)=>({entry,index,p:eligibility(state,entry)})).filter(x=>x.p.status==='eligible').sort((a,b)=>(LASERS[b.entry.weapon].dice*(6+b.p.count-1))-(LASERS[a.entry.weapon].dice*(6+a.p.count-1))||a.index-b.index);
+ const plan={},rank=queue.filter(e=>e.weapon!=='Missile rack').map((entry,index)=>({entry,index,p:eligibility(state,entry)})).filter(x=>x.p.status==='eligible').sort((a,b)=>(LASERS[b.entry.weapon].dice*(6+b.p.count-1))-(LASERS[a.entry.weapon].dice*(6+a.p.count-1))||a.index-b.index);
+ if(state.missileCombat){for(const salvo of state.missileCombat.salvos.filter(s=>s.status==='arrived'&&s.count>0)){const target=state.ships.find(s=>s.id===salvo.targetId);if(target&&target.condition.hull!==0&&salvo.detectedBy.includes(target.id))rank.push({entry:{id:'missile/'+salvo.id,targetId:salvo.targetId,missile:true},index:rank.length,p:{count:salvo.count},damage:24*salvo.count});}for(const r of rank){const salvo=r.entry.missile?state.missileCombat.salvos.find(s=>'missile/'+s.id===r.entry.id):null,order=state.workflow.initiatives.find(i=>i.shipId===(salvo?.shipId??r.entry.shipId))??salvo;r.initiative=order?.initiative??0;r.tie=order?.tie??0;}rank.sort((a,b)=>(b.damage??LASERS[b.entry.weapon].dice*(6+b.p.count-1))-(a.damage??LASERS[a.entry.weapon].dice*(6+a.p.count-1))||b.initiative-a.initiative||a.tie-b.tie||a.index-b.index);}
  const evade={},sand={};
- for(const {entry}of rank){const target=state.ships.find(s=>s.id===entry.targetId),useEvasion=(evade[target.id]??0)<target.flight.evasion;if(useEvasion)evade[target.id]=(evade[target.id]??0)+1;const row=sandRows(state,target.id)[0],useSand=!!row&&!sand[target.id]&&sandReservation(target,row).available>0;if(useSand)sand[target.id]=true;plan[entry.id]={evasion:useEvasion,sand:useSand?row:null};}
+ for(const {entry}of rank){const target=state.ships.find(s=>s.id===entry.targetId),useEvasion=(evade[target.id]??0)<target.flight.evasion;if(useEvasion)evade[target.id]=(evade[target.id]??0)+1;const row=sandRows(state,target.id)[0],useSand=!entry.missile&&!!row&&!sand[target.id]&&sandReservation(target,row).available>0;if(useSand)sand[target.id]=true;plan[entry.id]={evasion:useEvasion,sand:useSand?row:null};}
  return plan;
 }
 function absent(ship,location){const d=effectiveDesign(ship);return location==='Weapon'?d.record.weapons?.length===0:location==='Jump Drive'?d.record.jump===0:location==='Cargo'?d.record.cargoCapacity===0:location==='Fuel'?d.record.fuelCapacity===0:location==='Crew'?d.record.crewTotal===0:location==='Manoeuvre Drive'?ship.systems.driveKind==='none':location==='Sensors'?/^(none|no sensors)$/i.test(d.record.sensors??''):false;}
-function applyDamage(ship,amount,critical,eventId,roll){
+export function applyDamage(ship,amount,critical,eventId,roll){
  if(!amount&&!critical)return {initial:0,events:[]};
  const d=effectiveDesign(ship);ship.combatDamage??=newDamageLedger(d.hull,ship.condition.hull);const events=[],queue=[];
  function loss(n){const r=recordHullLoss(ship.combatDamage,ship.condition.hull,n);ship.combatDamage=r.ledger;ship.condition.hull=r.hull;for(let i=0;i<r.thresholds;i++)queue.push({incoming:1,origin:'sustained'});return r.lost;}
@@ -62,10 +64,11 @@ function applyDamage(ship,amount,critical,eventId,roll){
 // Deterministic transaction. readDie is either an explicit recorded command
 // stream or the preparer's bounded random source; input is never mutated.
 export function resolveDirectFire(snapshot,readDie){
- const state=structuredClone(snapshot),queue=directFireQueue(state),plan=allocation(state,queue),results=[],aid={},usage={evasion:{},sand:{},aid:{}};
+ const state=structuredClone(snapshot),queue=directFireQueue(state);if(state.missileCombat){queue.push(...missileQueue(state));const order=[...state.workflow.initiatives].sort((a,b)=>b.initiative-a.initiative||a.tie-b.tie||a.shipId.localeCompare(b.shipId)).map(x=>x.shipId);queue.sort((a,b)=>order.indexOf(a.shipId)-order.indexOf(b.shipId)||state.workflow.gunnery.declarations.find(d=>d.shipId===a.shipId).mounts.findIndex(m=>m.mountId===a.mountId)-state.workflow.gunnery.declarations.find(d=>d.shipId===b.shipId).mounts.findIndex(m=>m.mountId===b.mountId));}const plan=allocation(state,queue),results=[],aid={},usage={evasion:{},sand:{},aid:{}};
  const roll=n=>Array.from({length:n},()=>{const d=readDie();diceTotal([d],1);return d;});
- for(const entry of queue){const ship=state.ships.find(s=>s.id===entry.shipId),target=state.ships.find(s=>s.id===entry.targetId),p=eligibility(state,entry),result={id:entry.id,shipId:ship.id,shipName:ship.name,mountName:entry.mountId,targetId:entry.targetId,targetName:target?.name??'Unavailable',weapon:entry.weapon,status:p.status,message:p.reason??p.issues?.join(' ')??'',profile:p,criticals:[]};
+ for(const entry of queue){const ship=state.ships.find(s=>s.id===entry.shipId),target=state.ships.find(s=>s.id===entry.targetId),p=entry.weapon==='Missile rack'?missileLaunchProfile(state,entry):eligibility(state,entry),result={id:entry.id,shipId:ship.id,shipName:ship.name,mountName:entry.mountId,targetId:entry.targetId,targetName:target?.name??'Unavailable',weapon:entry.weapon,status:p.status,message:p.reason??p.issues?.join(' ')??'',profile:p,criticals:[]};
   if(p.status!=='eligible'){results.push(result);continue;}
+  if(entry.weapon==='Missile rack'){Object.assign(result,launchMissiles(state,entry,roll));results.push(result);continue;}
   if(ship.flight.gunners&&!aid[ship.id]){const profile=combatCrew(ship,'pilot'),dice=roll(2),effect=sum(dice)+profile.modifier+(ship.situational.pilot??0)-8;aid[ship.id]={profile,dice,effect,modifier:taskChain(effect)};usage.aid[ship.id]=1;}
   const allocated=plan[entry.id]??{evasion:false,sand:null},evasion=allocated.evasion?p.pilot.skill:0;let sand=0,sandResult=null;
   if(allocated.evasion)usage.evasion[target.id]=(usage.evasion[target.id]??0)+1;
@@ -76,11 +79,12 @@ export function resolveDirectFire(snapshot,readDie){
   const attack=laserAttack({...mod,damageDice:hit?roll(LASERS[entry.weapon].dice):[]}),damage=applyDamage(target,attack.damage,attack.critical,'r'+state.round+'/'+entry.id,roll);
   Object.assign(result,{status:attack.hit?'hit':'miss',attack,aid:aid[ship.id]??null,sand:sandResult,evasionUsed:allocated.evasion,actualHullLoss:damage.initial,criticals:damage.events,message:'Recorded once. Remaining system effects, if any, are manual.'});results.push(result);
  }
- return {ships:state.ships,results,plan,usage,pending:unresolvedDeclarations(state)};
+ if(state.missileCombat)for(const salvo of state.missileCombat.salvos.filter(s=>s.launchedRound===state.round))detectSalvo(state,salvo,roll,{launch:true});
+ return {ships:state.ships,results,plan,usage,pending:unresolvedDeclarations(state).filter(m=>!state.missileCombat||m.weapon!=='Missile rack'||results.find(r=>r.id===m.shipId+'/'+m.mountId)?.status==='manual'),...(state.missileCombat?{missileCombat:state.missileCombat}:{})};
 }
 export function prepareDirectFireCommand(state,random=Math.random){
  if(state.workflow?.phase!=='attacks'||state.workflow.gunnery.declarations.length!==state.workflow.gunnery.order.length||state.workflow.resolutionId)throw Error('Complete declarations first; recorded resolution cannot be rerolled.');
- const dice=[];resolveDirectFire(state,()=>{const n=random();if(!Number.isFinite(n)||n<0||n>=1)throw Error('Dice source unavailable.');const d=1+Math.floor(n*6);dice.push(d);return d;});
+ const dice=[];resolveDirectFire({...state,missileCombat:state.missileCombat??freshMissiles()},()=>{const n=random();if(!Number.isFinite(n)||n<0||n>=1)throw Error('Dice source unavailable.');const d=1+Math.floor(n*6);dice.push(d);return d;});
  return {type:'resolve-direct-fire',expectedRevision:state.revision,dice};
 }
 export function recordedResolution(snapshot,dice){
@@ -89,9 +93,10 @@ export function recordedResolution(snapshot,dice){
 export function normalizeCombatHistory(value,normalizeShips){
  if(value==null)return [];if(!Array.isArray(value)||value.length>100)throw Error('Combat history limit reached; export the encounter before starting another record.');const ids=new Set();
  return value.map(v=>{if(v.version!==1||!/^r[0-9]+-v[0-9]+$/.test(v.id)||ids.has(v.id)||!Number.isSafeInteger(v.snapshot?.round)||v.snapshot.round<1)throw Error('Invalid resolution record.');ids.add(v.id);
-  const ships=normalizeShips(v.snapshot.ships),workflow=normalizeWorkflow(v.snapshot.workflow,ships,null);if(workflow?.phase!=='attacks'||workflow.resolutionId||workflow.gunnery.declarations.length!==workflow.gunnery.order.length)throw Error('Invalid resolution snapshot.');const snapshot={round:v.snapshot.round,ships,workflow},resolved=recordedResolution(snapshot,v.dice);
+  const ships=normalizeShips(v.snapshot.ships),workflow=normalizeWorkflow(v.snapshot.workflow,ships,null);if(workflow?.phase!=='attacks'||workflow.resolutionId||workflow.gunnery.declarations.length!==workflow.gunnery.order.length)throw Error('Invalid resolution snapshot.');const snapshot={round:v.snapshot.round,ships,workflow,...(v.snapshot.missileCombat?{missileCombat:normalizeMissiles(v.snapshot.missileCombat,normalizeShips)}:{})},resolved=recordedResolution(snapshot,v.dice);
   if(JSON.stringify(v.results)!==JSON.stringify(resolved.results)||JSON.stringify(v.usage)!==JSON.stringify(resolved.usage)||JSON.stringify(v.plan)!==JSON.stringify(resolved.plan)||JSON.stringify(v.pending)!==JSON.stringify(resolved.pending))throw Error('Resolution record disagrees with its input and dice.');
+  if(v.missileAfter!=null&&JSON.stringify(v.missileAfter)!==JSON.stringify(resolved.missileCombat))throw Error('Missile launch record disagrees with its snapshot.');
   if(v.manualResolution!=null&&(typeof v.manualResolution!=='string'||!v.manualResolution.trim()||v.manualResolution.length>300))throw Error('Invalid manual attack acknowledgement.');
-  return {version:1,id:v.id,snapshot,dice:[...v.dice],results:resolved.results,usage:resolved.usage,plan:resolved.plan,pending:resolved.pending,...(v.manualResolution?{manualResolution:v.manualResolution.trim()}:{})};
+  return {version:1,id:v.id,snapshot,dice:[...v.dice],results:resolved.results,usage:resolved.usage,plan:resolved.plan,pending:resolved.pending,...(resolved.missileCombat?{missileAfter:resolved.missileCombat}:{}),...(v.manualResolution?{manualResolution:v.manualResolution.trim()}:{})};
  });
 }
