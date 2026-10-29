@@ -76,3 +76,7 @@ body.interface-shell #ship-sheet .sheet-body{flex:1;min-height:0}
 #battle-workflow .workflow-action-title{margin:0 0 8px;font-size:1rem}
 #battle-workflow>details{margin-top:10px}
 @media(max-width:700px){#workflow-strip{gap:5px;flex-direction:column;align-items:stretch;padding:8px}#workflow-strip li{padding:3px 6px;font-size:.8rem}}
+/* Expanded map keeps phase/actor context without duplicating navigation. */
+body.interface-shell.map-expanded #workflow-strip{padding:5px 10px;gap:3px}
+body.interface-shell.map-expanded #workflow-strip>ol,body.interface-shell.map-expanded #workflow-strip>button{display:none}
+body.interface-shell.map-expanded #workflow-strip strong{font-size:.85rem}

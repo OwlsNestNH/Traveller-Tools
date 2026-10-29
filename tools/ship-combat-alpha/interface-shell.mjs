@@ -8,7 +8,6 @@ export function mountInterfaceShell({getState,onAdd,onLeave,onFocus,canOpen}){
  const count=document.createElement('span');count.id='encounter-count';add.append(count);$('ship-rail').append(add);
  const heading=document.querySelector('.map-heading');top.append(heading);
  const focus=document.createElement('button');focus.id='focus-ship';focus.textContent='Focus Ship';focus.addEventListener('click',onFocus);heading.querySelector('.map-tools').prepend(focus);
- const workflowButton=document.createElement('button');workflowButton.id='show-workflow';workflowButton.textContent='Station actions';workflowButton.addEventListener('click',()=>{$('battle-workflow').scrollIntoView({block:'nearest'});$('battle-workflow').querySelector('button')?.focus({preventScroll:true});});focus.after(workflowButton);
  const status=$('selected-workspace');$('combat-right').prepend(status);const title=document.createElement('h2');title.className='display-title';title.textContent='Ship Status';status.prepend(title);
  const sizeDisplays=()=>{const top=$('console-frame').getBoundingClientRect().top+scrollY;$('movement-workspace').style.setProperty('--station-height',Math.max(240,innerHeight-top-status.getBoundingClientRect().height-16)+'px');};new ResizeObserver(sizeDisplays).observe(status);new ResizeObserver(sizeDisplays).observe($('console-frame'));sizeDisplays();
  const refresh=()=>{count.textContent=getState().ships.length+' / 10 ships';focus.disabled=!getState().ships.length;};

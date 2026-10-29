@@ -167,7 +167,9 @@ function alignRightPane(){
 }
 function sizeTacticalMap(){
  const frame=$('console-frame'),width=frame.parentElement.clientWidth,top=frame.getBoundingClientRect().top+scrollY,available=(visualViewport?.height??innerHeight)-top-Math.max(28,document.querySelector('.map-footer>summary').getBoundingClientRect().height),base=Math.max(240,Math.min(width,available)),expanded=document.body.classList.contains('map-expanded');
- frame.style.setProperty('--expanded-height',Math.max(200,available)+'px');
+ // The usable SVG, not its bordered frame, retains the 200px minimum.
+ const expandedInset=expanded?Math.max(0,frame.getBoundingClientRect().height-svg.getBoundingClientRect().height):0;
+ frame.style.setProperty('--expanded-height',Math.max(200+expandedInset,available)+'px');
  let height=base;
  if(!expanded&&innerWidth>700){
   // Size the actual SVG content edge, not the wrapper: the oval has percentage
