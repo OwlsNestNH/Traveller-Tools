@@ -26,3 +26,7 @@ test('early ending and partial declarations remain explicit in the exported repo
  let s=gunneryFixture();const id=s.workflow.gunnery.order[0];s=applyCommand(s,{type:'declare-gunnery',shipId:id,mounts:holdMounts(s.ships.find(x=>x.id===id))});const e=end(s).completedCombats[0],html=reportDocument(e);assert.match(html,/Phase at capture/);assert.match(html,/attacks/);assert.match(html,/Committed choices retained/);assert.match(html,/No gunnery declaration committed/);assert.match(html,/hold/);assert.equal(e.snapshot.workflow.gunnery.declarations.length,1);
  const fresh=applyCommand(end(fixture()),{type:'start-battle'}),early=end(fresh).completedCombats.at(-1);assert.match(reportDocument(early),/Round 2/);
 });
+
+test('report preserves crew overrides and distinguishes mount quantity from weapon slots',()=>{
+ const s=fixture();s.ships[0].crew.bonus=4;s.ships[0].crew.overrides.pilot=5;s.ships[0].crew.gunnerStations=[{mountId:'mixed',name:'Legacy gunner',skillName:'Gunner',skill:3,characteristicDM:1}];const e=end(s).completedCombats[0],html=reportDocument(e);assert.match(html,/General contribution override/);assert.match(html,/Role: pilot · Value: 5/);assert.match(html,/Legacy gunner/);assert.match(html,/4 weapons per mount · mount quantity 1/);
+});
