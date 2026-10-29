@@ -1,0 +1,69 @@
+/* Static console: normal rectangular controls, one MFD, larger work in popups. */
+.static-console #command-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border:1px solid #435668;border-radius:4px;background:#192835;padding:8px;min-height:76px}
+.static-console #workflow-strip{display:block;flex:1 1 230px;min-width:190px;padding:0;border:0;background:transparent;margin:0}
+.static-console #workflow-strip ol,.static-console #workflow-strip>button{display:none}
+.static-console #workflow-strip>div{display:grid;gap:5px}
+.static-console #battle-workflow{display:contents}
+.static-console .console-primary-actions,#pilot-command-bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.static-console .console-primary-actions{order:2}
+.static-console #pilot-command-bar{order:1}
+.static-console #command-bar>.map-tools{order:3;flex:0 1 auto}
+.static-console [data-console-more]{order:4}
+.static-console .map-heading{display:none}
+.static-console #command-bar .map-tools #advance,.static-console #command-bar .map-action-group{display:none}
+.static-console #encounter-header{gap:8px}
+.static-console #ship-rail .encounter-add{display:grid;grid-template-columns:120px auto;gap:4px 8px;align-items:center;align-self:center}
+.static-console #add-ship-main,.static-console #remove-ship-main{grid-column:1;margin:0;transform:none;background:#a6d6df;color:#10232d;border-color:#a6d6df;width:100%}
+.static-console #encounter-count{grid-column:2;grid-row:1/3;min-width:50px}
+.static-console #console-phase-tabs{position:absolute;top:0;left:50%;transform:translate(-50%,-20%);display:flex;gap:4px;padding:4px;background:#1b2b38;border:1px solid #6b8b9a;border-radius:4px;z-index:3;white-space:nowrap}
+.static-console #console-phase-tabs button{min-height:32px;padding:4px 8px;font-size:12px}
+.static-console #console-phase-tabs [aria-current]{background:#a6d6df;color:#10232d}
+.static-console #movement-workspace{overflow:visible;max-height:none}
+.static-console #console-mfd{border:1px solid #435668;border-radius:4px;background:#1b2835}
+.mfd-switches{display:flex;gap:5px;padding:6px}.mfd-switches button{flex:1;min-width:0}.mfd-switches [aria-pressed=true]{background:#a6d6df;color:#10232d}
+.mfd-screen{padding:14px;min-height:250px}.mfd-screen h2{font-size:14px;text-transform:uppercase;color:#b0dbe2}.mfd-screen p{margin:12px 0}
+.console-popup{position:fixed;inset:0;margin:auto;width:min(1100px,calc(100vw - 32px));max-width:none;max-height:calc(100dvh - 32px);padding:20px;border:1px solid #7398a4;border-radius:16px;background:#14212d;color:#e3edf2;overflow:auto;box-sizing:border-box}
+.console-popup::backdrop{background:#0009}.console-popup-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}.console-popup-heading h2{margin:0}
+.static-console #station-control-popup #station-pane{max-height:none;overflow:visible}
+.static-console #station-control-popup #advanced-workspace{display:block}
+.static-console #station-control-popup #selected-controls{display:block}
+.static-console #station-control-popup #round-planning{max-height:none}
+.static-console .critical-lines p{margin:4px 0;font-size:12px}.critical-lines{padding:4px 8px}
+.sensor-ping{pointer-events:none;color:#8ed7dc}.sensor-ping circle{stroke:currentColor;transform-box:fill-box;transform-origin:center;animation:sensor-pulse 3s linear infinite}
+@keyframes sensor-pulse{from{transform:scale(.05);opacity:.5}to{transform:scale(1);opacity:0}}
+@media(prefers-reduced-motion:reduce){.sensor-ping circle{animation:none;opacity:.12}.sensor-ping circle:not(:first-child){display:none}}
+/* Partition outlines are drawn once; individual hit areas never add a crossing stroke. */
+.shared-half-hit{stroke:none!important}.shared-divider{fill:none;pointer-events:none}
+@media(max-width:700px){.static-console #command-bar{gap:6px;padding:6px}.static-console #workflow-strip{flex-basis:100%}.static-console #console-phase-tabs{gap:2px;padding:3px}.static-console #console-phase-tabs button{padding:4px 5px;font-size:11px}.static-console #ship-rail .encounter-add{grid-template-columns:110px auto}.console-popup{width:calc(100vw - 16px);max-height:calc(100dvh - 16px);padding:12px}.mfd-screen{min-height:180px}}
+body.static-console #movement-workspace{max-height:none;overflow:visible;padding:0;border:0;background:none}
+body.static-console #combat-right{max-height:none;overflow:visible}
+body.static-console #workflow-strip{position:static;box-shadow:none;border-radius:0}
+body.static-console #selected-workspace{max-height:none;overflow:visible;padding:10px}
+body.static-console #drive-status{margin:5px 0 0;padding-top:5px}
+body.static-console .critical-lines button{font-size:12px;min-height:28px;padding:4px 8px}
+body.static-console #condition-reference{font-size:12px}
+body.static-console .mfd-screen{min-height:0;padding:10px 14px}
+body.static-console .mfd-screen p{margin:9px 0;font-size:14px}
+body.static-console #command-bar .map-zoom-group{display:flex}
+body.static-console #command-bar{min-height:80px}
+body.static-console #workflow-strip{flex:0 1 245px}
+body.static-console #command-bar button{min-height:36px;padding:6px 9px;font-size:13px}
+body.static-console .mfd-screen svg{display:block;width:100%;height:64px}
+body.static-console #console-settings-button{order:3}
+body.static-console #command-bar{align-content:center}
+@media(min-width:1200px){body.static-console #command-bar{height:100px;box-sizing:border-box}}
+
+@media(max-width:700px){body.static-console #command-bar button{min-height:44px}}
+
+body.static-console #add-ship-main,body.static-console #remove-ship-main{top:0}
+
+body.static-console .mfd-screen{min-height:250px;box-sizing:border-box}
+body.static-console #condition-reference>summary,body.static-console .mobile-stations>summary,body.static-console #round-planning>summary{display:block;width:100%;padding:8px;border:1px solid #435668;background:#213442;box-sizing:border-box;cursor:pointer}
+body.static-console #condition-reference>summary::after,body.static-console .mobile-stations>summary::after,body.static-console #round-planning>summary::after{content:' · Expand';float:right}
+body.static-console details[open]#condition-reference>summary::after,body.static-console details[open].mobile-stations>summary::after,body.static-console details[open]#round-planning>summary::after{content:' · Collapse'}
+.console-popup-heading{position:sticky;top:-20px;z-index:5;background:#14212d;padding:8px 0}
+@media(max-width:700px){.console-popup-heading{top:-12px}}
+body.static-console.map-expanded .mobile-stations{display:block}
+@media(min-width:1200px){body.static-console #command-bar{height:120px}}
+@media(min-width:701px) and (max-width:1199px){body.static-console #command-bar{height:160px;box-sizing:border-box}}
+#station-command-bar{order:2;display:flex;gap:6px;flex-wrap:wrap}

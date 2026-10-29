@@ -1,0 +1,5 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {createState} from '../engine.mjs';import {normalizeCrew} from '../setup.mjs';
+import {commitDutyAction,freshDuty} from '../crew-duty.mjs';
+import {stationCrewProfile} from '../station-crew-profile.mjs';
+test('station sheet identity and skill follow transferred operator, including transit',()=>{const ship=createState().ships[0];ship.crew=normalizeCrew({mode:'detailed',details:{engineer:{name:'Alice',skillName:'Engineer',skill:1,characteristicDM:0},sensors:{name:'Bob',skillName:'Engineer',skill:3,characteristicDM:1}}});ship.crewDuty=freshDuty(1);assert.equal(stationCrewProfile(ship,'engineer').name,'Alice');commitDutyAction(ship,{role:'sensors',kind:'move',to:'engineer',note:'Transfer'},1);ship.crewDuty.round=2;assert.equal(stationCrewProfile(ship,'sensors').name,'Unavailable');ship.crewDuty.round=3;const p=stationCrewProfile(ship,'engineer');assert.equal(p.name,'Bob');assert.equal(p.total,4);assert.match(p.breakdown,/Skill 3.*Characteristic\/other 1/);assert.equal(ship.crew.details.engineer.name,'Alice');});

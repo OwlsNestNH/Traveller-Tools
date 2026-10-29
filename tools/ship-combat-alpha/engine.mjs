@@ -1,3 +1,4 @@
+import {displayPreferences} from './display-preferences.mjs';
 import {normalizeDuty,freshDuty,dutyPenalty,expiredRepairs,crewIdentity} from './crew-duty.mjs';
 import {applyCrewAction} from './crew-actions.mjs';
 import {freshMissiles,normalizeMissiles,missileQueue,moveMissiles,applyEW,detectSalvo} from './missiles.mjs';
@@ -54,7 +55,7 @@ function checked(state,archive=false){
  if(workflow&&ships.some(s=>s.crewDuty&&s.crewDuty.round!==state.round+(['thrust','movement'].includes(workflow.phase)?1:0)))throw Error('Crew duty round and workflow disagree.');
  if(workflow?.resolutionId&&!combatHistory.some(r=>r.id===workflow.resolutionId&&r.snapshot.round===state.round&&JSON.stringify(r.snapshot.workflow.gunnery)===JSON.stringify(workflow.gunnery)))throw Error('Active resolution record is missing or mismatched.');
  if(workflow?.phase==='attacks'&&!workflow.resolutionId&&combatHistory.some(r=>r.snapshot.round===state.round))throw Error('Current round resolution reference is missing.');
- return {version:API_VERSION,...(completedCombats.length?{completedCombats}:{}),...(missileCombat?{missileCombat}:{}),...(combatHistory.length?{combatHistory}:{}),acceleration,workflow,revision:integer(state.revision,'Revision',0,1000000),round:integer(state.round,'Completed rounds',0,1000000),roundMinutes:integer(state.roundMinutes,'Round duration',1,60),ships};
+ return {version:API_VERSION,...(state.display?{display:displayPreferences(state.display)}:{}),...(completedCombats.length?{completedCombats}:{}),...(missileCombat?{missileCombat}:{}),...(combatHistory.length?{combatHistory}:{}),acceleration,workflow,revision:integer(state.revision,'Revision',0,1000000),round:integer(state.round,'Completed rounds',0,1000000),roundMinutes:integer(state.roundMinutes,'Round duration',1,60),ships};
 }
 // Fresh/reset demonstration only: retain each complete catalogue record and its citation.
 // Positions, velocities, sides and Green crew are scenario choices, not published ship facts.

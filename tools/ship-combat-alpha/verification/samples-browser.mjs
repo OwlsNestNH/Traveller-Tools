@@ -1,3 +1,4 @@
+import {advanceMovement} from './console-navigation.mjs';
 import {assertSampleEquivalent} from './sample-equivalence.mjs';
 import assert from 'node:assert/strict';
 import {readFile,writeFile} from 'node:fs/promises';
@@ -50,7 +51,7 @@ export async function verifySamples(page,width,artifacts){
   }
   await p.locator('#expand-map').click();await p.locator('#zoom-in').click();await p.locator('#zoom-in').click();await p.waitForFunction(()=>document.querySelector('#zoom-level').textContent==='100%');await painted('100-normal');await capture(artifacts+'sample-silhouettes-100-normal-'+width+'.png');await p.locator('#expand-map').click();await painted('100-expanded');await capture(artifacts+'sample-silhouettes-100-expanded-'+width+'.png');
   await p.locator('#expand-map').click();await p.locator('#open-setup').click();await p.locator('#ship-name').fill('Uncommitted sample edit');await p.locator('#reset').evaluate(e=>e.click());assert.equal(await p.locator('#setup-dialog').isVisible(),false);assertSampleEquivalent(await p.evaluate(()=>window.__readSample()),expected);
-  await p.locator('#advance').click();assert.equal((await p.evaluate(()=>window.__readSample())).round,1);await p.locator('#reset').click();assertSampleEquivalent(await p.evaluate(()=>window.__readSample()),expected);assert.deepEqual(normalizeState(JSON.parse(JSON.stringify(expected))),expected);await painted('reset');
+  await advanceMovement(p);assert.equal((await p.evaluate(()=>window.__readSample())).round,1);await p.locator('#reset').click();assertSampleEquivalent(await p.evaluate(()=>window.__readSample()),expected);assert.deepEqual(normalizeState(JSON.parse(JSON.stringify(expected))),expected);await painted('reset');
   assert.deepEqual(await p.evaluate(()=>window.__storageAccesses),[]);await writeFile(artifacts+'sample-encounter-'+width+'.json',JSON.stringify({head:process.env.SHIP_COMBAT_COMMIT??null,ships:expected.ships.map(s=>({id:s.id,name:s.name,source:s.template.source,position:s.motion.position,velocity:s.motion.velocity,thrust:s.capabilities.thrust,hull:s.condition.hull,ratedPower:s.template.record.ratedPower,appearance:s.appearance})),views:records,paintChecks},null,2));
  }finally{await p.close();}
 }
