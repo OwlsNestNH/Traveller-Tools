@@ -282,9 +282,9 @@ Core pp.79,172–173 and HG pp.36,74 provide Standard TL7/Thrust10/4D/Smart, lau
 Optional `missileCombat` stores salvos, detections, scans, EW and replay-validated impact inputs/dice/results. Old saves and old direct-fire archives remain valid. Launch, movement, scans, EW, PD and impacts are revision/round guarded; reopening and results navigation never roll. A maximum of 1,000 archived salvos and bounded event records protects import/runtime; export the encounter before reaching the limits. No campaign storage is read or written. Remaining crew actions, reinforcements, dogfighting and broad navigation cleanup are separate stages.
 
 
-### Unpublished local crew-action stage
+### Crew-action workflow
 
-This local candidate depends on the unpublished missile candidate. It is not a live release. Actions now provides a station action popup with explicit manual adjudication, a GM skill/difficulty roll, saved results, Change Position, and a Captain damage overview. Engineer opens the existing transactional Power editor. Sensors can change Active/Passive mode without spending an action and opens the existing missile scan/EW flow; EW and other sensor actions share the same operator allowance.
+Building on the standard missile workflow, Actions provides a station action popup with explicit manual adjudication, a GM skill/difficulty roll, saved results, Change Position, and a Captain damage overview. Engineer opens the existing transactional Power editor. Sensors can change Active/Passive mode without spending an action and opens the existing missile scan/EW flow; EW and other sensor actions share the same operator allowance.
 
 Core 2022 pp.171–172 informs temporary Repair System: 8+ Engineer, minus current severity, +1 for each consecutive round of work on the same latest critical. A new hit resets effort. Success records 1D hours. The GM must apply eligible temporary effects and review their expiry; Hull, destroyed equipment, severity and critical history are never silently restored. Expired repair reviews gate further automated movement. Generic declared rolls record results only; Leadership, Astrogation, general sensor locks, communications, boarding and other effect application remain manual.
 
