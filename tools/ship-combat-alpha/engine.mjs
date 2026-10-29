@@ -1,3 +1,4 @@
+import {normalizeDamageLedger} from './damage-ledger.mjs';
 import {nextGunner,normalizeDeclarations} from './gunnery.mjs';
 import {normalizeInitiativeRecord} from './initiative.mjs';
 import {normalizeWorkflow,canPlanWorkflow} from './workflow.mjs';
@@ -28,7 +29,7 @@ function ship(value){
  const appearance=normalizeAppearance(value.appearance);appearance.heading=velocityHeading(vector(value.motion?.velocity,'Velocity'),appearance.heading);
  const template=normalizeTemplate(value.template),designOverrides=normalizeOverrides(value.designOverrides,template),effective=effectiveDesign({template,designOverrides});
  const condition=normalizeCondition(value.condition,effective),systems=normalizeSystems(value.systems,effective,thrust,template);
- return {id:value.id,name:name(value.name),identity:normalizeIdentity(value.identity),template,designOverrides,appearance,crew:normalizeCrew(value.crew),condition,systems,situational:normalizeSituational(value.situational),capabilities:{thrust},flight:plan,motion};
+ return {id:value.id,name:name(value.name),identity:normalizeIdentity(value.identity),template,designOverrides,appearance,crew:normalizeCrew(value.crew),condition,systems,situational:normalizeSituational(value.situational),capabilities:{thrust},flight:plan,motion,...(value.combatDamage==null?{}:{combatDamage:normalizeDamageLedger(value.combatDamage)})};
 }
 function checked(state){
  if(state?.version!==API_VERSION)throw Error('Unsupported movement state version.');
