@@ -10,7 +10,19 @@ export async function verifyBottomSpace(page,width,artifacts){
  // Browser zoom remains 100%; reproduce the reference's separate 33% map zoom.
  if(width===1876){const box=await page.locator('#map').boundingBox();for(let i=0;i<11;i++)await page.locator('#map').dispatchEvent('wheel',{deltaY:100,clientX:box.x+box.width/2,clientY:box.y+box.height/2});await settle();assert.equal(await page.locator('#zoom-level').textContent(),'33%');}
  const metrics=()=>page.evaluate(()=>{const map=document.querySelector('#map'),frame=document.querySelector('#console-frame'),right=document.querySelector('#combat-right'),r=map.getBoundingClientRect(),f=frame.getBoundingClientRect(),b=right.getBoundingClientRect(),m=map.getScreenCTM();return{map:{top:r.top,bottom:r.bottom,height:r.height},frame:{top:f.top,bottom:f.bottom,height:f.height},rightBottom:b.bottom,extra:Number(frame.dataset.heightExtension),scale:m.a,scaleY:m.d,viewHeight:map.viewBox.baseVal.height,camera:document.querySelector('#scene').getAttribute('transform'),zoom:document.querySelector('#zoom-level').textContent};});
- const after=await metrics();assert.ok(after.map.bottom<=page.viewportSize().height+1);assert.ok(after.map.height>=200);assert.ok(Math.abs(after.scale-after.scaleY)<1e-7);
+ let after=await metrics();
+ if(width<=700){
+  // Normal mobile pages scroll: the persistent phase strip adds vertical space.
+  // Verify the usable map can be revealed unobstructed, rather than shrinking it.
+  const before=after,revision=await page.locator('#map').getAttribute('data-revision');
+  await page.locator('#map').scrollIntoViewIfNeeded();await paint();after=await metrics();
+  const strip=await page.locator('#workflow-strip').boundingBox();
+  assert.ok(after.map.top>=strip.y+strip.height-1,'map is reachable below the persistent strip');
+  assert.equal(after.camera,before.camera);assert.equal(after.zoom,before.zoom);assert.equal(after.map.height,before.map.height);assert.equal(await page.locator('#map').getAttribute('data-revision'),revision);
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+  await writeFile(artifacts+'bottom-space-metrics-'+width+'.json',JSON.stringify({before,after,strip},null,2));
+ }
+ assert.ok(after.map.bottom<=page.viewportSize().height+1);assert.ok(after.map.height>=200);assert.ok(Math.abs(after.scale-after.scaleY)<1e-7);
  if(width>700&&after.extra){
   const style=await page.addStyleTag({content:'.station-console:not(.map-expanded) .console-frame{height:'+(after.frame.height-after.extra)+'px!important}'});await paint();const before=await metrics();await style.evaluate(e=>e.remove());await settle();const restored=await metrics();assert.ok(restored.map.height>before.map.height);assert.ok(restored.viewHeight>before.viewHeight);assert.ok(Math.abs(restored.scale-before.scale)<.001);assert.equal(restored.camera,before.camera);assert.equal(restored.zoom,before.zoom);
   await writeFile(artifacts+'bottom-space-metrics-'+width+'.json',JSON.stringify({before,after:restored},null,2));

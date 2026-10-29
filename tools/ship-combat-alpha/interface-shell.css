@@ -65,3 +65,18 @@ body.interface-shell #ship-sheet .sheet-body{flex:1;min-height:0}
 #captain-initiative .dialog-header,#captain-initiative .dialog-footer{flex-shrink:0}
 #captain-initiative .dialog-footer{padding:12px;margin:0}
 .gunnery-declare label{display:block;margin:10px 0}.gunnery-declare select{width:100%;min-width:0}.gunnery-cycle{display:flex;align-items:center;gap:8px;margin:12px 0}.gunnery-cycle strong{flex:1;min-width:0}.gunnery-summary{padding-left:20px;overflow-wrap:anywhere}.gunnery-info{width:min(460px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;padding:20px;border-radius:16px}.gunnery-info h2{font-size:1.15rem}.gunnery-info p{font-size:.95rem}
+/* One persistent phase guide; mutations remain beside station controls. */
+#workflow-strip{grid-column:1/-1;position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:18px;background:#10232f;border:1px solid #527584;border-radius:12px;padding:10px 14px;box-shadow:0 4px 12px #0008}
+#workflow-strip ol{display:flex;gap:8px;list-style:none;padding:0;margin:0;flex-wrap:wrap}
+#workflow-strip li{padding:5px 8px;border-radius:8px;color:#b8cbd5}
+#workflow-strip [aria-current=step]{background:#215c70;color:#fff;font-weight:bold}
+#workflow-strip div{display:grid;gap:3px;min-width:0;overflow-wrap:anywhere}
+#workflow-strip span{font-size:.88rem}
+#battle-workflow{padding:10px;margin:10px 0;border:1px solid #45616f;border-radius:12px}
+#battle-workflow .workflow-action-title{margin:0 0 8px;font-size:1rem}
+#battle-workflow>details{margin-top:10px}
+@media(max-width:700px){#workflow-strip{gap:5px;flex-direction:column;align-items:stretch;padding:8px}#workflow-strip li{padding:3px 6px;font-size:.8rem}}
+/* Expanded map keeps phase/actor context without duplicating navigation. */
+body.interface-shell.map-expanded #workflow-strip{padding:5px 10px;gap:3px}
+body.interface-shell.map-expanded #workflow-strip>ol,body.interface-shell.map-expanded #workflow-strip>button{display:none}
+body.interface-shell.map-expanded #workflow-strip strong{font-size:.85rem}
