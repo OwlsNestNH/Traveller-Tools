@@ -1,4 +1,4 @@
-import {normalizeDuty,freshDuty,dutyPenalty,expiredRepairs} from './crew-duty.mjs';
+import {normalizeDuty,freshDuty,dutyPenalty,expiredRepairs,crewIdentity} from './crew-duty.mjs';
 import {applyCrewAction} from './crew-actions.mjs';
 import {freshMissiles,normalizeMissiles,missileQueue,moveMissiles,applyEW,detectSalvo} from './missiles.mjs';
 import {arrivals,recordedImpacts} from './missile-impact.mjs';
@@ -105,7 +105,7 @@ export function applyCommand(input,command){
   let n=1;while(state.ships.some(s=>s.id==='ship-'+n))n++;
   state.ships.push(ship({id:'ship-'+n,name:command.name,identity:command.identity,template,designOverrides,appearance:command.appearance,crew:command.crew??{},systems:command.systems??{mode:'allocated'},condition:{hull:effective.hull,...(command.presetId?preset(command.presetId).initialCondition:undefined),...command.condition},capabilities:{thrust:effective.thrust},motion:{position:command.position,velocity:command.velocity}}));break;
  }
- case 'set-crew':{const s=getShip(state,command.shipId);if((state.workflow&&s.crewDuty?.actions.length||s.crewDuty?.moves.some(m=>m.availableRound>s.crewDuty.round))&&JSON.stringify(normalizeCrew(command.crew))!==JSON.stringify(s.crew))throw Error('Finish combat before editing crew assignments with committed crew actions.');s.crew=normalizeCrew(command.crew);s.situational=normalizeSituational(command.situational);break;}
+ case 'set-crew':{const s=getShip(state,command.shipId);if((state.workflow&&s.crewDuty?.actions.length||s.crewDuty?.moves.some(m=>m.availableRound>s.crewDuty.round))&&crewIdentity(normalizeCrew(command.crew))!==crewIdentity(s.crew))throw Error('Finish combat before editing crew assignments with committed crew actions.');s.crew=normalizeCrew(command.crew);s.situational=normalizeSituational(command.situational);break;}
  case 'set-condition':{const s=getShip(state,command.shipId),next=normalizeCondition(command.condition,effectiveDesign(s));if(next.powerUsed!==s.condition.powerUsed)s.systems.mode='manual';s.condition=next;break;}
  case 'set-systems':{const s=getShip(state,command.shipId);s.systems=normalizeSystems(command.systems,effectiveDesign(s),s.capabilities.thrust,s.template);break;}
  case 'record-initiatives':{assertSetup(state);if(!Array.isArray(command.entries)||command.entries.length!==state.ships.length||new Set(command.entries.map(e=>e.shipId)).size!==state.ships.length)throw Error('Record one initiative entry for every current ship.');for(const entry of command.entries){const s=getShip(state,entry.shipId);s.flight=flight({...s.flight,initiative:entry.initiative,tie:entry.tie,initiativeRecord:Object.hasOwn(entry,'initiativeRecord')?entry.initiativeRecord:entry.initiative===s.flight.initiative?s.flight.initiativeRecord:null},s.capabilities.thrust);}break;}

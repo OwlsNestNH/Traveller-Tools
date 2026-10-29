@@ -65,3 +65,5 @@ export function commitDutyAction(ship,{role,kind,note,roll,repair,to,skillId},ro
 }
 
 export function expiredRepairs(ship,completedRound){return (ship.crewDuty?.actions??[]).filter(a=>a.repair?.expiresRound!=null&&completedRound>=a.repair.expiresRound&&!ship.crewDuty.repairReviews.some(r=>r.actionId===a.id));}
+
+export function crewIdentity(crew){return JSON.stringify(shipDuties({crew}).sort().map(role=>[role,baseAssignment({crew},role).operator]));}
