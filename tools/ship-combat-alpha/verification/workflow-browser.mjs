@@ -18,7 +18,7 @@ export async function verifyWorkflow(page,width,artifacts){
   await p.locator('#initiative-editor').evaluate(e=>e.open=false);await p.locator('#round-planning').evaluate(e=>e.open=false);
   await click('start');assert.equal((await state()).workflow.phase,'thrust');assert.equal(await p.locator('#advance').isDisabled(),true);
   assert.equal(await p.locator('[data-pilot-commit]').isVisible(),false);assert.equal(await p.locator('#begin-acceleration').isVisible(),false);
-  await choose('gunnery');assert.match(await p.locator('#station-records').textContent(),/Firing and damage are not implemented/);await choose('pilot');
+  await choose('gunnery');assert.match(await p.locator('#station-records').textContent(),/Resolve committed attacks through Battle workflow/);await choose('pilot');
   if(await p.locator('[data-workflow=select]').count())await click('select');await p.locator('[data-workflow=plot]').focus();await p.keyboard.press('Enter');
   const once=await state();assert.deepEqual(once.acceleration.declared,['merchant']);assert.deepEqual(once.ships.map(s=>s.motion),original.ships.map(s=>s.motion));
   await p.locator('#battle-workflow details').evaluate(e=>e.open=true);await click('reopen');assert.deepEqual((await state()).acceleration.declared,[]);
