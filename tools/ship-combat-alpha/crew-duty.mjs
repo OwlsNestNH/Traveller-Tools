@@ -64,4 +64,4 @@ export function commitDutyAction(ship,{role,kind,note,roll,repair,to,skillId},ro
  ship.crewDuty=normalizeDuty(ship.crewDuty);return ship.crewDuty.actions.at(-1);
 }
 
-export function expiredRepairs(ship){return (ship.crewDuty?.actions??[]).filter(a=>a.repair?.expiresRound!=null&&ship.crewDuty.round>=a.repair.expiresRound&&!ship.crewDuty.repairReviews.some(r=>r.actionId===a.id));}
+export function expiredRepairs(ship,completedRound){return (ship.crewDuty?.actions??[]).filter(a=>a.repair?.expiresRound!=null&&completedRound>=a.repair.expiresRound&&!ship.crewDuty.repairReviews.some(r=>r.actionId===a.id));}

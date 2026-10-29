@@ -72,10 +72,11 @@ export function applyCommand(input,command){
  const state=checked(input);
  if(command?.expectedRevision!==undefined&&command.expectedRevision!==state.revision)throw Error('State changed; refresh the command revision.');
  if(state.revision===1000000)throw Error('Prototype revision limit reached. Reset the sample.');
- const pendingCriticals=state.ships.some(s=>s.combatDamage?.pending.length||expiredRepairs(s).length)||state.missileCombat?.salvos.some(s=>s.status==='manual');
+ if(state.ships.some(s=>expiredRepairs(s,state.round).length)&&['resolve-direct-fire','resolve-missile-impacts','missile-ew','scan-missiles','crew-action'].includes(command?.type))throw Error('Review expired temporary repairs before automated actions.');
+ const pendingCriticals=state.ships.some(s=>s.combatDamage?.pending.length||expiredRepairs(s,state.round).length)||state.missileCombat?.salvos.some(s=>s.status==='manual');
  if(pendingCriticals&&(['plot','brake','coast','set-flight-plan','begin-acceleration','declare-acceleration','start-battle','advance-round'].includes(command?.type)||command?.type==='next-battle-phase'&&command.phase==='crew'))throw Error('Confirm pending critical effects and expired temporary repairs handled before automated movement or the next round.');
  switch(command?.type){
- case 'review-expired-repair':{const s=getShip(state,command.shipId);if(!expiredRepairs(s).some(a=>a.id===command.actionId)||typeof command.note!=='string'||!command.note.trim()||command.note.length>300)throw Error('Record how expired temporary effects were reversed or never applied.');s.crewDuty.repairReviews.push({actionId:command.actionId,note:command.note.trim()});break;}
+ case 'review-expired-repair':{const s=getShip(state,command.shipId);if(!expiredRepairs(s,state.round).some(a=>a.id===command.actionId)||typeof command.note!=='string'||!command.note.trim()||command.note.length>300)throw Error('Record how expired temporary effects were reversed or never applied.');s.crewDuty.repairReviews.push({actionId:command.actionId,note:command.note.trim()});break;}
  case 'crew-action':applyCrewAction(state,command);break;
  case 'resolve-missile-impacts':{const r=recordedImpacts(state,command.dice);state.ships=r.ships;state.missileCombat=r.missileCombat;break;}
  case 'missile-ew':applyEW(state,command.shipId,command.salvoId,command.dice);break;
