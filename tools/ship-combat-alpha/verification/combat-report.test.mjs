@@ -30,3 +30,7 @@ test('early ending and partial declarations remain explicit in the exported repo
 test('report preserves crew overrides and distinguishes mount quantity from weapon slots',()=>{
  const s=fixture();s.ships[0].crew.bonus=4;s.ships[0].crew.overrides.pilot=5;s.ships[0].crew.gunnerStations=[{mountId:'mixed',name:'Legacy gunner',skillName:'Gunner',skill:3,characteristicDM:1}];const e=end(s).completedCombats[0],html=reportDocument(e);assert.match(html,/General contribution override/);assert.match(html,/Role: pilot · Value: 5/);assert.match(html,/Legacy gunner/);assert.match(html,/4 weapons per mount · mount quantity 1/);
 });
+
+test('print document keeps condition summaries first without forced ship page breaks',()=>{
+ const e=end(fixture()).completedCombats[0],html=reportDocument(e);assert.ok(html.indexOf('<h2>Detailed history</h2>')>html.lastIndexOf('data-report-ship='));assert.match(html,/\.condition-report\{break-before:auto/);assert.doesNotMatch(html,/break-before:page/);assert.match(html,/Automatic hit history/);assert.match(html,/Crew action history/);
+});
