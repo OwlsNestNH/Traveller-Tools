@@ -92,4 +92,4 @@ body.interface-shell #remove-ship-dialog{height:fit-content;inset:0;margin:auto;
 #remove-ship-dialog .sheet-body{overflow:auto;padding:12px}
 #remove-ship-dialog .dialog-header h2{margin:0}
 /* Let the count use two short lines rather than wrapping the entire control row. */
-@media(max-width:700px){body.interface-shell #encounter-count{flex:0 0 44px;max-width:44px;line-height:1.2;text-align:center}}
+@media(max-width:700px){body.interface-shell #encounter-count{flex:0 0 52px;max-width:52px;line-height:1.2;text-align:center}}
