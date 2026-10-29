@@ -1,3 +1,4 @@
+import {normalizeGunnery} from './gunnery.mjs';
 // Companion 2024 pp.174–175 / Core 2022 pp.165–166.
 // Phase acknowledgements do not resolve attacks or crew actions.
 export const PHASES=Object.freeze(['thrust','movement','attacks','crew']);
@@ -10,7 +11,7 @@ export function normalizeWorkflow(value,ships,acceleration){
  if(['thrust','movement'].includes(value.phase)){
   if(!acceleration||(value.phase==='movement')!==(acceleration.declared.length===ships.length))throw Error('Workflow and acceleration declarations disagree.');
  }else if(acceleration)throw Error('Movement must finish before attacks or crew actions.');
- return {version:1,phase:value.phase,initiatives};
+ const gunnery=(value.phase==='attacks'||value.phase==='crew'&&value.gunnery!=null)?normalizeGunnery(value.gunnery,ships,initiatives):null;if(value.phase==='crew'&&gunnery&&gunnery.declarations.length!==gunnery.order.length)throw Error('Complete gunnery declarations before crew actions.');return {version:1,phase:value.phase,initiatives,...(gunnery?{gunnery}:{})};
 }
 export function workflowRound(state){return state.round+(state.workflow&&['attacks','crew'].includes(state.workflow.phase)?0:1);}
 export function canPlanWorkflow(state){return !state.workflow||state.workflow.phase==='thrust';}

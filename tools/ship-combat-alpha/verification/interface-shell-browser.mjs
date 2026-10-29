@@ -1,3 +1,4 @@
+import {verifyGunnery} from './gunnery-browser.mjs';
 import {verifyCaptain} from './captain-browser.mjs';
 import {verifySetupSpace} from './setup-space-browser.mjs';
 import {verifySetupDisclosures} from './setup-disclosures-browser.mjs';
@@ -9,7 +10,7 @@ import {createRequire} from 'node:module';
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const root=process.env.SHIP_COMBAT_TEST_ROOT||'http://127.0.0.1:8767/',out=process.env.SHIP_COMBAT_ARTIFACT_DIR||fileURLToPath(new URL('../verification-artifacts/interface-shell/',import.meta.url));await mkdir(out,{recursive:true});
 const source=await readFile(new URL('../app.mjs',import.meta.url),'utf8'),browser=await chromium.launch({headless:true}),report=[];
-try{await verifyCaptain(browser,source,root,out);await verifySetupSpace(browser,source,root,out);await verifySetupDisclosures(browser,source,root,out);await verifyPopupResize(browser,source,root,out);for(const width of [1876,1440,1100,390,320]){
+try{await verifyGunnery(browser,source,root,out);await verifyCaptain(browser,source,root,out);await verifySetupSpace(browser,source,root,out);await verifySetupDisclosures(browser,source,root,out);await verifyPopupResize(browser,source,root,out);for(const width of [1876,1440,1100,390,320]){
  const context=await browser.newContext({viewport:{width,height:1000},hasTouch:width<500}),page=await context.newPage(),errors=[];page.setDefaultTimeout(15000);page.on('pageerror',e=>errors.push(e.message));
  await context.addInitScript(()=>{window.__storage=[];for(const method of ['getItem','setItem','removeItem','clear','key'])Storage.prototype[method]=()=>{window.__storage.push(method);throw Error('Storage touched');};indexedDB.open=()=>{throw Error('Database touched');};});
  await page.route('**/app.mjs',route=>route.fulfill({contentType:'text/javascript',body:source+'\nwindow.__shellState=()=>structuredClone(state);window.__shellRoster=count=>{state=createState({ships:[]});for(let i=0;i<count;i++)state=applyCommand(state,{type:"add-ship",presetId:"core-190",name:"Synthetic ship "+(i+1),position:{q:i,r:0},velocity:{q:0,r:0}});selected=state.ships[0]?.id;render();};window.__shellBattle=()=>{state=applyCommand(state,{type:"record-initiatives",entries:state.ships.map((s,i)=>({shipId:s.id,initiative:i,tie:0}))});state=applyCommand(state,{type:"start-battle"});render();};'}));

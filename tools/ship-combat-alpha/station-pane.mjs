@@ -9,7 +9,7 @@ import {powerReport,systemProfile} from './systems.mjs';
 import {stationPowerRows,setStationSystem} from './station-power.mjs';
 import {escapeHTML as esc,shown,sourceLabel,signed} from './ui-format.mjs';
 
-export function createStationPane({getState,getSelected,isLocked,onCommit,onSelect,onRefresh,onDetails,onCondition,onAdvanced,onRoleChange=()=>{},onAmmunition=()=>{},onInitiative=()=>{}}){
+export function createStationPane({getState,getSelected,isLocked,onCommit,onSelect,onRefresh,onDetails,onCondition,onAdvanced,onRoleChange=()=>{},onAmmunition=()=>{},onInitiative=()=>{},onGunneryRender=()=>false}){
  const $=id=>document.getElementById(id),root=$('station-pane'),content=$('station-records'),pilot=$('selected-controls');
  let station='pilot',draft=null,error='',checkDifficulty=8,checkResult=null,checkContext='',checkError='';
  const selected=()=>getState().ships.find(s=>s.id===getSelected());
@@ -45,6 +45,7 @@ export function createStationPane({getState,getSelected,isLocked,onCommit,onSele
   if(station==='astrogator')text=`<p>Recorded jump rating: ${esc(shown(r.jump))}</p><p>Jump plotting and astrogation checks are not implemented.</p>`;
   if(station==='damage')text=`<p>Current hull: ${esc(shown(ship.condition.hull))} · Design hull: ${esc(shown(design?.hull))}</p><p>Condition and criticals are manual records. No damage or repair rolls are implemented.</p><button type="button" data-station-condition>Condition / criticals</button>`;
   if(station==='sensors')text=`<p>Recorded sensors: ${esc(r.sensors??'Unknown')}</p><p>Mode: ${esc(ship.systems.sensorsEnabled?ship.systems.sensorMode:'off')} · adjust mode in ship setup.</p><p>Detection and sensor checks are not implemented.</p>`;
+  if(station==='gunnery'&&onGunneryRender())return;
   if(station==='gunnery')text=`<ul>${r.weapons==null?'<li>Weapon fit unknown / untranscribed.</li>':r.weapons.length?r.weapons.map(w=>`<li>${esc(w.name)}: ${w.fit?esc(shown(w.fit.quantity))+' mount(s) · ':w.count+' × '}${esc(w.type)}; ${isEnergyWeapon(w)?'Power '+esc(shown(recordedWeaponPower(design,w))):ship.condition.ammunition?'loaded/reserve counts in inventory':'initial loaded '+esc(shown(w.ammunition))}</li>`).join(''):'<li>Explicitly unarmed.</li>'}</ul><p>Firing and damage are not implemented.</p><button type="button" data-station-ammunition ${locked||draft||getState().acceleration?'disabled':''}>Ammunition inventory</button>`;
   content.innerHTML=`${text}${station!=='comms'?`<p>Crew: ${esc(crew?.name||'No individual name recorded')} · contribution ${esc(signed(crewContribution(ship.crew,crewRole)))}</p>`:''}<p class="help">${esc(sourceLabel(ship.template))}</p><button type="button" data-station-details>Ship details / crew</button>`;
  }

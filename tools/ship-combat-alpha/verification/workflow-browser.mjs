@@ -33,6 +33,7 @@ export async function verifyWorkflow(page,width,artifacts){
   await p.locator('[data-workflow=move]').evaluate(e=>{e.click();e.click();});assert.equal((await state()).round,1);assert.equal((await state()).workflow.phase,'attacks');
   await click('gunnery');assert.equal(await p.locator('#station-pane').getAttribute('data-station'),'gunnery');
   await p.locator('#battle-workflow').screenshot({path:artifacts+'workflow-attacks-'+width+'.png'});
+  while((await state()).workflow.gunnery.declarations.length<(await state()).workflow.gunnery.order.length){await click('gunnery');await p.locator('[data-gunnery=commit]').click();}
   await click('next');assert.equal((await state()).workflow.phase,'crew');
   await p.locator('#battle-workflow').screenshot({path:artifacts+'workflow-crew-'+width+'.png'});
   await click('next');const second=await state();assert.equal(second.workflow.phase,'thrust');assert.equal(await p.locator('#open-setup').isDisabled(),true);assert.equal(await p.locator('#add-ship-main').isDisabled(),false);assert.equal(second.round,1);assert.deepEqual(second.workflow.initiatives,beforeMove.workflow.initiatives);assert.equal(await p.locator('#round').textContent(),'Round 2');

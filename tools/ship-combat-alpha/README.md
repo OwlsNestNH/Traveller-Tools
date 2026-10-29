@@ -240,3 +240,14 @@ Companion Update 2024 pp.174–175 supplies lowest-first acceleration and simult
 Optional versioned `workflow` state records the phase and confirmed initiative snapshot. Legacy states without it remain in manual mode. Normalization rejects inconsistent snapshots/declarations; command revisions and phase checks reject stale or duplicate commits. Reopen plots preserves plans; leaving workflow preserves records and does not undo movement. Setup/initiative changes require leaving the workflow. Existing JSON normalization supports round trips; this prototype still has no campaign persistence or reload recovery service.
 
 Initiative edits survive selection changes and failed saves, with explicit Cancel and stale-revision rejection. Pending ship/condition/Engineer/ammunition drafts block workflow commits. The ordinary toolbar and map geometry remain unchanged; its manual Advance is disabled during guided workflow so the phase action is authoritative.
+
+
+### Gunnery declarations
+
+The existing Attack phase now has Declare and manual Resolve substeps. Eligible ships (those with turret records) commit lowest to highest initiative under the labelled home rule. Each turret has Previous/Next navigation, an installed-weapon dropdown supporting four recorded slots, and one exclusive attack, laser point-defense, sand or Hold choice. Core 2022 pp.168/171 restrictions are retained; no permissive High Guard mixed-use mode is enabled. Known shared gunner assignments cannot allocate the same person to multiple turret uses.
+
+Only beam/pulse lasers, missile racks and sandcasters are supported in this bounded declaration stage. Unsupported types, non-turret mounts and unverified mount quantities are not inferred into extra attacks. Legacy type labels are recognized only when they match those supported weapons; unknown fits remain Hold-only. Detailed crews need a recorded gunner; simplified crews use their existing generic station model. Condition records marked offline/destroyed cannot commit active turret use.
+
+Choices remain local drafts until explicit Commit Declarations. Cancel discards only that draft. Committed ship declarations are normalized in the existing versioned workflow and survive JSON save/load; earlier ships cannot revise them. Leaving a partially committed declaration sequence is blocked. Once all declarations are committed, the existing manual resolution acknowledgement unlocks. New rounds start fresh declarations and preserve Pilot thrust reservations. Older saves without declaration records still load, including legacy Crew Actions snapshots.
+
+Declarations are intent, not resolution: no dice, ammunition, Power, damage, missile movement or defenses are applied. Range, ammunition, Power and reaction eligibility remain resolution checks. A target destroyed later retains its original target record for the later hold-fire/no-retarget rule; this stage does not execute resolution. Manual critical history is unchanged.
