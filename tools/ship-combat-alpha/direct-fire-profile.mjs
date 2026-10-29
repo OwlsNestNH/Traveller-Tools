@@ -1,3 +1,4 @@
+import {dutyAssignment,dutyPenalty,dutySkill} from './crew-duty.mjs';
 import {effectiveDesign,normalizeCrew,RATINGS} from './setup.mjs';
 import {assignedSkill} from './crew-roster.mjs';
 import {gunneryMounts} from './gunnery.mjs';
@@ -6,7 +7,7 @@ import {LASERS} from './direct-fire-rules.mjs';
 
 // Rating substitutes for skill in simplified crews. Recorded totals are not added
 // again as characteristic modifiers. Detailed roles retain their actual skills.
-export function combatCrew(ship,role,mountId=null){
+function baseCombatCrew(ship,role,mountId=null){
  const c=normalizeCrew(ship.crew),station=mountId?c.gunnerStations?.find(d=>d.mountId===mountId):null;
  const detailed=!!station||c.mode==='detailed'||c.mode==='compact'&&c.activeDetails.includes(role);
  if(!detailed)return {skill:RATINGS[c.rating],modifier:c.overrides[role]??c.bonus??RATINGS[c.rating],simple:true,source:c.rating+' crew; rating as skill'};
@@ -14,6 +15,22 @@ export function combatCrew(ship,role,mountId=null){
  const tons=effectiveDesign(ship)?.tons,valid=role==='sensors'?/^electronics\s*\(sensors\)$/i:role==='gunner'?/^gunner\s*\(turret\)$/i:tons==null?/^$/:tons<100?/^pilot\s*\(small craft\)$/i:tons<=5000?/^pilot\s*\(spacecraft\)$/i:/^pilot\s*\(capital ships\)$/i;
  if(!d||!valid.test(d.skillName.trim()))return {skill:null,modifier:null,simple:false,source:'Required '+role+' skill not recorded'};
  return {skill:d.skill,modifier:d.skill+d.characteristicDM,simple:false,source:d.skillName,breakdown:{skill:d.skill,stat:a?.stat??null,other:a?.stat==null?d.characteristicDM:a.other}};
+}
+export function combatCrew(ship,role,mountId=null){
+ if(!ship.crewDuty)return baseCombatCrew(ship,role,mountId);
+ const dutyRole=mountId&&(ship.crew.gunnerStations?.some(d=>d.mountId===mountId)||ship.crew.roster?.assignments?.['mount:'+mountId])?'mount:'+mountId:role;const penalty=dutyPenalty(ship,dutyRole);
+ if(!penalty.available)return {skill:null,modifier:null,simple:false,source:penalty.reason};
+ const a=dutyAssignment(ship,dutyRole),copy=structuredClone(ship);
+ if(a?.moved){
+  const skill=dutySkill(ship,dutyRole),origin=a.origin,old=origin.startsWith('mount:')?ship.crew.gunnerStations?.find(d=>d.mountId===origin.slice(6)):ship.crew.details[origin];
+  const detailed=!!skill||origin.startsWith('mount:')||ship.crew.mode==='detailed'||ship.crew.mode==='compact'&&ship.crew.activeDetails.includes(origin);
+  const d=skill?{name:'Combat duty assignment',skillName:skill.name,skill:skill.level,characteristicDM:(skill.stat??0)+skill.other}:old;
+  delete copy.crew.roster;copy.crew.gunnerStations=[];
+  if(detailed){copy.crew.mode='compact';copy.crew.activeDetails=[role];copy.crew.details[role]=d??null;if(mountId&&d)copy.crew.gunnerStations=[{mountId,...d}];}
+  else{copy.crew.mode='quick';copy.crew.overrides[role]=copy.crew.overrides[origin]??null;}
+ }
+
+ const p=baseCombatCrew(copy,role,mountId);if(p.modifier!=null&&penalty.penalty){p.modifier+=penalty.penalty;p.source+=' · Comms multi-action −2';}return p;
 }
 export function directFireQueue(state){
  const g=state.workflow?.gunnery;if(!g||g.declarations.length!==g.order.length)return [];

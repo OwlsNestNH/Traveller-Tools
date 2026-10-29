@@ -4,7 +4,7 @@ import {validateWeaponFits} from './weapon-fit.mjs';
 import {normalizeRecord,normalizeManualCondition,optionalName} from './ship-record.mjs';
 // Setup data is independent of motion. No storage, I/O, dice or combat resolution.
 export const MAX_SHIPS=10;
-export const ROLES=Object.freeze(['captain','pilot','astrogator','sensors','engineer','gunner','medic','steward']);
+export const ROLES=Object.freeze(['captain','pilot','astrogator','sensors','comms','engineer','gunner','medic','steward']);
 export const RATINGS=Object.freeze({Green:1,Regular:2,Veteran:3,Elite:4,Heroic:5});
 const LEGACY_RATINGS=Object.freeze({Green:1,Veteran:2,Elite:3});
 export const CREW_RATING_VERSION=2;
