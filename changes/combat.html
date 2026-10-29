@@ -34,6 +34,7 @@
 </p>
 <h3><time datetime="2026-10-29">October 29, 2026</time></h3>
 <ul>
+<li>End Round opens a review before advancing. End Combat captures final ship conditions, pending declarations and saved results without resolving or deleting them. After-action reports provide per-ship condition, critical history, ammunition and crew records, with all-ship Print/PDF, standalone HTML and encounter JSON downloads. Unknown information and GM-adjudicated effects remain explicit; browser storage is not automatic.</li>
 <li>A persistent combat strip shows the phase and acting/next ship, with a direct route to the relevant station. Pilot Commit Plot &amp; Next selects the next ship; primary workflow actions sit beside station controls. Criticals counts affected systems across automatic current severity and active manual records, without counting repeated hits again. Unknown manual records remain explicit; damage and hit history are unchanged.</li>
 <li>Crew Actions adds explicit station action records and GM skill rolls, saved results, full-next-round crew reassignment, shared Comms accounting, and temporary repair rolls with expiry review. Captain shows current damage; Engineering retains the Power editor; Sensors shares the existing EW allowance. System effects and general sensor-lock/Leadership outcomes still need GM adjudication. Hull and critical history are preserved.</li>
 <li>Standard missiles now launch from committed declarations, spend known loaded ammunition once, and persist as salvos. Companion pursuit starts next round after ship movement; final Attack-phase impacts include committed laser point defense, armour and critical tracking. Missile scans and Crew Actions electronic warfare require detected contacts and eligible sensors. Saved results never reroll; unsupported types and system effects remain manual. <a href="https://github.com/OwlsNestNH/Traveller-Tools/pull/200">Release #200</a></li>
@@ -74,7 +75,7 @@
 <ul>
 <li>Complete unsupported missile variants, manual direct-fire configurations and critical-system effects. Critical hit entries are history, with one current severity per system.</li>
 <li>Remaining crew automation: general sensor locks, Leadership and other GM-adjudicated outcomes; automatic application and reversal of temporary repair effects.</li>
-<li>Complete the end-of-round flow and add printable/saveable after-action reports.</li>
+<li>A dedicated encounter import interface remains future work; exported JSON preserves normalized encounter data and completed reports.</li>
 <li>Reinforcements that join without resetting committed combat declarations, the Companion Short-range choice of one or two hexes, and deferred layout cleanup. Currently, Add Ship during confirmed combat requires explicitly leaving the workflow, which clears its declaration sequence.</li>
 <li>Multiplayer and dogfighting remain later stages.</li>
 </ul>
