@@ -16,11 +16,12 @@ export async function verifyWorkflow(page,width,artifacts){
   await p.evaluate(()=>window.__failWorkflow=true);await p.locator('#initiative-form button').click();assert.match(await p.locator('#error').textContent(),/Injected/);assert.deepEqual(await state(),original);assert.equal(await p.locator('#initiative-4').inputValue(),'5');
   await p.evaluate(()=>window.__failWorkflow=false);await p.locator('#initiative-form button').click();
   await p.locator('#initiative-editor').evaluate(e=>e.open=false);await p.locator('#round-planning').evaluate(e=>e.open=false);
-  await click('start');assert.equal((await state()).workflow.phase,'thrust');assert.equal(await p.locator('#advance').isDisabled(),true);
+  await click('start');assert.equal((await state()).workflow.phase,'thrust');assert.match(await p.locator('#workflow-strip').textContent(),/Acting: Armed Trader.*Next: Hunting Ship/);assert.equal(await p.locator('#advance').isDisabled(),true);
   assert.equal(await p.locator('[data-pilot-commit]').isVisible(),false);assert.equal(await p.locator('#begin-acceleration').isVisible(),false);
   await choose('gunnery');assert.match(await p.locator('#station-records').textContent(),/Resolve committed attacks through Battle workflow/);await choose('pilot');
-  if(await p.locator('[data-workflow=select]').count())await click('select');await p.locator('[data-workflow=plot]').focus();await p.keyboard.press('Enter');
-  const once=await state();assert.deepEqual(once.acceleration.declared,['merchant']);assert.deepEqual(once.ships.map(s=>s.motion),original.ships.map(s=>s.motion));
+  if(await p.locator('[data-workflow=select]').count())await click('select');await p.locator('[data-workflow=plot]').evaluate(e=>{e.click();e.click();});
+  assert.match(await p.locator('#workflow-strip').textContent(),/Acting: Hunting Ship/);assert.equal(await p.locator('[data-select=courier]').getAttribute('aria-pressed'),'true');
+  const once=await state();await p.keyboard.press('Enter');assert.deepEqual(await state(),once);assert.deepEqual(once.acceleration.declared,['merchant']);assert.deepEqual(once.ships.map(s=>s.motion),original.ships.map(s=>s.motion));
   await p.locator('#battle-workflow details').evaluate(e=>e.open=true);await click('reopen');assert.deepEqual((await state()).acceleration.declared,[]);
   // Existing Engineer draft survives navigation and blocks workflow mutation until Cancel.
   await choose('engineer');await p.locator('[data-station-system=basic]').selectOption('50');const pending=await state();assert.equal(await p.locator('[data-workflow=plot]').isDisabled(),true);
@@ -37,6 +38,8 @@ export async function verifyWorkflow(page,width,artifacts){
   await click('next');assert.equal((await state()).workflow.phase,'crew');
   await p.locator('#battle-workflow').screenshot({path:artifacts+'workflow-crew-'+width+'.png'});
   await click('next');const second=await state();assert.equal(second.workflow.phase,'thrust');assert.equal(await p.locator('#open-setup').isDisabled(),true);assert.equal(await p.locator('#add-ship-main').isDisabled(),false);assert.equal(second.round,1);assert.deepEqual(second.workflow.initiatives,beforeMove.workflow.initiatives);assert.equal(await p.locator('#round').textContent(),'Round 2');
+  assert.equal(await p.locator('#station-pane').getAttribute('data-station'),'pilot');assert.equal(await p.locator('[data-select=merchant]').getAttribute('aria-pressed'),'true');
+  await p.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));const stripBox=await p.locator('#workflow-strip').boundingBox();assert.ok(stripBox.y>=-1&&stripBox.y<1000);
   const after=await geometry();assert.equal(after.width,map.width);assert.equal(after.height,map.height);assert.equal(after.transform,map.transform);
   assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await p.screenshot({path:artifacts+'workflow-page-'+width+'.png',fullPage:true});
   await p.locator('#battle-workflow details').evaluate(e=>e.open=true);await click('leave');assert.equal((await state()).workflow,null);assert.deepEqual((await state()).ships,second.ships);

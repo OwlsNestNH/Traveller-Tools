@@ -40,3 +40,18 @@ test('old saves remain manual; every active phase round-trips and corrupt workfl
  const missing=initial();missing.ships[0].flight.initiative=null;assert.throws(()=>act(missing,'start-battle'),/Record initiative/);
  assert.throws(()=>act(createState({ships:[]}),'start-battle'),/Add a ship/);
 });
+
+test('workflow presentation derives acting and next ships without changing state',async()=>{
+ const {workflowPresentation}=await import('../workflow-presentation.mjs');let s=start();const snapshot=JSON.stringify(s);
+ assert.deepEqual(workflowPresentation(s,'alpha'),{phase:'Manoeuvre',step:'Plot ships',current:'beta',next:'alpha',selected:'alpha'});assert.equal(JSON.stringify(s),snapshot);
+ s=act(s,'declare-acceleration',{shipId:'beta'});assert.equal(workflowPresentation(s,'beta').current,'alpha');assert.equal(workflowPresentation(s,'beta').next,null);
+ s=act(s,'declare-acceleration',{shipId:'alpha'});assert.equal(workflowPresentation(s,'alpha').step,'Move all ships');assert.equal(workflowPresentation(s,'alpha').current,null);
+ s=act(s,'advance-round');assert.equal(workflowPresentation(s,'alpha').phase,'Attack');
+});
+test('critical badge counts systems, not severity or hit history, retaining unknown manual data',async()=>{
+ const {criticalSummary}=await import('../workflow-presentation.mjs');const ship={condition:{criticals:[]},combatDamage:{severities:{Bridge:4,'M-drive':2},history:[{},{},{}]}};
+ assert.deepEqual(criticalSummary(ship),{count:2,unknown:false});
+ ship.condition.criticals=[{system:'bridge',status:'open'},{system:'Manoeuvre Drive',status:'open'},{system:'Sensors',status:'resolved'},{system:'Fuel',status:'open'}];
+ const before=JSON.stringify(ship);assert.deepEqual(criticalSummary(ship),{count:3,unknown:false});assert.equal(JSON.stringify(ship),before);
+ ship.condition.criticals=null;assert.deepEqual(criticalSummary(ship),{count:2,unknown:true});
+});
