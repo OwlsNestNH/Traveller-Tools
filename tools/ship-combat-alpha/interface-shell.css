@@ -64,3 +64,4 @@ body.interface-shell #ship-sheet .sheet-body{flex:1;min-height:0}
 #captain-initiative .captain-body{padding:16px;overflow:auto;min-height:0;flex:1}
 #captain-initiative .dialog-header,#captain-initiative .dialog-footer{flex-shrink:0}
 #captain-initiative .dialog-footer{padding:12px;margin:0}
+.gunnery-declare label{display:block;margin:10px 0}.gunnery-declare select{width:100%;min-width:0}.gunnery-cycle{display:flex;align-items:center;gap:8px;margin:12px 0}.gunnery-cycle strong{flex:1;min-width:0}.gunnery-summary{padding-left:20px;overflow-wrap:anywhere}.gunnery-info{width:min(460px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;padding:20px;border-radius:16px}.gunnery-info h2{font-size:1.15rem}.gunnery-info p{font-size:.95rem}
