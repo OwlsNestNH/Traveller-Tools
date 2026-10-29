@@ -1,3 +1,4 @@
+import {advanceMovement} from './console-navigation.mjs';
 import assert from 'node:assert/strict';
 
 // Runs against the synthetic custom ship already constructed by the main suite.
@@ -30,8 +31,8 @@ export async function verifyConsole(page,width,artifacts){
  // Expanded-map setup/placement drafts keep their own Escape/Cancel behavior.
  await page.locator('#expand-map').click();await page.locator('#open-setup').click();await page.locator('#ship-name').fill('Cancelled expanded edit');await page.keyboard.press('Escape');assert.equal(await page.locator('#setup-dialog').isVisible(),false);assert.equal(await page.locator('#expand-map').getAttribute('aria-pressed'),'true');assert.equal(await rev(),before);
  await page.locator('#add-ship-main').click();await page.locator('#instance-name').fill('Cancelled expanded add');await page.locator('#place-on-map').click();await page.locator('#map').focus();await page.keyboard.press('Escape');assert.equal(await page.locator('#setup-dialog').isVisible(),true);assert.equal(await page.locator('#instance-name').inputValue(),'Cancelled expanded add');await page.locator('#cancel-setup').click();assert.equal(await page.locator('#expand-map').getAttribute('aria-pressed'),'true');await page.locator('#expand-map').click();assert.equal(await page.locator('#console-fuel').inputValue(),'5.5');assert.equal(await rev(),before);
- // Changing authoritative state makes the old draft stale, with no partial write.
- await page.locator('#advance').click();before=await rev();await page.locator('#console-commit').click();assert.match(await page.locator('#console-error').textContent(),/State changed/);assert.equal(await rev(),before);await cancel();assert.equal(await value('status-fuel-current'),'0');
+ // Changing a plot makes the old condition draft stale, with no partial write.
+ await page.locator('[data-console-forward=coast]').click();before=await rev();await page.locator('#console-commit').click();assert.match(await page.locator('#console-error').textContent(),/State changed/);assert.equal(await rev(),before);await cancel();assert.equal(await value('status-fuel-current'),'0');
  // Explicit values are independently saved. The original template remains 100/150/42.5.
  await stat('fuel');await page.locator('#console-fuel').fill('12.75');await commit();assert.match(await page.locator('[data-limits=fuel]').textContent(),/Rated design maximum: 42.5/);assert.match(await page.locator('[data-limits=hull]').textContent(),/Rated design maximum: 100/);
  await page.locator('#selected-identity').evaluate(e=>e.open=true);assert.equal(await page.locator('[data-console-condition]').isVisible(),true);if(width>=781){const left=await page.locator('#selected-workspace').boundingBox(),map=await page.locator('.map-panel').boundingBox();assert.ok(left.x>=map.x+map.width);assert.equal(await page.locator('main>aside').count(),1);}

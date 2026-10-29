@@ -1,0 +1,34 @@
+import {createState,normalizeState} from '../engine.mjs';
+import {normalizeCrew} from '../setup.mjs';
+import {freshDuty,commitDutyAction} from '../crew-duty.mjs';
+import {openStation,closeStation} from './console-navigation.mjs';
+import {workflowAction} from './console-navigation.mjs';
+import assert from 'node:assert/strict';
+import {readFile,mkdir,writeFile} from 'node:fs/promises';
+import {createRequire} from 'node:module';
+const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
+const root=process.env.SHIP_COMBAT_TEST_ROOT||'http://127.0.0.1:8767/',out=process.env.SHIP_COMBAT_ARTIFACT_DIR||'tools/ship-combat-alpha/verification-artifacts/static-console/';await mkdir(out,{recursive:true});
+const source=await readFile(new URL('../app.mjs',import.meta.url),'utf8'),browser=await chromium.launch({headless:true}),report=[];
+try{for(const width of [1876,1440,1100,390,320]){
+ const context=await browser.newContext({viewport:{width,height:1000},hasTouch:width<500}),page=await context.newPage(),errors=[];page.setDefaultTimeout(10000);page.on('pageerror',e=>errors.push(e.message));
+ await page.route('**/app.mjs',r=>r.fulfill({contentType:'text/javascript',body:source+'\nimport {normalizeState as restoreConsole} from "./engine.mjs";window.__consoleLoad=input=>{state=restoreConsole(input);selected=state.ships[0].id;gunneryControls.clear();render();};window.__consoleState=()=>structuredClone(state);window.__consoleFixture=(n=3)=>{state=createState({ships:createState().ships.slice(0,n)});state.ships.forEach((s,i)=>{s.motion.position={q:0,r:0};s.flight.initiative=i;s.flight.tie=0;});selected=state.ships[0].id;camera={zoom:4,x:0,y:0};render();};'}));
+ await page.goto(new URL('tools/ship-combat-alpha/',root).href);await page.locator('#command-bar').waitFor();
+ const state=()=>page.evaluate(()=>window.__consoleState());
+ const original=await state();assert.equal(await page.locator('input[name=range-mode][value=on]').isChecked(),true);
+ for(const phase of ['Manoeuvre','Attack','Actions','Setup']){await page.locator('[data-phase-view="'+phase+'"]').click();assert.match(await page.locator('#phase-inspection').innerText(),/read-only/);await page.keyboard.press('Escape');assert.deepEqual(await state(),original);}
+ await page.locator('#console-settings-button').click();await page.locator('#sensor-pings-toggle').uncheck();await page.waitForFunction(()=>!document.querySelector('.sensor-ping'));assert.equal(await page.locator('.sensor-ping').count(),0);await page.keyboard.press('Escape');assert.equal((await state()).display.sensorPings,false);
+ await page.locator('input[name=range-mode][value=off]').check();assert.equal((await state()).display.rangeBands,false);assert.deepEqual((await state()).ships,original.ships);
+ await page.locator('[data-damage-details]').click();assert.equal(await page.locator('#damage-issues-popup').isVisible(),true);await page.locator('[data-edit-condition]').click();assert.equal(await page.locator('#current-hull').isVisible(),true);await page.locator('#cancel-condition').click();assert.deepEqual((await state()).ships,original.ships);
+ await page.locator('[data-console-pilot]').click();assert.equal(await page.locator('.pilot-check').isVisible(),true);await page.keyboard.press('Escape');assert.equal(await page.locator('.pilot-check').isVisible(),false);
+ await page.evaluate(()=>window.__consoleFixture(3));assert.equal(await page.locator('.shared-half').count(),3);await page.locator('.shared-half').nth(2).focus();await page.keyboard.press('Enter');assert.equal(await page.locator('.shared-half[aria-pressed=true]').getAttribute('data-ship'),(await state()).ships[2].id);
+ await page.screenshot({path:out+'thirds-'+width+'.png',fullPage:true});
+ await page.evaluate(()=>window.__consoleFixture(4));assert.equal(await page.locator('.shared-stack').count(),1);await page.locator('.shared-stack').focus();await page.keyboard.press('Enter');assert.equal(await page.locator('[data-choose-shared]').count(),4);await page.keyboard.press('Escape');
+ await page.evaluate(()=>window.__consoleFixture(3));await page.locator('[data-workflow=start]').click();const before=await state();assert.equal(before.workflow.phase,'thrust');
+ for(let i=0;i<3;i++)await page.locator('[data-workflow=plot]').click();const ready=await state();assert.equal(ready.workflow.phase,'movement');assert.deepEqual(ready.ships.map(s=>s.motion),before.ships.map(s=>s.motion));await page.keyboard.press('Enter');assert.deepEqual(await state(),ready);
+ await workflowAction(page,'reopen');assert.equal((await state()).acceleration.declared.length,0);for(let i=0;i<3;i++)await page.locator('[data-workflow=plot]').click();
+ await page.screenshot({path:out+'ready-to-move-'+width+'.png',fullPage:true});
+ await page.locator('[data-workflow=move]').click();assert.equal((await state()).workflow.phase,'attacks');assert.equal((await state()).round,1);await page.keyboard.press('Escape');assert.equal(await page.locator('[data-workflow=reopen]').count(),0);
+ await openStation(page,'gunnery');const weapon=page.locator('[data-gunnery-field=weapon]');if(await weapon.count()){const choices=await weapon.locator('option').evaluateAll(es=>es.map(e=>e.value));if(choices[1]){const beforeDraft=await state();await weapon.selectOption(choices[1]);await page.keyboard.press('Escape');await openStation(page,'gunnery');assert.equal(await weapon.inputValue(),choices[1]);assert.deepEqual(await state(),beforeDraft);await page.locator('[data-gunnery=cancel]').click();assert.deepEqual(await state(),beforeDraft);}}await closeStation(page);
+ const transferred=createState({ships:createState().ships.slice(0,1)}),member=transferred.ships[0];member.crew=normalizeCrew({mode:'detailed',details:{engineer:{name:'Alice',skillName:'Engineer',skill:1,characteristicDM:0},sensors:{name:'Bob',skillName:'Engineer',skill:3,characteristicDM:1}}});member.crewDuty=freshDuty(1);commitDutyAction(member,{role:'sensors',kind:'move',to:'engineer',note:'Transfer'},1);transferred.round=2;member.crewDuty.round=3;await page.evaluate(s=>window.__consoleLoad(s),normalizeState(transferred));await openStation(page,'engineer');assert.match(await page.locator('#station-crew-sheet').innerText(),/Bob.*Skill 3.*Characteristic\/other 1.*Total \+4/s);assert.doesNotMatch(await page.locator('#station-crew-sheet').innerText(),/Alice/);await closeStation(page);
+ assert.equal(await page.locator('#console-mfd').evaluate(e=>e.scrollHeight<=e.clientHeight+1),true);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);assert.deepEqual(errors,[]);report.push({width,passed:true});await context.close();
+}}finally{await browser.close();await writeFile(out+'results.json',JSON.stringify(report,null,2));}console.log(JSON.stringify(report));
