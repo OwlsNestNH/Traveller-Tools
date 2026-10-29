@@ -179,7 +179,9 @@ function alignRightPane(){
  pane.style.setProperty('--right-pane-height',Math.max(200,(visualViewport?.height??innerHeight)+visibleTop-Math.max(visibleTop,baseTop+offset))+'px');
 }
 function sizeTacticalMap(){
- const frame=$('console-frame'),width=frame.parentElement.clientWidth,top=frame.getBoundingClientRect().top+scrollY,available=(visualViewport?.height??innerHeight)-top-Math.max(28,document.querySelector('.map-footer>summary').getBoundingClientRect().height),base=Math.max(240,Math.min(width,available)),expanded=document.body.classList.contains('map-expanded');
+ // Mobile commands wrap in document flow; reserve a constant viewport margin so
+ // switching phase does not resize the tactical map or its projection.
+ const frame=$('console-frame'),width=frame.parentElement.clientWidth,top=frame.getBoundingClientRect().top+scrollY,available=(visualViewport?.height??innerHeight)-(document.body.classList.contains('static-console')&&innerWidth<=700?185:top+Math.max(28,document.querySelector('.map-footer>summary').getBoundingClientRect().height)),base=Math.max(240,Math.min(width,available)),expanded=document.body.classList.contains('map-expanded');
  // The usable SVG, not its bordered frame, retains the 200px minimum.
  const expandedInset=expanded?Math.max(0,frame.getBoundingClientRect().height-svg.getBoundingClientRect().height):0;
  frame.style.setProperty('--expanded-height',Math.max(200+expandedInset,available)+'px');
