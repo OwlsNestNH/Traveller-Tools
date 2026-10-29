@@ -80,3 +80,16 @@ body.interface-shell #ship-sheet .sheet-body{flex:1;min-height:0}
 body.interface-shell.map-expanded #workflow-strip{padding:5px 10px;gap:3px}
 body.interface-shell.map-expanded #workflow-strip>ol,body.interface-shell.map-expanded #workflow-strip>button{display:none}
 body.interface-shell.map-expanded #workflow-strip strong{font-size:.85rem}
+
+/* Lift Add Ship slightly without changing the ship cards or touch target size. */
+@media(min-width:701px){body.interface-shell #add-ship-main{position:relative;top:-6px}}
+#remove-ship-dialog{width:min(560px,calc(100vw - 24px));max-height:calc(100dvh - 24px);border:1px solid #466a7c;border-radius:12px;background:#102532;color:#e6faff;padding:0}
+#remove-ship-dialog::backdrop{background:#0009}
+#remove-ship-dialog .sheet-body{overflow-wrap:anywhere}
+body.interface-shell #remove-ship-dialog{height:fit-content;inset:0;margin:auto;overflow:hidden}
+#remove-ship-dialog .dialog-shell{display:flex;flex-direction:column;height:auto;max-height:calc(100dvh - 26px)}
+#remove-ship-dialog .dialog-header,#remove-ship-dialog .dialog-footer{flex-shrink:0;padding:12px}
+#remove-ship-dialog .sheet-body{overflow:auto;padding:12px}
+#remove-ship-dialog .dialog-header h2{margin:0}
+/* Let the count use two short lines rather than wrapping the entire control row. */
+@media(max-width:700px){body.interface-shell #encounter-count{flex:0 0 52px;max-width:52px;line-height:1.2;text-align:center}}

@@ -1,5 +1,5 @@
 // Presentation only: every mutation continues through the existing guarded editors.
-export function mountInterfaceShell({getState,onAdd,onLeave,onFocus,canOpen}){
+export function mountInterfaceShell({getState,getSelected,onRemove,onAdd,onLeave,onFocus,canOpen}){
  const $=id=>document.getElementById(id),main=document.querySelector('main');
  document.body.classList.add('interface-shell');
  const top=document.createElement('section');top.id='encounter-header';top.setAttribute('aria-label','Encounter ships and commands');main.prepend(top);
@@ -8,6 +8,13 @@ export function mountInterfaceShell({getState,onAdd,onLeave,onFocus,canOpen}){
  const count=document.createElement('span');count.id='encounter-count';add.append(count);$('ship-rail').append(add);
  const heading=document.querySelector('.map-heading');top.append(heading);
  const focus=document.createElement('button');focus.id='focus-ship';focus.textContent='Focus Ship';focus.addEventListener('click',onFocus);heading.querySelector('.map-tools').prepend(focus);
+ const remove=document.createElement('button');remove.id='remove-ship-main';remove.type='button';remove.textContent='Remove Ship';add.insertBefore(remove,count);
+ const removal=document.createElement('dialog');removal.id='remove-ship-dialog';removal.setAttribute('aria-labelledby','remove-ship-title');removal.innerHTML='<div class="dialog-shell"><header class="dialog-header"><h2 id="remove-ship-title">Remove selected ship?</h2></header><div class="sheet-body"><p data-removal-name></p><p>This removes the ship from the current encounter. Saved combat snapshots remain unchanged.</p><p data-removal-error role="alert"></p></div><footer class="dialog-footer"><button type="button" data-cancel autofocus>Cancel</button><button type="button" data-confirm>Remove Ship</button></footer></div>';document.body.append(removal);
+ let pendingRemoval=null;
+ remove.addEventListener('click',()=>{const state=getState(),ship=state.ships.find(s=>s.id===getSelected());if(removal.open||!ship||state.workflow||state.acceleration||!canOpen())return;pendingRemoval={shipId:ship.id,revision:state.revision};removal.querySelector('[data-removal-name]').textContent='Remove '+ship.name+'?';removal.querySelector('[data-removal-error]').textContent='';removal.showModal();});
+ removal.querySelector('[data-cancel]').onclick=()=>removal.close();
+ removal.querySelector('[data-confirm]').onclick=()=>{if(!pendingRemoval)return;const pending=pendingRemoval;if(getSelected()!==pending.shipId||getState().revision!==pending.revision){removal.querySelector('[data-removal-error]').textContent='The encounter changed. Cancel and select the ship again.';return;}if(!canOpen())return;pendingRemoval=null;if(onRemove(pending.shipId,pending.revision))removal.close();else{pendingRemoval=pending;removal.querySelector('[data-removal-error]').textContent='Removal was blocked. Cancel and check the encounter state.';}};
+ removal.addEventListener('close',()=>{pendingRemoval=null;(remove.disabled?$('add-ship-main'):remove).focus({preventScroll:true});});
  const status=$('selected-workspace');$('combat-right').prepend(status);const title=document.createElement('h2');title.className='display-title';title.textContent='Ship Status';status.prepend(title);
  const sizeDisplays=()=>{const top=$('console-frame').getBoundingClientRect().top+scrollY;$('movement-workspace').style.setProperty('--station-height',Math.max(240,innerHeight-top-status.getBoundingClientRect().height-16)+'px');};new ResizeObserver(sizeDisplays).observe(status);new ResizeObserver(sizeDisplays).observe($('console-frame'));sizeDisplays();
  const refresh=()=>{count.textContent=getState().ships.length+' / 10 ships';focus.disabled=!getState().ships.length;};
