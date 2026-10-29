@@ -9,7 +9,7 @@ export function laserAttack({weapon,count,range,gunner,other=0,evasion=0,evade=0
  for(const [label,v]of Object.entries({gunner,other,aid}))whole(v,label,-30,40);
  for(const [label,v]of Object.entries({evasion,evade,fireControl}))whole(v,label,0,10);
  whole(armour,'armour',0,1000);whole(sand,'sand protection',0,1000);if(!Number.isFinite(targetTons)||targetTons<=0)throw Error('Unknown target displacement.');
- const modifiers={gunner,other,weapon:w.attack,range:range==='Short'?1:range==='Long'?-2:0,size:Math.min(6,Math.floor(targetTons/1000)),evasion:-evasion,evade:-evade,fireControl,aid};
+ const modifiers={gunner,other,weapon:w.attack,range:range==='Short'?1:range==='Long'?-2:0,size:Math.min(6,Math.floor(targetTons/1000)),evasion:-evasion||0,evade:-evade||0,fireControl,aid};
  const attack=diceTotal(attackDice,2),total=attack+Object.values(modifiers).reduce((a,b)=>a+b,0),effect=total-8,hit=effect>=0;
  const rolled=hit?diceTotal(damageDice,w.dice):0;if(!hit&&damageDice.length)throw Error('A miss has no damage dice.');
  const linked=w.dice*(count-1),raw=hit?rolled+linked+effect:0,damage=Math.max(0,raw-armour-sand);

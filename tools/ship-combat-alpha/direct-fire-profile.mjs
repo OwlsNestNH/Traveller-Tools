@@ -35,9 +35,9 @@ export function directFireProfile(state,entry){
  if(!count)issues.push('The declared weapon fit is unverified.');
  if(crew.modifier==null)issues.push('Record a Gunner (turret) contribution.');
  if(target.condition.hull==null||targetDesign?.hull==null||targetDesign.armour==null)issues.push('Target hull, starting hull and armour must be known.');
- if([attacker,target].some(s=>(s.condition.criticals??[]).some(c=>c.status!=='resolved')))issues.push('Existing manual critical records need GM reconciliation.');
+ if([attacker,target].some(s=>(s.condition.criticals??[]).some(c=>c.status!=='resolved')||s.combatDamage?.pending?.length))issues.push('Existing manual critical effects need GM reconciliation.');
  if(mount.status==='damaged')issues.push('The damaged turret needs a verified current effect.');
  const bandIndex={Short:0,Medium:1,Long:2,'Very Long':3,Distant:4};
  if(range.band!=='Adjacent / Close'&&bandIndex[range.band]>bandIndex[LASERS[entry.weapon]?.maxRange])return {status:'hold',reason:'Declared target beyond weapon range; no retargeting.',range};
- return {status:issues.length?'manual':'eligible',issues,range,count,crew,pilot,mountId:mount.mountId,armour:targetDesign?.armour??null,targetTons:targetDesign?.tons??null};
+ return {status:issues.length?'manual':'eligible',issues,range,count,crew,pilot,mountId:mount.mountId,armour:targetDesign?.armour==null?null:Math.max(0,targetDesign.armour-(target.combatDamage?.armourLoss??0)),targetTons:targetDesign?.tons??null};
 }

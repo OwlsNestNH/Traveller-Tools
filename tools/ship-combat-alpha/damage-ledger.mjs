@@ -4,7 +4,7 @@ const integer=(n,label,min,max)=>{if(!Number.isSafeInteger(n)||n<min||n>max)thro
 // do not implicitly clear the ledger or replay earlier critical effects.
 export function newDamageLedger(startingHull,currentHull){
  integer(startingHull,'starting hull',1,1000000);integer(currentHull,'current hull',0,startingHull);
- return {version:1,startingHull,damageTaken:startingHull-currentHull,severities:{},history:[]};
+ return {version:1,startingHull,damageTaken:startingHull-currentHull,armourLoss:0,pending:[],handled:[],severities:{},history:[]};
 }
 export function normalizeDamageLedger(value){
  if(value==null)return null;
@@ -16,7 +16,9 @@ export function normalizeDamageLedger(value){
   severities[h.location]=expected.severity;return {eventId:h.eventId,location:h.location,...expected};
  });
  if(new Set(history.map(h=>h.eventId)).size!==history.length||JSON.stringify(Object.entries(severities).sort())!==JSON.stringify(Object.entries(value.severities??{}).sort()))throw Error('Duplicate or inconsistent critical history.');
- return {version:1,startingHull,damageTaken,severities,history};
+ const armourLoss=integer(value.armourLoss??0,'armour loss',0,1000),pending=Array.from(value.pending??[],id=>{if(!history.some(h=>h.eventId===id))throw Error('Unknown pending critical.');return id;});if(new Set(pending).size!==pending.length)throw Error('Duplicate pending critical.');
+ const handled=Array.from(value.handled??[],h=>{if(!Array.isArray(h.ids)||!h.ids.length||h.ids.some(id=>!history.some(e=>e.eventId===id)||pending.includes(id))||typeof h.note!=='string'||!h.note.trim()||h.note.length>300)throw Error('Invalid manual critical acknowledgement.');return {ids:[...h.ids],note:h.note.trim()};});if(handled.length>2048||new Set(handled.flatMap(h=>h.ids)).size!==handled.reduce((n,h)=>n+h.ids.length,0))throw Error('Duplicate manual critical acknowledgement.');
+ return {version:1,startingHull,damageTaken,armourLoss,pending,handled,severities,history};
 }
 export function recordCritical(value,{eventId,location,incoming}){
  const ledger=normalizeDamageLedger(value);if(!ledger)throw Error('Initialize damage ledger first.');
