@@ -11,7 +11,10 @@ export function normalizeWorkflow(value,ships,acceleration){
  if(['thrust','movement'].includes(value.phase)){
   if(!acceleration||(value.phase==='movement')!==(acceleration.declared.length===ships.length))throw Error('Workflow and acceleration declarations disagree.');
  }else if(acceleration)throw Error('Movement must finish before attacks or crew actions.');
- const gunnery=(value.phase==='attacks'||value.phase==='crew'&&value.gunnery!=null)?normalizeGunnery(value.gunnery,ships,initiatives):null;if(value.phase==='crew'&&gunnery&&gunnery.declarations.length!==gunnery.order.length)throw Error('Complete gunnery declarations before crew actions.');return {version:1,phase:value.phase,initiatives,...(gunnery?{gunnery}:{})};
+ const gunnery=(value.phase==='attacks'||value.phase==='crew'&&value.gunnery!=null)?normalizeGunnery(value.gunnery,ships,initiatives):null;if(value.phase==='crew'&&gunnery&&gunnery.declarations.length!==gunnery.order.length)throw Error('Complete gunnery declarations before crew actions.');
+ if(value.resolutionId!=null&&(!/^r[0-9]+-v[0-9]+$/.test(value.resolutionId)||!['attacks','crew'].includes(value.phase)))throw Error('Invalid active resolution reference.');
+ if(value.manualResolution!=null&&(typeof value.manualResolution!=='string'||!value.manualResolution.trim()||value.manualResolution.length>300))throw Error('Invalid manual resolution note.');
+ return {version:1,phase:value.phase,initiatives,...(gunnery?{gunnery}:{}),...(value.resolutionId?{resolutionId:value.resolutionId}:{}),...(value.manualResolution?{manualResolution:value.manualResolution}:{})};
 }
 export function workflowRound(state){return state.round+(state.workflow&&['attacks','crew'].includes(state.workflow.phase)?0:1);}
 export function canPlanWorkflow(state){return !state.workflow||state.workflow.phase==='thrust';}

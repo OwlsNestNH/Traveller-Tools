@@ -33,7 +33,8 @@
 </p>
 <h3><time datetime="2026-10-29">October 29, 2026</time></h3>
 <ul>
-<li>Gunnery declarations now cycle through turrets, select an installed weapon type and record an attack target, laser point-defense reservation, sand reservation or Hold fire. Ships commit from lowest to highest initiative under a labelled home rule; committed choices stay locked and survive save/load. After all eligible ships commit, the existing manual resolution step becomes available. Declaration applies no firing, ammunition use, damage or automatic defenses. Unsupported weapon types and non-turret mounts remain manual.</li>
+<li>Direct-fire resolution now applies eligible beam/pulse laser attacks in initiative order, with committed evasion, Aid Gunners, sand protection, armour and Hull damage. Saved results retain dice and inputs; Back/Next and reopening never reroll or reapply effects. Critical hits retain per-hit history and current system severity; unsupported system effects require GM handling. Sand has one defensive use per turret per round under a labelled home rule. Missiles, point defense and unsupported configurations remain manual.</li>
+<li>Gunnery declarations now cycle through turrets, select an installed weapon type and record an attack target, laser point-defense reservation, sand reservation or Hold fire. Ships commit from lowest to highest initiative under a labelled home rule; committed choices stay locked and survive save/load. After all eligible ships commit, resolution becomes available. Declaration applies no firing, ammunition use, damage or automatic defenses. Unsupported weapon types and non-turret mounts remain manual.</li>
 </ul>
 <h3><time datetime="2026-10-28">October 28, 2026</time></h3>
 <ul>
@@ -66,7 +67,7 @@
 <p class="muted">Approved remaining work, not released. Some underlying mechanics already exist; these are workflow integration and testing tasks. No release dates are promised.
 </p>
 <ul>
-<li>Attack resolution workflow: automatic defenses, missiles, damage, separate stacked criticals and a results display.</li>
+<li>Next: missile launch, salvos, electronic warfare, point defense and impacts; complete remaining manual direct-fire configurations and critical-system effects. Critical hit entries are history, with one current severity per system.</li>
 <li>Remaining crew actions: sensors and electronic warfare, engineering, damage control and changing stations.</li>
 <li>Complete the end-of-round flow and add printable/saveable after-action reports.</li>
 <li>Reinforcements that join without resetting committed combat declarations, the Companion Short-range choice of one or two hexes, and deferred layout cleanup. Currently, Add Ship during confirmed combat requires explicitly leaving the workflow, which clears its declaration sequence.</li>

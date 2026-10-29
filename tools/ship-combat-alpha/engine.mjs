@@ -1,3 +1,6 @@
+import {normalizeDamageLedger} from './damage-ledger.mjs';
+import {normalizeCombatHistory,recordedResolution} from './direct-fire-resolution.mjs';
+import {directFireQueue,unresolvedDeclarations} from './direct-fire-profile.mjs';
 import {nextGunner,normalizeDeclarations} from './gunnery.mjs';
 import {normalizeInitiativeRecord} from './initiative.mjs';
 import {normalizeWorkflow,canPlanWorkflow} from './workflow.mjs';
@@ -28,14 +31,17 @@ function ship(value){
  const appearance=normalizeAppearance(value.appearance);appearance.heading=velocityHeading(vector(value.motion?.velocity,'Velocity'),appearance.heading);
  const template=normalizeTemplate(value.template),designOverrides=normalizeOverrides(value.designOverrides,template),effective=effectiveDesign({template,designOverrides});
  const condition=normalizeCondition(value.condition,effective),systems=normalizeSystems(value.systems,effective,thrust,template);
- return {id:value.id,name:name(value.name),identity:normalizeIdentity(value.identity),template,designOverrides,appearance,crew:normalizeCrew(value.crew),condition,systems,situational:normalizeSituational(value.situational),capabilities:{thrust},flight:plan,motion};
+ return {id:value.id,name:name(value.name),identity:normalizeIdentity(value.identity),template,designOverrides,appearance,crew:normalizeCrew(value.crew),condition,systems,situational:normalizeSituational(value.situational),capabilities:{thrust},flight:plan,motion,...(value.combatDamage==null?{}:{combatDamage:normalizeDamageLedger(value.combatDamage)})};
 }
 function checked(state){
  if(state?.version!==API_VERSION)throw Error('Unsupported movement state version.');
  if(!Array.isArray(state.ships)||state.ships.length>MAX_SHIPS)throw Error(`The alpha supports 0 to ${MAX_SHIPS} ships (usability limit).`);
  const ships=Array.from(state.ships,ship);if(new Set(ships.map(s=>s.id)).size!==ships.length)throw Error('Ship IDs must be unique.');
  let acceleration=null;if(state.acceleration!=null){if(state.roundMinutes!==ROUND_MINUTES)throw Error('Companion declarations require six-minute rounds.');const order=accelerationOrder({ships}),v=state.acceleration;if(!Array.isArray(v.order)||JSON.stringify(v.order)!==JSON.stringify(order)||!Array.isArray(v.declared)||JSON.stringify(v.declared)!==JSON.stringify(order.slice(0,v.declared.length))||v.declared.length>order.length)throw Error('Invalid acceleration declaration sequence.');acceleration={order,declared:[...v.declared]};}
- return {version:API_VERSION,acceleration,workflow:normalizeWorkflow(state.workflow,ships,acceleration),revision:integer(state.revision,'Revision',0,1000000),round:integer(state.round,'Completed rounds',0,1000000),roundMinutes:integer(state.roundMinutes,'Round duration',1,60),ships};
+ const workflow=normalizeWorkflow(state.workflow,ships,acceleration),combatHistory=normalizeCombatHistory(state.combatHistory,rows=>{if(!Array.isArray(rows)||rows.length>MAX_SHIPS)throw Error('Invalid snapshot ships.');return rows.map(ship);});
+ if(workflow?.resolutionId&&!combatHistory.some(r=>r.id===workflow.resolutionId&&r.snapshot.round===state.round&&JSON.stringify(r.snapshot.workflow.gunnery)===JSON.stringify(workflow.gunnery)))throw Error('Active resolution record is missing or mismatched.');
+ if(workflow?.phase==='attacks'&&!workflow.resolutionId&&combatHistory.some(r=>r.snapshot.round===state.round))throw Error('Current round resolution reference is missing.');
+ return {version:API_VERSION,...(combatHistory.length?{combatHistory}:{}),acceleration,workflow,revision:integer(state.revision,'Revision',0,1000000),round:integer(state.round,'Completed rounds',0,1000000),roundMinutes:integer(state.roundMinutes,'Round duration',1,60),ships};
 }
 // Fresh/reset demonstration only: retain each complete catalogue record and its citation.
 // Positions, velocities, sides and Green crew are scenario choices, not published ship facts.
@@ -54,11 +60,19 @@ export function plotCost(ship,target){target=vector(target,'Target');vector(subt
 export function canPlot(ship,target){try{return plotCost(ship,target)<=availableThrust(ship);}catch{return false;}}
 // JSON command contract. Successful commands return a new normalized state;
 // rejected commands leave the caller's original state untouched.
+function archiveResolution(state,dice){const snapshot=structuredClone({round:state.round,ships:state.ships,workflow:state.workflow}),resolved=recordedResolution(snapshot,dice),id='r'+state.round+'-v'+state.revision;state.combatHistory??=[];state.combatHistory.push({version:1,id,snapshot,dice:[...dice],results:resolved.results,plan:resolved.plan,usage:resolved.usage,pending:resolved.pending});state.ships=resolved.ships;state.workflow.resolutionId=id;return state.combatHistory.at(-1);}
 export function applyCommand(input,command){
  const state=checked(input);
  if(command?.expectedRevision!==undefined&&command.expectedRevision!==state.revision)throw Error('State changed; refresh the command revision.');
  if(state.revision===1000000)throw Error('Prototype revision limit reached. Reset the sample.');
+ const pendingCriticals=state.ships.some(s=>s.combatDamage?.pending.length);
+ if(pendingCriticals&&(['plot','brake','coast','set-flight-plan','begin-acceleration','declare-acceleration','start-battle','advance-round'].includes(command?.type)||command?.type==='next-battle-phase'&&command.phase==='crew'))throw Error('Confirm pending critical effects handled before automated movement or the next round.');
  switch(command?.type){
+ case 'acknowledge-critical-effects':{const s=getShip(state,command.shipId),ledger=s.combatDamage;if(!ledger?.pending.length||typeof command.note!=='string'||!command.note.trim()||command.note.length>300)throw Error('Describe the pending critical effects handled manually.');ledger.handled.push({ids:[...ledger.pending],note:command.note.trim()});ledger.pending=[];break;}
+ case 'resolve-direct-fire':{
+  if(state.workflow?.phase!=='attacks'||nextGunner(state)||state.workflow.resolutionId||(state.combatHistory??[]).some(r=>r.snapshot.round===state.round))throw Error('Complete declarations first; direct fire can resolve only once per round.');
+  archiveResolution(state,command.dice);break;
+ }
  case 'plot':{
   const s=getShip(state,command.shipId);assertPlanning(state,s.id);const target=vector(command.target,'Target'),cost=plotCost(s,target);
   if(cost>availableThrust(s))throw Error(`Target needs ${cost} thrust; ${availableThrust(s)} available. Choose a reachable hex.`);
@@ -89,7 +103,7 @@ export function applyCommand(input,command){
  case 'start-battle':{assertSetup(state);if(state.roundMinutes!==ROUND_MINUTES)throw Error('Battle workflow requires six-minute rounds.');if(!state.ships.length)throw Error('Add a ship before starting battle workflow.');const order=accelerationOrder(state);state.workflow={version:1,phase:'thrust',initiatives:state.ships.map(s=>({shipId:s.id,initiative:s.flight.initiative,tie:s.flight.tie}))};state.acceleration={order,declared:[]};break;}
  case 'leave-battle':if(state.workflow?.phase==='attacks'&&state.workflow.gunnery.declarations.length&&nextGunner(state))throw Error('Finish locked declarations before leaving the workflow.');if(!state.workflow)throw Error('No active battle workflow.');state.workflow=null;state.acceleration=null;break;
  case 'declare-gunnery':{if(state.workflow?.phase!=='attacks'||nextGunner(state)!==command.shipId)throw Error('Declare the next eligible ship only; committed choices are locked.');const s=getShip(state,command.shipId);const mounts=normalizeDeclarations(command.mounts,s,state.ships,{commit:true});state.workflow.gunnery.declarations.push({shipId:s.id,mounts});break;}
- case 'next-battle-phase':if(!state.workflow||command.phase!==state.workflow.phase)throw Error('Battle phase changed; review the current phase.');if(state.workflow.phase==='attacks'){if(nextGunner(state))throw Error('Commit every ship’s gunnery declarations before resolution acknowledgement.');state.workflow.phase='crew';}else if(state.workflow.phase==='crew'){state.workflow.phase='thrust';delete state.workflow.gunnery;state.acceleration={order:accelerationOrder(state),declared:[]};}else throw Error('Commit all plots and movement before acknowledging actions.');break;
+ case 'next-battle-phase':if(!state.workflow||command.phase!==state.workflow.phase)throw Error('Battle phase changed; review the current phase.');if(state.workflow.phase==='attacks'){if(nextGunner(state))throw Error('Commit every ship’s gunnery declarations before resolution acknowledgement.');if(directFireQueue(state).length&&!state.workflow.resolutionId)throw Error('Resolve direct fire before acknowledging attacks.');const record=state.combatHistory?.find(r=>r.id===state.workflow.resolutionId),manual=unresolvedDeclarations(state).some(r=>r.action==='attack')||record?.results.some(r=>r.status==='manual');if(manual){if(typeof command.manualNote!=='string'||!command.manualNote.trim()||command.manualNote.length>300)throw Error('Record explicit GM confirmation of remaining manual attacks; missiles are not automatically resolved.');const archived=record??archiveResolution(state,[]);archived.manualResolution=command.manualNote.trim();state.workflow.manualResolution=command.manualNote.trim();}state.workflow.phase='crew';}else if(state.workflow.phase==='crew'){state.workflow.phase='thrust';delete state.workflow.gunnery;delete state.workflow.resolutionId;delete state.workflow.manualResolution;state.acceleration={order:accelerationOrder(state),declared:[]};}else throw Error('Commit all plots and movement before acknowledging actions.');break;
  case 'brake':{const s=getShip(state,command.shipId);assertPlanning(state,s.id);s.flight.braking=hexDistance(s.motion.velocity)>0;s.motion.impulse=brakingImpulse(s);break;}
  case 'coast':{const s=getShip(state,command.shipId);assertPlanning(state,s.id);s.flight.braking=false;s.motion.impulse={q:0,r:0};break;}
  case 'edit-ship':{
