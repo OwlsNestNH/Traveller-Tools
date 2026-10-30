@@ -209,4 +209,4 @@ const interfaceShell=mountInterfaceShell({getState:()=>state,getSelected:()=>sel
 
 mountSetupInfo();
 
-staticConsole=mountStaticConsole({getState:()=>state,getSelected:()=>selected,onStation:id=>stationPane.choose(id),onCrew:()=>crewControls.open(),onDetails:()=>shipSheet.open(),onCondition:()=>editors.openCondition()});workflowControls.render();staticConsole.render();
+staticConsole=mountStaticConsole({isLocked:()=>!!flightControls?.hasDraft()||editors.isPlacing()||editors.hasSetupDraft()||editors.hasConditionDraft()||shipSheet.isOpen()||stationPane.hasDraft()||ammunitionEditor.hasDraft()||consoleControls.hasDraft()||!$('systems-dialog').hidden,getState:()=>state,getSelected:()=>selected,onStation:id=>stationPane.choose(id),onCrew:()=>crewControls.open(),onDetails:()=>shipSheet.open(),onCondition:()=>editors.openCondition()});workflowControls.render();staticConsole.render();
