@@ -29,9 +29,9 @@
 .static-console #station-control-popup #selected-controls{display:block}
 .static-console #station-control-popup #round-planning{max-height:none}
 .static-console .critical-lines p{margin:4px 0;font-size:12px}.critical-lines{padding:4px 8px}
-.sensor-ping{pointer-events:none;color:#8ed7dc}.sensor-ping circle{stroke:currentColor;transform-box:fill-box;transform-origin:center;animation:sensor-pulse 3s linear infinite}
-@keyframes sensor-pulse{from{transform:scale(.05);opacity:.5}to{transform:scale(1);opacity:0}}
-@media(prefers-reduced-motion:reduce){.sensor-ping circle{animation:none;opacity:.12}.sensor-ping circle:not(:first-child){display:none}}
+.sensor-ping{pointer-events:none;color:#c4ffff}.sensor-ping circle{stroke:currentColor;transform-box:fill-box;transform-origin:center;animation:sensor-pulse 3s linear infinite}
+@keyframes sensor-pulse{from{transform:scale(.05);opacity:.95}60%{opacity:.65}to{transform:scale(1);opacity:0}}
+@media(prefers-reduced-motion:reduce){.sensor-ping circle{animation:none;opacity:.35}.sensor-ping circle:not(:first-child){display:none}}
 /* Partition outlines are drawn once; individual hit areas never add a crossing stroke. */
 .shared-half-hit{stroke:none!important}.shared-divider{fill:none;pointer-events:none}
 @media(max-width:700px){.static-console #command-bar{gap:6px;padding:6px}.static-console #workflow-strip{flex-basis:100%}.static-console #console-phase-tabs{gap:2px;padding:3px}.static-console #console-phase-tabs button{padding:4px 5px;font-size:11px}.static-console #ship-rail .encounter-add{grid-template-columns:110px auto}.console-popup{width:calc(100vw - 16px);max-height:calc(100dvh - 16px);padding:12px}.mfd-screen{min-height:180px}}
@@ -67,3 +67,5 @@ body.static-console.map-expanded .mobile-stations{display:block}
 @media(min-width:1200px){body.static-console #command-bar{height:120px}}
 @media(min-width:701px) and (max-width:1199px){body.static-console #command-bar{height:160px;box-sizing:border-box}}
 #station-command-bar{order:2;display:flex;gap:6px;flex-wrap:wrap}
+
+.static-console [data-console-move]{background:#a6d6df;color:#10232d;font-weight:700}

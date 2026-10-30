@@ -5,9 +5,9 @@ import {powerReport} from './systems.mjs';
 
 function plotPreview(ship){const points=[ship.motion.position,coastTarget(ship),plannedTarget(ship)].map(p=>({x:p.q+p.r/2,y:p.r*Math.sqrt(3)/2})),minX=Math.min(...points.map(p=>p.x)),minY=Math.min(...points.map(p=>p.y)),scale=Math.min(240/Math.max(1,...points.map(p=>p.x-minX)),40/Math.max(1,...points.map(p=>p.y-minY))),xy=p=>({x:30+(p.x-minX)*scale,y:12+(p.y-minY)*scale}),[start,coast,target]=points.map(xy);return `<svg viewBox="0 0 300 72" role="img" aria-label="Plotted move preview"><path d="M15 32 H285 M15 52 H285" stroke="#244555"/><path d="M${start.x} ${start.y} L${target.x} ${target.y}" stroke="#7ed6df"/><circle cx="${start.x}" cy="${start.y}" r="3" fill="#d7eaf4"/><circle cx="${coast.x}" cy="${coast.y}" r="5" fill="none" stroke="#b2c9d7"/><circle cx="${target.x}" cy="${target.y}" r="3" fill="#7ed6df"/></svg>`;}
 // Presentation adapter: all actions still use their original guarded controls.
-export function mountStaticConsole({getState,getSelected,onStation,onCrew,onDetails,onCondition}){
+export function mountStaticConsole({getState,getSelected,onStation,onCrew,onDetails,onCondition,isLocked=()=>false}){
  const $=id=>document.getElementById(id),bar=document.createElement('section');
- document.body.classList.add('static-console');bar.id='command-bar';bar.setAttribute('aria-label','Current phase commands');$('encounter-header').append(bar);
+ document.body.classList.add('static-console');bar.id='command-bar';bar.tabIndex=-1;bar.setAttribute('aria-label','Current phase commands');$('encounter-header').append(bar);
  bar.append($('workflow-strip'),$('battle-workflow'));
  const pilotCommands=document.createElement('div');pilotCommands.id='pilot-command-bar';bar.append(pilotCommands);const stationCommands=document.createElement('div');stationCommands.id='station-command-bar';bar.append(stationCommands);
  const mapTools=document.querySelector('.map-tools');bar.append(mapTools);
@@ -26,18 +26,22 @@ export function mountStaticConsole({getState,getSelected,onStation,onCrew,onDeta
  for(const dialog of [stationDialog,phaseDialog,settings]){dialog.addEventListener('click',e=>{if(e.target.closest('[data-close-console]'))close(dialog);});dialog.addEventListener('keydown',e=>{if(e.repeat&&['Enter',' '].includes(e.key))e.preventDefault();});}
  function openStation(role='pilot'){if(!getState().ships.length)return;onStation(role);if(!stationDialog.open)stationDialog.showModal();}
  tools.onclick=()=>{$('workflow-more')?.showModal();};
- let mode='plot';
+ let mode='plot',lastLocked=false;
+ for(const event of ['click','input','change','keydown','close'])document.addEventListener(event,()=>queueMicrotask(()=>{if(lastLocked!==isLocked())render();}),event==='close');
  function render(){
+  lastLocked=isLocked();
   const state=getState(),ship=state.ships.find(s=>s.id===getSelected()),view=workflowPresentation(state,getSelected());
   const phases=['Setup','Manoeuvre','Attack','Actions'];tabs.innerHTML=phases.map(p=>`<button type="button" data-phase-view="${p}" ${p===view.phase?'aria-current="step"':''}>${p}</button>`).join('');
   const pilot=view.phase==='Manoeuvre'||!state.workflow;
   pilotCommands.innerHTML=pilot?['coast','brake'].map((id,i)=>`<button type="button" data-console-forward="${id}" ${$(id).disabled?'disabled':''}>${i?'Stop':'Coast'}</button>`).join('')+'<button type="button" data-console-reserve="evasion">Reserve Thrust</button><button type="button" data-console-reserve="gunners">Aid Gunners</button><button type="button" data-console-pilot>Pilot Crew Sheet</button>':'';
+  if(!state.workflow){const declaring=state.acceleration?.order[state.acceleration.declared.length],id=declaring?'declare-acceleration':'advance',source=$(id);pilotCommands.innerHTML+=`<button type="button" data-console-move="${id}" ${!ship||!source||source.disabled||isLocked()?'disabled':''}>${declaring?'Commit Plot':state.acceleration?'Move All Ships':'Commit &amp; Advance'}</button>`;}
   stationCommands.innerHTML=view.phase==='Attack'&&view.current?`<button type="button" data-console-gunnery-commit ${!document.querySelector('[data-gunnery=commit]')||document.querySelector('[data-gunnery=commit]').disabled?'disabled':''}>Commit Declarations &amp; Next</button>`:'';
   const target=ship?plannedTarget(ship):null;
   const phaseBody=!ship?'':view.phase==='Attack'?'<h3>Declarations</h3><ul>'+((state.workflow?.gunnery?.declarations.find(d=>d.shipId===ship.id)?.mounts??[]).slice(0,3).map(m=>'<li>'+esc(m.mountId)+' · '+esc(m.action)+(m.targetId?' → '+esc(state.ships.find(s=>s.id===m.targetId)?.name??'Unavailable target'):'')+'</li>').join('')||[...document.querySelectorAll('.gunnery-summary li')].slice(0,3).map(e=>'<li>'+esc(e.textContent)+'</li>').join('')||'<li>Not committed</li>')+'</ul><button type="button" data-console-gunnery>Review all turret choices</button>':view.phase==='Actions'?'<h3>Saved crew actions</h3><p>'+esc(ship.crewDuty?.actions.filter(a=>a.round===state.round).slice(-2).map(a=>a.role+': '+a.note.slice(0,100)).join(' · ')||'Choose a crew station action.')+'</p><button type="button" data-console-crew>Open crew sheet</button>':`<p>Available thrust: ${availableThrust(ship)}</p><p>Plot uses ${hexDistance(ship.motion.impulse)} · ${ship.capabilities.thrust-hexDistance(ship.motion.impulse)} before reservations</p>${plotPreview(ship)}<p>Next Q/R: ${target.q}, ${target.r} · ${ship.flight.braking?'Continuing Stop':hexDistance(ship.motion.impulse)?'Planned acceleration':'Coasting'}</p><p>Use the command bar to review and commit the current phase.</p>`;
   mfd.innerHTML='<div class="mfd-switches">'+['plot','thrust','crew','details'].map(x=>`<button type="button" data-mfd="${x}" aria-pressed="${mode===x}">${x[0].toUpperCase()+x.slice(1)}</button>`).join('')+'</div><div class="mfd-screen"><h2>'+esc(view.phase==='Manoeuvre'?'Pilot · '+mode:view.phase+' · selected ship')+'</h2><h3>'+esc(ship?.name??'No ship selected')+'</h3>'+(ship?(mode==='thrust'?`<p>Available thrust: ${availableThrust(ship)}</p><p>Evasion reserved: ${ship.flight.evasion}</p><p>Help gunners reserved: ${ship.flight.gunners}</p><button type="button" data-console-reserve="evasion">Edit reservations</button>`:phaseBody):'<p>Add a ship to begin.</p>')+'</div>';
  }
- function click(e){const b=e.target.closest('button');if(!b||b.disabled||e.detail>1)return;
+ function click(e){const b=e.target.closest('button');if(!b||b.disabled)return;if(e.detail>1){if(b.dataset.consoleMove)bar.focus({preventScroll:true});return;}
+  if(b.dataset.consoleMove){const source=$(b.dataset.consoleMove);if(getState().workflow||isLocked()||!source||source.disabled)return;source.click();bar.focus({preventScroll:true});}
   if(b.dataset.consoleForward)$(b.dataset.consoleForward).click();
   if(b.hasAttribute('data-console-gunnery-commit')){document.querySelector('[data-gunnery=commit]')?.click();bar.querySelector('.workflow-action-title')?.focus({preventScroll:true});}
   if(b.hasAttribute('data-console-gunnery'))openStation('gunnery');
@@ -46,6 +50,7 @@ export function mountStaticConsole({getState,getSelected,onStation,onCrew,onDeta
   if(b.dataset.consoleReserve){openStation('pilot');$('station-pane').querySelector(`[data-pilot-reserve="${b.dataset.consoleReserve}"]`)?.click();}
   if(b.dataset.mfd){if(b.dataset.mfd==='crew'){if(getState().ships.length)onCrew();}else if(b.dataset.mfd==='details'){if(getState().ships.length)onDetails();}else{mode=b.dataset.mfd;render();}}
  }
+ bar.addEventListener('keydown',e=>{if(e.repeat&&['Enter',' '].includes(e.key))e.preventDefault();});
  bar.addEventListener('click',click);mfd.addEventListener('click',click);
  tabs.addEventListener('click',e=>{const phase=e.target.closest('[data-phase-view]')?.dataset.phaseView;if(!phase)return;const state=getState(),view=workflowPresentation(state,getSelected()),future=['Setup','Manoeuvre','Attack','Actions'].indexOf(phase)>['Setup','Manoeuvre','Attack','Actions'].indexOf(view.phase);
   phaseDialog.innerHTML=`<div class="console-popup-heading"><h2>${phase} · read-only view</h2><button type="button" data-close-console autofocus>Close</button></div><p>${future?'This phase is not available yet. Complete the preceding phase with the command bar.':phase===view.phase?'This is the current phase. Close this view to use its command bar.':'Review only. Completed actions cannot be changed here.'}</p><ul>${state.ships.map(s=>'<li><strong>'+esc(s.name)+'</strong> · '+(phase==='Setup'?'Initiative '+esc(s.flight.initiative??'unrecorded'):phase==='Manoeuvre'?'Q/R '+s.motion.position.q+', '+s.motion.position.r+' · reserved thrust '+(s.flight.evasion+s.flight.gunners):phase==='Attack'?esc(state.workflow?.gunnery?.declarations.find(d=>d.shipId===s.id)?.mounts.map(m=>m.action).join(', ')??'No current declarations'):esc(s.crewDuty?.actions.map(a=>a.note).join('; ')||'No recorded crew actions'))+'</li>').join('')}</ul>`;phaseDialog.showModal();
