@@ -24,3 +24,6 @@ assert.notDeepEqual(H.system(F.options.find(x=>x.Name==='Transceiver, 5 km'),F,U
 for(const key of ['type','power','aux','mount','weapon','ammoType'])assert.doesNotThrow(()=>H.selection(key,'Unknown imported choice',F));
 assert.equal(JSON.stringify({defaults:F.defaults,options:F.options,data:F.D}),before,'Help mutated construction data');
 console.log(`${equipment.length} equipment choices across ${U.groups(equipment).length} families and ${count} construction choices have purpose/effect/reference coverage; selected variants differ and construction data stays unchanged.`);
+
+assert.match(H.system(F.options.find(x=>x.Name==='Sensor System (basic)'),F,U).join(' '),/base detection range: 1 km/);
+assert.doesNotMatch(H.system(F.options.find(x=>x.Name==='Stealth (basic)'),F,U).join(' '),/Stealth basic\)/);

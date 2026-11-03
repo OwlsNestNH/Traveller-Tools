@@ -687,9 +687,10 @@ function system(o,F,U){
  const family=U.family(o.Name),purpose=purposes[family];
  if(!purpose)throw Error('Missing option explanation: '+family);
  const lines=[purpose],trait=String(o.Traits??'').trim();
- if(trait&&trait!==o.Name){const prefix=family==='Autopilot'?'Listed piloting modifier':family==='Navigation System'?'Listed navigation modifier':family==='ECM'?'Listed ECM rating':'Selected specification';lines.push(prefix+': '+trait.replace(/[.]$/,'')+'.');}
+ if(family==='Sensor System')lines.push('Listed base detection range: '+n(o.Traits)+' km.');
+ else if(trait&&trait!==o.Name&&family!=='Stealth'){const prefix=family==='Autopilot'?'Listed piloting modifier':family==='Navigation System'?'Listed navigation modifier':family==='ECM'?'Listed ECM rating':'Selected specification';lines.push(prefix+': '+trait.replace(/[.]$/,'')+'.');}
  if(o._prototypeBase)lines.push((o._prototypeEarly?'Early prototype':'Prototype')+': available earlier than '+o._prototypeBase+' at increased cost and volume.');
- if(o._fibreBase)lines.push('Fibre-optic protection against EMP, radiation and ion weapons.');
+ if(o._fibreBase&&!trait.includes('Fibre-optic'))lines.push('Fibre-optic protection against EMP, radiation and ion weapons.');
  if(family==='Life Support')lines.push('Quantity is people supported; suitable hull sealing is required.');
  if(family==='Tow Hitch')lines.push('Quantity is powered towed Spaces; unpowered towed capacity is twice that amount.');
  if(family==='Satellite Uplink')lines.push('Requires a radio with at least 500 km range; uses no Spaces from TL8.');
