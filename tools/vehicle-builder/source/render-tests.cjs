@@ -4,7 +4,7 @@ const events={},nodes=new Map();
 const node=()=>({children:[],dataset:{},style:{},classList:{toggle(){},add(){},remove(){}},addEventListener(){},showModal(){this.open=true;},close(){this.open=false;}});
 const context={console,structuredClone,setTimeout(){},document:{querySelector(s){if(!nodes.has(s))nodes.set(s,node());return nodes.get(s);},querySelectorAll(){return [];},addEventListener(k,fn){events[k]=fn;}},window:{},navigator:{}};
 vm.createContext(context);
-for(const f of ['data.js','engine.js','ui-model.js','audit-data.js','app.js'])vm.runInContext(fs.readFileSync('dist/'+f,'utf8'),context,{filename:f});
+for(const f of ['data.js','engine.js','ui-model.js','option-help.js','audit-data.js','app.js'])vm.runInContext(fs.readFileSync('dist/'+f,'utf8'),context,{filename:f});
 vm.runInContext(`for(const [id] of tabs){tab=id;render();if(!$('#editor').innerHTML)throw Error('Empty tab '+id);}
 state={...structuredClone(F.defaults),tl:14,equipment:[{name:'Robot Manipulator Arm',quantity:3,armSize:6,strIncrease:1,dexIncrease:4}],weapons:[{weapon:'No weapon installed',mount:'Turret',quantity:1,ratedSpaces:4,reservedCrew:0}]};result=F.calculate(state);
 if(!vehicleSheet().includes('STR 12 · DEX 12'))throw Error('Arm specifications lost on record');
