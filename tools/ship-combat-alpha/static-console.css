@@ -71,3 +71,5 @@ body.static-console.map-expanded .mobile-stations{display:block}
 .static-console [data-console-move]{background:#a6d6df;color:#10232d;font-weight:700}
 /* Give the existing lower-right display room at desktop widths; preserve the phone stack. */
 @media(min-width:951px){body.interface-shell.static-console main{grid-template-columns:minmax(0,2fr) minmax(360px,1fr)}}
+
+#highlighted-ship-sensors{margin:0 0 16px;padding:14px;border:1px solid #7398a4;border-radius:8px;min-width:0}#highlighted-ship-sensors legend{font-weight:700}#highlighted-ship-sensors [data-sensor-settings-name]{font-weight:700;overflow-wrap:anywhere}#highlighted-ship-sensors label{display:flex;align-items:center;gap:10px;min-height:44px}#highlighted-ship-sensors input{flex:0 0 auto;width:20px;height:20px}
