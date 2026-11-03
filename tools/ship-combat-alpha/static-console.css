@@ -99,3 +99,4 @@ body.static-console #mfd-phase-bar{align-items:center;padding:4px;gap:4px}#mfd-p
 .opening-action-row [data-opening-next]{color:#f3cd54}
 @media(max-width:700px){body.static-console #ship-rail .ship-row{flex-basis:185px}body.static-console #ship-rail .ship-choice strong{white-space:normal;overflow-wrap:anywhere}body.static-console #ship-rail .ship-details{min-width:48px}body.static-console #ship-rail .encounter-add{width:86px;min-width:86px}body.static-console #ship-rail .encounter-add button{font-size:.72rem;padding:4px}}
 @media(min-width:951px){body.static-console:not(.map-expanded) .console-frame{max-height:calc(100dvh - 292px)}}
+@media(max-width:500px){#scene .ship-node:not([aria-pressed=true]) .ship-label,#scene .map-range-label{display:none}}
