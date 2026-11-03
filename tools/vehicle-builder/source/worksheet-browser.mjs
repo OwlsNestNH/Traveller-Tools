@@ -35,6 +35,10 @@ try{
   await cargo.fill('2');await cargo.press('Tab');await page.getByRole('button',{name:'Restore browser save',exact:true}).click();assert.equal(await cargo.inputValue(),'1');
   const download=page.waitForEvent('download');await page.getByRole('button',{name:'Save JSON',exact:true}).click();const saved=await download;const savedPath=await saved.path();
   const chooser=page.waitForEvent('filechooser');await page.getByRole('button',{name:'Open design',exact:true}).click();await(await chooser).setFiles(savedPath);await page.getByText('Design opened',{exact:true}).waitFor();assert.equal(await cargo.inputValue(),'1');
+  await page.getByRole('button',{name:'External options',exact:false}).click();
+  const exterior=page.locator('.system-category').filter({has:page.locator('summary').filter({hasText:'Exterior'})});
+  await exterior.locator('summary').click();const exteriorQuantity=exterior.locator('[data-system-qty]').first();
+  await exteriorQuantity.focus();await exteriorQuantity.press('ArrowUp');assert.equal(await exteriorQuantity.evaluate(el=>document.activeElement===el),true,'Focus lost after large-category edit');
   const sections=await page.locator('#nav button').allTextContents();
   for(const name of sections){await page.locator('#nav button').filter({hasText:name}).click();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'Horizontal overflow '+name+' at '+width);}
   await page.getByRole('button',{name:'Core systems',exact:false}).click();
@@ -42,6 +46,13 @@ try{
   await page.screenshot({path:path.join(artifacts,`vehicle-${build.startsWith('source')?'source':'standalone'}-${width}.png`)});
   await page.locator('.system-card .info-button').first().click();await page.screenshot({path:path.join(artifacts,`vehicle-help-${build.startsWith('source')?'source':'standalone'}-${width}.png`)});await page.keyboard.press('Escape');
   await page.getByRole('button',{name:'Chassis',exact:false}).click();await page.screenshot({path:path.join(artifacts,`vehicle-chassis-${build.startsWith('source')?'source':'standalone'}-${width}.png`)});
+  if(width===1440){
+   await page.getByRole('button',{name:'Record & checks',exact:false}).click();await page.emulateMedia({media:'print'});
+   assert.equal(await page.locator('.vehicle-sheet').isVisible(),true);assert.equal(await page.locator('#summary').isVisible(),false);assert.equal(await page.locator('#nav').isVisible(),false);
+   assert.match(await page.locator('.vehicle-sheet').innerText(),/Frontier utility rover/);assert.match(await page.locator('.vehicle-sheet').innerText(),/Transceiver, 5 km/);
+   const printName=build.startsWith('source')?'source':'standalone';await page.screenshot({path:path.join(artifacts,'vehicle-print-'+printName+'.png'),fullPage:true});
+   const pdf=await page.pdf({path:path.join(artifacts,'vehicle-print-'+printName+'.pdf'),format:'A4',printBackground:true});assert.ok(pdf.length>10000);assert.equal(pdf.subarray(0,4).toString(),'%PDF');await page.emulateMedia({media:'screen'});
+  }
   assert.deepEqual(errors,[]);checks.push({width,build,result:'passed'});await context.close();
  }
  await writeFile(path.join(artifacts,'vehicle-browser-results.json'),JSON.stringify(checks,null,2));
