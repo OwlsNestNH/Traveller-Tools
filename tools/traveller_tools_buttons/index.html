@@ -124,6 +124,9 @@
       color:var(--muted);
       font-size:12px;
     }
+    .description{color:var(--muted);font-size:12px;line-height:1.4;margin-top:5px}
+    .btn > div:first-child{min-width:0}
+    footer a{color:var(--accent)}
     .hidden{display:none !important;}
     .smallNote{color:var(--muted);font-size:12px;margin-top:8px}
     @media (prefers-reduced-motion: reduce){
@@ -138,7 +141,7 @@
     <h1>Traveller RPG Tools & Generators</h1>
     <p class="sub">A civilized, clickable version of your link stash. Search and filter. Your browser does the rest.</p>
     <div class="controls">
-      <input id="search" type="search" placeholder="Search labels or URLs (e.g., 'world', 'donjon', 'npc')…" autocomplete="off" />
+      <input id="search" type="search" placeholder="Search tools or URLs (e.g., 'world', 'donjon', 'npc')…" autocomplete="off" />
       <button id="export-links" class="export-links" type="button" title="Download every listed link, including links hidden by your search or filter">Export all links (.md)</button>
       <div id="filters"></div>
     </div>
@@ -151,6 +154,7 @@
 </main>
 
 <footer>
+  <p><a href="../../changes/locker.html">Tool Locker Changelog</a></p>
   Generated for tabletop sanity. No tracking, no ads, no popups, no feelings.
 </footer>
 
@@ -161,6 +165,7 @@ const DATA = [
     items: [
       { label: "Mongoose Traveller 2e Character Creator — Tremlas", url: "https://blog.tremlas.com/games/traveller/mongoose-v2-character-creator/" },
       { label: "MT PC Generator", url: "http://traveller.chromeblack.com/files/mtpcgen.html" },
+      { label: "Traveller Character Generation Terminal (MgT2)", url: "https://travellercc.avorial.com/", description: "Character creation; public testing instance of a project intended for self-hosting." },
       { label: "MgT Manual Chargen", url: "http://www.munsondev.com/chargen/chargenname.php" },
     ]
   },
@@ -194,6 +199,7 @@ const DATA = [
       { label: "Torben Rasmussen World Maps", url: "https://topps.diku.dk/torbenm/maps.msp" },
       { label: "Watabou Medieval City Generator", url: "https://watabou.itch.io/medieval-fantasy-city-generator" },
       { label: "Vandeet Planetary Military Calculator", url: "http://www.vandeet.com/milcalc/" },
+      { label: "My Traveller Universe", url: "https://mytravelleruniverse.net/", description: "Mongoose World Builder’s Handbook system generation, mapping and campaign management." },
       { label: "Traveller Worlds (T5)", url: "https://www.travellerworlds.com/" },
       { label: "Dungeons Unlimited Tactical Maps — DEAD LINK", url: "http://www.angelfire.com/rpg2/dungeonsunlimited/" },
     ]
@@ -207,6 +213,7 @@ const DATA = [
   {
     section: "Subsector & Sector Mapping",
     items: [
+      { label: "Traveller RPG Sub-Sector Generator (MgT2 2022)", url: "https://github.com/DoNotResuscitate/traveller-sector-gen", description: "Python command-line subsector generator using Core Rulebook Update 2022 rules; Traveller Map SEC output." },
       { label: "Callisto Traveller Map", url: "https://travellermap.callistoflight.com/?cx=-96.562&cy=-19.500&scale=21.55" },
       { label: "Campaign Wiki Traveller Editor", url: "https://campaignwiki.org/traveller/edit" },
       { label: "Zhodani Random Subsector Generator", url: "https://zhodani.space/stuff/generators/random-subsector-generator/" },
@@ -216,6 +223,7 @@ const DATA = [
   {
     section: "Word & Name Generation",
     items: [
+      { label: "SpaceCorsair Language Generator", url: "https://www.taunoyen.com/traveller/corsairwordgen2.html", description: "Edition-agnostic alien words, names and sentences, plus Terran and hybrid names." },
       { label: "Donjon Sci-Fi Name Generator", url: "http://donjon.bin.sh/scifi/name/#type=sx;sx=alien" },
       { label: "Vilani Language Tools (Traveller5) — DEAD LINK", url: "https://www.farfuture.net/tools/vilanitools.html" },
     ]
@@ -224,6 +232,8 @@ const DATA = [
     section: "Trade, Travel & Shops",
     items: [
       { label: "Traveller Tools – Trade & Travel", url: "https://travellertools.azurewebsites.net/" },
+      { label: "Traveller Toolkit (MgT2)", url: "https://pgarriga.github.io/traveller-toolkit/", description: "Browser tools for world lookup and navigation, passengers, freight and ship sheets." },
+      { label: "Auto-Jimmy (MgT1/2)", url: "https://github.com/cthulhustig/autojimmy", description: "Desktop tools for jump routes, refuelling and trade; Windows, Linux and macOS." },
       { label: "Rather Be Gaming – Traveller Trade", url: "http://ratherbegaming.net/apps/travellerRPG/index.php" },
     ]
   },
@@ -296,7 +306,7 @@ function cardTemplate(section, items){
   const body = document.createElement('div');
   body.className = 'cardBody';
 
-  items.forEach(({label, url}) => {
+  items.forEach(({label, url, description}) => {
     const a = document.createElement('a');
     a.className = 'btn';
     a.href = url;
@@ -314,6 +324,12 @@ function cardTemplate(section, items){
 
     left.appendChild(lab);
     left.appendChild(u);
+    if (description) {
+      const detail = document.createElement('div');
+      detail.className = 'description';
+      detail.textContent = description;
+      left.appendChild(detail);
+    }
 
     const right = document.createElement('div');
     right.className = 'open';
@@ -331,7 +347,7 @@ function cardTemplate(section, items){
 
 function matchesQuery(item, q){
   if (!q) return true;
-  const hay = (item.label + " " + item.url).toLowerCase();
+  const hay = (item.label + " " + item.url + " " + (item.description || "")).toLowerCase();
   return hay.includes(q);
 }
 
@@ -372,7 +388,7 @@ function exportAllLinks(){
   ];
   DATA.forEach(({section, items}) => {
     lines.push('## ' + escapeText(section), '');
-    items.forEach(({label, url}) => lines.push('- [' + escapeText(label) + '](<' + url.replace(/</g, '%3C').replace(/>/g, '%3E') + '>)'));
+    items.forEach(({label, url, description}) => lines.push('- [' + escapeText(label) + '](<' + url.replace(/</g, '%3C').replace(/>/g, '%3E') + '>)' + (description ? ' — ' + escapeText(description) : '')));
     lines.push('');
   });
   const blob = new Blob([lines.join('\n')], {type: 'text/markdown;charset=utf-8'});
