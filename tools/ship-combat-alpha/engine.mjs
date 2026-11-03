@@ -1,3 +1,4 @@
+import {shortRangeSpaces} from './movement-rules.mjs';
 import {displayPreferences} from './display-preferences.mjs';
 import {normalizeDuty,freshDuty,dutyPenalty,expiredRepairs,crewIdentity} from './crew-duty.mjs';
 import {applyCrewAction} from './crew-actions.mjs';
@@ -55,7 +56,7 @@ function checked(state,archive=false){
  if(workflow&&ships.some(s=>s.crewDuty&&s.crewDuty.round!==state.round+(['thrust','movement'].includes(workflow.phase)?1:0)))throw Error('Crew duty round and workflow disagree.');
  if(workflow?.resolutionId&&!combatHistory.some(r=>r.id===workflow.resolutionId&&r.snapshot.round===state.round&&JSON.stringify(r.snapshot.workflow.gunnery)===JSON.stringify(workflow.gunnery)))throw Error('Active resolution record is missing or mismatched.');
  if(workflow?.phase==='attacks'&&!workflow.resolutionId&&combatHistory.some(r=>r.snapshot.round===state.round))throw Error('Current round resolution reference is missing.');
- return {version:API_VERSION,...(state.display?{display:displayPreferences(state.display)}:{}),...(completedCombats.length?{completedCombats}:{}),...(missileCombat?{missileCombat}:{}),...(combatHistory.length?{combatHistory}:{}),acceleration,workflow,revision:integer(state.revision,'Revision',0,1000000),round:integer(state.round,'Completed rounds',0,1000000),roundMinutes:integer(state.roundMinutes,'Round duration',1,60),ships};
+ return {version:API_VERSION,...(state.shortRange==null?{}:{shortRange:shortRangeSpaces(state.shortRange)}),...(state.display?{display:displayPreferences(state.display)}:{}),...(completedCombats.length?{completedCombats}:{}),...(missileCombat?{missileCombat}:{}),...(combatHistory.length?{combatHistory}:{}),acceleration,workflow,revision:integer(state.revision,'Revision',0,1000000),round:integer(state.round,'Completed rounds',0,1000000),roundMinutes:integer(state.roundMinutes,'Round duration',1,60),ships};
 }
 // Fresh/reset demonstration only: retain each complete catalogue record and its citation.
 // Positions, velocities, sides and Green crew are scenario choices, not published ship facts.
@@ -65,7 +66,7 @@ export function sampleShips(){
  return [
  ['merchant','acs2023-p22',-15,6,2,0],['courier','acs2023-p136',9,-9,-1,1],['escort','drinax-harrier-restored',-6,-12,1,1],['scout','acs2023-p6',3,12,0,-1],['fighter','scc2023-p051',18,6,-2,-1]
 ].map(([id,presetId,q,r,vq,vr])=>{const template=preset(presetId);return {id,name:template.name,template,appearance:{side:['escort','fighter'].includes(id)?'B':'A',icon:'auto'},crew:{mode:'quick',rating:'Green',ratingVersion:2},systems:{mode:'allocated'},condition:{hull:template.hull,...template.initialCondition},capabilities:{thrust:template.thrust},motion:{position:{q,r},velocity:{q:vq,r:vr},impulse:{q:0,r:0}}};});}
-export function createState({ships=sampleShips(),roundMinutes=ROUND_MINUTES}={}){return checked({version:API_VERSION,revision:0,round:0,roundMinutes,ships});}
+export function createState({ships=sampleShips(),roundMinutes=ROUND_MINUTES,shortRange=2}={}){return checked({version:API_VERSION,revision:0,round:0,roundMinutes,shortRange,ships});}
 export function getShip(state,id){const found=state.ships.find(s=>s.id===id);if(!found)throw Error('Select an existing ship.');return found;}
 export function coastTarget(ship){return add(ship.motion.position,ship.motion.velocity);}
 export function plannedTarget(ship){return add(coastTarget(ship),ship.motion.impulse);}
@@ -74,7 +75,7 @@ export function plotCost(ship,target){target=vector(target,'Target');vector(subt
 export function canPlot(ship,target){try{return plotCost(ship,target)<=availableThrust(ship);}catch{return false;}}
 // JSON command contract. Successful commands return a new normalized state;
 // rejected commands leave the caller's original state untouched.
-function archiveResolution(state,dice){const snapshot=structuredClone({round:state.round,ships:state.ships,workflow:state.workflow,missileCombat:state.missileCombat??freshMissiles()}),resolved=recordedResolution(snapshot,dice),id='r'+state.round+'-v'+state.revision;state.combatHistory??=[];state.combatHistory.push({version:1,id,snapshot,dice:[...dice],results:resolved.results,plan:resolved.plan,usage:resolved.usage,pending:resolved.pending,...(resolved.missileCombat?{missileAfter:resolved.missileCombat}:{})});if(resolved.missileCombat)state.missileCombat=resolved.missileCombat;state.ships=resolved.ships;state.workflow.resolutionId=id;return state.combatHistory.at(-1);}
+function archiveResolution(state,dice){const snapshot=structuredClone({round:state.round,...(state.shortRange==null?{}:{shortRange:state.shortRange}),ships:state.ships,workflow:state.workflow,missileCombat:state.missileCombat??freshMissiles()}),resolved=recordedResolution(snapshot,dice),id='r'+state.round+'-v'+state.revision;state.combatHistory??=[];state.combatHistory.push({version:1,id,snapshot,dice:[...dice],results:resolved.results,plan:resolved.plan,usage:resolved.usage,pending:resolved.pending,...(resolved.missileCombat?{missileAfter:resolved.missileCombat}:{})});if(resolved.missileCombat)state.missileCombat=resolved.missileCombat;state.ships=resolved.ships;state.workflow.resolutionId=id;return state.combatHistory.at(-1);}
 export function applyCommand(input,command){
  const state=checked(input);
  if(command?.expectedRevision!==undefined&&command.expectedRevision!==state.revision)throw Error('State changed; refresh the command revision.');
@@ -83,6 +84,7 @@ export function applyCommand(input,command){
  const pendingCriticals=state.ships.some(s=>s.combatDamage?.pending.length||expiredRepairs(s,state.round).length)||state.missileCombat?.salvos.some(s=>s.status==='manual');
  if(pendingCriticals&&(['plot','brake','coast','set-flight-plan','begin-acceleration','declare-acceleration','start-battle','advance-round'].includes(command?.type)||command?.type==='next-battle-phase'&&command.phase==='crew'))throw Error('Confirm pending critical effects and expired temporary repairs handled before automated movement or the next round.');
  switch(command?.type){
+ case 'set-short-range':assertSetup(state);state.shortRange=shortRangeSpaces(command.spaces);break;
  case 'review-expired-repair':{const s=getShip(state,command.shipId);if(!expiredRepairs(s,state.round).some(a=>a.id===command.actionId)||typeof command.note!=='string'||!command.note.trim()||command.note.length>300)throw Error('Record how expired temporary effects were reversed or never applied.');s.crewDuty.repairReviews.push({actionId:command.actionId,note:command.note.trim()});break;}
  case 'crew-action':applyCrewAction(state,command);break;
  case 'resolve-missile-impacts':{const r=recordedImpacts(state,command.dice);state.ships=r.ships;state.missileCombat=r.missileCombat;break;}

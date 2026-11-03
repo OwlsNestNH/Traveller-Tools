@@ -42,7 +42,7 @@ export function directFireProfile(state,entry){
  const attacker=state.ships.find(s=>s.id===entry.shipId),target=state.ships.find(s=>s.id===entry.targetId),design=attacker&&effectiveDesign(attacker),targetDesign=target&&effectiveDesign(target),mount=attacker&&gunneryMounts(attacker).find(m=>m.id===entry.mountId);
  if(!attacker||!target||target.condition.hull===0||attacker.condition.hull===0)return {status:'hold',reason:'Attacker or declared target unavailable; no retargeting.'};
  if(!mount||['offline','destroyed'].includes(mount.status))return {status:'hold',reason:'Declared turret unavailable.'};
- const w=design?.record.weapons?.find(w=>w.id===mount.mountId),fit=w?.fit,range=rangeInfo(attacker.motion.position,target.motion.position),crew=combatCrew(attacker,'gunner',mount.mountId),pilot=combatCrew(target,'pilot');
+ const w=design?.record.weapons?.find(w=>w.id===mount.mountId),fit=w?.fit,range=rangeInfo(attacker.motion.position,target.motion.position,state.shortRange),crew=combatCrew(attacker,'gunner',mount.mountId),pilot=combatCrew(target,'pilot');
  const issues=[];
  if(!fit||!fit.quantity)issues.push('Individual slot counts need a verified structured fit.');
  if(fit?.tech?.some((t,i)=>t&&fit.slots[i]===entry.weapon))issues.push('Modified weapon technology requires manual resolution in this stage.');
