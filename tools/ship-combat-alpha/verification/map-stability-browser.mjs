@@ -6,7 +6,7 @@ export async function verifyMapStability(page,width,artifacts){
  const paint=()=>p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
  const measure=()=>p.evaluate(()=>{const b=document.querySelector('#map').getBoundingClientRect();return{x:b.x,y:b.y,width:b.width,height:b.height,scrollY,transform:document.querySelector('#scene').getAttribute('transform'),zoom:document.querySelector('#zoom-level').textContent};});
  const click=s=>p.locator(s).first().evaluate(e=>e.dispatchEvent(new MouseEvent('click',{bubbles:true})));
- try{await p.goto(page.url());await p.locator('.ship-node').first().waitFor();
+ try{await p.goto(page.url());await p.locator('.ship-node').first().waitFor();if(width<=700)await p.locator('#mobile-command-drawer > summary').click();
   for(const expanded of [false,true]){
    if(expanded)await click('#expand-map');await p.evaluate(()=>scrollTo(0,0));await paint();const before=await measure();
    const same=async label=>{await paint();const after=await measure();for(const key of ['x','y','width','height'])assert.ok(Math.abs(after[key]-before[key])<=.1,label+' '+key);assert.equal(after.scrollY,before.scrollY,label+' page jump');assert.equal(after.transform,before.transform,label+' transform');assert.equal(after.zoom,before.zoom,label+' zoom');records.push({expanded,label,before,after});};

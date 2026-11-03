@@ -10,7 +10,7 @@ export async function verifyWrecks(page,width,artifacts){
   const p=await page.context().newPage();p.setDefaultTimeout(15000);const errors=[];p.on('pageerror',e=>errors.push(e.message));
   await p.route('**/app.mjs',r=>r.fulfill({contentType:'text/javascript',body:source.replace(marker,'state=createState({ships:'+JSON.stringify(ships)+'}),selected=')+`\nimport {normalizeState as reloadState} from './engine.mjs'; window.__wreckState=()=>structuredClone(state);window.__wreckReload=s=>{state=reloadState(s);render();};window.__wreckZoom=z=>{camera={x:0,y:0,zoom:z};drawMap();};`}));
   try{
-   await p.goto(page.url());await p.locator('.ship-node').first().waitFor();assert.equal(await p.locator('.ship-node.wrecked').count(),ships.length);
+   await p.goto(page.url());await p.locator('.ship-node').first().waitFor();if(width<=700)await p.locator('#mobile-command-drawer > summary').click();assert.equal(await p.locator('.ship-node.wrecked').count(),ships.length);
    const initial=await p.evaluate(()=>window.__wreckState());await p.evaluate(s=>window.__wreckReload(JSON.parse(JSON.stringify(s))),initial);assert.deepEqual(await p.evaluate(()=>window.__wreckState()),initial);
    for(let i=0;i<ships.length;i++){
     const node=p.locator('[data-ship="wreck-'+i+'"]'),icon=group[i];assert.equal(await node.getAttribute('data-icon'),icon);assert.equal(await node.locator('.ship-glyph').getAttribute('transform'),`rotate(${glyphRotation(icon,initial.ships[i].appearance.heading)})`);

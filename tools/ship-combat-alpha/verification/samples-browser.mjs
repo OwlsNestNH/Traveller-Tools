@@ -35,7 +35,7 @@ export async function verifySamples(page,width,artifacts){
  // Read-only test inspector; initial state, reset and all UI paths use unchanged production code.
  await p.route('**/app.mjs',r=>r.fulfill({contentType:'text/javascript',body:source+'\nwindow.__readSample=()=>structuredClone(state);'}));
  try{
-  await p.goto(page.url(),{waitUntil:'domcontentloaded'});await p.locator('.ship-node').first().waitFor();await painted('initial');assertSampleEquivalent(await p.evaluate(()=>window.__readSample()),expected);
+  await p.goto(page.url(),{waitUntil:'domcontentloaded'});await p.locator('.ship-node').first().waitFor();if(width<=700)await p.locator('#mobile-command-drawer > summary').click();await painted('initial');assertSampleEquivalent(await p.evaluate(()=>window.__readSample()),expected);
   const symbols={merchant:['armed-trader','armed-trader.svg'],courier:['hunting-ship','hunting-ship.svg'],scout:['stealth-scout','stealth-scout.svg'],fighter:['kashu-fighter','kashu-fighter.svg'],escort:['harrier','harrier-custom.svg']};
   for(const [id,[icon,file]]of Object.entries(symbols)){const node=p.locator('[data-ship="'+id+'"]');assert.equal(await node.getAttribute('data-icon'),icon);assert.equal(await node.locator('.ship-silhouette').getAttribute('href'),'assets/ships/'+file);if(id!=='escort')assert.match(await node.getAttribute('aria-description'),/interpreted deckplan/i);else assert.match(await node.getAttribute('aria-description'),/custom simplified reference-derived/);}
   await p.evaluate(async()=>{await Promise.all([...document.querySelectorAll('.ship-silhouette')].map(async e=>{const i=new Image();i.src=e.href.baseVal;await i.decode();}));});
