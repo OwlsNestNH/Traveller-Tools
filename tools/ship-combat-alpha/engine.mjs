@@ -66,7 +66,7 @@ export function sampleShips(){
  return [
  ['merchant','acs2023-p22',-15,6,2,0],['courier','acs2023-p136',9,-9,-1,1],['escort','drinax-harrier-restored',-6,-12,1,1],['scout','acs2023-p6',3,12,0,-1],['fighter','scc2023-p051',18,6,-2,-1]
 ].map(([id,presetId,q,r,vq,vr])=>{const template=preset(presetId);return {id,name:template.name,template,appearance:{side:['escort','fighter'].includes(id)?'B':'A',icon:'auto'},crew:{mode:'quick',rating:'Green',ratingVersion:2},systems:{mode:'allocated'},condition:{hull:template.hull,...template.initialCondition},capabilities:{thrust:template.thrust},motion:{position:{q,r},velocity:{q:vq,r:vr},impulse:{q:0,r:0}}};});}
-export function createState({ships=sampleShips(),roundMinutes=ROUND_MINUTES}={}){return checked({version:API_VERSION,revision:0,round:0,roundMinutes,ships});}
+export function createState({ships=sampleShips(),roundMinutes=ROUND_MINUTES,shortRange=2}={}){return checked({version:API_VERSION,revision:0,round:0,roundMinutes,shortRange,ships});}
 export function getShip(state,id){const found=state.ships.find(s=>s.id===id);if(!found)throw Error('Select an existing ship.');return found;}
 export function coastTarget(ship){return add(ship.motion.position,ship.motion.velocity);}
 export function plannedTarget(ship){return add(coastTarget(ship),ship.motion.impulse);}
