@@ -14,6 +14,15 @@ try{
   const context=await browser.newContext({viewport:{width,height:1000},acceptDownloads:true}),page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(origin+'/tools/vehicle-builder/'+build);
+  const type=page.locator('[data-key="type"]');
+  await type.selectOption('Walker');await page.getByRole('button',{name:'Explain Vehicle type · Walker',exact:true}).click();assert.match(await page.locator('#info-content').innerText(),/moved by legs/);await page.keyboard.press('Escape');
+  await type.selectOption('Ground Vehicle');
+  await page.getByRole('button',{name:'03Power & mobility',exact:true}).click();await page.locator('[data-key="power"]').selectOption('Fission (basic)');
+  await page.getByRole('button',{name:'Explain Primary power · Fission (basic)',exact:true}).click();assert.match(await page.locator('#info-content').innerText(),/Hostile Environment Protection/);await page.keyboard.press('Escape');
+  await page.locator('[data-key="power"]').selectOption('Powered');
+  await page.getByRole('button',{name:'04Armour & hull',exact:true}).click();await page.locator('[data-key="hull"]').selectOption('Reinforced');
+  await page.getByRole('button',{name:'Explain Hull construction · Reinforced',exact:true}).click();assert.match(await page.locator('#info-content').innerText(),/10% Hull/);await page.keyboard.press('Escape');await page.locator('[data-key="hull"]').selectOption('Standard');
+  await page.getByRole('button',{name:'01Chassis',exact:true}).click();
   const input=page.getByLabel('Nominal Spaces',{exact:true});
   for(const value of ['12','13','14']){await input.fill(value);await input.press('Tab');assert.equal(await input.inputValue(),value);}
   const help=page.getByRole('button',{name:'Explain Nominal Spaces',exact:true});
@@ -24,7 +33,9 @@ try{
   const feature=page.locator('[data-feature-choice]').first();await feature.selectOption('yes');await feature.selectOption('no');
   await page.getByRole('button',{name:'Core systems',exact:false}).click();
   await page.getByRole('searchbox',{name:'Search equipment'}).fill('transceiver');
-  const system=page.locator('[data-system]').first();await system.selectOption({index:0});
+  const system=page.locator('[data-system]').first();await system.selectOption({label:'Transceiver, 500 km · TL6+'});
+  const radioInfo=page.getByRole('button',{name:'Explain Transceiver, 500 km',exact:true});await radioInfo.focus();await page.keyboard.press('Enter');assert.match(await page.locator('#info-content').innerText(),/two-way radio.*500 km/s);await page.keyboard.press('Escape');assert.equal(await radioInfo.evaluate(el=>document.activeElement===el),true);
+  await system.selectOption({label:'Transceiver, 5 km · TL5+'});await page.getByRole('button',{name:'Explain Transceiver, 5 km',exact:true}).click();assert.match(await page.locator('#info-content').innerText(),/5 km/);assert.doesNotMatch(await page.locator('#info-content').innerText(),/500 km/);await page.keyboard.press('Escape');
   const quantity=page.locator('[data-system-qty]').first();await quantity.fill('2');await quantity.press('Tab');
   await page.locator('[data-install-system]').first().click();
   assert.match(await page.locator('#editor').innerText(),/Installed:/);

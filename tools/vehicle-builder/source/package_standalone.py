@@ -6,7 +6,7 @@ dist = root / 'dist'
 html = (dist / 'index.html').read_text(encoding='utf-8')
 html = html.replace('<link rel="stylesheet" href="style.css">',
                     '<style>' + (dist / 'style.css').read_text(encoding='utf-8') + '</style>')
-for name in ('data.js', 'engine.js', 'ui-model.js', 'audit-data.js', 'app.js'):
+for name in ('data.js', 'engine.js', 'ui-model.js', 'option-help.js', 'audit-data.js', 'app.js'):
     code = (dist / name).read_text(encoding='utf-8').replace('</script', '<\\/script')
     html = html.replace(f'<script src="{name}"></script>', '<script>' + code + '</script>')
 html = html.replace('href="../../../../changes/vehicle.html"', 'href="../../changes/vehicle.html"')

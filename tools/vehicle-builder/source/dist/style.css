@@ -29,3 +29,5 @@ body:has(.vehicle-sheet) .workgrid{grid-template-columns:minmax(0,1fr)}body:has(
 #editor .worksheet-field{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}#editor .worksheet-field>.info-button{margin:0}
 .system-card{grid-template-columns:minmax(0,1fr) auto}.system-card>.field{grid-column:1}.system-card>.info-button{grid-column:2;grid-row:1}.system-card>.quantity-picker{grid-column:1}.system-card>.system-budget{grid-column:2;grid-row:auto;justify-content:flex-end}.system-card>.sensor-custom,.system-card>.installed-note{grid-column:1/-1}
 @media(max-width:640px){.system-card>.system-budget{grid-column:1/-1;justify-content:flex-start}#editor .worksheet-field{align-items:end}.system-budget button{margin-left:auto}}
+
+.choice-toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:6px 0}.choice-toggle .inline{min-width:0}.choice-toggle .info-button{flex-shrink:0}.system-card>.info-button{justify-self:end;align-self:center}

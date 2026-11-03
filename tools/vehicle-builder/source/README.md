@@ -62,3 +62,9 @@ Construction fields, feature fitting and system choices use vertical rows. Info 
 The standalone packager resolves the changelog link for its output location and writes consistent CRLF output on Windows and CI. The public contact address matches the Trade and Combat changelogs.
 
 Run the existing suites above and `node worksheet-browser.mjs /path/to/playwright` from the repository root for both builds at desktop, 390px and 320px. The browser script creates its own local server and writes bounded screenshots under `verification-artifacts/`. Local browser access was unavailable during the first implementation pass; CI browser results and screenshots must be reviewed before merge or deployment.
+
+## Option explanations (2026-11-03)
+
+`dist/option-help.js` contains presentation-only purpose copy grounded in the existing catalogue traits and rule text. All 499 equipment choices across 176 families have a purpose, selected specifications, minimum TL and relevant restrictions; construction dropdowns and sensor/weapon toggles have adjacent explanations. Existing feature-effect popups remain source-referenced. No construction table, engine calculation or saved-design schema is changed.
+
+Run `node option-help-tests.cjs` for full catalogue/choice coverage and non-mutation checks. Browser regression also verifies selected radio range, chassis, power and hull explanations on both builds and all tested widths.
