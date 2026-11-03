@@ -1,0 +1,52 @@
+name: Vehicle worksheet checks
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'tools/vehicle-builder/**'
+      - 'changes/vehicle.html'
+      - '.github/workflows/vehicle-builder.yml'
+permissions:
+  contents: read
+jobs:
+  worksheet:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - name: Syntax and construction regressions
+        working-directory: tools/vehicle-builder/source
+        run: |
+          for file in dist/*.js *.cjs *.mjs; do node --check "$file"; done
+          node tests.cjs
+          node mechanics-tests.cjs
+          node render-tests.cjs
+          node hull-structure-tests.cjs
+          node seating-tests.cjs
+          node appendix-tests.cjs
+      - name: Verify standalone matches source
+        run: |
+          python tools/vehicle-builder/source/package_standalone.py
+          git diff --exit-code -- tools/vehicle-builder/Traveller-Vehicle-Builder.html
+      - name: Aggregate equipment audit
+        working-directory: tools/vehicle-builder/source
+        run: node audit.cjs
+      - name: Install pinned Chromium runner
+        run: |
+          npm install --prefix "$RUNNER_TEMP/vehicle-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
+          node "$RUNNER_TEMP/vehicle-playwright/node_modules/playwright/cli.js" install --with-deps chromium
+      - name: Desktop and mobile worksheet interactions
+        run: node tools/vehicle-builder/source/worksheet-browser.mjs "$RUNNER_TEMP/vehicle-playwright/node_modules/playwright"
+      - name: Upload review screenshots and results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: vehicle-worksheet-review-${{ github.event.pull_request.head.sha }}
+          path: verification-artifacts/vehicle-*
+          if-no-files-found: warn
