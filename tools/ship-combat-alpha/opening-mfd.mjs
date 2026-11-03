@@ -7,16 +7,20 @@ const phaseOf=state=>state.workflow?.phase==='attacks'?'Attack':state.workflow?.
 const number=(value,label,min,max)=>{if(value===''||!Number.isSafeInteger(Number(value))||Number(value)<min||Number(value)>max)throw Error(label+' requires a whole number from '+min+' to '+max+'.');return Number(value);};
 // UI drafts never contain unsaved dice: each explicit roll is committed once.
 export function createOpeningMfd({phaseBar,root,mfd,getState,getSelected,onSelect,dispatch,isLocked,onRefresh}){
- const drafts=new Map();let chosen='Opening',page='tactics',lastPhase=null,lastRevision=-1,error='',busy=false;
+ const drafts=new Map();let chosen='Opening',page='tactics',lastPhase=null,lastRevision=-1,error='',busy=false,pendingFocus=null;
  const ship=()=>getState().ships.find(s=>s.id===getSelected());
  function draftFor(s){if(!drafts.has(s.id)){const p=initiativeProfile(s),t=openingTactics(s),r=s.flight.initiativeRecord;drafts.set(s.id,{revision:getState().revision,dirty:false,tacticsFiat:t?.kind==='fiat'||t?.gmEffect!=null,initiativeFiat:s.flight.initiative!=null&&(!r||s.flight.initiative!==r.result.total),modifier:t?.modifier??p.tactics??'',effect:t&&t.kind!=='legacy'?effectiveTactics(t):'',pilot:r?.result.pilot??p.pilot??'',total:s.flight.initiative??'',tie:s.flight.tie});}return drafts.get(s.id);}
  const input=(label,field,value,min,max,disabled=false)=>`<label>${label}<input data-opening-field="${field}" type="number" step="1" min="${min}" max="${max}" value="${esc(String(value))}" ${disabled?'disabled':''}></label>`;
  const savedTactics=t=>!t?'No Tactics result saved.':t.kind==='legacy'?'Manual / legacy initiative includes an unrecorded Tactics contribution. No Effect or dice are inferred.':`${t.dice?t.dice.join(' + ')+' '+(t.modifier>=0?'+ ':'− ')+Math.abs(t.modifier)+' − 8 = ':'GM Fiat Effect '}${t.effect}${t.gmEffect!=null?' · GM override Effect '+t.gmEffect:''}`;
- function render(){
+ function captureFocus(){
   const focused=document.activeElement;let focusKey=null;
   if(phaseBar.contains(focused)&&focused?.dataset.mfdPhase)focusKey=`[data-mfd-phase="${focused.dataset.mfdPhase}"]`;
   else if(root.contains(focused))focusKey=focused?.dataset.openingPage?`[data-opening-page="${focused.dataset.openingPage}"]`:'[data-opening-next]';
   else if(mfd.contains(focused)&&focused?.closest('[data-opening-form], [data-opening-confirm], [data-opening-refresh], [data-opening-discard]'))focusKey=focused.dataset.openingField?`[data-opening-field="${focused.dataset.openingField}"]`:`[data-opening-page="${page==='initiative'?'initiative':'tactics'}"]`;
+  pendingFocus={focused,focusKey};
+ }
+ function render(){
+  if(!pendingFocus)captureFocus();const {focused,focusKey}=pendingFocus;pendingFocus=null;
   try{
   const state=getState(),current=phaseOf(state);for(const id of drafts.keys())if(!state.ships.some(s=>s.id===id))drafts.delete(id);if(lastPhase===null)chosen=current==='Opening'?'Opening':null;if(state.revision<lastRevision)drafts.clear();lastRevision=state.revision;
   if(lastPhase!==null&&lastPhase!==current){chosen=current==='Opening'?'Opening':null;page='tactics';error='';}lastPhase=current;
@@ -76,5 +80,5 @@ export function createOpeningMfd({phaseBar,root,mfd,getState,getSelected,onSelec
   }catch(err){error=err.message;}finally{busy=false;onRefresh();}
  });
  for(const owner of [root,mfd,phaseBar])owner.addEventListener('keydown',e=>{if(e.repeat&&['Enter',' '].includes(e.key))e.preventDefault();});
- return {render,legacy(){chosen=null;error='';},clear(){drafts.clear();chosen='Opening';page='tactics';lastPhase=null;lastRevision=-1;error='';}};
+ return {render,captureFocus,legacy(){chosen=null;error='';},clear(){drafts.clear();chosen='Opening';page='tactics';lastPhase=null;lastRevision=-1;error='';}};
 }
