@@ -17,3 +17,7 @@ for(const face of F.faces)assert.match(H.input('armourShift',{face}).lines.join(
 for(const name of ['Docking Bay','Hangar Bay']){const o=F.options.find(x=>x.Name===name);assert.equal(U.quantityLabel(o),'Carried vehicle shipping tons');assert.match(H.input('equipment.quantity',{name,unit:U.quantityLabel(o),pages:o._pages}).lines.join(' '),/shipping tons/);}
 assert.equal(JSON.stringify({state,data:F.D,options:F.options}),before,'Help mutated rules or design state');
 console.log('Exact ten reported feature popups have specific verified benefits, trade-offs, restrictions and fitting state; all 29 features and editable input families have help. Engine expectations and non-mutation checks passed.');
+
+const powered=H.selection('power','Powered',F,state).lines.join(' ');assert.match(powered,/chosen design TL/);assert.match(powered,/not a fixed TL3 engine/);assert.match(powered,/Fission and fusion are separate choices/);assert.match(powered,/no separate primary plant Spaces or cost/);
+const structurePower=H.selection('power','Powered',F,{...state,type:'Structure'}).lines.join(' ');assert.match(structurePower,/does not make the structure mobile/);assert.match(structurePower,/25% or 30%/);assert.doesNotMatch(structurePower,/no separate primary plant Spaces/);
+assert.match(H.selection('gas','Helium',F,state).lines.join(' '),/Minimum TL5/);assert.match(H.selection('gas','Hot Air',F,state).lines.join(' '),/Minimum TL3/);

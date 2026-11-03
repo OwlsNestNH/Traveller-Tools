@@ -10,7 +10,7 @@ function ref(o,p){if(typeof o==='string'){const matching=Object.values(sourceInd
 const bh=(p)=>`<span class="ref">Vehicle Handbook Update 2026 · pp. ${p}</span>`;
 const info=(title,html)=>`<button type="button" class="info-button" data-info-title="${esc(title)}" data-info="${esc(html)}" aria-haspopup="dialog" aria-label="Explain ${esc(title)}">Info</button>`;
 function choiceInfo(label,key,value,extra=''){
- const h=H.selection(key,value,F);return info(label+(typeof value==='boolean'?'':' · '+value),h.lines.map(t=>'<p>'+esc(t)+'</p>').join('')+(extra?'<p>'+esc(extra)+'</p>':'')+(h.row?ref(h.row):h.pages?bh(h.pages):''));
+ const h=H.selection(key,value,F,state);return info(label+(typeof value==='boolean'?'':' · '+value),h.lines.map(t=>'<p>'+esc(t)+'</p>').join('')+(extra?'<p>'+esc(extra)+'</p>':'')+(h.row?ref(h.row):h.pages?bh(h.pages):''));
 }
 function inputInfo(label,key,extra='',context={}){
  const h=H.input(key,context);if(!h.lines.length)throw Error('Missing input explanation: '+key);

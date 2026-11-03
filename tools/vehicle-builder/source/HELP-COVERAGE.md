@@ -20,7 +20,7 @@ reported rover), unchanged top speed/range and no additional internal allocation
 | --- | --- |
 | Chassis | Vehicle type, TL, nominal Spaces; conditional lifting gas/depth; global design name |
 | Features | All 29 feature descriptions; exact ten reported choices exercised by browser tests; incompatible saved choices retain help and removal |
-| Power & mobility | Primary/secondary power, extra reactor Spaces, speed/efficiency/fuel changes, both auxiliary slots; conditional structure ruling, rail grade and vacuum tube |
+| Power & mobility | Powered TL3+ means minimum availability, not fixed TL3 technology; baseline follows the selected chassis/design TL, nuclear choices remain separate and stationary structures are distinguished. Primary/secondary power, extra reactor Spaces, speed/efficiency/fuel changes, both auxiliary slots; conditional structure ruling, rail grade and vacuum tube |
 | Armour & hull | Added armour, hull type, all six face transfers |
 | Crew & cargo | Crew/main passenger counts and allocations, sophont size, drone toggle, additional group label/count/allocation, cargo and notes |
 | Comfort display | Existing overall-average formula explained beside crew and record summaries; no comfort calculation changes |

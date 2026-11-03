@@ -29,7 +29,7 @@ try{
   const type=page.locator('[data-key="type"]');
   await type.selectOption('Walker');await page.getByRole('button',{name:'Explain Vehicle type · Walker',exact:true}).click();assert.match(await page.locator('#info-content').innerText(),/moved by legs/);await page.keyboard.press('Escape');
   await type.selectOption('Ground Vehicle');
-  await page.getByRole('button',{name:'Power & mobility',exact:false}).click();await page.locator('[data-key="power"]').selectOption('Fission (basic)');
+  await page.getByRole('button',{name:'Power & mobility',exact:false}).click();await page.getByRole('button',{name:'Explain Primary power · Powered',exact:true}).click();assert.match(await page.locator('#info-content').innerText(),/not a fixed TL3 engine/);assert.match(await page.locator('#info-content').innerText(),/Fission and fusion are separate choices/);await page.screenshot({path:path.join(artifacts,'vehicle-powered-help-'+(build.startsWith('source')?'source':'standalone')+'-'+width+'.png')});await page.keyboard.press('Escape');await page.locator('[data-key="power"]').selectOption('Fission (basic)');
   await page.getByRole('button',{name:'Explain Primary power · Fission (basic)',exact:true}).click();assert.match(await page.locator('#info-content').innerText(),/Hostile Environment Protection/);await page.keyboard.press('Escape');
   await page.locator('[data-key="power"]').selectOption('Powered');
   await page.getByRole('button',{name:'Armour & hull',exact:false}).click();await page.locator('[data-key="hull"]').selectOption('Reinforced');
@@ -78,7 +78,7 @@ try{
   }
   const audit=await context.newPage();audit.on('pageerror',e=>errors.push(e.message));await audit.goto(origin+'/tools/vehicle-builder/'+build);
   await audit.getByRole('button',{name:'Crew & cargo',exact:false}).click();await audit.getByRole('button',{name:'Add passenger group',exact:true}).click();
-  await audit.getByRole('button',{name:'Weapon mounts',exact:false}).first().click();await audit.getByRole('button',{name:'+ Add mount',exact:true}).click();
+  await audit.getByRole('button',{name:'Weapon mounts',exact:false}).first().click();await audit.getByRole('button',{name:'Add mount',exact:false}).click();
   await audit.getByRole('button',{name:'Core systems',exact:false}).click();await audit.locator('[data-install-system]').first().click();
   const sectionAudit=[];
   for(const section of await audit.locator('#nav button').allTextContents()){
