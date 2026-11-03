@@ -20,9 +20,9 @@ try{
   assert.equal(await page.locator('[data-feature-choice]').count(),10);
   for(const [name,fragments] of Object.entries(reportedFeatures)){
    const button=page.getByRole('button',{name:'Explain '+name,exact:true});await button.focus();await page.keyboard.press('Enter');
-   const text=await page.locator('#info-content').innerText();for(const fragment of fragments)assert.ok(text.includes(fragment),name+' missing '+fragment);assert.match(text,/Limits:.*Minimum TL/s);assert.match(text,/Current choice:/);assert.match(text,/Vehicle Handbook/);
+   await page.getByRole('dialog',{name,exact:true}).waitFor();const text=await page.locator('#info-content').innerText();for(const fragment of fragments)assert.ok(text.includes(fragment),name+' missing '+fragment+'; actual content: '+text);assert.match(text,/Limits:.*Minimum TL/s);assert.match(text,/Current choice:/);assert.match(text,/Vehicle Handbook/);
    if(['Agile','Fast','Monowheel'].includes(name))await page.screenshot({path:path.join(artifacts,'vehicle-feature-'+name.toLowerCase()+'-'+(build.startsWith('source')?'source':'standalone')+'-'+width+'.png')});
-   await page.keyboard.press('Escape');assert.equal(await button.evaluate(el=>document.activeElement===el),true,'Feature help focus '+name);
+   await page.keyboard.press('Escape');await page.locator('#info-dialog').waitFor({state:'hidden'});assert.equal(await button.evaluate(el=>document.activeElement===el),true,'Feature help focus '+name);
   }
   await page.locator('[data-feature-choice="Agile"]').selectOption('yes');await page.getByRole('button',{name:'Explain Agile',exact:true}).click();assert.match(await page.locator('#info-content').innerText(),/Current choice: Fitted/);await page.keyboard.press('Escape');await page.locator('[data-feature-choice="Agile"]').selectOption('no');
   await page.getByRole('button',{name:'Chassis',exact:false}).click();

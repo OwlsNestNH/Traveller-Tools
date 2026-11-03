@@ -137,7 +137,7 @@ if(toolContext?.registerTool){
 
 let infoTrigger;
 function openInfo(button){infoTrigger=button;$('#info-title').textContent=button.dataset.infoTitle;$('#info-content').innerHTML=button.dataset.info;$('#info-dialog').showModal();}
-$('#info-dialog').addEventListener('close',()=>{if(infoTrigger?.isConnected)infoTrigger.focus();});
+$('#info-dialog').addEventListener('close',()=>{const dialog=$('#info-dialog'),active=document.activeElement;if(!dialog.open&&infoTrigger?.isConnected&&(!active||active===document.body||active===dialog||dialog.contains(active)))infoTrigger.focus();});
 $('#info-dialog').addEventListener('click',e=>{if(e.target!==e.currentTarget)return;const r=e.currentTarget.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)e.currentTarget.close();});
 
 render();
