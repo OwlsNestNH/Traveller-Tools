@@ -38,7 +38,9 @@ try{
   const sections=await page.locator('#nav button').allTextContents();
   for(const name of sections){await page.locator('#nav button').filter({hasText:name}).click();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'Horizontal overflow '+name+' at '+width);}
   await page.getByRole('button',{name:'Core systems',exact:false}).click();
+  await page.locator('.system-category').first().scrollIntoViewIfNeeded();
   await page.screenshot({path:path.join(artifacts,`vehicle-${build.startsWith('source')?'source':'standalone'}-${width}.png`)});
+  await page.locator('.system-card .info-button').first().click();await page.screenshot({path:path.join(artifacts,`vehicle-help-${build.startsWith('source')?'source':'standalone'}-${width}.png`)});await page.keyboard.press('Escape');
   await page.getByRole('button',{name:'Chassis',exact:false}).click();await page.screenshot({path:path.join(artifacts,`vehicle-chassis-${build.startsWith('source')?'source':'standalone'}-${width}.png`)});
   assert.deepEqual(errors,[]);checks.push({width,build,result:'passed'});await context.close();
  }
