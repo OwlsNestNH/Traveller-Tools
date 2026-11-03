@@ -63,7 +63,7 @@ function populate(){
  flightControls.render();workflowControls?.render();
  $('ship-identity').innerHTML=renderIdentity(s);$('ship-identity').querySelector('.actions').append(setupControl);consoleControls.render(s);$('ship-console').querySelectorAll('input,button').forEach(e=>e.disabled=placing||e.disabled);$('ship-identity').querySelectorAll('button').forEach(e=>e.disabled=placing||!!(state.acceleration||state.workflow)&&e.matches('#open-setup,[data-console-setup]'));
  $('drive-status').textContent=s?`${s.systems.driveKind==='reaction'?'M-Drive: reaction-only fit':s.systems.driveKind==='none'?'M-Drive: not installed':s.systems.driveKind==='unknown'?'M-Drive fit: unverified':'M-Drive thrust'} · ${s.capabilities.thrust} movement budget / ${effectiveDesign(s)?.thrust??'Unknown'} design; ${availableThrust(s)} after reservations.`:'M-Drive thrust: no ship selected';
- if(!s)return;
+ if(!s){const ranges=$('range-facts');if(ranges)ranges.replaceChildren();return;}
  const m=s.motion,target=plannedTarget(s),cost=hexDistance(m.impulse);$('selected-name').textContent=s.name;
  const facts=[['Position Q, R',pair(m.position)],['Velocity Q, R',pair(m.velocity)+' hex / round'],['Coast target',pair(coastTarget(s))],['Planned Δv',pair(m.impulse)],['Next position',pair(target)]];
  $('motion-facts').innerHTML=facts.map(([key,value])=>`<dt>${esc(key)}</dt><dd>${esc(value)}</dd>`).join('');$('budget').textContent=`${cost} / ${availableThrust(s)} movement thrust plotted (${s.capabilities.thrust} total, ${s.flight.evasion+s.flight.gunners} reserved) · ${reachableCount(availableThrust(s)).toLocaleString()} hexes in the thrust region. Prototype coordinate limits also apply.`;
