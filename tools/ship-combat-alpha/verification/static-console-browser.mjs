@@ -14,6 +14,7 @@ try{for(const width of [1876,1440,1100,390,320]){
  await page.route('**/app.mjs',r=>r.fulfill({contentType:'text/javascript',body:source+'\nimport {normalizeState as restoreConsole} from "./engine.mjs";window.__consoleLoad=input=>{state=restoreConsole(input);selected=state.ships[0]?.id??null;gunneryControls.clear();render();};window.__consoleState=()=>structuredClone(state);window.__consoleFixture=(n=3)=>{state=createState({ships:createState().ships.slice(0,n)});state.ships.forEach((s,i)=>{s.motion.position={q:0,r:0};s.flight.initiative=i;s.flight.tie=0;});selected=state.ships[0].id;camera={zoom:4,x:0,y:0};render();};'}));
  await page.goto(new URL('tools/ship-combat-alpha/',root).href);await page.locator('#command-bar').waitFor();
  const state=()=>page.evaluate(()=>window.__consoleState());
+ await page.locator('[data-mfd-phase=Manoeuvre]').click();
  const initial=await state(),move=page.locator('[data-console-move]');
  assert.equal(await move.isVisible(),true);assert.equal(await move.textContent(),'Commit & Advance');
  await move.dblclick();const expected=applyCommand(initial,{type:'advance-round'}),advanced=await state();assert.equal(advanced.round,expected.round);assert.equal(advanced.revision,expected.revision);assert.deepEqual(advanced.ships.map(s=>s.motion),expected.ships.map(s=>s.motion));await page.keyboard.press('Enter');assert.deepEqual(await state(),advanced);
