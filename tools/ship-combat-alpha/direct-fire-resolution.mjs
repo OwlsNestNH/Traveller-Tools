@@ -1,3 +1,4 @@
+import {shortRangeSpaces} from './movement-rules.mjs';
 import {missileQueue,missileLaunchProfile,launchMissiles,detectSalvo,normalizeMissiles,freshMissiles} from './missiles.mjs';
 import {effectiveDesign} from './setup.mjs';
 import {normalizeWorkflow} from './workflow.mjs';
@@ -93,7 +94,7 @@ export function recordedResolution(snapshot,dice){
 export function normalizeCombatHistory(value,normalizeShips){
  if(value==null)return [];if(!Array.isArray(value)||value.length>100)throw Error('Combat history limit reached; export the encounter before starting another record.');const ids=new Set();
  return value.map(v=>{if(v.version!==1||!/^r[0-9]+-v[0-9]+$/.test(v.id)||ids.has(v.id)||!Number.isSafeInteger(v.snapshot?.round)||v.snapshot.round<1)throw Error('Invalid resolution record.');ids.add(v.id);
-  const ships=normalizeShips(v.snapshot.ships),workflow=normalizeWorkflow(v.snapshot.workflow,ships,null);if(workflow?.phase!=='attacks'||workflow.resolutionId||workflow.gunnery.declarations.length!==workflow.gunnery.order.length)throw Error('Invalid resolution snapshot.');const snapshot={round:v.snapshot.round,ships,workflow,...(v.snapshot.missileCombat?{missileCombat:normalizeMissiles(v.snapshot.missileCombat,normalizeShips)}:{})},resolved=recordedResolution(snapshot,v.dice);
+  const ships=normalizeShips(v.snapshot.ships),workflow=normalizeWorkflow(v.snapshot.workflow,ships,null);if(workflow?.phase!=='attacks'||workflow.resolutionId||workflow.gunnery.declarations.length!==workflow.gunnery.order.length)throw Error('Invalid resolution snapshot.');const snapshot={round:v.snapshot.round,...(v.snapshot.shortRange==null?{}:{shortRange:shortRangeSpaces(v.snapshot.shortRange)}),ships,workflow,...(v.snapshot.missileCombat?{missileCombat:normalizeMissiles(v.snapshot.missileCombat,normalizeShips)}:{})},resolved=recordedResolution(snapshot,v.dice);
   if(JSON.stringify(v.results)!==JSON.stringify(resolved.results)||JSON.stringify(v.usage)!==JSON.stringify(resolved.usage)||JSON.stringify(v.plan)!==JSON.stringify(resolved.plan)||JSON.stringify(v.pending)!==JSON.stringify(resolved.pending))throw Error('Resolution record disagrees with its input and dice.');
   if(v.missileAfter!=null&&JSON.stringify(v.missileAfter)!==JSON.stringify(resolved.missileCombat))throw Error('Missile launch record disagrees with its snapshot.');
   if(v.manualResolution!=null&&(typeof v.manualResolution!=='string'||!v.manualResolution.trim()||v.manualResolution.length>300))throw Error('Invalid manual attack acknowledgement.');

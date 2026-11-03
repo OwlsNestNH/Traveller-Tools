@@ -69,3 +69,5 @@ body.static-console.map-expanded .mobile-stations{display:block}
 #station-command-bar{order:2;display:flex;gap:6px;flex-wrap:wrap}
 
 .static-console [data-console-move]{background:#a6d6df;color:#10232d;font-weight:700}
+/* Give the existing lower-right display room at desktop widths; preserve the phone stack. */
+@media(min-width:951px){body.interface-shell.static-console main{grid-template-columns:minmax(0,2fr) minmax(360px,1fr)}}
