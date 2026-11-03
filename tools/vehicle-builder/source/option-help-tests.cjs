@@ -13,6 +13,7 @@ const choices={type:F.types.map(x=>x.Type),power:F.powers.map(x=>x.Power),second
 for(const key of ['drone','vacTube','remote','autoloader','popup','modular','highFidelity','hardened','mast'])choices[key]=[false,true];
 let count=0;
 for(const [key,values] of Object.entries(choices))for(const value of values){const h=H.selection(key,value,F);assert.ok(h.lines.length,key+': '+value);assert.ok(h.row||h.pages,'Missing reference: '+key+': '+value);assert.ok(!h.lines.join(' ').includes('undefined'));count++;}
+assert.doesNotMatch(H.selection('secondary','Unpowered',F).lines.join(' '),/Removes powered propulsion/);
 assert.match(H.selection('hull','Reinforced',F).lines.join(' '),/10% Hull.*50%.*cost/);
 assert.match(H.selection('hull','Light',F).lines.join(' '),/25% Hull/);
 assert.match(H.selection('gas','Vacuum',F).lines.join(' '),/Rigid/);
