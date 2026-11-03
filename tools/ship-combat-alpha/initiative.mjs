@@ -10,21 +10,27 @@ export function initiativeProfile(ship){
  return {pilot,tactics,pilotSimple:simple('pilot'),tacticsSimple:simple('captain'),rating:c.rating,thrust:ship.capabilities.thrust};
 }
 const integer=(n,label,min,max)=>{if(!Number.isSafeInteger(n)||n<min||n>max)throw Error(label+' is outside its allowed whole-number range.');return n;};
-const dice=v=>{if(!Array.isArray(v)||v.length!==2)throw Error('Two dice required.');return v.map(n=>integer(n,'Die',1,6));};
+const dice=v=>{if(!Array.isArray(v)||v.length!==2)throw Error('Two dice required.');return Array.from(v,n=>integer(n,'Die',1,6));};
+export function navalTacticsEffect(modifier,values){integer(modifier,'Tactics modifier',-30,40);const rolled=dice(values);return {dice:rolled,modifier,effect:rolled[0]+rolled[1]+modifier-8};}
 export function openingInitiative({pilot,thrust,tacticsModifier=null,recordedEffect=0,baseDice,tacticsDice}){
  integer(pilot,'Pilot skill',0,10);integer(thrust,'Thrust',0,10000);const base=dice(baseDice);
  let effect=integer(recordedEffect,'Recorded Tactics Effect',-100,100),tactics=null;
- if(tacticsModifier!==null){integer(tacticsModifier,'Tactics modifier',-30,40);tactics=dice(tacticsDice);effect=tactics[0]+tactics[1]+tacticsModifier-8;}
+ if(tacticsModifier!==null){const checked=navalTacticsEffect(tacticsModifier,tacticsDice);tactics=checked.dice;effect=checked.effect;}
  return {baseDice:base,tacticsDice:tactics,pilot,thrust,tacticsModifier,tacticsEffect:effect,total:base[0]+base[1]+pilot+thrust+effect};
+}
+
+export function normalizeInitiativeProfile(value){
+ if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Invalid initiative crew snapshot.');
+ const p=value,pilot=p.pilot==null?null:integer(p.pilot,'Snapshot Pilot',0,10),tactics=p.tactics==null?null:integer(p.tactics,'Snapshot Tactics',-30,40);
+ if(typeof p.pilotSimple!=='boolean'||typeof p.tacticsSimple!=='boolean'||!Object.hasOwn(RATINGS,p.rating))throw Error('Invalid initiative crew snapshot.');
+ return {pilot,tactics,pilotSimple:p.pilotSimple,tacticsSimple:p.tacticsSimple,rating:p.rating,thrust:integer(p.thrust,'Snapshot thrust',0,10000)};
 }
 
 // Optional provenance: legacy/manual totals deliberately have no invented breakdown.
 export function normalizeInitiativeRecord(value){
  if(value==null)return null;
  if(value.version!==1||!value.profile)throw Error('Unsupported initiative record.');
- const p=value.profile,pilot=p.pilot==null?null:integer(p.pilot,'Snapshot Pilot',0,10),tactics=p.tactics==null?null:integer(p.tactics,'Snapshot Tactics',-30,40);
- if(typeof p.pilotSimple!=='boolean'||typeof p.tacticsSimple!=='boolean'||!Object.hasOwn(RATINGS,p.rating))throw Error('Invalid initiative crew snapshot.');
- const profile={pilot,tactics,pilotSimple:p.pilotSimple,tacticsSimple:p.tacticsSimple,rating:p.rating,thrust:integer(p.thrust,'Snapshot thrust',0,10000)};
+ const profile=normalizeInitiativeProfile(value.profile);
  const result=openingInitiative({...value.result,recordedEffect:value.result.tacticsEffect});
  return {version:1,profile,result};
 }

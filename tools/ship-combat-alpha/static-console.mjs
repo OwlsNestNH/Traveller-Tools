@@ -1,3 +1,4 @@
+import {createOpeningMfd} from './opening-mfd.mjs';
 import {createSensorDisplaySettings} from './sensor-display-settings.mjs';
 import {workflowPresentation} from './workflow-presentation.mjs';
 import {availableThrust,plannedTarget,coastTarget,hexDistance} from './engine.mjs';
@@ -6,7 +7,7 @@ import {powerReport} from './systems.mjs';
 
 function plotPreview(ship){const points=[ship.motion.position,coastTarget(ship),plannedTarget(ship)].map(p=>({x:p.q+p.r/2,y:p.r*Math.sqrt(3)/2})),minX=Math.min(...points.map(p=>p.x)),minY=Math.min(...points.map(p=>p.y)),scale=Math.min(240/Math.max(1,...points.map(p=>p.x-minX)),40/Math.max(1,...points.map(p=>p.y-minY))),xy=p=>({x:30+(p.x-minX)*scale,y:12+(p.y-minY)*scale}),[start,coast,target]=points.map(xy);return `<svg viewBox="0 0 300 72" role="img" aria-label="Plotted move preview"><path d="M15 32 H285 M15 52 H285" stroke="#244555"/><path d="M${start.x} ${start.y} L${target.x} ${target.y}" stroke="#7ed6df"/><circle cx="${start.x}" cy="${start.y}" r="3" fill="#d7eaf4"/><circle cx="${coast.x}" cy="${coast.y}" r="5" fill="none" stroke="#b2c9d7"/><circle cx="${target.x}" cy="${target.y}" r="3" fill="#7ed6df"/></svg>`;}
 // Presentation adapter: all actions still use their original guarded controls.
-export function mountStaticConsole({getState,getSelected,onStation,onCrew,onDetails,onCondition,onSensorPing=()=>{},isLocked=()=>false,isSensorSettingsLocked=isLocked}){
+export function mountStaticConsole({getState,getSelected,onStation,onCrew,onDetails,onCondition,onSensorPing=()=>{},onOpeningSelect=()=>{},dispatchOpening=()=>false,isOpeningLocked=()=>false,isLocked=()=>false,isSensorSettingsLocked=isLocked}){
  const $=id=>document.getElementById(id),bar=document.createElement('section');
  document.body.classList.add('static-console');bar.id='command-bar';bar.tabIndex=-1;bar.setAttribute('aria-label','Current phase commands');$('encounter-header').append(bar);
  bar.append($('workflow-strip'),$('battle-workflow'));
@@ -21,6 +22,7 @@ export function mountStaticConsole({getState,getSelected,onStation,onCrew,onDeta
  const extra=$('advanced-workspace');document.body.append(extra);
  stationDialog.addEventListener('click',e=>{if(e.target.closest('[data-station-details],[data-station-condition],[data-station-advanced],[data-station-ammunition],[data-station-crew-actions],[data-captain-initiative]'))stationDialog.close();},true);
  const mfd=document.createElement('section');mfd.id='console-mfd';mfd.setAttribute('aria-label','Selected ship multifunction display');$('movement-workspace').prepend(mfd);
+ const phaseBar=document.createElement('nav');phaseBar.id='mfd-phase-bar';phaseBar.setAttribute('aria-label','Combat phase MFD');bar.before(phaseBar);const openingActions=document.createElement('section');openingActions.id='opening-mfd-actions';mfd.before(openingActions);const opening=createOpeningMfd({phaseBar,root:openingActions,mfd,getState,getSelected,onSelect:onOpeningSelect,dispatch:dispatchOpening,isLocked:isOpeningLocked,onRefresh:()=>render()});
  const tabs=document.createElement('nav');tabs.id='console-phase-tabs';tabs.setAttribute('aria-label','Inspect combat phases');$('console-frame').append(tabs);
  const phaseDialog=document.createElement('dialog');phaseDialog.id='phase-inspection';phaseDialog.className='console-popup';document.body.append(phaseDialog);
  const close=dialog=>{dialog.close();};
@@ -40,6 +42,7 @@ export function mountStaticConsole({getState,getSelected,onStation,onCrew,onDeta
   const target=ship?plannedTarget(ship):null;
   const phaseBody=!ship?'':view.phase==='Attack'?'<h3>Declarations</h3><ul>'+((state.workflow?.gunnery?.declarations.find(d=>d.shipId===ship.id)?.mounts??[]).slice(0,3).map(m=>'<li>'+esc(m.mountId)+' · '+esc(m.action)+(m.targetId?' → '+esc(state.ships.find(s=>s.id===m.targetId)?.name??'Unavailable target'):'')+'</li>').join('')||[...document.querySelectorAll('.gunnery-summary li')].slice(0,3).map(e=>'<li>'+esc(e.textContent)+'</li>').join('')||'<li>Not committed</li>')+'</ul><button type="button" data-console-gunnery>Review all turret choices</button>':view.phase==='Actions'?'<h3>Saved crew actions</h3><p>'+esc(ship.crewDuty?.actions.filter(a=>a.round===state.round).slice(-2).map(a=>a.role+': '+a.note.slice(0,100)).join(' · ')||'Choose a crew station action.')+'</p><button type="button" data-console-crew>Open crew sheet</button>':`<p>Available thrust: ${availableThrust(ship)}</p><p>Plot uses ${hexDistance(ship.motion.impulse)} · ${ship.capabilities.thrust-hexDistance(ship.motion.impulse)} before reservations</p>${plotPreview(ship)}<p>Next Q/R: ${target.q}, ${target.r} · ${ship.flight.braking?'Continuing Stop':hexDistance(ship.motion.impulse)?'Planned acceleration':'Coasting'}</p><p>Use the command bar to review and commit the current phase.</p>`;
   mfd.innerHTML='<div class="mfd-switches">'+['plot','thrust','crew','details'].map(x=>`<button type="button" data-mfd="${x}" aria-pressed="${mode===x}">${x[0].toUpperCase()+x.slice(1)}</button>`).join('')+'</div><div class="mfd-screen"><h2>'+esc(view.phase==='Manoeuvre'?'Pilot · '+mode:view.phase+' · selected ship')+'</h2><h3>'+esc(ship?.name??'No ship selected')+'</h3>'+(ship?(mode==='thrust'?`<p>Available thrust: ${availableThrust(ship)}</p><p>Evasion reserved: ${ship.flight.evasion}</p><p>Help gunners reserved: ${ship.flight.gunners}</p><button type="button" data-console-reserve="evasion">Edit reservations</button>`:phaseBody):'<p>Add a ship to begin.</p>')+'</div>';
+  opening.render();
  }
  function click(e){const b=e.target.closest('button');if(!b||b.disabled)return;if(e.detail>1){if(b.dataset.consoleMove)bar.focus({preventScroll:true});return;}
   if(b.dataset.consoleMove){const source=$(b.dataset.consoleMove);if(getState().workflow||isLocked()||!source||source.disabled)return;source.click();bar.focus({preventScroll:true});}
@@ -49,7 +52,7 @@ export function mountStaticConsole({getState,getSelected,onStation,onCrew,onDeta
   if(b.hasAttribute('data-console-crew'))onCrew();
   if(b.hasAttribute('data-console-pilot'))openStation('pilot');
   if(b.dataset.consoleReserve){openStation('pilot');$('station-pane').querySelector(`[data-pilot-reserve="${b.dataset.consoleReserve}"]`)?.click();}
-  if(b.dataset.mfd){if(b.dataset.mfd==='crew'){if(getState().ships.length)onCrew();}else if(b.dataset.mfd==='details'){if(getState().ships.length)onDetails();}else{mode=b.dataset.mfd;render();}}
+  if(b.dataset.mfd){opening.legacy();if(b.dataset.mfd==='crew'){if(getState().ships.length)onCrew();}else if(b.dataset.mfd==='details'){if(getState().ships.length)onDetails();}else{mode=b.dataset.mfd;render();}}
  }
  bar.addEventListener('keydown',e=>{if(e.repeat&&['Enter',' '].includes(e.key))e.preventDefault();});
  bar.addEventListener('click',click);mfd.addEventListener('click',click);
@@ -61,5 +64,5 @@ export function mountStaticConsole({getState,getSelected,onStation,onCrew,onDeta
  document.addEventListener('click',e=>{if(!e.target.closest('[data-damage-details]'))return;const ship=getState().ships.find(s=>s.id===getSelected());if(!ship)return;const ledger=ship.combatDamage,power=powerReport(ship);damage.innerHTML='<div class="console-popup-heading"><h2>Damage &amp; Issues · '+esc(ship.name)+'</h2><button type="button" data-close-damage autofocus>Close</button></div><p>Hull '+esc(shown(ship.condition.hull))+' · Power output '+esc(shown(ship.condition.powerOutput))+' · Power remaining '+esc(shown(power.remaining))+' · Fuel '+esc(shown(ship.condition.fuel))+'</p><p>Life support: '+esc(ship.condition.lifeSupport??'Unknown')+' · Crew available: '+esc(shown(ship.condition.crewAvailable))+'</p><h3>Current system severity</h3><ul>'+Object.entries(ledger?.severities??{}).map(([k,v])=>'<li>'+esc(k)+' · severity '+v+'</li>').join('')+'</ul><h3>Manual condition records</h3><ul>'+(ship.condition.criticals?.map(c=>'<li>'+esc(c.system)+' · severity '+esc(c.severity??'unknown')+' · '+esc(c.status)+' · '+esc(c.effect??'Not recorded')+'</li>').join('')??'<li>Unknown — no manual record entered.</li>')+'</ul><h3>Automatic hit history</h3><ol>'+(ledger?.history.map(h=>'<li>'+esc(h.location)+' · '+h.previous+' → '+h.severity+(h.extraDice?' · additional 6D hull damage':'')+(ledger.pending.includes(h.eventId)?' · GM handling pending':'')+'</li>').join('')??'')+'</ol><p>'+esc(ledger?.pending.length??0)+' effects require GM handling.</p><ul>'+(ledger?.handled.map(h=>'<li>'+esc(h.note)+'</li>').join('')??'')+'</ul><button type="button" data-edit-condition>Edit manual condition</button>';damage.showModal();});
  damage.addEventListener('click',e=>{if(e.target.closest('[data-close-damage]'))damage.close();if(e.target.closest('[data-edit-condition]')){damage.close();onCondition();}});
  new MutationObserver(render).observe($('station-records'),{childList:true,subtree:true,attributes:true,attributeFilter:['disabled']});
- render();return {render,openStation};
+ render();return {render,openStation,clearOpening:()=>opening.clear()};
 }
