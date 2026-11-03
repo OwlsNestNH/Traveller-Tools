@@ -10,7 +10,61 @@
 .vehicle-sheet{background:white;border:1px solid #b6c3d3;border-top:5px solid var(--navy);border-radius:5px;margin-bottom:22px;overflow:hidden}.vehicle-sheet-header{background:var(--navy);color:white;padding:25px;display:flex;align-items:flex-start;gap:18px;flex-wrap:wrap}.sheet-kicker{font:.65rem monospace;letter-spacing:2px;color:#b9cce3}.vehicle-sheet h1{font-size:1.8rem;line-height:1.2;overflow-wrap:anywhere;margin:10px 0}.vehicle-sheet-header p{font-size:.85rem;color:#cedbe9;margin:0}.sheet-status{border:1px solid #769c92;color:#cceada;padding:6px 9px;font:.63rem monospace;letter-spacing:.5px}.sheet-status.attention{border-color:#d4a168;color:#ffe0a4}.sheet-stats{display:grid;grid-template-columns:.6fr 1fr 1fr 1fr 1.5fr;border-bottom:2px solid var(--navy)}.sheet-stats>div{padding:17px 10px;text-align:center;border-right:1px solid var(--line)}.sheet-stats>div:last-child{border-right:0}.sheet-stats span{display:block;text-transform:uppercase;letter-spacing:1px;font-size:.65rem;color:var(--muted)}.sheet-stats strong{font-size:1.5rem;display:block;margin-top:5px;overflow-wrap:anywhere}.sheet-stats>div:last-child strong{font-size:1.15rem;padding-top:5px}.sheet-reference{font-size:.73rem;color:var(--muted);margin:12px 22px}.sheet-reference .ref{display:inline}.sheet-section{padding:0 22px 18px}.sheet-section>h2{font-size:.78rem;letter-spacing:1px;text-transform:uppercase;border-bottom:2px solid var(--navy);padding:14px 0 7px;margin:0 0 10px}.sheet-profile{display:grid;grid-template-columns:1fr 1fr;gap:0 22px;margin:0}.sheet-profile>div{padding:9px 0;border-bottom:1px solid var(--line)}.sheet-profile dt{font-size:.7rem;color:var(--muted)}.sheet-profile dd{font-size:.9rem;margin:3px 0 0;font-weight:600}.sheet-section p{font-size:.85rem}.protection-table{font-variant-numeric:tabular-nums}.protection-table td,.protection-table th{padding:10px 7px;text-align:center;font-size:.7rem}.protection-table td{font-size:.9rem}.protection-table .ref{font-size:.65rem}.sheet-section .panel{border:0;box-shadow:none;margin:0;border-radius:0}.sheet-section .panelhead{display:none}.sheet-control{padding-bottom:12px;border-bottom:1px solid var(--line)}.sheet-footer{padding:15px 22px;background:#f2f5f9;font-size:.7rem;display:flex;gap:15px;align-items:center;justify-content:space-between}.design-notes{white-space:pre-wrap;overflow-wrap:anywhere}.vehicle-sheet tr{break-inside:avoid}
 body:has(.vehicle-sheet) .workgrid{grid-template-columns:minmax(0,1fr)}body:has(.vehicle-sheet) #summary{display:none}
 @media(max-width:640px){.vehicle-sheet-header{padding:18px}.vehicle-sheet h1{font-size:1.45rem}.sheet-stats{grid-template-columns:repeat(3,1fr)}.sheet-stats>div{border-bottom:1px solid var(--line)}.sheet-stats>div:last-child{grid-column:span 2}.sheet-profile{grid-template-columns:1fr}.sheet-section{padding:0 12px 14px}.sheet-footer{display:block}.sheet-footer button{margin-top:10px}.feature-conflict{align-items:flex-start;flex-direction:column}.system-category>summary span{display:none}}
-@media print{@page{size:A4;margin:12mm}.vehicle-sheet{border:1px solid #555;border-top:4px solid #17283f;border-radius:0}.vehicle-sheet-header{display:flex!important;background:white;color:#17283f;padding:14px 18px;min-height:0}.vehicle-sheet-header p,.sheet-kicker{color:#33475e}.vehicle-sheet h1{font-size:20pt}.sheet-status,.sheet-status.attention{color:#17283f;border-color:#555}.sheet-stats{grid-template-columns:.6fr 1fr 1fr 1fr 1.5fr}.sheet-stats>div{padding:10px}.sheet-stats>div:last-child{grid-column:auto}.sheet-reference{margin:8px 16px;font-size:8pt}.sheet-profile{grid-template-columns:1fr 1fr}.sheet-section{padding:0 16px 10px}.sheet-section>h2{break-after:avoid;font-size:10pt}.sheet-profile>div{padding:5px 0}.sheet-profile dd{font-size:10pt}.sheet-section table{font-size:8pt}.sheet-section td,.sheet-section th{padding:6px}.sheet-footer{display:block!important;padding:10px 16px}.sheet-section .ref{font-size:7pt}.sheet-stats,.sheet-profile,.protection-table,.sheet-checks{break-inside:avoid}.vehicle-sheet thead{display:table-header-group}}
+/* Readable, compact print record. Long designs continue rather than clip. */
+@media print{
+ @page{size:auto;margin:12mm}
+ .skip{display:none!important}
+ .vehicle-sheet{border:1px solid #555;border-top:3px solid #17283f;border-radius:0;margin:0;overflow:visible;font-size:10pt;line-height:1.2}
+ .vehicle-sheet-header{display:flex!important;background:white;color:#17283f;padding:9px 12px;min-height:0;gap:10px;justify-content:space-between}
+ .vehicle-sheet-header p,.sheet-kicker{color:#33475e}
+ .sheet-kicker{font-size:8pt;letter-spacing:1px}
+ .vehicle-sheet h1{font-size:18pt;margin:4px 0}
+ .vehicle-sheet-header p{font-size:10pt}
+ .sheet-status,.sheet-status.attention{color:#17283f;border-color:#555;font-size:8pt;padding:4px 6px}
+ .sheet-stats{grid-template-columns:.6fr 1fr 1fr 1fr 1.5fr}
+ .sheet-stats>div{padding:6px}
+ .sheet-stats span{font-size:8pt;letter-spacing:.5px}
+ .sheet-stats strong{font-size:15pt;margin-top:2px}
+ .sheet-stats>div:last-child{grid-column:auto}
+ .sheet-stats>div:last-child strong{font-size:12pt;padding-top:2px}
+ .sheet-reference{margin:6px 12px;font-size:8pt}
+ .sheet-reference .ref{font-size:8pt}
+ .sheet-profile{grid-template-columns:1fr 1fr;gap:0 16px}
+ .sheet-profile>div{display:grid;grid-template-columns:1fr 1.4fr;gap:8px;padding:3px 0;break-inside:avoid}
+ .sheet-profile dt{font-size:9pt}
+ .sheet-profile dd{font-size:10pt;margin:0;overflow-wrap:anywhere}
+ .sheet-section{padding:0 12px 3px}
+ .sheet-section>h2{break-after:avoid;font-size:10pt;letter-spacing:.5px;padding:4px 0 3px;margin:0 0 3px}
+ .sheet-section p{font-size:10pt;margin:3px 0;overflow-wrap:anywhere}
+ .sheet-section table{font-size:9pt}
+ .sheet-section td,.sheet-section th{padding:4px;font-size:9pt;overflow-wrap:anywhere}
+ .sheet-section .ref,.sheet-section .ref .cell{font-size:8pt}
+ .sheet-section .body{padding:4px 0}
+ .sheet-section .empty{padding:6px;font-size:10pt}
+ .sheet-section .chip{font-size:9pt;padding:2px 6px;margin:0 3px 0 0}
+ .sheet-control{padding-bottom:5px}
+ .sheet-control>.ref::before{content:" · "}
+ .sheet-section .ref{display:inline}
+ .sheet-section .ref .cell{display:inline}
+ .sheet-section .ref br{display:none}
+ .sheet-section .ref .cell::before{content:" · "}
+ .sheet-section .equipment-detail{display:inline;font-size:9pt}
+ .sheet-section .equipment-detail:not(:empty)::before{content:" · "}
+ .sheet-section td>.ref{display:block}
+ .sheet-section th{letter-spacing:0;overflow-wrap:normal}
+ .sheet-section .quantity-unit{margin-top:1px}
+ .sheet-section .quantity-unit{font-size:8pt}
+ .sheet-section:has(.sheet-control) table{table-layout:fixed}
+ .sheet-section:has(.sheet-control) th:first-child{width:64%}
+ .sheet-section:has(.sheet-control) th:nth-child(2){width:12%}
+ .sheet-section:has(.sheet-control) th:nth-child(3){width:10%}
+ .sheet-section:has(.sheet-control) th:nth-child(4){width:14%}
+ .sheet-footer{display:block!important;padding:6px 12px;font-size:8pt;break-inside:avoid}
+ .sheet-stats,.protection-table{break-inside:avoid}
+ .sheet-profile,.sheet-checks{break-inside:auto}
+ .vehicle-sheet thead{display:table-header-group}
+}
+
 
 /* Compact construction worksheet */
 #editor .grid,#editor .grid.three,.featuregrid,.system-grid{grid-template-columns:minmax(0,1fr);gap:0}

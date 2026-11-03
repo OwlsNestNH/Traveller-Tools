@@ -43,6 +43,10 @@ jobs:
         run: |
           npm install --prefix "$RUNNER_TEMP/vehicle-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
           node "$RUNNER_TEMP/vehicle-playwright/node_modules/playwright/cli.js" install --with-deps chromium
+      - name: Install PDF inspection utilities
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+      - name: Print pagination and content retention
+        run: node tools/vehicle-builder/source/print-browser.mjs "$RUNNER_TEMP/vehicle-playwright/node_modules/playwright"
       - name: Desktop and mobile worksheet interactions
         run: node tools/vehicle-builder/source/worksheet-browser.mjs "$RUNNER_TEMP/vehicle-playwright/node_modules/playwright"
       - name: Upload review screenshots and results
