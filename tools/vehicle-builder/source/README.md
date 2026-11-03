@@ -54,3 +54,11 @@ Independent fan tool for use with the user's supplied Traveller books. Traveller
 The 99 catalogue test designs and detailed vehicle data have been removed from the current publication. The parent folder retains summary audit reports and aggregate CSV counts. These historical results cannot be rerun from the published files.
 
 Run `node mechanics-tests.cjs`, `node render-tests.cjs` and `node hull-structure-tests.cjs` for the remaining mechanics, interface and Hull/Structure checks. No current suite depends on the removed catalogue fixtures.
+
+## Compact worksheet interface (2026-11-03)
+
+Construction fields, feature fitting and system choices use vertical rows. Info buttons open a native modal with the existing explanation and source references. Escape, Close and backdrop clicks dismiss it; the trigger regains focus. Current-section warnings reuse the engine's handbook page references. The pure engine, data and saved-design schema are unchanged.
+
+The standalone packager resolves the changelog link for its output location and writes consistent CRLF output on Windows and CI. The public contact address matches the Trade and Combat changelogs.
+
+Run the existing suites above and `node worksheet-browser.mjs /path/to/playwright` from the repository root for both builds at desktop, 390px and 320px. The browser script creates its own local server and writes bounded screenshots under `verification-artifacts/`. Local browser access was unavailable during the first implementation pass; CI browser results and screenshots must be reviewed before merge or deployment.
