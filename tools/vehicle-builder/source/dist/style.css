@@ -31,3 +31,5 @@ body:has(.vehicle-sheet) .workgrid{grid-template-columns:minmax(0,1fr)}body:has(
 @media(max-width:640px){.system-card>.system-budget{grid-column:1/-1;justify-content:flex-start}#editor .worksheet-field{align-items:end}.system-budget button{margin-left:auto}}
 
 .choice-toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:6px 0}.choice-toggle .inline{min-width:0}.choice-toggle .info-button{flex-shrink:0}.system-card>.info-button{justify-self:end;align-self:center}
+
+.quantity-row,.transfer-row{display:flex;align-items:center;gap:8px;min-width:0}.quantity-row .quantity-picker{flex:1;min-width:0}.system-card>.quantity-row{grid-column:1}.quantity-row .info-button,.transfer-row .info-button{flex-shrink:0}.armourcell .transfer-row{grid-column:4}.armourcell .transfer-row label{min-width:0}.armourcell .transfer-row input{width:55px}.armourcell{grid-template-columns:75px 35px minmax(0,1fr) 190px}@media(max-width:640px){.armourcell{grid-template-columns:70px 30px minmax(0,1fr)}.armourcell .transfer-row{grid-column:1/-1}.quantity-row{flex-wrap:wrap}.system-card>.quantity-row{grid-column:1/-1}}

@@ -219,7 +219,7 @@ function selection(key,value,F){
  }else if(key==='ruling'){
   pages='32, 45';lines=[v==='prose'?'Uses the handbook’s prose allowance of 25% for a powered structure.':'Uses the handbook table/worksheet allowance of 30% for a powered structure.','The source disagreement is kept explicit; this selection chooses which existing ruling the builder applies.'];
  }else if(key==='control'){
-  row=F.options.find(x=>x.Name===v);lines=['Provides the interface used to drive or operate the vehicle.'];if(v.includes('primitive'))lines.push('Primitive controls apply their listed control penalty and cost adjustment.');else if(v.includes('basic'))lines.push('Basic controls are included in the chassis; no improved-control Agility bonus is added.');else lines.push('An improved grade requires power and adds the listed Agility benefit; more control stations do not stack that benefit.');
+  row=F.options.find(x=>x.Name===v);if(!row)return unknown();lines=['Provides the interface used to drive or operate the vehicle.',`Agility ${row.Bonus>=0?'+':''}${row.Bonus}; minimum TL${row.TL}.`];if(v.includes('primitive'))lines.push('Primitive controls apply their listed control penalty and cost adjustment.');else if(v.includes('basic'))lines.push('Basic controls are included in the chassis; no improved-control Agility bonus is added.');else lines.push('An improved grade requires power and adds the listed Agility benefit; more control stations do not stack that benefit.');
  }else if(key==='mount'){
   row=F.D.Mounts.find(x=>x['Weapon Mount']===v);if(!row)return unknown();lines=[({ 'Fixed Mount':'Holds a weapon at a fixed aim point.',Hardpoint:'Carries an externally mounted weapon.', 'Pintle Mount':'Supports a weapon aimed within its specified arc.','Ring Mount':'Supports a weapon that can cover any arc.',Gunport:'Provides a firing opening for a weapon operated from inside.',Bay:'Houses weapons in a bay; one weapon can be fired per round.','Multi-Bay':'Houses multiple weapons that can be fired in the same round.',Turret:'Places weapons in a turret with crew space included in the mount.'})[v]];if(row['Pop-up']==='N')lines.push('This mount cannot be made pop-up.');
  }else if(key==='facing'){
@@ -238,5 +238,70 @@ function selection(key,value,F){
  }
  return {lines:lines.filter(Boolean),row,pages};
 }
-const api={purposes,system,selection};root.VehicleHelp=api;if(typeof module!=='undefined')module.exports=api;
+const featurePurposes={
+ Aerodyne:'Uses jet propulsion in a wingless flying design.',AFV:'Builds an armoured fighting vehicle with a stronger hull and greater armour allowance.',Agile:'Tunes the steering and locomotion to make the vehicle easier to handle.',ATV:'Adapts the vehicle for all-terrain travel.',Fast:'Uses a larger engine, trading fuel range for speed.',Floats:'Adds flotation so an aircraft can land on water.','Folding Wings':'Folds wings or rotors to make the aircraft easier to ship.',Hydrofoil:'Lifts a moving watercraft above the water to reduce drag.',Hypersonic:'Equips a jet aeroplane for hypersonic flight.','Jet Engines':'Replaces propeller propulsion with jet engines.',Locomotive:'Optimises a powered vehicle for hauling other vehicles.',Monowheel:'Uses one driving wheel for a compact, manoeuvrable vehicle.','Multi-Legged':'Gives a walker more than two legs for handling rough ground.','Off-Roader':'Adapts the vehicle for travelling away from roads.','Open Frame':'Places riders outside the enclosed body of the vehicle.','Open-Topped':'Leaves the vehicle open above its occupants.',Ornithopter:'Uses flapping wings to fly like a bird.','Rail Rider':'Fits the vehicle to run on railway tracks or a monorail.',Responsive:'Makes acceleration and deceleration quicker.',Rigid:'Gives an airship a rigid supporting frame.',Slow:'Uses a smaller engine, trading speed for more fuel range.','Smart Wheels':'Adapts wheel traction to difficult ground conditions.',STOL:'Equips an aircraft for short take-offs and landings.',Streamlined:'Shapes the body to reduce aerodynamic drag.',Supersonic:'Equips a jet aeroplane for supersonic flight.','Tilt Engines':'Tilts an aeroplane’s engines for vertical take-off and landing.',Tracks:'Uses tracks to cross rough ground.',Tunneller:'Equips a ground vehicle to tunnel through rock.',Unresponsive:'Trades quick speed changes for a cheaper chassis.'
+};
+function feature(name,F,state){
+ const f=F.features.find(x=>x['Feature Effect']===name);
+ if(!f)return ['This saved feature is not in the construction catalogue. Remove it or choose a supported feature.'];
+ const effects=[],limits=['Minimum TL'+f.TL],sign=x=>(x>0?'+':'')+n(x);
+ if(f.Agility)effects.push('Agility '+sign(f.Agility)+'.');
+ if(name==='Supersonic')effects.push('Sets base speed to Supersonic (band 9).');
+ else if(name==='Hypersonic')effects.push('Sets base speed to Hypersonic (band 10), or band 11 with Fast.');
+ else if(f.Speed)effects.push('Speed '+sign(f.Speed)+' band'+(Math.abs(f.Speed)===1?'':'s')+'.');else effects.push('Top speed unchanged.');
+ if(f.RangeMod!==1)effects.push(f.RangeMod===.5?'Range is halved.':'Range '+n(Math.abs(f.RangeMod-1)*100)+'% '+(f.RangeMod>1?'greater.':'shorter.'));else effects.push('Range unchanged.');
+ effects.push('Internal Spaces: no added allocation.');
+ if(f.HullMod!==1)effects.push('Hull +'+n((f.HullMod-1)*100)+'%.');
+ if(f.ShippingMod!==1)effects.push(f.ShippingMod===.5?'Shipping volume is halved.':'Shipping volume ×'+n(f.ShippingMod)+'.');
+ const special={AFV:'Armour limit is tripled; AFV and Tracks together share one speed-band penalty.',ATV:'Removes the off-road travel penalty and allows Rough terrain.','Off-Roader':'Removes the off-road travel penalty and allows Rough terrain.',Locomotive:'Towing capacity ×4 and reactor Power output ×3; gains the Unresponsive trait.',Monowheel:'Port and starboard armour must remain zero.','Multi-Legged':'DM+1 on rough terrain.','Open Frame':'Riders have no armour protection; enclosed-environment equipment is restricted.','Open-Topped':'Dorsal armour must remain zero; the sides provide half cover. Enclosed-environment equipment is restricted.',Ornithopter:'Requires Flyer (ornithopter) to pilot.',Responsive:'Halves the time needed to change speed bands.',Unresponsive:'Doubles the time needed to change speed bands.','Smart Wheels':'DM+1 in adverse conditions and reduces the terrain penalty by 1.',STOL:'Halves the runway space needed for take-off and landing.','Tilt Engines':'Provides vertical take-off and landing (VTOL).',Tracks:'AFV and Tracks together share one speed-band penalty.',Tunneller:'Tunnels at TL metres per hour, doubled from TL8.'};
+ if(special[name])effects.push(special[name]);
+ if(name==='Streamlined'&&state.type==='Airship')effects.push('Adds one percentage point of nominal envelope Spaces to usable airship capacity.');
+ const chassis=F.types.find(t=>t.Type===state.type),featureCost=chassis?Math.abs(chassis.Cost*state.spaces*f['Cost add']):null;
+ effects.push((f['Cost add']<0?'Saves ':'Adds ')+n(Math.abs(f['Cost add'])*100)+'% of baseline chassis cost'+(featureCost!==null?' (Cr'+n(featureCost)+' on this chassis)':'')+'.');
+ if(f['Size Limit']!=='none')limits.push(f['Size Limit']==='Size 20+'?'at least 20 nominal Spaces':'1–3 nominal Spaces only');
+ if(f.Prerequisite==='Powered')limits.push('requires vehicle power');
+ if(f.Prerequisite==='Jet')limits.push('requires Jet Engines');
+ let conflicts=String(f.Incompatible).split(',').map(x=>x.trim().replace('Open Topped','Open-Topped').replace('Tracked','Tracks')).filter(x=>x&&x!=='none');
+ if(name==='Tracks'&&!conflicts.includes('Rail Rider'))conflicts.push('Rail Rider');
+ if(conflicts.length)limits.push('incompatible with '+conflicts.join(', '));
+ if(name==='Unresponsive')limits.push('no duplicate discount when already Unresponsive from size (200+ Spaces)');
+ const reasons=F.featureReasons(name,state);
+ return [featurePurposes[name],'When fitted: '+effects.join(' '),'Limits: '+limits.join('; ')+'.','Current choice: '+(state.features.includes(name)?'Fitted.':'Not fitted. Effects apply only when fitted.'),...(reasons.length?['Current restrictions: '+reasons.join('; ')+'.']:[])];
+}
+function input(key,context={}){
+ const copy={
+ comfort:['Explains the overall average comfort for this design; it is not the worst group’s seat comfort.','The builder divides budgeted crew/passenger accommodation Spaces plus equipment Comfort Points by the occupant-size multiplier and total occupant count. Separate seating groups keep their own seat-allocation labels.','24-27, 83-85, 100'],
+ description:['Records free-form notes about this vehicle.','Notes are included in JSON saves and the printed record; they do not change the construction calculations.',null],
+ tl:['Sets the vehicle’s technology level, which limits which components and feature grades can be fitted.','Use a whole number from 0 to 20; incompatible existing selections are flagged rather than silently removed.','27'],
+ spaces:['Sets the nominal size of the chassis in whole Spaces.','This sets baseline cost and capacity; one cargo Space holds 250 kg. Equipment and occupants consume the available capacity.','25-27'],
+ extraPower:['Adds reactor volume to the primary nuclear power plant.','Each extra Space costs and produces Power according to that plant’s rating; it cannot extend a non-nuclear primary plant.','44-48'],
+ speedMod:['Raises or lowers the vehicle’s speed by whole speed bands.','Faster steps cost chassis money and usable Spaces; Slower steps release Spaces. TL limits and maximum speeds still apply.','49'],
+ efficiency:['Changes how far the vehicle travels on its fuel.','Each positive step adds 50% range; each negative step removes 25%. The chassis cost changes, and TL limits apply.','50'],
+ fuel:['Changes the amount of fuel carried.','Each step adds or removes 25% range and changes fuel-tank Spaces. At most two reductions are allowed; conventional or Fusion+ primary power is required.','50'],
+ armour:['Adds armour protection above the chassis’s base armour.','Four side faces receive full added armour; dorsal and ventral receive half, rounded up. Armour consumes Spaces and money and must stay within the armour limit.','26, 55-56'],
+ depth:['Multiplies a submersible’s safe operating depth.','Each additional multiplier adds 100% of baseline chassis cost and +1 base armour. The resulting armour must stay within its limit.','33'],
+ crew:['Allocates crew members, including the driver and any required operators.','Crew accommodation consumes Spaces; weapon crews and remote gunners are checked against the design’s needs.','24-27, 101-105'],
+ passengers:['Sets the passenger count in the main seating group.','Do not include crew here. This group’s seating is budgeted separately from additional passenger groups.','24-27'],
+ crewSpace:['Sets the amount of accommodation allocated per crew member.','Less than one Space per human-sized person reduces comfort. Occupant size also applies, and each group’s installed Spaces round up.','24-27'],
+ passengerSpace:['Sets accommodation per passenger in the main group.','The allocation controls seating comfort and Space use. Occupant size also applies, and each group rounds up separately.','24-27'],
+ controlQuantity:['Sets how many control stations are installed.','Paid stations are charged per station; the primitive-control price adjustment applies once. The control system’s Agility modifier never stacks with more stations.','58'],
+ cargo:['Reserves internal Spaces for cargo.','Each Space holds 250 kg. Cargo competes with occupants and installed equipment for the same usable capacity.','27'],
+ 'group.name':['Names this additional passenger group so different seating arrangements can be distinguished.','This label is saved with the design; it does not change the calculations.',null],
+ 'group.count':['Sets the number of passengers using this additional seating arrangement.','Keep these passengers separate from the main group and crew. Each group’s seating Spaces round up independently.','24-27'],
+ 'group.space':['Sets accommodation per passenger in this additional seating group.','This controls that group’s comfort and Space use; occupant size applies. Fold-down seats receive no automatic cargo-space credit.','24-27'],
+ 'weapon.quantity':['Sets how many identical weapons are linked in this mount.','Weapon mass, cost, crew and ammunition requirements scale with the count. Linked damage adds +1 per damage die per extra weapon before the Destructive multiplier.','101-105'],
+ 'weapon.ammo':['Purchases extra reload rounds for this mount.','Reserve ammunition adds cost and storage Spaces using the chosen ammunition profile. It does not change the weapon’s displayed base damage.','102, 120-123'],
+ 'weapon.gunShield':['Adds a protective shield for the mount’s gunner.','Enter the shield’s Protection value; the builder budgets the shield and checks its limits. It is separate from overall hull armour.','103'],
+ 'weapon.loaders':['Assigns people to reload this weapon without an autoloader.','Each missing required loader doubles reload time. An unassigned loader does not reserve a berth automatically.','102-103'],
+ 'weapon.ratedSpaces':['Reserves weapon capacity in an otherwise empty mount.','This budgets the mount’s volume and price without adding weapon mass or damage.','102-103'],
+ 'weapon.reservedCrew':['Reserves crew positions inside an empty turret.','These positions consume turret accommodation even though no weapon is installed.','102-103'],
+ armSize:['Sets the Size of the configurable robot arm.','Size determines the arm’s base strength and price; strength and dexterity upgrades are budgeted separately.','67; Robot Handbook 25-27'],
+ strIncrease:['Raises the selected manipulator arm’s strength above its base value.','Upgrades increase cost and must meet the arm’s characteristic limits. Vehicle-arm STR and DEX increases total at most +5.','67'],
+ dexIncrease:['Raises the selected manipulator arm’s dexterity above its base value.','Upgrades increase cost and must meet the arm’s characteristic limits. Vehicle-arm STR and DEX increases total at most +5.','67']
+ };
+ if(key==='armourShift')return {lines:[`Transfers armour to or from the ${context.face.toLowerCase()} face.`,`Positive values add protection here; negative values remove it. All six transfers must sum to zero. Base-armour floors and exposed-face restrictions still apply.`],pages:'26, 55-56'};
+ if(key==='equipment.quantity')return {lines:[`Sets ${context.unit.toLowerCase()} for ${context.name}.`,context.unit==='Carried vehicle shipping tons'?'Enter the carried vehicle’s shipping tons. Docking bays use ceil(4.4 × tons) Spaces; hangars use ceil(8 × tons), including maintenance access.':context.unit==='People supported'?'Enter people, not life-support units. The selected duration and whole-Space rounding determine the installed budget.':context.unit==='Largest aircraft Spaces'?'Enter the largest aircraft’s nominal Spaces. The deck reserves ten deck Spaces per aircraft Space.':context.unit==='Powered towed Spaces'?'Enter the powered vehicle Spaces to be towed; the unpowered towing capacity is twice this amount.':'The count scales the selected component’s budget; its minimum volume and rounding rules still apply.'],pages:context.pages||'57-100'};
+ const row=copy[key];return row?{lines:row.slice(0,2),pages:row[2]}:{lines:[]};
+}
+const api={purposes,system,selection,featurePurposes,feature,input};root.VehicleHelp=api;if(typeof module!=='undefined')module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

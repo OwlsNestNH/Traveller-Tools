@@ -28,6 +28,7 @@ jobs:
           node mechanics-tests.cjs
           node render-tests.cjs
           node option-help-tests.cjs
+          node feature-help-tests.cjs
           node hull-structure-tests.cjs
           node seating-tests.cjs
           node appendix-tests.cjs

@@ -68,3 +68,9 @@ Run the existing suites above and `node worksheet-browser.mjs /path/to/playwrigh
 `dist/option-help.js` contains presentation-only purpose copy grounded in the existing catalogue traits and rule text. All 499 equipment choices across 176 families have a purpose, selected specifications, minimum TL and relevant restrictions; construction dropdowns and sensor/weapon toggles have adjacent explanations. Existing feature-effect popups remain source-referenced. No construction table, engine calculation or saved-design schema is changed.
 
 Run `node option-help-tests.cjs` for full catalogue/choice coverage and non-mutation checks. Browser regression also verifies selected radio range, chassis, power and hull explanations on both builds and all tested widths.
+
+## Feature and full-builder help audit (2026-11-03)
+
+The reported Features popups opened but repeated catalogue one-liners. They now explain all 29 features with numerical effects, costs (including the current chassis amount), internal-Space/range implications, prerequisites/conflicts and fitting state. See `HELP-COVERAGE.md` for the section-by-section audit. Numeric, seating-group, armour-transfer, weapon-fitting, manipulator and installed-quantity inputs now have adjacent help. Overall comfort remains the existing average; its formula is explained without changing it.
+
+Run `node feature-help-tests.cjs`. Browser regression exercises all ten exact screenshot feature buttons and audits adjacent help for editable controls in every section. The engine, reference tables and saved-design format are unchanged.

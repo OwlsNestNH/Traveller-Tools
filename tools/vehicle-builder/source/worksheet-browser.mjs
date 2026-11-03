@@ -14,6 +14,18 @@ try{
   const context=await browser.newContext({viewport:{width,height:1000},acceptDownloads:true}),page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(origin+'/tools/vehicle-builder/'+build);
+  // Exact ten rows in the reported TL9 / 12-Space rover screenshot.
+  await page.getByRole('button',{name:'Features',exact:false}).click();
+  const reportedFeatures={Agile:['Agility +1','100% of baseline'],Fast:['Speed +1 band','Range is halved'],Monowheel:['Agility +2','Port and starboard armour must remain zero'],'Off-Roader':['Rough terrain','15% of baseline'],'Open-Topped':['Dorsal armour must remain zero','half cover'],Responsive:['Halves the time','Range 25% shorter'],Slow:['Speed -1 band','Range 50% greater'],'Smart Wheels':['Range 10% greater','terrain penalty by 1'],Streamlined:['Agility +1','Speed +1 band'],Unresponsive:['Doubles the time','Saves 25%']};
+  assert.equal(await page.locator('[data-feature-choice]').count(),10);
+  for(const [name,fragments] of Object.entries(reportedFeatures)){
+   const button=page.getByRole('button',{name:'Explain '+name,exact:true});await button.focus();await page.keyboard.press('Enter');
+   const text=await page.locator('#info-content').innerText();for(const fragment of fragments)assert.ok(text.includes(fragment),name+' missing '+fragment);assert.match(text,/Limits:.*Minimum TL/s);assert.match(text,/Current choice:/);assert.match(text,/Vehicle Handbook/);
+   if(['Agile','Fast','Monowheel'].includes(name))await page.screenshot({path:path.join(artifacts,'vehicle-feature-'+name.toLowerCase()+'-'+(build.startsWith('source')?'source':'standalone')+'-'+width+'.png')});
+   await page.keyboard.press('Escape');assert.equal(await button.evaluate(el=>document.activeElement===el),true,'Feature help focus '+name);
+  }
+  await page.locator('[data-feature-choice="Agile"]').selectOption('yes');await page.getByRole('button',{name:'Explain Agile',exact:true}).click();assert.match(await page.locator('#info-content').innerText(),/Current choice: Fitted/);await page.keyboard.press('Escape');await page.locator('[data-feature-choice="Agile"]').selectOption('no');
+  await page.getByRole('button',{name:'Chassis',exact:false}).click();
   const type=page.locator('[data-key="type"]');
   await type.selectOption('Walker');await page.getByRole('button',{name:'Explain Vehicle type · Walker',exact:true}).click();assert.match(await page.locator('#info-content').innerText(),/moved by legs/);await page.keyboard.press('Escape');
   await type.selectOption('Ground Vehicle');
@@ -64,7 +76,24 @@ try{
    const printName=build.startsWith('source')?'source':'standalone';await page.screenshot({path:path.join(artifacts,'vehicle-print-'+printName+'.png'),fullPage:true});
    const pdf=await page.pdf({path:path.join(artifacts,'vehicle-print-'+printName+'.pdf'),format:'A4',printBackground:true});assert.ok(pdf.length>10000);assert.equal(pdf.subarray(0,4).toString(),'%PDF');await page.emulateMedia({media:'screen'});
   }
-  assert.deepEqual(errors,[]);checks.push({width,build,result:'passed'});await context.close();
+  const audit=await context.newPage();audit.on('pageerror',e=>errors.push(e.message));await audit.goto(origin+'/tools/vehicle-builder/'+build);
+  await audit.getByRole('button',{name:'Crew & cargo',exact:false}).click();await audit.getByRole('button',{name:'Add passenger group',exact:true}).click();
+  await audit.getByRole('button',{name:'Weapon mounts',exact:false}).first().click();await audit.getByRole('button',{name:'+ Add mount',exact:true}).click();
+  await audit.getByRole('button',{name:'Core systems',exact:false}).click();await audit.locator('[data-install-system]').first().click();
+  const sectionAudit=[];
+  for(const section of await audit.locator('#nav button').allTextContents()){
+   await audit.locator('#nav button').filter({hasText:section}).click();
+   const result=await audit.locator('#editor input,#editor select,#editor textarea').evaluateAll(controls=>({count:controls.length,missing:controls.filter(el=>{
+    const label=el.closest('label'),next=label?.nextElementSibling||el.nextElementSibling;
+    const help=next?.matches('.info-button')?next:el.closest('.worksheet-field,.choice-toggle,.quantity-row,.transfer-row,.feature,td')?.querySelector('.info-button');
+    return !help?.dataset.info||help.dataset.info.replace(/<[^>]*>/g,'').trim().length<30;
+   }).map(el=>el.getAttribute('aria-label')||el.dataset.key||el.outerHTML.slice(0,120))}));
+   assert.deepEqual(result.missing,[],'Missing useful adjacent help in '+section+' '+width);sectionAudit.push({section,controls:result.count});
+  }
+  await audit.getByRole('button',{name:'Weapon mounts',exact:false}).first().click();await audit.locator('[data-prop="weapon"]').selectOption('No weapon installed');await audit.locator('[data-prop="mount"]').selectOption('Turret');
+  for(const prop of ['ratedSpaces','reservedCrew']){assert.ok(await audit.locator('[data-prop="'+prop+'"]').count()>0);}
+  await audit.close();
+  assert.deepEqual(errors,[]);checks.push({width,build,result:'passed',sectionAudit});await context.close();
  }
  await writeFile(path.join(artifacts,'vehicle-browser-results.json'),JSON.stringify(checks,null,2));
  console.log('Both builds: desktop/mobile/320px, all sections, repeated edits, popup keyboard/close/backdrop/focus, totals, equipment, browser save, JSON download/upload and overflow passed.');
