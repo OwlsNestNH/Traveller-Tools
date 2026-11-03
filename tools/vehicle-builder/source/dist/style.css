@@ -87,3 +87,36 @@ body:has(.vehicle-sheet) .workgrid{grid-template-columns:minmax(0,1fr)}body:has(
 .choice-toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:6px 0}.choice-toggle .inline{min-width:0}.choice-toggle .info-button{flex-shrink:0}.system-card>.info-button{justify-self:end;align-self:center}
 
 .quantity-row,.transfer-row{display:flex;align-items:center;gap:8px;min-width:0}.quantity-row .quantity-picker{flex:1;min-width:0}.system-card>.quantity-row{grid-column:1}.quantity-row .info-button,.transfer-row .info-button{flex-shrink:0}.armourcell .transfer-row{grid-column:4}.armourcell .transfer-row label{min-width:0}.armourcell .transfer-row input{width:55px}.armourcell{grid-template-columns:75px 35px minmax(0,1fr) 190px}@media(max-width:640px){.armourcell{grid-template-columns:70px 30px minmax(0,1fr)}.armourcell .transfer-row{grid-column:1/-1}.quantity-row{flex-wrap:wrap}.system-card>.quantity-row{grid-column:1/-1}}
+
+/* Operating-sheet prototype: compact information hierarchy, separate construction record. */
+.record-toolbar{padding:12px 16px;background:#fff;border:1px solid var(--line);margin-bottom:16px}.record-toolbar label{display:flex;align-items:center;gap:12px}.record-toolbar select{width:auto}.record-toolbar p{font-size:.8rem;color:var(--muted);margin:8px 0 0}
+.operating-sheet{padding:16px;font-size:14px;line-height:1.3}.op-heading{border-bottom:2px solid var(--navy);padding-bottom:6px}.op-heading h1{font-size:24px;margin:0 0 4px}.op-heading strong{font-size:10px}.op-heading p,.op-traits{margin:5px 0}.op-upper{display:grid;grid-template-columns:1.6fr 1fr;gap:16px}.op-stats,.op-armour dl,.op-systems{margin:0}.op-stats>div,.op-armour dl>div,.op-systems>div{display:grid;grid-template-columns:135px minmax(0,1fr);gap:8px;padding:3px 0;border-bottom:1px solid var(--line);break-inside:avoid}.operating-sheet dt{font-weight:600}.operating-sheet dd{margin:0;overflow-wrap:anywhere}.op-armour dl>div{grid-template-columns:1fr 1fr}.op-armour h2{font-size:14px;margin:5px 0}.op-armour p{margin:5px 0}.op-section{margin-top:8px}.op-section h2{font-size:14px;margin:0 0 4px;border-bottom:2px solid var(--navy);padding-bottom:2px}.op-section p{margin:4px 0;overflow-wrap:anywhere}.op-section ul{margin:4px 0;padding-left:18px}.op-section li{margin:2px 0}.op-weapons{table-layout:fixed}.op-weapons th:first-child{width:31%}.op-weapons th:nth-child(2){width:10%}.op-weapons th:nth-child(3){width:12%}.op-weapons th:nth-child(4){width:13%}.op-weapons th:nth-child(5){width:22%}.op-weapons th:nth-child(6){width:12%}.op-weapons th,.op-weapons td{font-size:12px;padding:5px;overflow-wrap:anywhere;letter-spacing:0}.op-weapons small{display:block;font-size:11px}.op-footer{font-size:10px;border-top:1px solid var(--line);margin-top:8px;padding-top:4px}.construction-spec pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:10pt}.construction-spec{background:white;padding:16px}
+@media(max-width:640px){.op-upper{grid-template-columns:1fr}.record-toolbar label{display:block}.record-toolbar select{width:100%}.op-stats>div,.op-systems>div{grid-template-columns:110px minmax(0,1fr)}.op-weapons{min-width:600px}.op-section:has(.op-weapons){overflow:auto}}
+@media print{
+ .operating-sheet{padding:8px 12px;font-size:10pt;line-height:1.2}
+ .operating-sheet h1{font-size:16pt;margin:0 0 3px}
+ .op-heading strong{font-size:8pt}.op-heading p,.op-traits{margin:3px 0}
+ .op-upper{grid-template-columns:1.6fr 1fr;gap:14px}
+ .op-stats>div,.op-systems>div{grid-template-columns:120px minmax(0,1fr);padding:2px 0;gap:6px}
+ .op-armour dl>div{padding:2px 0}
+ .op-armour h2,.op-section h2{font-size:10pt}
+ .op-armour p,.op-section p{margin:3px 0}
+ .op-section{margin-top:6px;overflow:visible!important}
+ .op-section h2{break-after:avoid}
+ .op-weapons{min-width:0;font-size:9pt}
+ .op-weapons th,.op-weapons td{font-size:9pt;padding:3px;overflow-wrap:anywhere}
+ .op-weapons small{font-size:8pt}
+ .op-footer{font-size:8pt;break-inside:avoid}
+ .construction-spec{break-before:page;padding:0}
+ .construction-spec pre{font-size:9pt}
+}
+
+@media print{
+ .operating-sheet{font-size:9pt;line-height:1.15}
+ .op-heading h1{font-size:15pt}
+ .op-stats>div,.op-systems>div,.op-armour dl>div{padding:1px 0}
+ .op-section{margin-top:4px}
+ .op-section h2{font-size:9pt;margin-bottom:3px}
+ .op-weapons td:first-child small{display:inline;font-size:8pt}
+ .op-weapons td:first-child small::before{content:" · "}
+}
