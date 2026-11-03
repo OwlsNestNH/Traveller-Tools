@@ -80,5 +80,5 @@ export function createOpeningMfd({phaseBar,root,mfd,getState,getSelected,onSelec
   }catch(err){error=err.message;}finally{busy=false;onRefresh();}
  });
  for(const owner of [root,mfd,phaseBar])owner.addEventListener('keydown',e=>{if(e.repeat&&['Enter',' '].includes(e.key))e.preventDefault();});
- return {render,captureFocus,isOpening:()=>chosen==='Opening',legacy(){chosen=null;error='';},clear(){drafts.clear();chosen='Opening';page='tactics';lastPhase=null;lastRevision=-1;error='';}};
+ return {render,captureFocus,showMovement:()=>chosen==='Manoeuvre'||chosen===null&&phaseOf(getState())==='Manoeuvre',legacy(){chosen=null;error='';},clear(){drafts.clear();chosen='Opening';page='tactics';lastPhase=null;lastRevision=-1;error='';}};
 }
