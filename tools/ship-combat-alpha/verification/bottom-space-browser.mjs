@@ -32,7 +32,7 @@ export async function verifyBottomSpace(page,width,artifacts){
  if(width===1876){
   // Reproduce the previous release's fixed wrapper footprint for a paired visual
   // comparison. Actual live PR151 before measurements are captured independently.
-  const help=await page.locator('.map-footer summary').boundingBox(),frameWidth=await page.locator('#console-frame').evaluate(e=>e.parentElement.clientWidth),priorBase=Math.max(240,Math.min(frameWidth,page.viewportSize().height-after.frame.top-help.height)),priorHeight=Math.max(priorBase,Math.min(page.viewportSize().height-after.frame.top,after.rightBottom-after.frame.top));
+  const help=await page.locator('.map-footer > summary').boundingBox(),frameWidth=await page.locator('#console-frame').evaluate(e=>e.parentElement.clientWidth),priorBase=Math.max(240,Math.min(frameWidth,page.viewportSize().height-after.frame.top-help.height)),priorHeight=Math.max(priorBase,Math.min(page.viewportSize().height-after.frame.top,after.rightBottom-after.frame.top));
   const previous=await page.addStyleTag({content:'.station-console:not(.map-expanded) .console-frame{height:'+priorHeight+'px!important}'});await paint();const beforeTop=await metrics();await page.screenshot({path:artifacts+'viewport-pr151-footprint-before-top.png'});await page.evaluate(()=>scrollTo(0,80));await paint();const beforeScrolled=await metrics();await page.screenshot({path:artifacts+'viewport-pr151-footprint-before-scrolled.png'});await previous.evaluate(e=>e.remove());await settle();await page.evaluate(()=>scrollTo(0,0));await settle();await writeFile(artifacts+'viewport-pr151-footprint-before.json',JSON.stringify({beforeTop,beforeScrolled},null,2));
  }
  await page.screenshot({path:artifacts+'bottom-space-'+width+'.png'});
@@ -48,7 +48,7 @@ export async function verifyBottomSpace(page,width,artifacts){
  // become reachable, rather than be pushed away by indefinite scroll compensation.
  for(let i=0;i<3;i++){await page.evaluate(()=>scrollTo(0,document.documentElement.scrollHeight));await paint();}
  const endHeight=await page.evaluate(()=>document.documentElement.scrollHeight);await paint();assert.equal(await page.evaluate(()=>document.documentElement.scrollHeight),endHeight,'scroll compensation reaches a finite end');
- for(const selector of ['.map-footer summary','.assumptions summary','body>footer']){await page.locator(selector).scrollIntoViewIfNeeded();await paint();const box=await page.locator(selector).boundingBox();assert.ok(box.y>=-1&&box.y+box.height<=page.viewportSize().height+1,'below-fold control is scroll reachable '+JSON.stringify({selector,box,viewport:page.viewportSize()}));}
+ for(const selector of ['.map-footer > summary','.assumptions summary','body>footer']){await page.locator(selector).scrollIntoViewIfNeeded();await paint();const box=await page.locator(selector).boundingBox();assert.ok(box.y>=-1&&box.y+box.height<=page.viewportSize().height+1,'below-fold control is scroll reachable '+JSON.stringify({selector,box,viewport:page.viewportSize()}));}
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
  await page.setViewportSize(original);await page.evaluate(()=>scrollTo(0,0));await settle();
 }
