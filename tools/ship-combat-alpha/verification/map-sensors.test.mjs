@@ -35,3 +35,7 @@ test('new encounters select two spaces while old missing fields and explicit cho
  const legacy=structuredClone(fresh);delete legacy.shortRange;const restored=normalizeState(legacy);assert.equal(restored.shortRange,undefined);assert.equal(rangeInfo({q:0,r:0},{q:2,r:0},restored.shortRange).band,'Medium');
  assert.equal(rangeInfo({q:0,r:0},{q:2,r:0},fresh.shortRange).band,'Short');assert.equal(rangeInfo({q:0,r:0},{q:2,r:0},fresh.shortRange).km,1296);
 });
+
+test('legacy firing archives without a rule field replay using their original one-space policy',()=>{
+ const legacy=directFireFixture();delete legacy.shortRange;const fired=applyCommand(legacy,prepareDirectFireCommand(legacy,()=>.4));assert.equal(fired.combatHistory[0].snapshot.shortRange,undefined);assert.deepEqual(normalizeState(JSON.parse(JSON.stringify(fired))),fired);
+});
