@@ -10,7 +10,7 @@ export async function verifyGridZoom(page,width,artifacts){
   // The production renderer, geometry, engine and controls remain unmodified.
   await p.route('**/app.mjs',route=>route.fulfill({contentType:'text/javascript',body:source.replace(marker,'camera={x:0,y:0,zoom:'+zoom+'},drag=null')}));
   try{
-   await p.goto(page.url(),{waitUntil:'domcontentloaded'});await p.locator('.ship-node').first().waitFor();
+   await p.goto(page.url(),{waitUntil:'domcontentloaded'});await p.locator('.ship-node').first().waitFor();if(width<=700)await p.locator('#mobile-command-drawer > summary').click();
    for(const expanded of [false,true]){
     if(expanded)await p.locator('#expand-map').click();await p.waitForFunction(z=>Number(document.querySelector('#map').dataset.zoom)===z,zoom);await p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
     const m=await p.locator('#map').evaluate(e=>({zoom:Number(e.dataset.zoom),grid:e.dataset.gridVisible==='true',width:e.viewBox.baseVal.width,height:e.viewBox.baseVal.height,cells:e.querySelectorAll('.cell').length,revision:e.dataset.revision})),expected=visibleGrid({x:0,y:0,zoom},m.width,m.height),limit=zoom>=1?GRID_LIMIT_AT_100:GRID_LIMIT;
