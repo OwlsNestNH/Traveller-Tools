@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 export async function verifyFlight(page,width,artifacts,edit){
  await page.locator('#round-planning').evaluate(e=>e.open=true);
- const flightAction=async id=>{if(id==='brake'){await closeStation(page);await page.locator('[data-console-forward=brake]').click();return;}await openPilot(page);await page.locator('#'+id).click();};
+ const flightAction=async id=>{if(id==='brake'){await closeStation(page);if(!await page.locator('[data-console-forward=brake]').isVisible())await page.locator('[data-mfd-phase=Manoeuvre]').click();await page.locator('[data-console-forward=brake]').click();return;}await openPilot(page);await page.locator('#'+id).click();};
  const openDetails=async id=>{await openPilot(page);if(!await page.locator('#'+id).evaluate(e=>e.open))await page.locator('#'+id+' summary').click();};
  const rev=()=>page.locator('#map').getAttribute('data-revision'),motion=id=>page.locator('[data-ship="'+id+'"]').evaluate(e=>({q:Number(e.dataset.q),r:Number(e.dataset.r),vq:Number(e.dataset.vq),vr:Number(e.dataset.vr)}));
  await closeStation(page);await page.locator('#reset').click();let before=await rev();await flightAction('begin-acceleration');assert.match(await page.locator('#error').textContent(),/Record initiative/);assert.equal(await rev(),before);

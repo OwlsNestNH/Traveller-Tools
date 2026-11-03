@@ -93,3 +93,5 @@ body.static-console #mfd-phase-bar{align-items:center;padding:4px;gap:4px}#mfd-p
 .opening-action-row button{background:#354958;color:#f4f7f9}.opening-action-row [aria-pressed=true]{background:#a6d6df;color:#10232d}.opening-action-row [data-opening-next]{background:#1a303c;color:#fff;border:2px solid #f3cd54}.opening-screen button[type=submit]{background:#83d9c8;color:#102c2b}.opening-screen .opening-fiat{font-weight:700;font-size:1rem;color:#e6f5f2}
 @media(min-width:951px){body.static-console #ship-rail{max-height:none}body.static-console #ship-rail .encounter-add button{min-height:32px}body.static-console #ship-rail .encounter-add{flex-direction:row}body.static-console #ship-rail .ship-row{min-height:0}body.static-console #ship-rail .ship-choice{min-height:38px}}
 @media(min-width:951px){body.static-console #opening-mfd-actions{padding:4px}body.static-console .opening-screen{padding:4px}body.static-console #combat-right{gap:4px}}
+
+#opening-legacy-commands[hidden]{display:none!important}
