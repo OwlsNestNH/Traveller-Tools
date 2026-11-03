@@ -17,12 +17,12 @@ try{
   const type=page.locator('[data-key="type"]');
   await type.selectOption('Walker');await page.getByRole('button',{name:'Explain Vehicle type · Walker',exact:true}).click();assert.match(await page.locator('#info-content').innerText(),/moved by legs/);await page.keyboard.press('Escape');
   await type.selectOption('Ground Vehicle');
-  await page.getByRole('button',{name:'03Power & mobility',exact:true}).click();await page.locator('[data-key="power"]').selectOption('Fission (basic)');
+  await page.getByRole('button',{name:'Power & mobility',exact:false}).click();await page.locator('[data-key="power"]').selectOption('Fission (basic)');
   await page.getByRole('button',{name:'Explain Primary power · Fission (basic)',exact:true}).click();assert.match(await page.locator('#info-content').innerText(),/Hostile Environment Protection/);await page.keyboard.press('Escape');
   await page.locator('[data-key="power"]').selectOption('Powered');
-  await page.getByRole('button',{name:'04Armour & hull',exact:true}).click();await page.locator('[data-key="hull"]').selectOption('Reinforced');
+  await page.getByRole('button',{name:'Armour & hull',exact:false}).click();await page.locator('[data-key="hull"]').selectOption('Reinforced');
   await page.getByRole('button',{name:'Explain Hull construction · Reinforced',exact:true}).click();assert.match(await page.locator('#info-content').innerText(),/10% Hull/);await page.keyboard.press('Escape');await page.locator('[data-key="hull"]').selectOption('Standard');
-  await page.getByRole('button',{name:'01Chassis',exact:true}).click();
+  await page.getByRole('button',{name:'Chassis',exact:false}).click();
   const input=page.getByLabel('Nominal Spaces',{exact:true});
   for(const value of ['12','13','14']){await input.fill(value);await input.press('Tab');assert.equal(await input.inputValue(),value);}
   const help=page.getByRole('button',{name:'Explain Nominal Spaces',exact:true});
