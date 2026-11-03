@@ -12,7 +12,7 @@ const source=await readFile(new URL('../app.mjs',import.meta.url),'utf8'),browse
 try{for(const width of [1876,1440,1100,390,320]){
  const context=await browser.newContext({viewport:{width,height:1000},hasTouch:width<500}),page=await context.newPage(),errors=[];page.setDefaultTimeout(10000);page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/app.mjs',r=>r.fulfill({contentType:'text/javascript',body:source+'\nimport {normalizeState as restoreConsole} from "./engine.mjs";window.__consoleLoad=input=>{state=restoreConsole(input);selected=state.ships[0]?.id??null;gunneryControls.clear();render();};window.__consoleState=()=>structuredClone(state);window.__consoleFixture=(n=3)=>{state=createState({ships:createState().ships.slice(0,n)});state.ships.forEach((s,i)=>{s.motion.position={q:0,r:0};s.flight.initiative=i;s.flight.tie=0;});selected=state.ships[0].id;camera={zoom:4,x:0,y:0};render();};'}));
- await page.goto(new URL('tools/ship-combat-alpha/',root).href);await page.locator('#command-bar').waitFor();
+ await page.goto(new URL('tools/ship-combat-alpha/',root).href);await page.locator('#command-bar').waitFor();if(width<=700)await page.locator('#mobile-command-drawer > summary').click();
  const state=()=>page.evaluate(()=>window.__consoleState());
  await page.locator('[data-mfd-phase=Manoeuvre]').click();
  const initial=await state(),move=page.locator('[data-console-move]');
