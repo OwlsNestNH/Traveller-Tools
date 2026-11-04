@@ -55,10 +55,10 @@ jobs:
           for attempt in {1..30}; do if curl --fail --silent "$SHIP_COMBAT_TEST_ROOT" > /dev/null; then break; fi; sleep 1; done
           node tools/ship-combat-alpha/verification/roster-stability-browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
           node tools/ship-combat-alpha/verification/workflow-navigation-browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
+          SHIP_COMBAT_OPENING_WIDTHS=1440,1100,390,320,700,701 node tools/ship-combat-alpha/verification/opening-browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
           node tools/ship-combat-alpha/verification/manoeuvre-browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
           node tools/ship-combat-alpha/verification/browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
           node tools/ship-combat-alpha/verification/interface-shell-browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
-          node tools/ship-combat-alpha/verification/opening-browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
           node tools/ship-combat-alpha/verification/settings-sensor-browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
           node tools/ship-combat-alpha/verification/map-sensors-browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
           node tools/ship-combat-alpha/verification/static-console-browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
