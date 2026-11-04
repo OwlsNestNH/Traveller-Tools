@@ -54,6 +54,7 @@ jobs:
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
           for attempt in {1..30}; do if curl --fail --silent "$SHIP_COMBAT_TEST_ROOT" > /dev/null; then break; fi; sleep 1; done
           node tools/ship-combat-alpha/verification/roster-stability-browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
+          node tools/ship-combat-alpha/verification/workflow-navigation-browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
           node tools/ship-combat-alpha/verification/browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
           node tools/ship-combat-alpha/verification/interface-shell-browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
           node tools/ship-combat-alpha/verification/opening-browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
