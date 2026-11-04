@@ -134,3 +134,4 @@ body.static-console:has(.manoeuvre-screen) #opening-legacy-commands,body.static-
 @media(min-width:951px){body.static-console:has(.opening-active) #selected-workspace{max-height:205px}}
 @media(max-width:700px){body.static-console:has(.manoeuvre-screen) #combat-right #movement-workspace{order:0}.manoeuvre-screen .manoeuvre-preview{grid-template-columns:1fr}.manoeuvre-preview dl{border-left:0;border-top:2px solid #7ed6df;padding:8px 0 0}}
 .manoeuvre-preview svg{height:140px}
+body.static-console .manoeuvre-screen svg{height:120px}
