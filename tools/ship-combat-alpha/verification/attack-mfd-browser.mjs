@@ -19,6 +19,7 @@ try{
    const state=()=>page.evaluate(()=>window.__attackState()),initial=await state(),row=page.locator('[data-gunnery-index="0"]');
    const status=await page.locator('#selected-workspace').boundingBox(),actions=await page.locator('.attack-action-row').boundingBox();
    assert.ok(status.y+status.height<=actions.y+1,'Ship Status precedes Attack actions');
+   if(width<700)assert.ok((await page.locator('[data-attack-gunnery] [data-gunnery=info]').boundingBox()).height>=44,'Rules remains a phone touch target');
    await row.waitFor();await page.screenshot({path:new URL(`viewport-${width}.png`,out).pathname});
    await row.scrollIntoViewIfNeeded();await page.screenshot({path:new URL(`form-${width}.png`,out).pathname});
    if(width<700)await page.screenshot({path:new URL(`full-${width}.png`,out).pathname,fullPage:true});
