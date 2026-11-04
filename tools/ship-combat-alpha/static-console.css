@@ -112,3 +112,4 @@ body.static-console #mfd-phase-bar{align-items:center;padding:4px;gap:4px}#mfd-p
 @media(max-width:700px){body.static-console #ship-rail .encounter-add #encounter-count{width:34px;min-width:0}body.static-console #ship-rail .ship-row{flex:0 0 160px;min-width:0}}
 @media(max-width:700px){body.static-console #ship-rail .ship-choice:not([aria-pressed=true]) strong{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}}
 @media(max-width:700px){body.static-console #selected-workspace{height:183px;box-sizing:border-box;overflow:auto}}
+@media(max-width:700px){body.static-console #ship-rail{height:102px;box-sizing:border-box}body.static-console #ship-rail>.panel{max-height:90px}body.static-console #ships{max-height:90px;overflow:auto;align-items:flex-start}body.static-console #ship-rail .ship-details{top:6px;transform:none}}
