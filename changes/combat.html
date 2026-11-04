@@ -14,7 +14,7 @@
 </nav>
 <h1>Ship Combat Alpha changelog
 </h1>
-<p class="muted">Updated <time datetime="2026-10-30">October 30, 2026</time> · Dates shown in UTC.
+<p class="muted">Updated <time datetime="2026-11-04">November 4, 2026</time> · Dates shown in UTC.
 </p>
 </header>
 <main>
@@ -32,6 +32,17 @@
 </h2>
 <p class="muted">Published updates.
 </p>
+<h3><time datetime="2026-11-04">November 4, 2026</time></h3>
+<ul>
+<li>Opening shows saved progress for each ship. The Manoeuvre display adds a current/coast/planned position preview, thrust readouts and direct Plot, Coast, Brake, Reserve Thrust and Aid Gunners controls. Plots commit lowest initiative first; all ships move together only after GM confirmation. <a href="https://github.com/OwlsNestNH/Traveller-Tools/pull/217">Release #217</a></li>
+<li>The Attack display brings turret, weapon and target declarations into the phase view, including laser point defense, sand reservations and Hold fire. Commitment and review states are explicit; declaring an attack does not resolve it. <a href="https://github.com/OwlsNestNH/Traveller-Tools/pull/218">Release #218</a></li>
+<li>Resolution adds Current Attack and Attack Log views with saved dice, modifiers, defenses, Hull damage and critical details. Replay on Map illustrates recorded eligible attacks without rerolling or applying damage again. GM resolution and missile-impact controls retain explicit manual-handling requirements. <a href="https://github.com/OwlsNestNH/Traveller-Tools/pull/219">Release #219</a></li>
+</ul>
+<h3><time datetime="2026-11-03">November 3, 2026</time></h3>
+<ul>
+<li>The shared phase display adds an Opening workflow: save each ship’s Tactics roll or GM Fiat, then Initiative, before reviewing and explicitly confirming combat. Saved rolls persist across navigation; unsaved inputs require explicit discard before final confirmation. Opening layout and phone controls keep ship progress and actions accessible. <a href="https://github.com/OwlsNestNH/Traveller-Tools/pull/214">Release #214</a> · <a href="https://github.com/OwlsNestNH/Traveller-Tools/pull/215">Release #215</a></li>
+<li>Settings adds an encounter choice of one or two hexes for Short range, defaulting to two for new encounters and retaining one for older saves. Range labels, attack modifiers, rings and cosmetic sensor pings follow the selected boundary. Settings also offers a highlighted-ship ping switch that updates immediately and preserves other ship settings; actual sensor mode and power remain separate. <a href="https://github.com/OwlsNestNH/Traveller-Tools/pull/210">Release #210</a> · <a href="https://github.com/OwlsNestNH/Traveller-Tools/pull/213">Release #213</a></li>
+</ul>
 <h3><time datetime="2026-10-30">October 30, 2026</time></h3>
 <ul><li>Restored Commit &amp; Advance on the command bar outside combat workflow, retaining explicit plot declarations and Move All Ships. Sensor pings are brighter and thicker, appear only for visible ships with enabled Active sensors, and remain independently switchable off.</li></ul>
 <h3><time datetime="2026-10-29">October 29, 2026</time></h3>
@@ -80,7 +91,7 @@
 <li>Complete unsupported missile variants, manual direct-fire configurations and critical-system effects. Critical hit entries are history, with one current severity per system.</li>
 <li>Remaining crew automation: general sensor locks, Leadership and other GM-adjudicated outcomes; automatic application and reversal of temporary repair effects.</li>
 <li>A dedicated encounter import interface remains future work; exported JSON preserves normalized encounter data and completed reports.</li>
-<li>Reinforcements that join without resetting committed combat declarations, the Companion Short-range choice of one or two hexes, and deferred layout cleanup. Currently, Add Ship during confirmed combat requires explicitly leaving the workflow, which clears its declaration sequence.</li>
+<li>Reinforcements that join without resetting committed combat declarations, and deferred layout cleanup. Currently, Add Ship during confirmed combat requires explicitly leaving the workflow, which clears its declaration sequence.</li>
 <li>Multiplayer and dogfighting remain later stages.</li>
 </ul>
 </section>

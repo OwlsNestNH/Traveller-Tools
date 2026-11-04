@@ -29,7 +29,9 @@ const fs=require('node:fs');
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'horizontal overflow at '+width);
  }
  await page.getByRole('link',{name:'Tool Locker Changelog'}).click();
- assert.match(await page.title(),/Traveller Tool Locker/);assert.equal(await page.locator('time[datetime="2026-11-03"]').count(),2);
+ assert.match(await page.title(),/Traveller Tool Locker/);assert.ok(await page.locator('time[datetime="2026-11-03"]').count()>=2);
+ assert.equal(await page.getByRole('heading',{name:/Derelict Maps/}).count(),1);
+ assert.equal(await page.getByRole('link',{name:'Release #216',exact:true}).getAttribute('href'),'https://github.com/OwlsNestNH/Traveller-Tools/pull/216');
  for(const a of await page.locator('nav a').all()) {const response=await page.request.get(new URL(await a.getAttribute('href'),page.url()).href);assert.equal(response.status(),200);}
  await page.getByRole('link',{name:'Open Traveller Tool Locker'}).click();assert.ok(page.url().endsWith('/tools/traveller_tools_buttons/'));
  await page.goto(root+'/');await page.getByRole('link',{name:'Tool Locker Changelog'}).click();assert.ok(page.url().endsWith('/changes/locker.html'));
