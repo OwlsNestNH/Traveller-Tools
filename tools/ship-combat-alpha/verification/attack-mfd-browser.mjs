@@ -17,6 +17,8 @@ try{
   try{
    await page.goto(new URL('tools/ship-combat-alpha/',root).href);
    const state=()=>page.evaluate(()=>window.__attackState()),initial=await state(),row=page.locator('[data-gunnery-index="0"]');
+   const status=await page.locator('#selected-workspace').boundingBox(),actions=await page.locator('.attack-action-row').boundingBox();
+   assert.ok(status.y+status.height<=actions.y+1,'Ship Status precedes Attack actions');
    await row.waitFor();await page.screenshot({path:new URL(`viewport-${width}.png`,out).pathname});
    await row.scrollIntoViewIfNeeded();await page.screenshot({path:new URL(`form-${width}.png`,out).pathname});
    if(width<700)await page.screenshot({path:new URL(`full-${width}.png`,out).pathname,fullPage:true});

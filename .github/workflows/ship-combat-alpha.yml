@@ -47,6 +47,22 @@ jobs:
         run: |
           npm install --prefix "$RUNNER_TEMP/ship-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
           node "$RUNNER_TEMP/ship-playwright/node_modules/playwright/cli.js" install --with-deps chromium
+      - name: Capture and check synthetic Attack MFD
+        run: |
+          python3 -m http.server 8767 --bind 127.0.0.1 > "$RUNNER_TEMP/ship-attack-server.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..30}; do if curl --fail --silent "$SHIP_COMBAT_TEST_ROOT" > /dev/null; then break; fi; sleep 1; done
+          node tools/ship-combat-alpha/verification/attack-mfd-browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
+      - name: Upload synthetic Attack MFD evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: attack-mfd-review-${{ github.event.pull_request.head.sha }}
+          path: |
+            tools/ship-combat-alpha/verification-artifacts/attack-mfd/*.png
+            tools/ship-combat-alpha/verification-artifacts/attack-mfd/manifest.json
+          if-no-files-found: warn
       - name: Exercise synthetic movement without campaign storage
         run: |
           python3 -m http.server 8767 --bind 127.0.0.1 > "$RUNNER_TEMP/ship-server.log" 2>&1 &
@@ -57,7 +73,6 @@ jobs:
           node tools/ship-combat-alpha/verification/workflow-navigation-browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
           SHIP_COMBAT_OPENING_WIDTHS=1440,1100,390,320,700,701 node tools/ship-combat-alpha/verification/opening-browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
           node tools/ship-combat-alpha/verification/manoeuvre-browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
-          node tools/ship-combat-alpha/verification/attack-mfd-browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
           node tools/ship-combat-alpha/verification/browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
           node tools/ship-combat-alpha/verification/interface-shell-browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
           node tools/ship-combat-alpha/verification/settings-sensor-browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
@@ -69,15 +84,6 @@ jobs:
         with:
           name: ship-combat-${{ github.event.pull_request.head.sha }}
           path: tools/ship-combat-alpha/verification-artifacts/
-          if-no-files-found: warn
-      - name: Upload synthetic Attack MFD evidence
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: attack-mfd-review-${{ github.event.pull_request.head.sha }}
-          path: |
-            tools/ship-combat-alpha/verification-artifacts/attack-mfd/*.png
-            tools/ship-combat-alpha/verification-artifacts/attack-mfd/manifest.json
           if-no-files-found: warn
       - name: Upload small Add Ship review evidence
         if: always()
