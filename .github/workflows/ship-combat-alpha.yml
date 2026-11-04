@@ -56,7 +56,7 @@ jobs:
           for attempt in {1..30}; do if curl --fail --silent "$SHIP_COMBAT_TEST_ROOT" > /dev/null; then break; fi; sleep 1; done
           node tools/ship-combat-alpha/verification/attack-mfd-browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
           node tools/ship-combat-alpha/verification/resolution-mfd-browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
-          SHIP_COMBAT_OPENING_WIDTHS=1440,390,320 node tools/ship-combat-alpha/verification/opening-browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
+          SHIP_COMBAT_SKIP_CAPTURE_ONLY=1 SHIP_COMBAT_OPENING_WIDTHS=1440,390,320 node tools/ship-combat-alpha/verification/opening-browser.mjs "$RUNNER_TEMP/ship-playwright/node_modules/playwright"
       - name: Upload synthetic Attack MFD evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
