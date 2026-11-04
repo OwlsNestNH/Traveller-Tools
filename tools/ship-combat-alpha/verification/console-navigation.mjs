@@ -8,5 +8,6 @@ export async function openStation(page,role='pilot'){
 }
 export const openPilot=page=>openStation(page,'pilot');
 export async function advanceMovement(page){await openPilot(page);await page.locator('[data-pilot-commit=advance]').click();await closeStation(page);}
-export async function workflowAction(page,action){await closeStation(page);const button=page.locator('[data-workflow="'+action+'"]');if(!await button.isVisible())await page.locator('[data-console-more]').click();await button.click();}
-export async function openWorkflowInfo(page){await closeStation(page);if(!await page.locator('#workflow-more').isVisible())await page.locator('[data-console-more]').click();}
+export async function ensureMobileCommands(page){const drawer=page.locator('#mobile-command-drawer');if(await drawer.count()&&!await drawer.evaluate(e=>e.open))await drawer.locator(':scope > summary').click();}
+export async function workflowAction(page,action){await closeStation(page);await ensureMobileCommands(page);const button=page.locator('[data-workflow="'+action+'"]');if(!await button.isVisible())await page.locator('[data-console-more]').click();await button.click();}
+export async function openWorkflowInfo(page){await closeStation(page);await ensureMobileCommands(page);if(!await page.locator('#workflow-more').isVisible())await page.locator('[data-console-more]').click();}
