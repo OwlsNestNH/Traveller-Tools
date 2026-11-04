@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
+import {readFile,mkdir} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import {gunneryFixture} from './gunnery-fixture.mjs';
 import {openStation} from './console-navigation.mjs';
 
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const root=process.env.SHIP_COMBAT_TEST_ROOT||'http://127.0.0.1:8767/';
+const out=new URL('../verification-artifacts/attack-mfd/',import.meta.url);await mkdir(out,{recursive:true});
 const source=await readFile(new URL('../app.mjs',import.meta.url),'utf8');
 const browser=await chromium.launch({headless:true,...(process.env.SHIP_COMBAT_CHROMIUM?{executablePath:process.env.SHIP_COMBAT_CHROMIUM}:{})});
 try{
@@ -16,6 +17,8 @@ try{
   try{
    await page.goto(new URL('tools/ship-combat-alpha/',root).href);
    const state=()=>page.evaluate(()=>window.__attackState()),initial=await state(),row=page.locator('[data-gunnery-index="0"]');
+   await row.waitFor();await page.screenshot({path:new URL(`viewport-${width}.png`,out).pathname});
+   await row.scrollIntoViewIfNeeded();await page.screenshot({path:new URL(`form-${width}.png`,out).pathname});
    assert.deepEqual(await row.locator('[data-gunnery-field=weapon] option').allTextContents(),['Choose installed weapon','Pulse laser','Missile rack','Sandcaster']);
    await row.locator('[data-gunnery-field=weapon]').selectOption('Pulse laser');
    await row.locator('[data-gunnery-field=action]').selectOption('attack');
