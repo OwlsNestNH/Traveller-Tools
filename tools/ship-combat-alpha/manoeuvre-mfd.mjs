@@ -9,7 +9,7 @@ function vectorPreview(ship){
 }
 // This view only presents existing commands; the engine remains authoritative.
 export function renderManoeuvre({state,ship,locked,preview}){
- const phase=state.workflow?.phase, next=state.acceleration?.order[state.acceleration.declared.length], canPlan=phase==='thrust'&&next===ship?.id&&!locked;
+ const next=state.acceleration?.order[state.acceleration.declared.length],phase=state.workflow?.phase??(state.acceleration?(next?'thrust':'movement'):null),canPlan=phase==='thrust'&&next===ship?.id&&!locked;
  const move=phase==='movement'&&!locked, present=!!ship;
  const button=(action,label,enabled,extra='')=>`<button type="button" data-manoeuvre="${action}" ${enabled?'':'disabled'} ${extra}>${label}</button>`;
  const actions=`<div class="manoeuvre-action-row">${button('plot','Plot',canPlan,'aria-pressed="true"')}${button('coast','Coast',canPlan)}${button('brake','Brake to Stop',canPlan)}${button('reserve','Reserve Thrust',canPlan)}${button('gunners','Aid Gunners',canPlan)}${move?button('move','GM · Move All Ships',true):phase==='thrust'&&next!==ship?.id?button('select','Select next ship',!locked):button('commit','Commit · Next Ship',canPlan)}</div>`;
