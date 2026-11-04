@@ -50,7 +50,7 @@ let state=createState(),selected=state.ships[0].id,camera=fitShipsCamera(state.s
 const canPlan=id=>canPlanWorkflow(state)&&(!state.acceleration||state.acceleration.order[state.acceleration.declared.length]===id);
 const rangeLabel=(a,b)=>{const v=rangeInfo(a,b,state.shortRange);return `${v.band} · ${v.km.toLocaleString(undefined,{maximumFractionDigits:2})} km (${v.spaces.toLocaleString(undefined,{maximumFractionDigits:4})} spaces)`;};
 const selectedShip=()=>getShip(state,selected),pair=p=>`${p.q}, ${p.r}`,number=id=>Number($(id).value),color=sideColor;
-function feedback(text='',error=''){$('message').textContent=text;$('error').textContent=error;}
+function feedback(text='',error=''){$('message').textContent=text;$('message').tabIndex=text?0:-1;$('error').textContent=error;}
 function dispatch(command,message){if(editors.isPlacing()){feedback('','Finish or cancel map placement first.');return false;}try{state=applyCommand(state,{...command,expectedRevision:command.expectedRevision??state.revision});feedback(message);render();return true;}catch(error){feedback('',error.message);return false;}}
 function populate(){
  const s=state.ships.find(s=>s.id===selected)??state.ships[0];selected=s?.id??null;const placing=editors?.isPlacing()??false;
