@@ -2,13 +2,14 @@ import {initiativeProfile,normalizeInitiativeProfile,openingInitiative,navalTact
 const whole=(n,label,min,max)=>{if(!Number.isSafeInteger(n)||n<min||n>max)throw Error(label+' must be a whole number from '+min+' to '+max+'.');return n;};
 export function normalizeOpeningTactics(value){
  if(value==null)return null;
- if(value.version!==1||!['roll','fiat'].includes(value.kind))throw Error('Invalid saved Opening Tactics.');
+ if(value.version!==1||!['roll','fiat','skip'].includes(value.kind))throw Error('Invalid saved Opening Tactics.');
  const profile=normalizeInitiativeProfile(value.profile),effect=whole(value.effect,'Tactics Effect',-100,100);let dice=null,modifier=null;
  if(value.kind==='roll'){
   modifier=whole(value.modifier,'Naval Tactics modifier',-30,40);
   if(!Array.isArray(value.dice)||value.dice.length!==2)throw Error('Two saved Tactics dice required.');
   dice=value.dice.map(n=>whole(n,'Tactics die',1,6));if(dice[0]+dice[1]+modifier-8!==effect)throw Error('Saved Tactics Effect disagrees with its dice.');
- }else if(value.dice!=null||value.modifier!=null)throw Error('GM Fiat Tactics cannot invent dice.');
+ }else if(value.dice!=null||value.modifier!=null)throw Error('Tactics without a roll cannot invent dice.');
+ if(value.kind==='skip'&&(effect!==0||value.gmEffect!=null))throw Error('Skipped Tactics must have zero Effect and no override.');
  return {version:1,kind:value.kind,profile,dice,modifier,effect,...(value.gmEffect==null?{}:{gmEffect:whole(value.gmEffect,'GM Tactics Effect',-100,100)})};
 }
 export const effectiveTactics=record=>record.gmEffect??record.effect;
@@ -22,8 +23,9 @@ export function openingTactics(ship){
 export function recordOpeningTactics(ship,command){
  if(ship.flight.initiative!=null)throw Error('Initiative is already recorded; its saved Tactics are preserved.');
  const old=ship.flight.openingTactics;
- if(old){if(command.handling!=='fiat')throw Error('Tactics already saved; it cannot be rolled again.');return normalizeOpeningTactics({...old,gmEffect:whole(command.effect,'GM Tactics Effect',-100,100)});}
+ if(old){if(old.kind==='skip')throw Error('Tactics already skipped; the saved choice is preserved.');if(command.handling!=='fiat')throw Error('Tactics already saved; it cannot be rolled again.');return normalizeOpeningTactics({...old,gmEffect:whole(command.effect,'GM Tactics Effect',-100,100)});}
  const profile=initiativeProfile(ship);
+ if(command.handling==='skip')return normalizeOpeningTactics({version:1,kind:'skip',profile,dice:null,modifier:null,effect:0});
  if(command.handling==='roll'){
   const result=navalTacticsEffect(command.modifier,command.dice);
   return normalizeOpeningTactics({version:1,kind:'roll',profile,dice:result.dice,modifier:result.modifier,effect:result.effect});

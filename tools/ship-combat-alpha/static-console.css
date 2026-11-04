@@ -168,3 +168,5 @@ body.static-console .opening-screen form>button[type=submit],body.static-console
 @media(min-width:951px){body.static-console:has(.resolution-screen) #selected-workspace{max-height:none;overflow:visible}}
 body.static-console:has(.resolution-screen) #message,.resolution-screen h2{overflow-wrap:anywhere}
 @media (min-width:701px) and (max-width:1600px){body.static-console:has(.resolution-screen) #command-bar{max-height:none;overflow:visible;flex-wrap:wrap}body.static-console:has(.resolution-screen) #mobile-command-drawer{flex-wrap:wrap}}
+
+body.static-console .opening-screen form>[data-opening-skip]{order:2;grid-column:1 / -1;min-height:44px}
