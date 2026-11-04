@@ -30,5 +30,5 @@ test('resolution view switches from pending to saved results without changing st
  assert.equal(view.available,true);assert.equal(view.needsDirect,true);assert.deepEqual(view.results,[]);assert.deepEqual(pending,before);
  const saved=applyCommand(pending,{type:'resolve-direct-fire',dice:[6,6,1,1,4,4]}),snapshot=structuredClone(saved),resolved=resolutionView(saved);
  assert.equal(resolved.needsDirect,false);assert.equal(resolved.results.length,1);assert.equal(resolved.results[0].status,'hit');assert.deepEqual(saved,snapshot);
- const rendered=renderResolution(saved);assert.match(rendered.content,/Hit/);assert.match(rendered.content,/Attack roll/);assert.doesNotMatch(rendered.actions,/Resolve All/);assert.match(rendered.actions,/GM · Attacks Complete/);assert.deepEqual(saved,snapshot);
+ const rendered=renderResolution(saved);assert.match(rendered.content,/Hit/);assert.match(rendered.content,/modified total/);assert.doesNotMatch(rendered.actions+rendered.content,/Resolve All/);assert.match(rendered.actions,/GM · Attacks Complete/);assert.deepEqual(saved,snapshot);
 });
