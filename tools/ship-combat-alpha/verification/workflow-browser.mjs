@@ -9,7 +9,7 @@ export async function verifyWorkflow(page,width,artifacts){
  const geometry=()=>p.locator('#map').evaluate(e=>({width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height,transform:document.querySelector('#scene').getAttribute('transform')}));
  const choose=role=>openStation(p,role);
  try{
-  await p.goto(page.url());await p.locator('.ship-node').first().waitFor();const original=await state(),map=await geometry();
+  await p.goto(page.url());await p.locator('.ship-node').first().waitFor();if(width<=700)await p.locator('#mobile-command-drawer > summary').click();const original=await state(),map=await geometry();
   assert.equal(await p.locator('[data-workflow=start]').isDisabled(),true);
   await choose('pilot');await p.locator('#round-planning').evaluate(e=>e.open=true);await p.locator('#initiative-editor').evaluate(e=>e.open=true);await p.locator('#initiative-0').fill('20');await closeStation(p);await p.locator('[data-select=scout]').click();await choose('pilot');assert.equal(await p.locator('#initiative-0').inputValue(),'20');assert.deepEqual(await state(),original);
   await p.locator('#cancel-initiative-draft').click();assert.equal(await p.locator('#initiative-0').inputValue(),'');

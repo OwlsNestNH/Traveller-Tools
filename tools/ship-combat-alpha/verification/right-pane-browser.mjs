@@ -9,9 +9,9 @@ export async function verifyRightPane(page,width,artifacts){
   await page.setViewportSize(size);await page.evaluate(()=>scrollTo(0,0));await paint();const initial=await metrics();
   for(const expanded of [false,true]){
    if(expanded)await page.locator('#expand-map').click();await page.evaluate(()=>scrollTo(0,0));await paint();const m=await metrics();
-   assert.ok(m.roster.bottom<=m.map.top);assert.ok(m.status.bottom<=m.commands.top);assert.ok(width>700?m.status.left>=m.map.right:m.status.top>=m.map.bottom);if(width>700)assert.ok(Math.abs(m.status.top-m.map.top)<=1.5);
+   assert.ok(m.roster.bottom<=m.map.top);if(width>700){assert.ok(m.status.bottom<=m.commands.top);assert.ok(m.status.left>=m.map.right);assert.ok(Math.abs(m.status.top-m.map.top)<=1.5);}else{assert.ok(m.commands.bottom<=m.status.top);assert.ok(m.status.bottom<=m.map.top);}
    assert.equal(m.camera,initial.camera);assert.equal(m.revision,initial.revision);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
-   if(width>700){await openPilot(page);await page.locator('#round-planning').evaluate(e=>e.open=true);await page.locator('#station-control-popup').evaluate(e=>e.scrollTop=100);const own=await metrics();assert.deepEqual(own.status,m.status,'popup scrolling leaves status fixed');assert.equal(own.camera,m.camera);await closeStation(page);}
+   if(width>700){await openPilot(page);await page.locator('#round-planning').evaluate(e=>e.open=true);const opened=await metrics();await page.locator('#station-control-popup').evaluate(e=>e.scrollTop=100);const own=await metrics();assert.deepEqual(own.status,opened.status,'popup scrolling leaves status fixed');assert.equal(own.camera,m.camera);await closeStation(page);}
    await page.screenshot({path:artifacts+'right-pane-'+(expanded?'expanded-':'normal-')+size.width+'.png'});records.push(m);
   }await page.locator('#expand-map').click();
  }

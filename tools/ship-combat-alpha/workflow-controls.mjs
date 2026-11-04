@@ -11,7 +11,7 @@ export function createWorkflowControls({root,getState,getSelected,isLocked,dispa
  let lastLocked=null;
  const strip=document.createElement('section');strip.id='workflow-strip';strip.setAttribute('aria-label','Combat progress');document.querySelector('main').prepend(strip);
  strip.addEventListener('click',event=>{if(!event.target.closest('button')||isLocked())return;const state=getState(),view=workflowPresentation(state,getSelected());if(!state.workflow){onStation('captain');onInitiative();return;}if(view.current)onSelect(view.current);onStation(view.phase==='Manoeuvre'?'pilot':view.phase==='Attack'?'gunnery':'captain');root.scrollIntoView({block:'nearest'});});
- function place(){const bar=document.getElementById('command-bar');if(bar){if(root.parentElement!==bar)bar.append(root);return;}const pane=document.getElementById('station-pane');pane.prepend(root);}
+ function place(){const bar=document.getElementById('mobile-command-drawer')??document.getElementById('command-bar');if(bar){if(root.parentElement!==bar)bar.append(root);return;}const pane=document.getElementById('station-pane');pane.prepend(root);}
  function compact(){
   const bar=document.getElementById('command-bar');if(!bar)return;
   const phase=getState().workflow?.phase,primary=phase==='thrust'?['select','plot']:phase==='movement'?['reopen','move']:phase==='attacks'?['gunnery','resolve','impacts','next']:phase==='crew'?['crew','round-review']:['initiative','start'];

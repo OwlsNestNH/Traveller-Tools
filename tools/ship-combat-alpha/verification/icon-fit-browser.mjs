@@ -10,7 +10,7 @@ async function verifyIconGroup(page,width,artifacts,icons){
   // Synthetic encounter and view-camera adapter only; production sizing and interaction paths are untouched.
   await p.route('**/app.mjs',r=>r.fulfill({contentType:'text/javascript',body:source.replace(marker,'state=createState({ships:'+JSON.stringify(ships)+'}),selected=').replace(cameraMarker,'camera={x:0,y:0,zoom:.33},drag=null')+"\nwindow.__iconFitZoom=z=>{camera={...camera,zoom:z};scheduleMap();};"}));
   try{
-   await p.goto(page.url(),{waitUntil:'domcontentloaded'});await p.locator('.ship-node').first().waitFor();
+   await p.goto(page.url(),{waitUntil:'domcontentloaded'});await p.locator('.ship-node').first().waitFor();if(width<=700)await p.locator('#mobile-command-drawer > summary').click();
    // Keep one initialized viewport/projection basis for the entire growth sequence.
    for(const zoom of [.33,1,2,4]){
     if(await p.locator('body').evaluate(e=>e.classList.contains('map-expanded')))await p.locator('#expand-map').click();
