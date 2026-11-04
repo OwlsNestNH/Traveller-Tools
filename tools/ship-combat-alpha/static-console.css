@@ -113,3 +113,17 @@ body.static-console #mfd-phase-bar{align-items:center;padding:4px;gap:4px}#mfd-p
 @media(max-width:700px){body.static-console #ship-rail .ship-choice:not([aria-pressed=true]) strong{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}}
 @media(max-width:700px){body.static-console #selected-workspace{height:183px;box-sizing:border-box;overflow:auto}}
 @media(max-width:700px){body.static-console #ship-rail{height:102px;box-sizing:border-box}body.static-console #ship-rail>.panel{max-height:90px}body.static-console #ships{max-height:90px;overflow:auto;align-items:flex-start}body.static-console #ship-rail .ship-details{top:6px;transform:none}}
+
+/* Opening progress reflects saved results, independently of the viewed page. */
+.opening-action-row [aria-pressed=true]{background:#354958;color:#f4f7f9}.opening-action-row [data-opening-step=true]{background:#a6d6df;color:#10232d}.opening-action-row [data-opening-next][data-opening-step=true]{background:#f3cd54;color:#182330}.opening-status-results{margin:2px 0;font-size:.85rem}
+.opening-screen form{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.opening-screen form>*{grid-column:1/-1}
+.opening-screen form>button[type=submit],.opening-screen form>.opening-fiat{grid-column:auto;min-height:54px}
+.opening-screen form>.opening-fiat{justify-content:center;margin:0;padding:6px;border:1px solid #698999;border-radius:4px;background:#244657;box-sizing:border-box}
+.opening-tactics-readouts label,.opening-target{align-items:center;text-align:center}
+.opening-tactics-readouts input{text-align:center}
+
+.opening-tactics-readouts{gap:0;margin:8px 0}.opening-tactics-readouts label,.opening-target{background:transparent;border:0;border-radius:0;padding:8px 12px}.opening-target{border-left:1px solid #698999}.opening-tactics-readouts input{max-width:8ch}.opening-screen form>.opening-fiat{background:#294657;font-size:1.05rem}.opening-screen form>.opening-fiat input{width:22px;height:22px;flex:none}
+body.static-console .opening-screen form>button[type=submit],body.static-console .opening-screen form>.opening-fiat{order:0;min-height:54px}
+body.static-console .opening-screen form>.opening-tactics-readouts,body.static-console .opening-screen form>.opening-fields{order:1}
+body.static-console .opening-screen form>p{order:2}
