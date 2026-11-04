@@ -31,6 +31,7 @@ export function createOpeningMfd({phaseBar,root,mfd,getState,getSelected,onSelec
   root.hidden=!['Opening','Manoeuvre'].includes(chosen);root.innerHTML='';mfd.classList.toggle('opening-active',['Opening','Manoeuvre'].includes(chosen));
   if(chosen===null)return;
   const screen=mfd.querySelector('.mfd-screen');if(!screen)return;screen.classList.add('opening-screen');mfd.querySelectorAll('[data-mfd]').forEach(b=>b.setAttribute('aria-pressed','false'));
+  if(chosen==='Manoeuvre'&&current==='Opening'){root.hidden=true;screen.innerHTML='<h2>Manoeuvre · phase overview</h2><p>Confirm Opening before plotting movement.</p>';return;}
   if(chosen==='Manoeuvre'){const view=renderManoeuvre({state,ship:ship(),locked:isLocked(),preview});root.innerHTML=view.actions;screen.innerHTML=view.content;screen.classList.add('manoeuvre-screen');return;}
   if(chosen!=='Opening'){screen.innerHTML=`<h2>${esc(chosen)} · phase overview</h2><p>Read only · current phase: ${esc(current)}.</p><p>Use the existing command bar and crew-station controls for ${esc(chosen)}. Selecting this phase does not advance combat.</p>`;return;}
   const s=ship(),ready=openingReady(state),locked=isLocked()||!!state.workflow||!!state.acceleration;
