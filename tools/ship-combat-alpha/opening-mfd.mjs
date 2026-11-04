@@ -3,12 +3,15 @@ import {openingTactics,effectiveTactics,openingInitiativeEntry,openingReady} fro
 import {rollPilotDice} from './pilot-check.mjs';
 import {escapeHTML as esc} from './ui-format.mjs';
 import {renderManoeuvre} from './manoeuvre-mfd.mjs';
+import {renderResolution} from './resolution-mfd.mjs';
+import {resolutionView} from './resolution-view.mjs';
 const PHASES=['Opening','Manoeuvre','Attack','Crew Actions','End of Round'];
 const phaseOf=state=>state.workflow?.phase==='attacks'?'Attack':state.workflow?.phase==='crew'?'Crew Actions':state.workflow||state.acceleration?'Manoeuvre':'Opening';
 const number=(value,label,min,max)=>{if(value===''||!Number.isSafeInteger(Number(value))||Number(value)<min||Number(value)>max)throw Error(label+' requires a whole number from '+min+' to '+max+'.');return Number(value);};
 // UI drafts never contain unsaved dice: each explicit roll is committed once.
-export function createOpeningMfd({phaseBar,root,mfd,getState,getSelected,onSelect,dispatch,isLocked,isAttackLocked=isLocked,onRefresh,preview}){
- const drafts=new Map();let chosen='Opening',page='tactics',lastShip=null,lastPhase=null,lastRevision=-1,error='',busy=false,pendingFocus=null;
+export function createOpeningMfd({phaseBar,root,mfd,getState,getSelected,onSelect,dispatch,isLocked,isAttackLocked=isLocked,onResolutionAction=()=>{},onResolutionReplay=()=>{},onRefresh,preview}){
+ const drafts=new Map();let chosen='Opening',page='tactics',lastShip=null,lastPhase=null,lastRevision=-1,error='',busy=false,pendingFocus=null,resolutionIndex=0,resolutionMode='current',resolutionKey='',lastResolutionMutation=-Infinity;
+ document.addEventListener('click',e=>{if(e.detail>1&&performance.now()-lastResolutionMutation<800){e.preventDefault();e.stopImmediatePropagation();phaseBar.querySelector('[aria-current]')?.focus({preventScroll:true});}},true);
  const ship=()=>getState().ships.find(s=>s.id===getSelected());
  function draftFor(s){if(!drafts.has(s.id)){const p=initiativeProfile(s),t=openingTactics(s),r=s.flight.initiativeRecord;drafts.set(s.id,{revision:getState().revision,dirty:false,tacticsFiat:t?.kind==='fiat'||t?.gmEffect!=null,initiativeFiat:s.flight.initiative!=null&&(!r||s.flight.initiative!==r.result.total),modifier:t?.modifier??p.tactics??'',effect:t&&t.kind!=='legacy'?effectiveTactics(t):'',pilot:r?.result.pilot??p.pilot??'',total:s.flight.initiative??'',tie:s.flight.tie});}return drafts.get(s.id);}
  const input=(label,field,value,min,max,disabled=false)=>`<label>${label}<input data-opening-field="${field}" type="number" step="1" min="${min}" max="${max}" value="${esc(String(value))}" ${disabled?'disabled':''}></label>`;
@@ -17,8 +20,9 @@ export function createOpeningMfd({phaseBar,root,mfd,getState,getSelected,onSelec
  function captureFocus(){
   const focused=document.activeElement;let focusKey=null;
   if(phaseBar.contains(focused)&&focused?.dataset.mfdPhase)focusKey=`[data-mfd-phase="${focused.dataset.mfdPhase}"]`;
-  else if(root.contains(focused))focusKey=focused?.dataset.manoeuvre?`[data-manoeuvre="${focused.dataset.manoeuvre==='select'?'commit':focused.dataset.manoeuvre}"]`:focused?.dataset.openingPage?`[data-opening-page="${focused.dataset.openingPage}"]`:'[data-opening-next]';
+  else if(root.contains(focused))focusKey=focused?.dataset.resolution?`[data-resolution="${focused.dataset.resolution}"]`:focused?.dataset.manoeuvre?`[data-manoeuvre="${focused.dataset.manoeuvre==='select'?'commit':focused.dataset.manoeuvre}"]`:focused?.dataset.openingPage?`[data-opening-page="${focused.dataset.openingPage}"]`:'[data-opening-next]';
   else if(mfd.contains(focused)&&focused?.dataset.manoeuvre==='select')focusKey='[data-manoeuvre="commit"]';
+  else if(mfd.contains(focused)&&(focused?.dataset.resolution||focused?.dataset.resolutionIndex!=null))focusKey=focused.dataset.resolution==='previous'?'[data-resolution="previous"]':'[data-resolution="current"]';
   else if(mfd.contains(focused)&&focused?.closest('[data-opening-form], [data-opening-confirm], [data-opening-refresh], [data-opening-discard]'))focusKey=focused.dataset.openingField?`[data-opening-field="${focused.dataset.openingField}"]`:`[data-opening-page="${page==='initiative'?'initiative':'tactics'}"]`;
   pendingFocus={focused,focusKey};
  }
@@ -27,12 +31,14 @@ export function createOpeningMfd({phaseBar,root,mfd,getState,getSelected,onSelec
   try{
   const state=getState(),current=phaseOf(state);for(const id of drafts.keys())if(!state.ships.some(s=>s.id===id))drafts.delete(id);if(lastPhase===null)chosen=['Opening','Manoeuvre','Attack'].includes(current)?current:null;if(state.revision<lastRevision)drafts.clear();lastRevision=state.revision;
   if(lastPhase!==null&&lastPhase!==current){chosen=['Opening','Manoeuvre','Attack'].includes(current)?current:null;page='tactics';error='';}lastPhase=current;
-  phaseBar.innerHTML=PHASES.map(p=>`<button type="button" data-mfd-phase="${p}" aria-pressed="${chosen===p}" ${p===current?'aria-current="step"':''}>${p}</button>`).join('')+(current==='Opening'?'<p class="opening-instruction">Complete Tactics and Initiative for each ship</p>':current==='Manoeuvre'?'<p class="opening-instruction">Plot movement for each ship</p>':current==='Attack'?'<p class="opening-instruction">Declare attacks · lowest initiative first</p>':'');
+  const resolving=current==='Attack'&&resolutionView(state).available;
+  phaseBar.innerHTML=PHASES.map(p=>`<button type="button" data-mfd-phase="${p}" aria-pressed="${chosen===p}" ${p===current?'aria-current="step"':''}>${p}</button>`).join('')+(current==='Opening'?'<p class="opening-instruction">Complete Tactics and Initiative for each ship</p>':current==='Manoeuvre'?'<p class="opening-instruction">Plot movement for each ship</p>':current==='Attack'?`<p class="opening-instruction">${resolving?'Resolve highest initiative first · missile impacts last':'Declare attacks · lowest initiative first'}</p>`:'');
   root.hidden=!['Opening','Manoeuvre','Attack'].includes(chosen);root.innerHTML='';mfd.classList.toggle('opening-active',['Opening','Manoeuvre','Attack'].includes(chosen));
   if(chosen===null)return;
   const screen=mfd.querySelector('.mfd-screen');if(!screen)return;screen.classList.add('opening-screen');mfd.querySelectorAll('[data-mfd]').forEach(b=>b.setAttribute('aria-pressed','false'));
   if(chosen==='Manoeuvre'&&current==='Opening'){root.hidden=true;screen.innerHTML='<h2>Manoeuvre · phase overview</h2><p>Confirm Opening before plotting movement.</p>';return;}
   if(chosen==='Manoeuvre'){const view=renderManoeuvre({state,ship:ship(),locked:isLocked(),preview});root.innerHTML=view.actions;screen.innerHTML=view.content;screen.classList.add('manoeuvre-screen');return;}
+  if(chosen==='Attack'&&resolving){const key=String(state.round)+':'+String(state.workflow.resolutionId??'pending');if(key!==resolutionKey){resolutionKey=key;resolutionIndex=0;resolutionMode='current';}const view=renderResolution(state,resolutionIndex,resolutionMode,isAttackLocked());resolutionIndex=Math.min(resolutionIndex,Math.max(0,view.view.results.length-1));root.innerHTML=view.actions;screen.innerHTML=view.content;screen.classList.add('resolution-screen');return;}
   if(chosen==='Attack'&&current==='Attack'){
    const s=ship(),g=state.workflow.gunnery,next=g.order[g.declarations.length];
    const canEdit=!!s&&s.id===next&&!isAttackLocked();root.innerHTML=`<div class="attack-action-row"><button type="button" data-attack-edit ${!canEdit?'disabled':''}>Attack</button><button type="button" data-attack-defence ${!canEdit?'disabled':''}>Reserve Defence</button><button type="button" data-attack-hold ${!canEdit?'disabled':''}>Hold Fire</button><button type="button" data-attack-commit ${!canEdit?'disabled':''}>Commit · Next Ship</button></div>`;
@@ -64,14 +70,16 @@ export function createOpeningMfd({phaseBar,root,mfd,getState,getSelected,onSelec
  function capture(e){const key=e.target.dataset.openingField,s=ship();if(!key||!s)return;const d=draftFor(s);d[key]=e.target.type==='checkbox'?e.target.checked:e.target.value;d.dirty=true;}
  mfd.addEventListener('click',e=>{if(e.detail>1&&e.target.closest('button[type=submit]')?.closest('[data-opening-form]')){e.preventDefault();e.stopPropagation();root.querySelector(`[data-opening-page="${page==='initiative'?'initiative':'tactics'}"]`)?.focus({preventScroll:true});}},true);
  mfd.addEventListener('input',capture);mfd.addEventListener('change',e=>{capture(e);if(e.target.type==='checkbox'&&e.target.dataset.openingField){render();mfd.querySelector(`[data-opening-field="${e.target.dataset.openingField}"]`)?.focus({preventScroll:true});}});
- phaseBar.addEventListener('click',e=>{const p=e.target.closest('[data-mfd-phase]')?.dataset.mfdPhase;if(!p)return;chosen=p;error='';onRefresh();});
+ phaseBar.addEventListener('click',e=>{const p=e.target.closest('[data-mfd-phase]')?.dataset.mfdPhase;if(!p)return;onResolutionReplay(null);chosen=p;error='';onRefresh();});
  root.addEventListener('click',e=>{
+  const resolution=e.target.closest('[data-resolution]')?.dataset.resolution;if(resolution){if(e.detail>1){phaseBar.querySelector('[aria-current]')?.focus({preventScroll:true});return;}const view=resolutionView(getState());if(resolution==='current'||resolution==='log'){onResolutionReplay(null);resolutionMode=resolution;onRefresh();return;}if(resolution==='next'||resolution==='previous'){onResolutionReplay(null);resolutionIndex=Math.max(0,Math.min(view.results.length-1,resolutionIndex+(resolution==='next'?1:-1)));resolutionMode='current';onRefresh();return;}if(resolution==='replay'){const result=view.results[resolutionIndex],snapshot=resolutionIndex<(view.record?.results.length??0)?view.record?.snapshot:view.impact?.snapshot;onResolutionReplay(result,snapshot);return;}lastResolutionMutation=performance.now();onResolutionReplay(null);onResolutionAction(resolution);phaseBar.querySelector('[aria-current]')?.focus({preventScroll:true});return;}
   if(e.detail>1)return;const p=e.target.closest('[data-opening-page]')?.dataset.openingPage;if(p){page=p;error='';onRefresh();return;}
   if(!e.target.closest('[data-opening-next]')||isLocked()||getState().workflow||getState().acceleration)return;
   if(openingReady(getState())){page='confirm';error='';onRefresh();return;}
   const ships=getState().ships,index=ships.findIndex(s=>s.id===getSelected());if(ships.length){const next=Array.from({length:ships.length},(_,i)=>ships[(index+1+i)%ships.length]).find(s=>s.flight.initiative==null);if(next){error='';onSelect(next.id);}}
  });
  mfd.addEventListener('click',e=>{
+  const resultIndex=e.target.closest('[data-resolution-index]')?.dataset.resolutionIndex;if(resultIndex!=null){onResolutionReplay(null);resolutionIndex=Number(resultIndex);resolutionMode='current';onRefresh();return;}const resolution=e.target.closest('[data-resolution]')?.dataset.resolution;if(resolution==='previous'||resolution==='replay'){const view=resolutionView(getState());if(resolution==='previous'){onResolutionReplay(null);resolutionIndex=Math.max(0,resolutionIndex-1);onRefresh();}else{const result=view.results[resolutionIndex],snapshot=resolutionIndex<(view.record?.results.length??0)?view.record?.snapshot:view.impact?.snapshot;onResolutionReplay(result,snapshot);}return;}
   if(e.target.closest('[data-opening-refresh]')){if(ship())drafts.delete(ship().id);error='';onRefresh();}
   if(e.target.closest('[data-opening-discard]')){drafts.clear();error='';onRefresh();}
   if(e.target.closest('[data-opening-confirm]')){if(busy||isLocked()||getState().workflow||getState().acceleration||!openingReady(getState())||[...drafts.values()].some(d=>d.dirty))return;busy=true;try{if(dispatch({type:'start-battle',expectedRevision:getState().revision},'Initiative confirmed; Opening records retained.')){chosen='Manoeuvre';drafts.clear();const first=getState().acceleration?.order[0];if(first)onSelect(first);}}finally{busy=false;onRefresh();}}
