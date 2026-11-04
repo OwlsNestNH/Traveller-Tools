@@ -45,6 +45,24 @@ const fs=require('node:fs');
  assert.equal(await page.getByRole('link',{name:'Release #216',exact:true}).getAttribute('href'),'https://github.com/OwlsNestNH/Traveller-Tools/pull/216');
  for(const a of await page.locator('nav a').all()) {const response=await page.request.get(new URL(await a.getAttribute('href'),page.url()).href);assert.equal(response.status(),200);}
  await page.getByRole('link',{name:'Open Traveller Tool Locker'}).click();assert.ok(page.url().endsWith('/tools/traveller_tools_buttons/'));
- await page.goto(root+'/');await page.getByRole('link',{name:'Tool Locker Changelog'}).click();assert.ok(page.url().endsWith('/changes/locker.html'));
- assert.deepEqual(errors,[]);await browser.close();console.log('PASS Discussions link visibility, keyboard focus and new-tab navigation; 44 links, Derelict Maps URL, safe new-tab attributes, search and export, six unique additions, description search, categories, complete export, responsive layout and changelog navigation');
+ await page.goto(root+'/');
+ const homeDiscussions=page.getByRole('link',{name:'GitHub Discussions — Questions & Feedback',exact:true});
+ assert.equal(await homeDiscussions.count(),1);
+ assert.equal(await homeDiscussions.getAttribute('href'),destination);
+ assert.equal(await homeDiscussions.getAttribute('target'),'_blank');
+ assert.equal(await homeDiscussions.getAttribute('rel'),'noopener noreferrer');
+ for(const width of [1440,390,320]){
+  await page.setViewportSize({width,height:640});await page.evaluate(()=>scrollTo(0,0));
+  assert.ok(await homeDiscussions.isVisible());
+  const box=await homeDiscussions.boundingBox();
+  assert.ok(box&&box.x>=0&&box.y>=0&&box.x+box.width<=width&&box.y+box.height<=640,'homepage Discussions above fold at '+width);
+  assert.ok(box.height>=44,'homepage Discussions touch target at '+width);
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'homepage overflow at '+width);
+ }
+ await page.reload();await page.keyboard.press('Tab');
+ assert.ok(await homeDiscussions.evaluate(el=>el===document.activeElement),'Discussions is first keyboard destination');
+ const homePopupEvent=page.waitForEvent('popup');await page.keyboard.press('Enter');
+ const homePopup=await homePopupEvent;await homePopup.waitForLoadState();assert.equal(homePopup.url(),destination);await homePopup.close();
+ await page.getByRole('link',{name:'Tool Locker Changelog'}).click();assert.ok(page.url().endsWith('/changes/locker.html'));
+ assert.deepEqual(errors,[]);await browser.close();console.log('PASS homepage Discussions above fold at desktop/mobile, touch target and keyboard navigation; Tool Locker Discussions link visibility, keyboard focus and new-tab navigation; 44 links, Derelict Maps URL, safe new-tab attributes, search and export, six unique additions, description search, categories, complete export, responsive layout and changelog navigation');
 })().catch(e=>{console.error(e);process.exit(1)});
