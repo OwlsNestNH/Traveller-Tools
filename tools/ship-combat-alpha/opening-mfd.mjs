@@ -7,7 +7,7 @@ const PHASES=['Opening','Manoeuvre','Attack','Crew Actions','End of Round'];
 const phaseOf=state=>state.workflow?.phase==='attacks'?'Attack':state.workflow?.phase==='crew'?'Crew Actions':state.workflow||state.acceleration?'Manoeuvre':'Opening';
 const number=(value,label,min,max)=>{if(value===''||!Number.isSafeInteger(Number(value))||Number(value)<min||Number(value)>max)throw Error(label+' requires a whole number from '+min+' to '+max+'.');return Number(value);};
 // UI drafts never contain unsaved dice: each explicit roll is committed once.
-export function createOpeningMfd({phaseBar,root,mfd,getState,getSelected,onSelect,dispatch,isLocked,onRefresh,preview}){
+export function createOpeningMfd({phaseBar,root,mfd,getState,getSelected,onSelect,dispatch,isLocked,isAttackLocked=isLocked,onRefresh,preview}){
  const drafts=new Map();let chosen='Opening',page='tactics',lastShip=null,lastPhase=null,lastRevision=-1,error='',busy=false,pendingFocus=null;
  const ship=()=>getState().ships.find(s=>s.id===getSelected());
  function draftFor(s){if(!drafts.has(s.id)){const p=initiativeProfile(s),t=openingTactics(s),r=s.flight.initiativeRecord;drafts.set(s.id,{revision:getState().revision,dirty:false,tacticsFiat:t?.kind==='fiat'||t?.gmEffect!=null,initiativeFiat:s.flight.initiative!=null&&(!r||s.flight.initiative!==r.result.total),modifier:t?.modifier??p.tactics??'',effect:t&&t.kind!=='legacy'?effectiveTactics(t):'',pilot:r?.result.pilot??p.pilot??'',total:s.flight.initiative??'',tie:s.flight.tie});}return drafts.get(s.id);}
@@ -25,14 +25,19 @@ export function createOpeningMfd({phaseBar,root,mfd,getState,getSelected,onSelec
  function render(){
   if(!pendingFocus)captureFocus();const {focused,focusKey}=pendingFocus;pendingFocus=null;
   try{
-  const state=getState(),current=phaseOf(state);for(const id of drafts.keys())if(!state.ships.some(s=>s.id===id))drafts.delete(id);if(lastPhase===null)chosen=['Opening','Manoeuvre'].includes(current)?current:null;if(state.revision<lastRevision)drafts.clear();lastRevision=state.revision;
-  if(lastPhase!==null&&lastPhase!==current){chosen=current==='Opening'||current==='Manoeuvre'?current:null;page='tactics';error='';}lastPhase=current;
-  phaseBar.innerHTML=PHASES.map(p=>`<button type="button" data-mfd-phase="${p}" aria-pressed="${chosen===p}" ${p===current?'aria-current="step"':''}>${p}</button>`).join('')+(current==='Opening'?'<p class="opening-instruction">Complete Tactics and Initiative for each ship</p>':current==='Manoeuvre'?'<p class="opening-instruction">Plot movement for each ship</p>':'');
-  root.hidden=!['Opening','Manoeuvre'].includes(chosen);root.innerHTML='';mfd.classList.toggle('opening-active',['Opening','Manoeuvre'].includes(chosen));
+  const state=getState(),current=phaseOf(state);for(const id of drafts.keys())if(!state.ships.some(s=>s.id===id))drafts.delete(id);if(lastPhase===null)chosen=['Opening','Manoeuvre','Attack'].includes(current)?current:null;if(state.revision<lastRevision)drafts.clear();lastRevision=state.revision;
+  if(lastPhase!==null&&lastPhase!==current){chosen=['Opening','Manoeuvre','Attack'].includes(current)?current:null;page='tactics';error='';}lastPhase=current;
+  phaseBar.innerHTML=PHASES.map(p=>`<button type="button" data-mfd-phase="${p}" aria-pressed="${chosen===p}" ${p===current?'aria-current="step"':''}>${p}</button>`).join('')+(current==='Opening'?'<p class="opening-instruction">Complete Tactics and Initiative for each ship</p>':current==='Manoeuvre'?'<p class="opening-instruction">Plot movement for each ship</p>':current==='Attack'?'<p class="opening-instruction">Declare attacks · lowest initiative first</p>':'');
+  root.hidden=!['Opening','Manoeuvre','Attack'].includes(chosen);root.innerHTML='';mfd.classList.toggle('opening-active',['Opening','Manoeuvre','Attack'].includes(chosen));
   if(chosen===null)return;
   const screen=mfd.querySelector('.mfd-screen');if(!screen)return;screen.classList.add('opening-screen');mfd.querySelectorAll('[data-mfd]').forEach(b=>b.setAttribute('aria-pressed','false'));
   if(chosen==='Manoeuvre'&&current==='Opening'){root.hidden=true;screen.innerHTML='<h2>Manoeuvre · phase overview</h2><p>Confirm Opening before plotting movement.</p>';return;}
   if(chosen==='Manoeuvre'){const view=renderManoeuvre({state,ship:ship(),locked:isLocked(),preview});root.innerHTML=view.actions;screen.innerHTML=view.content;screen.classList.add('manoeuvre-screen');return;}
+  if(chosen==='Attack'&&current==='Attack'){
+   const s=ship(),g=state.workflow.gunnery,next=g.order[g.declarations.length];
+   const canEdit=!!s&&s.id===next&&!isAttackLocked();root.innerHTML=`<div class="attack-action-row"><button type="button" data-attack-edit ${!canEdit?'disabled':''}>Attack</button><button type="button" data-attack-defence ${!canEdit?'disabled':''}>Reserve Defence</button><button type="button" data-attack-hold ${!canEdit?'disabled':''}>Hold Fire</button><button type="button" data-attack-commit ${!canEdit?'disabled':''}>Commit · Next Ship</button></div>`;
+   screen.classList.add('attack-screen');screen.innerHTML=`<h2>Attack Declaration — ${esc(s?.name??'No ship selected')}</h2><div data-attack-gunnery></div><p class="attack-note">Declarations record intent only. Rolls, ammunition and damage are handled during resolution.</p>`;return;
+  }
   if(chosen!=='Opening'){screen.innerHTML=`<h2>${esc(chosen)} · phase overview</h2><p>Read only · current phase: ${esc(current)}.</p><p>Use the existing command bar and crew-station controls for ${esc(chosen)}. Selecting this phase does not advance combat.</p>`;return;}
   const s=ship(),ready=openingReady(state),locked=isLocked()||!!state.workflow||!!state.acceleration;
   if(s?.id!==lastShip){lastShip=s?.id??null;page=!s||!openingTactics(s)?'tactics':s.flight.initiative==null?'initiative':'tactics';}
@@ -90,5 +95,5 @@ export function createOpeningMfd({phaseBar,root,mfd,getState,getSelected,onSelec
   }catch(err){error=err.message;}finally{busy=false;onRefresh();}
  });
  for(const owner of [root,mfd,phaseBar])owner.addEventListener('keydown',e=>{if(e.repeat&&['Enter',' '].includes(e.key))e.preventDefault();});
- return {render,captureFocus,showMovement:()=>{const current=phaseOf(getState());return current==='Manoeuvre'&&(chosen==='Manoeuvre'||chosen===null);},legacy(){chosen=null;error='';},clear(){drafts.clear();chosen='Opening';page='tactics';lastShip=null;lastPhase=null;lastRevision=-1;error='';}};
+ return {render,captureFocus,showAttack:()=>chosen==='Attack'&&phaseOf(getState())==='Attack',showMovement:()=>{const current=phaseOf(getState());return current==='Manoeuvre'&&(chosen==='Manoeuvre'||chosen===null);},legacy(){chosen=null;error='';},clear(){drafts.clear();chosen='Opening';page='tactics';lastShip=null;lastPhase=null;lastRevision=-1;error='';}};
 }
