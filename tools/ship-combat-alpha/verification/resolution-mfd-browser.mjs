@@ -14,8 +14,8 @@ const source=await readFile(new URL('../app.mjs',import.meta.url),'utf8'),browse
 try{for(const width of [1815,1440,1100,701,390,320]){
  const context=await browser.newContext({viewport:{width,height:width===1815?866:700}}),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.addInitScript(()=>{window.__resolutionDice=0;Math.random=()=>{window.__resolutionDice++;return .34;};});
- const separated=directFireFixture({high:[['mixed:1','Pulse laser','low']],third:[['second:1','Beam laser','low']]});separated.ships.find(s=>s.id==='high').motion.position={q:3,r:-3};separated.ships.find(s=>s.id==='third').motion.position={q:7,r:4};
- await page.route('**/app.mjs',r=>r.fulfill({contentType:'text/javascript',body:source+`\nstate=${JSON.stringify(separated)};selected='low';camera=fitShipsCamera(state.ships);render();window.__resolutionState=()=>structuredClone(state);`}));
+ let separated=directFireFixture({high:[['mixed:1','Pulse laser','low']],third:[['second:1','Beam laser','low']]});separated.ships.find(s=>s.id==='high').motion.position={q:3,r:-3};separated.ships.find(s=>s.id==='third').motion.position={q:7,r:4};
+ await page.route('**/app.mjs',r=>r.fulfill({contentType:'text/javascript',body:source+`\nimport {normalizeState as restoreResolution} from './engine.mjs';state=restoreResolution(${JSON.stringify(separated)});selected='low';camera=fitShipsCamera(state.ships);render();window.__resolutionState=()=>structuredClone(state);`}));
  try{
   await page.goto(new URL('tools/ship-combat-alpha/',root).href);const state=()=>page.evaluate(()=>window.__resolutionState()),initial=await state();
   await page.locator('[data-resolution=resolve]').waitFor();if([1815,1440,1100,390,320].includes(width))await page.screenshot({path:new URL(`pending-${width}.png`,out).pathname});
@@ -27,7 +27,8 @@ try{for(const width of [1815,1440,1100,701,390,320]){
   await page.locator('[data-resolution=replay]').click();assert.equal(await page.locator('#resolution-replay').count(),1);if(width===1815){await page.waitForTimeout(500);await page.screenshot({path:new URL('replay-1815.png',out).pathname});}
   await page.locator('[data-resolution=next]').click();assert.equal(await page.locator('#resolution-replay').count(),0);assert.match(await page.locator('.resolution-screen').innerText(),/Saved attack 2 of 2/);
   await page.locator('[data-resolution=log]').click();if([1815,390,320].includes(width))await page.screenshot({path:new URL(`log-${width}.png`,out).pathname,fullPage:width<700});await page.locator('[data-resolution-index="0"]').click();assert.match(await page.locator('.resolution-screen').innerText(),/Saved attack 1 of 2/);
-  assert.deepEqual(await state(),saved);assert.equal(await page.evaluate(()=>window.__resolutionDice),dice);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.deepEqual(errors,[]);console.log('PASS Resolution MFD '+width);
+  assert.deepEqual(await state(),saved);assert.equal(await page.evaluate(()=>window.__resolutionDice),dice);assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+  separated=JSON.parse(JSON.stringify(saved));await page.reload();assert.deepEqual(await state(),saved,'serialized results survive a real reload');assert.equal(await page.evaluate(()=>window.__resolutionDice),0,'reload does not roll again');assert.match(await page.locator('.resolution-screen').innerText(),/Saved attack 1 of 2/);assert.deepEqual(errors,[]);console.log('PASS Resolution MFD '+width);
  }finally{await context.close();}
  }
  const separate=s=>{s.ships.find(ship=>ship.id==='high').motion.position={q:3,r:-3};s.ships.find(ship=>ship.id==='third').motion.position={q:7,r:4};return s;};
