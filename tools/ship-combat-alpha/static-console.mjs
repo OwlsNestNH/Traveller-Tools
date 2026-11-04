@@ -48,6 +48,7 @@ export function mountStaticConsole({getState,getSelected,onStation,onCrew,onDeta
   opening.captureFocus();
   mfd.innerHTML='<div class="mfd-switches">'+['plot','thrust','crew','details'].map(x=>`<button type="button" data-mfd="${x}" aria-pressed="${mode===x}">${x[0].toUpperCase()+x.slice(1)}</button>`).join('')+'</div><div class="mfd-screen"><h2>'+esc(view.phase==='Manoeuvre'?'Pilot · '+mode:view.phase+' · selected ship')+'</h2><h3>'+esc(ship?.name??'No ship selected')+'</h3>'+(ship?(mode==='thrust'?`<p>Available thrust: ${availableThrust(ship)}</p><p>Evasion reserved: ${ship.flight.evasion}</p><p>Help gunners reserved: ${ship.flight.gunners}</p><button type="button" data-console-reserve="evasion">Edit reservations</button>`:phaseBody):'<p>Add a ship to begin.</p>')+'</div>';
   opening.render();
+  if(mfd.querySelector('.resolution-screen')){const popup=$('workflow-more');for(const action of ['resolve','impacts','next']){const button=$('battle-workflow').querySelector(`[data-workflow="${action}"]`);if(button&&popup&&!popup.contains(button))popup.append(button);}}
   const attackSlot=mfd.querySelector('[data-attack-gunnery]');if(attackSlot&&!stationDialog.open)onAttackMount(attackSlot);
  }
  function click(e){const b=e.target.closest('button');if(!b||b.disabled)return;if(e.detail>1){if(b.dataset.consoleMove)bar.focus({preventScroll:true});return;}
