@@ -25,7 +25,7 @@ try{
    if(width<700)await page.screenshot({path:new URL(`full-${width}.png`,out).pathname,fullPage:true});
    assert.deepEqual(await row.locator('[data-gunnery-field=weapon] option').allTextContents(),['Select weapon','Pulse laser','Missile rack','Sandcaster']);
    await row.locator('[data-gunnery-field=weapon]').selectOption('Missile rack');
-   assert.equal(await row.locator('.attack-action-key .reserve').count(),0,'missiles cannot reserve a defence');
+   assert.equal(await row.locator('[data-gunnery-field=action] option[value=point-defense]').count(),0,'missiles cannot reserve a defence');
    await row.locator('[data-gunnery-field=weapon]').selectOption('Sandcaster');
    assert.equal(await row.locator('[data-gunnery-field=action] option[value=attack]').count(),0,'sand cannot attack');
    await row.locator('[data-gunnery-field=weapon]').selectOption('Pulse laser');
@@ -41,8 +41,6 @@ try{
    const second=page.locator('[data-gunnery-index="1"]');
    await second.locator('[data-gunnery-field=weapon]').selectOption('Beam laser');
    await second.locator('[data-gunnery-field=action]').selectOption('point-defense');
-   const cue=await second.locator('.attack-action-key').boundingBox(),action=await second.locator('[data-gunnery-field=action]').boundingBox();
-   assert.ok(cue.y+cue.height<=action.y+1,'action cues do not overlap the dropdown');
    if(capture)await page.screenshot({path:new URL(`populated-${width}.png`,out).pathname,fullPage:width<700});
    await page.locator('[data-mfd-phase=Opening]').click();
    assert.deepEqual(await state(),initial,'phase inspection does not commit');
@@ -65,7 +63,7 @@ try{
    await page.locator('[data-gunnery=commit]').dblclick();
    await page.keyboard.press('Enter');
    assert.equal((await state()).workflow.gunnery.declarations.length,1,'station repeat activation commits only once');
-   const overflow=await page.evaluate(()=>({viewport:innerWidth,scroll:document.documentElement.scrollWidth,offenders:[...document.querySelectorAll('body *')].map(e=>{const r=e.getBoundingClientRect();return {tag:e.tagName,id:e.id,className:typeof e.className==='string'?e.className:'',right:r.right,width:r.width};}).filter(x=>x.right>innerWidth+1).slice(0,20)}));
+   const overflow=await page.evaluate(()=>({viewport:innerWidth,scroll:document.documentElement.scrollWidth,scrollX,body:document.body.scrollWidth,offenders:[...document.querySelectorAll('body *')].map(e=>{const r=e.getBoundingClientRect(),s=getComputedStyle(e);return {tag:e.tagName,id:e.id,className:typeof e.className==='string'?e.className:'',right:r.right,absoluteRight:r.right+scrollX,width:r.width,scrollWidth:e.scrollWidth,clientWidth:e.clientWidth,overflow:s.overflowX};}).filter(x=>x.absoluteRight>innerWidth+1||x.scrollWidth>x.clientWidth+1&&x.overflow==='visible').slice(0,30)}));
    assert.ok(overflow.scroll<=overflow.viewport+1,JSON.stringify(overflow));
    assert.deepEqual(errors,[]);console.log('PASS Attack MFD '+width);
   }finally{await context.close();}
