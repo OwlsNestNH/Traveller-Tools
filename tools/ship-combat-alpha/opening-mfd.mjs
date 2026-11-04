@@ -2,11 +2,12 @@ import {initiativeProfile,initiativeInputsChanged} from './initiative.mjs';
 import {openingTactics,effectiveTactics,openingInitiativeEntry,openingReady} from './opening.mjs';
 import {rollPilotDice} from './pilot-check.mjs';
 import {escapeHTML as esc} from './ui-format.mjs';
+import {renderManoeuvre} from './manoeuvre-mfd.mjs';
 const PHASES=['Opening','Manoeuvre','Attack','Crew Actions','End of Round'];
 const phaseOf=state=>state.workflow?.phase==='attacks'?'Attack':state.workflow?.phase==='crew'?'Crew Actions':state.workflow||state.acceleration?'Manoeuvre':'Opening';
 const number=(value,label,min,max)=>{if(value===''||!Number.isSafeInteger(Number(value))||Number(value)<min||Number(value)>max)throw Error(label+' requires a whole number from '+min+' to '+max+'.');return Number(value);};
 // UI drafts never contain unsaved dice: each explicit roll is committed once.
-export function createOpeningMfd({phaseBar,root,mfd,getState,getSelected,onSelect,dispatch,isLocked,onRefresh}){
+export function createOpeningMfd({phaseBar,root,mfd,getState,getSelected,onSelect,dispatch,isLocked,onRefresh,preview}){
  const drafts=new Map();let chosen='Opening',page='tactics',lastShip=null,lastPhase=null,lastRevision=-1,error='',busy=false,pendingFocus=null;
  const ship=()=>getState().ships.find(s=>s.id===getSelected());
  function draftFor(s){if(!drafts.has(s.id)){const p=initiativeProfile(s),t=openingTactics(s),r=s.flight.initiativeRecord;drafts.set(s.id,{revision:getState().revision,dirty:false,tacticsFiat:t?.kind==='fiat'||t?.gmEffect!=null,initiativeFiat:s.flight.initiative!=null&&(!r||s.flight.initiative!==r.result.total),modifier:t?.modifier??p.tactics??'',effect:t&&t.kind!=='legacy'?effectiveTactics(t):'',pilot:r?.result.pilot??p.pilot??'',total:s.flight.initiative??'',tie:s.flight.tie});}return drafts.get(s.id);}
@@ -15,19 +16,20 @@ export function createOpeningMfd({phaseBar,root,mfd,getState,getSelected,onSelec
  function captureFocus(){
   const focused=document.activeElement;let focusKey=null;
   if(phaseBar.contains(focused)&&focused?.dataset.mfdPhase)focusKey=`[data-mfd-phase="${focused.dataset.mfdPhase}"]`;
-  else if(root.contains(focused))focusKey=focused?.dataset.openingPage?`[data-opening-page="${focused.dataset.openingPage}"]`:'[data-opening-next]';
+  else if(root.contains(focused))focusKey=focused?.dataset.manoeuvre?`[data-manoeuvre="${focused.dataset.manoeuvre}"]`:focused?.dataset.openingPage?`[data-opening-page="${focused.dataset.openingPage}"]`:'[data-opening-next]';
   else if(mfd.contains(focused)&&focused?.closest('[data-opening-form], [data-opening-confirm], [data-opening-refresh], [data-opening-discard]'))focusKey=focused.dataset.openingField?`[data-opening-field="${focused.dataset.openingField}"]`:`[data-opening-page="${page==='initiative'?'initiative':'tactics'}"]`;
   pendingFocus={focused,focusKey};
  }
  function render(){
   if(!pendingFocus)captureFocus();const {focused,focusKey}=pendingFocus;pendingFocus=null;
   try{
-  const state=getState(),current=phaseOf(state);for(const id of drafts.keys())if(!state.ships.some(s=>s.id===id))drafts.delete(id);if(lastPhase===null)chosen=current==='Opening'?'Opening':null;if(state.revision<lastRevision)drafts.clear();lastRevision=state.revision;
-  if(lastPhase!==null&&lastPhase!==current){chosen=current==='Opening'?'Opening':null;page='tactics';error='';}lastPhase=current;
-  phaseBar.innerHTML=PHASES.map(p=>`<button type="button" data-mfd-phase="${p}" aria-pressed="${chosen===p}" ${p===current?'aria-current="step"':''}>${p}</button>`).join('')+(current==='Opening'?'<p class="opening-instruction">Complete Tactics and Initiative for each ship</p>':'');
-  root.hidden=chosen!=='Opening';root.innerHTML='';mfd.classList.toggle('opening-active',chosen==='Opening');
+  const state=getState(),current=phaseOf(state);for(const id of drafts.keys())if(!state.ships.some(s=>s.id===id))drafts.delete(id);if(lastPhase===null)chosen=['Opening','Manoeuvre'].includes(current)?current:null;if(state.revision<lastRevision)drafts.clear();lastRevision=state.revision;
+  if(lastPhase!==null&&lastPhase!==current){chosen=current==='Opening'||current==='Manoeuvre'?current:null;page='tactics';error='';}lastPhase=current;
+  phaseBar.innerHTML=PHASES.map(p=>`<button type="button" data-mfd-phase="${p}" aria-pressed="${chosen===p}" ${p===current?'aria-current="step"':''}>${p}</button>`).join('')+(current==='Opening'?'<p class="opening-instruction">Complete Tactics and Initiative for each ship</p>':current==='Manoeuvre'?'<p class="opening-instruction">Plot movement for each ship</p>':'');
+  root.hidden=!['Opening','Manoeuvre'].includes(chosen);root.innerHTML='';mfd.classList.toggle('opening-active',['Opening','Manoeuvre'].includes(chosen));
   if(chosen===null)return;
   const screen=mfd.querySelector('.mfd-screen');if(!screen)return;screen.classList.add('opening-screen');mfd.querySelectorAll('[data-mfd]').forEach(b=>b.setAttribute('aria-pressed','false'));
+  if(chosen==='Manoeuvre'){const view=renderManoeuvre({state,ship:ship(),locked:isLocked(),preview});root.innerHTML=view.actions;screen.innerHTML=view.content;screen.classList.add('manoeuvre-screen');return;}
   if(chosen!=='Opening'){screen.innerHTML=`<h2>${esc(chosen)} · phase overview</h2><p>Read only · current phase: ${esc(current)}.</p><p>Use the existing command bar and crew-station controls for ${esc(chosen)}. Selecting this phase does not advance combat.</p>`;return;}
   const s=ship(),ready=openingReady(state),locked=isLocked()||!!state.workflow||!!state.acceleration;
   if(s?.id!==lastShip){lastShip=s?.id??null;page=!s||!openingTactics(s)?'tactics':s.flight.initiative==null?'initiative':'tactics';}
@@ -63,7 +65,7 @@ export function createOpeningMfd({phaseBar,root,mfd,getState,getSelected,onSelec
  mfd.addEventListener('click',e=>{
   if(e.target.closest('[data-opening-refresh]')){if(ship())drafts.delete(ship().id);error='';onRefresh();}
   if(e.target.closest('[data-opening-discard]')){drafts.clear();error='';onRefresh();}
-  if(e.target.closest('[data-opening-confirm]')){if(busy||isLocked()||getState().workflow||getState().acceleration||!openingReady(getState())||[...drafts.values()].some(d=>d.dirty))return;busy=true;try{if(dispatch({type:'start-battle',expectedRevision:getState().revision},'Initiative confirmed; Opening records retained.')){chosen=null;drafts.clear();}}finally{busy=false;onRefresh();}}
+  if(e.target.closest('[data-opening-confirm]')){if(busy||isLocked()||getState().workflow||getState().acceleration||!openingReady(getState())||[...drafts.values()].some(d=>d.dirty))return;busy=true;try{if(dispatch({type:'start-battle',expectedRevision:getState().revision},'Initiative confirmed; Opening records retained.')){chosen='Manoeuvre';drafts.clear();const first=getState().acceleration?.order[0];if(first)onSelect(first);}}finally{busy=false;onRefresh();}}
  });
  mfd.addEventListener('submit',e=>{
   const form=e.target;if(!form.dataset.openingForm)return;e.preventDefault();if(busy||isLocked())return;
