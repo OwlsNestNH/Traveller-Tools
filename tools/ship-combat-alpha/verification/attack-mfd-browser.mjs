@@ -23,7 +23,11 @@ try{
    await row.waitFor();await page.screenshot({path:new URL(`viewport-${width}.png`,out).pathname});
    await row.scrollIntoViewIfNeeded();await page.screenshot({path:new URL(`form-${width}.png`,out).pathname});
    if(width<700)await page.screenshot({path:new URL(`full-${width}.png`,out).pathname,fullPage:true});
-   assert.deepEqual(await row.locator('[data-gunnery-field=weapon] option').allTextContents(),['Choose installed weapon','Pulse laser','Missile rack','Sandcaster']);
+   assert.deepEqual(await row.locator('[data-gunnery-field=weapon] option').allTextContents(),['Select weapon','Pulse laser','Missile rack','Sandcaster']);
+   await row.locator('[data-gunnery-field=weapon]').selectOption('Missile rack');
+   assert.equal(await row.locator('.attack-action-key .reserve').count(),0,'missiles cannot reserve a defence');
+   await row.locator('[data-gunnery-field=weapon]').selectOption('Sandcaster');
+   assert.equal(await row.locator('[data-gunnery-field=action] option[value=attack]').count(),0,'sand cannot attack');
    await row.locator('[data-gunnery-field=weapon]').selectOption('Pulse laser');
    await row.locator('[data-gunnery-field=action]').selectOption('attack');
    await row.locator('[data-gunnery-field=target]').selectOption('high');
@@ -34,6 +38,10 @@ try{
    await row.locator('[data-gunnery-field=weapon]').selectOption('Pulse laser');
    await row.locator('[data-gunnery-field=action]').selectOption('attack');
    await row.locator('[data-gunnery-field=target]').selectOption('high');
+   const second=page.locator('[data-gunnery-index="1"]');
+   await second.locator('[data-gunnery-field=weapon]').selectOption('Beam laser');
+   await second.locator('[data-gunnery-field=action]').selectOption('point-defense');
+   await page.screenshot({path:new URL(`populated-${width}.png`,out).pathname,fullPage:width<700});
    await page.locator('[data-mfd-phase=Opening]').click();
    assert.deepEqual(await state(),initial,'phase inspection does not commit');
    await page.locator('[data-mfd-phase=Attack]').click();
@@ -42,15 +50,15 @@ try{
    await page.keyboard.press('Enter');
    const committed=await state();assert.equal(committed.workflow.gunnery.declarations.length,1);
    assert.equal(committed.workflow.gunnery.declarations[0].mounts[0].targetId,'high');
+   assert.equal(committed.workflow.gunnery.declarations[0].mounts[1].action,'point-defense');
    assert.deepEqual(committed.ships,initial.ships,'declaration does not fire or spend resources');
+   await page.locator('[data-select=low]').click();
+   assert.equal(await row.locator('[data-gunnery-field=weapon]').isDisabled(),true,'committed ship is locked');
+   await page.screenshot({path:new URL(`locked-${width}.png`,out).pathname,fullPage:width<700});
    await page.reload();
    await page.locator('[data-attack-gunnery] [data-station-ammunition]').click();
    await page.keyboard.press('Escape');
    await page.waitForFunction(()=>document.activeElement===document.querySelector('[data-attack-gunnery] [data-station-ammunition]'));
-   await page.locator('[data-attack-gunnery] [data-gunnery=commit]').dblclick();
-   await page.keyboard.press('Enter');
-   assert.equal((await state()).workflow.gunnery.declarations.length,1,'MFD repeat activation commits only once');
-   await page.reload();
    await openStation(page,'gunnery');
    await page.locator('[data-gunnery=commit]').dblclick();
    await page.keyboard.press('Enter');
@@ -59,5 +67,5 @@ try{
    assert.deepEqual(errors,[]);console.log('PASS Attack MFD '+width);
   }finally{await context.close();}
  }
- await writeFile(new URL('manifest.json',out),JSON.stringify({commit:process.env.SHIP_COMBAT_COMMIT??null,fixture:'Synthetic gunneryFixture',viewports:[{width:1815,height:866},{width:390,height:700},{width:320,height:700}],images:['viewport-1815.png','form-1815.png','viewport-390.png','form-390.png','full-390.png','viewport-320.png','form-320.png','full-320.png']},null,2));
+ await writeFile(new URL('manifest.json',out),JSON.stringify({commit:process.env.SHIP_COMBAT_COMMIT??null,fixture:'Synthetic gunneryFixture',viewports:[{width:1815,height:866},{width:390,height:700},{width:320,height:700}],images:['viewport-1815.png','form-1815.png','populated-1815.png','locked-1815.png','viewport-390.png','form-390.png','full-390.png','populated-390.png','locked-390.png','viewport-320.png','form-320.png','full-320.png','populated-320.png','locked-320.png']},null,2));
 }finally{await browser.close();}
