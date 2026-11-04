@@ -34,9 +34,9 @@ export function createOpeningMfd({phaseBar,root,mfd,getState,getSelected,onSelec
   if(chosen==='Manoeuvre'&&current==='Opening'){root.hidden=true;screen.innerHTML='<h2>Manoeuvre · phase overview</h2><p>Confirm Opening before plotting movement.</p>';return;}
   if(chosen==='Manoeuvre'){const view=renderManoeuvre({state,ship:ship(),locked:isLocked(),preview});root.innerHTML=view.actions;screen.innerHTML=view.content;screen.classList.add('manoeuvre-screen');return;}
   if(chosen==='Attack'&&current==='Attack'){
-   const s=ship(),g=state.workflow.gunnery,next=g.order[g.declarations.length],due=state.ships.find(x=>x.id===next),done=g.declarations.some(d=>d.shipId===s?.id);
+   const s=ship(),g=state.workflow.gunnery,next=g.order[g.declarations.length];
    const canEdit=!!s&&s.id===next&&!isAttackLocked();root.innerHTML=`<div class="attack-action-row"><button type="button" data-attack-edit ${!canEdit?'disabled':''}>Attack</button><button type="button" data-attack-defence ${!canEdit?'disabled':''}>Reserve Defence</button><button type="button" data-attack-hold ${!canEdit?'disabled':''}>Hold Fire</button><button type="button" data-attack-commit ${!canEdit?'disabled':''}>Commit · Next Ship</button></div>`;
-   screen.classList.add('attack-screen');screen.innerHTML=`<h2>Attack — ${esc(s?.name??'No ship selected')}</h2><p>${done?'Declarations committed and locked.':next?`Lowest initiative first · ${esc(due?.name??'Unknown')} declares next.`:'All eligible ships have declared.'}</p><div data-attack-gunnery></div><p class="attack-note">Declarations record intent only. Rolls, ammunition and damage are handled during resolution.</p>`;return;
+   screen.classList.add('attack-screen');screen.innerHTML=`<h2>Attack — ${esc(s?.name??'No ship selected')}</h2><div data-attack-gunnery></div><p class="attack-note">Declarations record intent only. Rolls, ammunition and damage are handled during resolution.</p>`;return;
   }
   if(chosen!=='Opening'){screen.innerHTML=`<h2>${esc(chosen)} · phase overview</h2><p>Read only · current phase: ${esc(current)}.</p><p>Use the existing command bar and crew-station controls for ${esc(chosen)}. Selecting this phase does not advance combat.</p>`;return;}
   const s=ship(),ready=openingReady(state),locked=isLocked()||!!state.workflow||!!state.acceleration;
