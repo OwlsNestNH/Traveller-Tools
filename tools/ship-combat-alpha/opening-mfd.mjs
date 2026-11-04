@@ -17,6 +17,7 @@ export function createOpeningMfd({phaseBar,root,mfd,getState,getSelected,onSelec
   const focused=document.activeElement;let focusKey=null;
   if(phaseBar.contains(focused)&&focused?.dataset.mfdPhase)focusKey=`[data-mfd-phase="${focused.dataset.mfdPhase}"]`;
   else if(root.contains(focused))focusKey=focused?.dataset.manoeuvre?`[data-manoeuvre="${focused.dataset.manoeuvre}"]`:focused?.dataset.openingPage?`[data-opening-page="${focused.dataset.openingPage}"]`:'[data-opening-next]';
+  else if(mfd.contains(focused)&&focused?.dataset.manoeuvre==='select')focusKey='[data-manoeuvre="commit"]';
   else if(mfd.contains(focused)&&focused?.closest('[data-opening-form], [data-opening-confirm], [data-opening-refresh], [data-opening-discard]'))focusKey=focused.dataset.openingField?`[data-opening-field="${focused.dataset.openingField}"]`:`[data-opening-page="${page==='initiative'?'initiative':'tactics'}"]`;
   pendingFocus={focused,focusKey};
  }
@@ -86,5 +87,5 @@ export function createOpeningMfd({phaseBar,root,mfd,getState,getSelected,onSelec
   }catch(err){error=err.message;}finally{busy=false;onRefresh();}
  });
  for(const owner of [root,mfd,phaseBar])owner.addEventListener('keydown',e=>{if(e.repeat&&['Enter',' '].includes(e.key))e.preventDefault();});
- return {render,captureFocus,showMovement:()=>{const current=phaseOf(getState());return current==='Manoeuvre'&&lastPhase!==null&&lastPhase!==current||chosen==='Manoeuvre'||chosen===null&&current==='Manoeuvre';},legacy(){chosen=null;error='';},clear(){drafts.clear();chosen='Opening';page='tactics';lastShip=null;lastPhase=null;lastRevision=-1;error='';}};
+ return {render,captureFocus,showMovement:()=>{const current=phaseOf(getState());return current==='Manoeuvre'&&(chosen==='Manoeuvre'||chosen===null);},legacy(){chosen=null;error='';},clear(){drafts.clear();chosen='Opening';page='tactics';lastShip=null;lastPhase=null;lastRevision=-1;error='';}};
 }
