@@ -4,7 +4,7 @@ export async function verifyMapStability(page,width,artifacts){
  const p=await page.context().newPage(),records=[];
  const source=await readFile(new URL('../app.mjs',import.meta.url),'utf8');await p.route('**/app.mjs',r=>r.fulfill({contentType:'text/javascript',body:source}));
  const paint=()=>p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
- const measure=()=>p.evaluate(()=>{const b=document.querySelector('#map').getBoundingClientRect();return{x:b.x,y:b.y,width:b.width,height:b.height,scrollY,transform:document.querySelector('#scene').getAttribute('transform'),zoom:document.querySelector('#zoom-level').textContent};});
+ const measure=()=>p.evaluate(()=>{const box=sel=>{const e=document.querySelector(sel),r=e.getBoundingClientRect(),c=getComputedStyle(e);return {top:r.top,bottom:r.bottom,height:r.height,font:c.font,display:c.display,border:c.borderWidth};},b=document.querySelector('#map').getBoundingClientRect();return{x:b.x,y:b.y,width:b.width,height:b.height,scrollY,transform:document.querySelector('#scene').getAttribute('transform'),zoom:document.querySelector('#zoom-level').textContent,layout:Object.fromEntries(['#encounter-header','#ship-rail','#ships','[data-select=merchant]','[data-select=scout]','#mfd-phase-bar','#command-bar','#movement-workspace','#opening-mfd-actions','#selected-workspace','#combat-right'].map(s=>[s,box(s)]))};});
  const click=s=>p.locator(s).first().evaluate(e=>e.dispatchEvent(new MouseEvent('click',{bubbles:true})));
  try{await p.goto(page.url());await p.locator('.ship-node').first().waitFor();if(width<=700)await p.locator('#mobile-command-drawer > summary').click();
   for(const expanded of [false,true]){
