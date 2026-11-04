@@ -20,7 +20,7 @@ export async function verifyWorkflow(page,width,artifacts){
   await click('start');assert.equal((await state()).workflow.phase,'thrust');assert.match(await p.locator('#workflow-strip').textContent(),/Acting: Armed Trader.*Next: Hunting Ship/);assert.equal(await p.locator('#advance').isDisabled(),true);
   assert.equal(await p.locator('[data-pilot-commit]').isVisible(),false);assert.equal(await p.locator('#begin-acceleration').isVisible(),false);
   await choose('gunnery');assert.match(await p.locator('#station-records').textContent(),/Resolve committed attacks through Battle workflow/);await choose('pilot');
-  if(await p.locator('[data-workflow=select]').count())await click('select');await closeStation(p);await p.locator('[data-workflow=plot]').evaluate(e=>{e.click();e.click();});
+  if(await p.locator('[data-workflow=select]').count())await click('select');await closeStation(p);await p.locator('[data-manoeuvre=commit]').dblclick();
   assert.match(await p.locator('#workflow-strip').textContent(),/Acting: Hunting Ship/);assert.equal(await p.locator('[data-select=courier]').getAttribute('aria-pressed'),'true');
   const once=await state();await p.keyboard.press('Enter');assert.deepEqual(await state(),once);assert.deepEqual(once.acceleration.declared,['merchant']);assert.deepEqual(once.ships.map(s=>s.motion),original.ships.map(s=>s.motion));
   await p.locator('#battle-workflow details').evaluate(e=>e.open=true);await click('reopen');assert.deepEqual((await state()).acceleration.declared,[]);
@@ -32,7 +32,7 @@ export async function verifyWorkflow(page,width,artifacts){
   assert.equal((await state()).workflow.phase,'movement');assert.deepEqual((await state()).ships.map(s=>s.motion.position),original.ships.map(s=>s.motion.position));
   await p.locator('#command-bar').screenshot({path:artifacts+'workflow-movement-'+width+'.png'});
   await p.evaluate(()=>window.__failWorkflow=true);const beforeMove=await state();await click('move');assert.deepEqual(await state(),beforeMove);await p.evaluate(()=>window.__failWorkflow=false);
-  await p.locator('[data-workflow=move]').evaluate(e=>{e.click();e.click();});assert.equal((await state()).round,1);assert.equal((await state()).workflow.phase,'attacks');
+  await p.locator('[data-manoeuvre=move]').dblclick();assert.equal((await state()).round,1);assert.equal((await state()).workflow.phase,'attacks');
   await click('gunnery');assert.equal(await p.locator('#station-pane').getAttribute('data-station'),'gunnery');
   await p.locator('#command-bar').screenshot({path:artifacts+'workflow-attacks-'+width+'.png'});
   while((await state()).workflow.gunnery.declarations.length<(await state()).workflow.gunnery.order.length){await click('gunnery');await p.locator('[data-gunnery=commit]').click();}
