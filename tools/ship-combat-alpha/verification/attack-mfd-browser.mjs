@@ -10,7 +10,7 @@ const out=new URL('../verification-artifacts/attack-mfd/',import.meta.url);await
 const source=await readFile(new URL('../app.mjs',import.meta.url),'utf8');
 const browser=await chromium.launch({headless:true,...(process.env.SHIP_COMBAT_CHROMIUM?{executablePath:process.env.SHIP_COMBAT_CHROMIUM}:{})});
 try{
- for(const width of [1815,390,320]){
+ for(const width of [1815,1440,1100,701,390,320]){
   const context=await browser.newContext({viewport:{width,height:width===1815?866:700}}),page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.route('**/app.mjs',r=>r.fulfill({contentType:'text/javascript',body:source+`\nstate=${JSON.stringify(gunneryFixture())};selected='low';render();window.__attackState=()=>structuredClone(state);`}));
@@ -20,8 +20,8 @@ try{
    const status=await page.locator('#selected-workspace').boundingBox(),actions=await page.locator('.attack-action-row').boundingBox();
    assert.ok(status.y+status.height<=actions.y+1,'Ship Status precedes Attack actions');
    if(width<700)assert.ok((await page.locator('[data-attack-gunnery] [data-gunnery=info]').boundingBox()).height>=44,'Rules remains a phone touch target');
-   await row.waitFor();await page.screenshot({path:new URL(`viewport-${width}.png`,out).pathname});
-   await row.scrollIntoViewIfNeeded();await page.screenshot({path:new URL(`form-${width}.png`,out).pathname});
+   const capture=[1815,390,320].includes(width);await row.waitFor();if(capture)await page.screenshot({path:new URL(`viewport-${width}.png`,out).pathname});
+   await row.scrollIntoViewIfNeeded();if(capture)await page.screenshot({path:new URL(`form-${width}.png`,out).pathname});
    if(width<700)await page.screenshot({path:new URL(`full-${width}.png`,out).pathname,fullPage:true});
    assert.deepEqual(await row.locator('[data-gunnery-field=weapon] option').allTextContents(),['Select weapon','Pulse laser','Missile rack','Sandcaster']);
    await row.locator('[data-gunnery-field=weapon]').selectOption('Missile rack');
@@ -41,7 +41,9 @@ try{
    const second=page.locator('[data-gunnery-index="1"]');
    await second.locator('[data-gunnery-field=weapon]').selectOption('Beam laser');
    await second.locator('[data-gunnery-field=action]').selectOption('point-defense');
-   await page.screenshot({path:new URL(`populated-${width}.png`,out).pathname,fullPage:width<700});
+   const cue=await second.locator('.attack-action-key').boundingBox(),action=await second.locator('[data-gunnery-field=action]').boundingBox();
+   assert.ok(cue.y+cue.height<=action.y+1,'action cues do not overlap the dropdown');
+   if(capture)await page.screenshot({path:new URL(`populated-${width}.png`,out).pathname,fullPage:width<700});
    await page.locator('[data-mfd-phase=Opening]').click();
    assert.deepEqual(await state(),initial,'phase inspection does not commit');
    await page.locator('[data-mfd-phase=Attack]').click();
@@ -54,7 +56,7 @@ try{
    assert.deepEqual(committed.ships,initial.ships,'declaration does not fire or spend resources');
    await page.locator('[data-select=low]').click();
    assert.equal(await row.locator('[data-gunnery-field=weapon]').isDisabled(),true,'committed ship is locked');
-   await page.screenshot({path:new URL(`locked-${width}.png`,out).pathname,fullPage:width<700});
+   if(capture)await page.screenshot({path:new URL(`locked-${width}.png`,out).pathname,fullPage:width<700});
    await page.reload();
    await page.locator('[data-attack-gunnery] [data-station-ammunition]').click();
    await page.keyboard.press('Escape');
