@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {readFile,mkdir} from 'node:fs/promises';
+import {readFile,mkdir,writeFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import {gunneryFixture} from './gunnery-fixture.mjs';
 import {openStation} from './console-navigation.mjs';
@@ -19,6 +19,7 @@ try{
    const state=()=>page.evaluate(()=>window.__attackState()),initial=await state(),row=page.locator('[data-gunnery-index="0"]');
    await row.waitFor();await page.screenshot({path:new URL(`viewport-${width}.png`,out).pathname});
    await row.scrollIntoViewIfNeeded();await page.screenshot({path:new URL(`form-${width}.png`,out).pathname});
+   if(width<700)await page.screenshot({path:new URL(`full-${width}.png`,out).pathname,fullPage:true});
    assert.deepEqual(await row.locator('[data-gunnery-field=weapon] option').allTextContents(),['Choose installed weapon','Pulse laser','Missile rack','Sandcaster']);
    await row.locator('[data-gunnery-field=weapon]').selectOption('Pulse laser');
    await row.locator('[data-gunnery-field=action]').selectOption('attack');
@@ -55,4 +56,5 @@ try{
    assert.deepEqual(errors,[]);console.log('PASS Attack MFD '+width);
   }finally{await context.close();}
  }
+ await writeFile(new URL('manifest.json',out),JSON.stringify({commit:process.env.SHIP_COMBAT_COMMIT??null,fixture:'Synthetic gunneryFixture',viewports:[{width:1815,height:866},{width:390,height:700},{width:320,height:700}],images:['viewport-1815.png','form-1815.png','viewport-390.png','form-390.png','full-390.png','viewport-320.png','form-320.png','full-320.png']},null,2));
 }finally{await browser.close();}

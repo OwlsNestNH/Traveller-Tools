@@ -75,7 +75,9 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: attack-mfd-review-${{ github.event.pull_request.head.sha }}
-          path: tools/ship-combat-alpha/verification-artifacts/attack-mfd/*.png
+          path: |
+            tools/ship-combat-alpha/verification-artifacts/attack-mfd/*.png
+            tools/ship-combat-alpha/verification-artifacts/attack-mfd/manifest.json
           if-no-files-found: warn
       - name: Upload small Add Ship review evidence
         if: always()
