@@ -65,7 +65,8 @@ try{
    await page.locator('[data-gunnery=commit]').dblclick();
    await page.keyboard.press('Enter');
    assert.equal((await state()).workflow.gunnery.declarations.length,1,'station repeat activation commits only once');
-   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
+   const overflow=await page.evaluate(()=>({viewport:innerWidth,scroll:document.documentElement.scrollWidth,offenders:[...document.querySelectorAll('body *')].map(e=>{const r=e.getBoundingClientRect();return {tag:e.tagName,id:e.id,className:typeof e.className==='string'?e.className:'',right:r.right,width:r.width};}).filter(x=>x.right>innerWidth+1).slice(0,20)}));
+   assert.ok(overflow.scroll<=overflow.viewport+1,JSON.stringify(overflow));
    assert.deepEqual(errors,[]);console.log('PASS Attack MFD '+width);
   }finally{await context.close();}
  }
