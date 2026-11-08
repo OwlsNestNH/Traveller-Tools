@@ -497,6 +497,7 @@ function resetHiddenFields(control, record) {
 function matchesVisibility(control, values) {
   if(!control.visibleWhen)return true;
   const rule=control.visibleWhen,value=values?.[rule.field];
+  if(Array.isArray(rule.allOf))return rule.allOf.every(item=>matchesVisibility({visibleWhen:item},values));
   if(Array.isArray(rule.oneOf))return rule.oneOf.includes(value);
   if(Object.hasOwn(rule,'notEquals'))return value!==rule.notEquals;
   return value===rule.equals;

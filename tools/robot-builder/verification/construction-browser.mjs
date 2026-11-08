@@ -12,6 +12,7 @@ const context=await browser.newContext({viewport:{width:1440,height:1000},accept
 const page=await context.newPage();const errors=[];const checks=[];
 page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());
 const check=(label,ok)=>{assert.ok(ok,label);checks.push(label);};
+const checkStatus=async(label,expected)=>{await page.waitForFunction(value=>document.querySelector('#design-status')?.textContent===value,expected);check(label,await page.locator('#design-status').textContent()===expected);};
 const stage=async n=>page.locator('#stage-nav button').nth(n-1).click();
 const exportDraft=async()=>{const promise=page.waitForEvent('download');await page.locator('#export-design').click();const download=await promise;return JSON.parse(await fs.readFile(await download.path(),'utf8'));};
 try{
@@ -25,7 +26,7 @@ try{
  let draft=await exportDraft();check('slot allocation retained through API',draft.selections.physical.optionParameters['storage-compartment'].quantity===3);
  check('allocated slots reflected',await page.locator('#summary-metrics').textContent().then(t=>t.includes('3 / 16')));
  await quantity.selectOption('1000');
- check('over-capacity flagged',await page.locator('#design-status').textContent()==='Needs correction');
+ await checkStatus('over-capacity flagged','Needs correction');
  await quantity.selectOption('3');
  await page.getByRole('button',{name:/^Remove Storage Compartment$/i}).click();
  draft=await exportDraft();check('removal clears orphan parameters',!draft.selections.physical.options.includes('storage-compartment')&&!draft.selections.physical.optionParameters['storage-compartment']);
@@ -119,14 +120,16 @@ try{
  await page.locator('#new-design').click();await page.locator('#robot-kind').selectOption('clone');await page.locator('#robot-tl').selectOption('15');await stage(3);
  check('clone physical stage exposes its own growth controls',await page.locator('#physical-category').count()===0&&await page.locator('#field-physical-growth-growth-service').count()===1);
  await page.locator('#field-physical-growth-growth-service').selectOption('accelerated');await page.locator('#field-physical-acceleratedStop-growth-service').selectOption('early6');
- check('early clone growth requires an explicit commercial interpretation',await page.locator('#design-status').textContent()==='Rules incomplete');
+ await checkStatus('early clone growth requires an explicit commercial interpretation','Rules incomplete');
+ check('preset clone stop hides unrelated custom duration input',await page.locator('#field-physical-acceleratedStopMonths-growth-service').count()===0);
  await page.locator('#field-physical-earlyGrowthPrice-growth-service').selectOption('first-year-included');
  await stage(4);await page.locator('#field-brain-baseINT-biological-cognition').selectOption('11');await page.locator('#field-brain-rollINT-biological-cognition').selectOption('3');await page.locator('#field-brain-eduAccounting-biological-cognition').selectOption('separate');
  await stage(5);await page.locator('#field-skills-trainingYears-creche-training').selectOption('12');await stage(6);
  check('early clone age calendar is readable in final review',await page.locator('.review-clone-development').textContent().then(t=>t.includes('Apparent age 18 at training completion')&&t.includes('0 checks due')));
  check('adult early-stop clone shows separately calculated characteristics',await page.locator('.review-clone-characteristics').count()===1);
  await stage(3);await page.locator('#field-physical-acceleratedStop-growth-service').selectOption('early12');
- check('intermediate early clone stop keeps partial-year uncertainty explicit',await page.locator('#design-status').textContent()==='Rules incomplete');
+ await checkStatus('intermediate early clone stop keeps partial-year uncertainty explicit','Rules incomplete');
+ check('intermediate clone preset still hides custom-only duration',await page.locator('#field-physical-acceleratedStopMonths-growth-service').count()===0);
  await page.locator('#field-physical-partialCrecheEducation-growth-service').selectOption('completed-only');await stage(5);await page.locator('#field-skills-trainingYears-creche-training').selectOption('6');
  draft=await exportDraft();check('clone partial-year choice and stop month are preserved',draft.special.acceleratedStop==='early12'&&draft.special.partialCrecheEducation==='completed-only');
  await stage(3);await page.locator('#field-physical-acceleratedStop-growth-service').selectOption('custom');
@@ -135,8 +138,8 @@ try{
  check('fractional stop survives into the readable calendar',await page.locator('.review-clone-development').textContent().then(t=>t.includes('Apparent age 18.25 at training completion')));
  draft=await exportDraft();check('fractional stopping time is stored without rounding',draft.special.acceleratedStop==='custom'&&draft.special.acceleratedStopMonths===6.25);
  await stage(3);await page.locator('#field-physical-acceleratedStopMonths-growth-service').fill('6.5');await page.locator('#field-physical-acceleratedStopMonths-growth-service').press('Tab');await stage(5);await page.locator('#field-skills-trainingYears-creche-training').selectOption('16');
- check('uncredited fractional creche time cannot exceed the total duration limit',await page.locator('#design-status').textContent()==='Needs correction');
- await stage(3);await page.locator('#field-physical-acceleratedStop-growth-service').selectOption('adult18');await stage(4);await page.locator('#field-brain-baseINT-biological-cognition').selectOption('6');await page.locator('#field-brain-rollINT-biological-cognition').selectOption('1');
+ await checkStatus('uncredited fractional creche time cannot exceed the total duration limit','Needs correction');
+ await stage(3);await page.locator('#field-physical-acceleratedStop-growth-service').selectOption('adult18');await page.locator('#field-physical-earlyGrowthPrice-growth-service').waitFor({state:'detached'});check('adult growth hides early-stop price and custom duration',await page.locator('#field-physical-acceleratedStopMonths-growth-service').count()===0);await stage(4);await page.locator('#field-brain-baseINT-biological-cognition').selectOption('6');await page.locator('#field-brain-rollINT-biological-cognition').selectOption('1');
  await stage(5);await page.locator('#field-skills-trainingYears-creche-training').selectOption('3');await page.locator('#field-skills-increaseINT-creche-training').selectOption('3');
  const timingPrefix='#field-skills-trainingIntSchedule-creche-training-new-';
  for(const year of [1,2,3]){await page.locator(timingPrefix+'year').selectOption(String(year));await page.locator(timingPrefix+'cumulativeIncrease').selectOption(String(year));await page.getByRole('button',{name:'Add timed INT increase',exact:true}).click();}
@@ -279,6 +282,15 @@ try{
    await page.getByRole('button',{name:'Add computer program',exact:true}).click();
  }
  draft=await exportDraft();check('computer software stays per-device and distinguishes stored packages',draft.special.computerSoftware.length===4&&draft.special.computerSoftware.find(p=>p.program==='security').runningBandwidth===-1&&draft.special.computerSoftware.every(p=>p.parentComputer===computerId));
+ for(const [program,rating,running] of [['clone-creator','2','-1'],['fab-creator','4','-1'],['drone-control','2','1'],['swarm-control','4','2']]){
+   await page.locator(computerPrefix+'parentComputer').selectOption(computerId);await page.locator(computerPrefix+'program').selectOption(program);await page.locator(computerPrefix+'rating').selectOption(rating);await page.locator(computerPrefix+'runningBandwidth').selectOption(running);
+   check('Handbook program hides unrelated Expert and subject fields '+program,await page.locator(computerPrefix+'subject').count()===0&&await page.locator(computerPrefix+'expertUse').count()===0);
+   await page.getByRole('button',{name:'Add computer program',exact:true}).click();
+ }
+ draft=await exportDraft();check('Handbook programs preserve purchased and active ratings independently',draft.special.computerSoftware.length===8&&draft.special.computerSoftware.find(p=>p.program==='drone-control').rating===2&&draft.special.computerSoftware.find(p=>p.program==='swarm-control').runningBandwidth===2&&draft.special.computerSoftware.find(p=>p.program==='fab-creator').runningBandwidth===-1);
+ const interfaceRecord=draft.special.computerSoftware.find(p=>p.program==='intelligent-interface'),interfaceField='#field-skills-computerSoftware-'+interfaceRecord.id+'-runningBandwidth';
+ await page.locator(interfaceField).selectOption('-1');await checkStatus('remote control software cannot omit its active interface','Needs correction');await page.locator(interfaceField).selectOption('1');await checkStatus('restoring same-computer interface restores the scoped construction check','Subset checked');
+ await stage(6);check('Handbook control review retains source and unverified operational connection',await page.locator('.review-computer-programs').textContent().then(t=>t.includes('Drone Control')&&t.includes('Swarm Control')&&t.includes('Robot Handbook')&&t.includes('Operational Control Certified: No')));
  await stage(6);check('general computer review keeps program states separate',await page.locator('.review-computer-programs').textContent().then(t=>t.includes('Stored, not running')&&t.includes('Running at rating 0')&&t.includes('Expert (Medic)')));
  for(const width of [1440,390,320]){await page.setViewportSize({width,height:1000});check('general computer review has no overflow '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:path.join(out,'robot-computer-review-'+width+'.png'),fullPage:true});}
  await page.setViewportSize({width:1440,height:1000});await page.locator('#new-design').click();await page.locator('#robot-kind').selectOption('standard');await page.locator('#robot-tl').selectOption('13');await page.locator('#robot-name').fill('Composite fixture');await stage(6);
@@ -323,7 +335,7 @@ try{
  check('CSC device includes tripled hardware and interface once',await page.locator('#summary-metrics').textContent().then(t=>t.includes('17,500')));
  await stage(6);check('CSC device review keeps range, source and recipient scope',await page.locator('.robot-review').textContent().then(t=>t.includes('Central Supply Catalogue Update 2023')&&t.includes('500')&&t.includes('augment-only')));
  for(const width of [1440,390,320]){await page.setViewportSize({width,height:1000});check('CSC device review has no overflow '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:path.join(out,'robot-csc-devices-'+width+'.png'),fullPage:true});}
- await page.setViewportSize({width:1440,height:1000});await stage(3);await page.locator('#field-physical-augmentations-'+cscDevice.id+'-quantity').selectOption('4');check('CSC copy count cannot bypass shared implant limit',await page.locator('#design-status').textContent()==='Needs correction');
+ await page.setViewportSize({width:1440,height:1000});await stage(3);await page.locator('#field-physical-augmentations-'+cscDevice.id+'-quantity').selectOption('4');await checkStatus('CSC copy count cannot bypass shared implant limit','Needs correction');
  await page.locator('#field-physical-augmentations-'+cscDevice.id+'-quantity').selectOption('1');check('correcting CSC quantity restores construction total',await page.locator('#summary-metrics').textContent().then(t=>t.includes('17,500')));
  await page.locator('#field-physical-augmentations-new-optionId').selectOption('misc-mass-csc-portable-mediscanner-12');await cscComposer.getByRole('button',{name:'Add separate installation',exact:true}).click();
  draft=await exportDraft();check('CSC mediscanner remains a distinct second implant',draft.special.augmentations.length===2&&draft.special.augmentations[1].optionId==='misc-mass-csc-portable-mediscanner-12');
@@ -336,7 +348,7 @@ try{
  await stage(6);check('standard chamber review separates destructive scanning and storage from fabrication',await page.locator('.robot-review').textContent().then(t=>t.includes('Output Storage Bandwidth')&&t.includes('32')&&t.includes('Manufactures Objects')&&t.includes('Restores Memories')&&t.includes('119')));
  check('chamber output storage is not debited as active robot skill bandwidth',await page.locator('.review-costs').textContent().then(t=>t.includes('0 / 2')));
  for(const width of [1440,390,320]){await page.setViewportSize({width,height:1000});check('deconstruction review has no overflow '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:path.join(out,'robot-deconstruction-'+width+'.png'),fullPage:true});}
- await page.setViewportSize({width:1440,height:1000});await stage(1);await page.locator('#field-chassis-size').selectOption('size-5');check('chamber cannot fit into an undersized robot',await page.locator('#design-status').textContent()==='Needs correction');
+ await page.setViewportSize({width:1440,height:1000});await stage(1);await page.locator('#field-chassis-size').selectOption('size-5');await checkStatus('chamber cannot fit into an undersized robot','Needs correction');
  await page.locator('#new-design').click();
  await page.locator('#robot-kind').selectOption('standard');await stage(3);await page.locator('#physical-category').selectOption('weapons');
  await page.locator(weaponPrefix+'weaponId').selectOption('direct-grenade-smoke');await page.locator(weaponPrefix+'placement').selectOption('body');await page.locator(weaponPrefix+'fireControl').selectOption('none');

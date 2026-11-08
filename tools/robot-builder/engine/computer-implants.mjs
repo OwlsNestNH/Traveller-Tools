@@ -2,7 +2,12 @@
 const source=pages=>({book:'Core Rulebook Update 2022',edition:'Mongoose 2022',pages});
 const rows={interface:[[0,7,0]],'intelligent-interface':[[1,11,100]],security:[[0,8,0],[1,10,200],[2,11,1000],[3,12,20000]],intrusion:[[1,10,1000],[2,11,10000],[3,13,100000],[4,15,1000000]],expert:[[1,11,1000],[2,12,10000],[3,13,100000]],translator:[[0,9,50],[1,10,500]],agent:[[0,11,500],[1,12,2000],[2,13,100000],[3,14,250000]],intellect:[[1,12,2000],[2,13,50000],[3,14,200000]],database:[[0,7,null]]};
 const labels={interface:'Interface','intelligent-interface':'Intelligent Interface',security:'Security',intrusion:'Intrusion',expert:'Expert',translator:'Translator',agent:'Agent',intellect:'Intellect',database:'Database'};
-const sel=(field,label,choices,value)=>({field,label,type:'select',choices:choices.map(([id,label])=>({id,label})),default:value});
+const handbookSource=pages=>({book:'Robot Handbook',edition:'Mongoose 2022',pages});
+const handbookRows={'clone-creator':[[1,8,2000],[2,10,20000],[3,13,200000]],'fab-creator':[[1,8,2000],[2,10,5000],[3,13,20000],[4,17,50000]],'drone-control':[[1,11,2000],[2,12,5000]],'swarm-control':[[1,11,15000],[2,12,30000],[3,13,60000],[4,14,120000]]};
+Object.assign(rows,handbookRows);
+Object.assign(labels,{'clone-creator':'Clone Creator','fab-creator':'Fab Creator','drone-control':'Drone Control','swarm-control':'Swarm Control'});
+const programSource=program=>handbookRows[program]?handbookSource(program==='clone-creator'?'122':'123'):source('110-113');
+const sel=(field,label,choices,value)=>({field,label,type:'select',choices:choices.map(([id,label])=>({id,label,...(field==='program'?{source:programSource(id)}:{})})),default:value});
 const num=(field,label,min,max,value)=>({field,label,type:'number',min,max,default:value});
 const str=(field,label)=>({field,label,type:'text',maxLength:80,default:''});
 export const isComputerId=id=>id.startsWith('misc-mass-portable-computer-')||id==='misc-mass-computer-terminal-7'||['neural-comm-improved','neural-comm-advanced','neural-link-basic','neural-link-improved'].includes(id);
@@ -41,10 +46,10 @@ export function evaluateComputer(device,p,records,techLevel,context={}){
  }
  if(bonus&&!speciality)issue('error','COMPUTER_SPECIALITY','Dedicated Processing requires one named program or Expert skill.','112');
  const hardwareCost=device.cost*factor*(1+.25*bonus),massKg=device.massKg*factor,processing=device.effects.processing;
- const programs=records.map(r=>{const row=rows[r.program].find(x=>x[0]===r.rating);return{...r,label:labels[r.program],cost:r.program==='database'?r.databasePrice:row[2],minimumTL:row[1],active:r.runningBandwidth>=0,activeBandwidth:r.program==='database'?null:Math.max(0,r.runningBandwidth),scope:'computer-only',recipientSkillGranted:false,source:source('110-113')};});
+ const programs=records.map(r=>{const row=rows[r.program].find(x=>x[0]===r.rating);return{...r,label:labels[r.program],cost:r.program==='database'?r.databasePrice:row[2],minimumTL:row[1],active:r.runningBandwidth>=0,activeBandwidth:r.program==='database'?null:Math.max(0,r.runningBandwidth),scope:'computer-only',recipientSkillGranted:false,source:programSource(r.program)};});
  const active=programs.filter(r=>r.active);
  for(const r of active){
-  if(r.minimumTL>ratedTL)issue('error','COMPUTER_PROGRAM_TL',r.label+' requires rated TL'+r.minimumTL+' even when run at a lower rating.');
+  if(r.minimumTL>ratedTL)diagnostics.push({severity:'error',code:'COMPUTER_PROGRAM_TL',message:r.label+' requires rated TL'+r.minimumTL+' even when run at a lower rating.',source:r.source});
   if(r.program==='database')issue('blocker','COMPUTER_DATABASE_EXECUTION','Database has no numeric Bandwidth. Store it as data and access it through Interface or Agent; no running Bandwidth is invented.','111');
  }
  let used=active.reduce((n,r)=>n+(r.activeBandwidth??0),0),dedicatedCredit=0;
@@ -56,6 +61,19 @@ export function evaluateComputer(device,p,records,techLevel,context={}){
  if(used-dedicatedCredit>processing)issue('error','COMPUTER_PROCESSING','Simultaneous programs exceed ordinary plus applicable dedicated Processing.');
  if(processing===0&&active.filter(r=>r.activeBandwidth===0).length>1)issue('error','COMPUTER_ZERO_PROCESSING','Computer/0 runs only one zero-Bandwidth program at a time.');
  const intelligent=active.some(r=>r.program==='intelligent-interface'),intellect=active.find(r=>r.program==='intellect'),autonomous=active.filter(r=>r.program==='expert'&&r.expertUse==='autonomous');
+ for(const r of programs.filter(r=>handbookRows[r.program])){
+  // Stored licences supply no task bonus. A lower active rating uses that
+  // rating's capabilities, while purchase price and TL retain the bought tier.
+  if(!r.active)continue;
+  if(r.program==='clone-creator'||r.program==='fab-creator'){
+   r.effects={designDM:r.runningBandwidth,taskScope:r.program==='clone-creator'?'novel-genetic-design':'novel-fabricator-design',designTier:r.runningBandwidth,canDesignNanorobots:r.program==='fab-creator'&&r.runningBandwidth>=3,manufacturingGranted:false,surgeryGranted:false,facilityIncluded:false,condition:'Only applicable design tasks while active; appropriate skills, equipment and task checks remain required.'};
+  }else{
+   if(!intelligent)diagnostics.push({severity:'error',code:'COMPUTER_CONTROL_INTERFACE',message:r.label+' requires active Intelligent Interface on this computer; Intellect is not a substitute.',source:r.source});
+   const drone=r.program==='drone-control';
+   r.effects={...(drone?{controlDM:r.runningBandwidth-1,maxDrones:1}:{maxTasks:r.runningBandwidth,maxSkill:r.runningBandwidth-1}),requiresIntelligentInterface:true,hardwareAlternatives:drone?['attached-robotic-drone-controller','transceiver-link-to-robot']:['attached-swarm-controller','high-speed-multichannel-wireless-data-link'],hardwareVerified:false,targetVerified:false,operationalControlCertified:false,condition:'Conditional software limits only. Compatible controller or link, target equipment, range and task limitations must be checked separately.'};
+   diagnostics.push({severity:'warning',code:'COMPUTER_CONTROL_HARDWARE_UNVERIFIED',message:r.label+' requires a compatible controller or link and eligible targets; this software selection does not verify an operational connection.',source:r.source});
+  }
+ }
  for(const r of active.filter(r=>r.program==='expert')){
   if(r.expertUse==='assisted'&&!intelligent)issue('error','COMPUTER_EXPERT_INTERFACE','User-assisted Expert requires active Intelligent Interface.');
   if(r.expertUse==='autonomous'&&!intellect)issue('error','COMPUTER_EXPERT_INTELLECT','Autonomous Expert requires active Intellect.');
