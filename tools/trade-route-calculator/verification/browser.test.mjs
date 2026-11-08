@@ -263,29 +263,40 @@ try{
  await page.evaluate(()=>{window.savedSetItem=Storage.prototype.setItem;Storage.prototype.setItem=function(){throw new DOMException('Storage full','QuotaExceededError');};});await click('Save');await page.locator('#modal-error').getByText('Storage full',{exact:true}).waitFor();assert.equal((await read()).bank,bankBeforeFailure);await page.evaluate(()=>{Storage.prototype.setItem=window.savedSetItem;});await click('Cancel');
 
 
- // Combined expenses, stateroom setup, weekly refills, preview cancellation and batch undo.
+ // Combined expenses, cabin setup, retired support charges, preview cancellation and batch undo.
  await click('Settings');await click('Ship, trader & options');await fill('rooms-middle','10');await fill('rooms-low','4');await fill('people-middle','4');await fill('people-high','1');assert.match(await page.locator('#accommodation-estimate').textContent(),/Luggage: 1 t/);await page.screenshot({path:join(artifacts,'ship-berths-settings.png')});await click('Save');await closed();assert.equal((await read()).ship.staterooms,14);
  const openExpenses=async()=>{await click('Accounts');await page.locator('#main').getByRole('button',{name:'Ship expenses',exact:true}).click();};
+ const assertRetiredSupportAbsent=async()=>{
+  for(const kind of ['staterooms','passengerSupport','lifeSupport']){
+   assert.equal(await page.locator('[name="include-'+kind+'"], [data-expense-kind="'+kind+'"], [name="'+kind+'Units"], [name="'+kind+'Period"], [name="'+kind+'Months"], [name="'+kind+'"]').count(),0,kind+' cannot be paid again outside LSS refills');
+  }
+  assert.equal(await page.locator('[name="passengers-high"]').count(),0);
+  assert.match(await page.locator('#modal-body').textContent(),/Cabin and person support costs are included in Refill life support, not paid separately/);
+ };
  await click('Cargo');assert.match(await page.locator('[data-management-stock="luggage"]').textContent(),/1 t/);
  await click('Settings');await click('Ship, trader & options');await page.setViewportSize({width:390,height:844});await page.locator('[name="people-high"]').scrollIntoViewIfNeeded();await page.screenshot({path:join(artifacts,'ship-berths-mobile.png')});assert.ok(await page.locator('#modal-body').evaluate(e=>e.scrollWidth<=e.clientWidth+1));await page.setViewportSize({width:1440,height:1100});await fill('people-high','0');await click('Save');await closed();await click('Cargo');assert.equal(await page.locator('[data-management-stock="luggage"]').count(),0);await click('History');await click('Undo latest change');assert.equal((await read()).ship.accommodation.passengers.high,1);
- // Actual luggage and service cost adjustments are independent and reversible.
+ // Luggage and cabin-rate settings remain independent, free to configure and reversible.
+ const beforeSupportAdjustments=await read();
  await click('Settings');await click('Ship, trader & options');await page.locator('[name="luggageOverride"]').check();await fill('luggageTons','0');await page.locator('[name="roomService-low"]').selectOption('custom');await fill('roomCustom-low','150');await page.locator('[name="roomService-middle"]').selectOption('high');await page.screenshot({path:join(artifacts,'passenger-adjustments.png')});await click('Save');await closed();
- assert.equal((await read()).ship.accommodation.luggageTons,'0');await click('Cargo');assert.equal(await page.locator('[data-management-stock="luggage"]').count(),0);
- await openExpenses();await page.locator('[name="include-berthing"]').uncheck();await page.locator('[name="include-passengerSupport"]').check();await page.locator('[name="include-staterooms"]').check();assert.match(await page.locator('#expense-estimate').textContent(),/Cr 4,400/);await click('Preview expenses');await click('Pay Cr 4,400');await closed();
- assert.equal((await read()).ledger.at(-1).expense.amount,'1750');assert.equal((await read()).ship.accommodation.passengers.high,1);await click('History');await click('Undo latest change');await click('Undo latest change');assert.equal((await read()).ship.accommodation.luggageTons,'1');
+ const adjustedSupport=await read();assert.equal(adjustedSupport.ship.accommodation.luggageTons,'0');assert.deepEqual(adjustedSupport.ship.accommodation.roomService.low,{level:'custom',monthly:'150'});assert.equal(adjustedSupport.ship.accommodation.roomService.middle.level,'high');assert.equal(adjustedSupport.ship.accommodation.passengers.high,1);assert.equal(adjustedSupport.bank,beforeSupportAdjustments.bank);assert.deepEqual(adjustedSupport.ledger,beforeSupportAdjustments.ledger);
+ await click('Cargo');assert.equal(await page.locator('[data-management-stock="luggage"]').count(),0);
+ await openExpenses();await assertRetiredSupportAbsent();await page.locator('[name="include-berthing"]').uncheck();assert.equal(await page.locator('#modal-submit').isDisabled(),true);await click('Cancel');assert.deepEqual(await read(),adjustedSupport);
+ await click('History');await click('Undo latest change');const restoredSupport=await read();assert.deepEqual(restoredSupport.ship,beforeSupportAdjustments.ship);assert.equal(restoredSupport.bank,beforeSupportAdjustments.bank);assert.deepEqual(restoredSupport.ledger,beforeSupportAdjustments.ledger);assert.equal(restoredSupport.ship.accommodation.luggageTons,'1');
  const expenseBank=(await read()).bank;
- const fillExpenses=async()=>{await click('Select all expenses');await fill('weeks','2');await fill('fuelTons','12.5');await page.locator('[name="fuelType"]').selectOption('unrefined');await fill('stateroomsUnits','2');await fill('passengerSupportUnits','1');await fill('salary','6000');await fill('salaryMonths','2');};
- await openExpenses();await fillExpenses();await click('Roll & save starport rate');assert.equal(await page.locator('[name="salary"]').inputValue(),'6000');assert.match(await page.locator('[data-expense-kind="passengerSupport"]').textContent(),/1,000/);assert.equal(await page.locator('[name="passengers-high"]').count(),0);
- const savedDie=(await read()).worlds[(await read()).actual].berthingRate.die;
- const expenseTotal=String(savedDie*200+1300+5200+1750+12000);
+ const fillExpenses=async()=>{await click('Select all expenses');await fill('weeks','2');await fill('fuelTons','12.5');await page.locator('[name="fuelType"]').selectOption('unrefined');await fill('salary','6000');await fill('salaryMonths','2');};
+ await openExpenses();await fillExpenses();await click('Roll & save starport rate');assert.equal(await page.locator('[name="salary"]').inputValue(),'6000');await assertRetiredSupportAbsent();
+ const beforeExpensePayment=await read(),savedDie=beforeExpensePayment.worlds[beforeExpensePayment.actual].berthingRate.die;
+ // Class C berthing for two weeks, 12.5 tons rounded up to 13 at Cr100, and two months of salary.
+ const expenseAmounts=[String(savedDie*100*2),String(Math.ceil(12.5)*100),String(6000*2)];
+ const expenseTotal=String(expenseAmounts.reduce((total,amount)=>total+BigInt(amount),0n));
  await page.screenshot({path:join(artifacts,'combined-ship-expenses.png')});
- await click('Preview expenses');await click('Cancel');assert.equal((await read()).bank,expenseBank);
- await openExpenses();await fillExpenses();assert.equal(await page.getByRole('button',{name:'Roll & save starport rate',exact:true}).count(),0);
+ await click('Preview expenses');await click('Cancel');assert.deepEqual(await read(),beforeExpensePayment);assert.equal((await read()).bank,expenseBank);
+ await openExpenses();await fillExpenses();await assertRetiredSupportAbsent();assert.equal(await page.getByRole('button',{name:'Roll & save starport rate',exact:true}).count(),0);
  await click('Preview expenses');await click('Pay Cr '+Number(expenseTotal).toLocaleString('en-US'));await closed();
- const paid=await read();assert.equal(paid.bank,String(BigInt(expenseBank)-BigInt(expenseTotal)));assert.equal(new Set(paid.ledger.slice(-5).map(e=>e.batchId)).size,1);assert.equal(paid.ship.supportOccupants.passengers.high,1);assert.equal(paid.ship.expenses.salary,'6000');
+ const paid=await read(),batchEntries=paid.ledger.slice(beforeExpensePayment.ledger.length);assert.equal(paid.bank,String(BigInt(expenseBank)-BigInt(expenseTotal)));assert.deepEqual(paid.ledger.slice(0,beforeExpensePayment.ledger.length),beforeExpensePayment.ledger);assert.deepEqual(batchEntries.map(e=>e.expense.kind),['berthing','fuel','salary']);assert.deepEqual(batchEntries.map(e=>e.expense.amount),expenseAmounts);assert.deepEqual(batchEntries.map(e=>e.amount),expenseAmounts.map(amount=>String(-BigInt(amount))));assert.ok(batchEntries.every(e=>e.batchId));assert.equal(new Set(batchEntries.map(e=>e.batchId)).size,1);assert.deepEqual(paid.ship.supportOccupants,beforeExpensePayment.ship.supportOccupants);assert.deepEqual(paid.ship.accommodation,beforeExpensePayment.ship.accommodation);assert.equal(paid.ship.expenses.salary,'6000');
  await click('Settings');await click('Ship, trader & options');await click('Save');await closed();assert.equal((await read()).ship.expenses.salary,'6000');
- await openExpenses();await page.locator('[name="include-passengerSupport"]').check();assert.match(await page.locator('[data-expense-kind="passengerSupport"]').textContent(),/1,000/);assert.equal(await page.locator('[name="passengers-high"]').count(),0);await click('Cancel');
- await click('History');await click('Undo latest change');await click('Undo latest change');assert.equal((await read()).bank,expenseBank);
+ const beforeExpenseCancel=await read();await openExpenses();await assertRetiredSupportAbsent();await click('Cancel');assert.deepEqual(await read(),beforeExpenseCancel);
+ await click('History');await click('Undo latest change');await click('Undo latest change');const undoneExpenses=await read();assert.equal(undoneExpenses.bank,expenseBank);assert.deepEqual(undoneExpenses.ledger,beforeExpensePayment.ledger);assert.deepEqual(undoneExpenses.ship,beforeExpensePayment.ship);
  await openExpenses();await page.locator('[name="include-berthing"]').uncheck();assert.equal(await page.locator('#modal-submit').isDisabled(),true);await page.locator('[name="include-fuel"]').check();await fill('fuelTons','12.5');await click('Preview expenses');await click('Pay Cr 1,300');await closed();assert.equal((await read()).ledger.at(-1).expense.kind,'fuel');
  await click('Undo latest change');assert.equal((await read()).bank,expenseBank);
  await openExpenses();await page.locator('[name="include-berthing"]').uncheck();await page.locator('[name="include-fuel"]').check();await page.locator('[name="fuelType"]').selectOption('water');await fill('fuelTons','20');

@@ -60,8 +60,8 @@ function candidateFor(before,variant){return S.transition(before,label(variant),
  else S.shipExpense(state,inputFor(variant));
 });}
 function assertService(saved,before,variant){
- const cost={standard:'2300',custom:'810',water:'0',correction:'0',support:'2000',extra:'6000'}[variant];
- assert.equal(saved.revision,before.revision+1,'Exactly one campaign revision');assert.equal(saved.bank,String(BigInt(before.bank)-BigInt(cost)),'Existing exact service price');
+ const cost={standard:'2300',custom:'810',water:'0',correction:'0',support:'4004',extra:'10008'}[variant];
+ assert.equal(saved.revision,before.revision+1,'Exactly one campaign revision');assert.equal(saved.bank,String(BigInt(before.bank)-BigInt(cost)),'Exact service price, including rounded combined cabin and passenger daily support');
  assert.equal(saved.undo.length,before.undo.length+1,'Exactly one inverse transaction');
  assert.equal(saved.events.filter(entry=>entry.label===label(variant)).length,before.events.filter(entry=>entry.label===label(variant)).length+1,'Exactly one transition event');
  for(const key of Object.keys(before).filter(key=>!['revision','bank','ship','ledger','undo','events'].includes(key)))assert.deepEqual(saved[key],before[key],'Unrelated campaign field '+key+' is unchanged');
@@ -69,7 +69,7 @@ function assertService(saved,before,variant){
  if(support(variant)){
   ship.lifeSupport={capacityHours:672,stockUnits:{numerator:variant==='extra'?'168':'112',denominator:'1'},cargoUnits:{numerator:'0',denominator:'1'}};
   const q=saved.ledger.at(-1).expense;
-  assert.equal(q.kind,'lifeSupportRefill');assert.equal(q.supplyAmount,variant==='extra'?'4000':'2000');assert.equal(q.comfortAmount,variant==='extra'?'2000':'0');
+  assert.equal(q.kind,'lifeSupportRefill');assert.equal(q.supplyAmount,variant==='extra'?'8008':'4004');assert.equal(q.comfortAmount,variant==='extra'?'2000':'0');
   assert.equal(q.afterStockUnits.numerator,variant==='extra'?'168':'112');
   if(variant==='extra')assert.equal(q.comfortNote,reason,'Comfort cost records its note and adds no separate stock');
  }else ship.fuel.aboardTons=variant==='correction'?13:variant==='water'?23:variant==='custom'?28:43;

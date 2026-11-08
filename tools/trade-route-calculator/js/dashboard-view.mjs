@@ -1,5 +1,5 @@
-import {dashboardData} from './dashboard-data.mjs?v=fleet-20261108-2';
-import {escapeHtml as esc,moneyHtml} from './display.mjs?v=fleet-20261108-2';
+import {dashboardData} from './dashboard-data.mjs?v=lss-whole-days-20261108-1';
+import {escapeHtml as esc,moneyHtml} from './display.mjs?v=lss-whole-days-20261108-1';
 
 // Read-only presentation. Exact Credits remain BigInts until bounded ratios are
 // converted to SVG coordinates; display values always use the shared formatter.

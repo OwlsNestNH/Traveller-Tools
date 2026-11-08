@@ -1,8 +1,8 @@
-import {consumeReserveCompartments} from './lss-compartments.mjs?v=fleet-20261108-2';
+import {consumeReserveCompartments} from './lss-compartments.mjs?v=lss-whole-days-20261108-1';
 import * as A from './amounts.mjs';
-import {campaignRefillDraft,editRefillDraft} from './lss-refill-draft.mjs?v=fleet-20261108-2';
-import {consumableRefillQuote} from './lss-refill-pricing.mjs?v=fleet-20261108-2';
-import {supportAmount} from './life-support.mjs?v=fleet-20261108-2';
+import {campaignRefillDraft,editRefillDraft} from './lss-refill-draft.mjs?v=lss-whole-days-20261108-1';
+import {consumableRefillQuote} from './lss-refill-pricing.mjs?v=lss-whole-days-20261108-1';
+import {supportAmount} from './life-support.mjs?v=lss-whole-days-20261108-1';
 export function compartmentRefillQuote(state,draft,{gm=false}={}){
  const original=campaignRefillDraft(state).draft;
  let checked=original,purchased=A.rat(0),discarded=A.rat(0),changed=false;
@@ -36,5 +36,5 @@ export function compartmentRefillQuote(state,draft,{gm=false}={}){
 export function refillPricingAudit(q){
  if(q.gm)return [['Accounting','GM inventory adjustment; no purchase or comfort charge']];
  const exact=value=>{const n=supportAmount(value);return n.d===1n?String(n.n):String(n.n)+' / '+String(n.d);};
- return [['Middle people / Cr per 28 days',q.middle+' / '+q.rates.middle],['High people / Cr per 28 days',q.high+' / '+q.rates.high],['Occupied frozen Low / Cr per 28 days',q.low+' / '+q.rates.low],['Daily consumption - exact LSS',exact(q.dailyUnits)],['Purchased duration - exact days',exact(q.days)],['Consumables - exact Cr',exact(q.exactAmount)],['Consumables charged - Cr',q.supplyAmount],['Comfort charged - Cr',q.comfortAmount],['Credit rounding','Each supply/comfort charge rounded up to Cr '+q.roundingStep+' once'],['Reserve transfer - exact LSS',exact(q.transferredUnits??0)],['Fraction policy',q.cargoBatches?'Cargo changes by full 100-LSS batches; legacy cargo fractions stay exact. Internal purchase fraction policy is unchanged.':'Only a compartment receiving purchased whole LSS discards its prior fraction; other stock stays exact']];
+ return [['Middle people / Cr per 28 days',q.middle+' / '+q.rates.middle],['High people / Cr per 28 days',q.high+' / '+q.rates.high],['Luxury people / Cr per 28 days',(q.luxury??0)+' / '+(q.rates.luxury??'5000')],['Occupied frozen Low / Cr per 28 days',q.low+' / '+q.rates.low],...(q.dailyCredits!==undefined? [['Cabins included - Cr per 28 days',q.cabinMonthly],['People - Cr per 28 days',q.peopleMonthly],['Combined - Cr per 28 days',q.monthly],['Daily price before rounding - Cr',exact(q.dailyExact)],['Daily price rounded up - Cr',q.dailyCredits]]:[]),['Daily consumption - exact LSS',exact(q.dailyUnits)],['Purchased duration - exact days',exact(q.days)],['Consumables - exact Cr',exact(q.exactAmount)],['Consumables charged - Cr',q.supplyAmount],['Comfort charged - Cr',q.comfortAmount],['Credit rounding','Daily total rounded up first; final supply/comfort charge rounded up to Cr '+q.roundingStep+' once'],['Reserve transfer - exact LSS',exact(q.transferredUnits??0)],['Fraction policy',q.cargoBatches?'Cargo changes by full 100-LSS batches; legacy cargo fractions stay exact. Internal purchase fraction policy is unchanged.':'Only a compartment receiving purchased whole LSS discards its prior fraction; other stock stays exact']];
 }

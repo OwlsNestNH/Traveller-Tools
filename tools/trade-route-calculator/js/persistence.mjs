@@ -1,6 +1,6 @@
-import {validateImport,isFleet,selectedCampaign,shipIdentity,withCampaign,LEGACY_SHIP_ID} from './fleet.mjs?v=fleet-20261108-2';
-import {createDashboardBaseline,sameDashboardBaseline} from './dashboard-baseline.mjs?v=fleet-20261108-2';
-import {initial,validate} from './state.mjs?v=fleet-20261108-2';
+import {validateImport,isFleet,selectedCampaign,shipIdentity,withCampaign,LEGACY_SHIP_ID} from './fleet.mjs?v=lss-whole-days-20261108-1';
+import {createDashboardBaseline,sameDashboardBaseline} from './dashboard-baseline.mjs?v=lss-whole-days-20261108-1';
+import {initial,validate} from './state.mjs?v=lss-whole-days-20261108-1';
 export const KEY='traveller-trade-route-calculator:v1';
 const LOCK=KEY+':writer';
 // Only the provider can distinguish a rejected write from failed publication.

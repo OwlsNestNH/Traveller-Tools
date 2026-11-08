@@ -6,7 +6,7 @@ export function roundExisting(s){
  const changes=[];const set=(o,k,step,label)=>{if(o[k]==null)return;const c=change(o[k],step,label);if(c){o[k]=c.after;changes.push(c);}};
  set(s,'bank',100,'Bank');set(s.ship,'capacity',1,'Cargo capacity · tons');
  if(s.ship.accommodation)set(s.ship.accommodation,'luggageTons',1,'Actual passenger luggage · tons');
- if(s.ship.accommodation&&s.ship.accommodation.luggageTons==null&&!s.ship.roundTons){const passengers=s.ship.accommodation.passengers;const c=change(sum(Object.entries({low:'0.01',middle:'0.1',high:'1'}).map(([k,v])=>mul(passengers[k]||0,v))),1,'Combined passenger luggage allowance · tons');if(c)changes.push(c);}
+ if(s.ship.accommodation&&s.ship.accommodation.luggageTons==null&&!s.ship.roundTons){const passengers=s.ship.accommodation.passengers;const c=change(sum(Object.entries({low:'0.01',middle:'0.1',high:'1',luxury:'2'}).map(([k,v])=>mul(passengers[k]||0,v))),1,'Combined passenger luggage allowance · tons');if(c)changes.push(c);}
  for(const [k,v]of Object.entries(s.ship.expenses||{}))set(s.ship.expenses,k,100,'Saved '+k+' monthly cost');
  for(const [tier,service]of Object.entries(s.ship.accommodation?.roomService||{}))if(service.level==='custom')set(service,'monthly',100,tier+' stateroom custom monthly cost');
  for(const l of s.lots){set(l,'quantity',1,l.description+' · tons');set(l,'basis',100,l.description+' · cost basis');set(l,'goodsValue',100,l.description+' · goods value');}

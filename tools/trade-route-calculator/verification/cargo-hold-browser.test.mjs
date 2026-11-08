@@ -240,7 +240,7 @@ async function navigationAndDrafts(page,f){
    oldNoopReview=await remember('#service-panel [data-action="service-confirm"]');
    await unchanged(page,f,'Opening full-stock support adjustments');
    await page.locator('#service-form [name="cargo"]').fill('340');
-   assert.equal((await page.locator('.lss-total strong').textContent()).trim(),'Cr 9,500','The same consumable tariff applies to cargo supplies');
+   assert.equal((await page.locator('.lss-total strong').textContent()).trim(),'Cr 16,302','The combined Cr429 daily tariff applies to 190 additional cargo LSS / 5 daily use');
    assert.match(await page.locator('.lss-aboard').textContent(),/1140/);
 
    oldConfirm=await remember('#service-panel [data-action="service-confirm"]');

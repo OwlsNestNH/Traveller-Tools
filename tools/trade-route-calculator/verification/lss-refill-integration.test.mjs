@@ -38,18 +38,18 @@ test('allocation validation rejects bad imports; legacy reads never migrate',()=
 });
 test('capacity and rates are revalidated against campaign; comfort never discards stock',()=>{
  const s=campaign(),d=editRefillDraft(draft(s),'fill-cargo');s.ship.capacity='1';assert.throws(()=>compartmentRefillQuote(s,d),/capacity/);
- const t=campaign();t.ship.accommodation.refillRates={middle:'2000',high:'6000'};const q=compartmentRefillQuote(t,editRefillDraft(draft(t),'cargo',100));assert.equal(q.monthly,'14000');
+ const t=campaign();t.ship.accommodation.refillRates={middle:'2000',high:'6000'};const q=compartmentRefillQuote(t,editRefillDraft(draft(t),'cargo',100));assert.equal(q.monthly,'21000');
  const comfort=editRefillDraft(editRefillDraft(draft(t),'comfortCredits','777'),'comfortNote','Fresh provisions');const c=compartmentRefillQuote(t,comfort);assert.equal(c.amount,'777');eq(c.discardedUnits,0);eq(c.afterStockUnits,'16.2');
 });
 test('zero-rate paid loading remains a purchase; GM works with no complement or Credits',()=>{
- const s=campaign();s.ship.accommodation.refillRates={middle:'0',high:'0'};s.bank='0';
+ const s=campaign();s.ship.accommodation.refillRates={middle:'0',high:'0'};s.ship.accommodation.roomService={middle:{level:'custom',monthly:'0'},high:{level:'custom',monthly:'0'}};s.bank='0';
  const d=editRefillDraft(draft(s),'cargo',100),n=S.transition(s,'Refilled life support',n=>S.refillCompartments(n,d));assert.equal(n.bank,'0');eq(n.ship.lifeSupport.cargoUnits,100);eq(n.ledger.at(-1).expense.discardedUnits,'0.4');assert.equal(n.ledger.at(-1).amount,'0');
  s.ship.accommodation.passengers.high=0;s.ship.accommodation.crew.middle=0;
  const gm=S.transition(s,'Adjusted life support',n=>S.refillCompartments(n,editRefillDraft(draft(s),'cargo',100),{gm:true}));assert.equal(gm.bank,'0');eq(gm.ship.lifeSupport.cargoUnits,100);
 });
 test('manual and booked frozen occupants both bill once at the Low rate',()=>{
  const s=campaign();s.ship.accommodation.passengers.high=0;s.ship.accommodation.crew.middle=0;s.ship.accommodation.occupiedLowBerths=1;s.contracts=[{kind:'passenger',status:'accepted',passageClass:'low',count:1,cabinMode:'low'}];
- const q=compartmentRefillQuote(s,editRefillDraft(draft(s),'cargo',10));assert.equal(q.low,2);assert.equal(q.monthly,'200');eq(q.dailyUnits,'0.2');assert.equal(q.amount,'250');
+ const q=compartmentRefillQuote(s,editRefillDraft(draft(s),'cargo',10));assert.equal(q.low,2);assert.equal(q.monthly,'7200');eq(q.dailyUnits,'0.2');assert.equal(q.amount,'9030');
 });
 function harness(){let state=campaign(),form=null,editable=true;const h={commits:0};const document={getElementById:id=>id==='service-form'?form:null,querySelector:()=>null,querySelectorAll:()=>[]};h.services=createServicePanels({document,redesignedSupport:true,getState:()=>state,isEditable:()=>editable,commit(label,fn,revision){assert.equal(revision,state.revision);h.commits++;if(h.save)return h.save(()=>state=S.transition(state,label,fn));state=S.transition(state,label,fn);},render(){form=null;},showOverview(){},message(){},nextJumpFuel:()=>0});h.state=()=>state;h.readOnly=()=>editable=false;h.fill=values=>{form={dataset:{serviceToken:h.services.token()},elements:Object.entries(values).map(([name,value])=>({name,value:String(value)}))};h.services.sync();};h.action=name=>h.services.action(name,'',h.services.token());return h;}
 test('integrated controls cancel without writes and GM ignores comfort purchase',async()=>{
@@ -65,4 +65,18 @@ test('definite failure preserves exact fractions and permits retry; uncertain fa
 });
 test('stale token and lost ownership cannot pay a replacement draft',async()=>{
  const h=harness();h.services.open('support');const token=h.services.token();await h.action('service-cancel');h.services.open('support');h.fill({cargo:100});await h.services.action('service-confirm','',token);assert.equal(h.commits,0);h.readOnly();await assert.rejects(h.action('service-confirm'),/ownership/);assert.equal(h.commits,0);
+});
+
+
+test('stale displayed prices reject changed cabin counts, person rates and complement before writes',()=>{
+ for(const change of [s=>s.ship.accommodation.rooms.middle++,s=>s.ship.accommodation.refillRates={middle:'2000'},s=>s.ship.accommodation.crew.middle++]){
+  const s=campaign(),d=editRefillDraft(draft(s),'internal',20),expectedQuote=compartmentRefillQuote(s,d);change(s);const before=JSON.stringify(s);
+  assert.throws(()=>S.refillCompartments(s,d,{expectedQuote}),/quote changed/);assert.equal(JSON.stringify(s),before);
+ }
+});
+test('internal plus cargo quantities are priced together once and imported receipts never reprice',()=>{
+ const s=campaign();s.ship.accommodation.rooms={low:0,middle:1,high:0};s.ship.accommodation.passengers={low:0,middle:1,high:0};s.ship.accommodation.crew={low:0,middle:0,high:0};s.ship.lifeSupport={capacityHours:672,stockUnits:A.auditNumber(0),cargoUnits:A.auditNumber(0)};
+ let d=editRefillDraft(draft(s),'internal',4);d=editRefillDraft(d,'cargo',3);const q=compartmentRefillQuote(s,d);assert.equal(q.dailyCredits,'72');assert.equal(q.amount,'504');
+ const n=S.transition(s,'Refill',v=>S.refillCompartments(v,d,{expectedQuote:q})),receipt=structuredClone(n.ledger.at(-1));assert.equal(BigInt(s.bank)-BigInt(n.bank),504n);
+ n.ship.accommodation.rooms.middle=8;n.ship.accommodation.refillRates={middle:'5000'};const bytes=JSON.stringify(n);S.validate(JSON.parse(bytes));assert.equal(JSON.stringify(n),bytes);assert.deepEqual(n.ledger.at(-1),receipt);
 });

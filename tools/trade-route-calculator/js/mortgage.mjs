@@ -1,5 +1,6 @@
 import {credit} from './amounts.mjs';
-import {PAYMENT_DAYS,paymentCount,canonicalPaymentDate,validatePaymentDate,advancePaymentDate,duePaymentCount} from './payment-schedule.mjs?v=fleet-20261108-2';
+import {scheduledPaymentRecordMatches} from './scheduled-payment-rounding.mjs?v=lss-whole-days-20261108-1';
+import {PAYMENT_DAYS,paymentCount,canonicalPaymentDate,validatePaymentDate,advancePaymentDate,duePaymentCount} from './payment-schedule.mjs?v=lss-whole-days-20261108-1';
 
 export const MORTGAGE_DAYS=PAYMENT_DAYS;
 export const MORTGAGE_REFERENCE='Campaign installment tracking: a fixed payment every 4 weeks (28 days). A new 40-year mortgage has 480 payments, with each payment normally equal to the original financed amount divided by 240. This tracks scheduled payments and total paid, not principal, equity or an early-payoff value. Time passing never charges the bank.';
@@ -49,5 +50,5 @@ export function validateMortgagePaymentRecord(entry){
  const q=entry.expense.mortgage;
  if(!q||!q.before)throw Error('Invalid mortgage payment audit.');
  const expected=mortgagePaymentQuote({ship:{mortgage:q.before}},q.periods);
- if(['periods', 'amount', 'firstDueDate', 'lastDueDate', 'remainingAmount'].some(key=>q[key]!==expected[key])||!q.after||['originalAmount', 'payment', 'remainingPayments', 'totalPaid', 'nextDueDate', 'lastPaidDueDate'].some(key=>q.after[key]!==expected.after[key])||entry.expense.fixedAmount!==true||entry.expense.amount!==q.amount||credit(entry.amount)!==-credit(q.amount))throw Error('Mortgage payment audit does not match its recorded expense.');
+ if(['periods', 'amount', 'firstDueDate', 'lastDueDate', 'remainingAmount'].some(key=>q[key]!==expected[key])||!q.after||['originalAmount', 'payment', 'remainingPayments', 'totalPaid', 'nextDueDate', 'lastPaidDueDate'].some(key=>q.after[key]!==expected.after[key])||entry.expense.fixedAmount!==true||!scheduledPaymentRecordMatches(entry,q.amount))throw Error('Mortgage payment audit does not match its recorded expense.');
 }

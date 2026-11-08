@@ -1,4 +1,4 @@
-import {validate} from './state.mjs?v=fleet-20261108-2';
+import {validate} from './state.mjs?v=lss-whole-days-20261108-1';
 export const LEGACY_SHIP_ID='legacy-ship';
 export const isFleet=value=>value!==null&&typeof value==='object'&&Object.hasOwn(value,'fleetVersion');
 // Validate every member before any write. Keep imported fields and histories intact.
