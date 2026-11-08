@@ -3,6 +3,7 @@ import {assertKeys,integer,clone} from './schema.mjs';
 import {CSC_SLUG_WEAPONS} from './csc-slug-weapons.mjs';
 import {CSC_ENERGY_WEAPONS} from './csc-energy-weapons.mjs';
 import {CSC_HEAVY_WEAPONS} from './csc-heavy-weapons.mjs';
+import {CSC_MELEE_WEAPONS} from './csc-melee-weapons.mjs';
 import {CSC_WEAPON_ACCESSORIES,cscAccessoryEligibility,evaluateCscAccessories} from './csc-weapon-accessories.mjs';
 const book=pages=>({book:'Robot Handbook',edition:'Mongoose 2022',pages});
 const core=pages=>({book:'Core Rulebook Update 2022',edition:'Mongoose 2022',pages});
@@ -62,7 +63,7 @@ WEAPONS.push(...[
  ['rapier','Rapier',3,'small','2D',200,'blade',[]],
  ['shield','Shield',1,'small','1D',150,'bludgeon',[]],
  ['stunstick','Stunstick',8,'small','2D',300,'bludgeon',['Stun']]
-].map(([id,label,tl,mountClass,damage,cost,speciality,traits])=>({id,label,tl,mountClass,damage,cost,speciality,traits,range:'Melee',magazine:null,magazineCost:0,initialIncluded:true,skill:'melee',source:core('124-125'),implemented:true})));
+].map(([id,label,tl,mountClass,damage,cost,speciality,traits])=>({id,label,tl,mountClass,damage,cost,speciality,traits,range:'Melee',magazine:null,magazineCost:0,initialIncluded:true,skill:'melee',...(id==='broadsword'?{requiresTwoHands:true,handednessSource:core('125')}:{}),source:core('124-125'),implemented:true})));
 WEAPONS.push(...[['heavy-machinegun','Heavy Machinegun',6,1000,'4D',4500,100,400,100,['Auto 3']],['light-autocannon','Light Autocannon',6,1000,'6D',10000,500,1000,250,['Auto 3']]].map(([id,label,tl,range,damage,cost,magazine,magazineCost,massKg,traits])=>({id,label,tl,range,damage,cost,magazine,magazineCost,massKg,traits,mountClass:'vehicle',initialIncluded:false,skill:'heavy-weapons',speciality:'vehicle',source:core('142'),implemented:true})));
 export const WEAPON_ACCESSORIES=[
  ['gyrostabiliser','Gyrostabiliser',9,500,'gyrostabiliser'],['intelligent-0','Intelligent weapon Computer/0',11,1000,'intelligent'],['intelligent-1','Intelligent weapon Computer/1',13,5000,'intelligent'],
@@ -84,7 +85,7 @@ for(const w of WEAPONS){
  if(!w.weaponFamily)throw new TypeError('Weapon requires an explicit source family: '+w.id);
  w.compatibility={accessoryRules:'core-2022',associatedLauncherRules:'core-2022',attachedLauncher:RIFLE_WEAPON_IDS.includes(w.id),specialisedAmmunitionRules:null};
 }
-WEAPONS.push(...clone(CSC_SLUG_WEAPONS),...clone(CSC_ENERGY_WEAPONS),...clone(CSC_HEAVY_WEAPONS));
+WEAPONS.push(...clone(CSC_SLUG_WEAPONS),...clone(CSC_ENERGY_WEAPONS),...clone(CSC_HEAVY_WEAPONS),...clone(CSC_MELEE_WEAPONS));
 export const MOUNTS={small:{slots:1,cost:500,armSize:3},medium:{slots:2,cost:1000,armSize:5},heavy:{slots:10,cost:5000,armSize:7},vehicle:{slots:15,cost:10000,armSize:null}};
 export const FIRE_CONTROL=[{id:'none',label:'No fire control',tl:0,cost:0,dm:0},...['Basic','Improved','Enhanced','Advanced'].map((label,i)=>({id:label.toLowerCase(),label,tl:6+i*2,cost:[10000,25000,50000,100000][i],dm:i+1}))];
 const STORAGE_IDS=['storage-compartment','refrigerated-storage-compartment','hazardous-material-storage-compartment'];
@@ -181,9 +182,11 @@ export function evaluateWeapons(design,manipulators,skills,installedEquipment=[]
  if(record.placement!=='body'&&!arm)add('error','WEAPON_ARM_REQUIRED',record.id,'Select an installed manipulator.');
  if(arm&&!held&&(mount.armSize===null||arm.size<mount.armSize+(record.autoload?1:0)))add('error','WEAPON_ARM_SIZE',record.id,'Manipulator is too small for this weapon installation.');
  if(held&&w.mountClass==='vehicle')add('blocker','HELD_VEHICLE_WEAPON_UNRESOLVED',record.id,'Hand-held support, carrying fit and attack modifiers for a Heavy Weapons (vehicle) weapon are not defined by this construction route. Choose a body mount; a separate supported tripod or vehicle installation is not assumed.',book('60-61'));
+ if(held&&w.requiresTwoHands)add('blocker','HELD_TWO_HANDED_WEAPON_UNRESOLVED',record.id,'This weapon requires two-handed use. A single selected manipulator does not validate the second grip, coordinated operation or carrying fit; choose a supported mount until that route is modelled.',w.handednessSource??w.handedness?.source??w.source);
  if(held&&(n!==1||record.autoload))add('error','HELD_WEAPON_MOUNT',record.id,'Linked weapons and autoloaders require a mount.');
  if(!w.magazine&&(record.extraMagazines||!record.initialMagazines))add('error','WEAPON_AMMO_INAPPLICABLE',record.id,'This weapon has no separately purchased ammunition magazine; do not configure spare magazines or remove an initial magazine.');
  if(record.extraMagazines&&!record.autoload)add('blocker','SPARE_AMMO_STORAGE',record.id,'Loose spare ammunition needs a separate storage allocation; only autoloader magazines are currently accounted.');
+ if(record.autoload&&(!Number.isFinite(w.magazine)||w.magazine<=0))add('error','AUTOLOADER_AMMUNITION',record.id,'An autoloader requires a source-defined finite magazine or power pack; this weapon has none.');
  if(record.autoload&&!record.extraMagazines)add('error','EMPTY_AUTOLOADER',record.id,'Specify one to ten extra magazines for the autoloader.');
  if(w.initialIncluded&&!w.directPayload&&!record.initialMagazines)add('error','INCLUDED_POWER_PACK',record.id,'The source price includes its initial power pack; no removal discount is defined.');
  if(w.interpretation&&!(w.id==='advanced-combat-rifle'&&(auxiliaryMode==='integral-acr'||bothLaunchers)))add('warning','WEAPON_SOURCE_INTERPRETATION',record.id,w.interpretation);
@@ -193,7 +196,7 @@ export function evaluateWeapons(design,manipulators,skills,installedEquipment=[]
  if(itemCost!==null)cost+=itemCost;slots+=itemSlots;ledger.push({id:'weapon-'+record.id,label:w.label,cost:itemCost,slots:itemSlots,source:book('61-64'),weaponSource:w.source});
  const software=skills.filter(s=>s.id===w.skill||s.id===w.skill+':'+w.speciality||s.speciality===w.speciality&&s.id.startsWith(w.skill)).reduce((v,s)=>Math.max(v,s.level),-3);
  const dex=arm?(arm.dexterity===0?-3:arm.dexterity<=2?-2:arm.dexterity<=5?-1:arm.dexterity<=8?0:arm.dexterity<=11?1:arm.dexterity<=14?2:3):null;
- const baseAttackModifier=w.directPayload||held&&w.mountClass==='vehicle'?null:design.kind==='drone'&&design.selections.brain.model==='none'?null:record.placement==='body'?(fcs.id==='none'?software:fcs.dm):(fcs.id==='none'?software+(dex??0):Math.max(0,software)+Math.max(dex??0,fcs.dm));
+ const baseAttackModifier=w.directPayload||held&&(w.mountClass==='vehicle'||w.requiresTwoHands)?null:design.kind==='drone'&&design.selections.brain.model==='none'?null:record.placement==='body'?(fcs.id==='none'?software:fcs.dm):(fcs.id==='none'?software+(dex??0):Math.max(0,software)+Math.max(dex??0,fcs.dm));
  weapons.push({...record,weaponFamily:w.weaponFamily,sourceFamily:w.sourceFamily,mountClass:w.mountClass,compatibility:w.compatibility,...(w.ammunitionAccounting?{ammunitionAccounting:w.ammunitionAccounting}:{}),...(w.sourceFamily==='csc-2023'?{massKg:w.massKg}:{}),...(w.conditionalEffects?{conditionalEffects:{...w.conditionalEffects,...(cscWeapon&&w.traits.includes('Scope')&&!w.conditionalEffects.holographicSight?{scopeUsage:{trait:'Scope',active:held,condition:'Hand-held use of the printed weapon scope',independentFireControlScope:fcs.id!=='none',source:{book:'Central Supply Catalogue Update 2023',edition:'Mongoose revised printing (copyright 2026)',pages:'176'}}}:{})}}:{}),...(w.directPayload?{directPayload:true,massKg:w.massKg,conditionalEffects:w.conditionalEffects??null,fireControlStatus:fcs.id==='none'?'not-installed':'inactive-delivery-unresolved',effectContext:'Direct installation or carriage only. No ranged-launch mechanism, automatic trigger, attack-roll modifier or combined explosive effect is granted.',...(w.thrownRange?{thrownRange:w.thrownRange}:{}),effectResolution:w.skill==='explosives'?'Source Explosives check and game conditions determine the final effect.':'Grenade effect depends on delivery and target conditions.'}:{}),associatedAttacks,...(auxiliary?{auxiliary}:{}),...(looseAmmunition?{looseAmmunition}:{}),baseAttackModifier,attackContext:'Before range, cover, recoil, aim and situational modifiers; external drone operator skills are not assumed.',label:w.label,range:w.range,damage:w.damage,linkedDamageBonus:!w.directPayload&&n>1&&w.damage&&!w.damage.includes('DD')?Number(w.damage.match(/^([0-9]+)/)?.[1]??0)*(n-1):0,traits:finalTraits,accessories:record.accessories??[],accessoryEffects,...(cscAccessories?{accessoryDetails:cscAccessories.details}:{}),magazine:w.magazine,softwareLevel:software,fireControlDM:fcs.dm,manipulatorDM:dex,attackModifier:null,cost:itemCost,slots:itemSlots,source:w.source});
  add('warning','WEAPON_ATTACK_CONTEXT',record.id,'Attack resolution depends on control mode, applicable weapon software and target conditions. Hardware and software modifiers are reported separately.');
  }
