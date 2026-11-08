@@ -135,6 +135,9 @@ for(const [grade,slots,minArm,cost,maxKg] of [['Small',1,3,500,3],['Medium',2,5,
 family('Fabrication Chamber',105,[['Superior',19,null,500000,{time:'1D minutes',brainLimit:'Any',memoryImplantation:true}]],{slotsBasis:'allocated',costBasis:'allocatedSlots',operationalReview:true,operationalNotes:'Allocated chamber Slots. Printed minimum fabrication time is1D minutes; brain/neurological complexity and feedstock requirements still apply. Source memory data and permissions are external prerequisites.'});
 family('Open Fabrication',105,[['Basic',20,null,500000,{hours:1,brainLimit:'Any',externalFabrication:'advanced'}],['Improved',21,null,500000,{time:'1D minutes',brainLimit:'Any',externalFabrication:'superior',memoryImplantation:true}]],{slotsBasis:'allocated',costBasis:'allocatedSlots',operationalReview:true,operationalNotes:'Produces outside a sealed chamber. External guidance, feedstock and templates remain required; no maximum external object size is inferred from installed Slots.'});
 
+// Standard robot installation only; alternate chamber scaling is not inferred.
+add('Deconstruction Chamber (standard)',13,5000000,64,119,{family:'deconstruction-chamber',operationalReview:true,effects:{capacitySlots:50,approximateCapacityKg:150,equipmentMassKg:200,outputStorageBandwidth:32,destructive:true,doesNotGrantSkill:true},operationalNotes:'Standard-sized chamber only. Destroys the scanned object. Full output requires separate computer memory or data-wafer storage; fabrication and memory restoration are separate external processes. No scaled chamber size or output data requirement is inferred.'});
+
 // Stable aliases for IDs used by the original small prototype.
 for(const row of rows){if(row.id==='hostile-environment-protection')row.id='hostile-environment';if(row.id.startsWith('visual-camouflage-'))row.exclusive='visual-camouflage';}
 for(const row of rows)if(['rtg-long-duration','rtg-short-duration','solar-power-unit'].includes(row.family)){

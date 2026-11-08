@@ -6,7 +6,7 @@ const good=r=>{assert.equal(r.status,'verified',JSON.stringify(r.diagnostics));r
 const has=(r,code)=>assert.ok(r.diagnostics.some(d=>d.code===code),JSON.stringify(r.diagnostics));
 const custom=(id,skill,speciality,level)=>({id,skill,speciality,level});
 test('all current equipment rows evaluate without NaN or uncaught exceptions',()=>{
- const rows=getCatalogue().stages.find(s=>s.id==='physical').controls.find(c=>c.field==='options').choices;assert.equal(rows.length,227);
+ const rows=getCatalogue().stages.find(s=>s.id==='physical').controls.find(c=>c.field==='options').choices;assert.equal(rows.length,228);
  for(const row of rows){const r=ev({techLevel:18,selections:{chassis:{size:'size-8'},physical:{options:[row.id]}}});assert.ok(['verified','blocked','invalid'].includes(r.status));if(r.totals)assert.ok(Number.isFinite(r.totals.cost));}
 });
 test('allocated storage prices Slots, not installed copies',()=>{
@@ -94,5 +94,5 @@ test('known invalid capacity has provisional totals; unresolved pricing never do
  const unknown=ev({selections:{physical:{options:['rtg-short-duration-basic']}}});assert.equal(unknown.status,'blocked');assert.equal(unknown.previewTotals,undefined);
 });
 test('coverage inventory is current and identifies exact blocked kinds',()=>{
- const c=getCoverage();assert.equal(c.complete,false);assert.equal(c.inventory.ordinaryEquipmentRows,227);assert.ok(c.inventory.implementedKinds.includes('clone'));assert.ok(!c.inventory.blockedKinds.includes('clone'));
+ const c=getCoverage();assert.equal(c.complete,false);assert.equal(c.inventory.ordinaryEquipmentRows,228);assert.ok(c.inventory.implementedKinds.includes('clone'));assert.ok(!c.inventory.blockedKinds.includes('clone'));
 });
