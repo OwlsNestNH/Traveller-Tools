@@ -20,6 +20,7 @@ Open `http://127.0.0.1:8781/?api=local`. The server listens only on loopback and
 - `engine/companion-education.mjs`: pure, source-referenced Companion admission and award rules.
 - `engine/benefits.mjs`: source-keyed material-benefit and pension procedures.
 - `engine/psionic-games.mjs`: pure competition procedures, with bounded current-career session integration tracked in COVERAGE.md.
+- `engine/aslan-land.mjs`: current-SOC parcel calculation, delayed claims and explicit actual-claim confirmation, separate from family inheritance.
 - `engine/clan-share-assets.mjs`: source-derived male art and explicitly referee-confirmed weapon bundles, separate from cash or resale.
 - `engine/clan-shares.mjs`: exact share-lot accounting and validated exchange plans; session commands preserve source and clan provenance.
 - `engine/aslan-origin.mjs`: source-referenced family, birth, estate-baseline, clan and pride procedures with separate identity and explicit referee boundaries.

@@ -89,7 +89,7 @@ test('asset IDs coexist with ordinary benefit equipment without changing its def
 });
 
 test('revision .12 rejects previous .11 bytes unchanged before replay',()=>{
- assert.equal(RULES_REVISION,'character-preview-2026-11-08.12');const old=structuredClone(buildMaleShareAssetsFixture().session);old.rulesRevision='character-preview-2026-11-08.11';const bytes=JSON.stringify(old),r=api({operation:'project',session:old});assert.equal(r.ok,false);assert.match(r.error.message,/Legacy or different rules revision/);assert.equal(JSON.stringify(old),bytes);
+ assert.equal(RULES_REVISION,'character-preview-2026-11-08.13');const old=structuredClone(buildMaleShareAssetsFixture().session);old.rulesRevision='character-preview-2026-11-08.11';const bytes=JSON.stringify(old),r=api({operation:'project',session:old});assert.equal(r.ok,false);assert.match(r.error.message,/Legacy or different rules revision/);assert.equal(JSON.stringify(old),bytes);
 });
 
 

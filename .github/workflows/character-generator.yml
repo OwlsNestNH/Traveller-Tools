@@ -30,6 +30,7 @@ jobs:
           node "$RUNNER_TEMP/character-playwright/node_modules/playwright/cli.js" install --with-deps chromium
       - name: Desktop and mobile character interactions
         run: |
+          node tools/character-generator/verification/aslan-land-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/clan-asset-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/clan-share-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"

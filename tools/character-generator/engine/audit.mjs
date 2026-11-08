@@ -10,6 +10,7 @@ export function characterChanges(before,after){
  }
  // Persisted outcomes are audited without exposing internal continuation/effect queues.
  const ledgerFields={
+  landClaims:['id','redemptionId','inputs','quantity','source','world','socAtRedemption','minimumParcels','increment','parcels','parcelRuling','createdAge','createdGenerationTerms','delayRoll','delayYears','eligibleAge','status','claimResolution','assetId'],
   clanShareLots:['id','awardId','awarded','available','spent','forfeited','source','origin','clanId','provenance','redemptionIds','forfeitureIds','verificationId'],
   clanShareClans:['id','name','source','provenance'],
   clanShareVerifications:['id','kind','lotId','relationshipId','clanId','quantity','before','after','reason','source'],

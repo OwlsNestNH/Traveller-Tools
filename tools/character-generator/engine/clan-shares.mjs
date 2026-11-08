@@ -9,9 +9,9 @@ export function clanShareInputs(lots,inputs){
  return {quantity,inputs:selected};
 }
 export function clanShareExchange({lots,inputs,kind,gender,relationship,clanId}={}){
- const selected=clanShareInputs(lots,inputs);need(['cash','ship-shares','contact','ally','art','weapons'].includes(kind),'This Clan Share exchange is not implemented.');
+ const selected=clanShareInputs(lots,inputs);need(['cash','ship-shares','contact','ally','art','weapons','land'].includes(kind),'This Clan Share exchange is not implemented.');
  if(kind==='cash')need(gender==='female','Male Clan Share redemption grants art or weapons, not cash. Choose a supported art or weapon exchange instead.');
- if(['art','weapons'].includes(kind))need(gender==='male','Art and weapon Clan Share exchanges use the male source branch.');
+ if(['art','weapons','land'].includes(kind))need(gender==='male','Art, weapon and land Clan Share exchanges use the male source branch.');
  if(['contact','ally'].includes(kind)){need(clanId,'Verify the issuing clan before using a clan favour.');need(selected.quantity===1,'A clan favour consumes exactly one share.');need(selected.inputs.every(i=>i.clanId===clanId),'The favour must belong to the selected share clan.');}
  if(kind==='ally'){need(relationship?.role==='Contact','Select an existing Contact, not an Ally or other relationship.');need(relationship.clanFavour?.clanId===clanId&&relationship.clanFavour.upperEchelon===true,'Verify that this Contact belongs to this clan’s upper echelons first.');}
  return {...selected,kind,source:{...CLAN_SHARE_SOURCE},cash:kind==='cash'?selected.quantity*10000:0,shipShares:kind==='ship-shares'?selected.quantity:0,clanId:['contact','ally'].includes(kind)?clanId:null};

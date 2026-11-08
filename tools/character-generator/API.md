@@ -148,7 +148,7 @@ Military Event 10 and Spacer Events 5/10 offer a specific officer career in the 
 
 `character.aslanStatusChanges` records source, timing, SOC/status before and after, removed Clan Share tokens and affected award IDs. Native Aslan qualification failure sets SOC 2/Outcast and forfeits held unconverted Clan Shares, including those just received during mustering out. Original award records remain annotated rather than erased. Other benefits and cash history are preserved. No repossession of previously redeemed cash, ships or land is inferred.
 
-Native Aslan cash limits and male half-cash handling remain distinct from the Core three-roll rule. Broad Hierate/Core access, owned land/redemption and generic same-career Aslan assignment mapping remain outside this bounded route. Native origin setup is documented separately below.
+Native Aslan cash limits and male half-cash handling remain distinct from the Core three-roll rule. Broad Hierate/Core access and generic same-career Aslan assignment mapping remain outside this bounded route. The separate land-claim workflow is documented below. Native origin setup is documented separately below.
 
 ## Earned Aslan Outcast restoration
 
@@ -190,7 +190,7 @@ The restored-standing result does not explicitly grant the Outcast event's next-
 
 - `character.aslanHistoricalEntries` retains requested route, source, restoration ID, timing, prior career indices, decision, actual check, expiry and supersession. Another career, education or elapsed boundary expires an unused ruling. There is no permanent historical unlock, stockpile of approvals, reused benefits or silently retargeted decision. Existing officer-offer status reviews remain offer-specific.
 
-Family origin procedures are documented below. Owned land/redemption and general Hierate/Core access remain separate work; these bounded restoration paths do not certify complete Aslan generation.
+Family origin procedures are documented below. The land-claim workflow is documented below; inheritance and general Hierate/Core access remain separate work; these bounded restoration paths do not certify complete Aslan generation.
 
 ## Native Aslan family and origin
 
@@ -229,7 +229,7 @@ Exchanges are optional. The preview permits them at clean `precareer`, `career`,
 
 `character.clanShareLots`, `clanShareClans`, `clanShareVerifications` and `clanShareRedemptions` retain issuing/source evidence, stable IDs, exact inputs, outputs, before/after balances and action context. Qualification/status forfeiture consumes only the still-held part of each lot and records exact affected quantities. Previously exchanged cash, Ship Shares and relationships are not repossessed. Source-earned Outlaw shares with unknown clan can still become cash or Ship Shares; clan favours require the additional affiliation record.
 
-The always-on audit includes these ledgers and stable relationship identities. Replay/import uses the current rules revision; `.10` files are not automatically migrated. Corporate equity, land acquisition/claiming and cross-character pooling are not implemented by these commands. Male assets use the additional commands below.
+The always-on audit includes these ledgers and stable relationship identities. Replay/import uses the current rules revision; `.10` files are not automatically migrated. Corporate equity and cross-character pooling are not implemented by these commands. Land uses the additional workflow below. Male assets use the additional commands below.
 
 
 ## Male Clan Share assets
@@ -243,4 +243,20 @@ The same `redeem-clan-shares` command supports two male-only choices. `state.cla
 
 `character.assets` retains IDs, definition/source, original award IDs, personal ownership, redemption ID, category, quantity, assessed value, valuation basis and verification provenance. Weapon assets additionally retain unit cost, TL and source reference. `sourceVerification.method` distinguishes `source-derived` art from `referee-confirmed` weapons; the latter records `catalogChecked:false`. Redemption outputs include `assetIds`, `budget`, `assessedValue`, `unusedValue`, `unusedValueDisposition` and any lower-value ruling. The always-on audit captures both assets and the original lot debit.
 
-These are non-cash assets, so they cannot silently fund medical settlement, repay debt, consume cash-roll allowance, change WLT, advance time or grant weapon skills. Later Outcast forfeiture affects still-held shares, not the converted assets. This path neither applies male cash-roll halving nor borrows ordinary Core Weapon-benefit price/TL limits or repeat-award skill options. Automatic resale, corporations and land remain separate unfinished procedures.
+These are non-cash assets, so they cannot silently fund medical settlement, repay debt, consume cash-roll allowance, change WLT, advance time or grant weapon skills. Later Outcast forfeiture affects still-held shares, not the converted assets. This path neither applies male cash-roll halving nor borrows ordinary Core Weapon-benefit price/TL limits or repeat-award skill options. Automatic resale and corporations remain unfinished. Land uses the separate delayed-claim workflow below.
+
+
+## Aslan land claims and holdings
+
+Aliens Volume 1 Update 2026 pp. 17 and 47. This separate workflow creates a delayed claim first, not an immediately owned estate. It neither changes the family estate baseline nor decides inheritance.
+
+- `redeem-clan-shares {kind:"land",inputs:[{lotId,quantity},...],world:{name,location,reference?},parcelRuling?}` requires the male source branch, current SOC 9+, a clean generation checkpoint and at least three genuine shares. Multiple lots can combine. Unknown issuing-clan identity does not invalidate a source-verified quantity. Every lot retains original award provenance and exact debit.
+- The caller selects an identifiable world: name 1–120 characters, location 1–160, optional reference 1–160. No world catalog is checked and no UWP, parcel area or land quality is inferred.
+- Current SOC determines the printed minimum and per-extra-share increment. The accepted record freezes both and its resulting parcel count. A current SOC outside the printed range requires GM `parcelRuling:{minimumParcels,increment,reason}`; minimum is a positive exact integer, increment is nonnegative, reason is 1–500 characters. It does not reuse a historical family baseline. An override of a printed row is rejected. Software exact-integer bounds are not published land limits.
+- After validation, one normal D6 plus 3 records delay years and eligible chronological age. It does not receive characteristic boons or advance time. Nonstandard delay exceptions are not implemented. A GM replay can replace the original D6 within its valid range, preserving superseded audit history.
+- `state.clanShareOptions.landRules` projects the current single-row calculation and input bounds; its land choice projects eligible lot IDs and its reason. The GUI can combine selected lots and displays only the current calculation, not the source table.
+- `state.landClaimOptions` is separate from the unspent-share balance. Each claim projects maturity, remaining years, checkpoint eligibility and permitted modes. A converted claim is not automatically resized, cancelled or repossessed after later SOC loss or Outcast status. New redemption still has its own eligibility checks.
+- `resolve-land-claim {claimId,mode:"personal-return"|"relative-administration",claimEstablished:true,reason,relativeName?}` requires GM mode, elapsed recorded delay and a clean checkpoint. Relative administration additionally requires Independence 3+ and a named relative, maximum 120 characters. Both modes need explicit confirmation and a 1–500 character reason that the actual claim has been established. Appointing a relative alone does not establish title. Personal return rejects an irrelevant relative field. No travel, time, cash, skill or career progress is invented.
+- Resolution creates an active personally owned `aslan.landholding` asset with category `land`, the selected world, parcel count, original SOC, source award IDs and administration evidence. It has no equipment stats or cash valuation. `character.landClaims` preserves original inputs, world, source, SOC, parcel calculation, delay dice/timing, pending/claimed status, resolution and asset link. All are audited before/after. Pending claims and owned holdings have a dedicated printed sheet section, separate from equipment and the family estate.
+
+Repeated command IDs, import, restore and replay follow the ordinary deterministic audit contract. The rules revision is `character-preview-2026-11-08.13`; `.12` and earlier files are unverified read-only recovery records, not silently migrated. Corporations, inheritance timing, nonstandard delay exceptions, land valuation/income and broader alien-access gaps remain unfinished.
