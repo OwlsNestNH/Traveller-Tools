@@ -77,6 +77,9 @@ try{
   await page.locator('[name="capacity"]').fill('121.2');
   await info(page.locator('#settings-rounding-note [data-rule-info="rounding"]'),'rounding',{method:viewport.width<500?'tap':'click'});
   assert.equal(await page.locator('[name="capacity"]').inputValue(),'122','Ordinary blur normalization retains its existing whole-ton rule');
+  const roundingField=page.locator('#settings-form [name="creditStep"]');
+  for(const d of await roundingField.locator('xpath=ancestor::details').all())if(!await d.evaluate(el=>el.open))await d.locator(':scope > summary').click({position:{x:8,y:8}});
+  await info(roundingField.locator('xpath=..').locator('[data-rule-info="rounding"]'),'rounding',{method:viewport.width<500?'tap':'Enter',screenshot:'rounding-adjacent'});
   await page.locator('#settings-reset').click();assert.equal(await saved(),original);
   // A source popup over a supplier form leaves its exact inputs and its normal
   // revision/submit boundary intact. Escape closes only the topmost dialog.

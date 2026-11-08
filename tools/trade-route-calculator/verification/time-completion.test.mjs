@@ -20,7 +20,7 @@ const roleCallback=app.slice(roleStart+marker.length).split(');try{state=store.r
 const absolutize=(source,url)=>source.replaceAll('import.meta.url',JSON.stringify(url.href)).replace(/from '(\.[^']+)'/g,(_all,path)=>'from '+JSON.stringify(new URL(path,url).href));
 function replace(source,from,to){assert.ok(source.includes(from),'Expected existing harness boundary '+from);return source.replace(from,to);}
 let harnessSource=absolutize(await readFile(harnessURL,'utf8'),harnessURL);
-harnessSource=replace(harnessSource,'globalThis.api={setStore','globalThis.api={changeCampaignDay,timeForm,campaignTimeCounter,lifeSupportCounter,get timeOperation(){return timeWriteOperation;},roleChange:'+roleCallback+',setStore');
+harnessSource=replace(harnessSource,'globalThis.api={setStore','globalThis.api={toggleStationSupport,changeCampaignDay,timeForm,campaignTimeCounter,lifeSupportCounter,get timeOperation(){return timeWriteOperation;},roleChange:'+roleCallback+',setStore');
 const harnessModule='data:text/javascript;base64,'+Buffer.from(harnessSource).toString('base64');
 let storageSource=absolutize(await readFile(storageURL,'utf8'),storageURL);
 storageSource=replace(storageSource,JSON.stringify(harnessURL.href),JSON.stringify(harnessModule));
@@ -46,7 +46,7 @@ function setup(saved=fixture()){
  h.api.setTab('Overview');h.api.render();return h;
 }
 function open(h,edits={}){h.api.actions.time();h.fill({date:h.api.state.dateLabel,hours:h.api.state.hours+25,reason,...edits});assert.equal(ui(h).modalTitle,'Campaign time');}
-function begin(h,path,edits={}){if(path==='form'){open(h,edits);return h.submit();}return h.runAction(path==='forward'?'day-forward':'day-back');}
+function begin(h,path,edits={}){if(path==='station')return h.runAction('station-life-support');if(path==='form'){open(h,edits);return h.submit();}return h.runAction(path==='forward'?'day-forward':'day-back');}
 const submitEvent=h=>({preventDefault(){},currentTarget:h.dom.ids.get('modal-form')});
 function semanticUI(h){return {summary:h.dom.ids.get('summary').innerHTML,shipActions:h.dom.ids.get('ship-actions').innerHTML};}
 function noSuccess(h){assert.doesNotMatch(ui(h).message,success);}
@@ -202,4 +202,32 @@ for(const path of paths)test(`${path} closes an initially unused jump mulligan p
 
 for(const delayed of [false,true])test(`corrected local time validation completes without retaining the earlier warning, delayed=${delayed}`,async()=>{
  const h=setup(),raw=h.bytes();open(h,{reason:'   '});await h.submit();assert.equal(h.bytes(),raw);assert.match(ui(h).modalError,/reason/i);assert.equal(h.counters.writes,0);h.fill({reason:'Corrected referee explanation'});const gate=delayed?serviceSaveGate(h.store):null,result=h.submit();if(gate){assert.equal(gate.entries.length,1);assert.match(ui(h).modalError,/reason/i,'Previous review error remains until successful settlement');gate.entries[0].write();assert.match(ui(h).modalError,/reason/i);gate.entries[0].fulfill();}await result;assert.equal(ui(h).modalError,'','Only exact owned success clears the old local validation warning');assert.equal(ui(h).modalOpen,false);assert.match(ui(h).message,success);assert.equal(h.counters.writes,1);gate?.restore();
+});
+
+// Station supply uses the same owned, atomic save boundary as time controls.
+// No time, physical supplies, debt, cash or historical receipts change here.
+test('station synchronous save and reload Undo preserve all stock and economics',async()=>{
+ const h=setup(),before=h.persisted();await begin(h,'station');const saved=h.persisted();
+ assert.equal(saved.ship.stationLifeSupport,true);assert.equal(saved.hours,before.hours);assert.equal(cmp(supportStock(saved.ship).remainingUnits,supportStock(before.ship).remainingUnits),0,'Existing transition anchoring preserves the exact legacy supply quantity');unchanged(saved,before);assert.match(ui(h).message,/Station life support on saved/);assert.equal(h.counters.writes,1);
+ const fresh=setup(saved);await fresh.runAction('undo');for(const key of ['ship','hours','ledger','bank'])same(fresh.persisted()[key],before[key]);
+});
+test('station delayed save suppresses repeated switch and day actions through settlement',async t=>{
+ const {h,raw,gate,operation}=await pending(t,'station');assert.match(ui(h).modalTitle,/Saving station life support/);const display=semanticUI(h);
+ await begin(h,'station');await begin(h,'forward');assert.equal(gate.entries.length,1);assert.equal(h.bytes(),raw);
+ gate.entries[0].write();same(semanticUI(h),display);assert.equal(h.persisted().ship.stationLifeSupport,true);gate.entries[0].fulfill();await operation;assert.equal(ui(h).modalOpen,false);assert.match(ui(h).message,/Station life support on saved/);
+});
+test('known unwritten station failure preserves bytes and permits a deliberate retry',async t=>{
+ const {h,raw,gate,operation}=await pending(t,'station');h.failNext();gate.entries[0].fulfill();await operation;assert.equal(h.bytes(),raw);assert.equal(h.store.reloadRequired??false,false);assert.match(ui(h).modalError,/quota/i);h.api.closeModal();
+ const retry=begin(h,'station');await flush();assert.equal(gate.entries.length,2);gate.entries[1].fulfill();await retry;assert.equal(h.counters.writes,1);assert.equal(h.persisted().ship.stationLifeSupport,true);
+});
+for(const afterWrite of [false,true])test('unknown station result is reload-only, published='+afterWrite,async t=>{
+ const {h,raw,gate,operation}=await pending(t,'station');if(afterWrite)gate.entries[0].write();gate.entries[0].reject();await operation;terminal(h);assert.match(ui(h).message,/Station life support/i);if(!afterWrite)assert.equal(h.bytes(),raw);
+ const bytes=h.bytes();await begin(h,'station');await begin(h,'forward');assert.equal(h.bytes(),bytes);assert.equal(gate.entries.length,1);
+});
+for(const point of ['beforeNotify','afterNotify'])test('station durable '+point+' fault immediately requires reload',async t=>{
+ const {h,before,gate,operation}=await pending(t,'station');h.hooks[point]=()=>{throw Error('Station publication fault');};gate.entries[0].fulfill();await operation;terminal(h);assert.equal(h.persisted().ship.stationLifeSupport,true);assert.equal(h.counters.writes,1);assert.match(ui(h).message,/saved, but/);
+ const fresh=setup(h.persisted());await fresh.runAction('undo');same(fresh.persisted().ship,before.ship);
+});
+test('station pending completion cannot overwrite newer disk state or regain lost ownership',async t=>{
+ const {h,gate,operation}=await pending(t,'station');const next=S.transition(h.persisted(),'External expense',s=>S.expense(s,7,'Other owner'));h.external(next,{publish:false});const bytes=h.bytes();gate.entries[0].fulfill();await operation;assert.equal(h.bytes(),bytes);assert.equal(h.counters.writes,0);assert.doesNotMatch(ui(h).message,/Station life support on saved/);
 });

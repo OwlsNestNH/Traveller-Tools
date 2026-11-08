@@ -1,13 +1,13 @@
-import {recordedOperatingResult} from './financial-summary.mjs?v=fleet-20261108-2';
-import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=fleet-20261108-2';
-import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=fleet-20261108-2';
-import {bladderSpace} from './fuel.mjs?v=fleet-20261108-2';
+import {recordedOperatingResult} from './financial-summary.mjs?v=luxury-lss-20261108-1';
+import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=luxury-lss-20261108-1';
+import {supportStock,supportCargo,supportDisplay,supportReference,supportCostBasis} from './life-support.mjs?v=luxury-lss-20261108-1';
+import {bladderSpace} from './fuel.mjs?v=luxury-lss-20261108-1';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
-import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=fleet-20261108-2';
-import {distance} from './map.mjs?v=fleet-20261108-2';
+import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=luxury-lss-20261108-1';
+import {distance} from './map.mjs?v=luxury-lss-20261108-1';
 
-export const REPORT_VERSION='2026.10.21.118';
+export const REPORT_VERSION='2026.10.21.119';
 const clean=v=>String(v??'Not recorded').replace(/[\r\n\t\x00-\x1f]+/g,' ').trim();
 const number=v=>String(v).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const cr=v=>v==null?'Not recorded':'Cr '+number(v);
@@ -33,21 +33,23 @@ export function campaignReport(s,core,{exportedAt=new Date()}={}){
  line('Exported',exportedAt.toISOString());line('Calculator version',REPORT_VERSION);
  section('SHIP & OCCUPANTS');
  const otherCargo=A.sum((s.otherCargo??[]).map(l=>l.quantity)),cargo=A.sum(s.lots.map(l=>l.quantity)),freight=A.sum(s.contracts.filter(c=>c.status==='accepted'&&c.kind!=='passenger').map(c=>c.quantity)),luggage=passengerLuggage(s.ship);
- line('Cargo capacity',s.ship.capacity+' tons');line('Speculative cargo aboard',A.decimal(cargo)+' tons');line('Freight / mail aboard',A.decimal(freight)+' tons');line('Passenger luggage',luggage+' tons');line('Basic passenger accommodation',A.decimal(passengerAccommodation)+' tons');if(booked.total)line('Booked passengers aboard',booked.total+' ('+booked.high+' High, '+booked.middle+' Middle, '+booked.basic+' Basic, '+booked.low+' Low; already included in support totals)');
+ line('Cargo capacity',s.ship.capacity+' tons');line('Speculative cargo aboard',A.decimal(cargo)+' tons');line('Freight / mail aboard',A.decimal(freight)+' tons');line('Passenger luggage',luggage+' tons');line('Basic passenger accommodation',A.decimal(passengerAccommodation)+' tons');if(booked.total)line('Booked passengers aboard',booked.total+' ('+(booked.luxury?booked.luxury+' Luxury, ':'')+booked.high+' High, '+booked.middle+' Middle, '+booked.basic+' Basic, '+booked.low+' Low; already included in support totals)');
  line('Cargo space used by fuel in bladders',bladderSpace(s.ship)+' tons');line('Cargo space used by life support',supportStock(s.ship).cargoTons===null?'Unknown until stock and hull are recorded':supportDisplay(supportCargo(s.ship))+' tons');line('Space available',supportDisplay(A.sub(s.ship.capacity,A.sum([cargo,otherCargo,freight,luggage,passengerAccommodation,bladderSpace(s.ship),supportCargo(s.ship)])))+' tons');
  line('Jump rating',s.ship.jump);if(s.ship.fuel){line('Ship displacement',s.ship.fuel.displacementTons+' tons');line('Jump fuel aboard / capacity',s.ship.fuel.aboardTons+' / '+s.ship.fuel.capacityTons+' tons');line('Fuel scope','Jump fuel only; power-plant fuel excluded.');}line('Staterooms (all, including empty)',roomTotal(s.ship));
- for(const tier of ['low','middle','high']){const service=s.ship.accommodation?.roomService?.[tier];line('  '+tier+' staterooms',roomCounts(s.ship)[tier]+'; '+serviceLabel(tier,service)+' service; '+cr(serviceRate(tier,service))+'/room/month');}
+ for(const tier of ['low','middle','high','luxury'].filter(t=>t!=='luxury'||roomCounts(s.ship).luxury)){const service=s.ship.accommodation?.roomService?.[tier];line('  '+tier+' staterooms',(roomCounts(s.ship)[tier]??0)+'; '+serviceLabel(tier,service)+' service; '+cr(serviceRate(tier,service))+'/room/month');}
  line('Cost basis','Campaign rates; weekly charges are one quarter of monthly rates.');
  const occ=occupants(s.ship);
- if(s.ship.accommodation?.combinedPeople)line('People aboard (crew + passengers)',['passengers','crew'].reduce((n,r)=>n+['low','middle','high'].reduce((v,t)=>v+(occ[r]?.[t]??0),0),0));
+ if(s.ship.accommodation?.combinedPeople)line('People aboard (crew + passengers)',['passengers','crew'].reduce((n,r)=>n+['low','middle','high','luxury'].reduce((v,t)=>v+(occ[r]?.[t]??0),0),0));
  else for(const role of ['passengers','crew']){
-  line(role==='crew'?'Crew aboard':'Passengers aboard',['low','middle','high'].map(t=>(occ[role]?.[t]??0)+' '+t).join(' / '));
-  for(const tier of ['low','middle','high'])if(occ[role]?.[tier]){
+  line(role==='crew'?'Crew aboard':'Passengers aboard',['low','middle','high','luxury'].filter(t=>t!=='luxury'||occ[role]?.luxury).map(t=>(occ[role]?.[t]??0)+' '+t).join(' / '));
+  for(const tier of ['low','middle','high','luxury'])if(occ[role]?.[tier]){
    line('  '+role+' / '+tier+' support',cr(personRate(tier))+'/person/month, additional to stateroom expenses');
   }
  }
  if(s.ship.accommodation?.combinedPeople)line('People receiving high service',(occ.passengers?.high??0)+(occ.crew?.high??0));
- if(s.ship.lifeSupport){const q=supportStock(s.ship);line('Life support stock',q.remainingUnits===null?'Legacy days; actual LSS needs confirmation':q.remainingUnits+' LSS');line('Life support days / refill target',(q.remainingDays??'Unknown at current complement')+' / '+q.targetDays);line('Awake people / occupied low berths',q.awakePeople+' / '+q.occupiedLowBerths);line('Life support consumption',q.complementKnown?q.dailyUnits+' LSS/day':'Unknown complement');line('Internal life support capacity',q.internalCapacityUnits===null?'Unknown until hull displacement is recorded':q.internalCapacityUnits+' LSS');line('Life support source',supportReference);if(q.legacy)line('Legacy life support',q.migration.possible?'Converts inside the next reversible campaign change.':q.migration.reason);}
+ if(s.ship.accommodation?.combinedPeople&&((occ.passengers?.luxury??0)+(occ.crew?.luxury??0)))line('People receiving luxury service',(occ.passengers?.luxury??0)+(occ.crew?.luxury??0));
+ if(s.ship.stationLifeSupport!==undefined)line('Station life support',s.ship.stationLifeSupport?'On: onboard use paused while docked; jump disables it':'Off: onboard supplies in use');
+ if(s.ship.lifeSupport){const q=supportStock(s.ship);line('Life support stock',q.remainingUnits===null?'Legacy days; actual LSS needs confirmation':q.remainingUnits+' LSS');line('Life support days / refill target',(q.remainingDays??'Unknown at current complement')+' / '+q.targetDays);line('Awake people / occupied low berths',q.awakePeople+' / '+q.occupiedLowBerths);line('Life support consumption',q.complementKnown?q.dailyUnits+' LSS/day':'Unknown complement');line('Internal life support capacity',q.internalCapacityUnits===null?'Unknown until hull displacement is recorded':q.internalCapacityUnits+' LSS');line('Life support source',supportReference);if(q.complementKnown){const cost=supportCostBasis(s.ship);line('LSS cabin + person cost / 28 days',cr(cost.monthly));line('LSS daily cost rounded up',cr(cost.dailyCredits));line('LSS billing','Cabin cost included in refills. Existing stock and receipts retained without repricing or automatic credit.');}if(q.legacy)line('Legacy life support',q.migration.possible?'Converts inside the next reversible campaign change.':q.migration.reason);}
  section('FINANCIAL SUMMARY');
  const opening=s.ledger.find(e=>e.type==='Opening bank');
  line('Opening bank',cr(opening?.amount));line('Current bank',cr(s.bank));
@@ -71,6 +73,7 @@ export function campaignReport(s,core,{exportedAt=new Date()}={}){
  line('Cargo remaining cost basis',cr(total(s.lots.map(l=>l.basis))));
  line('Realized trading profit / loss',complete?cr(retained):'Incomplete historical sale records');
  line('Freight / mail income',cr(income));line('Passenger income',cr(passengerIncome));line('Recorded operating expenses',cr(operating));
+ const incidental=total(s.ledger.map(e=>e.expense?.incidentalCosts??'0'));if(incidental>0n)line('Included incidental costs on scheduled payments',cr(incidental));
  line(passengerIncome?'Trading + transport - expenses':'Trading + freight - expenses',complete?cr(retained+income+passengerIncome-operating):'Not available');
  line('Recorded insurance payments',cr(total(s.ledger.filter(e=>e.type==='Insurance claim').map(e=>e.amount))));
  line('Current profit setting',s.settings.profit+'% of positive profit [1]');

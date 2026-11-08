@@ -50,7 +50,7 @@ try{
  for(const viewport of [{width:1440,height:1100},{width:390,height:844},{width:320,height:740}]){
   const h=await start(viewport),{page,raw,read,tab,field,cancel,expenses,preview}=h;
   const before=await raw();await expenses({mortgageCount:2,maintenanceCount:3});
-  assert.match(await page.locator('#expense-estimate').textContent(),/Cr 206,005/);
+  assert.match(await page.locator('#expense-estimate').textContent(),/Cr 206,200/);
   assert.equal(await raw(),before);await cancel();assert.equal(await raw(),before,'Closing a draft never pays');
   await expenses({mortgageCount:361});assert.equal(await page.locator('#modal-submit').isDisabled(),true);assert.equal(await raw(),before);
   await field('mortgagePayments').fill('2');await preview();assert.equal(await raw(),before);await cancel();assert.equal(await raw(),before,'Cancelling confirmation never pays');
@@ -61,11 +61,18 @@ try{
   assert.match(await page.locator('#modal-body').textContent(),/Cash remaining after payment/);
   await page.locator('#modal-submit').evaluate(button=>{button.click();button.click();});await page.locator('#modal').waitFor({state:'hidden'});
   const paid=await read();assert.equal(paid.revision,JSON.parse(before).revision+1,'Repeated submit commits once');
-  assert.equal(paid.bank,String(BigInt(JSON.parse(before).bank)-206005n));assert.equal(paid.ship.mortgage.payment,'100001');
+  assert.equal(paid.bank,String(BigInt(JSON.parse(before).bank)-206200n));assert.equal(paid.ship.mortgage.payment,'100001');
   assert.equal(paid.ship.mortgage.originalAmount,'24000000');assert.equal(paid.ship.mortgage.remainingPayments,358);assert.equal(paid.ship.mortgage.totalPaid,'12200002');
   assert.equal(paid.ship.mortgage.nextDueDate,'085-1105');assert.equal(paid.ship.mortgage.lastPaidDueDate,'057-1105');
   assert.equal(paid.ship.maintenance.nextDueDate,'099-1105');assert.equal(paid.ship.maintenance.paidSinceTracking,'6003');
-  assert.equal(paid.ledger.length,JSON.parse(before).ledger.length+2);assert.equal(paid.ledger.at(-1).batchId,paid.ledger.at(-2).batchId);validate(paid);
+  assert.equal(paid.ledger.length,JSON.parse(before).ledger.length+2);assert.equal(paid.ledger.at(-1).batchId,paid.ledger.at(-2).batchId);
+  // Independent expectations: round each selected installment total once, without increasing scheduled repayments.
+  for(const [kind,scheduled,cash,incidentals]of [['mortgage','200002','200100','98'],['maintenance','6003','6100','97']]){
+   const entry=paid.ledger.slice(-2).find(e=>e.expense.kind===kind);assert.ok(entry,kind+' has one receipt');
+   assert.equal(entry.amount,String(-BigInt(cash)));assert.equal(entry.roundingStep,100);assert.equal(entry.expense.amount,cash);
+   assert.equal(entry.expense.scheduledAmount,scheduled);assert.equal(entry.expense[kind].amount,scheduled);assert.equal(entry.expense.incidentalCosts,incidentals);assert.equal(entry.expense.roundingStep,100);
+  }
+  validate(paid);
   await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();assert.deepEqual(await read(),paid);
   await tab('Accounts');const payment=page.locator('#main tr').filter({hasText:'Mortgage payment'});await payment.locator('[data-action="ledger-audit"]').click();
   assert.match(await page.locator('#modal-body').textContent(),/Original mortgage amount/);assert.match(await page.locator('#modal-body').textContent(),/24000000/);assert.match(await page.locator('#modal-body').textContent(),/085-1105/);await cancel();
@@ -92,7 +99,7 @@ try{
   const time=page.locator('#main [data-action="time"]');for(const details of await time.locator('xpath=ancestor::details').all())if(!await details.evaluate(el=>el.open))await details.locator(':scope > summary').click();await time.click();
   await page.locator('#modal [name="date"]').fill('001-1106');await page.locator('#modal [name="reason"]').fill('Verify frozen payment receipt dates');await page.locator('#modal-submit').click();await page.locator('#modal').waitFor({state:'hidden'});
   await tab('Accounts');const historical=page.locator('#main tr').filter({hasText:'Mortgage payment'});assert.match(await historical.textContent(),new RegExp(paidDate));await historical.locator('[data-action="ledger-audit"]').click();assert.ok((await page.locator('#modal-body').textContent()).includes(paidDate));await cancel();
-  await h.finish(String(viewport.width));console.log(`PASS: ${viewport.width}px exact fixed amounts, preview/cancel, bounded periods, repeated submit, combined payments, reload/import, audit/Undo and ownership loss.`);
+  await h.finish(String(viewport.width));console.log(`PASS: ${viewport.width}px rounded cash debits with exact scheduled repayments, preview/cancel, bounded periods, repeated submit, combined payments, reload/import, audit/Undo and ownership loss.`);
  }
  const h=await start({width:1440,height:1100},false),{page,raw,read,tab}=h;await tab('Settings');const before=await raw();
  const fields={mortgageOriginal:'24000000',mortgagePayment:'100001',mortgageRemaining:'360',mortgagePaid:'12000000',mortgageDueDate:'029-1105',maintenancePayment:'2001',maintenanceDueDate:'015-1105'};

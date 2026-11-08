@@ -82,7 +82,9 @@ async function planNext(hex){
 async function refillLss(force=false){
  let s=await read();if(s.worlds[s.actual].emptySpace)return;
  if(stock(s)>=140-1e-9||!force&&stock(s)>=105)return;
- const cost=(140-Math.floor(stock(s)))*50; // Cr7,000 /140 LSS; discard only the refilled compartment fraction.
+ // Independent fixture tariff: seven cabins + four Middle people + one High = Cr14,000/28 days.
+ const dailyCredits=Math.ceil((7*1000+4*1000+3000)/28),purchased=140-Math.floor(stock(s));
+ const cost=Math.ceil(dailyCredits*purchased/5); // Five physical LSS/day; discard only the refilled compartment fraction.
  if(BigInt(s.bank)<BigInt(cost)){report.decisions.push({kind:'LSS unavailable: insufficient cash',world:s.actual,cost,bank:s.bank});throw Error('Expected operating cash shortfall stops this trip before unsupported travel.');}
  await tab('Overview');await click('refill-support');if(await page.locator('#service-panel.service-saved').count())await click('service-new');await page.locator('#service-form [name="internal"]').fill('140');assert.equal(await action('service-confirm').isEnabled(),true);await click('service-confirm');await page.locator('#service-panel.service-saved').waitFor({state:'visible'});
  const after=await checkpoint('LSS normal refill');assert.equal(after.bank,String(BigInt(s.bank)-BigInt(cost)));assert.ok(Math.abs(stock(after)-140)<1e-9);assert.equal(after.ledger.length,s.ledger.length+1);check('normal LSS refill: exact prorating; no duplicate cabin/person payment',{world:s.worlds[s.actual].name,cost});

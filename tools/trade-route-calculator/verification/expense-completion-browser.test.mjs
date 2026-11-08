@@ -80,7 +80,19 @@ function assertSaved(saved, before, scenario) {
   assert.deepEqual(saved.ledger.at(-1).paidAt, {dateLabel: before.dateLabel, hours: before.hours});
   if (scenario.kind === 'salary') assert.equal(q.amount, '37000');
   if (scenario.mode === 'zero') assert.equal(q.amount, '0');
-  if (['mortgage', 'maintenance'].includes(scenario.kind)) assert.equal(q.amount, String(BigInt(before.ship[scenario.kind].payment) * BigInt(fields(scenario).payments)), 'Fixed cost is exempt from Credit rounding');
+  if (['mortgage', 'maintenance'].includes(scenario.kind)) {
+   const kind = scenario.kind, periods = BigInt(fields(scenario).payments), step = before.settings.creditStep === 100 ? 100n : 1n;
+   // Independent BigInt oracle: round the selected installment total once, not each payment.
+   const scheduled = BigInt(before.ship[kind].payment) * periods, cash = ((scheduled + step - 1n) / step) * step, incidentals = cash - scheduled;
+   const entry = saved.ledger.at(-1), tracked = kind === 'mortgage' ? 'totalPaid' : 'paidSinceTracking';
+   assert.equal(saved.bank, String(BigInt(before.bank) - cash)); assert.equal(entry.amount, String(-cash)); assert.equal(entry.roundingStep, Number(step));
+   for (const receipt of [q, entry.expense]) {
+    assert.equal(receipt.amount, String(cash)); assert.equal(receipt.scheduledAmount, String(scheduled)); assert.equal(receipt.incidentalCosts, String(incidentals)); assert.equal(receipt.roundingStep, Number(step));
+    assert.equal(receipt[kind].amount, String(scheduled)); assert.deepEqual(receipt[kind].before, before.ship[kind]); assert.deepEqual(receipt[kind].after, saved.ship[kind]);
+   }
+   assert.equal(saved.ship[kind].payment, before.ship[kind].payment); assert.equal(saved.ship[kind][tracked], String(BigInt(before.ship[kind][tracked]) + scheduled), 'Incidentals never count as scheduled repayments');
+   if (kind === 'mortgage') {assert.equal(saved.ship.mortgage.originalAmount, before.ship.mortgage.originalAmount); assert.equal(saved.ship.mortgage.remainingPayments, before.ship.mortgage.remainingPayments - Number(periods));}
+  }
  }
 }
 function compactSnapshot(snapshot) {return snapshot && {...snapshot, regions: snapshot.regions.map(({html, ...region}) => ({...region, htmlLength: html?.length ?? null, htmlSHA256: html == null ? null : hash(html)}))};}
@@ -568,7 +580,7 @@ if (process.argv.includes('--fixtures-only')) {
  assert.match(html, /<script type="module" src="js\/app\.mjs\?[^\"]+"/);
  assert.match(app, /import\s*\{[^}]*\bStore\b[^}]*\}\s*from\s*['"]\.\/persistence\.mjs\?[^'"]+['"]/);
  for (const hook of ['receiveCampaign', 'invalidate', 'publicationDeferred', 'writeGeneration']) assert.match(app, new RegExp('expenseServices\\.' + hook + '\\('), 'Expense app ownership hook: ' + hook);
- console.log(`PASS: exact expense fixture/oracles, all four payments + rate, fixed rounding exemption/salary rounding/zero berthing, huge Credits/million counts, exact inverse Undo and versioned runtime wiring. ${scenarios.length} scenarios, ${cases.length} browser cases, ${report.declaredScreenshots} declared overview/detail frames. Chromium was NOT launched.`);
+ console.log(`PASS: exact expense fixture/oracles, all four payments + rate, rounded scheduled-payment cash with exact repayment/incidentals, salary rounding/zero berthing, huge Credits/million counts, exact inverse Undo and versioned runtime wiring. ${scenarios.length} scenarios, ${cases.length} browser cases, ${report.declaredScreenshots} declared overview/detail frames. Chromium was NOT launched.`);
 } else {
  await mkdir(artifacts, {recursive: true}); const began = Date.now();
  const deadline = setTimeout(() => {console.error('Expense browser gate exceeded bounded 14-minute duration'); void browser?.close();}, report.limits.durationMs); deadline.unref();

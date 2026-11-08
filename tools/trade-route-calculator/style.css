@@ -697,3 +697,5 @@ main{padding-top:18px}
 .fleet-controls>button{min-height:44px;white-space:nowrap}
 .fleet-controls>.help{margin:0}
 @media(max-width:600px){.fleet-controls>.help{flex-basis:100%}.fleet-controls>select{flex:1;width:8rem}.fleet-controls>button{padding-inline:.6rem}}
+
+.station-support-control{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin:.4rem 0}.station-support-control button[aria-checked="true"]{border-color:var(--accent,#6bdddf);background:#23545b}.station-support-control .help{flex:1;min-width:12rem}
