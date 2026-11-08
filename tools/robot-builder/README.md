@@ -73,6 +73,12 @@ Timed INT purchases preserve cumulative costs, point banking and annual EDU prog
 
 Eleven powered CSC melee configurations separate complete hardware acquisition from current charge and replacement supplies. Printed weapon durations and recharge rules remain unchanged. Where the source omits endurance, the weapon follows actual robot endurance under an explicitly labelled user/referee ruling; an unknown host or biological/recipient endurance does not become unlimited power or END-hours. Unsupported replacement purchases, loaders and physical power connections remain unavailable. Melee (whip) is a distinct CSC specialty, while original Core all-listed software keeps its four-specialty price and Bandwidth. Explicit purchased specialty coverage now reaches weapon ratings and permits non-overlapping additional specialties.
 
+## Provisional metamorphic construction
+
+Metamorphic (provisional) is a separate whole-robot construction kind, not an android or cyborg conversion. Robot Handbook p104 supplies the three immutable tier TLs, rates, transformation times and appearance levels. Construction uses the explicit versioned application convention `provisional-base-slots-standard-v1`: tier rate times original chassis Base Slots, added to ordinary chassis/equipment costs; zero additional body-reserved Slots; no android multiplier; ordinary current-form manipulator Size, STR, DEX, fit and pricing. Ordinary armour, power, brain and capacity checks remain in force. High TL alone does not require sentience.
+
+The fixed-zero reservation and all formula choices are provisional assumptions, not printed construction definitions or full-book certification. Removal of unused Slots never lowers the metamorphic rate basis. Current form is bounded by the standard manipulator controls; Size and locomotion stay fixed within morphing, and features do not grant free equipment, attacks or software. Transient forms and operating combat are not simulated. Review, statblock, API, JSON convention identity and supported whole-robot component snapshots retain provisional provenance. Invalid TL and capacity selections stay available for correction. Bare-brain projection and organic-brain conversion remain distinct and retain their existing guards.
+
 ## Verification
 
 From the repository root:
@@ -84,6 +90,7 @@ python3 -m http.server 8778 --bind 127.0.0.1
 node tools/robot-builder/verification/browser.mjs /path/to/playwright
 node tools/robot-builder/verification/construction-browser.mjs /path/to/playwright
 node tools/robot-builder/verification/vehicle-options-browser.mjs /path/to/playwright
+node tools/robot-builder/verification/metamorphic-browser.mjs /path/to/playwright
 ```
 
 `ROBOT_TEST_URL` overrides the local preview URL. `ROBOT_BROWSER_CHANNEL=msedge` selects Edge for local Windows verification; CI uses pinned Chromium. All browser tests use a fresh isolated context with synthetic fixtures, not a user's campaign data.

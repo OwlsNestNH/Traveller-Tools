@@ -2,6 +2,7 @@
 // the user-facing projection; never change rule decisions or construction totals.
 export const labelText = value => String(value).replace(/([a-z])([A-Z])/g,'$1 $2').replace(/[-_:]/g,' ').replace(/^./,ch=>ch.toUpperCase());
 const diagnosticLabels = {
+ METAMORPHIC_PROVISIONAL:'Provisional metamorphic assumptions; current form only', METAMORPHIC_TL:'Metamorphic tier TL exceeds design',
  VEHICLE_OPTION_TL:'Vehicle option TL exceeds design', VEHICLE_OPTION_CONTEXT:'Deployment/interface conditional; referee review',
  VEHICLE_OPTION_LOAD_UNKNOWN:'Initial contents unverified; replacement price unknown', VEHICLE_OPTION_CHARGES_UNPRICED:'Additional charges: price/mass unresolved',
  NANO_PERMANENT_END:'Permanent END loss; above 15 active medical packages', NANO_UNTYPED_ACTIVE:'Active package types unknown; effects incomplete', NANO_LEGACY_AGEING_UNRESOLVED:'Existing anti-ageing declaration unresolved', NANO_ATTRIBUTE_PACKAGES:'Characteristic enhancement package count insufficient', NANO_ATTRIBUTE_TARGET:'Select characteristic enhancement target', NANO_ATTRIBUTE_MAX:'Characteristic enhancement maximum exceeded', NANO_REGEN_LIMIT:'Regenerative active-package limit exceeded (4)', NANO_AGEING_SINGLE:'Anti-ageing active-package limit exceeded (1)', PARTIAL_COVERAGE:'Coverage incomplete', KIND_NOT_IMPLEMENTED:'Construction type not implemented', SPECIAL_NOT_IMPLEMENTED:'Construction path not implemented',
@@ -66,6 +67,7 @@ export function diagnosticLabel(issue) {
 }
 export function coverageLabel(gap) {
  const id=typeof gap==='object'&&gap?gap.id:'';
+ if(id==='metamorphic-body')return 'Metamorphic: provisional current-form support';
  if(id==='nano-mixed-medical-inventory')return 'Active package types unknown; mixed-inventory coverage incomplete';
  return id&&/^[a-z0-9_-]{1,90}$/i.test(id)?`${labelText(id)}: coverage incomplete`:'Coverage incomplete; source review required';
 }

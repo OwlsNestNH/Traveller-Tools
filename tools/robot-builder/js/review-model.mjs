@@ -155,12 +155,14 @@ function weaponGripDisplay(weapon,armName) {
   if(Object.hasOwn(weapon,'primaryManipulatorDM'))display.primaryManipulatorHardwareDexDM=weapon.primaryManipulatorDM;
   return display;
 }
+function metamorphicRows(body){return [row('Construction status','Provisional'),row('Selected tier',body.label,body.source),row('Tier rate',money(body.pricePerSlot)+' / Slot',body.source),row('Price basis',body.priceBasisSlots+' Base Slots'),row('Body surcharge',money(body.bodyCost)),row('Morph time',body.morphTime,body.source),row('Appearance',body.appearance,body.source),...body.assumptions.map(a=>row(a.label,a.value,a.source,a.provenance)),row('Fixed Size',body.fixedProperties.size),row('Fixed locomotion',humanLabel(body.fixedProperties.primaryLocomotion)+' / '+humanLabel(body.fixedProperties.secondaryLocomotion)),row('Operating scope',body.operatingScope)];}
 export function projectReview(design, catalogue, evaluation) {
   const totals = evaluation.totals || evaluation.previewTotals;
-  const provisional = !evaluation.totals && !!evaluation.previewTotals;
+  const provisional = evaluation.provisional === true || !evaluation.totals && !!evaluation.previewTotals;
+  const provisionalLabel=evaluation.provisional===true?'Provisional construction assumptions; current form only':'Provisional values only; unresolved errors';
   const coverage = evaluation.coverage || catalogue.coverage || {};
   const status = evaluation.status === 'verified'
-    ? coverage.complete === true ? 'Checked' : 'Implemented rules checked; coverage incomplete'
+    ? evaluation.provisional ? 'Provisional assumptions checked; coverage incomplete' : coverage.complete === true ? 'Checked' : 'Implemented rules checked; coverage incomplete'
     : evaluation.status === 'invalid' ? 'Needs correction' : 'Rules or referee decisions outstanding';
   const sections = [];
   const visible=(rule,values)=>!rule || (rule.anyOf ? rule.anyOf.some(item=>visible(item,values)) : rule.allOf ? rule.allOf.every(item=>visible(item,values)) : Array.isArray(rule.oneOf) ? rule.oneOf.includes(values?.[rule.field]) : Object.hasOwn(rule,'notEquals') ? values?.[rule.field]!==rule.notEquals : values?.[rule.field]===rule.equals);
@@ -183,6 +185,7 @@ export function projectReview(design, catalogue, evaluation) {
     if (totals.traits?.length) stats.push(row('Traits',totals.traits));
     if (stats.length) sections.push(section('statistics','Robot statistics',stats,{kind:'metrics'}));
   }
+  if(evaluation.metamorphic)sections.push(section('metamorphic','Metamorphic body (provisional)',metamorphicRows(evaluation.metamorphic),{note:'Application assumptions; not full-book certification'}));
   const cloneDetails=totals?.clone;
   const development=cloneDetails||evaluation.development;
   if(development){
@@ -282,7 +285,8 @@ export function projectReview(design, catalogue, evaluation) {
       const summary=component ? `${money(component.constructionCost)} construction · ${role}` : `Selected ${role}; construction not calculated`;
       const details=[row('Quantity',reference.quantity),row('Robot type',catalogue.kinds?.find(kind=>kind.id===reference.design?.kind)?.label||humanLabel(reference.design?.kind)),row('Tech level',reference.design?.techLevel)];
       if(component){
-        details.push(row('Construction check',component.status==='verified'?'Implemented component rules checked':humanLabel(component.status)),row('Construction per copy',money(component.constructionUnitCost)),row('Listed price per copy',money(component.listedUnitCost)),row('Cost scope',component.costScope));
+        details.push(row('Construction check',component.status==='verified'?(component.provisional?'Provisional assumptions checked':'Implemented component rules checked'):humanLabel(component.status)),row('Construction per copy',money(component.constructionUnitCost)),row('Listed price per copy',money(component.listedUnitCost)),row('Cost scope',component.costScope));
+        if(component.metamorphic)details.push(...metamorphicRows(component.metamorphic));
         if(component.slots)details.push(row('Component Slots',component.slots));
         if(component.bandwidth)details.push(row('Component Bandwidth',component.bandwidth));
         if(component.coverage)details.push(row('Coverage',component.coverage.complete?'Selected construction covered':'Coverage incomplete'));
@@ -422,7 +426,7 @@ export function projectReview(design, catalogue, evaluation) {
     for(const weapon of design.special?.augmentWeapons||[])limbRows.push(...weaponRows([weapon],limbWeaponControl,choiceLabel(limbWeaponControl,'parentLimb',weapon.parentLimb,'Unresolved parent limb')));
   }
   if(limbRows.length)sections.push(section('limb-weapons','Cyberlimb weapons',limbRows,{note:totals?'Part-specific effects; recipient skill/attack modifiers unresolved':'Selected limb weapons; performance/cost not calculated'}));
-  const handled = new Set(['cost','constructionCost','costLabel','slots','bandwidth','zeroSlot','zeroBandwidth','hits','armour','intelligence','intelligenceDM','agility','tacticalSpeed','endurance','vehicleEndurance','vehicleBand','traits','manipulators','skills','hardwareSkills','skillEquivalents','toolCaps','weapons','defaultSuite','provisional','augmentation','augmentations','sharedInterfaces','augmentationEffects','equipmentCapabilities','capabilities','ammunitionStorage','composite','clone']);
+  const handled = new Set(['cost','constructionCost','costLabel','slots','bandwidth','zeroSlot','zeroBandwidth','hits','armour','intelligence','intelligenceDM','agility','tacticalSpeed','endurance','vehicleEndurance','vehicleBand','traits','manipulators','skills','hardwareSkills','skillEquivalents','toolCaps','weapons','defaultSuite','provisional','augmentation','augmentations','sharedInterfaces','augmentationEffects','equipmentCapabilities','capabilities','ammunitionStorage','composite','clone','metamorphic']);
   const extra = Object.entries(presentationFacts(totals)||{}).filter(([key,value])=>!handled.has(key)&&present(value)&&(!Array.isArray(value)||value.length)).map(([key,value])=>row(humanLabel(key),value));
   if (extra.length) sections.push(section('additional','Operating details',extra,{collapsed:true}));
   const ledger = (evaluation.ledger || []).map(item => row(armNames.has(item.id)?armName(item.id):item.label || item.name || item.id,
@@ -435,11 +439,11 @@ export function projectReview(design, catalogue, evaluation) {
   if (gaps.length) sections.push(section('coverage','Implementation coverage',gaps,{collapsed:true,note:'Coverage incomplete'}));
   const sources = [...new Set(sections.flatMap(item=>item.rows.flatMap(record=>[record.source,...(record.details||[]).map(detail=>detail.source)])).filter(Boolean))];
   if (sources.length) sections.push(section('sources','Source references',sources.map((source,index)=>row(String(index+1),source)),{collapsed:true}));
-  return { name:design.name || 'Untitled robot', kind:catalogue.kinds?.find(item=>item.id===design.kind)?.label || design.kind, techLevel:design.techLevel, status, provisional, unavailable:!totals, sections };
+  return { name:design.name || 'Untitled robot', kind:catalogue.kinds?.find(item=>item.id===design.kind)?.label || design.kind, techLevel:design.techLevel, status, provisional, provisionalLabel, unavailable:!totals, sections };
 }
 export function formatStatblock(review) {
   const rows = [review.name,`${review.kind} | TL ${review.techLevel}`,review.status];
-  if (review.provisional) rows.push('Provisional values only; unresolved errors');
+  if (review.provisional) rows.push(review.provisionalLabel);
   if (review.unavailable) rows.push('Totals are not calculated; selected components only; not verified');
   for (const group of review.sections) {
     rows.push('',group.title);
