@@ -1,6 +1,7 @@
 import {CSC_MASS_DEVICES} from './csc-mass-devices.mjs';
 import {CSC_COMPACT_TOOLS} from './csc-compact-tools.mjs';
 import {CSC_SIGNAL_DEVICES} from './csc-signal-devices.mjs';
+import {CSC_UTILITY_DEVICES} from './csc-utility-devices.mjs';
 import {HANDBOOK_MASS_DEVICES} from './handbook-mass-devices.mjs';
 import {computerParameters,neuralComputerParameters,computerSoftwareControl,validateComputerSoftware,evaluateComputer,isComputerId} from './computer-implants.mjs';
 import {weaponControl,validateWeapons,evaluateWeapons} from './weapons.mjs';
@@ -29,6 +30,7 @@ const MASS_DEVICES=[
  ...CSC_MASS_DEVICES,
  ...CSC_COMPACT_TOOLS,
  ...CSC_SIGNAL_DEVICES,
+ ...CSC_UTILITY_DEVICES,
  ...HANDBOOK_MASS_DEVICES,
  {id:'computer-terminal-7',label:'Computer terminal (TL7)',tl:7,massKg:2,cost:200,source:coreSource('111'),effects:{processing:0,includedSoftware:['Interface/0'],networkRequired:true,independentProcessing:false,robotBrain:false}},
  {id:'electronics-toolkit-7',label:'Electronics toolkit (TL7)',tl:7,massKg:2,cost:2000,source:coreSource('120'),effects:{electronicsToolkit:true,taskTechnologyModifiers:{minimumGap:2,lowerTaskTL:2,higherTaskTL:-2},recipientSkillGranted:false}},
