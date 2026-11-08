@@ -9,7 +9,7 @@ import {CSC_STANDARD_LAUNCHERS,CSC_DIRECT_PAYLOADS} from './csc-launcher-payload
 import {CSC_SPECIAL_ENERGY_WEAPONS} from './csc-special-energy-weapons.mjs';
 import {CSC_ADDITIONAL_SLUG_WEAPONS} from './csc-additional-slug-weapons.mjs';
 import {CSC_ARCHAIC_WEAPONS} from './csc-archaic-weapons.mjs';
-import {estimateCscMagazineMass,cscMagazineVariants,CSC_HIGH_CAPACITY_MAGAZINE_IDS} from './csc-ammunition-storage.mjs';
+import {estimateCscMagazineMass,cscMagazineVariants,cscMagazineSourceIds,cscInterchangeMagazineProducts,CSC_HIGH_CAPACITY_MAGAZINE_IDS} from './csc-ammunition-storage.mjs';
 import {CSC_WEAPON_ACCESSORIES,cscAccessoryEligibility,evaluateCscAccessories} from './csc-weapon-accessories.mjs';
 const book=pages=>({book:'Robot Handbook',edition:'Mongoose 2022',pages});
 const core=pages=>({book:'Core Rulebook Update 2022',edition:'Mongoose 2022',pages});
@@ -135,16 +135,29 @@ function accessoryChoices(design,weapon){return WEAPON_ACCESSORIES.filter(a=>!we
 // Absent allocation preserves the original all-or-nothing loader interpretation.
 // Split quantities are per linked copy. An impossible partition is never clamped.
 export function ammunitionPartition(record){
- const split=record.autoloadAllocation!==undefined,standard=record.extraMagazines??0,high=record.extraHighCapacityMagazines??0;
- const allocated=split?record.autoloadAllocation:{standard:record.autoload?standard:0,highCapacity:record.autoload?high:0};
- const resolved=allocated.standard<=standard&&allocated.highCapacity<=high;
- const autoloadCountPerWeapon=allocated.standard+allocated.highCapacity,storedCountPerWeapon=resolved?standard+high-autoloadCountPerWeapon:null;
+ const alternates=record.alternateMagazineSupplies??[],split=record.autoloadAllocation!==undefined||alternates.length>0,standard=record.extraMagazines??0,high=record.extraHighCapacityMagazines??0;
+ const allocated=record.autoloadAllocation??{standard:record.autoload?standard:0,highCapacity:record.autoload?high:0};
+ const resolved=allocated.standard<=standard&&allocated.highCapacity<=high&&alternates.every(item=>item.autoloadMagazines<=item.extraMagazines);
+ const autoloadCountPerWeapon=allocated.standard+allocated.highCapacity+alternates.reduce((sum,item)=>sum+item.autoloadMagazines,0);
+ const storedCountPerWeapon=resolved?standard+high+alternates.reduce((sum,item)=>sum+item.extraMagazines,0)-autoloadCountPerWeapon:null;
  const valid=resolved&&autoloadCountPerWeapon<=10&&(record.autoload||autoloadCountPerWeapon===0)&&storedCountPerWeapon<=100;
- return {mode:split?'split':'legacy',resolved,valid,standard:{type:'standard',totalPerWeapon:standard,autoloadPerWeapon:allocated.standard,storedPerWeapon:resolved?standard-allocated.standard:null},highCapacity:{type:'high-capacity',totalPerWeapon:high,autoloadPerWeapon:allocated.highCapacity,storedPerWeapon:resolved?high-allocated.highCapacity:null},autoloadCountPerWeapon,storedCountPerWeapon,autoloadMaximumPerWeapon:10,storedApplicationMaximumPerWeapon:100};
+ return {mode:split?'split':'legacy',resolved,valid,standard:{type:'standard',totalPerWeapon:standard,autoloadPerWeapon:allocated.standard,storedPerWeapon:resolved?standard-allocated.standard:null},highCapacity:{type:'high-capacity',totalPerWeapon:high,autoloadPerWeapon:allocated.highCapacity,storedPerWeapon:resolved?high-allocated.highCapacity:null},
+  ...(alternates.length?{alternates:alternates.map(item=>({sourceWeaponId:item.sourceWeaponId,type:item.variant,totalPerWeapon:item.extraMagazines,autoloadPerWeapon:item.autoloadMagazines,storedPerWeapon:resolved?item.extraMagazines-item.autoloadMagazines:null}))}:{}),
+  autoloadCountPerWeapon,storedCountPerWeapon,autoloadMaximumPerWeapon:10,storedApplicationMaximumPerWeapon:100};
 }
-const AMMUNITION_FIELDS=['initialMagazines','initialMagazineType','extraMagazines','extraHighCapacityMagazines','spareMagazineStorageId','highCapacityMagazineStorageId','autoloadAllocation'];
+const OPTIONAL_AMMUNITION_FIELDS=['autoloadAllocation','initialMagazineSourceId','alternateMagazineSupplies'];
+const AMMUNITION_FIELDS=['initialMagazines','initialMagazineType','extraMagazines','extraHighCapacityMagazines','spareMagazineStorageId','highCapacityMagazineStorageId',...OPTIONAL_AMMUNITION_FIELDS];
 function ammunitionSpecification(record){
- return {initialMagazines:record.initialMagazines,initialMagazineType:record.initialMagazineType??'standard',extraMagazines:record.extraMagazines,extraHighCapacityMagazines:record.extraHighCapacityMagazines??0,spareMagazineStorageId:record.spareMagazineStorageId??'none',highCapacityMagazineStorageId:record.highCapacityMagazineStorageId??'none',...(record.autoloadAllocation===undefined?{}:{autoloadAllocation:clone(record.autoloadAllocation)})};
+ return {initialMagazines:record.initialMagazines,initialMagazineType:record.initialMagazineType??'standard',extraMagazines:record.extraMagazines,extraHighCapacityMagazines:record.extraHighCapacityMagazines??0,spareMagazineStorageId:record.spareMagazineStorageId??'none',highCapacityMagazineStorageId:record.highCapacityMagazineStorageId??'none',...Object.fromEntries(OPTIONAL_AMMUNITION_FIELDS.filter(field=>record[field]!==undefined).map(field=>[field,clone(record[field])]))};
+}
+function magazineSupplyPresentation(record){
+ const weapon=WEAPONS.find(item=>item.id===record.weaponId),products=cscInterchangeMagazineProducts(weapon,WEAPONS),allowed=cscMagazineSourceIds(weapon);
+ const retained=[record.initialMagazineSourceId,...(record.alternateMagazineSupplies??[]).map(item=>item.sourceWeaponId)].filter(Boolean);
+ return {initialSourceField:'initialMagazineSourceId',alternateSuppliesField:'alternateMagazineSupplies',maximumAlternateProducts:2,identityFields:['sourceWeaponId','variant'],products,
+  initialSourceId:record.initialMagazineSourceId??record.weaponId,
+  sources:[...new Set([...allowed,...retained])].map(id=>({id,label:WEAPONS.find(item=>item.id===id)?.label??'Unavailable magazine source',available:id===record.weaponId||allowed.includes(id),alternateAllowed:id!==record.weaponId&&allowed.includes(id)})),
+  forceGroupOpen:retained.some(id=>id!==record.weaponId&&!allowed.includes(id))||(record.alternateMagazineSupplies??[]).some(item=>item.sourceWeaponId===record.weaponId),
+  scope:'Alternate supplies keep their source magazine identity, purchase price and labelled source-based mass estimate. Own-profile spare fields remain independent. Each copy shares one ten-supply loader limit and one hundred-reserve application bound.'};
 }
 function effectiveAmmunitionRecord(record,copyIndex){
  const override=record.ammunitionOverrides?.find(item=>item.copyIndex===copyIndex),effective={...record};
@@ -165,11 +178,11 @@ export function weaponRecordPresentation(record,copyIndex){
  }
  const retainedCopyIndices=overrides.filter(item=>item.copyIndex>original.linkedWeapons).map(item=>item.copyIndex);
  const choices=[...new Set([...Array.from({length:original.linkedWeapons},(_,i)=>i+1),...retainedCopyIndices])].sort((a,b)=>a-b).map(index=>{const customized=overrides.some(item=>item.copyIndex===index),installed=index<=original.linkedWeapons;return {id:index,label:'Copy '+index+(customized?' · Customized':' · Shared')+(installed?'':' · Not installed'),installed,customized};});
- const invalidCopy=overrides.some(item=>{const effective=effectiveAmmunitionRecord(original,item.copyIndex),partition=ammunitionPartition(effective);return !partition.valid||Boolean(original.autoload&&!partition.autoloadCountPerWeapon);});
- return clone({fields,ammunitionCustomization:{field:'ammunitionOverrides',label:'Linked ammunition',mode:overrides.length?'custom':'shared',choices,fields:AMMUNITION_FIELDS,selectedCopyIndex:copyIndex??null,materializedValue:ammunitionSpecification(record),effectiveRecord:record,overridden:overrides.some(item=>item.copyIndex===copyIndex),retainedCopyIndices,forceGroupOpen:Boolean(retainedCopyIndices.length||invalidCopy)}});
+ const invalidCopy=overrides.some(item=>{const effective=effectiveAmmunitionRecord(original,item.copyIndex),partition=ammunitionPartition(effective);return !partition.valid||Boolean(original.autoload&&!partition.autoloadCountPerWeapon)||magazineSupplyPresentation(effective).forceGroupOpen;});
+ return clone({fields,magazineSupplySelection:magazineSupplyPresentation(record),ammunitionCustomization:{field:'ammunitionOverrides',label:'Linked ammunition',mode:overrides.length?'custom':'shared',choices,fields:AMMUNITION_FIELDS,selectedCopyIndex:copyIndex??null,materializedValue:ammunitionSpecification(record),effectiveRecord:record,overridden:overrides.some(item=>item.copyIndex===copyIndex),retainedCopyIndices,forceGroupOpen:Boolean(retainedCopyIndices.length||invalidCopy)}});
 }
 export function weaponControl(design){return {field:'weapons',label:'Installed weapons',category:'Weapons',type:'weapons',maxItems:100,addLabel:'Add weapon',description:'Source-defined weapons, mounts and ammunition. The current weapon catalogue is incomplete; other weapons are not certified.',itemFields:[
- {field:'weaponId',label:'Weapon',type:'select',default:'handbook-stunner-12',choices:WEAPONS.map(w=>({...clone(w),...(cscMagazineVariants(w)?{magazineVariants:cscMagazineVariants(w)}:{}),eligibility:{available:!design||w.tl<=design.techLevel,reason:design&&w.tl>design.techLevel?'Requires TL'+w.tl:null}}))},
+ {field:'weaponId',label:'Weapon',type:'select',default:'handbook-stunner-12',choices:WEAPONS.map(w=>({...clone(w),...(cscMagazineVariants(w)?{magazineVariants:cscMagazineVariants(w)}:{}),...(cscMagazineSourceIds(w).length?{magazineProducts:cscInterchangeMagazineProducts(w,WEAPONS)}:{}),eligibility:{available:!design||w.tl<=design.techLevel,reason:design&&w.tl>design.techLevel?'Requires TL'+w.tl:null}}))},
  {field:'placement',label:'Placement',type:'select',default:'body',choices:[{id:'body',label:'Body mount'},{id:'arm',label:'Manipulator mount'},{id:'held',label:'Held in manipulator'}]},
  {field:'manipulatorId',resetWhenHidden:true,label:'Manipulator',type:'select',default:'none',choices:manipulatorChoices(design,'manipulatorId'),visibleWhen:{field:'placement',oneOf:['arm','held']}},
  {field:'supportManipulatorId',label:'Support manipulator',type:'select',default:'none',omitByDefault:true,choices:manipulatorChoices(design,'supportManipulatorId'),visibleWhen:retainedChoice('supportManipulatorId','none',{allOf:[{field:'placement',equals:'held'},{field:'weaponId',oneOf:WEAPONS.filter(supportsSecondGrip).map(weapon=>weapon.id)}]})},
@@ -198,7 +211,7 @@ export function weaponControl(design){return {field:'weapons',label:'Installed w
  ],source:book('61-64')};}
 export function validateWeapons(records){
  if(!Array.isArray(records)||records.length>100)throw new TypeError('Expected up to 100 weapon records.');const ids=new Set();
- for(const w of records){assertKeys(w,['id','weaponId','placement','manipulatorId','supportManipulatorId','linkedWeapons','fireControl','autoload','extraMagazines','initialMagazines','ammunition','accessories','extraFofTags','auxiliaryLauncher','auxiliaryAmmunition','auxiliaryLoaded','integralAmmunition','integralLoaded','looseGrenades','looseAmmunitionFor','ammunitionStorageId','spareMagazineStorageId','initialMagazineType','extraHighCapacityMagazines','highCapacityMagazineStorageId','autoloadAllocation','ammunitionOverrides'],'physical.weapons');
+ for(const w of records){assertKeys(w,['id','weaponId','placement','manipulatorId','supportManipulatorId','linkedWeapons','fireControl','autoload','extraMagazines','initialMagazines','ammunition','accessories','extraFofTags','auxiliaryLauncher','auxiliaryAmmunition','auxiliaryLoaded','integralAmmunition','integralLoaded','looseGrenades','looseAmmunitionFor','ammunitionStorageId','spareMagazineStorageId','initialMagazineType','extraHighCapacityMagazines','highCapacityMagazineStorageId','autoloadAllocation','ammunitionOverrides','initialMagazineSourceId','alternateMagazineSupplies'],'physical.weapons');
  if(typeof w.id!=='string'||!/^[-a-z0-9]{1,40}$/.test(w.id)||ids.has(w.id))throw new TypeError('Invalid or duplicate weapon ID.');ids.add(w.id);
  if(!WEAPONS.some(v=>v.id===w.weaponId)||!['body','arm','held'].includes(w.placement)||!FIRE_CONTROL.some(v=>v.id===w.fireControl)||typeof w.autoload!=='boolean'||typeof w.manipulatorId!=='string'||w.manipulatorId.length>40)throw new TypeError('Invalid weapon configuration.');
  if(w.supportManipulatorId!==undefined&&(typeof w.supportManipulatorId!=='string'||!/^[-a-z0-9]{1,40}$/.test(w.supportManipulatorId)))throw new TypeError('Invalid support manipulator reference.');
@@ -208,14 +221,26 @@ export function validateWeapons(records){
   for(const override of w.ammunitionOverrides){
    assertKeys(override,['copyIndex',...AMMUNITION_FIELDS],'ammunitionOverrides');integer(override.copyIndex,1,4,'ammunitionOverrides.copyIndex');
    if(copies.has(override.copyIndex))throw new TypeError('Duplicate ammunition override copy index.');copies.add(override.copyIndex);
-   for(const field of AMMUNITION_FIELDS.filter(field=>field!=='autoloadAllocation'))if(!Object.hasOwn(override,field)||override[field]===undefined)throw new TypeError('Ammunition overrides require a complete specification: '+field+'.');
+   for(const field of AMMUNITION_FIELDS.filter(field=>!OPTIONAL_AMMUNITION_FIELDS.includes(field)))if(!Object.hasOwn(override,field)||override[field]===undefined)throw new TypeError('Ammunition overrides require a complete specification: '+field+'.');
    validateWeapons([effectiveAmmunitionRecord(w,override.copyIndex)]);
   }
  }
   if(w.looseGrenades!==undefined)integer(w.looseGrenades,0,100,'looseGrenades');if(w.looseAmmunitionFor!==undefined&&!['primary','auxiliary','integral'].includes(w.looseAmmunitionFor))throw new TypeError('Invalid loose ammunition association');if(w.ammunitionStorageId!==undefined&&(typeof w.ammunitionStorageId!=='string'||w.ammunitionStorageId.length>100))throw new TypeError('Invalid storage reference');
  if(w.initialMagazineType!==undefined&&!['standard','high-capacity'].includes(w.initialMagazineType))throw new TypeError('Invalid initial magazine type.');
- const split=w.autoloadAllocation!==undefined,maxExtra=split?110:w.autoload?10:100;
- if(split){assertKeys(w.autoloadAllocation,['standard','highCapacity'],'autoloadAllocation');integer(w.autoloadAllocation.standard,0,110,'autoloadAllocation.standard');integer(w.autoloadAllocation.highCapacity,0,110,'autoloadAllocation.highCapacity');}
+ if(w.initialMagazineSourceId!==undefined&&(typeof w.initialMagazineSourceId!=='string'||!/^[-a-z0-9]{1,80}$/.test(w.initialMagazineSourceId)))throw new TypeError('Invalid initial magazine source.');
+ if(w.alternateMagazineSupplies!==undefined){
+  if(!Array.isArray(w.alternateMagazineSupplies)||w.alternateMagazineSupplies.length>2)throw new TypeError('Expected up to two alternate magazine products.');
+  const products=new Set();
+  for(const item of w.alternateMagazineSupplies){
+   assertKeys(item,['sourceWeaponId','variant','extraMagazines','autoloadMagazines','storageId'],'alternateMagazineSupplies');
+   if(typeof item.sourceWeaponId!=='string'||!/^[-a-z0-9]{1,80}$/.test(item.sourceWeaponId)||!['standard','high-capacity'].includes(item.variant))throw new TypeError('Invalid alternate magazine identity.');
+   const key=item.sourceWeaponId+':'+item.variant;if(products.has(key))throw new TypeError('Duplicate alternate magazine product.');products.add(key);
+   integer(item.extraMagazines,0,110,'alternateMagazineSupplies.extraMagazines');integer(item.autoloadMagazines,0,110,'alternateMagazineSupplies.autoloadMagazines');
+   if(typeof item.storageId!=='string'||!/^(?:none|(?:option|instance):[-a-z0-9]{1,80})$/.test(item.storageId))throw new TypeError('Invalid alternate magazine storage reference.');
+  }
+ }
+ const split=w.autoloadAllocation!==undefined||(w.alternateMagazineSupplies?.length??0)>0,maxExtra=split?110:w.autoload?10:100;
+ if(w.autoloadAllocation!==undefined){assertKeys(w.autoloadAllocation,['standard','highCapacity'],'autoloadAllocation');integer(w.autoloadAllocation.standard,0,110,'autoloadAllocation.standard');integer(w.autoloadAllocation.highCapacity,0,110,'autoloadAllocation.highCapacity');}
  if(w.extraHighCapacityMagazines!==undefined)integer(w.extraHighCapacityMagazines,0,maxExtra,'extraHighCapacityMagazines');
  if(w.highCapacityMagazineStorageId!==undefined&&(typeof w.highCapacityMagazineStorageId!=='string'||!/^(?:none|(?:option|instance):[-a-z0-9]{1,80})$/.test(w.highCapacityMagazineStorageId)))throw new TypeError('Invalid high-capacity magazine storage reference.');
  if(w.spareMagazineStorageId!==undefined&&(typeof w.spareMagazineStorageId!=='string'||!/^(?:none|(?:option|instance):[-a-z0-9]{1,80})$/.test(w.spareMagazineStorageId)))throw new TypeError('Invalid spare magazine storage reference.');
@@ -226,13 +251,25 @@ export function validateWeapons(records){
  if(w.ammunition!==undefined&&!['standard',...GRENADES.map(g=>g.id)].includes(w.ammunition))throw new TypeError('Unknown ammunition choice.');
  integer(w.linkedWeapons,1,4,'linkedWeapons');integer(w.extraMagazines,0,maxExtra,'extraMagazines');integer(w.initialMagazines,0,1,'initialMagazines');integer(w.extraMagazines+(w.extraHighCapacityMagazines??0),0,maxExtra,'combinedExtraMagazines');}
 }
+function aggregateMagazineProducts(copies){
+ const sum=values=>values.some(value=>value===null)?null:values.reduce((total,value)=>total+value,0),products=new Map();
+ for(const copy of copies)for(const product of copy.ammunitionInventory.products??[]){
+  if(!products.has(product.productId))products.set(product.productId,[]);
+  products.get(product.productId).push({...product,copyIndex:copy.copyIndex});
+ }
+ return [...products.values()].map(items=>{
+  const {totalPerWeapon,autoloadPerWeapon,storedPerWeapon,storageId,copyIndex,...metadata}=items[0];
+  return {...metadata,...Object.fromEntries(['initialCount','initialRounds','initialPurchaseCost','extraCount','extraRounds','autoloadCount','storedCount','autoloadRounds','storedRounds','reservePurchaseCost','loaderSupplyPurchaseCost'].map(field=>[field,sum(items.map(item=>item[field]))])),
+   storageReservations:items.flatMap(item=>item.storageReservations.map(reservation=>({...reservation,copyIndex:item.copyIndex})))};
+ });
+}
 function aggregateAmmunition(copies,record){
  const sum=values=>values.some(value=>value===null)?null:values.reduce((total,value)=>total+value,0);
  const initialAmmunition={mode:'per-copy',count:sum(copies.map(copy=>copy.initialAmmunition.count)),totalRounds:sum(copies.map(copy=>copy.initialAmmunition.totalRounds)),purchaseCost:sum(copies.map(copy=>copy.initialAmmunition.purchaseCost))};
  const inventories=copies.map(copy=>copy.ammunitionInventory),allocations=inventories.map(inventory=>inventory.allocation);
  const variant=key=>Object.fromEntries(['autoloadCount','storedCount','autoloadRounds','storedRounds'].map(field=>[field,sum(allocations.map(allocation=>allocation[key][field]))]));
- const allocation={mode:'per-copy',resolved:allocations.every(item=>item.resolved),valid:allocations.every(item=>item.valid),supplyWeaponId:allocations[0].supplyWeaponId,sourceFamily:allocations[0].sourceFamily,linkedWeapons:copies.length,standard:variant('standard'),highCapacity:variant('highCapacity'),reservePurchaseCost:sum(allocations.map(item=>item.reservePurchaseCost)),source:book('61')};
- const ammunitionInventory={mode:'per-copy',initial:initialAmmunition,...Object.fromEntries(['standardSpareCount','highCapacitySpareCount','standardSpareRounds','highCapacitySpareRounds','totalRounds','ammunitionCost','autoloadCost','totalCost'].map(field=>[field,sum(inventories.map(inventory=>inventory[field]))])),allocation,...(record.autoload?{autoload:{count:sum(allocations.map(item=>item.autoloadCountPerWeapon)),maximumPerWeapon:10,source:book('61')}}:{})};
+ const allocation={mode:'per-copy',resolved:allocations.every(item=>item.resolved),valid:allocations.every(item=>item.valid),supplyWeaponId:allocations[0].supplyWeaponId,sourceFamily:allocations[0].sourceFamily,linkedWeapons:copies.length,standard:variant('standard'),highCapacity:variant('highCapacity'),reservePurchaseCost:sum(allocations.map(item=>item.reservePurchaseCost)),loaderSupplyPurchaseCost:sum(allocations.map(item=>item.loaderSupplyPurchaseCost)),autoloadRounds:sum(allocations.map(item=>item.autoloadRounds)),storedRounds:sum(allocations.map(item=>item.storedRounds)),autoloadCount:sum(allocations.map(item=>item.autoloadCountPerWeapon)),storedCount:sum(allocations.map(item=>item.storedCountPerWeapon)),source:book('61')};
+ const ammunitionInventory={mode:'per-copy',initial:initialAmmunition,...(inventories.some(item=>item.products)?{products:aggregateMagazineProducts(copies)}:{}),...Object.fromEntries(['alternateSpareCount','alternateSpareRounds','standardSpareCount','highCapacitySpareCount','standardSpareRounds','highCapacitySpareRounds','totalRounds','ammunitionCost','autoloadCost','totalCost'].map(field=>[field,sum(inventories.map(inventory=>inventory[field]))])),allocation,...(record.autoload?{autoload:{count:sum(allocations.map(item=>item.autoloadCountPerWeapon)),maximumPerWeapon:10,source:book('61')}}:{})};
  return {initialAmmunition,ammunitionInventory,magazineVariants:copies[0].magazineVariants,ammoCost:ammunitionInventory.ammunitionCost,autoloadCost:ammunitionInventory.autoloadCost,unsupportedHighCapacity:copies.some(copy=>copy.unsupportedHighCapacity),replacementAmmoUnsupported:copies.some(copy=>copy.replacementAmmoUnsupported),unknownAmmunitionCost:copies.some(copy=>copy.unknownAmmunitionCost)};
 }
 function ammunitionCopyResult({copyIndex,customized,initialAmmunition,ammunitionInventory,spareAmmunition,highCapacitySpareAmmunition}){
@@ -321,58 +358,99 @@ export function evaluateWeapons(design,manipulators,skills,installedEquipment=[]
  // auxiliary launchers and loose cargo remain installation-scoped above/below.
  const evaluateAmmunition=(record,n,add)=>{
   if(!w.magazine&&(record.extraMagazines||!record.initialMagazines))add('error','WEAPON_AMMO_INAPPLICABLE',record.id,'This weapon has no separately purchased ammunition magazine; do not configure spare magazines or remove an initial magazine.');
-  const magazineVariants=cscMagazineVariants(w),highCapacity=magazineVariants?.highCapacity,initialType=record.initialMagazineType??'standard',highCount=record.extraHighCapacityMagazines??0,totalExtra=record.extraMagazines+highCount;
+  const magazineVariants=cscMagazineVariants(w),highCapacity=magazineVariants?.highCapacity,initialType=record.initialMagazineType??'standard',highCount=record.extraHighCapacityMagazines??0;
+  const alternateRows=record.alternateMagazineSupplies??[],initialSourceId=record.initialMagazineSourceId??w.id,allowedSources=cscMagazineSourceIds(w),interchangeProducts=cscInterchangeMagazineProducts(w,WEAPONS);
+  const sourceAllowed=id=>id===w.id||allowedSources.includes(id);
+  const initialSourceValid=sourceAllowed(initialSourceId),alternateSourcesValid=alternateRows.every(item=>item.sourceWeaponId!==w.id&&allowedSources.includes(item.sourceWeaponId));
+  const invalidSource=!initialSourceValid||!alternateSourcesValid;
+  if(!initialSourceValid)add('error','MAGAZINE_SOURCE_INCOMPATIBLE',record.id,'The retained initial magazine source is not compatible with this receiver. Only CSC standard/support ARLs explicitly interchange; restore a compatible receiver or correct the source.',w.source);
+  for(const item of alternateRows)if(item.sourceWeaponId===w.id||!allowedSources.includes(item.sourceWeaponId))add('error','MAGAZINE_SOURCE_INCOMPATIBLE',record.id,'The retained alternate magazine source '+item.sourceWeaponId+' is not an alternate compatible source. Own-profile supplies use the existing spare fields; capacity and calibre do not establish interchange.',w.source);
+  const product=(sourceWeaponId,type,compatible=true)=>{
+   const shared=interchangeProducts.find(item=>item.sourceWeaponId===sourceWeaponId&&item.id===type);
+   if(compatible&&shared)return {...shared,variant:type,compatible:true};
+   const own=compatible&&sourceWeaponId===w.id,variant=own&&type==='high-capacity'?highCapacity:null;
+   return {productId:sourceWeaponId+':'+type,compatible,sourceWeaponId,sourceWeaponLabel:WEAPONS.find(item=>item.id===sourceWeaponId)?.label??null,sourceFamily:own?w.sourceFamily:null,variant:type,
+    capacity:own?(type==='standard'?w.magazine:variant?.capacity)??null:null,unitCost:own?(type==='standard'?w.magazineCost:variant?.unitCost)??null:null,
+    estimate:own?(type==='standard'?estimateCscMagazineMass(w):variant?.estimate)??null:null,source:own?(variant?.source??w.source):null};
+  };
   const allocation=ammunitionPartition(record),splitAllocation=allocation.mode==='split';
   if(splitAllocation){
-   if(!allocation.resolved)add('error','AUTOLOAD_ALLOCATION_EXCEEDS_SUPPLY',record.id,'Loader allocation exceeds the additional supplies of at least one variant. The stored remainder and allocation costs are unresolved.');
-   if(allocation.autoloadCountPerWeapon>10)add('error','AUTOLOAD_ALLOCATION_LIMIT',record.id,'A loader holds up to ten additional magazines or power packs, combining both variants.',book('61'));
+   if(!allocation.resolved)add('error','AUTOLOAD_ALLOCATION_EXCEEDS_SUPPLY',record.id,'Loader allocation exceeds the additional supplies of at least one product. The stored remainder and allocation costs are unresolved.');
+   if(allocation.autoloadCountPerWeapon>10)add('error','AUTOLOAD_ALLOCATION_LIMIT',record.id,'A loader holds up to ten additional physical magazines or power packs, combining all source products and variants.',book('61'));
    if(!record.autoload&&allocation.autoloadCountPerWeapon>0)add('error','AUTOLOAD_ALLOCATION_WITHOUT_LOADER',record.id,'Positive loader quantities require an installed autoloader. Retained quantities have not been moved into storage.');
    if(allocation.storedCountPerWeapon>100)add('error','STORED_AMMO_APPLICATION_LIMIT',record.id,'Combined stored reserves exceed the application bound of one hundred per weapon. This is not a source prohibition.');
   }
-  const highCapacityRequested=initialType==='high-capacity'||highCount>0||allocation.highCapacity.autoloadPerWeapon>0||(record.highCapacityMagazineStorageId??'none')!=='none',unsupportedHighCapacity=highCapacityRequested&&!highCapacity;
+  const highCapacityRequested=initialType==='high-capacity'||highCount>0||allocation.highCapacity.autoloadPerWeapon>0||(record.highCapacityMagazineStorageId??'none')!=='none'||alternateRows.some(item=>item.variant==='high-capacity');
+  const unsupportedHighCapacity=highCapacityRequested&&!highCapacity;
   if(unsupportedHighCapacity)add('blocker','CSC_HIGH_CAPACITY_UNSUPPORTED',record.id,'High-capacity magazine compatibility is not established for this source profile. No conversion, replacement price or included-load discount is inferred.',{book:'Central Supply Catalogue Update 2023',edition:'Mongoose revised printing (copyright 2026)',pages:'175'});
   if(highCapacityRequested&&highCapacity){
    if(design.techLevel<highCapacity.tl)add('error','CSC_HIGH_CAPACITY_TL',record.id,'High-capacity magazines require TL4.',highCapacity.source);
    add('warning','CSC_HIGH_CAPACITY_REFEREE',record.id,highCapacity.qualification.shotgunReview?'High-capacity assault-shotgun magazines remain subject to referee approval; CSC specifically qualifies shotgun suitability.':'High-capacity magazine suitability remains subject to referee approval.',highCapacity.source);
   }
-  const reserveSpares=(variant,countPerWeapon,spareRef,estimate,unitCost)=>{
+  const hasInterchange=initialSourceId!==w.id||alternateRows.length>0;
+  if(hasInterchange&&!invalidSource){
+   add('warning','CSC_ARL_MAGAZINE_MASS_CONVENTION',record.id,'Magazine estimates retain their source weapon basis when transferred. CSC p142 does not settle donor versus receiver basis; this is a labelled inventory convention, not measured mass.',{...w.source,pages:'142,160-161'});
+   if(initialSourceId!==w.id&&initialType==='high-capacity'||alternateRows.some(item=>item.variant==='high-capacity'))add('warning','CSC_ARL_HIGH_CAPACITY_COMPOSITION',record.id,'Cross-fitting a high-capacity magazine combines CSC p160 interchange with p175 conversion, subject to referee suitability; it is not a worked source example.',{...w.source,pages:'160,175'});
+  }
+  const reserveSpares=(supply,countPerWeapon,spareRef)=>{
+   const {variant,estimate,unitCost}=supply;
    if(spareRef!=='none'){
-    if(countPerWeapon===0)add('error','UNUSED_SPARE_AMMO_STORAGE',record.id,'Spare magazine storage requires a positive count for its selected variant.');
+    if(countPerWeapon===0)add('error','UNUSED_SPARE_AMMO_STORAGE',record.id,'Spare magazine storage requires a positive count for its selected product.');
     if(record.autoload&&!splitAllocation)add('error','SPARE_AMMO_STORAGE_AUTOLOADER',record.id,'Autoloader magazines use their mount allocation, not a separate storage reservation.');
-    if(!estimate)add('error','SPARE_AMMO_STORAGE_UNSUPPORTED',record.id,'This source profile has no supported mass estimate for the selected magazine variant.');
+    if(!estimate)add('error','SPARE_AMMO_STORAGE_UNSUPPORTED',record.id,'This source profile has no supported mass estimate for the selected magazine product.');
    }
    if(countPerWeapon===null||!countPerWeapon||record.autoload&&!splitAllocation)return null;
    const storage=installedEquipment.find(o=>STORAGE_IDS.includes(o.id)&&storageKey(o)===spareRef);
    if(spareRef!=='none'&&!storage)add('error','SPARE_AMMO_STORAGE_REQUIRED',record.id,'Assign spare magazines to an installed storage compartment in this construction.');
    if(!estimate||!storage){add('blocker','SPARE_AMMO_STORAGE',record.id,'Spare ammunition requires a supported source mass estimate and an installed storage allocation with sufficient capacity.');return null;}
    const count=countPerWeapon*n,massKg=massPrecision(estimate.unitMassKg*count);
-   storageUsed.set(spareRef,massPrecision((storageUsed.get(spareRef)??0)+massKg));
-   spareReservations.push({recordId:record.id,storageId:spareRef});
-   return {variant,storageId:spareRef,countPerWeapon,linkedWeapons:n,count,estimated:true,unitMassKg:estimate.unitMassKg,massKg,cost:Number.isFinite(unitCost)?unitCost*count:null,estimate,source:estimate.source,storageSource:book('55'),scope:'Estimated stored reserves only; initial and autoloader ammunition are excluded. The ammunition cost subtotal is already included in the weapon cost. Capacity does not establish hazardous-material suitability.'};
+   storageUsed.set(spareRef,massPrecision((storageUsed.get(spareRef)??0)+massKg));spareReservations.push({recordId:record.id,storageId:spareRef});
+   return {variant,productId:supply.productId,sourceWeaponId:supply.sourceWeaponId,storageId:spareRef,countPerWeapon,linkedWeapons:n,count,estimated:true,unitMassKg:estimate.unitMassKg,massKg,cost:Number.isFinite(unitCost)?unitCost*count:null,estimate,source:estimate.source,storageSource:book('55'),scope:'Estimated stored reserves only; initial and autoloader ammunition are excluded. The ammunition cost subtotal is already included in the weapon cost. Capacity does not establish hazardous-material suitability.'};
   };
-  const spareAmmunition=reserveSpares('standard',splitAllocation?allocation.standard.storedPerWeapon:record.extraMagazines,record.spareMagazineStorageId??'none',estimateCscMagazineMass(w),w.magazineCost);
-  const highCapacitySpareAmmunition=reserveSpares('high-capacity',splitAllocation?allocation.highCapacity.storedPerWeapon:highCount,record.highCapacityMagazineStorageId??'none',highCapacity?.estimate,highCapacity?.unitCost);
+  // Normalize identities before accounting. Equal capacities never coalesce products.
+  const products=[
+   {...product(w.id,'standard'),...allocation.standard,storageId:record.spareMagazineStorageId??'none'},
+   {...product(w.id,'high-capacity'),...allocation.highCapacity,storageId:record.highCapacityMagazineStorageId??'none'},
+   ...alternateRows.map((item,index)=>({...product(item.sourceWeaponId,item.variant,item.sourceWeaponId!==w.id&&allowedSources.includes(item.sourceWeaponId)),...allocation.alternates[index],storageId:item.storageId}))
+  ];
+  if(!products.some(item=>item.productId===initialSourceId+':'+initialType))products.push({...product(initialSourceId,initialType,initialSourceValid),totalPerWeapon:0,autoloadPerWeapon:0,storedPerWeapon:allocation.resolved?0:null,storageId:'none'});
+  const initialProduct=product(initialSourceId,initialType,initialSourceValid),initialCount=record.initialMagazines*n;
+  const purchase=(count,unitCost)=>count===null?null:count===0?0:Number.isFinite(unitCost)?count*n*unitCost:null;
+  const sum=values=>values.some(value=>value===null)?null:values.reduce((total,value)=>total+value,0);
+  const rounds=(count,capacity)=>count===null?null:count===0?0:Number.isFinite(capacity)?count*n*capacity:null;
+  const initialPurchaseCost=w.initialIncluded?0:purchase(record.initialMagazines,initialProduct.unitCost);
+  const initialAmmunition={type:initialType,productId:initialProduct.productId,sourceWeaponId:initialSourceId,source:initialProduct.source,countPerWeapon:record.initialMagazines,linkedWeapons:n,count:initialCount,capacityPerMagazine:initialProduct.capacity,totalRounds:rounds(record.initialMagazines,initialProduct.capacity),included:w.initialIncluded,unitCost:initialProduct.unitCost,purchaseCost:initialPurchaseCost};
+  for(const supply of products){
+   supply.initialCount=supply.compatible&&supply.productId===initialProduct.productId?initialCount:0;
+   supply.initialRounds=supply.compatible&&supply.productId===initialProduct.productId?initialAmmunition.totalRounds:0;
+   supply.initialPurchaseCost=supply.compatible&&supply.productId===initialProduct.productId?initialPurchaseCost:0;
+   supply.extraCount=supply.totalPerWeapon*n;supply.extraRounds=rounds(supply.totalPerWeapon,supply.capacity);
+   supply.autoloadCount=supply.autoloadPerWeapon*n;supply.storedCount=supply.storedPerWeapon===null?null:supply.storedPerWeapon*n;
+   supply.autoloadRounds=rounds(supply.autoloadPerWeapon,supply.capacity);supply.storedRounds=rounds(supply.storedPerWeapon,supply.capacity);
+   supply.reservePurchaseCost=purchase(supply.storedPerWeapon,supply.unitCost);supply.loaderSupplyPurchaseCost=purchase(supply.autoloadPerWeapon,supply.unitCost);
+   // Legacy all-loader records retain their old invalid storage-choice diagnostics.
+   const reserved=reserveSpares(supply,!splitAllocation&&record.autoload?supply.totalPerWeapon:supply.storedPerWeapon,supply.storageId);
+   supply.storageReservations=reserved?[reserved]:[];
+  }
+  const spareAmmunition=products[0].storageReservations[0],highCapacitySpareAmmunition=products[1].storageReservations[0];
+  const totalExtra=products.reduce((count,item)=>count+item.totalPerWeapon,0);
   if(record.autoload&&(!Number.isFinite(w.magazine)||w.magazine<=0))add('error','AUTOLOADER_AMMUNITION',record.id,'An autoloader requires a source-defined finite magazine or power pack; this weapon has none.');
   if(record.autoload&&!allocation.autoloadCountPerWeapon)add('error','EMPTY_AUTOLOADER',record.id,'Specify one to ten additional magazines or power packs for the autoloader. Empty fitted-loader pricing remains unresolved.');
   if(w.initialIncluded&&!w.directPayload&&!record.initialMagazines)add('error','INCLUDED_POWER_PACK',record.id,'The source price includes its initial power pack; no removal discount is defined.');
   if(record.autoload&&design.techLevel<6)add('error','AUTOLOADER_TL',record.id,'Autoloaders require TL6.');
   const replacementAmmoUnsupported=w.ammunitionAccounting?.replacementPurchasesSupported===false&&(record.autoload||totalExtra>0);
   if(replacementAmmoUnsupported)add('blocker','CSC_REPLACEMENT_AMMUNITION_UNAVAILABLE',record.id,'Replacement packs, spare ammunition purchases and autoloading are not source-defined for this weapon supply. Its included supply remains available without inventing a replacement price.',w.source);
-  const initialUnitCost=initialType==='high-capacity'?highCapacity?.unitCost:w.magazineCost,initialCapacity=initialType==='high-capacity'?highCapacity?.capacity:w.magazine;
-  const initialCount=record.initialMagazines*n,initialPurchaseCost=w.initialIncluded?0:initialCount===0?0:Number.isFinite(initialUnitCost)?initialUnitCost*initialCount:null;
-  const purchase=(count,unitCost)=>count===null?null:count===0?0:Number.isFinite(unitCost)?count*n*unitCost:null;
-  const sum=(a,b)=>a===null||b===null?null:a+b;
-  const reservePurchaseCost=sum(purchase(allocation.standard.storedPerWeapon,w.magazineCost),purchase(allocation.highCapacity.storedPerWeapon,highCapacity?.unitCost));
-  const loaderSupplyCost=sum(purchase(allocation.standard.autoloadPerWeapon,w.magazineCost),purchase(allocation.highCapacity.autoloadPerWeapon,highCapacity?.unitCost));
-  const ammoCost=allocation.valid?sum(initialPurchaseCost,reservePurchaseCost):null;
-  const autoloadCost=!allocation.valid?null:!record.autoload?0:!allocation.autoloadCountPerWeapon||loaderSupplyCost===null?null:2*loaderSupplyCost;
-  const initialAmmunition={type:initialType,countPerWeapon:record.initialMagazines,linkedWeapons:n,count:initialCount,capacityPerMagazine:initialCapacity??null,totalRounds:Number.isFinite(initialCapacity)?initialCount*initialCapacity:null,included:w.initialIncluded,unitCost:initialUnitCost??null,purchaseCost:initialPurchaseCost};
-  const rounds=(count,capacity)=>count===null?null:count===0?0:Number.isFinite(capacity)?count*n*capacity:null;
-  const standardSpareRounds=rounds(record.extraMagazines,w.magazine),highCapacitySpareRounds=rounds(highCount,highCapacity?.capacity);
-  const allocationInventory={...allocation,supplyWeaponId:w.id,sourceFamily:w.sourceFamily,linkedWeapons:n,standard:{...allocation.standard,autoloadCount:allocation.standard.autoloadPerWeapon*n,storedCount:allocation.standard.storedPerWeapon===null?null:allocation.standard.storedPerWeapon*n,autoloadRounds:rounds(allocation.standard.autoloadPerWeapon,w.magazine),storedRounds:rounds(allocation.standard.storedPerWeapon,w.magazine)},highCapacity:{...allocation.highCapacity,autoloadCount:allocation.highCapacity.autoloadPerWeapon*n,storedCount:allocation.highCapacity.storedPerWeapon===null?null:allocation.highCapacity.storedPerWeapon*n,autoloadRounds:rounds(allocation.highCapacity.autoloadPerWeapon,highCapacity?.capacity),storedRounds:rounds(allocation.highCapacity.storedPerWeapon,highCapacity?.capacity)},reservePurchaseCost,source:book('61')};
-  const ammunitionInventory={initial:initialAmmunition,standardSpareCount:record.extraMagazines*n,highCapacitySpareCount:highCount*n,standardSpareRounds,highCapacitySpareRounds,totalRounds:sum(sum(initialAmmunition.totalRounds,standardSpareRounds),highCapacitySpareRounds),ammunitionCost:ammoCost,autoloadCost,totalCost:sum(ammoCost,autoloadCost),allocation:allocationInventory,...(record.autoload?{autoload:{countPerWeapon:allocation.autoloadCountPerWeapon,maximumPerWeapon:10,source:book('61'),...(allocation.highCapacity.autoloadPerWeapon?{composition:'Mixed variants combine CSC p175 magazine quantities/prices with Robot Handbook p61 autoloading; this is not a worked source example.',variantSource:highCapacity?.source??null}:{})}}:{})};
+  const reservePurchaseCost=sum(products.map(item=>item.reservePurchaseCost)),loaderSupplyCost=sum(products.map(item=>item.loaderSupplyPurchaseCost));
+  const ammoCost=allocation.valid&&!invalidSource?sum([initialPurchaseCost,reservePurchaseCost]):null;
+  const autoloadCost=!allocation.valid||invalidSource?null:!record.autoload?0:!allocation.autoloadCountPerWeapon||loaderSupplyCost===null?null:2*loaderSupplyCost;
+  const variantInventory=(part,supply)=>({...part,autoloadCount:supply.autoloadCount,storedCount:supply.storedCount,autoloadRounds:supply.autoloadRounds,storedRounds:supply.storedRounds});
+  const allocationInventory={...allocation,supplyWeaponId:w.id,sourceFamily:w.sourceFamily,linkedWeapons:n,standard:variantInventory(allocation.standard,products[0]),highCapacity:variantInventory(allocation.highCapacity,products[1]),reservePurchaseCost,loaderSupplyPurchaseCost:loaderSupplyCost,autoloadRounds:sum(products.map(item=>item.autoloadRounds)),storedRounds:sum(products.map(item=>item.storedRounds)),source:book('61')};
+  const ammunitionInventory={initial:initialAmmunition,...(allowedSources.length||hasInterchange?{products}:{}),standardSpareCount:record.extraMagazines*n,highCapacitySpareCount:highCount*n,standardSpareRounds:products[0].extraRounds,highCapacitySpareRounds:products[1].extraRounds,
+   alternateSpareCount:sum(products.slice(2).map(item=>item.extraCount)),alternateSpareRounds:sum(products.slice(2).map(item=>item.extraRounds)),
+   totalRounds:sum([initialAmmunition.totalRounds,...products.map(item=>item.extraRounds)]),ammunitionCost:ammoCost,autoloadCost,totalCost:sum([ammoCost,autoloadCost]),allocation:allocationInventory,
+   ...(record.autoload?{autoload:{countPerWeapon:allocation.autoloadCountPerWeapon,maximumPerWeapon:10,source:book('61'),...(allocation.highCapacity.autoloadPerWeapon||alternateRows.length?{composition:'Mixed source products and variants combine CSC pp160,175 magazine quantities/prices with Robot Handbook p61 autoloading; this is not a worked source example.',variantSource:highCapacity?.source??null}:{})}}:{})};
   const unknownAmmunitionCost=ammoCost===null||autoloadCost===null;
-  if(unknownAmmunitionCost&&!replacementAmmoUnsupported&&!(w.grenade&&!ammo))add('blocker','WEAPON_AMMUNITION_PRICE_UNRESOLVED',record.id,'The required ammunition or power-pack purchase has no defined price; no zero-cost purchase is assumed.',w.source);
+  if(unknownAmmunitionCost&&!replacementAmmoUnsupported&&!(w.grenade&&!ammo))add('blocker','WEAPON_AMMUNITION_PRICE_UNRESOLVED',record.id,'The required ammunition purchase or allocation is unresolved; no zero-cost purchase is assumed.',w.source);
   return {spareAmmunition,highCapacitySpareAmmunition,initialAmmunition,ammunitionInventory,magazineVariants,ammoCost,autoloadCost,unsupportedHighCapacity,replacementAmmoUnsupported,unknownAmmunitionCost};
  };
  const customized=Boolean(record.ammunitionOverrides?.length);

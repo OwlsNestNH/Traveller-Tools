@@ -75,7 +75,7 @@ test('CSC heavy source: bounded tranche excludes one-use, unresolved supply, dup
 test('CSC heavy source: ARL penalties, included bipods and integrated holographic sights remain conditional',()=>{
  for(const id of ['arl-standard','arl-support','arl-pdw']){
   const effects=raw(id).conditionalEffects;assert.deepEqual(effects.attackModifiers[0],{modifier:-1,condition:'All attacks with this profile',source:{book:'Central Supply Catalogue Update 2023',edition:'Mongoose revised printing (copyright 2026)',pages:'160'}});
-  if(id!=='arl-pdw'){assert.deepEqual(effects.magazineInterchangeability.profiles,['csc-arl-standard','csc-arl-support']);assert.equal(effects.magazineInterchangeability.alternateMagazineSelectionImplemented,false);}
+  if(id!=='arl-pdw'){assert.deepEqual(effects.magazineInterchangeability.profiles,['csc-arl-standard','csc-arl-support']);assert.equal(effects.magazineInterchangeability.alternateMagazineSelectionImplemented,true);}
  }
  const pdw=raw('arl-pdw').conditionalEffects;assert.equal(pdw.attackModifiers.length,2);assert.equal(pdw.attackModifiers[1].modifier,-2);assert.deepEqual(pdw.attackModifiers[1].rangeMetres,{minimum:10,minimumInclusive:false});assert.equal(pdw.modifierInteraction.resolved,false);
  for(const id of ['anti-materiel-rifle','light-assault-gun']){const w=raw(id),b=w.conditionalEffects.bipod;assert.equal(w.slugThrower,true);assert.equal(b.included,true);assert.equal(b.additionalCost,0);assert.deepEqual(b.setup,{action:'Minor',actions:2});assert.equal(b.condition,'Firing from the deployed bipod');assert.deepEqual(b.ignoredTraits,['Bulky','Very Bulky']);assert.equal(b.traitsPermanentlyRemoved,false);assert.ok(w.traits.includes('Very Bulky'));assert.ok(b.source.pages.includes('174'));}

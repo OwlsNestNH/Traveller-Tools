@@ -44,7 +44,7 @@ function conditions(id,tl,traits){
    effects.attackModifiers.push({modifier:-2,condition:'Target is beyond 10 metres',rangeMetres:{minimum:10,minimumInclusive:false},source:csc('160')});
    effects.modifierInteraction={resolved:false,context:'The universal ARL and beyond-10m PDW modifiers are retained separately; their interaction is not settled by construction accounting.',source:csc('160')};
   }
-  if(id!=='arl-pdw')effects.magazineInterchangeability={profiles:['csc-arl-standard','csc-arl-support'],alternateMagazineSelectionImplemented:false,source:csc('160')};
+  if(id!=='arl-pdw')effects.magazineInterchangeability={profiles:['csc-arl-standard','csc-arl-support'],alternateMagazineSelectionImplemented:true,source:csc('160')};
  }
  if(['anti-materiel-rifle','light-assault-gun'].includes(id))effects.bipod={included:true,additionalCost:0,setup:{action:'Minor',actions:2},condition:'Firing from the deployed bipod',ignoredTraits:['Bulky','Very Bulky'],traitsPermanentlyRemoved:false,source:csc(id==='anti-materiel-rifle'?'160,174':'163,174')};
  if(id.startsWith('cppg-')){
