@@ -3,15 +3,16 @@ import {createRequire} from 'node:module';
 import {mkdir,readFile} from 'node:fs/promises';
 import {guiFixture,campaignKey} from './fixtures/gui-parity.mjs';
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
-const browser=await chromium.launch({headless:true});
+const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BROWSER_CHANNEL?{channel:process.env.TRAVELLER_BROWSER_CHANNEL}:{})});
 try{for(const width of [1440,390,320])for(const location of ['toolbar','settings']){
  const f=guiFixture(),bytes=JSON.stringify(f.state),context=await browser.newContext({viewport:{width,height:1000}});
  await context.addInitScript(({key,bytes})=>{localStorage.setItem(key,bytes);globalThis.copied=[];Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>copied.push(text)},configurable:true});},{key:campaignKey,bytes});
  await context.route('https://travellermap.com/**',r=>{const u=new URL(r.request().url());return r.fulfill({json:u.pathname.endsWith('/universe')?f.universe:u.pathname.endsWith('/metadata')?f.metadata:u.pathname.endsWith('/sec')?f.sec:{Worlds:f.apiWorlds}});});
  const page=await context.newPage();page.setDefaultTimeout(15000);await page.goto(process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/');await page.getByText('Editing in this tab',{exact:true}).waitFor();
  const raw=()=>page.evaluate(k=>localStorage.getItem(k),campaignKey),toolbar=page.locator('#player-link-share');
- assert.deepEqual(await toolbar.locator('button').allTextContents(),['Copy Player Link','Backup','Load']);
+ assert.deepEqual(await toolbar.locator('button').allTextContents(),['Copy Player Link','Backup all ships','Export this ship','Load']);
  assert.equal(await toolbar.locator('[data-action=export]').getAttribute('data-mutate'),null);
+ assert.equal(await toolbar.locator('[data-action=export-ship]').getAttribute('data-mutate'),null);
  assert.notEqual(await toolbar.locator('[data-action=import]').getAttribute('data-mutate'),null);
  for(const b of await toolbar.locator('button').all()){const r=await b.boundingBox();assert.ok(r.x>=0&&r.x+r.width<=width&&r.height>=44,'Toolbar controls fit and retain touch targets');}
  assert.equal(await page.locator('#import-file').count(),1,'One shared file input');

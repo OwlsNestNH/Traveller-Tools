@@ -1,10 +1,10 @@
-import {ruleInfo} from './rule-references.mjs?v=fleet-20261108-1';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=fleet-20261108-1';
+import {ruleInfo} from './rule-references.mjs?v=fleet-20261108-2';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=fleet-20261108-2';
 import * as A from './amounts.mjs';
-import {manualLuggage} from './accommodation.mjs?v=fleet-20261108-1';
-import * as P from './passengers.mjs?v=fleet-20261108-1';
-import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=fleet-20261108-1';
-import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=fleet-20261108-1';
+import {manualLuggage} from './accommodation.mjs?v=fleet-20261108-2';
+import * as P from './passengers.mjs?v=fleet-20261108-2';
+import {passengerOffers,passageLabel,PASSAGE_CLASSES} from './passenger-rules.mjs?v=fleet-20261108-2';
+import {supportStock,monthlySupport,supportDisplay} from './life-support.mjs?v=fleet-20261108-2';
 import {displayDate} from './calendar.mjs';
 const esc=escapeHtml;
 const money=formatCreditsText,signed=x=>x>0?'+'+x:String(x);

@@ -49,7 +49,7 @@ try{
   async function importCampaign(contents,confirm){
    await tab('Settings');await page.locator('#import-file').setInputFiles({name:'synthetic-bladder.json',mimeType:'application/json',buffer:Buffer.from(contents)});
    await page.getByRole('heading',{name:'Load campaign (JSON)',exact:true}).waitFor();
-   if(confirm){await page.locator('#modal [name="backed"]').check();await page.locator('#modal').getByRole('button',{name:'Replace campaign',exact:true}).click();}
+   if(confirm){await page.locator('#modal [name="backed"]').check();await page.locator('#modal').getByRole('button',{name:'Replace selected ship',exact:true}).click();}
    else await page.locator('#modal').getByRole('button',{name:'Cancel',exact:true}).click();
    await page.locator('#modal').waitFor({state:'hidden'});
    if(confirm){

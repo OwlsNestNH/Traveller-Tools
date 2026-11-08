@@ -245,7 +245,7 @@ async function committedJump(page, hours=168) {
 async function exportCampaign(page) {
   await tab(page, 'Settings');
   const downloadReady = page.waitForEvent('download');
-  {const utility=page.getByRole('button',{name:'Save campaign (JSON)',exact:true,includeHidden:true});for(const detail of await utility.locator('xpath=ancestor::details').all())if(!await detail.evaluate(el=>el.open))await detail.locator(':scope > summary').click({position:{x:8,y:8}});await utility.click();}
+  {const utility=page.locator('#main').getByRole('button',{name:'Backup all ships',exact:true,includeHidden:true});for(const detail of await utility.locator('xpath=ancestor::details').all())if(!await detail.evaluate(el=>el.open))await detail.locator(':scope > summary').click({position:{x:8,y:8}});await utility.click();}
   const download = await downloadReady;
   const stream = await download.createReadStream();
   assert.ok(stream, 'A real JSON backup is downloaded');
@@ -260,7 +260,7 @@ async function importCampaign(page, state, filename='synthetic-mail-backup.json'
   await page.locator('#import-file').setInputFiles({name:filename, mimeType:'application/json', buffer:Buffer.from(JSON.stringify(state))});
   await page.getByRole('heading', {name:'Load campaign (JSON)', exact:true}).waitFor();
   await modal(page).locator('[name="backed"]').check();
-  await submit(page, 'Replace campaign');
+  await submit(page, 'Replace selected ship');
   await tab(page, 'Contracts');
 }
 async function assertCancelBlocked(page, id, reason) {
@@ -1606,7 +1606,7 @@ try {
     await page.locator('#import-file').setInputFiles({name:'synthetic-map-preference.json', mimeType:'application/json', buffer:Buffer.from(JSON.stringify(initial))});
     await page.getByRole('heading', {name:'Load campaign (JSON)', exact:true}).waitFor();
     await modal(page).locator('[name="backed"]').check();
-    await submit(page, 'Replace campaign');
+    await submit(page, 'Replace selected ship');
     await tab(page, 'Overview');
     assert.equal(await toggle.isChecked(), false, 'Campaign import preserves the browser map preference');
     assert.equal(await page.evaluate(key => localStorage.getItem(key), preferenceKey), 'false');

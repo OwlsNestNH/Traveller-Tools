@@ -82,7 +82,7 @@ async function insure(page){
 async function exported(page){
  await tab(page,'Settings');
  const downloaded=page.waitForEvent('download');
- {const utility=page.getByRole('button',{name:'Save campaign (JSON)',exact:true,includeHidden:true});for(const detail of await utility.locator('xpath=ancestor::details').all())if(!await detail.evaluate(el=>el.open))await detail.locator(':scope > summary').click({position:{x:8,y:8}});await utility.click();}
+ {const utility=page.locator('#main').getByRole('button',{name:'Backup all ships',exact:true,includeHidden:true});for(const detail of await utility.locator('xpath=ancestor::details').all())if(!await detail.evaluate(el=>el.open))await detail.locator(':scope > summary').click({position:{x:8,y:8}});await utility.click();}
  const download=await downloaded,stream=await download.createReadStream();
  assert.ok(stream,'Export creates a real JSON download');
  const chunks=[];for await(const chunk of stream)chunks.push(chunk);
@@ -96,7 +96,7 @@ async function imported(page,state){
  S.validate(structuredClone(state));
  await importFile(page,state);
  await page.getByRole('heading',{name:'Load campaign (JSON)',exact:true}).waitFor();
- await modal(page).locator('[name="backed"]').check();await submit(page,'Replace campaign');
+ await modal(page).locator('[name="backed"]').check();await submit(page,'Replace selected ship');
  await tab(page,'Cargo');
 }
 async function importedWithoutHistory(page,{extendRoute=false}={}){

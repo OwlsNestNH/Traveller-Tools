@@ -1,11 +1,11 @@
-import {recordedOperatingResult} from './financial-summary.mjs?v=fleet-20261108-1';
-import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=fleet-20261108-1';
-import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=fleet-20261108-1';
-import {bladderSpace} from './fuel.mjs?v=fleet-20261108-1';
+import {recordedOperatingResult} from './financial-summary.mjs?v=fleet-20261108-2';
+import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=fleet-20261108-2';
+import {supportStock,supportCargo,supportDisplay,supportReference} from './life-support.mjs?v=fleet-20261108-2';
+import {bladderSpace} from './fuel.mjs?v=fleet-20261108-2';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
-import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=fleet-20261108-1';
-import {distance} from './map.mjs?v=fleet-20261108-1';
+import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=fleet-20261108-2';
+import {distance} from './map.mjs?v=fleet-20261108-2';
 
 export const REPORT_VERSION='2026.10.21.118';
 const clean=v=>String(v??'Not recorded').replace(/[\r\n\t\x00-\x1f]+/g,' ').trim();

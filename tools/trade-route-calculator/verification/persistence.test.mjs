@@ -463,3 +463,84 @@ test('storage refresh enters recovery for damaged fleet members and blocks norma
  assert.doesNotThrow(()=>store.refresh());assert.equal(store.recovery,true);assert.equal(seen.at(-1).initialized,false);assert.throws(()=>store.save(initial(),0),/Restore or reset/);assert.equal(env.values.get(KEY),raw);
  env.values.set(KEY,good);store.refresh();assert.equal(store.recovery,false);assert.equal(store.listShips().length,2);
 });
+
+test('delete active first, middle or last ship selects first survivor and preserves every remaining field',async t=>{
+ const env=environment(t),seen=[],store=env.store((s,m)=>seen.push({s,m}));await store.acquire();await tick();
+ for(const target of ['first','middle','last']){
+  const fleet={fleetVersion:1,activeShipId:target,ships:['first','middle','last'].map(id=>({id,annotation:'Keep '+id,campaign:populated()}))};
+  for(const entry of fleet.ships){entry.campaign.ship.name=entry.id;entry.campaign.extraLegacyField={keep:entry.id};delete entry.campaign.settings.useRawIllegalPrices;}
+  env.values.set(KEY,JSON.stringify(fleet));const survivors=fleet.ships.filter(s=>s.id!==target);
+  const returned=store.deleteShip(target,store.context()),saved=JSON.parse(env.values.get(KEY));
+  assert.equal(saved.activeShipId,survivors[0].id);assert.deepEqual(saved.ships,survivors);assert.equal(JSON.stringify(saved.ships),JSON.stringify(survivors));
+  assert.deepEqual(returned,store.read());assert.equal(seen.at(-1).m.fleetChanged,true);assert.equal(env.store().activeShipId,survivors[0].id);assert.deepEqual(undo(store.read()).ledger,survivors[0].campaign.ledger);
+ }
+});
+
+test('delete nonactive ship retains selected campaign and rejects deleting the last ship or a missing ship',async t=>{
+ const env=environment(t),store=env.store();await store.acquire();await tick();const legacyBytes=JSON.stringify(populated());env.values.set(KEY,legacyBytes);
+ assert.throws(()=>store.deleteShip(store.activeShipId),/last ship/);assert.equal(env.values.get(KEY),legacyBytes);
+ store.addShip();store.addShip();const selected=store.activeShipId,before=store.read(),first=store.listShips()[0].id;
+ store.deleteShip(first);assert.equal(store.activeShipId,selected);assert.deepEqual(store.read(),before);assert.equal(store.listShips().length,2);
+ store.deleteShip(store.listShips()[0].id);assert.equal(store.activeShipId,selected);const raw=env.values.get(KEY);
+ for(const [id,pattern] of [[selected,/last ship/],['missing',/no longer exists/]]){assert.throws(()=>store.deleteShip(id),pattern);assert.equal(env.values.get(KEY),raw);}
+});
+
+test('delete ship quota, stale revision or identity, read-only, recovery and reload guards preserve bytes',async t=>{
+ const env=environment(t),store=env.store();await store.acquire();await tick();const stale=store.context();store.addShip();const target=store.activeShipId,raw=env.values.get(KEY),put=localStorage.setItem;
+ for(const context of [stale,{...store.context(),revision:999}]){assert.throws(()=>store.deleteShip(target,context),/stale/);assert.equal(env.values.get(KEY),raw);}
+ localStorage.setItem=()=>{throw Error('Quota exceeded');};assert.throws(()=>store.deleteShip(target),error=>error.committed===false&&/Quota/.test(error.message));localStorage.setItem=put;assert.equal(env.values.get(KEY),raw);
+ const reader=env.store();await reader.acquire();await tick();assert.throws(()=>reader.deleteShip(target),/read-only/);assert.equal(env.values.get(KEY),raw);
+ store.recovery=true;assert.throws(()=>store.deleteShip(target,store.context()),/Restore or reset/);store.recovery=false;
+ store.reloadRequired=true;assert.throws(()=>store.deleteShip(target),/Reload this page/);store.reloadRequired=false;assert.equal(env.values.get(KEY),raw);
+ const damaged=JSON.parse(raw);damaged.ships[0].campaign.ship=[];const badBytes=JSON.stringify(damaged);env.values.set(KEY,badBytes);store.refresh();assert.equal(store.recovery,true);assert.throws(()=>store.deleteShip(target,{revision:0,shipId:target}),/Restore or reset/);assert.equal(env.values.get(KEY),badBytes);
+});
+
+test('delete ship publication failure remains durable, reloadable and absent from the full backup',async t=>{
+ const env=environment(t),store=env.store();await store.acquire();await tick();store.addShip();store.addShip();const removed=store.activeShipId;
+ store.onChange=()=>{throw Error('Render failed');};assert.throws(()=>store.deleteShip(removed),error=>error.committed===true&&error.code==='SAVE_COMMITTED_PUBLICATION_FAILED');
+ const reader=env.store(),raw=env.values.get(KEY);assert.equal(reader.listShips().length,2);assert.ok(reader.listShips().every(s=>s.id!==removed));assert.equal(reader.activeShipId,reader.listShips()[0].id);
+ const originalDocument=Object.getOwnPropertyDescriptor(globalThis,'document'),create=URL.createObjectURL,revoke=URL.revokeObjectURL,timeout=globalThis.setTimeout;let captured;
+ Object.defineProperty(globalThis,'document',{configurable:true,value:{body:{append(){}},createElement:()=>({click(){},remove(){}})}});URL.createObjectURL=blob=>{captured=blob;return 'blob:test';};URL.revokeObjectURL=()=>{};globalThis.setTimeout=fn=>{fn();};
+ try{reader.backup();assert.equal(await captured.text(),raw);assert.ok(JSON.parse(await captured.text()).ships.every(s=>s.id!==removed));}
+ finally{URL.createObjectURL=create;URL.revokeObjectURL=revoke;globalThis.setTimeout=timeout;if(originalDocument)Object.defineProperty(globalThis,'document',originalDocument);else delete globalThis.document;}
+});
+
+async function captureShipDownload(action){
+ const originalDocument=Object.getOwnPropertyDescriptor(globalThis,'document'),create=URL.createObjectURL,revoke=URL.revokeObjectURL,timeout=globalThis.setTimeout;let captured,filename,clicked=0;
+ Object.defineProperty(globalThis,'document',{configurable:true,value:{body:{append(){}},createElement:()=>({click(){clicked++;filename=this.download;},remove(){}})}});
+ URL.createObjectURL=blob=>{captured=blob;return 'blob:test';};URL.revokeObjectURL=()=>{};globalThis.setTimeout=fn=>{fn();};
+ try{action();return {raw:await captured.text(),filename,clicked};}
+ finally{URL.createObjectURL=create;URL.revokeObjectURL=revoke;globalThis.setTimeout=timeout;if(originalDocument)Object.defineProperty(globalThis,'document',originalDocument);else delete globalThis.document;}
+}
+
+test('single ship export isolates the selected full record while group backup retains all ships',async t=>{
+ const env=environment(t),store=env.store();await store.acquire();await tick();store.replace(populated(),0);const first=store.activeShipId;store.addShip(populated());
+ const fleet=JSON.parse(env.values.get(KEY));fleet.ships[0].campaign.name='Inactive-only private marker';fleet.ships[1].campaign.name='Selected ship';fleet.ships[1].campaign.legacyExtra={keep:'verbatim'};delete fleet.ships[1].campaign.settings.useRawIllegalPrices;
+ const raw=JSON.stringify(fleet);env.values.set(KEY,raw);const selected=fleet.ships[1].campaign;
+ const single=await captureShipDownload(()=>store.backupShip()),group=await captureShipDownload(()=>store.backup());
+ assert.equal(single.clicked,1);assert.match(single.filename,/^traveller-ship-\d{4}-\d{2}-\d{2}\.json$/);assert.match(group.filename,/^traveller-fleet-/);
+ assert.equal(single.raw,JSON.stringify(selected));assert.deepEqual(JSON.parse(single.raw),selected);assert.equal(single.raw.includes('Inactive-only private marker'),false);assert.equal(isFleet(JSON.parse(single.raw)),false);assert.equal(group.raw,raw);assert.equal(env.values.get(KEY),raw);
+ store.selectShip(first);const switched=await captureShipDownload(()=>store.backupShip());assert.equal(JSON.parse(switched.raw).name,'Inactive-only private marker');
+});
+
+test('single ship export imports into only selected destination and preserves history',async t=>{
+ const env=environment(t),store=env.store();await store.acquire();await tick();store.replace(populated(),0);const exported=JSON.parse((await captureShipDownload(()=>store.backupShip())).raw);
+ store.addShip();const inactive=JSON.parse(env.values.get(KEY)).ships[0],expected=store.context();store.replace(validateImport(exported),expected);
+ const imported=store.read();assert.deepEqual(JSON.parse(env.values.get(KEY)).ships[0],inactive);assert.equal(imported.revision,expected.revision+1);
+ for(const key of ['ship','lots','contracts','ledger','events','undo','jumpAttempts','dashboardBaseline'])assert.deepEqual(imported[key],exported[key]);assert.equal(undo(imported).hours,0);
+});
+
+test('legacy single ship export keeps saved fields intact and works read-only without writes',async t=>{
+ const env=environment(t),legacy=populated();delete legacy.settings.useRawIllegalPrices;legacy.extraField={preserve:true};const raw=JSON.stringify(legacy);env.values.set(KEY,raw);
+ const store=env.store();assert.equal(store.editable,false);const put=localStorage.setItem;localStorage.setItem=()=>{throw Error('Export must not write');};
+ try{const single=await captureShipDownload(()=>store.backupShip());assert.equal(single.raw,raw);assert.equal(env.values.get(KEY),raw);}
+ finally{localStorage.setItem=put;}
+});
+
+test('single ship export rejects malformed fleet or legacy data without exporting a fallback',async t=>{
+ const env=environment(t),store=env.store();await store.acquire();await tick();store.addShip();const good=JSON.parse(env.values.get(KEY));
+ const corrupt=structuredClone(good);corrupt.ships[0].campaign.ship=[];const missing=structuredClone(good);missing.activeShipId='missing';const version=structuredClone(good);version.fleetVersion=999;
+ for(const raw of ['{bad json',JSON.stringify(corrupt),JSON.stringify(missing),JSON.stringify(version),JSON.stringify({schema:1})]){
+  env.values.set(KEY,raw);store.refresh();assert.equal(store.recovery,true);await assert.rejects(captureShipDownload(()=>store.backupShip()));assert.equal(env.values.get(KEY),raw);
+ }
+});

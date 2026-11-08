@@ -243,7 +243,7 @@ try{
   if(await page.locator('#service-panel').count())await click('service-cancel');
   const imported=structuredClone(f.state);imported.name='Imported service verification';imported.ship.fuel.aboardTons=6;
   await page.locator('#import-file').setInputFiles({name:'synthetic-service-import.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(imported))});
-  await page.getByRole('heading',{name:'Load campaign (JSON)',exact:true}).waitFor();await page.locator('[name="backed"]').check();await page.getByRole('button',{name:'Replace campaign',exact:true}).click();await page.locator('#modal').waitFor({state:'hidden'});
+  await page.getByRole('heading',{name:'Load campaign (JSON)',exact:true}).waitFor();await page.locator('[name="backed"]').check();await page.getByRole('button',{name:'Replace selected ship',exact:true}).click();await page.locator('#modal').waitFor({state:'hidden'});
   assert.equal((await read()).ship.fuel.aboardTons,6);assert.equal((await read()).name,imported.name);const importedBytes=await raw();
   await open();assert.equal(await page.locator('[name="fuelTons"]').inputValue(),'37','Imported campaign starts a new exact draft');await click('service-cancel');await unchanged('Cancelled imported draft',importedBytes);
  });
