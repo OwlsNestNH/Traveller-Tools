@@ -1,9 +1,9 @@
 {
-  "change": "2026-11-08: cabin/person costs folded into LSS; retire separate payments, add explanatory report lines. Original .58 economics independently checked for every surviving entry.",
+  "change": "2026-11-08: cabin/person costs folded into LSS; retire separate payments, add explanatory report lines. Original .58 economics independently checked for surviving entries, with separately computed Cr100 incidental allowance on scheduled payments.",
   "cases": [
     {
       "name": "seven-kind full batch credit 1",
-      "canonicalSha256": "13a8410bd55da707fa058c06c64efade3c8b10683b8f07a8325ef45ce96ff6bf"
+      "canonicalSha256": "41c573fb480a76effc7e68bb4d0035c6bfa8f3cded1f1c060d1296c7ce4ce07a"
     },
     {
       "name": "booked Low and awake plus legacy baseline credit 1",
@@ -15,7 +15,7 @@
     },
     {
       "name": "fixed mortgage maintenance exact credit 1",
-      "canonicalSha256": "e3211cba8797f4436c9a5316e67d21c125050e510e486357269a0d53173272b7"
+      "canonicalSha256": "0a4c4f9f604cca02b9f7968d2e4390a15aa2345afa52d78b28709b8ad08f8f64"
     },
     {
       "name": "manual exact amount 10.1 step 1",
@@ -43,7 +43,7 @@
     },
     {
       "name": "seven-kind full batch credit 100",
-      "canonicalSha256": "7d591b58285e28a4b11277acd0db70b296d00ffd8fe69c6dc47720cbccd3acc0"
+      "canonicalSha256": "2748748e5e3d66ce46e5c368fb7b11c45e73eae1947bab3c8c19868faf6c0aca"
     },
     {
       "name": "booked Low and awake plus legacy baseline credit 100",
@@ -55,7 +55,7 @@
     },
     {
       "name": "fixed mortgage maintenance exact credit 100",
-      "canonicalSha256": "15f7a7a0e4357e21e65250f02eb2751ef9888089d8d84ee3dddcfa5871c1d3d9"
+      "canonicalSha256": "9dd95325197d9901f68f3b5c87ba7f33e22c3dd2219a92fe91f23cc1d8d33ba7"
     },
     {
       "name": "manual exact amount 10.1 step 100",
@@ -311,7 +311,7 @@
     },
     {
       "name": "select all helper retains seven kinds",
-      "canonicalSha256": "13a8410bd55da707fa058c06c64efade3c8b10683b8f07a8325ef45ce96ff6bf"
+      "canonicalSha256": "41c573fb480a76effc7e68bb4d0035c6bfa8f3cded1f1c060d1296c7ce4ce07a"
     },
     {
       "name": "fuel quantity shortcut next",

@@ -1,5 +1,5 @@
-import {makePlayerSnapshotExample} from './player-snapshot-fixture.mjs?v=fleet-20261108-2';
-import {measureSnapshotLink} from './player-snapshot-codec.mjs?v=fleet-20261108-2';
+import {makePlayerSnapshotExample} from './player-snapshot-fixture.mjs?v=luxury-lss-20261108-1';
+import {measureSnapshotLink} from './player-snapshot-codec.mjs?v=luxury-lss-20261108-1';
 const result=document.getElementById('result'),link=document.getElementById('link'),open=document.getElementById('open');
 document.getElementById('generate').addEventListener('click',()=>{
   link.value='';open.hidden=true;open.removeAttribute('href');

@@ -37,6 +37,8 @@ async function finish(ctx,name){cases.push(name);await ctx.tracing.stop({path:jo
 try{
  for(const width of [1440,390]){
   const {ctx,page}=await start(width);await tab(page,'Settings').click();
+  const middlePeople=page.locator('#settings-form [name="people-middle"]');await reveal(middlePeople);await middlePeople.fill('0');
+  assert.match(await page.locator('#accommodation-estimate').innerText(),/Cabin charges: Cr 0 \/ month.*Combined: Cr 0 \/ month/,'Empty-ship Settings estimate agrees with the zero-cost engine');await middlePeople.fill('2');
   for(const [name,value]of [['rooms-luxury','1'],['people-luxury','1']]){const input=page.locator('#settings-form [name="'+name+'"]');await reveal(input);await input.fill(value);}
   assert.equal(await page.locator('#settings-form [name="refillRate-luxury"]').inputValue(),'5000');
   await page.locator('#settings-form button[type="submit"]').click();let baseline=await read(page);assert.equal(baseline.ship.accommodation.passengers.luxury,1);assert.equal(baseline.ship.accommodation.rooms.luxury,1);assert.equal(baseline.ship.accommodation.luggageTons,'2');assert.equal(units(baseline),112);
@@ -55,7 +57,26 @@ try{
   await action(page,'service-confirm').click();await page.waitForFunction(({key,bank})=>JSON.parse(localStorage.getItem(key)).bank===String(BigInt(bank)-786n),{key:campaignKey,bank:beforeRefill.bank});
   const refill=await read(page);assert.equal(units(refill),117);assert.equal(refill.ledger.at(-1).expense.cabinMonthly,'5000');assert.equal(refill.ledger.at(-1).expense.peopleMonthly,'17000');assert.equal(refill.ledger.at(-1).expense.dailyCredits,'786');assert.equal(refill.ledger.at(-1).roundingStep,1);
   await tab(page,'History').click();await action(page,'undo').click();assert.equal(units(await read(page)),112);assert.equal((await read(page)).bank,beforeRefill.bank);
+  // Explicit docking is per ship, persistent and reversible, with no hidden
+  // refill or station charge. Browsing remains unrelated to the switch.
+  await tab(page,'Overview').click();const beforeDock=await read(page);
+  const station=action(page,'station-life-support');assert.equal(await station.getAttribute('aria-checked'),'false');
+  await station.click();await page.waitForFunction(key=>JSON.parse(localStorage.getItem(key)).ship.stationLifeSupport===true,campaignKey);
+  const docked=await read(page);assert.equal(docked.bank,beforeDock.bank);assert.deepEqual(docked.ledger,beforeDock.ledger);assert.equal(units(docked),112);
+  await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();await tab(page,'Overview').click();assert.equal(await station.getAttribute('aria-checked'),'true');assert.match(await page.locator('.life-support-counter').innerText(),/Station supply/);
+  await action(page,'day-forward').click();assert.equal(units(await read(page)),112,'A docked day uses station supplies');
+  await station.click();await action(page,'day-forward').click();assert.equal(units(await read(page)),107,'Undocking resumes onboard consumption');
+  await tab(page,'History').click();await action(page,'undo').click();assert.equal(units(await read(page)),112);
+  // Cr100 allowance is included once in the expense, not a separate charge.
+  await tab(page,'Settings').click();const rounding=page.locator('#settings-form [name="creditStep"]');await reveal(rounding);
+  const roundingInfo=rounding.locator('xpath=..').locator('[data-rule-info="rounding"]');assert.equal(await roundingInfo.count(),1);await roundingInfo.click();
+  const info=page.locator('#rule-reference-popup');await info.waitFor({state:'visible'});assert.match(await info.innerText(),/small taxes|tips/);assert.match(await info.innerText(),/already (included|in)|not.*extra|not.*separate|not an additional/i);await page.keyboard.press('Escape');await info.waitFor({state:'hidden'});
+  await rounding.selectOption('100');await page.locator('#settings-form button[type="submit"]').click();await tab(page,'Overview').click();const beforeRounded=await read(page);
+  await action(page,'refill-support').click();await page.locator('#service-form [name="internal"]').fill('117');await page.locator('#service-form [name="internal"]').blur();assert.match(await page.locator('.lss-total').innerText(),/800/);
+  await action(page,'service-confirm').click();await page.waitForFunction(({key,bank})=>JSON.parse(localStorage.getItem(key)).bank===String(BigInt(bank)-800n),{key:campaignKey,bank:beforeRounded.bank});
+  const rounded=await read(page);assert.equal(rounded.ledger.length,beforeRounded.ledger.length+1);assert.equal(rounded.ledger.at(-1).amount,'-800');assert.equal(rounded.ledger.at(-1).roundingStep,100);assert.equal(rounded.ledger.at(-1).expense.dailyCredits,'786');
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);await page.screenshot({path:join(artifacts,'luxury-station-rounded-'+width+'.png'),fullPage:true});
   await finish(ctx,'manual-'+width);
  }
- assert.deepEqual(errors,[]);console.log('PASS: Luxury Settings, source-aware manual booking, Cancel, exact baseline/stock preservation, reload, consumption, combined refill price, Undo and desktop/mobile layout');
+ assert.deepEqual(errors,[]);console.log('PASS: Luxury Settings, source-aware manual booking, Cancel, exact baseline/stock preservation, reload, consumption, combined refill price, station switch, Cr100 popup/debit, Undo and desktop/mobile layout');
 }finally{await browser.close();}

@@ -1,6 +1,7 @@
-import {tiers,roomCounts,serviceRate} from './accommodation.mjs?v=fleet-20261108-2';
-import {passengerShip} from './passengers.mjs?v=fleet-20261108-2';
-import {supportCostBasis,supportPurchaseCost,combinedSupportReference} from './life-support.mjs?v=fleet-20261108-2';
+import {creditStep} from './rounding.mjs?v=luxury-lss-20261108-1';
+import {tiers,roomCounts,serviceRate} from './accommodation.mjs?v=luxury-lss-20261108-1';
+import {passengerShip} from './passengers.mjs?v=luxury-lss-20261108-1';
+import {supportCostBasis,supportPurchaseCost,combinedSupportReference} from './life-support.mjs?v=luxury-lss-20261108-1';
 
 export const consumableRefillReference=combinedSupportReference;
 // Installed amount is informational; supportCostBasis applies zero when empty.
@@ -10,5 +11,5 @@ export function monthlyCabinUpkeep(ship){
 }
 export function consumableRefillBasis(state){return supportCostBasis(passengerShip(state));}
 export function consumableRefillQuote(state,{purchasedUnits,comfortCost='0',comfortNote=''}){
- return supportPurchaseCost(passengerShip(state),purchasedUnits,{comfortCost,comfortNote});
+ return supportPurchaseCost(passengerShip(state),purchasedUnits,{comfortCost,comfortNote,roundingStep:creditStep(state)});
 }

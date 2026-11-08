@@ -14,7 +14,7 @@ test('economic source remains pinned after approved Luxury service and combined 
  const {readFile}=await import('node:fs/promises'),{createHash}=await import('node:crypto'),{withoutCampaignPoliticsValidation}=await import('./campaign-politics-source-guard.mjs');
  const source=await readFile(new URL('../js/state.mjs',import.meta.url),'utf8');
  const hash=s=>createHash('sha256').update(s.replace(/(^import [^\n]*?)\?v=[^'"]+/gm,'$1?v=<release>')).digest('hex');
- const released='0e070fc9c8cf7715380e718e225a96ac845db1f6445645c979fb988074d5d9fc';
+ const released='dc082c87585257116472be5d2999b3b3d9524a9b0ebdea368c7c26cb6947b069';
  assert.equal(hash(withoutCampaignPoliticsValidation(source)),released);
  assert.notEqual(hash(withoutCampaignPoliticsValidation(source.replace('s.bank=','s.bank ='))),released,'Economic edits cannot bypass the existing source guard');
 });

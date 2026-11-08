@@ -1,13 +1,13 @@
-import {recordedOperatingResult} from './financial-summary.mjs?v=fleet-20261108-2';
-import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=fleet-20261108-2';
-import {supportStock,supportCargo,supportDisplay,supportReference,supportCostBasis} from './life-support.mjs?v=fleet-20261108-2';
-import {bladderSpace} from './fuel.mjs?v=fleet-20261108-2';
+import {recordedOperatingResult} from './financial-summary.mjs?v=luxury-lss-20261108-1';
+import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=luxury-lss-20261108-1';
+import {supportStock,supportCargo,supportDisplay,supportReference,supportCostBasis} from './life-support.mjs?v=luxury-lss-20261108-1';
+import {bladderSpace} from './fuel.mjs?v=luxury-lss-20261108-1';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
-import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=fleet-20261108-2';
-import {distance} from './map.mjs?v=fleet-20261108-2';
+import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=luxury-lss-20261108-1';
+import {distance} from './map.mjs?v=luxury-lss-20261108-1';
 
-export const REPORT_VERSION='2026.10.21.118';
+export const REPORT_VERSION='2026.10.21.119';
 const clean=v=>String(v??'Not recorded').replace(/[\r\n\t\x00-\x1f]+/g,' ').trim();
 const number=v=>String(v).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const cr=v=>v==null?'Not recorded':'Cr '+number(v);
@@ -48,6 +48,7 @@ export function campaignReport(s,core,{exportedAt=new Date()}={}){
  }
  if(s.ship.accommodation?.combinedPeople)line('People receiving high service',(occ.passengers?.high??0)+(occ.crew?.high??0));
  if(s.ship.accommodation?.combinedPeople&&((occ.passengers?.luxury??0)+(occ.crew?.luxury??0)))line('People receiving luxury service',(occ.passengers?.luxury??0)+(occ.crew?.luxury??0));
+ if(s.ship.stationLifeSupport!==undefined)line('Station life support',s.ship.stationLifeSupport?'On: onboard use paused while docked; jump disables it':'Off: onboard supplies in use');
  if(s.ship.lifeSupport){const q=supportStock(s.ship);line('Life support stock',q.remainingUnits===null?'Legacy days; actual LSS needs confirmation':q.remainingUnits+' LSS');line('Life support days / refill target',(q.remainingDays??'Unknown at current complement')+' / '+q.targetDays);line('Awake people / occupied low berths',q.awakePeople+' / '+q.occupiedLowBerths);line('Life support consumption',q.complementKnown?q.dailyUnits+' LSS/day':'Unknown complement');line('Internal life support capacity',q.internalCapacityUnits===null?'Unknown until hull displacement is recorded':q.internalCapacityUnits+' LSS');line('Life support source',supportReference);if(q.complementKnown){const cost=supportCostBasis(s.ship);line('LSS cabin + person cost / 28 days',cr(cost.monthly));line('LSS daily cost rounded up',cr(cost.dailyCredits));line('LSS billing','Cabin cost included in refills. Existing stock and receipts retained without repricing or automatic credit.');}if(q.legacy)line('Legacy life support',q.migration.possible?'Converts inside the next reversible campaign change.':q.migration.reason);}
  section('FINANCIAL SUMMARY');
  const opening=s.ledger.find(e=>e.type==='Opening bank');
@@ -72,6 +73,7 @@ export function campaignReport(s,core,{exportedAt=new Date()}={}){
  line('Cargo remaining cost basis',cr(total(s.lots.map(l=>l.basis))));
  line('Realized trading profit / loss',complete?cr(retained):'Incomplete historical sale records');
  line('Freight / mail income',cr(income));line('Passenger income',cr(passengerIncome));line('Recorded operating expenses',cr(operating));
+ const incidental=total(s.ledger.map(e=>e.expense?.incidentalCosts??'0'));if(incidental>0n)line('Included incidental costs on scheduled payments',cr(incidental));
  line(passengerIncome?'Trading + transport - expenses':'Trading + freight - expenses',complete?cr(retained+income+passengerIncome-operating):'Not available');
  line('Recorded insurance payments',cr(total(s.ledger.filter(e=>e.type==='Insurance claim').map(e=>e.amount))));
  line('Current profit setting',s.settings.profit+'% of positive profit [1]');

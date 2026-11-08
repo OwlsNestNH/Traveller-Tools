@@ -24,8 +24,8 @@ test('custom cabin and person rates affect combined price; stock location and ta
  s.ship.accommodation.roomService={middle:{level:'custom',monthly:'5555'}};s.ship.lifeSupport.capacityHours=24;s.ship.lifeSupport.stockUnits=A.auditNumber(5000);
  assert.equal(quote(s,100).amount,'8550');s.ship.accommodation.refillRates={middle:'2000'};assert.equal(quote(s,100).amount,'12125');
 });
-test('precise purchased fractions remain exact; final price uses whole Credits even with Cr100 fund setting',()=>{
- const s=campaign();s.ship.accommodation.crew.middle=1;const units=A.auditNumber(A.rat(1,24)),q=quote(s,units);assert.deepEqual(q.purchasedUnits,units);assert.deepEqual(q.exactAmount,A.auditNumber(3));assert.equal(q.amount,'3');s.settings.creditStep=100;assert.equal(quote(s,units).amount,'3');assert.equal(quote(s,0).amount,'0');
+test('precise purchased fractions remain exact; daily tariff stays whole Credits while final expense follows the selected Cr100 setting',()=>{
+ const s=campaign();s.ship.accommodation.crew.middle=1;const units=A.auditNumber(A.rat(1,24)),q=quote(s,units);assert.deepEqual(q.purchasedUnits,units);assert.deepEqual(q.exactAmount,A.auditNumber(3));assert.equal(q.amount,'3');s.settings.creditStep=100;assert.equal(quote(s,units).amount,'100');assert.equal(quote(s,1).dailyCredits,'72');assert.equal(quote(s,7).amount,'600');assert.equal(quote(s,0).amount,'0');
 });
 test('empty ship has zero cabin tariff; paid stock needs complement while comfort is allowed',()=>{
  const s=campaign(),bytes=JSON.stringify(s),basis=consumableRefillBasis(s);assert.equal(basis.installedCabinMonthly,'1000');assert.equal(basis.cabinMonthly,'0');assert.equal(basis.monthly,'0');assert.equal(basis.dailyCredits,'0');assert.deepEqual(basis.dailyUnits,A.auditNumber(0));assert.equal(quote(s,0).amount,'0');assert.throws(()=>quote(s,1),/positive complement/);assert.throws(()=>quote(s,-1),/negative/);assert.equal(JSON.stringify(s),bytes);

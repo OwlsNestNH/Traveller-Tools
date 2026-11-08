@@ -103,19 +103,19 @@ test('missing fixed expenses navigate to Settings without invented payment defau
  }
 });
 
-test('mortgage prepay uses exact fixed credits, all dates metadata, and a saved receipt in place',async()=>{
+test('mortgage prepay rounds cash but preserves exact schedule, dates and a saved receipt',async()=>{
  const s=campaign();s.settings.creditStep=100;const h=harness(s);h.expenses.open('mortgage',{fresh:true});h.edit({payments:2});
- let html=h.expenses.panel();assert.match(html,/Cr 200,002/);assert.match(html,/Cr 4,799,998/);assert.match(html,/data-payment-first="029-1105" data-payment-count="2" data-payment-amount="100001"/);assert.match(html,/085-1105/);
+ let html=h.expenses.panel();assert.match(html,/Cr 200,100/);assert.match(html,/Cr 4,799,900/);assert.match(html,/data-payment-first="029-1105" data-payment-count="2" data-payment-amount="100001"/);assert.match(html,/085-1105/);
  assert.doesNotMatch(html,/Review changes|data-action="expense-review"/);
  const pay=h.arg('expense-pay');await h.expenses.action('expense-pay',pay);await h.expenses.action('expense-pay',pay);
- assert.equal(h.commits,1);assert.equal(h.state().bank,'4799998');assert.equal(h.state().ship.mortgage.remainingPayments,478);assert.equal(h.state().ship.mortgage.totalPaid,'200002');assert.equal(h.state().ship.mortgage.originalAmount,'24000001');
- html=h.expenses.panel();assert.match(html,/Payment recorded/);assert.match(html,/002-1105 · 05:00/);assert.match(html,/085-1105/);assert.match(html,/>478</);assert.match(html,/Cr 200,002/);assert.equal((html.match(/<button(?=[^>]*data-action)/g)||[]).length,1);assert.match(html,/type="button" class="rule-info" data-rule-info="mortgage"/);assert.doesNotMatch(html,/expense-pay|expense-cancel/);
+ assert.equal(h.commits,1);assert.equal(h.state().bank,'4799900');assert.equal(h.state().ship.mortgage.remainingPayments,478);assert.equal(h.state().ship.mortgage.totalPaid,'200002');assert.equal(h.state().ship.mortgage.originalAmount,'24000001');
+ html=h.expenses.panel();assert.match(html,/Payment recorded/);assert.match(html,/002-1105 · 05:00/);assert.match(html,/085-1105/);assert.match(html,/>478</);assert.match(html,/Cr 200,100/);assert.equal((html.match(/<button(?=[^>]*data-action)/g)||[]).length,1);assert.match(html,/type="button" class="rule-info" data-rule-info="mortgage"/);assert.doesNotMatch(html,/expense-pay|expense-cancel/);
  assert.deepEqual(h.expenses.route(),{kind:'mortgage',receiptId:h.state().ledger.at(-1).id});assert.equal(h.state().events.at(-1).label,'Paid mortgage');
 });
 
 test('maintenance prepays its independent fixed schedule and restores through Undo',async()=>{
  const s=campaign();s.settings.creditStep=100;const h=harness(s),before=structuredClone(s);h.expenses.open('maintenance',{fresh:true});h.edit({payments:3});
- assert.match(h.expenses.panel(),/Cr 6,003/);await h.click('expense-pay');assert.equal(h.state().ship.maintenance.nextDueDate,'099-1105');assert.equal(h.state().ship.maintenance.paidSinceTracking,'6003');assert.deepEqual(h.state().ship.mortgage,before.ship.mortgage);
+ assert.match(h.expenses.panel(),/Cr 6,100/);await h.click('expense-pay');assert.equal(h.state().ship.maintenance.nextDueDate,'099-1105');assert.equal(h.state().ship.maintenance.paidSinceTracking,'6003');assert.deepEqual(h.state().ship.mortgage,before.ship.mortgage);
  const undone=S.undo(h.state());assert.equal(undone.bank,before.bank);assert.deepEqual(undone.ship.maintenance,before.ship.maintenance);h.setState(undone);assert.match(h.expenses.panel(),/no longer in the ledger/);assert.doesNotMatch(h.expenses.panel(),/Payment recorded/);
 });
 

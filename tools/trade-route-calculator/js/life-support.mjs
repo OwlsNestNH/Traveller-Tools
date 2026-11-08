@@ -1,8 +1,8 @@
-import {supportCompartments,consumeReserveCompartments} from './lss-compartments.mjs?v=fleet-20261108-2';
-import {passengerShip} from './passengers.mjs?v=fleet-20261108-2';
-import {tiers,roomCounts,serviceRate,occupants,personRate,refillPersonRate} from './accommodation.mjs?v=fleet-20261108-2';
+import {supportCompartments,consumeReserveCompartments} from './lss-compartments.mjs?v=luxury-lss-20261108-1';
+import {passengerShip} from './passengers.mjs?v=luxury-lss-20261108-1';
+import {tiers,roomCounts,serviceRate,occupants,personRate,refillPersonRate} from './accommodation.mjs?v=luxury-lss-20261108-1';
 import {add,sub,mul,div,cmp,dec,rat,decimal,auditNumber,credit,floor} from './amounts.mjs';
-import {up,creditStep} from './rounding.mjs?v=fleet-20261108-2';
+import {up,creditStep} from './rounding.mjs?v=luxury-lss-20261108-1';
 
 export const supportReference='Cluster Truck, p. 14: awake occupants consume 1 LSS per day; occupied low berths consume 0.1. Internal storage holds 4 LSS per displacement ton; overflow uses 0.01 cargo tons per LSS.';
 export const extraSupportReference='Campaign rule: standard and extra supplies use the same combined cabin-plus-person daily tariff, rounded up to whole Credits per day before purchased duration is applied.';
@@ -64,14 +64,15 @@ export function supportCostBasis(ship){
 }
 export function monthlySupport(ship){return BigInt(supportCostBasis(ship).monthly);}
 export const combinedSupportReference='Campaign LSS tariff: installed cabin costs plus configured Middle, High and Luxury person costs and Cr100 per occupied frozen Low berth per 28 days. Divide the combined monthly total by 28 and round up to whole Credits per day before multiplying by the purchased duration. No occupants means zero cabin charge and zero LSS use. Cabin cost is included in supplies, never charged separately. Existing stock and past payments are retained without repricing or automatic credit.';
-export function supportPurchaseCost(ship,purchasedUnits,{comfortCost='0',comfortNote=''}={}){
+export function supportPurchaseCost(ship,purchasedUnits,{comfortCost='0',comfortNote='',roundingStep=1}={}){
+ if(![1,100].includes(roundingStep))throw Error('Invalid Credit rounding step.');
  const basis=supportCostBasis(ship),units=supportAmount(purchasedUnits),daily=supportAmount(basis.dailyUnits);
  if(cmp(units,0)<0)throw Error('Purchased LSS cannot be negative.');
  if(cmp(units,0)>0&&cmp(daily,0)<=0)throw Error('Enter a positive complement before buying supplies. Empty-ship stock can be recorded with GM Adjustment.');
  const comfort=credit(comfortCost);if(comfort<0n)throw Error('Comfort provisions cost cannot be negative.');
  if(typeof comfortNote!=='string'||comfort>0n&&!comfortNote.trim())throw Error('Add a note for optional comfort provisions.');
- const days=cmp(daily,0)>0?div(units,daily):rat(0),cost=mul(basis.dailyCredits,days),supplyAmount=up(cost,1),comfortAmount=up(comfort,1);
- return {...basis,purchasedUnits:auditNumber(units),days:auditNumber(days),exactAmount:auditNumber(cost),supplyAmount:String(supplyAmount),comfortAmount:String(comfortAmount),comfortNote:comfortNote.trim(),amount:String(supplyAmount+comfortAmount),cabinAmount:'0',roundingStep:1,reference:combinedSupportReference};
+ const days=cmp(daily,0)>0?div(units,daily):rat(0),cost=mul(basis.dailyCredits,days),supplyAmount=up(cost,roundingStep),comfortAmount=up(comfort,roundingStep);
+ return {...basis,purchasedUnits:auditNumber(units),days:auditNumber(days),exactAmount:auditNumber(cost),supplyAmount:String(supplyAmount),comfortAmount:String(comfortAmount),comfortNote:comfortNote.trim(),amount:String(supplyAmount+comfortAmount),cabinAmount:'0',roundingStep,reference:combinedSupportReference};
 }
 function legacyHours(x){return Math.max(0,x.remainingHours-(x.elapsedHours??0));}
 export function supportMigration(ship){
@@ -139,7 +140,7 @@ export function configureSupport(ship,{targetDays=ship.lifeSupport?supportDispla
 }
 export function consumeSupport(ship,hours,{complementShip=ship}={}){
  if(!Number.isSafeInteger(hours)||hours<0)throw Error('Life support consumption needs non-negative whole hours.');
- if(!ship.lifeSupport)return;
+ if(!ship.lifeSupport||ship.stationLifeSupport===true&&complementShip.stationLifeSupport===true)return;
  anchorSupport(ship,{complementShip});
  if(ship.lifeSupport.stockUnits===undefined)return; // Unknown legacy quantity is preserved, never invented.
  const c=supportComplement(complementShip);if(!c.known)return;
@@ -176,7 +177,7 @@ export function refillQuote(s,{extraDays='0',addDays=null,topOffDays=null,comfor
  // Prices still use nominal period requirements; comfort never changes stock.
  const nominalPurchase=add(standardUnits,extraUnits),roundPostPurchaseTotal=cmp(nominalPurchase,0)>0;
  const after=roundPostPurchaseTotal?dec(up(add(stock,nominalPurchase))):stock,purchased=sub(after,stock),standardDays=div(standardUnits,c.dailyUnits),extraPurchasedDays=div(extraUnits,c.dailyUnits),billingHeadcount=extraSupportHeadcount(s.ship);
- const price=supportPurchaseCost(s.ship,purchased,{comfortCost,comfortNote}),monthly=BigInt(price.monthly),standardAmount=BigInt(price.supplyAmount),extraAmount=0n,comfortAmount=BigInt(price.comfortAmount),standardExact=supportAmount(price.exactAmount),extraExact=rat(0);
+ const price=supportPurchaseCost(s.ship,purchased,{comfortCost,comfortNote,roundingStep:creditStep(s)}),monthly=BigInt(price.monthly),standardAmount=BigInt(price.supplyAmount),extraAmount=0n,comfortAmount=BigInt(price.comfortAmount),standardExact=supportAmount(price.exactAmount),extraExact=rat(0);
  // One combined charge for all purchased units, including stock-rounding surplus.
  const period=div(supportAmount(price.days),28),cabinExact=mul(price.cabinMonthly,period),highExact=mul(BigInt(price.high)*(BigInt(price.rates.high)-BigInt(price.rates.middle)),period),luxuryExact=mul(BigInt(price.luxury)*(BigInt(price.rates.luxury)-BigInt(price.rates.middle)),period),basicExact=mul(BigInt(price.middle+price.high+price.luxury)*BigInt(price.rates.middle)+BigInt(price.low)*100n,period);
  const priceRounding=sub(standardAmount,add(add(add(basicExact,cabinExact),highExact),luxuryExact)),beforeDays=div(stock,c.dailyUnits),afterDays=div(after,c.dailyUnits),beforeCargo=mul(maxZero(sub(stock,internalCapacity)),'0.01'),afterCargo=mul(maxZero(sub(after,internalCapacity)),'0.01');

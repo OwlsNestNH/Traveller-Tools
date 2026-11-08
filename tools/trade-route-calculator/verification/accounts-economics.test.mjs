@@ -34,8 +34,9 @@ test('Accounts complete-state oracle is pinned to independently released .58 sou
 });
 // The original oracle is kept immutable. The approved LSS change retires two
 // payment controls and adds cost explanations to reports. A separate snapshot
-// pins that UI, while each surviving ledger entry must still match the original
-// independently observed economics. Direct attempts to pay retired charges are
+// pins that UI, while each surviving ledger entry must still match the original, except the
+// explicitly authorized fixed-payment incidental allowance calculated from the
+// independently observed schedule. Direct attempts to pay retired charges are
 // covered by expense-panels.test and rejected atomically by the state API.
 for(const [index,spec]of scenarios.entries())test('combined-support compatibility: '+spec.name,async()=>{
  const value=await combinedAccountsObservation(spec,seeds[spec.name],factory,report,S,{accountsHarness,kinds,core,S},expected.cases[index]);

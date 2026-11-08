@@ -13,5 +13,5 @@ for(const [index,spec]of scenarios.entries()){
  const value=await combinedAccountsObservation(spec,seeds[spec.name],factory,report,S,deps,original.cases[index]);
  cases.push({name:spec.name,canonicalSha256:createHash('sha256').update(JSON.stringify(value)).digest('hex')});
 }
-await writeFile(new URL('./fixtures/accounts-combined-support.json',import.meta.url),JSON.stringify({change:'2026-11-08: cabin/person costs folded into LSS; retire separate payments, add explanatory report lines. Original .58 economics independently checked for every surviving entry.',cases},null,2)+'\n');
-console.log('Captured 80 cases only after all surviving original economic entries matched.');
+await writeFile(new URL('./fixtures/accounts-combined-support.json',import.meta.url),JSON.stringify({change:'2026-11-08: cabin/person costs folded into LSS; retire separate payments, add explanatory report lines. Original .58 economics independently checked for surviving entries, with separately computed Cr100 incidental allowance on scheduled payments.',cases},null,2)+'\n');
+console.log('Captured 80 cases only after original economic entries and independent incidental allowances matched.');

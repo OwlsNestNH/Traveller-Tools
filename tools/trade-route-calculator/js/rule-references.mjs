@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=fleet-20261108-2';
+import {escapeHtml as esc} from './display.mjs?v=luxury-lss-20261108-1';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.
@@ -127,14 +127,15 @@ export const RULE_REFERENCES=Object.freeze({
   part('Home rule','Consumables use Middle Cr1,000, High Cr3,000 and Luxury Cr5,000 per person per 28 days by default, editable in Settings. Every occupied frozen Low berth costs Cr100 per 28 days, including manual occupants. Middle, High and Luxury consume the same LSS; Low uses 0.1 LSS/day without a second price discount.'),
   part('Home rule','Internal and cargo supplies use the same combined cabin-plus-person daily tariff, rounded up to whole Credits per day. Sum both compartments before billing. Cabin upkeep is included in LSS price, never paid separately. Comfort spending is a separate one-time charge and adds no supplies.'),
   part('App convention','Cargo supplies are consumed first. Hourly travel remains exact. A successful paid refill discards only the fraction in each compartment actually receiving supplies, then loads whole LSS. Viewing, Cancel, failed saves and comfort-only purchases retain stock. GM Adjustment changes compartment quantities without a purchase.'),
-  part('App convention','The combined daily tariff is rounded up first; final supply and comfort charges round up to whole Credits. The audit records cabin costs, person rates, exact quantities and duration. Existing stock and past payments remain unchanged, with no automatic credit. Legacy receipts retain their original pricing explanation.')
+  part('App convention','The combined daily tariff is rounded up first; final supply and comfort charges round up to the selected Cr1 or Cr100 step. The audit records cabin costs, person rates, exact quantities and duration. Existing stock and past payments remain unchanged, with no automatic credit. Legacy receipts retain their original pricing explanation.')
  ]),
  'support-pricing':entry('life-support top-up and extra reserve',[core('154')],[
-  part('Home rule','Every new refill uses installed cabin costs plus configured person costs per 28 days. Divide the total by 28, round up to whole Credits per day, then multiply by the duration of all purchased LSS. Final charges round up to whole Credits. Standard and reserve supplies use the same price.'),
+  part('Home rule','Every new refill uses installed cabin costs plus configured person costs per 28 days. Divide the total by 28, round up to whole Credits per day, then multiply by the duration of all purchased LSS. Final charges use the selected Cr1 or Cr100 rounding step. Standard and reserve supplies use the same price.'),
   part('Published context','Core supplies the cabin/person cost basis. These refill prices are campaign choices, not Cluster Truck supply prices.'),
   part('App convention','Purchased supply and comfort charges remain distinct in the audit. Comfort purchases add no LSS or days. Cabin charges are included in supplies; historical separate payments remain unchanged.')
  ]),
  'support-stock':entry('life-support stock and comfort',[],[
+  part('Home rule','Enable Use station life support only while docked at the actual port. Onboard use pauses without adding supplies or a station charge. The switch defaults off and turns off on jumping or changing actual location; undock explicitly before spending time away from port.'),
   part('App convention','Hourly consumption keeps exact stock. Changing the complement recalculates endurance without refilling supplies. Unknown legacy stock stays unknown until reviewed. Comfort spending adds no LSS or endurance.'),
   part('Referee input','Opening stock and stock corrections are explicit records, not generated supply purchases.'),
   part('App convention','Historical refills rounded the resulting LSS aboard UP once to a whole number. From 12.1 to 13 LSS, add 0.9 LSS. Keep surplus aboard; existing period-based prices remain unchanged. No purchase or comfort-only spending leaves stock unchanged.'),
@@ -149,7 +150,7 @@ export const RULE_REFERENCES=Object.freeze({
  'mortgage':entry('mortgage payments',[core('149, 153–154')],[
   part('Published rule','The mortgage basis uses ship price ÷ 240 for the periodic payment.'),
   part('App convention','The app tracks an entered fixed payment, installments remaining, paid total and next due date at 28-day intervals. It does not amortize principal. A 480-payment example is a campaign schedule, not exactly 40 of the app’s 365-day years.'),
-  part('Referee input','Existing entered terms stay fixed. Confirming payment debits the bank; elapsed time alone does not. Fixed mortgage payments retain their entered Credit amount.')
+  part('Referee input','Existing entered terms stay fixed. Confirming payment debits the bank; elapsed time alone does not. Mortgage schedules retain their entered Credit amount. The cash debit follows Credit rounding, with the extra recorded as incidental costs rather than debt repayment.')
  ]),
  'maintenance':entry('maintenance costs',[core('153–154')],[
   part('App convention','The Ship Maintenance field totals recorded maintenance payments in the available ledger. It is included once in Total expenses, not added again. Fresh player links separate the current visit’s maintenance from Incidentals; older links retain their original combined amount and show maintenance as unknown.'),
@@ -178,7 +179,8 @@ export const RULE_REFERENCES=Object.freeze({
   part('Referee input / app convention','This optional module is off by default. Entered tax rates are overrides. Current charges round upward under the active policy; historical recorded amounts and dice stay unchanged.')
  ]),
  'rounding':entry('rounding and recorded amounts',[],[
-  part('Home rule','New final monetary amounts round UP once to whole Credits, or Cr100 when selected. New ton entries use the whole-ton policy. Fixed mortgage and maintenance payments retain their entered amounts; extra-reserve support charges have their separate Cr100 rule.'),
+  part('Home rule','Cr100 rounding includes an allowance for small taxes, incidental expenses and tips. A Cr72 expense becomes Cr100, leaving Cr900 from a Cr1,000 ship fund. This allowance is already in the rounded charge, not an additional fee.'),
+  part('Home rule','New final monetary amounts round UP once to whole Credits, or Cr100 when selected. New ton entries use the whole-ton policy. Mortgage and maintenance schedules retain their entered amounts; their cash debits round up with the difference recorded as incidental costs. The daily LSS tariff rounds up to whole Credits first; the final refill expense then follows the selected Cr1/Cr100 setting.'),
   part('App convention','Exact intermediate quantities and per-lot cost allocation are retained. Partial-sale cost-basis allocation rounds down to whole Credits and leaves its remainder on the lot; the final sale consumes all remaining basis. Historical amounts keep their recorded precision.'),
   part('Referee input','An entered value or correction is shown separately from generated data where recorded. Missing legacy evidence is Not recorded; current references do not recompute old transactions.')
  ])

@@ -54,7 +54,7 @@ test('partial refill retains the fraction instead of charging a whole consumed d
  const s=campaign({days:28});const n=S.transition(s,'Six hours',x=>x.hours+=6);assert.equal(units(n),'111');
  const q=refillQuote(n);assert.equal(q.standardDays,'0.25');assert.equal(q.standardAmount,'72');assert.equal(q.purchasedUnits,'1');
  const refilled=S.transition(n,'Refill',S.refillLifeSupport);assert.equal(units(refilled),'112');assert.deepEqual(S.undo(refilled).ship.lifeSupport,n.ship.lifeSupport);
- const rounded=structuredClone(n);rounded.settings.creditStep=100;assert.equal(refillQuote(rounded).standardAmount,'72');
+ const rounded=structuredClone(n);rounded.settings.creditStep=100;assert.equal(refillQuote(rounded).standardAmount,'100');
 });
 test('internal capacity covers all stock; overflow reserves exact cargo and consumption releases it',()=>{
  let s=campaign({hull:10,days:14});assert.equal(supportStock(s.ship).internalCapacityUnits,'40');assert.equal(supportStock(s.ship).internalUnits,'40');assert.equal(supportStock(s.ship).cargoTons,'0.16');assertExact(S.used(s),4,25);

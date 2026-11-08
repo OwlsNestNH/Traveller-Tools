@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=fleet-20261108-2';
+import {ruleInfo} from './rule-references.mjs?v=luxury-lss-20261108-1';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={
@@ -41,6 +41,7 @@ function settingRow(input){
   for(const [direction,text,action]of [[1,'▴','Increase'],[-1,'▾','Decrease']]){const button=node('button','',text);button.type='button';button.dataset.settingStep=direction;button.setAttribute('aria-label',action+' '+caption);arrows.append(button);}
   number.append(input);if(unit)number.append(node('span','settings-unit',unit));number.append(arrows);control.append(number);
  }else{row.classList.add(input.tagName==='SELECT'?'setting-select-row':'setting-text-row');control.append(input);}
+ if(input.name==='creditStep')control.insertAdjacentHTML('beforeend',ruleInfo('rounding'));
  row.append(label,control);return row;
 }
 function notes(title,children){const details=node('details','settings-notes');details.append(node('summary','',title),...children);return details;}
@@ -51,7 +52,7 @@ export function mountSettingsLayout(form,openGroups=new Map()){
  const fuelEstimate=fuel.querySelector('#fuel-settings-estimate'),luggageEstimate=accommodation.querySelector('#luggage-estimate'),costEstimate=accommodation.querySelector('#accommodation-estimate');
  const fuelNotes=[...fuel.querySelectorAll(':scope > p')].filter(el=>el!==fuelEstimate),accommodationNotes=[...accommodation.querySelectorAll(':scope > p, :scope > details')],pricingNotes=[...source.querySelectorAll(':scope > p')];
  const recurringNotes=Object.fromEntries(['mortgage','maintenance'].map(kind=>[kind,[source.querySelector('#'+kind+'-settings-summary'),source.querySelector('#'+kind+'-settings-help')]]));
- const groupReferences={fuel:['bladders','fuel-availability'],mortgage:['mortgage'],maintenance:['maintenance'],trader:['broker'],pricing:['profit'],cabins:['support-cost'],people:['accommodation'],support:['lss'],optional:['tax','insurance'],rounding:['rounding']};
+ const groupReferences={fuel:['bladders','fuel-availability'],mortgage:['mortgage'],maintenance:['maintenance'],trader:['broker'],pricing:['profit'],cabins:['support-cost'],people:['accommodation'],support:['lss'],optional:['tax','insurance']};
  const columns=node('div','settings-columns'),left=node('div','settings-column'),right=node('div','settings-column');columns.append(left,right);
  for(const group of settingsGroups){
   const section=node('details','settings-section'),heading=node('summary','settings-section-heading'),title=node('div'),chevron=node('span','settings-disclosure','▸');
