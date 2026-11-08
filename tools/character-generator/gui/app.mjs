@@ -1,5 +1,6 @@
 import { call } from './client.mjs';
 import {inspectRecordedHistory,recordedHistoryText} from './legacy-history.mjs';
+import {choiceLabel} from './choice-labels.mjs';
 const exportSession=session=>JSON.stringify(session,null,2);
 const sourceLabel=(source,page)=>(catalog?.sources?.[source]?.title??source)+' · p. '+page;
 const $=selector=>document.querySelector(selector);
@@ -258,7 +259,7 @@ function stageView(state){
  case 'preterm-commission':return '<p>Your education allows a commission attempt before this career term. The award and any dice are recorded separately from ordinary advancement.</p><div class="actions">'+button('Attempt education commission','education-commission')+button('Continue without it','skip-education-commission','quiet')+'</div>';
  case 'failed-entry':return '<p>The attempted career did not accept you. Choose the fallback available to your society.</p><div class="actions">'+button('Use culture fallback','fallback')+button('Enter the draft','draft','quiet',state.draftUsed?'disabled':'')+'</div>';
  case 'book-step':return bookView(state);
- case 'effect-choice':return '<p>Choose the outcome you want to apply.</p><div class="choice-list">'+state.pendingChoice.options.map((option,index)=>button(esc(option.label),'choose-effect','choice','data-index="'+index+'"')).join('')+'</div>';
+ case 'effect-choice':return '<p>Choose the outcome you want to apply.</p><div class="choice-list">'+state.pendingChoice.options.map((option,index)=>button(esc(choiceLabel(option)),'choose-effect','choice','data-index="'+index+'"')).join('')+'</div>';
  case 'skill-choice':return '<p>'+esc(state.pendingChoice.label??'Choose the skill awarded by this result.')+'</p><p class="help">'+esc(state.pendingChoice.scope==='existing'?'Choose a skill you already have.':'Specialised skills need a speciality, for example Gun Combat (slug).')+'</p><label>Skill or specialisation<input id="award-skill" list="all-skills" maxlength="80" placeholder="e.g. Engineer (power)"></label>'+button('Accept skill','choose-skill')+button('Resolve this award from the source','skill-award-source','quiet');
  case 'training':return '<p>Choose an available training table. The rules engine will roll and apply its result.</p><div class="choice-list">'+state.trainingOptions.map(t=>button(esc(t.name),'training','choice','data-table="'+t.id+'"')).join('')+'</div>';
  case 'ageing':return '<p>Your Traveller has reached the next ageing checkpoint. The engine applies the species schedule and modifiers.</p>'+button('Roll ageing','ageing');
