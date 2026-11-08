@@ -78,7 +78,8 @@ for(const [id,tl,damage,mass,cost,traits,speciality,hands,pages,tablePage]of exp
 }
 test('distinct Core Shield and CSC Buckler remain unchanged; excluded rows do not appear',()=>{
  const core=WEAPONS.find(w=>w.id==='shield'),buckler=WEAPONS.find(w=>w.id==='csc-buckler');assert.deepEqual([core.tl,core.cost,core.damage],[1,150,'1D']);assert.deepEqual([buckler.tl,buckler.cost,buckler.massKg],[1,10,1]);assert.equal(buckler.conditionalEffects.parry.requiresMeleeSkill,true);assert.equal(buckler.conditionalEffects.parry.unskilledEffectiveMelee,null);
- assert.equal(new Set(WEAPONS.map(w=>w.id)).size,WEAPONS.length);for(const id of ['large-shield','expandable-shield','gravitic-shield','monofilament-garrotte','claw-glove','piston-fist'])assert.equal(WEAPONS.some(w=>w.id==='csc-'+id),false);
+ assert.equal(new Set(WEAPONS.map(w=>w.id)).size,WEAPONS.length);for(const id of ['large-shield','expandable-shield','gravitic-shield','monofilament-garrotte','claw-glove'])assert.equal(WEAPONS.some(w=>w.id==='csc-'+id),false);
+ const pistonFist=WEAPONS.find(w=>w.id==='csc-piston-fist');assert.deepEqual(pistonFist.supportedPlacements,['worn']);assert.equal(pistonFist.mountClass,null);
 });
 test('standard shield parry and riot directional protection are conditional and never armour/software',()=>{
  for(const id of ['shield','riot-shield']){const p=raw(id).conditionalEffects.parry;assert.deepEqual([p.effectiveMeleeBonus,p.unskilledEffectiveMelee,p.attackBonus,p.protectionGranted,p.automaticBonusApplied,p.permanentSkillBonusGranted],[1,0,0,0,false,false]);assert.equal(p.requiresHeld,true);}
