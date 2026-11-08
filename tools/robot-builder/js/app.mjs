@@ -114,7 +114,7 @@ function recordChoices(field,record) {
   const choices=field.choicesBy?.values?.[record?.[field.choicesBy.field]] || field.choices || [];
   return field.maxValueField && Number.isFinite(record?.[field.maxValueField]) ? choices.filter(choice=>typeof choice.id!=='number'||choice.id<=record[field.maxValueField]) : choices;
 }
-function dependsOn(rule,key){return rule?.field===key || rule?.allOf?.some(item=>dependsOn(item,key));}
+function dependsOn(rule,key){return rule?.field===key || rule?.allOf?.some(item=>dependsOn(item,key)) || rule?.anyOf?.some(item=>dependsOn(item,key));}
 function renderControl(control, choicesOverride) {
   const field = el('div', undefined, 'field');
   const id = ['field',currentStage,control.field,control.category && String(control.category).toLowerCase().replace(/[^a-z0-9_-]+/g,'-')].filter(Boolean).join('-');
@@ -290,6 +290,8 @@ function renderControl(control, choicesOverride) {
     };
     const makeFields=(record,prefix,onChange)=>{
       const grid=el('div',undefined,'fields-grid'),groups=new Map();
+      // Optional fields in older backups use control defaults for display only.
+      const displayRecord={...Object.fromEntries((control.itemFields||[]).filter(item=>Object.hasOwn(item,'default')).map(item=>[item.field,item.default])),...record};
       const targetFor=item=>{
         if(!item.group)return grid;
         if(!groups.has(item.group)){
@@ -300,7 +302,7 @@ function renderControl(control, choicesOverride) {
         return groups.get(item.group);
       };
       for(const item of control.itemFields || []) {
-        if (!matchesVisibility(item, record)) continue;
+        if (!matchesVisibility(item, displayRecord)) continue;
         const row=el('label',item.labelBy?.values?.[record[item.labelBy.field]] || item.label || item.field);
         const fieldId=prefix+'-'+item.field;row.htmlFor=fieldId;
         let input;
@@ -327,7 +329,7 @@ if(item.type==='multiselect'){
           };draw();row.classList.add('wide');
         }
         else if(item.type==='number')input=numericPicker({...item,max:item.maxBy?.values?.[record[item.maxBy.field]]??item.max},record[item.field]??item.min,value=>onChange(item.field,value));
-        else if(item.type==='select'){input=el('select');const choices=recordChoices(item,record);selectChoices(input,choices,record[item.field]);input.addEventListener('change',()=>onChange(item.field,choices.find(c=>String(c.id)===input.value)?.id??null));}
+        else if(item.type==='select'){input=el('select');const choices=recordChoices(item,displayRecord);selectChoices(input,choices,displayRecord[item.field]);input.addEventListener('change',()=>onChange(item.field,choices.find(c=>String(c.id)===input.value)?.id??null));}
         else {input=el('input');input.type='text';input.value=record[item.field]??'';input.maxLength=item.maxLength||120;input.addEventListener('input',()=>onChange(item.field,input.value));}
         input.id=fieldId;row.append(input);targetFor(item).append(row);
       }
@@ -505,6 +507,7 @@ function matchesVisibility(control, values) {
   if(!control.visibleWhen)return true;
   const rule=control.visibleWhen,value=values?.[rule.field];
   if(Array.isArray(rule.allOf))return rule.allOf.every(item=>matchesVisibility({visibleWhen:item},values));
+  if(Array.isArray(rule.anyOf))return rule.anyOf.some(item=>matchesVisibility({visibleWhen:item},values));
   if(Array.isArray(rule.oneOf))return rule.oneOf.includes(value);
   if(Object.hasOwn(rule,'notEquals'))return value!==rule.notEquals;
   return value===rule.equals;
