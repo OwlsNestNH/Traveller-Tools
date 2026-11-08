@@ -48,6 +48,7 @@ jobs:
           node tools/robot-builder/verification/construction-browser.mjs "$RUNNER_TEMP/robot-playwright/node_modules/playwright"
           node tools/robot-builder/verification/vehicle-options-browser.mjs "$RUNNER_TEMP/robot-playwright/node_modules/playwright"
           node tools/robot-builder/verification/conditional-melee-browser.mjs "$RUNNER_TEMP/robot-playwright/node_modules/playwright"
+          node tools/robot-builder/verification/shields-expendable-melee-browser.mjs "$RUNNER_TEMP/robot-playwright/node_modules/playwright"
           node tools/robot-builder/verification/metamorphic-browser.mjs "$RUNNER_TEMP/robot-playwright/node_modules/playwright"
           node tools/robot-builder/verification/vehicle-utilities-browser.mjs "$RUNNER_TEMP/robot-playwright/node_modules/playwright"
       - name: Upload bounded verification evidence

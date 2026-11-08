@@ -14,15 +14,16 @@ const assertMeleeRow=(row,w)=>{
  assert.ok(row,w.id);
  for(const label of forbiddenLabels)assert.ok(!row.details.some(d=>d.label===label),w.id+': '+label);
  const ammo=row.details.filter(d=>d.label==='Ammunition');
- assert.deepEqual(ammo.map(d=>d.value),w.poweredMelee?[]:['Not applicable'],w.id);
+ assert.deepEqual(ammo.map(d=>d.value),w.poweredMelee||w.expendableMelee?[]:['Not applicable'],w.id);
  if(w.poweredMelee){assert.ok(row.details.some(d=>d.label==='Acquisition'&&d.value==='Complete weapon hardware; initial charge unspecified'));assert.ok(row.details.some(d=>d.label==='Power endurance'));assert.ok(row.details.some(d=>d.label==='Recharge'));assert.ok(row.details.some(d=>d.label==='Power supplies'));}
- if(w.attackProfiles){assert.ok(row.value.includes('Conditional damage'));assert.equal(row.details.find(d=>d.label==='Current attack mode').value,'Unresolved');assert.ok(row.details.some(d=>d.value==='2D damage · No AP'));}
+ if(w.expendableMelee){assert.ok(row.details.some(d=>d.label==='Use'&&d.value==='Single use'));assert.ok(row.details.some(d=>d.label==='Acquisition'&&d.value==='One complete weapon'));}
+ if(w.attackProfiles){assert.ok(row.value.includes('Conditional damage'));assert.equal(row.details.find(d=>d.label==='Current attack mode').value,'Unresolved');assert.ok(row.details.some(d=>d.value===(w.attackProfiles.kind==='grapple-condition'?'2D + opposed Melee Effect; conditional':'2D damage · No AP')));}
 };
 const rejectedText=/Ammunition: standard|Ammunition Type:|Auxiliary Loaded:|Integral Loaded:|Loose Grenades:|Ammo Cost:|Autoload Cost:|Magazine Cost:|Initial Included:/;
 class Node {constructor(tag){this.tag=tag;this.textContent='';this.children=[];}append(...items){this.children.push(...items);}}
 const visible=n=>[n.textContent,...n.children.map(visible)].join(' ');
-test('sweep includes every Core, ordinary, conditional and powered no-ammunition melee profile',()=>{
- assert.equal(melee.length,41);assert.equal(melee.filter(w=>w.poweredMelee).length,11);assert.equal(melee.filter(w=>w.sourceFamily==='csc-2023').length,34);
+test('sweep includes every Core, ordinary, conditional, powered and expendable no-magazine melee profile',()=>{
+ assert.equal(melee.length,46);assert.equal(melee.filter(w=>w.poweredMelee).length,11);assert.equal(melee.filter(w=>w.expendableMelee).length,1);assert.equal(melee.filter(w=>w.sourceFamily==='csc-2023').length,39);
 });
 for(const w of melee)test('no fictional supply details in ordinary/component/cyberlimb review and print: '+w.id,()=>{
  const d=standard(w.id),json=exportDesign(d),evaluation=evaluateDesign(d);assert.equal(evaluation.status,'verified');
