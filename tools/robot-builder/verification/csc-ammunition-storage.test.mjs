@@ -20,6 +20,7 @@ const expected=[
 ];
 const blocked=['hand-flamer','cryo-rifle','flame-rifle','stagger-laser-rifle-12','stagger-laser-rifle-14','stun-blaster','cryojet','flamethrower-4','flamethrower-6','flamethrower-8','mace','staff','battle-axe','broadsword','great-axe','long-blade-1','long-blade-3','monoblade','buckler','blade','cutlass','dagger','hatchet','sap','sledgehammer','rapier','stone-axe','stealth-dagger','war-pick','direct-grenade-chemical','direct-grenade-emp','direct-grenade-incendiary','direct-grenade-neurotoxin','direct-grenade-plasma','direct-grenade-thermal-smoke','direct-grenade-tranq-gas','pepper-spray','ion-rifle-14','ion-rifle-15','maser-pistol','maser-rifle','solar-beam-rifle','matter-disintegrator-19'];
 blocked.push('gravity-hammer','static-maul','stunstick','arc-field-weapon','chaindrive-axe','chaindrive-sword','static-axe-11','static-axe-12','static-blade-11','static-blade-12','shock-whip');
+blocked.push('monofilament-axe','spear','lance','piston-spear');
 const storageKinds=['storage-compartment','refrigerated-storage-compartment','hazardous-material-storage-compartment'];
 const ref='option:storage-compartment';
 const record=(patch={})=>({id:'weapon',weaponId:'csc-heavy-advanced-combat-rifle',placement:'body',manipulatorId:'none',linkedWeapons:1,fireControl:'none',autoload:false,extraMagazines:1,initialMagazines:1,spareMagazineStorageId:ref,...patch});
@@ -29,9 +30,9 @@ const design=(records=[record()],physical={})=>updateDesign(createDesign({techLe
 const has=(result,code)=>result.diagnostics.some(d=>d.code===code);
 const projection=d=>{const r=evaluateDesign(d);return projectReview(d,getCatalogue(d),r);};
 
-test('the explicit estimate registry covers 70 CSC profiles and excludes the other 54',()=>{
+test('the explicit estimate registry covers 70 CSC profiles and excludes the other 58',()=>{
  const csc=WEAPONS.filter(w=>w.sourceFamily==='csc-2023');
- assert.equal(csc.length,124);assert.equal(expected.length,70);assert.equal(blocked.length,54);
+ assert.equal(csc.length,128);assert.equal(expected.length,70);assert.equal(blocked.length,58);
  assert.deepEqual([...CSC_AMMUNITION_ESTIMATE_IDS].sort(),expected.map(([id])=>'csc-'+id).sort());
  assert.deepEqual(csc.filter(w=>!estimateCscMagazineMass(w)).map(w=>w.id).sort(),blocked.map(id=>'csc-'+id).sort());
  assert.ok(Object.isFrozen(CSC_AMMUNITION_ESTIMATE_IDS));
