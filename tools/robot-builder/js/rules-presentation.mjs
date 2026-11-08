@@ -12,6 +12,7 @@ const diagnosticLabels = {
  WEAPON_ARM_REQUIRED:'Requires installed arm', WEAPON_ARM_SIZE:'Arm size insufficient', WEAPON_TL:'Weapon/fire-control TL exceeds design',
  WEAPON_ATTACK_CONTEXT:'Attack modifier unresolved; contextual', WEAPON_SOURCE_INTERPRETATION:'Selected weapon source interpretation',
  SOURCE_INTERPRETATION:'Selected source interpretation', CONDITIONAL_OPERATION:'Conditional operation',
+ MAGAZINE_SOURCE_INCOMPATIBLE:'Magazine source incompatible; select receiving or compatible source', CSC_ARL_MAGAZINE_MASS_CONVENTION:'Magazine mass estimated; source-magazine basis convention', CSC_ARL_HIGH_CAPACITY_COMPOSITION:'Cross-fit high-capacity: combined rules; referee approval required',
  CSC_HIGH_CAPACITY_REFEREE:'High-capacity suitability: referee approval required', CSC_HIGH_CAPACITY_TL:'High-capacity magazines require TL4',
  CSC_HIGH_CAPACITY_UNSUPPORTED:'High-capacity compatibility unresolved', CSC_REPLACEMENT_AMMUNITION_UNAVAILABLE:'Unknown replacement price; included supply only',
  WEAPON_AMMUNITION_PRICE_UNRESOLVED:'Unknown replacement price', AUTOLOAD_ALLOCATION_LIMIT:'Loader limit exceeded; maximum 10',

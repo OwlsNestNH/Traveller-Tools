@@ -45,7 +45,9 @@ An optional explicit allocation can divide additional supplies between the autol
 
 Linked weapons can retain different initial loads, spare variants, loader allocations and storage assignments through optional complete per-copy specifications. Unlisted copies inherit the shared settings; customised copies do not change when shared quantities change. Hardware and fire control remain linked, with ammunition and capacity summed once per installed copy. Reducing the linked count retains out-of-range specifications for correction without counting removed copies. No averaged magazine capacity or per-weapon supply count is invented. Legacy designs omit the optional list and retain their previous meaning.
 
-Remaining ammunition cases include ARL standard/support magazine interchange, included-pack replacement disposition and unverified high-capacity feed compatibility. Empty fitted-loader pricing and fitting already-owned supplies remain unmodelled. These are application or source boundaries, not claims that such constructions are prohibited.
+ARL standard/support magazine selections retain four distinct source products: each donor profile has ordinary and high-capacity variants. Initial loads and extra supplies retain their source prices, capacities and qualified mass estimates without changing the receiving weapon or its traits. Equal-capacity products are not interchangeable identities. All products share per-copy loader/reserve limits and compartment capacity. Donor-based mass is an explicit inventory convention, and cross-fitted high-capacity supplies remain referee-qualified. PDW interchange is not inferred. Optional source fields preserve legacy defaults and per-copy independence.
+
+Remaining ammunition cases include included-pack replacement disposition and unverified high-capacity feed compatibility. Empty fitted-loader pricing and fitting already-owned supplies remain unmodelled. These are application or source boundaries, not claims that such constructions are prohibited.
 
 ## Held weapon grips
 

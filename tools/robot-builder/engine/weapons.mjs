@@ -153,10 +153,10 @@ function ammunitionSpecification(record){
 function magazineSupplyPresentation(record){
  const weapon=WEAPONS.find(item=>item.id===record.weaponId),products=cscInterchangeMagazineProducts(weapon,WEAPONS),allowed=cscMagazineSourceIds(weapon);
  const retained=[record.initialMagazineSourceId,...(record.alternateMagazineSupplies??[]).map(item=>item.sourceWeaponId)].filter(Boolean);
- return {initialSourceField:'initialMagazineSourceId',alternateSuppliesField:'alternateMagazineSupplies',maximumAlternateProducts:2,identityFields:['sourceWeaponId','variant'],products,
+ return {initialSourceField:'initialMagazineSourceId',alternateSuppliesField:'alternateMagazineSupplies',maximumAlternateProducts:2,numericControls:{extraMagazines:{min:0,max:110,step:1},autoloadMagazines:{min:0,max:110,step:1}},identityFields:['sourceWeaponId','variant'],products,
   initialSourceId:record.initialMagazineSourceId??record.weaponId,
   sources:[...new Set([...allowed,...retained])].map(id=>({id,label:WEAPONS.find(item=>item.id===id)?.label??'Unavailable magazine source',available:id===record.weaponId||allowed.includes(id),alternateAllowed:id!==record.weaponId&&allowed.includes(id)})),
-  forceGroupOpen:retained.some(id=>id!==record.weaponId&&!allowed.includes(id))||(record.alternateMagazineSupplies??[]).some(item=>item.sourceWeaponId===record.weaponId),
+  forceGroupOpen:retained.some(id=>id!==record.weaponId&&!allowed.includes(id))||(record.alternateMagazineSupplies??[]).some(item=>item.sourceWeaponId===record.weaponId)||Boolean(record.alternateMagazineSupplies?.length&&!ammunitionPartition(record).valid),
   scope:'Alternate supplies keep their source magazine identity, purchase price and labelled source-based mass estimate. Own-profile spare fields remain independent. Each copy shares one ten-supply loader limit and one hundred-reserve application bound.'};
 }
 function effectiveAmmunitionRecord(record,copyIndex){
@@ -169,8 +169,8 @@ export function weaponRecordPresentation(record,copyIndex){
  const original=record,overrides=record.ammunitionOverrides??[];
  record=effectiveAmmunitionRecord(original,copyIndex);
  const allocation=ammunitionPartition(record),split=allocation.mode==='split',max=split?110:record.autoload?10:100;
- const summary=allocation.resolved?'Stored remainder per weapon: '+allocation.standard.storedPerWeapon+' standard, '+allocation.highCapacity.storedPerWeapon+' high-capacity':'Stored remainder unresolved: loader allocation exceeds additional supplies';
- const fields={extraMagazines:{max},extraHighCapacityMagazines:{max},autoloadAllocation:{mode:allocation.mode,materializedValue:{standard:allocation.standard.autoloadPerWeapon,highCapacity:allocation.highCapacity.autoloadPerWeapon},summary,forceGroupOpen:split&&(!allocation.valid||Boolean(record.autoload&&allocation.autoloadCountPerWeapon===0))}};
+ const summary=allocation.resolved?(record.alternateMagazineSupplies?.length?'Receiving-weapon stored remainder per weapon: ':'Stored remainder per weapon: ')+allocation.standard.storedPerWeapon+' standard, '+allocation.highCapacity.storedPerWeapon+' high-capacity':'Stored remainder unresolved: loader allocation exceeds additional supplies';
+ const fields={extraMagazines:{max},extraHighCapacityMagazines:{max},autoloadAllocation:{mode:record.autoloadAllocation===undefined?'legacy':'split',materializedValue:{standard:allocation.standard.autoloadPerWeapon,highCapacity:allocation.highCapacity.autoloadPerWeapon},summary,forceGroupOpen:split&&(!allocation.valid||Boolean(record.autoload&&allocation.autoloadCountPerWeapon===0))}};
  if(split){
   const weapon=WEAPONS.find(w=>w.id===record.weaponId);
   fields.spareMagazineStorageId={visible:(record.spareMagazineStorageId??'none')!=='none'||Boolean(weapon&&estimateCscMagazineMass(weapon)&&allocation.standard.storedPerWeapon>0)};

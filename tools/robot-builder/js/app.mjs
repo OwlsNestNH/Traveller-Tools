@@ -1,5 +1,6 @@
 import { createRobotApi } from './api.mjs';
 import { renderReview } from './review.mjs';
+import {renderMagazinePanel} from './magazine-editor.mjs';
 import {sourceReference,diagnosticLabel,coverageLabel,sourceExampleLabel} from './rules-presentation.mjs';
 
 const $ = id => document.getElementById(id);
@@ -385,6 +386,11 @@ if(item.type==='multiselect'){
         else if(item.type==='select'){input=el('select');const choices=recordChoices(item,displayRecord);selectChoices(input,choices,displayRecord[item.field]);input.addEventListener('change',()=>onChange(item.field,choices.find(c=>String(c.id)===input.value)?.id??null));}
         else {input=el('input');input.type='text';input.value=record[item.field]??'';input.maxLength=item.maxLength||120;input.addEventListener('input',()=>onChange(item.field,input.value));}
         input.id=fieldId;row.append(input);targetFor(item).append(row);
+      }
+      const selection=presentation.magazineSupplySelection;
+      if(!onlyFields||onlyFields.includes(selection?.alternateSuppliesField)){
+        const panel=renderMagazinePanel({record,selection,control,prefix,shared:!onlyFields&&presentation.ammunitionCustomization?.mode==='custom',groupKey:view.design.kind+':'+prefix+':compatible-magazines',recordGroups,onChange,el,selectChoices,numericPicker});
+        if(panel)grid.append(panel);
       }
       return grid;
     };
