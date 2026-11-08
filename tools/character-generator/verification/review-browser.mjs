@@ -94,6 +94,9 @@ try {
   assert.equal(record.events.at(-1).command.payload.text,'Retain this pending action');
  });
  await check('Aslan family choices include both son paths and retain selected value',async page=>{
+  // This test targets birth-order persistence, not the separate random rite-doubles branches.
+  await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(createSession('review-aslan-family'))});
+  await page.reload();await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();
   await page.locator('[name=species]').selectOption('aslan');await page.locator('[name=gender]').selectOption('male');
   await begin(page);await page.getByRole('button',{name:'Roll six characteristics',exact:true}).click();
   await page.getByRole('button',{name:'Keep these characteristics'}).click();await page.locator('#birth-order').waitFor();
@@ -101,7 +104,9 @@ try {
   await page.locator('#birth-order').selectOption('second-son');await page.locator('#book-confirm').check();
   await page.getByRole('button',{name:'Record outcome and continue'}).click();
   await page.getByRole('heading',{name:'Choose background skills'}).waitFor();
-  assert.equal(JSON.parse(await stored(page)).events.at(-1).command.payload.birthOrder,'second-son');
+  const recorded=JSON.parse(await stored(page)).events.at(-1);
+  assert.equal(recorded.command.payload.birthOrder,'second-son');
+  assert.deepEqual(recorded.rolls.find(roll=>roll.label==='Rite of Passage').values,[6,1]);
  });
  await check('failed setup configuration stops before later setup actions',async page=>{
   const commands=[];
