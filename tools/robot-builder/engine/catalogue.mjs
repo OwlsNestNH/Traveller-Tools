@@ -1,6 +1,6 @@
 import {externalVehicleControl} from './vehicle-options.mjs';
 import {weaponControl} from './weapons.mjs';
-import {SPECIALITIES,CUSTOM_PACKAGE_FIELDS} from './skills-data.mjs';
+import {SPECIALITIES,SOURCE_SPECIALITIES,CUSTOM_PACKAGE_FIELDS} from './skills-data.mjs';
 import {OPTIONS_ARRAY} from './options-data.mjs';
 import {clone} from './schema.mjs';
 export const source = pages => ({book:'Robot Handbook',edition:'Mongoose 2022',pages});
@@ -55,6 +55,12 @@ for(const [skillId,specialities] of Object.entries(SPECIALITIES)){
  }
 }
 const optionAliases={'visual-spectrum-sensor':'visual-spectrum','voder-speaker':'voder','auditory-sensor':'auditory','wireless-data-link':'wireless','transceiver-5km-improved':'transceiver-improved','transceiver-5km-basic':'transceiver-basic','video-screen-basic':'video-basic'};
+for(const [skillId,specialities] of Object.entries(SOURCE_SPECIALITIES))for(const speciality of specialities)for(const level of [1,2,3]){
+ const skill=SKILLS.find(s=>s.id===skillId);
+ PACKAGES.push(choice(`${skillId}-${speciality.id}-${level}`,`${skill.label} (${speciality.id}, CSC 2023) ${level}`,'73-75',{
+  skill:skillId,speciality:speciality.id,level,tl:skill.tl+level,bandwidth:skill.bandwidth+level,perPackageBandwidth:skill.bandwidth+level,packageCount:1,cost:skill.cost*10**level,characteristic:skill.characteristic,specialtySource:speciality.source
+ }));
+}
 export const OPTIONS=OPTIONS_ARRAY.map(row=>({...row,id:optionAliases[row.id]??row.id,...(row.category==='Weapons'?{label:row.label+' (unassociated hardware)',description:'For a complete installation use Installed weapons. This legacy hardware entry is separate and does not supply or connect to a weapon record.',preferredEditor:'weapons'}:{}),parameterControls:[
  ...(row.repeatable||row.slotsBasis==='allocated'?[{field:'quantity',label:row.slotsBasis==='allocated'?'Allocated slots':'Quantity',type:'number',min:1,max:1000,default:1,step:1,appliesTo:'options'}]:[]),
  ...(row.zeroSlot?[{field:'suiteQuantity',label:'Default-suite copies',type:'number',min:1,max:5,default:1,step:1,appliesTo:'defaultSuite'}]:[]),
@@ -111,7 +117,10 @@ export const STAGES = [
  {id:'finalisation',label:'Finalisation',description:'Remove only genuinely unused slots; the original base slots remain the basis for other costs.',controls:[number('removedSlots','Permanently remove unused slots',0,160,'13'),select('priceMode','Final price',[choice('construction','Calculated construction cost','76'),choice('custom','Custom list price (book-permitted adjustment)','76')]),{...number('customPrice','Custom final list price (Cr)',0,Number.MAX_SAFE_INTEGER,'76'),visibleWhen:{field:'priceMode',equals:'custom'}}]}
 ];
 for(const control of STAGES.find(s=>s.id==='skills').controls){
- if(control.field==='coreWeapon')control.visibleWhen={field:'corePackage',oneOf:['primitive-homing','basic-security','basic-target','hunter-standard','hunter-tactical']};
+ if(control.field==='coreWeapon'){
+  control.visibleWhen={field:'corePackage',oneOf:['primitive-homing','basic-security','basic-target','hunter-standard','hunter-tactical']};
+  for(const [skill,specialities]of Object.entries(SOURCE_SPECIALITIES))for(const speciality of specialities)control.choices.push(choice(skill+':'+speciality.id,SKILLS.find(s=>s.id===skill).label+' ('+speciality.id+', CSC 2023)','69-73',{specialtySource:speciality.source}));
+ }
  if(control.field==='hunterBandwidth')control.visibleWhen={field:'corePackage',oneOf:['hunter-standard','hunter-tactical']};
 }
 export const COVERAGE = {complete:false,scope:'Selected-rule construction checks, not certification of every possible Handbook design.',supportedTechLevels:{minimum:5,maximum:23,note:'Displayed implementation scope follows published component and high-technology milestones, not a universal campaign TL limit. Ordinary armour below TL6 remains unresolved.'},gaps:[

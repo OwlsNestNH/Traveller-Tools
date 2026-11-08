@@ -26,6 +26,7 @@ const diagnosticLabels = {
  AMMUNITION_HAZARD_CLASSIFICATION:'Hazardous handling unresolved; referee approval required', EMPTY_AUTOLOADER:'Empty loader price unresolved; select 1–10 loads',
  AUTOLOADER_AMMUNITION:'Autoloader requires finite magazine/power pack', AUTOLOADER_TL:'Autoloader requires TL6',
  INCLUDED_POWER_PACK:'Included initial power pack required', WEAPON_AMMO_INAPPLICABLE:'No separate magazine; clear ammunition settings',
+ POWERED_MELEE_INITIAL_SELECTION:'Hardware-only acquisition; reset initial magazine selection', POWERED_MELEE_ALLOCATION:'Power-supply allocation unsupported; clear allocation', POWERED_MELEE_SUPPLY_UNAVAILABLE:'Powered melee replacement supply unpriced; clear spares/autoloader',
  AMMUNITION_INAPPLICABLE:'Selectable grenade ammunition inapplicable', AMMUNITION_TL:'Ammunition TL exceeds design',
  GRENADE_AMMUNITION:'Select grenade ammunition', AUXILIARY_AMMUNITION:'Select auxiliary-launcher grenade', INTEGRAL_AMMUNITION:'Select included-launcher grenade',
  AUXILIARY_UNUSED_AMMUNITION:'Auxiliary ammunition requires launcher', INTEGRAL_UNUSED_AMMUNITION:'Included-launcher fields require both launchers',
@@ -67,6 +68,18 @@ export function coverageLabel(gap) {
  return id&&/^[a-z0-9_-]{1,90}$/i.test(id)?`${labelText(id)}: coverage incomplete`:'Coverage incomplete; source review required';
 }
 const conditionLabels = new Map([
+ ['Target is smaller than a vehicle','Target smaller than vehicle only'],
+ ['Parrying weapon is lower TL than the Arc-Field Weapon','Parry restriction: lower-TL weapons only'],
+ ['Questioning with the Shock Whip','Shock Whip: questioning only'],
+ ['Combat or intimidation use','Combat/intimidation use only'],
+ ['Combat or cutting use','Combat/cutting use only'],
+ ['Powered use','Powered use'],
+ ['Initial charge unspecified','Initial charge unspecified'],
+ ['Host endurance reference required','Host endurance reference required'],
+ ['Host endurance unresolved','Host endurance unresolved'],
+ ['Uses host robot endurance','Uses host robot endurance'],
+ ['Printed recharge duration','Printed recharge duration'],
+ ['Recharge duration unstated','Recharge duration unstated'],
  ['Target is unaware of the attacker','Stun: target unaware of attacker only'],
  ['Parrying with the rapier','Rapier: parrying only'],
  ['Electronics (sensors) checks to detect this weapon; TL differential applies','Weapon detection only; Electronics (sensors); TL differential applies'],
@@ -182,6 +195,10 @@ const textFacts = new Map([
  ['Weapon computer only; does not grant robot brain bandwidth or skill software.','Weapon computer only; no robot software grant'],
  ['Does not grant general stealth or stack Silent detection modifiers.','No general Stealth grant; Silent does not stack'],
  ['No included initial magazine stated in the CSC slug section','Initial magazine inclusion unstated'],
+ ['Melee (blade)','Melee (blade)'],
+ ['printed-source','Printed source'],['user-referee-ruling','User/referee ruling'],
+ ['robot-endurance','Robot endurance'],['recipient-robot-endurance','Recipient robot endurance'],
+ ['Intimidate','Intimidate'],['Persuade','Persuade'],
 ]);
 const hiddenFields = new Set(['id','recordIds','weaponId','optionId','profileId','parentWeaponId','parentLimb','parentBrain','parentComputer','sourceOption','storageId','manipulatorId','supportManipulatorId','gripManipulatorIds','supplyWeaponId','ammunitionOverrides','ammunitionCopies','diagnostics','selections','design','rules','rule','tables','table','catalogue','choices','supportedTechLevels','interpretations']);
 const proseFields = /^(?:description|message|notes?|detail|scope|reason|explanation|context|timing|trainingTiming|attackContext|skillScope|stacking|method|basis|costScope|.*(?:Description|Notes|Explanation|Reason|Context|Scope|Timing))$/;

@@ -112,7 +112,7 @@ test('ordinary CSC melee API, review, renderer and print retain conditions witho
  }
 });
 test('no-ammunition melee preserves legacy JSON without inventing purchased magazines or metre ranges',()=>{
- for(const weapon of WEAPONS.filter(w=>w.weaponFamily==='melee'&&w.magazine===null))for(const linkedWeapons of [1,2]){
+ for(const weapon of WEAPONS.filter(w=>w.weaponFamily==='melee'&&w.magazine===null&&!w.poweredMelee))for(const linkedWeapons of [1,2]){
   const patch={weaponId:weapon.id,linkedWeapons},d=design('blade',patch),before=exportDesign(d),r=evaluateDesign(d);assert.equal(r.status,'verified');const w=r.totals.weapons[0];assert.equal(w.initialMagazines,1);assert.equal(w.initialAmmunition.status,'not-applicable');assert.deepEqual([w.initialAmmunition.count,w.initialAmmunition.totalRounds,w.initialAmmunition.purchaseCost],[0,0,0]);assert.equal(w.ammunitionInventory.status,'not-applicable');assert.equal(w.ammunitionInventory.totalRounds,0);assert.equal(w.ammunitionInventory.totalCost,0);assert.equal(w.cost,(weapon.cost+(weapon.mountClass==='small'?500:1000))*linkedWeapons);assert.equal(exportDesign(d),before);
   const text=formatStatblock(projection(d));assert.match(text,/Range: Melee/);assert.match(text,/Ammunition: Not applicable/);assert.doesNotMatch(text,/Melee m\b|Initial Magazines:|Initial Ammunition:|Ammunition Inventory:|Capacity Per Magazine:|Initial magazine per weapon/);
  }

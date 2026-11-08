@@ -80,7 +80,7 @@ for(const [id,name,tl,range,damage,mass,cost,capacity,loadCost,traits,projectile
 }
 
 test('CSC archaic tranche has exactly five source profiles without throwing or specialised families',()=>{
- assert.deepEqual(CSC_ARCHAIC_WEAPONS.map(w=>w.id),expected.map(e=>'csc-'+e[0]));assert.equal(WEAPONS.filter(w=>w.sourceFamily==='csc-2023').length,113);
+ assert.deepEqual(CSC_ARCHAIC_WEAPONS.map(w=>w.id),expected.map(e=>'csc-'+e[0]));assert.equal(WEAPONS.filter(w=>w.sourceFamily==='csc-2023').length,124);
  for(const id of ['dart','javelin','atlatl','bolas','pistol-crossbow'])assert.equal(raw(id),undefined);
  assert.equal(raw('gauss-rifle').speciality,'slug');assert.equal(WEAPONS.find(w=>w.id==='rifle').sourceFamily,'core-2022');
 });

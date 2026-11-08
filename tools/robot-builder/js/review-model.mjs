@@ -4,7 +4,7 @@ import {magazineProductId,magazineProductLabel,magazineProductFacts,magazineProd
 const format = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
 const massFormat = new Intl.NumberFormat('en-US', { maximumFractionDigits: 9 });
 const present = value => value !== undefined && value !== null;
-const noMeleeAmmunition=weapon=>weapon?.weaponFamily==='melee'&&weapon.magazine===null;
+const noMeleeAmmunition=weapon=>weapon?.weaponFamily==='melee'&&weapon.magazine===null&&!weapon.poweredMelee;
 const weaponRange=range=>present(range)?`Range: ${valueText(range)}${typeof range==='number'?' m':''}`:'Range not calculated';
 export function humanLabel(value) {
   return String(value).replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[-_:]/g, ' ').replace(/^./, ch => ch.toUpperCase());
@@ -39,10 +39,20 @@ function profileRow(label, summary, record, omitted = [], detail = '') {
   if(record.ammunitionInventory?.products)for(const field of ['ammunitionInventory','initialAmmunition','magazineVariants','spareAmmunition','highCapacitySpareAmmunition','extraMagazines','extraHighCapacityMagazines','initialMagazines','initialMagazineType','autoloadAllocation','ammoCost','autoloadCost'])hidden.add(field);
   // A legacy initialMagazines=1 is a schema sentinel for no-ammunition melee,
   // not an included magazine or power pack. Invalid selections remain editable.
-  if(noMeleeAmmunition(record))for(const field of ['initialMagazines','initialMagazineType','initialMagazineSourceId','extraMagazines','extraHighCapacityMagazines','autoload','autoloadAllocation','magazine','initialAmmunition','ammunitionInventory','ammunitionAccounting','magazineVariants','spareAmmunition','highCapacitySpareAmmunition'])hidden.add(field);
+  if(noMeleeAmmunition(record)||record.poweredMelee)for(const field of ['initialMagazines','initialMagazineType','initialMagazineSourceId','extraMagazines','extraHighCapacityMagazines','autoload','autoloadAllocation','magazine','initialAmmunition','ammunitionInventory','ammunitionAccounting','magazineVariants','spareAmmunition','highCapacitySpareAmmunition'])hidden.add(field);
+  if(record.poweredMelee)for(const field of ['poweredMelee','powerOperation','acquisition'])hidden.add(field);
   const details = Object.entries(presentationFacts(record)||{}).filter(([key])=>!hidden.has(key)).map(([key,value])=>row(humanLabel(key),value));
   if(noMeleeAmmunition(record))details.push(row('Ammunition','Not applicable'));
+  if(record.poweredMelee)details.push(...poweredMeleeRows(record));
   return {...row(label,summary,record.source,detail),details};
+}
+function poweredMeleeRows(weapon){
+ const power=weapon.powerOperation,endurance=power?.endurance,recharge=power?.recharge;
+ const duration=endurance?.basis==='printed-source'?`${endurance.duration} · Printed duration${endurance.condition?' · '+conditionLabel(endurance.condition):''}`:
+  `${present(endurance?.hours)?valueText(endurance.hours)+' hours':'Host endurance unresolved'} · ${endurance?.reference==='recipient-robot-endurance'?'Recipient robot endurance':'Robot endurance'} · User/referee ruling`;
+ return [row('Acquisition','Complete weapon hardware; initial charge unspecified',weapon.acquisition?.source||weapon.source),
+  row('Power endurance',duration,endurance?.source),row('Recharge',recharge?.duration||'Recharge duration unstated',recharge?.source),
+  row('Power supplies','Replacement price unspecified; charger provisioning unspecified',power?.supply?.source)];
 }
 function ammunitionMassDisplay(value) {
   if(Array.isArray(value))return value.map(ammunitionMassDisplay);
@@ -66,7 +76,7 @@ function magazineSelectionRows(spec,label,weapon,storageName,sourceName) {
   return [initial,...donors];
 }
 function ammunitionProductRows(weapon,storageName,sourceName) {
-  if(noMeleeAmmunition(weapon))return [];
+  if(noMeleeAmmunition(weapon)||weapon.poweredMelee)return [];
   const inventory=weapon.ammunitionInventory;
   if(!inventory?.products){
     if(weapon.ammunitionOverrides?.length)return [];
@@ -97,7 +107,7 @@ function ammunitionProductRows(weapon,storageName,sourceName) {
   return rows;
 }
 function ammunitionCopyRows(weapon,storageName,sourceName=()=> 'Selected weapon') {
-  if(noMeleeAmmunition(weapon))return [];
+  if(noMeleeAmmunition(weapon)||weapon.poweredMelee)return [];
   if(weapon.ammunitionInventory?.products)return [];
   if(!weapon.ammunitionCopies?.length&&weapon.ammunitionOverrides?.length){
     const selectedRow=(spec,label)=>{
@@ -360,6 +370,8 @@ export function projectReview(design, catalogue, evaluation) {
   }
   const choiceLabel = (control,field,id,fallback) => control?.itemFields?.find(item=>item.field===field)?.choices?.find(item=>item.id===id)?.label || fallback || humanLabel(id);
   const weaponRows = (weapons,control,parentLabel='') => weapons.flatMap(weapon=>{
+    const selected=control?.itemFields?.find(item=>item.field==='weaponId')?.choices?.find(item=>item.id===weapon.weaponId);
+    if(!weapon.poweredMelee&&selected?.poweredMelee)weapon={...weapon,poweredMelee:true,acquisition:selected.acquisition,powerOperation:selected.powerOperation,conditionalEffects:selected.conditionalEffects,source:selected.source};
     const name=weapon.label || choiceLabel(control,'weaponId',weapon.weaponId,'Selected weapon');
     const storageName=id=>choiceLabel(control,'ammunitionStorageId',id,'Unresolved storage');
     const ammunitionName=id=>choiceLabel(control,'auxiliaryAmmunition',id);

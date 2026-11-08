@@ -161,7 +161,7 @@ export function evaluateAugmentations(design){
    const equipment=evaluateEquipment({kind:'cyborg',techLevel:tl,selections:{chassis:{size:'size-0'},physical:{options:[],defaultSuite:[],optionParameters:{},optionInstances:associated,powerMode:'conventional',powerPacks:0,armourRemoved:false,vehicleSpeed:false}}},optionChoices,baseSlots);
    diagnostics.push(...equipment.diagnostics.map(d=>({...d,path:path+'.equipment.'+d.path})));
    const weaponRecords=s.augmentWeapons.filter(w=>w.parentLimb===record.id).map(standardLimbWeapon),limbDex=masterRecord&&!masterDEX?null:Math.min(baseDEX+p.dexterityIncrease,masterRecord?masterDEX:iface.dexterity);
-   const weaponResult=evaluateWeapons({techLevel:tl,kind:'drone',selections:{physical:{weapons:weaponRecords},brain:{model:'none'}}},[{id:record.id,size,dexterity:limbDex??0}],[],equipment.installed);
+   const weaponResult=evaluateWeapons({techLevel:tl,kind:'drone',selections:{physical:{weapons:weaponRecords},brain:{model:'none'}}},[{id:record.id,size,dexterity:limbDex??0}],[],equipment.installed,{hours:null,reference:'recipient-robot-endurance'});
    diagnostics.push(...weaponResult.diagnostics.map(d=>({...d,path:path+'.weapons.'+d.path})));
    out.weaponCost=weaponResult.cost*q;
    out.weapons=weaponResult.weapons.map(w=>({...w,parentLimb:record.id,copies:q,perLimbCost:w.cost,scope:'parent-limb-only',softwareLevel:null,baseAttackModifier:null,attackModifier:null,...(limbDex===null?{manipulatorDM:null}:{}),attackContext:'Recipient skills and control mode are external. Limb DM applies only to limb attachment; internal servo uses no limb characteristic DM.',constructionSource:source('60-64,89-90')}));
