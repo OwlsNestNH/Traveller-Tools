@@ -99,6 +99,7 @@ const storageKey=storage=>storage.instanceId?'instance:'+storage.instanceId:'opt
 const massPrecision=kg=>Math.round(kg*1e9)/1e9;
 function storageChoices(design){const p=design?.selections?.physical,labels={'storage-compartment':'Storage Compartment','refrigerated-storage-compartment':'Refrigerated Storage Compartment','hazardous-material-storage-compartment':'Hazardous Material Storage Compartment'};return[{id:'none',label:'No storage assigned'},...(p?.options??[]).filter(id=>STORAGE_IDS.includes(id)).map(id=>({id:'option:'+id,label:labels[id]+' (standard selection)'})),...(p?.optionInstances??[]).filter(o=>STORAGE_IDS.includes(o.optionId)).map((o,index)=>({id:'instance:'+o.id,label:labels[o.optionId]+' '+(index+1)}))];}
 const retainedChoice=(field,defaultValue,normal)=>({anyOf:[{field,notEquals:defaultValue},normal]});
+const noMeleeAmmunition=weapon=>weapon?.weaponFamily==='melee'&&weapon.magazine===null;
 const supportsSecondGrip=weapon=>Boolean(weapon.requiresTwoHands||weapon.handedness?.alternateTwoHandedUse);
 const manipulatorLabel=(arm,index)=>`${arm.kind==='base'?'Base arm':arm.kind==='leg'?'Converted leg':'Additional arm'} ${index+1}`;
 function manipulatorChoices(design,field){
@@ -168,6 +169,7 @@ function effectiveAmmunitionRecord(record,copyIndex){
 export function weaponRecordPresentation(record,copyIndex){
  const original=record,overrides=record.ammunitionOverrides??[];
  record=effectiveAmmunitionRecord(original,copyIndex);
+ const weapon=WEAPONS.find(w=>w.id===record.weaponId),noAmmunition=noMeleeAmmunition(weapon);
  const allocation=ammunitionPartition(record),split=allocation.mode==='split',max=split?110:record.autoload?10:100;
  const summary=allocation.resolved?(record.alternateMagazineSupplies?.length?'Receiving-weapon stored remainder per weapon: ':'Stored remainder per weapon: ')+allocation.standard.storedPerWeapon+' standard, '+allocation.highCapacity.storedPerWeapon+' high-capacity':'Stored remainder unresolved: loader allocation exceeds additional supplies';
  const fields={extraMagazines:{max},extraHighCapacityMagazines:{max},autoloadAllocation:{mode:record.autoloadAllocation===undefined?'legacy':'split',materializedValue:{standard:allocation.standard.autoloadPerWeapon,highCapacity:allocation.highCapacity.autoloadPerWeapon},summary,forceGroupOpen:split&&(!allocation.valid||Boolean(record.autoload&&allocation.autoloadCountPerWeapon===0))}};
@@ -176,10 +178,16 @@ export function weaponRecordPresentation(record,copyIndex){
   fields.spareMagazineStorageId={visible:(record.spareMagazineStorageId??'none')!=='none'||Boolean(weapon&&estimateCscMagazineMass(weapon)&&allocation.standard.storedPerWeapon>0)};
   fields.highCapacityMagazineStorageId={visible:(record.highCapacityMagazineStorageId??'none')!=='none'||Boolean(weapon&&cscMagazineVariants(weapon)&&allocation.highCapacity.storedPerWeapon>0)};
  }
+ if(noAmmunition){
+  fields.initialMagazines={visible:record.initialMagazines!==1};
+  fields.extraMagazines.visible=(record.extraMagazines??0)!==0;
+  fields.autoload={visible:record.autoload===true};
+  fields.autoloadAllocation.visible=record.autoloadAllocation!==undefined;
+ }
  const retainedCopyIndices=overrides.filter(item=>item.copyIndex>original.linkedWeapons).map(item=>item.copyIndex);
  const choices=[...new Set([...Array.from({length:original.linkedWeapons},(_,i)=>i+1),...retainedCopyIndices])].sort((a,b)=>a-b).map(index=>{const customized=overrides.some(item=>item.copyIndex===index),installed=index<=original.linkedWeapons;return {id:index,label:'Copy '+index+(customized?' · Customized':' · Shared')+(installed?'':' · Not installed'),installed,customized};});
  const invalidCopy=overrides.some(item=>{const effective=effectiveAmmunitionRecord(original,item.copyIndex),partition=ammunitionPartition(effective);return !partition.valid||Boolean(original.autoload&&!partition.autoloadCountPerWeapon)||magazineSupplyPresentation(effective).forceGroupOpen;});
- return clone({fields,magazineSupplySelection:magazineSupplyPresentation(record),ammunitionCustomization:{field:'ammunitionOverrides',label:'Linked ammunition',mode:overrides.length?'custom':'shared',choices,fields:AMMUNITION_FIELDS,selectedCopyIndex:copyIndex??null,materializedValue:ammunitionSpecification(record),effectiveRecord:record,overridden:overrides.some(item=>item.copyIndex===copyIndex),retainedCopyIndices,forceGroupOpen:Boolean(retainedCopyIndices.length||invalidCopy)}});
+ return clone({fields,magazineSupplySelection:magazineSupplyPresentation(record),ammunitionCustomization:noAmmunition&&!overrides.length?null:{field:'ammunitionOverrides',label:'Linked ammunition',mode:overrides.length?'custom':'shared',choices,fields:AMMUNITION_FIELDS,selectedCopyIndex:copyIndex??null,materializedValue:ammunitionSpecification(record),effectiveRecord:record,overridden:overrides.some(item=>item.copyIndex===copyIndex),retainedCopyIndices,forceGroupOpen:Boolean(retainedCopyIndices.length||invalidCopy)}});
 }
 export function weaponControl(design){return {field:'weapons',label:'Installed weapons',category:'Weapons',type:'weapons',maxItems:100,addLabel:'Add weapon',description:'Source-defined weapons, mounts and ammunition. The current weapon catalogue is incomplete; other weapons are not certified.',itemFields:[
  {field:'weaponId',label:'Weapon',type:'select',default:'handbook-stunner-12',choices:WEAPONS.map(w=>({...clone(w),...(cscMagazineVariants(w)?{magazineVariants:cscMagazineVariants(w)}:{}),...(cscMagazineSourceIds(w).length?{magazineProducts:cscInterchangeMagazineProducts(w,WEAPONS)}:{}),eligibility:{available:!design||w.tl<=design.techLevel,reason:design&&w.tl>design.techLevel?'Requires TL'+w.tl:null}}))},
@@ -265,11 +273,12 @@ function aggregateMagazineProducts(copies){
 }
 function aggregateAmmunition(copies,record){
  const sum=values=>values.some(value=>value===null)?null:values.reduce((total,value)=>total+value,0);
- const initialAmmunition={mode:'per-copy',count:sum(copies.map(copy=>copy.initialAmmunition.count)),totalRounds:sum(copies.map(copy=>copy.initialAmmunition.totalRounds)),purchaseCost:sum(copies.map(copy=>copy.initialAmmunition.purchaseCost))};
+ const noAmmunition=copies.every(copy=>copy.initialAmmunition.status==='not-applicable');
+ const initialAmmunition={...(noAmmunition?{status:'not-applicable'}:{}),mode:'per-copy',count:sum(copies.map(copy=>copy.initialAmmunition.count)),totalRounds:sum(copies.map(copy=>copy.initialAmmunition.totalRounds)),purchaseCost:sum(copies.map(copy=>copy.initialAmmunition.purchaseCost))};
  const inventories=copies.map(copy=>copy.ammunitionInventory),allocations=inventories.map(inventory=>inventory.allocation);
  const variant=key=>Object.fromEntries(['autoloadCount','storedCount','autoloadRounds','storedRounds'].map(field=>[field,sum(allocations.map(allocation=>allocation[key][field]))]));
  const allocation={mode:'per-copy',resolved:allocations.every(item=>item.resolved),valid:allocations.every(item=>item.valid),supplyWeaponId:allocations[0].supplyWeaponId,sourceFamily:allocations[0].sourceFamily,linkedWeapons:copies.length,standard:variant('standard'),highCapacity:variant('highCapacity'),reservePurchaseCost:sum(allocations.map(item=>item.reservePurchaseCost)),loaderSupplyPurchaseCost:sum(allocations.map(item=>item.loaderSupplyPurchaseCost)),autoloadRounds:sum(allocations.map(item=>item.autoloadRounds)),storedRounds:sum(allocations.map(item=>item.storedRounds)),autoloadCount:sum(allocations.map(item=>item.autoloadCountPerWeapon)),storedCount:sum(allocations.map(item=>item.storedCountPerWeapon)),source:book('61')};
- const ammunitionInventory={mode:'per-copy',initial:initialAmmunition,...(inventories.some(item=>item.products)?{products:aggregateMagazineProducts(copies)}:{}),...Object.fromEntries(['alternateSpareCount','alternateSpareRounds','standardSpareCount','highCapacitySpareCount','standardSpareRounds','highCapacitySpareRounds','totalRounds','ammunitionCost','autoloadCost','totalCost'].map(field=>[field,sum(inventories.map(inventory=>inventory[field]))])),allocation,...(record.autoload?{autoload:{count:sum(allocations.map(item=>item.autoloadCountPerWeapon)),maximumPerWeapon:10,source:book('61')}}:{})};
+ const ammunitionInventory={...(noAmmunition?{status:'not-applicable'}:{}),mode:'per-copy',initial:initialAmmunition,...(inventories.some(item=>item.products)?{products:aggregateMagazineProducts(copies)}:{}),...Object.fromEntries(['alternateSpareCount','alternateSpareRounds','standardSpareCount','highCapacitySpareCount','standardSpareRounds','highCapacitySpareRounds','totalRounds','ammunitionCost','autoloadCost','totalCost'].map(field=>[field,sum(inventories.map(inventory=>inventory[field]))])),allocation,...(record.autoload?{autoload:{count:sum(allocations.map(item=>item.autoloadCountPerWeapon)),maximumPerWeapon:10,source:book('61')}}:{})};
  return {initialAmmunition,ammunitionInventory,magazineVariants:copies[0].magazineVariants,ammoCost:ammunitionInventory.ammunitionCost,autoloadCost:ammunitionInventory.autoloadCost,unsupportedHighCapacity:copies.some(copy=>copy.unsupportedHighCapacity),replacementAmmoUnsupported:copies.some(copy=>copy.replacementAmmoUnsupported),unknownAmmunitionCost:copies.some(copy=>copy.unknownAmmunitionCost)};
 }
 function ammunitionCopyResult({copyIndex,customized,initialAmmunition,ammunitionInventory,spareAmmunition,highCapacitySpareAmmunition}){
@@ -345,12 +354,12 @@ export function evaluateWeapons(design,manipulators,skills,installedEquipment=[]
  if(!held&&supportId!=='none')add('error','WEAPON_UNUSED_SUPPORT',record.id,'A support grip applies only to a held weapon. Clear the retained support selection or change its placement.');
  if(held){
   const support=manipulators.find(a=>a.id===supportId);
-  if(w.requiresTwoHands&&supportId==='none'||supportId!=='none'&&!support)add('error','HELD_SUPPORT_REQUIRED',record.id,(w.handedness?.explicitPrintedHandCount===false?'The supported physical interpretation uses two hands. ':'')+'Select an installed second manipulator for the support grip.',grip.handednessBasis.source);
+  if(w.requiresTwoHands&&supportId==='none'||supportId!=='none'&&!support)add('error','HELD_SUPPORT_REQUIRED',record.id,(w.requiresTwoHands&&w.handedness?.explicitPrintedHandCount===false?'The supported physical interpretation uses two hands. ':'')+'Select an installed second manipulator for the support grip.',grip.handednessBasis.source);
   if(supportId!=='none'&&supportId===record.manipulatorId)add('error','HELD_GRIPS_MUST_DIFFER',record.id,'The primary and support grip must use two distinct manipulators.');
   if(supportId!=='none'&&!supportsSecondGrip(w))add('error','HELD_SUPPORT_UNSUPPORTED',record.id,'A second grip is not supported for this weapon profile. Clear the retained selection; no handling or damage benefit is granted.',grip.handednessBasis.source);
   if(grip.gripAssignmentStatus==='conflicting')add('error','HELD_GRIP_OCCUPIED',record.id,'Incompatible held loadout: a selected manipulator also grips another weapon. Assign a free hand or remove a weapon from this held loadout. Owning or stowing both weapons is not prohibited.',book('60,115'));
   if(grip.multiArm)add('warning','HELD_MULTI_ARM_CHARACTERISTICS',record.id,'The participating manipulators are reported separately. General robot rules do not specify how their STR or DEX combine; effective characteristics, melee STR damage and attack modifiers remain referee-dependent. No extra attacks or automatic parry are granted.',book('25-28,60,115'));
-  if(grip.handednessBasis.explicitPrintedHandCount===false)add('warning','HELD_HANDEDNESS_INTERPRETATION',record.id,'Two-handed operation is a qualified physical interpretation, not an explicit printed hand-count rule.',grip.handednessBasis.source);
+  if(grip.handednessBasis.explicitPrintedHandCount===false)add('warning',w.requiresTwoHands?'HELD_HANDEDNESS_INTERPRETATION':'HELD_ONE_HANDED_INTERPRETATION',record.id,(w.requiresTwoHands?'Two-handed':'One-handed')+' operation is a qualified physical interpretation, not an explicit printed hand-count rule.',grip.handednessBasis.source);
   add('warning','HELD_CARRYING_FIT',record.id,'Grip assignments do not establish physical reach, coordination or carrying fit. Reasonable load remains a referee condition; arm STR is not summed and operating endurance hours are not END.',core('98'));
  }
  if(held&&(n!==1||record.autoload))add('error','HELD_WEAPON_MOUNT',record.id,'Linked weapons and autoloaders require a mount.');
@@ -414,12 +423,13 @@ export function evaluateWeapons(design,manipulators,skills,installedEquipment=[]
    ...alternateRows.map((item,index)=>({...product(item.sourceWeaponId,item.variant,item.sourceWeaponId!==w.id&&allowedSources.includes(item.sourceWeaponId)),...allocation.alternates[index],storageId:item.storageId}))
   ];
   if(!products.some(item=>item.productId===initialSourceId+':'+initialType))products.push({...product(initialSourceId,initialType,initialSourceValid),totalPerWeapon:0,autoloadPerWeapon:0,storedPerWeapon:allocation.resolved?0:null,storageId:'none'});
-  const initialProduct=product(initialSourceId,initialType,initialSourceValid),initialCount=record.initialMagazines*n;
+  const noAmmunition=noMeleeAmmunition(w),initialQuantity=noAmmunition?0:record.initialMagazines;
+  const initialProduct=product(initialSourceId,initialType,initialSourceValid),initialCount=initialQuantity*n;
   const purchase=(count,unitCost)=>count===null?null:count===0?0:Number.isFinite(unitCost)?count*n*unitCost:null;
   const sum=values=>values.some(value=>value===null)?null:values.reduce((total,value)=>total+value,0);
   const rounds=(count,capacity)=>count===null?null:count===0?0:Number.isFinite(capacity)?count*n*capacity:null;
   const initialPurchaseCost=w.initialIncluded?0:purchase(record.initialMagazines,initialProduct.unitCost);
-  const initialAmmunition={type:initialType,productId:initialProduct.productId,sourceWeaponId:initialSourceId,source:initialProduct.source,countPerWeapon:record.initialMagazines,linkedWeapons:n,count:initialCount,capacityPerMagazine:initialProduct.capacity,totalRounds:rounds(record.initialMagazines,initialProduct.capacity),included:w.initialIncluded,unitCost:initialProduct.unitCost,purchaseCost:initialPurchaseCost};
+  const initialAmmunition=noAmmunition?{status:'not-applicable',countPerWeapon:0,linkedWeapons:n,count:0,totalRounds:0,purchaseCost:0,source:w.source}:{type:initialType,productId:initialProduct.productId,sourceWeaponId:initialSourceId,source:initialProduct.source,countPerWeapon:record.initialMagazines,linkedWeapons:n,count:initialCount,capacityPerMagazine:initialProduct.capacity,totalRounds:rounds(record.initialMagazines,initialProduct.capacity),included:w.initialIncluded,unitCost:initialProduct.unitCost,purchaseCost:initialPurchaseCost};
   for(const supply of products){
    supply.initialCount=supply.compatible&&supply.productId===initialProduct.productId?initialCount:0;
    supply.initialRounds=supply.compatible&&supply.productId===initialProduct.productId?initialAmmunition.totalRounds:0;
@@ -436,7 +446,7 @@ export function evaluateWeapons(design,manipulators,skills,installedEquipment=[]
   const totalExtra=products.reduce((count,item)=>count+item.totalPerWeapon,0);
   if(record.autoload&&(!Number.isFinite(w.magazine)||w.magazine<=0))add('error','AUTOLOADER_AMMUNITION',record.id,'An autoloader requires a source-defined finite magazine or power pack; this weapon has none.');
   if(record.autoload&&!allocation.autoloadCountPerWeapon)add('error','EMPTY_AUTOLOADER',record.id,'Specify one to ten additional magazines or power packs for the autoloader. Empty fitted-loader pricing remains unresolved.');
-  if(w.initialIncluded&&!w.directPayload&&!record.initialMagazines)add('error','INCLUDED_POWER_PACK',record.id,'The source price includes its initial power pack; no removal discount is defined.');
+  if(w.initialIncluded&&!w.directPayload&&!noAmmunition&&!record.initialMagazines)add('error','INCLUDED_POWER_PACK',record.id,'The source price includes its initial power pack; no removal discount is defined.');
   if(record.autoload&&design.techLevel<6)add('error','AUTOLOADER_TL',record.id,'Autoloaders require TL6.');
   const replacementAmmoUnsupported=w.ammunitionAccounting?.replacementPurchasesSupported===false&&(record.autoload||totalExtra>0);
   if(replacementAmmoUnsupported)add('blocker','CSC_REPLACEMENT_AMMUNITION_UNAVAILABLE',record.id,'Replacement packs, spare ammunition purchases and autoloading are not source-defined for this weapon supply. Its included supply remains available without inventing a replacement price.',w.source);
@@ -445,7 +455,7 @@ export function evaluateWeapons(design,manipulators,skills,installedEquipment=[]
   const autoloadCost=!allocation.valid||invalidSource?null:!record.autoload?0:!allocation.autoloadCountPerWeapon||loaderSupplyCost===null?null:2*loaderSupplyCost;
   const variantInventory=(part,supply)=>({...part,autoloadCount:supply.autoloadCount,storedCount:supply.storedCount,autoloadRounds:supply.autoloadRounds,storedRounds:supply.storedRounds});
   const allocationInventory={...allocation,supplyWeaponId:w.id,sourceFamily:w.sourceFamily,linkedWeapons:n,standard:variantInventory(allocation.standard,products[0]),highCapacity:variantInventory(allocation.highCapacity,products[1]),reservePurchaseCost,loaderSupplyPurchaseCost:loaderSupplyCost,autoloadRounds:sum(products.map(item=>item.autoloadRounds)),storedRounds:sum(products.map(item=>item.storedRounds)),source:book('61')};
-  const ammunitionInventory={initial:initialAmmunition,...(allowedSources.length||hasInterchange?{products}:{}),standardSpareCount:record.extraMagazines*n,highCapacitySpareCount:highCount*n,standardSpareRounds:products[0].extraRounds,highCapacitySpareRounds:products[1].extraRounds,
+  const ammunitionInventory={...(noAmmunition?{status:'not-applicable'}:{}),initial:initialAmmunition,...(allowedSources.length||hasInterchange?{products}:{}),standardSpareCount:record.extraMagazines*n,highCapacitySpareCount:highCount*n,standardSpareRounds:products[0].extraRounds,highCapacitySpareRounds:products[1].extraRounds,
    alternateSpareCount:sum(products.slice(2).map(item=>item.extraCount)),alternateSpareRounds:sum(products.slice(2).map(item=>item.extraRounds)),
    totalRounds:sum([initialAmmunition.totalRounds,...products.map(item=>item.extraRounds)]),ammunitionCost:ammoCost,autoloadCost,totalCost:sum([ammoCost,autoloadCost]),allocation:allocationInventory,
    ...(record.autoload?{autoload:{countPerWeapon:allocation.autoloadCountPerWeapon,maximumPerWeapon:10,source:book('61'),...(allocation.highCapacity.autoloadPerWeapon||alternateRows.length?{composition:'Mixed source products and variants combine CSC pp160,175 magazine quantities/prices with Robot Handbook p61 autoloading; this is not a worked source example.',variantSource:highCapacity?.source??null}:{})}}:{})};

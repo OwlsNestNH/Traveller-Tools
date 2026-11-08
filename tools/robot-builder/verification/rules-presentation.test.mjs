@@ -58,7 +58,7 @@ test('labels-only: unknown diagnostics are bounded and retain severity, source a
 
 test('labels-only: ordinary and component nested metadata preserves facts, estimates, sources and user-selected content',()=>{
  const d=paired();d.name='My robot: a user-authored name.';
- const e=evaluateDesign(d),weapon=e.totals.weapons[0];
+ const e=evaluateDesign(d),weapon=e.totals.weapons[1]; // Finite-ammunition bow for injected magazine metadata.
  weapon.unexpectedMetadata={description:rawProse,arbitraryNarrative:rawProse,rule:{damage:999,label:rawProse},tables:[{label:rawProse,cost:99}],count:3,status:'unresolved',source:{...source,note:rawProse}};
  weapon.magazineVariants={highCapacity:{capacity:30,unitCost:30,estimatedUnitMassKg:.15,qualification:{refereeMayReject:true,shotgunReview:true,source},estimate:{estimated:true,unitMassKg:.15,scope:rawProse,source}}};
  weapon.attackContext=rawProse;

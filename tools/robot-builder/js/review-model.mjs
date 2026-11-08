@@ -4,6 +4,8 @@ import {magazineProductId,magazineProductLabel,magazineProductFacts,magazineProd
 const format = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
 const massFormat = new Intl.NumberFormat('en-US', { maximumFractionDigits: 9 });
 const present = value => value !== undefined && value !== null;
+const noMeleeAmmunition=weapon=>weapon?.weaponFamily==='melee'&&weapon.magazine===null;
+const weaponRange=range=>present(range)?`Range: ${valueText(range)}${typeof range==='number'?' m':''}`:'Range not calculated';
 export function humanLabel(value) {
   return String(value).replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[-_:]/g, ' ').replace(/^./, ch => ch.toUpperCase());
 }
@@ -35,7 +37,11 @@ function profileRow(label, summary, record, omitted = [], detail = '') {
   const hidden = new Set(['id','weaponId','optionId','sourceOption','label','name','source','ammunitionOverrides','ammunitionCopies','alternateMagazineSupplies',...omitted]);
   if(record.ammunitionCopies?.length||record.ammunitionOverrides?.length)for(const field of ['extraMagazines','extraHighCapacityMagazines','initialMagazines','initialMagazineType','autoloadAllocation'])hidden.add(field);
   if(record.ammunitionInventory?.products)for(const field of ['ammunitionInventory','initialAmmunition','magazineVariants','spareAmmunition','highCapacitySpareAmmunition','extraMagazines','extraHighCapacityMagazines','initialMagazines','initialMagazineType','autoloadAllocation','ammoCost','autoloadCost'])hidden.add(field);
+  // A legacy initialMagazines=1 is a schema sentinel for no-ammunition melee,
+  // not an included magazine or power pack. Invalid selections remain editable.
+  if(noMeleeAmmunition(record))for(const field of ['initialMagazines','initialMagazineType','initialMagazineSourceId','extraMagazines','extraHighCapacityMagazines','autoload','autoloadAllocation','magazine','initialAmmunition','ammunitionInventory','ammunitionAccounting','magazineVariants','spareAmmunition','highCapacitySpareAmmunition'])hidden.add(field);
   const details = Object.entries(presentationFacts(record)||{}).filter(([key])=>!hidden.has(key)).map(([key,value])=>row(humanLabel(key),value));
+  if(noMeleeAmmunition(record))details.push(row('Ammunition','Not applicable'));
   return {...row(label,summary,record.source,detail),details};
 }
 function ammunitionMassDisplay(value) {
@@ -60,6 +66,7 @@ function magazineSelectionRows(spec,label,weapon,storageName,sourceName) {
   return [initial,...donors];
 }
 function ammunitionProductRows(weapon,storageName,sourceName) {
+  if(noMeleeAmmunition(weapon))return [];
   const inventory=weapon.ammunitionInventory;
   if(!inventory?.products){
     if(weapon.ammunitionOverrides?.length)return [];
@@ -90,6 +97,7 @@ function ammunitionProductRows(weapon,storageName,sourceName) {
   return rows;
 }
 function ammunitionCopyRows(weapon,storageName,sourceName=()=> 'Selected weapon') {
+  if(noMeleeAmmunition(weapon))return [];
   if(weapon.ammunitionInventory?.products)return [];
   if(!weapon.ammunitionCopies?.length&&weapon.ammunitionOverrides?.length){
     const selectedRow=(spec,label)=>{
@@ -278,7 +286,7 @@ export function projectReview(design, catalogue, evaluation) {
         };
         const componentArmNames=new Map((profile.manipulators||snapshot?.selections?.physical?.manipulators||[]).map((arm,index)=>[arm.id,`${arm.kind==='base'?'Base arm':arm.kind==='leg'?'Converted leg':'Additional arm'} ${index+1}`]));
         const display={...weapon,...weaponGripDisplay(weapon,id=>componentArmNames.get(id)||'Unspecified manipulator'),...ammunitionInventoryDisplay(weapon),...(weapon.magazineVariants?{magazineVariants:ammunitionMassDisplay(weapon.magazineVariants)}:{}),...(weapon.highCapacitySpareAmmunition?{highCapacitySpareAmmunition:spareAmmunitionDisplay(weapon.highCapacitySpareAmmunition,storageName(weapon.highCapacitySpareAmmunition.storageId))}:{}),...(weapon.spareAmmunition?{spareAmmunition:spareAmmunitionDisplay(weapon.spareAmmunition,storageName(weapon.spareAmmunition.storageId))}:{})};
-        const weaponRow=profileRow(`${component.name} / ${weapon.label||'Weapon'}`,`${present(weapon.damage)?weapon.damage+' damage':'Damage not calculated'} · ${present(weapon.range)?'Range '+valueText(weapon.range)+' m':'Range not calculated'}`,display,['damage','range','manipulatorId','supportManipulatorId','gripManipulatorIds','primaryManipulatorDM','parentLimb','spareMagazineStorageId','highCapacityMagazineStorageId'],'Component-only weapon; attack/delivery conditional');
+        const weaponRow=profileRow(`${component.name} / ${weapon.label||'Weapon'}`,`${present(weapon.damage)?weapon.damage+' damage':'Damage not calculated'} · ${weaponRange(weapon.range)}`,display,['damage','range','manipulatorId','supportManipulatorId','gripManipulatorIds','primaryManipulatorDM','parentLimb','spareMagazineStorageId','highCapacityMagazineStorageId'],'Component-only weapon; attack/delivery conditional');
         for(const item of weaponRow.details){if(item.label==='Autoload Allocation')item.label='Selected loader allocation per weapon';if(item.label==='High Capacity Spare Ammunition')item.label='High-capacity spare ammunition (estimated mass)';if(item.label==='Spare Ammunition')item.label='Spare ammunition (estimated mass)';if(item.label==='Mass Kg')item.label='Source weapon mass (kg)';}
         const sourceName=id=>profile.weapons?.find(item=>item.weaponId===id)?.label||catalogue.stages?.flatMap(stage=>stage.controls||[]).flatMap(control=>control.itemFields||[]).find(item=>item.field==='weaponId')?.choices?.find(item=>item.id===id)?.label||'Unavailable magazine source';
         weaponRow.details.push(...ammunitionProductRows(weapon,storageName,sourceName),...ammunitionCopyRows(weapon,storageName,sourceName));
@@ -355,7 +363,7 @@ export function projectReview(design, catalogue, evaluation) {
     const name=weapon.label || choiceLabel(control,'weaponId',weapon.weaponId,'Selected weapon');
     const storageName=id=>choiceLabel(control,'ammunitionStorageId',id,'Unresolved storage');
     const ammunitionName=id=>choiceLabel(control,'auxiliaryAmmunition',id);
-    const summary=[present(weapon.damage)?`${weapon.damage} damage`:'Damage not calculated',present(weapon.range)?`Range: ${valueText(weapon.range)} m`:'Range not calculated',weapon.traits?.length?weapon.traits.join(', '):''].filter(Boolean).join(' · ');
+    const summary=[present(weapon.damage)?`${weapon.damage} damage`:'Damage not calculated',weaponRange(weapon.range),weapon.traits?.length?weapon.traits.join(', '):''].filter(Boolean).join(' · ');
     const placement=parentLabel ? choiceLabel(control,'placement',weapon.placement) : weapon.placement==='arm' ? `Mounted on ${armName(weapon.manipulatorId)}` : weapon.placement==='held' ? `Held by ${armName(weapon.manipulatorId)}${weapon.supportManipulatorId&&weapon.supportManipulatorId!=='none'?' and '+armName(weapon.supportManipulatorId):''}` : weapon.placement ? `${titleName(weapon.placement)} mount` : 'Placement unresolved';
     const detail=[parentLabel,placement,`Software Level: ${valueText(weapon.softwareLevel)}`,`FCS DM: ${valueText(weapon.fireControlDM)}`,`DEX DM: ${valueText(weapon.manipulatorDM)}`].filter(Boolean).join(' · ');
     const accessoryChoices=control?.itemFields?.find(item=>item.field==='accessories')?.choices||[];

@@ -4,7 +4,7 @@ export const labelText = value => String(value).replace(/([a-z])([A-Z])/g,'$1 $2
 const diagnosticLabels = {
  NANO_PERMANENT_END:'Permanent END loss; above 15 active medical packages', NANO_UNTYPED_ACTIVE:'Active package types unknown; effects incomplete', NANO_LEGACY_AGEING_UNRESOLVED:'Existing anti-ageing declaration unresolved', NANO_ATTRIBUTE_PACKAGES:'Characteristic enhancement package count insufficient', NANO_ATTRIBUTE_TARGET:'Select characteristic enhancement target', NANO_ATTRIBUTE_MAX:'Characteristic enhancement maximum exceeded', NANO_REGEN_LIMIT:'Regenerative active-package limit exceeded (4)', NANO_AGEING_SINGLE:'Anti-ageing active-package limit exceeded (1)', PARTIAL_COVERAGE:'Coverage incomplete', KIND_NOT_IMPLEMENTED:'Construction type not implemented', SPECIAL_NOT_IMPLEMENTED:'Construction path not implemented',
  HELD_MULTI_ARM_CHARACTERISTICS:'Combined-arm characteristics unresolved', HELD_CARRYING_FIT:'Carrying/reach unresolved; referee approval required',
- HELD_HANDEDNESS_INTERPRETATION:'Two-handed use: source interpretation', HELD_STRENGTH_CONDITION:'Bulky STR requirement; attack penalty conditional',
+ HELD_HANDEDNESS_INTERPRETATION:'Two-handed use: source interpretation', HELD_ONE_HANDED_INTERPRETATION:'One-handed use: source interpretation', HELD_STRENGTH_CONDITION:'Bulky STR requirement; attack penalty conditional',
  HELD_SUPPORT_REQUIRED:'Requires second grip; select an installed arm', HELD_GRIPS_MUST_DIFFER:'Grips must differ; select another arm',
  HELD_SUPPORT_UNSUPPORTED:'Second grip unsupported; clear selection', HELD_GRIP_OCCUPIED:'Grip already occupied; choose a free arm',
  HELD_VEHICLE_WEAPON_UNRESOLVED:'Held vehicle weapon unresolved; select body mount', HELD_WEAPON_MOUNT:'Linked weapons/autoloader require a mount',
@@ -67,6 +67,9 @@ export function coverageLabel(gap) {
  return id&&/^[a-z0-9_-]{1,90}$/i.test(id)?`${labelText(id)}: coverage incomplete`:'Coverage incomplete; source review required';
 }
 const conditionLabels = new Map([
+ ['Target is unaware of the attacker','Stun: target unaware of attacker only'],
+ ['Parrying with the rapier','Rapier: parrying only'],
+ ['Electronics (sensors) checks to detect this weapon; TL differential applies','Weapon detection only; Electronics (sensors); TL differential applies'],
  ['precise endpoint location and tracking','Precise endpoint location/tracking required'],
  ["Target is less than 50 metres away","Target under 50 m"],
  ["Compatible trigger-activated weapon targets an object within 1 metre of a correctly coded transmitting tag whose signal reaches the scanner within 50 metres","Compatible trigger; target within 1 m of coded tag; received signal within 50 m"],
@@ -141,6 +144,8 @@ export function conditionLabel(value) {
  return 'Operating condition unresolved; check source';
 }
 const textFacts = new Map([
+ ['Qualified one-handed physical configuration; no explicit printed hand count.','One-hand physical interpretation; printed hand count unstated'],
+ ['Qualified two-handed physical configuration; no explicit printed hand count.','Two-hand physical interpretation; printed hand count unstated'],
  ['Selected weapon only','Selected weapon only'],
  ['Weapon computer hardware only; no robot brain bandwidth, skills or general software is installed.','Weapon computer only; no robot bandwidth/skill/software grant'],
  ['Mounting the hardware alone does not grant its hand-held Scope benefit or recipient sensors.','Hand-held Scope benefit only; no recipient sensor grant'],

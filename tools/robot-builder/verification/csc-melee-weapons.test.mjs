@@ -24,8 +24,8 @@ const profile=(...args)=>direct(...args).weapons[0];
 const design=(id,patch={})=>updateDesign(createDesign({techLevel:16}),{selections:{chassis:{size:'size-7'},physical:{weapons:[record(id,patch)]}}});
 const has=(r,code)=>r.diagnostics.some(d=>d.code===code);
 
-test('CSC melee source: exactly nine bounded profiles preserve rows, handedness, skills and sources',()=>{
- assert.deepEqual(CSC_MELEE_WEAPONS.map(w=>w.id),expected.map(e=>'csc-'+e[0]));
+test('CSC melee source: original nine bounded profiles preserve rows, handedness, skills and sources',()=>{
+ assert.deepEqual(CSC_MELEE_WEAPONS.slice(0,9).map(w=>w.id),expected.map(e=>'csc-'+e[0]));
  for(const [id,tl,mount,damage,mass,cost,speciality,traits,twoHands,page] of expected){
   const w=raw(id);assert.deepEqual([w.tl,w.mountClass,w.damage,w.massKg,w.cost,w.speciality,w.traits,w.requiresTwoHands],[tl,mount,damage,mass,cost,speciality,traits,twoHands],id);
   assert.equal(w.sourceFamily,'csc-2023');assert.equal(w.weaponFamily,'melee');assert.equal(w.skill,'melee');assert.equal(w.range,'Melee');assert.equal(w.magazine,null);assert.equal(w.magazineCost,0);assert.equal(w.initialIncluded,true);
@@ -33,7 +33,7 @@ test('CSC melee source: exactly nine bounded profiles preserve rows, handedness,
   assert.deepEqual(w.compatibility,{accessoryRules:'csc-2023',associatedLauncherRules:null,attachedLauncher:false,specialisedAmmunitionRules:null,robotPowerConnection:false});assert.equal(w.ammunitionAccounting.autoloadSupported,false);assert.equal(w.ammunitionAccounting.separatelyPricedAmmunition,false);
   for(const flag of ['resolvedAttack','skillGranted','defenceGranted','bodyMountedDefenceGranted'])assert.equal(w.conditionalEffects[flag],false);
  }
- for(const id of ['cutlass','dagger','stunstick','club','blade','rapier','gravity-hammer','static-maul','arc-field-weapon','chaindrive-axe','psi-blade','boarding-shield','gravitic-shield'])assert.equal(raw(id),undefined);
+ for(const id of ['stunstick','club','gravity-hammer','static-maul','arc-field-weapon','chaindrive-axe','psi-blade','boarding-shield','gravitic-shield'])assert.equal(raw(id),undefined);
  assert.equal(WEAPONS.find(w=>w.id==='broadsword').tl,2);assert.equal(raw('broadsword').tl,1);
 });
 
@@ -56,7 +56,7 @@ for(const [id,tl,mount,damage,mass,cost,speciality,traits,twoHands] of expected)
 test('CSC melee integration: narrow accessories are admitted while ammunition and attached launchers fail closed',()=>{
  for(const w of CSC_MELEE_WEAPONS){const id=w.id.slice(4);
   for(const a of WEAPON_ACCESSORIES){
-   const allowed=a.sourceFamily==='csc-2023'&&(['intelligent','scan-jammer','smart-tracker'].includes(a.kind)||a.kind==='gyrostabiliser'&&['mace','battle-axe','broadsword','great-axe'].includes(id));
+   const allowed=a.sourceFamily==='csc-2023'&&(['intelligent','scan-jammer','smart-tracker'].includes(a.kind)||a.kind==='gyrostabiliser'&&['mace','battle-axe','broadsword','great-axe','sledgehammer'].includes(id));
    if(a.sourceFamily==='csc-2023')assert.equal(cscAccessoryEligibility(w,a).available,allowed);
    const accessories=[a.id,...(a.id==='csc-smart-tracker'?['csc-intelligent-0']:[])],r=direct(id,{accessories});
    if(allowed){assert.equal(r.weapons[0].cost,w.cost+(w.mountClass==='small'?500:1000)+a.cost+(a.id==='csc-smart-tracker'?1000:0));assert.equal(r.weapons[0].baseAttackModifier,-3);}

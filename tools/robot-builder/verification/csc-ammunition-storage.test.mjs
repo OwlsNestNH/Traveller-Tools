@@ -18,7 +18,7 @@ const expected=[
  ['anti-materiel-rifle',.075],['arl-standard',.3],['arl-support',.8],['arl-pdw',.2],['cppg-11',.36,'cartridge-magazine'],['cppg-12',.36,'cartridge-magazine'],['cppg-13',.3,'cartridge-magazine'],['early-machinegun',2.1],['light-assault-gun',1],['light-gatling-laser',9,'cartridge-magazine'],['machinegun',3],['rapid-fire-machinegun',3.6],['rocket-launcher-6',.04],['rocket-launcher-7',.04],['rocket-launcher-8',.08],['rocket-launcher-9',.08],['heavy-machinegun',50],['vrf-gauss-gun',500],['vrf-machinegun',1250],['rocket-pod',22.5],['tac-launcher-anti-aircraft',5],['tac-launcher-anti-personnel',5],['tac-launcher-armour-piercing',5],
  ['grenade-launcher-standard',.06],['ram-grenade-launcher-standard',.18],['heavy-advanced-combat-rifle',.75],['ducks-foot-pistol-4',.04],['ducks-foot-pistol-5',.05],['ducks-foot-pistol-6',.06],['ducks-foot-pistol-7',.07],['ducks-foot-pistol-8',.08]
 ];
-const blocked=['hand-flamer','cryo-rifle','flame-rifle','stagger-laser-rifle-12','stagger-laser-rifle-14','stun-blaster','cryojet','flamethrower-4','flamethrower-6','flamethrower-8','mace','staff','battle-axe','broadsword','great-axe','long-blade-1','long-blade-3','monoblade','buckler','direct-grenade-chemical','direct-grenade-emp','direct-grenade-incendiary','direct-grenade-neurotoxin','direct-grenade-plasma','direct-grenade-thermal-smoke','direct-grenade-tranq-gas','pepper-spray','ion-rifle-14','ion-rifle-15','maser-pistol','maser-rifle','solar-beam-rifle','matter-disintegrator-19'];
+const blocked=['hand-flamer','cryo-rifle','flame-rifle','stagger-laser-rifle-12','stagger-laser-rifle-14','stun-blaster','cryojet','flamethrower-4','flamethrower-6','flamethrower-8','mace','staff','battle-axe','broadsword','great-axe','long-blade-1','long-blade-3','monoblade','buckler','blade','cutlass','dagger','hatchet','sap','sledgehammer','rapier','stone-axe','stealth-dagger','war-pick','direct-grenade-chemical','direct-grenade-emp','direct-grenade-incendiary','direct-grenade-neurotoxin','direct-grenade-plasma','direct-grenade-thermal-smoke','direct-grenade-tranq-gas','pepper-spray','ion-rifle-14','ion-rifle-15','maser-pistol','maser-rifle','solar-beam-rifle','matter-disintegrator-19'];
 const storageKinds=['storage-compartment','refrigerated-storage-compartment','hazardous-material-storage-compartment'];
 const ref='option:storage-compartment';
 const record=(patch={})=>({id:'weapon',weaponId:'csc-heavy-advanced-combat-rifle',placement:'body',manipulatorId:'none',linkedWeapons:1,fireControl:'none',autoload:false,extraMagazines:1,initialMagazines:1,spareMagazineStorageId:ref,...patch});
@@ -28,9 +28,9 @@ const design=(records=[record()],physical={})=>updateDesign(createDesign({techLe
 const has=(result,code)=>result.diagnostics.some(d=>d.code===code);
 const projection=d=>{const r=evaluateDesign(d);return projectReview(d,getCatalogue(d),r);};
 
-test('the explicit estimate registry covers 70 CSC profiles and excludes the other 33',()=>{
+test('the explicit estimate registry covers 70 CSC profiles and excludes the other 43',()=>{
  const csc=WEAPONS.filter(w=>w.sourceFamily==='csc-2023');
- assert.equal(csc.length,103);assert.equal(expected.length,70);assert.equal(blocked.length,33);
+ assert.equal(csc.length,113);assert.equal(expected.length,70);assert.equal(blocked.length,43);
  assert.deepEqual([...CSC_AMMUNITION_ESTIMATE_IDS].sort(),expected.map(([id])=>'csc-'+id).sort());
  assert.deepEqual(csc.filter(w=>!estimateCscMagazineMass(w)).map(w=>w.id).sort(),blocked.map(id=>'csc-'+id).sort());
  assert.ok(Object.isFrozen(CSC_AMMUNITION_ESTIMATE_IDS));
