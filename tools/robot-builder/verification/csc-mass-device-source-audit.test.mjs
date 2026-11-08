@@ -4,9 +4,12 @@ import {createDesign,updateDesign,evaluateDesign} from '../engine/index.mjs';
 import {getAugmentationCatalogue} from '../engine/augmentations.mjs';
 import {CSC_MASS_DEVICES} from '../engine/csc-mass-devices.mjs';
 
-// Independently transcribed from visually checked printed pp63-65,74-76,78-79,88,90-91,125-126,
+// Independently transcribed from visually checked printed pp63-65,73-76,78-79,88,90-91,105,107,125-126,
 // Central Supply Catalogue Update 2023, revised printing copyright 2026.
 const rows=[
+ ['optical-binoculars-3',3,1,75,'73'],['electronic-binoculars-8',8,1,750,'74'],
+ ['camera-still-mono-5',5,2,200,'73'],['camera-still-colour-6',6,1,100,'73'],['camera-still-digital-7',7,1,200,'73'],['camera-still-holographic-9',9,2,1000,'73'],['camera-motion-holographic-10',10,2,2000,'73'],
+ ['fire-extinguisher-5',5,2,50,'105'],['infinite-rope-16',16,1,1000,'107'],['cutting-torch-10',10,2,5000,'126'],
  ['holographic-display-9',9,2,800,'63'],['holographic-display-11',11,1,1000,'63'],['holographic-projector-12',12,1,10000,'63'],
  ['radio-transceiver-7',7,1,100,'64-65'],['laser-transceiver-9',9,1.5,2500,'64-65'],
  ['electronic-binoculars-9',9,1,750,'74'],['electronic-binoculars-10',10,1,750,'74'],['cold-light-lantern-6',6,.25,20,'74'],
@@ -133,4 +136,45 @@ test('New nested sensor, medical and tool data is detached between returned resu
  const med=cap('medikit-8');med.consumables.replenishmentCost=0;assert.equal(cap('medikit-8').consumables.replenishmentCost,250);assert.equal(cap('medikit-10').consumables.replenishmentCost,375);
  const cat=getAugmentationCatalogue();cat.find(r=>r.id===option('portable-mediscanner-12')).device.effects.alienSpeciesChips.included=true;assert.equal(cap('portable-mediscanner-12').alienSpeciesChips.included,false);
  cap('electronic-tool-set-7').taskTechnologyGuidance.automaticModifier=true;assert.equal(cap('electronic-tool-set-7').taskTechnologyGuidance.automaticModifier,false);
+});
+
+test('Optical and basic electronic binoculars do not acquire later-TL imaging',()=>{
+ const optical=cap('optical-binoculars-3');assert.equal(optical.maximumMagnification,10);assert.equal(optical.fieldOfViewReducesWithMagnification,true);
+ for(const key of ['laserRangefinder','lightIntensification','infraredVision','thermalImaging'])assert.equal(optical[key],false);
+ const basic=cap('electronic-binoculars-8');assert.equal(basic.magnification,10);assert.equal(basic.laserRangefinder,true);assert.equal(basic.lightIntensification,true);
+ for(const key of ['infraredVision','thermalImaging','imageProcessing','partiallyHiddenObjectIdentification','lightIntensificationInTotalDarkness','seesThroughFog','seesThroughSmoke','seesThroughThickFoliage'])assert.equal(basic[key],false);
+});
+test('Cameras retain media requirements without professional bonuses or invented media allowances',()=>{
+ const mono=cap('camera-still-mono-5');assert.equal(mono.capture,'still');assert.equal(mono.imageType,'monochrome');assert.equal(mono.developmentRequired,true);
+ assert.deepEqual(mono.consumables,{processingRequired:true,costPerBatch:1,imagesPerBatch:1,replenishmentIncluded:false});
+ const colour=cap('camera-still-colour-6');assert.equal(colour.instantPhoto,true);assert.equal(colour.imageType,'colour');assert.deepEqual(colour.consumables,{processingRequired:true,costPerBatch:1,imagesPerBatch:10,replenishmentIncluded:false});
+ const digital=cap('camera-still-digital-7');assert.equal(digital.media,'digital');assert.equal(digital.capture,'still');assert.equal(digital.imageType,'colour');
+ const still=cap('camera-still-holographic-9');assert.equal(still.capture,'still');assert.equal(still.imageQuality,'moderate-grade');
+ const motion=cap('camera-motion-holographic-10');assert.equal(motion.capture,'motion');assert.equal(motion.fullMotion,true);
+ for(const id of ['camera-still-digital-7','camera-still-holographic-9','camera-motion-holographic-10']){const c=cap(id);assert.equal(c.mediaCapacity,null);assert.equal(c.additionalMediaCost,null);assert.equal(c.consumables,undefined);}
+ for(const id of rows.filter(r=>r[0].startsWith('camera-')).map(r=>r[0])){const c=cap(id);assert.equal(c.professionalGrade,false);assert.equal(c.professionalArtDMGranted,false);assert.equal(c.recipientSkillGranted,false);}
+ for(const id of ['camera-motion-still-8','camera-professional-8','camera-still-mono-4','camera-motion-5','cutting-torch-5'])assert.ok(!CSC_MASS_DEVICES.some(r=>r.id==='csc-'+id));
+});
+test('Survival and cutting equipment retain consumable, reserve and material limits',()=>{
+ const fire=cap('fire-extinguisher-5');assert.equal(fire.singleUse,true);assert.equal(fire.replacementIncluded,false);assert.equal(fire.recipientProtectionGranted,false);
+ assert.deepEqual(fire.flameVictimExtinguishing,{requiresActiveUse:true,condition:'Extinguishing a victim subjected to a flame attack',firstRoundDamageMultiplier:.5,subsequentRoundDamageMultiplier:0,permanentFireProtection:false});
+ const rope=cap('infinite-rope-16');assert.deepEqual(rope.rope,{totalCapacityMetres:26,reusableLengthMetres:25,minimumColonyReserveMetres:1,loadKg:750,reclamationRequiresReserve:true,reclamationRequiresReloadingUsedRope:true,colonyReadout:true,unlimitedProduction:false});assert.equal(rope.recipientLiftingCapacityGranted,false);
+ const torch=cap('cutting-torch-10');assert.equal(torch.materialTLExclusiveMaximum,14);assert.equal(torch.cutsBondedSuperdenseTL14OrHigher,false);assert.equal(torch.fuel,'gas canister');assert.equal(torch.automaticTaskSuccess,false);assert.deepEqual(torch.supplies,{required:true,continuousDuration:null,replenishmentCost:null,replenishmentIncluded:false});
+});
+test('Camera and survival implants enforce source TL, count, interface and override boundaries',()=>{
+ for(const [id,tl] of rows.slice(0,10).filter(r=>r[1]>5))assert.ok(has(run(id,{},[],tl-1),'AUGMENT_TL'));
+ assert.ok(has(run('camera-still-mono-5',{quantity:3},[{id:'other',optionId:option('fire-extinguisher-5'),parameters:{}}]),'MISC_IMPLANT_COUNT'));
+ assert.equal(run('camera-still-colour-6',{quantity:3}).totals.cost,30900);
+ assert.ok(has(run('cutting-torch-10',{interfaceMode:'neural'}),'MISC_IMPLANT_NEURAL_LINK'));
+ const linked=run('cutting-torch-10',{interfaceMode:'neural'},[{id:'link',optionId:'neural-link-basic',parameters:{}}]);assert.equal(linked.status,'verified');assert.equal(linked.totals.augmentations[0].interfaceCost,0);assert.equal(linked.totals.augmentations[0].structureCost,15000);
+ assert.equal(run('infinite-rope-16',{ruggedised:'yes'},[],16).totals.cost,16250);
+ for(const p of [{professionalGrade:true},{mediaCapacity:999},{cost:0},{massKg:0}])assert.throws(()=>run('camera-still-digital-7',p));
+ for(const p of [{totalCapacityMetres:999},{loadKg:9999}])assert.throws(()=>run('infinite-rope-16',p,[],16));
+ assert.ok(getAugmentationCatalogue().some(r=>r.id==='misc-mass-binoculars-8'));
+});
+test('New camera and survival nested effects remain detached',()=>{
+ cap('camera-still-mono-5').consumables.costPerBatch=0;assert.equal(cap('camera-still-mono-5').consumables.costPerBatch,1);assert.equal(cap('camera-still-colour-6').consumables.imagesPerBatch,10);
+ cap('infinite-rope-16').rope.minimumColonyReserveMetres=0;assert.equal(cap('infinite-rope-16').rope.minimumColonyReserveMetres,1);
+ cap('fire-extinguisher-5').flameVictimExtinguishing.permanentFireProtection=true;assert.equal(cap('fire-extinguisher-5').flameVictimExtinguishing.permanentFireProtection,false);
+ getAugmentationCatalogue().find(r=>r.id===option('cutting-torch-10')).device.effects.supplies.replenishmentIncluded=true;assert.equal(cap('cutting-torch-10').supplies.replenishmentIncluded,false);
 });

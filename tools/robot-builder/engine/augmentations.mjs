@@ -1,4 +1,5 @@
 import {CSC_MASS_DEVICES} from './csc-mass-devices.mjs';
+import {HANDBOOK_MASS_DEVICES} from './handbook-mass-devices.mjs';
 import {computerParameters,neuralComputerParameters,computerSoftwareControl,validateComputerSoftware,evaluateComputer,isComputerId} from './computer-implants.mjs';
 import {weaponControl,validateWeapons,evaluateWeapons} from './weapons.mjs';
 import {evaluateBrainSoftware,validateSoftwareSelection} from './brain-software.mjs';
@@ -24,6 +25,7 @@ const BRAIN_ROWS=[['brain-implant-basic','Basic robot brain implant',13,100000,2
 const coreSource=pages=>({book:'Core Rulebook Update 2022',edition:'Mongoose 2022',pages});
 const MASS_DEVICES=[
  ...CSC_MASS_DEVICES,
+ ...HANDBOOK_MASS_DEVICES,
  {id:'computer-terminal-7',label:'Computer terminal (TL7)',tl:7,massKg:2,cost:200,source:coreSource('111'),effects:{processing:0,includedSoftware:['Interface/0'],networkRequired:true,independentProcessing:false,robotBrain:false}},
  {id:'electronics-toolkit-7',label:'Electronics toolkit (TL7)',tl:7,massKg:2,cost:2000,source:coreSource('120'),effects:{electronicsToolkit:true,taskTechnologyModifiers:{minimumGap:2,lowerTaskTL:2,higherTaskTL:-2},recipientSkillGranted:false}},
  ...[[8,1,1000,0],[10,1,1500,1],[12,1,5000,2],[14,0,10000,3]].map(([tl,massKg,cost,firstAidDM])=>({id:'medikit-'+tl,label:'Medikit (TL'+tl+')',tl,massKg,cost,source:coreSource('114'),effects:{firstAidDM,condition:'First aid with appropriate use; not a universal Medic modifier',recipientSkillGranted:false}})),
