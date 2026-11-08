@@ -38,7 +38,7 @@ try{
  for(const width of [1440,390]){
   const {ctx,page}=await start(width);await tab(page,'Settings').click();
   const middlePeople=page.locator('#settings-form [name="people-middle"]');await reveal(middlePeople);await middlePeople.fill('0');
-  assert.match(await page.locator('#accommodation-estimate').innerText(),/Cabin charges: Cr 0 \/ month.*Combined: Cr 0 \/ month/,'Empty-ship Settings estimate agrees with the zero-cost engine');await middlePeople.fill('2');
+  await reveal(page.locator('#accommodation-estimate'));assert.match(await page.locator('#accommodation-estimate').innerText(),/Cabin charges: Cr 0 \/ month.*Combined: Cr 0 \/ month/,'Empty-ship Settings estimate agrees with the zero-cost engine');await middlePeople.fill('2');
   for(const [name,value]of [['rooms-luxury','1'],['people-luxury','1']]){const input=page.locator('#settings-form [name="'+name+'"]');await reveal(input);await input.fill(value);}
   assert.equal(await page.locator('#settings-form [name="refillRate-luxury"]').inputValue(),'5000');
   await page.locator('#settings-form button[type="submit"]').click();let baseline=await read(page);assert.equal(baseline.ship.accommodation.passengers.luxury,1);assert.equal(baseline.ship.accommodation.rooms.luxury,1);assert.equal(baseline.ship.accommodation.luggageTons,'2');assert.equal(units(baseline),112);
