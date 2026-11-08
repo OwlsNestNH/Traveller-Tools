@@ -5,7 +5,7 @@ This tool is in active development. It does **not** yet cover every legal Robot 
 ## Architecture
 
 - `engine/`: deterministic rules, typed catalogue, source references, design schema, validation and calculation. No DOM, browser storage or network dependence.
-- `engine/composites.mjs`: source-scoped integration of independently revalidated robot snapshots. Component construction costs are distinct from listed prices and external host costs.
+- `engine/composites.mjs`: source-scoped integration of independently revalidated robot snapshots. Component construction costs are distinct from listed prices and external host costs. A composite robot keeps its own selected list price without replacing combined construction accounting.
 - `js/api.mjs`: application API. It composes the engine with explicit named-design saves, import/export and read-only statblock projection. Browser persistence is injected and independently tested.
 - `js/app.mjs`: rendering and user interaction only. It imports the API, never the rules modules. Dropdown choices and constraints come from the engine.
 - `js/review-model.mjs` projects engine output without DOM or construction calculations; `js/review.mjs` renders that read-only API result. The same projection supplies the printable statblock.
@@ -15,7 +15,7 @@ The six navigation stages retain the Handbook names: Chassis Size, Locomotion, P
 
 ## Sources and coverage
 
-The implementation cites printed pages of **Robot Handbook (Mongoose Publishing, 2022)**. Core characteristic DMs follow **Traveller Core Rulebook Update 2022**, p9. Source books and private research files are not included in this repository. The older spreadsheet is not an authoritative source.
+The implementation cites printed pages of **Robot Handbook (Mongoose Publishing, 2022)**. Core characteristic DMs follow **Traveller Core Rulebook Update 2022**, p9. Long-range missile case procurement additionally cites **High Guard Update 2022**, pp 36-37, using the inspected revised printing (copyright 2026). Individual long-range pricing remains unresolved. Source books and private research files are not included in this repository. The older spreadsheet is not an authoritative source.
 
 The engine catalogue and every evaluation return a current coverage inventory. The [source coverage matrix](verification/source-coverage-matrix.md) and [remaining construction inventory](verification/construction-gap-inventory.md) separate concrete implementation gaps from external dependencies, source ambiguities and contextual operating rules. A result can be invalid, blocked, or checked only within the implemented subset. These states are shown separately from referee-dependent choices. Missing options are not silently represented by zero cost or a generic override.
 
