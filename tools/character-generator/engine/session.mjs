@@ -1,3 +1,4 @@
+import { CLAN_SHARE_SOURCE, clanShareExchange, clanShareLotInvariant } from './clan-shares.mjs';
 import { ASLAN_FAMILY_BANDS, aslanFamilyBand, aslanFamilyResult, aslanBirthOrder, aslanEstateOptions, aslanEstate, aslanOriginReason, aslanClanResult, aslanPrideResult } from './aslan-origin.mjs';
 import { createAslanOutlawRestoration, aslanOutlawRestorationDecision, aslanOutlawRestorationOutcome } from './aslan-outlaw-restoration.mjs';
 import { createAslanRestoration, aslanRestorationDecision, aslanRestorationAvailability, aslanRestorationExpiry } from './aslan-restoration.mjs';
@@ -22,7 +23,7 @@ const RULE_PACK={...CORE_PACK,...EXPANSION_PACK};
 import { API_VERSION, SOURCES, CAREERS, PRECAREERS, SPECIES, SKILLS, BACKGROUND_SKILLS, findCareer, findSpecies } from './catalog.mjs';
 const LIMIT = 2000;
 export const MAX_SAVE_BYTES = 2000000;
-export const RULES_REVISION='character-preview-2026-11-08.10';
+export const RULES_REVISION='character-preview-2026-11-08.11';
 const saveSize = value => new TextEncoder().encode(JSON.stringify(value,null,2)).byteLength;
 const copy = value => structuredClone(value);
 const plain = value => value && typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
@@ -180,14 +181,54 @@ function grantAslanOfficerOffer(state,e){
  const {career,record}=currentCareer(state);need(state.character.species==='aslan'&&state.character.culture==='native','This offer requires native Aslan generation.');
  state.character.aslanOfficerOffers??=[];state.character.aslanOfficerOffers.push(createAslanOfficerOffer({id:'aslan-officer-'+(state.character.aslanOfficerOffers.length+1),originCareerId:career.id,originCareerIndex:state.active,originAssignment:record.assignment,eventResult:e.eventResult,targetCareerId:e.career,completedTerms:state.character.terms,originCareerTerms:record.terms}));
 }
+function addRelationship(state,role,name,extra={}){
+ state.character.relationshipSequence=(state.character.relationshipSequence??0)+1;
+ const relationship={id:'relationship-'+state.character.relationshipSequence,role,name,...copy(extra)};state.character.relationships.push(relationship);return relationship;
+}
+function originShareClan(state){
+ const origin=state.character.aslanOrigin?.clan;if(!origin)return null;state.character.clanShareClans??=[];
+ let clan=state.character.clanShareClans.find(c=>c.id==='origin-clan');if(!clan){clan={id:'origin-clan',name:origin.name||origin.type+' clan (origin)',provenance:'origin',source:{id:'aliens',page:18}};state.character.clanShareClans.push(clan);}return clan.id;
+}
+function syncClanShareTokens(state){
+ state.character.benefits=state.character.benefits.filter(b=>!aslanClanShareTokens([b]).length);
+ const quantity=(state.character.clanShareLots??[]).reduce((sum,l)=>sum+l.available,0);
+ if(quantity)state.character.benefits.push({name:'Clan Share',quantity,definitionId:'aslan.clan-share',redemption:'recorded-lots'});
+}
+function addClanShareLot(state,quantity,award=null){
+ integer(quantity,1,1000000,'Clan Shares');state.character.clanShareLots??=[];
+ const originClan=originShareClan(state),careerId=award?.origin?.careerId,source=award?.origin?.source;
+ const clanKnown=award&&originClan&&((careerId?.startsWith('aslan.')&&!['aslan.outcast','aslan.outlaw'].includes(careerId))||!careerId&&source?.id==='aliens'&&(source.page===21||source.pages?.includes(21)));
+ const lot={id:'clan-lot-'+(state.character.clanShareLots.length+1),awardId:award?.id??null,awarded:quantity,available:quantity,spent:0,forfeited:0,source:copy(award?.source??{id:'aliens',page:47}),origin:copy(award?.origin??null),clanId:clanKnown?originClan:null,provenance:award?'source':'unverified',redemptionIds:[],forfeitureIds:[]};state.character.clanShareLots.push(lot);if(award)award.clanShareLotIds=[...(award.clanShareLotIds??[]),lot.id];syncClanShareTokens(state);
+ if(state.character.species==='aslan'&&state.character.culture==='native'&&state.character.outcast)forfeitAslanClanShares(state,'native-clan-share-award',{id:'aliens',page:22});return lot;
+}
+function clanShareCheckpoint(state){
+ if(state.character.species!=='aslan'||state.character.culture!=='native')return 'This bounded exchange uses native Aslan rules.';
+ if(state.character.deceased)return 'A deceased Traveller cannot redeem shares.';
+ if(state.character.outcast)return 'Current Outcast standing forfeits unconverted Clan Shares.';
+ if(!['precareer','career','term-end','retirement','finish'].includes(state.stage))return 'Finish the current rule procedure before exchanging shares.';
+ if(state.pending||state.pendingChoice||state.effectsQueue?.length||state.effectNext||state.character.aslanOrigin?.status==='pending'||activeAslanOfficerOffer(state)||gamesPending(state)||activeReeducation(state)||activeMerchantFine(state)||advisoryRecord(state)||state.psionicTraining||state.character.reeducations?.some(r=>r.status==='deferred'))return 'A reserved rule continuation must finish before exchanging shares.';
+ return '';
+}
+function clanShareOptions(state){
+ const reason=clanShareCheckpoint(state),clans=copy(state.character.clanShareClans??[]),clanName=id=>clans.find(c=>c.id===id)?.name??'Issuing clan unverified';
+ const lots=(state.character.clanShareLots??[]).filter(l=>l.available>0).map(l=>{const sourceVerified=l.provenance!=='unverified'&&(!l.awardId||state.character.benefitAwards?.find(a=>a.id===l.awardId)?.status==='resolved'),clanVerified=!!l.clanId;return {...copy(l),label:'Clan Shares / '+l.id,clanName:clanName(l.clanId),sourceVerified,clanVerified,cashShipAvailable:!reason&&sourceVerified,favourAvailable:!reason&&sourceVerified&&clanVerified,availableForRedemption:sourceVerified,verificationRequired:!sourceVerified,needsClanVerification:!clanVerified,canVerify:!reason&&state.config.gm&&(!sourceVerified||!clanVerified),reason:!sourceVerified?'Verify that this is a genuine Clan Share award.':!clanVerified?'Clan identity is needed only for clan favours.':''};});
+ const balance=lots.reduce((sum,l)=>sum+l.available,0),redeemableBalance=lots.filter(l=>l.sourceVerified).reduce((sum,l)=>sum+l.available,0),ids=lots.filter(l=>l.cashShipAvailable).map(l=>l.id),favourIds=lots.filter(l=>l.favourAvailable).map(l=>l.id);
+ const contacts=state.character.relationships.filter(r=>r.role==='Contact').map(r=>{const verified=r.clanFavour?.upperEchelon===true;return {id:r.id,name:r.name,role:r.role,clanId:r.clanFavour?.clanId??null,clanName:clanName(r.clanFavour?.clanId),upperEchelon:verified,verificationRequired:!verified,canVerify:!reason&&state.config.gm&&!r.clanFavour,eligibleLotIds:verified?lots.filter(l=>l.favourAvailable&&l.clanId===r.clanFavour.clanId).map(l=>l.id):[]};});
+ const allyIds=[...new Set(contacts.flatMap(c=>c.eligibleLotIds))];
+ return {available:!reason&&redeemableBalance>0,checkpointAvailable:!reason,checkpointReason:reason,reason:reason||(!balance?'No unspent Clan Shares.':!redeemableBalance?'Verify the source of an available lot.':''),balance,redeemableBalance,lots,clans,choices:[{id:'cash',name:'Cash',available:state.character.gender==='female'&&ids.length>0,reason:state.character.gender!=='female'?'Male redemption grants art or weapons; not implemented here.':reason||(!ids.length?'No verified shares.':''),lotIds:state.character.gender==='female'?ids:[]},{id:'ship-shares',name:'Ship Shares',available:ids.length>0,reason:reason||(!ids.length?'No verified shares.':''),lotIds:ids},{id:'contact',name:'Clan Contact',available:favourIds.length>0,reason:reason||(!favourIds.length?'Verify an issuing clan before spending its favour.':''),lotIds:favourIds},{id:'ally',name:'Upgrade clan Contact',available:allyIds.length>0,reason:reason||(!allyIds.length?'No verified Contact matches an available share clan.':''),lotIds:allyIds}],contacts};
+}
+function shareReason(value){const reason=text(value??'',500);need(reason,'Record the source verification reason.');return reason;}
+
 function forfeitAslanClanShares(state,cause,source,setOutcast=false){
  const removed=aslanClanShareTokens(state.character.benefits),before=state.character.stats.SOC,outcastBefore=!!state.character.outcast;
  if(setOutcast){if(setOutcast===true)state.character.stats.SOC=2;state.character.outcast=true;}
  if(!removed.length&&(!setOutcast||setOutcast==='preserve-SOC'&&outcastBefore))return null;
  state.character.aslanStatusChanges??=[];const id='aslan-status-'+(state.character.aslanStatusChanges.length+1),awardIds=[];
  state.character.benefits=state.character.benefits.filter(b=>!removed.some(r=>JSON.stringify(r)===JSON.stringify(b)));
- for(const a of state.character.benefitAwards??[])if(removed.length&&a.definitionId==='aslan.clan-share'&&!a.forfeited){a.forfeited=true;a.received=false;a.forfeitureIds=[...(a.forfeitureIds??[]),id];awardIds.push(a.id);}
- const change={id,cause,source:copy(source),careerIndex:state.active??activeAslanOfficerOffer(state)?.originCareerIndex??null,generationTerms:state.character.terms,age:state.character.age,socBefore:before,socAfter:state.character.stats.SOC,outcastBefore,outcastAfter:!!state.character.outcast,removed,awardIds};
+ const forfeitures=[];for(const lot of state.character.clanShareLots??[])if(lot.available>0){const quantity=lot.available;lot.available=0;lot.forfeited+=quantity;lot.forfeitureIds.push(id);clanShareLotInvariant(lot);forfeitures.push({lotId:lot.id,awardId:lot.awardId,quantity});if(lot.awardId){const a=benefitAward(state,lot.awardId);a.forfeitedQuantity=(a.forfeitedQuantity??0)+quantity;a.forfeited=a.forfeitedQuantity===a.quantity;if(a.forfeited)a.received=false;a.forfeitureIds=[...(a.forfeitureIds??[]),id];if(!awardIds.includes(a.id))awardIds.push(a.id);}}
+ // Preserve explicit source-assisted tokens without inventing provenance for them.
+ for(const a of state.character.benefitAwards??[])if(removed.length&&a.definitionId==='aslan.clan-share'&&!a.clanShareLotIds?.length&&!a.forfeited){a.forfeited=true;a.received=false;a.forfeitureIds=[...(a.forfeitureIds??[]),id];awardIds.push(a.id);}
+ const change={id,cause,source:copy(source),careerIndex:state.active??activeAslanOfficerOffer(state)?.originCareerIndex??null,generationTerms:state.character.terms,age:state.character.age,socBefore:before,socAfter:state.character.stats.SOC,outcastBefore,outcastAfter:!!state.character.outcast,removed,awardIds,forfeitures};
  state.character.aslanStatusChanges.push(change);return change;
 }
 
@@ -758,8 +799,8 @@ function applyEffects(state,effects) {
    }
    case 'cash':state.character.cash+=integer(effect.value,-10000000,10000000,'Cash');break;
    case 'debt':state.character.debt+=integer(effect.value,0,10000000,'Debt');break;
-   case 'relationship':need(['Contact','Ally','Rival','Enemy'].includes(effect.role),'Invalid relationship.');state.character.relationships.push({role:effect.role,name:text(effect.name,120)});break;
-   case 'benefit':state.character.benefits.push({name:text(effect.name,120),quantity:integer(effect.value,1,100,'Quantity')});break;
+   case 'relationship':need(['Contact','Ally','Rival','Enemy'].includes(effect.role),'Invalid relationship.');addRelationship(state,effect.role,text(effect.name,120));break;
+   case 'benefit':{const name=text(effect.name,120),quantity=integer(effect.value,1,100,'Quantity');if(/^clan shares?$/i.test(name))addClanShareLot(state,quantity);else state.character.benefits.push({name,quantity});break;}
    default:throw new Error('Unsupported effect.');
   }
  }
@@ -1045,6 +1086,7 @@ function benefitAsset(state,award,properties){
  state.character.benefits.push({name:asset.name,quantity:1,assetId:asset.id,definitionId:award.definitionId,ownership:asset.ownership,...(asset.mortgagePaidPercent!==undefined?{mortgagePaidPercent:asset.mortgagePaidPercent}:{})});return asset;
 }
 function recordBenefitToken(state,award,name,quantity=1,extra={}){
+ if((extra.definitionId??award.definitionId)==='aslan.clan-share'){addClanShareLot(state,quantity,award);return;}
  const existing=state.character.benefits.find(b=>!b.assetId&&b.name===name&&b.definitionId===(extra.definitionId??award.definitionId));
  if(existing){if(!extra.nonnumeric)existing.quantity+=quantity;}
  else state.character.benefits.push({name,quantity,definitionId:extra.definitionId??award.definitionId,...copy(extra)});
@@ -1262,7 +1304,7 @@ function drainEffects(state,rolls) {
    case 'zhodani-relationship-loss':state.pendingChoice={...copy(e),source:copy(e.source??{id:'aliens',page:273}),label:'Choose an Ally or Contact to lose',relationshipsBefore:copy(state.character.relationships)};state.stage='relationship-loss';return;
    case 'relationship':{
     const count=e.countFrom?Math.max(e.countFrom.minimum??0,characteristicDM(stat(state,e.countFrom.statDM))):e.dice?mechanicalDice(state,e.dice,rolls,e.type+' count'):(e.count??1);
-    if(!e.onlyIfAbsent||!state.character.relationships.some(r=>r.role===e.type))for(let i=0;i<count;i++)state.character.relationships.push({role:e.type,name:'Unnamed '+e.type.toLowerCase()});
+    if(!e.onlyIfAbsent||!state.character.relationships.some(r=>r.role===e.type))for(let i=0;i<count;i++)addRelationship(state,e.type,'Unnamed '+e.type.toLowerCase());
     break;
    }
    case 'check':{
@@ -1404,6 +1446,32 @@ function apply(state,command,rolls) {
  if(activeAslanOfficerOffer(state)){const allowed=['qualify-aslan-officer','cancel-aslan-officer','benefit','choose-effect','choose-skill','skill-award-source','retry-skill-choice','resolve-book','notes','gm-mode'];if(state._aslanOfficerExit)allowed.push('leave-career');if(state._aslanOfficerQualification)allowed.push('career');need(allowed.includes(command.type),'Resolve the reserved officer exit and qualification before changing its context. Restore/replay explicitly to revise it.');}
  if(state.stage==='aslan-officer-rank')need(['resolve-aslan-officer-rank','notes','gm-mode'].includes(command.type),'Resolve the printed officer rank-table mapping before continuing.');
  switch(command.type) {
+
+ case 'verify-clan-share-lot':{
+  need(!clanShareCheckpoint(state),clanShareCheckpoint(state));need(state.config.gm,'Enable GM mode to verify share provenance.');need(Object.keys(payload).every(k=>['lotId','clanId','newClanName','reason'].includes(k)),'Use only the lot, issuing clan and reason.');const hasClanId=Object.hasOwn(payload,'clanId'),hasNewClanName=Object.hasOwn(payload,'newClanName');need(!(hasClanId&&hasNewClanName),'Choose only one existing or newly identified clan.');for(const key of ['clanId','newClanName'])if(Object.hasOwn(payload,key))need(typeof payload[key]==='string'&&payload[key].trim().length>0,'Any supplied issuing-clan field must be a nonempty string.');
+  const lot=state.character.clanShareLots?.find(l=>l.id===payload.lotId);need(lot?.available>0,'Select an existing unspent lot.');need(lot.provenance==='unverified'||!lot.clanId,'This lot already has verified provenance.');const reason=shareReason(payload.reason);let clan;
+  if(hasClanId){clan=state.character.clanShareClans?.find(c=>c.id===payload.clanId);need(clan,'Choose a known clan ID.');}
+  else if(hasNewClanName){const name=text(payload.newClanName,80);need(name,'Identify the issuing clan.');state.character.clanShareClans??=[];clan={id:'verified-clan-'+(state.character.clanShareClans.length+1),name,provenance:'referee',source:copy(CLAN_SHARE_SOURCE)};state.character.clanShareClans.push(clan);}
+  need(clan||lot.provenance==='unverified','Identify the missing issuing clan or leave this known-source lot unchanged.');lot.clanId=clan?.id??lot.clanId;if(lot.provenance==='unverified')lot.provenance='referee';state.character.clanShareVerifications??=[];const decision={id:'clan-verification-'+(state.character.clanShareVerifications.length+1),kind:'lot',lotId:lot.id,clanId:lot.clanId,quantity:lot.awarded,reason,source:copy(CLAN_SHARE_SOURCE)};state.character.clanShareVerifications.push(decision);lot.verificationId=decision.id;return 'Verified existing Clan Share lot '+lot.id+(clan?' and issuing clan. ':'. Issuing clan remains unverified. ')+reason;
+ }
+ case 'verify-clan-contact':{
+  need(!clanShareCheckpoint(state),clanShareCheckpoint(state));need(state.config.gm,'Enable GM mode to verify the existing Contact.');need(Object.keys(payload).every(k=>['relationshipId','clanId','reason'].includes(k)),'Use only the Contact ID, clan ID and source reason.');const relationship=state.character.relationships.find(r=>r.id===payload.relationshipId);need(relationship?.role==='Contact','Select an existing Contact.');const clan=state.character.clanShareClans?.find(c=>c.id===payload.clanId);need(clan,'Choose a recorded clan.');need(!relationship.clanFavour,'This Contact already has recorded clan provenance.');const reason=shareReason(payload.reason);state.character.clanShareVerifications??=[];const decision={id:'clan-verification-'+(state.character.clanShareVerifications.length+1),kind:'contact',relationshipId:relationship.id,clanId:clan.id,reason,source:copy(CLAN_SHARE_SOURCE)};state.character.clanShareVerifications.push(decision);relationship.clanFavour={clanId:clan.id,upperEchelon:true,verificationId:decision.id};return 'Verified Contact '+relationship.name+' in the clan upper echelons. '+reason;
+ }
+ case 'redeem-clan-shares':{
+  need(!clanShareCheckpoint(state),clanShareCheckpoint(state));const allowed=['kind','inputs',...(payload.kind==='contact'?['name']:payload.kind==='ally'?['relationshipId']:[])];need(Object.keys(payload).every(k=>allowed.includes(k)),'Use only fields belonging to the selected Clan Share exchange.');
+  const lots=state.character.clanShareLots??[],relationship=payload.kind==='ally'?state.character.relationships.find(r=>r.id===payload.relationshipId):null,clanId=lots.find(l=>l.id===payload.inputs?.[0]?.lotId)?.clanId;
+  const plan=clanShareExchange({lots,inputs:payload.inputs,kind:payload.kind,gender:state.character.gender,relationship,clanId});
+  for(const input of plan.inputs){const lot=lots.find(l=>l.id===input.lotId);need(!lot.awardId||benefitAward(state,lot.awardId).status==='resolved','Finish receiving the source award before exchanging its shares.');}
+  const name=payload.kind==='contact'?text(payload.name,120):null;if(payload.kind==='contact')need(name,'Name or describe the new clan Contact.');
+  state.character.clanShareRedemptions??=[];const id='clan-redemption-'+(state.character.clanShareRedemptions.length+1),before={cash:state.character.cash,shareBalance:lots.reduce((n,l)=>n+l.available,0)},outputs={};
+  for(const input of plan.inputs){const lot=lots.find(l=>l.id===input.lotId);lot.available-=input.quantity;lot.spent+=input.quantity;lot.redemptionIds.push(id);clanShareLotInvariant(lot);if(lot.awardId){const award=benefitAward(state,lot.awardId);award.redeemedQuantity=(award.redeemedQuantity??0)+input.quantity;award.redemptionIds=[...new Set([...(award.redemptionIds??[]),id])];}}
+  syncClanShareTokens(state);
+  if(plan.cash){state.character.cash+=plan.cash;outputs.cash=plan.cash;}
+  if(plan.shipShares){state.character.benefitAwards??=[];const award={id:'award-'+(state.character.benefitAwards.length+1),name:'Ship Share',definitionId:'core.material.Ship Share',source:{id:'core',page:47},origin:{careerId:null,careerIndex:null,source:copy(CLAN_SHARE_SOURCE),redemptionId:id},quantity:plan.shipShares,previousCount:0,status:'resolved',assetIds:[],decisions:[{type:'clan-share-conversion',redemptionId:id}],received:true};state.character.benefitAwards.push(award);recordBenefitToken(state,award,'Ship Share',plan.shipShares,{redeemableForCash:false,valuePerShare:1000000});outputs.shipShares=plan.shipShares;outputs.awardId=award.id;}
+  if(payload.kind==='contact'){const created=addRelationship(state,'Contact',name,{clanFavour:{clanId,upperEchelon:true,redemptionId:id}});outputs.relationshipId=created.id;outputs.relationshipAfter=copy(created);}
+  if(payload.kind==='ally'){outputs.relationshipBefore=copy(relationship);relationship.role='Ally';relationship.clanFavour.upgradedBy=id;outputs.relationshipId=relationship.id;outputs.relationshipAfter=copy(relationship);}
+  const after={cash:state.character.cash,shareBalance:lots.reduce((n,l)=>n+l.available,0)};state.character.clanShareRedemptions.push({id,kind:plan.kind,inputs:plan.inputs,quantity:plan.quantity,outputs,before,after,clanId:plan.clanId,source:copy(CLAN_SHARE_SOURCE),age:state.character.age,generationTerms:state.character.terms,stage:state.stage});return 'Exchanged '+plan.quantity+' Clan Share'+(plan.quantity===1?'':'s')+' for '+plan.kind+'. No career term or benefit roll consumed.';
+ }
 
  case 'roll-aslan-gender':{
   const o=state.character.aslanOrigin;need(state.stage==='aslan-family'&&o&&!o.identityGender&&!o.gender&&!o.family,'Only an unspecified origin gender can be rolled.');need(Object.keys(payload).length===0,'The gender roll takes no inputs.');
@@ -2373,6 +2441,7 @@ export function project(session) {
  state.currentCrossCareerTraining=crossCareerTraining(state);
  state.assignmentChangeOptions=assignmentOptions(state);state.currentAssignmentChange=copy(currentAssignmentChange(state)??state.character.assignmentChanges?.at(-1)??null);
  state.aslanHistoricalEntryOptions=historicalEntryOptions(state);state.currentAslanHistoricalEntry=currentHistoricalEntry(state);
+ state.clanShareOptions=clanShareOptions(state);
  state.currentAslanOrigin=currentAslanOrigin(state);
  state.currentAslanOutlawRestoration=copy(currentAslanOutlawRestoration(state));
  state.currentAslanRestoration=copy(currentAslanRestoration(state));state.aslanRestorationNotice=restorationNotice(state);

@@ -83,7 +83,7 @@ test('Core first boat wording and undefined Combat Implant stop explicitly',()=>
  for(const name of ["Ship's Boat",'Combat Implant']){const s=fixture('core.psion');award(s,name);assert.equal(s.pending.kind,'benefit-source');assert.equal(s.character.benefits.length,0);assert.equal(s.character.careers[0].benefitRolls,12);assert.throws(()=>cmd(s,'resolve-book',{confirmed:true,note:'Checked'}),/Choose record/);sourceNone(s);assert.equal(s.character.careers[0].benefitRolls,11);}
 });
 test('Clan Shares stay unconverted; bespoke kinship and Nenj do not receive TAS conversions',()=>{
- const s=fixture('aslan.guardian');award(s,'Clan Share','benefit-complete',{value:3});assert.equal(s.character.benefits[0].quantity,3);assert.equal(s.character.benefits[0].redemption,'source-required');assert.equal(s.character.cash,0);assert.equal(s.character.benefits.some(b=>b.name==='Ship Share'),false);
+ const s=fixture('aslan.guardian');award(s,'Clan Share','benefit-complete',{value:3});assert.equal(s.character.benefits[0].quantity,3);assert.equal(s.character.benefits[0].redemption,'recorded-lots');assert.equal(s.character.clanShareLots[0].awarded,3);assert.equal(s.character.clanShareLots[0].available,3);assert.equal(s.character.cash,0);assert.equal(s.character.benefits.some(b=>b.name==='Ship Share'),false);
  award(s,'Ceremonial Kinship');assert.equal(s.pending.kind,'benefit-source');sourceNone(s);const z=fixture('zhodani.army');award(z,'Nenj');assert.equal(z.pending.kind,'benefit-source');assert.equal(z.character.benefits.length,0);
 });
 test('Following awards apply relationships and FOL; Patronage is annual, never cash',()=>{
