@@ -517,6 +517,6 @@ async function start(){
 }
 start();
 
-document.addEventListener('change',event=>{if(['clan-share-kind','clan-share-lot','clan-share-contact','clan-verify-lot','clan-verify-target','clan-verify-contact','clan-contact-clan'].includes(event.target.id))syncClanShareControls();});
+document.addEventListener('change',event=>{if(['clan-share-kind','clan-share-lot'].includes(event.target.id)){if($('#clan-weapons-confirmed'))$('#clan-weapons-confirmed').checked=false;if($('#clan-lower-value-confirmed'))$('#clan-lower-value-confirmed').checked=false;}if(['clan-share-kind','clan-share-lot','clan-share-contact','clan-verify-lot','clan-verify-target','clan-verify-contact','clan-contact-clan'].includes(event.target.id))syncClanShareControls();});
 
 document.addEventListener('input',event=>{if(event.target.id==='clan-share-quantity'||event.target.matches('[data-weapon-field]')){if($('#clan-weapons-confirmed'))$('#clan-weapons-confirmed').checked=false;if($('#clan-lower-value-confirmed'))$('#clan-lower-value-confirmed').checked=false;syncClanAssetControls();}});
