@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {readFile} from 'node:fs/promises';
 import {createServer} from '../server.mjs';
+import {buildAslanOriginFixture} from './aslan-origin-fixtures.mjs';
 import {createSession,execute,exportSession} from '../engine/session.mjs';
 
 // Independent review regressions. Uses only fresh temporary browser contexts.
@@ -93,20 +94,18 @@ try {
   const record=JSON.parse(await stored(page));assert.equal(record.events.at(-1).command.type,'notes');
   assert.equal(record.events.at(-1).command.payload.text,'Retain this pending action');
  });
- await check('Aslan family choices include both son paths and retain selected value',async page=>{
-  // This test targets birth-order persistence, not the separate random rite-doubles branches.
-  await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(createSession('review-aslan-family'))});
-  await page.reload();await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();
-  await page.locator('[name=species]').selectOption('aslan');await page.locator('[name=gender]').selectOption('male');
-  await begin(page);await page.getByRole('button',{name:'Roll six characteristics',exact:true}).click();
-  await page.getByRole('button',{name:'Keep these characteristics'}).click();await page.locator('#birth-order').waitFor();
-  assert.deepEqual(await page.locator('#birth-order option').evaluateAll(nodes=>nodes.map(node=>node.value)),['','first-son','second-son','daughter']);
-  await page.locator('#birth-order').selectOption('second-son');await page.locator('#book-confirm').check();
-  await page.getByRole('button',{name:'Record outcome and continue'}).click();
-  await page.getByRole('heading',{name:'Choose background skills'}).waitFor();
-  const recorded=JSON.parse(await stored(page)).events.at(-1);
-  assert.equal(recorded.command.payload.birthOrder,'second-son');
-  assert.deepEqual(recorded.rolls.find(roll=>roll.label==='Rite of Passage').values,[6,1]);
+ await check('Aslan birth order is rolled once and its recorded source result survives reload',async page=>{
+  const fixture=buildAslanOriginFixture({stage:'aslan-birth-order'});
+  await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(fixture.session)});
+  await page.reload();await page.getByRole('heading',{name:'Your place in the family'}).waitFor();
+  assert.equal(await page.locator('#birth-order').count(),0);
+  await page.getByRole('button',{name:'Roll birth order',exact:true}).click();
+  await page.getByRole('heading',{name:'Record the family land baseline'}).waitFor();
+  const saved=await stored(page),record=JSON.parse(saved).events.at(-1);
+  assert.equal(record.command.type,'roll-aslan-birth-order');
+  assert.equal(record.rolls.length,1);assert.equal(record.rolls[0].values.length,2);
+  await page.reload();await page.getByRole('heading',{name:'Record the family land baseline'}).waitFor();
+  assert.equal(await stored(page),saved);
  });
  await check('failed setup configuration stops before later setup actions',async page=>{
   const commands=[];

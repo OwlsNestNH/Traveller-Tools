@@ -1,3 +1,4 @@
+import {settleOrigin} from './aslan-origin-fixtures.mjs';
 
 import assert from 'node:assert/strict';
 import {api} from '../engine/session.mjs';
@@ -9,8 +10,7 @@ const cache=new Map();
 export function aslanSetup(seed='aslan-officer',gender='male',riteShares=false,config={}){
  let r=api({operation:'create',seed});r=run(r,'setup',{species:'aslan',gender});if(Object.keys(config).length)r=run(r,'configure',config);r=run(r,'gm-mode',{enabled:true});r=run(r,'roll-statistics');
  for(let i=0;i<6;i++)r=run(r,'gm-override',{field:'pool',index:i,value:8,reason:'Officer opportunity source fixture'});
- r=run(r,'accept-statistics');r=force(r,'resolve-book',{confirmed:true,note:'Referee verified family birth order; the engine rolls the native rite.',birthOrder:gender==='male'?'second-son':'daughter',effects:[]},riteShares?[1,1]:[2,3]);r=settle(r);
- assert.equal(r.state.stage,'background');r=run(r,'background',{skills:r.state.backgroundOptions.slice(0,r.state.backgroundRemaining)});return run(r,'skip-precareer');
+ r=run(r,'accept-statistics');r=settleOrigin(r,{riteDice:riteShares?[1,1]:[2,3]});assert.equal(r.state.stage,'precareer');return run(r,'skip-precareer');
 }
 export function aslanEvent(r,result){
  for(let n=0;n<40;n++){const before=r.revision,x=run(r,'survival');if(x.log.at(-1).rolls[1]?.label==='Event table')return run(x,'gm-replay',{revision:x.revision,rollIndex:1,values:[Math.max(1,result-6),Math.min(6,result-1)],reason:'Aslan source officer event'});r=run(x,'restore',{revision:before});}

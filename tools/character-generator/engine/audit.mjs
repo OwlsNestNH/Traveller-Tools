@@ -3,7 +3,7 @@ const clone=value=>value===undefined?null:structuredClone(value);
 export function characterChanges(before,after){
  const changes=[];
  const add=(path,a,b)=>{if(JSON.stringify(a)!==JSON.stringify(b))changes.push({path,before:clone(a),after:clone(b)});};
- for(const field of ['name','notes','species','variant','culture','gender','homeworld','age','terms','cash','debt','sentenced','outcast','deceased','qualificationBanned','psionEntryPermission','preCareer','birthOrder','medicalCosts','retirementFromCreation','nonCareerMonths','treatmentAgeingTerms','psionicLoss'])add(field,before[field],after[field]);
+ for(const field of ['name','notes','species','variant','culture','gender','identityGender','homeworld','age','terms','cash','debt','sentenced','outcast','deceased','qualificationBanned','psionEntryPermission','preCareer','birthOrder','medicalCosts','retirementFromCreation','nonCareerMonths','treatmentAgeingTerms','psionicLoss'])add(field,before[field],after[field]);
  for(const field of ['stats','skills'])for(const key of new Set([...Object.keys(before[field]??{}),...Object.keys(after[field]??{})]))add(field+'.'+key,before[field]?.[key],after[field]?.[key]);
  for(const field of ['benefits','relationships','historyNotes','futureConditions','traits','injuries','medicalBills','medicalSettlements','ageingCrises','benefitAwards','assets','annualIncome','benefitRollHistory','statusReviews','careerTransfers','relationshipLosses']){
   const old=before[field]??[],next=after[field]??[];for(let i=0;i<Math.max(old.length,next.length);i++)add(field+'.'+i,old[i],next[i]);
@@ -27,6 +27,8 @@ export function characterChanges(before,after){
   const a=before[ledger]??[],b=after[ledger]??[];
   for(let i=0;i<Math.max(a.length,b.length);i++)for(const field of fields)add(ledger+'.'+i+'.'+field,a[i]?.[field],b[i]?.[field]);
  }
+ // Only persisted Aslan origin evidence, never projected source choices or queues.
+ for(const field of ['source','initialStats','familySOC','statPool','identityGender','gender','family','familyBandDecision','birthOrder','estate','clan','pride','background','rite','status','decisions'])add('aslanOrigin.'+field,before.aslanOrigin?.[field],after.aslanOrigin?.[field]);
  add('sainthood',before.sainthood,after.sainthood);
  const oldGames=before.psionicGames?.applications??[],newGames=after.psionicGames?.applications??[];for(let i=0;i<Math.max(oldGames.length,newGames.length);i++)add('psionicGames.applications.'+i,oldGames[i],newGames[i]);
  for(const field of ['historyKnown','checksAttempted','firstTalentChosen'])add('psionics.'+field,before.psionics?.[field],after.psionics?.[field]);

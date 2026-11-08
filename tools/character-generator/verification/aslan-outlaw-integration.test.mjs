@@ -73,6 +73,6 @@ test('source ruling replay and restore do not resurrect a consumed approval or d
  const base=buildHistoricalEntryFixture({approved:true});let r=force(base,'career',{id:'aslan.military',assignment:'warrior'},[6,6]);r=run(r,'gm-replay',{revision:base.revision+1,rollIndex:0,values:[1,1],reason:'Review the normal entry qualification'});assert.equal(r.state.character.aslanHistoricalEntries.length,1);assert.equal(entry(r).status,'consumed');assert.equal(r.state.character.aslanOutlawRestorations.length,1);roundtrip(r);
  r=run(r,'restore',{revision:base.revision});assert.equal(entry(r).status,'approved');assert.equal(rest(r).clanShares,3);assert.equal(r.state.character.careers.length,2);roundtrip(r);
 });
-test('revision .9 rejects exact .8 saves before any reconstruction or mutation',()=>{
- assert.equal(RULES_REVISION,'character-preview-2026-11-08.9');const old=structuredClone(buildOutlawDepartureFixture().session);old.rulesRevision='character-preview-2026-11-08.8';const bytes=JSON.stringify(old),r=api({operation:'project',session:old});assert.equal(r.ok,false);assert.match(r.error.message,/Legacy or different rules revision/);assert.equal(JSON.stringify(old),bytes);
+test('revision .10 rejects exact .9 saves before any reconstruction or mutation',()=>{
+ assert.equal(RULES_REVISION,'character-preview-2026-11-08.10');const old=structuredClone(buildOutlawDepartureFixture().session);old.rulesRevision='character-preview-2026-11-08.9';const bytes=JSON.stringify(old),r=api({operation:'project',session:old});assert.equal(r.ok,false);assert.match(r.error.message,/Legacy or different rules revision/);assert.equal(JSON.stringify(old),bytes);
 });

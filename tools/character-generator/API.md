@@ -148,7 +148,7 @@ Military Event 10 and Spacer Events 5/10 offer a specific officer career in the 
 
 `character.aslanStatusChanges` records source, timing, SOC/status before and after, removed Clan Share tokens and affected award IDs. Native Aslan qualification failure sets SOC 2/Outcast and forfeits held unconverted Clan Shares, including those just received during mustering out. Original award records remain annotated rather than erased. Other benefits and cash history are preserved. No repossession of previously redeemed cash, ships or land is inferred.
 
-Native Aslan cash limits and male half-cash handling remain distinct from the Core three-roll rule. Broad Hierate/Core access, family/clan/land setup and generic same-career Aslan assignment mapping remain outside this bounded route.
+Native Aslan cash limits and male half-cash handling remain distinct from the Core three-roll rule. Broad Hierate/Core access, owned land/redemption and generic same-career Aslan assignment mapping remain outside this bounded route. Native origin setup is documented separately below.
 
 ## Earned Aslan Outcast restoration
 
@@ -190,4 +190,27 @@ The restored-standing result does not explicitly grant the Outcast event's next-
 
 - `character.aslanHistoricalEntries` retains requested route, source, restoration ID, timing, prior career indices, decision, actual check, expiry and supersession. Another career, education or elapsed boundary expires an unused ruling. There is no permanent historical unlock, stockpile of approvals, reused benefits or silently retargeted decision. Existing officer-offer status reviews remain offer-specific.
 
-Family/clan/land procedures and general Hierate/Core access remain separate work; these bounded restoration paths do not certify complete Aslan generation.
+Family origin procedures are documented below. Owned land/redemption and general Hierate/Core access remain separate work; these bounded restoration paths do not certify complete Aslan generation.
+
+## Native Aslan family and origin
+
+Accepted final statistics create `character.aslanOrigin`. `familySOC`, `initialStats` and `statPool` preserve the initial accepted placement, species modifiers and roll provenance. Later personal SOC changes do not rewrite this history. Family awards supplement the ordinary background allowance. Family, birth, clan, scope, pride and rite rolls do not receive the characteristic boon option or enter the six-stat reroll total.
+
+Use `currentAslanOrigin`, including its projected `estateOptions`, `canRollGender` and `sourceDecision` fields. It exposes decisions and recorded results, not full source tables. The native sequence is:
+
+1. `aslan-family`: `roll-aslan-family {}`. If gender was unspecified, `roll-aslan-gender {}` first uses the source roll. An explicitly different identity is never randomly replaced.
+2. Resolve any supplemental family skill choices. `aslan-birth-order` then uses `roll-aslan-birth-order {}` for males. Daughters require no invented birth-order roll.
+3. `aslan-estate`: `resolve-aslan-estate {method:"printed-minimum"}` records the printed baseline with `ownership:"unestablished"`. The overview's unspecific instruction to roll land does not invent a die absent from the detailed table. Below the printed estate range, the recorded minimum is null, not a zero-sized owned estate. An out-of-table SOC uses GM `method:"referee-baseline"`, nonnegative integer `parcels` and `increment`, and a source `reason`.
+4. `aslan-clan`: `roll-aslan-clan {}` records clan dice and any conditional scope die. Alternatively, GM `choose-aslan-clan {name,scope,reason}` records a referee-selected clan. Name is 1–80 characters; descriptive scope is 1–160. Both retain provenance.
+5. `aslan-pride`: optional `name-aslan-clan {name}` records only a descriptive name. `roll-aslan-pride {}` records the separate pride roll.
+6. Ordinary `background {skills}` consumes the unchanged background allowance, then `aslan-rite` uses `roll-aslan-rite {}`. Doubles may require normal typed effect/skill continuations before origin completion and pre-career choices.
+
+`book-step` with `pending.kind:"aslan-origin-source"` requires `resolve-aslan-origin-source`, not generic effects. All such rulings require GM mode and a 1–500 character reason:
+
+- `sourceDecision.kind:"family-band"`: `{band,reason}` for the unprinted initial family SOC, using only projected choices.
+- `female-independence`: `{decision:"omit"|"grant-level-zero",reason}`. The level-zero grant is explicitly a referee exception to the gender restriction, not an invented substitute award.
+- `gender`: `{gender:"male"|"female",reason}` selects the published mechanical branch. `character.identityGender` and `aslanOrigin.identityGender` retain the original choice; `character.gender` remains the engine's mechanical field. Clients display the identity separately from the source branch.
+
+Source decisions retain their own ledger. Estate inheritance eligibility does not prove present ownership, grant an asset, pay cash or advance time. Initial Outcast family classification does not fabricate previous career service. Restore and replay remain explicit audited operations; origin history is not silently corrected by later SOC edits. The original-SOC fields in earned restoration events remain deliberate referee inputs, not automatically filled from family SOC.
+
+This increment does not redeem Clan Shares, establish an inherited estate's current title, implement corporate investments or finish all Hierate/Core access rules.

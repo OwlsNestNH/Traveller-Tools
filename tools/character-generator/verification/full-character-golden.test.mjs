@@ -156,59 +156,573 @@ const FIXTURES = [
   auditHash:"0ee1d404e47f930eef45a05eaa962eb0833cfbb52a719c485570d692eca56cfc"
  },
  {
-  name:"Native Aslan two-term Military and involuntary exit",seed:"golden-aslan-4",
-  commands:[
-   {"type":"setup","payload":{"name":"Golden aslan","species":"aslan","gender":"male"}},
-   {"type":"roll-statistics","payload":{}},
-   {"type":"accept-statistics","payload":{}},
-   {"type":"resolve-book","payload":{"confirmed":true,"note":"Source-assisted golden fixture: birth order confirmed by the referee; native rite remains rolled by the engine.","birthOrder":"first-son","effects":[]}},
-   {"type":"background","payload":{"skills":["Animals","Art","Athletics","Carouse"]}},
-   {"type":"skip-precareer","payload":{}},
-   {"type":"career","payload":{"id":"aslan.military","assignment":"warrior"}},
-   {"type":"survival","payload":{}},
-   {"type":"advancement","payload":{}},
-   {"type":"choose-skill","payload":{"name":"Gun Combat (archaic)"}},
-   {"type":"training","payload":{"table":"service"}},
-   {"type":"choose-skill","payload":{"name":"Melee (unarmed)"}},
-   {"type":"continue-career","payload":{}},
-   {"type":"training","payload":{"table":"service"}},
-   {"type":"choose-skill","payload":{"name":"Gun Combat (archaic)"}},
-   {"type":"survival","payload":{}},
-   {"type":"leave-career","payload":{}},
-   {"type":"benefit","payload":{"cash":false}},
-   {"type":"benefit","payload":{"cash":false}},
-   {"type":"finish","payload":{}}
+  "name": "Native Aslan origin, two Military terms and involuntary exit",
+  "seed": "golden-aslan-origin-exit-6",
+  "commands": [
+    {
+      "type": "setup",
+      "payload": {
+        "name": "Golden Aslan origin",
+        "species": "aslan",
+        "gender": "male"
+      }
+    },
+    {
+      "type": "roll-statistics",
+      "payload": {}
+    },
+    {
+      "type": "accept-statistics",
+      "payload": {}
+    },
+    {
+      "type": "roll-aslan-family",
+      "payload": {}
+    },
+    {
+      "type": "roll-aslan-birth-order",
+      "payload": {}
+    },
+    {
+      "type": "resolve-aslan-estate",
+      "payload": {
+        "method": "printed-minimum"
+      }
+    },
+    {
+      "type": "roll-aslan-clan",
+      "payload": {}
+    },
+    {
+      "type": "roll-aslan-pride",
+      "payload": {}
+    },
+    {
+      "type": "background",
+      "payload": {
+        "skills": [
+          "Animals",
+          "Art",
+          "Athletics"
+        ]
+      }
+    },
+    {
+      "type": "roll-aslan-rite",
+      "payload": {}
+    },
+    {
+      "type": "skip-precareer",
+      "payload": {}
+    },
+    {
+      "type": "career",
+      "payload": {
+        "id": "aslan.military",
+        "assignment": "warrior"
+      }
+    },
+    {
+      "type": "survival",
+      "payload": {}
+    },
+    {
+      "type": "choose-effect",
+      "payload": {
+        "index": 0
+      }
+    },
+    {
+      "type": "advancement",
+      "payload": {}
+    },
+    {
+      "type": "choose-skill",
+      "payload": {
+        "name": "Gun Combat (archaic)"
+      }
+    },
+    {
+      "type": "training",
+      "payload": {
+        "table": "service"
+      }
+    },
+    {
+      "type": "continue-career",
+      "payload": {}
+    },
+    {
+      "type": "training",
+      "payload": {
+        "table": "service"
+      }
+    },
+    {
+      "type": "choose-skill",
+      "payload": {
+        "name": "Athletics (dexterity)"
+      }
+    },
+    {
+      "type": "survival",
+      "payload": {}
+    },
+    {
+      "type": "leave-career",
+      "payload": {}
+    },
+    {
+      "type": "benefit",
+      "payload": {
+        "cash": false
+      }
+    },
+    {
+      "type": "benefit",
+      "payload": {
+        "cash": false
+      }
+    },
+    {
+      "type": "finish",
+      "payload": {}
+    }
   ],
-  expected:{"age":22,"terms":2,"stats":{"STR":6,"DEX":7,"END":5,"INT":6,"EDU":11,"SOC":8,"RITE":3},"skills":{"Animals":0,"Art":0,"Athletics":0,"Carouse":0,"Gun Combat":0,"Melee":0,"Navigation":0,"Survival":0,"Gun Combat (archaic)":2,"Melee (unarmed)":1},"cash":0,"debt":0,"careers":[{"id":"aslan.military","assignment":"warrior","terms":2,"rank":1,"officer":false,"exit":"involuntary","pension":0}],"relationships":["Rival"],"coverage":["species-setup"]},
-  auditHash:"91ca3d4a95c4c568e2c1344d81e4b16c4a4557e3334deac350ea59715ba12b58"
- },
+  "expected": {
+    "age": 22,
+    "terms": 2,
+    "stats": {
+      "STR": 11,
+      "DEX": 6,
+      "END": 11,
+      "INT": 6,
+      "EDU": 7,
+      "SOC": 9,
+      "RITE": 0
+    },
+    "skills": {
+      "Animals": 0,
+      "Art": 0,
+      "Athletics": 0,
+      "Carouse": 1,
+      "Gun Combat": 0,
+      "Melee": 0,
+      "Navigation": 0,
+      "Survival": 0,
+      "Gun Combat (archaic)": 1,
+      "Athletics (dexterity)": 1
+    },
+    "cash": 0,
+    "debt": 0,
+    "careers": [
+      {
+        "id": "aslan.military",
+        "assignment": "warrior",
+        "terms": 2,
+        "rank": 1,
+        "officer": false,
+        "exit": "involuntary",
+        "pension": 0
+      }
+    ],
+    "relationships": [
+      "Contact",
+      "Rival"
+    ],
+    "coverage": []
+  },
+  "auditHash": "b6d96a84a96bd308755ee5e9833644c0beb213783d1b2b1b514d1ec552d8faed",
+  "expectedOrigin": {
+    "status": "completed",
+    "familySOC": 9,
+    "birthOrder": {
+      "source": {
+        "id": "aliens",
+        "page": 16
+      },
+      "id": "second-son",
+      "dice": [
+        2,
+        2
+      ],
+      "total": 4
+    },
+    "estate": {
+      "source": {
+        "id": "aliens",
+        "page": 17
+      },
+      "familySOC": 9,
+      "minimumParcels": 10,
+      "increment": 2,
+      "ownership": "unestablished",
+      "inheritance": "none",
+      "interpretation": "printed-minimum-no-unspecified-roll",
+      "decision": null
+    },
+    "clan": {
+      "source": {
+        "id": "aliens",
+        "page": 18
+      },
+      "mode": "rolled",
+      "dice": [
+        2,
+        4
+      ],
+      "total": 6,
+      "type": "Major",
+      "name": "",
+      "scope": {
+        "count": 1,
+        "unit": "Hierate"
+      }
+    },
+    "pride": {
+      "source": {
+        "id": "aliens",
+        "page": 18
+      },
+      "dice": [
+        3,
+        4
+      ],
+      "total": 7,
+      "id": "average",
+      "name": "Average pride"
+    },
+    "rite": {
+      "source": {
+        "id": "aliens",
+        "page": 21
+      },
+      "dice": [
+        5,
+        6
+      ],
+      "total": 11,
+      "modifier": 0,
+      "statsBefore": {
+        "STR": 11,
+        "DEX": 6,
+        "END": 11,
+        "INT": 6,
+        "EDU": 6,
+        "SOC": 9
+      },
+      "effectsResolved": true
+    },
+    "background": {
+      "source": {
+        "id": "aliens",
+        "page": 20
+      },
+      "skills": [
+        "Animals",
+        "Art",
+        "Athletics"
+      ],
+      "count": 3,
+      "supplementsFamily": true
+    }
+  }
+},
  {
-  name:"Native Aslan early retirement with typed source-assisted equipment",seed:"golden-aslan-2",
-  commands:[
-   {"type":"setup","payload":{"name":"Golden aslan","species":"aslan","gender":"male"}},
-   {"type":"roll-statistics","payload":{}},
-   {"type":"accept-statistics","payload":{}},
-   {"type":"resolve-book","payload":{"confirmed":true,"note":"Source-assisted golden fixture: birth order confirmed by the referee; native rite remains rolled by the engine.","birthOrder":"first-son","effects":[]}},
-   {"type":"background","payload":{"skills":["Animals","Art","Athletics","Carouse"]}},
-   {"type":"skip-precareer","payload":{}},
-   {"type":"career","payload":{"id":"aslan.military","assignment":"warrior"}},
-   {"type":"survival","payload":{}},
-   {"type":"choose-effect","payload":{"index":0}},
-   {"type":"advancement","payload":{}},
-   {"type":"choose-skill","payload":{"name":"Gun Combat (archaic)"}},
-   {"type":"training","payload":{"table":"service"}},
-   {"type":"leave-career","payload":{"retire":true}},
-   {"type":"gm-mode","payload":{"enabled":true}},
-   {"type":"benefit","payload":{"cash":false}},
-   {"type":"gm-replay","payload":{"revision":15,"rollIndex":0,"values":[4],"reason":"Golden regression: explicit referee roll replacement"}},
-   {"type":"resolve-book","payload":{"confirmed":true,"note":"Source-assisted golden fixture: hypothetical referee-approved equipment input; catalogue verification remains manual.","benefitItemName":"Service pistol (fixture)","benefitItemCost":200,"benefitItemTL":6,"benefitWeaponSkill":"Gun Combat (slug)"}},
-   {"type":"benefit","payload":{"cash":false}},
-   {"type":"gm-replay","payload":{"revision":18,"rollIndex":0,"values":[1],"reason":"Golden regression: explicit referee roll replacement"}},
-   {"type":"finish","payload":{}}
+  "name": "Native Aslan origin and early retirement with typed equipment",
+  "seed": "golden-aslan-origin-retire-14",
+  "commands": [
+    {
+      "type": "setup",
+      "payload": {
+        "name": "Golden Aslan origin",
+        "species": "aslan",
+        "gender": "male"
+      }
+    },
+    {
+      "type": "roll-statistics",
+      "payload": {}
+    },
+    {
+      "type": "accept-statistics",
+      "payload": {}
+    },
+    {
+      "type": "roll-aslan-family",
+      "payload": {}
+    },
+    {
+      "type": "roll-aslan-birth-order",
+      "payload": {}
+    },
+    {
+      "type": "resolve-aslan-estate",
+      "payload": {
+        "method": "printed-minimum"
+      }
+    },
+    {
+      "type": "roll-aslan-clan",
+      "payload": {}
+    },
+    {
+      "type": "roll-aslan-pride",
+      "payload": {}
+    },
+    {
+      "type": "background",
+      "payload": {
+        "skills": [
+          "Animals",
+          "Art",
+          "Athletics"
+        ]
+      }
+    },
+    {
+      "type": "roll-aslan-rite",
+      "payload": {}
+    },
+    {
+      "type": "skip-precareer",
+      "payload": {}
+    },
+    {
+      "type": "career",
+      "payload": {
+        "id": "aslan.military",
+        "assignment": "warrior"
+      }
+    },
+    {
+      "type": "survival",
+      "payload": {}
+    },
+    {
+      "type": "advancement",
+      "payload": {}
+    },
+    {
+      "type": "choose-skill",
+      "payload": {
+        "name": "Gun Combat (archaic)"
+      }
+    },
+    {
+      "type": "training",
+      "payload": {
+        "table": "service"
+      }
+    },
+    {
+      "type": "choose-skill",
+      "payload": {
+        "name": "Melee (unarmed)"
+      }
+    },
+    {
+      "type": "leave-career",
+      "payload": {
+        "retire": true
+      }
+    },
+    {
+      "type": "gm-mode",
+      "payload": {
+        "enabled": true
+      }
+    },
+    {
+      "type": "benefit",
+      "payload": {
+        "cash": false
+      }
+    },
+    {
+      "type": "gm-replay",
+      "payload": {
+        "revision": 20,
+        "rollIndex": 0,
+        "values": [
+          4
+        ],
+        "reason": "Golden regression: explicit referee roll replacement"
+      }
+    },
+    {
+      "type": "resolve-book",
+      "payload": {
+        "confirmed": true,
+        "note": "Source-assisted golden fixture: hypothetical referee-approved equipment input; catalogue verification remains manual.",
+        "benefitItemName": "Service pistol (fixture)",
+        "benefitItemCost": 200,
+        "benefitItemTL": 6,
+        "benefitWeaponSkill": "Gun Combat (slug)"
+      }
+    },
+    {
+      "type": "benefit",
+      "payload": {
+        "cash": false
+      }
+    },
+    {
+      "type": "gm-replay",
+      "payload": {
+        "revision": 23,
+        "rollIndex": 0,
+        "values": [
+          1
+        ],
+        "reason": "Golden regression: explicit referee roll replacement"
+      }
+    },
+    {
+      "type": "finish",
+      "payload": {}
+    }
   ],
-  expected:{"age":18,"terms":1,"stats":{"STR":7,"DEX":2,"END":9,"INT":7,"EDU":11,"SOC":5,"RITE":4},"skills":{"Animals":0,"Art":0,"Athletics":0,"Carouse":1,"Gun Combat":0,"Melee":0,"Navigation":0,"Survival":0,"Gun Combat (archaic)":1},"cash":0,"debt":0,"careers":[{"id":"aslan.military","assignment":"warrior","terms":1,"rank":1,"officer":false,"exit":"voluntary","pension":0}],"relationships":[],"coverage":["species-setup","benefit-equipment"]},
-  auditHash:"7ea918b77b7304e49dd152fe81ee725a8c127f969060bfac0be43491e5011864"
- }
+  "expected": {
+    "age": 18,
+    "terms": 1,
+    "stats": {
+      "STR": 9,
+      "DEX": 5,
+      "END": 5,
+      "INT": 7,
+      "EDU": 6,
+      "SOC": 7,
+      "RITE": 1
+    },
+    "skills": {
+      "Animals": 0,
+      "Art": 0,
+      "Athletics": 0,
+      "Carouse": 0,
+      "Gun Combat": 0,
+      "Melee": 0,
+      "Navigation": 0,
+      "Survival": 0,
+      "Gun Combat (archaic)": 1,
+      "Melee (unarmed)": 1
+    },
+    "cash": 0,
+    "debt": 0,
+    "careers": [
+      {
+        "id": "aslan.military",
+        "assignment": "warrior",
+        "terms": 1,
+        "rank": 1,
+        "officer": false,
+        "exit": "voluntary",
+        "pension": 0
+      }
+    ],
+    "relationships": [],
+    "coverage": [
+      "benefit-equipment"
+    ]
+  },
+  "auditHash": "401d2e2c89cd37bbdb5b437d298d55323a1bd745c17e24ccacf1aea171038834",
+  "expectedOrigin": {
+    "status": "completed",
+    "familySOC": 7,
+    "birthOrder": {
+      "source": {
+        "id": "aliens",
+        "page": 16
+      },
+      "id": "first-son",
+      "dice": [
+        6,
+        6
+      ],
+      "total": 12
+    },
+    "estate": {
+      "source": {
+        "id": "aliens",
+        "page": 17
+      },
+      "familySOC": 7,
+      "minimumParcels": null,
+      "increment": null,
+      "ownership": "unestablished",
+      "inheritance": "first-son",
+      "interpretation": "no-printed-estate",
+      "decision": null
+    },
+    "clan": {
+      "source": {
+        "id": "aliens",
+        "page": 18
+      },
+      "mode": "rolled",
+      "dice": [
+        4,
+        1
+      ],
+      "total": 5,
+      "type": "Vassal",
+      "name": "",
+      "scope": {
+        "count": 2,
+        "unit": "sector",
+        "die": 6,
+        "divisor": 3
+      }
+    },
+    "pride": {
+      "source": {
+        "id": "aliens",
+        "page": 18
+      },
+      "dice": [
+        3,
+        3
+      ],
+      "total": 6,
+      "id": "average",
+      "name": "Average pride"
+    },
+    "rite": {
+      "source": {
+        "id": "aliens",
+        "page": 21
+      },
+      "dice": [
+        4,
+        3
+      ],
+      "total": 7,
+      "modifier": 1,
+      "statsBefore": {
+        "STR": 9,
+        "DEX": 5,
+        "END": 5,
+        "INT": 7,
+        "EDU": 6,
+        "SOC": 7
+      },
+      "effectsResolved": true
+    },
+    "background": {
+      "source": {
+        "id": "aliens",
+        "page": 20
+      },
+      "skills": [
+        "Animals",
+        "Art",
+        "Athletics"
+      ],
+      "count": 3,
+      "supplementsFamily": true
+    }
+  }
+}
 ];
 
 function run(fixture,commands=fixture.commands) {
@@ -239,6 +753,7 @@ for(const fixture of FIXTURES)test('golden: '+fixture.name,()=>{
  const r=run(fixture);
  assert.equal(r.state.stage,'finish');assert.equal(r.state.active,null);
  assert.deepEqual(mechanics(r.state),fixture.expected);
+ if(fixture.expectedOrigin)for(const [key,value] of Object.entries(fixture.expectedOrigin))assert.deepEqual(r.state.character.aslanOrigin[key],value,'Origin '+key);
  assert.equal(auditHash(r.session),fixture.auditHash,'Command/roll changes require deliberate source review of this golden.');
  assert.equal(r.log.length,fixture.commands.length);
  assert.deepEqual(r.log.map(e=>e.type),fixture.commands.map(c=>c.type));
@@ -304,17 +819,18 @@ test('golden Aslan distinguishes involuntary exit, early retirement and pending 
  assert.equal(ordinary.state.character.retirementFromCreation,undefined);
  assert.equal(ordinary.state.character.careers[0].exit,'involuntary');
  assert.equal(ordinary.state.character.careers[0].pensionEntitlement.excluded,true);
- assert.equal(retired.states[11].exitOptions.canRetire,true);
- assert.equal(retired.states[11].exitOptions.canLeave,false);
- assert.equal(retired.states[15].stage,'book-step');assert.equal(retired.states[15].pending.kind,'benefit-equipment');
- assert.equal(retired.states[15].character.benefitAwards[0].status,'pending');
- assert.equal(retired.states[15].character.careers[0].benefitRolls,2,'The unresolved award does not consume a roll.');
- assert.equal(retired.states[16].character.careers[0].benefitRolls,1);
- assert.equal(retired.states[18].stage,'retirement');
+ const beforeExit=f.commands.findIndex(c=>c.type==='leave-career')-1,equipment=f.commands.findIndex(c=>c.type==='gm-replay'&&c.payload.values[0]===4),resolved=f.commands.findIndex(c=>c.type==='resolve-book'),finalBenefit=f.commands.findIndex(c=>c.type==='gm-replay'&&c.payload.values[0]===1);
+ assert.equal(retired.states[beforeExit].exitOptions.canRetire,true);
+ assert.equal(retired.states[beforeExit].exitOptions.canLeave,false);
+ assert.equal(retired.states[equipment].stage,'book-step');assert.equal(retired.states[equipment].pending.kind,'benefit-equipment');
+ assert.equal(retired.states[equipment].character.benefitAwards[0].status,'pending');
+ assert.equal(retired.states[equipment].character.careers[0].benefitRolls,2,'The unresolved award does not consume a roll.');
+ assert.equal(retired.states[resolved].character.careers[0].benefitRolls,1);
+ assert.equal(retired.states[finalBenefit].stage,'retirement');
  const c=retired.state.character;
  assert.equal(c.birthOrder,'first-son');assert.equal(c.retirementFromCreation,true);
  assert.equal(c.retirementDecision.source.page,22);assert.equal(c.retirementDecision.terms,1);
- assert.deepEqual(retired.state.coverage,['species-setup','benefit-equipment']);
+ assert.deepEqual(retired.state.coverage,['benefit-equipment']);
  const asset=c.assets[0],award=c.benefitAwards[0];
  assert.equal(asset.id,'asset-1');assert.equal(asset.originCareerId,'aslan.military');
  assert.equal(asset.weaponSkill,'Gun Combat (slug)');assert.equal(asset.cost,200);assert.equal(asset.techLevel,6);
@@ -322,8 +838,19 @@ test('golden Aslan distinguishes involuntary exit, early retirement and pending 
  assert.equal(award.origin.tableContext.result,4);assert.equal(award.status,'resolved');
  assert.match(asset.sourceDecision,/Source-assisted golden fixture/);
  assert.equal(award.decisions[0].note,asset.sourceDecision);
- assert.equal(retired.log.filter(x=>x.type==='resolve-book').length,2);
+ assert.equal(retired.log.filter(x=>x.type==='resolve-book').length,1);
  assert.equal(retired.log.filter(x=>x.type==='gm-replay').length,2,'Original and replacement rolls remain separate audit actions.');
+ for(const result of [ordinary,retired]){
+  const origin=result.state.character.aslanOrigin,background=result.log.findIndex(e=>e.type==='background'),rite=result.log.findIndex(e=>e.type==='roll-aslan-rite');
+  assert.equal(origin.status,'completed');assert.ok(background<rite);
+  assert.equal(origin.familySOC,origin.initialStats.SOC);assert.equal(origin.estate.ownership,'unestablished');
+  assert.equal(result.log.filter(e=>e.type==='roll-aslan-birth-order').length,1);
+  assert.equal(result.log.filter(e=>e.type==='resolve-aslan-estate')[0].rolls.length,0);
+ }
+ assert.equal(ordinary.state.character.aslanOrigin.estate.minimumParcels,10);
+ assert.equal(retired.state.character.aslanOrigin.estate.minimumParcels,null);
+ assert.equal(retired.state.character.aslanOrigin.clan.scope.count,2);
+ assert.equal(retired.state.character.aslanOrigin.clan.scope.die,6);
  assert.ok(retired.state.careerChoices.every(c=>c.disabled));
  assert.throws(()=>execute(retired.session,{type:'career',payload:{id:'aslan.envoy',assignment:'duellist'}}),/start of a term/);
 });

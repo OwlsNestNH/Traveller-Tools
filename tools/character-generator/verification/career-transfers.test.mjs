@@ -161,12 +161,8 @@ test('GM restore explicitly reopens an unconsumed right and keeps the original c
  assert.ok(restored.log.some(e=>e.summary.includes('Entered Guard')));assert.deepEqual(project(importSession(exportSession(restored.session))).state,restored.state);
  const player=run(entered,'gm-mode',{enabled:false});rejected(player,'restore',{revision:army.revision},/GM mode/);
 });
-test('canonical Aslan birth-order labels reject arbitrary API text without changing the pending rite',()=>{
- let r=api({operation:'create',seed:'aslan-birth-order'});r=run(r,'setup',{species:'aslan',gender:'male'});r=run(r,'roll-statistics');r=run(r,'accept-statistics');
- assert.equal(r.state.pending.kind,'species-setup');
- for(const birthOrder of ['', 'arbitrary', 'First Son'])rejected(r,'resolve-book',{confirmed:true,effects:[],birthOrder},/birth-order/);
- for(const birthOrder of ['first-son','second-son','daughter']){
-  const accepted=run(r,'resolve-book',{confirmed:true,effects:[],birthOrder});
-  assert.equal(accepted.state.character.birthOrder,birthOrder);
- }
+test('native Aslan origin does not accept the old manual birth-order bypass',()=>{
+ let r=api({operation:'create',seed:'aslan-birth-order'});r=run(r,'setup',{species:'aslan',gender:'male'});r=run(r,'roll-statistics');r=run(r,'accept-statistics');assert.equal(r.state.stage,'aslan-family');
+ for(const birthOrder of ['arbitrary','first-son','second-son','daughter'])rejected(r,'resolve-book',{confirmed:true,effects:[],birthOrder},/source step/);
+ assert.equal(r.state.character.birthOrder,undefined);assert.equal(r.state.character.aslanOrigin.family,null);
 });

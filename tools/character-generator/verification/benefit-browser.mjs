@@ -3,6 +3,7 @@ import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {createServer} from '../server.mjs';
+import {settleOrigin} from './aslan-origin-fixtures.mjs';
 import {createSession,execute,exportSession,catalog} from '../engine/session.mjs';
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright'),key='traveller-character-generator.v1';
 const out=new URL('./artifacts/',import.meta.url);await mkdir(out,{recursive:true});
@@ -14,7 +15,7 @@ function fixture(kind,die){const scout=kind==='scout';let r={session:createSessi
 function retireFixture(){
  for(let seed=0;seed<80;seed++){
   let r={session:createSession('retirement-browser-'+seed)};const run=(t,p={})=>r=step(r,t,p);
-  try{run('setup',{species:'aslan',gender:'female',name:'Early retirement regression'});run('gm-mode',{enabled:true});run('roll-statistics');run('accept-statistics');run('resolve-book',{confirmed:true,note:'Source fixture confirms daughter family position',birthOrder:'daughter',effects:[]});if(r.state.stage!=='background')continue;run('background',{skills:r.state.backgroundOptions.filter(n=>!Object.hasOwn(r.state.character.skills,n)).slice(0,r.state.backgroundRemaining)});run('skip-precareer');run('career',{id:'aslan.military',assignment:'support'});
+  try{run('setup',{species:'aslan',gender:'female',name:'Early retirement regression'});run('gm-mode',{enabled:true});run('roll-statistics');run('accept-statistics');r=settleOrigin(r);if(r.state.stage!=='precareer')continue;run('skip-precareer');run('career',{id:'aslan.military',assignment:'support'});
    for(let i=0;i<40;i++){
     if(r.state.stage==='term-end'){if(r.state.exitOptions.canRetire)return r;break;}
     if(['book-step','failed-entry','career','deceased'].includes(r.state.stage))break;
