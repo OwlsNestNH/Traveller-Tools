@@ -2,6 +2,8 @@
 // the user-facing projection; never change rule decisions or construction totals.
 export const labelText = value => String(value).replace(/([a-z])([A-Z])/g,'$1 $2').replace(/[-_:]/g,' ').replace(/^./,ch=>ch.toUpperCase());
 const diagnosticLabels = {
+ VEHICLE_OPTION_TL:'Vehicle option TL exceeds design', VEHICLE_OPTION_CONTEXT:'Deployment/interface conditional; referee review',
+ VEHICLE_OPTION_LOAD_UNKNOWN:'Initial contents unverified; replacement price unknown', VEHICLE_OPTION_CHARGES_UNPRICED:'Additional charges: price/mass unresolved',
  NANO_PERMANENT_END:'Permanent END loss; above 15 active medical packages', NANO_UNTYPED_ACTIVE:'Active package types unknown; effects incomplete', NANO_LEGACY_AGEING_UNRESOLVED:'Existing anti-ageing declaration unresolved', NANO_ATTRIBUTE_PACKAGES:'Characteristic enhancement package count insufficient', NANO_ATTRIBUTE_TARGET:'Select characteristic enhancement target', NANO_ATTRIBUTE_MAX:'Characteristic enhancement maximum exceeded', NANO_REGEN_LIMIT:'Regenerative active-package limit exceeded (4)', NANO_AGEING_SINGLE:'Anti-ageing active-package limit exceeded (1)', PARTIAL_COVERAGE:'Coverage incomplete', KIND_NOT_IMPLEMENTED:'Construction type not implemented', SPECIAL_NOT_IMPLEMENTED:'Construction path not implemented',
  HELD_MULTI_ARM_CHARACTERISTICS:'Combined-arm characteristics unresolved', HELD_CARRYING_FIT:'Carrying/reach unresolved; referee approval required',
  HELD_HANDEDNESS_INTERPRETATION:'Two-handed use: source interpretation', HELD_ONE_HANDED_INTERPRETATION:'One-handed use: source interpretation', HELD_STRENGTH_CONDITION:'Bulky STR requirement; attack penalty conditional',
@@ -249,7 +251,7 @@ export function diagnosticContext(issue,design,catalogue) {
  const field=control?.field||parts[1],values=parts[0]==='special'?design.special:design.selections?.[parts[0]],records=values?.[field];
  const index=Array.isArray(records)?records.findIndex(record=>typeof record==='object'&&record.id===parts[parts.indexOf(field)+1]):-1;
  const record=index>=0?records[index]:null;
- const choices=control?.itemFields?.find(item=>item.field==='weaponId')?.choices||control?.choices||[];
+ const choices=control?.itemFields?.find(item=>item.field==='weaponId'||item.field==='optionId')?.choices||control?.choices||[];
  let recordName='';
  if(record){
   const choice=choices.find(choice=>choice.id===(record.weaponId||record.optionId));

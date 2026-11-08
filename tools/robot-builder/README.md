@@ -21,6 +21,12 @@ The engine catalogue and every evaluation return a current coverage inventory. T
 
 Current coverage continues to change during implementation. See `getCatalogue(design).coverage` and `evaluateDesign(design).coverage` rather than assuming that a row in a catalogue proves all of its prerequisites and operating rules are implemented.
 
+## Source-defined vehicle options
+
+Three fixed-Space dischargers from Vehicle Handbook Update 2026, pp74-75 and 77, have a separate source catalogue: decoy, prismatic aerosol and smoke. Robot Handbook p62 supplies the 64-Slots-per-Space conversion. The full Robot Handbook and its construction catalogue were checked for equivalents; Handbook options retain precedence. Selection stores an authoritative ID and quantity, never editable source prices, TLs or Spaces. Generic external input records remain separate, unverified estimates.
+
+Printed charge capacities are not an included or loaded inventory. Hardware accounting is supported; operating clearance, control interfaces and deployment remain contextual. Additional requested charges retain unresolved price and mass, blocking totals rather than becoming free consumables. No armour, skill or defence bonus is applied automatically. The remaining catalogue, prototype variants and full vehicle-host legality are separate work.
+
 ## Saved designs
 
 Storage is isolated under `traveller.robot-builder.designs.v1`. No existing tool save is read, migrated or rewritten. Only explicit Save / Save a copy writes a named design. Import stages an unsaved draft and never overwrites saved designs.
@@ -77,6 +83,7 @@ python3 -m http.server 8778 --bind 127.0.0.1
 # In another terminal:
 node tools/robot-builder/verification/browser.mjs /path/to/playwright
 node tools/robot-builder/verification/construction-browser.mjs /path/to/playwright
+node tools/robot-builder/verification/vehicle-options-browser.mjs /path/to/playwright
 ```
 
 `ROBOT_TEST_URL` overrides the local preview URL. `ROBOT_BROWSER_CHANNEL=msedge` selects Edge for local Windows verification; CI uses pinned Chromium. All browser tests use a fresh isolated context with synthetic fixtures, not a user's campaign data.

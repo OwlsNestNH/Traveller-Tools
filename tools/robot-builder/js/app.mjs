@@ -275,7 +275,7 @@ function renderControl(control, choicesOverride) {
       catch(error){notify(error.message,true);}finally{fileInput.value='';}
     });
     actions.append(add,importButton,fileInput);grid.append(actions);field.append(grid);
-  } else if (control.type === 'custom-packages' || control.type === 'weapons' || control.type === 'external-vehicle-options') {
+  } else if (control.type === 'custom-packages' || control.type === 'weapons' || control.type === 'external-vehicle-options' || control.type === 'verified-vehicle-options') {
     field.classList.add('wide');
     const installed=Array.isArray(selected)?selected:[];
     const isWeapon = control.type === 'weapons';
@@ -387,6 +387,12 @@ if(item.type==='multiselect'){
         else {input=el('input');input.type='text';input.value=record[item.field]??'';input.maxLength=item.maxLength||120;input.addEventListener('input',()=>onChange(item.field,input.value));}
         input.id=fieldId;row.append(input);targetFor(item).append(row);
       }
+      if(presentation.vehicleOption){
+        const facts=presentation.vehicleOption;
+        grid.append(el('p','Cr '+facts.unitCost.toLocaleString()+' / '+facts.slotsPerInstallation+' Slots / Capacity '+facts.capacityPerInstallation+' per installation','wide help'));
+        grid.append(el('p',[facts.loadLabel,facts.replacementPriceLabel,...facts.conditionLabels].join(' · '),'wide help'));
+        grid.append(el('p',sourceText(facts.source)+' · '+sourceText(facts.conversionSource),'wide source'));
+      }
       const selection=presentation.magazineSupplySelection;
       if(!onlyFields||onlyFields.includes(selection?.alternateSuppliesField)){
         const panel=renderMagazinePanel({record,selection,control,prefix,shared:!onlyFields&&presentation.ammunitionCustomization?.mode==='custom',groupKey:view.design.kind+':'+prefix+':compatible-magazines',recordGroups,onChange,el,selectChoices,numericPicker});
@@ -421,7 +427,7 @@ if(item.type==='multiselect'){
     const redrawComposer = () => {
       const next = makeFields(draft, id+'-new', (key, value) => {
         if(value===undefined)delete draft[key];else draft[key]=value;Object.assign(draft,resetHiddenFields(control,draft));customDrafts.set(draftKey,draft);add.disabled=!valid();
-        if (control.type==='weapons'||(control.itemFields||[]).some(item=>dependsOn(item.visibleWhen,key)||item.choicesBy?.field===key||item.labelBy?.field===key||item.maxBy?.field===key||item.maxValueField===key)) redrawComposer();
+        if (control.type==='weapons'||control.type==='verified-vehicle-options'||(control.itemFields||[]).some(item=>dependsOn(item.visibleWhen,key)||item.choicesBy?.field===key||item.labelBy?.field===key||item.maxBy?.field===key||item.maxValueField===key)) redrawComposer();
       });
       const previous=composer.querySelector('.fields-grid');
       if(previous)previous.replaceWith(next);else composer.append(next);

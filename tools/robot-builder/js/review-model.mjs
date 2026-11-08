@@ -252,6 +252,11 @@ export function projectReview(design, catalogue, evaluation) {
   if (sharedInterfaces.length) sections.push(section('augmentation-interfaces','Shared cybernetic interfaces',sharedInterfaces.map(item=>profileRow(`${titleName(item.sense)} interface`,money(item.totalCost),item,['totalCost','recordIds'])),{collapsed:true}));
   const augmentationEffects = totals?.augmentationEffects || augmentResult?.effects;
   if (augmentationEffects) sections.push(section('augmentation-effects','Cybernetic effects',Object.entries(presentationFacts(augmentationEffects)||{}).filter(([,value])=>present(value)).map(([key,value])=>row(humanLabel(key),value)),{collapsed:true}));
+  const verifiedRecords=evaluation.verifiedVehicleInstallations||[];
+  if(verifiedRecords.length)sections.push(section('verified-vehicle-options','Vehicle options (2026 source)',verifiedRecords.map(item=>({
+    ...row(item.label,money(item.cost)+' / '+valueText(item.slots)+' Slots',item.source,'Source hardware; deployment conditional'),
+    details:[row('Installations',item.quantity),row('Capacity per installation',item.capacityPerInstallation),row('Initial contents','Unverified'),row('Replacement charge price','Unknown'),...(item.additionalCharges?[row('Additional charges',item.additionalCharges),row('Additional charge cost',item.additionalChargeCost),row('Additional charge mass',item.additionalChargeMassKg)]:[]),row('Conditions',item.conditionLabels),row('Conversion source',sourceLabel(item.conversionSource))]
+  }))));
   const externalControl = controls.find(control=>control.type==='external-vehicle-options');
   const externalRecords = externalControl ? design.selections?.[externalControl.stage]?.[externalControl.field] || [] : [];
   if (externalRecords.length) sections.push(section('external-options','Unverified external vehicle options',externalRecords.map(record=>{
