@@ -12,11 +12,12 @@ export function renderMagazinePanel({record,selection,control,prefix,shared,grou
  const initialFacts=el('output',magazineProductFacts(model.initialProduct),'wide derived-value');initialFacts.id=source.id+'-facts';content.append(initialFacts);
  const initialSource=magazineProductSources(model.initialProduct);if(initialSource)content.append(el('p',initialSource,'wide source'));
  const supplies=record[selection.alternateSuppliesField]||[];
- const updateRow=(index,patch)=>onChange(selection.alternateSuppliesField,supplies.map((row,i)=>i===index?{...row,...patch}:row));
+ const productSelection=product=>({sourceWeaponId:product.sourceWeaponId,variant:product.variant??product.id,modification:product.modification&&product.modification!=='standard'?product.modification:undefined});
+ const updateRow=(index,patch)=>onChange(selection.alternateSuppliesField,supplies.map((row,i)=>i===index?Object.fromEntries(Object.entries({...row,...patch}).filter(([,value])=>value!==undefined)):row));
  for(const selected of model.rows){
   const index=selected.index,rowPrefix=prefix+'-'+selection.alternateSuppliesField+'-'+index,card=el('div',undefined,'wide option-settings'),fields=el('div',undefined,'fields-grid');
   const productRow=el('label','Additional magazine product'),product=el('select');product.id=rowPrefix+'-product';productRow.htmlFor=product.id;selectChoices(product,selected.choices,selected.productId);
-  product.addEventListener('change',()=>{const chosen=model.products.find(item=>magazineProductId(item)===product.value);if(chosen)updateRow(index,{sourceWeaponId:chosen.sourceWeaponId,variant:chosen.id});});productRow.append(product);fields.append(productRow);
+  product.addEventListener('change',()=>{const chosen=model.products.find(item=>magazineProductId(item)===product.value);if(chosen)updateRow(index,productSelection(chosen));});productRow.append(product);fields.append(productRow);
   for(const [field,label] of [['extraMagazines','Total extras per weapon'],['autoloadMagazines','Allocated to loader']]){
    const inputRow=el('label',label),input=numericPicker(model.numericControls[field],selected.supply[field],value=>updateRow(index,{[field]:value}));input.id=rowPrefix+'-'+field;inputRow.htmlFor=input.id;inputRow.append(input);fields.append(inputRow);
   }
@@ -29,7 +30,7 @@ export function renderMagazinePanel({record,selection,control,prefix,shared,grou
  if(model.addChoices.length&&supplies.length<model.maximumAlternateProducts){
   const pickerRow=el('label','Add compatible spares'),picker=el('select');picker.id=prefix+'-'+selection.alternateSuppliesField+'-add-product';pickerRow.htmlFor=picker.id;selectChoices(picker,model.addChoices,'','Choose a magazine product');pickerRow.append(picker);
   const add=el('button','Add magazine product');add.type='button';add.id=prefix+'-'+selection.alternateSuppliesField+'-add';add.disabled=true;picker.addEventListener('change',()=>{add.disabled=!picker.value;});
-  add.addEventListener('click',()=>{const product=model.products.find(item=>magazineProductId(item)===picker.value);if(product)onChange(selection.alternateSuppliesField,[...supplies,{sourceWeaponId:product.sourceWeaponId,variant:product.id,extraMagazines:0,autoloadMagazines:0,storageId:'none'}]);});content.append(pickerRow,add);
+  add.addEventListener('click',()=>{const product=model.products.find(item=>magazineProductId(item)===picker.value);if(product)onChange(selection.alternateSuppliesField,[...supplies,{...Object.fromEntries(Object.entries(productSelection(product)).filter(([,value])=>value!==undefined)),extraMagazines:0,autoloadMagazines:0,storageId:'none'}]);});content.append(pickerRow,add);
  }
  panel.append(content);return panel;
 }

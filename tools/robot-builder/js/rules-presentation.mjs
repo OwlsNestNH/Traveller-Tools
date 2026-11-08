@@ -2,6 +2,9 @@
 // the user-facing projection; never change rule decisions or construction totals.
 export const labelText = value => String(value).replace(/([a-z])([A-Z])/g,'$1 $2').replace(/[-_:]/g,' ').replace(/^./,ch=>ch.toUpperCase());
 const diagnosticLabels = {
+ CSC_AMMO_MASS_ESTIMATE:'Standard-load-based estimate; modified mass unresolved',
+ CSC_AMMO_MODIFICATION_UNKNOWN:'Unknown ammunition; select a supported modification', CSC_AMMO_PROFILE_UNSUPPORTED:'Specialised ammunition unsupported for this source profile', CSC_AMMO_CATEGORY:'Ammunition category incompatible',
+ CSC_AMMO_MANUFACTURE_REQUIRED:'Declare manufacture TL for all linked copies', CSC_AMMO_MANUFACTURE_TIER_UNRESOLVED:'Unsupported manufacture tier; price and attack unresolved', CSC_AMMO_MANUFACTURE_TL:'Ammunition exceeds declared manufacture TL', CSC_AMMO_DESIGN_TL:'Ammunition exceeds design TL', CSC_AMMO_LINKED_ATTACK_UNRESOLVED:'Mixed or partly loaded copies; common attack and linked bonus unresolved',
  COMPOSITE_METAMORPHIC_SOURCE:'Provisional source body excluded; brain/software only',
  METAMORPHIC_PROVISIONAL:'Provisional metamorphic assumptions; current form only', METAMORPHIC_TL:'Metamorphic tier TL exceeds design',
  VEHICLE_OPTION_CHARGES_INAPPLICABLE:'Clear retained charges; not applicable', VEHICLE_OPTION_MEDIUM_INAPPLICABLE:'Clear retained sampler medium; not applicable', VEHICLE_OPTION_MEDIUM_REQUIRED:'Select one sampler medium',
@@ -76,6 +79,7 @@ export function coverageLabel(gap) {
  return id&&/^[a-z0-9_-]{1,90}$/i.test(id)?`${labelText(id)}: coverage incomplete`:'Coverage incomplete; source review required';
 }
 const conditionLabels = new Map([
+ ['Hand-held use of the printed weapon scope','Printed scope: hand-held use only'],
  ['Target is smaller than a vehicle','Target smaller than vehicle only'],
  ['Parrying weapon is lower TL than the Arc-Field Weapon','Parry restriction: lower-TL weapons only'],
  ['Questioning with the Shock Whip','Shock Whip: questioning only'],
@@ -170,6 +174,7 @@ export function conditionLabel(value) {
  return 'Operating condition unresolved; check source';
 }
 const textFacts = new Map([
+ ['csc-single-modification-v1','Single ammunition modification; bounded CSC subset'],
  ['Qualified one-handed physical configuration; no explicit printed hand count.','One-hand physical interpretation; printed hand count unstated'],
  ['Qualified two-handed physical configuration; no explicit printed hand count.','Two-hand physical interpretation; printed hand count unstated'],
  ['Selected weapon only','Selected weapon only'],
@@ -213,7 +218,7 @@ const textFacts = new Map([
  ['robot-endurance','Robot endurance'],['recipient-robot-endurance','Recipient robot endurance'],
  ['Intimidate','Intimidate'],['Persuade','Persuade'],
 ]);
-const hiddenFields = new Set(['id','recordIds','weaponId','optionId','profileId','parentWeaponId','parentLimb','parentBrain','parentComputer','sourceOption','storageId','manipulatorId','supportManipulatorId','gripManipulatorIds','supplyWeaponId','ammunitionOverrides','ammunitionCopies','diagnostics','selections','design','rules','rule','tables','table','catalogue','choices','supportedTechLevels','interpretations']);
+const hiddenFields = new Set(['sourceWeaponProfile','ammunitionAttackProfiles','loadedAmmunitionAttack','weaponManufacture','id','recordIds','weaponId','optionId','profileId','parentWeaponId','parentLimb','parentBrain','parentComputer','sourceOption','storageId','manipulatorId','supportManipulatorId','gripManipulatorIds','supplyWeaponId','ammunitionOverrides','ammunitionCopies','diagnostics','selections','design','rules','rule','tables','table','catalogue','choices','supportedTechLevels','interpretations']);
 const proseFields = /^(?:description|message|notes?|detail|scope|reason|explanation|context|timing|trainingTiming|attackContext|skillScope|stacking|method|basis|costScope|.*(?:Description|Notes|Explanation|Reason|Context|Scope|Timing))$/;
 const namedStrings = new Set(['label','name','speciality','specialty','subject','additionalSpecies','storage','manipulator','primaryManipulator','supportManipulator','grippingManipulators','accessory','supply','traits','coveredSpecialities','storageDestinations']);
 const statusKeys = /(?:status|conditions?|resolution|fit|interpretation|qualification)$/i;

@@ -1,5 +1,5 @@
 import {diagnosticLabel,diagnosticContext,coverageLabel,conditionLabel,presentationFacts,sourceReference} from './rules-presentation.mjs';
-import {magazineProductId,magazineProductLabel,magazineProductFacts,magazineProductSources,magazineVariantLabel} from './magazine-presentation.mjs';
+import {magazineProductId,magazineProductLabel,magazineProductFacts,magazineProductSources,ammunitionModificationLabel} from './magazine-presentation.mjs';
 // Read-only presentation projection. No construction rules or calculated totals live here.
 const format = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
 const massFormat = new Intl.NumberFormat('en-US', { maximumFractionDigits: 9 });
@@ -7,6 +7,11 @@ const present = value => value !== undefined && value !== null;
 const noMeleeAmmunition=weapon=>weapon?.weaponFamily==='melee'&&weapon.magazine===null&&!weapon.poweredMelee&&!weapon.expendableMelee;
 const weaponDamage=weapon=>weapon.attackProfiles&&!weapon.attackProfiles.resolved?'Conditional damage':present(weapon.damage)?weapon.damage+' damage':'Damage not calculated';
 const weaponRange=range=>present(range)?`Range: ${valueText(range)}${typeof range==='number'?' m':''}`:'Range not calculated';
+const loadedAttackStatus = status => ({homogeneous:'Loaded attack',unloaded:'Unloaded; no loaded attack','mixed-unresolved':'Mixed ammunition; common attack unresolved',unresolved:'Loaded attack unresolved'}[status]||'Loaded attack unresolved');
+const attackFigures = profile => [present(profile?.damage)?profile.damage+' damage':'Damage unresolved',present(profile?.range)?'Range: '+(typeof profile.range==='number'?massFormat.format(profile.range)+' m':valueText(profile.range)):'Range unresolved',profile?.traits?.length?profile.traits.join(', '):''].filter(Boolean).join(' · ');
+const weaponSummary = weapon => weapon.loadedAmmunitionAttack ? weapon.loadedAmmunitionAttack.status==='homogeneous'?'Loaded attack · '+attackFigures(weapon.loadedAmmunitionAttack):loadedAttackStatus(weapon.loadedAmmunitionAttack.status) : [weaponDamage(weapon),weaponRange(weapon.range),weapon.traits?.length?weapon.traits.join(', '):''].filter(Boolean).join(' · ');
+const ammunitionFields=['initialAmmunitionModification','spareAmmunitionModification','highCapacityAmmunitionModification'];
+const hasModifiedSelection = record => ammunitionFields.some(field=>record[field]!=null&&record[field]!=='standard')||(record.alternateMagazineSupplies||[]).some(item=>item.modification!=null&&item.modification!=='standard')||(record.ammunitionOverrides||[]).some(hasModifiedSelection);
 export function humanLabel(value) {
   return String(value).replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[-_:]/g, ' ').replace(/^./, ch => ch.toUpperCase());
 }
@@ -45,7 +50,7 @@ function titleName(value) {
   return humanLabel(value).replace(/\b\w/g, letter => letter.toUpperCase());
 }
 function profileRow(label, summary, record, omitted = [], detail = '') {
-  const hidden = new Set(['id','weaponId','optionId','sourceOption','label','name','source','ammunitionOverrides','ammunitionCopies','alternateMagazineSupplies',...omitted]);
+  const hidden = new Set(['id','weaponId','optionId','sourceOption','label','name','source','ammunitionOverrides','ammunitionCopies','alternateMagazineSupplies','sourceWeaponProfile','ammunitionAttackProfiles','loadedAmmunitionAttack','weaponManufacture','weaponManufactureTL',...ammunitionFields,...omitted]);
   if(record.ammunitionCopies?.length||record.ammunitionOverrides?.length)for(const field of ['extraMagazines','extraHighCapacityMagazines','initialMagazines','initialMagazineType','autoloadAllocation'])hidden.add(field);
   if(record.ammunitionInventory?.products)for(const field of ['ammunitionInventory','initialAmmunition','magazineVariants','spareAmmunition','highCapacitySpareAmmunition','extraMagazines','extraHighCapacityMagazines','initialMagazines','initialMagazineType','autoloadAllocation','ammoCost','autoloadCost'])hidden.add(field);
   // A legacy initialMagazines=1 is a schema sentinel for no-ammunition melee,
@@ -53,6 +58,12 @@ function profileRow(label, summary, record, omitted = [], detail = '') {
   // are not facts about melee hardware. Hide them only here; invalid selections
   // and their diagnostics remain available in the editor and serialized design.
   if(noMeleeAmmunition(record)||record.poweredMelee||record.expendableMelee)for(const field of ['ammunition','ammunitionType','auxiliaryLauncher','auxiliaryAmmunition','auxiliaryLoaded','integralAmmunition','integralLoaded','looseGrenades','looseAmmunitionFor','looseAmmunition','ammoCost','autoloadCost','magazineCost','initialIncluded','initialMagazines','initialMagazineType','initialMagazineSourceId','extraMagazines','extraHighCapacityMagazines','autoload','autoloadAllocation','magazine','initialAmmunition','ammunitionInventory','ammunitionAccounting','magazineVariants','spareAmmunition','highCapacitySpareAmmunition'])hidden.add(field);
+  if(record.loadedAmmunitionAttack)for(const field of ['conditionalEffects','linkedDamageBonus','traits'])hidden.add(field);
+  if(record.loadedAmmunitionAttack||record.ammunitionAttackProfiles){
+    if(!Object.hasOwn(record,'ammunition')||record.ammunition==='standard')hidden.add('ammunition');
+    if(record.auxiliaryLoaded===0&&(!record.auxiliaryLauncher||record.auxiliaryLauncher==='none')&&!record.auxiliary&&!record.associatedAttacks?.some(attack=>attack.mode!=='integral-acr'))hidden.add('auxiliaryLoaded');
+    if(record.integralLoaded===0&&!record.associatedAttacks?.some(attack=>attack.mode==='integral-acr'))hidden.add('integralLoaded');
+  }
   if(record.attackProfiles)hidden.add('attackProfiles');
   if(record.sourceBaseProfile)hidden.add('sourceBaseProfile');
   if(record.sourceMeasurements)hidden.add('sourceMeasurements');
@@ -64,7 +75,37 @@ function profileRow(label, summary, record, omitted = [], detail = '') {
   if(record.sourceMeasurements?.mass?.status==='unspecified')details.push(row('Source mass','Unspecified (printed dash)',record.sourceMeasurements.source));
   if(record.poweredMelee)details.push(...poweredMeleeRows(record));
   if(record.attackProfiles)details.push(...conditionalAttackRows(record));
+  details.push(...specialisedAmmunitionRows(record));
   return {...row(label,summary,record.source,detail),details};
+}
+function attackConditionRows(profile,label){
+ const effects=profile?.conditionalEffects||{},rows=[];
+ if(effects.batonDamageSplit)rows.push(row(label+' / Baton split','Half Stun (round up); remainder ordinary; armour order unresolved',effects.batonDamageSplit.source));
+ const {batonDamageSplit,...other}=effects,conditions=presentationFacts(other);
+ if(conditions&&Object.keys(conditions).length)rows.push(row(label+' / Conditions',conditions,profile.source));
+ return rows;
+}
+function specialisedAmmunitionRows(weapon){
+ const rows=[],hardware=weapon.sourceWeaponProfile,manufacture=weapon.weaponManufacture,loaded=weapon.loadedAmmunitionAttack;
+ if(hardware)rows.push(row('Source hardware profile',attackFigures(hardware),hardware.source,'Source figures; not a loaded attack'));
+ if(manufacture||Object.hasOwn(weapon,'weaponManufactureTL')){
+  const declared=manufacture?manufacture.declaredTL:weapon.weaponManufactureTL;
+  const status=manufacture?({unknown:'Unknown','catalogue-tier-declared':'Catalogue-tier declaration','unsupported-tier':'Unsupported tier; price and attack unresolved'}[manufacture.status]||'Unresolved'):'Not evaluated';
+  rows.push(row('Manufacture declaration (all linked copies)',[present(declared)?'TL'+declared:'Unknown',manufacture?'Catalogue TL'+manufacture.catalogueTL:'',status==='Unknown'?'':status].filter(Boolean).join(' · '),manufacture?.source));
+ }
+ for(const profile of weapon.ammunitionAttackProfiles||[]){
+  const label='Copy '+profile.copyIndex+' configured ammunition',resolved=profile.status==='configured';
+  rows.push(row(label,[profile.modificationLabel||ammunitionModificationLabel(profile.modification),resolved?attackFigures(profile):'Profile unresolved','Initial: '+valueText(profile.initialCount),profile.loaded?'Loaded':'Not loaded'].join(' · '),profile.source,'Configured per-copy profile; combined attack separate'));
+  if(resolved)rows.push(...attackConditionRows(profile,label));
+ }
+ if(loaded){
+  rows.push(row('Loaded attack status',loadedAttackStatus(loaded.status)));
+  if(loaded.status==='homogeneous'){
+   rows.push(row('Common loaded attack',attackFigures(loaded)));
+   rows.push(row('Loaded linked damage bonus',present(loaded.linkedDamageBonus)?loaded.linkedDamageBonus:'Unresolved'));
+  }else rows.push(row('Loaded linked damage bonus',loaded.status==='unloaded'?'Not applicable; unloaded':'Unresolved'));
+ }
+ return rows;
 }
 function conditionalAttackRows(weapon){
  const attack=weapon.attackProfiles;
@@ -99,16 +140,17 @@ function ammunitionInventoryDisplay(weapon) {
 }
 function magazineSelectionRows(spec,label,weapon,storageName,sourceName) {
   const source=spec.initialMagazineSourceId??weapon.weaponId;
-  const initial=row(label,`Initial: ${valueText(spec.initialMagazines)} · ${sourceName(source)} / ${magazineVariantLabel(spec.initialMagazineType??'standard')}`,weapon.source);
-  const donors=(spec.alternateMagazineSupplies||[]).map((supply,index)=>row(`${label} / compatible spares ${index+1}`,`${sourceName(supply.sourceWeaponId)} / ${magazineVariantLabel(supply.variant)} · Extras: ${valueText(supply.extraMagazines)} · Selected loader: ${valueText(supply.autoloadMagazines)} · Storage: ${storageName(supply.storageId)}`,weapon.source));
-  return [initial,...donors];
+  const initial=row(label,`Initial: ${valueText(spec.initialMagazines)} · ${magazineProductLabel({sourceWeaponLabel:sourceName(source),variant:spec.initialMagazineType??'standard',modification:spec.initialAmmunitionModification})}`,weapon.source);
+  const donors=(spec.alternateMagazineSupplies||[]).map((supply,index)=>row(`${label} / compatible spares ${index+1}`,`${magazineProductLabel({...supply,sourceWeaponLabel:sourceName(supply.sourceWeaponId)})} · Extras: ${valueText(supply.extraMagazines)} · Selected loader: ${valueText(supply.autoloadMagazines)} · Storage: ${storageName(supply.storageId)}`,weapon.source));
+  const selected=ammunitionFields.slice(1).filter(field=>Object.hasOwn(spec,field)).map(field=>row(label+' / '+(field==='spareAmmunitionModification'?'Standard spares':'High-capacity spares'),ammunitionModificationLabel(spec[field]),weapon.source));
+  return [initial,...selected,...donors];
 }
 function ammunitionProductRows(weapon,storageName,sourceName) {
   if(noMeleeAmmunition(weapon)||weapon.poweredMelee||weapon.expendableMelee)return [];
   const inventory=weapon.ammunitionInventory;
   if(!inventory?.products){
     if(weapon.ammunitionOverrides?.length)return [];
-    return Object.hasOwn(weapon,'initialMagazineSourceId')||weapon.alternateMagazineSupplies?.length?magazineSelectionRows(weapon,'Magazine selection',weapon,storageName,sourceName):[];
+    return Object.hasOwn(weapon,'initialMagazineSourceId')||ammunitionFields.some(field=>Object.hasOwn(weapon,field))||weapon.alternateMagazineSupplies?.length?magazineSelectionRows(weapon,'Magazine selection',weapon,storageName,sourceName):[];
   }
   const summary=(inventory,label)=>{
     const initial=inventory.initial,allocation=inventory.allocation,countScope=allocation?.linkedWeapons>1&&allocation.mode!=='per-copy'?' per weapon':'';
@@ -116,7 +158,8 @@ function ammunitionProductRows(weapon,storageName,sourceName) {
   };
   const products=(inventory,spec,prefix='')=>{
     const retained=new Set((spec.alternateMagazineSupplies||[]).map(magazineProductId));
-    if(Object.hasOwn(spec,'initialMagazineSourceId'))retained.add((spec.initialMagazineSourceId??weapon.weaponId)+':'+(spec.initialMagazineType??'standard'));
+    if(Object.hasOwn(spec,'initialMagazineSourceId')||Object.hasOwn(spec,'initialAmmunitionModification'))retained.add(magazineProductId({sourceWeaponId:spec.initialMagazineSourceId??weapon.weaponId,variant:spec.initialMagazineType??'standard',modification:spec.initialAmmunitionModification}));
+    for(const [field,variant] of [['spareAmmunitionModification','standard'],['highCapacityAmmunitionModification','high-capacity']])if(Object.hasOwn(spec,field))retained.add(magazineProductId({sourceWeaponId:weapon.weaponId,variant,modification:spec[field]}));
     return inventory.products.filter(product=>product.initialCount||product.extraCount||product.compatible===false||retained.has(product.productId)||(product.storageId&&product.storageId!=='none')).map(product=>{
       const counts=[`Initial: ${valueText(product.initialCount)} / ${valueText(product.initialRounds)} rounds`,`Extras: ${valueText(product.extraCount)} / ${valueText(product.extraRounds)} rounds`,`Loader: ${valueText(product.autoloadCount)} / ${valueText(product.autoloadRounds)} rounds`,`Stored: ${valueText(product.storedCount)} / ${valueText(product.storedRounds)} rounds`];
       const reservations=(product.storageReservations||[]).map(reservation=>`${reservation.copyIndex?'Copy '+reservation.copyIndex+': ':''}${storageName(reservation.storageId)} · ${valueText(reservation.count)} magazines · ${massFormat.format(reservation.massKg)} kg estimated`);
@@ -145,7 +188,7 @@ function ammunitionCopyRows(weapon,storageName,sourceName=()=> 'Selected weapon'
         allocation?`Selected loader: standard ${valueText(allocation.standard)}, high-capacity ${valueText(allocation.highCapacity)}`:'All extras follow loader setting',
         `Standard storage: ${storageName(spec.spareMagazineStorageId??'none','spareAmmunition')}`,
         `High-capacity storage: ${storageName(spec.highCapacityMagazineStorageId??'none','highCapacitySpareAmmunition')}`];
-      if(Object.hasOwn(spec,'initialMagazineSourceId')||spec.alternateMagazineSupplies?.length)parts.push(...magazineSelectionRows(spec,label,weapon,storageName,sourceName).map(item=>item.value));
+      if(Object.hasOwn(spec,'initialMagazineSourceId')||ammunitionFields.some(field=>Object.hasOwn(spec,field))||spec.alternateMagazineSupplies?.length)parts.push(...magazineSelectionRows(spec,label,weapon,storageName,sourceName).map(item=>item.value));
       return row(label,parts.join(' · '),weapon.source);
     };
     return [selectedRow(weapon,'Shared ammunition selection'),...weapon.ammunitionOverrides.map(copy=>selectedRow(copy,`Copy ${copy.copyIndex} ammunition selection${copy.copyIndex>weapon.linkedWeapons?' · Not installed':''}`))];
@@ -333,7 +376,7 @@ export function projectReview(design, catalogue, evaluation) {
         };
         const componentArmNames=new Map((profile.manipulators||snapshot?.selections?.physical?.manipulators||[]).map((arm,index)=>[arm.id,`${arm.kind==='base'?'Base arm':arm.kind==='leg'?'Converted leg':'Additional arm'} ${index+1}`]));
         const display={...weapon,...weaponGripDisplay(weapon,id=>componentArmNames.get(id)||'Unspecified manipulator'),...ammunitionInventoryDisplay(weapon),...(weapon.magazineVariants?{magazineVariants:ammunitionMassDisplay(weapon.magazineVariants)}:{}),...(weapon.highCapacitySpareAmmunition?{highCapacitySpareAmmunition:spareAmmunitionDisplay(weapon.highCapacitySpareAmmunition,storageName(weapon.highCapacitySpareAmmunition.storageId))}:{}),...(weapon.spareAmmunition?{spareAmmunition:spareAmmunitionDisplay(weapon.spareAmmunition,storageName(weapon.spareAmmunition.storageId))}:{})};
-        const weaponRow=profileRow(`${component.name} / ${weapon.label||'Weapon'}`,`${weaponDamage(weapon)} · ${weaponRange(weapon.range)}`,display,['damage','range','manipulatorId','supportManipulatorId','gripManipulatorIds','primaryManipulatorDM','parentLimb','spareMagazineStorageId','highCapacityMagazineStorageId'],'Component-only weapon; attack/delivery conditional');
+        const weaponRow=profileRow(`${component.name} / ${weapon.label||'Weapon'}`,weapon.loadedAmmunitionAttack?weaponSummary(weapon):weaponDamage(weapon)+' · '+weaponRange(weapon.range),display,['damage','range','manipulatorId','supportManipulatorId','gripManipulatorIds','primaryManipulatorDM','parentLimb','spareMagazineStorageId','highCapacityMagazineStorageId'],'Component-only weapon; attack/delivery conditional');
         for(const item of weaponRow.details){if(item.label==='Autoload Allocation')item.label='Selected loader allocation per weapon';if(item.label==='High Capacity Spare Ammunition')item.label='High-capacity spare ammunition (estimated mass)';if(item.label==='Spare Ammunition')item.label='Spare ammunition (estimated mass)';if(item.label==='Mass Kg')item.label='Source weapon mass (kg)';}
         const sourceName=id=>profile.weapons?.find(item=>item.weaponId===id)?.label||catalogue.stages?.flatMap(stage=>stage.controls||[]).flatMap(control=>control.itemFields||[]).find(item=>item.field==='weaponId')?.choices?.find(item=>item.id===id)?.label||'Unavailable magazine source';
         weaponRow.details.push(...ammunitionProductRows(weapon,storageName,sourceName),...ammunitionCopyRows(weapon,storageName,sourceName));
@@ -414,10 +457,11 @@ export function projectReview(design, catalogue, evaluation) {
     if(selected?.sourceBaseProfile)weapon={...weapon,...(!Object.hasOwn(weapon,'damage')?{damage:selected.damage,range:selected.range,massKg:selected.massKg,traits:selected.traits}:{}),sourceBaseProfile:selected.sourceBaseProfile,sourceMeasurements:selected.sourceMeasurements,conditionalEffects:weapon.conditionalEffects??selected.conditionalEffects,source:weapon.source??selected.source};
     if(!weapon.expendableMelee&&selected?.expendableMelee)weapon={...weapon,expendableMelee:true,acquisition:selected.acquisition,linkedOperation:selected.linkedOperation};
     if(!weapon.attackProfiles&&selected?.attackProfiles)weapon={...weapon,attackProfiles:selected.attackProfiles,damage:null,traits:weapon.traits??selected.traits};
+    if(!weapon.loadedAmmunitionAttack&&(hasModifiedSelection(weapon)||Object.hasOwn(weapon,'weaponManufactureTL')))weapon={...weapon,sourceWeaponProfile:weapon.sourceWeaponProfile||(selected?{damage:selected.damage,range:selected.range,traits:selected.traits,source:selected.source}:undefined),loadedAmmunitionAttack:{status:'unresolved'}};
     const name=weapon.label || choiceLabel(control,'weaponId',weapon.weaponId,'Selected weapon');
     const storageName=id=>choiceLabel(control,'ammunitionStorageId',id,'Unresolved storage');
     const ammunitionName=id=>choiceLabel(control,'auxiliaryAmmunition',id);
-    const summary=[weaponDamage(weapon),weaponRange(weapon.range),weapon.traits?.length?weapon.traits.join(', '):''].filter(Boolean).join(' · ');
+    const summary=weaponSummary(weapon);
     const placement=parentLabel ? choiceLabel(control,'placement',weapon.placement) : weapon.placement==='arm' ? `Mounted on ${armName(weapon.manipulatorId)}` : weapon.placement==='held' ? `Held by ${armName(weapon.manipulatorId)}${weapon.supportManipulatorId&&weapon.supportManipulatorId!=='none'?' and '+armName(weapon.supportManipulatorId):''}` : weapon.placement ? `${titleName(weapon.placement)} mount` : 'Placement unresolved';
     const detail=[parentLabel,placement,`Software Level: ${valueText(weapon.softwareLevel)}`,`FCS DM: ${valueText(weapon.fireControlDM)}`,`DEX DM: ${valueText(weapon.manipulatorDM)}`].filter(Boolean).join(' · ');
     const accessoryChoices=control?.itemFields?.find(item=>item.field==='accessories')?.choices||[];

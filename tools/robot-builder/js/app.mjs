@@ -48,7 +48,7 @@ async function safely(action, success) {
     return null;
   }
 }
-function option(id, label) { const node = el('option', label); node.value = id; return node; }
+function option(id, label) { const node = el('option', label); node.value = id??''; return node; }
 function numericPicker(control, value, onChange) {
   const min = Number(control.min), max = Number(control.max), step = Number(control.step ?? 1);
   const count = Math.floor((max - min) / step) + 1;
@@ -68,7 +68,7 @@ const sourceText = sourceReference;
 
 function selectChoices(select, choices, selected, placeholder = 'Choose an option') {
   const prompt = option('', placeholder); prompt.disabled = true;
-  select.replaceChildren(...((choices||[]).some(choice=>choice.id==='')?[]:[prompt]));
+  select.replaceChildren(...((choices||[]).some(choice=>choice.id==null||choice.id==='')?[]:[prompt]));
   for (const choice of choices || []) select.append(option(choice.id, choiceLabel(choice)));
   if (selected !== undefined && selected !== null && selected !== '' && ![...select.options].some(item => item.value === String(selected))) {
     select.append(option(selected, `${selected} · unavailable selection`));
@@ -111,8 +111,8 @@ function submitSelection(control, value, completedDraftKey) {
     catch (error) { if (draft !== undefined) customDrafts.set(completedDraftKey, draft); throw error; }
   });
 }
-function recordChoices(field,record) {
-  const choices=field.choicesBy?.values?.[record?.[field.choicesBy.field]] || field.choices || [];
+function recordChoices(field,record,fieldView={}) {
+  const choices=fieldView.choices??field.choicesBy?.values?.[record?.[field.choicesBy.field]]??field.choices??[];
   return field.maxValueField && Number.isFinite(record?.[field.maxValueField]) ? choices.filter(choice=>typeof choice.id!=='number'||choice.id<=record[field.maxValueField]) : choices;
 }
 function dependsOn(rule,key){return rule?.field===key || rule?.allOf?.some(item=>dependsOn(item,key)) || rule?.anyOf?.some(item=>dependsOn(item,key));}
@@ -383,7 +383,7 @@ if(item.type==='multiselect'){
           };draw();row.classList.add('wide');
         }
         else if(item.type==='number')input=numericPicker({...item,max:fieldView.max??item.maxBy?.values?.[record[item.maxBy.field]]??item.max},record[item.field]??item.min,value=>onChange(item.field,value));
-        else if(item.type==='select'){input=el('select');const choices=recordChoices(item,displayRecord);selectChoices(input,choices,displayRecord[item.field]);input.addEventListener('change',()=>onChange(item.field,choices.find(c=>String(c.id)===input.value)?.id??null));}
+        else if(item.type==='select'){input=el('select');const choices=recordChoices(item,displayRecord,fieldView);selectChoices(input,choices,displayRecord[item.field]);input.addEventListener('change',()=>{const value=choices.find(c=>String(c.id??'')===input.value)?.id??null;onChange(item.field,item.omitByDefault&&Object.hasOwn(item,'default')&&value===item.default?undefined:value);});}
         else {input=el('input');input.type='text';input.value=record[item.field]??'';input.maxLength=item.maxLength||120;input.addEventListener('input',()=>onChange(item.field,input.value));}
         input.id=fieldId;row.append(input);targetFor(item).append(row);
       }
