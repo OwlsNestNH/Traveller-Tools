@@ -416,7 +416,7 @@ export function projectReview(design, catalogue, evaluation) {
   if (totals?.manipulators?.length) sections.push(section('manipulators','Manipulators',totals.manipulators.map(arm => profileRow(armName(arm.id),`Size ${valueText(arm.size)} · STR ${valueText(arm.strength)} · DEX ${valueText(arm.dexterity)}`,arm,['kind','size','strength','dexterity']))));
   const skillRows = records => (records || []).map(skill => {
     const name = skill.label || skill.name || titleName(skill.skill || skill.id || 'Skill');
-    const idName = skill.id?.includes(':') ? `${titleName(skill.id.split(':')[0])} (${skill.id.split(':').slice(1).join(':')})` : name;
+    const idName = !skill.label && skill.id?.includes(':') ? `${titleName(skill.id.split(':')[0])} (${skill.id.split(':').slice(1).join(':')})` : name;
     const summary = [`Installed level ${valueText(skill.level)}`,`Effective ${present(skill.effectiveLevel)?valueText(skill.effectiveLevel):'level unresolved'}`,skill.characteristic ? `${skill.characteristic==='variable'?'Variable characteristic':skill.characteristic}` : ''].filter(Boolean).join(' · ');
     const details = {...skill};
     if(skill.modifierOptions)details.modifierOptions=skill.modifierOptions.map(item=>({manipulator:armName(item.manipulatorId),modifier:item.modifier,effectiveLevel:item.effectiveLevel}));

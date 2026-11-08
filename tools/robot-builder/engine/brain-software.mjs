@@ -1,8 +1,8 @@
 import {PACKAGES,SKILLS,source} from './catalogue.mjs';
 import {characteristicDM} from './characteristics.mjs';
+import {normalSpeciality} from './skill-coverage.mjs';
 import {assertKeys,integer,clone} from './schema.mjs';
 const lookup=(rows,id)=>{const row=rows.find(r=>r.id===id);if(!row)throw new TypeError('Unknown software choice: '+id);return row;};
-const normalSpeciality=value=>value.trim().toLowerCase().replaceAll(' ','-');
 const specialityCoverage=pkg=>pkg.coveredSpecialities?.map(normalSpeciality)??[normalSpeciality(pkg.speciality??'')];
 export function validateSoftwareSelection(selection){
  assertKeys(selection,['packages','customPackages'],'software');
@@ -32,19 +32,19 @@ export function evaluateBrainSoftware({brain,upgrade,techLevel:tl,settings,selec
  if(brain.family==='basic'&&core.id!=='basic-none'&&packages.length)error('BASIC_FIXED_SKILLS','skills.packages','This Basic brain uses its fixed function rather than general skill packages.','70–71');
  for(const pkg of packages){
   if(brain.family==='basic'&&pkg.level>1)error('BASIC_SKILL_LEVEL','skills.packages','Basic (none) is limited to skill level one.','71');
-  if(pkg.refereeBroad)issue('warning','REFEREE_BROAD_SKILL','skills.packages','Using the explicitly selected referee-approved '+pkg.packageCount+'-package broad coverage rule for '+pkg.skill+'.','73');
+  if(pkg.refereeBroad)issue('warning','REFEREE_BROAD_SKILL','skills.packages','Using the explicitly selected '+pkg.packageCount+'-package referee rule for '+pkg.skill+': '+(pkg.coversAllSpecialities?'all specialities, including open/custom specialities. Referee approval is required.':'legacy listed specialities only; saved scope is unchanged. Select a full-coverage choice separately for all specialities.'),'73');
   if(!pkg.implemented)block('SPECIALITY_REQUIRED','skills.packages',pkg.reason,'73–74');
   const skillKey=pkg.skill+(pkg.speciality?':'+pkg.speciality.trim().toLowerCase().replaceAll(' ','-'):'');
   const coverage=specialityCoverage(pkg);
-  if(skillIds.has(skillKey)||skillScopes.some(previous=>previous.skill===pkg.skill&&previous.coverage.some(speciality=>coverage.includes(speciality))))error('DUPLICATE_SKILL','skills.packages','Install only one level of each covered skill speciality.','73');
-  skillIds.add(skillKey);skillScopes.push({skill:pkg.skill,coverage});
+  if(skillIds.has(skillKey)||skillScopes.some(previous=>previous.skill===pkg.skill&&(previous.coversAllSpecialities||pkg.coversAllSpecialities||previous.coverage.some(speciality=>coverage.includes(speciality)))))error('DUPLICATE_SKILL','skills.packages','Install only one level of each covered skill speciality.','73');
+  skillIds.add(skillKey);skillScopes.push({skill:pkg.skill,coverage,coversAllSpecialities:pkg.coversAllSpecialities===true});
   if(pkg.tl>tl)error('MIN_TL','skills.packages',`${pkg.label} exceeds design technology.`,'73–74');
   if((pkg.perPackageBandwidth??pkg.bandwidth)>brain.bandwidth)error('INHERENT_BANDWIDTH','skills.packages',`${pkg.label} exceeds inherent brain bandwidth; storage upgrades do not raise this limit.`,'67,73');
   if(pkg.bandwidth===0)zeroBW++;else bwUsed+=pkg.bandwidth;
   cost+=pkg.cost;entry(pkg.id,pkg.label,pkg.cost,0,'73–74',{bandwidth:pkg.bandwidth});
   const modifier=pkg.characteristic==='INT'?characteristicDM(intelligence):null;
   const modifierOptions=pkg.characteristic==='DEX'?manipulators.map(a=>({manipulatorId:a.id,modifier:characteristicDM(a.dexterity),effectiveLevel:pkg.level+characteristicDM(a.dexterity)})):[];
-  skills.push({id:skillKey,...(pkg.speciality?{speciality:pkg.speciality,grantsOtherSpecialitiesAtZero:pkg.level>0&&pkg.skill!=='profession'}:{}),...(pkg.coveredSpecialities?{coveredSpecialities:pkg.coveredSpecialities}:{}),level:pkg.level,characteristic:pkg.characteristic,modifier,effectiveLevel:modifier===null?null:pkg.level+modifier,...(modifierOptions.length?{modifierOptions}:{})});
+  skills.push({id:skillKey,skill:pkg.skill,...(pkg.refereeBroad?{label:pkg.label}:{}),source:pkg.source??source('73-74'),...(pkg.speciality?{speciality:pkg.speciality,grantsOtherSpecialitiesAtZero:pkg.level>0&&pkg.skill!=='profession'}:{}),...(pkg.coveredSpecialities?{coveredSpecialities:pkg.coveredSpecialities}:{}),...(pkg.refereeBroad?{refereeBroad:true,packageCount:pkg.packageCount,coversAllSpecialities:pkg.coversAllSpecialities===true}:{}),level:pkg.level,characteristic:pkg.characteristic,modifier,effectiveLevel:modifier===null?null:pkg.level+modifier,...(modifierOptions.length?{modifierOptions}:{})});
  }
  const zeroBWAllowance=brain.rank>=2?brain.bandwidth:0;bwUsed+=Math.max(0,zeroBW-zeroBWAllowance);
  const bandwidthCapacity=brain.bandwidth+upgrade.bandwidth;

@@ -1,3 +1,4 @@
+import {resolveSkillLevel} from './skill-coverage.mjs';
 // Fictional Traveller equipment data and construction accounting; no real-world instructions.
 import {assertKeys,integer,clone} from './schema.mjs';
 import {CSC_WORN_WEAPONS,evaluateWornWeapon,retainedWearChoices} from './csc-worn-weapons.mjs';
@@ -565,7 +566,7 @@ export function evaluateWeapons(design,manipulators,skills,installedEquipment=[]
   ammunitionAttackProjection={sourceWeaponProfile:{weaponId:w.id,label:w.label,damage:w.damage,range:w.range,traits:clone(w.traits),conditionalEffects:clone(w.conditionalEffects??{}),source:clone(w.source)},weaponManufacture:manufacture,ammunitionAttackProfiles:profiles,loadedAmmunitionAttack,damage:loadedAmmunitionAttack.damage,range:loadedAmmunitionAttack.range,traits:loadedAmmunitionAttack.traits,conditionalEffects:loadedAmmunitionAttack.conditionalEffects,linkedDamageBonus};
   if(status==='mixed-unresolved')add('warning','CSC_AMMO_LINKED_ATTACK_UNRESOLVED',record.id,'Mixed or partially loaded linked copies have no common attack profile or certified linked damage bonus. Per-copy profiles and purchased inventories remain separate.',{...w.source,pages:'178-181'});
  }
- const software=skills.filter(s=>s.id===w.skill||s.id===w.skill+':'+w.speciality||s.speciality===w.speciality&&s.id.startsWith(w.skill)||s.id.startsWith(w.skill+':')&&s.coveredSpecialities?.includes(w.speciality)).reduce((v,s)=>Math.max(v,s.level),-3);
+ const software=resolveSkillLevel(skills,w.skill,w.speciality);
  const primaryManipulatorDM=arm?characteristic(arm.dexterity):null,dex=held&&(grip.multiArm||grip.gripAssignmentStatus!=='assigned')?null:primaryManipulatorDM;
  const heldStrengthRequirement=held&&(finalTraits.includes('Very Bulky')||finalTraits.includes('Bulky'))?{trait:finalTraits.includes('Very Bulky')?'Very Bulky':'Bulky',minimumStrength:finalTraits.includes('Very Bulky')?12:9,constructionBan:false,effectiveStrength:grip.effectiveStrength,penaltyResolved:false,source:core('79')}:null;
  if(heldStrengthRequirement)add('warning','HELD_STRENGTH_CONDITION',record.id,'Bulky and Very Bulky impose operational STR conditions, not a construction ban. Apply the source penalty using the applicable STR; no arm-combination rule is inferred.',core('79'));

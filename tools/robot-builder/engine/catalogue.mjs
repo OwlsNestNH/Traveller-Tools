@@ -46,12 +46,15 @@ export const PACKAGES = SKILLS.flatMap(skill=>[0,1,2,3].map(level=>choice(`${ski
 for(const [skillId,specialities] of Object.entries(SPECIALITIES)){
  const skill=SKILLS.find(s=>s.id===skillId);
  const allId=['electronics','engineer'].includes(skillId)?'all':'all-listed';
- const broadChoices=skillId==='profession'||skillId==='art'?[]:skillId==='science'?['all-referee-four','all-referee-eight']:['all-referee-four'];
+ // Old referee IDs covered only listed examples. Preserve saved scope; full coverage is a new explicit choice.
+ const legacyBroad=skillId==='profession'||skillId==='art'?[]:skillId==='science'?['all-referee-four','all-referee-eight']:['all-referee-four'];
+ const broadChoices=[...legacyBroad,'all-referee-four-full','all-referee-eight-full'];
  for(const speciality of [...specialities,allId,...broadChoices])for(const level of [1,2,3]){
-  const refereeBroad=speciality.startsWith('all-referee-'),broad=speciality===allId||refereeBroad,count=refereeBroad?(speciality.endsWith('eight')?8:4):broad?specialities.length:1,requiresInstrument=skillId==='art'&&(speciality==='instrument'||broad);
-  PACKAGES.push(choice(skillId+'-'+speciality.toLowerCase()+'-'+level,skill.label+' ('+speciality.replaceAll('-',' ')+') '+level,'73-75',{
+  const refereeBroad=speciality.startsWith('all-referee-'),broad=speciality===allId||refereeBroad,count=refereeBroad?(speciality.includes('-eight')?8:4):broad?specialities.length:1,fullCoverage=refereeBroad&&speciality.endsWith('-full'),requiresInstrument=skillId==='art'&&!fullCoverage&&(speciality==='instrument'||broad);
+  const scopeLabel=refereeBroad?(fullCoverage?'all specialities; referee '+count+'-package rule':'listed only; legacy referee '+count+'-package selection'):speciality.replaceAll('-',' ');
+  PACKAGES.push(choice(skillId+'-'+speciality.toLowerCase()+'-'+level,skill.label+' ('+scopeLabel+') '+level,'73-75',{
    skill:skillId,speciality,level,tl:skill.tl+level,bandwidth:(skill.bandwidth+level)*count,perPackageBandwidth:skill.bandwidth+level,packageCount:count,cost:skill.cost*10**level*count,characteristic:skill.characteristic,
-   specialtySource:{book:'Core Rulebook Update 2022',pages:'64-72'},...(broad?{coveredSpecialities:specialities}:{}),...(refereeBroad?{refereeBroad:true}:{}),
+   specialtySource:{book:'Core Rulebook Update 2022',pages:'64-72'},...(broad?{coveredSpecialities:specialities}:{}),...(fullCoverage?{coversAllSpecialities:true}:{}),...(refereeBroad?{refereeBroad:true}:{}),
    ...(requiresInstrument?{implemented:false,reason:'Name the actual instrument in a custom package.'}:{})
   }));
  }

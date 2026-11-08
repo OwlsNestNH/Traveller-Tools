@@ -1,3 +1,4 @@
+import {resolveSkillLevel} from './skill-coverage.mjs';
 import {externalWearProvenance} from './csc-worn-weapons.mjs';
 import {CSC_SPECIALISED_AMMUNITION_IDS} from './csc-specialised-ammunition.mjs';
 import {initialiseMedicalInventory} from './medical-nanorobots.mjs';
@@ -211,7 +212,7 @@ function evaluateSingleDesign(input){
  const brainAccounting=evaluateBrainSoftware({brain,upgrade,techLevel:tl,settings:s.brain,selection:{packages:s.skills.packages,customPackages:s.skills.customPackages},core,coreBandwidth,coreSkills,manipulators,brainSlots:chassis.size>=brain.bandwidth-(tl-brain.tl)?0:1});
  const {intelligence,intellectBW,bwUsed,zeroBW,zeroBWAllowance,bandwidthCapacity,packages,skills}=brainAccounting;
  cost+=brainAccounting.cost;used+=brainAccounting.slots;diagnostics.push(...brainAccounting.diagnostics);ledger.push(...brainAccounting.ledger);
- const equipmentOperations=options.filter(o=>o.operationRequiresSkills).map(o=>{const missing=o.operationRequiresSkills.filter(required=>{const skill=required.skill.toLowerCase().replaceAll(' ','-'),speciality=required.specialty?.replaceAll(' ','-');return !skills.some(s=>{const [base,spec]=s.id.split(':');if(base!==skill)return false;if(!speciality||spec===speciality||spec==='all')return s.level>=required.minimumLevel;if(!spec)return s.level>=required.minimumLevel;if(s.grantsOtherSpecialitiesAtZero&&required.minimumLevel===0)return true;return false;});});if(missing.length)issue('warning','EQUIPMENT_INACTIVE_SKILL','physical.'+(o.instanceId?'optionInstances.'+o.instanceId:'options.'+o.id),o.label+' is installed but lacks required operating software: '+missing.map(r=>r.skill+(r.specialty?' ('+r.specialty+')':'')+' '+r.minimumLevel).join(', ')+'.',o.source.pages);return{id:o.instanceId??o.id,optionId:o.id,status:missing.length?'inactive':'software-ready',missingRequirements:missing,externalConditionsStillApply:true};});
+ const equipmentOperations=options.filter(o=>o.operationRequiresSkills).map(o=>{const missing=o.operationRequiresSkills.filter(required=>{const skill=required.skill.toLowerCase().replaceAll(' ','-'),speciality=required.specialty?.replaceAll(' ','-');return resolveSkillLevel(skills,skill,speciality)<required.minimumLevel;});if(missing.length)issue('warning','EQUIPMENT_INACTIVE_SKILL','physical.'+(o.instanceId?'optionInstances.'+o.instanceId:'options.'+o.id),o.label+' is installed but lacks required operating software: '+missing.map(r=>r.skill+(r.specialty?' ('+r.specialty+')':'')+' '+r.minimumLevel).join(', ')+'.',o.source.pages);return{id:o.instanceId??o.id,optionId:o.id,status:missing.length?'inactive':'software-ready',missingRequirements:missing,externalConditionsStillApply:true};});
  const weaponResult=evaluateWeapons(design,manipulators,skills,options,{hours:design.kind==='biological'||endurance===null?null:Math.round(endurance),reference:'robot-endurance',powerState:equipment.powerState});diagnostics.push(...weaponResult.diagnostics);ledger.push(...weaponResult.ledger);const externalWearCost=weaponResult.weapons.filter(w=>w.externalWear).reduce((sum,w)=>sum+(w.cost??0),0),externalWear=externalWearProvenance(design);cost+=weaponResult.cost-externalWearCost;used+=weaponResult.slots;
  let droneLink=null;if(design.kind==='drone'){droneLink=evaluateDroneInterface(design,{hasDroneInterface:options.some(o=>o.effects?.droneInterface),hasCommunications:options.some(o=>o.family==='transceiver'||o.id==='wireless')});diagnostics.push(...droneLink.diagnostics);}
  let avatarLink=null;
@@ -240,11 +241,11 @@ function evaluateSingleDesign(input){
  if(used>capacity)error('SLOTS_EXCEEDED','physical','Installed components exceed available slots.','13');
  issue('warning','PARTIAL_COVERAGE','coverage','This result checks selected implemented rules only, not every Handbook option. See coverage gaps.');
  const status=diagnostics.some(d=>d.severity==='error')?'invalid':diagnostics.some(d=>d.severity==='blocker')?'blocked':'verified';
- const athletics=packages.find(p=>p.skill==='athletics'&&p.level===0);
- const athleticsStrength=packages.find(p=>p.skill==='athletics'&&p.speciality==='strength')??athletics,athleticsDexterity=packages.find(p=>p.skill==='athletics'&&p.speciality==='dexterity')??athletics;
+ const standardSkills=skills.filter(skill=>skill.characteristic!=='hard-coded');
+ const athleticsStrength=resolveSkillLevel(standardSkills,'athletics','strength',{untrained:null}),athleticsDexterity=resolveSkillLevel(standardSkills,'athletics','dexterity',{untrained:null});
  const skillEquivalents=manipulators.flatMap(arm=>[
- ...(athleticsStrength?[{skill:'athletics',speciality:'strength',manipulatorId:arm.id,level:athleticsStrength.level+characteristicDM(arm.strength)}]:[]),
- ...(athleticsDexterity?[{skill:'athletics',speciality:'dexterity',manipulatorId:arm.id,level:athleticsDexterity.level+characteristicDM(arm.dexterity)}]:[])
+ ...(athleticsStrength!==null?[{skill:'athletics',speciality:'strength',manipulatorId:arm.id,level:athleticsStrength+characteristicDM(arm.strength)}]:[]),
+ ...(athleticsDexterity!==null?[{skill:'athletics',speciality:'dexterity',manipulatorId:arm.id,level:athleticsDexterity+characteristicDM(arm.dexterity)}]:[])
  ]);
  if(p.agility)skillEquivalents.push({skill:'athletics',speciality:'dexterity',source:'agility-enhancement',level:p.agility});
  if(p.powerPacks&&!equipment.powerState.limited)skillEquivalents.push({skill:'athletics',speciality:'endurance',source:'power-packs',level:p.powerPacks});

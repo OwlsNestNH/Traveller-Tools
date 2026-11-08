@@ -109,6 +109,7 @@ node --test tools/robot-builder/verification/*.test.mjs
 python3 -m http.server 8778 --bind 127.0.0.1
 # In another terminal:
 node tools/robot-builder/verification/browser.mjs /path/to/playwright
+node tools/robot-builder/verification/handbook-skill-coverage-browser.mjs /path/to/playwright
 node tools/robot-builder/verification/construction-browser.mjs /path/to/playwright
 node tools/robot-builder/verification/vehicle-options-browser.mjs /path/to/playwright
 node tools/robot-builder/verification/conditional-melee-browser.mjs /path/to/playwright
@@ -141,3 +142,8 @@ Modification identity is independent of magazine source and capacity variant. In
 Source hardware, configured per-copy ammunition and loaded attack facts are separate. Reserves do not change active attacks. Zero initial loads do not create loaded attacks. Mixed or partially loaded links retain purchasable inventory without a common damage/AP profile or linked bonus. Homogeneous Extended Range uses the reduced dice count for the linked flat bonus; APDS subtracts points per die. Baton retains its damage expression, removes AP/Blast and shows conditional half-Stun rounded up with an ordinary remainder, leaving armour-processing order unresolved. Modified shotgun loads do not inherit pellet/spread benefits. Fractional ranges remain exact; sight thresholds and stock range bands remain independent. These facts do not simulate combat.
 
 The editor, review, component/limb projections and actual Print statblock use selected labels and figures, source references and unresolved-state labels. JSON/import/save preserve optional fields and retained unavailable identities. The source text and private audit remain outside Git.
+## Handbook skill coverage
+
+Standard software resolves purchased specialities and listed bundles at their installed level, with Core p58 level-zero access to other same-skill specialities. Profession retains its exception. Characteristic-based Athletics equivalents and equipment/weapon readiness use that same coverage; hard-coded functions remain limited to their stated tasks. CSC whip stays separate from the four Core Melee purchases and receives no free positive level.
+
+Robot Handbook p73 full coverage is an explicit referee selection, available with four or eight same-level purchases, including Art and Profession. New full-coverage identities include open/custom specialities only under that selected rule. Existing all-listed and legacy referee identities keep their finite coverage, prices and Bandwidth; loading a save never upgrades them. Additional overlapping software remains a correctable duplicate rather than a free or discounted grant. Review and Print retain full-versus-listed scope, source and referee qualification.
