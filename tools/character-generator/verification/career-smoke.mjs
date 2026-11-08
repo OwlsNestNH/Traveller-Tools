@@ -23,7 +23,7 @@ const seeds=option('seeds',20,1,500),termGoal=option('terms',3,1,10),mental=opti
 const sourceURL=new URL('../engine/session.mjs',import.meta.url);
 let source=await readFile(sourceURL,'utf8');
 source=source.replace(/from\s+'(\.\/[^']+)'/g,(_,relative)=>'from '+JSON.stringify(new URL(relative,sourceURL).href));
-source+='\nexport const continuationAudit={initial,enterCareer,apply,trainingOptions,exitOptions,activeReeducation,activeMerchantFine};';
+source+='\nexport const continuationAudit={initial,enterCareer,apply,trainingOptions,exitOptions,activeReeducation,activeMerchantFine,advisoryRecord,advisoryOptions,crossCareerTraining};';
 const {continuationAudit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const failures=[],stages={},sourceStops={},completedTerms={},completedStages={};
 let scenarios=0,completed=0;
@@ -51,6 +51,7 @@ for(const career of CAREERS)for(const assignment of career.assignments)for(let s
    if(state.stage==='book-step') {
     sourceStops[state.pending.kind]=(sourceStops[state.pending.kind]??0)+1;break;
    }
+   if(state.stage==='advisory-cash-source'||state.stage==='advisory-cash'&&state.cashRolls>=3&&a.advisoryRecord(state)?.cashLimitDecision?.decision!=='allow-extra'){sourceStops['advisory-cash-ruling']=(sourceStops['advisory-cash-ruling']??0)+1;break;}
    if(state.stage==='relationship-loss'&&!relationshipLossOptions(state.character.relationships).length){sourceStops['zhodani-relationship-loss']=(sourceStops['zhodani-relationship-loss']??0)+1;break;}
    if(state.stage==='reeducation-decisions'&&a.activeReeducation(state)?.plan?.requirements.length){sourceStops['zhodani-reeducation']=(sourceStops['zhodani-reeducation']??0)+1;break;}
    if(['career','deceased','finish','retirement'].includes(state.stage)) {
@@ -61,6 +62,9 @@ for(const career of CAREERS)for(const assignment of career.assignments)for(let s
    let command;
    switch(state.stage) {
     // These synthetic characters have no anagathic history. Never invent referee decisions.
+    case 'cross-career-training':{const options=a.crossCareerTraining(state).options;command={type:'cross-career-training',payload:{assignment:options[(seed+step)%options.length].id}};break;}
+    case 'advisory-career':{const options=a.advisoryOptions();command={type:'advisory-career',payload:{careerId:options[(seed+step)%options.length].id}};break;}
+    case 'advisory-cash':command={type:'advisory-cash',payload:{creditIds:[]}};break;
     case 'relationship-loss':{const options=relationshipLossOptions(state.character.relationships);command={type:'resolve-relationship-loss',payload:{index:options[(seed+step)%options.length].index}};break;}
     case 'merchant-fine-roll':command={type:'merchant-fine-roll'};break;
     case 'merchant-fine-decision':command={type:'resolve-merchant-fine',payload:{decision:seed%2===0&&state.character.cash>=a.activeMerchantFine(state).amount?'pay':'decline'}};break;

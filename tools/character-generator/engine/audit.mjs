@@ -10,6 +10,9 @@ export function characterChanges(before,after){
  }
  // Persisted outcomes are audited without exposing internal continuation/effect queues.
  const ledgerFields={
+  benefitCredits:['id','source','originCareerId','originCareerIndex','value','scope','status','consumption'],
+  advisoryServices:['id','source','originCareerId','originCareerIndex','careerTerms','generationTerms','age','status','careerId','ruling','training','cash','cashLimitDecision','completion'],
+  crossCareerRoutes:['id','kind','source','originCareerId','originCareerIndex','careerTerms','generationTerms','age','status','check','tables','training','completion'],
   merchantFines:['id','source','status','die','amount','origin','decision','payment','reeducationId','completion'],
   reeducations:['id','source','status','origin','roll','fineDie','decisions','decisionHistory','timeline','completion']
  };

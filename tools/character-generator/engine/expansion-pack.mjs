@@ -1969,7 +1969,7 @@ outcomes('zhodani.agent',{
  3:C('Drive / Flyer / Pilot / Seafarer'),
  4:[RAND('1D',[[1,1,[I()]],[2,6,C('Survival / Medic')]])],
  5:[B()],6:[relationship('Contact',1,'D3')],8:[K('EDU',8,[ANY('existing')])],
- 9:[K('Investigate',8,[T('events',{career:'zhodani.prole',dice:'2D'}),T('training',{career:'zhodani.prole',tableChoice:'assignment',dice:'1D'})],[T('mishap',{career:'zhodani.prole',dice:'1D',keepCareer:true})])],
+ 9:[{kind:'zhodani-undercover',source:{id:'aliens',page:259}}],
  10:C('Admin / Electronics (computers)'),11:[relationship('Ally'),A(2)],12:[P('next-check')]
 },{
  1:[I(2,'lower')],2:[K('Advocate',8,[BR('retain-term')],[RE()])],
@@ -2003,7 +2003,7 @@ outcomes('zhodani.entertainer',{
 });
 outcomes('zhodani.government',{
  3:C('Animals (riding) / Art / Carouse'),
- 4:[U('zhodani.government',265,'Select another Zhodani career, roll its service/assignment training as directed, and gain one cash benefit roll from that career.')],
+ 4:[{kind:'zhodani-advisory',source:{id:'aliens',page:265}}],
  5:[B()],6:[...C('Admin / Advocate / Diplomat / Persuade'),relationship('Rival')],
  8:[K('EDU',8,[ANY('existing')])],
  9:[Q([['Refuse',[relationship('Enemy'),T('mishap',{dice:'1D'})]],['Accept',[K('Diplomat|Persuade',8,C('Carouse / Persuade / Tactics'))]]])],
@@ -2049,7 +2049,7 @@ outcomes('zhodani.navy',{
  4:[I(2,'lower'),R(1)],5:[SOC(10,[A(-2),relationship('Enemy')],[RE()])],6:[I()]
 });
 outcomes('zhodani.prole',{
- 3:[B()],4:[B()],5:[relationship('Contact',1,'D3')],6:[K('EDU',8,[ANY('existing')])],
+ 3:[{kind:'benefit-credit',scope:'any',value:1,source:{id:'aliens',page:273}}],4:[{kind:'benefit-credit',scope:'career',value:1,source:{id:'aliens',page:273}}],5:[relationship('Contact',1,'D3')],6:[K('EDU',8,[ANY('existing')])],
  8:[Q([['Report',[A(2)]],['Keep secret',[relationship('Ally')]]])],9:[A(2)],10:C('Drive=1 / Flyer=1 / Pilot=1'),
  11:[Q([['Contact',[relationship('Contact')]],['Skill',[ANY('existing')]]])],12:[P()]
 },{

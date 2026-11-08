@@ -84,8 +84,8 @@ test('pending commands are strict, block unrelated changes and preserve action r
  r=run(r,'gm-replay',{revision:original.number,rollIndex:0,values:[4],reason:'Referee corrected the initial fine die.'});
  assert.equal(r.state.currentMerchantFine.die,4);assert.equal(r.state.currentMerchantFine.payment,null);assert.equal(record(r).terms,0);roundtrip(r);
 });
-test('revision .5 rejects earlier published revisions before reconstruction without modifying old bytes',()=>{
- assert.equal(RULES_REVISION,'character-preview-2026-11-08.5');
+test('revision .6 rejects earlier published revisions before reconstruction without modifying old bytes',()=>{
+ assert.equal(RULES_REVISION,'character-preview-2026-11-08.6');
  for(const rulesRevision of ['character-preview-2026-11-08.2','character-preview-2026-11-08.3','character-preview-2026-11-08.4']){
   const old=structuredClone(ordinary.session);old.rulesRevision=rulesRevision;old.events.push({invalid:true});const bytes=JSON.stringify(old);
   const out=api({operation:'project',session:old});assert.equal(out.ok,false);assert.match(out.error.message,/Legacy or different rules revision/);assert.equal(JSON.stringify(old),bytes);

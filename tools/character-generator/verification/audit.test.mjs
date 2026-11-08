@@ -37,3 +37,13 @@ test('source ledgers audit choices and treatment time without copying continuati
  changes.find(c=>c.path==='reeducations.0.decisions').after.chronology.reason='Changed only in derived log';
  assert.equal(after.reeducations[0].decisions.chronology.reason,'Referee ruling');
 });
+
+
+test('borrowed career awards retain source, rolls and explicit cap rulings in the audit',()=>{
+ const after={crossCareerRoutes:[{id:'route-1',originCareerId:'zhodani.agent',tables:[{careerId:'zhodani.prole',table:'mishap',row:4}],completion:null,continuation:{queue:['internal']}}],advisoryServices:[{id:'advisory-1',careerId:'zhodani.prole',ruling:{table:'service',timing:'immediate',countsTowardCashLimit:true},cash:{die:2,modifier:1,amount:10000,cashRollsBefore:3,cashRollsAfter:4},cashLimitDecision:{decision:'allow-extra',reason:'GM exception',cashRolls:3,limit:3},context:{effects:['internal']}}]};
+ const changes=characterChanges({},after);
+ assert.ok(changes.some(c=>c.path==='crossCareerRoutes.0.tables'&&c.after[0].careerId==='zhodani.prole'));
+ assert.ok(changes.some(c=>c.path==='advisoryServices.0.cashLimitDecision'&&c.after.reason==='GM exception'));
+ assert.ok(changes.some(c=>c.path==='advisoryServices.0.ruling'&&c.after.countsTowardCashLimit===true));
+ assert.doesNotMatch(JSON.stringify(changes),/internal|continuation|context/);
+});

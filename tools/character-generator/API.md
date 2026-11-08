@@ -100,3 +100,22 @@ Prole mishap5 pauses at `relationship-loss`. Projected `relationshipLossOptions`
 Scholar distinct Science awards use `choose-skill {name}` at `skill-choice`. `pendingChoice.selected` records earlier selections and `count` is the remaining award count. Comparison is canonical and case-insensitive for distinctness. Save/import and source-limit interruptions retain both the previous choice and downstream effects. Ordinary generic skill names still follow the supported skill grammar.
 
 Government mishap4 uses the existing `choose-effect {index}` choices for PSI, Melee or Recon. One selected check is rolled, followed by source-prescribed stay or injury handling. It does not grant an additional ordinary Event after failed survival.
+
+
+## Borrowed Zhodani career results
+
+Agent Event 9 records `character.crossCareerRoutes` while retaining the actual Agent career. Each route keeps its Investigate check, ordered borrowed Prole table results, selected assignment roll and completion. Nested Prole Events use Prole Mishaps, not Agent Mishaps. Source interruptions retain borrowed table provenance; career benefits, rank and time remain with the Agent. Death ends the route without queued training or extra career credit.
+
+Successful routes pause at `cross-career-training` with `currentCrossCareerTraining.options`. Use `cross-career-training {assignment}` once. A failed undercover check has no assignment award. The selected skill may require a normal speciality choice before the route completes.
+
+Government Event 4 pauses at `advisory-career`. Use the dropdown choices in `currentAdvisory.options` and send `advisory-career {careerId}`. The fixed interpretation uses another Zhodani career's Service Skills table, then its cash benefit immediately. It does not enter that career. Skills resolve before `advisory-cash`; send `advisory-cash {creditIds?:[]}` for the same selected career's cash roll.
+
+`character.advisoryServices` records the source interpretation, origin, chosen career, service die, cash die/modifier/result, cash-roll and optional WLT changes, GM decisions and completion. The cash roll uses Gambler and explicitly selected eligible global credits, never Government rank or scoped modifiers, and does not spend an ordinary Government benefit. `benefitRollHistory` links the separate entitlement.
+
+At the lifetime cash limit, `advisoryCashBlocked` is true and the entitlement remains saved. `resolve-advisory-cash-limit {decision:'forfeit'|'allow-extra',reason}` requires GM mode and an explicit reason. There is no default waiver or fourth roll. An override remains a GM exception to the normal cap.
+
+An unprinted modified result pauses at `advisory-cash-source`, preserving the original die, selected credits and used cash roll. `resolve-advisory-cash-result {amount,reason}` requires GM mode, a bounded nonnegative integer amount and a reason; it does not roll or consume anything again.
+
+## Optional one-roll benefit credits
+
+`character.benefitCredits` retains each source-earned credit's identity, origin, value, scope, status and consumption. Prole Event 3 is global; Event 4 is restricted to the originating career's ordinary benefits. `benefitCreditOptions` gives the eligible options at ordinary benefits and advisory cash. Send `creditIds` on `benefit` or `advisory-cash` to apply only the selected credits. Omission or an empty array preserves them. Duplicate and ineligible IDs reject without mutation. Cash-source resolution, restore and replay retain exactly one consumption for the effective roll.

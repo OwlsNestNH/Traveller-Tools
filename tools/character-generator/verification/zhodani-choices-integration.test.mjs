@@ -90,9 +90,9 @@ test('protected Government successful check resumes the existing Event at advanc
  let r=buildGovernmentCheckFixture({protectedStay:true});r=force(r,'choose-effect',{index:0},[6,6]);
  assert.equal(r.state.stage,'advancement');assert.equal(career(r).forcedExit,false);assert.equal(career(r).terms,0);assert.equal(r.log.at(-1).rolls.length,1);roundtrip(r);
 });
-test('revision .5 rejects every prior candidate unchanged before replay',()=>{
- assert.equal(RULES_REVISION,'character-preview-2026-11-08.5');
- for(const rev of [2,3,4]){const old=structuredClone(prole.session);old.rulesRevision='character-preview-2026-11-08.'+rev;const before=JSON.stringify(old);
+test('revision .6 rejects every prior candidate unchanged before replay',()=>{
+ assert.equal(RULES_REVISION,'character-preview-2026-11-08.6');
+ for(const rev of [2,3,4,5]){const old=structuredClone(prole.session);old.rulesRevision='character-preview-2026-11-08.'+rev;const before=JSON.stringify(old);
  const r=api({operation:'project',session:old});assert.equal(r.ok,false);assert.match(r.error.message,/Legacy or different rules revision/);assert.equal(JSON.stringify(old),before);}
 });
 
