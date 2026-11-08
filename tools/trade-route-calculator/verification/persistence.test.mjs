@@ -381,3 +381,85 @@ test('Dashboard snapshot does not consume prepared or committed jump allowances'
  const env=environment(t),w=x=>({id:x+',0',x,y:0,name:x?'Destination':'Origin',sector:'Test',hex:x?'0201':'0101',uwp:'A788899-C',zone:'Safe'});let source=initial();Object.assign(source,{initialized:true,actual:'0,0',worlds:{'0,0':w(0),'1,0':w(1)},route:['0,0','1,0']});const prepared=prepareJump(source,()=>({dice:[2,2,2,2,2,2],total:12}));source=transition(prepared.state,'Jump: Origin → Destination',s=>commitJump(s,{attemptId:prepared.attempt.id,elapsed:160}));assert.equal(jumpUndoEligibility(source).allowed,true);
  env.values.set(KEY,JSON.stringify(source));const store=env.store();await store.acquire();await tick();assert.equal(jumpUndoEligibility(store.read()).allowed,true);assert.deepEqual(store.read().jumpAttempts,source.jumpAttempts);assert.deepEqual(store.read().events,source.events);const next=undoJump(store.read());store.save(next,source.revision);assert.equal(dashboardData(store.read()).adjustment,'0');assert.deepEqual(store.read().dashboardBaseline,createDashboardBaseline(source));
 });
+
+import {validateImport,isFleet} from '../js/fleet.mjs';
+
+test('fleet migration, switching, edits and legacy replacement preserve independent ships',async t=>{
+ const env=environment(t),seen=[],store=env.store((s,m)=>seen.push({s,m}));await store.acquire();await tick();
+ const a=populated();a.ship.name='First';store.replace(a,0);const first=store.read(),before=JSON.parse(env.values.get(KEY));
+ assert.equal(isFleet(before),false);const firstId=store.activeShipId;
+ const second=initial();second.ship.name='Second';store.addShip(second,store.context());const secondId=store.activeShipId;
+ assert.notEqual(secondId,firstId);assert.equal(store.listShips().length,2);assert.equal(seen.at(-1).m.fleetChanged,true);
+ assert.deepEqual(JSON.parse(env.values.get(KEY)).ships[0].campaign,before);
+ store.save(transition(store.read(),'Second money',s=>s.bank='77'),store.context());
+ store.selectShip(firstId,store.context());assert.deepEqual(store.read(),first);
+ const untouched=JSON.parse(env.values.get(KEY)).ships[1];store.replace(initial(),store.context());
+ assert.deepEqual(JSON.parse(env.values.get(KEY)).ships[1],untouched);assert.equal(store.read().initialized,false);
+ store.selectShip(secondId,store.context());assert.equal(store.read().bank,'77');
+ store.save(undo(store.read()),store.context());assert.equal(store.read().bank,'0');
+ const reloaded=env.store();assert.equal(reloaded.activeShipId,secondId);assert.equal(reloaded.listShips()[1].name,'Second');
+});
+
+test('fleet operations reject stale identity, read-only and quota failures atomically',async t=>{
+ const env=environment(t),store=env.store();await store.acquire();await tick();const old=store.context();
+ store.addShip();assert.equal(store.read().revision,old.revision);let raw=env.values.get(KEY);
+ for(const action of [()=>store.save(initial(),old),()=>store.replace(initial(),old),()=>store.selectShip(old.shipId,old),()=>store.addShip(initial(),old)]){assert.throws(action,/stale/);assert.equal(env.values.get(KEY),raw);}
+ const put=localStorage.setItem;localStorage.setItem=()=>{throw Error('Quota exceeded');};
+ for(const action of [()=>store.addShip(),()=>store.selectShip(old.shipId)]){assert.throws(action,/Quota/);assert.equal(env.values.get(KEY),raw);}
+ localStorage.setItem=put;const reader=env.store();await reader.acquire();await tick();
+ for(const action of [()=>reader.addShip(),()=>reader.selectShip(old.shipId),()=>reader.replace(JSON.parse(raw),0)])assert.throws(action,/read-only/);
+ assert.equal(env.values.get(KEY),raw);
+});
+
+test('fleet imports validate every member, preserve histories and replace the whole group',async t=>{
+ const env=environment(t),store=env.store();await store.acquire();await tick();store.addShip();
+ const incoming={fleetVersion:1,activeShipId:'two',ships:[{id:'one',campaign:populated()},{id:'two',campaign:initial()}]};
+ const raw=env.values.get(KEY);
+ for(const mutate of [s=>s.fleetVersion=2,s=>s.ships=[],s=>s.activeShipId='absent',s=>s.ships[1].id='one',s=>s.ships[0].campaign.ship=[],s=>s.ships.push(null)]){
+  const invalid=structuredClone(incoming);mutate(invalid);assert.throws(()=>validateImport(invalid));assert.throws(()=>store.replace(invalid,store.context()));assert.equal(env.values.get(KEY),raw);
+ }
+ const expectation=store.context();store.replace(incoming,expectation,'replacement');
+ assert.equal(store.activeShipId,'two');assert.deepEqual(store.listShips().map(s=>s.id),['one','two']);assert.equal(store.read().revision,expectation.revision+1);
+ const saved=JSON.parse(env.values.get(KEY));assert.deepEqual(saved.ships[0].campaign.undo,incoming.ships[0].campaign.undo);assert.equal(saved.ships[0].campaign.revision,incoming.ships[0].campaign.revision);
+ assert.equal(incoming.ships[1].campaign.revision,0,'Import never mutates caller input');
+});
+
+test('fleet publication failure reports committed and a later reader sees the whole durable group',async t=>{
+ const env=environment(t),store=env.store();await store.acquire();await tick();store.onChange=()=>{throw Error('Render failed');};
+ assert.throws(()=>store.addShip(),error=>error.committed===true&&error.code==='SAVE_COMMITTED_PUBLICATION_FAILED');
+ assert.equal(store.listShips().length,2);const id=store.activeShipId;
+ store.onChange=()=>{};store.selectShip(store.listShips()[0].id);store.onChange=()=>{throw Error('Render failed');};
+ assert.throws(()=>store.selectShip(id),error=>error.committed===true);assert.equal(env.store().activeShipId,id);
+});
+
+test('fleet backups include every ship and preserve exact saved bytes',async t=>{
+ const env=environment(t),store=env.store();await store.acquire();await tick();store.addShip();store.addShip();
+ const raw=env.values.get(KEY),originalDocument=Object.getOwnPropertyDescriptor(globalThis,'document'),create=URL.createObjectURL,revoke=URL.revokeObjectURL,timeout=globalThis.setTimeout;let captured,clicked=false;
+ Object.defineProperty(globalThis,'document',{configurable:true,value:{body:{append(){}},createElement:()=>({click(){clicked=true;},remove(){}})}});
+ URL.createObjectURL=blob=>{captured=blob;return 'blob:test';};URL.revokeObjectURL=()=>{};globalThis.setTimeout=fn=>{fn();};
+ try{store.backup();assert.equal(clicked,true);assert.equal(await captured.text(),raw);assert.equal(JSON.parse(await captured.text()).ships.length,3);}
+ finally{URL.createObjectURL=create;URL.revokeObjectURL=revoke;globalThis.setTimeout=timeout;if(originalDocument)Object.defineProperty(globalThis,'document',originalDocument);else delete globalThis.document;}
+});
+
+test('damaged inactive fleet member enters recovery without overwriting any ship',async t=>{
+ const env=environment(t),bad={fleetVersion:1,activeShipId:'good',ships:[{id:'good',campaign:initial()},{id:'bad',campaign:initial()}]};bad.ships[1].campaign.undo=[{label:'bad',inverse:[{path:['bank']}]}];const raw=JSON.stringify(bad);env.values.set(KEY,raw);
+ const store=env.store();await store.acquire();await tick();assert.equal(store.recovery,true);assert.equal(env.values.get(KEY),raw);assert.throws(()=>store.addShip());
+ const restore={fleetVersion:1,activeShipId:'restored',ships:[{id:'restored',campaign:initial()}]};store.replace(restore,0);assert.equal(store.recovery,false);assert.equal(store.activeShipId,'restored');
+});
+
+test('fleet lock takeover reloads selection and rejects the former editor',async t=>{
+ const env=environment(t),a=env.store(),b=env.store();await a.acquire();await tick();a.addShip();const id=a.activeShipId;
+ await b.acquire(true);a.yield();await tick();assert.equal(b.editable,true);assert.equal(b.activeShipId,id);assert.throws(()=>a.addShip(),/read-only/);
+ b.selectShip(b.listShips()[0].id);assert.equal(a.activeShipId,b.activeShipId);
+});
+
+test('fleet replacement announces external group change even when selected identity is reused',async t=>{
+ const env=environment(t),seen=[],store=env.store((s,m)=>seen.push(m));await store.acquire();await tick();store.addShip();const incoming=JSON.parse(env.values.get(KEY));
+ store.replace(incoming,store.context(),'token');assert.equal(seen.at(-1).fleetChanged,true);assert.equal(seen.at(-1).replacementToken,'token');
+});
+
+test('storage refresh enters recovery for damaged fleet members and blocks normal writes',async t=>{
+ const env=environment(t),seen=[],store=env.store(s=>seen.push(s));await store.acquire();await tick();store.addShip();const good=env.values.get(KEY),bad=JSON.parse(good);bad.ships[0].campaign.ship=[];const raw=JSON.stringify(bad);env.values.set(KEY,raw);
+ assert.doesNotThrow(()=>store.refresh());assert.equal(store.recovery,true);assert.equal(seen.at(-1).initialized,false);assert.throws(()=>store.save(initial(),0),/Restore or reset/);assert.equal(env.values.get(KEY),raw);
+ env.values.set(KEY,good);store.refresh();assert.equal(store.recovery,false);assert.equal(store.listShips().length,2);
+});

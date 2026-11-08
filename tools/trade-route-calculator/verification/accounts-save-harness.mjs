@@ -73,7 +73,7 @@ export function accountsDOM(modalMarkup=accountsModalMarkup) {
  const ids={get(id){return baseIds.get(id)??roots.flatMap(root=>walk(root)).find(n=>n.id===id);},has(id){return !!this.get(id);},set(id,n){n.id=id;n.setAttribute?.('id',id);baseIds.set(id,n);return this;},delete(id){const n=this.get(id);n?.remove();return baseIds.delete(id);},values(){return [...baseIds.values()];}};
  document={activeElement:null,createElement:tag=>{const n=node(tag);n.getContext=()=>({measureText:t=>({width:String(t).length*6})});return n;},getElementById:id=>ids.get(id)||null,addEventListener(type,listener){if(!listeners.has(type))listeners.set(type,[]);listeners.get(type).push(listener);},querySelectorAll:selector=>roots.flatMap(root=>[root,...walk(root)]).filter(n=>match(n,selector)),querySelector(selector){return this.querySelectorAll(selector)[0]??null;}};
  const root=node('body');roots.push(root);document.body=root;
- for(const id of ['summary','ship-actions','tabs','main','notes','takeover','import-file','save-status','message']){const n=node('div',{id});baseIds.set(id,n);root.append(n);}
+ for(const id of ['fleet-controls','summary','ship-actions','tabs','main','notes','takeover','import-file','save-status','message']){const n=node('div',{id});baseIds.set(id,n);root.append(n);}
  // Parse the selected complete source's real shell. Heading/X and both action
  // buttons belong to its form; never shadow parsed nodes with detached ID stubs.
  parse(root,modalMarkup);

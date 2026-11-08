@@ -988,3 +988,31 @@ The Main toolbar includes Backup and Load shortcuts beside Copy Player Link. The
 Accounting periods are read-only views. All dates is the default; From and To use inclusive Imperial campaign dates (DDD-YYYY), including the final day's last hour. Apply commits only the view, Clear returns to All dates, and unapplied dates disable PDF preview. Current visit uses a recorded setup or jump boundary rather than matching the world name; uncertain visit history requires an explicit date range. Opening balance, recorded income, expenses, closing balance and running balances use exact whole Credits. Income includes deposits and opening funds, not trading profit. Missing opening history remains Unknown; All dates can still show the saved current bank.
 
 Accounting PDF opens a private summary of the active period with optional transaction detail and the existing Print / Save as PDF controls. Screen and PDF retain newest-ledger-entry order, preserve existing audit controls, and do not alter the saved campaign. Accounting notes and financial detail are never appended to the existing player-safe exports.
+
+## Multiple ships
+
+Use the compact **Ship** dropdown to switch between ships saved in this browser.
+**Add ship** creates an empty ship without replacing the current one; then set up
+its starting world/balances or use **Load** to import an older single-ship backup.
+Each ship has its own cargo, bank, route, clock, settings, contracts and History/Undo.
+Rename the selected ship in Settings. Finish or cancel open reviews, services and
+route edits before switching; unconfirmed Settings/search input asks before discard.
+
+**Backup / Save campaign (JSON)** saves the entire group and its selected ship.
+Loading a group backup explicitly replaces the entire group after backup acknowledgement.
+Loading an older single-ship backup, or Reset campaign, affects only the selected
+ship and preserves the others. The old single-ship save remains readable; adding
+the second ship converts it atomically to a versioned fleet envelope in the same
+browser storage key, retaining the original campaign. Existing single-ship files
+remain accepted. Group files require this version of the app or later.
+
+Only one tab edits the group at a time. Take over editing moves the writer lock,
+not ownership of individual ships. Storage errors leave the prior group intact;
+corrupt group data enters recovery and can still be exported raw. No campaign
+data is uploaded. Use regular backups: browser storage is limited and clearing
+site data removes all locally saved ships. Player links, reports and trade/PDF
+views describe only the selected ship, not the private group backup.
+
+Verification: the native persistence suite covers migration, atomicity, validation
+and recovery; fleet-browser.test.mjs exercises switching, independent balances,
+reload, import/export, quota rejection and writer takeover at desktop/mobile sizes.

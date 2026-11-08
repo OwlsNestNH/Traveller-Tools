@@ -1,3 +1,4 @@
+import {validateImport,isFleet,selectedCampaign,shipIdentity,withCampaign,LEGACY_SHIP_ID} from './fleet.mjs?v=fleet-20261108-1';
 import {createDashboardBaseline,sameDashboardBaseline} from './dashboard-baseline.mjs?v=compact-trade-20261021-118';
 import {initial,validate} from './state.mjs?v=compact-trade-20261021-118';
 export const KEY='traveller-trade-route-calculator:v1';
@@ -11,9 +12,22 @@ export class SaveCommittedPublicationError extends Error{
  constructor(revision,cause){super('Saved revision '+revision+', but publication failed: '+String(cause?.message??cause),{cause});this.name='SaveCommittedPublicationError';this.code='SAVE_COMMITTED_PUBLICATION_FAILED';this.committed=true;this.revision=revision;}
 }
 function serializedCampaign(next){
- validate(next);
- const raw=JSON.stringify(next),state=validate(JSON.parse(raw));
+ validateImport(next);
+ const raw=JSON.stringify(next),document=validateImport(JSON.parse(raw)),state=validate(structuredClone(selectedCampaign(document)));
  return {raw,state};
+}
+function assertExpected(document,expected){
+ const revision=typeof expected==='object'?expected?.revision:expected;
+ if(selectedCampaign(document).revision!==revision||typeof expected==='object'&&shipIdentity(document)!==expected.shipId)throw Error('This preview is stale. Reload it before committing.');
+}
+function requireWriter(store){
+ if(store.reloadRequired)throw Error('Reload this page before editing the campaign again.');
+ if(store.recovery)throw Error('Restore or reset the saved campaign before editing.');
+ if(!store.editable)throw Error('This tab is read-only. Take over editing first.');
+}
+function publish(store,saved,metadata){
+ try{store.onChange(saved.state,metadata);}
+ catch(cause){throw new SaveCommittedPublicationError(saved.state.revision,cause);}
 }
 function saveWithBoundary(next,expected,publicationToken,replacement){
   let saved;
@@ -21,9 +35,9 @@ function saveWithBoundary(next,expected,publicationToken,replacement){
    if(this.reloadRequired)throw Error('Reload this page before editing the campaign again.');
    if(this.recovery)throw Error('Restore or reset the saved campaign before editing.');
    if(!this.editable)throw Error('This tab is read-only. Take over editing first.');
-   const current=this.read();if(current.revision!==expected)throw Error('This preview is stale. Reload it before committing.');
+   const document=this.readDocument();assertExpected(document,expected);const current=validate(structuredClone(selectedCampaign(document)));
    if(!replacement&&current.dashboardBaseline&&!sameDashboardBaseline(current.dashboardBaseline,next.dashboardBaseline)&&!( !current.initialized&&next.initialized&&sameDashboardBaseline(next.dashboardBaseline,createDashboardBaseline(next,'opening')) ))throw Error('Dashboard starting point changed. Reopen this preview before committing.');
-   saved=serializedCampaign(next);
+   saved=serializedCampaign(withCampaign(document,next));
    // localStorage.setItem is atomic: a throwing write leaves the old value.
    localStorage.setItem(KEY,saved.raw);
   }catch(cause){throw new SaveNotCommittedError(cause);}
@@ -32,9 +46,35 @@ function saveWithBoundary(next,expected,publicationToken,replacement){
   catch(cause){throw new SaveCommittedPublicationError(revision,cause);}
  }
 export class Store{
- constructor(onChange,onRole,onDiagnostic){this.onDiagnostic=onDiagnostic;this.onChange=onChange;this.onRole=onRole;this.editable=false;this.release=null;this.acquisition=null;this.id=crypto.randomUUID();this.channel=typeof BroadcastChannel==='function'?new BroadcastChannel(KEY):null;this.channel?.addEventListener('message',e=>{if(e.data.type==='takeover'&&e.data.id!==this.id)this.yield();});window.addEventListener('storage',e=>{if(e.key===KEY){this.onChange(this.read());}if(e.key===KEY+':takeover'&&e.newValue!==this.id)this.yield();});}
+ constructor(onChange,onRole,onDiagnostic){this.onDiagnostic=onDiagnostic;this.onChange=onChange;this.onRole=onRole;this.editable=false;this.release=null;this.acquisition=null;this.id=crypto.randomUUID();this.channel=typeof BroadcastChannel==='function'?new BroadcastChannel(KEY):null;this.channel?.addEventListener('message',e=>{if(e.data.type==='takeover'&&e.data.id!==this.id)this.yield();});window.addEventListener('storage',e=>{if(e.key===KEY){this.refresh();}if(e.key===KEY+':takeover'&&e.newValue!==this.id)this.yield();});}
+ refresh(){
+  let state;
+  try{state=this.read();this.recovery=false;}
+  catch(error){this.diagnostic(error,'storage-read');this.recovery=true;this.recoveryMessage=error.message;state=initial();}
+  this.onChange(state);
+  if(this.recovery)this.onRole(this.editable,'Recovery mode: restore saved data');
+ }
  diagnostic(error,context){try{this.onDiagnostic?.(error,context);}catch{/* Diagnostics cannot affect locks or saves. */}}
- read(){const raw=localStorage.getItem(KEY);if(!raw)return initial();let s;try{s=JSON.parse(raw);}catch{throw Error('Saved data could not be read. Export the raw backup before resetting.');}return validate(s);}
+ readDocument(){const raw=localStorage.getItem(KEY);if(!raw)return initial();let s;try{s=JSON.parse(raw);}catch{throw Error('Saved data could not be read. Export the raw backup before resetting.');}return validateImport(s);}
+ read(){return validate(structuredClone(selectedCampaign(this.readDocument())));}
+ get activeShipId(){return shipIdentity(this.readDocument());}
+ context(){const document=this.readDocument();return {revision:selectedCampaign(document).revision,shipId:shipIdentity(document)};}
+ listShips(){const document=this.readDocument(),active=shipIdentity(document);return (isFleet(document)?document.ships:[{id:LEGACY_SHIP_ID,campaign:document}]).map(({id,campaign})=>({id,name:campaign.ship.name||campaign.name||'Unnamed ship',active:id===active}));}
+ changeFleet(change,expected){
+  let saved;
+  try{
+   requireWriter(this);const document=this.readDocument();assertExpected(document,expected);
+   const fleet=isFleet(document)?document:{fleetVersion:1,activeShipId:LEGACY_SHIP_ID,ships:[{id:LEGACY_SHIP_ID,campaign:document}]};
+   change(fleet);saved=serializedCampaign(fleet);localStorage.setItem(KEY,saved.raw);
+  }catch(cause){throw new SaveNotCommittedError(cause);}
+  publish(this,saved,{fleetChanged:true});return saved.state;
+ }
+ addShip(campaign=initial(),expected=this.context()){
+  return this.changeFleet(fleet=>{const id=crypto.randomUUID();const next=structuredClone(validate(campaign));if(next.initialized&&!next.dashboardBaseline)next.dashboardBaseline=createDashboardBaseline(next);fleet.ships.push({id,campaign:next});fleet.activeShipId=id;},expected);
+ }
+ selectShip(id,expected=this.context()){
+  return this.changeFleet(fleet=>{const entry=fleet.ships.find(ship=>ship.id===id);if(!entry)throw Error('Ship no longer exists. Reload the fleet.');fleet.activeShipId=id;if(entry.campaign.initialized&&!entry.campaign.dashboardBaseline)entry.campaign.dashboardBaseline=createDashboardBaseline(validate(structuredClone(entry.campaign)));},expected);
+ }
  async acquire(takeover=false){
   if(this.reloadRequired){this.onRole(false,'Reload this page before editing the campaign again.');return;}
   // A request remains owned until its held lock is released. Repeated clicks
@@ -64,11 +104,11 @@ export class Store{
      // keep the action revision, Undo trail and jump mulligan exactly as saved.
      // Preserve legacy fields verbatim; validate a clone so normalization does
      // not turn this one-time snapshot into an unrelated campaign migration.
-     const raw=localStorage.getItem(KEY),next=JSON.parse(raw);
+     const raw=localStorage.getItem(KEY),document=JSON.parse(raw),next=selectedCampaign(document);
      if(next.revision!==state.revision)throw Error('Campaign changed while starting Dashboard tracking. Reload to retry.');
      next.dashboardBaseline=createDashboardBaseline(state);
      validate(structuredClone(next));
-     localStorage.setItem(KEY,JSON.stringify(next));
+     localStorage.setItem(KEY,JSON.stringify(document));
      state=validate(next);
     }
     this.editable=true;
@@ -88,22 +128,31 @@ export class Store{
  }
  save(next,expected,saveToken){return saveWithBoundary.call(this,next,expected,saveToken,false);}
 
- backup(){const raw=localStorage.getItem(KEY)||JSON.stringify(initial());const url=URL.createObjectURL(new Blob([raw],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='traveller-campaign-'+new Date().toISOString().slice(0,10)+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}
+ backup(){const raw=localStorage.getItem(KEY)||JSON.stringify(initial());const url=URL.createObjectURL(new Blob([raw],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='traveller-fleet-'+new Date().toISOString().slice(0,10)+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}
  replace(next,expected,replacementToken){
   let saved;
   try{
    if(this.reloadRequired)throw Error('Reload this page before editing the campaign again.');
-   next=structuredClone(validate(next));next.revision=expected+1;
+   next=validateImport(next);
+   if(isFleet(next)){
+    if(!this.editable)throw Error('This tab is read-only. Take over editing first.');
+    if(!this.recovery)assertExpected(this.readDocument(),expected);
+    const campaign=selectedCampaign(next);campaign.revision=(typeof expected==='object'?expected.revision:expected)+1;
+    for(const entry of next.ships)if(entry.campaign.initialized&&!entry.campaign.dashboardBaseline)entry.campaign.dashboardBaseline=createDashboardBaseline(validate(structuredClone(entry.campaign)));
+    saved=serializedCampaign(next);localStorage.setItem(KEY,saved.raw);
+   }else{
+   next=structuredClone(validate(next));next.revision=(typeof expected==='object'?expected.revision:expected)+1;
    if(next.initialized&&!next.dashboardBaseline)next.dashboardBaseline=createDashboardBaseline(next);
    if(this.recovery){
     if(!this.editable)throw Error('Take over editing before restoring');
     saved=serializedCampaign(next);localStorage.setItem(KEY,saved.raw);
    }
+   }
   }catch(cause){throw new SaveNotCommittedError(cause);}
   if(!saved)return saveWithBoundary.call(this,next,expected,replacementToken,true);
   this.recovery=false;
   const revision=saved.state.revision;
-  try{this.onChange(saved.state,{replacementToken});this.onRole(true,'Editing in this tab');}
+  try{this.onChange(saved.state,{replacementToken,...(isFleet(next)?{fleetChanged:true}:{})});this.onRole(true,'Editing in this tab');}
   catch(cause){throw new SaveCommittedPublicationError(revision,cause);}
  }
 }

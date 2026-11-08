@@ -32,6 +32,7 @@ export function createCampaignController({getState,getStore,getKnownWorlds,getRo
   // Compatibility for synchronous callers/tests only. Async provenance uses
   // a one-use token tied to this exact pending write, never a global flag.
   isLocalSave:()=>localSave,
+  isPending:()=>!!pending,
   isLocalPublication(next,metadata){
    const token=metadata?.saveToken;
    if(!publications.has(token)||publications.get(token)!==next.revision)return false;
