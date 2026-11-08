@@ -1,3 +1,4 @@
+import {medicalInventoryControls,validateMedicalInventory,evaluateMedicalInventory} from './medical-nanorobots.mjs';
 import {compositeControls,supportsReferences,validateReferences} from './composites.mjs';
 import {equipmentCapabilities} from './capabilities.mjs';
 import {getAugmentationControls,validateAugmentationRecords,evaluateAugmentations} from './augmentations.mjs';
@@ -63,6 +64,7 @@ for(const c of controls){
 function baseSpecialControls(kind){return kind==='clone'?copy(controls):kind==='microbot'?copy(microControls):kind==='nanorobot'?copy(nanoControls):kind==='avatar'?copy(avatarControls):kind==='missile'?copy(missileControls):kind==='cyborg'?copy(cyborgControls):kind==='drone'?copy(droneControls):['vehicle-brain','ship-brain'].includes(kind)?copy(hostControls(kind)):['android','biological'].includes(kind)?copy(bodyControls(kind).map(c=>({...c,source:source(kind==='android'?'86-87':'88-89')}))):[];}
 export function getSpecialControls(kind,design={}){
  const base=[...baseSpecialControls(kind),...compositeControls(kind)];
+ if(kind==='nanorobot'){const itemised=design.special?.medicalMode==='itemised';return [...base.map(c=>!itemised?c:c.field==='otherActivePackages'?{...c,label:'Untyped existing active packages (app limit 100)',visibleWhen:{field:'medicalMode',equals:'itemised'}}:c.field==='existingAgeingPackage'?{...c,label:'Unreconciled legacy active anti-ageing declaration',visibleWhen:{field:'medicalMode',equals:'itemised'}}:{...c,visibleWhen:{field:'medicalMode',equals:'legacy-single'}}),...medicalInventoryControls(design.techLevel??13)];}
  if(kind==='biological')return [...base,...getAugmentationControls(design).map(c=>c.stage==='physical'?{...c,category:'cybernetics',...(c.choices?{choices:c.choices.map(o=>({...o,category:'cybernetics'}))}:{})}:c)];
  if(kind!=='cyborg')return base;
  const mode={...select('cyborgMode','Cybernetic construction',[['full-body','Full-body conversion'],['augments','Individual augmentations']],'full-body'),stage:'chassis',source:source('89-93')};
@@ -73,11 +75,12 @@ export function validateSpecialFields(kind,fields){
  if(!fields||typeof fields!=='object'||Array.isArray(fields))throw new TypeError('special must be an object.');
  if(supportsReferences(kind))validateReferences(kind,fields.designReferences);
  if(kind==='microbot')validateOptionInstances(fields.optionInstances,MICRO_OPTIONS);
+ if(kind==='nanorobot')validateMedicalInventory(fields);
  if(kind==='clone'){validateCloneCustomSkills(fields.trainingCustomSkills);validateCloneIntSchedule(fields.trainingIntSchedule);}
  if(['cyborg','biological'].includes(kind))validateAugmentationRecords({kind,special:fields});
  const cs=getSpecialControls(kind,{special:fields}),allowed=new Set(cs.map(c=>c.field));
  if(Object.keys(fields).some(k=>!allowed.has(k)))throw new TypeError('Unknown special field.');
- for(const c of cs){const v=fields[c.field];if(c.type==='number'&&(!(c.integer===false?Number.isFinite(v):Number.isInteger(v))||v<c.min||v>c.max))throw new TypeError(`special.${c.field} must be a ${c.integer===false?'finite number':'whole number'} from ${c.min} to ${c.max}.`);if(c.type==='multiselect'&&(!Array.isArray(v)||v.length>200||new Set(v).size!==v.length||v.some(id=>!c.choices.some(x=>x.id===id))))throw new TypeError(`special. has invalid selections.`);if(c.type==='select'&&!c.choices.some(x=>x.id===v))throw new TypeError(`special.${c.field} has an unknown choice.`);}
+ for(const c of cs){if(kind==='nanorobot'&&fields.medicalMode===undefined&&fields.medicalPackages===undefined&&['medicalMode','medicalPackages'].includes(c.field))continue;const v=fields[c.field];if(c.type==='number'&&(!(c.integer===false?Number.isFinite(v):Number.isInteger(v))||v<c.min||v>c.max))throw new TypeError(`special.${c.field} must be a ${c.integer===false?'finite number':'whole number'} from ${c.min} to ${c.max}.`);if(c.type==='multiselect'&&(!Array.isArray(v)||v.length>200||new Set(v).size!==v.length||v.some(id=>!c.choices.some(x=>x.id===id))))throw new TypeError(`special. has invalid selections.`);if(c.type==='select'&&!c.choices.some(x=>x.id===v))throw new TypeError(`special.${c.field} has an unknown choice.`);}
  return true;
 }
 function validateCloneIntSchedule(records){if(!Array.isArray(records)||records.length>4)throw new TypeError('Invalid timed INT schedule.');const ids=new Set();let year=0,increase=0;for(const r of records){if(!r||Object.keys(r).some(k=>!['id','year','cumulativeIncrease'].includes(k))||typeof r.id!=='string'||!/^[-a-z0-9]{1,40}$/.test(r.id)||ids.has(r.id)||!Number.isInteger(r.year)||r.year<=year||r.year>16||!Number.isInteger(r.cumulativeIncrease)||r.cumulativeIncrease<=increase||r.cumulativeIncrease>4)throw new TypeError('INT events require unique IDs and strictly increasing years and cumulative increases.');ids.add(r.id);year=r.year;increase=r.cumulativeIncrease;}}
@@ -387,6 +390,7 @@ function evaluateNanorobot(design){
  const finish=totals=>{const status=diagnostics.some(d=>d.severity==='error')?'invalid':diagnostics.some(d=>d.severity==='blocker')?'blocked':'verified';return{costLabel:design.kind==='nanorobot'?'Selected package cost':'Interface cost only',status,diagnostics,ledger,coverage,totals:status==='verified'?totals:null};};
  try{validateSpecialFields('nanorobot',design.special);}catch(e){issue('error','SCHEMA','special',e.message);return finish(null);}
  const s=design.special,tl=design.techLevel;
+ if(s.medicalMode==='itemised')return evaluateMedicalInventory(design);
  if(['construction-enhanced','construction-advanced','construction-superior','distributed-conscious'].includes(s.packageType))return evaluateHighNano(design);
  if(tl<13)issue('error','NANO_TL','techLevel','Practical medical nanorobot packages require TL13.');
  if(['construction-basic','construction-improved','excavation','soil','cleanup'].includes(s.packageType))return evaluateNanoSwarm(design);
@@ -404,6 +408,7 @@ function evaluateNanorobot(design){
   if(s.packages!==1||s.existingAgeingPackage==='yes')issue('error','NANO_AGEING_SINGLE','special.packages','Only one anti-ageing package may be active.');
   const effectiveTL=tl-Math.floor(s.continuousTreatmentYears/20);
   effect={effectiveTL,ageingReduction:effectiveTL<13?0:effectiveTL===13?.5:effectiveTL===14?.75:.9};
+  if(effectiveTL>15){issue('warning','NANO_LEGACY_AGEING_HIGH_TL','special.continuousTreatmentYears','The retained legacy 90% ageing reduction above effective TL15 is an unverified extrapolation, not a printed source value. Use itemised records to expose the unresolved effect.');coverage.gaps.push({id:'nano-legacy-ageing-high-tl',category:'unresolved-source',message:'Legacy mode retains its previous 90% value above effective TL15 for compatibility. The source specifies only effective TL13-15 ageing percentages.',source:source('83-84')});}
   if(effectiveTL<13)issue('warning','NANO_AGEING_EFFECTIVE_TL','special.continuousTreatmentYears','Continuous treatment has reduced effective technology below the printed anti-ageing effect table.');
  }
  if(s.packageType==='regenerative'){
@@ -657,7 +662,7 @@ export function evaluateSpecialDesign(design){
  if(!t)return result;
  const metric=(label,value,unit)=>{if(value!==null&&value!==undefined)result.summaryMetrics.push({label,value,...(unit?{unit}: {})});};
  if(t.clone){for(const [stat,value]of Object.entries(t.clone.characteristics))metric(stat,value);metric('EDU',t.clone.education);metric('Unspent training points',t.clone.unspentTrainingPoints);metric('Time to maturity',t.clone.maturityYears,'years');}
- if(t.nanorobot){const n=t.nanorobot;metric('Packages',n.packages);metric('Package lifetime',n.lifeYears,'years');metric('Working lifetime',n.lifetimeHours,'hours');metric('Production capacity',n.capacitySlotsPerHour,'Slots/hour');metric('Permanent END loss',n.permanentEnduranceLoss);metric('Ageing reduction',n.ageingReduction===undefined?undefined:n.ageingReduction*100,'%');metric('Nanotech infection resistance DM',n.nanotechDefence?.resistanceDM);}
+ if(t.nanorobot){const n=t.nanorobot;metric('Packages',n.packages);metric('Package lifetime',n.lifeYears,'years');metric('Working lifetime',n.lifetimeHours,'hours');metric('Production capacity',n.capacitySlotsPerHour,'Slots/hour');metric(n.enduranceLossIsMinimum?'Minimum permanent END loss':'Permanent END loss',n.permanentEnduranceLoss);metric('Ageing reduction',n.ageingReduction===undefined?undefined:n.ageingReduction*100,'%');metric('Nanotech infection resistance DM',n.nanotechDefence?.resistanceDM);}
  if(t.integration){const h=t.integration;metric('Occupied host capacity',h.occupiedHostCapacity,h.hostUnit);metric('Retrofit work',h.retrofitHours,'hours');metric('Retrofit work',h.retrofitPersonDays,'person-days');metric('Haptic DEX',h.effectiveDexterity);metric('Astrogation DM',h.astrogationDM);metric('Misjump DM',h.misjumpDM);}
  if(t.carrier){metric('Carriers',t.carrier.quantity);metric('Payload capacity',t.carrier.payloadSlots,'Slots');metric('Maximum warhead Size',t.carrier.maxWarheadSize);metric('Flight burn',t.carrier.burnRounds,'rounds');}
  if(t.biologicalAvatar){metric('Simultaneous hosts',t.biologicalAvatar.maxHosts);metric('Control reclamation target',t.biologicalAvatar.reclaimTarget,'+');metric('Degradation checks due',t.biologicalAvatar.degradationChecksDue);}
