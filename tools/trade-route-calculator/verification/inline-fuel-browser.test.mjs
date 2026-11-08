@@ -189,7 +189,7 @@ try{
  for(const width of report.widths)await run('six compact expense buttons',{width,fixedExpenses:true},async h=>{
   const {page,click,unchanged,screenshot}=h;await click('ship-expenses');await page.locator('.expense-table').waitFor();
   const buttons=page.locator('.expense-table [data-action="expense-open"]');assert.equal(await buttons.count(),6);
-  assert.equal(await page.locator('[data-action="expense-open"][data-arg="staterooms"]').count(),0,'Cabin costs are included only in LSS, never a second payment button');
+  assert.equal(await page.locator('[data-action="expense-open"][data-arg$=":staterooms"]').count(),0,'Cabin costs are included only in LSS, never a second payment button');
   const labels=await buttons.allTextContents();assert.deepEqual(labels,['Mortgage ›','Monthly maintenance ›','Crew salaries ›','Life support ›','Fuel ›','Port costs ›']);
   const appearance=await buttons.evaluateAll(els=>els.map(el=>{const style=getComputedStyle(el),r=el.getBoundingClientRect(),rgb=style.backgroundColor.match(/[\d.]+/g).map(Number);return {name:el.textContent,tag:el.tagName,background:style.backgroundColor,border:style.borderStyle,rgb,height:r.height,width:r.width,left:r.left,right:r.right,viewport:innerWidth};}));
   // Allow one tenth of a pixel for Chromium's fractional line-box rounding.
