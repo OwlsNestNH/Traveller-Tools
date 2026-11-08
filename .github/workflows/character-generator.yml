@@ -38,6 +38,7 @@ jobs:
           node tools/character-generator/verification/aezorgh-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/recovery-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/transfer-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+          node tools/character-generator/verification/reeducation-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
       - name: Upload review screenshots and results
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
