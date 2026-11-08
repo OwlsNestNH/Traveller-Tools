@@ -116,6 +116,34 @@ try{
  await page.getByRole('button',{name:'Add learned speciality',exact:true}).click();
  const learned=await exportDraft();check('clone learned specialty uses separate schema',learned.special.trainingCustomSkills.some(p=>p.skill==='profession'&&p.speciality==='labourer'&&p.level===2));
  await page.screenshot({path:path.join(out,'robot-clone-training.png'),fullPage:true});
+ await page.locator('#new-design').click();await page.locator('#robot-kind').selectOption('clone');await page.locator('#robot-tl').selectOption('15');await stage(3);
+ check('clone physical stage exposes its own growth controls',await page.locator('#physical-category').count()===0&&await page.locator('#field-physical-growth-growth-service').count()===1);
+ await page.locator('#field-physical-growth-growth-service').selectOption('accelerated');await page.locator('#field-physical-acceleratedStop-growth-service').selectOption('early6');
+ check('early clone growth requires an explicit commercial interpretation',await page.locator('#design-status').textContent()==='Rules incomplete');
+ await page.locator('#field-physical-earlyGrowthPrice-growth-service').selectOption('first-year-included');
+ await stage(4);await page.locator('#field-brain-baseINT-biological-cognition').selectOption('11');await page.locator('#field-brain-rollINT-biological-cognition').selectOption('3');await page.locator('#field-brain-eduAccounting-biological-cognition').selectOption('separate');
+ await stage(5);await page.locator('#field-skills-trainingYears-creche-training').selectOption('12');await stage(6);
+ check('early clone age calendar is readable in final review',await page.locator('.review-clone-development').textContent().then(t=>t.includes('Apparent age 18 at training completion')&&t.includes('0 checks due')));
+ check('adult early-stop clone shows separately calculated characteristics',await page.locator('.review-clone-characteristics').count()===1);
+ await stage(3);await page.locator('#field-physical-acceleratedStop-growth-service').selectOption('early12');
+ check('intermediate early clone stop keeps partial-year uncertainty explicit',await page.locator('#design-status').textContent()==='Rules incomplete');
+ await page.locator('#field-physical-partialCrecheEducation-growth-service').selectOption('completed-only');await stage(5);await page.locator('#field-skills-trainingYears-creche-training').selectOption('6');
+ draft=await exportDraft();check('clone partial-year choice and stop month are preserved',draft.special.acceleratedStop==='early12'&&draft.special.partialCrecheEducation==='completed-only');
+ await stage(3);await page.locator('#field-physical-acceleratedStop-growth-service').selectOption('custom');
+ const stopMonths=page.locator('#field-physical-acceleratedStopMonths-growth-service');check('source-permitted custom stop is a bounded unrestricted-step input',await stopMonths.getAttribute('type')==='number'&&await stopMonths.getAttribute('step')==='any');
+ await stopMonths.fill('6.25');await stopMonths.press('Tab');await stage(5);await page.locator('#field-skills-trainingYears-creche-training').selectOption('12');await stage(6);
+ check('fractional stop survives into the readable calendar',await page.locator('.review-clone-development').textContent().then(t=>t.includes('Apparent age 18.25 at training completion')));
+ draft=await exportDraft();check('fractional stopping time is stored without rounding',draft.special.acceleratedStop==='custom'&&draft.special.acceleratedStopMonths===6.25);
+ await stage(3);await page.locator('#field-physical-acceleratedStopMonths-growth-service').fill('6.5');await page.locator('#field-physical-acceleratedStopMonths-growth-service').press('Tab');await stage(5);await page.locator('#field-skills-trainingYears-creche-training').selectOption('16');
+ check('uncredited fractional creche time cannot exceed the total duration limit',await page.locator('#design-status').textContent()==='Needs correction');
+ await stage(3);await page.locator('#field-physical-acceleratedStop-growth-service').selectOption('adult18');await stage(4);await page.locator('#field-brain-baseINT-biological-cognition').selectOption('6');await page.locator('#field-brain-rollINT-biological-cognition').selectOption('1');
+ await stage(5);await page.locator('#field-skills-trainingYears-creche-training').selectOption('3');await page.locator('#field-skills-increaseINT-creche-training').selectOption('3');
+ const timingPrefix='#field-skills-trainingIntSchedule-creche-training-new-';
+ for(const year of [1,2,3]){await page.locator(timingPrefix+'year').selectOption(String(year));await page.locator(timingPrefix+'cumulativeIncrease').selectOption(String(year));await page.getByRole('button',{name:'Add timed INT increase',exact:true}).click();}
+ draft=await exportDraft();check('clone timed INT schedule uses distinct structured records',draft.special.trainingIntSchedule.length===3&&draft.special.trainingIntSchedule.every((item,i)=>item.year===i+1&&item.cumulativeIncrease===i+1)&&new Set(draft.special.trainingIntSchedule.map(item=>item.id)).size===3);
+ await stage(6);check('clone timed training review retains annual effects and convention',await page.locator('.review-clone-training-years').textContent().then(t=>t.includes('EDU 7')&&t.includes('INT 10')&&t.includes('before year-end')));
+ for(const width of [1440,390,320]){await page.setViewportSize({width,height:1000});check('clone development review has no overflow '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:path.join(out,'robot-clone-development-'+width+'.png'),fullPage:true});}
+ await page.setViewportSize({width:1440,height:1000});
  await page.locator('#example-design').selectOption('steward-droid');await page.locator('#load-example').click();
  const example=await exportDraft();check('published example loads as draft',example.name.includes('Steward'));
  check('published construction and list prices remain distinct',await page.locator('#summary-metrics').textContent().then(t=>t.includes('39,800')&&t.includes('35,000')));
@@ -229,6 +257,13 @@ try{
  await page.locator('#field-physical-augmentations-new-optionId').selectOption('misc-mass-portable-computer-14');
  await page.locator('#stage-content details').filter({has:page.locator('#field-physical-augmentations-new-optionId')}).getByRole('button',{name:'Add separate installation',exact:true}).click();draft=await exportDraft();const computerId=draft.special.augmentations[0].id;
  await stage(5);const computerPrefix='#field-skills-computerSoftware-new-';
+ check('implant speciality editor stays compact without a brain implant',await page.locator('#field-skills-brainCustomPackages-new-parentBrain').count()===0&&await page.getByRole('button',{name:'Add implant speciality',exact:true}).isDisabled());
+ check('implant speciality prerequisite is visible',await page.getByText('Install a robot brain implant before adding custom implant software specialities.',{exact:true}).isVisible());
+ for(const [program,label] of [['expert','Expert skill'],['translator','Translation language'],['database','Database topic']]){
+   await page.locator(computerPrefix+'program').selectOption(program);
+   check('program-specific subject label '+program,await page.getByLabel(label,{exact:true}).count()===1);
+ }
+ await page.locator(computerPrefix+'program').selectOption('interface');
  await page.locator(computerPrefix+'parentComputer').selectOption(computerId);
  check('ordinary computer programs hide irrelevant subject and database fields',await page.locator(computerPrefix+'subject').count()===0&&await page.locator(computerPrefix+'databasePrice').count()===0);
  await page.locator(computerPrefix+'runningBandwidth').selectOption('0');await page.getByRole('button',{name:'Add computer program',exact:true}).click();

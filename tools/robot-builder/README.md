@@ -37,6 +37,12 @@ Direct payloads, associated launchers and stored individual rounds are distinct 
 
 Delayed file reads carry a draft revision so an earlier import cannot overwrite a newer draft. Saving, importing and referencing a component remain separate actions.
 
+## Clone development
+
+Clones use biological templates, growth services and learned skills rather than a robot chassis/brain conversion. Accelerated growth can stop at the convenient whole-month choices or a bounded custom fractional month. Source-dependent pricing, partial-year education and calendar interpretations are recorded explicitly; no prorated fee or premature completed-year training grant is invented.
+
+Timed INT purchases preserve cumulative costs, point banking and annual EDU progression. Actual post-maturity training advances the ageing clock, and uncredited partial creche months still count toward the sixteen-year limit. Required ageing rolls are not manufactured: affected designs retain a provisional calendar and ageing obligations while current-character certification is blocked. The printed thirty-three-versus-thirty-four-year calendar conflict remains visible. Natural-grown clone backgrounds and immature characteristics require their appropriate biological or character records.
+
 ## Verification
 
 From the repository root:
@@ -51,6 +57,6 @@ node tools/robot-builder/verification/construction-browser.mjs /path/to/playwrig
 
 `ROBOT_TEST_URL` overrides the local preview URL. `ROBOT_BROWSER_CHANNEL=msedge` selects Edge for local Windows verification; CI uses pinned Chromium. All browser tests use a fresh isolated context with synthetic fixtures, not a user's campaign data.
 
-Native checks independently exercise construction arithmetic, all 224 source equipment rows, published reconstructions, scoped special types and API persistence. Browser checks exercise navigation, dropdowns, explicit saves, reload, export, invalid imports, equipment allocation, weapon installation and accessories, separate equipment settings, custom skills, clone learned specialties and responsive layouts at 320, 390, 768, 1100 and 1440 pixels. A passing suite is not proof of exhaustive Handbook coverage. See [published robot validation](verification/published-validation.md) for the comparison scope, assumptions and unresolved source discrepancies.
+Native checks independently exercise construction arithmetic, all 224 source equipment rows, published reconstructions, scoped special types and API persistence. Browser checks exercise navigation, dropdowns, explicit saves, reload, export, invalid imports, equipment allocation, weapon installation and accessories, separate equipment settings, custom skills, clone learned specialties, early-stop development, timed training, implanted computer programs, component snapshots and responsive layouts at 320, 390, 768, 1100 and 1440 pixels. A passing suite is not proof of exhaustive Handbook coverage. See [published robot validation](verification/published-validation.md) for the comparison scope, assumptions and unresolved source discrepancies.
 
 No standalone linter/typechecker is configured in this plain ECMAScript-module tool. Syntax checks, schema validation, deterministic tests and independent rules/UI reviews are required before a release.

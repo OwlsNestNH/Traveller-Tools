@@ -240,3 +240,16 @@ test('general computer program states stay separate from robot brains and recipi
  assert.match(output,/separate from robot brain software and recipient skills/);assert.ok(!review.sections.some(s=>s.id==='skills'||s.id==='implant-skills'));
  assert.doesNotMatch(output,/Parent Computer: computer/);
 });
+test('blocked clone review preserves calendar and due ageing without certifying characteristics',()=>{
+ const d=updateDesign(createDesign({kind:'clone',techLevel:15}),{special:{growth:'accelerated',eduAccounting:'separate',trainingYears:15,baseINT:11,rollINT:3}});
+ const result=evaluateDesign(d);assert.equal(result.status,'blocked');const review=projectReview(d,getCatalogue(d),result),output=formatStatblock(review);
+ assert.match(output,/Apparent age 33 at training completion/);assert.match(output,/2 checks due/);assert.match(output,/15 elapsed adult years/);assert.match(output,/no unresolved ageing losses or current-character legality are certified/);
+ assert.ok(!review.sections.some(s=>s.id==='clone-characteristics'));assert.equal(review.unavailable,true);
+});
+
+test('early clone review shows structured training and mature characteristics separately',()=>{
+ const d=updateDesign(createDesign({kind:'clone',techLevel:15}),{special:{growth:'accelerated',eduAccounting:'separate',acceleratedStop:'early6',earlyGrowthPrice:'first-year-included',baseINT:11,rollINT:3,trainingYears:12}});
+ const result=evaluateDesign(d);assert.equal(result.status,'verified');const review=projectReview(d,getCatalogue(d),result),output=formatStatblock(review);
+ assert.match(output,/Apparent age 18 at training completion/);assert.equal(review.sections.find(s=>s.id==='clone-training-years').rows.length,12);assert.ok(review.sections.some(s=>s.id==='clone-characteristics'));
+ assert.ok(!review.sections.find(s=>s.id==='additional')?.rows.some(r=>r.label==='Clone'));
+});

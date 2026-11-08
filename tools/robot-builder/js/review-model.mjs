@@ -64,6 +64,26 @@ export function projectReview(design, catalogue, evaluation) {
     if (totals.traits?.length) stats.push(row('Traits',totals.traits));
     if (stats.length) sections.push(section('statistics','Robot statistics',stats,{kind:'metrics'}));
   }
+  const cloneDetails=totals?.clone;
+  const development=cloneDetails||evaluation.development;
+  if(development){
+    const calendar=development.growthCalendar,ageing=development.ageing,source=calendar?.source||evaluation.development?.source;
+    const rows=[];
+    if(calendar)rows.push(profileRow('Growth calendar',present(calendar.trainingExitApparentAge)?`Apparent age ${valueText(calendar.trainingExitApparentAge)} at training completion`:'Growth calendar requires the selected character pathway',calendar,['trainingExitApparentAge'],'Source interpretations are recorded separately from elapsed time.'));
+    if(ageing)rows.push(profileRow('Ageing obligations',`${valueText(ageing.checksDue)} checks due · ${valueText(ageing.effectiveAdultYears)} elapsed adult years`,{...ageing,source},['checksDue','effectiveAdultYears'],'Required game ageing outcomes are not invented.'));
+    if(rows.length)sections.push(section('clone-development','Clone growth and ageing',rows,{note:cloneDetails?'Calendar and ageing conditions follow the selected growth and training pathway.':evaluation.development.description||'Development checks only; final characteristics and prices remain unresolved.'}));
+  }
+  if(cloneDetails){
+    const source=cloneDetails.growthCalendar?.source||{book:'Robot Handbook',pages:'96-99'};
+    const stats=Object.entries(cloneDetails.characteristics||{}).map(([name,value])=>row(name,value,source));
+    if(present(cloneDetails.education))stats.push(row('EDU',cloneDetails.education,source));
+    if(stats.length)sections.push(section('clone-characteristics','Clone characteristics',stats,{kind:'metrics'}));
+    sections.push(section('clone-training','Creche training',[
+      row('Training points earned',cloneDetails.trainingPoints,source),row('Unspent training points',cloneDetails.unspentTrainingPoints,source),row('Initial EDU',cloneDetails.initialEducation,source),row('Maturity time',present(cloneDetails.maturityYears)?valueText(cloneDetails.maturityYears)+' years':'Not calculated',source),row('Training fee years',cloneDetails.chargedTrainingYears,source)
+    ],{note:cloneDetails.trainingTiming||'Natural education and background follow their own character rules.'}));
+    if(cloneDetails.annualTraining?.length)sections.push(section('clone-training-years','Annual clone training records',cloneDetails.annualTraining.map(year=>profileRow(`Year ${year.additionalYear}`,`EDU ${valueText(year.education)} · INT ${valueText(year.intelligence)}`,{...year,source},['additionalYear','education','intelligence','timing'],year.timing)),{collapsed:true}));
+    sections.push(section('clone-template','Clone template and timing details',[profileRow('Selected template','Adult template characteristics and explicit schedule',{templateCharacteristics:cloneDetails.templateCharacteristics,intTrainingSchedule:cloneDetails.intTrainingSchedule,spareBody:cloneDetails.spareBody,source})],{collapsed:true}));
+  }
   // Only describe selections exposed by this type's catalogue; clones must not inherit ordinary defaults.
   const configuration = controls.filter(control => !['physical','skills','finalisation'].includes(control.stage) && ['select','number','text'].includes(control.type)).map(control => {
     const value = control.readOnly && Object.hasOwn(control,'derivedValue') ? control.derivedValue : control.target === 'special' ? design.special?.[control.field] : design.selections?.[control.stage]?.[control.field];
@@ -201,7 +221,7 @@ export function projectReview(design, catalogue, evaluation) {
       selectedCustom.push({...row(name+(detail?' ('+detail+')':''),summary,control.source||recordChoice(nameField,record)?.source,control.label),details});
     }
   }
-  if(selectedCustom.length)sections.push(section('selected-custom-skills','Selected software and specialities',selectedCustom,{collapsed:true,note:'Selected records are retained even when construction is blocked. Checked effects and limits are shown separately.'}));
+  if(selectedCustom.length)sections.push(section('selected-custom-skills','Selected programs and training',selectedCustom,{collapsed:true,note:'Selected records are retained even when construction is blocked. Checked effects and limits are shown separately.'}));
   const skills = skillRows(totals?.skills);
   if (!totals) {
     const skillControl = controls.find(control => control.field === 'packages');
@@ -258,7 +278,7 @@ export function projectReview(design, catalogue, evaluation) {
     for(const weapon of design.special?.augmentWeapons||[])limbRows.push(...weaponRows([weapon],limbWeaponControl,choiceLabel(limbWeaponControl,'parentLimb',weapon.parentLimb,'Unresolved parent limb')));
   }
   if(limbRows.length)sections.push(section('limb-weapons','Cyberlimb weapons',limbRows,{note:totals?'Separate servo and limb attachment effects are scoped to the selected part. Recipient skill and total attack modifiers remain uncalculated.':'Selected limb weapon records only. Performance and costs have not been calculated.'}));
-  const handled = new Set(['cost','constructionCost','costLabel','slots','bandwidth','zeroSlot','zeroBandwidth','hits','armour','intelligence','intelligenceDM','agility','tacticalSpeed','endurance','vehicleEndurance','vehicleBand','traits','manipulators','skills','hardwareSkills','skillEquivalents','toolCaps','weapons','defaultSuite','provisional','augmentation','augmentations','sharedInterfaces','augmentationEffects','equipmentCapabilities','capabilities','ammunitionStorage','composite']);
+  const handled = new Set(['cost','constructionCost','costLabel','slots','bandwidth','zeroSlot','zeroBandwidth','hits','armour','intelligence','intelligenceDM','agility','tacticalSpeed','endurance','vehicleEndurance','vehicleBand','traits','manipulators','skills','hardwareSkills','skillEquivalents','toolCaps','weapons','defaultSuite','provisional','augmentation','augmentations','sharedInterfaces','augmentationEffects','equipmentCapabilities','capabilities','ammunitionStorage','composite','clone']);
   const extra = Object.entries(totals || {}).filter(([key,value])=>!handled.has(key)&&present(value)&&(!Array.isArray(value)||value.length)).map(([key,value])=>row(humanLabel(key),value));
   if (extra.length) sections.push(section('additional','Operating details',extra,{collapsed:true}));
   const ledger = (evaluation.ledger || []).map(item => row(item.label || item.name || item.id,

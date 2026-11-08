@@ -272,6 +272,11 @@ function renderControl(control, choicesOverride) {
     const installed=Array.isArray(selected)?selected:[];
     const isWeapon = control.type === 'weapons';
     const isExternal = control.type === 'external-vehicle-options';
+    if(control.collapseUnavailable && control.canAdd===false && installed.length===0){
+      field.append(el('p',control.unavailableReason || 'Add the required component first.','help'));
+      const add=el('button',control.addLabel || 'Add custom package');add.type='button';add.disabled=true;field.append(add);
+      return field;
+    }
     const recordLabel = record => {
       if(control.recordNameField){const field=control.itemFields?.find(item=>item.field===control.recordNameField),name=recordChoices(field||{},record).find(choice=>choice.id===record[control.recordNameField])?.label||record[control.recordNameField]||'New record';return name+(control.recordDetailField&&record[control.recordDetailField]?' ('+record[control.recordDetailField]+')':'');}
       return isWeapon ? (control.itemFields?.find(item=>item.field==='weaponId')?.choices?.find(choice=>choice.id===record.weaponId)?.label || 'Weapon installation') : record.speciality || 'Custom package';
@@ -289,7 +294,7 @@ function renderControl(control, choicesOverride) {
       };
       for(const item of control.itemFields || []) {
         if (!matchesVisibility(item, record)) continue;
-        const row=el('label',item.label || item.field);
+        const row=el('label',item.labelBy?.values?.[record[item.labelBy.field]] || item.label || item.field);
         const fieldId=prefix+'-'+item.field;row.htmlFor=fieldId;
         let input;
 if(item.type==='multiselect'){
@@ -347,7 +352,7 @@ if(item.type==='multiselect'){
     const redrawComposer = () => {
       const next = makeFields(draft, id+'-new', (key, value) => {
         draft[key]=value;Object.assign(draft,resetHiddenFields(control,draft));customDrafts.set(draftKey,draft);add.disabled=!valid();
-        if ((control.itemFields||[]).some(item=>dependsOn(item.visibleWhen,key)||item.choicesBy?.field===key||item.maxValueField===key)) redrawComposer();
+        if ((control.itemFields||[]).some(item=>dependsOn(item.visibleWhen,key)||item.choicesBy?.field===key||item.labelBy?.field===key||item.maxValueField===key)) redrawComposer();
       });
       const previous=composer.querySelector('.fields-grid');
       if(previous)previous.replaceWith(next);else composer.append(next);

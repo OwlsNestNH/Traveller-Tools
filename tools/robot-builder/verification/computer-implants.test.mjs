@@ -32,3 +32,9 @@ test('Security and Translator expose source-valued conditional capabilities',()=
 test('misc computer controlled through an actual neural link retains conditional physical Expert context',()=>{const d=design(14,14,{interfaceMode:'neural'},[program('expert',1,1,{subject:'Athletics'}),program('intelligent-interface',1,1)]);assert.ok(has(evaluateDesign(d),'MISC_IMPLANT_NEURAL_LINK'));const linked=updateDesign(d,{special:{augmentations:[...d.special.augmentations,{id:'link',optionId:'neural-link-basic',parameters:{}}]}});const r=evaluateDesign(linked);assert.equal(r.status,'verified');assert.equal(computer(r).programs[0].effects.physicalAssistance,true);assert.equal(computer(r).recipientSkillsGranted,false);});
 
 test('basic neural-link computer upgrade is an unpriced source ambiguity rather than universal illegality',()=>{const r=neural('neural-link-basic',{computerUpgrade:'yes'});assert.equal(r.status,'blocked');const d=r.diagnostics.find(d=>d.code==='NEURAL_COMPUTER_UPGRADE');assert.equal(d.severity,'blocker');assert.match(d.message,/does not explicitly price/);assert.equal(r.totals,null);assert.ok(!r.ledger.some(e=>e.id==='augment:computer:options'&&e.cost===10000));const supported=neural('neural-link-improved',{computerUpgrade:'yes'});assert.equal(supported.status,'verified');assert.equal(supported.totals.cost,55000);assert.equal(computer(supported).processing,2);});
+test('computer subject keeps one stored field with program-specific labels',()=>{
+ const control=getCatalogue(design()).stages.flatMap(s=>s.controls).find(c=>c.field==='computerSoftware');
+ const subject=control.itemFields.find(f=>f.field==='subject');
+ assert.equal(subject.labelBy.field,'program');assert.deepEqual(subject.labelBy.values,{expert:'Expert skill',translator:'Translation language',database:'Database topic'});
+ assert.deepEqual(subject.visibleWhen.oneOf,['expert','translator','database']);assert.equal(control.recordDetailField,'subject');
+});

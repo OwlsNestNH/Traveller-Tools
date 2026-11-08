@@ -60,7 +60,7 @@ export function getAugmentationControls(design={}){
  const brainParents=records.filter(r=>r.optionId.startsWith('brain-implant-')).map((r,i)=>[r.id,'Robot brain implant '+(i+1)]);
  return [
  computerSoftwareControl(design),
- {field:'brainCustomPackages',label:'Custom implant software specialities',type:'custom-packages',maxItems:200,default:[],stage:'skills',addLabel:'Add implant speciality',itemFields:[select('parentBrain','Implant brain',brainParents.length?brainParents:[['unassigned','Add a brain implant first']],'unassigned'),...CUSTOM_PACKAGE_FIELDS],source:source('73-74,92')},
+ {field:'brainCustomPackages',label:'Custom implant software specialities',type:'custom-packages',canAdd:brainParents.length>0,collapseUnavailable:true,unavailableReason:'Install a robot brain implant before adding custom implant software specialities.',maxItems:200,default:[],stage:'skills',addLabel:'Add implant speciality',itemFields:[select('parentBrain','Implant brain',brainParents.length?brainParents:[['unassigned','Add a brain implant first']],'unassigned'),...CUSTOM_PACKAGE_FIELDS],source:source('73-74,92')},
  {...select('augmentRecipient','Recipient anatomy',[['human','Human adult baseline'],['other','Other species/body plan']],'human'),stage:'chassis'},
  {...select('augmentSpeciesVerified','External species geometry/capabilities',[['unconfirmed','Not confirmed'],['confirmed','Supplied by a separate body/character record']],'unconfirmed'),stage:'chassis',visibleWhen:{field:'augmentRecipient',equals:'other'}},
  ...[['Arms',2],['Legs',2],['Eyes',2],['Ears',2],['Noses',1],['Tongues',1]].map(([part,count])=>({...number('augmentNatural'+part,'Natural '+part.toLowerCase(),0,20,count),stage:'chassis',visibleWhen:{field:'augmentRecipient',equals:'other'}})),
