@@ -255,7 +255,7 @@ export function diagnosticContext(issue,design,catalogue) {
  let recordName='';
  if(record){
   const choice=choices.find(choice=>choice.id===(record.weaponId||record.optionId));
-  recordName=record.name||choice?.label||labelText(record.weaponId||record.optionId||field);
+  recordName=record.name||choice?.label||issue.recordLabel||labelText(record.weaponId||record.optionId||field);
   recordName+=` ${index+1}`;
  }
  if(parts[0]==='special'&&parts.includes('weapons')){
@@ -277,7 +277,7 @@ export function diagnosticContext(issue,design,catalogue) {
  }
  const option=controls.flatMap(item=>item.choices||[]).find(choice=>parts.includes(choice.id));
  const copyIndex=parts.indexOf('ammunitionOverrides');
- return [...new Set([control?.stageLabel,control?.label||(!control&&record?labelText(field):''),recordName||option?.label,copyIndex>=0&&/^\d+$/.test(parts[copyIndex+1])?`Copy ${parts[copyIndex+1]}`:''].filter(Boolean))].join(' · ');
+ return [...new Set([control?.stageLabel,control?.label||issue.contextLabel||(!control&&record?labelText(field):''),recordName||option?.label,copyIndex>=0&&/^\d+$/.test(parts[copyIndex+1])?`Copy ${parts[copyIndex+1]}`:''].filter(Boolean))].join(' · ');
 }
 
 export function sourceExampleLabel(example) {

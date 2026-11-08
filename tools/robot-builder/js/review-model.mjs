@@ -21,6 +21,13 @@ function valueText(value) {
 }
 const money = value => present(value) ? `Cr ${valueText(value)}` : 'Not calculated';
 function row(label, value, source, detail = '') { return { label, value: valueText(value), source: sourceLabel(source), detail }; }
+function vehicleOptionReviewRow(item,component=null) {
+  const componentState=component?({verified:'Subset checked',invalid:'Needs correction',blocked:'Rules incomplete'}[component.status]||'Not verified'):null;
+  return {
+    ...row(component?component.name+' / '+item.label:item.label,money(item.cost)+' / '+valueText(item.slots)+' Slots'+(component?' per component copy':''),item.source,component?'Component-only hardware; no host grant':'Source hardware; deployment conditional'),
+    details:[...(component?[row('Component copies',component.quantity),row('Component construction',componentState),row('Accounting','Per component copy; no host grant')]:[]),row('Installations'+(component?' per component copy':''),item.quantity),row('Capacity per installation',item.capacityPerInstallation),row('Initial contents','Unverified'),row('Replacement charge price','Unknown'),...(item.additionalCharges?[row('Additional charges'+(component?' per component copy':''),item.additionalCharges),row('Additional charge cost',item.additionalChargeCost),row('Additional charge mass',item.additionalChargeMassKg)]:[]),row('Conditions',item.conditionLabels),row('Conversion source',sourceLabel(item.conversionSource))]
+  };
+}
 function section(id, title, rows, extra = {}) { return { id, title, rows, ...extra }; }
 function objectRows(records, labelFor) {
   return (records || []).map((record,index) => {
@@ -253,10 +260,7 @@ export function projectReview(design, catalogue, evaluation) {
   const augmentationEffects = totals?.augmentationEffects || augmentResult?.effects;
   if (augmentationEffects) sections.push(section('augmentation-effects','Cybernetic effects',Object.entries(presentationFacts(augmentationEffects)||{}).filter(([,value])=>present(value)).map(([key,value])=>row(humanLabel(key),value)),{collapsed:true}));
   const verifiedRecords=evaluation.verifiedVehicleInstallations||[];
-  if(verifiedRecords.length)sections.push(section('verified-vehicle-options','Vehicle options (2026 source)',verifiedRecords.map(item=>({
-    ...row(item.label,money(item.cost)+' / '+valueText(item.slots)+' Slots',item.source,'Source hardware; deployment conditional'),
-    details:[row('Installations',item.quantity),row('Capacity per installation',item.capacityPerInstallation),row('Initial contents','Unverified'),row('Replacement charge price','Unknown'),...(item.additionalCharges?[row('Additional charges',item.additionalCharges),row('Additional charge cost',item.additionalChargeCost),row('Additional charge mass',item.additionalChargeMassKg)]:[]),row('Conditions',item.conditionLabels),row('Conversion source',sourceLabel(item.conversionSource))]
-  }))));
+  if(verifiedRecords.length)sections.push(section('verified-vehicle-options','Vehicle options (2026 source)',verifiedRecords.map(item=>vehicleOptionReviewRow(item))));
   const externalControl = controls.find(control=>control.type==='external-vehicle-options');
   const externalRecords = externalControl ? design.selections?.[externalControl.stage]?.[externalControl.field] || [] : [];
   if (externalRecords.length) sections.push(section('external-options','Unverified external vehicle options',externalRecords.map(record=>{
@@ -286,6 +290,8 @@ export function projectReview(design, catalogue, evaluation) {
       return {...row(reference.design?.name||'Unnamed component',summary,component?.source||referenceControl.source,'Detached snapshot; rechecked'),details};
     });
     sections.push(section('components','Referenced component designs',rows,{note:'Component accounting; external host unverified'}));
+    const componentVehicleRows=components.flatMap(component=>(component.verifiedVehicleInstallations||[]).map(item=>vehicleOptionReviewRow(item,component)));
+    if(componentVehicleRows.length)sections.push(section('component-vehicle-options','Component vehicle options (2026 source)',componentVehicleRows,{collapsed:true,note:'Per component copy; no host grant'}));
     const profiles=[];
     for(const component of components.filter(component=>component.profile)){
       const profile=component.profile;
