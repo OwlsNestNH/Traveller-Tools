@@ -334,23 +334,24 @@ async function runDeposit(page,result,scenario,context){
 async function catalogCase(page,result){
  await page.goto(new URL('verification/deposit-catalog/index.html',base).href);
  const cards=page.locator('main .tool-card'),headings=await cards.locator('h2').allTextContents();
- assert.deepEqual(headings,["Nav Calculator", "Ship\u2019s Log & Ledger", "Traveller Tool Locker", "Traveller Ship Operations \u2014 Beta", "Ship Combat Alpha", "Traveller Vehicle Builder"]);
+ assert.deepEqual(headings,["Nav Calculator", "Ship\u2019s Log & Ledger", "Traveller Tool Locker", "Traveller Ship Operations \u2014 Beta", "Ship Combat Alpha", "Traveller Vehicle Builder", "Robot Builder - Beta"]);
  const card=cards.filter({has:page.getByRole('heading',{name:'Traveller Ship Operations — Beta',exact:true})});await card.scrollIntoViewIfNeeded();
  assert.equal(await card.getByRole('heading',{name:'Traveller Ship Operations — Beta',exact:true}).isVisible(),true);
  assert.equal(await card.getByRole('link',{name:'Launch Tool',exact:true}).getAttribute('href'),'tools/trade-route-calculator/');
  assert.equal(await page.getByRole('heading',{name:/Traveller Ship Operations.*Alpha/}).count(),0);
- assert.deepEqual(await cards.locator('a:not(.changelog-link)').evaluateAll(elements=>elements.map(el=>el.getAttribute('href'))),["tools/nav-calculator/", "tools/traveller_ship_logger_v2/", "tools/traveller_tools_buttons/", "tools/trade-route-calculator/", "tools/ship-combat-alpha/", "tools/vehicle-builder/"]);
- assert.deepEqual(await cards.locator('p').allTextContents(),["Work out travel times before the captain promises delivery by lunch. Space is big. Your fuel budget isn\u2019t.", "Track cargo, passengers, jumps and the bills that follow you across the stars. The mortgage survives every adventure.", "A stash of Traveller tools and generators for when the crew ignores your carefully prepared adventure. Again.", "Buy low, sell somewhere else, and discover what taxes did to your brilliant plan. Plot routes, trade goods and track cargo, fuel, life support and accounts.", "Under construction \u2014 Set up ships and crews, record opening initiative, plot vector movement, declare turret fire and review saved combat results. Eligible laser attacks, standard missiles, Hull damage and critical history are supported; unsupported weapons and system effects still need GM handling. Rules assumptions and home rules are labelled.", "Build the ride your crew deserves\u2014or the one they can afford. Add armour, weapons and seats, then see what still fits."]);
+ assert.deepEqual(await cards.locator('a:not(.changelog-link)').evaluateAll(elements=>elements.map(el=>el.getAttribute('href'))),["tools/nav-calculator/", "tools/traveller_ship_logger_v2/", "tools/traveller_tools_buttons/", "tools/trade-route-calculator/", "tools/ship-combat-alpha/", "tools/vehicle-builder/", "tools/robot-builder/"]);
+ assert.deepEqual(await cards.locator('p').allTextContents(),["Work out travel times before the captain promises delivery by lunch. Space is big. Your fuel budget isn\u2019t.", "Track cargo, passengers, jumps and the bills that follow you across the stars. The mortgage survives every adventure.", "A stash of Traveller tools and generators for when the crew ignores your carefully prepared adventure. Again.", "Buy low, sell somewhere else, and discover what taxes did to your brilliant plan. Plot routes, trade goods and track cargo, fuel, life support and accounts.", "Under construction \u2014 Set up ships and crews, record opening initiative, plot vector movement, declare turret fire and review saved combat results. Eligible laser attacks, standard missiles, Hull damage and critical history are supported; unsupported weapons and system effects still need GM handling. Rules assumptions and home rules are labelled.", "Build the ride your crew deserves\u2014or the one they can afford. Add armour, weapons and seats, then see what still fits.", "Build a robot across six construction stages, check what fits, and save or print the result. Ordinary and special construction paths keep source limits and referee choices visible."]);
  assert.deepEqual(await cards.locator('a.changelog-link').evaluateAll(elements=>elements.map(el=>({label:el.textContent.trim(),href:el.getAttribute('href')}))),[
   {label:'Tool Locker Changelog',href:'changes/locker.html'},
   {label:'Trade Changelog',href:'changes/trade.html'},
   {label:'Combat Changelog',href:'changes/combat.html'},
-  {label:'Vehicle Changelog',href:'changes/vehicle.html'}
- ],'Supplemental changelog links remain distinct from the six tool launch links');
+  {label:'Vehicle Changelog',href:'changes/vehicle.html'},
+  {label:'Robot Builder Changelog',href:'changes/robot.html'}
+ ],'Supplemental changelog links remain distinct from the seven tool launch links');
  assert.equal(await page.getByRole('link',{name:'Archive',exact:true}).getAttribute('href'),'archive/');
- assert.equal(result.blockedCounters.length,6,'All six external counter images are isolated test fixtures');
+ assert.equal(result.blockedCounters.length,7,'All seven external counter images are isolated test fixtures');
  await frames(page);await layout(page,result,'catalog');await capture(page,result,'beta-catalog',{fullPage:true});
- result.checks.push('Actual root catalog source shows the exact Beta heading, unchanged Launch Tool path, five neighboring active card headings/paths (including Ship Combat Alpha; speculative alpha is archived) and unchanged description; four supplemental changelog labels/paths verified separately; external counters intercepted');
+ result.checks.push('Actual root catalog source shows the exact Beta heading, unchanged Launch Tool path, six neighboring active card headings/paths (including Ship Combat Alpha and Robot Builder Beta; speculative alpha is archived) and unchanged description; five supplemental changelog labels/paths verified separately; external counters intercepted');
 }
 async function writeReport(){await writeFile(join(artifacts,'deposit-completion-report.json'),JSON.stringify(report,null,2)+'\n');}
 async function runCase(id,kind,viewport,scenario){

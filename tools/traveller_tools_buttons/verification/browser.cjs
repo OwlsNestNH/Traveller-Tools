@@ -45,8 +45,22 @@ const fs=require('node:fs');
  assert.equal(await page.getByRole('link',{name:'Release #216',exact:true}).getAttribute('href'),'https://github.com/OwlsNestNH/Traveller-Tools/pull/216');
  for(const a of await page.locator('nav a').all()) {const response=await page.request.get(new URL(await a.getAttribute('href'),page.url()).href);assert.equal(response.status(),200);}
  await page.getByRole('link',{name:'Open Traveller Tool Locker'}).click();assert.ok(page.url().endsWith('/tools/traveller_tools_buttons/'));
- await page.goto(root+'/');
+ // Keep the optional remote badges pending to reproduce an unavailable image service.
+ // The homepage UI, reload and keyboard flows must remain independently verifiable.
+ const pendingBadges=[];
+ await page.route('https://img.shields.io/**',route=>{pendingBadges.push(route);});
+ const badgesPending=async()=>{
+  await assert.rejects(page.waitForLoadState('load',{timeout:250}),{name:'TimeoutError'});
+  assert.ok(pendingBadges.length>0,'homepage requested visit badge images');
+  assert.equal(await page.evaluate(()=>document.readyState),'interactive');
+ };
+ const finishBadges=async()=>{
+  await Promise.all(pendingBadges.splice(0).map(route=>route.fulfill({status:200,contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="90" height="20"><rect width="90" height="20" fill="#2b4cff"/></svg>'})));
+  await page.waitForLoadState('load');
+ };
+ await page.goto(root+'/',{waitUntil:'domcontentloaded'});
  const homeDiscussions=page.getByRole('link',{name:'GitHub Discussions — Questions & Feedback',exact:true});
+ await homeDiscussions.waitFor({state:'visible'});await badgesPending();
  assert.equal(await homeDiscussions.count(),1);
  assert.equal(await homeDiscussions.getAttribute('href'),destination);
  assert.equal(await homeDiscussions.getAttribute('target'),'_blank');
@@ -59,10 +73,12 @@ const fs=require('node:fs');
   assert.ok(box.height>=44,'homepage Discussions touch target at '+width);
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'homepage overflow at '+width);
  }
- await page.reload();await page.keyboard.press('Tab');
+ await finishBadges();
+ await page.reload({waitUntil:'domcontentloaded'});await homeDiscussions.waitFor({state:'visible'});await badgesPending();await page.keyboard.press('Tab');
  assert.ok(await homeDiscussions.evaluate(el=>el===document.activeElement),'Discussions is first keyboard destination');
  const homePopupEvent=page.waitForEvent('popup');await page.keyboard.press('Enter');
  const homePopup=await homePopupEvent;await homePopup.waitForLoadState();assert.equal(homePopup.url(),destination);await homePopup.close();
+ await finishBadges();
  await page.getByRole('link',{name:'Tool Locker Changelog'}).click();assert.ok(page.url().endsWith('/changes/locker.html'));
- assert.deepEqual(errors,[]);await browser.close();console.log('PASS homepage Discussions above fold at desktop/mobile, touch target and keyboard navigation; Tool Locker Discussions link visibility, keyboard focus and new-tab navigation; 44 links, Derelict Maps URL, safe new-tab attributes, search and export, six unique additions, description search, categories, complete export, responsive layout and changelog navigation');
+ assert.deepEqual(errors,[]);await browser.close();console.log('PASS homepage readiness and reload with pending visit badges; homepage Discussions above fold at desktop/mobile, touch target and keyboard navigation; Tool Locker Discussions link visibility, keyboard focus and new-tab navigation; 44 links, Derelict Maps URL, safe new-tab attributes, search and export, six unique additions, description search, categories, complete export, responsive layout and changelog navigation');
 })().catch(e=>{console.error(e);process.exit(1)});
