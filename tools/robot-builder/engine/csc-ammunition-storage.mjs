@@ -9,12 +9,14 @@ const heavyRoundIds=[
  'anti-materiel-rifle','arl-standard','arl-support','arl-pdw','early-machinegun','machinegun','rapid-fire-machinegun','heavy-machinegun','light-assault-gun','vrf-gauss-gun','vrf-machinegun',
  ...[6,7,8,9].map(tl=>'rocket-launcher-'+tl),'rocket-pod','tac-launcher-anti-aircraft','tac-launcher-anti-personnel','tac-launcher-armour-piercing'
 ];
+const projectileIds=['compound-cam-bow','crossbow','long-bow','repeating-crossbow','short-bow'];
 const cartridgeIds=['personal-defence-laser','cartridge-laser-carbine-10','cartridge-laser-carbine-12','cartridge-laser-rifle-10','cartridge-laser-rifle-12','cppg-11','cppg-12','cppg-13','light-gatling-laser'];
 // Explicit source-qualified profiles only. Fuel/chemical sprays, unspecified pack
 // locations, integral supplies without replacement prices and direct payloads do
 // not gain a magazine estimate by sharing a weapon family or mount size.
 const registry=new Map([
  ...slugIds.map(id=>['csc-'+id,{kind:'round-load',pages:'142-148'}]),
+ ...projectileIds.map(id=>['csc-'+id,{kind:'projectile-load',pages:'154'}]),
  ...heavyRoundIds.map(id=>['csc-'+id,{kind:'round-load',pages:'160-173'}]),
  ...['grenade-launcher-standard','ram-grenade-launcher-standard'].map(id=>['csc-'+id,{kind:'round-load',pages:'160-163'}]),
  ...cartridgeIds.map(id=>['csc-'+id,{kind:'cartridge-magazine',pages:'149-153,160-163'}]),

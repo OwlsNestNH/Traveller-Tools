@@ -8,9 +8,10 @@ import {CSC_AMMUNITION_ESTIMATE_IDS,estimateCscMagazineMass} from '../engine/csc
 import {createRobotApi} from '../js/api.mjs';
 import {projectReview,formatStatblock} from '../js/review-model.mjs';
 
-// CSC revised printing pp142-153,160-173: these expected guideline results are
+// CSC revised printing pp142-154,160-173: these expected guideline results are
 // separate fixtures, not values calculated by the production estimator.
 const expected=[
+ ['compound-cam-bow',.005,'projectile-load'],['crossbow',.015,'projectile-load'],['long-bow',.0075,'projectile-load'],['repeating-crossbow',.12,'projectile-load'],['short-bow',.005,'projectile-load'],
  ['assault-pistol',.075],['cartridge-pistol',.045],['coach-pistol',.02],['flechette-pistol',.01],['heavy-revolver',.045],['magrail-pistol',.1],['shot-pistol',.0025],['universal-auto-pistol',.05],['zip-gun',.001],
  ['accelerator-rifle-11',.2],['air-rifle-3',.015],['air-rifle-4',.015],['assault-shotgun',.6],['big-game-rifle',.2],['flechette-submachine-gun',.6],['gauss-assault-gun',.36],['gauss-rifle',1.6],['gauss-sniper-rifle',.24],['gauss-submachinegun',.9],['magrail-rifle',.6],['sawn-off-shotgun',.06],['light-shotgun',.09],['sniper-rifle',.1],['snub-carbine',.1],['spear-gun',.01],
  ['gauntlet-laser',1.2,'external-power-pack'],['laser-pistol-11',.6,'external-power-pack'],['personal-defence-laser',.25,'cartridge-magazine'],['cartridge-laser-carbine-10',.225,'cartridge-magazine'],['cartridge-laser-carbine-12',.25,'cartridge-magazine'],['cartridge-laser-rifle-10',.5,'cartridge-magazine'],['cartridge-laser-rifle-12',.5,'cartridge-magazine'],['heavy-laser-rifle',2.4,'internal-power-pack'],['stun-carbine',.8,'internal-power-pack'],
@@ -27,9 +28,9 @@ const design=(records=[record()],physical={})=>updateDesign(createDesign({techLe
 const has=(result,code)=>result.diagnostics.some(d=>d.code===code);
 const projection=d=>{const r=evaluateDesign(d);return projectReview(d,getCatalogue(d),r);};
 
-test('the explicit estimate registry covers 65 CSC profiles and excludes the other 33',()=>{
+test('the explicit estimate registry covers 70 CSC profiles and excludes the other 33',()=>{
  const csc=WEAPONS.filter(w=>w.sourceFamily==='csc-2023');
- assert.equal(csc.length,98);assert.equal(expected.length,65);assert.equal(blocked.length,33);
+ assert.equal(csc.length,103);assert.equal(expected.length,70);assert.equal(blocked.length,33);
  assert.deepEqual([...CSC_AMMUNITION_ESTIMATE_IDS].sort(),expected.map(([id])=>'csc-'+id).sort());
  assert.deepEqual(csc.filter(w=>!estimateCscMagazineMass(w)).map(w=>w.id).sort(),blocked.map(id=>'csc-'+id).sort());
  assert.ok(Object.isFrozen(CSC_AMMUNITION_ESTIMATE_IDS));
@@ -156,7 +157,7 @@ test('UI constraints are engine metadata, source-scoped and detached',()=>{
  assert.deepEqual(storage.visibleWhen.allOf[0].oneOf.slice().sort(),expected.map(([id])=>'csc-'+id).sort());
  assert.deepEqual(storage.visibleWhen.allOf.slice(1),[{field:'autoload',equals:false},{field:'extraMagazines',notEquals:0}]);
  storage.visibleWhen.allOf[0].oneOf.splice(0);storage.choices[1].label='mutated';max.maxBy.values.true=999;
- const fresh=weaponControl(d).itemFields;assert.equal(fresh.find(f=>f.field==='spareMagazineStorageId').visibleWhen.allOf[0].oneOf.length,65);assert.equal(fresh.find(f=>f.field==='extraMagazines').maxBy.values.true,10);
+ const fresh=weaponControl(d).itemFields;assert.equal(fresh.find(f=>f.field==='spareMagazineStorageId').visibleWhen.allOf[0].oneOf.length,70);assert.equal(fresh.find(f=>f.field==='extraMagazines').maxBy.values.true,10);
 });
 test('API rejects 100-spare autoload transition atomically without truncation or loss of storage',()=>{
  const api=createRobotApi(),d=design([record({extraMagazines:100})],{optionParameters:{'storage-compartment':{quantity:100}}});

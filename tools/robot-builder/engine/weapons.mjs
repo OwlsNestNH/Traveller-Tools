@@ -7,6 +7,7 @@ import {CSC_MELEE_WEAPONS} from './csc-melee-weapons.mjs';
 import {CSC_STANDARD_LAUNCHERS,CSC_DIRECT_PAYLOADS} from './csc-launcher-payloads.mjs';
 import {CSC_SPECIAL_ENERGY_WEAPONS} from './csc-special-energy-weapons.mjs';
 import {CSC_ADDITIONAL_SLUG_WEAPONS} from './csc-additional-slug-weapons.mjs';
+import {CSC_ARCHAIC_WEAPONS} from './csc-archaic-weapons.mjs';
 import {estimateCscMagazineMass} from './csc-ammunition-storage.mjs';
 import {CSC_WEAPON_ACCESSORIES,cscAccessoryEligibility,evaluateCscAccessories} from './csc-weapon-accessories.mjs';
 const book=pages=>({book:'Robot Handbook',edition:'Mongoose 2022',pages});
@@ -89,7 +90,7 @@ for(const w of WEAPONS){
  if(!w.weaponFamily)throw new TypeError('Weapon requires an explicit source family: '+w.id);
  w.compatibility={accessoryRules:'core-2022',associatedLauncherRules:'core-2022',attachedLauncher:RIFLE_WEAPON_IDS.includes(w.id),specialisedAmmunitionRules:null};
 }
-WEAPONS.push(...clone(CSC_SLUG_WEAPONS),...clone(CSC_ENERGY_WEAPONS),...clone(CSC_HEAVY_WEAPONS),...clone(CSC_MELEE_WEAPONS),...clone(CSC_STANDARD_LAUNCHERS),...clone(CSC_DIRECT_PAYLOADS),...clone(CSC_SPECIAL_ENERGY_WEAPONS),...clone(CSC_ADDITIONAL_SLUG_WEAPONS));
+WEAPONS.push(...clone(CSC_SLUG_WEAPONS),...clone(CSC_ENERGY_WEAPONS),...clone(CSC_HEAVY_WEAPONS),...clone(CSC_MELEE_WEAPONS),...clone(CSC_STANDARD_LAUNCHERS),...clone(CSC_DIRECT_PAYLOADS),...clone(CSC_SPECIAL_ENERGY_WEAPONS),...clone(CSC_ADDITIONAL_SLUG_WEAPONS),...clone(CSC_ARCHAIC_WEAPONS));
 export const MOUNTS={small:{slots:1,cost:500,armSize:3},medium:{slots:2,cost:1000,armSize:5},heavy:{slots:10,cost:5000,armSize:7},vehicle:{slots:15,cost:10000,armSize:null}};
 export const FIRE_CONTROL=[{id:'none',label:'No fire control',tl:0,cost:0,dm:0},...['Basic','Improved','Enhanced','Advanced'].map((label,i)=>({id:label.toLowerCase(),label,tl:6+i*2,cost:[10000,25000,50000,100000][i],dm:i+1}))];
 const STORAGE_IDS=['storage-compartment','refrigerated-storage-compartment','hazardous-material-storage-compartment'];
@@ -190,7 +191,7 @@ export function evaluateWeapons(design,manipulators,skills,installedEquipment=[]
  if(record.placement!=='body'&&!arm)add('error','WEAPON_ARM_REQUIRED',record.id,'Select an installed manipulator.');
  if(arm&&!held&&(mount.armSize===null||arm.size<mount.armSize+(record.autoload?1:0)))add('error','WEAPON_ARM_SIZE',record.id,'Manipulator is too small for this weapon installation.');
  if(held&&w.mountClass==='vehicle')add('blocker','HELD_VEHICLE_WEAPON_UNRESOLVED',record.id,'Hand-held support, carrying fit and attack modifiers for a Heavy Weapons (vehicle) weapon are not defined by this construction route. Choose a body mount; a separate supported tripod or vehicle installation is not assumed.',book('60-61'));
- if(held&&w.requiresTwoHands)add('blocker','HELD_TWO_HANDED_WEAPON_UNRESOLVED',record.id,'This weapon requires two-handed use. A single selected manipulator does not validate the second grip, coordinated operation or carrying fit; choose a supported mount until that route is modelled.',w.handednessSource??w.handedness?.source??w.source);
+ if(held&&w.requiresTwoHands)add('blocker','HELD_TWO_HANDED_WEAPON_UNRESOLVED',record.id,(w.handedness?.explicitPrintedHandCount===false?'The supported physical interpretation of this weapon uses two hands. ':'This weapon requires two-handed use. ')+'A single selected manipulator does not validate the second grip, coordinated operation or carrying fit; choose a supported mount until that route is modelled.',w.handednessSource??w.handedness?.source??w.source);
  if(held&&(n!==1||record.autoload))add('error','HELD_WEAPON_MOUNT',record.id,'Linked weapons and autoloaders require a mount.');
  if(!w.magazine&&(record.extraMagazines||!record.initialMagazines))add('error','WEAPON_AMMO_INAPPLICABLE',record.id,'This weapon has no separately purchased ammunition magazine; do not configure spare magazines or remove an initial magazine.');
  const spareRef=record.spareMagazineStorageId??'none',spareEstimate=estimateCscMagazineMass(w);let spareAmmunition=null;
