@@ -18,6 +18,7 @@ for(const[,names,path]of app.matchAll(/^import (.+) from '([^']+)';$/gm)){
  else for(const name of names.slice(1,-1).split(','))bindings[name.trim()]=module[name.trim()];
 }
 const persistence=(await readFile(new URL('../js/persistence.mjs',import.meta.url),'utf8')).replace(/^import .*;\n/gm,'').replace(/export /g,'');
+Object.assign(bindings,await import('../js/fleet.mjs'));
 delete bindings.Store;delete bindings.KEY;
 const executable=app.replace(/^import .*;\n/gm,'').replace(/\nboot\(\)\.catch\([\s\S]*$/,'');
 const origin={id:'0,0',x:0,y:0,name:'Origin',sector:'Test',hex:'0101',uwp:'A788899-C',zone:'Safe'};

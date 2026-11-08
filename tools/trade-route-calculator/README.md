@@ -1008,7 +1008,8 @@ remain accepted. Group files require this version of the app or later.
 
 Only one tab edits the group at a time. Take over editing moves the writer lock,
 not ownership of individual ships. Storage errors leave the prior group intact;
-corrupt group data enters recovery and can still be exported raw. No campaign
+corrupt group data enters recovery and can still be exported raw. Recovery restore
+or reset replaces the unreadable saved group; retain the raw backup first. No campaign
 data is uploaded. Use regular backups: browser storage is limited and clearing
 site data removes all locally saved ships. Player links, reports and trade/PDF
 views describe only the selected ship, not the private group backup.

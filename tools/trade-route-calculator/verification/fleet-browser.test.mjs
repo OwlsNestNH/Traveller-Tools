@@ -4,7 +4,8 @@
 // Optional: TRAVELLER_TEST_URL, TRAVELLER_BROWSER_CHANNEL; --fixtures-only needs no browser.
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
-import {readFile} from 'node:fs/promises';
+import {readFile,mkdir} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
 import {guiFixture,campaignKey as KEY} from './fixtures/gui-parity.mjs';
 import {validate} from '../js/state.mjs';
 const base=process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/';
@@ -109,11 +110,43 @@ const cases=[
   await switchShip(p,'synthetic-beta');assert.equal(await p.locator('[data-action="contract-accept"]').count(),0);
   await switchShip(p,'synthetic-alpha');assert.equal(await p.locator('[data-action="contract-accept"]').count(),0,'Old session offers cannot revive when switching back');
  }],
+ ['supplier input stays with source ship',async p=>{
+  const seed=await read(p);assert.equal(seed.ships[0].campaign.actual,seed.ships[1].campaign.actual,'Exercise same-world draft restoration');
+  await tab(p,'Trade');await action(p,'search').click();
+  await p.locator('#supplier-form [name=party]').fill('Alpha private synthetic supplier');
+  await p.locator('#supplier-form [name=counterparty]').fill('5');
+  await p.locator('#supplier-form [name=method]').selectOption('blackMarket');
+  await p.locator('#supplier-form .supplier-overrides').evaluate(el=>{el.open=true;});
+  await p.locator('#supplier-form [name=dice]').fill('11');
+  await forceSwitch(p,'synthetic-beta');await p.getByRole('heading',{name:'Switch ships?',exact:true}).waitFor();
+  await p.locator('#modal-submit').click();await closed(p);assert.equal((await read(p)).activeShipId,'synthetic-beta');
+  await tab(p,'Trade');await action(p,'search').click();assert.notEqual(await p.locator('#supplier-form [name=party]').inputValue(),'Alpha private synthetic supplier');
+  assert.equal(await p.locator('#supplier-form [name=counterparty]').inputValue(),'2');assert.equal(await p.locator('#supplier-form [name=dice]').inputValue(),'');
+  assert.notEqual(await p.locator('#supplier-form [name=method]').inputValue(),'blackMarket');
+ }],
+ ['open service blocks switch',async p=>{
+  await tab(p,'Overview');await action(p,'refuel').click();await p.locator('#service-panel').waitFor();
+  await noLoss(p,()=>forceSwitch(p,'synthetic-beta'));assert.equal(await p.locator('#ship-select').inputValue(),'synthetic-alpha');assert.equal(await p.locator('#service-panel').isVisible(),true);
+  assert.match(await p.locator('#message').textContent(),/service|finish|close/i);
+ }],
+ ['route draft blocks switch',async p=>{
+  await tab(p,'Overview');await p.locator('#route-menu > summary').click();await action(p,'route-build').click();await action(p,'route-cancel').waitFor();
+  await noLoss(p,()=>forceSwitch(p,'synthetic-beta'));assert.equal(await p.locator('#ship-select').inputValue(),'synthetic-alpha');assert.match(await p.locator('#message').textContent(),/route draft/i);
+  await action(p,'route-cancel').click();await switchShip(p,'synthetic-beta');
+ }],
+ ['keyboard switch retains focus',async p=>{
+  await p.locator('#ship-select').focus();await p.keyboard.press('ArrowDown');await p.keyboard.press('Enter');
+  await p.waitForFunction(key=>JSON.parse(localStorage.getItem(key)).activeShipId==='synthetic-beta',KEY);await tick(p);
+  assert.equal(await p.evaluate(()=>document.activeElement?.id),'ship-select','Focus returns to replacement select after render');
+  await p.keyboard.press('ArrowUp');await p.keyboard.press('Enter');await p.waitForFunction(key=>JSON.parse(localStorage.getItem(key)).activeShipId==='synthetic-alpha',KEY);await tick(p);
+  assert.equal(await p.evaluate(()=>document.activeElement?.id),'ship-select');
+ }],
  ['compact responsive controls',async(p,_context,width)=>{
   const select=p.locator('#ship-select');assert.equal(await select.count(),1);assert.equal(await p.getByLabel('Ship',{exact:true}).count(),1);
   for(const control of [select,action(p,'ship-add')]){const r=await control.boundingBox();assert.ok(r&&r.x>=0&&r.x+r.width<=width+1,'Ship control fits viewport');assert.ok(r.height>=44,'Ship control has touch target');}
   assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'No viewport overflow');
   await switchShip(p,'synthetic-beta');assert.equal(await select.inputValue(),'synthetic-beta');
+  const dir=new URL('../verification-artifacts/',import.meta.url);await mkdir(dir,{recursive:true});await p.screenshot({path:fileURLToPath(new URL(`fleet-${width}.png`,dir)),fullPage:false});
  }]
 ];
 if(process.argv.includes('--fixtures-only')){
@@ -122,9 +155,15 @@ if(process.argv.includes('--fixtures-only')){
  console.log(`PASS synthetic fleet fixtures; ${cases.length*3} browser cases declared. Chromium not launched.`);
 }else{
  const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BROWSER_CHANNEL?{channel:process.env.TRAVELLER_BROWSER_CHANNEL}:{})});const failures=[];
- try{for(const width of [1440,390,320])for(const[name,run]of cases){let env;try{env=await contextFor(browser,name.startsWith('legacy')?f.state:fixture(),width);await run(env.page,env.context,width);assert.deepEqual(env.errors,[]);for(const p of env.context.pages())assert.deepEqual(await p.evaluate(()=>globalThis.fleetUnhandled||[]),[]);console.log(`PASS ${name} ${width}`);}catch(error){failures.push(`${name} ${width}: ${error.stack||error}`);console.error(failures.at(-1));if(env)console.error('UI error:',await env.page.locator('#modal-error').textContent(),await env.page.locator('#message').textContent());}finally{await env?.context.close();}}}finally{await browser.close();}
+ try{for(const width of [1440,390,320])for(const[name,run]of cases){if(process.env.TRAVELLER_CASE_FILTER&&!name.includes(process.env.TRAVELLER_CASE_FILTER))continue;let env;try{env=await contextFor(browser,name.startsWith('legacy')?f.state:(()=>{const seed=fixture();if(name.startsWith('supplier input')){seed.ships[1].campaign.actual=seed.ships[0].campaign.actual;seed.ships[1].campaign.routeIndex=seed.ships[0].campaign.routeIndex;}return seed;})(),width);await run(env.page,env.context,width);assert.deepEqual(env.errors,[]);for(const p of env.context.pages())assert.deepEqual(await p.evaluate(()=>globalThis.fleetUnhandled||[]),[]);console.log(`PASS ${name} ${width}`);}catch(error){failures.push(`${name} ${width}: ${error.stack||error}`);console.error(failures.at(-1));if(env)console.error('UI error:',await env.page.locator('#modal-error').textContent(),await env.page.locator('#message').textContent());}finally{await env?.context.close();}}}finally{await browser.close();}
  assert.deepEqual(failures,[],`${failures.length} fleet browser cases failed`);
 }
+
+
+
+
+
+
 
 
 
