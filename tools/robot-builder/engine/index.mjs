@@ -6,7 +6,8 @@ import {characteristicDM} from './characteristics.mjs';
 import {evaluateBrainSoftware} from './brain-software.mjs';
 import {equipmentCapabilities} from './capabilities.mjs';
 import {verifiedVehicleOptionCatalogue,validateVerifiedVehicleOptions,evaluateVerifiedVehicleOptions} from './verified-vehicle-options.mjs';
-export {vehicleOptionRecordPresentation} from './verified-vehicle-options.mjs';
+import {vehicleOptionRecordPresentation as presentVehicleOption} from './verified-vehicle-options.mjs';
+export function vehicleOptionRecordPresentation(record,design){return presentVehicleOption(record,SIZES.find(row=>row.id===design?.selections?.chassis?.size));}
 import {validateExternalVehicleOptions,evaluateExternalVehicleOptions} from './vehicle-options.mjs';
 import {evaluateMetamorphicBody,fabricationCapabilities,highTechnologyInventory} from './high-technology.mjs';
 export {weaponRecordPresentation} from './weapons.mjs';
@@ -191,7 +192,7 @@ function evaluateSingleDesign(input){
  if(reduction>baseCost*.2){const correction=reduction-baseCost*.2;cost+=correction;entry('arm-savings-cap','Manipulator saving limit',correction,0,'25–26');}
  const equipment=evaluateEquipment(design,OPTIONS,baseSlots),options=equipment.installed,defaultSuite=options.filter(o=>o.fromDefault);
  diagnostics.push(...equipment.diagnostics);ledger.push(...equipment.ledger);cost+=equipment.cost;used+=equipment.slots;
- const verifiedVehicle=evaluateVerifiedVehicleOptions(design,equipment);diagnostics.push(...verifiedVehicle.diagnostics);ledger.push(...verifiedVehicle.ledger);cost+=verifiedVehicle.cost;used+=verifiedVehicle.slots;
+ const verifiedVehicle=evaluateVerifiedVehicleOptions(design,equipment,chassis);diagnostics.push(...verifiedVehicle.diagnostics);ledger.push(...verifiedVehicle.ledger);cost+=verifiedVehicle.cost;used+=verifiedVehicle.slots;
  const externalVehicle=evaluateExternalVehicleOptions(design,chassis,OPTIONS);diagnostics.push(...externalVehicle.diagnostics);ledger.push(...externalVehicle.ledger);cost+=externalVehicle.cost;used+=externalVehicle.slots;
  const zeroSlotCount=equipment.zeroSlot.used,zeroSlotAllowance=equipment.zeroSlot.allowance,overflow=equipment.zeroSlot.overflow;
  if(equipment.noInternalPower){endurance=endurance*p.powerPacks/(1+p.powerPacks);if(p.vehicleSpeed)vehicleEndurance=Math.round(endurance/4/2**p.vehicleBands);}

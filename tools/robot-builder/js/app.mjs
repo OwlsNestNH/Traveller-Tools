@@ -390,7 +390,7 @@ if(item.type==='multiselect'){
       if(!onlyFields)for(const field of presentation.wearMetadataRemovals||[]){const remove=el('button','Clear retained '+({ammunitionOverrides:'linked ammunition',initialMagazineSourceId:'initial magazine source',alternateMagazineSupplies:'alternate supplies',initialAmmunitionModification:'initial ammunition modification',spareAmmunitionModification:'spare ammunition modification',highCapacityAmmunitionModification:'high-capacity ammunition modification',weaponManufactureTL:'manufacture declaration'}[field]));remove.type='button';remove.addEventListener('click',()=>onChange(field,undefined));grid.append(remove);}
       if(presentation.vehicleOption){
         const facts=presentation.vehicleOption;
-        grid.append(el('p','Cr '+facts.unitCost.toLocaleString()+' / '+facts.slotsPerInstallation+' Slots'+(facts.family==='discharger'?' / Capacity '+facts.capacityPerInstallation:'')+' per installation','wide help'));
+        grid.append(el('p',(facts.unitCost===null?'Cost unresolved':'Cr '+facts.unitCost.toLocaleString())+' / '+facts.slotsPerInstallation+' Slots'+(facts.family==='discharger'?' / Capacity '+facts.capacityPerInstallation:'')+' per installation','wide help'));
         grid.append(el('p',[facts.loadLabel,facts.replacementPriceLabel,...(facts.selectedFacts||[]).map(fact=>fact.label+': '+fact.value),...facts.conditionLabels].filter(Boolean).join(' · '),'wide help'));
         grid.append(el('p',sourceText(facts.source)+' · '+sourceText(facts.conversionSource),'wide source'));
       }
