@@ -22,7 +22,7 @@ Limits include 2 MB UTF-8 decoded imports and serialized saves (checked before a
 
 - Setup: `configure`, `setup`, `gm-mode`.
 - Characteristics: `roll-statistics`, `swap-statistics`, `accept-statistics`, `add-extra`.
-- Life path: `background`, `precareer`, `skip-precareer`, `career`, `fallback`, `training`, `survival`, `advancement`, `commission`, `continue-career`, `leave-career`, `benefit`, `ageing`, `finish`.
+- Life path: `background`, `precareer`, `skip-precareer`, `career`, `fallback`, `training`, `survival`, `advancement`, `commission`, `continue-career`, `change-assignment`, `qualify-assignment`, `abandon-assignment-change`, `leave-career`, `benefit`, `ageing`, `finish`.
 - Benefits: projected typed `book-step` decisions distinguish equipment, ship, special benefit and pension rulings. `character.benefitAwards` records original entitlements separately from stable `character.assets`. `benefitRollHistory` preserves table/modifier context and duplicate-award rerolls. Use the offered fields and limits; an unconfirmed choice does not consume the award.
 - Psionics: `learn-talent {talent}`, `finish-psionic-training`, `begin-psionic-training`. Projected `psionicTraining`, `psionicOptions`, `psionicCanFinish` and `canStartPsionicTraining` drive choices. Initial selection order and rolled-check count are distinct. Institute terms and unknown attempt history use typed `resolve-book` decisions; no arbitrary free retry, training or debt is implied.
 - Games: `apply-psionic-games`, `psionic-games-preliminary {talent}`, `psionic-games-final`, `complete-psionic-games`. Use `psionicGamesAvailability`, `currentPsionicGames`, `psionicGamesOptions` and `psionicGamesNeedsStacking`. The replacement term is offered only at an existing-career term boundary. Completion requires `ordinaryEvents: {mode: "omit" | "resolved-externally", reason}` and, when requested, `awardStacking: {mode: "additive" | "winner-replaces-preliminary", reason}`. External events require an explicit `ordinaryEventEffects` array, even when empty. Supported effects are cash deltas, nonnegative debt additions, existing-characteristic deltas and named Contact/Ally/Rival/Enemy additions; unsupported effects reject without partial completion. The record retains frozen context, ordered checks, source decisions, benefit accounting and term completion.
@@ -119,3 +119,16 @@ An unprinted modified result pauses at `advisory-cash-source`, preserving the or
 ## Optional one-roll benefit credits
 
 `character.benefitCredits` retains each source-earned credit's identity, origin, value, scope, status and consumption. Prole Event 3 is global; Event 4 is restricted to the originating career's ordinary benefits. `benefitCreditOptions` gives the eligible options at ordinary benefits and advisory cash. Send `creditIds` on `benefit` or `advisory-cash` to apply only the selected credits. Omission or an empty array preserves them. Duplicate and ineligible IDs reject without mutation. Cash-source resolution, restore and replay retain exactly one consumption for the effective roll.
+
+
+## Core assignment changes
+
+At a completed term boundary, `assignmentChangeOptions` projects only the eleven Core careers explicitly classified on p. 20. Each option contains `id`, `name`, `mode` (`retain` or `restart`), `available`, `reason` and `source`. Do not infer options for alien, Companion, Drifter, Psion or Prisoner careers.
+
+- `change-assignment {assignment}` in retain mode starts the next term with one qualification attempt. Success changes the assignment; failure keeps the old one. Both continue to ordinary training, with no new basic training, career record or rank award.
+- The same command in restart mode records a voluntary change and resolves the old career's normal benefits first. The lifetime cash count does not reset.
+- At `assignment-entry`, `currentAssignmentChange` identifies the saved target. `qualify-assignment {}` attempts that target using current post-benefit characteristics. `abandon-assignment-change {}` returns to ordinary career selection before the attempt and never reverses benefits.
+- `character.assignmentChanges` records from/to assignments, origin career index, mode, status, source, timing, qualification result and any new career index. Each career's `termHistory` preserves the assignment and rank actually held, even after its current assignment changes.
+- `character.careerTransitions` separately records source, age, generation terms, from/to career and assignment identities, mode, qualification check or automatic reason, entry/failure status and any new career index.
+
+The retained-career path preserves career terms, officer status, highest rank and benefits. Fresh-assignment paths start a separate rank-zero career record. Applicable persistent qualification rights remain available; first-entry education, commission and rank awards are not repeated by an in-place switch. Invalid choices are rejected before dice or one-use rights are consumed. Automatic qualification, including Core Noble SOC 10+, does not invent a qualification roll.

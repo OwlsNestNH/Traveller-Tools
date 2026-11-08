@@ -10,6 +10,8 @@ export function characterChanges(before,after){
  }
  // Persisted outcomes are audited without exposing internal continuation/effect queues.
  const ledgerFields={
+  careerTransitions:['id','source','procedureSource','generationTerms','age','fromCareerIndex','fromCareerId','fromAssignment','toCareerId','toAssignment','mode','check','automaticReason','status','newCareerIndex'],
+  assignmentChanges:['id','careerId','careerIndex','fromAssignment','toAssignment','mode','status','source','generationTerms','age','check','newCareerIndex','rank','officer','automaticReason','transitionId'],
   benefitCredits:['id','source','originCareerId','originCareerIndex','value','scope','status','consumption'],
   advisoryServices:['id','source','originCareerId','originCareerIndex','careerTerms','generationTerms','age','status','careerId','ruling','training','cash','cashLimitDecision','completion'],
   crossCareerRoutes:['id','kind','source','originCareerId','originCareerIndex','careerTerms','generationTerms','age','status','check','tables','training','completion'],
@@ -25,7 +27,7 @@ export function characterChanges(before,after){
  for(const field of ['historyKnown','checksAttempted','firstTalentChosen'])add('psionics.'+field,before.psionics?.[field],after.psionics?.[field]);
  for(const field of ['attempts','tests','training','rulings','importedAttempted']){const a=before.psionics?.[field]??[],b=after.psionics?.[field]??[];for(let i=0;i<Math.max(a.length,b.length);i++)add('psionics.'+field+'.'+i,a[i],b[i]);}
  const old=before.careers??[],next=after.careers??[];
- for(let i=0;i<Math.max(old.length,next.length);i++)for(const field of ['id','assignment','terms','rank','officer','benefitRolls','forcedExit','forcedStay','parole','released','pension','pensionCondition','pensionEntitlement','pensionExitStatusBasis','pensionStatusReviewRequired'])add('careers.'+i+'.'+field,old[i]?.[field],next[i]?.[field]);
+ for(let i=0;i<Math.max(old.length,next.length);i++)for(const field of ['id','assignment','terms','rank','officer','benefitRolls','forcedExit','forcedStay','parole','released','pension','pensionCondition','pensionEntitlement','pensionExitStatusBasis','pensionStatusReviewRequired','termHistory','exitGenerationTerms','exitAge','exitAssignment'])add('careers.'+i+'.'+field,old[i]?.[field],next[i]?.[field]);
  const oldEducation=before.educations??[],newEducation=after.educations??[];
  for(let i=0;i<Math.max(oldEducation.length,newEducation.length);i++){
   const a=oldEducation[i]??{},b=newEducation[i]??{};

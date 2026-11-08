@@ -26,3 +26,5 @@ summary{min-height:44px;align-content:center}.check{min-height:48px}
 #legacy-history{max-width:1400px;margin:24px auto;padding:24px}#legacy-actions{padding-left:24px}#legacy-actions li{overflow-wrap:anywhere;margin:16px 0}#legacy-history .actions{flex-wrap:wrap}#legacy-history[hidden]{display:none}
 
 fieldset{min-inline-size:0;max-width:100%}legend{max-width:100%;overflow-wrap:anywhere}.check>span{min-width:0;overflow-wrap:anywhere}summary{overflow-wrap:anywhere}
+
+.assignment-options>summary{min-height:44px;padding-block:6px}
