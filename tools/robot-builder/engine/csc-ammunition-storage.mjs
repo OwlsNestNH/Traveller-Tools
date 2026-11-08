@@ -65,3 +65,23 @@ export function cscMagazineVariants(weapon){
  highCapacity.estimate={...standardEstimate,unitMassKg:highCapacity.estimatedUnitMassKg,standardUnitMassKg:standardEstimate.unitMassKg,massMultiplier:2,roundsPerLoad:highCapacity.capacity,variantSource:csc('175')};
  return {standard,highCapacity};
 }
+
+// Only the standard and support ARLs explicitly interchange on CSC p160.
+// Capacity, calibre and the ARL family name do not establish compatibility.
+export const CSC_ARL_INTERCHANGE_IDS=Object.freeze(['csc-arl-standard','csc-arl-support']);
+export function cscMagazineSourceIds(weapon){
+ return CSC_ARL_INTERCHANGE_IDS.includes(weapon?.id)&&weapon.sourceFamily==='csc-2023'?[...CSC_ARL_INTERCHANGE_IDS]:[];
+}
+export function cscInterchangeMagazineProducts(receiver,weapons){
+ return cscMagazineSourceIds(receiver).flatMap(sourceWeaponId=>{
+  const donor=weapons.find(item=>item.id===sourceWeaponId),variants=cscMagazineVariants(donor);
+  if(!variants)return [];
+  return Object.values(variants).map(variant=>({
+   ...structuredClone(variant),productId:sourceWeaponId+':'+variant.id,sourceWeaponId,sourceWeaponLabel:donor.label,sourceFamily:donor.sourceFamily,
+   interchangeSource:csc('160'),receiverIdentityUnchanged:true,
+   estimate:{...structuredClone(variant.estimate),basisSourceWeaponId:sourceWeaponId,basisConvention:'source-magazine-identity',
+    scope:'CSC p142 rule-of-thumb estimate, not measured mass. Keeping the source weapon as the estimate basis is an inventory convention: p142 does not settle donor versus receiver basis. Transfer does not change a physical magazine mass.'},
+   ...(variant.id==='high-capacity'?{qualification:{...structuredClone(variant.qualification),composition:'Combines CSC p160 standard/support interchange with p175 high-capacity conversion, subject to referee suitability; not a worked source example.'}}:{})
+  }));
+ });
+}

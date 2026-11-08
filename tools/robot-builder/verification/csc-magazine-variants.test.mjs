@@ -123,7 +123,7 @@ test('TL4 is independently enforced, shotgun suitability qualified, and equal ca
  assert.deepEqual([arl.highCapacity.capacity,arl.highCapacity.unitCost,arl.highCapacity.estimatedUnitMassKg],[40,300,.6]);
  assert.deepEqual([support.standard.capacity,support.standard.unitCost,support.standard.estimatedUnitMassKg],[40,200,.8]);
  const w=direct([record({weaponId:'csc-arl-standard',linkedWeapons:1,extraMagazines:0,extraHighCapacityMagazines:1,spareMagazineStorageId:'none'})]).weapons[0];
- assert.equal(w.conditionalEffects.magazineInterchangeability.alternateMagazineSelectionImplemented,false);
+ assert.equal(w.conditionalEffects.magazineInterchangeability.alternateMagazineSelectionImplemented,true);
 });
 
 const grenades=()=>record({id:'grenades',weaponId:'grenade-launcher',linkedWeapons:1,initialMagazineType:'standard',extraMagazines:0,extraHighCapacityMagazines:0,spareMagazineStorageId:'none',highCapacityMagazineStorageId:'none',ammunition:'frag',looseGrenades:1,looseAmmunitionFor:'primary',ammunitionStorageId:ref});
