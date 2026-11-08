@@ -4,6 +4,7 @@ import {CSC_SLUG_WEAPONS} from './csc-slug-weapons.mjs';
 import {CSC_ENERGY_WEAPONS} from './csc-energy-weapons.mjs';
 import {CSC_HEAVY_WEAPONS} from './csc-heavy-weapons.mjs';
 import {CSC_MELEE_WEAPONS} from './csc-melee-weapons.mjs';
+import {CSC_STANDARD_LAUNCHERS,CSC_DIRECT_PAYLOADS} from './csc-launcher-payloads.mjs';
 import {CSC_WEAPON_ACCESSORIES,cscAccessoryEligibility,evaluateCscAccessories} from './csc-weapon-accessories.mjs';
 const book=pages=>({book:'Robot Handbook',edition:'Mongoose 2022',pages});
 const core=pages=>({book:'Core Rulebook Update 2022',edition:'Mongoose 2022',pages});
@@ -85,7 +86,7 @@ for(const w of WEAPONS){
  if(!w.weaponFamily)throw new TypeError('Weapon requires an explicit source family: '+w.id);
  w.compatibility={accessoryRules:'core-2022',associatedLauncherRules:'core-2022',attachedLauncher:RIFLE_WEAPON_IDS.includes(w.id),specialisedAmmunitionRules:null};
 }
-WEAPONS.push(...clone(CSC_SLUG_WEAPONS),...clone(CSC_ENERGY_WEAPONS),...clone(CSC_HEAVY_WEAPONS),...clone(CSC_MELEE_WEAPONS));
+WEAPONS.push(...clone(CSC_SLUG_WEAPONS),...clone(CSC_ENERGY_WEAPONS),...clone(CSC_HEAVY_WEAPONS),...clone(CSC_MELEE_WEAPONS),...clone(CSC_STANDARD_LAUNCHERS),...clone(CSC_DIRECT_PAYLOADS));
 export const MOUNTS={small:{slots:1,cost:500,armSize:3},medium:{slots:2,cost:1000,armSize:5},heavy:{slots:10,cost:5000,armSize:7},vehicle:{slots:15,cost:10000,armSize:null}};
 export const FIRE_CONTROL=[{id:'none',label:'No fire control',tl:0,cost:0,dm:0},...['Basic','Improved','Enhanced','Advanced'].map((label,i)=>({id:label.toLowerCase(),label,tl:6+i*2,cost:[10000,25000,50000,100000][i],dm:i+1}))];
 const STORAGE_IDS=['storage-compartment','refrigerated-storage-compartment','hazardous-material-storage-compartment'];
@@ -134,8 +135,8 @@ export function evaluateWeapons(design,manipulators,skills,installedEquipment=[]
  const unsupportedAmmunition=cscWeapon&&(record.ammunition??'standard')!=='standard';
  if(unsupportedAccessories&&!cscAccessories?.diagnostics.length)add('error',cscWeapon?'CSC_ACCESSORIES_UNSUPPORTED':'ACCESSORY_SOURCE',record.id,'Accessory definitions must match the selected weapon source; this combination is not implemented.');
  if(cscAccessories){for(const d of cscAccessories.diagnostics)add('error',d.code,record.id,d.message,d.source);accessoryCost=cscAccessories.cost??0;accessoryEffects.push(...cscAccessories.effects);}
- if(unsupportedLaunchers)add('error','CSC_LAUNCHERS_UNSUPPORTED',record.id,'CSC grenade and associated-launcher definitions (pp157,174) are not implemented for this source profile.');
- if(unsupportedAmmunition)add('error','CSC_AMMUNITION_UNSUPPORTED',record.id,'Only the printed standard CSC ammunition profile is supported; grenade and specialised ammunition require their own source definitions.');
+ if(unsupportedLaunchers)add('error','CSC_LAUNCHERS_UNSUPPORTED',record.id,'Additional CSC auxiliary/integral launcher configurations and loose ammunition storage are not implemented for this source profile.');
+ if(unsupportedAmmunition)add('error','CSC_AMMUNITION_UNSUPPORTED',record.id,'Selected Core or specialised ammunition cannot replace this source-defined CSC profile.');
  for(const accessory of unsupportedAccessories||cscWeapon?[]:accessories){accessoryCost+=accessory.cost;if(accessory.tl>design.techLevel)add('error','ACCESSORY_TL',record.id,accessory.label+' exceeds design technology.');if(families.has(accessory.family))add('error','ACCESSORY_FAMILY',record.id,'Choose only one accessory of each family.');families.add(accessory.family);
  if(accessory.family==='gyrostabiliser'&&(!w.traits.includes('Bulky')||w.damage?.includes('DD')))add('error','GYROSTABILISER_WEAPON',record.id,'Gyrostabilisers require a Bulky, non-Destructive weapon.');
  if(accessory.family==='scope'&&!['rifle','heavy-portable','heavy-vehicle'].includes(w.weaponFamily))add('error','SCOPE_WEAPON',record.id,'Scopes require a rifle or heavy weapon.');
