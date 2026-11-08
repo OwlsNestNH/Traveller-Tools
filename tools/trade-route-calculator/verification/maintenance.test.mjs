@@ -19,8 +19,8 @@ test('advance payment increments only its own schedule and exact tracked total; 
  const s=campaign();s.settings.creditStep=100;const before=JSON.stringify(s),q=maintenancePaymentQuote(s,3);
  assert.equal(q.amount,'6003');assert.equal(q.firstDueDate,'015-1105');assert.equal(q.lastDueDate,'071-1105');assert.equal(q.after.nextDueDate,'099-1105');
  assert.equal(q.after.paidSinceTracking,'6003');assert.equal(JSON.stringify(s),before);
- const n=pay(s,3);assert.equal(n.bank,'493997');assert.deepEqual(n.ship.maintenance,q.after);assert.deepEqual(n.ship.mortgage,s.ship.mortgage);
- assert.equal(n.ledger[0].roundingStep,1);assert.equal(n.ledger[0].expense.fixedAmount,true);assert.equal(n.hours,0);
+ const n=pay(s,3);assert.equal(n.bank,'493900');assert.equal(n.ledger[0].expense.scheduledAmount,'6003');assert.equal(n.ledger[0].expense.incidentalCosts,'97');assert.deepEqual(n.ship.maintenance,q.after);assert.deepEqual(n.ship.mortgage,s.ship.mortgage);
+ assert.equal(n.ledger[0].roundingStep,100);assert.equal(n.ledger[0].expense.fixedAmount,true);assert.equal(n.hours,0);
  const undone=S.undo(n);for(const key of ['bank','ship','ledger','hours'])assert.deepEqual(undone[key],s[key]);
 });
 test('mortgage, maintenance and salary can prepay independently in one atomic batch',()=>{

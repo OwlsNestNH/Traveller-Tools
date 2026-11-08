@@ -98,7 +98,7 @@ test('larger geometry reveals more map at fixed camera, zoom and projected world
 test('Ship services advertise only mounted panel targets in each map mode',()=>{
  const code=app.slice(app.indexOf('function shipActions(){'),app.indexOf('function refuelShortcut('));
  for(const expanded of [false,true]){
-  const html=runInNewContext(code+'\nshipActions();',{state:{initialized:true},tab:'Overview',mapExpanded:expanded,cargoHoldOpen:false,services:{selected:()=>null},campaignTimeCounter:()=>'',btn:(label,action)=>'<button data-action="'+action+'">'+label+'</button>'});
+  const html=runInNewContext(code+'\nshipActions();',{state:{initialized:true,ship:{}},stationSupportAvailable:()=>false,tab:'Overview',mapExpanded:expanded,cargoHoldOpen:false,services:{selected:()=>null},campaignTimeCounter:()=>'',btn:(label,action)=>'<button data-action="'+action+'">'+label+'</button>'});
   assert.equal((html.match(/aria-pressed="false"/g)||[]).length,4);
   if(expanded)assert.doesNotMatch(html,/aria-controls=/);
   else assert.equal((html.match(/aria-controls="world-information-panel"/g)||[]).length,4);

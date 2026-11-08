@@ -1,16 +1,16 @@
-import {ruleInfo} from './rule-references.mjs?v=fleet-20261108-2';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=fleet-20261108-2';
-import {passengerShip} from './passengers.mjs?v=fleet-20261108-2';
+import {ruleInfo} from './rule-references.mjs?v=luxury-lss-20261108-1';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=luxury-lss-20261108-1';
+import {passengerShip} from './passengers.mjs?v=luxury-lss-20261108-1';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=fleet-20261108-2';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=fleet-20261108-2';
-import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=fleet-20261108-2';
-import {roomCounts} from './accommodation.mjs?v=fleet-20261108-2';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=fleet-20261108-2';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=fleet-20261108-2';
-import {creditStep} from './rounding.mjs?v=fleet-20261108-2';
-import {roll} from './rules.mjs?v=fleet-20261108-2';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=fleet-20261108-2';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=luxury-lss-20261108-1';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=luxury-lss-20261108-1';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=luxury-lss-20261108-1';
+import {roomCounts} from './accommodation.mjs?v=luxury-lss-20261108-1';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=luxury-lss-20261108-1';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=luxury-lss-20261108-1';
+import {creditStep} from './rounding.mjs?v=luxury-lss-20261108-1';
+import {roll} from './rules.mjs?v=luxury-lss-20261108-1';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=luxury-lss-20261108-1';
 
 const esc=escapeHtml;
 const money=formatCreditsText;
@@ -31,11 +31,8 @@ export function expenseOverview(state,{separateCabinUpkeep=false}={}){
  const salary=ship.expenses?.salary;
  rows.push({kind:'salary',label:labels.salary,amount:salary===undefined?null:String(salary),due:'Manually selected'});
  const supportKnown=!!ship.accommodation&&supportComplement(ship).known;
- if(separateCabinUpkeep){
- rows.push({kind:'staterooms',label:labels.staterooms,amount:ship.accommodation?String(monthlyCabinUpkeep(ship)):null,due:'Manually selected'});
- let consumables=null;try{if(supportKnown)consumables=consumableRefillBasis(state).monthly;}catch{/* Invalid or unknown complement stays unknown. */}
- rows.push({kind:'support',label:labels.support,amount:consumables,due:'As used'});
- }else rows.push({kind:'support',label:labels.support,amount:supportKnown?String(monthlySupport(ship)):null,due:'As used'});
+ let support=null;try{if(supportKnown){const basis=consumableRefillBasis(state);support=String(BigInt(basis.dailyCredits)*28n);}}catch{/* Invalid or unknown complement stays unknown. */}
+ rows.push({kind:'support',label:labels.support,amount:support,due:'Included when refilling'});
  rows.push({kind:'fuel',label:labels.fuel,amount:null,variable:true,due:'As needed'},{kind:'berthing',label:labels.berthing,amount:null,variable:true,due:'Weekly'});
  const recurring=rows.filter(row=>!row.variable),missing=recurring.filter(row=>row.amount===null).map(row=>row.label);
  return {rows,total:String(recurring.reduce((sum,row)=>sum+(row.amount===null?0n:credit(row.amount)),0n)),missing};
@@ -70,7 +67,7 @@ export function createExpensePanels({document,separateCabinUpkeep=false,getState
  function open(kind='expenses',{fresh=false,receiptId}={}){
   if(session?.busy){message('Wait for the current expense to finish saving.');return false;}
   if(reloadMessage)throw Error(reloadMessage);
-  if(kind==='staterooms'&&!separateCabinUpkeep)throw Error('Separate cabin upkeep is not enabled.');
+  if(kind==='staterooms'&&(fresh||!latestExpenseReceipt(getState(),kind,receiptId)))throw Error('Cabin costs are included in LSS refill. Historical receipts remain available in History.');
   if(!['expenses',...payableKinds,'fuel','support'].includes(kind))throw Error('Choose a ship expense.');
   if(kind==='fuel'||kind==='support'){
    if(typeof openService!=='function')throw Error('Ship service navigation is unavailable.');
@@ -134,7 +131,7 @@ export function createExpensePanels({document,separateCabinUpkeep=false,getState
  }
  function overview(){
   const s=getState(),q=expenseOverview(s,{separateCabinUpkeep});
-  return `<h2>Expenses</h2><h3>${esc(s.ship.name)}</h3><p class="help">Recurring costs use a 4-week (28-day) month. Select an expense name to open its controls.</p><table class="expense-table"><thead><tr><th scope="col">Expense</th><th scope="col" class="number">4-week cost</th><th scope="col">Next due</th></tr></thead><tbody>${q.rows.map(row=>'<tr><th scope="row">'+(row.kind==='maintenance'?'<span class="expense-maintenance-action">':'')+button(row.label+' ›','expense-open',row.kind).replace('class=""','class="expense-name"')+(row.kind==='maintenance'?ruleInfo('maintenance')+'</span>':'')+'</th><td class="number">'+esc(row.variable?'Variable':row.amount===null?'Not configured':money(row.amount))+'</td><td>'+esc(row.due)+'</td></tr>').join('')}</tbody><tfoot><tr><th scope="row">Regular 4-week total</th><td class="number">${money(q.total)}</td><td>${q.missing.length?'Partial total':''}</td></tr></tfoot></table><p class="help">Variable costs are excluded.${q.missing.length?' Not configured and excluded: '+esc(q.missing.join(', '))+'.':''}</p><p class="help">Payments are recorded only when you select Pay. Opening an expense changes only this view.</p>`;
+  return `<h2>Expenses</h2><h3>${esc(s.ship.name)}</h3><p class="help">Recurring costs use a 4-week (28-day) month. Select an expense name to open its controls.</p><table class="expense-table"><thead><tr><th scope="col">Expense</th><th scope="col" class="number">4-week cost</th><th scope="col">Next due</th></tr></thead><tbody>${q.rows.map(row=>'<tr><th scope="row">'+(row.kind==='maintenance'?'<span class="expense-maintenance-action">':'')+button(row.label+' ›','expense-open',row.kind).replace('class=""','class="expense-name"')+(row.kind==='maintenance'?ruleInfo('maintenance')+'</span>':'')+'</th><td class="number">'+esc(row.variable?'Variable':row.amount===null?'Not configured':money(row.amount))+'</td><td>'+esc(row.due)+'</td></tr>').join('')}</tbody><tfoot><tr><th scope="row">Regular 4-week total</th><td class="number">${money(q.total)}</td><td>${q.missing.length?'Partial total':''}</td></tr></tfoot></table><p class="help">Variable costs are excluded.${q.missing.length?' Not configured and excluded: '+esc(q.missing.join(', '))+'.':''}</p><p class="help">Life support includes cabin and person costs: the combined daily cost is rounded up before multiplying by 28. Only refilling supplies charges that cost. No occupants means zero cost. Existing stock and past receipts are retained without repricing or automatic credit. Opening an expense changes only this view.</p>`;
  }
  function previewMarkup(f){
   if(!f.valid)return '<p class="notice" role="alert">'+esc(f.error)+'</p>';

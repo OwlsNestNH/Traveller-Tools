@@ -1,5 +1,6 @@
 import {credit} from './amounts.mjs';
-import {paymentCount,canonicalPaymentDate,validatePaymentDate,advancePaymentDate,duePaymentCount} from './payment-schedule.mjs?v=fleet-20261108-2';
+import {scheduledPaymentRecordMatches} from './scheduled-payment-rounding.mjs?v=luxury-lss-20261108-1';
+import {paymentCount,canonicalPaymentDate,validatePaymentDate,advancePaymentDate,duePaymentCount} from './payment-schedule.mjs?v=luxury-lss-20261108-1';
 export const MAINTENANCE_REFERENCE='Campaign monthly maintenance: the entered fixed cost every 4 weeks (28 days), payable in advance. Each confirmed payment advances this expense’s own next-unpaid date. No annual overhaul, penalties or automatic bank charges are simulated.';
 export function validateMaintenance(m){
  if(m===undefined)return;
@@ -35,5 +36,5 @@ export function validateMaintenancePaymentRecord(entry){
  const q=entry.expense.maintenance;
  if(!q||!q.before)throw Error('Invalid maintenance payment audit.');
  const expected=maintenancePaymentQuote({ship:{maintenance:q.before}},q.periods);
- if(['periods', 'amount', 'firstDueDate', 'lastDueDate'].some(key=>q[key]!==expected[key])||!q.after||['payment', 'paidSinceTracking', 'nextDueDate', 'lastPaidDueDate'].some(key=>q.after[key]!==expected.after[key])||entry.expense.fixedAmount!==true||entry.expense.amount!==q.amount||credit(entry.amount)!==-credit(q.amount))throw Error('Maintenance payment audit does not match its recorded expense.');
+ if(['periods', 'amount', 'firstDueDate', 'lastDueDate'].some(key=>q[key]!==expected[key])||!q.after||['payment', 'paidSinceTracking', 'nextDueDate', 'lastPaidDueDate'].some(key=>q.after[key]!==expected.after[key])||entry.expense.fixedAmount!==true||!scheduledPaymentRecordMatches(entry,q.amount))throw Error('Maintenance payment audit does not match its recorded expense.');
 }

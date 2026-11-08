@@ -12,24 +12,23 @@ test('Class D/E water follows effective hydrographics, including exotic atmosphe
   assert.equal(E.expenseQuote({...world(port),overrideUWP:port+'530000-0'},input).amount,'0');
  }
 });
-test('stateroom and per-person refills use separate counts and weekly billing',()=>{
+test('historical stateroom/person calculators retain their terms but new separate payments are rejected',()=>{
  const s=campaign();s.ship.staterooms=10;
  const support={kind:'passengerSupport',period:'week',units:2,passengers:{low:2,middle:3,high:1},crew:{middle:4}};
  assert.equal(E.expenseQuote(world(),support).amount,'6000');
  assert.equal(E.expenseQuote(world(),{...support,period:'month',units:1}).amount,'12000');
  assert.equal(E.expenseQuote(world(),{...support,passengers:{high:1},crew:{},units:1}).amount,'750');
- const after=S.transition(s,'Refill',n=>S.shipExpenses(n,[{kind:'staterooms',staterooms:999,period:'week',units:2},support]));
- assert.equal(after.bank,'89000');assert.equal(after.ledger[0].expense.amount,'5000');assert.deepEqual(after.ship.supportOccupants.passengers,support.passengers);assert.equal(S.undo(after).bank,s.bank);
+ const before=structuredClone(s);assert.throws(()=>S.shipExpenses(s,[{kind:'staterooms',staterooms:999,period:'week',units:2},support]),/included in LSS/);assert.deepEqual(s,before);
  for(const invalid of [{...support,units:0},{...support,period:'day'},{...support,crew:{low:-1}},{...support,passengers:{},crew:{}}])assert.throws(()=>E.expenseQuote(world(),invalid));
  const legacy=campaign();delete legacy.ship.staterooms;assert.equal(S.validate(legacy),legacy);
  for(const staterooms of [-1,1.5,'4'])assert.throws(()=>S.validate({...s,ship:{...s.ship,staterooms}}));
 });
-test('all four expenses pay atomically, retain separate audits and undo together',()=>{
+test('remaining non-LSS expenses pay atomically, retain separate audits and undo together',()=>{
  const s=campaign();S.saveBerthingRate(s,2);
- const inputs=[{kind:'berthing',weeks:2},{kind:'fuel',fuelType:'unrefined',tons:'12.5',otherSupplier:true,notes:'Private depot'},{kind:'lifeSupport',monthly:'2000',months:2},{kind:'salary',monthly:'6000',months:1}];
+ const inputs=[{kind:'berthing',weeks:2},{kind:'fuel',fuelType:'unrefined',tons:'12.5',otherSupplier:true,notes:'Private depot'},{kind:'salary',monthly:'6000',months:1}];
  const after=S.transition(s,'Combined expenses',n=>S.shipExpenses(n,inputs));
- assert.equal(after.bank,'84700');assert.equal(after.ledger.length,4);assert.equal(new Set(after.ledger.map(e=>e.batchId)).size,1);assert.ok(after.ledger[0].batchId);
- assert.deepEqual(after.ledger.map(e=>e.expense.amount),['4000','1300','4000','6000']);assert.equal(after.ship.expenses.salary,'6000');assert.equal(after.ship.expenses.lifeSupport,'2000');
+ assert.equal(after.bank,'88700');assert.equal(after.ledger.length,3);assert.equal(new Set(after.ledger.map(e=>e.batchId)).size,1);assert.ok(after.ledger[0].batchId);
+ assert.deepEqual(after.ledger.map(e=>e.expense.amount),['4000','1300','6000']);assert.equal(after.ship.expenses.salary,'6000');assert.equal(after.ship.expenses.lifeSupport,undefined);
  assert.equal(S.undo(after).bank,s.bank);assert.equal(S.undo(after).ledger.length,0);assert.deepEqual(S.validate(JSON.parse(JSON.stringify(after))),after);
 });
 test('invalid or unaffordable batches never partially charge',()=>{

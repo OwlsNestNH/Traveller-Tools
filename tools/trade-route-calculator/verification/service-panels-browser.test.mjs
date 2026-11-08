@@ -173,13 +173,13 @@ try{
  });
  await run('LSS extra supplies and comfort',{},async h=>{
   const {f,page,click,field,fill,read,unchanged,open,closed,undo}=h;
-  await open('refill-support');await fill('internal',112);assert.match(await page.locator('#service-panel').textContent(),/Cr 2,000/,'Normal top-up charges consumables only');
+  await open('refill-support');await fill('internal',112);assert.match(await page.locator('#service-panel').textContent(),/Cr 4,004/,'Normal top-up buys 14 days at the combined Cr286 daily rate');
   await fill('internal',168);await page.locator('.lss-comfort > summary').click();await fill('comfortCredits',2000);await fill('comfortNote','Upgraded meals and cabin comforts');
-  assert.match(await page.locator('.lss-total').textContent(),/Cr 6,000/);await unchanged('LSS live forecast');
+  assert.match(await page.locator('.lss-total').textContent(),/Cr 10,008/);await unchanged('LSS live forecast');
   assert.match(await page.locator('#service-panel').textContent(),/42/);assert.match(await page.locator('#service-panel').textContent(),/168/);await unchanged('LSS review');
   assert.equal(await field('internal').inputValue(),'168');assert.equal(await field('comfortCredits').inputValue(),'2000');assert.equal(await field('comfortNote').inputValue(),'Upgraded meals and cabin comforts');
   await click('service-confirm');await h.saved();const paid=await read();
-  assert.equal(paid.bank,'94000');assert.equal(paid.hours,f.state.hours);assert.equal(Object.hasOwn(paid.ship.lifeSupport,'remainingHours'),false,'Physical stock replaces legacy hours');
+  assert.equal(paid.bank,'89992');assert.equal(paid.hours,f.state.hours);assert.equal(Object.hasOwn(paid.ship.lifeSupport,'remainingHours'),false,'Physical stock replaces legacy hours');
   const stock=paid.ship.lifeSupport.stockUnits;assert.ok(stock,'Physical LSS stock is persisted');assert.equal(Number(stock.numerator)/Number(stock.denominator),168);
   assert.match(JSON.stringify(paid.ledger),/Upgraded meals and cabin comforts/);assert.equal(paid.undo.length,1,'One confirmation has one Undo transaction');
   await undo();const undone=await read();assert.equal(undone.bank,f.state.bank);assert.deepEqual(undone.ship.lifeSupport,f.state.ship.lifeSupport,'Undo restores even legacy inventory representation');assert.deepEqual(undone.ledger,f.state.ledger);
@@ -187,12 +187,12 @@ try{
  await run('LSS frozen billing and invalid drafts',{frozen:2},async h=>{
   const {page,action,click,fill,read,unchanged,open,closed}=h;
   await open('refill-support');await fill('internal',177);
-  assert.match(await page.locator('.lss-total').textContent(),/Cr 4,250/,'All four awake and two frozen occupants are billed');
+  assert.match(await page.locator('.lss-total').textContent(),/Cr 8,302/,'Combined cabin/person rate Cr293 per day applies to 119 purchased LSS / 4.2 daily use');
   await fill('cargo',100000);assert.equal(await action('service-confirm').isDisabled(),true,'Cargo-overflow / unaffordable reserve cannot be reviewed');
   await fill('cargo',0);await fill('internal',177);await page.locator('.lss-comfort > summary').click();await fill('comfortCredits',2000);
   assert.equal(await action('service-confirm').isDisabled(),true,'Paid comfort requires its audit note');
   await fill('comfortNote','Frozen berth pricing verification');await unchanged('Frozen LSS review');await click('service-confirm');await h.saved();
-  const paid=await read(),stock=paid.ship.lifeSupport.stockUnits;assert.equal(Number(stock.numerator)/Number(stock.denominator),177);assert.equal(paid.bank,'93750');
+  const paid=await read(),stock=paid.ship.lifeSupport.stockUnits;assert.equal(Number(stock.numerator)/Number(stock.denominator),177);assert.equal(paid.bank,'89698');
   await click('service-new');assert.equal(await page.locator('#service-form').count(),1,'Full supplies still expose extra reserve and comfort controls');assert.equal(await action('service-confirm').isDisabled(),true,'No-op normal refill does not create another charge');await click('service-cancel');
  });
  for(const width of [1440,390,320])await run('persistent MFD receipts '+width,{},async h=>{
@@ -221,7 +221,7 @@ try{
  await run('fractional day purchase actual stock',{awake:1,stockUnits:'12.1'},async h=>{
   const {page,click,fill,read}=h;
   const before=await h.raw(),boxes=await frameBoxes(page);await h.open('refill-support');await fill('internal','13');await fixedFrame(page,boxes,'Fractional purchase');
-  assert.match(await page.locator('.lss-total').textContent(),/Cr 36/);assert.match(await page.locator('.lss-aboard').textContent(),/13/);await h.unchanged('Fractional preview only',before);await click('service-confirm');await h.saved();const stock=(await read()).ship.lifeSupport.stockUnits;assert.equal(Number(stock.numerator)/Number(stock.denominator),13);await h.undo();assert.equal(Number((await read()).ship.lifeSupport.stockUnits.numerator)/Number((await read()).ship.lifeSupport.stockUnits.denominator),12.1);
+  assert.match(await page.locator('.lss-total').textContent(),/Cr 179/);assert.match(await page.locator('.lss-aboard').textContent(),/13/);await h.unchanged('Fractional preview only',before);await click('service-confirm');await h.saved();const stock=(await read()).ship.lifeSupport.stockUnits;assert.equal(Number(stock.numerator)/Number(stock.denominator),13);await h.undo();assert.equal(Number((await read()).ship.lifeSupport.stockUnits.numerator)/Number((await read()).ship.lifeSupport.stockUnits.denominator),12.1);
  });
  await run('unaffordable LSS summary',{bank:'3000'},async h=>{
   await h.open('refill-support');await h.fill('internal',800);assert.equal(await h.action('service-confirm').isDisabled(),true);assert.match(await h.page.locator('.lss-blocked').textContent(),/Insufficient/i);await h.click('service-cancel');await h.unchanged('Unaffordable LSS cancellation');

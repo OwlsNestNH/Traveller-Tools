@@ -1,7 +1,9 @@
 // Mechanical data: Core Rulebook Update 2022, printed pp. 238–239.
-import {roll,die} from './rules.mjs?v=fleet-20261108-2';
+import {roll,die} from './rules.mjs?v=luxury-lss-20261108-1';
 export const PASSAGE_CLASSES=['low','basic','middle','high'];
-export const passageLabel=x=>({low:'Low',basic:'Basic',middle:'Middle',high:'High'}[x]||x);
+// Luxury is manual: Singularity quotes rooms, not Core per-person traffic/fare rows.
+export const BOOKING_CLASSES=[...PASSAGE_CLASSES,'luxury'];
+export const passageLabel=x=>({low:'Low',basic:'Basic',middle:'Middle',high:'High',luxury:'Luxury'}[x]||x);
 function integer(value,label){if(!Number.isSafeInteger(value))throw Error(label+' must be a whole number.');return value;}
 export function passengerFare(passageClass,distance,data){
  if(!PASSAGE_CLASSES.includes(passageClass)||!Number.isInteger(distance)||distance<1||distance>6)throw Error('Passenger fares require a class and a single jump of 1–6 parsecs.');

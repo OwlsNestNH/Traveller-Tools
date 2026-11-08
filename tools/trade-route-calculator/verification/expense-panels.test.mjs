@@ -42,27 +42,30 @@ function harness(initial=campaign(),options={}){
  return h;
 }
 
-test('separate cabin integration is gated until the consumable refill adapter replaces the combined tariff',()=>{
- const h=harness();h.expenses.open();assert.doesNotMatch(h.expenses.panel(),/Cabin upkeep/);assert.throws(()=>h.expenses.open('staterooms'),/not enabled/);
- const q=expenseOverview(campaign(),{separateCabinUpkeep:true});assert.equal(q.rows.find(r=>r.kind==='staterooms').amount,'4000');assert.equal(q.rows.find(r=>r.kind==='support').amount,'4000');assert.equal(q.total,'122003');
+test('new cabin and person payments are blocked through panel, single and bundled paths',()=>{
+ const s=campaign(),before=structuredClone(s),h=harness(s,{separateCabinUpkeep:true});h.expenses.open();assert.doesNotMatch(h.expenses.panel(),/Cabin upkeep/);
+ assert.throws(()=>h.expenses.open('staterooms',{fresh:true}),/included in LSS/);
+ for(const kind of ['staterooms','passengerSupport','lifeSupport']){
+  assert.throws(()=>S.shipExpense(s,{kind,period:'month',units:1}),/included in LSS/);
+  assert.throws(()=>S.shipExpenses(s,[{kind:'salary',monthly:'100',months:1},{kind,period:'month',units:1}]),/included in LSS/);
+ }
+ assert.deepEqual(s,before);assert.equal(h.commits,0);
+ const q=expenseOverview(s,{separateCabinUpkeep:true});assert.equal(q.rows.some(r=>r.kind==='staterooms'),false);assert.equal(q.rows.find(r=>r.kind==='support').amount,'8008');
 });
-test('separate cabin upkeep uses Settings rates, saves once, changes no LSS and undoes',async()=>{
- const s=campaign();s.ship.lifeSupport={capacityHours:672,stockUnits:{numerator:'128',denominator:'10'}};s.ship.accommodation.roomService={middle:{level:'custom',monthly:'1234'}};
- const h=harness(s,{separateCabinUpkeep:true}),before=structuredClone(s);h.expenses.open('staterooms',{fresh:true});h.edit({payments:2});assert.match(h.expenses.panel(),/Cr 9,872/);assert.match(h.expenses.panel(),/cabin upkeep only/);assert.deepEqual(h.state(),before);
- const token=h.arg('expense-pay');await h.expenses.action('expense-pay',token);await h.expenses.action('expense-pay',token);assert.equal(h.commits,1);assert.equal(h.state().bank,'4990128');assert.deepEqual(h.state().ship.lifeSupport,before.ship.lifeSupport);assert.equal(h.state().ledger.length,1);assert.equal(h.state().ledger[0].expense.kind,'staterooms');
- const receipt=harness(h.state(),{separateCabinUpkeep:true});receipt.expenses.open('staterooms');assert.match(receipt.expenses.panel(),/Payment recorded/);assert.equal(receipt.commits,0);assert.deepEqual(S.undo(h.state()).ship,before.ship);assert.equal(S.undo(h.state()).bank,before.bank);
+test('historical separate cabin receipts remain readable unchanged after import',()=>{
+ const s=campaign(),expense=expenseQuote(s.worlds[s.actual],{kind:'staterooms',rooms:s.ship.accommodation.rooms,period:'month',units:2});
+ s.ledger.push({id:'historic-cabin-payment',type:'Ship expense',amount:'-8000',hours:0,world:s.actual,expense});
+ const bytes=JSON.stringify(s),h=harness(S.validate(JSON.parse(bytes)));h.expenses.open('staterooms',{receiptId:'historic-cabin-payment'});
+ assert.match(h.expenses.panel(),/Payment recorded/);assert.match(h.expenses.panel(),/8,000/);assert.equal(h.commits,0);assert.equal(JSON.stringify(h.state()),bytes);
+ assert.throws(()=>h.expenses.open('staterooms',{fresh:true}),/included in LSS/);
 });
-test('cabin Cancel and failed save leave stock and bank untouched',async()=>{
- for(const fail of [false,true]){const s=campaign(),h=harness(s,{separateCabinUpkeep:true,fail}),before=structuredClone(s);h.expenses.open('staterooms',{fresh:true});h.edit({payments:2});if(fail)await assert.rejects(h.click('expense-pay'),/Storage rejected/);else await h.click('expense-cancel');assert.equal(h.commits,0);assert.deepEqual(h.state(),before);}
-});
-test('cabin pending save freezes its request and rejects repeated payment',async()=>{
- const h=harness(campaign(),{separateCabinUpkeep:true,commit({label,fn,revision,save,h}){return new Promise((resolve,reject)=>{h.pending=()=>{try{resolve(save(label,fn,revision));}catch(error){reject(error);}};});}});
- h.expenses.open('staterooms',{fresh:true});const token=h.arg('expense-pay'),pending=h.expenses.action('expense-pay',token);await h.expenses.action('expense-pay',token);h.edit({payments:9});assert.equal(h.commits,0);h.pending();await pending;assert.equal(h.commits,1);assert.equal(h.state().ledger[0].amount,'-4000');await h.expenses.action('expense-pay',token);assert.equal(h.commits,1);
+test('empty ship summary includes zero support cost and never creates a cabin debt',()=>{
+ const s=campaign();s.ship.accommodation.passengers.middle=0;const before=JSON.stringify(s),q=expenseOverview(s);assert.equal(q.rows.find(r=>r.kind==='support').amount,'0');assert.equal(JSON.stringify(s),before);
 });
 
 test('compact summary has six name links, exact recurring total, no row Pay, and no loan data',()=>{
  const s=campaign(),h=harness(s);h.expenses.open();const html=h.expenses.panel(),q=expenseOverview(s);
- assert.equal(q.total,'122003');assert.deepEqual(q.missing,[]);assert.equal(q.rows.find(row=>row.kind==='support').amount,String(monthlySupport(s.ship)));
+ assert.equal(q.total,'122011');assert.deepEqual(q.missing,[]);assert.equal(q.rows.find(row=>row.kind==='support').amount,'8008');
  for(const label of ['Mortgage','Monthly maintenance','Crew salaries','Life support','Fuel','Port costs'])assert.match(html,new RegExp(label));
  assert.equal((html.match(/data-action="expense-open"/g)||[]).length,6);
  assert.equal((html.match(/>Variable</g)||[]).length,2);assert.match(html,/class="expense-table"/);assert.match(html,/4-week \(28-day\) month/);
@@ -100,19 +103,19 @@ test('missing fixed expenses navigate to Settings without invented payment defau
  }
 });
 
-test('mortgage prepay uses exact fixed credits, all dates metadata, and a saved receipt in place',async()=>{
+test('mortgage prepay rounds cash but preserves exact schedule, dates and a saved receipt',async()=>{
  const s=campaign();s.settings.creditStep=100;const h=harness(s);h.expenses.open('mortgage',{fresh:true});h.edit({payments:2});
- let html=h.expenses.panel();assert.match(html,/Cr 200,002/);assert.match(html,/Cr 4,799,998/);assert.match(html,/data-payment-first="029-1105" data-payment-count="2" data-payment-amount="100001"/);assert.match(html,/085-1105/);
+ let html=h.expenses.panel();assert.match(html,/Cr 200,100/);assert.match(html,/Cr 4,799,900/);assert.match(html,/data-payment-first="029-1105" data-payment-count="2" data-payment-amount="100001"/);assert.match(html,/085-1105/);
  assert.doesNotMatch(html,/Review changes|data-action="expense-review"/);
  const pay=h.arg('expense-pay');await h.expenses.action('expense-pay',pay);await h.expenses.action('expense-pay',pay);
- assert.equal(h.commits,1);assert.equal(h.state().bank,'4799998');assert.equal(h.state().ship.mortgage.remainingPayments,478);assert.equal(h.state().ship.mortgage.totalPaid,'200002');assert.equal(h.state().ship.mortgage.originalAmount,'24000001');
- html=h.expenses.panel();assert.match(html,/Payment recorded/);assert.match(html,/002-1105 · 05:00/);assert.match(html,/085-1105/);assert.match(html,/>478</);assert.match(html,/Cr 200,002/);assert.equal((html.match(/<button(?=[^>]*data-action)/g)||[]).length,1);assert.match(html,/type="button" class="rule-info" data-rule-info="mortgage"/);assert.doesNotMatch(html,/expense-pay|expense-cancel/);
+ assert.equal(h.commits,1);assert.equal(h.state().bank,'4799900');assert.equal(h.state().ship.mortgage.remainingPayments,478);assert.equal(h.state().ship.mortgage.totalPaid,'200002');assert.equal(h.state().ship.mortgage.originalAmount,'24000001');
+ html=h.expenses.panel();assert.match(html,/Payment recorded/);assert.match(html,/002-1105 · 05:00/);assert.match(html,/085-1105/);assert.match(html,/>478</);assert.match(html,/Cr 200,100/);assert.equal((html.match(/<button(?=[^>]*data-action)/g)||[]).length,1);assert.match(html,/type="button" class="rule-info" data-rule-info="mortgage"/);assert.doesNotMatch(html,/expense-pay|expense-cancel/);
  assert.deepEqual(h.expenses.route(),{kind:'mortgage',receiptId:h.state().ledger.at(-1).id});assert.equal(h.state().events.at(-1).label,'Paid mortgage');
 });
 
 test('maintenance prepays its independent fixed schedule and restores through Undo',async()=>{
  const s=campaign();s.settings.creditStep=100;const h=harness(s),before=structuredClone(s);h.expenses.open('maintenance',{fresh:true});h.edit({payments:3});
- assert.match(h.expenses.panel(),/Cr 6,003/);await h.click('expense-pay');assert.equal(h.state().ship.maintenance.nextDueDate,'099-1105');assert.equal(h.state().ship.maintenance.paidSinceTracking,'6003');assert.deepEqual(h.state().ship.mortgage,before.ship.mortgage);
+ assert.match(h.expenses.panel(),/Cr 6,100/);await h.click('expense-pay');assert.equal(h.state().ship.maintenance.nextDueDate,'099-1105');assert.equal(h.state().ship.maintenance.paidSinceTracking,'6003');assert.deepEqual(h.state().ship.mortgage,before.ship.mortgage);
  const undone=S.undo(h.state());assert.equal(undone.bank,before.bank);assert.deepEqual(undone.ship.maintenance,before.ship.maintenance);h.setState(undone);assert.match(h.expenses.panel(),/no longer in the ledger/);assert.doesNotMatch(h.expenses.panel(),/Payment recorded/);
 });
 

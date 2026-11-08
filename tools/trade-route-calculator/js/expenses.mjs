@@ -1,9 +1,10 @@
-import {maintenancePaymentQuote,MAINTENANCE_REFERENCE} from './maintenance.mjs?v=fleet-20261108-2';
-import {mortgagePaymentQuote,MORTGAGE_REFERENCE} from './mortgage.mjs?v=fleet-20261108-2';
-import {fuelPurchase,fuelReference} from './fuel.mjs?v=fleet-20261108-2';
-import {up} from './rounding.mjs?v=fleet-20261108-2';
+import {maintenancePaymentQuote,MAINTENANCE_REFERENCE} from './maintenance.mjs?v=luxury-lss-20261108-1';
+import {mortgagePaymentQuote,MORTGAGE_REFERENCE} from './mortgage.mjs?v=luxury-lss-20261108-1';
+import {fuelPurchase,fuelReference} from './fuel.mjs?v=luxury-lss-20261108-1';
+import {up} from './rounding.mjs?v=luxury-lss-20261108-1';
 import * as A from './amounts.mjs';
-import {monthlyRates,serviceRate,serviceLabel,personMonthlyRate,personRate} from './accommodation.mjs?v=fleet-20261108-2';
+import {scheduledPaymentCash} from './scheduled-payment-rounding.mjs?v=luxury-lss-20261108-1';
+import {monthlyRates,serviceRate,serviceLabel,personMonthlyRate,personRate} from './accommodation.mjs?v=luxury-lss-20261108-1';
 
 export const berthMultipliers={A:1000,B:500,C:100,D:10,E:0,X:0};
 export function starport(world){return (world.overrideUWP||world.uwp).slice(0,1).toUpperCase();}
@@ -40,9 +41,13 @@ export function fuelPricing(world,input){
  if(A.cmp(rate,0)<0)throw Error('Fuel price cannot be negative.');
  return {type,collecting,hydro,standard,custom,rate};
 }
+function scheduledPaymentDetails(expense){
+ if(!Object.hasOwn(expense,'scheduledAmount'))return [];
+ return [['Scheduled payment total - Cr',expense.scheduledAmount],['Incidental costs - Cr',expense.incidentalCosts],['Cash debit - Cr',expense.amount],['Rounding [R]','Credits up to Cr'+expense.roundingStep+'; selected installment total rounded once']];
+}
 export function recurringExpenseDetails(expense){
- if(expense.kind==='mortgage'){const q=expense.mortgage;return [['Original mortgage amount · Cr',q.before.originalAmount],['Fixed payment · Cr / 4 weeks',q.before.payment],['Payments paid now',String(q.periods)],['First installment due',q.firstDueDate],['Paid through installment due',q.lastDueDate],['Payments remaining before',String(q.before.remainingPayments)],['Payments remaining after',String(q.after.remainingPayments)],['Total paid before · Cr',q.before.totalPaid],['Total paid after · Cr',q.after.totalPaid],['Remaining scheduled payments · Cr',q.remainingAmount],['Next unpaid payment due',q.after.remainingPayments?q.after.nextDueDate:'None · all scheduled payments paid']];}
- if(expense.kind==='maintenance'){const q=expense.maintenance;return [['Monthly cost · Cr / 4 weeks',q.before.payment],['Payments paid now',String(q.periods)],['First installment due',q.firstDueDate],['Paid through installment due',q.lastDueDate],['Next unpaid payment due',q.after.nextDueDate],['Paid since tracking before · Cr',q.before.paidSinceTracking],['Paid since tracking after · Cr',q.after.paidSinceTracking]];}
+ if(expense.kind==='mortgage'){const q=expense.mortgage;return [...scheduledPaymentDetails(expense),['Original mortgage amount · Cr',q.before.originalAmount],['Fixed payment · Cr / 4 weeks',q.before.payment],['Payments paid now',String(q.periods)],['First installment due',q.firstDueDate],['Paid through installment due',q.lastDueDate],['Payments remaining before',String(q.before.remainingPayments)],['Payments remaining after',String(q.after.remainingPayments)],['Total paid before · Cr',q.before.totalPaid],['Total paid after · Cr',q.after.totalPaid],['Remaining scheduled payments · Cr',q.remainingAmount],['Next unpaid payment due',q.after.remainingPayments?q.after.nextDueDate:'None · all scheduled payments paid']];}
+ if(expense.kind==='maintenance'){const q=expense.maintenance;return [...scheduledPaymentDetails(expense),['Monthly cost · Cr / 4 weeks',q.before.payment],['Payments paid now',String(q.periods)],['First installment due',q.firstDueDate],['Paid through installment due',q.lastDueDate],['Next unpaid payment due',q.after.nextDueDate],['Paid since tracking before · Cr',q.before.paidSinceTracking],['Paid since tracking after · Cr',q.after.paidSinceTracking]];}
  return expense.details;
 }
 export function expenseQuote(world,input){
@@ -50,13 +55,13 @@ export function expenseQuote(world,input){
  const kind=input.kind,notes=String(input.notes||'').trim(),port=starport(world);
  if(kind==='maintenance'){
   const q=maintenancePaymentQuote({ship:input.recurringShip||{}},input.maintenancePayments);
-  const details=recurringExpenseDetails({kind,maintenance:q});
-  return {kind,label:'Monthly maintenance',amount:q.amount,details,reference:MAINTENANCE_REFERENCE+' Fixed costs are paid exactly as recorded, unaffected by Credit rounding.',notes,worldId:world.id,worldName:world.name,fixedAmount:true,maintenance:q};
+  const cash=scheduledPaymentCash(q.amount,input.creditStep||1),details=recurringExpenseDetails({kind,maintenance:q,...cash});
+  return {kind,label:'Monthly maintenance',...cash,details,reference:MAINTENANCE_REFERENCE+' The selected installment total is rounded up once to the chosen Credit step for the cash debit. Any extra is recorded as incidental costs; the scheduled amount and paid-since-tracking total remain exact.',notes,worldId:world.id,worldName:world.name,fixedAmount:true,maintenance:q};
  }
  if(kind==='mortgage'){
   const q=mortgagePaymentQuote({ship:input.recurringShip||{}},input.mortgagePayments);
-  const details=recurringExpenseDetails({kind,mortgage:q});
-  return {kind,label:'Mortgage payment',amount:q.amount,details,reference:MORTGAGE_REFERENCE+' Fixed amounts are paid exactly as recorded, unaffected by Credit rounding.',notes,worldId:world.id,worldName:world.name,fixedAmount:true,mortgage:q};
+  const cash=scheduledPaymentCash(q.amount,input.creditStep||1),details=recurringExpenseDetails({kind,mortgage:q,...cash});
+  return {kind,label:'Mortgage payment',...cash,details,reference:MORTGAGE_REFERENCE+' The selected installment total is rounded up once to the chosen Credit step for the cash debit. Any extra is recorded as incidental costs; the scheduled amount and mortgage total paid remain exact.',notes,worldId:world.id,worldName:world.name,fixedAmount:true,mortgage:q};
  }
 
  let amount,details,reference,unrounded;
@@ -81,7 +86,7 @@ export function expenseQuote(world,input){
    const rooms=input.rooms??{low:0,middle:input.staterooms??0,high:0};let totalRooms=0;
    for(const tier of Object.keys(supportRates)){
     const n=people(rooms[tier],tier+' staterooms'),service=input.roomService?.[tier],rate=serviceRate(tier,service);
-    totalRooms+=n;monthly+=BigInt(n)*BigInt(rate);
+    if(tier==='luxury'&&!n)continue;totalRooms+=n;monthly+=BigInt(n)*BigInt(rate);
     details.push([tier+' staterooms (including empty)',String(n)+' x Cr'+rate+' / month / '+serviceLabel(tier,service)+' service']);
    }
    if(!totalRooms)throw Error('Enter at least one stateroom in ship settings.');
@@ -90,7 +95,7 @@ export function expenseQuote(world,input){
    let totalPeople=0;
    for(const role of ['passengers','crew'])for(const tier of Object.keys(supportRates)){
     const rate=String(personRate(tier));
-    const n=people(input[role]?.[tier],role+' · '+tier);totalPeople+=n;monthly+=BigInt(n)*BigInt(rate);
+    const n=people(input[role]?.[tier],role+' · '+tier);if(tier==='luxury'&&!n)continue;totalPeople+=n;monthly+=BigInt(n)*BigInt(rate);
     details.push([(role==='crew'?'Crew':'Passengers')+' / '+tier,String(n)+' x Cr'+rate+' / month / selected service level']);
    }
    const low=people(input.bookedLowBerths,'Booked Low passengers');monthly+=BigInt(low)*100n;totalPeople+=low;if(low)details.push(['Booked frozen Low passengers',String(low)+' x Cr100 / month / Core p.154']);
@@ -99,6 +104,7 @@ export function expenseQuote(world,input){
   unrounded=A.decimal(A.rat(monthly*BigInt(units),divisor));amount=String(up(unrounded,input.creditStep||1));
   details.push(['Monthly total · Cr',String(monthly)],['Billing period',input.period],['Periods purchased',String(units)],['Weekly billing basis','One quarter of a monthly charge']);
   reference='Campaign rule agreed 2026-10-04: installed middle and high cabins cost Cr1,000/month each, including empty cabins. Middle-service people cost Cr1,000/month. Campaign change: High-passenger life support is raised from the Core Rulebook’s Cr1,000 to Cr3,000 per person per month. This includes crew receiving high service and upgraded middle-cabin occupants. Low-service cabin Cr100 and low-service person Cr1,000 are retained campaign settings, not RAW low-berth costs. A week is one quarter of a month. Cabin custom rates are per cabin; person service is charged separately. Historical payments are unchanged.';
+  if((input.rooms?.luxury??0)+(input.passengers?.luxury??0)+(input.crew?.luxury??0)>0)reference+=' Luxury follows the same campaign convention: Cr1,000/cabin and Cr5,000/person per 28 days, separate charges.';
  }else if(kind==='lifeSupport'||kind==='salary'){
   const monthly=A.credit(input.monthly),months=count(input.months,'Months');if(monthly<=0n)throw Error('Enter a positive monthly cost.');
   amount=String(monthly*BigInt(months));details=[['Entered monthly cost · Cr',String(monthly)],['Months paid',String(months)]];

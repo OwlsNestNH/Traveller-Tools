@@ -32,14 +32,14 @@ test('small internal capacity cannot receive a whole reserve ton',()=>{
  const n=consumeReserveCompartments(allocation(80,200),100,80);equal(n.internal,0);equal(n.cargo,200);equal(n.transferred,0);equal(n.total,200);
 });
 test('new cargo refill batches add exactly 100 LSS and retain existing legacy fractions',()=>{
- const s=ship();s.ship.lifeSupport={capacityHours:672,stockUnits:'901.5',cargoUnits:'101.5',roundCargoSpace:true};
+ const s=ship();s.bank='10000000';s.ship.lifeSupport={capacityHours:672,stockUnits:'901.5',cargoUnits:'101.5',roundCargoSpace:true};
  let d=campaignRefillDraft(s).draft;assert.equal(d.cargoBatches,true);d=editRefillDraft(d,'cargo-step',1);equal(d.cargo,'201.5');
  const q=compartmentRefillQuote(s,d);equal(q.purchasedUnits,100);equal(q.discardedUnits,0);equal(q.afterCargoUnits,'201.5');equal(q.afterStockUnits,'1001.5');
  const n=S.transition(s,'Life support refill',v=>S.refillCompartments(v,d));equal(n.ship.lifeSupport.stockUnits,'1001.5');assert.equal(n.ship.lifeSupport.roundCargoSpace,true);S.validate(n);
  assert.throws(()=>editRefillDraft(d,'cargo','202'),/whole tons/);assert.match(renderRefillDraft(d,{quote:q,blocked:''}),/step="100"/);
 });
 test('GM reserve reduction is whole batches, preserves legacy remainder, charges nothing',()=>{
- const s=ship();s.ship.lifeSupport={capacityHours:672,stockUnits:'901.5',cargoUnits:'101.5',roundCargoSpace:true};
+ const s=ship();s.bank='10000000';s.ship.lifeSupport={capacityHours:672,stockUnits:'901.5',cargoUnits:'101.5',roundCargoSpace:true};
  const d=editRefillDraft(campaignRefillDraft(s).draft,'cargo-step',-1),q=compartmentRefillQuote(s,d,{gm:true});equal(q.afterCargoUnits,'1.5');
  assert.throws(()=>compartmentRefillQuote(s,d),/GM Adjustment/);const n=S.transition(s,'GM reserve adjustment',v=>S.refillCompartments(v,d,{gm:true}));assert.equal(n.bank,s.bank);assert.deepEqual(n.ledger,s.ledger);equal(n.ship.lifeSupport.stockUnits,'801.5');
 });
@@ -49,7 +49,7 @@ test('refill preview includes automatic whole-batch transfers without altering t
  const n=S.transition(s,'GM storage adjustment',v=>S.refillCompartments(v,d,{gm:true}));equal(supportCompartments(n.ship).internal,800);equal(supportCompartments(n.ship).cargo,0);S.validate(n);
 });
 test('refill available space uses rounded reserved cargo rather than double charging the legacy tail',()=>{
- const s=ship();s.ship.lifeSupport={capacityHours:672,stockUnits:'901.5',cargoUnits:'101.5',roundCargoSpace:true};
+ const s=ship();s.bank='10000000';s.ship.lifeSupport={capacityHours:672,stockUnits:'901.5',cargoUnits:'101.5',roundCargoSpace:true};
  const d=campaignRefillDraft(s).draft,full=editRefillDraft(d,'fill-cargo'),q=compartmentRefillQuote(s,full);const n=S.transition(s,'Life support refill',v=>S.refillCompartments(v,full));S.validate(n);assert.ok(A.cmp(S.used(n),n.ship.capacity)<=0);equal(q.discardedUnits,0);
 });
 

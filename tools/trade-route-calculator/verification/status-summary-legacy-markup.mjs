@@ -23,3 +23,10 @@ export function legacyStatusSummaryMarkup(html,state){
   .replace(/<div class="status-bladder-gauge">[\s\S]*?<\/div>/g,'')
   .replace(/<progress class="status-main-fuel"[^>]*aria-valuetext="(\d+) tons total aboard; \d+ of (\d+) tons in main tank; \d+ of (\d+) tons in bladders"><\/progress>/g,(_,aboard,base,bladder)=>'<progress max="'+(Number(base)+Number(bladder))+'" value="'+aboard+'" aria-label="Jump fuel aboard" aria-valuetext="'+aboard+' tons aboard of '+(Number(base)+Number(bladder))+' tons total capacity"></progress>');
 }
+
+// The new explicit docking switch is a separate control after the existing
+// service row. Remove only that addition for frozen route UI hashes; all old
+// service actions and all campaign bytes remain compared to the original.
+export function legacyShipActionsMarkup(html){
+ return html.replace('Advance 24 hours. Onboard LSS is used unless station life support is enabled. Undo restores the date and supplies together.','Advance 24 hours and consume life support supplies. Undo restores the date and supplies together.').replace(/<div class="station-support-control"><button[^>]*data-action="station-life-support"[^>]*>[\s\S]*?<\/button><span class="help">[^<]*<\/span><\/div>$/,'');
+}

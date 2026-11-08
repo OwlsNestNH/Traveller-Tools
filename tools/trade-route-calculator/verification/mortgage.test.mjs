@@ -64,11 +64,11 @@ test('final scheduled payment reaches zero without inventing principal or fracti
  assert.equal(n.ship.mortgage.originalAmount,'24000000');assert.equal(n.ship.mortgage.lastPaidDueDate,'057-1105');
  assert.throws(()=>pay(n),/All scheduled/);assert.throws(()=>pay(s,3),/Choose 1 to 2/);
 });
-test('fixed installment amounts remain exact under Cr100 rounding, including large Credits',()=>{
+test('Cr100 cash debits include incidentals while fixed installments and large Credit totals remain exact',()=>{
  const s=campaign({payment:'100001'});s.settings.creditStep=100;
- const n=pay(s,2);assert.equal(n.ledger[0].amount,'-200002');assert.equal(n.ship.mortgage.totalPaid,'12200002');assert.equal(n.ship.mortgage.payment,'100001');
- const big=campaign({originalAmount:'900719925474099312340',payment:'9007199254740993123',totalPaid:'1',remainingPayments:2});big.bank='999999999999999999999';
- const paid=pay(big,2);assert.equal(paid.ledger[0].amount,'-18014398509481986246');assert.equal(paid.ship.mortgage.totalPaid,'18014398509481986247');
+ const n=pay(s,2);assert.equal(n.ledger[0].amount,'-200100');assert.equal(n.ledger[0].expense.scheduledAmount,'200002');assert.equal(n.ledger[0].expense.incidentalCosts,'98');assert.equal(n.ledger[0].roundingStep,100);assert.equal(n.ship.mortgage.totalPaid,'12200002');assert.equal(n.ship.mortgage.payment,'100001');
+ const big=campaign({originalAmount:'900719925474099312340',payment:'9007199254740993123',totalPaid:'1',remainingPayments:2});big.bank='999999999999999999999';big.settings.creditStep=100;
+ const paid=pay(big,2);assert.equal(paid.ledger[0].amount,'-18014398509481986300');assert.equal(paid.ledger[0].expense.incidentalCosts,'54');assert.equal(paid.ship.mortgage.totalPaid,'18014398509481986247');
  const rounded=S.transition(s,'Round Credits',S.applyRounding);assert.deepEqual(rounded.ship.mortgage,s.ship.mortgage,'Bulk rounding does not rewrite a fixed obligation or original amount');
 });
 test('mortgage and other selected expenses pay as one audited batch and Undo together',()=>{
@@ -117,7 +117,7 @@ test('expense quote includes fixed original amount, prior total and recorded pay
  const s=campaign(),q=expenseQuote(s.worlds[s.actual],{kind:'mortgage',recurringShip:s.ship,mortgagePayments:2,notes:'Two payments in advance',creditStep:100});
  assert.equal(q.fixedAmount,true);assert.equal(q.amount,'200000');assert.equal(q.notes,'Two payments in advance');assert.equal(q.mortgage.before.originalAmount,'24000000');
  assert.ok(q.details.some(([label,value])=>label==='Paid through installment due'&&value==='057-1105'));
- assert.match(q.reference,/not principal, equity/);assert.match(q.reference,/unaffected by Credit rounding/);
+ assert.match(q.reference,/not principal, equity/);assert.match(q.reference,/incidental costs/);assert.equal(q.scheduledAmount,'200000');assert.equal(q.incidentalCosts,'0');assert.equal(q.roundingStep,100);
 });
 
 test('reports retain original and cumulative mortgage figures without recalculating principal',()=>{
