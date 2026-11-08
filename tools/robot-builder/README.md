@@ -7,6 +7,7 @@ This tool is in active development. It does **not** yet cover every legal Robot 
 - `engine/`: deterministic rules, typed catalogue, source references, design schema, validation and calculation. No DOM, browser storage or network dependence.
 - `js/api.mjs`: application API. It composes the engine with explicit named-design saves, import/export and read-only statblock projection. Browser persistence is injected and independently tested.
 - `js/app.mjs`: rendering and user interaction only. It imports the API, never the rules modules. Dropdown choices and constraints come from the engine.
+- `js/review-model.mjs` projects engine output without DOM or construction calculations; `js/review.mjs` renders that read-only API result. The same projection supplies the printable statblock.
 - No server is required for the current adapter. The boundary is a stable programmatic API, not a claim that presentation and rules share one implementation.
 
 The six navigation stages retain the Handbook names: Chassis Size, Locomotion, Physical Options, Robot Brain, Skill Packages, Finalisation. Special construction paths provide their own metadata and rules.

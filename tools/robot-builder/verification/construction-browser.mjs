@@ -43,6 +43,14 @@ try{
  await page.getByRole('button',{name:'Remove separate Scientific Toolkit (Basic)',exact:true}).first().click();
  draft=await exportDraft();check('removing one separate copy preserves the other',draft.selections.physical.optionInstances.length===1&&draft.selections.physical.optionInstances[0].parameters.detail==='planetology');
  await page.getByRole('button',{name:'Remove separate Scientific Toolkit (Basic)',exact:true}).click();
+ const powerPrefix='#field-physical-';
+ await page.locator(powerPrefix+'powerMode-slot-cost-options').selectOption('solar-coating-only');
+ check('conditional solar state dropdowns appear',await page.locator(powerPrefix+'solarLight-slot-cost-options').count()===1&&await page.locator(powerPrefix+'solarZone-slot-cost-options').count()===1);
+ await page.locator(powerPrefix+'solarLight-slot-cost-options').selectOption('low');
+ await page.locator(powerPrefix+'solarZone-slot-cost-options').selectOption('first-cold');
+ draft=await exportDraft();check('selected solar assumptions retained',draft.selections.physical.solarLight==='low'&&draft.selections.physical.solarZone==='first-cold');
+ await page.locator(powerPrefix+'powerMode-slot-cost-options').selectOption('conventional');
+ check('conventional mode hides solar assumptions',await page.locator(powerPrefix+'solarLight-slot-cost-options').count()===0);
  await page.locator('#physical-category').selectOption('weapons');
  const weaponPrefix='#field-physical-weapons-weapons-new-';
  check('body weapon hides irrelevant manipulator selector',await page.locator(weaponPrefix+'manipulatorId').count()===0);
@@ -113,6 +121,52 @@ try{
    check('populated review has no overflow '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
    await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:path.join(out,'robot-review-'+width+'.png'),fullPage:true});
  }
+ await page.setViewportSize({width:1440,height:1000});
+ await page.locator('#new-design').click();await page.locator('#robot-kind').selectOption('cyborg');await page.locator('#robot-tl').selectOption('8');await stage(1);
+ await page.locator('#field-chassis-cyborgMode').selectOption('augments');
+ check('individual augmentation mode hides full-body controls',await page.locator('#field-chassis-conversionInterface').count()===0);
+ await stage(3);
+ check('individual cyborg editor is not hidden by ordinary categories',await page.locator('#physical-category').count()===0&&await page.locator('#field-physical-augmentations-new-optionId').count()===1);
+ await page.locator('#field-physical-limbPriceInterpretation').selectOption('worked');
+ await page.locator('#field-physical-augmentations-new-optionId').selectOption('cybernetic-arm');
+ await page.locator('#field-physical-augmentations-new-strengthIncrease').selectOption('1');
+ const augmentComposer=page.locator('#stage-content details').filter({has:page.locator('#field-physical-augmentations-new-optionId')});
+ await augmentComposer.getByRole('button',{name:'Add separate installation',exact:true}).click();
+ draft=await exportDraft();const limb=draft.special.augmentations[0];
+ check('cybernetic part uses independent special schema',limb.optionId==='cybernetic-arm'&&limb.parameters.strengthIncrease===1);
+ const optional=augmentComposer.locator('.parameter-group').first();
+ check('unused optional modifications start collapsed',await optional.evaluate(node=>!node.open));
+ await optional.locator('summary').click();await page.locator('#field-physical-augmentations-'+limb.id+'-ruggedised').selectOption('yes');
+ check('chosen optional modification remains expanded',await optional.evaluate(node=>node.open));
+ draft=await exportDraft();check('optional modification retained through API',draft.special.augmentations[0].parameters.ruggedised==='yes');
+ await page.locator('#field-physical-augmentations-'+limb.id+'-ruggedised').selectOption('no');
+ check('worked cybernetic arm cost displayed',await page.locator('#summary-metrics').textContent().then(t=>t.includes('22,100')));
+ await page.locator('#field-physical-augmentOptions-new-optionId').selectOption('auditory');
+ await page.locator('#field-physical-augmentOptions-new-parentLimb').selectOption(limb.id);
+ const limbEquipment=page.locator('#stage-content details').filter({has:page.locator('#field-physical-augmentOptions-new-optionId')});
+ await limbEquipment.getByRole('button',{name:'Add separate installation',exact:true}).click();
+ draft=await exportDraft();check('limb equipment references selected limb',draft.special.augmentOptions[0].parameters.parentLimb===limb.id);
+ for(const width of [1440,390,320]){
+   await page.setViewportSize({width,height:1000});
+   check('cybernetic editor has no overflow '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+   await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:path.join(out,'robot-cybernetic-editor-'+width+'.png'),fullPage:true});
+ }
+ await stage(6);
+ check('cybernetic review shows independent profiles',await page.locator('.review-augmentations').textContent().then(t=>t.includes('Cybernetic arm')&&t.includes('STR')));
+ check('cybernetic review retains installed equipment',await page.locator('.review-equipment').textContent().then(t=>t.includes('Auditory Sensor')));
+ await page.setViewportSize({width:1440,height:1000});await page.locator('#robot-kind').selectOption('biological');await page.locator('#robot-tl').selectOption('13');await stage(3);
+ await page.locator('#physical-category').selectOption('cybernetics');
+ check('biological augments use their own category',await page.locator('#field-physical-augmentations-cybernetics-new-optionId').count()===1);
+ await page.locator('#robot-kind').selectOption('standard');await stage(3);await page.locator('#physical-category').selectOption('slot-cost-options');
+ const extPrefix='#field-physical-externalVehicleOptions-slot-cost-options-new-';
+ await page.locator(extPrefix+'name').fill('Source-specific fixture');await page.locator(extPrefix+'sourceEdition').fill('Unverified test edition');await page.locator(extPrefix+'sourcePage').fill('12');
+ await page.locator(extPrefix+'spaceValue').fill('0.125');await page.locator(extPrefix+'pricePerInstallation').fill('1234');await page.locator(extPrefix+'quantity').selectOption('2');
+ await page.locator(extPrefix+'handbookEquivalent').selectOption('none');
+ await page.getByRole('button',{name:'Add external vehicle option',exact:true}).click();
+ draft=await exportDraft();check('external source record retained with fractional Spaces',draft.selections.physical.externalVehicleOptions[0].spaceValue===0.125);
+ check('external input cannot produce certified total',await page.locator('#summary-metrics').textContent().then(t=>t.includes('Not calculated')));
+ await stage(6);
+ check('external review explicitly qualifies estimates',await page.locator('.review-external-options').textContent().then(t=>t.includes('Cr 2,468 quoted')&&t.includes('16 converted Slots')&&t.includes('unverified')));
  check('no runtime errors',errors.length===0);
  await fs.writeFile(path.join(out,'construction-report.json'),JSON.stringify({checks,errors},null,2));console.log('PASS '+checks.length+' construction workflow checks');
 }catch(error){await page.screenshot({path:path.join(out,'construction-failure.png'),fullPage:true});await fs.writeFile(path.join(out,'construction-report.json'),JSON.stringify({checks,errors,failure:error.stack},null,2));throw error;}

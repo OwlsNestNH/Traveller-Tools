@@ -41,7 +41,9 @@ try {
  check('seven physical categories',await page.locator('#physical-category option').count()===8);
  for(const category of ['chassis-modifications','locomotive-modifications','manipulator-modification','default-suites','zero-slot-options','slot-cost-options','weapons']) {
   await page.locator('#physical-category').selectOption(category);
-  check('bounded dropdowns '+category,await page.locator('#stage-content input[type=number]').count()===0);
+  const numericInputs=await page.locator('#stage-content input[type=number]').evaluateAll(inputs=>inputs.map(input=>({id:input.id,min:Number(input.min),max:Number(input.max),step:Number(input.step||1)})));
+  check('bounded dropdowns '+category,numericInputs.every(input=>Number.isFinite(input.min)&&Number.isFinite(input.max)&&input.step>0&&Math.floor((input.max-input.min)/input.step)+1>1001));
+  check('custom numeric fields are explicit external inputs '+category,numericInputs.every(input=>input.id.startsWith('field-physical-externalVehicleOptions-')&&/-(spaceValue|pricePerInstallation)$/.test(input.id)));
  }
  await page.locator('#physical-category').selectOption('default-suites');
  await page.screenshot({path:path.join(out,'robot-desktop-options.png'),fullPage:true});

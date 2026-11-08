@@ -137,12 +137,21 @@ function renderControl(control, choicesOverride) {
     field.replaceChildren();field.classList.add('wide');
     const installed=Array.isArray(selected)?selected:[];
     const local=installed.filter(record=>choices.some(choice=>choice.id===record.optionId));
-    const details=el('details');details.open=local.length>0;
-    details.append(el('summary','Separate copies with different settings'+(local.length?' ('+local.length+')':'')));
-    details.append(el('p','Use a separate installation when copies need different specialties or other settings. Quantity on an ordinary option remains the simpler choice for identical copies.','help'));
+    const details=el('details');details.open=local.length>0||control.expandByDefault===true;
+    details.append(el('summary',(control.summaryLabel||'Separate copies with different settings')+(local.length?' ('+local.length+')':'')));
+    details.append(el('p',control.description||'Use a separate installation when copies need different specialties or other settings. Quantity on an ordinary option remains the simpler choice for identical copies.','help'));
     const parametersFor=choice=>(choice?.parameterControls||[]).filter(item=>!item.appliesTo||item.appliesTo==='options');
     const makeParameters=(choice,parameters,prefix,onChange)=>{
-      const grid=el('div',undefined,'fields-grid');
+      const grid=el('div',undefined,'fields-grid');const groups=new Map();
+      const targetFor=item=>{
+        if(!item.group)return grid;
+        if(!groups.has(item.group)){
+          const details=el('details',undefined,'wide parameter-group');
+          details.open=parametersFor(choice).filter(field=>field.group===item.group).some(field=>Object.hasOwn(parameters,field.field)&&JSON.stringify(parameters[field.field])!==JSON.stringify(field.default));
+          details.append(el('summary',item.group));const content=el('div',undefined,'fields-grid');details.append(content);grid.append(details);groups.set(item.group,content);
+        }
+        return groups.get(item.group);
+      };
       for(const item of parametersFor(choice)){
         if(!matchesVisibility(item,parameters))continue;
         const row=el('label',item.label);const inputId=prefix+'-'+item.field;row.htmlFor=inputId;
@@ -155,7 +164,7 @@ function renderControl(control, choicesOverride) {
           input=el('input');input.type='text';input.value=value;input.maxLength=item.maxLength||120;
           input.addEventListener('change',()=>onChange(item.field,input.value));
         }
-        input.id=inputId;row.append(input);grid.append(row);
+        input.id=inputId;row.append(input);targetFor(item).append(row);
       }
       return grid;
     };
@@ -177,7 +186,7 @@ function renderControl(control, choicesOverride) {
     const redraw=()=>{
       const choice=choices.find(item=>item.id===draft.optionId);
       hint.textContent=sourceText(choice?.source);add.disabled=!choice||installed.length>=(control.maxItems||100);
-      container.replaceChildren(makeParameters(choice,draft.parameters,id+'-new',(key,value)=>{draft.parameters[key]=value;customDrafts.set(draftKey,draft);}));
+      container.replaceChildren(makeParameters(choice,draft.parameters,id+'-new',(key,value)=>{draft.parameters[key]=value;customDrafts.set(draftKey,draft);if(parametersFor(choice).find(item=>item.field===key)?.type!=='text')redraw();}));
     };
     picker.addEventListener('change',()=>{
       draft.optionId=picker.value;const choice=choices.find(item=>item.id===draft.optionId);
@@ -189,11 +198,12 @@ function renderControl(control, choicesOverride) {
       customDrafts.delete(draftKey);submitSelection(control,[...installed,next]);
     });
     composer.append(picker,hint,container,add);redraw();details.append(composer);field.append(details);
-  } else if (control.type === 'custom-packages' || control.type === 'weapons') {
+  } else if (control.type === 'custom-packages' || control.type === 'weapons' || control.type === 'external-vehicle-options') {
     field.classList.add('wide');
     const installed=Array.isArray(selected)?selected:[];
     const isWeapon = control.type === 'weapons';
-    const recordLabel = record => isWeapon ? (control.itemFields?.find(item=>item.field==='weaponId')?.choices?.find(choice=>choice.id===record.weaponId)?.label || 'Weapon installation') : record.speciality || 'Custom package';
+    const isExternal = control.type === 'external-vehicle-options';
+    const recordLabel = record => control.recordNameField ? record[control.recordNameField] || 'New record' : isWeapon ? (control.itemFields?.find(item=>item.field==='weaponId')?.choices?.find(choice=>choice.id===record.weaponId)?.label || 'Weapon installation') : record.speciality || 'Custom package';
     const makeFields=(record,prefix,onChange)=>{
       const grid=el('div',undefined,'fields-grid');
       for(const item of control.itemFields || []) {
@@ -235,7 +245,7 @@ if(item.type==='multiselect'){
       const grid=makeFields(record,id+'-'+record.id,(key,value)=>{
         // Keep text edits local until blur, so typing does not redraw the form.
         const next=resetHiddenFields(control,{...record,[key]:value});
-        if(typeof value==='string'&&key==='speciality'){record[key]=value;return;}
+        if((control.itemFields||[]).some(item=>item.field===key&&item.type==='text')){record[key]=value;return;}
         submitSelection(control,installed.map(item=>item.id===record.id?next:item));
       });
       for(const input of grid.querySelectorAll('input[type=text]'))input.addEventListener('change',()=>submitSelection(control,installed));
@@ -245,9 +255,9 @@ if(item.type==='multiselect'){
     const draft=customDrafts.get(draftKey)||Object.fromEntries((control.itemFields||[]).map(item=>[item.field,item.default??(item.type==='multiselect'?[]:item.type==='select'?item.choices?.[0]?.id:item.type==='number'?item.min??0:'')]));
     customDrafts.set(draftKey,draft);
     const composer=el('div',undefined,'option-settings');
-    composer.append(el('h4',isWeapon?'Add a weapon installation':'Add a book-permitted custom package'));
-    const add=el('button',control.addLabel || (isWeapon?'Add weapon':'Add custom package'));add.type='button';add.className='primary';
-    const valid=()=>!(control.itemFields||[]).some(item=>item.type==='text'&&!String(draft[item.field]||'').trim())&&installed.length<(control.maxItems||200);
+    composer.append(el('h4',control.composerLabel||(isWeapon?'Add a weapon installation':isExternal?'Add a source-defined external vehicle option':'Add a book-permitted custom package')));
+    const add=el('button',control.addLabel || (isWeapon?'Add weapon':isExternal?'Add external vehicle option':'Add custom package'));add.type='button';add.className='primary';
+    const valid=()=>!(control.itemFields||[]).some(item=>item.type==='text'&&item.required!==false&&item.optional!==true&&!String(draft[item.field]||'').trim())&&installed.length<(control.maxItems||200);
     add.disabled=!valid();
     const redrawComposer = () => {
       const next = makeFields(draft, id+'-new', (key, value) => {
@@ -259,7 +269,7 @@ if(item.type==='multiselect'){
     };
     redrawComposer();
     add.addEventListener('click',()=>{
-      const next={id:(isWeapon?'wpn-':'pkg-')+globalThis.crypto.randomUUID(),...draft};
+      const next={id:(control.recordIdPrefix||(isWeapon?'wpn-':isExternal?'veh-':'pkg-'))+globalThis.crypto.randomUUID(),...draft};
       customDrafts.delete(draftKey);submitSelection(control,[...installed,next]);
     });
     composer.append(add);field.append(composer);
@@ -358,14 +368,17 @@ if(item.type==='multiselect'){
     let input;
     if (control.type === 'number') {
       input = numericPicker(control, selected, value => submitSelection(control, value));
+    } else if (control.type === 'text') {
+      input=el('input');input.type='text';input.value=selected??'';input.maxLength=control.maxLength||120;
+      input.addEventListener('change',()=>submitSelection(control,input.value));
     } else {
       input = el('select'); selectChoices(input, choices, selected);
       input.addEventListener('change', () => submitSelection(control, choices.find(choice => String(choice.id) === input.value)?.id ?? null));
     }
     input.id = id; field.append(input);
   }
-  if (control.description || control.help) field.append(el('p', control.description || control.help, 'help'));
-  const source = sourceText(control.source); if (source) field.append(el('p', source, 'source'));
+  if ((control.description || control.help) && control.type !== 'option-instances') field.append(el('p', control.description || control.help, 'help'));
+  const source = sourceText(control.source || choices.find(choice=>choice.id===selected)?.source); if (source) field.append(el('p', source, 'source'));
   if (control.type !== 'multiselect' && control.choices?.length === 0) field.append(el('p', 'Book choices pending verification. No custom values are substituted.', 'help'));
   return field;
 }
@@ -393,17 +406,19 @@ function renderStage() {
   const content = $('stage-content'); content.replaceChildren();
   const sourceStage = view.catalogue.stages.find(item => item.id === currentStage);
   const stage = sourceStage ? { ...sourceStage, controls: sourceStage.controls.filter(controlVisible) } : null;
+  const activeCategories=Array.isArray(stage?.categories)&&stage.categories.length?stage.categories.map(item=>[item.id,item.label]):categories;
   if (stage?.description) content.append(el('p', stage.description, 'stage-description'));
-  if (currentStage === 'physical' && (stage?.controls || []).some(control=>control.category || control.choices?.some(choice=>choice.category))) {
+  if (currentStage === 'physical' && stage?.categorize!==false && (stage?.controls || []).some(control=>control.category || control.choices?.some(choice=>choice.category))) {
     const layout = el('div', undefined, 'category-layout');
     const navigation = el('div', undefined, 'category-picker');
-    const label = el('label', 'Physical-option category'); label.htmlFor = 'physical-category';
+    const label = el('label', stage.categoryLabel || 'Physical-option category'); label.htmlFor = 'physical-category';
     const picker = el('select'); picker.id = 'physical-category';
-    selectChoices(picker,categories.map(([id,label])=>({id,label})),physicalCategory);
+    if(!activeCategories.some(([id])=>id===physicalCategory))physicalCategory=activeCategories[0]?.[0];
+    selectChoices(picker,activeCategories.map(([id,label])=>({id,label})),physicalCategory);
     picker.addEventListener('change',()=>{physicalCategory=picker.value;renderStage();});
     label.append(picker);navigation.append(label,el('p','Choose a category to keep the workspace focused. Installed options remain with the design.','help'));
     const body = el('div', undefined, 'category-content');
-    const category = categories.find(([id])=>id===physicalCategory) || categories[0];
+    const category = activeCategories.find(([id])=>id===physicalCategory) || activeCategories[0];
     const [categoryId,labelText] = category;
     body.append(el('h3',labelText));
     const controls = (stage?.controls || []).filter(control => control.category === categoryId || control.category === labelText);
@@ -428,6 +443,22 @@ function renderStage() {
     for (const control of stage?.controls || []) grid.append(renderControl(control));
     if (!grid.children.length) grid.append(el('p', 'This stage is awaiting source-verified construction choices.', 'help'));
     content.append(grid);
+  }
+  const technology=view.catalogue.highTechnology;
+  const referenceRows=currentStage==='chassis'?technology?.metamorphic:currentStage==='finalisation'?technology?.backupServices:null;
+  if(referenceRows?.length){
+    const disclosure=el('details',undefined,'source-reference');
+    disclosure.append(el('summary',currentStage==='chassis'?'High-tech body references':'External backup and transfer references'));
+    disclosure.append(el('p','Reference prices only. These entries do not add components or change this design’s totals.','help'));
+    if(technology.scope)disclosure.append(el('p',technology.scope,'help'));
+    for(const record of referenceRows){
+      const card=el('div',undefined,'option-settings');card.append(el('strong',record.label||record.purpose||record.id.replaceAll('-',' ')));
+      const price=record.pricePerSlot!=null?'Cr '+formatted(record.pricePerSlot)+' / Slot':record.cost!=null?'Cr '+formatted(record.cost)+(record.unit?' / '+record.unit:''):'Price not resolved';
+      card.append(el('p',['TL '+record.tl,price,record.morphTime,record.appearance].filter(Boolean).join(' · '),'help'));
+      if(record.reason)card.append(el('p',record.reason,'help'));
+      card.append(el('small',sourceText(record.source),'source'));disclosure.append(card);
+    }
+    content.append(disclosure);
   }
   if (stage?.note) content.append(el('p', stage.note, 'scope-note'));
 }
@@ -460,8 +491,11 @@ function renderSummary() {
   $('compact-summary').replaceChildren(...compact.map(([label,value])=>{const span=el('span',label);span.append(el('b',value));return span;}));
 
   const diagnostics = evaluation.diagnostics || [];
-  $('issues').replaceChildren(...diagnostics.map(issue => {
-    const node = el('div', undefined, `issue ${issue.severity}`); node.append(el('p', issue.message));
+  $('issues').replaceChildren(...diagnostics.map((issue,index) => {
+    const node = el('div', undefined, `issue ${issue.severity}`);
+    const context=view.review?.sections.find(section=>section.id==='warnings')?.rows[index]?.detail;
+    if(context)node.append(el('small',context,'help'));
+    node.append(el('p', issue.message));
     const source = sourceText(issue.source); if (source) node.append(el('small', source, 'source')); return node;
   }));
   if (!diagnostics.length) $('issues').append(el('p', evaluation.status === 'verified' ? 'No outstanding construction checks.' : 'Construction rules have not been fully verified.', 'help'));

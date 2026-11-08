@@ -202,3 +202,9 @@ footer { color: var(--muted); font-size: .73rem; }
 .review-item-details dl>div{display:grid;grid-template-columns:minmax(0,.65fr) minmax(0,1fr);gap:8px;padding:5px 0}
 .review-item-details dt,.review-item-details dd{font-size:.74rem}
 @media(max-width:560px){.review-item-details dl>div{grid-template-columns:minmax(0,1fr);gap:3px}}
+
+/* Keep the headline price readable even when its scoped label is long. */
+.metrics > .metric:first-child { display: block; }
+.metrics > .metric:first-child dd { margin: 5px 0 0; text-align: left; overflow-wrap: anywhere; }
+.parameter-group > summary { cursor: pointer; padding: 8px 0; }
+.parameter-group[open] > summary { margin-bottom: 8px; }

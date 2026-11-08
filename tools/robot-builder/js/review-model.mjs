@@ -44,9 +44,10 @@ export function projectReview(design, catalogue, evaluation) {
     ? coverage.complete === true ? 'Checked' : 'Implemented rules checked; coverage incomplete'
     : evaluation.status === 'invalid' ? 'Needs correction' : 'Rules or referee decisions outstanding';
   const sections = [];
-  const controls = (catalogue.stages || []).flatMap(stage => stage.controls.map(control => ({ ...control, stage:stage.id })));
+  const visible=(rule,values)=>!rule || (rule.allOf ? rule.allOf.every(item=>visible(item,values)) : Array.isArray(rule.oneOf) ? rule.oneOf.includes(values?.[rule.field]) : Object.hasOwn(rule,'notEquals') ? values?.[rule.field]!==rule.notEquals : values?.[rule.field]===rule.equals);
+  const controls = (catalogue.stages || []).flatMap(stage => stage.controls.map(control => ({ ...control, stage:stage.id }))).filter(control=>visible(control.visibleWhen,control.target==='special'?design.special:design.selections?.[control.stage]));
   const physical = design.selections?.physical || {};
-  const options = new Map(controls.filter(control => ['options','defaultSuite','optionInstances','optionParameters'].includes(control.field)).flatMap(control => control.choices || []).map(choice => [choice.id,choice]));
+  const options = new Map(controls.filter(control => control.type === 'option-instances' || ['options','defaultSuite','optionInstances','optionParameters'].includes(control.field)).flatMap(control => control.choices || []).map(choice => [choice.id,choice]));
   const excluded = evaluation.notApplicableMetrics || [];
   const costLabel = evaluation.costLabel || totals?.costLabel || 'Construction cost';
   const costs = [row(costLabel, money(totals?.cost))];
@@ -72,14 +73,14 @@ export function projectReview(design, catalogue, evaluation) {
   }).filter(Boolean);
   if (configuration.length) sections.push(section('configuration','Selected construction',configuration,{collapsed:true}));
   const equipment = [];
-  const equipmentRow = (id,params,context,instanceId) => {
+  const equipmentRow = (id,params,context,instanceId,ledgerPrefix = 'instance-') => {
     const choice = options.get(id);
-    const ledgerId = instanceId ? `instance-${instanceId}` : `${context==='Default suite'?'default':'option'}-${id}`;
-    const ledger = evaluation.ledger?.find(item => item.id === ledgerId);
+    const ledgerId = instanceId ? `${ledgerPrefix}${instanceId}` : `${context==='Default suite'?'default':'option'}-${id}`;
+    const ledger = evaluation.ledger?.find(item => item.id === ledgerId || item.id?.startsWith(ledgerId + ':'));
     const parameterContext = context === 'Default suite' ? 'defaultSuite' : 'options';
     const visibleParameters = Object.entries(params).filter(([key]) => {
       const control = choice?.parameterControls?.find(item => item.field === key);
-      return !control?.appliesTo || control.appliesTo === parameterContext;
+      return (!control?.appliesTo || control.appliesTo === parameterContext) && visible(control?.visibleWhen,params);
     });
     const parameterValues = Object.fromEntries(visibleParameters.map(([key,value]) => {
       const control = choice?.parameterControls?.find(item => item.field === key);
@@ -92,8 +93,38 @@ export function projectReview(design, catalogue, evaluation) {
   };
   if (controls.some(control => control.field === 'defaultSuite')) for (const id of physical.defaultSuite || []) equipment.push(equipmentRow(id,physical.optionParameters?.[id] || {},'Default suite'));
   if (controls.some(control => control.field === 'options')) for (const id of physical.options || []) equipment.push(equipmentRow(id,physical.optionParameters?.[id] || {},'Installed option'));
-  if (controls.some(control => control.field === 'optionInstances')) for (const item of physical.optionInstances || []) equipment.push(equipmentRow(item.optionId,item.parameters || {},'Separate installation',item.id));
+  for (const control of controls.filter(control => control.type === 'option-instances' || control.field === 'optionInstances')) {
+    const records = control.target === 'special' ? design.special?.[control.field] : design.selections?.[control.stage]?.[control.field];
+    for (const item of records || []) equipment.push(equipmentRow(item.optionId,item.parameters || {},control.field === 'optionInstances' ? 'Separate installation' : control.label,item.id,control.ledgerPrefix));
+  }
   if (equipment.length) sections.push(section('equipment','Installed equipment',equipment));
+  const augmentResult = totals?.augmentation;
+  const augmentations = totals?.augmentations || augmentResult?.augmentations || [];
+  if (augmentations.length) sections.push(section('augmentations','Cybernetic part profiles',augmentations.map(item => {
+    const attributes = item.characteristics;
+    const summary = [
+      money(item.totalCost),
+      present(item.quantity) ? `${valueText(item.quantity)} part(s)` : '',
+      attributes ? `STR ${valueText(attributes.strength)} / DEX ${valueText(attributes.effectiveDexterity)}` : '',
+      present(item.slots?.remaining) ? `${valueText(item.slots.remaining)} free limb Slots` : ''
+    ].filter(Boolean).join(' · ');
+    return profileRow(item.label || options.get(item.optionId)?.label || 'Cybernetic part',summary,item,['totalCost','quantity']);
+  }),{note:'Shared interfaces are itemised separately. Limb and sensory effects apply only in their stated context.'}));
+  const sharedInterfaces = totals?.sharedInterfaces || augmentResult?.sharedInterfaces || [];
+  if (sharedInterfaces.length) sections.push(section('augmentation-interfaces','Shared cybernetic interfaces',sharedInterfaces.map(item=>profileRow(`${titleName(item.sense)} interface`,money(item.totalCost),item,['totalCost','recordIds'])),{collapsed:true}));
+  const augmentationEffects = totals?.augmentationEffects || augmentResult?.effects;
+  if (augmentationEffects) sections.push(section('augmentation-effects','Cybernetic effects',Object.entries(augmentationEffects).filter(([,value])=>present(value)).map(([key,value])=>row(humanLabel(key),value)),{collapsed:true}));
+  const externalControl = controls.find(control=>control.type==='external-vehicle-options');
+  const externalRecords = externalControl ? design.selections?.[externalControl.stage]?.[externalControl.field] || [] : [];
+  if (externalRecords.length) sections.push(section('external-options','Unverified external vehicle options',externalRecords.map(record=>{
+    const estimate=evaluation.externalVehicleEstimates?.find(item=>item.id===record.id);
+    const fields=(externalControl.itemFields || []).filter(field=>present(record[field.field])&&visible(field.visibleWhen,record)).map(field=>{
+      const value=record[field.field],choice=field.choices?.find(item=>item.id===value);
+      return row(field.label,choice?.label??value);
+    });
+    const result=row(record.name || 'External option',estimate ? `${money(estimate.quotedCost)} quoted; ${present(estimate.convertedSlots)?valueText(estimate.convertedSlots)+' converted Slots':'Slots unresolved'}` : 'Not calculated',{book:record.sourceTitle,edition:record.sourceEdition,pages:record.sourcePage},'Source, equivalence and installation prerequisites are unverified. These estimates do not certify the design.');
+    return {...result,details:fields};
+  }),{note:'Conversion of supplied figures only. Use the Robot Handbook option wherever an equivalent exists.'}));
   const armNames = new Map((totals?.manipulators || physical.manipulators || []).map((arm,index)=>[arm.id,`${arm.kind==='base'?'Base arm':arm.kind==='leg'?'Converted leg':'Additional arm'} ${index+1}`]));
   const armName = id => armNames.get(id) || 'Unspecified manipulator';
   if (totals?.manipulators?.length) sections.push(section('manipulators','Manipulators',totals.manipulators.map(arm => profileRow(armName(arm.id),`Size ${valueText(arm.size)} · STR ${valueText(arm.strength)} · DEX ${valueText(arm.dexterity)}`,arm,['kind','size','strength','dexterity']))));
@@ -118,6 +149,11 @@ export function projectReview(design, catalogue, evaluation) {
   if (totals?.hardwareSkills?.length) sections.push(section('hardware-skills','Hardware skills',totals.hardwareSkills.map(item=>profileRow(titleName(item.skill),`Level ${valueText(item.level)} · Characteristic DM ${valueText(item.characteristicModifier)}`,item,['skill','level','characteristicModifier'],options.get(item.sourceOption)?.label || 'Hardware-provided skill'))));
   if (totals?.skillEquivalents?.length) sections.push(section('skill-equivalents','Characteristic-based equivalents',totals.skillEquivalents.map(item=>profileRow(`${titleName(item.skill)}${item.speciality?' ('+item.speciality+')':''}`,`Level: ${valueText(item.level)}${item.manipulatorId?' · '+armName(item.manipulatorId):''}`,item,['skill','speciality','level','manipulatorId'])),{collapsed:true}));
   if (totals?.toolCaps?.length) sections.push(section('tool-caps','Tool skill limits',totals.toolCaps.map(item=>profileRow(options.get(item.optionId)?.label || titleName(item.optionId),Object.entries(item.skills || {}).map(([skill,level])=>`${titleName(skill)} up to ${valueText(level)}`).join(' · '),item,['skills','detail'],item.detail || '')),{note:'Tool limits do not grant software skill levels.'}));
+  const capabilities=totals?.equipmentCapabilities || [];
+  for(const category of [...new Set(capabilities.map(item=>item.category||'equipment'))]) {
+    const records=capabilities.filter(item=>(item.category||'equipment')===category);
+    sections.push(section('capabilities-'+category,`${titleName(category)} capabilities`,records.map(item=>profileRow(item.label || options.get(item.optionId)?.label || titleName(item.id),[item.status?titleName(item.status):'',item.condition||'Source-defined operating limits'].filter(Boolean).join(' · '),item,['category','status','condition'])),{collapsed:true,note:'These are construction capabilities and conditions, not resolved task outcomes.'}));
+  }
   const weapons = totals?.weapons || (controls.some(control=>control.field==='weapons') ? physical.weapons || [] : []);
   const weaponControl = controls.find(control=>control.field==='weapons');
   const weaponName = weapon => weapon.label || weaponControl?.itemFields?.find(item=>item.field==='weaponId')?.choices?.find(item=>item.id===weapon.weaponId)?.label || 'Selected weapon';
@@ -132,13 +168,21 @@ export function projectReview(design, catalogue, evaluation) {
     for(const id of weapon.accessories||[]){const accessory=accessoryChoices.find(item=>item.id===id);result.details.push(row('Accessory',accessoryName(id),accessory?.source));}
     return result;
   });
-  if (weapons.length) sections.push(section('weapons','Weapons',weaponRows,{note:totals ? 'Attack modifiers are contextual. Read the separate hardware/software values and outstanding checks.' : 'Selected installations only. Weapon performance has not been calculated.'}));  const handled = new Set(['cost','constructionCost','costLabel','slots','bandwidth','zeroSlot','zeroBandwidth','hits','armour','intelligence','intelligenceDM','agility','tacticalSpeed','endurance','vehicleEndurance','vehicleBand','traits','manipulators','skills','hardwareSkills','skillEquivalents','toolCaps','weapons','defaultSuite','provisional']);
+  if (weapons.length) sections.push(section('weapons','Weapons',weaponRows,{note:totals ? 'Attack modifiers are contextual. Read the separate hardware/software values and outstanding checks.' : 'Selected installations only. Weapon performance has not been calculated.'}));  const handled = new Set(['cost','constructionCost','costLabel','slots','bandwidth','zeroSlot','zeroBandwidth','hits','armour','intelligence','intelligenceDM','agility','tacticalSpeed','endurance','vehicleEndurance','vehicleBand','traits','manipulators','skills','hardwareSkills','skillEquivalents','toolCaps','weapons','defaultSuite','provisional','augmentation','augmentations','sharedInterfaces','augmentationEffects','equipmentCapabilities']);
   const extra = Object.entries(totals || {}).filter(([key,value])=>!handled.has(key)&&present(value)&&(!Array.isArray(value)||value.length)).map(([key,value])=>row(humanLabel(key),value));
   if (extra.length) sections.push(section('additional','Operating details',extra,{collapsed:true}));
   const ledger = (evaluation.ledger || []).map(item => row(item.label || item.name || item.id,
-    [present(item.cost) ? money(item.cost) : item.cost===null?'Cost unresolved':null,present(item.slots)?`${valueText(item.slots)} slots`:item.slots===null?'Slots unresolved':null,present(item.bandwidth)?`${valueText(item.bandwidth)} bandwidth`:null,present(item.quantity)?`Quantity ${valueText(item.quantity)}`:null].filter(Boolean).join(' · '),item.source,[item.note,sourceLabel(item.weaponSource)].filter(Boolean).join(' · ')));
+    [present(item.cost) ? money(item.cost) : item.cost===null?'Cost unresolved':null,present(item.slots)?`${valueText(item.slots)} slots`:item.slots===null?'Slots unresolved':null,present(item.bandwidth)?`${valueText(item.bandwidth)} bandwidth`:null,present(item.quantity)?`Quantity ${valueText(item.quantity)}`:null].filter(Boolean).join(' · '),item.source,[item.note,sourceLabel(item.weaponSource),sourceLabel(item.externalSource)].filter(Boolean).join(' · ')));
   if (ledger.length) sections.push(section('ledger','Construction breakdown',ledger,{collapsed:true}));
-  const warnings = (evaluation.diagnostics || []).map(item => row(humanLabel(item.severity || 'Check'),item.message || String(item),item.source,item.path || ''));
+  const diagnosticContext=path=>{
+    const parts=String(path||'').split('.');
+    const control=controls.find(control=>parts.includes(control.field)&&(control.target==='special'?parts[0]==='special':control.stage===parts[0]));
+    if(!control)return '';
+    const stage=catalogue.stages.find(stage=>stage.id===control.stage);
+    const option=parts.map(part=>options.get(part)).find(Boolean);
+    return [...new Set([stage?.label,control.label,option?.label].filter(Boolean))].join(' · ');
+  };
+  const warnings = (evaluation.diagnostics || []).map(item => row(humanLabel(item.severity || 'Check'),item.message || String(item),item.source,diagnosticContext(item.path)));
   if (!warnings.length) warnings.push(row('Checks',evaluation.status==='verified'?'No outstanding checks in implemented rules.':'Calculation has not been verified.'));
   sections.push(section('warnings','Checks and limitations',warnings));
   const gaps = (coverage.gaps || []).map(item=>row('Coverage',typeof item==='string'?item:item.message,item.source));

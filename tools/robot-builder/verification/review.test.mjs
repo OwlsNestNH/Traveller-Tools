@@ -104,3 +104,55 @@ test('weapon accessory names and sources survive secondary review and print',()=
  assert.match(view.statblock,/Accessory: Laser sight.*Core Rulebook.*135/);
  assert.doesNotMatch(weapon.details.find(detail=>detail.label==='Accessory Effects').value,/laser-sight-8/);
 });
+
+test('diagnostic context uses user-facing stage and field names instead of internal paths',()=>{
+ const c={...catalogue,stages:[{id:'chassis',label:'Chassis Size',controls:[{field:'baseSTR',label:'Base STR',target:'special',type:'select',choices:[]}]}]};
+ const review=projectReview(design,c,{status:'invalid',totals:null,diagnostics:[{severity:'error',path:'special.baseSTR',message:'Unavailable base score.'}],ledger:[],coverage:{complete:false}});
+ const warning=review.sections.find(section=>section.id==='warnings').rows[0];
+ assert.equal(warning.detail,'Chassis Size · Base STR');assert.doesNotMatch(formatStatblock(review),/special\.baseSTR/);
+});
+import {createDesign,updateDesign,getCatalogue,evaluateDesign} from '../engine/index.mjs';
+test('individual cybernetic parts retain choices and contextual profiles through the API',()=>{
+ let d=createDesign({kind:'cyborg',techLevel:8});
+ d=updateDesign(d,{special:{cyborgMode:'augments',limbPriceInterpretation:'worked',augmentations:[{id:'arm',optionId:'cybernetic-arm',parameters:{strengthIncrease:1,dexterityIncrease:2}}]}});
+ const api=createRobotApi();api.importDesign(JSON.stringify(d));const view=api.getView();
+ const equipment=view.review.sections.find(s=>s.id==='equipment'),profiles=view.review.sections.find(s=>s.id==='augmentations');
+ assert.equal(equipment.rows.length,1);assert.match(equipment.rows[0].label,/arm/i);
+ assert.match(profiles.rows[0].value,/Cr 24,500/);assert.ok(profiles.rows[0].value.includes('STR '+view.evaluation.totals.augmentations[0].characteristics.strength+' / DEX 6'));
+ assert.ok(view.statblock.includes('Nominal Dexterity: '+view.evaluation.totals.augmentations[0].characteristics.nominalDexterity));assert.match(view.statblock,/Interface Dexterity Cap: 6/);
+ assert.doesNotMatch(view.statblock,/Slots: Not calculated|Bandwidth: Not calculated/);
+});
+test('biological cybernetic profiles are not lost inside generic operating details',()=>{
+ let d=createDesign({kind:'biological',techLevel:13});
+ d=updateDesign(d,{special:{genomeLocomotion:'confirmed',augmentations:[{id:'kidney',optionId:'organ-advanced',parameters:{complexity:'simple'}}]}});
+ const review=projectReview(d,getCatalogue(d),evaluateDesign(d));
+ assert.equal(review.sections.find(s=>s.id==='augmentations').rows.length,1);
+ assert.ok(review.sections.find(s=>s.id==='augmentation-effects').rows.some(r=>r.label==='Overall Endurance Modifier'&&r.value==='2'));
+ assert.ok(review.sections.find(s=>s.id==='equipment').rows.some(r=>/organ/i.test(r.label)));
+ assert.ok(!review.sections.find(s=>s.id==='additional')?.rows.some(r=>r.label==='Augmentation'));
+});
+test('blocked augmentation records remain visible without invented part totals',()=>{
+ let d=createDesign({kind:'cyborg',techLevel:8});
+ d=updateDesign(d,{special:{cyborgMode:'augments',augmentations:[{id:'arm',optionId:'cybernetic-arm',parameters:{strengthIncrease:1}}]}});
+ const result=evaluateDesign(d);assert.equal(result.status,'blocked');
+ const review=projectReview(d,getCatalogue(d),result),output=formatStatblock(review);
+ assert.match(output,/Cybernetic arm/i);assert.match(output,/Limb STR increase: 1/i);
+ assert.equal(review.sections.some(s=>s.id==='augmentations'),false);
+ assert.match(output,/Selected augmentations only: Not calculated/);
+});
+test('external option review keeps qualified source inputs and estimates outside certified totals',()=>{
+ let d=createDesign({techLevel:12});d=updateDesign(d,{selections:{physical:{externalVehicleOptions:[{id:'test',name:'Source-specific fixture',sourceTitle:'Vehicle Handbook',sourceEdition:'Unverified edition',sourcePage:'12',minimumTL:10,quantity:2,spaceRule:'fixed',spaceValue:.125,percentageBasis:'unresolved',pricePerInstallation:1234,handbookEquivalent:'none'}]}}});
+ const result=evaluateDesign(d),review=projectReview(d,getCatalogue(d),result),output=formatStatblock(review);
+ assert.equal(result.status,'blocked');assert.equal(review.unavailable,true);
+ const external=review.sections.find(s=>s.id==='external-options');assert.equal(external.rows.length,1);
+ assert.match(external.rows[0].value,/Cr 2,468 quoted; 16 converted Slots/);
+ assert.match(external.rows[0].source,/Unverified edition/);
+ assert.match(output,/Construction cost: Not calculated/);assert.match(output,/do not certify the design/);
+});
+test('operating capabilities are grouped and preserve explicit readiness and unknown dependencies',()=>{
+ const totals={equipmentCapabilities:[{id:'controller-a',optionId:'controller',label:'Controller',category:'controller',status:'inactive',targetLinkVerified:false,taskCapacity:0,condition:'Requires Remote Ops software',source:{book:'Robot Handbook',pages:44}},{id:'environment-summary',category:'environment',radiationProtection:500,depthMetres:100,source:{book:'Robot Handbook',pages:42}}]};
+ const review=projectReview(design,catalogue,evaluate(totals)),output=formatStatblock(review);
+ assert.equal(review.sections.find(s=>s.id==='capabilities-controller').collapsed,true);
+ assert.match(output,/Requires Remote Ops software/);assert.match(output,/Target Link Verified: No/);assert.match(output,/Task Capacity: 0/);assert.match(output,/Radiation Protection: 500/);assert.match(output,/Depth Metres: 100/);
+ assert.ok(!review.sections.find(s=>s.id==='additional')?.rows.some(r=>r.label==='Equipment Capabilities'));
+});

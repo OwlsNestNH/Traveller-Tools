@@ -132,6 +132,9 @@ for(const [grade,slots,minArm,cost,maxKg] of [['Small',1,3,500,3],['Medium',2,5,
  add(`Weapon Mount Autoloader (${grade})`,6,0,slots,61,{category:'Weapons',family:'weapon-autoloader',costBasis:'weaponMagazine',implemented:false,reason:'Requires associated mount, magazine unit price and ammunition count.',effects:{additionalSlots:slots,minimumManipulatorSize:minArm===null?null:minArm+1,maximumAdditionalMagazines:10},operationalNotes:'Adds100% associated mount Slots. Full10-magazine load costs20×magazine price; weapon and mount remain separate. Do not treat as free.'});
 }
 
+family('Fabrication Chamber',105,[['Superior',19,null,500000,{time:'1D minutes',brainLimit:'Any',memoryImplantation:true}]],{slotsBasis:'allocated',costBasis:'allocatedSlots',operationalReview:true,operationalNotes:'Allocated chamber Slots. Printed minimum fabrication time is1D minutes; brain/neurological complexity and feedstock requirements still apply. Source memory data and permissions are external prerequisites.'});
+family('Open Fabrication',105,[['Basic',20,null,500000,{hours:1,brainLimit:'Any',externalFabrication:'advanced'}],['Improved',21,null,500000,{time:'1D minutes',brainLimit:'Any',externalFabrication:'superior',memoryImplantation:true}]],{slotsBasis:'allocated',costBasis:'allocatedSlots',operationalReview:true,operationalNotes:'Produces outside a sealed chamber. External guidance, feedstock and templates remain required; no maximum external object size is inferred from installed Slots.'});
+
 // Stable aliases for IDs used by the original small prototype.
 for(const row of rows){if(row.id==='hostile-environment-protection')row.id='hostile-environment';if(row.id.startsWith('visual-camouflage-'))row.exclusive='visual-camouflage';}
 for(const row of rows)if(['rtg-long-duration','rtg-short-duration','solar-power-unit'].includes(row.family)){

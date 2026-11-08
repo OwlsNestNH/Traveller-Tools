@@ -1,3 +1,4 @@
+import {getAugmentationControls,validateAugmentationRecords,evaluateAugmentations} from './augmentations.mjs';
 import {evaluateEquipment} from './equipment.mjs';
 import {CUSTOM_PACKAGE_FIELDS} from './skills-data.mjs';
 import {OPTIONS_ARRAY} from './options-data.mjs';
@@ -48,12 +49,20 @@ for(const c of controls){
  if(c.field==='quickEducation')c.visibleWhen={field:'growth',equals:'quick'};
  if(c.field==='storageYears')c.visibleWhen={field:'growth',equals:'spare'};
 }
-export function getSpecialControls(kind){return kind==='clone'?copy(controls):kind==='microbot'?copy(microControls):kind==='nanorobot'?copy(nanoControls):kind==='avatar'?copy(avatarControls):kind==='missile'?copy(missileControls):kind==='cyborg'?copy(cyborgControls):kind==='drone'?copy(droneControls):['vehicle-brain','ship-brain'].includes(kind)?copy(hostControls(kind)):['android','biological'].includes(kind)?copy(bodyControls(kind).map(c=>({...c,source:source(kind==='android'?'86-87':'88-89')}))):[];}
-export function createSpecialDesignFields(kind,techLevel=13){const fields=Object.fromEntries(getSpecialControls(kind).map(c=>[c.field,c.default]));if(kind==='clone'&&techLevel<13){fields.growth=techLevel>=10?'accelerated':'natural';for(const stat of ['STR','DEX','END','INT'])fields['base'+stat]=3;}return fields;}
+function baseSpecialControls(kind){return kind==='clone'?copy(controls):kind==='microbot'?copy(microControls):kind==='nanorobot'?copy(nanoControls):kind==='avatar'?copy(avatarControls):kind==='missile'?copy(missileControls):kind==='cyborg'?copy(cyborgControls):kind==='drone'?copy(droneControls):['vehicle-brain','ship-brain'].includes(kind)?copy(hostControls(kind)):['android','biological'].includes(kind)?copy(bodyControls(kind).map(c=>({...c,source:source(kind==='android'?'86-87':'88-89')}))):[];}
+export function getSpecialControls(kind,design={}){
+ const base=baseSpecialControls(kind);
+ if(kind==='biological')return [...base,...getAugmentationControls(design).map(c=>c.stage==='physical'?{...c,category:'cybernetics',...(c.choices?{choices:c.choices.map(o=>({...o,category:'cybernetics'}))}:{})}:c)];
+ if(kind!=='cyborg')return base;
+ const mode={...select('cyborgMode','Cybernetic construction',[['full-body','Full-body conversion'],['augments','Individual augmentations']],'full-body'),stage:'chassis',source:source('89-93')};
+ return [mode,...base.map(c=>({...c,visibleWhen:c.visibleWhen?{allOf:[{field:'cyborgMode',equals:'full-body'},c.visibleWhen]}:{field:'cyborgMode',equals:'full-body'}})),...getAugmentationControls(design).map(c=>({...c,visibleWhen:c.visibleWhen?{allOf:[{field:'cyborgMode',equals:'augments'},c.visibleWhen]}:{field:'cyborgMode',equals:'augments'}}))];
+}
+export function createSpecialDesignFields(kind,techLevel=13){const fields=Object.fromEntries(getSpecialControls(kind,{techLevel}).map(c=>[c.field,copy(c.default)]));if(kind==='clone'&&techLevel<13){fields.growth=techLevel>=10?'accelerated':'natural';for(const stat of ['STR','DEX','END','INT'])fields['base'+stat]=3;}return fields;}
 export function validateSpecialFields(kind,fields){
  if(!fields||typeof fields!=='object'||Array.isArray(fields))throw new TypeError('special must be an object.');
  if(kind==='clone')validateCloneCustomSkills(fields.trainingCustomSkills);
- const cs=getSpecialControls(kind),allowed=new Set(cs.map(c=>c.field));
+ if(['cyborg','biological'].includes(kind))validateAugmentationRecords({kind,special:fields});
+ const cs=getSpecialControls(kind,{special:fields}),allowed=new Set(cs.map(c=>c.field));
  if(Object.keys(fields).some(k=>!allowed.has(k)))throw new TypeError('Unknown special field.');
  for(const c of cs){const v=fields[c.field];if(c.type==='number'&&(!Number.isInteger(v)||v<c.min||v>c.max))throw new TypeError(`special.${c.field} must be an integer from ${c.min} to ${c.max}.`);if(c.type==='multiselect'&&(!Array.isArray(v)||v.length>200||new Set(v).size!==v.length||v.some(id=>!c.choices.some(x=>x.id===id))))throw new TypeError(`special. has invalid selections.`);if(c.type==='select'&&!c.choices.some(x=>x.id===v))throw new TypeError(`special.${c.field} has an unknown choice.`);}
  return true;
@@ -66,7 +75,7 @@ function evaluateSpecialDesignRaw(design){
  if(design.kind==='microbot')return evaluateMicrobot(design);
  if(design.kind==='nanorobot')return evaluateNanorobot(design);
  if(design.kind==='missile')return evaluateMissileCarrier(design);
- if(design.kind==='cyborg')return evaluateCyborgConversion(design);
+ if(design.kind==='cyborg')return design.special?.cyborgMode==='augments'?evaluateIndividualAugments(design):evaluateCyborgConversion(design);
  if(['vehicle-brain','ship-brain'].includes(design.kind))return evaluateBrainHost(design);
  const diagnostics=[],ledger=[],coverage={complete:false,scope:'Clone template, growth and supported creche training construction; optional Traveller skill-limit checks',implemented:['Catalogue and donor template mechanics','Commercial growth and storage costs','Itemized learned skills, permitted custom specialities and characteristic point costs','Annual EDU/INT bookkeeping under explicit interpretations','Natural, accelerated and quick ageing schedules'],gaps:[
  {id:'clone-genetics',category:'construction',message:'Species/genetic-engineering variants and biological augmentations are not constructed or priced. Published nonstandard templates are not inferred from desired final characteristics.',source:source('96-99,246-248')},
@@ -196,8 +205,10 @@ export function evaluateBodyType(design,{baseSlots,brainRank,physicalCost,softwa
   traits.push('Requires food, water and air','Natural healing DM '+[-2,0,2,4][BODY_TIERS.biological.findIndex(r=>r[0]===tier)]);
   issue('warning','BIO_FABRICATION_CONFLICT','special.bodyTier','Living-body fabrication technology differs between p87 (TL16) and pp105/121 (TL17); a self-fabrication claim requires reconciliation.');
  }
+ const augmentation=kind==='biological'?evaluateAugmentations(design):null;
+ if(augmentation)diagnostics.push(...augmentation.diagnostics);
  const bodyFee=baseSlots*perSlot;
- return {diagnostics,reservedSlots:Math.ceil(baseSlots*(kind==='android'?.5:.75)),bodyFee,cost:3*(physicalCost+bodyFee)+softwareCost,baseArmour:0,traits,source:source(kind==='android'?'86-87':'88-89')};
+ return {diagnostics,reservedSlots:Math.ceil(baseSlots*(kind==='android'?.5:.75)),bodyFee,augmentationCost:augmentation?.cost??0,augmentation,cost:3*(physicalCost+bodyFee)+softwareCost+(augmentation?.cost??0),baseArmour:0,traits,source:source(kind==='android'?'86-87':'88-89')};
 }
 
 
@@ -209,11 +220,15 @@ const MICRO_BRAINS=[
  {id:'basic',label:'Basic',tl:11,bandwidth:1,intelligence:4,cost:4000,family:'basic',rank:1},
  {id:'hunter-killer',label:'Hunter/Killer',tl:11,bandwidth:1,intelligence:4,cost:6000,family:'hunter-killer',rank:1},
  {id:'advanced',label:'Advanced (p81 microbot row)',tl:12,bandwidth:2,intelligence:6,cost:10000,family:'advanced',rank:2},
- {id:'very-advanced',label:'Very Advanced',tl:15,bandwidth:3,intelligence:9,cost:500000,family:'very-advanced',rank:3}
+ {id:'very-advanced',label:'Very Advanced',tl:15,bandwidth:3,intelligence:9,cost:500000,family:'very-advanced',rank:3},
+ {id:'very-advanced-tl17',label:'Very Advanced Computer/4 (p104)',tl:17,bandwidth:4,intelligence:10,cost:500000,family:'very-advanced',rank:3},
+ {id:'very-advanced-tl19',label:'Very Advanced Computer/5 (p104)',tl:19,bandwidth:5,intelligence:11,cost:500000,family:'very-advanced',rank:3}
 ];
 const microEligible=o=>o?.zeroSlot===true&&o.slotsBasis==='fixed'&&o.slots===0&&o.implemented===true&&(!o.allowedKinds||o.allowedKinds.includes('microbot'))&&o.id!=='reflec'&&['each','baseSlots'].includes(o.costBasis);
 const MICRO_OPTIONS=OPTIONS.filter(microEligible);const microControls=[
- {...number('massMg','Mass (milligrams)',2,30000,1000),stage:'chassis'},
+ {...select('selfDestruct','Microbot self-destruct',[['none','None'],['defensive','Defensive: 1D to self'],['offensive','Offensive: 1D to contact target, mass above1g']],'none'),stage:'physical',source:source('53,80-81')},
+ {...select('massUnit','Mass unit',[['mg','Milligrams'],['microgram','Micrograms (TL19+)']],'mg'),stage:'chassis',source:source('80,105')},
+ {...number('massMg','Mass (selected unit)',1,30000,1000),stage:'chassis'},
  {...select('locomotion','Microbot locomotion',LOCOMOTION.map(l=>[l.id,l.label]),'walker'),stage:'locomotion'},
  {...number('speedIncrease','Additional tactical movement (metres)',0,12,0),stage:'locomotion'},
  {...select('efficiency','Power efficiency',[['normal','Normal'],['improved','Improved efficiency']],'normal'),stage:'physical'},
@@ -234,16 +249,17 @@ function evaluateMicrobot(design){
  const diagnostics=[],ledger=[];
  const issue=(severity,code,path,message,pages='79-81')=>diagnostics.push({severity,code,path,message,source:source(pages)});
  const entry=(id,label,cost,pages='79-81')=>ledger.push({id,label,cost,slots:0,source:source(pages)});
- const coverage={complete:false,scope:'Microbot construction with implemented zero-slot catalogue',gaps:[{id:'micro-options',message:'Additional zero-slot equipment, self-destruct prices and swarm operations are not implemented.',source:source('79-81')},{id:'micro-brain-conflict',message:'Advanced brain table p81 differs from ordinary p66; a recorded interpretation is required.',source:source('66,81')}]};
+ const coverage={complete:false,scope:'Microbot construction with implemented zero-slot catalogue',gaps:[{id:'micro-options',message:'Parameterized zero-slot installations and operational swarm coordination remain outside this microbot path.',source:source('79-81')},{id:'micro-brain-conflict',message:'Advanced brain table p81 differs from ordinary p66; a recorded interpretation is required.',source:source('66,81')}]};
  const finish=totals=>{const status=diagnostics.some(d=>d.severity==='error')?'invalid':diagnostics.some(d=>d.severity==='blocker')?'blocked':'verified';return{costLabel:'Construction cost',status,diagnostics,ledger,totals:status==='verified'?totals:null,coverage};};
  for(const id of Array.isArray(design.special?.options)?design.special.options:[]){const option=OPTIONS.find(o=>o.id===id);if(option&&!microEligible(option))issue('error','MICRO_OPTION_ELIGIBILITY','special.options','This option is slotted, body-ineligible or outside the verified microbot zero-slot set.','80');}
  if(diagnostics.some(d=>d.severity==='error'))return finish(null);
  try{validateSpecialFields('microbot',design.special);}catch(e){issue('error','SCHEMA','special',e.message);return finish(null);}
  const s=design.special,tl=design.techLevel,b=MICRO_BRAINS.find(b=>b.id===s.brain),l=LOCOMOTION.find(l=>l.id===s.locomotion),core=CORE_PACKAGES.find(p=>p.id===s.corePackage);
  if(tl<8)issue('error','MICRO_TL','techLevel','Microbots require TL8 or later.');
- const masses=[1000,500,250,125,60,30,15,8,4,2];const minMass=masses[Math.max(0,Math.min(9,tl-8))];
- if(s.massMg<minMass)issue('error','MICRO_MASS','special.massMg','Mass is below the minimum for this technology.');
- if(tl>17)issue('warning','MICRO_HIGH_TL_MASS','special.massMg','Minimum mass uses the last printed table row (TL17); smaller higher-TL extrapolations are not assumed.');
+ const masses=[1000,500,250,125,60,30,15,8,4,2];const minMass=tl>=19?null:masses[Math.max(0,Math.min(9,tl-8))],massMg=s.massMg/(s.massUnit==='microgram'?1000:1);
+ if(s.massUnit==='microgram'&&tl<19)issue('error','MICRO_SUBMILLIGRAM_TL','special.massUnit','Sub-milligram microbots require TL19.','105');
+ if(minMass!==null&&massMg<minMass)issue('error','MICRO_MASS','special.massMg','Mass is below the minimum for this technology.');
+ if(tl===18)issue('warning','MICRO_HIGH_TL_MASS','special.massMg','Minimum mass uses the last printed table row (TL17); smaller higher-TL extrapolations are not assumed.');
  if(l.tl>tl)issue('error','MICRO_LOCOMOTION_TL','special.locomotion','Locomotion exceeds design technology.');
  if(l.id==='aeroplane')issue('blocker','MICRO_AEROPLANE_CONFLICT','special.locomotion','Microbots allow locomotion options generally, but aeroplane movement requires vehicle movement, which microbots prohibit. Referee reconciliation is required.','17,80');
  if(l.id==='thruster')issue('blocker','MICRO_THRUSTER_PRIMARY','special.locomotion','Microbot general locomotion permission conflicts with the ordinary primary-thruster restriction; source reconciliation is required.','17,80');
@@ -294,7 +310,8 @@ function evaluateMicrobot(design){
  }
  const zeroBWAllowance=b.rank>=2?b.bandwidth:0;if(zeroBW>zeroBWAllowance)bw+=zeroBW-zeroBWAllowance;
  if(bw>b.bandwidth)issue('error','MICRO_BANDWIDTH','special','Intellect and software exceed inherent bandwidth; microbots cannot add memory modules.','67,80-81');
- let zeroCount=s.arms+(s.environment==='none'?0:1)+s.radiationLevels;
+ let zeroCount=s.arms+(s.environment==='none'?0:1)+s.radiationLevels+(s.selfDestruct==='none'?0:1);
+ if(s.selfDestruct!=='none'){const destructCost=s.selfDestruct==='defensive'?250:500;hardware+=destructCost;entry('micro-self-destruct','Microbot '+s.selfDestruct+' self-destruct',destructCost,'53,80-81');if(s.selfDestruct==='offensive'&&massMg<=1000)issue('error','MICRO_OFFENSIVE_MASS','special.massMg','Offensive microbot self-destruct requires mass strictly above one gram.','81');issue('warning','MICRO_SELF_DESTRUCT_PRICE','special.selfDestruct','Price combines the p53 per-Base-Slot rate with p80 half-Base-Slot pricing; p81 supplies miniature effects and no separate price row.','53,80-81');}
  const equipment=evaluateEquipment({kind:'microbot',techLevel:tl,selections:{chassis:{size:'size-0'},physical:{options:s.options,defaultSuite:[],optionParameters:{},optionInstances:[],armourRemoved:false,vehicleSpeed:false,powerPacks:0,powerMode:'conventional'}}},MICRO_OPTIONS,.5);
  diagnostics.push(...equipment.diagnostics.map(d=>({...d,path:d.path.replace(/^physical/,'special')})));
  hardware+=equipment.cost;zeroCount+=equipment.installed.reduce((n,o)=>n+o.quantity,0);
@@ -308,13 +325,13 @@ function evaluateMicrobot(design){
  hardware*=protectionMultiplier;
  const endurance=Math.round(l.endurance*(tl>=15?2:tl>=12?1.5:1)*(s.efficiency==='improved'?2:1)*(1-s.speedIncrease*.1));
  issue('warning','MICRO_SCOPE','coverage','Checks the implemented microbot table and selected zero-slot hardware, not every Handbook device. No default suite, secondary locomotion, armour, memory module or power pack is included.');
- return finish({cost:hardware+software,slots:{base:0,capacity:0,used:0,remaining:0},bandwidth:{inherent:b.bandwidth,capacity:b.bandwidth,used:bw,remaining:b.bandwidth-bw},zeroSlot:{allowance:tl,used:zeroCount,overflow:0},zeroBandwidth:{allowance:zeroBWAllowance,used:zeroBW,overflow:Math.max(0,zeroBW-zeroBWAllowance)},hits:1,armour:0,tacticalSpeed:speed,endurance,intelligence,skills:installed,manipulators:Array.from({length:s.arms},(_,i)=>({id:'micro-'+(i+1),size:0,strength:0,dexterity:armDEX})),traits:['Small (-4)',...l.traits,...equipment.traits],microbot:{massMg:s.massMg,minMassMg:minMass,hardwareCost:hardware,softwareCost:software,protectionMultiplier}});
+ return finish({cost:hardware+software,slots:{base:0,capacity:0,used:0,remaining:0},bandwidth:{inherent:b.bandwidth,capacity:b.bandwidth,used:bw,remaining:b.bandwidth-bw},zeroSlot:{allowance:tl,used:zeroCount,overflow:0},zeroBandwidth:{allowance:zeroBWAllowance,used:zeroBW,overflow:Math.max(0,zeroBW-zeroBWAllowance)},hits:1,armour:0,tacticalSpeed:speed,endurance,intelligence,skills:installed,manipulators:Array.from({length:s.arms},(_,i)=>({id:'micro-'+(i+1),size:0,strength:0,dexterity:armDEX})),traits:['Small (-4)',...l.traits,...equipment.traits],microbot:{massMg,minMassMg:minMass,selfDestruct:s.selfDestruct==='none'?null:{type:s.selfDestruct,damageDice:1,target:s.selfDestruct==='defensive'?'self':'direct-contact target'},hardwareCost:hardware,softwareCost:software,protectionMultiplier}});
 }
 
 
 
 const nanoControls=[
- {...select('packageType','Nanorobot medical package',[['pharmaceutical','Pharmaceutical'],['physical','Physical enhancement'],['mental','Mental enhancement'],['anti-ageing','Anti-ageing'],['regenerative','Regenerative'],['construction-basic','Construction (basic)'],['construction-improved','Construction (improved)'],['excavation','Environmental excavation'],['soil','Soil enrichment'],['cleanup','Environmental cleanup']],'pharmaceutical'),stage:'chassis'},
+ {...select('packageType','Nanorobot medical package',[['pharmaceutical','Pharmaceutical'],['physical','Physical enhancement'],['mental','Mental enhancement'],['anti-ageing','Anti-ageing'],['regenerative','Regenerative'],['construction-basic','Construction (basic)'],['construction-improved','Construction (improved)'],['excavation','Environmental excavation'],['soil','Soil enrichment'],['cleanup','Environmental cleanup'],['construction-enhanced','Nanoconstructor (enhanced)'],['construction-advanced','Nanoconstructor (advanced)'],['construction-superior','Nanoconstructor (superior)'],['distributed-conscious','Distributed conscious swarm']],'pharmaceutical'),stage:'chassis'},
  {...number('packages','Packages in this purchase',1,100,1),stage:'chassis'},
  {...number('otherActivePackages','Other active medical packages already in body',0,100,0),stage:'physical'},
  {...number('attributeIncrease','Requested attribute increase',1,3,1),stage:'physical'},
@@ -341,6 +358,7 @@ function evaluateNanorobot(design){
  const finish=totals=>{const status=diagnostics.some(d=>d.severity==='error')?'invalid':diagnostics.some(d=>d.severity==='blocker')?'blocked':'verified';return{costLabel:design.kind==='nanorobot'?'Selected package cost':'Interface cost only',status,diagnostics,ledger,coverage,totals:status==='verified'?totals:null};};
  try{validateSpecialFields('nanorobot',design.special);}catch(e){issue('error','SCHEMA','special',e.message);return finish(null);}
  const s=design.special,tl=design.techLevel;
+ if(['construction-enhanced','construction-advanced','construction-superior','distributed-conscious'].includes(s.packageType))return evaluateHighNano(design);
  if(tl<13)issue('error','NANO_TL','techLevel','Practical medical nanorobot packages require TL13.');
  if(['construction-basic','construction-improved','excavation','soil','cleanup'].includes(s.packageType))return evaluateNanoSwarm(design);
  const price={pharmaceutical:20000,physical:20000,mental:40000,'anti-ageing':80000,regenerative:20000}[s.packageType];
@@ -432,15 +450,19 @@ export function getSpecialStageNotes(kind){
  if(kind==='missile')Object.assign(common,{chassis:'Choose a standard carrier. Custom robot warheads require a separate construction record.',locomotion:'Carrier propulsion is fixed: primary and secondary thrusters with vehicle movement. Flight burn is measured in rounds.',physical:'Check custom warhead Size, base Slots and payload capacity. Removing the supplied warhead gives no credit.',brain:'Factory carrier uses a primitive homing brain and drone interface. A different control arrangement needs separately priced alterations.',skills:'A single controlling brain requires Pilot; a dedicated homing brain requires an interface/controller link.',finalisation:'Shown cost covers carrier procurement only. Long-range variant pricing remains unresolved; do not substitute the standard total.'});
  if(kind==='avatar')Object.assign(common,{chassis:'Choose a robotic avatar link or biological interface implant. Biological implants do not include a replacement body.',locomotion:'Robotic avatar bodies use their selected locomotion. Biological implant estimates rely on an external host body.',physical:'Robotic links require communications; biological implants require an existing neural link and any stated external hardware.',brain:'Robotic controller and receiver brains must be Advanced or better. Biological interfaces retain a biological host/controller rather than purchasing a robot brain.',skills:'Remote software fits the receiving robot bandwidth. Biological control interfaces do not grant learned skills.',finalisation:'Robotic links are counted in the body construction total. Biological-interface cost covers the implant only; control and mental-effect checks remain operational requirements.'});
  if(kind==='drone')Object.assign(common,{brain:'The drone may have no onboard brain. Operator interface hardware is external and its price is not added to the robot.',skills:'A brainless drone runs no onboard skill software; its operator and controller are separate requirements.'});
- return Object.fromEntries(Object.entries(common).map(([stage,description])=>[stage,{description,source:source(pages)}]));
+ const notes=Object.fromEntries(Object.entries(common).map(([stage,description])=>[stage,{description,source:source(pages)}]));
+ if(kind==='cyborg'){notes.physical.categorize=false;notes.physical.description='Select individual cybernetic parts and their equipment, or reserve capacity for a full-body conversion interface. Costs exclude the separately constructed recipient body.';}
+ if(kind==='biological')notes.physical={description:'Choose genome-dependent robot options or separately priced personal cybernetic augmentations.',source:source('88-94'),categories:[['chassis-modifications','Chassis Modifications'],['locomotive-modifications','Locomotive Modifications'],['manipulator-modification','Manipulator Modification'],['default-suites','Default Suites'],['zero-slot-options','Zero-Slot Options'],['slot-cost-options','Slot Cost Options'],['weapons','Weapons'],['cybernetics','Cybernetic augmentations']].map(([id,label])=>({id,label}))};
+ return notes;
 }
 
 
-const AVATAR_CONTROLLERS=[['basic',11,2,1,50000],['improved',13,1,2,200000],['enhanced',14,1,4,500000],['advanced',16,1,8,1000000]];
+const AVATAR_CONTROLLERS=[['basic',11,2,1,50000],['improved',13,1,2,200000],['enhanced',14,1,4,500000],['advanced',16,1,8,1000000],['superior',18,1,64,5000000]];
 const avatarControls=[
+ {...select('superiorControllerSlots','Superior controller Slots interpretation',[['unresolved','Not resolved: p104 omits Slots'],['inherited-one','Referee: retain preceding one-Slot controller size']],'unresolved'),stage:'brain',visibleWhen:{field:'controllerTier',equals:'superior'},source:source('95,104')},
  {...select('avatarRole','Avatar link role',[['controller','Controller robot'],['receiver','Receiver / remote body']],'receiver'),stage:'chassis'},
  {...select('controllerTier','Avatar controller tier',AVATAR_CONTROLLERS.map(([id,tl])=>[id,`${id} (TL${tl})`]),'basic'),stage:'brain',visibleWhen:{field:'avatarRole',equals:'controller'}},
- {...number('controlledHosts','Simultaneously controlled hosts',1,8,1),stage:'brain',visibleWhen:{field:'avatarRole',equals:'controller'}},
+ {...number('controlledHosts','Simultaneously controlled hosts',1,64,1),stage:'brain',visibleWhen:{field:'avatarRole',equals:'controller'}},
  {...number('remoteSkillBandwidth','Bandwidth used by remote controller software',0,100,0),stage:'skills',visibleWhen:{field:'avatarRole',equals:'receiver'}}
 ].map(c=>({...c,source:source('95-96')}));
 export function evaluateAvatarLink(design,{brainRank,hasTransceiver,bandwidthCapacity}){
@@ -450,6 +472,7 @@ export function evaluateAvatarLink(design,{brainRank,hasTransceiver,bandwidthCap
  let minTL,cost,slots,maxHosts=null,bufferDays=null;
  if(s.avatarRole==='controller'){
   const row=AVATAR_CONTROLLERS.find(r=>r[0]===s.controllerTier);[,minTL,slots,maxHosts,cost]=row;
+  if(s.controllerTier==='superior'&&s.superiorControllerSlots!=='inherited-one')issue('blocker','AVATAR_SUPERIOR_SLOTS','special.superiorControllerSlots','p104 provides TL18, 64 hosts and Cr5M, but no Slot count. Resolve the inherited one-Slot interpretation explicitly.');
   if(s.controlledHosts>maxHosts)issue('error','AVATAR_HOST_LIMIT','special.controlledHosts','Selected controller tier cannot control this many hosts simultaneously.');
  }else{
   minTL=11;cost=10000;slots=1;bufferDays=7;
@@ -460,6 +483,18 @@ export function evaluateAvatarLink(design,{brainRank,hasTransceiver,bandwidthCap
  return{diagnostics,cost,slots,traits:['Avatar '+s.avatarRole,'No drone multitasking DM'],avatar:{role:s.avatarRole,maxHosts,bufferDays,remoteSkillBandwidth:s.avatarRole==='receiver'?s.remoteSkillBandwidth:null},source:source('95-96')};
 }
 
+
+function evaluateHighNano(design){
+ const s=design.special,rows={'construction-enhanced':[18,100000,'Complex electronics and simple biomechanical structures'],'construction-advanced':[20,200000,'Living beings and any robot brain'],'construction-superior':[23,500000,'Self-replicating nanoswarm initiator'],'distributed-conscious':[22,200000,'Conscious interconnected nanorobot swarm']};
+ const [minTL,price,capability]=rows[s.packageType],distributed=s.packageType==='distributed-conscious',diagnostics=[],volumeLitres=s.packages*.1;
+ const issue=(severity,code,message)=>diagnostics.push({severity,code,path:'special.packageType',message,source:source('105')});
+ if(design.techLevel<minTL)issue('error','NANO_HIGH_TL','Selected high-technology package requires TL'+minTL+'.');
+ if(s.environment!=='none'||s.radiationLevels)issue('blocker','NANO_HIGH_PROTECTION','The high-technology table does not establish a price basis for extending ordinary package protection multipliers.');
+ if(!distributed&&s.packageType!=='construction-superior'&&s.packages>s.controllerMaxTasks)issue('error','NANO_CONTROLLER_TASKS','Purchased 0.1-litre bags exceed the supplied simultaneous controller task capacity.');
+ const cost=price*(distributed?s.packages:volumeLitres),status=diagnostics.some(d=>d.severity==='error')?'invalid':diagnostics.some(d=>d.severity==='blocker')?'blocked':'verified';
+ issue('warning','NANO_HIGH_SCOPE','This is the printed high-technology acquisition price and capability, not a validated production facility, brain design or operational swarm simulation.');
+ return {status,costLabel:'Selected high-tech package cost',diagnostics,ledger:[{id:'nano-high-package',label:capability,cost,slots:0,source:source('105')}],coverage:{complete:false,scope:'High-technology nanorobot acquisition and stated capability',gaps:[{id:'nano-high-production',message:'p105 does not specify working lifetime, production speed or complete distributed-brain bandwidth/INT construction accounting.',source:source('105')}],operationalDependencies:[{id:'nano-high-control',message:'External controller and feedstock remain separate except for the superior self-replicating initiator. Autonomous growth is not simulated.',source:source('105')}]},totals:status==='verified'?{cost,slots:null,bandwidth:null,traits:[capability],skills:[],manipulators:[],nanorobot:{packageType:s.packageType,packages:s.packages,volumeLitres,costBasis:distributed?'per package':'per litre',unitPrice:price,capability,lifeHours:null,productionSlotsPerHour:null}}:null};
+}
 
 function evaluateNanoSwarm(design){
  const s=design.special,tl=design.techLevel,diagnostics=[],ledger=[];
@@ -539,6 +574,10 @@ const cyborgControls=[
  {...select('surgeryState','Conversion procedure state',[['planned','Planned / not yet resolved'],['successful','Successful procedure recorded']],'planned'),stage:'finalisation'},
  {...number('surgeryDurationDie','Recorded surgery duration D6',1,6,1),stage:'finalisation'}
 ].map(c=>({...c,source:source('92-93')}));
+function evaluateIndividualAugments(design){
+ const result=evaluateAugmentations(design),status=result.diagnostics.some(d=>d.severity==='error')?'invalid':result.diagnostics.some(d=>d.severity==='blocker')?'blocked':'verified';
+ return {status,costLabel:'Selected augmentations only',diagnostics:result.diagnostics,ledger:result.ledger,coverage:result.coverage,notApplicableMetrics:['slots','bandwidth'],totals:status==='verified'?{cost:result.cost,slots:null,bandwidth:null,augmentations:result.augmentations,sharedInterfaces:result.sharedInterfaces,augmentationEffects:result.effects,traits:[],skills:[],manipulators:[]}:null};
+}
 function evaluateCyborgConversion(design){
  const diagnostics=[],ledger=[];const issue=(severity,code,path,message)=>diagnostics.push({severity,code,path,message,source:source('92-93')});
  const coverage={complete:false,scope:'Full-body conversion interface and procedure requirements only; replacement body and living character not validated',gaps:[{id:'cyborg-body',message:'Robot, vehicle or ship body, power and fittings need a separate valid construction record.',source:source('92-93')},{id:'cyborg-character',message:'Organic INT, EDU, learned skills, mental state and procedure results are retained from the biological character, not replaced by robot software.',source:source('92-93')}]};
@@ -580,7 +619,7 @@ export function evaluateDroneInterface(design,{hasDroneInterface,hasCommunicatio
 }
 export function evaluateSpecialDesign(design){
  const result=evaluateSpecialDesignRaw(design),t=result.totals;
- result.notApplicableMetrics=(['clone','nanorobot','vehicle-brain','ship-brain','missile'].includes(design.kind)||usesStandaloneSpecialPath(design))?['slots','bandwidth']:design.kind==='cyborg'?['bandwidth']:[];
+ result.notApplicableMetrics=(['clone','nanorobot','vehicle-brain','ship-brain','missile'].includes(design.kind)||usesStandaloneSpecialPath(design))?['slots','bandwidth']:design.kind==='cyborg'?(design.special?.cyborgMode==='augments'?['slots','bandwidth']:['bandwidth']):[];
  result.summaryMetrics=[];
  if(!t)return result;
  const metric=(label,value,unit)=>{if(value!==null&&value!==undefined)result.summaryMetrics.push({label,value,...(unit?{unit}: {})});};
