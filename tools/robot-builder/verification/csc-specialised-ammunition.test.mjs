@@ -111,3 +111,9 @@ test('modified source scopes remain conditional and unsupported retained high-ca
  const invalid=direct(record({highCapacityAmmunitionModification:'baton'}));assert.ok(has(invalid,'CSC_HIGH_CAPACITY_UNSUPPORTED'));assert.equal(invalid.weapons[0].cost,null);assert.equal(invalid.weapons[0].highCapacityAmmunitionModification,'baton');
  const bad=record({ammunitionOverrides:[{copyIndex:1,...weaponRecordPresentation(record(),1).ammunitionCustomization.materializedValue,weaponManufactureTL:12}]});assert.throws(()=>validateWeapons([bad]));
 });
+
+
+test('larger modified product lists survive source changes without expanding ordinary ARL schema limits',()=>{
+ const r=record({alternateMagazineSupplies:['armour-piercing','solid-shot','baton'].map(modification=>({sourceWeaponId:'csc-gauss-sniper-rifle',variant:'standard',modification,extraMagazines:0,autoloadMagazines:0,storageId:'none'}))});
+ assert.doesNotThrow(()=>validateWeapons([r]));r.weaponId='csc-arl-standard';assert.doesNotThrow(()=>validateWeapons([r]));assert.ok(has(direct(r),'MAGAZINE_SOURCE_INCOMPATIBLE'));assert.equal(direct(r).weapons[0].cost,null);
+});

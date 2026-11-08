@@ -267,7 +267,8 @@ export function validateWeapons(records){
  if(w.initialMagazineType!==undefined&&!['standard','high-capacity'].includes(w.initialMagazineType))throw new TypeError('Invalid initial magazine type.');
  if(w.initialMagazineSourceId!==undefined&&(typeof w.initialMagazineSourceId!=='string'||!/^[-a-z0-9]{1,80}$/.test(w.initialMagazineSourceId)))throw new TypeError('Invalid initial magazine source.');
  if(w.alternateMagazineSupplies!==undefined){
-  if(!Array.isArray(w.alternateMagazineSupplies)||w.alternateMagazineSupplies.length>12)throw new TypeError('Expected up to twelve additional magazine products.');
+  const maximumProducts=specialisedAmmunitionCategory(WEAPONS.find(item=>item.id===w.weaponId))||recordUsesSpecialisedAmmunition(w)?12:2;
+  if(!Array.isArray(w.alternateMagazineSupplies)||w.alternateMagazineSupplies.length>maximumProducts)throw new TypeError('Too many additional magazine products for this inventory scope.');
   const products=new Set();
   for(const item of w.alternateMagazineSupplies){
    assertKeys(item,['sourceWeaponId','variant','modification','extraMagazines','autoloadMagazines','storageId'],'alternateMagazineSupplies');
