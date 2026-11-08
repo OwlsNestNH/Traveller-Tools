@@ -1259,6 +1259,7 @@ function apply(state,command,rolls) {
   const record=assertGamesContext(state),decisions=gamesDecisionInput(payload),outcome=gamesCompetition(record,decisions);
   need(outcome.resolved&&outcome.completed,'Record every required Games source decision: '+outcome.unresolved.map(d=>d.key).join(', ')+'.');
   const external=gamesExternalEffects(state,payload);record.decisions=copy(outcome.decisions);record.ordinaryEventEffects=copy(external);
+  if(!state.coverage.includes('psionic-games'))state.coverage.push('psionic-games');
   record.competition=copy(outcome);record.audit=copy(outcome.audit);
   // No new career, ordinary skill roll, survival check or advancement is inserted.
   queueEffects(state,sourcedEffects(outcome.effects,PSIONIC_GAMES_SOURCE),'psionic-games-complete',rolls);

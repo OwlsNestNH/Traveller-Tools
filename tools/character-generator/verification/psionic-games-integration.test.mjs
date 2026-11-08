@@ -350,3 +350,12 @@ test('import rejects rewritten original roll identity before applying a replay',
  entry.rolls[1].label='Mishap table';
  const result=api({operation:'import',raw:JSON.stringify(bad)});assert.equal(result.ok,false);assert.match(result.error.message,/Roll audit mismatch/);
 });
+
+test('accepted Games source rulings are listed in source-assisted coverage only on completion',()=>{
+ const pending=finalStage();assert.ok(!pending.state.coverage.includes('psionic-games'));
+ rejected(pending,'complete-psionic-games',{ordinaryEvents:rule('omit')},/source decision/);
+ assert.ok(!pending.state.coverage.includes('psionic-games'));
+ const done=run(pending,'complete-psionic-games',complete);
+ assert.equal(done.state.coverage.filter(kind=>kind==='psionic-games').length,1);
+ assert.deepEqual(project(importSession(exportSession(done.session))).state.coverage,done.state.coverage);
+});
