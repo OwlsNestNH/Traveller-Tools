@@ -150,7 +150,7 @@ test('CSC energy rejects Core accessories and unsupported ammunition/launcher co
 });
 
 test('CSC energy imports reject unresolved weapons, free power overrides and alternate-effect injection',()=>{
- for(const patch of [{weaponId:'csc-ion-rifle-14'},{weaponId:'csc-maser-pistol'},{weaponId:'csc-solar-beam-rifle'},{powerConnection:'robot'},{rechargeHours:0},{initialIncluded:true},{magazineCost:0},{ammunition:'chemical-cartridge'},{conditionalEffects:{attackDM:99}},{damage:'3D',traits:['Blast 3']},{sourceFamily:'core-2022'}]){
+ for(const patch of [{weaponId:'csc-matter-disintegrator-18'},{weaponId:'csc-maser-pistol-16'},{weaponId:'csc-solar-beam-rifle-16'},{powerConnection:'robot'},{rechargeHours:0},{initialIncluded:true},{magazineCost:0},{ammunition:'chemical-cartridge'},{conditionalEffects:{attackDM:99}},{damage:'3D',traits:['Blast 3']},{sourceFamily:'core-2022'}]){
   const d=design('stun-blaster');Object.assign(d.selections.physical.weapons[0],patch);assert.throws(()=>importDesign(JSON.stringify(d)),TypeError);
  }
 });

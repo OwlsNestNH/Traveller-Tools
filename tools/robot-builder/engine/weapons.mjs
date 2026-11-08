@@ -5,6 +5,7 @@ import {CSC_ENERGY_WEAPONS} from './csc-energy-weapons.mjs';
 import {CSC_HEAVY_WEAPONS} from './csc-heavy-weapons.mjs';
 import {CSC_MELEE_WEAPONS} from './csc-melee-weapons.mjs';
 import {CSC_STANDARD_LAUNCHERS,CSC_DIRECT_PAYLOADS} from './csc-launcher-payloads.mjs';
+import {CSC_SPECIAL_ENERGY_WEAPONS} from './csc-special-energy-weapons.mjs';
 import {CSC_WEAPON_ACCESSORIES,cscAccessoryEligibility,evaluateCscAccessories} from './csc-weapon-accessories.mjs';
 const book=pages=>({book:'Robot Handbook',edition:'Mongoose 2022',pages});
 const core=pages=>({book:'Core Rulebook Update 2022',edition:'Mongoose 2022',pages});
@@ -86,7 +87,7 @@ for(const w of WEAPONS){
  if(!w.weaponFamily)throw new TypeError('Weapon requires an explicit source family: '+w.id);
  w.compatibility={accessoryRules:'core-2022',associatedLauncherRules:'core-2022',attachedLauncher:RIFLE_WEAPON_IDS.includes(w.id),specialisedAmmunitionRules:null};
 }
-WEAPONS.push(...clone(CSC_SLUG_WEAPONS),...clone(CSC_ENERGY_WEAPONS),...clone(CSC_HEAVY_WEAPONS),...clone(CSC_MELEE_WEAPONS),...clone(CSC_STANDARD_LAUNCHERS),...clone(CSC_DIRECT_PAYLOADS));
+WEAPONS.push(...clone(CSC_SLUG_WEAPONS),...clone(CSC_ENERGY_WEAPONS),...clone(CSC_HEAVY_WEAPONS),...clone(CSC_MELEE_WEAPONS),...clone(CSC_STANDARD_LAUNCHERS),...clone(CSC_DIRECT_PAYLOADS),...clone(CSC_SPECIAL_ENERGY_WEAPONS));
 export const MOUNTS={small:{slots:1,cost:500,armSize:3},medium:{slots:2,cost:1000,armSize:5},heavy:{slots:10,cost:5000,armSize:7},vehicle:{slots:15,cost:10000,armSize:null}};
 export const FIRE_CONTROL=[{id:'none',label:'No fire control',tl:0,cost:0,dm:0},...['Basic','Improved','Enhanced','Advanced'].map((label,i)=>({id:label.toLowerCase(),label,tl:6+i*2,cost:[10000,25000,50000,100000][i],dm:i+1}))];
 const STORAGE_IDS=['storage-compartment','refrigerated-storage-compartment','hazardous-material-storage-compartment'];
@@ -192,8 +193,15 @@ export function evaluateWeapons(design,manipulators,skills,installedEquipment=[]
  if(w.initialIncluded&&!w.directPayload&&!record.initialMagazines)add('error','INCLUDED_POWER_PACK',record.id,'The source price includes its initial power pack; no removal discount is defined.');
  if(w.interpretation&&!(w.id==='advanced-combat-rifle'&&(auxiliaryMode==='integral-acr'||bothLaunchers)))add('warning','WEAPON_SOURCE_INTERPRETATION',record.id,w.interpretation);
  if(record.autoload&&design.techLevel<6)add('error','AUTOLOADER_TL',record.id,'Autoloaders require TL6.');
- const mountSlots=held?0:mount.slots*n*(record.autoload?2:1),fcsSlots=fcs.id==='none'?0:1,ammoCost=w.magazineCost*((record.autoload?0:record.extraMagazines)+(!w.initialIncluded?record.initialMagazines:0))*n;
- const itemCost=(unsupportedAccessories||unsupportedLaunchers||unsupportedAmmunition||w.grenade&&!ammo||auxiliaryMode!=='none'&&!auxiliaryAmmo||bothLaunchers&&!integralAmmo)?null:auxiliaryCost+looseCost+(w.cost+accessoryCost)*n+(held?0:mount.cost*n)+fcs.cost+ammoCost+(record.autoload?2*w.magazineCost*record.extraMagazines*n:0),itemSlots=mountSlots+fcsSlots;
+ const replacementAmmoUnsupported=w.ammunitionAccounting?.replacementPurchasesSupported===false&&(record.autoload||record.extraMagazines>0);
+ if(replacementAmmoUnsupported)add('blocker','CSC_REPLACEMENT_AMMUNITION_UNAVAILABLE',record.id,'Replacement packs, spare ammunition purchases and autoloading are not source-defined for this weapon supply. Its included supply remains available without inventing a replacement price.',w.source);
+ const mountSlots=held?0:mount.slots*n*(record.autoload?2:1),fcsSlots=fcs.id==='none'?0:1;
+ const purchasedMagazines=(record.autoload?0:record.extraMagazines)+(!w.initialIncluded?record.initialMagazines:0);
+ const ammoCost=purchasedMagazines===0?0:Number.isFinite(w.magazineCost)?w.magazineCost*purchasedMagazines*n:null;
+ const autoloadCost=!record.autoload?0:Number.isFinite(w.magazineCost)?2*w.magazineCost*record.extraMagazines*n:null;
+ const unknownAmmunitionCost=ammoCost===null||autoloadCost===null;
+ if(unknownAmmunitionCost&&!replacementAmmoUnsupported&&!(w.grenade&&!ammo))add('blocker','WEAPON_AMMUNITION_PRICE_UNRESOLVED',record.id,'The required ammunition or power-pack purchase has no defined price; no zero-cost purchase is assumed.',w.source);
+ const itemCost=(unsupportedAccessories||unsupportedLaunchers||unsupportedAmmunition||replacementAmmoUnsupported||unknownAmmunitionCost||w.grenade&&!ammo||auxiliaryMode!=='none'&&!auxiliaryAmmo||bothLaunchers&&!integralAmmo)?null:auxiliaryCost+looseCost+(w.cost+accessoryCost)*n+(held?0:mount.cost*n)+fcs.cost+ammoCost+autoloadCost,itemSlots=mountSlots+fcsSlots;
  if(itemCost!==null)cost+=itemCost;slots+=itemSlots;ledger.push({id:'weapon-'+record.id,label:w.label,cost:itemCost,slots:itemSlots,source:book('61-64'),weaponSource:w.source});
  const software=skills.filter(s=>s.id===w.skill||s.id===w.skill+':'+w.speciality||s.speciality===w.speciality&&s.id.startsWith(w.skill)).reduce((v,s)=>Math.max(v,s.level),-3);
  const dex=arm?(arm.dexterity===0?-3:arm.dexterity<=2?-2:arm.dexterity<=5?-1:arm.dexterity<=8?0:arm.dexterity<=11?1:arm.dexterity<=14?2:3):null;
