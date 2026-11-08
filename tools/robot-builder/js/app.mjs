@@ -68,7 +68,7 @@ const sourceText = sourceReference;
 
 function selectChoices(select, choices, selected, placeholder = 'Choose an option') {
   const prompt = option('', placeholder); prompt.disabled = true;
-  select.replaceChildren(prompt);
+  select.replaceChildren(...((choices||[]).some(choice=>choice.id==='')?[]:[prompt]));
   for (const choice of choices || []) select.append(option(choice.id, choiceLabel(choice)));
   if (selected !== undefined && selected !== null && selected !== '' && ![...select.options].some(item => item.value === String(selected))) {
     select.append(option(selected, `${selected} · unavailable selection`));
@@ -357,7 +357,7 @@ function renderControl(control, choicesOverride) {
           targetFor(item).append(wrapper);continue;
         }
         const sharedLabel=!onlyFields&&presentation.ammunitionCustomization?.mode==='custom'&&presentation.ammunitionCustomization.fields.includes(item.field)?'Shared · ':'';
-        const row=el('label',sharedLabel+(item.labelBy?.values?.[record[item.labelBy.field]] || item.label || item.field));
+        const row=el('label',sharedLabel+(fieldView.label || item.labelBy?.values?.[record[item.labelBy.field]] || item.label || item.field));
         const fieldId=prefix+'-'+item.field;row.htmlFor=fieldId;
         let input;
 if(item.type==='multiselect'){
@@ -389,8 +389,8 @@ if(item.type==='multiselect'){
       }
       if(presentation.vehicleOption){
         const facts=presentation.vehicleOption;
-        grid.append(el('p','Cr '+facts.unitCost.toLocaleString()+' / '+facts.slotsPerInstallation+' Slots / Capacity '+facts.capacityPerInstallation+' per installation','wide help'));
-        grid.append(el('p',[facts.loadLabel,facts.replacementPriceLabel,...facts.conditionLabels].join(' · '),'wide help'));
+        grid.append(el('p','Cr '+facts.unitCost.toLocaleString()+' / '+facts.slotsPerInstallation+' Slots'+(facts.family==='discharger'?' / Capacity '+facts.capacityPerInstallation:'')+' per installation','wide help'));
+        grid.append(el('p',[facts.loadLabel,facts.replacementPriceLabel,...(facts.selectedFacts||[]).map(fact=>fact.label+': '+fact.value),...facts.conditionLabels].filter(Boolean).join(' · '),'wide help'));
         grid.append(el('p',sourceText(facts.source)+' · '+sourceText(facts.conversionSource),'wide source'));
       }
       const selection=presentation.magazineSupplySelection;
