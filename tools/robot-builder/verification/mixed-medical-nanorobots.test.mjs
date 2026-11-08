@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createDesign,updateDesign,applySelection,evaluateDesign,getCatalogue,exportDesign,importDesign,validateDesign} from '../engine/index.mjs';
+import {projectReview} from '../js/review-model.mjs';
 
 // Full Robot Handbook 2022 PDF, pp81,83-84,86; Core Update 2022 p9 characteristic definitions. Mixed records never assert application success.
 const record=(id,patch={})=>({id,packageType:'pharmaceutical',count:1,hardwareTL:13,role:'purchased-active',target:'unresolved',attributeIncrease:1,continuousTreatmentYears:0,pharmaceuticalPurpose:'',environment:'none',radiationLevels:0,...patch});
@@ -9,6 +10,15 @@ const make=(records,patch={},tl=15)=>base({medicalMode:'itemised',medicalPackage
 const evaluate=(records,patch={},tl=15)=>evaluateDesign(make(records,patch,tl));
 const mode=(d,value)=>applySelection(d,{stage:'chassis',field:'medicalMode',value});
 const has=(r,code)=>r.diagnostics.some(d=>d.code===code);
+
+test('medical selections use a medical heading rather than a software or training heading',()=>{
+ for(const d of [make([record('dose')]),make([record('unknown-target',{packageType:'physical'})])]){
+  const review=projectReview(d,getCatalogue(d),evaluateDesign(d));
+  const selected=review.sections.find(s=>s.id==='selected-medical-packages');
+  assert.equal(selected.title,'Selected medical packages');assert.equal(selected.rows.length,1);
+  assert.ok(!review.sections.some(s=>s.id==='selected-custom-skills'));
+ }
+});
 
 test('pre-extension imports keep every legacy field and evaluation unchanged',()=>{
  for(const packageType of ['pharmaceutical','physical','mental','regenerative','anti-ageing','nanotech-defence','construction-basic','construction-improved','excavation','soil','cleanup']){

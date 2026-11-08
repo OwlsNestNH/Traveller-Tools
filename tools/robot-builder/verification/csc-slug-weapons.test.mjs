@@ -119,7 +119,7 @@ test('CSC source conflicts retain the selected table values and leave Core value
 });
 
 test('every CSC row rejects every Core accessory without applying its cost or effects',()=>{
- for(const [id] of expected)for(const accessory of WEAPON_ACCESSORIES){
+ for(const [id] of expected)for(const accessory of WEAPON_ACCESSORIES.filter(a=>a.sourceFamily==='core-2022')){
   const result=direct(id,{accessories:[accessory.id]});assert.ok(has(result,'CSC_ACCESSORIES_UNSUPPORTED'),id+' '+accessory.id);assert.equal(result.weapons[0].cost,null);assert.deepEqual(result.weapons[0].accessoryEffects,[]);assert.deepEqual(result.weapons[0].traits,WEAPONS.find(w=>w.id==='csc-'+id).traits);
  }
  const invalid=run('big-game-rifle',{accessories:['gyrostabiliser']});assert.equal(invalid.status,'invalid');assert.equal(invalid.totals,null);
@@ -150,7 +150,7 @@ test('CSC catalogues, direct engine output, API and review retain detached condi
  choice.conditionalEffects.reload.actions=999;choice.compatibility.accessoryRules='core-2022';choice.source.pages='bad';
  const raw=weaponControl(d).itemFields.find(f=>f.field==='weaponId').choices.find(w=>w.id==='csc-coach-pistol');raw.conditionalEffects.alternativeDischarge.damage='999D';
  const evaluated=direct('coach-pistol');evaluated.weapons[0].conditionalEffects.reload.actions=999;evaluated.weapons[0].source.pages='bad';evaluated.weapons[0].ammunitionAccounting.magazinePriceSource.pages='bad';
- const original=WEAPONS.find(w=>w.id==='csc-coach-pistol');assert.equal(original.conditionalEffects.reload.actions,1);assert.equal(original.conditionalEffects.alternativeDischarge.damage,'4D');assert.equal(original.source.pages,'142-143');assert.equal(original.ammunitionAccounting.magazinePriceSource.pages,'143');assert.equal(original.compatibility.accessoryRules,null);
+ const original=WEAPONS.find(w=>w.id==='csc-coach-pistol');assert.equal(original.conditionalEffects.reload.actions,1);assert.equal(original.conditionalEffects.alternativeDischarge.damage,'4D');assert.equal(original.source.pages,'142-143');assert.equal(original.ammunitionAccounting.magazinePriceSource.pages,'143');assert.equal(original.compatibility.accessoryRules,'csc-2023');
  const api=createRobotApi({storage:{getItem:()=>null},locks:{request:async(name,callback)=>callback()}});api.importDesign(exportDesign(d));
  const view=api.getView(),weapon=view.evaluation.totals.weapons[0];assert.equal(weapon.conditionalEffects.alternativeDischarge.damage,'4D');assert.equal(weapon.weaponFamily,'pistol');assert.equal(weapon.ammunitionAccounting.initialMagazine,'separate-purchase');
  const details=view.review.sections.find(s=>s.id==='weapons').rows[0].details;assert.ok(details.some(r=>r.label==='Conditional Effects'&&r.value.includes('Significant')&&r.value.includes('4D')));assert.ok(details.some(r=>r.label==='Ammunition Accounting'&&r.value.includes('separate-purchase')));

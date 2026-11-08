@@ -208,7 +208,7 @@ export function projectReview(design, catalogue, evaluation) {
     const programs=computers.flatMap(item=>(item.generalComputer.programs||[]).map(program=>profileRow(`${item.label||'Computer'} / ${program.label}${program.subject?' ('+program.subject+')':''}`,`Purchased rating ${valueText(program.rating)} · ${program.active?'Running at rating '+valueText(program.runningBandwidth):'Stored, not running'}`,program,['parentComputer','program','rating','runningBandwidth','subject','databasePrice','expertUse'],'Program belongs to this computer. Any assistance or autonomous use remains subject to its stated conditions.')));
     if(programs.length)sections.push(section('computer-programs','Computer program states',programs));
   }
-  const selectedCustom=[];
+  const selectedCustom=[],selectedMedical=[];
   const recordChoice=(field,record)=>((field?.choicesBy?.values?.[record?.[field.choicesBy.field]])||field?.choices||[]).find(choice=>choice.id===record[field?.field]);
   for(const control of controls.filter(control=>control.type==='custom-packages'&&control.field!=='customPackages')){
     const records=control.target==='special'?design.special?.[control.field]:design.selections?.[control.stage]?.[control.field];
@@ -218,10 +218,11 @@ export function projectReview(design, catalogue, evaluation) {
       const detail=record[control.recordDetailField||'speciality'];
       const details=(control.itemFields||[]).filter(field=>present(record[field.field])&&visible(field.visibleWhen,record)).map(field=>row(field.label,recordChoice(field,record)?.label??record[field.field]));
       const summary=control.summaryFields?control.summaryFields.map(key=>{const field=control.itemFields.find(field=>field.field===key);return (field?.label||humanLabel(key))+': '+(recordChoice(field,record)?.label??valueText(record[key]));}).join(' · '):`Selected level ${valueText(record.level)}`;
-      selectedCustom.push({...row(name+(detail?' ('+detail+')':''),summary,control.source||recordChoice(nameField,record)?.source,control.label),details});
+      (control.field==='medicalPackages'?selectedMedical:selectedCustom).push({...row(name+(detail?' ('+detail+')':''),summary,control.source||recordChoice(nameField,record)?.source,control.label),details});
     }
   }
   if(selectedCustom.length)sections.push(section('selected-custom-skills','Selected programs and training',selectedCustom,{collapsed:true,note:'Selected records are retained even when construction is blocked. Checked effects and limits are shown separately.'}));
+  if(selectedMedical.length)sections.push(section('selected-medical-packages','Selected medical packages',selectedMedical,{collapsed:true,note:'Selected records are retained even when construction is blocked. Purchased and active totals are shown separately.'}));
   const skills = skillRows(totals?.skills);
   if (!totals) {
     const skillControl = controls.find(control => control.field === 'packages');

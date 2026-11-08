@@ -59,7 +59,7 @@ function conditions(id,traits){
 export const CSC_SLUG_WEAPONS=rows.map(([id,name,tl,weaponFamily,range,damage,massKg,cost,magazine,magazineCost,traits,pages])=>({
  id:'csc-'+id,label:name+' (CSC 2023)',tl,weaponFamily,sourceFamily:'csc-2023',mountClass:weaponFamily==='pistol'?'small':'medium',
  range,damage,massKg,cost,magazine,magazineCost,traits,initialIncluded:false,skill:'gun-combat',speciality:'slug',implemented:true,
- compatibility:{accessoryRules:null,associatedLauncherRules:null,attachedLauncher:false,specialisedAmmunitionRules:null},
+ compatibility:{accessoryRules:'csc-2023',associatedLauncherRules:null,attachedLauncher:false,specialisedAmmunitionRules:null},
  conditionalEffects:conditions(id,traits),
  ammunitionAccounting:{initialMagazine:'separate-purchase',inclusionStatement:'No included initial magazine stated in the CSC slug section',magazinePriceSource:csc(weaponFamily==='pistol'?'143':'145'),mountExcludesAmmunition:true,mountSource:{book:'Robot Handbook',edition:'Mongoose 2022',pages:'61'}},
  source:csc(pages),

@@ -302,7 +302,7 @@ if(item.type==='multiselect'){
           const draw=()=>{
             const picker=el('div',undefined,'option-picker'),select=el('select'),add=el('button','Add');
             select.setAttribute('aria-label',item.label||item.field);add.type='button';
-            selectChoices(select,(item.choices||[]).filter(choice=>!selected.includes(choice.id)),'');
+            selectChoices(select,recordChoices(item,record).filter(choice=>!selected.includes(choice.id)),'');
             add.disabled=true;select.addEventListener('change',()=>{add.disabled=!select.value||selected.length>=(item.maxItems||100);});
             add.addEventListener('click',()=>{selected.push(select.value);onChange(item.field,[...selected]);draw();});
             picker.append(select,add);const list=el('div',undefined,'installed-list');
@@ -314,7 +314,7 @@ if(item.type==='multiselect'){
             }
             const search=el('input');search.type='search';search.placeholder='Find a book option';search.setAttribute('aria-label','Search '+(item.label||item.field));
             search.addEventListener('input',()=>{
-              const query=search.value.toLowerCase();selectChoices(select,(item.choices||[]).filter(choice=>!selected.includes(choice.id)&&choice.label.toLowerCase().includes(query)),'');add.disabled=true;
+              const query=search.value.toLowerCase();selectChoices(select,recordChoices(item,record).filter(choice=>!selected.includes(choice.id)&&choice.label.toLowerCase().includes(query)),'');add.disabled=true;
             });
             input.replaceChildren(...((item.choices||[]).length>30?[search]:[]),picker,list);
           };draw();row.classList.add('wide');
