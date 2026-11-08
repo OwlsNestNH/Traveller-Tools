@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
+import {fileURLToPath} from 'node:url';
 import {mkdir,readFile} from 'node:fs/promises';
 import {guiFixture,campaignKey} from './fixtures/gui-parity.mjs';
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
@@ -33,6 +34,6 @@ try{for(const width of [1440,390,320])for(const location of ['toolbar','settings
  await page.locator('#modal-submit').click();await page.locator('#modal-error').filter({hasText:/Synthetic shortcut save failure/}).waitFor();assert.equal(await raw(),bytes,'Failed replacement never changes saved campaign');await page.locator('#modal-cancel').click();assert.equal(await raw(),bytes);
  await load(JSON.stringify(next));await page.getByRole('heading',{name:'Load campaign (JSON)',exact:true}).waitFor();await page.locator('#modal [name=backed]').check();await page.locator('#modal-submit').click();await page.locator('#modal').waitFor({state:'hidden'});assert.equal(JSON.parse(await raw()).name,next.name);assert.equal(JSON.parse(await raw()).revision,f.state.revision+1);
  const after=await raw();await toolbar.getByRole('button',{name:'Copy Player Link',exact:true}).click();assert.equal(await raw(),after);assert.equal(await page.evaluate(()=>copied.length),2);
- await mkdir(new URL('../verification-artifacts/',import.meta.url),{recursive:true});await toolbar.screenshot({path:new URL(`../verification-artifacts/backup-shortcuts-${location}-${width}.png`,import.meta.url).pathname});
+ await mkdir(new URL('../verification-artifacts/',import.meta.url),{recursive:true});await toolbar.screenshot({path:fileURLToPath(new URL(`../verification-artifacts/backup-shortcuts-${location}-${width}.png`,import.meta.url))});
  await context.close();console.log('PASS backup/load '+location+' '+width);
 }}finally{await browser.close();}
