@@ -1,5 +1,6 @@
 // Read-only presentation projection. No construction rules or calculated totals live here.
 const format = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
+const massFormat = new Intl.NumberFormat('en-US', { maximumFractionDigits: 9 });
 const present = value => value !== undefined && value !== null;
 export function humanLabel(value) {
   return String(value).replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[-_:]/g, ' ').replace(/^./, ch => ch.toUpperCase());
@@ -35,6 +36,9 @@ function profileRow(label, summary, record, omitted = [], detail = '') {
   const hidden = new Set(['id','weaponId','optionId','sourceOption','label','name','source',...omitted]);
   const details = Object.entries(record).filter(([key])=>!hidden.has(key)).map(([key,value])=>row(humanLabel(key),value));
   return {...row(label,summary,record.source,detail),details};
+}
+function spareAmmunitionDisplay({storageId,...ammunition},storage) {
+  return {...ammunition,storage,unitMassKg:massFormat.format(ammunition.unitMassKg),massKg:massFormat.format(ammunition.massKg),estimate:{...ammunition.estimate,unitMassKg:massFormat.format(ammunition.estimate.unitMassKg),basisWeaponMassKg:massFormat.format(ammunition.estimate.basisWeaponMassKg)}};
 }
 export function projectReview(design, catalogue, evaluation) {
   const totals = evaluation.totals || evaluation.previewTotals;
@@ -174,7 +178,19 @@ export function projectReview(design, catalogue, evaluation) {
       const profile=component.profile;
       profiles.push(profileRow(component.name,profile.scope||'Referenced robot profile',{...profile,manipulators:(profile.manipulators||[]).map(({id,...arm},index)=>({arm:index+1,...arm}))},['scope','weapons','skills','hardwareSkills'],'These values belong to the referenced robot, not automatically to its host.'));
       for(const skill of profile.skills||[])profiles.push(profileRow(`${component.name} / ${skill.label||titleName(skill.skill||skill.id)}`,`Installed level ${valueText(skill.level)} · Effective ${valueText(skill.effectiveLevel)}`,skill,['level','effectiveLevel'],'Component skill software.'));
-      for(const weapon of profile.weapons||[])profiles.push(profileRow(`${component.name} / ${weapon.label||'Weapon'}`,`${present(weapon.damage)?weapon.damage+' damage':'Damage not calculated'} · ${present(weapon.range)?'Range '+valueText(weapon.range)+' m':'Range not calculated'}`,weapon,['damage','range','manipulatorId','parentLimb'],'Weapon belongs to the referenced robot; delivery and attack conditions remain contextual.'));
+      for(const weapon of profile.weapons||[]){
+        const snapshot=selectedReferences.find(reference=>reference.id===component.id)?.design;
+        const storageName=id=>{
+          const instance=(snapshot?.selections?.physical?.optionInstances||[]).find(item=>'instance:'+item.id===id);
+          if(instance)return titleName(instance.optionId)+' (separate installation '+((snapshot.selections.physical.optionInstances.indexOf(instance))+1)+')';
+          const standard=(snapshot?.selections?.physical?.options||[]).find(option=>'option:'+option===id);
+          return standard?titleName(standard)+' (standard selection)':'Unresolved storage';
+        };
+        const display={...weapon,...(weapon.spareAmmunition?{spareAmmunition:spareAmmunitionDisplay(weapon.spareAmmunition,storageName(weapon.spareAmmunition.storageId))}:{})};
+        const weaponRow=profileRow(`${component.name} / ${weapon.label||'Weapon'}`,`${present(weapon.damage)?weapon.damage+' damage':'Damage not calculated'} · ${present(weapon.range)?'Range '+valueText(weapon.range)+' m':'Range not calculated'}`,display,['damage','range','manipulatorId','parentLimb','spareMagazineStorageId'],'Weapon belongs to the referenced robot; delivery and attack conditions remain contextual.');
+        for(const item of weaponRow.details){if(item.label==='Spare Ammunition')item.label='Spare ammunition (estimated mass)';if(item.label==='Mass Kg')item.label='Source weapon mass (kg)';}
+        profiles.push(weaponRow);
+      }
       for(const effect of component.equipmentOperations||[])profiles.push(profileRow(`${component.name} / ${effect.label||'Equipment readiness'}`,effect.condition||humanLabel(effect.status||'Conditional'),effect,['condition','status'],'Component operating condition.'));
     }
     if(profiles.length)sections.push(section('component-profiles','Referenced robot profiles',profiles,{collapsed:true}));
@@ -251,8 +267,9 @@ export function projectReview(design, catalogue, evaluation) {
     const detail=[parentLabel,placement,`Software Level: ${valueText(weapon.softwareLevel)}`,`FCS DM: ${valueText(weapon.fireControlDM)}`,`DEX DM: ${valueText(weapon.manipulatorDM)}`].filter(Boolean).join(' · ');
     const accessoryChoices=control?.itemFields?.find(item=>item.field==='accessories')?.choices||[];
     const accessoryName=id=>accessoryChoices.find(item=>item.id===id)?.label||humanLabel(id);
-    const displayWeapon={...weapon,...(weapon.looseAmmunition?{looseAmmunition:(({storageId,...rest})=>({...rest,storage:storageName(storageId),grenade:ammunitionName(rest.grenade)}))(weapon.looseAmmunition)}:{}),accessoryEffects:(weapon.accessoryEffects||[]).map(effect=>({...effect,accessory:accessoryName(effect.accessory)}))};
-    const result=profileRow(name,summary,displayWeapon,['damage','range','traits','placement','manipulatorId','parentLimb','accessories','auxiliary','associatedAttacks','ammunitionStorageId'],detail);
+    const displayWeapon={...weapon,...(weapon.spareAmmunition?{spareAmmunition:spareAmmunitionDisplay(weapon.spareAmmunition,choiceLabel(control,'spareMagazineStorageId',weapon.spareAmmunition.storageId,'Unresolved storage'))}:{}),...(weapon.looseAmmunition?{looseAmmunition:(({storageId,...rest})=>({...rest,storage:storageName(storageId),grenade:ammunitionName(rest.grenade)}))(weapon.looseAmmunition)}:{}),accessoryEffects:(weapon.accessoryEffects||[]).map(effect=>({...effect,accessory:accessoryName(effect.accessory)}))};
+    const result=profileRow(name,summary,displayWeapon,['damage','range','traits','placement','manipulatorId','parentLimb','accessories','auxiliary','associatedAttacks','ammunitionStorageId','spareMagazineStorageId'],detail);
+    for(const item of result.details){if(item.label==='Spare Ammunition')item.label='Spare ammunition (estimated mass)';if(item.label==='Mass Kg')item.label='Source weapon mass (kg)';}
     for(const id of weapon.accessories||[]){const accessory=accessoryChoices.find(item=>item.id===id);result.details.push(row('Accessory',accessoryName(id),accessory?.source));}
     const rows=[result];
     for(const attack of weapon.associatedAttacks || (weapon.auxiliary?[weapon.auxiliary]:[])){
@@ -261,7 +278,7 @@ export function projectReview(design, catalogue, evaluation) {
     }
     return rows;
   });
-  const storageRows=(records,control)=>records.map(item=>profileRow(choiceLabel(control,'ammunitionStorageId',item.storageId,'Unresolved storage'),`${valueText(item.reservedKg)} / ${valueText(item.capacityKg)} kg reserved · ${valueText(item.remainingKg)} kg remaining`,item,['storageId','reservedKg','capacityKg','remainingKg','scope'],item.scope));
+  const storageRows=(records,control)=>records.map(item=>profileRow(choiceLabel(control,'ammunitionStorageId',item.storageId,'Unresolved storage'),`${massFormat.format(item.reservedKg)} / ${massFormat.format(item.capacityKg)} kg reserved · ${massFormat.format(item.remainingKg)} kg remaining`,item,['storageId','reservedKg','capacityKg','remainingKg','scope'],item.scope));
   const weaponControl=controls.find(control=>control.field==='weapons');
   const weapons=totals?.weapons || (weaponControl?physical.weapons||[]:[]);
   if(weapons.length)sections.push(section('weapons','Weapons',weaponRows(weapons,weaponControl),{note:totals?'Attack modifiers are contextual. Read the separate hardware/software values and outstanding checks.':'Selected installations only. Weapon performance has not been calculated.'}));

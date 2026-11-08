@@ -100,8 +100,15 @@ function renderNavigation() {
   }));
 }
 function selectedValue(control) { return control.target === 'special' ? view.design.special?.[control.field] : view.design.selections?.[currentStage]?.[control.field]; }
-function submitSelection(control, value) {
-  safely(() => api.select({ stage: currentStage, field: control.field, value }));
+function submitSelection(control, value, completedDraftKey) {
+  return safely(() => {
+    const draft = completedDraftKey === undefined ? undefined : customDrafts.get(completedDraftKey);
+    // The API emits synchronously. Reset for its successful render, but restore
+    // the complete composer before safely redraws any rejected Add.
+    if (completedDraftKey !== undefined) customDrafts.delete(completedDraftKey);
+    try { return api.select({ stage: currentStage, field: control.field, value }); }
+    catch (error) { if (draft !== undefined) customDrafts.set(completedDraftKey, draft); throw error; }
+  });
 }
 function recordChoices(field,record) {
   const choices=field.choicesBy?.values?.[record?.[field.choicesBy.field]] || field.choices || [];
@@ -228,7 +235,7 @@ function renderControl(control, choicesOverride) {
     });
     add.addEventListener('click',()=>{
       const next={id:'eqp-'+globalThis.crypto.randomUUID(),optionId:draft.optionId,parameters:{...draft.parameters}};
-      customDrafts.delete(draftKey);submitSelection(control,[...installed,next]);
+      submitSelection(control,[...installed,next],draftKey);
     });
     composer.append(picker,hint,container,add);redraw();details.append(composer);field.append(details);
   } else if (control.type === 'design-references') {
@@ -319,7 +326,7 @@ if(item.type==='multiselect'){
             input.replaceChildren(...((item.choices||[]).length>30?[search]:[]),picker,list);
           };draw();row.classList.add('wide');
         }
-        else if(item.type==='number')input=numericPicker(item,record[item.field]??item.min,value=>onChange(item.field,value));
+        else if(item.type==='number')input=numericPicker({...item,max:item.maxBy?.values?.[record[item.maxBy.field]]??item.max},record[item.field]??item.min,value=>onChange(item.field,value));
         else if(item.type==='select'){input=el('select');const choices=recordChoices(item,record);selectChoices(input,choices,record[item.field]);input.addEventListener('change',()=>onChange(item.field,choices.find(c=>String(c.id)===input.value)?.id??null));}
         else {input=el('input');input.type='text';input.value=record[item.field]??'';input.maxLength=item.maxLength||120;input.addEventListener('input',()=>onChange(item.field,input.value));}
         input.id=fieldId;row.append(input);targetFor(item).append(row);
@@ -352,7 +359,7 @@ if(item.type==='multiselect'){
     const redrawComposer = () => {
       const next = makeFields(draft, id+'-new', (key, value) => {
         draft[key]=value;Object.assign(draft,resetHiddenFields(control,draft));customDrafts.set(draftKey,draft);add.disabled=!valid();
-        if ((control.itemFields||[]).some(item=>dependsOn(item.visibleWhen,key)||item.choicesBy?.field===key||item.labelBy?.field===key||item.maxValueField===key)) redrawComposer();
+        if ((control.itemFields||[]).some(item=>dependsOn(item.visibleWhen,key)||item.choicesBy?.field===key||item.labelBy?.field===key||item.maxBy?.field===key||item.maxValueField===key)) redrawComposer();
       });
       const previous=composer.querySelector('.fields-grid');
       if(previous)previous.replaceWith(next);else composer.append(next);
@@ -360,7 +367,7 @@ if(item.type==='multiselect'){
     redrawComposer();
     add.addEventListener('click',()=>{
       const next={id:(control.recordIdPrefix||(isWeapon?'wpn-':isExternal?'veh-':'pkg-'))+globalThis.crypto.randomUUID(),...draft};
-      customDrafts.delete(draftKey);submitSelection(control,[...installed,next]);
+      submitSelection(control,[...installed,next],draftKey);
     });
     composer.append(add);
     if(control.canAdd===false&&control.unavailableReason)composer.append(el('p',control.unavailableReason,'help'));
