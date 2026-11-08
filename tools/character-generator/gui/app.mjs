@@ -1,3 +1,4 @@
+import {clanAssetTotals,clanAssetPayload,clanWeaponRow,clanAssetSheetDetail} from './clan-asset-view.mjs';
 import {clanShareView,clanShareSheet,clanShareSelection} from './clan-share-view.mjs';
 import {aslanOriginView,aslanOriginSourceView,aslanOriginSheet} from './aslan-origin-view.mjs';
 import {aslanOutlawRestorationView,aslanOutlawSheet,aslanHistoricalOptionsView,aslanHistoricalDecisionView,aslanHistoricalSheet} from './aslan-outlaw-view.mjs';
@@ -25,6 +26,19 @@ const stageNames={'aslan-family':'Discover your family background','aslan-birth-
 const coverageLabels={'zhodani-relationship-loss':'Missing relationship source decision','zhodani-reeducation':'Re-education source decisions','zhodani-anagathic-ageing':'Anagathic ageing credit','zhodani-ageing-psi':'PSI ageing decision','career-transfer':'Career transfer rank decisions','psionic-games':'Psionic Games source decisions','native-effect':'A special event or award','benefit-equipment':'Equipment selections','benefit-ship':'Ship choices and history','benefit-source':'Special benefit rulings',pension:'Pension eligibility or payment conditions','injury-zero':'Injury survival rulings','injury-medical':'Employer medical contributions','medical-settlement':'Medical bill financing','ageing-financing':'Ageing-care financing','psionic-training-terms':'Psionic training access, costs and timing','psionic-history':'Earlier psionic attempt history','psionic-repeat-training':'Repeated psionic training','psionic-retry':'A psionic replacement award','missing-characteristic-check':'A cross-species characteristic check','species-setup':'Species upbringing details','companion-career-rights':'Education rights in a later career'};
 const button=(label,action,cls='',attributes='')=>'<button type="button" data-action="'+action+'" class="'+cls+'" '+attributes+'>'+label+'</button>';
 const options=(list,value)=>list.map(x=>'<option value="'+esc(x.id??x)+'" '+((x.id??x)===value?'selected':'')+(x.disabled?' disabled':'')+'>'+esc(x.name??x)+'</option>').join('');
+function readClanWeaponItems(){return [...document.querySelectorAll('[data-weapon-row]')].map(row=>Object.fromEntries([...row.querySelectorAll('[data-weapon-field]')].map(input=>[input.dataset.weaponField,['quantity','unitCost','tl'].includes(input.dataset.weaponField)?(input.value===''?undefined:Number(input.value)):input.value])));}
+function renderClanWeaponItems(items){if($('#clan-weapons-confirmed'))$('#clan-weapons-confirmed').checked=false;if($('#clan-lower-value-confirmed'))$('#clan-lower-value-confirmed').checked=false;const rules=projection.state.clanShareOptions?.assetRules;if(!rules||!$('#clan-weapon-items'))return;$('#clan-weapon-items').innerHTML=items.map((item,i)=>clanWeaponRow(i,rules,{esc,button},item)).join('');syncClanAssetControls();}
+function syncClanAssetControls(){
+ const rules=projection.state.clanShareOptions?.assetRules;if(!rules||!$('#clan-art-fields'))return;
+ const kind=$('#clan-share-kind').value,lot=$('#clan-share-lot').value,enabled=!!lot,art=kind==='art',weapons=kind==='weapons',weaponEnabled=weapons&&enabled&&projection.state.config.gm;
+ $('#clan-art-fields').hidden=!art;$('#clan-art-name').disabled=!art||!enabled;$('#clan-weapon-fields').hidden=!weapons;
+ for(const input of document.querySelectorAll('#clan-weapon-fields input,#clan-weapon-fields textarea,#clan-weapon-fields button'))input.disabled=!weaponEnabled;
+ const items=readClanWeaponItems();$('[data-action=clan-add-weapon]').disabled=!weaponEnabled||items.length>=rules.maxItems;for(const b of document.querySelectorAll('[data-action=clan-remove-weapon]'))b.disabled=!weaponEnabled||items.length<=1;
+ const values=clanAssetTotals(numberInput('#clan-share-quantity'),rules,items),showLower=weapons&&values.unused>0;
+ $('#clan-lower-value-fields').hidden=!showLower;$('#clan-lower-value-confirmed').disabled=!showLower||!weaponEnabled;$('#clan-lower-value-reason').disabled=!showLower||!weaponEnabled;
+ if(!showLower)$('#clan-lower-value-confirmed').checked=false;
+ const display=$('#clan-asset-value');display.hidden=!art&&!weapons;display.textContent=values.budget===null?'Choose a positive share quantity.':'Share value: Cr'+values.budget.toLocaleString()+(weapons?(values.total===null?'. Enter each item quantity and unit price.':'. Selected items: Cr'+values.total.toLocaleString()+(values.unused<0?'. Over budget by Cr'+(-values.unused).toLocaleString()+'. Cash supplements are unavailable.':values.unused>0?'. Unused value: Cr'+values.unused.toLocaleString()+'.':'. Exact value.')):'. Assessed art value; not cash.');
+}
 function syncClanShareControls(savedLot){
  const p=projection.state.clanShareOptions,kind=$('#clan-share-kind');if(!p||!kind)return;
  const lotInput=$('#clan-share-lot'),previous=savedLot??lotInput.value;
@@ -40,6 +54,7 @@ function syncClanShareControls(savedLot){
  $('[data-action=redeem-clan-shares]').disabled=!p.checkpointAvailable||!selected.choice?.available||!lot||kind.value==='ally'&&!person;
  const verifyLot=$('#clan-verify-lot'),verifyTarget=$('#clan-verify-target');
  if(verifyLot){const l=p.lots.find(l=>l.id===verifyLot.value);$('#clan-verify-lot-help').textContent=l?l.label+'. '+l.available+' held. '+l.reason:'';const sourceOnly=verifyTarget.querySelector('[value="__source"]');sourceOnly.disabled=!l?.verificationRequired;if(sourceOnly.disabled&&verifyTarget.value==='__source')verifyTarget.value='';$('#clan-verify-target-help').textContent=verifyTarget.value==='__source'?'Source only; issuing clan remains unknown.':verifyTarget.value==='__new'?'Identify another issuing clan.':p.clans.find(c=>c.id===verifyTarget.value)?.name??'';const newClan=verifyTarget.value==='__new';$('#clan-verify-new-field').hidden=!newClan;$('#clan-verify-new').disabled=!newClan||!l?.canVerify;$('[data-action=verify-clan-share-lot]').disabled=!l?.canVerify||!verifyTarget.value;}
+ syncClanAssetControls();
  const verifyContact=$('#clan-verify-contact');if(verifyContact){$('#clan-contact-clan-help').textContent=p.clans.find(c=>c.id===$('#clan-contact-clan').value)?.name??'';const c=p.contacts.find(c=>c.id===verifyContact.value);$('#clan-verify-contact-help').textContent=c?c.name+' · '+c.id+' · '+c.clanName:'';$('[data-action=verify-clan-contact]').disabled=!c?.canVerify||!$('#clan-contact-clan').value;}
 }
 function notify(message,error=false){$('#message').style.overflowWrap='anywhere';$('#message').className=error?'error':'';$('#message').textContent=message;}
@@ -221,7 +236,7 @@ function assetHistory(history){
 }
 function assetSheet(state){
  const assets=(state.character.assets??[]).filter(a=>a.active!==false);if(!assets.length)return '';
- return '<div class="sheet-section"><h3>Equipment & ships</h3><ul class="compact-list">'+assets.map(a=>'<li><strong>'+esc(a.name??a.variant??a.model??a.id)+'</strong>'+(a.category?' ('+esc(a.category)+')':'')+(a.cost!==undefined?' | Cr'+a.cost.toLocaleString():'')+(a.techLevel!==undefined?' | TL '+a.techLevel:'')+(a.mortgagePaidPercent!=null?' | Mortgage '+a.mortgagePaidPercent+'% paid':'')+(a.ownership?' | '+esc(a.ownership):'')+(a.owner?' (owner: '+esc(a.owner)+')':'')+(a.recallable?' | Subject to recall':'')+(a.history?'<div class="multiline">'+assetHistory(a.history)+'</div>':'')+'</li>').join('')+'</ul></div>';
+ return '<div class="sheet-section"><h3>Equipment & ships</h3><ul class="compact-list">'+assets.map(a=>'<li><strong>'+esc(a.name??a.variant??a.model??a.id)+'</strong>'+(a.category?' ('+esc(a.category)+')':'')+(a.cost!==undefined?' | Cr'+a.cost.toLocaleString():'')+(a.techLevel!==undefined?' | TL '+a.techLevel:'')+(a.mortgagePaidPercent!=null?' | Mortgage '+a.mortgagePaidPercent+'% paid':'')+(a.ownership?' | '+esc(a.ownership):'')+(a.owner?' (owner: '+esc(a.owner)+')':'')+(a.recallable?' | Subject to recall':'')+clanAssetSheetDetail(a,{esc})+(a.history?'<div class="multiline">'+assetHistory(a.history)+'</div>':'')+'</li>').join('')+'</ul></div>';
 }
 function psionicDecisionView(state){
  const p=state.pending;
@@ -353,7 +368,9 @@ document.addEventListener('click',async event=>{
  if(action==='career-list'){selectedCareer='';render();$('#step-title')?.focus();return;}
  if(action==='add-effect'){effects=readEffects();effects.push({kind:projection.state.stage==='psionic-games-decisions'?'stat':'skill',name:'',value:1,mode:'increase',role:'Contact'});$('#effect-list').innerHTML=effects.map(effectView).join('');return;}
  if(action==='remove-effect'){effects=readEffects();effects.splice(Number(el.dataset.index),1);$('#effect-list').innerHTML=effects.map(effectView).join('');return;}
- if(action==='redeem-clan-shares'){const kind=$('#clan-share-kind').value,payload={kind,inputs:[{lotId:$('#clan-share-lot').value,quantity:numberInput('#clan-share-quantity')}]};if(kind==='contact')payload.name=$('#clan-share-name').value;if(kind==='ally')payload.relationshipId=$('#clan-share-contact').value;return send(action,payload);}
+ if(action==='clan-add-weapon'){const items=readClanWeaponItems();if(items.length<projection.state.clanShareOptions.assetRules.maxItems){renderClanWeaponItems([...items,{quantity:1}]);document.querySelectorAll('[data-weapon-row]')[items.length]?.querySelector('input')?.focus();}return;}
+ if(action==='clan-remove-weapon'){const items=readClanWeaponItems(),index=Number(el.dataset.index);if(items.length>1&&Number.isInteger(index)&&index>=0&&index<items.length){renderClanWeaponItems(items.filter((_,i)=>i!==index));document.querySelectorAll('[data-weapon-row]')[Math.min(index,items.length-2)]?.querySelector('input')?.focus();}return;}
+ if(action==='redeem-clan-shares'){const kind=$('#clan-share-kind').value,payload={kind,inputs:[{lotId:$('#clan-share-lot').value,quantity:numberInput('#clan-share-quantity')}]};if(kind==='contact')payload.name=$('#clan-share-name').value;if(kind==='ally')payload.relationshipId=$('#clan-share-contact').value;if(['art','weapons'].includes(kind))Object.assign(payload,clanAssetPayload(kind,{name:$('#clan-art-name').value,items:readClanWeaponItems(),sourceConfirmed:$('#clan-weapons-confirmed').checked,sourceReason:$('#clan-weapons-reason').value,lowerValueConfirmed:$('#clan-lower-value-confirmed').checked,lowerValueReason:$('#clan-lower-value-reason').value}));return send(action,payload);}
  if(action==='verify-clan-share-lot'){const target=$('#clan-verify-target').value,payload={lotId:$('#clan-verify-lot').value,reason:$('#clan-verify-reason').value};if(target==='__new')payload.newClanName=$('#clan-verify-new').value;else if(target&&target!=='__source')payload.clanId=target;return send(action,payload);}
  if(action==='verify-clan-contact')return send(action,{relationshipId:$('#clan-verify-contact').value,clanId:$('#clan-contact-clan').value,reason:$('#clan-contact-reason').value});
  if(['roll-aslan-gender','roll-aslan-family','roll-aslan-birth-order','roll-aslan-clan','roll-aslan-pride','roll-aslan-rite'].includes(action))return send(action);
@@ -501,3 +518,5 @@ async function start(){
 start();
 
 document.addEventListener('change',event=>{if(['clan-share-kind','clan-share-lot','clan-share-contact','clan-verify-lot','clan-verify-target','clan-verify-contact','clan-contact-clan'].includes(event.target.id))syncClanShareControls();});
+
+document.addEventListener('input',event=>{if(event.target.id==='clan-share-quantity'||event.target.matches('[data-weapon-field]')){if($('#clan-weapons-confirmed'))$('#clan-weapons-confirmed').checked=false;if($('#clan-lower-value-confirmed'))$('#clan-lower-value-confirmed').checked=false;syncClanAssetControls();}});
