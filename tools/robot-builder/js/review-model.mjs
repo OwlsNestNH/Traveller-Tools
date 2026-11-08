@@ -167,11 +167,11 @@ function weaponGripDisplay(weapon,armName) {
   if(Object.hasOwn(weapon,'primaryManipulatorDM'))display.primaryManipulatorHardwareDexDM=weapon.primaryManipulatorDM;
   return display;
 }
-function metamorphicRows(body){return [row('Construction status','Provisional'),row('Selected tier',body.label,body.source),row('Tier rate',money(body.pricePerSlot)+' / Slot',body.source),row('Price basis',body.priceBasisSlots+' Base Slots'),row('Body surcharge',money(body.bodyCost)),row('Morph time',body.morphTime,body.source),row('Appearance',body.appearance,body.source),...body.assumptions.map(a=>row(a.label,a.value,a.source,a.provenance)),row('Fixed Size',body.fixedProperties.size),row('Fixed locomotion',humanLabel(body.fixedProperties.primaryLocomotion)+' / '+humanLabel(body.fixedProperties.secondaryLocomotion)),row('Operating scope',body.operatingScope)];}
+function metamorphicRows(body,component=false){return [row('Construction status','Provisional'),row('Selected tier',body.label,body.source),row('Tier rate',money(body.pricePerSlot)+' / Slot',body.source),row('Price basis',body.priceBasisSlots+' Base Slots'),row(component?'Body surcharge per component copy':'Body surcharge',money(body.bodyCost)),row('Morph time',body.morphTime,body.source),row('Appearance',body.appearance,body.source),...body.assumptions.map(a=>row(a.label,a.value,a.source,a.provenance)),row('Fixed Size',body.fixedProperties.size),row('Fixed locomotion',humanLabel(body.fixedProperties.primaryLocomotion)+' / '+humanLabel(body.fixedProperties.secondaryLocomotion)),row('Operating scope',body.operatingScope)];}
 export function projectReview(design, catalogue, evaluation) {
   const totals = evaluation.totals || evaluation.previewTotals;
   const provisional = evaluation.provisional === true || !evaluation.totals && !!evaluation.previewTotals;
-  const provisionalLabel=evaluation.provisional===true?'Provisional construction assumptions; current form only':'Provisional values only; unresolved errors';
+  const provisionalLabel=evaluation.provisional===true?(evaluation.composite?'Provisional component source; purchase scope below':'Provisional construction assumptions; current form only'):'Provisional values only; unresolved errors';
   const coverage = evaluation.coverage || catalogue.coverage || {};
   const status = evaluation.status === 'verified'
     ? evaluation.provisional ? 'Provisional assumptions checked; coverage incomplete' : coverage.complete === true ? 'Checked' : 'Implemented rules checked; coverage incomplete'
@@ -298,8 +298,9 @@ export function projectReview(design, catalogue, evaluation) {
       const details=[row('Quantity',reference.quantity),row('Robot type',catalogue.kinds?.find(kind=>kind.id===reference.design?.kind)?.label||humanLabel(reference.design?.kind)),row('Tech level',reference.design?.techLevel)];
       if(component){
         details.push(row('Construction check',component.status==='verified'?(component.provisional?'Provisional assumptions checked':'Implemented component rules checked'):humanLabel(component.status)),row('Construction per copy',money(component.constructionUnitCost)),row('Listed price per copy',money(component.listedUnitCost)),row('Cost scope',component.costScope));
-        if(component.metamorphic)details.push(...metamorphicRows(component.metamorphic));
-        if(component.slots)details.push(row('Component Slots',component.slots));
+        if(component.metamorphic&&component.role!=='installed-brain')details.push(...metamorphicRows(component.metamorphic,true));
+        if(component.sourceProvenance?.kind==='metamorphic')details.push(row('Source construction','Provisional metamorphic snapshot'),row('Purchase boundary','Brain and software only; source body excluded'),row('Morph capability','Not purchased'));
+        if(component.slots)details.push(row(component.role==='installed-brain'?'Source body Slots (not purchased)':'Component Slots',component.slots));
         if(component.bandwidth)details.push(row('Component Bandwidth',component.bandwidth));
         if(component.coverage)details.push(row('Coverage',component.coverage.complete?'Selected construction covered':'Coverage incomplete'));
       }
@@ -311,7 +312,7 @@ export function projectReview(design, catalogue, evaluation) {
     const profiles=[];
     for(const component of components.filter(component=>component.profile)){
       const profile=component.profile;
-      profiles.push(profileRow(component.name,'Referenced robot profile',{...profile,manipulators:(profile.manipulators||[]).map(({id,...arm},index)=>({arm:index+1,...arm}))},['scope','weapons','skills','hardwareSkills'],'Component-only values; no host grant'));
+      profiles.push(profileRow(component.name,'Referenced robot profile',{...profile,manipulators:(profile.manipulators||[]).map(({id,...arm},index)=>({arm:index+1,...arm}))},['scope','weapons','skills','hardwareSkills'],component.role==='installed-brain'?'Source robot context; only brain/software purchased':'Component-only values; no host grant'));
       for(const skill of profile.skills||[])profiles.push(profileRow(`${component.name} / ${skill.label||titleName(skill.skill||skill.id)}`,`Installed level ${valueText(skill.level)} · Effective ${valueText(skill.effectiveLevel)}`,skill,['level','effectiveLevel'],'Component-only software'));
       for(const weapon of profile.weapons||[]){
         const snapshot=selectedReferences.find(reference=>reference.id===component.id)?.design;
@@ -465,7 +466,7 @@ export function formatStatblock(review) {
     if (group.note) rows.push(group.note);
     for (const item of group.rows) {
       rows.push(`${item.label}: ${item.value}${item.detail?' | '+item.detail:''}${item.source?' | '+item.source:''}`);
-      for(const detail of item.details || [])rows.push(`  ${detail.label}: ${detail.value}${detail.source?' | '+detail.source:''}`);
+      for(const detail of item.details || [])rows.push(`  ${detail.label}: ${detail.value}${detail.detail?' | '+detail.detail:''}${detail.source?' | '+detail.source:''}`);
     }
   }
   rows.push('','Robot Handbook (Mongoose Publishing, 2022). Unofficial fan-made tool.','Implemented rules only; coverage incomplete; outstanding checks apply');

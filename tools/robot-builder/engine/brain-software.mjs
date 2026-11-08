@@ -17,7 +17,7 @@ export function evaluateBrainSoftware({brain,upgrade,techLevel:tl,settings,selec
  const s={brain:settings,skills:selection},diagnostics=[],ledger=[];let cost=0,used=0;
  const issue=(severity,code,path,message,pages)=>diagnostics.push({severity,code,path,message,source:source(pages)});
  const error=(...args)=>issue('error',...args),block=(...args)=>issue('blocker',...args);
- const entry=(id,label,cost,slots,pages,extra={})=>ledger.push({id,label,cost,slots,source:source(pages),...extra});
+ const entry=(id,label,cost,slots,pages,extra={})=>ledger.push({id,label,cost,slots,source:source(pages),accountingDomain:'brain-software',...extra});
  if(upgrade.tl>tl||upgrade.rank>brain.rank)error('BANDWIDTH_UPGRADE','brain.bandwidthUpgrade','This bandwidth module requires higher technology or brain capability.','67');
  if(s.brain.hardened&&tl<8)error('MIN_TL','brain.hardened','Brain hardening requires TL8.','67');
  const brainCost=brain.cost*(retrotech&&brain.rank>=3?.5**(tl-brain.tl):1)*(s.brain.hardened?1.5:1),upgradeCost=upgrade.cost*(s.brain.hardened?1.5:1);

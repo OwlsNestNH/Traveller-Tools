@@ -2,6 +2,7 @@
 // the user-facing projection; never change rule decisions or construction totals.
 export const labelText = value => String(value).replace(/([a-z])([A-Z])/g,'$1 $2').replace(/[-_:]/g,' ').replace(/^./,ch=>ch.toUpperCase());
 const diagnosticLabels = {
+ COMPOSITE_METAMORPHIC_SOURCE:'Provisional source body excluded; brain/software only',
  METAMORPHIC_PROVISIONAL:'Provisional metamorphic assumptions; current form only', METAMORPHIC_TL:'Metamorphic tier TL exceeds design',
  VEHICLE_OPTION_TL:'Vehicle option TL exceeds design', VEHICLE_OPTION_CONTEXT:'Deployment/interface conditional; referee review',
  VEHICLE_OPTION_LOAD_UNKNOWN:'Initial contents unverified; replacement price unknown', VEHICLE_OPTION_CHARGES_UNPRICED:'Additional charges: price/mass unresolved',

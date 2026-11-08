@@ -1,3 +1,4 @@
+import {createDesign,updateDesign} from '../engine/index.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -44,5 +45,33 @@ try{
  const slots='#field-physical-optionParameters-slot-cost-options-storage-compartment-quantity';check('overcapacity remains repairable',await page.locator(slots).inputValue()==='17');await page.locator(slots).selectOption('2');await status('Provisional assumptions');
  await stage(6);await stage(1);await stage(6);check('repeated stage changes preserve tier',(await draft()).special.metamorphicTier==='improved');
  await page.locator('#robot-kind').selectOption('standard');await status('Subset checked');check('switching back isolates ordinary construction',!(await draft()).special.metamorphicTier);await stage(6);check('ordinary review has no metamorphic body assumptions',!(await page.locator('.robot-review').textContent()).includes('0 additional reserved Slots'));
+
+ const source=updateDesign(createDesign({kind:'metamorphic',techLevel:17}),{name:'Metamorphic component source'});
+ const composite=role=>updateDesign(createDesign({kind:'vehicle-brain',techLevel:19}),{special:{designReferences:[{id:'source',role,quantity:1,design:source}]}});
+ for(const role of ['installed-brain','installed-robot']){
+  const fixture=composite(role);await load(fixture);await status('Provisional assumptions');await stage(6);
+  const group=page.locator('.review-components'),details=group.locator('.review-item-details');await click(details.locator('summary'));
+  const text=await group.textContent();check(role+' exact component acquisition total',await page.locator('#summary-metrics').textContent().then(t=>t.includes(role==='installed-brain'?'Cr 20,000':'Cr 822,000')));
+  if(role==='installed-brain'){
+   check('brain-only component excludes unpurchased body facts',!text.includes('Body surcharge')&&!text.includes('Morph time')&&!text.includes('1D minutes')&&!text.includes('Cr 800,000'));
+   check('brain-only component retains scoped provisional provenance',text.includes('Provisional metamorphic snapshot')&&text.includes('Brain and software only; source body excluded')&&text.includes('Morph capability')&&text.includes('Not purchased'));
+  }else{
+   check('whole component body surcharge is per copy',text.includes('Body surcharge per component copy')&&text.includes('Cr 800,000')&&text.includes('1D minutes'));
+   check('nested component application assumptions remain visibly labelled',await details.locator('.review-detail').filter({hasText:'Application convention'}).count()===6);
+  }
+  for(const width of [1440,390,320]){await page.setViewportSize({width,height:1000});check(role+' component review fits '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:path.join(out,'robot-metamorphic-'+role+'-'+width+'.png'),fullPage:true});}
+  await page.setViewportSize({width:1440,height:1000});await page.evaluate(()=>{window.print=()=>{};});await click(page.locator('#print-design'));await page.emulateMedia({media:'print'});const print=await page.locator('#print-output').textContent();
+  if(role==='installed-brain')check('brain-only print excludes body facts and states purchase boundary',!print.includes('Body surcharge')&&!print.includes('Morph time')&&!print.includes('1D minutes')&&print.includes('Brain and software only; source body excluded'));
+  else check('whole-component print retains assumption provenance and per-copy surcharge',print.includes('Base Slots price basis: Original chassis Base Slots | Application convention')&&print.includes('Body surcharge per component copy: Cr 800,000'));
+  await page.screenshot({path:path.join(out,'robot-metamorphic-'+role+'-print.png'),fullPage:true});await page.emulateMedia({media:'screen'});
+  check(role+' component snapshot export retained',JSON.stringify((await draft()).special.designReferences)===JSON.stringify(fixture.special.designReferences));
+ }
+ const invalidSource=composite('installed-brain');invalidSource.special.designReferences[0].design.techLevel=16;await load(invalidSource);await status('Needs correction');await stage(6);
+ check('invalid brain-only source remains retained and unpriced',(await draft()).special.designReferences[0].design.techLevel===16&&await page.locator('#summary-metrics').textContent().then(t=>t.includes('Not calculated')));
+ check('invalid source review never leaks unpurchased body quote',await page.locator('.review-components').textContent().then(t=>!t.includes('Body surcharge')&&!t.includes('Morph time')));
+ await load(composite('installed-brain'));await status('Provisional assumptions');const repaired=await draft(),forged=structuredClone(repaired);forged.special.designReferences[0].design.special.bodyCost=0;
+ await page.locator('#import-file').setInputFiles({name:'forged-metamorphic-component.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(forged))});await page.waitForFunction(()=>document.querySelector('#notice').classList.contains('error'));
+ check('forged source body price rejects without changing current draft',JSON.stringify(await draft())===JSON.stringify(repaired));
+ check('component flows show no source tables',await page.locator('table,.source-reference').count()===0);
  check('no browser runtime errors',errors.length===0);await fs.writeFile(path.join(out,'metamorphic-browser-report.json'),JSON.stringify({checks,errors},null,2));console.log('PASS '+checks.length+' metamorphic browser checks');
 }catch(error){await page.screenshot({path:path.join(out,'metamorphic-failure.png'),fullPage:true});await fs.writeFile(path.join(out,'metamorphic-browser-report.json'),JSON.stringify({checks,errors,failure:error.stack},null,2));throw error;}finally{await context.close();await browser.close();}
