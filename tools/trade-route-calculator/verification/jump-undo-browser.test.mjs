@@ -33,14 +33,14 @@ async function context(state){
 async function finish(ctx,name){cases.push(name);await ctx.tracing.stop({path:join(artifacts,`jump-undo-${name}.zip`)});await ctx.close();activeContext=null;}
 try{
  for(const options of [{empty:false,shortfall:false},{empty:true,shortfall:true}]){
-  const source=fixture(options);if(!options.empty)source.ship.stationLifeSupport=true;
+  const source=fixture(options);if(!options.empty){source.ship.stationLifeSupport=true;source.ship.accommodation={rooms:{low:0,middle:1,high:0},passengers:{low:0,middle:1,high:0},crew:{low:0,middle:0,high:0},occupiedLowBerths:0,luggageTons:'0'};source.ship.lifeSupport={capacityHours:672,stockUnits:{numerator:'28',denominator:'1'}};S.validate(source);}
   const {ctx,page}=await context(source),name=options.empty?'empty-shortfall':'normal';
   assert.equal(await action(page,'jump-undo').isDisabled(),true);
   await action(page,'jump').click();const prepared=await read(page);assert.deepEqual(material(prepared),material(source));assert.equal(prepared.jumpAttempts[0].rolls.length,1);
   if(options.shortfall)assert.match(await page.locator('#modal-body').textContent(),/Insufficient fuel/);
   await click(page,'Cancel');await close(page);await page.evaluate(()=>globalThis.jumpDieFace=6);await action(page,'jump').click();assert.equal(await page.evaluate(()=>globalThis.jumpDiceCalls),6,'Reopening does not roll');assert.deepEqual(await read(page),prepared);await page.keyboard.press('Escape');await close(page);
   await page.reload();await page.getByText('Editing in this tab',{exact:true}).waitFor();await page.evaluate(()=>globalThis.jumpDieFace=5);await action(page,'jump').click();assert.equal(await page.evaluate(()=>globalThis.jumpDiceCalls),0,'Reload reuses saved dice');await page.locator('#modal [name="hours"]').fill('160');await click(page,'COMMIT JUMP');await close(page);
-  const arrived=await read(page);if(!options.empty){assert.equal(arrived.ship.stationLifeSupport,false,'Jump automatically leaves station supply');assert.equal(arrived.ship.lifeSupport.remainingHours,512,'Travel consumes onboard LSS even when starting docked');}
+  const arrived=await read(page);if(!options.empty){assert.equal(arrived.ship.stationLifeSupport,false,'Jump automatically leaves station supply');assert.deepEqual(arrived.ship.lifeSupport.stockUnits,{numerator:'64',denominator:'3'},'Known one-person manifest consumes 160/24 LSS even when starting docked');}
   assert.equal(arrived.actual,destination.id);assert.equal(arrived.contracts[0].firstDeparture.to,destination.id);assert.equal(arrived.policies[0].status,'arrived');assert.equal(await action(page,'jump-undo').isDisabled(),false);
   await page.screenshot({path:join(artifacts,`jump-undo-${name}-available.png`),fullPage:true});
   await action(page,'jump-undo').click();await click(page,'Cancel');await close(page);assert.deepEqual(await read(page),arrived);

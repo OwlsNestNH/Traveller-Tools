@@ -19,13 +19,13 @@ const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BRO
 const fieldNames=[
  'name','ship','capacity','jump','broker','streetwise','admin','characteristic','rank','soc','intDM','eduDM','tradeSocDM','mode','custom',
  'fuelAvailabilityAlert','shipTons','fuelCapacity','bladderTons','fuelAboard',
- 'rooms-low','roomService-low','roomCustom-low','rooms-middle','roomService-middle','roomCustom-middle','rooms-high','roomService-high','roomCustom-high',
- 'people-middle','people-high','occupiedLowBerths','luggageOverride','luggageTons','supportCapacity','supportRemaining','supportUnits','refillRate-middle','refillRate-high',
+ 'rooms-low','roomService-low','roomCustom-low','rooms-middle','roomService-middle','roomCustom-middle','rooms-high','roomService-high','roomCustom-high','rooms-luxury','roomService-luxury','roomCustom-luxury',
+ 'people-middle','people-high','people-luxury','occupiedLowBerths','luggageOverride','luggageTons','supportCapacity','supportRemaining','supportUnits','refillRate-middle','refillRate-high','refillRate-luxury',
  'creditStep','scoops','armed','reducedProfitLimitsEnabled','minPurchasePercent','maxSalePercent',
  'maxBaseRetailEnabled','maxBaseRetail','useRawIllegalPrices','tax','insurance','mortgageOriginal','mortgagePayment','mortgageRemaining','mortgagePaid','mortgageDueDate','maintenancePayment','maintenanceDueDate'
 ];
-assert.equal(fieldNames.length,57);
-assert.equal(new Set(fieldNames).size,57);
+assert.equal(fieldNames.length,62);
+assert.equal(new Set(fieldNames).size,62);
 const draft={
  mortgageOriginal:'24000000',mortgagePayment:'100001',mortgageRemaining:'360',mortgagePaid:'12000000',mortgageDueDate:'029-1105',maintenancePayment:'2001',maintenanceDueDate:'015-1105',
  name:'Compact Settings verification',ship:'Synthetic Settings Trader',capacity:'160',jump:'3',
@@ -34,6 +34,7 @@ const draft={
  'rooms-low':'1','roomService-low':'custom','roomCustom-low':'200',
  'rooms-middle':'5','roomService-middle':'custom','roomCustom-middle':'1300',
  'rooms-high':'2','roomService-high':'custom','roomCustom-high':'1700',
+ 'rooms-luxury':'0','roomService-luxury':'luxury','roomCustom-luxury':'1000','people-luxury':'0','refillRate-luxury':'5000',
  'people-middle':'6','people-high':'3',occupiedLowBerths:'2',luggageOverride:true,luggageTons:'7',supportCapacity:'35',supportRemaining:'13.75',supportUnits:'',
  'refillRate-middle':'1000','refillRate-high':'3000',creditStep:'100',scoops:false,armed:true,reducedProfitLimitsEnabled:true,minPurchasePercent:'90',maxSalePercent:'110',
  maxBaseRetailEnabled:true,maxBaseRetail:'50000',useRawIllegalPrices:true,tax:true,insurance:true,fuelAvailabilityAlert:true
@@ -92,6 +93,7 @@ async function start(size,{untrackedFuel=false,traderSeed=null}={}){
   const el=field(name);await reveal(el);
   if(typeof value==='boolean')await el.setChecked(value);
   else if(await el.evaluate(e=>e.tagName==='SELECT'))await el.selectOption(value);
+  else if(name==='roomCustom-luxury'&&await el.isDisabled())assert.equal(await el.inputValue(),value,'Unused Luxury cabin rate retains its default');
   else await el.fill(value);
  }
  async function setDraft(){for(const [name,value]of Object.entries(draft))await set(name,value);}
@@ -160,7 +162,7 @@ function savedValues(state,before){
 async function auxiliary(h){
  const {page,raw,unchanged,action,dismiss,reveal}=h,before=await raw();
  await action('settings-edit');await page.getByRole('heading',{name:'Ship, trader & options',exact:true}).waitFor();
- assert.deepEqual((await page.locator('#modal [name]').evaluateAll(fields=>fields.map(el=>el.name))).sort(),[...fieldNames].sort(),'The optional dialog has the same 55 fields');
+ assert.deepEqual((await page.locator('#modal [name]').evaluateAll(fields=>fields.map(el=>el.name))).sort(),[...fieldNames].sort(),'The optional dialog has the same 62 fields');
  await page.locator('#modal [name="mode"]').selectOption('custom');
  assert.equal(await page.locator('#modal [name="custom"]').isDisabled(),false,'Modal mode changes update the modal control');
  assert.equal(await page.locator('#settings-form').count(),0,'The inline form is detached while the optional dialog is open');
@@ -235,7 +237,7 @@ try{
   await tab('Settings');await page.locator('#settings-form').waitFor();
   assert.equal(await page.locator('#modal[open]').count(),0,'Settings are inline, not a compulsory modal');
   const inventory=await page.locator('#settings-form [name]').evaluateAll(fields=>fields.map(el=>({name:el.name,label:[...(el.labels||[])].map(label=>label.textContent.trim()).join(' '),row:!!el.closest('.setting-row')})));
-  assert.deepEqual(inventory.map(x=>x.name).sort(),[...fieldNames].sort(),'All 55 existing fields appear exactly once');
+  assert.deepEqual(inventory.map(x=>x.name).sort(),[...fieldNames].sort(),'All 62 fields including Luxury appear exactly once');
   assert.ok(inventory.every(x=>x.label&&x.row),'Every field has a label and a compact setting row');
   assert.ok(await page.locator('#settings-form .settings-section').count()>1,'Settings are grouped into sections');
   const sections=page.locator('#main details[data-settings-group]');
@@ -317,7 +319,7 @@ try{
   for(const name of ['minPurchasePercent','maxSalePercent'])assert.equal(await field(name).isDisabled(),false,'Price-limit values remain editable while the option is off');
   const switches=page.locator('#settings-form .settings-switch input[type="checkbox"],#settings-form input.settings-switch[type="checkbox"]');
   assert.equal(await switches.count(),9,'All nine boolean options retain native checkbox switches');
-  await setDraft();assert.deepEqual(await values(),draft,'All 55 draft controls accept their intended input types');
+  await setDraft();assert.deepEqual(await values(),draft,'All 62 draft controls accept their intended input types');
   // Explicit arrow buttons must preserve direct typing, signed values and the
   // fractional custom profit. A +1 / -1 round trip never silently saves.
   for(const number of await page.locator('#settings-form input[type="number"]').all()){
@@ -408,7 +410,7 @@ try{
   await unchanged(beforeReadOnly,'Editing ownership transfer');
   if(size.width===1440){await auxiliary(h);await staleDraft(h);}
   await h.finish(String(size.width));
-  console.log(`PASS: ${size.width}px all 14 disclosure headers, pointer/keyboard, defaults/navigation, exact 55-field parity, collapsed draft/save/revert, validation/reveal/focus, atomic save/reload/Undo, partial-day stock and editing locks.`);
+  console.log(`PASS: ${size.width}px all 14 disclosure headers, pointer/keyboard, defaults/navigation, exact 62-field parity, collapsed draft/save/revert, validation/reveal/focus, atomic save/reload/Undo, partial-day stock and editing locks.`);
  }
  // Legacy trade and mail defaults differ on purpose. The actual UI must keep
  // both, and method switching must never overwrite a manually entered DM.
