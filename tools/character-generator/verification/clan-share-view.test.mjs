@@ -36,7 +36,7 @@ test('reserved continuations and missing projection have no exchange or verifica
 test('projected names and source labels are escaped, with wrapping live summaries',()=>{
  const s=state({config:{gm:true}});s.clanShareOptions.contacts[1].name='<Contact>';s.clanShareOptions.clans[0].name='<Clan>';
  const html=clanShareView(s,context);assert.match(html,/&lt;Contact&gt;/);assert.match(html,/&lt;Clan&gt;/);assert.doesNotMatch(html,/<Contact>|<Clan>/);
- for(const id of ['clan-share-lot-help','clan-share-contact-help','clan-verify-lot-help','clan-verify-contact-help'])assert.match(html,new RegExp('id="'+id+'"[^>]*aria-live="polite"'));
+ for(const id of ['clan-share-lot-help','clan-share-contact-help','clan-verify-lot-help','clan-verify-contact-help','clan-verify-target-help','clan-contact-clan-help'])assert.match(html,new RegExp('id="'+id+'"[^>]*aria-live="polite"'));
 });
 test('sheet retains original awards, partial spending and forfeiture separately',()=>{
  const s={character:{clanShareLots:[{id:'lot-1',awarded:3,available:0,spent:1,forfeited:2}],clanShareRedemptions:[{kind:'contact',quantity:1,outputs:{relationshipAfter:{name:'<Person>'}}}]}};
