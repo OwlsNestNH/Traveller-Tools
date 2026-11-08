@@ -1,9 +1,9 @@
 import {playerTradePrint,openTradePrint} from './trade-exports.mjs';
 import {derivedRetailPercent} from './player-retail-percent.mjs';
 import {campaignPoliticsFragment} from './campaign-politics-codec.mjs';
-import {informationButton} from './player-info.mjs?v=compact-trade-20261021-118';
+import {informationButton} from './player-info.mjs?v=fleet-20261108-1';
 import {formatSnapshotTons, formatSnapshotWholeDown, formatSnapshotLss, formatSnapshotQuantityText} from './player-snapshot-format.mjs';
-import {projectPlayerSnapshot, summarizePlayerExpenses, EXPENSE_KINDS} from './player-snapshot.mjs?v=compact-trade-20261021-118';
+import {projectPlayerSnapshot, summarizePlayerExpenses, EXPENSE_KINDS} from './player-snapshot.mjs?v=fleet-20261108-1';
 
 // Immutable transmitted data and local annotations remain separate.
 // Persistence is supplied by the standalone recipient adapter, never campaign storage.

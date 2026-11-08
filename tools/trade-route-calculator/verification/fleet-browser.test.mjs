@@ -158,13 +158,3 @@ if(process.argv.includes('--fixtures-only')){
  try{for(const width of [1440,390,320])for(const[name,run]of cases){if(process.env.TRAVELLER_CASE_FILTER&&!name.includes(process.env.TRAVELLER_CASE_FILTER))continue;let env;try{env=await contextFor(browser,name.startsWith('legacy')?f.state:(()=>{const seed=fixture();if(name.startsWith('supplier input')){seed.ships[1].campaign.actual=seed.ships[0].campaign.actual;seed.ships[1].campaign.routeIndex=seed.ships[0].campaign.routeIndex;}return seed;})(),width);await run(env.page,env.context,width);assert.deepEqual(env.errors,[]);for(const p of env.context.pages())assert.deepEqual(await p.evaluate(()=>globalThis.fleetUnhandled||[]),[]);console.log(`PASS ${name} ${width}`);}catch(error){failures.push(`${name} ${width}: ${error.stack||error}`);console.error(failures.at(-1));if(env)console.error('UI error:',await env.page.locator('#modal-error').textContent(),await env.page.locator('#message').textContent());}finally{await env?.context.close();}}}finally{await browser.close();}
  assert.deepEqual(failures,[],`${failures.length} fleet browser cases failed`);
 }
-
-
-
-
-
-
-
-
-
-

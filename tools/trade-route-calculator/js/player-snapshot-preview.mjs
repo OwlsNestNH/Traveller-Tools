@@ -1,7 +1,7 @@
 import {COMMODITIES} from './player-snapshot-catalog.mjs';
-import {playerSnapshotFixture} from './player-snapshot-fixture.mjs?v=compact-trade-20261021-118';
-import {renderPlayerSnapshot,clearPlayerSnapshotMap} from './player-snapshot-view.mjs?v=compact-trade-20261021-118';
-import {createRecipientStore} from './player-snapshot-storage.mjs?v=compact-trade-20261021-118';
+import {playerSnapshotFixture} from './player-snapshot-fixture.mjs?v=fleet-20261108-1';
+import {renderPlayerSnapshot,clearPlayerSnapshotMap} from './player-snapshot-view.mjs?v=fleet-20261108-1';
+import {createRecipientStore} from './player-snapshot-storage.mjs?v=fleet-20261108-1';
 const root=document.getElementById('snapshot'),store=createRecipientStore(()=>localStorage);
 function display() {
   clearPlayerSnapshotMap(root);
