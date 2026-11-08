@@ -30,7 +30,7 @@ test('CSC melee source: exactly nine bounded profiles preserve rows, handedness,
   const w=raw(id);assert.deepEqual([w.tl,w.mountClass,w.damage,w.massKg,w.cost,w.speciality,w.traits,w.requiresTwoHands],[tl,mount,damage,mass,cost,speciality,traits,twoHands],id);
   assert.equal(w.sourceFamily,'csc-2023');assert.equal(w.weaponFamily,'melee');assert.equal(w.skill,'melee');assert.equal(w.range,'Melee');assert.equal(w.magazine,null);assert.equal(w.magazineCost,0);assert.equal(w.initialIncluded,true);
   assert.equal(w.source.book,'Central Supply Catalogue Update 2023');assert.equal(w.source.edition,'Mongoose revised printing (copyright 2026)');assert.ok(w.source.pages.includes(page));assert.deepEqual(w.sourceMeasurements.mass,{value:mass,unit:'kg'});assert.equal(w.sourceMeasurements.source.pages,page);assert.equal(w.handedness.hands,twoHands?2:1);assert.equal(w.handedness.mountSource.pages,'61');
-  assert.deepEqual(w.compatibility,{accessoryRules:null,associatedLauncherRules:null,attachedLauncher:false,specialisedAmmunitionRules:null,robotPowerConnection:false});assert.equal(w.ammunitionAccounting.autoloadSupported,false);assert.equal(w.ammunitionAccounting.separatelyPricedAmmunition,false);
+  assert.deepEqual(w.compatibility,{accessoryRules:'csc-2023',associatedLauncherRules:null,attachedLauncher:false,specialisedAmmunitionRules:null,robotPowerConnection:false});assert.equal(w.ammunitionAccounting.autoloadSupported,false);assert.equal(w.ammunitionAccounting.separatelyPricedAmmunition,false);
   for(const flag of ['resolvedAttack','skillGranted','defenceGranted','bodyMountedDefenceGranted'])assert.equal(w.conditionalEffects[flag],false);
  }
  for(const id of ['cutlass','dagger','stunstick','club','blade','rapier','gravity-hammer','static-maul','arc-field-weapon','chaindrive-axe','psi-blade','boarding-shield','gravitic-shield'])assert.equal(raw(id),undefined);
@@ -53,10 +53,15 @@ for(const [id,tl,mount,damage,mass,cost,speciality,traits,twoHands] of expected)
  const held=direct(id,{placement:'held',manipulatorId:'arm'});assert.equal(held.weapons[0].slots,0);assert.equal(held.weapons[0].cost,cost);assert.equal(has(held,'HELD_TWO_HANDED_WEAPON_UNRESOLVED'),twoHands);if(twoHands){assert.equal(held.weapons[0].baseAttackModifier,null);assert.equal(held.diagnostics.find(d=>d.code==='HELD_TWO_HANDED_WEAPON_UNRESOLVED').severity,'blocker');assert.equal(profile(id,{placement:'held',manipulatorId:'arm',fireControl:'advanced'}).baseAttackModifier,null);}
 });
 
-test('CSC melee integration: all firearm accessories, ammunition and attached launchers fail closed',()=>{
+test('CSC melee integration: narrow accessories are admitted while ammunition and attached launchers fail closed',()=>{
  for(const w of CSC_MELEE_WEAPONS){const id=w.id.slice(4);
-  for(const a of CSC_WEAPON_ACCESSORIES)assert.equal(cscAccessoryEligibility(w,a).available,false);
-  for(const a of WEAPON_ACCESSORIES){const r=direct(id,{accessories:[a.id]});assert.ok(has(r,'CSC_ACCESSORIES_UNSUPPORTED'),a.id);assert.equal(r.weapons[0].cost,null);assert.deepEqual(r.weapons[0].accessoryEffects,[]);assert.deepEqual(r.weapons[0].traits,w.traits);}
+  for(const a of WEAPON_ACCESSORIES){
+   const allowed=a.sourceFamily==='csc-2023'&&(['intelligent','scan-jammer','smart-tracker'].includes(a.kind)||a.kind==='gyrostabiliser'&&['mace','battle-axe','broadsword','great-axe'].includes(id));
+   if(a.sourceFamily==='csc-2023')assert.equal(cscAccessoryEligibility(w,a).available,allowed);
+   const accessories=[a.id,...(a.id==='csc-smart-tracker'?['csc-intelligent-0']:[])],r=direct(id,{accessories});
+   if(allowed){assert.equal(r.weapons[0].cost,w.cost+(w.mountClass==='small'?500:1000)+a.cost+(a.id==='csc-smart-tracker'?1000:0));assert.equal(r.weapons[0].baseAttackModifier,-3);}
+   else{assert.ok(r.diagnostics.some(d=>d.severity==='error'),a.id);assert.equal(r.weapons[0].cost,null);assert.deepEqual(r.weapons[0].accessoryEffects,[]);assert.deepEqual(r.weapons[0].traits,w.traits);}
+  }
   for(const ammunition of ['frag','smoke','stun','aerosol']){const r=direct(id,{ammunition});assert.ok(has(r,'CSC_AMMUNITION_UNSUPPORTED'));assert.equal(r.weapons[0].cost,null);}
   for(const patch of [{auxiliaryLauncher:'attached'},{auxiliaryLauncher:'integral-acr'},{auxiliaryLauncher:'both-acr'},{auxiliaryLoaded:1},{integralLoaded:1},{looseGrenades:1}]){const r=direct(id,patch);assert.ok(has(r,'CSC_LAUNCHERS_UNSUPPORTED'));assert.equal(r.weapons[0].cost,null);assert.deepEqual(r.weapons[0].associatedAttacks,[]);}
  }

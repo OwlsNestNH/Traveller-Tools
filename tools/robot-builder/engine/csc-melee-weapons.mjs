@@ -26,8 +26,8 @@ export const CSC_MELEE_WEAPONS=rows.map(([id,name,tl,mountClass,damage,massKg,co
  range:'Melee',damage,massKg,cost,magazine:null,magazineCost:0,initialIncluded:true,skill:'melee',speciality,traits,implemented:true,requiresTwoHands,
  sourceMeasurements:{mass:{value:massKg,unit:'kg'},source:csc(tablePage)},
  handedness:{hands:requiresTwoHands?2:1,alternateTwoHandedUse:['battle-axe','long-blade-1','long-blade-3'].includes(id),source:csc(id==='mace'?'132':id==='buckler'?'140':id.startsWith('long-blade')||id==='monoblade'?'135':'134'),mountSource:rh('61')},
- // Firearm accessories are deliberately unsupported for these melee profiles.
- compatibility:{accessoryRules:null,associatedLauncherRules:null,attachedLauncher:false,specialisedAmmunitionRules:null,robotPowerConnection:false},
+ // Only source-supported melee accessory families are admitted by the shared rules.
+ compatibility:{accessoryRules:'csc-2023',associatedLauncherRules:null,attachedLauncher:false,specialisedAmmunitionRules:null,robotPowerConnection:false},
  conditionalEffects:conditions(id,traits),
  ammunitionAccounting:{initialMagazine:'not-applicable',sourceInclusion:'not-applicable',separatelyPricedAmmunition:false,autoloadSupported:false,source:csc(tablePage)},
  source:csc(pages),

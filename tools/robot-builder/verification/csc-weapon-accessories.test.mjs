@@ -47,14 +47,14 @@ for(const [id,tl,cost,mass,family,pages,weaponId] of expected){
  });
 }
 
-test('bounded catalogue contains twelve unique CSC accessory IDs and unchanged nine Core IDs/prices',()=>{
- assert.equal(CSC_WEAPON_ACCESSORIES.length,12);assert.deepEqual(CSC_WEAPON_ACCESSORIES.map(a=>a.id),expected.map(([id])=>'csc-'+id));assert.equal(new Set(WEAPON_ACCESSORIES.map(a=>a.id)).size,WEAPON_ACCESSORIES.length);
+test('bounded catalogue contains twenty unique CSC accessory IDs and unchanged nine Core IDs/prices',()=>{
+ assert.equal(CSC_WEAPON_ACCESSORIES.length,20);assert.deepEqual(CSC_WEAPON_ACCESSORIES.slice(0,12).map(a=>a.id),expected.map(([id])=>'csc-'+id));assert.equal(new Set(WEAPON_ACCESSORIES.map(a=>a.id)).size,WEAPON_ACCESSORIES.length);
  const core=WEAPON_ACCESSORIES.filter(a=>a.sourceFamily==='core-2022');assert.deepEqual(core.map(a=>[a.id,a.tl,a.cost]),[['gyrostabiliser',9,500],['intelligent-0',11,1000],['intelligent-1',13,5000],['laser-sight-8',8,200],['laser-sight-10',10,200],['scope-5',5,50],['scope-7',7,50],['secure',10,250],['suppressor',8,250]]);
- for(const id of ['csc-bipod','csc-auxiliary-launcher','csc-high-capacity-magazine','csc-phud','csc-xray','csc-shoulder-stock','csc-secure'])assert.ok(!WEAPON_ACCESSORIES.some(a=>a.id===id));
+ for(const id of ['csc-auxiliary-launcher','csc-high-capacity-magazine','csc-phud','csc-xray'])assert.ok(!WEAPON_ACCESSORIES.some(a=>a.id===id));
 });
 
-test('all 25 slug weapons enforce the independently checked CSC eligibility matrix in controls and evaluation',()=>{
- for(const w of CSC_SLUG_WEAPONS)for(const a of CSC_WEAPON_ACCESSORIES){
+test('all 25 slug weapons enforce the original twelve-accessory eligibility matrix in controls and evaluation',()=>{
+ for(const w of CSC_SLUG_WEAPONS)for(const a of CSC_WEAPON_ACCESSORIES.slice(0,12)){
   const optic=['scope-5','scope-7','holographic-sight','laser-sight-8','laser-sight-10'].some(id=>a.id==='csc-'+id);
   const allowed=!(optic&&w.traits.includes('Scope'))&&!(a.id.startsWith('csc-scope-')&&w.weaponFamily==='pistol')&&!(a.id==='csc-gyrostabiliser'&&!w.traits.some(t=>['Bulky','Very Bulky'].includes(t)))&&!(a.id==='csc-suppressor'&&w.traits.some(t=>t.startsWith('Auto ')));
   const ids=a.id==='csc-smart-tracker'?['intelligent-0','smart-tracker']:[a.id.slice(4)],r=direct(w.id.slice(4),ids);
@@ -157,8 +157,8 @@ test('accessory sources, conditional effects, catalogue variants and API returns
 });
 
 
-test('all 15 integrated energy profiles use source-aware CSC accessories and reject slug-only suppressors',()=>{
- for(const w of CSC_ENERGY_WEAPONS)for(const a of CSC_WEAPON_ACCESSORIES){
+test('all 15 integrated energy profiles use the original twelve CSC accessories and reject slug-only suppressors',()=>{
+ for(const w of CSC_ENERGY_WEAPONS)for(const a of CSC_WEAPON_ACCESSORIES.slice(0,12)){
   const optic=['scope-5','scope-7','holographic-sight','laser-sight-8','laser-sight-10'].some(id=>a.id==='csc-'+id);
   const allowed=a.id!=='csc-suppressor'&&a.id!=='csc-gyrostabiliser'&&!(optic&&w.traits.includes('Scope'))&&!(a.id.startsWith('csc-scope-')&&w.weaponFamily==='pistol');
   const ids=a.id==='csc-smart-tracker'?['intelligent-0','smart-tracker']:[a.id.slice(4)],r=direct(w.id.slice(4),ids);

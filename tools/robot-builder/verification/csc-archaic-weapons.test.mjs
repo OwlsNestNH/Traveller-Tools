@@ -104,12 +104,12 @@ test('Short Bow TL0 breakage depends on unknown manufacturing TL, never robot TL
  for(const [id] of expected.filter(r=>r[0]!=='short-bow'))assert.equal(profile(id).conditionalEffects.tl0Breakage,undefined);
 });
 
-test('CSC archaic accessories allow computers and generic sights, deny firearm-only items in UI and imports',()=>{
- const allowed=['csc-intelligent-0','csc-intelligent-1','csc-intelligent-2','csc-intelligent-3','csc-laser-sight-8','csc-laser-sight-10','csc-holographic-sight'];
+test('CSC archaic accessories allow qualified tracker hardware and retain scope/slug/pistol restrictions',()=>{
+ const allowed=['csc-intelligent-0','csc-intelligent-1','csc-intelligent-2','csc-intelligent-3','csc-laser-sight-8','csc-laser-sight-10','csc-holographic-sight','csc-smart-tracker','csc-bipod','csc-fof-safety','csc-scan-jammer','csc-secure'];
  for(const [id,,,,,,cost,,loadCost] of expected){
   assert.deepEqual(accessoryChoices(id).map(a=>a.id).sort(),[...allowed,...(id==='long-bow'?['csc-gyrostabiliser']:[])].sort());
-  for(const a of CSC_WEAPON_ACCESSORIES){const good=allowed.includes(a.id)||id==='long-bow'&&a.id==='csc-gyrostabiliser';assert.equal(cscAccessoryEligibility(raw(id),a).available,good,a.id);const r=direct(id,{accessories:[a.id]});if(good){assert.equal(r.weapons[0].cost,cost+1000+loadCost+a.cost);assert.equal(r.weapons[0].accessoryEffects[0].skillGranted,false);}else{assert.equal(r.weapons[0].cost,null);assert.deepEqual(r.weapons[0].accessoryEffects,[]);}}
-  for(const [a,code] of [['csc-scope-5','SCOPE_WEAPON'],['csc-scope-7','SCOPE_WEAPON'],['csc-suppressor','SUPPRESSOR_WEAPON'],['csc-smart-tracker','CSC_TRACKER_FIREARM']]){
+  for(const a of CSC_WEAPON_ACCESSORIES){const good=allowed.includes(a.id)||id==='long-bow'&&a.id==='csc-gyrostabiliser';assert.equal(cscAccessoryEligibility(raw(id),a).available,good,a.id);const r=direct(id,{accessories:[a.id,...(a.id==='csc-smart-tracker'?['csc-intelligent-0']:[])]});if(good){assert.equal(r.weapons[0].cost,cost+1000+loadCost+a.cost+(a.id==='csc-smart-tracker'?1000:0));assert.equal(r.weapons[0].accessoryEffects[0].skillGranted,false);}else{assert.equal(r.weapons[0].cost,null);assert.deepEqual(r.weapons[0].accessoryEffects,[]);}}
+  for(const [a,code] of [['csc-scope-5','SCOPE_WEAPON'],['csc-scope-7','SCOPE_WEAPON'],['csc-suppressor','SUPPRESSOR_WEAPON'],['csc-xray-1','CSC_XRAY_SCOPE'],['csc-shoulder-stock','CSC_STOCK_PISTOL']]){
    const patch={accessories:[a,...(a==='csc-smart-tracker'?['csc-intelligent-0']:[])]},r=direct(id,patch);assert.ok(has(r,code));assert.equal(r.weapons[0].cost,null);assert.deepEqual(r.weapons[0].accessoryEffects,[]);
    const imported=importDesign(exportDesign(design(id,patch))),evaluation=evaluateDesign(imported);assert.equal(evaluation.status,'invalid');assert.equal(evaluation.totals,null);assert.ok(has(evaluation,code));
   }
