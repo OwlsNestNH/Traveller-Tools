@@ -1,3 +1,4 @@
+import {buildFailedAslanRestorationEntryFixture} from './aslan-restoration-browser-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {api,project,importSession,exportSession} from '../engine/session.mjs';
@@ -61,4 +62,14 @@ for(const gender of ['male','female'])test('p43 '+gender+' starts at a typed sou
 });
 test('next-term education consumes the window rather than silently preserving it',()=>{
  let r=ready('on-restoration');r=run(r,'open-precareer');r=force(r,'precareer',{id:'core.university'},[6,6]);r=run(r,'education-skill',{name:'Admin'});r=run(r,'education-skill',{name:'Medic'});r=force(r,'education-event',{},[1,4]);r=force(r,'education-graduation',{},[6,6]);assert.equal(r.state.character.terms,2);assert.equal(restoration(r).status,'expired');assert.equal(restoration(r).expiry.reason,'next-term-window-ended');roundtrip(r);
+});
+
+
+test('browser failed-entry fixture earns failure from public history without relying on old origin dice order',()=>{
+ const base=buildFailedAslanRestorationEntryFixture(),saved=exportSession(base.session);
+ const attempted=run(base,'career',{id:'aslan.military-officer',assignment:'leader'});
+ assert.equal(exportSession(base.session),saved);assert.equal(base.state.stage,'career');
+ assert.equal(attempted.state.stage,'failed-entry');assert.equal(attempted.state.character.aslanRestorations.at(-1).attempt.success,false);
+ const fallback=settle(run(attempted,'fallback'));assert.equal(fallback.state.character.careers.at(-1).id,'aslan.outcast');
+ assert.equal(fallback.state.character.terms,base.state.character.terms);assert.equal(fallback.state.character.age,base.state.character.age);
 });
