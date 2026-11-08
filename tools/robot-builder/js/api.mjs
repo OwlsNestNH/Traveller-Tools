@@ -61,11 +61,13 @@ export function createRobotApi(options = {}) {
     const catalogue = engine.getCatalogue(design);
     const kind = catalogue.kinds.find(item=>item.id===design.kind)?.label || design.kind;
     const f = value => typeof value === 'number' ? new Intl.NumberFormat('en-US',{maximumFractionDigits:2}).format(value) : String(value);
-    const t = evaluation.totals;
+    const t = evaluation.totals || evaluation.previewTotals;
     const statusText = evaluation.status === 'verified' ? (evaluation.coverage?.complete === true ? 'Checked' : 'Implemented rules checked; coverage incomplete') : evaluation.status === 'invalid' ? 'Needs correction' : 'Rules or referee decisions outstanding';
     const rows = [design.name || 'Untitled robot',kind+' | TL '+design.techLevel,statusText];
     if(t) {
-      if(t.cost!=null) rows.push('Construction cost: Cr '+f(t.cost));
+      if(!evaluation.totals)rows.push('Provisional values only. This design has unresolved errors.');
+      if(t.constructionCost!=null && t.constructionCost!==t.cost)rows.push('Construction cost: Cr '+f(t.constructionCost));
+      if(t.cost!=null) rows.push((evaluation.costLabel || t.costLabel || 'Construction cost')+': Cr '+f(t.cost));
       if(t.slots) rows.push('Slots: '+f(t.slots.used)+' / '+f(t.slots.capacity)+' used ('+f(t.slots.remaining)+' free)');
       if(t.bandwidth) rows.push('Bandwidth: '+f(t.bandwidth.used)+' / '+f(t.bandwidth.capacity)+' used');
       if(t.zeroSlot) rows.push('Zero-Slot options: '+f(t.zeroSlot.used)+' / '+f(t.zeroSlot.allowance));
@@ -74,14 +76,14 @@ export function createRobotApi(options = {}) {
       if(t.traits?.length)rows.push('Traits: '+t.traits.join(', '));
       if(t.skills?.length)rows.push('Skills: '+t.skills.map(item=>(item.label||item.id)+' '+f(item.level)+(item.effectiveLevel!=null?' (effective '+f(item.effectiveLevel)+')':'')).join(', '));
       if(t.manipulators?.length){rows.push('','Manipulators');for(const arm of t.manipulators)rows.push([arm.id,arm.size!=null?'Size '+arm.size:null,arm.strength!=null?'STR '+arm.strength:null,arm.dexterity!=null?'DEX '+arm.dexterity:null].filter(Boolean).join(' | '));}
-      for(const [key,value] of Object.entries(t))if(!['cost','baseChassisCost','basicCost','slots','bandwidth','zeroSlot','zeroBandwidth','hits','armour','intelligence','intelligenceDM','tacticalSpeed','endurance','vehicleEndurance','vehicleBand','traits','skills','manipulators'].includes(key)&&value!=null) {
+      for(const [key,value] of Object.entries(t))if(!['cost','costLabel','constructionCost','baseChassisCost','basicCost','slots','bandwidth','zeroSlot','zeroBandwidth','hits','armour','intelligence','intelligenceDM','tacticalSpeed','endurance','vehicleEndurance','vehicleBand','traits','skills','manipulators'].includes(key)&&value!=null) {
         if(typeof value!=='object')rows.push(key.replace(/([A-Z])/g,' $1')+': '+f(value));
         else if(!Array.isArray(value))for(const [label,stat] of Object.entries(value))if(stat!=null&&typeof stat!=='object')rows.push(label+': '+f(stat));
       }
     }
     if (evaluation.ledger?.length) {
       rows.push('','Construction breakdown');
-      for (const item of evaluation.ledger) rows.push([item.label || item.name || item.id,item.cost !== undefined ? 'Cr '+f(item.cost) : null,item.note].filter(Boolean).join(' | '));
+      for (const item of evaluation.ledger) rows.push([item.label || item.name || item.id,item.cost === null ? 'Cost unresolved' : item.cost !== undefined ? 'Cr '+f(item.cost) : null,item.note].filter(Boolean).join(' | '));
     }
     if (evaluation.diagnostics?.length) {
       rows.push('','Checks and limitations');

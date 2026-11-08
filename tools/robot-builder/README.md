@@ -34,10 +34,11 @@ node --test tools/robot-builder/verification/*.test.mjs
 python3 -m http.server 8778 --bind 127.0.0.1
 # In another terminal:
 node tools/robot-builder/verification/browser.mjs /path/to/playwright
+node tools/robot-builder/verification/construction-browser.mjs /path/to/playwright
 ```
 
 `ROBOT_TEST_URL` overrides the local preview URL. `ROBOT_BROWSER_CHANNEL=msedge` selects Edge for local Windows verification; CI uses pinned Chromium. All browser tests use a fresh isolated context with synthetic fixtures, not a user's campaign data.
 
-Native checks independently exercise the engine and API persistence. Browser checks exercise navigation, dropdowns, explicit saves, reload, export, invalid imports and responsive layouts at 320, 390, 768, 1100 and 1440 pixels. A passing suite is not proof of exhaustive Handbook coverage.
+Native checks independently exercise construction arithmetic, all 224 source equipment rows, published reconstructions, scoped special types and API persistence. Browser checks exercise navigation, dropdowns, explicit saves, reload, export, invalid imports, equipment allocation, weapon installation, custom skills, clone training and responsive layouts at 320, 390, 768, 1100 and 1440 pixels. A passing suite is not proof of exhaustive Handbook coverage. See [published robot validation](verification/published-validation.md) for the comparison scope, assumptions and unresolved source discrepancies.
 
 No standalone linter/typechecker is configured in this plain ECMAScript-module tool. Syntax checks, schema validation, deterministic tests and independent rules/UI reviews are required before a release.

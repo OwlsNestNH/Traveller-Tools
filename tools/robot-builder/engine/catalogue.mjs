@@ -1,3 +1,5 @@
+import {weaponControl} from './weapons.mjs';
+import {SPECIALITIES,CUSTOM_PACKAGE_FIELDS} from './skills-data.mjs';
 import {OPTIONS_ARRAY} from './options-data.mjs';
 import {clone} from './schema.mjs';
 export const source = pages => ({book:'Robot Handbook',edition:'Mongoose 2022',pages});
@@ -16,8 +18,9 @@ export const BRAINS = [
  ['primitive',7,0,10000,1,0],['primitive',8,0,100,1,0],['basic',8,1,20000,3,1],['hunter-killer',8,1,30000,3,1],
  ['basic',10,1,4000,4,1],['hunter-killer',10,1,6000,4,1],['advanced',10,2,100000,6,2],['advanced',11,2,50000,7,2],
  ['advanced',12,2,10000,8,2],['very-advanced',12,3,500000,9,3],['very-advanced',13,4,500000,10,3],['very-advanced',14,5,500000,11,3],
- ['self-aware',15,10,1000000,12,4],['self-aware',16,15,1000000,13,4],['conscious',17,20,5000000,15,5],['conscious',18,30,1000000,15,5]
-].map(([family,tl,bandwidth,cost,intelligence,rank])=>choice(`${family}-tl${tl}`,`${({'primitive':'Primitive','basic':'Basic','hunter-killer':'Hunter/Killer','advanced':'Advanced','very-advanced':'Very Advanced','self-aware':'Self-Aware','conscious':'Conscious'})[family]} (TL${tl})`,'65–67',{family,tl,bandwidth,cost,intelligence,rank}));
+ ['self-aware',15,10,1000000,12,4],['self-aware',16,15,1000000,13,4],['conscious',17,20,5000000,15,5],['conscious',18,30,1000000,15,5],['conscious',19,50,1000000,18,5]
+].map(([family,tl,bandwidth,cost,intelligence,rank])=>choice(`${family}-tl${tl}`,`${({'primitive':'Primitive','basic':'Basic','hunter-killer':'Hunter/Killer','advanced':'Advanced','very-advanced':'Very Advanced','self-aware':'Self-Aware','conscious':'Conscious'})[family]} (TL${tl})`,'65–67',{family,tl,bandwidth,cost,intelligence,rank,...(tl===19?{source:source('104')}: {})}));
+BRAINS.push(choice('none','No onboard brain (drone)','78-79',{family:'none',tl:6,bandwidth:0,cost:0,intelligence:0,rank:0}));
 export const BANDWIDTH = [choice('none','None','67',{tl:0,rank:0,bandwidth:0,cost:0}), ...[
  [8,1,1,5000],[10,2,2,5000],[11,2,3,10000],[12,2,4,20000],[12,3,6,50000],[12,3,8,100000],
  [15,4,10,500000],[15,4,15,1000000],[15,4,20,2500000],[15,4,25,5000000],[17,5,30,5000000],[17,5,40,10000000],[18,5,50,5000000]
@@ -37,19 +40,24 @@ export const PACKAGES = SKILLS.flatMap(skill=>[0,1,2,3].map(level=>choice(`${ski
  skill:skill.id,level,tl:skill.tl+level,bandwidth:skill.bandwidth+level,cost:skill.cost*10**level,characteristic:skill.characteristic,
  implemented:!(level>0&&specialtySkills.includes(skill.id)),reason:level>0&&specialtySkills.includes(skill.id)?'Speciality selection is not yet implemented.':undefined
 }))).map(({reason,...rest})=>reason?{...rest,reason}:rest);
-const documentedSpecialities={electronics:['comms','computers','remote-ops','sensors'],engineer:['m-drive','j-drive','life-support','power']};
-for(const [skillId,specialities] of Object.entries(documentedSpecialities)){
+for(const [skillId,specialities] of Object.entries(SPECIALITIES)){
  const skill=SKILLS.find(s=>s.id===skillId);
- for(const speciality of [...specialities,'all'])for(const level of [1,2,3]){
-  const count=speciality==='all'?4:1;
-  PACKAGES.push(choice(skillId+'-'+speciality+'-'+level,skill.label+' ('+speciality.replaceAll('-',' ')+') '+level,'73–75',{
-   skill:skillId,speciality,level,tl:skill.tl+level,bandwidth:(skill.bandwidth+level)*count,perPackageBandwidth:skill.bandwidth+level,packageCount:count,cost:skill.cost*10**level*count,characteristic:skill.characteristic
+ const allId=['electronics','engineer'].includes(skillId)?'all':'all-listed';
+ const broadChoices=skillId==='profession'||skillId==='art'?[]:skillId==='science'?['all-referee-four','all-referee-eight']:['all-referee-four'];
+ for(const speciality of [...specialities,allId,...broadChoices])for(const level of [1,2,3]){
+  const refereeBroad=speciality.startsWith('all-referee-'),broad=speciality===allId||refereeBroad,count=refereeBroad?(speciality.endsWith('eight')?8:4):broad?specialities.length:1,requiresInstrument=skillId==='art'&&(speciality==='instrument'||broad);
+  PACKAGES.push(choice(skillId+'-'+speciality.toLowerCase()+'-'+level,skill.label+' ('+speciality.replaceAll('-',' ')+') '+level,'73-75',{
+   skill:skillId,speciality,level,tl:skill.tl+level,bandwidth:(skill.bandwidth+level)*count,perPackageBandwidth:skill.bandwidth+level,packageCount:count,cost:skill.cost*10**level*count,characteristic:skill.characteristic,
+   specialtySource:{book:'Core Rulebook Update 2022',pages:'64-72'},...(broad?{coveredSpecialities:specialities}:{}),...(refereeBroad?{refereeBroad:true}:{}),
+   ...(requiresInstrument?{implemented:false,reason:'Name the actual instrument in a custom package.'}:{})
   }));
  }
 }
 const optionAliases={'visual-spectrum-sensor':'visual-spectrum','voder-speaker':'voder','auditory-sensor':'auditory','wireless-data-link':'wireless','transceiver-5km-improved':'transceiver-improved','transceiver-5km-basic':'transceiver-basic','video-screen-basic':'video-basic'};
 export const OPTIONS=OPTIONS_ARRAY.map(row=>({...row,id:optionAliases[row.id]??row.id,parameterControls:[
- ...(row.repeatable||row.slotsBasis==='allocated'?[{field:'quantity',label:row.slotsBasis==='allocated'?'Allocated slots':'Quantity',type:'number',min:1,max:1000,default:1,step:1}]:[]),
+ ...(row.repeatable||row.slotsBasis==='allocated'?[{field:'quantity',label:row.slotsBasis==='allocated'?'Allocated slots':'Quantity',type:'number',min:1,max:1000,default:1,step:1,appliesTo:'options'}]:[]),
+ ...(row.zeroSlot?[{field:'suiteQuantity',label:'Default-suite copies',type:'number',min:1,max:5,default:1,step:1,appliesTo:'defaultSuite'}]:[]),
+ ...(row.requiresPriceInterpretation?[{field:'costInterpretation',label:'Short RTG price interpretation',type:'select',default:'unresolved',choices:[{id:'unresolved',label:'Resolve table/prose conflict'},{id:'baseSlots',label:'Prose: cost per chassis Base Slot'},{id:'installedSlots',label:'Table: cost per installed option Slot'}]}]:[]),
  ...(row.requiresDetail?[{field:'detail',label:row.requiresDetail,type:'text',maxLength:120,default:''}]:[])
 ]}));
 export const DEFAULT_ITEMS = [
@@ -66,8 +74,7 @@ export const CORE_PACKAGES=[choice('none','No hard-coded package','69–73',{fam
  ['basic-target','Basic (target)','basic',1,[['explosives',1],['recon',0]]],['hunter-standard','Hunter/Killer (standard)','hunter-killer',1,[['weapon',0],['recon',0]]],
  ['hunter-tactical','Hunter/Killer (tactical)','hunter-killer',1,[['weapon',0],['recon',0],['tactics-military',2]]]
  ].map(([id,label,family,bandwidth,skills])=>choice(id,label,'69–73',{family,bandwidth,skills,cost:id==='hunter-tactical'?10000:0,
- implemented:!['primitive-homing','basic-security','hunter-standard','hunter-tactical'].includes(id),
- ...(['primitive-homing','basic-security','hunter-standard','hunter-tactical'].includes(id)?{reason:'Weapon speciality selection and hard-coded bandwidth confirmation are pending.'}:{})}))
+ implemented:true}))
 ];
 
 export const KINDS = [choice('standard','Ordinary robot','13–78'),...[
@@ -84,20 +91,27 @@ export const STAGES = [
  number('armourAdded','Additional armour',0,60,'19','Chassis Modifications'),boolean('armourRemoved','Remove one point of base armour','19','Chassis Modifications'),
  boolean('efficiency','Improved efficiency','19–20','Chassis Modifications'),number('powerPacks','Additional power packs',0,3,'19–20','Chassis Modifications'),number('resiliency','Hit adjustment',-36,64,'20','Chassis Modifications'),
  number('agility','Agility enhancement',0,4,'22','Locomotive Modifications'),number('tacticalSpeed','Tactical movement adjustment',-6,7,'22','Locomotive Modifications'),boolean('vehicleSpeed','Vehicle speed movement','23','Locomotive Modifications'),{...number('vehicleBands','Extra vehicle speed bands',0,3,'23','Locomotive Modifications'),visibleWhen:{field:'vehicleSpeed',equals:true}},
+ select('powerMode','Operating power assumption',[choice('conventional','Conventional power / added packs','19,55-57'),choice('direct-connection','Direct connection to an external supply','19,55-56'),choice('alternate-full','Installed RTG / solar units at full capability','55-57')],'Slot Cost Options'),
  {field:'defaultSuite',label:'Default suite (up to five items)',category:'Default Suites',type:'multiselect',maxItems:5,choices:OPTIONS.filter(o=>o.zeroSlot)},
  {field:'options',label:'Installed options',type:'multiselect',choices:OPTIONS},
+ weaponControl(),
  {field:'optionParameters',label:'Installed option settings',type:'option-parameters',choices:OPTIONS},
  {field:'manipulators',label:'Manipulators',type:'manipulators',baseIds:['base-1','base-2'],kinds:[{id:'additional',label:'Additional arm'},{id:'leg',label:'Converted walker leg'}],itemFields:[select('size','Manipulator size',[{id:'chassis',label:'Match chassis'},...Array.from({length:10},(_,i)=>({id:i+1,label:`Size ${i+1}`}))]),number('strengthIncrease','STR increase',0,19,'26'),number('dexterityIncrease','DEX increase',0,13,'26')],category:'Manipulator Modification',source:source('25–26'),description:'Two base arms; additional arms and converted walker legs may be specified. Empty list removes both base arms.'}
  ]},
  {id:'brain',label:'Robot Brain',description:'Brain generation controls inherent bandwidth; storage upgrades do not increase the per-package limit.',controls:[select('model','Brain model',BRAINS),select('bandwidthUpgrade','Bandwidth upgrade',BANDWIDTH),number('intellectUpgrade','Intellect increase',0,3,'67'),boolean('hardened','Hardened brain and storage','67')]},
- {id:'skills',label:'Skill Packages',description:'Standard packages. Positive-level speciality packages and hard-coded primitive/basic packages remain blocked.',controls:[select('corePackage','Hard-coded package',CORE_PACKAGES),{field:'packages',label:'Installed packages',type:'multiselect',choices:PACKAGES}]},
+ {id:'skills',label:'Skill Packages',description:'Choose published specialities or a book-permitted custom language, profession, science field or instrument. Profession never grants other specialities at level zero.',controls:[select('corePackage','Hard-coded package',CORE_PACKAGES),select('coreWeapon','Hard-coded weapon speciality',[choice('unspecified','Select a weapon speciality','69-73'),...['gun-combat','melee','heavy-weapons','gunner'].flatMap(skill=>SPECIALITIES[skill].map(speciality=>choice(skill+':'+speciality,SKILLS.find(s=>s.id===skill).label+' ('+speciality.replaceAll('-',' ')+')','69-73')))]),select('hunterBandwidth','Hunter/Killer package bandwidth interpretation',[choice('unresolved','Unresolved source ambiguity','72-73'),choice('zero','Referee interpretation: hard-coded package uses 0 BW','72-73'),choice('one','Referee interpretation: hard-coded package uses 1 BW','72-73')]),{field:'packages',label:'Installed packages',type:'multiselect',choices:PACKAGES},{field:'customPackages',label:'Custom specialities permitted by the book',type:'custom-packages',maxItems:200,itemFields:CUSTOM_PACKAGE_FIELDS,source:{book:'Core Rulebook Update 2022',pages:'64-72'}}]},
  {id:'finalisation',label:'Finalisation',description:'Remove only genuinely unused slots; the original base slots remain the basis for other costs.',controls:[number('removedSlots','Permanently remove unused slots',0,160,'13'),select('priceMode','Final price',[choice('construction','Calculated construction cost','76'),choice('custom','Custom list price (book-permitted adjustment)','76')]),{...number('customPrice','Custom final list price (Cr)',0,Number.MAX_SAFE_INTEGER,'76'),visibleWhen:{field:'priceMode',equals:'custom'}}]}
 ];
-export const COVERAGE = {complete:false,scope:'Verified ordinary construction subset; not full Handbook coverage.',gaps:[
- {id:'option-catalogue',message:'224 source-cited ordinary option rows are catalogued. Short-duration RTG pricing, autoloaders, detailed weapon integration and conditional operational performance require additional handling.',source:source('29–64')},
- {id:'special-types',message:'Special robot forms, clones, vehicle brains and ship brains are blocked.',source:source('79–105')},
- {id:'hardcoded-packages',message:'Weapon-specific hard-coded packages and Hunter/Killer bandwidth interpretation remain blocked.',source:source('69–73')},
- {id:'speciality-packages',message:'Electronics and Engineer specialities (including four-package all-speciality coverage) are implemented. Other positive-level specialities require verified source enumeration.',source:source('73–74')},
- {id:'finalisation',message:'Complete finalisation including all cost adjustments and characteristic/trait output is pending.',source:source('76–78')}
+for(const control of STAGES.find(s=>s.id==='skills').controls){
+ if(control.field==='coreWeapon')control.visibleWhen={field:'corePackage',oneOf:['primitive-homing','basic-security','hunter-standard','hunter-tactical']};
+ if(control.field==='hunterBandwidth')control.visibleWhen={field:'corePackage',oneOf:['hunter-standard','hunter-tactical']};
+}
+export const COVERAGE = {complete:false,scope:'Selected-rule construction checks, not certification of every possible Handbook design.',supportedTechLevels:{minimum:5,maximum:23,note:'Displayed implementation scope follows published component and high-technology milestones, not a universal campaign TL limit. Ordinary armour below TL6 remains unresolved.'},gaps:[
+ {id:'weapons',message:'Source-defined Core slug and energy weapons and the Handbook stunner support mounts, links and autoloaders. Other weapon catalogues, loose-ammunition storage and complete attack-context resolution remain incomplete.',source:source('60-64')},
+ {id:'power-conditions',message:'Full-capability alternative power and direct connection are modelled; aged RTG output, dim-solar states, solar-coating-only operation and detailed recharge cycles still require review.',source:source('33,55-57')},
+ {id:'short-rtg-interpretation',message:'Short RTG table/prose pricing conflicts are exposed as an explicit user/referee interpretation, not silently reconciled.',source:source('56')},
+ {id:'per-instance-options',message:'Repeated identical equipment is supported. Multiple copies of one grade with different per-copy details or weapon targets require separate-instance support.',source:source('41-64')},
+ {id:'aeroplane-speed',message:'Aeroplane vehicle-speed mapping is absent from the p23 table and remains blocked pending a disclosed source interpretation.',source:source('17,23')},
+ ...OPTIONS.filter(o=>!o.implemented).map(o=>({id:'option-'+o.id,message:o.label+': '+o.reason,source:o.source}))
 ]};
-export function getCatalogue(){return clone({schemaVersion:1,kinds:KINDS,techLevels:Array.from({length:12},(_,i)=>({id:i+7,label:`TL${i+7}`})),stages:STAGES,coverage:COVERAGE});}
+export function getCatalogue(){return clone({schemaVersion:1,kinds:KINDS,techLevels:Array.from({length:19},(_,i)=>({id:i+5,label:`TL${i+5}`})),stages:STAGES,coverage:COVERAGE});}

@@ -6,7 +6,7 @@ const error=(r,code)=>assert.ok(r.diagnostics.some(x=>x.code===code),JSON.string
 const verified=r=>{assert.equal(r.status,'verified',JSON.stringify(r.diagnostics));return r.totals;};
 const arm=(id,kind,size,strengthIncrease=0,dexterityIncrease=0)=>({id,kind,size,strengthIncrease,dexterityIncrease});
 test('six stages, typed values, explicit incomplete scope and catalogue isolation',()=>{
- const a=getCatalogue();assert.equal(a.stages.length,6);assert.equal(a.coverage.complete,false);assert.equal(a.techLevels[0].id,7);
+ const a=getCatalogue();assert.equal(a.stages.length,6);assert.equal(a.coverage.complete,false);assert.equal(a.techLevels[0].id,5);
  a.kinds[0].label='changed';assert.notEqual(getCatalogue().kinds[0].label,'changed');
  assert.equal(a.stages.find(x=>x.id==='physical').controls.find(x=>x.field==='vehicleSpeed').choices[0].id,false);
 });

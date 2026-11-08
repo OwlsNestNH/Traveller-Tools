@@ -15,9 +15,12 @@ const categories = [
 ];
 let api;
 let view;
+let pointerActive = false;
+let deferredView = null;
 let currentStage = 'chassis';
 let physicalCategory = 'chassis-modifications';
 const searches = new Map();
+const customDrafts = new Map();
 const number = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 });
 const el = (tag, text, className) => {
   const node = document.createElement(tag);
@@ -100,7 +103,7 @@ function submitSelection(control, value) {
 }
 function renderControl(control, choicesOverride) {
   const field = el('div', undefined, 'field');
-  const id = `field-${currentStage}-${control.field}${control.category ? `-${control.category}` : ""}`;
+  const id = ['field',currentStage,control.field,control.category && String(control.category).toLowerCase().replace(/[^a-z0-9_-]+/g,'-')].filter(Boolean).join('-');
   const label = el('label', control.label); label.htmlFor = id; field.append(label);
   const choices = choicesOverride || control.choices || [];
   const selected = selectedValue(control);
@@ -111,7 +114,7 @@ function renderControl(control, choicesOverride) {
     const installed = new Set([...(all.options || []),...(all.defaultSuite || [])]);
     let shown=0;
     for(const choice of choices.filter(item=>installed.has(item.id))) {
-      const controls=(choice.parameterControls || []).filter(item=>item.field!=='quantity'||!(all.defaultSuite||[]).includes(choice.id));
+      const controls=(choice.parameterControls || []).filter(item=>(!control.paramContext || !item.appliesTo || item.appliesTo===control.paramContext) && (!item.appliesTo || item.appliesTo==='options'&&(all.options||[]).includes(choice.id) || item.appliesTo==='defaultSuite'&&(all.defaultSuite||[]).includes(choice.id)));
       if(!controls.length)continue;
       shown++;
       const card=el('div',undefined,'option-settings');card.append(el('h4',choice.label));
@@ -129,6 +132,63 @@ function renderControl(control, choicesOverride) {
       card.append(grid);if(choice.source)card.append(el('p',sourceText(choice.source),'source'));field.append(card);
     }
     if(!shown)return el('span',undefined,'empty-settings');
+  } else if (control.type === 'custom-packages' || control.type === 'weapons') {
+    field.classList.add('wide');
+    const installed=Array.isArray(selected)?selected:[];
+    const isWeapon = control.type === 'weapons';
+    const recordLabel = record => isWeapon ? (control.itemFields?.find(item=>item.field==='weaponId')?.choices?.find(choice=>choice.id===record.weaponId)?.label || 'Weapon installation') : record.speciality || 'Custom package';
+    const makeFields=(record,prefix,onChange)=>{
+      const grid=el('div',undefined,'fields-grid');
+      for(const item of control.itemFields || []) {
+        if (!matchesVisibility(item, record)) continue;
+        const row=el('label',item.label || item.field);
+        const fieldId=prefix+'-'+item.field;row.htmlFor=fieldId;
+        let input;
+        if(item.type==='number')input=numericPicker(item,record[item.field]??item.min,value=>onChange(item.field,value));
+        else if(item.type==='select'){input=el('select');selectChoices(input,item.choices,record[item.field]);input.addEventListener('change',()=>onChange(item.field,item.choices.find(c=>String(c.id)===input.value)?.id??null));}
+        else {input=el('input');input.type='text';input.value=record[item.field]??'';input.maxLength=item.maxLength||120;input.addEventListener('input',()=>onChange(item.field,input.value));}
+        input.id=fieldId;row.append(input);grid.append(row);
+      }
+      return grid;
+    };
+    for(const record of installed) {
+      const card=el('div',undefined,'option-settings');
+      const heading=el('div',undefined,'manipulator-heading');heading.append(el('h4',recordLabel(record)));
+      const remove=el('button','Remove');remove.type='button';remove.setAttribute('aria-label','Remove '+recordLabel(record));
+      remove.addEventListener('click',()=>submitSelection(control,installed.filter(item=>item.id!==record.id)));
+      heading.append(remove);card.append(heading);
+      const grid=makeFields(record,id+'-'+record.id,(key,value)=>{
+        // Keep text edits local until blur, so typing does not redraw the form.
+        const next={...record,[key]:value};
+        if(typeof value==='string'&&key==='speciality'){record[key]=value;return;}
+        submitSelection(control,installed.map(item=>item.id===record.id?next:item));
+      });
+      for(const input of grid.querySelectorAll('input[type=text]'))input.addEventListener('change',()=>submitSelection(control,installed));
+      card.append(grid);field.append(card);
+    }
+    const draftKey=view.design.kind+':'+id;
+    const draft=customDrafts.get(draftKey)||Object.fromEntries((control.itemFields||[]).map(item=>[item.field,item.default??(item.type==='select'?item.choices?.[0]?.id:item.type==='number'?item.min??0:'')]));
+    customDrafts.set(draftKey,draft);
+    const composer=el('div',undefined,'option-settings');
+    composer.append(el('h4',isWeapon?'Add a weapon installation':'Add a book-permitted custom package'));
+    const add=el('button',control.addLabel || (isWeapon?'Add weapon':'Add custom package'));add.type='button';add.className='primary';
+    const valid=()=>!(control.itemFields||[]).some(item=>item.type==='text'&&!String(draft[item.field]||'').trim())&&installed.length<(control.maxItems||200);
+    add.disabled=!valid();
+    const redrawComposer = () => {
+      const next = makeFields(draft, id+'-new', (key, value) => {
+        draft[key]=value;customDrafts.set(draftKey,draft);add.disabled=!valid();
+        if ((control.itemFields||[]).some(item=>item.visibleWhen?.field===key)) redrawComposer();
+      });
+      const previous=composer.querySelector('.fields-grid');
+      if(previous)previous.replaceWith(next);else composer.append(next);
+    };
+    redrawComposer();
+    add.addEventListener('click',()=>{
+      const next={id:(isWeapon?'wpn-':'pkg-')+globalThis.crypto.randomUUID(),...draft};
+      customDrafts.delete(draftKey);submitSelection(control,[...installed,next]);
+    });
+    composer.append(add);field.append(composer);
+
   } else if (control.type === 'manipulators') {
     field.classList.add('wide');
     if (!control.itemFields?.length) {
@@ -234,13 +294,25 @@ function renderControl(control, choicesOverride) {
   if (control.type !== 'multiselect' && control.choices?.length === 0) field.append(el('p', 'Book choices pending verification. No custom values are substituted.', 'help'));
   return field;
 }
+function matchesVisibility(control, values) {
+  if(!control.visibleWhen)return true;
+  const rule=control.visibleWhen,value=values?.[rule.field];
+  if(Array.isArray(rule.oneOf))return rule.oneOf.includes(value);
+  if(Object.hasOwn(rule,'notEquals'))return value!==rule.notEquals;
+  return value===rule.equals;
+}
+
+function controlVisible(control) {
+  return matchesVisibility(control, control.target==='special'?view.design.special:view.design.selections?.[currentStage]);
+}
+
 function renderStage() {
   const index = stages.findIndex(([id]) => id === currentStage);
   $('stage-position').textContent = `STAGE ${index + 1} OF 6`;
   $('stage-title').textContent = stages[index][1];
   const content = $('stage-content'); content.replaceChildren();
   const sourceStage = view.catalogue.stages.find(item => item.id === currentStage);
-  const stage = sourceStage ? { ...sourceStage, controls: sourceStage.controls.filter(control => !control.visibleWhen || (control.target === 'special' ? view.design.special?.[control.visibleWhen.field] : view.design.selections[currentStage]?.[control.visibleWhen.field]) === control.visibleWhen.equals) } : null;
+  const stage = sourceStage ? { ...sourceStage, controls: sourceStage.controls.filter(controlVisible) } : null;
   if (stage?.description) content.append(el('p', stage.description, 'stage-description'));
   if (currentStage === 'physical' && (stage?.controls || []).some(control=>control.category || control.choices?.some(choice=>choice.category))) {
     const layout = el('div', undefined, 'category-layout');
@@ -257,8 +329,11 @@ function renderStage() {
     const controls = (stage?.controls || []).filter(control => control.category === categoryId || control.category === labelText);
     for (const control of controls) body.append(renderControl(control));
     for (const control of (stage?.controls || []).filter(control => !control.category)) {
-      const choices = (control.choices || []).filter(choice => choice.category === categoryId || choice.category === labelText);
-      if (choices.length) body.append(renderControl({ ...control, label:labelText, category:categoryId }, choices));
+      const context = categoryId==='default-suites'?'defaultSuite':'options';
+      const choices = (control.choices || []).filter(choice => control.type==='option-parameters'
+        ? (view.design.selections.physical[context]||[]).includes(choice.id) && (context==='defaultSuite'||choice.category===categoryId||choice.category===labelText)
+        : choice.category === categoryId || choice.category === labelText);
+      if (choices.length) body.append(renderControl({ ...control, label:control.type==='option-parameters'?'Installed option settings':labelText, category:categoryId, ...(control.type==='option-parameters'?{paramContext:context}:{}) }, choices));
     }
     if (body.children.length===1) body.append(el('p','This category is awaiting verified book choices.','help'));
     layout.append(navigation,body);content.append(layout);
@@ -280,22 +355,30 @@ function metric(label, value) { const row = el('div', undefined, 'metric'); row.
 function formatted(value, suffix = '') { return typeof value === 'number' && Number.isFinite(value) ? `${number.format(value)}${suffix}` : 'Not calculated'; }
 function renderSummary() {
   const evaluation = view.evaluation;
-  $('design-status').textContent = { verified: evaluation.coverage?.complete === false ? 'Subset checked' : 'Verified', invalid: 'Needs correction', blocked: 'Rules incomplete' }[evaluation.status] || 'Not verified';
+  $('design-status').textContent = { verified: evaluation.coverage?.complete === true ? 'Verified' : 'Subset checked', invalid: 'Needs correction', blocked: 'Rules incomplete' }[evaluation.status] || 'Not verified';
   $('design-status').className = `tag ${evaluation.status === 'verified' ? 'success' : 'review'}`;
-  const totals = evaluation.totals;
+  const provisional = !evaluation.totals && !!evaluation.previewTotals;
+  const totals = evaluation.totals || evaluation.previewTotals;
+  const costLabel = evaluation.costLabel || totals?.costLabel || 'Construction cost';
+  const excluded = evaluation.notApplicableMetrics || [];
   const list = el('dl', undefined, 'metrics');
-  list.append(metric('Total cost', totals?.cost != null ? `Cr ${formatted(totals.cost)}` : 'Not calculated'));
+  list.append(metric((provisional ? 'Provisional ' : '') + costLabel, totals?.cost != null ? 'Cr ' + formatted(totals.cost) : 'Not calculated'));
+  if (totals?.constructionCost != null && totals.constructionCost !== totals.cost) list.append(metric('Construction cost', 'Cr ' + formatted(totals.constructionCost)));
   for (const [key, label] of [['slots', 'Slots'], ['bandwidth', 'Bandwidth']]) {
-    list.append(metric(label, totals?.[key] ? `${formatted(totals[key].used)} / ${formatted(totals[key].capacity)}` : 'Not calculated'));
+    if (excluded.includes(key)) continue;
+    list.append(metric(label, totals?.[key] ? formatted(totals[key].used) + ' / ' + formatted(totals[key].capacity) : 'Not calculated'));
   }
   $('summary-metrics').replaceChildren(list);
   const stats = el('dl',undefined,'quick-stats');
-  for(const [key,label] of [['hits','Hits'],['armour','Protection'],['intelligence','Intelligence'],['tacticalSpeed','Move / action']]) {
-    if (totals?.[key] != null) stats.append(metric(label,formatted(totals[key],key==='tacticalSpeed'?' m':'')));
-  }
+  const summaryStats = evaluation.summaryMetrics || [['hits','Hits'],['armour','Protection'],['intelligence','Intelligence'],['tacticalSpeed','Move / action']].filter(([key])=>totals?.[key]!=null).map(([key,label])=>({label,value:totals[key],unit:key==='tacticalSpeed'?' m':''}));
+  const showMetric = item => typeof item.value==='number'?formatted(item.value)+(item.unit||''):String(item.value??'Not calculated');
+  for(const item of summaryStats) stats.append(metric(item.label,showMetric(item)));
   $('summary-metrics').append(stats);
-  const compact = [['Cost',totals?.cost!=null?'Cr '+formatted(totals.cost):'Pending'],['Slots',totals?.slots?formatted(totals.slots.used)+' / '+formatted(totals.slots.capacity):'--'],['Bandwidth',totals?.bandwidth?formatted(totals.bandwidth.used)+' / '+formatted(totals.bandwidth.capacity):'--']];
+  const compact = [[(provisional?'Provisional ':'')+costLabel,totals?.cost!=null?'Cr '+formatted(totals.cost):'Pending']];
+  for(const [key,label] of [['slots','Slots'],['bandwidth','Bandwidth']])if(!excluded.includes(key))compact.push([label,totals?.[key]?formatted(totals[key].used)+' / '+formatted(totals[key].capacity):'--']);
+  if(compact.length===1)for(const item of summaryStats.slice(0,2))compact.push([item.label,showMetric(item)]);
   $('compact-summary').replaceChildren(...compact.map(([label,value])=>{const span=el('span',label);span.append(el('b',value));return span;}));
+
   const diagnostics = evaluation.diagnostics || [];
   $('issues').replaceChildren(...diagnostics.map(issue => {
     const node = el('div', undefined, `issue ${issue.severity}`); node.append(el('p', issue.message));
@@ -306,7 +389,7 @@ function renderSummary() {
   if (coverage?.gaps?.length) {
     const details = el('details', undefined, 'coverage'); details.append(el('summary', 'Implementation coverage'));
     if (coverage.scope) details.append(el('p', coverage.scope, 'help'));
-    for (const gap of coverage.gaps) details.append(el('p', typeof gap === 'string' ? gap : gap.message, 'help'));
+    for (const gap of coverage.gaps) details.append(el('p', typeof gap === 'string' ? gap : gap.message || gap.reason || gap.id, 'help'));
     $('issues').append(details);
   }
 }
@@ -330,8 +413,19 @@ function renderExamples() {
   $('load-example').disabled = !$('example-design').value || view.busy;
   $('example-note').textContent = examples.length ? 'Examples replace the draft without changing your saved designs.' : 'No construction examples are available yet.';
 }
+// A change event fires on blur before a pointer click. Preserve the clicked
+// control until that click finishes, while exposing the fresh API state now.
+const finishPointer = () => setTimeout(() => {
+  pointerActive = false;
+  if (deferredView) { const next = deferredView; deferredView = null; render(next); }
+}, 0);
+document.addEventListener('pointerdown', () => { pointerActive = true; }, true);
+window.addEventListener('pointerup', finishPointer, true);
+window.addEventListener('pointercancel', finishPointer, true);
+window.addEventListener('blur', finishPointer);
 function render(next) {
   view = next || api.getView();
+  if (pointerActive) { deferredView = view; return; }
   const focused = document.activeElement?.id;
   updateIdentity(); renderNavigation(); renderStage(); renderSummary(); renderSaved(); renderExamples();
   if (focused && $(focused)) $(focused).focus({ preventScroll: true });
