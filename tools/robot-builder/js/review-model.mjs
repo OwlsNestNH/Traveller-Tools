@@ -384,10 +384,16 @@ export function projectReview(design, catalogue, evaluation) {
     if(componentVehicleRows.length)sections.push(section('component-vehicle-options','Component vehicle options (2026 source)',componentVehicleRows,{collapsed:true,note:'Per component copy; no host grant'}));
     const externalRows=components.flatMap(component=>(component.externalWornWeapons||[]).map(weapon=>wornWeaponRow(weapon,id=>{const snapshot=selectedReferences.find(r=>r.id===component.id)?.design;const arms=snapshot?.selections?.physical?.manipulators||[];const arm=arms.find(a=>a.id===id);return arm?`${arm.kind==='base'?'Base arm':'Additional arm'} ${arms.indexOf(arm)+1}`:'Unavailable manipulator';},`${component.name} / ${weapon.label} (${component.quantity} component copies)`)));
     if(externalRows.length)sections.push(section('component-external-wear','Component external wear',externalRows,{note:'One item per component copy; no host grant'}));
-    const profiles=[];
+    const profiles=[],componentEquivalents=[];
     for(const component of components.filter(component=>component.profile)){
       const profile=component.profile;
-      profiles.push(profileRow(component.name,'Referenced robot profile',{...profile,manipulators:(profile.manipulators||[]).map(({id,...arm},index)=>({arm:index+1,...arm}))},['scope','weapons','skills','hardwareSkills'],component.role==='installed-brain'?'Source robot context; only brain/software purchased':'Component-only values; no host grant'));
+      if(component.role!=='installed-brain')for(const equivalent of profile.skillEquivalents||[]){
+        const arms=profile.manipulators||[],armIndex=arms.findIndex(arm=>arm.id===equivalent.manipulatorId),arm=arms[armIndex];
+        const armLabel=arm?`${arm.kind==='base'?'Base arm':arm.kind==='leg'?'Converted leg':'Additional arm'} ${armIndex+1}`:equivalent.manipulatorId?'Unspecified manipulator':null;
+        const source=equivalent.manipulatorId?{book:'Robot Handbook',edition:'Mongoose 2022',pages:'26,73'}:component.source;
+        componentEquivalents.push({...row(`${component.name} / ${titleName(equivalent.skill)}${equivalent.speciality?' ('+equivalent.speciality+')':''}`,`Level: ${valueText(equivalent.level)}${armLabel?' · '+armLabel:''}`,source,'Component-only equivalent; per copy; no host grant'),details:[row('Component copies',component.quantity),...(equivalent.source?[row('Origin',humanLabel(equivalent.source))]:[])]});
+      }
+      profiles.push(profileRow(component.name,'Referenced robot profile',{...profile,manipulators:(profile.manipulators||[]).map(({id,...arm},index)=>({arm:index+1,...arm}))},['scope','weapons','skills','hardwareSkills','skillEquivalents'],component.role==='installed-brain'?'Source robot context; only brain/software purchased':'Component-only values; no host grant'));
       for(const skill of profile.skills||[])profiles.push(profileRow(`${component.name} / ${skill.label||titleName(skill.skill||skill.id)}`,`Installed level ${valueText(skill.level)} · Effective ${valueText(skill.effectiveLevel)}`,skill,['level','effectiveLevel'],'Component-only software'));
       for(const weapon of (profile.weapons||[]).filter(w=>!w.externalWear)){
         const snapshot=selectedReferences.find(reference=>reference.id===component.id)?.design;
@@ -408,6 +414,7 @@ export function projectReview(design, catalogue, evaluation) {
       for(const effect of component.equipmentOperations||[])profiles.push(profileRow(`${component.name} / ${effect.label||'Equipment readiness'}`,conditionLabel(effect.condition)||humanLabel(effect.status||'Conditional'),effect,['condition','status'],'Component-only condition'));
     }
     if(profiles.length)sections.push(section('component-profiles','Referenced robot profiles',profiles,{collapsed:true}));
+    if(componentEquivalents.length)sections.push(section('component-skill-equivalents','Characteristic-based equivalents (components)',componentEquivalents,{collapsed:true,note:'Each referenced robot separately; no host skill grant'}));
     const derived=evaluation.composite?.derivedInputs||totals?.composite?.derivedInputs;
     if(derived&&Object.keys(derived).length)sections.push(section('component-derived','Integration values from component designs',Object.entries(presentationFacts(derived)||{}).map(([key,value])=>row(humanLabel(key),value,evaluation.composite?.source||referenceControl.source)),{collapsed:true,note:'Source-derived component inputs'}));
   }
