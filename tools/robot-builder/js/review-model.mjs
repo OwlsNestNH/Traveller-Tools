@@ -45,6 +45,13 @@ function ammunitionMassDisplay(value) {
 function spareAmmunitionDisplay({storageId,...ammunition},storage) {
   return {...ammunitionMassDisplay(ammunition),storage};
 }
+function ammunitionInventoryDisplay(weapon) {
+  if(!weapon.ammunitionInventory)return {};
+  const inventory=weapon.ammunitionInventory;
+  if(!inventory.allocation)return {ammunitionInventory:inventory};
+  const {supplyWeaponId,sourceFamily,mode,...allocation}=inventory.allocation;
+  return {ammunitionInventory:{...inventory,allocation:{mode:mode==='split'?'Split loader and storage':'All extras follow loader setting',supply:weapon.label||humanLabel(supplyWeaponId),sourceFamily:humanLabel(sourceFamily),...allocation}}};
+}
 export function projectReview(design, catalogue, evaluation) {
   const totals = evaluation.totals || evaluation.previewTotals;
   const provisional = !evaluation.totals && !!evaluation.previewTotals;
@@ -191,9 +198,9 @@ export function projectReview(design, catalogue, evaluation) {
           const standard=(snapshot?.selections?.physical?.options||[]).find(option=>'option:'+option===id);
           return standard?titleName(standard)+' (standard selection)':'Unresolved storage';
         };
-        const display={...weapon,...(weapon.magazineVariants?{magazineVariants:ammunitionMassDisplay(weapon.magazineVariants)}:{}),...(weapon.highCapacitySpareAmmunition?{highCapacitySpareAmmunition:spareAmmunitionDisplay(weapon.highCapacitySpareAmmunition,storageName(weapon.highCapacitySpareAmmunition.storageId))}:{}),...(weapon.spareAmmunition?{spareAmmunition:spareAmmunitionDisplay(weapon.spareAmmunition,storageName(weapon.spareAmmunition.storageId))}:{})};
+        const display={...weapon,...ammunitionInventoryDisplay(weapon),...(weapon.magazineVariants?{magazineVariants:ammunitionMassDisplay(weapon.magazineVariants)}:{}),...(weapon.highCapacitySpareAmmunition?{highCapacitySpareAmmunition:spareAmmunitionDisplay(weapon.highCapacitySpareAmmunition,storageName(weapon.highCapacitySpareAmmunition.storageId))}:{}),...(weapon.spareAmmunition?{spareAmmunition:spareAmmunitionDisplay(weapon.spareAmmunition,storageName(weapon.spareAmmunition.storageId))}:{})};
         const weaponRow=profileRow(`${component.name} / ${weapon.label||'Weapon'}`,`${present(weapon.damage)?weapon.damage+' damage':'Damage not calculated'} · ${present(weapon.range)?'Range '+valueText(weapon.range)+' m':'Range not calculated'}`,display,['damage','range','manipulatorId','parentLimb','spareMagazineStorageId','highCapacityMagazineStorageId'],'Weapon belongs to the referenced robot; delivery and attack conditions remain contextual.');
-        for(const item of weaponRow.details){if(item.label==='High Capacity Spare Ammunition')item.label='High-capacity spare ammunition (estimated mass)';if(item.label==='Spare Ammunition')item.label='Spare ammunition (estimated mass)';if(item.label==='Mass Kg')item.label='Source weapon mass (kg)';}
+        for(const item of weaponRow.details){if(item.label==='Autoload Allocation')item.label='Selected loader allocation per weapon';if(item.label==='High Capacity Spare Ammunition')item.label='High-capacity spare ammunition (estimated mass)';if(item.label==='Spare Ammunition')item.label='Spare ammunition (estimated mass)';if(item.label==='Mass Kg')item.label='Source weapon mass (kg)';}
         profiles.push(weaponRow);
       }
       for(const effect of component.equipmentOperations||[])profiles.push(profileRow(`${component.name} / ${effect.label||'Equipment readiness'}`,effect.condition||humanLabel(effect.status||'Conditional'),effect,['condition','status'],'Component operating condition.'));
@@ -272,9 +279,9 @@ export function projectReview(design, catalogue, evaluation) {
     const detail=[parentLabel,placement,`Software Level: ${valueText(weapon.softwareLevel)}`,`FCS DM: ${valueText(weapon.fireControlDM)}`,`DEX DM: ${valueText(weapon.manipulatorDM)}`].filter(Boolean).join(' · ');
     const accessoryChoices=control?.itemFields?.find(item=>item.field==='accessories')?.choices||[];
     const accessoryName=id=>accessoryChoices.find(item=>item.id===id)?.label||humanLabel(id);
-    const displayWeapon={...weapon,...(weapon.magazineVariants?{magazineVariants:ammunitionMassDisplay(weapon.magazineVariants)}:{}),...(weapon.highCapacitySpareAmmunition?{highCapacitySpareAmmunition:spareAmmunitionDisplay(weapon.highCapacitySpareAmmunition,choiceLabel(control,'highCapacityMagazineStorageId',weapon.highCapacitySpareAmmunition.storageId,'Unresolved storage'))}:{}),...(weapon.spareAmmunition?{spareAmmunition:spareAmmunitionDisplay(weapon.spareAmmunition,choiceLabel(control,'spareMagazineStorageId',weapon.spareAmmunition.storageId,'Unresolved storage'))}:{}),...(weapon.looseAmmunition?{looseAmmunition:(({storageId,...rest})=>({...rest,storage:storageName(storageId),grenade:ammunitionName(rest.grenade)}))(weapon.looseAmmunition)}:{}),accessoryEffects:(weapon.accessoryEffects||[]).map(effect=>({...effect,accessory:accessoryName(effect.accessory)}))};
+    const displayWeapon={...weapon,...ammunitionInventoryDisplay(weapon),...(weapon.magazineVariants?{magazineVariants:ammunitionMassDisplay(weapon.magazineVariants)}:{}),...(weapon.highCapacitySpareAmmunition?{highCapacitySpareAmmunition:spareAmmunitionDisplay(weapon.highCapacitySpareAmmunition,choiceLabel(control,'highCapacityMagazineStorageId',weapon.highCapacitySpareAmmunition.storageId,'Unresolved storage'))}:{}),...(weapon.spareAmmunition?{spareAmmunition:spareAmmunitionDisplay(weapon.spareAmmunition,choiceLabel(control,'spareMagazineStorageId',weapon.spareAmmunition.storageId,'Unresolved storage'))}:{}),...(weapon.looseAmmunition?{looseAmmunition:(({storageId,...rest})=>({...rest,storage:storageName(storageId),grenade:ammunitionName(rest.grenade)}))(weapon.looseAmmunition)}:{}),accessoryEffects:(weapon.accessoryEffects||[]).map(effect=>({...effect,accessory:accessoryName(effect.accessory)}))};
     const result=profileRow(name,summary,displayWeapon,['damage','range','traits','placement','manipulatorId','parentLimb','accessories','auxiliary','associatedAttacks','ammunitionStorageId','spareMagazineStorageId','highCapacityMagazineStorageId'],detail);
-    for(const item of result.details){if(item.label==='High Capacity Spare Ammunition')item.label='High-capacity spare ammunition (estimated mass)';if(item.label==='Spare Ammunition')item.label='Spare ammunition (estimated mass)';if(item.label==='Mass Kg')item.label='Source weapon mass (kg)';}
+    for(const item of result.details){if(item.label==='Autoload Allocation')item.label='Selected loader allocation per weapon';if(item.label==='High Capacity Spare Ammunition')item.label='High-capacity spare ammunition (estimated mass)';if(item.label==='Spare Ammunition')item.label='Spare ammunition (estimated mass)';if(item.label==='Mass Kg')item.label='Source weapon mass (kg)';}
     for(const id of weapon.accessories||[]){const accessory=accessoryChoices.find(item=>item.id===id);result.details.push(row('Accessory',accessoryName(id),accessory?.source));}
     const rows=[result];
     for(const attack of weapon.associatedAttacks || (weapon.auxiliary?[weapon.auxiliary]:[])){

@@ -61,6 +61,7 @@ export function createRobotApi(options = {}) {
   function getReview() {
     return projectReview(design,engine.getCatalogue(design),engine.evaluateDesign(design));
   }
+  function getRecordPresentation(control,record) { return control.type==='weapons' ? engine.weaponRecordPresentation(record) : {fields:{}}; }
   function getStatblock() { return formatStatblock(getReview()); }
   function getView() {
     const catalogue=engine.getCatalogue(design),evaluation=engine.evaluateDesign(design);
@@ -192,5 +193,5 @@ export function createRobotApi(options = {}) {
     const next = engine.createExample(id); currentId = null; baseline = null; return changed(next);
   }
   function subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); }
-  return {getView,getStatblock,listExamples,loadExample,setIdentity,select,newDesign,saveDesign,listSaved,loadDesign,importDesign,attachDesignReference,removeDesignReference,exportDesign:()=>engine.exportDesign(design),refreshSaved,subscribe};
+  return {getView,getStatblock,getRecordPresentation,listExamples,loadExample,setIdentity,select,newDesign,saveDesign,listSaved,loadDesign,importDesign,attachDesignReference,removeDesignReference,exportDesign:()=>engine.exportDesign(design),refreshSaved,subscribe};
 }

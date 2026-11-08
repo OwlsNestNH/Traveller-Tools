@@ -22,6 +22,7 @@ let currentStage = 'chassis';
 let physicalCategory = 'chassis-modifications';
 const searches = new Map();
 const customDrafts = new Map();
+const recordGroups = new Map();
 const number = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 });
 const el = (tag, text, className) => {
   const node = document.createElement(tag);
@@ -289,20 +290,36 @@ function renderControl(control, choicesOverride) {
       return isWeapon ? (control.itemFields?.find(item=>item.field==='weaponId')?.choices?.find(choice=>choice.id===record.weaponId)?.label || 'Weapon installation') : record.speciality || 'Custom package';
     };
     const makeFields=(record,prefix,onChange)=>{
-      const grid=el('div',undefined,'fields-grid'),groups=new Map();
+      const grid=el('div',undefined,'fields-grid'),groups=new Map(),presentation=api.getRecordPresentation(control,record);
       // Optional fields in older backups use control defaults for display only.
       const displayRecord={...Object.fromEntries((control.itemFields||[]).filter(item=>Object.hasOwn(item,'default')).map(item=>[item.field,item.default])),...record};
       const targetFor=item=>{
         if(!item.group)return grid;
         if(!groups.has(item.group)){
           const details=el('details',undefined,'wide parameter-group');
-          details.open=(control.itemFields||[]).filter(field=>field.group===item.group).some(field=>Object.hasOwn(record,field.field)&&JSON.stringify(record[field.field])!==JSON.stringify(field.default));
+          const groupKey=view.design.kind+':'+prefix+':'+item.group;
+          const forceOpen=(control.itemFields||[]).some(field=>field.group===item.group&&presentation.fields?.[field.field]?.forceGroupOpen);
+          details.open=forceOpen||(item.collapsedByDefault?(recordGroups.get(groupKey)??false):(control.itemFields||[]).filter(field=>field.group===item.group).some(field=>Object.hasOwn(record,field.field)&&JSON.stringify(record[field.field])!==JSON.stringify(field.default)));
+          if(item.collapsedByDefault)details.addEventListener('toggle',()=>recordGroups.set(groupKey,details.open));
           details.append(el('summary',item.group));const content=el('div',undefined,'fields-grid');details.append(content);grid.append(details);groups.set(item.group,content);
         }
         return groups.get(item.group);
       };
       for(const item of control.itemFields || []) {
-        if (!matchesVisibility(item, displayRecord)) continue;
+        const fieldView=presentation.fields?.[item.field]||{};
+        if (!(typeof fieldView.visible==='boolean'?fieldView.visible:matchesVisibility(item, displayRecord))) continue;
+        if(item.type==='optional-object'){
+          const fieldId=prefix+'-'+item.field,wrapper=el('div',undefined,'wide fields-grid'),label=el('label',item.label),mode=el('select');
+          label.htmlFor=fieldId;mode.id=fieldId;selectChoices(mode,item.choices,fieldView.mode);
+          mode.addEventListener('change',()=>onChange(item.field,mode.value===item.absentMode?undefined:structuredClone(fieldView.materializedValue)));
+          label.append(mode);wrapper.append(label);
+          if(fieldView.mode===item.presentMode)for(const child of item.itemFields||[]){
+            const childId=fieldId+'-'+child.field,row=el('label',child.label),input=numericPicker(child,record[item.field]?.[child.field],value=>onChange(item.field,{...record[item.field],[child.field]:value}));
+            row.htmlFor=childId;input.id=childId;row.append(input);wrapper.append(row);
+          }
+          const summary=el('output',fieldView.summary,'wide derived-value');summary.id=fieldId+'-summary';wrapper.append(summary);
+          targetFor(item).append(wrapper);continue;
+        }
         const row=el('label',item.labelBy?.values?.[record[item.labelBy.field]] || item.label || item.field);
         const fieldId=prefix+'-'+item.field;row.htmlFor=fieldId;
         let input;
@@ -328,7 +345,7 @@ if(item.type==='multiselect'){
             input.replaceChildren(...((item.choices||[]).length>30?[search]:[]),picker,list);
           };draw();row.classList.add('wide');
         }
-        else if(item.type==='number')input=numericPicker({...item,max:item.maxBy?.values?.[record[item.maxBy.field]]??item.max},record[item.field]??item.min,value=>onChange(item.field,value));
+        else if(item.type==='number')input=numericPicker({...item,max:fieldView.max??item.maxBy?.values?.[record[item.maxBy.field]]??item.max},record[item.field]??item.min,value=>onChange(item.field,value));
         else if(item.type==='select'){input=el('select');const choices=recordChoices(item,displayRecord);selectChoices(input,choices,displayRecord[item.field]);input.addEventListener('change',()=>onChange(item.field,choices.find(c=>String(c.id)===input.value)?.id??null));}
         else {input=el('input');input.type='text';input.value=record[item.field]??'';input.maxLength=item.maxLength||120;input.addEventListener('input',()=>onChange(item.field,input.value));}
         input.id=fieldId;row.append(input);targetFor(item).append(row);
@@ -343,7 +360,8 @@ if(item.type==='multiselect'){
       heading.append(remove);card.append(heading);
       const grid=makeFields(record,id+'-'+record.id,(key,value)=>{
         // Keep text edits local until blur, so typing does not redraw the form.
-        const next=resetHiddenFields(control,{...record,[key]:value});
+        const changed={...record};if(value===undefined)delete changed[key];else changed[key]=value;
+        const next=resetHiddenFields(control,changed);
         if((control.itemFields||[]).some(item=>item.field===key&&item.type==='text')){record[key]=value;return;}
         submitSelection(control,installed.map(item=>item.id===record.id?next:item));
       });
@@ -351,7 +369,7 @@ if(item.type==='multiselect'){
       card.append(grid);field.append(card);
     }
     const draftKey=view.design.kind+':'+id;
-    const draft=customDrafts.get(draftKey)||Object.fromEntries((control.itemFields||[]).map(item=>[item.field,item.default??(item.type==='multiselect'?[]:item.type==='select'?item.choices?.[0]?.id:item.type==='number'?item.min??0:'')]));
+    const draft=customDrafts.get(draftKey)||Object.fromEntries((control.itemFields||[]).filter(item=>!item.omitByDefault).map(item=>[item.field,item.default??(item.type==='multiselect'?[]:item.type==='select'?item.choices?.[0]?.id:item.type==='number'?item.min??0:'')]));
     customDrafts.set(draftKey,draft);
     const composer=el('div',undefined,'option-settings');
     composer.append(el('h4',control.composerLabel||(isWeapon?'Add a weapon installation':isExternal?'Add a source-defined external vehicle option':'Add a book-permitted custom package')));
@@ -360,8 +378,8 @@ if(item.type==='multiselect'){
     add.disabled=!valid();
     const redrawComposer = () => {
       const next = makeFields(draft, id+'-new', (key, value) => {
-        draft[key]=value;Object.assign(draft,resetHiddenFields(control,draft));customDrafts.set(draftKey,draft);add.disabled=!valid();
-        if ((control.itemFields||[]).some(item=>dependsOn(item.visibleWhen,key)||item.choicesBy?.field===key||item.labelBy?.field===key||item.maxBy?.field===key||item.maxValueField===key)) redrawComposer();
+        if(value===undefined)delete draft[key];else draft[key]=value;Object.assign(draft,resetHiddenFields(control,draft));customDrafts.set(draftKey,draft);add.disabled=!valid();
+        if (control.type==='weapons'||(control.itemFields||[]).some(item=>dependsOn(item.visibleWhen,key)||item.choicesBy?.field===key||item.labelBy?.field===key||item.maxBy?.field===key||item.maxValueField===key)) redrawComposer();
       });
       const previous=composer.querySelector('.fields-grid');
       if(previous)previous.replaceWith(next);else composer.append(next);

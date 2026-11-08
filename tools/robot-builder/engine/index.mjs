@@ -5,6 +5,7 @@ import {evaluateBrainSoftware} from './brain-software.mjs';
 import {equipmentCapabilities} from './capabilities.mjs';
 import {validateExternalVehicleOptions,evaluateExternalVehicleOptions} from './vehicle-options.mjs';
 import {fabricationCapabilities,highTechnologyInventory} from './high-technology.mjs';
+export {weaponRecordPresentation} from './weapons.mjs';
 import {weaponControl,validateWeapons,evaluateWeapons,WEAPONS} from './weapons.mjs';
 import {evaluateEquipment,validateOptionParameters,validateOptionInstances} from './equipment.mjs';
 import {SCHEMA_VERSION,STAGE_IDS,isRecord,assertJson,clone,assertKeys,integer,mergeKnown} from './schema.mjs';
