@@ -301,7 +301,16 @@ try{
  for(const width of [1440,390,320]){
    await page.setViewportSize({width,height:1000});check('composite editor and review have no overflow '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:path.join(out,'robot-composite-review-'+width+'.png'),fullPage:true});
  }
- await page.setViewportSize({width:1440,height:1000});await page.locator('#robot-kind').selectOption('standard');await stage(3);await page.locator('#physical-category').selectOption('weapons');
+ await page.setViewportSize({width:1440,height:1000});await page.locator('#new-design').click();await page.locator('#robot-kind').selectOption('avatar');await page.locator('#robot-tl').selectOption('13');
+ const receiverDraft=await exportDraft();await stage(1);await page.locator('#field-chassis-avatarRole').selectOption('controller');await stage(4);await page.locator('#field-brain-controllerTier').selectOption('improved');await stage(6);
+ await page.locator(referencePrefix+'role').selectOption('receiver');await page.locator(referencePrefix+'file').setInputFiles({name:'receiver.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(receiverDraft))});
+ await page.waitForFunction(()=>document.querySelector('#summary-metrics')?.textContent.includes('234,000'));
+ await page.locator('#field-finalisation-priceMode').selectOption('custom');await page.locator('#field-finalisation-customPrice').fill('1');await page.locator('#field-finalisation-customPrice').press('Tab');
+ check('composite list price remains distinct from construction cost',await page.locator('.review-costs').textContent().then(t=>t.includes('List price (combined design)Cr 1')&&t.includes('Construction costCr 234,000')));
+ draft=await exportDraft();check('composite price choice survives export',draft.selections.finalisation.customPrice===1&&draft.special.designReferences.length===1);
+ await page.locator('#field-finalisation-priceMode').selectOption('construction');check('composite construction price returns after switching modes',await page.locator('#summary-metrics').textContent().then(t=>t.includes('234,000')));
+ await page.locator('#field-finalisation-priceMode').selectOption('custom');check('switching back retains chosen composite list price',await page.locator('#field-finalisation-customPrice').inputValue()==='1'&&await page.locator('.review-costs').textContent().then(t=>t.includes('List price (combined design)Cr 1')));
+ await page.locator('#robot-kind').selectOption('standard');await stage(3);await page.locator('#physical-category').selectOption('weapons');
  await page.locator(weaponPrefix+'weaponId').selectOption('direct-grenade-smoke');await page.locator(weaponPrefix+'placement').selectOption('body');await page.locator(weaponPrefix+'fireControl').selectOption('none');
  await page.getByRole('button',{name:'Add weapon',exact:true}).click();draft=await exportDraft();check('direct payload is a weapon record rather than launcher ammunition',draft.selections.physical.weapons[0].weaponId==='direct-grenade-smoke');
  await stage(6);check('direct payload review keeps unresolved delivery range explicit',await page.locator('.review-weapons').textContent().then(t=>t.includes('Range not calculated')&&t.includes('Direct Payload')));

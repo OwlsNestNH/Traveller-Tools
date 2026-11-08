@@ -26,3 +26,26 @@ test('biological avatar interface estimates cannot masquerade as robot snapshots
 
 test('component profile retains evaluated physical and skill fields without duplicating costs',()=>{const child=robot(),expected=evaluateDesign(child).totals,result=evaluateDesign(attach(ship(),child,'installed-robot')),profile=result.composite.components[0].profile;for(const key of ['hits','armour','endurance','tacticalSpeed','manipulators','skills'])assert.deepEqual(profile[key],expected[key]);assert.deepEqual(profile.locomotion,child.selections.locomotion);assert.equal(profile.cost,undefined);assert.equal(profile.coverage,undefined);assert.equal(profile.composite,undefined);assert.equal(result.totals.cost,512000);});
 test('host finalisation notes allow referenced component costs',()=>{const stages=getCatalogue(attach(ship(),robot(),'installed-robot')).stages;assert.match(stages.find(s=>s.id==='finalisation').description,/attached robot construction costs/);});
+
+
+test('composite robot list prices stay separate from combined construction accounting',()=>{
+ const controller=updateDesign(createDesign({kind:'avatar',techLevel:13}),{special:{avatarRole:'controller',controllerTier:'improved'}});
+ const receiver=updateDesign(createDesign({kind:'avatar',techLevel:13}),{selections:{finalisation:{priceMode:'custom',customPrice:999999}}});
+ const drone=updateDesign(createDesign({kind:'drone',techLevel:13}),{selections:{physical:{options:['transceiver-improved']}}});
+ const operator=updateDesign(robot(),{selections:{physical:{options:['robotic-drone-controller-basic']}}});
+ for(const [parent,child,role]of [[controller,receiver,'receiver'],[drone,operator,'controller']]){
+  const combined=evaluateDesign(attach(parent,child,role));assert.equal(combined.status,'verified');
+  for(const customPrice of [0,1,999999]){
+   const design=attach(updateDesign(parent,{selections:{finalisation:{priceMode:'custom',customPrice}}}),child,role);
+   const result=evaluateDesign(importDesign(exportDesign(design)));
+   assert.equal(result.status,'verified');assert.equal(result.totals.cost,customPrice);
+   assert.equal(result.totals.constructionCost,combined.totals.constructionCost);
+   assert.equal(result.ledger.reduce((sum,row)=>sum+row.cost,0),combined.totals.constructionCost);
+   assert.equal(result.costLabel,'List price (combined design)');assert.equal(result.totals.costLabel,result.costLabel);
+   const restored=evaluateDesign(updateDesign(design,{selections:{finalisation:{priceMode:'construction'}}}));
+   assert.equal(restored.totals.cost,combined.totals.constructionCost);
+  }
+ }
+ const result=evaluateDesign(attach(controller,receiver,'receiver'));assert.equal(result.totals.cost,234000);
+ assert.equal(result.composite.components[0].listedUnitCost,999999);assert.equal(result.composite.components[0].constructionUnitCost,22000);
+});

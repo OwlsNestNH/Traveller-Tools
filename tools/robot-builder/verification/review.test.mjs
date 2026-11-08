@@ -253,3 +253,11 @@ test('early clone review shows structured training and mature characteristics se
  assert.match(output,/Apparent age 18 at training completion/);assert.equal(review.sections.find(s=>s.id==='clone-training-years').rows.length,12);assert.ok(review.sections.some(s=>s.id==='clone-characteristics'));
  assert.ok(!review.sections.find(s=>s.id==='additional')?.rows.some(r=>r.label==='Clone'));
 });
+
+test('composite review and statblock retain list price separately from construction costs',()=>{
+ const child=createDesign({kind:'avatar',techLevel:13});
+ const design=updateDesign(createDesign({kind:'avatar',techLevel:13}),{special:{avatarRole:'controller',controllerTier:'improved',designReferences:[{id:'receiver',role:'receiver',quantity:1,design:child}]},selections:{finalisation:{priceMode:'custom',customPrice:1}}});
+ const result=evaluateDesign(design),review=projectReview(design,getCatalogue(design),result),output=formatStatblock(review);
+ assert.equal(result.status,'verified');assert.match(output,/List price \(combined design\): Cr 1/);
+ assert.match(output,/Construction cost: Cr 234,000/);assert.match(output,/Cr 22,000 construction/);
+});
