@@ -153,11 +153,11 @@ test('absent new fields preserve old imports and unknown replacement prices rema
 test('UI constraints are engine metadata, source-scoped and detached',()=>{
  const d=design(),control=weaponControl(d),fields=control.itemFields,max=fields.find(f=>f.field==='extraMagazines'),storage=fields.find(f=>f.field==='spareMagazineStorageId');
  assert.deepEqual(max.maxBy,{field:'autoload',values:{true:10,false:100}});assert.equal(max.max,100);assert.match(max.limitScope,/application bound/);
- assert.equal(storage.resetWhenHidden,true);assert.equal(storage.default,'none');assert.equal(storage.choices[1].id,ref);
- assert.deepEqual(storage.visibleWhen.allOf[0].oneOf.slice().sort(),expected.map(([id])=>'csc-'+id).sort());
- assert.deepEqual(storage.visibleWhen.allOf.slice(1),[{field:'autoload',equals:false},{field:'extraMagazines',notEquals:0}]);
- storage.visibleWhen.allOf[0].oneOf.splice(0);storage.choices[1].label='mutated';max.maxBy.values.true=999;
- const fresh=weaponControl(d).itemFields;assert.equal(fresh.find(f=>f.field==='spareMagazineStorageId').visibleWhen.allOf[0].oneOf.length,70);assert.equal(fresh.find(f=>f.field==='extraMagazines').maxBy.values.true,10);
+ assert.equal(storage.resetWhenHidden,undefined);assert.equal(storage.default,'none');assert.equal(storage.choices[1].id,ref);
+ assert.deepEqual(storage.visibleWhen.anyOf[1].allOf[0].oneOf.slice().sort(),expected.map(([id])=>'csc-'+id).sort());
+ assert.deepEqual(storage.visibleWhen.anyOf[1].allOf.slice(1),[{field:'autoload',equals:false},{field:'extraMagazines',notEquals:0}]);
+ storage.visibleWhen.anyOf[1].allOf[0].oneOf.splice(0);storage.choices[1].label='mutated';max.maxBy.values.true=999;
+ const fresh=weaponControl(d).itemFields;assert.equal(fresh.find(f=>f.field==='spareMagazineStorageId').visibleWhen.anyOf[1].allOf[0].oneOf.length,70);assert.equal(fresh.find(f=>f.field==='extraMagazines').maxBy.values.true,10);
 });
 test('API rejects 100-spare autoload transition atomically without truncation or loss of storage',()=>{
  const api=createRobotApi(),d=design([record({extraMagazines:100})],{optionParameters:{'storage-compartment':{quantity:100}}});

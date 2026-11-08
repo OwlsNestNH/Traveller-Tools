@@ -40,3 +40,28 @@ export function estimateCscMagazineMass(weapon){
   ...(entry.kind.endsWith('power-pack')?{weaponMassFraction:factor}:{referenceRounds:20,referenceWeaponMassFraction:.1,roundsPerLoad:weapon.magazine}),
   source:csc('142'),classificationSource:csc(entry.pages),scope:'CSC rule-of-thumb estimate; not an independently measured magazine mass.'};
 }
+
+// CSC p175 applies to magazines, including the explicitly described tubular
+// CPPG magazines. A source-specific inventory avoids equating every finite
+// load, cylinder, power pack or belt with a supported magazine conversion.
+const highCapacityProfiles=new Map([
+ ['assault-pistol','142-143'],['assault-shotgun','145-146'],
+ ['arl-standard','160-161'],['arl-support','160-161'],['arl-pdw','160-161'],
+ ['light-assault-gun','163'],['personal-defence-laser','150'],
+ ['cartridge-laser-carbine-10','151,153'],['cartridge-laser-carbine-12','151,153'],
+ ['cartridge-laser-rifle-10','151,153'],['cartridge-laser-rifle-12','151,153'],
+ ['light-gatling-laser','163'],['cppg-11','160-161'],['cppg-12','160-161'],['cppg-13','160-161'],
+ ['repeating-crossbow','154']
+].map(([id,pages])=>['csc-'+id,pages]));
+export const CSC_HIGH_CAPACITY_MAGAZINE_IDS=Object.freeze([...highCapacityProfiles.keys()]);
+export function cscMagazineVariants(weapon){
+ const pages=highCapacityProfiles.get(weapon?.id),standardEstimate=estimateCscMagazineMass(weapon);
+ // All admitted profiles purchase the initial load separately. Included packs
+ // never obtain an invented upgrade price or removal discount.
+ if(!pages||!standardEstimate||weapon.initialIncluded!==false)return null;
+ const qualification={refereeMayReject:true,shotgunReview:weapon.id==='csc-assault-shotgun',source:csc('175')};
+ const standard={id:'standard',label:'Standard',capacity:weapon.magazine,unitCost:weapon.magazineCost,estimatedUnitMassKg:standardEstimate.unitMassKg,estimate:standardEstimate,source:{...weapon.source}};
+ const highCapacity={id:'high-capacity',label:'High-capacity',tl:4,capacity:weapon.magazine*2,unitCost:weapon.magazineCost*3,estimatedUnitMassKg:Math.round(standardEstimate.unitMassKg*2*1e9)/1e9,source:csc('175'),classificationSource:csc(pages),qualification};
+ highCapacity.estimate={...standardEstimate,unitMassKg:highCapacity.estimatedUnitMassKg,standardUnitMassKg:standardEstimate.unitMassKg,massMultiplier:2,roundsPerLoad:highCapacity.capacity,variantSource:csc('175')};
+ return {standard,highCapacity};
+}

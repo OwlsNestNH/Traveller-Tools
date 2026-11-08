@@ -37,8 +37,13 @@ function profileRow(label, summary, record, omitted = [], detail = '') {
   const details = Object.entries(record).filter(([key])=>!hidden.has(key)).map(([key,value])=>row(humanLabel(key),value));
   return {...row(label,summary,record.source,detail),details};
 }
+function ammunitionMassDisplay(value) {
+  if(Array.isArray(value))return value.map(ammunitionMassDisplay);
+  if(!value||typeof value!=='object')return value;
+  return Object.fromEntries(Object.entries(value).map(([key,item])=>[key,key.endsWith('Kg')&&typeof item==='number'?massFormat.format(item):ammunitionMassDisplay(item)]));
+}
 function spareAmmunitionDisplay({storageId,...ammunition},storage) {
-  return {...ammunition,storage,unitMassKg:massFormat.format(ammunition.unitMassKg),massKg:massFormat.format(ammunition.massKg),estimate:{...ammunition.estimate,unitMassKg:massFormat.format(ammunition.estimate.unitMassKg),basisWeaponMassKg:massFormat.format(ammunition.estimate.basisWeaponMassKg)}};
+  return {...ammunitionMassDisplay(ammunition),storage};
 }
 export function projectReview(design, catalogue, evaluation) {
   const totals = evaluation.totals || evaluation.previewTotals;
@@ -48,7 +53,7 @@ export function projectReview(design, catalogue, evaluation) {
     ? coverage.complete === true ? 'Checked' : 'Implemented rules checked; coverage incomplete'
     : evaluation.status === 'invalid' ? 'Needs correction' : 'Rules or referee decisions outstanding';
   const sections = [];
-  const visible=(rule,values)=>!rule || (rule.allOf ? rule.allOf.every(item=>visible(item,values)) : Array.isArray(rule.oneOf) ? rule.oneOf.includes(values?.[rule.field]) : Object.hasOwn(rule,'notEquals') ? values?.[rule.field]!==rule.notEquals : values?.[rule.field]===rule.equals);
+  const visible=(rule,values)=>!rule || (rule.anyOf ? rule.anyOf.some(item=>visible(item,values)) : rule.allOf ? rule.allOf.every(item=>visible(item,values)) : Array.isArray(rule.oneOf) ? rule.oneOf.includes(values?.[rule.field]) : Object.hasOwn(rule,'notEquals') ? values?.[rule.field]!==rule.notEquals : values?.[rule.field]===rule.equals);
   const controls = (catalogue.stages || []).flatMap(stage => stage.controls.map(control => ({ ...control, stage:stage.id }))).filter(control=>visible(control.visibleWhen,control.target==='special'?design.special:design.selections?.[control.stage]));
   const physical = design.selections?.physical || {};
   const options = new Map(controls.filter(control => control.type === 'option-instances' || ['options','defaultSuite','optionInstances','optionParameters'].includes(control.field)).flatMap(control => control.choices || []).map(choice => [choice.id,choice]));
@@ -186,9 +191,9 @@ export function projectReview(design, catalogue, evaluation) {
           const standard=(snapshot?.selections?.physical?.options||[]).find(option=>'option:'+option===id);
           return standard?titleName(standard)+' (standard selection)':'Unresolved storage';
         };
-        const display={...weapon,...(weapon.spareAmmunition?{spareAmmunition:spareAmmunitionDisplay(weapon.spareAmmunition,storageName(weapon.spareAmmunition.storageId))}:{})};
-        const weaponRow=profileRow(`${component.name} / ${weapon.label||'Weapon'}`,`${present(weapon.damage)?weapon.damage+' damage':'Damage not calculated'} · ${present(weapon.range)?'Range '+valueText(weapon.range)+' m':'Range not calculated'}`,display,['damage','range','manipulatorId','parentLimb','spareMagazineStorageId'],'Weapon belongs to the referenced robot; delivery and attack conditions remain contextual.');
-        for(const item of weaponRow.details){if(item.label==='Spare Ammunition')item.label='Spare ammunition (estimated mass)';if(item.label==='Mass Kg')item.label='Source weapon mass (kg)';}
+        const display={...weapon,...(weapon.magazineVariants?{magazineVariants:ammunitionMassDisplay(weapon.magazineVariants)}:{}),...(weapon.highCapacitySpareAmmunition?{highCapacitySpareAmmunition:spareAmmunitionDisplay(weapon.highCapacitySpareAmmunition,storageName(weapon.highCapacitySpareAmmunition.storageId))}:{}),...(weapon.spareAmmunition?{spareAmmunition:spareAmmunitionDisplay(weapon.spareAmmunition,storageName(weapon.spareAmmunition.storageId))}:{})};
+        const weaponRow=profileRow(`${component.name} / ${weapon.label||'Weapon'}`,`${present(weapon.damage)?weapon.damage+' damage':'Damage not calculated'} · ${present(weapon.range)?'Range '+valueText(weapon.range)+' m':'Range not calculated'}`,display,['damage','range','manipulatorId','parentLimb','spareMagazineStorageId','highCapacityMagazineStorageId'],'Weapon belongs to the referenced robot; delivery and attack conditions remain contextual.');
+        for(const item of weaponRow.details){if(item.label==='High Capacity Spare Ammunition')item.label='High-capacity spare ammunition (estimated mass)';if(item.label==='Spare Ammunition')item.label='Spare ammunition (estimated mass)';if(item.label==='Mass Kg')item.label='Source weapon mass (kg)';}
         profiles.push(weaponRow);
       }
       for(const effect of component.equipmentOperations||[])profiles.push(profileRow(`${component.name} / ${effect.label||'Equipment readiness'}`,effect.condition||humanLabel(effect.status||'Conditional'),effect,['condition','status'],'Component operating condition.'));
@@ -267,9 +272,9 @@ export function projectReview(design, catalogue, evaluation) {
     const detail=[parentLabel,placement,`Software Level: ${valueText(weapon.softwareLevel)}`,`FCS DM: ${valueText(weapon.fireControlDM)}`,`DEX DM: ${valueText(weapon.manipulatorDM)}`].filter(Boolean).join(' · ');
     const accessoryChoices=control?.itemFields?.find(item=>item.field==='accessories')?.choices||[];
     const accessoryName=id=>accessoryChoices.find(item=>item.id===id)?.label||humanLabel(id);
-    const displayWeapon={...weapon,...(weapon.spareAmmunition?{spareAmmunition:spareAmmunitionDisplay(weapon.spareAmmunition,choiceLabel(control,'spareMagazineStorageId',weapon.spareAmmunition.storageId,'Unresolved storage'))}:{}),...(weapon.looseAmmunition?{looseAmmunition:(({storageId,...rest})=>({...rest,storage:storageName(storageId),grenade:ammunitionName(rest.grenade)}))(weapon.looseAmmunition)}:{}),accessoryEffects:(weapon.accessoryEffects||[]).map(effect=>({...effect,accessory:accessoryName(effect.accessory)}))};
-    const result=profileRow(name,summary,displayWeapon,['damage','range','traits','placement','manipulatorId','parentLimb','accessories','auxiliary','associatedAttacks','ammunitionStorageId','spareMagazineStorageId'],detail);
-    for(const item of result.details){if(item.label==='Spare Ammunition')item.label='Spare ammunition (estimated mass)';if(item.label==='Mass Kg')item.label='Source weapon mass (kg)';}
+    const displayWeapon={...weapon,...(weapon.magazineVariants?{magazineVariants:ammunitionMassDisplay(weapon.magazineVariants)}:{}),...(weapon.highCapacitySpareAmmunition?{highCapacitySpareAmmunition:spareAmmunitionDisplay(weapon.highCapacitySpareAmmunition,choiceLabel(control,'highCapacityMagazineStorageId',weapon.highCapacitySpareAmmunition.storageId,'Unresolved storage'))}:{}),...(weapon.spareAmmunition?{spareAmmunition:spareAmmunitionDisplay(weapon.spareAmmunition,choiceLabel(control,'spareMagazineStorageId',weapon.spareAmmunition.storageId,'Unresolved storage'))}:{}),...(weapon.looseAmmunition?{looseAmmunition:(({storageId,...rest})=>({...rest,storage:storageName(storageId),grenade:ammunitionName(rest.grenade)}))(weapon.looseAmmunition)}:{}),accessoryEffects:(weapon.accessoryEffects||[]).map(effect=>({...effect,accessory:accessoryName(effect.accessory)}))};
+    const result=profileRow(name,summary,displayWeapon,['damage','range','traits','placement','manipulatorId','parentLimb','accessories','auxiliary','associatedAttacks','ammunitionStorageId','spareMagazineStorageId','highCapacityMagazineStorageId'],detail);
+    for(const item of result.details){if(item.label==='High Capacity Spare Ammunition')item.label='High-capacity spare ammunition (estimated mass)';if(item.label==='Spare Ammunition')item.label='Spare ammunition (estimated mass)';if(item.label==='Mass Kg')item.label='Source weapon mass (kg)';}
     for(const id of weapon.accessories||[]){const accessory=accessoryChoices.find(item=>item.id===id);result.details.push(row('Accessory',accessoryName(id),accessory?.source));}
     const rows=[result];
     for(const attack of weapon.associatedAttacks || (weapon.auxiliary?[weapon.auxiliary]:[])){
