@@ -20,7 +20,7 @@ const exportDraft=async()=>{const next=page.waitForEvent('download');await click
 const importDraft=async(d,name='conditional-melee.json')=>{await page.locator('#import-file').setInputFiles({name,mimeType:'application/json',buffer:Buffer.from(JSON.stringify(d))});await page.getByText('Design imported. Save it to keep it in this browser.',{exact:true}).waitFor();};
 const weaponRow=label=>page.locator('.review-weapons .review-row').filter({has:page.getByText(label+' (CSC 2023)',{exact:true})});
 const ledgerRow=label=>page.locator('.review-ledger .review-row').filter({has:page.getByText(label+' (CSC 2023)',{exact:true})});
-const labels={'monofilament-axe':'Monofilament Axe',spear:'Spear',lance:'Lance','piston-spear':'Piston Spear'};
+const labels={'monofilament-axe':'Monofilament Axe',spear:'Spear',lance:'Lance','piston-spear':'Piston Spear',stunstick:'Stunstick','arc-field-weapon':'Arc-Field Weapon'};
 try{
  await page.goto(base);await page.locator('#stage-nav button').first().waitFor();
  const fixture=updateDesign(createDesign({techLevel:16}),{name:'Conditional melee fixture',selections:{chassis:{size:'size-7'}}});
@@ -51,15 +51,20 @@ try{
  check('Spear fragility remains manufacture-qualified',await weaponRow('Spear').textContent().then(t=>t.includes('manufacturing TL unrecorded')&&t.includes('Manufacturing Tech Level')&&t.includes('Not calculated')));
  await page.evaluate(()=>{window.print=()=>{window.__printed=true;};});await click(page.locator('#print-design'));
  check('print uses conditional damage and no-AP fallback',await page.locator('#print-output').textContent().then(t=>t.includes('Conditional damage')&&t.includes('2D damage · No AP')&&t.includes('1 Minor Action after every attack')));
+ check('print omits inapplicable melee supply sentinels',await page.locator('#print-output').textContent().then(t=>!/Ammunition: standard|Auxiliary Loaded:|Integral Loaded:|Loose Grenades:|Ammo Cost:|Autoload Cost:/.test(t)));
+ check('printed powered hardware retains acquisition and duration',await page.locator('#print-output').textContent().then(t=>t.includes('Complete weapon hardware; initial charge unspecified')&&t.includes('2D hours')&&t.includes('144 hours')));
  check('print executed without dialog',await page.evaluate(()=>window.__printed===true));
  check('no full source table exposed',await page.locator('.source-reference,table').count()===0);
- for(const label of ['Lance','Piston Spear'])await click(weaponRow(label).locator('summary').first());
+ for(const label of ['Lance','Piston Spear','Stunstick','Arc-Field Weapon'])await click(weaponRow(label).locator('summary').first());
  const resetFact=weaponRow('Piston Spear').locator('dt').filter({hasText:/^Reset$/}).locator('..').locator('dd');await resetFact.waitFor({state:'visible'});
  check('conditional detail facts are visibly reachable',await resetFact.isVisible());
  for(const width of [1440,390,320]){
-  await page.setViewportSize({width,height:1000});check('review fits '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+  await page.setViewportSize({width,height:1000});
+  for(const label of Object.values(labels)){const fields=await weaponRow(label).locator('.review-item-details dt').allTextContents();check(label+' omits fictional supply fields at '+width,!fields.some(field=>['Ammunition Type','Auxiliary Loaded','Integral Loaded','Loose Grenades','Ammo Cost','Autoload Cost'].includes(field)));const ammunition=await weaponRow(label).locator('.review-item-details dt').filter({hasText:/^Ammunition$/}).locator('..').locator('dd').allTextContents();check(label+' correct ammunition presentation at '+width,JSON.stringify(ammunition)===JSON.stringify(['Stunstick','Arc-Field Weapon'].includes(label)?[]:['Not applicable']));}
+  check('review fits '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
   await page.screenshot({path:path.join(out,'robot-conditional-melee-'+width+'.png'),fullPage:true});
   await weaponRow('Piston Spear').screenshot({path:path.join(out,'robot-piston-profile-'+width+'.png')});
+  await weaponRow('Stunstick').screenshot({path:path.join(out,'robot-powered-profile-'+width+'.png')});
  }
  await page.setViewportSize({width:1440,height:1000});await stage(3);await page.locator('#physical-category').selectOption('weapons');
  await page.locator(prefix('spear')+'placement').selectOption('held');await page.locator(prefix('spear')+'manipulatorId').selectOption('base-1');
@@ -85,6 +90,19 @@ try{
  check('unsaved imports do not alter named save',await page.evaluate(()=>localStorage.getItem('traveller.robot-builder.designs.v1'))===saved);
  const repaired=await exportDraft();await click(page.locator('#new-design'));await importDraft(repaired);check('JSON round-trip preserves exact weapon records',JSON.stringify((await exportDraft()).selections.physical.weapons)===JSON.stringify(repaired.selections.physical.weapons));
  await stage(6);await status('round-tripped conditional modes remain source-qualified','Subset checked');
+ const invalidPowered=structuredClone(repaired);invalidPowered.selections.physical.weapons.find(w=>w.weaponId==='csc-stunstick').extraMagazines=1;
+ await importDraft(invalidPowered,'retained-powered-supply.json');await stage(3);await page.locator('#physical-category').selectOption('weapons');
+ check('unsupported powered supply import remains editable',await page.locator(prefix('stunstick')+'extraMagazines').inputValue()==='1');
+ check('unsupported powered supply retains diagnostic status',await page.locator('#design-status').textContent()!=='Subset checked');
+ await page.locator(prefix('stunstick')+'extraMagazines').selectOption('0');await status('removing powered supply restores hardware','Subset checked');
+ check('powered supply correction preserves serialized record',JSON.stringify((await exportDraft()).selections.physical.weapons)===JSON.stringify(repaired.selections.physical.weapons));
+ const ranged=updateDesign(fixture,{selections:{physical:{options:['hazardous-material-storage-compartment'],optionParameters:{'hazardous-material-storage-compartment':{quantity:2}},weapons:[{id:'ranged-control',weaponId:'advanced-combat-rifle',placement:'held',manipulatorId:'base-1',linkedWeapons:1,fireControl:'none',autoload:false,extraMagazines:0,initialMagazines:1,auxiliaryLauncher:'both-acr',auxiliaryAmmunition:'smoke',auxiliaryLoaded:1,integralAmmunition:'frag',integralLoaded:1,looseGrenades:2,looseAmmunitionFor:'integral',ammunitionStorageId:'option:hazardous-material-storage-compartment'}]}}});
+ await importDraft(ranged,'real-launcher-supplies.json');await stage(6);await status('real firearm and launcher supply acquisition preserved','Subset checked');
+ const rangedText=await page.locator('.review-weapons').textContent();
+ check('real loaded launchers and loose rounds remain displayed',rangedText.includes('Auxiliary Loaded')&&rangedText.includes('Integral Loaded')&&rangedText.includes('Loose Grenades')&&rangedText.includes('Smoke')&&rangedText.includes('Fragmentation'));
+ check('both secondary attack profiles retain loaded count',await page.locator('.review-weapons dt').filter({hasText:/^Loaded Per Weapon$/}).locator('..').locator('dd').allTextContents().then(values=>values.length===2&&values.every(v=>v==='1')));
+ await page.evaluate(()=>{window.print=()=>{};});await click(page.locator('#print-design'));
+ check('ranged print retains real launcher supply numbers',await page.locator('#print-output').textContent().then(t=>t.includes('Auxiliary Loaded: 1')&&t.includes('Integral Loaded: 1')&&t.includes('Loose Grenades: 2')));
  check('no browser runtime errors',errors.length===0);
  await fs.writeFile(path.join(out,'conditional-melee-report.json'),JSON.stringify({checks,errors},null,2));console.log('PASS '+checks.length+' conditional melee workflow checks');
 }catch(error){await page.screenshot({path:path.join(out,'conditional-melee-failure.png'),fullPage:true});await fs.writeFile(path.join(out,'conditional-melee-report.json'),JSON.stringify({checks,errors,failure:error.stack},null,2));throw error;}
