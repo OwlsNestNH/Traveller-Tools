@@ -61,7 +61,7 @@ export function createRobotApi(options = {}) {
   function getReview() {
     return projectReview(design,engine.getCatalogue(design),engine.evaluateDesign(design));
   }
-  function getRecordPresentation(control,record,copyIndex) { return control.type==='weapons' ? engine.weaponRecordPresentation(record,copyIndex) : control.type==='verified-vehicle-options' ? engine.vehicleOptionRecordPresentation(record) : {fields:{}}; }
+  function getRecordPresentation(control,record,copyIndex) { return control.type==='weapons' ? engine.weaponRecordPresentation(record,copyIndex) : control.type==='verified-vehicle-options' ? engine.vehicleOptionRecordPresentation(record,design) : {fields:{}}; }
   function getStatblock() { return formatStatblock(getReview()); }
   function getView() {
     const catalogue=engine.getCatalogue(design),evaluation=engine.evaluateDesign(design);

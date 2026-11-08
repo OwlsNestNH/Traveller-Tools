@@ -13,7 +13,7 @@ test('source audit: three 2026 dischargers preserve exact printed hardware facts
   ['vh2026-decoy-dispenser',5,1,2500,60,'74-75'],['vh2026-prismatic-aerosol-discharger',9,1,4000,30,'77'],['vh2026-smoke-discharger',3,1,1000,30,'77']
  ]);
  for(const choice of choices()){assert.equal(choice.slots,64);assert.equal(choice.sourceVerified,true);assert.equal(choice.handbookEquivalent,null);assert.equal(choice.source.book,'Vehicle Handbook Update 2026');assert.equal(choice.source.edition,'Mongoose 2026');assert.deepEqual(choice.conversionSource,{book:'Robot Handbook',edition:'Mongoose 2022',pages:'62'});}
- assert.equal(getCatalogue().coverage.inventory.verifiedVehicleOptionRows,9);
+ assert.equal(getCatalogue().coverage.inventory.verifiedVehicleOptionRows,14);
 });
 test('fixed-source hardware can pass subset checks and is priced exactly once',()=>{
  const base=evaluateDesign(make([]));
@@ -67,7 +67,7 @@ test('API save/import/export/review retain source identity, unknown loads and co
  const api=createRobotApi({storage,locks:{request:(_name,_options,callback)=>callback()},idFactory:()=> 'verified-fixture'});
  api.importDesign(exportDesign(make()));await api.saveDesign();const exported=api.exportDesign();assert.equal(importDesign(exported).selections.physical.verifiedVehicleOptions[0].optionId,'vh2026-smoke-discharger');
  const view=api.getView(),section=view.review.sections.find(section=>section.id==='verified-vehicle-options');assert.ok(section);assert.equal(section.rows[0].label,'Smoke Discharger');assert.match(section.rows[0].source,/2026/);assert.ok(section.rows[0].details.some(row=>row.label==='Initial contents'&&row.value==='Unverified'));
- const control=view.catalogue.stages.find(stage=>stage.id==='physical').controls.find(control=>control.type==='verified-vehicle-options');assert.deepEqual(control.itemFields.map(field=>field.field),['optionId','quantity','extraCharges','samplerMedium']);
+ const control=view.catalogue.stages.find(stage=>stage.id==='physical').controls.find(control=>control.type==='verified-vehicle-options');assert.deepEqual(control.itemFields.map(field=>field.field),['optionId','quantity','allocatedSpaces','extraCharges','samplerMedium']);
  const presentation=api.getRecordPresentation(control,sourceRecord());assert.equal(presentation.vehicleOption.unitCost,1000);presentation.vehicleOption.unitCost=0;assert.equal(api.getRecordPresentation(control,sourceRecord()).vehicleOption.unitCost,1000);
  const restored=createRobotApi({storage,locks:{request:(_n,_o,callback)=>callback()}});restored.loadDesign('verified-fixture');assert.deepEqual(restored.getView().design.selections.physical.verifiedVehicleOptions,[sourceRecord()]);
 });

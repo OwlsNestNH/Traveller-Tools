@@ -8,7 +8,7 @@ const crane='vh2026-light-crane',sampler='vh2026-external-sampler-',radar='vh202
 const record=(optionId=crane,patch={})=>({id:'utility',optionId,quantity:1,...patch});
 const make=(records=[record()],physical={},techLevel=15)=>updateDesign(createDesign({techLevel}),{selections:{chassis:{size:'size-8'},physical:{verifiedVehicleOptions:records,...(techLevel===7?{defaultSuite:['visual-spectrum','auditory']} : {}),...physical}}});
 const stationary=(records=[],techLevel=8,external=false)=>updateDesign(make(records,{manipulators:[],options:['no-internal-power',...(external?['external-power']:[])],powerMode:'direct-connection'},techLevel),{selections:{locomotion:{primary:'none'}}});
-const utilities=()=>verifiedVehicleOptionCatalogue().filter(row=>row.family==='utility');
+const utilities=()=>verifiedVehicleOptionCatalogue().filter(row=>['crane','sampler','radar'].includes(row.utilityType));
 const run=design=>{const evaluation=evaluateDesign(design),review=projectReview(design,getCatalogue(design),evaluation);return{evaluation,review,statblock:formatStatblock(review)};};
 const attach=(robot,role='installed-robot',quantity=1,parent=createDesign({kind:'vehicle-brain',techLevel:15}))=>updateDesign(parent,{special:{designReferences:[{id:'component',role,quantity,design:robot}]}});
 const physicalKeys=['capacity','capacityPerInstallation','loadedCharges','initialChargesIncluded','additionalCharges','additionalChargeCost','additionalChargeMassKg'];
@@ -21,7 +21,7 @@ test('six utility source rows retain exact hardware facts, pages, conversion and
  for(const row of utilities()){
   assert.equal(row.source.book,'Vehicle Handbook Update 2026');assert.equal(row.source.edition,'Mongoose 2026');assert.deepEqual(row.conversionSource,{book:'Robot Handbook',edition:'Mongoose 2022',pages:'62'});assert.equal(row.powerSource.pages,'57');assert.equal(row.technologySource.pages,'57');assert.equal(row.sourceVerified,true);assert.equal(row.handbookEquivalent,null);assert.equal(row.equivalenceAudit.status,'No matching construction equivalent identified; related RH paths reviewed.');assert.ok(row.equivalenceAudit.relatedHandbookSource.pages);
  }
- assert.equal(utilities().some(row=>row.id===sampler+'advanced'),false);assert.equal(getCatalogue().coverage.inventory.verifiedVehicleOptionRows,9);
+ assert.equal(utilities().some(row=>row.id===sampler+'advanced'),false);assert.equal(getCatalogue().coverage.inventory.verifiedVehicleOptionRows,14);
 });
 for(const row of utilities())test(row.label+' hardware is accounted exactly once at source TL and checked for fit',()=>{
  const records=[record(row.id,row.utilityType==='sampler'?{samplerMedium:'gas'}:{})],design=row.spaces===3?stationary(records,row.tl):make(records,{},Math.max(7,row.tl)),base=updateDesign(design,{selections:{physical:{verifiedVehicleOptions:[]}}});

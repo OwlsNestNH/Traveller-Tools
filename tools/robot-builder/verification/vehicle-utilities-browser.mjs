@@ -39,7 +39,7 @@ const noDischargerInventory=['Initial contents','Replacement charge price','Addi
 
 try{
  await page.goto(root);await page.locator('#stage-nav button').first().waitFor();await importDraft(fixture([]));await physical();
- check('source picker contains three dischargers and six utilities',await page.locator(prefix+'new-optionId option:not([disabled])').count()===9);
+ check('source picker retains existing rows alongside recovery/replenishment options',await page.locator(prefix+'new-optionId option:not([disabled])').count()===14);
  await page.locator(prefix+'new-optionId').selectOption(crane);check('crane composer hides charges and sampler medium',await page.locator(prefix+'new-extraCharges').count()===0&&await page.locator(prefix+'new-samplerMedium').count()===0);check('crane fixed TL and 500 kg visible',await page.locator('#stage-content').textContent().then(text=>text.includes('Maximum load per installation: 500 kg')&&text.includes('Hardware TL: 1')));
  await click(page.getByRole('button',{name:'Add source vehicle option',exact:true}));let draft=await exportDraft(),id=draft.selections.physical.verifiedVehicleOptions[0].id,installed=prefix+id+'-';
  check('crane addition uses immutable source ID',draft.selections.physical.verifiedVehicleOptions[0].optionId===crane&&!Object.hasOwn(draft.selections.physical.verifiedVehicleOptions[0],'cost'));
