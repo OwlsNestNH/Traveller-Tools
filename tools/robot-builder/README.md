@@ -53,6 +53,10 @@ Supported held two-handed weapons use one weapon record with two distinct instal
 
 Actual arm characteristics are reported separately. Multi-arm effective characteristics and attack modifiers remain unresolved; no highest, averaged, summed or first-arm value is invented. Carrying fit, reach and coordinated operation remain referee-dependent, and archaic handedness remains a qualified physical interpretation. Held vehicle-class weapons and whole-recipient cyberlimb grip assignments remain outside this route. Mount-size prerequisites apply to attached mounts, not to held grips.
 
+## Rules presentation
+
+The editor, design review and printable statblock show concise labels, selected figures and source references. Full reference rows and long rule explanations are not displayed. Estimated values, incomplete coverage, unresolved results, source interpretations and referee-dependent conditions remain labelled; corrective checks identify the relevant part, weapon and linked copy. Detailed engine diagnostics remain available for verification without becoming presentation text. User-entered design names and specialties are retained.
+
 ## Clone development
 
 Clones use biological templates, growth services and learned skills rather than a robot chassis/brain conversion. Accelerated growth can stop at the convenient whole-month choices or a bounded custom fractional month. Source-dependent pricing, partial-year education and calendar interpretations are recorded explicitly; no prorated fee or premature completed-year training grant is invented.

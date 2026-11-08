@@ -3,8 +3,8 @@ export function renderReview(review, documentRef = globalThis.document) {
   const node = (tag,text,className) => { const item=documentRef.createElement(tag);if(text!==undefined)item.textContent=text;if(className)item.className=className;return item; };
   const root=node('div',undefined,'robot-review');
   root.append(node('h3','Design review','review-title'),node('p',review.status,'review-status'));
-  if(review.provisional)root.append(node('p','Provisional values only. Correct the outstanding errors before play.','review-warning'));
-  if(review.unavailable)root.append(node('p','Totals are not calculated. Selected components are shown for review only.','review-warning'));
+  if(review.provisional)root.append(node('p','Provisional values only; correct outstanding errors.','review-warning'));
+  if(review.unavailable)root.append(node('p','Totals are not calculated; selected components only.','review-warning'));
   for(const group of review.sections){
     const container=node(group.collapsed?'details':'section',undefined,`review-section review-${group.id}`);
     container.append(node(group.collapsed?'summary':'h4',group.title));

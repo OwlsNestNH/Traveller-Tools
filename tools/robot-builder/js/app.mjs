@@ -1,5 +1,6 @@
 import { createRobotApi } from './api.mjs';
 import { renderReview } from './review.mjs';
+import {sourceReference,diagnosticLabel,coverageLabel,sourceExampleLabel} from './rules-presentation.mjs';
 
 const $ = id => document.getElementById(id);
 const stages = [
@@ -61,12 +62,9 @@ function numericPicker(control, value, onChange) {
   input.addEventListener('change', () => onChange(input.value === '' ? null : Number(input.value)));
   return input;
 }
-function choiceLabel(choice) { return choice.label + (choice.eligibility?.available === false ? ' (' + choice.eligibility.reason + ')' : choice.implemented === false ? ' (not yet implemented)' : ''); }
-function sourceText(source) {
-  if (!source) return '';
-  if (typeof source === 'string') return source;
-  return [source.title || source.book, source.page ? `p. ${source.page}` : source.pages, source.note].filter(Boolean).join(' · ');
-}
+function choiceLabel(choice) { return choice.label + (choice.eligibility?.available === false ? ' (unavailable)' : choice.implemented === false ? ' (not yet implemented)' : ''); }
+const sourceText = sourceReference;
+
 function selectChoices(select, choices, selected, placeholder = 'Choose an option') {
   const prompt = option('', placeholder); prompt.disabled = true;
   select.replaceChildren(prompt);
@@ -82,7 +80,7 @@ function updateIdentity() {
   const levels = view.catalogue.techLevels || [];
   selectChoices($('robot-tl'), levels.map(item => typeof item === 'number' ? { id: item, label: `TL ${item}` } : item), view.design.techLevel, 'Choose TL');
   const kind = view.catalogue.kinds.find(item => item.id === view.design.kind);
-  $('type-note').textContent = kind?.description || kind?.note || (kind?.implemented === false ? 'This type has distinct construction rules that are not yet implemented. Selections may be explored, but this design cannot be verified.' : 'Choose the robot type first, then visit any construction stage. Your selections stay with the design.');
+  $('type-note').textContent = kind?.implemented===false?'Construction path not implemented':'Construction preview; coverage incomplete';
 }
 function renderNavigation() {
   $('stage-nav').replaceChildren(...stages.map(([id, label], i) => {
@@ -125,7 +123,7 @@ function renderControl(control, choicesOverride) {
   const selected = control.readOnly && Object.hasOwn(control,'derivedValue') ? control.derivedValue : selectedValue(control);
   if(control.readOnly){
     const output=el('output',choices.find(choice=>choice.id===selected)?.label ?? (selected===undefined||selected===null?'Not calculated':String(selected)),'derived-value');output.id=id;
-    field.append(output,el('p',control.description||'Derived from the selected component designs.','help'));
+    field.append(output,el('p','Derived from component designs','help'));
     const source=sourceText(control.source);if(source)field.append(el('small',source,'source'));
     return field;
   }
@@ -160,7 +158,7 @@ function renderControl(control, choicesOverride) {
     const local=installed.filter(record=>choices.some(choice=>choice.id===record.optionId));
     const details=el('details');details.open=local.length>0||control.expandByDefault===true;
     details.append(el('summary',(control.summaryLabel||'Separate copies with different settings')+(local.length?' ('+local.length+')':'')));
-    details.append(el('p',control.description||'Use a separate installation when copies need different specialties or other settings. Quantity on an ordinary option remains the simpler choice for identical copies.','help'));
+    details.append(el('p','Separate copies: individual settings. Quantity: identical copies.','help'));
     const parametersFor=choice=>(choice?.parameterControls||[]).filter(item=>!item.appliesTo||item.appliesTo==='options');
     const makeParameters=(choice,parameters,prefix,onChange)=>{
       const grid=el('div',undefined,'fields-grid');const groups=new Map();
@@ -537,7 +535,7 @@ if(item.type==='multiselect'){
     }
     input.id = id; field.append(input);
   }
-  if ((control.description || control.help) && control.type !== 'option-instances') field.append(el('p', control.description || control.help, 'help'));
+  // Source descriptions remain in the API, not the labels-only editor.
   const source = sourceText(control.source || choices.find(choice=>choice.id===selected)?.source); if (source) field.append(el('p', source, 'source'));
   if (control.type !== 'multiselect' && control.choices?.length === 0) field.append(el('p', 'Book choices pending verification. No custom values are substituted.', 'help'));
   if(control.collapsedByDefault){
@@ -581,7 +579,7 @@ function renderStage() {
   const sourceStage = view.catalogue.stages.find(item => item.id === currentStage);
   const stage = sourceStage ? { ...sourceStage, controls: sourceStage.controls.filter(controlVisible) } : null;
   const activeCategories=Array.isArray(stage?.categories)&&stage.categories.length?stage.categories.map(item=>[item.id,item.label]):categories;
-  if (stage?.description) content.append(el('p', stage.description, 'stage-description'));
+
   if (currentStage === 'physical' && stage?.categorize!==false && (stage?.controls || []).some(control=>control.category || control.choices?.some(choice=>choice.category))) {
     const layout = el('div', undefined, 'category-layout');
     const navigation = el('div', undefined, 'category-picker');
@@ -618,23 +616,8 @@ function renderStage() {
     if (!grid.children.length) grid.append(el('p', 'This stage is awaiting source-verified construction choices.', 'help'));
     content.append(grid);
   }
-  const technology=view.catalogue.highTechnology;
-  const referenceRows=currentStage==='chassis'?technology?.metamorphic:currentStage==='finalisation'?technology?.backupServices:null;
-  if(referenceRows?.length){
-    const disclosure=el('details',undefined,'source-reference');
-    disclosure.append(el('summary',currentStage==='chassis'?'High-tech body references':'External backup and transfer references'));
-    disclosure.append(el('p','Reference prices only. These entries do not add components or change this design’s totals.','help'));
-    if(technology.scope)disclosure.append(el('p',technology.scope,'help'));
-    for(const record of referenceRows){
-      const card=el('div',undefined,'option-settings');card.append(el('strong',record.label||record.purpose||record.id.replaceAll('-',' ')));
-      const price=record.pricePerSlot!=null?'Cr '+formatted(record.pricePerSlot)+' / Slot':record.cost!=null?'Cr '+formatted(record.cost)+(record.unit?' / '+record.unit:''):'Price not resolved';
-      card.append(el('p',['TL '+record.tl,price,record.morphTime,record.appearance].filter(Boolean).join(' · '),'help'));
-      if(record.reason)card.append(el('p',record.reason,'help'));
-      card.append(el('small',sourceText(record.source),'source'));disclosure.append(card);
-    }
-    content.append(disclosure);
-  }
-  if (stage?.note) content.append(el('p', stage.note, 'scope-note'));
+  // Reference tables remain API-only; the editor displays selected choices and checks.
+
 }
 function metric(label, value) { const row = el('div', undefined, 'metric'); row.append(el('dt', label), el('dd', value)); return row; }
 function formatted(value, suffix = '') { return typeof value === 'number' && Number.isFinite(value) ? `${number.format(value)}${suffix}` : 'Not calculated'; }
@@ -669,15 +652,15 @@ function renderSummary() {
     const node = el('div', undefined, `issue ${issue.severity}`);
     const context=view.review?.sections.find(section=>section.id==='warnings')?.rows[index]?.detail;
     if(context)node.append(el('small',context,'help'));
-    node.append(el('p', issue.message));
+    node.append(el('p', `${issue.severity||'Check'}: ${view.review?.sections.find(section=>section.id==='warnings')?.rows[index]?.value||diagnosticLabel(issue)}`));
     const source = sourceText(issue.source); if (source) node.append(el('small', source, 'source')); return node;
   }));
   if (!diagnostics.length) $('issues').append(el('p', evaluation.status === 'verified' ? 'No outstanding construction checks.' : 'Construction rules have not been fully verified.', 'help'));
   const coverage = evaluation.coverage || view.catalogue.coverage;
   if (coverage?.gaps?.length || coverage?.compositeBoundaries?.length) {
     const details = el('details', undefined, 'coverage'); details.append(el('summary', 'Implementation coverage'));
-    if (coverage.scope) details.append(el('p', coverage.scope, 'help'));
-    for (const gap of [...(coverage.gaps||[]),...(coverage.compositeBoundaries||[])]) details.append(el('p', typeof gap === 'string' ? gap : gap.message || gap.reason || gap.id, 'help'));
+    details.append(el('p', 'Coverage incomplete', 'help'));
+    for (const gap of [...(coverage.gaps||[]),...(coverage.compositeBoundaries||[])]) { const item=el('p',coverageLabel(gap),'help');const source=sourceText(gap?.source);if(source)item.append(el('small',source,'source'));details.append(item); }
     $('issues').append(details);
   }
 }
@@ -703,8 +686,9 @@ function renderExamples() {
 }
 function updateExampleNote(examples=api.listExamples?.()||[]) {
   const selected=examples.find(item=>item.id===$('example-design').value);
+
   $('example-note').textContent = examples.length
-    ? [selected?.description,'Examples replace the draft without changing your saved designs.'].filter(Boolean).join(' ')
+    ? [sourceExampleLabel(selected),sourceText(selected?.source),'Examples replace the draft without changing your saved designs.'].filter(Boolean).join(' · ')
     : 'No construction examples are available yet.';
 }
 // A change event fires on blur before a pointer click. Preserve the clicked

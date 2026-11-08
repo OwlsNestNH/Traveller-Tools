@@ -19,17 +19,17 @@ test('weapon output retains damage, range, magazine, modifiers and source',()=>{
 });
 test('hardware skills, skill equivalents and tool limits remain distinct from software',()=>{
  const output=text({skills:[{id:'medic',level:0,effectiveLevel:2}],hardwareSkills:[{skill:'recon',level:2,characteristicModifier:0}],skillEquivalents:[{skill:'athletics',speciality:'strength',level:-1,manipulatorId:'arm-1'}],toolCaps:[{id:'medikit',optionId:'medikit',skills:{Medic:2},grantsSkill:false}]});
- for(const expected of ['Skill packages','Hardware skills','Characteristic-based equivalents','Level: -1','Tool skill limits','Grants Skill: No','do not grant software skill levels'])assert.ok(output.includes(expected),expected);
+ for(const expected of ['Skill packages','Hardware skills','Characteristic-based equivalents','Level: -1','Tool skill limits','Grants Skill: No','no software grant'])assert.ok(output.includes(expected),expected);
 });
 test('provisional values and null accounting are never shown as verified or zero',()=>{
- const output=text(null,{status:'invalid',previewTotals:{cost:123,provisional:true},ledger:[{label:'Unknown component',cost:null,slots:null}],diagnostics:[{severity:'error',message:'Capacity exceeded'}]});
- assert.match(output,/Provisional values only/);assert.match(output,/Needs correction/);assert.match(output,/Cost unresolved/);assert.match(output,/Slots unresolved/);assert.match(output,/Capacity exceeded/);assert.doesNotMatch(output,/Unknown component: Cr 0/);
+ const output=text(null,{status:'invalid',previewTotals:{cost:123,provisional:true},ledger:[{label:'Unknown component',cost:null,slots:null}],diagnostics:[{severity:'error',code:'SLOTS_EXCEEDED',message:'Capacity exceeded'}]});
+ assert.match(output,/Provisional values only/);assert.match(output,/Needs correction/);assert.match(output,/Cost unresolved/);assert.match(output,/Slots unresolved/);assert.match(output,/Slot capacity exceeded/);assert.doesNotMatch(output,/Unknown component: Cr 0/);
 });
 test('blocked designs print selected equipment with no invented totals',()=>{
  const c={...catalogue,stages:[{id:'physical',controls:[{field:'options',choices:[{id:'sensor',label:'Sensor',source:{book:'Robot Handbook',pages:39}}]}]}]};
  const d={...design,selections:{physical:{options:['sensor'],optionParameters:{sensor:{detail:'Custom species'}}}}};
- const output=formatStatblock(projectReview(d,c,{...evaluate(null),status:'blocked',diagnostics:[{severity:'blocker',message:'Needs referee decision'}]}));
- assert.match(output,/Totals are not calculated/);assert.match(output,/Construction cost: Not calculated/);assert.match(output,/Sensor/);assert.match(output,/Custom species/);assert.match(output,/Needs referee decision/);
+ const output=formatStatblock(projectReview(d,c,{...evaluate(null),status:'blocked',diagnostics:[{severity:'blocker',code:'FUTURE_REFEREE_DECISION',message:'Needs referee decision'}]}));
+ assert.match(output,/Totals are not calculated/);assert.match(output,/Construction cost: Not calculated/);assert.match(output,/Sensor/);assert.match(output,/Custom species/);assert.match(output,/Future referee decision; check selection\/source/);
 });
 test('type catalogue prevents ordinary defaults leaking into clone review',()=>{
  const d={...design,kind:'clone',special:{growth:'accelerated'},selections:{physical:{defaultSuite:['sensor'],options:['sensor']}}};
@@ -147,7 +147,7 @@ test('external option review keeps qualified source inputs and estimates outside
  const external=review.sections.find(s=>s.id==='external-options');assert.equal(external.rows.length,1);
  assert.match(external.rows[0].value,/Cr 2,468 quoted; 16 converted Slots/);
  assert.match(external.rows[0].source,/Unverified edition/);
- assert.match(output,/Construction cost: Not calculated/);assert.match(output,/do not certify the design/);
+ assert.match(output,/Construction cost: Not calculated/);assert.match(output,/not certified/);
 });
 test('operating capabilities are grouped and preserve explicit readiness and unknown dependencies',()=>{
  const totals={equipmentCapabilities:[{id:'controller-a',optionId:'controller',label:'Controller',category:'controller',status:'inactive',targetLinkVerified:false,taskCapacity:0,condition:'Requires Remote Ops software',source:{book:'Robot Handbook',pages:44}},{id:'environment-summary',category:'environment',radiationProtection:500,depthMetres:100,source:{book:'Robot Handbook',pages:42}}]};
@@ -175,7 +175,7 @@ test('implant brain and skill profiles stay readable and separate from recipient
  assert.match(review.sections.find(s=>s.id==='implant-brains').rows[0].value,/INT 8/);
  assert.equal(review.sections.find(s=>s.id==='implant-skills').rows.length,2);
  assert.equal(review.sections.some(s=>s.id==='skills'),false);
- assert.match(output,/not automatically granted to the recipient/);assert.match(output,/Language \(Vilani\)/);
+ assert.match(output,/no recipient grant/);assert.match(output,/Language \(Vilani\)/);
 });
 test('special legacy and per-instance equipment both survive a blocked review without ordinary leakage',()=>{
  let d=createDesign({kind:'microbot',techLevel:14});d=updateDesign(d,{special:{options:['wireless'],optionInstances:[{id:'radio',optionId:'transceiver-500km-advanced',parameters:{quantity:2}}]}});
@@ -207,7 +207,7 @@ test('cyberlimb weapon profiles preserve parent, independent capacity and unknow
  const r=projectReview(d,getCatalogue(d),result),s=r.sections.find(s=>s.id==='limb-weapons'),output=formatStatblock(r);
  assert.equal(s.rows.length,2);assert.match(s.rows[0].value,/Cr 25,000/);assert.match(s.rows[0].label,/Cybernetic arm/i);
  assert.match(output,/Copies: 2/);assert.match(output,/Per Limb Slots: 3/);assert.match(output,/Base Attack Modifier: Not calculated/);
- assert.match(output,/Recipient skill and total attack modifiers remain uncalculated/);
+ assert.match(output,/recipient skill\/attack modifiers unresolved/);
  assert.ok(!r.sections.find(s=>s.id==='augmentations').rows[0].details.some(row=>row.label==='Weapons'));
 });
 
@@ -216,14 +216,14 @@ test('blocked limb weapon selection remains readable without invented costs',()=
  const result=evaluateDesign(d);assert.equal(result.status,'blocked');
  const r=projectReview(d,getCatalogue(d),result),s=r.sections.find(s=>s.id==='limb-weapons');
  assert.equal(s.rows.length,1);assert.match(s.rows[0].label,/Stunner/i);assert.match(s.rows[0].detail,/Cybernetic arm/i);
- assert.match(s.note,/Performance and costs have not been calculated/);
+ assert.match(s.note,/performance\/cost not calculated/);
 });
 test('composite review exposes source-derived integration values without dumping nested designs',()=>{
  const child=createDesign({techLevel:13});child.name='Reference robot';
  const d=updateDesign(createDesign({kind:'ship-brain',techLevel:13}),{special:{designReferences:[{id:'reference',role:'installed-robot',quantity:1,design:child}]}});
  const evaluation=evaluateDesign(d),review=projectReview(d,getCatalogue(d),evaluation),output=formatStatblock(review);
  const component=review.sections.find(s=>s.id==='components');assert.equal(component.rows.length,1);assert.match(component.rows[0].value,/Cr 12,000 construction/);
- assert.match(output,/Cr 512,000/);assert.match(output,/External hull, vehicle or biological-host legality/);assert.match(output,/Integration values from component designs/);assert.match(output,/Referenced robot profiles/);assert.match(output,/Hits: 20/);assert.match(output,/Arm: 1/);assert.match(output,/not automatically to its host/);
+ assert.match(output,/Cr 512,000/);assert.match(output,/external host unverified/);assert.match(output,/Integration values from component designs/);assert.match(output,/Referenced robot profiles/);assert.match(output,/Hits: 20/);assert.match(output,/Arm: 1/);assert.match(output,/no host grant/);
  assert.ok(!review.sections.find(s=>s.id==='additional')?.rows.some(row=>row.label==='Composite'));
  assert.doesNotMatch(output,/Schema Version|designReferences|selections\./);
 });
@@ -231,19 +231,19 @@ test('composite review exposes source-derived integration values without dumping
 test('equipment summaries show changed settings while default options remain in disclosure',()=>{
  let d=createDesign({kind:'cyborg',techLevel:13});d=updateDesign(d,{special:{cyborgMode:'augments',augmentations:[{id:'arm',optionId:'cybernetic-arm',parameters:{}}]}});
  const review=projectReview(d,getCatalogue(d),evaluateDesign(d));const equipment=review.sections.find(s=>s.id==='equipment').rows[0];
- assert.doesNotMatch(equipment.value,/Ruggedised circuitry: No|Detachable socket/);assert.ok(equipment.details.some(row=>row.label.includes('Installation reference')));
+ assert.doesNotMatch(equipment.value,/Ruggedised circuitry: No|Detachable socket/);assert.ok(equipment.details.some(row=>row.label==='Installation'));
 });
 test('general computer program states stay separate from robot brains and recipient skills',()=>{
  const d=updateDesign(createDesign({kind:'cyborg',techLevel:14}),{special:{cyborgMode:'augments',augmentations:[{id:'computer',optionId:'misc-mass-portable-computer-14',parameters:{}}],computerSoftware:[{id:'interface',parentComputer:'computer',program:'interface',rating:0,runningBandwidth:0,subject:'',databasePrice:10,expertUse:'assisted'},{id:'security',parentComputer:'computer',program:'security',rating:0,runningBandwidth:-1,subject:'',databasePrice:10,expertUse:'assisted'}]}});
  const result=evaluateDesign(d);assert.equal(result.status,'verified');const review=projectReview(d,getCatalogue(d),result),output=formatStatblock(review);
  assert.equal(review.sections.find(s=>s.id==='computer-programs').rows.length,2);assert.match(output,/Running at rating 0/);assert.match(output,/Stored, not running/);assert.match(output,/Processing 0 active \/ 5 available/);
- assert.match(output,/separate from robot brain software and recipient skills/);assert.ok(!review.sections.some(s=>s.id==='skills'||s.id==='implant-skills'));
+ assert.match(output,/Computer-only software; no robot\/recipient skill grant/);assert.ok(!review.sections.some(s=>s.id==='skills'||s.id==='implant-skills'));
  assert.doesNotMatch(output,/Parent Computer: computer/);
 });
 test('blocked clone review preserves calendar and due ageing without certifying characteristics',()=>{
  const d=updateDesign(createDesign({kind:'clone',techLevel:15}),{special:{growth:'accelerated',eduAccounting:'separate',trainingYears:15,baseINT:11,rollINT:3}});
  const result=evaluateDesign(d);assert.equal(result.status,'blocked');const review=projectReview(d,getCatalogue(d),result),output=formatStatblock(review);
- assert.match(output,/Apparent age 33 at training completion/);assert.match(output,/2 checks due/);assert.match(output,/15 elapsed adult years/);assert.match(output,/no unresolved ageing losses or current-character legality are certified/);
+ assert.match(output,/Apparent age 33 at training completion/);assert.match(output,/2 checks due/);assert.match(output,/15 elapsed adult years/);assert.match(output,/Ageing rolls outstanding; characteristics not certified/);
  assert.ok(!review.sections.some(s=>s.id==='clone-characteristics'));assert.equal(review.unavailable,true);
 });
 

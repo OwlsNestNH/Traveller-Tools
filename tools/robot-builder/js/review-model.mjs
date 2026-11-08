@@ -1,3 +1,4 @@
+import {diagnosticLabel,diagnosticContext,coverageLabel,conditionLabel,presentationFacts,sourceReference} from './rules-presentation.mjs';
 // Read-only presentation projection. No construction rules or calculated totals live here.
 const format = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
 const massFormat = new Intl.NumberFormat('en-US', { maximumFractionDigits: 9 });
@@ -5,11 +6,8 @@ const present = value => value !== undefined && value !== null;
 export function humanLabel(value) {
   return String(value).replace(/([a-z])([A-Z])/g, '$1 $2').replace(/[-_:]/g, ' ').replace(/^./, ch => ch.toUpperCase());
 }
-export function sourceLabel(source) {
-  if (!source) return '';
-  if (typeof source === 'string') return source;
-  return [source.book || source.title, source.edition, present(source.pages ?? source.page) ? `p. ${source.pages ?? source.page}` : '', source.note].filter(Boolean).join(' · ');
-}
+export const sourceLabel = sourceReference;
+
 function valueText(value) {
   if (value === null || value === undefined) return 'Not calculated';
   if (typeof value === 'number') return format.format(value);
@@ -35,7 +33,7 @@ function titleName(value) {
 function profileRow(label, summary, record, omitted = [], detail = '') {
   const hidden = new Set(['id','weaponId','optionId','sourceOption','label','name','source','ammunitionOverrides','ammunitionCopies',...omitted]);
   if(record.ammunitionCopies?.length||record.ammunitionOverrides?.length)for(const field of ['extraMagazines','extraHighCapacityMagazines','initialMagazines','initialMagazineType','autoloadAllocation'])hidden.add(field);
-  const details = Object.entries(record).filter(([key])=>!hidden.has(key)).map(([key,value])=>row(humanLabel(key),value));
+  const details = Object.entries(presentationFacts(record)||{}).filter(([key])=>!hidden.has(key)).map(([key,value])=>row(humanLabel(key),value));
   return {...row(label,summary,record.source,detail),details};
 }
 function ammunitionMassDisplay(value) {
@@ -125,9 +123,9 @@ export function projectReview(design, catalogue, evaluation) {
   if(development){
     const calendar=development.growthCalendar,ageing=development.ageing,source=calendar?.source||evaluation.development?.source;
     const rows=[];
-    if(calendar)rows.push(profileRow('Growth calendar',present(calendar.trainingExitApparentAge)?`Apparent age ${valueText(calendar.trainingExitApparentAge)} at training completion`:'Growth calendar requires the selected character pathway',calendar,['trainingExitApparentAge'],'Source interpretations are recorded separately from elapsed time.'));
-    if(ageing)rows.push(profileRow('Ageing obligations',`${valueText(ageing.checksDue)} checks due · ${valueText(ageing.effectiveAdultYears)} elapsed adult years`,{...ageing,source},['checksDue','effectiveAdultYears'],'Required game ageing outcomes are not invented.'));
-    if(rows.length)sections.push(section('clone-development','Clone growth and ageing',rows,{note:cloneDetails?'Calendar and ageing conditions follow the selected growth and training pathway.':evaluation.development.description||'Development checks only; final characteristics and prices remain unresolved.'}));
+    if(calendar)rows.push(profileRow('Growth calendar',present(calendar.trainingExitApparentAge)?`Apparent age ${valueText(calendar.trainingExitApparentAge)} at training completion`:'Growth calendar requires the selected character pathway',calendar,['trainingExitApparentAge'],'Source interpretation; provisional calendar'));
+    if(ageing)rows.push(profileRow('Ageing obligations',`${valueText(ageing.checksDue)} checks due · ${valueText(ageing.effectiveAdultYears)} elapsed adult years`,{...ageing,source},['checksDue','effectiveAdultYears'],'Ageing outcomes unresolved'));
+    if(rows.length)sections.push(section('clone-development','Clone growth and ageing',rows,{note:cloneDetails?'Selected growth/training pathway':'Development only; characteristics/prices unresolved'}));
   }
   if(cloneDetails){
     const source=cloneDetails.growthCalendar?.source||{book:'Robot Handbook',pages:'96-99'};
@@ -136,8 +134,8 @@ export function projectReview(design, catalogue, evaluation) {
     if(stats.length)sections.push(section('clone-characteristics','Clone characteristics',stats,{kind:'metrics'}));
     sections.push(section('clone-training','Creche training',[
       row('Training points earned',cloneDetails.trainingPoints,source),row('Unspent training points',cloneDetails.unspentTrainingPoints,source),row('Initial EDU',cloneDetails.initialEducation,source),row('Maturity time',present(cloneDetails.maturityYears)?valueText(cloneDetails.maturityYears)+' years':'Not calculated',source),row('Training fee years',cloneDetails.chargedTrainingYears,source)
-    ],{note:cloneDetails.trainingTiming||'Natural education and background follow their own character rules.'}));
-    if(cloneDetails.annualTraining?.length)sections.push(section('clone-training-years','Annual clone training records',cloneDetails.annualTraining.map(year=>profileRow(`Year ${year.additionalYear}`,`EDU ${valueText(year.education)} · INT ${valueText(year.intelligence)}`,{...year,source},['additionalYear','education','intelligence','timing'],year.timing)),{collapsed:true}));
+    ],{note:'EDU before year-end INT; selected convention; character background separate'}));
+    if(cloneDetails.annualTraining?.length)sections.push(section('clone-training-years','Annual clone training records',cloneDetails.annualTraining.map(year=>profileRow(`Year ${year.additionalYear}`,`EDU ${valueText(year.education)} · INT ${valueText(year.intelligence)}`,{...year,source},['additionalYear','education','intelligence','timing'],'EDU before year-end INT; other purchases by graduation')),{collapsed:true}));
     sections.push(section('clone-template','Clone template and timing details',[profileRow('Selected template','Adult template characteristics and explicit schedule',{templateCharacteristics:cloneDetails.templateCharacteristics,intTrainingSchedule:cloneDetails.intTrainingSchedule,spareBody:cloneDetails.spareBody,source})],{collapsed:true}));
   }
   // Only describe selections exposed by this type's catalogue; clones must not inherit ordinary defaults.
@@ -169,7 +167,7 @@ export function projectReview(design, catalogue, evaluation) {
       return !control || !Object.hasOwn(control,'default') || JSON.stringify(value)!==JSON.stringify(control.default);
     }).map(([key])=>{const label=choice?.parameterControls?.find(item=>item.field===key)?.label||key;return[label,parameterValues[label]];}));
     const summary={placement:context,...(present(ledger?.quantity)&&!hasQuantity?{quantity:ledger.quantity}:{}),...compactParameters};
-    return {...row(choice?.label || humanLabel(id),summary,choice?.source || ledger?.source),details:[...Object.entries(parameterValues).map(([label,value])=>row(label,value)),...(instanceId?[row('Installation reference',instanceId)]:[])]};
+    return {...row(choice?.label || humanLabel(id),summary,choice?.source || ledger?.source),details:[...Object.entries(parameterValues).map(([label,value])=>row(label,value)),...(instanceId?[row('Installation','Separate copy')]:[])]};
   };
   for(const control of controls.filter(control=>['defaultSuite','options'].includes(control.field))){
     const values=control.target==='special'?design.special:design.selections?.[control.stage];
@@ -190,12 +188,12 @@ export function projectReview(design, catalogue, evaluation) {
       attributes ? `STR ${valueText(attributes.strength)} / DEX ${valueText(attributes.effectiveDexterity)}` : '',
       present(item.slots?.remaining) ? `${valueText(item.slots.remaining)} free limb Slots` : ''
     ].filter(Boolean).join(' · ');
-    return profileRow(item.label || options.get(item.optionId)?.label || 'Cybernetic part',summary,item,['totalCost','quantity','robotBrain','generalComputer','weapons','weaponAccounting']);
-  }),{note:'Shared interfaces are itemised separately. Limb and sensory effects apply only in their stated context.'}));
+    return profileRow(item.label || options.get(item.optionId)?.label || 'Cybernetic part',summary,item,['totalCost','quantity','robotBrain','generalComputer','weapons','weaponAccounting'],'Part-specific effects; no automatic recipient grant');
+  }),{note:'Part-specific effects; shared interfaces separate'}));
   const sharedInterfaces = totals?.sharedInterfaces || augmentResult?.sharedInterfaces || [];
   if (sharedInterfaces.length) sections.push(section('augmentation-interfaces','Shared cybernetic interfaces',sharedInterfaces.map(item=>profileRow(`${titleName(item.sense)} interface`,money(item.totalCost),item,['totalCost','recordIds'])),{collapsed:true}));
   const augmentationEffects = totals?.augmentationEffects || augmentResult?.effects;
-  if (augmentationEffects) sections.push(section('augmentation-effects','Cybernetic effects',Object.entries(augmentationEffects).filter(([,value])=>present(value)).map(([key,value])=>row(humanLabel(key),value)),{collapsed:true}));
+  if (augmentationEffects) sections.push(section('augmentation-effects','Cybernetic effects',Object.entries(presentationFacts(augmentationEffects)||{}).filter(([,value])=>present(value)).map(([key,value])=>row(humanLabel(key),value)),{collapsed:true}));
   const externalControl = controls.find(control=>control.type==='external-vehicle-options');
   const externalRecords = externalControl ? design.selections?.[externalControl.stage]?.[externalControl.field] || [] : [];
   if (externalRecords.length) sections.push(section('external-options','Unverified external vehicle options',externalRecords.map(record=>{
@@ -204,9 +202,9 @@ export function projectReview(design, catalogue, evaluation) {
       const value=record[field.field],choice=field.choices?.find(item=>item.id===value);
       return row(field.label,choice?.label??value);
     });
-    const result=row(record.name || 'External option',estimate ? `${money(estimate.quotedCost)} quoted; ${present(estimate.convertedSlots)?valueText(estimate.convertedSlots)+' converted Slots':'Slots unresolved'}` : 'Not calculated',{book:record.sourceTitle,edition:record.sourceEdition,pages:record.sourcePage},'Source, equivalence and installation prerequisites are unverified. These estimates do not certify the design.');
+    const result=row(record.name || 'External option',estimate ? `${money(estimate.quotedCost)} quoted; ${present(estimate.convertedSlots)?valueText(estimate.convertedSlots)+' converted Slots':'Slots unresolved'}` : 'Not calculated',{book:record.sourceTitle,edition:record.sourceEdition,pages:record.sourcePage},'Source estimate; installation unverified; not certified');
     return {...result,details:fields};
-  }),{note:'Conversion of supplied figures only. Use the Robot Handbook option wherever an equivalent exists.'}));
+  }),{note:'External conversion estimate; Handbook equivalence required'}));
   const referenceControl=controls.find(control=>control.type==='design-references');
   const selectedReferences=referenceControl?design.special?.[referenceControl.field]||[]:[];
   const components=evaluation.composite?.components||totals?.composite?.components||[];
@@ -220,16 +218,16 @@ export function projectReview(design, catalogue, evaluation) {
         details.push(row('Construction check',component.status==='verified'?'Implemented component rules checked':humanLabel(component.status)),row('Construction per copy',money(component.constructionUnitCost)),row('Listed price per copy',money(component.listedUnitCost)),row('Cost scope',component.costScope));
         if(component.slots)details.push(row('Component Slots',component.slots));
         if(component.bandwidth)details.push(row('Component Bandwidth',component.bandwidth));
-        if(component.coverage)details.push(row('Coverage',component.coverage.complete?'Selected construction covered':component.coverage.scope||'Component coverage remains incomplete'));
+        if(component.coverage)details.push(row('Coverage',component.coverage.complete?'Selected construction covered':'Coverage incomplete'));
       }
-      return {...row(reference.design?.name||'Unnamed component',summary,component?.source||referenceControl.source,'Detached snapshot, checked again for this construction. Original saved designs are unchanged.'),details};
+      return {...row(reference.design?.name||'Unnamed component',summary,component?.source||referenceControl.source,'Detached snapshot; rechecked'),details};
     });
-    sections.push(section('components','Referenced component designs',rows,{note:'Component construction prices and interfaces are accounted for separately. External hull, vehicle or biological-host legality is not established by a robot snapshot.'}));
+    sections.push(section('components','Referenced component designs',rows,{note:'Component accounting; external host unverified'}));
     const profiles=[];
     for(const component of components.filter(component=>component.profile)){
       const profile=component.profile;
-      profiles.push(profileRow(component.name,profile.scope||'Referenced robot profile',{...profile,manipulators:(profile.manipulators||[]).map(({id,...arm},index)=>({arm:index+1,...arm}))},['scope','weapons','skills','hardwareSkills'],'These values belong to the referenced robot, not automatically to its host.'));
-      for(const skill of profile.skills||[])profiles.push(profileRow(`${component.name} / ${skill.label||titleName(skill.skill||skill.id)}`,`Installed level ${valueText(skill.level)} · Effective ${valueText(skill.effectiveLevel)}`,skill,['level','effectiveLevel'],'Component skill software.'));
+      profiles.push(profileRow(component.name,'Referenced robot profile',{...profile,manipulators:(profile.manipulators||[]).map(({id,...arm},index)=>({arm:index+1,...arm}))},['scope','weapons','skills','hardwareSkills'],'Component-only values; no host grant'));
+      for(const skill of profile.skills||[])profiles.push(profileRow(`${component.name} / ${skill.label||titleName(skill.skill||skill.id)}`,`Installed level ${valueText(skill.level)} · Effective ${valueText(skill.effectiveLevel)}`,skill,['level','effectiveLevel'],'Component-only software'));
       for(const weapon of profile.weapons||[]){
         const snapshot=selectedReferences.find(reference=>reference.id===component.id)?.design;
         const storageName=id=>{
@@ -240,16 +238,16 @@ export function projectReview(design, catalogue, evaluation) {
         };
         const componentArmNames=new Map((profile.manipulators||snapshot?.selections?.physical?.manipulators||[]).map((arm,index)=>[arm.id,`${arm.kind==='base'?'Base arm':arm.kind==='leg'?'Converted leg':'Additional arm'} ${index+1}`]));
         const display={...weapon,...weaponGripDisplay(weapon,id=>componentArmNames.get(id)||'Unspecified manipulator'),...ammunitionInventoryDisplay(weapon),...(weapon.magazineVariants?{magazineVariants:ammunitionMassDisplay(weapon.magazineVariants)}:{}),...(weapon.highCapacitySpareAmmunition?{highCapacitySpareAmmunition:spareAmmunitionDisplay(weapon.highCapacitySpareAmmunition,storageName(weapon.highCapacitySpareAmmunition.storageId))}:{}),...(weapon.spareAmmunition?{spareAmmunition:spareAmmunitionDisplay(weapon.spareAmmunition,storageName(weapon.spareAmmunition.storageId))}:{})};
-        const weaponRow=profileRow(`${component.name} / ${weapon.label||'Weapon'}`,`${present(weapon.damage)?weapon.damage+' damage':'Damage not calculated'} · ${present(weapon.range)?'Range '+valueText(weapon.range)+' m':'Range not calculated'}`,display,['damage','range','manipulatorId','supportManipulatorId','gripManipulatorIds','primaryManipulatorDM','parentLimb','spareMagazineStorageId','highCapacityMagazineStorageId'],'Weapon belongs to the referenced robot; delivery and attack conditions remain contextual.');
+        const weaponRow=profileRow(`${component.name} / ${weapon.label||'Weapon'}`,`${present(weapon.damage)?weapon.damage+' damage':'Damage not calculated'} · ${present(weapon.range)?'Range '+valueText(weapon.range)+' m':'Range not calculated'}`,display,['damage','range','manipulatorId','supportManipulatorId','gripManipulatorIds','primaryManipulatorDM','parentLimb','spareMagazineStorageId','highCapacityMagazineStorageId'],'Component-only weapon; attack/delivery conditional');
         for(const item of weaponRow.details){if(item.label==='Autoload Allocation')item.label='Selected loader allocation per weapon';if(item.label==='High Capacity Spare Ammunition')item.label='High-capacity spare ammunition (estimated mass)';if(item.label==='Spare Ammunition')item.label='Spare ammunition (estimated mass)';if(item.label==='Mass Kg')item.label='Source weapon mass (kg)';}
         weaponRow.details.push(...ammunitionCopyRows(weapon,storageName));
         profiles.push(weaponRow);
       }
-      for(const effect of component.equipmentOperations||[])profiles.push(profileRow(`${component.name} / ${effect.label||'Equipment readiness'}`,effect.condition||humanLabel(effect.status||'Conditional'),effect,['condition','status'],'Component operating condition.'));
+      for(const effect of component.equipmentOperations||[])profiles.push(profileRow(`${component.name} / ${effect.label||'Equipment readiness'}`,conditionLabel(effect.condition)||humanLabel(effect.status||'Conditional'),effect,['condition','status'],'Component-only condition'));
     }
     if(profiles.length)sections.push(section('component-profiles','Referenced robot profiles',profiles,{collapsed:true}));
     const derived=evaluation.composite?.derivedInputs||totals?.composite?.derivedInputs;
-    if(derived&&Object.keys(derived).length)sections.push(section('component-derived','Integration values from component designs',Object.entries(derived).map(([key,value])=>row(humanLabel(key),value,evaluation.composite?.source||referenceControl.source)),{collapsed:true,note:'These source inputs are derived by the rules engine from the selected snapshots, replacing manual estimates.'}));
+    if(derived&&Object.keys(derived).length)sections.push(section('component-derived','Integration values from component designs',Object.entries(presentationFacts(derived)||{}).map(([key,value])=>row(humanLabel(key),value,evaluation.composite?.source||referenceControl.source)),{collapsed:true,note:'Source-derived component inputs'}));
   }
   const armNames = new Map((totals?.manipulators || physical.manipulators || []).map((arm,index)=>[arm.id,`${arm.kind==='base'?'Base arm':arm.kind==='leg'?'Converted leg':'Additional arm'} ${index+1}`]));
   const armName = id => armNames.get(id) || 'Unspecified manipulator';
@@ -267,15 +265,15 @@ export function projectReview(design, catalogue, evaluation) {
     const name=item=>item.label||options.get(item.optionId)?.label||'Implant brain';
     sections.push(section('implant-brains','Implant brains',implantBrains.map(item=>{
       const brain=item.robotBrain;
-      return profileRow(name(item),`INT ${valueText(brain.intelligence)} · Bandwidth ${valueText(brain.bandwidth?.used)} / ${valueText(brain.bandwidth?.capacity)}`,brain,['intelligence','skills'],'Implant-only construction. These skills are not automatically granted to the recipient.');
+      return profileRow(name(item),`INT ${valueText(brain.intelligence)} · Bandwidth ${valueText(brain.bandwidth?.used)} / ${valueText(brain.bandwidth?.capacity)}`,brain,['intelligence','skills'],'Implant-only skills; no recipient grant');
     })));
-    const rows=implantBrains.flatMap(item=>skillRows(item.robotBrain.skills).map(record=>({...record,label:name(item)+' / '+record.label,detail:'Skill belongs to this implant, not the recipient.',source:sourceLabel(item.robotBrain.source)})));
+    const rows=implantBrains.flatMap(item=>skillRows(item.robotBrain.skills).map(record=>({...record,label:name(item)+' / '+record.label,detail:'Implant-only skill; no recipient grant',source:sourceLabel(item.robotBrain.source)})));
     if(rows.length)sections.push(section('implant-skills','Implant skill software',rows));
   }
   const computers=augmentations.filter(item=>item.generalComputer);
   if(computers.length){
-    sections.push(section('computers','Implanted general computers',computers.map(item=>profileRow(item.label||options.get(item.optionId)?.label||'Computer',`Processing ${valueText(item.generalComputer.activeBandwidth)} active / ${valueText(item.generalComputer.processing)} available`,item.generalComputer,['programs'],'General-computer software is separate from robot brain software and recipient skills.'))));
-    const programs=computers.flatMap(item=>(item.generalComputer.programs||[]).map(program=>profileRow(`${item.label||'Computer'} / ${program.label}${program.subject?' ('+program.subject+')':''}`,`Purchased rating ${valueText(program.rating)} · ${program.active?'Running at rating '+valueText(program.runningBandwidth):'Stored, not running'}`,program,['parentComputer','program','rating','runningBandwidth','subject','databasePrice','expertUse'],'Program belongs to this computer. Any assistance or autonomous use remains subject to its stated conditions.')));
+    sections.push(section('computers','Implanted general computers',computers.map(item=>profileRow(item.label||options.get(item.optionId)?.label||'Computer',`Processing ${valueText(item.generalComputer.activeBandwidth)} active / ${valueText(item.generalComputer.processing)} available`,item.generalComputer,['programs'],'Computer-only software; no robot/recipient skill grant'))));
+    const programs=computers.flatMap(item=>(item.generalComputer.programs||[]).map(program=>profileRow(`${item.label||'Computer'} / ${program.label}${program.subject?' ('+program.subject+')':''}`,`Purchased rating ${valueText(program.rating)} · ${program.active?'Running at rating '+valueText(program.runningBandwidth):'Stored, not running'}`,program,['parentComputer','program','rating','runningBandwidth','subject','databasePrice','expertUse'],'Computer-only program; conditional use')));
     if(programs.length)sections.push(section('computer-programs','Computer program states',programs));
   }
   const selectedCustom=[],selectedMedical=[];
@@ -291,8 +289,8 @@ export function projectReview(design, catalogue, evaluation) {
       (control.field==='medicalPackages'?selectedMedical:selectedCustom).push({...row(name+(detail?' ('+detail+')':''),summary,control.source||recordChoice(nameField,record)?.source,control.label),details});
     }
   }
-  if(selectedCustom.length)sections.push(section('selected-custom-skills','Selected programs and training',selectedCustom,{collapsed:true,note:'Selected records are retained even when construction is blocked. Checked effects and limits are shown separately.'}));
-  if(selectedMedical.length)sections.push(section('selected-medical-packages','Selected medical packages',selectedMedical,{collapsed:true,note:'Selected records are retained even when construction is blocked. Purchased and active totals are shown separately.'}));
+  if(selectedCustom.length)sections.push(section('selected-custom-skills','Selected programs and training',selectedCustom,{collapsed:true,note:'Retained selections; checked effects separate'}));
+  if(selectedMedical.length)sections.push(section('selected-medical-packages','Selected medical packages',selectedMedical,{collapsed:true,note:'Retained selections; purchased/active totals separate'}));
   const skills = skillRows(totals?.skills);
   if (!totals) {
     const skillControl = controls.find(control => control.field === 'packages');
@@ -305,11 +303,11 @@ export function projectReview(design, catalogue, evaluation) {
   if (skills.length) sections.push(section('skills','Skill packages',skills));
   if (totals?.hardwareSkills?.length) sections.push(section('hardware-skills','Hardware skills',totals.hardwareSkills.map(item=>profileRow(titleName(item.skill),`Level ${valueText(item.level)} · Characteristic DM ${valueText(item.characteristicModifier)}`,item,['skill','level','characteristicModifier'],options.get(item.sourceOption)?.label || 'Hardware-provided skill'))));
   if (totals?.skillEquivalents?.length) sections.push(section('skill-equivalents','Characteristic-based equivalents',totals.skillEquivalents.map(item=>profileRow(`${titleName(item.skill)}${item.speciality?' ('+item.speciality+')':''}`,`Level: ${valueText(item.level)}${item.manipulatorId?' · '+armName(item.manipulatorId):''}`,item,['skill','speciality','level','manipulatorId'])),{collapsed:true}));
-  if (totals?.toolCaps?.length) sections.push(section('tool-caps','Tool skill limits',totals.toolCaps.map(item=>profileRow(options.get(item.optionId)?.label || titleName(item.optionId),Object.entries(item.skills || {}).map(([skill,level])=>`${titleName(skill)} up to ${valueText(level)}`).join(' · '),item,['skills','detail'],item.detail || '')),{note:'Tool limits do not grant software skill levels.'}));
+  if (totals?.toolCaps?.length) sections.push(section('tool-caps','Tool skill limits',totals.toolCaps.map(item=>profileRow(options.get(item.optionId)?.label || titleName(item.optionId),Object.entries(item.skills || {}).map(([skill,level])=>`${titleName(skill)} up to ${valueText(level)}`).join(' · '),item,['skills','detail'],item.detail || '')),{note:'Tool limits only; no software grant'}));
   const capabilities=totals?.equipmentCapabilities || totals?.capabilities || [];
   for(const category of [...new Set(capabilities.map(item=>item.category||'equipment'))]) {
     const records=capabilities.filter(item=>(item.category||'equipment')===category);
-    sections.push(section('capabilities-'+category,`${titleName(category)} capabilities`,records.map(item=>profileRow(item.label || options.get(item.optionId)?.label || titleName(item.id),[item.status?titleName(item.status):'',item.condition||'Source-defined operating limits'].filter(Boolean).join(' · '),item,['category','status','condition'])),{collapsed:true,note:'These are construction capabilities and conditions, not resolved task outcomes.'}));
+    sections.push(section('capabilities-'+category,`${titleName(category)} capabilities`,records.map(item=>profileRow(item.label || options.get(item.optionId)?.label || titleName(item.id),[item.status?titleName(item.status):'',conditionLabel(item.condition)||'Source-defined limits'].filter(Boolean).join(' · '),item,['category','status','condition'])),{collapsed:true,note:'Conditional capabilities; task outcomes unresolved'}));
   }
   const choiceLabel = (control,field,id,fallback) => control?.itemFields?.find(item=>item.field===field)?.choices?.find(item=>item.id===id)?.label || fallback || humanLabel(id);
   const weaponRows = (weapons,control,parentLabel='') => weapons.flatMap(weapon=>{
@@ -329,55 +327,47 @@ export function projectReview(design, catalogue, evaluation) {
     const rows=[result];
     for(const attack of weapon.associatedAttacks || (weapon.auxiliary?[weapon.auxiliary]:[])){
       const label=attack.mode==='integral-acr'?'included muzzle launcher':attack.mode==='attached'?'attached launcher':'secondary launcher';
-      rows.push(profileRow(name+' / secondary launcher / '+label,`${present(attack.damage)?attack.damage+' damage':'Damage unresolved'} · Range ${valueText(attack.range)} m`,{...attack,ammunition:attack.ammunition?ammunitionName(attack.ammunition):null},['profileId','parentWeaponId','damage','range','context'],[parentLabel,attack.context,'Costs are already included in the parent weapon record.'].filter(Boolean).join(' ')));
+      rows.push(profileRow(name+' / secondary launcher / '+label,`${present(attack.damage)?attack.damage+' damage':'Damage unresolved'} · Range ${valueText(attack.range)} m`,{...attack,ammunition:attack.ammunition?ammunitionName(attack.ammunition):null},['profileId','parentWeaponId','damage','range','context'],[parentLabel,'Secondary attack; cost included'].filter(Boolean).join(' ')));
     }
     return rows;
   });
-  const storageRows=(records,control)=>records.map(item=>profileRow(choiceLabel(control,'ammunitionStorageId',item.storageId,'Unresolved storage'),`${massFormat.format(item.reservedKg)} / ${massFormat.format(item.capacityKg)} kg reserved · ${massFormat.format(item.remainingKg)} kg remaining`,item,['storageId','reservedKg','capacityKg','remainingKg','scope'],item.scope));
+  const storageRows=(records,control)=>records.map(item=>profileRow(choiceLabel(control,'ammunitionStorageId',item.storageId,'Unresolved storage'),`${massFormat.format(item.reservedKg)} / ${massFormat.format(item.capacityKg)} kg reserved · ${massFormat.format(item.remainingKg)} kg remaining`,item,['storageId','reservedKg','capacityKg','remainingKg','scope'],'Source estimate; other cargo/handling unverified'));
   const weaponControl=controls.find(control=>control.field==='weapons');
   const weapons=totals?.weapons || (weaponControl?physical.weapons||[]:[]);
-  if(weapons.length)sections.push(section('weapons','Weapons',weaponRows(weapons,weaponControl),{note:totals?'Attack modifiers are contextual. Read the separate hardware/software values and outstanding checks.':'Selected installations only. Weapon performance has not been calculated.'}));
+  if(weapons.length)sections.push(section('weapons','Weapons',weaponRows(weapons,weaponControl),{note:totals?'Attack modifiers contextual; hardware/software separate':'Selected installations; performance not calculated'}));
   if(totals?.ammunitionStorage?.length)sections.push(section('ammunition-storage','Ammunition storage reservations',storageRows(totals.ammunitionStorage,weaponControl),{collapsed:true}));
   const limbWeaponControl=controls.find(control=>control.field==='augmentWeapons');
   const limbRows=[];
   if(augmentations.length){
     for(const part of augmentations.filter(part=>part.weapons?.length)){
       const name=choiceLabel(limbWeaponControl,'parentLimb',part.id,part.label||'Cybernetic limb');
-      limbRows.push(profileRow(name,`${money(part.weaponAccounting?.totalCost)} weapon installations`,part.weaponAccounting||{},['ammunitionStorage'],'Per-limb capacity and identical copies are accounted for by the rules engine. Costs are included in the part total.'));
+      limbRows.push(profileRow(name,`${money(part.weaponAccounting?.totalCost)} weapon installations`,part.weaponAccounting||{},['ammunitionStorage'],'Per-limb capacity; cost included in part total'));
       limbRows.push(...weaponRows(part.weapons,limbWeaponControl,name));
       if(part.weaponAccounting?.ammunitionStorage?.length)limbRows.push(...storageRows(part.weaponAccounting.ammunitionStorage,limbWeaponControl));
     }
   }else if(limbWeaponControl){
     for(const weapon of design.special?.augmentWeapons||[])limbRows.push(...weaponRows([weapon],limbWeaponControl,choiceLabel(limbWeaponControl,'parentLimb',weapon.parentLimb,'Unresolved parent limb')));
   }
-  if(limbRows.length)sections.push(section('limb-weapons','Cyberlimb weapons',limbRows,{note:totals?'Separate servo and limb attachment effects are scoped to the selected part. Recipient skill and total attack modifiers remain uncalculated.':'Selected limb weapon records only. Performance and costs have not been calculated.'}));
+  if(limbRows.length)sections.push(section('limb-weapons','Cyberlimb weapons',limbRows,{note:totals?'Part-specific effects; recipient skill/attack modifiers unresolved':'Selected limb weapons; performance/cost not calculated'}));
   const handled = new Set(['cost','constructionCost','costLabel','slots','bandwidth','zeroSlot','zeroBandwidth','hits','armour','intelligence','intelligenceDM','agility','tacticalSpeed','endurance','vehicleEndurance','vehicleBand','traits','manipulators','skills','hardwareSkills','skillEquivalents','toolCaps','weapons','defaultSuite','provisional','augmentation','augmentations','sharedInterfaces','augmentationEffects','equipmentCapabilities','capabilities','ammunitionStorage','composite','clone']);
-  const extra = Object.entries(totals || {}).filter(([key,value])=>!handled.has(key)&&present(value)&&(!Array.isArray(value)||value.length)).map(([key,value])=>row(humanLabel(key),value));
+  const extra = Object.entries(presentationFacts(totals)||{}).filter(([key,value])=>!handled.has(key)&&present(value)&&(!Array.isArray(value)||value.length)).map(([key,value])=>row(humanLabel(key),value));
   if (extra.length) sections.push(section('additional','Operating details',extra,{collapsed:true}));
   const ledger = (evaluation.ledger || []).map(item => row(armNames.has(item.id)?armName(item.id):item.label || item.name || item.id,
-    [present(item.cost) ? money(item.cost) : item.cost===null?'Cost unresolved':null,present(item.slots)?`${valueText(item.slots)} slots`:item.slots===null?'Slots unresolved':null,present(item.bandwidth)?`${valueText(item.bandwidth)} bandwidth`:null,present(item.quantity)?`Quantity ${valueText(item.quantity)}`:null].filter(Boolean).join(' · '),item.source,[item.note,sourceLabel(item.weaponSource),sourceLabel(item.externalSource)].filter(Boolean).join(' · ')));
+    [present(item.cost) ? money(item.cost) : item.cost===null?'Cost unresolved':null,present(item.slots)?`${valueText(item.slots)} slots`:item.slots===null?'Slots unresolved':null,present(item.bandwidth)?`${valueText(item.bandwidth)} bandwidth`:null,present(item.quantity)?`Quantity ${valueText(item.quantity)}`:null].filter(Boolean).join(' · '),item.source,[item.note?'Source-qualified accounting':'',sourceLabel(item.weaponSource),sourceLabel(item.externalSource)].filter(Boolean).join(' · ')));
   if (ledger.length) sections.push(section('ledger','Construction breakdown',ledger,{collapsed:true}));
-  const diagnosticContext=path=>{
-    const parts=String(path||'').split('.');
-    const control=controls.find(control=>parts.includes(control.field)&&(control.target==='special'?parts[0]==='special':control.stage===parts[0]));
-    if(!control)return '';
-    const stage=catalogue.stages.find(stage=>stage.id===control.stage);
-    const option=parts.map(part=>options.get(part)).find(Boolean);
-    return [...new Set([stage?.label,control.label,option?.label].filter(Boolean))].join(' · ');
-  };
-  const warnings = (evaluation.diagnostics || []).map(item => row(humanLabel(item.severity || 'Check'),item.message || String(item),item.source,diagnosticContext(item.path)));
-  if (!warnings.length) warnings.push(row('Checks',evaluation.status==='verified'?'No outstanding checks in implemented rules.':'Calculation has not been verified.'));
+  const warnings = (evaluation.diagnostics || []).map(item => row(humanLabel(item.severity || 'Check'),diagnosticLabel(item),item.source,diagnosticContext(item,design,catalogue)));
+  if (!warnings.length) warnings.push(row('Checks',evaluation.status==='verified'?'Implemented checks passed; coverage incomplete':'Calculation not verified'));
   sections.push(section('warnings','Checks and limitations',warnings));
-  const gaps = [...(coverage.gaps || []),...(coverage.compositeBoundaries||[])].map(item=>row('Coverage',typeof item==='string'?item:item.message,item.source));
-  if (gaps.length) sections.push(section('coverage','Implementation coverage',gaps,{collapsed:true,note:coverage.scope || ''}));
+  const gaps = [...(coverage.gaps || []),...(coverage.compositeBoundaries||[])].map(item=>row('Coverage',coverageLabel(item),item.source));
+  if (gaps.length) sections.push(section('coverage','Implementation coverage',gaps,{collapsed:true,note:'Coverage incomplete'}));
   const sources = [...new Set(sections.flatMap(item=>item.rows.flatMap(record=>[record.source,...(record.details||[]).map(detail=>detail.source)])).filter(Boolean))];
   if (sources.length) sections.push(section('sources','Source references',sources.map((source,index)=>row(String(index+1),source)),{collapsed:true}));
   return { name:design.name || 'Untitled robot', kind:catalogue.kinds?.find(item=>item.id===design.kind)?.label || design.kind, techLevel:design.techLevel, status, provisional, unavailable:!totals, sections };
 }
 export function formatStatblock(review) {
   const rows = [review.name,`${review.kind} | TL ${review.techLevel}`,review.status];
-  if (review.provisional) rows.push('Provisional values only. This design has unresolved errors.');
-  if (review.unavailable) rows.push('Totals are not calculated. Selected components below are not a verified statblock.');
+  if (review.provisional) rows.push('Provisional values only; unresolved errors');
+  if (review.unavailable) rows.push('Totals are not calculated; selected components only; not verified');
   for (const group of review.sections) {
     rows.push('',group.title);
     if (group.note) rows.push(group.note);
@@ -386,6 +376,6 @@ export function formatStatblock(review) {
       for(const detail of item.details || [])rows.push(`  ${detail.label}: ${detail.value}${detail.source?' | '+detail.source:''}`);
     }
   }
-  rows.push('','Robot Handbook (Mongoose Publishing, 2022). Unofficial fan-made tool.','Only implemented rules are checked. Review the coverage gaps and any referee decisions before play.');
+  rows.push('','Robot Handbook (Mongoose Publishing, 2022). Unofficial fan-made tool.','Implemented rules only; coverage incomplete; outstanding checks apply');
   return rows.join('\n');
 }

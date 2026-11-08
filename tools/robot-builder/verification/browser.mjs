@@ -68,10 +68,13 @@ try {
   const probe=await context.newPage();probe.on('pageerror',e=>errors.push(kind+': '+e.message));
   await probe.goto(root);await probe.locator('#robot-kind').selectOption(kind);
   check('type selection '+kind,await probe.locator('#robot-kind').inputValue()===kind);
+  let referencesHidden=true;
   for(let stage=0;stage<6;stage++){
    await click(probe.locator('#stage-nav button').nth(stage));
    check('type stage '+kind+'/'+stage,await probe.locator('#stage-title').textContent()!=='');
+   referencesHidden=referencesHidden&&await probe.locator('.source-reference,table').count()===0;
   }
+  check('no full source reference rows '+kind,referencesHidden);
   await probe.close();
  }
 
