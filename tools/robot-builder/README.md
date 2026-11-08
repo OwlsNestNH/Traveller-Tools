@@ -15,7 +15,7 @@ The six navigation stages retain the Handbook names: Chassis Size, Locomotion, P
 
 The implementation cites printed pages of **Robot Handbook (Mongoose Publishing, 2022)**. Core characteristic DMs follow **Traveller Core Rulebook Update 2022**, p9. Source books and private research files are not included in this repository. The older spreadsheet is not an authoritative source.
 
-The engine catalogue and every evaluation return a current coverage inventory. A result can be invalid, blocked, or checked only within the implemented subset. These states are shown separately from referee-dependent choices. Missing options are not silently represented by zero cost or a generic override.
+The engine catalogue and every evaluation return a current coverage inventory. The [source coverage matrix](verification/source-coverage-matrix.md) separates construction gaps from external dependencies and contextual operating rules. A result can be invalid, blocked, or checked only within the implemented subset. These states are shown separately from referee-dependent choices. Missing options are not silently represented by zero cost or a generic override.
 
 Current coverage continues to change during implementation. See `getCatalogue(design).coverage` and `evaluateDesign(design).coverage` rather than assuming that a row in a catalogue proves all of its prerequisites and operating rules are implemented.
 
@@ -39,6 +39,6 @@ node tools/robot-builder/verification/construction-browser.mjs /path/to/playwrig
 
 `ROBOT_TEST_URL` overrides the local preview URL. `ROBOT_BROWSER_CHANNEL=msedge` selects Edge for local Windows verification; CI uses pinned Chromium. All browser tests use a fresh isolated context with synthetic fixtures, not a user's campaign data.
 
-Native checks independently exercise construction arithmetic, all 224 source equipment rows, published reconstructions, scoped special types and API persistence. Browser checks exercise navigation, dropdowns, explicit saves, reload, export, invalid imports, equipment allocation, weapon installation, custom skills, clone training and responsive layouts at 320, 390, 768, 1100 and 1440 pixels. A passing suite is not proof of exhaustive Handbook coverage. See [published robot validation](verification/published-validation.md) for the comparison scope, assumptions and unresolved source discrepancies.
+Native checks independently exercise construction arithmetic, all 224 source equipment rows, published reconstructions, scoped special types and API persistence. Browser checks exercise navigation, dropdowns, explicit saves, reload, export, invalid imports, equipment allocation, weapon installation and accessories, separate equipment settings, custom skills, clone learned specialties and responsive layouts at 320, 390, 768, 1100 and 1440 pixels. A passing suite is not proof of exhaustive Handbook coverage. See [published robot validation](verification/published-validation.md) for the comparison scope, assumptions and unresolved source discrepancies.
 
 No standalone linter/typechecker is configured in this plain ECMAScript-module tool. Syntax checks, schema validation, deterministic tests and independent rules/UI reviews are required before a release.

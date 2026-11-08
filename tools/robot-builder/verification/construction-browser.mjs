@@ -29,6 +29,20 @@ try{
  await quantity.selectOption('3');
  await page.getByRole('button',{name:/^Remove Storage Compartment$/i}).click();
  draft=await exportDraft();check('removal clears orphan parameters',!draft.selections.physical.options.includes('storage-compartment')&&!draft.selections.physical.optionParameters['storage-compartment']);
+ const separate=page.locator('#stage-content details').filter({has:page.locator('#field-physical-optionInstances-slot-cost-options-new-optionId')});
+ await separate.locator('summary').click();
+ const instancePrefix='#field-physical-optionInstances-slot-cost-options-new-';
+ for(const specialty of ['biology','planetology']){
+  await page.locator(instancePrefix+'optionId').selectOption('scientific-toolkit-basic');
+  await page.locator(instancePrefix+'detail').fill(specialty);
+  await page.getByRole('button',{name:'Add separate installation',exact:true}).click();
+ }
+ draft=await exportDraft();
+ check('separate toolkits retain distinct specialties',draft.selections.physical.optionInstances.map(i=>i.parameters.detail).join(',')==='biology,planetology');
+ check('separate toolkit records have unique IDs',new Set(draft.selections.physical.optionInstances.map(i=>i.id)).size===2);
+ await page.getByRole('button',{name:'Remove separate Scientific Toolkit (Basic)',exact:true}).first().click();
+ draft=await exportDraft();check('removing one separate copy preserves the other',draft.selections.physical.optionInstances.length===1&&draft.selections.physical.optionInstances[0].parameters.detail==='planetology');
+ await page.getByRole('button',{name:'Remove separate Scientific Toolkit (Basic)',exact:true}).click();
  await page.locator('#physical-category').selectOption('weapons');
  const weaponPrefix='#field-physical-weapons-weapons-new-';
  check('body weapon hides irrelevant manipulator selector',await page.locator(weaponPrefix+'manipulatorId').count()===0);
@@ -40,6 +54,19 @@ try{
  await page.getByRole('button',{name:'Add weapon',exact:true}).click();
  draft=await exportDraft();const weapon=draft.selections.physical.weapons[0];
  check('weapon choices retained through API',weapon.weaponId==='laser-carbine-9'&&weapon.placement==='arm'&&weapon.manipulatorId==='base-1'&&weapon.fireControl==='basic');
+ const installedPrefix='#field-physical-weapons-weapons-'+weapon.id+'-';
+ const accessory=page.locator(installedPrefix+'accessories');
+ await accessory.locator('select').selectOption('laser-sight-8');
+ await accessory.getByRole('button',{name:'Add',exact:true}).click();
+ draft=await exportDraft();check('weapon accessory set choice retained',draft.selections.physical.weapons[0].accessories.includes('laser-sight-8'));
+ await accessory.getByRole('button',{name:'Remove Laser sight',exact:true}).click();
+ draft=await exportDraft();check('weapon accessory removal retained',draft.selections.physical.weapons[0].accessories.length===0);
+ await page.locator(installedPrefix+'placement').selectOption('body');
+ draft=await exportDraft();check('body switch resets hidden arm by metadata',draft.selections.physical.weapons[0].manipulatorId==='none');
+ await page.locator(installedPrefix+'linkedWeapons').selectOption('2');
+ await page.locator(installedPrefix+'placement').selectOption('held');
+ await page.locator(installedPrefix+'manipulatorId').selectOption('base-1');
+ draft=await exportDraft();check('held switch resets hidden linked weapon count',draft.selections.physical.weapons[0].linkedWeapons===1);
  await page.screenshot({path:path.join(out,'robot-weapon-installation.png'),fullPage:true});
  await page.getByRole('button',{name:/^Remove Laser Carbine/}).click();
  draft=await exportDraft();check('weapon removal retained',draft.selections.physical.weapons.length===0);
@@ -63,11 +90,29 @@ try{
  check('clone has separate controls',await page.locator('#stage-content').textContent().then(t=>t.includes('Template')));
  const clone=await exportDraft();check('clone saved schema separate',clone.kind==='clone'&&!!clone.special);
  await stage(5);check('clone training visible',await page.locator('#stage-content').textContent().then(t=>/training|creche|crèche/i.test(t)));
+ await page.locator('#robot-tl').selectOption('13');
+ const learnedPrefix='#field-skills-trainingCustomSkills-creche-training-new-';
+ await page.locator(learnedPrefix+'skill').selectOption('profession');
+ await page.locator(learnedPrefix+'speciality').fill('labourer');await page.locator(learnedPrefix+'level').selectOption('2');
+ await page.getByRole('button',{name:'Add learned speciality',exact:true}).click();
+ const learned=await exportDraft();check('clone learned specialty uses separate schema',learned.special.trainingCustomSkills.some(p=>p.skill==='profession'&&p.speciality==='labourer'&&p.level===2));
  await page.screenshot({path:path.join(out,'robot-clone-training.png'),fullPage:true});
  await page.locator('#example-design').selectOption('steward-droid');await page.locator('#load-example').click();
  const example=await exportDraft();check('published example loads as draft',example.name.includes('Steward'));
  check('published construction and list prices remain distinct',await page.locator('#summary-metrics').textContent().then(t=>t.includes('39,800')&&t.includes('35,000')));
  check('loading example leaves saved bytes unchanged',await page.evaluate(()=>localStorage.getItem('traveller.robot-builder.designs.v1'))===saved);
+ await page.locator('#example-design').selectOption('startek');
+ check('source example discrepancy visible before load',await page.locator('#example-note').textContent().then(t=>t.includes('Cr200')&&t.includes('Cr697,300')));
+ await page.locator('#load-example').click();await stage(6);
+ check('finalisation uses structured review',await page.locator('.robot-review').count()===1&&await page.locator('#stage-content pre').count()===0);
+ check('review contains installed weapon and hardware details',await page.locator('.review-weapons').textContent().then(t=>t.includes('Stunner')&&/software/i.test(t)));
+ const order=await page.locator('#stage-content').evaluate(node=>[...node.children].map(n=>n.className));
+ check('finalisation choices precede review',order.indexOf('fields-grid')<order.indexOf('robot-review'));
+ for(const width of [1440,390,320]){
+   await page.setViewportSize({width,height:1000});
+   check('populated review has no overflow '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+   await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:path.join(out,'robot-review-'+width+'.png'),fullPage:true});
+ }
  check('no runtime errors',errors.length===0);
  await fs.writeFile(path.join(out,'construction-report.json'),JSON.stringify({checks,errors},null,2));console.log('PASS '+checks.length+' construction workflow checks');
 }catch(error){await page.screenshot({path:path.join(out,'construction-failure.png'),fullPage:true});await fs.writeFile(path.join(out,'construction-report.json'),JSON.stringify({checks,errors,failure:error.stack},null,2));throw error;}

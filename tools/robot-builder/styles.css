@@ -176,3 +176,29 @@ footer { color: var(--muted); font-size: .73rem; }
 
 .quick-stats .metric{display:block;padding:0;border:0}.quick-stats dd{font-size:1.15rem}
 @media(max-width:480px){.stage-button{min-height:60px}.shell{padding-top:16px}.title-row{margin-bottom:16px}}
+/* Finalisation review: aligned values, expandable accounting, no wide tables. */
+.robot-review{margin-top:24px;border-top:1px solid var(--line);padding-top:20px;min-width:0}
+.review-title{margin:0;font-size:1.1rem;color:var(--text)}
+.review-status{font-size:.8rem;color:var(--muted);margin:5px 0 16px}
+.review-warning{padding:12px;border-left:3px solid var(--warning);background:var(--field);font-size:.85rem}
+.review-section{border-top:1px solid var(--line);padding:15px 0;min-width:0}
+.review-section h4,.review-section summary{font-size:.85rem;font-weight:650;margin:0 0 10px}
+.review-section summary{cursor:pointer;margin:0;min-height:30px;align-content:center}
+.review-section[open] summary{margin-bottom:12px}
+.review-rows,.review-metrics{margin:0;min-width:0}
+.review-rows .review-row{display:grid;grid-template-columns:minmax(130px,.7fr) minmax(0,1.3fr);gap:8px 18px;padding:9px 0}
+.review-row dt{font-size:.8rem;color:var(--muted);overflow-wrap:anywhere}
+.review-row dd{font-size:.83rem;margin:0;min-width:0;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.review-detail{display:block;color:var(--muted);font-size:.74rem;margin-top:5px}
+.review-row .source{display:block}
+.review-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.review-metrics dd{font-size:1.1rem;font-weight:600;margin-top:4px}
+.review-costs .review-metrics dd{font-size:1.25rem}
+.review-warnings .review-row{border-left:2px solid var(--warning);padding-left:10px;margin:7px 0}
+@media(max-width:560px){.review-rows .review-row{grid-template-columns:minmax(0,1fr);gap:4px;padding:10px 0}.review-metrics{gap:12px}.review-metrics dd{font-size:1rem}}
+.review-item-details{margin-top:7px;color:var(--muted);font-size:.74rem}
+.review-section .review-item-details summary{font-size:.74rem;font-weight:400;min-height:28px;margin:0}
+.review-item-details dl{margin:6px 0 0;padding-left:10px;border-left:1px solid var(--line)}
+.review-item-details dl>div{display:grid;grid-template-columns:minmax(0,.65fr) minmax(0,1fr);gap:8px;padding:5px 0}
+.review-item-details dt,.review-item-details dd{font-size:.74rem}
+@media(max-width:560px){.review-item-details dl>div{grid-template-columns:minmax(0,1fr);gap:3px}}

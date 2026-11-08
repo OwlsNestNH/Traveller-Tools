@@ -1,4 +1,5 @@
 import * as engine from '../engine/index.mjs';
+import {projectReview,formatStatblock} from './review-model.mjs';
 
 // Local service boundary. The GUI imports this API, never the rules engine.
 export const STORE_KEY = 'traveller.robot-builder.designs.v1';
@@ -56,45 +57,14 @@ export function createRobotApi(options = {}) {
   if (status.canSave && !locks?.request) status = {level:'warning',code:'locks-unavailable',message:'This browser cannot safely coordinate saves between tabs. Building, importing and exporting still work.',canSave:false};
   function assertIdle() { if (busy) throw fault('save-pending','A save is in progress. Wait before changing the design.'); }
   function listSaved() { return saved.designs.map(entry => ({id:entry.id,name:entry.design.name,kind:entry.design.kind,techLevel:entry.design.techLevel,updatedAt:entry.updatedAt})); }
-  function getStatblock() {
-    const evaluation = engine.evaluateDesign(design);
-    const catalogue = engine.getCatalogue(design);
-    const kind = catalogue.kinds.find(item=>item.id===design.kind)?.label || design.kind;
-    const f = value => typeof value === 'number' ? new Intl.NumberFormat('en-US',{maximumFractionDigits:2}).format(value) : String(value);
-    const t = evaluation.totals || evaluation.previewTotals;
-    const statusText = evaluation.status === 'verified' ? (evaluation.coverage?.complete === true ? 'Checked' : 'Implemented rules checked; coverage incomplete') : evaluation.status === 'invalid' ? 'Needs correction' : 'Rules or referee decisions outstanding';
-    const rows = [design.name || 'Untitled robot',kind+' | TL '+design.techLevel,statusText];
-    if(t) {
-      if(!evaluation.totals)rows.push('Provisional values only. This design has unresolved errors.');
-      if(t.constructionCost!=null && t.constructionCost!==t.cost)rows.push('Construction cost: Cr '+f(t.constructionCost));
-      if(t.cost!=null) rows.push((evaluation.costLabel || t.costLabel || 'Construction cost')+': Cr '+f(t.cost));
-      if(t.slots) rows.push('Slots: '+f(t.slots.used)+' / '+f(t.slots.capacity)+' used ('+f(t.slots.remaining)+' free)');
-      if(t.bandwidth) rows.push('Bandwidth: '+f(t.bandwidth.used)+' / '+f(t.bandwidth.capacity)+' used');
-      if(t.zeroSlot) rows.push('Zero-Slot options: '+f(t.zeroSlot.used)+' / '+f(t.zeroSlot.allowance));
-      if(t.zeroBandwidth) rows.push('Zero-bandwidth packages: '+f(t.zeroBandwidth.used)+' / '+f(t.zeroBandwidth.allowance));
-      for(const [key,label,unit] of [['hits','Hits',''],['armour','Protection',''],['intelligence','Intelligence',''],['tacticalSpeed','Movement per minor action',' m'],['endurance','Endurance',' hours'],['vehicleEndurance','Vehicle movement endurance',' hours'],['vehicleBand','Vehicle speed band','']]) if(t[key]!=null) rows.push(label+': '+f(t[key])+unit);
-      if(t.traits?.length)rows.push('Traits: '+t.traits.join(', '));
-      if(t.skills?.length)rows.push('Skills: '+t.skills.map(item=>(item.label||item.id)+' '+f(item.level)+(item.effectiveLevel!=null?' (effective '+f(item.effectiveLevel)+')':'')).join(', '));
-      if(t.manipulators?.length){rows.push('','Manipulators');for(const arm of t.manipulators)rows.push([arm.id,arm.size!=null?'Size '+arm.size:null,arm.strength!=null?'STR '+arm.strength:null,arm.dexterity!=null?'DEX '+arm.dexterity:null].filter(Boolean).join(' | '));}
-      for(const [key,value] of Object.entries(t))if(!['cost','costLabel','constructionCost','baseChassisCost','basicCost','slots','bandwidth','zeroSlot','zeroBandwidth','hits','armour','intelligence','intelligenceDM','tacticalSpeed','endurance','vehicleEndurance','vehicleBand','traits','skills','manipulators'].includes(key)&&value!=null) {
-        if(typeof value!=='object')rows.push(key.replace(/([A-Z])/g,' $1')+': '+f(value));
-        else if(!Array.isArray(value))for(const [label,stat] of Object.entries(value))if(stat!=null&&typeof stat!=='object')rows.push(label+': '+f(stat));
-      }
-    }
-    if (evaluation.ledger?.length) {
-      rows.push('','Construction breakdown');
-      for (const item of evaluation.ledger) rows.push([item.label || item.name || item.id,item.cost === null ? 'Cost unresolved' : item.cost !== undefined ? 'Cr '+f(item.cost) : null,item.note].filter(Boolean).join(' | '));
-    }
-    if (evaluation.diagnostics?.length) {
-      rows.push('','Checks and limitations');
-      for (const item of evaluation.diagnostics) rows.push(item.message || String(item));
-    }
-    rows.push('','Robot Handbook (Mongoose Publishing, 2022). Unofficial fan-made tool.','Only implemented rules are checked. Review the coverage gaps and any referee decisions before play.');
-    return rows.join('\n');
+  function getReview() {
+    return projectReview(design,engine.getCatalogue(design),engine.evaluateDesign(design));
   }
-
+  function getStatblock() { return formatStatblock(getReview()); }
   function getView() {
-    return clone({design,catalogue:engine.getCatalogue(design),evaluation:engine.evaluateDesign(design),savedDesigns:listSaved(),storageStatus:{...status,canSave:status.canSave&&!busy},dirty:baseline !== JSON.stringify(design),busy,currentId,statblock:getStatblock()});
+    const catalogue=engine.getCatalogue(design),evaluation=engine.evaluateDesign(design);
+    const review=projectReview(design,catalogue,evaluation);
+    return clone({design,catalogue,evaluation,review,savedDesigns:listSaved(),storageStatus:{...status,canSave:status.canSave&&!busy},dirty:baseline !== JSON.stringify(design),busy,currentId,statblock:formatStatblock(review)});
   }
   function emit() {
     const view = getView();

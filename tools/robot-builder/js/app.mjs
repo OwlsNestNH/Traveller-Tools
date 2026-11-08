@@ -1,4 +1,5 @@
 import { createRobotApi } from './api.mjs';
+import { renderReview } from './review.mjs';
 
 const $ = id => document.getElementById(id);
 const stages = [
@@ -132,6 +133,62 @@ function renderControl(control, choicesOverride) {
       card.append(grid);if(choice.source)card.append(el('p',sourceText(choice.source),'source'));field.append(card);
     }
     if(!shown)return el('span',undefined,'empty-settings');
+  } else if (control.type === 'option-instances') {
+    field.replaceChildren();field.classList.add('wide');
+    const installed=Array.isArray(selected)?selected:[];
+    const local=installed.filter(record=>choices.some(choice=>choice.id===record.optionId));
+    const details=el('details');details.open=local.length>0;
+    details.append(el('summary','Separate copies with different settings'+(local.length?' ('+local.length+')':'')));
+    details.append(el('p','Use a separate installation when copies need different specialties or other settings. Quantity on an ordinary option remains the simpler choice for identical copies.','help'));
+    const parametersFor=choice=>(choice?.parameterControls||[]).filter(item=>!item.appliesTo||item.appliesTo==='options');
+    const makeParameters=(choice,parameters,prefix,onChange)=>{
+      const grid=el('div',undefined,'fields-grid');
+      for(const item of parametersFor(choice)){
+        if(!matchesVisibility(item,parameters))continue;
+        const row=el('label',item.label);const inputId=prefix+'-'+item.field;row.htmlFor=inputId;
+        const value=parameters[item.field]??item.default??'';let input;
+        if(item.type==='number')input=numericPicker(item,value,value=>onChange(item.field,value));
+        else if(item.type==='select'){
+          input=el('select');selectChoices(input,item.choices,value);
+          input.addEventListener('change',()=>onChange(item.field,item.choices.find(c=>String(c.id)===input.value)?.id??null));
+        }else{
+          input=el('input');input.type='text';input.value=value;input.maxLength=item.maxLength||120;
+          input.addEventListener('change',()=>onChange(item.field,input.value));
+        }
+        input.id=inputId;row.append(input);grid.append(row);
+      }
+      return grid;
+    };
+    for(const record of local){
+      const choice=choices.find(choice=>choice.id===record.optionId);
+      const card=el('div',undefined,'option-settings');const heading=el('div',undefined,'manipulator-heading');
+      heading.append(el('h4',choice.label));const remove=el('button','Remove');remove.type='button';remove.setAttribute('aria-label','Remove separate '+choice.label);
+      remove.addEventListener('click',()=>submitSelection(control,installed.filter(item=>item.id!==record.id)));
+      heading.append(remove);card.append(heading);
+      card.append(makeParameters(choice,record.parameters,id+'-'+record.id,(key,value)=>submitSelection(control,installed.map(item=>item.id===record.id?{...item,parameters:{...item.parameters,[key]:value}}:item))));
+      card.append(el('p',sourceText(choice.source),'source'));details.append(card);
+    }
+    const draftKey=view.design.kind+':'+id;
+    const draft=customDrafts.get(draftKey)||{optionId:'',parameters:{}};customDrafts.set(draftKey,draft);
+    const composer=el('div',undefined,'option-settings');const picker=el('select');picker.id=id+'-new-optionId';
+    picker.setAttribute('aria-label','Separate installation option');selectChoices(picker,choices,draft.optionId);
+    const hint=el('p',undefined,'help source');const container=el('div');
+    const add=el('button',control.addLabel||'Add separate installation');add.type='button';add.className='primary';
+    const redraw=()=>{
+      const choice=choices.find(item=>item.id===draft.optionId);
+      hint.textContent=sourceText(choice?.source);add.disabled=!choice||installed.length>=(control.maxItems||100);
+      container.replaceChildren(makeParameters(choice,draft.parameters,id+'-new',(key,value)=>{draft.parameters[key]=value;customDrafts.set(draftKey,draft);}));
+    };
+    picker.addEventListener('change',()=>{
+      draft.optionId=picker.value;const choice=choices.find(item=>item.id===draft.optionId);
+      draft.parameters=Object.fromEntries(parametersFor(choice).map(item=>[item.field,item.default??(item.type==='number'?item.min??0:item.type==='select'?item.choices?.[0]?.id:'')]));
+      customDrafts.set(draftKey,draft);redraw();
+    });
+    add.addEventListener('click',()=>{
+      const next={id:'eqp-'+globalThis.crypto.randomUUID(),optionId:draft.optionId,parameters:{...draft.parameters}};
+      customDrafts.delete(draftKey);submitSelection(control,[...installed,next]);
+    });
+    composer.append(picker,hint,container,add);redraw();details.append(composer);field.append(details);
   } else if (control.type === 'custom-packages' || control.type === 'weapons') {
     field.classList.add('wide');
     const installed=Array.isArray(selected)?selected:[];
@@ -144,7 +201,25 @@ function renderControl(control, choicesOverride) {
         const row=el('label',item.label || item.field);
         const fieldId=prefix+'-'+item.field;row.htmlFor=fieldId;
         let input;
-        if(item.type==='number')input=numericPicker(item,record[item.field]??item.min,value=>onChange(item.field,value));
+if(item.type==='multiselect'){
+          input=el('div',undefined,'record-multiselect');let selected=[...(record[item.field]||[])];
+          const draw=()=>{
+            const picker=el('div',undefined,'option-picker'),select=el('select'),add=el('button','Add');
+            select.setAttribute('aria-label',item.label||item.field);add.type='button';
+            selectChoices(select,(item.choices||[]).filter(choice=>!selected.includes(choice.id)),'');
+            add.disabled=true;select.addEventListener('change',()=>{add.disabled=!select.value||selected.length>=(item.maxItems||100);});
+            add.addEventListener('click',()=>{selected.push(select.value);onChange(item.field,[...selected]);draw();});
+            picker.append(select,add);const list=el('div',undefined,'installed-list');
+            for(const value of selected){
+              const choice=item.choices?.find(choice=>choice.id===value),row=el('div',undefined,'installed-row');
+              const remove=el('button','Remove');remove.type='button';remove.setAttribute('aria-label','Remove '+(choice?.label||value));
+              remove.addEventListener('click',()=>{selected=selected.filter(id=>id!==value);onChange(item.field,[...selected]);draw();});
+              row.append(el('span',choice?.label||value),remove);list.append(row);
+            }
+            input.replaceChildren(picker,list);
+          };draw();row.classList.add('wide');
+        }
+        else if(item.type==='number')input=numericPicker(item,record[item.field]??item.min,value=>onChange(item.field,value));
         else if(item.type==='select'){input=el('select');selectChoices(input,item.choices,record[item.field]);input.addEventListener('change',()=>onChange(item.field,item.choices.find(c=>String(c.id)===input.value)?.id??null));}
         else {input=el('input');input.type='text';input.value=record[item.field]??'';input.maxLength=item.maxLength||120;input.addEventListener('input',()=>onChange(item.field,input.value));}
         input.id=fieldId;row.append(input);grid.append(row);
@@ -159,7 +234,7 @@ function renderControl(control, choicesOverride) {
       heading.append(remove);card.append(heading);
       const grid=makeFields(record,id+'-'+record.id,(key,value)=>{
         // Keep text edits local until blur, so typing does not redraw the form.
-        const next={...record,[key]:value};
+        const next=resetHiddenFields(control,{...record,[key]:value});
         if(typeof value==='string'&&key==='speciality'){record[key]=value;return;}
         submitSelection(control,installed.map(item=>item.id===record.id?next:item));
       });
@@ -167,7 +242,7 @@ function renderControl(control, choicesOverride) {
       card.append(grid);field.append(card);
     }
     const draftKey=view.design.kind+':'+id;
-    const draft=customDrafts.get(draftKey)||Object.fromEntries((control.itemFields||[]).map(item=>[item.field,item.default??(item.type==='select'?item.choices?.[0]?.id:item.type==='number'?item.min??0:'')]));
+    const draft=customDrafts.get(draftKey)||Object.fromEntries((control.itemFields||[]).map(item=>[item.field,item.default??(item.type==='multiselect'?[]:item.type==='select'?item.choices?.[0]?.id:item.type==='number'?item.min??0:'')]));
     customDrafts.set(draftKey,draft);
     const composer=el('div',undefined,'option-settings');
     composer.append(el('h4',isWeapon?'Add a weapon installation':'Add a book-permitted custom package'));
@@ -176,7 +251,7 @@ function renderControl(control, choicesOverride) {
     add.disabled=!valid();
     const redrawComposer = () => {
       const next = makeFields(draft, id+'-new', (key, value) => {
-        draft[key]=value;customDrafts.set(draftKey,draft);add.disabled=!valid();
+        draft[key]=value;Object.assign(draft,resetHiddenFields(control,draft));customDrafts.set(draftKey,draft);add.disabled=!valid();
         if ((control.itemFields||[]).some(item=>item.visibleWhen?.field===key)) redrawComposer();
       });
       const previous=composer.querySelector('.fields-grid');
@@ -294,6 +369,11 @@ function renderControl(control, choicesOverride) {
   if (control.type !== 'multiselect' && control.choices?.length === 0) field.append(el('p', 'Book choices pending verification. No custom values are substituted.', 'help'));
   return field;
 }
+function resetHiddenFields(control, record) {
+  const next={...record};
+  for(const item of control.itemFields||[])if(item.resetWhenHidden&&!matchesVisibility(item,next))next[item.field]=item.default;
+  return next;
+}
 function matchesVisibility(control, values) {
   if(!control.visibleWhen)return true;
   const rule=control.visibleWhen,value=values?.[rule.field];
@@ -340,9 +420,9 @@ function renderStage() {
 
   } else if (currentStage === 'finalisation') {
     content.append(el('p', 'Review the statblock and outstanding checks before using this robot in play.', 'stage-description'));
-    const pre = el('pre', typeof api.getStatblock === 'function' ? api.getStatblock() : view.statblock || 'Statblock is not available yet.', 'statblock');
-    for (const control of stage?.controls || []) content.append(renderControl(control));
-    content.append(pre);
+    const choices=el('div',undefined,'fields-grid');
+    for (const control of stage?.controls || []) choices.append(renderControl(control));
+    content.append(choices,renderReview(view.review));
   } else {
     const grid = el('div', undefined, 'fields-grid');
     for (const control of stage?.controls || []) grid.append(renderControl(control));
@@ -411,7 +491,13 @@ function renderExamples() {
   $('example-design').replaceChildren(option('', 'Choose an example'), ...examples.map(item => option(item.id, item.name || item.label)));
   if (examples.some(item => item.id === selected)) $('example-design').value = selected;
   $('load-example').disabled = !$('example-design').value || view.busy;
-  $('example-note').textContent = examples.length ? 'Examples replace the draft without changing your saved designs.' : 'No construction examples are available yet.';
+  updateExampleNote(examples);
+}
+function updateExampleNote(examples=api.listExamples?.()||[]) {
+  const selected=examples.find(item=>item.id===$('example-design').value);
+  $('example-note').textContent = examples.length
+    ? [selected?.description,'Examples replace the draft without changing your saved designs.'].filter(Boolean).join(' ')
+    : 'No construction examples are available yet.';
 }
 // A change event fires on blur before a pointer click. Preserve the clicked
 // control until that click finishes, while exposing the fresh API state now.
@@ -460,7 +546,7 @@ try {
     safely(() => api.newDesign(view.design.kind), 'New design started.');
   });
   $('refresh-saved').addEventListener('click', () => safely(() => api.refreshSaved(), 'Saved list refreshed. Your current draft is unchanged.'));
-  $('example-design').addEventListener('change', () => { $('load-example').disabled = !$('example-design').value || view.busy; });
+  $('example-design').addEventListener('change', () => { $('load-example').disabled = !$('example-design').value || view.busy; updateExampleNote(); });
   $('load-example').addEventListener('click', () => {
     if (view.dirty && !window.confirm('Load this example and replace your unsaved changes? Save or export first to keep them.')) return;
     safely(() => api.loadExample($('example-design').value), 'Example loaded as an unsaved draft.');
