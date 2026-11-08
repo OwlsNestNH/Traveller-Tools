@@ -87,7 +87,7 @@ export function evaluateDesign(input){
  const block=(code,path,message,pages)=>issue('blocker',code,path,message,pages);
  const entry=(id,label,cost,slots,pages,extra={})=>ledger.push({id,label,cost,slots,source:source(pages),...extra});
  if(!kind.implemented)block('KIND_NOT_IMPLEMENTED','kind',kind.reason,kind.source.pages);
- 
+
  if(primary.tl>tl)error('MIN_TL','locomotion.primary','Primary locomotion exceeds design technology.','16');
  if(primary.id==='thruster')error('THRUSTER_PRIMARY','locomotion.primary','Ordinary robots use thrusters as secondary locomotion. Missile designs require their separate path.','17');
  if(primary.id==='aeroplane')block('AEROPLANE_SPEED','locomotion.primary','Aeroplane vehicle-speed mapping requires source reconciliation before calculation.','17,23');

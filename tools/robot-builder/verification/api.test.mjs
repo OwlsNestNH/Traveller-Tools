@@ -150,4 +150,3 @@ test('controller observers receive detached snapshots and can unsubscribe',()=>{
   rename(instance,'Visible');assert.equal(instance.getView().design.name,'Visible');assert.equal(calls,1);
   off();rename(instance,'Another');assert.equal(calls,1);
 });
-

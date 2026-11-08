@@ -78,4 +78,3 @@ try {
  await fs.writeFile(path.join(out,'browser-report.json'),JSON.stringify({checks,errors,failure:error.stack},null,2));
  throw error;
 } finally {await context.close();await browser.close();}
-

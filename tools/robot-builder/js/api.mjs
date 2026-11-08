@@ -191,4 +191,3 @@ export function createRobotApi(options = {}) {
   function subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); }
   return {getView,getStatblock,listExamples,loadExample,setIdentity,select,newDesign,saveDesign,listSaved,loadDesign,importDesign,exportDesign:()=>engine.exportDesign(design),refreshSaved,subscribe};
 }
-

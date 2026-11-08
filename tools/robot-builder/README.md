@@ -41,4 +41,3 @@ node tools/robot-builder/verification/browser.mjs /path/to/playwright
 Native checks independently exercise the engine and API persistence. Browser checks exercise navigation, dropdowns, explicit saves, reload, export, invalid imports and responsive layouts at 320, 390, 768, 1100 and 1440 pixels. A passing suite is not proof of exhaustive Handbook coverage.
 
 No standalone linter/typechecker is configured in this plain ECMAScript-module tool. Syntax checks, schema validation, deterministic tests and independent rules/UI reviews are required before a release.
-

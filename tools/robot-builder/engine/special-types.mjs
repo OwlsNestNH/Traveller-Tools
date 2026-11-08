@@ -109,7 +109,7 @@ export function evaluateSpecialDesign(design){
   annualTraining.push({additionalYear:y,education:edu,intelligence:trainedINT,selectablePointsAccrued:points-(s.eduAccounting==='included'?autoEduSpent:0)});
  } if(s.eduAccounting==='included')points-=autoEduSpent;
  if(spent>points)issue('error','CLONE_TRAINING_BUDGET','special.trainingSkills','Allocated points exceed the available training budget.','99');
- 
+
  const trainingCost=s.trainingYears*20000;if(trainingCost)entry('training','Additional creche training',trainingCost,'99');
  let ageing=null;
  if(['accelerated','quick'].includes(s.growth)){const quick=s.growth==='quick',interval=quick?2:4;ageing={firstCheckAdultYears:8,intervalYears:interval,firstDM:quick?-4:null,extraDM:quick?null:-2,checksDue:s.adultYears<8?0:Math.floor((s.adultYears-8)/interval)+1,postMaturityRate:quick?2:1};if(ageing.checksDue)issue('blocker','CLONE_AGEING_ROLLS','special.adultYears','Ageing checks are due; characteristic losses and survival must be resolved before certifying the current adult.','97-98');}
@@ -117,7 +117,7 @@ export function evaluateSpecialDesign(design){
  coverage.gaps.push({id:'clone-character',reason:'SOC; natural EDU and careers; genetic changes; unlisted skill specialties; transplant surgery; ageing rolls; facility construction.',source:source('96-99')});
  const cost=templateCost+growthCost+storageCost+trainingCost;
  const trainedStats=Object.fromEntries(Object.entries(stats).map(([stat,value])=>[stat,value+s['increase'+stat]]));
- 
+
  return result({cost,slots:null,bandwidth:null,intelligence:s.growth==='spare'?null:trainedStats.INT,clone:{characteristics:trainedStats,templateCharacteristics:stats,templateCost,growthCost,storageCost,trainingCost,maturityYears:growth.years,education:edu,initialEducation:initialEdu,annualTraining,trainingPoints:points,unspentTrainingPoints:points-spent,ageing,spareBody:s.growth==='spare'},traits:['Biological clone'],skills:copy(selectedSkills),manipulators:[]});
 }
 
@@ -264,4 +264,3 @@ function evaluateMicrobot(design){
  issue('warning','MICRO_SCOPE','coverage','Checks the implemented microbot table and selected zero-slot hardware, not every Handbook device. No default suite, secondary locomotion, armour, memory module or power pack is included.');
  return finish({cost:hardware+software,slots:{base:0,capacity:0,used:0,remaining:0},bandwidth:{inherent:b.bandwidth,capacity:b.bandwidth,used:bw,remaining:b.bandwidth-bw},zeroSlot:{allowance:tl,used:zeroCount,overflow:0},zeroBandwidth:{allowance:zeroBWAllowance,used:zeroBW,overflow:Math.max(0,zeroBW-zeroBWAllowance)},hits:1,armour:0,tacticalSpeed:speed,endurance,intelligence,skills:installed,manipulators:Array.from({length:s.arms},(_,i)=>({id:'micro-'+(i+1),size:0,strength:0,dexterity:armDEX})),traits:['Small (-4)',...l.traits],microbot:{massMg:s.massMg,minMassMg:minMass,hardwareCost:hardware,softwareCost:software,protectionMultiplier}});
 }
-

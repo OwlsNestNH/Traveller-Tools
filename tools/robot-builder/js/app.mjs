@@ -396,11 +396,3 @@ try {
   $('stage-content').replaceChildren(el('p', 'The construction workbench could not start. Your saved designs have not been changed.', 'error'));
   notify(error.message || 'Please reload the page and try again.', true);
 }
-
-
-
-
-
-
-
-
