@@ -9,10 +9,11 @@ export function characterChanges(before,after){
   const old=before[field]??[],next=after[field]??[];for(let i=0;i<Math.max(old.length,next.length);i++)add(field+'.'+i,old[i],next[i]);
  }
  add('sainthood',before.sainthood,after.sainthood);
+ const oldGames=before.psionicGames?.applications??[],newGames=after.psionicGames?.applications??[];for(let i=0;i<Math.max(oldGames.length,newGames.length);i++)add('psionicGames.applications.'+i,oldGames[i],newGames[i]);
  for(const field of ['historyKnown','checksAttempted','firstTalentChosen'])add('psionics.'+field,before.psionics?.[field],after.psionics?.[field]);
  for(const field of ['attempts','tests','training','rulings','importedAttempted']){const a=before.psionics?.[field]??[],b=after.psionics?.[field]??[];for(let i=0;i<Math.max(a.length,b.length);i++)add('psionics.'+field+'.'+i,a[i],b[i]);}
  const old=before.careers??[],next=after.careers??[];
- for(let i=0;i<Math.max(old.length,next.length);i++)for(const field of ['id','assignment','terms','rank','officer','benefitRolls','forcedExit','forcedStay','parole','released','pension','pensionCondition','pensionEntitlement'])add('careers.'+i+'.'+field,old[i]?.[field],next[i]?.[field]);
+ for(let i=0;i<Math.max(old.length,next.length);i++)for(const field of ['id','assignment','terms','rank','officer','benefitRolls','forcedExit','forcedStay','parole','released','pension','pensionCondition','pensionEntitlement','pensionExitStatusBasis','pensionStatusReviewRequired'])add('careers.'+i+'.'+field,old[i]?.[field],next[i]?.[field]);
  const oldEducation=before.educations??[],newEducation=after.educations??[];
  for(let i=0;i<Math.max(oldEducation.length,newEducation.length);i++){
   const a=oldEducation[i]??{},b=newEducation[i]??{};

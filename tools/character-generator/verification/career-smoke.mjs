@@ -22,7 +22,7 @@ const seeds=option('seeds',20,1,500),termGoal=option('terms',3,1,10),mental=opti
 const sourceURL=new URL('../engine/session.mjs',import.meta.url);
 let source=await readFile(sourceURL,'utf8');
 source=source.replace(/from\s+'(\.\/[^']+)'/g,(_,relative)=>'from '+JSON.stringify(new URL(relative,sourceURL).href));
-source+='\nexport const continuationAudit={initial,enterCareer,apply,trainingOptions};';
+source+='\nexport const continuationAudit={initial,enterCareer,apply,trainingOptions,exitOptions};';
 const {continuationAudit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const failures=[],stages={},sourceStops={},completedTerms={},completedStages={};
 let scenarios=0,completed=0;
@@ -50,7 +50,7 @@ for(const career of CAREERS)for(const assignment of career.assignments)for(let s
    if(state.stage==='book-step') {
     sourceStops[state.pending.kind]=(sourceStops[state.pending.kind]??0)+1;break;
    }
-   if(['career','deceased','finish'].includes(state.stage)) {
+   if(['career','deceased','finish','retirement'].includes(state.stage)) {
     completed++;completedTerms[state.character.terms]=(completedTerms[state.character.terms]??0)+1;
     completedStages[state.stage]=(completedStages[state.stage]??0)+1;break;
    }
@@ -85,10 +85,15 @@ for(const career of CAREERS)for(const assignment of career.assignments)for(let s
        (record.terms===0||(state.character.stats.SOC??0)>=9)&&
        !(career.group==='zhodani'&&(state.character.stats.SOC??0)<10))command={type:'commission'};
      else command={type:'advancement'};break;
-    case 'term-end':
-     command={type:record.forcedExit?'leave-career':
-      record.forcedStay||career.id==='core.prisoner'&&!record.released||record.terms<termGoal?'continue-career':'leave-career',
-      payload:{retire:true}};break;
+    case 'term-end': {
+     const exits=a.exitOptions(state),wantsLeave=record.forcedExit||record.terms>=termGoal;
+     if(wantsLeave&&exits.canLeave)command={type:'leave-career'};
+     else if(wantsLeave&&exits.canRetire)command={type:'leave-career',payload:{retire:true}};
+     else if(exits.canContinue)command={type:'continue-career'};
+     else if(exits.canLeave)command={type:'leave-career'};
+     else throw Error('No accepted end-of-term action: '+JSON.stringify(exits));
+     break;
+    }
     case 'benefits':
      command={type:'benefit',payload:{cash:seed%2===0&&state.cashRolls<3&&!(species==='aslan'&&state.character.gender==='male')}};break;
     case 'ageing':command={type:'ageing'};break;

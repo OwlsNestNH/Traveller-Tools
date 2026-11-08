@@ -15,7 +15,7 @@ These edition choices matter. In particular the 2026 Aslan characteristic modifi
 
 - Independent versioned JSON rules API and optional localhost HTTP adapter.
 - Original, readable responsive interface with large controls.
-- Always-on deterministic event log; save, import, print and audit-preserving restore.
+- Always-on deterministic event log; save, import, print and GM-gated audit-preserving restore.
 - Logged GM changes and replacement dice, with reason and retained original record.
 - Requested boon, placement, below-43 and extra-characteristic controls.
 - Species-specific stat formulas, basic backgrounds and career filtering.
@@ -26,6 +26,7 @@ These edition choices matter. In particular the 2026 Aslan characteristic modifi
 - Vargr strain overlays, native/Imperial social statistics, Aezorgh derived Charisma, and the published Aslan rite-of-passage double results.
 - Native ordered Core/Zhodani talent acquisition, persistent check penalties, source-based career retry opportunities, initial Zhodani training and career elevation. Companion childhood training reuses the same workflow. Institute access, costs and chronology are explicitly approved rather than assumed.
 - Source-keyed named benefits, stable equipment/ship assets, same-table duplicate Scout rerolls, same-ship mortgage progress, bounded equipment selections, recurring Patronage and culture-specific pensions. Book decisions remain explicit for ambiguous definitions and ship history.
+- Bounded native Psionic Games at an existing-career term boundary: lifetime application, ordered talent checks, final, explicit event/award rulings, one replacement term, inherited benefits and due ageing. Initial-career entry timing and complex ordinary event consequences remain outside this route.
 - Derived before/after action details, printable notes/connections and medical ledger.
 - Ten additional shared alien event tables and explicit constrained-effect metadata.
 - Pure Core medical, injury, ageing, pension and benefit procedures with source-grounded tests.
@@ -37,10 +38,11 @@ Routine training, checks, table rolls, many choices, rank awards and benefits ar
 Important areas still needing integration, deeper testing or source adjudication include:
 
 - Companion cross-book exceptions, source-specific career transfers and assignment changes.
-- Psionic acquisition histories from older/manual records, repeat-course chronology and untraceable retry awards require source decisions. Zhodani re-education, status reviews and the once-per-lifetime Psionic Games replacement term remain incomplete.
+- Psionic acquisition histories from older/manual records, repeat-course chronology and untraceable retry awards require source decisions. Zhodani re-education and wider status-review procedures remain incomplete. Games source ambiguities are explicit rulings, not silently selected defaults.
 - Detailed Aslan rite/clan/land/share procedures and constrained gender/culture paths.
 - Non-standard Vargr and Aezorgh cross-book choices, derived social characteristics and career restrictions.
 - Nonstandard injury/medical rules, detailed equipment verification, ambiguous ship-history procedures and unimplemented bespoke benefits. Clan Shares remain unconverted entitlements; land/corporation/redemption choices need further handling.
+- Automatic event commissions at SOC below 9 after the first term retain ordinary eligibility pending a source ruling. Zhodani pension amounts record their exit-class basis; later class changes flag a source review rather than silently changing entitlement.
 - Event branches requiring wagers, custom checks, referee choices, prior-history changes or future conditional obligations.
 - Optional characteristic consequences throughout careers. Displaying Luck/Morale/Wealth is not a claim that every optional rule using it is automated.
 - Deeper full-character and multi-career golden scenarios. White-box continuation stress covers all career assignments but bypasses qualification/species setup and stops at source-assisted decisions.

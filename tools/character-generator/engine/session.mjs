@@ -1,3 +1,4 @@
+import { PSIONIC_GAMES_SOURCE, psionicGamesEligibility, psionicGamesApplication, psionicGamesPreliminaries, psionicGamesFinal, psionicGamesCompetition } from './psionic-games.mjs';
 import { namedBenefitPlan, canonicalBenefitName, pensionEntitlement } from './benefits.mjs';
 import { psionicPotential, talentAcquisition, psionicTalentOptions } from './psionics.mjs';
 import { COMPANION_EDUCATION_IDS, companionEntryCheck, companionInitialAwards, companionEvent, companionGraduationCheck, companionTermOutcome, companionCareerBenefits, companionResolveSkillChoice } from './companion-education.mjs';
@@ -35,7 +36,10 @@ function initial(seed) {
 function die(state) { let t=state.rng+=0x6D2B79F5; t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);state.rng>>>=0;return Math.floor(((t^t>>>14)>>>0)/4294967296*6)+1; }
 function dice(state,n,rolls,label,boon=false) {
  const randomValues=Array.from({length:n+(boon?1:0)},()=>die(state));
- const forced=state._override?.index===rolls.length?state._override.values:null;
+ const replay=state._override,prefix=replay?.preserved?.[rolls.length],selected=replay?.index===rolls.length;
+ if(prefix)need(prefix.label===label&&prefix.values.length===randomValues.length,'The preserved roll identity or dice count changed before the selected replay roll.');
+ if(selected&&replay.target)need(replay.target.label===label&&replay.target.values.length===randomValues.length,'The selected replay roll identity or dice count changed.');
+ const forced=selected?replay.values:prefix?.values;
  if(forced)need(Array.isArray(forced)&&forced.length===randomValues.length&&forced.every(x=>Number.isInteger(x)&&x>=1&&x<=6),'Replacement dice must match the original dice count and each be 1-6.');
  const values=forced?[...forced]:randomValues;
  const kept=boon?[...values].sort((a,b)=>b-a).slice(0,n):values;
@@ -171,6 +175,110 @@ function closeTerm(state) {
  else state.stage='term-end';
  if(career.maxTerms&&record.terms>=career.maxTerms){record.forcedExit=true;record.forcedStay=false;}
 }
+
+// Games support starts at an existing career's term boundary; initial-career timing is not implemented.
+// Benefit inheritance: Core 2022 p.46 + Aliens Volume 1 Update 2026 p.242.
+// A completed Games term uses ordinary non-mishap term accounting, including existing benefit blocks.
+const GAMES_COMMANDS=['psionic-games-preliminary','psionic-games-final','complete-psionic-games'];
+function gamesHistory(state){return state.character.psionicGames??={version:1,applications:[]};}
+function gamesPending(state){
+ const index=state.psionicGamesPending;
+ if(index===undefined||index===null)return null;
+ const record=state.character.psionicGames?.applications[index];
+ need(record?.status==='pending','The pending Games application is missing or already completed.');return record;
+}
+function gamesContext(state){
+ const {record}=currentCareer(state);
+ return {careerIndex:state.active,career:copy(record),species:state.character.species,culture:state.character.culture,
+  age:state.character.age,terms:state.character.terms,stats:copy(state.character.stats),skills:copy(state.character.skills),
+  forcedCareer:state.forcedCareer??null,retired:!!state.character.retirementFromCreation,deceased:!!state.character.deceased};
+}
+function assertGamesContext(state){
+ const record=gamesPending(state);need(record,'No Psionic Games competition is pending.');
+ need(state.active===record.context.careerIndex&&JSON.stringify(gamesContext(state))===JSON.stringify(record.context),
+  'The reserved Games career or character context changed. Restore the pending context or explicitly replay the application.');return record;
+}
+function psionicGamesAvailability(state){
+ const unavailable=reason=>({available:false,reason,timing:'next-term-boundary',source:copy(PSIONIC_GAMES_SOURCE)});
+ if(gamesPending(state))return unavailable('Complete the reserved Psionic Games term first.');
+ if(state.stage!=='term-end'||state.active===null)return unavailable('This option begins at a completed term boundary in an active career.');
+ if(state.character.species!=='zhodani'||state.character.culture!=='native')return unavailable('This route requires a native Zhodani Intendant.');
+ if(state.character.retirementFromCreation||state.character.deceased)return unavailable('Retirement or death prevents another term.');
+ if(state.forcedCareer)return unavailable('Resolve the required next career; the Games cannot bypass a career transfer.');
+ const {record,career}=currentCareer(state),exit=exitOptions(state);
+ if(!exit.canContinue)return unavailable(exit.continueReason);
+ if(record.exit||record.retiredFromCreation||career.maxTerms&&record.terms>=career.maxTerms)return unavailable('This career cannot accept another term.');
+ if(record.terms<1)return unavailable('Initial-career Games entry is not implemented; complete an ordinary term first.');
+ if(state.pending||state.effectsQueue?.length||state.injury!==undefined&&state.injury!==null||state.psionicTraining)return unavailable('Resolve the current source, medical or training step first.');
+ if(!Number.isInteger(state.character.stats.PSI)||state.character.stats.PSI<0||state.character.stats.PSI>40)return unavailable('An established PSI score is required.');
+ const eligibility=psionicGamesEligibility({socialClass:state.character.stats.SOC===10?'intendant':state.character.stats.SOC>10?'noble':'prole',
+  previousApplications:state.character.psionicGames?.applications.length??0,currentCareerId:career.id});
+ if(!eligibility.eligible)return unavailable(eligibility.reasons.includes('lifetime-application-used')?'The once-per-lifetime application has already been used, including failures.':'Only Intendants can apply; Proles and Nobles cannot.');
+ return {available:true,reason:'',timing:'next-term-boundary',source:copy(PSIONIC_GAMES_SOURCE),applicationTarget:10,
+  careerId:career.id,forcedStay:!!record.forcedStay,benefitRolls:record.benefitBlock>0?0:1};
+}
+function gamesRemaining(record){
+ const rolled=new Set(record.preliminaryRolls.map(row=>row.talent));
+ return PSIONIC_TALENTS.filter(t=>Object.hasOwn(record.context.skills,t)&&record.context.skills[t]>=0&&!rolled.has(t))
+  .map(talent=>({talent,level:record.context.skills[talent],target:8}));
+}
+function gamesAudit(record){
+ return [ ...record.application.audit, ...record.preliminaryRolls.map(row=>row.check), ...(record.final?.audit??[]) ]
+  .map((entry,index)=>({...copy(entry),sequence:index+1}));
+}
+function gamesCompetition(record,decisions={}){
+ return psionicGamesCompetition({application:record.application,skills:record.context.skills,
+  preliminaryRolls:record.preliminaryRolls.map(({talent,dice})=>({talent,dice})),finalDice:record.final?.dice,decisions});
+}
+function gamesDecisionInput(payload){
+ need(Object.keys(payload).every(k=>['ordinaryEvents','awardStacking','ordinaryEventEffects'].includes(k)),'Use the typed Games decision fields, not arbitrary effects or term changes.');
+ for(const key of ['ordinaryEvents','awardStacking'])if(payload[key]!==undefined){
+  need(plain(payload[key])&&Object.keys(payload[key]).every(k=>['mode','reason'].includes(k)),'Invalid Games source-decision fields.');
+ }
+ return {ordinaryEvents:payload.ordinaryEvents,awardStacking:payload.awardStacking};
+}
+
+
+function gamesExternalEffects(state,payload){
+ const effects=payload.ordinaryEventEffects;
+ if(payload.ordinaryEvents.mode==='omit'){
+  need(effects===undefined||Array.isArray(effects)&&effects.length===0,'Omitted events cannot also grant external event effects.');return [];
+ }
+ need(Array.isArray(effects)&&effects.length<=30,'Externally resolved events require an explicit ordinaryEventEffects array, including [] when there are none.');
+ const result=copy(effects);
+ for(const e of result){
+  need(plain(e),'Invalid external event effect.');
+  const fields=e.kind==='relationship'?['kind','role','name']:e.kind==='stat'?['kind','name','value']:['kind','value'];
+  need(Object.keys(e).every(k=>fields.includes(k)),'Use only typed external event fields; no nested, random or career-changing effects.');
+  if(e.kind==='stat'){
+   need(typeof e.name==='string'&&Object.hasOwn(state.character.stats,e.name),'Choose an existing characteristic.');
+   integer(e.value,-12,12,'External characteristic change');
+  }else if(e.kind==='cash')integer(e.value,-10000000,10000000,'External cash change');
+  else if(e.kind==='debt')integer(e.value,0,10000000,'External debt change');
+  else if(e.kind==='relationship'){need(['Contact','Ally','Rival','Enemy'].includes(e.role),'Choose a supported relationship.');need(text(e.name,120),'Name or describe the event relationship.');}
+  else throw new Error('This event consequence is not supported by the bounded Games route. Skills, rank, terms, arbitrary benefits and career transfers cannot be supplied.');
+ }
+ return result;
+}
+function finishPsionicGames(state){
+ const record=gamesPending(state);need(record?.competition?.completed,'The Games completion decision is missing.');
+ // External event effects are final adjudicated deltas after Games awards, never a second event/term.
+ // Preflight on a copy so unsupported physical zero/medical outcomes remain blocked atomically.
+ const preview=copy(state);applyEffects(preview,record.ordinaryEventEffects);
+ need(['STR','DEX','END'].every(k=>preview.character.stats[k]>0),'A zero physical characteristic requires medical/injury resolution outside this bounded Games route.');
+ need(preview.character.cash>=0,'Resolve external event funding without a negative cash balance.');
+ applyEffects(state,record.ordinaryEventEffects);
+ const {record:career}=currentCareer(state),before={age:state.character.age,terms:state.character.terms,careerTerms:career.terms,
+  benefitRolls:career.benefitRolls,successfulTerms:career.successfulTerms,forcedStay:!!career.forcedStay,rank:career.rank};
+ career.mishap=false;closeTerm(state);career.forcedStay=false;
+ record.status='completed';record.benefitAccounting.actualDelta=career.benefitRolls-before.benefitRolls;
+ record.completion={source:copy(PSIONIC_GAMES_SOURCE),durationSource:{id:'core',title:'Core Rulebook Update 2022',pages:[11]},
+  termDelta:1,years:4,before,after:{age:state.character.age,terms:state.character.terms,careerTerms:career.terms,
+   benefitRolls:career.benefitRolls,successfulTerms:career.successfulTerms,rank:career.rank},
+  satisfiedForcedStay:before.forcedStay,ageingDue:state.stage==='ageing',externalEventEffectsTiming:'after-games-awards-before-term-close'};
+ state.psionicGamesPending=null;
+}
+
 function applyEffects(state,effects) {
  need(Array.isArray(effects)&&effects.length<=30,'Too many effects.');
  for(const effect of effects) {
@@ -269,14 +377,16 @@ function returnFromPsionics(state,rolls,completed){
 function activatePsionicTraining(state,rolls){
  const active=state.psionicTraining,history=psionicHistory(state);
  if(!history.historyKnown){psionicSource(state,'psionic-history','Prior psionic acquisition checks are unknown. Record their count and attempted talents before further rolls. Do not reset failed checks.');return;}
- if((state.character.stats.PSI??0)<=0){active.noPotential=true;returnFromPsionics(state,rolls,false);return;}
  if(active.context==='companion-community'&&history.training.some(t=>t.completed)){active.mode='reuse';returnFromPsionics(state,rolls,true);return;}
+ if(active.context==='companion-community'&&active.requiresTerms&&!active.termsResolved){psionicSource(state,'psionic-training-terms','Resolve access, testing/training charges and timing after confirming prior history. No completed course is charged again.');return;}
+ if((state.character.stats.PSI??0)<=0){active.noPotential=true;returnFromPsionics(state,rolls,false);return;}
  active.attemptStart=history.attempts.length;state.pending=null;state.stage='psionic-training';
  if(active.mode==='retry'&&!psionicOptions(state).length){psionicSource(state,'psionic-retry','This talent cannot use the supported acquisition table. Resolve this source award explicitly.');return;}
 }
 function startPsionicTraining(state,config,rolls){
  need(!state.psionicTraining,'Another psionic training opportunity is active.');
  state.psionicTraining={mode:'initial',...copy(config)};
+ if(config.context==='companion-community'&&state.character.psionics&&(!state.character.psionics.historyKnown||state.character.psionics.training.some(t=>t.completed))){activatePsionicTraining(state,rolls);return;}
  if(config.context==='zhodani-elevation'&&state.character.psionics?.training.some(t=>t.completed)){psionicSource(state,'psionic-repeat-training','The Traveller has already completed initial psionic training. Resolve how this new societal training interacts with prior attempts; no free repeated checks are assumed.');return;}
  if(config.requiresTerms){psionicSource(state,'psionic-training-terms','Resolve access, testing/training charges and timing. Core testing takes two weeks and costs at least Cr5000; training takes four months and costs Cr100000. No free training, elapsed age or debt is assumed.');return;}
  if(config.test&&!Object.hasOwn(state.character.stats,'PSI')){if(!state.character.psionics)psionicHistory(state,true);recordPsionicTest(state,config.context,dice(state,2,rolls,'Psionic potential'),completedCareerTerms(state));}
@@ -540,6 +650,7 @@ function completeEffects(state,rolls) {
  if(next==='education-finish'){educationFinish(state,rolls);return;}
  if(next==='education-graduation'){if(!educationRecord(state).graduationAllowed)educationFinish(state,rolls);else state.stage=next;return;}
  if(next==='end-term'){closeTerm(state);return;}
+ if(next==='psionic-games-complete'){finishPsionicGames(state);return;}
  if(next==='ageing-crisis'){
   const preliminary=ageingCrisis({stats:state.character.stats});if(preliminary.crisis){
    const costDie=dice(state,1,rolls,'Ageing crisis medical cost'),outcome=ageingCrisis({stats:state.character.stats,medicalDie:costDie});state.character.ageingCrises??=[];const index=state.character.ageingCrises.length;
@@ -782,6 +893,7 @@ function trainingOptions(state){
 function apply(state,command,rolls) {
  need(plain(command)&&typeof command.type==='string','A command type is required.');
  const payload=command.payload??{};need(plain(payload),'Invalid command payload.');
+ if(gamesPending(state))need([...GAMES_COMMANDS,'notes','gm-mode'].includes(command.type),'Complete the reserved Games term before changing the character or career. Restore/replay explicitly to revise its context.');
  switch(command.type) {
  case 'setup': {
   need(state.stage==='identity','Identity has already been accepted.');
@@ -1093,7 +1205,7 @@ function apply(state,command,rolls) {
   if(!assignment.advancement){closeTerm(state);return 'This career has no conventional advancement roll.';}
   if(!checkAvailable(state,assignment.advancement)&&!state._sourceCheck&&!record.automaticPromotion){missingCheck(state,assignment.advancement,'Advancement',command);return 'Advancement check requires source resolution for the absent characteristic.';}
   const zhodaniAuto=career.group==='zhodani'&&(state.character.stats.SOC??0)>=10&&record.terms+1===(record.drafted?2:1);
-  const check=record.automaticPromotion||zhodaniAuto?{natural:0,total:99,target:assignment.advancement.target,success:true,automatic:true}:rulesCheck(state,assignment.advancement,rolls,'Advancement',modifierTotal(state,'advancement')+(record.educationModifiers?.advancement??0)+(career.group==='zhodani'&&(state.character.stats.SOC??0)>=11?1:0));record.automaticPromotion=false;
+  const check=record.automaticPromotion||zhodaniAuto?{natural:0,total:99,target:assignment.advancement.target,success:true,automatic:true}:rulesCheck(state,assignment.advancement,rolls,'Advancement',modifierTotal(state,'advancement')+(record.educationModifiers?.advancement??0)+(career.group==='zhodani'&&(state.character.stats.SOC??0)>=11?1:0));if(record.automaticPromotion)record.automaticCommission=false;record.automaticPromotion=false;
   if(career.id==='core.prisoner'){record.released=check.total>record.parole;record.forcedExit=record.released;}else if(check.total<=record.terms+1)record.forcedExit=true;
   if(check.natural===12&&career.id!=='core.prisoner'){record.forcedStay=true;record.forcedExit=false;}
   if(check.success){
@@ -1102,6 +1214,57 @@ function apply(state,command,rolls) {
   }else closeTerm(state);
   return 'Advancement: '+JSON.stringify(check)+'. Rank '+record.rank+'.';
  }
+
+ case 'apply-psionic-games':{
+  need(Object.keys(payload).length===0,'The Games application rolls its own dice and accepts no overrides.');
+  const available=psionicGamesAvailability(state);need(available.available,available.reason);
+  const history=gamesHistory(state),context=gamesContext(state);
+  dice(state,2,rolls,'Psionic Games application');
+  const application=psionicGamesApplication({socialClass:'intendant',previousApplications:history.applications.length,
+   currentCareerId:context.career.id,psi:context.stats.PSI,dice:rolls.at(-1).values});
+  const record={id:'games-'+(history.applications.length+1),source:copy(PSIONIC_GAMES_SOURCE),timing:'next-term-boundary',
+   status:application.success?'pending':'failed',context,application,preliminaryRolls:[],preliminaries:null,final:null,
+   competition:null,decisions:null,ordinaryEventEffects:[],audit:copy(application.audit),
+   benefitAccounting:{mode:'ordinary-current-career-term',baseRolls:1,existingBlock:context.career.benefitBlock??0,
+    expectedDelta:context.career.benefitBlock>0?0:1,source:[copy(PSIONIC_GAMES_SOURCE),{id:'core',title:'Core Rulebook Update 2022',pages:[46]}]}};
+  history.applications.push(record);
+  if(application.success){
+   state.psionicGamesPending=history.applications.length-1;
+   state.stage=gamesRemaining(record).length?'psionic-games-preliminaries':'psionic-games-final';
+   if(state.stage==='psionic-games-final')record.preliminaries=psionicGamesPreliminaries({psi:context.stats.PSI,skills:context.skills,rolls:[]});
+  }
+  return 'Psionic Games application: '+JSON.stringify(application.audit[0])+'. Lifetime application used. '+(application.success?'Reserved the next term in '+context.career.id+'; no term or award is applied until all checks and source decisions are complete.':'Application failed; the ordinary next term remains available and no term was consumed.');
+ }
+ case 'psionic-games-preliminary':{
+  need(state.stage==='psionic-games-preliminaries','Not at a Games preliminary check.');
+  const record=assertGamesContext(state);
+  need(Object.keys(payload).every(k=>k==='talent'),'Choose a possessed talent; dice and outcomes cannot be supplied.');
+  const option=gamesRemaining(record).find(o=>o.talent===payload.talent);need(option,'Choose an unrolled talent actually possessed at application.');
+  dice(state,2,rolls,'Psionic Games preliminary: '+option.talent);
+  const values=copy(rolls.at(-1).values),one=psionicGamesPreliminaries({psi:record.context.stats.PSI,skills:{[option.talent]:option.level},rolls:[{talent:option.talent,dice:values}]});
+  record.preliminaryRolls.push({talent:option.talent,dice:values,check:one.audit[0]});record.audit=gamesAudit(record);
+  if(!gamesRemaining(record).length){record.preliminaries=psionicGamesPreliminaries({psi:record.context.stats.PSI,skills:record.context.skills,rolls:record.preliminaryRolls.map(({talent,dice})=>({talent,dice}))});state.stage='psionic-games-final';}
+  return 'Psionic Games preliminary: '+JSON.stringify(record.audit.at(-1))+'. No skill is gained.';
+ }
+ case 'psionic-games-final':{
+  need(state.stage==='psionic-games-final','Not at the Games final check.');
+  need(Object.keys(payload).length===0,'The Games final rolls its own dice and accepts no overrides.');
+  const record=assertGamesContext(state);need(record.preliminaries?.resolved&&!gamesRemaining(record).length,'Complete every possessed-talent preliminary first.');
+  dice(state,2,rolls,'Psionic Games final');record.final=psionicGamesFinal({preliminaries:record.preliminaries,dice:rolls.at(-1).values});
+  record.audit=gamesAudit(record);record.competition=gamesCompetition(record);state.stage='psionic-games-decisions';
+  return 'Psionic Games final: '+JSON.stringify(record.audit.at(-1))+'. Checks retained; source decisions are required before awards and term completion.';
+ }
+ case 'complete-psionic-games':{
+  need(state.stage==='psionic-games-decisions','Complete the Games checks before recording source decisions.');
+  const record=assertGamesContext(state),decisions=gamesDecisionInput(payload),outcome=gamesCompetition(record,decisions);
+  need(outcome.resolved&&outcome.completed,'Record every required Games source decision: '+outcome.unresolved.map(d=>d.key).join(', ')+'.');
+  const external=gamesExternalEffects(state,payload);record.decisions=copy(outcome.decisions);record.ordinaryEventEffects=copy(external);
+  record.competition=copy(outcome);record.audit=copy(outcome.audit);
+  // No new career, ordinary skill roll, survival check or advancement is inserted.
+  queueEffects(state,sourcedEffects(outcome.effects,PSIONIC_GAMES_SOURCE),'psionic-games-complete',rolls);
+  return 'Completed Psionic Games source decisions: '+JSON.stringify(record.decisions)+'. External event effects: '+JSON.stringify(external)+'. One four-year term in '+record.context.career.id+'; ordinary benefit accounting and due ageing follow.';
+ }
+
  case 'continue-career': {
   need(state.stage==='term-end','Not at the end of a term.');
   const {record,career}=currentCareer(state);need(!record.forcedExit,'This career must be left.');
@@ -1112,7 +1275,7 @@ function apply(state,command,rolls) {
   if(availability.sourceRequired){missingCheck(state,{stat:'SOC',target:career.commission},'Commission',command);return 'Commission check requires source resolution for the absent characteristic.';}record.commissionTried=true;
   const bonus=modifierTotal(state,'advancement',false)-record.terms+(record.educationModifiers?.commission??0);
   const check=record.automaticCommission||career.group==='zhodani'?{automatic:true,success:true,total:99}:rulesCheck(state,{stat:'SOC',target:career.commission},rolls,'Commission',bonus);
-  if(check.success){modifierTotal(state,'advancement');record.highestRank=Math.max(record.highestRank??record.rank,record.rank,1);record.rank=1;record.officer=true;record.automaticCommission=false;queueEffects(state,rankEffects(state),'end-term',rolls);}
+  if(check.success){modifierTotal(state,'advancement');record.highestRank=Math.max(record.highestRank??record.rank,record.rank,1);record.rank=1;record.officer=true;if(record.automaticCommission)record.automaticPromotion=false;record.automaticCommission=false;queueEffects(state,rankEffects(state),'end-term',rolls);}
   return 'Commission: '+JSON.stringify(check)+(check.success?'. Became rank 1 officer; no advancement roll this term.':'. Advancement remains available.');
  }
  case 'leave-career': {
@@ -1124,6 +1287,7 @@ function apply(state,command,rolls) {
   record.benefitRolls+=bonus;
   record.benefitDM=highest>=5?1:0;
   const pension=pensionEntitlement({careerId:career.id,terms:record.terms,soc:state.character.stats.SOC});record.pensionEntitlement=copy(pension);
+  if(career.group==='zhodani')record.pensionExitStatusBasis={soc:state.character.stats.SOC,socialClass:state.character.stats.SOC>=11?'noble':state.character.stats.SOC===10?'intendant':'prole',source:{id:'aliens',page:277}};
   if(pension.needsAdjudication){sourceStep(state,'pension',pension.source.id,pension.source.page,pension.reason,'leave-career');state.pending.careerIndex=state.active;return 'Pension entitlement requires an explicit source decision before mustering out.';}
   record.pension=pension.annualCredits;record.pensionCondition=pension.condition;finishCareerExit(state);
   return 'Left '+career.name+' with '+record.benefitRolls+' benefit rolls.'+(retire?' Early retirement ends creation after these benefits; no career transfer.':'');
@@ -1186,7 +1350,7 @@ if(pending.kind==='psionic-training-terms'){
     const cost=integer(payload.psionicCost,0,10000000,'Psionic testing and training cost');need(['cash','provided'].includes(payload.psionicFunding),'Choose cash payment or source-provided training.');
     if(payload.psionicFunding==='cash'){need(cost>=pending.minimumCost&&(pending.testingNeeded||cost===100000),'Cash cost must meet the published minimum of Cr'+pending.minimumCost+'; tested training costs exactly Cr100000.');need(state.character.cash>=cost,'Available cash does not cover the psionic charges; no automatic debt is allowed.');}
     else need(cost===0,'Provided testing/training has zero personal cost; document who provides it in the source ruling.');
-    const ruling={kind:pending.kind,approved:true,note,quotedCost:cost,cost,funding:payload.psionicFunding,timingConfirmed:true};psionicHistory(state).rulings.push(ruling);
+    const ruling={kind:pending.kind,approved:true,note,quotedCost:cost,cost,funding:payload.psionicFunding,timingConfirmed:true};psionicHistory(state).rulings.push(ruling);active.termsResolved=true;
     if(!Object.hasOwn(state.character.stats,'PSI')){const history=psionicHistory(state);history.historyKnown=!acquiredTalents(state).length;recordPsionicTest(state,active.context,dice(state,2,rolls,'Psionic potential'),completedCareerTerms(state));}
     if(payload.psionicFunding==='cash'){ruling.cost=(state.character.stats.PSI??0)>0?cost:pending.testingNeeded?cost-100000:0;state.character.cash-=ruling.cost;}
     state.pending=null;activatePsionicTraining(state,rolls);return 'Psionic access and timing approved; personal cost Cr'+ruling.cost+' ('+payload.psionicFunding+'). '+note;
@@ -1343,10 +1507,11 @@ export function project(session) {
    const original=session.events[target-1];need(!['gm-replay','restore'].includes(original.command.type),'Choose an original generation roll.');
    const originalRoll=log[target-1].rolls[rollIndex];need(originalRoll,'The selected action has no such roll.');
    const reason=text(payload.reason??'',300);need(reason,'A reason is required for replacing a roll.');
-   const rng=state.rng,gm=state.config.gm;state=copy(snapshots[target-1]);state.rng=rng;state.config.gm=gm;state._override={index:rollIndex,values:payload.values};
+   const rng=state.rng,gm=state.config.gm;state=copy(snapshots[target-1]);state.rng=rng;state.config.gm=gm;state._override={index:rollIndex,values:payload.values,preserved:copy(log[target-1].rolls.slice(0,rollIndex)),target:copy(originalRoll)};
    const outcome=apply(state,original.command,rolls);need(rolls[rollIndex],'Original roll is not present in the replayed action.');delete state._override;
-   summary='GM replaced action '+target+' roll '+(rollIndex+1)+' ['+originalRoll.values.join(', ')+'] → ['+payload.values.join(', ')+']. Reason: '+reason+'. Subsequent character changes were superseded; all actions remain in the log. '+outcome;
+   summary='GM replaced action '+target+' roll '+(rollIndex+1)+' ['+originalRoll.values.join(', ')+'] → ['+payload.values.join(', ')+']. Reason: '+reason+'. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. '+outcome;
   }else if(event.command?.type==='restore'){
+   need(state.config.gm,'Enable GM mode before restoring a previous character state.');
    const target=integer(event.command.payload?.revision,0,i-1,'Restore point');
    const rng=state.rng,gm=state.config.gm;state=copy(snapshots[target]);state.rng=rng;state.config.gm=gm;
    summary='Restored character state to action '+target+'. Prior rolls and actions remain in this log; randomness was not rewound.';
@@ -1355,6 +1520,11 @@ export function project(session) {
   if(event.summary!==undefined)need(event.summary===summary,'Action summary mismatch at action '+(i+1)+'.');
   log.push({number:i+1,id:event.id,type:event.command.type,summary,rolls,changes:characterChanges(snapshots[i].character,state.character)});snapshots.push(copy(state));
  }
+ for(const career of state.character.careers)if(career.pensionExitStatusBasis){const socialClass=state.character.stats.SOC>=11?'noble':state.character.stats.SOC===10?'intendant':'prole';career.pensionStatusReviewRequired=socialClass!==career.pensionExitStatusBasis.socialClass;}
+ state.psionicGamesAvailability=psionicGamesAvailability(state);
+ state.currentPsionicGames=copy(state.character.psionicGames?.applications.at(-1)??null);
+ state.psionicGamesOptions=gamesPending(state)?gamesRemaining(gamesPending(state)):[];
+ state.psionicGamesNeedsStacking=!!gamesPending(state)?.competition?.unresolved.some(d=>d.key==='awardStacking');
  state.commissionAvailability=commissionAvailability(state);state.exitOptions=exitOptions(state);state.followingInteractionDM=followingInteractionDM(state.character.stats.FOL);
  state.currentBenefitAward=state.pending?.awardId?copy(benefitAward(state,state.pending.awardId)):null;
  state.currentInjury=state.injury!==undefined&&state.injury!==null?copy(injuryRecord(state)):null;
