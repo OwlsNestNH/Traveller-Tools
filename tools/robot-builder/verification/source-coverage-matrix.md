@@ -4,9 +4,9 @@ Scope: Robot Handbook (Mongoose 2022), broad ordinary and special new-build cons
 
 Status key: **I** implementation present for the stated scope; **P** a named construction/output path remains partial; **A** source ambiguity or disclosed interpretation; **E** external host, recipient, source record or referee dependency. These labels describe scope, not completion of the final release gate.
 
-## Final candidate status
+## Implemented construction corrections
 
-The standard skill resolver and optional RH 73 four/eight-purchase breadth, microbot package/instance parity, high-tech constructor controls and high-tech nano environmental pricing are integrated. Independent source review and final exact-head syntax/native/browser checks remain pending. Component Athletics-equivalent projection is a specific final-review check. See the [finite release inventory](construction-gap-inventory.md) for these corrections, remaining boundaries and acceptance gates.
+The standard skill resolver and optional RH 73 four/eight-purchase breadth, microbot package/instance parity, high-tech constructor controls and high-tech nano environmental pricing are integrated. Whole-robot component Athletics-equivalent projections are included in review and print; brain-only acquisitions exclude limb equivalents. Each release requires independent source review and exact-head syntax/native/browser checks. See the [finite release inventory](construction-gap-inventory.md) for these corrections, remaining boundaries and acceptance gates.
 
 ## Construction matrix
 
@@ -14,7 +14,7 @@ The standard skill resolver and optional RH 73 four/eight-purchase breadth, micr
 |---|---|---|---|
 | Chassis, Slots, Hits and costs | 13-15 | I | Sizes 1-8, immutable Base Slots, removal limits and separate cost ledgers. Representative arithmetic does not reconstruct every catalogue robot. |
 | Locomotion and modifications | 16-24 | I / A | Primary/secondary movement, agility, tactical/vehicle speed and endurance. Aeroplane base-band omission and primary-thruster edge cases remain qualified. |
-| Manipulators | 25-28 | I | Base, removed, resized, additional and converted-leg accounting. STR/DEX and Athletics equivalents are per limb; component projection must pass final review. |
+| Manipulators | 25-28 | I | Base, removed, resized, additional and converted-leg accounting. STR/DEX and Athletics equivalents are per limb. Whole-robot component review/print retains component-only equivalents without granting them to the parent; brain-only acquisitions exclude them. |
 | Default suite and zero-slot budgets | 29-31 | I | Placements, substitutions, duplicate quantities, paid overflow and independent instances. Microbots retain their distinct rules. |
 | Camouflage, Reflec and surface options | 31-39 | I / A | Costs, exclusive families and body restrictions. Detection remains distance/sense-dependent; Size 5 references do not invent other-size outcomes. |
 | Environmental and biological protection | 32-34,41-42,88 | I / E | Costs, pressure stacking, armour/body eligibility and biological genome prerequisites across installation routes. Part-only protection does not protect a whole recipient. |
@@ -61,6 +61,6 @@ The [published validation](published-validation.md) retains representative recon
 
 Existing focused suites cover ordinary source rows, equipment route equivalence, implants/computers, composites, clones, external additions and persistence. New Handbook suites exercise the integrated corrections. Source interpretation, acquisition, installed legality, current operation and recipient/host validation remain distinct. A published example or a passing suite proves only its tested scope.
 
-The final candidate must pass independent source review, required syntax/native aggregate checks and all configured browser runners, including both Handbook suites. Final desktop/mobile smoke must cover retained-invalid repair, type/TL changes, six stages, explicit save/copy/reload, JSON and actual print, plus persistence/security regressions. No final aggregate or deployment pass is claimed here. Combat, medical outcomes, manufacturing, fleets, retrofit history, support procurement and full careers remain separate workflows unless requested.
+The final candidate must pass independent source review, required syntax/native aggregate checks and all configured browser runners, including both Handbook suites. Final desktop/mobile smoke must cover retained-invalid repair, type/TL changes, six stages, explicit save/copy/reload, JSON and actual print, plus persistence/security regressions. Record exact execution and publication evidence in the release PR. Combat, medical outcomes, manufacturing, fleets, retrofit history, support procurement and full careers remain separate workflows unless requested.
 
 The provisional metamorphic convention does not claim an authoritative erratum. The previously bounded [author-discussion search](https://forum.mongoosepublishing.com/threads/the-robot-handbook-is-here.123556/page-5) established no general definition for the omitted cost/Slot/limb basis; it is not proof that no later clarification exists.

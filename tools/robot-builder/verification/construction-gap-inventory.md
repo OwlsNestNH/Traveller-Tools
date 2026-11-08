@@ -2,18 +2,18 @@
 
 Scope: Robot Handbook (Mongoose 2022), broad ordinary and special new-build construction. This inventory separates finite release work from source omissions, referee choices, external records and optional later workflows. Neither catalogue rows nor representative examples certify every possible legal robot.
 
-## Integrated corrections; final review pending
+## Integrated construction corrections
 
-The final Handbook corrections are implemented. Independent source review and the full syntax, native and browser gates on the final candidate remain pending; this document does not close those gates.
+The Handbook corrections below are implemented. Each release requires independent source review and syntax, native and browser verification of the exact candidate. Record execution results in the release PR.
 
-- **Standard skill coverage (RH 26,69-73; Core 58).** One resolver handles purchased specialities, listed coverage and permitted same-skill level-zero access. Profession retains its exception. Athletics limb equivalents and weapon/equipment readiness use the purchased scope rather than an unrelated positive speciality. Final review must also verify component Athletics-equivalent projections.
+- **Standard skill coverage (RH 26,69-73; Core 58).** One resolver handles purchased specialities, listed coverage and permitted same-skill level-zero access. Profession retains its exception. Athletics limb equivalents and weapon/equipment readiness use the purchased scope rather than an unrelated positive speciality. Review and print retain each whole-robot component's own limb Athletics equivalents without granting them to the parent. Brain-only acquisitions exclude limb equivalents.
 - **Microbot software parity (RH 69-73,79-81).** Ordinary core/standard package evaluation now handles the source microbrain table, Basic's one-package allowance, locomotion and selected homing/servant branches, custom specialities, covered-scope overlap and brain limits. No additional memory module or wider equipment route is granted.
 - **Brainless microbot installations (RH 79-81).** Drone-interface and communication checks use combined legacy and independent equipment instances. Real receiver/link prerequisites and no-brain software restrictions remain.
 - **High-tech constructor controls (RH 84-85,105).** Enhanced and advanced constructors expose controller task capacity. The check concerns simultaneous deployment, not a guarantee that purchased reserve inventory can operate together.
 - **Optional broad software (RH 73).** Explicit referee four- and eight-purchase choices support approved full breadth, including open/custom Art and Profession specialities. Existing individual, all-listed and finite legacy selections retain their price, Bandwidth and saved meaning; no legacy selection silently becomes universal.
 - **High-tech nano protection (RH 81,83,105).** General environmental multipliers apply to acquisition in its source unit: per litre for high-tech constructors and per package for distributed consciousness, with cumulative radiation pricing. Missing operating ratings remain unknown.
 
-These corrections have focused regression suites and two dedicated browser runners. Their existence is not evidence that the final merged candidate has passed review or aggregate checks.
+Focused regression suites and two dedicated browser runners cover these corrections. Their presence does not replace executing the configured checks for each release.
 
 ## Included bounded additions
 
