@@ -39,6 +39,10 @@ Medical nanorobot records distinguish purchased active packages, purchased reser
 
 Delayed file reads carry a draft revision so an earlier import cannot overwrite a newer draft. Saving, importing and referencing a component remain separate actions.
 
+Sixteen explicitly magazine-fed CSC configurations support separately selected standard/high-capacity initial loads and mixed spare quantities. The high-capacity accessory has its own TL4 gate and p175 capacity/price multipliers; its mass doubles the original p142 estimate once. Standard and high-capacity spares may use different compartments or a combined autoloader, with a shared ten-magazine autoload limit. Referee-dependent compatibility remains qualified, particularly shotguns, and other finite-capacity supplies do not automatically acquire this conversion. Optional fields preserve old backups; invalid retained choices stay visible and removable.
+
+Remaining ammunition cases include asymmetric loadouts across linked copies, an autoloader plus separately stored reserves, ARL standard/support magazine interchange, included-pack replacement disposition and unverified high-capacity feed compatibility. These are application or source boundaries, not claims that such constructions are prohibited.
+
 ## Clone development
 
 Clones use biological templates, growth services and learned skills rather than a robot chassis/brain conversion. Accelerated growth can stop at the convenient whole-month choices or a bounded custom fractional month. Source-dependent pricing, partial-year education and calendar interpretations are recorded explicitly; no prorated fee or premature completed-year training grant is invented.
