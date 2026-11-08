@@ -208,7 +208,7 @@ for(const delayed of [false,true])test(`corrected local time validation complete
 // No time, physical supplies, debt, cash or historical receipts change here.
 test('station synchronous save and reload Undo preserve all stock and economics',async()=>{
  const h=setup(),before=h.persisted();await begin(h,'station');const saved=h.persisted();
- assert.equal(saved.ship.stationLifeSupport,true);assert.equal(saved.hours,before.hours);same(saved.ship.lifeSupport,before.ship.lifeSupport);unchanged(saved,before);assert.match(ui(h).message,/Station life support on saved/);assert.equal(h.counters.writes,1);
+ assert.equal(saved.ship.stationLifeSupport,true);assert.equal(saved.hours,before.hours);assert.equal(cmp(supportStock(saved.ship).remainingUnits,supportStock(before.ship).remainingUnits),0,'Existing transition anchoring preserves the exact legacy supply quantity');unchanged(saved,before);assert.match(ui(h).message,/Station life support on saved/);assert.equal(h.counters.writes,1);
  const fresh=setup(saved);await fresh.runAction('undo');for(const key of ['ship','hours','ledger','bank'])same(fresh.persisted()[key],before[key]);
 });
 test('station delayed save suppresses repeated switch and day actions through settlement',async t=>{
