@@ -97,7 +97,7 @@ test('Hard Knocks first-career penalties survive retained switches without first
  r=run(r,'companion-skill',{selected:['Athletics','Deception']});r=force(r,'education-event',{},[1,4]);r=force(r,'education-graduation',{},[6,6]);r=run(r,'companion-skill',{selected:['Drive','Gambler','Melee']});r=run(r,'companion-skill',{selected:['Gun Combat (slug)']});
  r=settle(force(r,'career',{id:'core.army',assignment:'support'},[6,6]));r=closeNext(r,9);assert.deepEqual(record(r).educationModifiers,{commission:-2,advancement:-2});
  const before=structuredClone(r.state.character);r=force(r,'change-assignment',{assignment:'infantry'},[6,6]);assert.equal(r.state.character.assignmentChanges[0].check.modifier,0);assert.deepEqual(record(r).educationModifiers,{commission:-2,advancement:-2});assert.deepEqual(r.state.character.skills,before.skills);assert.equal(r.state.character.educations[0].careerAttempts,before.educations[0].careerAttempts);
- r=closeNext(r);assert.match(r.log.findLast(x=>x.type==='advancement').summary,/"modifier":-2/);roundtrip(r); 
+ r=closeNext(r);assert.match(r.log.findLast(x=>x.type==='advancement').summary,/"modifier":-2/);roundtrip(r);
 });
 
 test('public ageing-crisis history still allows Noble automatic entry without another roll',()=>{
