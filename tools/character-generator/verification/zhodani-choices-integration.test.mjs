@@ -12,7 +12,7 @@ test('source-earned Prole removal consumes one existing relationship and reaches
  assert.equal(r.state.pendingChoice.source.page,273);r=run(r,'gm-mode',{enabled:false});
  r=run(r,'resolve-relationship-loss',{index:choice.index},{id:'remove-once'});assert.equal(r.state.stage,'reeducation-roll');
  assert.equal(r.state.character.relationships.length,before.relationships.length-1);assert.equal(r.state.character.relationshipLosses.length,1);
- assert.deepEqual(r.state.character.relationshipLosses[0].removed,before.relationships[choice.index]);assert.equal(r.state.character.relationshipLosses[0].source.page,273);
+ assert.match(before.relationships[choice.index].id,/^relationship-\d+$/);assert.deepEqual(r.state.character.relationshipLosses[0].removed,before.relationships[choice.index]);assert.equal(r.state.character.relationships.some(p=>p.id===before.relationships[choice.index].id),false);assert.equal(r.state.character.relationshipLosses[0].source.page,273);
  assert.equal(r.state.character.age,before.age);assert.equal(career(r).id,'zhodani.prole');assert.equal(career(r).terms,before.careers[0].terms);
  assert.deepEqual(run(r,'resolve-relationship-loss',{index:choice.index},{id:'remove-once'}).session,r.session);roundtrip(r);
 });
@@ -28,7 +28,7 @@ test('missing Prole relationship is a typed source ruling and preserves the whol
  assert.equal(r.state.character.relationshipLosses[0].removed,null);assert.equal(r.state.coverage.filter(x=>x==='zhodani-relationship-loss').length,1);roundtrip(r);
 });
 test('protected Prole loss removes only the selected duplicate entry and retains its original Event continuation',()=>{
- const before=protectedProle.state.character.relationships;let r=run(protectedProle,'resolve-relationship-loss',{index:1});
+ const before=protectedProle.state.character.relationships;assert.equal(new Set(before.map(p=>p.id)).size,before.length);assert.ok(before.every(p=>/^relationship-\d+$/.test(p.id)));let r=run(protectedProle,'resolve-relationship-loss',{index:1});
  assert.deepEqual(r.state.character.relationships,[before[0],...before.slice(2)]);r=rolledReeducation(r,1);
  r=run(r,'resolve-reeducation',{chronology:chronology('before-resume')});assert.equal(r.state.stage,'advancement');assert.equal(career(r).forcedExit,false);
  assert.equal(career(r).terms,1);assert.equal(r.state.character.nonCareerMonths,48);assert.equal(r.log.at(-1).rolls.length,0);roundtrip(r);
