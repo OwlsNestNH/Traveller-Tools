@@ -148,7 +148,7 @@ Military Event 10 and Spacer Events 5/10 offer a specific officer career in the 
 
 `character.aslanStatusChanges` records source, timing, SOC/status before and after, removed Clan Share tokens and affected award IDs. Native Aslan qualification failure sets SOC 2/Outcast and forfeits held unconverted Clan Shares, including those just received during mustering out. Original award records remain annotated rather than erased. Other benefits and cash history are preserved. No repossession of previously redeemed cash, ships or land is inferred.
 
-Native Aslan cash limits and male half-cash handling remain distinct from the Core three-roll rule. Broad Hierate/Core access, family/clan/land setup, Outlaw redemption and generic same-career Aslan assignment mapping remain outside this bounded route.
+Native Aslan cash limits and male half-cash handling remain distinct from the Core three-roll rule. Broad Hierate/Core access, family/clan/land setup and generic same-career Aslan assignment mapping remain outside this bounded route.
 
 ## Earned Aslan Outcast restoration
 
@@ -164,4 +164,30 @@ Outcast Event 11 opens a typed `book-step` with `pending.kind = aslan-restoratio
 
 - `character.aslanRestorations` records the source, original career/time boundary, SOC/status before and after, typed decision, actual career attempt/check and expiry. Previous forfeitures remain historical; restoration does not return lost Clan Shares.
 
-Voluntary native Outcast entry sets Outcast status and forfeits held unconverted Clan Shares without inventing the SOC 2 penalty that applies to qualification failure. Outlaw restoration is a separate `aslan-outlaw-restoration` source stop marked unsupported. Its distinct male/female conditions cannot be completed through a generic SOC-only edit.
+Voluntary native Outcast entry sets Outcast status and forfeits held unconverted Clan Shares without inventing the SOC 2 penalty that applies to qualification failure. Its separate Outlaw procedure is described below.
+
+## Earned Aslan Outlaw restoration
+
+Outlaw Event 11 opens `book-step` with `pending.kind = aslan-outlaw-restoration` and `currentAslanOutlawRestoration`. Generic source effects cannot complete it.
+
+- Male `resolve-aslan-outlaw-restoration` uses `{decision:"restore",originalSOC,originalSOCConfirmed:true,reason}` and requires GM mode. Original SOC is a verified integer1–40 and reason is1–500 characters. Present Outcast status clears before three Clan Shares are awarded, so the new award is not immediately forfeited. The printed imperative is not given an invented optional decline.
+
+- Female acceptance uses `{decision:"marry",unmarriedConfirmed:true,reason}` and requires GM mode. It rolls fresh normal2D SOC, with no statistics boon or SOC species modifier, records the accepted marriage and clears current Outcast status. It grants no male Clan Share award.
+
+- Female `{decision:"decline"}` requires no GM mode and leaves SOC/status/term unchanged. `{decision:"ineligible",unmarriedConfirmed:false,reason}` requires GM mode to record known ineligibility. Missing marital history never implies eligibility.
+
+- Accepted paths require departure and finish the existing term once, including any due ageing, followed by the old career benefits once. They do not award a free extra term, qualification, rank or automatic new career. `character.aslanOutlawRestorations` retains the original source/time boundary, before/after values, decision, exact SOC dice, share award IDs, marriage and departure. The career records `aslanRestorationExit` provenance.
+
+### Separate historical career access
+
+The restored-standing result does not explicitly grant the Outcast event's next-term entry permission. The interface therefore requests a separate referee interpretation for a specific next native Aslan career and assignment. It is never presented as an automatic source grant.
+
+- `aslanHistoricalEntryOptions` projects `{careerId,name,assignments:[{id,name,available,reason}],available,reason,restorationId}` at the completed restoration departure boundary.
+
+- `request-aslan-historical-entry {careerId,assignment}` opens `book-step` with `pending.kind = aslan-historical-entry` and `currentAslanHistoricalEntry`, including the requested labels. It rolls no dice. A different request explicitly supersedes any unused approval, retaining its history.
+
+- GM-only `resolve-aslan-historical-entry {approved,reason}` records approval or denial. Approval permits only the requested ordinary qualification attempt; it does not bypass other prerequisites or roll qualification immediately. The normal `career` command consumes it. Failure uses normal SOC2/Outcast/forfeiture and source fallback.
+
+- `character.aslanHistoricalEntries` retains requested route, source, restoration ID, timing, prior career indices, decision, actual check, expiry and supersession. Another career, education or elapsed boundary expires an unused ruling. There is no permanent historical unlock, stockpile of approvals, reused benefits or silently retargeted decision. Existing officer-offer status reviews remain offer-specific.
+
+Family/clan/land procedures and general Hierate/Core access remain separate work; these bounded restoration paths do not certify complete Aslan generation.

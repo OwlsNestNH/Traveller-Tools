@@ -55,8 +55,8 @@ test('direct voluntary Outcast entry forfeits held shares without imposing SOC2'
  let r=aslanSetup('voluntary-outcast-shares','male',true),soc=r.state.character.stats.SOC,awards=structuredClone(r.state.character.benefitAwards);assert.ok(r.state.character.benefits.length);
  r=settle(run(r,'career',{id:'aslan.outcast',assignment:'labourer'}));assert.equal(r.state.character.outcast,true);assert.equal(r.state.character.stats.SOC,soc);assert.equal(r.state.character.benefits.length,0);assert.equal(r.state.character.aslanStatusChanges[0].cause,'outcast-career-entry');assert.ok(r.state.character.benefitAwards.every((x,i)=>x.forfeited&&x.quantity===awards[i].quantity));roundtrip(r);
 });
-for(const gender of ['male','female'])test('p43 '+gender+' remains an explicit unresolved stop without partial rewards',()=>{
- const r=buildAslanOutlawRestorationFixture({gender});assert.equal(r.state.pending.kind,'aslan-outlaw-restoration');assert.equal(r.state.pending.unsupported,true);const before=exportSession(r.session);
+for(const gender of ['male','female'])test('p43 '+gender+' starts at a typed source stop without partial rewards',()=>{
+ const r=buildAslanOutlawRestorationFixture({gender});assert.equal(r.state.pending.kind,'aslan-outlaw-restoration');assert.equal(r.state.currentAslanOutlawRestoration.status,'pending');const before=exportSession(r.session);
  rejected(r,'resolve-book',{confirmed:true,note:'Do not accept a SOC-only completion',effects:[{kind:'stat',name:'SOC',value:6}]});rejected(r,'resolve-aslan-restoration',decision);assert.equal(exportSession(r.session),before);roundtrip(r);
 });
 test('next-term education consumes the window rather than silently preserving it',()=>{

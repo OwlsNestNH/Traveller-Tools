@@ -1,3 +1,4 @@
+import { createAslanOutlawRestoration, aslanOutlawRestorationDecision, aslanOutlawRestorationOutcome } from './aslan-outlaw-restoration.mjs';
 import { createAslanRestoration, aslanRestorationDecision, aslanRestorationAvailability, aslanRestorationExpiry } from './aslan-restoration.mjs';
 import { createAslanOfficerOffer, aslanOfficerExpiry, aslanOfficerEligibility, ASLAN_OFFICER_RANK_OPTIONS, aslanOfficerRankEffects, aslanClanShareTokens } from './aslan-officers.mjs';
 import { ASSIGNMENT_SOURCE, CORE_ASSIGNMENT_MODES, nobleAutomaticQualification, careerReentryPlan, assignmentChangePlan } from './assignment-changes.mjs';
@@ -20,7 +21,7 @@ const RULE_PACK={...CORE_PACK,...EXPANSION_PACK};
 import { API_VERSION, SOURCES, CAREERS, PRECAREERS, SPECIES, SKILLS, BACKGROUND_SKILLS, findCareer, findSpecies } from './catalog.mjs';
 const LIMIT = 2000;
 export const MAX_SAVE_BYTES = 2000000;
-export const RULES_REVISION='character-preview-2026-11-08.8';
+export const RULES_REVISION='character-preview-2026-11-08.9';
 const saveSize = value => new TextEncoder().encode(JSON.stringify(value,null,2)).byteLength;
 const copy = value => structuredClone(value);
 const plain = value => value && typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
@@ -187,6 +188,68 @@ function forfeitAslanClanShares(state,cause,source,setOutcast=false){
  for(const a of state.character.benefitAwards??[])if(removed.length&&a.definitionId==='aslan.clan-share'&&!a.forfeited){a.forfeited=true;a.received=false;a.forfeitureIds=[...(a.forfeitureIds??[]),id];awardIds.push(a.id);}
  const change={id,cause,source:copy(source),careerIndex:state.active??activeAslanOfficerOffer(state)?.originCareerIndex??null,generationTerms:state.character.terms,age:state.character.age,socBefore:before,socAfter:state.character.stats.SOC,outcastBefore,outcastAfter:!!state.character.outcast,removed,awardIds};
  state.character.aslanStatusChanges.push(change);return change;
+}
+
+function currentAslanOutlawRestoration(state){const id=state.pending?.kind==='aslan-outlaw-restoration'?state.pending.restorationId:null;return (id?state.character.aslanOutlawRestorations?.find(r=>r.id===id):null)??state.character.aslanOutlawRestorations?.at(-1)??null;}
+function beginAslanOutlawRestoration(state){
+ const {record,career}=currentCareer(state);state.character.aslanOutlawRestorations??=[];
+ const r=createAslanOutlawRestoration({id:'aslan-outlaw-restoration-'+(state.character.aslanOutlawRestorations.length+1),careerId:career.id,careerIndex:state.active,assignment:record.assignment,careerTerms:record.terms,completedTerms:state.character.terms,gender:state.character.gender,soc:state.character.stats.SOC,outcast:state.character.outcast,forcedExit:record.forcedExit,forcedStay:record.forcedStay});
+ state.character.aslanOutlawRestorations.push(r);sourceStep(state,'aslan-outlaw-restoration','aliens',43,'Resolve the source-earned restoration using verified SOC or current marriage eligibility.','native-resume');state.pending.restorationId=r.id;
+}
+function refreshAslanOutlawRestorations(state){
+ for(const r of state.character.aslanOutlawRestorations??[]){
+  if(!['awaiting-departure','mustering-out'].includes(r.status))continue;
+  if(state.character.deceased){r.status='deceased';r.departure={...r.departure,completed:false,endedBy:'death'};continue;}
+  const c=state.character.careers[r.originCareerIndex];
+  if(c?.exit){r.status=c.benefitRolls>0?'mustering-out':'completed';r.departure={...r.departure,exit:c.exit,generationTerms:c.exitGenerationTerms,age:c.exitAge,educationCount:(state.character.educations??[]).length,completed:c.benefitRolls===0};}
+ }
+}
+
+function outlawEntryBoundary(state){
+ const r=(state.character.aslanOutlawRestorations??[]).findLast(r=>r.status==='completed');
+ if(!r)return {available:false,reason:'Complete the earned Outlaw restoration and departure first.'};
+ const origin=state.character.careers[r.originCareerIndex];
+ let reason='';
+ if(state.character.deceased||state.character.retirementFromCreation)reason='Character creation has ended.';
+ else if(state.failedQualification)reason='Resolve the failed qualification before another entry.';
+ else if(state.character.outcast)reason='Current Outcast status has not been restored.';
+ else if(state.character.careers.length!==r.originCareerIndex+1)reason='The restoration departure has already been followed by another career.';
+ else if(state.character.terms!==r.departure.generationTerms||state.character.age!==r.departure.age)reason='The restoration departure boundary has elapsed.';
+ else if((state.character.educations??[]).length!==(r.departure.educationCount??0))reason='Another education term has begun.';
+ else if(state.forcedCareer||origin?.forcedStay)reason='Resolve the independent required career or continuation.';
+ else if(state.stage!=='career'||state.active!==null)reason='Resolve the original departure and benefits before requesting entry.';
+ return {available:!reason,reason,restoration:r};
+}
+function historicalEntryApproval(state,careerId,assignment){
+ const boundary=outlawEntryBoundary(state);if(!boundary.available)return null;
+ return (state.character.aslanHistoricalEntries??[]).find(r=>r.status==='approved'&&r.restorationId===boundary.restoration.id&&r.careerId===careerId&&(assignment===undefined||r.assignment===assignment))??null;
+}
+function historicalEntryOptions(state){
+ const boundary=outlawEntryBoundary(state);if(!boundary.available)return [];
+ const projected={...state,_aslanHistoricalProjection:true};
+ return availableCareers(projected).filter(c=>c.group==='aslan'&&!['aslan.outcast','aslan.outlaw'].includes(c.id)).map(c=>{
+  const assignments=c.assignments.map(a=>{
+   const pre=RULE_PACK[c.id]?.prerequisites?.assignments?.[a.id],gender=c.eligibility?.[a.id];
+   const sourceOK=conditionMatches(state,pre)&&(!gender||gender===state.character.gender)&&!(c.id==='aslan.military'&&a.id==='support'&&state.character.gender==='male'&&stat(state,'SOC')>8);
+   return {id:a.id,name:a.name,available:!c.disabled&&!a.disabled&&sourceOK,reason:c.reason||a.reason||(sourceOK?'':'The assignment source prerequisites are not met.')};
+  });
+  const available=assignments.some(a=>a.available);return {careerId:c.id,name:c.name,assignments,available,reason:available?'':c.reason||'No eligible assignment.',restorationId:boundary.restoration.id};
+ });
+}
+function currentHistoricalEntry(state){
+ const id=state.pending?.kind==='aslan-historical-entry'?state.pending.entryId:null;
+ const r=(id?state.character.aslanHistoricalEntries?.find(r=>r.id===id):null)??state.character.aslanHistoricalEntries?.at(-1);if(!r)return null;
+ const career=findCareer(r.careerId);return {...copy(r),careerName:career.name,assignmentName:career.assignments.find(a=>a.id===r.assignment)?.name??r.assignment};
+}
+function refreshHistoricalEntries(state){
+ for(const r of state.character.aslanHistoricalEntries??[]){
+  if(!['requested','approved'].includes(r.status))continue;let reason='';
+  if(state.character.deceased||state.character.retirementFromCreation)reason='character-ended';
+  else if(state.character.careers.length!==r.originCareerIndex+1)reason='another-career-entered';
+  else if(state.character.terms!==r.generationTerms||state.character.age!==r.age)reason='entry-boundary-elapsed';
+  else if((state.character.educations??[]).length!==r.educationCount)reason='education-entered';
+  if(reason){r.status='expired';r.expiry={reason,generationTerms:state.character.terms,age:state.character.age};}
+ }
 }
 
 function currentAslanRestoration(state){const id=state.pending?.kind==='aslan-restoration'?state.pending.restorationId:null;return (id?state.character.aslanRestorations?.find(r=>r.id===id):null)??state.character.aslanRestorations?.at(-1)??null;}
@@ -499,8 +562,10 @@ export function availableCareers(state) {
  if(c.minSOC&&(state.character.stats.SOC??0)<c.minSOC)reason='Requires SOC '+c.minSOC+' or greater.';
  if(c.maxSOC&&(state.character.stats.SOC??0)>c.maxSOC)reason='Requires SOC '+c.maxSOC+' or less.';
  const restoration=restorationForEntry(state,c.id),officerException=state._aslanOfficerQualification&&state._aslanOfficerQualification===activeAslanOfficerOffer(state)?.id&&activeAslanOfficerOffer(state)?.targetCareerId===c.id&&activeAslanOfficerOffer(state)?.statusVerification?.approved;
- const restoredHistory=(state.character.aslanRestorations??[]).some(r=>r.decision?.accept)&&aslanOfficerHistory(state).length>0;
- if(species==='aslan'&&culture==='native'&&!['aslan.outcast','aslan.outlaw'].includes(c.id)&&!restoration&&!officerException&&(state.character.outcast||restoredHistory))reason=restoredHistory?'Historical Outcast/Outlaw service requires another source-earned entry exception; restoration did not grant permanent career access.':'Outcast restriction. Use the source rules to leave Hierate society.';
+ const restoredHistory=((state.character.aslanRestorations??[]).some(r=>r.decision?.accept)||(state.character.aslanOutlawRestorations??[]).some(r=>r.departure?.required))&&aslanOfficerHistory(state).length>0;
+ const historicalApproval=historicalEntryApproval(state,c.id);
+ if(species==='aslan'&&culture==='native'&&!['aslan.outcast','aslan.outlaw'].includes(c.id)&&!restoration&&!officerException&&!historicalApproval&&(state.character.outcast||restoredHistory&&!state._aslanHistoricalProjection))reason=restoredHistory?'Historical Outcast/Outlaw service requires another source-earned entry exception; restoration did not grant permanent career access.':'Outcast restriction. Use the source rules to leave Hierate society.';
+ if(restoredHistory&&!restoration&&!officerException&&!state._aslanHistoricalProjection&&historicalApproval)c.assignments=c.assignments.map(a=>a.id===historicalApproval.assignment?a:{...a,disabled:true,reason:'The historical-entry ruling approves a different assignment.'});
  c.assignments=c.assignments.map(a=>{const absent=[a.survival,a.advancement].filter(check=>check&&!checkAvailable(state,check,pre.initialStats)).map(check=>check.stat);return absent.length?{...a,disabled:true,reason:'Requires absent '+[...new Set(absent)].join('/')+' characteristic; use a source-approved cross-species route.'}:a;});
  c.assignments=c.assignments.map(a=>{const transfer=transferForEntry(state,c.id,a.id);return {...a,...(transfer?{transferId:transfer.right.id}:{}),...(state.character.qualificationBanned&&c.qualification&&!transfer&&!nobleAutomaticQualification(c.id,state.character.stats)?{disabled:true,reason:'An ageing crisis prevents this qualification check.'}:{})};});
  if(state.stage==='career'&&state.active===null)c.assignments=c.assignments.map(a=>{const plan=reentryPlan(state,c.id,a.id,!!state.pendingDraft||state.forcedCareer===c.id&&state.forcedCareerDraft);return plan.allowed?a:{...a,disabled:true,reason:plan.reason};});
@@ -1262,7 +1327,8 @@ function drainEffects(state,rolls) {
    case 'advancement-block':currentCareer(state).record.advancementBlock=e.terms;break;
    case 'benefit-block':currentCareer(state).record.benefitBlock=e.terms;break;
    case 'aslan-restoration-opportunity':beginAslanRestoration(state);return;
-   case 'aslan-outlaw-restoration':sourceStep(state,'aslan-outlaw-restoration','aliens',43,'This source-earned restoration needs separate male and female procedures, original SOC verification and marriage eligibility. It is not implemented; a SOC-only change cannot complete it.','native-resume');state.pending.unsupported=true;return;
+   case 'aslan-outlaw-restoration':beginAslanOutlawRestoration(state);return;
+   case 'aslan-outlaw-restoration-awarded':{const r=state.character.aslanOutlawRestorations.find(r=>r.id===e.restorationId);need(r,'The Outlaw restoration award record is missing.');r.shareAwardIds=(state.character.benefitAwards??[]).slice(e.awardStart).filter(a=>a.definitionId==='aslan.clan-share').map(a=>a.id);break;}
    case 'aslan-outcast':forfeitAslanClanShares(state,'source-outcast-effect',e.source??{id:'aliens',page:22},true);currentCareer(state).record.forcedExit=true;break;
    case 'officer-qualification-opportunity':grantAslanOfficerOffer(state,e);break;
    case 'aslan-officer-rank-choice':{const {record}=currentCareer(state);state.pendingAslanOfficerRank={careerIndex:state.active,offerId:record.aslanOfficerOfferId,source:{id:'aliens',page:39}};state.stage='aslan-officer-rank';return;}
@@ -1309,12 +1375,50 @@ function apply(state,command,rolls) {
  if(state.stage==='relationship-loss')need(['resolve-relationship-loss','notes','gm-mode'].includes(command.type),'Resolve the pending relationship loss before changing the character. Restore/replay explicitly to revise it.');
  if(state.stage==='cross-career-training')need(['cross-career-training','notes','gm-mode'].includes(command.type),'Resolve the borrowed training before changing its career context. Restore/replay explicitly to revise it.');
  if(advisoryRecord(state))need(['advisory-career','advisory-cash','resolve-advisory-cash-limit','resolve-advisory-cash-result','choose-effect','choose-skill','skill-award-source','retry-skill-choice','resolve-book','notes','gm-mode'].includes(command.type),'Resolve the pending advisory service before changing the character. Restore/replay explicitly to revise it.');
+ if(state.pending?.kind==='aslan-historical-entry')need(['resolve-aslan-historical-entry','notes','gm-mode'].includes(command.type),'Resolve the requested historical-entry ruling before changing its context.');
  if(state.pending?.kind==='aslan-restoration')need(['resolve-aslan-restoration','notes','gm-mode'].includes(command.type),'Resolve or decline the earned restoration with its typed fields before continuing.');
- if(state.pending?.kind==='aslan-outlaw-restoration')need(['notes','gm-mode'].includes(command.type),'The Outlaw restoration procedure is not implemented. Preserve this source stop or restore/replay its originating action.');
+ if(state.pending?.kind==='aslan-outlaw-restoration')need(['resolve-aslan-outlaw-restoration','notes','gm-mode'].includes(command.type),'Resolve the earned Outlaw restoration with its typed fields before continuing.');
  if(state.stage==='assignment-entry')need(['qualify-assignment','abandon-assignment-change','notes','gm-mode'].includes(command.type),'Qualify for the pending assignment or abandon that plan before another career action.');
  if(activeAslanOfficerOffer(state)){const allowed=['qualify-aslan-officer','cancel-aslan-officer','benefit','choose-effect','choose-skill','skill-award-source','retry-skill-choice','resolve-book','notes','gm-mode'];if(state._aslanOfficerExit)allowed.push('leave-career');if(state._aslanOfficerQualification)allowed.push('career');need(allowed.includes(command.type),'Resolve the reserved officer exit and qualification before changing its context. Restore/replay explicitly to revise it.');}
  if(state.stage==='aslan-officer-rank')need(['resolve-aslan-officer-rank','notes','gm-mode'].includes(command.type),'Resolve the printed officer rank-table mapping before continuing.');
  switch(command.type) {
+
+ case 'request-aslan-historical-entry':{
+  need(Object.keys(payload).every(k=>['careerId','assignment'].includes(k)),'Choose only the requested career and assignment.');
+  const boundary=outlawEntryBoundary(state);need(boundary.available,boundary.reason);
+  const option=historicalEntryOptions(state).find(c=>c.careerId===payload.careerId),assignment=option?.assignments.find(a=>a.id===payload.assignment);need(option?.available&&assignment?.available,assignment?.reason||option?.reason||'Choose an eligible requested entry.');
+  const prior=(state.character.aslanHistoricalEntries??[]).find(r=>['requested','approved'].includes(r.status));need(!prior||prior.careerId!==payload.careerId||prior.assignment!==payload.assignment,'That entry already has an outstanding ruling.');
+  state.character.aslanHistoricalEntries??=[];const id='aslan-historical-entry-'+(state.character.aslanHistoricalEntries.length+1);
+  if(prior){prior.status='superseded';prior.supersededBy=id;}
+  const r={id,source:{id:'aliens',page:43},restorationId:boundary.restoration.id,originCareerIndex:boundary.restoration.originCareerIndex,generationTerms:state.character.terms,age:state.character.age,educationCount:(state.character.educations??[]).length,careerId:payload.careerId,assignment:payload.assignment,priorCareerIndices:aslanOfficerHistory(state),status:'requested',decision:null,attempt:null,expiry:null,supersededBy:null};
+  state.character.aslanHistoricalEntries.push(r);sourceStep(state,'aslan-historical-entry','aliens',43,'Record the referee interpretation allowing or denying this one requested career entry after restored standing; qualification and other prerequisites still apply.','career');state.pending.entryId=id;
+  return 'Requested a source ruling for '+option.name+' / '+assignment.name+'. No qualification was rolled.';
+ }
+ case 'resolve-aslan-historical-entry':{
+  need(state.stage==='book-step'&&state.pending?.kind==='aslan-historical-entry','No historical-entry ruling is pending.');need(state.config.gm,'Enable GM mode to record the historical-entry source interpretation.');need(Object.keys(payload).every(k=>['approved','reason'].includes(k)),'Use only approval and its source reason.');need(typeof payload.approved==='boolean','Record approval or denial.');
+  const reason=text(payload.reason??'',500);need(reason,'Record the source basis for this single-entry ruling.');
+  const r=state.character.aslanHistoricalEntries.find(r=>r.id===state.pending.entryId);need(r?.status==='requested','The requested historical entry is no longer pending.');
+  const projected={...state,stage:'career',pending:null},option=historicalEntryOptions(projected).find(c=>c.careerId===r.careerId)?.assignments.find(a=>a.id===r.assignment);
+  need(option?.available,option?.reason??'The requested entry context is no longer eligible.');r.decision={approved:payload.approved,reason};r.status=payload.approved?'approved':'declined';state.pending=null;state.stage='career';
+  return 'Referee '+(payload.approved?'approved':'declined')+' one '+findCareer(r.careerId).name+' / '+r.assignment+' entry attempt. '+reason;
+ }
+
+ case 'resolve-aslan-outlaw-restoration':{
+  need(state.stage==='book-step'&&state.pending?.kind==='aslan-outlaw-restoration','No earned Outlaw restoration is pending.');
+  const r=currentAslanOutlawRestoration(state),{record,career}=currentCareer(state);need(r?.status==='pending'&&r.originCareerIndex===state.active&&career.id===r.originCareerId&&record.assignment===r.originAssignment&&record.terms===r.originCareerTerms&&state.character.terms===r.grantedAtCompletedTerms&&state.character.gender===r.gender,'The Outlaw restoration context changed.');
+  const decision=aslanOutlawRestorationDecision({gender:r.gender,payload,gm:state.config.gm});let socDice;
+  if(decision.decision==='marry'){dice(state,2,rolls,'Outlaw marriage SOC');socDice=copy(rolls.at(-1).values);}
+  const outcome=aslanOutlawRestorationOutcome({gender:r.gender,decision,socDice});r.decision=decision;
+  if(socDice)r.socRoll={dice:socDice,natural:outcome.soc,total:outcome.soc,modifier:0,boon:false};
+  state.pending=null;
+  if(outcome.restored){
+   setStat(state,'SOC',outcome.soc);state.character.outcast=false;r.clanShares=outcome.clanShares;r.married=outcome.married;r.status='awaiting-departure';
+   r.departure={required:true,completed:false,source:copy(r.source)};record.aslanRestorationExit={restorationId:r.id,source:copy(r.source)};record.forcedExit=true;
+   state.effectsQueue.unshift(...(outcome.clanShares?[{kind:'benefit',name:'Clan Share',value:outcome.clanShares,source:copy(r.source)}]:[]),{kind:'aslan-outlaw-restoration-awarded',restorationId:r.id,awardStart:(state.character.benefitAwards??[]).length});
+  }else r.status=decision.decision==='decline'?'declined':'ineligible';
+  r.socAfter=state.character.stats.SOC;r.outcastAfter=!!state.character.outcast;drainEffects(state,rolls);
+  return outcome.restored?'Outlaw restoration resolved: SOC '+r.socAfter+', '+outcome.clanShares+' Clan Shares, required career departure. '+decision.reason:'Outlaw restoration: '+r.status+'. Current career continues without a restoration award.';
+ }
 
  case 'resolve-aslan-restoration':{
   need(state.stage==='book-step'&&state.pending?.kind==='aslan-restoration','No earned Aslan restoration is pending.');
@@ -1725,6 +1829,7 @@ function apply(state,command,rolls) {
   if(career.id==='zhodani.guard'&&assignment.id==='commando')need((state.character.stats.PSI??0)>=9,'Commando assignment requires PSI 9 or greater.');
   const educational=educationRights(state,career.id,assignment.id);
   if(educational.unresolved.length){const unresolved=educational.unresolved[0];if(unresolved.educationIndex!==undefined){sourceStep(state,'companion-career-rights',unresolved.source.id,unresolved.source.pages?.[0]??unresolved.source.page,unresolved.reason,'career');Object.assign(state.pending,{educationIndex:unresolved.educationIndex,career:career.id,assignment:assignment.id,citizenMapping:unresolved.citizenMapping});}else{sourceStep(state,'education-entry-rights','core',17,unresolved.reason,'career');state.pending.career=career.id;}return 'Education entry rights require source adjudication before qualification.';}
+  const historicalApproval=historicalEntryApproval(state,career.id,assignment.id);
   const restoration=restorationForEntry(state,career.id);
   const transfer=transferForEntry(state,career.id,assignment.id);
   if(transfer&&!transfer.plan.resolved){sourceStep(state,'career-transfer',transfer.right.source.id,transfer.right.source.pages[0],'Transfer rank track','career');Object.assign(state.pending,{transferId:transfer.right.id,careerId:career.id,assignmentId:assignment.id,rank:transfer.right.retainedRank,rankTracks:copy(transfer.plan.rankTracks)});return 'Transfer rank-track source decision required.';}
@@ -1740,6 +1845,7 @@ function apply(state,command,rolls) {
   const check=automaticReason?null:rulesCheck(state,qualification,rolls,'Qualification',modifier);
   const transition=recordCareerTransition(state,career,assignment.id,check,automaticReason,entryPlan);
   if(officerOffer){officerOffer.check=copy(check);officerOffer.transitionId=transition.id;}
+  if(historicalApproval){historicalApproval.status='consumed';historicalApproval.attempt={careerId:career.id,assignment:assignment.id,careerIndex:check&&!check.success?null:state.character.careers.length,generationTerms:state.character.terms,check:copy(check),automaticReason,success:!check||check.success};}
   if(restoration){restoration.status='consumed';restoration.attempt={careerId:career.id,assignment:assignment.id,careerIndex:check&&!check.success?null:state.character.careers.length,generationTerms:state.character.terms,check:copy(check),automaticReason,success:!check||check.success};if((!check||check.success)&&restoration.decision.statusTiming==='on-successful-entry')state.character.outcast=false;}
   for(const r of state.character.educations??[])if(r.completed)r.careerAttempts=(r.careerAttempts??0)+1;
   if(check&&!check.success){
@@ -2171,7 +2277,7 @@ export function project(session) {
    summary='Restored character state to action '+target+'. Prior rolls and actions remain in this log; randomness was not rewound.';
   }else summary=apply(state,event.command,rolls);
   const prior=event.command.type==='gm-replay'?snapshots[event.command.payload.revision-1]:snapshots[i];if(event.command.type!=='restore'&&!state.psionicTraining&&state.character.species==='zhodani'&&state.active!==null&&(state.character.stats.PSI??0)>(prior.character.stats.PSI??0)&&(state.character.stats.SOC??0)<10)reviewZhodaniStatus(state,'command:'+event.command.type,rolls,state.stage);
-  refreshAssignmentChange(state);refreshAslanOfficerOffers(state);refreshAslanRestorations(state);terminateBorrowedRoutes(state);expireBenefitCredits(state);
+  refreshAssignmentChange(state);refreshAslanOfficerOffers(state);refreshAslanRestorations(state);refreshAslanOutlawRestorations(state);refreshHistoricalEntries(state);terminateBorrowedRoutes(state);expireBenefitCredits(state);
   removeUnavailablePsionicAgeingChoice(state);
   expireCareerTransfers(state);
   if(event.rolls!==undefined)need(JSON.stringify(event.rolls)===JSON.stringify(rolls),'Roll audit mismatch at action '+(i+1)+'.');
@@ -2191,6 +2297,8 @@ export function project(session) {
  state.relationshipLossOptions=state.stage==='relationship-loss'?relationshipLossOptions(state.character.relationships):[];
  state.currentCrossCareerTraining=crossCareerTraining(state);
  state.assignmentChangeOptions=assignmentOptions(state);state.currentAssignmentChange=copy(currentAssignmentChange(state)??state.character.assignmentChanges?.at(-1)??null);
+ state.aslanHistoricalEntryOptions=historicalEntryOptions(state);state.currentAslanHistoricalEntry=currentHistoricalEntry(state);
+ state.currentAslanOutlawRestoration=copy(currentAslanOutlawRestoration(state));
  state.currentAslanRestoration=copy(currentAslanRestoration(state));state.aslanRestorationNotice=restorationNotice(state);
  state.aslanOfficerOptions=aslanOfficerOptions(state);state.currentAslanOfficerOffer=currentAslanOfficerProjection(state);
  state.benefitCreditOptions=['benefits','advisory-cash'].includes(state.stage)?benefitCredits(state,state.stage==='advisory-cash'?'advisory':'ordinary').map(c=>({id:c.id,label:(c.scope==='any'?'Any career benefit':'Current career benefit')+' +'+c.value,value:c.value,source:copy(c.source)})):[];

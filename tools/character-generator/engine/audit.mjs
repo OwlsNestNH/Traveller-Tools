@@ -10,6 +10,8 @@ export function characterChanges(before,after){
  }
  // Persisted outcomes are audited without exposing internal continuation/effect queues.
  const ledgerFields={
+  aslanOutlawRestorations:['id','source','eventResult','originCareerId','originCareerIndex','originAssignment','originCareerTerms','grantedAtCompletedTerms','gender','socBefore','outcastBefore','exitBefore','stayBefore','status','decision','socRoll','socAfter','outcastAfter','clanShares','shareAwardIds','married','departure'],
+  aslanHistoricalEntries:['id','source','restorationId','originCareerIndex','generationTerms','age','educationCount','careerId','assignment','priorCareerIndices','status','decision','attempt','expiry','supersededBy'],
   aslanRestorations:['id','source','eventResult','originCareerId','originCareerIndex','originAssignment','grantedAtCompletedTerms','availableAtCompletedTerms','socBefore','outcastBefore','status','decision','socAfter','outcastAfter','attempt','expiry'],
   aslanOfficerOffers:['id','source','eventResult','originCareerId','originCareerIndex','originAssignment','grantedAtCompletedTerms','availableAtCompletedTerms','targetCareerId','status','selectedAssignment','qualificationDM','commitment','check','transitionId','newCareerIndex','expired','rankMapping','statusVerification','cancellation'],
   aslanStatusChanges:['id','cause','source','careerIndex','generationTerms','age','socBefore','socAfter','outcastBefore','outcastAfter','removed','awardIds'],
@@ -30,7 +32,7 @@ export function characterChanges(before,after){
  for(const field of ['historyKnown','checksAttempted','firstTalentChosen'])add('psionics.'+field,before.psionics?.[field],after.psionics?.[field]);
  for(const field of ['attempts','tests','training','rulings','importedAttempted']){const a=before.psionics?.[field]??[],b=after.psionics?.[field]??[];for(let i=0;i<Math.max(a.length,b.length);i++)add('psionics.'+field+'.'+i,a[i],b[i]);}
  const old=before.careers??[],next=after.careers??[];
- for(let i=0;i<Math.max(old.length,next.length);i++)for(const field of ['id','assignment','terms','rank','officer','benefitRolls','forcedExit','forcedStay','parole','released','pension','pensionCondition','pensionEntitlement','pensionExitStatusBasis','pensionStatusReviewRequired','termHistory','exitGenerationTerms','exitAge','exitAssignment','aslanOfficerOfferId','aslanRankMapping'])add('careers.'+i+'.'+field,old[i]?.[field],next[i]?.[field]);
+ for(let i=0;i<Math.max(old.length,next.length);i++)for(const field of ['id','assignment','terms','rank','officer','benefitRolls','forcedExit','forcedStay','parole','released','pension','pensionCondition','pensionEntitlement','pensionExitStatusBasis','pensionStatusReviewRequired','termHistory','exitGenerationTerms','exitAge','exitAssignment','aslanOfficerOfferId','aslanRankMapping','aslanRestorationExit'])add('careers.'+i+'.'+field,old[i]?.[field],next[i]?.[field]);
  const oldEducation=before.educations??[],newEducation=after.educations??[];
  for(let i=0;i<Math.max(oldEducation.length,newEducation.length);i++){
   const a=oldEducation[i]??{},b=newEducation[i]??{};

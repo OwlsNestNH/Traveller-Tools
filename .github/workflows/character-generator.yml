@@ -45,6 +45,7 @@ jobs:
           node tools/character-generator/verification/assignment-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/aslan-officer-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/aslan-restoration-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+          node tools/character-generator/verification/aslan-outlaw-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
       - name: Upload review screenshots and results
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

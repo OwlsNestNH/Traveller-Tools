@@ -101,6 +101,6 @@ test('offer rechecks forced next career and current outcast restrictions without
   const s=structuredClone(buildAslanOfficerFixture().state);if(patch.forcedCareer)s.forcedCareer=patch.forcedCareer;else Object.assign(s.character,patch);assert.equal(a.aslanOfficerOptions(s)[0].available,false);const before=structuredClone(s),rolls=[];assert.throws(()=>a.apply(s,{type:'begin-aslan-officer',payload:{offerId:'aslan-officer-1',assignment:'leader'}},rolls));assert.deepEqual(s,before);assert.equal(rolls.length,0);
  }
 });
-test('revision .8 rejects old .7 before replay without modifying the save',()=>{
- assert.equal(RULES_REVISION,'character-preview-2026-11-08.8');const old=structuredClone(buildAslanOfficerFixture().session);old.rulesRevision='character-preview-2026-11-08.7';const bytes=JSON.stringify(old);const result=api({operation:'project',session:old});assert.equal(result.ok,false);assert.match(result.error.message,/Legacy or different rules revision/);assert.equal(JSON.stringify(old),bytes);
+test('revision .9 rejects old .8 before replay without modifying the save',()=>{
+ assert.equal(RULES_REVISION,'character-preview-2026-11-08.9');const old=structuredClone(buildAslanOfficerFixture().session);old.rulesRevision='character-preview-2026-11-08.8';const bytes=JSON.stringify(old);const result=api({operation:'project',session:old});assert.equal(result.ok,false);assert.match(result.error.message,/Legacy or different rules revision/);assert.equal(JSON.stringify(old),bytes);
 });

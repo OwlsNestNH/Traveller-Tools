@@ -6,8 +6,8 @@ import {run,force,rejected} from './zhodani-reeducation-fixtures.mjs';
 import {settleAssignment as settle} from './assignment-fixtures.mjs';
 export {run,force,rejected,settle};
 const cache=new Map();
-export function aslanSetup(seed='aslan-officer',gender='male',riteShares=false){
- let r=api({operation:'create',seed});r=run(r,'setup',{species:'aslan',gender});r=run(r,'gm-mode',{enabled:true});r=run(r,'roll-statistics');
+export function aslanSetup(seed='aslan-officer',gender='male',riteShares=false,config={}){
+ let r=api({operation:'create',seed});r=run(r,'setup',{species:'aslan',gender});if(Object.keys(config).length)r=run(r,'configure',config);r=run(r,'gm-mode',{enabled:true});r=run(r,'roll-statistics');
  for(let i=0;i<6;i++)r=run(r,'gm-override',{field:'pool',index:i,value:8,reason:'Officer opportunity source fixture'});
  r=run(r,'accept-statistics');r=force(r,'resolve-book',{confirmed:true,note:'Referee verified family birth order; the engine rolls the native rite.',birthOrder:gender==='male'?'second-son':'daughter',effects:[]},riteShares?[1,1]:[2,3]);r=settle(r);
  assert.equal(r.state.stage,'background');r=run(r,'background',{skills:r.state.backgroundOptions.slice(0,r.state.backgroundRemaining)});return run(r,'skip-precareer');
@@ -41,10 +41,11 @@ export function buildAslanRestorationFixture({gender='male',voluntary=false,seed
  assert.equal(r.state.character.outcast,true);r=settle(aslanEvent(r,11));assert.equal(r.state.pending.kind,'aslan-restoration');return r;
 }
 
-export function buildAslanOutlawRestorationFixture({gender='male'}={}){
- let r=aslanSetup('aslan-outlaw-restoration-'+gender,gender,true);
+export function buildAslanOutlawRestorationFixture({gender='male',boons=0,age=null}={}){
+ let r=aslanSetup('aslan-outlaw-restoration-'+gender,gender,true,boons?{boons}:{});
  r=force(r,'career',{id:'aslan.military-officer',assignment:gender==='male'?'leader':'executive'},[1,1]);r=settle(run(r,'fallback',{draft:false}));
  r=aslanBenefits(run(aslanEndTerm(settle(aslanEvent(r,6))),'leave-career'));
  r=settle(force(r,'career',{id:'aslan.outlaw',assignment:'raider'},[6,6]));if(r.state.stage==='training')r=settle(force(r,'training',{table:'personal'},[1]));
+ if(age!==null)r=run(r,'gm-override',{field:'age',value:age,reason:'Source restoration ageing boundary fixture'});
  r=settle(aslanEvent(r,11));assert.equal(r.state.pending.kind,'aslan-outlaw-restoration');return r;
 }
