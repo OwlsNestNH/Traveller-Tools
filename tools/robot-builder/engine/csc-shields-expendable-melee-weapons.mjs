@@ -18,7 +18,7 @@ function effects(id,hands,handPages){
  }
  if(id==='boarding-shield'){
   result.parry={permitted:false,effectiveMeleeBonus:0,unskilledEffectiveMelee:null,automaticBonusApplied:false,source:csc('140')};
-  result.cover={protection:8,maximumPeople:2,movementWhileCoveredPermitted:true,requiresPositionBehindShield:true,geometryResolved:false,robotSizeFitResolved:false,universalArmour:false,automaticProtectionApplied:false,condition:'Cover behind shield; positioning and robot-size fit unresolved',source:csc('140')};
+  result.cover={protection:8,sourceSupportedPeople:2,movementWhileCoveredPermitted:true,requiresPositionBehindShield:true,geometryResolved:false,robotSizeFitResolved:false,universalArmour:false,automaticProtectionApplied:false,condition:'Cover behind shield; positioning and robot-size fit unresolved',source:csc('140')};
  }
  if(['shield','garrotte'].includes(id))result.tl0Breakage={maximumAttackEffect:-3,requiredManufacturingTechLevel:0,manufacturingTechLevel:null,inferFromRobotTechLevel:false,inferFromCatalogueTechLevel:false,noDefectAtManufacturingTechLevelAtLeast:1,breaks:'weapon',appliesTo:'source-attack-roll',appliesAutomaticallyToParry:false,automaticBreakageApplied:false,condition:'Weapon crafted at TL0 and attack Effect is -3 or worse; manufacturing TL is not recorded by this construction.',source:csc('131')};
  if(id==='anti-armour-flail')result.oneUse={weaponUselessAfterUse:true,reusableShaft:false,reloadSupported:false,restoredWeapon:false,resolved:false,presetDelay:{minimumRounds:1,maximumRounds:12,resolved:false,simulated:false,detonationResolved:false},condition:'Single use; preset delay 1-12 rounds unresolved',source:csc('131-132')};
