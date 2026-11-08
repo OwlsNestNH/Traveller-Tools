@@ -83,3 +83,7 @@ Combat resolution, surgery success, treatment outcomes, factory activity, fleet 
 Independent checks cover all four printed prices at introduction; each implant's TL+2 memory gate; hardening, memory and INT costs; inherent versus expanded Bandwidth; zero-Bandwidth allowance; standard/custom software per implant; recipient-skill isolation; and the two explicit software-surcharge interpretations. The p 67 arithmetic example totals Cr 197,500 including its separate Cr 30,000 neural link.
 
 No remaining arithmetic failure was found in these focused cases. The source interpretations and concrete construction gaps above still prevent an unqualified claim of “any legal robot.”
+
+## Specialised ammunition follow-on boundaries
+
+Five single CSC modifications now cover the explicit fifteen-slug/two-launcher registry with shared catalogue-tier manufacture declarations and preserved per-copy inventory identity. Fourteen further heavy profiles have positive source exceptions and remain deferred implementation scope. Other modifications/combinations, higher/lower manufacture hardware pricing, loose-round economies and unverified high-capacity compatibility remain separate work. Modified-load mass is a labelled standard-load estimate; mixed linked attack semantics and Baton armour-processing order are not guessed. These limitations are not categorical bans on legal constructions.

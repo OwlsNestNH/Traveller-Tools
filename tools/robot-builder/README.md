@@ -101,8 +101,10 @@ node tools/robot-builder/verification/construction-browser.mjs /path/to/playwrig
 node tools/robot-builder/verification/vehicle-options-browser.mjs /path/to/playwright
 node tools/robot-builder/verification/conditional-melee-browser.mjs /path/to/playwright
 node tools/robot-builder/verification/external-wear-browser.mjs /path/to/playwright
+node tools/robot-builder/verification/shields-expendable-melee-browser.mjs /path/to/playwright
 node tools/robot-builder/verification/metamorphic-browser.mjs /path/to/playwright
 node tools/robot-builder/verification/vehicle-utilities-browser.mjs /path/to/playwright
+node tools/robot-builder/verification/specialised-ammunition-browser.mjs /path/to/playwright
 ```
 
 `ROBOT_TEST_URL` overrides the local preview URL. `ROBOT_BROWSER_CHANNEL=msedge` selects Edge for local Windows verification; CI uses pinned Chromium. All browser tests use a fresh isolated context with synthetic fixtures, not a user's campaign data.
@@ -112,3 +114,15 @@ Native checks independently exercise construction arithmetic, all 224 source equ
 No standalone linter/typechecker is configured in this plain ECMAScript-module tool. Syntax checks, schema validation, deterministic tests and independent rules/UI reviews are required before a release.
 
 Five further CSC melee profiles preserve three distinct shield roles, one complete expendable Anti-Armour Flail and the ordinary Garrotte. Standard parry, directional ranged/Fire protection and boarding cover remain conditional, never robot armour or software. The single-use flail has no reusable shaft, reload economy or resolved linked effect. Garrotte mass is unspecified, with an unresolved grapple formula and qualified paired grips. Mounts use RH p61 categories, not the separate mass-only implant route. Manufacturing-TL breakage is attack-triggered and does not infer manufacture from robot or catalogue TL. No timer, combat-state simulator, worn gauntlets, Large Shield, expandable/gravitic shield or monofilament Garrotte is added.
+
+## Bounded CSC specialised ammunition
+
+Five single modifications (Armour Piercing, Solid Shot, APDS, Baton and Extended Range) are supported for fifteen explicitly classified CSC slug profiles and the two CSC standard-ammunition launchers. The current capability registry is returned by the API. Core identities, other CSC profiles and ordinary inventory paths remain separate. Fourteen further verified heavy exceptions are deferred implementation scope, not a prohibition. Other round modifications, combinations, loose-round economy, higher/lower manufacture products and extra high-capacity eligibility are not inferred.
+
+A selected manufacture TL is a user design declaration covering all linked copies. Legacy records leave actual manufacture unknown. Certification requires that declaration to equal the selected catalogue profile TL and meet the ammunition threshold, independently of robot TL. Higher/lower declarations remain visible and unresolved, without clamping or repricing hardware. This is an application support boundary, not a source ban on later manufacture or a referee approval requirement for an ordinary catalogue-tier declaration.
+
+Modification identity is independent of magazine source and capacity variant. Initial loads, spare fields and additional product rows may hold different single modifications. Complete per-copy settings preserve shared/custom isolation. Source magazine price is multiplied once by the capacity-price factor and ammunition multiplier; allocated loader supplies alone enter the doubled RH p61 loader package. One shared ten-physical-magazine loader limit and the existing application reserve bound apply. Estimates retain the standard-load CSC p142 basis and p175 high-capacity multiplier; actual modified-load mass is unresolved. Cost multipliers never multiply mass.
+
+Source hardware, configured per-copy ammunition and loaded attack facts are separate. Reserves do not change active attacks. Zero initial loads do not create loaded attacks. Mixed or partially loaded links retain purchasable inventory without a common damage/AP profile or linked bonus. Homogeneous Extended Range uses the reduced dice count for the linked flat bonus; APDS subtracts points per die. Baton retains its damage expression, removes AP/Blast and shows conditional half-Stun rounded up with an ordinary remainder, leaving armour-processing order unresolved. Modified shotgun loads do not inherit pellet/spread benefits. Fractional ranges remain exact; sight thresholds and stock range bands remain independent. These facts do not simulate combat.
+
+The editor, review, component/limb projections and actual Print statblock use selected labels and figures, source references and unresolved-state labels. JSON/import/save preserve optional fields and retained unavailable identities. The source text and private audit remain outside Git.

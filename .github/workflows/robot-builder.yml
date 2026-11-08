@@ -52,6 +52,7 @@ jobs:
           node tools/robot-builder/verification/external-wear-browser.mjs "$RUNNER_TEMP/robot-playwright/node_modules/playwright"
           node tools/robot-builder/verification/metamorphic-browser.mjs "$RUNNER_TEMP/robot-playwright/node_modules/playwright"
           node tools/robot-builder/verification/vehicle-utilities-browser.mjs "$RUNNER_TEMP/robot-playwright/node_modules/playwright"
+          node tools/robot-builder/verification/specialised-ammunition-browser.mjs "$RUNNER_TEMP/robot-playwright/node_modules/playwright"
       - name: Upload bounded verification evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
