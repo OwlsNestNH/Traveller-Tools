@@ -51,6 +51,8 @@ jobs:
           curl --fail --silent "$ROBOT_TEST_URL" > /dev/null
           node tools/robot-builder/verification/release-browser.mjs "$RUNNER_TEMP/robot-playwright/node_modules/playwright"
           node tools/robot-builder/verification/browser.mjs "$RUNNER_TEMP/robot-playwright/node_modules/playwright"
+          node tools/robot-builder/verification/handbook-skill-coverage-browser.mjs "$RUNNER_TEMP/robot-playwright/node_modules/playwright"
+          node tools/robot-builder/verification/handbook-special-software-browser.mjs "$RUNNER_TEMP/robot-playwright/node_modules/playwright"
           node tools/robot-builder/verification/construction-browser.mjs "$RUNNER_TEMP/robot-playwright/node_modules/playwright"
           node tools/robot-builder/verification/vehicle-options-browser.mjs "$RUNNER_TEMP/robot-playwright/node_modules/playwright"
           node tools/robot-builder/verification/conditional-melee-browser.mjs "$RUNNER_TEMP/robot-playwright/node_modules/playwright"

@@ -127,7 +127,6 @@ node tools/robot-builder/verification/vehicle-options-browser.mjs /path/to/playw
 node tools/robot-builder/verification/conditional-melee-browser.mjs /path/to/playwright
 node tools/robot-builder/verification/shields-expendable-melee-browser.mjs /path/to/playwright
 node tools/robot-builder/verification/external-wear-browser.mjs /path/to/playwright
-node tools/robot-builder/verification/shields-expendable-melee-browser.mjs /path/to/playwright
 node tools/robot-builder/verification/metamorphic-browser.mjs /path/to/playwright
 node tools/robot-builder/verification/vehicle-utilities-browser.mjs /path/to/playwright
 node tools/robot-builder/verification/specialised-ammunition-browser.mjs /path/to/playwright
@@ -141,7 +140,7 @@ Native checks independently exercise construction arithmetic, all 224 source equ
 
 No standalone linter/typechecker is configured in this plain ECMAScript-module tool. Syntax checks, schema validation, deterministic tests and independent rules/UI reviews are required before a release.
 
-Five further CSC melee profiles preserve three distinct shield roles, one complete expendable Anti-Armour Flail and the ordinary Garrotte. Standard parry, directional ranged/Fire protection and boarding cover remain conditional, never robot armour or software. The single-use flail has no reusable shaft, reload economy or resolved linked effect. Garrotte mass is unspecified, with an unresolved grapple formula and qualified paired grips. Mounts use RH p61 categories, not the separate mass-only implant route. Manufacturing-TL breakage is attack-triggered and does not infer manufacture from robot or catalogue TL. No timer, combat-state simulator, worn gauntlets, Large Shield, expandable/gravitic shield or monofilament Garrotte is added.
+Five further CSC melee profiles preserve three distinct shield roles, one complete expendable Anti-Armour Flail and the ordinary Garrotte. Standard parry, directional ranged/Fire protection and boarding cover remain conditional, never robot armour or software. The single-use flail has no reusable shaft, reload economy or resolved linked effect. Garrotte mass is unspecified, with an unresolved grapple formula and qualified paired grips. Mounts use RH p61 categories, not the separate mass-only implant route. Manufacturing-TL breakage is attack-triggered and does not infer manufacture from robot or catalogue TL. This five-profile shield/grapple increment adds no timer, combat-state simulator, Large Shield, expandable/gravitic shield or monofilament Garrotte. The six non-powered wearable acquisitions are supported separately under the explicit external-wear convention above; this increment does not widen that route.
 
 ## Bounded CSC specialised ammunition
 
