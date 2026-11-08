@@ -43,7 +43,9 @@ Sixteen explicitly magazine-fed CSC configurations support separately selected s
 
 An optional explicit allocation can divide additional supplies between the autoloader and separately stored reserves. Existing quantities remain total extras; only the allocated subset attracts the doubled loader package price, and only the remainder reserves cargo space. The source limit is ten supplies per loader. The separate application bound is one hundred stored reserves per linked copy, allowing at most 110 total extras in explicit mode. Old designs omit the allocation object and retain their previous meaning and limits. Opening the allocation disclosure does not change a draft; selecting split mode preserves the existing effective allocation before editing.
 
-Remaining ammunition cases include asymmetric loadouts across linked copies, ARL standard/support magazine interchange, included-pack replacement disposition and unverified high-capacity feed compatibility. Empty fitted-loader pricing and fitting already-owned supplies remain unmodelled. These are application or source boundaries, not claims that such constructions are prohibited.
+Linked weapons can retain different initial loads, spare variants, loader allocations and storage assignments through optional complete per-copy specifications. Unlisted copies inherit the shared settings; customised copies do not change when shared quantities change. Hardware and fire control remain linked, with ammunition and capacity summed once per installed copy. Reducing the linked count retains out-of-range specifications for correction without counting removed copies. No averaged magazine capacity or per-weapon supply count is invented. Legacy designs omit the optional list and retain their previous meaning.
+
+Remaining ammunition cases include ARL standard/support magazine interchange, included-pack replacement disposition and unverified high-capacity feed compatibility. Empty fitted-loader pricing and fitting already-owned supplies remain unmodelled. These are application or source boundaries, not claims that such constructions are prohibited.
 
 ## Held weapon grips
 

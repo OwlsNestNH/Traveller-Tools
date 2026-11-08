@@ -23,6 +23,7 @@ let physicalCategory = 'chassis-modifications';
 const searches = new Map();
 const customDrafts = new Map();
 const recordGroups = new Map();
+const ammunitionCopies = new Map();
 const number = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 });
 const el = (tag, text, className) => {
   const node = document.createElement(tag);
@@ -289,7 +290,7 @@ function renderControl(control, choicesOverride) {
       if(control.recordNameField){const field=control.itemFields?.find(item=>item.field===control.recordNameField),name=recordChoices(field||{},record).find(choice=>choice.id===record[control.recordNameField])?.label||record[control.recordNameField]||'New record';return name+(control.recordDetailField&&record[control.recordDetailField]?' ('+record[control.recordDetailField]+')':'');}
       return isWeapon ? (control.itemFields?.find(item=>item.field==='weaponId')?.choices?.find(choice=>choice.id===record.weaponId)?.label || 'Weapon installation') : record.speciality || 'Custom package';
     };
-    const makeFields=(record,prefix,onChange)=>{
+    const makeFields=(record,prefix,onChange,onlyFields=null)=>{
       const grid=el('div',undefined,'fields-grid'),groups=new Map(),presentation=api.getRecordPresentation(control,record);
       // Optional fields in older backups use control defaults for display only.
       const displayRecord={...Object.fromEntries((control.itemFields||[]).filter(item=>Object.hasOwn(item,'default')).map(item=>[item.field,item.default])),...record};
@@ -306,7 +307,43 @@ function renderControl(control, choicesOverride) {
         return groups.get(item.group);
       };
       for(const item of control.itemFields || []) {
+        if(onlyFields&&!onlyFields.includes(item.field))continue;
         const fieldView=presentation.fields?.[item.field]||{};
+        if(item.type==='ammunition-overrides'){
+          const customization=presentation.ammunitionCustomization;
+          if(!customization)continue;
+          const panel=el('details',undefined,'wide parameter-group'),key=view.design.kind+':'+prefix+':linked-ammunition';
+          panel.open=customization.forceGroupOpen||recordGroups.get(key)||customization.mode==='custom';
+          panel.addEventListener('toggle',()=>recordGroups.set(key,panel.open));
+          panel.append(el('summary','Linked ammunition'));
+          const modeRow=el('label','Ammunition settings'),mode=el('select');mode.id=prefix+'-ammunitionOverrides-mode';modeRow.htmlFor=mode.id;
+          selectChoices(mode,[{id:'shared',label:'Same ammunition for all'},{id:'custom',label:'Customize linked copy'}],customization.mode);
+          const chosen=customization.choices.find(choice=>choice.id===ammunitionCopies.get(key))||customization.choices.find(choice=>choice.customized)||customization.choices[0];
+          const copyIndex=chosen?.id;
+          const copyView=api.getRecordPresentation(control,record,copyIndex).ammunitionCustomization;
+          const replaceCopy=value=>onChange(item.field,[...(record[item.field]||[]).filter(copy=>copy.copyIndex!==copyIndex),{copyIndex,...value}].sort((a,b)=>a.copyIndex-b.copyIndex));
+          mode.addEventListener('change',()=>{
+            if(mode.value==='shared')onChange(item.field,undefined);
+            else if(copyView)replaceCopy(structuredClone(copyView.materializedValue));
+          });
+          modeRow.append(mode);panel.append(modeRow);
+          if(customization.mode==='custom'&&copyView){
+            const pickerRow=el('label','Linked copy'),picker=el('select');picker.id=prefix+'-ammunitionOverrides-copy';pickerRow.htmlFor=picker.id;
+            selectChoices(picker,customization.choices,copyIndex);
+            picker.addEventListener('change',()=>{ammunitionCopies.set(key,Number(picker.value));const replacement=makeFields(record,prefix,onChange);grid.replaceWith(replacement);});
+            pickerRow.append(picker);panel.append(pickerRow);
+            if(!chosen.installed)panel.append(el('p','Retained copy · Not installed','help'));
+            const revert=el('button',copyView.overridden?'Revert copy to shared ammunition':'Customize this copy');revert.type='button';
+            revert.addEventListener('click',()=>{
+              if(copyView.overridden){const remaining=(record[item.field]||[]).filter(copy=>copy.copyIndex!==copyIndex);onChange(item.field,remaining.length?remaining:undefined);}
+              else replaceCopy(structuredClone(copyView.materializedValue));
+            });panel.append(revert);
+            if(copyView.overridden)panel.append(makeFields(copyView.effectiveRecord,prefix+'-copy-'+copyIndex,(field,value)=>{
+              const next=structuredClone(copyView.materializedValue);if(value===undefined)delete next[field];else next[field]=value;replaceCopy(next);
+            },customization.fields));
+          }
+          grid.append(panel);continue;
+        }
         if (!(typeof fieldView.visible==='boolean'?fieldView.visible:matchesVisibility(item, displayRecord))) continue;
         if(item.type==='optional-object'){
           const fieldId=prefix+'-'+item.field,wrapper=el('div',undefined,'wide fields-grid'),label=el('label',item.label),mode=el('select');
@@ -320,7 +357,8 @@ function renderControl(control, choicesOverride) {
           const summary=el('output',fieldView.summary,'wide derived-value');summary.id=fieldId+'-summary';wrapper.append(summary);
           targetFor(item).append(wrapper);continue;
         }
-        const row=el('label',item.labelBy?.values?.[record[item.labelBy.field]] || item.label || item.field);
+        const sharedLabel=!onlyFields&&presentation.ammunitionCustomization?.mode==='custom'&&presentation.ammunitionCustomization.fields.includes(item.field)?'Shared · ':'';
+        const row=el('label',sharedLabel+(item.labelBy?.values?.[record[item.labelBy.field]] || item.label || item.field));
         const fieldId=prefix+'-'+item.field;row.htmlFor=fieldId;
         let input;
 if(item.type==='multiselect'){
