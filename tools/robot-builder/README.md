@@ -1,6 +1,16 @@
-# Robot Builder (construction preview)
+# Robot Builder (Beta 0.1)
 
-This tool is in active development. It does **not** yet cover every legal Robot Handbook design and must not be presented as complete.
+Release label: `0.1.0-beta.1`. This is an application release identifier, independent of the unchanged design JSON schema. See the [Robot Builder changelog](../../changes/robot.html).
+
+The beta supports broad ordinary and special new-build construction, with source references and explicit coverage boundaries. A checked result applies to the selected implemented rules; it does **not** certify every legal Robot Handbook design.
+
+## Release scope
+
+Ordinary chassis, movement, manipulators, equipment, weapons, brains and software sit alongside scoped special construction and acquisition paths. Saved designs, separate installations, component snapshots, JSON backups and printable statblocks retain selected facts and qualifications. Metamorphic construction and external wear keep their explicit versioned referee conventions.
+
+Source omissions, referee choices, external host legality and recipient or biological records remain visible boundaries. Acquisition prices do not establish missing operating ratings, implant fit or production limits. Combat, treatment, maintenance, retrofit histories, manufacturing, fleets and full character careers remain separate workflows. Selected CSC, Vehicle Handbook and High Guard integrations are bounded additions, not complete external catalogues.
+
+The coverage matrix and remaining construction inventory track concrete construction gaps separately from those boundaries. Representative examples and passing tests are evidence for their stated scope, not whole-book certification. Release integration still requires review and the full configured checks on the final candidate.
 
 ## Architecture
 
@@ -105,9 +115,11 @@ The fixed-zero reservation and all formula choices are provisional assumptions, 
 From the repository root:
 
 ```sh
+node tests/tool-visits.test.cjs
 node --test tools/robot-builder/verification/*.test.mjs
 python3 -m http.server 8778 --bind 127.0.0.1
 # In another terminal:
+node tools/robot-builder/verification/release-browser.mjs /path/to/playwright
 node tools/robot-builder/verification/browser.mjs /path/to/playwright
 node tools/robot-builder/verification/handbook-skill-coverage-browser.mjs /path/to/playwright
 node tools/robot-builder/verification/construction-browser.mjs /path/to/playwright

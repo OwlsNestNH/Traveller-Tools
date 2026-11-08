@@ -4,9 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Traveller robot construction workbench with independent Handbook stages and explicit rules coverage.">
-  <title>Robot Builder | Traveller Tools</title><link rel="icon" href="data:,">
+  <meta name="application-version" content="0.1.0-beta.1">
+  <title>Robot Builder - Beta | Traveller Tools</title><link rel="icon" href="data:,">
   <link rel="stylesheet" href="styles.css">
   <script type="module" src="js/app.mjs"></script>
+  <script src="../../assets/js/tool-visits.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#stage-panel">Skip to robot design</a>
@@ -15,7 +17,7 @@
     <a href="../../index.html">All tools</a>
   </header>
   <main class="shell">
-    <div class="title-row"><div><p class="eyebrow">ROBOT HANDBOOK WORKBENCH</p><h1>Robot Builder</h1><p class="intro">One design. Six independent stages.</p></div><div class="title-actions"><span class="tag">Construction preview</span><button id="new-design" type="button">New blank design</button><button id="save-design" type="button" class="primary">Save design</button></div></div>
+    <div class="title-row"><div><p class="eyebrow">ROBOT HANDBOOK WORKBENCH</p><h1>Robot Builder</h1><p class="intro"><span id="release-version">Beta 0.1</span> &middot; Six independent stages. <a href="../../changes/robot.html" target="_blank" rel="noopener" aria-label="Robot Builder changelog (opens in a new tab)">Changelog</a></p></div><div class="title-actions"><button id="new-design" type="button">New blank design</button><button id="save-design" type="button" class="primary">Save design</button></div></div>
     <section class="panel identity" aria-label="Robot identity">
       <div class="identity-fields">
         <label for="robot-kind">Robot type<select id="robot-kind"></select></label>
@@ -41,7 +43,7 @@
       <div class="load-row"><label for="example-design">Examples<select id="example-design"><option value="">Choose an example</option></select></label><button id="load-example" type="button" disabled>Load example</button></div><p id="example-note" class="help"></p><p id="storage-note" class="help"></p>
     </section>
     <p id="notice" role="status" aria-live="polite" aria-atomic="true"></p>
-    <footer>Traveller fan tool. Unimplemented rules are flagged for review, never treated as a verified design. <a href="../../index.html#copyright-notice">Copyright and usage notice</a>.</footer>
+    <footer>Traveller fan tool. Construction checks cover implemented rules; source exceptions and referee choices remain labelled. <a href="../../index.html#copyright-notice">Copyright and usage notice</a>.</footer>
   </main>
   <input id="import-file" type="file" accept=".json,application/json" hidden>
   <section id="print-output" aria-label="Printable robot statblock"></section>
