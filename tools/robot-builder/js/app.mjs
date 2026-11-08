@@ -121,7 +121,7 @@ function renderControl(control, choicesOverride) {
   const id = ['field',currentStage,control.field,control.category && String(control.category).toLowerCase().replace(/[^a-z0-9_-]+/g,'-')].filter(Boolean).join('-');
   const label = el('label', control.label); label.htmlFor = id; field.append(label);
   const choices = choicesOverride || control.choices || [];
-  const selected = control.readOnly && Object.hasOwn(control,'derivedValue') ? control.derivedValue : selectedValue(control);
+  const selected = control.readOnly && Object.hasOwn(control,'derivedValue') ? control.derivedValue : selectedValue(control) ?? control.default;
   if(control.readOnly){
     const output=el('output',choices.find(choice=>choice.id===selected)?.label ?? (selected===undefined||selected===null?'Not calculated':String(selected)),'derived-value');output.id=id;
     field.append(output,el('p','Derived from component designs','help'));
@@ -387,6 +387,7 @@ if(item.type==='multiselect'){
         else {input=el('input');input.type='text';input.value=record[item.field]??'';input.maxLength=item.maxLength||120;input.addEventListener('input',()=>onChange(item.field,input.value));}
         input.id=fieldId;row.append(input);targetFor(item).append(row);
       }
+      for(const field of presentation.wearMetadataRemovals||[]){const remove=el('button','Clear retained '+({ammunitionOverrides:'linked ammunition',initialMagazineSourceId:'initial magazine source',alternateMagazineSupplies:'alternate supplies'}[field]));remove.type='button';remove.addEventListener('click',()=>onChange(field,undefined));grid.append(remove);}
       if(presentation.vehicleOption){
         const facts=presentation.vehicleOption;
         grid.append(el('p','Cr '+facts.unitCost.toLocaleString()+' / '+facts.slotsPerInstallation+' Slots'+(facts.family==='discharger'?' / Capacity '+facts.capacityPerInstallation:'')+' per installation','wide help'));
@@ -563,6 +564,7 @@ if(item.type==='multiselect'){
 }
 function resetHiddenFields(control, record) {
   const next={...record};
+  if(control.type==='weapons'&&(record.placement==='worn'||record.wearSite!==undefined||control.itemFields.find(f=>f.field==='weaponId')?.choices?.find(w=>w.id===record.weaponId)?.wearable))return next;
   for(const item of control.itemFields||[]){
     if(item.resetWhenHidden&&!matchesVisibility(item,next))next[item.field]=item.default;
     if(item.resetWhenUnavailable){const choices=recordChoices(item,next);if(!choices.some(choice=>choice.id===next[item.field]))next[item.field]=choices.some(choice=>choice.id===item.default)?item.default:choices[0]?.id;}

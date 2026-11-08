@@ -85,6 +85,6 @@ test('CSC melee integration: Core second-grip requirement and no-magazine guard 
   const r=direct('mace',{weaponId:'broadsword',placement:'held',manipulatorId:'arm',fireControl},16,7,[{id:'melee:blade',level:4}]);assert.ok(has(r,'HELD_SUPPORT_REQUIRED'));assert.equal(r.weapons[0].baseAttackModifier,null);assert.equal(r.weapons[0].attackModifier,null);
  }
  const mounted=direct('mace',{weaponId:'broadsword'});assert.equal(has(mounted,'HELD_SUPPORT_REQUIRED'),false);assert.equal(mounted.weapons[0].cost,1500);assert.equal(mounted.weapons[0].slots,2);
- for(const w of WEAPONS.filter(w=>w.magazine===null)){const r=direct('mace',{weaponId:w.id,autoload:true,extraMagazines:1});assert.ok(has(r,'AUTOLOADER_AMMUNITION'),w.id);}
+ for(const w of WEAPONS.filter(w=>w.magazine===null)){const r=direct('mace',{weaponId:w.id,autoload:true,extraMagazines:1});assert.ok(has(r,w.wearable?'EXTERNAL_WEAR_RETAINED':'AUTOLOADER_AMMUNITION'),w.id);}
  for(const w of WEAPONS.filter(w=>Number.isFinite(w.magazine)&&w.magazine>0)){const r=direct('mace',{weaponId:w.id,autoload:true,extraMagazines:1});assert.equal(has(r,'AUTOLOADER_AMMUNITION'),false,w.id);}
 });

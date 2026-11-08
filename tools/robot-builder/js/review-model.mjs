@@ -66,6 +66,17 @@ function profileRow(label, summary, record, omitted = [], detail = '') {
   if(record.attackProfiles)details.push(...conditionalAttackRows(record));
   return {...row(label,summary,record.source,detail),details};
 }
+function externalWearRows(wear){return [row('Accounting status',wear.convention?'Referee accounting assumption':'Unselected / unresolved'),row('Convention',wear.selectedConvention||'Unselected / unresolved'),row('Convention basis',wear.convention?'Normal item price; no integral mount; no internal Slots':'Unresolved'),row('Rule status','Not a published construction rule'),row('Fit / stacking','Referee review'),row('Zero-Slot implant','No'),row('Mass / volume','Not zero by convention'),row('Coverage','Six non-powered hand/forearm profiles; base/additional arms only'),row('Excluded routes','Recipient implants; feet; shoulders; powered wear')];}
+function wornWeaponRow(weapon,armName,label=weapon.label){
+ const wear=weapon.externalWear;
+ return {...row(label,[weaponDamage(weapon),weaponRange(weapon.range),...(weapon.traits||[])].join(' · '),weapon.source,'External wear · Fit unverified · Compatibility unresolved'),details:[
+ row('Acquisition',`1 item · ${money(weapon.acquisition.cost)}`,weapon.acquisition.source),row('Placement',humanLabel(weapon.placement)),row('Wear association',`${armName(weapon.manipulatorId)} / ${wear.wearSite||'Unselected'}`),row('Skill',humanLabel(weapon.skill)+(weapon.speciality?' ('+weapon.speciality+')':''),weapon.source),row('Source mass',weapon.massKg===null?'Mass unspecified':valueText(weapon.massKg)+' kg',weapon.source),
+ ...externalWearRows({selectedConvention:wear.selectedConvention,convention:wear.convention}),row('Installed-wear accounting',wear.accountingResolved?'Assumption applied':'Unresolved'),row('Internal reservation',wear.internalSlotsReserved===null?'Unresolved':'No internal Slots'),row('Fit','Fit unverified'),row('Compatibility','Compatibility unresolved'),row('Overlap count',wear.overlaps.length),
+ ...(wear.limb?[row('Source limb context',`Size ${wear.limb.size} · STR ${wear.limb.strength} · DEX ${wear.limb.dexterity}`)]:[]),
+ row('Attack resolution','Unresolved; no skill or extra attacks granted'),row('STR damage DM',weapon.conditionalEffects?.strengthDamage?.applies===false?'Never added (positive or negative)':'Unresolved'),row('Ammunition',weapon.wearable?'Not applicable':'Unsupported wear route'),
+ ...(weapon.conditionalEffects?.retractableClaws?[row('Claw readiness','Unresolved')]:[]),...(weapon.conditionalEffects?.pneumatic?[row('Pneumatic supplies / reset','Unspecified')]:[]),
+ ...Object.entries(wear.retainedSelections).map(([key,value])=>row('Retained '+humanLabel(key).toLowerCase()+' (unsupported)',value))]};
+}
 function conditionalAttackRows(weapon){
  const attack=weapon.attackProfiles;
  if(attack.kind==='grapple-condition')return [row('Current attack mode','Unresolved',attack.source),row('Grapple damage','2D + opposed Melee Effect; conditional',attack.source),row('Consecutive successful rounds','+1D each; unresolved',attack.source),row('Grapple requirement','Successful damaging grapple; unresolved',attack.condition.source)];
@@ -176,11 +187,11 @@ function weaponGripDisplay(weapon,armName) {
   if(Object.hasOwn(weapon,'primaryManipulatorDM'))display.primaryManipulatorHardwareDexDM=weapon.primaryManipulatorDM;
   return display;
 }
-function metamorphicRows(body,component=false){return [row('Construction status','Provisional'),row('Selected tier',body.label,body.source),row('Tier rate',money(body.pricePerSlot)+' / Slot',body.source),row('Price basis',body.priceBasisSlots+' Base Slots'),row(component?'Body surcharge per component copy':'Body surcharge',money(body.bodyCost)),row('Morph time',body.morphTime,body.source),row('Appearance',body.appearance,body.source),...body.assumptions.map(a=>row(a.label,a.value,a.source,a.provenance)),row('Fixed Size',body.fixedProperties.size),row('Fixed locomotion',humanLabel(body.fixedProperties.primaryLocomotion)+' / '+humanLabel(body.fixedProperties.secondaryLocomotion)),row('Operating scope',body.operatingScope)];}
+function metamorphicRows(body,component=false){return [row('Construction status','Provisional'),row('Metamorphic convention',body.convention),row('Selected tier',body.label,body.source),row('Tier rate',money(body.pricePerSlot)+' / Slot',body.source),row('Price basis',body.priceBasisSlots+' Base Slots'),row(component?'Body surcharge per component copy':'Body surcharge',money(body.bodyCost)),row('Morph time',body.morphTime,body.source),row('Appearance',body.appearance,body.source),...body.assumptions.map(a=>row(a.label,a.value,a.source,a.provenance)),row('Fixed Size',body.fixedProperties.size),row('Fixed locomotion',humanLabel(body.fixedProperties.primaryLocomotion)+' / '+humanLabel(body.fixedProperties.secondaryLocomotion)),row('Operating scope',body.operatingScope)];}
 export function projectReview(design, catalogue, evaluation) {
   const totals = evaluation.totals || evaluation.previewTotals;
   const provisional = evaluation.provisional === true || !evaluation.totals && !!evaluation.previewTotals;
-  const provisionalLabel=evaluation.provisional===true?(evaluation.composite?'Provisional component source; purchase scope below':'Provisional construction assumptions; current form only'):'Provisional values only; unresolved errors';
+  const provisionalLabel=evaluation.provisional===true?(evaluation.composite?'Provisional component source; purchase scope below':evaluation.metamorphic?'Provisional construction assumptions; current form only':'Provisional external-wear accounting assumption'):'Provisional values only; unresolved errors';
   const coverage = evaluation.coverage || catalogue.coverage || {};
   const status = evaluation.status === 'verified'
     ? evaluation.provisional ? 'Provisional assumptions checked; coverage incomplete' : coverage.complete === true ? 'Checked' : 'Implemented rules checked; coverage incomplete'
@@ -206,6 +217,7 @@ export function projectReview(design, catalogue, evaluation) {
     if (totals.traits?.length) stats.push(row('Traits',totals.traits));
     if (stats.length) sections.push(section('statistics','Robot statistics',stats,{kind:'metrics'}));
   }
+  if(evaluation.externalWear)sections.push(section('external-wear','External wear accounting',externalWearRows(evaluation.externalWear),{note:'Per-design referee assumption'}));
   if(evaluation.metamorphic)sections.push(section('metamorphic','Metamorphic body (provisional)',metamorphicRows(evaluation.metamorphic),{note:'Application assumptions; not full-book certification'}));
   const cloneDetails=totals?.clone;
   const development=cloneDetails||evaluation.development;
@@ -307,6 +319,8 @@ export function projectReview(design, catalogue, evaluation) {
       const details=[row('Quantity',reference.quantity),row('Robot type',catalogue.kinds?.find(kind=>kind.id===reference.design?.kind)?.label||humanLabel(reference.design?.kind)),row('Tech level',reference.design?.techLevel)];
       if(component){
         details.push(row('Construction check',component.status==='verified'?(component.provisional?'Provisional assumptions checked':'Implemented component rules checked'):humanLabel(component.status)),row('Construction per copy',money(component.constructionUnitCost)),row('Listed price per copy',money(component.listedUnitCost)),row('Cost scope',component.costScope));
+        if(component.externalWear)details.push(...externalWearRows(component.externalWear));
+        if(component.sourceExternalWear)details.push(row('Source wear convention',component.sourceExternalWear.selectedConvention||'Unselected / unresolved'),row('External wear purchase','Excluded; brain and software only'));
         if(component.metamorphic&&component.role!=='installed-brain')details.push(...metamorphicRows(component.metamorphic,true));
         if(component.sourceProvenance?.kind==='metamorphic')details.push(row('Source construction','Provisional metamorphic snapshot'),row('Purchase boundary','Brain and software only; source body excluded'),row('Morph capability','Not purchased'));
         if(component.slots)details.push(row(component.role==='installed-brain'?'Source body Slots (not purchased)':'Component Slots',component.slots));
@@ -318,12 +332,14 @@ export function projectReview(design, catalogue, evaluation) {
     sections.push(section('components','Referenced component designs',rows,{note:'Component accounting; external host unverified'}));
     const componentVehicleRows=components.flatMap(component=>(component.verifiedVehicleInstallations||[]).map(item=>vehicleOptionReviewRow(item,component)));
     if(componentVehicleRows.length)sections.push(section('component-vehicle-options','Component vehicle options (2026 source)',componentVehicleRows,{collapsed:true,note:'Per component copy; no host grant'}));
+    const externalRows=components.flatMap(component=>(component.externalWornWeapons||[]).map(weapon=>wornWeaponRow(weapon,id=>{const snapshot=selectedReferences.find(r=>r.id===component.id)?.design;const arms=snapshot?.selections?.physical?.manipulators||[];const arm=arms.find(a=>a.id===id);return arm?`${arm.kind==='base'?'Base arm':'Additional arm'} ${arms.indexOf(arm)+1}`:'Unavailable manipulator';},`${component.name} / ${weapon.label} (${component.quantity} component copies)`)));
+    if(externalRows.length)sections.push(section('component-external-wear','Component external wear',externalRows,{note:'One item per component copy; no host grant'}));
     const profiles=[];
     for(const component of components.filter(component=>component.profile)){
       const profile=component.profile;
       profiles.push(profileRow(component.name,'Referenced robot profile',{...profile,manipulators:(profile.manipulators||[]).map(({id,...arm},index)=>({arm:index+1,...arm}))},['scope','weapons','skills','hardwareSkills'],component.role==='installed-brain'?'Source robot context; only brain/software purchased':'Component-only values; no host grant'));
       for(const skill of profile.skills||[])profiles.push(profileRow(`${component.name} / ${skill.label||titleName(skill.skill||skill.id)}`,`Installed level ${valueText(skill.level)} · Effective ${valueText(skill.effectiveLevel)}`,skill,['level','effectiveLevel'],'Component-only software'));
-      for(const weapon of profile.weapons||[]){
+      for(const weapon of (profile.weapons||[]).filter(w=>!w.externalWear)){
         const snapshot=selectedReferences.find(reference=>reference.id===component.id)?.design;
         const storageName=id=>{
           const instance=(snapshot?.selections?.physical?.optionInstances||[]).find(item=>'instance:'+item.id===id);
@@ -414,6 +430,7 @@ export function projectReview(design, catalogue, evaluation) {
     if(selected?.sourceBaseProfile)weapon={...weapon,...(!Object.hasOwn(weapon,'damage')?{damage:selected.damage,range:selected.range,massKg:selected.massKg,traits:selected.traits}:{}),sourceBaseProfile:selected.sourceBaseProfile,sourceMeasurements:selected.sourceMeasurements,conditionalEffects:weapon.conditionalEffects??selected.conditionalEffects,source:weapon.source??selected.source};
     if(!weapon.expendableMelee&&selected?.expendableMelee)weapon={...weapon,expendableMelee:true,acquisition:selected.acquisition,linkedOperation:selected.linkedOperation};
     if(!weapon.attackProfiles&&selected?.attackProfiles)weapon={...weapon,attackProfiles:selected.attackProfiles,damage:null,traits:weapon.traits??selected.traits};
+    if(weapon.externalWear)return [wornWeaponRow(weapon,armName)];
     const name=weapon.label || choiceLabel(control,'weaponId',weapon.weaponId,'Selected weapon');
     const storageName=id=>choiceLabel(control,'ammunitionStorageId',id,'Unresolved storage');
     const ammunitionName=id=>choiceLabel(control,'auxiliaryAmmunition',id);
@@ -437,7 +454,7 @@ export function projectReview(design, catalogue, evaluation) {
   });
   const storageRows=(records,control)=>records.map(item=>profileRow(choiceLabel(control,'ammunitionStorageId',item.storageId,'Unresolved storage'),`${massFormat.format(item.reservedKg)} / ${massFormat.format(item.capacityKg)} kg reserved · ${massFormat.format(item.remainingKg)} kg remaining`,item,['storageId','reservedKg','capacityKg','remainingKg','scope'],'Source estimate; other cargo/handling unverified'));
   const weaponControl=controls.find(control=>control.field==='weapons');
-  const weapons=totals?.weapons || (weaponControl?physical.weapons||[]:[]);
+  const weapons=evaluation.weaponInstallations || totals?.weapons || (weaponControl?physical.weapons||[]:[]);
   if(weapons.length)sections.push(section('weapons','Weapons',weaponRows(weapons,weaponControl),{note:totals?'Attack modifiers contextual; hardware/software separate':'Selected installations; performance not calculated'}));
   if(totals?.ammunitionStorage?.length)sections.push(section('ammunition-storage','Ammunition storage reservations',storageRows(totals.ammunitionStorage,weaponControl),{collapsed:true}));
   const limbWeaponControl=controls.find(control=>control.field==='augmentWeapons');
@@ -453,7 +470,7 @@ export function projectReview(design, catalogue, evaluation) {
     for(const weapon of design.special?.augmentWeapons||[])limbRows.push(...weaponRows([weapon],limbWeaponControl,choiceLabel(limbWeaponControl,'parentLimb',weapon.parentLimb,'Unresolved parent limb')));
   }
   if(limbRows.length)sections.push(section('limb-weapons','Cyberlimb weapons',limbRows,{note:totals?'Part-specific effects; recipient skill/attack modifiers unresolved':'Selected limb weapons; performance/cost not calculated'}));
-  const handled = new Set(['cost','constructionCost','costLabel','slots','bandwidth','zeroSlot','zeroBandwidth','hits','armour','intelligence','intelligenceDM','agility','tacticalSpeed','endurance','vehicleEndurance','vehicleBand','traits','manipulators','skills','hardwareSkills','skillEquivalents','toolCaps','weapons','defaultSuite','provisional','augmentation','augmentations','sharedInterfaces','augmentationEffects','equipmentCapabilities','capabilities','ammunitionStorage','composite','clone','metamorphic']);
+  const handled = new Set(['externalWear','cost','constructionCost','costLabel','slots','bandwidth','zeroSlot','zeroBandwidth','hits','armour','intelligence','intelligenceDM','agility','tacticalSpeed','endurance','vehicleEndurance','vehicleBand','traits','manipulators','skills','hardwareSkills','skillEquivalents','toolCaps','weapons','defaultSuite','provisional','augmentation','augmentations','sharedInterfaces','augmentationEffects','equipmentCapabilities','capabilities','ammunitionStorage','composite','clone','metamorphic']);
   const extra = Object.entries(presentationFacts(totals)||{}).filter(([key,value])=>!handled.has(key)&&present(value)&&(!Array.isArray(value)||value.length)).map(([key,value])=>row(humanLabel(key),value));
   if (extra.length) sections.push(section('additional','Operating details',extra,{collapsed:true}));
   const ledger = (evaluation.ledger || []).map(item => row(armNames.has(item.id)?armName(item.id):item.label || item.name || item.id,
