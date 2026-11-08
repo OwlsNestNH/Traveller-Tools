@@ -29,18 +29,21 @@ These edition choices matter. In particular the 2026 Aslan characteristic modifi
 - Persisted, next-term alien transfer rights for Zhodani Army to Guard, Guard to Agent, Merchant to Navy and Vargr Loner to Spacer/Corsair. Source rank/assignment and expiry conditions are retained. Merchant-to-Navy rank track remains an explicit referee decision, rather than an assumed officer commission.
 - Bounded native Psionic Games at an existing-career term boundary: lifetime application, ordered talent checks, final, explicit event/award rulings, one replacement term, inherited benefits and due ageing. Initial-career entry timing and complex ordinary event consequences remain outside this route.
 - Native Zhodani career PSI elevation and re-education outcomes, with explicit referee decisions for unprinted modified results, sub-year durations, treatment chronology, contradictory discharge, insufficient fine funding and END zero. Separate non-career time and ageing credit preserve career training, advancement, benefits and pension accounting. Ordered treatment/term ageing resumes the saved context; age-caused permanent PSI loss retains historical talent records.
+- Native Zhodani Merchant mishap fine: one logged die, immediate affordable cash payment or explicit decline, retained source/protected-event context, and linked Prole re-education. The original and any later treatment fine are distinct records. Nonpayment versus row2 continuation requires a typed precedence ruling unless protected by the source event. No automatic financing or duplicate charge.
 - Derived before/after action details, printable notes/connections and medical ledger.
 - Ten additional shared alien event tables and explicit constrained-effect metadata.
 - Pure Core medical, injury, ageing, pension and benefit procedures with source-grounded tests.
 
 ## Automation boundaries
 
+Ordinary failed-survival mishaps that permit staying close the term under the specific Core2022 p14 flowchart. The general p18 Events paragraph is not treated as permission for an extra Event in that branch. Protected Event2 mishaps resume their existing after-event queue; Prisoner retains its explicit p52 advancement exception.
+
 Routine training, checks, table rolls, many choices, rank awards and benefits are automated. Unsupported effect kinds and special source routes must stop at a source-assisted step with a reference. They must never be treated as successful no-ops.
 
 Important areas still needing integration, deeper testing or source adjudication include:
 
 - Companion cross-book exceptions, career transfers outside the four explicitly implemented routes, and general assignment changes.
-- Psionic acquisition histories from older/manual records, repeat-course chronology and untraceable retry awards require source decisions. Zhodani re-education covers supported source-earned triggers and all six outcomes, but unresolved source timing and consequence ambiguities remain typed referee decisions. The Merchant unpaid-fine trigger and other unimplemented event wrappers still stop for source adjudication. Wider setting-level status, suppression and anagathic history are not universal automatic rules. Games source ambiguities are explicit rulings, not silently selected defaults.
+- Psionic acquisition histories from older/manual records, repeat-course chronology and untraceable retry awards require source decisions. Zhodani re-education covers supported source-earned triggers and all six outcomes, but unresolved source timing and consequence ambiguities remain typed referee decisions. Other unimplemented event wrappers still stop for source adjudication, including Prole relationship removal, Scholar distinct Science selections and Agent undercover routing. Wider setting-level status, suppression and anagathic history are not universal automatic rules. Games source ambiguities are explicit rulings, not silently selected defaults.
 - Detailed Aslan rite/clan/land/share procedures and constrained gender/culture paths.
 - Non-standard Vargr and Aezorgh cross-book choices, derived social characteristics and career restrictions.
 - Nonstandard injury/medical rules, detailed equipment verification, ambiguous ship-history procedures and unimplemented bespoke benefits. Clan Shares remain unconverted entitlements; land/corporation/redemption choices need further handling.

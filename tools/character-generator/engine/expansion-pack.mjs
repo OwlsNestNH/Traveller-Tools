@@ -2033,7 +2033,7 @@ outcomes('zhodani.merchant',{
  6:C('Broker / Diplomat / Profession / @Contact'),8:[K('EDU',8,[ANY('existing')])],9:[B()],10:[R(1)],11:[relationship('Ally'),A(2)],12:[P('next-check')]
 },{
  1:[I(2,'lower')],2:[BR('retain-term')],
- 3:[U('zhodani.merchant',269,'Roll fine 1D × Cr1000. Pay immediately to stay; otherwise leave and SOC9-or-lower also rolls re-education.')],
+ 3:[{kind:'merchant-fine',source:{id:'aliens',page:269}}],
  4:[Q([['Continue',[stay(),{kind:'benefit-block',terms:2}]],['Leave',[]]])],
  5:[{kind:'cash',dice:'1D',multiplier:1000}],6:[I()]
 });

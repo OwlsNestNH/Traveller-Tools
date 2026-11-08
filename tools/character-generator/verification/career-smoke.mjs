@@ -22,7 +22,7 @@ const seeds=option('seeds',20,1,500),termGoal=option('terms',3,1,10),mental=opti
 const sourceURL=new URL('../engine/session.mjs',import.meta.url);
 let source=await readFile(sourceURL,'utf8');
 source=source.replace(/from\s+'(\.\/[^']+)'/g,(_,relative)=>'from '+JSON.stringify(new URL(relative,sourceURL).href));
-source+='\nexport const continuationAudit={initial,enterCareer,apply,trainingOptions,exitOptions,activeReeducation};';
+source+='\nexport const continuationAudit={initial,enterCareer,apply,trainingOptions,exitOptions,activeReeducation,activeMerchantFine};';
 const {continuationAudit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const failures=[],stages={},sourceStops={},completedTerms={},completedStages={};
 let scenarios=0,completed=0;
@@ -59,6 +59,8 @@ for(const career of CAREERS)for(const assignment of career.assignments)for(let s
    let command;
    switch(state.stage) {
     // These synthetic characters have no anagathic history. Never invent referee decisions.
+    case 'merchant-fine-roll':command={type:'merchant-fine-roll'};break;
+    case 'merchant-fine-decision':command={type:'resolve-merchant-fine',payload:{decision:seed%2===0&&state.character.cash>=a.activeMerchantFine(state).amount?'pay':'decline'}};break;
     case 'reeducation-roll':command={type:'reeducation-roll',payload:{anagathicTerms:0}};break;
     case 'reeducation-fine':command={type:'reeducation-fine'};break;
     case 'reeducation-decisions':command={type:'resolve-reeducation',payload:{}};break;

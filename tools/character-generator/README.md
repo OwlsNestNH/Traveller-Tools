@@ -20,6 +20,7 @@ Open `http://127.0.0.1:8781/?api=local`. The server listens only on loopback and
 - `engine/companion-education.mjs`: pure, source-referenced Companion admission and award rules.
 - `engine/benefits.mjs`: source-keyed material-benefit and pension procedures.
 - `engine/psionic-games.mjs`: pure competition procedures, with bounded current-career session integration tracked in COVERAGE.md.
+- `engine/merchant-fine.mjs`: original typed fine/payment procedure for the Zhodani Merchant mishap, with a separate recorded link to any subsequent re-education.
 - `engine/zhodani-reeducation.mjs`: pure source-referenced treatment plans and typed referee decisions, with separate non-career time and ageing integration in the session engine.
 - `engine/psionics.mjs`: pure source-referenced potential and talent-acquisition checks.
 - `engine/audit.mjs`: deterministic before/after mechanical audit detail.
@@ -42,7 +43,7 @@ The action log is always on. GM edits require a reason and keep the old result. 
 
 ## Data and saves
 
-The browser stores one draft locally. Unsaved biography text survives ordinary UI rerenders and is recorded before JSON export or the Print button. It is not saved merely by typing; the browser warns before unloading a dirty draft. Use **Save character & log** for backups before starting a new character. Import replays and validates the file before replacing the current draft. Unreadable stored drafts are preserved behind recovery controls, with raw backup download and explicit replacement confirmation. The current Zhodani mechanics use rules revision `character-preview-2026-11-08.3`; prior `.2` saves are available only through read-only recovery. New saves record an explicit rules revision as well as save format 1. Only the matching revision can be replayed. Older development exports without a revision, and files from any other rules revision, are rejected before character reconstruction. This prevents historical outcomes from silently changing when rules are corrected. The recovery panel can display their recorded actions as an unverified, read-only history and download the unchanged original file; it cannot reconstruct a validated character or continue that historical session. Invalid UTF-8 files are not imported, and their original File bytes remain downloadable. A malformed browser draft remains protected until explicit replacement. Keep exported backups when updating versions. No automatic migration or guessed historical rules are used.
+The browser stores one draft locally. Unsaved biography text survives ordinary UI rerenders and is recorded before JSON export or the Print button. It is not saved merely by typing; the browser warns before unloading a dirty draft. Use **Save character & log** for backups before starting a new character. Import replays and validates the file before replacing the current draft. Unreadable stored drafts are preserved behind recovery controls, with raw backup download and explicit replacement confirmation. The current Zhodani mechanics use rules revision `character-preview-2026-11-08.4`; prior `.2` and `.3` saves are available only through read-only recovery. New saves record an explicit rules revision as well as save format 1. Only the matching revision can be replayed. Older development exports without a revision, and files from any other rules revision, are rejected before character reconstruction. This prevents historical outcomes from silently changing when rules are corrected. The recovery panel can display their recorded actions as an unverified, read-only history and download the unchanged original file; it cannot reconstruct a validated character or continue that historical session. Invalid UTF-8 files are not imported, and their original File bytes remain downloadable. A malformed browser draft remains protected until explicit replacement. Keep exported backups when updating versions. No automatic migration or guessed historical rules are used.
 
 No licensed books, scans, private document links, or borrowed Tremlas code are included. Own the relevant books to resolve source-assisted steps. Character names, notes, and campaign material stay in your browser or local API request and are not sent to the publisher or repository.
 
@@ -59,6 +60,7 @@ node tools/character-generator/verification/aezorgh-browser.mjs /path/to/playwri
 node tools/character-generator/verification/recovery-browser.mjs /path/to/playwright
 node tools/character-generator/verification/transfer-browser.mjs /path/to/playwright
 node tools/character-generator/verification/reeducation-browser.mjs /path/to/playwright
+node tools/character-generator/verification/merchant-fine-browser.mjs /path/to/playwright
 node tools/character-generator/verification/career-smoke.mjs
 ```
 

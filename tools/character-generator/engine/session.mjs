@@ -1,3 +1,4 @@
+import { MERCHANT_FINE_SOURCE, merchantFineRoll, merchantFineOptions, merchantFineOutcome } from './merchant-fine.mjs';
 import { ZHODANI_REEDUCATION_SOURCE,reeducationRoll,reeducationPlan,treatmentTimeline,zhodaniStatusPlan,REEDUCATION_EXPLICIT_DISCHARGE } from './zhodani-reeducation.mjs';
 import { careerTransferRule, createCareerTransfer, careerTransferEntry, careerTransferExpiry } from './career-transfers.mjs';
 import { PSIONIC_GAMES_SOURCE, psionicGamesEligibility, psionicGamesApplication, psionicGamesPreliminaries, psionicGamesFinal, psionicGamesCompetition } from './psionic-games.mjs';
@@ -14,7 +15,7 @@ const RULE_PACK={...CORE_PACK,...EXPANSION_PACK};
 import { API_VERSION, SOURCES, CAREERS, PRECAREERS, SPECIES, SKILLS, BACKGROUND_SKILLS, findCareer, findSpecies } from './catalog.mjs';
 const LIMIT = 2000;
 export const MAX_SAVE_BYTES = 2000000;
-export const RULES_REVISION='character-preview-2026-11-08.3';
+export const RULES_REVISION='character-preview-2026-11-08.4';
 const saveSize = value => new TextEncoder().encode(JSON.stringify(value,null,2)).byteLength;
 const copy = value => structuredClone(value);
 const plain = value => value && typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
@@ -132,6 +133,24 @@ function exitOptions(state){
 const postBenefitsStage=state=>state.character.retirementFromCreation?'retirement':'career';
 
 
+
+function activeMerchantFine(state){return state.merchantFine===null||state.merchantFine===undefined?null:state.character.merchantFines?.[state.merchantFine];}
+function merchantFineContext(state){
+ const {record,career}=currentCareer(state);return {careerIndex:state.active,careerId:career.id,careerTerms:record.terms,
+  generationTerms:state.character.terms,age:state.character.age,cash:state.character.cash,socialStanding:state.character.stats.SOC,forcedExit:!!record.forcedExit};
+}
+function assertMerchantFineContext(state,fine){need(fine&&JSON.stringify(merchantFineContext(state))===JSON.stringify(fine.context),'The pending Merchant fine context changed. Restore/replay the original context.');}
+function beginMerchantFine(state,e){
+ if(state.active===null||currentCareer(state).career.id!=='zhodani.merchant'){nativeFallback(state,e,'The Merchant fine requires its original active Zhodani Merchant career.');return;}
+ need(!activeMerchantFine(state),'Another Merchant fine is pending.');
+ const origin=copy(e.reeducationOrigin??reeducationOrigin(state,'mishap',3)),context=merchantFineContext(state);
+ state.character.merchantFines??=[];const fine={id:'merchant-fine-'+(state.character.merchantFines.length+1),source:copy(MERCHANT_FINE_SOURCE),
+  status:'awaiting-roll',die:null,amount:null,origin,context,cashAvailable:context.cash,socialStanding:context.socialStanding,
+  decision:null,payment:null,reeducationId:null,completion:null,
+  continuation:{queue:copy(state.effectsQueue),next:state.effectNext,steps:state.effectSteps}};
+ state.merchantFine=state.character.merchantFines.length;state.character.merchantFines.push(fine);
+ state.effectsQueue=[];state.effectNext=null;state.pendingChoice=null;state.stage='merchant-fine-roll';
+}
 
 function activeReeducation(state){return state.reeducation===null||state.reeducation===undefined?null:state.character.reeducations?.[state.reeducation];}
 function reeducationOrigin(state,table,row,parent={}){
@@ -1012,6 +1031,7 @@ function drainEffects(state,rolls) {
     else {nativeFallback(state,e);return;}break;
    }
    case 'promotion':{const {record}=currentCareer(state);record.automaticPromotion=true;if(e.allowCommission)record.automaticCommission=true;break;}
+   case 'merchant-fine':beginMerchantFine(state,e);return;
    case 'table-roll':{
     if(e.table==='zhodani.re-education'){beginReeducation(state,e);return;}
     if(state.active===null){
@@ -1084,7 +1104,32 @@ function apply(state,command,rolls) {
  const payload=command.payload??{};need(plain(payload),'Invalid command payload.');
  if(gamesPending(state))need([...GAMES_COMMANDS,'notes','gm-mode'].includes(command.type),'Complete the reserved Games term before changing the character or career. Restore/replay explicitly to revise its context.');
  if(activeReeducation(state))need(['reeducation-roll','reeducation-fine','resolve-reeducation','ageing','choose-effect','choose-skill','resolve-book','notes','gm-mode'].includes(command.type),'Complete the pending re-education and ageing continuation before changing the character. Restore/replay explicitly to revise it.');
+ if(activeMerchantFine(state))need(['merchant-fine-roll','resolve-merchant-fine','notes','gm-mode'].includes(command.type),'Complete the pending Merchant fine before changing the character. Restore/replay explicitly to revise its context.');
  switch(command.type) {
+
+ case 'merchant-fine-roll':{
+  const fine=activeMerchantFine(state);need(state.stage==='merchant-fine-roll'&&fine?.status==='awaiting-roll','No Merchant fine roll is pending.');
+  need(!Object.keys(payload).length,'The Merchant fine uses one engine-generated die.');assertMerchantFineContext(state,fine);
+  const result=merchantFineRoll({die:dice(state,1,rolls,'Merchant mishap fine')});fine.die=result.die;fine.amount=result.amount;
+  fine.status='decision';state.stage='merchant-fine-decision';return 'Merchant mishap fine Cr'+fine.amount+'.';
+ }
+ case 'resolve-merchant-fine':{
+  const fine=activeMerchantFine(state);need(state.stage==='merchant-fine-decision'&&fine?.status==='decision','No Merchant fine decision is pending.');
+  need(Object.keys(payload).length===1&&Object.hasOwn(payload,'decision'),'Use only the typed Merchant payment decision.');assertMerchantFineContext(state,fine);
+  const result=merchantFineOutcome({die:fine.die,cash:state.character.cash,socialStanding:state.character.stats.SOC,decision:payload.decision,protectedStay:!!fine.origin.protectedStay});
+  state.character.cash=result.cashAfter;const {record}=currentCareer(state);
+  record.forcedExit=result.disposition==='leave'?true:fine.origin.protectedStay?!!fine.origin.protectedExitBefore:false;
+  fine.decision=result.decision;fine.payment=copy(result.payment);fine.disposition={mode:result.disposition,forcedExit:!!record.forcedExit,nonpaymentDischarge:result.nonpaymentDischarge};
+  fine.status='completed';fine.completion={age:state.character.age,generationTerms:state.character.terms,careerTerms:record.terms,cash:state.character.cash};
+  const continuation=fine.continuation;fine.continuation=null;state.merchantFine=null;
+  state.effectsQueue=copy(continuation.queue);state.effectNext=continuation.next;state.effectSteps=continuation.steps;
+  if(result.reeducation){
+   beginReeducation(state,{kind:'table-roll',table:'zhodani.re-education',source:{id:'aliens',page:276},
+    reeducationOrigin:{...copy(fine.origin),merchantFineId:fine.id,nonpaymentDischarge:result.nonpaymentDischarge,explicitDischarge:result.nonpaymentDischarge}});
+   fine.reeducationId=activeReeducation(state)?.id??null;
+  }else drainEffects(state,rolls);
+  return result.decision==='pay'?'Paid Merchant mishap fine Cr'+fine.amount+' from cash.':'Declined Merchant mishap fine Cr'+fine.amount+'. No debt added.'+(result.reeducation?' Separate re-education follows.':'');
+ }
 
  case 'reeducation-roll':{
   const episode=activeReeducation(state);need(state.stage==='reeducation-roll'&&episode?.status==='awaiting-roll','No re-education roll is pending.');
@@ -1794,6 +1839,7 @@ export function project(session) {
  state.psionicGamesOptions=gamesPending(state)?gamesRemaining(gamesPending(state)):[];
  state.psionicGamesNeedsStacking=!!gamesPending(state)?.competition?.unresolved.some(d=>d.key==='awardStacking');
  state.commissionAvailability=commissionAvailability(state);state.exitOptions=exitOptions(state);state.followingInteractionDM=followingInteractionDM(state.character.stats.FOL);
+ const merchantFine=activeMerchantFine(state)??state.character.merchantFines?.at(-1)??null;state.currentMerchantFine=copy(merchantFine);state.merchantFineOptions=state.stage==='merchant-fine-decision'&&activeMerchantFine(state)?merchantFineOptions({die:merchantFine.die,cash:state.character.cash}):[];
  const reeducation=activeReeducation(state)??state.character.reeducations?.at(-1)??null;state.currentReeducation=copy(reeducation);state.reeducationRequirements=activeReeducation(state)?copy(reeducation.plan?.requirements??[{key:'anagathicTerms',minimum:0,maximum:1000}]):[];
  state.currentBenefitAward=state.pending?.awardId?copy(benefitAward(state,state.pending.awardId)):null;
  state.currentInjury=state.injury!==undefined&&state.injury!==null?copy(injuryRecord(state)):null;
