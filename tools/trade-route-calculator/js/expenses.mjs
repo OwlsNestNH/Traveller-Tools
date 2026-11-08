@@ -81,7 +81,7 @@ export function expenseQuote(world,input){
    const rooms=input.rooms??{low:0,middle:input.staterooms??0,high:0};let totalRooms=0;
    for(const tier of Object.keys(supportRates)){
     const n=people(rooms[tier],tier+' staterooms'),service=input.roomService?.[tier],rate=serviceRate(tier,service);
-    totalRooms+=n;monthly+=BigInt(n)*BigInt(rate);
+    if(tier==='luxury'&&!n)continue;totalRooms+=n;monthly+=BigInt(n)*BigInt(rate);
     details.push([tier+' staterooms (including empty)',String(n)+' x Cr'+rate+' / month / '+serviceLabel(tier,service)+' service']);
    }
    if(!totalRooms)throw Error('Enter at least one stateroom in ship settings.');
@@ -90,7 +90,7 @@ export function expenseQuote(world,input){
    let totalPeople=0;
    for(const role of ['passengers','crew'])for(const tier of Object.keys(supportRates)){
     const rate=String(personRate(tier));
-    const n=people(input[role]?.[tier],role+' · '+tier);totalPeople+=n;monthly+=BigInt(n)*BigInt(rate);
+    const n=people(input[role]?.[tier],role+' · '+tier);if(tier==='luxury'&&!n)continue;totalPeople+=n;monthly+=BigInt(n)*BigInt(rate);
     details.push([(role==='crew'?'Crew':'Passengers')+' / '+tier,String(n)+' x Cr'+rate+' / month / selected service level']);
    }
    const low=people(input.bookedLowBerths,'Booked Low passengers');monthly+=BigInt(low)*100n;totalPeople+=low;if(low)details.push(['Booked frozen Low passengers',String(low)+' x Cr100 / month / Core p.154']);
@@ -99,6 +99,7 @@ export function expenseQuote(world,input){
   unrounded=A.decimal(A.rat(monthly*BigInt(units),divisor));amount=String(up(unrounded,input.creditStep||1));
   details.push(['Monthly total · Cr',String(monthly)],['Billing period',input.period],['Periods purchased',String(units)],['Weekly billing basis','One quarter of a monthly charge']);
   reference='Campaign rule agreed 2026-10-04: installed middle and high cabins cost Cr1,000/month each, including empty cabins. Middle-service people cost Cr1,000/month. Campaign change: High-passenger life support is raised from the Core Rulebook’s Cr1,000 to Cr3,000 per person per month. This includes crew receiving high service and upgraded middle-cabin occupants. Low-service cabin Cr100 and low-service person Cr1,000 are retained campaign settings, not RAW low-berth costs. A week is one quarter of a month. Cabin custom rates are per cabin; person service is charged separately. Historical payments are unchanged.';
+  if((input.rooms?.luxury??0)+(input.passengers?.luxury??0)+(input.crew?.luxury??0)>0)reference+=' Luxury follows the same campaign convention: Cr1,000/cabin and Cr5,000/person per 28 days, separate charges.';
  }else if(kind==='lifeSupport'||kind==='salary'){
   const monthly=A.credit(input.monthly),months=count(input.months,'Months');if(monthly<=0n)throw Error('Enter a positive monthly cost.');
   amount=String(monthly*BigInt(months));details=[['Entered monthly cost · Cr',String(monthly)],['Months paid',String(months)]];

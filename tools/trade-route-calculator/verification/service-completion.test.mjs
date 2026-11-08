@@ -9,8 +9,9 @@ import {campaignBaseline} from './fixtures/campaign-baseline.mjs';
 // Scope: actual Fuel/LSS app callbacks and real Store, with private storage and
 // a delayed completion adapter. This does not certify browser gestures, Web
 // Locks, arbitrary async providers, or other not-yet-migrated action groups.
-// Approved resulting-stock ceiling changes only the physical stock expectations below.
-// Prices, time, consumption, accounting and Undo remain independently exact.
+// Approved combined daily tariff includes cabin and person costs. Fixture has
+// Cr8,200 monthly => Cr293/day and 4.2 LSS/day; purchased whole loads are billed.
+// Time, consumption, accounting, save completion and Undo remain independently exact.
 const cases=[
  {id:'refined fuel',kind:'fuel',values:{fuelType:'refined',fuelTons:'7.25',expenseNotes:'Exact refined draft'},bank:'96000',fuel:28,amount:'4000'},
  {id:'unrefined fuel',kind:'fuel',values:{fuelType:'unrefined',fuelTons:'2.25',expenseNotes:'Exact unrefined draft'},bank:'99700',fuel:23,amount:'300'},
@@ -18,9 +19,9 @@ const cases=[
  {id:'custom refined whole credits',kind:'fuel',values:{fuelType:'custom',customFuelType:'refined',customFuelRate:'101.25',fuelTons:'2.25',expenseNotes:'Quoted local price'},bank:'99696',fuel:23,amount:'304'},
  {id:'custom unrefined Cr100',kind:'fuel',fixture:{creditStep:100},values:{fuelType:'custom',customFuelType:'unrefined',customFuelRate:'101.25',fuelTons:'2.25',expenseNotes:'Quoted local price'},bank:'99600',fuel:23,amount:'400'},
  {id:'no-refund fuel correction',kind:'fuel',correction:true,values:{fuelRemaining:'13',fuelReason:'Measured actual remaining'},bank:'100000',fuel:13,amount:null},
- {id:'standard life support',kind:'support',values:{internal:'118'},bank:'97857',stock:{numerator:'118',denominator:'1'},amount:'2143'},
- {id:'extra and comfort life support',kind:'support',values:{internal:'177',comfortCredits:'2000',comfortNote:'Fresh comfort provisions'},bank:'93750',stock:{numerator:'177',denominator:'1'},amount:'6250'},
- {id:'extra-only full life support',kind:'support',fixture:{full:true},values:{internal:'177',comfortCredits:'0',comfortNote:''},bank:'97857',stock:{numerator:'177',denominator:'1'},amount:'2143'},
+ {id:'standard life support',kind:'support',values:{internal:'118'},bank:'95814',stock:{numerator:'118',denominator:'1'},amount:'4186'},
+ {id:'extra and comfort life support',kind:'support',values:{internal:'177',comfortCredits:'2000',comfortNote:'Fresh comfort provisions'},bank:'89698',stock:{numerator:'177',denominator:'1'},amount:'10302'},
+ {id:'extra-only full life support',kind:'support',fixture:{full:true},values:{internal:'177',comfortCredits:'0',comfortNote:''},bank:'95814',stock:{numerator:'177',denominator:'1'},amount:'4186'},
  {id:'comfort-only full life support',kind:'support',fixture:{full:true},values:{comfortCredits:'2000',comfortNote:'Comfort only'},bank:'98000',stock:{numerator:'588',denominator:'5'},amount:'2000'}
 ];
 const representatives=[cases[0],cases[5],cases[7]];

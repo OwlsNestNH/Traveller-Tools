@@ -198,6 +198,7 @@ export function saveBerthingRate(s,die){
 }
 function checkFuelCargo(s,input){if(input.kind!=='fuel'||!s.ship.fuel)return;const q=fuelPurchase(s.ship,input.tons),ship={...s.ship,fuel:{...s.ship.fuel,aboardTons:q.after}};if(cmp(add(sub(used(s),bladderSpace(s.ship)),bladderSpace(ship)),s.ship.capacity)>0)throw Error('Fuel in bladders would exceed cargo capacity.');}
 export function shipExpense(s,input){
+ if(['staterooms','passengerSupport','lifeSupport'].includes(input.kind))throw Error('Cabin and person costs are included in LSS refill. Use Refill life support; do not pay a separate support charge.');
  input={...input,creditStep:creditStep(s),fuelShip:s.ship,recurringShip:s.ship};
  if(input.kind==='passengerSupport'&&s.ship.accommodation)input={...input,passengers:passengerShip(s).accommodation.passengers,crew:passengerShip(s).accommodation.crew,bookedLowBerths:passengerTotals(s).low};
  if(input.kind==='staterooms')input={...input,staterooms:s.ship.staterooms??0,rooms:roomCounts(s.ship),roomService:s.ship.accommodation?.roomService};
@@ -214,6 +215,7 @@ export function shipExpense(s,input){
 }
 export function shipExpenses(s,inputs){
  if(!Array.isArray(inputs)||!inputs.length)throw Error('Select at least one expense.');
+ if(inputs.some(input=>['staterooms','passengerSupport','lifeSupport'].includes(input.kind)))throw Error('Cabin and person costs are included in LSS refill. Reopen expenses without separate support charges.');
  if(new Set(inputs.map(x=>x.kind)).size!==inputs.length)throw Error('Each expense type can be included only once.');
  inputs=payableExpenses(inputs);if(!inputs.length)throw Error('Nothing to pay: no fuel to purchase. Select another expense or enter a fuel quantity.');
  inputs=inputs.map(input=>({...input,creditStep:creditStep(s),fuelShip:s.ship,recurringShip:s.ship}));
@@ -413,26 +415,27 @@ export function applyRounding(s){
  validate(s);return changes;
 }
 
-export function refillCompartments(s,draft,{gm=false}={}){
- const q=compartmentRefillQuote(s,draft,{gm});if(!q.changed)throw Error('No supply adjustment or purchase selected.');
+export function refillCompartments(s,draft,{gm=false,expectedQuote=null}={}){
+ const q=compartmentRefillQuote(s,draft,{gm});if(expectedQuote&&JSON.stringify(q)!==JSON.stringify(expectedQuote))throw Error('Life support quote changed. Reopen the refill to review current cabin costs, rates, occupants and stock.');if(!q.changed)throw Error('No supply adjustment or purchase selected.');
  s.ship.lifeSupport={capacityHours:q.capacityHours,stockUnits:q.afterStockUnits,cargoUnits:q.afterCargoUnits,...(s.ship.lifeSupport.roundCargoSpace?{roundCargoSpace:true}:{})};
- const details=[['Internal before',supportDisplay(q.compartments.internal.before)],['Internal after',supportDisplay(q.compartments.internal.after)],['Cargo before',supportDisplay(q.compartments.cargo.before)],['Cargo after',supportDisplay(q.compartments.cargo.after)],['Purchased LSS',supportDisplay(q.purchasedUnits)],['Discarded fraction LSS',supportDisplay(q.discardedUnits)],['Reason',q.reason],['Comfort provisions Cr',q.comfortAmount],['Comfort note',q.comfortNote??''],['Cabin upkeep','Separate operating expense; not charged here'],...refillPricingAudit(q)];
+ const details=[['Internal before',supportDisplay(q.compartments.internal.before)],['Internal after',supportDisplay(q.compartments.internal.after)],['Cargo before',supportDisplay(q.compartments.cargo.before)],['Cargo after',supportDisplay(q.compartments.cargo.after)],['Purchased LSS',supportDisplay(q.purchasedUnits)],['Discarded fraction LSS',supportDisplay(q.discardedUnits)],['Reason',q.reason],['Comfort provisions Cr',q.comfortAmount],['Comfort note',q.comfortNote??''],['Cabin upkeep','Included in the daily LSS tariff; no separate payment'],...refillPricingAudit(q)];
  if(gm)s.events.push({id:uid(),label:'Life support GM adjustment audit',hours:s.hours,world:s.actual,lifeSupportAdjustment:{...q,details,bankChange:'0'}});
- else note(s,'Ship expense - Life support refill',-credit(q.amount),{expense:{kind:'lifeSupportRefill',label:'Life support refill',worldId:s.actual,worldName:s.worlds[s.actual]?.name||s.actual,...q,details}});
+ else note(s,'Ship expense - Life support refill',-credit(q.amount),{roundingStep:1,expense:{kind:'lifeSupportRefill',label:'Life support refill',worldId:s.actual,worldName:s.worlds[s.actual]?.name||s.actual,...q,details}});
  return q;
 }
 export function refillLifeSupport(s,options={}){
  const q=refillQuote(s,options);
+ if(options.expectedQuote&&JSON.stringify(q)!==JSON.stringify(options.expectedQuote))throw Error('Life support quote changed. Reopen the refill to review current costs and stock.');
  if(cmp(supportAmount(q.purchasedStockUnits),0)===0&&credit(q.comfortAmount)===0n)throw Error('Life support is already full for the requested target.');
  if(credit(s.bank)<credit(q.amount))throw Error('Insufficient funds for the life support purchase.');
  const lifeSupport={capacityHours:q.capacityHours,stockUnits:q.afterStockUnits};
  const nextShip={...s.ship,lifeSupport};
  if(cmp(add(sub(used(s),supportCargo(s.ship)),supportCargo(nextShip)),s.ship.capacity)>0)throw Error('Life support overflow, fuel, luggage and cargo would exceed cargo capacity.');
- const details=[['Awake crew',String(q.awakeCrew)],['Awake passengers',String(q.awakePassengers)],['Awake people',String(q.awakePeople)],['Daily consumption · LSS',q.dailyUnits],['Top-off days',q.topOffDays??'Not selected'],['Days selected to add',q.addedDays??'Legacy reserve'],['Nominal days purchased',q.nominalDaysPurchased],['Actual days added',q.actualDaysAdded],['Occupied low berths',String(q.occupiedLowBerths)],['LSS before',q.beforeUnits],['Standard top-up · days',q.standardDays],['Standard top-up · Cr',q.standardAmount],['Monthly cabin + person bundle · Cr',q.monthly],['Extra reserve requirement · nominal LSS',q.extraUnits],['Pooled LSS purchase',q.purchasedUnits],['Post-purchase stock rounding',q.roundPostPurchaseTotal?'Resulting LSS aboard rounded UP once to a whole number':'Not applied: no supply purchase'],['Rounding surplus aboard · LSS',q.purchaseSurplusUnits],['LSS after',q.afterUnits],['Days after',q.afterDays],['Internal LSS after',q.afterInternalUnits+' / '+q.internalCapacityUnits],['Life support cargo after · tons',q.afterCargoTons],['Basic supplies · unrounded Cr',q.basicSupplyCharge],['Cabins · unrounded Cr',q.cabinCharge],['High-service quality · unrounded Cr',q.highServiceCharge],['Monetary rounding · Cr',q.priceRounding],['Total charged · Cr',q.amount]];
- if(cmp(q.extraUnits,0)>0)details.push(['Home rule',`Cr${q.extraRate} × ${q.extraHeadcount} person-equivalents × ${q.extraPurchasedDays} days / ${q.extraBillingDays}; combined extra charge rounded UP once to Cr${q.extraRoundingStep}: Cr${q.extraAmount}. Existing stock credited.`]);
+ const details=[['Awake crew',String(q.awakeCrew)],['Awake passengers',String(q.awakePassengers)],['Awake people',String(q.awakePeople)],['Daily consumption · LSS',q.dailyUnits],['Top-off days',q.topOffDays??'Not selected'],['Days selected to add',q.addedDays??'Legacy reserve'],['Nominal days purchased',q.nominalDaysPurchased],['Actual days added',q.actualDaysAdded],['Occupied low berths',String(q.occupiedLowBerths)],['LSS before',q.beforeUnits],['Standard top-up · days',q.standardDays],['Combined supplies · Cr',q.standardAmount],['Daily combined cost rounded up · Cr',q.dailyCredits],['Monthly cabin + person bundle · Cr',q.monthly],['Extra reserve requirement · nominal LSS',q.extraUnits],['Pooled LSS purchase',q.purchasedUnits],['Post-purchase stock rounding',q.roundPostPurchaseTotal?'Resulting LSS aboard rounded UP once to a whole number':'Not applied: no supply purchase'],['Rounding surplus aboard · LSS',q.purchaseSurplusUnits],['LSS after',q.afterUnits],['Days after',q.afterDays],['Internal LSS after',q.afterInternalUnits+' / '+q.internalCapacityUnits],['Life support cargo after · tons',q.afterCargoTons],['Basic supplies · unrounded Cr',q.basicSupplyCharge],['Cabins · unrounded Cr',q.cabinCharge],['High-service quality · unrounded Cr',q.highServiceCharge],...(q.luxuryServiceCharge&&q.luxuryServiceCharge!=='0'?[['Luxury-service quality - unrounded Cr',q.luxuryServiceCharge]]:[]),['Monetary rounding · Cr',q.priceRounding],['Total charged · Cr',q.amount]];
+ details.push(['Pricing','Cabins and people are folded into one daily LSS price. All purchased LSS uses the same tariff.'],['Historical payments','Existing stock and receipts retained; no retroactive repricing or automatic credit.']);
  if(credit(q.comfortAmount)>0n)details.push(['Comfort provisions · Cr',q.comfortAmount],['Comfort note',q.comfortNote],['Comfort scope','Cost only; adds no LSS, endurance or cargo capacity.']);
  s.ship.lifeSupport=lifeSupport;
- note(s,'Ship expense · Life support refill',-credit(q.amount),{expense:{kind:'lifeSupportRefill',label:'Life support refill',worldId:s.actual,worldName:s.worlds[s.actual]?.name||s.actual,...q,details,reference:supportReference,extraReference:extraSupportReference}});
+ note(s,'Ship expense · Life support refill',-credit(q.amount),{roundingStep:1,expense:{kind:'lifeSupportRefill',label:'Life support refill',worldId:s.actual,worldName:s.worlds[s.actual]?.name||s.actual,...q,details}});
  return q;
 }
 
@@ -465,7 +468,7 @@ function acceptPassengerOffer(s,search,offer,{count,cabinMode,serviceConfirmed=f
  if(s.worlds[offer.origin].emptySpace||s.worlds[offer.destination].emptySpace||jumpDistance(s.worlds[offer.origin],s.worlds[offer.destination])>s.ship.jump)throw Error('Choose a destination within one jump of the ship.');
  if(!Number.isSafeInteger(count)||count<1||count>passengerOfferRemaining(s,offer))throw Error('Choose a whole passenger count within remaining availability.');
  if(!s.ship.accommodation?.passengerCapacity)throw Error('Review passenger cabin and Low-berth capacity first.');
- if(['high','middle'].includes(offer.passageClass)&&!serviceConfirmed)throw Error('Confirm Steward service is available for these passengers.');
+ if(['high','middle','luxury'].includes(offer.passageClass)&&!serviceConfirmed)throw Error('Confirm Steward service is available for these passengers.');
  if(cabinMode==='cargo'&&!spaceConfirmed)throw Error('Confirm this spare space has been fitted for Basic passengers.');
  const accepted=s.contracts.filter(c=>c.kind==='passenger'&&c.searchId===search.id).reduce((n,c)=>n+c.count,0),population=offer.audit.originPopulation;
  if(population!==null&&population!==undefined&&BigInt(accepted+count)>BigInt(population)&&!String(populationException).trim())throw Error('Passenger count exceeds the recorded origin population. Enter the exceptional referee circumstances.');

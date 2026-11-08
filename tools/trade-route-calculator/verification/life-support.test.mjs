@@ -18,24 +18,24 @@ const assertExact=(actual,n,d=1)=>assert.equal(cmp(actual,{n:BigInt(n),d:BigInt(
 function cargo(s,quantity){s.lots=[{id:'existing',commodity:'11',description:'Existing cargo',quantity,basis:'100',goodsValue:'100'}];return s;}
 
 test('standard top-up buys only the exact deficit; Undo restores stock and money',()=>{
- const s=campaign(),q=refillQuote(s);assert.equal(q.monthly,'8000');assert.equal(q.standardDays,'14');assert.equal(q.amount,'4000');assert.equal(q.purchasedUnits,'56');
- const n=S.transition(s,'Refill',S.refillLifeSupport);assert.equal(n.bank,'96000');assert.equal(units(n),'112');assert.equal(n.hours,0);assert.equal(refillQuote(n).amount,'0');
+ const s=campaign(),q=refillQuote(s);assert.equal(q.monthly,'8000');assert.equal(q.standardDays,'14');assert.equal(q.amount,'4004');assert.equal(q.purchasedUnits,'56');
+ const n=S.transition(s,'Refill',S.refillLifeSupport);assert.equal(n.bank,'95996');assert.equal(units(n),'112');assert.equal(n.hours,0);assert.equal(refillQuote(n).amount,'0');
  assert.throws(()=>S.transition(n,'Again',S.refillLifeSupport),/already full/);assert.deepEqual(S.undo(n).ship,s.ship);assert.equal(S.undo(n).bank,s.bank);
 });
 test('approved standard plus extra plus comfort example and audit',()=>{
  const s=campaign(),options={extraDays:'14',comfortCost:'2000',comfortNote:'Fresh food and entertainment'},q=refillQuote(s,options);
- assert.equal(q.standardAmount,'4000');assert.equal(q.extraAmount,'2000');assert.equal(q.comfortAmount,'2000');assert.equal(q.amount,'8000');assert.equal(q.afterUnits,'168');assert.equal(q.afterDays,'42');
- const n=S.transition(s,'Refill',x=>S.refillLifeSupport(x,options));assert.equal(units(n),'168');assert.equal(n.bank,'92000');assert.equal(n.ledger.length,1);
- assert.equal(n.ledger[0].expense.extraPricingLabel,'Home rule');assert.match(JSON.stringify(n.ledger[0]),/Cr1000 × 4 person-equivalents × 14 days \/ 28/);assert.match(JSON.stringify(n.ledger[0]),/rounded UP once to Cr100/);assert.match(JSON.stringify(n.ledger[0]),/Cost only/);
- assert.equal(refillQuote(n,{extraDays:'14'}).amount,'0');assert.equal(refillQuote(n,{extraDays:'21'}).extraAmount,'1000');assert.equal(refillQuote(n,{extraDays:'21'}).extraUnits,'28');
+ assert.equal(q.standardAmount,'8008');assert.equal(q.extraAmount,'0');assert.equal(q.comfortAmount,'2000');assert.equal(q.amount,'10008');assert.equal(q.afterUnits,'168');assert.equal(q.afterDays,'42');
+ const n=S.transition(s,'Refill',x=>S.refillLifeSupport(x,options));assert.equal(units(n),'168');assert.equal(n.bank,'89992');assert.equal(n.ledger.length,1);
+ assert.equal(n.ledger[0].expense.extraPricingLabel,'Combined daily LSS tariff');assert.match(JSON.stringify(n.ledger[0]),/daily LSS price/);assert.match(JSON.stringify(n.ledger[0]),/no retroactive repricing/);assert.match(JSON.stringify(n.ledger[0]),/Cost only/);
+ assert.equal(refillQuote(n,{extraDays:'14'}).amount,'0');assert.equal(refillQuote(n,{extraDays:'21'}).standardAmount,'2002');assert.equal(refillQuote(n,{extraDays:'21'}).extraUnits,'28');
  assert.equal(n.ship.lifeSupport.capacityHours,672,'extra provisions do not change the normal target');
 });
-test('high-service monthly bundle stays in standard top-up; extras use only approved flat rate',()=>{
+test('high-service combined tariff applies equally to standard and reserve supplies',()=>{
  const s=campaign();s.ship.accommodation.passengers={low:0,middle:2,high:2};s.ship.accommodation.luggageTons='0';
- assert.equal(monthlySupport(s.ship),12000n);const q=refillQuote(s,{extraDays:14});assert.equal(q.standardAmount,'6000');assert.equal(q.extraAmount,'2000');
+ assert.equal(monthlySupport(s.ship),12000n);const q=refillQuote(s,{extraDays:14});assert.equal(q.standardAmount,'12012');assert.equal(q.extraAmount,'0');
 });
 test('full stock still permits extra provisions or comfort-only cost; old stock is credited',()=>{
- const s=campaign({days:28});assert.equal(refillQuote(s,{extraDays:14}).standardAmount,'0');assert.equal(refillQuote(s,{extraDays:14}).amount,'2000');
+ const s=campaign({days:28});assert.equal(refillQuote(s,{extraDays:14}).standardAmount,'4004');assert.equal(refillQuote(s,{extraDays:14}).amount,'4004');
  const n=S.transition(s,'Comfort',x=>S.refillLifeSupport(x,{comfortCost:'777',comfortNote:'Luxury meal'}));assert.deepEqual(n.ship.lifeSupport,s.ship.lifeSupport);assert.equal(n.bank,'99223');
  assert.throws(()=>refillQuote(s,{comfortCost:'1'}),/note/);assert.throws(()=>refillQuote(s,{extraDays:-1}),/negative/);
 });
@@ -46,15 +46,15 @@ test('fractional consumption happens every hour exactly, including actual low be
  assert.equal(units(s),'1.1');assert.equal(supportStock(s.ship).remainingDays,'1');
  const n=S.transition(s,'Exhaust',x=>x.hours+=1000);assert.equal(units(n),'0');assert.deepEqual(S.undo(n).ship.lifeSupport,s.ship.lifeSupport);
 });
-test('frozen extra headcount charges one tenth and rounds combined extra charge once to Cr100',()=>{
- const s=campaign({awake:0,frozen:1,days:28}),q=refillQuote(s,{extraDays:1});assert.equal(q.extraHeadcount,'0.1');assert.equal(q.extraUnits,'0.1');assert.equal(q.extraAmount,'100');assert.equal(q.standardAmount,'0');
- const mixed=campaign({awake:1,frozen:1,days:28}),m=refillQuote(mixed,{extraDays:1});assert.equal(m.extraHeadcount,'1.1');assert.equal(m.extraAmount,'100');assert.deepEqual(m.extraExact,{numerator:'275',denominator:'7'});
+test('frozen physical rate remains one tenth; daily price includes cabins and actual purchased surplus',()=>{
+ const s=campaign({awake:0,frozen:1,days:28}),q=refillQuote(s,{extraDays:1});assert.equal(q.extraHeadcount,'0.1');assert.equal(q.extraUnits,'0.1');assert.equal(q.extraAmount,'0');assert.equal(q.standardAmount,'294');
+ const mixed=campaign({awake:1,frozen:1,days:28}),m=refillQuote(mixed,{extraDays:1});assert.equal(m.extraHeadcount,'1.1');assert.equal(m.extraAmount,'0');assert.deepEqual(m.extraExact,{numerator:'0',denominator:'1'});
 });
 test('partial refill retains the fraction instead of charging a whole consumed day',()=>{
  const s=campaign({days:28});const n=S.transition(s,'Six hours',x=>x.hours+=6);assert.equal(units(n),'111');
  const q=refillQuote(n);assert.equal(q.standardDays,'0.25');assert.equal(q.standardAmount,'72');assert.equal(q.purchasedUnits,'1');
  const refilled=S.transition(n,'Refill',S.refillLifeSupport);assert.equal(units(refilled),'112');assert.deepEqual(S.undo(refilled).ship.lifeSupport,n.ship.lifeSupport);
- const rounded=structuredClone(n);rounded.settings.creditStep=100;assert.equal(refillQuote(rounded).standardAmount,'100');
+ const rounded=structuredClone(n);rounded.settings.creditStep=100;assert.equal(refillQuote(rounded).standardAmount,'72');
 });
 test('internal capacity covers all stock; overflow reserves exact cargo and consumption releases it',()=>{
  let s=campaign({hull:10,days:14});assert.equal(supportStock(s.ship).internalCapacityUnits,'40');assert.equal(supportStock(s.ship).internalUnits,'40');assert.equal(supportStock(s.ship).cargoTons,'0.16');assertExact(S.used(s),4,25);
@@ -84,7 +84,7 @@ test('complement edits preserve units and elapsed time consumes the original com
 test('legacy days preserve actual endurance including partial elapsed and old inverse history',()=>{
  const s=campaign();s.ship.lifeSupport={capacityHours:672,remainingHours:336,elapsedHours:6};const raw=JSON.stringify(s);S.validate(s);assert.equal(JSON.stringify(s),raw);
  assert.equal(supportStock(s.ship).remainingDays,'13.75');assert.equal(supportStock(s.ship).remainingUnits,'55');
- const q=refillQuote(s);assert.equal(q.standardDays,'14.25');assert.equal(q.standardAmount,'4072');
+ const q=refillQuote(s);assert.equal(q.standardDays,'14.25');assert.equal(q.standardAmount,'4076');
  const n=S.transition(s,'Double complement',x=>x.ship.accommodation.passengers.middle=8);assert.equal(units(n),'55');assert.equal(supportStock(n.ship).remainingDays,'6.875');assert.deepEqual(S.undo(n).ship,s.ship);
  const legacy=campaign();legacy.ship.lifeSupport={capacityHours:672,remainingHours:650};assert.equal(supportStock(legacy.ship).remainingDays,'27.083333');const after=S.transition(legacy,'Two hours',x=>x.hours+=2);assert.equal(units(after),'108');assert.deepEqual(S.undo(after).ship,legacy.ship);
  // An old inverse can still restore hour fields after migration is undone.
@@ -142,25 +142,25 @@ test('switching between awake and frozen changes future consumption only, and fr
 
 test('legacy refill billing headcounts alone do not establish a physical manifest',()=>{
  const s=campaign();s.ship.supportOccupants={passengers:{low:0,middle:4,high:0},crew:{low:0,middle:0,high:0}};delete s.ship.accommodation;s.ship.lifeSupport={capacityHours:672,remainingHours:336};
- assert.equal(supportStock(s.ship).complementKnown,false);assert.equal(supportStock(s.ship).remainingUnits,null);assert.equal(monthlySupport(s.ship),4000n);
+ assert.equal(supportStock(s.ship).complementKnown,false);assert.equal(supportStock(s.ship).remainingUnits,null);assert.throws(()=>monthlySupport(s.ship),/complement/);
  const n=S.transition(s,'Wait',x=>x.hours+=24);assert.equal(n.ship.lifeSupport.remainingHours,336);assert.equal(n.ship.lifeSupport.migrationRequired,true);assert.deepEqual(S.undo(n).ship,s.ship);
 });
 
 
-test('an unconfigured zero monthly bundle cannot create free standard LSS',()=>{
+test('frozen occupants alone have a monetary rate even without cabins',()=>{
  const s=campaign({awake:0,frozen:1,days:0});s.ship.accommodation.rooms.middle=0;
- assert.throws(()=>refillQuote(s),/service charges/);s.ship.accommodation.rooms.low=1;assert.equal(refillQuote(s).standardAmount,'100');
+ assert.equal(refillQuote(s).standardAmount,'120');s.ship.accommodation.rooms.low=1;assert.equal(refillQuote(s).standardAmount,'240');
 });
 
 for(const [need,before,purchase]of [['0.4','2.4','0.6'],['0.5','2.3','0.7'],['0.6','2.2','0.8'],['1','1.8','1.2'],['1.1','1.7','1.3']])test(`fractional Low stock ${before} rounds resulting stock to 3, adding ${purchase}`,()=>{const s=campaign({awake:0,frozen:1,days:0});s.ship.accommodation.rooms={low:1,middle:0,high:0};s.ship.lifeSupport=configureSupport(s.ship,{targetDays:28,stockUnits:before});const q=refillQuote(s);assert.equal(q.purchasedUnits,purchase);assert.equal(q.roundPostPurchaseTotal,true);assert.equal(q.nominalPurchasedUnits,need);assert.equal(q.afterUnits,'3');assert.equal(q.afterDays,'30');assert.equal(q.dailyUnits,'0.1');assertExact(supportAmount(q.afterStockUnits),3);});
-test('Low rounds the combined standard and reserve purchase, preserves period charges and retains surplus',()=>{const s=campaign({awake:0,frozen:1,days:0});s.ship.accommodation.rooms={low:1,middle:0,high:0};s.ship.lifeSupport=configureSupport(s.ship,{targetDays:4,stockUnits:'0'});const q=refillQuote(s,{extraDays:'4'});assert.equal(q.standardUnits,'0.4');assert.equal(q.extraUnits,'0.4');assert.equal(q.purchasedUnits,'1');assert.equal(q.nominalPurchasedUnits,'0.8');assert.equal(q.purchaseSurplusUnits,'0.2');assert.equal(q.afterDays,'10');assert.equal(q.standardAmount,'15');assert.equal(q.extraAmount,'100');const n=S.transition(s,'Refill',x=>S.refillLifeSupport(x,{extraDays:'4'}));assert.equal(units(n),'1');assert.equal(n.bank,'99885');const undone=S.undo(n);assert.deepEqual(undone.ship,s.ship);assert.equal(undone.bank,s.bank);});
+test('Low rounds the combined standard and reserve purchase, bills all purchased units at the combined daily tariff and retains surplus',()=>{const s=campaign({awake:0,frozen:1,days:0});s.ship.accommodation.rooms={low:1,middle:0,high:0};s.ship.lifeSupport=configureSupport(s.ship,{targetDays:4,stockUnits:'0'});const q=refillQuote(s,{extraDays:'4'});assert.equal(q.standardUnits,'0.4');assert.equal(q.extraUnits,'0.4');assert.equal(q.purchasedUnits,'1');assert.equal(q.nominalPurchasedUnits,'0.8');assert.equal(q.purchaseSurplusUnits,'0.2');assert.equal(q.afterDays,'10');assert.equal(q.standardAmount,'80');assert.equal(q.extraAmount,'0');const n=S.transition(s,'Refill',x=>S.refillLifeSupport(x,{extraDays:'4'}));assert.equal(units(n),'1');assert.equal(n.bank,'99920');const undone=S.undo(n);assert.deepEqual(undone.ship,s.ship);assert.equal(undone.bank,s.bank);});
 test('zero Low requirement stays zero and comfort changes only money',()=>{const s=campaign({awake:0,frozen:1,days:28}),q=refillQuote(s);assert.equal(q.purchasedUnits,'0');assert.equal(q.amount,'0');const comfort=refillQuote(s,{comfortCost:'1000',comfortNote:'Coffee only'});assert.equal(comfort.purchasedUnits,'0');assert.equal(comfort.afterUnits,q.beforeUnits);assert.equal(comfort.amount,'1000');assert.equal(comfort.standardAmount,'0');assert.equal(comfort.extraAmount,'0');});
 test('without occupied Low, the purchase can be fractional to finish at a whole stock total',()=>{const s=campaign({awake:1,days:0});s.ship.lifeSupport=configureSupport(s.ship,{targetDays:2,stockUnits:'1.6'});const q=refillQuote(s);assert.equal(q.purchasedUnits,'0.4');assert.equal(q.afterUnits,'2');assert.equal(q.roundPostPurchaseTotal,true);});
 
-test('12.1 aboard tops up to 13 by adding 0.9, with exact cost and Undo',()=>{const s=campaign({awake:1,days:0});s.ship.lifeSupport=configureSupport(s.ship,{targetDays:13,stockUnits:'12.1'});const q=refillQuote(s);assert.equal(q.purchasedUnits,'0.9');assert.equal(q.afterUnits,'13');assert.equal(q.purchaseSurplusUnits,'0');assert.equal(q.standardAmount,'161');const n=S.transition(s,'Refill',S.refillLifeSupport);assert.equal(units(n),'13');assert.equal(n.bank,'99839');assert.deepEqual(S.undo(n).ship,s.ship);assert.equal(S.undo(n).bank,s.bank);});
+test('12.1 aboard tops up to 13 by adding 0.9, with exact cost and Undo',()=>{const s=campaign({awake:1,days:0});s.ship.lifeSupport=configureSupport(s.ship,{targetDays:13,stockUnits:'12.1'});const q=refillQuote(s);assert.equal(q.purchasedUnits,'0.9');assert.equal(q.afterUnits,'13');assert.equal(q.purchaseSurplusUnits,'0');assert.equal(q.standardAmount,'162');const n=S.transition(s,'Refill',S.refillLifeSupport);assert.equal(units(n),'13');assert.equal(n.bank,'99838');assert.deepEqual(S.undo(n).ship,s.ship);assert.equal(S.undo(n).bank,s.bank);});
 test('fractional full stock stays exact for no-purchase and comfort-only spending',()=>{const s=campaign({awake:1,days:0});s.ship.lifeSupport=configureSupport(s.ship,{targetDays:13,stockUnits:'14.1'});const q=refillQuote(s);assert.equal(q.purchasedUnits,'0');assert.equal(q.afterUnits,'14.1');assert.equal(q.roundPostPurchaseTotal,false);const n=S.transition(s,'Comfort',x=>S.refillLifeSupport(x,{comfortCost:'1000',comfortNote:'Quality only'}));assert.deepEqual(n.ship.lifeSupport,s.ship.lifeSupport);assert.equal(n.bank,'99000');});
 
-test('Top off 28 then add 7 reaches 35 days; add-only 7 reaches 21',()=>{const s=campaign();const add=refillQuote(s,{addDays:'7'});assert.equal(add.afterDays,'21');assert.equal(add.purchasedUnits,'28');assert.equal(add.amount,'2000');const top=refillQuote(s,{topOffDays:'28',addDays:'7'});assert.equal(top.afterDays,'35');assert.equal(top.purchasedUnits,'84');assert.equal(top.amount,'5000');assert.equal(top.basicSupplyCharge,'3000');assert.equal(top.cabinCharge,'2000');assert.equal(top.highServiceCharge,'0');assert.equal(top.priceRounding,'0');});
-test('Top off 28 preserves configured target and never removes supplies above 28',()=>{const s=campaign();s.ship.lifeSupport=configureSupport(s.ship,{targetDays:14,stockDays:14});const top=refillQuote(s,{topOffDays:'28',addDays:'0'}),add=refillQuote(s,{addDays:'14'});assert.equal(top.afterDays,'28');assert.equal(top.amount,add.amount);assert.equal(top.amount,'2000');const n=S.transition(s,'Top off',x=>S.refillLifeSupport(x,{topOffDays:'28',addDays:'0'}));assert.equal(n.ship.lifeSupport.capacityHours,336);const full=campaign({days:35}),q=refillQuote(full,{topOffDays:'28',addDays:'0'});assert.equal(q.purchasedUnits,'0');assert.equal(q.afterDays,'35');assert.equal(q.amount,'0');assert.equal(q.roundPostPurchaseTotal,false);});
+test('Top off 28 then add 7 reaches 35 days; add-only 7 reaches 21',()=>{const s=campaign();const add=refillQuote(s,{addDays:'7'});assert.equal(add.afterDays,'21');assert.equal(add.purchasedUnits,'28');assert.equal(add.amount,'2002');const top=refillQuote(s,{topOffDays:'28',addDays:'7'});assert.equal(top.afterDays,'35');assert.equal(top.purchasedUnits,'84');assert.equal(top.amount,'6006');assert.equal(top.basicSupplyCharge,'3000');assert.equal(top.cabinCharge,'3000');assert.equal(top.highServiceCharge,'0');assert.equal(top.priceRounding,'6');});
+test('Top off 28 preserves configured target and never removes supplies above 28',()=>{const s=campaign();s.ship.lifeSupport=configureSupport(s.ship,{targetDays:14,stockDays:14});const top=refillQuote(s,{topOffDays:'28',addDays:'0'}),add=refillQuote(s,{addDays:'14'});assert.equal(top.afterDays,'28');assert.equal(top.amount,add.amount);assert.equal(top.amount,'4004');const n=S.transition(s,'Top off',x=>S.refillLifeSupport(x,{topOffDays:'28',addDays:'0'}));assert.equal(n.ship.lifeSupport.capacityHours,336);const full=campaign({days:35}),q=refillQuote(full,{topOffDays:'28',addDays:'0'});assert.equal(q.purchasedUnits,'0');assert.equal(q.afterDays,'35');assert.equal(q.amount,'0');assert.equal(q.roundPostPurchaseTotal,false);});
 test('day purchase rounds final stock before cargo admission and includes surplus overflow',()=>{const s=campaign({awake:1,hull:1,capacity:'0.005',days:0});s.ship.lifeSupport=configureSupport(s.ship,{targetDays:28,stockUnits:'3.1'});const q=refillQuote(s,{addDays:'1'});assert.equal(q.afterUnits,'5');assert.equal(q.purchasedUnits,'1.9');assert.equal(q.afterInternalUnits,'4');assert.equal(q.afterCargoTons,'0.01');assert.throws(()=>S.transition(s,'Too much',x=>S.refillLifeSupport(x,{addDays:'1'})),/cargo capacity/);assert.equal(units(s),'3.1');});
-test('High and comfort increase costs without increasing daily use or physical day quantity',()=>{const s=campaign();s.ship.accommodation.passengers={low:0,middle:2,high:2};const q=refillQuote(s,{topOffDays:'28',addDays:'0',comfortCost:'1000',comfortNote:'Quality only'});assert.equal(q.dailyUnits,'4');assert.equal(q.purchasedUnits,'56');assert.equal(q.basicSupplyCharge,'2000');assert.equal(q.cabinCharge,'2000');assert.equal(q.highServiceCharge,'2000');assert.equal(q.comfortAmount,'1000');assert.equal(q.amount,'7000');});
+test('High and comfort increase costs without increasing daily use or physical day quantity',()=>{const s=campaign();s.ship.accommodation.passengers={low:0,middle:2,high:2};const q=refillQuote(s,{topOffDays:'28',addDays:'0',comfortCost:'1000',comfortNote:'Quality only'});assert.equal(q.dailyUnits,'4');assert.equal(q.purchasedUnits,'56');assert.equal(q.basicSupplyCharge,'2000');assert.equal(q.cabinCharge,'2000');assert.equal(q.highServiceCharge,'2000');assert.equal(q.comfortAmount,'1000');assert.equal(q.amount,'7006');});

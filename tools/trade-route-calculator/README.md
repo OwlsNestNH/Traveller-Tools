@@ -1027,3 +1027,15 @@ views describe only the selected ship, not the private group backup.
 Verification: the native persistence suite covers migration, atomicity, validation
 and recovery; fleet-browser.test.mjs exercises switching, independent balances,
 reload, import/export, quota rejection and writer takeover at desktop/mobile sizes.
+
+## Luxury passengers
+
+Settings supports Luxury cabins and awake Luxury-service people. Campaign upkeep stays Cr1,000 per cabin per 28 days; the default Luxury consumable rate is Cr5,000 per person per 28 days, editable alongside Middle and High. Every awake person still consumes 1 LSS/day. Cabin and person costs combine into the daily LSS refill price described below.
+
+Use **Manual passenger** to book Luxury with agreed per-person terms. Singularity Sourcebook (2025), printed p.45, requires High or Luxury staterooms, gives 2 cargo tons of baggage per Luxury passenger, and specifies Steward 2+ per occupied Luxury stateroom. Review cabin allocation and service before confirming. Shared bookings use the existing two-per-cabin campaign allocation, not automatic family/liner pricing.
+
+The rule popup distinguishes Singularity room fares, additional-occupant surcharge and complete-route rates from this app's per-person, single-jump manual contract. Generated availability and fares retain the four Core classes. Existing bookings, receipts, luggage overrides, stock, imports and Undo stay intact. Missing Luxury fields in old saves mean zero; loading does not rewrite them. No life-support mode toggle is introduced.
+
+### Combined LSS pricing
+New refills include cabin costs and configured person costs in one tariff. Divide the monthly total by 28, round UP to a whole Credit per day, then multiply by the duration of all purchased internal and cargo LSS. Round the final charge UP to a whole Credit. For one Cr1,000 cabin and one Middle person, the daily tariff is Cr72 and 28 LSS costs Cr2,016. No occupants means zero cabin cost and zero physical consumption. Buying supplies requires a known positive complement; GM stock corrections and comfort-only spending remain available when empty.
+Separate new cabin/person support payments are disabled. Existing stock, past receipts and balances are not repriced and receive no automatic credits. Review historical separate cabin payments before a future refill; the app does not infer paid-through periods from old records.

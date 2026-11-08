@@ -10,11 +10,11 @@ test('shared SVG is inert and deterministic for main and player projections',()=
 
 test('sparse claim lists and sparse coordinates are rejected',()=>{for(const claims of [new Array(2),[[,1]],[[0,]]])assert.throws(()=>projectCampaignPolitics({version:1,claims,allegiances:[]}));});
 
-test('economic source remains pinned after territory validation and explicit commission audit fields',async()=>{
+test('economic source remains pinned after approved Luxury service and combined daily LSS billing',async()=>{
  const {readFile}=await import('node:fs/promises'),{createHash}=await import('node:crypto'),{withoutCampaignPoliticsValidation}=await import('./campaign-politics-source-guard.mjs');
  const source=await readFile(new URL('../js/state.mjs',import.meta.url),'utf8');
  const hash=s=>createHash('sha256').update(s.replace(/(^import [^\n]*?)\?v=[^'"]+/gm,'$1?v=<release>')).digest('hex');
- const released='fd83f07cd73a57de8baa2f556aff2aa95e1217d8eb0081db36d3b3ad236ca024';
+ const released='0e070fc9c8cf7715380e718e225a96ac845db1f6445645c979fb988074d5d9fc';
  assert.equal(hash(withoutCampaignPoliticsValidation(source)),released);
  assert.notEqual(hash(withoutCampaignPoliticsValidation(source.replace('s.bank=','s.bank ='))),released,'Economic edits cannot bypass the existing source guard');
 });

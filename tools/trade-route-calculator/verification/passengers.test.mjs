@@ -41,7 +41,7 @@ test('partial bookings share compatible seats and never exceed source availabili
 test('frozen Low is separate from low-service cabins and changes LSS/billing only once',()=>{
  const s=base({low:1}),n=board(s,'low');assert.equal(stock(n).awakePeople,4);assert.equal(stock(n).occupiedLowBerths,1);assert.equal(stock(n).dailyUnits,'4.1');assert.equal(monthlySupport(P.passengerShip(n)),9100n);assert.equal(refillQuote(n).monthly,'9100');assert.throws(()=>board(n,'low'),/Low berths/);
  const day=S.transition(n,'Time advanced',v=>v.hours+=24);assert.equal(stock(day).remainingUnits,'135.9');assert.deepEqual(S.undo(day).ship.lifeSupport,n.ship.lifeSupport);
- const paid=S.transition(n,'Support expense',v=>S.shipExpenses(v,[{kind:'passengerSupport',period:'month',units:1}]));assert.equal(paid.ledger.at(-1).expense.amount,'4100');assert.deepEqual(paid.ship.accommodation,n.ship.accommodation);
+ const before=structuredClone(n);assert.throws(()=>S.shipExpenses(n,[{kind:'passengerSupport',period:'month',units:1}]),/included in LSS/);assert.deepEqual(n,before);
 });
 test('baggage rounds the aggregate once; fixed legacy and current whole-ship overrides retain zero/custom values',()=>{
  let s=base();s.ship.roundTons=true;let n=board(s,'low');n=board(n,'low');assert.equal(A.decimal(S.used(n)),'1');
@@ -73,8 +73,8 @@ test('origin population threshold applies across classes and explicit exceptions
  assert.throws(()=>board(first,'low'),/population/);const exception=S.transition(first,'Accepted exceptional passenger',n=>S.acceptPassengers(n,offer(n,'low').offerId,{count:1,cabinMode:'low',populationException:'Stranded visitor, not a permanent resident.'}));assert.equal(exception.contracts.at(-1).populationException,'Stranded visitor, not a permanent resident.');assert.equal(exception.contracts.at(-1).count,1);
  const zero=base();for(const o of P.latestPassengerSearch(zero).offers)o.audit.originPopulation='0';assert.throws(()=>board(zero,'low'),/population/);
 });
-test('baseline frozen billing stays unchanged while newly booked Low adds Cr100 and physical consumption once',()=>{
- const s=base();s.ship.accommodation.occupiedLowBerths=2;assert.equal(monthlySupport(s.ship),9000n);assert.equal(stock(s).dailyUnits,'4.2');const n=board(s,'low');assert.equal(monthlySupport(P.passengerShip(n)),9100n);assert.equal(stock(n).dailyUnits,'4.3');assert.equal(stock(n).occupiedLowBerths,3);assert.equal(refillQuote(n).monthly,'9100');assert.deepEqual(n.ship.accommodation,s.ship.accommodation);
+test('baseline and booked frozen occupants each contribute Cr100 monthly and physical consumption once',()=>{
+ const s=base();s.ship.accommodation.occupiedLowBerths=2;assert.equal(monthlySupport(s.ship),9200n);assert.equal(stock(s).dailyUnits,'4.2');const n=board(s,'low');assert.equal(monthlySupport(P.passengerShip(n)),9300n);assert.equal(stock(n).dailyUnits,'4.3');assert.equal(stock(n).occupiedLowBerths,3);assert.equal(refillQuote(n).monthly,'9300');assert.deepEqual(n.ship.accommodation,s.ship.accommodation);
 });
 
 function manual(s,type='middle',count=2,fare='1234',mode='private',extra={}){

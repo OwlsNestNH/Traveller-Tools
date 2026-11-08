@@ -10,8 +10,9 @@ const fields={
  'rooms-low':['Low service · cabins'],'roomService-low':['Low cabin running-cost rate'],'roomCustom-low':['Custom low cabin cost','Cr / month','Per cabin; only in Custom mode'],
  'rooms-middle':['Middle service · cabins'],'roomService-middle':['Middle cabin running-cost rate'],'roomCustom-middle':['Custom middle cabin cost','Cr / month','Per cabin; only in Custom mode'],
  'rooms-high':['High service · cabins'],'roomService-high':['High cabin running-cost rate'],'roomCustom-high':['Custom high cabin cost','Cr / month','Per cabin; only in Custom mode'],
- 'people-middle':['Awake people — Middle?'],'people-high':['Awake people — High?'],occupiedLowBerths:['Occupied low berths','','Frozen occupants only; exclude from awake people'],luggageOverride:['Override total luggage tons'],luggageTons:['Total luggage','tons','Automatic unless overridden'],
- 'refillRate-middle':['Middle refill rate','Cr','Per person per 28 days'],'refillRate-high':['High refill rate','Cr','Per person per 28 days'],
+ 'rooms-luxury':['Luxury service - cabins'],'roomService-luxury':['Luxury cabin running-cost rate'],'roomCustom-luxury':['Custom luxury cabin cost','Cr / month','Per cabin; only in Custom mode'],
+ 'people-middle':['Awake people — Middle?'],'people-high':['Awake people — High?'],'people-luxury':['Awake people - Luxury?'],occupiedLowBerths:['Occupied low berths','','Frozen occupants only; exclude from awake people'],luggageOverride:['Override total luggage tons'],luggageTons:['Total luggage','tons','Automatic unless overridden'],
+ 'refillRate-middle':['Middle refill rate','Cr','Per person per 28 days'],'refillRate-high':['High refill rate','Cr','Per person per 28 days'],'refillRate-luxury':['Luxury refill rate','Cr','Per person per 28 days'],
  supportCapacity:['Standard refill target','days'],supportRemaining:['Recorded endurance','days'],supportUnits:['Set actual LSS aboard','LSS','Optional inventory correction; overrides entered days'],tax:['Enable optional Merchant Prince taxes'],insurance:['Enable optional Merchant Prince cargo insurance'],creditStep:['Credit rounding for new entries']
 };
 export const settingsGroups=[
@@ -21,9 +22,9 @@ export const settingsGroups=[
  {id:'maintenance',title:'Monthly maintenance',description:'A separate four-week payment schedule',advanced:true,names:['maintenancePayment','maintenanceDueDate']},
  {id:'trader',title:'Trader & mail modifiers',description:'Whole-number skills and DMs',advanced:true,names:['broker','streetwise','admin','characteristic','rank','soc','intDM','eduDM','tradeSocDM']},
  {id:'pricing',title:'Trade rules & pricing',description:'Optional limits and profit settings for new transactions',advanced:true,names:['mode','custom','reducedProfitLimitsEnabled','minPurchasePercent','maxSalePercent','maxBaseRetailEnabled','maxBaseRetail','useRawIllegalPrices']},
- {id:'cabins',title:'Cabins & running costs',description:'All installed cabins, including crew and empty cabins',names:['rooms-low','roomService-low','roomCustom-low','rooms-middle','roomService-middle','roomCustom-middle','rooms-high','roomService-high','roomCustom-high']},
- {id:'people',title:'People & luggage',description:'Awake people include crew; frozen occupants are separate',names:['people-middle','people-high','occupiedLowBerths','luggageOverride','luggageTons']},
- {id:'support',title:'Life support supplies',description:'Supplies actually aboard',names:['supportCapacity','supportRemaining','supportUnits','refillRate-middle','refillRate-high']},
+ {id:'cabins',title:'Cabins & running costs',description:'All installed cabins, including crew and empty cabins',names:['rooms-low','roomService-low','roomCustom-low','rooms-middle','roomService-middle','roomCustom-middle','rooms-high','roomService-high','roomCustom-high','rooms-luxury','roomService-luxury','roomCustom-luxury']},
+ {id:'people',title:'People & luggage',description:'Awake people include crew; frozen occupants are separate',names:['people-middle','people-high','people-luxury','occupiedLowBerths','luggageOverride','luggageTons']},
+ {id:'support',title:'Life support supplies',description:'Supplies actually aboard',names:['supportCapacity','supportRemaining','supportUnits','refillRate-middle','refillRate-high','refillRate-luxury']},
  {id:'optional',title:'Optional taxes & insurance',description:'Merchant Prince campaign rules',advanced:true,names:['tax','insurance']},
  {id:'rounding',title:'Credit rounding',description:'Rounding for new entries',advanced:true,names:['creditStep']}
 ];

@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as S from '../js/state.mjs';
 import {decimal} from '../js/amounts.mjs';
+import {supportCostBasis} from '../js/life-support.mjs';
+import {expenseQuote} from '../js/expenses.mjs';
 import {passengerLuggage} from '../js/accommodation.mjs';
 const manifest=()=>({lowBerths:5,passengers:{low:2,middle:3,high:1},crew:{low:0,middle:4,high:0}});
 function campaign(){const s=S.initial();s.initialized=true;s.actual='0,0';s.bank='100000';s.worlds={'0,0':{id:'0,0',x:0,y:0,hex:'0101',sector:'Test',name:'Port',uwp:'A788899-C',zone:'Safe'}};s.ship.accommodation=manifest();return s;}
@@ -19,32 +21,29 @@ test('boarding and disembarking reconcile cargo space, preserve bank and undo at
  full.snapshots=[{id:'s',kind:'supplier',worldId:'0,0',party:'a',offers:[{id:'o',commodity:'11',remaining:'1',unitPrice:'100'}]}];
  assert.throws(()=>S.buy(full,{snapshotId:'s',offerId:'o',quantity:'0.01'}));
 });
-test('life support always uses saved actual headcounts and cannot change luggage by paying',()=>{
- const s=campaign(),before=structuredClone(s.ship.accommodation),next=S.transition(s,'Refill',n=>S.shipExpenses(n,[{kind:'passengerSupport',period:'week',units:1,passengers:{high:999},crew:{}}]));
- assert.equal(next.ledger.at(-1).expense.amount,'3000');assert.equal(next.bank,'97000');assert.deepEqual(next.ship.accommodation,before);assert.equal(passengerLuggage(next.ship),'1.32');
- assert.equal(S.undo(next).bank,s.bank);
+test('life support uses saved actual headcounts and rejected legacy payments cannot change luggage',()=>{
+ const s=campaign(),before=structuredClone(s);assert.equal(supportCostBasis(s.ship).peopleMonthly,'12000');
+ assert.throws(()=>S.transition(s,'Refill',n=>S.shipExpenses(n,[{kind:'passengerSupport',period:'week',units:1,passengers:{high:999},crew:{}}])),/included in LSS/);
+ assert.deepEqual(s,before);assert.equal(passengerLuggage(s.ship),'1.32');
 });
+
 test('actual luggage including zero replaces allowance independently of service upgrades',()=>{
  const s=campaign();s.ship.accommodation.luggageTons='0';
  s.ship.accommodation.passengersService={middle:{level:'high'},high:{level:'custom',monthly:'3500'}};
  assert.equal(passengerLuggage(s.ship),'0');S.validate(s);
- const next=S.transition(s,'Upgraded refill',n=>S.shipExpenses(n,[{kind:'passengerSupport',period:'week',units:1}]));
- assert.equal(next.ledger.at(-1).expense.amount,'3000');assert.match(JSON.stringify(next.ledger.at(-1).expense.details),/selected service level/);
- assert.equal(passengerLuggage(next.ship),'0');
+ assert.equal(supportCostBasis(s.ship).peopleMonthly,'12000');assert.throws(()=>S.shipExpenses(s,[{kind:'passengerSupport',period:'week',units:1}]),/included in LSS/);assert.equal(passengerLuggage(s.ship),'0');
  s.ship.accommodation.luggageTons='0.125';assert.equal(decimal(S.used(s)),'0.125');
  s.ship.accommodation.luggageTons=null;assert.equal(decimal(S.used(s)),'1.32');
  for(const luggageTons of ['-1','NaN'])assert.throws(()=>S.validate({...s,ship:{...s.ship,accommodation:{...s.ship.accommodation,luggageTons}}}));
  s.ship.accommodation.roomService={high:{level:'custom',monthly:'-1'}};assert.throws(()=>S.validate(s));
 });
 
-test('room breakdown migrates legacy totals and saved room services govern future expenses only',()=>{
+test('room breakdown and service changes affect future refill prices while historical receipts stay frozen',()=>{
  const s=campaign();s.ship.staterooms=3;
- const original=S.transition(s,'Old payment',n=>S.shipExpenses(n,[{kind:'staterooms',period:'week',units:1}]));
- assert.equal(original.ledger[0].expense.amount,'875'); // 5 low + 3 middle, including empty
- const next=S.transition(original,'Upgrade rooms',n=>{n.ship.accommodation.rooms={low:2,middle:3,high:1};n.ship.staterooms=6;n.ship.accommodation.roomService={middle:{level:'high'}};});
- const paid=S.transition(next,'Refill',n=>S.shipExpenses(n,[{kind:'staterooms',rooms:{middle:999},roomService:{middle:{level:'low'}},period:'week',units:1}]));
- assert.equal(paid.ledger.at(-1).expense.amount,'1050');assert.deepEqual(paid.ledger[0],original.ledger[0]);
- assert.deepEqual(S.validate(JSON.parse(JSON.stringify(paid))),paid);assert.equal(S.undo(paid).bank,next.bank);
+ const expense=expenseQuote(s.worlds[s.actual],{kind:'staterooms',rooms:{low:5,middle:3,high:0},period:'week',units:1});assert.equal(expense.amount,'875');
+ s.ledger.push({id:'old-cabin',type:'Ship expense',amount:'-875',hours:0,world:s.actual,expense});
+ const next=S.transition(s,'Upgrade rooms',n=>{n.ship.accommodation.rooms={low:2,middle:3,high:1};n.ship.staterooms=6;n.ship.accommodation.roomService={middle:{level:'high'}};});
+ assert.equal(supportCostBasis(next.ship).cabinMonthly,'4200');assert.deepEqual(next.ledger,s.ledger);assert.deepEqual(S.validate(JSON.parse(JSON.stringify(next))),next);assert.deepEqual(S.undo(next).ship,s.ship);
  for(const value of [-1,1.5,'2',null]){const bad=structuredClone(next);bad.ship.accommodation.rooms.low=value;assert.throws(()=>S.validate(bad));}
 });
 

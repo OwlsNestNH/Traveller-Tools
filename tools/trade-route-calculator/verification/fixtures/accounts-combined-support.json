@@ -1,0 +1,325 @@
+{
+  "change": "2026-11-08: cabin/person costs folded into LSS; retire separate payments, add explanatory report lines. Original .58 economics independently checked for every surviving entry.",
+  "cases": [
+    {
+      "name": "seven-kind full batch credit 1",
+      "canonicalSha256": "13a8410bd55da707fa058c06c64efade3c8b10683b8f07a8325ef45ce96ff6bf"
+    },
+    {
+      "name": "booked Low and awake plus legacy baseline credit 1",
+      "canonicalSha256": "826a3ad248ffc2865e637514d61aec7b994a1882a25bedd78ac180fdd5b68f49"
+    },
+    {
+      "name": "independent reversed periods credit 1",
+      "canonicalSha256": "f728f6c86afcfdaca2a3cf35d78a1fa50643f4a5de60f4843c31ffb9bdbe66bc"
+    },
+    {
+      "name": "fixed mortgage maintenance exact credit 1",
+      "canonicalSha256": "e3211cba8797f4436c9a5316e67d21c125050e510e486357269a0d53173272b7"
+    },
+    {
+      "name": "manual exact amount 10.1 step 1",
+      "canonicalSha256": "5c448fc8caa29127dddd826c2a8d394647e709fbd17eb48a60dd96ed771973a8"
+    },
+    {
+      "name": "manual exact amount 90071992547409931.1 step 1",
+      "canonicalSha256": "8e4deef8f0974653c00909ec152f2af4556c4c43e0b8ce12cb9465d62c501226"
+    },
+    {
+      "name": "correction signed amount 10.1 step 1",
+      "canonicalSha256": "72edf2ff515a98c94eed080c152e73028cc0e80a6995760f698a67eba639f20f"
+    },
+    {
+      "name": "correction signed amount -10.1 step 1",
+      "canonicalSha256": "257d2ae43c5475bcd7ca7299b1296b94013804bbd16edd8067b322919b565bc5"
+    },
+    {
+      "name": "correction signed amount 0 step 1",
+      "canonicalSha256": "6ef418e47b507dfa4e7641a14290d220cf4d83d87eabf59fbeb9a7aa6bfcc09c"
+    },
+    {
+      "name": "correction signed amount -900719925474099399999.1 step 1",
+      "canonicalSha256": "975854d9491f4272020eb801751c819905a34642e01a2c4bcb3c079fb2cd7122"
+    },
+    {
+      "name": "seven-kind full batch credit 100",
+      "canonicalSha256": "7d591b58285e28a4b11277acd0db70b296d00ffd8fe69c6dc47720cbccd3acc0"
+    },
+    {
+      "name": "booked Low and awake plus legacy baseline credit 100",
+      "canonicalSha256": "8aaf230d8a431a0e66ad9cf6211f4a275428bd62576a6b650ab3e0165e9b3594"
+    },
+    {
+      "name": "independent reversed periods credit 100",
+      "canonicalSha256": "0bdd2587a0eb62c12e27d5ed31c7a333158ddbdeef2ffe27dee375b38adf3fbf"
+    },
+    {
+      "name": "fixed mortgage maintenance exact credit 100",
+      "canonicalSha256": "15f7a7a0e4357e21e65250f02eb2751ef9888089d8d84ee3dddcfa5871c1d3d9"
+    },
+    {
+      "name": "manual exact amount 10.1 step 100",
+      "canonicalSha256": "64e92b9809dfc934f638ff89471b5ef0fa91316a600d6bd6e0fdb4d9e280cf04"
+    },
+    {
+      "name": "manual exact amount 90071992547409931.1 step 100",
+      "canonicalSha256": "3032e0973a857e406c5e2271bfb7620db98266e7221522a8f1e597fed0065d2f"
+    },
+    {
+      "name": "correction signed amount 10.1 step 100",
+      "canonicalSha256": "24ff4e243fa7070cd6f69bc09fb5fe6062c30dba5503824f4e271f94464af714"
+    },
+    {
+      "name": "correction signed amount -10.1 step 100",
+      "canonicalSha256": "7460b51d290f0e5e6e3b3a54afc7afb9509792e5f0ad37edcb132999d46449e6"
+    },
+    {
+      "name": "correction signed amount 0 step 100",
+      "canonicalSha256": "670a7ea78bdcb3a521e03391d7121c383ce2cd225b0fa8e5e92d0e9b76b9a6fd"
+    },
+    {
+      "name": "correction signed amount -900719925474099399999.1 step 100",
+      "canonicalSha256": "2f704bb6ce6524c744edf13dbc23f44e2c13730a55e0ac65376c0ba75b964ba2"
+    },
+    {
+      "name": "saved berthing A",
+      "canonicalSha256": "c3abd6db9990282e3785fe46b3bc650244796550e627533c80fb508ad2118b39"
+    },
+    {
+      "name": "inline rate retains form then payment A",
+      "canonicalSha256": "725326bb6aec69be488716e0f9eb75278543a8c05a2895f7047ed3b2cdfb3c66"
+    },
+    {
+      "name": "fuel unrefined port A",
+      "canonicalSha256": "caa98e7ca5553489c3bf8422d36ab2e64e7529fc1923e87aecfad0b165b22eb5"
+    },
+    {
+      "name": "fuel water port A",
+      "canonicalSha256": "b0a1cca0e243419d2cd42f3df2db2bf67c40a5fc58ea550aaa708a92f2156af4"
+    },
+    {
+      "name": "saved berthing B",
+      "canonicalSha256": "66d83945c04047ce002e5e63fa1ef19366dc2e2010ed57717af641baed612d5f"
+    },
+    {
+      "name": "inline rate retains form then payment B",
+      "canonicalSha256": "6de8aaff274ec2fb15b243e3d3410fa7867fcbb828e8614e8bd18ce8c69eb1c9"
+    },
+    {
+      "name": "fuel unrefined port B",
+      "canonicalSha256": "7059259056673a4c92f6fc98968a2936ceb73e883b5a7da27d3391ad84fa9de1"
+    },
+    {
+      "name": "fuel water port B",
+      "canonicalSha256": "7ab75d6f955700538567365103473242ad5a41cb262528e2c0b5f64d95559591"
+    },
+    {
+      "name": "saved berthing C",
+      "canonicalSha256": "f2a3f0985ea52dd113e4a0d0728f2dbd67025a636cd5a17d406f7511c8be137d"
+    },
+    {
+      "name": "inline rate retains form then payment C",
+      "canonicalSha256": "0b6d3c7dda2f44d7b627ef2c1cfa0b2ba08ccc5a4165122fbc798f90f419a361"
+    },
+    {
+      "name": "fuel unrefined port C",
+      "canonicalSha256": "11da961465428f921d72099ce44508e2671231496d359f8377e3c8a18056c8a1"
+    },
+    {
+      "name": "fuel water port C",
+      "canonicalSha256": "027db546b45f3eb745d2585bf1b4988ef4cc8f0c1707215e8fad4278ff36e043"
+    },
+    {
+      "name": "saved berthing D",
+      "canonicalSha256": "37f268795e221ab07d87efb2bdc61786a266bb74193077b10da965c4e0364375"
+    },
+    {
+      "name": "inline rate retains form then payment D",
+      "canonicalSha256": "f8d84721133ad92d0a9882da5809767dce8dd7903e15340e0b9977012a56275b"
+    },
+    {
+      "name": "fuel unrefined port D",
+      "canonicalSha256": "61c4c319210a14cf3272cee13e071ab24da08bd0f5e24f1e5658189f2c887527"
+    },
+    {
+      "name": "fuel water port D",
+      "canonicalSha256": "5c0cd9cf74af4f3cc7b29daaccf7aebfd6e6e1fe7ef058f4581ba9b9b593fe5a"
+    },
+    {
+      "name": "saved berthing E",
+      "canonicalSha256": "7574c9b566c254d5794758dea952cc55703864f95165877d85a792315f27b091"
+    },
+    {
+      "name": "fuel unrefined port E",
+      "canonicalSha256": "9e71478371ea6499e34edfff32c2a8319bae3708f19d64c277178c90be2cff49"
+    },
+    {
+      "name": "fuel water port E",
+      "canonicalSha256": "ce19115d855ea7b1101773163eef698048ac8937c453854d5d67edaafba35ab0"
+    },
+    {
+      "name": "saved berthing X",
+      "canonicalSha256": "2be2aab757304492009648be1370184184f767d40c6dd3162c907e26c11a2c23"
+    },
+    {
+      "name": "fuel unrefined port X",
+      "canonicalSha256": "d815248d254eee6cc5fe370764cbd0a5c75c8d061276e009b20db54d4007b448"
+    },
+    {
+      "name": "fuel water port X",
+      "canonicalSha256": "91feb47b9942ed015f7760988c3e4da3784ad59ce39de21329c87ad5d61045cf"
+    },
+    {
+      "name": "optional dormant fuel-only refined true",
+      "canonicalSha256": "7f87f2c437c559d4937539857d0481535e9efc3b169b001239fad8b88190b106"
+    },
+    {
+      "name": "optional dormant fuel-only unrefined true",
+      "canonicalSha256": "896c328fea1b433b5230a0117c81d6db29c1560966f6175659e76010be4c57b0"
+    },
+    {
+      "name": "optional dormant fuel-only water true",
+      "canonicalSha256": "1645cc0a5cd714dbfee7c1ca99d572b689d975be20b39d5219e0f49159933ae4"
+    },
+    {
+      "name": "optional dormant fuel-only refined false",
+      "canonicalSha256": "2cadef598a596d9b36a55bd89e724df09a66c70117c2410634a3c54dd3161085"
+    },
+    {
+      "name": "optional dormant fuel-only unrefined false",
+      "canonicalSha256": "e41d1a3fdb8fd867285cb9887b0b915aeb151e39abffb09cfdcffc82f7435382"
+    },
+    {
+      "name": "optional dormant fuel-only water false",
+      "canonicalSha256": "ad3475cc88dcd296a7c35330b0532dba3623c09d868aa1f1e30f3d65228d84a9"
+    },
+    {
+      "name": "zero fuel omitted salary persists",
+      "canonicalSha256": "5dc163ba2fcc558252767b9a80745ce0a0d77cd298e8d29c1f11623159ebaa43"
+    },
+    {
+      "name": "zero fuel only cannot pay",
+      "canonicalSha256": "688ea06de04745e752e3134e378f6e2ed17aa951c20e6e61621ea17db94d8409"
+    },
+    {
+      "name": "empty selection cannot pay",
+      "canonicalSha256": "770e22b1cc97e2ff46a938a2f8d316358809b81c37ad2ea766adb282490706dc"
+    },
+    {
+      "name": "all zero-cost nonempty batch",
+      "canonicalSha256": "416e4d9d2b17c4d7ae83a011308d104875c95108c24e51981593506120057494"
+    },
+    {
+      "name": "deselected invalid fields cannot block salary",
+      "canonicalSha256": "2fea7e0e44c00e4cc078b257c236f53a57b15e71800012027e907634e32637cd"
+    },
+    {
+      "name": "combined insufficient funds no partial debit",
+      "canonicalSha256": "2226a28cda2a0cf22339c626b55e9a793fe456af070bd9a4f5f4140adc8c973a"
+    },
+    {
+      "name": "manual invalid 0",
+      "canonicalSha256": "e115fd5133bde3ebc1292679d133a0d63b09e85fcc0c113f50af5d3387c7eb4c"
+    },
+    {
+      "name": "manual invalid -1",
+      "canonicalSha256": "5f4c42e1001aab0dbc3eeae7bfacf05dc1ef29e1371db8336f7bd172e72e87a4"
+    },
+    {
+      "name": "manual invalid NaN",
+      "canonicalSha256": "ff61e800c4cfbfc8b5f78e39c38a07f8205e77b2b31f9e93745bcbecf2ed5de0"
+    },
+    {
+      "name": "manual invalid 900719925474099399999",
+      "canonicalSha256": "53b32e9afbca93d012af75f6f8f0a3425a4948090dee82d1a3c20e23dbe66720"
+    },
+    {
+      "name": "manual blank reason",
+      "canonicalSha256": "c59e915c285108f90c28218fda75feb9ac6d9ca1ffa6add422eb1d1c1fe40cd8"
+    },
+    {
+      "name": "correction blank reason",
+      "canonicalSha256": "3f6ead7aed6f9c0b8c0aee20628428feaeef44da43b8384c16234f4e11a5256a"
+    },
+    {
+      "name": "invalid fuel NaN",
+      "canonicalSha256": "c7433c05bcfccaa86ab59bf2010f0f44b54e74719456693d005646a1a1943579"
+    },
+    {
+      "name": "invalid fuel -1",
+      "canonicalSha256": "fc2cd9912191a158a5e13fab6941b4ae929f10033b74ec1545869d5d0410ac87"
+    },
+    {
+      "name": "invalid fuel 1000",
+      "canonicalSha256": "63f88225eb8a73d5776461a11538e65ae43b90b81f876b782a2067deaa6b4ff0"
+    },
+    {
+      "name": "bladder cargo boundary exact",
+      "canonicalSha256": "6feec47e7fd5f96bb004b8b7d51c0bbd58a0e79478496cc39c5738f252e1c640"
+    },
+    {
+      "name": "bladder cargo overflow rejected",
+      "canonicalSha256": "be4eaf84cbdbc2e4d1d4dc0c1ec2cd8ac1d8704d54195bb06a87e8d7a3f99f02"
+    },
+    {
+      "name": "private refined supplier documented",
+      "canonicalSha256": "e2d5d22c8f4a6d4d0a49edcedee3b99c707099bf7f855b1653ee09da8198be48"
+    },
+    {
+      "name": "private supplier needs notes",
+      "canonicalSha256": "b4330f3ddaeeef06cf190eadb98ee7a8307e63f4b4b43e64216ccb0e4e7bb01c"
+    },
+    {
+      "name": "unavailable water advisory stays permitted",
+      "canonicalSha256": "d1603c4c4d6a760d5c3f36eceb98eac33fdb3293a43358faa61b537e5d020710"
+    },
+    {
+      "name": "effective port override saved mismatch requires new rate",
+      "canonicalSha256": "11f582f40275804225336ed538bf78bbd5d0a1965b564eb20f3904a142132b08"
+    },
+    {
+      "name": "browse other world bills actual",
+      "canonicalSha256": "271c4daacd29220a5321c5797def04e86b52a7ca9763a38df04e5e683877b853"
+    },
+    {
+      "name": "legacy stock representation anchored unchanged amount",
+      "canonicalSha256": "aa8f0417c0cb0d6abc773eda0f90c446ce3f0e92cbeb3855ababbb98a847e208"
+    },
+    {
+      "name": "committed bundle closes jump mulligan permanently",
+      "canonicalSha256": "33ee46fad2441b77f1a092b7490e17506141c4088dc78145360992430bb8ce04"
+    },
+    {
+      "name": "committed manual closes jump mulligan permanently",
+      "canonicalSha256": "89081650cb1ad87231cb82de4f361cce01c0ff67ddda51aee15997eeed3e911f"
+    },
+    {
+      "name": "committed correction closes jump mulligan permanently",
+      "canonicalSha256": "2ede4738964ffb195e6e358886bec40fe115cead195608c31730e8910259b757"
+    },
+    {
+      "name": "rate then bundle closes prior mulligan",
+      "canonicalSha256": "f65c5c75ceb5873827c5b9263530e96822554d9771fd9ff4211693b1021c15b9"
+    },
+    {
+      "name": "cancel first no economic effects",
+      "canonicalSha256": "b475b076f7c2988071b3d77a1b20550affe207f623d7af750047abcd82620e3a"
+    },
+    {
+      "name": "cancel review no economic effects",
+      "canonicalSha256": "5b14770d2f78f289a6edf836632703cf7bba968884de0a3fafd5cf677e8a5625"
+    },
+    {
+      "name": "select all helper retains seven kinds",
+      "canonicalSha256": "13a8410bd55da707fa058c06c64efade3c8b10683b8f07a8325ef45ce96ff6bf"
+    },
+    {
+      "name": "fuel quantity shortcut next",
+      "canonicalSha256": "d134f0cd986a7a210433f8e6cdd254485acd15274811d640ca35cc71ffa446f4"
+    },
+    {
+      "name": "fuel quantity shortcut fill",
+      "canonicalSha256": "90597442ce1651740d986335d6ac417cf8b63e8acc33dc52b8b36c24834aac9f"
+    }
+  ]
+}

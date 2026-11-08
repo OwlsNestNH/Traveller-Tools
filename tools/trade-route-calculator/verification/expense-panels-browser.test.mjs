@@ -56,7 +56,7 @@ try{
    await click('map-zoom-in');await page.waitForFunction(()=>document.querySelector('.map-zoom-controls .help')?.textContent==='120%');await panMap();const preservedCamera=await camera(),mapHeights=[preservedCamera.height];let cameraChecks=0;
    assert.notEqual(preservedCamera.zoom,'100%');assert.notEqual(preservedCamera.pan,'translate(0 0)');
    const sameCamera=async label=>{const measured=await camera();assertMapCameraUnchanged(measured,preservedCamera,label);mapHeights.push(measured.height);cameraChecks++;};
-   await click('ship-expenses');await sameCamera('Open Ship expenses');assert.equal(await page.locator('.expense-table tbody tr').count(),7);assert.match(await page.locator('.expense-table tfoot').textContent(),/Cr 122,000/);assert.equal(await raw(),bytes);
+   await click('ship-expenses');await sameCamera('Open Ship expenses');assert.equal(await page.locator('.expense-table tbody tr').count(),6);assert.match(await page.locator('.expense-table tfoot').textContent(),/Cr 122,008/);assert.equal(await raw(),bytes);
    await page.screenshot({path:artifacts+`/expenses-summary-${width}.png`,fullPage:true});await overviewGeometry(page);
    // Every remaining top-level service switches directly in every stock mode.
    for(const from of ['refuel','refill-support'])for(const mode of (from==='refuel'?['inline']:['draft','edited']))for(const to of ['refuel','refill-support','ship-expenses']){
