@@ -24,6 +24,7 @@ export function createRobotApi(options = {}) {
   let baseline = JSON.stringify(design);
   let status = ok();
   let busy = false;
+  let draftRevision = 0;
 
   function decodeStore(raw) {
     if (raw === null) return {schemaVersion:1,revision:0,designs:[]};
@@ -64,14 +65,14 @@ export function createRobotApi(options = {}) {
   function getView() {
     const catalogue=engine.getCatalogue(design),evaluation=engine.evaluateDesign(design);
     const review=projectReview(design,catalogue,evaluation);
-    return clone({design,catalogue,evaluation,review,savedDesigns:listSaved(),storageStatus:{...status,canSave:status.canSave&&!busy},dirty:baseline !== JSON.stringify(design),busy,currentId,statblock:formatStatblock(review)});
+    return clone({design,catalogue,evaluation,review,savedDesigns:listSaved(),storageStatus:{...status,canSave:status.canSave&&!busy},dirty:baseline !== JSON.stringify(design),busy,draftRevision,currentId,statblock:formatStatblock(review)});
   }
   function emit() {
     const view = getView();
     for (const listener of listeners) { try { listener(clone(view)); } catch(error) { globalThis.console?.error('Robot Builder view listener failed',error); } }
     return view;
   }
-  function changed(next) { design = next; return emit(); }
+  function changed(next) { design = next; draftRevision++; return emit(); }
   function setIdentity(patch) {
     assertIdle();
     if (!patch || typeof patch !== 'object' || Array.isArray(patch) || Object.keys(patch).some(key => !['name','kind','techLevel'].includes(key))) throw fault('invalid-identity','Only name, robot type and Tech Level can be changed here.');
@@ -90,14 +91,44 @@ export function createRobotApi(options = {}) {
     assertIdle();
     const entry = saved.designs.find(item => item.id === id);
     if (!entry) throw fault('not-found','That saved design is no longer available. Refresh the saved list.');
-    design = clone(entry.design); currentId = entry.id; baseline = JSON.stringify(design);
+    design = clone(entry.design); draftRevision++; currentId = entry.id; baseline = JSON.stringify(design);
     return emit();
   }
-  function importDesign(json) {
-    assertIdle();
+  function importDesign(json, expectedRevision) {
+    assertIdle(); assertRevision(expectedRevision);
     let next; try { next = engine.importDesign(json); } catch(error) { if(error instanceof SyntaxError) throw fault('invalid-json','This is not valid Robot Builder JSON. Your current design and saved designs are unchanged.'); throw error; }
     currentId = null; baseline = null;
     return changed(next);
+  }
+  function assertRevision(expectedRevision) {
+    if (expectedRevision !== undefined && expectedRevision !== draftRevision) throw fault('draft-changed','The draft changed while the file was being read. Choose the file again to apply it to this draft.');
+  }
+  function referenceControl() {
+    const control=engine.getCatalogue(design).stages.flatMap(stage=>stage.controls.map(control=>({...control,stage:stage.id}))).find(control=>control.type==='design-references');
+    if(!control)throw fault('references-unavailable','This construction type does not accept referenced robot designs.');
+    return control;
+  }
+  function attachDesignReference(command) {
+    assertIdle();
+    if(!command || typeof command!=='object' || Array.isArray(command) || Object.keys(command).some(key=>!['role','quantity','savedId','json','expectedRevision'].includes(key)))throw fault('invalid-reference','Choose a role and one saved or imported robot design.');
+    assertRevision(command.expectedRevision);
+    if((typeof command.savedId==='string')===(typeof command.json==='string'))throw fault('invalid-reference','Choose exactly one saved design or import file.');
+    const control=referenceControl();
+    let snapshot;
+    if(typeof command.savedId==='string'){
+      const entry=saved.designs.find(entry=>entry.id===command.savedId);
+      if(!entry)throw fault('not-found','That saved design is no longer available. Refresh the saved list.');
+      snapshot=engine.importDesign(JSON.stringify(entry.design));
+    }else snapshot=engine.importDesign(command.json);
+    const id='ref-'+idFactory();
+    const refs=design.special?.[control.field]||[];
+    if(refs.some(record=>record.id===id))throw fault('id-conflict','Unable to create a distinct component reference. Try again.');
+    return changed(engine.applySelection(design,{stage:control.stage,field:control.field,value:[...refs,{id,role:command.role,quantity:command.quantity??1,design:snapshot}]}));
+  }
+  function removeDesignReference(id) {
+    assertIdle();const control=referenceControl();const refs=design.special?.[control.field]||[];
+    if(!refs.some(record=>record.id===id))throw fault('not-found','That component reference is no longer part of this draft.');
+    return changed(engine.applySelection(design,{stage:control.stage,field:control.field,value:refs.filter(record=>record.id!==id)}));
   }
   function refreshSaved() {
     assertIdle();
@@ -161,5 +192,5 @@ export function createRobotApi(options = {}) {
     const next = engine.createExample(id); currentId = null; baseline = null; return changed(next);
   }
   function subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); }
-  return {getView,getStatblock,listExamples,loadExample,setIdentity,select,newDesign,saveDesign,listSaved,loadDesign,importDesign,exportDesign:()=>engine.exportDesign(design),refreshSaved,subscribe};
+  return {getView,getStatblock,listExamples,loadExample,setIdentity,select,newDesign,saveDesign,listSaved,loadDesign,importDesign,attachDesignReference,removeDesignReference,exportDesign:()=>engine.exportDesign(design),refreshSaved,subscribe};
 }

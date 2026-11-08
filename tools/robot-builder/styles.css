@@ -164,8 +164,8 @@ footer { color: var(--muted); font-size: .73rem; }
 }
 @media(max-width:560px){
  .identity-fields{grid-template-columns:minmax(0,1fr) 100px!important}
- .identity-fields label[for="robot-name"]{grid-column:1/-1;grid-row:1}
- .identity-fields label[for="robot-kind"]{grid-column:1;grid-row:2}
+ .identity-fields label[for="robot-name"]{grid-column:1;grid-row:2}
+ .identity-fields label[for="robot-kind"]{grid-column:1/-1;grid-row:1}
  .identity-fields label[for="robot-tl"]{grid-column:2;grid-row:2}
  .category-content{grid-template-columns:1fr}.title-row{gap:12px!important}.title-actions{justify-content:flex-start}
  .title-actions button{padding:9px 12px}.intro{margin-bottom:0}
@@ -208,3 +208,9 @@ footer { color: var(--muted); font-size: .73rem; }
 .metrics > .metric:first-child dd { margin: 5px 0 0; text-align: left; overflow-wrap: anywhere; }
 .parameter-group > summary { cursor: pointer; padding: 8px 0; }
 .parameter-group[open] > summary { margin-bottom: 8px; }
+.external-options > summary, .external-composer > summary { cursor: pointer; padding: 10px 0; }
+
+.derived-value { display: block; min-height: 2.75rem; padding: .7rem .85rem; border: 1px solid var(--border, #344258); border-radius: .35rem; background: #101622; color: #c8dcff; }
+
+@media(max-width:800px){#stage-panel{scroll-margin-top:85px}}
+.optional-control{border-top:1px solid #2b3750;padding-top:12px}.optional-control>summary{cursor:pointer;color:#c8dcff;margin-bottom:12px}

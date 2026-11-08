@@ -94,6 +94,7 @@ function renderNavigation() {
       renderNavigation();
       renderStage();
       $('stage-panel').focus({ preventScroll: true });
+      if(window.matchMedia('(max-width:800px)').matches) $('stage-panel').scrollIntoView({block:'start',behavior:'instant'});
     });
     return button;
   }));
@@ -102,12 +103,23 @@ function selectedValue(control) { return control.target === 'special' ? view.des
 function submitSelection(control, value) {
   safely(() => api.select({ stage: currentStage, field: control.field, value }));
 }
+function recordChoices(field,record) {
+  const choices=field.choicesBy?.values?.[record?.[field.choicesBy.field]] || field.choices || [];
+  return field.maxValueField && Number.isFinite(record?.[field.maxValueField]) ? choices.filter(choice=>typeof choice.id!=='number'||choice.id<=record[field.maxValueField]) : choices;
+}
+function dependsOn(rule,key){return rule?.field===key || rule?.allOf?.some(item=>dependsOn(item,key));}
 function renderControl(control, choicesOverride) {
   const field = el('div', undefined, 'field');
   const id = ['field',currentStage,control.field,control.category && String(control.category).toLowerCase().replace(/[^a-z0-9_-]+/g,'-')].filter(Boolean).join('-');
   const label = el('label', control.label); label.htmlFor = id; field.append(label);
   const choices = choicesOverride || control.choices || [];
-  const selected = selectedValue(control);
+  const selected = control.readOnly && Object.hasOwn(control,'derivedValue') ? control.derivedValue : selectedValue(control);
+  if(control.readOnly){
+    const output=el('output',choices.find(choice=>choice.id===selected)?.label ?? (selected===undefined||selected===null?'Not calculated':String(selected)),'derived-value');output.id=id;
+    field.append(output,el('p',control.description||'Derived from the selected component designs.','help'));
+    const source=sourceText(control.source);if(source)field.append(el('small',source,'source'));
+    return field;
+  }
   if (control.type === 'option-parameters') {
     field.classList.add('wide');
     const all = view.design.selections.physical;
@@ -156,7 +168,28 @@ function renderControl(control, choicesOverride) {
         if(!matchesVisibility(item,parameters))continue;
         const row=el('label',item.label);const inputId=prefix+'-'+item.field;row.htmlFor=inputId;
         const value=parameters[item.field]??item.default??'';let input;
-        if(item.type==='number')input=numericPicker(item,value,value=>onChange(item.field,value));
+        if(item.type==='multiselect'){
+          input=el('div',undefined,'record-multiselect');let values=Array.isArray(value)?[...value]:[];
+          const draw=()=>{
+            const picker=el('div',undefined,'option-picker'),select=el('select'),add=el('button','Add');
+            select.setAttribute('aria-label',item.label||item.field);add.type='button';
+            selectChoices(select,(item.choices||[]).filter(choice=>!values.includes(choice.id)),'');
+            add.disabled=true;select.addEventListener('change',()=>{add.disabled=!select.value||values.length>=(item.maxItems||200);});
+            add.addEventListener('click',()=>{values.push(select.value);onChange(item.field,[...values]);draw();});
+            picker.append(select,add);const list=el('div',undefined,'installed-list');
+            for(const value of values){
+              const choice=item.choices?.find(choice=>choice.id===value),entry=el('div',undefined,'installed-row'),remove=el('button','Remove');
+              remove.type='button';remove.setAttribute('aria-label','Remove '+(choice?.label||value));
+              remove.addEventListener('click',()=>{values=values.filter(id=>id!==value);onChange(item.field,[...values]);draw();});
+              entry.append(el('span',choice?.label||value),remove);list.append(entry);
+            }
+            const search=el('input');search.type='search';search.placeholder='Find a book option';search.setAttribute('aria-label','Search '+(item.label||item.field));
+            search.addEventListener('input',()=>{
+              const query=search.value.toLowerCase();selectChoices(select,(item.choices||[]).filter(choice=>!values.includes(choice.id)&&choice.label.toLowerCase().includes(query)),'');add.disabled=true;
+            });
+            input.replaceChildren(...((item.choices||[]).length>30?[search]:[]),picker,list);
+          };draw();row.classList.add('wide');
+        }else if(item.type==='number')input=numericPicker(item,value,value=>onChange(item.field,value));
         else if(item.type==='select'){
           input=el('select');selectChoices(input,item.choices,value);
           input.addEventListener('change',()=>onChange(item.field,item.choices.find(c=>String(c.id)===input.value)?.id??null));
@@ -190,7 +223,7 @@ function renderControl(control, choicesOverride) {
     };
     picker.addEventListener('change',()=>{
       draft.optionId=picker.value;const choice=choices.find(item=>item.id===draft.optionId);
-      draft.parameters=Object.fromEntries(parametersFor(choice).map(item=>[item.field,item.default??(item.type==='number'?item.min??0:item.type==='select'?item.choices?.[0]?.id:'')]));
+      draft.parameters=Object.fromEntries(parametersFor(choice).map(item=>[item.field,item.default??(item.type==='multiselect'?[]:item.type==='number'?item.min??0:item.type==='select'?item.choices?.[0]?.id:'')]));
       customDrafts.set(draftKey,draft);redraw();
     });
     add.addEventListener('click',()=>{
@@ -198,14 +231,62 @@ function renderControl(control, choicesOverride) {
       customDrafts.delete(draftKey);submitSelection(control,[...installed,next]);
     });
     composer.append(picker,hint,container,add);redraw();details.append(composer);field.append(details);
+  } else if (control.type === 'design-references') {
+    field.classList.add('wide');
+    const installed=Array.isArray(selected)?selected:[];
+    const roles=control.choices || control.itemFields?.find(item=>item.field==='role')?.choices || [];
+    for(const record of installed){
+      const card=el('div',undefined,'option-settings'),heading=el('div',undefined,'manipulator-heading');
+      const name=record.design?.name || 'Unnamed component';
+      heading.append(el('h4',name));
+      const remove=el('button','Remove');remove.type='button';remove.setAttribute('aria-label','Remove referenced '+name);
+      remove.addEventListener('click',()=>safely(()=>api.removeDesignReference(record.id),'Component reference removed from this draft.'));
+      heading.append(remove);card.append(heading);
+      card.append(el('p',[roles.find(role=>role.id===record.role)?.label||record.role,`TL ${record.design?.techLevel}`,`Quantity ${record.quantity}`].join(' · '),'help'));
+      card.append(el('p','This is a copied design snapshot. Its construction is checked again with the current rules; the original saved design is unchanged.','help'));
+      field.append(card);
+    }
+    const draftKey=view.design.kind+':'+id;
+    const draft=customDrafts.get(draftKey)||{role:'',quantity:1,savedId:''};customDrafts.set(draftKey,draft);
+    const grid=el('div',undefined,'fields-grid');
+    const roleLabel=el('label','Component role'),role=el('select');role.id=id+'-role';roleLabel.htmlFor=role.id;selectChoices(role,roles,draft.role);roleLabel.append(role);grid.append(roleLabel);
+    const quantityLabel=el('label','Identical copies');
+    const quantity=numericPicker(control.quantityControl||{min:control.quantityMin||1,max:control.quantityMax||control.maxQuantity||1,step:1},draft.quantity,value=>{draft.quantity=value;});quantity.id=id+'-quantity';quantityLabel.htmlFor=quantity.id;quantityLabel.append(quantity);grid.append(quantityLabel);
+    const savedLabel=el('label','Saved robot design'),savedPicker=el('select');savedPicker.id=id+'-saved';savedLabel.htmlFor=savedPicker.id;
+    selectChoices(savedPicker,(view.savedDesigns||[]).map(item=>({id:item.id,label:`${item.name||'Unnamed robot'} (TL${item.techLevel})`})),draft.savedId,'Choose a saved design');savedLabel.append(savedPicker);grid.append(savedLabel);
+    const actions=el('div',undefined,'row-actions wide');const add=el('button','Use saved component'),importButton=el('button','Import component JSON');add.type=importButton.type='button';add.className='primary';
+    const fileInput=el('input');fileInput.type='file';fileInput.accept='.json,application/json';fileInput.hidden=true;fileInput.id=id+'-file';
+    const update=()=>{draft.role=role.value;draft.savedId=savedPicker.value;const full=installed.length>=(control.maxItems||16);add.disabled=full||!draft.role||!draft.savedId;importButton.disabled=full||!draft.role;};
+    role.addEventListener('change',update);savedPicker.addEventListener('change',update);update();
+    add.addEventListener('click',()=>safely(()=>api.attachDesignReference({role:draft.role,quantity:draft.quantity,savedId:draft.savedId}),'Component snapshot added. Check its construction results below.'));
+    importButton.addEventListener('click',()=>fileInput.click());
+    fileInput.addEventListener('change',async()=>{
+      const file=fileInput.files?.[0];if(!file)return;
+      const revision=view.draftRevision,request={role:draft.role,quantity:draft.quantity};
+      try{if(file.size>2*1024*1024)throw new Error('Choose a robot design smaller than 2 MB.');const json=await file.text();await safely(()=>api.attachDesignReference({...request,json,expectedRevision:revision}),'Component snapshot imported. Original saves are unchanged.');}
+      catch(error){notify(error.message,true);}finally{fileInput.value='';}
+    });
+    actions.append(add,importButton,fileInput);grid.append(actions);field.append(grid);
   } else if (control.type === 'custom-packages' || control.type === 'weapons' || control.type === 'external-vehicle-options') {
     field.classList.add('wide');
     const installed=Array.isArray(selected)?selected:[];
     const isWeapon = control.type === 'weapons';
     const isExternal = control.type === 'external-vehicle-options';
-    const recordLabel = record => control.recordNameField ? record[control.recordNameField] || 'New record' : isWeapon ? (control.itemFields?.find(item=>item.field==='weaponId')?.choices?.find(choice=>choice.id===record.weaponId)?.label || 'Weapon installation') : record.speciality || 'Custom package';
+    const recordLabel = record => {
+      if(control.recordNameField){const field=control.itemFields?.find(item=>item.field===control.recordNameField),name=recordChoices(field||{},record).find(choice=>choice.id===record[control.recordNameField])?.label||record[control.recordNameField]||'New record';return name+(control.recordDetailField&&record[control.recordDetailField]?' ('+record[control.recordDetailField]+')':'');}
+      return isWeapon ? (control.itemFields?.find(item=>item.field==='weaponId')?.choices?.find(choice=>choice.id===record.weaponId)?.label || 'Weapon installation') : record.speciality || 'Custom package';
+    };
     const makeFields=(record,prefix,onChange)=>{
-      const grid=el('div',undefined,'fields-grid');
+      const grid=el('div',undefined,'fields-grid'),groups=new Map();
+      const targetFor=item=>{
+        if(!item.group)return grid;
+        if(!groups.has(item.group)){
+          const details=el('details',undefined,'wide parameter-group');
+          details.open=(control.itemFields||[]).filter(field=>field.group===item.group).some(field=>Object.hasOwn(record,field.field)&&JSON.stringify(record[field.field])!==JSON.stringify(field.default));
+          details.append(el('summary',item.group));const content=el('div',undefined,'fields-grid');details.append(content);grid.append(details);groups.set(item.group,content);
+        }
+        return groups.get(item.group);
+      };
       for(const item of control.itemFields || []) {
         if (!matchesVisibility(item, record)) continue;
         const row=el('label',item.label || item.field);
@@ -226,13 +307,17 @@ if(item.type==='multiselect'){
               remove.addEventListener('click',()=>{selected=selected.filter(id=>id!==value);onChange(item.field,[...selected]);draw();});
               row.append(el('span',choice?.label||value),remove);list.append(row);
             }
-            input.replaceChildren(picker,list);
+            const search=el('input');search.type='search';search.placeholder='Find a book option';search.setAttribute('aria-label','Search '+(item.label||item.field));
+            search.addEventListener('input',()=>{
+              const query=search.value.toLowerCase();selectChoices(select,(item.choices||[]).filter(choice=>!selected.includes(choice.id)&&choice.label.toLowerCase().includes(query)),'');add.disabled=true;
+            });
+            input.replaceChildren(...((item.choices||[]).length>30?[search]:[]),picker,list);
           };draw();row.classList.add('wide');
         }
         else if(item.type==='number')input=numericPicker(item,record[item.field]??item.min,value=>onChange(item.field,value));
-        else if(item.type==='select'){input=el('select');selectChoices(input,item.choices,record[item.field]);input.addEventListener('change',()=>onChange(item.field,item.choices.find(c=>String(c.id)===input.value)?.id??null));}
+        else if(item.type==='select'){input=el('select');const choices=recordChoices(item,record);selectChoices(input,choices,record[item.field]);input.addEventListener('change',()=>onChange(item.field,choices.find(c=>String(c.id)===input.value)?.id??null));}
         else {input=el('input');input.type='text';input.value=record[item.field]??'';input.maxLength=item.maxLength||120;input.addEventListener('input',()=>onChange(item.field,input.value));}
-        input.id=fieldId;row.append(input);grid.append(row);
+        input.id=fieldId;row.append(input);targetFor(item).append(row);
       }
       return grid;
     };
@@ -257,12 +342,12 @@ if(item.type==='multiselect'){
     const composer=el('div',undefined,'option-settings');
     composer.append(el('h4',control.composerLabel||(isWeapon?'Add a weapon installation':isExternal?'Add a source-defined external vehicle option':'Add a book-permitted custom package')));
     const add=el('button',control.addLabel || (isWeapon?'Add weapon':isExternal?'Add external vehicle option':'Add custom package'));add.type='button';add.className='primary';
-    const valid=()=>!(control.itemFields||[]).some(item=>item.type==='text'&&item.required!==false&&item.optional!==true&&!String(draft[item.field]||'').trim())&&installed.length<(control.maxItems||200);
+    const valid=()=>control.canAdd!==false&&!(control.itemFields||[]).some(item=>matchesVisibility(item,draft)&&item.type==='text'&&item.required!==false&&item.optional!==true&&!String(draft[item.field]||'').trim())&&installed.length<(control.maxItems||200);
     add.disabled=!valid();
     const redrawComposer = () => {
       const next = makeFields(draft, id+'-new', (key, value) => {
         draft[key]=value;Object.assign(draft,resetHiddenFields(control,draft));customDrafts.set(draftKey,draft);add.disabled=!valid();
-        if ((control.itemFields||[]).some(item=>item.visibleWhen?.field===key)) redrawComposer();
+        if ((control.itemFields||[]).some(item=>dependsOn(item.visibleWhen,key)||item.choicesBy?.field===key||item.maxValueField===key)) redrawComposer();
       });
       const previous=composer.querySelector('.fields-grid');
       if(previous)previous.replaceWith(next);else composer.append(next);
@@ -272,7 +357,12 @@ if(item.type==='multiselect'){
       const next={id:(control.recordIdPrefix||(isWeapon?'wpn-':isExternal?'veh-':'pkg-'))+globalThis.crypto.randomUUID(),...draft};
       customDrafts.delete(draftKey);submitSelection(control,[...installed,next]);
     });
-    composer.append(add);field.append(composer);
+    composer.append(add);
+    if(control.canAdd===false&&control.unavailableReason)composer.append(el('p',control.unavailableReason,'help'));
+    if(isExternal){
+      const disclosure=el('details',undefined,'external-composer');disclosure.open=installed.length===0;
+      const heading=composer.querySelector('h4');disclosure.append(el('summary',heading?.textContent||'Add external vehicle option'));heading?.remove();disclosure.append(composer);field.append(disclosure);
+    }else field.append(composer);
 
   } else if (control.type === 'manipulators') {
     field.classList.add('wide');
@@ -380,11 +470,23 @@ if(item.type==='multiselect'){
   if ((control.description || control.help) && control.type !== 'option-instances') field.append(el('p', control.description || control.help, 'help'));
   const source = sourceText(control.source || choices.find(choice=>choice.id===selected)?.source); if (source) field.append(el('p', source, 'source'));
   if (control.type !== 'multiselect' && control.choices?.length === 0) field.append(el('p', 'Book choices pending verification. No custom values are substituted.', 'help'));
+  if(control.collapsedByDefault){
+    label.remove();const disclosure=el('details',undefined,'wide optional-control');disclosure.open=Array.isArray(selected)&&selected.length>0;
+    disclosure.append(el('summary',control.label+(selected?.length?' ('+selected.length+')':'')),field);return disclosure;
+  }
+  if(control.type==='external-vehicle-options'){
+    label.remove();const disclosure=el('details',undefined,'wide external-options');
+    disclosure.open=Array.isArray(selected)&&selected.length>0;
+    disclosure.append(el('summary',control.label+(selected?.length?' ('+selected.length+')':'')),field);return disclosure;
+  }
   return field;
 }
 function resetHiddenFields(control, record) {
   const next={...record};
-  for(const item of control.itemFields||[])if(item.resetWhenHidden&&!matchesVisibility(item,next))next[item.field]=item.default;
+  for(const item of control.itemFields||[]){
+    if(item.resetWhenHidden&&!matchesVisibility(item,next))next[item.field]=item.default;
+    if(item.resetWhenUnavailable){const choices=recordChoices(item,next);if(!choices.some(choice=>choice.id===next[item.field]))next[item.field]=choices.some(choice=>choice.id===item.default)?item.default:choices[0]?.id;}
+  }
   return next;
 }
 function matchesVisibility(control, values) {
@@ -500,10 +602,10 @@ function renderSummary() {
   }));
   if (!diagnostics.length) $('issues').append(el('p', evaluation.status === 'verified' ? 'No outstanding construction checks.' : 'Construction rules have not been fully verified.', 'help'));
   const coverage = evaluation.coverage || view.catalogue.coverage;
-  if (coverage?.gaps?.length) {
+  if (coverage?.gaps?.length || coverage?.compositeBoundaries?.length) {
     const details = el('details', undefined, 'coverage'); details.append(el('summary', 'Implementation coverage'));
     if (coverage.scope) details.append(el('p', coverage.scope, 'help'));
-    for (const gap of coverage.gaps) details.append(el('p', typeof gap === 'string' ? gap : gap.message || gap.reason || gap.id, 'help'));
+    for (const gap of [...(coverage.gaps||[]),...(coverage.compositeBoundaries||[])]) details.append(el('p', typeof gap === 'string' ? gap : gap.message || gap.reason || gap.id, 'help'));
     $('issues').append(details);
   }
 }
@@ -601,7 +703,7 @@ try {
     try {
       if (file.size > 2 * 1024 * 1024) throw new Error('This JSON file is too large. Choose a robot design smaller than 2 MB.');
       if (view.dirty && !window.confirm('Import this design and replace your current unsaved changes?')) return;
-      const json = await file.text(); safely(() => api.importDesign(json), 'Design imported. Save it to keep it in this browser.');
+      const revision = view.draftRevision; const json = await file.text(); safely(() => api.importDesign(json,revision), 'Design imported. Save it to keep it in this browser.');
     } catch (error) { notify(error.message, true); }
     finally { event.target.value = ''; }
   });

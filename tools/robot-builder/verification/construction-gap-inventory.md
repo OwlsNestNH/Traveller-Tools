@@ -1,0 +1,49 @@
+# Remaining Robot Builder construction work
+
+Scope: Robot Handbook (Mongoose 2022), new construction. This is a concrete gap inventory after the general-computer and composite reviews, not a claim that every possible design has been certified. Published examples and tests establish the stated cases only.
+
+## Implementable choices or integration still missing
+
+1. **Clone growth and training records, pp 98-99.** The printed early-stop accelerated-growth choice is not represented: the book describes stopping at apparent age six after six months, with normal ageing thereafter. Its stated example leaves sixteen years of creche training at apparent age twenty-two rather than thirty-four. Do not invent a prorated commercial fee. Current INT training records have one aggregate completion year, not multiple separately timed purchases; those can affect automatic EDU catch-up. These are construction/training-record limits, not a request for a full career simulator.
+2. **Other source-defined devices and composite payload forms.** The mass-only implant catalogue covers nineteen eligible printed device rows plus source-derived computer variants, not every external-book device. Direct Plastic/TDX charge sizing lacks a printed base mass in the checked Core table; no unit is invented. Microbot/swarm payload packaging and biological host records need appropriate source dimensions and compatibility rather than a fabricated standard chassis Size. External ship/vehicle legality remains a separate dependency below.
+
+Recently closed:
+- Repeatable microbot equipment uses independent instance records. Three auditory and two visual sensors cost Cr730 including the body/brain and consume five zero-slot choices; fifteen copies at TL14 are invalid.
+- Cyberlimb weapons now use associated weapon, ammunition, fire-control and autoloader records. Independent tests cover separate servos versus actual-Size limb attachments, arm/leg capacity, standard equipment prices, quantities and cybernetic percentage costs.
+- Attached and included ACR launchers now have distinct, independently loaded attack profiles. Loose individual grenade rounds reserve their known masses in either storage route and aggregate per compartment. Packaged fragmentation ammunition is not universally classified as hazardous cargo by the source; the output retains a handling condition.
+- Simultaneous configured ACR muzzle and underslung attacks are supported without double charging the included hardware.
+- Direct mounts support all four source-massed Core grenades and the fictional four-kilogram charge. No launcher, autoloader, trigger or applied attack modifier is invented; aerosol/smoke conditions survive delivery-route changes.
+- Mass-only miscellaneous implants support the nineteen eligible printed computer, terminal, sensor, electronics-toolkit and medikit rows. Device count, interfaces, triple hardware prices, modifiers and operating conditions are independently checked.
+- General-purpose implanted computers now separate purchased programs from active programs, enforce rated TL and Processing, and retain source specialisation and prototype/retrotech prices and masses. The same software rules apply to bundled neural computers at their printed package price, with no duplicate device/interface charge. Physical Expert assistance is conditional on the actual neural-link route and never becomes a permanent recipient skill. Thirty-one independent tests check these paths, including both printed Core examples.
+- One-level validated robot snapshots now reconcile host/brain/body/payload costs and relevant capacities. Invalid and blocked children propagate; interface-only BIACS/RIBACI estimates cannot masquerade as robot bodies. Missile occupancy uses twice immutable Base Slots. Controller hardware, transceivers, skills and avatar Bandwidth remain distinct checks.
+
+## Source ambiguities or missing definitions
+
+- **Metamorphic bodies, p 104:** reserved Slots, full body-cost basis and freely formed manipulator characteristics are not specified. Prices and morph times alone do not define a complete legal build. No authoritative clarification was found in the bounded author-thread search.
+- **Aeroplane vehicle movement, pp 17,23, and primary-thruster edge cases:** the required mapping/reconciliation remains absent. Do not invent a vehicle band.
+- **Brain implants, pp 67,89,92-94:** the ordinary upgrade/software rules are now implemented. Software in cybernetic percentage surcharges requires a selected interpretation. Very Advanced implant retrotech is also a source-basis question: p 67 gives a general discount and p 92 gives introduction prices without an explicit exemption. Printed introduction prices are verified. Both later-TL pricing readings are now explicit, and unresolved affected selections block; neither is silently universal.
+- **Bundled neural computer upgrades, p 92:** the Computer/1 advanced-comm route to Computer/2 at TL 15 and Cr10,000 is explicit. The later neural-link paragraph does not repeat the advanced-only restriction, but supplies no distinct Computer/0-to-/2 price. That basic-link case remains a source question, not an invented free upgrade. General-computer software licence/device-price treatment and cybernetic percentage treatment remain separately disclosed.
+- **Weapon boundaries, pp 61 and Core pp 126,135:** combined rifle/Heavy Weapons mounting for an attached launcher is unresolved, so only its held construction is currently accepted. Loose spare magazines require source-backed container mass; individual grenade mass cannot stand in for that missing data.
+- **Other disclosed choices:** Hunter/Killer package Bandwidth, the p 81 Advanced microbrain row versus ordinary brain fit, short-RTG price basis, solar-coating STR/Agility scope, cyberlimb increase prices versus worked examples, master-interface DEX and superior-avatar Slot count.
+- **High-tech incomplete definitions, pp 104-105:** continuous-backup implant capacity/compatibility and distributed-conscious-swarm INT/Bandwidth are not fully specified. High-tech nanoconstructor lifetime/throughput, open-fabrication external size bounds and a precise sub-milligram minimum are also unstated. Keep source-priced acquisitions/capabilities distinct from complete certified brains or facilities.
+- **Conditional operation:** mixed degraded-source power, stationary usable STR and omitted charging history cannot be computed by inventing an energy model. This need not prevent legal installation, but an unsupported operating result must remain qualified.
+- **Published reconstruction discrepancies:** preserve Advanced Courier, Zombie, StarTek, Nano Hero and Sabmiqys differences. Do not alter inputs merely to make catalogue records fit.
+
+Resolving a source ambiguity can require a published ruling or an explicit referee interpretation. Passing tests is not itself such a ruling.
+
+## External source or host dependencies
+
+- The matching earlier Vehicle Handbook was not found in connected Drive or Library. The verified copy is Update 2026, not automatically the edition referenced by Robot Handbook 2022. The generic 64-Slots-per-Space conversion can remain an unverified estimate; a verified original option catalogue is still missing.
+- High Guard and the relevant Vehicle Handbook are needed for host hull/vehicle legality and referenced missile/torpedo definitions. The installed robot can be validated separately without pretending typed host dimensions prove the host legal.
+- Central Supply Catalogue and other weapon/device books are needed for their augmentation, drug, equipment and weapon rows. Source availability, not an arbitrary manual override, should determine coverage.
+- Biological templates, recipient anatomy, clone donor data and medical-package compatibility may depend on a supplied character/species record. A genome confirmation flag is not a substitute for a complete independent species generator.
+
+## Separate enhancements, not new-build release requirements
+
+Combat resolution, surgery success, treatment outcomes, factory activity, fleet operation, damage/maintenance simulation, retrofit histories, support procurement and full careers are separate workflows. A Robot-as-Traveller projection is needed only when that output is selected; a full career generator is not implied. Deeper reference graphs and fleet-wide shared-component cost aggregation are optional composition enhancements, not automatic requirements for an individual robot builder. One-level snapshots do not certify an otherwise unverified external host.
+
+## Focused implant audit
+
+Independent checks cover all four printed prices at introduction; each implant's TL+2 memory gate; hardening, memory and INT costs; inherent versus expanded Bandwidth; zero-Bandwidth allowance; standard/custom software per implant; recipient-skill isolation; and the two explicit software-surcharge interpretations. The p 67 arithmetic example totals Cr 197,500 including its separate Cr 30,000 neural link.
+
+No remaining arithmetic failure was found in these focused cases. The source interpretations and concrete construction gaps above still prevent an unqualified claim of “any legal robot.”

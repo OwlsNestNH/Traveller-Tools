@@ -150,3 +150,35 @@ test('controller observers receive detached snapshots and can unsubscribe',()=>{
   rename(instance,'Visible');assert.equal(instance.getView().design.name,'Visible');assert.equal(calls,1);
   off();rename(instance,'Another');assert.equal(calls,1);
 });
+
+test('delayed file import cannot replace a newer draft or change saved bytes',async()=>{
+ const storage=memory();const instance=api(storage);await instance.saveDesign();const bytes=storage.getItem(STORE_KEY),old=instance.exportDesign(),revision=instance.getView().draftRevision;
+ instance.setIdentity({name:'Newer edit'});assert.throws(()=>instance.importDesign(old,revision),{code:'draft-changed'});
+ assert.equal(instance.getView().design.name,'Newer edit');assert.equal(storage.getItem(STORE_KEY),bytes);
+ const current=instance.getView().draftRevision;instance.importDesign(old,current);assert.equal(instance.getView().design.name,'Untitled robot');
+});
+
+test('component commands reject ambiguous sources and unsupported types atomically',()=>{
+ const instance=api(),before=instance.exportDesign();
+ assert.throws(()=>instance.attachDesignReference({role:'body',savedId:'saved',json:before}),{code:'invalid-reference'});
+ assert.throws(()=>instance.attachDesignReference({role:'body',json:before}),{code:'references-unavailable'});
+ assert.throws(()=>instance.attachDesignReference({role:'body',json:before,extra:true}),{code:'invalid-reference'});
+ assert.equal(instance.exportDesign(),before);
+});
+test('saved components are copied into a parent without mutating the original save',async()=>{
+ const storage=memory();const instance=api(storage);instance.setIdentity({name:'Installed robot',techLevel:13});await instance.saveDesign();
+ const savedId=instance.listSaved()[0].id,bytes=storage.getItem(STORE_KEY);instance.newDesign('ship-brain');
+ instance.attachDesignReference({role:'installed-robot',savedId});let view=instance.getView();
+ assert.equal(view.evaluation.status,'verified');assert.equal(view.evaluation.totals.cost,512000);assert.equal(view.design.special.designReferences[0].design.name,'Installed robot');assert.equal(storage.getItem(STORE_KEY),bytes);
+ const exported=instance.exportDesign(),id=view.design.special.designReferences[0].id;instance.removeDesignReference(id);assert.equal(instance.getView().design.special.designReferences.length,0);
+ instance.importDesign(exported);view=instance.getView();assert.equal(view.design.special.designReferences[0].id,id);assert.equal(view.currentId,null);assert.equal(storage.getItem(STORE_KEY),bytes);
+ instance.loadDesign(savedId);instance.setIdentity({name:'Edited original'});assert.equal(JSON.parse(exported).special.designReferences[0].design.name,'Installed robot');
+});
+
+test('component file imports are atomic, revision guarded and never trust supplied totals',()=>{
+ const instance=api();instance.setIdentity({techLevel:13});const child=instance.exportDesign();instance.newDesign('ship-brain');const before=instance.exportDesign(),revision=instance.getView().draftRevision;
+ for(const command of [{role:'installed-robot',json:'{'},{role:'installed-robot',savedId:'missing'}])assert.throws(()=>instance.attachDesignReference(command));
+ assert.equal(instance.exportDesign(),before);instance.setIdentity({name:'Revised host'});assert.throws(()=>instance.attachDesignReference({role:'installed-robot',json:child,expectedRevision:revision}),{code:'draft-changed'});
+ const forged=JSON.parse(child);forged.totals={cost:0};assert.throws(()=>instance.attachDesignReference({role:'installed-robot',json:JSON.stringify(forged)}));
+ instance.attachDesignReference({role:'installed-robot',json:child,expectedRevision:instance.getView().draftRevision});assert.equal(instance.getView().evaluation.totals.cost,512000);
+});

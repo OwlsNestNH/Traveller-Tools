@@ -33,7 +33,8 @@ export function evaluatePowerMode(design,installed){
   else if(p.powerMode==='alternate-full'&&modes.some(m=>m.level!=='half'))issue('blocker','ALTERNATE_FULL_CONFLICT','The explicitly selected source condition is not full capability. Use conditioned-alternative mode or restore full-capability conditions.');
   else{
    const active=modes.filter(m=>m.level!=='off'),fullCount=active.filter(m=>m.level==='half').reduce((n,m)=>n+m.o.quantity,0),count=active.reduce((n,m)=>n+m.o.quantity,0);
-   if(active.some(m=>m.level==='unknown'))issue('blocker','SOLAR_UNIT_LIGHT','Dim or dark solar-unit output depends on prior charging and local conditions, which are not supplied. No stored endurance is invented.');
+   if(fullCount>=2&&activity==='normal'){powerState.movementFactor=1;powerState.strengthFactor=1;if(active.some(m=>m.level==='unknown'))issue('warning','SUPPLEMENTAL_POWER_UNCERTAIN','Two full-capability sources already supply the selected normal operating state. Supplemental solar output remains unknown and is not needed or added to that result.');}
+   else if(active.some(m=>m.level==='unknown'))issue('blocker','SOLAR_UNIT_LIGHT','Dim or dark solar-unit output depends on prior charging and local conditions, which are not supplied. No stored endurance is invented.');
    else if(!count){powerState.shutdown=true;issue('blocker','ALTERNATE_NO_OUTPUT','Installed sources are unavailable in this selected state. This does not prohibit their installation.');}
    else if(count>1&&activity!=='normal')issue('blocker','MULTI_SOURCE_ACTIVITY','Reduced-activity recharge/output combinations for multiple sources are not specified. Select normal activity or review that condition separately.');
    else if(fullCount>=2){powerState.movementFactor=1;powerState.strengthFactor=1;}

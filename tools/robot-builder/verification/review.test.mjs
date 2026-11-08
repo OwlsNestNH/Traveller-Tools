@@ -156,3 +156,87 @@ test('operating capabilities are grouped and preserve explicit readiness and unk
  assert.match(output,/Requires Remote Ops software/);assert.match(output,/Target Link Verified: No/);assert.match(output,/Task Capacity: 0/);assert.match(output,/Radiation Protection: 500/);assert.match(output,/Depth Metres: 100/);
  assert.ok(!review.sections.find(s=>s.id==='additional')?.rows.some(r=>r.label==='Equipment Capabilities'));
 });
+test('microbot capability projections use the same source-cited review groups',()=>{
+ let d=createDesign({kind:'microbot',techLevel:14});d=updateDesign(d,{special:{options:['vacuum-environment-protection','transceiver-500km-advanced']}});
+ const review=projectReview(d,getCatalogue(d),evaluateDesign(d)),output=formatStatblock(review);
+ assert.ok(review.sections.some(s=>s.id==='capabilities-communications'));assert.match(output,/Range Km: 500/);assert.match(output,/Vacuum: Yes/);
+ assert.ok(!review.sections.find(s=>s.id==='additional')?.rows.some(r=>r.label==='Capabilities'));
+});
+test('blocked special paths retain selected custom skills with readable parent choices',()=>{
+ const d={...design,kind:'cyborg',special:{brainCustomPackages:[{id:'skill',parentBrain:'brain-record',skill:'language',speciality:'Vilani',level:1}]}};
+ const c={...catalogue,stages:[{id:'skills',controls:[{field:'brainCustomPackages',target:'special',type:'custom-packages',label:'Implant custom software',source:{book:'Robot Handbook',pages:'72,92'},itemFields:[{field:'parentBrain',label:'Implant',choices:[{id:'brain-record',label:'Basic brain implant 1'}]},{field:'skill',label:'Skill',choices:[{id:'language',label:'Language'}]},{field:'speciality',label:'Speciality'},{field:'level',label:'Level'}]}]}]};
+ const review=projectReview(d,c,{...evaluate(null),status:'blocked'}),output=formatStatblock(review);
+ assert.match(output,/Language \(Vilani\)/);assert.match(output,/Selected level 1/);assert.match(output,/Basic brain implant 1/);assert.doesNotMatch(output,/brain-record/);
+});
+test('implant brain and skill profiles stay readable and separate from recipient skills',()=>{
+ let d=createDesign({kind:'cyborg',techLevel:15});d=updateDesign(d,{special:{cyborgMode:'augments',augmentations:[{id:'link',optionId:'neural-link-basic',parameters:{}},{id:'brain',optionId:'brain-implant-basic',parameters:{bandwidthUpgrade:'bw-1',softwarePackages:['admin-1']}}],brainCustomPackages:[{id:'language',parentBrain:'brain',skill:'language',speciality:'Vilani',level:1}]}});
+ const result=evaluateDesign(d);assert.equal(result.status,'verified');
+ const review=projectReview(d,getCatalogue(d),result),output=formatStatblock(review);
+ assert.match(review.sections.find(s=>s.id==='implant-brains').rows[0].value,/INT 8/);
+ assert.equal(review.sections.find(s=>s.id==='implant-skills').rows.length,2);
+ assert.equal(review.sections.some(s=>s.id==='skills'),false);
+ assert.match(output,/not automatically granted to the recipient/);assert.match(output,/Language \(Vilani\)/);
+});
+test('special legacy and per-instance equipment both survive a blocked review without ordinary leakage',()=>{
+ let d=createDesign({kind:'microbot',techLevel:14});d=updateDesign(d,{special:{options:['wireless'],optionInstances:[{id:'radio',optionId:'transceiver-500km-advanced',parameters:{quantity:2}}]}});
+ const result=evaluateDesign(d);assert.equal(result.status,'verified');
+ const review=projectReview(d,getCatalogue(d),{...result,status:'blocked',totals:null}),rows=review.sections.find(s=>s.id==='equipment').rows;
+ assert.equal(rows.length,2);assert.ok(rows.some(r=>r.label==='Wireless Data Link'));assert.ok(rows.some(r=>r.label.includes('500km')&&r.value.includes('Quantity: 2')));
+ assert.ok(!rows.some(r=>r.label==='Visual Spectrum Sensor'));
+});
+test('auxiliary attacks and shared ammunition reservations have readable separate review rows',()=>{
+ const c={...catalogue,stages:[{id:'physical',controls:[{field:'weapons',type:'weapons',itemFields:[{field:'ammunitionStorageId',choices:[{id:'instance:box',label:'Storage compartment 1'}]},{field:'auxiliaryAmmunition',choices:[{id:'smoke',label:'Smoke grenade'}]}]}]}]};
+ const totals={weapons:[{id:'rifle',label:'Rifle',damage:'3D',range:500,placement:'held',auxiliary:{parentWeaponId:'rifle',mode:'attached',range:100,damage:'Smoke',ammunition:'smoke',cost:1015,fireControlAssociationVerified:false,context:'Separate attack.',source:{book:'Core Rulebook Update 2022',pages:135}},looseAmmunition:{storageId:'instance:box',grenade:'smoke',count:2,massKg:1}}],ammunitionStorage:[{storageId:'instance:box',capacityKg:2,reservedKg:1,remainingKg:1,scope:'Approximate capacity.',source:{book:'Robot Handbook',pages:55}}]};
+ const review=projectReview(design,c,evaluate(totals)),output=formatStatblock(review);
+ assert.equal(review.sections.find(s=>s.id==='weapons').rows.length,2);
+ assert.match(output,/Rifle \/ secondary launcher/);assert.match(output,/Smoke grenade/);assert.match(output,/Fire Control Association Verified: No/);assert.match(output,/Storage compartment 1/);assert.match(output,/1 \/ 2 kg reserved/);assert.doesNotMatch(output,/instance:box/);
+});
+test('both ACR attacks appear once with distinct ranges and ammunition',()=>{
+ const c={...catalogue,stages:[{id:'physical',controls:[{field:'weapons',type:'weapons',itemFields:[{field:'auxiliaryAmmunition',choices:[{id:'smoke',label:'Smoke grenade'},{id:'stun',label:'Stun grenade'}]}]}]}]};
+ const attached={profileId:'gun:attached',parentWeaponId:'gun',mode:'attached',range:100,ammunition:'smoke',damage:'Smoke',context:'Separate attack.'};
+ const integral={profileId:'gun:integral',parentWeaponId:'gun',mode:'integral-acr',range:250,ammunition:'stun',damage:'Stun',context:'Separate attack.'};
+ const r=projectReview(design,c,evaluate({weapons:[{id:'gun',label:'Advanced Combat Rifle',auxiliary:attached,associatedAttacks:[attached,integral]}]}));
+ const rows=r.sections.find(s=>s.id==='weapons').rows,output=formatStatblock(r);
+ assert.equal(rows.length,3);assert.match(rows[1].value,/100 m/);assert.match(rows[2].value,/250 m/);
+ assert.match(output,/Smoke grenade/);assert.match(output,/Stun grenade/);assert.doesNotMatch(output,/gun:attached|gun:integral/);
+});
+
+test('cyberlimb weapon profiles preserve parent, independent capacity and unknown recipient attacks',()=>{
+ let d=createDesign({kind:'cyborg',techLevel:13});d=updateDesign(d,{special:{cyborgMode:'augments',augmentations:[{id:'arm',optionId:'cybernetic-arm',parameters:{quantity:2}}],augmentWeapons:[{id:'gun',parentLimb:'arm',weaponId:'handbook-stunner-12',placement:'arm',linkedWeapons:1,fireControl:'basic',autoload:true,extraMagazines:2,initialMagazines:1}]}});
+ const result=evaluateDesign(d);assert.equal(result.status,'verified');
+ const r=projectReview(d,getCatalogue(d),result),s=r.sections.find(s=>s.id==='limb-weapons'),output=formatStatblock(r);
+ assert.equal(s.rows.length,2);assert.match(s.rows[0].value,/Cr 25,000/);assert.match(s.rows[0].label,/Cybernetic arm/i);
+ assert.match(output,/Copies: 2/);assert.match(output,/Per Limb Slots: 3/);assert.match(output,/Base Attack Modifier: Not calculated/);
+ assert.match(output,/Recipient skill and total attack modifiers remain uncalculated/);
+ assert.ok(!r.sections.find(s=>s.id==='augmentations').rows[0].details.some(row=>row.label==='Weapons'));
+});
+
+test('blocked limb weapon selection remains readable without invented costs',()=>{
+ let d=createDesign({kind:'cyborg',techLevel:13});d=updateDesign(d,{special:{cyborgMode:'augments',augmentations:[{id:'arm',optionId:'cybernetic-arm',parameters:{strengthIncrease:1}}],augmentWeapons:[{id:'gun',parentLimb:'arm',weaponId:'handbook-stunner-12',placement:'body',linkedWeapons:1,fireControl:'none',autoload:false,extraMagazines:0,initialMagazines:1}]}});
+ const result=evaluateDesign(d);assert.equal(result.status,'blocked');
+ const r=projectReview(d,getCatalogue(d),result),s=r.sections.find(s=>s.id==='limb-weapons');
+ assert.equal(s.rows.length,1);assert.match(s.rows[0].label,/Stunner/i);assert.match(s.rows[0].detail,/Cybernetic arm/i);
+ assert.match(s.note,/Performance and costs have not been calculated/);
+});
+test('composite review exposes source-derived integration values without dumping nested designs',()=>{
+ const child=createDesign({techLevel:13});child.name='Reference robot';
+ const d=updateDesign(createDesign({kind:'ship-brain',techLevel:13}),{special:{designReferences:[{id:'reference',role:'installed-robot',quantity:1,design:child}]}});
+ const evaluation=evaluateDesign(d),review=projectReview(d,getCatalogue(d),evaluation),output=formatStatblock(review);
+ const component=review.sections.find(s=>s.id==='components');assert.equal(component.rows.length,1);assert.match(component.rows[0].value,/Cr 12,000 construction/);
+ assert.match(output,/Cr 512,000/);assert.match(output,/External hull, vehicle or biological-host legality/);assert.match(output,/Integration values from component designs/);assert.match(output,/Referenced robot profiles/);assert.match(output,/Hits: 20/);assert.match(output,/Arm: 1/);assert.match(output,/not automatically to its host/);
+ assert.ok(!review.sections.find(s=>s.id==='additional')?.rows.some(row=>row.label==='Composite'));
+ assert.doesNotMatch(output,/Schema Version|designReferences|selections\./);
+});
+
+test('equipment summaries show changed settings while default options remain in disclosure',()=>{
+ let d=createDesign({kind:'cyborg',techLevel:13});d=updateDesign(d,{special:{cyborgMode:'augments',augmentations:[{id:'arm',optionId:'cybernetic-arm',parameters:{}}]}});
+ const review=projectReview(d,getCatalogue(d),evaluateDesign(d));const equipment=review.sections.find(s=>s.id==='equipment').rows[0];
+ assert.doesNotMatch(equipment.value,/Ruggedised circuitry: No|Detachable socket/);assert.ok(equipment.details.some(row=>row.label.includes('Installation reference')));
+});
+test('general computer program states stay separate from robot brains and recipient skills',()=>{
+ const d=updateDesign(createDesign({kind:'cyborg',techLevel:14}),{special:{cyborgMode:'augments',augmentations:[{id:'computer',optionId:'misc-mass-portable-computer-14',parameters:{}}],computerSoftware:[{id:'interface',parentComputer:'computer',program:'interface',rating:0,runningBandwidth:0,subject:'',databasePrice:10,expertUse:'assisted'},{id:'security',parentComputer:'computer',program:'security',rating:0,runningBandwidth:-1,subject:'',databasePrice:10,expertUse:'assisted'}]}});
+ const result=evaluateDesign(d);assert.equal(result.status,'verified');const review=projectReview(d,getCatalogue(d),result),output=formatStatblock(review);
+ assert.equal(review.sections.find(s=>s.id==='computer-programs').rows.length,2);assert.match(output,/Running at rating 0/);assert.match(output,/Stored, not running/);assert.match(output,/Processing 0 active \/ 5 available/);
+ assert.match(output,/separate from robot brain software and recipient skills/);assert.ok(!review.sections.some(s=>s.id==='skills'||s.id==='implant-skills'));
+ assert.doesNotMatch(output,/Parent Computer: computer/);
+});

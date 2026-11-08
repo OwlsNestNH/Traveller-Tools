@@ -78,6 +78,17 @@ try{
  await page.screenshot({path:path.join(out,'robot-weapon-installation.png'),fullPage:true});
  await page.getByRole('button',{name:/^Remove Laser Carbine/}).click();
  draft=await exportDraft();check('weapon removal retained',draft.selections.physical.weapons.length===0);
+ await page.locator(weaponPrefix+'weaponId').selectOption('advanced-combat-rifle');
+ await page.locator(weaponPrefix+'placement').selectOption('held');await page.locator(weaponPrefix+'manipulatorId').selectOption('base-1');
+ const launcherGroup=page.locator('.parameter-group').filter({has:page.locator(weaponPrefix+'auxiliaryLauncher')});
+ if(!await launcherGroup.evaluate(node=>node.open))await launcherGroup.locator('summary').click();
+ await page.locator(weaponPrefix+'auxiliaryLauncher').selectOption('both-acr');
+ await page.locator(weaponPrefix+'auxiliaryAmmunition').selectOption('smoke');await page.locator(weaponPrefix+'auxiliaryLoaded').selectOption('1');
+ await page.locator(weaponPrefix+'integralAmmunition').selectOption('frag');await page.locator(weaponPrefix+'integralLoaded').selectOption('1');
+ await page.getByRole('button',{name:'Add weapon',exact:true}).click();draft=await exportDraft();
+ check('ACR independent launcher inputs survive API update',draft.selections.physical.weapons[0].auxiliaryAmmunition==='smoke'&&draft.selections.physical.weapons[0].integralAmmunition==='frag');
+ await stage(6);check('ACR review presents both source ranges',await page.locator('.review-weapons').textContent().then(t=>t.includes('100 m')&&t.includes('250 m')&&t.includes('included muzzle launcher')&&t.includes('attached launcher')));
+ await stage(3);await page.locator('#physical-category').selectOption('weapons');await page.getByRole('button',{name:/^Remove Advanced Combat Rifle/}).click();
  await stage(5);
  const packages=page.locator('#field-skills-packages');await packages.selectOption('admin-0');
  await packages.locator('..').getByRole('button',{name:'Add',exact:true}).click();
@@ -141,9 +152,10 @@ try{
  draft=await exportDraft();check('optional modification retained through API',draft.special.augmentations[0].parameters.ruggedised==='yes');
  await page.locator('#field-physical-augmentations-'+limb.id+'-ruggedised').selectOption('no');
  check('worked cybernetic arm cost displayed',await page.locator('#summary-metrics').textContent().then(t=>t.includes('22,100')));
+ const limbEquipment=page.locator('#stage-content details').filter({has:page.locator('#field-physical-augmentOptions-new-optionId')});
+ if(!await limbEquipment.evaluate(node=>node.open))await limbEquipment.locator('summary').click();
  await page.locator('#field-physical-augmentOptions-new-optionId').selectOption('auditory');
  await page.locator('#field-physical-augmentOptions-new-parentLimb').selectOption(limb.id);
- const limbEquipment=page.locator('#stage-content details').filter({has:page.locator('#field-physical-augmentOptions-new-optionId')});
  await limbEquipment.getByRole('button',{name:'Add separate installation',exact:true}).click();
  draft=await exportDraft();check('limb equipment references selected limb',draft.special.augmentOptions[0].parameters.parentLimb===limb.id);
  for(const width of [1440,390,320]){
@@ -154,19 +166,130 @@ try{
  await stage(6);
  check('cybernetic review shows independent profiles',await page.locator('.review-augmentations').textContent().then(t=>t.includes('Cybernetic arm')&&t.includes('STR')));
  check('cybernetic review retains installed equipment',await page.locator('.review-equipment').textContent().then(t=>t.includes('Auditory Sensor')));
- await page.setViewportSize({width:1440,height:1000});await page.locator('#robot-kind').selectOption('biological');await page.locator('#robot-tl').selectOption('13');await stage(3);
+ await page.setViewportSize({width:1440,height:1000});await page.locator('#new-design').click();await page.locator('#robot-kind').selectOption('cyborg');await page.locator('#robot-tl').selectOption('13');await stage(1);
+ await page.locator('#field-chassis-cyborgMode').selectOption('augments');await stage(3);
+ await page.locator('#field-physical-augmentations-new-optionId').selectOption('cybernetic-arm');
+ await page.locator('#stage-content details').filter({has:page.locator('#field-physical-augmentations-new-optionId')}).getByRole('button',{name:'Add separate installation',exact:true}).click();
+ draft=await exportDraft();const armedLimb=draft.special.augmentations[0];const limbWeaponPrefix='#field-physical-augmentWeapons-new-';
+ const limbWeaponsPanel=page.locator('.optional-control').filter({has:page.locator(limbWeaponPrefix+'parentLimb')});
+ check('unused limb weapon editor starts collapsed after prerequisite parts',await limbWeaponsPanel.evaluate(node=>!node.open));
+ await limbWeaponsPanel.locator(':scope > summary').click();
+ await page.locator(limbWeaponPrefix+'parentLimb').selectOption(armedLimb.id);await page.locator(limbWeaponPrefix+'weaponId').selectOption('handbook-stunner-12');
+ await page.locator(limbWeaponPrefix+'placement').selectOption('arm');await page.locator(limbWeaponPrefix+'fireControl').selectOption('basic');await page.locator(limbWeaponPrefix+'autoload').selectOption('true');await page.locator(limbWeaponPrefix+'extraMagazines').selectOption('2');
+ await page.getByRole('button',{name:'Add weapon',exact:true}).click();draft=await exportDraft();
+ check('cyberlimb weapon is scoped to finite parent record',draft.special.augmentWeapons[0].parentLimb===armedLimb.id&&draft.special.augmentWeapons[0].autoload===true);
+ check('cyberlimb weapon cost integrated into part total',await page.locator('#summary-metrics').textContent().then(t=>t.includes('24,000')));
+ await stage(6);check('cyberlimb final review shows scoped profile',await page.locator('.review-limb-weapons').textContent().then(t=>t.includes('12,500')&&t.includes('Recipient skill and total attack modifiers remain uncalculated')));
+ for(const width of [1440,390,320]){
+   await page.setViewportSize({width,height:1000});check('armed cyberlimb review has no overflow '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+   await page.screenshot({path:path.join(out,'robot-cyberlimb-weapon-review-'+width+'.png'),fullPage:true});
+ }
+ await page.setViewportSize({width:1440,height:1000});await page.locator('#new-design').click();await page.locator('#robot-kind').selectOption('cyborg');await page.locator('#robot-tl').selectOption('15');await stage(1);
+ await page.locator('#field-chassis-cyborgMode').selectOption('augments');await stage(3);
+ const implantPrefix='#field-physical-augmentations-new-';
+ const implantComposer=page.locator('#stage-content details').filter({has:page.locator(implantPrefix+'optionId')});
+ await page.locator(implantPrefix+'optionId').selectOption('neural-link-basic');await implantComposer.getByRole('button',{name:'Add separate installation',exact:true}).click();
+ await page.locator(implantPrefix+'optionId').selectOption('brain-implant-basic');await page.locator(implantPrefix+'bandwidthUpgrade').selectOption('bw-1');
+ const software=page.locator(implantPrefix+'softwarePackages');
+ await implantComposer.locator('.parameter-group').filter({has:software}).locator('summary').click();
+ await software.locator('input[type=search]').fill('Admin');check('implant software search filters only book choices',await software.locator('select option').count()===5);
+ await software.locator('select').selectOption('admin-1');await software.getByRole('button',{name:'Add',exact:true}).click();
+ await implantComposer.getByRole('button',{name:'Add separate installation',exact:true}).click();
+ draft=await exportDraft();const brain=draft.special.augmentations.find(item=>item.optionId==='brain-implant-basic');
+ check('implant software stays with its brain record',brain.parameters.softwarePackages.includes('admin-1')&&brain.parameters.bandwidthUpgrade==='bw-1');
+ const installedBrainPrefix='#field-physical-augmentations-'+brain.id+'-';
+ const brainModifiers=implantComposer.locator('.parameter-group').filter({has:page.locator(installedBrainPrefix+'naturalLooking')});
+ await brainModifiers.locator('summary').click();await page.locator(installedBrainPrefix+'naturalLooking').selectOption('tl10');
+ check('ambiguous implant software modifier cannot certify totals',await page.locator('#summary-metrics').textContent().then(t=>t.includes('Not calculated')));
+ await page.locator(installedBrainPrefix+'softwareModifierBasis').selectOption('include-all-fixed-costs');
+ draft=await exportDraft();check('implant modifier interpretation retained',draft.special.augmentations.find(item=>item.id===brain.id).parameters.softwareModifierBasis==='include-all-fixed-costs');
+ check('explicit implant interpretation produces scoped total',await page.locator('#summary-metrics').textContent().then(t=>!t.includes('Not calculated')));
+ await stage(5);const brainSkillPrefix='#field-skills-brainCustomPackages-new-';
+ await page.locator(brainSkillPrefix+'parentBrain').selectOption(brain.id);await page.locator(brainSkillPrefix+'skill').selectOption('language');await page.locator(brainSkillPrefix+'speciality').fill('Vilani');await page.locator(brainSkillPrefix+'level').selectOption('1');
+ await page.getByRole('button',{name:'Add implant speciality',exact:true}).click();
+ draft=await exportDraft();check('custom implant speciality retains finite parent link',draft.special.brainCustomPackages[0].parentBrain===brain.id&&draft.special.brainCustomPackages[0].speciality==='Vilani');
+ await stage(6);check('implant review keeps installed software and custom choices',await page.locator('.robot-review').textContent().then(t=>t.includes('Admin 1')&&t.includes('Language (Vilani)')));
+ await page.locator('#robot-kind').selectOption('biological');await page.locator('#robot-tl').selectOption('13');await stage(3);
  await page.locator('#physical-category').selectOption('cybernetics');
  check('biological augments use their own category',await page.locator('#field-physical-augmentations-cybernetics-new-optionId').count()===1);
+ await page.locator('#robot-kind').selectOption('microbot');await page.locator('#robot-tl').selectOption('14');await stage(3);
+ const microPrefix='#field-physical-optionInstances-new-';
+ const microInstances=page.locator('#stage-content details').filter({has:page.locator(microPrefix+'optionId')});
+ if(!await microInstances.evaluate(node=>node.open))await microInstances.locator('summary').click();
+ await page.locator(microPrefix+'optionId').selectOption('auditory');await page.locator(microPrefix+'quantity').selectOption('3');
+ await microInstances.getByRole('button',{name:'Add separate installation',exact:true}).click();
+ draft=await exportDraft();check('repeated microbot hardware uses its special instance schema',draft.special.optionInstances[0].optionId==='auditory'&&draft.special.optionInstances[0].parameters.quantity===3);
+ await stage(6);check('microbot review retains repeated hardware',await page.locator('.review-equipment').textContent().then(t=>t.includes('Auditory Sensor')&&t.includes('Quantity: 3')));
+ await page.locator('#new-design').click();await page.locator('#robot-kind').selectOption('cyborg');await page.locator('#robot-tl').selectOption('13');await stage(1);await page.locator('#field-chassis-cyborgMode').selectOption('augments');await stage(3);
+ await page.locator('#field-physical-augmentations-new-optionId').selectOption('misc-mass-portable-computer-8');
+ await page.locator('#stage-content details').filter({has:page.locator('#field-physical-augmentations-new-optionId')}).getByRole('button',{name:'Add separate installation',exact:true}).click();
+ check('mass-defined implant has source-priced total',await page.locator('#summary-metrics').textContent().then(t=>t.includes('10,750')));
+ await stage(6);check('mass-defined implant review preserves source device',await page.locator('.review-augmentations').textContent().then(t=>t.includes('Mass Kg: 2')&&t.includes('Slots: Not calculated')));
+ await page.locator('#new-design').click();await page.locator('#robot-kind').selectOption('cyborg');await page.locator('#robot-tl').selectOption('14');await stage(1);await page.locator('#field-chassis-cyborgMode').selectOption('augments');await stage(3);
+ await page.locator('#field-physical-augmentations-new-optionId').selectOption('misc-mass-portable-computer-14');
+ await page.locator('#stage-content details').filter({has:page.locator('#field-physical-augmentations-new-optionId')}).getByRole('button',{name:'Add separate installation',exact:true}).click();draft=await exportDraft();const computerId=draft.special.augmentations[0].id;
+ await stage(5);const computerPrefix='#field-skills-computerSoftware-new-';
+ await page.locator(computerPrefix+'parentComputer').selectOption(computerId);
+ check('ordinary computer programs hide irrelevant subject and database fields',await page.locator(computerPrefix+'subject').count()===0&&await page.locator(computerPrefix+'databasePrice').count()===0);
+ await page.locator(computerPrefix+'runningBandwidth').selectOption('0');await page.getByRole('button',{name:'Add computer program',exact:true}).click();
+ draft=await exportDraft();check('active rating zero is a numeric executing program state',draft.special.computerSoftware[0].rating===0&&draft.special.computerSoftware[0].runningBandwidth===0);
+ for(const program of ['security','intelligent-interface','expert']){
+   await page.locator(computerPrefix+'parentComputer').selectOption(computerId);await page.locator(computerPrefix+'program').selectOption(program);
+   if(program==='expert'){
+     await page.locator(computerPrefix+'subject').fill('Medic');
+     check('computer Expert dropdown excludes unavailable purchased ratings',await page.locator(computerPrefix+'rating option').evaluateAll(nodes=>nodes.filter(n=>n.value!=='').map(n=>n.value).join(','))==='1,2,3');
+     check('active computer rating is bounded by the purchased rating',await page.locator(computerPrefix+'runningBandwidth option').evaluateAll(nodes=>nodes.filter(n=>n.value!=='').map(n=>n.value).join(','))==='-1,1');
+   }
+   if(program!=='security')await page.locator(computerPrefix+'runningBandwidth').selectOption('1');
+   await page.getByRole('button',{name:'Add computer program',exact:true}).click();
+ }
+ draft=await exportDraft();check('computer software stays per-device and distinguishes stored packages',draft.special.computerSoftware.length===4&&draft.special.computerSoftware.find(p=>p.program==='security').runningBandwidth===-1&&draft.special.computerSoftware.every(p=>p.parentComputer===computerId));
+ await stage(6);check('general computer review keeps program states separate',await page.locator('.review-computer-programs').textContent().then(t=>t.includes('Stored, not running')&&t.includes('Running at rating 0')&&t.includes('Expert (Medic)')));
+ for(const width of [1440,390,320]){await page.setViewportSize({width,height:1000});check('general computer review has no overflow '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:path.join(out,'robot-computer-review-'+width+'.png'),fullPage:true});}
+ await page.setViewportSize({width:1440,height:1000});await page.locator('#new-design').click();await page.locator('#robot-kind').selectOption('standard');await page.locator('#robot-tl').selectOption('13');await page.locator('#robot-name').fill('Composite fixture');await stage(6);
+ await page.locator('#save-copy').click();await page.getByText('New design copy saved.',{exact:true}).waitFor();
+ const componentDraft=await exportDraft(),componentBytes=await page.evaluate(()=>localStorage.getItem('traveller.robot-builder.designs.v1'));
+ const componentSavedId=JSON.parse(componentBytes).designs.find(item=>item.design.name==='Composite fixture').id;
+ await page.locator('#robot-kind').selectOption('ship-brain');await stage(6);
+ const referencePrefix='#field-finalisation-designReferences-';await page.locator(referencePrefix+'role').selectOption('installed-robot');await page.locator(referencePrefix+'saved').selectOption(componentSavedId);
+ await page.getByRole('button',{name:'Use saved component',exact:true}).click();draft=await exportDraft();
+ check('composite picker copies saved design through API',draft.special.designReferences[0].design.name==='Composite fixture'&&draft.special.designReferences[0].role==='installed-robot');
+ check('composite total includes referenced robot once',await page.locator('#summary-metrics').textContent().then(t=>t.includes('512,000')));
+ check('component review separates host legality',await page.locator('.review-components').textContent().then(t=>t.includes('12,000')&&t.includes('External hull, vehicle or biological-host legality')));
+ check('copying component leaves browser saves untouched',await page.evaluate(()=>localStorage.getItem('traveller.robot-builder.designs.v1'))===componentBytes);
+ await stage(4);check('component-derived brain TL is read-only rather than a conflicting manual selector',await page.locator('output#field-brain-brainTL').textContent()==='12'&&await page.locator('select#field-brain-brainTL').count()===0);await stage(6);
+ await page.getByRole('button',{name:'Remove referenced Composite fixture',exact:true}).click();draft=await exportDraft();check('component removal leaves original save and parent draft',draft.special.designReferences.length===0&&await page.evaluate(()=>localStorage.getItem('traveller.robot-builder.designs.v1'))===componentBytes);
+ await page.locator(referencePrefix+'role').selectOption('installed-robot');
+ await page.locator(referencePrefix+'file').setInputFiles({name:'component.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(componentDraft))});
+ await page.getByText('Component snapshot imported. Original saves are unchanged.',{exact:true}).waitFor();draft=await exportDraft();
+ check('component file import retains detached snapshot',draft.special.designReferences[0].design.name==='Composite fixture');
+ for(const width of [1440,390,320]){
+   await page.setViewportSize({width,height:1000});check('composite editor and review have no overflow '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:path.join(out,'robot-composite-review-'+width+'.png'),fullPage:true});
+ }
+ await page.setViewportSize({width:1440,height:1000});await page.locator('#robot-kind').selectOption('standard');await stage(3);await page.locator('#physical-category').selectOption('weapons');
+ await page.locator(weaponPrefix+'weaponId').selectOption('direct-grenade-smoke');await page.locator(weaponPrefix+'placement').selectOption('body');await page.locator(weaponPrefix+'fireControl').selectOption('none');
+ await page.getByRole('button',{name:'Add weapon',exact:true}).click();draft=await exportDraft();check('direct payload is a weapon record rather than launcher ammunition',draft.selections.physical.weapons[0].weaponId==='direct-grenade-smoke');
+ await stage(6);check('direct payload review keeps unresolved delivery range explicit',await page.locator('.review-weapons').textContent().then(t=>t.includes('Range not calculated')&&t.includes('Direct Payload')));
  await page.locator('#robot-kind').selectOption('standard');await stage(3);await page.locator('#physical-category').selectOption('slot-cost-options');
  const extPrefix='#field-physical-externalVehicleOptions-slot-cost-options-new-';
+ check('unused external source editor stays collapsed',await page.locator('.external-options').evaluate(node=>!node.open));
+ await page.locator('.external-options > summary').click();
  await page.locator(extPrefix+'name').fill('Source-specific fixture');await page.locator(extPrefix+'sourceEdition').fill('Unverified test edition');await page.locator(extPrefix+'sourcePage').fill('12');
  await page.locator(extPrefix+'spaceValue').fill('0.125');await page.locator(extPrefix+'pricePerInstallation').fill('1234');await page.locator(extPrefix+'quantity').selectOption('2');
  await page.locator(extPrefix+'handbookEquivalent').selectOption('none');
  await page.getByRole('button',{name:'Add external vehicle option',exact:true}).click();
  draft=await exportDraft();check('external source record retained with fractional Spaces',draft.selections.physical.externalVehicleOptions[0].spaceValue===0.125);
  check('external input cannot produce certified total',await page.locator('#summary-metrics').textContent().then(t=>t.includes('Not calculated')));
+ for(const width of [1440,390,320]){
+   await page.setViewportSize({width,height:1000});
+   check('external source editor has no overflow '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+   await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:path.join(out,'robot-external-editor-'+width+'.png'),fullPage:true});
+ }
  await stage(6);
  check('external review explicitly qualifies estimates',await page.locator('.review-external-options').textContent().then(t=>t.includes('Cr 2,468 quoted')&&t.includes('16 converted Slots')&&t.includes('unverified')));
+ await page.setViewportSize({width:320,height:700});await page.evaluate(()=>scrollTo(0,0));
+ check('mobile identity keeps robot type before name',await page.evaluate(()=>document.querySelector('label[for="robot-kind"]').getBoundingClientRect().top<document.querySelector('label[for="robot-name"]').getBoundingClientRect().top));
+ await stage(1);check('mobile explicit navigation brings the active stage into view',await page.locator('#stage-title').evaluate(node=>{const r=node.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight;}));
  check('no runtime errors',errors.length===0);
  await fs.writeFile(path.join(out,'construction-report.json'),JSON.stringify({checks,errors},null,2));console.log('PASS '+checks.length+' construction workflow checks');
 }catch(error){await page.screenshot({path:path.join(out,'construction-failure.png'),fullPage:true});await fs.writeFile(path.join(out,'construction-report.json'),JSON.stringify({checks,errors,failure:error.stack},null,2));throw error;}
