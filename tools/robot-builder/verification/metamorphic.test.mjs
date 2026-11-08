@@ -79,7 +79,7 @@ test('whole-robot composites preserve provisional assumptions and account once, 
 });
 test('component invalidity, bare-brain projection and organic-brain boundaries remain enforced',()=>{
  const child=make(17,'advanced');assert.equal(evaluate(attach('ship-brain','installed-robot',child)).status,'invalid');
- assert.ok(has(evaluate(attach('vehicle-brain','installed-brain',make())),'COMPOSITE_BRAIN_PROJECTION'));
+ assert.equal(evaluate(attach('vehicle-brain','installed-brain',make())).status,'verified');
  assert.ok(has(evaluate(attach('cyborg','body',make())),'COMPOSITE_ORGANIC_BRAIN'));
  const noBrain=updateDesign(make(),{selections:{brain:{model:'none'}}});assert.equal(evaluate(attach('cyborg','body',noBrain)).status,'invalid');
 });

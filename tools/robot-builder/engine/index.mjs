@@ -217,7 +217,7 @@ function evaluateSingleDesign(input){
   coreSkills.push({id:skillId,level,characteristic:'hard-coded',modifier:0,effectiveLevel:level});
  }
  if(core.id==='basic-locomotion'){coreSkills.push({id:'athletics-dexterity',level:p.agility,characteristic:'hard-coded',modifier:0,effectiveLevel:p.agility},{id:'vehicle-'+primary.id,level:p.agility,characteristic:'hard-coded',modifier:0,effectiveLevel:p.agility});}
- cost+=core.cost;if(core.id!=='none')entry('core-package',core.label,core.cost,0,'69–73',{bandwidth:coreBandwidth});
+ cost+=core.cost;if(core.id!=='none')entry('core-package',core.label,core.cost,0,'69–73',{bandwidth:coreBandwidth,accountingDomain:'brain-software'});
  const brainAccounting=evaluateBrainSoftware({brain,upgrade,techLevel:tl,settings:s.brain,selection:{packages:s.skills.packages,customPackages:s.skills.customPackages},core,coreBandwidth,coreSkills,manipulators,brainSlots:chassis.size>=brain.bandwidth-(tl-brain.tl)?0:1});
  const {intelligence,intellectBW,bwUsed,zeroBW,zeroBWAllowance,bandwidthCapacity,packages,skills}=brainAccounting;
  cost+=brainAccounting.cost;used+=brainAccounting.slots;diagnostics.push(...brainAccounting.diagnostics);ledger.push(...brainAccounting.ledger);

@@ -19,7 +19,7 @@ export function renderReview(review, documentRef = globalThis.document) {
         const disclosure=node('details',undefined,'review-item-details');
         disclosure.append(node('summary',`${record.label} details`));
         const detailList=node('dl');
-        for(const detail of record.details){const pair=node('div'),detailValue=node('dd',detail.value);if(detail.source)detailValue.append(node('small',detail.source,'source'));pair.append(node('dt',detail.label),detailValue);detailList.append(pair);}
+        for(const detail of record.details){const pair=node('div'),detailValue=node('dd',detail.value);if(detail.detail)detailValue.append(node('small',detail.detail,'review-detail'));if(detail.source)detailValue.append(node('small',detail.source,'source'));pair.append(node('dt',detail.label),detailValue);detailList.append(pair);}
         disclosure.append(detailList);value.append(disclosure);
       }
       item.append(value);list.append(item);
