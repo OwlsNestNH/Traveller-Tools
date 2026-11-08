@@ -35,6 +35,8 @@ The campaign clock displays an Imperial day-year date and hour, starting at 001-
 
 Main status shows remaining life-support endurance rounded down to whole days.
 The progress gauge uses that same whole-day value, so 27.x days shows 27 out of a 28-day target.
+Above the target, the scale extends to the full whole-day count and an amber segment identifies the excess.
+For example, 40.7 days shows 40 days: 28 at the target plus 12 above it. This is not a cargo-reserve label.
 LSS quantities, consumption, accounting and saved stock retain their precision.
 
 Get sale offers quotes every eligible trade-good lot in the hold, independent of

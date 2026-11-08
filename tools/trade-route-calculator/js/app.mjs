@@ -10,7 +10,7 @@ import {matchesBuyRetailFilter,matchesSellRetailFilter,buyOfferRetailLabel} from
 import {campaignPlayerSnapshot,campaignPlayerMarketSnapshot,playerSnapshotForVisit} from './player-campaign-snapshot.mjs?v=lss-whole-days-20261108-1';
 import {playerSnapshotUrl} from './player-snapshot-link.mjs?v=lss-whole-days-20261108-1';
 import {createCargoRemovalSession} from './cargo-removal-session.mjs?v=lss-whole-days-20261108-1';
-import {statusGaugeValues,fuelGaugeValues} from './status-gauges.mjs?v=lss-whole-days-20261108-1';
+import {statusGaugeValues,fuelGaugeValues,lifeSupportGaugeValues} from './status-gauges.mjs?v=lss-whole-days-20261108-1';
 import {prepareContactSearchResult,marketAvailabilityRecord,tradeCodeLabel} from './contact-search-result.mjs?v=lss-whole-days-20261108-1';
 import {prepareMarketOfferOverride,applyMarketOfferOverride} from './market-offer.mjs?v=lss-whole-days-20261108-1';
 import {prepareInsuranceTerms} from './insurance-terms.mjs?v=lss-whole-days-20261108-1';
@@ -725,8 +725,12 @@ function toggleStationSupport(){
 }
 function refuelShortcut(){if(!state.ship.fuel){services.close();settings();message('Enter ship size, tank capacity and fuel aboard to enable refuelling.');return;}inputRounding=[];services.open('fuel');}
 function lifeSupportCounter(){
- const x=state.ship.lifeSupport,q=x?supportStock(passengerShip(state)):null,wholeDays=q?.remainingDays==null?null:String(A.floor(q.remainingDays)),days=value=>value==null?'Unknown':String(Number(Number(value).toFixed(2)));
- return `<div class="stat life-support-counter"><span class="label">Life support</span><span class="value">${state.ship.stationLifeSupport===true?'Station supply':q?(wholeDays??'Unknown')+' days'+(q.remainingUnits==='0'?' · EMPTY':''):'Set in Settings'}</span>${q?`<span class="help">${q.remainingUnits==null?'Review recorded stock':days(q.remainingUnits)+' LSS aboard'} · ${days(q.targetDays)}-day target</span>${wholeDays!==null?'<progress max="'+q.targetDays+'" value="'+wholeDays+'" aria-label="Life support endurance against standard refill target"></progress>':''}`:''}</div>`;
+ const q=state.ship.lifeSupport?supportStock(passengerShip(state)):null,g=q?lifeSupportGaugeValues(q.remainingDays,q.targetDays):null,days=value=>value==null?'Unknown':String(Number(Number(value).toFixed(2)));
+ const above=g&&A.cmp(g.aboveDays,0)>0,station=state.ship.stationLifeSupport===true;
+ const help=q?(above?days(q.remainingUnits)+' LSS · <span class="status-lss-target-label">'+g.targetDays+'d target</span> +<span class="status-lss-above-label">'+g.aboveDays+'d above</span>':(q.remainingUnits==null?'Review recorded stock':days(q.remainingUnits)+' LSS aboard')+' · '+days(q.targetDays)+'-day target'):'';
+ const description=g?(station?'Station supply active; onboard consumption paused. ':'')+g.wholeDays+' whole days onboard; '+g.targetDays+'-day target; '+g.aboveDays+' days above target. Scale: 0 to '+g.scaleDays+' days.':'';
+ const gauge=g?'<div class="status-lss-gauge" title="'+esc(description)+'"><progress max="'+g.scaleDays+'" value="'+g.wholeDays+'" aria-label="Life support endurance against standard refill target" aria-valuetext="'+esc(description)+'"></progress>'+(above?'<span class="status-lss-above" aria-hidden="true" style="width:'+g.abovePercent+'%"></span>':'')+'</div>':'';
+ return '<div class="stat life-support-counter"><span class="label">Life support</span><span class="value">'+(station?'Station supply':q?(g?.wholeDays??'Unknown')+' days'+(q.remainingUnits==='0'?' · EMPTY':''):'Set in Settings')+'</span>'+(q?'<span class="help">'+help+'</span>'+gauge:'')+'</div>';
 }
 function campaignTimeCounter(){
  return `<div class="stat campaign-time"><span class="label">Campaign time</span><span class="value">${esc(displayDate(state.dateLabel,state.hours))}</span>${state.initialized?`<div class="day-controls" role="group" aria-label="Change campaign day"><button data-action="day-back" data-mutate ${state.hours<24?'data-unavailable disabled':''} title="Move the date back 24 hours without restoring supplies or reversing transactions. Use Undo to reverse an accidental advance.">&#8722;1 day</button><button data-action="day-forward" data-mutate ${!Number.isSafeInteger(state.hours+24)?'data-unavailable disabled':''} title="Advance 24 hours. Onboard LSS is used unless station life support is enabled. Undo restores the date and supplies together.">+1 day</button></div>`:''}</div>`;

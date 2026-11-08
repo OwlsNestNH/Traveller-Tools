@@ -1,4 +1,4 @@
-import {floor} from '../js/amounts.mjs';
+import {floor,cmp,sub,div,mul,decimal} from '../js/amounts.mjs';
 import {supportCargo,supportStock,supportDisplay} from '../js/life-support.mjs';
 import {passengerShip} from '../js/passengers.mjs';
 // Normalize approved presentation changes for the frozen route oracles.
@@ -11,7 +11,12 @@ export function legacyStatusSummaryMarkup(html,state){
  if(remaining!==null){
   const prefix='<div class="stat life-support-counter"><span class="label">Life support</span><span class="value">';
   html=html.replace(prefix+String(floor(remaining))+' days',prefix+String(Number(Number(remaining).toFixed(2)))+' days');
-  html=html.replace('<progress max="'+support.targetDays+'" value="'+String(floor(remaining))+'" aria-label="Life support endurance','<progress max="'+support.targetDays+'" value="'+remaining+'" aria-label="Life support endurance');
+  const whole=String(floor(remaining)),above=cmp(whole,support.targetDays)>0?decimal(sub(whole,support.targetDays)):'0',scale=above==='0'?support.targetDays:whole;
+  const description=(state.ship.stationLifeSupport===true?'Station supply active; onboard consumption paused. ':'')+whole+' whole days onboard; '+support.targetDays+'-day target; '+above+' days above target. Scale: 0 to '+scale+' days.';
+  const extra=above==='0'?'':'<span class="status-lss-above" aria-hidden="true" style="width:'+String(Number(floor(mul(div(above,scale),100000000)))/1000000)+'%"></span>';
+  const expected='<div class="status-lss-gauge" title="'+description+'"><progress max="'+scale+'" value="'+whole+'" aria-label="Life support endurance against standard refill target" aria-valuetext="'+description+'"></progress>'+extra+'</div>';
+  html=html.replace(expected,'<progress max="'+support.targetDays+'" value="'+remaining+'" aria-label="Life support endurance against standard refill target"></progress>');
+  if(above!=='0'){const units=String(Number(Number(support.remainingUnits).toFixed(2))),target=String(Number(Number(support.targetDays).toFixed(2)));html=html.replace('<span class="help">'+units+' LSS · <span class="status-lss-target-label">'+support.targetDays+'d target</span> +<span class="status-lss-above-label">'+above+'d above</span></span>','<span class="help">'+units+' LSS aboard · '+target+'-day target</span>');}
  }
  // Restore only the removed header label for the historical rendered hash.
  // Its exact value still comes from the observed state; frozen evidence stays intact.

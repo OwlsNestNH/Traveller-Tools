@@ -10,3 +10,12 @@ export function statusGaugeValues(ship,occupied){
  const scale=A.cmp(total,capacity)>0?total:capacity;
  return {cargo:{capacity,total,bladder,ordinary:A.dec(ordinary),free:A.sub(capacity,total),overCapacity:A.cmp(total,capacity)>0,ordinaryPercent:percent(ordinary,scale),bladderPercent:percent(bladder,scale)},fuel:fuelGaugeValues(ship)};
 }
+
+// Endurance is total usable supply, not a cargo-reserve or tank-capacity measure.
+export function lifeSupportGaugeValues(remainingDays,targetDays){
+ if(remainingDays==null)return null;
+ const wholeDays=String(A.floor(remainingDays)),target=A.decimal(targetDays);
+ if(A.cmp(wholeDays,0)<0||A.cmp(target,0)<=0)throw Error('Invalid endurance gauge values.');
+ const scale=A.cmp(wholeDays,target)>0?wholeDays:target,base=A.cmp(wholeDays,target)<0?wholeDays:target,above=A.decimal(positive(A.sub(wholeDays,target)));
+ return {wholeDays,targetDays:target,scaleDays:scale,baseDays:base,aboveDays:above,basePercent:percent(base,scale),abovePercent:percent(above,scale)};
+}
