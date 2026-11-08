@@ -1,3 +1,4 @@
+import {createDesign,updateDesign} from '../engine/index.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -39,6 +40,19 @@ try{
  await page.locator('#import-file').setInputFiles({name:'forged.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(forged))});await page.waitForTimeout(100);check('forged source facts rejected without losing draft',JSON.stringify(await exportDraft())===JSON.stringify(before));
  await stage(5);check('source review distinguishes capacity from contents',await page.locator('.review-verified-vehicle-options').textContent().then(text=>text.includes('Initial contents')&&text.includes('Unverified')&&text.includes('Replacement charge price')));
  await physical();for(const width of [1440,390,320]){await page.setViewportSize({width,height:1000});const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);check('source editor fits '+width,!overflow);await page.screenshot({path:path.join(out,'vehicle-options-'+width+'.png'),fullPage:true});}
+ const componentFixture=(quantity=1,role='installed-robot')=>{
+  const robot=updateDesign(createDesign({techLevel:15}),{name:'Component smoke robot',selections:{chassis:{size:'size-8'},physical:{verifiedVehicleOptions:[{id:'smoke',optionId:'vh2026-smoke-discharger',quantity}]}}});
+  return updateDesign(createDesign({kind:'vehicle-brain',techLevel:15}),{special:{designReferences:[{id:'component',role,quantity:1,design:robot}]}});
+ };
+ const importComponent=async design=>{await page.locator('#import-file').setInputFiles({name:'component.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(design))});await page.waitForFunction(()=>document.querySelector('#robot-kind').value==='vehicle-brain');await stage(5);};
+ await page.setViewportSize({width:1440,height:1000});await importComponent(componentFixture());
+ const componentGroup=page.locator('.review-component-vehicle-options');
+ check('complete component keeps source hardware and readable warning names',await componentGroup.textContent().then(text=>text.includes('Component smoke robot / Smoke Discharger')&&text.includes('Initial contents')&&text.includes('Unverified')&&text.includes('Capacity per installation'))&&await page.locator('#issues').textContent().then(text=>text.includes('Smoke Discharger')&&!text.includes('Vh2026')));
+ await click(componentGroup.locator('summary').first());await click(componentGroup.locator('.review-item-details summary'));
+ await page.screenshot({path:path.join(out,'vehicle-component-review-1440.png'),fullPage:true});await page.setViewportSize({width:320,height:1000});check('component source review fits 320',await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:path.join(out,'vehicle-component-review-320.png'),fullPage:true});
+ await importComponent(componentFixture(2));check('child quantity two shows per-copy accounting',await componentGroup.textContent().then(text=>text.includes('Cr 2,000 / 128 Slots per component copy')));
+ await importComponent(componentFixture(3));check('invalid child keeps source detail without complete totals',await componentGroup.textContent().then(text=>text.includes('Needs correction'))&&await page.locator('#summary-metrics').textContent().then(text=>text.includes('Not calculated')));
+ await importComponent(componentFixture(1,'installed-brain'));check('brain-only purchase omits source hardware and its deployment warnings',await componentGroup.count()===0&&await page.locator('#issues').textContent().then(text=>!text.includes('Smoke Discharger')));
  check('no full source reference table',await page.locator('.source-reference,table').count()===0);check('no browser errors',errors.length===0);
  await fs.writeFile(path.join(out,'vehicle-options-report.json'),JSON.stringify({checks,errors},null,2));console.log('PASS '+checks.length+' source vehicle option browser checks');
 }catch(error){await page.screenshot({path:path.join(out,'vehicle-options-failure.png'),fullPage:true});await fs.writeFile(path.join(out,'vehicle-options-report.json'),JSON.stringify({checks,errors,failure:error.stack},null,2));throw error;}
