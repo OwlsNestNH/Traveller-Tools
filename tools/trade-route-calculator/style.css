@@ -688,3 +688,12 @@ main{padding-top:18px}
 .accounting-pdf h3,.accounting-pdf p{margin:0 0 6px}
 @media(max-width:700px){.accounting-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.accounting-period .field{flex:1 1 120px}}
 @media(max-width:380px){.accounting-summary{grid-template-columns:minmax(0,1fr)}.accounting-pdf button{width:100%}}
+
+/* Compact, persistent ship selection; each ship owns its saved campaign. */
+.fleet-controls{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;padding:.4rem 0;min-width:0}
+.fleet-controls:empty{display:none}
+.fleet-controls>label{font-size:.8rem;font-weight:700}
+.fleet-controls>select{width:14rem;max-width:calc(100% - 3rem);min-width:0;min-height:44px}
+.fleet-controls>button{min-height:44px;white-space:nowrap}
+.fleet-controls>.help{margin:0}
+@media(max-width:600px){.fleet-controls>.help{flex-basis:100%}.fleet-controls>select{flex:1;width:8rem}.fleet-controls>button{padding-inline:.6rem}}
