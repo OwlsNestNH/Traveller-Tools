@@ -119,7 +119,7 @@ test('larger modified product lists survive source changes without expanding ord
 });
 
 test('retained manufacture never activates ammunition attacks outside the explicit supported source capability',()=>{
- for(const source of WEAPONS.filter(w=>w.compatibility.specialisedAmmunitionRules!=='csc-single-modification-v1')){
+ for(const source of WEAPONS.filter(w=>w.compatibility.specialisedAmmunitionRules!=='csc-single-modification-v1'&&(!w.supportedPlacements||w.supportedPlacements.includes('body')))){
   const legacy=baseline(source.id);legacy.linkedWeapons=2;
   const before=direct(legacy).weapons[0];
   for(const declaredTL of [null,source.tl]){

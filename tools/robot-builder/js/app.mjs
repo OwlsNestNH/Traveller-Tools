@@ -387,7 +387,7 @@ if(item.type==='multiselect'){
         else {input=el('input');input.type='text';input.value=record[item.field]??'';input.maxLength=item.maxLength||120;input.addEventListener('input',()=>onChange(item.field,input.value));}
         input.id=fieldId;row.append(input);targetFor(item).append(row);
       }
-      for(const field of presentation.wearMetadataRemovals||[]){const remove=el('button','Clear retained '+({ammunitionOverrides:'linked ammunition',initialMagazineSourceId:'initial magazine source',alternateMagazineSupplies:'alternate supplies'}[field]));remove.type='button';remove.addEventListener('click',()=>onChange(field,undefined));grid.append(remove);}
+      if(!onlyFields)for(const field of presentation.wearMetadataRemovals||[]){const remove=el('button','Clear retained '+({ammunitionOverrides:'linked ammunition',initialMagazineSourceId:'initial magazine source',alternateMagazineSupplies:'alternate supplies',initialAmmunitionModification:'initial ammunition modification',spareAmmunitionModification:'spare ammunition modification',highCapacityAmmunitionModification:'high-capacity ammunition modification',weaponManufactureTL:'manufacture declaration'}[field]));remove.type='button';remove.addEventListener('click',()=>onChange(field,undefined));grid.append(remove);}
       if(presentation.vehicleOption){
         const facts=presentation.vehicleOption;
         grid.append(el('p','Cr '+facts.unitCost.toLocaleString()+' / '+facts.slotsPerInstallation+' Slots'+(facts.family==='discharger'?' / Capacity '+facts.capacityPerInstallation:'')+' per installation','wide help'));
