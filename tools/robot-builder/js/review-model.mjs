@@ -9,7 +9,7 @@ const weaponDamage=weapon=>weapon.attackProfiles&&!weapon.attackProfiles.resolve
 const weaponRange=range=>present(range)?`Range: ${valueText(range)}${typeof range==='number'?' m':''}`:'Range not calculated';
 const loadedAttackStatus = status => ({homogeneous:'Loaded attack',unloaded:'Unloaded; no loaded attack','mixed-unresolved':'Mixed ammunition; common attack unresolved',unresolved:'Loaded attack unresolved'}[status]||'Loaded attack unresolved');
 const attackFigures = profile => [present(profile?.damage)?profile.damage+' damage':'Damage unresolved',present(profile?.range)?'Range: '+(typeof profile.range==='number'?massFormat.format(profile.range)+' m':valueText(profile.range)):'Range unresolved',profile?.traits?.length?profile.traits.join(', '):''].filter(Boolean).join(' · ');
-const weaponSummary = weapon => weapon.loadedAmmunitionAttack ? weapon.loadedAmmunitionAttack.status==='homogeneous'?'Loaded attack · '+attackFigures(weapon.loadedAmmunitionAttack):loadedAttackStatus(weapon.loadedAmmunitionAttack.status) : [weaponDamage(weapon),weaponRange(weapon.range),weapon.traits?.length?weapon.traits.join(', '):''].filter(Boolean).join(' · ');
+const weaponSummary = weapon => weapon.loadedAmmunitionAttack ? weapon.loadedAmmunitionAttack.status==='homogeneous'?'Loaded attack · '+attackFigures(weapon.loadedAmmunitionAttack):loadedAttackStatus(weapon.loadedAmmunitionAttack.status) : hasModifiedSelection(weapon)?'Specialised ammunition unresolved; source profile separate':[weaponDamage(weapon),weaponRange(weapon.range),weapon.traits?.length?weapon.traits.join(', '):''].filter(Boolean).join(' · ');
 const ammunitionFields=['initialAmmunitionModification','spareAmmunitionModification','highCapacityAmmunitionModification'];
 const hasModifiedSelection = record => ammunitionFields.some(field=>record[field]!=null&&record[field]!=='standard')||(record.alternateMagazineSupplies||[]).some(item=>item.modification!=null&&item.modification!=='standard')||(record.ammunitionOverrides||[]).some(hasModifiedSelection);
 export function humanLabel(value) {
@@ -90,8 +90,15 @@ function specialisedAmmunitionRows(weapon){
  if(hardware)rows.push(row('Source hardware profile',attackFigures(hardware),hardware.source,'Source figures; not a loaded attack'));
  if(manufacture||Object.hasOwn(weapon,'weaponManufactureTL')){
   const declared=manufacture?manufacture.declaredTL:weapon.weaponManufactureTL;
-  const status=manufacture?({unknown:'Unknown','catalogue-tier-declared':'Catalogue-tier declaration','unsupported-tier':'Unsupported tier; price and attack unresolved'}[manufacture.status]||'Unresolved'):'Not evaluated';
+  const status=manufacture?({unknown:'Unknown','catalogue-tier-declared':'Catalogue-tier declaration','unsupported-tier':'Unsupported tier; price and attack unresolved','unsupported-profile':'Unsupported source; declaration retained'}[manufacture.status]||'Unresolved'):'Not evaluated';
   rows.push(row('Manufacture declaration (all linked copies)',[present(declared)?'TL'+declared:'Unknown',manufacture?'Catalogue TL'+manufacture.catalogueTL:'',status==='Unknown'?'':status].filter(Boolean).join(' · '),manufacture?.source));
+ }
+ if(!weapon.loadedAmmunitionAttack&&!weapon.ammunitionAttackProfiles?.length&&hasModifiedSelection(weapon)){
+  const selectedRows=(record,prefix='')=>{
+   for(const [field,label]of [['initialAmmunitionModification','Initial ammunition'],['spareAmmunitionModification','Standard spare ammunition'],['highCapacityAmmunitionModification','High-capacity spare ammunition']])if(record[field]&&record[field]!=='standard')rows.push(row(prefix+'Retained '+label,ammunitionModificationLabel(record[field])+'; unresolved for selected source'));
+   for(const supply of record.alternateMagazineSupplies||[])if(supply.modification&&supply.modification!=='standard')rows.push(row(prefix+'Retained additional ammunition',ammunitionModificationLabel(supply.modification)+'; unresolved for selected source'));
+  };
+  selectedRows(weapon);for(const copy of weapon.ammunitionOverrides||[])selectedRows(copy,'Copy '+copy.copyIndex+' / ');
  }
  for(const profile of weapon.ammunitionAttackProfiles||[]){
   const label='Copy '+profile.copyIndex+' configured ammunition',resolved=profile.status==='configured';
@@ -457,8 +464,9 @@ export function projectReview(design, catalogue, evaluation) {
     if(selected?.sourceBaseProfile)weapon={...weapon,...(!Object.hasOwn(weapon,'damage')?{damage:selected.damage,range:selected.range,massKg:selected.massKg,traits:selected.traits}:{}),sourceBaseProfile:selected.sourceBaseProfile,sourceMeasurements:selected.sourceMeasurements,conditionalEffects:weapon.conditionalEffects??selected.conditionalEffects,source:weapon.source??selected.source};
     if(!weapon.expendableMelee&&selected?.expendableMelee)weapon={...weapon,expendableMelee:true,acquisition:selected.acquisition,linkedOperation:selected.linkedOperation};
     if(!weapon.attackProfiles&&selected?.attackProfiles)weapon={...weapon,attackProfiles:selected.attackProfiles,damage:null,traits:weapon.traits??selected.traits};
-    if(!weapon.loadedAmmunitionAttack&&(hasModifiedSelection(weapon)||Object.hasOwn(weapon,'weaponManufactureTL')))weapon={...weapon,sourceWeaponProfile:weapon.sourceWeaponProfile||(selected?{damage:selected.damage,range:selected.range,traits:selected.traits,source:selected.source}:undefined),loadedAmmunitionAttack:{status:'unresolved'}};
-    const name=weapon.label || choiceLabel(control,'weaponId',weapon.weaponId,'Selected weapon');
+    if(!weapon.loadedAmmunitionAttack&&selected?.compatibility?.specialisedAmmunitionRules==='csc-single-modification-v1'&&(hasModifiedSelection(weapon)||Object.hasOwn(weapon,'weaponManufactureTL')))weapon={...weapon,sourceWeaponProfile:weapon.sourceWeaponProfile||(selected?{damage:selected.damage,range:selected.range,traits:selected.traits,source:selected.source}:undefined),loadedAmmunitionAttack:{status:'unresolved'}};
+    if(!weapon.loadedAmmunitionAttack&&hasModifiedSelection(weapon))weapon={...weapon,sourceWeaponProfile:weapon.sourceWeaponProfile||(selected?{damage:selected.damage,range:selected.range,traits:selected.traits,source:selected.source}:undefined),damage:null,range:null,traits:[],linkedDamageBonus:null};
+ const name=weapon.label || choiceLabel(control,'weaponId',weapon.weaponId,'Selected weapon');
     const storageName=id=>choiceLabel(control,'ammunitionStorageId',id,'Unresolved storage');
     const ammunitionName=id=>choiceLabel(control,'auxiliaryAmmunition',id);
     const summary=weaponSummary(weapon);

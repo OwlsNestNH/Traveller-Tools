@@ -117,3 +117,20 @@ test('larger modified product lists survive source changes without expanding ord
  const r=record({alternateMagazineSupplies:['armour-piercing','solid-shot','baton'].map(modification=>({sourceWeaponId:'csc-gauss-sniper-rifle',variant:'standard',modification,extraMagazines:0,autoloadMagazines:0,storageId:'none'}))});
  assert.doesNotThrow(()=>validateWeapons([r]));r.weaponId='csc-arl-standard';assert.doesNotThrow(()=>validateWeapons([r]));assert.ok(has(direct(r),'MAGAZINE_SOURCE_INCOMPATIBLE'));assert.equal(direct(r).weapons[0].cost,null);
 });
+
+test('retained manufacture never activates ammunition attacks outside the explicit supported source capability',()=>{
+ for(const source of WEAPONS.filter(w=>w.compatibility.specialisedAmmunitionRules!=='csc-single-modification-v1')){
+  const legacy=baseline(source.id);legacy.linkedWeapons=2;
+  const before=direct(legacy).weapons[0];
+  for(const declaredTL of [null,source.tl]){
+   const r=direct({...legacy,weaponManufactureTL:declaredTL}),after=r.weapons[0];
+   for(const field of ['damage','range','traits','linkedDamageBonus','conditionalEffects','attackProfiles','powerOperation','initialAmmunition'])assert.deepEqual(after[field],before[field],source.id+' '+field);
+   assert.equal(after.loadedAmmunitionAttack,undefined,source.id);assert.equal(after.ammunitionAttackProfiles,undefined,source.id);assert.equal(after.weaponManufacture.status,'unsupported-profile');
+   if(declaredTL!==null){assert.ok(has(r,'CSC_AMMO_PROFILE_UNSUPPORTED'),source.id);assert.equal(after.cost,null,source.id);}
+  }
+ }
+});
+for(const id of ['csc-anti-armour-flail','csc-garrotte','csc-lance','csc-piston-spear','csc-blade','csc-stunstick','blade','stunstick','direct-grenade-frag','csc-direct-grenade-incendiary','gauss-rifle','csc-gauss-assault-gun','csc-spear-gun','csc-arl-standard','csc-air-rifle-4'])test(id+' unsupported modified attacks fail closed with retained source facts',()=>{
+ const source=weapon(id),legacy=baseline(id);legacy.linkedWeapons=2;const r=direct({...legacy,weaponManufactureTL:source.tl,initialAmmunitionModification:'armour-piercing'}),out=r.weapons[0];
+ assert.ok(has(r,'CSC_AMMO_PROFILE_UNSUPPORTED'));assert.equal(out.initialAmmunitionModification,'armour-piercing');assert.equal(out.cost,null);assert.equal(out.damage,null);assert.equal(out.range,null);assert.equal(out.linkedDamageBonus,null);assert.deepEqual(out.traits,[]);assert.equal(out.loadedAmmunitionAttack,undefined);assert.equal(out.ammunitionAttackProfiles,undefined);assert.equal(out.sourceWeaponProfile.damage,source.damage);assert.deepEqual(out.conditionalEffects,direct(legacy).weapons[0].conditionalEffects);
+});
