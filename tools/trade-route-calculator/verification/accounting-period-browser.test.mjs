@@ -3,7 +3,7 @@ import {mkdir} from 'node:fs/promises';import {fileURLToPath} from 'node:url';im
 import {guiFixture,campaignKey} from './fixtures/gui-parity.mjs';
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const artifacts=fileURLToPath(new URL('../verification-artifacts/',import.meta.url));await mkdir(artifacts,{recursive:true});
-const browser=await chromium.launch({headless:true}),base=process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/';
+const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BROWSER_CHANNEL?{channel:process.env.TRAVELLER_BROWSER_CHANNEL}:{})}),base=process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/';
 function fixture({unknown=false,long=false,backdatedVisit=false}={}){
  const f=guiFixture(),s=f.state,w=s.actual;
  const entry=(id,type,amount,day,note)=>({id,type,amount,hours:(day-1)*24+(day===66?23:0),world:w,reason:note});

@@ -34,6 +34,7 @@ async function openDeposit(p){await tab(p,'Accounts');await action(p,'deposit').
 async function forceSwitch(p,id){await p.evaluate(id=>{const s=document.querySelector('#ship-select');s.value=id;s.dispatchEvent(new Event('change',{bubbles:true}));},id);await tick(p);}
 async function settingsDraft(p){await tab(p,'Settings');const input=p.locator('#settings-form [name=name]');await input.evaluate(el=>{for(let p=el.parentElement;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;});await input.fill('Unsaved synthetic setting');return input;}
 async function noLoss(p,fn){const before=await raw(p);await fn();await tick(p);assert.equal(await raw(p),before,'Rejected or cancelled operation must preserve exact saved fleet bytes');}
+async function fleetScreenshot(p,label){const dir=new URL('../verification-artifacts/',import.meta.url);await mkdir(dir,{recursive:true});await p.screenshot({path:fileURLToPath(new URL('fleet-'+label+'-'+p.viewportSize().width+'.png',dir)),fullPage:false});}
 async function blockedDelete(p){
  const before=await p.locator('#modal').evaluate(d=>({open:d.open,title:document.querySelector('#modal-title').textContent}));
  await noLoss(p,()=>p.locator('[data-action=ship-delete]').evaluate(b=>b.dispatchEvent(new MouseEvent('click',{bubbles:true}))));
@@ -150,7 +151,7 @@ const cases=[
   const original=await read(p),remaining=original.ships.filter(s=>s.id!==original.activeShipId),removed=active(original);
   await action(p,'ship-delete').click();await p.getByRole('heading',{name:'Delete ship?',exact:true}).waitFor();
   assert.ok((await p.locator('#modal-body').textContent()).includes(removed.ship.name),'Selected ship name is rendered literally');
-  assert.equal(await p.locator('#modal-body img').count(),0,'Ship name cannot inject markup');
+  assert.equal(await p.locator('#modal-body img').count(),0,'Ship name cannot inject markup');await fleetScreenshot(p,'delete-dialog');
   assert.match(await p.locator('#modal-body').textContent(),/cannot be undone|not undoable|can.t be undone/i);
   await p.locator('#modal [name=backed]').check();
   const writes=await p.evaluate(()=>fleetTest.writes);
@@ -164,7 +165,7 @@ const cases=[
   for(const cancel of ['cancel','close','escape'])await noLoss(p,async()=>{await action(p,'ship-delete').click();await p.getByRole('heading',{name:'Delete ship?',exact:true}).waitFor();assert.equal(await p.locator('#modal [name=backed]').isChecked(),false);await p.locator('#modal-submit').click();assert.equal(await p.locator('#modal').evaluate(d=>d.open),true);assert.match(await p.locator('#modal-error').textContent(),/backup|acknowledge|confirm|proceed/i);if(cancel==='escape')await p.keyboard.press('Escape');else await p.locator('#modal-'+cancel).click();await closed(p);});
  }],
  ['delete only ship blocked',async p=>{
-  assert.equal(await action(p,'ship-delete').isDisabled(),true);assert.ok((await p.locator('body').textContent()).includes('Keep at least one ship. Use Reset campaign to clear its data.'));
+  assert.equal(await action(p,'ship-delete').isDisabled(),true);await fleetScreenshot(p,'last-ship');assert.ok((await p.locator('body').textContent()).includes('Keep at least one ship. Use Reset campaign to clear its data.'));
   await noLoss(p,async()=>{await p.locator('[data-action=ship-delete]').evaluate(b=>b.dispatchEvent(new MouseEvent('click',{bubbles:true})));});assert.equal(await p.locator('#modal').evaluate(d=>d.open),false);assert.equal((await read(p)).ships.length,1);
  }],
  ['delete quota preserves group and retries',async p=>{
