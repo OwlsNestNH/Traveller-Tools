@@ -18,3 +18,7 @@ summary{min-height:44px;align-content:center}.check{min-height:48px}
 @media print{.print-only{display:block!important}.multiline{white-space:pre-wrap}.audit-changes{display:block}#action-log details{display:block}#action-log details>summary{display:none}#action-log details:not([open])>*:not(summary){display:block}}
 
 .sheet-facts{grid-template-columns:repeat(2,minmax(0,1fr))}.sheet-facts strong{overflow-wrap:anywhere}
+
+/* Keep enlarged action labels inside their card and skip navigation offscreen until focused. */
+.actions>button{min-width:0;max-width:100%;overflow-wrap:anywhere}
+.skip-link{top:0;transform:translateY(-200%)}.skip-link:focus{top:10px;transform:none}

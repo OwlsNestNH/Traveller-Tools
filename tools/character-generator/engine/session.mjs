@@ -29,7 +29,7 @@ export const EXTRA_STATS = [
  {id:'CHA',name:'Charisma',kind:'house',source:'House option outside the Vargr rules',dice:2}
 ];
 function initial(seed) {
- return {version:API_VERSION,rng:hash(seed),stage:'identity',config:{boons:0,minimumReroll:true,allocation:true,extras:[],gm:false,zhodaniPsi:false},
+ return {version:API_VERSION,rng:hash(seed),stage:'identity',config:{boons:0,minimumReroll:true,allocation:true,extras:[],gm:false,zhodaniPsi:false,aezorghTwoDice:false},
  character:{name:'',species:'human',culture:'native',gender:'',homeworld:'',age:18,terms:0,stats:{},skills:{},traits:[],careers:[],relationships:[],benefits:[],cash:0,debt:0,notes:''},
  pool:[],rollTotal:null,backgroundRemaining:0,active:null,pending:null,failedQualification:false,draftUsed:false,cashRolls:0,connections:[],coverage:[],lastRoll:null};
 }
@@ -47,6 +47,16 @@ function dice(state,n,rolls,label,boon=false) {
  const entry={label,values,kept,total};rolls.push(entry);state.lastRoll=entry;return total;
 }
 function stat(state,key) { need(Object.hasOwn(state.character.stats,key),'Characteristic '+key+' is not present.');return state.character.stats[key]; }
+// User-selected generation options, not additional published species rules.
+function statisticsRerollThreshold(state) { return state.character.species==='aezorgh'&&!state.config.aezorghTwoDice?30:43; }
+function statisticsCanReroll(state) { return state.stage==='statistics'&&state.pool.length===6&&!!(state.config.gm||state.config.minimumReroll&&state.rollTotal<statisticsRerollThreshold(state)); }
+function refreshStatisticsPool(state) {
+ for(const p of state.pool){p.divisor=state.character.species==='aezorgh'&&state.config.aezorghTwoDice&&p.formulaCount===1?2:1;p.derivedBase=Math.floor(p.base/p.divisor);p.value=Math.max(1,p.derivedBase+p.adjustment);}
+ state.rollTotal=state.pool.reduce((sum,p)=>sum+p.base,0);
+}
+function statisticsDivisionSummary(state) {
+ return state.character.species==='aezorgh'&&state.config.aezorghTwoDice?' Optional Aezorgh placement (round down before species bonuses): '+state.pool.map(p=>p.key+' raw '+p.base+'/'+p.divisor+' = '+p.derivedBase+', species '+(p.adjustment>=0?'+':'')+p.adjustment).join('; ')+'.':'';
+}
 function maxStat(state,key) { return findSpecies(state.character.species).maxima?.[key]??15; }
 function setStat(state,key,value) { integer(value,0,40,'Characteristic'); state.character.stats[key]=value;if(state.character.species==='aezorgh'&&key==='SOC')state.character.stats.CHA=Math.floor(value/2); }
 function gainSkill(state,name,level,mode='increase',allowTalentAcquisition=false) {
@@ -898,13 +908,14 @@ function apply(state,command,rolls) {
  case 'setup': {
   need(state.stage==='identity','Identity has already been accepted.');
   const species=findSpecies(payload.species);need(species,'Unknown species.');
+  need(!state.config.aezorghTwoDice||species.id==='aezorgh','The optional Aezorgh two-dice method applies only to Aezorgh. Disable it before selecting another species.');
   need(!(species.id==='zhodani'&&payload.culture==='imperial'),'Zhodani rules assume Consulate childhood. Select Human for outside-Consulate upbringing.');
   if(payload.variant!==undefined)need(species.id==='vargr','Only Vargr have this strain option.');
   if(species.id==='vargr'){const variant=payload.variant??'standard';need(variant==='standard'||Object.hasOwn(SPECIES_RULES.vargr.variants,variant),'Choose a supported Vargr strain.');state.character.variant=variant;}
   state.character.name=text(payload.name??'',80);state.character.species=species.id;
   state.character.gender=text(payload.gender??'',20);state.character.culture=payload.culture==='imperial'?'imperial':'native';
   state.character.homeworld=text(payload.homeworld??'',160);state.character.age=species.startAge;state.character.traits=copy(SPECIES_RULES[species.id]?.traits??[]);
-  state.stage='statistics';return 'Started '+(state.character.name||'an unnamed Traveller')+' ('+species.name+').'+(species.id==='vargr'?' Vargr strain: '+state.character.variant+'.':'');
+  state.stage='statistics';return 'Started '+(state.character.name||'an unnamed Traveller')+' ('+species.name+').'+(species.id==='vargr'?' Vargr strain: '+state.character.variant+'.':'')+(species.id==='aezorgh'?(state.config.aezorghTwoDice?' Optional Aezorgh method: six raw 2D totals; reroll minimum 43 before placement and halving; free swaps; one-die destinations halve rounding down before species bonuses.':' Standard Aezorgh method: published 1D/2D formulas; raw reroll minimum 30; swaps within matching formula groups, with GM exceptions.'):'');
  }
  case 'configure': {
   need(state.stage==='identity'||state.stage==='statistics'&&!state.pool.length,'Options must be set before rolling.');
@@ -912,8 +923,10 @@ function apply(state,command,rolls) {
   if(payload.minimumReroll!==undefined){need(typeof payload.minimumReroll==='boolean','Invalid reroll option.');state.config.minimumReroll=payload.minimumReroll;}
   if(payload.allocation!==undefined){need(typeof payload.allocation==='boolean','Invalid allocation option.');state.config.allocation=payload.allocation;}
   if(payload.extras!==undefined){need(Array.isArray(payload.extras)&&payload.extras.length<=6&&new Set(payload.extras).size===payload.extras.length,'Invalid extra characteristics.');need(payload.extras.every(x=>EXTRA_STATS.some(e=>e.id===x)),'Unsupported extra characteristic.');state.config.extras=[...payload.extras];}
+  if(payload.aezorghTwoDice!==undefined){need(typeof payload.aezorghTwoDice==='boolean','The optional Aezorgh two-dice method must be true or false.');need(!payload.aezorghTwoDice||state.stage==='identity'||state.character.species==='aezorgh','The optional two-dice method applies only to Aezorgh.');state.config.aezorghTwoDice=payload.aezorghTwoDice;}
   if(payload.zhodaniPsi!==undefined){need(typeof payload.zhodaniPsi==='boolean','Invalid Zhodani PSI option.');state.config.zhodaniPsi=payload.zhodaniPsi;}
-  return 'Generation options: '+state.config.boons+' boon rolls; player placement '+(state.config.allocation?'on':'off')+'; below-43 reroll '+(state.config.minimumReroll?'on':'off')+'; extras '+(state.config.extras.join(', ')||'none')+'; Zhodani PSI option '+(state.config.zhodaniPsi?'on':'off')+'.';
+  const rerollSummary=state.stage==='identity'&&Object.hasOwn(payload,'aezorghTwoDice')?'minimum-total reroll '+(state.config.minimumReroll?'on':'off')+' (threshold confirmed at species setup)':'below-'+statisticsRerollThreshold(state)+' reroll '+(state.config.minimumReroll?'on':'off');
+  return 'Generation options: '+state.config.boons+' boon rolls; player placement '+(state.config.allocation?'on':'off')+'; '+rerollSummary+'; extras '+(state.config.extras.join(', ')||'none')+'; Zhodani PSI option '+(state.config.zhodaniPsi?'on':'off')+'.'+(state.config.aezorghTwoDice?' Optional Aezorgh method: six raw 2D totals, free placement, then halve one-die destinations rounding down.':'');
  }
  case 'gm-mode': {
   need(typeof payload.enabled==='boolean','GM mode must be true or false.');
@@ -922,30 +935,34 @@ function apply(state,command,rolls) {
  case 'roll-statistics': {
   need(state.stage==='statistics','Statistics cannot be rolled at this stage.');
 
-  if(state.pool.length)need(state.config.gm||(state.config.minimumReroll&&state.rollTotal<43),'Reroll is available only below a six-score base total of 43, or in GM mode.');
+  const rerollThreshold=statisticsRerollThreshold(state);
+  if(state.pool.length)need(statisticsCanReroll(state),'Reroll is available only below a six-score base total of '+rerollThreshold+', or in GM mode.');
   const species=findSpecies(state.character.species);
   if(state.config.zhodaniPsi){need(state.config.gm&&species.id==='zhodani','The Zhodani PSI option requires GM mode and a Zhodani Traveller.');state.optionalPsi=[9,9,10,10,11,12][dice(state,1,rolls,'Zhodani optional PSI')-1];}
+  need(!state.config.aezorghTwoDice||species.id==='aezorgh','The optional two-dice method applies only to Aezorgh.');
   const formulas=species.id==='vargr'?{...species.dice,...(SPECIES_RULES.vargr.variants[state.character.variant]??{})}:species.dice;
   const basic=Object.entries(formulas).slice(0,6).map(([key,dice])=>species.id==='vargr'&&state.character.culture==='imperial'&&key==='CHA'?['SOC',[2,0]]:[key,dice]);
   const before=state.pool.length?state.pool.map(p=>p.base):null;
-  state.pool=basic.map(([key,[count,adjustment]],i)=>({key,count,adjustment,origin:key,base:dice(state,count,rolls,key,i<state.config.boons),boon:i<state.config.boons}));
-  state.rollTotal=state.pool.reduce((sum,p)=>sum+p.base,0);
-  return (before?'Rerolled statistics; previous '+before.join(', ')+'. ':'Rolled statistics. ')+'Base total '+state.rollTotal+'. Species modifiers excluded; extra characteristics excluded.';
+  state.pool=basic.map(([key,[formulaCount,adjustment]],i)=>{const count=state.config.aezorghTwoDice?2:formulaCount;return {key,count,formulaCount,adjustment,origin:key,base:dice(state,count,rolls,key,i<state.config.boons),boon:i<state.config.boons};});
+  refreshStatisticsPool(state);
+  return (before?'Rerolled statistics; previous '+before.join(', ')+'. ':'Rolled statistics. ')+'Base total '+state.rollTotal+'. Species modifiers excluded; extra characteristics excluded.'+statisticsDivisionSummary(state);
  }
  case 'swap-statistics': {
   need(state.stage==='statistics'&&state.pool.length===6,'Roll statistics first.');
   need(state.config.allocation||state.config.gm,'Player assignment is not enabled.');
   const a=integer(payload.a,0,5,'First score'),b=integer(payload.b,0,5,'Second score');need(a!==b,'Choose two different characteristics.');
-  need(state.pool[a].count===state.pool[b].count||state.config.gm,'Published dice formulas differ. A GM override is required for this swap.');
+  const mixedFormula=state.pool[a].formulaCount!==state.pool[b].formulaCount,freePlacement=state.character.species==='aezorgh'&&state.config.aezorghTwoDice;
+  need(!mixedFormula||freePlacement||state.config.gm,'Published dice formulas differ. A GM override is required for this swap.');
   const old=[state.pool[a].base,state.pool[b].base];[state.pool[a].base,state.pool[b].base]=[state.pool[b].base,state.pool[a].base];
-  [state.pool[a].boon,state.pool[b].boon]=[state.pool[b].boon,state.pool[a].boon];[state.pool[a].origin,state.pool[b].origin]=[state.pool[b].origin,state.pool[a].origin];
-  return 'Swapped '+state.pool[a].key+' '+old[0]+' → '+old[1]+' and '+state.pool[b].key+' '+old[1]+' → '+old[0]+(state.pool[a].count!==state.pool[b].count?' (GM exception).':'.');
+  [state.pool[a].boon,state.pool[b].boon]=[state.pool[b].boon,state.pool[a].boon];[state.pool[a].origin,state.pool[b].origin]=[state.pool[b].origin,state.pool[a].origin];[state.pool[a].count,state.pool[b].count]=[state.pool[b].count,state.pool[a].count];refreshStatisticsPool(state);
+  return 'Swapped '+state.pool[a].key+' '+old[0]+' → '+old[1]+' and '+state.pool[b].key+' '+old[1]+' → '+old[0]+(mixedFormula&&!freePlacement?' (GM exception).':'.')+statisticsDivisionSummary(state);
  }
  case 'accept-statistics': {
   need(state.stage==='statistics'&&state.pool.length===6,'Roll statistics first.');
   const species=findSpecies(state.character.species);
   need(species.id==='zhodani'||!state.config.extras.includes('PSI')||state.config.gm,'Optional PSI generation requires referee permission in GM mode.');
-  for(const p of state.pool)state.character.stats[p.key]=Math.max(1,p.base+p.adjustment);
+  refreshStatisticsPool(state);
+  for(const p of state.pool)state.character.stats[p.key]=p.value;
   for(const [key,[count,adjustment]] of Object.entries(species.dice).slice(6))state.character.stats[key]=key==='PSI'&&state.config.zhodaniPsi?state.optionalPsi:dice(state,count,rolls,key)+adjustment;
   for(const id of state.config.extras) {
    if(Object.hasOwn(state.character.stats,id))continue;
@@ -1480,9 +1497,9 @@ if(pending.kind==='psionic-training-terms'){
   else if(field==='age'){old=state.character.age;state.character.age=integer(payload.value,0,500,'Age');}
   else if(field==='cash'||field==='debt'){old=state.character[field];state.character[field]=integer(payload.value,0,100000000,'Amount');}
   else if(field==='pool'){
-   need(state.stage==='statistics'&&state.pool.length===6,'Roll statistics first.');const index=integer(payload.index,0,5,'Pool index');old=state.pool[index].base;state.pool[index].base=integer(payload.value,1,18,'Base score');state.rollTotal=state.pool.reduce((n,p)=>n+p.base,0);
+   need(state.stage==='statistics'&&state.pool.length===6,'Roll statistics first.');const index=integer(payload.index,0,5,'Pool index');old=state.pool[index].base;state.pool[index].base=integer(payload.value,1,18,'Base score');refreshStatisticsPool(state);
   }else throw new Error('That field cannot be overridden.');
-  return 'GM override '+field+(field==='pool'?'['+payload.index+']':'')+': '+String(old??'absent')+' → '+payload.value+'. Reason: '+reason;
+  return 'GM override '+field+(field==='pool'?'['+payload.index+']':'')+': '+String(old??'absent')+' → '+payload.value+'. Reason: '+reason+(field==='pool'?statisticsDivisionSummary(state):'');
  }
  case 'finish':{need(!state.forcedCareer,'Resolve the required next career before finishing.');need(['career','retirement'].includes(state.stage)&&state.active===null,'Finish between careers after resolving benefits.');const settlement=settleInjuryBills(state);if(settlement===false)return 'Outstanding injury bills await source resolution of the cash balance.';state.stage='finish';return 'Finished source-assisted character. Unautomated stages remain listed in the record.'+(settlement?' Injury bills: paid Cr'+settlement.paid+', remaining medical debt Cr'+settlement.debt+'.':'');}
  default:throw new Error('Unknown command: '+command.type);
@@ -1522,6 +1539,8 @@ export function project(session) {
   log.push({number:i+1,id:event.id,type:event.command.type,summary,rolls,changes:characterChanges(snapshots[i].character,state.character)});snapshots.push(copy(state));
  }
  for(const career of state.character.careers)if(career.pensionExitStatusBasis){const socialClass=state.character.stats.SOC>=11?'noble':state.character.stats.SOC===10?'intendant':'prole';career.pensionStatusReviewRequired=socialClass!==career.pensionExitStatusBasis.socialClass;}
+ state.statisticsRerollThreshold=statisticsRerollThreshold(state);
+ state.statisticsCanReroll=statisticsCanReroll(state);
  state.psionicGamesAvailability=psionicGamesAvailability(state);
  state.currentPsionicGames=copy(state.character.psionicGames?.applications.at(-1)??null);
  state.psionicGamesOptions=gamesPending(state)?gamesRemaining(gamesPending(state)):[];

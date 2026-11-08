@@ -17,7 +17,7 @@ These edition choices matter. In particular the 2026 Aslan characteristic modifi
 - Original, readable responsive interface with large controls.
 - Always-on deterministic event log; save, import, print and GM-gated audit-preserving restore.
 - Logged GM changes and replacement dice, with reason and retained original record.
-- Requested boon, placement, below-43 and extra-characteristic controls.
+- Requested first-roll boons, placement, minimum-total rerolls and extra-characteristic controls. Standard Aezorgh use30; their optional six-2D6 method uses43 before placement/halving, free swaps and destination-specific rounding down. Both are explicitly labelled house options.
 - Species-specific stat formulas, basic backgrounds and career filtering.
 - Numeric training, rank, material/cash benefit, event and mishap tables for all 45 scoped careers.
 - Native Core University/academy entry, initial awards, events, graduation/honours, deferred service awards, future entry/qualification rights and pre-term commissions, with explicit source-assisted exceptions.
