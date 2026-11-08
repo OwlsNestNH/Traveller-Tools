@@ -455,12 +455,13 @@ export function projectReview(design, catalogue, evaluation) {
   if(selectedMedical.length)sections.push(section('selected-medical-packages','Selected medical packages',selectedMedical,{collapsed:true,note:'Retained selections; purchased/active totals separate'}));
   const skills = skillRows(totals?.skills);
   if (!totals) {
-    const skillControl = controls.find(control => control.field === 'packages');
-    for (const id of skillControl ? design.selections?.skills?.packages || [] : []) {
+    const skillControl = controls.find(control => control.type === 'multiselect' && control.field === 'packages');
+    for (const id of skillControl ? (skillControl.target==='special'?design.special?.packages:design.selections?.skills?.packages) || [] : []) {
       const choice = skillControl.choices?.find(item=>item.id===id);
       skills.push(row(choice?.label || titleName(id),'Selected; effective level not calculated',choice?.source));
     }
-    if (controls.some(control=>control.field==='customPackages')) skills.push(...skillRows(design.selections?.skills?.customPackages));
+    const customControl=controls.find(control=>control.field==='customPackages');
+    if (customControl) skills.push(...skillRows((customControl.target==='special'?design.special?.customPackages:design.selections?.skills?.customPackages)?.map(record=>({...record,label:titleName(record.skill)+(record.speciality?' ('+record.speciality+')':'')}))));
   }
   if (skills.length) sections.push(section('skills','Skill packages',skills));
   if (totals?.hardwareSkills?.length) sections.push(section('hardware-skills','Hardware skills',totals.hardwareSkills.map(item=>profileRow(titleName(item.skill),`Level ${valueText(item.level)} · Characteristic DM ${valueText(item.characteristicModifier)}`,item,['skill','level','characteristicModifier'],options.get(item.sourceOption)?.label || 'Hardware-provided skill'))));

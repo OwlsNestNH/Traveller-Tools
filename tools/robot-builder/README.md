@@ -75,6 +75,12 @@ External wear requires the explicit per-design convention `external-wear-no-inte
 
 Worn purchase prices are outside body multipliers and the ordinary chassis minimum-cost floor. Whole-component quantities scale their own purchases once; brain-only acquisitions exclude worn hardware and its physical-fit warnings. Design results, review, print and detached component snapshots preserve both wear and any metamorphic provenance. Converted-leg/foot/shoulder wear, recipient/cyberlimb copies, powered or stun gear, linked weapons, fire control, accessories and ammunition customization are outside this bounded route. Existing held-grip conflicts and ordinary mounted accounting are unchanged.
 
+## Microbot software and high-tech nanorobots
+
+Microbots use the shared hard-coded package and standard software validation. Basic (none) can install one compatible package up to level one; no Bandwidth module is available. Hard-coded weapon and servant choices are explicit, and Basic (locomotion) retains level-zero movement skills without an invented agility enhancement. Custom software retains normal prices, inherent Bandwidth limits and characteristic modifiers. Protection multipliers apply to hardware, not software. Old backups without the new selectors retain defaults; a missing weapon specialty remains unresolved rather than becoming a generic weapon skill.
+
+Brainless microbots validate receiver and communications across both legacy hardware and separate installations. Higher-technology nanoconstructors expose their existing external controller capacity input. This route continues to treat the selected construction bags as operated together; reserve inventory and scheduling are not modelled. High-tech nanorobot protections follow the general Handbook multipliers while retaining each product's printed litre or package price basis. Unknown working life, production rate, intelligence and Bandwidth remain unknown.
+
 ## Rules presentation
 
 The editor, design review and printable statblock show concise labels, selected figures and source references. Full reference rows and long rule explanations are not displayed. Estimated values, incomplete coverage, unresolved results, source interpretations and referee-dependent conditions remain labelled; corrective checks identify the relevant part, weapon and linked copy. Detailed engine diagnostics remain available for verification without becoming presentation text. User-entered design names and specialties are retained.
@@ -113,6 +119,7 @@ node tools/robot-builder/verification/metamorphic-browser.mjs /path/to/playwrigh
 node tools/robot-builder/verification/vehicle-utilities-browser.mjs /path/to/playwright
 node tools/robot-builder/verification/specialised-ammunition-browser.mjs /path/to/playwright
 node tools/robot-builder/verification/vehicle-recovery-browser.mjs /path/to/playwright
+node tools/robot-builder/verification/handbook-special-software-browser.mjs /path/to/playwright
 ```
 
 `ROBOT_TEST_URL` overrides the local preview URL. `ROBOT_BROWSER_CHANNEL=msedge` selects Edge for local Windows verification; CI uses pinned Chromium. All browser tests use a fresh isolated context with synthetic fixtures, not a user's campaign data.

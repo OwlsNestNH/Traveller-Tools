@@ -4,9 +4,12 @@ import {compositeControls,supportsReferences,validateReferences} from './composi
 import {equipmentCapabilities} from './capabilities.mjs';
 import {getAugmentationControls,validateAugmentationRecords,evaluateAugmentations} from './augmentations.mjs';
 import {evaluateEquipment,validateOptionInstances} from './equipment.mjs';
+import {evaluateCoreSoftware} from './core-software.mjs';
+import {evaluateBrainSoftware,validateSoftwareSelection} from './brain-software.mjs';
+import {characteristicDM} from './characteristics.mjs';
 import {CUSTOM_PACKAGE_FIELDS} from './skills-data.mjs';
 import {OPTIONS_ARRAY} from './options-data.mjs';
-import {PACKAGES,LOCOMOTION,OPTIONS,DEFAULT_ITEMS,CORE_PACKAGES} from './catalogue.mjs';
+import {PACKAGES,LOCOMOTION,OPTIONS,DEFAULT_ITEMS,CORE_PACKAGES,BANDWIDTH,STAGES} from './catalogue.mjs';
 // Pure special-construction API. Rules data, not reproduced source prose.
 const copy = value => JSON.parse(JSON.stringify(value));
 const source = pages => ({book:'Robot Handbook',edition:'Mongoose 2022',pages});
@@ -76,13 +79,13 @@ export function createSpecialDesignFields(kind,techLevel=13){const fields=Object
 export function validateSpecialFields(kind,fields){
  if(!fields||typeof fields!=='object'||Array.isArray(fields))throw new TypeError('special must be an object.');
  if(supportsReferences(kind))validateReferences(kind,fields.designReferences);
- if(kind==='microbot')validateOptionInstances(fields.optionInstances,MICRO_OPTIONS);
+ if(kind==='microbot'){validateOptionInstances(fields.optionInstances,MICRO_OPTIONS);validateSoftwareSelection({packages:fields.packages,customPackages:fields.customPackages===undefined?[]:fields.customPackages});}
  if(kind==='nanorobot')validateMedicalInventory(fields);
  if(kind==='clone'){validateCloneCustomSkills(fields.trainingCustomSkills);validateCloneIntSchedule(fields.trainingIntSchedule);}
  if(['cyborg','biological'].includes(kind))validateAugmentationRecords({kind,special:fields});
  const cs=getSpecialControls(kind,{special:fields}),allowed=new Set(cs.map(c=>c.field));
  if(Object.keys(fields).some(k=>!allowed.has(k)))throw new TypeError('Unknown special field.');
- for(const c of cs){if(kind==='nanorobot'&&fields.medicalMode===undefined&&fields.medicalPackages===undefined&&['medicalMode','medicalPackages'].includes(c.field))continue;const v=fields[c.field];if(c.type==='number'&&(!(c.integer===false?Number.isFinite(v):Number.isInteger(v))||v<c.min||v>c.max))throw new TypeError(`special.${c.field} must be a ${c.integer===false?'finite number':'whole number'} from ${c.min} to ${c.max}.`);if(c.type==='multiselect'&&(!Array.isArray(v)||v.length>200||new Set(v).size!==v.length||v.some(id=>!c.choices.some(x=>x.id===id))))throw new TypeError(`special. has invalid selections.`);if(c.type==='select'&&!c.choices.some(x=>x.id===v))throw new TypeError(`special.${c.field} has an unknown choice.`);}
+ for(const c of cs){if(kind==='nanorobot'&&fields.medicalMode===undefined&&fields.medicalPackages===undefined&&['medicalMode','medicalPackages'].includes(c.field))continue;const v=fields[c.field];if(c.optional&&v===undefined)continue;if(c.type==='number'&&(!(c.integer===false?Number.isFinite(v):Number.isInteger(v))||v<c.min||v>c.max))throw new TypeError(`special.${c.field} must be a ${c.integer===false?'finite number':'whole number'} from ${c.min} to ${c.max}.`);if(c.type==='multiselect'&&(!Array.isArray(v)||v.length>200||new Set(v).size!==v.length||v.some(id=>!c.choices.some(x=>x.id===id))))throw new TypeError(`special. has invalid selections.`);if(c.type==='select'&&!c.choices.some(x=>x.id===v))throw new TypeError(`special.${c.field} has an unknown choice.`);}
  return true;
 }
 function validateCloneIntSchedule(records){if(!Array.isArray(records)||records.length>4)throw new TypeError('Invalid timed INT schedule.');const ids=new Set();let year=0,increase=0;for(const r of records){if(!r||Object.keys(r).some(k=>!['id','year','cumulativeIncrease'].includes(k))||typeof r.id!=='string'||!/^[-a-z0-9]{1,40}$/.test(r.id)||ids.has(r.id)||!Number.isInteger(r.year)||r.year<=year||r.year>16||!Number.isInteger(r.cumulativeIncrease)||r.cumulativeIncrease<=increase||r.cumulativeIncrease>4)throw new TypeError('INT events require unique IDs and strictly increasing years and cumulative increases.');ids.add(r.id);year=r.year;increase=r.cumulativeIncrease;}}
@@ -273,6 +276,8 @@ const MICRO_OPTIONS=OPTIONS.filter(microEligible);const microControls=[
  {...select('advancedBrainInterpretation','Advanced brain source discrepancy',[['unresolved','Not resolved'],['micro-table','Use the explicit p81 microbot table (INT6, TL12)']],'unresolved'),stage:'brain',visibleWhen:{field:'brain',equals:'advanced'}},
  {...select('hunterBandwidth','Hunter/Killer package bandwidth interpretation',[['unresolved','Unresolved source ambiguity'],['zero','Referee interpretation: hard-coded package uses 0 BW'],['one','Referee interpretation: hard-coded package uses 1 BW']],'unresolved'),stage:'skills',visibleWhen:{field:'brain',equals:'hunter-killer'}},
  {...select('corePackage','Hard-coded skill package',CORE_PACKAGES.map(p=>[p.id,p.label]),'primitive-alert'),stage:'skills'},
+ ...STAGES.find(stage=>stage.id==='skills').controls.filter(c=>['coreWeapon','servantProfession'].includes(c.field)).map(c=>({...copy(c),default:c.field==='coreWeapon'?'unspecified':'domestic-servant',optional:true,stage:'skills',visibleWhen:{field:'corePackage',oneOf:c.field==='coreWeapon'?['primitive-homing','basic-security','hunter-standard','hunter-tactical']:['basic-servant']}})),
+ {field:'customPackages',label:'Custom microbot software specialities',type:'custom-packages',default:[],optional:true,maxItems:100,itemFields:CUSTOM_PACKAGE_FIELDS,stage:'skills'},
  {field:'packages',label:'Installed microbot software',type:'multiselect',default:[],choices:PACKAGES,stage:'skills'}
 ].map(c=>({...c,source:source('79-81')}));
 function evaluateMicrobot(design){
@@ -311,38 +316,31 @@ function evaluateMicrobot(design){
   else issue('warning','MICRO_BRAIN_TABLE','special.brain','Using the explicit p81 microbot table: TL12, INT6, BW2, Cr10000; ordinary-brain INT8 and fit TL14 are not silently substituted.','66,81');
  }
  if(b.rank>=3&&tl>b.tl)issue('warning','MICRO_BRAIN_PRICE_INTERPRETATION','special.brain','Uses the printed microbot table price at higher TL; the book does not explicitly define a new retro-brain discount clock after microbot fit.','67,81');
- const brainCost=b.cost*(s.hardened==='yes'?1.5:1);hardware+=brainCost;entry('brain','Microbot brain',brainCost,'67,81');
- const intellectBW=s.intellectUpgrade*(s.intellectUpgrade+1)/2,intelligence=b.intelligence+s.intellectUpgrade;
- let intellectCost=s.intellectUpgrade?1000:0;for(let n=1;n<=s.intellectUpgrade;n++)intellectCost*=b.intelligence+n;if(intelligence>=12)intellectCost*=2;
- if(intellectCost){hardware+=intellectCost;entry('intellect','Intellect upgrade',intellectCost,'67');}
- let bw=intellectBW,zeroBW=0;const installed=[];
+ const equipment=evaluateEquipment({kind:'microbot',techLevel:tl,selections:{chassis:{size:'size-0'},physical:{options:s.options,defaultSuite:[],optionParameters:{},optionInstances:s.optionInstances,armourRemoved:false,vehicleSpeed:false,powerPacks:0,powerMode:'conventional'}}},MICRO_OPTIONS,.5);
+ const manipulators=Array.from({length:s.arms},(_,i)=>({id:'micro-'+(i+1),size:0,strength:0,dexterity:armDEX}));
+ const selection={packages:s.packages,customPackages:s.customPackages??[],coreWeapon:s.coreWeapon??'unspecified',servantProfession:s.servantProfession??'domestic-servant',targetMode:'explosives',hunterBandwidth:s.hunterBandwidth};
+ const mapSoftwareDiagnostic=d=>({...d,path:d.path.replace(/^(skills|brain)\.?/,'special.')});
+ let bw=0,zeroBW=0,zeroBWAllowance=0,intelligence=0,installed=[];
  if(b.rank<0){
-  if(core.id!=='none'||s.packages.length||s.intellectUpgrade||s.hardened==='yes')issue('error','MICRO_NO_BRAIN_SOFTWARE','special.brain','A brainless microdrone cannot install brain upgrades or skill software.');
-  if(!s.options.includes('drone-interface'))issue('error','MICRO_DRONE_INTERFACE','special.options','A brainless microdrone requires an onboard drone receiver.');
-  if(!s.options.some(id=>id.startsWith('transceiver')||['wireless','wireless-data-link'].includes(id)))issue('error','MICRO_DRONE_COMMS','special.options','A brainless microdrone requires communications.');
- }else if(b.rank<2){
-  if(core.family!==b.family)issue('error','MICRO_CORE_FAMILY','special.corePackage','Hard-coded package does not match the selected brain.','69-73');
-  if(s.packages.length)issue('blocker','MICRO_CORE_ADDONS','special.packages','Additional hard-coded skills and bandwidth interpretation require their dedicated package rules.','69-73');
-  if(core.reason||core.implemented===false)issue('blocker','MICRO_CORE_DETAIL','special.corePackage',core.reason??'The selected hard-coded package requires unresolved detail.','69-73');
-  if(b.family==='hunter-killer'&&s.hunterBandwidth==='unresolved')issue('blocker','MICRO_HUNTER_BANDWIDTH','special.hunterBandwidth','Hunter/Killer hard-coded bandwidth differs between the package rules; record the referee interpretation.','72-73');
-  software+=core.cost;bw+=b.family==='hunter-killer'&&s.hunterBandwidth==='zero'?0:core.bandwidth;installed.push(...core.skills.map(([skill,level])=>({skill,level})));entry('core-package','Hard-coded skill package',core.cost,'69-73');
+  if(core.id!=='none'||s.packages.length||selection.customPackages.length||s.intellectUpgrade||s.hardened==='yes')issue('error','MICRO_NO_BRAIN_SOFTWARE','special.brain','A brainless microdrone cannot install brain upgrades or skill software.');
+  if(!equipment.installed.some(o=>o.effects?.droneInterface))issue('error','MICRO_DRONE_INTERFACE','special.options','A brainless microdrone requires an onboard drone receiver.');
+  if(!equipment.installed.some(o=>o.family==='transceiver'||o.id==='wireless'))issue('error','MICRO_DRONE_COMMS','special.options','A brainless microdrone requires communications.');
  }else{
-  if(core.id!=='none')issue('error','MICRO_CORE_ADVANCED','special.corePackage','Advanced brains use installed skill packages rather than hard-coded primitive packages.','69-73');
-  const selected=s.packages.map(id=>PACKAGES.find(p=>p.id===id));const seen=new Set();
-  for(const p of selected){
-   const key=p.skill+':'+(p.speciality??'');if(seen.has(key))issue('error','MICRO_SKILL_DUPLICATE','special.packages','Install a single level of each skill or specialty.','73');seen.add(key);
-   if(p.implemented===false)issue('blocker','MICRO_SKILL_SPECIALTY','special.packages',p.reason??'This package requires specialty details.','73-75');
-   if(p.tl>tl)issue('error','MICRO_SKILL_TL','special.packages','Skill software exceeds design technology.','73');
-   if((p.perPackageBandwidth??p.bandwidth)>b.bandwidth)issue('error','MICRO_SKILL_BW','special.packages','Skill exceeds inherent brain bandwidth.','73');
-   if(p.bandwidth===0)zeroBW++;else bw+=p.bandwidth;
-   software+=p.cost;entry(p.id,p.label,p.cost,'73-75');installed.push(copy(p));
-  }
+  const coreAccounting=evaluateCoreSoftware({brain:b,core,selection,options:equipment.installed,primaryLocomotion:l.id,agility:0});
+  diagnostics.push(...coreAccounting.diagnostics.map(mapSoftwareDiagnostic));
+  const accounting=evaluateBrainSoftware({brain:b,upgrade:BANDWIDTH.find(u=>u.id==='none'),techLevel:tl,settings:{hardened:s.hardened==='yes',intellectUpgrade:s.intellectUpgrade},selection:{packages:selection.packages,customPackages:selection.customPackages},core,coreBandwidth:coreAccounting.coreBandwidth,coreSkills:coreAccounting.coreSkills,manipulators,retrotech:false});
+  diagnostics.push(...accounting.diagnostics.map(mapSoftwareDiagnostic));
+  hardware+=accounting.brainCost+accounting.intellectCost;software+=core.cost+accounting.softwareCost;
+  ledger.push(...accounting.ledger.map(e=>e.id==='brain'?{...e,label:'Microbot brain',source:source('67,81')}:e));
+  if(core.id!=='none')ledger.push({id:'core-package',label:core.label,cost:core.cost,slots:0,bandwidth:coreAccounting.coreBandwidth,accountingDomain:'brain-software',source:source('69-73')});
+  ({bwUsed:bw,zeroBW,zeroBWAllowance,intelligence}=accounting);
+  // Retain the microbot skill alias while adopting the shared effective-skill output.
+  installed=accounting.skills.map(skill=>({...skill,skill:skill.id.split(':')[0]}));
+  if(bw>b.bandwidth)issue('error','MICRO_BANDWIDTH','special','Intellect and software exceed inherent bandwidth; microbots cannot add memory modules.','67,80-81');
  }
- const zeroBWAllowance=b.rank>=2?b.bandwidth:0;if(zeroBW>zeroBWAllowance)bw+=zeroBW-zeroBWAllowance;
- if(bw>b.bandwidth)issue('error','MICRO_BANDWIDTH','special','Intellect and software exceed inherent bandwidth; microbots cannot add memory modules.','67,80-81');
  let zeroCount=s.arms+(s.environment==='none'?0:1)+s.radiationLevels+(s.selfDestruct==='none'?0:1);
  if(s.selfDestruct!=='none'){const destructCost=s.selfDestruct==='defensive'?250:500;hardware+=destructCost;entry('micro-self-destruct','Microbot '+s.selfDestruct+' self-destruct',destructCost,'53,80-81');if(s.selfDestruct==='offensive'&&massMg<=1000)issue('error','MICRO_OFFENSIVE_MASS','special.massMg','Offensive microbot self-destruct requires mass strictly above one gram.','81');issue('warning','MICRO_SELF_DESTRUCT_PRICE','special.selfDestruct','Price combines the p53 per-Base-Slot rate with p80 half-Base-Slot pricing; p81 supplies miniature effects and no separate price row.','53,80-81');}
- const equipment=evaluateEquipment({kind:'microbot',techLevel:tl,selections:{chassis:{size:'size-0'},physical:{options:s.options,defaultSuite:[],optionParameters:{},optionInstances:s.optionInstances,armourRemoved:false,vehicleSpeed:false,powerPacks:0,powerMode:'conventional'}}},MICRO_OPTIONS,.5);
+
  diagnostics.push(...equipment.diagnostics.map(d=>({...d,path:d.path.replace(/^physical/,'special')})));
  hardware+=equipment.cost;zeroCount+=equipment.installed.reduce((n,o)=>n+o.quantity,0);
  ledger.push(...equipment.ledger.filter(e=>e.id!=='zero-slot-overflow'));
@@ -359,7 +357,7 @@ function evaluateMicrobot(design){
  if(s.radiationLevels)capabilityEquipment.push({...OPTIONS.find(o=>o.id==='radiation-environment-protection'),quantity:s.radiationLevels,parameters:{}});
  const capabilities=equipmentCapabilities(capabilityEquipment,{techLevel:tl,primary:l.id,tacticalSpeed:speed,brainFamily:b.family});
  issue('warning','MICRO_SCOPE','coverage','Checks the implemented microbot table and selected zero-slot hardware, not every Handbook device. No default suite, secondary locomotion, armour, memory module or power pack is included.');
- return finish({cost:hardware+software,capabilities,equipment:capabilityEquipment.map(o=>({id:o.instanceId??o.id,optionId:o.id,label:o.label,quantity:o.quantity,source:o.source})),slots:{base:0,capacity:0,used:0,remaining:0},bandwidth:{inherent:b.bandwidth,capacity:b.bandwidth,used:bw,remaining:b.bandwidth-bw},zeroSlot:{allowance:tl,used:zeroCount,overflow:0},zeroBandwidth:{allowance:zeroBWAllowance,used:zeroBW,overflow:Math.max(0,zeroBW-zeroBWAllowance)},hits:1,armour:0,tacticalSpeed:speed,endurance,intelligence,skills:installed,manipulators:Array.from({length:s.arms},(_,i)=>({id:'micro-'+(i+1),size:0,strength:0,dexterity:armDEX})),traits:['Small (-4)',...l.traits,...equipment.traits],microbot:{massMg,minMassMg:minMass,selfDestruct:s.selfDestruct==='none'?null:{type:s.selfDestruct,damageDice:1,target:s.selfDestruct==='defensive'?'self':'direct-contact target'},hardwareCost:hardware,softwareCost:software,protectionMultiplier}});
+ return finish({cost:hardware+software,capabilities,equipment:capabilityEquipment.map(o=>({id:o.instanceId??o.id,optionId:o.id,label:o.label,quantity:o.quantity,source:o.source})),slots:{base:0,capacity:0,used:0,remaining:0},bandwidth:{inherent:b.bandwidth,capacity:b.bandwidth,used:bw,remaining:b.bandwidth-bw},zeroSlot:{allowance:tl,used:zeroCount,overflow:0},zeroBandwidth:{allowance:zeroBWAllowance,used:zeroBW,overflow:Math.max(0,zeroBW-zeroBWAllowance)},hits:1,armour:0,tacticalSpeed:speed,endurance,intelligence,intelligenceDM:characteristicDM(intelligence),skills:installed,manipulators,traits:['Small (-4)',...l.traits,...equipment.traits],microbot:{massMg,minMassMg:minMass,selfDestruct:s.selfDestruct==='none'?null:{type:s.selfDestruct,damageDice:1,target:s.selfDestruct==='defensive'?'self':'direct-contact target'},hardwareCost:hardware,softwareCost:software,protectionMultiplier}});
 }
 
 
@@ -528,11 +526,11 @@ function evaluateHighNano(design){
  const [minTL,price,capability]=rows[s.packageType],distributed=s.packageType==='distributed-conscious',diagnostics=[],volumeLitres=s.packages*.1;
  const issue=(severity,code,message)=>diagnostics.push({severity,code,path:'special.packageType',message,source:source('105')});
  if(design.techLevel<minTL)issue('error','NANO_HIGH_TL','Selected high-technology package requires TL'+minTL+'.');
- if(s.environment!=='none'||s.radiationLevels)issue('blocker','NANO_HIGH_PROTECTION','The high-technology table does not establish a price basis for extending ordinary package protection multipliers.');
+ const protectionMultiplier=(s.environment==='corrosive'?2:s.environment==='insidious'?5:1)*2**s.radiationLevels;
  if(!distributed&&s.packageType!=='construction-superior'&&s.packages>s.controllerMaxTasks)issue('error','NANO_CONTROLLER_TASKS','Purchased 0.1-litre bags exceed the supplied simultaneous controller task capacity.');
- const cost=price*(distributed?s.packages:volumeLitres),status=diagnostics.some(d=>d.severity==='error')?'invalid':diagnostics.some(d=>d.severity==='blocker')?'blocked':'verified';
+ const basePackageCost=price*(distributed?s.packages:volumeLitres),cost=basePackageCost*protectionMultiplier,status=diagnostics.some(d=>d.severity==='error')?'invalid':diagnostics.some(d=>d.severity==='blocker')?'blocked':'verified';
  issue('warning','NANO_HIGH_SCOPE','This is the printed high-technology acquisition price and capability, not a validated production facility, brain design or operational swarm simulation.');
- return {status,costLabel:'Selected high-tech package cost',diagnostics,ledger:[{id:'nano-high-package',label:capability,cost,slots:0,source:source('105')}],coverage:{complete:false,scope:'High-technology nanorobot acquisition and stated capability',gaps:[{id:'nano-high-production',message:'p105 does not specify working lifetime, production speed or complete distributed-brain bandwidth/INT construction accounting.',source:source('105')}],operationalDependencies:[{id:'nano-high-control',message:'External controller and feedstock remain separate except for the superior self-replicating initiator. Autonomous growth is not simulated.',source:source('105')}]},totals:status==='verified'?{cost,slots:null,bandwidth:null,traits:[capability],skills:[],manipulators:[],nanorobot:{packageType:s.packageType,packages:s.packages,volumeLitres,costBasis:distributed?'per package':'per litre',unitPrice:price,capability,lifeHours:null,productionSlotsPerHour:null}}:null};
+ return {status,costLabel:'Selected high-tech package cost',diagnostics,ledger:[{id:'nano-high-package',label:capability,cost,slots:0,source:source(protectionMultiplier===1?'105':'81,83,105')}],coverage:{complete:false,scope:'High-technology nanorobot acquisition and stated capability',gaps:[{id:'nano-high-production',message:'p105 does not specify working lifetime, production speed or complete distributed-brain bandwidth/INT construction accounting.',source:source('105')}],operationalDependencies:[{id:'nano-high-control',message:'External controller and feedstock remain separate except for the superior self-replicating initiator. Autonomous growth is not simulated.',source:source('105')}]},totals:status==='verified'?{cost,slots:null,bandwidth:null,traits:[capability],skills:[],manipulators:[],nanorobot:{packageType:s.packageType,packages:s.packages,volumeLitres,costBasis:distributed?'per package':'per litre',unitPrice:price,basePackageCost,protectionMultiplier,...(!distributed&&s.packageType!=='construction-superior'?{controllerMaxTasks:s.controllerMaxTasks}:{}),capability,lifeHours:null,productionSlotsPerHour:null}}:null};
 }
 
 function evaluateNanoSwarm(design){
@@ -562,7 +560,7 @@ function evaluateNanoSwarm(design){
 
 const nanoVisibility={
  otherActivePackages:['pharmaceutical','physical','mental','anti-ageing','regenerative','nanotech-defence'],attributeIncrease:['physical','mental'],
- controllerMaxTasks:['construction-basic','construction-improved','excavation','soil','cleanup'],materials:['construction-basic','construction-improved'],outputRetailValue:['construction-basic','construction-improved'],materialRoll:['construction-basic','construction-improved'],excavationMaterial:['excavation'],cleanupUnitCost:['cleanup'],uniqueCleanup:['cleanup'],soilMaterial:['soil'],regulatedExcavation:['excavation'],shutdownFailsafe:['excavation'],commsLossFailsafe:['excavation'],checkinMinutes:['excavation']
+ controllerMaxTasks:['construction-basic','construction-improved','construction-enhanced','construction-advanced','excavation','soil','cleanup'],materials:['construction-basic','construction-improved'],outputRetailValue:['construction-basic','construction-improved'],materialRoll:['construction-basic','construction-improved'],excavationMaterial:['excavation'],cleanupUnitCost:['cleanup'],uniqueCleanup:['cleanup'],soilMaterial:['soil'],regulatedExcavation:['excavation'],shutdownFailsafe:['excavation'],commsLossFailsafe:['excavation'],checkinMinutes:['excavation']
 };
 for(const c of nanoControls)if(nanoVisibility[c.field])c.visibleWhen={field:'packageType',oneOf:nanoVisibility[c.field]};
 
