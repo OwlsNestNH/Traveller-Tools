@@ -33,7 +33,7 @@ export async function worldReadability(page,{oneLineFacts=false}={}){
 export async function resourceBarGeometry(page){
  const result=await page.locator('#summary').evaluate(summary=>{
   const box=el=>{if(!el)return null;const b=el.getBoundingClientRect();return {left:b.left,right:b.right,top:b.top,bottom:b.bottom,width:b.width,height:b.height};};
-  const counter=selector=>{const el=summary.querySelector(selector),progress=el.querySelector(':scope>progress'),note=el.querySelector('.help');return {box:box(el),label:box(el.querySelector('.label')),value:box(el.querySelector('.value')),note:note?.getClientRects().length?box(note):null,bar:box(progress),visible:!!progress?.getClientRects().length,max:progress?.max,fill:progress?.value};};
+  const counter=selector=>{const el=summary.querySelector(selector),progress=el.querySelector(':scope>progress,:scope>.status-lss-gauge>progress'),note=el.querySelector('.help');return {box:box(el),label:box(el.querySelector('.label')),value:box(el.querySelector('.value')),note:note?.getClientRects().length?box(note):null,bar:box(progress),visible:!!progress?.getClientRects().length,max:progress?.max,fill:progress?.value};};
   return {viewport:innerWidth,box:box(summary),fuel:counter('.fuel-counter'),support:counter('.life-support-counter'),overflow:summary.scrollWidth-summary.clientWidth};
  });
  assert.ok(result.overflow<=1,'Summary tracks fit the viewport');
