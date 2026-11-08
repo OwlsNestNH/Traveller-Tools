@@ -331,9 +331,10 @@ export function evaluateWeapons(design,manipulators,skills,installedEquipment=[]
  for(const record of design.selections.physical.weapons){const original=WEAPONS.find(w=>w.id===record.weaponId),ammo=GRENADES.find(g=>g.id===record.ammunition),w=original.grenade&&ammo?{...original,conditionalEffects:ammo.conditionalEffects??null,damage:ammo.damage,magazineCost:ammo.cost*original.magazine,traits:[...original.traits,...ammo.traits]}:original,mount=MOUNTS[w.mountClass],fcs=FIRE_CONTROL.find(f=>f.id===record.fireControl),arm=manipulators.find(a=>a.id===record.manipulatorId),n=record.linkedWeapons,held=record.placement==='held';
  if(record.placement==='worn'||w.wearable){const result=evaluateWornWeapon(design,record,w,manipulators);diagnostics.push(...result.diagnostics);ledger.push(result.ledger);weapons.push(result.weapon);cost+=result.weapon.cost??0;continue;}
  if(record.wearSite!==undefined&&record.wearSite!=='unresolved')add('error','EXTERNAL_WEAR_UNUSED_SITE',record.id,'Clear retained wear site or select supported external wear.');
- const specialisedMode=recordUsesSpecialisedAmmunition(record)||Object.hasOwn(record,'weaponManufactureTL'),manufacture=manufactureDeclaration(w,record.weaponManufactureTL);
- const unsupportedManufacture=record.weaponManufactureTL!=null&&record.weaponManufactureTL!==w.tl;
- if(unsupportedManufacture)add('blocker','CSC_AMMO_MANUFACTURE_TIER_UNRESOLVED',record.id,'Declared manufacture TL is retained; catalogue-tier hardware pricing is not certified for this declaration.',manufacture.source);
+ const specialisedSelection=recordUsesSpecialisedAmmunition(record),supportedSpecialised=Boolean(specialisedAmmunitionCategory(w)),manufactureSelected=Object.hasOwn(record,'weaponManufactureTL');
+ const specialisedMode=supportedSpecialised&&(specialisedSelection||manufactureSelected),manufacture={...manufactureDeclaration(w,record.weaponManufactureTL),...(!supportedSpecialised?{status:'unsupported-profile'}:{})};
+ const unsupportedManufacture=record.weaponManufactureTL!=null&&(!supportedSpecialised||record.weaponManufactureTL!==w.tl);
+ if(unsupportedManufacture)add('blocker',supportedSpecialised?'CSC_AMMO_MANUFACTURE_TIER_UNRESOLVED':'CSC_AMMO_PROFILE_UNSUPPORTED',record.id,supportedSpecialised?'Declared manufacture TL is retained; catalogue-tier hardware pricing is not certified for this declaration.':'Retained manufacture declaration is outside this specialised-ammunition source scope. It does not change source attack, power, conditional-operation or acquisition rules.',manufacture.source);
  const grip=heldGripProfile(record,w,manipulators,occupancy),supportId=record.supportManipulatorId??'none';
  const accessories=(record.accessories??[]).map(id=>WEAPON_ACCESSORIES.find(a=>a.id===id)),families=new Set();let accessoryCost=0;const accessoryEffects=[];
  const cscWeapon=w.sourceFamily==='csc-2023',cscAccessories=cscWeapon&&w.compatibility.accessoryRules==='csc-2023'?evaluateCscAccessories(w,record,design.techLevel):null;
@@ -543,7 +544,10 @@ export function evaluateWeapons(design,manipulators,skills,installedEquipment=[]
  const itemCost=(unsupportedManufacture||unsupportedAccessories||unsupportedLaunchers||unsupportedAmmunition||unsupportedHighCapacity||replacementAmmoUnsupported||unknownAmmunitionCost||w.grenade&&!ammo||auxiliaryMode!=='none'&&!auxiliaryAmmo||bothLaunchers&&!integralAmmo)?null:auxiliaryCost+looseCost+(cscAccessories?.additionalCost??0)+(w.cost+accessoryCost)*n+(held?0:mount.cost*n)+fcs.cost+ammoCost+autoloadCost,itemSlots=mountSlots+fcsSlots;
  if(itemCost!==null)cost+=itemCost;slots+=itemSlots;ledger.push({id:'weapon-'+record.id,label:w.label,cost:itemCost,slots:itemSlots,source:book('61-64'),weaponSource:w.source});
 
- let ammunitionAttackProjection={};
+ let ammunitionAttackProjection=manufactureSelected&&!supportedSpecialised?{weaponManufacture:manufacture}:{};
+ // Metadata on another source must never turn an initial-load schema sentinel
+ // into ammunition or bypass direct/conditional/expendable attack restrictions.
+ if(specialisedSelection&&!supportedSpecialised)Object.assign(ammunitionAttackProjection,{sourceWeaponProfile:{weaponId:w.id,label:w.label,damage:w.damage,range:w.range,traits:clone(w.traits),conditionalEffects:clone(w.conditionalEffects??{}),source:clone(w.source)},damage:null,range:null,traits:[],linkedDamageBonus:null});
  if(specialisedMode){
   const profiles=Array.from({length:n},(_,index)=>{
    const effective=effectiveAmmunitionRecord(record,index+1),modification=effective.initialAmmunitionModification??'standard',assessment=specialisedAmmunitionAssessment(w,modification,record.weaponManufactureTL,design.techLevel),sourceValid=(effective.initialMagazineSourceId??w.id)===w.id||cscMagazineSourceIds(w).includes(effective.initialMagazineSourceId);

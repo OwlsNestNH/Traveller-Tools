@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createDesign,updateDesign,getCatalogue,evaluateDesign} from '../engine/index.mjs';
-import {weaponRecordPresentation,weaponControl,evaluateWeapons} from '../engine/weapons.mjs';
+import {WEAPONS,weaponRecordPresentation,weaponControl,evaluateWeapons} from '../engine/weapons.mjs';
 import {evaluateAugmentations} from '../engine/augmentations.mjs';
 import {createRobotApi} from '../js/api.mjs';
 import {projectReview,formatStatblock} from '../js/review-model.mjs';
@@ -160,4 +160,15 @@ test('configured weapon Scope usage has its specific concise condition',()=>{
  const condition=rows(review(weapon())).find(row=>row.label==='Copy 1 configured ammunition / Conditions');
  assert.match(condition.value,/Scope Usage.*Printed scope: hand-held use only/);
  assert.doesNotMatch(condition.value,/Operating condition unresolved; check source/);
+});
+
+test('unsupported manufacture metadata cannot invent common ammunition attacks in review or actual-print projection',()=>{
+ for(const id of ['csc-anti-armour-flail','csc-garrotte','csc-lance','csc-piston-spear','csc-stunstick','csc-blade','direct-grenade-frag','csc-direct-grenade-incendiary','gauss-rifle','csc-gauss-assault-gun']){
+  const source=WEAPONS.find(w=>w.id===id),selection={id:'unsupported-source',weaponId:id,placement:'body',manipulatorId:'none',linkedWeapons:2,fireControl:'none',autoload:false,extraMagazines:0,initialMagazines:1,weaponManufactureTL:source.tl};
+  for(const modified of [false,true]){
+   const d=updateDesign(createDesign({techLevel:23}),{selections:{chassis:{size:'size-7'},physical:{weapons:[{...selection,...(modified?{initialAmmunitionModification:'armour-piercing'}:{})}]}}}),result=evaluateDesign(d),review=projectReview(d,getCatalogue(d),result),text=formatStatblock(review);
+   assert.ok(!text.includes('Common loaded attack'),id);assert.ok(!text.includes('Loaded linked damage bonus'),id);assert.ok(!text.includes('Copy 1 configured ammunition'),id);assert.ok(text.includes('Manufacture declaration (all linked copies)'),id);
+   if(modified){assert.ok(text.includes('Specialised ammunition unresolved; source profile separate'),id);assert.ok(text.includes('Armour Piercing; unresolved for selected source'),id);assert.ok(text.includes('Source hardware profile'),id);}
+  }
+ }
 });
