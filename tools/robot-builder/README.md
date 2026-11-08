@@ -23,9 +23,9 @@ Current coverage continues to change during implementation. See `getCatalogue(de
 
 ## Source-defined vehicle options
 
-Three fixed-Space dischargers from Vehicle Handbook Update 2026, pp74-75 and 77, have a separate source catalogue: decoy, prismatic aerosol and smoke. Robot Handbook p62 supplies the 64-Slots-per-Space conversion. The full Robot Handbook and its construction catalogue were checked for equivalents; Handbook options retain precedence. Selection stores an authoritative ID and quantity, never editable source prices, TLs or Spaces. Generic external input records remain separate, unverified estimates.
+Nine fixed-Space choices from Vehicle Handbook Update 2026 have a separate source catalogue: the decoy, prismatic aerosol and smoke dischargers (pp74-75,77), Light Crane (p68), Basic/Improved External Samplers and Basic/Improved/Advanced Ground Penetrating Radar (p69). Robot Handbook p62 supplies the 64-Slots-per-Space conversion. The full Robot Handbook and its construction catalogue were checked for equivalents; no matching construction equivalent was identified for this subset, and related Handbook paths were reviewed. Handbook options retain precedence. Selection stores an authoritative ID and quantity, never editable source prices, TLs or Spaces. Generic external input records remain separate, unverified estimates.
 
-Printed charge capacities are not an included or loaded inventory. Hardware accounting is supported; operating clearance, control interfaces and deployment remain contextual. Additional requested charges retain unresolved price and mass, blocking totals rather than becoming free consumables. No armour, skill or defence bonus is applied automatically. The remaining catalogue, prototype variants and full vehicle-host legality are separate work.
+Printed charge capacities are not an included or loaded inventory. Hardware accounting is supported; operating clearance, control interfaces and deployment remain contextual. Additional requested charges retain unresolved price and mass, blocking totals rather than becoming free consumables. No armour, skill or defence bonus is applied automatically. Utility installations retain their source hardware TL independently of robot TL. The Light Crane remains its TL1/500kg introduction configuration. Each sampler installation selects one medium; analysis and adjacent-laboratory delivery remain conditional. Radar retains individual nominal depth, environmental/armour limits and conditional detection checks. Advanced radar drones are dedicated device parts, not additional constructed robots or a skill grant. Power context uses the selected robot state without certifying utility readiness or inventing an energy budget. Inapplicable retained charges/media stay visible for correction and never create phantom purchases. The remaining catalogue, higher-hardware-TL crane scaling, prototype variants and full vehicle-host legality are separate work.
 
 ## Saved designs
 
@@ -93,6 +93,7 @@ node tools/robot-builder/verification/construction-browser.mjs /path/to/playwrig
 node tools/robot-builder/verification/vehicle-options-browser.mjs /path/to/playwright
 node tools/robot-builder/verification/conditional-melee-browser.mjs /path/to/playwright
 node tools/robot-builder/verification/metamorphic-browser.mjs /path/to/playwright
+node tools/robot-builder/verification/vehicle-utilities-browser.mjs /path/to/playwright
 ```
 
 `ROBOT_TEST_URL` overrides the local preview URL. `ROBOT_BROWSER_CHANNEL=msedge` selects Edge for local Windows verification; CI uses pinned Chromium. All browser tests use a fresh isolated context with synthetic fixtures, not a user's campaign data.

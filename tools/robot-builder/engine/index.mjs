@@ -188,7 +188,7 @@ function evaluateSingleDesign(input){
  if(reduction>baseCost*.2){const correction=reduction-baseCost*.2;cost+=correction;entry('arm-savings-cap','Manipulator saving limit',correction,0,'25–26');}
  const equipment=evaluateEquipment(design,OPTIONS,baseSlots),options=equipment.installed,defaultSuite=options.filter(o=>o.fromDefault);
  diagnostics.push(...equipment.diagnostics);ledger.push(...equipment.ledger);cost+=equipment.cost;used+=equipment.slots;
- const verifiedVehicle=evaluateVerifiedVehicleOptions(design);diagnostics.push(...verifiedVehicle.diagnostics);ledger.push(...verifiedVehicle.ledger);cost+=verifiedVehicle.cost;used+=verifiedVehicle.slots;
+ const verifiedVehicle=evaluateVerifiedVehicleOptions(design,equipment);diagnostics.push(...verifiedVehicle.diagnostics);ledger.push(...verifiedVehicle.ledger);cost+=verifiedVehicle.cost;used+=verifiedVehicle.slots;
  const externalVehicle=evaluateExternalVehicleOptions(design,chassis,OPTIONS);diagnostics.push(...externalVehicle.diagnostics);ledger.push(...externalVehicle.ledger);cost+=externalVehicle.cost;used+=externalVehicle.slots;
  const zeroSlotCount=equipment.zeroSlot.used,zeroSlotAllowance=equipment.zeroSlot.allowance,overflow=equipment.zeroSlot.overflow;
  if(equipment.noInternalPower){endurance=endurance*p.powerPacks/(1+p.powerPacks);if(p.vehicleSpeed)vehicleEndurance=Math.round(endurance/4/2**p.vehicleBands);}
