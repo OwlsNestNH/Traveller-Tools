@@ -14,7 +14,7 @@
 </nav>
 <h1>Traveller Ship Operations — Beta changelog
 </h1>
-<p class="muted">Updated <time datetime="2026-10-26">October 26, 2026</time> · Dates shown in UTC.
+<p class="muted">Updated <time datetime="2026-11-08">November 8, 2026</time> · Dates shown in UTC.
 </p>
 </header>
 <main>
@@ -31,6 +31,13 @@
 </h2>
 <p class="muted">Published updates.
 </p>
+<h3 id="release-230"><time datetime="2026-11-08">November 8, 2026</time></h3>
+<ul>
+<li>A compact Ship dropdown and Add ship action support independent campaigns, with separate cargo, credits, location, route, settings and history. <a href="https://github.com/OwlsNestNH/Traveller-Tools/pull/230">Release #230</a></li>
+<li>Backup all ships saves the whole group; Export this ship saves only the selected campaign. Load clearly distinguishes replacing the selected ship from replacing all ships, with a backup acknowledgement before either action. Older single-ship files remain supported.</li>
+<li>Existing browser saves are preserved, and ship-switching guards help prevent unfinished edits from being lost.</li>
+<li>Delete ship removes the selected campaign after a clear confirmation and backup acknowledgement, preserving the other ships. At least one ship must remain; Reset campaign can clear the final ship.</li>
+</ul>
 <h3><time datetime="2026-10-26">October 26, 2026</time></h3>
 <ul>
 <li>Separate tool changelogs with contact and feedback details, linked below the main launch buttons. <a href="https://github.com/OwlsNestNH/Traveller-Tools/pull/186">Release #186</a></li>

@@ -3,7 +3,7 @@ import {mkdir} from 'node:fs/promises';import {fileURLToPath} from 'node:url';im
 import {guiFixture,campaignKey} from './fixtures/gui-parity.mjs';
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const artifacts=fileURLToPath(new URL('../verification-artifacts/',import.meta.url));await mkdir(artifacts,{recursive:true});
-const browser=await chromium.launch({headless:true}),base=process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/';
+const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BROWSER_CHANNEL?{channel:process.env.TRAVELLER_BROWSER_CHANNEL}:{})}),base=process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/';
 function fixture({unknown=false,long=false,backdatedVisit=false}={}){
  const f=guiFixture(),s=f.state,w=s.actual;
  const entry=(id,type,amount,day,note)=>({id,type,amount,hours:(day-1)*24+(day===66?23:0),world:w,reason:note});
@@ -30,7 +30,7 @@ try{
  for(const width of [1440,390,320]){
   const {page:p,context,bytes,raw}=await open(width);try{
    assert.deepEqual(await values(p),['Cr 0','Cr 125,000','Cr 8,000','Cr 117,000']);assert.equal(await p.locator('.bank-ledger tbody tr').count(),5);
-   for(const name of ['Ship expenses','Record expense','Record deposit','Referee bank correction','Export report (TXT)','Save campaign (JSON)'])assert.equal(await p.getByRole('button',{name,exact:true}).count(),1);
+   for(const name of ['Ship expenses','Record expense','Record deposit','Referee bank correction','Export report (TXT)','Backup all ships'])assert.equal(await p.locator('#main').getByRole('button',{name,exact:true}).count(),1);
    for(const b of await p.locator('.accounting-period button,.accounting-pdf button').all()){assert.equal(await b.getAttribute('data-mutate'),null);const r=await b.boundingBox();assert.ok(r.height>=44&&r.x>=0&&r.x+r.width<=width+1);}
    await p.locator('#accounting-from').fill('060-1105');assert.equal(await p.getByRole('button',{name:'Preview PDF',exact:true}).isDisabled(),true);await p.locator('#accounting-to').fill('059-1105');await p.getByRole('button',{name:'Apply',exact:true}).click();await p.locator('#accounting-error').filter({hasText:'From must be on or before To'}).waitFor();assert.match(await p.locator('#accounting-active').textContent(),/All dates/);assert.equal(await p.locator('.bank-ledger tbody tr').count(),5);assert.equal(await raw(),bytes);
    await range(p);assert.deepEqual(await values(p),['Cr 100,000','Cr 25,000','Cr 8,000','Cr 117,000']);assert.equal(await p.locator('.bank-ledger tbody tr').count(),4);assert.equal(await p.locator('#accounting-error').isVisible(),false);assert.equal(await p.getByRole('button',{name:'Preview PDF',exact:true}).isDisabled(),false);

@@ -1,16 +1,16 @@
-import {ruleInfo} from './rule-references.mjs?v=fleet-20261108-1';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=fleet-20261108-1';
-import {passengerShip} from './passengers.mjs?v=fleet-20261108-1';
+import {ruleInfo} from './rule-references.mjs?v=fleet-20261108-2';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=fleet-20261108-2';
+import {passengerShip} from './passengers.mjs?v=fleet-20261108-2';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=fleet-20261108-1';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=fleet-20261108-1';
-import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=fleet-20261108-1';
-import {roomCounts} from './accommodation.mjs?v=fleet-20261108-1';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=fleet-20261108-1';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=fleet-20261108-1';
-import {creditStep} from './rounding.mjs?v=fleet-20261108-1';
-import {roll} from './rules.mjs?v=fleet-20261108-1';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=fleet-20261108-1';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=fleet-20261108-2';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=fleet-20261108-2';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=fleet-20261108-2';
+import {roomCounts} from './accommodation.mjs?v=fleet-20261108-2';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=fleet-20261108-2';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=fleet-20261108-2';
+import {creditStep} from './rounding.mjs?v=fleet-20261108-2';
+import {roll} from './rules.mjs?v=fleet-20261108-2';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=fleet-20261108-2';
 
 const esc=escapeHtml;
 const money=formatCreditsText;

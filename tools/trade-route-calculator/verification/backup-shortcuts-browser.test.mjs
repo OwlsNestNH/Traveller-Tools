@@ -1,17 +1,19 @@
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
+import {fileURLToPath} from 'node:url';
 import {mkdir,readFile} from 'node:fs/promises';
 import {guiFixture,campaignKey} from './fixtures/gui-parity.mjs';
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
-const browser=await chromium.launch({headless:true});
+const browser=await chromium.launch({headless:true,...(process.env.TRAVELLER_BROWSER_CHANNEL?{channel:process.env.TRAVELLER_BROWSER_CHANNEL}:{})});
 try{for(const width of [1440,390,320])for(const location of ['toolbar','settings']){
  const f=guiFixture(),bytes=JSON.stringify(f.state),context=await browser.newContext({viewport:{width,height:1000}});
  await context.addInitScript(({key,bytes})=>{localStorage.setItem(key,bytes);globalThis.copied=[];Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>copied.push(text)},configurable:true});},{key:campaignKey,bytes});
  await context.route('https://travellermap.com/**',r=>{const u=new URL(r.request().url());return r.fulfill({json:u.pathname.endsWith('/universe')?f.universe:u.pathname.endsWith('/metadata')?f.metadata:u.pathname.endsWith('/sec')?f.sec:{Worlds:f.apiWorlds}});});
  const page=await context.newPage();page.setDefaultTimeout(15000);await page.goto(process.env.TRAVELLER_TEST_URL||'http://127.0.0.1:8765/');await page.getByText('Editing in this tab',{exact:true}).waitFor();
  const raw=()=>page.evaluate(k=>localStorage.getItem(k),campaignKey),toolbar=page.locator('#player-link-share');
- assert.deepEqual(await toolbar.locator('button').allTextContents(),['Copy Player Link','Backup','Load']);
+ assert.deepEqual(await toolbar.locator('button').allTextContents(),['Copy Player Link','Backup all ships','Export this ship','Load']);
  assert.equal(await toolbar.locator('[data-action=export]').getAttribute('data-mutate'),null);
+ assert.equal(await toolbar.locator('[data-action=export-ship]').getAttribute('data-mutate'),null);
  assert.notEqual(await toolbar.locator('[data-action=import]').getAttribute('data-mutate'),null);
  for(const b of await toolbar.locator('button').all()){const r=await b.boundingBox();assert.ok(r.x>=0&&r.x+r.width<=width&&r.height>=44,'Toolbar controls fit and retain touch targets');}
  assert.equal(await page.locator('#import-file').count(),1,'One shared file input');
@@ -32,6 +34,6 @@ try{for(const width of [1440,390,320])for(const location of ['toolbar','settings
  await page.locator('#modal-submit').click();await page.locator('#modal-error').filter({hasText:/Synthetic shortcut save failure/}).waitFor();assert.equal(await raw(),bytes,'Failed replacement never changes saved campaign');await page.locator('#modal-cancel').click();assert.equal(await raw(),bytes);
  await load(JSON.stringify(next));await page.getByRole('heading',{name:'Load campaign (JSON)',exact:true}).waitFor();await page.locator('#modal [name=backed]').check();await page.locator('#modal-submit').click();await page.locator('#modal').waitFor({state:'hidden'});assert.equal(JSON.parse(await raw()).name,next.name);assert.equal(JSON.parse(await raw()).revision,f.state.revision+1);
  const after=await raw();await toolbar.getByRole('button',{name:'Copy Player Link',exact:true}).click();assert.equal(await raw(),after);assert.equal(await page.evaluate(()=>copied.length),2);
- await mkdir(new URL('../verification-artifacts/',import.meta.url),{recursive:true});await toolbar.screenshot({path:new URL(`../verification-artifacts/backup-shortcuts-${location}-${width}.png`,import.meta.url).pathname});
+ await mkdir(new URL('../verification-artifacts/',import.meta.url),{recursive:true});await toolbar.screenshot({path:fileURLToPath(new URL(`../verification-artifacts/backup-shortcuts-${location}-${width}.png`,import.meta.url))});
  await context.close();console.log('PASS backup/load '+location+' '+width);
 }}finally{await browser.close();}

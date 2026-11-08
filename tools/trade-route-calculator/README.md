@@ -998,7 +998,17 @@ Each ship has its own cargo, bank, route, clock, settings, contracts and History
 Rename the selected ship in Settings. Finish or cancel open reviews, services and
 route edits before switching; unconfirmed Settings/search input asks before discard.
 
-**Backup / Save campaign (JSON)** saves the entire group and its selected ship.
+**Delete ship** removes only the selected ship after an explicit confirmation and
+backup acknowledgement. The other ships stay unchanged, and the first remaining
+ship is selected. Deletion cannot be undone in the tool; keep a group backup to
+recover a removed ship. At least one ship must remain. Use Reset campaign to
+clear the final ship instead. Finish or cancel open work before deleting.
+
+**Backup all ships** saves the entire group and its selected ship.
+**Export this ship** saves only the selected campaign as a single-ship JSON file.
+Both exports use saved data and are available without editing permission.
+**Load** identifies a single-ship or group file before confirmation: **Replace
+selected ship** preserves the other ships; **Replace all ships** replaces the group.
 Loading a group backup explicitly replaces the entire group after backup acknowledgement.
 Loading an older single-ship backup, or Reset campaign, affects only the selected
 ship and preserves the others. The old single-ship save remains readable; adding

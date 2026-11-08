@@ -1,6 +1,6 @@
-import {validateImport,isFleet,selectedCampaign,shipIdentity,withCampaign,LEGACY_SHIP_ID} from './fleet.mjs?v=fleet-20261108-1';
-import {createDashboardBaseline,sameDashboardBaseline} from './dashboard-baseline.mjs?v=fleet-20261108-1';
-import {initial,validate} from './state.mjs?v=fleet-20261108-1';
+import {validateImport,isFleet,selectedCampaign,shipIdentity,withCampaign,LEGACY_SHIP_ID} from './fleet.mjs?v=fleet-20261108-2';
+import {createDashboardBaseline,sameDashboardBaseline} from './dashboard-baseline.mjs?v=fleet-20261108-2';
+import {initial,validate} from './state.mjs?v=fleet-20261108-2';
 export const KEY='traveller-trade-route-calculator:v1';
 const LOCK=KEY+':writer';
 // Only the provider can distinguish a rejected write from failed publication.
@@ -75,6 +75,16 @@ export class Store{
  selectShip(id,expected=this.context()){
   return this.changeFleet(fleet=>{const entry=fleet.ships.find(ship=>ship.id===id);if(!entry)throw Error('Ship no longer exists. Reload the fleet.');fleet.activeShipId=id;if(entry.campaign.initialized&&!entry.campaign.dashboardBaseline)entry.campaign.dashboardBaseline=createDashboardBaseline(validate(structuredClone(entry.campaign)));},expected);
  }
+ deleteShip(id,expected=this.context()){
+  return this.changeFleet(fleet=>{
+   const index=fleet.ships.findIndex(ship=>ship.id===id);
+   if(index<0)throw Error('Ship no longer exists. Reload the fleet.');
+   if(fleet.ships.length===1)throw Error('Cannot delete the last ship. Add another ship first.');
+   fleet.ships.splice(index,1);
+   // Keep surviving campaigns untouched, including their revisions and Undo.
+   if(fleet.activeShipId===id)fleet.activeShipId=fleet.ships[0].id;
+  },expected);
+ }
  async acquire(takeover=false){
   if(this.reloadRequired){this.onRole(false,'Reload this page before editing the campaign again.');return;}
   // A request remains owned until its held lock is released. Repeated clicks
@@ -129,6 +139,7 @@ export class Store{
  save(next,expected,saveToken){return saveWithBoundary.call(this,next,expected,saveToken,false);}
 
  backup(){const raw=localStorage.getItem(KEY)||JSON.stringify(initial());const url=URL.createObjectURL(new Blob([raw],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='traveller-fleet-'+new Date().toISOString().slice(0,10)+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}
+ backupShip(){const raw=JSON.stringify(selectedCampaign(this.readDocument()));const url=URL.createObjectURL(new Blob([raw],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='traveller-ship-'+new Date().toISOString().slice(0,10)+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}
  replace(next,expected,replacementToken){
   let saved;
   try{

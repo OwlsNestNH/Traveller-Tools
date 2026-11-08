@@ -1,7 +1,7 @@
 import {COMMODITIES} from './player-snapshot-catalog.mjs';
-import {playerSnapshotFixture} from './player-snapshot-fixture.mjs?v=fleet-20261108-1';
-import {renderPlayerSnapshot,clearPlayerSnapshotMap} from './player-snapshot-view.mjs?v=fleet-20261108-1';
-import {createRecipientStore} from './player-snapshot-storage.mjs?v=fleet-20261108-1';
+import {playerSnapshotFixture} from './player-snapshot-fixture.mjs?v=fleet-20261108-2';
+import {renderPlayerSnapshot,clearPlayerSnapshotMap} from './player-snapshot-view.mjs?v=fleet-20261108-2';
+import {createRecipientStore} from './player-snapshot-storage.mjs?v=fleet-20261108-2';
 const root=document.getElementById('snapshot'),store=createRecipientStore(()=>localStorage);
 function display() {
   clearPlayerSnapshotMap(root);

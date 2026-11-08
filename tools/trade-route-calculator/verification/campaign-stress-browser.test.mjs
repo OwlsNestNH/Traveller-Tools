@@ -133,7 +133,7 @@ async function importBytes(page,bytes,{cancel=false}={}){
  const ready=page.waitForEvent('filechooser');await target.click();await(await ready).setFiles({name:'synthetic-stress-backup.json',mimeType:'application/json',buffer:Buffer.from(bytes)});
  await heading(page,'Load campaign (JSON)');
  if(cancel)return dismiss(page);
- await modal(page).locator('[name="backed"]').check();await submit(page,'Replace campaign');
+ await modal(page).locator('[name="backed"]').check();await submit(page,'Replace selected ship');
 }
 async function saleDraft(page){
  await existingSell(page);await action(page,'sale-clear').click();
