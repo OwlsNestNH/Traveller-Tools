@@ -1,4 +1,4 @@
-import {escapeHtml as esc} from './display.mjs?v=luxury-lss-20261108-1';
+import {escapeHtml as esc} from './display.mjs?v=lss-whole-days-20261108-1';
 
 // Display-only provenance. No campaign values, private source locations or rule
 // calculations belong here. Saved audits remain the authority for actual terms.

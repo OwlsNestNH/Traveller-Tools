@@ -1,5 +1,5 @@
 // Mechanical data: Core Rulebook Update 2022, printed pp. 238–239.
-import {roll,die} from './rules.mjs?v=luxury-lss-20261108-1';
+import {roll,die} from './rules.mjs?v=lss-whole-days-20261108-1';
 export const PASSAGE_CLASSES=['low','basic','middle','high'];
 // Luxury is manual: Singularity quotes rooms, not Core per-person traffic/fare rows.
 export const BOOKING_CLASSES=[...PASSAGE_CLASSES,'luxury'];

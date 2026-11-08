@@ -1,4 +1,4 @@
-import {searchWorlds,loadWorld} from './map.mjs?v=luxury-lss-20261108-1';
+import {searchWorlds,loadWorld} from './map.mjs?v=lss-whole-days-20261108-1';
 
 export const planetSearchLabel=w=>[w.name,w.subsectorName,w.sector,w.hex].join(' — ');
 

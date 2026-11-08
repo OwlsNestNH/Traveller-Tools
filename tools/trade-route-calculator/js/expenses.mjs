@@ -1,10 +1,10 @@
-import {maintenancePaymentQuote,MAINTENANCE_REFERENCE} from './maintenance.mjs?v=luxury-lss-20261108-1';
-import {mortgagePaymentQuote,MORTGAGE_REFERENCE} from './mortgage.mjs?v=luxury-lss-20261108-1';
-import {fuelPurchase,fuelReference} from './fuel.mjs?v=luxury-lss-20261108-1';
-import {up} from './rounding.mjs?v=luxury-lss-20261108-1';
+import {maintenancePaymentQuote,MAINTENANCE_REFERENCE} from './maintenance.mjs?v=lss-whole-days-20261108-1';
+import {mortgagePaymentQuote,MORTGAGE_REFERENCE} from './mortgage.mjs?v=lss-whole-days-20261108-1';
+import {fuelPurchase,fuelReference} from './fuel.mjs?v=lss-whole-days-20261108-1';
+import {up} from './rounding.mjs?v=lss-whole-days-20261108-1';
 import * as A from './amounts.mjs';
-import {scheduledPaymentCash} from './scheduled-payment-rounding.mjs?v=luxury-lss-20261108-1';
-import {monthlyRates,serviceRate,serviceLabel,personMonthlyRate,personRate} from './accommodation.mjs?v=luxury-lss-20261108-1';
+import {scheduledPaymentCash} from './scheduled-payment-rounding.mjs?v=lss-whole-days-20261108-1';
+import {monthlyRates,serviceRate,serviceLabel,personMonthlyRate,personRate} from './accommodation.mjs?v=lss-whole-days-20261108-1';
 
 export const berthMultipliers={A:1000,B:500,C:100,D:10,E:0,X:0};
 export function starport(world){return (world.overrideUWP||world.uwp).slice(0,1).toUpperCase();}

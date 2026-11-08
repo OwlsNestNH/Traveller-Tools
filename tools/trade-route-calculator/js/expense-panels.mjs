@@ -1,16 +1,16 @@
-import {ruleInfo} from './rule-references.mjs?v=luxury-lss-20261108-1';
-import {escapeHtml,formatCreditsText} from './display.mjs?v=luxury-lss-20261108-1';
-import {passengerShip} from './passengers.mjs?v=luxury-lss-20261108-1';
+import {ruleInfo} from './rule-references.mjs?v=lss-whole-days-20261108-1';
+import {escapeHtml,formatCreditsText} from './display.mjs?v=lss-whole-days-20261108-1';
+import {passengerShip} from './passengers.mjs?v=lss-whole-days-20261108-1';
 import {credit} from './amounts.mjs';
-import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=luxury-lss-20261108-1';
-import {monthlySupport,supportComplement} from './life-support.mjs?v=luxury-lss-20261108-1';
-import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=luxury-lss-20261108-1';
-import {roomCounts} from './accommodation.mjs?v=luxury-lss-20261108-1';
-import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=luxury-lss-20261108-1';
-import {recordedPaymentDate} from './payment-schedule.mjs?v=luxury-lss-20261108-1';
-import {creditStep} from './rounding.mjs?v=luxury-lss-20261108-1';
-import {roll} from './rules.mjs?v=luxury-lss-20261108-1';
-import {SaveCommittedPublicationError} from './persistence.mjs?v=luxury-lss-20261108-1';
+import {expenseQuote,berthRate,starport,berthMultipliers,recurringExpenseDetails} from './expenses.mjs?v=lss-whole-days-20261108-1';
+import {monthlySupport,supportComplement} from './life-support.mjs?v=lss-whole-days-20261108-1';
+import {monthlyCabinUpkeep,consumableRefillBasis} from './lss-refill-pricing.mjs?v=lss-whole-days-20261108-1';
+import {roomCounts} from './accommodation.mjs?v=lss-whole-days-20261108-1';
+import {shipExpense,saveBerthingRate,uid} from './state.mjs?v=lss-whole-days-20261108-1';
+import {recordedPaymentDate} from './payment-schedule.mjs?v=lss-whole-days-20261108-1';
+import {creditStep} from './rounding.mjs?v=lss-whole-days-20261108-1';
+import {roll} from './rules.mjs?v=lss-whole-days-20261108-1';
+import {SaveCommittedPublicationError} from './persistence.mjs?v=lss-whole-days-20261108-1';
 
 const esc=escapeHtml;
 const money=formatCreditsText;
