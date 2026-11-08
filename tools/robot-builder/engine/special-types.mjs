@@ -11,7 +11,7 @@ const source = pages => ({book:'Robot Handbook',edition:'Mongoose 2022',pages});
 const specialKinds = [
  ['clone','Clone','96-99','Template, growth and training budget implemented; character generation and ageing resolution remain external.'],
  ['microbot','Microbot','79-81','Miniature chassis, mass, movement, protection and p81 microbrain table implemented; source conflicts remain explicit.'],
- ['nanorobot','Nanorobot','82-85','Medical, construction and environmental nanorobot packages implemented with explicit operational limits and external controller dependencies.'],
+ ['nanorobot','Nanorobot','82-86','Medical, construction and environmental nanorobot packages implemented with explicit operational limits and external controller dependencies.'],
  ['android','Android','86-87','Body tiers, half-slot reservation and physical-only price multiplier implemented.'],
  ['biological','Biological robot','88-89','Genome-dependent body tiers and three-quarter-slot reservation implemented; bespoke genomes require referee confirmation.'],
  ['cyborg','Cyborg','90-93','Full-body organic-brain conversion interfaces, procedure thresholds and degradation schedules calculated; replacement body construction remains external.'],
@@ -360,7 +360,7 @@ function evaluateMicrobot(design){
 
 
 const nanoControls=[
- {...select('packageType','Nanorobot medical package',[['pharmaceutical','Pharmaceutical'],['physical','Physical enhancement'],['mental','Mental enhancement'],['anti-ageing','Anti-ageing'],['regenerative','Regenerative'],['construction-basic','Construction (basic)'],['construction-improved','Construction (improved)'],['excavation','Environmental excavation'],['soil','Soil enrichment'],['cleanup','Environmental cleanup'],['construction-enhanced','Nanoconstructor (enhanced)'],['construction-advanced','Nanoconstructor (advanced)'],['construction-superior','Nanoconstructor (superior)'],['distributed-conscious','Distributed conscious swarm']],'pharmaceutical'),stage:'chassis'},
+ {...select('packageType','Nanorobot medical package',[['pharmaceutical','Pharmaceutical'],['physical','Physical enhancement'],['mental','Mental enhancement'],['anti-ageing','Anti-ageing'],['regenerative','Regenerative'],['nanotech-defence','Prophylactic nanotech defence'],['construction-basic','Construction (basic)'],['construction-improved','Construction (improved)'],['excavation','Environmental excavation'],['soil','Soil enrichment'],['cleanup','Environmental cleanup'],['construction-enhanced','Nanoconstructor (enhanced)'],['construction-advanced','Nanoconstructor (advanced)'],['construction-superior','Nanoconstructor (superior)'],['distributed-conscious','Distributed conscious swarm']],'pharmaceutical'),stage:'chassis'},
  {...number('packages','Packages in this purchase',1,100,1),stage:'chassis'},
  {...number('otherActivePackages','Other active medical packages already in body',0,100,0),stage:'physical'},
  {...number('attributeIncrease','Requested attribute increase',1,3,1),stage:'physical'},
@@ -390,9 +390,11 @@ function evaluateNanorobot(design){
  if(['construction-enhanced','construction-advanced','construction-superior','distributed-conscious'].includes(s.packageType))return evaluateHighNano(design);
  if(tl<13)issue('error','NANO_TL','techLevel','Practical medical nanorobot packages require TL13.');
  if(['construction-basic','construction-improved','excavation','soil','cleanup'].includes(s.packageType))return evaluateNanoSwarm(design);
- const price={pharmaceutical:20000,physical:20000,mental:40000,'anti-ageing':80000,regenerative:20000}[s.packageType];
+ // p86 identifies prophylactic defence as medical packages; p83 supplies the ordinary medical price and lifetime.
+ const price={pharmaceutical:20000,physical:20000,mental:40000,'anti-ageing':80000,regenerative:20000,'nanotech-defence':20000}[s.packageType];
  const lifeYears=2**(tl-13),totalActive=s.packages+s.otherActivePackages,enduranceLoss=Math.max(0,totalActive-15);
  let effect={};
+ if(s.packageType==='nanotech-defence')effect={nanotechDefence:{resistanceDM:s.packages,dmPerActivePackage:1,linearStacking:true,scope:'Resistance to nanotech infections while the packages remain effective',automaticImmunity:false,applicationVerified:false,infectionResolutionPerformed:false,initialProgrammingRequiresSwarmController:true,autonomousAfterApplication:true,source:source('83,86')}};
  if(['physical','mental'].includes(s.packageType)){
   const required=[1,3,6][s.attributeIncrease-1];if(s.packages<required)issue('error','NANO_ATTRIBUTE_PACKAGES','special.packages','Requested attribute increase requires '+required+' packages.');
   effect={attributeIncrease:s.attributeIncrease,packagesRequired:required,attributeCategory:s.packageType};
@@ -552,7 +554,7 @@ function evaluateNanoSwarm(design){
 
 
 const nanoVisibility={
- otherActivePackages:['pharmaceutical','physical','mental','anti-ageing','regenerative'],attributeIncrease:['physical','mental'],
+ otherActivePackages:['pharmaceutical','physical','mental','anti-ageing','regenerative','nanotech-defence'],attributeIncrease:['physical','mental'],
  controllerMaxTasks:['construction-basic','construction-improved','excavation','soil','cleanup'],materials:['construction-basic','construction-improved'],outputRetailValue:['construction-basic','construction-improved'],materialRoll:['construction-basic','construction-improved'],excavationMaterial:['excavation'],cleanupUnitCost:['cleanup'],uniqueCleanup:['cleanup'],soilMaterial:['soil'],regulatedExcavation:['excavation'],shutdownFailsafe:['excavation'],commsLossFailsafe:['excavation'],checkinMinutes:['excavation']
 };
 for(const c of nanoControls)if(nanoVisibility[c.field])c.visibleWhen={field:'packageType',oneOf:nanoVisibility[c.field]};
@@ -655,7 +657,7 @@ export function evaluateSpecialDesign(design){
  if(!t)return result;
  const metric=(label,value,unit)=>{if(value!==null&&value!==undefined)result.summaryMetrics.push({label,value,...(unit?{unit}: {})});};
  if(t.clone){for(const [stat,value]of Object.entries(t.clone.characteristics))metric(stat,value);metric('EDU',t.clone.education);metric('Unspent training points',t.clone.unspentTrainingPoints);metric('Time to maturity',t.clone.maturityYears,'years');}
- if(t.nanorobot){const n=t.nanorobot;metric('Packages',n.packages);metric('Package lifetime',n.lifeYears,'years');metric('Working lifetime',n.lifetimeHours,'hours');metric('Production capacity',n.capacitySlotsPerHour,'Slots/hour');metric('Permanent END loss',n.permanentEnduranceLoss);metric('Ageing reduction',n.ageingReduction===undefined?undefined:n.ageingReduction*100,'%');}
+ if(t.nanorobot){const n=t.nanorobot;metric('Packages',n.packages);metric('Package lifetime',n.lifeYears,'years');metric('Working lifetime',n.lifetimeHours,'hours');metric('Production capacity',n.capacitySlotsPerHour,'Slots/hour');metric('Permanent END loss',n.permanentEnduranceLoss);metric('Ageing reduction',n.ageingReduction===undefined?undefined:n.ageingReduction*100,'%');metric('Nanotech infection resistance DM',n.nanotechDefence?.resistanceDM);}
  if(t.integration){const h=t.integration;metric('Occupied host capacity',h.occupiedHostCapacity,h.hostUnit);metric('Retrofit work',h.retrofitHours,'hours');metric('Retrofit work',h.retrofitPersonDays,'person-days');metric('Haptic DEX',h.effectiveDexterity);metric('Astrogation DM',h.astrogationDM);metric('Misjump DM',h.misjumpDM);}
  if(t.carrier){metric('Carriers',t.carrier.quantity);metric('Payload capacity',t.carrier.payloadSlots,'Slots');metric('Maximum warhead Size',t.carrier.maxWarheadSize);metric('Flight burn',t.carrier.burnRounds,'rounds');}
  if(t.biologicalAvatar){metric('Simultaneous hosts',t.biologicalAvatar.maxHosts);metric('Control reclamation target',t.biologicalAvatar.reclaimTarget,'+');metric('Degradation checks due',t.biologicalAvatar.degradationChecksDue);}
