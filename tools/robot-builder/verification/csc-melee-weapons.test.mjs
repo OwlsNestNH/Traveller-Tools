@@ -50,7 +50,7 @@ for(const [id,tl,mount,damage,mass,cost,speciality,traits,twoHands] of expected)
  for(const patch of [{autoload:true},{autoload:true,extraMagazines:1}])assert.ok(has(direct(id,patch),'AUTOLOADER_AMMUNITION'));
  assert.ok(has(direct(id,{extraMagazines:1}),'WEAPON_AMMO_INAPPLICABLE'));assert.ok(has(direct(id,{initialMagazines:0}),'WEAPON_AMMO_INAPPLICABLE'));
  assert.equal(profile(id,{},16,7,[{id:'melee:'+speciality,level:2}]).softwareLevel,2);assert.equal(profile(id,{},16,7,[{id:'gun-combat:slug',level:4}]).softwareLevel,-3);
- const held=direct(id,{placement:'held',manipulatorId:'arm'});assert.equal(held.weapons[0].slots,0);assert.equal(held.weapons[0].cost,cost);assert.equal(has(held,'HELD_TWO_HANDED_WEAPON_UNRESOLVED'),twoHands);if(twoHands){assert.equal(held.weapons[0].baseAttackModifier,null);assert.equal(held.diagnostics.find(d=>d.code==='HELD_TWO_HANDED_WEAPON_UNRESOLVED').severity,'blocker');assert.equal(profile(id,{placement:'held',manipulatorId:'arm',fireControl:'advanced'}).baseAttackModifier,null);}
+ const held=direct(id,{placement:'held',manipulatorId:'arm'});assert.equal(held.weapons[0].slots,0);assert.equal(held.weapons[0].cost,cost);assert.equal(has(held,'HELD_SUPPORT_REQUIRED'),twoHands);if(twoHands){assert.equal(held.weapons[0].baseAttackModifier,null);assert.equal(held.diagnostics.find(d=>d.code==='HELD_SUPPORT_REQUIRED').severity,'error');assert.equal(profile(id,{placement:'held',manipulatorId:'arm',fireControl:'advanced'}).baseAttackModifier,null);}
 });
 
 test('CSC melee integration: narrow accessories are admitted while ammunition and attached launchers fail closed',()=>{
@@ -79,12 +79,12 @@ test('CSC melee integration: import rejects source overrides and catalogue/API/e
 });
 
 
-test('CSC melee integration: Core two-handed blocker and no-magazine guard preserve valid weapon routes',()=>{
+test('CSC melee integration: Core second-grip requirement and no-magazine guard preserve valid weapon routes',()=>{
  const core=WEAPONS.find(w=>w.id==='broadsword');assert.equal(core.requiresTwoHands,true);assert.equal(core.tl,2);assert.equal(core.cost,500);assert.deepEqual(core.traits,['Bulky']);assert.equal(core.sourceFamily,'core-2022');
  for(const fireControl of ['none','basic','improved','enhanced','advanced']){
-  const r=direct('mace',{weaponId:'broadsword',placement:'held',manipulatorId:'arm',fireControl},16,7,[{id:'melee:blade',level:4}]);assert.ok(has(r,'HELD_TWO_HANDED_WEAPON_UNRESOLVED'));assert.equal(r.weapons[0].baseAttackModifier,null);assert.equal(r.weapons[0].attackModifier,null);
+  const r=direct('mace',{weaponId:'broadsword',placement:'held',manipulatorId:'arm',fireControl},16,7,[{id:'melee:blade',level:4}]);assert.ok(has(r,'HELD_SUPPORT_REQUIRED'));assert.equal(r.weapons[0].baseAttackModifier,null);assert.equal(r.weapons[0].attackModifier,null);
  }
- const mounted=direct('mace',{weaponId:'broadsword'});assert.equal(has(mounted,'HELD_TWO_HANDED_WEAPON_UNRESOLVED'),false);assert.equal(mounted.weapons[0].cost,1500);assert.equal(mounted.weapons[0].slots,2);
+ const mounted=direct('mace',{weaponId:'broadsword'});assert.equal(has(mounted,'HELD_SUPPORT_REQUIRED'),false);assert.equal(mounted.weapons[0].cost,1500);assert.equal(mounted.weapons[0].slots,2);
  for(const w of WEAPONS.filter(w=>w.magazine===null)){const r=direct('mace',{weaponId:w.id,autoload:true,extraMagazines:1});assert.ok(has(r,'AUTOLOADER_AMMUNITION'),w.id);}
  for(const w of WEAPONS.filter(w=>Number.isFinite(w.magazine)&&w.magazine>0)){const r=direct('mace',{weaponId:w.id,autoload:true,extraMagazines:1});assert.equal(has(r,'AUTOLOADER_AMMUNITION'),false,w.id);}
 });

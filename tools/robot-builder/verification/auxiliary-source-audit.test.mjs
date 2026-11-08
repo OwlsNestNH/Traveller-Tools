@@ -58,11 +58,11 @@ test('Robot Handbook p 55 does not universally classify packaged fragmentation r
 });
 
 test('Robot Handbook storage reservations aggregate within either route, not across different lockers',()=>{
- const physical={...storage,optionInstances:[{id:'locker',optionId:'storage-compartment',parameters:{quantity:1}}],weapons:[{...stored,auxiliaryAmmunition:'smoke'},{...stored,id:'rifle-b',auxiliaryAmmunition:'smoke',ammunitionStorageId:'instance:locker'}]};
+ const physical={...storage,manipulators:[...createDesign().selections.physical.manipulators,{id:'storage-audit-arm',kind:'additional',size:1,strengthIncrease:0,dexterityIncrease:0}],optionInstances:[{id:'locker',optionId:'storage-compartment',parameters:{quantity:1}}],weapons:[{...stored,auxiliaryAmmunition:'smoke'},{...stored,id:'rifle-b',manipulatorId:'base-2',auxiliaryAmmunition:'smoke',ammunitionStorageId:'instance:locker'}]};
  const r=evaluate(physical),t=totals(r);assert.equal(r.status,'verified');
  assert.deepEqual(t.ammunitionStorage.map(s=>[s.storageId,s.reservedKg,s.remainingKg]),[['option:storage-compartment',2,0],['instance:locker',2,0]]);
  for(const ref of ['option:storage-compartment','instance:locker']){
-  const bad=evaluate({...physical,weapons:[...physical.weapons,{...stored,id:'rifle-c',auxiliaryAmmunition:'smoke',looseGrenades:1,ammunitionStorageId:ref}]});
+  const bad=evaluate({...physical,weapons:[...physical.weapons,{...stored,id:'rifle-c',manipulatorId:'storage-audit-arm',auxiliaryAmmunition:'smoke',looseGrenades:1,ammunitionStorageId:ref}]});
   assert.equal(bad.status,'invalid');assert.ok(diagnostic(bad,'AMMUNITION_STORAGE_CAPACITY'));
   assert.equal(totals(bad).ammunitionStorage.find(s=>s.storageId===ref).reservedKg,2.5);
  }

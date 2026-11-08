@@ -48,16 +48,16 @@ for(const [id,name,tl,range,damage,mass,cost,capacity,loadCost,traits,projectile
   assert.equal(has(direct(id,{autoload:true,extraMagazines:1}),'AUTOLOADER_AMMUNITION'),false);assert.ok(has(direct(id,{autoload:true}),'EMPTY_AUTOLOADER'));
   assert.deepEqual(importDesign(exportDesign(d)),d);assert.deepEqual(r.ledger.find(l=>l.id==='weapon-archaic-test').weaponSource,source('154'));
  });
- test('CSC archaic mounting: '+id+' preserves arm limits and held support blocker',()=>{
+ test('CSC archaic mounting: '+id+' preserves arm limits and held support assignment',()=>{
   const arm={placement:'arm',manipulatorId:'arm'};
   if(tl>0)assert.ok(has(direct(id,{},tl-1),'WEAPON_TL'));assert.equal(has(direct(id,{},tl),'WEAPON_TL'),false);
   assert.ok(has(direct(id,arm,16,4),'WEAPON_ARM_SIZE'));assert.equal(has(direct(id,arm,16,5),'WEAPON_ARM_SIZE'),false);assert.equal(profile(id,arm,16,5).cost,cost+1000+loadCost);
   assert.ok(has(direct(id,{...arm,autoload:true,extraMagazines:1},16,5),'WEAPON_ARM_SIZE'));assert.equal(has(direct(id,{...arm,autoload:true,extraMagazines:1},16,6),'WEAPON_ARM_SIZE'),false);
   for(const fireControl of ['none','basic','advanced']){
-   const h=direct(id,{placement:'held',manipulatorId:'arm',fireControl}),p=h.weapons[0],block=h.diagnostics.find(d=>d.code==='HELD_TWO_HANDED_WEAPON_UNRESOLVED');assert.equal(block.severity,'blocker');assert.match(block.message,/physical interpretation/);assert.deepEqual(block.source,source('154-155'));assert.equal(p.baseAttackModifier,null);assert.equal(p.attackModifier,null);assert.equal(p.slots,fireControl==='none'?0:1);
+   const h=direct(id,{placement:'held',manipulatorId:'arm',fireControl}),p=h.weapons[0],block=h.diagnostics.find(d=>d.code==='HELD_SUPPORT_REQUIRED');assert.equal(block.severity,'error');assert.match(block.message,/physical interpretation/);assert.deepEqual(block.source,source('154-155'));assert.equal(p.baseAttackModifier,null);assert.equal(p.attackModifier,null);assert.equal(p.slots,fireControl==='none'?0:1);
   }
   assert.equal(profile(id,{placement:'held',manipulatorId:'arm'}).cost,cost+loadCost);
-  assert.equal(has(direct(id),'HELD_TWO_HANDED_WEAPON_UNRESOLVED'),false);assert.equal(has(direct(id,arm),'HELD_TWO_HANDED_WEAPON_UNRESOLVED'),false);
+  assert.equal(has(direct(id),'HELD_SUPPORT_REQUIRED'),false);assert.equal(has(direct(id,arm),'HELD_SUPPORT_REQUIRED'),false);
  });
  test('CSC archaic skills: '+id+' does not inherit slug, energy or Athletics',()=>{
   for(const s of ['gun-combat:slug','gun-combat:energy','athletics:dexterity','heavy-weapons:portable']){const p=profile(id,{},16,6,[{id:s,level:4}]);assert.equal(p.softwareLevel,-3,s);assert.equal(p.baseAttackModifier,-3);}

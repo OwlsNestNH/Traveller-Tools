@@ -45,6 +45,12 @@ An optional explicit allocation can divide additional supplies between the autol
 
 Remaining ammunition cases include asymmetric loadouts across linked copies, ARL standard/support magazine interchange, included-pack replacement disposition and unverified high-capacity feed compatibility. Empty fitted-loader pricing and fitting already-owned supplies remain unmodelled. These are application or source boundaries, not claims that such constructions are prohibited.
 
+## Held weapon grips
+
+Supported held two-handed weapons use one weapon record with two distinct installed manipulators. Both grips participate in held-loadout occupancy checks; an arm-mounted attachment does not automatically occupy its gripping hand. A second grip never duplicates the weapon, ammunition, accessories or fire-control purchase. Missing, removed, shared or inapplicable references remain visible and repairable. Source-marked optional two-handed use is supported without inventing a damage benefit.
+
+Actual arm characteristics are reported separately. Multi-arm effective characteristics and attack modifiers remain unresolved; no highest, averaged, summed or first-arm value is invented. Carrying fit, reach and coordinated operation remain referee-dependent, and archaic handedness remains a qualified physical interpretation. Held vehicle-class weapons and whole-recipient cyberlimb grip assignments remain outside this route. Mount-size prerequisites apply to attached mounts, not to held grips.
+
 ## Clone development
 
 Clones use biological templates, growth services and learned skills rather than a robot chassis/brain conversion. Accelerated growth can stop at the convenient whole-month choices or a bounded custom fractional month. Source-dependent pricing, partial-year education and calendar interpretations are recorded explicitly; no prorated fee or premature completed-year training grant is invented.
