@@ -73,7 +73,7 @@ for(const [id,tl,mountClass,range,damage,massKg,cost,magazine,magazineCost,trait
 
 test('CSC catalogue is exactly the fixed-capacity tranche and has no inferred mass/category conversion',()=>{
  assert.equal(CSC_SLUG_WEAPONS.length,25);assert.deepEqual(CSC_SLUG_WEAPONS.map(w=>w.id),expected.map(r=>'csc-'+r[0]));
- for(const id of ['csc-ducks-foot-pistol','csc-heavy-advanced-combat-rifle','csc-antique-pistol','csc-shotgun'])assert.ok(!WEAPONS.some(w=>w.id===id));
+ for(const id of ['csc-ducks-foot-pistol','csc-ducks-foot-pistol-9','csc-antique-pistol','csc-shotgun'])assert.ok(!WEAPONS.some(w=>w.id===id));
  const carbine=WEAPONS.find(w=>w.id==='csc-snub-carbine');assert.equal(carbine.massKg,1);assert.equal(carbine.mountClass,'medium');assert.equal(carbine.weaponFamily,'rifle');
  assert.ok(WEAPONS.every(w=>w.weaponFamily&&w.sourceFamily&&w.compatibility));
  assert.ok(RIFLE_WEAPON_IDS.every(id=>WEAPONS.find(w=>w.id===id).sourceFamily==='core-2022'));assert.ok(!RIFLE_WEAPON_IDS.some(id=>id.startsWith('csc-')));
@@ -138,7 +138,7 @@ test('CSC associated, integral and grenade ammunition inputs never inherit Core 
 });
 
 test('imports cannot supply CSC traits, launcher definitions, variable-capacity profiles or conditional modifiers',()=>{
- for(const patch of [{weaponId:'csc-ducks-foot-pistol'},{weaponId:'csc-heavy-advanced-combat-rifle'},{ammunition:'armour-piercing'},{conditionalEffects:{attackDM:99}},{cost:0},{sourceFamily:'core-2022'},{magazine:100}]){
+ for(const patch of [{weaponId:'csc-ducks-foot-pistol'},{weaponId:'csc-ducks-foot-pistol-9'},{ammunition:'armour-piercing'},{conditionalEffects:{attackDM:99}},{cost:0},{sourceFamily:'core-2022'},{magazine:100}]){
   const d=design('gauss-rifle');Object.assign(d.selections.physical.weapons[0],patch);assert.throws(()=>importDesign(JSON.stringify(d)),TypeError);
  }
  const d=design('gauss-rifle',{accessories:['scope-5']});const imported=importDesign(exportDesign(d)),r=evaluateDesign(imported);assert.equal(r.status,'invalid');assert.ok(has(r,'CSC_ACCESSORIES_UNSUPPORTED'));
