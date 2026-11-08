@@ -646,17 +646,19 @@ function updateExampleNote(examples=api.listExamples?.()||[]) {
 const finishPointer = () => setTimeout(() => {
   pointerActive = false;
   if (deferredView) { const next = deferredView; deferredView = null; render(next); }
+  $('stage-panel').setAttribute('aria-busy','false');
 }, 0);
-document.addEventListener('pointerdown', () => { pointerActive = true; }, true);
+document.addEventListener('pointerdown', () => { pointerActive = true; $('stage-panel').setAttribute('aria-busy','true'); }, true);
 window.addEventListener('pointerup', finishPointer, true);
 window.addEventListener('pointercancel', finishPointer, true);
 window.addEventListener('blur', finishPointer);
 function render(next) {
   view = next || api.getView();
-  if (pointerActive) { deferredView = view; return; }
+  if (pointerActive) { deferredView = view; $('stage-panel').setAttribute('aria-busy','true'); return; }
   const focused = document.activeElement?.id;
   updateIdentity(); renderNavigation(); renderStage(); renderSummary(); renderSaved(); renderExamples();
   if (focused && $(focused)) $(focused).focus({ preventScroll: true });
+  $('stage-panel').setAttribute('aria-busy','false');
 }
 function download() {
   const result = api.exportDesign();

@@ -10,6 +10,9 @@ await fs.mkdir(out,{recursive:true});
 const browser=await chromium.launch({headless:true,...(process.env.ROBOT_BROWSER_CHANNEL?{channel:process.env.ROBOT_BROWSER_CHANNEL}:{})});
 const context=await browser.newContext({viewport:{width:1440,height:1000},acceptDownloads:true});
 const page=await context.newPage();
+// A pointer interaction can defer DOM replacement until its click has finished.
+const click=async locator=>{await locator.click();await locator.page().waitForFunction(()=>document.querySelector('#stage-panel')?.getAttribute('aria-busy')==='false');};
+
 const errors=[];const checks=[];
 page.on('pageerror',e=>errors.push(e.message));
 page.on('console',m=>{if(m.type()==='error'&&!m.text().includes('favicon'))errors.push(m.text());});
@@ -21,23 +24,23 @@ try {
  check('initial shell usable',await page.locator('#stage-title').textContent()==='Chassis Size');
  check('ordinary type first',await page.locator('#robot-kind').inputValue()==='standard');
  await page.locator('#robot-name').fill('Browser fixture');await page.locator('#robot-name').press('Tab');
- for(let i=0;i<6;i++){await page.locator('#stage-nav button').nth(i).click();check('stage navigation '+i,(await page.locator('#stage-position').textContent()).includes(String(i+1)));}
- await page.locator('#stage-nav button').first().click();
+ for(let i=0;i<6;i++){await click(page.locator('#stage-nav button').nth(i));check('stage navigation '+i,(await page.locator('#stage-position').textContent()).includes(String(i+1)));}
+ await click(page.locator('#stage-nav button').first());
  check('navigation preserves name',await page.locator('#robot-name').inputValue()==='Browser fixture');
- await page.locator('#save-design').click();await page.getByText('Design saved.',{exact:true}).waitFor();
+ await click(page.locator('#save-design'));await page.getByText('Design saved.',{exact:true}).waitFor();
  check('saved list gains entry',await page.locator('#saved-design option').count()===2);
  const saved=await page.evaluate(()=>localStorage.getItem('traveller.robot-builder.designs.v1'));
  check('save schema',JSON.parse(saved).designs[0].design.name==='Browser fixture');
  await page.reload();await page.locator('#stage-nav button').first().waitFor();
- await page.locator('#saved-design').selectOption({index:1});await page.locator('#load-design').click();
+ await page.locator('#saved-design').selectOption({index:1});await click(page.locator('#load-design'));
  check('saved design reload',await page.locator('#robot-name').inputValue()==='Browser fixture');
- const downloadPromise=page.waitForEvent('download');await page.locator('#export-design').click();
+ const downloadPromise=page.waitForEvent('download');await click(page.locator('#export-design'));
  const download=await downloadPromise;const exported=JSON.parse(await fs.readFile(await download.path(),'utf8'));
  check('export exact design',exported.name==='Browser fixture');
  await page.locator('#import-file').setInputFiles({name:'bad.json',mimeType:'application/json',buffer:Buffer.from('{')});
  await page.waitForTimeout(100);check('invalid import preserves name',await page.locator('#robot-name').inputValue()==='Browser fixture');
  check('invalid import preserves store',await page.evaluate(()=>localStorage.getItem('traveller.robot-builder.designs.v1'))===saved);
- await page.locator('#stage-nav button').nth(2).click();
+ await click(page.locator('#stage-nav button').nth(2));
  check('seven physical categories',await page.locator('#physical-category option').count()===8);
  for(const category of ['chassis-modifications','locomotive-modifications','manipulator-modification','default-suites','zero-slot-options','slot-cost-options','weapons']) {
   await page.locator('#physical-category').selectOption(category);
@@ -50,14 +53,14 @@ try {
  for(const width of [1440,1100,768,390,320]) {
   await page.setViewportSize({width,height:1000});
   for(let stage=0;stage<6;stage++){
-   await page.locator('#stage-nav button').nth(stage).click();
+   await click(page.locator('#stage-nav button').nth(stage));
    const overflow=await page.evaluate(()=>({page:document.documentElement.scrollWidth,width:innerWidth,offenders:[...document.querySelectorAll('input,select,button')].filter(el=>el.getBoundingClientRect().right>innerWidth+1).map(el=>el.id||el.textContent)}));
    check('no overflow '+width+'/'+stage,overflow.page<=width+1&&overflow.offenders.length===0);
   }
-  await page.locator('#stage-nav button').nth(2).click();
+  await click(page.locator('#stage-nav button').nth(2));
   if(width===390||width===320)await page.screenshot({path:path.join(out,`robot-${width}.png`),fullPage:true});
  }
- await page.setViewportSize({width:1440,height:1000});await page.locator('#stage-nav button').first().click();
+ await page.setViewportSize({width:1440,height:1000});await click(page.locator('#stage-nav button').first());
  await page.screenshot({path:path.join(out,'robot-desktop.png'),fullPage:true});
  // Every construction kind must render its own catalogue without falling through to hidden stale controls.
  const kinds=await page.locator('#robot-kind option').evaluateAll(items=>items.map(item=>item.value).filter(Boolean));
@@ -66,7 +69,7 @@ try {
   await probe.goto(root);await probe.locator('#robot-kind').selectOption(kind);
   check('type selection '+kind,await probe.locator('#robot-kind').inputValue()===kind);
   for(let stage=0;stage<6;stage++){
-   await probe.locator('#stage-nav button').nth(stage).click();
+   await click(probe.locator('#stage-nav button').nth(stage));
    check('type stage '+kind+'/'+stage,await probe.locator('#stage-title').textContent()!=='');
   }
   await probe.close();
