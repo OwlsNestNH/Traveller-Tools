@@ -1,3 +1,4 @@
+import { psionicPotential, talentAcquisition, psionicTalentOptions } from './psionics.mjs';
 import { COMPANION_EDUCATION_IDS, companionEntryCheck, companionInitialAwards, companionEvent, companionGraduationCheck, companionTermOutcome, companionCareerBenefits, companionResolveSkillChoice } from './companion-education.mjs';
 import { characterChanges } from './audit.mjs';
 import { SPECIALITIES, PSIONIC_TALENTS, normalizeSkillName } from './skills.mjs';
@@ -140,7 +141,7 @@ function applyEffects(state,effects) {
  for(const effect of effects) {
   need(plain(effect),'Invalid effect.');
   switch(effect.kind) {
-   case 'skill':gainSkill(state,text(effect.name,80),integer(effect.value,0,4,'Skill value'),effect.mode==='set'?'set':'increase',true);break;
+   case 'skill':{const name=text(effect.name,80),newTalent=PSIONIC_TALENTS.includes(name)&&!Object.hasOwn(state.character.skills,name);gainSkill(state,name,integer(effect.value,0,4,'Skill value'),effect.mode==='set'?'set':'increase',true);if(newTalent)psionicHistory(state).historyKnown=false;break;}
    case 'stat':{
     const key=text(effect.name,8);need(Object.hasOwn(state.character.stats,key),'Unknown characteristic.');
     const change=integer(effect.value,-12,12,'Characteristic change');
@@ -203,6 +204,67 @@ function cashLimit(state) {
 
 const isCompanionEducation=id=>COMPANION_EDUCATION_IDS.includes(id);
 const completedCareerTerms=state=>state.character.careers.reduce((sum,c)=>sum+c.terms,0);
+
+function psionicHistory(state,known=false){
+ if(!state.character.psionics)state.character.psionics={historyKnown:known,checksAttempted:0,firstTalentChosen:false,attempts:[],tests:[],training:[],rulings:[],importedAttempted:[]};
+ return state.character.psionics;
+}
+const acquiredTalents=state=>PSIONIC_TALENTS.filter(name=>Object.hasOwn(state.character.skills,name));
+function recordPsionicTest(state,context,natural,careerTerms=0){
+ const wasUntested=!Object.hasOwn(state.character.stats,'PSI'),result=psionicPotential({roll:natural,careerTerms}),history=psionicHistory(state,true);
+ if(wasUntested&&!acquiredTalents(state).length&&!history.attempts.length&&!state.character.psionicTraining)history.historyKnown=true;
+ history.tests.push({...result,context});setStat(state,'PSI',result.psi);return result;
+}
+function psionicOptions(state){
+ const active=state.psionicTraining;if(!active)return [];
+ const history=psionicHistory(state);
+ return psionicTalentOptions({species:state.character.species,acquired:acquiredTalents(state),attempted:[...history.importedAttempted,...history.attempts.map(a=>a.talent)],previousChecks:history.checksAttempted,firstTalentChosen:history.firstTalentChosen,talent:active.mode==='retry'?active.talent:null});
+}
+function psionicSource(state,kind,label){
+ const active=state.psionicTraining;sourceStep(state,kind,active.source.id,active.source.page,label,'psionic-training');
+ if(kind==='psionic-training-terms')Object.assign(state.pending,{testingNeeded:!Object.hasOwn(state.character.stats,'PSI'),minimumCost:Object.hasOwn(state.character.stats,'PSI')?100000:105000});
+}
+function returnFromPsionics(state,rolls,completed){
+ const active=state.psionicTraining,history=psionicHistory(state);
+ if(active.mode==='initial')history.training.push({context:active.context,source:copy(active.source),attemptStart:active.attemptStart??history.attempts.length,attemptEnd:history.attempts.length,completed});
+ state.psionicTraining=null;state.pending=null;
+ if(active.next==='companion-admission'&&completed){Object.assign(state.pendingEducation,{psionicTrainingComplete:true,acquiredTalents:acquiredTalents(state)});}
+ if(active.next==='native-resume')drainEffects(state,rolls);else state.stage=active.next;
+}
+function activatePsionicTraining(state,rolls){
+ const active=state.psionicTraining,history=psionicHistory(state);
+ if(!history.historyKnown){psionicSource(state,'psionic-history','Prior psionic acquisition checks are unknown. Record their count and attempted talents before further rolls. Do not reset failed checks.');return;}
+ if((state.character.stats.PSI??0)<=0){active.noPotential=true;returnFromPsionics(state,rolls,false);return;}
+ active.attemptStart=history.attempts.length;state.pending=null;state.stage='psionic-training';
+ if(active.mode==='retry'&&!psionicOptions(state).length){psionicSource(state,'psionic-retry','This talent cannot use the supported acquisition table. Resolve this source award explicitly.');return;}
+}
+function startPsionicTraining(state,config,rolls){
+ need(!state.psionicTraining,'Another psionic training opportunity is active.');
+ state.psionicTraining={mode:'initial',...copy(config)};
+ if(config.context==='zhodani-elevation'&&state.character.psionics?.training.some(t=>t.completed)){psionicSource(state,'psionic-repeat-training','The Traveller has already completed initial psionic training. Resolve how this new societal training interacts with prior attempts; no free repeated checks are assumed.');return;}
+ if(config.requiresTerms){psionicSource(state,'psionic-training-terms','Resolve access, testing/training charges and timing. Core testing takes two weeks and costs at least Cr5000; training takes four months and costs Cr100000. No free training, elapsed age or debt is assumed.');return;}
+ if(config.test&&!Object.hasOwn(state.character.stats,'PSI')){if(!state.character.psionics)psionicHistory(state,true);recordPsionicTest(state,config.context,dice(state,2,rolls,'Psionic potential'),completedCareerTerms(state));}
+ activatePsionicTraining(state,rolls);
+}
+function markPsionicOrigin(effects,origin){
+ const result=copy(effects);function visit(value){if(Array.isArray(value)){value.forEach(visit);return;}if(!value||typeof value!=='object')return;if(value.kind)value.psionicOrigin=copy(origin);for(const [key,item] of Object.entries(value))if(key!=='psionicOrigin')visit(item);}visit(result);return result;
+}
+function requestTalentAward(state,e,rolls){
+ const career=state.active!==null?currentCareer(state).career:null,zhodani=state.character.species==='zhodani'&&(state.character.stats.SOC??0)>=10;
+ if((zhodani||career?.id==='core.psion'&&e.psionicOrigin?.table==='service')&&(state.character.stats.PSI??0)>0){
+  startPsionicTraining(state,{mode:'retry',context:zhodani?'zhodani-award':'core-psion-award',source:zhodani?{id:'aliens',page:256}:{id:'core',page:229},talent:e.name,origin:e.psionicOrigin??null,next:'native-resume',award:copy(e)},rolls);return;
+ }
+ nativeFallback(state,e,'Resolve the required psionic talent acquisition from the source before awarding this skill. No free training or talent is assumed.');
+}
+function rerollPsionicAward(state,active,rolls){
+ const origin=active.origin,current=state.active!==null?currentCareer(state):null,record=current?.record,career=current?.career,pack=nativePack(state);
+ if(!origin||!career||origin.careerId!==career.id||origin.assignment!==record.assignment){state.psionicTraining=active;psionicSource(state,'psionic-retry','The failed Zhodani acquisition requires another skill roll, but its originating table is unknown. Resolve that replacement explicitly.');return;}
+ const rows=origin.table==='assignment'?pack.training.assignments[record.assignment]:pack.training[origin.table];
+ need(rows?.length===6,'The original psionic skill table is unavailable.');
+ const result=dice(state,1,rolls,'Psionic replacement: '+origin.table);
+ state.effectsQueue.unshift(...markPsionicOrigin(rows[result-1],{...origin,result}));drainEffects(state,rolls);
+}
+
 function companionSource(state,phase,result,extra={}) {
  const id=state.education!==undefined&&state.education!==null?educationRecord(state).id:state.pendingEducation.id;
  sourceStep(state,'companion-'+phase,'companion',PRECAREER_RULES[id].source.pages[0],result.reason??('Resolve missing information: '+(result.missingInputs??[]).join(', ')),phase);
@@ -450,24 +512,25 @@ function drainEffects(state,rolls) {
     else {state.pendingChoice={...e,picked:e.picked??[],options:serviceSkills(e.career)};state.stage='education-service';return;}break;
    }
    case 'education-status':educationRecord(state).graduationAllowed=e.graduationAllowed;break;
-   case 'psionic-talent':{if(e.name&&PSIONIC_TALENTS.includes(e.name)&&skillLevel(state,e.name)>=0){if(skillAwardExceedsLimit(state,e.name,e.value??1,e.mode)){nativeFallback(state,e,'This mandatory talent award would exceed the total skill limit. Adjudicate the award from the source.');return;}gainSkill(state,e.name,e.value??1,e.mode);break;}nativeFallback(state,e,'Resolve psionic acquisition from the source before awarding a talent.');return;}
+   case 'psionic-talent':{if(e.name&&PSIONIC_TALENTS.includes(e.name)&&skillLevel(state,e.name)>=0){if(skillAwardExceedsLimit(state,e.name,e.value??1,e.mode)){nativeFallback(state,e,'This mandatory talent award would exceed the total skill limit. Adjudicate the award from the source.');return;}gainSkill(state,e.name,e.value??1,e.mode);break;}requestTalentAward(state,e,rolls);return;}
    case 'checked-skill':{
     const name=educationRecord(state).checkedSkill;need(name,'The education check skill was not recorded.');
     state.effectsQueue.unshift({kind:'skill',name,mode:e.mode,value:e.value});break;
    }
    case 'psionic-test':{
-    if(!Object.hasOwn(state.character.stats,'PSI'))state.character.stats.PSI=Math.max(0,dice(state,2,rolls,'Psionic potential')-completedCareerTerms(state));
+    if(!Object.hasOwn(state.character.stats,'PSI'))recordPsionicTest(state,'source-event',dice(state,2,rolls,'Psionic potential'),completedCareerTerms(state));
     break;
    }
    case 'career-permission':if(e.career==='core.psion')state.character.psionEntryPermission=true;else {nativeFallback(state,e);return;}break;
    case 'choice':state.pendingChoice=e;state.stage='effect-choice';return;
    case 'skill-choice':
+    if(e.scope==='psionic-talents'&&!acquiredTalents(state).length){nativeFallback(state,e,'This result improves an already acquired psionic talent, but none is possessed. Resolve the source award explicitly; it does not grant free acquisition.');return;}
     if(!['any','existing','science-specialties','psionic-talents'].includes(e.scope)||e.distinctSpecialties||e.untrained){nativeFallback(state,e,'Resolve the constrained skill choice from the source.');return;}
     state.pendingChoice=e;state.stage='skill-choice';return;
    case 'skill-reduction-choice':{const eligible=Object.keys(state.character.skills).filter(n=>state.character.skills[n]>0&&(!e.names||e.names.includes(n))&&skillNameAllowed(state,n,e));if(!eligible.length){nativeFallback(state,e,'No eligible trained skill can satisfy this reduction. Resolve the printed mishap explicitly before continuing.');return;}state.pendingChoice=e;state.stage='skill-choice';return;}
    case 'skill':{
     const base=e.name.split(' (')[0];
-    if(PSIONIC_TALENTS.includes(base)&&skillLevel(state,e.name)<0){nativeFallback(state,e,'Resolve the required psionic talent acquisition before awarding this skill.');return;}
+    if(PSIONIC_TALENTS.includes(base)&&skillLevel(state,e.name)<0){requestTalentAward(state,e,rolls);return;}
     if(e.value>0&&SPECIALIZED.includes(base)&&e.name===base){state.pendingChoice={kind:'skill-choice',scope:'any',allowed:[base],mode:e.mode,value:e.value,label:'Choose a '+base+' specialisation'};state.stage='skill-choice';return;}
 
     if(skillAwardExceedsLimit(state,e.name,e.value??1,e.mode)){nativeFallback(state,e,'This mandatory skill award would exceed the total skill limit. Resolve its disposal from Core p. 18 without exceeding the cap.');return;}gainSkill(state,e.name,e.value??1,e.mode);break;
@@ -481,7 +544,7 @@ function drainEffects(state,rolls) {
     if(e.name==='SOC'&&next>ceiling)state.character.benefits.push({name:'Ship Share',quantity:next-ceiling});
     setStat(state,e.name,Math.min(ceiling,Math.max(0,next)));
     if(state.character.species==='aezorgh'&&e.name==='SOC')state.character.stats.CHA=Math.floor(state.character.stats.SOC/2);
-    if(state.character.species==='zhodani'&&e.name==='PSI'&&current<9&&state.character.stats.PSI>=9&&(state.character.stats.SOC??0)<10){state.character.stats.SOC=10;state.effectsQueue.unshift({kind:'unsupported',source:{id:'aliens',page:254},reason:'Resolve immediate Intendant status and psionic training after PSI reaches 9.'});}
+    if(state.character.species==='zhodani'&&state.active!==null&&e.name==='PSI'&&current<9&&state.character.stats.PSI>=9&&(state.character.stats.SOC??0)<10){state.character.stats.SOC=10;startPsionicTraining(state,{context:'zhodani-elevation',source:{id:'aliens',page:255},next:'native-resume'},rolls);return;}
     break;
    }
    case 'benefit':{
@@ -567,7 +630,7 @@ function drainEffects(state,rolls) {
    case 'aslan-outcast':state.character.outcast=true;state.character.stats.SOC=e.SOC;if(e.forfeitClanShares)state.character.benefits=state.character.benefits.filter(b=>b.name!=='Clan Share');currentCareer(state).record.forcedExit=true;break;
    case 'conditional-future':state.character.futureConditions??=[];state.character.futureConditions.push(copy(e));break;
    case 'assignment-effect':{state.effectsQueue.unshift(...copy(e.assignments[currentCareer(state).record.assignment]??[]));break;}
-   case 'independence':{if(state.character.gender!=='male'){nativeFallback(state,e,'Resolve the gender-specific Independence result.');return;}const result=dice(state,2,rolls,'Independence acquisition');if(result>stat(state,'SOC'))gainSkill(state,'Independence',e.value,e.mode);break;}
+   case 'independence':{if(state.character.gender!=='male'){nativeFallback(state,e,'Resolve the gender-specific Independence result.');return;}const result=dice(state,2,rolls,'Independence acquisition');if(result>stat(state,'SOC')){if(skillAwardExceedsLimit(state,'Independence',e.value??1,e.mode)){nativeFallback(state,e,'This mandatory Independence award would exceed the total skill limit. Resolve it explicitly without exceeding Core p. 18.');return;}gainSkill(state,'Independence',e.value??1,e.mode);}break;}
    case 'conditional':{
     const condition=e.condition;let passes=true;
     if(condition.gender)passes&&=state.character.gender===condition.gender;
@@ -652,6 +715,7 @@ function apply(state,command,rolls) {
  case 'accept-statistics': {
   need(state.stage==='statistics'&&state.pool.length===6,'Roll statistics first.');
   const species=findSpecies(state.character.species);
+  need(species.id==='zhodani'||!state.config.extras.includes('PSI')||state.config.gm,'Optional PSI generation requires referee permission in GM mode.');
   for(const p of state.pool)state.character.stats[p.key]=Math.max(1,p.base+p.adjustment);
   for(const [key,[count,adjustment]] of Object.entries(species.dice).slice(6))state.character.stats[key]=key==='PSI'&&state.config.zhodaniPsi?state.optionalPsi:dice(state,count,rolls,key)+adjustment;
   for(const id of state.config.extras) {
@@ -673,9 +737,33 @@ function apply(state,command,rolls) {
   state.backgroundRemaining=species.id==='zhodani'&&state.character.stats.SOC>=10?0:species.extraBackground??Math.max(0,3+characteristicDM(state.character.stats.EDU));
   if(state.config.extras.includes('WLT'))state.character.stats.WLT=state.character.stats.SOC??0;
   state.stage='background';
-  if(species.setup)sourceStep(state,'species-setup',species.source,species.setupPage,species.setup,'background');
+  if(Object.hasOwn(state.character.stats,'PSI')){const history=psionicHistory(state,true);history.tests.push({context:species.id==='zhodani'?'zhodani-childhood':'referee-potential',source:{id:species.id==='zhodani'?'aliens':'core',page:species.id==='zhodani'?254:228},psi:state.character.stats.PSI,careerTerms:0});}
+   if(species.id==='zhodani'&&state.character.stats.SOC>=10)startPsionicTraining(state,{context:'zhodani-childhood',source:{id:'aliens',page:255},next:'precareer'},rolls);
+   else if(species.setup&&species.id!=='zhodani')sourceStep(state,'species-setup',species.source,species.setupPage,species.setup,'background');
   return 'Accepted statistics and generated selected extra characteristics.';
  }
+ case 'begin-psionic-training':{
+   need(['career','precareer'].includes(state.stage)&&state.active===null&&!state.forcedCareer,'Begin institute training only between careers.');
+   need(!Object.hasOwn(state.character.stats,'PSI')||state.character.stats.PSI>0,'PSI zero has no training potential.');
+   need(!state.character.psionics?.training.some(t=>t.completed),'Initial training has already been completed; later retries require a source award.');
+   startPsionicTraining(state,{context:'core-institute',source:{id:'core',page:228},next:state.stage,test:true,requiresTerms:true},rolls);return 'Institute access, costs and timing require an explicit source decision.';
+  }
+  case 'learn-talent':{
+   need(state.stage==='psionic-training'&&state.psionicTraining,'No psionic acquisition opportunity is active.');
+   const talent=text(payload.talent,40),option=psionicOptions(state).find(o=>o.talent===talent);need(option,'Choose an available, unacquired talent for this opportunity.');
+   const history=psionicHistory(state),active=state.psionicTraining;
+   const outcome=talentAcquisition({talent,psi:stat(state,'PSI'),previousChecks:history.checksAttempted,firstTalentChosen:history.firstTalentChosen,species:state.character.species,roll:option.automatic?undefined:dice(state,2,rolls,'Acquire '+talent)});
+   history.attempts.push({...outcome,context:active.context,source:copy(active.source)});history.checksAttempted+=outcome.checksAdded;history.firstTalentChosen=true;
+   if(outcome.success)gainSkill(state,talent,0,'set',true);
+   if(active.mode==='retry'){
+    state.psionicTraining=null;
+    if(!outcome.success&&active.context==='zhodani-award')rerollPsionicAward(state,active,rolls);else drainEffects(state,rolls);
+   }
+   return 'Psionic acquisition '+talent+': '+(outcome.automatic?'automatic first talent (no check)':outcome.total+' against 8; '+outcome.previousChecks+' previous checks')+'. '+(outcome.success?'Acquired at level 0.':'Not acquired.')+' Source: '+active.source.id+' p. '+active.source.page+'.';
+  }
+  case 'finish-psionic-training':{
+   need(state.stage==='psionic-training'&&state.psionicTraining?.mode==='initial','Only an initial training session can be finished.');returnFromPsionics(state,rolls,true);return 'Initial psionic training completed; all acquisition attempts and failures remain recorded.';
+  }
  case 'background': {
   need(state.stage==='background','Not choosing background skills.');
   need(Array.isArray(payload.skills)&&payload.skills.length===state.backgroundRemaining&&new Set(payload.skills).size===payload.skills.length,'Choose exactly '+state.backgroundRemaining+' distinct background skills.');
@@ -716,7 +804,13 @@ function apply(state,command,rolls) {
   if(id==='companion.colonial')config.homeworld={techLevel:integer(payload.techLevel,0,40,'Homeworld technology level')};
   if(id==='companion.spacer')config.homeworld={size:integer(payload.size,0,40,'Homeworld size')};
   if(id==='companion.merchant'){need(['business','shipboard'].includes(payload.curriculum),'Choose a Merchant academy curriculum.');config.curriculum=payload.curriculum;}
-  if(id==='companion.psionic'&&!config.psionicTrainingComplete){companionSource(state,'psionic-testing',{reason:'Resolve PSI testing, talent acquisition and initial training from Core p. 228 before admission. Record only talents actually acquired.'});return 'Psionic testing and training require an explicit source decision.';}
+  if(id==='companion.psionic'&&Object.hasOwn(state.character.stats,'PSI'))need(state.character.stats.PSI>0,'PSI zero has no training potential. Choose another pre-career option.');
+   if(id==='companion.psionic'&&!config.psionicTrainingComplete){
+    const history=state.character.psionics;
+    if(history?.historyKnown&&history.training.some(t=>t.completed)){Object.assign(config,{psionicTrainingComplete:true,acquiredTalents:acquiredTalents(state)});}
+    else{const nativeChildhood=state.character.species==='human'&&state.character.terms===0&&state.character.age===18;
+     startPsionicTraining(state,{context:'companion-community',source:{id:'companion',page:33},next:'companion-admission',test:true,requiresTerms:!nativeChildhood},rolls);return 'Psionic community testing and training must be completed before admission.';}
+   }
   if(id==='companion.psionic')need((state.character.stats.PSI??0)>0,'Positive tested PSI is required for psionic training.');
   const input={id,term:state.character.terms+1,stats:state.character.stats,homeworld:config.homeworld,species:state.character.species,attemptedThisTerm:state.educationAttemptTerms?.includes(state.character.terms)??false};
   let outcome=companionEntryCheck(input);
@@ -797,6 +891,7 @@ function apply(state,command,rolls) {
   const prerequisites=RULE_PACK[career.id]?.prerequisites??{};need(conditionMatches(state,prerequisites.assignments?.[assignment.id]),'This assignment has additional source prerequisites.');
   if(career.eligibility?.[assignment.id])need(state.character.gender===career.eligibility[assignment.id],'This assignment has a gender restriction.');
   if(career.id==='aslan.military'&&assignment.id==='support'&&state.character.gender==='male')need(stat(state,'SOC')<=8,'Male support assignment requires SOC 8 or less.');
+  if(career.id==='core.psion'&&!state.character.psionics?.training.some(t=>t.completed)){startPsionicTraining(state,{context:'core-institute',source:{id:'core',page:228},next:'career',test:true,requiresTerms:true},rolls);return 'Complete psionic training before attempting Psion career entry.';}
   if(career.id==='zhodani.guard'&&assignment.id==='commando')need((state.character.stats.PSI??0)>=9,'Commando assignment requires PSI 9 or greater.');
   const educational=educationRights(state,career.id,assignment.id);
   if(educational.unresolved.length){const unresolved=educational.unresolved[0];if(unresolved.educationIndex!==undefined){sourceStep(state,'companion-career-rights',unresolved.source.id,unresolved.source.pages?.[0]??unresolved.source.page,unresolved.reason,'career');Object.assign(state.pending,{educationIndex:unresolved.educationIndex,career:career.id,assignment:assignment.id,citizenMapping:unresolved.citizenMapping});}else{sourceStep(state,'education-entry-rights','core',17,unresolved.reason,'career');state.pending.career=career.id;}return 'Education entry rights require source adjudication before qualification.';}
@@ -863,7 +958,7 @@ function apply(state,command,rolls) {
   need(state.stage==='training','No training roll is pending.');need(trainingOptions(state).some(x=>x.id===payload.table),'Training table is not available.');const pack=nativePack(state),{record,career}=currentCareer(state);const rows=payload.table==='assignment'?pack.training.assignments[record.assignment]:pack.training[payload.table];
   const tableModifier=payload.table==='assignment'?(pack.prerequisites.assignmentTableModifiers??[]).filter(m=>conditionMatches(state,m.condition)).reduce((n,m)=>n+m.dm,0):0;
   if(rows.length!==6&&rows.length!==9){sourceStep(state,'term-training',career.source,career.page,'Resolve the special training table.','survival');return 'Training table requires source resolution.';}
-  const result=dice(state,1,rolls,'Training: '+payload.table)+tableModifier;queueEffects(state,rows[result-1],state.trainingNext??'survival',rolls);state.trainingNext=null;return 'Training '+payload.table+' result '+result+'.';
+  const result=dice(state,1,rolls,'Training: '+payload.table)+tableModifier;queueEffects(state,markPsionicOrigin(rows[result-1],{careerId:career.id,assignment:record.assignment,table:payload.table,result}),state.trainingNext??'survival',rolls);state.trainingNext=null;return 'Training '+payload.table+' result '+result+'.';
  }
  case 'survival': {
   need(state.stage==='survival','Not at the survival check.');
@@ -935,6 +1030,33 @@ function apply(state,command,rolls) {
   need(state.stage==='book-step'&&state.pending,'No source step to resolve.');
   need(payload.confirmed===true,'Confirm you checked the indicated source.');
   const pending=copy(state.pending);
+  if(pending.kind==='psionic-training-terms'){
+    const note=text(payload.note??'',500);need(note,'Record the source ruling on access, costs and timing.');need(typeof payload.psionicApproved==='boolean','Record whether training is approved.');need(!(payload.effects??[]).length,'Use the explicit psionic funding fields, not generic effects.');
+    const active=state.psionicTraining;need(active,'No training request is pending.');
+    if(!payload.psionicApproved){psionicHistory(state).rulings.push({kind:pending.kind,approved:false,note});returnFromPsionics(state,rolls,false);return 'Psionic training declined. '+note;}
+    need(payload.psionicTimingConfirmed===true,'Confirm how the testing and training time fits the source chronology.');
+    const cost=integer(payload.psionicCost,0,10000000,'Psionic testing and training cost');need(['cash','provided'].includes(payload.psionicFunding),'Choose cash payment or source-provided training.');
+    if(payload.psionicFunding==='cash'){need(cost>=pending.minimumCost&&(pending.testingNeeded||cost===100000),'Cash cost must meet the published minimum of Cr'+pending.minimumCost+'; tested training costs exactly Cr100000.');need(state.character.cash>=cost,'Available cash does not cover the psionic charges; no automatic debt is allowed.');}
+    else need(cost===0,'Provided testing/training has zero personal cost; document who provides it in the source ruling.');
+    const ruling={kind:pending.kind,approved:true,note,quotedCost:cost,cost,funding:payload.psionicFunding,timingConfirmed:true};psionicHistory(state).rulings.push(ruling);
+    if(!Object.hasOwn(state.character.stats,'PSI')){const history=psionicHistory(state);history.historyKnown=!acquiredTalents(state).length;recordPsionicTest(state,active.context,dice(state,2,rolls,'Psionic potential'),completedCareerTerms(state));}
+    if(payload.psionicFunding==='cash'){ruling.cost=(state.character.stats.PSI??0)>0?cost:pending.testingNeeded?cost-100000:0;state.character.cash-=ruling.cost;}
+    state.pending=null;activatePsionicTraining(state,rolls);return 'Psionic access and timing approved; personal cost Cr'+ruling.cost+' ('+payload.psionicFunding+'). '+note;
+   }
+   if(pending.kind==='psionic-history'){
+    const note=text(payload.note??'',500);need(note,'Record the source of the prior psionic check history.');need(!(payload.effects??[]).length,'History confirmation cannot grant skills or change characteristics.');
+    const count=integer(payload.psionicPreviousChecks,0,1000,'Previous acquisition checks'),first=payload.psionicFirstTalentChosen,names=payload.psionicAttemptedTalents;
+    need(typeof first==='boolean','Record whether a first talent has already been chosen.');need(Array.isArray(names)&&new Set(names).size===names.length&&names.every(n=>PSIONIC_TALENTS.includes(n)),'Record distinct canonical attempted talents.');
+    need(first||count===0&&names.length===0,'First-talent history contradicts previous checks.');need(!first||names.length>0,'Record the previously chosen talent.');need(count>=names.filter(n=>n!=='Telepathy').length,'Previous checks cannot be fewer than the non-automatic attempted talents.');
+    need(acquiredTalents(state).every(n=>names.includes(n)),'Include every acquired talent in its acquisition history.');
+    need(count!==0||!first||names.length===1&&names[0]==='Telepathy'&&acquiredTalents(state).includes('Telepathy'),'Zero previous checks with a chosen talent requires acquired automatic Telepathy.');
+    const history=psionicHistory(state);need(count>=history.checksAttempted&&(!history.firstTalentChosen||first)&&history.attempts.every(a=>names.includes(a.talent)),'Existing native acquisition history cannot be erased or reduced.');
+    Object.assign(history,{historyKnown:true,checksAttempted:count,firstTalentChosen:first,importedAttempted:copy(names)});history.rulings.push({kind:pending.kind,note,previousChecks:count,firstTalentChosen:first,attemptedTalents:copy(names)});state.pending=null;activatePsionicTraining(state,rolls);return 'Prior psionic history recorded: '+count+' checks. '+note;
+   }
+   if(pending.kind==='psionic-repeat-training'){const note=text(payload.note??'',500);need(note,'Record the repeated-training source ruling.');applyEffects(state,payload.effects??[]);psionicHistory(state).rulings.push({kind:pending.kind,note});state.pending=null;returnFromPsionics(state,rolls,true);return 'Repeated psionic training resolved from source. '+note;}
+   if(pending.kind==='psionic-retry'){
+    const note=text(payload.note??'',500);need(note,'Record the source replacement for the unresolved talent award.');applyEffects(state,payload.effects??[]);state.pending=null;state.psionicTraining=null;drainEffects(state,rolls);return 'Source-assisted psionic replacement: '+note;
+   }
   if(pending.kind==='injury-zero'){
    const record=injuryRecord(state),note=text(payload.note??'',500);need(note,'Record the injury survival and zero-score ruling.');need(typeof payload.injurySurvives==='boolean','Record whether the Traveller survives this injury.');record.zeroRuling={survives:payload.injurySurvives,note};
    need((payload.effects??[]).every(e=>e.kind!=='stat'),'Use the explicit injury-score fields for characteristic changes.');applyEffects(state,payload.effects??[]);state.pending=null;
@@ -1022,8 +1144,10 @@ function apply(state,command,rolls) {
  case 'add-extra': {
   need(state.stage!=='identity'&&state.stage!=='statistics','Accept the six characteristics first.');
   const extra=EXTRA_STATS.find(e=>e.id===payload.id);need(extra,'Choose an available characteristic.');need(!Object.hasOwn(state.character.stats,extra.id),'This characteristic already exists.');
+  if(extra.id==='PSI')need(state.config.gm,'Raw PSI generation requires referee permission in GM mode; institute testing uses the psionic-training source step.');
   const value=extra.derive?(state.character.stats[extra.derive]??0):dice(state,extra.dice,rolls,extra.id);
   state.character.stats[extra.id]=extra.id==='PSI'?Math.max(0,value-completedCareerTerms(state)):value;
+   if(extra.id==='PSI')recordPsionicTest(state,'referee-potential',value,completedCareerTerms(state));
   state.config.extras.push(extra.id);return 'Added '+extra.name+' '+state.character.stats[extra.id]+'. '+extra.source+(extra.id==='PSI'?'; testing reduced by completed career terms. Potential does not grant training or talents.':'.');
  }
  case 'ageing':{
@@ -1087,7 +1211,10 @@ export function project(session) {
  state.injuryOptions=state.stage==='injury-loss'?copy(injuryRecord(state).options):[];
  state.injuryRestorable=state.stage==='injury-treatment'?copy(injuryRecord(state).losses):{};
  state.medicalOutstanding=(state.character.medicalBills??[]).filter(b=>!b.settled).reduce((sum,b)=>sum+b.personalCost,0);
- state.trainingOptions=state.stage==='training'?trainingOptions(state):[];
+ state.psionicOptions=state.stage==='psionic-training'?psionicOptions(state):[];
+  state.psionicCanFinish=state.stage==='psionic-training'&&state.psionicTraining?.mode==='initial';
+  state.canStartPsionicTraining=['career','precareer'].includes(state.stage)&&state.active===null&&!state.forcedCareer&&(!Object.hasOwn(state.character.stats,'PSI')||state.character.stats.PSI>0)&&!state.character.psionics?.training.some(t=>t.completed);
+  state.trainingOptions=state.stage==='training'?trainingOptions(state):[];
  state.educationOptions=['education-skill','companion-skill'].includes(state.stage)?educationOptions(state,state.pendingChoice):[];
  state.educationCheckSkills=state.stage==='education-check'?learnedEducationSkills(state):[];
  state.canChooseEducation=state.stage==='career'&&state.active===null&&!state.forcedCareer&&state.character.terms<3&&!state.educationAttemptTerms?.includes(state.character.terms);

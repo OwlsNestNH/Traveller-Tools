@@ -23,6 +23,7 @@ Limits include 2 MB UTF-8 decoded imports and serialized saves (checked before a
 - Setup: `configure`, `setup`, `gm-mode`.
 - Characteristics: `roll-statistics`, `swap-statistics`, `accept-statistics`, `add-extra`.
 - Life path: `background`, `precareer`, `skip-precareer`, `career`, `fallback`, `training`, `survival`, `advancement`, `commission`, `continue-career`, `leave-career`, `benefit`, `ageing`, `finish`.
+- Psionics: `learn-talent {talent}`, `finish-psionic-training`, `begin-psionic-training`. Projected `psionicTraining`, `psionicOptions`, `psionicCanFinish` and `canStartPsionicTraining` drive choices. Initial selection order and rolled-check count are distinct. Institute terms and unknown attempt history use typed `resolve-book` decisions; no arbitrary free retry, training or debt is implied.
 - Treatment: `injury-loss {index}`, `injury-treatment {restore:{STR,DEX,END},inService}`. Projected `currentInjury`, `injuryOptions`, `injuryRestorable` and `medicalOutstanding` drive the client.
 - Education: `companion-entry`, `companion-skill`, `cancel-education`, `education-event`, `education-graduation`, Core study/service choices and `preterm-commission`.
 - Decisions: `choose-effect`, `choose-skill`, education-specific commands where offered, `resolve-book`.

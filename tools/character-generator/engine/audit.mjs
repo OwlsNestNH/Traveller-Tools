@@ -3,11 +3,13 @@ const clone=value=>value===undefined?null:structuredClone(value);
 export function characterChanges(before,after){
  const changes=[];
  const add=(path,a,b)=>{if(JSON.stringify(a)!==JSON.stringify(b))changes.push({path,before:clone(a),after:clone(b)});};
- for(const field of ['name','species','variant','culture','gender','homeworld','age','terms','cash','debt','sentenced','outcast','deceased','qualificationBanned','psionEntryPermission','preCareer','birthOrder','medicalCosts'])add(field,before[field],after[field]);
+ for(const field of ['name','notes','species','variant','culture','gender','homeworld','age','terms','cash','debt','sentenced','outcast','deceased','qualificationBanned','psionEntryPermission','preCareer','birthOrder','medicalCosts'])add(field,before[field],after[field]);
  for(const field of ['stats','skills'])for(const key of new Set([...Object.keys(before[field]??{}),...Object.keys(after[field]??{})]))add(field+'.'+key,before[field]?.[key],after[field]?.[key]);
  for(const field of ['benefits','relationships','historyNotes','futureConditions','traits','injuries','medicalBills','medicalSettlements','ageingCrises']){
   const old=before[field]??[],next=after[field]??[];for(let i=0;i<Math.max(old.length,next.length);i++)add(field+'.'+i,old[i],next[i]);
  }
+ for(const field of ['historyKnown','checksAttempted','firstTalentChosen'])add('psionics.'+field,before.psionics?.[field],after.psionics?.[field]);
+ for(const field of ['attempts','tests','training','rulings']){const a=before.psionics?.[field]??[],b=after.psionics?.[field]??[];for(let i=0;i<Math.max(a.length,b.length);i++)add('psionics.'+field+'.'+i,a[i],b[i]);}
  const old=before.careers??[],next=after.careers??[];
  for(let i=0;i<Math.max(old.length,next.length);i++)for(const field of ['id','assignment','terms','rank','officer','benefitRolls','forcedExit','forcedStay','parole','released','pension'])add('careers.'+i+'.'+field,old[i]?.[field],next[i]?.[field]);
  const oldEducation=before.educations??[],newEducation=after.educations??[];

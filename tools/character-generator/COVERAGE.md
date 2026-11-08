@@ -24,6 +24,7 @@ These edition choices matter. In particular the 2026 Aslan characteristic modifi
 - Native five Companion education paths, constrained awards, graduation and persisted career rights, with explicit cross-book and psionic exceptions.
 - Native ordinary injuries, partial restoration, listed employer contributions, source adjudication for unlisted employers/zero scores, and end-of-creation medical bill settlement. Ageing crisis funding remains a separate explicit decision.
 - Vargr strain overlays, native/Imperial social statistics, Aezorgh derived Charisma, and the published Aslan rite-of-passage double results.
+- Native ordered Core/Zhodani talent acquisition, persistent check penalties, source-based career retry opportunities, initial Zhodani training and career elevation. Companion childhood training reuses the same workflow. Institute access, costs and chronology are explicitly approved rather than assumed.
 - Derived before/after action details, printable notes/connections and medical ledger.
 - Ten additional shared alien event tables and explicit constrained-effect metadata.
 - Pure Core medical, injury, ageing, pension and benefit procedures with source-grounded tests.
@@ -35,7 +36,7 @@ Routine training, checks, table rolls, many choices, rank awards and benefits ar
 Important areas still needing integration, deeper testing or source adjudication include:
 
 - Companion cross-book exceptions, source-specific career transfers and assignment changes.
-- Psionic talent acquisition/training, Zhodani social transitions, re-education and status reviews.
+- Psionic acquisition histories from older/manual records, repeat-course chronology and untraceable retry awards require source decisions. Zhodani re-education, status reviews and the once-per-lifetime Psionic Games replacement term remain incomplete.
 - Detailed Aslan rite/clan/land/share procedures and constrained gender/culture paths.
 - Non-standard Vargr and Aezorgh cross-book choices, derived social characteristics and career restrictions.
 - Nonstandard injury/medical rules, equipment selection, ship ownership/mortgage aggregation and repeated benefit choices.

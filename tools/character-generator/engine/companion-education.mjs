@@ -304,6 +304,3 @@ export function companionCareerBenefits({id,graduation,careerId,assignment,curri
  }
  return result(id,{...meta,scope:'persistent-unless-entry-rank-restriction'});
 }
-
-
-
