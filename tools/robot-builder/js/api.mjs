@@ -1,5 +1,6 @@
 import * as engine from '../engine/index.mjs';
 import {projectReview,formatStatblock} from './review-model.mjs';
+import {projectSheet} from './sheet-model.mjs';
 
 // Local service boundary. The GUI imports this API, never the rules engine.
 export const STORE_KEY = 'traveller.robot-builder.designs.v1';
@@ -63,6 +64,10 @@ export function createRobotApi(options = {}) {
   }
   function getRecordPresentation(control,record,copyIndex) { return control.type==='weapons' ? engine.weaponRecordPresentation(record,copyIndex) : control.type==='verified-vehicle-options' ? engine.vehicleOptionRecordPresentation(record,design) : {fields:{}}; }
   function getStatblock() { return formatStatblock(getReview()); }
+  function getSheet() {
+    const catalogue=engine.getCatalogue(design), evaluation=engine.evaluateDesign(design);
+    return projectSheet(design,catalogue,evaluation,projectReview(design,catalogue,evaluation));
+  }
   function getView() {
     const catalogue=engine.getCatalogue(design),evaluation=engine.evaluateDesign(design);
     const review=projectReview(design,catalogue,evaluation);
@@ -193,5 +198,5 @@ export function createRobotApi(options = {}) {
     const next = engine.createExample(id); currentId = null; baseline = null; return changed(next);
   }
   function subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); }
-  return {getView,getStatblock,getRecordPresentation,listExamples,loadExample,setIdentity,select,newDesign,saveDesign,listSaved,loadDesign,importDesign,attachDesignReference,removeDesignReference,exportDesign:()=>engine.exportDesign(design),refreshSaved,subscribe};
+  return {getView,getStatblock,getSheet,getRecordPresentation,listExamples,loadExample,setIdentity,select,newDesign,saveDesign,listSaved,loadDesign,importDesign,attachDesignReference,removeDesignReference,exportDesign:()=>engine.exportDesign(design),refreshSaved,subscribe};
 }

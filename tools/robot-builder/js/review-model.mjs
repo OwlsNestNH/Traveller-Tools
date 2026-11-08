@@ -318,7 +318,8 @@ export function projectReview(design, catalogue, evaluation) {
       return !control || !Object.hasOwn(control,'default') || JSON.stringify(value)!==JSON.stringify(control.default);
     }).map(([key])=>{const label=choice?.parameterControls?.find(item=>item.field===key)?.label||key;return[label,parameterValues[label]];}));
     const summary={placement:context,...(present(ledger?.quantity)&&!hasQuantity?{quantity:ledger.quantity}:{}),...compactParameters};
-    return {...row(choice?.label || humanLabel(id),summary,choice?.source || ledger?.source),details:[...Object.entries(parameterValues).map(([label,value])=>row(label,value)),...(instanceId?[row('Installation','Separate copy')]:[])]};
+    const sheetParameters={...(present(ledger?.quantity)&&ledger.quantity>1&&!hasQuantity?{quantity:ledger.quantity}:{}),...compactParameters};
+    return {...row(choice?.label || humanLabel(id),summary,choice?.source || ledger?.source),sheetValue:Object.keys(sheetParameters).length?valueText(sheetParameters):'',details:[...Object.entries(parameterValues).map(([label,value])=>row(label,value)),...(instanceId?[row('Installation','Separate copy')]:[])]};
   };
   for(const control of controls.filter(control=>['defaultSuite','options'].includes(control.field))){
     const values=control.target==='special'?design.special:design.selections?.[control.stage];
@@ -427,7 +428,7 @@ export function projectReview(design, catalogue, evaluation) {
     const summary = [`Installed level ${valueText(skill.level)}`,`Effective ${present(skill.effectiveLevel)?valueText(skill.effectiveLevel):'level unresolved'}`,skill.characteristic ? `${skill.characteristic==='variable'?'Variable characteristic':skill.characteristic}` : ''].filter(Boolean).join(' · ');
     const details = {...skill};
     if(skill.modifierOptions)details.modifierOptions=skill.modifierOptions.map(item=>({manipulator:armName(item.manipulatorId),modifier:item.modifier,effectiveLevel:item.effectiveLevel}));
-    return profileRow(idName,summary,details,['level','effectiveLevel','characteristic','speciality']);
+    return {...profileRow(idName,summary,details,['level','effectiveLevel','characteristic','speciality']),sheetValue:present(skill.effectiveLevel)?valueText(skill.effectiveLevel)+' effective ('+valueText(skill.level)+' installed'+(skill.characteristic?'; '+skill.characteristic:'')+')':valueText(skill.level)+' installed; effective unresolved'+(skill.characteristic?' ('+skill.characteristic+')':'')};
   });
   const implantBrains=augmentations.filter(item=>item.robotBrain);
   if(implantBrains.length){
@@ -501,6 +502,12 @@ export function projectReview(design, catalogue, evaluation) {
     const accessoryName=id=>accessoryChoices.find(item=>item.id===id)?.label||humanLabel(id);
     const displayWeapon={...weapon,...weaponGripDisplay(weapon,parentLabel?()=>parentLabel:armName),...ammunitionInventoryDisplay(weapon),...(weapon.magazineVariants?{magazineVariants:ammunitionMassDisplay(weapon.magazineVariants)}:{}),...(weapon.highCapacitySpareAmmunition?{highCapacitySpareAmmunition:spareAmmunitionDisplay(weapon.highCapacitySpareAmmunition,choiceLabel(control,'highCapacityMagazineStorageId',weapon.highCapacitySpareAmmunition.storageId,'Unresolved storage'))}:{}),...(weapon.spareAmmunition?{spareAmmunition:spareAmmunitionDisplay(weapon.spareAmmunition,choiceLabel(control,'spareMagazineStorageId',weapon.spareAmmunition.storageId,'Unresolved storage'))}:{}),...(weapon.looseAmmunition?{looseAmmunition:(({storageId,...rest})=>({...rest,storage:storageName(storageId),grenade:ammunitionName(rest.grenade)}))(weapon.looseAmmunition)}:{}),accessoryEffects:(weapon.accessoryEffects||[]).map(effect=>({...effect,accessory:accessoryName(effect.accessory)}))};
     const result=profileRow(name,summary,displayWeapon,['damage','range','traits','placement','manipulatorId','supportManipulatorId','gripManipulatorIds','primaryManipulatorDM','parentLimb','accessories','auxiliary','associatedAttacks','ammunitionStorageId','spareMagazineStorageId','highCapacityMagazineStorageId'],detail);
+    const initialSupplies=weapon.ammunitionCopies?.length
+      ? weapon.ammunitionCopies.map(copy=>({copyIndex:copy.copyIndex,...copy.initialAmmunition}))
+      : weapon.initialAmmunition ? [weapon.initialAmmunition] : [];
+    result.sheetLoads=initialSupplies.filter(load=>present(load.capacityPerMagazine)&&Number.isFinite(load.count)).map(load=>row(load.copyIndex?'Copy '+load.copyIndex+' initial supplies':'Initial supplies',
+      valueText(load.count)+' magazines/packs; '+valueText(load.totalRounds)+' rounds/charges'+(load.count===0?'; no initial load':''),load.source||weapon.source));
+    if(result.sheetLoads.length&&!weapon.loadedAmmunitionAttack)result.sheetValue=(weapon.initialAmmunition.count===0?'No initial load; hardware profile: ':'Hardware profile: ')+summary;
     for(const item of result.details){if(item.label==='Autoload Allocation')item.label='Selected loader allocation per weapon';if(item.label==='High Capacity Spare Ammunition')item.label='High-capacity spare ammunition (estimated mass)';if(item.label==='Spare Ammunition')item.label='Spare ammunition (estimated mass)';if(item.label==='Mass Kg')item.label='Source weapon mass (kg)';}
     for(const id of weapon.accessories||[]){const accessory=accessoryChoices.find(item=>item.id===id);result.details.push(row('Accessory',accessoryName(id),accessory?.source));}
     const magazineStorageName=(id,key)=>choiceLabel(control,key==='highCapacitySpareAmmunition'?'highCapacityMagazineStorageId':'spareMagazineStorageId',id,'Unresolved storage'),magazineSourceName=id=>choiceLabel(control,'weaponId',id,'Unavailable magazine source');

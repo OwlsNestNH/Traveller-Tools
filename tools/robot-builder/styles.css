@@ -214,3 +214,63 @@ footer { color: var(--muted); font-size: .73rem; }
 
 @media(max-width:800px){#stage-panel{scroll-margin-top:85px}}
 .optional-control{border-top:1px solid #2b3750;padding-top:12px}.optional-control>summary{cursor:pointer;color:#c8dcff;margin-bottom:12px}
+
+/* Optional read-only reference sheet. No artwork or source-book assets. */
+.output-options { display:flex; flex-wrap:wrap; gap:12px 20px; align-items:end; margin-top:18px; }
+.output-options label { width:min(100%,260px); }
+.output-options .help { flex:1 1 220px; margin:0 0 8px; }
+#sheet-preview { margin-top:20px; }
+#sheet-preview[hidden] { display:none; }
+.robot-sheet { color:#303438; background:#f3f3f1; border:1px solid #c8ccce; padding:24px; font:15px/1.45 Arial,Helvetica,sans-serif; overflow-wrap:anywhere; }
+.robot-sheet * { box-sizing:border-box; }
+.robot-sheet .sheet-kind { margin:0 0 3px; font-size:12px; letter-spacing:.04em; text-transform:uppercase; color:#50595c; }
+.robot-sheet .sheet-status { margin:0 0 16px; color:#494f52; font-size:12px; }
+.robot-sheet .sheet-summary { display:grid; grid-template-columns:minmax(0,2fr) minmax(0,.7fr) minmax(0,1.7fr) minmax(0,1.3fr) minmax(0,.55fr) minmax(0,1.6fr); margin:0; border-bottom:2px solid #464c50; }
+.robot-sheet .sheet-metric { min-width:0; padding:0 8px 7px; border-left:1px solid #767d81; }
+.robot-sheet .sheet-metric:first-child { border-left:0; padding-left:0; }
+.robot-sheet dt { font-weight:700; }
+.robot-sheet dd { margin:0; }
+.robot-sheet .sheet-metric dt { margin-bottom:5px; padding-bottom:5px; border-bottom:1px solid #767d81; }
+.robot-sheet .sheet-detail { font-size:.85em; color:#50575b; }
+.robot-sheet .sheet-cost { margin:5px 0; font-size:12px; text-align:right; }
+.robot-sheet .sheet-body { margin:0; }
+.robot-sheet .sheet-row { display:grid; grid-template-columns:126px minmax(0,1fr); border-bottom:1px solid #767d81; }
+.robot-sheet .sheet-row > dt { padding:6px 8px 6px 0; border-right:1px solid #767d81; }
+.robot-sheet .sheet-row > dd { padding:6px 0 6px 8px; min-width:0; }
+.robot-sheet .sheet-entry strong { font-weight:600; }
+.robot-sheet .sheet-note { display:block; margin:4px 0 0; font-size:11px; line-height:1.4; color:#51595d; }
+.robot-sheet .sheet-supplement { margin-top:14px; }
+.robot-sheet .sheet-supplement h3 { margin:0 0 4px; font:700 13px/1.4 Arial,Helvetica,sans-serif; color:#303438; }
+.robot-sheet .sheet-supplement ul { padding-left:18px; margin:4px 0 0; }
+.robot-sheet .sheet-supplement li { margin:3px 0; font-size:12px; }
+.robot-sheet .sheet-source { color:#51595d; font-size:.9em; }
+.robot-sheet .sheet-footer { margin:14px 0 0; padding-top:8px; border-top:1px solid #a1a7aa; font-size:11px; color:#51595d; }
+@media screen and (max-width:650px) {
+  .robot-sheet { padding:14px; font-size:14px; }
+  .robot-sheet .sheet-summary { grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px 0; }
+  .robot-sheet .sheet-metric:nth-child(4) { border-left:0; padding-left:0; }
+  .robot-sheet .sheet-row { grid-template-columns:98px minmax(0,1fr); }
+}
+@media screen and (max-width:380px) {
+  .robot-sheet { padding:10px; }
+  .robot-sheet .sheet-summary { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .robot-sheet .sheet-metric:nth-child(odd) { border-left:0; padding-left:0; }
+  .robot-sheet .sheet-metric:nth-child(even) { border-left:1px solid #767d81; padding-left:8px; }
+  .robot-sheet .sheet-row { grid-template-columns:minmax(0,1fr); }
+  .robot-sheet .sheet-row > dt { border-right:0; padding-bottom:0; }
+  .robot-sheet .sheet-row > dd { padding-left:0; }
+}
+@media print {
+  .robot-sheet { border:0; padding:0; background:white; font-size:10pt; line-height:1.4; print-color-adjust:exact; }
+  .robot-sheet .sheet-summary { break-inside:avoid; }
+  /* Normal block flow lets even a single long skills/options row span pages. */
+  .robot-sheet .sheet-row { display:block; }
+  .robot-sheet .sheet-row::after { content:""; display:block; clear:both; }
+  .robot-sheet .sheet-row > dt { float:left; width:90pt; border-right:0; }
+  .robot-sheet .sheet-row > dd { margin-left:90pt; border-left:1px solid #767d81; }
+  .robot-sheet .sheet-supplement { break-inside:auto; }
+  .robot-sheet .sheet-supplement h3 { break-after:avoid; }
+  .robot-sheet .sheet-supplement li { break-inside:avoid; }
+  .robot-sheet .sheet-entry { orphans:2; widows:2; }
+  .robot-sheet .sheet-note, .robot-sheet .sheet-footer { font-size:8pt; }
+}
