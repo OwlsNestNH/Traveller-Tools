@@ -9,7 +9,7 @@ test('family and birth rolls have separate large-control actions, never a manual
   assert.match(aslanOriginView(state('aslan-family'), context), /roll-aslan-family/);
   assert.match(aslanOriginView(state('aslan-family'), context), /separately from the ordinary background/);
   const blank = aslanOriginView(state('aslan-family', {canRollGender: true}), context);
-  assert.match(blank, /roll-aslan-gender/); assert.doesNotMatch(blank, /roll-aslan-family/);
+  assert.match(blank, /aliens p. 16/); assert.match(blank, /roll-aslan-gender/); assert.doesNotMatch(blank, /roll-aslan-family/);
   const birth = aslanOriginView(state('aslan-birth-order'), context);
   assert.match(birth, /roll-aslan-birth-order/); assert.doesNotMatch(birth, /<select|first-son| checked/);
 });

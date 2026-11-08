@@ -11,7 +11,7 @@ export function aslanOriginView(state, {esc, button, sourceLabel}) {
   if (!origin) return '<p class="warning">The Aslan origin record is unavailable. Preserve your save and log.</p>';
   const disabled = state.config.gm ? '' : ' disabled';
   const help = !state.config.gm ? '<p class="help">Enable GM changes to record a source ruling.</p>' : '';
-  const start = '<p class="source">' + esc(sourceLabel('aliens', sourcePages[state.stage] ?? 17)) + '</p>' + familyEvidence(origin, esc);
+  const start = '<p class="source">' + esc(sourceLabel('aliens', origin.canRollGender ? 16 : sourcePages[state.stage] ?? 17)) + '</p>' + familyEvidence(origin, esc);
   if (state.stage === 'aslan-family') {
     if (origin.canRollGender) return start + button('Roll gender', 'roll-aslan-gender');
     return start + '<p>Family awards are recorded separately from the ordinary background skill allowance.</p>' + button('Roll family background', 'roll-aslan-family');
@@ -39,7 +39,7 @@ export function aslanOriginSourceView(state, {esc, button, sourceLabel}) {
     if (!choices.length) return '<p class="warning">No family classifications are available. Preserve your save and log.</p>';
     input = '<label>Referee family classification<select id="aslan-family-band"' + disabled + '><option value="">Choose a classification</option>' + choices.map(choice => '<option value="' + esc(choice.id) + '">' + esc(choice.name) + '</option>').join('') + '</select></label>';
   } else if (decision === 'female-independence') {
-    input = '<p class="warning">The family result awards Independence, but the skill rule is male-only. Record the referee ruling.</p><label>Ruling<select id="aslan-origin-decision"' + disabled + '><option value="">Choose a ruling</option><option value="omit">Omit this award</option><option value="grant-level-zero">Grant Independence 0 as a GM exception</option></select></label>';
+    input = '<p class="warning">The family result awards Independence, but the skill rule is male-only. Granting it is a GM exception.</p><label>Ruling<select id="aslan-origin-decision"' + disabled + '><option value="">Choose a ruling</option><option value="omit">Omit this award</option><option value="grant-level-zero">Grant level 0 (exception)</option></select></label>';
   } else if (decision === 'gender') {
     const choices = origin.sourceDecision?.options ?? [];
     if (!choices.length) return '<p class="warning">The source rules branches are unavailable. Preserve your save and log.</p>';
