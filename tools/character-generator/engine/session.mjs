@@ -1,3 +1,4 @@
+import { relationshipLossOptions, relationshipLoss, distinctScienceSelection } from './zhodani-choices.mjs';
 import { MERCHANT_FINE_SOURCE, merchantFineRoll, merchantFineOptions, merchantFineOutcome } from './merchant-fine.mjs';
 import { ZHODANI_REEDUCATION_SOURCE,reeducationRoll,reeducationPlan,treatmentTimeline,zhodaniStatusPlan,REEDUCATION_EXPLICIT_DISCHARGE } from './zhodani-reeducation.mjs';
 import { careerTransferRule, createCareerTransfer, careerTransferEntry, careerTransferExpiry } from './career-transfers.mjs';
@@ -15,7 +16,7 @@ const RULE_PACK={...CORE_PACK,...EXPANSION_PACK};
 import { API_VERSION, SOURCES, CAREERS, PRECAREERS, SPECIES, SKILLS, BACKGROUND_SKILLS, findCareer, findSpecies } from './catalog.mjs';
 const LIMIT = 2000;
 export const MAX_SAVE_BYTES = 2000000;
-export const RULES_REVISION='character-preview-2026-11-08.4';
+export const RULES_REVISION='character-preview-2026-11-08.5';
 const saveSize = value => new TextEncoder().encode(JSON.stringify(value,null,2)).byteLength;
 const copy = value => structuredClone(value);
 const plain = value => value && typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
@@ -934,12 +935,12 @@ function drainEffects(state,rolls) {
     break;
    }
    case 'career-permission':if(e.career==='core.psion')state.character.psionEntryPermission=true;else {nativeFallback(state,e);return;}break;
-   case 'choice':state.pendingChoice=e;state.stage='effect-choice';return;
+   case 'choice':state.pendingChoice=e.guard==='zhodani-government-defence'&&state.character.psionicLoss?.permanent?{...e,options:e.options.filter(o=>o.label!=='PSI'),unavailableOptions:[{label:'PSI',reason:'Permanent psionic loss prevents this defence option.'}]}:e;state.stage='effect-choice';return;
    case 'skill-choice':
     if(state.character.psionicLoss&&(e.scope==='psionic-talents'||e.allowed?.length&&e.allowed.every(n=>PSIONIC_TALENTS.includes(n)))){nativeFallback(state,e,'Ageing permanently removed psionic ability. Resolve this constrained award explicitly without restoring historical talents.');return;}
     if(e.scope==='psionic-talents'&&!acquiredTalents(state).length){nativeFallback(state,e,'This result improves an already acquired psionic talent, but none is possessed. Resolve the source award explicitly; it does not grant free acquisition.');return;}
-    if(!['any','existing','science-specialties','psionic-talents'].includes(e.scope)||e.distinctSpecialties||e.untrained){nativeFallback(state,e,'Resolve the constrained skill choice from the source.');return;}
-    state.pendingChoice=e;state.stage='skill-choice';return;
+    if(!['any','existing','science-specialties','psionic-talents'].includes(e.scope)||(e.distinctSpecialties&&e.scope!=='science-specialties')||e.untrained){nativeFallback(state,e,'Resolve the constrained skill choice from the source.');return;}
+    state.pendingChoice=e.scope==='science-specialties'?{...e,selected:e.selected??[],source:copy(e.source??e.reeducationOrigin?.source??{id:currentCareer(state).career.source,page:currentCareer(state).career.page+1}),label:'Choose a Science specialisation'}:e;state.stage='skill-choice';return;
    case 'skill-reduction-choice':{const eligible=Object.keys(state.character.skills).filter(n=>state.character.skills[n]>0&&(!e.names||e.names.includes(n))&&skillNameAllowed(state,n,e));if(!eligible.length){nativeFallback(state,e,'No eligible trained skill can satisfy this reduction. Resolve the printed mishap explicitly before continuing.');return;}state.pendingChoice=e;state.stage='skill-choice';return;}
    case 'skill':{
     const base=e.name.split(' (')[0];
@@ -986,6 +987,7 @@ function drainEffects(state,rolls) {
    }
    case 'benefit':if(!beginNamedBenefit(state,e,rolls))return;break;
    case 'cash':state.character.cash+=integer(e.dice?mechanicalDice(state,e.dice,rolls,'Cash result')*(e.multiplier??1):e.value,-100000000,100000000,'Cash award');break;
+   case 'zhodani-relationship-loss':state.pendingChoice={...copy(e),source:copy(e.source??{id:'aliens',page:273}),label:'Choose an Ally or Contact to lose',relationshipsBefore:copy(state.character.relationships)};state.stage='relationship-loss';return;
    case 'relationship':{
     const count=e.countFrom?Math.max(e.countFrom.minimum??0,characteristicDM(stat(state,e.countFrom.statDM))):e.dice?mechanicalDice(state,e.dice,rolls,e.type+' count'):(e.count??1);
     if(!e.onlyIfAbsent||!state.character.relationships.some(r=>r.role===e.type))for(let i=0;i<count;i++)state.character.relationships.push({role:e.type,name:'Unnamed '+e.type.toLowerCase()});
@@ -1105,7 +1107,20 @@ function apply(state,command,rolls) {
  if(gamesPending(state))need([...GAMES_COMMANDS,'notes','gm-mode'].includes(command.type),'Complete the reserved Games term before changing the character or career. Restore/replay explicitly to revise its context.');
  if(activeReeducation(state))need(['reeducation-roll','reeducation-fine','resolve-reeducation','ageing','choose-effect','choose-skill','resolve-book','notes','gm-mode'].includes(command.type),'Complete the pending re-education and ageing continuation before changing the character. Restore/replay explicitly to revise it.');
  if(activeMerchantFine(state))need(['merchant-fine-roll','resolve-merchant-fine','notes','gm-mode'].includes(command.type),'Complete the pending Merchant fine before changing the character. Restore/replay explicitly to revise its context.');
+ if(state.stage==='relationship-loss')need(['resolve-relationship-loss','notes','gm-mode'].includes(command.type),'Resolve the pending relationship loss before changing the character. Restore/replay explicitly to revise it.');
  switch(command.type) {
+
+ case 'resolve-relationship-loss':{
+  need(state.stage==='relationship-loss'&&state.pendingChoice?.kind==='zhodani-relationship-loss','No relationship loss is pending.');
+  const e=state.pendingChoice;need(JSON.stringify(state.character.relationships)===JSON.stringify(e.relationshipsBefore),'Relationship context changed. Restore/replay the original context.');
+  const result=relationshipLoss(state.character.relationships,payload);
+  state.character.relationships=result.remaining;state.character.relationshipLosses??=[];
+  state.character.relationshipLosses.push({source:copy(e.source),careerId:state.active===null?null:currentCareer(state).career.id,careerIndex:state.active,
+   age:state.character.age,generationTerms:state.character.terms,relationshipIndex:result.relationshipIndex,removed:copy(result.removed),absent:result.absent,reason:result.reason});
+  if(result.absent&&!state.coverage.includes('zhodani-relationship-loss'))state.coverage.push('zhodani-relationship-loss');
+  state.pendingChoice=null;drainEffects(state,rolls);
+  return result.absent?'No eligible relationship to remove. Referee ruling: '+result.reason:'Removed '+result.removed.role+': '+result.removed.name+'.';
+ }
 
  case 'merchant-fine-roll':{
   const fine=activeMerchantFine(state);need(state.stage==='merchant-fine-roll'&&fine?.status==='awaiting-roll','No Merchant fine roll is pending.');
@@ -1454,10 +1469,10 @@ function apply(state,command,rolls) {
   need(state.stage==='book-step'&&state.pending?.kind==='native-effect'&&['skill-choice','skill-reduction-choice'].includes(state.pending.effect?.kind),'No skill choice can be retried.');state.pendingChoice=copy(state.pending.effect);state.pending=null;state.stage='skill-choice';return 'Returned to the pending skill choice without applying an award.';
  }
  case 'choose-skill': {
-  need(state.stage==='skill-choice'&&state.pendingChoice,'There is no skill choice.');const e=state.pendingChoice,name=normalizeSkillName(text(payload.name,80),{requireSpeciality:e.mode!=='set'||(e.value??1)>0}).name;need(skillNameAllowed(state,name,e),'Skill is not available for this award.');
+  need(state.stage==='skill-choice'&&state.pendingChoice,'There is no skill choice.');const e=state.pendingChoice,name=normalizeSkillName(text(payload.name,80),{requireSpeciality:e.mode!=='set'||(e.value??1)>0}).name;need(skillNameAllowed(state,name,e),'Skill is not available for this award.');if(e.distinctSpecialties)distinctScienceSelection(name,e.selected??[]);
   if((e.mode!=='set'||(e.value??1)>0)&&SPECIALIZED.includes(name.split(' (')[0]))need(name.includes(' ('),'Choose a specialisation, for example Science (physics).');
   if(e.kind!=='skill-reduction-choice'&&skillAwardExceedsLimit(state,name,e.value??1,e.mode)){state.pendingChoice=null;nativeFallback(state,e,'The selected award would exceed the total skill limit. Choose another valid skill or record a source decision under Core p. 18.');return 'Over-cap skill choice requires an alternate selection or source resolution.';}
-  if(e.kind==='skill-reduction-choice'){need(Object.hasOwn(state.character.skills,name)&&state.character.skills[name]>0,'Choose a trained skill to reduce.');if(e.names)need(e.names.includes(name),'Choose one of the indicated skills.');state.character.skills[name]=Math.max(0,state.character.skills[name]-e.value);}else gainSkill(state,name,e.value??1,e.mode);if(e.awardId)benefitAward(state,e.awardId).decisions.push({type:'skill',name,mode:e.mode,value:e.value??1});state.pendingChoice=null;if((e.count??1)>1)state.effectsQueue.unshift({...e,count:e.count-1});drainEffects(state,rolls);return 'Selected '+name+' for a skill award.';
+  if(e.kind==='skill-reduction-choice'){need(Object.hasOwn(state.character.skills,name)&&state.character.skills[name]>0,'Choose a trained skill to reduce.');if(e.names)need(e.names.includes(name),'Choose one of the indicated skills.');state.character.skills[name]=Math.max(0,state.character.skills[name]-e.value);}else gainSkill(state,name,e.value??1,e.mode);if(e.awardId)benefitAward(state,e.awardId).decisions.push({type:'skill',name,mode:e.mode,value:e.value??1});state.pendingChoice=null;if((e.count??1)>1)state.effectsQueue.unshift({...e,count:e.count-1,...(e.distinctSpecialties?{selected:[...(e.selected??[]),name]}:{})});drainEffects(state,rolls);return 'Selected '+name+' for a skill award.';
  }
  case 'training': {
   need(state.stage==='training','No training roll is pending.');need(trainingOptions(state).some(x=>x.id===payload.table),'Training table is not available.');const pack=nativePack(state),{record,career}=currentCareer(state);const rows=payload.table==='assignment'?pack.training.assignments[record.assignment]:pack.training[payload.table];
@@ -1841,6 +1856,7 @@ export function project(session) {
  state.commissionAvailability=commissionAvailability(state);state.exitOptions=exitOptions(state);state.followingInteractionDM=followingInteractionDM(state.character.stats.FOL);
  const merchantFine=activeMerchantFine(state)??state.character.merchantFines?.at(-1)??null;state.currentMerchantFine=copy(merchantFine);state.merchantFineOptions=state.stage==='merchant-fine-decision'&&activeMerchantFine(state)?merchantFineOptions({die:merchantFine.die,cash:state.character.cash}):[];
  const reeducation=activeReeducation(state)??state.character.reeducations?.at(-1)??null;state.currentReeducation=copy(reeducation);state.reeducationRequirements=activeReeducation(state)?copy(reeducation.plan?.requirements??[{key:'anagathicTerms',minimum:0,maximum:1000}]):[];
+ state.relationshipLossOptions=state.stage==='relationship-loss'?relationshipLossOptions(state.character.relationships):[];
  state.currentBenefitAward=state.pending?.awardId?copy(benefitAward(state,state.pending.awardId)):null;
  state.currentInjury=state.injury!==undefined&&state.injury!==null?copy(injuryRecord(state)):null;
  state.injuryOptions=state.stage==='injury-loss'?copy(injuryRecord(state).options):[];

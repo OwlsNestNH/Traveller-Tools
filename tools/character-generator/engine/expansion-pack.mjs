@@ -2011,7 +2011,7 @@ outcomes('zhodani.government',{
 },{
  1:[{kind:'benefit-rolls',mode:'retain-one'},ST('exit')],2:[{kind:'advancement-block',terms:1},stay()],
  3:[relationship('Rival')],
- 4:[U('zhodani.government',265,'Choose PSI, Melee or Recon check at 8+. Success permits staying; failure causes injury.')],
+ 4:[{...Q(['PSI','Melee','Recon'].map(name=>[name,[K(name,8,[stay()],[{...I(),source:{id:'aliens',page:265}}],{source:{id:'aliens',page:265}})]])),source:{id:'aliens',page:265},label:'Choose a defence check',guard:'zhodani-government-defence'}],
  5:[K('Diplomat',8,[stay(),R(1)],[RE(),ST('exit')])],6:[I()]
 });
 outcomes('zhodani.guard',{
@@ -2054,7 +2054,7 @@ outcomes('zhodani.prole',{
  11:[Q([['Contact',[relationship('Contact')]],['Skill',[ANY('existing')]]])],12:[P()]
 },{
  1:[I(2,'lower')],2:[relationship('Enemy'),RE()],3:[noTerm()],4:[RE()],
- 5:[{kind:'relationship-remove',types:['Ally','Contact'],count:1},RE()],6:[I()]
+ 5:[{kind:'zhodani-relationship-loss',source:{id:'aliens',page:273}},RE()],6:[I()]
 });
 outcomes('zhodani.scholar',{
  2:[T('mishap',{dice:'1D',keepCareer:true,keepCareerThroughReeducation:true})],

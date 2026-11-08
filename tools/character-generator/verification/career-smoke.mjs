@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {CAREERS,SPECIES,SKILLS} from '../engine/catalog.mjs';
+import {relationshipLossOptions} from '../engine/zhodani-choices.mjs';
 import {SPECIALITIES,PSIONIC_TALENTS} from '../engine/skills.mjs';
 import {createSession,execute} from '../engine/session.mjs';
 
@@ -50,6 +51,7 @@ for(const career of CAREERS)for(const assignment of career.assignments)for(let s
    if(state.stage==='book-step') {
     sourceStops[state.pending.kind]=(sourceStops[state.pending.kind]??0)+1;break;
    }
+   if(state.stage==='relationship-loss'&&!relationshipLossOptions(state.character.relationships).length){sourceStops['zhodani-relationship-loss']=(sourceStops['zhodani-relationship-loss']??0)+1;break;}
    if(state.stage==='reeducation-decisions'&&a.activeReeducation(state)?.plan?.requirements.length){sourceStops['zhodani-reeducation']=(sourceStops['zhodani-reeducation']??0)+1;break;}
    if(['career','deceased','finish','retirement'].includes(state.stage)) {
     completed++;completedTerms[state.character.terms]=(completedTerms[state.character.terms]??0)+1;
@@ -59,6 +61,7 @@ for(const career of CAREERS)for(const assignment of career.assignments)for(let s
    let command;
    switch(state.stage) {
     // These synthetic characters have no anagathic history. Never invent referee decisions.
+    case 'relationship-loss':{const options=relationshipLossOptions(state.character.relationships);command={type:'resolve-relationship-loss',payload:{index:options[(seed+step)%options.length].index}};break;}
     case 'merchant-fine-roll':command={type:'merchant-fine-roll'};break;
     case 'merchant-fine-decision':command={type:'resolve-merchant-fine',payload:{decision:seed%2===0&&state.character.cash>=a.activeMerchantFine(state).amount?'pay':'decline'}};break;
     case 'reeducation-roll':command={type:'reeducation-roll',payload:{anagathicTerms:0}};break;
@@ -71,7 +74,7 @@ for(const career of CAREERS)for(const assignment of career.assignments)for(let s
     case 'skill-choice': {
      const pending=state.pendingChoice,bases=pending.names??pending.allowed??SKILLS;
      const candidates=[...new Set([...Object.keys(state.character.skills),...bases.flatMap(name=>
-      Object.hasOwn(SPECIALITIES,name)?SPECIALITIES[name]?.map(speciality=>name+' ('+speciality+')')??[name+' (review)']:[name])])];
+      Object.hasOwn(SPECIALITIES,name)?SPECIALITIES[name]?.map(speciality=>name+' ('+speciality+')')??(name==='Science'?['Science (review)','Science (alternate review)']:[name+' (review)']):[name])])];
      const rejected=[];
      for(let attempt=0;attempt<candidates.length;attempt++) {
       const name=candidates[(attempt+seed)%candidates.length],candidate=structuredClone(state);

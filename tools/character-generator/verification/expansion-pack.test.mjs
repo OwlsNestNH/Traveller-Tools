@@ -88,7 +88,7 @@ test('expanded high-characteristic DM is optional and cited',()=>{
 });
 test('source data contains no private source locations or source-book prose',async()=>{
  const text=await readFile(new URL('../engine/expansion-pack.mjs',import.meta.url),'utf8');
- assert.doesNotMatch(text,/drive\.google\.com|1LhIQ33z|1LoEIGEA|1IHKxIdu|Order #32924231|Science Fict ion Adventure/);
+ assert.doesNotMatch(text,/drive\.google\.com|Order\s*#\d{5,}|Science Fict ion Adventure/);
 });
 
 

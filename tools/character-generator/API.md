@@ -91,3 +91,12 @@ Zhodani Merchant mishap3 uses two native stages, `merchant-fine-roll` and `merch
 `currentMerchantFine` exposes the active or latest source record, die, amount, origin/context, decision, payment, linked `reeducationId`, completion, `cashAvailable` and `socialStanding`. `merchantFineOptions` provides authoritative availability and reasons. `character.merchantFines` preserves the ledger across save/replay. Pending fine context blocks unrelated character changes; audited GM restore/replay remains available.
 
 Declining at SOC9 or below enters a separate re-education episode. Its row5 fine gets its own die and funding record. Nonpayment departure and row2 permission to stay conflict unless a protected event settles the outcome; use the existing typed disposition ruling, not an assumed priority. Protected Event2 resumes its existing event continuation without another Event. Ordinary retained failed-survival mishaps close their term under the specific Core2022 p14 flowchart; the generic p18 prose does not add another Event. Prisoner keeps its explicit p52 advancement exception. Failed-survival ordinary Benefit loss is preserved.
+
+
+## Zhodani constrained choices
+
+Prole mishap5 pauses at `relationship-loss`. Projected `relationshipLossOptions` contains only eligible existing entries with their original `index`, `role` and `name`. Use `resolve-relationship-loss {index}` to remove exactly one. When the eligible list is empty, only `{absent:true,reason}` can record the referee's explicit missing-roster ruling. These forms cannot be combined. The saved `character.relationshipLosses` ledger preserves the source, originating career, original index and removed entry, or the absence ruling. Re-education follows only after that action.
+
+Scholar distinct Science awards use `choose-skill {name}` at `skill-choice`. `pendingChoice.selected` records earlier selections and `count` is the remaining award count. Comparison is canonical and case-insensitive for distinctness. Save/import and source-limit interruptions retain both the previous choice and downstream effects. Ordinary generic skill names still follow the supported skill grammar.
+
+Government mishap4 uses the existing `choose-effect {index}` choices for PSI, Melee or Recon. One selected check is rolled, followed by source-prescribed stay or injury handling. It does not grant an additional ordinary Event after failed survival.

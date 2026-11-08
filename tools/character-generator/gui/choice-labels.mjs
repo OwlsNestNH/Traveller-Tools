@@ -12,3 +12,8 @@ export function choiceLabel(option){
  if(!/^Basic-training option [0-9]+$/.test(option.label??''))return option.label??'Choose an outcome';
  return effectsLabel(option.effects)??option.label;
 }
+
+export function skillChoiceProgress(choice,esc){
+ if(!choice?.selected?.length)return '';
+ return '<p class="notice">Already awarded: '+choice.selected.map(esc).join(', ')+'. Remaining skill awards: '+esc(choice.count??1)+'. Do not add the earlier awards again.</p>';
+}
