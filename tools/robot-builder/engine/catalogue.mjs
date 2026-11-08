@@ -1,5 +1,6 @@
 import {verifiedVehicleControl} from './verified-vehicle-options.mjs';
 import {externalVehicleControl} from './vehicle-options.mjs';
+import {externalWearControl} from './csc-worn-weapons.mjs';
 import {weaponControl} from './weapons.mjs';
 import {SPECIALITIES,SOURCE_SPECIALITIES,CUSTOM_PACKAGE_FIELDS} from './skills-data.mjs';
 import {OPTIONS_ARRAY} from './options-data.mjs';
@@ -104,7 +105,7 @@ export const STAGES = [
  select('powerMode','Operating power assumption',[choice('conventional','Conventional power / added packs','19,55-57'),choice('direct-connection','Direct connection to an external supply','19,55-56'),choice('alternate-full','Installed RTG / solar units at full capability','55-57'),choice('conditioned-alternative','RTG / solar units under selected conditions','55-57'),choice('solar-coating-only','Solar coating only','33')],'Slot Cost Options'),
  {field:'defaultSuite',label:'Default suite (up to five items)',category:'Default Suites',type:'multiselect',maxItems:5,choices:OPTIONS.filter(o=>o.zeroSlot)},
  {field:'options',label:'Installed options',type:'multiselect',choices:OPTIONS},
- weaponControl(),verifiedVehicleControl(),externalVehicleControl(OPTIONS),
+ externalWearControl(),weaponControl(),verifiedVehicleControl(),externalVehicleControl(OPTIONS),
  { ...select('solarLight','Available solar light',[choice('full','Adequate sunlight','33,57'),choice('low','Low light / cloudy / indoors','33,57'),choice('none','No sunlight','33,57')],'Slot Cost Options'),visibleWhen:{field:'powerMode',oneOf:['conditioned-alternative','solar-coating-only']}},
  { ...select('solarZone','Distance beyond habitable zone',[choice('habitable','Habitable zone','33,57'),choice('first-cold','One orbit beyond','33,57'),choice('second-cold','Two orbits beyond','33,57'),choice('frozen','Three orbits beyond','33,57'),choice('outer','Four or more orbits beyond','33,57')],'Slot Cost Options'),visibleWhen:{field:'powerMode',oneOf:['conditioned-alternative','solar-coating-only']}},
  { ...select('alternativeActivity','Solar unit activity',[choice('normal','Normal solar-powered activity','57'),choice('quarter','Quarter-power activity','57'),choice('stationary','Stationary / limited physical activity','57')],'Slot Cost Options'),visibleWhen:{field:'powerMode',equals:'conditioned-alternative'}},

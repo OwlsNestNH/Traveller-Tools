@@ -36,7 +36,7 @@ test('high-capacity conversion is explicitly source-scoped to sixteen priced mag
  for(const w of WEAPONS.filter(w=>!CSC_HIGH_CAPACITY_MAGAZINE_IDS.includes(w.id))){
   assert.equal(cscMagazineVariants(w),null,w.id);
   const r=direct([record({weaponId:w.id})],[equipment('storage-compartment',100),equipment('refrigerated-storage-compartment',100)]);
-  assert.ok(has(r,'CSC_HIGH_CAPACITY_UNSUPPORTED'),w.id);assert.equal(r.weapons[0].cost,null,w.id);
+  assert.ok(has(r,w.wearable?'EXTERNAL_WEAR_RETAINED':'CSC_HIGH_CAPACITY_UNSUPPORTED'),w.id);assert.equal(r.weapons[0].cost,null,w.id);
   assert.equal(r.weapons[0].magazineVariants,undefined,w.id);assert.equal(r.weapons[0].highCapacitySpareAmmunition,undefined,w.id);
  }
 });

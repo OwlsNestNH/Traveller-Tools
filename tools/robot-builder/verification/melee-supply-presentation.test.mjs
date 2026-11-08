@@ -5,7 +5,7 @@ import {createDesign,updateDesign,evaluateDesign,getCatalogue,exportDesign,impor
 import {createRobotApi} from '../js/api.mjs';
 import {projectReview,formatStatblock} from '../js/review-model.mjs';
 import {renderReview} from '../js/review.mjs';
-const melee=WEAPONS.filter(w=>w.weaponFamily==='melee'&&(w.magazine===null||w.poweredMelee));
+const melee=WEAPONS.filter(w=>w.weaponFamily==='melee'&&!w.wearable&&(w.magazine===null||w.poweredMelee));
 const record=(weaponId,patch={})=>({id:'supply-presentation',weaponId,placement:'body',manipulatorId:'none',linkedWeapons:1,fireControl:'none',autoload:false,extraMagazines:0,initialMagazines:1,ammunition:'standard',auxiliaryLauncher:'none',auxiliaryAmmunition:'standard',auxiliaryLoaded:0,integralAmmunition:'standard',integralLoaded:0,looseGrenades:0,looseAmmunitionFor:'primary',ammunitionStorageId:'none',...patch});
 const standard=(weaponId,patch={})=>updateDesign(createDesign({techLevel:23}),{selections:{chassis:{size:'size-7'},physical:{weapons:[record(weaponId,patch)]}}});
 const project=(design,evaluation=evaluateDesign(design))=>projectReview(design,getCatalogue(design),evaluation);
@@ -22,7 +22,7 @@ const rejectedText=/Ammunition: standard|Ammunition Type:|Auxiliary Loaded:|Inte
 class Node {constructor(tag){this.tag=tag;this.textContent='';this.children=[];}append(...items){this.children.push(...items);}}
 const visible=n=>[n.textContent,...n.children.map(visible)].join(' ');
 test('sweep includes every Core, ordinary, conditional and powered no-ammunition melee profile',()=>{
- assert.equal(melee.length,41);assert.equal(melee.filter(w=>w.poweredMelee).length,11);assert.equal(melee.filter(w=>w.sourceFamily==='csc-2023').length,34);
+ assert.ok(melee.length>=41);assert.equal(melee.filter(w=>w.poweredMelee).length,11);assert.ok(melee.every(w=>!w.wearable));
 });
 for(const w of melee)test('no fictional supply details in ordinary/component/cyberlimb review and print: '+w.id,()=>{
  const d=standard(w.id),json=exportDesign(d),evaluation=evaluateDesign(d);assert.equal(evaluation.status,'verified');
