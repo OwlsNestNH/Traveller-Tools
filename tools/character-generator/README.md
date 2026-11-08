@@ -10,7 +10,7 @@ Node.js 22 or newer; no runtime dependencies.
 node tools/character-generator/server.mjs
 ```
 
-Open `http://127.0.0.1:8781/?api=local`. The server listens only on loopback and provides the separate JSON rules API. `PORT` can select another local port. A static server can instead serve this directory: without `?api=local`, the same API adapter runs the rules module in the browser. No account, telemetry, cloud save, or external data transmission is used.
+Open `http://127.0.0.1:8781/?api=local`. The server listens only on loopback and provides the separate JSON rules API. `PORT` can select another local port. A static server can instead serve this directory: without `?api=local`, the same API adapter runs the rules module in the browser. HTTP mode does not download the engine modules during normal UI use; static mode loads them on demand. No account, telemetry, cloud save, or external data transmission is used.
 
 ## Design
 
@@ -41,7 +41,7 @@ The action log is always on. GM edits require a reason and keep the old result. 
 
 ## Data and saves
 
-The browser stores one draft locally. Unsaved biography text survives ordinary UI rerenders and is recorded before JSON export or the Print button. It is not saved merely by typing; the browser warns before unloading a dirty draft. Use **Save character & log** for backups before starting a new character. Import replays and validates the file before replacing the current draft. Unreadable stored drafts are preserved behind recovery controls, with raw backup download and explicit replacement confirmation. Save format 1 is an evolving preview format, not yet a long-term migration guarantee. Keep a printed/exported record when updating versions. Earlier development exports containing the old GM replay summaries, restores performed without GM mode, or earlier Aezorgh setup/reroll rules may now fail validation. They are preserved by the recovery UI, not silently migrated or rewritten.
+The browser stores one draft locally. Unsaved biography text survives ordinary UI rerenders and is recorded before JSON export or the Print button. It is not saved merely by typing; the browser warns before unloading a dirty draft. Use **Save character & log** for backups before starting a new character. Import replays and validates the file before replacing the current draft. Unreadable stored drafts are preserved behind recovery controls, with raw backup download and explicit replacement confirmation. New saves record an explicit rules revision as well as save format 1. Only the matching revision can be replayed. Older development exports without a revision, and files from any other rules revision, are rejected before character reconstruction. This prevents historical outcomes from silently changing when rules are corrected. The recovery panel can display their recorded actions as an unverified, read-only history and download the unchanged original file; it cannot reconstruct a validated character or continue that historical session. Invalid UTF-8 files are not imported, and their original File bytes remain downloadable. A malformed browser draft remains protected until explicit replacement. Keep exported backups when updating versions. No automatic migration or guessed historical rules are used.
 
 No licensed books, scans, private document links, or borrowed Tremlas code are included. Own the relevant books to resolve source-assisted steps. Character names, notes, and campaign material stay in your browser or local API request and are not sent to the publisher or repository.
 
@@ -55,6 +55,8 @@ node tools/character-generator/verification/expansion-browser.mjs /path/to/playw
 node tools/character-generator/verification/benefit-browser.mjs /path/to/playwright
 node tools/character-generator/verification/games-browser.mjs /path/to/playwright
 node tools/character-generator/verification/aezorgh-browser.mjs /path/to/playwright
+node tools/character-generator/verification/recovery-browser.mjs /path/to/playwright
+node tools/character-generator/verification/transfer-browser.mjs /path/to/playwright
 node tools/character-generator/verification/career-smoke.mjs
 ```
 
@@ -64,14 +66,14 @@ Browser checks require Playwright and an installed browser. Set `CHARACTER_BROWS
 
 Keep source data in a separate rules pack and register its identifiers in `engine/catalog.mjs`. Use the existing effect schema for shared mechanics; add a tested handler for genuinely new procedures. A new label or table does not establish complete support. Unknown effects must stop explicitly with a source reference.
 
-Each addition needs source-page provenance, species/culture eligibility tests, deterministic save/replay regressions and narrow-screen UI checks. Keep optional rules distinct from defaults and preserve the always-on audit. Review publication rights before distributing a new source pack.
+Each addition needs source-page provenance, species/culture eligibility tests, deterministic save/replay regressions and narrow-screen UI checks. Bump `RULES_REVISION` whenever engine or rule data changes can alter results, continuation or audit semantics; never stamp an older save with a newer revision to make it load. Keep optional rules distinct from defaults and preserve the always-on audit. Review publication rights before distributing a new source pack.
 
 ## Rights and attribution
 
-Traveller belongs to Mongoose Publishing. Publisher terms and the scope of permission for a multi-book automation aid must be resolved before public release. No licence to the underlying books is granted by this repository.
+Traveller belongs to Mongoose Publishing. The site operator reports that Mongoose is aware of the site and handles publisher correspondence. Distribution remains subject to the publisher policy; this is not publisher endorsement or a licence to the underlying books.
 
 The interface takes inspiration from the step-by-step flow of [David Vines' character creator](https://blog.tremlas.com/games/traveller/mongoose-v2-character-creator/). Its code, text, styling, and assets were not copied. The [plugin author's redistribution restrictions](https://blog.tremlas.com/wordpress-plugins/mongoose-traveller-v2-character-creator-plugin-details/) remain separate from rights in this original implementation.
 
-The prescribed notice is available in [NOTICE.html](NOTICE.html); it does not establish approval or notification.
+The prescribed notice is available in [NOTICE.html](NOTICE.html) and must remain with the tool.
 
-Review [Mongoose's licensing page](https://www.mongoosepublishing.com/pages/traveller-licensing) and its linked fair-use policy. A publisher notice already elsewhere in a repository does not establish that this expanded tool has been approved or notified.
+Review [Mongoose's licensing page](https://www.mongoosepublishing.com/pages/traveller-licensing) and its linked fair-use policy. The ordinary UI does not display full tables or copied book explanations. Its original executable numeric mappings remain readable in source files. Neither a public repository nor static hosting provides source confidentiality; the localhost adapter also serves those files for static-mode compatibility. Avoid claiming that labels-only screens make the underlying rule data inaccessible.

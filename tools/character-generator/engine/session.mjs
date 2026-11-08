@@ -1,3 +1,4 @@
+import { careerTransferRule, createCareerTransfer, careerTransferEntry, careerTransferExpiry } from './career-transfers.mjs';
 import { PSIONIC_GAMES_SOURCE, psionicGamesEligibility, psionicGamesApplication, psionicGamesPreliminaries, psionicGamesFinal, psionicGamesCompetition } from './psionic-games.mjs';
 import { namedBenefitPlan, canonicalBenefitName, pensionEntitlement } from './benefits.mjs';
 import { psionicPotential, talentAcquisition, psionicTalentOptions } from './psionics.mjs';
@@ -12,6 +13,7 @@ const RULE_PACK={...CORE_PACK,...EXPANSION_PACK};
 import { API_VERSION, SOURCES, CAREERS, PRECAREERS, SPECIES, SKILLS, BACKGROUND_SKILLS, findCareer, findSpecies } from './catalog.mjs';
 const LIMIT = 2000;
 export const MAX_SAVE_BYTES = 2000000;
+export const RULES_REVISION='character-preview-2026-11-08.2';
 const saveSize = value => new TextEncoder().encode(JSON.stringify(value,null,2)).byteLength;
 const copy = value => structuredClone(value);
 const plain = value => value && typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
@@ -128,6 +130,41 @@ function exitOptions(state){
 }
 const postBenefitsStage=state=>state.character.retirementFromCreation?'retirement':'career';
 
+
+function transferForEntry(state,careerId,assignmentId){
+ for(const right of state.character.careerTransfers??[]){
+  const plan=careerTransferEntry({right,completedTerms:state.character.terms,careerCount:state.character.careers.length,
+   activeCareerIndex:state.active,careerId,assignmentId});
+  if(plan.available)return {right,plan};
+ }
+ return null;
+}
+function expireCareerTransfers(state){
+ for(const right of state.character.careerTransfers??[]){
+  const expired=careerTransferExpiry({right,completedTerms:state.character.terms,careerCount:state.character.careers.length});
+  if(expired){right.status='expired';right.expired=expired;}
+ }
+}
+function transferOptions(state){
+ return (state.character.careerTransfers??[]).map(right=>{
+  const career=state.careerChoices.find(c=>c.id===right.targetCareerId),assignmentId=right.targetAssignmentId??career?.assignments[0]?.id;
+  const plan=careerTransferEntry({right,completedTerms:state.character.terms,careerCount:state.character.careers.length,
+   activeCareerIndex:state.active,careerId:right.targetCareerId,assignmentId});
+  const assignment=right.targetAssignmentId?career?.assignments.find(a=>a.id===right.targetAssignmentId):null;
+  return {id:right.id,careerId:right.targetCareerId,assignmentId:right.targetAssignmentId,rank:right.retainedRank,rankTrack:right.rankTrackDecision?.rankTrack??right.rankTrack,
+   available:state.stage==='career'&&plan.available&&!career?.disabled&&!!career&&!assignment?.disabled&&!state.failedQualification&&conditionMatches(state,RULE_PACK[right.targetCareerId]?.prerequisites.assignments?.[assignmentId]),
+   needsRankTrackDecision:!!plan.needsAdjudication,source:copy(right.source),status:right.status,
+   availableAtCompletedTerms:right.availableAtCompletedTerms,reason:plan.reasons?.[0]??career?.reason??assignment?.reason??''};
+ });
+}
+function grantCareerTransfer(state,effect){
+ const {record,career}=currentCareer(state),rule=careerTransferRule(career.id,effect);if(!rule)return false;
+ state.character.careerTransfers??=[];
+ const right=createCareerTransfer({ruleId:rule.id,id:'transfer-'+(state.character.careerTransfers.length+1),sourceCareerIndex:state.active,
+  sourceAssignment:record.assignment,sourceRank:record.rank,sourceOfficer:!!record.officer,completedTerms:state.character.terms,soc:state.character.stats.SOC});
+ state.character.careerTransfers.push(right);if(['zhodani.army-guard','zhodani.guard-agent'].includes(rule.id))record.transferVoluntaryExit=right.id;return true;
+}
+
 export function availableCareers(state) {
  const species=state.character.species,culture=state.character.culture;
  const groups=species==='aezorgh'?['core','vargr','companion']:species==='human'||culture==='imperial'?['core','companion']:[species,'companion'];
@@ -136,7 +173,8 @@ export function availableCareers(state) {
  const c={...original,qualification:pre.qualification===undefined?original.qualification:pre.qualification,assignments:original.assignments.map(a=>({...a,...pack?.checks?.[a.id]}))};
  let reason='';
  if(state.forcedCareer&&c.id!==state.forcedCareer)reason='An event requires a different next career.';
- if(state.character.qualificationBanned&&c.qualification)reason='An ageing crisis prevents future qualification checks.';
+ const transferAvailable=c.assignments.some(a=>transferForEntry(state,c.id,a.id));
+ if(state.character.qualificationBanned&&c.qualification&&!transferAvailable)reason='An ageing crisis prevents future qualification checks.';
  if(!conditionMatches(state,pre))reason='The source prerequisites are not met.';
  if(c.specialEntry&&!state.character.sentenced)reason='Requires a sentencing event.';
  if(c.needsVerification)reason='Rule data awaiting verification.';
@@ -147,18 +185,26 @@ export function availableCareers(state) {
  if(c.maxSOC&&(state.character.stats.SOC??0)>c.maxSOC)reason='Requires SOC '+c.maxSOC+' or less.';
  if(species==='aslan'&&culture==='native'&&state.character.outcast&&!['aslan.outcast','aslan.outlaw'].includes(c.id))reason='Outcast restriction. Use the source rules to leave Hierate society.';
  c.assignments=c.assignments.map(a=>{const absent=[a.survival,a.advancement].filter(check=>check&&!checkAvailable(state,check,pre.initialStats)).map(check=>check.stat);return absent.length?{...a,disabled:true,reason:'Requires absent '+[...new Set(absent)].join('/')+' characteristic; use a source-approved cross-species route.'}:a;});
+ c.assignments=c.assignments.map(a=>{const transfer=transferForEntry(state,c.id,a.id);return {...a,...(transfer?{transferId:transfer.right.id}:{}),...(state.character.qualificationBanned&&c.qualification&&!transfer?{disabled:true,reason:'An ageing crisis prevents this qualification check.'}:{})};});
+ if(transferAvailable)c.transferId=c.assignments.find(a=>a.transferId)?.transferId;
  if(c.assignments.every(a=>a.disabled))reason='Every assignment requires a characteristic absent for this species.';
  if(c.id==='aslan.wanderer'&&state.character.birthOrder!=='second-son')reason='Requires a second son under the source rules.';
  if(state.character.retirementFromCreation)reason='Early retirement ends character creation; a different career cannot be selected.';
   return {...c,disabled:!!reason,reason};
  });
 }
-function enterCareer(state,career,assignment,rolls=[]) {
+function enterCareer(state,career,assignment,rolls=[],transfer=null) {
  const educational=educationRights(state,career.id,assignment,true);
  if(state.educationEntryRulings)delete state.educationEntryRulings[career.id];
  const previous=state.character.careers.at(-1);
  need(previous?.id!==career.id||career.id==='core.drifter'||state.pendingDraft,'Cannot immediately return to the career just left.');
  const next={id:career.id,assignment,drafted:!!state.pendingDraft,terms:0,rank:0,officer:false,benefitRolls:0,totalBenefits:0,successfulTerms:0};
+ if(transfer){
+  const {right,plan}=transfer;need(right.status==='unconsumed'&&plan.resolved&&plan.automaticEntry,'The transfer right is unavailable or unresolved.');
+  need(plan.rank===null||educational.entryRank===null||educational.entryRank===plan.rank,'Conflicting education and transfer ranks require source resolution.');
+  if(plan.rank!==null){next.rank=plan.rank;next.highestRank=plan.rank;next.officer=plan.officer;}
+  next.transferId=right.id;right.status='consumed';right.consumed={careerIndex:state.character.careers.length,careerId:career.id,assignmentId:assignment,completedTerms:state.character.terms,rank:next.rank,rankTrack:plan.rankTrack};
+ }
  for(const m of state.modifiers??[])if(m.careerId==='next')m.careerId=career.id;
  state.character.careers.push(next);state.forcedCareer=null;state.forcedCareerDraft=false;next.educationCommission=educational.commission;next.commissionBlockedFirstTerm=educational.commissionBlocked;state.active=state.character.careers.length-1;state.failedQualification=false;state.pendingDraft=false;
  next.educationModifiers={commission:educational.commissionModifier,advancement:educational.advancementModifier};
@@ -827,6 +873,7 @@ function drainEffects(state,rolls) {
      break;
     }
     const {record}=currentCareer(state);
+    if(grantCareerTransfer(state,e))break;
     if(e.assignment||e.retainRank||e.careerGroup||e.careerChoices){nativeFallback(state,e,'Resolve this specific career transfer from the source.');return;}
     if(e.action==='stay')record.forcedExit=false;
     else if(e.action==='exit'){record.forcedExit=true;if(record.id==='core.prisoner'){record.released=true;record.escaped=true;}}
@@ -1141,20 +1188,25 @@ function apply(state,command,rolls) {
   if(career.id==='zhodani.guard'&&assignment.id==='commando')need((state.character.stats.PSI??0)>=9,'Commando assignment requires PSI 9 or greater.');
   const educational=educationRights(state,career.id,assignment.id);
   if(educational.unresolved.length){const unresolved=educational.unresolved[0];if(unresolved.educationIndex!==undefined){sourceStep(state,'companion-career-rights',unresolved.source.id,unresolved.source.pages?.[0]??unresolved.source.page,unresolved.reason,'career');Object.assign(state.pending,{educationIndex:unresolved.educationIndex,career:career.id,assignment:assignment.id,citizenMapping:unresolved.citizenMapping});}else{sourceStep(state,'education-entry-rights','core',17,unresolved.reason,'career');state.pending.career=career.id;}return 'Education entry rights require source adjudication before qualification.';}
-  let modifier=(career.group==='core'?-state.character.careers.length:0)+educational.qualificationModifier+modifierTotal(state,'qualification',true,career.id);
+  const transfer=transferForEntry(state,career.id,assignment.id);
+  if(transfer&&!transfer.plan.resolved){sourceStep(state,'career-transfer',transfer.right.source.id,transfer.right.source.pages[0],'Transfer rank track','career');Object.assign(state.pending,{transferId:transfer.right.id,careerId:career.id,assignmentId:assignment.id,rank:transfer.right.retainedRank,rankTracks:copy(transfer.plan.rankTracks)});return 'Transfer rank-track source decision required.';}
+  let modifier=(career.group==='core'?-state.character.careers.length:0)+educational.qualificationModifier+(transfer?0:modifierTotal(state,'qualification',true,career.id));
 
   if(career.agePenalty&&state.character.age>=career.agePenalty[0]&&!(prerequisites.qualificationModifiers??[]).some(m=>m.condition?.ageMin===career.agePenalty[0]&&m.dm===career.agePenalty[1]))modifier+=career.agePenalty[1];
   for(const m of prerequisites.qualificationModifiers??[])if(conditionMatches(state,m.condition))modifier+=m.dm;
   const qualification=prerequisites.qualificationByGender?.[state.character.gender]??career.qualification;
   const forced=state.forcedCareer===career.id;if(forced)state.pendingDraft=!!state.forcedCareerDraft;
-  const check=qualification&&!forced&&!educational.automaticEntry&&!state.automaticCareers?.includes(career.id)?rulesCheck(state,qualification,rolls,'Qualification',modifier):null;
+  const check=qualification&&!forced&&!transfer&&!educational.automaticEntry&&!state.automaticCareers?.includes(career.id)?rulesCheck(state,qualification,rolls,'Qualification',modifier):null;
   for(const r of state.character.educations??[])if(r.completed)r.careerAttempts=(r.careerAttempts??0)+1;
   if(check&&!check.success){
    state.failedQualification=true;
    if(state.character.species==='aslan'&&state.character.culture==='native'){state.character.stats.SOC=2;state.character.outcast=true;}
    state.stage='failed-entry';return 'Failed '+career.name+' qualification: '+JSON.stringify(check)+'.';
   }
-  enterCareer(state,career,assignment.id,rolls);return 'Entered '+career.name+' / '+assignment.name+(check?': '+JSON.stringify(check):' automatically')+'.';
+  enterCareer(state,career,assignment.id,rolls,transfer);return 'Entered '+career.name+' / '+assignment.name+(check?': '+JSON.stringify(check):' automatically')+'.';
+ }
+ case 'cancel-career-transfer':{
+  need(state.stage==='book-step'&&state.pending?.kind==='career-transfer','No transfer rank-track decision is pending.');state.pending=null;state.stage='career';return 'Returned to career selection; transfer right remains unconsumed.';
  }
  case 'fallback': {
   need(state.stage==='failed-entry','No failed qualification to resolve.');
@@ -1300,7 +1352,7 @@ function apply(state,command,rolls) {
   const options=exitOptions(state),retire=payload.retire===true;need(retire?options.canRetire:options.canLeave,retire?options.retireReason:options.leaveReason);
   const {record,career}=currentCareer(state);
   if(retire){state.character.retirementFromCreation=true;state.character.retirementDecision={careerId:career.id,careerIndex:state.active,terms:record.terms,source:{id:'aliens',page:22},purpose:'Finish creation after benefits, without a career transfer.'};record.retiredFromCreation=true;}
-  record.exit=record.forcedExit?'involuntary':'voluntary';
+  record.exit=record.transferVoluntaryExit?'voluntary':record.forcedExit?'involuntary':'voluntary';
   const highest=record.highestRank??record.rank;const bonus=highest>=5?3:highest>=3?2:highest>=1?1:0;
   record.benefitRolls+=bonus;
   record.benefitDM=highest>=5?1:0;
@@ -1327,6 +1379,14 @@ function apply(state,command,rolls) {
   need(state.stage==='book-step'&&state.pending,'No source step to resolve.');
   need(payload.confirmed===true,'Confirm you checked the indicated source.');
   const pending=copy(state.pending);
+   if(pending.kind==='career-transfer'){
+    const right=state.character.careerTransfers?.find(r=>r.id===pending.transferId);need(right?.status==='unconsumed','The transfer right is no longer available.');
+    need(!(payload.effects??[]).length,'Transfer rank mapping uses typed fields, not generic effects.');const note=text(payload.note??'',500);need(note,'Record the source rank-track decision.');
+    const decision={rankTrack:payload.transferRankTrack,reason:note};const plan=careerTransferEntry({right,completedTerms:state.character.terms,careerCount:state.character.careers.length,activeCareerIndex:state.active,careerId:pending.careerId,assignmentId:pending.assignmentId,rankTrackDecision:decision});
+    need(plan.available&&plan.resolved,'The transfer context changed or its rank mapping is incomplete.');right.rankTrackDecision=copy(plan.decision);
+    state.pending=null;state.stage='career';const result=apply(state,{type:'career',payload:{id:pending.careerId,assignment:pending.assignmentId}},rolls);
+    return 'Transfer rank track '+decision.rankTrack+'. '+note+'. '+result;
+   }
     if(pending.kind==='benefit-equipment'){
     const note=text(payload.note??'',500);need(note,'Record the equipment source and restriction checks.');need(!(payload.effects??[]).length,'Equipment uses its typed selection fields, not generic effects.');
     const award=benefitAward(state,pending.awardId),name=text(payload.benefitItemName??'',120);need(name,'Choose an actual source-listed item.');
@@ -1457,7 +1517,7 @@ if(pending.kind==='psionic-training-terms'){
    if(state.character.species==='aslan'){
     const result=dice(state,2,rolls,'Rite of Passage');state.character.stats.RITE=['STR','DEX','END','INT','EDU','SOC'].filter(key=>stat(state,key)>result).length;
     const riteDice=rolls.at(-1).values;if(riteDice[0]===riteDice[1])riteEffects=sourcedEffects(EXPANSION_TABLES['aslan.rite-doubles'].results[result],{id:'aliens',page:21});
-    state.character.birthOrder=text(payload.birthOrder??'',30);
+    need(['first-son','second-son','daughter'].includes(payload.birthOrder),'Choose a canonical Aslan birth-order label.');state.character.birthOrder=payload.birthOrder;
    }
   }
   state.pending=null;if(riteEffects)queueEffects(state,riteEffects,'background',rolls);else advanceAfterBook(state,pending,payload,rolls);
@@ -1507,10 +1567,11 @@ if(pending.kind==='psionic-training-terms'){
 }
 export function createSession(seed='traveller-'+Date.now()) {
  need(typeof seed==='string'&&seed.length>0&&seed.length<=120,'Invalid random seed.');
- return {format:'traveller-character-session',version:API_VERSION,seed,events:[]};
+ return {format:'traveller-character-session',version:API_VERSION,rulesRevision:RULES_REVISION,seed,events:[]};
 }
 export function project(session) {
  need(plain(session)&&session.format==='traveller-character-session'&&session.version===API_VERSION,'Unsupported save format.');
+ need(session.rulesRevision===RULES_REVISION,'Legacy or different rules revision. Preserve the original save and review its recorded history before continuing.');
  need(typeof session.seed==='string'&&session.seed.length>0&&session.seed.length<=120,'Invalid random seed.');
  need(Array.isArray(session.events)&&session.events.length<=LIMIT,'Save contains too many actions.');
  need(saveSize(session)<=MAX_SAVE_BYTES,'Save size limit reached. Export your current character before continuing.');
@@ -1534,6 +1595,7 @@ export function project(session) {
    const rng=state.rng,gm=state.config.gm;state=copy(snapshots[target]);state.rng=rng;state.config.gm=gm;
    summary='Restored character state to action '+target+'. Prior rolls and actions remain in this log; randomness was not rewound.';
   }else summary=apply(state,event.command,rolls);
+  expireCareerTransfers(state);
   if(event.rolls!==undefined)need(JSON.stringify(event.rolls)===JSON.stringify(rolls),'Roll audit mismatch at action '+(i+1)+'.');
   if(event.summary!==undefined)need(event.summary===summary,'Action summary mismatch at action '+(i+1)+'.');
   log.push({number:i+1,id:event.id,type:event.command.type,summary,rolls,changes:characterChanges(snapshots[i].character,state.character)});snapshots.push(copy(state));
@@ -1560,7 +1622,7 @@ export function project(session) {
  state.canChooseEducation=state.stage==='career'&&state.active===null&&!state.forcedCareer&&!state.character.retirementFromCreation&&state.character.terms<3&&!state.educationAttemptTerms?.includes(state.character.terms);
  if(state.character.species==='aezorgh'&&Object.hasOwn(state.character.stats,'SOC'))state.character.stats.CHA=Math.floor(state.character.stats.SOC/2);
  state.backgroundOptions=backgroundOptions(state);state.cashLimit=cashLimit(state);
- state.careerChoices=availableCareers(state);state.statDMs=Object.fromEntries(Object.entries(state.character.stats).map(([k,v])=>[k,k==='RITE'?v:characteristicDM(v)]));
+ state.careerChoices=availableCareers(state);state.careerTransferOptions=transferOptions(state);state.statDMs=Object.fromEntries(Object.entries(state.character.stats).map(([k,v])=>[k,k==='RITE'?v:characteristicDM(v)]));
  return {state,log,revision:session.events.length};
 }
 export function execute(session,command,{id,expectedRevision}={}) {
@@ -1579,7 +1641,7 @@ export function importSession(raw) {
  need(typeof raw==='string'&&new TextEncoder().encode(raw).byteLength<=MAX_SAVE_BYTES,'Save is too large.');const session=JSON.parse(raw);project(session);return session;
 }
 export function exportSession(session) {project(session);return JSON.stringify(session,null,2);}
-export function catalog() {return {apiVersion:API_VERSION,sources:SOURCES,sourceDiscrepancies:SOURCE_DISCREPANCIES,species:SPECIES,careers:CAREERS,precareers:PRECAREERS,companionEducation:PRECAREER_RULES,extraStats:EXTRA_STATS,skills:SKILLS,skillSpecialities:SPECIALITIES,backgroundSkills:BACKGROUND_SKILLS};}
+export function catalog() {return {apiVersion:API_VERSION,sources:SOURCES,sourceDiscrepancies:SOURCE_DISCREPANCIES,species:SPECIES,careers:CAREERS,precareers:PRECAREERS,extraStats:EXTRA_STATS,skills:SKILLS,skillSpecialities:SPECIALITIES,backgroundSkills:BACKGROUND_SKILLS};}
 export function api(request) {
  try {
  need(plain(request),'Invalid request.');

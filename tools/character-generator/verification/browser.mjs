@@ -13,6 +13,7 @@ const errors=[],checks=[];
 try{
  for(const [name,viewport,transport] of [['desktop',{width:1440,height:1000},'http'],['mobile',{width:390,height:844},'http'],['narrow',{width:320,height:740},'in-process']]){
   const context=await browser.newContext({viewport});const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
+  const engineRequests=[];page.on('request',request=>{if(new URL(request.url()).pathname.includes('/engine/'))engineRequests.push(request.url());});
   await page.goto(origin+(transport==='http'?'/?api=local':'/'));await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();
   await page.locator('[name=name]').fill('Browser Test <Traveller>');
   await page.locator('[name=boons]').selectOption('3');
@@ -51,7 +52,9 @@ try{
   const result=await page.locator('#workspace').innerText();assert.ok(result.length>0);
   await page.evaluate(()=>document.body.style.fontSize='36px');
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,name+' enlarged-text overflow');
-  checks.push({viewport:name,transport,logActions:beforeLog,pass:true});await context.close();
+  if(transport==='http')assert.deepEqual(engineRequests,[],'HTTP GUI must not download rules engine modules');
+  else assert.ok(engineRequests.some(url=>url.endsWith('/engine/session.mjs')),'Static mode still uses the in-process engine');
+  checks.push({viewport:name,transport,engineModuleRequests:engineRequests.length,logActions:beforeLog,pass:true});await context.close();
  }
  assert.deepEqual(errors,[]);
  await writeFile(path.join(out,'browser-results.json'),JSON.stringify({checks,errors},null,2));console.log(JSON.stringify({checks,errors}));

@@ -27,3 +27,10 @@ test('default transport exposes the same engine API without network activity',as
   const result=await call({operation:'catalog'});assert.equal(result.ok,true);assert.equal(result.apiVersion,1);
  }finally{globalThis.location=oldLocation;globalThis.fetch=oldFetch;}
 });
+
+test('GUI transport has no static engine dependency',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const source=await readFile(new URL('../gui/client.mjs',import.meta.url),'utf8');
+ assert.equal(source.split('\n').some(line=>line.startsWith('import ')&&line.includes('/engine/')),false);
+ assert.ok(source.includes("await import('../engine/session.mjs')"));
+});

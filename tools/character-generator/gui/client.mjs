@@ -1,4 +1,3 @@
-import { api } from '../engine/session.mjs';
 // The GUI consumes this JSON contract; it does not roll dice or calculate outcomes.
 export async function call(request) {
  const endpoint=new URLSearchParams(location.search).get('api');
@@ -10,5 +9,6 @@ export async function call(request) {
   if(!response.ok&&result?.ok!==false)throw new Error('Rules API returned HTTP '+response.status+'. Your previous character was kept.');
   return result;
  }
+ const {api}=await import('../engine/session.mjs');
  return api(request);
 }

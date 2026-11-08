@@ -1,0 +1,42 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {mkdir,writeFile,readFile} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import {createServer} from '../server.mjs';
+import {createSession,execute,exportSession} from '../engine/session.mjs';
+import {legacyRaw} from './legacy-fixture.mjs';
+const require=createRequire(import.meta.url),{chromium}=require(process.argv[2]||'playwright');
+const out=fileURLToPath(new URL('./artifacts/',import.meta.url));await mkdir(out,{recursive:true});
+const server=createServer();await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+const origin='http://127.0.0.1:'+server.address().port,key='traveller-character-generator.v1';
+const browser=await chromium.launch({headless:true,...(process.env.CHARACTER_BROWSER_CHANNEL?{channel:process.env.CHARACTER_BROWSER_CHANNEL}:{})});
+const checks=[],errors=[];
+async function fresh(name,run,viewport={width:1100,height:900}){const context=await browser.newContext({viewport}),page=await context.newPage();page.on('pageerror',error=>errors.push(error.message));page.setDefaultTimeout(8000);try{await page.goto(origin+'/?api=local');await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();await run(page);checks.push({name,pass:true});}catch(error){checks.push({name,pass:false,error:error.message});}finally{await context.close();}}
+async function begin(page){await page.locator('[name=name]').fill('Keep current Traveller');await page.getByRole('button',{name:'Begin character',exact:true}).click();await page.getByRole('button',{name:'Roll six characteristics',exact:true}).waitFor();}
+async function stored(page){return page.evaluate(key=>localStorage.getItem(key),key);}
+async function load(page,raw){await page.locator('#import').setInputFiles({name:'historical.json',mimeType:'application/json',buffer:Buffer.isBuffer(raw)?raw:Buffer.from(raw)});await page.waitForFunction(()=>!document.querySelector('#import').disabled&&document.querySelector('#message').textContent.includes('Could not load'));}
+async function downloaded(page,id){const pending=page.waitForEvent('download');await page.locator(id).click();const download=await pending;return readFile(await download.path());}
+try{
+ await fresh('failed legacy import preserves live state, dirty notes and exact file',async page=>{
+  await begin(page);const before=await stored(page),count=await page.locator('#action-log li').count();await page.locator('summary').filter({hasText:'Notes & connections'}).click();await page.locator('#character-notes').fill('Keep unsaved notes '+String.fromCodePoint(0xeb));
+  const raw=' \n'+legacyRaw+'\n ';await load(page,raw);assert.equal(await stored(page),before);assert.equal(await page.locator('#action-log li').count(),count);assert.equal(await page.locator('#character-notes').inputValue(),'Keep unsaved notes '+String.fromCodePoint(0xeb));assert.equal(await page.locator('#sheet h2').textContent(),'Keep current Traveller');assert.equal(await page.locator('#legacy-actions>li').count(),4);assert.match(await page.locator('#legacy-history').innerText(),/Unverified/);assert.equal(await page.locator('#legacy-history [data-action]').count(),0);assert.deepEqual(await downloaded(page,'#legacy-save'),Buffer.from(raw));assert.match((await downloaded(page,'#legacy-text')).toString('utf8'),/UNVERIFIED RECORDED HISTORY/);await page.locator('#legacy-close').click();assert.equal(await page.locator('#legacy-history').isVisible(),false);assert.equal(await stored(page),before);
+ });
+ await fresh('unversioned stored draft stays protected while its history is inspected',async page=>{
+  await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:legacyRaw});await page.reload();await page.locator('#recovery-inspect').waitFor();await begin(page);assert.equal(await stored(page),legacyRaw);await page.locator('#recovery-inspect').click();assert.equal(await page.locator('#legacy-actions>li').count(),4);assert.deepEqual(await downloaded(page,'#legacy-save'),Buffer.from(legacyRaw));assert.equal(await stored(page),legacyRaw);assert.equal(await page.locator('#sheet h2').textContent(),'Keep current Traveller');
+ });
+ await fresh('malformed encoding and corrupt JSON retain exact original bytes',async page=>{
+  await begin(page);const before=await stored(page),bytes=Buffer.from([0x7b,0x22,0x78,0x22,0x3a,0x22,0xc3,0x22,0x7d]);await load(page,bytes);assert.match(await page.locator('#legacy-description').textContent(),/not valid UTF-8/);assert.equal(await page.locator('#legacy-text').isDisabled(),true);assert.deepEqual(await downloaded(page,'#legacy-save'),bytes);assert.equal(await stored(page),before);await load(page,'{broken');assert.match(await page.locator('#legacy-description').textContent(),/not readable JSON/);assert.equal(await page.locator('#legacy-text').isDisabled(),true);assert.deepEqual(await downloaded(page,'#legacy-save'),Buffer.from('{broken'));assert.equal(await stored(page),before);
+ });
+ await fresh('historical HTML is inert and long history remains readable on narrow screens',async page=>{
+  const record=JSON.parse(legacyRaw);record.events[0].summary='<img src=x onerror=alert(1)> '+ 'x'.repeat(600);record.events[0].command.payload.name='<script>bad()</script>';await load(page,JSON.stringify(record));await page.locator('#legacy-actions summary').first().click();assert.equal(await page.locator('#legacy-history img,#legacy-history script').count(),0);assert.match(await page.locator('#legacy-history').innerText(),/<img/);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);const small=await page.locator('#legacy-history button:visible').evaluateAll(nodes=>nodes.filter(node=>node.getBoundingClientRect().height<43).map(node=>node.textContent));assert.deepEqual(small,[]);await page.screenshot({path:out+'recovery-narrow.png',fullPage:true});await page.evaluate(()=>document.body.style.fontSize='36px');assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);await page.screenshot({path:out+'recovery-enlarged.png',fullPage:true});
+ },{width:320,height:800});
+ await fresh('valid import asks before replacing revision-zero unsaved notes',async page=>{
+  await page.locator('summary').filter({hasText:'Notes & connections'}).click();await page.locator('#character-notes').fill('Unsaved before setup');const before=await stored(page);const raw=exportSession(execute(createSession('recovery-valid-import'),{type:'setup',payload:{species:'human',name:'Valid imported Traveller'}}).session);let dialogs=0;
+  page.once('dialog',dialog=>{dialogs++;dialog.dismiss();});await page.locator('#import').setInputFiles({name:'valid.json',mimeType:'application/json',buffer:Buffer.from(raw)});await page.waitForFunction(()=>!document.querySelector('#import').disabled);assert.equal(dialogs,1);assert.equal(await page.locator('#character-notes').inputValue(),'Unsaved before setup');assert.equal(await stored(page),before);assert.equal(await page.locator('#action-log>li').count(),1);assert.equal(await page.locator('#sheet h2').textContent(),'Your Traveller');
+  page.once('dialog',dialog=>{dialogs++;dialog.accept();});await page.locator('#import').setInputFiles({name:'valid.json',mimeType:'application/json',buffer:Buffer.from(raw)});await page.waitForFunction(()=>document.querySelector('#sheet h2').textContent==='Valid imported Traveller');assert.equal(dialogs,2);assert.equal(JSON.parse(await stored(page)).rulesRevision,JSON.parse(raw).rulesRevision);assert.equal(await page.locator('#character-notes').inputValue(),'');
+ });
+ await fresh('a different revision cannot silently become the current character',async page=>{
+  await begin(page);const before=await stored(page),record=JSON.parse(before);record.rulesRevision='unknown-historical-revision';await load(page,JSON.stringify(record));assert.equal(await stored(page),before);assert.match(await page.locator('#legacy-description').textContent(),/unknown-historical-revision/);assert.equal(await page.locator('#sheet h2').textContent(),'Keep current Traveller');assert.match(await page.locator('#message').textContent(),/rules revision/);
+ });
+ assert.deepEqual(errors,[]);assert.ok(checks.every(check=>check.pass),JSON.stringify(checks));await writeFile(out+'recovery-browser-results.json',JSON.stringify({checks,errors},null,2));console.log(JSON.stringify({checks,errors}));
+}finally{await browser.close();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}

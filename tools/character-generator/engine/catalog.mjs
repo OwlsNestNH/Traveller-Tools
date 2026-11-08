@@ -73,7 +73,7 @@ export const PRECAREERS = [
  {id:'core.university',name:'University',source:'core',page:16,entry:{stat:'EDU',target:6},graduation:{stat:'INT',target:6},maxTerm:3},
  ...['Army','Marine','Navy'].map((name,i)=>({id:'core.academy-'+name.toLowerCase(),name:name+' academy',source:'core',page:16,entry:{stat:i===2?'INT':'END',target:i===0?7:8},graduation:{stat:'INT',target:7},maxTerm:3})),
  {id:'companion.colonial',name:'Colonial upbringing',source:'companion',page:32},
- {id:'companion.psionic',name:'Psionic community',source:'companion',page:32},
+ {id:'companion.psionic',name:'Psionic community',source:'companion',page:33},
  {id:'companion.merchant',name:'Merchant academy',source:'companion',page:33},
  {id:'companion.hard-knocks',name:'School of hard knocks',source:'companion',page:34},
  {id:'companion.spacer',name:'Spacer community',source:'companion',page:34}

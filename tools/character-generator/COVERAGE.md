@@ -15,7 +15,7 @@ These edition choices matter. In particular the 2026 Aslan characteristic modifi
 
 - Independent versioned JSON rules API and optional localhost HTTP adapter.
 - Original, readable responsive interface with large controls.
-- Always-on deterministic event log; save, import, print and GM-gated audit-preserving restore.
+- Always-on deterministic event log; rules-revision-pinned save/import, print and GM-gated audit-preserving restore. Unversioned or different-revision files are preserved for unverified read-only history recovery; historical mechanics are never silently reinterpreted.
 - Logged GM changes and replacement dice, with reason and retained original record.
 - Requested first-roll boons, placement, minimum-total rerolls and extra-characteristic controls. Standard Aezorgh use30; their optional six-2D6 method uses43 before placement/halving, free swaps and destination-specific rounding down. Both are explicitly labelled house options.
 - Species-specific stat formulas, basic backgrounds and career filtering.
@@ -26,6 +26,7 @@ These edition choices matter. In particular the 2026 Aslan characteristic modifi
 - Vargr strain overlays, native/Imperial social statistics, Aezorgh derived Charisma, and the published Aslan rite-of-passage double results.
 - Native ordered Core/Zhodani talent acquisition, persistent check penalties, source-based career retry opportunities, initial Zhodani training and career elevation. Companion childhood training reuses the same workflow. Institute access, costs and chronology are explicitly approved rather than assumed.
 - Source-keyed named benefits, stable equipment/ship assets, same-table duplicate Scout rerolls, same-ship mortgage progress, bounded equipment selections, recurring Patronage and culture-specific pensions. Book decisions remain explicit for ambiguous definitions and ship history.
+- Persisted, next-term alien transfer rights for Zhodani Army to Guard, Guard to Agent, Merchant to Navy and Vargr Loner to Spacer/Corsair. Source rank/assignment and expiry conditions are retained. Merchant-to-Navy rank track remains an explicit referee decision, rather than an assumed officer commission.
 - Bounded native Psionic Games at an existing-career term boundary: lifetime application, ordered talent checks, final, explicit event/award rulings, one replacement term, inherited benefits and due ageing. Initial-career entry timing and complex ordinary event consequences remain outside this route.
 - Derived before/after action details, printable notes/connections and medical ledger.
 - Ten additional shared alien event tables and explicit constrained-effect metadata.
@@ -37,7 +38,7 @@ Routine training, checks, table rolls, many choices, rank awards and benefits ar
 
 Important areas still needing integration, deeper testing or source adjudication include:
 
-- Companion cross-book exceptions, source-specific career transfers and assignment changes.
+- Companion cross-book exceptions, career transfers outside the four explicitly implemented routes, and general assignment changes.
 - Psionic acquisition histories from older/manual records, repeat-course chronology and untraceable retry awards require source decisions. Zhodani re-education and wider status-review procedures remain incomplete. Games source ambiguities are explicit rulings, not silently selected defaults.
 - Detailed Aslan rite/clan/land/share procedures and constrained gender/culture paths.
 - Non-standard Vargr and Aezorgh cross-book choices, derived social characteristics and career restrictions.
@@ -45,7 +46,7 @@ Important areas still needing integration, deeper testing or source adjudication
 - Automatic event commissions at SOC below 9 after the first term retain ordinary eligibility pending a source ruling. Zhodani pension amounts record their exit-class basis; later class changes flag a source review rather than silently changing entitlement.
 - Event branches requiring wagers, custom checks, referee choices, prior-history changes or future conditional obligations.
 - Optional characteristic consequences throughout careers. Displaying Luck/Morale/Wealth is not a claim that every optional rule using it is automated.
-- Deeper full-character and multi-career golden scenarios. White-box continuation stress covers all career assignments but bypasses qualification/species setup and stops at source-assisted decisions.
+- Deeper full-character and multi-career coverage beyond the bounded public-API golden scenarios. White-box continuation stress covers all career assignments but bypasses qualification/species setup and stops at source-assisted decisions.
 - Optional anagathics, post-career purchases and campaign group-skill packages are not fully automated.
 
 Some of these have data/helper implementations but are not yet wired into all engine/UI paths. Inspect the current integration tests and actual stop points before relying on an area above.
@@ -58,8 +59,8 @@ Manual resolution is an acknowledged development fallback, not equivalent to ful
 2. Run all engine, integration, API and browser tests against the exact candidate revision. Add multi-term golden scenarios and malformed-save regressions.
 3. Complete independent rules/code review and fix material findings. Re-run review after consequential changes.
 4. Test desktop and narrow/mobile layouts, keyboard focus, screen-reader announcements, save/load, printing and meaningful failure recovery.
-5. Resolve publisher permission/notification for this multi-book tool. Do not assume a general repository notice establishes clearance. Use the current publisher terms and obtain any needed scope approval before public distribution.
-6. Only then create the approved release PR/merge/deployment. Keep robot/trade work isolated and verify the current main branch before integration.
+5. Retain the prescribed publisher notice and review actual distributed content against the current policy. The site operator reports that Mongoose is aware of the site and handles publisher correspondence. Do not display full table pages or copied explanations. Document that public source files and static deployments expose the executable mappings; a labels-only interface is not source confidentiality. Do not represent publisher endorsement.
+6. Candidate branches and draft PRs may be used for CI under the user's authorization. Merge/deployment must wait for required tests and review, with any remaining source-assisted scope explicitly stated. Keep robot/trade work isolated and verify the current main branch before integration.
 
 ## Test evidence
 
