@@ -61,7 +61,8 @@ for(const [id,name,tl,range,damage,mass,cost,capacity,loadCost,traits,projectile
  });
  test('CSC archaic skills: '+id+' does not inherit slug, energy or Athletics',()=>{
   for(const s of ['gun-combat:slug','gun-combat:energy','athletics:dexterity','heavy-weapons:portable']){const p=profile(id,{},16,6,[{id:s,level:4}]);assert.equal(p.softwareLevel,-3,s);assert.equal(p.baseAttackModifier,-3);}
-  for(const s of [{id:'gun-combat:archaic',level:2},{id:'gun-combat',level:2}]){const p=profile(id,{},16,6,[s]);assert.equal(p.softwareLevel,2);assert.equal(p.baseAttackModifier,2);}
+  // Core p58: positive skill requires a speciality; an unqualified positive is not universal software.
+  for(const [s,expected] of [[{id:'gun-combat:archaic',level:2},2],[{id:'gun-combat',level:0},0],[{id:'gun-combat',level:2},-3],[{id:'gun-combat:slug',level:2,grantsOtherSpecialitiesAtZero:true},0]]){const p=profile(id,{},16,6,[s]);assert.equal(p.softwareLevel,expected);assert.equal(p.baseAttackModifier,expected);}
   const p=profile(id,{fireControl:'basic'},16,6,[{id:'gun-combat:slug',level:4}]);assert.equal(p.softwareLevel,-3);assert.equal(p.baseAttackModifier,1);assert.equal(p.fireControlDM,1);assert.ok(p.traits.includes('Scope'));assert.equal(p.conditionalEffects.skillGranted,false);
  });
  test('CSC archaic storage: '+id+' uses a separately classified estimated projectile load',()=>{
