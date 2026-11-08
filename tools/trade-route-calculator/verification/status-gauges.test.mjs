@@ -23,12 +23,12 @@ test('nonterminating Life Support overflow renders through advance, reload and U
  await reloaded.api.actions.undo();assert.equal(A.cmp(S.used(reloaded.persisted()),'0.01'),0);assert.deepEqual(reloaded.persisted().ship,s.ship);
 });
 
-for(const [stock,shown] of [['29.96','29'],['27.96','27'],['0','0'],['0.99','0'],['28','28'],['29.999999999999999999','29']])test(`Main life-support remaining days rounds down: ${stock} → ${shown}`,()=>{
+for(const [stock,shown] of [['29.96','29'],['27.96','27'],['27.999999999999999999','27'],['28.01','28'],['1','1'],['0','0'],['0.99','0'],['28','28'],['29.999999999999999999','29']])test(`Main life-support remaining days rounds down: ${stock} → ${shown}`,()=>{
  const s=campaign();s.ship.accommodation={rooms:{low:0,middle:4,high:0},passengers:{low:0,middle:0,high:0},crew:{low:0,middle:1,high:0}};
  s.ship.lifeSupport=configureSupport(s.ship,{stockUnits:stock,targetDays:28});
  const before=JSON.stringify(s),h=harness(s),summary=h.dom.ids.get('summary').innerHTML;
  assert.match(summary,new RegExp('class="value">'+shown+' days'));
- assert.match(summary,new RegExp('value="'+stock.replaceAll('.','\\.')+'" aria-label="Life support endurance'));
+ assert.match(summary,new RegExp('value="'+shown+'" aria-label="Life support endurance'));
  assert.equal(JSON.stringify(s),before);assert.equal(JSON.stringify(h.persisted()),before);assert.equal(h.calls.saves,0);
 });
 test('Main life-support keeps unknown endurance and unconfigured guidance',()=>{
@@ -38,4 +38,13 @@ test('Main life-support keeps unknown endurance and unconfigured guidance',()=>{
  s.ship.lifeSupport=configureSupport(s.ship,{stockUnits:'10',targetDays:28});
  const h=harness(s),summary=h.dom.ids.get('summary').innerHTML;
  assert.match(summary,/Unknown days/);assert.doesNotMatch(summary,/aria-label="Life support endurance/);assert.equal(h.calls.saves,0);
+});
+
+for(const stock of ['0','10'])test('Zero-demand LSS has no misleading full/infinite gauge with '+stock+' stock',()=>{
+ const s=campaign();s.ship.accommodation={rooms:{low:0,middle:4,high:0},passengers:{low:0,middle:0,high:0},crew:{low:0,middle:0,high:0}};s.ship.lifeSupport=configureSupport(s.ship,{stockUnits:stock,targetDays:28});
+ const before=JSON.stringify(s),h=harness(s),summary=h.dom.ids.get('summary').innerHTML;assert.match(summary,/Unknown days/);assert.doesNotMatch(summary,/aria-label="Life support endurance|Infinity|NaN/);assert.equal(JSON.stringify(h.persisted()),before);assert.equal(h.calls.saves,0);
+});
+test('Custom target uses the same floored days and preserves sub-day stock',()=>{
+ const s=campaign();s.ship.accommodation={rooms:{low:0,middle:4,high:0},passengers:{low:0,middle:0,high:0},crew:{low:0,middle:1,high:0}};s.ship.lifeSupport=configureSupport(s.ship,{stockUnits:'13.999',targetDays:14});
+ const before=JSON.stringify(s),h=harness(s),summary=h.dom.ids.get('summary').innerHTML;assert.match(summary,/class="value">13 days/);assert.match(summary,/<progress max="14" value="13" aria-label="Life support endurance/);assert.equal(JSON.stringify(h.persisted()),before);assert.equal(h.calls.saves,0);
 });

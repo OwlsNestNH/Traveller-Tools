@@ -39,7 +39,7 @@ import {mountSettingsLayout,syncSettingsControls,stepSetting} from './settings-l
 import {configureFuel,fuelCapacities,bladderSpace,validateFuel,jumpFuel} from './fuel.mjs?v=luxury-lss-20261108-1';
 import {refillQuote,supportStock,supportCargo,supportDisplay,supportCostBasis,anchorSupport,configureSupport} from './life-support.mjs?v=luxury-lss-20261108-1';
 import {playerBriefing} from './player-briefing.mjs?v=luxury-lss-20261108-1';
-import {campaignReport} from './report.mjs?v=luxury-lss-20261108-1';
+import {campaignReport} from './report.mjs?v=lss-whole-days-20261108-1';
 import {up,creditStep,roundExisting} from './rounding.mjs?v=luxury-lss-20261108-1';
 import {tiers,luggageAllowance,occupants,passengerLuggage,manualLuggage,serviceRate,serviceLabel,roomCounts,roomTotal,personMonthlyRate,personRate,refillPersonRate} from './accommodation.mjs?v=luxury-lss-20261108-1';
 import * as A from './amounts.mjs';
@@ -725,8 +725,8 @@ function toggleStationSupport(){
 }
 function refuelShortcut(){if(!state.ship.fuel){services.close();settings();message('Enter ship size, tank capacity and fuel aboard to enable refuelling.');return;}inputRounding=[];services.open('fuel');}
 function lifeSupportCounter(){
- const x=state.ship.lifeSupport,q=x?supportStock(passengerShip(state)):null,days=value=>value==null?'Unknown':String(Number(Number(value).toFixed(2)));
- return `<div class="stat life-support-counter"><span class="label">Life support</span><span class="value">${state.ship.stationLifeSupport===true?'Station supply':q?(q.remainingDays==null?'Unknown':String(A.floor(q.remainingDays)))+' days'+(q.remainingUnits==='0'?' · EMPTY':''):'Set in Settings'}</span>${q?`<span class="help">${q.remainingUnits==null?'Review recorded stock':days(q.remainingUnits)+' LSS aboard'} · ${days(q.targetDays)}-day target</span>${q.remainingDays!==null?'<progress max="'+q.targetDays+'" value="'+q.remainingDays+'" aria-label="Life support endurance against standard refill target"></progress>':''}`:''}</div>`;
+ const x=state.ship.lifeSupport,q=x?supportStock(passengerShip(state)):null,wholeDays=q?.remainingDays==null?null:String(A.floor(q.remainingDays)),days=value=>value==null?'Unknown':String(Number(Number(value).toFixed(2)));
+ return `<div class="stat life-support-counter"><span class="label">Life support</span><span class="value">${state.ship.stationLifeSupport===true?'Station supply':q?(wholeDays??'Unknown')+' days'+(q.remainingUnits==='0'?' · EMPTY':''):'Set in Settings'}</span>${q?`<span class="help">${q.remainingUnits==null?'Review recorded stock':days(q.remainingUnits)+' LSS aboard'} · ${days(q.targetDays)}-day target</span>${wholeDays!==null?'<progress max="'+q.targetDays+'" value="'+wholeDays+'" aria-label="Life support endurance against standard refill target"></progress>':''}`:''}</div>`;
 }
 function campaignTimeCounter(){
  return `<div class="stat campaign-time"><span class="label">Campaign time</span><span class="value">${esc(displayDate(state.dateLabel,state.hours))}</span>${state.initialized?`<div class="day-controls" role="group" aria-label="Change campaign day"><button data-action="day-back" data-mutate ${state.hours<24?'data-unavailable disabled':''} title="Move the date back 24 hours without restoring supplies or reversing transactions. Use Undo to reverse an accidental advance.">&#8722;1 day</button><button data-action="day-forward" data-mutate ${!Number.isSafeInteger(state.hours+24)?'data-unavailable disabled':''} title="Advance 24 hours. Onboard LSS is used unless station life support is enabled. Undo restores the date and supplies together.">+1 day</button></div>`:''}</div>`;

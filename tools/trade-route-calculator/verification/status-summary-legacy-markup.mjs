@@ -5,11 +5,13 @@ import {passengerShip} from '../js/passengers.mjs';
 // All pre-existing summary numbers and route/economic observations remain checked.
 export function legacyStatusSummaryMarkup(html,state){
  // Restore only the approved whole-day text to the old display for frozen hashes.
- // Keep the precise gauge, stock, campaign and economic observations untouched.
- const remaining=state?.ship.lifeSupport?supportStock(passengerShip(state)).remainingDays:null;
+ // Restore its matching whole-day gauge to the historical precise display only.
+ // Stock, campaign and economic observations remain untouched.
+ const support=state?.ship.lifeSupport?supportStock(passengerShip(state)):null,remaining=support?.remainingDays??null;
  if(remaining!==null){
   const prefix='<div class="stat life-support-counter"><span class="label">Life support</span><span class="value">';
   html=html.replace(prefix+String(floor(remaining))+' days',prefix+String(Number(Number(remaining).toFixed(2)))+' days');
+  html=html.replace('<progress max="'+support.targetDays+'" value="'+String(floor(remaining))+'" aria-label="Life support endurance','<progress max="'+support.targetDays+'" value="'+remaining+'" aria-label="Life support endurance');
  }
  // Restore only the removed header label for the historical rendered hash.
  // Its exact value still comes from the observed state; frozen evidence stays intact.
