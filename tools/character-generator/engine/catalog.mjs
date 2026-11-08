@@ -11,8 +11,8 @@ export const SKILLS = [...new Set([...BACKGROUND_SKILLS,'Advocate','Astrogation'
 const species = (id,name,source,page,dice,extra={}) => ({id,name,source,page,dice,startAge:18,maximum:15,...extra});
 export const SPECIES = [
  species('human','Human','core',9,{STR:[2,0],DEX:[2,0],END:[2,0],INT:[2,0],EDU:[2,0],SOC:[2,0]}),
- species('aslan','Aslan','aliens',15,{STR:[2,1],DEX:[2,-1],END:[2,1],INT:[2,0],EDU:[2,0],SOC:[2,0]},{startAge:14,agingStart:42,agingTermMultiplier:2,setup:'Aslan family, land and Rite of Passage',setupPage:16}),
- species('vargr','Vargr','aliens',186,{STR:[2,-1],DEX:[2,1],END:[2,-1],INT:[2,0],EDU:[2,0],CHA:[2,0]}),
+ species('aslan','Aslan','aliens',15,{STR:[2,1],DEX:[2,-1],END:[2,1],INT:[2,0],EDU:[2,0],SOC:[2,0]},{startAge:14,agingStart:42,agingTermMultiplier:2,setup:'Record Aslan family and land details. Do not roll the Rite yet; the engine rolls it after this setup.',setupPage:16}),
+ species('vargr','Vargr','aliens',186,{STR:[2,-1],DEX:[2,1],END:[2,-1],INT:[2,0],EDU:[2,0],CHA:[2,0]},{variants:[{id:'standard',name:'Standard Vargr'},{id:'urzaeng',name:'Urzaeng'},{id:'kokasha',name:'Kokasha'}]}),
  species('zhodani','Zhodani','aliens',254,{STR:[2,0],DEX:[2,0],END:[2,0],INT:[2,0],EDU:[2,0],SOC:[2,0],PSI:[2,0]},{setup:'Zhodani status and psionic talents',setupPage:254}),
  species('aezorgh','Aezorgh','jtas11',67,{STR:[1,0],DEX:[2,3],END:[1,1],INT:[2,2],EDU:[1,0],SOC:[1,0]},{maxima:{DEX:18,INT:16},background:['Athletics','Mechanic','Recon','Stealth'],extraBackground:1,precareerDM:-2,agingStart:34,agingDMUntil:[82,4]})
 ];

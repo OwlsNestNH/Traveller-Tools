@@ -23,6 +23,7 @@ jobs:
         run: |
           for file in tools/character-generator/engine/*.mjs tools/character-generator/gui/*.mjs tools/character-generator/server.mjs; do node --check "$file"; done
           node --test tools/character-generator/verification/*.test.mjs
+          node tools/character-generator/verification/career-smoke.mjs
       - name: Install pinned Chromium runner
         run: |
           npm install --prefix "$RUNNER_TEMP/character-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
@@ -31,6 +32,7 @@ jobs:
         run: |
           node tools/character-generator/verification/browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/review-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+          node tools/character-generator/verification/expansion-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
       - name: Upload review screenshots and results
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

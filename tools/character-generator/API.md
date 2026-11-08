@@ -23,6 +23,8 @@ Limits include 2 MB UTF-8 decoded imports and serialized saves (checked before a
 - Setup: `configure`, `setup`, `gm-mode`.
 - Characteristics: `roll-statistics`, `swap-statistics`, `accept-statistics`, `add-extra`.
 - Life path: `background`, `precareer`, `skip-precareer`, `career`, `fallback`, `training`, `survival`, `advancement`, `commission`, `continue-career`, `leave-career`, `benefit`, `ageing`, `finish`.
+- Treatment: `injury-loss {index}`, `injury-treatment {restore:{STR,DEX,END},inService}`. Projected `currentInjury`, `injuryOptions`, `injuryRestorable` and `medicalOutstanding` drive the client.
+- Education: `companion-entry`, `companion-skill`, `cancel-education`, `education-event`, `education-graduation`, Core study/service choices and `preterm-commission`.
 - Decisions: `choose-effect`, `choose-skill`, education-specific commands where offered, `resolve-book`.
 - Record: `notes`, `connection`.
 - Audit-preserving corrections: `restore`, `gm-override`, `gm-replay`.
@@ -30,6 +32,8 @@ Limits include 2 MB UTF-8 decoded imports and serialized saves (checked before a
 Use the projected stage and offered options rather than guessing a valid next command. The GUI is a reference client; integration tests show complete payloads. Some preview command payloads may change before a stable release.
 
 ## Audit semantics
+
+Projected log entries include derived `changes` with a mechanical path, before and after value. These are replayed, not independently trusted saved state. Medical bills, injuries and education awards are included.
 
 `rolls` contains label, raw D6 values, kept values and computed total. D3 rolls keep the mapped values separately from the raw dice. Boon rolls retain the best N of N+1. The seeded PRNG is deterministic and reproducible, not a secure random service.
 

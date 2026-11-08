@@ -21,6 +21,10 @@ These edition choices matter. In particular the 2026 Aslan characteristic modifi
 - Species-specific stat formulas, basic backgrounds and career filtering.
 - Numeric training, rank, material/cash benefit, event and mishap tables for all 45 scoped careers.
 - Native Core University/academy entry, initial awards, events, graduation/honours, deferred service awards, future entry/qualification rights and pre-term commissions, with explicit source-assisted exceptions.
+- Native five Companion education paths, constrained awards, graduation and persisted career rights, with explicit cross-book and psionic exceptions.
+- Native ordinary injuries, partial restoration, listed employer contributions, source adjudication for unlisted employers/zero scores, and end-of-creation medical bill settlement. Ageing crisis funding remains a separate explicit decision.
+- Vargr strain overlays, native/Imperial social statistics, Aezorgh derived Charisma, and the published Aslan rite-of-passage double results.
+- Derived before/after action details, printable notes/connections and medical ledger.
 - Ten additional shared alien event tables and explicit constrained-effect metadata.
 - Pure Core medical, injury, ageing, pension and benefit procedures with source-grounded tests.
 
@@ -30,14 +34,15 @@ Routine training, checks, table rolls, many choices, rank awards and benefits ar
 
 Important areas still needing integration, deeper testing or source adjudication include:
 
-- Full native handling of Companion pre-careers, source-specific career transfers and assignment changes.
+- Companion cross-book exceptions, source-specific career transfers and assignment changes.
 - Psionic talent acquisition/training, Zhodani social transitions, re-education and status reviews.
 - Detailed Aslan rite/clan/land/share procedures and constrained gender/culture paths.
 - Non-standard Vargr and Aezorgh cross-book choices, derived social characteristics and career restrictions.
-- Injury treatment, medical subsidies, equipment selection, ship ownership/mortgage aggregation and repeated benefit choices.
+- Nonstandard injury/medical rules, equipment selection, ship ownership/mortgage aggregation and repeated benefit choices.
 - Event branches requiring wagers, custom checks, referee choices, prior-history changes or future conditional obligations.
 - Optional characteristic consequences throughout careers. Displaying Luck/Morale/Wealth is not a claim that every optional rule using it is automated.
-- Multi-term and multi-career regression coverage, including force-stay/force-exit, Prisoner, draft, commissions, ageing and career re-entry.
+- Deeper full-character and multi-career golden scenarios. White-box continuation stress covers all career assignments but bypasses qualification/species setup and stops at source-assisted decisions.
+- Optional anagathics, post-career purchases and campaign group-skill packages are not fully automated.
 
 Some of these have data/helper implementations but are not yet wired into all engine/UI paths. Inspect the current integration tests and actual stop points before relying on an area above.
 

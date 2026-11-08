@@ -17,6 +17,8 @@ Open `http://127.0.0.1:8781/?api=local`. The server listens only on loopback and
 - `engine/catalog.mjs`: source identifiers, species, careers, and labels.
 - `engine/core-pack.mjs`, `expansion-pack.mjs`, `education-pack.mjs`: original numeric rule representations with source-page references.
 - `engine/core-procedures.mjs`: pure procedures for ageing, injuries, benefits, medical bills, and pensions.
+- `engine/companion-education.mjs`: pure, source-referenced Companion admission and award rules.
+- `engine/audit.mjs`: deterministic before/after mechanical audit detail.
 - `engine/session.mjs`: deterministic state transitions and the versioned API. No DOM dependencies.
 - `gui/client.mjs`: interchangeable in-process or HTTP API transport.
 - `gui/app.mjs`, `index.html`, `styles.css`: accessible, large-control interface and live character sheet.
@@ -44,6 +46,8 @@ No licensed books, scans, private document links, or borrowed Tremlas code are i
 node --test tools/character-generator/verification/*.test.mjs
 node tools/character-generator/verification/browser.mjs /path/to/playwright
 node tools/character-generator/verification/review-browser.mjs /path/to/playwright
+node tools/character-generator/verification/expansion-browser.mjs /path/to/playwright
+node tools/character-generator/verification/career-smoke.mjs
 ```
 
 Browser checks require Playwright and an installed browser. Set `CHARACTER_BROWSER_CHANNEL=msedge` to use installed Microsoft Edge. Browser contexts are temporary and do not use an existing signed-in profile. Screenshots and results go to ignored `verification/artifacts/`.
@@ -53,5 +57,7 @@ Browser checks require Playwright and an installed browser. Set `CHARACTER_BROWS
 Traveller belongs to Mongoose Publishing. Publisher terms and the scope of permission for a multi-book automation aid must be resolved before public release. No licence to the underlying books is granted by this repository.
 
 The interface takes inspiration from the step-by-step flow of [David Vines' character creator](https://blog.tremlas.com/games/traveller/mongoose-v2-character-creator/). Its code, text, styling, and assets were not copied. The [plugin author's redistribution restrictions](https://blog.tremlas.com/wordpress-plugins/mongoose-traveller-v2-character-creator-plugin-details/) remain separate from rights in this original implementation.
+
+The prescribed notice is available in [NOTICE.html](NOTICE.html); it does not establish approval or notification.
 
 Review [Mongoose's licensing page](https://www.mongoosepublishing.com/pages/traveller-licensing) and its linked fair-use policy. A publisher notice already elsewhere in a repository does not establish that this expanded tool has been approved or notified.

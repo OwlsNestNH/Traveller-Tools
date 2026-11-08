@@ -37,7 +37,7 @@ async function importFile(page,contents,name='review.json') {
  await page.locator('#import').setInputFiles({name,mimeType:'application/json',buffer:Buffer.from(contents)});
 }
 try {
- browser=await chromium.launch({headless:true,channel:process.env.CHARACTER_BROWSER_CHANNEL||'msedge'});
+ browser=await chromium.launch({headless:true,...(process.env.CHARACTER_BROWSER_CHANNEL?{channel:process.env.CHARACTER_BROWSER_CHANNEL}:{})});
  await check('invalid import preserves live character, saved bytes and action log',async page=>{
   await begin(page);const before=await stored(page),count=await page.locator('#action-log li').count();
   await importFile(page,'{"format":"invalid"}');

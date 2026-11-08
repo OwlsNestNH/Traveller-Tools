@@ -97,3 +97,10 @@ test('cross-species SOC benefit requests explicit resolution rather than crashin
  assert.equal(s.stage,'book-step');
  assert.equal(s.character.stats.SOC,undefined,'Do not invent an unrolled SOC value.');
 });
+
+test('GM SOC correction updates Aezorgh derived CHA before the next rule check',()=>{
+ const s=fixture('aezorgh','vargr.agent','enforcer');s.config.gm=true;s.character.stats.SOC=6;s.character.stats.CHA=3;
+ a.apply(s,{type:'gm-override',payload:{field:'stat.SOC',value:12,reason:'Correct source result'}},[]);
+ s._override={index:0,values:[3,3]};const check=a.rulesCheck(s,{stat:'CHA',target:6},[],'Derived CHA after GM correction');assert.equal(check.dm,0);assert.equal(check.success,true);
+ assert.throws(()=>a.apply(s,{type:'gm-override',payload:{field:'stat.CHA',value:12,reason:'Would be silently overwritten'}},[]),/derived from SOC/);
+});
