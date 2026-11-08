@@ -16,3 +16,5 @@ summary{min-height:44px;align-content:center}.check{min-height:48px}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 [hidden]{display:none!important}.print-only{display:none}.multiline{white-space:pre-wrap}.audit-changes p{font-size:15px;overflow-wrap:anywhere;margin:8px 0}
 @media print{.print-only{display:block!important}.multiline{white-space:pre-wrap}.audit-changes{display:block}#action-log details{display:block}#action-log details>summary{display:none}#action-log details:not([open])>*:not(summary){display:block}}
+
+.sheet-facts{grid-template-columns:repeat(2,minmax(0,1fr))}.sheet-facts strong{overflow-wrap:anywhere}

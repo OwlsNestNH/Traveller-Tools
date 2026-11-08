@@ -1,3 +1,4 @@
+import { namedBenefitPlan, canonicalBenefitName, pensionEntitlement } from './benefits.mjs';
 import { psionicPotential, talentAcquisition, psionicTalentOptions } from './psionics.mjs';
 import { COMPANION_EDUCATION_IDS, companionEntryCheck, companionInitialAwards, companionEvent, companionGraduationCheck, companionTermOutcome, companionCareerBenefits, companionResolveSkillChoice } from './companion-education.mjs';
 import { characterChanges } from './audit.mjs';
@@ -66,7 +67,7 @@ function sourceStep(state,kind,source,page,label,next) {
  state.pending={kind,source,page,label,next};state.stage='book-step';
  if(!state.coverage.includes(kind)) state.coverage.push(kind);
 }
-function checkAvailable(state,check){return !check||check.stat.split('/').some(key=>Object.hasOwn(state.character.stats,key));}
+function checkAvailable(state,check,initialStats={}){return !check||check.stat.split('/').some(key=>Object.hasOwn(state.character.stats,key)||Object.hasOwn(initialStats,key));}
 function missingCheck(state,check,label,command,source){
  const resumeStage=state.stage,career=state.active!==null?currentCareer(state).career:null;
  sourceStep(state,'missing-characteristic-check',source?.id??career?.source??'core',source?.page??source?.pages?.[0]??career?.page??17,'The '+check.stat+' characteristic required for '+label+' is absent. Resolve the cross-species check from the source; no score is invented.',resumeStage);
@@ -80,6 +81,39 @@ function rulesCheck(state,check,rolls,label,modifier=0) {
  const natural=dice(state,2,rolls,label);
  return {natural,stat:chosen,dm,modifier,total:natural+dm+modifier,target:check.target,success:natural+dm+modifier>=check.target};
 }
+
+function commissionAvailability(state){
+ const unavailable=reason=>({available:false,reason,sourceRequired:false,automatic:false});
+ if(state.stage!=='advancement'||state.active===null)return unavailable('Commission must be attempted during advancement.');
+ const {record,career}=currentCareer(state);
+ if(career.commission===undefined)return unavailable('This career does not offer commissions.');
+ if(record.officer)return unavailable('This Traveller already holds a commission.');
+ if(record.commissionTried)return unavailable('A commission has already been attempted this term.');
+ if(record.commissionBlockedFirstTerm&&record.terms===0)return unavailable('Failed academy graduation prohibits a commission in this first term.');
+ if(record.terms!==0&&(state.character.stats.SOC??0)<9)return unavailable('Later commission attempts require SOC 9 or greater.');
+ if(career.group==='zhodani'&&((state.character.stats.SOC??0)<10||record.drafted&&record.terms===0))return unavailable('This Zhodani Traveller cannot receive a commission this term.');
+ const automatic=!!record.automaticCommission||career.group==='zhodani';
+ const sourceRequired=!automatic&&!checkAvailable(state,{stat:'SOC'})&&!state._sourceCheck;
+ return {available:true,reason:sourceRequired?'The missing SOC check requires explicit source resolution.':'',sourceRequired,automatic};
+}
+function followingInteractionDM(value){
+ if(value===undefined)return null;
+ need(Number.isFinite(value)&&value>=0,'FOL must be a non-negative score.');
+ return value>=13?4:value>=10?3:value>=7?2:value>=4?1:0;
+}
+function exitOptions(state){
+ const none={canLeave:false,leaveReason:'Not at the end of a term.',canRetire:false,retireReason:'Not at the end of a term.',retirementRequired:false,canContinue:false,continueReason:'Not at the end of a term.'};
+ if(state.stage!=='term-end'||state.active===null)return none;
+ const {record,career}=currentCareer(state);
+ const canContinue=!record.forcedExit,continueReason=canContinue?'':'This career must be left.';
+ const blocked=record.forcedStay?'A natural 12 requires another term.':career.id==='core.prisoner'&&!record.released?'Prisoners must pass the parole threshold or escape before leaving.':null;
+ if(blocked)return {...none,leaveReason:blocked,retireReason:blocked,canContinue,continueReason};
+ const earlyAslan=career.group==='aslan'&&!['aslan.outcast','aslan.outlaw'].includes(career.id)&&!record.forcedExit&&record.terms<3;
+ if(earlyAslan)return {canLeave:false,leaveReason:'This Aslan career requires three terms before transfer. Early retirement ends character creation.',canRetire:!state.forcedCareer,retireReason:state.forcedCareer?'Resolve the required next career before retiring.':'Early retirement ends creation after benefits; it does not permit a different career.',retirementRequired:true,canContinue,continueReason};
+ return {canLeave:true,leaveReason:'',canRetire:false,retireReason:'Leave normally, then finish creation after resolving benefits.',retirementRequired:false,canContinue,continueReason};
+}
+const postBenefitsStage=state=>state.character.retirementFromCreation?'retirement':'career';
+
 export function availableCareers(state) {
  const species=state.character.species,culture=state.character.culture;
  const groups=species==='aezorgh'?['core','vargr','companion']:species==='human'||culture==='imperial'?['core','companion']:[species,'companion'];
@@ -98,10 +132,11 @@ export function availableCareers(state) {
  if(c.minSOC&&(state.character.stats.SOC??0)<c.minSOC)reason='Requires SOC '+c.minSOC+' or greater.';
  if(c.maxSOC&&(state.character.stats.SOC??0)>c.maxSOC)reason='Requires SOC '+c.maxSOC+' or less.';
  if(species==='aslan'&&culture==='native'&&state.character.outcast&&!['aslan.outcast','aslan.outlaw'].includes(c.id))reason='Outcast restriction. Use the source rules to leave Hierate society.';
- c.assignments=c.assignments.map(a=>{const absent=[a.survival,a.advancement].filter(check=>check&&!checkAvailable(state,check)).map(check=>check.stat);return absent.length?{...a,disabled:true,reason:'Requires absent '+[...new Set(absent)].join('/')+' characteristic; use a source-approved cross-species route.'}:a;});
+ c.assignments=c.assignments.map(a=>{const absent=[a.survival,a.advancement].filter(check=>check&&!checkAvailable(state,check,pre.initialStats)).map(check=>check.stat);return absent.length?{...a,disabled:true,reason:'Requires absent '+[...new Set(absent)].join('/')+' characteristic; use a source-approved cross-species route.'}:a;});
  if(c.assignments.every(a=>a.disabled))reason='Every assignment requires a characteristic absent for this species.';
  if(c.id==='aslan.wanderer'&&state.character.birthOrder!=='second-son')reason='Requires a second son under the source rules.';
- return {...c,disabled:!!reason,reason};
+ if(state.character.retirementFromCreation)reason='Early retirement ends character creation; a different career cannot be selected.';
+  return {...c,disabled:!!reason,reason};
  });
 }
 function enterCareer(state,career,assignment,rolls=[]) {
@@ -176,7 +211,7 @@ function advanceAfterBook(state,pending,payload,rolls) {
  if(pending.kind==='advancement-training'){closeTerm(state);return;}
  if(pending.kind==='benefit'){
   const {record}=currentCareer(state);record.benefitRolls--;record.totalBenefits++;
-  state.stage=record.benefitRolls?'benefits':'career';
+  state.stage=record.benefitRolls?'benefits':postBenefitsStage(state);
   if(!record.benefitRolls)state.active=null;return;
  }
  state.stage=pending.next;
@@ -235,6 +270,7 @@ function activatePsionicTraining(state,rolls){
  const active=state.psionicTraining,history=psionicHistory(state);
  if(!history.historyKnown){psionicSource(state,'psionic-history','Prior psionic acquisition checks are unknown. Record their count and attempted talents before further rolls. Do not reset failed checks.');return;}
  if((state.character.stats.PSI??0)<=0){active.noPotential=true;returnFromPsionics(state,rolls,false);return;}
+ if(active.context==='companion-community'&&history.training.some(t=>t.completed)){active.mode='reuse';returnFromPsionics(state,rolls,true);return;}
  active.attemptStart=history.attempts.length;state.pending=null;state.stage='psionic-training';
  if(active.mode==='retry'&&!psionicOptions(state).length){psionicSource(state,'psionic-retry','This talent cannot use the supported acquisition table. Resolve this source award explicitly.');return;}
 }
@@ -414,6 +450,69 @@ function payAgeingCare(state,e,rolls){
  if(state.character.cash<e.value){sourceStep(state,'ageing-financing','core',49,'Ageing-crisis care must be paid. Ordinary injury debt rules do not automatically finance this crisis. Resolve funding or refusal explicitly.','native-resume');Object.assign(state.pending,{cost:e.value,shortfall:e.value-state.character.cash,crisisIndex:e.crisisIndex});return false;}
  state.character.cash-=e.value;crisis.paid=e.value;crisis.resolved=true;crisis.careAccepted=true;return true;
 }
+
+function benefitOrigin(state,e){
+ if(e.benefitOrigin)return copy(e.benefitOrigin);
+ const career=state.active!==null?currentCareer(state).career:null;
+ return {careerId:career?.id??null,careerIndex:state.active,source:copy(e.source??{id:career?.source??'core',page:career?.page??47}),tableContext:null};
+}
+function markBenefitOrigin(effects,origin){
+ const result=copy(effects);function visit(value){if(Array.isArray(value)){value.forEach(visit);return;}if(!value||typeof value!=='object')return;if(value.kind)value.benefitOrigin=copy(origin);for(const [key,item]of Object.entries(value))if(!['benefitOrigin','source'].includes(key))visit(item);}visit(result);return result;
+}
+function benefitAward(state,id){const award=state.character.benefitAwards?.find(a=>a.id===id);need(award,'The benefit award record is missing.');return award;}
+function benefitSource(state,award,kind,label,fields={}){
+ sourceStep(state,kind,award.source.id,award.source.page??award.source.pages?.[0]??47,label,'native-resume');Object.assign(state.pending,copy(fields),{kind,source:award.source.id,page:award.source.page??award.source.pages?.[0]??47,awardId:award.id,benefitName:award.name,definitionId:award.definitionId});
+}
+function benefitAsset(state,award,properties){
+ state.character.assets??=[];const asset={id:'asset-'+(state.character.assets.length+1),definitionId:award.definitionId,source:copy(award.source),originCareerId:award.origin.careerId,awardIds:[award.id],active:true,...copy(properties)};state.character.assets.push(asset);award.assetIds.push(asset.id);
+ state.character.benefits.push({name:asset.name,quantity:1,assetId:asset.id,definitionId:award.definitionId,ownership:asset.ownership,...(asset.mortgagePaidPercent!==undefined?{mortgagePaidPercent:asset.mortgagePaidPercent}:{})});return asset;
+}
+function recordBenefitToken(state,award,name,quantity=1,extra={}){
+ const existing=state.character.benefits.find(b=>!b.assetId&&b.name===name&&b.definitionId===(extra.definitionId??award.definitionId));
+ if(existing){if(!extra.nonnumeric)existing.quantity+=quantity;}
+ else state.character.benefits.push({name,quantity,definitionId:extra.definitionId??award.definitionId,...copy(extra)});
+}
+function compileBenefitEffects(effects,awardId){
+ const result=copy(effects);function visit(value){if(Array.isArray(value)){value.forEach(visit);return;}if(!value||typeof value!=='object')return;if(value.kind){value.awardId=awardId;if(value.kind==='benefit')value.kind='benefit-record';}for(const child of Object.values(value))visit(child);}visit(result);return result;
+}
+function beginNamedBenefit(state,e,rolls){
+ const origin=benefitOrigin(state,e),quantity=e.dice?mechanicalDice(state,e.dice,rolls,e.name+' quantity'):(e.value??1);
+ const first=namedBenefitPlan({name:e.name,careerId:origin.careerId,source:origin.source,quantity});let previousCount=(state.character.benefitAwards??[]).filter(a=>a.definitionId===first.definitionId&&a.status==='resolved'&&a.received!==false).length;
+ if(first.name==='TAS Membership'&&state.character.benefits.some(b=>canonicalBenefitName(b.name).toLowerCase()==='tas membership'))previousCount=Math.max(previousCount,1);
+ const plan=namedBenefitPlan({name:e.name,careerId:origin.careerId,source:origin.source,quantity,previousCount});
+ state.character.benefitAwards??=[];const award={id:'award-'+(state.character.benefitAwards.length+1),name:plan.name,definitionId:plan.definitionId,source:copy(plan.source),origin,quantity,previousCount,status:'pending',assetIds:[],decisions:[]};state.character.benefitAwards.push(award);
+ state.effectsQueue.unshift({kind:'benefit-finalize',awardId:award.id});
+ if(plan.needsAdjudication){benefitSource(state,award,'benefit-source',plan.reason);return false;}
+ state.effectsQueue.unshift(...compileBenefitEffects(sourcedEffects(plan.effects,plan.source),award.id));return true;
+}
+const weaponSkills=['Gun Combat (archaic)','Gun Combat (energy)','Gun Combat (slug)','Melee (blade)','Melee (bludgeon)','Melee (natural)','Melee (unarmed)',...['Heavy Weapons','Gunner'].flatMap(base=>SPECIALITIES[base].map(s=>base+' ('+s+')')),'Athletics (dexterity)','Explosives'];
+function openBenefitEquipment(state,e){
+ const award=benefitAward(state,e.awardId),prior=(state.character.assets??[]).filter(a=>a.definitionId===award.definitionId&&a.active);
+ const weaponSkillOptions=e.category==='blade'?['Melee (blade)']:e.category==='gun'?weaponSkills.filter(n=>n.startsWith('Gun Combat')):e.category==='weapon'?weaponSkills:[];
+ benefitSource(state,award,'benefit-equipment','Choose the actual source-listed equipment and confirm its cost, TL and restrictions before receiving it.',{...e,weaponSkillRequired:weaponSkillOptions.length>0,weaponSkillOptions,replacementAssetIds:e.replaceOriginal?prior.map(a=>a.id):[]});
+}
+function openBenefitShip(state,e,rolls){
+ const award=benefitAward(state,e.awardId),existing=(state.character.assets??[]).find(a=>a.definitionId===award.definitionId&&a.type==='ship'&&a.active);
+ if(e.kind==='ship-mortgage'&&award.previousCount>0){
+  if(!existing){benefitSource(state,award,'benefit-source','The previous ship award has no established asset. Resolve the same-vessel mortgage history before applying another award.');return false;}
+  need(existing.mortgagePaidPercent+25===e.percentAfter,'Existing mortgage progress conflicts with the source award history.');
+  existing.mortgagePaidPercent=e.percentAfter;existing.awardIds.push(award.id);award.assetIds.push(existing.id);const b=state.character.benefits.find(b=>b.assetId===existing.id);if(b)b.mortgagePaidPercent=e.percentAfter;return true;
+ }
+ const history=e.quirks??e.history;
+ if(e.kind==='ship-use'&&!history){benefitAsset(state,award,{type:'ship',name:e.name,ownership:'use',owner:e.owner,recallable:!!e.recallable,mortgagePaidPercent:null});return true;}
+ const historyRollCount=history?mechanicalDice(state,history.countDice,rolls,'Ship history roll count'):0;
+ const variants=e.variants??[e.family??e.name];benefitSource(state,award,'benefit-ship','Resolve the indicated ship history table and model choice explicitly. Outdated Ships and Spacecraft Quirks are different tables; no age or discount interpretation is assumed.',{variants,model:variants[0],ownership:e.kind==='ship-use'?'use':'owned',owner:e.owner??'Traveller',recallable:!!e.recallable,mortgagePaidPercent:e.kind==='ship-mortgage'?e.percentAfter:null,historyTable:history?.table??null,historyTableLabel:history?.table==='core.outdated-ships'?'Outdated Ships (Core p. 188)':'Spacecraft Quirks (Core p. 188)',historyRollCount,existingAssetId:null});return false;
+}
+function rerollMaterialBenefit(state,e,rolls){
+ const award=benefitAward(state,e.awardId),context=award.origin.tableContext,career=state.active!==null?currentCareer(state).career:null;
+ if(!context||!career||context.careerId!==career.id||context.table!=='material'){benefitSource(state,award,'benefit-source','This repeated borrowed ship requires a material-table reroll, but its original table and modifiers were not recorded. Resolve the replacement explicitly.');return false;}
+ const natural=dice(state,1,rolls,'Repeated ship: material benefit'),result=natural+context.modifier,entry={natural,modifier:context.modifier,result};state.benefitRollContext?.rolls.push(entry);award.reroll=entry;
+ const rows=RULE_PACK[context.careerId]?.benefits.material;
+ if(!rows?.[result-1]){benefitSource(state,award,'benefit-source','The replacement benefit result '+result+' is outside the printed table. Resolve it explicitly without consuming another benefit roll.');return false;}
+ award.status='rerolled';state.effectsQueue.unshift(...markBenefitOrigin(rows[result-1],{...award.origin,tableContext:{...context,...entry}}));return true;
+}
+function finishCareerExit(state){const {record}=currentCareer(state);state.stage=record.benefitRolls?'benefits':postBenefitsStage(state);if(!record.benefitRolls)state.active=null;}
+
 function nativePack(state) { return state.active===null?null:RULE_PACK[state.character.careers[state.active].id]??null; }
 function rankEffects(state) {
  const {record}=currentCareer(state),pack=nativePack(state);if(!pack)return [];
@@ -451,7 +550,7 @@ function completeEffects(state,rolls) {
  }
  if(next==='new-career-training'){state.stage='training';return;}
  if(next==='after-event'){const {record}=currentCareer(state);if(record.forcedExit||record.advancementBlock>0)closeTerm(state);else state.stage='advancement';return;}
- if(next==='benefit-complete'){const {record}=currentCareer(state);record.benefitRolls--;record.totalBenefits++;state.stage=record.benefitRolls?'benefits':'career';if(!record.benefitRolls)state.active=null;return;}
+ if(next==='benefit-complete'){if(state.benefitRollContext){state.character.benefitRollHistory??=[];state.character.benefitRollHistory.push({...copy(state.benefitRollContext),completed:true});state.benefitRollContext=null;}const {record}=currentCareer(state);record.benefitRolls--;record.totalBenefits++;state.stage=record.benefitRolls?'benefits':postBenefitsStage(state);if(!record.benefitRolls)state.active=null;return;}
  state.stage=next;
 }
 function mechanicalDice(state,expression,rolls,label) {
@@ -487,6 +586,7 @@ function skillNameAllowed(state,name,effect) {
  if(effect.scope==='science-specialties'&&base!=='Science')return false;
  if(effect.scope==='psionic-talents'&&(!['Telepathy','Clairvoyance','Telekinesis','Awareness','Teleportation','Technopathy'].includes(base)||skillLevel(state,name)<0))return false;
  if(effect.allowed&&!effect.allowed.includes(base))return false;
+ if(effect.permittedNames&&!effect.permittedNames.includes(name))return false;
  return true;
 }
 const SPECIALIZED = Object.keys(SPECIALITIES);
@@ -531,7 +631,7 @@ function drainEffects(state,rolls) {
    case 'skill':{
     const base=e.name.split(' (')[0];
     if(PSIONIC_TALENTS.includes(base)&&skillLevel(state,e.name)<0){requestTalentAward(state,e,rolls);return;}
-    if(e.value>0&&SPECIALIZED.includes(base)&&e.name===base){state.pendingChoice={kind:'skill-choice',scope:'any',allowed:[base],mode:e.mode,value:e.value,label:'Choose a '+base+' specialisation'};state.stage='skill-choice';return;}
+    if(e.value>0&&SPECIALIZED.includes(base)&&e.name===base){state.pendingChoice={kind:'skill-choice',scope:'any',allowed:[base],mode:e.mode,value:e.value,...(e.awardId?{awardId:e.awardId}:{}),label:'Choose a '+base+' specialisation'};state.stage='skill-choice';return;}
 
     if(skillAwardExceedsLimit(state,e.name,e.value??1,e.mode)){nativeFallback(state,e,'This mandatory skill award would exceed the total skill limit. Resolve its disposal from Core p. 18 without exceeding the cap.');return;}gainSkill(state,e.name,e.value??1,e.mode);break;
    }
@@ -547,11 +647,28 @@ function drainEffects(state,rolls) {
     if(state.character.species==='zhodani'&&state.active!==null&&e.name==='PSI'&&current<9&&state.character.stats.PSI>=9&&(state.character.stats.SOC??0)<10){state.character.stats.SOC=10;startPsionicTraining(state,{context:'zhodani-elevation',source:{id:'aliens',page:255},next:'native-resume'},rolls);return;}
     break;
    }
-   case 'benefit':{
-    const quantity=e.dice?mechanicalDice(state,e.dice,rolls,e.name+' quantity'):(e.value??1);
-    if(e.name==='TAS Membership'&&state.character.benefits.some(x=>x.name===e.name))state.character.benefits.push({name:'Ship Share',quantity:2});
-    else {state.character.benefits.push({name:e.name,quantity});if(BENEFIT_RULES[e.name]?.effects)state.effectsQueue.unshift(...copy(BENEFIT_RULES[e.name].effects));}break;
+   case 'benefit-finalize':{const award=benefitAward(state,e.awardId);if(award.status==='pending')award.status='resolved';break;}
+   case 'benefit-record':{const award=benefitAward(state,e.awardId);recordBenefitToken(state,award,e.name,e.value??1,{definitionId:'core.material.'+canonicalBenefitName(e.name),...(e.name==='Ship Share'?{redeemableForCash:false,valuePerShare:1000000}:{})});break;}
+   case 'entitlement':{const award=benefitAward(state,e.awardId);recordBenefitToken(state,award,e.name,e.quantity??1,{...(e.redemption?{redemption:e.redemption}:{}),...(e.nonnumeric?{nonnumeric:true}:{})});break;}
+   case 'equipment-choice':openBenefitEquipment(state,e);return;
+   case 'equipment-upgrade':{benefitSource(state,benefitAward(state,e.awardId),'benefit-source','Select a previously received augmentation and resolve its one-level upgrade explicitly, ignoring its original purchase limits.');return;}
+   case 'weapon-skill-choice':{
+    const names=[...new Set((state.character.assets??[]).filter(a=>a.active&&a.weaponSkill&&e.allowedBases.includes(a.weaponSkill.split(' (')[0])).map(a=>a.weaponSkill))];
+    if(!names.length){benefitSource(state,benefitAward(state,e.awardId),'benefit-source','No received weapon has a recorded matching skill. Establish the weapon and skill before resolving this improvement.');return;}
+    state.pendingChoice={kind:'skill-choice',scope:'any',allowed:e.allowedBases,permittedNames:names,mode:e.mode,value:e.value,awardId:e.awardId,label:'Improve a skill matching a weapon already received: '+names.join(', ')};state.stage='skill-choice';return;
    }
+   case 'ship-use':case 'ship-mortgage':if(!openBenefitShip(state,e,rolls))return;break;
+   case 'reroll-benefit':if(!rerollMaterialBenefit(state,e,rolls))return;break;
+   case 'annual-income':{
+    const award=benefitAward(state,e.awardId);if(award.previousCount){benefitSource(state,award,'benefit-source','Resolve whether this repeated Patronage award supplies another stipend or changes an existing patron; no extra annual payment is assumed.');return;}
+    state.character.annualIncome??=[];state.character.annualIncome.push({id:'income-'+(state.character.annualIncome.length+1),name:e.name,annualCredits:e.annualCredits,condition:e.condition,source:copy(award.source),awardId:award.id});
+    recordBenefitToken(state,award,e.name,1,{annualCredits:e.annualCredits,condition:e.condition});break;
+   }
+   case 'sainthood':{
+    const award=benefitAward(state,e.awardId);state.character.sainthood??={candidacies:0,interactionDM:0,checks:[]};const sainthood=state.character.sainthood;sainthood.candidacies=e.candidacy;sainthood.interactionDM=Math.max(sainthood.interactionDM,2);
+    benefitSource(state,award,'benefit-source','Resolve the belief-specific Science check at 14 with the cumulative candidacy bonus. Confirm its success or failure; interaction modifiers remain fixed, not additive.',{sainthood:{candidacy:e.candidacy,checkBonus:e.candidacy,target:14,skill:'Science (belief)',interactionDM:sainthood.interactionDM}});return;
+   }
+   case 'benefit':if(!beginNamedBenefit(state,e,rolls))return;break;
    case 'cash':state.character.cash+=integer(e.dice?mechanicalDice(state,e.dice,rolls,'Cash result')*(e.multiplier??1):e.value,-100000000,100000000,'Cash award');break;
    case 'relationship':{
     const count=e.countFrom?Math.max(e.countFrom.minimum??0,characteristicDM(stat(state,e.countFrom.statDM))):e.dice?mechanicalDice(state,e.dice,rolls,e.type+' count'):(e.count??1);
@@ -743,7 +860,7 @@ function apply(state,command,rolls) {
   return 'Accepted statistics and generated selected extra characteristics.';
  }
  case 'begin-psionic-training':{
-   need(['career','precareer'].includes(state.stage)&&state.active===null&&!state.forcedCareer,'Begin institute training only between careers.');
+   need(['career','precareer'].includes(state.stage)&&state.active===null&&!state.forcedCareer&&!state.character.retirementFromCreation,'Begin institute training only between careers, before retirement.');
    need(!Object.hasOwn(state.character.stats,'PSI')||state.character.stats.PSI>0,'PSI zero has no training potential.');
    need(!state.character.psionics?.training.some(t=>t.completed),'Initial training has already been completed; later retries require a source award.');
    startPsionicTraining(state,{context:'core-institute',source:{id:'core',page:228},next:state.stage,test:true,requiresTerms:true},rolls);return 'Institute access, costs and timing require an explicit source decision.';
@@ -773,7 +890,7 @@ function apply(state,command,rolls) {
  }
  case 'skip-precareer':need(state.stage==='precareer','Not choosing pre-career education.');state.stage='career';return 'Skipped pre-career education.';
  case 'open-precareer':{
-  need(state.stage==='career'&&state.active===null&&!state.forcedCareer,'Education is only available before choosing a career.');
+  need(state.stage==='career'&&state.active===null&&!state.forcedCareer&&!state.character.retirementFromCreation,'Education is only available before choosing a career, not after retirement.');
   need(state.character.terms<3&&!state.educationAttemptTerms?.includes(state.character.terms),'Education has already been attempted this term or its time limit has passed.');
   state.stage='precareer';return 'Reviewing pre-career education for term '+(state.character.terms+1)+'.';
  }
@@ -940,7 +1057,7 @@ function apply(state,command,rolls) {
  }
  case 'choose-effect': {
   need(state.stage==='effect-choice'&&state.pendingChoice,'There is no effect choice.');
-  const option=state.pendingChoice.options[integer(payload.index,0,state.pendingChoice.options.length-1,'Choice')];state.pendingChoice=null;state.effectsQueue.unshift(...copy(option.effects));drainEffects(state,rolls);return 'Chose '+option.label+'.';
+  const option=state.pendingChoice.options[integer(payload.index,0,state.pendingChoice.options.length-1,'Choice')];if(state.pendingChoice.awardId)benefitAward(state,state.pendingChoice.awardId).decisions.push({type:'choice',index:payload.index,label:option.label});state.pendingChoice=null;state.effectsQueue.unshift(...copy(option.effects));drainEffects(state,rolls);return 'Chose '+option.label+'.';
  }
  case 'skill-award-source':{
   need(state.stage==='skill-choice'&&state.pendingChoice,'No skill award is pending.');const effect=copy(state.pendingChoice);state.pendingChoice=null;nativeFallback(state,effect,'Resolve this constrained or over-cap skill award explicitly. Record the chosen outcome without exceeding the total skill limit.');return 'Skill award paused for explicit source resolution.';
@@ -952,7 +1069,7 @@ function apply(state,command,rolls) {
   need(state.stage==='skill-choice'&&state.pendingChoice,'There is no skill choice.');const e=state.pendingChoice,name=normalizeSkillName(text(payload.name,80),{requireSpeciality:e.mode!=='set'||(e.value??1)>0}).name;need(skillNameAllowed(state,name,e),'Skill is not available for this award.');
   if((e.mode!=='set'||(e.value??1)>0)&&SPECIALIZED.includes(name.split(' (')[0]))need(name.includes(' ('),'Choose a specialisation, for example Science (physics).');
   if(e.kind!=='skill-reduction-choice'&&skillAwardExceedsLimit(state,name,e.value??1,e.mode)){state.pendingChoice=null;nativeFallback(state,e,'The selected award would exceed the total skill limit. Choose another valid skill or record a source decision under Core p. 18.');return 'Over-cap skill choice requires an alternate selection or source resolution.';}
-  if(e.kind==='skill-reduction-choice'){need(Object.hasOwn(state.character.skills,name)&&state.character.skills[name]>0,'Choose a trained skill to reduce.');if(e.names)need(e.names.includes(name),'Choose one of the indicated skills.');state.character.skills[name]=Math.max(0,state.character.skills[name]-e.value);}else gainSkill(state,name,e.value??1,e.mode);state.pendingChoice=null;if((e.count??1)>1)state.effectsQueue.unshift({...e,count:e.count-1});drainEffects(state,rolls);return 'Selected '+name+' for a skill award.';
+  if(e.kind==='skill-reduction-choice'){need(Object.hasOwn(state.character.skills,name)&&state.character.skills[name]>0,'Choose a trained skill to reduce.');if(e.names)need(e.names.includes(name),'Choose one of the indicated skills.');state.character.skills[name]=Math.max(0,state.character.skills[name]-e.value);}else gainSkill(state,name,e.value??1,e.mode);if(e.awardId)benefitAward(state,e.awardId).decisions.push({type:'skill',name,mode:e.mode,value:e.value??1});state.pendingChoice=null;if((e.count??1)>1)state.effectsQueue.unshift({...e,count:e.count-1});drainEffects(state,rolls);return 'Selected '+name+' for a skill award.';
  }
  case 'training': {
   need(state.stage==='training','No training roll is pending.');need(trainingOptions(state).some(x=>x.id===payload.table),'Training table is not available.');const pack=nativePack(state),{record,career}=currentCareer(state);const rows=payload.table==='assignment'?pack.training.assignments[record.assignment]:pack.training[payload.table];
@@ -991,27 +1108,25 @@ function apply(state,command,rolls) {
   record.forcedStay=false;if(nativePack(state))state.stage='training';else sourceStep(state,'term-training',career.source,career.page,'Resolve this term training roll.','survival');return 'Continued '+career.name+'.';
  }
  case 'commission': {
-  need(state.stage==='advancement','Commission must be attempted during advancement.');const {record,career}=currentCareer(state);
-  need(career.commission!==undefined&&!record.officer&&!record.commissionTried,'Commission is not available.');
-  need(!(record.commissionBlockedFirstTerm&&record.terms===0),'Failed academy graduation prohibits a commission in this first term.');
-  need(record.terms===0||(state.character.stats.SOC??0)>=9,'Later commission attempts require SOC 9 or greater.');if(!checkAvailable(state,{stat:'SOC'})&&!state._sourceCheck&&!record.automaticCommission&&career.group!=='zhodani'){missingCheck(state,{stat:'SOC',target:career.commission},'Commission',command);return 'Commission check requires source resolution for the absent characteristic.';}record.commissionTried=true;
+  const availability=commissionAvailability(state);need(availability.available,availability.reason);const {record,career}=currentCareer(state);
+  if(availability.sourceRequired){missingCheck(state,{stat:'SOC',target:career.commission},'Commission',command);return 'Commission check requires source resolution for the absent characteristic.';}record.commissionTried=true;
   const bonus=modifierTotal(state,'advancement',false)-record.terms+(record.educationModifiers?.commission??0);
-  if(career.group==='zhodani')need((state.character.stats.SOC??0)>=10&&!(record.drafted&&record.terms===0),'This Zhodani Traveller cannot receive a commission this term.');
   const check=record.automaticCommission||career.group==='zhodani'?{automatic:true,success:true,total:99}:rulesCheck(state,{stat:'SOC',target:career.commission},rolls,'Commission',bonus);
   if(check.success){modifierTotal(state,'advancement');record.highestRank=Math.max(record.highestRank??record.rank,record.rank,1);record.rank=1;record.officer=true;record.automaticCommission=false;queueEffects(state,rankEffects(state),'end-term',rolls);}
   return 'Commission: '+JSON.stringify(check)+(check.success?'. Became rank 1 officer; no advancement roll this term.':'. Advancement remains available.');
  }
  case 'leave-career': {
-  need(state.stage==='term-end','Not at the end of a term.');
-  const {record,career}=currentCareer(state);need(!record.forcedStay,'A natural 12 requires another term.');need(career.id!=='core.prisoner'||record.released,'Prisoners must pass the parole threshold or escape before leaving.');
-  if(career.group==='aslan'&&!['aslan.outcast','aslan.outlaw'].includes(career.id)&&!record.forcedExit)need(record.terms>=3||payload.retire,'Aslan normally serve three terms before changing careers. You may retire.');
+  const options=exitOptions(state),retire=payload.retire===true;need(retire?options.canRetire:options.canLeave,retire?options.retireReason:options.leaveReason);
+  const {record,career}=currentCareer(state);
+  if(retire){state.character.retirementFromCreation=true;state.character.retirementDecision={careerId:career.id,careerIndex:state.active,terms:record.terms,source:{id:'aliens',page:22},purpose:'Finish creation after benefits, without a career transfer.'};record.retiredFromCreation=true;}
   record.exit=record.forcedExit?'involuntary':'voluntary';
   const highest=record.highestRank??record.rank;const bonus=highest>=5?3:highest>=3?2:highest>=1?1:0;
   record.benefitRolls+=bonus;
   record.benefitDM=highest>=5?1:0;
-  const pension=pensionForCareer({careerId:career.id,terms:record.terms});if(!pension.needsAdjudication)record.pension=pension.annualCredits;
-  state.stage=record.benefitRolls?'benefits':'career';if(!record.benefitRolls)state.active=null;
-  return 'Left '+career.name+' with '+record.benefitRolls+' benefit rolls.';
+  const pension=pensionEntitlement({careerId:career.id,terms:record.terms,soc:state.character.stats.SOC});record.pensionEntitlement=copy(pension);
+  if(pension.needsAdjudication){sourceStep(state,'pension',pension.source.id,pension.source.page,pension.reason,'leave-career');state.pending.careerIndex=state.active;return 'Pension entitlement requires an explicit source decision before mustering out.';}
+  record.pension=pension.annualCredits;record.pensionCondition=pension.condition;finishCareerExit(state);
+  return 'Left '+career.name+' with '+record.benefitRolls+' benefit rolls.'+(retire?' Early retirement ends creation after these benefits; no career transfer.':'');
  }
  case 'benefit': {
   need(state.stage==='benefits','No benefits to roll.');
@@ -1023,14 +1138,47 @@ function apply(state,command,rolls) {
   if(cash){state.cashRolls++;if(Object.hasOwn(state.character.stats,'WLT'))state.character.stats.WLT=Math.min(15,state.character.stats.WLT+1);}
   const pack=nativePack(state),index=result-1;
   if(index>=7||index<0){sourceStep(state,'benefit',career.source,career.page,'Benefit result '+result+' is outside the printed table. Referee adjudication required.','benefits');return 'Benefit roll exceeds printed table; no result was assumed.';}
-  if(pack){queueEffects(state,cash?[{kind:'cash',value:pack.benefits.cash[index]*(state.character.species==='aslan'&&state.character.culture==='native'&&state.character.gender==='male'?0.5:1)}]:pack.benefits.material[index],'benefit-complete',rolls);}else sourceStep(state,'benefit',career.source,career.page,'Resolve '+(cash?'cash':'material')+' benefit result '+result+'.','benefits');
+  if(pack){const origin={careerId:career.id,careerIndex:state.active,source:{id:career.source,page:career.page},tableContext:{careerId:career.id,table:cash?'cash':'material',modifier,natural:result-modifier,result}};state.benefitRollContext={...origin.tableContext,careerIndex:state.active,rolls:[{natural:result-modifier,modifier,result}]};queueEffects(state,cash?[{kind:'cash',value:pack.benefits.cash[index]*(state.character.species==='aslan'&&state.character.culture==='native'&&state.character.gender==='male'?0.5:1)}]:markBenefitOrigin(pack.benefits.material[index],origin),'benefit-complete',rolls);}else sourceStep(state,'benefit',career.source,career.page,'Resolve '+(cash?'cash':'material')+' benefit result '+result+'.','benefits');
   return 'Rolled '+(cash?'cash':'material')+' benefit '+result+' (DM '+modifier+').';
  }
  case 'resolve-book': {
   need(state.stage==='book-step'&&state.pending,'No source step to resolve.');
   need(payload.confirmed===true,'Confirm you checked the indicated source.');
   const pending=copy(state.pending);
-  if(pending.kind==='psionic-training-terms'){
+    if(pending.kind==='benefit-equipment'){
+    const note=text(payload.note??'',500);need(note,'Record the equipment source and restriction checks.');need(!(payload.effects??[]).length,'Equipment uses its typed selection fields, not generic effects.');
+    const award=benefitAward(state,pending.awardId),name=text(payload.benefitItemName??'',120);need(name,'Choose an actual source-listed item.');
+    const cost=integer(payload.benefitItemCost,0,pending.maximumCost??1000000000,'Item cost'),techLevel=integer(payload.benefitItemTL,0,pending.maximumTL??40,'Item technology level');let weaponSkill=null;
+    if(pending.weaponSkillRequired){weaponSkill=normalizeSkillName(text(payload.benefitWeaponSkill??'',80),{requireSpeciality:true}).name;need(pending.weaponSkillOptions.includes(weaponSkill),'Choose the appropriate canonical skill for the received weapon.');}
+    let replaced=null;if(pending.replaceOriginal){need(pending.replacementAssetIds.includes(payload.benefitReplaceAssetId),'Choose the original active armour asset to trade in.');replaced=state.character.assets.find(a=>a.id===payload.benefitReplaceAssetId);need(replaced?.active,'The original asset is no longer active.');replaced.active=false;state.character.benefits=state.character.benefits.filter(b=>b.assetId!==replaced.id);}
+    const asset=benefitAsset(state,award,{type:'equipment',name,category:pending.category,ownership:'owned',owner:'Traveller',cost,techLevel,...(weaponSkill?{weaponSkill}:{}),sourceDecision:note,...(replaced?{replacesAssetId:replaced.id}:{})});
+    award.decisions.push({type:'equipment',assetId:asset.id,note});state.pending=null;drainEffects(state,rolls);return 'Received '+name+' from '+award.name+' after source confirmation. '+note;
+   }
+   if(pending.kind==='benefit-ship'){
+    const note=text(payload.note??'',500);need(note,'Record the ship source decision.');need(!(payload.effects??[]).length,'Ship awards use typed fields, not generic effects.');
+    const award=benefitAward(state,pending.awardId),variant=payload.benefitShipVariant??(pending.variants.length===1?pending.variants[0]:null);need(pending.variants.includes(variant),'Select one of the source ship variants.');
+    const history=text(payload.benefitShipHistory??'',2000);need(!pending.historyRollCount||history,'Record every required ship-history result and any age/discount ruling.');
+    const asset=benefitAsset(state,award,{type:'ship',name:variant,ownership:pending.ownership,owner:pending.owner,recallable:pending.recallable,mortgagePaidPercent:pending.mortgagePaidPercent,history:{table:pending.historyTable,count:pending.historyRollCount,source:{id:'core',page:188},resolution:history},sourceDecision:note});
+    award.decisions.push({type:'ship',assetId:asset.id,note,history});state.pending=null;drainEffects(state,rolls);return 'Received '+variant+' with '+(pending.mortgagePaidPercent===null?'source-defined use rights':pending.mortgagePaidPercent+'% mortgage paid')+'. '+note;
+   }
+   if(pending.kind==='benefit-source'){
+    const note=text(payload.note??'',500);need(note,'Record the exact source ruling for this benefit.');const award=benefitAward(state,pending.awardId);
+    if(pending.sainthood){need(typeof payload.benefitSainthoodSuccess==='boolean','Record the belief-specific sainthood check success or failure.');need(!(payload.effects??[]).length,'Sainthood uses its explicit check ruling, not generic effects.');const status=state.character.sainthood;status.checks.push({...copy(pending.sainthood),success:payload.benefitSainthoodSuccess,sourceAssisted:true,note,awardId:award.id});if(payload.benefitSainthoodSuccess)status.interactionDM=4;recordBenefitToken(state,award,status.interactionDM===4?'Living saint':'Sainthood candidacy',1,{nonnumeric:true,interactionDM:status.interactionDM});award.decisions.push({type:'sainthood',success:payload.benefitSainthoodSuccess,note});}
+    else{
+     need(['record','effects','none'].includes(payload.benefitResolution),'Choose record, effects or no award for the source outcome.');
+     if(payload.benefitResolution==='record'){need(!(payload.effects??[]).length,'Use effects resolution when applying mechanical effects.');const name=text(payload.benefitOutcomeName??'',120);need(name,'Describe the actual source-resolved entitlement.');recordBenefitToken(state,award,name,award.quantity,{sourceAssisted:true,resolution:note});}
+     else if(payload.benefitResolution==='effects'){need((payload.effects??[]).length>0,'Record the mechanical effects of the source decision.');applyEffects(state,payload.effects);}
+     else{need(!(payload.effects??[]).length,'No-award resolution cannot also apply effects.');award.received=false;}
+     award.decisions.push({type:payload.benefitResolution,note,outcome:payload.benefitOutcomeName??null,effects:copy(payload.effects??[])});
+    }
+    state.pending=null;drainEffects(state,rolls);return 'Source-resolved '+award.name+': '+note;
+   }
+   if(pending.kind==='pension'){
+    const note=text(payload.note??'',500),condition=text(payload.pensionCondition??'',500);need(note&&condition,'Record the pension ruling and its payment conditions.');need(!(payload.effects??[]).length,'Pension entitlement is not immediate cash.');
+    const record=state.character.careers[pending.careerIndex];need(record&&state.active===pending.careerIndex,'The pension career changed.');const annualCredits=integer(payload.pensionAnnualCredits,0,1000000000,'Annual pension');
+    record.pension=annualCredits;record.pensionCondition=condition;record.pensionEntitlement={...record.pensionEntitlement,needsAdjudication:false,sourceAssisted:true,annualCredits,condition,note};state.pending=null;finishCareerExit(state);return 'Pension source ruling: Cr'+annualCredits+' annually. '+condition;
+   }
+if(pending.kind==='psionic-training-terms'){
     const note=text(payload.note??'',500);need(note,'Record the source ruling on access, costs and timing.');need(typeof payload.psionicApproved==='boolean','Record whether training is approved.');need(!(payload.effects??[]).length,'Use the explicit psionic funding fields, not generic effects.');
     const active=state.psionicTraining;need(active,'No training request is pending.');
     if(!payload.psionicApproved){psionicHistory(state).rulings.push({kind:pending.kind,approved:false,note});returnFromPsionics(state,rolls,false);return 'Psionic training declined. '+note;}
@@ -1050,7 +1198,7 @@ function apply(state,command,rolls) {
     need(first||count===0&&names.length===0,'First-talent history contradicts previous checks.');need(!first||names.length>0,'Record the previously chosen talent.');need(count>=names.filter(n=>n!=='Telepathy').length,'Previous checks cannot be fewer than the non-automatic attempted talents.');
     need(acquiredTalents(state).every(n=>names.includes(n)),'Include every acquired talent in its acquisition history.');
     need(count!==0||!first||names.length===1&&names[0]==='Telepathy'&&acquiredTalents(state).includes('Telepathy'),'Zero previous checks with a chosen talent requires acquired automatic Telepathy.');
-    const history=psionicHistory(state);need(count>=history.checksAttempted&&(!history.firstTalentChosen||first)&&history.attempts.every(a=>names.includes(a.talent)),'Existing native acquisition history cannot be erased or reduced.');
+    const history=psionicHistory(state);need(count>=history.checksAttempted&&(!history.firstTalentChosen||first)&&history.attempts.every(a=>names.includes(a.talent))&&history.importedAttempted.every(name=>names.includes(name)),'Existing native or imported acquisition history cannot be erased or reduced.');
     Object.assign(history,{historyKnown:true,checksAttempted:count,firstTalentChosen:first,importedAttempted:copy(names)});history.rulings.push({kind:pending.kind,note,previousChecks:count,firstTalentChosen:first,attemptedTalents:copy(names)});state.pending=null;activatePsionicTraining(state,rolls);return 'Prior psionic history recorded: '+count+' checks. '+note;
    }
    if(pending.kind==='psionic-repeat-training'){const note=text(payload.note??'',500);need(note,'Record the repeated-training source ruling.');applyEffects(state,payload.effects??[]);psionicHistory(state).rulings.push({kind:pending.kind,note});state.pending=null;returnFromPsionics(state,rolls,true);return 'Repeated psionic training resolved from source. '+note;}
@@ -1075,7 +1223,7 @@ function apply(state,command,rolls) {
    else{need(!(payload.effects??[]).length,'Do not add financing effects when care is refused.');Object.assign(crisis,{resolved:true,careAccepted:false,paid:0});state.effectsQueue=[{kind:'death',cause:'ageing',crisisIndex:pending.crisisIndex}];drainEffects(state,rolls);}
    return 'Source-assisted ageing financing: '+(payload.ageingCareApproved?'care paid':'care refused')+'. '+note;
   }
-  if(pending.kind==='medical-settlement'){applyEffects(state,payload.effects??[]);need(state.character.cash>=0,'Resolve the negative cash balance before settling injury bills.');need(text(payload.note??'',500),'Record the balance correction.');state.pending=null;state.stage='career';return 'Medical settlement balance resolved; finish the character to settle the outstanding bills.';}
+  if(pending.kind==='medical-settlement'){applyEffects(state,payload.effects??[]);need(state.character.cash>=0,'Resolve the negative cash balance before settling injury bills.');need(text(payload.note??'',500),'Record the balance correction.');state.pending=null;state.stage=postBenefitsStage(state);return 'Medical settlement balance resolved; finish the character to settle the outstanding bills.';}
   if(pending.kind==='missing-characteristic-check'){
    const note=text(payload.note??'',500);need(note,'Record the source ruling used for the absent characteristic.');need(!(payload.effects??[]).length,'Record only the check here; its consequences are resolved afterwards.');
    const natural=integer(payload.checkNatural,2,12,'Unmodified check roll'),total=integer(payload.checkTotal,-100,100,'Modified check total');
@@ -1134,7 +1282,7 @@ function apply(state,command,rolls) {
   return 'Source-assisted '+pending.kind+' confirmed. '+text(payload.note??'',500)+' Effects: '+JSON.stringify(payload.effects??[])+'.';
  }
  case 'connection': {
-  need(['career','term-end','finish'].includes(state.stage),'Add connections between terms or at completion.');
+  need(['career','term-end','retirement','finish'].includes(state.stage),'Add connections between terms or at completion.');
   need(state.connections.length<2,'At most two connections award skills.');
   const person=text(payload.person,80);need(person&&!state.connections.some(c=>c.person.toLowerCase()===person.toLowerCase()),'Use a different Traveller for each connection.');
   const skill=text(payload.skill,80);need(skill!=='Jack-of-all-Trades','Connections cannot award Jack-of-all-Trades.');
@@ -1171,7 +1319,7 @@ function apply(state,command,rolls) {
   }else throw new Error('That field cannot be overridden.');
   return 'GM override '+field+(field==='pool'?'['+payload.index+']':'')+': '+String(old??'absent')+' → '+payload.value+'. Reason: '+reason;
  }
- case 'finish':{need(!state.forcedCareer,'Resolve the required next career before finishing.');need(state.stage==='career'&&state.active===null,'Finish between careers after resolving benefits.');const settlement=settleInjuryBills(state);if(settlement===false)return 'Outstanding injury bills await source resolution of the cash balance.';state.stage='finish';return 'Finished source-assisted character. Unautomated stages remain listed in the record.'+(settlement?' Injury bills: paid Cr'+settlement.paid+', remaining medical debt Cr'+settlement.debt+'.':'');}
+ case 'finish':{need(!state.forcedCareer,'Resolve the required next career before finishing.');need(['career','retirement'].includes(state.stage)&&state.active===null,'Finish between careers after resolving benefits.');const settlement=settleInjuryBills(state);if(settlement===false)return 'Outstanding injury bills await source resolution of the cash balance.';state.stage='finish';return 'Finished source-assisted character. Unautomated stages remain listed in the record.'+(settlement?' Injury bills: paid Cr'+settlement.paid+', remaining medical debt Cr'+settlement.debt+'.':'');}
  default:throw new Error('Unknown command: '+command.type);
  }
 }
@@ -1207,17 +1355,19 @@ export function project(session) {
   if(event.summary!==undefined)need(event.summary===summary,'Action summary mismatch at action '+(i+1)+'.');
   log.push({number:i+1,id:event.id,type:event.command.type,summary,rolls,changes:characterChanges(snapshots[i].character,state.character)});snapshots.push(copy(state));
  }
+ state.commissionAvailability=commissionAvailability(state);state.exitOptions=exitOptions(state);state.followingInteractionDM=followingInteractionDM(state.character.stats.FOL);
+ state.currentBenefitAward=state.pending?.awardId?copy(benefitAward(state,state.pending.awardId)):null;
  state.currentInjury=state.injury!==undefined&&state.injury!==null?copy(injuryRecord(state)):null;
  state.injuryOptions=state.stage==='injury-loss'?copy(injuryRecord(state).options):[];
  state.injuryRestorable=state.stage==='injury-treatment'?copy(injuryRecord(state).losses):{};
  state.medicalOutstanding=(state.character.medicalBills??[]).filter(b=>!b.settled).reduce((sum,b)=>sum+b.personalCost,0);
  state.psionicOptions=state.stage==='psionic-training'?psionicOptions(state):[];
   state.psionicCanFinish=state.stage==='psionic-training'&&state.psionicTraining?.mode==='initial';
-  state.canStartPsionicTraining=['career','precareer'].includes(state.stage)&&state.active===null&&!state.forcedCareer&&(!Object.hasOwn(state.character.stats,'PSI')||state.character.stats.PSI>0)&&!state.character.psionics?.training.some(t=>t.completed);
+  state.canStartPsionicTraining=['career','precareer'].includes(state.stage)&&state.active===null&&!state.forcedCareer&&!state.character.retirementFromCreation&&(!Object.hasOwn(state.character.stats,'PSI')||state.character.stats.PSI>0)&&!state.character.psionics?.training.some(t=>t.completed);
   state.trainingOptions=state.stage==='training'?trainingOptions(state):[];
  state.educationOptions=['education-skill','companion-skill'].includes(state.stage)?educationOptions(state,state.pendingChoice):[];
  state.educationCheckSkills=state.stage==='education-check'?learnedEducationSkills(state):[];
- state.canChooseEducation=state.stage==='career'&&state.active===null&&!state.forcedCareer&&state.character.terms<3&&!state.educationAttemptTerms?.includes(state.character.terms);
+ state.canChooseEducation=state.stage==='career'&&state.active===null&&!state.forcedCareer&&!state.character.retirementFromCreation&&state.character.terms<3&&!state.educationAttemptTerms?.includes(state.character.terms);
  if(state.character.species==='aezorgh'&&Object.hasOwn(state.character.stats,'SOC'))state.character.stats.CHA=Math.floor(state.character.stats.SOC/2);
  state.backgroundOptions=backgroundOptions(state);state.cashLimit=cashLimit(state);
  state.careerChoices=availableCareers(state);state.statDMs=Object.fromEntries(Object.entries(state.character.stats).map(([k,v])=>[k,k==='RITE'?v:characteristicDM(v)]));

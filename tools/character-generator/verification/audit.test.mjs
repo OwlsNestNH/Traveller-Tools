@@ -16,3 +16,8 @@ test('education decisions and future-right consumption are included without dump
  const after={educations:[{id:'core.university',selections:{'university-1':'Medic'},careerAttempts:1,graduation:{graduated:true,honours:false,effects:[{kind:'skill',name:'Medic',value:1}]}}]};
  const changes=characterChanges(before,after);assert.ok(changes.some(c=>c.path.endsWith('.selections.university-1')&&c.after==='Medic'));assert.ok(changes.some(c=>c.path.endsWith('.careerAttempts')&&c.after===1));assert.ok(changes.some(c=>c.path.endsWith('.graduation.graduated')&&c.after===true));assert.ok(!JSON.stringify(changes).includes('effects'));
 });
+
+test('notes, assets and imported acquisition attempts retain explicit before and after values',()=>{
+ const before={notes:'Earlier biography',assets:[],psionics:{importedAttempted:['Telepathy']}},after={notes:'Updated biography',assets:[{id:'asset-1',name:'Scout',ownership:'borrowed'}],psionics:{importedAttempted:['Telepathy','Clairvoyance']}};
+ const changes=characterChanges(before,after);assert.deepEqual(changes.find(c=>c.path==='notes'),{path:'notes',before:'Earlier biography',after:'Updated biography'});assert.ok(changes.some(c=>c.path==='assets.0'&&c.after.ownership==='borrowed'));assert.ok(changes.some(c=>c.path==='psionics.importedAttempted.1'&&c.after==='Clairvoyance'));
+});

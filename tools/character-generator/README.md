@@ -18,6 +18,8 @@ Open `http://127.0.0.1:8781/?api=local`. The server listens only on loopback and
 - `engine/core-pack.mjs`, `expansion-pack.mjs`, `education-pack.mjs`: original numeric rule representations with source-page references.
 - `engine/core-procedures.mjs`: pure procedures for ageing, injuries, benefits, medical bills, and pensions.
 - `engine/companion-education.mjs`: pure, source-referenced Companion admission and award rules.
+- `engine/benefits.mjs`: source-keyed material-benefit and pension procedures.
+- `engine/psionic-games.mjs`: isolated competition rules helper; session support is tracked in COVERAGE.md.
 - `engine/psionics.mjs`: pure source-referenced potential and talent-acquisition checks.
 - `engine/audit.mjs`: deterministic before/after mechanical audit detail.
 - `engine/session.mjs`: deterministic state transitions and the versioned API. No DOM dependencies.
@@ -48,10 +50,17 @@ node --test tools/character-generator/verification/*.test.mjs
 node tools/character-generator/verification/browser.mjs /path/to/playwright
 node tools/character-generator/verification/review-browser.mjs /path/to/playwright
 node tools/character-generator/verification/expansion-browser.mjs /path/to/playwright
+node tools/character-generator/verification/benefit-browser.mjs /path/to/playwright
 node tools/character-generator/verification/career-smoke.mjs
 ```
 
 Browser checks require Playwright and an installed browser. Set `CHARACTER_BROWSER_CHANNEL=msedge` to use installed Microsoft Edge. Browser contexts are temporary and do not use an existing signed-in profile. Screenshots and results go to ignored `verification/artifacts/`.
+
+## Adding species and careers later
+
+Keep source data in a separate rules pack and register its identifiers in `engine/catalog.mjs`. Use the existing effect schema for shared mechanics; add a tested handler for genuinely new procedures. A new label or table does not establish complete support. Unknown effects must stop explicitly with a source reference.
+
+Each addition needs source-page provenance, species/culture eligibility tests, deterministic save/replay regressions and narrow-screen UI checks. Keep optional rules distinct from defaults and preserve the always-on audit. Review publication rights before distributing a new source pack.
 
 ## Rights and attribution
 
