@@ -2,7 +2,9 @@ import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { api } from './engine/session.mjs';
+import { api, MAX_SAVE_BYTES } from './engine/session.mjs';
+// JSON import wraps an already-serialized save; escaping can nearly double it.
+const MAX_REQUEST_BYTES=2*MAX_SAVE_BYTES+65536;
 const root=fileURLToPath(new URL('.',import.meta.url));
 const types={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.json':'application/json'};
 export function createServer(){
@@ -14,7 +16,7 @@ export function createServer(){
   const url=new URL(req.url,'http://'+host);
   if(url.pathname==='/api/v1'&&req.method==='POST'){
    const chunks=[];let bytes=0;try{
-    for await(const chunk of req){bytes+=chunk.length;if(bytes>2000000){res.writeHead(413);res.end('Request too large');return;}chunks.push(chunk);}
+    for await(const chunk of req){bytes+=chunk.length;if(bytes>MAX_REQUEST_BYTES){res.writeHead(413);res.end('Request too large');return;}chunks.push(chunk);}
     const body=new TextDecoder('utf-8',{fatal:true}).decode(Buffer.concat(chunks));
     const result=api(JSON.parse(body));res.writeHead(result.ok?200:400,{'Content-Type':'application/json'});res.end(JSON.stringify(result));
    }catch{res.writeHead(400,{'Content-Type':'application/json'});res.end(JSON.stringify({ok:false,error:{code:'INVALID_REQUEST',message:'Invalid JSON request.'}}));}return;

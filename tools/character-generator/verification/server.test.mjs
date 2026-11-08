@@ -30,3 +30,20 @@ test('chunked UTF-8 names roundtrip without silent character replacement',async(
   const malformed=await fetch(base+'/api/v1',{method:'POST',body:Buffer.from([123,34,120,34,58,34,0xc3,34,125])});assert.equal(malformed.status,400);
  }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });
+
+test('a valid near-limit save roundtrips through the escaped HTTP import envelope',async()=>{
+ const {createSession,execute,exportSession,MAX_SAVE_BYTES}=await import('../engine/session.mjs');
+ let session=createSession('http-near-cap');let reachedLimit=false;
+ for(let i=0;i<130;i++){
+  try{session=execute(session,{type:'notes',payload:{text:'"'.repeat(9000)}}).session;}
+  catch(error){assert.match(error.message,/size limit/);reachedLimit=true;break;}
+ }
+ assert.equal(reachedLimit,true);
+ const raw=exportSession(session),body=JSON.stringify({operation:'import',raw});
+ assert.ok(Buffer.byteLength(raw)<=MAX_SAVE_BYTES);assert.ok(Buffer.byteLength(body)>MAX_SAVE_BYTES);
+ const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));
+ try{
+  const response=await fetch('http://127.0.0.1:'+server.address().port+'/api/v1',{method:'POST',headers:{'Content-Type':'application/json'},body});
+  assert.equal(response.status,200);const restored=await response.json();assert.equal(restored.ok,true);assert.deepEqual(restored.session,session);
+ }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
+});

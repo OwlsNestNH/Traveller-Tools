@@ -6,7 +6,7 @@ import { EXPANSION_PACK, SPECIES_RULES, PRECAREER_RULES, BENEFIT_RULES, SOURCE_D
 const RULE_PACK={...CORE_PACK,...EXPANSION_PACK};
 import { API_VERSION, SOURCES, CAREERS, PRECAREERS, SPECIES, SKILLS, BACKGROUND_SKILLS, findCareer, findSpecies } from './catalog.mjs';
 const LIMIT = 2000;
-const MAX_SAVE_BYTES = 2000000;
+export const MAX_SAVE_BYTES = 2000000;
 const saveSize = value => new TextEncoder().encode(JSON.stringify(value,null,2)).byteLength;
 const copy = value => structuredClone(value);
 const plain = value => value && typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
