@@ -2072,7 +2072,7 @@ outcomes('zhodani.scholar',{
 
 
 const genderAward=(gender,effects)=>({kind:'conditional',condition:{gender},then:effects,otherwise:[sourceRequired('aliens',20,'This award is restricted by gender. Choose another permitted award.')]});
-const officerOpportunity=career=>({kind:'officer-qualification-opportunity',career,term:'next',dmFrom:'current-career-terms',ignoreMinimumThreeTerms:true});
+const officerOpportunity=(career,page,eventResult)=>({kind:'officer-qualification-opportunity',career,term:'next',dmFrom:'current-career-terms',ignoreMinimumThreeTerms:true,source:{id:'aliens',page},eventResult});
 outcomes('aslan.envoy',{
  3:[Q([['Withdraw',C('SOC-1')],['Continue',[K('Diplomat|Investigate|Stealth',8,[A(2)],[stat('SOC',-1),A(-2)])]]])],
  4:C('Animals=1 / Athletics=1 / Stealth=1 / Survival=1'),5:[relationship('Contact')],6:[K('EDU',8,[ANY()])],
@@ -2116,7 +2116,7 @@ outcomes('aslan.military',{
  5:[U('aslan.military',31,'Gain Melee (natural), Gun Combat, Drive or Survival; check the selected skill at 8+ for next advancement DM+2.')],
  6:[K('EDU',8,[ANY()])],8:C('Gun Combat / Language / Melee / Recon / Survival'),
  9:[Q([['Duel',[K('Melee (natural)',8,C('SOC+1'),C('SOC-1'))]],['Prove courage',[RAND('1D',[[1,3,[I()]],[4,6,[relationship('Rival'),A(4),stat('SOC',1)]]])]]])],
- 10:[officerOpportunity('aslan.military-officer')],
+ 10:[officerOpportunity('aslan.military-officer',31,10)],
  11:[Q([['Tactics',[genderAward('male',C('Tactics (military)'))]],['Advancement',[M('advancement',4,'one')]]])],12:[P()]
 },{
  1:[I(2,'lower')],2:[relationship('Rival')],3:C('Gun Combat / Stealth / Streetwise / Survival'),4:C('SOC-1'),
@@ -2148,11 +2148,11 @@ outcomes('aslan.scientist',{
 outcomes('aslan.spacer',{
  3:[K('Gunner|Mechanic|Pilot',8,[A(2)],[noTerm(),relationship('Enemy')])],
  4:[OPT('Smuggle',[K('Deception',8,[R(3)],[A(-6)])])],
- 5:[officerOpportunity('aslan.space-officer')],
+ 5:[officerOpportunity('aslan.space-officer',37,5)],
  6:[Q([['Science',[genderAward('female',C('Science'))]],['Streetwise',C('Streetwise')],['Survival',C('Survival')],['Tolerance',C('Tolerance')]])],
  8:[relationship('Contact')],
  9:[Q([['Heroism',[K('END',9,[],[I()]),A(2)]],['Prudence',[K('Stealth',8,[],C('SOC-1'))]]])],
- 10:[officerOpportunity('aslan.space-officer')],
+ 10:[officerOpportunity('aslan.space-officer',37,10)],
  11:[Q([['Steward',[genderAward('female',C('Steward'))]],['Advancement',[M('advancement',4,'one')]]])],12:[P()]
 },{
  1:[I(2,'lower')],2:[relationship('Rival')],3:[K('END',8,[],C('END-1'))],4:C('SOC-2'),
@@ -2177,7 +2177,7 @@ outcomes('aslan.outcast',{
  8:[Q([['Fight',[K('Melee',10,[R(1)],[noTerm()])]],['Escape',[K('Stealth',8,[],[noTerm()])]]])],
  9:[OPT('Join expedition',[relationship('Ally'),{kind:'career-status',action:'next',careerGroup:'core'}])],
  10:[{kind:'career-status',action:'auto-qualify',careerChoices:['aslan.outlaw','aslan.wanderer']}],
- 11:[OPT('Accept redemption',[{kind:'aslan-restore-status',from:'initial-SOC'},{kind:'note',text:'Owe a clan elder a substantial favour.'}])],
+ 11:[{kind:'aslan-restoration-opportunity',source:{id:'aliens',page:41},eventResult:11}],
  12:[P()]
 },{
  1:[I(2,'lower')],2:[{kind:'relationship-remove',types:['Ally','Contact'],count:1,ifAbsent:[noTerm()]}],
@@ -2189,7 +2189,7 @@ outcomes('aslan.outlaw',{
  6:[relationship('Contact')],8:C('Electronics / Gun Combat / Independence / Stealth'),
  9:[K('Gun Combat|Pilot|Stealth',8,[Q([['Benefit',[R(1)]],['Status',C('SOC+1')]])],[I()])],
  10:[Q([['Accept mission',[K('Stealth',8,[R(1)])]],['Inform enemies',[R(1),relationship('Enemy')]]])],
- 11:[U('aslan.outlaw',43,'Male: 3 Clan Shares, restore original SOC and leave. Unmarried female may marry, reroll SOC and leave.')],
+ 11:[{kind:'aslan-outlaw-restoration',source:{id:'aliens',page:43},eventResult:11}],
  12:[P()]
 },{
  1:[I(2,'lower')],2:[stat('END',-2),relationship('Enemy')],3:[I(),noTerm()],

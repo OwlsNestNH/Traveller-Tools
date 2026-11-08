@@ -132,3 +132,36 @@ At a completed term boundary, `assignmentChangeOptions` projects only the eleven
 - `character.careerTransitions` separately records source, age, generation terms, from/to career and assignment identities, mode, qualification check or automatic reason, entry/failure status and any new career index.
 
 The retained-career path preserves career terms, officer status, highest rank and benefits. Fresh-assignment paths start a separate rank-zero career record. Applicable persistent qualification rights remain available; first-entry education, commission and rank awards are not repeated by an in-place switch. Invalid choices are rejected before dice or one-use rights are consumed. Automatic qualification, including Core Noble SOC 10+, does not invent a qualification roll.
+
+
+## Native Aslan officer offers
+
+Military Event 10 and Spacer Events 5/10 offer a specific officer career in the following term. The originating career's completed terms provide the qualification DM. `aslanOfficerOptions` exposes the actual eligible assignments, availability/reason, source, DM and whether departure needs the minimum-service waiver. The GUI must not turn that waiver into general permission to leave early.
+
+- `begin-aslan-officer {offerId,assignment}` records the selected route and resolves the old career's benefits once. After an already-legal departure, it does not repeat those benefits.
+- `aslan-officer-entry` uses `currentAslanOfficerOffer`. `qualify-aslan-officer {}` resolves the named qualification, not a Core commission or automatic transfer. Success starts a separate rank-zero career.
+- `cancel-aslan-officer {mode}` accepts only projected `cancelOptions`. A waiver-only departure can end creation through retirement. An independently legal departure may return to ordinary career selection. Previously resolved benefits are retained.
+- At `aslan-officer-rank`, `resolve-aslan-officer-rank {tableId,reason}` requires GM mode and an explicit choice from projected printed headers. The successful qualification remains unchanged. The saved mapping applies to that career's future rank awards. No Navigator/Shipmaster mapping is assumed from the mismatched source headings.
+- An `aslan-officer-status` source step verifies a prior Outcast/Outlaw history when necessary. `resolve-book` requires GM mode, `confirmed: true`, `aslanOfficerStatusApproved`, a source-basis `note`, and `aslanOfficerStatusConfirmed: true` for approval. Approval applies only to this offer. Denial does not leave the old career, roll qualification or consume benefits.
+
+`character.aslanOfficerOffers` retains the grant boundary, source/origin career, selected assignment, completed-term DM, commitment, check, cancellation, rank mapping and `statusVerification`. Forced stay is not waived; unused offers expire if another term intervenes. Ordinary forced exit does not itself disqualify the offer.
+
+`character.aslanStatusChanges` records source, timing, SOC/status before and after, removed Clan Share tokens and affected award IDs. Native Aslan qualification failure sets SOC 2/Outcast and forfeits held unconverted Clan Shares, including those just received during mustering out. Original award records remain annotated rather than erased. Other benefits and cash history are preserved. No repossession of previously redeemed cash, ships or land is inferred.
+
+Native Aslan cash limits and male half-cash handling remain distinct from the Core three-roll rule. Broad Hierate/Core access, family/clan/land setup, Outlaw redemption and generic same-career Aslan assignment mapping remain outside this bounded route.
+
+## Earned Aslan Outcast restoration
+
+Outcast Event 11 opens a typed `book-step` with `pending.kind = aslan-restoration`, not a generic characteristic edit. `currentAslanRestoration` is the pending/latest ledger record.
+
+- `resolve-aslan-restoration {accept:false}` declines without requiring GM mode.
+
+- Acceptance requires GM mode and `{accept:true,originalSOC,originalSOCConfirmed:true,statusTiming,reason}`. Original SOC is a verified integer from 1 through 40 (the engine representation limit, not a normal source roll range); the nonempty reason is at most 500 characters. Neither is guessed or prefilled.
+
+- `statusTiming` is an explicit referee ruling: `on-restoration` or `on-successful-entry`. SOC restores on acceptance; clearing current Outcast status follows that recorded ruling.
+
+- The earned right permits one normal next-term career attempt, not automatic qualification, retained rank, a free term or a permanent historical career unlock. `aslanRestorationNotice` projects its availability and reason. Continuing Outcast expires it; forced stay and independent entry conditions remain binding.
+
+- `character.aslanRestorations` records the source, original career/time boundary, SOC/status before and after, typed decision, actual career attempt/check and expiry. Previous forfeitures remain historical; restoration does not return lost Clan Shares.
+
+Voluntary native Outcast entry sets Outcast status and forfeits held unconverted Clan Shares without inventing the SOC 2 penalty that applies to qualification failure. Outlaw restoration is a separate `aslan-outlaw-restoration` source stop marked unsupported. Its distinct male/female conditions cannot be completed through a generic SOC-only edit.
