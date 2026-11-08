@@ -88,7 +88,7 @@ export const CORE_PACKAGES=[choice('none','No hard-coded package','69–73',{fam
 ];
 
 export const KINDS = [choice('standard','Ordinary robot','13–78'),...[
- ['drone','Drone','79'],['microbot','Microbot','80'],['nanorobot','Nanorobot','83'],['android','Android','86'],['biological','Biological robot','89'],
+ ['metamorphic','Metamorphic (provisional)','104'],['drone','Drone','79'],['microbot','Microbot','80'],['nanorobot','Nanorobot','83'],['android','Android','86'],['biological','Biological robot','89'],
  ['cyborg','Cyborg','93'],['avatar','Avatar','95'],['clone','Clone','98'],['missile','Missile robot','100'],['vehicle-brain','Vehicle brain','102'],['ship-brain','Ship brain','103']
 ].map(([id,label,pages])=>choice(id,label,'79–105',{implemented:false,reason:'This type requires its own design sequence; implementation and source verification are pending.'}))];
 const select=(field,label,choices,category)=>({field,label,type:'select',choices,...(category?{category}:{})});
@@ -125,7 +125,7 @@ for(const control of STAGES.find(s=>s.id==='skills').controls){
  if(control.field==='hunterBandwidth')control.visibleWhen={field:'corePackage',oneOf:['hunter-standard','hunter-tactical']};
 }
 export const COVERAGE = {complete:false,scope:'Selected-rule construction checks, not certification of every possible Handbook design.',supportedTechLevels:{minimum:5,maximum:23,note:'Displayed implementation scope follows published component and high-technology milestones, not a universal campaign TL limit. Ordinary armour below TL6 remains unresolved.'},gaps:[
- {id:'metamorphic-body',message:'Metamorphic tiers have published technology, prices and transformation times, but the book does not specify reserved Slots, a complete body-price formula or mutable manipulator characteristic limits. Reference prices are not a certified construction path; android multipliers are not inferred from appearance.',source:source('104')},
+ {id:'metamorphic-body',status:'provisional-supported',message:'Provisional current-form construction uses the printed tier rate against immutable Base Slots, ordinary chassis/equipment costs, zero additional body reservation and ordinary manipulator rules. These fixed application assumptions are not RAW. Size and locomotion remain fixed; transient forms, arbitrary free limbs and combat simulation are not implemented.',source:source('104')},
  {id:'high-tech-backup-services',message:'Published high-tech backup, restore, continuous-backup implant and body-transformation prices are reference estimates. Compatible bodies, storage, implanted capacity and actual transfer procedures remain separate source-dependent work.',source:source('104,113')},
  {id:'open-fabrication-output',message:'Superior and open fabrication have installed Slot/cost accounting. Maximum external output size, controller compatibility, feedstock and licensed source templates remain qualified operating prerequisites, not unlimited manufacturing.',source:source('51-52,105')},
  {id:'vehicle-option-conversion',message:'Handbook conversion is64 robot Slots per vehicle Space, with robot-book equivalents taking precedence. External records calculate qualified conversion estimates while blocking source/prerequisite certification. Three source-verified Update 2026 discharger options use immutable catalogue facts. Other items, prototype variants, charge procurement and full vehicle-host construction remain separate work.',source:source('62')},

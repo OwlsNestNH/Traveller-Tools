@@ -1,3 +1,4 @@
+import {metamorphicControls} from './high-technology.mjs';
 import {medicalInventoryControls,validateMedicalInventory,evaluateMedicalInventory} from './medical-nanorobots.mjs';
 import {compositeControls,supportsReferences,validateReferences} from './composites.mjs';
 import {equipmentCapabilities} from './capabilities.mjs';
@@ -13,6 +14,7 @@ const specialKinds = [
  ['clone','Clone','96-99','Template, growth and training budget implemented; character generation and ageing resolution remain external.'],
  ['microbot','Microbot','79-81','Miniature chassis, mass, movement, protection and p81 microbrain table implemented; source conflicts remain explicit.'],
  ['nanorobot','Nanorobot','82-86','Medical, construction and environmental nanorobot packages implemented with explicit operational limits and external controller dependencies.'],
+ ['metamorphic','Metamorphic (provisional)','104','Provisional current-form construction: Base Slots rate plus standard hardware, zero body reservation and ordinary manipulator limits.'],
  ['android','Android','86-87','Body tiers, half-slot reservation and physical-only price multiplier implemented.'],
  ['biological','Biological robot','88-89','Genome-dependent body tiers and three-quarter-slot reservation implemented; bespoke genomes require referee confirmation.'],
  ['cyborg','Cyborg','90-93','Full-body organic-brain conversion interfaces, procedure thresholds and degradation schedules calculated; replacement body construction remains external.'],
@@ -21,7 +23,7 @@ const specialKinds = [
  ['missile','Missile robot','100-101','Standard carrier procurement, payload bounds and burn rounds calculated; custom warhead robot construction is an external dependency.'],
  ['vehicle-brain','Vehicle brain','102-103','Interface cost and occupied vehicle Spaces calculated; host and installed brain require separate construction validation.'],
  ['ship-brain','Ship brain','102-103','Interface cost, occupied tonnage and operating modifiers calculated; High Guard host construction remains an external dependency.']
-].map(([id,label,pages,reason])=>({id,label,source:source(pages),implemented:['clone','microbot','nanorobot','android','biological','avatar','cyborg','drone','missile','vehicle-brain','ship-brain'].includes(id),reason}));
+].map(([id,label,pages,reason])=>({id,label,source:source(pages),implemented:['metamorphic','clone','microbot','nanorobot','android','biological','avatar','cyborg','drone','missile','vehicle-brain','ship-brain'].includes(id),...(id==='metamorphic'?{provisional:true}:{}),reason}));
 export function getSpecialKinds(){return copy(specialKinds);}
 const number=(field,label,min,max,value)=>({field,label,type:'number',min,max,default:value,source:source('96-99')});
 const select=(field,label,values,value)=>({field,label,type:'select',choices:values.map(([id,label])=>({id,label})),default:value,source:source('96-99')});
@@ -61,7 +63,7 @@ for(const c of controls){
  if(c.field==='quickEducation')c.visibleWhen={field:'growth',equals:'quick'};
  if(c.field==='storageYears')c.visibleWhen={field:'growth',equals:'spare'};
 }
-function baseSpecialControls(kind){return kind==='clone'?copy(controls):kind==='microbot'?copy(microControls):kind==='nanorobot'?copy(nanoControls):kind==='avatar'?copy(avatarControls):kind==='missile'?copy(missileControls):kind==='cyborg'?copy(cyborgControls):kind==='drone'?copy(droneControls):['vehicle-brain','ship-brain'].includes(kind)?copy(hostControls(kind)):['android','biological'].includes(kind)?copy(bodyControls(kind).map(c=>({...c,source:source(kind==='android'?'86-87':'88-89')}))):[];}
+function baseSpecialControls(kind){return kind==='metamorphic'?metamorphicControls():kind==='clone'?copy(controls):kind==='microbot'?copy(microControls):kind==='nanorobot'?copy(nanoControls):kind==='avatar'?copy(avatarControls):kind==='missile'?copy(missileControls):kind==='cyborg'?copy(cyborgControls):kind==='drone'?copy(droneControls):['vehicle-brain','ship-brain'].includes(kind)?copy(hostControls(kind)):['android','biological'].includes(kind)?copy(bodyControls(kind).map(c=>({...c,source:source(kind==='android'?'86-87':'88-89')}))):[];}
 export function getSpecialControls(kind,design={}){
  const base=[...baseSpecialControls(kind),...compositeControls(kind)];
  if(kind==='nanorobot'){const itemised=design.special?.medicalMode==='itemised';return [...base.map(c=>!itemised?c:c.field==='otherActivePackages'?{...c,label:'Untyped existing active packages (app limit 100)',visibleWhen:{field:'medicalMode',equals:'itemised'}}:c.field==='existingAgeingPackage'?{...c,label:'Unreconciled legacy active anti-ageing declaration',visibleWhen:{field:'medicalMode',equals:'itemised'}}:{...c,visibleWhen:{field:'medicalMode',equals:'legacy-single'}}),...medicalInventoryControls(design.techLevel??13)];}

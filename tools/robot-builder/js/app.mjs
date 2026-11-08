@@ -635,9 +635,9 @@ function metric(label, value) { const row = el('div', undefined, 'metric'); row.
 function formatted(value, suffix = '') { return typeof value === 'number' && Number.isFinite(value) ? `${number.format(value)}${suffix}` : 'Not calculated'; }
 function renderSummary() {
   const evaluation = view.evaluation;
-  $('design-status').textContent = { verified: evaluation.coverage?.complete === true ? 'Verified' : 'Subset checked', invalid: 'Needs correction', blocked: 'Rules incomplete' }[evaluation.status] || 'Not verified';
-  $('design-status').className = `tag ${evaluation.status === 'verified' ? 'success' : 'review'}`;
-  const provisional = !evaluation.totals && !!evaluation.previewTotals;
+  $('design-status').textContent = { verified: evaluation.provisional ? 'Provisional assumptions' : evaluation.coverage?.complete === true ? 'Verified' : 'Subset checked', invalid: 'Needs correction', blocked: 'Rules incomplete' }[evaluation.status] || 'Not verified';
+  $('design-status').className = `tag ${evaluation.status === 'verified' && !evaluation.provisional ? 'success' : 'review'}`;
+  const provisional = evaluation.provisional === true || !evaluation.totals && !!evaluation.previewTotals;
   const totals = evaluation.totals || evaluation.previewTotals;
   const costLabel = evaluation.costLabel || totals?.costLabel || 'Construction cost';
   const excluded = evaluation.notApplicableMetrics || [];
