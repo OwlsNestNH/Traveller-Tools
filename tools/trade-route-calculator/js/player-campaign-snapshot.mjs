@@ -1,12 +1,12 @@
 // Read-only campaign adapter. Only explicit public values cross this boundary.
 // No DOM, persistence, random rolls, network access or URL serialization.
-import {projectPlayerSnapshot,projectPlayerMarketSnapshot,SNAPSHOT_VERSION,EXPENSE_KINDS} from './player-snapshot.mjs?v=luxury-lss-20261108-1';
-import {playerBriefingData} from './player-briefing.mjs?v=luxury-lss-20261108-1';
-import {context} from './rules.mjs?v=luxury-lss-20261108-1';
+import {projectPlayerSnapshot,projectPlayerMarketSnapshot,SNAPSHOT_VERSION,EXPENSE_KINDS} from './player-snapshot.mjs?v=lss-whole-days-20261108-1';
+import {playerBriefingData} from './player-briefing.mjs?v=lss-whole-days-20261108-1';
+import {context} from './rules.mjs?v=lss-whole-days-20261108-1';
 import {displayDate} from './calendar.mjs';
-import {supportStock,supportAmount} from './life-support.mjs?v=luxury-lss-20261108-1';
-import {passengerShip} from './passengers.mjs?v=luxury-lss-20261108-1';
-import {fuelAvailabilityAdvice} from './expenses.mjs?v=luxury-lss-20261108-1';
+import {supportStock,supportAmount} from './life-support.mjs?v=lss-whole-days-20261108-1';
+import {passengerShip} from './passengers.mjs?v=lss-whole-days-20261108-1';
+import {fuelAvailabilityAdvice} from './expenses.mjs?v=lss-whole-days-20261108-1';
 import * as A from './amounts.mjs';
 
 const text=value=>String(value??'').replace(/[\x00-\x1f\x7f]/g,' ').slice(0,240);

@@ -34,7 +34,8 @@ The campaign clock displays an Imperial day-year date and hour, starting at 001-
 ## Development and verification
 
 Main status shows remaining life-support endurance rounded down to whole days.
-The progress gauge, LSS quantities, accounting and saved stock retain their precision.
+The progress gauge uses that same whole-day value, so 27.x days shows 27 out of a 28-day target.
+LSS quantities, consumption, accounting and saved stock retain their precision.
 
 Get sale offers quotes every eligible trade-good lot in the hold, independent of
 selection and display filters. A successful buyer search generates those quotes

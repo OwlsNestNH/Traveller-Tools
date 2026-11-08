@@ -1,4 +1,4 @@
-import {ruleInfo} from './rule-references.mjs?v=luxury-lss-20261108-1';
+import {ruleInfo} from './rule-references.mjs?v=lss-whole-days-20261108-1';
 // Presentation only: reuse the existing settings controls, names, values and
 // validation attributes. The application keeps the same save and Undo path.
 const fields={

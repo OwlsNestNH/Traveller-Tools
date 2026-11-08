@@ -1,7 +1,7 @@
 import {COMMODITIES} from './player-snapshot-catalog.mjs';
-import {playerSnapshotFixture} from './player-snapshot-fixture.mjs?v=luxury-lss-20261108-1';
-import {renderPlayerSnapshot,clearPlayerSnapshotMap} from './player-snapshot-view.mjs?v=luxury-lss-20261108-1';
-import {createRecipientStore} from './player-snapshot-storage.mjs?v=luxury-lss-20261108-1';
+import {playerSnapshotFixture} from './player-snapshot-fixture.mjs?v=lss-whole-days-20261108-1';
+import {renderPlayerSnapshot,clearPlayerSnapshotMap} from './player-snapshot-view.mjs?v=lss-whole-days-20261108-1';
+import {createRecipientStore} from './player-snapshot-storage.mjs?v=lss-whole-days-20261108-1';
 const root=document.getElementById('snapshot'),store=createRecipientStore(()=>localStorage);
 function display() {
   clearPlayerSnapshotMap(root);

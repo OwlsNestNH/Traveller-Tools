@@ -1,4 +1,4 @@
-import {up} from './rounding.mjs?v=luxury-lss-20261108-1';
+import {up} from './rounding.mjs?v=lss-whole-days-20261108-1';
 import {sum,mul,decimal,cmp,credit} from './amounts.mjs';
 
 export const tiers=['low','middle','high','luxury'];

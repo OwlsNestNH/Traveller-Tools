@@ -1,7 +1,7 @@
-import {creditStep} from './rounding.mjs?v=luxury-lss-20261108-1';
-import {tiers,roomCounts,serviceRate} from './accommodation.mjs?v=luxury-lss-20261108-1';
-import {passengerShip} from './passengers.mjs?v=luxury-lss-20261108-1';
-import {supportCostBasis,supportPurchaseCost,combinedSupportReference} from './life-support.mjs?v=luxury-lss-20261108-1';
+import {creditStep} from './rounding.mjs?v=lss-whole-days-20261108-1';
+import {tiers,roomCounts,serviceRate} from './accommodation.mjs?v=lss-whole-days-20261108-1';
+import {passengerShip} from './passengers.mjs?v=lss-whole-days-20261108-1';
+import {supportCostBasis,supportPurchaseCost,combinedSupportReference} from './life-support.mjs?v=lss-whole-days-20261108-1';
 
 export const consumableRefillReference=combinedSupportReference;
 // Installed amount is informational; supportCostBasis applies zero when empty.

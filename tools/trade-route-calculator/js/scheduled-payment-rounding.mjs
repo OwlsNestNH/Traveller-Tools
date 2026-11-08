@@ -1,5 +1,5 @@
 import {credit} from './amounts.mjs';
-import {up} from './rounding.mjs?v=luxury-lss-20261108-1';
+import {up} from './rounding.mjs?v=lss-whole-days-20261108-1';
 
 // Round the selected installment total once, without changing the obligation.
 export function scheduledPaymentCash(scheduledAmount,roundingStep=1){
