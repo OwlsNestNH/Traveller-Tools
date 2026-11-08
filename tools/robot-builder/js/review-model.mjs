@@ -39,8 +39,10 @@ function profileRow(label, summary, record, omitted = [], detail = '') {
   if(record.ammunitionCopies?.length||record.ammunitionOverrides?.length)for(const field of ['extraMagazines','extraHighCapacityMagazines','initialMagazines','initialMagazineType','autoloadAllocation'])hidden.add(field);
   if(record.ammunitionInventory?.products)for(const field of ['ammunitionInventory','initialAmmunition','magazineVariants','spareAmmunition','highCapacitySpareAmmunition','extraMagazines','extraHighCapacityMagazines','initialMagazines','initialMagazineType','autoloadAllocation','ammoCost','autoloadCost'])hidden.add(field);
   // A legacy initialMagazines=1 is a schema sentinel for no-ammunition melee,
-  // not an included magazine or power pack. Invalid selections remain editable.
-  if(noMeleeAmmunition(record)||record.poweredMelee)for(const field of ['initialMagazines','initialMagazineType','initialMagazineSourceId','extraMagazines','extraHighCapacityMagazines','autoload','autoloadAllocation','magazine','initialAmmunition','ammunitionInventory','ammunitionAccounting','magazineVariants','spareAmmunition','highCapacitySpareAmmunition'])hidden.add(field);
+  // not an included magazine or power pack. Other legacy supply/launcher fields
+  // are not facts about melee hardware. Hide them only here; invalid selections
+  // and their diagnostics remain available in the editor and serialized design.
+  if(noMeleeAmmunition(record)||record.poweredMelee)for(const field of ['ammunition','ammunitionType','auxiliaryLauncher','auxiliaryAmmunition','auxiliaryLoaded','integralAmmunition','integralLoaded','looseGrenades','looseAmmunitionFor','looseAmmunition','ammoCost','autoloadCost','magazineCost','initialIncluded','initialMagazines','initialMagazineType','initialMagazineSourceId','extraMagazines','extraHighCapacityMagazines','autoload','autoloadAllocation','magazine','initialAmmunition','ammunitionInventory','ammunitionAccounting','magazineVariants','spareAmmunition','highCapacitySpareAmmunition'])hidden.add(field);
   if(record.attackProfiles)hidden.add('attackProfiles');
   if(record.poweredMelee)for(const field of ['poweredMelee','powerOperation','acquisition'])hidden.add(field);
   const details = Object.entries(presentationFacts(record)||{}).filter(([key])=>!hidden.has(key)).map(([key,value])=>row(humanLabel(key),value));
@@ -381,6 +383,8 @@ export function projectReview(design, catalogue, evaluation) {
   const choiceLabel = (control,field,id,fallback) => control?.itemFields?.find(item=>item.field===field)?.choices?.find(item=>item.id===id)?.label || fallback || humanLabel(id);
   const weaponRows = (weapons,control,parentLabel='') => weapons.flatMap(weapon=>{
     const selected=control?.itemFields?.find(item=>item.field==='weaponId')?.choices?.find(item=>item.id===weapon.weaponId);
+    // Unavailable totals still use source identity to omit inapplicable supply facts.
+    if(!weapon.weaponFamily&&selected?.weaponFamily==='melee')weapon={...weapon,weaponFamily:selected.weaponFamily,magazine:selected.magazine};
     if(!weapon.poweredMelee&&selected?.poweredMelee)weapon={...weapon,poweredMelee:true,acquisition:selected.acquisition,powerOperation:selected.powerOperation,conditionalEffects:selected.conditionalEffects,source:selected.source};
     if(!weapon.attackProfiles&&selected?.attackProfiles)weapon={...weapon,attackProfiles:selected.attackProfiles,damage:null,traits:weapon.traits??selected.traits};
     const name=weapon.label || choiceLabel(control,'weaponId',weapon.weaponId,'Selected weapon');
