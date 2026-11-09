@@ -13,6 +13,7 @@ export function aslanEventOutcomesView(state,{button,esc}){
 
 export function aslanEventOutcomesSheet(state,{esc}){
  const c=state.character;let html='';
+ for(const r of c.equipmentCredits??[])html+='<p><strong>Restricted equipment credit: Cr'+esc(r.remaining)+' remaining</strong> of Cr'+esc(r.amount)+'. '+esc(r.categories.join(', '))+'. '+esc(r.status)+'.</p>';
  for(const r of c.aslanLandholds??[])html+='<p><strong>Landhold: '+esc(r.parcels)+' parcels</strong> (SOC '+esc(r.socAtAward)+'). '+esc(r.name??'Name pending')+'; '+esc(r.location??'Location pending for finalization / GM')+'.</p>';
  for(const r of c.aslanSecrets??[])html+='<p><strong>Retained secret: '+esc(r.quantity)+' conditional Clan Shares</strong>. '+esc(r.status)+', not spendable. '+esc(r.condition)+'</p>';
  for(const r of c.aslanOutcastOpportunities??[])html+='<p>Optional next-term Outlaw / Wanderer automatic qualification: '+esc(r.status)+'.</p>';
