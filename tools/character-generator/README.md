@@ -46,6 +46,10 @@ Open `http://127.0.0.1:8781/?api=local`. The server listens only on loopback and
 
 See API.md for the request/response contract and COVERAGE.md for the boundaries of automation.
 
+## Finished character sheet
+
+Finalized Travellers have a large **Open your character sheet** button. This opens a read-only, compact sheet with the current character record, completed terms and chronological events and decisions. Saved notes, medical notes and supported species-specific records stay visible. Superseded GM branches remain in the full action log rather than appearing as current outcomes. The sheet offers its own print view, the unchanged character-and-log export, and a return to the full action log. Closing the sheet or pressing Escape returns to the finish button without changing the character.
+
 ## Requested options
 
 0-6 boon rolls, score placement/swapping, optional minimum-total rerolls, and optional extra characteristics. These switches are explicitly identified as optional or house rules. Extra characteristics and species modifiers are excluded from the threshold. Boons apply to the first N rolls before allocation.
@@ -75,6 +79,7 @@ node tools/character-generator/verification/survival-result-browser.mjs /path/to
 node tools/character-generator/verification/advancement-result-browser.mjs /path/to/playwright
 node tools/character-generator/verification/life-event-presentation-browser.mjs /path/to/playwright
 node tools/character-generator/verification/training-information-browser.mjs /path/to/playwright
+node tools/character-generator/verification/final-sheet-browser.mjs /path/to/playwright
 node tools/character-generator/verification/release-presentation-browser.mjs /path/to/playwright
 node tools/character-generator/verification/release-scope-browser.mjs /path/to/playwright
 node tools/character-generator/verification/browser.mjs /path/to/playwright
