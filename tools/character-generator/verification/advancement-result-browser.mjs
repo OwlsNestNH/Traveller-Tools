@@ -46,7 +46,11 @@ try{
     await page.screenshot({path:fileURLToPath(new URL('advancement-result-'+name+'.png',out)),fullPage:true});
     // The result remains until a real next step, then leaves the workspace
     // while its human-readable history remains in the log.
-    await page.locator(success?'[data-action="training"]':'[data-action="continue-career"]').first().click();
+    // A failed advancement can force career exit, so do not assume that
+    // continuing is legal. Exercise an enabled next step from the actual UI.
+    const nextAction=page.locator(success?'[data-action="training"]:enabled':'[data-action="continue-career"]:enabled, [data-action="leave-career"]:enabled, [data-action="retire-career"]:enabled').first();
+    assert.equal(await nextAction.count(),1,'An eligible next career action must be available.');
+    await nextAction.click();
     await page.waitForFunction(revision=>JSON.parse(localStorage.getItem('traveller-character-generator.v1')).events.length===revision+2&&!document.querySelector('#new').disabled,before.revision);
     assert.notEqual(await page.locator('#last-action-result h3').innerText(),expected.title);
     assert.ok((await page.locator('#action-log').innerText()).includes(after.log.at(-1).summary));
