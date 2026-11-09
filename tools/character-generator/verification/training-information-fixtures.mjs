@@ -1,9 +1,9 @@
 import {api} from '../engine/session.mjs';
 import {run} from './core-life-event-fixtures.mjs';
 export {run};
-export function trainingFixture({species='human',career='core.drifter',assignment='wanderer',seedStart=0}={}){
+export function trainingFixture({species='human',career='core.drifter',assignment='wanderer',seedStart=0,rulesRevision}={}){
  for(let seed=seedStart;seed<seedStart+100;seed++){
-  let r=api({operation:'create',seed:'training-information-'+seed});r=run(r,'setup',{species,gender:'male'});r=run(r,'gm-mode',{enabled:true});r=run(r,'roll-statistics');
+  let r=api({operation:'create',seed:'training-information-'+seed});if(rulesRevision){r.session.rulesRevision=rulesRevision;r=api({operation:'import',raw:JSON.stringify(r.session)});}r=run(r,'setup',{species,gender:'male'});r=run(r,'gm-mode',{enabled:true});r=run(r,'roll-statistics');
   for(let i=0;i<6;i++)r=run(r,'gm-override',{field:'pool',index:i,value:12,reason:'Training presentation regression'});
   r=run(r,'accept-statistics');r=run(r,'background',{skills:r.state.backgroundOptions.slice(0,r.state.backgroundRemaining)});r=run(r,'skip-precareer');r=run(r,'career',{id:career,assignment});
   for(let step=0;step<12;step++){

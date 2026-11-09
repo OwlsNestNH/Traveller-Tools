@@ -6,7 +6,7 @@ The rules engine is independent of the GUI. Import `api` from `engine/session.mj
 
 `api` exposes four species (Human, Aslan, Vargr, Aezorgh) and 36 careers. Zhodani setup, careers and the Intendant/Noble PSI configuration are deferred. Direct commands, projection, import and restore/replay histories containing these choices fail with `INVALID_REQUEST`; original files remain available through unverified read-only recovery. Filtering applies equally to the in-browser and HTTP API. No request flag enables development content. Human PSI, Core/Vargr Psion and Companion paths remain supported.
 
-New sessions use rules revision `character-preview-2026-11-09.17`; verified compatible `.16` sessions remain editable without rewriting their revision, commands or original escape outcomes. The new explicit escape command requires this updated build. Current and compatible saves must also satisfy release scope. Earlier revisions, including `.15`, remain read-only recovery records. `developmentApi` and the direct engine procedures preserve full internal development coverage; they are not the public release contract. Zhodani-specific command descriptions below document that preserved, deferred implementation only.
+The current rules revision is exported as `RULES_REVISION` by `engine/session.mjs`. Existing `.16`, `.17`, `.18` and `.19` histories retain their recorded rules, revision, commands and outcomes on import. New sessions select required specialties immediately when awarded; `.18` saves retain their deferred-specialty workflow. The new explicit escape command requires this updated build. Current and compatible saves must also satisfy release scope. Earlier revisions, including `.15`, remain read-only recovery records. `developmentApi` and the direct engine procedures preserve full internal development coverage; they are not the public release contract. Zhodani-specific command descriptions below document that preserved, deferred implementation only.
 
 ## Operations
 
@@ -23,6 +23,10 @@ Success has `ok: true`. Invalid requests have `ok: false` and `error: {code: "IN
 A session is `{format: "traveller-character-session", version: 1, rulesRevision, seed, events}`. Each event carries an ID, command, generated dice and summary. Commands are validated against the current stage and applied to a clone: failed actions do not mutate the supplied session. Repeating an ID with the same command is idempotent, including a retry with its original expected revision; reusing it for a different command is rejected. Send `expectedRevision` to reject stale edits. Clients must retain the returned session on each accepted command.
 
 Limits include 2 MB UTF-8 decoded imports and serialized saves (checked before accepting an action), a bounded 4 MB plus 64 KiB HTTP envelope to allow JSON escaping, 2,000 actions, bounded text and effect lists, and a rule-effect loop cap. These are guardrails for a local tool, not a hosted multi-user security design. A production host would need authentication, authorization, rate limits and a durable storage design.
+
+## Derived event-result presentation
+
+Projected log entries may include `eventResults`: read-only table identity, row, original roll, concise description, possible effect summary and source reference. These fields are derived after replay validation and are not added to saved commands or summaries. Typed event decisions retain their parent context, while the normal change list records actual effects. Unknown or unsupported source outcomes remain explicit; a description does not apply a rule.
 
 ## Core command families
 
@@ -355,3 +359,13 @@ Believer event 9: the player chooses either one 2D roll multiplied by Cr10,000 a
 The user ruling of 2026-11-09 rerolls a mandatory Independence result from the same source table, retaining all dice and modifiers. Family Outcast row 4 rerolls before any award; the accepted row supplements ordinary background skills. Material-benefit replacements (including borrowed-ship rerolls) consume only the original benefit entitlement. Printed gender substitutions and legal choice alternatives remain available; male-only choices retain their original indices but are unavailable with a reason.
 
 Each reroll sequence is limited to 64 candidate rolls; exhaustion rejects the entire action without committing a partial award. Fixed or event awards without an originating rerollable table remain explicit source decisions. This is a user ruling, not newly claimed printed text. Historical `.16` and `.17` mechanics are unchanged.
+
+### Optional first-career Academy Service Skills roll
+
+With GM mode enabled, send `gm-academy-training` with `{enabled: true|false}` before entering the first career. The option is off unless explicitly enabled; its change is recorded in the action log and participates in restore/replay. The UI label is **Allow Service Skill choice in the first term after Academy**.
+
+After a completed Core military Academy term immediately preceding the first lifetime career, enabling this house option adds one ordinary Service Skills roll after basic training and any graduation awards. It applies only to the matching Army, Marine, or Navy career and does not double later-career training. The roll uses ordinary skill gains, specialization choices, and limits. The option does not change the default full first-career level-0 basic training, including Army's Drive-or-Vacc Suit choice; minimum-level-0 awards do not stack. Existing saves without the new command retain their original behavior.
+
+### Borrowed event roll checkpoints
+
+`cross-career-cover-check` and `resolve-relationship-event-step` are the UI's separated-step variants of the original commands. Their original equivalents remain replay-compatible. A pending `borrowed-event-roll` exposes `pendingBorrowedRoll` with `id`, `label`, `kind`, `dice`, and `source`. Submit `roll-borrowed-event` with exactly `{pendingId: pendingBorrowedRoll.id}`. Each token authorizes only that current roll; a later token cannot be consumed by retrying an earlier request. Source/skill prerequisites may suspend without rolling. Export/import, request IDs and expected revisions preserve pending checkpoints. New `.20` sessions enable separation by default; explicit variant commands enable future separated routes in compatible older saves without changing their revision or recorded actions.

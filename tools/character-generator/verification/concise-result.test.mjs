@@ -11,7 +11,7 @@ const catalog=api({operation:'catalog'}),esc=s=>String(s).replaceAll('&','&amp;'
 test('failed survival at term end keeps the check, mishap and rival without repeated counters or departure',()=>{
  const r=failedSurvivalFixture().after,event=r.log.at(-1),before=exportSession(r.session),result=conciseResult(event,r.state,catalog);
  assert.equal(r.state.stage,'term-end');assert.equal(result.title,'Survival failed.');assert.equal(result.status,'failure');assert.equal(result.compact,true);
- assert.equal(result.details.length,3);assert.match(result.text,/Check \[1, 3\]: total 5 against target 7\+/);assert.match(result.text,/Mishap rolled: 2/);assert.match(result.text,/Rival/);assert.doesNotMatch(result.text,/Age:|Completed terms|Career terms|Must leave/);
+ assert.equal(result.details.length,7);assert.match(result.text,/Table outcome:/);assert.match(result.text,/Source:/);assert.match(result.text,/Check \[1, 3\]: total 5 against target 7\+/);assert.match(result.text,/Mishap rolled: 2/);assert.match(result.text,/Rival/);assert.doesNotMatch(result.text,/Age:|Completed terms|Career terms|Must leave/);
  assert.match(result.full.text,/Must leave this career/);assert.match(fullActionLog(r.log),/careers\.0\.forcedExit/);assert.equal(exportSession(r.session),before);assert.deepEqual(conciseResult(project(importSession(before)).log.at(-1),r.state,catalog),result);
  const effects=conciseResult({...event,changes:[...event.changes,{path:'stats.STR',before:8,after:6},{path:'skills.Recon',before:0,after:1},{path:'debt',before:0,after:1000}]},r.state,catalog).text;
  assert.match(effects,/Strength: 8 → 6/);assert.match(effects,/Skill Recon: 0 → 1/);assert.match(effects,/Debt: Cr0 → Cr1,000/);

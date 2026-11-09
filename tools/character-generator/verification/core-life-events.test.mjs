@@ -41,10 +41,10 @@ test('betrayal converts exactly one existing Contact or Ally, retaining identity
   assert.deepEqual(s.character.relationships,[prior[0],{...prior[1],role},prior[2]]);assert.equal(s.character.cash,23);assert.equal(s.stage,'advancement');assert.deepEqual(s.effectsQueue,[]);
  }
 });
-test('all unusual rows retain typed records while Science allocation defers without delaying its Contact',()=>{
+test('all unusual rows retain typed records while Science is allocated before its Contact',()=>{
  for(let row=1;row<=6;row++){
-  let r=unusual(row);assert.equal(r.state.character.lifeEvents[1].row,row);assert.equal(r.state.character.lifeEvents[0].status,row===2?'completed':'pending');
-  if(row===2){assert.equal(r.state.stage,'advancement');const award=r.state.character.deferredSkillAwards.at(-1);assert.equal(award.name,'Science');assert.equal(award.status,'pending');assert.deepEqual(award.source,{id:'core',page:46});assert.equal(r.state.character.relationships.at(-1).name,'Alien contact');roundtrip(r);r=run(r,'allocate-specializations');r=run(r,'choose-skill',{name:'Science (xenology)'});assert.equal(r.state.character.skills['Science (xenology)'],1);assert.equal(r.state.character.relationships.at(-1).name,'Alien contact');}
+  let r=unusual(row);assert.equal(r.state.character.lifeEvents[1].row,row);assert.equal(r.state.character.lifeEvents[0].status,'pending');
+  if(row===2){assert.equal(r.state.stage,'skill-choice');assert.deepEqual(r.state.pendingChoice.allowed,['Science']);assert.deepEqual(r.state.pendingChoice.source,{id:'core',page:46});assert.ok(!r.state.character.relationships?.some(x=>x.name==='Alien contact'));assert.equal(r.state.character.deferredSkillAwards?.length??0,0);roundtrip(r);r=run(r,'choose-skill',{name:'Science (xenology)'});assert.equal(r.state.character.skills['Science (xenology)'],1);assert.equal(r.state.character.relationships.at(-1).name,'Alien contact');}
   else if(row===1)r=decision(r,{outcome:'decline'});
   else if([3,6].includes(row)){rejected(r,'resolve-life-event',{confirmed:true,reason:'Agreed item',name:'',cost:100});r=decision(r,{name:'Uncatalogued object'});assert.equal(r.state.character.assets.at(-1).name,'Uncatalogued object');assert.equal(r.state.character.assets.at(-1).cost,undefined);}
   else r=decision(r,{outcome:row===4?'amnesia':'government'});

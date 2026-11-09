@@ -166,9 +166,9 @@ Colonial Upbringing is available only in the first generation term, before any c
 
 Academy commissions remain optional even with honours, allowing an enlisted career. University initial choices must be distinct skill bases, including when different specialisations are selected. These existing behaviors are now explicitly confirmed by the user.
 
-## Deferred specialties and audit corrections
+## Historical .18 specialties and audit corrections
 
-New .18 sessions defer ordinary unspecified positive specialist awards until allocation. Players may allocate at a quiet checkpoint or during finalization; fixed named and source-constrained awards remain immediate. Checks that depend on unresolved skills settle the relevant awards first. This is the requested presentation policy, not a claim that the books instruct all choices to wait until finalization. Separate awards retain their order, source and individual limits. Connections cannot bypass level three through aliases, and open Science, Language and Profession subjects share case-insensitive identities.
+Existing .18 sessions defer ordinary unspecified positive specialist awards until allocation; new characters instead use immediate selection as described below. Players may allocate at a quiet checkpoint or during finalization; fixed named and source-constrained awards remain immediate. Checks that depend on unresolved skills settle the relevant awards first. This was the earlier presentation policy, not a claim that the books instruct all choices to wait until finalization. Separate awards retain their order, source and individual limits. Connections cannot bypass level three through aliases, and open Science, Language and Profession subjects share case-insensitive identities.
 
 The same revision corrects forced Drifter draft continuation, earned-benefit forfeiture, Scout event departure timing and Believer immediate event promotion. Compatible .16/.17 sessions retain their original mechanics. The public four-species scope and deferred Zhodani recovery boundary are unchanged.
 
@@ -178,3 +178,19 @@ The toolbar’s **View full log** information control opens the recorded action 
 Believer event 9 now asks the player whether to accept payment or refuse during the event, without requiring GM mode. Before the choice, it shows the Benefit rolls forfeited, the Cr2D × 10,000-per-roll payment range, and that acceptance ends the career. The count includes accrued rolls, the survived current term and remaining rank entitlement, after any owed Benefit-roll loss. Acceptance records the payout and prevents forfeited term/rank rolls from reappearing. Refusal gains 1D Enemies and leaves ordinary advancement available. Historical .16/.17 saves retain the original source-resolution step.
 
 Believer event 9: the player chooses either one 2D roll multiplied by Cr10,000 and the forfeited roll count, or separate 2D rolls per forfeited Benefit roll, summed and multiplied by Cr10,000. Both acceptance options leave the career; refusal gains 1D Enemies. The recorded calculation shows every result, formula and total. This calculation choice is an explicit player ruling; legacy .16/.17 source-resolution is unchanged.
+
+## Immediate specialty selection
+
+New characters choose a specialty when an award requires one, as the skill is received, rather than waiting for finalization. This follows the player's latest timing decision. Earlier .18 saves retain their recorded deferred-award workflow and can still allocate pending awards without losing them; importing a save does not silently change its rules revision. Legacy .16/.17 compatibility and the other .18 rule corrections remain intact.
+
+## Event descriptions and results
+
+Event result panels and the full action log now include concise, original source-backed event context, the actual table dice, the table’s possible mechanical outcomes, and separately recorded character changes. Pre-career, career, mishap and nested life/unusual event results use the same read-only projection. Typed event decisions retain their parent context; choices and checks remain explicit rather than being presented as already-awarded effects. Known nested disaster mishaps retain their table provenance and protection against automatic career ejection. Source-assisted outcomes remain pending and unknown narrative rows are not invented.
+
+These display fields are derived after replay validation and never change saved commands, summaries, rules revisions, dice or character state. Historical save bytes and original log fields remain unchanged.
+
+## Separate borrowed-career rolls
+
+New `.20` characters pause between undercover checks, borrowed career tables, subsequent checks and random consequences, Life/Unusual tables, and injury table/severity dice. Each pending step is saved before its next roll. Relationship choices do not roll the later consequence. Published dice, modifiers, outcomes and career accounting are unchanged. Other generation procedures outside these borrowed-career routes are not claimed to be fully separated.
+
+Existing `.16`–`.19` recorded commands retain their original combined outcomes. The UI uses explicit new cover and relationship commands for future separated steps without rewriting those saved histories or revisions.

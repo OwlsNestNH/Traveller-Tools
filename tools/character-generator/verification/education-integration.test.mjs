@@ -122,12 +122,13 @@ test('matching academy auto-entry, honours commission and distinct service award
  while(r.state.stage==='effect-choice')r=run(r,'choose-effect',{index:0});
  assert.equal(r.state.stage,'education-service');
  r=run(r,'education-service',{name:'Gun Combat'});
+ assert.equal(r.state.stage,'skill-choice');r=run(r,'choose-skill',{name:'Gun Combat (slug)'});
  assert.equal(r.state.stage,'education-service');
  assert.throws(()=>run(r,'education-service',{name:'Gun Combat'}),/different/);
  r=run(r,'education-service',{name:'Recon'});
  r=run(r,'education-service',{name:'Vacc Suit'});
  assert.equal(r.state.stage,'survival');
- assert.ok(r.state.character.deferredSkillAwards.some(a=>a.name==='Gun Combat'&&a.value===1&&a.status==='pending'));assert.equal(r.state.character.skills.Recon,1);
+ assert.equal(r.state.character.skills['Gun Combat (slug)'],1);assert.equal(r.state.character.deferredSkillAwards?.length??0,0);assert.equal(r.state.character.skills.Recon,1);
  assert.equal(r.state.character.skills['Vacc Suit'],1);assert.equal(r.state.character.skills.Leadership,1);
  assert.equal(r.state.character.educations[0].serviceAwardUsed,true);
  assert.equal(r.state.character.careers[0].officer,true);
