@@ -4,6 +4,7 @@ import {currentEffectsSheet} from './current-effects.mjs';
 import {careerRankView} from './career-rank-view.mjs';
 import {trainingChoiceView} from './training-information.mjs';
 import {trainingContext} from './training-context.mjs';
+import {createFinalSheet} from './final-sheet.mjs';
 import {setupOptionalSummary,syncSetupOptionalSummary} from './setup-options.mjs';
 import {relationshipEventView,relationshipEventPayload,relationshipEventSheet} from './relationship-event-view.mjs';
 import {benefitWagerView,benefitWagerSheet} from './benefit-wager-view.mjs';
@@ -379,7 +380,7 @@ function stageView(state){
  return aslanRestorationNotice(state,{esc})+'<p>You are now <strong>'+state.character.age+'</strong>. '+(record.forcedExit?'This career must end.':record.forcedStay?'Your natural 12 requires another term.':'Continue in this career or collect your benefits.')+'</p>'+(exits.retirementRequired?'<p class="warning">Changing this native Aslan career normally requires three terms. You may instead retire from character creation, collect benefits and finish.</p>':'')+'<div class="actions">'+button('Continue this career','continue-career','',exits.canContinue?'':'disabled')+button('Leave and take benefits','leave-career','quiet',exits.canLeave?'':'disabled')+(exits.canRetire?button('Retire from creation and take benefits','retire-career','quiet'):'')+'</div>'+(state.psionicGamesAvailability?.available?'<div class="sheet-section"><h3>Psionic Games opportunity</h3><p>Apply once in your lifetime. A failed application still uses that opportunity. Success replaces your next ordinary term with a Games term in this career.</p>'+button('Apply for the Psionic Games','apply-psionic-games','quiet')+'</div>':'')+(!exits.canLeave&&exits.leaveReason?'<p class="help">'+esc(exits.leaveReason)+'</p>':'')+assignmentChangeView(state,{esc,button,sourceLabel})+aslanOfficerOffersView(state,{esc,button,sourceLabel});
  }
  case 'benefits':{const cash=cashRollDisplay(state);return aslanRestorationNotice(state,{esc})+aslanOfficerPendingView(state,{esc,button,sourceLabel,careerName:id=>catalog.careers.find(c=>c.id===id)?.name??id,assignmentName:(id,assignment)=>catalog.careers.find(c=>c.id===id)?.assignments.find(a=>a.id===assignment)?.name??assignment})+assignmentPendingView(state,{esc,careerName:id=>catalog.careers.find(c=>c.id===id)?.name??id,assignmentName:(id,assignment)=>catalog.careers.find(c=>c.id===id)?.assignments.find(a=>a.id===assignment)?.name??assignment})+'<p><strong>'+state.character.careers[state.active].benefitRolls+'</strong> benefit rolls remain. '+esc(cash.label)+': '+cash.used+' / '+(state.cashLimit===999?'unlimited':state.cashLimit)+'.</p>'+benefitCreditView(state,{esc})+coreLifeBenefitView(state,{esc})+'<div class="actions">'+button('Roll a material benefit','material-benefit')+button('Roll a cash benefit','cash-benefit','quiet',cash.disabled?'disabled':'')+'</div>';}
- case 'finish':return '<p>Save or print your character and review the source-assisted steps with your referee. The complete action log is included.</p><p class="warning">This preview does not certify every source rule. It records which steps were manually resolved.</p><h3>Source-assisted coverage</h3><ul>'+state.coverage.map(x=>'<li>'+esc(coverageLabels[x]??x.replaceAll('-',' '))+'</li>').join('')+'</ul>';
+ case 'finish':return '<div class="final-sheet-invitation">'+button('Open your character sheet','open-character-sheet','final-sheet-button')+'<p>A compact view of your Traveller, completed terms, injuries, events and decisions.</p></div><p>Save or print your character and review the source-assisted steps with your referee. The complete action log is included.</p><p class="warning">This preview does not certify every source rule. It records which steps were manually resolved.</p><h3>Source-assisted coverage</h3><ul>'+state.coverage.map(x=>'<li>'+esc(coverageLabels[x]??x.replaceAll('-',' '))+'</li>').join('')+'</ul>';
  default:return '<p>Unsupported stage. Preserve your save and log.</p>';
  }
 }
@@ -422,6 +423,7 @@ document.addEventListener('click',async event=>{
  const el=event.target.closest('[data-action]');if(!el||busy)return;
  const action=el.dataset.action;
  if(action==='prisoner-escape'){if(event.detail>1)return;return send(action,{skill:el.dataset.skill});}
+ if(action==='open-character-sheet'){if(event.detail>1||!await saveDraftNotes())return;finalSheet.open(projection,session,catalog);return;}
  if(action==='resolve-prisoner-lawyer'){if(event.detail>1)return;return send(action,prisonerLawyerPayload($));}
  if(action==='resolve-life-event'){if(event.detail>1)return;return send(action,coreLifeEventPayload(projection.state,$));}
  if(action==='resolve-relationship-event'){if(event.detail>1)return;return send(action,relationshipEventPayload(projection.state,$));}
@@ -532,7 +534,7 @@ $('#export').onclick=async()=>{if(busy||!await saveDraftNotes())return;download(
 $('#log-download').onclick=()=>download('traveller-action-log.txt',projection.log.map(e=>'ACTION '+e.number+' · '+e.summary+'\n'+e.rolls.map(r=>r.label+': '+r.values.join(', ')+'; kept '+r.kept.join(', ')+'; total '+r.total).join('\n')+'\n'+(e.changes??[]).map(c=>c.path+': '+auditValue(c.before)+' -> '+auditValue(c.after)).join('\n')).join('\n\n'),'text/plain');
 let printDetails=null;
 window.addEventListener('beforeprint',()=>{
- if(printDetails)return;printDetails=[...document.querySelectorAll('#action-log details')].map(element=>({element,open:element.open}));printDetails.forEach(item=>item.element.open=true);
+ if(printDetails)return;printDetails=[...document.querySelectorAll('#action-log details,#final-sheet-content details')].map(element=>({element,open:element.open}));printDetails.forEach(item=>item.element.open=true);
 });
 window.addEventListener('afterprint',()=>{for(const item of printDetails??[])item.element.open=item.open;printDetails=null;});
 $('#print').onclick=async()=>{
@@ -540,6 +542,7 @@ $('#print').onclick=async()=>{
  if(!await saveDraftNotes())return;
  window.print();
 };
+const finalSheet=createFinalSheet({document,onSave:()=>$('#export').onclick(),onPrint:()=>$('#print').onclick()});
 $('#recovery-save').onclick=()=>{if(recoveryRaw!==null)download('traveller-unreadable-draft-backup.json',recoveryRaw);};
 $('#recovery-inspect').onclick=()=>{if(recoveryRaw!==null){inspectHistory(recoveryRaw);$('#legacy-title').focus();}};
 $('#legacy-save').onclick=()=>{if(inspectionOriginal!==null||inspectionRaw!==null)download('traveller-legacy-original.json',inspectionOriginal??inspectionRaw);};
