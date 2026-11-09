@@ -8,10 +8,10 @@ import {sourceTrainingFixture} from './source-training-fixtures.mjs';
 import {coverResult} from './agent-cover-fixtures.mjs';
 import {aslanSetup,aslanEvent,force,settle} from './aslan-officer-fixtures.mjs';
 const esc=value=>String(value).replaceAll('<','&lt;');
-test('table information is sorted, distinct labels without row mapping or weights',()=>{
+test('table popup preserves implemented outcome order and characteristic bumps without dice labels',()=>{
  const skill=name=>({kind:'skill',name});
  const result=trainingInformation([[skill('Zeta')],[skill('Admin'),skill('Admin')],[{kind:'choice',options:[{effects:[skill('Broker')]},{effects:[skill('Admin')]}]}],[{kind:'stat',name:'INT',value:1}],[{kind:'conditional',condition:{gender:'male'},then:[skill('Male')],otherwise:[skill('Female')]}]],()=>true);
- assert.deepEqual(result,{skills:['Admin','Broker','Male','Zeta'],characteristics:['INT'],other:[]});
+ assert.deepEqual(result,{skills:['Admin','Broker','Male','Zeta'],characteristics:['INT'],other:[],entries:['Zeta','Admin, Admin','Broker or Admin','INT +1','Male']});
  assert.doesNotMatch(JSON.stringify(result),/effects|value|row|dice|Female/);
  assert.match(trainingInformationView(result,'<script>',esc),/&lt;script>/);
 });
@@ -56,9 +56,19 @@ test('Aslan Military assignment previews contain only reachable outcomes for eac
   if(r.state.stage!=='training')r=settle(force(settle(aslanEvent(r,8)),'advancement',{},[6,6]));
   assert.equal(r.state.stage,'training');
   const raw=exportSession(r.session),information=r.state.trainingOptions.find(option=>option.id==='assignment').information;
-  assert.deepEqual(information,{skills,characteristics:[],other:[]},gender+' SOC '+soc);
+  assert.deepEqual({skills:information.skills,characteristics:information.characteristics,other:information.other},{skills,characteristics:[],other:[]},gender+' SOC '+soc);
+  assert.equal(information.entries.length,6);assert.ok(information.entries.every(Boolean));
   const imported=api({operation:'import',raw});assert.equal(imported.ok,true);
   assert.deepEqual(imported.state.trainingOptions,r.state.trainingOptions);
   assert.equal(exportSession(imported.session),raw);
  }
+});
+
+test('popup entries retain duplicate rows and signed characteristic amounts',()=>{
+ const info=trainingInformation([[{kind:'skill',name:'Melee'}],[{kind:'stat',name:'STR',value:2}],[{kind:'skill',name:'Melee'}],[{kind:'stat',name:'END',value:-1}]]);
+ assert.deepEqual(info.entries,['Melee','STR +2','Melee','END -1']);
+ const html=trainingInformationView(info,'Personal development',esc);
+ assert.match(html,/popover="auto"/);assert.match(html,/role="dialog"/);assert.match(html,/popovertargetaction="hide"/);assert.match(html,/aria-label="View skills and outcomes: Personal development"/);
+ assert.ok(html.indexOf('Melee</li>')<html.indexOf('STR +2</li>'));assert.equal((html.match(/Melee<\/li>/g)||[]).length,2);
+ assert.doesNotMatch(html,/<details|<summary|alphabetically/);
 });
