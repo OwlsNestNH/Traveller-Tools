@@ -17,6 +17,7 @@ try{
    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(lonerTrainingFixture().session)});await page.reload();await page.locator('#training-award-options').waitFor();
    assert.match(await page.locator('#workspace').innerText(),/p. 195/);assert.match(await page.locator('#training-award-options').innerText(),/Profession \(belter\)/);
    assert.equal(await page.locator('#award-skill').getAttribute('list'),'award-skill-options');
+   await page.locator('#award-base').selectOption('Engineer');
    const values=await page.locator('#award-skill-options option').evaluateAll(nodes=>nodes.map(n=>n.value));assert.ok(values.includes('Engineer (power)'));assert.ok(!values.includes('Medic'));
    const name='vargr-training-'+width+(apiMode?'-http':'-static');await page.screenshot({path:fileURLToPath(new URL(name+'-pending.png',out)),fullPage:true});
    await page.locator('#award-skill').fill('Medic');await page.locator('[data-action=choose-skill]').click();await page.waitForFunction(()=>!document.querySelector('#new').disabled);assert.equal(await page.locator('#training-award-options').count(),1);

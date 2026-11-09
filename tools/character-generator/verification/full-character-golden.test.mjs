@@ -726,7 +726,8 @@ const FIXTURES = [
 ];
 
 function run(fixture,commands=fixture.commands) {
- let session=createSession(fixture.seed),result=project(session);
+ // Preserve these historical command/roll goldens at their original immediate-choice revision.
+ let session={...createSession(fixture.seed),rulesRevision:'character-preview-2026-11-09.17'},result=project(session);
  const states=[];
  for(const command of commands){
   const before=JSON.stringify(session);
@@ -856,7 +857,7 @@ test('golden Aslan distinguishes involuntary exit, early retirement and pending 
 });
 
 for(const optional of [false,true])test('Aezorgh '+(optional?'optional six-2D raw43':'standard mixed-dice raw30')+' threshold is fixed before placement',()=>{
- let session=createSession('golden-aezorgh-0');
+ let session={...createSession('golden-aezorgh-0'),rulesRevision:'character-preview-2026-11-09.17'};
  if(optional)session=execute(session,{type:'configure',payload:{aezorghTwoDice:true}}).session;
  session=execute(session,{type:'setup',payload:{species:'aezorgh'}}).session;
  let r=execute(session,{type:'roll-statistics'}),before=r.state;

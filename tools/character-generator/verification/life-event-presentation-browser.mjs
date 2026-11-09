@@ -30,12 +30,16 @@ try{
   try{
    await page.goto('http://127.0.0.1:'+server.address().port+(http?'/?api=local':'/'));await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();
    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw});await page.reload();
-   await page.locator('#workspace [data-action=survival]').click();await assertPending(page);
+   await page.locator('#workspace [data-action=survival-check]').click();
+   await page.locator('[data-action=career-event]').waitFor();
+   const checkpoint=await saved(page);assert.equal(checkpoint.events.length,fixture.session.events.length+1);assert.equal(project(checkpoint).state.stage,'career-event');assert.equal(checkpoint.events.at(-1).rolls.length,1);assert.equal(await page.locator('[data-action=choose-effect]').count(),0);
+   await page.reload();await page.locator('[data-action=career-event]').waitFor();assert.deepEqual(await saved(page),checkpoint);
+   await page.locator('[data-action=career-event]').click();await assertPending(page);
    assert.match(await page.locator('#message').innerText(),/Vargr Life Event 10: Good Fortune/);
    assert.match(await page.locator('#message').innerText(),/Benefit roll.*CHA \+1/);
    assert.match(await downloadedActionLog(page),/vargr.life-events/);
    const pending=await saved(page),before=project(pending);
-   assert.equal(pending.events.length,fixture.session.events.length+1);
+   assert.equal(pending.events.length,fixture.session.events.length+2);
    await page.reload();await assertPending(page);assert.deepEqual(await saved(page),pending);
    const name='life-event-'+width+(http?'-http':'-static')+'-'+(index?'charisma':'benefit');
    await page.screenshot({path:fileURLToPath(new URL(name+'-pending.png',out)),fullPage:true});

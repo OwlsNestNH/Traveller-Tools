@@ -121,13 +121,13 @@ test('matching academy auto-entry, honours commission and distinct service award
  r=run(r,'preterm-commission',{attempt:true});
  while(r.state.stage==='effect-choice')r=run(r,'choose-effect',{index:0});
  assert.equal(r.state.stage,'education-service');
- r=run(r,'education-service',{name:'Gun Combat'});r=run(r,'choose-skill',{name:'Gun Combat (slug)'});
+ r=run(r,'education-service',{name:'Gun Combat'});
  assert.equal(r.state.stage,'education-service');
  assert.throws(()=>run(r,'education-service',{name:'Gun Combat'}),/different/);
  r=run(r,'education-service',{name:'Recon'});
  r=run(r,'education-service',{name:'Vacc Suit'});
  assert.equal(r.state.stage,'survival');
- assert.equal(r.state.character.skills['Gun Combat (slug)'],1);assert.equal(r.state.character.skills.Recon,1);
+ assert.ok(r.state.character.deferredSkillAwards.some(a=>a.name==='Gun Combat'&&a.value===1&&a.status==='pending'));assert.equal(r.state.character.skills.Recon,1);
  assert.equal(r.state.character.skills['Vacc Suit'],1);assert.equal(r.state.character.skills.Leadership,1);
  assert.equal(r.state.character.educations[0].serviceAwardUsed,true);
  assert.equal(r.state.character.careers[0].officer,true);
@@ -155,4 +155,27 @@ test('interface source is valid UTF8, includes education controls and stage-chan
  assert.match(app,/focusAfterAction\(previousStage,focused\)/);assert.match(app,/tabindex="-1"/);
  assert.match(app,/education-graduation/);assert.match(app,/education-service/);
  assert.match(app,/Debt/);assert.match(app,/historyNotes/);assert.match(app,/futureConditions/);
+});
+
+test('hobby choices hide unacquired talents while preserving legacy projection',()=>{
+ let r=force(setup('hobby-eligibility'),'precareer',{id:'core.academy-navy'},[4,4]);
+ r=force(r,'education-event',{},[4,5]);
+ assert.equal(r.state.stage,'education-skill');
+ assert.ok(r.state.educationOptions.some(o=>o.name==='Medic'));
+ assert.ok(!r.state.educationOptions.some(o=>['Telepathy','Technopathy','Jack-of-all-Trades'].includes(o.name)));
+ assert.throws(()=>run(r,'education-skill',{name:'Telepathy'}),/listed education skill/);
+ const old=structuredClone(r.session);old.rulesRevision='character-preview-2026-11-09.17';
+ assert.ok(project(old).state.educationOptions.some(o=>o.name==='Telepathy'));
+ r=run(r,'education-skill',{name:'Medic'});assert.equal(r.state.stage,'education-graduation');
+ assert.deepEqual(project(importSession(exportSession(r.session))).state,r.state);
+});
+
+for(const graduation of [[4,4],[5,6]])test('academy commission can be declined with graduation '+graduation.join('+'),()=>{
+ let r=force(setup('decline-academy-'+graduation),'precareer',{id:'core.academy-navy'},[4,4]);
+ r=force(r,'education-event',{},[2,3]);r=force(r,'education-graduation',{},graduation);
+ r=run(r,'career',{id:'core.navy',assignment:'crew'});assert.equal(r.state.stage,'preterm-commission');
+ r=run(r,'preterm-commission',{attempt:false});
+ assert.equal(r.state.character.careers[0].officer,false);assert.equal(r.state.character.careers[0].rank,0);
+ assert.equal(r.log.at(-1).rolls.length,0);
+ assert.deepEqual(project(importSession(exportSession(r.session))).state,r.state);
 });

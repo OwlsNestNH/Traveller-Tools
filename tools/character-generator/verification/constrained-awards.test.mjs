@@ -72,7 +72,7 @@ test('Vargr non-psionic award rejects psionic aliases case-insensitively instead
  for(const subject of ['psionicology','PSIONICS','Telepathy','telekinetic research','clairvoyance','Teleportation','Technopathy','extrasensory perception','precognition','psychokinesis','mind reading','remote viewing']){
   const name='Science ('+subject+')';rejected(r,'choose-skill',{name});const s=structuredClone(r.state),before=structuredClone(s);assert.throws(()=>choose(s,name),/not available/);assert.deepEqual(s,before);
  }
- for(const subject of ['physics','PHYSICS','chemistry','Biology','xenology','psychology']){const next=run(r,'choose-skill',{name:'Science ('+subject+')'});assert.equal(next.state.character.skills['Science ('+subject+')'],1);}
+ for(const subject of ['physics','PHYSICS','chemistry','Biology','xenology','psychology']){const next=run(r,'choose-skill',{name:'Science ('+subject+')'});assert.equal(next.state.character.skills['Science ('+subject.toLowerCase()+')'],1);assert.equal(next.session.events.at(-1).command.payload.name,'Science ('+subject+')');assert.equal(Object.keys(next.state.character.skills).filter(n=>n.toLowerCase()==='science ('+subject.toLowerCase()+')').length,1);}
 });
 test('unclassified Vargr Science subjects pause without awards and retain source eligibility constraint through retry and replay',()=>{
  const r=awardFixture('vargr.psion',6),name='Science (unclassified field)',before=r.state.character.skills;

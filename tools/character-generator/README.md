@@ -64,7 +64,7 @@ The action log is always recorded. Download the full technical history separatel
 
 ## Data and saves
 
-The browser stores one draft locally. Unsaved biography text survives ordinary UI rerenders and is recorded before JSON export or the Print button. It is not saved merely by typing; the browser warns before unloading a dirty draft. Use **Save character & log** for backups before starting a new character. Import replays and validates the file before replacing the current draft. Unreadable stored drafts are preserved behind recovery controls, with raw backup download and explicit replacement confirmation. New characters use rules revision `character-preview-2026-11-09.17`. The verified compatible `.16` revision remains editable without changing its saved revision, events or historical escape outcomes; prior `.2`, `.3`, `.4`, `.5`, `.6`, `.7`, `.8`, `.9`, `.10`, `.11`, `.12`, `.13`, `.14` and `.15` saves are available only through read-only recovery. New saves record an explicit rules revision as well as save format 1. Only current or explicitly supported compatible revisions within the current release scope can be replayed. Zhodani saves still enter read-only recovery without rewriting their bytes, commands or audit history. Older development exports without a revision, and files from any unsupported rules revision, are rejected before character reconstruction. This prevents historical outcomes from silently changing when rules are corrected. The recovery panel can display their recorded actions as an unverified, read-only history and download the unchanged original file; it cannot reconstruct a validated character or continue that historical session. Invalid UTF-8 files are not imported, and their original File bytes remain downloadable. A malformed browser draft remains protected until explicit replacement. Keep exported backups when updating versions. No automatic migration or guessed historical rules are used.
+The browser stores one draft locally. Unsaved biography text survives ordinary UI rerenders and is recorded before JSON export or the Print button. It is not saved merely by typing; the browser warns before unloading a dirty draft. Use **Save character & log** for backups before starting a new character. Import replays and validates the file before replacing the current draft. Unreadable stored drafts are preserved behind recovery controls, with raw backup download and explicit replacement confirmation. New characters use rules revision `character-preview-2026-11-09.18`. The verified compatible `.16` and `.17` revisions remain editable without changing its saved revision, events or historical escape outcomes; prior `.2`, `.3`, `.4`, `.5`, `.6`, `.7`, `.8`, `.9`, `.10`, `.11`, `.12`, `.13`, `.14` and `.15` saves are available only through read-only recovery. New saves record an explicit rules revision as well as save format 1. Only current or explicitly supported compatible revisions within the current release scope can be replayed. Zhodani saves still enter read-only recovery without rewriting their bytes, commands or audit history. Older development exports without a revision, and files from any unsupported rules revision, are rejected before character reconstruction. This prevents historical outcomes from silently changing when rules are corrected. The recovery panel can display their recorded actions as an unverified, read-only history and download the unchanged original file; it cannot reconstruct a validated character or continue that historical session. Invalid UTF-8 files are not imported, and their original File bytes remain downloadable. A malformed browser draft remains protected until explicit replacement. Keep exported backups when updating versions. No automatic migration or guessed historical rules are used.
 
 No licensed books, scans, private document links, or borrowed Tremlas code are included. Own the relevant books to resolve source-assisted steps. Character names, notes, and campaign material stay in your browser or local API request and are not sent to the publisher, repository or visit counter.
 
@@ -80,6 +80,7 @@ node tools/character-generator/verification/survival-result-browser.mjs /path/to
 node tools/character-generator/verification/advancement-result-browser.mjs /path/to/playwright
 node tools/character-generator/verification/life-event-presentation-browser.mjs /path/to/playwright
 node tools/character-generator/verification/training-information-browser.mjs /path/to/playwright
+node tools/character-generator/verification/full-log-browser.mjs /path/to/playwright
 node tools/character-generator/verification/final-sheet-browser.mjs /path/to/playwright
 node tools/character-generator/verification/release-presentation-browser.mjs /path/to/playwright
 node tools/character-generator/verification/release-scope-browser.mjs /path/to/playwright
@@ -135,6 +136,12 @@ A shared, read-only result panel names each roll and its recorded effects across
 
 ## Later-career basic training
 
+### Separate term steps
+
+The interactive builder now rolls survival on its own. A saved career-event or mishap checkpoint follows, with its own roll button, dice and short summary of the implemented table effects. Choices then resolve before advancement. Repeated table actions reject, and refreshing or reimporting the checkpoint cannot reroll automatically. Historical `survival` actions retain their original combined replay; new interaction uses `survival-check`, followed by `career-event` or `career-mishap`.
+
+Regular training starts each later term. Event skill awards, rank bonuses and the additional successful-advancement training roll are independent awards (Core 2022 pp. 14, 18-19). The first career replaces its initial regular roll with basic training; a subsequent career receives its one basic-training choice and the normal roll. Table summaries describe implemented effects, not reproduced source narrative. Existing source-required outcomes remain explicit.
+
 The basic-training choice and the regular term training roll are separate in a later career, including Prisoner. The first career alone replaces its initial regular training roll with basic training (Core Rulebook Update 2022, p. 18; Prisoner exceptions on p. 52). The screen names both steps and explains the transition without changing rules, saved events or existing save compatibility.
 
 ## Explicit Prisoner escape checks
@@ -146,3 +153,28 @@ Prisoner Event 3 names the escape opportunity, its risk, and separate Stealth an
 Setup checkboxes choose extra characteristics to generate when the six core scores are accepted. The separate **Add another characteristic** control appears only afterwards, offering extras not already present. The GM panel is absent during setup; setup's existing GM option remains the single enable switch there.
 
 After setup, GM tools show one task at a time. **Change a value** uses named fields, the actual current value and a required reason. **Replace a roll** lists recorded rolls by name and asks for each replacement die. A confirmation explains that later character progress is superseded; all original actions and their results remain in the detailed log. These presentation changes retain the existing correction and replay commands.
+
+### Recorded pre-career interpretations (9 November 2026)
+
+For new revised sessions, Merchant Academy graduates may enter any Citizen assignment as their first career. The curriculum-matching requirement applies only to Merchant Broker/Marine assignments (Companion 2024 p. 33). Failed military-academy automatic entry expires once another career is taken (Core 2022 p. 17). These are recorded user rulings resolving ambiguous wording, not newly quoted source rules. Compatible legacy sessions keep their previous adjudication path and recorded decisions.
+
+Colonial Upbringing is unavailable at TL9 or higher, and School of Hard Knocks is unavailable at SOC7 or higher. These recorded eligibility rulings do not consume an education entry attempt when an ineligible selection is rejected.
+
+School of Hard Knocks promotion/commission penalties persist through forced career exits and end after any subsequent voluntary career exit, under the recorded permanent-record ruling.
+
+Colonial Upbringing is available only in the first generation term, before any career or other pre-career education. Nonstandard starting-age timing still requires an explicit source decision.
+
+Academy commissions remain optional even with honours, allowing an enlisted career. University initial choices must be distinct skill bases, including when different specialisations are selected. These existing behaviors are now explicitly confirmed by the user.
+
+## Deferred specialties and audit corrections
+
+New .18 sessions defer ordinary unspecified positive specialist awards until allocation. Players may allocate at a quiet checkpoint or during finalization; fixed named and source-constrained awards remain immediate. Checks that depend on unresolved skills settle the relevant awards first. This is the requested presentation policy, not a claim that the books instruct all choices to wait until finalization. Separate awards retain their order, source and individual limits. Connections cannot bypass level three through aliases, and open Science, Language and Profession subjects share case-insensitive identities.
+
+The same revision corrects forced Drifter draft continuation, earned-benefit forfeiture, Scout event departure timing and Believer immediate event promotion. Compatible .16/.17 sessions retain their original mechanics. The public four-species scope and deferred Zhodani recovery boundary are unchanged.
+
+For new sessions, the conflicting Aslan Space Officer headings on Aliens 2026 pp. 38–39 use the explicit campaign interpretation: Shipmaster → Pilot/Gunner and Navigator → Engineer/Crew. Rank bonuses follow that mapping automatically for direct entry and officer opportunities. Historical .16/.17 saves retain their original source-resolution behavior.
+The toolbar’s **View full log** information control opens the recorded action history without changing the character. Escape or Close log returns to the toolbar. The existing text download remains available both in the toolbar and the log viewer. Draft notes must be recorded before they appear in this history.
+
+Believer event 9 now asks the player whether to accept payment or refuse during the event, without requiring GM mode. Before the choice, it shows the Benefit rolls forfeited, the Cr2D × 10,000-per-roll payment range, and that acceptance ends the career. The count includes accrued rolls, the survived current term and remaining rank entitlement, after any owed Benefit-roll loss. Acceptance records the payout and prevents forfeited term/rank rolls from reappearing. Refusal gains 1D Enemies and leaves ordinary advancement available. Historical .16/.17 saves retain the original source-resolution step.
+
+Believer event 9: the player chooses either one 2D roll multiplied by Cr10,000 and the forfeited roll count, or separate 2D rolls per forfeited Benefit roll, summed and multiplied by Cr10,000. Both acceptance options leave the career; refusal gains 1D Enemies. The recorded calculation shows every result, formula and total. This calculation choice is an explicit player ruling; legacy .16/.17 source-resolution is unchanged.

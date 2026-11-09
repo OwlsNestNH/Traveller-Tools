@@ -27,22 +27,28 @@ try{
    for(const {term,before,after} of cases){
     // Actual later-term survival clicks must leave a visible result, not a generic notice.
     await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(before.session)});await page.reload();
-    await page.locator('[data-action=survival]').waitFor();
-    const natural=run(before,'survival'),expected=survivalResult(natural.log.at(-1),natural.state);
-    await page.locator('[data-action=survival]').evaluate(button=>{button.click();button.click();});
+    await page.locator('[data-action=survival-check]').waitFor();
+    const checked=run(before,'survival-check'),natural=run(checked,'career-event'),expected=survivalResult(checked.log.at(-1),checked.state);
+    await page.locator('[data-action=survival-check]').evaluate(button=>{button.click();button.click();});
     await page.locator('#last-action-result').waitFor();await page.waitForFunction(()=>!document.querySelector('#new').disabled);
     await assertResultColor(page,expected.status,{message:true});
     const resultText=await page.locator('#last-action-result').innerText();
     assert.ok(resultText.includes(expected.title));
-    assert.ok(resultText.includes(expected.details.find(detail=>detail.startsWith('Career event rolled:'))));
+    assert.doesNotMatch(resultText,/Career event rolled:|Mishap rolled:/);
     assert.match(await page.locator('#message').innerText(),/Survival succeeded/);
+    const checkpoint=await page.evaluate(key=>localStorage.getItem(key),key);assert.equal(project(importSession(checkpoint)).state.stage,'career-event');assert.equal(importSession(checkpoint).events.at(-1).rolls.length,1);
+    assert.equal(await page.locator('[data-action=advancement]').count(),0);
+    await page.reload();await page.locator('[data-action=career-event]').waitFor();assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),checkpoint);
+
+    await page.locator('[data-action=career-event]').evaluate(button=>{button.click();button.click();});await page.waitForFunction(()=>!document.querySelector('#new').disabled);
+    const eventText=await page.locator('#last-action-result').innerText();assert.match(eventText,/Table outcome:/);assert.match(eventText,/Roll \[.*\] = \d+/);
     if(term===3)assert.match(await page.locator('#sheet').innerText(),/Contact/);
-    else assert.match(resultText,/EDU check/);
+    else assert.match(eventText,/EDU check/);
     const raw=await page.evaluate(key=>localStorage.getItem(key),key),saved=importSession(raw);
-    assert.equal(saved.events.length,before.revision+1);assert.equal(exportSession(saved),raw);
+    assert.equal(saved.events.length,before.revision+2);assert.equal(exportSession(saved),raw);
     assert.ok((await downloadedActionLog(page)).includes(natural.log.at(-1).summary));
     await page.reload();await page.locator('#last-action-result').waitFor();assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);
-    assert.ok((await page.locator('#last-action-result').innerText()).includes(expected.title));
+    assert.equal(await page.locator('#last-action-result').innerText(),eventText);
     // Targeted regression outcomes must also persist on reload without replaying dice.
     const targetedRaw=exportSession(after.session);
     await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:targetedRaw});await page.reload();await page.locator('#last-action-result').waitFor();

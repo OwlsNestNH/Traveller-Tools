@@ -56,17 +56,23 @@ test('Merchant ordinary graduate receives the entered rank1 bonus once',()=>{
 test('Merchant first entered career, not failed qualification attempts, controls automatic matching entry',()=>{
  const r=merchant(),s=structuredClone(r.state);s.character.educations[0].careerAttempts=2;assert.equal(a.educationRights(s,'core.merchant','broker').automaticEntry,true);s.character.careers.push({id:'core.army',terms:1,exit:'voluntary'});assert.equal(a.educationRights(s,'core.merchant','broker').automaticEntry,false);assert.equal(a.educationRights(s,'core.merchant','marine').advancementModifier,2);
 });
-test('Merchant Citizen mapping blocks and resumes only after an explicit referee decision',()=>{
- let r=merchant();r=run(r,'career',{id:'core.citizen',assignment:'corporate'});assert.equal(r.state.pending.kind,'companion-career-rights');assert.equal(r.state.character.careers.length,0);assert.equal(r.state.pending.citizenMapping,true);r=run(r,'resolve-book',{confirmed:true,note:'Referee confirms the corporate branch matches business study',citizenBranchApproved:true});r=run(r,'career',{id:'core.citizen',assignment:'corporate'});assert.equal(r.state.character.careers[0].rank,2);assert.equal(r.state.character.careers[0].educationModifiers.advancement,2);
+for(const curriculum of ['business','shipboard'])for(const assignment of ['corporate','worker','colonist'])test('Merchant '+curriculum+' accepts Citizen '+assignment+' under the recorded ruling',()=>{
+ let r=merchant(curriculum);const legacy=structuredClone(r.state);legacy.deferredSpecializations=false;
+ assert.equal(a.educationRights(legacy,'core.citizen',assignment).unresolved.length,1);
+ r=run(r,'career',{id:'core.citizen',assignment});
+ assert.equal(r.state.character.careers[0].rank,2);assert.equal(r.state.character.careers[0].educationModifiers.advancement,2);
+ assert.equal(r.log.at(-1).rolls.length,0);
+ assert.deepEqual(project(importSession(exportSession(r.session))).state,r.state);
 });
+
 test('Hard Knocks enforces two initial, three other and current-level0 honours choices',()=>{
  let r=select(setup('knocks-constraints',{SOC:6}),'hard-knocks');r=run(r,'companion-entry');assert.throws(()=>pick(r,'Athletics','Athletics'),/distinct/);r=pick(r,'Athletics','Deception');r=event(r);r=graduate(r);assert.throws(()=>pick(r,'Athletics','Drive','Gambler'),/outside|already/);r=pick(r,'Drive','Gambler','Melee');assert.throws(()=>pick(r,'Streetwise'),/outside/);r=pick(r,'Gun Combat (slug)');assert.equal(r.state.stage,'career');assert.equal(r.state.character.stats.SOC,5);assert.equal(r.state.character.skills.Carouse,1);assert.equal(r.state.character.skills['Gun Combat (slug)'],1);
 });
 test('Hard Knocks modifiers apply to first career and stop after voluntary exit',()=>{
- const r=hardKnocks(),s=structuredClone(r.state);assert.equal(a.educationRights(s,'core.army','infantry').advancementModifier,-2);s.character.careers.push({id:'core.army',terms:1,exit:'voluntary'});assert.equal(a.educationRights(s,'core.navy','crew').advancementModifier,0);s.character.careers[0].exit='involuntary';assert.equal(a.educationRights(s,'core.navy','crew').unresolved.length,1);
+ const r=hardKnocks(),s=structuredClone(r.state);assert.equal(a.educationRights(s,'core.army','infantry').advancementModifier,-2);s.character.careers.push({id:'core.army',terms:1,exit:'voluntary'});assert.equal(a.educationRights(s,'core.navy','crew').advancementModifier,0);s.character.careers[0].exit='involuntary';assert.equal(a.educationRights(s,'core.navy','crew').advancementModifier,-2);s.character.careers.push({id:'core.navy',exit:'voluntary'});assert.equal(a.educationRights(s,'core.merchant','marine').advancementModifier,0);
 });
-test('Hard Knocks involuntary exit source decision is saved and used on retry',()=>{
- const r=hardKnocks(),s=structuredClone(r.state);s.character.careers.push({id:'core.army',terms:1,exit:'involuntary'});s.stage='career';s.active=null;a.apply(s,{type:'career',payload:{id:'core.navy',assignment:'crew'}},[]);assert.equal(s.pending.kind,'companion-career-rights');a.apply(s,{type:'resolve-book',payload:{confirmed:true,note:'Referee keeps the education penalty for this next career',qualificationModifier:0,commissionModifier:-2,advancementModifier:-2,educationAutomaticEntry:false}},[]);assert.equal(a.educationRights(s,'core.navy','crew').advancementModifier,-2);assert.equal(a.educationRights(s,'core.navy','crew').unresolved.length,0);
+test('Legacy Hard Knocks involuntary exit source decision is saved and used on retry',()=>{
+ const r=hardKnocks(),s=structuredClone(r.state);s.deferredSpecializations=false;s.character.careers.push({id:'core.army',terms:1,exit:'involuntary'});s.stage='career';s.active=null;a.apply(s,{type:'career',payload:{id:'core.navy',assignment:'crew'}},[]);assert.equal(s.pending.kind,'companion-career-rights');a.apply(s,{type:'resolve-book',payload:{confirmed:true,note:'Referee keeps the education penalty for this next career',qualificationModifier:0,commissionModifier:-2,advancementModifier:-2,educationAutomaticEntry:false}},[]);assert.equal(a.educationRights(s,'core.navy','crew').advancementModifier,-2);assert.equal(a.educationRights(s,'core.navy','crew').unresolved.length,0);
 });
 test('Spacer automatic admission, all four distinct subjects and free-trader bonuses integrate',()=>{
  const r=spacer(),c=r.state.character;assert.equal(r.state.stage,'career');assert.equal(c.skills.Astrogation,0);assert.equal(c.skills.Electronics,0);assert.equal(c.skills.Engineer,0);assert.equal(c.skills.Profession,0);assert.equal(c.skills.Pilot,0);assert.equal(c.skills['Jack-of-all-Trades'],1);assert.equal(c.stats.DEX,8);assert.equal(c.stats.SOC,5);assert.equal(a.educationRights(r.state,'core.merchant','free').qualificationModifier,1);assert.equal(a.educationRights(r.state,'core.merchant','free').advancementModifier,1);assert.equal(a.educationRights(r.state,'core.merchant','broker').qualificationModifier,0);
@@ -80,8 +86,8 @@ test('Merchant failed graduation retains curriculum skills but no future rights'
 test('Shared event tragedy prevents Companion graduation while keeping initial skills',()=>{
  let r=select(setup('spacer-tragedy'),'spacer');r=run(r,'companion-entry',{size:0});r=pick(r,'Astrogation','Electronics');r=event(r,[1,2]);assert.equal(r.state.stage,'career');assert.equal(r.state.character.terms,1);assert.equal(r.state.character.skills['Jack-of-all-Trades'],undefined);assert.equal(r.state.character.skills['Vacc Suit'],1);assert.equal(r.state.character.educations[0].graduation.attempted,false);
 });
-test('Higher-TL colonial entry and nonstandard timing require source decisions',()=>{
- let r=select(setup('colonial-manual'),'colonial');r=run(r,'companion-entry',{techLevel:10});assert.equal(r.state.pending.kind,'companion-entry');assert.equal(r.state.character.terms,0);r=run(r,'resolve-book',{confirmed:true,note:'Referee permits this colony background despite unusual technology',educationEntrySuccess:true});r=run(r,'gm-override',{field:'age',value:25,reason:'Fixture nonstandard current age'});const s=structuredClone(r.state);s.character.educations[0].ageBefore=25;s.character.educations[0].graduationAllowed=false;a.queueEffects(s,[],'education-finish',[]);assert.equal(s.pending.kind,'companion-timing');a.apply(s,{type:'resolve-book',payload:{confirmed:true,note:'Referee assigns four years to the later colonial education',educationAgeAfter:29}},[]);assert.equal(s.character.age,29);assert.equal(s.character.terms,1);assert.equal(s.stage,'career');
+test('Legacy higher-TL colonial entry and nonstandard timing preserve source decisions',()=>{
+ let r=select(setup('colonial-manual'),'colonial');r.session.rulesRevision='character-preview-2026-11-09.17';r=run(r,'companion-entry',{techLevel:10});assert.equal(r.state.pending.kind,'companion-entry');assert.equal(r.state.character.terms,0);r=run(r,'resolve-book',{confirmed:true,note:'Referee permits this colony background despite unusual technology',educationEntrySuccess:true});r=run(r,'gm-override',{field:'age',value:25,reason:'Fixture nonstandard current age'});const s=structuredClone(r.state);s.character.educations[0].ageBefore=25;s.character.educations[0].graduationAllowed=false;a.queueEffects(s,[],'education-finish',[]);assert.equal(s.pending.kind,'companion-timing');a.apply(s,{type:'resolve-book',payload:{confirmed:true,note:'Referee assigns four years to the later colonial education',educationAgeAfter:29}},[]);assert.equal(s.character.age,29);assert.equal(s.character.terms,1);assert.equal(s.stage,'career');
 });
 test('Missing social characteristic pauses Companion entry rather than inventing SOC',()=>{
  const r=select(setup('alien-social'),'hard-knocks'),s=structuredClone(r.state);delete s.character.stats.SOC;s.character.stats.CHA=7;s.character.species='vargr';a.apply(s,{type:'companion-entry',payload:{}},[]);assert.equal(s.pending.kind,'companion-entry');assert.equal(s.character.stats.SOC,undefined);assert.equal(s.character.terms,0);
@@ -144,4 +150,13 @@ test('basic0 and no-op awards remain possible when prior characteristic loss low
 
 test('basic training preserves an explicitly named Profession specialty at0',()=>{
  const result=a.asBasic([{kind:'skill',name:'Profession (religion)',value:1,mode:'increase'}]);assert.equal(result[0].name,'Profession (religion)');assert.equal(result[0].value,0);assert.equal(a.asBasic([{kind:'skill',name:'Pilot (spacecraft)',value:1}])[0].name,'Pilot');
+});
+
+test('new-session Colonial and Hard Knocks admission bounds reject without consuming an attempt',()=>{
+ for(const [id,payload,changes,pattern] of [['colonial',{techLevel:9},{},/TL8 or lower/],['hard-knocks',{}, {SOC:7},/SOC 6 or lower/]]){
+  let r=select(setup('entry-bound-'+id,changes),id);
+  assert.throws(()=>run(r,'companion-entry',payload),pattern);
+  assert.equal(r.state.character.terms,0);assert.equal(r.state.educationAttemptTerms,undefined);
+  r=run(r,'cancel-education');assert.equal(r.state.stage,'precareer');
+ }
 });

@@ -20,8 +20,8 @@ export function settleOrigin(r,{until='precareer',familyDie=6,birthDice=[1,2],cl
  }
  return r;
 }
-export function buildAslanOriginFixture({seed='aslan-origin-fixture',gender='male',familySOC=8,soc=familySOC,stage='aslan-family',boons=0,allocation=true,...options}={}){
- let r=api({operation:'create',seed});r=run(r,'setup',{species:'aslan',gender});r=run(r,'configure',{boons,allocation});r=run(r,'gm-mode',{enabled:true});r=run(r,'roll-statistics');
+export function buildAslanOriginFixture({seed='aslan-origin-fixture',gender='male',familySOC=8,soc=familySOC,stage='aslan-family',boons=0,allocation=true,rulesRevision,...options}={}){
+ let r=api({operation:'create',seed});if(rulesRevision)r.session.rulesRevision=rulesRevision;r=run(r,'setup',{species:'aslan',gender});r=run(r,'configure',{boons,allocation});r=run(r,'gm-mode',{enabled:true});r=run(r,'roll-statistics');
  for(let i=0;i<6;i++)r=run(r,'gm-override',{field:'pool',index:i,value:i===5?soc:8,reason:'Source-origin boundary fixture'});
  r=run(r,'accept-statistics');r=settleOrigin(r,{...options,until:stage});assert.equal(r.state.stage,stage,'Origin fixture did not reach '+stage);return r;
 }

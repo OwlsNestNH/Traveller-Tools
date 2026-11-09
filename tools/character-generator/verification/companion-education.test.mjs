@@ -280,3 +280,9 @@ test('ordinary Merchant academy rank1 entry receives the attained rank bonus exa
   assert.deepEqual(rights({...args,graduation:graduated('merchant',true),enteringCareer:true}).effects,[],'Rank2 does not retroactively grant rank1.');
  }
 });
+
+test('recorded Colonial ruling allows only the first generation term',()=>{
+ for(const term of [2,3])assert.equal(entry({id:id('colonial'),term,homeworld:{techLevel:8},resolvedEducationRulings:true}).eligible,false);
+ assert.equal(entry({id:id('colonial'),term:1,homeworld:{techLevel:8},resolvedEducationRulings:true}).automatic,true);
+ assert.equal(entry({id:id('colonial'),term:2,homeworld:{techLevel:8}}).automatic,true);
+});

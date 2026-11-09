@@ -281,3 +281,11 @@ test('invalid and contradictory inputs are rejected without coercion',()=>{
  ];
  bad.forEach(call=>assert.throws(call));
 });
+
+test('recorded failed-academy ruling expires entry after another career, preserving legacy adjudication',()=>{
+ const args={id:'core.academy-army',graduation:educationGraduationCheck({id:'core.academy-army',stats:{INT:7,END:7,SOC:7},roll:3}),careerId:'core.army',firstCareerAfterEducation:false};
+ const current=educationCareerBenefits({...args,resolvedEducationRulings:true});
+ assert.equal(current.automaticEntry,false);assert.equal(current.needsAdjudication,false);assert.equal(current.commission,null);
+ assert.equal(educationCareerBenefits(args).needsAdjudication,true);
+ assert.equal(educationCareerBenefits({...args,firstCareerAfterEducation:true,resolvedEducationRulings:true}).automaticEntry,true);
+});

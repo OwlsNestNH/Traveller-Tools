@@ -23,7 +23,7 @@ test('assignment rows permit choice alternatives but not other assignments or in
 test('public Loner reproduction is constrained, atomic, sourced, replayable and consumes no random rolls',()=>{
  let r=lonerTrainingFixture();assert.equal(r.state.stage,'skill-choice');assert.equal(r.state.pendingChoice.source.page,195);
  const original=structuredClone(r.session);
- for(const name of ['Admin','Medic','Profession (domestic servant)','Engineer']){const rejected=api({operation:'command',session:r.session,command:{type:'choose-skill',payload:{name}}});assert.equal(rejected.ok,false);assert.deepEqual(r.session,original);}
+ for(const name of ['Admin','Medic','Profession (domestic servant)','Engineer (invalid)']){const rejected=api({operation:'command',session:r.session,command:{type:'choose-skill',payload:{name}}});assert.equal(rejected.ok,false);assert.deepEqual(r.session,original);}
  r=run(r,'skill-award-source');assert.equal(r.state.pending.page,195);assert.deepEqual(r.state.pending.effect.trainingContext,{careerId:'vargr.loner',assignment:'prospector',tables:['assignment']});r=run(r,'retry-skill-choice');
  r=run(r,'choose-skill',{name:'Engineer (power)'});assert.equal(r.state.character.skills['Engineer (power)'],1);assert.equal(r.state.stage,'advancement');assert.match(r.log.at(-1).summary,/Aliens 2026 p. 195; vargr.loner \/ prospector/);assert.deepEqual(r.log.at(-1).rolls,[]);assert.deepEqual(project(importSession(exportSession(r.session))),project(r.session));
  assert.equal(api({operation:'command',session:r.session,command:{type:'choose-skill',payload:{name:'Vacc Suit'}}}).ok,false);
@@ -40,4 +40,11 @@ test('public Merchant event uses actual EDU eligibility and preserves pending re
   const skill=r.state.pendingChoice.tableSkills.find(n=>!n.includes(' (')&&!['Animals','Art','Athletics','Drive','Electronics','Engineer','Flyer','Gun Combat','Language','Melee','Pilot','Profession','Science','Seafarer'].includes(n));
   const next=run(r,'choose-skill',{name:skill});assert.equal(next.state.stage,'advancement');assert.deepEqual(next.log.at(-1).rolls,[]);assert.deepEqual(next.state.modifiers,r.state.modifiers);
  }
+});
+
+test('Loner generic Engineer can defer without losing source or consuming extra rolls',()=>{
+ const r=lonerTrainingFixture(),deferred=run(r,'choose-skill',{name:'Engineer'});assert.equal(deferred.state.stage,'advancement');assert.deepEqual(deferred.log.at(-1).rolls,[]);
+ const award=deferred.state.character.deferredSkillAwards.at(-1);assert.equal(award.name,'Engineer');assert.equal(award.status,'pending');assert.equal(award.source.page,195);assert.deepEqual(award.trainingContext,{careerId:'vargr.loner',assignment:'prospector',tables:['assignment']});
+ const pending=run(deferred,'allocate-specializations');assert.equal(pending.state.pendingChoice.source.page,195);assert.deepEqual(project(importSession(exportSession(pending.session))),project(pending.session));
+ const allocated=run(pending,'choose-skill',{name:'Engineer (power)'});assert.equal(allocated.state.stage,'advancement');assert.equal(allocated.state.character.skills['Engineer (power)'],1);assert.deepEqual(allocated.log.at(-1).rolls,[]);assert.equal(allocated.state.character.deferredSkillAwards.at(-1).status,'allocated');
 });

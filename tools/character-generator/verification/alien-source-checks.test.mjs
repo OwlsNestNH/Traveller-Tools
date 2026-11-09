@@ -36,7 +36,9 @@ function competingSpecialty(index,name){
  let r=military();
  for(let term=0;term<2;term++){
   r=run(r,'choose-effect',{index});r=force(r,'choose-skill',{name},[1,1]);
-  r=aslanEndTerm(r);r=run(r,'continue-career');r=settle(force(r,'training',{table:'personal'},[1]));r=aslanEvent(r,5);
+  r=aslanEndTerm(r);
+  if(r.state.specializationOptions?.available){r=run(r,'allocate-specializations');while(r.state.pendingChoice?.allocationId){const alternatives=r.state.skillChoiceSuggestions.filter(n=>n!==name&&!['Drive (wheel)','Gun Combat (archaic)'].includes(n));assert.ok(alternatives.length,'Keep incidental rank awards separate from both compared specialties');r=run(r,'choose-skill',{name:alternatives[0]});}}
+  r=run(r,'continue-career');r=settle(force(r,'training',{table:'personal'},[1]));r=aslanEvent(r,5);
  }
  assert.equal(r.state.character.skills[name],2);return r;
 }

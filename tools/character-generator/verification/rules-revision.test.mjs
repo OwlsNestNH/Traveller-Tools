@@ -15,3 +15,12 @@ test('current revision round-trips through every public API path',()=>{
 test('catalog exposes labels and no complete Companion mechanical payload',()=>{
  const result=api({operation:'catalog'});assert.equal(result.ok,true);assert.equal(Object.hasOwn(result,'companionEducation'),false);assert.equal(result.precareers.find(p=>p.id==='companion.psionic').page,33);
 });
+
+// Newly projected controls must not rewrite historical mechanical snapshots.
+test('legacy .16 and .17 projections omit new deferred-specialization fields',()=>{
+ for(const revision of ['character-preview-2026-11-09.16','character-preview-2026-11-09.17']){
+  const session={...createSession('legacy-shape'),rulesRevision:revision};const state=project(session).state;
+  for(const key of ['deferredSpecializations','specializationOptions','skillChoiceBases'])assert.equal(Object.hasOwn(state,key),false,key);
+ }
+ const state=project(createSession('current-shape')).state;assert.equal(state.deferredSpecializations,true);assert.ok(state.specializationOptions);
+});

@@ -44,7 +44,7 @@ test('qualification failure forfeits held Rite and just-mustered Clan Shares but
 test('early cancellation permits retirement only and never opens a generic early transfer',()=>{
  let r=buildAslanOfficerFixture({ready:true}),benefits=structuredClone(r.state.character.benefits),cash=r.state.character.cash;assert.deepEqual(offer(r).cancelOptions.map(x=>x.id),['retire']);
  rejected(r,'cancel-aslan-officer',{mode:'career-choice'});rejected(r,'leave-career');r=run(r,'cancel-aslan-officer',{mode:'retire'});assert.equal(r.state.stage,'retirement');assert.equal(r.state.character.retirementFromCreation,true);assert.equal(offer(r).check,null);assert.deepEqual(r.state.character.benefits,benefits);assert.equal(r.state.character.cash,cash);
- rejected(r,'career',{id:'aslan.scientist',assignment:'researcher'});r=run(r,'finish');assert.equal(r.state.stage,'finish');roundtrip(r);
+ rejected(r,'career',{id:'aslan.scientist',assignment:'researcher'});r=run(r,'finish');while(r.state.stage==='skill-choice'){r=run(r,'choose-skill',{name:r.state.skillChoiceSuggestions[0]});}if(r.state.stage!=='finish')r=run(r,'finish');assert.equal(r.state.stage,'finish');roundtrip(r);
 });
 test('ordinary legal exit can cancel the unrolled offer without restoring benefits',()=>{
  let r=buildAslanOfficerFixture({termsBefore:2,ready:true}),benefits=structuredClone(r.state.character.benefits),history=structuredClone(r.state.character.benefitRollHistory);assert.deepEqual(offer(r).cancelOptions.map(x=>x.id),['career-choice','retire']);
@@ -68,8 +68,8 @@ test('qualification replay can replace failure with success without duplicated f
 test('duplicate command ID is idempotent and player restore remains rejected',()=>{
  const base=buildAslanOfficerFixture({ready:true});let r=run(base,'qualify-aslan-officer',{}, {id:'officer-once'});const saved=exportSession(r.session);r=run(r,'qualify-aslan-officer',{}, {id:'officer-once'});assert.equal(exportSession(r.session),saved);r=run(r,'gm-mode',{enabled:false});rejected(r,'restore',{revision:base.revision});roundtrip(r);
 });
-for(const tableId of ['pilot-gunner','engineer-crew'])test('female Space Officer preserves successful check through explicit '+tableId+' mapping',()=>{
- let r=settle(force(buildAslanOfficerFixture({origin:'spacer',gender:'female',ready:true}),'qualify-aslan-officer',{},[6,6]));assert.equal(r.state.stage,'aslan-officer-rank');const check=structuredClone(offer(r).check),rolls=structuredClone(r.log.findLast(e=>e.type==='qualify-aslan-officer').rolls);
+for(const tableId of ['pilot-gunner','engineer-crew'])test('legacy female Space Officer preserves successful check through explicit '+tableId+' mapping',()=>{
+ let r=settle(force(buildAslanOfficerFixture({origin:'spacer',gender:'female',ready:true,rulesRevision:'character-preview-2026-11-09.17'}),'qualify-aslan-officer',{},[6,6]));assert.equal(r.state.stage,'aslan-officer-rank');const check=structuredClone(offer(r).check),rolls=structuredClone(r.log.findLast(e=>e.type==='qualify-aslan-officer').rolls);
  assert.deepEqual(offer(r).rankOptions.map(x=>x.id),['pilot-gunner','engineer-crew']);rejected(r,'resolve-aslan-officer-rank',{tableId});rejected(r,'resolve-aslan-officer-rank',{tableId:'navigator',reason:'Invalid invented mapping'});
  r=run(r,'gm-mode',{enabled:false});rejected(r,'resolve-aslan-officer-rank',{tableId,reason:'Source reading'});r=run(r,'gm-mode',{enabled:true});r=run(r,'resolve-aslan-officer-rank',{tableId,reason:'Referee maps the printed heading to this selected assignment.'});
  assert.equal(r.state.stage,'training');assert.equal(last(r).aslanRankMapping.tableId,tableId);assert.deepEqual(offer(r).check,check);assert.deepEqual(r.log.findLast(e=>e.type==='qualify-aslan-officer').rolls,rolls);assert.equal(last(r).rank,0);rejected(r,'resolve-aslan-officer-rank',{tableId,reason:'Duplicate'});
@@ -102,5 +102,11 @@ test('offer rechecks forced next career and current outcast restrictions without
  }
 });
 test('revision .10 rejects old .9 before replay without modifying the save',()=>{
- assert.equal(RULES_REVISION,'character-preview-2026-11-09.17');const old=structuredClone(buildAslanOfficerFixture().session);old.rulesRevision='character-preview-2026-11-08.9';const bytes=JSON.stringify(old);const result=api({operation:'project',session:old});assert.equal(result.ok,false);assert.match(result.error.message,/Legacy or different rules revision/);assert.equal(JSON.stringify(old),bytes);
+ assert.equal(RULES_REVISION,'character-preview-2026-11-09.18');const old=structuredClone(buildAslanOfficerFixture().session);old.rulesRevision='character-preview-2026-11-08.9';const bytes=JSON.stringify(old);const result=api({operation:'project',session:old});assert.equal(result.ok,false);assert.match(result.error.message,/Legacy or different rules revision/);assert.equal(JSON.stringify(old),bytes);
+});
+
+for(const [assignment,tableId,skill] of [['shipmaster','pilot-gunner','Admin'],['navigator','engineer-crew','Astrogation']])test('resolved Space Officer mapping '+assignment+' applies without a GM mapping prompt',()=>{
+ let r=settle(force(buildAslanOfficerFixture({origin:'spacer',gender:'female',ready:true,assignment}),'qualify-aslan-officer',{},[6,6]));assert.equal(r.state.stage,'training');assert.equal(last(r).aslanRankMapping.tableId,tableId);assert.equal(offer(r).rankMapping.tableId,tableId);rejected(r,'resolve-aslan-officer-rank',{tableId:tableId==='pilot-gunner'?'engineer-crew':'pilot-gunner',reason:'Cannot remap a resolved assignment'});roundtrip(r);
+ r=settle(force(r,'training',{table:'personal'},[1]));r=aslanEndTerm(settle(aslanEvent(r,8)));assert.equal(last(r).rank,1);assert.ok(r.state.character.skills[skill]>=1);roundtrip(r);
+ const direct=structuredClone(r.state);delete direct.character.careers.at(-1).aslanOfficerOfferId;delete direct.character.careers.at(-1).aslanRankMapping;direct.character.careers.at(-1).rank=3;const effects=a.rankEffects(direct);assert.equal(effects[0].name,assignment==='shipmaster'?'Advocate':'Electronics');assert.equal(direct.character.careers.at(-1).aslanRankMapping.tableId,tableId);
 });

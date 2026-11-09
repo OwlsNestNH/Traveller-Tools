@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {availableEffectChoiceIndex} from './available-effect-choice.mjs';
 import {readFile} from 'node:fs/promises';
 import {CAREERS,SPECIES,SKILLS} from '../engine/catalog.mjs';
 import {relationshipLossOptions} from '../engine/zhodani-choices.mjs';
@@ -30,6 +31,8 @@ let scenarios=0,completed=0;
 for(const career of CAREERS)for(const assignment of career.assignments)for(let seed=0;seed<seeds;seed++) {
  scenarios++;
  let state=a.initial(career.id+'|'+assignment.id+'|smoke'+seed);
+ // Exercise current rules, not legacy immediate-choice behavior, in synthetic states.
+ state.deferredSpecializations=true;state.correctedCareerEvents=true;
  const species=['aslan','vargr','zhodani'].includes(career.group)?career.group:'human';
  state.character.species=species;
  state.character.gender=career.eligibility?.[assignment.id]??career.gender??(seed%2?'male':'female');
@@ -61,6 +64,7 @@ for(const career of CAREERS)for(const assignment of career.assignments)for(let s
    const record=state.character.careers[state.active];
    let command;
    switch(state.stage) {
+    case 'failed-entry':{assert.equal(state.forcedDraft?.status,'pending','Only the explicit forced-draft continuation is expected.');command={type:'fallback',payload:{draft:true}};break;}
     // These synthetic characters have no anagathic history. Never invent referee decisions.
     case 'cross-career-cover':{const options=a.crossCareerCover(state).options;command={type:'cross-career-cover',payload:{careerId:options[(seed+step)%options.length].id}};break;}
     case 'cross-career-training':{const options=a.crossCareerTraining(state).options;command={type:'cross-career-training',payload:{assignment:options[(seed+step)%options.length].id}};break;}
@@ -77,7 +81,7 @@ for(const career of CAREERS)for(const assignment of career.assignments)for(let s
     case 'injury-loss':command={type:'injury-loss',payload:{index:(seed+step)%state.character.injuries[state.injury].options.length}};break;
     case 'injury-treatment':command={type:'injury-treatment',payload:{restore:{},inService:false}};break;
     case 'effect-choice':
-     command={type:'choose-effect',payload:{index:(seed+step)%state.pendingChoice.options.length}};break;
+     command={type:'choose-effect',payload:{index:availableEffectChoiceIndex(state.pendingChoice.options,seed+step)}};break;
     case 'skill-choice': {
      const pending=state.pendingChoice,bases=pending.names??pending.allowed??SKILLS;
      const candidates=[...new Set([...Object.keys(state.character.skills),...bases.flatMap(name=>

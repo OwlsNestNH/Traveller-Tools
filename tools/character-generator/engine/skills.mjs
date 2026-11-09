@@ -19,16 +19,17 @@ export const SPECIALITIES=Object.freeze({
 });
 export const PSIONIC_TALENTS=Object.freeze(['Telepathy','Clairvoyance','Telekinesis','Awareness','Teleportation','Technopathy']);
 const ALIASES={'Drive (tracked)':'Drive (track)','Drive (wheeled)':'Drive (wheel)','Engineer (power plant)':'Engineer (power)'};
-export function normalizeSkillName(input,{requireSpeciality=false}={}){
+export function normalizeSkillName(input,{requireSpeciality=false,canonicalOpen=false}={}){
  if(typeof input!=='string'||input.length>80)throw new Error('Invalid skill name.');
- const name=ALIASES[input.trim()]??input.trim();
+ let name=ALIASES[input.trim()]??input.trim();
  const parsed=name.match(/^([^()]+?)(?: \(([^()]+)\))?$/);
  if(!parsed)throw new Error('Use a complete skill name and specialisation, for example Pilot (spacecraft).');
- const base=parsed[1],speciality=parsed[2];
+ const base=parsed[1];let speciality=parsed[2];
  if(base!==base.trim()||speciality&&speciality!==speciality.trim())throw new Error('Remove extra spaces from the skill name.');
  const specialised=Object.hasOwn(SPECIALITIES,base);
  if(speciality&&!specialised)throw new Error('This skill does not use specialisations.');
  if(requireSpeciality&&specialised&&!speciality)throw new Error('Choose a specialisation, for example Pilot (spacecraft).');
  if(speciality&&Array.isArray(SPECIALITIES[base])&&!SPECIALITIES[base].includes(speciality))throw new Error('Choose a listed '+base+' specialisation.');
+ if(canonicalOpen&&speciality&&Object.hasOwn(SPECIALITIES,base)&&SPECIALITIES[base]===null){speciality=speciality.toLowerCase();name=base+' ('+speciality+')';}
  return {name,base,speciality};
 }

@@ -21,5 +21,5 @@ export function aslanAccessConflictView(state,{esc,button,sourceLabel}){
 }
 export function fallbackView(state,{esc,button}){
  const p=state.fallbackOptions;if(!p)return '<p class="warning">Fallback choices are unavailable. Preserve the current save and log.</p>';
- return '<p>The attempted career did not accept you. These options follow the recorded qualification context.</p><div class="actions">'+button(esc(p.normal.name),'fallback','',p.normal.available?'':'disabled')+button(esc(p.draft.name),'draft','quiet',p.draft.available?'':'disabled')+'</div>'+(p.normal.reason?'<p class="help">'+esc(p.normal.reason)+'</p>':'')+(p.draft.reason?'<p class="help">'+esc(p.draft.reason)+'</p>':'');
+ return '<p>'+(p.forced?'Your Drifter event requires the Core draft for your next term, even if you have been drafted before.':'The attempted career did not accept you. These options follow the recorded qualification context.')+'</p><div class="actions">'+button(esc(p.normal.name),'fallback','',p.normal.available?'':'disabled')+button(esc(p.draft.name),'draft','quiet',p.draft.available?'':'disabled')+'</div>'+(p.normal.reason?'<p class="help">'+esc(p.normal.reason)+'</p>':'')+(p.draft.reason?'<p class="help">'+esc(p.draft.reason)+'</p>':'');
 }

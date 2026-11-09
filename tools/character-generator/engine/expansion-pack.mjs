@@ -1762,7 +1762,7 @@ export const SOURCE_DISCREPANCIES = [
  {id:'aslan.guardian.qualification-modifier',source:citation('aliens',23,26),summary:{stat:'SOC',min:9,dm:1},detail:{stat:'EDU',min:9,dm:2},resolution:'detail'},
  {id:'aslan.scientist.survival',source:citation('aliens',23,34),summary:{healer:'EDU5',researcher:'EDU6'},detail:{healer:'END5',researcher:'END6'},resolution:'detail'},
  {id:'aslan.scientist.healer-gender',source:citation('aliens',21,23,34),summary:'either',detailSymbol:'male',detailProse:'either',resolution:'either; prose and summary agree'},
- {id:'aslan.space-officer.rank-labels',source:citation('aliens',38,39),labels:['Pilot/Gunner','Engineer/Crew'],expected:['Shipmaster','Navigator'],resolution:'source-required; no guessed assignment mapping'},
+ {id:'aslan.space-officer.rank-labels',source:citation('aliens',38,39),labels:['Pilot/Gunner','Engineer/Crew'],expected:['Shipmaster','Navigator'],resolution:'Explicit campaign interpretation for new sessions: Shipmaster uses Pilot/Gunner; Navigator uses Engineer/Crew. Historical .16/.17 saves retain their source-resolution path.'},
  {id:'vargr.citizen.worker-advancement',source:citation('aliens',187,190),summary:{stat:'CHA',target:4},detail:{stat:'CHA',target:6},resolution:'detail'},
  {id:'vargr.merchant.qualification',source:citation('aliens',187,196),summary:{stat:'INT',target:5},detail:{stat:'CHA',target:6},resolution:'detail'},
  {id:'vargr.scientist.qualification',source:citation('aliens',187,202),summary:{stat:'EDU',target:8},detail:{stat:'INT',target:8},resolution:'detail'},
@@ -1864,9 +1864,9 @@ outcomes('companion.believer',{
  5:C('Streetwise / Persuade'),
  6:[DSTAT('SOC','D3',-1),{kind:'benefit-rolls',dice:'D3',value:1},B(1,'all')],
  7:[T('core.life-events',{dice:'2D',sourcePage:46})],8:C('Carouse / Persuade'),
- 9:[Q([['Accept payment',[U('companion.believer',40,'Leave career; forfeit all benefits and receive 2D × Cr10000 for each forfeited benefit roll.')]],['Refuse',[relationship('Enemy',1,'1D')]]])],
+ 9:[{...Q([['Accept payment',[{...U('companion.believer',40,'Leave career; forfeit all benefits and receive 2D × Cr10000 for each forfeited benefit roll.'),kind:'believer-buyout'}]],['Refuse',[relationship('Enemy',1,'1D')]]]),believerBuyoutChoice:true}],
  10:[OPT('Perform rites',[relationship('Ally'),relationship('Rival')])],
- 11:[M('advancement',-2,'all')],12:[P(),M('advancement',1,'all')]
+ 11:[M('advancement',-2,'all')],12:[{...P(),mode:'immediate'},M('advancement',1,'all')]
 },{
  1:[I(),ST('exit')],2:[relationship('Enemy')],
  3:[{kind:'rank',value:-1},R(-1),stay()],
@@ -2320,6 +2320,7 @@ for(const [id,c] of Object.entries(builds)){
  c.coverage={training:'complete',ranks:coverage(c.ranks),benefits:'table-results',events:coverage(c.events),mishaps:coverage(c.mishaps)};
 }
 export const EXPANSION_EFFECT_SCHEMA={
+ 'believer-buyout':'Player-accepted event9: source-bound cash payout for forfeited current-career Benefit rolls, then exit.',
  ...Object.fromEntries(['skill','stat','choice','benefit','relationship','check','modifier','benefit-rolls','table-roll','career-status','promotion','injury','random','psionic-talent'].map(kind=>[kind,'Shared Core effect contract'])),
  conditional:'condition: {gender} or {stat,min}; then and otherwise effect arrays',
  independence:'male only; roll 2D strictly greater than SOC before granting skill',

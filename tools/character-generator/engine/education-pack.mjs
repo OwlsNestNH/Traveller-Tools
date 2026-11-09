@@ -184,7 +184,7 @@ export function educationGraduationCheck({id,stats,roll,graduationAllowed=true}=
  */
 export function educationCareerBenefits({
  id,graduation,careerId,assignment,firstCareerAfterEducation=true,firstCareerAttempt=true,
- serviceAwardUsed=false,enteringCareer=true,forcedNextCareer=null
+ serviceAwardUsed=false,enteringCareer=true,forcedNextCareer=null,resolvedEducationRulings=false
 }={}) {
  const education=get(id),rules=education.careerRules;
  if(typeof careerId!=='string') throw new TypeError('Career ID is required.');
@@ -217,6 +217,7 @@ export function educationCareerBenefits({
  } else if(rules.failedGraduation?.career===careerId) {
   if(!Number.isFinite(graduation.total)) throw new TypeError('A failed graduation needs its modified total.');
   if(graduation.total>rules.failedGraduation.totalMustExceed) {
+   if(!firstCareerAfterEducation&&resolvedEducationRulings)return outcome(17,[],meta);
    if(!firstCareerAfterEducation) return outcome(17,[],{...meta,needsAdjudication:true,reason:'Delayed use of failed-academy automatic entry is not specified by the source.'});
    meta.automaticEntry=true;
    meta.commission={allowed:false,forbiddenTerms:1};
