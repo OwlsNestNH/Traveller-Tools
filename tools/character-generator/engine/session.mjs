@@ -1,3 +1,5 @@
+import {decorateLifeEventPresentation} from './life-event-projection.mjs';
+import {trainingInformation} from './training-information.mjs';
 import {BENEFIT_WAGERS,wagerLimit,wagerDelta} from './benefit-wagers.mjs';
 import { vargrTrainingChoice, tableSkillAllowed } from './vargr-training.mjs';
 import { CORE_LIFE_SOURCE, CORE_LIFE_TABLES, lifeNarrativeOptions, lifePsionAccess } from './core-life-events.mjs';
@@ -1316,6 +1318,14 @@ function skillNameAllowed(state,name,effect) {
  if(effect.tableSkills&&!tableSkillAllowed(name,effect.tableSkills))return false;
  if(['assignment','eligible-career'].includes(effect.scope)&&!effect.tableSkills)return false;
  return true;
+}
+export function skillChoiceSuggestions(state){
+ if(state.stage!=='skill-choice'||!state.pendingChoice)return [];
+ const effect=state.pendingChoice,requireSpeciality=effect.mode!=='set'||(effect.value??1)>0;
+ const entries=effect.kind==='skill-reduction-choice'?(effect.names??Object.keys(state.character.skills)):effect.permittedNames??effect.tableSkills??effect.allowed??SKILLS;
+ const candidates=entries.flatMap(name=>Array.isArray(SPECIALITIES[name])?[...(!requireSpeciality?[name]:[]),...SPECIALITIES[name].map(speciality=>name+' ('+speciality+')')]:[name]);
+ candidates.push(...Object.keys(state.character.skills));
+ return [...new Set(candidates)].filter(name=>{try{normalizeSkillName(name,{requireSpeciality});if(effect.distinctSpecialties)distinctScienceSelection(name,effect.selected??[]);if(effect.kind==='skill-reduction-choice'&&(!(state.character.skills[name]>0)||effect.names&&!effect.names.includes(name)))return false;return skillNameAllowed(state,name,effect);}catch{return false;}}).sort((a,b)=>a.localeCompare(b,'en'));
 }
 const SPECIALIZED = Object.keys(SPECIALITIES);
 function nativeFallback(state,effect,reason) {
@@ -2791,13 +2801,22 @@ export function project(session) {
  state.psionicOptions=state.stage==='psionic-training'?psionicOptions(state):[];
   state.psionicCanFinish=state.stage==='psionic-training'&&state.psionicTraining?.mode==='initial';
   state.canStartPsionicTraining=!accessMandatory(state)&&!state.character.psionicLoss&&['career','precareer'].includes(state.stage)&&state.active===null&&!state.forcedCareer&&!state.character.retirementFromCreation&&(!Object.hasOwn(state.character.stats,'PSI')||state.character.stats.PSI>0)&&!state.character.psionics?.training.some(t=>t.completed);
+ state.skillChoiceSuggestions=skillChoiceSuggestions(state);
   state.trainingOptions=state.stage==='training'?trainingOptions(state):[];
+ // Add labels only after replay. Presentation metadata cannot alter saved
+ // effects, summaries, RNG state, eligibility or rules-revision compatibility.
+ const tableInfo=(careerId,assignment,table,{ordinary=false}={})=>{const pack=RULE_PACK[careerId],training=pack?.training;let rows=table==='assignment'?training?.assignments?.[assignment]:training?.[table];if(ordinary&&table==='assignment'&&rows?.length===9){const modifier=(pack.prerequisites.assignmentTableModifiers??[]).filter(m=>conditionMatches(state,m.condition)).reduce((n,m)=>n+m.dm,0);rows=rows.slice(modifier,modifier+6);}return trainingInformation(rows,condition=>conditionMatches(state,condition));};
+ if(state.stage==='training'){const {career,record}=currentCareer(state);state.trainingOptions=state.trainingOptions.map(option=>({...option,information:tableInfo(career.id,record.assignment,option.id,{ordinary:true})}));}
+ if(state.currentCrossCareerTraining){const training=state.currentCrossCareerTraining;training.options=training.options.map(option=>({...option,information:tableInfo(training.sourceCareerId,option.id,'assignment')}));}
+ if(state.stage==='effect-choice')state.pendingChoice.options=state.pendingChoice.options.map(option=>{const effect=option.effects?.find(e=>e.kind==='source-training-roll');return effect?{...option,information:tableInfo(currentCareer(state).career.id,effect.assignment,effect.table)}:option;});
+
  state.educationOptions=['education-skill','companion-skill'].includes(state.stage)?educationOptions(state,state.pendingChoice):[];
  state.educationCheckSkills=state.stage==='education-check'?learnedEducationSkills(state):[];
  state.canChooseEducation=!accessMandatory(state)&&state.stage==='career'&&state.active===null&&!state.forcedCareer&&!state.character.retirementFromCreation&&state.character.terms<3&&!state.educationAttemptTerms?.includes(state.character.terms);
  if(state.character.species==='aezorgh'&&Object.hasOwn(state.character.stats,'SOC'))state.character.stats.CHA=Math.floor(state.character.stats.SOC/2);
  state.backgroundOptions=backgroundOptions(state);state.cashLimit=cashLimit(state);state.cashRollAccount=cashRollAccount(state);state.cashRollsUsed=cashRollsUsed(state);state.cashRollAccounting={id:cashRollAccount(state),name:cashRollAccount(state)==='core'?'Core lifetime cash rolls':cashRollAccount(state)==='aslan'?'Native Aslan cash rolls':'Cash benefit rolls',used:cashRollsUsed(state),limit:cashLimit(state),total:state.cashRolls,accounts:copy(state.character.cashRollAccounts??null)};if(state.character.aslanCareerContext)state.character.aslanCareerContext.scopeLabel=state.character.aslanCareerContext.careerIds?.map(id=>findCareer(id).name).join(' / ')??'Core careers';
  state.careerChoices=availableCareers(state);state.careerTransferOptions=transferOptions(state);state.statDMs=Object.fromEntries(Object.entries(state.character.stats).map(([k,v])=>[k,k==='RITE'?v:characteristicDM(v)]));
+ decorateLifeEventPresentation({state,log,snapshots,events:session.events});
  return {state,log,revision:session.events.length};
 }
 export function execute(session,command,{id,expectedRevision}={}) {

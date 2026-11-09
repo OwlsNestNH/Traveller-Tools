@@ -16,8 +16,8 @@ try{
    await page.goto('http://127.0.0.1:'+server.address().port+(apiMode?'/?api=local':'/'));await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();
    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(lonerTrainingFixture().session)});await page.reload();await page.locator('#training-award-options').waitFor();
    assert.match(await page.locator('#workspace').innerText(),/p. 195/);assert.match(await page.locator('#training-award-options').innerText(),/Profession \(belter\)/);
-   assert.equal(await page.locator('#award-skill').getAttribute('list'),'training-award-skills');
-   const values=await page.locator('#training-award-skills option').evaluateAll(nodes=>nodes.map(n=>n.value));assert.ok(values.includes('Engineer (power)'));assert.ok(!values.includes('Medic'));
+   assert.equal(await page.locator('#award-skill').getAttribute('list'),'award-skill-options');
+   const values=await page.locator('#award-skill-options option').evaluateAll(nodes=>nodes.map(n=>n.value));assert.ok(values.includes('Engineer (power)'));assert.ok(!values.includes('Medic'));
    const name='vargr-training-'+width+(apiMode?'-http':'-static');await page.screenshot({path:fileURLToPath(new URL(name+'-pending.png',out)),fullPage:true});
    await page.locator('#award-skill').fill('Medic');await page.locator('[data-action=choose-skill]').click();await page.waitForFunction(()=>!document.querySelector('#new').disabled);assert.equal(await page.locator('#training-award-options').count(),1);
    await page.locator('[data-action=skill-award-source]').click();await page.locator('[data-action=retry-skill-choice]').waitFor();await page.locator('[data-action=retry-skill-choice]').click();await page.locator('#training-award-options').waitFor();
