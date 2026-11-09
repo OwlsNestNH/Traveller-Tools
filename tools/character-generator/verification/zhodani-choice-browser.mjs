@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
-import {createServer} from '../server.mjs';
+import {createServer} from './development-server.mjs';
 import {project,exportSession} from '../engine/session.mjs';
 import {buildProleLossFixture,buildScholarChoiceFixture,buildGovernmentCheckFixture,buildGovernmentLostPsiFixture,run,force} from './zhodani-choice-fixtures.mjs';
 const require=createRequire(import.meta.url),{chromium}=require(process.argv[2]||'playwright');

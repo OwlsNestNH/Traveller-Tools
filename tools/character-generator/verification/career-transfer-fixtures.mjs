@@ -1,5 +1,6 @@
+// Preserved full-engine development regression, including deferred Zhodani.
 import assert from 'node:assert/strict';
-import {api,exportSession} from '../engine/session.mjs';
+import {developmentApi as api,exportSession} from '../engine/session.mjs';
 // These fixtures use only public commands, normal seeded dice, and audited GM replay/overrides.
 function run(r,type,payload={},options={}){
  const result=api({operation:'command',session:r.session,command:{type,payload},...options});

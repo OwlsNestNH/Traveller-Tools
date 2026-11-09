@@ -21,15 +21,17 @@ jobs:
           node-version: '22'
       - name: Syntax and rules regressions
         run: |
-          for file in tools/character-generator/engine/*.mjs tools/character-generator/gui/*.mjs tools/character-generator/server.mjs; do node --check "$file"; done
+          for file in tools/character-generator/engine/*.mjs tools/character-generator/gui/*.mjs tools/character-generator/server*.mjs; do node --check "$file"; done
           node --test tools/character-generator/verification/*.test.mjs
           node tools/character-generator/verification/career-smoke.mjs
       - name: Install pinned Chromium runner
         run: |
           npm install --prefix "$RUNNER_TEMP/character-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
           node "$RUNNER_TEMP/character-playwright/node_modules/playwright/cli.js" install --with-deps chromium
-      - name: Desktop and mobile character interactions
+      - name: Desktop and mobile release and mixed-scope interactions
         run: |
+          node tools/character-generator/verification/release-scope-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+          node tools/character-generator/verification/aslan-access-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/aslan-land-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/clan-asset-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/clan-share-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
@@ -37,19 +39,21 @@ jobs:
           node tools/character-generator/verification/review-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/expansion-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/benefit-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
-          node tools/character-generator/verification/games-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/aezorgh-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/recovery-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/transfer-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
-          node tools/character-generator/verification/reeducation-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
-          node tools/character-generator/verification/merchant-fine-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
-          node tools/character-generator/verification/zhodani-choice-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
-          node tools/character-generator/verification/cross-career-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/assignment-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/aslan-officer-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/aslan-restoration-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/aslan-outlaw-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           node tools/character-generator/verification/aslan-origin-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+      - name: Preserved deferred development browser regressions
+        run: |
+          node tools/character-generator/verification/games-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+          node tools/character-generator/verification/reeducation-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+          node tools/character-generator/verification/merchant-fine-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+          node tools/character-generator/verification/zhodani-choice-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+          node tools/character-generator/verification/cross-career-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
       - name: Upload review screenshots and results
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

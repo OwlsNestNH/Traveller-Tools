@@ -1,6 +1,7 @@
+// Preserved full-engine development regression, including deferred Zhodani.
 import {settle} from './career-transfer-fixtures.mjs';
 import assert from 'node:assert/strict';
-import {api,exportSession} from '../engine/session.mjs';
+import {developmentApi as api,exportSession} from '../engine/session.mjs';
 export function run(r,type,payload={},options={}){const out=api({operation:'command',session:r.session,command:{type,payload},...options});assert.equal(out.ok,true,type+': '+out.error?.message);return out;}
 export function rejected(r,type,payload={},pattern=/./){const before=exportSession(r.session),out=api({operation:'command',session:r.session,command:{type,payload}});assert.equal(out.ok,false);assert.match(out.error.message,pattern);assert.equal(exportSession(r.session),before);return out;}
 export function force(r,type,payload,values,index=0){const rolled=run(r,type,payload);return run(rolled,'gm-replay',{revision:rolled.revision,rollIndex:index,values,reason:'Verified Zhodani source regression fixture'});}

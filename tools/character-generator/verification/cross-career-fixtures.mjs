@@ -1,3 +1,4 @@
+// Preserved full-engine development regression, including deferred Zhodani.
 
 import assert from 'node:assert/strict';
 import {api} from '../engine/session.mjs';

@@ -1,6 +1,7 @@
+// Preserved full-engine development regression, including deferred Zhodani.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {api,project,importSession,exportSession,RULES_REVISION} from '../engine/session.mjs';
+import {developmentApi as api,project,importSession,exportSession,RULES_REVISION} from '../engine/session.mjs';
 import {buildProleLossFixture,buildScholarChoiceFixture,buildGovernmentCheckFixture,buildGovernmentLostPsiFixture,run,rejected,force} from './zhodani-choice-fixtures.mjs';
 import {rolledReeducation,chronology} from './zhodani-reeducation-fixtures.mjs';
 const prole=buildProleLossFixture(),empty=buildProleLossFixture({withRelationships:false}),protectedProle=buildProleLossFixture({protectedStay:true});
@@ -91,7 +92,7 @@ test('protected Government successful check resumes the existing Event at advanc
  assert.equal(r.state.stage,'advancement');assert.equal(career(r).forcedExit,false);assert.equal(career(r).terms,0);assert.equal(r.log.at(-1).rolls.length,1);roundtrip(r);
 });
 test('revision .6 rejects every prior candidate unchanged before replay',()=>{
- assert.equal(RULES_REVISION,'character-preview-2026-11-08.13');
+ assert.equal(RULES_REVISION,'character-preview-2026-11-08.14');
  for(const rev of [2,3,4,5]){const old=structuredClone(prole.session);old.rulesRevision='character-preview-2026-11-08.'+rev;const before=JSON.stringify(old);
  const r=api({operation:'project',session:old});assert.equal(r.ok,false);assert.match(r.error.message,/Legacy or different rules revision/);assert.equal(JSON.stringify(old),before);}
 });

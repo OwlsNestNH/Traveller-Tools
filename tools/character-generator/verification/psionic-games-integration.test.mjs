@@ -1,7 +1,8 @@
+// Preserved full-engine development regression, including deferred Zhodani.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {api,createSession,execute,project,exportSession,importSession} from '../engine/session.mjs';
+import {developmentApi as api,createSession,execute,project,exportSession,importSession} from '../engine/session.mjs';
 
 // Public replay-based fixture: every mutation is an ordinary API action or reasoned GM override.
 function run(r,type,payload={},options={}){

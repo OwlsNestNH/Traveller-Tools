@@ -2106,7 +2106,7 @@ outcomes('aslan.manager',{
  9:[K('Diplomat|Admin',8,[relationship('Rival')],[A(-2)])],10:[A(2)],
  11:[Q([['Tolerance',C('Tolerance')],['Advancement',[A(4)]]])],12:[P()]
 },{
- 1:[I()],2:[Q([['Charge true',[R(3),outcast()]],['Charge false',[K('Advocate',8,[stay()],[ST('exit')])]]])],
+ 1:[I()],2:[Q([['Charge true',[R(3),outcast(),ST('next','aslan.outcast')]],['Charge false',[K('Advocate',8,[stay()],[ST('exit')])]]])],
  3:[relationship('Contact')],4:[OPT('Continue',[stay(),{kind:'benefit-block',terms:2}])],
  5:C('Flyer=1 / Navigation=1 / Profession=1 / Survival=1'),6:[relationship('Rival')]
 });
@@ -2143,7 +2143,7 @@ outcomes('aslan.scientist',{
  1:[I()],2:C('END-1'),3:[relationship('Rival'),OPT('Continue',[stay(),noTerm()])],
  4:[Q([['Astrogation',[genderAward('female',C('Astrogation=1'))]],['Mechanic',[genderAward('female',C('Mechanic=1'))]],['Science',[genderAward('female',C('Science=1'))]],['Survival',C('Survival=1')]])],
  5:[OPT('Challenge',[K('Melee (natural)',8,[stat('SOC',1),stay()],[stat('SOC',-2),ST('exit')])])],
- 6:[OPT('Continue in human space',[ST('auto-qualify','core.scholar')])]
+ 6:[OPT('Continue in human space',[{kind:'aslan-access-right',route:'scientist-scholar'}])]
 });
 outcomes('aslan.spacer',{
  3:[K('Gunner|Mechanic|Pilot',8,[A(2)],[noTerm(),relationship('Enemy')])],
@@ -2175,7 +2175,7 @@ outcomes('aslan.outcast',{
  5:[Q([['Engineer',[genderAward('female',C('Engineer'))]],['Mechanic',[genderAward('female',C('Mechanic'))]],['Tolerance',C('Tolerance')],['Vacc Suit',C('Vacc Suit')]])],
  6:[relationship('Contact')],
  8:[Q([['Fight',[K('Melee',10,[R(1)],[noTerm()])]],['Escape',[K('Stealth',8,[],[noTerm()])]]])],
- 9:[OPT('Join expedition',[relationship('Ally'),{kind:'career-status',action:'next',careerGroup:'core'}])],
+ 9:[OPT('Join expedition',[relationship('Ally'),{kind:'aslan-access-right',route:'outcast-expedition'}])],
  10:[{kind:'career-status',action:'auto-qualify',careerChoices:['aslan.outlaw','aslan.wanderer']}],
  11:[{kind:'aslan-restoration-opportunity',source:{id:'aliens',page:41},eventResult:11}],
  12:[P()]

@@ -1,6 +1,7 @@
+// Preserved full-engine development regression, including deferred Zhodani.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {api,project,exportSession,importSession} from '../engine/session.mjs';
+import {developmentApi as api,project,exportSession,importSession} from '../engine/session.mjs';
 import {CAREER_TRANSFER_RULES,careerTransferRule,createCareerTransfer,careerTransferEligibility,careerTransferEntry,careerTransferExpiry} from '../engine/career-transfers.mjs';
 
 import {run,rejected,force,settle,fixture} from './career-transfer-fixtures.mjs';

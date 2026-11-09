@@ -1,7 +1,8 @@
+// Preserved full-engine development regression, including deferred Zhodani.
 import {settle} from './career-transfer-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {api,exportSession,importSession,project,RULES_REVISION} from '../engine/session.mjs';
+import {developmentApi as api,exportSession,importSession,project,RULES_REVISION} from '../engine/session.mjs';
 import {buildMerchantFineFixture,rolledMerchantFine,run,rejected,force} from './merchant-fine-fixtures.mjs';
 import {chronology,rolledReeducation} from './zhodani-reeducation-fixtures.mjs';
 const ordinary=buildMerchantFineFixture({cash:6000}),noble=buildMerchantFineFixture({cash:6000,soc:10}),protectedFine=buildMerchantFineFixture({cash:6000,protectedStay:true});
@@ -85,7 +86,7 @@ test('pending commands are strict, block unrelated changes and preserve action r
  assert.equal(r.state.currentMerchantFine.die,4);assert.equal(r.state.currentMerchantFine.payment,null);assert.equal(record(r).terms,0);roundtrip(r);
 });
 test('revision .6 rejects earlier published revisions before reconstruction without modifying old bytes',()=>{
- assert.equal(RULES_REVISION,'character-preview-2026-11-08.13');
+ assert.equal(RULES_REVISION,'character-preview-2026-11-08.14');
  for(const rulesRevision of ['character-preview-2026-11-08.2','character-preview-2026-11-08.3','character-preview-2026-11-08.4']){
   const old=structuredClone(ordinary.session);old.rulesRevision=rulesRevision;old.events.push({invalid:true});const bytes=JSON.stringify(old);
   const out=api({operation:'project',session:old});assert.equal(out.ok,false);assert.match(out.error.message,/Legacy or different rules revision/);assert.equal(JSON.stringify(old),bytes);

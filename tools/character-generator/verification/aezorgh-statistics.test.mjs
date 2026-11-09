@@ -1,6 +1,7 @@
+// Preserved full-engine development regression, including deferred Zhodani.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {api,createSession,execute,project,exportSession,importSession} from '../engine/session.mjs';
+import {developmentApi as api,createSession,execute,project,exportSession,importSession} from '../engine/session.mjs';
 
 function run(r,type,payload={},options={}){return execute(r.session??r,{type,payload},options);}
 function start(species='aezorgh',options={}){

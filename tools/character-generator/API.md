@@ -2,6 +2,12 @@
 
 The rules engine is independent of the GUI. Import `api` from `engine/session.mjs`, or POST the same JSON to `/api/v1` on the local server. No server-side sessions are retained.
 
+## Release boundary
+
+`api` exposes four species (Human, Aslan, Vargr, Aezorgh) and 36 careers. Zhodani setup, careers and the Intendant/Noble PSI configuration are deferred. Direct commands, projection, import and restore/replay histories containing these choices fail with `INVALID_REQUEST`; original files remain available through unverified read-only recovery. Filtering applies equally to the in-browser and HTTP API. No request flag enables development content. Human PSI, Core/Vargr Psion and Companion paths remain supported.
+
+The rules revision remains `character-preview-2026-11-08.14`: the underlying mechanics and audit summaries are unchanged. Matching-revision saves must also satisfy release scope. Earlier revisions, including `.13`, remain read-only recovery records. `developmentApi` and the direct engine procedures preserve full internal development coverage; they are not the public release contract. Zhodani-specific command descriptions below document that preserved, deferred implementation only.
+
 ## Operations
 
 - `{"operation":"catalog"}` returns versioned species, career, pre-career, skill and source catalogues.
@@ -259,4 +265,29 @@ Aliens Volume 1 Update 2026 pp. 17 and 47. This separate workflow creates a dela
 - `resolve-land-claim {claimId,mode:"personal-return"|"relative-administration",claimEstablished:true,reason,relativeName?}` requires GM mode, elapsed recorded delay and a clean checkpoint. Relative administration additionally requires Independence 3+ and a named relative, maximum 120 characters. Both modes need explicit confirmation and a 1–500 character reason that the actual claim has been established. Appointing a relative alone does not establish title. Personal return rejects an irrelevant relative field. No travel, time, cash, skill or career progress is invented.
 - Resolution creates an active personally owned `aslan.landholding` asset with category `land`, the selected world, parcel count, original SOC, source award IDs and administration evidence. It has no equipment stats or cash valuation. `character.landClaims` preserves original inputs, world, source, SOC, parcel calculation, delay dice/timing, pending/claimed status, resolution and asset link. All are audited before/after. Pending claims and owned holdings have a dedicated printed sheet section, separate from equipment and the family estate.
 
-Repeated command IDs, import, restore and replay follow the ordinary deterministic audit contract. The rules revision is `character-preview-2026-11-08.13`; `.12` and earlier files are unverified read-only recovery records, not silently migrated. Corporations, inheritance timing, nonstandard delay exceptions, land valuation/income and broader alien-access gaps remain unfinished.
+Repeated command IDs, import, restore and replay follow the ordinary deterministic audit contract. The rules revision is `character-preview-2026-11-08.14`; `.13` and earlier files are unverified read-only recovery records, not silently migrated. Corporations, inheritance timing, nonstandard delay exceptions, land valuation/income and broader alien-access gaps remain unfinished.
+
+
+## Native Aslan outward career access
+
+Aliens Volume 1 Update 2026 pp. 22, 29, 35 and 41; ordinary Core qualification and benefits remain distinct from native upbringing.
+
+- Actual Outcast or Outlaw career history restricts respectable native Aslan careers, whether or not a restoration record exists. A family-background Outcast label is not career service. Existing restoration, officer and approved historical-entry exceptions remain scoped to their original target and source boundary.
+- Source-earned Scientist Mishap 6 offers one next-term automatic Scholar attempt after legal departure and the original benefits. An accepted Outcast Event 9 expedition instead requires an ordinary Core-career qualification attempt next term. It preserves the current Event’s advancement. Neither route silently waives protected stay, minimum service, due ageing or old benefits.
+- The p. 22 history route permits Core career access outside Aslan space. Current Outcast status without that career history has the narrower Rogue/Drifter scope. A failed native qualification permits only a no-check outward Drifter fallback, never a second qualification or draft in that same term. Corporate-employment permissions are not implemented by this route.
+- `state.aslanAccessOptions` projects source, availability/reason, target career IDs, whether entry is automatic and whether the next attempt is mandatory. The GUI displays these choices and their source reference without importing engine rule packs. `state.aslanAccessRules` supplies destination and reason limits.
+- `activate-aslan-access {routeId,destination,confirmed:true}` records a 1–160 character destination at a clean career boundary after the original career and benefits. No GM is needed for a printed route. It changes no identity, upbringing, statistics, skills, age, rank or prior benefits and does not simulate travel. `character.aslanCareerContext` separately records region, active/established/expired status, access ID, destination, exact career scope and source. A narrow route does not silently authorize unrelated Core careers.
+- The ordinary `career` command consumes a next-term right on its actual attempt. `character.aslanCareerAccess` retains origin career/assignment, granted/available term boundary, scope, activation, actual check/result and expiry. Optional unused rights expire on the documented chronology, education, other-career and next-term boundaries; rejected actions consume no rights, dice or education opportunities. `c.aslanAccess` projects an applicable automatic right so the interface does not misleadingly request an ordinary qualification roll.
+- A failed outward Core qualification follows Core Drifter/draft handling and does not newly impose native SOC 2, Outcast status or Clan Share forfeiture. `state.fallbackOptions` supplies the authoritative fallback and draft labels, availability and reasons. The lifetime ordinary draft limit still applies. `state.finishOptions` and existing education/training/continuation projections prevent bypassing a mandatory expedition.
+- Manager Mishap 2’s accepted true accusation retains its specifically required next Outcast career. Broader outward routes cannot replace that source mandate.
+- If expedition timing conflicts with a natural-12 forced stay, `state.aslanAccessConflict` projects the genuine conflict and two source-precedence choices. GM `resolve-aslan-access-conflict {decision,reason}` explicitly selects `honor-forced-stay` (keep the forced term, expire the expedition) or `honor-expedition` (retain the expedition, waive only this conflicting forced stay). The 1–500 character reason, original roll and chosen precedence are preserved. There is no default.
+
+### Separate Aslan and Core muster-outs
+
+The configured ruling resolves the original native-career benefits under Aslan rules before departure. Each outward Core career then uses Core benefits, full Core cash amounts and its Core pension rules when that career later ends. Native upbringing and native ageing thresholds remain unchanged. No benefits are repeated or retroactively reinterpreted.
+
+Each outward Core record carries `aslanOutsideRules` with its source-access ID and applied career, benefits, cash, pension and ageing systems. `character.cashRollAccounts` separates native and Core rolls; initialization reconciles existing completed Core cash history rather than assuming zero. Prior native cash rolls do not consume the Core lifetime allowance of three. Core cash usage persists across later Core careers. `state.cashRolls` remains the total actual count; clients must use `state.cashRollAccounting.used/limit` or `cashRollsUsed/cashLimit` to enable the active cash choice. The projected account includes a display name and the total. WLT changes only once for each actual cash roll.
+
+The action audit includes route scope, activation/attempt/expiry, context, per-career applied rules and separate cash accounts. Rules revision `.14` rejects earlier saves for verified replay while preserving their original unverified read-only history. General Aslan assignment rank mapping, corporate employment, the Outcast Event 10 Wanderer prerequisite question and broader cross-book gaps remain outside this bounded increment.
+
+For limited Aslan outward rights, failed scoped Scholar qualification permits the ordinary Drifter fallback only. It does not enable elective wider Core careers or the Core draft.
