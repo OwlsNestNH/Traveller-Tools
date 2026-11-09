@@ -90,7 +90,8 @@ function deferrableChoice(state,e){return !!state.deferredSpecializations&&!e.al
 function allocationEffects(state,base){return pendingSpecializations(state,base).map(a=>({...copy(a),kind:'skill-choice',scope:'any',allowed:[a.name],allocationId:a.id,deferSpeciality:false,label:'Allocate '+a.name+' award: '+(a.mode==='set'?'gain at least level ':'increase by ')+a.value}));}
 function requireAllocationsBefore(state,e,base){const effects=allocationEffects(state,base);if(!effects.length)return false;if(e.kind==='skill'&&e.name.includes(' ('))for(const effect of effects)effect.followingFixedAward=copy(e);state.effectsQueue.unshift(...effects,e);return true;}
 function specializationOptions(state){return {available:!!state.deferredSpecializations&&pendingSpecializations(state).length>0&&!state.pendingChoice&&!state.pending&&!state.effectsQueue?.length&&['career','precareer','training','survival','advancement','term-end','benefits','retirement'].includes(state.stage),count:pendingSpecializations(state).length};}
-function allocationImproves(state,name,e){const old=state.character.skills[name]??0,next=e.mode==='set'?Math.max(old,e.value):Math.min(4,old+e.value),fixed=e.followingFixedAward;if(e.maximum&&next>e.maximum||e.followingConnection===name&&next>=3)return false;if(fixed?.name===name){const after=n=>fixed.mode==='set'?Math.max(n,fixed.value):Math.min(4,n+fixed.value);return after(next)>after(old);}return next>old;}
+function normalizedSkill(state,name,options={}){return normalizeSkillName(name,{...options,canonicalOpen:!!state.deferredSpecializations});}
+function allocationImproves(state,name,e){name=normalizedSkill(state,name).name;const old=state.character.skills[name]??0,next=e.mode==='set'?Math.max(old,e.value):Math.min(4,old+e.value),fixed=e.followingFixedAward;if(e.maximum&&next>e.maximum||e.followingConnection===name&&next>=3)return false;if(fixed?.name&&normalizedSkill(state,fixed.name).name===name){const after=n=>fixed.mode==='set'?Math.max(n,fixed.value):Math.min(4,n+fixed.value);return after(next)>after(old);}return next>old;}
 function independenceAcquired(state,name,rolls){
  if(!state.deferredSpecializations||name!=='Independence')return true;
  need(state.character.species==='aslan'&&state.character.gender==='male','Independence is available only to male Aslan.');
@@ -98,7 +99,7 @@ function independenceAcquired(state,name,rolls){
 }
 function gainSkill(state,name,level,mode='increase',allowTalentAcquisition=false) {
  need(typeof name==='string'&&name.length<=80,'Invalid skill.');
- const parsed=normalizeSkillName(name,{requireSpeciality:mode!=='set'||level>0});name=parsed.name;const base=parsed.base;need(SKILLS.includes(base),'Choose a supported skill or specialisation.');need(!PSIONIC_TALENTS.includes(base)||!state.character.psionicLoss,'Ageing permanently removed psionic ability; historical talents cannot be increased or reacquired.');
+ const parsed=normalizedSkill(state,name,{requireSpeciality:mode!=='set'||level>0});name=parsed.name;const base=parsed.base;need(SKILLS.includes(base),'Choose a supported skill or specialisation.');need(!PSIONIC_TALENTS.includes(base)||!state.character.psionicLoss,'Ageing permanently removed psionic ability; historical talents cannot be increased or reacquired.');
  if(PSIONIC_TALENTS.includes(base)&&!Object.hasOwn(state.character.skills,name))need(allowTalentAcquisition&&(state.character.stats.PSI??0)>0,'Psionic talents require testing and explicit acquisition before improvement.');
  if(mode==='set'&&level===0&&SPECIALIZED.includes(base)&&base!=='Profession')name=base;
  const current=state.character.skills[name];
@@ -108,7 +109,7 @@ function gainSkill(state,name,level,mode='increase',allowTalentAcquisition=false
  state.character.skills[name]=Math.min(4,next);
 }
 function skillAwardExceedsLimit(state,name,level,mode='increase') {
- const parsed=normalizeSkillName(name,{requireSpeciality:mode!=='set'||level>0});
+ const parsed=normalizedSkill(state,name,{requireSpeciality:mode!=='set'||level>0});
  const key=mode==='set'&&level===0&&parsed.base!=='Profession'&&Object.hasOwn(SPECIALITIES,parsed.base)?parsed.base:parsed.name;
  const current=state.character.skills[key],next=mode==='set'?Math.max(current??-1,level):Math.min(4,current===undefined?1:current+level);
  const increase=Math.max(next,0)-Math.max(current??0,0),total=Object.values(state.character.skills).reduce((sum,n)=>sum+n,0);
@@ -1285,6 +1286,7 @@ function mechanicalDice(state,expression,rolls,label) {
  return entry.total;
 }
 function skillLevel(state,name) {
+ if(state.deferredSpecializations)name=normalizedSkill(state,name).name;
  const base=name.split(' (')[0],skills=state.character.skills;
  if(name.includes(' (')){
   if(Object.hasOwn(skills,name))return skills[name];
@@ -1318,7 +1320,7 @@ function nonPsionicEligibility(name){
  return 'eligible';
 }
 function skillNameAllowed(state,name,effect) {
- let parsed;try{parsed=normalizeSkillName(name);}catch{return false;}name=parsed.name;const base=parsed.base;
+ let parsed;try{parsed=normalizedSkill(state,name);}catch{return false;}name=parsed.name;const base=parsed.base;
  if(state.deferredSpecializations&&(['Independence','Tolerance'].includes(base)&&state.character.species!=='aslan'||base==='Independence'&&state.character.gender!=='male'))return false;
  if(PSIONIC_TALENTS.includes(base)&&(state.character.psionicLoss||skillLevel(state,name)<0&&!coreTalentChoice(state,effect)&&effect.scope!=='new-psionic-talent'))return false;
  if(coreTalentChoice(state,effect)&&base==='Technopathy')return false;
@@ -2183,7 +2185,7 @@ function apply(state,command,rolls) {
  }
  case 'companion-skill':{
   need(state.stage==='companion-skill'&&state.pendingChoice,'No Companion study choice is due.');
-  const record=educationRecord(state),result=companionResolveSkillChoice({id:record.id,effect:state.pendingChoice,selected:payload.selected,skills:state.character.skills,selections:record.selections});
+  const record=educationRecord(state),result=companionResolveSkillChoice({id:record.id,effect:state.pendingChoice,selected:state.deferredSpecializations&&Array.isArray(payload.selected)?payload.selected.map(n=>normalizedSkill(state,n).name):payload.selected,skills:state.character.skills,selections:record.selections});
   need(result.resolved,result.reason??('Missing '+result.missingInputs.join(', ')));
   record.selections[result.selection.id]=copy(result.selection.names);state.pendingChoice=null;state.effectsQueue.unshift(...sourcedEffects(result.effects,result.source));drainEffects(state,rolls);
   return 'Companion study choices recorded: '+result.selection.id+' = '+result.selection.names.join(', ')+'.';
@@ -2212,7 +2214,7 @@ function apply(state,command,rolls) {
  }
  case 'education-skill':{
   need(state.stage==='education-skill'&&state.pendingChoice,'No education skill choice is due.');
-  const e=state.pendingChoice,name=text(payload.name,80),base=name.split(' (')[0];
+  const e=state.pendingChoice,name=state.deferredSpecializations?normalizedSkill(state,text(payload.name,80)).name:text(payload.name,80),base=name.split(' (')[0];
   need(educationSkillValid(state,name,e),'Choose a listed education skill and an allowed specialisation.');
   if(SPECIALIZED.includes(base)&&e.selectionId!=='hobby')need(name.includes(' ('),'Choose the specialisation to retain for graduation.');
   const record=educationRecord(state);
@@ -2334,7 +2336,7 @@ function apply(state,command,rolls) {
   need(state.stage==='book-step'&&state.pending?.kind==='native-effect'&&['skill-choice','skill-reduction-choice'].includes(state.pending.effect?.kind),'No skill choice can be retried.');state.pendingChoice=copy(state.pending.effect);state.pending=null;state.stage='skill-choice';return 'Returned to the pending skill choice without applying an award.';
  }
  case 'choose-skill': {
-  need(state.stage==='skill-choice'&&state.pendingChoice,'There is no skill choice.');const e=state.pendingChoice,name=normalizeSkillName(text(payload.name,80),{requireSpeciality:!e.deferSpeciality&&(e.mode!=='set'||(e.value??1)>0)}).name;
+  need(state.stage==='skill-choice'&&state.pendingChoice,'There is no skill choice.');const e=state.pendingChoice,name=normalizedSkill(state,text(payload.name,80),{requireSpeciality:!e.deferSpeciality&&(e.mode!=='set'||(e.value??1)>0)}).name;
   if(e.scope==='non-psionic'&&nonPsionicEligibility(name)==='source-required'){state.pendingChoice=null;nativeFallback(state,{...e,requestedName:name},'The selected Science subject is not classified for this non-psionic award. Confirm its non-psionic eligibility from the source before recording an award, or retry with a verified specialty.');return 'Unclassified Science specialty requires an explicit source eligibility decision; no skill awarded.';}
   need(skillNameAllowed(state,name,e),'Skill is not available for this award.');if(e.distinctSpecialties)distinctScienceSelection(name,e.selected??[]);
   if(coreTalentChoice(state,e)&&skillLevel(state,name)<0){state.pendingChoice=null;requestTalentAward(state,{...e,kind:'psionic-talent',name},rolls);return 'Selected '+name+' for a service-table acquisition attempt.';}
@@ -2693,7 +2695,7 @@ if(pending.kind==='psionic-training-terms'){
     const record=educationRecord(state);record.graduation={id:record.id,resolved:true,manual:true,attempted:true,graduated:payload.graduated,honours:payload.honours,note};applyEffects(state,payload.effects??[]);state.pending=null;educationFinish(state,rolls);
    }else if(pending.kind==='companion-skill-choice'){
     need(Array.isArray(payload.educationSelections)&&payload.educationSelections.length>0&&payload.educationSelections.length<=10,'Record the adjudicated selected skills.');
-    const names=payload.educationSelections.map(n=>normalizeSkillName(text(n,80)).name);need(names.every(n=>SKILLS.includes(n.split(' (')[0])),'Choose supported skill names.');
+    const names=payload.educationSelections.map(n=>normalizedSkill(state,text(n,80)).name);need(names.every(n=>SKILLS.includes(n.split(' (')[0])),'Choose supported skill names.');
     educationRecord(state).selections[pending.choice.selectionId]=names;applyEffects(state,payload.effects??[]);state.pending=null;drainEffects(state,rolls);
    }else if(pending.kind==='companion-initial-awards'){
     applyEffects(state,payload.effects??[]);state.pending=null;state.stage='education-event';
@@ -2721,10 +2723,10 @@ if(pending.kind==='psionic-training-terms'){
   need(['career','term-end','retirement','finish'].includes(state.stage),'Add connections between terms or at completion.');
   need(state.connections.length<2,'At most two connections award skills.');
   const person=text(payload.person,80);need(person&&!state.connections.some(c=>c.person.toLowerCase()===person.toLowerCase()),'Use a different Traveller for each connection.');
-  const skill=state.deferredSpecializations?normalizeSkillName(text(payload.skill,80)).name:text(payload.skill,80);need(skill!=='Jack-of-all-Trades','Connections cannot award Jack-of-all-Trades.');
+  const skill=state.deferredSpecializations?normalizedSkill(state,text(payload.skill,80)).name:text(payload.skill,80);need(skill!=='Jack-of-all-Trades','Connections cannot award Jack-of-all-Trades.');
   if(state.deferredSpecializations)need(skillNameAllowed(state,skill,{scope:'any'}),'Skill is not available for this connection.');
   need((state.character.skills[skill]??0)<3,'A connection cannot increase a skill above level 3.');
-  if(state.deferredSpecializations){const parsed=normalizeSkillName(skill);need(SKILLS.includes(parsed.base),'Choose a supported skill.');if(SPECIALIZED.includes(skill)){deferSkillAward(state,{kind:'skill',name:skill,mode:'increase',value:1,maximum:3,connection:person});state.connections.push({person,skill,note:text(payload.note??'',300)});return 'Connection with '+person+': '+skill+' award saved for specialization allocation.';}const awards=allocationEffects(state,parsed.base);if(awards.length){for(const award of awards)award.followingConnection=skill;state.specializationContinuation={stage:state.stage,command:copy(command)};queueEffects(state,awards,'specialization-command',rolls);return 'Allocate earlier '+parsed.base+' awards before the connection skill.';}}
+  if(state.deferredSpecializations){const parsed=normalizedSkill(state,skill);need(SKILLS.includes(parsed.base),'Choose a supported skill.');if(SPECIALIZED.includes(skill)){deferSkillAward(state,{kind:'skill',name:skill,mode:'increase',value:1,maximum:3,connection:person});state.connections.push({person,skill,note:text(payload.note??'',300)});return 'Connection with '+person+': '+skill+' award saved for specialization allocation.';}const awards=allocationEffects(state,parsed.base);if(awards.length){for(const award of awards)award.followingConnection=skill;state.specializationContinuation={stage:state.stage,command:copy(command)};queueEffects(state,awards,'specialization-command',rolls);return 'Allocate earlier '+parsed.base+' awards before the connection skill.';}}
   const acquired=independenceAcquired(state,skill,rolls);if(acquired)gainSkill(state,skill,1);state.connections.push({person,skill,note:text(payload.note??'',300),...(state.deferredSpecializations&&!acquired?{acquired:false}:{})});return 'Connection with '+person+': '+skill+(acquired?' gained.':' acquisition failed; the opportunity is recorded.');
  }
  case 'add-extra': {
