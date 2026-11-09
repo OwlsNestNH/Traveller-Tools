@@ -158,3 +158,9 @@ School of Hard Knocks promotion/commission penalties persist through forced care
 Colonial Upbringing is available only in the first generation term, before any career or other pre-career education. Nonstandard starting-age timing still requires an explicit source decision.
 
 Academy commissions remain optional even with honours, allowing an enlisted career. University initial choices must be distinct skill bases, including when different specialisations are selected. These existing behaviors are now explicitly confirmed by the user.
+
+## Deferred specialties and audit corrections
+
+New .18 sessions defer ordinary unspecified positive specialist awards until allocation. Players may allocate at a quiet checkpoint or during finalization; fixed named and source-constrained awards remain immediate. Checks that depend on unresolved skills settle the relevant awards first. This is the requested presentation policy, not a claim that the books instruct all choices to wait until finalization. Separate awards retain their order, source and individual limits. Connections cannot bypass level three through aliases, and open Science, Language and Profession subjects share case-insensitive identities.
+
+The same revision corrects forced Drifter draft continuation, earned-benefit forfeiture, Scout event departure timing and Believer immediate event promotion. Compatible .16/.17 sessions retain their original mechanics. The public four-species scope and deferred Zhodani recovery boundary are unchanged.
