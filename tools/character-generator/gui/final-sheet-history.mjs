@@ -1,6 +1,7 @@
 // Read-only presentation of the validated projection. Never infer missing outcomes.
 import {characterEffectDetails,modifierEffectDetails,pendingEffectDetails} from './roll-result-view.mjs';
 import {lifeEventLogDetails} from './life-event-presentation.mjs';
+import {conciseResult} from './concise-result.mjs';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const careerName=(catalog,id)=>catalog.careers.find(c=>c.id===id)?.name??id??'Outside a career';
 const assignmentName=(catalog,id,assignment)=>catalog.careers.find(c=>c.id===id)?.assignments.find(a=>a.id===assignment)?.name??assignment;
@@ -142,7 +143,10 @@ function importantEffects(event,catalog){
 
 export function finalEventRows(projection,session,catalog){
  return currentEvents(projection,session).filter(event=>!auditOnly.has(event.type)&&!/^Chose Basic-training option \d+\.$/.test(event.summary)).map(event=>{
-  const summary=shortSummary(event),details=unique([...lifeEventLogDetails(event),...importantEffects(event,catalog)]).filter(detail=>!summary.includes(detail));
+  const equipment=(event.changes??[]).some(change=>/^assets\.\d+$/.test(change.path)&&!change.before&&change.after?.name)?conciseResult(event,{},catalog):null;
+  const compact=equipment?.compact;
+  const summary=compact?equipment.title+(event.type==='resolve-book'&&event.command?.payload?.note?' '+event.command.payload.note.trim():''):shortSummary(event);
+  const details=unique([...lifeEventLogDetails(event),...(compact?equipment.details:importantEffects(event,catalog))]).filter(detail=>!summary.includes(detail));
   const rolls=event.rolls??[];
   if(!details.length&&!rolls.length&&['injury-treatment','skill-award-source','companion-choice-source'].includes(event.type))return {number:event.number,summary:'',details,rolls};
   return {number:event.number,summary,details,rolls};

@@ -1,3 +1,4 @@
+import {equipmentFixture} from './concise-result-fixtures.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {finalEventRows,finalEventsView} from '../gui/final-sheet-history.mjs';
@@ -55,8 +56,8 @@ test('source effects are readable, preserve restrictions, and never serialize pa
   {path:'assets.0',before:null,after:{name:'Scout ship',ownership:'use',owner:'Scout Service',recallable:true,condition:'Return on recall',mortgagePaidPercent:25}}
  ]}]);
  const html=finalEventsView(r,r.session,catalog);
- assert.match(html,/Do not sell \{this ship\}\. &lt;img src=x&gt; Effects: \[\]\./);assert.match(html,/Cash \+Cr1,000/);assert.match(html,/qualification is barred/);
- assert.match(html,/Not transferable/);assert.match(html,/cannot be redeemed for cash/);assert.match(html,/use only/);assert.match(html,/Owned by Scout Service/);assert.match(html,/recalled by the owner/);assert.match(html,/mortgage 25% paid/);
+ assert.match(html,/Do not sell \{this ship\}\. &lt;img src=x&gt; Effects: \[\]\./);assert.match(html,/Cash: Cr0 → Cr1,000/);assert.match(html,/qualification is barred/);
+ assert.match(html,/Not transferable/);assert.match(html,/cannot be redeemed for cash/);assert.match(html,/Use only/);assert.match(html,/owned by Scout Service/);assert.match(html,/owner may recall/);assert.match(html,/Mortgage 25% paid/);
  assert.doesNotMatch(html,/&quot;kind&quot;|&quot;value&quot;|<img src=x>/);assert.equal(html.match(/Do not sell/g).length,1);
 });
 
@@ -74,4 +75,9 @@ test('setup-only and bookkeeping-only histories stay empty, including replayed s
 test('mechanical dice show their recorded conversion and modifier, without inventing extra rolls',()=>{
  const r=synthetic([{type:'choose-effect',summary:'Chose the recorded consequence.',rolls:[{label:'Loss (D3)',values:[5],kept:[3],modifier:0,total:3},{label:'Delay (1D+3)',values:[2],kept:[2],modifier:3,total:5}]}]);
  const html=finalEventsView(r,r.session,catalog);assert.match(html,/Loss \(D3\): \[5\] → \[3\] = 3/);assert.match(html,/Delay \(1D\+3\): \[2\] \+3 = 5/);
+});
+
+test('equipment history names the item once and preserves its recorded source ruling',()=>{
+ const r=equipmentFixture().after,html=finalEventsView(r,r.session);
+ assert.equal((html.match(/Synthetic weapon/g)??[]).length,1);assert.match(html,/Received Synthetic weapon/);assert.match(html,/Synthetic equipment ruling/);assert.doesNotMatch(html,/Benefit: Synthetic weapon|Asset: Synthetic weapon|Owned by Traveller/);
 });
