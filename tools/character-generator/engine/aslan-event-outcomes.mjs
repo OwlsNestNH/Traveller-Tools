@@ -13,4 +13,4 @@ export function aslanEventPending(state){
 
 export function aslanOutcastEntry(state,careerId){return (state.character.aslanOutcastOpportunities??[]).find(r=>r.status==='available'&&r.availableAtCompletedTerms===state.character.terms&&r.careers.includes(careerId));}
 
-export function aslanOwnedLand(state){return [...(state.character.aslanLandholds??[]).map(r=>({...r,ledger:'aslanLandholds'})),...(state.character.assets??[]).filter(r=>r.active&&r.ownership==='personal'&&r.category==='land').map(r=>({...r,ledger:'assets'}))].filter(r=>r.parcels>0);}
+export function aslanOwnedLand(state){return [...(state.character.aslanLandholds??[]).map(r=>({...r,ledger:'aslanLandholds'})),...(state.character.assets??[]).filter(r=>r.active&&r.ownership==='personal'&&r.category==='land').map(r=>({...r,increment:r.increment??state.character.landClaims?.find(c=>c.id===r.landClaimId)?.increment,ledger:'assets'}))].filter(r=>r.parcels>0);}

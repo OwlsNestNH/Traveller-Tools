@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {aslanSetup,aslanEvent,aslanEndTerm,aslanBenefits,run,force,settle,rejected} from './aslan-officer-fixtures.mjs';
 import {project,exportSession,importSession} from '../engine/session.mjs';
-import {aslanEventPending} from '../engine/aslan-event-outcomes.mjs';
+import {aslanEventPending,aslanOwnedLand} from '../engine/aslan-event-outcomes.mjs';
 import {aslanEventOutcomesView,aslanEventOutcomesSheet} from '../gui/aslan-event-outcomes-view.mjs';
 function career(id,assignment,seed=''){let r=aslanSetup('event-outcomes-'+id+seed);r=settle(id==='aslan.outcast'?run(r,'career',{id,assignment}):force(r,'career',{id,assignment},[6,6]));if(r.state.stage==='training')r=settle(force(r,'training',{table:'personal'},[1]));return r;}
 function life(row){for(let seed=0;seed<100;seed++){let r=aslanEvent(career('aslan.military','warrior',seed),7);if(r.log.at(-1).rolls.find(x=>x.label.startsWith('aslan.life-events'))?.total===row)return r;}throw Error('Life fixture not found');}
@@ -17,3 +17,5 @@ test('Territory challenge uses recorded target 8 and signed Effect for landless 
 test('Rite Cr5000 equipment credit advances origin and creates no cash',async()=>{const {buildAslanOriginFixture}=await import('./aslan-origin-fixtures.mjs');let r=force(buildAslanOriginFixture({gender:'male',stage:'aslan-rite'}),'roll-aslan-rite',{},[2,2]);assert.equal(aslanEventPending(r.state),'rite-equipment');r=run(r,'record-aslan-rite-equipment');assert.equal(r.state.character.equipmentCredits[0].remaining,5000);assert.equal(r.state.character.cash,0);assert.equal(r.state.stage,'precareer');roundtrip(r);});
 
 test('entitlement sheet retains restricted credit, pending land and conditional shares visibly',()=>{const html=aslanEventOutcomesSheet({character:{equipmentCredits:[{remaining:5000,amount:5000,categories:['Art','Armour','Weapon'],status:'available'}],aslanLandholds:[{parcels:10,socAtAward:9}],aslanSecrets:[{quantity:5,status:'retained',condition:'Trade later'}]}},{esc:String});assert.match(html,/Cr5000 remaining/);assert.match(html,/Art, Armour, Weapon/);assert.match(html,/Location pending/);assert.match(html,/not spendable/);});
+
+test('owned redeemed land retains its verified claim increment after SOC changes',()=>{const holdings=aslanOwnedLand({character:{stats:{SOC:2},assets:[{id:'asset-1',landClaimId:'claim-1',active:true,ownership:'personal',category:'land',parcels:10}],landClaims:[{id:'claim-1',increment:2}]}});assert.equal(holdings[0].increment,2);assert.equal(holdings[0].ledger,'assets');});
