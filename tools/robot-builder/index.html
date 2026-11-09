@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Traveller robot construction workbench with independent Handbook stages and explicit rules coverage.">
-  <meta name="application-version" content="0.1.0-beta.1">
+  <meta name="application-version" content="0.2.0-beta.1">
   <title>Robot Builder - Beta | Traveller Tools</title><link rel="icon" href="data:,">
   <link rel="stylesheet" href="styles.css">
   <script type="module" src="js/app.mjs"></script>
@@ -17,7 +17,7 @@
     <a href="../../index.html">All tools</a>
   </header>
   <main class="shell">
-    <div class="title-row"><div><p class="eyebrow">ROBOT HANDBOOK WORKBENCH</p><h1>Robot Builder</h1><p class="intro"><span id="release-version">Beta 0.1</span> &middot; Six independent stages. <a href="../../changes/robot.html" target="_blank" rel="noopener" aria-label="Robot Builder changelog (opens in a new tab)">Changelog</a></p></div><div class="title-actions"><button id="new-design" type="button">New blank design</button><button id="save-design" type="button" class="primary">Save design</button></div></div>
+    <div class="title-row"><div><p class="eyebrow">ROBOT HANDBOOK WORKBENCH</p><h1>Robot Builder</h1><p class="intro"><span id="release-version">Beta 0.2</span> &middot; Six independent stages. <a href="../../changes/robot.html" target="_blank" rel="noopener" aria-label="Robot Builder changelog (opens in a new tab)">Changelog</a></p></div><div class="title-actions"><button id="new-design" type="button">New blank design</button><button id="save-design" type="button" class="primary">Save design</button></div></div>
     <section class="panel identity" aria-label="Robot identity">
       <div class="identity-fields">
         <label for="robot-kind">Robot type<select id="robot-kind"></select></label>
@@ -39,6 +39,8 @@
     </div>
     <section class="panel library" aria-label="Design files">
       <div class="file-actions"><button id="save-copy" type="button">Save a copy</button><button id="export-design" type="button">Export JSON</button><button id="import-design" type="button">Import JSON</button><button id="print-design" type="button">Print statblock</button></div>
+      <div class="output-options"><label for="output-format">Print format<select id="output-format" aria-describedby="output-format-note"><option value="detailed">Detailed statblock</option><option value="reference">Reference sheet</option></select></label><p id="output-format-note" class="help">Reference sheet previews below. Format choice does not change your design or JSON backup.</p></div>
+      <div id="sheet-preview" hidden></div>
       <div class="load-row"><label for="saved-design">Saved designs<select id="saved-design"><option value="">Choose a saved design</option></select></label><button id="load-design" type="button" disabled>Load design</button><button id="refresh-saved" type="button">Refresh saved list</button></div>
       <div class="load-row"><label for="example-design">Examples<select id="example-design"><option value="">Choose an example</option></select></label><button id="load-example" type="button" disabled>Load example</button></div><p id="example-note" class="help"></p><p id="storage-note" class="help"></p>
     </section>

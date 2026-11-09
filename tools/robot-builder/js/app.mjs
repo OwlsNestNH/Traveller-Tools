@@ -1,5 +1,6 @@
 import { createRobotApi } from './api.mjs';
 import { renderReview } from './review.mjs';
+import {renderSheet} from './sheet.mjs';
 import {renderMagazinePanel} from './magazine-editor.mjs';
 import {sourceReference,diagnosticLabel,coverageLabel,sourceExampleLabel} from './rules-presentation.mjs';
 
@@ -720,7 +721,7 @@ function render(next) {
   view = next || api.getView();
   if (pointerActive) { deferredView = view; $('stage-panel').setAttribute('aria-busy','true'); return; }
   const focused = document.activeElement?.id;
-  updateIdentity(); renderNavigation(); renderStage(); renderSummary(); renderSaved(); renderExamples();
+  updateIdentity(); renderNavigation(); renderStage(); renderSummary(); renderSaved(); renderExamples(); renderOutputPreview();
   if (focused && $(focused)) $(focused).focus({ preventScroll: true });
   $('stage-panel').setAttribute('aria-busy','false');
 }
@@ -733,11 +734,20 @@ function download() {
   document.body.append(anchor); anchor.click(); anchor.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
-function printDesign() {
-  const output = $('print-output');
-  output.replaceChildren(el('h1', view.design.name || 'Robot design'), el('pre', api.getStatblock?.() || view.statblock || 'Statblock unavailable.'));
-  window.print();
+function referenceSelected() { return $('output-format').value === 'reference'; }
+function renderOutputPreview() {
+  const selected = referenceSelected();
+  $('sheet-preview').hidden = !selected;
+  $('print-design').textContent = selected ? 'Print reference sheet' : 'Print statblock';
+  $('sheet-preview').replaceChildren(...(selected ? [renderSheet(api.getSheet())] : []));
 }
+function preparePrint() {
+  const output = $('print-output');
+  output.setAttribute('aria-label', referenceSelected() ? 'Printable robot reference sheet' : 'Printable robot statblock');
+  if (referenceSelected()) output.replaceChildren(renderSheet(api.getSheet()));
+  else output.replaceChildren(el('h1', view.design.name || 'Robot design'), el('pre', api.getStatblock?.() || view.statblock || 'Statblock unavailable.'));
+}
+function printDesign() { preparePrint(); window.print(); }
 try {
   api = createRobotApi();
   api.subscribe(render);
@@ -780,6 +790,8 @@ try {
     finally { event.target.value = ''; }
   });
   $('print-design').addEventListener('click', () => safely(printDesign));
+  $('output-format').addEventListener('change', () => safely(renderOutputPreview));
+  window.addEventListener('beforeprint', preparePrint);
 } catch (error) {
   $('stage-content').replaceChildren(el('p', 'The construction workbench could not start. Your saved designs have not been changed.', 'error'));
   notify(error.message || 'Please reload the page and try again.', true);

@@ -1,6 +1,6 @@
-# Robot Builder (Beta 0.1)
+# Robot Builder (Beta 0.2)
 
-Release label: `0.1.0-beta.1`. This is an application release identifier, independent of the unchanged design JSON schema. See the [Robot Builder changelog](../../changes/robot.html).
+Release label: `0.2.0-beta.1`. This is an application release identifier, independent of the unchanged design JSON schema. See the [Robot Builder changelog](../../changes/robot.html).
 
 The beta supports broad ordinary and special new-build construction, with source references and explicit coverage boundaries. A checked result applies to the selected implemented rules; it does **not** certify every legal Robot Handbook design.
 
@@ -110,6 +110,11 @@ Metamorphic (provisional) is a separate whole-robot construction kind, not an an
 
 The fixed-zero reservation and all formula choices are provisional assumptions, not printed construction definitions or full-book certification. Removal of unused Slots never lowers the metamorphic rate basis. Current form is bounded by the standard manipulator controls; Size and locomotion stay fixed within morphing, and features do not grant free equipment, attacks or software. Transient forms and operating combat are not simulated. Review, statblock, API, JSON convention identity and supported whole-robot component snapshots retain provisional provenance. Invalid TL and capacity selections stay available for correction. Brain-only vehicle integration projects ordinary brain/upgrades/software prices without buying the source metamorphic body; its provisional source provenance stays explicit. Organic-brain conversion remains distinct and retains its existing guard.
 
+## Reference sheet
+Choose **Reference sheet** under Design files to preview a compact ruled sheet, then use **Print reference sheet** (or the browser's Print command) to print or save a PDF. **Detailed statblock** remains the default and preserves its existing full output. The display-only choice is not saved in design JSON or browser design records. No sample artwork or branding is bundled.
+
+The API's read-only `getSheet()` uses evaluated totals and qualified review facts through `js/sheet-model.mjs`; the text-only DOM renderer in `js/sheet.mjs` performs no rules arithmetic. Missing values remain unresolved, preview totals retain their status, and attached component/implant records never become host or recipient grants. This is a quick reference: use the detailed statblock for full installation settings, conditional attack modes, source details and component profiles. Long rows and checks may span pages instead of being clipped or scaled down.
+
 ## Verification
 
 From the repository root:
@@ -119,6 +124,7 @@ node tests/tool-visits.test.cjs
 node --test tools/robot-builder/verification/*.test.mjs
 python3 -m http.server 8778 --bind 127.0.0.1
 # In another terminal:
+node tools/robot-builder/verification/reference-sheet-browser.mjs /path/to/playwright
 node tools/robot-builder/verification/release-browser.mjs /path/to/playwright
 node tools/robot-builder/verification/browser.mjs /path/to/playwright
 node tools/robot-builder/verification/handbook-skill-coverage-browser.mjs /path/to/playwright

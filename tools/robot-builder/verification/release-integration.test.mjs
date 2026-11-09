@@ -21,13 +21,13 @@ test('Robot Builder release is reachable from the homepage without displacing ex
 });
 
 test('release version is consistent and changelog opens separately from the draft', () => {
-  assert.equal(version(tool), '0.1.0-beta.1');
+  assert.equal(version(tool), '0.2.0-beta.1');
   assert.equal(version(changes()), version(tool));
-  assert.match(tool, /id="release-version">Beta 0\.1<\/span>/);
+  assert.match(tool, /id="release-version">Beta 0\.2<\/span>/);
   assert.match(tool, /<a[^>]*href="\.\.\/\.\.\/changes\/robot.html"[^>]*target="_blank"[^>]*rel="noopener"[^>]*aria-label="[^"]*new tab[^"]*"[^>]*>Changelog<\/a>/);
   assert.match(changes(), /id="release-beta-0-1"/);
   assert.match(changes(), /Beta 0\.1/);
-  assert.match(read('tools/robot-builder/README.md'), /0\.1\.0-beta\.1/);
+  assert.match(read('tools/robot-builder/README.md'), /0\.2\.0-beta\.1/);
 });
 
 test('changelog keeps accessible site navigation, feedback and usage notice', () => {

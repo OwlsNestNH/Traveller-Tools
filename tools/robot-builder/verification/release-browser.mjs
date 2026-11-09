@@ -38,7 +38,7 @@ try {
     await editor.setViewportSize({width, height: 1000});
     await editor.locator('#stage-nav button').first().waitFor();
     check('homepage launch resolves ' + width, editor.url() === root);
-    check('beta version visible ' + width, await editor.locator('#release-version').isVisible() && await editor.locator('#release-version').textContent() === 'Beta 0.1');
+    check('beta version visible ' + width, await editor.locator('#release-version').isVisible() && await editor.locator('#release-version').textContent() === 'Beta 0.2');
     check('six construction stages ' + width, await editor.locator('#stage-nav button').count() === 6);
     await editor.locator('#robot-name').fill('Release smoke ' + width);
     await editor.locator('#robot-name').press('Tab');
