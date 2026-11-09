@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {availableEffectChoiceIndex} from './available-effect-choice.mjs';
 import {readFile} from 'node:fs/promises';
 import {CAREERS,SPECIES,SKILLS} from '../engine/catalog.mjs';
 import {relationshipLossOptions} from '../engine/zhodani-choices.mjs';
@@ -80,7 +81,7 @@ for(const career of CAREERS)for(const assignment of career.assignments)for(let s
     case 'injury-loss':command={type:'injury-loss',payload:{index:(seed+step)%state.character.injuries[state.injury].options.length}};break;
     case 'injury-treatment':command={type:'injury-treatment',payload:{restore:{},inService:false}};break;
     case 'effect-choice':
-     command={type:'choose-effect',payload:{index:(seed+step)%state.pendingChoice.options.length}};break;
+     command={type:'choose-effect',payload:{index:availableEffectChoiceIndex(state.pendingChoice.options,seed+step)}};break;
     case 'skill-choice': {
      const pending=state.pendingChoice,bases=pending.names??pending.allowed??SKILLS;
      const candidates=[...new Set([...Object.keys(state.character.skills),...bases.flatMap(name=>
