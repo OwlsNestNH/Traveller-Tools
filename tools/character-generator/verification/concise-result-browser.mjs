@@ -4,13 +4,14 @@ import {mkdir,writeFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {createServer} from '../server.mjs';
 import {exportSession} from '../engine/session.mjs';
-import {laterCareerFixture,treatmentFixture,equipmentFixture} from './concise-result-fixtures.mjs';
+import {laterCareerFixture,treatmentFixture,equipmentFixture,failedSurvivalFixture} from './concise-result-fixtures.mjs';
 import {downloadedActionLog} from './download-log-browser.mjs';
+import {assertResultColor} from './result-color-browser-assertions.mjs';
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright'),key='traveller-character-generator.v1';
 const server=createServer();await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const origin='http://127.0.0.1:'+server.address().port;
 const browser=await chromium.launch({headless:true,...(process.env.CHARACTER_BROWSER_CHANNEL?{channel:process.env.CHARACTER_BROWSER_CHANNEL}:{})});
 const out=new URL('./artifacts/',import.meta.url);await mkdir(out,{recursive:true});const checks=[],errors=[];
-const fixtures={career:laterCareerFixture(),treatment:treatmentFixture(),equipment:equipmentFixture()};
+const fixtures={career:laterCareerFixture(),treatment:treatmentFixture(),equipment:equipmentFixture(),survival:failedSurvivalFixture()};
 try{
  for(const width of [1440,320])for(const transport of ['static','http']){
   const context=await browser.newContext({viewport:{width,height:900}}),page=await context.newPage(),name=transport+'-'+width,engineRequests=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',request=>{if(request.url().includes('/engine/'))engineRequests.push(request.url());});
@@ -26,6 +27,12 @@ try{
    const saved=await page.evaluate(key=>localStorage.getItem(key),key);const summary=panel.locator('summary');await summary.focus();await summary.press('Enter');assert.match(await panel.innerText(),/Career transition/);await summary.press('Enter');assert.doesNotMatch(await panel.innerText(),/Career transition/);assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),saved);
    await page.reload();await panel.waitFor();assert.equal(await panel.locator('details').getAttribute('open'),null);assert.match(await downloadedActionLog(page),/Entered Rogue/);assert.ok((await downloadedActionLog(page)).startsWith(logBefore));
    await page.locator('#workspace').screenshot({path:fileURLToPath(new URL('concise-career-'+name+'.png',out))});
+   await load(fixtures.survival.before);await page.locator('[data-action=survival]').evaluate(button=>{button.click();button.click();});await page.getByRole('heading',{name:'The end of a term',exact:true}).waitFor();
+   const survivalText=await panel.innerText();assert.match(survivalText,/Survival failed/);assert.match(survivalText,/Check \[1, 3\]: total 5 against target 7\+/);assert.match(survivalText,/Mishap rolled: 2/);assert.match(survivalText,/Rival/);assert.doesNotMatch(survivalText,/Age:|Completed terms:|Career terms:|Must leave this career/);assert.ok(survivalText.length<250);await assertResultColor(page,'failure',{message:true});
+   assert.equal(await page.getByRole('button',{name:'Leave and take benefits',exact:true}).isEnabled(),true);assert.equal(await page.getByRole('button',{name:'Continue this career',exact:true}).isEnabled(),false);
+   const survivalRaw=await page.evaluate(key=>localStorage.getItem(key),key);assert.equal(JSON.parse(survivalRaw).events.length,fixtures.survival.before.revision+1);
+   await panel.locator('summary').click();assert.match(await panel.innerText(),/Career terms:|Must leave this career/);await panel.locator('summary').click();assert.match(await downloadedActionLog(page),/careers\.0\.forcedExit/);
+   await page.reload();await panel.waitFor();assert.equal(await panel.innerText(),survivalText);assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),survivalRaw);await page.locator('#workspace').screenshot({path:fileURLToPath(new URL('concise-survival-'+name+'.png',out))});
    for(const kind of ['treatment','equipment']){
     const r=fixtures[kind].after,raw=await load(r),text=await panel.innerText();
     if(kind==='treatment'){assert.match(text,/Injury treatment complete/);assert.match(text,/Strength: 7 → 11/);assert.match(text,/Cr20,000 due/);assert.doesNotMatch(text,/Injury loss|Treatment restores|Career terms/);}

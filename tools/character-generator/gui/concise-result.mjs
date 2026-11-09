@@ -1,5 +1,6 @@
 // Presentation only. The full result and immutable action log remain available.
 import {rollResult,characterEffectDetails,modifierEffectDetails,pendingEffectDetails} from './roll-result-view.mjs';
+import {survivalResult} from './survival-result.mjs';
 const finite=n=>typeof n==='number'&&Number.isFinite(n);
 const unique=values=>[...new Set(values.filter(Boolean))];
 const amount=n=>'Cr'+n.toLocaleString('en-US');
@@ -16,6 +17,15 @@ function otherEffects(event,catalog,keep){
 export function conciseResult(event,state,catalog){
  const full=rollResult(event,state,catalog);if(!full)return null;
  const changes=event.changes??[];let title,details=[];
+ const survival=event.type==='survival'&&state?.stage==='term-end'?survivalResult(event,state):null;
+ if(survival?.status==='failure'){
+  title=full.title;
+  // The term-end prompt already gives age and mandatory departure. Keep the
+  // actual check, mishap and consequences here, not duplicate term counters.
+  const forcedExit=state.character?.careers?.[state.active]?.forcedExit===true;
+  const dice=event.rolls?.find(roll=>roll.label==='Survival');
+  details=full.details.filter(detail=>!/^Age:|^Completed terms:|^Career terms:/.test(detail)&&!(forcedExit&&detail==='Must leave this career.')).map(detail=>dice&&detail.startsWith('Check total ')?detail.replace('Check total ','Check ['+dice.values.join(', ')+']: total '):detail);
+ }
  if(event.type==='career'){
   const delta=changes.find(change=>/^careerTransitions\.\d+\.status$/.test(change.path)&&['entered','failed'].includes(change.after)&&change.before==null);
   const transition=delta&&state?.character?.careerTransitions?.[Number(delta.path.split('.')[1])];

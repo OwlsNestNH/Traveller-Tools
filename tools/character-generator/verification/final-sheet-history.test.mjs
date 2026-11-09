@@ -81,3 +81,8 @@ test('equipment history names the item once and preserves its recorded source ru
  const r=equipmentFixture().after,html=finalEventsView(r,r.session);
  assert.equal((html.match(/Synthetic weapon/g)??[]).length,1);assert.match(html,/Received Synthetic weapon/);assert.match(html,/Synthetic equipment ruling/);assert.doesNotMatch(html,/Benefit: Synthetic weapon|Asset: Synthetic weapon|Owned by Traveller/);
 });
+
+test('rolled equipment history shows dice once in its authoritative dice row',()=>{
+ const r=synthetic([{type:'benefit',summary:'Received equipment.',rolls:[{label:'Benefits',values:[5],kept:[5],total:5}],changes:[{path:'assets.0',before:null,after:{name:'Cloth Armour',ownership:'owned'}}]}]);
+ const html=finalEventsView(r,r.session,catalog);assert.equal((html.match(/Benefits:/g)??[]).length,1);assert.match(html,/Dice: Benefits: \[5\] = 5/);assert.match(html,/Received Cloth Armour/);
+});

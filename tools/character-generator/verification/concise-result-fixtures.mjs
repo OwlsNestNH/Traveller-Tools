@@ -2,7 +2,12 @@ import {optionalBenefitFixture} from './optional-benefit-fixtures.mjs';
 import {sourceCheckFixture} from './source-check-fixtures.mjs';
 import {run} from './core-life-event-fixtures.mjs';
 import {api} from '../engine/session.mjs';
+import {aslanSetup,force,settle} from './aslan-officer-fixtures.mjs';
 export {run};
+export function failedSurvivalFixture(){
+ const before=settle(force(aslanSetup('concise-survival-9'),'career',{id:'aslan.military',assignment:'warrior'},[6,6]));
+ return {before,after:run(before,'survival')};
+}
 export function laterCareerFixture(){
  let before=optionalBenefitFixture();while(before.state.stage==='benefits')before=run(before,'benefit',{cash:true});
  return {before,after:run(before,'career',{id:'core.rogue',assignment:'thief'})};

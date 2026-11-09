@@ -143,7 +143,8 @@ function importantEffects(event,catalog){
 
 export function finalEventRows(projection,session,catalog){
  return currentEvents(projection,session).filter(event=>!auditOnly.has(event.type)&&!/^Chose Basic-training option \d+\.$/.test(event.summary)).map(event=>{
-  const equipment=(event.changes??[]).some(change=>/^assets\.\d+$/.test(change.path)&&!change.before&&change.after?.name)?conciseResult(event,{},catalog):null;
+  // Dice are rendered once in the dedicated row below, not in asset details.
+  const equipment=(event.changes??[]).some(change=>/^assets\.\d+$/.test(change.path)&&!change.before&&change.after?.name)?conciseResult({...event,rolls:[]},{},catalog):null;
   const compact=equipment?.compact;
   const summary=compact?equipment.title+(event.type==='resolve-book'&&event.command?.payload?.note?' '+event.command.payload.note.trim():''):shortSummary(event);
   const details=unique([...lifeEventLogDetails(event),...(compact?equipment.details:importantEffects(event,catalog))]).filter(detail=>!summary.includes(detail));
