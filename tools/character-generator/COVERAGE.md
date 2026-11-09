@@ -141,4 +141,4 @@ Core p. 18 later-career basic training remains followed by the regular term trai
 
 ### Believer buyout
 
-In .18 sessions, Companion p.40 event9 presents both player-selected payment calculations and refusal during the event. Acceptance displays forfeited accrued/current-term/rank rolls, records the exact dice and payment, and prevents lost benefits returning at exit. Refusal grants1D Enemies and preserves advancement. The two calculation choices are an explicit player ruling, not a claim that both are unambiguous printed procedures. Legacy .16/.17 retain their original source step.
+In .18 sessions, Companion p. 40 Event 9 presents both player-selected payment calculations and refusal during the event. Acceptance displays forfeited accrued/current-term/rank rolls, records the exact dice and payment, and prevents lost benefits returning at exit. Refusal grants 1D Enemies and preserves advancement. The two calculation choices are an explicit player ruling, not a claim that both are unambiguous printed procedures. Legacy .16/.17 retain their original source step.
