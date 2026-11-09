@@ -31,3 +31,7 @@ test('source-assisted and non-dice actions are not fictional rolls',()=>{
  assert.equal(simpleActionLog([{number:1,type:'resolve-book',summary:'Source-assisted success.',rolls:[]}]),'');
  assert.equal(simpleActionLog([]),'');
 });
+test('table DMs and actual skill or cash awards are concise without false success labels',()=>{
+ const text=simpleActionLog([{number:1,type:'benefit',summary:'Rolled cash benefit 7 (DM 2).',rolls:[roll('Cash benefit',[5])],changes:[{path:'cash',before:0,after:10000}]},{number:2,type:'training',summary:'Training service result 4.',rolls:[roll('Training: service',[3])],changes:[{path:'skills.Pilot',before:0,after:1}]}]);
+ assert.match(text,/Cash benefit: \[5\]; DM \+2 = 7/);assert.match(text,/Training: service: \[3\]; DM \+1 = 4/);assert.match(text,/Cr10,000/);assert.match(text,/Skill Pilot/);assert.doesNotMatch(text,/failure|success/);
+});

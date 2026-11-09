@@ -1,4 +1,4 @@
-import {rollResult} from './roll-result-view.mjs';
+import {rollResult,characterEffectDetails} from './roll-result-view.mjs';
 const finite=n=>typeof n==='number'&&Number.isFinite(n);
 const signed=n=>(n>=0?'+':'')+n;
 const primary={career:'Qualification','change-assignment':'Assignment qualification',survival:'Survival','survival-check':'Survival',advancement:'Advancement',commission:'Commission','preterm-commission':'Education commission',precareer:'Education entry','companion-entry':'Companion education entry','education-graduation':'Graduation'};
@@ -21,6 +21,12 @@ function checkFor(event,roll){
  if(event.type==='prisoner-escape'&&roll.label==='Skill check'){
   const m=summary.match(/^Prisoner escape using (?:Stealth|Deception): (-?\d+) against 10\+;/);if(m)return {total:+m[1],target:10,success:+m[1]>=10};
  }
+ if(event.type==='benefit'&&/^(Cash benefit|Material benefit|Repeated ship: material benefit)(?: \(|$)/.test(roll.label)){
+  const m=summary.match(/^Rolled (?:cash|material) benefit -?\d+ \(DM (-?\d+)\)\./);if(m)return {total:roll.total+Number(m[1])};
+ }
+ if(event.type==='training'&&roll.label.startsWith('Training: ')&&roll===event.rolls.filter(r=>r.label.startsWith('Training: ')).at(-1)){
+  const m=summary.match(/^Training .+ result (-?\d+)\.$/);if(m)return {total:+m[1]};
+ }
  return null;
 }
 export function simpleActionLog(log){
@@ -33,7 +39,7 @@ export function simpleActionLog(log){
    if(check){
     text+='; DM '+signed(check.total-raw);
     if(finite(check.dm)&&finite(check.modifier))text+=' ('+(check.stat??'characteristic')+' '+signed(check.dm)+', other '+signed(check.modifier)+')';
-    return text+' = '+check.total+(finite(check.target)?' vs '+check.target+'+':'')+'; '+(check.success?'success':'failure')+'.';
+    return text+' = '+check.total+(finite(check.target)?' vs '+check.target+'+':'')+(typeof check.success==='boolean'?'; '+(check.success?'success':'failure'):'')+'.';
    }
    // Mechanical expressions explicitly record modifiers. Ordinary raw totals
    // do not prove DM 0, so do not invent it for unstructured historical checks.
@@ -42,7 +48,9 @@ export function simpleActionLog(log){
   });
   const result=rollResult(event,{},{});
   const outcomes=(event.eventResults??[]).map(r=>r.title+(r.summary?': '+r.summary:''));
-  return 'Action '+event.number+'\n'+lines.join('\n')+'\n'+[result?.title,...outcomes].filter(Boolean).join('\n');
+  const effects=characterEffectDetails({...event,changes:(event.changes??[]).filter(c=>/^(skills\.|stats\.|cash$|debt$|benefits\.\d+$|assets\.\d+$)/.test(c.path))},{});
+  return 'Action '+event.number+'\n'+lines.join('\n')+'\n'+[result?.title,...outcomes,...effects].filter(Boolean).join('\n');
  }).join('\n\n');
 }
+
 
