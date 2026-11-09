@@ -2,10 +2,10 @@ import {api} from '../engine/session.mjs';
 import {run,rejected} from './core-life-event-fixtures.mjs';
 export {run,rejected};
 const cache=new Map();
-export function agentCoverFixture({vargr=false,end=9}={}){
- const key=JSON.stringify({vargr,end});if(cache.has(key))return structuredClone(cache.get(key));
+export function agentCoverFixture({vargr=false,end=9,rulesRevision='character-preview-2026-11-09.19'}={}){
+ const key=JSON.stringify({vargr,end,rulesRevision});if(cache.has(key))return structuredClone(cache.get(key));
  for(let seed=0;seed<100;seed++){
-  let r=api({operation:'create',seed:'cover-'+seed});r=run(r,'setup',{species:vargr?'vargr':'human'});r=run(r,'gm-mode',{enabled:true});r=run(r,'roll-statistics');
+  let r=api({operation:'create',seed:'cover-'+seed});r.session.rulesRevision=rulesRevision;r=run(r,'setup',{species:vargr?'vargr':'human'});r=run(r,'gm-mode',{enabled:true});r=run(r,'roll-statistics');
   for(let i=0;i<6;i++)r=run(r,'gm-override',{field:'pool',index:i,value:i===2?end:9,reason:'Undercover source regression'});
   r=run(r,'accept-statistics');r=run(r,'background',{skills:r.state.backgroundOptions.slice(0,r.state.backgroundRemaining)});r=run(r,'skip-precareer');r=run(r,'career',{id:vargr?'vargr.agent':'core.agent',assignment:vargr?'spy':'intelligence'});
   if(r.state.stage!=='survival')continue;r=run(r,'survival');if(r.log.at(-1).rolls[1]?.label!=='Event table')continue;

@@ -79,7 +79,7 @@ function rolledResults(entry,before,after,prior=[]){
  }
  return results;
 }
-const continuations=new Set(['choose-effect','choose-skill','education-skill','education-check','resolve-life-event','resolve-relationship-event','resolve-relationship-loss','injury-loss','injury-treatment','resolve-book','prisoner-escape','believer-buyout','cross-career-cover','cross-career-training','merchant-fine-roll','resolve-merchant-fine','resolve-benefit-wager','resolve-prisoner-lawyer','skill-award-source','retry-skill-choice','resolve-land-claim','activate-aslan-access','resolve-aslan-access-conflict','resolve-aslan-restoration','resolve-aslan-outlaw-restoration','begin-aslan-officer','qualify-aslan-officer','cancel-aslan-officer','resolve-aslan-officer-rank','advisory-career','advisory-cash','resolve-advisory-cash-result','resolve-advisory-cash-limit','companion-skill','companion-choice-source','education-service','cancel-career-transfer','begin-psionic-training']);
+const continuations=new Set(['cross-career-cover-check','resolve-relationship-event-step','roll-borrowed-event','choose-effect','choose-skill','education-skill','education-check','resolve-life-event','resolve-relationship-event','resolve-relationship-loss','injury-loss','injury-treatment','resolve-book','prisoner-escape','believer-buyout','cross-career-cover','cross-career-training','merchant-fine-roll','resolve-merchant-fine','resolve-benefit-wager','resolve-prisoner-lawyer','skill-award-source','retry-skill-choice','resolve-land-claim','activate-aslan-access','resolve-aslan-access-conflict','resolve-aslan-restoration','resolve-aslan-outlaw-restoration','begin-aslan-officer','qualify-aslan-officer','cancel-aslan-officer','resolve-aslan-officer-rank','advisory-career','advisory-cash','resolve-advisory-cash-result','resolve-advisory-cash-limit','companion-skill','companion-choice-source','education-service','cancel-career-transfer','begin-psionic-training']);
 export function decorateEventResults({log,snapshots,events}){
  const contexts=[[]];
  for(let i=0;i<log.length;i++){
@@ -90,7 +90,7 @@ export function decorateEventResults({log,snapshots,events}){
   const inherited=continuations.has(actual.type)?prior:[];
   const results=rolledResults(log[i],before,after,inherited);
   const context=results.length?[...inherited,...results]:inherited;
-  if(context.length)log[i].eventResults=structuredClone(context);
+  if(context.length)log[i].eventResults=structuredClone(actual.type==='roll-borrowed-event'?results:context);
   contexts.push(command.type==='restore'||['notes','gm-mode','add-extra'].includes(actual.type)?prior:context);
  }
 }

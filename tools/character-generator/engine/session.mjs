@@ -1,3 +1,4 @@
+import {eventEffectSummary} from './event-effect-summary.mjs';
 import {decorateEventResults} from './event-result-projection.mjs';
 import {culturalSkillAward,culturalAwardLabel,ASLAN_CULTURAL_SKILL_SOURCE,aslanSkillLabel,ASLAN_SKILL_LEGEND} from './aslan-skill-culture.mjs';
 import {believerBuyoutPlan,believerBuyoutChoice} from './believer-buyout.mjs';
@@ -37,9 +38,9 @@ const RULE_PACK={...CORE_PACK,...EXPANSION_PACK};
 import { API_VERSION, SOURCES, CAREERS, PRECAREERS, SPECIES, SKILLS, BACKGROUND_SKILLS, findCareer, findSpecies } from './catalog.mjs';
 const LIMIT = 2000;
 export const MAX_SAVE_BYTES = 2000000;
-export const RULES_REVISION='character-preview-2026-11-09.19';
+export const RULES_REVISION='character-preview-2026-11-09.20';
 // .19 chooses specialties on receipt; .18 retains deferred awards and corrections; .16/.17 retain historical mechanics.
-export const COMPATIBLE_RULES_REVISIONS=Object.freeze([RULES_REVISION,'character-preview-2026-11-09.18','character-preview-2026-11-09.17','character-preview-2026-11-09.16']);
+export const COMPATIBLE_RULES_REVISIONS=Object.freeze([RULES_REVISION,'character-preview-2026-11-09.19','character-preview-2026-11-09.18','character-preview-2026-11-09.17','character-preview-2026-11-09.16']);
 const saveSize = value => new TextEncoder().encode(JSON.stringify(value,null,2)).byteLength;
 const copy = value => structuredClone(value);
 const plain = value => value && typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
@@ -1403,8 +1404,23 @@ function bindAwardCheck(state,name) {
  const check=state.effectsQueue?.[0];
  if(check?.kind==='check'&&check.skillScope==='preceding-award')check.awardedSkill=name;
 }
-function drainEffects(state,rolls) {
+function borrowedRollPending(state,e){
+ if(!state.separateBorrowedRolls||!e?.crossCareerRouteId||!['table-roll','random','check'].includes(e.kind))return null;
+ const route=crossCareerRoute(state,e.crossCareerRouteId);
+ // Deferred Zhodani generation retains its development-only behavior.
+ if(!['core.agent','vargr.agent'].includes(route.originCareerId))return null;
+ const career=findCareer(e.career??e.tableCareerId??route.coverCareerId);
+ const label=e.kind==='table-roll'?career.name+' '+(['mishap','mishaps','core.mishap'].includes(e.table)?'mishap':'event'):
+  e.kind==='check'?(e.stat??e.skills?.join(' or ')??'Event')+' check':'Event consequence';
+ return {id:route.id+'-roll-'+((state.effectSteps??0)+1),routeId:route.id,label,kind:e.kind,
+  dice:e.dice??(e.kind==='check'?'2D':['mishap','mishaps','core.mishap'].includes(e.table)?'1D':'2D'),
+  source:copy(e.kind==='table-roll'?{id:career.source,page:career.page+1}:e.source??route.source),target:e.kind==='check'?e.target:null,resumeStage:state.stage};
+}
+function drainEffects(state,rolls,approvedRoll=null) {
  while(state.effectsQueue?.length) {
+  const next=state.effectsQueue[0],pending=borrowedRollPending(state,next);
+  if(pending&&next!==approvedRoll){state.pendingBorrowedRoll=pending;state.stage='borrowed-event-roll';return;}
+  approvedRoll=null;
   state.effectSteps=(state.effectSteps??0)+1;need(state.effectSteps<200,'Rule-effect loop limit reached.');
   const e=state.effectsQueue.shift();need(e&&typeof e.kind==='string','Malformed source effect.');if(!state.correctedCareerEvents)legacyCareerEffects(e);
   if(state.deferredSpecializations){
@@ -1710,9 +1726,10 @@ function apply(state,command,rolls) {
  if(activeReeducation(state))need(['reeducation-roll','reeducation-fine','resolve-reeducation','ageing','choose-effect','choose-skill','resolve-book','notes','gm-mode'].includes(command.type),'Complete the pending re-education and ageing continuation before changing the character. Restore/replay explicitly to revise it.');
  if(activeMerchantFine(state))need(['merchant-fine-roll','resolve-merchant-fine','notes','gm-mode'].includes(command.type),'Complete the pending Merchant fine before changing the character. Restore/replay explicitly to revise its context.');
  if(state.stage==='benefit-wager')need(['resolve-benefit-wager','notes','gm-mode'].includes(command.type),'Resolve or decline the pending benefit wager before changing its context. Restore/replay explicitly to revise it.');
- if(state.stage==='relationship-event')need(['resolve-relationship-event','notes','gm-mode'].includes(command.type),'Resolve the pending relationship event before changing the character. Restore/replay explicitly to revise it.');
+ if(state.stage==='relationship-event')need(['resolve-relationship-event','resolve-relationship-event-step','notes','gm-mode'].includes(command.type),'Resolve the pending relationship event before changing the character. Restore/replay explicitly to revise it.');
  if(state.stage==='relationship-loss')need(['resolve-relationship-loss','notes','gm-mode'].includes(command.type),'Resolve the pending relationship loss before changing the character. Restore/replay explicitly to revise it.');
- if(state.stage==='cross-career-cover')need(['cross-career-cover','notes','gm-mode'].includes(command.type),'Resolve the cover career before changing its context.');
+ if(state.stage==='borrowed-event-roll')need(['roll-borrowed-event','notes','gm-mode'].includes(command.type),'Roll the pending event step before changing its context. Restore or replay to revise it.');
+ if(state.stage==='cross-career-cover')need(['cross-career-cover','cross-career-cover-check','notes','gm-mode'].includes(command.type),'Resolve the cover career before changing its context.');
  if(state.stage==='cross-career-training')need(['cross-career-training','notes','gm-mode'].includes(command.type),'Resolve the borrowed training before changing its career context. Restore/replay explicitly to revise it.');
  if(advisoryRecord(state))need(['advisory-career','advisory-cash','resolve-advisory-cash-limit','resolve-advisory-cash-result','choose-effect','choose-skill','skill-award-source','retry-skill-choice','resolve-book','notes','gm-mode'].includes(command.type),'Resolve the pending advisory service before changing the character. Restore/replay explicitly to revise it.');
  if(state.pending?.kind==='aslan-historical-entry')need(['resolve-aslan-historical-entry','notes','gm-mode'].includes(command.type),'Resolve the requested historical-entry ruling before changing its context.');
@@ -1967,7 +1984,27 @@ function apply(state,command,rolls) {
   return 'GM advisory cash-limit disposition: '+payload.decision+'. '+reason;
  }
 
+ case 'roll-borrowed-event':{
+  const pending=state.pendingBorrowedRoll,e=state.effectsQueue?.[0];
+  need(state.stage==='borrowed-event-roll'&&pending&&borrowedRollPending(state,e)?.id===pending.id,'No borrowed event roll is pending.');
+  need(Object.keys(payload).length===1&&payload.pendingId===pending.id,'Choose the current pending roll.');
+  const route=crossCareerRoute(state,pending.routeId);assertCrossCareerContext(state,route);
+  const checkModifier=e.kind==='check'?(e.stat?characteristicDM(stat(state,e.stat)):Math.max(...e.skills.map(n=>skillCheckDM(state,n)))):null;
+  const tableCount=route.tables.length;state.stage=pending.resumeStage;delete state.pendingBorrowedRoll;
+  drainEffects(state,rolls,e);
+  const rolled=rolls[0];if(!rolled)return pending.label+' is awaiting its required skill choice or source resolution. No dice rolled.';
+  let story='';
+  if(e.kind==='table-roll'){
+   const table=route.tables[tableCount];
+   if(table){const pack=RULE_PACK[table.careerId];story=eventEffectSummary((table.table==='mishap'?pack.mishaps:pack.events)?.[table.row]??[]);}
+  }else if(e.kind==='random')story=eventEffectSummary(e.outcomes.find(o=>rolled.total>=o.min&&rolled.total<=o.max)?.effects??[]);
+  else {const total=rolled.total+checkModifier;story=total+' against '+e.target+'+: '+(total>=e.target?'succeeded.':'failed.')+' '+careerOutcomeSummary(total>=e.target?e.success:e.failure);}
+  return pending.label+' result '+rolled.total+'. '+story;
+ }
+
+ case 'cross-career-cover-check':
  case 'cross-career-cover':{
+  if(command.type==='cross-career-cover-check')state.separateBorrowedRolls=true;
   const pending=crossCareerCover(state);need(pending,'No cover career choice is pending.');
   need(Object.keys(payload).every(k=>k==='careerId')&&pending.options.some(c=>c.id===payload.careerId),'Choose a listed cover career.');
   const route=crossCareerRoute(state,pending.routeId);assertCrossCareerContext(state,route);
@@ -1991,7 +2028,9 @@ function apply(state,command,rolls) {
   return 'Borrowed '+career.name+' '+payload.assignment+' training: '+die+'.';
  }
 
+ case 'resolve-relationship-event-step':
  case 'resolve-relationship-event':{
+  if(command.type==='resolve-relationship-event-step')state.separateBorrowedRolls=true;
   need(state.stage==='relationship-event'&&['relationship-change','relationship-remove'].includes(state.pendingChoice?.kind),'No relationship event is pending.');
   const e=state.pendingChoice;
   need(Object.keys(payload).every(k=>['relationshipId','role','name','confirmed'].includes(k)),'Use only the typed relationship event fields.');
@@ -2872,7 +2911,7 @@ export function project(session) {
  need(typeof session.seed==='string'&&session.seed.length>0&&session.seed.length<=120,'Invalid random seed.');
  need(Array.isArray(session.events)&&session.events.length<=LIMIT,'Save contains too many actions.');
  need(saveSize(session)<=MAX_SAVE_BYTES,'Save size limit reached. Export your current character before continuing.');
- let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(session.rulesRevision==='character-preview-2026-11-09.19')state.immediateSpecializations=true;const snapshots=[copy(state)],log=[];
+ let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(['character-preview-2026-11-09.19',RULES_REVISION].includes(session.rulesRevision))state.immediateSpecializations=true;if(session.rulesRevision===RULES_REVISION)state.separateBorrowedRolls=true;const snapshots=[copy(state)],log=[];
  for(let i=0;i<session.events.length;i++){
   const event=session.events[i];need(plain(event)&&typeof event.id==='string'&&event.id.length<=120,'Invalid action record.');
   need(!log.some(e=>e.id===event.id),'Duplicate action ID.');
