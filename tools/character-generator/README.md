@@ -71,6 +71,7 @@ All existing engine tests and the full 45-career development smoke remain in CI.
 
 ```sh
 node --test tools/character-generator/verification/*.test.mjs
+node tools/character-generator/verification/survival-result-browser.mjs /path/to/playwright
 node tools/character-generator/verification/advancement-result-browser.mjs /path/to/playwright
 node tools/character-generator/verification/life-event-presentation-browser.mjs /path/to/playwright
 node tools/character-generator/verification/training-information-browser.mjs /path/to/playwright
@@ -121,3 +122,7 @@ Review [Mongoose's licensing page](https://www.mongoosepublishing.com/pages/trav
 ## Source-assisted beta boundary
 
 Normal automated paths and typed decisions retain their source, checks and mandatory action log. Generic book steps are manual: only supported effects entered there are applied. Future modifiers, permissions and other unsupported consequences must be tracked separately with the referee. Confirming a note does not implement those rules. Preserve exported files before updates; older rules revisions open only through unchanged-byte recovery.
+
+## Result presentation
+
+A shared, read-only result panel names each roll and its recorded effects across supported career/species paths. Advancement and survival checks show verified success/failure, while secondary rolls retain their labels and totals. The character sheet keeps current rank, injuries, recorded medical notes, ongoing modifiers and entitlements visible. Proposed treatment and source-assisted consequences are marked pending, not applied. Core life-event titles and Vargr Good Fortune are named; other expansion results retain verified table and result identifiers where titles are not sourced. The existing detailed action log and text download are unchanged. These derived display fields do not change rolls, command summaries, saved rules revisions or save compatibility.

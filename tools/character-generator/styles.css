@@ -45,3 +45,5 @@ fieldset{min-inline-size:0;max-width:100%}legend{max-width:100%;overflow-wrap:an
 .training-choice{min-width:0}.training-choice>.choice{width:100%}.training-information{margin:6px 0 0;background:var(--wash);font-size:16px}.training-information summary{min-height:44px}.training-information p{overflow-wrap:anywhere}
 
 .career-rank-summary{background:var(--accent);border:2px solid var(--blue);border-radius:9px;padding:14px;margin:14px 0 20px;overflow-wrap:anywhere}.career-rank-summary h3{font-size:15px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.04em}.career-rank-summary p{margin:5px 0}.career-rank-value{display:block;font-size:26px;font-weight:800;line-height:1.25}
+
+.result-panel{border:2px solid #42774f;background:#e5f2e8;border-radius:9px;padding:16px;margin:0 0 24px;overflow-wrap:anywhere}.result-panel h3{margin:0 0 8px}.result-panel p{margin:6px 0}

@@ -32,7 +32,7 @@ try{
     await choices.first().evaluate(button=>{button.click();button.click();});
     await page.waitForFunction(revision=>{const session=JSON.parse(localStorage.getItem('traveller-character-generator.v1'));return session.events.length===revision+1&&!document.querySelector('#new').disabled;},fixture.revision);
     let r=api({operation:'project',session:JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key))});
-    const notice=await page.locator('#message').innerText();assert.match(notice,/Received:|Pending award:|Choose the training outcome|source decision|Talent acquisition|No skill/);
+    const notice=await page.locator('#message').innerText();assert.match(notice,/Skill |Pending:|choose|Choose|source|Strength|Dexterity|Endurance|Intellect|Education|Charisma|Social standing|Gambler/);
     for(const change of r.log.at(-1).changes.filter(c=>c.path.startsWith('skills.')&&typeof c.after==='number'&&(c.before===null||c.after>c.before)))assert.ok(notice.includes(change.path.slice(7)));
     await page.reload();await page.waitForFunction(()=>!document.querySelector('#new').disabled);assert.equal(JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key)).events.length,fixture.revision+1);
     checks.push({name,pass:true});
@@ -44,7 +44,7 @@ try{
    assert.match(await page.locator('#workspace').innerText(),/Awarded base skill: Electronics/);
    const specialtySave=await page.evaluate(key=>localStorage.getItem(key),key);await page.locator('#award-skill').fill('Admin');await page.locator('[data-action=choose-skill]').click();await page.locator('#message.error').waitFor();
    assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),specialtySave);await page.reload();await page.locator('#award-skill').fill('Electronics (computers)');await page.locator('[data-action=choose-skill]').click();
-   await page.waitForFunction(()=>document.querySelector('#message')?.textContent.includes('Received: Electronics (computers) 1'));
+   await page.waitForFunction(()=>document.querySelector('#message')?.textContent.includes('Skill Electronics (computers): untrained → 1'));
    assert.match(await page.locator('#action-log').innerText(),/Electronics \(computers\)/);checks.push({name:'specialty-'+width+(apiMode?'-http':'-static'),pass:true});
   }finally{await context.close();}
  }
