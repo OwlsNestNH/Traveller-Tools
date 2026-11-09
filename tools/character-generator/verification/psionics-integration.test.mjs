@@ -147,3 +147,27 @@ test('source history cannot lower native check penalties after a manual talent a
  assert.equal(s.pending.kind,'psionic-history');assert.throws(()=>cmd(s,'resolve-book',{confirmed:true,note:'Invalid reset',psionicPreviousChecks:0,psionicFirstTalentChosen:true,psionicAttemptedTalents:['Telepathy']}),/cannot be erased/);
  cmd(s,'resolve-book',{confirmed:true,note:'Source confirms original check and later manual acquisition',psionicPreviousChecks:1,psionicFirstTalentChosen:true,psionicAttemptedTalents:['Telepathy','Awareness']});assert.equal(s.character.psionics.attempts.length,1);assert.equal(s.character.psionics.checksAttempted,1);
 });
+
+// Approved Human/Vargr ruling extends the acquisition procedure, not Zhodani social rules.
+for(const species of ['human','vargr']){
+ const make=()=>{const s=fixture(species,species==='human'?'core.psion':'vargr.psion');s.character.careers[0].assignment=species==='human'?'adept':'institute';s.character.stats.SOC=4;s.psionAcquisitionRuling=true;s.character.psionics.firstTalentChosen=true;s.character.psionics.checksAttempted=2;return s;};
+ const award=(s,origin)=>a.queueEffects(s,[{kind:'psionic-talent',name:'Awareness',value:1,...(origin?{psionicOrigin:{careerId:s.character.careers[0].id,assignment:s.character.careers[0].assignment,table:'service'}}:{})},{kind:'cash',value:19}],'survival',[]);
+ test(species+' ruled named acquisition preserves penalties and succeeds at level zero below SOC10',()=>{
+  const s=make();award(s);assert.equal(s.stage,'psionic-training');assert.equal(s.psionicTraining.context,'human-vargr-psion-ruling');cmd(s,'learn-talent',{talent:'Awareness'},[6,6]);assert.equal(s.character.skills.Awareness,0);assert.equal(s.character.psionics.checksAttempted,3);assert.equal(s.character.psionics.attempts.at(-1).previousChecks,2);assert.equal(s.character.cash,19);
+ });
+ test(species+' ruled failed table acquisition rerolls its original table with outer queue intact',()=>{
+  const s=make();award(s,true);const r=cmd(s,'learn-talent',{talent:'Awareness'},[1,1]);assert.equal(r.rolls.length,2);assert.match(r.rolls[1].label,/Psionic replacement/);assert.equal(s.character.psionics.checksAttempted,3);assert.ok(s.character.cash===19||s.effectsQueue.some(e=>e.kind==='cash'&&e.value===19));
+ });
+ test(species+' failed fixed award requires explicit replacement rather than inventing a table',()=>{
+  const s=make();award(s);cmd(s,'learn-talent',{talent:'Awareness'},[1,1]);assert.equal(s.pending.kind,'psionic-retry');assert.equal(s.character.cash,0);cmd(s,'resolve-book',{confirmed:true,note:'Referee selected Admin replacement',effects:[{kind:'skill',name:'Admin',value:1}]});assert.equal(s.character.skills.Admin,1);assert.equal(s.character.cash,19);
+ });
+ test(species+' generic Talent with none owned permits chosen retry with every previous penalty',()=>{
+  const s=make();a.queueEffects(s,[{kind:'skill-choice',scope:'psionic-talents',mode:'increase',value:1},{kind:'cash',value:7}],'survival',[]);assert.equal(s.stage,'skill-choice');assert.throws(()=>cmd(s,'choose-skill',{name:'Technopathy'}),/not available/);cmd(s,'choose-skill',{name:'Awareness'});assert.equal(s.stage,'psionic-training');cmd(s,'learn-talent',{talent:'Awareness'},[6,6]);assert.equal(s.character.skills.Awareness,0);assert.equal(s.character.psionics.attempts.at(-1).previousChecks,2);assert.equal(s.character.cash,7);
+ });
+ test(species+' generic Talent with owned talent still improves only an owned talent',()=>{
+  const s=make();s.character.skills.Telepathy=0;a.queueEffects(s,[{kind:'skill-choice',scope:'psionic-talents',mode:'increase',value:1}],'survival',[]);assert.throws(()=>cmd(s,'choose-skill',{name:'Awareness'}),/not available/);cmd(s,'choose-skill',{name:'Telepathy'});assert.equal(s.character.skills.Telepathy,1);assert.equal(s.character.psionics.checksAttempted,2);
+ });
+ test(species+' ruled acquisition preserves unknown-history and zero-potential boundaries',()=>{
+  const s=make();s.character.psionics.historyKnown=false;award(s);assert.equal(s.pending.kind,'psionic-history');const zero=make();zero.character.stats.PSI=0;award(zero);assert.equal(zero.pending.kind,'native-effect');assert.equal(zero.character.cash,0);
+ });
+}

@@ -1026,17 +1026,24 @@ function startPsionicTraining(state,config,rolls){
 function markPsionicOrigin(effects,origin){
  const result=copy(effects);function visit(value){if(Array.isArray(value)){value.forEach(visit);return;}if(!value||typeof value!=='object')return;if(value.kind)value.psionicOrigin=copy(origin);for(const [key,item] of Object.entries(value))if(key!=='psionicOrigin')visit(item);}visit(result);return result;
 }
+// User ruling: apply Aliens p. 256 acquisition/replacement to Human and Vargr Psion awards.
+// This does not import Zhodani social-class requirements or unlock that species.
+function psionAcquisitionRuling(state){
+ if(!state.psionAcquisitionRuling||state.active===null)return false;
+ const id=currentCareer(state).career.id;
+ return state.character.species==='human'&&id==='core.psion'||state.character.species==='vargr'&&id==='vargr.psion';
+}
 function requestTalentAward(state,e,rolls){
  if(state.character.psionicLoss){nativeFallback(state,e,'Ageing permanently removed psionic ability. Resolve this mandatory talent result explicitly without restoring it.');return;}
- const career=state.active!==null?currentCareer(state).career:null,zhodani=state.character.species==='zhodani'&&(state.character.stats.SOC??0)>=10;
- if((zhodani||career?.id==='core.psion'&&e.psionicOrigin?.table==='service')&&(state.character.stats.PSI??0)>0){
-  startPsionicTraining(state,{mode:'retry',context:zhodani?'zhodani-award':'core-psion-award',source:zhodani?{id:'aliens',page:256}:{id:'core',page:229},talent:e.name,origin:e.psionicOrigin??null,next:'native-resume',award:copy(e)},rolls);return;
+ const ruling=psionAcquisitionRuling(state),career=state.active!==null?currentCareer(state).career:null,zhodani=state.character.species==='zhodani'&&(state.character.stats.SOC??0)>=10;
+ if((ruling||zhodani||career?.id==='core.psion'&&e.psionicOrigin?.table==='service')&&(state.character.stats.PSI??0)>0){
+  startPsionicTraining(state,{mode:'retry',context:ruling?'human-vargr-psion-ruling':zhodani?'zhodani-award':'core-psion-award',source:ruling||zhodani?{id:'aliens',page:256}:{id:'core',page:229},talent:e.name,origin:e.psionicOrigin??null,next:'native-resume',award:copy(e)},rolls);return;
  }
  nativeFallback(state,e,'Resolve the required psionic talent acquisition from the source before awarding this skill. No free training or talent is assumed.');
 }
 function rerollPsionicAward(state,active,rolls){
  const origin=active.origin,current=state.active!==null?currentCareer(state):null,record=current?.record,career=current?.career,pack=nativePack(state);
- if(!origin||!career||origin.careerId!==career.id||origin.assignment!==record.assignment){state.psionicTraining=active;psionicSource(state,'psionic-retry','The failed Zhodani acquisition requires another skill roll, but its originating table is unknown. Resolve that replacement explicitly.');return;}
+ if(!origin||!career||origin.careerId!==career.id||origin.assignment!==record.assignment){state.psionicTraining=active;psionicSource(state,'psionic-retry','The failed psionic acquisition requires another skill roll, but its originating table is unknown. Resolve that replacement explicitly.');return;}
  const rows=origin.table==='assignment'?pack.training.assignments[record.assignment]:pack.training[origin.table];
  need(rows?.length===6,'The original psionic skill table is unavailable.');
  const result=dice(state,1,rolls,'Psionic replacement: '+origin.table);
@@ -1378,6 +1385,8 @@ function skillCheckDM(state,name) {
 }
 
 function coreTalentChoice(state,effect){
+ // With no owned talents, the user's ruling permits one chosen acquisition attempt.
+ if(effect.scope==='psionic-talents'&&psionAcquisitionRuling(state)&&!acquiredTalents(state).length)return true;
  return effect.scope==='psionic-talents'&&effect.untrained==='acquisition-check'&&state.active!==null&&currentCareer(state).career.id==='core.psion'&&effect.psionicOrigin?.table==='service';
 }
 function availableNewTalents(state){return PSIONIC_TALENTS.filter(name=>name!=='Technopathy'&&skillLevel(state,name)<0);}
@@ -2361,7 +2370,7 @@ function apply(state,command,rolls) {
    if(outcome.success)gainSkill(state,talent,0,'set',true);
    if(active.mode==='retry'){
     state.psionicTraining=null;
-    if(!outcome.success&&active.context==='zhodani-award')rerollPsionicAward(state,active,rolls);else drainEffects(state,rolls);
+    if(!outcome.success&&['zhodani-award','human-vargr-psion-ruling'].includes(active.context))rerollPsionicAward(state,active,rolls);else drainEffects(state,rolls);
    }
    return 'Psionic acquisition '+talent+': '+(outcome.automatic?'automatic first talent (no check)':outcome.total+' against 8; '+outcome.previousChecks+' previous checks')+'. '+(outcome.success?'Acquired at level 0.':'Not acquired.')+' Source: '+active.source.id+' p. '+active.source.page+'.';
   }
@@ -2588,7 +2597,7 @@ function apply(state,command,rolls) {
   need(state.stage==='skill-choice'&&state.pendingChoice,'There is no skill choice.');const e=state.pendingChoice,name=normalizedSkill(state,text(payload.name,80),{requireSpeciality:!e.deferSpeciality&&(e.mode!=='set'||(e.value??1)>0)}).name;
   if(e.scope==='non-psionic'&&nonPsionicEligibility(name)==='source-required'){state.pendingChoice=null;nativeFallback(state,{...e,requestedName:name},'The selected Science subject is not classified for this non-psionic award. Confirm its non-psionic eligibility from the source before recording an award, or retry with a verified specialty.');return 'Unclassified Science specialty requires an explicit source eligibility decision; no skill awarded.';}
   need(skillNameAllowed(state,name,e),'Skill is not available for this award.');if(e.distinctSpecialties)distinctScienceSelection(name,e.selected??[]);
-  if(coreTalentChoice(state,e)&&skillLevel(state,name)<0){state.pendingChoice=null;requestTalentAward(state,{...e,kind:'psionic-talent',name},rolls);return 'Selected '+name+' for a service-table acquisition attempt.';}
+  if(coreTalentChoice(state,e)&&skillLevel(state,name)<0){state.pendingChoice=null;requestTalentAward(state,{...e,kind:'psionic-talent',name},rolls);return 'Selected '+name+' for a talent acquisition attempt.';}
   if(e.scope==='new-psionic-talent'){gainSkill(state,name,0,'set',true);const history=psionicHistory(state);history.firstTalentChosen=true;history.rulings.push({context:'vargr-psion-event-8',source:{id:'aliens',page:201},talent:name,level:0,acquisitionCheck:false});state.pendingChoice=null;drainEffects(state,rolls);return 'Acquired '+name+' at level 0 after the event check. Aliens 2026 p. 201; no additional acquisition check.';}
   if(e.deferSpeciality&&SPECIALIZED.includes(name)&&(e.mode!=='set'||(e.value??1)>0)){deferSkillAward(state,{...e,name});state.pendingChoice=null;if((e.count??1)>1)state.effectsQueue.unshift({...e,count:e.count-1});drainEffects(state,rolls);return 'Recorded '+name+' award for specialization allocation.';}
   if((e.allocationId||e.deferSpeciality&&(e.mode!=='set'||(e.value??1)>0)&&SPECIALIZED.includes(name.split(' (')[0]))&&name.includes(' ('))need(allocationImproves(state,name,e),'This specialty would lose the award. Choose a different specialty.');
@@ -3070,7 +3079,7 @@ export function project(session) {
  need(Array.isArray(session.events)&&session.events.length<=LIMIT,'Save contains too many actions.');
  need(saveSize(session)<=MAX_SAVE_BYTES,'Save size limit reached. Export your current character before continuing.');
 
- let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(['character-preview-2026-11-09.19','character-preview-2026-11-09.20',RULES_REVISION].includes(session.rulesRevision))state.immediateSpecializations=true;if(['character-preview-2026-11-09.20',RULES_REVISION].includes(session.rulesRevision))state.separateBorrowedRolls=true;if(session.rulesRevision===RULES_REVISION){state.believerFalseTeachingsRuling=true;state.equipmentChoices=true;state.printedBenefitMaximum=true;}const snapshots=[copy(state)],log=[];
+ let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(['character-preview-2026-11-09.19','character-preview-2026-11-09.20',RULES_REVISION].includes(session.rulesRevision))state.immediateSpecializations=true;if(['character-preview-2026-11-09.20',RULES_REVISION].includes(session.rulesRevision))state.separateBorrowedRolls=true;if(session.rulesRevision===RULES_REVISION){state.believerFalseTeachingsRuling=true;state.equipmentChoices=true;state.printedBenefitMaximum=true;state.psionAcquisitionRuling=true;}const snapshots=[copy(state)],log=[];
  for(let i=0;i<session.events.length;i++){
   const event=session.events[i];need(plain(event)&&typeof event.id==='string'&&event.id.length<=120,'Invalid action record.');
   need(!log.some(e=>e.id===event.id),'Duplicate action ID.');

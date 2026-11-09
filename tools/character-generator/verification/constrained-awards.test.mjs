@@ -48,7 +48,7 @@ test('Core service Any Talent improves known talent or uses history-aware single
  const known=run(r,'choose-skill',{name:'Telepathy'});assert.equal(known.state.character.skills.Telepathy,1);assert.deepEqual(known.log.at(-1).rolls,[]);
  let unknown=run(r,'choose-skill',{name:'Teleportation'});assert.equal(unknown.state.stage,'psionic-training');assert.equal(unknown.state.psionicTraining.mode,'retry');roundtrip(unknown);
  const before=unknown.state.character.psionics.checksAttempted;unknown=force(unknown,'learn-talent',{talent:'Teleportation'},[6,6]);assert.equal(unknown.state.character.skills.Teleportation,0);assert.equal(unknown.state.character.psionics.checksAttempted,before+1);assert.equal(unknown.state.stage,'survival');roundtrip(unknown);
- const failed=force(run(r,'choose-skill',{name:'Teleportation'}),'learn-talent',{talent:'Teleportation'},[1,1]);assert.equal(failed.state.character.skills.Teleportation,undefined);assert.equal(failed.state.stage,'survival');assert.equal(failed.log.at(-1).rolls.length,1);
+ const failed=force(run(r,'choose-skill',{name:'Teleportation'}),'learn-talent',{talent:'Teleportation'},[1,1]);assert.equal(failed.state.character.skills.Teleportation,undefined);assert.equal(failed.state.stage,'survival');assert.equal(failed.log.at(-1).rolls.length,2);assert.match(failed.log.at(-1).rolls[1].label,/Psionic replacement/);
  const s=structuredClone(r.state);s.character.psionics.historyKnown=false;choose(s,'Teleportation');assert.equal(s.pending.kind,'psionic-history');
  const lost=structuredClone(r.state);lost.character.psionicLoss={permanent:true};assert.throws(()=>choose(lost,'Telepathy'),/not available/);
 });
@@ -62,10 +62,10 @@ test('Vargr failed additional training retains its Science award and successful 
  const {EXPANSION_PACK}=await import('../engine/expansion-pack.mjs');const r=awardFixture('vargr.psion',8),s=structuredClone(r.state);s.pendingChoice=null;s._override={index:0,values:[1,1]};const rolls=[];a.queueEffects(s,EXPANSION_PACK['vargr.psion'].events[8],'advancement',rolls);delete s._override;assert.equal(s.character.skills['Science (psionicology)'],1);assert.equal(s.character.skills.Teleportation,undefined);assert.equal(rolls.length,1);
  const granted=run(r,'choose-skill',{name:'Teleportation'}),core=structuredClone(coreGenericFixture().state);core.character.psionics=structuredClone(granted.state.character.psionics);core.character.skills=structuredClone(granted.state.character.skills);choose(core,'Telekinesis');assert.equal(core.psionicTraining.mode,'retry');const previous=core.character.psionics.checksAttempted;core._override={index:0,values:[6,6]};a.apply(core,{type:'learn-talent',payload:{talent:'Telekinesis'}},[]);delete core._override;assert.equal(core.character.psionics.attempts.at(-1).previousChecks,previous);assert.equal(core.character.psionics.checksAttempted,previous+1);
 });
-test('Core generic row supports first acquisition and cap fallback without relaxing rank awards',()=>{
+test('Core generic row supports first acquisition, cap fallback and ruled empty-roster rank acquisition',()=>{
  const r=coreGenericFixture(),s=structuredClone(r.state);s.character.skills={};s.character.psionics={historyKnown:true,checksAttempted:0,firstTalentChosen:false,attempts:[],tests:[],training:[],rulings:[],importedAttempted:[]};const effect=s.pendingChoice;s.pendingChoice=null;a.queueEffects(s,[effect],'survival',[]);assert.equal(s.stage,'skill-choice');choose(s,'Telepathy');assert.equal(s.stage,'psionic-training');const rolls=[];a.apply(s,{type:'learn-talent',payload:{talent:'Telepathy'}},rolls);assert.equal(s.character.skills.Telepathy,0);assert.deepEqual(rolls,[]);
  const cap=structuredClone(r.state);cap.character.stats.INT=0;cap.character.stats.EDU=0;choose(cap,'Telepathy');assert.equal(cap.stage,'book-step');assert.equal(cap.pending.effect.untrained,'acquisition-check');
- const rank=structuredClone(s);rank.character.skills={};a.queueEffects(rank,[{kind:'skill-choice',scope:'psionic-talents',mode:'set',value:1}],'survival',[]);assert.equal(rank.stage,'book-step');assert.match(rank.pending.label,/already acquired/);
+ const rank=structuredClone(s);rank.character.skills={};a.queueEffects(rank,[{kind:'skill-choice',scope:'psionic-talents',mode:'set',value:1}],'survival',[]);assert.equal(rank.stage,'skill-choice');choose(rank,'Awareness');assert.equal(rank.stage,'psionic-training');
 });
 test('Vargr non-psionic award rejects psionic aliases case-insensitively instead of accepting arbitrary Science subjects',()=>{
  const r=awardFixture('vargr.psion',6);
@@ -82,4 +82,10 @@ test('unclassified Vargr Science subjects pause without awards and retain source
  const good=run(run(retry,'retry-skill-choice'),'choose-skill',{name:'Science (physics)'});assert.equal(good.state.character.skills['Science (physics)'],1);roundtrip(good);
  rejected(paused,'resolve-book',{confirmed:false,note:'Unconfirmed eligibility',effects:[{kind:'skill',name,value:1}]});
  const resolved=run(paused,'resolve-book',{confirmed:true,note:'Referee checked this field is non-psionic for this source event',effects:[{kind:'skill',name,value:1}]});assert.equal(resolved.state.character.skills[name],1);roundtrip(resolved);
+});
+
+
+test('legacy .16-.20 retain old feature flags and .20 talent failures do not gain rerolls',()=>{
+ for(const suffix of ['16','17','18','19','20']){const session=api({operation:'create',seed:'psion-compat'}).session;session.rulesRevision='character-preview-2026-11-09.'+suffix;const state=project(session).state;assert.equal(state.psionAcquisitionRuling,undefined);if(suffix==='20')assert.equal(state.separateBorrowedRolls,true);}
+ const session=structuredClone(coreGenericFixture().session);session.rulesRevision='character-preview-2026-11-09.20';let r=run({session},'choose-skill',{name:'Teleportation'});r=force(r,'learn-talent',{talent:'Teleportation'},[1,1]);assert.equal(r.log.at(-1).rolls.length,1);assert.equal(r.state.stage,'survival');roundtrip(r);
 });
