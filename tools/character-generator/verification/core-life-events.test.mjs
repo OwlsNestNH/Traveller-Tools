@@ -6,7 +6,8 @@ import {CORE_LIFE_TABLES,lifePsionAccess} from '../engine/core-life-events.mjs';
 import {lifeFixture,run,rejected} from './core-life-event-fixtures.mjs';
 const roundtrip=r=>assert.deepEqual(project(importSession(exportSession(r.session))).state,r.state);
 const decision=(r,p)=>run(r,'resolve-life-event',{confirmed:true,reason:'Original referee source decision.',...p});
-const unusual=row=>lifeFixture({seed:'life-566',unusual:row});
+// Retain explicit-description legacy coverage; new generic artefacts are covered by equipment-finalization tests.
+const unusual=row=>lifeFixture({seed:'life-566',unusual:row,...([3,6].includes(row)?{rulesRevision:'character-preview-2026-11-09.20'}:{})});
 const sourceURL=new URL('../engine/session.mjs',import.meta.url);let source=await readFile(sourceURL,'utf8');source=source.replace(/from\s+'(\.\/[^']+)'/g,(_,p)=>'from '+JSON.stringify(new URL(p,sourceURL).href));source+='\nexport const lifeAudit={apply,queueEffects};';const {lifeAudit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 
 test('Core p46 encodes every life and unusual row without source narration',()=>{

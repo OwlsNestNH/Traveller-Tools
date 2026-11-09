@@ -16,7 +16,7 @@ try{
  for(const width of [1440,320])for(const transport of ['', '?api=local'])for(const scenario of ['narrative','betrayal','artefact','psionics','crime']){
   const context=await browser.newContext({viewport:{width,height:950}}),page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   try{
-   const fixture=scenario==='artefact'||scenario==='psionics'?lifeFixture({seed:'life-566',unusual:scenario==='artefact'?3:1}):lifeFixture({row:scenario==='narrative'?3:scenario==='betrayal'?8:11});
+   const fixture=scenario==='artefact'||scenario==='psionics'?lifeFixture({seed:'life-566',unusual:scenario==='artefact'?3:1,...(scenario==='artefact'?{rulesRevision:'character-preview-2026-11-09.20'}:{})}):lifeFixture({row:scenario==='narrative'?3:scenario==='betrayal'?8:11});
    await page.goto(origin+'/'+transport);await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(fixture.session)});await page.reload();await page.locator('#core-life-decision').waitFor();
    assert.equal(await page.locator('[data-action=add-effect]').count(),0);const before=await saved(page);await page.locator('[data-action=resolve-life-event]').click();await ready(page);assert.equal((await saved(page)).revision,before.revision);
    // Interrupted pending saves replay identically before the user makes a decision.

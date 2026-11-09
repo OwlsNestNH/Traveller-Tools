@@ -24,3 +24,9 @@ test('legacy .16 and .17 projections omit new deferred-specialization fields',()
  }
  const state=project(createSession('current-shape')).state;assert.equal(state.deferredSpecializations,true);assert.ok(state.specializationOptions);
 });
+
+test('combined .21 enables new rulings without changing .16 through .20 feature gates',()=>{
+ const keys=['equipmentChoices','printedBenefitMaximum','believerFalseTeachingsRuling','psionAcquisitionRuling'];
+ for(let n=16;n<=20;n++){const session={...createSession('combined-legacy-'+n),rulesRevision:'character-preview-2026-11-09.'+n};const state=project(session).state;for(const key of keys)assert.equal(state[key],undefined,key+' legacy '+n);assert.equal(!!state.immediateSpecializations,n>=19);assert.equal(!!state.separateBorrowedRolls,n>=20);assert.equal(!!state.correctedCareerEvents,n>=18);assert.equal(importSession(exportSession(session)).rulesRevision,session.rulesRevision);}
+ for(const key of keys)assert.equal(project(createSession('combined-new')).state[key],true,key);
+});

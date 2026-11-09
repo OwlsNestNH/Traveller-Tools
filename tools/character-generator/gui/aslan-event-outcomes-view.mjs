@@ -1,0 +1,21 @@
+// Uses only the server/client projection; never imports the rules engine in HTTP mode.
+export function aslanEventOutcomesView(state,{button,esc}){
+ const pending=state.aslanEventOutcome?.kind;if(!pending)return '';
+ if(pending==='wanderer-land'&&state.character.stats.SOC>17)return '';
+ if(pending==='rite-equipment')return '<h3>Rite reward</h3><p>Cr5000 of art, armour or weapons. Keep this restricted credit for finalization; it is not cash.</p><p class="source">Aliens 2026 p. 21</p>'+button('Record equipment credit','record-aslan-rite-equipment');
+ if(pending==='territory-challenge'){const holdings=state.aslanEventOutcome.holdings;return '<h3>Territory Challenge</h3><p>Choose the skill and affected personal holding. Each point of Effect changes one parcel increment, or SOC if landless. Target 8+ uses the recorded player ruling.</p><p class="source">Aliens 2026 p. 46</p><label>Skill<select id="aslan-territory-skill">'+['Broker','Diplomat','Gun Combat','Melee (natural)'].map(n=>'<option>'+n+'</option>').join('')+'</select></label>'+(holdings.length?'<label>Personal landhold<select id="aslan-territory-holding">'+holdings.map(r=>'<option value="'+esc(r.id)+'">'+esc(r.name??r.id)+' ('+esc(r.parcels)+' parcels)</option>').join('')+'</select></label>':'<label class="check"><input type="checkbox" id="aslan-territory-landless"><span>I have no personal land; apply Effect to SOC.</span></label><p>If you own land not recorded here, use the source review rather than confirming landless.</p>')+button('Roll territory challenge','resolve-aslan-territory');}
+ if(pending==='guardian-secret')return '<h3>Keep the clan secret</h3><p>Roll 1D now and retain that many conditional Clan Shares for later. These are not spendable shares. Exposing the secret gains a clan elder as an Enemy.</p><p class="source">Aliens 2026 p. 27; timing uses the recorded player ruling.</p>'+button('Roll and retain conditional shares','retain-aslan-secret');
+ if(pending==='outcast-opportunity')return '<h3>Outlaw band or Wanderer crew</h3><p>Next term only, you may automatically qualify for either career. This does not force you to leave or choose either career. Other prerequisites still apply.</p><p class="source">Aliens 2026 p. 41</p>'+button('Record optional next-term opportunity','record-aslan-outcast-opportunity');
+ if(pending==='wanderer-land')return '<h3>Unclaimed territory</h3><p>Raise SOC to 9 only if it is lower. Award the printed SOC-based Land Parcels. Name and location can be entered or left for the GM at finalization.</p><p class="source">Aliens 2026 pp. 17, 45</p>'+button('Award landhold','award-aslan-wanderer-land');
+ const relationship=state.character.relationships.some(r=>['Contact','Ally'].includes(r.role));
+ return '<h3>Dishonoured</h3><p>Choose a defence. Failure sets SOC 2 and Outcast status and forfeits unconverted Clan Shares.</p><p class="source">Aliens 2026 p. 46</p>'+(relationship?'<label class="check"><input type="checkbox" id="aslan-clan-defence"><span>A recorded Contact or Ally belongs to my clan (+2 to Advocate only).</span></label>':'<p>No recorded Contact or Ally is available for the clan bonus.</p>')+'<div class="actions">'+button('Roll Advocate 8+','resolve-aslan-dishonoured','','data-skill="Advocate"')+button('Roll Melee (natural) 10+','resolve-aslan-dishonoured','','data-skill="Melee (natural)"')+'</div>';
+}
+
+export function aslanEventOutcomesSheet(state,{esc}){
+ const c=state.character;let html='';
+ for(const r of c.equipmentCredits??[])html+='<p><strong>Restricted equipment credit: Cr'+esc(r.remaining)+' remaining</strong> of Cr'+esc(r.amount)+'. '+esc(r.categories.join(', '))+'. '+esc(r.status)+'.</p>';
+ for(const r of c.aslanLandholds??[])html+='<p><strong>Landhold: '+esc(r.parcels)+' parcels</strong> (SOC '+esc(r.socAtAward)+'). '+esc(r.name??'Name pending')+'; '+esc(r.location??'Location pending for finalization / GM')+'.</p>';
+ for(const r of c.aslanSecrets??[])html+='<p><strong>Retained secret: '+esc(r.quantity)+' conditional Clan Shares</strong>. '+esc(r.status)+', not spendable. '+esc(r.condition)+'</p>';
+ for(const r of c.aslanOutcastOpportunities??[])html+='<p>Optional next-term Outlaw / Wanderer automatic qualification: '+esc(r.status)+'.</p>';
+ return html?'<div class="sheet-section"><h3>Aslan event entitlements</h3>'+html+'</div>':'';
+}
