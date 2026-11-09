@@ -18,16 +18,23 @@ try{
   try{
    await page.goto('http://127.0.0.1:'+server.address().port+(apiMode?'/?api=local':'/'));await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();
    for(const [kind,fixture,action] of [['ordinary',ordinary,'training'],['source',navy,'choose-effect'],['borrowed',borrowed,'cross-career-training']]){
-    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(fixture.session)});await page.reload();await page.locator('.training-information').first().waitFor();
-    const before=await page.evaluate(key=>localStorage.getItem(key),key),summary=page.locator('.training-information summary').first();
-    await summary.focus();await summary.press('Enter');await page.locator('.training-information[open]').waitFor();assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),before);
-    await summary.press('Enter');assert.equal(await page.locator('.training-information[open]').count(),0);
-    await page.reload();await page.locator('.training-information').first().waitFor();assert.equal(await page.locator('.training-information[open]').count(),0);
+    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(fixture.session)});await page.reload();await page.locator('.training-info-trigger').first().waitFor();
+    const before=await page.evaluate(key=>localStorage.getItem(key),key),trigger=page.locator('.training-info-trigger').first(),popup=page.locator('.training-information:popover-open');
+    const options=kind==='ordinary'?fixture.state.trainingOptions:kind==='source'?fixture.state.pendingChoice.options:fixture.state.currentCrossCareerTraining.options;
+    await trigger.focus();await trigger.press('Enter');await popup.waitFor();assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),before);
+    assert.deepEqual(await popup.locator('li').allTextContents(),options[0].information.entries);
+    assert.ok((await trigger.boundingBox()).width<=44);assert.equal(await popup.getAttribute('role'),'dialog');
+    await page.keyboard.press('Escape');assert.equal(await popup.count(),0);assert.equal(await trigger.evaluate(el=>el===document.activeElement),true);
+    await trigger.click();await popup.waitFor();await popup.locator('.training-info-close').click();assert.equal(await popup.count(),0);
+    await trigger.click();await popup.waitFor();await page.mouse.click(2,2);assert.equal(await popup.count(),0);
+    await trigger.click();await popup.waitFor();await page.reload();await page.locator('.training-info-trigger').first().waitFor();assert.equal(await popup.count(),0);
+    assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),before);
     const choices=page.locator('[data-action='+action+']');assert.ok(await choices.count()>1);
-    await page.locator('.training-information summary').first().click();
+    await page.locator('.training-info-trigger').first().click();await popup.waitFor();
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
     const name=kind+'-'+width+(apiMode?'-http':'-static');await page.screenshot({path:fileURLToPath(new URL('training-information-'+name+'.png',out)),fullPage:true});
-    // The disclosure must never select a table, and rapid repeated selection
+    await page.keyboard.press('Escape');
+    // The popup must never select a table, and rapid repeated selection
     // must still execute one command only.
     await choices.first().evaluate(button=>{button.click();button.click();});
     await page.waitForFunction(revision=>{const session=JSON.parse(localStorage.getItem('traveller-character-generator.v1'));return session.events.length===revision+1&&!document.querySelector('#new').disabled;},fixture.revision);
