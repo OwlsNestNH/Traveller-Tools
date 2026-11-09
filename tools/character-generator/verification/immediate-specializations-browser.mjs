@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {createServer} from '../server.mjs';
-import {exportSession,project} from '../engine/session.mjs';
+import {exportSession,project,RULES_REVISION} from '../engine/session.mjs';
 import {trainingFixture,run} from './training-information-fixtures.mjs';
 const fixture=run(trainingFixture({species:'vargr',career:'vargr.citizen',assignment:'corporate'}),'training',{table:'advanced'});
 assert.equal(fixture.state.stage,'skill-choice');assert.equal(fixture.state.character.deferredSkillAwards,undefined);
@@ -22,7 +22,7 @@ try{for(const http of [false,true])for(const width of [320,1440]){
   assert.equal(await page.locator('#award-skill').inputValue(),'Electronics (computers)');await page.getByRole('button',{name:'Accept skill',exact:true}).click();
   await page.waitForFunction(({key})=>{const raw=localStorage.getItem(key);return raw&&JSON.parse(raw).events.at(-1)?.command.type==='choose-skill';},{key});
   const raw=await page.evaluate(key=>localStorage.getItem(key),key),result=project(JSON.parse(raw));
-  assert.equal(result.state.character.skills['Electronics (computers)'],1);assert.equal(result.state.stage,'term-end');assert.equal(result.state.character.deferredSkillAwards,undefined);assert.equal(JSON.parse(raw).rulesRevision,'character-preview-2026-11-09.19');
+  assert.equal(result.state.character.skills['Electronics (computers)'],1);assert.equal(result.state.stage,'term-end');assert.equal(result.state.character.deferredSkillAwards,undefined);assert.equal(JSON.parse(raw).rulesRevision,RULES_REVISION);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   console.log('PASS immediate allocation '+(http?'HTTP':'static')+' '+width);
  }finally{await context.close();}
