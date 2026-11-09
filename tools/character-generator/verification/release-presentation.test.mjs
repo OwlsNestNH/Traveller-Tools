@@ -62,3 +62,28 @@ test('site decoration does not request unavailable assets in standalone local ru
  assert.deepEqual(attach('/tools/character-generator/','localhost').scripts,[]);
  for(const suffix of ['','index.html']){const x=attach('/Traveller-Tools/tools/character-generator/'+suffix,'owlsnestnh.github.io');assert.equal(x.scripts.length,1);assert.equal(x.scripts[0].src,'../../assets/js/tool-visits.js');assert.equal(x.link.href,'../../changes/character.html');}
 });
+
+
+test('routed presentation fixture preserves browser crypto secure-context requirements',()=>{
+ const browser=read('tools/character-generator/verification/release-presentation-browser.mjs');
+ const origins=browser.match(/const origin=published\?'([^']+)':'([^']+)'/);
+ assert.ok(origins,'Both routed origins remain explicit');
+ for(const origin of origins.slice(1))assert.equal(new URL(origin).protocol,'https:',origin+' must expose secure browser APIs without a crypto shim');
+ assert.match(browser,/capability\.secureContext,true/);
+ assert.match(browser,/capability\.randomUUID,'function'/);
+ assert.match(browser,/startupDiagnostics/);
+ assert.match(browser,/requestFailures/);
+ assert.doesNotMatch(browser,/ignoreHTTPSErrors|unsafely-treat-insecure-origin-as-secure/);
+});
+
+test('actual GUI startup reports missing browser UUID instead of rendering a partial character',async()=>{
+ const app=read('tools/character-generator/gui/app.mjs'),begin=app.indexOf('async function start(){'),end=app.indexOf('\nstart();',begin);
+ assert.ok(begin>=0&&end>begin,'Inspect the unchanged startup function, not a rewritten implementation');
+ async function run(crypto){
+  const calls=[],messages=[];let renders=0;
+  const context={crypto,call:async request=>{calls.push(request.operation);return api(JSON.parse(JSON.stringify(request)));},localStorage:{getItem:()=>null},key:'test',projection:undefined,storageWarning:'',setBusy:()=>{},updateRecovery:()=>{},render:()=>renders++,notify:(message,error)=>messages.push({message,error})};
+  await vm.runInNewContext(app.slice(begin,end)+'\nstart();',context);return{calls,messages,renders};
+ }
+ const unavailable=await run({});assert.equal(unavailable.renders,0);assert.deepEqual(unavailable.calls,['catalog']);assert.equal(unavailable.messages[0].error,true);assert.match(unavailable.messages[0].message,/Unable to start the rules engine: crypto.randomUUID is not a function/);
+ const available=await run({randomUUID:()=> 'startup-capability-check'});assert.equal(available.renders,1);assert.deepEqual(available.calls,['catalog','create']);assert.deepEqual(available.messages,[]);
+});

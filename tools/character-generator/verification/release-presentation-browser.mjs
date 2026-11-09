@@ -11,12 +11,32 @@ const root=path.resolve(fileURLToPath(new URL('../../../',import.meta.url))),out
 await mkdir(out,{recursive:true});
 const types={'.html':'text/html','.css':'text/css','.js':'text/javascript','.mjs':'text/javascript','.json':'application/json'};
 const browser=await chromium.launch({headless:true,...(process.env.CHARACTER_BROWSER_CHANNEL?{channel:process.env.CHARACTER_BROWSER_CHANNEL}:{})});
-const checks=[],errors=[],unexpected=[],layoutMetrics=[];
+const checks=[],errors=[],unexpected=[],layoutMetrics=[],startupDiagnostics=[],requestFailures=[];
 const check=(label,value)=>{assert.ok(value,label);checks.push(label);};
+async function waitForCharacter(page,label){
+ // Surface startup errors before a missing-heading timeout. In particular,
+ // routed fixture origins still obey the browser's secure-context rules.
+ const inspect=()=>page.evaluate(()=>({url:location.href,secureContext:window.isSecureContext,randomUUID:typeof globalThis.crypto?.randomUUID,message:document.querySelector('#message')?.textContent??'',messageIsError:document.querySelector('#message')?.classList.contains('error')??false,step:document.querySelector('#step-title')?.textContent??'',scripts:[...document.scripts].map(script=>script.src)}));
+ try{
+  await page.waitForLoadState('domcontentloaded');
+  const capability=await inspect();
+  assert.equal(capability.secureContext,true,label+' requires a secure browser origin');
+  assert.equal(capability.randomUUID,'function',label+' requires the real browser crypto.randomUUID');
+  await page.waitForFunction(()=>document.querySelector('#step-title')||document.querySelector('#message')?.classList.contains('error'));
+  const state=await inspect();startupDiagnostics.push({label,...state});
+  assert.equal(state.messageIsError,false,label+' startup failed: '+state.message);
+  await page.getByRole('heading',{name:'Start your Traveller',exact:true}).waitFor();
+ }catch(error){
+  startupDiagnostics.push({label,failure:error.message,...await inspect().catch(()=>({inspectionUnavailable:true}))});
+  await page.screenshot({path:fileURLToPath(new URL('release-presentation-'+label+'-startup-failure.png',out)),fullPage:true}).catch(()=>{});
+  throw error;
+ }
+}
 try{
  for(const width of [1440,320])for(const published of [false,true]){
-  const origin=published?'https://owlsnestnh.github.io':'http://character-beta.test',site=origin+'/Traveller-Tools/',tool=site+'tools/character-generator/',notesURL=site+'changes/character.html';
+  const origin=published?'https://owlsnestnh.github.io':'https://character-beta.test',site=origin+'/Traveller-Tools/',tool=site+'tools/character-generator/',notesURL=site+'changes/character.html';
   const name=(published?'published':'preview')+'-'+width,hits=[],context=await browser.newContext({viewport:{width,height:1000},serviceWorkers:'block'});
+  context.on('requestfailed',request=>requestFailures.push({case:name,url:request.url(),error:request.failure()?.errorText}));
   context.on('page',page=>{page.on('pageerror',e=>errors.push(e.message));page.on('console',e=>{if(e.type()==='error')errors.push(e.text());});});
   await context.route('**/*',async route=>{
    const url=new URL(route.request().url());
@@ -34,7 +54,7 @@ try{
    const card=page.locator('.tool-card').filter({has:page.getByRole('heading',{name:'Character Generator - Beta',exact:true})});
    check(name+' home fits',await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
    const launch=page.waitForEvent('popup');await card.getByRole('link',{name:'Open Character Generator',exact:true}).click();const editor=await launch;
-   await editor.getByRole('heading',{name:'Start your Traveller',exact:true}).waitFor();assert.equal(editor.url(),tool);
+   await waitForCharacter(editor,name+'-launch');assert.equal(editor.url(),tool);
    assert.equal(await editor.locator('#release-version').textContent(),'Beta 0.1');
    assert.deepEqual(await editor.locator('[name=species] option').evaluateAll(nodes=>nodes.map(node=>node.value)),['human','aslan','vargr','aezorgh']);
    const optional=editor.locator('#setup-optional-settings'),optionalSummary=optional.locator('summary');
@@ -68,7 +88,7 @@ try{
    check(name+' navigation touch targets',await notes.locator('nav a').evaluateAll(nodes=>nodes.every(node=>node.getBoundingClientRect().height>=44)));
    check(name+' notes fit',await notes.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
    await notes.screenshot({path:fileURLToPath(new URL('release-presentation-'+name+'-notes.png',out)),fullPage:true});
-   await notes.getByRole('link',{name:'Open Character Generator',exact:true}).click();await notes.getByRole('heading',{name:'Start your Traveller',exact:true}).waitFor();assert.equal(notes.url(),tool);
+   await notes.getByRole('link',{name:'Open Character Generator',exact:true}).click();await waitForCharacter(notes,name+'-changelog-return');assert.equal(notes.url(),tool);
    await notes.goBack();await notes.getByRole('heading',{name:'Character Generator changelog',exact:true}).waitFor();assert.equal(notes.url(),notesURL);
    await notes.close();assert.equal(await editor.locator('[name=name]').inputValue(),'Unsaved release check '+width);
    const repeat=editor.waitForEvent('popup');await editor.getByRole('link',{name:'Character Generator changelog (opens in a new tab)',exact:true}).press('Enter');const reopened=await repeat;
@@ -80,5 +100,5 @@ try{
   }finally{await context.close();}
  }
  assert.deepEqual(errors,[]);assert.deepEqual(unexpected,[]);
- await writeFile(new URL('release-presentation-browser-results.json',out),JSON.stringify({checks,errors,unexpected,layoutMetrics},null,2));console.log(JSON.stringify({checks,errors,unexpected,layoutMetrics}));
-}catch(error){await writeFile(new URL('release-presentation-browser-failure.json',out),JSON.stringify({message:error.message,checks,errors,unexpected,layoutMetrics},null,2));throw error;}finally{await browser.close();}
+ await writeFile(new URL('release-presentation-browser-results.json',out),JSON.stringify({checks,errors,unexpected,layoutMetrics,startupDiagnostics,requestFailures},null,2));console.log(JSON.stringify({checks,errors,unexpected,layoutMetrics,startupDiagnostics,requestFailures}));
+}catch(error){await writeFile(new URL('release-presentation-browser-failure.json',out),JSON.stringify({message:error.message,checks,errors,unexpected,layoutMetrics,startupDiagnostics,requestFailures},null,2));throw error;}finally{await browser.close();}
