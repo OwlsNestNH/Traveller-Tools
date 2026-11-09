@@ -5,6 +5,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - 'tools/trade-route-calculator/**'
+      - 'index.html'
       - 'tests/**'
       - 'assets/**'
       - '.github/workflows/mail-browser.yml'

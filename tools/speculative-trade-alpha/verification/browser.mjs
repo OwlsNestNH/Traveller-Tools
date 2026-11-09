@@ -46,7 +46,8 @@ try {
  const quote=(await read()).lots[0].quote;assert.equal(quote.gross.numerator,'226875');
  await page.reload();await page.getByText('Saved quote:',{exact:false}).waitFor();assert.deepEqual((await read()).lots[0].quote,quote);checks.push('reload retains quote and individual dice');
  await click('Review settlement');await click('Cancel review / hold cargo');assert.deepEqual((await read()).lots[0].quote,quote);assert.equal((await read()).cash.numerator,'540000');checks.push('cancel retains cash/cargo/quote');
- await page.goto(new URL('../../',base).href);await page.goBack();await page.getByText('Saved quote:',{exact:false}).waitFor();assert.deepEqual((await read()).lots[0].quote,quote);checks.push('back-forward navigation preserves quote');
+ // Homepage readiness must not depend on optional third-party visit badge images.
+ await page.goto(new URL('../../',base).href,{waitUntil:'domcontentloaded'});await page.getByRole('heading',{name:'Traveller Tools',exact:true}).waitFor({state:'visible'});await page.goBack();await page.getByText('Saved quote:',{exact:false}).waitFor();assert.deepEqual((await read()).lots[0].quote,quote);checks.push('back-forward navigation preserves quote');
  await page.screenshot({path:new URL('desktop.png',artifacts).pathname.replace(/^\/(.:)/,'$1'),fullPage:true});
  await page.setViewportSize({width:390,height:844});await page.screenshot({path:new URL('mobile.png',artifacts).pathname.replace(/^\/(.:)/,'$1'),fullPage:true});
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);checks.push('390px layout has no horizontal overflow');

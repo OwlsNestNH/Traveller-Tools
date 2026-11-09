@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="application-version" content="0.1.0-beta.1">
+<meta name="description" content="Character Generator Beta 0.1 release notes, source-assisted coverage and limitations.">
+<title>Character Generator - Beta - Changelog</title>
+<link rel="icon" href="data:,">
+<style>*{box-sizing:border-box}body{margin:0;background:#0b0e14;color:#e6e6e6;font:16px/1.6 system-ui,-apple-system,Segoe UI,sans-serif}header,main,footer{width:min(100%,850px);margin:auto;padding:24px}header{padding-bottom:8px}h1{font-size:clamp(1.6rem,5vw,2.2rem);line-height:1.2;margin:20px 0 8px}h2{font-size:1.3rem;margin:0 0 12px}h3{font-size:1rem;margin:0 0 8px}a{color:#b9c7ff;text-underline-offset:3px}a:focus-visible{outline:3px solid #fff;outline-offset:4px}nav{display:flex;flex-wrap:wrap;gap:12px 24px}nav a{display:inline-flex;align-items:center;min-height:44px}.feedback{border:1px solid #425270;background:#141a2a;border-radius:10px;padding:20px;margin-bottom:28px}.feedback p{margin:0 0 10px}.feedback a{font-size:1.05rem;overflow-wrap:anywhere}section+section{margin-top:32px}li{margin:10px 0}ul{padding-left:22px}.muted,footer{color:#aab6c9;font-size:.9rem}footer{border-top:1px solid #293448}@media(max-width:400px){header,main,footer{padding:16px}.feedback{padding:16px}}
+</style>
+</head>
+<body>
+<header>
+<nav aria-label="Page navigation"><a href="../">Traveller Tools</a><a href="../tools/character-generator/">Open Character Generator</a></nav>
+<h1>Character Generator changelog</h1>
+<p class="muted">Updated <time datetime="2026-11-09">November 9, 2026</time> &middot; Dates shown in UTC.</p>
+</header>
+<main>
+<section class="feedback" aria-labelledby="contact-heading">
+<h2 id="contact-heading">Contact &amp; feedback</h2>
+<p><a href="mailto:bows_cosmic.7e@icloud.com">bows_cosmic.7e@icloud.com</a></p>
+<p>Feel free to send any Bug Notes, Questions, Suggestions, or Feedback. Thanks!</p>
+</section>
+<section aria-labelledby="recent-heading">
+<h2 id="recent-heading">Recent changes</h2>
+<h3 id="release-beta-0-1"><time datetime="2026-11-09">November 9, 2026</time> &middot; Beta 0.1: source-assisted character generation</h3>
+<ul>
+<li>Build a Human, Aslan, Vargr or Aezorgh Traveller through characteristic setup, background, education and career choices, with a live character sheet. The release offers 36 career entries; a listed career does not mean every event, mishap or benefit is automated. Zhodani species, careers and their Intendant/Noble PSI option are deferred.</li>
+<li>Implemented paths include ordinary training, career checks, rank awards, benefits and ageing, plus bounded source-specific choices. Human optional PSI, Core/Vargr Psion and Companion paths remain available, with source decisions where needed.</li>
+<li>Optional boons, score placement/swapping, minimum-total rerolls and extra characteristics are labelled. The Aezorgh six-2D6 method is an optional house rule, not the published default.</li>
+<li>Rolls, choices, corrections and restored steps remain in the always-on action log. GM changes require a reason and preserve the original record. Save character &amp; log exports a JSON backup; Print character includes the record and saved notes.</li>
+<li>The browser keeps one local draft. Load validates a matching-rules save before replacing the draft. At a source stop, you can export the pending character and log before deciding how to proceed.</li>
+</ul>
+</section>
+<section aria-labelledby="scope-heading">
+<h2 id="scope-heading">Beta coverage and limitations</h2>
+<p><strong>This is a source-assisted beta, not a complete, fully automated or independently rules-certified generator.</strong> Keep the relevant books and your referee available. Source references identify the rules being used, but generic fallback references may point to a career's opening page rather than the precise event page.</p>
+<ul>
+<li><strong>Manual consequences stay manual.</strong> A generic source step applies only supported immediate effects you enter. A confirmed note does not install future modifiers, permissions, transfers or deferred awards. Track unsupported consequences separately with your referee; do not treat confirmation as automation.</li>
+<li>Companion Believer buyouts, unusual Vargr psionic-testing opportunities, and some Aslan career permissions, deferred Clan Shares, defence choices and status/land awards still need source adjudication.</li>
+<li>Specialist kinship, Brotherhood, Secret School and standalone Land Parcel benefits; Sainthood and repeated Patronage; some ship, implant and equipment awards are not fully automated. Inheritance, corporate holdings, land income and unpriced equipment also remain bounded or manual.</li>
+<li>Cross-book career and education eligibility, ambiguous cultural rules, previous or unprinted outcomes, Aezorgh social-statistic changes and unusual medical funding need referee rulings. Optional characteristic displays do not implement every rule that uses them.</li>
+<li>Optional anagathics, post-career shopping and campaign group-skill packages are not fully automated. These are concrete limits, not a claim that every possible source exception has been identified.</li>
+</ul>
+</section>
+<section aria-labelledby="saves-heading">
+<h2 id="saves-heading">Save compatibility and privacy</h2>
+<p>Export backups before updates or starting another character. Older or otherwise incompatible rules revisions open only as unverified, read-only recorded history, with an unchanged-original download. They cannot continue under new rules or become a validated character sheet. There is no automatic migration. Deferred Zhodani histories are also kept read only without changing their bytes.</p>
+<p>The mandatory local log is not cryptographic proof or protection against someone editing their own file. No account or cloud save is provided. Names, notes and campaign data stay in your browser or local API. The published site uses the existing shared Hits visit counter for the canonical tool path only; it does not send your character, query or fragment. Counting failures do not affect generation.</p>
+</section>
+<section aria-labelledby="sources-heading">
+<h2 id="sources-heading">Sources and attribution</h2>
+<ul>
+<li>Traveller Core Rulebook Update 2022.</li>
+<li>Traveller Companion Update 2024.</li>
+<li>Aliens of Charted Space Volume 1 Update 2026, for the released Aslan and Vargr paths. Zhodani are deferred; K'kree are excluded.</li>
+<li>Journal of the Travellers' Aid Society Volume 11, for Aezorgh species rules.</li>
+</ul>
+<p>Source books are required and are not included. This original fan tool is inspired by the step-by-step approach of <a href="https://blog.tremlas.com/games/traveller/mongoose-v2-character-creator/">David Vines' character creator</a>; its code, text and assets were not copied.</p>
+<p>Traveller belongs to Mongoose Publishing. See the <a href="../tools/character-generator/NOTICE.html">publisher notice</a> and <a href="https://www.mongoosepublishing.com/pages/traveller-licensing">licensing terms</a>. This is not publisher endorsement or a licence to the books. Public source files expose the original executable numeric mappings; labels-only screens do not make those mappings private.</p>
+</section>
+</main>
+<footer>Independent fan tool. <a href="../#copyright-notice">Copyright &amp; usage notice</a>. Dates shown in UTC.</footer>
+</body>
+</html>

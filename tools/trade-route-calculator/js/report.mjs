@@ -1,13 +1,13 @@
-import {recordedOperatingResult} from './financial-summary.mjs?v=luxury-lss-20261108-1';
-import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=luxury-lss-20261108-1';
-import {supportStock,supportCargo,supportDisplay,supportReference,supportCostBasis} from './life-support.mjs?v=luxury-lss-20261108-1';
-import {bladderSpace} from './fuel.mjs?v=luxury-lss-20261108-1';
+import {recordedOperatingResult} from './financial-summary.mjs?v=lss-whole-days-20261108-1';
+import {passengerShip,passengerTotals,passengerSpace} from './passengers.mjs?v=lss-whole-days-20261108-1';
+import {supportStock,supportCargo,supportDisplay,supportReference,supportCostBasis} from './life-support.mjs?v=lss-whole-days-20261108-1';
+import {bladderSpace} from './fuel.mjs?v=lss-whole-days-20261108-1';
 import * as A from './amounts.mjs';
 import {displayDate} from './calendar.mjs';
-import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=luxury-lss-20261108-1';
-import {distance} from './map.mjs?v=luxury-lss-20261108-1';
+import {occupants,passengerLuggage,serviceLabel,serviceRate,roomCounts,roomTotal,personMonthlyRate,personRate} from './accommodation.mjs?v=lss-whole-days-20261108-1';
+import {distance} from './map.mjs?v=lss-whole-days-20261108-1';
 
-export const REPORT_VERSION='2026.10.21.119';
+export const REPORT_VERSION='2026.10.21.120';
 const clean=v=>String(v??'Not recorded').replace(/[\r\n\t\x00-\x1f]+/g,' ').trim();
 const number=v=>String(v).replace(/\B(?=(\d{3})+(?!\d))/g,',');
 const cr=v=>v==null?'Not recorded':'Cr '+number(v);

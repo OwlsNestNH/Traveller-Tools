@@ -1,6 +1,6 @@
 # Coverage and release gates
 
-Status: local development/source-assisted preview. A data table being present does not mean every resulting rule is automated. The UI must preserve this distinction.
+Status: source-assisted Beta 0.1 candidate; merge/deployment require the release gates below. A data table being present does not mean every resulting rule is automated. The UI must preserve this distinction.
 
 ## Source scope
 
@@ -132,6 +132,6 @@ These paths are not advertised as automated by this candidate. They stop with so
 - Vargr unusual-event psionic-testing opportunity (Aliens p. 206), beyond the separately implemented Core testing route.
 - Aslan Outcast Event 10 career permission (p. 41), Guardian Event 3 deferred Clan Shares (p. 27), life Event 11 defence procedure (p. 46), and Wanderer Event 12 status/land award (p. 45).
 - Specialized Aslan kinship, Brotherhood, Secret School and standalone Land Parcel benefits (p. 47); Companion Sainthood and repeated Patronage stacking; the first Core Ship's Boat award/alternative interpretation, repeated Cybernetic Implant upgrades, and unverified Combat Implant definitions. Existing ordinary material benefits do not establish these bespoke procedures.
-- Aslan ambiguous officer headings, territory-event target and some gender/culture branches; Aezorgh derived Charisma versus independent social-statistic changes; wider cross-book education and career access; and unprinted cap, third-party injury, medical-funding, out-of-range benefit results and history cases. Generic fallback citations may identify a career's opening page rather than its exact event page; this preview does not claim precise-page certification.
+- Aslan ambiguous officer headings, territory-event target and some gender/culture branches; Aezorgh derived Charisma versus independent social-statistic changes; wider cross-book education and career access; and unprinted cap, third-party injury, medical-funding, out-of-range benefit results and history cases. Generic fallback citations may identify a career's opening page rather than its exact event page; this beta does not claim precise-page certification.
 
 Common Core relationship paths, the specified constrained talent/Truther awards, optional benefit credits, bounded wagers, lawyer appeals, and Core/Vargr undercover routes are implemented above, not part of this remaining list. This inventory is a concrete release limitation, not a claim that every possible source exception has been discovered.

@@ -1,8 +1,8 @@
-import {supportCompartments,consumeReserveCompartments} from './lss-compartments.mjs?v=luxury-lss-20261108-1';
-import {passengerShip} from './passengers.mjs?v=luxury-lss-20261108-1';
-import {tiers,roomCounts,serviceRate,occupants,personRate,refillPersonRate} from './accommodation.mjs?v=luxury-lss-20261108-1';
+import {supportCompartments,consumeReserveCompartments} from './lss-compartments.mjs?v=lss-whole-days-20261108-1';
+import {passengerShip} from './passengers.mjs?v=lss-whole-days-20261108-1';
+import {tiers,roomCounts,serviceRate,occupants,personRate,refillPersonRate} from './accommodation.mjs?v=lss-whole-days-20261108-1';
 import {add,sub,mul,div,cmp,dec,rat,decimal,auditNumber,credit,floor} from './amounts.mjs';
-import {up,creditStep} from './rounding.mjs?v=luxury-lss-20261108-1';
+import {up,creditStep} from './rounding.mjs?v=lss-whole-days-20261108-1';
 
 export const supportReference='Cluster Truck, p. 14: awake occupants consume 1 LSS per day; occupied low berths consume 0.1. Internal storage holds 4 LSS per displacement ton; overflow uses 0.01 cargo tons per LSS.';
 export const extraSupportReference='Campaign rule: standard and extra supplies use the same combined cabin-plus-person daily tariff, rounded up to whole Credits per day before purchased duration is applied.';

@@ -1,6 +1,6 @@
-# Traveller character generator (development preview)
+# Traveller character generator (source-assisted Beta 0.1)
 
-Original, non-commercial software under development. This is **not a complete or rules-certified generator**. Some paths stop for source-book adjudication. Do not publish, link from the live tools index, or describe this preview as complete until the release gates in COVERAGE.md are met.
+Original, non-commercial source-assisted beta (`0.1.0-beta.1`). This is **not a complete, fully automated or rules-certified generator**. Some paths stop for source-book adjudication and unsupported consequences still need separate referee bookkeeping. See the [user-facing changelog](../../changes/character.html) for Beta 0.1 coverage and limitations. Merge and deployment require the exact-candidate tests and independent review in COVERAGE.md.
 
 ## Release scope
 
@@ -16,7 +16,7 @@ Node.js 22 or newer; no runtime dependencies.
 node tools/character-generator/server.mjs
 ```
 
-Open `http://127.0.0.1:8781/?api=local`. The server listens only on loopback and provides the separate JSON rules API. `PORT` can select another local port. A static server can instead serve this directory: without `?api=local`, the same API adapter runs the rules module in the browser. HTTP mode does not download the engine modules during normal UI use; static mode loads them on demand. No account, telemetry, cloud save, or external data transmission is used.
+Open `http://127.0.0.1:8781/?api=local`. The server listens only on loopback and provides the separate JSON rules API. `PORT` can select another local port. A static server can instead serve this directory: without `?api=local`, the same API adapter runs the rules module in the browser. HTTP mode does not download the engine modules during normal UI use; static mode loads them on demand. No account or cloud save is used. Local runs make no visit-counter requests. On the published site, the existing shared Hits counter receives only the canonical tool path, never character data, query strings or fragments. Counter failures do not affect generation.
 
 ## Design
 
@@ -62,7 +62,7 @@ The action log is always on. GM edits require a reason and keep the old result. 
 
 The browser stores one draft locally. Unsaved biography text survives ordinary UI rerenders and is recorded before JSON export or the Print button. It is not saved merely by typing; the browser warns before unloading a dirty draft. Use **Save character & log** for backups before starting a new character. Import replays and validates the file before replacing the current draft. Unreadable stored drafts are preserved behind recovery controls, with raw backup download and explicit replacement confirmation. The current generator uses rules revision `character-preview-2026-11-09.16`; prior `.2`, `.3`, `.4`, `.5`, `.6`, `.7`, `.8`, `.9`, `.10`, `.11`, `.12`, `.13`, `.14` and `.15` saves are available only through read-only recovery. New saves record an explicit rules revision as well as save format 1. Only matching-revision saves within the current release scope can be replayed. Matching `.16` Zhodani saves also enter read-only recovery without rewriting their bytes, commands or audit history. Older development exports without a revision, and files from any other rules revision, are rejected before character reconstruction. This prevents historical outcomes from silently changing when rules are corrected. The recovery panel can display their recorded actions as an unverified, read-only history and download the unchanged original file; it cannot reconstruct a validated character or continue that historical session. Invalid UTF-8 files are not imported, and their original File bytes remain downloadable. A malformed browser draft remains protected until explicit replacement. Keep exported backups when updating versions. No automatic migration or guessed historical rules are used.
 
-No licensed books, scans, private document links, or borrowed Tremlas code are included. Own the relevant books to resolve source-assisted steps. Character names, notes, and campaign material stay in your browser or local API request and are not sent to the publisher or repository.
+No licensed books, scans, private document links, or borrowed Tremlas code are included. Own the relevant books to resolve source-assisted steps. Character names, notes, and campaign material stay in your browser or local API request and are not sent to the publisher, repository or visit counter.
 
 ## Verification
 
@@ -71,6 +71,7 @@ All existing engine tests and the full 45-career development smoke remain in CI.
 
 ```sh
 node --test tools/character-generator/verification/*.test.mjs
+node tools/character-generator/verification/release-presentation-browser.mjs /path/to/playwright
 node tools/character-generator/verification/release-scope-browser.mjs /path/to/playwright
 node tools/character-generator/verification/browser.mjs /path/to/playwright
 node tools/character-generator/verification/review-browser.mjs /path/to/playwright

@@ -18,7 +18,7 @@ import {configureFuel} from '../js/fuel.mjs';
 import {createDashboardBaseline} from '../js/dashboard-baseline.mjs';
 import {displayDate} from '../js/calendar.mjs';
 import {supportStock} from '../js/life-support.mjs';
-import {floor} from '../js/amounts.mjs';
+import {floor,cmp,sub,decimal} from '../js/amounts.mjs';
 import {POLITICAL_TERRITORY_KEY} from '../js/map-preferences.mjs';
 
 const base = process.env.TRAVELLER_TEST_URL || 'http://127.0.0.1:8765/';
@@ -379,7 +379,14 @@ async function successful(page, result, before, scenario, {fresh = false} = {}) 
  assert.equal(snapshot.storage.writes, 1); assert.equal(snapshot.durableToken, false); assert.match(await page.locator('#message').textContent(), successPattern);
  const saved = await read(page), date = displayDate(saved.dateLabel, saved.hours), stock = supportStock(saved.ship);
  assert.equal(scenario.path === 'form' ? snapshot.semantic.settingsDate : snapshot.semantic.time, date, 'Settled UI displays the committed date');
- if (stock.tracked) {assert.ok(snapshot.semantic.support.includes(String(Number(Number(stock.remainingUnits).toFixed(2))) + ' LSS aboard')); assert.ok(snapshot.semantic.support.includes((stock.remainingDays===null?'Unknown':String(floor(stock.remainingDays))) + ' days'));}
+ if (stock.tracked) {
+  const whole=stock.remainingDays===null?null:String(floor(stock.remainingDays)),above=whole!==null&&cmp(whole,stock.targetDays)>0,units=String(Number(Number(stock.remainingUnits).toFixed(2)));
+  const expectedHelp=above?units+' LSS · '+stock.targetDays+'d target +'+decimal(sub(whole,stock.targetDays))+'d above':(stock.remainingUnits===null?'Review recorded stock':units+' LSS aboard')+' · '+String(Number(Number(stock.targetDays).toFixed(2)))+'-day target';
+  assert.equal(await page.locator('.life-support-counter>.help').textContent(),expectedHelp,'Settled supply quantity and target/excess legend match the saved stock');
+  assert.ok(snapshot.semantic.support.includes((whole??'Unknown')+' days'));
+  const progress=page.locator('.status-lss-gauge>progress');assert.equal(await progress.count(),whole===null?0:1);
+  if(whole!==null){const scale=above?whole:stock.targetDays;assert.equal(await progress.getAttribute('value'),whole);assert.equal(await progress.getAttribute('max'),scale);assert.ok((await progress.getAttribute('aria-valuetext')).includes('Scale: 0 to '+scale+' days.'));}
+ }
  for (const item of [...snapshot.observations, ...snapshot.storage.observations]) assert.doesNotMatch(item.message, successPattern, 'No success announcement before settlement');
  assert.equal(snapshot.publications.filter(p => p.tokenMatches && p.snapshotMatches && p.actualCallback).length, 1);
  const bytes = await raw(page), total = snapshot.totalCalls;

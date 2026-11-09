@@ -1,0 +1,122 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {createRequire} from 'node:module';
+import {sheetFixtures} from './reference-sheet-fixtures.mjs';
+import {createRobotApi} from '../js/api.mjs';
+const require=createRequire(import.meta.url);
+const {chromium}=require(process.argv[2] || 'playwright');
+const root=process.env.ROBOT_TEST_URL || 'http://127.0.0.1:8778/tools/robot-builder/';
+const out=path.resolve(process.env.ROBOT_ARTIFACTS || 'verification-artifacts/robot');
+await fs.mkdir(out,{recursive:true});
+const fixtures=sheetFixtures(), checks=[],errors=[];
+const browser=await chromium.launch({headless:true,...(process.env.ROBOT_BROWSER_CHANNEL?{channel:process.env.ROBOT_BROWSER_CHANNEL}:{})});
+const context=await browser.newContext({viewport:{width:1440,height:1000},acceptDownloads:true});
+const page=await context.newPage();
+page.on('pageerror',e=>errors.push(e.message));
+page.on('dialog',d=>d.accept());
+page.on('console',m=>{if(m.type()==='error'&&!m.text().includes('favicon'))errors.push(m.text());});
+await page.addInitScript(()=>{window.__printed=0;window.print=()=>{window.__printed++;};});
+const check=(label,condition)=>{assert.ok(condition,label);checks.push(label);};
+const click=async locator=>{await locator.click();await page.waitForFunction(()=>document.querySelector('#stage-panel')?.getAttribute('aria-busy')==='false');};
+const importFixture=async design=>{
+ await page.locator('#import-file').setInputFiles({name:'synthetic-reference.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(design))});
+ await page.waitForFunction(name=>document.querySelector('#robot-name').value===name,design.name);
+ await page.waitForFunction(()=>document.querySelector('#stage-panel').getAttribute('aria-busy')==='false');
+};
+const exportJSON=async()=>{
+ const pending=page.waitForEvent('download');await click(page.locator('#export-design'));const download=await pending;
+ return JSON.parse(await fs.readFile(await download.path(),'utf8'));
+};
+try{
+ await page.goto(root);await page.locator('#stage-nav button').first().waitFor();
+ check('detailed statblock is default',await page.locator('#output-format').inputValue()==='detailed');
+ check('reference preview hidden by default',await page.locator('#sheet-preview').isHidden());
+ await importFixture(fixtures.baseline);
+ await click(page.locator('#print-design'));
+ const baselineApi=createRobotApi();baselineApi.importDesign(JSON.stringify(fixtures.baseline));
+ check('default Print remains byte-identical',await page.locator('#print-output pre').textContent()===baselineApi.getStatblock());
+ await page.emulateMedia({media:'print'});
+ await page.pdf({path:path.join(out,'reference-before-detailed.pdf'),format:'A4',printBackground:true});
+ await page.emulateMedia({media:'screen'});
+ await importFixture(fixtures.populated);
+ await click(page.locator('#save-design'));
+ const beforeStorage=await page.evaluate(()=>localStorage.getItem('traveller.robot-builder.designs.v1'));
+ const beforeJSON=await exportJSON();
+ for(let i=0;i<4;i++){
+  await page.locator('#output-format').selectOption('reference');
+  check('reference preview visible '+i,await page.locator('#sheet-preview .robot-sheet').isVisible());
+  await click(page.locator('#print-design'));
+  check('Print uses reference sheet '+i,await page.locator('#print-output .robot-sheet').count()===1);
+  check('Print uses fresh populated values '+i,(await page.locator('#print-output').textContent()).includes('76,543'));
+  await page.locator('#output-format').selectOption('detailed');
+  check('detailed choice hides preview '+i,await page.locator('#sheet-preview').isHidden());
+  await click(page.locator('#print-design'));
+  check('Print restores detailed output '+i,await page.locator('#print-output pre').count()===1);
+ }
+ check('format switching leaves saved bytes unchanged',await page.evaluate(()=>localStorage.getItem('traveller.robot-builder.designs.v1'))===beforeStorage);
+ check('format switching leaves exported design unchanged',JSON.stringify(await exportJSON())===JSON.stringify(beforeJSON));
+ await page.locator('#output-format').selectOption('reference');
+ for(const width of [1440,390,320]){
+  await page.setViewportSize({width,height:1000});
+  check('no page overflow '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+  check('no sheet overflow '+width,await page.locator('#sheet-preview .robot-sheet').evaluate(el=>el.scrollWidth<=el.clientWidth+1));
+  await page.locator('.compact-summary').evaluate(el=>el.style.visibility='hidden');
+  await page.locator('#sheet-preview .robot-sheet').screenshot({path:path.join(out,'reference-sheet-'+width+'.png')});
+ }
+ await page.setViewportSize({width:1440,height:1000});
+ await click(page.locator('#print-design'));
+ const printed=await page.locator('#print-output').textContent();
+ check('loaded/configured ammunition survives sheet print',/Loaded attack|configured ammunition/.test(printed)&&printed.includes('APDS'));
+ check('effective skill values remain qualified',printed.includes('installed')&&printed.includes('Covered Specialities'));
+ check('construction and selected list prices remain distinct',printed.includes('Construction cost')&&printed.includes('List price'));
+ await page.emulateMedia({media:'print'});
+ await page.pdf({path:path.join(out,'reference-populated.pdf'),format:'A4',printBackground:true});
+ await page.locator('#print-output').screenshot({path:path.join(out,'reference-print.png')});
+ await page.emulateMedia({media:'screen'});
+ await importFixture({...fixtures.populated,name:'<img src=x onerror=window.__unsafe=1>'});
+ check('unsafe-looking name is literal',await page.locator('#sheet-preview img').count()===0 && !(await page.evaluate(()=>window.__unsafe)));
+ await importFixture(fixtures.blocked);
+ check('blocked sheet explicitly has unavailable totals',(await page.locator('#sheet-preview').textContent()).includes('Totals unavailable; selections only'));
+ check('blocked sheet has no invented cost',await page.locator('#sheet-preview .sheet-metric').last().locator('dd').first().textContent()==='Unresolved');
+ await click(page.locator('#print-design'));
+ await page.emulateMedia({media:'print'});
+ await page.pdf({path:path.join(out,'reference-blocked.pdf'),format:'A4',printBackground:true});
+ await page.emulateMedia({media:'screen'});
+ await importFixture(fixtures.invalid);
+ check('invalid and provisional status visible',(await page.locator('#sheet-preview').textContent()).includes('Needs correction')&&(await page.locator('#sheet-preview').textContent()).includes('Provisional'));
+ await click(page.locator('#print-design'));
+ await page.emulateMedia({media:'print'});
+ await page.pdf({path:path.join(out,'reference-invalid.pdf'),format:'A4',printBackground:true});
+ await page.emulateMedia({media:'screen'});
+ for(const key of ['wholeComponent','brainComponent']){
+  await importFixture(fixtures[key]);
+  const body=await page.locator('#sheet-preview .sheet-body').textContent();
+  check(key+' does not inherit source weapon or skill',!body.includes('Gauss Sniper')&&!body.includes('Electronics (all)'));
+  check(key+' scope visible',(await page.locator('#sheet-preview').textContent()).includes(key==='brainComponent'?'Brain, upgrades and software only':'Complete referenced robot construction'));
+ }
+ await importFixture(fixtures.long);
+ check('all 101 storage options retained',await page.locator('#sheet-preview [data-section="options"] strong').filter({hasText:'Storage Compartment'}).count()===101);
+ await click(page.locator('#print-design'));
+ await page.emulateMedia({media:'print'});
+ await page.pdf({path:path.join(out,'reference-long.pdf'),format:'A4',printBackground:true});
+ await page.emulateMedia({media:'screen'});
+ await page.locator('#output-format').selectOption('detailed');
+ await page.evaluate(()=>window.dispatchEvent(new Event('beforeprint')));
+ check('browser print prepares selected detailed format',await page.locator('#print-output pre').count()===1);
+ await page.locator('#output-format').selectOption('reference');
+ await page.evaluate(()=>window.dispatchEvent(new Event('beforeprint')));
+ check('browser print prepares selected reference format',await page.locator('#print-output .robot-sheet').count()===1);
+ await importFixture({...fixtures.baseline,name:'Latest unsaved reference'});
+ await click(page.locator('#print-design'));
+ check('print is current after earlier preview',(await page.locator('#print-output').textContent()).includes('Latest unsaved reference'));
+ await page.reload();await page.locator('#stage-nav button').first().waitFor();
+ check('format is display-only, reload defaults to detailed',await page.locator('#output-format').inputValue()==='detailed');
+ check('saved record survives reload',await page.evaluate(()=>localStorage.getItem('traveller.robot-builder.designs.v1'))===beforeStorage);
+ check('no browser errors',errors.length===0);
+ await fs.writeFile(path.join(out,'reference-sheet-browser.json'),JSON.stringify({checks,errors},null,2));
+ console.log('PASS '+checks.length+' reference-sheet browser checks');
+}catch(error){
+ await fs.writeFile(path.join(out,'reference-sheet-browser-failure.json'),JSON.stringify({message:error.message,checks,errors},null,2));
+ throw error;
+}finally{await browser.close();}

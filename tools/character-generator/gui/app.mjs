@@ -377,7 +377,7 @@ function stageView(state){
  }
 }
 function printedNarrative(state){
- return '<section class="print-only sheet-section"><h3>Background notes</h3><p class="multiline">'+esc(state.character.notes||'No saved notes.')+'</p>'+(state.connections.length?'<h3>Connections</h3>'+state.connections.map(c=>'<p><strong>'+esc(c.person)+'</strong>: '+esc(c.note)+'<br>Connection skill: '+esc(c.skill)+'</p>').join(''):'')+'<p class="tiny">Source-assisted development preview. Review the recorded manual rulings with your referee.</p></section>';
+ return '<section class="print-only sheet-section"><h3>Background notes</h3><p class="multiline">'+esc(state.character.notes||'No saved notes.')+'</p>'+(state.connections.length?'<h3>Connections</h3>'+state.connections.map(c=>'<p><strong>'+esc(c.person)+'</strong>: '+esc(c.note)+'<br>Connection skill: '+esc(c.skill)+'</p>').join(''):'')+'<p class="tiny">Source-assisted Beta 0.1. Review the recorded manual rulings with your referee.</p></section>';
 }
 function sheetView(state){
  const c=state.character,simpleBenefits=c.benefits.filter(b=>!b.assetId&&!b.annualCredits);
@@ -413,6 +413,7 @@ document.addEventListener('click',async event=>{
  const action=el.dataset.action;
  if(action==='resolve-prisoner-lawyer'){if(event.detail>1)return;return send(action,prisonerLawyerPayload($));}
  if(action==='resolve-life-event'){if(event.detail>1)return;return send(action,coreLifeEventPayload(projection.state,$));}
+ if(action==='resolve-relationship-event'){if(event.detail>1)return;return send(action,relationshipEventPayload(projection.state,$));}
  if(['redeem-clan-shares','verify-clan-share-lot','verify-clan-contact','resolve-land-claim','activate-aslan-access','resolve-aslan-access-conflict'].includes(action)&&event.detail>1)return;
  if(action==='select-career'){selectedCareer=el.dataset.id;render();$('#step-title')?.focus();return;}
  if(action==='career-list'){selectedCareer='';render();$('#step-title')?.focus();return;}
@@ -424,7 +425,6 @@ document.addEventListener('click',async event=>{
  if(action==='resolve-aslan-access-conflict')return send(action,{decision:$('#aslan-access-decision').value,reason:$('#aslan-access-conflict-reason').value});
  if(action==='activate-aslan-access')return send(action,aslanAccessPayload({routeId:$('#aslan-access-route').value,destination:$('#aslan-access-destination').value,confirmed:$('#aslan-access-confirmed').checked}));
  if(action==='resolve-land-claim')return send(action,landClaimPayload({claimId:$('#land-claim').value,mode:$('#land-claim-mode').value,claimEstablished:$('#land-claim-confirmed').checked,reason:$('#land-claim-reason').value,relativeName:$('#land-relative-name').value}));
- if(action==='resolve-relationship-event')return send(action,relationshipEventPayload(state,$));
  if(action==='redeem-clan-shares'){const kind=$('#clan-share-kind').value,payload={kind,inputs:[{lotId:$('#clan-share-lot').value,quantity:numberInput('#clan-share-quantity')}]};if(kind==='contact')payload.name=$('#clan-share-name').value;if(kind==='ally')payload.relationshipId=$('#clan-share-contact').value;if(['art','weapons'].includes(kind))Object.assign(payload,clanAssetPayload(kind,{name:$('#clan-art-name').value,items:readClanWeaponItems(),sourceConfirmed:$('#clan-weapons-confirmed').checked,sourceReason:$('#clan-weapons-reason').value,lowerValueConfirmed:$('#clan-lower-value-confirmed').checked,lowerValueReason:$('#clan-lower-value-reason').value}));return send(action,payload);}
  if(action==='verify-clan-share-lot'){const target=$('#clan-verify-target').value,payload={lotId:$('#clan-verify-lot').value,reason:$('#clan-verify-reason').value};if(target==='__new')payload.newClanName=$('#clan-verify-new').value;else if(target&&target!=='__source')payload.clanId=target;return send(action,payload);}
  if(action==='verify-clan-contact')return send(action,{relationshipId:$('#clan-verify-contact').value,clanId:$('#clan-contact-clan').value,reason:$('#clan-contact-reason').value});

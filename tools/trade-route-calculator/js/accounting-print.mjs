@@ -1,4 +1,4 @@
-import {escapeHtml as esc,formatCreditsText} from './display.mjs?v=luxury-lss-20261108-1';
+import {escapeHtml as esc,formatCreditsText} from './display.mjs?v=lss-whole-days-20261108-1';
 const money=x=>x===null?'Unknown':esc(formatCreditsText(x));
 // Explicit private report, never added to player snapshots or existing Player/GM exports.
 export function accountingPrint(r,{includeTransactions=false}={}){
