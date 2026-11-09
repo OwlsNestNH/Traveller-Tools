@@ -2,18 +2,20 @@ import assert from 'node:assert/strict';
 import {writeFileSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
 import {api} from '../engine/session.mjs';
+import {testSourceDecision} from './random-source-decisions.mjs';
 const arg=(key,fallback)=>process.argv.find(a=>a.startsWith('--'+key+'='))?.split('=').slice(1).join('=')??fallback;
 const goal=Number(arg('goal',10)),max=Number(arg('attempts',500));
 const testedHead=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
 if(arg('expected-head',''))assert.equal(testedHead,arg('expected-head',''),'Unexpected candidate head');
+const sourcePolicy=arg('source-policy','test-only');
 const catalog=api({operation:'catalog'}),rows=[];
 let believerEncounterCount=0;
 function run(career,assignment,species,n){
  const seed=`full-random-v1|${species}|${career.id}|${assignment.id}|${n}`;
- let r=api({operation:'create',seed}),trace=[],entered=false,believerChoices=[];
+ let r=api({operation:'create',seed}),trace=[],entered=false,believerChoices=[],sourceDecisions=[];
  let random=n+1; const pick=a=>{random=(Math.imul(random,1664525)+1013904223)>>>0;return a[random%a.length];};
  const act=(type,payload={})=>{trace.push({type,payload});const next=api({operation:'command',session:r.session,command:{type,payload}});if(!next.ok)throw Error(next.error.message);r=next;};
- const result=(outcome,reason)=>({seed,outcome,reason,stage:r.state.stage,entered,terms:r.state.character.terms,...(believerChoices.length?{believerChoices}:{}),...(outcome==='error'||outcome==='unsupported-stage'?{trace:trace.slice(-8),pending:r.state.pendingChoice}: {})});
+ const result=(outcome,reason)=>({seed,outcome,reason,stage:r.state.stage,entered,terms:r.state.character.terms,completionClass:sourceDecisions.some(x=>x.classification==='placeholder')?'placeholder':sourceDecisions.length?'source-assisted':'automated',...(sourceDecisions.length?{sourceDecisions}:{}),...(believerChoices.length?{believerChoices}:{}),...(outcome==='error'||outcome==='unsupported-stage'?{trace:trace.slice(-8),pending:r.state.pendingChoice}: {})});
  try{
 
 
@@ -33,7 +35,15 @@ function run(career,assignment,species,n){
     const replay=api({operation:'project',session:r.session});assert.equal(replay.ok,true);assert.deepEqual(replay.state,s);
     return result('completed');
    }
-   if(s.stage==='book-step')return result('source-stop',s.pending?.kind+': '+s.pending?.label);
+   if(s.stage==='book-step'){
+    const plan=sourcePolicy==='test-only'?testSourceDecision(s):null;
+    if(!plan)return result('source-stop',s.pending?.kind+': '+s.pending?.label);
+    sourceDecisions.push(plan.ruling);
+    if(plan.gm&&!s.config.gm)act('gm-mode',{enabled:true});
+    act(plan.type,plan.payload);
+    if(plan.gm&&!s.config.gm)act('gm-mode',{enabled:false});
+    continue;
+   }
    if(s.stage==='deceased')return result('deceased');
    if(s.stage==='failed-entry')return result('qualification-failed','Natural qualification failure');
    switch(s.stage){
@@ -53,7 +63,14 @@ function run(career,assignment,species,n){
     case 'education-skill':act('education-skill',{name:pick(s.educationOptions).name});break;
     case 'companion-skill':act('companion-skill',{selected:[pick(s.educationOptions).name]});break;
     case 'career':case 'retirement':{
-     if(entered){if(!s.finishOptions.available)return result('source-stop',s.finishOptions.reason);act('finish');break;}
+     if(entered){
+      if(!s.finishOptions.available){
+       const forced=s.careerChoices.find(x=>x.id===s.forcedCareer&&!x.disabled),assignment=forced?.assignments.find(x=>!x.disabled);
+       if(forced&&assignment){act('career',{id:forced.id,assignment:assignment.id});break;}
+       return result('source-stop',s.finishOptions.reason);
+      }
+      act('finish');break;
+     }
      if(career.id==='core.prisoner'&&!c.sentenced&&!c.careers.length){act('career',{id:'core.rogue',assignment:'thief'});break;}
      const available=s.careerChoices.find(x=>x.id===career.id),a=available?.assignments.find(x=>x.id===assignment.id);
      if(!available||available.disabled||a?.disabled)return result('ineligible',available?.reason||a?.reason||'Career absent');
@@ -101,14 +118,14 @@ function run(career,assignment,species,n){
 for(const career of catalog.careers.filter(c=>(!arg('career','')||c.id===arg('career',''))&&(arg('species','')!=='aezorgh'||['core','vargr','companion'].includes(c.group))))for(const assignment of career.assignments.filter(a=>!arg('assignment','')||a.id===arg('assignment',''))){
  const species=arg('species','')||(['aslan','vargr'].includes(career.group)?career.group:'human');
  const row={career:career.id,assignment:assignment.id,species,attempted:0,completed:0,outcomes:{},runs:[]};
- for(let n=0;n<(species!=='human'&&career.id.endsWith('.psion')?Math.min(max,10):max)&&row.completed<goal;n++){
+ for(let n=0;n<(sourcePolicy==='stop'&&species!=='human'&&career.id.endsWith('.psion')?Math.min(max,10):max)&&row.completed<goal;n++){
   const out=run(career,assignment,species,n);row.attempted++;row.completed+=out.outcome==='completed'?1:0;row.outcomes[out.outcome]=(row.outcomes[out.outcome]??0)+1;row.runs.push(out);
   // Static source permission blocks cannot be removed by rerolling.
-  
+
  }
- rows.push(row);console.log(career.id,assignment.id,`${row.completed}/${row.attempted}`,JSON.stringify({outcomes:row.outcomes,believerChoices:row.runs.flatMap(x=>(x.believerChoices??[]).map(choice=>({seed:x.seed,...choice}))),completedSeeds:row.runs.filter(x=>x.outcome==='completed').map(x=>x.seed),issues:row.runs.filter(x=>['error','unsupported-stage'].includes(x.outcome))}));
+ rows.push(row);console.log(career.id,assignment.id,`${row.completed}/${row.attempted}`,JSON.stringify({outcomes:row.outcomes,completionClasses:Object.fromEntries(['automated','source-assisted','placeholder'].map(kind=>[kind,row.runs.filter(x=>x.outcome==='completed'&&x.completionClass===kind).length])),sourceDecisions:row.runs.flatMap(x=>(x.sourceDecisions??[]).map(decision=>({seed:x.seed,...decision}))),believerChoices:row.runs.flatMap(x=>(x.believerChoices??[]).map(choice=>({seed:x.seed,...choice}))),completedSeeds:row.runs.filter(x=>x.outcome==='completed').map(x=>x.seed),issues:row.runs.filter(x=>['error','unsupported-stage'].includes(x.outcome))}));
 }
 assert.equal(execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),testedHead,'Candidate changed during test');
-const report={head:testedHead,goal,maxAttemptsPerAssignment:max,believerChoicePolicy:'Cycle single-roll acceptance, refusal, separate-roll acceptance across natural encounters; per-run choice ordinals retained for reproducibility.',method:'Release api only; natural dice; 1-3 target terms, qualification failures retry with new seed; no GM overrides or source adjudications; no session saves.',rows};
+const report={head:testedHead,goal,maxAttemptsPerAssignment:max,sourcePolicy,believerChoicePolicy:'Cycle single-roll acceptance, refusal, separate-roll acceptance across natural encounters; per-run choice ordinals retained for reproducibility.',method:'Release api only; natural dice; 1-3 target terms, qualification failures retry with new seed; no dice/stat overrides; explicitly classified test-only referee decisions/placeholders when enabled; no session saves.',rows};
 const output=arg('output','');if(output)writeFileSync(output,JSON.stringify(report,null,2)+'\n');
 console.log('SUMMARY',JSON.stringify({assignments:rows.length,attempted:rows.reduce((n,r)=>n+r.attempted,0),completed:rows.reduce((n,r)=>n+r.completed,0),shortfalls:rows.filter(r=>r.completed<goal).map(r=>[r.career,r.assignment,r.completed]),errors:rows.flatMap(r=>r.runs.filter(x=>x.outcome==='error'||x.outcome==='unsupported-stage'))}));
