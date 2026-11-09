@@ -4,7 +4,8 @@ import {execFileSync} from 'node:child_process';
 import {api} from '../engine/session.mjs';
 import {testSourceDecision} from './random-source-decisions.mjs';
 const arg=(key,fallback)=>process.argv.find(a=>a.startsWith('--'+key+'='))?.split('=').slice(1).join('=')??fallback;
-const goal=Number(arg('goal',10)),max=Number(arg('attempts',500));
+const goal=Number(arg('goal',10)),max=Number(arg('attempts',500)),startSeed=Number(arg('start-seed',0));
+assert.ok(Number.isInteger(goal)&&goal>0&&Number.isInteger(max)&&max>0&&Number.isInteger(startSeed)&&startSeed>=0,'Invalid generation limits');
 const testedHead=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
 if(arg('expected-head',''))assert.equal(testedHead,arg('expected-head',''),'Unexpected candidate head');
 const sourcePolicy=arg('source-policy','test-only');
@@ -118,7 +119,7 @@ function run(career,assignment,species,n){
 for(const career of catalog.careers.filter(c=>(!arg('career','')||c.id===arg('career',''))&&(arg('species','')!=='aezorgh'||['core','vargr','companion'].includes(c.group))))for(const assignment of career.assignments.filter(a=>!arg('assignment','')||a.id===arg('assignment',''))){
  const species=arg('species','')||(['aslan','vargr'].includes(career.group)?career.group:'human');
  const row={career:career.id,assignment:assignment.id,species,attempted:0,completed:0,outcomes:{},runs:[]};
- for(let n=0;n<(sourcePolicy==='stop'&&species!=='human'&&career.id.endsWith('.psion')?Math.min(max,10):max)&&row.completed<goal;n++){
+ for(let n=startSeed;n<startSeed+(sourcePolicy==='stop'&&species!=='human'&&career.id.endsWith('.psion')?Math.min(max,10):max)&&row.completed<goal;n++){
   const out=run(career,assignment,species,n);row.attempted++;row.completed+=out.outcome==='completed'?1:0;row.outcomes[out.outcome]=(row.outcomes[out.outcome]??0)+1;row.runs.push(out);
   // Static source permission blocks cannot be removed by rerolling.
 
@@ -126,6 +127,6 @@ for(const career of catalog.careers.filter(c=>(!arg('career','')||c.id===arg('ca
  rows.push(row);console.log(career.id,assignment.id,`${row.completed}/${row.attempted}`,JSON.stringify({outcomes:row.outcomes,completionClasses:Object.fromEntries(['automated','source-assisted','placeholder'].map(kind=>[kind,row.runs.filter(x=>x.outcome==='completed'&&x.completionClass===kind).length])),sourceDecisions:row.runs.flatMap(x=>(x.sourceDecisions??[]).map(decision=>({seed:x.seed,...decision}))),believerChoices:row.runs.flatMap(x=>(x.believerChoices??[]).map(choice=>({seed:x.seed,...choice}))),completedSeeds:row.runs.filter(x=>x.outcome==='completed').map(x=>x.seed),issues:row.runs.filter(x=>['error','unsupported-stage'].includes(x.outcome))}));
 }
 assert.equal(execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),testedHead,'Candidate changed during test');
-const report={head:testedHead,goal,maxAttemptsPerAssignment:max,sourcePolicy,believerChoicePolicy:'Cycle single-roll acceptance, refusal, separate-roll acceptance across natural encounters; per-run choice ordinals retained for reproducibility.',method:'Release api only; natural dice; 1-3 target terms, qualification failures retry with new seed; no dice/stat overrides; explicitly classified test-only referee decisions/placeholders when enabled; no session saves.',rows};
+const report={head:testedHead,goal,maxAttemptsPerAssignment:max,startSeed,sourcePolicy,believerChoicePolicy:'Cycle single-roll acceptance, refusal, separate-roll acceptance across natural encounters; per-run choice ordinals retained for reproducibility.',method:'Release api only; natural dice; 1-3 target terms, qualification failures retry with new seed; no dice/stat overrides; explicitly classified test-only referee decisions/placeholders when enabled; no session saves.',rows};
 const output=arg('output','');if(output)writeFileSync(output,JSON.stringify(report,null,2)+'\n');
 console.log('SUMMARY',JSON.stringify({assignments:rows.length,attempted:rows.reduce((n,r)=>n+r.attempted,0),completed:rows.reduce((n,r)=>n+r.completed,0),shortfalls:rows.filter(r=>r.completed<goal).map(r=>[r.career,r.assignment,r.completed]),errors:rows.flatMap(r=>r.runs.filter(x=>x.outcome==='error'||x.outcome==='unsupported-stage'))}));
