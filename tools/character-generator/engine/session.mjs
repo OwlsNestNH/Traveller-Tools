@@ -13,7 +13,7 @@ import { CLAN_SHARE_SOURCE, clanShareExchange, clanShareLotInvariant } from './c
 import { ASLAN_FAMILY_BANDS, aslanFamilyBand, aslanFamilyResult, aslanBirthOrder, aslanEstateOptions, aslanEstate, aslanOriginReason, aslanClanResult, aslanPrideResult } from './aslan-origin.mjs';
 import { createAslanOutlawRestoration, aslanOutlawRestorationDecision, aslanOutlawRestorationOutcome } from './aslan-outlaw-restoration.mjs';
 import { createAslanRestoration, aslanRestorationDecision, aslanRestorationAvailability, aslanRestorationExpiry } from './aslan-restoration.mjs';
-import { createAslanOfficerOffer, aslanOfficerExpiry, aslanOfficerEligibility, ASLAN_OFFICER_RANK_OPTIONS, aslanOfficerRankEffects, aslanClanShareTokens } from './aslan-officers.mjs';
+import { createAslanOfficerOffer, aslanOfficerExpiry, aslanOfficerEligibility, ASLAN_OFFICER_RANK_OPTIONS, aslanOfficerRankEffects, aslanSpaceOfficerRankMapping, aslanClanShareTokens } from './aslan-officers.mjs';
 import { ASSIGNMENT_SOURCE, CORE_ASSIGNMENT_MODES, nobleAutomaticQualification, careerReentryPlan, assignmentChangePlan } from './assignment-changes.mjs';
 import { ADVISORY_SOURCE, advisoryCashPlan } from './cross-career-procedures.mjs';
 import { relationshipLossOptions, relationshipLoss, distinctScienceSelection } from './zhodani-choices.mjs';
@@ -223,7 +223,7 @@ function aslanOfficerOptions(state){
   const origin=state.character.careers[o.originCareerIndex],prior=aslanOfficerHistory(state),verified=o.statusVerification?.approved===true;
   const plan=aslanOfficerEligibility({offer:o,stage:state.stage,completedTerms:state.character.terms,activeCareerIndex:state.active,originCareer:origin,careerCount:state.character.careers.length,outcast:!!state.character.outcast&&!prior.length&&!verified,forcedCareer:state.forcedCareer,retired:!!state.character.retirementFromCreation,qualificationBanned:!!state.character.qualificationBanned});
   const career=findCareer(o.targetCareerId),pre=RULE_PACK[career.id].prerequisites;
-  const assignments=career.assignments.map(a=>{const permitted=conditionMatches(state,pre.assignments?.[a.id])&&[a.survival,a.advancement].every(c=>checkAvailable(state,c));return {id:a.id,name:a.name,available:permitted,reason:permitted?'':'The target assignment prerequisites are not met.',sourceRequired:career.id==='aslan.space-officer'&&a.id!=='commander'};});
+  const assignments=career.assignments.map(a=>{const permitted=conditionMatches(state,pre.assignments?.[a.id])&&[a.survival,a.advancement].every(c=>checkAvailable(state,c));return {id:a.id,name:a.name,available:permitted,reason:permitted?'':'The target assignment prerequisites are not met.',sourceRequired:career.id==='aslan.space-officer'&&a.id!=='commander'&&!state.correctedCareerEvents};});
   return {id:o.id,targetCareerId:o.targetCareerId,targetName:career.name,source:copy(o.source),...plan,sourceRequired:prior.length>0&&!verified,assignments};
  });
 }
@@ -1241,6 +1241,7 @@ function finishCareerExit(state){const {record}=currentCareer(state);state.stage
 function nativePack(state) { return state.active===null?null:RULE_PACK[state.character.careers[state.active].id]??null; }
 function rankEffects(state) {
  const {record}=currentCareer(state),pack=nativePack(state);if(!pack)return [];
+ if(state.correctedCareerEvents&&record.id==='aslan.space-officer'){const mapping=aslanSpaceOfficerRankMapping(record.assignment);if(mapping){record.aslanRankMapping=mapping;const offer=state.character.aslanOfficerOffers?.find(o=>o.id===record.aslanOfficerOfferId);if(offer)offer.rankMapping=copy(mapping);return aslanOfficerRankEffects(mapping.tableId,record.rank);}}
  if(record.id==='aslan.space-officer'&&record.assignment!=='commander'&&record.aslanOfficerOfferId){if(record.aslanRankMapping)return aslanOfficerRankEffects(record.aslanRankMapping.tableId,record.rank);return [{kind:'aslan-officer-rank-choice',source:{id:'aliens',page:39}}];}
  const rows=record.officer?(pack.ranks.officer??pack.ranks.default):pack.ranks.assignments?.[record.assignment]??pack.ranks.enlisted??pack.ranks.default;
  return copy(rows?.find(r=>r.rank===record.rank)?.effects??[]);

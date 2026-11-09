@@ -38,6 +38,12 @@ export function aslanOfficerEligibility({offer,stage,completedTerms,activeCareer
  return {available:!reason,reason,earlyExit,qualificationDM:originCareer?.terms??null};
 }
 export const ASLAN_OFFICER_RANK_OPTIONS=Object.freeze([{id:'pilot-gunner',name:'Pilot/Gunner'},{id:'engineer-crew',name:'Engineer/Crew'}].map(Object.freeze));
+// Explicit campaign interpretation of the mismatched headings on Aliens 2026 pp.38–39.
+export const ASLAN_SPACE_OFFICER_MAPPING=Object.freeze({shipmaster:'pilot-gunner',navigator:'engineer-crew'});
+export function aslanSpaceOfficerRankMapping(assignment){
+ const tableId=ASLAN_SPACE_OFFICER_MAPPING[assignment];
+ return tableId?{tableId,reason:'Source interpretation: Shipmaster uses Pilot/Gunner; Navigator uses Engineer/Crew.',source:{id:'aliens',page:39},interpretation:'resolved-assignment-headings'}:null;
+}
 export function aslanOfficerRankEffects(tableId,rank){
  need(ASLAN_OFFICER_RANK_OPTIONS.some(x=>x.id===tableId),'Choose one of the printed rank-table headings.');integer(rank,0,6,'Rank');
  const skill=(name)=>({kind:'skill',name,mode:'set',value:1,source:{id:'aliens',page:39}});

@@ -1762,7 +1762,7 @@ export const SOURCE_DISCREPANCIES = [
  {id:'aslan.guardian.qualification-modifier',source:citation('aliens',23,26),summary:{stat:'SOC',min:9,dm:1},detail:{stat:'EDU',min:9,dm:2},resolution:'detail'},
  {id:'aslan.scientist.survival',source:citation('aliens',23,34),summary:{healer:'EDU5',researcher:'EDU6'},detail:{healer:'END5',researcher:'END6'},resolution:'detail'},
  {id:'aslan.scientist.healer-gender',source:citation('aliens',21,23,34),summary:'either',detailSymbol:'male',detailProse:'either',resolution:'either; prose and summary agree'},
- {id:'aslan.space-officer.rank-labels',source:citation('aliens',38,39),labels:['Pilot/Gunner','Engineer/Crew'],expected:['Shipmaster','Navigator'],resolution:'source-required; no guessed assignment mapping'},
+ {id:'aslan.space-officer.rank-labels',source:citation('aliens',38,39),labels:['Pilot/Gunner','Engineer/Crew'],expected:['Shipmaster','Navigator'],resolution:'Explicit campaign interpretation for new sessions: Shipmaster uses Pilot/Gunner; Navigator uses Engineer/Crew. Historical .16/.17 saves retain their source-resolution path.'},
  {id:'vargr.citizen.worker-advancement',source:citation('aliens',187,190),summary:{stat:'CHA',target:4},detail:{stat:'CHA',target:6},resolution:'detail'},
  {id:'vargr.merchant.qualification',source:citation('aliens',187,196),summary:{stat:'INT',target:5},detail:{stat:'CHA',target:6},resolution:'detail'},
  {id:'vargr.scientist.qualification',source:citation('aliens',187,202),summary:{stat:'EDU',target:8},detail:{stat:'INT',target:8},resolution:'detail'},
