@@ -66,11 +66,12 @@ const colonialSkills=PRECAREER_RULES['companion.colonial'].admissionEffects.map(
 const colonialZeroSkills=PRECAREER_RULES['companion.colonial'].admissionEffects.filter(e=>e.value===0).map(e=>e.name);
 
 /** term is one-based. No University/Academy later-term DM is copied to these options. */
-export function companionEntryCheck({id,term,stats,homeworld,roll,species='human',attemptedThisTerm=false}={}){
+export function companionEntryCheck({id,term,stats,homeworld,roll,species='human',attemptedThisTerm=false,resolvedEducationRulings=false}={}){
  const r=rule(id),missing=[];
  missingNumber(term,'term',1,100,missing);boolean(attemptedThisTerm,'attemptedThisTerm');
  const speciesDM=speciesModifier(species,'entry');
  if(missing.length)return missingResult(id,missing);
+ if(resolvedEducationRulings&&id==='companion.colonial'&&term!==1)return result(id,{term,eligible:false,success:false,consumesTerm:false,reason:'Colonial upbringing is available only before the first career or education term.'});
  if(term>3||attemptedThisTerm)return result(id,{term,eligible:false,success:false,consumesTerm:false,reason:term>3?'pre-career-term-limit':'entry-already-attempted-this-term'});
  const entry=r.entry;let automatic=false,check=entry;
  if(entry.automaticWhen){
@@ -86,6 +87,7 @@ export function companionEntryCheck({id,term,stats,homeworld,roll,species='human
    automatic=value!==undefined&&value<=(condition.max??Infinity)&&value>=(condition.min??-Infinity);
   }
   if(missing.length)return missingResult(id,missing);
+  if(!automatic&&!entry.otherwise&&resolvedEducationRulings)return result(id,{term,eligible:false,success:false,consumesTerm:false,reason:id==='companion.colonial'?'Colonial upbringing requires a homeworld of TL8 or lower.':'School of Hard Knocks requires SOC 6 or lower.'});
   if(!automatic&&!entry.otherwise)return adjudicate(id,'The source supplies no admission rule outside this automatic-entry condition.',{term,eligible:null,success:null});
   check=entry.otherwise;
  }
@@ -247,7 +249,7 @@ export function companionTermOutcome({id,entered,age,term,colonialAgeDice}={}){
  * firstCareerAfterEducation means first ENTERED career, not first attempted qualification.
  * citizenBranchApproved records a referee decision; no Citizen assignment mapping is inferred.
  */
-export function companionCareerBenefits({id,graduation,careerId,assignment,curriculum,firstCareerAfterEducation,firstCareerExit,citizenBranchApproved,enteringCareer=false,forcedNextCareer=null}={}){
+export function companionCareerBenefits({id,graduation,careerId,assignment,curriculum,firstCareerAfterEducation,firstCareerExit,citizenBranchApproved,resolvedEducationRulings=false,enteringCareer=false,forcedNextCareer=null}={}){
  const r=rule(id),missing=[];
  if(typeof careerId!=='string')throw new TypeError('careerId is required.');
  boolean(enteringCareer,'enteringCareer');
@@ -275,11 +277,11 @@ export function companionCareerBenefits({id,graduation,careerId,assignment,curri
   if(assignment===undefined)missing.push('assignment');
   if(missing.length)return missingResult(id,missing,meta);
   if(firstCareerAfterEducation){
-   if(careerId==='core.citizen'){
+   if(careerId==='core.citizen'&&!resolvedEducationRulings){
     if(citizenBranchApproved===undefined)return adjudicate(id,'The source does not map Merchant curricula to Citizen assignments.',meta);
     boolean(citizenBranchApproved,'citizenBranchApproved');
    }
-   const appropriate=careerId==='core.merchant'?assignment===cr.assignment:citizenBranchApproved;
+   const appropriate=careerId==='core.merchant'?assignment===cr.assignment:resolvedEducationRulings||citizenBranchApproved;
    if(appropriate){
     const rows=CORE_PACK[careerId]?.ranks.assignments?.[assignment];
     if(!rows)throw new Error('Unknown career assignment.');
@@ -296,6 +298,7 @@ export function companionCareerBenefits({id,graduation,careerId,assignment,curri
   else{
    if(firstCareerExit===undefined)return missingResult(id,['firstCareerExit'],meta);
    if(!['voluntary','involuntary'].includes(firstCareerExit))throw new Error('firstCareerExit must be voluntary or involuntary.');
+   if(firstCareerExit!=='voluntary'&&resolvedEducationRulings){meta.commissionModifier=-2;meta.advancementModifier=-2;return result(id,meta);}
    if(firstCareerExit!=='voluntary')return adjudicate(id,'The source only removes the penalty after voluntary first-career departure; subsequent involuntary-exit handling is not specified.',meta);
   }
  }

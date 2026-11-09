@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {educationSubjects,educationSpecialities,educationSkillView,syncEducationSubject} from '../gui/education-skill-view.mjs';
+import {educationSkillTitle,educationSubjects,educationSpecialities,educationSkillView,syncEducationSubject} from '../gui/education-skill-view.mjs';
 import {catalog} from '../engine/session.mjs';
 import {UNIVERSITY_SKILL_CHOICES} from '../engine/education-pack.mjs';
 const esc=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
@@ -31,4 +31,15 @@ test('changing subjects resets stale input and offers only matching options, inc
 });
 test('hobby level zero requests only a base skill',()=>{
  const s=state();s.pendingChoice.selectionId='hobby';assert.deepEqual(educationSpecialities(s,catalog(),'Animals'),[]);
+});
+
+test('all pre-career hobby prompts name the event and avoid University subject controls',()=>{
+ for(const id of ['core.university','core.academy-army','core.academy-marine','core.academy-navy','companion.colonial','companion.psionic','companion.merchant','companion.hard-knocks','companion.spacer']){
+  const s=state();s.stage='education-skill';s.character.educations[0].id=id;s.pendingChoice.selectionId='hobby';
+  assert.equal(educationSkillTitle(s),'Choose your hobby skill');
+  const html=educationSkillView(s,catalog(),esc,label=>label);
+  assert.match(html,/Pre-career event 9: hobby skill/);assert.match(html,/except Jack-of-all-Trades at level 0/);assert.match(html,/Record hobby skill/);
+  assert.doesNotMatch(html,/Study subject|Study skill or specialisation|University skill [12]|retained for/);
+ }
+ assert.equal(educationSkillTitle({...state(),stage:'education-skill'}),null);
 });

@@ -146,3 +146,15 @@ Prisoner Event 3 names the escape opportunity, its risk, and separate Stealth an
 Setup checkboxes choose extra characteristics to generate when the six core scores are accepted. The separate **Add another characteristic** control appears only afterwards, offering extras not already present. The GM panel is absent during setup; setup's existing GM option remains the single enable switch there.
 
 After setup, GM tools show one task at a time. **Change a value** uses named fields, the actual current value and a required reason. **Replace a roll** lists recorded rolls by name and asks for each replacement die. A confirmation explains that later character progress is superseded; all original actions and their results remain in the detailed log. These presentation changes retain the existing correction and replay commands.
+
+### Recorded pre-career interpretations (9 November 2026)
+
+For new revised sessions, Merchant Academy graduates may enter any Citizen assignment as their first career. The curriculum-matching requirement applies only to Merchant Broker/Marine assignments (Companion 2024 p. 33). Failed military-academy automatic entry expires once another career is taken (Core 2022 p. 17). These are recorded user rulings resolving ambiguous wording, not newly quoted source rules. Compatible legacy sessions keep their previous adjudication path and recorded decisions.
+
+Colonial Upbringing is unavailable at TL9 or higher, and School of Hard Knocks is unavailable at SOC7 or higher. These recorded eligibility rulings do not consume an education entry attempt when an ineligible selection is rejected.
+
+School of Hard Knocks promotion/commission penalties persist through forced career exits and end after any subsequent voluntary career exit, under the recorded permanent-record ruling.
+
+Colonial Upbringing is available only in the first generation term, before any career or other pre-career education. Nonstandard starting-age timing still requires an explicit source decision.
+
+Academy commissions remain optional even with honours, allowing an enlisted career. University initial choices must be distinct skill bases, including when different specialisations are selected. These existing behaviors are now explicitly confirmed by the user.

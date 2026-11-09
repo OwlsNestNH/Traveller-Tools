@@ -414,7 +414,7 @@ function assignmentOptions(state){
 }
 function assignmentUniversityDM(state,careerId,assignment){
  let value=0;for(const record of state.character.educations??[])if(record.id==='core.university'&&record.completed&&record.graduation){
-  const rights=educationCareerBenefits({id:record.id,graduation:record.graduation,careerId,assignment,firstCareerAfterEducation:false,firstCareerAttempt:false,serviceAwardUsed:true,enteringCareer:false});
+  const rights=educationCareerBenefits({resolvedEducationRulings:!!state.deferredSpecializations,id:record.id,graduation:record.graduation,careerId,assignment,firstCareerAfterEducation:false,firstCareerAttempt:false,serviceAwardUsed:true,enteringCareer:false});
   value=Math.max(value,rights.qualificationModifier??0);
  }return value;
 }
@@ -1056,6 +1056,8 @@ function educationRecord(state) { need(state.education!==undefined&&state.educat
 function educationOptions(state,e) {
  if(state.education!==undefined&&state.education!==null&&isCompanionEducation(educationRecord(state).id)&&e.selectionId!=='hobby')return companionChoiceOptions(state,e);
  const definitions=e.options==='any'?SKILLS.filter(s=>!e.exclude?.includes(s)).map(name=>({name})):e.options;
+ // Preserve legacy projected choices; new hobby lists mirror command eligibility.
+ if(state.deferredSpecializations&&e.selectionId==='hobby')return (definitions??[]).filter(o=>skillNameAllowed(state,o.name,{scope:'any',exclude:e.exclude}));
  return definitions??[];
 }
 function educationSkillValid(state,name,e) {
@@ -1088,13 +1090,13 @@ function educationRights(state,careerId,assignment,entering=false) {
   if(!record.completed||!record.graduation)continue;
   if(isCompanionEducation(record.id)){
    const key=careerId+'/'+assignment,ruling=record.rightsRulings?.[key];
-   let r=ruling?.manual?ruling:companionCareerBenefits({id:record.id,graduation:record.graduation,careerId,assignment,curriculum:record.curriculum,firstCareerAfterEducation:state.character.careers.length===record.careersBefore,firstCareerExit:state.character.careers[record.careersBefore]?.exit,citizenBranchApproved:ruling?.citizenBranchApproved,enteringCareer:entering,forcedNextCareer:state.forcedCareer});
+   let r=ruling?.manual?ruling:companionCareerBenefits({resolvedEducationRulings:!!state.deferredSpecializations,id:record.id,graduation:record.graduation,careerId,assignment,curriculum:record.curriculum,firstCareerAfterEducation:state.character.careers.length===record.careersBefore,firstCareerExit:state.deferredSpecializations&&record.id==='companion.hard-knocks'?(state.character.careers.slice(record.careersBefore).some(c=>c.exit==='voluntary')?'voluntary':'involuntary'):state.character.careers[record.careersBefore]?.exit,citizenBranchApproved:ruling?.citizenBranchApproved,enteringCareer:entering,forcedNextCareer:state.forcedCareer});
    if(!r.resolved){rights.unresolved.push({kind:'unsupported',source:r.source??PRECAREER_RULES[record.id].source,reason:r.reason??('Resolve '+r.missingInputs.join(', ')),educationIndex:index,careerId,assignment,citizenMapping:record.id==='companion.merchant'&&careerId==='core.citizen'&&state.character.careers.length===record.careersBefore});continue;}
    rights.qualificationModifier+=r.qualificationModifier??0;rights.commissionModifier+=r.commissionModifier??0;rights.advancementModifier+=r.advancementModifier??0;rights.automaticEntry||=r.automaticEntry;
    if(r.entryRank!==null&&r.entryRank!==undefined){rights.entryRank=Math.max(rights.entryRank??0,r.entryRank);if(entering)rights.effects.push(...(r.effects??[]));}
    continue;
   }
-  const r=educationCareerBenefits({id:record.id,graduation:record.graduation,careerId,assignment,
+  const r=educationCareerBenefits({resolvedEducationRulings:!!state.deferredSpecializations,id:record.id,graduation:record.graduation,careerId,assignment,
    firstCareerAfterEducation:state.character.careers.length===record.careersBefore,
    firstCareerAttempt:(record.careerAttempts??0)===0,serviceAwardUsed:!!record.serviceAwardUsed,enteringCareer:entering,
    forcedNextCareer:state.forcedCareer});
@@ -2195,7 +2197,7 @@ function apply(state,command,rolls) {
      startPsionicTraining(state,{context:'companion-community',source:{id:'companion',page:33},next:'companion-admission',test:true,requiresTerms:!nativeChildhood},rolls);return 'Psionic community testing and training must be completed before admission.';}
    }
   if(id==='companion.psionic')need((state.character.stats.PSI??0)>0,'Positive tested PSI is required for psionic training.');
-  const input={id,term:state.character.terms+1,stats:state.character.stats,homeworld:config.homeworld,species:state.character.species,attemptedThisTerm:state.educationAttemptTerms?.includes(state.character.terms)??false};
+  const input={resolvedEducationRulings:!!state.deferredSpecializations,id,term:state.character.terms+1,stats:state.character.stats,homeworld:config.homeworld,species:state.character.species,attemptedThisTerm:state.educationAttemptTerms?.includes(state.character.terms)??false};
   let outcome=companionEntryCheck(input);
   if(!outcome.resolved&&outcome.missingInputs?.length===1&&outcome.missingInputs[0]==='roll')outcome=companionEntryCheck({...input,roll:dice(state,2,rolls,'Companion education entry')});
   if(!outcome.resolved){companionSource(state,'entry',outcome);return 'Admission requires source resolution; no entry roll or term was assumed.';}

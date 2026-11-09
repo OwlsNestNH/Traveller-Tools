@@ -1,5 +1,5 @@
 import {skillAwardView,syncAwardBase,deferredAwardsView} from './skill-award-view.mjs';
-import {educationSkillView,syncEducationSubject} from './education-skill-view.mjs';
+import {educationSkillTitle,educationSkillView,syncEducationSubject} from './education-skill-view.mjs';
 import {prisonerEscapeTitle,prisonerEscapeView} from './prisoner-escape-view.mjs';
 import {extraCharacteristicsView,gmControlsView,syncCorrectionField,syncReplacementDice,syncCorrectionTask,correctionPayload,replacementPayload} from './character-controls.mjs';
 import {rollResult} from './roll-result-view.mjs';
@@ -404,7 +404,7 @@ function render(){
  const shareDraft={open:$('#clan-share-panel')?.open,kind:$('#clan-share-kind')?.value,lot:$('#clan-share-lot')?.value};
  const state=projection.state;const detailKey=d=>d.id||d.querySelector(':scope > summary')?.textContent;const previousDetails=new Map([...$('#sheet').querySelectorAll('details')].map(d=>[detailKey(d),d.open]));
  const gmDraft={task:$('#gm-task')?.value,field:$('#gm-field')?.value,roll:$('#gm-roll-choice')?.value,restore:$('#gm-restore-choice')?.value};
- $('#workspace').innerHTML='<p class="step-count">COMPLETED TERMS: '+state.character.terms+' · '+esc(state.stage.toUpperCase().replaceAll('-',' '))+'</p><h2 id="step-title" tabindex="-1">'+esc(trainingContext(state)?.title??(state.prisonerEscape?prisonerEscapeTitle:null)??(isBasicTrainingChoice(state)?'Choose a basic-training skill':stageNames[state.stage]??state.stage))+'</h2>'+lastResult+aslanAccessView(state,{esc,button})+clanShareView(state,{esc,button,sourceLabel})+landClaimView(state,{esc,button,sourceLabel})+aslanAccessConflictView(state,{esc,button,sourceLabel})+stageView(state)+deferredAwardsView(state,{esc,button});
+ $('#workspace').innerHTML='<p class="step-count">COMPLETED TERMS: '+state.character.terms+' · '+esc(state.stage.toUpperCase().replaceAll('-',' '))+'</p><h2 id="step-title" tabindex="-1">'+esc(educationSkillTitle(state)??trainingContext(state)?.title??(state.prisonerEscape?prisonerEscapeTitle:null)??(isBasicTrainingChoice(state)?'Choose a basic-training skill':stageNames[state.stage]??state.stage))+'</h2>'+lastResult+aslanAccessView(state,{esc,button})+clanShareView(state,{esc,button,sourceLabel})+landClaimView(state,{esc,button,sourceLabel})+aslanAccessConflictView(state,{esc,button,sourceLabel})+stageView(state)+deferredAwardsView(state,{esc,button});
  if(state.stage==='skill-choice')syncAwardBase(state,catalog,document,esc);
  if($('#clan-share-panel'))$('#clan-share-panel').open=shareDraft.open??false;if($('#clan-share-kind')&&shareDraft.kind)$('#clan-share-kind').value=shareDraft.kind;syncClanShareControls(shareDraft.lot);if($('#land-claim-panel'))$('#land-claim-panel').open=landOpen??false;syncLandClaimControls();if($('#aslan-access-panel'))$('#aslan-access-panel').open=accessOpen??false;syncAslanAccessControls();
  if(lifeDraft&&$('#core-life-decision')?.dataset.lifeEventId===lifeDraft.id)for(const field of lifeDraft.fields){const input=document.getElementById(field.id);if(input){input.value=field.value;input.checked=field.checked;}}syncCoreLifeEventControls($);
