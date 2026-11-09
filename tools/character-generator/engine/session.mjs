@@ -1,3 +1,4 @@
+import {aslanEventPending,aslanOutcastEntry,aslanOwnedLand} from './aslan-event-outcomes.mjs';
 import {eventEffectSummary} from './event-effect-summary.mjs';
 import {decorateEventResults} from './event-result-projection.mjs';
 import {equipmentOptions,resolveEquipmentItem} from './equipment-catalog.mjs';
@@ -737,7 +738,7 @@ export function availableCareers(state) {
  const restoration=restorationForEntry(state,c.id),officerException=state._aslanOfficerQualification&&state._aslanOfficerQualification===activeAslanOfficerOffer(state)?.id&&activeAslanOfficerOffer(state)?.targetCareerId===c.id&&activeAslanOfficerOffer(state)?.statusVerification?.approved;
  const restoredHistory=aslanOfficerHistory(state).length>0;
  const historicalApproval=historicalEntryApproval(state,c.id);
- if(species==='aslan'&&culture==='native'&&c.group==='aslan'&&!['aslan.outcast','aslan.outlaw'].includes(c.id)&&!restoration&&!officerException&&!historicalApproval&&(state.character.outcast||restoredHistory&&!state._aslanHistoricalProjection))reason=restoredHistory?'Historical Outcast/Outlaw service requires a source-earned exception or outward route.':'Outcast restriction. Use the source rules to leave Hierate society.';
+ if(species==='aslan'&&culture==='native'&&c.group==='aslan'&&!['aslan.outcast','aslan.outlaw'].includes(c.id)&&!restoration&&!aslanOutcastEntry(state,c.id)&&!officerException&&!historicalApproval&&(state.character.outcast||restoredHistory&&!state._aslanHistoricalProjection))reason=restoredHistory?'Historical Outcast/Outlaw service requires a source-earned exception or outward route.':'Outcast restriction. Use the source rules to leave Hierate society.';
  if(restoredHistory&&!restoration&&!officerException&&!state._aslanHistoricalProjection&&historicalApproval)c.assignments=c.assignments.map(a=>a.id===historicalApproval.assignment?a:{...a,disabled:true,reason:'The historical-entry ruling approves a different assignment.'});
  // Mirror assignment entry guards in new-session choices; cultural skill labels do not relax career prerequisites.
  if(state.deferredSpecializations)c.assignments=c.assignments.map(a=>{if(a.disabled)return a;const gender=c.eligibility?.[a.id];const assignmentReason=!conditionMatches(state,pre.assignments?.[a.id])?'This assignment has additional source prerequisites.':gender&&state.character.gender!==gender?'This assignment has a gender restriction.':c.id==='aslan.military'&&a.id==='support'&&state.character.gender==='male'&&(state.character.stats.SOC??0)>8?'Male support assignment requires SOC 8 or less.':'';return assignmentReason?{...a,disabled:true,reason:assignmentReason}:a;});
@@ -786,7 +787,7 @@ function enterCareer(state,career,assignment,rolls=[],transfer=null) {
 }
 function currentCareer(state) { need(state.active!==null,'No active career.');const record=state.character.careers[state.active],career=findCareer(record.id),base=career.assignments.find(a=>a.id===record.assignment),override=RULE_PACK[record.id]?.checks?.[record.assignment];return {record,career,assignment:{...base,...override}}; }
 function closeTerm(state) {
- const {record,career}=currentCareer(state);record.termHistory??=[];record.termHistory.push({careerTerm:record.terms+1,generationTerm:state.character.terms+1,assignment:record.assignment,rank:record.rank,officer:!!record.officer,age:state.character.age+4});record.terms++;state.character.terms++;state.character.age+=4;
+ const {record,career}=currentCareer(state);record.termHistory??=[];record.termHistory.push({careerTerm:record.terms+1,generationTerm:state.character.terms+1,assignment:record.assignment,rank:record.rank,officer:!!record.officer,age:state.character.age+4});record.terms++;state.character.terms++;state.character.age+=4;for(const opportunity of state.character.aslanOutcastOpportunities??[])if(opportunity.status==='available'&&opportunity.availableAtCompletedTerms<state.character.terms)opportunity.status='expired';
  // Core p.46 Crime changes the next term, not this term's advancement (p.18).
  if(record.lifeCrimeExitPending){record.forcedExit=true;record.forcedStay=false;delete record.lifeCrimeExitPending;}
  if(state.correctedCareerEvents&&record.eventExitAtTermEnd){record.forcedExit=true;record.forcedStay=false;}
@@ -1803,7 +1804,7 @@ function apply(state,command,rolls) {
  if(state.pending?.deferredEquipmentId)need(['resolve-book','resolve-artefact-details','cancel-deferred-equipment','notes','gm-mode'].includes(command.type),'Resolve the earlier equipment choice before continuing.');
  if(state.stage==='equipment-finalization')need(['choose-deferred-equipment','close-equipment-finalization','finish','notes','gm-mode'].includes(command.type),'Complete or close the equipment checklist before continuing.');
  if(state.pending?.kind==='prisoner-lawyer')need(['resolve-prisoner-lawyer','notes','gm-mode'].includes(command.type),'Resolve the pending lawyer choice before changing its context. Use restore or replay to revise it.');
- if(state.character.aslanOrigin?.status==='pending')need(['roll-aslan-gender','roll-aslan-family','roll-aslan-birth-order','resolve-aslan-estate','roll-aslan-clan','choose-aslan-clan','name-aslan-clan','roll-aslan-pride','roll-aslan-rite','resolve-aslan-origin-source','background','choose-effect','choose-skill','skill-award-source','retry-skill-choice','resolve-book','notes','gm-mode'].includes(command.type),'Finish the recorded Aslan origin before changing its context. Restore or replay explicitly to revise it.');
+ if(state.character.aslanOrigin?.status==='pending')need(['roll-aslan-gender','roll-aslan-family','roll-aslan-birth-order','resolve-aslan-estate','roll-aslan-clan','choose-aslan-clan','name-aslan-clan','roll-aslan-pride','roll-aslan-rite','record-aslan-rite-equipment','resolve-aslan-origin-source','background','choose-effect','choose-skill','skill-award-source','retry-skill-choice','resolve-book','notes','gm-mode'].includes(command.type),'Finish the recorded Aslan origin before changing its context. Restore or replay explicitly to revise it.');
  if(state.pending?.kind==='aslan-origin-source')need(['resolve-aslan-origin-source','notes','gm-mode'].includes(command.type),'Resolve this origin question with its typed source fields.');
  if(gamesPending(state))need([...GAMES_COMMANDS,'notes','gm-mode'].includes(command.type),'Complete the reserved Games term before changing the character or career. Restore/replay explicitly to revise its context.');
  if(activeReeducation(state))need(['reeducation-roll','reeducation-fine','resolve-reeducation','ageing','choose-effect','choose-skill','resolve-book','notes','gm-mode'].includes(command.type),'Complete the pending re-education and ageing continuation before changing the character. Restore/replay explicitly to revise it.');
@@ -1950,6 +1951,57 @@ function apply(state,command,rolls) {
   return 'Referee '+(payload.approved?'approved':'declined')+' one '+findCareer(r.careerId).name+' / '+r.assignment+' entry attempt. '+reason;
  }
 
+ case 'record-aslan-rite-equipment':{
+  need(aslanEventPending(state)==='rite-equipment','No Rite equipment credit is pending.');need(Object.keys(payload).length===0,'No equipment selection is required yet.');need(state.character.gender==='male','The Rite equipment credit is the male result.');
+  state.character.equipmentCredits??=[];state.character.equipmentCredits.push({id:'aslan-equipment-credit-'+(state.character.equipmentCredits.length+1),amount:5000,remaining:5000,categories:['Art','Armour','Weapon'],source:{id:'aliens',page:21},origin:'aslan-rite-2+2',status:'available'});
+  state.pending=null;drainEffects(state,rolls);return 'Cr5000 restricted equipment credit recorded for art, armour or weapons. Choose items at finalization; no cash awarded.';
+ }
+ case 'resolve-aslan-territory':{
+  need(aslanEventPending(state)==='territory-challenge','No Territory Challenge is pending.');need(Object.keys(payload).every(k=>['skill','holdingId','landlessConfirmed'].includes(k)),'Choose the skill and affected holding, or confirm no personal land.');
+  need(['Broker','Diplomat','Gun Combat','Melee (natural)'].includes(payload.skill),'Choose a printed Territory Challenge skill.');
+  const holdings=aslanOwnedLand(state),holding=holdings.find(r=>r.id===payload.holdingId);
+  need(holding||payload.holdingId===null&&payload.landlessConfirmed===true&&!holdings.length,'Choose an owned landhold or confirm no personal land. Unrecorded ownership requires source review.');
+  const increment=holding?(holding.increment??aslanLandRules(state.character.stats.SOC).increment):null;need(!holding||Number.isSafeInteger(increment)&&increment>=0,'This landhold needs a verified parcel increment before rolling.');
+  const natural=dice(state,2,rolls,'Territory Challenge: '+payload.skill),modifier=skillCheckDM(state,payload.skill),total=natural+modifier,effect=total-8;
+  const r={source:{id:'aliens',page:46},target:8,targetRuling:'Player ruling: Average 8+.',skill:payload.skill,natural,modifier,total,effect,holdingId:holding?.id??null,increment};
+  if(holding){const owned=state.character[holding.ledger].find(r=>r.id===holding.id);r.parcelsBefore=owned.parcels;r.parcelsAfter=Math.max(0,owned.parcels+effect*increment);need(Number.isSafeInteger(r.parcelsAfter),'Parcel change exceeds supported integer range.');owned.parcels=r.parcelsAfter;}
+  else{r.socBefore=state.character.stats.SOC;setStat(state,'SOC',Math.max(0,Math.min(maxStat(state,'SOC'),r.socBefore+effect)));r.socAfter=state.character.stats.SOC;}
+  state.character.aslanTerritoryChallenges??=[];state.character.aslanTerritoryChallenges.push(r);state.pending=null;drainEffects(state,rolls);
+  return 'Territory Challenge: '+payload.skill+' '+total+' against 8+, Effect '+effect+'. '+(holding?'Land Parcels '+r.parcelsBefore+' to '+r.parcelsAfter+'.':'SOC '+r.socBefore+' to '+r.socAfter+'.');
+ }
+ case 'retain-aslan-secret':{
+  need(aslanEventPending(state)==='guardian-secret','No retained Guardian secret is pending.');need(Object.keys(payload).length===0,'The retained secret needs no additional inputs.');
+  const quantity=dice(state,1,rolls,'Retained Guardian secret: conditional Clan Shares');state.character.aslanSecrets??=[];
+  state.character.aslanSecrets.push({id:'aslan-secret-'+(state.character.aslanSecrets.length+1),source:{id:'aliens',page:27},quantity,status:'retained',spendable:false,condition:'Trade the retained secret later; exposing it gains a clan elder as an Enemy.',timingRuling:'Roll now and retain the value.'});
+  state.pending=null;drainEffects(state,rolls);return 'Secret retained: '+quantity+' conditional Clan Shares recorded, not spendable until traded.';
+ }
+ case 'record-aslan-outcast-opportunity':{
+  need(aslanEventPending(state)==='outcast-opportunity','No Outcast career opportunity is pending.');need(Object.keys(payload).length===0,'No immediate career choice is required.');
+  state.character.aslanOutcastOpportunities??=[];state.character.aslanOutcastOpportunities.push({id:'aslan-outcast-opportunity-'+(state.character.aslanOutcastOpportunities.length+1),source:{id:'aliens',page:41},careers:['aslan.outlaw','aslan.wanderer'],availableAtCompletedTerms:state.character.terms+1,status:'available'});
+  state.pending=null;drainEffects(state,rolls);return 'Optional automatic Outlaw or Wanderer qualification available next term only. Staying or choosing another career remains allowed; other prerequisites still apply.';
+ }
+ case 'resolve-aslan-dishonoured':{
+  need(aslanEventPending(state)==='dishonoured','No Dishonoured defence is pending.');
+  need(Object.keys(payload).every(k=>['skill','clanRelationshipConfirmed'].includes(k)),'Choose only the defence and clan relationship confirmation.');
+  need(['Advocate','Melee (natural)'].includes(payload.skill),'Choose Advocate or Melee (natural).');
+  need(typeof payload.clanRelationshipConfirmed==='boolean','Confirm whether a Contact or Ally belongs to the clan.');
+  const eligible=state.character.relationships.filter(r=>['Contact','Ally'].includes(r.role));
+  need(!payload.clanRelationshipConfirmed||eligible.length>0,'A recorded Contact or Ally is required for the clan bonus.');
+  const target=payload.skill==='Advocate'?8:10,bonus=payload.skill==='Advocate'&&payload.clanRelationshipConfirmed?2:0;
+  const natural=dice(state,2,rolls,'Dishonoured: '+payload.skill),modifier=skillCheckDM(state,payload.skill)+bonus,total=natural+modifier,success=total>=target;
+  const result={source:{id:'aliens',page:46},skill:payload.skill,target,natural,modifier,clanBonus:bonus,clanRelationshipConfirmed:payload.clanRelationshipConfirmed,total,effect:total-target,success,socBefore:state.character.stats.SOC};
+  if(!success)forfeitAslanClanShares(state,'dishonoured-defence-failed',result.source,true);
+  result.socAfter=state.character.stats.SOC;state.character.aslanDefences??=[];state.character.aslanDefences.push(result);
+  state.pending=null;drainEffects(state,rolls);
+  return 'Dishonoured: '+payload.skill+' '+total+' against '+target+'+. '+(success?'Defended successfully.':'SOC 2; Outcast status; unconverted Clan Shares forfeited.');
+ }
+ case 'award-aslan-wanderer-land':{
+  need(aslanEventPending(state)==='wanderer-land','No Wanderer land award is pending.');need(Object.keys(payload).length===0,'This award requires no invented location.');
+  const before=state.character.stats.SOC,soc=Math.max(9,before),rule=aslanLandRules(soc);need(rule.minimumParcels!==null,'Current SOC is outside the printed parcel table; retain this source step for a referee parcel ruling.');
+  setStat(state,'SOC',soc);state.character.aslanLandholds??=[];
+  state.character.aslanLandholds.push({id:'aslan-landhold-'+(state.character.aslanLandholds.length+1),source:{id:'aliens',page:45},parcelSource:{id:'aliens',page:17},origin:'wanderer-event-12',socBefore:before,socAtAward:soc,parcels:rule.minimumParcels,increment:rule.increment,detailsStatus:'pending',name:null,location:null});
+  state.pending=null;drainEffects(state,rolls);return 'Unclaimed territory: SOC '+before+' to '+soc+'; '+rule.minimumParcels+' Land Parcels awarded. Name and location may be entered or left for the GM at finalization.';
+ }
  case 'resolve-aslan-outlaw-restoration':{
   need(state.stage==='book-step'&&state.pending?.kind==='aslan-outlaw-restoration','No earned Outlaw restoration is pending.');
   const r=currentAslanOutlawRestoration(state),{record,career}=currentCareer(state);need(r?.status==='pending'&&r.originCareerIndex===state.active&&career.id===r.originCareerId&&record.assignment===r.originAssignment&&record.terms===r.originCareerTerms&&state.character.terms===r.grantedAtCompletedTerms&&state.character.gender===r.gender,'The Outlaw restoration context changed.');
@@ -2456,7 +2508,7 @@ function apply(state,command,rolls) {
   const qualification=prerequisites.qualificationByGender?.[state.character.gender]??career.qualification;
   const forced=state.forcedCareer===career.id;if(forced)state.pendingDraft=!!state.forcedCareerDraft;
   const officerOffer=state._aslanOfficerQualification?activeAslanOfficerOffer(state):null,access=accessForAttempt(state,career.id);
-  const automaticReason=officerOffer?null:forced?'forced-career':transfer?'source-transfer':access?.automatic?'aslan-outward-source':nobleAutomaticQualification(career.id,state.character.stats)?'noble-social-standing':educational.automaticEntry?'education':state.automaticCareers?.includes(career.id)?'source-entry-right':!qualification?'no-check':null;
+  const automaticReason=officerOffer?null:aslanOutcastEntry(state,career.id)?'aslan-outcast-event-10':forced?'forced-career':transfer?'source-transfer':access?.automatic?'aslan-outward-source':nobleAutomaticQualification(career.id,state.character.stats)?'noble-social-standing':educational.automaticEntry?'education':state.automaticCareers?.includes(career.id)?'source-entry-right':!qualification?'no-check':null;
   if(!automaticReason&&!checkAvailable(state,qualification)&&!state._sourceCheck){missingCheck(state,qualification,'Qualification',command,{id:career.source,page:career.page});return 'Qualification requires source resolution for the missing characteristic.';}
   let modifier=(career.group==='core'?-state.character.careers.length:0)+educational.qualificationModifier+(automaticReason?0:modifierTotal(state,'qualification',true,career.id))+(officerOffer?.qualificationDM??0);
 
@@ -2464,6 +2516,7 @@ function apply(state,command,rolls) {
   for(const m of prerequisites.qualificationModifiers??[])if(conditionMatches(state,m.condition))modifier+=m.dm;
   const check=automaticReason?null:rulesCheck(state,qualification,rolls,'Qualification',modifier);
   const transition=recordCareerTransition(state,career,assignment.id,check,automaticReason,entryPlan);
+  for(const opportunity of state.character.aslanOutcastOpportunities??[])if(opportunity.status==='available'&&opportunity.availableAtCompletedTerms===state.character.terms){opportunity.status=automaticReason==='aslan-outcast-event-10'?'consumed':'declined';opportunity.attempt={careerId:career.id,assignment:assignment.id,automaticReason};}
   if(access){access.status='consumed';access.attempt={careerId:career.id,assignment:assignment.id,generationTerms:state.character.terms,check:copy(check),automaticReason,success:!check||check.success};if(state.character.aslanCareerContext?.accessId===access.id)state.character.aslanCareerContext.status='established';}
   if(officerOffer){officerOffer.check=copy(check);officerOffer.transitionId=transition.id;}
   if(historicalApproval){historicalApproval.status='consumed';historicalApproval.attempt={careerId:career.id,assignment:assignment.id,careerIndex:check&&!check.success?null:state.character.careers.length,generationTerms:state.character.terms,check:copy(check),automaticReason,success:!check||check.success};}
