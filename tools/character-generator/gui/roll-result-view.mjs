@@ -1,4 +1,5 @@
 // Player-facing presentation only. Never alter summaries, audit records or mechanics.
+import {checkOutcome} from './check-outcome.mjs';
 import {survivalResult} from './survival-result.mjs';
 import {advancementResult} from './advancement-result.mjs';
 import {lifeEventIdentity,lifeEventLogDetails} from './life-event-presentation.mjs';
@@ -136,13 +137,17 @@ export function rollResult(event,state,catalog,options={}){
  const advancement=advancementResult(event);
  const survival=survivalResult(event,state);
  const specialized=advancement??survival;
+ const outcome=checkOutcome(event);
+ const mixed=outcome?.mixed||(['success','failure'].includes(specialized?.status)&&['success','failure'].includes(outcome?.status)&&specialized.status!==outcome.status);
  const modifierBefore=event.modifierChanges?{modifiers:event.modifierChanges.before}:options.beforeState;
  const modifierAfter=event.modifierChanges?{modifiers:event.modifierChanges.after}:state;
  const primaryLabels=advancement?['Advancement','Commission','Education commission']:survival?['Survival','Event table','Mishap table']:[];
  // Specialized helpers already identify the adjusted check and observed rank/skill gains.
  const effectEvent=advancement?{...event,changes:(event.changes??[]).filter(c=>!(((c.path.startsWith('skills.')||c.path.startsWith('stats.')&&finite(c.before))&&finite(c.after))||(/^careers\.\d+\.(rank|officer|forcedExit|forcedStay|released)$/.test(c.path)&&((finite(c.before)&&finite(c.after))||c.after===true))))}:event;
  const details=[...(event.rolls??[]).filter(r=>finite(r.total)&&!primaryLabels.includes(r.label)).map(r=>rollLabel(r,catalog)),...lifeEventLogDetails(event),...characterEffectDetails(effectEvent,catalog),...modifierEffectDetails(modifierBefore,modifierAfter,catalog),...pendingEffectDetails(event,catalog)];
- const check=summaryCheck(event.summary);if(check&&!specialized)details.unshift(check);
+ const check=summaryCheck(event.summary);if(check&&!specialized&&!outcome)details.unshift(check);
+ if(outcome)details.unshift(...outcome.details);
+ if(mixed)details.unshift('Mixed check results.');
  if(specialized)details.unshift(...specialized.details);
  const choice=state?.pendingChoice;
  if(choice&&typeof state?.lifeEventPresentation?.description==='string')details.push('Pending: '+state.lifeEventPresentation.description);
@@ -154,6 +159,6 @@ export function rollResult(event,state,catalog,options={}){
  let title=specialized?.title??(words(event.type)||'Action')+' result.';
  // Use only prose-only summaries; never leak serialized rules or property paths.
  if(!specialized&&event.summary&&!/[{}\[\]]/.test(event.summary)&&!/[A-Za-z]+\.[A-Za-z]+/.test(event.summary))title=event.summary;
- const result={title,details:unique(details),status:sourcePending?'pending':specialized?.status??'info'};
+ const result={title,details:unique(details),status:mixed?'info':['success','failure'].includes(specialized?.status)?specialized.status:outcome?.status??(sourcePending?'pending':specialized?.status??'info')};
  result.text=[result.title,...result.details].join(' ');return result;
 }
