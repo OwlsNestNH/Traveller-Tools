@@ -56,7 +56,7 @@ try{
    const launch=page.waitForEvent('popup');await card.getByRole('link',{name:'Open Character Generator',exact:true}).click();const editor=await launch;
    await waitForCharacter(editor,name+'-launch');assert.equal(editor.url(),tool);
    assert.equal(await editor.locator('#release-version').textContent(),'Beta 0.1');
-   assert.deepEqual(await editor.locator('[name=species] option').evaluateAll(nodes=>nodes.map(node=>node.value)),['human','aslan','vargr','aezorgh']);
+   assert.deepEqual(await editor.locator('[name=species] option').evaluateAll(nodes=>nodes.map(node=>node.value)),['human','aslan','vargr','zhodani','aezorgh']);
    const optional=editor.locator('#setup-optional-settings'),optionalSummary=optional.locator('summary');
    assert.equal(await optional.getAttribute('open'),null);assert.equal(await editor.locator('[name=extras][value=LCK]').isVisible(),false);assert.equal(await editor.locator('[name=gm]').isVisible(),false);
    assert.equal(await editor.locator('[name=boons]').inputValue(),'0');assert.equal(await editor.locator('[name=allocation]').isChecked(),true);assert.equal(await editor.locator('[name=minimumReroll]').isChecked(),true);
@@ -75,7 +75,7 @@ try{
    await editor.locator('[name=name]').fill('Unsaved release check '+width);
    const limits=editor.locator('#automation-limits'),summary=limits.locator('summary');await summary.focus();await summary.press('Enter');
    check(name+' limitations open with keyboard',await limits.getAttribute('open')!==null);
-   assert.match(await limits.textContent(),/Notes do not automate future modifiers/);assert.match(await limits.textContent(),/Zhodani are deferred/);
+   assert.match(await limits.textContent(),/Notes do not automate future modifiers/);assert.match(await limits.textContent(),/Zhodani use source-assisted rules/);
    await summary.press('Enter');check(name+' limitations close with keyboard',await limits.getAttribute('open')===null);await summary.press('Enter');
    check(name+' editor fits',await editor.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
    await editor.screenshot({path:fileURLToPath(new URL('release-presentation-'+name+'-editor.png',out)),fullPage:true});

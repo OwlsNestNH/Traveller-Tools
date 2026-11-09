@@ -12,7 +12,7 @@ test('homepage exposes source-assisted beta fourth and Ship Combat before the re
  const cards=[...home.matchAll(/<section class="tool-card">([\s\S]*?)<\/section>/g)].map(m=>m[1]);
  assert.deepEqual(cards.map(card=>card.match(/<h2>(.*?)<\/h2>/)[1]),['Nav Calculator','Traveller Tool Locker','Traveller Ship Operations — Beta','Character Generator - Beta','Traveller Vehicle Builder','Robot Builder - Beta','Ship Combat Alpha','Ship’s Log &amp; Ledger']);
  assert.deepEqual(cards.map(card=>card.match(/<a href="(tools\/[^"]+)"/)[1]),['tools/nav-calculator/','tools/traveller_tools_buttons/','tools/trade-route-calculator/','tools/character-generator/','tools/vehicle-builder/','tools/robot-builder/','tools/ship-combat-alpha/','tools/traveller_ship_logger_v2/']);
- assert.match(cards[3],/source-assisted beta/);assert.match(cards[3],/Zhodani are deferred/);assert.match(cards[3],/href="changes\/character.html"/);
+ assert.match(cards[3],/source-assisted beta/);assert.match(cards[3],/Zhodani use source-assisted rules/);assert.match(cards[3],/href="changes\/character.html"/);
  assert.equal((home.match(/img.shields.io\/badge\/dynamic\/json/g)||[]).length,8);
  assert.doesNotMatch(home,/<script[^>]*tool-visits/);
 });
@@ -25,12 +25,12 @@ test('beta version, notice, printable disclaimer and notes agree with the releas
  assert.match(read('tools/character-generator/README.md'),/0\.1\.0-beta\.1/);
  assert.match(read('tools/character-generator/NOTICE.html'),/Non-commercial source-assisted beta/);
  assert.doesNotMatch(tool+read('tools/character-generator/README.md'),/development preview|Do not publish/);
- const catalog=api({operation:'catalog'});assert.equal(catalog.ok,true);assert.equal(catalog.species.length,4);assert.equal(catalog.careers.length,36);
+ const catalog=api({operation:'catalog'});assert.equal(catalog.ok,true);assert.equal(catalog.species.length,5);assert.equal(catalog.careers.length,45);
 });
 
 test('visible limitations, always-on log and unchanged read-only recovery remain explicit',()=>{
- for(const text of ['id="automation-limits"','Human, Aslan, Vargr and Aezorgh','Zhodani are deferred','A listed career does not mean every event or benefit is automated','Some Companion buyouts','unusual Vargr psionic access','Cross-book eligibility','Notes do not automate future modifiers','older rules revisions can be recovered unchanged and read only','Download full log','id="log-download"','Unverified historical record','Download unchanged original'])assert.ok(tool.includes(text),text);
- for(const text of ['36 career entries','Zhodani species, careers and their Intendant/Noble PSI option are deferred','Manual consequences stay manual','future modifiers, permissions, transfers or deferred awards','Believer buyouts','kinship, Brotherhood, Secret School','Optional anagathics','unverified, read-only','unchanged-original download','no automatic migration','not cryptographic proof','canonical tool path only'])assert.ok(changes.includes(text),text);
+ for(const text of ['id="automation-limits"','Human, Aslan, Vargr, Zhodani and Aezorgh','Zhodani use source-assisted rules','A listed career does not mean every event or benefit is automated','Some Companion buyouts','unusual Vargr psionic access','Cross-book eligibility','Notes do not automate future modifiers','older rules revisions can be recovered unchanged and read only','Download full log','id="log-download"','Unverified historical record','Download unchanged original'])assert.ok(tool.includes(text),text);
+ for(const text of ['45 career entries','Zhodani species, nine careers and the GM-enabled Intendant/Noble PSI option are available','Manual consequences stay manual','future modifiers, permissions, transfers or deferred awards','Believer buyouts','kinship, Brotherhood, Secret School','Optional anagathics','unverified, read-only','unchanged-original download','no automatic migration','not cryptographic proof','canonical tool path only'])assert.ok(changes.includes(text),text);
  assert.match(changes,/not a complete, fully automated or independently rules-certified generator/);
 });
 

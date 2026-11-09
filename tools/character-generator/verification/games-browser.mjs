@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
-import {createServer} from './development-server.mjs';
+import {createServer} from '../server.mjs';
 import {createSession,execute,exportSession,catalog} from '../engine/session.mjs';
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright'),key='traveller-character-generator.v1';
 const out=new URL('./artifacts/',import.meta.url);await mkdir(out,{recursive:true});

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
-import {createServer} from './development-server.mjs';
+import {createServer} from '../server.mjs';
 import {project,exportSession} from '../engine/session.mjs';
 import {buildAgentUndercoverFixture,buildGovernmentAdvisoryFixture,buildBenefitCreditFixture,buildAdvisoryCashSourceFixture,buildAdvisorySkillCapFixture,run,force} from './cross-career-fixtures.mjs';
 import {rolledReeducation} from './zhodani-reeducation-fixtures.mjs';
