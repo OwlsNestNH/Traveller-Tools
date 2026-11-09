@@ -29,7 +29,7 @@ test('beta version, notice, printable disclaimer and notes agree with the releas
 });
 
 test('visible limitations, always-on log and unchanged read-only recovery remain explicit',()=>{
- for(const text of ['id="automation-limits"','Human, Aslan, Vargr and Aezorgh','Zhodani are deferred','A listed career does not mean every event or benefit is automated','Some Companion buyouts','unusual Vargr psionic access','Cross-book eligibility','Notes do not automate future modifiers','older rules revisions can be recovered unchanged and read only','ALWAYS ON','id="action-log"','Unverified historical record','Download unchanged original'])assert.ok(tool.includes(text),text);
+ for(const text of ['id="automation-limits"','Human, Aslan, Vargr and Aezorgh','Zhodani are deferred','A listed career does not mean every event or benefit is automated','Some Companion buyouts','unusual Vargr psionic access','Cross-book eligibility','Notes do not automate future modifiers','older rules revisions can be recovered unchanged and read only','Download full log','id="log-download"','Unverified historical record','Download unchanged original'])assert.ok(tool.includes(text),text);
  for(const text of ['36 career entries','Zhodani species, careers and their Intendant/Noble PSI option are deferred','Manual consequences stay manual','future modifiers, permissions, transfers or deferred awards','Believer buyouts','kinship, Brotherhood, Secret School','Optional anagathics','unverified, read-only','unchanged-original download','no automatic migration','not cryptographic proof','canonical tool path only'])assert.ok(changes.includes(text),text);
  assert.match(changes,/not a complete, fully automated or independently rules-certified generator/);
 });

@@ -60,12 +60,12 @@ export function characterEffectDetails(event,catalog){
   if(path.startsWith('stats.')&&finite(after)){details.push(change(stats[path.slice(6)]??words(path.slice(6)),before,after));continue;}
   if(['cash','debt','medicalCosts'].includes(path)&&finite(after)){details.push(change({cash:'Cash',debt:'Debt',medicalCosts:'Medical costs'}[path],finite(before)?amount(before):amount(0),amount(after)));continue;}
   if(scalarLabels[path]&&finite(after)){details.push(change(scalarLabels[path],before,after));continue;}
-  if(flagLabels[path]&&typeof after==='boolean'){details.push(flagLabels[path][after?0:1]);continue;}
+  if(flagLabels[path]&&typeof after==='boolean'&&(after||before===true)){details.push(flagLabels[path][after?0:1]);continue;}
   if(path==='psionicLoss'&&after?.permanent){details.push('Permanent loss of psionic abilities recorded.');continue;}
   if(path==='lifePsionAccess'&&after){details.push('Life event psionic access recorded.');continue;}
   const career=path.match(/^careers\.\d+\.(\w+)$/);
   if(career){const field=career[1];if(careerNumbers[field]&&finite(after))details.push(change(careerNumbers[field],before,field==='pension'?amount(after):after));
-   else if(careerFlags[field]&&typeof after==='boolean')details.push(careerFlags[field][after?0:1]);
+   else if(careerFlags[field]&&typeof after==='boolean'&&(after||before===true))details.push(careerFlags[field][after?0:1]);
    else if(field==='id'&&after)details.push('Career: '+nameOf(after,catalog)+'.');
    else if(field==='assignment'&&after)details.push('Assignment: '+words(after)+'.');
    else if(field==='pensionCondition'&&after)details.push('Pension condition: '+after+'.');

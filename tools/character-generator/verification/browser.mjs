@@ -40,7 +40,7 @@ try{
   await page.getByRole('button',{name:'Attempt this career'}).click();
   await page.waitForFunction(()=>!document.querySelector('#step-title').textContent.includes('Choose your next career'));
   const saved=await page.evaluate(()=>localStorage.getItem('traveller-character-generator.v1'));assert.ok(JSON.parse(saved).events.length>5);
-  const beforeLog=await page.locator('#action-log li').count();await page.reload();await page.waitForFunction(()=>document.querySelectorAll('#action-log li').length>0);assert.equal(await page.locator('#action-log li').count(),beforeLog);
+  const beforeLog=await page.locator('#workspace').evaluate(el=>Number(el.dataset.revision));await page.reload();await page.waitForFunction(()=>Number(document.querySelector('#workspace')?.dataset.revision??0)>0);assert.equal(await page.locator('#workspace').evaluate(el=>Number(el.dataset.revision)),beforeLog);
   assert.equal(await page.locator('#sheet img,#sheet script').count(),0);
   const downloadEvent=page.waitForEvent('download');await page.locator('#export').click();const download=await downloadEvent;const exported=JSON.parse(await readFile(await download.path(),'utf8'));assert.equal(exported.events.length,beforeLog);
   const horizontal=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);assert.equal(horizontal,false,name+' horizontal overflow');
@@ -48,7 +48,7 @@ try{
   await page.screenshot({path:path.join(out,name+'-career.png'),fullPage:true});
   await page.locator('#import').setInputFiles({name:'broken.json',mimeType:'application/json',buffer:Buffer.from('{"format":"invalid"}')});
   await page.waitForFunction(()=>document.querySelector('#message').textContent.includes('Could not load'));
-  assert.equal(await page.locator('#action-log li').count(),beforeLog);
+  assert.equal(await page.locator('#workspace').evaluate(el=>Number(el.dataset.revision)),beforeLog);
   const result=await page.locator('#workspace').innerText();assert.ok(result.length>0);
   await page.evaluate(()=>document.body.style.fontSize='36px');
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,name+' enlarged-text overflow');

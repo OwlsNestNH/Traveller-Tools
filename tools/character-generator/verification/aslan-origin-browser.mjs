@@ -13,14 +13,14 @@ const browser=await chromium.launch({headless:true,...(process.env.CHARACTER_BRO
 const checks=[],errors=[];
 async function snapshot(page){return project(JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key)));}
 async function ready(page){await page.waitForFunction(()=>!document.querySelector('#new').disabled);}
-async function replay(page){const before=await snapshot(page);await page.reload();await page.waitForFunction(()=>document.querySelectorAll('#action-log li').length>5);assert.deepEqual(await snapshot(page),before);}
+async function replay(page){const before=await snapshot(page);await page.reload();await page.waitForFunction(()=>Number(document.querySelector('#workspace')?.dataset.revision??0)>5);assert.deepEqual(await snapshot(page),before);}
 async function shot(page,name){await page.locator('#workspace').screenshot({path:out+name+'.png'});}
 async function fresh(name,width,fixture,check,{staticMode=false}={}){
  const context=await browser.newContext({viewport:{width,height:950}}),page=await context.newPage();page.setDefaultTimeout(15000);page.on('pageerror',e=>errors.push(e.message));
  try{
   await page.goto(origin+(staticMode?'/':'/?api=local'));await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();
   await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(fixture.session)});await page.reload();
-  await page.waitForFunction(()=>document.querySelectorAll('#action-log li').length>5);await check(page);await ready(page);
+  await page.waitForFunction(()=>Number(document.querySelector('#workspace')?.dataset.revision??0)>5);await check(page);await ready(page);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,name+' overflow');
   assert.deepEqual(await page.locator('button:visible').evaluateAll(nodes=>nodes.filter(n=>n.getBoundingClientRect().height<43).map(n=>n.textContent)),[]);
   await shot(page,name);checks.push({name,width,pass:true});

@@ -1,3 +1,4 @@
+import {downloadedActionLog} from './download-log-browser.mjs';
 import {assertResultColor} from './result-color-browser-assertions.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
@@ -39,7 +40,7 @@ try{
     else assert.match(resultText,/EDU check/);
     const raw=await page.evaluate(key=>localStorage.getItem(key),key),saved=importSession(raw);
     assert.equal(saved.events.length,before.revision+1);assert.equal(exportSession(saved),raw);
-    assert.ok((await page.locator('#action-log').innerText()).includes(natural.log.at(-1).summary));
+    assert.ok((await downloadedActionLog(page)).includes(natural.log.at(-1).summary));
     await page.reload();await page.locator('#last-action-result').waitFor();assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);
     assert.ok((await page.locator('#last-action-result').innerText()).includes(expected.title));
     // Targeted regression outcomes must also persist on reload without replaying dice.
@@ -51,7 +52,7 @@ try{
     const sheet=await page.locator('#sheet').innerText();assert.match(sheet,/Ally/);
     if(term===3)assert.match(sheet,/A new romantic relationship begins/);
     else assert.match(sheet,/advancement[^\n]*\+4|\+4[^\n]*advancement/i);
-    assert.ok((await page.locator('#action-log').innerText()).includes(after.log.at(-1).summary));
+    assert.ok((await downloadedActionLog(page)).includes(after.log.at(-1).summary));
     assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),targetedRaw);
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
     const name='term-'+term+'-'+width+(http?'-http':'-static');
