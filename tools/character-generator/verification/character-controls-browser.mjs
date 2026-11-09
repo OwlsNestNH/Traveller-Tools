@@ -1,3 +1,4 @@
+import {downloadedActionLog} from './download-log-browser.mjs';
 // Candidate-only browser checks. Temporary profiles; no live services or saved user data.
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
@@ -49,7 +50,7 @@ try{
    await page.locator('#gm-controls').screenshot({path:new URL('character-controls-'+label+'-roll.png',out).pathname});
    page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'Replace this roll',exact:true}).click();await changed(page,before);
    const replaced=JSON.parse(await saved(page));current=project(replaced);assert.equal(current.state.stage,'statistics');assert.equal(current.state.pool[0].base,12);assert.equal(current.state.character.age,18);assert.deepEqual(replaced.events.slice(0,old.events.length),old.events);assert.equal(current.log.at(-1).type,'gm-replay');assert.equal(current.log.at(-1).rolls[0].total,12);
-   assert.equal(await page.locator('#extra-stat').count(),0);assert.equal(await page.locator('#gm-roll-form').isVisible(),true);assert.equal(await page.locator('#action-log > li').count(),replaced.events.length);assert.match(await page.locator('#action-log').textContent(),/A fixture chronology correction/);assert.equal(await page.locator('#last-action-result').isVisible(),true);
+   assert.equal(await page.locator('#extra-stat').count(),0);assert.equal(await page.locator('#gm-roll-form').isVisible(),true);assert.equal(await page.locator('#workspace').evaluate(el=>Number(el.dataset.revision)),replaced.events.length);assert.match(await downloadedActionLog(page),/A fixture chronology correction/);assert.equal(await page.locator('#last-action-result').isVisible(),true);
    await page.reload();await page.getByRole('button',{name:'Keep these characteristics',exact:true}).waitFor();assert.deepEqual(JSON.parse(await saved(page)),replaced);assert.equal(await page.locator('#gm-controls').getAttribute('open'),null);
    if(transport==='http'){assert.ok(requests.some(url=>url.includes('/api/v1')));assert.ok(!requests.some(url=>/\/engine\//.test(url)));}
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);checks.push(label+' contextual extras, current values, guarded corrections, roll picker, cancellation, audit and reload');

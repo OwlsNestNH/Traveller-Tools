@@ -1,3 +1,4 @@
+import {downloadedActionLog} from './download-log-browser.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -45,7 +46,7 @@ try{
    const specialtySave=await page.evaluate(key=>localStorage.getItem(key),key);await page.locator('#award-skill').fill('Admin');await page.locator('[data-action=choose-skill]').click();await page.locator('#message.error').waitFor();
    assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),specialtySave);await page.reload();await page.locator('#award-skill').fill('Electronics (computers)');await page.locator('[data-action=choose-skill]').click();
    await page.waitForFunction(()=>document.querySelector('#message')?.textContent.includes('Skill Electronics (computers): untrained → 1'));
-   assert.match(await page.locator('#action-log').innerText(),/Electronics \(computers\)/);checks.push({name:'specialty-'+width+(apiMode?'-http':'-static'),pass:true});
+   assert.match(await downloadedActionLog(page),/Electronics \(computers\)/);checks.push({name:'specialty-'+width+(apiMode?'-http':'-static'),pass:true});
    for(const [base,die,selected] of [['Drive',1,'Drive (wheel)'],['Melee',6,'Melee (blade)']]){
     let offered=run(ordinary,'training',{table:'personal'});offered=run(offered,'gm-replay',{revision:offered.revision,rollIndex:0,values:[die],reason:'Speciality dropdown regression'});
     await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(offered.session)});await page.reload();await page.locator('#award-skill').waitFor();

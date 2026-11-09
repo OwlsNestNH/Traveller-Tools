@@ -65,3 +65,10 @@ body.final-sheet-open{overflow:hidden}#final-character-sheet{color:var(--ink);ba
 @media print{body.final-sheet-open{overflow:visible}body.final-sheet-open> :not(#final-character-sheet){display:none!important}body.final-sheet-open>#final-character-sheet{display:block!important;position:static;width:100%;max-height:none;margin:0;padding:0;overflow:visible;border:0;border-radius:0}.final-sheet-toolbar,.final-sheet-heading>button{display:none!important}#final-character-sheet::backdrop{display:none}#final-sheet-content{display:block;font-size:10pt;line-height:1.35}#final-sheet-content .stats{grid-template-columns:repeat(6,minmax(0,1fr))}#final-sheet-content .sheet-facts{grid-template-columns:repeat(4,minmax(0,1fr))}#final-sheet-content .sheet-section{break-inside:auto}#final-sheet-content h3{break-after:avoid}#final-sheet-content details>summary{display:none}#final-sheet-content details:not([open])>*:not(summary){display:block}#final-sheet-content .final-term-list li{break-inside:avoid}#final-sheet-title:focus{outline:none}}
 
 .final-event-rolls{display:block;margin-top:5px;font-size:14px;color:var(--muted)}
+
+/* The result is shown beside the decision, not repeated above the workspace. */
+#message.action-announcement{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
+.result-information{margin-top:12px;border-top:1px solid var(--line);padding-top:8px;}
+.result-information>summary{min-height:44px;cursor:pointer;align-content:center;font-weight:600;}
+.result-information>summary span{margin-right:6px;}
+.final-event-rolls{display:block;margin-top:4px;color:var(--muted);font-size:14px;}

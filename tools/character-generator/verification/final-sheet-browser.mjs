@@ -61,9 +61,11 @@ try{
    const downloading=page.waitForEvent('download');await dialog.getByRole('button',{name:'Save character & log',exact:true}).click();
    const download=await downloading;assert.equal(await readFile(await download.path(),'utf8'),saved);
    await page.screenshot({path:fileURLToPath(new URL('final-sheet-'+label+'.png',out)),fullPage:true});
-   await dialog.getByRole('button',{name:'View full action log',exact:true}).click();await dialog.waitFor({state:'hidden'});
-   assert.equal(await page.evaluate(()=>document.activeElement.textContent),'Action log');
-   await open.click();await dialog.waitFor();await dialog.getByRole('button',{name:'Close sheet',exact:true}).click();
+   const logDownloading=page.waitForEvent('download');await dialog.getByRole('button',{name:'Download full log',exact:true}).click();
+   const logDownload=await logDownloading;assert.equal(logDownload.suggestedFilename(),'traveller-action-log.txt');
+   const logText=await readFile(await logDownload.path(),'utf8');assert.match(logText,/ACTION 1/);assert.match(logText,/Source-confirmed synthetic treatment note/);
+   assert.equal(await dialog.isVisible(),true);assert.equal(await page.locator('.log-section').count(),0);
+   await dialog.getByRole('button',{name:'Close sheet',exact:true}).click();
    assert.equal(await page.evaluate(()=>document.activeElement.dataset.action),'open-character-sheet');
    // A cancelled replacement cannot discard or invalidate the finished sheet.
    page.once('dialog',d=>d.dismiss());await page.locator('#new').click();await open.waitFor();

@@ -17,8 +17,8 @@ try{
  for(const width of [1440,320])for(const transport of ['', '?api=local'])for(const [name,fixture] of fixtures){
   const context=await browser.newContext({viewport:{width,height:950}}),page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   try{
-   await page.goto(origin+'/'+transport);await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(fixture.session)});await page.reload();await page.waitForFunction(()=>document.querySelectorAll('#action-log li').length>5);await ready(page);
-   const before=await saved(page);assert.deepEqual(before.state,fixture.state);await page.reload();await page.waitForFunction(()=>document.querySelectorAll('#action-log li').length>5);assert.deepEqual((await saved(page)).state,before.state);
+   await page.goto(origin+'/'+transport);await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(fixture.session)});await page.reload();await page.waitForFunction(()=>Number(document.querySelector('#workspace')?.dataset.revision??0)>5);await ready(page);
+   const before=await saved(page);assert.deepEqual(before.state,fixture.state);await page.reload();await page.waitForFunction(()=>Number(document.querySelector('#workspace')?.dataset.revision??0)>5);assert.deepEqual((await saved(page)).state,before.state);
    if(before.state.stage==='relationship-event'){
     const button=page.locator('[data-action=resolve-relationship-event]');await button.click();await ready(page);assert.equal((await saved(page)).revision,before.revision);
     const person=page.locator('#relationship-event-person');if(await person.count())await person.selectOption(before.state.character.relationships[1].id);
@@ -26,7 +26,7 @@ try{
     await page.locator('#relationship-event-confirm').check();await button.dblclick();await ready(page);
     const after=await saved(page);assert.equal(after.revision,before.revision+1);assert.equal(after.state.character.relationshipEvents.length,1);assert.match(await page.locator('#sheet').innerText(),/Relationship consequences/);
     if(await person.count())throw Error('Completed relationship choice remains visible');
-    await page.reload();await page.waitForFunction(()=>document.querySelectorAll('#action-log li').length>5);assert.deepEqual((await saved(page)).state,after.state);
+    await page.reload();await page.waitForFunction(()=>Number(document.querySelector('#workspace')?.dataset.revision??0)>5);assert.deepEqual((await saved(page)).state,after.state);
    }else{assert.equal(before.state.pending.kind,'native-effect');assert.match(await page.locator('#workspace').innerText(),/no replacement relationship/i);}
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
    const label=name+'-'+width+'-'+(transport?'http':'static');await page.screenshot({path:new URL('relationship-'+label+'.png',out).pathname,fullPage:true});checks.push({name:label,pass:true});
