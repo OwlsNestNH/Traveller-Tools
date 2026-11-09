@@ -1304,13 +1304,17 @@ function nonPsionicEligibility(name){
  if(base==='Science'&&!NON_PSIONIC_SCIENCES.has(speciality?.toLowerCase()))return 'source-required';
  return 'eligible';
 }
+function zhodaniOpenSkillAllowed(state,base,{connection=false}={}) {
+ if(state.character.species!=='zhodani'||!['Deception','Gambler','Streetwise'].includes(base))return true;
+ const careers=connection?state.character.careers:state.active===null?[]:[state.character.careers[state.active]];
+ return base!=='Gambler'&&careers.some(c=>c.id==='zhodani.agent'&&c.assignment==='tozjabr');
+}
 function skillNameAllowed(state,name,effect) {
  let parsed;try{parsed=normalizeSkillName(name);}catch{return false;}name=parsed.name;const base=parsed.base;
  // Aliens 2026 p256 restricts open awards, not explicit printed exceptions
  // (Informant Streetwise), existing records, or forced skill losses.
  if(state.character.species==='zhodani'&&['any','existing'].includes(effect.scope)&&!effect.allowed&&!effect.tableSkills&&!effect.permittedNames&&['Deception','Gambler','Streetwise'].includes(base)){
-  const career=state.active===null?null:state.character.careers[state.active];
-  if(base==='Gambler'||career?.id!=='zhodani.agent'||career.assignment!=='tozjabr')return false;
+  if(!zhodaniOpenSkillAllowed(state,base))return false;
  }
  if(PSIONIC_TALENTS.includes(base)&&(state.character.psionicLoss||skillLevel(state,name)<0&&!coreTalentChoice(state,effect)&&effect.scope!=='new-psionic-talent'))return false;
  if(coreTalentChoice(state,effect)&&base==='Technopathy')return false;
@@ -2711,6 +2715,7 @@ if(pending.kind==='psionic-training-terms'){
   need(state.connections.length<2,'At most two connections award skills.');
   const person=text(payload.person,80);need(person&&!state.connections.some(c=>c.person.toLowerCase()===person.toLowerCase()),'Use a different Traveller for each connection.');
   const skill=text(payload.skill,80);need(skill!=='Jack-of-all-Trades','Connections cannot award Jack-of-all-Trades.');
+  need(zhodaniOpenSkillAllowed(state,normalizeSkillName(skill).base,{connection:true}),'This rare skill is not available for a Zhodani connection.');
   need((state.character.skills[skill]??0)<3,'A connection cannot increase a skill above level 3.');
   gainSkill(state,skill,1);state.connections.push({person,skill,note:text(payload.note??'',300)});return 'Connection with '+person+': '+skill+' gained.';
  }

@@ -33,3 +33,8 @@ test('public draft assignment interruption survives save, replay and idempotent 
  const retry=run(loaded,'fallback',{}, {id:'native-draft-once'});assert.equal(retry.state.character.consularDrafts.length,1);assert.deepEqual(retry.state,loaded.state);
  r=run(loaded,'career',{id:'zhodani.army',assignment:'infantry'});assert.equal(r.state.character.careers[0].drafted,true);assert.equal(r.log.at(-1).rolls.some(x=>/Qualification/.test(x.label)),false);assert.deepEqual(api({operation:'import',raw:exportSession(r.session)}).state,r.state);
 });
+
+test('Zhodani connections cannot bypass rare skills and retain source-trained Tozjabr access',()=>{
+ const s=fixture();s.stage='career';for(const skill of ['Gambler','Deception','Streetwise'])assert.throws(()=>cmd(s,'connection',{person:'Traveller',skill}),/rare skill/);assert.equal(s.connections.length,0);
+ s.character.careers=[{id:'zhodani.agent',assignment:'tozjabr'}];s.active=null;cmd(s,'connection',{person:'First Traveller',skill:'Deception'});cmd(s,'connection',{person:'Second Traveller',skill:'Streetwise'});assert.equal(s.character.skills.Deception,1);assert.equal(s.character.skills.Streetwise,1);
+});

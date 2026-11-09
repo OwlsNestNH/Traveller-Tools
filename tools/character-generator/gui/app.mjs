@@ -223,6 +223,7 @@ function careerTransferNotice(state,careerId){
  return '<div class="notice"><strong>Next-term transfer available</strong>'+rights.map(right=>'<p>'+esc(right.assignmentId?catalog.careers.find(c=>c.id===careerId)?.assignments.find(a=>a.id===right.assignmentId)?.name??right.assignmentId:'Any eligible assignment')+(right.rank!==null&&right.rank!==undefined?' · rank '+esc(right.rank):'')+(right.needsRankTrackDecision?' · rank track needs a referee ruling':'')+'</p>').join('')+'</div>';
 }
 function careerQualificationLabel(state,career){
+ if(state.forcedCareer===career.id&&state.forcedCareerDraft)return 'automatic via Consular draft';
  if(career.aslanAccess?.automatic)return 'automatic via recorded outward source right';
  const ordinary=career.qualification?career.qualification.stat+' '+career.qualification.target+'+':'automatic';
  const rights=(state.careerTransferOptions??[]).filter(right=>right.careerId===career.id&&right.available);
