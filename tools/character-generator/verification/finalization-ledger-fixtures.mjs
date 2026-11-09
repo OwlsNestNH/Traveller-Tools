@@ -1,0 +1,4 @@
+import {buildAslanOriginFixture} from './aslan-origin-fixtures.mjs';
+import {aslanSetup,aslanEvent,aslanEndTerm,aslanBenefits,force,settle,run} from './aslan-officer-fixtures.mjs';
+export function creditFinalizationFixture(rulesRevision){let r=force(buildAslanOriginFixture({gender:'male',stage:'aslan-rite',rulesRevision}),'roll-aslan-rite',{},[2,2]);r=run(r,'record-aslan-rite-equipment');return run(r,'skip-precareer');}
+export function landFinalizationFixture(){let r=aslanSetup('event-outcomes-aslan.wanderer');r=settle(force(r,'career',{id:'aslan.wanderer',assignment:'scout'},[6,6]));if(r.state.stage==='training')r=settle(force(r,'training',{table:'personal'},[1]));r=aslanEvent(r,12);r=run(r,'award-aslan-wanderer-land');r=aslanBenefits(run(aslanEndTerm(r),'leave-career',{retire:true}));return r;}

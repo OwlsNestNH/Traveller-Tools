@@ -1,3 +1,4 @@
+import {restrictedCreditItems,restrictedCreditPurchase} from './finalization-ledgers.mjs';
 import {aslanEventPending,aslanOutcastEntry,aslanOwnedLand} from './aslan-event-outcomes.mjs';
 import {eventEffectSummary} from './event-effect-summary.mjs';
 import {decorateEventResults} from './event-result-projection.mjs';
@@ -1240,6 +1241,9 @@ function beginNamedBenefit(state,e,rolls){
 }
 const weaponSkills=['Gun Combat (archaic)','Gun Combat (energy)','Gun Combat (slug)','Melee (blade)','Melee (bludgeon)','Melee (natural)','Melee (unarmed)',...['Heavy Weapons','Gunner'].flatMap(base=>SPECIALITIES[base].map(s=>base+' ('+s+')')),'Athletics (dexterity)','Explosives'];
 function canDeferEquipment(p){return p.source==='core'&&['armour','blade','gun','weapon','scientific-equipment','personal-vehicle'].includes(p.category)&&!p.deferredEquipmentId&&(p.restrictions??[]).every(r=>['common-or-military-ranged','unarmed'].includes(r));}
+function retainLedgerDetails(state,kind,record,name){
+ if(!state.equipmentChoices)return;state.character.deferredEquipment??=[];state.character.deferredEquipment.push({id:'equipment-'+(state.character.deferredEquipment.length+1),kind,status:'pending',name,source:copy(record.source),origin:{careerId:record.origin},targetId:record.id,priorAwardIds:[]});
+}
 function retainGenericEquipment(state){
  const p=state.pending;state.character.deferredEquipment??=[];need(!state.character.deferredEquipment.some(e=>e.awardId===p.awardId),'This award is already queued.');
  const entry={id:'equipment-'+(state.character.deferredEquipment.length+1),kind:'equipment',awardId:p.awardId,status:'pending',selection:copy(p),priorAwardIds:state.character.benefitAwards.filter(a=>a.id!==p.awardId).map(a=>a.id)};state.character.deferredEquipment.push(entry);
@@ -1253,13 +1257,18 @@ function openDeferredEquipment(state,entry,context){
  state.pending.label=context==='dependency'?'Choose this earlier awarded item because a pending skill increase affects the next action.':'Choose the details of this previously awarded item.';
 }
 function beginDeferredEquipmentTask(state,entry,context,rolls){
+ if(['landhold','equipment-credit'].includes(entry.kind)){
+  need(context==='finalization','Descriptive ledger entries are never weapon-skill prerequisites.');state.pending={kind:entry.kind+'-details',deferredContext:'finalization',deferredEquipmentId:entry.id,targetId:entry.targetId,benefitName:entry.name,source:entry.source.id,page:entry.source.page};
+  if(entry.kind==='equipment-credit'){const credit=state.character.equipmentCredits.find(c=>c.id===entry.targetId);need(credit,'The equipment credit is missing.');state.pending.credit=copy(credit);state.pending.catalogueByCategory=Object.fromEntries(credit.categories.map(category=>[category,restrictedCreditItems(credit,category)]));}
+  else state.pending.landhold=copy(state.character.aslanLandholds.find(l=>l.id===entry.targetId));state.stage='book-step';return;
+ }
  if(entry.kind==='artefact'){need(context==='finalization','Artefact descriptions are never a mechanical prerequisite.');state.pending={kind:'artefact-details',deferredContext:'finalization',deferredEquipmentId:entry.id,benefitName:entry.name,source:entry.source.id,page:entry.source.page};state.stage='book-step';return;}
  if(entry.kind!=='weapon-improvement'){openDeferredEquipment(state,entry,context);return;}
  state.resolvingEquipmentTask=entry.id;const effects=[{...copy(entry.effect),deferredEquipmentTaskId:entry.id,eligibleAwardIds:copy(entry.priorAwardIds)},{kind:'deferred-equipment-complete',id:entry.id}];
  if(context==='finalization')queueEffects(state,effects,'equipment-finalization',rolls);else {state.effectsQueue.unshift(...effects);drainEffects(state,rolls);}
 }
 function equipmentTaskPrerequisite(state,entry){
- if(entry.kind==='artefact')return null;
+ if(['artefact','landhold','equipment-credit'].includes(entry.kind))return null;
  return outstandingEquipment(state).find(d=>d.kind==='equipment'&&entry.priorAwardIds.includes(d.awardId)&&(entry.kind==='weapon-improvement'?d.selection.weaponSkillOptions.some(n=>entry.effect.allowedBases.includes(n.split(' (')[0])):entry.selection.replaceOriginal&&d.selection.definitionId===entry.selection.definitionId));
 }
 function equipmentSkillBarrier(state,e){
@@ -1810,7 +1819,7 @@ function apply(state,command,rolls) {
   queueEffects(state,[{kind:'equipment-command-resume'}],'equipment-command-resume',rolls);return 'Resolve the earlier weapon improvement before applying this skill or characteristic ruling. The original source decision is retained.';
  }
  if(state.correctedCareerEvents&&state.pendingChoice?.believerBuyoutChoice&&command.type==='gm-override')need(false,'Choose the buyout first, or use audited restore/replay to revise its benefit context.');
- if(state.pending?.deferredEquipmentId)need(['resolve-book','resolve-artefact-details','cancel-deferred-equipment','notes','gm-mode'].includes(command.type),'Resolve the earlier equipment choice before continuing.');
+ if(state.pending?.deferredEquipmentId)need(['resolve-book','resolve-artefact-details','resolve-landhold-details','spend-equipment-credit','retain-equipment-credit','cancel-deferred-equipment','notes','gm-mode'].includes(command.type),'Resolve the earlier equipment choice before continuing.');
  if(state.stage==='equipment-finalization')need(['choose-deferred-equipment','close-equipment-finalization','finish','notes','gm-mode'].includes(command.type),'Complete or close the equipment checklist before continuing.');
  if(state.pending?.kind==='prisoner-lawyer')need(['resolve-prisoner-lawyer','notes','gm-mode'].includes(command.type),'Resolve the pending lawyer choice before changing its context. Use restore or replay to revise it.');
  if(state.character.aslanOrigin?.status==='pending')need(['roll-aslan-gender','roll-aslan-family','roll-aslan-birth-order','resolve-aslan-estate','roll-aslan-clan','choose-aslan-clan','name-aslan-clan','roll-aslan-pride','roll-aslan-rite','record-aslan-rite-equipment','resolve-aslan-origin-source','background','choose-effect','choose-skill','skill-award-source','retry-skill-choice','resolve-book','notes','gm-mode'].includes(command.type),'Finish the recorded Aslan origin before changing its context. Restore or replay explicitly to revise it.');
@@ -1962,7 +1971,7 @@ function apply(state,command,rolls) {
 
  case 'record-aslan-rite-equipment':{
   need(aslanEventPending(state)==='rite-equipment','No Rite equipment credit is pending.');need(Object.keys(payload).length===0,'No equipment selection is required yet.');need(state.character.gender==='male','The Rite equipment credit is the male result.');
-  state.character.equipmentCredits??=[];state.character.equipmentCredits.push({id:'aslan-equipment-credit-'+(state.character.equipmentCredits.length+1),amount:5000,remaining:5000,categories:['Art','Armour','Weapon'],source:{id:'aliens',page:21},origin:'aslan-rite-2+2',status:'available'});
+  state.character.equipmentCredits??=[];state.character.equipmentCredits.push({id:'aslan-equipment-credit-'+(state.character.equipmentCredits.length+1),amount:5000,remaining:5000,categories:['Art','Armour','Weapon'],source:{id:'aliens',page:21},origin:'aslan-rite-2+2',status:'available'});retainLedgerDetails(state,'equipment-credit',state.character.equipmentCredits.at(-1),'Rite equipment credit');
   state.pending=null;drainEffects(state,rolls);return 'Cr5000 restricted equipment credit recorded for art, armour or weapons. Choose items at finalization; no cash awarded.';
  }
  case 'resolve-aslan-territory':{
@@ -2008,7 +2017,7 @@ function apply(state,command,rolls) {
   need(aslanEventPending(state)==='wanderer-land','No Wanderer land award is pending.');need(Object.keys(payload).length===0,'This award requires no invented location.');
   const before=state.character.stats.SOC,soc=Math.max(9,before),rule=aslanLandRules(soc);need(rule.minimumParcels!==null,'Current SOC is outside the printed parcel table; retain this source step for a referee parcel ruling.');
   setStat(state,'SOC',soc);state.character.aslanLandholds??=[];
-  state.character.aslanLandholds.push({id:'aslan-landhold-'+(state.character.aslanLandholds.length+1),source:{id:'aliens',page:45},parcelSource:{id:'aliens',page:17},origin:'wanderer-event-12',socBefore:before,socAtAward:soc,parcels:rule.minimumParcels,increment:rule.increment,detailsStatus:'pending',name:null,location:null});
+  state.character.aslanLandholds.push({id:'aslan-landhold-'+(state.character.aslanLandholds.length+1),source:{id:'aliens',page:45},parcelSource:{id:'aliens',page:17},origin:'wanderer-event-12',socBefore:before,socAtAward:soc,parcels:rule.minimumParcels,increment:rule.increment,detailsStatus:'pending',name:null,location:null});retainLedgerDetails(state,'landhold',state.character.aslanLandholds.at(-1),'Landhold');
   state.pending=null;drainEffects(state,rolls);return 'Unclaimed territory: SOC '+before+' to '+soc+'; '+rule.minimumParcels+' Land Parcels awarded. Name and location may be entered or left for the GM at finalization.';
  }
  case 'resolve-aslan-outlaw-restoration':{
@@ -2832,6 +2841,15 @@ function apply(state,command,rolls) {
  }
  case 'choose-deferred-equipment':{
   need(state.equipmentChoices&&state.stage==='equipment-finalization','Open the final equipment checklist first.');const entry=outstandingEquipment(state).find(e=>e.id===payload.id);need(entry,'Choose an unresolved equipment award.');need(!equipmentTaskPrerequisite(state,entry),'Resolve the linked earlier equipment award first.');beginDeferredEquipmentTask(state,entry,'finalization',rolls);return 'Resolve the awarded '+(entry.name??benefitAward(state,entry.awardId).name)+' details.';
+ }
+ case 'resolve-landhold-details':{
+  need(state.stage==='book-step'&&state.pending?.kind==='landhold-details','No landhold details are open.');need(Object.keys(payload).every(k=>['name','location'].includes(k)),'Use only the landhold name and location.');const entry=outstandingEquipment(state).find(e=>e.id===state.pending.deferredEquipmentId);need(entry?.kind==='landhold','This landhold task is no longer pending.');const land=state.character.aslanLandholds.find(l=>l.id===entry.targetId);need(land,'The awarded landhold is missing.');land.name=text(payload.name??'',120)||null;land.location=text(payload.location??'',240)||null;land.detailsStatus='recorded';entry.status='resolved';state.pending=null;state.stage='equipment-finalization';return 'Landhold description recorded. Unnamed or unplaced land remains for the GM; parcel ownership is unchanged.';
+ }
+ case 'spend-equipment-credit':{
+  need(state.stage==='book-step'&&state.pending?.kind==='equipment-credit-details','No restricted equipment credit is open.');const entry=outstandingEquipment(state).find(e=>e.id===state.pending.deferredEquipmentId);need(entry?.kind==='equipment-credit','This credit task is no longer pending.');const credit=state.character.equipmentCredits.find(c=>c.id===entry.targetId);need(credit,'The equipment credit is missing.');const item=restrictedCreditPurchase(credit,payload);credit.purchases??=[];state.character.assets??=[];const asset={id:'credit-asset-'+credit.id+'-'+(credit.purchases.length+1),type:'equipment',active:true,ownership:'owned',owner:'Traveller',source:copy(credit.source),creditId:credit.id,...copy(item)};state.character.assets.push(asset);credit.remaining-=item.cost;credit.purchases.push({assetId:asset.id,cost:item.cost,quantity:item.quantity});credit.status=credit.remaining?'partially-spent':'spent';state.pending.credit=copy(credit);state.pending.catalogueByCategory=Object.fromEntries(credit.categories.map(category=>[category,restrictedCreditItems(credit,category)]));return 'Received '+item.quantity+' × '+item.name+' using Cr'+item.cost+' restricted credit. Cr'+credit.remaining+' remains; cash is unchanged.';
+ }
+ case 'retain-equipment-credit':{
+  need(state.stage==='book-step'&&state.pending?.kind==='equipment-credit-details','No restricted equipment credit is open.');need(Object.keys(payload).length===0,'No conversion or cash amount is permitted.');const entry=outstandingEquipment(state).find(e=>e.id===state.pending.deferredEquipmentId),credit=state.character.equipmentCredits.find(c=>c.id===entry?.targetId);need(entry&&credit,'This credit task is no longer pending.');credit.status=credit.remaining?'retained':'spent';entry.status='resolved';state.pending=null;state.stage='equipment-finalization';return 'Recorded the equipment selection and retained Cr'+credit.remaining+' restricted credit. No unused credit was converted to cash or discarded.';
  }
  case 'resolve-artefact-details':{
   need(state.stage==='book-step'&&state.pending?.kind==='artefact-details','No artefact details are open.');need(Object.keys(payload).every(k=>['name','description'].includes(k)),'Use only the artefact name and description.');const entry=outstandingEquipment(state).find(e=>e.id===state.pending.deferredEquipmentId);need(entry?.kind==='artefact','The artefact details are no longer pending.');const asset=state.character.assets.find(a=>a.id===entry.assetId);need(asset,'The awarded artefact is missing.');asset.name=text(payload.name??'',120)||entry.name;asset.description=text(payload.description??'',2000);asset.detailsPending=false;entry.status='resolved';const r=state.character.lifeEvents.find(r=>r.id===entry.lifeEventId);r.decision.details={name:asset.name,description:asset.description};state.pending=null;state.stage='equipment-finalization';return 'Recorded '+entry.name+' details. An unknown description is permitted; no powers or value are assigned.';
