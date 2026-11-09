@@ -3,6 +3,8 @@
 export function testSourceDecision(s){
  const p=s.pending,c=s.character,kind=p?.kind;
  if(!kind)return null;
+ // Current user ruling requires a source-table reroll, never an omission.
+ if(c.species==='aslan'&&c.gender==='female'&&(p.decision==='female-independence'||/Independence/.test(p.label??'')))return null;
  let type='resolve-book',payload={confirmed:true},gm=false,classification='source-assisted',decision='',unvalidated=[];
  const placeholder=(text,mechanics=p.label)=>{classification='placeholder';decision=text;unvalidated.push(mechanics);};
  switch(kind){
@@ -27,8 +29,7 @@ export function testSourceDecision(s){
   else{gm=true;payload={decision:'restore',originalSOC:Math.max(1,c.aslanOrigin?.familySOC??s.currentAslanOutlawRestoration?.socBefore??c.stats.SOC),originalSOCConfirmed:true};decision='Test referee uses recorded family SOC, or pre-restoration SOC when unavailable, for the required male restoration.';}
   break;
  case 'aslan-origin-source':
-  if(p.decision!=='female-independence')return null;
-  type='resolve-aslan-origin-source';gm=true;payload={decision:'omit'};decision='Resolve female Independence conflict by omitting the male-only family award.';break;
+  return null;
  case 'benefit-equipment':
   Object.assign(payload,{benefitItemName:'TEST ONLY '+p.category+' placeholder',benefitItemCost:Math.min(100,p.maximumCost??100),benefitItemTL:Math.min(5,p.maximumTL??5),...(p.weaponSkillRequired?{benefitWeaponSkill:p.weaponSkillOptions[0]}:{}),...(p.replaceOriginal?{benefitReplaceAssetId:p.replacementAssetIds[0]}:{})});
   placeholder('Fictional equipment within numeric limits; item catalogue existence and restrictions not checked.','Actual equipment catalogue selection, price, TL and restrictions.');break;

@@ -16,14 +16,15 @@ function run(career,assignment,species,n){
  let r=api({operation:'create',seed}),trace=[],entered=false,believerChoices=[],sourceDecisions=[];
  let random=n+1; const pick=a=>{random=(Math.imul(random,1664525)+1013904223)>>>0;return a[random%a.length];};
  const act=(type,payload={})=>{trace.push({type,payload});const next=api({operation:'command',session:r.session,command:{type,payload}});if(!next.ok)throw Error(next.error.message);r=next;};
- const result=(outcome,reason)=>({seed,outcome,reason,stage:r.state.stage,entered,terms:r.state.character.terms,completionClass:sourceDecisions.some(x=>x.classification==='placeholder')?'placeholder':sourceDecisions.length?'source-assisted':'automated',...(sourceDecisions.length?{sourceDecisions}:{}),...(believerChoices.length?{believerChoices}:{}),...(outcome==='error'||outcome==='unsupported-stage'?{trace:trace.slice(-8),pending:r.state.pendingChoice}: {})});
+ const result=(outcome,reason)=>({seed,outcome,reason,stage:r.state.stage,entered,terms:r.state.character.terms,gender:r.state.character.gender,familyRerolls:r.log.flatMap(entry=>entry.rolls??[]).filter(roll=>/female Independence reroll/.test(roll.label)).map(roll=>({label:roll.label,values:roll.values,total:roll.total})),completionClass:sourceDecisions.some(x=>x.classification==='placeholder')?'placeholder':sourceDecisions.length?'source-assisted':'automated',...(sourceDecisions.length?{sourceDecisions}:{}),...(believerChoices.length?{believerChoices}:{}),...(outcome==='error'||outcome==='unsupported-stage'?{trace:trace.slice(-8),pending:r.state.pendingChoice}: {})});
  try{
 
 
-  act('setup',{species,gender:career.eligibility?.[assignment.id]??career.gender??(n%2?'male':'female')});
+  act('setup',{species,gender:arg('gender','')||(career.eligibility?.[assignment.id]??career.gender??(n%2?'male':'female'))});
   act('roll-statistics');act('accept-statistics');
   for(let step=0;step<180;step++){
    const s=r.state,c=s.character,record=c.careers[s.active];
+   if(c.species==='aslan'&&c.gender==='female')assert.ok(!Object.hasOwn(c.skills,'Independence'),'Female received male-only Independence');
    assert.ok(Object.values(c.stats).every(Number.isFinite),'Nonfinite statistic');
    assert.ok(Object.values(c.skills).every(v=>Number.isInteger(v)&&v>=0&&v<=4),'Invalid skill level');
    assert.ok(Number.isFinite(c.cash)&&Number.isFinite(c.debt),'Nonfinite cash/debt');
@@ -87,7 +88,7 @@ function run(career,assignment,species,n){
       const buyout=r.state.character.careers[careerIndex].believerBuyout;
       if(index===1){const enemiesGained=r.state.character.relationships.filter(person=>person.role==='Enemy').length-enemiesBefore;assert.ok(enemiesGained>=1&&enemiesGained<=6,'Refusal must gain 1D Enemies');believerChoices.push({encounter,index,decision:'decline',enemiesGained});}
       else{assert.ok(buyout,'Accepted offer lacks buyout record');assert.equal(buyout.calculation,index===0?'once':'separate');assert.equal(buyout.results.length,buyout.forfeited.total>0?(index===0?1:buyout.forfeited.total):0);assert.ok(buyout.results.every(total=>Number.isInteger(total)&&total>=2&&total<=12));assert.equal(buyout.amount,buyout.results.reduce((sum,total)=>sum+total,0)*10000*(index===0?buyout.forfeited.total:1));believerChoices.push({encounter,index,decision:'accept',calculation:buyout.calculation,results:buyout.results,formula:buyout.formula,amount:buyout.amount,forfeitedRolls:buyout.forfeited.total});}
-     }else act('choose-effect',{index:s.pendingChoice.options.indexOf(pick(s.pendingChoice.options))});
+     }else act('choose-effect',{index:s.pendingChoice.options.indexOf(pick(s.pendingChoice.options.filter(option=>option.available!==false)))});
      break;
     }
     case 'skill-choice':{
@@ -116,7 +117,7 @@ function run(career,assignment,species,n){
   return result('error','180-action guard exceeded');
  }catch(e){return result('error',e.message);}
 }
-for(const career of catalog.careers.filter(c=>(!arg('career','')||c.id===arg('career',''))&&(arg('species','')!=='aezorgh'||['core','vargr','companion'].includes(c.group))))for(const assignment of career.assignments.filter(a=>!arg('assignment','')||a.id===arg('assignment',''))){
+for(const career of catalog.careers.filter(c=>(!arg('group','')||c.group===arg('group',''))&&(!arg('gender','')||!c.gender||c.gender===arg('gender',''))&&(!arg('career','')||c.id===arg('career',''))&&(arg('species','')!=='aezorgh'||['core','vargr','companion'].includes(c.group))))for(const assignment of career.assignments.filter(a=>(!arg('gender','')||!career.eligibility?.[a.id]||career.eligibility[a.id]===arg('gender',''))&&(!arg('assignment','')||a.id===arg('assignment','')))){
  const species=arg('species','')||(['aslan','vargr'].includes(career.group)?career.group:'human');
  const row={career:career.id,assignment:assignment.id,species,attempted:0,completed:0,outcomes:{},runs:[]};
  for(let n=startSeed;n<startSeed+(sourcePolicy==='stop'&&species!=='human'&&career.id.endsWith('.psion')?Math.min(max,10):max)&&row.completed<goal;n++){
@@ -127,6 +128,6 @@ for(const career of catalog.careers.filter(c=>(!arg('career','')||c.id===arg('ca
  rows.push(row);console.log(career.id,assignment.id,`${row.completed}/${row.attempted}`,JSON.stringify({outcomes:row.outcomes,completionClasses:Object.fromEntries(['automated','source-assisted','placeholder'].map(kind=>[kind,row.runs.filter(x=>x.outcome==='completed'&&x.completionClass===kind).length])),sourceDecisions:row.runs.flatMap(x=>(x.sourceDecisions??[]).map(decision=>({seed:x.seed,...decision}))),believerChoices:row.runs.flatMap(x=>(x.believerChoices??[]).map(choice=>({seed:x.seed,...choice}))),completedSeeds:row.runs.filter(x=>x.outcome==='completed').map(x=>x.seed),issues:row.runs.filter(x=>['error','unsupported-stage'].includes(x.outcome))}));
 }
 assert.equal(execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),testedHead,'Candidate changed during test');
-const report={head:testedHead,goal,maxAttemptsPerAssignment:max,startSeed,sourcePolicy,believerChoicePolicy:'Cycle single-roll acceptance, refusal, separate-roll acceptance across natural encounters; per-run choice ordinals retained for reproducibility.',method:'Release api only; natural dice; 1-3 target terms, qualification failures retry with new seed; no dice/stat overrides; explicitly classified test-only referee decisions/placeholders when enabled; no session saves.',rows};
+const report={head:testedHead,goal,maxAttemptsPerAssignment:max,startSeed,sourcePolicy,gender:arg('gender','mixed'),group:arg('group','all'),believerChoicePolicy:'Cycle single-roll acceptance, refusal, separate-roll acceptance across natural encounters; per-run choice ordinals retained for reproducibility.',method:'Release api only; natural dice; 1-3 target terms, qualification failures retry with new seed; no dice/stat overrides; explicitly classified test-only referee decisions/placeholders when enabled; no session saves.',rows};
 const output=arg('output','');if(output)writeFileSync(output,JSON.stringify(report,null,2)+'\n');
 console.log('SUMMARY',JSON.stringify({assignments:rows.length,attempted:rows.reduce((n,r)=>n+r.attempted,0),completed:rows.reduce((n,r)=>n+r.completed,0),shortfalls:rows.filter(r=>r.completed<goal).map(r=>[r.career,r.assignment,r.completed]),errors:rows.flatMap(r=>r.runs.filter(x=>x.outcome==='error'||x.outcome==='unsupported-stage'))}));
