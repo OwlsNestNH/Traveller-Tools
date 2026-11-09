@@ -75,3 +75,7 @@ test('scoped cash, stat, relationship count, benefits and PSI rolls pause indepe
  while(state.stage==='borrowed-event-roll'){const rolls=[];a.apply(state,{type:'roll-borrowed-event',payload:{pendingId:state.pendingBorrowedRoll.id}},rolls);assert.equal(rolls.length,1);actual.push(...rolls);}
  assert.equal(actual.length,5);assert.deepEqual(actual,expected);assert.equal(state.rng,old.rng);assert.deepEqual(state.character,old.character);
 });
+test('existing saved relationship checkpoint uses zero-dice new continuation without rewriting prior combined action',()=>{
+ let r=agentCoverFixture();r=run(r,'cross-career-cover',{careerId:'core.rogue'});r=forceAt(r,r.revision,0,[1,1]);r=forceAt(r,r.revision-1,1,[3]);assert.equal(r.state.stage,'relationship-event');
+ const prefix=JSON.stringify(r.session.events),count=r.revision;r=run(r,'resolve-relationship-event-step',{role:'Enemy',confirmed:true});assert.equal(r.log.at(-1).rolls.length,0);assert.equal(r.state.stage,'borrowed-event-roll');assert.equal(JSON.stringify(r.session.events.slice(0,count)),prefix);roundtrip(r);
+});
