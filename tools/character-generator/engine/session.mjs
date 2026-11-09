@@ -101,10 +101,10 @@ function allocationImproves(state,name,e){name=normalizedSkill(state,name).name;
 
 // User ruling (2026-11-09): reroll mandatory female Independence table results.
 function mandatoryIndependence(state,effects){return (effects??[]).some(e=>e.kind==='independence'||e.kind==='skill'&&e.name==='Independence'||e.kind==='conditional'&&mandatoryIndependence(state,conditionMatches(state,e.condition)?e.then:e.otherwise));}
-function femaleIndependenceTableRoll(state,rows,modifier,rolls,label){
+function femaleIndependenceTableRoll(state,rows,modifier,rolls,label,capToTable=false){
  for(let attempt=0;attempt<64;attempt++){
   const result=dice(state,1,rolls,attempt?label+' (female Independence reroll '+attempt+')':label)+modifier;
-  if(!state.deferredSpecializations||state.character.species!=='aslan'||state.character.gender!=='female'||!mandatoryIndependence(state,rows?.[result-1]))return result;
+  if(!state.deferredSpecializations||state.character.species!=='aslan'||state.character.gender!=='female'||!mandatoryIndependence(state,rows?.[(capToTable&&rows?.length?Math.min(result,rows.length):result)-1]))return result;
  }
  throw Error('Female Independence reroll limit reached (64 attempts); no award or action committed.');
 }
@@ -1287,10 +1287,11 @@ function openBenefitShip(state,e,rolls){
 function rerollMaterialBenefit(state,e,rolls){
  const award=benefitAward(state,e.awardId),context=award.origin.tableContext,career=state.active!==null?currentCareer(state).career:null;
  if(!context||!career||context.careerId!==career.id||context.table!=='material'){benefitSource(state,award,'benefit-source','This repeated borrowed ship requires a material-table reroll, but its original table and modifiers were not recorded. Resolve the replacement explicitly.');return false;}
- const start=rolls.length,result=femaleIndependenceTableRoll(state,RULE_PACK[context.careerId]?.benefits.material,context.modifier,rolls,'Repeated ship: material benefit'),natural=result-context.modifier,entry={natural,modifier:context.modifier,result};state.benefitRollContext?.rolls.push(...rolls.slice(start).map(r=>({natural:r.total,modifier:context.modifier,result:r.total+context.modifier})));award.reroll=entry;
- const rows=RULE_PACK[context.careerId]?.benefits.material;
- if(!rows?.[result-1]){benefitSource(state,award,'benefit-source','The replacement benefit result '+result+' is outside the printed table. Resolve it explicitly without consuming another benefit roll.');return false;}
- award.status='rerolled';state.effectsQueue.unshift(...markBenefitOrigin(rows[result-1],{...award.origin,tableContext:{...context,...entry}}));return true;
+ const start=rolls.length,result=femaleIndependenceTableRoll(state,RULE_PACK[context.careerId]?.benefits.material,context.modifier,rolls,'Repeated ship: material benefit',state.printedBenefitMaximum),natural=result-context.modifier,entry={natural,modifier:context.modifier,result};state.benefitRollContext?.rolls.push(...rolls.slice(start).map(r=>({natural:r.total,modifier:context.modifier,result:r.total+context.modifier})));award.reroll=entry;
+ const rows=RULE_PACK[context.careerId]?.benefits.material,appliedResult=state.printedBenefitMaximum&&rows?.length?Math.min(result,rows.length):result;
+ if(state.printedBenefitMaximum)entry.appliedResult=appliedResult;
+ if(!rows?.[appliedResult-1]){benefitSource(state,award,'benefit-source','The replacement benefit result '+result+' is outside the printed table. Resolve it explicitly without consuming another benefit roll.');return false;}
+ award.status='rerolled';state.effectsQueue.unshift(...markBenefitOrigin(rows[appliedResult-1],{...award.origin,tableContext:{...context,...entry}}));return true;
 }
 function finishCareerExit(state){const {record}=currentCareer(state);state.stage=record.benefitRolls?'benefits':postBenefitsStage(state);if(!record.benefitRolls)state.active=null;}
 
@@ -2698,15 +2699,17 @@ function apply(state,command,rolls) {
   const credits=selectedBenefitCredits(state,payload),creditIds=credits.map(c=>c.id),creditModifier=credits.reduce((n,c)=>n+c.value,0);
   const modifier=(record.benefitDM??0)+(cash&&Object.hasOwn(state.character.skills,'Gambler')?1:0)+modifierTotal(state,'benefit')+speciesModifiers+creditModifier+lifeModifier;
   const benefitRollStart=rolls.length;
-  const result=cash?dice(state,1,rolls,'Cash benefit')+modifier:femaleIndependenceTableRoll(state,nativePack(state)?.benefits.material,modifier,rolls,'Material benefit');
+  const result=cash?dice(state,1,rolls,'Cash benefit')+modifier:femaleIndependenceTableRoll(state,nativePack(state)?.benefits.material,modifier,rolls,'Material benefit',state.printedBenefitMaximum);
   for(const b of lifeBonuses){b.status='consumed';b.consumption={careerId:career.id,careerIndex:state.active,cash,die:result-modifier,result};}
   consumeBenefitCredits(credits,{kind:'ordinary',careerId:career.id,careerIndex:state.active,cash,die:result-modifier,result});
   state.benefitRollContext={careerId:career.id,careerIndex:state.active,table:cash?'cash':'material',modifier,natural:result-modifier,result,creditIds,lifeBonusIds,rolls:rolls.slice(benefitRollStart).map(r=>({natural:r.total,modifier,result:r.total+modifier}))};
   if(cash){state.cashRolls++;const account=cashRollAccount(state);if(account)state.character.cashRollAccounts[account]++;if(Object.hasOwn(state.character.stats,'WLT'))state.character.stats.WLT=Math.min(15,state.character.stats.WLT+1);}
-  const pack=nativePack(state),index=result-1;
-  if(index>=7||index<0){sourceStep(state,'benefit',career.source,career.page,'Benefit result '+result+' is outside the printed table. Referee adjudication required.','benefits');state.pending.rollContext=copy(state.benefitRollContext);return 'Benefit roll exceeds printed table; no result was assumed.';}
-  if(pack){const origin={careerId:career.id,careerIndex:state.active,source:{id:career.source,page:career.page},tableContext:{careerId:career.id,table:cash?'cash':'material',modifier,natural:result-modifier,result}};state.benefitRollContext={...origin.tableContext,careerIndex:state.active,creditIds,lifeBonusIds,rolls:rolls.slice(benefitRollStart).map(r=>({natural:r.total,modifier,result:r.total+modifier}))};queueEffects(state,cash?[{kind:'cash',value:pack.benefits.cash[index]*(state.character.species==='aslan'&&state.character.culture==='native'&&state.character.gender==='male'&&cashRollAccount(state)!=='core'?0.5:1)}]:markBenefitOrigin(pack.benefits.material[index],origin),'benefit-complete',rolls);}else sourceStep(state,'benefit',career.source,career.page,'Resolve '+(cash?'cash':'material')+' benefit result '+result+'.','benefits');
-  return 'Rolled '+(cash?'cash':'material')+' benefit '+result+' (DM '+modifier+').';
+  // User ruling: cap only at the actual printed maximum; retain the uncapped dice/DM for audit.
+  const pack=nativePack(state),rows=pack?.benefits[cash?'cash':'material'],appliedResult=state.printedBenefitMaximum&&rows?.length?Math.min(result,rows.length):result,index=appliedResult-1;
+  if(state.printedBenefitMaximum)state.benefitRollContext.appliedResult=appliedResult;
+  if((state.printedBenefitMaximum?rows&&index>=rows.length:index>=7)||index<0){sourceStep(state,'benefit',career.source,career.page,'Benefit result '+result+' is outside the printed table. Referee adjudication required.','benefits');state.pending.rollContext=copy(state.benefitRollContext);return 'Benefit roll exceeds printed table; no result was assumed.';}
+  if(pack){const origin={careerId:career.id,careerIndex:state.active,source:{id:career.source,page:career.page},tableContext:{careerId:career.id,table:cash?'cash':'material',modifier,natural:result-modifier,result,...(state.printedBenefitMaximum?{appliedResult}:{})}};state.benefitRollContext={...origin.tableContext,careerIndex:state.active,creditIds,lifeBonusIds,rolls:rolls.slice(benefitRollStart).map(r=>({natural:r.total,modifier,result:r.total+modifier}))};queueEffects(state,cash?[{kind:'cash',value:pack.benefits.cash[index]*(state.character.species==='aslan'&&state.character.culture==='native'&&state.character.gender==='male'&&cashRollAccount(state)!=='core'?0.5:1)}]:markBenefitOrigin(pack.benefits.material[index],origin),'benefit-complete',rolls);}else sourceStep(state,'benefit',career.source,career.page,'Resolve '+(cash?'cash':'material')+' benefit result '+result+'.','benefits');
+  return 'Rolled '+(cash?'cash':'material')+' benefit '+result+' (DM '+modifier+').'+(appliedResult!==result?' Applied printed maximum row '+appliedResult+' (user ruling).':'');
  }
  case 'resolve-prisoner-lawyer':{
   need(state.stage==='book-step'&&state.pending?.kind==='prisoner-lawyer','No lawyer opportunity is pending.');
