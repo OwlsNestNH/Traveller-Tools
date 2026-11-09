@@ -50,7 +50,7 @@ try{
   });
   try{
    const page=await context.newPage();await page.goto(site);
-   assert.deepEqual(await page.locator('main .tool-card h2').allTextContents(),['Nav Calculator','Traveller Tool Locker','Traveller Ship Operations — Beta','Ship Combat Alpha','Traveller Vehicle Builder','Robot Builder - Beta','Character Generator - Beta','Ship’s Log & Ledger']);
+   assert.deepEqual(await page.locator('main .tool-card h2').allTextContents(),['Nav Calculator','Traveller Tool Locker','Traveller Ship Operations — Beta','Character Generator - Beta','Traveller Vehicle Builder','Robot Builder - Beta','Ship Combat Alpha','Ship’s Log & Ledger']);
    const card=page.locator('.tool-card').filter({has:page.getByRole('heading',{name:'Character Generator - Beta',exact:true})});
    check(name+' home fits',await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
    const launch=page.waitForEvent('popup');await card.getByRole('link',{name:'Open Character Generator',exact:true}).click();const editor=await launch;
