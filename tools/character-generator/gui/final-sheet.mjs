@@ -28,7 +28,7 @@ export function compactRecord(document,source){
 export function createFinalSheet({document,onSave,onPrint}){
  const dialog=document.getElementById('final-character-sheet'),content=document.getElementById('final-sheet-content');
  let returnToLog=false;
- const close=()=>dialog.close();
+ const close=()=>{dialog.close();finishClose();};
  dialog.querySelector('[data-final-close]').addEventListener('click',close);
  dialog.querySelector('[data-final-save]').addEventListener('click',onSave);
  dialog.querySelector('[data-final-print]').addEventListener('click',onPrint);
@@ -43,12 +43,16 @@ export function createFinalSheet({document,onSave,onPrint}){
   if(event.shiftKey&&(current===first||!controls.includes(current))){event.preventDefault();last.focus();}
   else if(!event.shiftKey&&current===last){event.preventDefault();first.focus();}
  });
- dialog.addEventListener('close',()=>{
+ function finishClose(){
+  // Button closes are synchronous. Ignore their later native event, or a
+  // queued close event from a dialog that has already been reopened.
+  if(dialog.open||!document.body.classList.contains('final-sheet-open'))return;
   document.body.classList.remove('final-sheet-open');
   const target=returnToLog?document.querySelector('.log-section h2'):document.querySelector('[data-action="open-character-sheet"]');
   returnToLog=false;
   if(target){if(!target.hasAttribute('tabindex')&&target.tagName!=='BUTTON')target.tabIndex=-1;target.focus();}
- });
+ }
+ dialog.addEventListener('close',finishClose);
  return {
   open(projection,session,catalog){
    if(dialog.open||projection.state.stage!=='finish')return;
