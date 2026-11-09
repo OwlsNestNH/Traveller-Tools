@@ -7,12 +7,13 @@ const goal=Number(arg('goal',10)),max=Number(arg('attempts',500));
 const testedHead=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
 if(arg('expected-head',''))assert.equal(testedHead,arg('expected-head',''),'Unexpected candidate head');
 const catalog=api({operation:'catalog'}),rows=[];
+let believerEncounterCount=0;
 function run(career,assignment,species,n){
  const seed=`full-random-v1|${species}|${career.id}|${assignment.id}|${n}`;
- let r=api({operation:'create',seed}),trace=[],entered=false;
+ let r=api({operation:'create',seed}),trace=[],entered=false,believerChoices=[];
  let random=n+1; const pick=a=>{random=(Math.imul(random,1664525)+1013904223)>>>0;return a[random%a.length];};
  const act=(type,payload={})=>{trace.push({type,payload});const next=api({operation:'command',session:r.session,command:{type,payload}});if(!next.ok)throw Error(next.error.message);r=next;};
- const result=(outcome,reason)=>({seed,outcome,reason,stage:r.state.stage,entered,terms:r.state.character.terms,...(outcome==='error'||outcome==='unsupported-stage'?{trace:trace.slice(-8),pending:r.state.pendingChoice}: {})});
+ const result=(outcome,reason)=>({seed,outcome,reason,stage:r.state.stage,entered,terms:r.state.character.terms,...(believerChoices.length?{believerChoices}:{}),...(outcome==='error'||outcome==='unsupported-stage'?{trace:trace.slice(-8),pending:r.state.pendingChoice}: {})});
  try{
 
 
@@ -60,7 +61,17 @@ function run(career,assignment,species,n){
     }
     case 'cross-career-cover':act('cross-career-cover',{careerId:pick(s.currentCrossCareerCover.options).id});break;
     case 'cross-career-training':act('cross-career-training',{assignment:pick(s.currentCrossCareerTraining.options).id});break;
-    case 'effect-choice':act('choose-effect',{index:s.pendingChoice.options.indexOf(pick(s.pendingChoice.options))});break;
+    case 'effect-choice':{
+     if(s.pendingChoice.believerBuyoutChoice){
+      const encounter=believerEncounterCount++,index=encounter%3,careerIndex=s.active;
+      const enemiesBefore=c.relationships.filter(person=>person.role==='Enemy').length;
+      act('choose-effect',{index});
+      const buyout=r.state.character.careers[careerIndex].believerBuyout;
+      if(index===1){const enemiesGained=r.state.character.relationships.filter(person=>person.role==='Enemy').length-enemiesBefore;assert.ok(enemiesGained>=1&&enemiesGained<=6,'Refusal must gain 1D Enemies');believerChoices.push({encounter,index,decision:'decline',enemiesGained});}
+      else{assert.ok(buyout,'Accepted offer lacks buyout record');assert.equal(buyout.calculation,index===0?'once':'separate');assert.equal(buyout.results.length,buyout.forfeited.total>0?(index===0?1:buyout.forfeited.total):0);assert.ok(buyout.results.every(total=>Number.isInteger(total)&&total>=2&&total<=12));assert.equal(buyout.amount,buyout.results.reduce((sum,total)=>sum+total,0)*10000*(index===0?buyout.forfeited.total:1));believerChoices.push({encounter,index,decision:'accept',calculation:buyout.calculation,results:buyout.results,formula:buyout.formula,amount:buyout.amount,forfeitedRolls:buyout.forfeited.total});}
+     }else act('choose-effect',{index:s.pendingChoice.options.indexOf(pick(s.pendingChoice.options))});
+     break;
+    }
     case 'skill-choice':{
      const names=[...s.skillChoiceSuggestions];
      for(const [base,subject] of [['Science','physics'],['Language','galanglic'],['Profession','construction']])if(s.skillChoiceBases?.includes(base))names.push(base+' ('+(s.pendingChoice?.selected?.includes(base+' ('+subject+')')||s.pendingChoice?.scope==='untrained-electronics-or-science'?subject+' alternate '+n:subject)+')');
@@ -95,15 +106,9 @@ for(const career of catalog.careers.filter(c=>(!arg('career','')||c.id===arg('ca
   // Static source permission blocks cannot be removed by rerolling.
   
  }
- rows.push(row);console.log(career.id,assignment.id,`${row.completed}/${row.attempted}`,JSON.stringify({outcomes:row.outcomes,completedSeeds:row.runs.filter(x=>x.outcome==='completed').map(x=>x.seed),issues:row.runs.filter(x=>['error','unsupported-stage'].includes(x.outcome))}));
+ rows.push(row);console.log(career.id,assignment.id,`${row.completed}/${row.attempted}`,JSON.stringify({outcomes:row.outcomes,believerChoices:row.runs.flatMap(x=>(x.believerChoices??[]).map(choice=>({seed:x.seed,...choice}))),completedSeeds:row.runs.filter(x=>x.outcome==='completed').map(x=>x.seed),issues:row.runs.filter(x=>['error','unsupported-stage'].includes(x.outcome))}));
 }
 assert.equal(execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),testedHead,'Candidate changed during test');
-const report={head:testedHead,goal,maxAttemptsPerAssignment:max,method:'Release api only; natural dice; 1-3 target terms, qualification failures retry with new seed; no GM overrides or source adjudications; no session saves.',rows};
+const report={head:testedHead,goal,maxAttemptsPerAssignment:max,believerChoicePolicy:'Cycle single-roll acceptance, refusal, separate-roll acceptance across natural encounters; per-run choice ordinals retained for reproducibility.',method:'Release api only; natural dice; 1-3 target terms, qualification failures retry with new seed; no GM overrides or source adjudications; no session saves.',rows};
 const output=arg('output','');if(output)writeFileSync(output,JSON.stringify(report,null,2)+'\n');
 console.log('SUMMARY',JSON.stringify({assignments:rows.length,attempted:rows.reduce((n,r)=>n+r.attempted,0),completed:rows.reduce((n,r)=>n+r.completed,0),shortfalls:rows.filter(r=>r.completed<goal).map(r=>[r.career,r.assignment,r.completed]),errors:rows.flatMap(r=>r.runs.filter(x=>x.outcome==='error'||x.outcome==='unsupported-stage'))}));
-
-
-
-
-
-
