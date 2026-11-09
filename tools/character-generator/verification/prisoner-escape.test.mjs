@@ -14,7 +14,7 @@ function assertOriginal(result,expected){
  const state=structuredClone(result.state);delete state.prisonerEscape;
  // Preview labels are display metadata, not saved mechanics or RNG.
  for(const option of state.trainingOptions??[])delete option.information;
- assert.equal(hash(state),expected.state);assert.equal(hash(result.log),expected.log);
+ assert.equal(hash(state),expected.state);const log=result.log.map(({eventResults,...original})=>original);assert.equal(hash(log),expected.log);
 }
 export function escapeFixture(){return {session:structuredClone(legacy.session),...project(legacy.session)};}
 

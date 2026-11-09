@@ -182,3 +182,9 @@ Believer event 9: the player chooses either one 2D roll multiplied by Cr10,000 a
 ## Specialty timing (.19)
 
 New characters choose a specialty when an award requires one, as the skill is received, rather than waiting for finalization. This follows the player's latest timing decision. Earlier .18 saves retain their recorded deferred-award workflow and can still allocate pending awards without losing them; importing a save does not silently change its rules revision. Legacy .16/.17 compatibility and the other .18 rule corrections remain intact.
+
+## Event descriptions and results
+
+Event result panels and the full action log now include concise, original source-backed event context, the actual table dice, the table’s possible mechanical outcomes, and separately recorded character changes. Pre-career, career, mishap and nested life/unusual event results use the same read-only projection. Typed event decisions retain their parent context; choices and checks remain explicit rather than being presented as already-awarded effects. Known nested disaster mishaps retain their table provenance and protection against automatic career ejection. Source-assisted outcomes remain pending and unknown narrative rows are not invented.
+
+These display fields are derived after replay validation and never change saved commands, summaries, rules revisions, dice or character state. Historical save bytes and original log fields remain unchanged.

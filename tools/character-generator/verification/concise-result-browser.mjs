@@ -35,7 +35,7 @@ try{
    await page.reload();await panel.waitFor();assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),splitRaw);
    // Retain the historical combined-command concise presentation checks separately.
    await load(fixtures.survival.after);
-   const survivalText=await panel.innerText();assert.match(survivalText,/Survival failed/);assert.match(survivalText,/Check \[1, 3\]: total 5 against target 7\+/);assert.match(survivalText,/Mishap rolled: 2/);assert.match(survivalText,/Rival/);assert.doesNotMatch(survivalText,/Age:|Completed terms:|Career terms:|Must leave this career/);assert.ok(survivalText.length<250);await assertResultColor(page,'failure');
+   const survivalText=await panel.innerText();assert.match(survivalText,/Survival failed/);assert.match(survivalText,/Check \[1, 3\]: total 5 against target 7\+/);assert.match(survivalText,/Mishap rolled: 2/);assert.match(survivalText,/Rival/);assert.doesNotMatch(survivalText,/Age:|Completed terms:|Career terms:|Must leave this career/);assert.match(survivalText,/Table outcome:/);assert.match(survivalText,/Source:/);await assertResultColor(page,'failure');
    assert.equal(await page.getByRole('button',{name:'Leave and take benefits',exact:true}).isEnabled(),true);assert.equal(await page.getByRole('button',{name:'Continue this career',exact:true}).isEnabled(),false);
    const survivalRaw=await page.evaluate(key=>localStorage.getItem(key),key);assert.equal(JSON.parse(survivalRaw).events.length,fixtures.survival.before.revision+1);
    await panel.locator('summary').click();assert.match(await panel.innerText(),/Career terms:|Must leave this career/);await panel.locator('summary').click();assert.match(await downloadedActionLog(page),/careers\.0\.forcedExit/);

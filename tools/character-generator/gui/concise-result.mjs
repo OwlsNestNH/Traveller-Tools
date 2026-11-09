@@ -1,3 +1,4 @@
+import {eventResultDetails} from './event-result-view.mjs';
 // Presentation only. The full result and immutable action log remain available.
 import {rollResult,characterEffectDetails,modifierEffectDetails,pendingEffectDetails} from './roll-result-view.mjs';
 import {survivalResult} from './survival-result.mjs';
@@ -70,7 +71,7 @@ export function conciseResult(event,state,catalog){
  if(!title)return {...full,full,compact:false};
  const basicSkills=details.filter(detail=>/^Skill .*: untrained → 0\.$/.test(detail));
  if(basicSkills.length>1)details=[...details.filter(detail=>!basicSkills.includes(detail)),'Basic training: '+basicSkills.map(detail=>detail.slice(6).replace(': untrained → 0.',' 0')).join(', ')+'.'];
- details=unique(details);return {title,details,status:full.status,text:[title,...details].join(' '),full,compact:true};
+ details=unique([...eventResultDetails(event),...details]);return {title,details,status:full.status,text:[title,...details].join(' '),full,compact:true};
 }
 export function latestResultView(result,{esc}){
  if(!result)return '';

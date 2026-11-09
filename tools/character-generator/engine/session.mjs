@@ -1,3 +1,4 @@
+import {decorateEventResults} from './event-result-projection.mjs';
 import {culturalSkillAward,culturalAwardLabel,ASLAN_CULTURAL_SKILL_SOURCE,aslanSkillLabel,ASLAN_SKILL_LEGEND} from './aslan-skill-culture.mjs';
 import {believerBuyoutPlan,believerBuyoutChoice} from './believer-buyout.mjs';
 import {prisonerEscapePending} from './prisoner-escape.mjs';
@@ -2942,6 +2943,7 @@ export function project(session) {
  const pendingEffects=snapshot=>({forcedCareer:snapshot.forcedCareer??null,automaticCareers:copy(snapshot.automaticCareers??[]),careers:snapshot.character.careers.map(c=>({id:c.id,automaticPromotion:!!c.automaticPromotion,automaticCommission:!!c.automaticCommission,commissionBlockedFirstTerm:!!c.commissionBlockedFirstTerm}))});
  for(let i=0;i<log.length;i++){const before=pendingEffects(snapshots[i]),after=pendingEffects(snapshots[i+1]);if(JSON.stringify(before)!==JSON.stringify(after))log[i].pendingEffectChanges={before,after};}
  decorateLifeEventPresentation({state,log,snapshots,events:session.events});
+ decorateEventResults({log,snapshots,events:session.events});
  return {state,log,revision:session.events.length};
 }
 export function execute(session,command,{id,expectedRevision}={}) {

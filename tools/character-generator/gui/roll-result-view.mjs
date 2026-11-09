@@ -1,3 +1,4 @@
+import {eventResultDetails} from './event-result-view.mjs';
 // Player-facing presentation only. Never alter summaries, audit records or mechanics.
 import {checkOutcome} from './check-outcome.mjs';
 import {survivalResult} from './survival-result.mjs';
@@ -145,7 +146,7 @@ export function rollResult(event,state,catalog,options={}){
  const primaryLabels=advancement?['Advancement','Commission','Education commission']:survival?['Survival','Event table','Mishap table']:[];
  // Specialized helpers already identify the adjusted check and observed rank/skill gains.
  const effectEvent=advancement?{...event,changes:(event.changes??[]).filter(c=>!(((c.path.startsWith('skills.')||c.path.startsWith('stats.')&&finite(c.before))&&finite(c.after))||(/^careers\.\d+\.(rank|officer|forcedExit|forcedStay|released)$/.test(c.path)&&((finite(c.before)&&finite(c.after))||c.after===true))))}:event;
- const details=[...(event.rolls??[]).filter(r=>finite(r.total)&&!primaryLabels.includes(r.label)).map(r=>rollLabel(r,catalog)),...lifeEventLogDetails(event),...characterEffectDetails(effectEvent,catalog),...modifierEffectDetails(modifierBefore,modifierAfter,catalog),...pendingEffectDetails(event,catalog)];
+ const details=[...eventResultDetails(event),...(event.rolls??[]).filter(r=>finite(r.total)&&!primaryLabels.includes(r.label)).map(r=>rollLabel(r,catalog)),...lifeEventLogDetails(event),...characterEffectDetails(effectEvent,catalog),...modifierEffectDetails(modifierBefore,modifierAfter,catalog),...pendingEffectDetails(event,catalog)];
  const check=summaryCheck(event.summary);if(check&&!specialized&&!outcome)details.unshift(check);
  if(outcome)details.unshift(...outcome.details);
  if(mixed)details.unshift('Mixed check results.');
@@ -160,7 +161,7 @@ export function rollResult(event,state,catalog,options={}){
  let title=specialized?.title??(words(event.type)||'Action')+' result.';
  // Use only prose-only summaries; never leak serialized rules or property paths.
  if(!specialized&&event.summary&&!/[{}\[\]]/.test(event.summary)&&!/[A-Za-z]+\.[A-Za-z]+/.test(event.summary))title=event.summary;
- if(careerOutcome){
+ if(careerOutcome&&!event.eventResults?.length){
   title=careerOutcome[1]+' result '+careerOutcome[2]+'.';
   const roll=event.rolls?.find(r=>r.label===(careerOutcome[1]==='Mishap'?'Mishap table':'Event table'));
   details.unshift('Table outcome: '+careerOutcome[3]);
