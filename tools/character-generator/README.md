@@ -166,9 +166,9 @@ Colonial Upbringing is available only in the first generation term, before any c
 
 Academy commissions remain optional even with honours, allowing an enlisted career. University initial choices must be distinct skill bases, including when different specialisations are selected. These existing behaviors are now explicitly confirmed by the user.
 
-## Deferred specialties and audit corrections
+## Historical .18 specialties and audit corrections
 
-New .18 sessions defer ordinary unspecified positive specialist awards until allocation. Players may allocate at a quiet checkpoint or during finalization; fixed named and source-constrained awards remain immediate. Checks that depend on unresolved skills settle the relevant awards first. This is the requested presentation policy, not a claim that the books instruct all choices to wait until finalization. Separate awards retain their order, source and individual limits. Connections cannot bypass level three through aliases, and open Science, Language and Profession subjects share case-insensitive identities.
+Existing .18 sessions defer ordinary unspecified positive specialist awards until allocation; new characters instead use immediate selection as described below. Players may allocate at a quiet checkpoint or during finalization; fixed named and source-constrained awards remain immediate. Checks that depend on unresolved skills settle the relevant awards first. This was the earlier presentation policy, not a claim that the books instruct all choices to wait until finalization. Separate awards retain their order, source and individual limits. Connections cannot bypass level three through aliases, and open Science, Language and Profession subjects share case-insensitive identities.
 
 The same revision corrects forced Drifter draft continuation, earned-benefit forfeiture, Scout event departure timing and Believer immediate event promotion. Compatible .16/.17 sessions retain their original mechanics. The public four-species scope and deferred Zhodani recovery boundary are unchanged.
 
@@ -179,7 +179,7 @@ Believer event 9 now asks the player whether to accept payment or refuse during 
 
 Believer event 9: the player chooses either one 2D roll multiplied by Cr10,000 and the forfeited roll count, or separate 2D rolls per forfeited Benefit roll, summed and multiplied by Cr10,000. Both acceptance options leave the career; refusal gains 1D Enemies. The recorded calculation shows every result, formula and total. This calculation choice is an explicit player ruling; legacy .16/.17 source-resolution is unchanged.
 
-## Specialty timing (.19)
+## Immediate specialty selection
 
 New characters choose a specialty when an award requires one, as the skill is received, rather than waiting for finalization. This follows the player's latest timing decision. Earlier .18 saves retain their recorded deferred-award workflow and can still allocate pending awards without losing them; importing a save does not silently change its rules revision. Legacy .16/.17 compatibility and the other .18 rule corrections remain intact.
 

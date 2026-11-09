@@ -6,7 +6,7 @@ The rules engine is independent of the GUI. Import `api` from `engine/session.mj
 
 `api` exposes four species (Human, Aslan, Vargr, Aezorgh) and 36 careers. Zhodani setup, careers and the Intendant/Noble PSI configuration are deferred. Direct commands, projection, import and restore/replay histories containing these choices fail with `INVALID_REQUEST`; original files remain available through unverified read-only recovery. Filtering applies equally to the in-browser and HTTP API. No request flag enables development content. Human PSI, Core/Vargr Psion and Companion paths remain supported.
 
-New sessions use rules revision `character-preview-2026-11-09.17`; verified compatible `.16` sessions remain editable without rewriting their revision, commands or original escape outcomes. The new explicit escape command requires this updated build. Current and compatible saves must also satisfy release scope. Earlier revisions, including `.15`, remain read-only recovery records. `developmentApi` and the direct engine procedures preserve full internal development coverage; they are not the public release contract. Zhodani-specific command descriptions below document that preserved, deferred implementation only.
+The current rules revision is exported as `RULES_REVISION` by `engine/session.mjs`. Existing `.16`, `.17`, `.18` and `.19` histories retain their recorded rules, revision, commands and outcomes on import. New sessions select required specialties immediately when awarded; `.18` saves retain their deferred-specialty workflow. The new explicit escape command requires this updated build. Current and compatible saves must also satisfy release scope. Earlier revisions, including `.15`, remain read-only recovery records. `developmentApi` and the direct engine procedures preserve full internal development coverage; they are not the public release contract. Zhodani-specific command descriptions below document that preserved, deferred implementation only.
 
 ## Operations
 
@@ -23,6 +23,10 @@ Success has `ok: true`. Invalid requests have `ok: false` and `error: {code: "IN
 A session is `{format: "traveller-character-session", version: 1, rulesRevision, seed, events}`. Each event carries an ID, command, generated dice and summary. Commands are validated against the current stage and applied to a clone: failed actions do not mutate the supplied session. Repeating an ID with the same command is idempotent, including a retry with its original expected revision; reusing it for a different command is rejected. Send `expectedRevision` to reject stale edits. Clients must retain the returned session on each accepted command.
 
 Limits include 2 MB UTF-8 decoded imports and serialized saves (checked before accepting an action), a bounded 4 MB plus 64 KiB HTTP envelope to allow JSON escaping, 2,000 actions, bounded text and effect lists, and a rule-effect loop cap. These are guardrails for a local tool, not a hosted multi-user security design. A production host would need authentication, authorization, rate limits and a durable storage design.
+
+## Derived event-result presentation
+
+Projected log entries may include `eventResults`: read-only table identity, row, original roll, concise description, possible effect summary and source reference. These fields are derived after replay validation and are not added to saved commands or summaries. Typed event decisions retain their parent context, while the normal change list records actual effects. Unknown or unsupported source outcomes remain explicit; a description does not apply a rule.
 
 ## Core command families
 
