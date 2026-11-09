@@ -8,11 +8,11 @@ const read=file=>fs.readFileSync(new URL('../../../'+file,import.meta.url),'utf8
 const home=read('index.html'),tool=read('tools/character-generator/index.html'),changes=read('changes/character.html');
 const version=html=>html.match(/<meta name="application-version" content="([^"]+)"/)?.[1];
 
-test('homepage exposes source-assisted beta immediately before the retained final Log card',()=>{
+test('homepage exposes source-assisted beta fourth and Ship Combat before the retained final Log card',()=>{
  const cards=[...home.matchAll(/<section class="tool-card">([\s\S]*?)<\/section>/g)].map(m=>m[1]);
- assert.deepEqual(cards.map(card=>card.match(/<h2>(.*?)<\/h2>/)[1]),['Nav Calculator','Traveller Tool Locker','Traveller Ship Operations — Beta','Ship Combat Alpha','Traveller Vehicle Builder','Robot Builder - Beta','Character Generator - Beta','Ship’s Log &amp; Ledger']);
- assert.deepEqual(cards.map(card=>card.match(/<a href="(tools\/[^"]+)"/)[1]),['tools/nav-calculator/','tools/traveller_tools_buttons/','tools/trade-route-calculator/','tools/ship-combat-alpha/','tools/vehicle-builder/','tools/robot-builder/','tools/character-generator/','tools/traveller_ship_logger_v2/']);
- assert.match(cards[6],/source-assisted beta/);assert.match(cards[6],/Zhodani are deferred/);assert.match(cards[6],/href="changes\/character.html"/);
+ assert.deepEqual(cards.map(card=>card.match(/<h2>(.*?)<\/h2>/)[1]),['Nav Calculator','Traveller Tool Locker','Traveller Ship Operations — Beta','Character Generator - Beta','Traveller Vehicle Builder','Robot Builder - Beta','Ship Combat Alpha','Ship’s Log &amp; Ledger']);
+ assert.deepEqual(cards.map(card=>card.match(/<a href="(tools\/[^"]+)"/)[1]),['tools/nav-calculator/','tools/traveller_tools_buttons/','tools/trade-route-calculator/','tools/character-generator/','tools/vehicle-builder/','tools/robot-builder/','tools/ship-combat-alpha/','tools/traveller_ship_logger_v2/']);
+ assert.match(cards[3],/source-assisted beta/);assert.match(cards[3],/Zhodani are deferred/);assert.match(cards[3],/href="changes\/character.html"/);
  assert.equal((home.match(/img.shields.io\/badge\/dynamic\/json/g)||[]).length,8);
  assert.doesNotMatch(home,/<script[^>]*tool-visits/);
 });
