@@ -355,3 +355,9 @@ Believer event 9: the player chooses either one 2D roll multiplied by Cr10,000 a
 The user ruling of 2026-11-09 rerolls a mandatory Independence result from the same source table, retaining all dice and modifiers. Family Outcast row 4 rerolls before any award; the accepted row supplements ordinary background skills. Material-benefit replacements (including borrowed-ship rerolls) consume only the original benefit entitlement. Printed gender substitutions and legal choice alternatives remain available; male-only choices retain their original indices but are unavailable with a reason.
 
 Each reroll sequence is limited to 64 candidate rolls; exhaustion rejects the entire action without committing a partial award. Fixed or event awards without an originating rerollable table remain explicit source decisions. This is a user ruling, not newly claimed printed text. Historical `.16` and `.17` mechanics are unchanged.
+
+### Optional first-career Academy Service Skills roll
+
+With GM mode enabled, send `gm-academy-training` with `{enabled: true|false}` before entering the first career. The option is off unless explicitly enabled; its change is recorded in the action log and participates in restore/replay. The UI label is **Allow Service Skill choice in the first term after Academy**.
+
+After a completed Core military Academy or Merchant Academy term immediately preceding the first lifetime career, enabling this house option adds one ordinary Service Skills roll after basic training and any graduation awards. It applies to matching or nonmatching eligible careers and does not double later-career training. The roll uses ordinary skill gains, specialization choices, and limits. The option does not change the default full first-career level-0 basic training, including Army's Drive-or-Vacc Suit choice; minimum-level-0 awards do not stack. Existing saves without the new command retain their original behavior.

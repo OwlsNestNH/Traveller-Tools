@@ -104,5 +104,5 @@ test('Academy roll improves known skills normally and honors the level cap',()=>
 
 test('option off retains the Army basic-training choice at level zero',()=>{
  const r=enter(academy(), 'core.army','support',1);
- assert.equal(r.state.character.skills['Vacc Suit'],0);assert.equal(r.state.stage,'survival');
+ assert.equal(r.state.character.skills['Vacc Suit'],0);assert.equal(r.state.character.skills.Drive,0);assert.equal(r.state.stage,'survival');
 });
