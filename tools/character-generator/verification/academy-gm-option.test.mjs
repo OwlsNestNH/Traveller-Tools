@@ -118,3 +118,12 @@ test('only matching Core military academies qualify',()=>{
  a.apply(state,{type:'career',payload:{id:'core.merchant',assignment:'free'}},[]);
  assert.equal(state.stage,'survival');assert.equal(state.character.careers[0].academyServiceTraining,undefined);
 });
+
+test('Army Academy does not grant the optional roll in Navy or Marines',()=>{
+ for(const [id,assignment] of [['core.navy','crew'],['core.marine','support']]){
+  let r=force(academy(true),'career',{id,assignment},[6,6]);
+  if(r.state.stage==='preterm-commission')r=run(r,'preterm-commission',{attempt:false});
+  while(r.state.stage==='effect-choice')r=run(r,'choose-effect',{index:0});
+  assert.equal(r.state.stage,'survival');assert.equal(r.state.character.careers[0].academyServiceTraining,undefined);
+ }
+});
