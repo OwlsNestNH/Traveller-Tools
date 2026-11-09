@@ -1866,7 +1866,7 @@ outcomes('companion.believer',{
  7:[T('core.life-events',{dice:'2D',sourcePage:46})],8:C('Carouse / Persuade'),
  9:[Q([['Accept payment',[U('companion.believer',40,'Leave career; forfeit all benefits and receive 2D × Cr10000 for each forfeited benefit roll.')]],['Refuse',[relationship('Enemy',1,'1D')]]])],
  10:[OPT('Perform rites',[relationship('Ally'),relationship('Rival')])],
- 11:[M('advancement',-2,'all')],12:[P(),M('advancement',1,'all')]
+ 11:[M('advancement',-2,'all')],12:[{...P(),mode:'immediate'},M('advancement',1,'all')]
 },{
  1:[I(),ST('exit')],2:[relationship('Enemy')],
  3:[{kind:'rank',value:-1},R(-1),stay()],

@@ -452,8 +452,8 @@ common('core.scholar',{
 });
 common('core.scout',{
  3:[choice([
-   ['Escape',[check('Pilot',8,use('Electronics (sensors)=1'),[status('exit')])]],
-   ['Negotiate',[check('Persuade',10,use('Electronics (sensors)=1'),[status('exit')])]]
+   ['Escape',[check('Pilot',8,use('Electronics (sensors)=1'),[{...status('exit'),timing:'term-end'}])]],
+   ['Negotiate',[check('Persuade',10,use('Electronics (sensors)=1'),[{...status('exit'),timing:'term-end'}])]]
  ]),relation('Enemy')],
  4:use('Animals (riding)=1|Animals (training)=1|Survival=1|Recon=1|Science=1'),
  5:[mod('benefit',1,'one')],
