@@ -22,12 +22,12 @@ export function buildAgentUndercoverFixture({success=true,borrowedEvent=3,borrow
  }
  throw Error('No public undercover fixture found.');
 }
-function governmentSetup(seed,gambler=false){
+function governmentSetup(seed){
  let r=api({operation:'create',seed});r=run(r,'configure',{extras:['WLT']});r=run(r,'setup',{species:'zhodani'});r=run(r,'gm-mode',{enabled:true});r=run(r,'roll-statistics');
  for(let i=0;i<6;i++)r=run(r,'gm-override',{field:'pool',index:i,value:i===5?11:8,reason:'Advisory source fixture'});
  r=force(r,'accept-statistics',{},[4,5]);r=run(r,'learn-talent',{talent:'Telepathy'});r=run(r,'finish-psionic-training');
  if(r.state.stage==='background')r=run(r,'background',{skills:r.state.backgroundOptions.slice(0,r.state.backgroundRemaining)});
- r=run(r,'skip-precareer');if(gambler)r=run(r,'connection',{person:'Fixture Traveller',skill:'Gambler',note:'Recorded source-earned connection skill.'});return settle(force(r,'career',{id:'zhodani.government',assignment:'administration'},[6,6]));
+ r=run(r,'skip-precareer');return settle(force(r,'career',{id:'zhodani.government',assignment:'administration'},[6,6]));
 }
 function advisoryEvent(r,row=4){
  for(let i=0;i<30;i++){
@@ -37,9 +37,9 @@ function advisoryEvent(r,row=4){
  }
  throw Error('No public advisory Event fixture found.');
 }
-export function buildGovernmentAdvisoryFixture({cashRolls=0,gambler=false,withBenefitModifier=false}={}){
- const key=JSON.stringify(['government',cashRolls,gambler,withBenefitModifier]);if(cache.has(key))return structuredClone(cache.get(key));
- let r=governmentSetup('government-advisory',gambler);
+export function buildGovernmentAdvisoryFixture({cashRolls=0,withBenefitModifier=false}={}){
+ const key=JSON.stringify(['government',cashRolls,withBenefitModifier]);if(cache.has(key))return structuredClone(cache.get(key));
+ let r=governmentSetup('government-advisory');
  if(withBenefitModifier){r=advisoryEvent(r,5);r=run(r,'advancement');if(r.log.at(-1).rolls.length)r=replay(r,r.revision,0,[4,5]);r=settle(r);if(r.state.stage==='training')r=settle(force(r,'training',{table:'personal'},[1]));r=run(r,'continue-career');r=settle(force(r,'training',{table:'personal'},[1]));}
  for(let i=0;i<cashRolls;i++){
   r=advisoryEvent(r);r=settle(force(r,'advisory-career',{careerId:'zhodani.prole'},[1]));r=force(r,'advisory-cash',{},[1]);

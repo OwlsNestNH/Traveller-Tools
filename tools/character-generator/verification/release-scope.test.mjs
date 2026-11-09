@@ -1,41 +1,43 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {api,developmentApi,createSession,execute,exportSession,RULES_REVISION} from '../engine/session.mjs';
+import {api,developmentApi,createSession,execute,exportSession,RULES_REVISION,COMPATIBLE_RULES_REVISIONS} from '../engine/session.mjs';
+import {ZHODANI_RELEASE_REVISION,assertReleaseRequest} from '../engine/release-scope.mjs';
 import {inspectRecordedHistory} from '../gui/legacy-history.mjs';
 import {createServer} from '../server.mjs';
 const command=(session,type,payload)=>({operation:'command',session,command:{type,payload}});
-const denied=result=>{assert.equal(result.ok,false);assert.match(result.error.message,/deferred/);};
-const saved=()=>execute(createSession('deferred-save'),{type:'setup',payload:{species:'zhodani',name:'Original history'}}).session;
-test('release catalog keeps four species and all 36 non-Zhodani careers; development coverage stays intact',()=>{
- const catalog=api({operation:'catalog'});assert.deepEqual(catalog.species.map(s=>s.id),['human','aslan','vargr','aezorgh']);assert.equal(catalog.careers.length,36);assert.equal(catalog.careers.some(c=>c.group==='zhodani'),false);
- for(const id of ['core.psion','companion.truther','aslan.military','vargr.psion'])assert.ok(catalog.careers.some(c=>c.id===id));assert.equal(catalog.precareers.length,9);assert.ok(catalog.extraStats.some(s=>s.id==='PSI'));
- assert.equal(developmentApi({operation:'catalog'}).careers.length,45);assert.equal(developmentApi({operation:'catalog'}).species.length,5);
+const saved=()=>execute(createSession('zhodani-save'),{type:'setup',payload:{species:'zhodani',name:'Original history'}}).session;
+test('public catalog includes five species and all nine Zhodani careers within 45 careers',()=>{
+ const c=api({operation:'catalog'});assert.equal(c.species.length,5);assert.ok(c.species.some(s=>s.id==='zhodani'));assert.equal(c.careers.length,45);assert.equal(c.careers.filter(c=>c.group==='zhodani').length,9);
+ assert.deepEqual(c,developmentApi({operation:'catalog'}));assert.equal(RULES_REVISION,ZHODANI_RELEASE_REVISION);
 });
-test('public setup, career and PSI paths reject deferred choices without changing the input',()=>{
- const session=createSession('release'),before=JSON.stringify(session);
- for(const [type,payload] of [['setup',{species:'zhodani'}],['configure',{zhodaniPsi:true}],['career',{id:'zhodani.army',assignment:'infantry'}]])denied(api(command(session,type,payload)));
- assert.equal(JSON.stringify(session),before);
- for(const species of ['human','aslan','vargr','aezorgh'])assert.equal(api(command(session,'setup',{species})).ok,true);
- let r=api(command(session,'gm-mode',{enabled:true}));r=api(command(r.session,'configure',{extras:['PSI'],zhodaniPsi:false}));assert.equal(r.ok,true);
+test('new public Zhodani setup, native PSI and GM PSI survive export and replay',()=>{
+ for(const optional of [false,true]){
+  let r=api({operation:'create',seed:'release-psi'});
+  for(const [type,payload] of [['gm-mode',{enabled:optional}],['configure',{zhodaniPsi:optional}],['setup',{species:'zhodani'}],['roll-statistics',{}],['accept-statistics',{}]]){r=api(command(r.session,type,payload));assert.equal(r.ok,true,r.error?.message);}
+  assert.equal(typeof r.state.character.stats.PSI,'number');if(optional){assert.ok(r.state.character.stats.PSI>=9);assert.ok(r.state.character.stats.SOC>=10);assert.equal(r.state.stage,'psionic-training');}
+  assert.deepEqual(api({operation:'project',session:r.session}).state,r.state);
+  const raw=exportSession(r.session);assert.deepEqual(api({operation:'import',raw}).state,r.state);assert.equal(exportSession(api({operation:'import',raw}).session),raw);
+ }
 });
-test('all public session entry points reject deferred history and retain exact recovery bytes',()=>{
- const session=saved(),raw=exportSession(session);assert.equal(session.rulesRevision,RULES_REVISION);
- for(const request of [{operation:'import',raw},{operation:'project',session},command(session,'notes',{text:'Continue'}),command(session,'restore',{revision:0}),command(session,'gm-replay',{revision:1,rollIndex:0,values:[1],reason:'Replay'})])denied(api(request));
- assert.equal(exportSession(session),raw);assert.equal(inspectRecordedHistory(raw).events.length,1);
- // A restore cannot launder a superseded Zhodani setup into a blank session.
- let restored=execute(createSession('restore'),{type:'gm-mode',payload:{enabled:true}});
- restored=execute(restored.session,{type:'setup',payload:{species:'zhodani'}});restored=execute(restored.session,{type:'restore',payload:{revision:1}});
- denied(api({operation:'project',session:restored.session}));denied(api({operation:'import',raw:exportSession(restored.session)}));
+test('GM PSI option still requires GM mode and Zhodani species when rolling',()=>{
+ for(const [gm,species] of [[false,'zhodani'],[true,'human']]){
+  let r=api({operation:'create',seed:'invalid-option'});for(const [type,payload] of [['gm-mode',{enabled:gm}],['configure',{zhodaniPsi:true}],['setup',{species}]]){r=api(command(r.session,type,payload));assert.equal(r.ok,true);}
+  const raw=exportSession(r.session);assert.equal(api(command(r.session,'roll-statistics',{})).ok,false);assert.equal(exportSession(r.session),raw);
+ }
 });
-test('prose mentioning deferred content is not mistaken for a species choice',()=>{
- const r=api(command(createSession('prose'),'setup',{species:'human',name:'Zhodani visitor'}));assert.equal(r.ok,true);assert.equal(api(command(r.session,'notes',{text:'zhodani.army'})).ok,true);
+test('older public revisions still reject formerly deferred commands and superseded histories',()=>{
+ for(const rulesRevision of ['character-preview-2026-11-09.16','character-preview-2026-11-09.17','character-preview-2026-11-09.18']){
+  const session={...createSession('old'),rulesRevision};for(const [type,payload] of [['setup',{species:'zhodani'}],['configure',{zhodaniPsi:true}],['career',{id:'zhodani.army'}]])assert.throws(()=>assertReleaseRequest(command(session,type,payload)),/deferred/);
+  const old={...saved(),rulesRevision},raw=JSON.stringify(old);for(const request of [{operation:'project',session:old},{operation:'import',raw},command(old,'restore',{revision:0})])assert.equal(api(request).ok,false);
+  assert.equal(JSON.stringify(old),raw);assert.equal(inspectRecordedHistory(raw).events.length,1);
+  const superseded={...session,events:[{command:{type:'setup',payload:{species:'zhodani'}}},{command:{type:'restore',payload:{revision:0}}}]};assert.throws(()=>assertReleaseRequest({session:superseded}),/deferred/);
+ }
+ for(const rulesRevision of COMPATIBLE_RULES_REVISIONS){const session={...createSession('human'),rulesRevision};const r=api(command(session,'setup',{species:'human',name:'Zhodani visitor'}));assert.equal(r.ok,true,r.error?.message);assert.equal(r.session.rulesRevision,rulesRevision);}
 });
-test('HTTP uses the same release boundary and has no request-controlled development unlock',async()=>{
+test('public HTTP supports current Zhodani and rejects old history without a flag bypass',async()=>{
  const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+server.address().port;
- try{
-  for(const suffix of ['', '?development=true']){
-   const response=await fetch(origin+'/api/v1'+suffix,{method:'POST',body:JSON.stringify({...command(createSession('http'),'setup',{species:'zhodani'}),development:true})});assert.equal(response.status,400);denied(await response.json());
-  }
-  const response=await fetch(origin+'/api/v1',{method:'POST',body:JSON.stringify({operation:'import',raw:exportSession(saved())})});assert.equal(response.status,400);denied(await response.json());
- }finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
+ try{for(const suffix of ['', '?development=true']){
+  const response=await fetch(origin+'/api/v1'+suffix,{method:'POST',body:JSON.stringify({...command(createSession('http'),'setup',{species:'zhodani'}),development:true})});assert.equal(response.status,200);assert.equal((await response.json()).state.character.species,'zhodani');
+  const raw=JSON.stringify({...saved(),rulesRevision:'character-preview-2026-11-09.17'});const rejected=await fetch(origin+'/api/v1'+suffix,{method:'POST',body:JSON.stringify({operation:'import',raw,development:true})});assert.equal(rejected.status,400);assert.equal((await rejected.json()).ok,false);
+ }}finally{server.closeAllConnections();await new Promise(r=>server.close(r));}
 });

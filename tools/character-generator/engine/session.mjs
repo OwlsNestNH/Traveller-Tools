@@ -33,9 +33,10 @@ const RULE_PACK={...CORE_PACK,...EXPANSION_PACK};
 import { API_VERSION, SOURCES, CAREERS, PRECAREERS, SPECIES, SKILLS, BACKGROUND_SKILLS, findCareer, findSpecies } from './catalog.mjs';
 const LIMIT = 2000;
 export const MAX_SAVE_BYTES = 2000000;
-export const RULES_REVISION='character-preview-2026-11-09.17';
-// .17 adds an explicit command; every existing .16 command retains its rules.
-export const COMPATIBLE_RULES_REVISIONS=Object.freeze([RULES_REVISION,'character-preview-2026-11-09.16']);
+export const RULES_REVISION='character-preview-2026-11-09.19';
+// .19 releases Zhodani and its native draft. Earlier public species retain their rules.
+// The release gate keeps historical deferred Zhodani records read-only.
+export const COMPATIBLE_RULES_REVISIONS=Object.freeze([RULES_REVISION,'character-preview-2026-11-09.17','character-preview-2026-11-09.16']);
 const saveSize = value => new TextEncoder().encode(JSON.stringify(value,null,2)).byteLength;
 const copy = value => structuredClone(value);
 const plain = value => value && typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
@@ -1303,8 +1304,18 @@ function nonPsionicEligibility(name){
  if(base==='Science'&&!NON_PSIONIC_SCIENCES.has(speciality?.toLowerCase()))return 'source-required';
  return 'eligible';
 }
+function zhodaniOpenSkillAllowed(state,base,{connection=false}={}) {
+ if(state.character.species!=='zhodani'||!['Deception','Gambler','Streetwise'].includes(base))return true;
+ const careers=connection?state.character.careers:state.active===null?[]:[state.character.careers[state.active]];
+ return base!=='Gambler'&&careers.some(c=>c.id==='zhodani.agent'&&c.assignment==='tozjabr');
+}
 function skillNameAllowed(state,name,effect) {
  let parsed;try{parsed=normalizeSkillName(name);}catch{return false;}name=parsed.name;const base=parsed.base;
+ // Aliens 2026 p256 restricts open awards, not explicit printed exceptions
+ // (Informant Streetwise), existing records, or forced skill losses.
+ if(state.character.species==='zhodani'&&['any','existing'].includes(effect.scope)&&!effect.allowed&&!effect.tableSkills&&!effect.permittedNames&&['Deception','Gambler','Streetwise'].includes(base)){
+  if(!zhodaniOpenSkillAllowed(state,base))return false;
+ }
  if(PSIONIC_TALENTS.includes(base)&&(state.character.psionicLoss||skillLevel(state,name)<0&&!coreTalentChoice(state,effect)&&effect.scope!=='new-psionic-talent'))return false;
  if(coreTalentChoice(state,effect)&&base==='Technopathy')return false;
  if(effect.scope==='new-psionic-talent'&&(!availableNewTalents(state).includes(name)||(state.character.stats.PSI??0)<=0))return false;
@@ -2265,7 +2276,17 @@ function apply(state,command,rolls) {
  case 'fallback': {
   need(state.stage==='failed-entry','No failed qualification to resolve.');
   const species=state.character.species;
-  if(species==='zhodani'){sourceStep(state,'draft','aliens',255,'Resolve the Zhodani draft; select the resulting career with GM correction.','career');state.failedQualification=false;return 'Zhodani draft requires source resolution.';}
+  if(species==='zhodani'){
+   // Aliens 2026 p255: the first failed qualification requires the Consular draft.
+   // Core's once-only draft and a second mandatory Consular draft conflict: retain
+   // a source-assisted boundary instead of inventing repeat permission or a Drifter.
+   if(state.draftUsed){sourceStep(state,'draft','aliens',255,'Resolve the conflict between the mandatory Consular draft and the Core once-only draft rule; record the referee-approved next career explicitly.','career');state.failedQualification=false;return 'Repeated Consular draft requires a referee decision.';}
+   const die=dice(state,1,rolls,'Consular draft'),id=die<=3?'zhodani.army':die<=5?'zhodani.merchant':'zhodani.navy';
+   state.draftUsed=true;state.failedQualification=false;state.character.consularDrafts??=[];
+   state.character.consularDrafts.push({die,careerId:id,source:{id:'aliens',page:255},generationTerms:state.character.terms});
+   if(id==='zhodani.merchant'){state.pendingDraft=true;enterCareer(state,findCareer(id),'corporate',rolls);return 'Consular draft: Merchant / Corporate. No qualification check.';}
+   state.forcedCareer=id;state.forcedCareerDraft=true;state.stage='career';return 'Consular draft: '+findCareer(id).name+'. Choose an assignment; no qualification check is required.';
+  }
   const outwardFailure=nativeAslan(state)&&state.failedQualificationContext?.group==='core'&&!!accessContext(state),outwardDrifter=nativeAslan(state)&&state.failedQualificationContext?.group==='aslan'&&accessForAttempt(state,'core.drifter')?.route==='outside-failed-entry';
   let id=outwardFailure||outwardDrifter?'core.drifter':species==='aslan'&&state.character.culture==='native'?'aslan.outcast':species==='vargr'&&state.character.culture==='native'?'vargr.loner':'core.drifter';
   let assignment;
@@ -2694,6 +2715,7 @@ if(pending.kind==='psionic-training-terms'){
   need(state.connections.length<2,'At most two connections award skills.');
   const person=text(payload.person,80);need(person&&!state.connections.some(c=>c.person.toLowerCase()===person.toLowerCase()),'Use a different Traveller for each connection.');
   const skill=text(payload.skill,80);need(skill!=='Jack-of-all-Trades','Connections cannot award Jack-of-all-Trades.');
+  need(zhodaniOpenSkillAllowed(state,normalizeSkillName(skill).base,{connection:true}),'This rare skill is not available for a Zhodani connection.');
   need((state.character.skills[skill]??0)<3,'A connection cannot increase a skill above level 3.');
   gainSkill(state,skill,1);state.connections.push({person,skill,note:text(payload.note??'',300)});return 'Connection with '+person+': '+skill+' gained.';
  }
@@ -2864,7 +2886,7 @@ export function developmentApi(request) {
 export function api(request) {
  try {
   assertReleaseRequest(request);
-  return releaseResult(developmentApi(request));
+  return releaseResult(developmentApi(request),request);
  } catch(error) {
   return {ok:false,error:{code:'INVALID_REQUEST',message:error.message}};
  }

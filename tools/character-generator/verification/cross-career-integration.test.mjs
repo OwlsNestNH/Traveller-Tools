@@ -76,7 +76,7 @@ test('explicit extra-roll exception remains separately audited and consumes a fo
  r=force(r,'advisory-cash',{},[1]);assert.equal(r.state.cashRolls,4);assert.equal(r.state.character.advisoryServices.at(-1).cash.capException,true);assert.equal(r.state.character.advisoryServices.at(-1).cashLimitDecision.decision,'allow-extra');roundtrip(r);
 });
 test('revision .6 rejects earlier .5 save unchanged before reconstruction',()=>{
- assert.equal(RULES_REVISION,'character-preview-2026-11-09.17');const old=structuredClone(government.session);old.rulesRevision='character-preview-2026-11-08.5';const bytes=JSON.stringify(old);assert.equal(api({operation:'project',session:old}).ok,false);assert.equal(JSON.stringify(old),bytes);
+ assert.equal(RULES_REVISION,'character-preview-2026-11-09.19');const old=structuredClone(government.session);old.rulesRevision='character-preview-2026-11-08.5';const bytes=JSON.stringify(old);assert.equal(api({operation:'project',session:old}).ok,false);assert.equal(JSON.stringify(old),bytes);
 });
 
 test('explicit one-roll credits defer by default and reject duplicate, unknown and ineligible identifiers',()=>{
@@ -128,10 +128,10 @@ test('borrowed Prole Event12 promotion applies to Agent and adds no separate car
  let r=buildAgentUndercoverFixture({borrowedEvent:12});r=force(r,'cross-career-training',{assignment:'colonist'},[3]);r=run(r,'advancement');assert.equal(r.log.at(-1).rolls.length,0);assert.equal(career(r).rank,1);assert.equal(r.state.character.careers.length,1);
 });
 
-test('source-earned Gambler and Government scoped modifier remain separate on advisory cash',()=>{
- let r=buildGovernmentAdvisoryFixture({gambler:true,withBenefitModifier:true});assert.equal(r.state.character.skills.Gambler,1);const modifiers=structuredClone(r.state.modifiers),ordinary=structuredClone(career(r));
+test('Government scoped modifier remains separate from ordinary advisory cash',()=>{
+ let r=buildGovernmentAdvisoryFixture({withBenefitModifier:true});assert.equal(r.state.character.skills.Gambler,undefined);const modifiers=structuredClone(r.state.modifiers),ordinary=structuredClone(career(r));
  r=settle(force(r,'advisory-career',{careerId:'zhodani.prole'},[1]));r=force(r,'advisory-cash',{},[6]);
- assert.equal(r.state.character.advisoryServices.at(-1).cash.modifier,1);assert.equal(r.state.character.advisoryServices.at(-1).cash.amount,100000);assert.deepEqual(r.state.modifiers,modifiers);assert.deepEqual(career(r),ordinary);roundtrip(r);
+ assert.equal(r.state.character.advisoryServices.at(-1).cash.modifier,0);assert.equal(r.state.character.advisoryServices.at(-1).cash.amount,50000);assert.deepEqual(r.state.modifiers,modifiers);assert.deepEqual(career(r),ordinary);roundtrip(r);
 });
 test('explicit ordinary credit selection survives GM replay and restore without a second consumption',()=>{
  const before=buildBenefitCreditFixture(),ids=before.state.benefitCreditOptions.map(c=>c.id);let r=run(before,'benefit',{cash:true,creditIds:ids});const revision=r.revision;

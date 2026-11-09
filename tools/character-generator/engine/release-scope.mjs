@@ -1,30 +1,27 @@
-// Release policy, separate from preserved source-rule implementation and save revision.
-const deferred = id => typeof id === 'string' && (id === 'zhodani' || id.startsWith('zhodani.'));
-const message = 'Zhodani generation is deferred from this release. Preserve the original save and use read-only history recovery.';
+// Public scope is pinned to the saved rules revision; never reinterpret old histories.
+export const ZHODANI_RELEASE_REVISION='character-preview-2026-11-09.19';
+const zhodani = id => typeof id === 'string' && (id === 'zhodani' || id.startsWith('zhodani.'));
+const message = 'Zhodani generation was deferred in this saved rules revision. Preserve the original save and use read-only history recovery.';
+const enabled = session => session?.rulesRevision === ZHODANI_RELEASE_REVISION;
 function checkCommand(command) {
  const p=command?.payload;
- if(command?.type==='setup' && deferred(p?.species) || command?.type==='configure' && p?.zhodaniPsi ||
-    command?.type==='career' && deferred(p?.id)) throw new Error(message);
+ if(command?.type==='setup' && zhodani(p?.species) || command?.type==='configure' && p?.zhodaniPsi ||
+    command?.type==='career' && zhodani(p?.id)) throw new Error(message);
 }
 export function assertReleaseRequest(request) {
- // Check every recorded command, including superseded history before restore/replay.
- // Do not scan prose: names, notes and source references are not generation choices.
+ if(enabled(request?.session)) return;
+ // Include superseded history: restore cannot launder a formerly deferred choice.
  if(Array.isArray(request?.session?.events)) for(const event of request.session.events) checkCommand(event?.command);
  if(request?.operation==='command') checkCommand(request.command);
- // Imports are bounded/parsed and replay-validated by the engine first; inspect the
- // returned session below rather than parsing unbounded JSON here a second time.
+ // Imports are bounded and replay-validated first, then inspected in releaseResult.
 }
-export function releaseResult(result) {
+export function releaseResult(result,request) {
  if(!result.ok) return result;
  if(result.session) assertReleaseRequest({session:result.session});
- if(result.state) {
-  if(deferred(result.state.character.species) || result.state.config.zhodaniPsi ||
-     result.state.character.careers.some(c=>deferred(c.id))) throw new Error(message);
-  result.state.careerChoices=result.state.careerChoices.filter(c=>!deferred(c.id));
- }
- if(result.species) {
-  // Clone because the development catalogue holds shared rule constants.
-  result={...result,species:result.species.filter(s=>!deferred(s.id)),careers:result.careers.filter(c=>!deferred(c.id))};
+ if(result.state && !enabled(result.session??request?.session)) {
+  if(zhodani(result.state.character.species) || result.state.config.zhodaniPsi ||
+     result.state.character.careers.some(c=>zhodani(c.id))) throw new Error(message);
+  result.state.careerChoices=result.state.careerChoices.filter(c=>!zhodani(c.id));
  }
  return result;
 }
