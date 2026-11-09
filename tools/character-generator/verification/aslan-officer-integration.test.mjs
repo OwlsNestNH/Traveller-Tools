@@ -44,7 +44,7 @@ test('qualification failure forfeits held Rite and just-mustered Clan Shares but
 test('early cancellation permits retirement only and never opens a generic early transfer',()=>{
  let r=buildAslanOfficerFixture({ready:true}),benefits=structuredClone(r.state.character.benefits),cash=r.state.character.cash;assert.deepEqual(offer(r).cancelOptions.map(x=>x.id),['retire']);
  rejected(r,'cancel-aslan-officer',{mode:'career-choice'});rejected(r,'leave-career');r=run(r,'cancel-aslan-officer',{mode:'retire'});assert.equal(r.state.stage,'retirement');assert.equal(r.state.character.retirementFromCreation,true);assert.equal(offer(r).check,null);assert.deepEqual(r.state.character.benefits,benefits);assert.equal(r.state.character.cash,cash);
- rejected(r,'career',{id:'aslan.scientist',assignment:'researcher'});r=run(r,'finish');assert.equal(r.state.stage,'finish');roundtrip(r);
+ rejected(r,'career',{id:'aslan.scientist',assignment:'researcher'});r=run(r,'finish');while(r.state.stage==='skill-choice'){r=run(r,'choose-skill',{name:r.state.skillChoiceSuggestions[0]});}if(r.state.stage!=='finish')r=run(r,'finish');assert.equal(r.state.stage,'finish');roundtrip(r);
 });
 test('ordinary legal exit can cancel the unrolled offer without restoring benefits',()=>{
  let r=buildAslanOfficerFixture({termsBefore:2,ready:true}),benefits=structuredClone(r.state.character.benefits),history=structuredClone(r.state.character.benefitRollHistory);assert.deepEqual(offer(r).cancelOptions.map(x=>x.id),['career-choice','retire']);
