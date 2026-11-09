@@ -80,7 +80,7 @@ function dice(state,n,rolls,label,boon=false) {
 }
 function stat(state,key) { need(Object.hasOwn(state.character.stats,key),'Characteristic '+key+' is not present.');return state.character.stats[key]; }
 // User-selected generation options, not additional published species rules.
-function statisticsRerollThreshold(state) { return state.character.species==='aezorgh'&&!state.config.aezorghTwoDice?30:43; }
+function statisticsRerollThreshold(state) { return state.config.minimumTotal??(state.character.species==='aezorgh'&&!state.config.aezorghTwoDice?30:43); }
 function statisticsCanReroll(state) { return state.stage==='statistics'&&state.pool.length===6&&!!(state.config.gm||state.config.minimumReroll&&state.rollTotal<statisticsRerollThreshold(state)); }
 function refreshStatisticsPool(state) {
  for(const p of state.pool){p.divisor=state.character.species==='aezorgh'&&state.config.aezorghTwoDice&&p.formulaCount===1?2:1;p.derivedBase=Math.floor(p.base/p.divisor);p.value=Math.max(1,p.derivedBase+p.adjustment);}
@@ -2285,17 +2285,18 @@ function apply(state,command,rolls) {
   state.character.name=text(payload.name??'',80);state.character.species=species.id;
   state.character.gender=text(payload.gender??'',20);state.character.culture=payload.culture==='imperial'?'imperial':'native';
   state.character.homeworld=text(payload.homeworld??'',160);state.character.age=species.startAge;state.character.traits=copy(SPECIES_RULES[species.id]?.traits??[]);
-  state.stage='statistics';return 'Started '+(state.character.name||'an unnamed Traveller')+' ('+species.name+').'+(species.id==='vargr'?' Vargr strain: '+state.character.variant+'.':'')+(species.id==='aezorgh'?(state.config.aezorghTwoDice?' Optional Aezorgh method: six raw 2D totals; reroll minimum 43 before placement and halving; free swaps; one-die destinations halve rounding down before species bonuses.':' Standard Aezorgh method: published 1D/2D formulas; raw reroll minimum 30; swaps within matching formula groups, with GM exceptions.'):'');
+  state.stage='statistics';return 'Started '+(state.character.name||'an unnamed Traveller')+' ('+species.name+').'+(species.id==='vargr'?' Vargr strain: '+state.character.variant+'.':'')+(species.id==='aezorgh'?(state.config.aezorghTwoDice?' Optional Aezorgh method: six raw 2D totals; reroll minimum '+statisticsRerollThreshold(state)+' before placement and halving; free swaps; one-die destinations halve rounding down before species bonuses.':' Standard Aezorgh method: published 1D/2D formulas; raw reroll minimum '+statisticsRerollThreshold(state)+'; swaps within matching formula groups, with GM exceptions.'):'');
  }
  case 'configure': {
   need(state.stage==='identity'||state.stage==='statistics'&&!state.pool.length,'Options must be set before rolling.');
   if(payload.boons!==undefined)state.config.boons=integer(payload.boons,0,6,'Boon rolls');
+  if(payload.minimumTotal!==undefined)state.config.minimumTotal=integer(payload.minimumTotal,6,72,'Minimum raw total');
   if(payload.minimumReroll!==undefined){need(typeof payload.minimumReroll==='boolean','Invalid reroll option.');state.config.minimumReroll=payload.minimumReroll;}
   if(payload.allocation!==undefined){need(typeof payload.allocation==='boolean','Invalid allocation option.');state.config.allocation=payload.allocation;}
   if(payload.extras!==undefined){need(Array.isArray(payload.extras)&&payload.extras.length<=6&&new Set(payload.extras).size===payload.extras.length,'Invalid extra characteristics.');need(payload.extras.every(x=>EXTRA_STATS.some(e=>e.id===x)),'Unsupported extra characteristic.');state.config.extras=[...payload.extras];}
   if(payload.aezorghTwoDice!==undefined){need(typeof payload.aezorghTwoDice==='boolean','The optional Aezorgh two-dice method must be true or false.');need(!payload.aezorghTwoDice||state.stage==='identity'||state.character.species==='aezorgh','The optional two-dice method applies only to Aezorgh.');state.config.aezorghTwoDice=payload.aezorghTwoDice;}
   if(payload.zhodaniPsi!==undefined){need(typeof payload.zhodaniPsi==='boolean','Invalid Zhodani PSI option.');state.config.zhodaniPsi=payload.zhodaniPsi;}
-  const rerollSummary=state.stage==='identity'&&Object.hasOwn(payload,'aezorghTwoDice')?'minimum-total reroll '+(state.config.minimumReroll?'on':'off')+' (threshold confirmed at species setup)':'below-'+statisticsRerollThreshold(state)+' reroll '+(state.config.minimumReroll?'on':'off');
+  const rerollSummary=state.config.minimumTotal===undefined&&state.stage==='identity'&&Object.hasOwn(payload,'aezorghTwoDice')?'minimum-total reroll '+(state.config.minimumReroll?'on':'off')+' (threshold confirmed at species setup)':'below-'+statisticsRerollThreshold(state)+' reroll '+(state.config.minimumReroll?'on':'off');
   return 'Generation options: '+state.config.boons+' boon rolls; player placement '+(state.config.allocation?'on':'off')+'; '+rerollSummary+'; extras '+(state.config.extras.join(', ')||'none')+'; Zhodani PSI option '+(state.config.zhodaniPsi?'on':'off')+'.'+(state.config.aezorghTwoDice?' Optional Aezorgh method: six raw 2D totals, free placement, then halve one-die destinations rounding down.':'');
  }
  case 'gm-academy-training': {

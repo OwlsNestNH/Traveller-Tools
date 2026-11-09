@@ -173,8 +173,15 @@ function setupView(){
 function syncPsiOptions(form){const psi=form.querySelector('[name=extras][value=PSI]');if(psi){psi.disabled=form.elements.species.value==='zhodani';if(psi.disabled)psi.checked=false;}}
 function syncRerollOptions(form){
  const aezorgh=form.elements.species.value==='aezorgh',twoDice=aezorgh&&form.elements.aezorghTwoDice.checked;
- $('#reroll-option-text').textContent='Allow reroll below a raw total of '+(aezorgh&&!twoDice?30:43);
- $('#reroll-threshold-help').textContent=twoDice?'The 43-point check uses all six raw 2D6 totals before placement, halving or species bonuses. Extra characteristics do not count.':aezorgh?'Standard Aezorgh use a 30-point raw-dice minimum. One-die scores swap within their group; DEX and INT swap separately. Extra characteristics and species bonuses do not count.':'The threshold uses the six raw scores before species modifiers. Extra characteristics do not count.';
+ const input=form.elements.minimumTotal,defaultTotal=aezorgh&&!twoDice?30:43;
+ if(input){
+  const previousDefault=input.dataset.defaultTotal??'43';
+  if(input.value===previousDefault)input.value=String(defaultTotal);
+  input.dataset.defaultTotal=String(defaultTotal);
+ }
+ const threshold=input?.value||defaultTotal;
+ $('#reroll-option-text').textContent='Allow reroll below a raw total of '+threshold;
+ $('#reroll-threshold-help').textContent=twoDice?'The check uses all six raw 2D6 totals before placement, halving or species bonuses. Default: 43. Extra characteristics do not count.':aezorgh?'Standard Aezorgh default to a 30-point raw-dice minimum. One-die scores swap within their group; DEX and INT swap separately. Extra characteristics and species bonuses do not count.':'The threshold uses the six raw scores before species modifiers. Default: 43. Extra characteristics do not count.';
 }
 function syncIdentityOptions(form){
  const species=form.elements.species.value,culture=form.elements.culture,variant=form.elements.variant;
@@ -531,7 +538,7 @@ window.addEventListener('beforeunload',event=>{if(notesDraft!==null&&notesDraft!
 document.addEventListener('change',event=>{
  if(event.target.id==='aslan-historical-target')$('#aslan-historical-selection').textContent=event.target.value?event.target.selectedOptions[0].textContent:'';
  if(event.target.matches('[name=species]'))syncIdentityOptions(event.target.form);
- if(event.target.matches('[name=aezorghTwoDice]'))syncRerollOptions(event.target.form);
+ if(event.target.matches('[name=aezorghTwoDice], [name=minimumTotal]'))syncRerollOptions(event.target.form);
   if(event.target.matches('[name=gm]')){syncPsiOptions(event.target.form);const academy=event.target.form.elements.academyServiceSkill;if(academy){academy.disabled=!event.target.checked;if(academy.disabled)academy.checked=false;}}
  if(event.target.matches('[name=species],[name=extras],[name=gm],[name=zhodaniPsi]'))syncSetupOptionalSummary(event.target.form);
  if(['lawyer-outcome','lawyer-level'].includes(event.target.id))syncPrisonerLawyerControls($);
@@ -558,7 +565,7 @@ document.addEventListener('submit',async event=>{
  if(event.target.id==='setup-form'){
   event.preventDefault();if(busy)return;const form=event.target;const values=new FormData(form);
    if(values.get('zhodaniPsi')&&(!values.get('gm')||values.get('species')!=='zhodani')){notify('The Zhodani PSI option needs GM mode and a Zhodani Traveller.',true);return;}
-  if(!await send('configure',{boons:Number(values.get('boons')),minimumReroll:!!values.get('minimumReroll'),allocation:!!values.get('allocation'),extras:values.getAll('extras'),zhodaniPsi:!!values.get('zhodaniPsi'),aezorghTwoDice:values.get('species')==='aezorgh'&&!!values.get('aezorghTwoDice')}))return;
+  if(!await send('configure',{boons:Number(values.get('boons')),minimumReroll:!!values.get('minimumReroll'),minimumTotal:Number(values.get('minimumTotal')),allocation:!!values.get('allocation'),extras:values.getAll('extras'),zhodaniPsi:!!values.get('zhodaniPsi'),aezorghTwoDice:values.get('species')==='aezorgh'&&!!values.get('aezorghTwoDice')}))return;
   if(!!values.get('gm')!==projection.state.config.gm&&!await send('gm-mode',{enabled:!!values.get('gm')}))return;
   if(values.get('academyServiceSkill')&&!await send('gm-academy-training',{enabled:true}))return;
   await send('setup',{name:values.get('name'),species:values.get('species'),gender:values.get('gender'),culture:values.get('culture')??'native',variant:values.get('species')==='vargr'?(values.get('variant')??'standard'):undefined,homeworld:values.get('homeworld')});

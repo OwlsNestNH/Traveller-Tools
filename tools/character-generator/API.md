@@ -380,3 +380,7 @@ A mechanical dependency can temporarily resolve only the relevant earlier weapon
 
 ### Finalization ledger commands
 `resolve-landhold-details` accepts optional `name` and `location` strings for the selected landhold. `spend-equipment-credit` accepts `category`, optional canonical `itemId`, custom `name`, `unitCost`, positive integer `quantity`, optional `techLevel`, `sourceNote`, and `confirmed: true`; canonical metadata cannot be overridden. It debits only the selected restricted credit and creates a linked asset, leaving the popup open. `retain-equipment-credit` closes that task while retaining unspent credit. All use existing command-ID replay/idempotence and finalization cancellation semantics.
+
+## Adjustable minimum raw total
+
+The `configure` command accepts optional `minimumTotal`, an integer from 6 through 72, before any statistics rolls. It overrides the raw-total threshold without changing dice, placement, modifiers, or `minimumReroll`. The projected `statisticsRerollThreshold` is authoritative. Omitting `minimumTotal` preserves the existing species/method default (30 for standard Aezorgh, 43 otherwise) and legacy config/save shape. The option is saved and replayed with its command.
