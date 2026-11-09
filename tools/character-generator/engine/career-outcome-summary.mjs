@@ -1,6 +1,6 @@
 // Short, original summaries of implemented effects, not reproduced book prose.
 const signed=n=>(n>=0?'+':'')+n;
-const words=s=>String(s??'').replaceAll('-',' ');
+const words=s=>String(s??'').replace(/^(core|aslan|vargr|zhodani)\./,'').replaceAll('-',' ');
 export function careerOutcomeSummary(effects=[]){
  return effects.map(effect=>{
   switch(effect.kind){
@@ -10,7 +10,7 @@ export function careerOutcomeSummary(effects=[]){
    case 'stat':return effect.name+' '+signed(effect.value)+'.';
    case 'note':return effect.text??effect.note??effect.label??'Record the event note.';
    case 'modifier':return words(effect.target)+' DM '+signed(effect.value)+'.';
-   case 'relationship':return 'Gain '+(effect.count??effect.dice??1)+' '+words(effect.type)+'.';
+   case 'relationship':return 'Gain '+(effect.dice??effect.count??1)+' '+words(effect.type)+'.';
    case 'table-roll':return 'Resolve the '+words(effect.table)+' table.';
    case 'check':return 'Resolve '+(effect.stat??effect.skills?.join(' or ')??'the event check')+' '+effect.target+'+ and its consequences.';
    case 'benefit-rolls':return effect.value!==undefined?signed(effect.value)+' Benefit rolls.':'Resolve the Benefit-roll consequence.';

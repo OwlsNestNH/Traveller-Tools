@@ -4,8 +4,13 @@ import {api} from '../engine/session.mjs';
 import {assignmentSetup,run,force,settleAssignment} from './assignment-fixtures.mjs';
 import {rollResult} from '../gui/roll-result-view.mjs';
 import {trainingContext} from '../gui/training-context.mjs';
+import {careerOutcomeSummary} from '../engine/career-outcome-summary.mjs';
 function start(){let r=run(assignmentSetup('separate-term-steps'),'skip-precareer');return settleAssignment(force(r,'career',{id:'core.army',assignment:'support'},[6,6]));}
 function command(r,type,payload={}){return api({operation:'command',session:r.session,command:{type,payload}});}
+test('table summary retains random relationship count rather than its fallback count',()=>{
+ assert.equal(careerOutcomeSummary([{kind:'relationship',type:'Contact',count:1,dice:'D3'}]),'Gain D3 Contact.');
+ assert.equal(careerOutcomeSummary([{kind:'relationship',type:'Enemy',count:2}]),'Gain 2 Enemy.');
+});
 test('survival and event are separate persisted actions with replay-identical dice and consequences',()=>{
  const r=start(),old=run(r,'survival'),check=run(r,'survival-check');
  assert.equal(check.log.at(-1).rolls.length,1);

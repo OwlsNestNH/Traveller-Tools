@@ -134,6 +134,7 @@ export function pendingEffectDetails(event,catalog){
 }
 export function rollResult(event,state,catalog,options={}){
  if(!event)return null;
+ const careerOutcome=event.summary?.match(/(Career event|Mishap) result (\d+)\. (.+)$/);
  const advancement=advancementResult(event);
  const survival=survivalResult(event,state);
  const specialized=advancement??survival;
@@ -159,6 +160,12 @@ export function rollResult(event,state,catalog,options={}){
  let title=specialized?.title??(words(event.type)||'Action')+' result.';
  // Use only prose-only summaries; never leak serialized rules or property paths.
  if(!specialized&&event.summary&&!/[{}\[\]]/.test(event.summary)&&!/[A-Za-z]+\.[A-Za-z]+/.test(event.summary))title=event.summary;
+ if(careerOutcome){
+  title=careerOutcome[1]+' result '+careerOutcome[2]+'.';
+  const roll=event.rolls?.find(r=>r.label===(careerOutcome[1]==='Mishap'?'Mishap table':'Event table'));
+  details.unshift('Table outcome: '+careerOutcome[3]);
+  if(roll)details.unshift('Roll ['+roll.values.join(', ')+'] = '+roll.total+'.');
+ }
  const result={title,details:unique(details),status:mixed?'info':['success','failure'].includes(specialized?.status)?specialized.status:outcome?.status??(sourcePending?'pending':specialized?.status??'info')};
  result.text=[result.title,...result.details].join(' ');return result;
 }

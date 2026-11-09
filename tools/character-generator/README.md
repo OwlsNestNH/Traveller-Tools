@@ -136,6 +136,12 @@ A shared, read-only result panel names each roll and its recorded effects across
 
 ## Later-career basic training
 
+### Separate term steps
+
+The interactive builder now rolls survival on its own. A saved career-event or mishap checkpoint follows, with its own roll button, dice and short summary of the implemented table effects. Choices then resolve before advancement. Repeated table actions reject, and refreshing or reimporting the checkpoint cannot reroll automatically. Historical `survival` actions retain their original combined replay; new interaction uses `survival-check`, followed by `career-event` or `career-mishap`.
+
+Regular training starts each later term. Event skill awards, rank bonuses and the additional successful-advancement training roll are independent awards (Core 2022 pp. 14, 18-19). The first career replaces its initial regular roll with basic training; a subsequent career receives its one basic-training choice and the normal roll. Table summaries describe implemented effects, not reproduced source narrative. Existing source-required outcomes remain explicit.
+
 The basic-training choice and the regular term training roll are separate in a later career, including Prisoner. The first career alone replaces its initial regular training roll with basic training (Core Rulebook Update 2022, p. 18; Prisoner exceptions on p. 52). The screen names both steps and explains the transition without changing rules, saved events or existing save compatibility.
 
 ## Explicit Prisoner escape checks
