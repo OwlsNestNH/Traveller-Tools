@@ -30,3 +30,10 @@ test('compact warning keeps complete limits in the same disclosure and retains e
  for(const id of ['export','import','print','new','action-log'])assert.ok(html.includes('id="'+id+'"'),id);
  assert.match(css,/font:18px\/1\.55/);assert.match(css,/\.toolbar button,\.toolbar \.button\{min-height:54px\}/);assert.match(css,/#automation-limits>summary\{min-height:44px\}/);
 });
+
+test('saved identity GM state is shown honestly and setup can explicitly disable it',()=>{
+ const source=read('gui/app.mjs'),start=source.indexOf('function setupView(){'),end=source.indexOf('\nfunction syncPsiOptions(',start);
+ const setup=vm.runInNewContext(source.slice(start,end)+';setupView()', {projection:{state:{config:{gm:true}}},catalog:{species:[{id:'human'},{id:'vargr',variants:[]}],extraStats:[]},options:()=>'',esc:String,setupOptionalSummary});
+ assert.match(setup,/GM changes on/);assert.match(setup,/name="gm" type="checkbox" checked/);
+ assert.ok(source.includes("if(!!values.get('gm')!==projection.state.config.gm&&!await send('gm-mode',{enabled:!!values.get('gm')}))return;"));
+});

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {createServer} from '../server.mjs';
-import {project} from '../engine/session.mjs';
+import {project,createSession,execute,exportSession} from '../engine/session.mjs';
 const require=createRequire(import.meta.url),{chromium}=require(process.argv[2]||'playwright');
 const out=new URL('./artifacts/',import.meta.url);await mkdir(out,{recursive:true});
 const server=createServer();await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
@@ -31,7 +31,7 @@ try{
    const initial=project(JSON.parse(await saved(page)));await page.locator('#gm-field').selectOption('pool.1');assert.equal(await page.locator('#gm-value').inputValue(),String(initial.state.pool[1].base));
    before=await count(page);await page.locator('#gm-value').fill('11');await page.getByRole('button',{name:'Save correction',exact:true}).click();assert.equal(await count(page),before); // reason required
    await page.locator('#gm-reason').fill('Correct the named DEX raw score');await page.getByRole('button',{name:'Save correction',exact:true}).click();await changed(page,before);
-   let current=project(JSON.parse(await saved(page)));assert.equal(current.state.pool[1].base,11);assert.equal(current.state.pool[0].base,initial.state.pool[0].base);assert.equal(current.log.at(-1).type,'gm-override');assert.match(current.log.at(-1).summary,/pool\[1\]/);
+   let current=project(JSON.parse(await saved(page)));assert.equal(current.state.pool[1].base,11);assert.equal(current.state.pool[0].base,initial.state.pool[0].base);assert.equal(current.log.at(-1).type,'gm-override');assert.match(current.log.at(-1).summary,/pool\[1\]/);assert.equal(await page.evaluate(()=>document.activeElement.id),'gm-save-correction');
    await page.getByRole('button',{name:'Keep these characteristics',exact:true}).click();await page.getByRole('heading',{name:'Choose background skills',exact:true}).waitFor();await ready(page);
    assert.equal(await page.locator('#additional-characteristics').getAttribute('open'),null);assert.notEqual(await page.locator('#gm-controls').getAttribute('open'),null); // disclosure state follows identity, not position
    assert.equal(await page.locator('#extra-stat option[value=LCK]').count(),0);assert.equal(await page.locator('#sheet .stat').filter({hasText:'LCK'}).count(),1);
@@ -53,6 +53,21 @@ try{
    await page.reload();await page.getByRole('button',{name:'Keep these characteristics',exact:true}).waitFor();assert.deepEqual(JSON.parse(await saved(page)),replaced);assert.equal(await page.locator('#gm-controls').getAttribute('open'),null);
    if(transport==='http'){assert.ok(requests.some(url=>url.includes('/api/v1')));assert.ok(!requests.some(url=>/\/engine\//.test(url)));}
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);checks.push(label+' contextual extras, current values, guarded corrections, roll picker, cancellation, audit and reload');
+  }finally{await context.close();}
+ }
+ // Identity-stage saves created by the old sidebar retain their actual GM setting.
+ for(const transport of ['static','http'])for(const keepEnabled of [true,false]){
+  const raw=exportSession(execute(createSession('saved-identity-gm-'+transport+keepEnabled),{type:'gm-mode',payload:{enabled:true}}).session);
+  const context=await browser.newContext({viewport:{width:320,height:1000}});await context.addInitScript(({key,raw})=>localStorage.setItem(key,raw),{key,raw});
+  const page=await context.newPage();page.on('pageerror',error=>errors.push(error.message));
+  try{
+   await page.goto(origin+(transport==='http'?'/?api=local':'/'));await page.getByRole('heading',{name:'Start your Traveller',exact:true}).waitFor();
+   assert.match(await page.locator('#setup-optional-summary').textContent(),/GM changes on/);assert.equal(await page.locator('[name=gm]').isChecked(),true);
+   if(!keepEnabled){await page.locator('#setup-optional-settings > summary').click();await page.locator('[name=gm]').uncheck();assert.match(await page.locator('#setup-optional-summary').textContent(),/GM changes off/);}
+   await page.getByRole('button',{name:'Begin character',exact:true}).click();await page.getByRole('button',{name:'Roll six characteristics',exact:true}).waitFor();await ready(page);
+   const restored=project(JSON.parse(await saved(page)));assert.equal(restored.state.config.gm,keepEnabled);assert.equal(await page.locator('#gm-toggle').isChecked(),keepEnabled);
+   assert.equal(restored.log.filter(e=>e.type==='gm-mode').length,keepEnabled?1:2);if(!keepEnabled)assert.match(restored.log.find(e=>e.summary.includes('true → false'))?.summary??'',/GM mode true → false/);
+   checks.push(transport+' saved identity GM '+(keepEnabled?'preserved':'explicitly disabled and logged'));
   }finally{await context.close();}
  }
  assert.deepEqual(errors,[]);await writeFile(new URL('character-controls-browser-results.json',out),JSON.stringify({checks,errors},null,2));console.log(JSON.stringify({checks,errors},null,2));

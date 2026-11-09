@@ -34,7 +34,17 @@ jobs:
         run: |
           npm install --prefix "$RUNNER_TEMP/character-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
           node "$RUNNER_TEMP/character-playwright/node_modules/playwright/cli.js" install --with-deps chromium
+      - name: Compact character sheet interactions
+        run: node tools/character-generator/verification/final-sheet-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+      - name: Upload compact sheet review
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-character-sheet-review-${{ github.event.pull_request.head.sha }}
+          path: tools/character-generator/verification/artifacts/final-sheet-*
+          if-no-files-found: warn
       - name: Desktop and mobile release and mixed-scope interactions
+        if: ${{ !cancelled() && steps.browser-install.outcome == 'success' }}
         run: |
           failures=0
           for suite in character-controls-browser player-psi-browser survival-result-browser advancement-result-browser life-event-presentation-browser training-information-browser release-presentation-browser prisoner-lawyer-browser optional-benefit-browser relationship-events-browser core-life-events-browser source-checks-browser release-scope-browser vargr-training-browser constrained-awards-browser benefit-wagers-browser agent-cover-browser source-training-browser aslan-access-browser aslan-land-browser clan-asset-browser clan-share-browser browser review-browser expansion-browser benefit-browser aezorgh-browser recovery-browser transfer-browser assignment-browser aslan-officer-browser aslan-restoration-browser aslan-outlaw-browser aslan-origin-browser; do
