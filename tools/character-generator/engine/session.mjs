@@ -778,7 +778,7 @@ function enterCareer(state,career,assignment,rolls=[],transfer=null) {
   const basic=first?rows.flatMap(asBasic):[{kind:'choice',options:rows.map((row,i)=>({label:'Basic-training option '+(i+1),effects:asBasic(row)}))}];
   next.entryEffects=[...basic,...educational.effects,...educational.unresolved];next.entryNext=first?'survival':'new-career-training';
   // Explicit GM house option, not an academy graduation award. Never double a later-career roll.
-  if(first&&state.config.academyServiceSkill&&state.character.educations?.some(e=>e.completed&&e.term===state.character.terms&&['core.academy-army','core.academy-marine','core.academy-navy','companion.merchant'].includes(e.id))){next.academyServiceTraining='pending';next.entryNext='new-career-training';}
+  if(first&&state.config.academyServiceSkill&&state.character.educations?.some(e=>e.completed&&e.term===state.character.terms&&['core.army','core.marine','core.navy'].includes(career.id)&&e.id==='core.academy-'+career.id.slice(5))){next.academyServiceTraining='pending';next.entryNext='new-career-training';}
   if(next.educationCommission)state.stage='preterm-commission';else finishCareerEntry(state,rolls);
  }else sourceStep(state,'basic-training',career.source,career.page,first?'Choose basic training from the source table.':'Choose one basic-training skill from the source table.','survival');
 }

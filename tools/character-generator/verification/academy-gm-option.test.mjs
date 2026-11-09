@@ -76,9 +76,9 @@ test('old sessions without the new command project identically and keep RAW off'
  const entered=enter(old);assert.equal(entered.state.stage,'survival');assert.equal(entered.state.character.careers[0].academyServiceTraining,undefined);
 });
 
-test('nonmatching destination still qualifies; later careers retain a single ordinary roll',()=>{
+test('nonmatching destination does not qualify; later careers retain a single ordinary roll',()=>{
  let r=academy(true);r=force(r,'career',{id:'core.merchant',assignment:'free'},[6,6]);
- assert.equal(r.state.stage,'training');assert.deepEqual(r.state.trainingOptions.map(t=>t.id),['service']);
+ assert.equal(r.state.stage,'survival');assert.equal(r.state.character.careers[0].academyServiceTraining,undefined);
  const state=structuredClone(academy(true).state);state.character.careers.push({id:'core.scout',assignment:'courier',terms:1,exit:'voluntary',rank:0});state._override={index:0,values:[6,6]};
  a.apply(state,{type:'career',payload:{id:'core.merchant',assignment:'free'}},[]);
  assert.equal(state.character.careers.at(-1).academyServiceTraining,undefined);
@@ -105,4 +105,16 @@ test('Academy roll improves known skills normally and honors the level cap',()=>
 test('option off retains the Army basic-training choice at level zero',()=>{
  const r=enter(academy(), 'core.army','support',1);
  assert.equal(r.state.character.skills['Vacc Suit'],0);assert.equal(r.state.character.skills.Drive,0);assert.equal(r.state.stage,'survival');
+});
+
+test('only matching Core military academies qualify',()=>{
+ for(const [academyId,careerId,assignment] of [['core.academy-marine','core.marine','support'],['core.academy-navy','core.navy','crew']]){
+  let r=academy(true,academyId,false);r=enter(r,careerId,assignment);
+  assert.equal(r.state.stage,'training');assert.deepEqual(r.state.trainingOptions.map(t=>t.id),['service']);
+ }
+ const state=structuredClone(academy(true).state);state.character.educations[0].id='companion.merchant';delete state.character.educations[0].graduation;state.character.educations[0].curriculum='business';state._override={index:0,values:[6,6]};
+ // Inspect the first-career gate without reinterpreting an unrelated academy's source effects.
+ state.character.educations[0].completed=true;
+ a.apply(state,{type:'career',payload:{id:'core.merchant',assignment:'free'}},[]);
+ assert.equal(state.stage,'survival');assert.equal(state.character.careers[0].academyServiceTraining,undefined);
 });
