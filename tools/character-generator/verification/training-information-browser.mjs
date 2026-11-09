@@ -46,6 +46,13 @@ try{
    assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),specialtySave);await page.reload();await page.locator('#award-skill').fill('Electronics (computers)');await page.locator('[data-action=choose-skill]').click();
    await page.waitForFunction(()=>document.querySelector('#message')?.textContent.includes('Skill Electronics (computers): untrained → 1'));
    assert.match(await page.locator('#action-log').innerText(),/Electronics \(computers\)/);checks.push({name:'specialty-'+width+(apiMode?'-http':'-static'),pass:true});
+   for(const [base,die,selected] of [['Drive',1,'Drive (wheel)'],['Melee',6,'Melee (blade)']]){
+    let offered=run(ordinary,'training',{table:'personal'});offered=run(offered,'gm-replay',{revision:offered.revision,rollIndex:0,values:[die],reason:'Speciality dropdown regression'});
+    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(offered.session)});await page.reload();await page.locator('#award-skill').waitFor();
+    const values=await page.locator('#award-skill-options option').evaluateAll(options=>options.map(option=>option.value));assert.ok(values.includes(selected));assert.ok(values.every(value=>value.startsWith(base+' (')));assert.ok(!values.includes(base));
+    await page.locator('#award-skill').fill(selected);await page.locator('[data-action=choose-skill]').click();await page.waitForFunction(()=>!document.querySelector('#award-skill')&&!document.querySelector('#new').disabled);
+    const accepted=api({operation:'project',session:JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key))});assert.equal(accepted.state.character.skills[selected],1);assert.notEqual(accepted.state.stage,'book-step');checks.push({name:base+'-specialty-'+width+(apiMode?'-http':'-static'),pass:true});
+   }
   }finally{await context.close();}
  }
  assert.deepEqual(errors,[]);await writeFile(new URL('training-information-browser-results.json',out),JSON.stringify({checks,errors},null,2));console.log(JSON.stringify({checks,errors}));
