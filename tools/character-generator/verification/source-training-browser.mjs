@@ -20,10 +20,11 @@ try{
     await page.locator('[data-action=choose-effect]').first().waitFor();assert.match(await page.locator('#workspace').innerText(),/Core p. 37/);assert.equal(await page.getByRole('button',{name:/Advanced education/}).count(),0);assert.equal(await page.locator('[data-action=choose-effect]').count(),3);
     await page.reload();await page.locator('[data-action=choose-effect]').first().click();
    }else{
-    await page.locator('#award-skill').waitFor();await page.reload();await page.locator('#award-skill').fill('Language (Vilani)');await page.locator('[data-action=choose-skill]').click();
+    assert.equal(fixture.state.stage,'advancement');assert.ok(fixture.state.character.deferredSkillAwards.some(a=>a.name==='Language'&&a.status==='pending'));
+    await page.getByRole('button',{name:'Allocate specializations now',exact:true}).click();await page.locator('#award-skill').waitFor();await page.reload();await page.locator('#award-skill').fill('Language (Vilani)');await page.locator('[data-action=choose-skill]').click();
    }
    await page.waitForFunction(()=>!document.querySelector('#new').disabled&& !document.querySelector('[data-action=choose-effect]')&&!document.querySelector('#award-skill'));
-   const before=project(JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key)));assert.equal(before.state.character.sourceTraining.length,1);assert.equal(before.state.character.sourceTraining[0].status,'completed');assert.equal(before.state.stage,navy?'term-end':'advancement');
+   const before=project(JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key)));assert.equal(before.state.character.sourceTraining.length,1);assert.equal(before.state.character.sourceTraining[0].status,'completed');assert.equal(before.state.stage,navy?'term-end':'advancement');if(!navy){assert.equal(before.state.character.skills['Language (vilani)'],1);assert.equal(before.state.character.deferredSkillAwards.find(a=>a.name==='Language').status,'allocated');}
    await page.reload();await page.waitForFunction(()=>!document.querySelector('#new').disabled);assert.deepEqual(project(JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key))),before);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
    const name='source-training-'+(navy?'navy':'citizen')+'-'+width+(apiMode?'-http':'-static');await page.screenshot({path:fileURLToPath(new URL(name+'.png',out)),fullPage:true});checks.push({name,pass:true});
