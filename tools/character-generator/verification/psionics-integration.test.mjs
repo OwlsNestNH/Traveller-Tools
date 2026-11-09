@@ -112,8 +112,8 @@ test('late-term community requires timing decision rather than retroactive free 
  const s=fixture('human',null);s.stage='companion-admission';s.pendingEducation={id:'companion.psionic'};s.character.terms=1;s.character.age=22;
  cmd(s,'companion-entry');assert.equal(s.pending.kind,'psionic-training-terms');assert.equal(s.character.age,22);assert.equal(s.character.psionics.attempts.length,0);
 });
-test('raw human PSI requires referee permission, without awarding a talent',()=>{
- let r=run(createSession('raw'),'setup',{species:'human'});r=run(r,'roll-statistics');r=run(r,'accept-statistics');assert.throws(()=>run(r,'add-extra',{id:'PSI'}),/referee/);r=run(r,'gm-mode',{enabled:true});r=run(r,'add-extra',{id:'PSI'});assert.equal(r.state.character.psionics.historyKnown,true);assert.deepEqual(r.state.character.skills,{});
+test('player-selected human PSI keeps GM mode off without awarding a talent',()=>{
+ let r=run(createSession('raw'),'setup',{species:'human'});r=run(r,'roll-statistics');r=run(r,'accept-statistics');r=run(r,'add-extra',{id:'PSI'});assert.equal(r.state.config.gm,false);assert.equal(r.state.character.psionics.historyKnown,true);assert.deepEqual(r.state.character.skills,{});
 });
 test('Core Psion entry cannot silently bypass initial training',()=>{
  const s=fixture('human',null);s.config.gm=true;cmd(s,'career',{id:'core.psion',assignment:'adept'});assert.equal(s.pending.kind,'psionic-training-terms');assert.equal(s.character.careers.length,0);
