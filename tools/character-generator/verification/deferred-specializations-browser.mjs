@@ -3,7 +3,7 @@ import {createRequire} from 'node:module';
 import {createServer} from '../server.mjs';
 import {exportSession,project} from '../engine/session.mjs';
 import {trainingFixture,run} from './training-information-fixtures.mjs';
-const fixture=run(trainingFixture({species:'vargr',career:'vargr.citizen',assignment:'corporate'}),'training',{table:'advanced'});
+const fixture=run(trainingFixture({species:'vargr',career:'vargr.citizen',assignment:'corporate',rulesRevision:'character-preview-2026-11-09.18'}),'training',{table:'advanced'});
 assert.equal(fixture.state.character.deferredSkillAwards.at(-1).name,'Electronics');
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const server=createServer();await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));

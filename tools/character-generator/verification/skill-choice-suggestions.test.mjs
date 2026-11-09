@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {api,exportSession,skillChoiceSuggestions} from '../engine/session.mjs';
 import {trainingFixture,run} from './training-information-fixtures.mjs';
-function allocate(r){assert.equal(r.state.stage,'term-end');assert.equal(r.state.specializationOptions.available,true);assert.ok(r.state.character.deferredSkillAwards.some(a=>a.status==='pending'));return run(r,'allocate-specializations');}
+function allocate(r){assert.equal(r.state.stage,'skill-choice');assert.equal(r.state.character.deferredSkillAwards,undefined);assert.equal(r.state.pendingChoice.deferSpeciality,undefined);return r;}
 function pending(table='advanced'){return allocate(run(trainingFixture({species:'vargr',career:'vargr.citizen',assignment:'corporate'}),'training',{table}));}
 test('Electronics award offers only canonical Electronics specialities; unrelated skills reject atomically',()=>{
  const r=pending(),raw=exportSession(r.session);assert.deepEqual(r.state.pendingChoice.allowed,['Electronics']);

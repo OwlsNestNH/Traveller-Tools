@@ -42,8 +42,8 @@ test('public Merchant event uses actual EDU eligibility and preserves pending re
  }
 });
 
-test('Loner generic Engineer can defer without losing source or consuming extra rolls',()=>{
- const r=lonerTrainingFixture(),deferred=run(r,'choose-skill',{name:'Engineer'});assert.equal(deferred.state.stage,'advancement');assert.deepEqual(deferred.log.at(-1).rolls,[]);
+test('legacy .18 Loner generic Engineer can defer without losing source or consuming extra rolls',()=>{
+ const session=structuredClone(lonerTrainingFixture().session);session.rulesRevision='character-preview-2026-11-09.18';const r={session,...project(session)},deferred=run(r,'choose-skill',{name:'Engineer'});assert.equal(deferred.state.stage,'advancement');assert.deepEqual(deferred.log.at(-1).rolls,[]);
  const award=deferred.state.character.deferredSkillAwards.at(-1);assert.equal(award.name,'Engineer');assert.equal(award.status,'pending');assert.equal(award.source.page,195);assert.deepEqual(award.trainingContext,{careerId:'vargr.loner',assignment:'prospector',tables:['assignment']});
  const pending=run(deferred,'allocate-specializations');assert.equal(pending.state.pendingChoice.source.page,195);assert.deepEqual(project(importSession(exportSession(pending.session))),project(pending.session));
  const allocated=run(pending,'choose-skill',{name:'Engineer (power)'});assert.equal(allocated.state.stage,'advancement');assert.equal(allocated.state.character.skills['Engineer (power)'],1);assert.deepEqual(allocated.log.at(-1).rolls,[]);assert.equal(allocated.state.character.deferredSkillAwards.at(-1).status,'allocated');

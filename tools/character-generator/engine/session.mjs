@@ -36,9 +36,9 @@ const RULE_PACK={...CORE_PACK,...EXPANSION_PACK};
 import { API_VERSION, SOURCES, CAREERS, PRECAREERS, SPECIES, SKILLS, BACKGROUND_SKILLS, findCareer, findSpecies } from './catalog.mjs';
 const LIMIT = 2000;
 export const MAX_SAVE_BYTES = 2000000;
-export const RULES_REVISION='character-preview-2026-11-09.18';
-// .18 corrects career events and defers unspecified awards; .16/.17 preserve historical mechanics.
-export const COMPATIBLE_RULES_REVISIONS=Object.freeze([RULES_REVISION,'character-preview-2026-11-09.17','character-preview-2026-11-09.16']);
+export const RULES_REVISION='character-preview-2026-11-09.19';
+// .19 chooses specialties on receipt; .18 retains deferred awards and corrections; .16/.17 retain historical mechanics.
+export const COMPATIBLE_RULES_REVISIONS=Object.freeze([RULES_REVISION,'character-preview-2026-11-09.18','character-preview-2026-11-09.17','character-preview-2026-11-09.16']);
 const saveSize = value => new TextEncoder().encode(JSON.stringify(value,null,2)).byteLength;
 const copy = value => structuredClone(value);
 const plain = value => value && typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
@@ -89,7 +89,7 @@ function setStat(state,key,value) { integer(value,0,40,'Characteristic'); state.
 // Unspecified awards remain individually allocatable, preserving minimum-level awards.
 function pendingSpecializations(state,base){return (state.character.deferredSkillAwards??[]).filter(a=>a.status==='pending'&&(!base||(Array.isArray(base)?base.includes(a.name):a.name===base)));}
 function deferSkillAward(state,e){const awards=state.character.deferredSkillAwards??=[];const award={...copy(e),id:'specialization-'+(awards.length+1),name:e.name,count:1,value:e.value??1,mode:e.mode??'increase',status:'pending',age:state.character.age,term:state.character.terms};awards.push(award);return award;}
-function deferrableChoice(state,e){return !!state.deferredSpecializations&&!e.allocationId&&e.kind!=='skill-reduction-choice'&&!e.distinctSpecialties&&!e.permittedNames&&['any','assignment','eligible-career',undefined].includes(e.scope);}
+function deferrableChoice(state,e){return !!state.deferredSpecializations&&!state.immediateSpecializations&&!e.allocationId&&e.kind!=='skill-reduction-choice'&&!e.distinctSpecialties&&!e.permittedNames&&['any','assignment','eligible-career',undefined].includes(e.scope);}
 function allocationEffects(state,base){return pendingSpecializations(state,base).map(a=>({...copy(a),kind:'skill-choice',scope:'any',allowed:[a.name],allocationId:a.id,deferSpeciality:false,label:'Allocate '+a.name+' award: '+(a.mode==='set'?'gain at least level ':'increase by ')+a.value}));}
 function requireAllocationsBefore(state,e,base){const effects=allocationEffects(state,base);if(!effects.length)return false;if(e.kind==='skill'&&e.name.includes(' ('))for(const effect of effects)effect.followingFixedAward=copy(e);state.effectsQueue.unshift(...effects,e);return true;}
 function specializationOptions(state){return {available:!!state.deferredSpecializations&&pendingSpecializations(state).length>0&&!state.pendingChoice&&!state.pending&&!state.effectsQueue?.length&&['career','precareer','training','survival','advancement','term-end','benefits','retirement','finish'].includes(state.stage),count:pendingSpecializations(state).length};}
@@ -1462,8 +1462,8 @@ function drainEffects(state,rolls) {
     if(state.deferredSpecializations&&base==='Independence'&&(e.value??1)>0){state.effectsQueue.unshift({...e,kind:'independence'});break;}
     if(state.character.psionicLoss&&PSIONIC_TALENTS.includes(base)){nativeFallback(state,e,'Ageing permanently removed psionic ability. Resolve this mandatory talent award explicitly without restoring it.');return;}
     if(PSIONIC_TALENTS.includes(base)&&skillLevel(state,e.name)<0){requestTalentAward(state,e,rolls);return;}
-    if(state.deferredSpecializations&&(e.value??1)>0&&SPECIALIZED.includes(base)&&e.name===base&&!e.immediateSpeciality&&state.effectsQueue?.[0]?.skillScope!=='preceding-award'){deferSkillAward(state,e);break;}
-    if(e.value>0&&SPECIALIZED.includes(base)&&e.name===base){state.pendingChoice={...copy(e),kind:'skill-choice',scope:'any',allowed:[base],mode:e.mode,value:e.value,...(e.awardId?{awardId:e.awardId}:{}),label:'Choose a '+base+' specialisation'};state.stage='skill-choice';return;}
+    if(state.deferredSpecializations&&!state.immediateSpecializations&&(e.value??1)>0&&SPECIALIZED.includes(base)&&e.name===base&&!e.immediateSpeciality&&state.effectsQueue?.[0]?.skillScope!=='preceding-award'){deferSkillAward(state,e);break;}
+    if((state.immediateSpecializations?(e.value??1):e.value)>0&&SPECIALIZED.includes(base)&&e.name===base){state.pendingChoice={...copy(e),kind:'skill-choice',scope:'any',allowed:[base],mode:e.mode,value:e.value,...(e.awardId?{awardId:e.awardId}:{}),label:'Choose a '+base+' specialisation'};state.stage='skill-choice';return;}
 
     if(skillAwardExceedsLimit(state,e.name,e.value??1,e.mode)){nativeFallback(state,e,'This mandatory skill award would exceed the total skill limit. Resolve its disposal from Core p. 18 without exceeding the cap.');return;}gainSkill(state,e.name,e.value??1,e.mode);bindAwardCheck(state,e.name);break;
    }
@@ -2802,7 +2802,7 @@ if(pending.kind==='psionic-training-terms'){
   need(['career','term-end','retirement','finish'].includes(state.stage),'Add connections between terms or at completion.');
   need(state.connections.length<2,'At most two connections award skills.');
   const person=text(payload.person,80);need(person&&!state.connections.some(c=>c.person.toLowerCase()===person.toLowerCase()),'Use a different Traveller for each connection.');
-  const skill=state.deferredSpecializations?normalizedSkill(state,text(payload.skill,80)).name:text(payload.skill,80);need(skill!=='Jack-of-all-Trades','Connections cannot award Jack-of-all-Trades.');
+  const skill=state.deferredSpecializations?normalizedSkill(state,text(payload.skill,80),{requireSpeciality:!!state.immediateSpecializations}).name:text(payload.skill,80);need(skill!=='Jack-of-all-Trades','Connections cannot award Jack-of-all-Trades.');
   if(state.deferredSpecializations)need(skillNameAllowed(state,skill,{scope:'any'}),'Skill is not available for this connection.');
   need((state.character.skills[skill]??0)<3,'A connection cannot increase a skill above level 3.');
   if(state.deferredSpecializations){const parsed=normalizedSkill(state,skill);need(SKILLS.includes(parsed.base),'Choose a supported skill.');if(SPECIALIZED.includes(skill)){deferSkillAward(state,{kind:'skill',name:skill,mode:'increase',value:1,maximum:3,connection:person});state.connections.push({person,skill,note:text(payload.note??'',300)});return 'Connection with '+person+': '+skill+' award saved for specialization allocation.';}const awards=allocationEffects(state,parsed.base);if(awards.length){for(const award of awards)award.followingConnection=skill;state.specializationContinuation={stage:state.stage,command:copy(command)};queueEffects(state,awards,'specialization-command',rolls);return 'Allocate earlier '+parsed.base+' awards before the connection skill.';}}
@@ -2862,7 +2862,7 @@ export function project(session) {
  need(typeof session.seed==='string'&&session.seed.length>0&&session.seed.length<=120,'Invalid random seed.');
  need(Array.isArray(session.events)&&session.events.length<=LIMIT,'Save contains too many actions.');
  need(saveSize(session)<=MAX_SAVE_BYTES,'Save size limit reached. Export your current character before continuing.');
- let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}const snapshots=[copy(state)],log=[];
+ let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(session.rulesRevision==='character-preview-2026-11-09.19')state.immediateSpecializations=true;const snapshots=[copy(state)],log=[];
  for(let i=0;i<session.events.length;i++){
   const event=session.events[i];need(plain(event)&&typeof event.id==='string'&&event.id.length<=120,'Invalid action record.');
   need(!log.some(e=>e.id===event.id),'Duplicate action ID.');
