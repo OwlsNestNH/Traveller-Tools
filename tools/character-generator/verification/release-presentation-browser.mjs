@@ -62,7 +62,7 @@ try{
    assert.equal(await editor.locator('[name=boons]').inputValue(),'0');assert.equal(await editor.locator('[name=allocation]').isChecked(),true);assert.equal(await editor.locator('[name=minimumReroll]').isChecked(),true);
    assert.match(await optionalSummary.textContent(),/No optional extras · GM changes off/);check(name+' Begin remains visible with options closed',await editor.getByRole('button',{name:'Begin character',exact:true}).isVisible());
    const metrics=await editor.evaluate(()=>({stepTop:Math.round(document.querySelector('#workspace').getBoundingClientRect().top+scrollY),bodyFont:parseFloat(getComputedStyle(document.body).fontSize),toolbar:[...document.querySelectorAll('.toolbar>button,.toolbar>.button')].map(el=>({height:el.getBoundingClientRect().height,font:parseFloat(getComputedStyle(el).fontSize)}))}));
-   layoutMetrics.push({name,...metrics});assert.equal(metrics.bodyFont,18);assert.equal(metrics.toolbar.length,4);assert.ok(metrics.toolbar.every(control=>control.height>=54&&control.font>=16));if(width===320)assert.ok(metrics.stepTop<700,name+' first step starts before 700px');
+   layoutMetrics.push({name,...metrics});assert.equal(metrics.bodyFont,18);assert.equal(metrics.toolbar.length,5);assert.ok(metrics.toolbar.every(control=>control.height>=54&&control.font>=16));if(width===320)assert.ok(metrics.stepTop<700,name+' first step starts before 700px');
    check(name+' optional disclosure large target',await optionalSummary.evaluate(el=>el.getBoundingClientRect().height>=44));
    await editor.screenshot({path:fileURLToPath(new URL('gui-simplicity-'+name+'-default.png',out)),fullPage:true});
    await optionalSummary.focus();await optionalSummary.press('Enter');assert.notEqual(await optional.getAttribute('open'),null);
