@@ -19,7 +19,7 @@ try{
    const fixture=optionalBenefitFixture(vargr),credit=fixture.state.benefitCreditOptions[0].id;
    await page.goto(origin+(http?'/?api=local':'/'));await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();
    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(fixture.session)});await page.reload();await page.locator('[name=benefit-credit]').waitFor();
-   assert.equal(await page.locator('[name=benefit-credit]').isChecked(),false);
+   assert.equal(await page.locator('[name=benefit-credit]').isChecked(),false);assert.equal(await page.locator('[name=benefit-credit]').locator('..').innerText(),fixture.state.benefitCreditOptions[0].label);
    await page.locator('[data-action=cash-benefit]').click();const held=run(fixture,'benefit',{cash:true,creditIds:[],lifeBonusIds:[]});
    await page.waitForFunction(({key,revision})=>JSON.parse(localStorage.getItem(key)).events.length===revision,{key,revision:held.revision});await loaded(page);
    assert.deepEqual((await saved(page)).state,held.state);assert.equal(held.state.character.benefitCredits[0].status,'available');

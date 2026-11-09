@@ -11,7 +11,7 @@ const root=path.resolve(fileURLToPath(new URL('../../../',import.meta.url))),out
 await mkdir(out,{recursive:true});
 const types={'.html':'text/html','.css':'text/css','.js':'text/javascript','.mjs':'text/javascript','.json':'application/json'};
 const browser=await chromium.launch({headless:true,...(process.env.CHARACTER_BROWSER_CHANNEL?{channel:process.env.CHARACTER_BROWSER_CHANNEL}:{})});
-const checks=[],errors=[],unexpected=[];
+const checks=[],errors=[],unexpected=[],layoutMetrics=[];
 const check=(label,value)=>{assert.ok(value,label);checks.push(label);};
 try{
  for(const width of [1440,320])for(const published of [false,true]){
@@ -37,6 +37,21 @@ try{
    await editor.getByRole('heading',{name:'Start your Traveller',exact:true}).waitFor();assert.equal(editor.url(),tool);
    assert.equal(await editor.locator('#release-version').textContent(),'Beta 0.1');
    assert.deepEqual(await editor.locator('[name=species] option').evaluateAll(nodes=>nodes.map(node=>node.value)),['human','aslan','vargr','aezorgh']);
+   const optional=editor.locator('#setup-optional-settings'),optionalSummary=optional.locator('summary');
+   assert.equal(await optional.getAttribute('open'),null);assert.equal(await editor.locator('[name=extras][value=LCK]').isVisible(),false);assert.equal(await editor.locator('[name=gm]').isVisible(),false);
+   assert.equal(await editor.locator('[name=boons]').inputValue(),'0');assert.equal(await editor.locator('[name=allocation]').isChecked(),true);assert.equal(await editor.locator('[name=minimumReroll]').isChecked(),true);
+   assert.match(await optionalSummary.textContent(),/No optional extras · GM changes off/);check(name+' Begin remains visible with options closed',await editor.getByRole('button',{name:'Begin character',exact:true}).isVisible());
+   const metrics=await editor.evaluate(()=>({stepTop:Math.round(document.querySelector('#workspace').getBoundingClientRect().top+scrollY),bodyFont:parseFloat(getComputedStyle(document.body).fontSize),toolbar:[...document.querySelectorAll('.toolbar>button,.toolbar>.button')].map(el=>({height:el.getBoundingClientRect().height,font:parseFloat(getComputedStyle(el).fontSize)}))}));
+   layoutMetrics.push({name,...metrics});assert.equal(metrics.bodyFont,18);assert.equal(metrics.toolbar.length,4);assert.ok(metrics.toolbar.every(control=>control.height>=54&&control.font>=16));if(width===320)assert.ok(metrics.stepTop<700,name+' first step starts before 700px');
+   check(name+' optional disclosure large target',await optionalSummary.evaluate(el=>el.getBoundingClientRect().height>=44));
+   await editor.screenshot({path:fileURLToPath(new URL('gui-simplicity-'+name+'-default.png',out)),fullPage:true});
+   await optionalSummary.focus();await optionalSummary.press('Enter');assert.notEqual(await optional.getAttribute('open'),null);
+   await editor.locator('[name=gm]').check();assert.equal(await editor.locator('[name=extras][value=PSI]').isEnabled(),true);await editor.locator('[name=extras][value=LCK]').check();
+   assert.match(await optionalSummary.textContent(),/Optional extras: LCK · GM changes on/);
+   await optionalSummary.press('Enter');assert.equal(await optional.getAttribute('open'),null);assert.equal(await editor.locator('[name=extras][value=LCK]').isChecked(),true);assert.equal(await editor.locator('[name=gm]').isChecked(),true);
+   await optionalSummary.press('Enter');assert.notEqual(await optional.getAttribute('open'),null);assert.equal(await editor.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+   await editor.locator('#workspace').screenshot({path:fileURLToPath(new URL('gui-simplicity-'+name+'-options.png',out))});
+   await editor.locator('[name=extras][value=LCK]').uncheck();await editor.locator('[name=gm]').uncheck();await optionalSummary.press('Enter');assert.match(await optionalSummary.textContent(),/No optional extras · GM changes off/);
    await editor.locator('[name=name]').fill('Unsaved release check '+width);
    const limits=editor.locator('#automation-limits'),summary=limits.locator('summary');await summary.focus();await summary.press('Enter');
    check(name+' limitations open with keyboard',await limits.getAttribute('open')!==null);
@@ -65,5 +80,5 @@ try{
   }finally{await context.close();}
  }
  assert.deepEqual(errors,[]);assert.deepEqual(unexpected,[]);
- await writeFile(new URL('release-presentation-browser-results.json',out),JSON.stringify({checks,errors,unexpected},null,2));console.log(JSON.stringify({checks,errors,unexpected}));
-}catch(error){await writeFile(new URL('release-presentation-browser-failure.json',out),JSON.stringify({message:error.message,checks,errors,unexpected},null,2));throw error;}finally{await browser.close();}
+ await writeFile(new URL('release-presentation-browser-results.json',out),JSON.stringify({checks,errors,unexpected,layoutMetrics},null,2));console.log(JSON.stringify({checks,errors,unexpected,layoutMetrics}));
+}catch(error){await writeFile(new URL('release-presentation-browser-failure.json',out),JSON.stringify({message:error.message,checks,errors,unexpected,layoutMetrics},null,2));throw error;}finally{await browser.close();}
