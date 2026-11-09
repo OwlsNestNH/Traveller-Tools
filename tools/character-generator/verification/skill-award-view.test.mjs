@@ -20,3 +20,8 @@ test('allocation renders only useful specialties and pending awards remain separ
  const view=deferredAwardsView(s,helpers);assert.equal((view.match(/Gun Combat/g)??[]).length,2);assert.doesNotMatch(view,/Science/);assert.match(view,/allocate-specializations/);
  s.specializationOptions.available=false;assert.doesNotMatch(deferredAwardsView(s,helpers),/allocate-specializations/);
 });
+
+test('ordinary skills in defer-enabled mixed choices need no specialty control',()=>{
+ const s={...state,skillChoiceBases:['Admin','Science'],skillChoiceSuggestions:['Admin']};assert.deepEqual(awardBases(s),['Admin','Science']);
+ const nodes={'#award-base':{value:'Admin'},'#award-skill':{},'#award-skill-options':{},'#award-speciality-controls':{}},root={querySelector:id=>nodes[id]??null};syncAwardBase(s,catalog,root,esc);assert.equal(nodes['#award-skill'].value,'Admin');assert.equal(nodes['#award-speciality-controls'].innerHTML,'');
+});
