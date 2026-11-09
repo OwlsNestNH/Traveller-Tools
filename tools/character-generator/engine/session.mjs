@@ -1,4 +1,5 @@
 import {culturalSkillAward,culturalAwardLabel,ASLAN_CULTURAL_SKILL_SOURCE,aslanSkillLabel,ASLAN_SKILL_LEGEND} from './aslan-skill-culture.mjs';
+import {believerBuyoutPlan,believerBuyoutChoice} from './believer-buyout.mjs';
 import {prisonerEscapePending} from './prisoner-escape.mjs';
 import {decorateLifeEventPresentation} from './life-event-projection.mjs';
 import {trainingInformation} from './training-information.mjs';
@@ -772,7 +773,7 @@ function closeTerm(state) {
  // Core p.46 Crime changes the next term, not this term's advancement (p.18).
  if(record.lifeCrimeExitPending){record.forcedExit=true;record.forcedStay=false;delete record.lifeCrimeExitPending;}
  if(state.correctedCareerEvents&&record.eventExitAtTermEnd){record.forcedExit=true;record.forcedStay=false;}
- if(!record.mishap){if(!(record.benefitBlock>0))record.benefitRolls++;record.successfulTerms++;}
+ if(!record.mishap){if(!(record.benefitBlock>0)&&!record.believerBuyout?.forfeitedTerm)record.benefitRolls++;record.successfulTerms++;}
  if(record.advancementBlock>0)record.advancementBlock--;if(record.benefitBlock>0)record.benefitBlock--;
  record.mishap=false;record.commissionTried=false;
  const species=findSpecies(state.character.species);const ageStart=species.agingStart??34;
@@ -1265,6 +1266,8 @@ function legacyCareerEffects(value){
  if(!value||typeof value!=='object')return value;
  if(value.kind==='career-status'&&value.timing==='term-end')delete value.timing;
  if(value.kind==='promotion'&&value.mode==='immediate')value.mode='automatic';
+ if(value.kind==='believer-buyout')value.kind='source-required';
+ delete value.believerBuyoutChoice;
  for(const child of Object.values(value))legacyCareerEffects(child);
  return value;
 }
@@ -1429,7 +1432,7 @@ function drainEffects(state,rolls) {
     break;
    }
    case 'career-permission':if(e.career==='core.psion')state.character.psionEntryPermission=true;else {nativeFallback(state,e);return;}break;
-   case 'choice':state.pendingChoice=e.guard==='zhodani-government-defence'&&state.character.psionicLoss?.permanent?{...e,options:e.options.filter(o=>o.label!=='PSI'),unavailableOptions:[{label:'PSI',reason:'Permanent psionic loss prevents this defence option.'}]}:e;state.stage='effect-choice';return;
+   case 'choice':if(state.correctedCareerEvents&&e.believerBuyoutChoice){const plan=believerBuyoutPlan(currentCareer(state).record,state.character.lifeBenefitLosses,state.active);e.label=believerBuyoutChoice(plan);e.buyoutPlan=plan;e.options[0].label='Accept: roll 2D once x forfeited rolls';e.options[0].effects[0].calculation='once';e.options[1].label='Refuse payment and gain 1D Enemies';e.options.push({label:'Accept: separate 2D per forfeited roll',effects:[{...copy(e.options[0].effects[0]),calculation:'separate'}]});}state.pendingChoice=e.guard==='zhodani-government-defence'&&state.character.psionicLoss?.permanent?{...e,options:e.options.filter(o=>o.label!=='PSI'),unavailableOptions:[{label:'PSI',reason:'Permanent psionic loss prevents this defence option.'}]}:e;state.stage='effect-choice';return;
    case 'skill-choice':
     if(['assignment','eligible-career'].includes(e.scope)&&state.active!==null){
      const {career,record}=currentCareer(state),choice=vargrTrainingChoice({careerId:career.id,assignment:record.assignment,pack:nativePack(state),eligibleTables:trainingOptions(state).map(t=>t.id),effect:e});
@@ -1648,6 +1651,17 @@ function drainEffects(state,rolls) {
    case 'parole':{
     const {record}=currentCareer(state);record.parole=e.mode==='reset'?mechanicalDice(state,e.dice??'1D+2',rolls,'Parole threshold'):Math.min(12,(record.parole??0)+e.value);break;
    }
+   case 'believer-buyout':{
+    const {record}=currentCareer(state);need(!record.believerBuyout?.accepted,'This buyout was already accepted.');
+    const plan=believerBuyoutPlan(record,state.character.lifeBenefitLosses,state.active);
+    need(['once','separate'].includes(e.calculation),'Choose how to calculate the buyout.');
+    const results=Array.from({length:plan.total?(e.calculation==='once'?1:plan.total):0},(_,i)=>dice(state,2,rolls,'Believer buyout: '+(e.calculation==='once'?'one roll multiplied by '+plan.total:'Benefit roll '+(i+1)+' of '+plan.total)));
+    const natural=results[0]??0,amount=results.reduce((sum,n)=>sum+n,0)*10000*(e.calculation==='once'?plan.total:1),formula=e.calculation==='once'?natural+' x Cr10,000 x '+plan.total:'('+results.join(' + ')+') x Cr10,000';
+    state.character.historyNotes??=[];state.character.historyNotes.push('Believer buyout: '+formula+' = Cr'+amount.toLocaleString('en-US')+'. Forfeited '+plan.total+' Benefit rolls and left the career.');
+    record.believerBuyout={accepted:true,source:{id:'companion',page:40},forfeited:plan,forfeitedTerm:true,calculation:e.calculation,results,formula,natural,amount,age:state.character.age,term:state.character.terms};
+    for(const loss of state.character.lifeBenefitLosses??[])if(plan.lossIds.includes(loss.id)){loss.status='applied';loss.appliedCareerIndex=state.active;}
+    record.benefitRolls=0;record.forfeitedRankBenefitRolls=plan.rankEntitlement;record.forcedExit=true;record.forcedStay=false;state.character.cash+=amount;break;
+   }
    case 'note':state.character.historyNotes??=[];state.character.historyNotes.push(e.text);break;
    default:nativeFallback(state,e);return;
   }
@@ -1673,6 +1687,7 @@ function trainingOptions(state){
 function apply(state,command,rolls) {
  need(plain(command)&&typeof command.type==='string','A command type is required.');
  const payload=command.payload??{};need(plain(payload),'Invalid command payload.');
+ if(state.correctedCareerEvents&&state.pendingChoice?.believerBuyoutChoice&&command.type==='gm-override')need(false,'Choose the buyout first, or use audited restore/replay to revise its benefit context.');
  if(state.pending?.kind==='prisoner-lawyer')need(['resolve-prisoner-lawyer','notes','gm-mode'].includes(command.type),'Resolve the pending lawyer choice before changing its context. Use restore or replay to revise it.');
  if(state.character.aslanOrigin?.status==='pending')need(['roll-aslan-gender','roll-aslan-family','roll-aslan-birth-order','resolve-aslan-estate','roll-aslan-clan','choose-aslan-clan','name-aslan-clan','roll-aslan-pride','roll-aslan-rite','resolve-aslan-origin-source','background','choose-effect','choose-skill','skill-award-source','retry-skill-choice','resolve-book','notes','gm-mode'].includes(command.type),'Finish the recorded Aslan origin before changing its context. Restore or replay explicitly to revise it.');
  if(state.pending?.kind==='aslan-origin-source')need(['resolve-aslan-origin-source','notes','gm-mode'].includes(command.type),'Resolve this origin question with its typed source fields.');

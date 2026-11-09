@@ -341,3 +341,9 @@ Vargr Psion Event 6 (Aliens 2026 p. 201) permits a non-psionic skill, excluding 
 ## Prisoner escape selection
 
 `state.prisonerEscape` appears only for the exact active Core Prisoner Event 3 choice and contains Stealth/Deception skill levels and check modifiers. `prisoner-escape` accepts only `{skill: "Stealth"}` or `{skill: "Deception"}` and rolls the chosen skill against 10. Invalid or stale commands reject atomically; duplicate action IDs do not roll again. `choose-effect` index 1 still declines without a roll. Original `choose-effect` index 0 remains unchanged for historical replay. Source: Core 2022 p. 57.
+
+### Believer event 9
+
+New sessions expose the buyout through the ordinary `effect-choice` stage and `choose-effect {index}` command. `pendingChoice.buyoutPlan` records the accrued/current-term/rank components, owed loss IDs, total forfeited rolls, and payment range. No decision is preselected. Acceptance records `career.believerBuyout`, adds its cash payment, closes the term and requires career exit with no restored forfeited benefits. Refusal keeps the career and rolls 1D Enemies. The choice is available in player mode; replay/import and duplicate command IDs preserve the decision and payout. Historical .16/.17 choices and manual source resolution remain unchanged.
+
+Believer event 9: the player chooses either one 2D roll multiplied by Cr10,000 and the forfeited roll count, or separate 2D rolls per forfeited Benefit roll, summed and multiplied by Cr10,000. Both acceptance options leave the career; refusal gains 1D Enemies. The recorded calculation shows every result, formula and total. This calculation choice is an explicit player ruling; legacy .16/.17 source-resolution is unchanged.

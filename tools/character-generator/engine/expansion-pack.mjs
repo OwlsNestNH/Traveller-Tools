@@ -1864,7 +1864,7 @@ outcomes('companion.believer',{
  5:C('Streetwise / Persuade'),
  6:[DSTAT('SOC','D3',-1),{kind:'benefit-rolls',dice:'D3',value:1},B(1,'all')],
  7:[T('core.life-events',{dice:'2D',sourcePage:46})],8:C('Carouse / Persuade'),
- 9:[Q([['Accept payment',[U('companion.believer',40,'Leave career; forfeit all benefits and receive 2D × Cr10000 for each forfeited benefit roll.')]],['Refuse',[relationship('Enemy',1,'1D')]]])],
+ 9:[{...Q([['Accept payment',[{...U('companion.believer',40,'Leave career; forfeit all benefits and receive 2D × Cr10000 for each forfeited benefit roll.'),kind:'believer-buyout'}]],['Refuse',[relationship('Enemy',1,'1D')]]]),believerBuyoutChoice:true}],
  10:[OPT('Perform rites',[relationship('Ally'),relationship('Rival')])],
  11:[M('advancement',-2,'all')],12:[{...P(),mode:'immediate'},M('advancement',1,'all')]
 },{
@@ -2320,6 +2320,7 @@ for(const [id,c] of Object.entries(builds)){
  c.coverage={training:'complete',ranks:coverage(c.ranks),benefits:'table-results',events:coverage(c.events),mishaps:coverage(c.mishaps)};
 }
 export const EXPANSION_EFFECT_SCHEMA={
+ 'believer-buyout':'Player-accepted event9: source-bound cash payout for forfeited current-career Benefit rolls, then exit.',
  ...Object.fromEntries(['skill','stat','choice','benefit','relationship','check','modifier','benefit-rolls','table-roll','career-status','promotion','injury','random','psionic-talent'].map(kind=>[kind,'Shared Core effect contract'])),
  conditional:'condition: {gender} or {stat,min}; then and otherwise effect arrays',
  independence:'male only; roll 2D strictly greater than SOC before granting skill',
