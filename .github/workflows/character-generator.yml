@@ -51,6 +51,13 @@ jobs:
             node "tools/character-generator/verification/$suite.mjs" "$RUNNER_TEMP/character-playwright/node_modules/playwright" || failures=$((failures + 1))
           done
           test "$failures" -eq 0
+      - name: Upload compact sheet review
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-character-sheet-review-${{ github.event.pull_request.head.sha }}
+          path: tools/character-generator/verification/artifacts/final-sheet-*
+          if-no-files-found: warn
       - name: Upload review screenshots and results
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

@@ -17,7 +17,7 @@ test('current action selection follows nested restore and replay branches withou
 test('final history preserves actual terms, injuries and source decisions through export and replay',()=>{
  const r=finalSheetFixture(),before=exportSession(r.session),rows=completedTermRows(r.state,catalog),html=finalEventsView(r,r.session);
  assert.equal(r.state.stage,'finish');assert.equal(rows.length,1);assert.equal(rows[0].number,1);assert.match(rows[0].label,/Intermediary.*Arbitrator/);
- assert.match(html,/Source-confirmed synthetic treatment note/);assert.match(html,/remaining medical debt Cr20000/);
+ assert.match(html,/Source-confirmed synthetic treatment note/);assert.match(html,/Injury table: \[2\] = 2/);assert.match(html,/Mishap table: \[5\] = 5/);assert.match(html,/remaining medical debt Cr20000/);
  assert.equal(html.includes('not executable'),false,'Background notes are in the record, not duplicated as events');
  assert.ok(currentActionNumbers(r.session).has(r.revision));assert.equal(exportSession(r.session),before);
  const restored=project(importSession(before));assert.deepEqual(completedTermRows(restored.state,catalog),rows);assert.equal(finalEventsView(restored,r.session),html);

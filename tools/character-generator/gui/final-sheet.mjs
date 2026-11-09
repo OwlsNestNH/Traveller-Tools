@@ -33,6 +33,16 @@ export function createFinalSheet({document,onSave,onPrint}){
  dialog.querySelector('[data-final-save]').addEventListener('click',onSave);
  dialog.querySelector('[data-final-print]').addEventListener('click',onPrint);
  dialog.querySelector('[data-final-log]').addEventListener('click',()=>{returnToLog=true;close();});
+ // Native modal inertness protects the editor; wrap the last/first Tab too
+ // so Chromium does not move keyboard focus into browser chrome mid-review.
+ dialog.addEventListener('keydown',event=>{
+  if(event.key!=='Tab'||event.ctrlKey||event.metaKey||event.altKey)return;
+  const controls=[...dialog.querySelectorAll('button,a[href],summary,[tabindex]')].filter(node=>!node.disabled&&node.tabIndex>=0&&node.getClientRects().length);
+  const first=controls[0],last=controls.at(-1),current=document.activeElement;
+  if(!first){event.preventDefault();document.getElementById('final-sheet-title').focus();return;}
+  if(event.shiftKey&&(current===first||!controls.includes(current))){event.preventDefault();last.focus();}
+  else if(!event.shiftKey&&current===last){event.preventDefault();first.focus();}
+ });
  dialog.addEventListener('close',()=>{
   document.body.classList.remove('final-sheet-open');
   const target=returnToLog?document.querySelector('.log-section h2'):document.querySelector('[data-action="open-character-sheet"]');

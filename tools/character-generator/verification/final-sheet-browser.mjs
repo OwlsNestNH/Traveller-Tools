@@ -33,16 +33,17 @@ try{
    assert.match(await content.textContent(),new RegExp('Unsaved biography '+label));
    assert.match(await content.textContent(),/Source-confirmed synthetic treatment note/);
    assert.match(await content.textContent(),/Term 1 · Intermediary \/ Arbitrator/);
-   assert.match(await content.textContent(),/Cr20,000/);
+   assert.match(await content.textContent(),/Cr20,000/);assert.match(await content.textContent(),/Injury table: \[2\] = 2/);
    assert.equal(await content.locator('input,button,select,textarea,datalist').count(),0);
    assert.equal(await content.locator('img,script').count(),0);
    assert.deepEqual(await page.locator('[id]').evaluateAll(nodes=>nodes.map(n=>n.id).filter((id,i,ids)=>ids.indexOf(id)!==i)),[]);
    assert.ok(await dialog.evaluate(el=>el.scrollWidth<=el.clientWidth+1));
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
    const saved=await page.evaluate(key=>localStorage.getItem(key),key);assert.equal(JSON.parse(saved).events.at(-1).command.type,'notes');
+   await page.screenshot({path:fileURLToPath(new URL('final-sheet-'+label+'-opened.png',out)),fullPage:true});
    // Modal keyboard focus stays inside and Escape returns to the new opener
    // after the save above rerendered the underlying editor.
-   for(let i=0;i<12;i++){await page.keyboard.press('Tab');assert.ok(await page.evaluate(()=>document.activeElement.closest('#final-character-sheet')!==null));}
+   for(const key of ['Tab','Shift+Tab'])for(let i=0;i<12;i++){await page.keyboard.press(key);assert.ok(await page.evaluate(()=>document.activeElement.closest('#final-character-sheet')!==null));}
    await page.keyboard.press('Escape');await dialog.waitFor({state:'hidden'});
    assert.equal(await page.evaluate(()=>document.activeElement.dataset.action),'open-character-sheet');
    assert.equal(await page.evaluate(()=>document.body.classList.contains('final-sheet-open')),false);
@@ -69,7 +70,7 @@ try{
    await open.click();await dialog.waitFor();await page.keyboard.press('Escape');
    assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),saved);
    checks.push(label+' finish, notes, current history, modal keyboard, double activation, print, export and cancelled replacement');
-  }finally{await context.close();}
+  }catch(error){await page.screenshot({path:fileURLToPath(new URL('final-sheet-'+label+'-failure.png',out)),fullPage:true}).catch(()=>{});throw error;}finally{await context.close();}
  }
  // Imported finalized saves expose the same entry point in both transports.
  for(const transport of ['static','http']){

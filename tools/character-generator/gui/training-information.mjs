@@ -1,7 +1,8 @@
 export function trainingInformationView(info,name,esc){
  if(!info)return '';
  const sections=[['Skills',info.skills],['Characteristics',info.characteristics],['Other outcomes',info.other]].filter(([,entries])=>entries?.length);
- return '<details class="training-information"><summary>View skills and outcomes: '+esc(name)+'</summary>'+sections.map(([label,entries])=>'<p><strong>'+label+':</strong> '+entries.map(esc).join(', ')+'.</p>').join('')+'<p class="tiny">Possible outcomes, listed alphabetically. Choosing the table rolls one result; some results require a further choice.</p></details>';
+ const label='View skills and outcomes: '+name;
+ return '<details class="training-information"><summary aria-label="'+esc(label)+'" title="'+esc(label)+'"><span aria-hidden="true">ⓘ</span></summary>'+sections.map(([label,entries])=>'<p><strong>'+label+':</strong> '+entries.map(esc).join(', ')+'.</p>').join('')+'<p class="tiny">Possible outcomes, listed alphabetically. Choosing the table rolls one result; some results require a further choice.</p></details>';
 }
 export function trainingChoiceView(label,info,action,attributes,{esc,button}){
  return '<div class="training-choice">'+button(esc(label),action,'choice',attributes)+trainingInformationView(info,label,esc)+'</div>';
