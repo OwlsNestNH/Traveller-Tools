@@ -4,6 +4,8 @@ import {execFileSync} from 'node:child_process';
 import {api} from '../engine/session.mjs';
 const arg=(key,fallback)=>process.argv.find(a=>a.startsWith('--'+key+'='))?.split('=').slice(1).join('=')??fallback;
 const goal=Number(arg('goal',10)),max=Number(arg('attempts',500));
+const testedHead=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+if(arg('expected-head',''))assert.equal(testedHead,arg('expected-head',''),'Unexpected candidate head');
 const catalog=api({operation:'catalog'}),rows=[];
 function run(career,assignment,species,n){
  const seed=`full-random-v1|${species}|${career.id}|${assignment.id}|${n}`;
@@ -85,7 +87,7 @@ function run(career,assignment,species,n){
   return result('error','180-action guard exceeded');
  }catch(e){return result('error',e.message);}
 }
-for(const career of catalog.careers.filter(c=>(!arg('career','')||c.id===arg('career',''))&&(arg('species','')!=='aezorgh'||['core','vargr','companion'].includes(c.group))))for(const assignment of career.assignments){
+for(const career of catalog.careers.filter(c=>(!arg('career','')||c.id===arg('career',''))&&(arg('species','')!=='aezorgh'||['core','vargr','companion'].includes(c.group))))for(const assignment of career.assignments.filter(a=>!arg('assignment','')||a.id===arg('assignment',''))){
  const species=arg('species','')||(['aslan','vargr'].includes(career.group)?career.group:'human');
  const row={career:career.id,assignment:assignment.id,species,attempted:0,completed:0,outcomes:{},runs:[]};
  for(let n=0;n<(species!=='human'&&career.id.endsWith('.psion')?Math.min(max,10):max)&&row.completed<goal;n++){
@@ -95,7 +97,8 @@ for(const career of catalog.careers.filter(c=>(!arg('career','')||c.id===arg('ca
  }
  rows.push(row);console.log(career.id,assignment.id,`${row.completed}/${row.attempted}`,JSON.stringify({outcomes:row.outcomes,completedSeeds:row.runs.filter(x=>x.outcome==='completed').map(x=>x.seed),issues:row.runs.filter(x=>['error','unsupported-stage'].includes(x.outcome))}));
 }
-const report={head:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),goal,maxAttemptsPerAssignment:max,method:'Release api only; natural dice; 1-3 target terms, qualification failures retry with new seed; no GM overrides or source adjudications; no session saves.',rows};
+assert.equal(execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),testedHead,'Candidate changed during test');
+const report={head:testedHead,goal,maxAttemptsPerAssignment:max,method:'Release api only; natural dice; 1-3 target terms, qualification failures retry with new seed; no GM overrides or source adjudications; no session saves.',rows};
 const output=arg('output','');if(output)writeFileSync(output,JSON.stringify(report,null,2)+'\n');
 console.log('SUMMARY',JSON.stringify({assignments:rows.length,attempted:rows.reduce((n,r)=>n+r.attempted,0),completed:rows.reduce((n,r)=>n+r.completed,0),shortfalls:rows.filter(r=>r.completed<goal).map(r=>[r.career,r.assignment,r.completed]),errors:rows.flatMap(r=>r.runs.filter(x=>x.outcome==='error'||x.outcome==='unsupported-stage'))}));
 
