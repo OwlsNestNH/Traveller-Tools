@@ -1,5 +1,6 @@
 import {equipmentFinalizationView,deferredEquipmentSummary,mountEquipmentDialog} from './equipment-finalization.mjs';
 import {equipmentCatalogueView,syncEquipmentCatalogue} from './equipment-catalogue.mjs';
+let aslanManualReviewKey=null;
 import {aslanEventOutcomesView,aslanEventOutcomesSheet} from './aslan-event-outcomes-view.mjs';
 import {skillAwardView,syncAwardBase,deferredAwardsView} from './skill-award-view.mjs';
 import {educationSkillTitle,educationSkillView,syncEducationSubject} from './education-skill-view.mjs';
@@ -331,7 +332,7 @@ function medicalSheet(state){
  return '<div class="sheet-section"><h3>Medical bills</h3><p>Unsettled personal balance: <strong>Cr'+(state.medicalOutstanding??0).toLocaleString()+'</strong></p><ul class="compact-list">'+bills.map(b=>'<li>Cr'+b.totalCost.toLocaleString()+' treatment; employer Cr'+b.coveredCost.toLocaleString()+'; personal Cr'+b.personalCost.toLocaleString()+'. '+(b.settled?'Paid Cr'+b.paid.toLocaleString()+', debt Cr'+b.debt.toLocaleString()+'.':'Settles when creation finishes.')+'</li>').join('')+'</ul></div>';
 }
 function bookView(state){
- const aslanEvent=aslanEventOutcomesView(state,{button,esc});if(aslanEvent)return aslanEvent;
+ const aslanEvent=aslanEventOutcomesView(state,{button,esc});if(aslanEvent&&aslanManualReviewKey!==JSON.stringify(state.pending))return aslanEvent+button('Review exceptional source outcome','aslan-source-review','quiet');
  if(state.pending.kind==='prisoner-lawyer')return prisonerLawyerView(state,{esc,button});
  if(state.pending.kind==='core-life-decision')return coreLifeEventView(state,{esc,button,sourceLabel});
  const p=state.pending,effectAllowed=!p.sainthood&&!['zhodani-anagathic-ageing','zhodani-ageing-psi','career-transfer','companion-psionic-testing','companion-entry','companion-career-rights','missing-characteristic-check','injury-medical','injury-zero','psionic-training-terms','psionic-history','benefit-equipment','benefit-ship','pension'].includes(p.kind);
@@ -438,6 +439,7 @@ document.addEventListener('click',async event=>{
  const el=event.target.closest('[data-action]');if(!el||busy)return;
  const action=el.dataset.action;
  if(['record-aslan-rite-equipment','retain-aslan-secret','record-aslan-outcast-opportunity'].includes(action)){if(event.detail>1)return;return send(action,{});}
+ if(action==='aslan-source-review'){aslanManualReviewKey=JSON.stringify(projection.state.pending);return render();}
  if(action==='resolve-aslan-territory'){if(event.detail>1)return;return send(action,{skill:document.getElementById('aslan-territory-skill').value,holdingId:document.getElementById('aslan-territory-holding')?.value??null,landlessConfirmed:!!document.getElementById('aslan-territory-landless')?.checked});}
  if(action==='award-aslan-wanderer-land'){if(event.detail>1)return;return send(action,{});}
  if(action==='resolve-aslan-dishonoured'){if(event.detail>1)return;return send(action,{skill:el.dataset.skill,clanRelationshipConfirmed:!!document.getElementById('aslan-clan-defence')?.checked});}

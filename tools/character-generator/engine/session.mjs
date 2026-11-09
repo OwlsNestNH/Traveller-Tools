@@ -725,7 +725,7 @@ export function availableCareers(state) {
  if(nativeAslan(state)&&c.group==='core'&&!accessCoreAllowed(state,c.id)&&state.forcedCareer!==c.id)reason='This Core career is outside the recorded outward route.';
  if(accessMandatory(state)&&c.group!=='core')reason='The accepted expedition requires a Core career attempt next term.';
  if(state.forcedCareer&&c.id!==state.forcedCareer)reason='An event requires a different next career.';
- const transferAvailable=c.assignments.some(a=>transferForEntry(state,c.id,a.id)),entryAccess=accessForAttempt(state,c.id),accessAutomatic=!!entryAccess?.automatic;if(entryAccess)c.aslanAccess={id:entryAccess.id,automatic:entryAccess.automatic,source:copy(entryAccess.source)};
+ const transferAvailable=c.assignments.some(a=>transferForEntry(state,c.id,a.id)),entryAccess=accessForAttempt(state,c.id),accessAutomatic=!!entryAccess?.automatic||!!aslanOutcastEntry(state,c.id);if(entryAccess)c.aslanAccess={id:entryAccess.id,automatic:entryAccess.automatic,source:copy(entryAccess.source)};
  if(state.character.qualificationBanned&&c.qualification&&!transferAvailable&&!accessAutomatic&&!nobleAutomaticQualification(c.id,state.character.stats))reason='An ageing crisis prevents future qualification checks.';
  if(!conditionMatches(state,pre))reason='The source prerequisites are not met.';
  if(c.specialEntry&&!state.character.sentenced)reason='Requires a sentencing event.';
