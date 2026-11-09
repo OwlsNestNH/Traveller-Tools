@@ -13,9 +13,9 @@ These edition choices matter. In particular the 2026 Aslan characteristic modifi
 
 ## Release versus preserved development coverage
 
-The supported public API and GUI expose four species and 36 careers; nine Zhodani careers, Zhodani generation and its Intendant/Noble PSI option are excluded. Human optional PSI and Core/Vargr Psion are not excluded. Both transports reject deferred commands and histories, including imported `.14` files and superseded actions before restore; recovery preserves their original bytes and unverified history.
+The supported public API and GUI expose four species and 36 careers; nine Zhodani careers, Zhodani generation and its Intendant/Noble PSI option are excluded. Human optional PSI and Core/Vargr Psion are not excluded. Both transports reject deferred commands and histories, including imported matching-revision files and superseded actions before restore; recovery preserves their original bytes and unverified history.
 
-The unchanged mechanics use `character-preview-2026-11-08.14`; `.13` and earlier saves remain read-only. Existing full-engine tables, procedures, fixtures, unit tests and 45-career smoke are preserved. The implementation inventory below includes deferred development coverage and must not be read as a list of released features. All Zhodani-only procedures and Games tests described below are preserved development coverage.
+The current mechanics use `character-preview-2026-11-09.15`; `.14` and earlier saves remain read-only because new native life events consume secondary dice and constrained Vargr awards change validation. Existing full-engine tables, procedures, fixtures, unit tests and 45-career smoke are preserved. The implementation inventory below includes deferred development coverage and must not be read as a list of released features. All Zhodani-only procedures and Games tests described below are preserved development coverage.
 
 CI retains all browser scripts. Five deferred suites use an explicit verification-only development server. Expansion and transfer suites keep non-Zhodani cases on the release server and use the development server only for deferred scenarios. A separate release-scope browser suite checks desktop/320px, static/HTTP, absence of Zhodani choices and exact-byte recovery. There is no request-controlled unlock. Release tests and deferred tests must both pass, but passing deferred tests does not expand release scope.
 
@@ -94,3 +94,5 @@ Manual resolution is an acknowledged development fallback, not equivalent to ful
 ## Test evidence
 
 Run `node --test tools/character-generator/verification/*.test.mjs` for the current unit/integration/API result. Run `verification/browser.mjs` with Playwright for desktop/mobile evidence. Generated results and screenshots are local artifacts, not a substitute for a source-rule review. Do not infer full correctness merely from all existing tests passing.
+
+Bounded Vargr event training is automated for Loner's assignment-only award (p. 195) and eligible-career awards for Agent, Intermediary, Merchant, Scientist and Spacer. Candidates come from actual eligible tables, including nested skill alternatives and exact printed specialities. The UI lists only these candidates and the engine rejects out-of-table awards atomically. The optional Citizen Event 4 prerequisite-waiver route and analogous unverified Companion scopes are not included. Regression coverage includes the public `audit-0` Loner seed, low/high-EDU Merchant events, HTTP validation, replay, source retry, and static/HTTP narrow/desktop browser checks.

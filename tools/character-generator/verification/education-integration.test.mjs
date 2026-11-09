@@ -76,13 +76,14 @@ test('prank total2 forces Prisoner without an active career and completes failed
  assert.equal(state.character.educations[0].graduation.graduated,false);
  assert.equal(state.character.relationships.at(-1).role,'Enemy');
 });
-test('life event source fallback works without active career and captures education consequences',()=>{
+test('native life event works without active career and preserves education continuation',()=>{
  let r=force(setup('life'),'precareer',{id:'core.university'},[3,3]);r=studies(r);
- r=force(r,'education-event',{},[3,4]);assert.equal(r.state.stage,'book-step');
- assert.equal(r.state.pending.source,'core');assert.equal(r.state.pending.page,46);
- r=run(r,'resolve-book',{confirmed:true,effects:[{kind:'relationship',role:'Ally',name:'Study friend'}],educationNoGraduation:true,educationNextCareer:'core.prisoner',note:'Referee resolved the listed life event'});
- assert.equal(r.state.stage,'career');assert.equal(r.state.forcedCareer,'core.prisoner');assert.equal(r.state.character.terms,1);
- assert.ok(r.state.coverage.includes('native-effect'));
+ r=force(r,'education-event',{},[3,4]);assert.equal(r.state.stage,'education-graduation');
+ assert.equal(r.state.pending,null);assert.deepEqual(r.state.character.lifeEvents[0].source,{id:'core',page:46});
+ assert.equal(r.state.character.lifeEvents[0].row,9);assert.equal(r.state.character.lifeEvents[0].status,'completed');
+ assert.ok(r.state.modifiers.some(m=>m.target==='qualification'&&m.value===2&&m.careerId==='any'));
+ assert.equal(r.state.character.terms,0);assert.equal(r.state.character.educations[0].graduationAllowed,true);
+ assert.equal(r.log.at(-1).rolls.length,2);assert.deepEqual(project(importSession(exportSession(r.session))).state,r.state);
 });
 test('hobby event excludes JaT and awards only level0',()=>{
  let r=force(setup('hobby'),'precareer',{id:'core.university'},[3,3]);r=studies(r);

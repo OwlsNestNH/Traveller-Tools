@@ -34,3 +34,6 @@ fieldset{min-inline-size:0;max-width:100%}legend{max-width:100%;overflow-wrap:an
 #aslan-access-panel .help,#aslan-access-selection{overflow-wrap:anywhere}
 
 #aslan-access-decision-help{overflow-wrap:anywhere}
+
+/* The recorded destination is free text, including unbroken world identifiers. */
+#aslan-access-sheet p{overflow-wrap:anywhere}

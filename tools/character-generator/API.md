@@ -6,7 +6,7 @@ The rules engine is independent of the GUI. Import `api` from `engine/session.mj
 
 `api` exposes four species (Human, Aslan, Vargr, Aezorgh) and 36 careers. Zhodani setup, careers and the Intendant/Noble PSI configuration are deferred. Direct commands, projection, import and restore/replay histories containing these choices fail with `INVALID_REQUEST`; original files remain available through unverified read-only recovery. Filtering applies equally to the in-browser and HTTP API. No request flag enables development content. Human PSI, Core/Vargr Psion and Companion paths remain supported.
 
-The rules revision remains `character-preview-2026-11-08.14`: the underlying mechanics and audit summaries are unchanged. Matching-revision saves must also satisfy release scope. Earlier revisions, including `.13`, remain read-only recovery records. `developmentApi` and the direct engine procedures preserve full internal development coverage; they are not the public release contract. Zhodani-specific command descriptions below document that preserved, deferred implementation only.
+The rules revision is `character-preview-2026-11-09.15`: native Core life events and constrained Vargr training change mechanics, secondary dice and audit summaries. Matching-revision saves must also satisfy release scope. Earlier revisions, including `.14`, remain read-only recovery records. `developmentApi` and the direct engine procedures preserve full internal development coverage; they are not the public release contract. Zhodani-specific command descriptions below document that preserved, deferred implementation only.
 
 ## Operations
 
@@ -265,7 +265,7 @@ Aliens Volume 1 Update 2026 pp. 17 and 47. This separate workflow creates a dela
 - `resolve-land-claim {claimId,mode:"personal-return"|"relative-administration",claimEstablished:true,reason,relativeName?}` requires GM mode, elapsed recorded delay and a clean checkpoint. Relative administration additionally requires Independence 3+ and a named relative, maximum 120 characters. Both modes need explicit confirmation and a 1–500 character reason that the actual claim has been established. Appointing a relative alone does not establish title. Personal return rejects an irrelevant relative field. No travel, time, cash, skill or career progress is invented.
 - Resolution creates an active personally owned `aslan.landholding` asset with category `land`, the selected world, parcel count, original SOC, source award IDs and administration evidence. It has no equipment stats or cash valuation. `character.landClaims` preserves original inputs, world, source, SOC, parcel calculation, delay dice/timing, pending/claimed status, resolution and asset link. All are audited before/after. Pending claims and owned holdings have a dedicated printed sheet section, separate from equipment and the family estate.
 
-Repeated command IDs, import, restore and replay follow the ordinary deterministic audit contract. The rules revision is `character-preview-2026-11-08.14`; `.13` and earlier files are unverified read-only recovery records, not silently migrated. Corporations, inheritance timing, nonstandard delay exceptions, land valuation/income and broader alien-access gaps remain unfinished.
+Repeated command IDs, import, restore and replay follow the ordinary deterministic audit contract. The rules revision is `character-preview-2026-11-09.15`; `.14` and earlier files are unverified read-only recovery records, not silently migrated. Corporations, inheritance timing, nonstandard delay exceptions, land valuation/income and broader alien-access gaps remain unfinished.
 
 
 ## Native Aslan outward career access
@@ -291,3 +291,9 @@ Each outward Core record carries `aslanOutsideRules` with its source-access ID a
 The action audit includes route scope, activation/attempt/expiry, context, per-career applied rules and separate cash accounts. Rules revision `.14` rejects earlier saves for verified replay while preserving their original unverified read-only history. General Aslan assignment rank mapping, corporate employment, the Outcast Event 10 Wanderer prerequisite question and broader cross-book gaps remain outside this bounded increment.
 
 For limited Aslan outward rights, failed scoped Scholar qualification permits the ordinary Drifter fallback only. It does not enable elective wider Core careers or the Core draft.
+
+### Bounded Vargr training awards
+
+Vargr Loner Event 4 (Aliens 2026 p. 195) opens an assignment-only skill choice. Agent, Intermediary, Merchant, Scientist and Spacer advanced-training events (pp. 189, 193, 197, 203, 205) open a choice limited to skill entries on tables currently available to that career and assignment. EDU prerequisites still apply. Characteristic entries and other assignments are excluded; an explicitly named speciality cannot be exchanged for another speciality.
+
+The pending `skill-choice` includes `tableSkills`, `trainingContext` (career, assignment, eligible table IDs) and the event `source`. `choose-skill` validates against that recorded set, uses normal skill caps and consumes no dice. Source resolution and retry retain the constraint and source. Companion Truther and Citizen Event 4's one-off prerequisite waiver remain source-assisted.

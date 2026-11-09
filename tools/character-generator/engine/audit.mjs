@@ -3,9 +3,9 @@ const clone=value=>value===undefined?null:structuredClone(value);
 export function characterChanges(before,after){
  const changes=[];
  const add=(path,a,b)=>{if(JSON.stringify(a)!==JSON.stringify(b))changes.push({path,before:clone(a),after:clone(b)});};
- for(const field of ['name','notes','species','variant','culture','gender','identityGender','relationshipSequence','homeworld','age','terms','cash','debt','sentenced','outcast','deceased','qualificationBanned','psionEntryPermission','preCareer','birthOrder','medicalCosts','retirementFromCreation','nonCareerMonths','treatmentAgeingTerms','psionicLoss','cashRollAccounts'])add(field,before[field],after[field]);
+ for(const field of ['name','notes','species','variant','culture','gender','identityGender','relationshipSequence','homeworld','age','terms','cash','debt','sentenced','outcast','deceased','qualificationBanned','psionEntryPermission','preCareer','birthOrder','medicalCosts','retirementFromCreation','nonCareerMonths','treatmentAgeingTerms','psionicLoss','cashRollAccounts','lifePsionAccess'])add(field,before[field],after[field]);
  for(const field of ['stats','skills'])for(const key of new Set([...Object.keys(before[field]??{}),...Object.keys(after[field]??{})]))add(field+'.'+key,before[field]?.[key],after[field]?.[key]);
- for(const field of ['benefits','relationships','historyNotes','futureConditions','traits','injuries','medicalBills','medicalSettlements','ageingCrises','benefitAwards','assets','annualIncome','benefitRollHistory','statusReviews','careerTransfers','relationshipLosses']){
+ for(const field of ['benefits','relationships','historyNotes','futureConditions','traits','injuries','medicalBills','medicalSettlements','ageingCrises','benefitAwards','assets','annualIncome','benefitRollHistory','statusReviews','careerTransfers','relationshipLosses','lifeEvents','lifeBenefitBonuses','lifeBenefitLosses']){
   const old=before[field]??[],next=after[field]??[];for(let i=0;i<Math.max(old.length,next.length);i++)add(field+'.'+i,old[i],next[i]);
  }
  // Persisted outcomes are audited without exposing internal continuation/effect queues.
