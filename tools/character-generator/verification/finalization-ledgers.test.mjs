@@ -10,3 +10,14 @@ test('custom source art and armour share the balance; unknown or overpriced sele
 test('landhold descriptors allow blank GM placeholders without changing source or parcel mechanics',()=>{for(const name of ['', 'Our new holding']){let r=landFinalizationFixture();const before=structuredClone(r.state.character.aslanLandholds[0]);r=open(r);assert.equal(r.state.pending.kind,'landhold-details');const cancelled=run(r,'cancel-deferred-equipment');assert.deepEqual(cancelled.state.character.aslanLandholds[0],before);r=run(cancelled,'choose-deferred-equipment',{id:r.state.character.deferredEquipment.find(e=>e.kind==='landhold').id});assert.throws(()=>run(r,'resolve-landhold-details',{name,parcels:999}),/only/);r=run(r,'resolve-landhold-details',{name,location:''},{id:'land-details-once'});assert.deepEqual(run(r,'resolve-landhold-details',{name,location:''},{id:'land-details-once'}),r);const after=r.state.character.aslanLandholds[0];assert.equal(after.name,name||null);assert.equal(after.location,null);assert.equal(after.detailsStatus,'recorded');for(const key of ['parcels','increment','socAtAward','socBefore','source','parcelSource'])assert.deepEqual(after[key],before[key]);roundtrip(r);}});
 test('compatible historical characters are not forced into new ledger finalization',()=>{const r=creditFinalizationFixture('character-preview-2026-11-09.20');assert.equal(r.state.character.deferredEquipment,undefined);const finished=run(r,'finish');assert.equal(finished.state.stage,'finish');assert.equal(finished.state.character.equipmentCredits[0].remaining,5000);roundtrip(finished);});
 test('credit parser rejects extra fields and tampered price metadata',()=>{const c={categories:['Art','Armour','Weapon'],remaining:5000};assert.throws(()=>restrictedCreditPurchase(c,{...purchase,cash:5000}),/only/);assert.throws(()=>restrictedCreditPurchase(c,{...purchase,name:'Fake rifle'}),/metadata/);});
+
+import {artefactFinalizationFixture} from './equipment-fixtures.mjs';
+test('typed finalization dialogs reject generic source effects atomically',()=>{
+ for(const fixture of [creditFinalizationFixture,landFinalizationFixture,()=>artefactFinalizationFixture(3)]){
+  const r=open(fixture()),before=exportSession(r.session),state=structuredClone(r.state);
+  for(const effects of [[{kind:'cash',value:5000}],[{kind:'skill',name:'Gun Combat (slug)',value:1}],[{kind:'stat',name:'INT',value:1}],[]]){
+   assert.throws(()=>run(r,'resolve-book',{confirmed:true,note:'Invalid generic typed-popup resolution',effects}),/typed detail command/);
+   assert.equal(exportSession(r.session),before);assert.deepEqual(r.state,state);roundtrip(r);
+  }
+ }
+});
