@@ -63,6 +63,7 @@ for(const career of CAREERS)for(const assignment of career.assignments)for(let s
    const record=state.character.careers[state.active];
    let command;
    switch(state.stage) {
+    case 'failed-entry':{assert.equal(state.forcedDraft?.status,'pending','Only the explicit forced-draft continuation is expected.');command={type:'fallback',payload:{draft:true}};break;}
     // These synthetic characters have no anagathic history. Never invent referee decisions.
     case 'cross-career-cover':{const options=a.crossCareerCover(state).options;command={type:'cross-career-cover',payload:{careerId:options[(seed+step)%options.length].id}};break;}
     case 'cross-career-training':{const options=a.crossCareerTraining(state).options;command={type:'cross-career-training',payload:{assignment:options[(seed+step)%options.length].id}};break;}
