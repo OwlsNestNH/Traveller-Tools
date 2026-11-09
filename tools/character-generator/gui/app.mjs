@@ -1,3 +1,4 @@
+import {skillAwardView,syncAwardBase,deferredAwardsView} from './skill-award-view.mjs';
 import {educationSkillView,syncEducationSubject} from './education-skill-view.mjs';
 import {prisonerEscapeTitle,prisonerEscapeView} from './prisoner-escape-view.mjs';
 import {extraCharacteristicsView,gmControlsView,syncCorrectionField,syncReplacementDice,syncCorrectionTask,correctionPayload,replacementPayload} from './character-controls.mjs';
@@ -362,11 +363,7 @@ function stageView(state){
  case 'book-step':return state.pending?.kind==='aslan-origin-source'?aslanOriginSourceView(state,{esc,button,sourceLabel}):state.pending?.kind==='aslan-historical-entry'?aslanHistoricalDecisionView(state,{esc,button,sourceLabel}):state.pending?.kind==='aslan-outlaw-restoration'?aslanOutlawRestorationView(state,{esc,button,sourceLabel}):state.pending?.kind==='aslan-restoration'?aslanRestorationView(state,{esc,button,sourceLabel}):state.pending?.kind==='aslan-officer-status'?aslanOfficerStatusView(state,{esc,button,sourceLabel}):bookView(state);
  case 'benefit-wager':return benefitWagerView(state,{esc,button,sourceLabel});
  case 'effect-choice':if(state.prisonerEscape)return prisonerEscapeView(state.prisonerEscape,{esc,button});return (state.lifeEventPresentation?'<h3>'+esc(state.lifeEventPresentation.title)+'</h3>':'')+'<p>'+esc(trainingContext(state)?.description??(isBasicTrainingChoice(state)?'Choose one skill at level 0.':state.lifeEventPresentation?.description??state.pendingChoice.label??'Choose the outcome you want to apply.'))+'</p>'+'<div class="choice-list">'+state.pendingChoice.options.map((option,index)=>option.information?trainingChoiceView(choiceLabel(option),option.information,'choose-effect','data-index="'+index+'"',{esc,button}):button(esc(state.lifeEventPresentation?.optionLabels?.[index]??choiceLabel(option)),'choose-effect','choice','data-index="'+index+'"')).join('')+'</div>'+(state.pendingChoice.unavailableOptions??[]).map(option=>'<p class="help">'+esc(option.label)+': '+esc(option.reason)+'</p>').join('');
- case 'skill-choice':{
-  const choice=state.pendingChoice,suggestions=state.skillChoiceSuggestions??[],base=choice.allowed?.length===1&&Object.hasOwn(catalog.skillSpecialities??{},choice.allowed[0])?choice.allowed[0]:null;
-  const placeholder=suggestions[0]??(base?base+' (speciality)':'e.g. Engineer (power)');
-  return (choice.source?'<p class="source">'+esc(sourceLabel(choice.source.id,choice.source.page))+'</p>':'')+(choice.tableSkills?'<p id="training-award-options">Eligible skills: '+choice.tableSkills.map(esc).join(', ')+'.</p>':'')+skillChoiceProgress(choice,esc)+'<p>'+esc(choice.label??'Choose the skill awarded by this result.')+'</p>'+(base?'<p><strong>Awarded base skill: '+esc(base)+'.</strong> Choose a speciality within this skill.</p>':'')+'<p class="help">'+esc(choice.scope==='existing'?'Choose a skill you already have.':base?'Only specialities of '+base+' are accepted. Enter a subject for an open-ended skill.':'The suggestions are limited to skills available for this award. Specialised skills need a speciality.')+'</p><datalist id="award-skill-options">'+suggestions.map(name=>'<option value="'+esc(name)+'"></option>').join('')+'</datalist><label>'+esc(base?base+' speciality':'Skill or specialisation')+'<input id="award-skill" list="award-skill-options" maxlength="80" placeholder="'+esc(placeholder)+'"></label>'+button('Accept skill','choose-skill')+button('Resolve this award from the source','skill-award-source','quiet');
- }
+ case 'skill-choice':return skillAwardView(state,catalog,{esc,button,sourceLabel,skillChoiceProgress});
 
  case 'training':return '<p>'+esc(trainingContext(state)?.description??'Choose an available training table. The rules engine will roll and apply its result.')+'</p><div class="choice-list">'+state.trainingOptions.map(t=>trainingChoiceView(t.name,t.information,'training','data-table="'+esc(t.id)+'"',{esc,button})).join('')+'</div>';
  case 'ageing':return '<p>Your Traveller has reached the next ageing checkpoint. The engine applies the species schedule and modifiers.</p>'+button('Roll ageing','ageing');
@@ -407,7 +404,8 @@ function render(){
  const shareDraft={open:$('#clan-share-panel')?.open,kind:$('#clan-share-kind')?.value,lot:$('#clan-share-lot')?.value};
  const state=projection.state;const detailKey=d=>d.id||d.querySelector(':scope > summary')?.textContent;const previousDetails=new Map([...$('#sheet').querySelectorAll('details')].map(d=>[detailKey(d),d.open]));
  const gmDraft={task:$('#gm-task')?.value,field:$('#gm-field')?.value,roll:$('#gm-roll-choice')?.value,restore:$('#gm-restore-choice')?.value};
- $('#workspace').innerHTML='<p class="step-count">COMPLETED TERMS: '+state.character.terms+' · '+esc(state.stage.toUpperCase().replaceAll('-',' '))+'</p><h2 id="step-title" tabindex="-1">'+esc(trainingContext(state)?.title??(state.prisonerEscape?prisonerEscapeTitle:null)??(isBasicTrainingChoice(state)?'Choose a basic-training skill':stageNames[state.stage]??state.stage))+'</h2>'+lastResult+aslanAccessView(state,{esc,button})+clanShareView(state,{esc,button,sourceLabel})+landClaimView(state,{esc,button,sourceLabel})+aslanAccessConflictView(state,{esc,button,sourceLabel})+stageView(state);
+ $('#workspace').innerHTML='<p class="step-count">COMPLETED TERMS: '+state.character.terms+' · '+esc(state.stage.toUpperCase().replaceAll('-',' '))+'</p><h2 id="step-title" tabindex="-1">'+esc(trainingContext(state)?.title??(state.prisonerEscape?prisonerEscapeTitle:null)??(isBasicTrainingChoice(state)?'Choose a basic-training skill':stageNames[state.stage]??state.stage))+'</h2>'+lastResult+aslanAccessView(state,{esc,button})+clanShareView(state,{esc,button,sourceLabel})+landClaimView(state,{esc,button,sourceLabel})+aslanAccessConflictView(state,{esc,button,sourceLabel})+stageView(state)+deferredAwardsView(state,{esc,button});
+ if(state.stage==='skill-choice')syncAwardBase(state,catalog,document,esc);
  if($('#clan-share-panel'))$('#clan-share-panel').open=shareDraft.open??false;if($('#clan-share-kind')&&shareDraft.kind)$('#clan-share-kind').value=shareDraft.kind;syncClanShareControls(shareDraft.lot);if($('#land-claim-panel'))$('#land-claim-panel').open=landOpen??false;syncLandClaimControls();if($('#aslan-access-panel'))$('#aslan-access-panel').open=accessOpen??false;syncAslanAccessControls();
  if(lifeDraft&&$('#core-life-decision')?.dataset.lifeEventId===lifeDraft.id)for(const field of lifeDraft.fields){const input=document.getElementById(field.id);if(input){input.value=field.value;input.checked=field.checked;}}syncCoreLifeEventControls($);
  if(lawyerDraft&&$('#prisoner-lawyer')?.dataset.lawyerId===lawyerDraft.id)for(const field of lawyerDraft.fields){const input=document.getElementById(field.id);if(input){input.value=field.value;input.checked=field.checked;}}syncPrisonerLawyerControls($);
@@ -480,6 +478,7 @@ document.addEventListener('click',async event=>{
   if(action==='injury-loss')return send(action,{index:Number(el.dataset.index)});
   if(action==='injury-treatment')return send(action,{restore:Object.fromEntries([...document.querySelectorAll('[data-injury-restore]')].map(input=>[input.dataset.injuryRestore,Number(input.value)])),inService:$('#injury-in-service').checked});
   if(action==='choose-effect')return send(action,{index:Number(el.dataset.index)});
+ if(action==='allocate-specializations')return send(action);
  if(action==='choose-skill')return send(action,{name:$('#award-skill').value});
  if(action==='education-skill')return send(action,{name:$('#education-skill').value});
  if(action==='education-service')return send(action,{name:el.dataset.name});
@@ -616,3 +615,5 @@ document.addEventListener('change',event=>{if(event.target.id==='aslan-access-de
 document.addEventListener('change',event=>{if(['life-outcome','life-funding'].includes(event.target.id))syncCoreLifeEventControls($);});
 
 document.addEventListener('change',event=>{if(event.target.id==='education-subject')syncEducationSubject(projection.state,catalog,document,esc);});
+
+document.addEventListener('change',event=>{if(event.target.id==='award-base')syncAwardBase(projection.state,catalog,document,esc);if(event.target.id==='award-speciality')$('#award-skill').value=event.target.value;});
