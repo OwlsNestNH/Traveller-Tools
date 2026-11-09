@@ -32,7 +32,7 @@ try{
    await page.locator('#setup-optional-settings>summary').click();
    const psi=page.locator('[name=extras][value=PSI]'),gm=page.locator('[name=gm]');
    assert.equal(await psi.isEnabled(),true);assert.equal(await gm.isChecked(),false);
-   if(initial){await psi.check();await gm.check();await gm.uncheck();assert.equal(await psi.isChecked(),true);assert.match(await page.locator('#setup-optional-summary').textContent(),/PSI.*GM changes off/);}
+   if(initial){await psi.check();await page.locator('#setup-gm-settings>summary').click();await gm.check();await gm.uncheck();assert.equal(await psi.isChecked(),true);assert.match(await page.locator('#setup-optional-summary').textContent(),/PSI.*GM changes off/);}
    await page.getByRole('button',{name:'Begin character',exact:true}).click();
    await page.getByRole('button',{name:'Roll six characteristics',exact:true}).click();
    await page.getByRole('button',{name:'Keep these characteristics',exact:true}).click();

@@ -66,12 +66,12 @@ try{
    check(name+' optional disclosure large target',await optionalSummary.evaluate(el=>el.getBoundingClientRect().height>=44));
    await editor.screenshot({path:fileURLToPath(new URL('gui-simplicity-'+name+'-default.png',out)),fullPage:true});
    await optionalSummary.focus();await optionalSummary.press('Enter');assert.notEqual(await optional.getAttribute('open'),null);
-   await editor.locator('[name=gm]').check();assert.equal(await editor.locator('[name=extras][value=PSI]').isEnabled(),true);await editor.locator('[name=extras][value=LCK]').check();
+   await editor.locator('#setup-gm-settings').evaluate(el=>el.open=true);await editor.locator('[name=gm]').check();assert.equal(await editor.locator('[name=extras][value=PSI]').isEnabled(),true);await editor.locator('#setup-optional-settings').evaluate(el=>el.open=true);await editor.locator('[name=extras][value=LCK]').check();
    assert.match(await optionalSummary.textContent(),/Optional extras: LCK · GM changes on/);
    await optionalSummary.press('Enter');assert.equal(await optional.getAttribute('open'),null);assert.equal(await editor.locator('[name=extras][value=LCK]').isChecked(),true);assert.equal(await editor.locator('[name=gm]').isChecked(),true);
    await optionalSummary.press('Enter');assert.notEqual(await optional.getAttribute('open'),null);assert.equal(await editor.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
    await editor.locator('#workspace').screenshot({path:fileURLToPath(new URL('gui-simplicity-'+name+'-options.png',out))});
-   await editor.locator('[name=extras][value=LCK]').uncheck();await editor.locator('[name=gm]').uncheck();await optionalSummary.press('Enter');assert.match(await optionalSummary.textContent(),/No optional extras · GM changes off/);
+   await editor.locator('#setup-optional-settings').evaluate(el=>el.open=true);await editor.locator('[name=extras][value=LCK]').uncheck();await editor.locator('#setup-gm-settings').evaluate(el=>el.open=true);await editor.locator('[name=gm]').uncheck();await optionalSummary.press('Enter');assert.match(await optionalSummary.textContent(),/No optional extras · GM changes off/);
    await editor.locator('[name=name]').fill('Unsaved release check '+width);
    const limits=editor.locator('#automation-limits'),summary=limits.locator('summary');await summary.focus();await summary.press('Enter');
    check(name+' limitations open with keyboard',await limits.getAttribute('open')!==null);

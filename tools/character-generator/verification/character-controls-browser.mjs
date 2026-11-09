@@ -22,7 +22,7 @@ try{
   try{
    await page.goto(origin+(transport==='http'?'/?api=local':'/'));await page.getByRole('heading',{name:'Start your Traveller',exact:true}).waitFor();
    assert.equal(await page.locator('#extra-stat').count(),0);assert.equal(await page.locator('#gm-toggle').count(),0);
-   await page.locator('#setup-optional-settings > summary').click();await page.locator('[name=extras][value=LCK]').check();await page.locator('[name=name]').fill('Controls browser fixture');
+   await page.locator('#setup-optional-settings > summary').click();await page.locator('#setup-optional-settings').evaluate(el=>el.open=true);await page.locator('[name=extras][value=LCK]').check();await page.locator('[name=name]').fill('Controls browser fixture');
    await page.screenshot({path:fileURLToPath(new URL('character-controls-'+label+'-setup.png',out)),fullPage:true});
    await page.getByRole('button',{name:'Begin character',exact:true}).click();await page.getByRole('button',{name:'Roll six characteristics',exact:true}).click();await page.getByRole('button',{name:'Keep these characteristics',exact:true}).waitFor();await ready(page);
    assert.equal(await page.locator('#extra-stat').count(),0);assert.equal(await page.locator('#gm-controls').getAttribute('open'),null);
@@ -65,7 +65,7 @@ try{
   try{
    await page.goto(origin+(transport==='http'?'/?api=local':'/'));await page.getByRole('heading',{name:'Start your Traveller',exact:true}).waitFor();
    assert.match(await page.locator('#setup-optional-summary').textContent(),/GM changes on/);assert.equal(await page.locator('[name=gm]').isChecked(),true);
-   if(!keepEnabled){await page.locator('#setup-optional-settings > summary').click();await page.locator('[name=gm]').uncheck();assert.match(await page.locator('#setup-optional-summary').textContent(),/GM changes off/);}
+   if(!keepEnabled){await page.locator('#setup-optional-settings > summary').click();await page.locator('#setup-gm-settings').evaluate(el=>el.open=true);await page.locator('[name=gm]').uncheck();assert.match(await page.locator('#setup-optional-summary').textContent(),/GM changes off/);}
    await page.getByRole('button',{name:'Begin character',exact:true}).click();await page.getByRole('button',{name:'Roll six characteristics',exact:true}).waitFor();await ready(page);
    const restored=project(JSON.parse(await saved(page)));assert.equal(restored.state.config.gm,keepEnabled);assert.equal(await page.locator('#gm-toggle').isChecked(),keepEnabled);
    assert.equal(restored.log.filter(e=>e.type==='gm-mode').length,keepEnabled?1:2);if(!keepEnabled)assert.match(restored.log.find(e=>e.summary.includes('true → false'))?.summary??'',/GM mode true → false/);

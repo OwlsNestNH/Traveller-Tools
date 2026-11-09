@@ -15,7 +15,7 @@ test('optional setup summary distinguishes defaults and retained selected settin
 test('actual setup view keeps essential fields and Begin outside the optional disclosure',()=>{
  const source=read('gui/app.mjs'),start=source.indexOf('function setupView(){'),end=source.indexOf('\nfunction syncPsiOptions(',start);
  const setup=vm.runInNewContext(source.slice(start,end)+';setupView()', {projection:{state:{}},catalog:{species:[{id:'human'},{id:'vargr',variants:[]}],extraStats:[{id:'LCK',name:'Luck',source:'Companion 2024 p. 5'},{id:'PSI',name:'Psionic strength',source:'Core 2022 p. 228'}]},options:()=>'',esc:String,setupOptionalSummary});
- const parts=setup.match(/^([\s\S]*?)<details id="setup-optional-settings">([\s\S]*?)<\/details>([\s\S]*)$/);assert.ok(parts);
+ const parts=setup.match(/^([\s\S]*?)<details name="opening-gm-sections" id="setup-optional-settings">([\s\S]*?)<\/details>([\s\S]*)$/);assert.ok(parts);
  for(const name of ['name','species','gender','homeworld','boons','allocation','minimumReroll'])assert.ok(parts[1].includes('name="'+name+'"'),name);
  assert.match(parts[2],/<summary>Characteristic options<span id="setup-optional-summary">No optional extras · GM changes off<\/span><\/summary>/);
  assert.match(parts[2],/name="extras" value="LCK"/);assert.match(parts[2],/name="extras" value="PSI"/);assert.doesNotMatch(parts[2],/name="extras" value="PSI"[^>]*disabled/);assert.match(parts[1],/name="gm"/);assert.doesNotMatch(parts[1],/name="gm"[^>]*checked/);assert.match(parts[3],/name="aezorghTwoDice"/);assert.match(parts[3],/name="academyServiceSkill"/);

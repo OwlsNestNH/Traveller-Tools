@@ -16,7 +16,7 @@ try{
   await page.goto('http://127.0.0.1:'+server.address().port+(http?'/?api=local':'/'));await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();
   await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw});await page.reload();await page.getByRole('heading',{name:'Graduation',exact:true}).waitFor();
   let text=await page.locator('#last-action-result').innerText();assert.match(text,/part/i);assert.match(text,/Carouse at least level 1/);assert.match(text,/Roll \[2, 3\] = 5/);assert.match(text,/Skill Carouse/);
-  await page.getByRole('button',{name:/View full log/}).click();await page.locator('#full-action-log').waitFor({state:'visible'});assert.match(await page.locator('#full-log-content').innerText(),/part/i);await page.keyboard.press('Escape');await page.locator('#full-action-log').waitFor({state:'hidden'});
+  await page.getByRole('button',{name:/Full Log/}).click();await page.locator('#full-action-log').waitFor({state:'visible'});assert.match(await page.locator('#full-log-content').innerText(),/part/i);await page.keyboard.press('Escape');await page.locator('#full-action-log').waitFor({state:'hidden'});
   assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);await page.reload();await page.getByRole('heading',{name:'Graduation',exact:true}).waitFor();assert.match(await page.locator('#last-action-result').innerText(),/part/i);assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);await page.screenshot({path:fileURLToPath(new URL('event-result-'+http+'-'+width+'.png',out)),fullPage:true});checks.push({http,width,pass:true});await context.close();
  }

@@ -17,7 +17,7 @@ try{
   await page.goto(origin+(transport==='http'?'/?api=local':'/'));await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();
   await page.locator('[name=name]').fill('Browser Test <Traveller>');
   await page.locator('[name=boons]').selectOption('3');
-  await page.locator('#setup-optional-settings>summary').click();await page.locator('[name=extras][value=LCK]').check();
+  await page.locator('#setup-optional-settings>summary').click();await page.locator('#setup-optional-settings').evaluate(el=>el.open=true);await page.locator('[name=extras][value=LCK]').check();
   await page.getByRole('button',{name:'Begin character',exact:true}).click();
   await page.getByRole('button',{name:'Roll six characteristics'}).waitFor();
   await page.getByRole('button',{name:'Roll six characteristics'}).click();
