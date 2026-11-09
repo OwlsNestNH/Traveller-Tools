@@ -3,7 +3,7 @@ import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {createServer} from '../server.mjs';
-import {exportSession,project} from '../engine/session.mjs';
+import {exportSession,project,RULES_REVISION} from '../engine/session.mjs';
 import {agentCoverFixture,coverResult} from './agent-cover-fixtures.mjs';
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const server=createServer();await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
@@ -18,12 +18,19 @@ try{
   const context=await browser.newContext({viewport:{width,height:1000}}),page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   try{
    await page.goto('http://127.0.0.1:'+server.address().port+(apiMode?'/?api=local':'/'));await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();
-   const fixture=step==='wager'?coverResult({careerId:'core.rogue',row:10}):step==='cover'?agentCoverFixture({vargr}):coverResult({vargr,success:step!=='failure',row:step==='failure'?2:5});
+   const fixture=step==='wager'?coverResult({careerId:'core.rogue',row:10}):step==='cover'?agentCoverFixture({vargr,rulesRevision:RULES_REVISION}):coverResult({vargr,success:step!=='failure',row:step==='failure'?2:5});
+   assert.equal(fixture.session.rulesRevision,step==='cover'?RULES_REVISION:'character-preview-2026-11-09.19');
    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(fixture.session)});await page.reload();await ready(page);
    if(step==='cover'){
     await page.getByRole('heading',{name:'Choose your cover career'}).waitFor();assert.equal(await page.locator('[data-action=cross-career-cover]').count(),vargr?9:2);assert.equal(await page.locator('[data-career^="zhodani."]').count(),0);
     await page.reload();await ready(page);await page.locator('[data-action=cross-career-cover][data-career="'+(vargr?'vargr.citizen':'core.citizen')+'"]').click();await ready(page);
-    assert.equal((await read(page)).state.character.crossCareerRoutes.at(-1).coverCareerId,vargr?'vargr.citizen':'core.citizen');
+    let p=await read(page);assert.equal(p.state.character.crossCareerRoutes.at(-1).coverCareerId,vargr?'vargr.citizen':'core.citizen');
+    assert.equal(p.state.stage,'borrowed-event-roll');assert.equal(p.log.at(-1).type,'cross-career-cover-check');assert.equal(p.log.at(-1).rolls.length,1);assert.equal(p.state.character.crossCareerRoutes.at(-1).tables.length,0);
+    const checkpoint=await page.evaluate(key=>localStorage.getItem(key),key),pendingId=p.state.pendingBorrowedRoll.id;
+    await page.reload();await page.locator('[data-action=roll-borrowed-event]').waitFor();assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),checkpoint);
+    await page.locator('[data-action=roll-borrowed-event]').evaluate(b=>{b.click();b.click();});await ready(page);
+    const after=JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key));assert.equal(after.events.length,JSON.parse(checkpoint).events.length+1);assert.deepEqual(after.events.at(-1).command,{type:'roll-borrowed-event',payload:{pendingId}});
+    p=await read(page);assert.equal(p.log.at(-1).rolls.length,1);assert.equal(p.state.character.crossCareerRoutes.at(-1).tables.length,1);assert.equal(p.state.character.careers.length,1);assert.equal(p.state.character.terms,fixture.state.character.terms);
    }else if(step==='training'){
     await page.getByRole('heading',{name:'Choose your extra training'}).waitFor();assert.equal(await page.locator('[data-action=cross-career-training]').count(),3);await page.reload();await ready(page);
     await page.locator('[data-action=cross-career-training][data-assignment=worker]').click();await ready(page);
