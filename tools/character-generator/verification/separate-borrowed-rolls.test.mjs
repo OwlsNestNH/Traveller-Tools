@@ -47,7 +47,7 @@ test('borrowed Rogue failed check, injury table and severity each roll separatel
 test('borrowed Life and Unusual events preserve their source and stop at every table',()=>{
  let r=rolledBorrowed(separatedCover({success:true}),[3,4]);assert.equal(r.log.at(-1).rolls.length,1);assert.equal(r.state.pendingBorrowedRoll.label,'Life event');assert.deepEqual(r.state.pendingBorrowedRoll.source,{id:'core',page:46});roundtrip(r);
  r=rolledBorrowed(r,[6,6]);assert.equal(r.log.at(-1).rolls.length,1);assert.equal(r.state.pendingBorrowedRoll.label,'Unusual event');assert.equal(r.state.pendingBorrowedRoll.dice,'1D');assert.equal(r.state.pendingBorrowedRoll.source.page,46);assert.match(r.log.at(-1).summary,/Life event result 12/);roundtrip(r);
- r=rolledBorrowed(r,[3]);assert.equal(r.log.at(-1).rolls.length,1);assert.equal(r.state.stage,'book-step');assert.equal(r.log.at(-1).eventResults.at(-1).table,'core.unusual-events');roundtrip(r);
+ r=rolledBorrowed(r,[3]);assert.equal(r.log.at(-1).rolls.length,1);assert.equal(r.state.stage,'cross-career-training');assert.equal(r.state.character.assets.at(-1).name,'Alien Artefact');assert.equal(r.state.character.assets.at(-1).detailsPending,true);assert.equal(r.log.at(-1).eventResults.at(-1).table,'core.unusual-events');roundtrip(r);
 });
 test('borrowed Life injury retains separate dice and Life source provenance',()=>{
  let r=rolledBorrowed(separatedCover({success:true}),[3,4]);r=rolledBorrowed(r,[1,1]);assert.equal(r.log.at(-1).rolls.length,1);assert.equal(r.state.pendingBorrowedRoll.kind,'borrowed-injury-table');r=rolledBorrowed(r,[6]);assert.equal(r.log.at(-1).rolls.length,1);assert.equal(r.state.character.injuries.at(-1).tableResult,6);assert.equal(r.state.character.injuries.at(-1).fixed,false);roundtrip(r);

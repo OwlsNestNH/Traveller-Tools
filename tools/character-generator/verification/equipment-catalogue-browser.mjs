@@ -15,7 +15,7 @@ try{
   await page.locator('#book-confirm').check();await page.locator('#benefit-item-id').selectOption('');assert.equal(await page.locator('#book-confirm').isChecked(),false);assert.equal(await page.locator('#benefit-item-name').getAttribute('readonly'),null);
   await page.locator('#benefit-item-id').selectOption('core.rifle');await page.locator('#book-note').fill('Selected source-backed Rifle.');await page.locator('#book-confirm').check();await page.getByRole('button',{name:'Record outcome and continue'}).click();
   await page.getByRole('heading',{name:'Assets & benefits',exact:true}).waitFor();const sheet=await page.locator('#sheet').innerText();assert.match(sheet,/Rifle/);assert.match(sheet,/126/);assert.match(sheet,/Gun Combat \(slug\)/);
-  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);await page.reload();assert.match(await page.locator('#sheet').innerText(),/Rifle/);
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);await page.reload();await page.getByRole('heading',{name:'Assets & benefits',exact:true}).waitFor();assert.match(await page.locator('#sheet').innerText(),/Rifle/);
   await context.close();console.log('PASS equipment picker '+width+' '+(transport||'static'));
  }
  assert.deepEqual(errors,[]);
