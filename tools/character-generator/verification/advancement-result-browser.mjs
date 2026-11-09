@@ -1,3 +1,5 @@
+import {qualificationOutcomeFixture} from './check-outcome-fixtures.mjs';
+import {assertResultColor} from './result-color-browser-assertions.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -29,6 +31,7 @@ try{
     await page.locator('#last-action-result').waitFor();
     await page.waitForFunction(()=>!document.querySelector('#new').disabled);
     const expected=advancementResult(after.log.at(-1));
+    await assertResultColor(page,expected.status,{message:true});
     assert.equal(await page.locator('#last-action-result h3').innerText(),expected.title);
     assert.equal(await page.locator('#sheet .career-rank-value').innerText(),'Rank '+after.state.character.careers[after.state.active].rank);
     assert.equal(await page.locator('#sheet .career-rank-summary').evaluate(el=>el.compareDocumentPosition(document.querySelector('#sheet .stats')) & Node.DOCUMENT_POSITION_FOLLOWING),4);
@@ -40,6 +43,7 @@ try{
     assert.equal(project(saved).log.at(-1).summary,after.log.at(-1).summary);
     await page.reload();await page.locator('#last-action-result').waitFor();
     assert.equal(await page.locator('#last-action-result h3').innerText(),expected.title);
+    await assertResultColor(page,expected.status);
     assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
     const name=(success?'success':'failure')+'-'+width+(http?'-http':'-static');
@@ -57,6 +61,15 @@ try{
     await page.reload();await page.waitForFunction(()=>!document.querySelector('#new').disabled);
     assert.ok(await page.locator('#last-action-result').count()<=1);
     checks.push({name,passed:true});
+   }
+   for(const success of [false,true]){
+    const {after}=qualificationOutcomeFixture(success),raw=exportSession(after.session);
+    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw});await page.reload();await page.locator('#last-action-result').waitFor();
+    await assertResultColor(page,success?'success':'failure');
+    assert.ok((await page.locator('#last-action-result').innerText()).includes(success?'succeeded':'failed'));
+    assert.ok((await page.locator('#action-log').innerText()).includes(after.log.at(-1).summary));
+    assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);
+    checks.push({name:'qualification-'+success+'-'+width+'-'+http,passed:true});
    }
    if(http)assert.deepEqual(engineRequests,[]);
   }finally{await context.close();}
