@@ -1,0 +1,33 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {api,exportSession,project} from '../engine/session.mjs';
+import {trainingFixture,run} from './training-information-fixtures.mjs';
+const url=new URL('../engine/session.mjs',import.meta.url);
+let source=await readFile(url,'utf8');source=source.replace(/from\s+'(\.\/[^']+)'/g,(_,path)=>'from '+JSON.stringify(new URL(path,url).href));
+source+='\nexport const audit={initial,queueEffects,apply,skillChoiceSuggestions};';
+const {audit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+function fixture(){const s=a.initial('deferred');s.deferredSpecializations=true;s.character.stats={STR:7,DEX:7,END:7,INT:7,EDU:7,SOC:7};s.stage='career';return s;}
+const skill=(name,value=1,mode='set')=>({kind:'skill',name,value,mode});
+const choose=(s,name)=>a.apply(s,{type:'choose-skill',payload:{name}},[]);
+test('Academy Gun Combat 1 and later rank Gun Combat 1 split without losing either award',()=>{
+ const s=fixture();a.queueEffects(s,[skill('Gun Combat')],'career',[]);a.queueEffects(s,[skill('Gun Combat')],'career',[]);
+ assert.equal(s.stage,'career');assert.equal(s.character.skills['Gun Combat'],undefined);assert.equal(s.character.deferredSkillAwards.length,2);
+ a.apply(s,{type:'finish'},[]);assert.equal(s.stage,'skill-choice');choose(s,'Gun Combat (energy)');
+ assert.throws(()=>choose(s,'Gun Combat (energy)'),/lose the award/);assert.equal(s.character.deferredSkillAwards[1].status,'pending');
+ choose(s,'Gun Combat (slug)');assert.equal(s.stage,'career');a.apply(s,{type:'finish'},[]);assert.equal(s.stage,'finish');
+ assert.deepEqual(s.character.skills,{'Gun Combat (energy)':1,'Gun Combat (slug)':1});
+});
+test('optional early allocation returns to the exact quiet checkpoint',()=>{const s=fixture();a.queueEffects(s,[skill('Drive',1,'increase')],'training',[]);a.apply(s,{type:'allocate-specializations'},[]);choose(s,'Drive (wheel)');assert.equal(s.stage,'training');assert.equal(s.character.skills['Drive (wheel)'],1);});
+test('generic increments can stack, while capped specialties cannot silently consume an award',()=>{const s=fixture();s.character.skills['Gun Combat (slug)']=4;a.queueEffects(s,[skill('Gun Combat',1,'increase'),skill('Gun Combat',1,'increase')],'career',[]);a.apply(s,{type:'finish'},[]);assert.ok(!a.skillChoiceSuggestions(s).includes('Gun Combat (slug)'));assert.throws(()=>choose(s,'Gun Combat (slug)'),/lose/);choose(s,'Gun Combat (energy)');choose(s,'Gun Combat (energy)');assert.equal(s.character.skills['Gun Combat (energy)'],2);assert.equal(s.character.skills['Gun Combat (slug)'],4);});
+test('printed Electronics comms is fixed and not deferred',()=>{const s=fixture();a.queueEffects(s,[skill('Electronics (comms)')],'career',[]);assert.deepEqual(s.character.skills,{'Electronics (comms)':1});assert.equal(s.character.deferredSkillAwards,undefined);});
+test('pending awards settle before a dependent skill check and bind exact preceding award',()=>{const s=fixture();a.queueEffects(s,[skill('Gun Combat'),{kind:'check',skills:['Gun Combat (energy)'],target:100,success:[],failure:[]}],'career',[]);assert.equal(s.stage,'skill-choice');choose(s,'Gun Combat (energy)');assert.equal(s.stage,'career');const t=fixture();a.queueEffects(t,[skill('Drive'),{kind:'check',skillScope:'preceding-award',skills:['Drive'],target:100,success:[],failure:[]}],'career',[]);assert.equal(t.character.deferredSkillAwards,undefined);choose(t,'Drive (wheel)');assert.equal(t.stage,'career');});
+test('distinct Science and restricted named choices remain immediate',()=>{const s=fixture();a.queueEffects(s,[{kind:'skill-choice',scope:'science-specialties',distinctSpecialties:true,count:2,value:1,mode:'increase',source:{id:'core',page:42}}],'career',[]);assert.equal(s.pendingChoice.deferSpeciality,undefined);choose(s,'Science (physics)');assert.throws(()=>choose(s,'Science (physics)'),/different|distinct/i);choose(s,'Science (biology)');assert.equal(s.character.deferredSkillAwards,undefined);});
+test('generic selectable base defers; invalid and unrelated specialties reject',()=>{const s=fixture();a.queueEffects(s,[{kind:'skill-choice',scope:'any',allowed:['Electronics'],mode:'set',value:1}],'career',[]);assert.equal(s.pendingChoice.deferSpeciality,true);assert.throws(()=>choose(s,'Electronics (pottery)'),/listed/);assert.throws(()=>choose(s,'Drive (wheel)'),/available/);choose(s,'Electronics');assert.equal(s.character.deferredSkillAwards[0].name,'Electronics');});
+test('new saved sessions preserve interrupted allocations byte-for-byte and historical .17 stays immediate',()=>{
+ let start=trainingFixture({species:'vargr',career:'vargr.citizen',assignment:'corporate'});let r=run(start,'training',{table:'advanced'});
+ const checkpoint=r.state.stage;assert.equal(r.state.character.deferredSkillAwards.at(-1).name,'Electronics');r=run(r,'allocate-specializations');const raw=exportSession(r.session);const restored=api({operation:'import',raw});assert.equal(restored.ok,true);assert.equal(exportSession(restored.session),raw);assert.deepEqual(restored.state,r.state);r=run(restored,'choose-skill',{name:'Electronics (computers)'});assert.equal(r.state.stage,checkpoint);assert.equal(r.state.character.skills['Electronics (computers)'],1);
+ const old=structuredClone(start.session);old.rulesRevision='character-preview-2026-11-09.17';const legacy=run({...project(old),session:old},'training',{table:'advanced'});assert.equal(legacy.state.stage,'skill-choice');assert.equal(legacy.state.pendingChoice.deferSpeciality,undefined);assert.equal(api({operation:'import',raw:exportSession(legacy.session)}).ok,true);
+});
+
+test('multi-count generic choices each create exactly one allocatable award',()=>{const s=fixture();a.queueEffects(s,[{kind:'skill-choice',scope:'any',mode:'increase',value:1,count:2}],'career',[]);choose(s,'Electronics');choose(s,'Electronics');a.apply(s,{type:'finish'},[]);choose(s,'Electronics (comms)');choose(s,'Electronics (computers)');assert.equal(s.stage,'career');assert.equal(s.character.deferredSkillAwards.filter(a=>a.status==='allocated').length,2);});
