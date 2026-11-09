@@ -88,9 +88,9 @@ function pendingSpecializations(state,base){return (state.character.deferredSkil
 function deferSkillAward(state,e){const awards=state.character.deferredSkillAwards??=[];const award={...copy(e),id:'specialization-'+(awards.length+1),name:e.name,count:1,value:e.value??1,mode:e.mode??'increase',status:'pending',age:state.character.age,term:state.character.terms};awards.push(award);return award;}
 function deferrableChoice(state,e){return !!state.deferredSpecializations&&!e.allocationId&&e.kind!=='skill-reduction-choice'&&!e.distinctSpecialties&&!e.permittedNames&&['any','assignment','eligible-career',undefined].includes(e.scope);}
 function allocationEffects(state,base){return pendingSpecializations(state,base).map(a=>({...copy(a),kind:'skill-choice',scope:'any',allowed:[a.name],allocationId:a.id,deferSpeciality:false,label:'Allocate '+a.name+' award: '+(a.mode==='set'?'gain at least level ':'increase by ')+a.value}));}
-function requireAllocationsBefore(state,e,base){const effects=allocationEffects(state,base);if(!effects.length)return false;state.effectsQueue.unshift(...effects,e);return true;}
+function requireAllocationsBefore(state,e,base){const effects=allocationEffects(state,base);if(!effects.length)return false;if(e.kind==='skill'&&e.name.includes(' ('))for(const effect of effects)effect.followingFixedAward=copy(e);state.effectsQueue.unshift(...effects,e);return true;}
 function specializationOptions(state){return {available:!!state.deferredSpecializations&&pendingSpecializations(state).length>0&&!state.pendingChoice&&!state.pending&&!state.effectsQueue?.length&&['career','precareer','training','survival','advancement','term-end','benefits','retirement'].includes(state.stage),count:pendingSpecializations(state).length};}
-function allocationImproves(state,name,e){const old=state.character.skills[name]??0;return e.mode==='set'?e.value>old:old<4;}
+function allocationImproves(state,name,e){const old=state.character.skills[name]??0,next=e.mode==='set'?Math.max(old,e.value):Math.min(4,old+e.value),fixed=e.followingFixedAward;if(fixed?.name===name){const after=n=>fixed.mode==='set'?Math.max(n,fixed.value):Math.min(4,n+fixed.value);return after(next)>after(old);}return next>old;}
 function gainSkill(state,name,level,mode='increase',allowTalentAcquisition=false) {
  need(typeof name==='string'&&name.length<=80,'Invalid skill.');
  const parsed=normalizeSkillName(name,{requireSpeciality:mode!=='set'||level>0});name=parsed.name;const base=parsed.base;need(SKILLS.includes(base),'Choose a supported skill or specialisation.');need(!PSIONIC_TALENTS.includes(base)||!state.character.psionicLoss,'Ageing permanently removed psionic ability; historical talents cannot be increased or reacquired.');
@@ -2827,7 +2827,7 @@ export function project(session) {
  state.psionicOptions=state.stage==='psionic-training'?psionicOptions(state):[];
   state.psionicCanFinish=state.stage==='psionic-training'&&state.psionicTraining?.mode==='initial';
   state.canStartPsionicTraining=!accessMandatory(state)&&!state.character.psionicLoss&&['career','precareer'].includes(state.stage)&&state.active===null&&!state.forcedCareer&&!state.character.retirementFromCreation&&(!Object.hasOwn(state.character.stats,'PSI')||state.character.stats.PSI>0)&&!state.character.psionics?.training.some(t=>t.completed);
- state.skillChoiceSuggestions=skillChoiceSuggestions(state);state.specializationOptions=specializationOptions(state);
+ state.skillChoiceSuggestions=skillChoiceSuggestions(state);state.specializationOptions=specializationOptions(state);state.skillChoiceBases=[...new Set([...state.skillChoiceSuggestions.map(n=>n.split(' (')[0]),...['Science (physics)','Language (Galanglic)','Profession (construction)'].filter(n=>state.stage==='skill-choice'&&skillNameAllowed(state,n,state.pendingChoice)).map(n=>n.split(' (')[0])])].sort();
  if(prisonerEscapePending(state))state.prisonerEscape={skills:['Stealth','Deception'].map(name=>({name,level:skillLevel(state,name),modifier:skillCheckDM(state,name)}))};
   state.trainingOptions=state.stage==='training'?trainingOptions(state):[];
  // Add labels only after replay. Presentation metadata cannot alter saved
