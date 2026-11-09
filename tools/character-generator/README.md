@@ -80,6 +80,7 @@ node tools/character-generator/verification/survival-result-browser.mjs /path/to
 node tools/character-generator/verification/advancement-result-browser.mjs /path/to/playwright
 node tools/character-generator/verification/life-event-presentation-browser.mjs /path/to/playwright
 node tools/character-generator/verification/training-information-browser.mjs /path/to/playwright
+node tools/character-generator/verification/full-log-browser.mjs /path/to/playwright
 node tools/character-generator/verification/final-sheet-browser.mjs /path/to/playwright
 node tools/character-generator/verification/release-presentation-browser.mjs /path/to/playwright
 node tools/character-generator/verification/release-scope-browser.mjs /path/to/playwright
@@ -166,3 +167,4 @@ New .18 sessions defer ordinary unspecified positive specialist awards until all
 The same revision corrects forced Drifter draft continuation, earned-benefit forfeiture, Scout event departure timing and Believer immediate event promotion. Compatible .16/.17 sessions retain their original mechanics. The public four-species scope and deferred Zhodani recovery boundary are unchanged.
 
 For new sessions, the conflicting Aslan Space Officer headings on Aliens 2026 pp. 38–39 use the explicit campaign interpretation: Shipmaster → Pilot/Gunner and Navigator → Engineer/Crew. Rank bonuses follow that mapping automatically for direct entry and officer opportunities. Historical .16/.17 saves retain their original source-resolution behavior.
+The toolbar’s **View full log** information control opens the recorded action history without changing the character. Escape or Close log returns to the toolbar. The existing text download remains available both in the toolbar and the log viewer. Draft notes must be recorded before they appear in this history.

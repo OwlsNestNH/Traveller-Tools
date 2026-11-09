@@ -1,5 +1,6 @@
 import {skillAwardView,syncAwardBase,deferredAwardsView} from './skill-award-view.mjs';
 import {educationSkillTitle,educationSkillView,syncEducationSubject} from './education-skill-view.mjs';
+import {createLogViewer} from './log-viewer.mjs';
 import {prisonerEscapeTitle,prisonerEscapeView} from './prisoner-escape-view.mjs';
 import {extraCharacteristicsView,gmControlsView,syncCorrectionField,syncReplacementDice,syncCorrectionTask,correctionPayload,replacementPayload} from './character-controls.mjs';
 import {rollResult} from './roll-result-view.mjs';
@@ -541,6 +542,8 @@ function download(name,contents,type='application/json'){
 }
 async function saveDraftNotes(){const notes=$('#character-notes')?.value;return notes===undefined||notes===projection.state.character.notes||await send('notes',{text:notes});}
 $('#export').onclick=async()=>{if(busy||!await saveDraftNotes())return;download('traveller-character.json',exportSession(session));};
+const logViewer=createLogViewer({document,getLog:()=>projection.log,onDownload:()=>$('#log-download').onclick()});
+$('#log-view').onclick=()=>{if(!busy&&projection?.ok)logViewer.open();};
 $('#log-download').onclick=()=>download('traveller-action-log.txt',fullActionLog(projection.log),'text/plain');
 let printDetails=null;
 window.addEventListener('beforeprint',()=>{
