@@ -31,7 +31,7 @@ New revision histories apply the user ruling for Companion 2024 p. 39, mishap 4:
 - Original, readable responsive interface with large controls.
 - Always-on deterministic event log; rules-revision-pinned save/import, print and GM-gated audit-preserving restore. Unversioned or different-revision files are preserved for unverified read-only history recovery; historical mechanics are never silently reinterpreted.
 - Logged GM changes and replacement dice, with reason and retained original record.
-- Requested first-roll boons, placement, minimum-total rerolls and extra-characteristic controls. Standard Aezorgh use30; their optional six-2D6 method uses43 before placement/halving, free swaps and destination-specific rounding down. Both are explicitly labelled house options.
+- Requested first-roll boons, placement, minimum-total rerolls and extra-characteristic controls. Standard Aezorgh use30; their optional six-2D6 method uses43 before placement/halving, free swaps and destination-specific rounding up in new .22 sessions (historical .16-.21 sessions retain rounding down). Both are explicitly labelled house options.
 - Species-specific stat formulas, basic backgrounds and career filtering.
 - Numeric training, rank, material/cash benefit, event and mishap tables for all 45 development careers (36 in release scope).
 - Native Core University/academy entry, initial awards, events, graduation/honours, deferred service awards, future entry/qualification rights and pre-term commissions, with explicit source-assisted exceptions.

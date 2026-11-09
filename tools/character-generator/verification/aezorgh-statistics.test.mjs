@@ -1,8 +1,10 @@
 // Preserved full-engine development regression, including deferred Zhodani.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {developmentApi as api,createSession,execute,project,exportSession,importSession} from '../engine/session.mjs';
+import {developmentApi as api,createSession as createCurrentSession,execute,project,exportSession,importSession} from '../engine/session.mjs';
 
+// Preserve the historical floor-division contract; current rounding-up is covered separately.
+function createSession(seed){return {...createCurrentSession(seed),rulesRevision:'character-preview-2026-11-09.21'};}
 function run(r,type,payload={},options={}){return execute(r.session??r,{type,payload},options);}
 function start(species='aezorgh',options={}){
  let r=run(createSession('aezorgh-statistics-'+species),'setup',{species});

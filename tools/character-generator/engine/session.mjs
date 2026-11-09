@@ -41,9 +41,9 @@ const RULE_PACK={...CORE_PACK,...EXPANSION_PACK};
 import { API_VERSION, SOURCES, CAREERS, PRECAREERS, SPECIES, SKILLS, BACKGROUND_SKILLS, findCareer, findSpecies } from './catalog.mjs';
 const LIMIT = 2000;
 export const MAX_SAVE_BYTES = 2000000;
-export const RULES_REVISION='character-preview-2026-11-09.21';
+export const RULES_REVISION='character-preview-2026-11-09.22';
 // .19 chooses specialties on receipt; .18 retains deferred awards and corrections; .16/.17 retain historical mechanics.
-export const COMPATIBLE_RULES_REVISIONS=Object.freeze([RULES_REVISION,'character-preview-2026-11-09.20','character-preview-2026-11-09.19','character-preview-2026-11-09.18','character-preview-2026-11-09.17','character-preview-2026-11-09.16']);
+export const COMPATIBLE_RULES_REVISIONS=Object.freeze([RULES_REVISION,'character-preview-2026-11-09.21','character-preview-2026-11-09.20','character-preview-2026-11-09.19','character-preview-2026-11-09.18','character-preview-2026-11-09.17','character-preview-2026-11-09.16']);
 const saveSize = value => new TextEncoder().encode(JSON.stringify(value,null,2)).byteLength;
 const copy = value => structuredClone(value);
 const plain = value => value && typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
@@ -83,11 +83,11 @@ function stat(state,key) { need(Object.hasOwn(state.character.stats,key),'Charac
 function statisticsRerollThreshold(state) { return state.config.minimumTotal??(state.character.species==='aezorgh'&&!state.config.aezorghTwoDice?30:43); }
 function statisticsCanReroll(state) { return state.stage==='statistics'&&state.pool.length===6&&!!(state.config.gm||state.config.minimumReroll&&state.rollTotal<statisticsRerollThreshold(state)); }
 function refreshStatisticsPool(state) {
- for(const p of state.pool){p.divisor=state.character.species==='aezorgh'&&state.config.aezorghTwoDice&&p.formulaCount===1?2:1;p.derivedBase=Math.floor(p.base/p.divisor);p.value=Math.max(1,p.derivedBase+p.adjustment);}
+ for(const p of state.pool){p.divisor=state.character.species==='aezorgh'&&state.config.aezorghTwoDice&&p.formulaCount===1?2:1;p.derivedBase=(state.aezorghRoundUp?Math.ceil:Math.floor)(p.base/p.divisor);p.value=Math.max(1,p.derivedBase+p.adjustment);}
  state.rollTotal=state.pool.reduce((sum,p)=>sum+p.base,0);
 }
 function statisticsDivisionSummary(state) {
- return state.character.species==='aezorgh'&&state.config.aezorghTwoDice?' Optional Aezorgh placement (round down before species bonuses): '+state.pool.map(p=>p.key+' raw '+p.base+'/'+p.divisor+' = '+p.derivedBase+', species '+(p.adjustment>=0?'+':'')+p.adjustment).join('; ')+'.':'';
+ return state.character.species==='aezorgh'&&state.config.aezorghTwoDice?' Optional Aezorgh placement (round '+(state.aezorghRoundUp?'up':'down')+' before species bonuses): '+state.pool.map(p=>p.key+' raw '+p.base+'/'+p.divisor+' = '+p.derivedBase+', species '+(p.adjustment>=0?'+':'')+p.adjustment).join('; ')+'.':'';
 }
 function maxStat(state,key) { return findSpecies(state.character.species).maxima?.[key]??15; }
 function setStat(state,key,value) { integer(value,0,40,'Characteristic'); state.character.stats[key]=value;if(state.character.species==='aezorgh'&&key==='SOC')state.character.stats.CHA=Math.floor(value/2); }
@@ -2285,7 +2285,7 @@ function apply(state,command,rolls) {
   state.character.name=text(payload.name??'',80);state.character.species=species.id;
   state.character.gender=text(payload.gender??'',20);state.character.culture=payload.culture==='imperial'?'imperial':'native';
   state.character.homeworld=text(payload.homeworld??'',160);state.character.age=species.startAge;state.character.traits=copy(SPECIES_RULES[species.id]?.traits??[]);
-  state.stage='statistics';return 'Started '+(state.character.name||'an unnamed Traveller')+' ('+species.name+').'+(species.id==='vargr'?' Vargr strain: '+state.character.variant+'.':'')+(species.id==='aezorgh'?(state.config.aezorghTwoDice?' Optional Aezorgh method: six raw 2D totals; reroll minimum '+statisticsRerollThreshold(state)+' before placement and halving; free swaps; one-die destinations halve rounding down before species bonuses.':' Standard Aezorgh method: published 1D/2D formulas; raw reroll minimum '+statisticsRerollThreshold(state)+'; swaps within matching formula groups, with GM exceptions.'):'');
+  state.stage='statistics';return 'Started '+(state.character.name||'an unnamed Traveller')+' ('+species.name+').'+(species.id==='vargr'?' Vargr strain: '+state.character.variant+'.':'')+(species.id==='aezorgh'?(state.config.aezorghTwoDice?' Optional Aezorgh method: six raw 2D totals; reroll minimum '+statisticsRerollThreshold(state)+' before placement and halving; free swaps; one-die destinations halve rounding '+(state.aezorghRoundUp?'up':'down')+' before species bonuses.':' Standard Aezorgh method: published 1D/2D formulas; raw reroll minimum '+statisticsRerollThreshold(state)+'; swaps within matching formula groups, with GM exceptions.'):'');
  }
  case 'configure': {
   need(state.stage==='identity'||state.stage==='statistics'&&!state.pool.length,'Options must be set before rolling.');
@@ -2297,7 +2297,7 @@ function apply(state,command,rolls) {
   if(payload.aezorghTwoDice!==undefined){need(typeof payload.aezorghTwoDice==='boolean','The optional Aezorgh two-dice method must be true or false.');need(!payload.aezorghTwoDice||state.stage==='identity'||state.character.species==='aezorgh','The optional two-dice method applies only to Aezorgh.');state.config.aezorghTwoDice=payload.aezorghTwoDice;}
   if(payload.zhodaniPsi!==undefined){need(typeof payload.zhodaniPsi==='boolean','Invalid Zhodani PSI option.');state.config.zhodaniPsi=payload.zhodaniPsi;}
   const rerollSummary=state.config.minimumTotal===undefined&&state.stage==='identity'&&Object.hasOwn(payload,'aezorghTwoDice')?'minimum-total reroll '+(state.config.minimumReroll?'on':'off')+' (threshold confirmed at species setup)':'below-'+statisticsRerollThreshold(state)+' reroll '+(state.config.minimumReroll?'on':'off');
-  return 'Generation options: '+state.config.boons+' boon rolls; player placement '+(state.config.allocation?'on':'off')+'; '+rerollSummary+'; extras '+(state.config.extras.join(', ')||'none')+'; Zhodani PSI option '+(state.config.zhodaniPsi?'on':'off')+'.'+(state.config.aezorghTwoDice?' Optional Aezorgh method: six raw 2D totals, free placement, then halve one-die destinations rounding down.':'');
+  return 'Generation options: '+state.config.boons+' boon rolls; player placement '+(state.config.allocation?'on':'off')+'; '+rerollSummary+'; extras '+(state.config.extras.join(', ')||'none')+'; Zhodani PSI option '+(state.config.zhodaniPsi?'on':'off')+'.'+(state.config.aezorghTwoDice?' Optional Aezorgh method: six raw 2D totals, free placement, then halve one-die destinations rounding '+(state.aezorghRoundUp?'up':'down')+'.':'');
  }
  case 'gm-academy-training': {
   need(state.config.gm,'Enable GM result changes to set this house option.');
@@ -3099,7 +3099,7 @@ export function project(session) {
  need(Array.isArray(session.events)&&session.events.length<=LIMIT,'Save contains too many actions.');
  need(saveSize(session)<=MAX_SAVE_BYTES,'Save size limit reached. Export your current character before continuing.');
 
- let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(['character-preview-2026-11-09.19','character-preview-2026-11-09.20',RULES_REVISION].includes(session.rulesRevision))state.immediateSpecializations=true;if(['character-preview-2026-11-09.20',RULES_REVISION].includes(session.rulesRevision))state.separateBorrowedRolls=true;if(session.rulesRevision===RULES_REVISION){state.believerFalseTeachingsRuling=true;state.equipmentChoices=true;state.printedBenefitMaximum=true;state.psionAcquisitionRuling=true;}const snapshots=[copy(state)],log=[];
+ let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(['character-preview-2026-11-09.19','character-preview-2026-11-09.20','character-preview-2026-11-09.21',RULES_REVISION].includes(session.rulesRevision))state.immediateSpecializations=true;if(['character-preview-2026-11-09.20','character-preview-2026-11-09.21',RULES_REVISION].includes(session.rulesRevision))state.separateBorrowedRolls=true;if(['character-preview-2026-11-09.21',RULES_REVISION].includes(session.rulesRevision)){state.believerFalseTeachingsRuling=true;state.equipmentChoices=true;state.printedBenefitMaximum=true;state.psionAcquisitionRuling=true;}if(session.rulesRevision===RULES_REVISION)state.aezorghRoundUp=true;const snapshots=[copy(state)],log=[];
  for(let i=0;i<session.events.length;i++){
   const event=session.events[i];need(plain(event)&&typeof event.id==='string'&&event.id.length<=120,'Invalid action record.');
   need(!log.some(e=>e.id===event.id),'Duplicate action ID.');
