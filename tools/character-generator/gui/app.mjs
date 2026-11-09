@@ -516,7 +516,8 @@ document.addEventListener('change',event=>{
  if(event.target.id==='gm-roll-choice')syncReplacementDice(projection.log,$,esc);
  if(event.target.id==='gm-task')syncCorrectionTask($);
  if(event.target.id==='games-event-mode')$('#games-event-effects').hidden=event.target.value!=='resolved-externally';
-  if(event.target.id==='gm-toggle')send('gm-mode',{enabled:event.target.checked});
+  if(event.target.id==='gm-academy-training')send('gm-academy-training',{enabled:event.target.checked});
+   if(event.target.id==='gm-toggle')send('gm-mode',{enabled:event.target.checked});
  if(event.target.matches('[data-field="kind"]')){effects=readEffects();$('#effect-list').innerHTML=effects.map(effectView).join('');}
 });
 document.addEventListener('submit',async event=>{

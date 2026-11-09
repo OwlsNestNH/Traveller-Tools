@@ -777,6 +777,8 @@ function enterCareer(state,career,assignment,rolls=[],transfer=null) {
   const rows=pack.basicTraining.table==='assignment'?pack.training.assignments[assignment]:pack.training.service;
   const basic=first?rows.flatMap(asBasic):[{kind:'choice',options:rows.map((row,i)=>({label:'Basic-training option '+(i+1),effects:asBasic(row)}))}];
   next.entryEffects=[...basic,...educational.effects,...educational.unresolved];next.entryNext=first?'survival':'new-career-training';
+  // Explicit GM house option, not an academy graduation award. Never double a later-career roll.
+  if(first&&state.config.academyServiceSkill&&state.character.educations?.some(e=>e.completed&&e.term===state.character.terms&&['core.academy-army','core.academy-marine','core.academy-navy','companion.merchant'].includes(e.id))){next.academyServiceTraining='pending';next.entryNext='new-career-training';}
   if(next.educationCommission)state.stage='preterm-commission';else finishCareerEntry(state,rolls);
  }else sourceStep(state,'basic-training',career.source,career.page,first?'Choose basic training from the source table.':'Choose one basic-training skill from the source table.','survival');
 }
@@ -1693,7 +1695,7 @@ function trainingOptions(state){
  return ['personal','service','assignment','advanced','officer','psionic'].filter(key=>{
   const rows=key==='assignment'?pack.training.assignments[record.assignment]:pack.training[key];
   const req=pack.prerequisites?.[key];
-  return rows&&(!req?.stat||stat(state,req.stat)>=req.min)&&(!req?.commissioned||record.officer);
+  return (record.academyServiceTraining!=='pending'||key==='service')&&rows&&(!req?.stat||stat(state,req.stat)>=req.min)&&(!req?.commissioned||record.officer);
  }).map(id=>({id,name:{personal:'Personal development',service:'Service skills',assignment:'Assignment skills',advanced:'Advanced education',officer:'Officer skills',psionic:'Psionic skills'}[id]}));
 }
 
@@ -2101,6 +2103,13 @@ function apply(state,command,rolls) {
   const rerollSummary=state.stage==='identity'&&Object.hasOwn(payload,'aezorghTwoDice')?'minimum-total reroll '+(state.config.minimumReroll?'on':'off')+' (threshold confirmed at species setup)':'below-'+statisticsRerollThreshold(state)+' reroll '+(state.config.minimumReroll?'on':'off');
   return 'Generation options: '+state.config.boons+' boon rolls; player placement '+(state.config.allocation?'on':'off')+'; '+rerollSummary+'; extras '+(state.config.extras.join(', ')||'none')+'; Zhodani PSI option '+(state.config.zhodaniPsi?'on':'off')+'.'+(state.config.aezorghTwoDice?' Optional Aezorgh method: six raw 2D totals, free placement, then halve one-die destinations rounding down.':'');
  }
+ case 'gm-academy-training': {
+  need(state.config.gm,'Enable GM result changes to set this house option.');
+  need(state.character.careers.length===0,'Set this option before entering the first career. Restore an earlier step to revise it.');
+  need(typeof payload.enabled==='boolean','Academy Service Skill option must be true or false.');
+  state.config.academyServiceSkill=payload.enabled;
+  return 'GM option: Allow Service Skill choice in the first term after Academy '+(payload.enabled?'on':'off')+'. Grants one Service Skills roll instead of skipping first-career training; graduation awards are unchanged.';
+ }
  case 'gm-mode': {
   need(typeof payload.enabled==='boolean','GM mode must be true or false.');
   const old=state.config.gm;state.config.gm=payload.enabled;return 'GM mode '+old+' → '+payload.enabled+'.';
@@ -2416,7 +2425,7 @@ function apply(state,command,rolls) {
   need(state.stage==='training','No training roll is pending.');need(trainingOptions(state).some(x=>x.id===payload.table),'Training table is not available.');const pack=nativePack(state),{record,career}=currentCareer(state);const rows=payload.table==='assignment'?pack.training.assignments[record.assignment]:pack.training[payload.table];
   const tableModifier=payload.table==='assignment'?(pack.prerequisites.assignmentTableModifiers??[]).filter(m=>conditionMatches(state,m.condition)).reduce((n,m)=>n+m.dm,0):0;
   if(rows.length!==6&&rows.length!==9){sourceStep(state,'term-training',career.source,career.page,'Resolve the special training table.','survival');return 'Training table requires source resolution.';}
-  const result=femaleIndependenceTableRoll(state,rows,tableModifier,rolls,'Training: '+payload.table);queueEffects(state,markPsionicOrigin(rows[result-1],{careerId:career.id,assignment:record.assignment,table:payload.table,result}),state.trainingNext??'survival',rolls);state.trainingNext=null;return 'Training '+payload.table+' result '+result+'.';
+  const result=femaleIndependenceTableRoll(state,rows,tableModifier,rolls,'Training: '+payload.table);if(record.academyServiceTraining==='pending')record.academyServiceTraining='completed';queueEffects(state,markPsionicOrigin(rows[result-1],{careerId:career.id,assignment:record.assignment,table:payload.table,result}),state.trainingNext??'survival',rolls);state.trainingNext=null;return 'Training '+payload.table+' result '+result+'.';
  }
  case 'survival-check':
  case 'survival': {
