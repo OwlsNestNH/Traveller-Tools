@@ -49,7 +49,7 @@ test('real qualification success and failure preserve detailed log and saved byt
  }
 });
 test('outcome panels and notifications use accessible colored bars with explicit status text',async()=>{
- const css=await readFile(new URL('../styles.css',import.meta.url),'utf8'),app=await readFile(new URL('../gui/app.mjs',import.meta.url),'utf8');
+ const css=await readFile(new URL('../styles.css',import.meta.url),'utf8'),app=await readFile(new URL('../gui/concise-result.mjs',import.meta.url),'utf8');
  assert.match(app,/data-result-status=/);assert.match(app,/success:'Success',failure:'Failure',pending:'Pending resolution',info:'Information'/);
  const luminance=hex=>{const c=hex.match(/[\da-f]{2}/gi).map(x=>parseInt(x,16)/255).map(n=>n<=.04045?n/12.92:((n+.055)/1.055)**2.4);return .2126*c[0]+.7152*c[1]+.0722*c[2];};
  const contrast=(a,b)=>{const values=[luminance(a),luminance(b)].sort((a,b)=>b-a);return (values[0]+.05)/(values[1]+.05);};

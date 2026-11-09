@@ -27,7 +27,7 @@ test('compact warning keeps complete limits in the same disclosure and retains e
  assert.match(html,/<strong>Source-assisted beta\.<\/strong> Some outcomes need your books and referee\./);
  const limits=html.match(/<details id="automation-limits">([\s\S]*?)<\/details>/)?.[1];assert.ok(limits);
  for(const text of ['not a fully automated or independently rules-certified generator','explicit source confirmation','keep unsupported consequences with your referee','Zhodani are deferred','Notes do not automate future modifiers','older rules revisions can be recovered unchanged and read only'])assert.ok(limits.includes(text),text);
- for(const id of ['export','import','print','new','action-log'])assert.ok(html.includes('id="'+id+'"'),id);
+ for(const id of ['export','import','print','new','log-download'])assert.ok(html.includes('id="'+id+'"'),id);
  assert.match(css,/font:18px\/1\.55/);assert.match(css,/\.toolbar button,\.toolbar \.button\{min-height:54px\}/);assert.match(css,/#automation-limits>summary\{min-height:44px\}/);
 });
 

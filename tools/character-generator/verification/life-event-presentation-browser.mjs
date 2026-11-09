@@ -1,3 +1,4 @@
+import {downloadedActionLog} from './download-log-browser.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -32,7 +33,7 @@ try{
    await page.locator('#workspace [data-action=survival]').click();await assertPending(page);
    assert.match(await page.locator('#message').innerText(),/Vargr Life Event 10: Good Fortune/);
    assert.match(await page.locator('#message').innerText(),/Benefit roll.*CHA \+1/);
-   assert.match(await page.locator('#action-log').innerText(),/vargr.life-events/);
+   assert.match(await downloadedActionLog(page),/vargr.life-events/);
    const pending=await saved(page),before=project(pending);
    assert.equal(pending.events.length,fixture.session.events.length+1);
    await page.reload();await assertPending(page);assert.deepEqual(await saved(page),pending);
@@ -51,7 +52,7 @@ try{
    assert.ok((await page.locator('#message').innerText()).includes(title+': '+effect));
    await page.reload();await page.locator('#workspace [data-action=advancement]').waitFor();
    assert.deepEqual(await saved(page),afterSave);assert.equal(await page.locator('#workspace [data-action=choose-effect]').count(),0);
-   assert.ok((await page.locator('#action-log').innerText()).includes(after.log.at(-1).summary));
+   assert.ok((await downloadedActionLog(page)).includes(after.log.at(-1).summary));
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
    if(http)assert.deepEqual(engineRequests,[]);
    await page.screenshot({path:fileURLToPath(new URL(name+'-resolved.png',out)),fullPage:true});checks.push({http,width,index,pass:true});

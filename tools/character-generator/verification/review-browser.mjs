@@ -40,10 +40,10 @@ async function importFile(page,contents,name='review.json') {
 try {
  browser=await chromium.launch({headless:true,...(process.env.CHARACTER_BROWSER_CHANNEL?{channel:process.env.CHARACTER_BROWSER_CHANNEL}:{})});
  await check('invalid import preserves live character, saved bytes and action log',async page=>{
-  await begin(page);const before=await stored(page),count=await page.locator('#action-log li').count();
+  await begin(page);const before=await stored(page),count=await page.locator('#workspace').evaluate(el=>Number(el.dataset.revision));
   await importFile(page,'{"format":"invalid"}');
   await page.waitForFunction(()=>document.querySelector('#message').textContent.includes('Could not load'));
-  assert.equal(await stored(page),before);assert.equal(await page.locator('#action-log li').count(),count);
+  assert.equal(await stored(page),before);assert.equal(await page.locator('#workspace').evaluate(el=>Number(el.dataset.revision)),count);
   assert.equal(await page.locator('#sheet h2').textContent(),'Review Traveller');
  });
  await check('cancelled valid import preserves character and re-enables controls',async page=>{
