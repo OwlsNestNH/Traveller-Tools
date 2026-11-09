@@ -3140,6 +3140,7 @@ export function project(session) {
   state.canStartPsionicTraining=!accessMandatory(state)&&!state.character.psionicLoss&&['career','precareer'].includes(state.stage)&&state.active===null&&!state.forcedCareer&&!state.character.retirementFromCreation&&(!Object.hasOwn(state.character.stats,'PSI')||state.character.stats.PSI>0)&&!state.character.psionics?.training.some(t=>t.completed);
  if(state.deferredSpecializations&&state.character.species==='aslan'&&state.pendingChoice?.options)state.pendingChoice.options=state.pendingChoice.options.map(culturalAwardLabel);
  state.skillChoiceSuggestions=skillChoiceSuggestions(state);if(state.deferredSpecializations){state.specializationOptions=specializationOptions(state);state.skillChoiceBases=skillChoiceBases(state);}
+ const aslanEventKind=aslanEventPending(state);if(aslanEventKind)state.aslanEventOutcome={kind:aslanEventKind,holdings:aslanOwnedLand(state)};
  if(prisonerEscapePending(state))state.prisonerEscape={skills:['Stealth','Deception'].map(name=>({name,level:skillLevel(state,name),modifier:skillCheckDM(state,name)}))};
   state.trainingOptions=state.stage==='training'?trainingOptions(state):[];
  // Add labels only after replay. Presentation metadata cannot alter saved
