@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -26,7 +27,7 @@ try{
    await page.reload();await page.locator('[name=benefit-credit]').waitFor();await page.locator('[name=benefit-credit]').check();
    const name='optional-benefit-'+(vargr?'vargr':'core')+'-'+width+'-'+(http?'http':'static');
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
-   await page.locator('#workspace').screenshot({path:new URL(name+'-selected.png',out).pathname});
+   await page.locator('#workspace').screenshot({path:fileURLToPath(new URL(name+'-selected.png',out))});
    await page.locator('[data-action=cash-benefit]').click();const used=run(held,'benefit',{cash:true,creditIds:[credit],lifeBonusIds:[]});
    await page.waitForFunction(({key,revision})=>JSON.parse(localStorage.getItem(key)).events.length===revision,{key,revision:used.revision});await loaded(page);
    assert.deepEqual((await saved(page)).state,used.state);assert.equal(used.state.character.benefitCredits[0].status,'consumed');assert.equal(await page.locator('[name=benefit-credit]').count(),0);

@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import {downloadedActionLog} from './download-log-browser.mjs';
 // Candidate-only browser checks. Temporary profiles; no live services or saved user data.
 import assert from 'node:assert/strict';
@@ -22,7 +23,7 @@ try{
    await page.goto(origin+(transport==='http'?'/?api=local':'/'));await page.getByRole('heading',{name:'Start your Traveller',exact:true}).waitFor();
    assert.equal(await page.locator('#extra-stat').count(),0);assert.equal(await page.locator('#gm-toggle').count(),0);
    await page.locator('#setup-optional-settings > summary').click();await page.locator('[name=extras][value=LCK]').check();await page.locator('[name=name]').fill('Controls browser fixture');
-   await page.screenshot({path:new URL('character-controls-'+label+'-setup.png',out).pathname,fullPage:true});
+   await page.screenshot({path:fileURLToPath(new URL('character-controls-'+label+'-setup.png',out)),fullPage:true});
    await page.getByRole('button',{name:'Begin character',exact:true}).click();await page.getByRole('button',{name:'Roll six characteristics',exact:true}).click();await page.getByRole('button',{name:'Keep these characteristics',exact:true}).waitFor();await ready(page);
    assert.equal(await page.locator('#extra-stat').count(),0);assert.equal(await page.locator('#gm-controls').getAttribute('open'),null);
    await page.locator('#gm-controls > summary').focus();await page.keyboard.press('Enter');assert.equal(await page.locator('#gm-value-form').count(),0);
@@ -40,14 +41,14 @@ try{
    assert.equal(await page.locator('#extra-stat option[value=MRL]').count(),0);assert.equal(await page.locator('#sheet .stat').filter({hasText:'MRL'}).count(),1);
    await page.locator('#gm-field').selectOption('age');assert.equal(await page.locator('#gm-value').inputValue(),'18');await page.locator('#gm-value').fill('45');await page.locator('#gm-reason').fill('A fixture chronology correction');before=await count(page);
    await page.evaluate(()=>{const form=document.querySelector('#gm-value-form');form.requestSubmit();form.requestSubmit();});await changed(page,before);assert.equal(await count(page),before+1);assert.equal(project(JSON.parse(await saved(page))).state.character.age,45);
-   await page.locator('#gm-controls').screenshot({path:new URL('character-controls-'+label+'-value.png',out).pathname});
+   await page.locator('#gm-controls').screenshot({path:fileURLToPath(new URL('character-controls-'+label+'-value.png',out))});
    await page.locator('#gm-task').selectOption('roll');assert.equal(await page.locator('#gm-value-form').isVisible(),false);assert.equal(await page.locator('#gm-roll-form').isVisible(),true);
    const old=JSON.parse(await saved(page)),revision=old.events.findIndex(e=>e.command.type==='roll-statistics')+1;await page.locator('#gm-roll-choice').selectOption(revision+':0');assert.equal(await page.locator('[data-gm-die]').count(),2);
    const info=page.locator('#gm-replay-explanation > summary');assert.equal(await info.locator('[aria-hidden=true]').textContent(),'ⓘ');await info.focus();await page.keyboard.press('Enter');assert.notEqual(await page.locator('#gm-replay-explanation').getAttribute('open'),null);await page.keyboard.press('Enter');
    await page.locator('[data-gm-die]').nth(0).fill('7');await page.locator('[data-gm-die]').nth(1).fill('6');await page.locator('#gm-roll-reason').fill('Correct the recorded STR dice');before=await count(page);await page.getByRole('button',{name:'Replace this roll',exact:true}).click();assert.equal(await count(page),before);
    await page.locator('[data-gm-die]').nth(0).fill('6');const unchanged=await saved(page);page.once('dialog',dialog=>dialog.dismiss());await page.getByRole('button',{name:'Replace this roll',exact:true}).click();assert.equal(await saved(page),unchanged);assert.equal(await page.locator('#gm-roll-reason').inputValue(),'Correct the recorded STR dice');
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
-   await page.locator('#gm-controls').screenshot({path:new URL('character-controls-'+label+'-roll.png',out).pathname});
+   await page.locator('#gm-controls').screenshot({path:fileURLToPath(new URL('character-controls-'+label+'-roll.png',out))});
    page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'Replace this roll',exact:true}).click();await changed(page,before);
    const replaced=JSON.parse(await saved(page));current=project(replaced);assert.equal(current.state.stage,'statistics');assert.equal(current.state.pool[0].base,12);assert.equal(current.state.character.age,18);assert.deepEqual(replaced.events.slice(0,old.events.length),old.events);assert.equal(current.log.at(-1).type,'gm-replay');assert.equal(current.log.at(-1).rolls[0].total,12);
    assert.equal(await page.locator('#extra-stat').count(),0);assert.equal(await page.locator('#gm-roll-form').isVisible(),true);assert.equal(await page.locator('#workspace').evaluate(el=>Number(el.dataset.revision)),replaced.events.length);assert.match(await downloadedActionLog(page),/A fixture chronology correction/);assert.equal(await page.locator('#last-action-result').isVisible(),true);

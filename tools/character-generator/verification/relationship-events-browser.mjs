@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -29,7 +30,7 @@ try{
     await page.reload();await page.waitForFunction(()=>Number(document.querySelector('#workspace')?.dataset.revision??0)>5);assert.deepEqual((await saved(page)).state,after.state);
    }else{assert.equal(before.state.pending.kind,'native-effect');assert.match(await page.locator('#workspace').innerText(),/no replacement relationship/i);}
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
-   const label=name+'-'+width+'-'+(transport?'http':'static');await page.screenshot({path:new URL('relationship-'+label+'.png',out).pathname,fullPage:true});checks.push({name:label,pass:true});
+   const label=name+'-'+width+'-'+(transport?'http':'static');await page.screenshot({path:fileURLToPath(new URL('relationship-'+label+'.png',out)),fullPage:true});checks.push({name:label,pass:true});
   }finally{await context.close();}
  }
  assert.deepEqual(errors,[]);await writeFile(new URL('relationship-events-browser-results.json',out),JSON.stringify({checks,errors},null,2));console.log(JSON.stringify({checks,errors}));

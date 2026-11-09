@@ -46,16 +46,16 @@ try{
     checks.push({name,pass:true});
    }
    // An awarded base skill must not offer unrelated skills in its suggestions.
-   const specialty=run(ordinary,'training',{table:'advanced'});assert.deepEqual(specialty.state.pendingChoice.allowed,['Electronics']);
+   const specialty=run(run(ordinary,'training',{table:'advanced'}),'allocate-specializations');assert.deepEqual(specialty.state.pendingChoice.allowed,['Electronics']);
    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(specialty.session)});await page.reload();await page.locator('#award-skill').waitFor();
    assert.deepEqual(await page.locator('#award-skill-options option').evaluateAll(options=>options.map(option=>option.value)),specialty.state.skillChoiceSuggestions);
-   assert.match(await page.locator('#workspace').innerText(),/Awarded base skill: Electronics/);
+   assert.equal(await page.locator('#award-base').inputValue(),'Electronics');assert.equal(await page.locator('#award-base option[value]').count(),2);
    const specialtySave=await page.evaluate(key=>localStorage.getItem(key),key);await page.locator('#award-skill').fill('Admin');await page.locator('[data-action=choose-skill]').click();await page.locator('#message.error').waitFor();
    assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),specialtySave);await page.reload();await page.locator('#award-skill').fill('Electronics (computers)');await page.locator('[data-action=choose-skill]').click();
    await page.waitForFunction(()=>document.querySelector('#message')?.textContent.includes('Skill Electronics (computers): untrained → 1'));
    assert.match(await downloadedActionLog(page),/Electronics \(computers\)/);checks.push({name:'specialty-'+width+(apiMode?'-http':'-static'),pass:true});
    for(const [base,die,selected] of [['Drive',1,'Drive (wheel)'],['Melee',6,'Melee (blade)']]){
-    let offered=run(ordinary,'training',{table:'personal'});offered=run(offered,'gm-replay',{revision:offered.revision,rollIndex:0,values:[die],reason:'Speciality dropdown regression'});
+    let offered=run(ordinary,'training',{table:'personal'});offered=run(offered,'gm-replay',{revision:offered.revision,rollIndex:0,values:[die],reason:'Speciality dropdown regression'});offered=run(offered,'allocate-specializations');
     await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(offered.session)});await page.reload();await page.locator('#award-skill').waitFor();
     const values=await page.locator('#award-skill-options option').evaluateAll(options=>options.map(option=>option.value));assert.ok(values.includes(selected));assert.ok(values.every(value=>value.startsWith(base+' (')));assert.ok(!values.includes(base));
     await page.locator('#award-skill').fill(selected);await page.locator('[data-action=choose-skill]').click();await page.waitForFunction(()=>!document.querySelector('#award-skill')&&!document.querySelector('#new').disabled);
