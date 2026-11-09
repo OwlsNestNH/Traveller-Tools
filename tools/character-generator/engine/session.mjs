@@ -84,13 +84,18 @@ function statisticsDivisionSummary(state) {
 function maxStat(state,key) { return findSpecies(state.character.species).maxima?.[key]??15; }
 function setStat(state,key,value) { integer(value,0,40,'Characteristic'); state.character.stats[key]=value;if(state.character.species==='aezorgh'&&key==='SOC')state.character.stats.CHA=Math.floor(value/2); }
 // Unspecified awards remain individually allocatable, preserving minimum-level awards.
-function pendingSpecializations(state,base){return (state.character.deferredSkillAwards??[]).filter(a=>a.status==='pending'&&(!base||a.name===base));}
+function pendingSpecializations(state,base){return (state.character.deferredSkillAwards??[]).filter(a=>a.status==='pending'&&(!base||(Array.isArray(base)?base.includes(a.name):a.name===base)));}
 function deferSkillAward(state,e){const awards=state.character.deferredSkillAwards??=[];const award={...copy(e),id:'specialization-'+(awards.length+1),name:e.name,count:1,value:e.value??1,mode:e.mode??'increase',status:'pending',age:state.character.age,term:state.character.terms};awards.push(award);return award;}
 function deferrableChoice(state,e){return !!state.deferredSpecializations&&!e.allocationId&&e.kind!=='skill-reduction-choice'&&!e.distinctSpecialties&&!e.permittedNames&&['any','assignment','eligible-career',undefined].includes(e.scope);}
 function allocationEffects(state,base){return pendingSpecializations(state,base).map(a=>({...copy(a),kind:'skill-choice',scope:'any',allowed:[a.name],allocationId:a.id,deferSpeciality:false,label:'Allocate '+a.name+' award: '+(a.mode==='set'?'gain at least level ':'increase by ')+a.value}));}
 function requireAllocationsBefore(state,e,base){const effects=allocationEffects(state,base);if(!effects.length)return false;if(e.kind==='skill'&&e.name.includes(' ('))for(const effect of effects)effect.followingFixedAward=copy(e);state.effectsQueue.unshift(...effects,e);return true;}
 function specializationOptions(state){return {available:!!state.deferredSpecializations&&pendingSpecializations(state).length>0&&!state.pendingChoice&&!state.pending&&!state.effectsQueue?.length&&['career','precareer','training','survival','advancement','term-end','benefits','retirement'].includes(state.stage),count:pendingSpecializations(state).length};}
-function allocationImproves(state,name,e){const old=state.character.skills[name]??0,next=e.mode==='set'?Math.max(old,e.value):Math.min(4,old+e.value),fixed=e.followingFixedAward;if(fixed?.name===name){const after=n=>fixed.mode==='set'?Math.max(n,fixed.value):Math.min(4,n+fixed.value);return after(next)>after(old);}return next>old;}
+function allocationImproves(state,name,e){const old=state.character.skills[name]??0,next=e.mode==='set'?Math.max(old,e.value):Math.min(4,old+e.value),fixed=e.followingFixedAward;if(e.maximum&&next>e.maximum||e.followingConnection===name&&next>=3)return false;if(fixed?.name===name){const after=n=>fixed.mode==='set'?Math.max(n,fixed.value):Math.min(4,n+fixed.value);return after(next)>after(old);}return next>old;}
+function independenceAcquired(state,name,rolls){
+ if(!state.deferredSpecializations||name!=='Independence')return true;
+ need(state.character.species==='aslan'&&state.character.gender==='male','Independence is available only to male Aslan.');
+ return dice(state,2,rolls,'Independence acquisition')>stat(state,'SOC');
+}
 function gainSkill(state,name,level,mode='increase',allowTalentAcquisition=false) {
  need(typeof name==='string'&&name.length<=80,'Invalid skill.');
  const parsed=normalizeSkillName(name,{requireSpeciality:mode!=='set'||level>0});name=parsed.name;const base=parsed.base;need(SKILLS.includes(base),'Choose a supported skill or specialisation.');need(!PSIONIC_TALENTS.includes(base)||!state.character.psionicLoss,'Ageing permanently removed psionic ability; historical talents cannot be increased or reacquired.');
@@ -1250,6 +1255,7 @@ function queueEffects(state,effects,next,rolls) {
 }
 function completeEffects(state,rolls) {
  const next=state.effectNext;state.effectsQueue=[];state.effectNext=null;state.pendingChoice=null;
+ if(next==='specialization-command'){const saved=state.specializationContinuation;delete state.specializationContinuation;state.stage=saved.stage;apply(state,saved.command,rolls);return;}
  if(next==='aslan-origin-family'){finishAslanFamily(state);return;}
  if(next==='aslan-origin-complete'){state.character.aslanOrigin.status='completed';state.character.aslanOrigin.rite.effectsResolved=true;state.stage='precareer';return;}
  if(next==='education-finish'){educationFinish(state,rolls);return;}
@@ -1313,6 +1319,7 @@ function nonPsionicEligibility(name){
 }
 function skillNameAllowed(state,name,effect) {
  let parsed;try{parsed=normalizeSkillName(name);}catch{return false;}name=parsed.name;const base=parsed.base;
+ if(state.deferredSpecializations&&(['Independence','Tolerance'].includes(base)&&state.character.species!=='aslan'||base==='Independence'&&state.character.gender!=='male'))return false;
  if(PSIONIC_TALENTS.includes(base)&&(state.character.psionicLoss||skillLevel(state,name)<0&&!coreTalentChoice(state,effect)&&effect.scope!=='new-psionic-talent'))return false;
  if(coreTalentChoice(state,effect)&&base==='Technopathy')return false;
  if(effect.scope==='new-psionic-talent'&&(!availableNewTalents(state).includes(name)||(state.character.stats.PSI??0)<=0))return false;
@@ -1355,8 +1362,10 @@ function drainEffects(state,rolls) {
   state.effectSteps=(state.effectSteps??0)+1;need(state.effectSteps<200,'Rule-effect loop limit reached.');
   const e=state.effectsQueue.shift();need(e&&typeof e.kind==='string','Malformed source effect.');
   if(state.deferredSpecializations){
-   const dependent=(e.kind==='check'&&(!e.stat||e.skillScope))||e.kind==='skill-reduction-choice'||e.kind==='education-skill-choice'&&e.selectionId!=='hobby'||e.kind==='benefit-wager'||e.kind==='weapon-skill-choice'||e.kind==='skill-choice'&&!deferrableChoice(state,e)&&!e.allocationId;
-   if(dependent&&requireAllocationsBefore(state,e))continue;
+   const dependent=(e.kind==='check'&&(!e.stat||e.skillScope))||e.kind==='skill-reduction-choice'||e.kind==='education-skill-choice'&&e.existingOnly||e.kind==='benefit-wager'||e.kind==='weapon-skill-choice'||e.kind==='sainthood'||e.kind==='skill-choice'&&!deferrableChoice(state,e)&&!e.allocationId;
+   const dependencyNames=e.kind==='check'?e.skills:e.kind==='benefit-wager'?BENEFIT_WAGERS[e.route]?.skills:e.kind==='weapon-skill-choice'?e.allowedBases:e.kind==='sainthood'?['Science']:e.kind==='skill-reduction-choice'?e.names:e.kind==='skill-choice'?e.permittedNames??e.allowed:undefined;
+   const dependencyBases=dependencyNames?.map(name=>name.split(' (')[0]);
+   if(dependent&&requireAllocationsBefore(state,e,dependencyBases))continue;
    if(e.kind==='skill'&&e.name.includes(' (')&&requireAllocationsBefore(state,e,e.name.split(' (')[0]))continue;
   }
   switch(e.kind) {
@@ -1407,6 +1416,7 @@ function drainEffects(state,rolls) {
    case 'skill-reduction-choice':{const eligible=Object.keys(state.character.skills).filter(n=>state.character.skills[n]>0&&(!e.names||e.names.includes(n))&&skillNameAllowed(state,n,e));if(!eligible.length){nativeFallback(state,e,'No eligible trained skill can satisfy this reduction. Resolve the printed mishap explicitly before continuing.');return;}state.pendingChoice=e;state.stage='skill-choice';return;}
    case 'skill':{
     const base=e.name.split(' (')[0];
+    if(state.deferredSpecializations&&base==='Independence'&&(e.value??1)>0){state.effectsQueue.unshift({...e,kind:'independence'});break;}
     if(state.character.psionicLoss&&PSIONIC_TALENTS.includes(base)){nativeFallback(state,e,'Ageing permanently removed psionic ability. Resolve this mandatory talent award explicitly without restoring it.');return;}
     if(PSIONIC_TALENTS.includes(base)&&skillLevel(state,e.name)<0){requestTalentAward(state,e,rolls);return;}
     if(state.deferredSpecializations&&(e.value??1)>0&&SPECIALIZED.includes(base)&&e.name===base&&!e.immediateSpeciality&&state.effectsQueue?.[0]?.skillScope!=='preceding-award'){deferSkillAward(state,e);break;}
@@ -1599,7 +1609,7 @@ function drainEffects(state,rolls) {
    case 'aslan-officer-rank-choice':{const {record}=currentCareer(state);state.pendingAslanOfficerRank={careerIndex:state.active,offerId:record.aslanOfficerOfferId,source:{id:'aliens',page:39}};state.stage='aslan-officer-rank';return;}
    case 'conditional-future':state.character.futureConditions??=[];state.character.futureConditions.push(copy(e));break;
    case 'assignment-effect':{state.effectsQueue.unshift(...copy(e.assignments[currentCareer(state).record.assignment]??[]));break;}
-   case 'independence':{if(state.character.gender!=='male'){nativeFallback(state,e,'Resolve the gender-specific Independence result.');return;}const result=dice(state,2,rolls,'Independence acquisition');if(result>stat(state,'SOC')){if(skillAwardExceedsLimit(state,'Independence',e.value??1,e.mode)){nativeFallback(state,e,'This mandatory Independence award would exceed the total skill limit. Resolve it explicitly without exceeding Core p. 18.');return;}gainSkill(state,'Independence',e.value??1,e.mode);}break;}
+   case 'independence':{if(state.character.gender!=='male'||state.deferredSpecializations&&state.character.species!=='aslan'){nativeFallback(state,e,'Resolve the gender-specific Independence result.');return;}const result=dice(state,2,rolls,'Independence acquisition');if(result>stat(state,'SOC')){if(skillAwardExceedsLimit(state,'Independence',e.value??1,e.mode)){nativeFallback(state,e,'This mandatory Independence award would exceed the total skill limit. Resolve it explicitly without exceeding Core p. 18.');return;}gainSkill(state,'Independence',e.value??1,e.mode);}break;}
    case 'conditional':{
     const condition=e.condition;let passes=true;
     if(condition.gender)passes&&=state.character.gender===condition.gender;
@@ -2207,8 +2217,8 @@ function apply(state,command,rolls) {
   if(SPECIALIZED.includes(base)&&e.selectionId!=='hobby')need(name.includes(' ('),'Choose the specialisation to retain for graduation.');
   const record=educationRecord(state);
   if(e.selectionId.startsWith('university-'))need(!Object.entries(record.selections).some(([id,n])=>id.startsWith('university-')&&n.split(' (')[0]===base),'Overlapping university choices require source adjudication. Choose different skill bases in the native flow.');
-  record.selections[e.selectionId]=name;const awardName=e.value===0&&base!=='Profession'?base:name;if(skillAwardExceedsLimit(state,awardName,e.value,e.mode)){state.pendingChoice=null;nativeFallback(state,{kind:'skill',name:awardName,value:e.value,mode:e.mode,source:{id:'core',page:16}},'This education award would exceed the total skill limit. Resolve it explicitly from Core p. 18.');return 'Education skill choice recorded; its over-cap award requires source resolution.';}gainSkill(state,awardName,e.value,e.mode);
-  state.pendingChoice=null;drainEffects(state,rolls);return 'Education skill '+name+' at level '+e.value+' recorded.';
+  record.selections[e.selectionId]=name;const awardName=e.value===0&&base!=='Profession'?base:name;if(skillAwardExceedsLimit(state,awardName,e.value,e.mode)){state.pendingChoice=null;nativeFallback(state,{kind:'skill',name:awardName,value:e.value,mode:e.mode,source:{id:'core',page:16}},'This education award would exceed the total skill limit. Resolve it explicitly from Core p. 18.');return 'Education skill choice recorded; its over-cap award requires source resolution.';}const acquired=independenceAcquired(state,awardName,rolls);if(acquired)gainSkill(state,awardName,e.value,e.mode);
+  state.pendingChoice=null;drainEffects(state,rolls);return acquired?'Education skill '+name+' at level '+e.value+' recorded.':'Education skill '+name+' acquisition failed; the opportunity is recorded.';
  }
  case 'education-service':{
   need(state.stage==='education-service'&&state.pendingChoice,'No academy service award is due.');
@@ -2330,11 +2340,11 @@ function apply(state,command,rolls) {
   if(coreTalentChoice(state,e)&&skillLevel(state,name)<0){state.pendingChoice=null;requestTalentAward(state,{...e,kind:'psionic-talent',name},rolls);return 'Selected '+name+' for a service-table acquisition attempt.';}
   if(e.scope==='new-psionic-talent'){gainSkill(state,name,0,'set',true);const history=psionicHistory(state);history.firstTalentChosen=true;history.rulings.push({context:'vargr-psion-event-8',source:{id:'aliens',page:201},talent:name,level:0,acquisitionCheck:false});state.pendingChoice=null;drainEffects(state,rolls);return 'Acquired '+name+' at level 0 after the event check. Aliens 2026 p. 201; no additional acquisition check.';}
   if(e.deferSpeciality&&SPECIALIZED.includes(name)&&(e.mode!=='set'||(e.value??1)>0)){deferSkillAward(state,{...e,name});state.pendingChoice=null;if((e.count??1)>1)state.effectsQueue.unshift({...e,count:e.count-1});drainEffects(state,rolls);return 'Recorded '+name+' award for specialization allocation.';}
-  if(e.allocationId)need(allocationImproves(state,name,e),'This specialty would lose the award. Choose a different specialty.');
+  if((e.allocationId||e.deferSpeciality&&(e.mode!=='set'||(e.value??1)>0)&&SPECIALIZED.includes(name.split(' (')[0]))&&name.includes(' ('))need(allocationImproves(state,name,e),'This specialty would lose the award. Choose a different specialty.');
   const award=constrainedAward(state,name,e);
   if((e.mode!=='set'||(e.value??1)>0)&&SPECIALIZED.includes(name.split(' (')[0]))need(name.includes(' ('),'Choose a specialisation, for example Science (physics).');
   if(e.kind!=='skill-reduction-choice'&&skillAwardExceedsLimit(state,name,award.value??1,award.mode)){state.pendingChoice=null;nativeFallback(state,e,'The selected award would exceed the total skill limit. Choose another valid skill or record a source decision under Core p. 18.');return 'Over-cap skill choice requires an alternate selection or source resolution.';}
-  if(e.kind==='skill-reduction-choice'){need(Object.hasOwn(state.character.skills,name)&&state.character.skills[name]>0,'Choose a trained skill to reduce.');if(e.names)need(e.names.includes(name),'Choose one of the indicated skills.');state.character.skills[name]=Math.max(0,state.character.skills[name]-e.value);}else {gainSkill(state,name,award.value??1,award.mode);bindAwardCheck(state,name);}if(e.allocationId){const saved=state.character.deferredSkillAwards.find(a=>a.id===e.allocationId);need(saved?.status==='pending','This award was already allocated.');saved.status='allocated';saved.speciality=name;}if(e.awardId)benefitAward(state,e.awardId).decisions.push({type:'skill',name,mode:e.mode,value:e.value??1});state.pendingChoice=null;if((e.count??1)>1)state.effectsQueue.unshift({...e,count:e.count-1,...(e.distinctSpecialties?{selected:[...(e.selected??[]),name]}:{})});drainEffects(state,rolls);return 'Selected '+name+' for a skill award.'+(e.trainingContext?' Aliens 2026 p. '+e.source.page+'; '+e.trainingContext.careerId+' / '+e.trainingContext.assignment+'; eligible tables: '+e.trainingContext.tables.join(', ')+'.':'');
+  if(e.kind==='skill-reduction-choice'){need(Object.hasOwn(state.character.skills,name)&&state.character.skills[name]>0,'Choose a trained skill to reduce.');if(e.names)need(e.names.includes(name),'Choose one of the indicated skills.');state.character.skills[name]=Math.max(0,state.character.skills[name]-e.value);}else {if(independenceAcquired(state,name,rolls))gainSkill(state,name,award.value??1,award.mode);bindAwardCheck(state,name);}if(e.allocationId){const saved=state.character.deferredSkillAwards.find(a=>a.id===e.allocationId);need(saved?.status==='pending','This award was already allocated.');saved.status='allocated';saved.speciality=name;}if(e.awardId)benefitAward(state,e.awardId).decisions.push({type:'skill',name,mode:e.mode,value:e.value??1});state.pendingChoice=null;if((e.count??1)>1)state.effectsQueue.unshift({...e,count:e.count-1,...(e.distinctSpecialties?{selected:[...(e.selected??[]),name]}:{})});drainEffects(state,rolls);return 'Selected '+name+' for a skill award.'+(e.trainingContext?' Aliens 2026 p. '+e.source.page+'; '+e.trainingContext.careerId+' / '+e.trainingContext.assignment+'; eligible tables: '+e.trainingContext.tables.join(', ')+'.':'');
  }
  case 'training': {
   need(state.stage==='training','No training roll is pending.');need(trainingOptions(state).some(x=>x.id===payload.table),'Training table is not available.');const pack=nativePack(state),{record,career}=currentCareer(state);const rows=payload.table==='assignment'?pack.training.assignments[record.assignment]:pack.training[payload.table];
@@ -2710,9 +2720,11 @@ if(pending.kind==='psionic-training-terms'){
   need(['career','term-end','retirement','finish'].includes(state.stage),'Add connections between terms or at completion.');
   need(state.connections.length<2,'At most two connections award skills.');
   const person=text(payload.person,80);need(person&&!state.connections.some(c=>c.person.toLowerCase()===person.toLowerCase()),'Use a different Traveller for each connection.');
-  const skill=text(payload.skill,80);need(skill!=='Jack-of-all-Trades','Connections cannot award Jack-of-all-Trades.');
+  const skill=state.deferredSpecializations?normalizeSkillName(text(payload.skill,80)).name:text(payload.skill,80);need(skill!=='Jack-of-all-Trades','Connections cannot award Jack-of-all-Trades.');
+  if(state.deferredSpecializations)need(skillNameAllowed(state,skill,{scope:'any'}),'Skill is not available for this connection.');
   need((state.character.skills[skill]??0)<3,'A connection cannot increase a skill above level 3.');
-  gainSkill(state,skill,1);state.connections.push({person,skill,note:text(payload.note??'',300)});return 'Connection with '+person+': '+skill+' gained.';
+  if(state.deferredSpecializations){const parsed=normalizeSkillName(skill);need(SKILLS.includes(parsed.base),'Choose a supported skill.');if(SPECIALIZED.includes(skill)){deferSkillAward(state,{kind:'skill',name:skill,mode:'increase',value:1,maximum:3,connection:person});state.connections.push({person,skill,note:text(payload.note??'',300)});return 'Connection with '+person+': '+skill+' award saved for specialization allocation.';}const awards=allocationEffects(state,parsed.base);if(awards.length){for(const award of awards)award.followingConnection=skill;state.specializationContinuation={stage:state.stage,command:copy(command)};queueEffects(state,awards,'specialization-command',rolls);return 'Allocate earlier '+parsed.base+' awards before the connection skill.';}}
+  const acquired=independenceAcquired(state,skill,rolls);if(acquired)gainSkill(state,skill,1);state.connections.push({person,skill,note:text(payload.note??'',300),...(state.deferredSpecializations&&!acquired?{acquired:false}:{})});return 'Connection with '+person+': '+skill+(acquired?' gained.':' acquisition failed; the opportunity is recorded.');
  }
  case 'add-extra': {
   need(state.pending?.kind!=='core-life-decision','Finish the pending life event decision before extra characteristics.');
