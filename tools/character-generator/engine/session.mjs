@@ -1152,15 +1152,15 @@ const INJURY_STATS=['STR','DEX','END'];
 function injuryRecord(state){need(state.injury!==undefined&&state.injury!==null,'No injury is active.');return state.character.injuries[state.injury];}
 function completeInjury(state,rolls){const record=injuryRecord(state);record.completed=true;state.injury=null;state.pending=null;return drainEffects(state,rolls);}
 function injurySource(state,kind,label,extra={}){const record=injuryRecord(state);sourceStep(state,kind,'core',49,label,'injury-resume');Object.assign(state.pending,{injuryId:record.id,...extra});}
-function beginInjury(state,e,rolls){
+function beginInjury(state,e,rolls,prepared=null){
  if(e.table!=='core.injury'||e.subject&&e.subject!=='traveller'){nativeFallback(state,e,e.subject?'This injury concerns another person. Resolve that person and their injury from the source; do not apply it to the Traveller.':'Resolve the unsupported injury table from the source.');return;}
  if(INJURY_STATS.some(name=>!Object.hasOwn(state.character.stats,name))){nativeFallback(state,e,'A physical characteristic is absent. Resolve this injury using the species source.');return;}
- const tableRolls=[];let result;
- if(e.result!==undefined)result=integer(e.result,1,6,'Fixed injury result');
+ const tableRolls=prepared?.tableRolls??[];let result;
+ if(prepared)result=prepared.result;else if(e.result!==undefined)result=integer(e.result,1,6,'Fixed injury result');
  else{const count=integer(e.rolls??1,1,2,'Injury table rolls');if(count===2&&!['lower','higher'].includes(e.take)){nativeFallback(state,e,'Choose the multiple-roll injury rule from the source.');return;}for(let i=0;i<count;i++)tableRolls.push(dice(state,1,rolls,'Injury table'+(count>1?' '+(i+1):'')));result=count===1?tableRolls[0]:e.take==='lower'?Math.min(...tableRolls):Math.max(...tableRolls);}
- const severityDie=result<=2?dice(state,1,rolls,'Injury severity'):undefined,outcome=injuryOutcome({roll:result,severityDie});
+ const severityDie=prepared?prepared.severityDie:result<=2?dice(state,1,rolls,'Injury severity'):undefined,outcome=injuryOutcome({roll:result,severityDie});
  const career=state.active===null?null:currentCareer(state);state.character.injuries??=[];state.injury=state.character.injuries.length;
- const record={id:'injury-'+(state.injury+1),source:copy(outcome.source),contextSource:copy(e.source??(career?{id:career.career.source,page:career.career.page}:outcome.source)),careerId:career?.record.id??null,careerIndex:state.active,rank:career?.record.rank??0,tableRolls,tableResult:result,...(severityDie!==undefined?{severityDie}:{}),take:e.take??null,fixed:e.result!==undefined,statsBefore:Object.fromEntries(INJURY_STATS.map(name=>[name,stat(state,name)])),options:copy(outcome.effects[0]?.options??[]),completed:false};
+ const record={id:'injury-'+(state.injury+1),source:copy(outcome.source),contextSource:copy(e.source??(career?{id:career.career.source,page:career.career.page}:outcome.source)),careerId:career?.record.id??null,careerIndex:state.active,rank:career?.record.rank??0,tableRolls,tableResult:result,...(severityDie!==undefined?{severityDie}:{}),take:e.take??null,fixed:prepared?!!e.injuryFixed:e.result!==undefined,statsBefore:Object.fromEntries(INJURY_STATS.map(name=>[name,stat(state,name)])),options:copy(outcome.effects[0]?.options??[]),completed:false};
  state.character.injuries.push(record);
  if(!outcome.effects.length){record.losses={STR:0,DEX:0,END:0};record.statsAfterLoss=copy(record.statsBefore);record.restoration={STR:0,DEX:0,END:0};record.completed=true;state.injury=null;return;}
  need(outcome.effects.length===1&&outcome.effects[0].kind==='choice','Injury helper must provide one loss choice.');state.stage='injury-loss';
@@ -1404,17 +1404,23 @@ function bindAwardCheck(state,name) {
  const check=state.effectsQueue?.[0];
  if(check?.kind==='check'&&check.skillScope==='preceding-award')check.awardedSkill=name;
 }
-function borrowedRollPending(state,e){
- if(!state.separateBorrowedRolls||!e?.crossCareerRouteId||!['table-roll','random','check'].includes(e.kind))return null;
+function separatedBorrowedRoute(state,e){
+ if(!state.separateBorrowedRolls||!e?.crossCareerRouteId)return null;
  const route=crossCareerRoute(state,e.crossCareerRouteId);
- // Deferred Zhodani generation retains its development-only behavior.
- if(!['core.agent','vargr.agent'].includes(route.originCareerId))return null;
- const career=findCareer(e.career??e.tableCareerId??route.coverCareerId);
- const label=e.kind==='table-roll'?career.name+' '+(['mishap','mishaps','core.mishap'].includes(e.table)?'mishap':'event'):
-  e.kind==='check'?(e.stat??e.skills?.join(' or ')??'Event')+' check':'Event consequence';
+ return ['core.agent','vargr.agent'].includes(route.originCareerId)?route:null;
+}
+function borrowedRollPending(state,e){
+ const route=separatedBorrowedRoute(state,e);if(!route)return null;
+ if(!(e.kind==='psionic-test'&&!Object.hasOwn(state.character.stats,'PSI'))&&!['table-roll','random','check','borrowed-injury-table','borrowed-injury-severity','source-training-roll'].includes(e.kind)&&!(['cash','stat','relationship','benefit-rolls'].includes(e.kind)&&e.dice))return null;
+ const career=findCareer(e.career??e.tableCareerId??route.coverCareerId),shared=CORE_LIFE_TABLES[e.table]??EXPANSION_TABLES[e.table];
+ const sharedLabel={'core.life-events':'Life event','core.unusual-events':'Unusual event'}[e.table]??e.table?.replaceAll('.',' ').replaceAll('-',' ');
+ const labels={'psionic-test':'Psionic potential','random':'Event consequence','borrowed-injury-table':'Injury table'+((e.rolls??1)>1?' '+((e.tableRolls?.length??0)+1):''),'borrowed-injury-severity':'Injury severity','cash':'Cash award','stat':(e.name??'Characteristic')+' change','relationship':(e.type??'Relationship')+' count','benefit-rolls':'Benefit rolls','source-training-roll':'Source training'};
+ const label=e.kind==='table-roll'?(shared?sharedLabel:career.name+' '+(['mishap','mishaps','core.mishap'].includes(e.table)?'mishap':'event')):
+  e.kind==='check'?(e.stat??e.skills?.join(' or ')??e.awardedSkill??'Event')+' check':labels[e.kind];
+ const sharedSource=CORE_LIFE_TABLES[e.table]?CORE_LIFE_SOURCE:shared?.source;
  return {id:route.id+'-roll-'+((state.effectSteps??0)+1),routeId:route.id,label,kind:e.kind,
-  dice:e.dice??(e.kind==='check'?'2D':['mishap','mishaps','core.mishap'].includes(e.table)?'1D':'2D'),
-  source:copy(e.kind==='table-roll'?{id:career.source,page:career.page+1}:e.source??route.source),target:e.kind==='check'?e.target:null,resumeStage:state.stage};
+  dice:e.dice??shared?.dice??(['borrowed-injury-table','borrowed-injury-severity','source-training-roll'].includes(e.kind)?'1D':e.kind==='check'?'2D':['mishap','mishaps','core.mishap'].includes(e.table)?'1D':'2D'),
+  source:copy(sharedSource??e.source??(e.kind==='table-roll'?{id:career.source,page:career.page+1}:route.source)),target:e.kind==='check'?e.target:null,resumeStage:state.stage};
 }
 function drainEffects(state,rolls,approvedRoll=null) {
  while(state.effectsQueue?.length) {
@@ -1619,7 +1625,7 @@ function drainEffects(state,rolls,approvedRoll=null) {
      state.character.lifeEvents??=[];
      const record={id:'life-event-'+(state.character.lifeEvents.length+1),table:e.table,row,source:copy(CORE_LIFE_SOURCE),age:state.character.age,careerId:state.active===null?null:currentCareer(state).career.id,careerIndex:state.active,parentId:e.lifeEventId??null,status:'pending',decision:null};
      state.character.lifeEvents.push(record);
-     state.effectsQueue.unshift(...sourcedEffects(table.results[row],CORE_LIFE_SOURCE).map(effect=>({...effect,lifeEventId:record.id})),{kind:'core-life-complete',lifeEventId:record.id});break;
+     let effects=sourcedEffects(table.results[row],CORE_LIFE_SOURCE).map(effect=>({...effect,lifeEventId:record.id}));if(separatedBorrowedRoute(state,e))effects=borrowedEffects(effects,{tableCareerId:e.tableCareerId,crossCareerRouteId:e.crossCareerRouteId});state.effectsQueue.unshift(...effects,{kind:'core-life-complete',lifeEventId:record.id});break;
     }
     if(e.table==='zhodani.re-education'){beginReeducation(state,e);return;}
     if(state.active===null){
@@ -1656,7 +1662,22 @@ function drainEffects(state,rolls,approvedRoll=null) {
     state.effectsQueue.unshift(...copy(outcome.effects));break;
    }
    case 'keep-career':currentCareer(state).record.forcedExit=e.forcedExit;break;
-   case 'injury':beginInjury(state,e,rolls);if(state.injury!==null&&state.injury!==undefined||state.pending&&state.stage==='book-step')return;break;
+   case 'borrowed-injury-table':{
+    const tableRolls=[...e.tableRolls,dice(state,1,rolls,'Injury table'+((e.rolls??1)>1?' '+(e.tableRolls.length+1):''))];
+    if(tableRolls.length<(e.rolls??1)){state.effectsQueue.unshift({...e,tableRolls});break;}
+    const result=tableRolls.length===1?tableRolls[0]:e.take==='lower'?Math.min(...tableRolls):Math.max(...tableRolls);
+    if(result<=2){state.effectsQueue.unshift({...e,kind:'borrowed-injury-severity',tableRolls,result});break;}
+    beginInjury(state,e,rolls,{tableRolls,result});if(state.injury!==null&&state.injury!==undefined)return;break;
+   }
+   case 'borrowed-injury-severity':{
+    const severityDie=dice(state,1,rolls,'Injury severity');beginInjury(state,e,rolls,{tableRolls:e.tableRolls,result:e.result,severityDie});if(state.injury!==null&&state.injury!==undefined)return;break;
+   }
+   case 'injury':
+    if(separatedBorrowedRoute(state,e)&&e.table==='core.injury'&&(!e.subject||e.subject==='traveller')&&INJURY_STATS.every(name=>Object.hasOwn(state.character.stats,name))&&(e.rolls===undefined||e.rolls===1||e.rolls===2&&['lower','higher'].includes(e.take))){
+     if(e.result===undefined){state.effectsQueue.unshift({...e,kind:'borrowed-injury-table',tableRolls:[],injuryFixed:false});break;}
+     if(e.result<=2){state.effectsQueue.unshift({...e,kind:'borrowed-injury-severity',tableRolls:[],injuryFixed:true});break;}
+    }
+    beginInjury(state,e,rolls);if(state.injury!==null&&state.injury!==undefined||state.pending&&state.stage==='book-step')return;break;
    case 'medical-cost':if(e.context==='ageing-crisis'){if(!payAgeingCare(state,e,rolls))return;}else{nativeFallback(state,e,'Resolve this medical cost and its financing explicitly; it is not automatically ordinary injury debt.');return;}break;
    case 'qualification-ban':state.character.qualificationBanned=true;break;
    case 'death':{for(const event of state.character.lifeEvents??[])if(event.status==='pending')event.status='deceased';for(const route of state.character.crossCareerRoutes??[])if(route.status!=='completed'){route.status='deceased';route.completion={age:state.character.age,generationTerms:state.character.terms,cause:'death-before-route-completion'};}state.pendingCrossCareerTraining=null;const advisory=advisoryRecord(state);if(advisory){advisory.status='deceased';advisory.completion={age:state.character.age,generationTerms:state.character.terms};state.advisoryService=null;}for(const episode of state.character.reeducations??[])if(['treatment','deferred','decisions'].includes(episode.status)){const deferred=episode.status==='deferred';episode.status='deceased';episode.completion={cause:deferred?'death-before-treatment':e.cause??'death',age:state.character.age};}state.reeducation=null;state.treatmentAgeing=null;}if(e.crisisIndex!==undefined){Object.assign(state.character.ageingCrises[e.crisisIndex],{resolved:true,careAccepted:false,paid:0});}state.character.deceased=true;state.stage='deceased';state.effectsQueue=[];state.effectNext='deceased';break;
@@ -1989,16 +2010,18 @@ function apply(state,command,rolls) {
   need(state.stage==='borrowed-event-roll'&&pending&&borrowedRollPending(state,e)?.id===pending.id,'No borrowed event roll is pending.');
   need(Object.keys(payload).length===1&&payload.pendingId===pending.id,'Choose the current pending roll.');
   const route=crossCareerRoute(state,pending.routeId);assertCrossCareerContext(state,route);
-  const checkModifier=e.kind==='check'?(e.stat?characteristicDM(stat(state,e.stat)):Math.max(...e.skills.map(n=>skillCheckDM(state,n)))):null;
+  const checkModifier=e.kind==='check'?(e.stat?characteristicDM(state.character.stats[e.stat]??0):Math.max(...(e.skillScope==='preceding-award'&&e.awardedSkill?[e.awardedSkill]:e.skills??[]).map(n=>skillCheckDM(state,n)))):null;
   const tableCount=route.tables.length;state.stage=pending.resumeStage;delete state.pendingBorrowedRoll;
   drainEffects(state,rolls,e);
   const rolled=rolls[0];if(!rolled)return pending.label+' is awaiting its required skill choice or source resolution. No dice rolled.';
   let story='';
   if(e.kind==='table-roll'){
    const table=route.tables[tableCount];
-   if(table){const pack=RULE_PACK[table.careerId];story=eventEffectSummary((table.table==='mishap'?pack.mishaps:pack.events)?.[table.row]??[]);}
+   const shared=CORE_LIFE_TABLES[e.table]??EXPANSION_TABLES[e.table];if(shared)story=eventEffectSummary(shared.results[rolled.total]??[]);else if(table){const pack=RULE_PACK[table.careerId];story=eventEffectSummary((table.table==='mishap'?pack.mishaps:pack.events)?.[table.row]??[]);}
   }else if(e.kind==='random')story=eventEffectSummary(e.outcomes.find(o=>rolled.total>=o.min&&rolled.total<=o.max)?.effects??[]);
-  else {const total=rolled.total+checkModifier;story=total+' against '+e.target+'+: '+(total>=e.target?'succeeded.':'failed.')+' '+careerOutcomeSummary(total>=e.target?e.success:e.failure);}
+  else if(e.kind==='check'){const total=rolled.total+checkModifier;story=total+' against '+e.target+'+: '+(total>=e.target?'succeeded.':'failed.')+' '+careerOutcomeSummary(total>=e.target?e.success:e.failure);}
+  if(e.kind==='borrowed-injury-table')story=state.pendingBorrowedRoll?.kind==='borrowed-injury-severity'?'Roll severity next.':state.pendingBorrowedRoll?.kind==='borrowed-injury-table'?'Roll the next injury die; retain the '+e.take+' result.':state.stage==='injury-loss'?'Choose the recorded injury consequence.':'No characteristic loss from this injury.';
+  if(e.kind==='borrowed-injury-severity')story='Choose the recorded injury consequence.';
   return pending.label+' result '+rolled.total+'. '+story;
  }
 
