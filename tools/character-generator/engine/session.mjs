@@ -1,3 +1,4 @@
+import {culturalSkillAward,culturalAwardLabel,ASLAN_CULTURAL_SKILL_SOURCE} from './aslan-skill-culture.mjs';
 import {prisonerEscapePending} from './prisoner-escape.mjs';
 import {decorateLifeEventPresentation} from './life-event-projection.mjs';
 import {trainingInformation} from './training-information.mjs';
@@ -1635,6 +1636,7 @@ function drainEffects(state,rolls) {
    case 'assignment-effect':{state.effectsQueue.unshift(...copy(e.assignments[currentCareer(state).record.assignment]??[]));break;}
    case 'independence':{if(state.character.gender!=='male'||state.deferredSpecializations&&state.character.species!=='aslan'){nativeFallback(state,e,'Resolve the gender-specific Independence result.');return;}const result=dice(state,2,rolls,'Independence acquisition');if(result>stat(state,'SOC')){if(skillAwardExceedsLimit(state,'Independence',e.value??1,e.mode)){nativeFallback(state,e,'This mandatory Independence award would exceed the total skill limit. Resolve it explicitly without exceeding Core p. 18.');return;}gainSkill(state,'Independence',e.value??1,e.mode);}break;}
    case 'conditional':{
+    if(state.deferredSpecializations&&state.character.species==='aslan'&&culturalSkillAward(e)){state.character.historyNotes??=[];state.character.historyNotes.push(e.then.map(effect=>effect.name).join(', ')+' is culturally '+e.condition.gender+'-associated, but may be learned by other genders (Aliens 2026 p. 19).');state.effectsQueue.unshift(...copy(e.then).map(effect=>({...effect,culturalPreference:{gender:e.condition.gender,restricted:false,source:copy(ASLAN_CULTURAL_SKILL_SOURCE)}})));break;}
     const condition=e.condition;let passes=true;
     if(condition.gender)passes&&=state.character.gender===condition.gender;
     if(condition.stat)passes&&=(state.character.stats[condition.stat]??0)>=(condition.min??-Infinity)&&(state.character.stats[condition.stat]??0)<=(condition.max??Infinity);
@@ -2870,6 +2872,7 @@ export function project(session) {
  state.psionicOptions=state.stage==='psionic-training'?psionicOptions(state):[];
   state.psionicCanFinish=state.stage==='psionic-training'&&state.psionicTraining?.mode==='initial';
   state.canStartPsionicTraining=!accessMandatory(state)&&!state.character.psionicLoss&&['career','precareer'].includes(state.stage)&&state.active===null&&!state.forcedCareer&&!state.character.retirementFromCreation&&(!Object.hasOwn(state.character.stats,'PSI')||state.character.stats.PSI>0)&&!state.character.psionics?.training.some(t=>t.completed);
+ if(state.deferredSpecializations&&state.character.species==='aslan'&&state.pendingChoice?.options)state.pendingChoice.options=state.pendingChoice.options.map(culturalAwardLabel);
  state.skillChoiceSuggestions=skillChoiceSuggestions(state);if(state.deferredSpecializations){state.specializationOptions=specializationOptions(state);state.skillChoiceBases=skillChoiceBases(state);}
  if(prisonerEscapePending(state))state.prisonerEscape={skills:['Stealth','Deception'].map(name=>({name,level:skillLevel(state,name),modifier:skillCheckDM(state,name)}))};
   state.trainingOptions=state.stage==='training'?trainingOptions(state):[];
