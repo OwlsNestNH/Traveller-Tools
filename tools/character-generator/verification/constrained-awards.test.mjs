@@ -89,3 +89,15 @@ test('legacy .16-.20 retain old feature flags and .20 talent failures do not gai
  for(const suffix of ['16','17','18','19','20']){const session=api({operation:'create',seed:'psion-compat'}).session;session.rulesRevision='character-preview-2026-11-09.'+suffix;const state=project(session).state;assert.equal(state.psionAcquisitionRuling,undefined);if(suffix==='20')assert.equal(state.separateBorrowedRolls,true);}
  const session=structuredClone(coreGenericFixture().session);session.rulesRevision='character-preview-2026-11-09.20';let r=run({session},'choose-skill',{name:'Teleportation'});r=force(r,'learn-talent',{talent:'Teleportation'},[1,1]);assert.equal(r.log.at(-1).rolls.length,1);assert.equal(r.state.stage,'survival');roundtrip(r);
 });
+
+test('Core service metadata preserves new-talent acquisition when ordinary generic Talent is owned-only',()=>{
+ const r=coreGenericFixture();
+ assert.equal(r.state.character.species,'human');assert.equal(r.state.character.careers[r.state.active].id,'core.psion');
+ assert.equal(r.state.character.skills.Telepathy,0);assert.equal(r.state.character.skills.Teleportation,undefined);
+ assert.equal(r.state.pendingChoice.scope,'psionic-talents');assert.equal(r.state.pendingChoice.untrained,'acquisition-check');assert.equal(r.state.pendingChoice.psionicOrigin.table,'service');
+ const service=structuredClone(r.state);choose(service,'Teleportation');assert.equal(service.stage,'psionic-training');assert.equal(service.psionicTraining.talent,'Teleportation');assert.equal(service.character.skills.Telepathy,0);
+ const known=structuredClone(r.state);choose(known,'Telepathy');assert.equal(known.character.skills.Telepathy,1);assert.equal(known.psionicTraining,null);
+ const ordinary=structuredClone(r.state);delete ordinary.pendingChoice.untrained;delete ordinary.pendingChoice.psionicOrigin;assert.throws(()=>choose(ordinary,'Teleportation'),/not available/);choose(ordinary,'Telepathy');assert.equal(ordinary.character.skills.Telepathy,1);
+ const wrongTable=structuredClone(r.state);wrongTable.pendingChoice.psionicOrigin.table='assignment';assert.throws(()=>choose(wrongTable,'Teleportation'),/not available/);
+ const missingMarker=structuredClone(r.state);delete missingMarker.pendingChoice.untrained;assert.throws(()=>choose(missingMarker,'Teleportation'),/not available/);
+});
