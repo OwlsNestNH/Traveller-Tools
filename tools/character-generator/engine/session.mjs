@@ -1,3 +1,4 @@
+import {prisonerEscapePending} from './prisoner-escape.mjs';
 import {decorateLifeEventPresentation} from './life-event-projection.mjs';
 import {trainingInformation} from './training-information.mjs';
 import {BENEFIT_WAGERS,wagerLimit,wagerDelta} from './benefit-wagers.mjs';
@@ -32,7 +33,9 @@ const RULE_PACK={...CORE_PACK,...EXPANSION_PACK};
 import { API_VERSION, SOURCES, CAREERS, PRECAREERS, SPECIES, SKILLS, BACKGROUND_SKILLS, findCareer, findSpecies } from './catalog.mjs';
 const LIMIT = 2000;
 export const MAX_SAVE_BYTES = 2000000;
-export const RULES_REVISION='character-preview-2026-11-09.16';
+export const RULES_REVISION='character-preview-2026-11-09.17';
+// .17 adds an explicit command; every existing .16 command retains its rules.
+export const COMPATIBLE_RULES_REVISIONS=Object.freeze([RULES_REVISION,'character-preview-2026-11-09.16']);
 const saveSize = value => new TextEncoder().encode(JSON.stringify(value,null,2)).byteLength;
 const copy = value => structuredClone(value);
 const plain = value => value && typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
@@ -2288,6 +2291,13 @@ function apply(state,command,rolls) {
   if(bill.needsAdjudication){record.medicalQuote=copy(bill);injurySource(state,'injury-medical',bill.reason+' Record the covered cost for the actual organisation; do not substitute another career.',{totalCost:bill.totalCost,restoration:copy(restoration)});return 'Treatment selected; employer contribution requires source resolution.';}
   finishInjuryTreatment(state,bill,rolls);return 'Injury treatment: '+restoredPoints+' restored points; cost Cr'+bill.totalCost+', organisation Cr'+bill.coveredCost+', deferred personal bill Cr'+bill.personalCost+'.';
  }
+ case 'prisoner-escape': {
+  need(prisonerEscapePending(state),'No Prisoner escape opportunity is pending.');
+  need(Object.keys(payload).length===1&&['Stealth','Deception'].includes(payload.skill),'Choose Stealth or Deception for the escape check.');
+  const effect=copy(state.pendingChoice.options[0].effects[0]),modifier=skillCheckDM(state,payload.skill);effect.skills=[payload.skill];
+  state.pendingChoice=null;state.effectsQueue.unshift(effect);drainEffects(state,rolls);
+  const total=rolls[0].total+modifier;return 'Prisoner escape using '+payload.skill+': '+total+' against 10+; '+(total>=10?'succeeded.':'failed. Parole Threshold +2 (maximum 12).');
+ }
  case 'choose-effect': {
   need(state.stage==='effect-choice'&&state.pendingChoice,'There is no effect choice.');removeUnavailablePsionicAgeingChoice(state);
   const option=state.pendingChoice.options[integer(payload.index,0,state.pendingChoice.options.length-1,'Choice')];if(state.pendingChoice.awardId)benefitAward(state,state.pendingChoice.awardId).decisions.push({type:'choice',index:payload.index,label:option.label});state.pendingChoice=null;state.effectsQueue.unshift(...copy(option.effects));drainEffects(state,rolls);return 'Chose '+option.label+'.';
@@ -2736,7 +2746,7 @@ export function createSession(seed='traveller-'+Date.now()) {
 }
 export function project(session) {
  need(plain(session)&&session.format==='traveller-character-session'&&session.version===API_VERSION,'Unsupported save format.');
- need(session.rulesRevision===RULES_REVISION,'Legacy or different rules revision. Preserve the original save and review its recorded history before continuing.');
+ need(COMPATIBLE_RULES_REVISIONS.includes(session.rulesRevision),'Legacy or different rules revision. Preserve the original save and review its recorded history before continuing.');
  need(typeof session.seed==='string'&&session.seed.length>0&&session.seed.length<=120,'Invalid random seed.');
  need(Array.isArray(session.events)&&session.events.length<=LIMIT,'Save contains too many actions.');
  need(saveSize(session)<=MAX_SAVE_BYTES,'Save size limit reached. Export your current character before continuing.');
@@ -2800,6 +2810,7 @@ export function project(session) {
   state.psionicCanFinish=state.stage==='psionic-training'&&state.psionicTraining?.mode==='initial';
   state.canStartPsionicTraining=!accessMandatory(state)&&!state.character.psionicLoss&&['career','precareer'].includes(state.stage)&&state.active===null&&!state.forcedCareer&&!state.character.retirementFromCreation&&(!Object.hasOwn(state.character.stats,'PSI')||state.character.stats.PSI>0)&&!state.character.psionics?.training.some(t=>t.completed);
  state.skillChoiceSuggestions=skillChoiceSuggestions(state);
+ if(prisonerEscapePending(state))state.prisonerEscape={skills:['Stealth','Deception'].map(name=>({name,level:skillLevel(state,name),modifier:skillCheckDM(state,name)}))};
   state.trainingOptions=state.stage==='training'?trainingOptions(state):[];
  // Add labels only after replay. Presentation metadata cannot alter saved
  // effects, summaries, RNG state, eligibility or rules-revision compatibility.
