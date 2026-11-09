@@ -128,14 +128,17 @@ Core Psion service result 6 (Core pp. 229, 236) now uses the normal ordered acqu
 
 These paths are not advertised as automated by this candidate. They stop with source context and preserve the pending character and action log. The generic source form can record supported immediate effects and notes, but cannot install arbitrary permissions, transfers, deferred awards or future modifiers. Save/export remains available; referee bookkeeping or further implementation is needed for unsupported consequences.
 
-- Companion Believer Event 9 buyout (p. 40), including forfeited benefits and its per-roll payment.
 - Vargr unusual-event psionic-testing opportunity (Aliens p. 206), beyond the separately implemented Core testing route.
 - Aslan Outcast Event 10 career permission (p. 41), Guardian Event 3 deferred Clan Shares (p. 27), life Event 11 defence procedure (p. 46), and Wanderer Event 12 status/land award (p. 45).
 - Specialized Aslan kinship, Brotherhood, Secret School and standalone Land Parcel benefits (p. 47); Companion Sainthood and repeated Patronage stacking; the first Core Ship's Boat award/alternative interpretation, repeated Cybernetic Implant upgrades, and unverified Combat Implant definitions. Existing ordinary material benefits do not establish these bespoke procedures.
-- Aslan ambiguous officer headings, territory-event target and some gender/culture branches; Aezorgh derived Charisma versus independent social-statistic changes; wider cross-book education and career access; and unprinted cap, third-party injury, medical-funding, out-of-range benefit results and history cases. Generic fallback citations may identify a career's opening page rather than its exact event page; this beta does not claim precise-page certification.
+- Aslan territory-event target and remaining unimplemented gender/culture branches; Aezorgh derived Charisma versus independent social-statistic changes; wider cross-book education and career access; and unprinted cap, third-party injury, medical-funding, out-of-range benefit results and history cases. Generic fallback citations may identify a career's opening page rather than its exact event page; this beta does not claim precise-page certification.
 
 Common Core relationship paths, the specified constrained talent/Truther awards, optional benefit credits, bounded wagers, lawyer appeals, and Core/Vargr undercover routes are implemented above, not part of this remaining list. This inventory is a concrete release limitation, not a claim that every possible source exception has been discovered.
 
 ### Prisoner choice clarity and compatibility
 
 Core p. 18 later-career basic training remains followed by the regular term training roll; the UI explains both steps. Core p. 57 escape offers explicit Stealth or Deception 10+ with success, failure and decline consequences before the player acts. A new command leaves historical automatic `choose-effect` checks untouched. Frozen synthetic `.16` checkpoint and branch fingerprints verify exact mechanics/audit replay; interactive continuation, malformed and deferred rejection, both skill boundaries, restore and static/HTTP desktop/mobile tests cover the new route.
+
+### Believer buyout
+
+In .18 sessions, Companion p.40 event9 presents both player-selected payment calculations and refusal during the event. Acceptance displays forfeited accrued/current-term/rank rolls, records the exact dice and payment, and prevents lost benefits returning at exit. Refusal grants1D Enemies and preserves advancement. The two calculation choices are an explicit player ruling, not a claim that both are unambiguous printed procedures. Legacy .16/.17 retain their original source step.
