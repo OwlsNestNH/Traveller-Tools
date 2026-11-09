@@ -79,7 +79,7 @@ test('robot uses one canonical shared visit counter without sending draft, query
   hidden.events.visibilitychange();
   assert.deepEqual(hidden.requests, [hit]);
   assert.equal(hidden.events.visibilitychange, undefined);
-  assert.equal((home.match(/img.shields.io\/badge\/dynamic\/json/g) || []).length, 7);
+  assert.equal((home.match(/img.shields.io\/badge\/dynamic\/json/g) || []).length, 8);
   assert.match(home, /tools%2Frobot-builder&amp;query=%24.total/);
   assert.doesNotMatch(home, /<script[^>]*tool-visits.js/);
 });

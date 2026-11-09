@@ -1,0 +1,13 @@
+// Source-earned restoration uses a typed decision, never a generic characteristic edit.
+export function aslanRestorationView(state,{esc,button,sourceLabel}){
+ const r=state.currentAslanRestoration;
+ if(!r)return '<p class="warning">The earned restoration record is unavailable. Preserve your save and log.</p>';
+ const disabled=state.config.gm?'':' disabled';
+ return '<p class="source">'+esc(sourceLabel('aliens',41))+'</p><h3>Restore Aslan standing</h3><p>The source-earned offer needs a verified original SOC and a recorded timing ruling. Qualification remains a separate next-term attempt.</p><label>Verified original SOC<input id="aslan-original-soc" type="number" min="1" max="40" step="1"'+disabled+'></label><label class="check"><input id="aslan-original-soc-confirmed" type="checkbox"'+disabled+'><span>The original SOC was verified from the character history and source.</span></label><label>When Outcast status ends<select id="aslan-status-timing"'+disabled+'><option value="">Choose the GM ruling</option><option value="on-restoration">On restoration</option><option value="on-successful-entry">On entry success</option></select></label><label>Source basis and GM reason<textarea id="aslan-restoration-reason" rows="3" maxlength="500"'+disabled+' placeholder="Required; saved in the action log"></textarea></label><div class="actions">'+button('Accept verified restoration','resolve-aslan-restoration','','data-accept="true"'+disabled)+button('Decline this restoration','resolve-aslan-restoration','quiet','data-accept="false"')+'</div>'+(!state.config.gm?'<p class="help">Enable GM changes to record the original SOC and timing ruling. You may decline without GM mode.</p>':'');
+}
+export function aslanRestorationSheet(state,{esc}){
+ const records=state.character.aslanRestorations??[];if(!records.length)return '';
+ return '<div class="sheet-section"><h3>Aslan restoration record</h3>'+records.map(r=>'<p><strong>Outcast restoration</strong>: '+esc(r.status)+'.'+(r.decision?'<br>SOC: '+esc(r.socBefore)+' to '+esc(r.decision.originalSOC??r.socBefore)+'.<br>Status timing: '+esc((r.decision.statusTiming??'unchanged').replaceAll('-',' '))+'.'+(r.decision.reason?'<br>GM reason: '+esc(r.decision.reason)+'.':''):'')+'</p>').join('')+'</div>';
+}
+
+export function aslanRestorationNotice(state,{esc}){const r=state.aslanRestorationNotice;if(!r)return '';return '<p class="warning"><strong>Next-term restoration right</strong><br>One career attempt remains; qualification is still required. '+esc(r.reason??'')+'</p>'; }

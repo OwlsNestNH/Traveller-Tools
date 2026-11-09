@@ -1,0 +1,60 @@
+name: Character generator checks
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'tools/character-generator/**'
+      - 'index.html'
+      - 'changes/character.html'
+      - 'assets/js/tool-visits.js'
+      - 'tests/tool-visits.test.cjs'
+      - '.github/workflows/character-generator.yml'
+permissions:
+  contents: read
+jobs:
+  character-generator:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - name: Syntax and rules regressions
+        run: |
+          for file in tools/character-generator/engine/*.mjs tools/character-generator/gui/*.mjs tools/character-generator/server*.mjs; do node --check "$file"; done
+          node tests/tool-visits.test.cjs
+          node --test tools/character-generator/verification/*.test.mjs
+          node tools/character-generator/verification/career-smoke.mjs
+      - name: Install pinned Chromium runner
+        id: browser-install
+        run: |
+          npm install --prefix "$RUNNER_TEMP/character-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
+          node "$RUNNER_TEMP/character-playwright/node_modules/playwright/cli.js" install --with-deps chromium
+      - name: Desktop and mobile release and mixed-scope interactions
+        run: |
+          failures=0
+          for suite in release-presentation-browser prisoner-lawyer-browser optional-benefit-browser relationship-events-browser core-life-events-browser source-checks-browser release-scope-browser vargr-training-browser constrained-awards-browser benefit-wagers-browser agent-cover-browser source-training-browser aslan-access-browser aslan-land-browser clan-asset-browser clan-share-browser browser review-browser expansion-browser benefit-browser aezorgh-browser recovery-browser transfer-browser assignment-browser aslan-officer-browser aslan-restoration-browser aslan-outlaw-browser aslan-origin-browser; do
+            echo "Running browser suite: $suite"
+            node "tools/character-generator/verification/$suite.mjs" "$RUNNER_TEMP/character-playwright/node_modules/playwright" || failures=$((failures + 1))
+          done
+          test "$failures" -eq 0
+      - name: Preserved deferred development browser regressions
+        if: ${{ !cancelled() && steps.browser-install.outcome == 'success' }}
+        run: |
+          failures=0
+          for suite in games-browser reeducation-browser merchant-fine-browser zhodani-choice-browser cross-career-browser; do
+            echo "Running browser suite: $suite"
+            node "tools/character-generator/verification/$suite.mjs" "$RUNNER_TEMP/character-playwright/node_modules/playwright" || failures=$((failures + 1))
+          done
+          test "$failures" -eq 0
+      - name: Upload review screenshots and results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: character-generator-review-${{ github.event.pull_request.head.sha }}
+          path: tools/character-generator/verification/artifacts/
+          if-no-files-found: warn

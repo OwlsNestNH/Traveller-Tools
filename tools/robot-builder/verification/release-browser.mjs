@@ -30,7 +30,7 @@ try {
     await page.goto(site);
     const card = page.locator('.tool-card').filter({has: page.getByRole('heading', {name: 'Robot Builder - Beta', exact: true})});
     check('homepage beta card ' + width, await card.count() === 1);
-    check('seven retained tool cards ' + width, await page.locator('.tool-card').count() === 7);
+    check('eight retained tool cards ' + width, await page.locator('.tool-card').count() === 8);
     await layout(page, 'homepage ' + width);
     const launch = page.waitForEvent('popup');
     await card.getByRole('link', {name: 'Open Robot Builder', exact: true}).click();
