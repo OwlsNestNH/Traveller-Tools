@@ -188,3 +188,9 @@ New characters choose a specialty when an award requires one, as the skill is re
 Event result panels and the full action log now include concise, original source-backed event context, the actual table dice, the table’s possible mechanical outcomes, and separately recorded character changes. Pre-career, career, mishap and nested life/unusual event results use the same read-only projection. Typed event decisions retain their parent context; choices and checks remain explicit rather than being presented as already-awarded effects. Known nested disaster mishaps retain their table provenance and protection against automatic career ejection. Source-assisted outcomes remain pending and unknown narrative rows are not invented.
 
 These display fields are derived after replay validation and never change saved commands, summaries, rules revisions, dice or character state. Historical save bytes and original log fields remain unchanged.
+
+## Separate borrowed-career rolls
+
+New `.20` characters pause between undercover checks, borrowed career tables, subsequent checks and random consequences, Life/Unusual tables, and injury table/severity dice. Each pending step is saved before its next roll. Relationship choices do not roll the later consequence. Published dice, modifiers, outcomes and career accounting are unchanged. Other generation procedures outside these borrowed-career routes are not claimed to be fully separated.
+
+Existing `.16`–`.19` recorded commands retain their original combined outcomes. The UI uses explicit new cover and relationship commands for future separated steps without rewriting those saved histories or revisions.
