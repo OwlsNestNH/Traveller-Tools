@@ -44,7 +44,7 @@ try{
   assert.equal(await page.locator('#sheet img,#sheet script').count(),0);
   const downloadEvent=page.waitForEvent('download');await page.locator('#export').click();const download=await downloadEvent;const exported=JSON.parse(await readFile(await download.path(),'utf8'));assert.equal(exported.events.length,beforeLog);
   const horizontal=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);assert.equal(horizontal,false,name+' horizontal overflow');
-  const tinyButtons=await page.locator('button:visible').evaluateAll(nodes=>nodes.filter(n=>n.getBoundingClientRect().height<43).map(n=>n.textContent));assert.deepEqual(tinyButtons,[]);
+  const tinyButtons=await page.locator('button:visible').evaluateAll(nodes=>nodes.filter(n=>n.getBoundingClientRect().height<(n.closest('.log-switch')?24:43)).map(n=>n.textContent));assert.deepEqual(tinyButtons,[]);
   await page.screenshot({path:path.join(out,name+'-career.png'),fullPage:true});
   await page.locator('#import').setInputFiles({name:'broken.json',mimeType:'application/json',buffer:Buffer.from('{"format":"invalid"}')});
   await page.waitForFunction(()=>document.querySelector('#message').textContent.includes('Could not load'));

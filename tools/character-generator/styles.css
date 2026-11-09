@@ -85,7 +85,7 @@ body.final-sheet-open{overflow:hidden}#final-character-sheet{color:var(--ink);ba
 .equipment-checklist .choice { flex-direction: column; align-items: flex-start; text-align: left; }
 /* Opening screen: visual presentation only, scoped away from saved-character workflows. */
 @media screen {
-body[data-stage="identity"]{color-scheme:dark;--ink:#f1f5f8;--muted:#bdccd6;--blue:#ffd052;--line:#7b929f;--paper:#061a28;--wash:#071522;--focus:#fff1ae;--accent:#142e3c;background:#03111c url('./assets/opening-spaceport.svg') center bottom / 1600px auto no-repeat;color:var(--ink);padding-bottom:20px}
+body[data-stage="identity"]{color-scheme:dark;--ink:#f1f5f8;--muted:#bdccd6;--blue:#ffd052;--line:#7b929f;--paper:#061a28;--wash:#071522;--focus:#fff1ae;--accent:#142e3c;background:#03111c url('./assets/opening-spaceport.svg') center calc(100% - 260px) / 1600px auto no-repeat;color:var(--ink);padding-bottom:20px}
 body[data-stage="identity"] header{padding-block:32px 22px;min-height:150px;background:url('./assets/opening-orbit.svg') right center / min(38vw,440px) auto no-repeat}
 body[data-stage="identity"] h1{font-size:clamp(28px,4.2vw,56px);color:#ffd052;letter-spacing:.025em;text-shadow:0 3px 15px #000}
 body[data-stage="identity"] .eyebrow{color:#ffd052}body[data-stage="identity"] .lead{letter-spacing:.3em;color:#f5f7fa}
@@ -99,7 +99,7 @@ body[data-stage="identity"] button:hover,body[data-stage="identity"] .button:hov
 body[data-stage="identity"] .notice{border:1px solid #ffd052;background:linear-gradient(110deg,#39301acc,#141d22ed);border-radius:14px}
 body[data-stage="identity"] #workspace,body[data-stage="identity"] #sheet{background:linear-gradient(140deg,#062536ef,#03121deb);border:1px solid #afc1ca;box-shadow:0 8px 30px #0007}
 body[data-stage="identity"] #workspace .step-count{display:none}body[data-stage="identity"] #workspace h2{font-size:clamp(26px,2.5vw,36px)}
-body[data-stage="identity"] #workspace h2::before,body[data-stage="identity"] #sheet h2::before{content:'//';color:#ffc53e;margin-right:12px;font-style:italic}
+body[data-stage="identity"] #workspace h2::before,body[data-stage="identity"] #sheet h2::before{content:'';display:inline-block;width:28px;height:26px;background:repeating-linear-gradient(125deg,transparent 0 6px,#ffc53e 6px 12px,transparent 12px 18px);margin-right:12px}
 body[data-stage="identity"] input:not([type=checkbox]):not([type=file]),body[data-stage="identity"] select,body[data-stage="identity"] textarea{background:#061623;color:#f1f5f8;border:1px solid #9eb4bf;min-height:46px}
 body[data-stage="identity"] input[type=checkbox]{accent-color:#ffd052}
 body[data-stage="identity"] .opening-boons{border-top:1px solid #cfaa3b;margin-top:28px;padding-top:10px}
@@ -123,3 +123,7 @@ body[data-stage="identity"] #simple-action-log,body[data-stage="identity"] #full
 .log-switch{display:grid;gap:4px}.log-switch button{min-height:27px;padding:2px 12px}
 #simple-action-log{width:min(1040px,calc(100% - 32px));max-height:85vh;border:2px solid var(--blue);border-radius:14px;padding:24px}#simple-action-log::backdrop{background:#001425aa}#simple-log-content{white-space:pre-wrap;overflow-wrap:anywhere;font:16px/1.6 ui-monospace,monospace;max-height:60vh;overflow:auto}
 @media print{#simple-action-log{display:none!important}}
+@media screen{body[data-stage="identity"] .toolbar>.file-button{margin:0}body[data-stage="identity"] .toolbar{grid-auto-rows:64px}body[data-stage="identity"] .toolbar>*{height:64px}body[data-stage="identity"] .toolbar .log-switch button{height:32px;min-height:32px}}
+@media screen{body[data-stage="identity"] .toolbar>*,body[data-stage="identity"] .toolbar button{font-size:16px}}
+@media screen and (min-width:761px){body[data-stage="identity"] #setup-form>.form-grid{grid-template-columns:1fr;gap:15px}body[data-stage="identity"] #setup-form>.form-grid>label{display:grid;grid-template-columns:minmax(140px,.65fr) minmax(0,1fr);align-items:center;gap:6px 16px}body[data-stage="identity"] #setup-form>.form-grid>label>small{grid-column:2}body[data-stage="identity"] .opening-boons>label{display:grid;grid-template-columns:minmax(140px,.65fr) minmax(0,1fr);gap:6px 16px;align-items:center}body[data-stage="identity"] .opening-boons>label>small{grid-column:2}}
+@media screen{body[data-stage="identity"] #opening-portrait{margin:18px auto 24px;max-width:320px}body[data-stage="identity"] #opening-portrait img{display:block;width:100%;height:auto;aspect-ratio:1;border-radius:50%;object-fit:cover}body[data-stage="identity"] #sheet{position:static}}
