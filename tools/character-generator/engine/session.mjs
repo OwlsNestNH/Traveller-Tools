@@ -1,4 +1,4 @@
-import {culturalSkillAward,culturalAwardLabel,ASLAN_CULTURAL_SKILL_SOURCE} from './aslan-skill-culture.mjs';
+import {culturalSkillAward,culturalAwardLabel,ASLAN_CULTURAL_SKILL_SOURCE,aslanSkillLabel,ASLAN_SKILL_LEGEND} from './aslan-skill-culture.mjs';
 import {prisonerEscapePending} from './prisoner-escape.mjs';
 import {decorateLifeEventPresentation} from './life-event-projection.mjs';
 import {trainingInformation} from './training-information.mjs';
@@ -2879,7 +2879,7 @@ export function project(session) {
   state.trainingOptions=state.stage==='training'?trainingOptions(state):[];
  // Add labels only after replay. Presentation metadata cannot alter saved
  // effects, summaries, RNG state, eligibility or rules-revision compatibility.
- const tableInfo=(careerId,assignment,table,{ordinary=false}={})=>{const pack=RULE_PACK[careerId],training=pack?.training;let rows=table==='assignment'?training?.assignments?.[assignment]:training?.[table];if(ordinary&&table==='assignment'&&rows?.length===9){const modifier=(pack.prerequisites.assignmentTableModifiers??[]).filter(m=>conditionMatches(state,m.condition)).reduce((n,m)=>n+m.dm,0);rows=rows.slice(modifier,modifier+6);}return trainingInformation(rows,condition=>conditionMatches(state,condition));};
+ const tableInfo=(careerId,assignment,table,{ordinary=false}={})=>{const pack=RULE_PACK[careerId],training=pack?.training;let rows=table==='assignment'?training?.assignments?.[assignment]:training?.[table];if(ordinary&&table==='assignment'&&rows?.length===9){const modifier=(pack.prerequisites.assignmentTableModifiers??[]).filter(m=>conditionMatches(state,m.condition)).reduce((n,m)=>n+m.dm,0);rows=rows.slice(modifier,modifier+6);}return trainingInformation(rows,condition=>conditionMatches(state,condition),state.deferredSpecializations&&careerId.startsWith('aslan.')?{skillLabel:aslanSkillLabel,legend:ASLAN_SKILL_LEGEND}:{});};
  if(state.stage==='training'){const {career,record}=currentCareer(state);state.trainingOptions=state.trainingOptions.map(option=>({...option,information:tableInfo(career.id,record.assignment,option.id,{ordinary:true})}));}
  if(state.currentCrossCareerTraining){const training=state.currentCrossCareerTraining;training.options=training.options.map(option=>({...option,information:tableInfo(training.sourceCareerId,option.id,'assignment')}));}
  if(state.stage==='effect-choice')state.pendingChoice.options=state.pendingChoice.options.map(option=>{const effect=option.effects?.find(e=>e.kind==='source-training-roll');return effect?{...option,information:tableInfo(currentCareer(state).career.id,effect.assignment,effect.table)}:option;});

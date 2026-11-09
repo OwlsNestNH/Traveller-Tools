@@ -15,3 +15,20 @@ export function culturalAwardLabel(option){
  const gender=[...new Set(marked.map(e=>e.condition.gender))].join('/');
  return {...option,label:option.label+' ('+gender+'-associated)',culturalPreference:{gender,restricted:false,source:ASLAN_CULTURAL_SKILL_SOURCE,note:'Cultural preference, not a prohibition. Other genders may learn this skill.'}};
 }
+
+// Read directly from the orange/blue/gray Aslan Skills table, Aliens 2026 p.19.
+// Unqualified base skills can contain both culturally marked and common specialties.
+export const ASLAN_SKILL_LEGEND='Aslan cultural associations (Aliens 2026 p. 19): male-associated and female-associated skills may be learned by other genders; rare skills are permitted. Common skills are unmarked. Independence alone is male-only and requires its acquisition check (p. 20). Career and background eligibility are separate rules.';
+export function aslanSkillLabel(name){
+ const base=name.split(' (')[0],subject=name.match(/ \(([^)]+)\)$/)?.[1];let label;
+ if(base==='Independence')label='male-only; acquisition check';
+ else if(['Leadership','Tactics'].includes(base))label='male-associated';
+ else if(['Astrogation','Broker','Engineer','Mechanic','Profession','Science','Steward'].includes(base))label='female-associated';
+ else if(base==='Gunner')label=subject?(['capital','turret'].includes(subject)?'male-associated':null):'capital/turret male-associated';
+ else if(base==='Heavy Weapons')label=subject?(['portable','vehicle'].includes(subject)?'male-associated':null):'portable/vehicle male-associated';
+ else if(base==='Animals')label=subject?(subject==='veterinary'?'female-associated':null):'veterinary female-associated';
+ else if(base==='Electronics')label=subject?(subject!=='sensors'?'female-associated':null):'all except sensors female-associated';
+ else if(base==='Gambler')label='rare';
+ else if(base==='Melee')label=subject?(['blade','unarmed'].includes(subject)?'rare':null):'blade/unarmed rare';
+ return label?name+' ['+label+']':name;
+}
