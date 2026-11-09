@@ -2,6 +2,7 @@ import {culturalSkillAward,culturalAwardLabel,ASLAN_CULTURAL_SKILL_SOURCE,aslanS
 import {believerBuyoutPlan,believerBuyoutChoice} from './believer-buyout.mjs';
 import {prisonerEscapePending} from './prisoner-escape.mjs';
 import {decorateLifeEventPresentation} from './life-event-projection.mjs';
+import {careerOutcomeSummary} from './career-outcome-summary.mjs';
 import {trainingInformation} from './training-information.mjs';
 import {BENEFIT_WAGERS,wagerLimit,wagerDelta} from './benefit-wagers.mjs';
 import { vargrTrainingChoice, tableSkillAllowed } from './vargr-training.mjs';
@@ -2416,15 +2417,31 @@ function apply(state,command,rolls) {
   if(rows.length!==6&&rows.length!==9){sourceStep(state,'term-training',career.source,career.page,'Resolve the special training table.','survival');return 'Training table requires source resolution.';}
   const result=femaleIndependenceTableRoll(state,rows,tableModifier,rolls,'Training: '+payload.table);queueEffects(state,markPsionicOrigin(rows[result-1],{careerId:career.id,assignment:record.assignment,table:payload.table,result}),state.trainingNext??'survival',rolls);state.trainingNext=null;return 'Training '+payload.table+' result '+result+'.';
  }
+ case 'survival-check':
  case 'survival': {
   need(state.stage==='survival','Not at the survival check.');
   const {record,career,assignment}=currentCareer(state);
   if(!checkAvailable(state,assignment.survival)&&!state._sourceCheck){missingCheck(state,assignment.survival,'Survival',command);return 'Survival check requires source resolution for the absent characteristic.';}
   const check=rulesCheck(state,assignment.survival,rolls,'Survival',modifierTotal(state,'survival'));check.success&&=check.natural!==2;
   const pack=nativePack(state);
+  // New interactive command: preserve the historical combined command verbatim.
+  // The explicit table action consumes the same next dice, only after this checkpoint.
+  if(command.type==='survival-check'){state.stage=check.success?'career-event':'career-mishap';return 'Survival: '+JSON.stringify(check)+'.';}
   if(!check.success){record.mishap=true;record.forcedExit=career.id!=='core.prisoner';const result=dice(state,1,rolls,'Mishap table');if(pack?.mishaps[result])queueEffects(state,career.group==='zhodani'?withReeducationOrigin(pack.mishaps[result],reeducationOrigin(state,'mishap',result)):pack.mishaps[result],career.id==='core.prisoner'?'advancement':'end-term',rolls);else sourceStep(state,'mishap',career.source,career.page+1,'Resolve mishap result '+result+'.','term-end');}
   else {const result=dice(state,2,rolls,'Event table');if(pack?.events[result])queueEffects(state,career.group==='zhodani'?withReeducationOrigin(pack.events[result],reeducationOrigin(state,'event',result)):pack.events[result],'after-event',rolls);else sourceStep(state,'career-event',career.source,career.page+1,'Resolve career event result '+result+'.','advancement');}
   return 'Survival: '+JSON.stringify(check)+'.';
+ }
+ case 'career-event':
+ case 'career-mishap': {
+  need(state.stage===command.type,'No matching career table roll is pending.');
+  need(Object.keys(payload).length===0,'The career table rolls its own dice.');
+  const {record,career}=currentCareer(state),pack=nativePack(state),mishap=command.type==='career-mishap';
+  if(mishap){record.mishap=true;record.forcedExit=career.id!=='core.prisoner';}
+  const result=dice(state,mishap?1:2,rolls,mishap?'Mishap table':'Event table');
+  const effects=(mishap?pack?.mishaps:pack?.events)?.[result];
+  if(effects)queueEffects(state,career.group==='zhodani'?withReeducationOrigin(effects,reeducationOrigin(state,mishap?'mishap':'event',result)):effects,mishap?(career.id==='core.prisoner'?'advancement':'end-term'):'after-event',rolls);
+  else sourceStep(state,mishap?'mishap':'career-event',career.source,career.page+1,'Resolve '+(mishap?'mishap':'career event')+' result '+result+'.',mishap?'term-end':'advancement');
+  return (mishap?'Mishap':'Career event')+' result '+result+'. '+(effects?careerOutcomeSummary(effects):'Consult the source for the table outcome.');
  }
  case 'advancement': {
   need(state.stage==='advancement','Not at advancement.');

@@ -33,9 +33,9 @@ test('training context does not mislabel advancement rolls, later terms or ordin
  const {basic}=prisonerBasicTrainingFixture(),trained=run(basic,'choose-effect',{index:5});
  const state=structuredClone(trained.state),before=structuredClone(state);
  trainingContext(state);assert.deepEqual(state,before);
- state.trainingNext='end-term';assert.equal(trainingContext(state),null);
- state.trainingNext=null;state.character.careers[state.active].terms=1;assert.equal(trainingContext(state),null);
- state.character.careers[state.active].terms=0;state.active=0;assert.equal(trainingContext(state),null);
+ state.trainingNext='end-term';assert.equal(trainingContext(state).title,'Advancement training');
+ state.trainingNext=null;state.character.careers[state.active].terms=1;assert.equal(trainingContext(state).title,'Regular term training');
+ state.character.careers[state.active].terms=0;state.active=0;assert.equal(trainingContext(state).title,'Regular term training');
  const choice=structuredClone(basic.state);choice.pendingChoice.options[0].label='An unrelated choice';assert.equal(trainingContext(choice),null);
  choice.pendingChoice.options=[];assert.equal(trainingContext(choice),null);
  assert.equal(trainingContext({stage:'identity'}),null);
