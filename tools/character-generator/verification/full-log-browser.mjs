@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import {createServer} from '../server.mjs';
 import {project} from '../engine/session.mjs';
@@ -29,7 +30,7 @@ try{
    assert.equal(await dialog.evaluate(el=>el.open),false);assert.equal(await trigger.evaluate(el=>el===document.activeElement),true);
   }
   assert.equal(await downloadedActionLog(page),expected);
-  await trigger.click();const downloadPromise=page.waitForEvent('download');await page.locator('[data-log-download]').click();await downloadPromise;
+  await trigger.click();const downloadPromise=page.waitForEvent('download');await page.locator('[data-log-download]').click();const modalDownload=await downloadPromise;assert.equal(modalDownload.suggestedFilename(),'traveller-action-log.txt');assert.equal(await readFile(await modalDownload.path(),'utf8'),expected);
   assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),before);
   await page.reload();await page.getByRole('button',{name:'Keep these characteristics'}).waitFor();assert.equal(await dialog.evaluate(el=>el.open),false);
   await trigger.click();assert.equal(await page.locator('#full-log-content').textContent(),expected);await page.keyboard.press('Escape');
