@@ -5,6 +5,7 @@ import {createHash} from 'node:crypto';
 import {api,project,exportSession,importSession,RULES_REVISION} from '../engine/session.mjs';
 import {prisonerEscapePending} from '../engine/prisoner-escape.mjs';
 import {prisonerEscapeView} from '../gui/prisoner-escape-view.mjs';
+import {rollResult} from '../gui/roll-result-view.mjs';
 import {createServer} from '../server.mjs';
 import {run,rejected} from './core-life-event-fixtures.mjs';
 const legacy=JSON.parse(readFileSync(new URL('./prisoner-escape-legacy.json',import.meta.url),'utf8'));
@@ -16,6 +17,18 @@ function assertOriginal(result,expected){
  assert.equal(hash(state),expected.state);assert.equal(hash(result.log),expected.log);
 }
 export function escapeFixture(){return {session:structuredClone(legacy.session),...project(legacy.session)};}
+
+test('escape result colors use the verified selected-skill outcome, never notes or restored history',()=>{
+ for(const skill of ['Stealth','Deception'])for(const success of [false,true]){
+  const summary='Prisoner escape using '+skill+': '+(success?10:9)+' against 10+; '+(success?'succeeded.':'failed. Parole Threshold +2 (maximum 12).');
+  assert.equal(rollResult({type:'prisoner-escape',summary},{},{}).status,success?'success':'failure');
+  for(const type of ['notes','restore','gm-replay'])assert.equal(rollResult({type,summary},{},{}).status,'info');
+  assert.equal(rollResult({type:'prisoner-escape',summary:summary.replace(success?'10 against':'9 against',success?'9 against':'10 against')},{},{}).status,'info');
+ }
+ const r=run(escapeFixture(),'prisoner-escape',{skill:'Stealth'}),raw=exportSession(r.session);
+ assert.equal(rollResult(r.log.at(-1),r.state,{}).status,'failure');
+ assert.equal(exportSession(r.session),raw);
+});
 
 test('unmodified .16 checkpoints and earlier escape results replay exactly without changing save bytes',()=>{
  assert.equal(RULES_REVISION,'character-preview-2026-11-09.17');

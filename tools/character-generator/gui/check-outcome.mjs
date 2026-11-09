@@ -1,0 +1,56 @@
+// Presentation evidence only. Never infer success from an unmodified dice roll,
+// a character gain/loss, a free-form note, or a historical check copied unchanged.
+const finite=n=>typeof n==='number'&&Number.isFinite(n);
+function checked(label,check){
+ if(!check||typeof check.success!=='boolean'||(!finite(check.total)&&check.automatic!==true))return null;
+ return {status:check.success?'success':'failure',text:label+(check.automatic===true?(check.success?' succeeded automatically.':' failed.'):': '+check.total+(finite(check.target)?' against '+check.target+'+':'')+'; '+(check.success?'succeeded.':'failed.'))};
+}
+const auditLabels={careerTransitions:'Qualification',assignmentChanges:'Assignment qualification',aslanOfficerOffers:'Officer qualification',aslanCareerAccess:'Career qualification',aslanHistoricalEntries:'Career qualification',aslanRestorations:'Career qualification',benefitWagers:'Benefit wager'};
+export function checkOutcome(event){
+ // Restoring/replaying a snapshot can change old check records without making
+ // those checks again. Replay-specific summary helpers remain responsible for
+ // their own verified result; never infer one from historical audit deltas.
+ if(['restore','gm-replay'].includes(event?.type))return null;
+ const summary=event?.summary??'',evidence=[];
+ // Exact engine summaries are replay-validated. Restrict to known commands so
+ // a referee note that mentions a check cannot itself assert an outcome.
+ const patterns={
+  career:/^(?:Failed .+ qualification|Entered .+ \/ .+): (\{.*\})\.$/,
+  'change-assignment':/^Assignment qualification: (\{.*\})\. Continuing /,
+  'precareer':/^Education entry failed: (\{.*\})\./
+ };
+ const match=summary.match(patterns[event?.type]??/$a/);
+ if(match){try{evidence.push(checked(event.type==='career'?'Qualification':event.type==='change-assignment'?'Assignment qualification':'Education entry',JSON.parse(match[1])));}catch{/* A malformed summary supplies no evidence. */}}
+ const gamesLabel={'apply-psionic-games':'application','psionic-games-preliminary':'preliminary','psionic-games-final':'final'}[event?.type];
+ if(gamesLabel){
+  const m=summary.match(new RegExp('^Psionic Games '+gamesLabel+': (\\{.*\\})\\. '));
+  if(m){try{evidence.push(checked('Psionic Games '+gamesLabel,JSON.parse(m[1])));}catch{/* Invalid serialized checks are not outcomes. */}}
+ }
+ for(const {path,before,after} of event?.changes??[]){
+  if(event?.type==='resolve-prisoner-lawyer'&&/^prisonerLawyers\.\d+\.decision$/.test(path)&&JSON.stringify(after?.check)!==JSON.stringify(before?.check))evidence.push(checked('Lawyer appeal',after?.check));
+  const direct=path.match(/^(\w+)\.\d+\.(check|attempt)$/),label=direct&&auditLabels[direct[1]];
+  if(label){const check=direct[2]==='attempt'?after?.check:after,old=direct[2]==='attempt'?before?.check:before;if(JSON.stringify(check)!==JSON.stringify(old))evidence.push(checked(label,check));}
+  const education=path.match(/^educations\.\d+\.(entry|graduation)\.(success|graduated)$/);
+  if(education&&typeof after==='boolean'&&before!==after)evidence.push({status:after?'success':'failure',text:(education[1]==='entry'?'Education entry':'Graduation')+(after?' succeeded.':' failed.')});
+ }
+ if(event?.type==='education-check'){
+  const m=summary.match(/^Education (.+) check (-?\d+) against (-?\d+)\.$/);
+  if(m)evidence.push(checked('Education '+m[1]+' check',{total:Number(m[2]),target:Number(m[3]),success:Number(m[2])>=Number(m[3])}));
+ }
+ if(event?.type==='prisoner-escape'){
+  const m=summary.match(/^Prisoner escape using (Stealth|Deception): (-?\d+) against 10\+; (succeeded\.|failed\. Parole Threshold \+2 \(maximum 12\)\.)$/);
+  if(m&&(Number(m[2])>=10)===(m[3]==='succeeded.'))evidence.push(checked('Prisoner escape using '+m[1],{total:Number(m[2]),target:10,success:Number(m[2])>=10}));
+ }
+ if(event?.type==='education-graduation'){
+  const m=summary.match(/^Graduation total (-?\d+) against (-?\d+): (honours|graduated|did not graduate)\.$/);
+  if(m)evidence.push(checked('Graduation',{total:Number(m[1]),target:Number(m[2]),success:m[3]!=='did not graduate'}));
+ }
+ if(event?.type==='learn-talent'){
+  const m=summary.match(/^Psionic acquisition (.+): (automatic first talent \(no check\)|(-?\d+) against 8; \d+ previous checks)\. (Acquired at level 0|Not acquired)\. Source: /);
+  if(m)evidence.push(checked('Psionic acquisition '+m[1],{automatic:m[2].startsWith('automatic'),total:m[3]===undefined?undefined:Number(m[3]),target:8,success:m[4]==='Acquired at level 0'}));
+ }
+ const checks=evidence.filter(Boolean);
+ if(!checks.length)return null;
+ const failed=checks.some(c=>c.status==='failure'),succeeded=checks.some(c=>c.status==='success');
+ return {status:failed&&succeeded?'info':failed?'failure':'success',details:[...(failed&&succeeded?['Mixed check results.']:[]),...new Set(checks.map(c=>c.text))],mixed:failed&&succeeded};
+}

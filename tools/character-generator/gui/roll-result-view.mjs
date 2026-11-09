@@ -1,4 +1,5 @@
 // Player-facing presentation only. Never alter summaries, audit records or mechanics.
+import {checkOutcome} from './check-outcome.mjs';
 import {survivalResult} from './survival-result.mjs';
 import {advancementResult} from './advancement-result.mjs';
 import {lifeEventIdentity,lifeEventLogDetails} from './life-event-presentation.mjs';
@@ -59,12 +60,12 @@ export function characterEffectDetails(event,catalog){
   if(path.startsWith('stats.')&&finite(after)){details.push(change(stats[path.slice(6)]??words(path.slice(6)),before,after));continue;}
   if(['cash','debt','medicalCosts'].includes(path)&&finite(after)){details.push(change({cash:'Cash',debt:'Debt',medicalCosts:'Medical costs'}[path],finite(before)?amount(before):amount(0),amount(after)));continue;}
   if(scalarLabels[path]&&finite(after)){details.push(change(scalarLabels[path],before,after));continue;}
-  if(flagLabels[path]&&typeof after==='boolean'){details.push(flagLabels[path][after?0:1]);continue;}
+  if(flagLabels[path]&&typeof after==='boolean'&&(after||before===true)){details.push(flagLabels[path][after?0:1]);continue;}
   if(path==='psionicLoss'&&after?.permanent){details.push('Permanent loss of psionic abilities recorded.');continue;}
   if(path==='lifePsionAccess'&&after){details.push('Life event psionic access recorded.');continue;}
   const career=path.match(/^careers\.\d+\.(\w+)$/);
   if(career){const field=career[1];if(careerNumbers[field]&&finite(after))details.push(change(careerNumbers[field],before,field==='pension'?amount(after):after));
-   else if(careerFlags[field]&&typeof after==='boolean')details.push(careerFlags[field][after?0:1]);
+   else if(careerFlags[field]&&typeof after==='boolean'&&(after||before===true))details.push(careerFlags[field][after?0:1]);
    else if(field==='id'&&after)details.push('Career: '+nameOf(after,catalog)+'.');
    else if(field==='assignment'&&after)details.push('Assignment: '+words(after)+'.');
    else if(field==='pensionCondition'&&after)details.push('Pension condition: '+after+'.');
@@ -136,13 +137,17 @@ export function rollResult(event,state,catalog,options={}){
  const advancement=advancementResult(event);
  const survival=survivalResult(event,state);
  const specialized=advancement??survival;
+ const outcome=checkOutcome(event);
+ const mixed=outcome?.mixed||(['success','failure'].includes(specialized?.status)&&['success','failure'].includes(outcome?.status)&&specialized.status!==outcome.status);
  const modifierBefore=event.modifierChanges?{modifiers:event.modifierChanges.before}:options.beforeState;
  const modifierAfter=event.modifierChanges?{modifiers:event.modifierChanges.after}:state;
  const primaryLabels=advancement?['Advancement','Commission','Education commission']:survival?['Survival','Event table','Mishap table']:[];
  // Specialized helpers already identify the adjusted check and observed rank/skill gains.
  const effectEvent=advancement?{...event,changes:(event.changes??[]).filter(c=>!(((c.path.startsWith('skills.')||c.path.startsWith('stats.')&&finite(c.before))&&finite(c.after))||(/^careers\.\d+\.(rank|officer|forcedExit|forcedStay|released)$/.test(c.path)&&((finite(c.before)&&finite(c.after))||c.after===true))))}:event;
  const details=[...(event.rolls??[]).filter(r=>finite(r.total)&&!primaryLabels.includes(r.label)).map(r=>rollLabel(r,catalog)),...lifeEventLogDetails(event),...characterEffectDetails(effectEvent,catalog),...modifierEffectDetails(modifierBefore,modifierAfter,catalog),...pendingEffectDetails(event,catalog)];
- const check=summaryCheck(event.summary);if(check&&!specialized)details.unshift(check);
+ const check=summaryCheck(event.summary);if(check&&!specialized&&!outcome)details.unshift(check);
+ if(outcome)details.unshift(...outcome.details);
+ if(mixed)details.unshift('Mixed check results.');
  if(specialized)details.unshift(...specialized.details);
  const choice=state?.pendingChoice;
  if(choice&&typeof state?.lifeEventPresentation?.description==='string')details.push('Pending: '+state.lifeEventPresentation.description);
@@ -154,6 +159,6 @@ export function rollResult(event,state,catalog,options={}){
  let title=specialized?.title??(words(event.type)||'Action')+' result.';
  // Use only prose-only summaries; never leak serialized rules or property paths.
  if(!specialized&&event.summary&&!/[{}\[\]]/.test(event.summary)&&!/[A-Za-z]+\.[A-Za-z]+/.test(event.summary))title=event.summary;
- const result={title,details:unique(details),status:sourcePending?'pending':specialized?.status??'info'};
+ const result={title,details:unique(details),status:mixed?'info':['success','failure'].includes(specialized?.status)?specialized.status:outcome?.status??(sourcePending?'pending':specialized?.status??'info')};
  result.text=[result.title,...result.details].join(' ');return result;
 }

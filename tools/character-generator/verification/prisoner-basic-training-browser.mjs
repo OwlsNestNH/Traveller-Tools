@@ -5,6 +5,7 @@ import {fileURLToPath} from 'node:url';
 import {createServer} from '../server.mjs';
 import {api,exportSession} from '../engine/session.mjs';
 import {prisonerBasicTrainingFixture} from './prisoner-basic-training-fixtures.mjs';
+import {assertResultColor} from './result-color-browser-assertions.mjs';
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const server=createServer();await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const browser=await chromium.launch({headless:true,...(process.env.CHARACTER_BROWSER_CHANNEL?{channel:process.env.CHARACTER_BROWSER_CHANNEL}:{})});
@@ -21,7 +22,7 @@ try{
    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(firstCareer.session)});await page.reload();
    await page.getByRole('heading',{name:'Will you make it through?'}).waitFor();assert.equal(await page.locator('[data-action=training]').count(),0);
    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(basic.session)});await page.reload();
-   await page.getByRole('heading',{name:'Choose your basic training'}).waitFor();
+   await page.getByRole('heading',{name:'Choose a basic-training skill'}).waitFor();
    assert.match(await page.locator('#workspace').innerText(),/level 0.*regular training roll/s);
    await page.getByRole('button',{name:'Persuade 0',exact:true}).evaluate(button=>{button.click();button.click();});
    await page.getByRole('heading',{name:'Regular term training'}).waitFor();
@@ -56,7 +57,7 @@ try{
     const resolved=JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key)),result=api({operation:'project',session:resolved});
     assert.deepEqual(resolved.events.slice(0,legacy.session.events.length),legacy.session.events);assert.equal(resolved.rulesRevision,'character-preview-2026-11-09.16');
     assert.equal(result.state.prisonerEscape,undefined);assert.equal(await page.locator('#workspace [data-action=prisoner-escape]').count(),0);
-    if(skill){assert.deepEqual(resolved.events.at(-1).command,{type:'prisoner-escape',payload:{skill}});assert.match(await page.locator('#message').innerText(),new RegExp('escape using '+skill));assert.equal(result.log.at(-1).rolls.length,1);}
+    if(skill){assert.deepEqual(resolved.events.at(-1).command,{type:'prisoner-escape',payload:{skill}});assert.match(await page.locator('#message').innerText(),new RegExp('escape using '+skill));assert.equal(result.log.at(-1).rolls.length,1);await assertResultColor(page,'failure',{message:true});}
     else {assert.equal(result.state.stage,'advancement');assert.deepEqual(result.log.at(-1).rolls,[]);}
     await page.reload();await page.waitForFunction(()=>!document.querySelector('#new').disabled);assert.deepEqual(JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key)),resolved);assert.equal(await page.locator('#workspace [data-action=prisoner-escape]').count(),0);
     checks.push({name:'escape-'+name+'-'+(skill??'stay'),pass:true});

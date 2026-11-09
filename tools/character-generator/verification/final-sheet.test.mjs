@@ -26,8 +26,11 @@ test('completed term view preserves historical assignments and distinguishes mis
  const state={character:{terms:4,careers:[{id:'core.army',termHistory:[{generationTerm:2,careerTerm:1,assignment:'support',rank:1,age:26},{generationTerm:3,careerTerm:2,assignment:'infantry',rank:2,age:30}]}],educations:[{id:'core.university',term:1,completed:true,graduation:{graduated:true,honours:true}}]}};
  const rows=completedTermRows(state,catalog);assert.deepEqual(rows.map(r=>r.number),[1,2,3]);assert.match(rows[0].detail,/honours/);assert.match(rows[1].label,/Support/);assert.match(rows[2].label,/Infantry/);assert.match(completedTermsView(state,catalog),/1 completed term has no separate term entry/);
 });
-test('final summaries escape free text and omit superseded decisions rather than repeating them as current',()=>{
- let r=finalSheetFixture({finish:false}),revision=r.revision;
- r=run(r,'gm-override',{field:'cash',value:11,reason:'Discarded synthetic decision'});r=run(r,'restore',{revision});r=run(r,'gm-override',{field:'cash',value:22,reason:'Current <img src=x onerror=alert(1)> decision'});r=run(r,'finish');
- const html=finalEventsView(r,r.session);assert.equal(html.includes('Discarded synthetic decision'),false);assert.match(html,/Current &lt;img src=x onerror=alert\(1\)&gt; decision/);assert.match(html,/superseded action/);
+test('final summaries escape source decisions and omit superseded decisions rather than repeating them as current',()=>{
+ const session=finalSheetFixture().session;session.events=session.events.slice(0,19);
+ let r={session,...project(session)},revision=r.revision;
+ r=run(r,'resolve-book',{confirmed:true,note:'Discarded synthetic decision',medicalCoveredCost:0,effects:[]});
+ r=run(r,'restore',{revision});
+ r=run(r,'resolve-book',{confirmed:true,note:'Current <img src=x onerror=alert(1)> decision',medicalCoveredCost:0,effects:[]});
+ const html=finalEventsView(r,r.session);assert.equal(html.includes('Discarded synthetic decision'),false);assert.match(html,/Current &lt;img src=x onerror=alert\(1\)&gt; decision/);assert.doesNotMatch(html,/superseded action|Restored character|GM replaced/);
 });

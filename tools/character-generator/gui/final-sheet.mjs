@@ -25,15 +25,14 @@ export function compactRecord(document,source){
  return record;
 }
 
-export function createFinalSheet({document,onSave,onPrint}){
+export function createFinalSheet({document,onSave,onPrint,onLog}){
  const dialog=document.getElementById('final-character-sheet'),content=document.getElementById('final-sheet-content');
- let returnToLog=false;
  const close=()=>{dialog.close();finishClose();};
  dialog.querySelector('[data-final-close]').addEventListener('click',close);
  dialog.addEventListener('cancel',event=>{event.preventDefault();close();});
  dialog.querySelector('[data-final-save]').addEventListener('click',onSave);
  dialog.querySelector('[data-final-print]').addEventListener('click',onPrint);
- dialog.querySelector('[data-final-log]').addEventListener('click',()=>{returnToLog=true;close();});
+ dialog.querySelector('[data-final-log]').addEventListener('click',onLog);
  // Native modal inertness protects the editor; wrap the last/first Tab too
  // so Chromium does not move keyboard focus into browser chrome mid-review.
  dialog.addEventListener('keydown',event=>{
@@ -49,8 +48,7 @@ export function createFinalSheet({document,onSave,onPrint}){
   // queued close event from a dialog that has already been reopened.
   if(dialog.open||!document.body.classList.contains('final-sheet-open'))return;
   document.body.classList.remove('final-sheet-open');
-  const target=returnToLog?document.querySelector('.log-section h2'):document.querySelector('[data-action="open-character-sheet"]');
-  returnToLog=false;
+  const target=document.querySelector('[data-action="open-character-sheet"]');
   if(target){if(!target.hasAttribute('tabindex')&&target.tagName!=='BUTTON')target.tabIndex=-1;target.focus();}
  }
  dialog.addEventListener('close',finishClose);
@@ -59,7 +57,7 @@ export function createFinalSheet({document,onSave,onPrint}){
    if(dialog.open||projection.state.stage!=='finish')return;
    const record=compactRecord(document,document.getElementById('sheet'));
    const history=document.createElement('div');history.className='final-history';
-   history.innerHTML=completedTermsView(projection.state,catalog)+finalEventsView(projection,session);
+   history.innerHTML=completedTermsView(projection.state,catalog)+finalEventsView(projection,session,catalog);
    content.replaceChildren(record,history);
    document.body.classList.add('final-sheet-open');dialog.showModal();dialog.scrollTop=0;
    document.getElementById('final-sheet-title').focus();

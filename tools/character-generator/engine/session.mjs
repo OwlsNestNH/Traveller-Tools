@@ -2049,7 +2049,6 @@ function apply(state,command,rolls) {
  case 'accept-statistics': {
   need(state.stage==='statistics'&&state.pool.length===6,'Roll statistics first.');
   const species=findSpecies(state.character.species);
-  need(species.id==='zhodani'||!state.config.extras.includes('PSI')||state.config.gm,'Optional PSI generation requires referee permission in GM mode.');
   refreshStatisticsPool(state);
   for(const p of state.pool)state.character.stats[p.key]=p.value;
   for(const [key,[count,adjustment]] of Object.entries(species.dice).slice(6))state.character.stats[key]=key==='PSI'&&state.config.zhodaniPsi?state.optionalPsi:dice(state,count,rolls,key)+adjustment;
@@ -2702,7 +2701,6 @@ if(pending.kind==='psionic-training-terms'){
   need(state.pending?.kind!=='core-life-decision','Finish the pending life event decision before extra characteristics.');
   need(state.stage!=='identity'&&state.stage!=='statistics','Accept the six characteristics first.');
   const extra=EXTRA_STATS.find(e=>e.id===payload.id);need(extra,'Choose an available characteristic.');need(!Object.hasOwn(state.character.stats,extra.id),'This characteristic already exists.');
-  if(extra.id==='PSI')need(state.config.gm,'Raw PSI generation requires referee permission in GM mode; institute testing uses the psionic-training source step.');
   const value=extra.derive?(state.character.stats[extra.derive]??0):dice(state,extra.dice,rolls,extra.id);
   state.character.stats[extra.id]=extra.id==='PSI'?Math.max(0,value-completedCareerTerms(state)):value;
    if(extra.id==='PSI')recordPsionicTest(state,'referee-potential',value,completedCareerTerms(state));

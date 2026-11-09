@@ -7,7 +7,7 @@ import {prisonerBasicTrainingFixture,run} from './prisoner-basic-training-fixtur
 test('Rogue to Prisoner keeps the chosen basic skill and then the ordinary training roll',()=>{
  const {firstCareer,basic}=prisonerBasicTrainingFixture();
  assert.equal(firstCareer.state.stage,'survival');assert.equal(trainingContext(firstCareer.state),null);
- assert.equal(trainingContext(basic.state).title,'Choose your basic training');
+ assert.equal(trainingContext(basic.state).title,'Choose a basic-training skill');
  assert.match(trainingContext(basic.state).description,/level 0.*regular training roll/);
  const before=exportSession(basic.session),trained=run(basic,'choose-effect',{index:5});
  assert.equal(exportSession(basic.session),before);
