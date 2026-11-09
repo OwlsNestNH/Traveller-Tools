@@ -1,3 +1,4 @@
+import {educationSkillView,syncEducationSubject} from './education-skill-view.mjs';
 import {prisonerEscapeTitle,prisonerEscapeView} from './prisoner-escape-view.mjs';
 import {extraCharacteristicsView,gmControlsView,syncCorrectionField,syncReplacementDice,syncCorrectionTask,correctionPayload,replacementPayload} from './character-controls.mjs';
 import {rollResult} from './roll-result-view.mjs';
@@ -353,7 +354,7 @@ function stageView(state){
  case 'retirement':return '<p>Your early retirement choice ends further career and education entry. Benefits are resolved; you can now finish this Traveller.</p>'+button('Finish character','finish');
  case 'education-event':return '<p>Your initial education awards are recorded. Roll one pre-career event before graduation.</p>'+button('Roll education event','education-event');
  case 'education-graduation':return '<p>Roll your graduation check. Your initial skills are retained even if you do not graduate.</p>'+button('Roll graduation','education-graduation');
- case 'education-skill':return '<p>Choose a skill from your study options. For specialised university subjects, include the speciality to keep for graduation, for example Science (physics). Animals is limited to training or veterinary.</p><p class="help">Award: level '+state.pendingChoice.value+'. Available subjects: '+state.educationOptions.map(o=>esc(o.name)).join(', ')+'.</p><label>Study skill<input id="education-skill" list="education-skills" maxlength="80"></label><datalist id="education-skills">'+state.educationOptions.map(o=>'<option value="'+esc(o.name)+'"></option>').join('')+'</datalist>'+button('Record study skill','education-skill');
+ case 'education-skill':return educationSkillView(state,catalog,esc,button);
  case 'education-service':return '<p>Choose '+(state.pendingChoice.count-state.pendingChoice.picked.length)+' more distinct service skill'+(state.pendingChoice.count-state.pendingChoice.picked.length===1?'':'s')+' to gain at level 1.</p><div class="choice-list">'+state.pendingChoice.options.filter(n=>!state.pendingChoice.picked.includes(n)).map(n=>button(esc(n),'education-service','choice','data-name="'+esc(n)+'"')).join('')+'</div>';
  case 'education-check':return '<p>Choose a skill learned or improved during this education term. Success increases the skill and records the tutor as a Rival.</p><label>Skill<select id="education-check-skill">'+options(state.educationCheckSkills,state.educationCheckSkills[0])+'</select></label>'+button('Roll the study challenge','education-check');
  case 'preterm-commission':return '<p>Your education allows a commission attempt before this career term. The award and any dice are recorded separately from ordinary advancement.</p><div class="actions">'+button('Attempt education commission','education-commission')+button('Continue without it','skip-education-commission','quiet')+'</div>';
@@ -613,3 +614,5 @@ document.addEventListener('input',event=>{if(event.target.id==='aslan-access-des
 document.addEventListener('change',event=>{if(event.target.id==='aslan-access-decision'){const selected=projection.state.aslanAccessConflict?.choices.find(c=>c.id===event.target.value);$('#aslan-access-decision-help').textContent=selected?selected.name+'. '+selected.reason:'';$('[data-action=resolve-aslan-access-conflict]').disabled=!projection.state.config.gm||!selected;}});
 
 document.addEventListener('change',event=>{if(['life-outcome','life-funding'].includes(event.target.id))syncCoreLifeEventControls($);});
+
+document.addEventListener('change',event=>{if(event.target.id==='education-subject')syncEducationSubject(projection.state,catalog,document,esc);});
