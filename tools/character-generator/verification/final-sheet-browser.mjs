@@ -85,5 +85,5 @@ try{
   }finally{await context.close();}
  }
  assert.deepEqual(errors,[]);await writeFile(new URL('final-sheet-browser-results.json',out),JSON.stringify({checks,errors},null,2));console.log(JSON.stringify({checks,errors}));
-}catch(error){await writeFile(new URL('final-sheet-browser-failure.json',out),JSON.stringify({checks,errors,error:error.message},null,2));throw error;}
+}catch(error){await writeFile(new URL('final-sheet-browser-failure.json',out),JSON.stringify({checks,errors,error:error.message,stack:error.stack},null,2));throw error;}
 finally{await browser.close();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}

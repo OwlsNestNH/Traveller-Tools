@@ -30,6 +30,7 @@ export function createFinalSheet({document,onSave,onPrint}){
  let returnToLog=false;
  const close=()=>{dialog.close();finishClose();};
  dialog.querySelector('[data-final-close]').addEventListener('click',close);
+ dialog.addEventListener('cancel',event=>{event.preventDefault();close();});
  dialog.querySelector('[data-final-save]').addEventListener('click',onSave);
  dialog.querySelector('[data-final-print]').addEventListener('click',onPrint);
  dialog.querySelector('[data-final-log]').addEventListener('click',()=>{returnToLog=true;close();});
