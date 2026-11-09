@@ -1420,7 +1420,7 @@ function borrowedRollPending(state,e){
  const sharedSource=CORE_LIFE_TABLES[e.table]?CORE_LIFE_SOURCE:shared?.source;
  return {id:route.id+'-roll-'+((state.effectSteps??0)+1),routeId:route.id,label,kind:e.kind,
   dice:e.dice??shared?.dice??(['borrowed-injury-table','borrowed-injury-severity','source-training-roll'].includes(e.kind)?'1D':e.kind==='check'?'2D':['mishap','mishaps','core.mishap'].includes(e.table)?'1D':'2D'),
-  source:copy(sharedSource??e.source??(e.kind==='table-roll'?{id:career.source,page:career.page+1}:route.source)),target:e.kind==='check'?e.target:null,resumeStage:state.stage};
+  source:copy(['borrowed-injury-table','borrowed-injury-severity'].includes(e.kind)?{id:'core',page:49}:sharedSource??e.source??(e.kind==='table-roll'?{id:career.source,page:career.page+1}:route.source)),target:e.kind==='check'?e.target:null,resumeStage:state.stage};
 }
 function drainEffects(state,rolls,approvedRoll=null) {
  while(state.effectsQueue?.length) {
