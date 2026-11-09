@@ -14,8 +14,8 @@ test('male first level-zero Independence requires strictly greater than SOC',()=
  for(const [values,expected]of [[[1,1],undefined],[[1,2],0]]){const r=run(natural,'gm-replay',{revision:natural.revision,rollIndex:1,values,reason:'Strict acquisition boundary'});assert.equal(r.state.character.skills.Independence,expected);assert.equal(r.state.stage,'aslan-birth-order');assert.equal(r.state.currentAslanOrigin.family.die,4);}
 
 });
-test('female Independence has explicit source decision without invented substitute',()=>{
- let r=force(build({gender:'female',familySOC:2}),'roll-aslan-family',{},[4]);assert.equal(r.state.pending.decision,'female-independence');assert.equal(r.state.currentAslanOrigin.sourceDecision.kind,'female-independence');rejected(r,'resolve-book',{confirmed:true,effects:[]},/typed/);const player=run(r,'gm-mode',{enabled:false});rejected(player,'resolve-aslan-origin-source',{decision:'omit',reason:'Source reading'},/GM/);rejected(r,'resolve-aslan-origin-source',{decision:'replace',reason:'Source reading'},/omission/);
+for(const revision of ['16','17'])test('legacy .'+revision+' female Independence preserves explicit source decision',()=>{
+ let base=build({gender:'female',familySOC:2});base.session.rulesRevision='character-preview-2026-11-09.'+revision;base={...api({operation:'project',session:base.session}),session:base.session};let r=force(base,'roll-aslan-family',{},[4]);assert.equal(r.state.pending.decision,'female-independence');assert.equal(r.state.currentAslanOrigin.sourceDecision.kind,'female-independence');rejected(r,'resolve-book',{confirmed:true,effects:[]},/typed/);const player=run(r,'gm-mode',{enabled:false});rejected(player,'resolve-aslan-origin-source',{decision:'omit',reason:'Source reading'},/GM/);rejected(r,'resolve-aslan-origin-source',{decision:'replace',reason:'Source reading'},/omission/);
  for(const decision of ['omit','grant-level-zero']){const x=run(r,'resolve-aslan-origin-source',{decision,reason:'Explicit referee handling of the incompatible family award.'});assert.equal(x.state.stage,'aslan-estate');assert.equal(x.state.character.skills.Independence,decision==='omit'?undefined:0);assert.equal(x.log.at(-1).rolls.length,0);round(x);}
 });
 test('unknown family SOC needs a decision before any family die',()=>{
@@ -56,4 +56,12 @@ test('non-Aslan and Imperial-Aslan setup retain their existing routes',()=>{
 test('family Profession0 is the printed generic familiarity without consuming a normal pick',()=>{let r=force(build({familySOC:3}),'roll-aslan-family',{},[1]);const count=r.state.backgroundRemaining;r=run(r,'choose-effect',{index:1});assert.equal(r.state.character.skills.Profession,0);assert.equal(r.state.backgroundRemaining,count);assert.equal(r.state.stage,'aslan-birth-order');round(r);});
 test('each clan scope branch logs the actual die separately, including D2 and D3 boundaries',()=>{
  for(const total of [3,4,5,10,11]){let natural;for(let n=0;n<70;n++){const r=run(build({seed:'clan-scope-'+total+'-'+n,stage:'aslan-clan'}),'roll-aslan-clan');if(r.state.currentAslanOrigin.clan.total===total){natural=r;break;}}assert.ok(natural,'Find natural clan row '+total);for(const value of [1,3,4,6]){const r=run(natural,'gm-replay',{revision:natural.revision,rollIndex:1,values:[value],reason:'Exact source scope boundary'}),scope=r.state.currentAslanOrigin.clan.scope;assert.equal(r.state.currentAslanOrigin.clan.total,total);assert.equal(scope.die,value);assert.equal(scope.count,Math.ceil(value/([3,11].includes(total)?2:total===5?3:1)));assert.equal(r.log.at(-1).rolls.length,2);round(r);}}
+});
+
+test('current female family Independence rerolls with complete replayable audit',()=>{
+ let r;for(let n=0;n<60;n++){const x=run(build({seed:'female-reroll-'+n,gender:'female',familySOC:2}),'roll-aslan-family',{}, {id:'female-family-once'});if(x.log.at(-1).rolls[0].values[0]===4){r=x;break;}}assert.ok(r);assert.deepEqual(run(r,'roll-aslan-family',{}, {id:'female-family-once'}).state,r.state);
+ assert.notEqual(r.state.currentAslanOrigin.family.die,4);assert.equal(r.state.character.skills.Independence,undefined);
+ assert.equal(r.log.at(-1).rolls[0].values[0],4);assert.ok(r.log.at(-1).rolls.length>1);assert.equal(r.state.currentAslanOrigin.family.rerolls.length,r.log.at(-1).rolls.length);round(r);
+ r=run(r,'gm-replay',{revision:r.revision,rollIndex:1,values:[3],reason:'Replacement family roll audit'});assert.equal(r.state.character.skills.Survival,0);assert.equal(r.state.currentAslanOrigin.family.die,3);round(r);
+ rejected(r,'roll-aslan-family',{},/already|not ready/);
 });

@@ -214,7 +214,7 @@ Use `currentAslanOrigin`, including its projected `estateOptions`, `canRollGende
 `book-step` with `pending.kind:"aslan-origin-source"` requires `resolve-aslan-origin-source`, not generic effects. All such rulings require GM mode and a 1–500 character reason:
 
 - `sourceDecision.kind:"family-band"`: `{band,reason}` for the unprinted initial family SOC, using only projected choices.
-- `female-independence`: `{decision:"omit"|"grant-level-zero",reason}`. The level-zero grant is explicitly a referee exception to the gender restriction, not an invented substitute award.
+- Legacy `.16`/`.17` only, `female-independence`: `{decision:"omit"|"grant-level-zero",reason}`. The level-zero grant is explicitly a referee exception to the gender restriction, not an invented substitute award.
 - `gender`: `{gender:"male"|"female",reason}` selects the published mechanical branch. `character.identityGender` and `aslanOrigin.identityGender` retain the original choice; `character.gender` remains the engine's mechanical field. Clients display the identity separately from the source branch.
 
 Source decisions retain their own ledger. Estate inheritance eligibility does not prove present ownership, grant an asset, pay cash or advance time. Initial Outcast family classification does not fabricate previous career service. Restore and replay remain explicit audited operations; origin history is not silently corrected by later SOC edits. The original-SOC fields in earned restoration events remain deliberate referee inputs, not automatically filled from family SOC.
@@ -347,3 +347,9 @@ Vargr Psion Event 6 (Aliens 2026 p. 201) permits a non-psionic skill, excluding 
 New sessions expose the buyout through the ordinary `effect-choice` stage and `choose-effect {index}` command. `pendingChoice.buyoutPlan` records the accrued/current-term/rank components, owed loss IDs, total forfeited rolls, and payment range. No decision is preselected. Acceptance records `career.believerBuyout`, adds its cash payment, closes the term and requires career exit with no restored forfeited benefits. Refusal keeps the career and rolls 1D Enemies. The choice is available in player mode; replay/import and duplicate command IDs preserve the decision and payout. Historical .16/.17 choices and manual source resolution remain unchanged.
 
 Believer event 9: the player chooses either one 2D roll multiplied by Cr10,000 and the forfeited roll count, or separate 2D rolls per forfeited Benefit roll, summed and multiplied by Cr10,000. Both acceptance options leave the career; refusal gains 1D Enemies. The recorded calculation shows every result, formula and total. This calculation choice is an explicit player ruling; legacy .16/.17 source-resolution is unchanged.
+
+### Female Aslan Independence ruling (.18)
+
+The user ruling of 2026-11-09 rerolls a mandatory Independence result from the same source table, retaining all dice and modifiers. Family Outcast row 4 rerolls before any award; the accepted row supplements ordinary background skills. Material-benefit replacements (including borrowed-ship rerolls) consume only the original benefit entitlement. Printed gender substitutions and legal choice alternatives remain available; male-only choices retain their original indices but are unavailable with a reason.
+
+A command is limited to 64 candidate rolls; exhaustion rejects the entire action without committing a partial award. Fixed or event awards without an originating rerollable table remain explicit source decisions. This is a user ruling, not newly claimed printed text. Historical `.16` and `.17` mechanics are unchanged.

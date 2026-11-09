@@ -94,6 +94,17 @@ function requireAllocationsBefore(state,e,base){const effects=allocationEffects(
 function specializationOptions(state){return {available:!!state.deferredSpecializations&&pendingSpecializations(state).length>0&&!state.pendingChoice&&!state.pending&&!state.effectsQueue?.length&&['career','precareer','training','survival','advancement','term-end','benefits','retirement','finish'].includes(state.stage),count:pendingSpecializations(state).length};}
 function normalizedSkill(state,name,options={}){return normalizeSkillName(name,{...options,canonicalOpen:!!state.deferredSpecializations});}
 function allocationImproves(state,name,e){name=normalizedSkill(state,name).name;const old=state.character.skills[name]??0,next=e.mode==='set'?Math.max(old,e.value):Math.min(4,old+e.value),fixed=e.followingFixedAward;if(e.maximum&&next>e.maximum||e.followingConnection===name&&next>=3)return false;if(fixed?.name&&normalizedSkill(state,fixed.name).name===name){const after=n=>fixed.mode==='set'?Math.max(n,fixed.value):Math.min(4,n+fixed.value);return after(next)>after(old);}return next>old;}
+
+// User ruling (2026-11-09): reroll mandatory female Independence table results.
+function mandatoryIndependence(state,effects){return (effects??[]).some(e=>e.kind==='independence'||e.kind==='skill'&&e.name==='Independence'||e.kind==='conditional'&&mandatoryIndependence(state,conditionMatches(state,e.condition)?e.then:e.otherwise));}
+function femaleIndependenceTableRoll(state,rows,modifier,rolls,label){
+ for(let attempt=0;attempt<64;attempt++){
+  const result=dice(state,1,rolls,attempt?label+' (female Independence reroll '+attempt+')':label)+modifier;
+  if(!state.deferredSpecializations||state.character.species!=='aslan'||state.character.gender!=='female'||!mandatoryIndependence(state,rows?.[result-1]))return result;
+ }
+ throw Error('Female Independence reroll limit reached (64 attempts); no award or action committed.');
+}
+
 function independenceAcquired(state,name,rolls){
  if(!state.deferredSpecializations||name!=='Independence')return true;
  need(state.character.species==='aslan'&&state.character.gender==='male','Independence is available only to male Aslan.');
@@ -1234,7 +1245,7 @@ function openBenefitShip(state,e,rolls){
 function rerollMaterialBenefit(state,e,rolls){
  const award=benefitAward(state,e.awardId),context=award.origin.tableContext,career=state.active!==null?currentCareer(state).career:null;
  if(!context||!career||context.careerId!==career.id||context.table!=='material'){benefitSource(state,award,'benefit-source','This repeated borrowed ship requires a material-table reroll, but its original table and modifiers were not recorded. Resolve the replacement explicitly.');return false;}
- const natural=dice(state,1,rolls,'Repeated ship: material benefit'),result=natural+context.modifier,entry={natural,modifier:context.modifier,result};state.benefitRollContext?.rolls.push(entry);award.reroll=entry;
+ const start=rolls.length,result=femaleIndependenceTableRoll(state,RULE_PACK[context.careerId]?.benefits.material,context.modifier,rolls,'Repeated ship: material benefit'),natural=result-context.modifier,entry={natural,modifier:context.modifier,result};state.benefitRollContext?.rolls.push(...rolls.slice(start).map(r=>({natural:r.total,modifier:context.modifier,result:r.total+context.modifier})));award.reroll=entry;
  const rows=RULE_PACK[context.careerId]?.benefits.material;
  if(!rows?.[result-1]){benefitSource(state,award,'benefit-source','The replacement benefit result '+result+' is outside the printed table. Resolve it explicitly without consuming another benefit roll.');return false;}
  award.status='rerolled';state.effectsQueue.unshift(...markBenefitOrigin(rows[result-1],{...award.origin,tableContext:{...context,...entry}}));return true;
@@ -1432,7 +1443,7 @@ function drainEffects(state,rolls) {
     break;
    }
    case 'career-permission':if(e.career==='core.psion')state.character.psionEntryPermission=true;else {nativeFallback(state,e);return;}break;
-   case 'choice':if(state.correctedCareerEvents&&e.believerBuyoutChoice){const plan=believerBuyoutPlan(currentCareer(state).record,state.character.lifeBenefitLosses,state.active);e.label=believerBuyoutChoice(plan);e.buyoutPlan=plan;e.options[0].label='Accept: roll 2D once x forfeited rolls';e.options[0].effects[0].calculation='once';e.options[1].label='Refuse payment and gain 1D Enemies';e.options.push({label:'Accept: separate 2D per forfeited roll',effects:[{...copy(e.options[0].effects[0]),calculation:'separate'}]});}state.pendingChoice=e.guard==='zhodani-government-defence'&&state.character.psionicLoss?.permanent?{...e,options:e.options.filter(o=>o.label!=='PSI'),unavailableOptions:[{label:'PSI',reason:'Permanent psionic loss prevents this defence option.'}]}:e;state.stage='effect-choice';return;
+   case 'choice':if(state.deferredSpecializations&&state.character.species==='aslan'&&state.character.gender==='female')e.options=e.options.map(o=>mandatoryIndependence(state,o.effects)?{...o,available:false,reason:'Independence is male-only. Choose a listed alternative.'}:o);if(state.correctedCareerEvents&&e.believerBuyoutChoice){const plan=believerBuyoutPlan(currentCareer(state).record,state.character.lifeBenefitLosses,state.active);e.label=believerBuyoutChoice(plan);e.buyoutPlan=plan;e.options[0].label='Accept: roll 2D once x forfeited rolls';e.options[0].effects[0].calculation='once';e.options[1].label='Refuse payment and gain 1D Enemies';e.options.push({label:'Accept: separate 2D per forfeited roll',effects:[{...copy(e.options[0].effects[0]),calculation:'separate'}]});}state.pendingChoice=e.guard==='zhodani-government-defence'&&state.character.psionicLoss?.permanent?{...e,options:e.options.filter(o=>o.label!=='PSI'),unavailableOptions:[{label:'PSI',reason:'Permanent psionic loss prevents this defence option.'}]}:e;state.stage='effect-choice';return;
    case 'skill-choice':
     if(['assignment','eligible-career'].includes(e.scope)&&state.active!==null){
      const {career,record}=currentCareer(state),choice=vargrTrainingChoice({careerId:career.id,assignment:record.assignment,pack:nativePack(state),eligibleTables:trainingOptions(state).map(t=>t.id),effect:e});
@@ -1640,7 +1651,7 @@ function drainEffects(state,rolls) {
    case 'aslan-officer-rank-choice':{const {record}=currentCareer(state);state.pendingAslanOfficerRank={careerIndex:state.active,offerId:record.aslanOfficerOfferId,source:{id:'aliens',page:39}};state.stage='aslan-officer-rank';return;}
    case 'conditional-future':state.character.futureConditions??=[];state.character.futureConditions.push(copy(e));break;
    case 'assignment-effect':{state.effectsQueue.unshift(...copy(e.assignments[currentCareer(state).record.assignment]??[]));break;}
-   case 'independence':{if(state.character.gender!=='male'||state.deferredSpecializations&&state.character.species!=='aslan'){nativeFallback(state,e,'Resolve the gender-specific Independence result.');return;}const result=dice(state,2,rolls,'Independence acquisition');if(result>stat(state,'SOC')){if(skillAwardExceedsLimit(state,'Independence',e.value??1,e.mode)){nativeFallback(state,e,'This mandatory Independence award would exceed the total skill limit. Resolve it explicitly without exceeding Core p. 18.');return;}gainSkill(state,'Independence',e.value??1,e.mode);}break;}
+   case 'independence':{if(state.character.gender!=='male'||state.deferredSpecializations&&state.character.species!=='aslan'){nativeFallback(state,e,state.deferredSpecializations?'No rerollable source table accompanies this fixed/event Independence award. Resolve its replacement explicitly; Independence remains male-only.':'Resolve the gender-specific Independence result.');return;}const result=dice(state,2,rolls,'Independence acquisition');if(result>stat(state,'SOC')){if(skillAwardExceedsLimit(state,'Independence',e.value??1,e.mode)){nativeFallback(state,e,'This mandatory Independence award would exceed the total skill limit. Resolve it explicitly without exceeding Core p. 18.');return;}gainSkill(state,'Independence',e.value??1,e.mode);}break;}
    case 'conditional':{
     if(state.deferredSpecializations&&state.character.species==='aslan'&&culturalSkillAward(e)){state.character.historyNotes??=[];state.character.historyNotes.push(e.then.map(effect=>effect.name).join(', ')+' is culturally '+e.condition.gender+'-associated, but may be learned by other genders (Aliens 2026 p. 19).');state.effectsQueue.unshift(...copy(e.then).map(effect=>({...effect,culturalPreference:{gender:e.condition.gender,restricted:false,source:copy(ASLAN_CULTURAL_SKILL_SOURCE)}})));break;}
     const condition=e.condition;let passes=true;
@@ -1770,8 +1781,10 @@ function apply(state,command,rolls) {
   const o=state.character.aslanOrigin;need(state.stage==='aslan-family'&&o&&!o.family,'The family background has already been rolled or is not ready.');need(Object.keys(payload).length===0,'The family roll takes no inputs.');need(o.gender,'Choose or roll the source gender branch first.');
   const band=aslanFamilyBand(o.familySOC)??o.familyBandDecision?.band;
   if(!band){originSource(state,'family-band','The initial SOC has no printed family band. Record a referee band before rolling.',17);return 'Family background awaits an unprinted-SOC ruling; no die rolled.';}
-  const die=dice(state,1,rolls,'Aslan family background'),result=aslanFamilyResult({soc:o.familySOC,die,gender:state.character.gender,band});
+  const rows=Array.from({length:6},(_,i)=>aslanFamilyResult({soc:o.familySOC,die:i+1,gender:state.character.gender,band}).effects);
+  const start=rolls.length,die=femaleIndependenceTableRoll(state,rows,0,rolls,'Aslan family background'),result=aslanFamilyResult({soc:o.familySOC,die,gender:state.character.gender,band});
   o.family={source:result.source,die,band,label:result.label,status:'resolving-award',awardsBefore:copy(state.character.skills),awardsAfter:null};
+  if(state.deferredSpecializations&&rolls.length>start+1)o.family.rerolls=rolls.slice(start).map(r=>({die:r.values[0],label:r.label,source:copy(result.source),band}));
   if(result.needsDecision){originSource(state,result.needsDecision,'Resolve the female family award against the male-only Independence rule.',20);return result.label+' awaits the typed Independence ruling.';}
   queueEffects(state,sourcedEffects(result.effects,{id:'aliens',page:17}),'aslan-origin-family',rolls);return 'Family background: '+result.label+'. Award supplements ordinary background skills.';
  }
@@ -2375,7 +2388,7 @@ function apply(state,command,rolls) {
  }
  case 'choose-effect': {
   need(state.stage==='effect-choice'&&state.pendingChoice,'There is no effect choice.');removeUnavailablePsionicAgeingChoice(state);
-  const option=state.pendingChoice.options[integer(payload.index,0,state.pendingChoice.options.length-1,'Choice')];if(state.pendingChoice.awardId)benefitAward(state,state.pendingChoice.awardId).decisions.push({type:'choice',index:payload.index,label:option.label});state.pendingChoice=null;state.effectsQueue.unshift(...copy(option.effects));drainEffects(state,rolls);return 'Chose '+option.label+'.';
+  const option=state.pendingChoice.options[integer(payload.index,0,state.pendingChoice.options.length-1,'Choice')];need(option.available!==false,option.reason??'This option is unavailable.');if(state.pendingChoice.awardId)benefitAward(state,state.pendingChoice.awardId).decisions.push({type:'choice',index:payload.index,label:option.label});state.pendingChoice=null;state.effectsQueue.unshift(...copy(option.effects));drainEffects(state,rolls);return 'Chose '+option.label+'.';
  }
  case 'skill-award-source':{
   need(state.stage==='skill-choice'&&state.pendingChoice,'No skill award is pending.');const effect=copy(state.pendingChoice);state.pendingChoice=null;nativeFallback(state,effect,'Resolve this constrained or over-cap skill award explicitly. Record the chosen outcome without exceeding the total skill limit.');return 'Skill award paused for explicit source resolution.';
@@ -2401,7 +2414,7 @@ function apply(state,command,rolls) {
   need(state.stage==='training','No training roll is pending.');need(trainingOptions(state).some(x=>x.id===payload.table),'Training table is not available.');const pack=nativePack(state),{record,career}=currentCareer(state);const rows=payload.table==='assignment'?pack.training.assignments[record.assignment]:pack.training[payload.table];
   const tableModifier=payload.table==='assignment'?(pack.prerequisites.assignmentTableModifiers??[]).filter(m=>conditionMatches(state,m.condition)).reduce((n,m)=>n+m.dm,0):0;
   if(rows.length!==6&&rows.length!==9){sourceStep(state,'term-training',career.source,career.page,'Resolve the special training table.','survival');return 'Training table requires source resolution.';}
-  const result=dice(state,1,rolls,'Training: '+payload.table)+tableModifier;queueEffects(state,markPsionicOrigin(rows[result-1],{careerId:career.id,assignment:record.assignment,table:payload.table,result}),state.trainingNext??'survival',rolls);state.trainingNext=null;return 'Training '+payload.table+' result '+result+'.';
+  const result=femaleIndependenceTableRoll(state,rows,tableModifier,rolls,'Training: '+payload.table);queueEffects(state,markPsionicOrigin(rows[result-1],{careerId:career.id,assignment:record.assignment,table:payload.table,result}),state.trainingNext??'survival',rolls);state.trainingNext=null;return 'Training '+payload.table+' result '+result+'.';
  }
  case 'survival': {
   need(state.stage==='survival','Not at the survival check.');
@@ -2534,14 +2547,15 @@ function apply(state,command,rolls) {
   const lifeModifier=lifeBonuses.reduce((n,b)=>n+b.value,0);
   const credits=selectedBenefitCredits(state,payload),creditIds=credits.map(c=>c.id),creditModifier=credits.reduce((n,c)=>n+c.value,0);
   const modifier=(record.benefitDM??0)+(cash&&Object.hasOwn(state.character.skills,'Gambler')?1:0)+modifierTotal(state,'benefit')+speciesModifiers+creditModifier+lifeModifier;
-  const result=dice(state,1,rolls,cash?'Cash benefit':'Material benefit')+modifier;
+  const benefitRollStart=rolls.length;
+  const result=cash?dice(state,1,rolls,'Cash benefit')+modifier:femaleIndependenceTableRoll(state,nativePack(state)?.benefits.material,modifier,rolls,'Material benefit');
   for(const b of lifeBonuses){b.status='consumed';b.consumption={careerId:career.id,careerIndex:state.active,cash,die:result-modifier,result};}
   consumeBenefitCredits(credits,{kind:'ordinary',careerId:career.id,careerIndex:state.active,cash,die:result-modifier,result});
-  state.benefitRollContext={careerId:career.id,careerIndex:state.active,table:cash?'cash':'material',modifier,natural:result-modifier,result,creditIds,lifeBonusIds,rolls:[{natural:result-modifier,modifier,result}]};
+  state.benefitRollContext={careerId:career.id,careerIndex:state.active,table:cash?'cash':'material',modifier,natural:result-modifier,result,creditIds,lifeBonusIds,rolls:rolls.slice(benefitRollStart).map(r=>({natural:r.total,modifier,result:r.total+modifier}))};
   if(cash){state.cashRolls++;const account=cashRollAccount(state);if(account)state.character.cashRollAccounts[account]++;if(Object.hasOwn(state.character.stats,'WLT'))state.character.stats.WLT=Math.min(15,state.character.stats.WLT+1);}
   const pack=nativePack(state),index=result-1;
   if(index>=7||index<0){sourceStep(state,'benefit',career.source,career.page,'Benefit result '+result+' is outside the printed table. Referee adjudication required.','benefits');state.pending.rollContext=copy(state.benefitRollContext);return 'Benefit roll exceeds printed table; no result was assumed.';}
-  if(pack){const origin={careerId:career.id,careerIndex:state.active,source:{id:career.source,page:career.page},tableContext:{careerId:career.id,table:cash?'cash':'material',modifier,natural:result-modifier,result}};state.benefitRollContext={...origin.tableContext,careerIndex:state.active,creditIds,lifeBonusIds,rolls:[{natural:result-modifier,modifier,result}]};queueEffects(state,cash?[{kind:'cash',value:pack.benefits.cash[index]*(state.character.species==='aslan'&&state.character.culture==='native'&&state.character.gender==='male'&&cashRollAccount(state)!=='core'?0.5:1)}]:markBenefitOrigin(pack.benefits.material[index],origin),'benefit-complete',rolls);}else sourceStep(state,'benefit',career.source,career.page,'Resolve '+(cash?'cash':'material')+' benefit result '+result+'.','benefits');
+  if(pack){const origin={careerId:career.id,careerIndex:state.active,source:{id:career.source,page:career.page},tableContext:{careerId:career.id,table:cash?'cash':'material',modifier,natural:result-modifier,result}};state.benefitRollContext={...origin.tableContext,careerIndex:state.active,creditIds,lifeBonusIds,rolls:rolls.slice(benefitRollStart).map(r=>({natural:r.total,modifier,result:r.total+modifier}))};queueEffects(state,cash?[{kind:'cash',value:pack.benefits.cash[index]*(state.character.species==='aslan'&&state.character.culture==='native'&&state.character.gender==='male'&&cashRollAccount(state)!=='core'?0.5:1)}]:markBenefitOrigin(pack.benefits.material[index],origin),'benefit-complete',rolls);}else sourceStep(state,'benefit',career.source,career.page,'Resolve '+(cash?'cash':'material')+' benefit result '+result+'.','benefits');
   return 'Rolled '+(cash?'cash':'material')+' benefit '+result+' (DM '+modifier+').';
  }
  case 'resolve-prisoner-lawyer':{
