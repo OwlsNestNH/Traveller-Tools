@@ -1,5 +1,5 @@
 {
-  "provenance": "Generated using unchanged .16 engine at git 1af31388be3a248c4426f7049184fedf3e3f46cc. Synthetic test character only.",
+  "provenance": "Generated using unchanged .16 engine at git 1af31388be3a248c4426f7049184fedf3e3f46cc. Synthetic test character only. State fingerprints exclude read-only training preview information; all mechanics and the complete audit log remain covered.",
   "session": {
     "format": "traveller-character-session",
     "version": 1,
@@ -550,7 +550,7 @@
     },
     {
       "count": 20,
-      "state": "82969b3745f1137afe43c493f0eec686055166fc9edf2092058c3c1493505215",
+      "state": "0c9e6c7d82284b407c220e38e36ca60d97e5836a17f6de2cf59c6730ad37784d",
       "log": "83d608a1e053fe9638901a73fcd68ba1898d5194887806acc50b65e7a105459c"
     },
     {

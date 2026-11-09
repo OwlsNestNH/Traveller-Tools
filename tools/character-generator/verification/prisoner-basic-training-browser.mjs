@@ -31,8 +31,8 @@ try{
    await page.reload();await page.getByRole('heading',{name:'Regular term training'}).waitFor();
    assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);
    const info=page.getByLabel('View skills and outcomes: Assignment skills');await info.focus();await info.press('Enter');
-   assert.equal(await page.locator('.training-information[open]').count(),1);assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);
-   await info.press('Enter');assert.equal(await page.locator('.training-information[open]').count(),0);
+   assert.equal(await page.locator('.training-information[open], .training-information:popover-open').count(),1);assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);
+   await info.press('Enter');assert.equal(await page.locator('.training-information[open], .training-information:popover-open').count(),0);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
    const name=width+(apiMode?'-http':'-static');await page.locator('#workspace').screenshot({path:fileURLToPath(new URL('prisoner-basic-training-'+name+'.png',out))});
    await page.getByRole('button',{name:'Assignment skills',exact:true}).evaluate(button=>{button.click();button.click();});

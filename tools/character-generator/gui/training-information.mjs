@@ -1,11 +1,11 @@
-export function trainingInformationView(info,name,esc){
+function informationId(name){let hash=2166136261;for(const c of name)hash=Math.imul(hash^c.codePointAt(0),16777619);return 'training-information-'+(hash>>>0).toString(36);}
+export function trainingInformationView(info,name,esc,identity=name){
  if(!info)return '';
- const sections=[['Skills',info.skills],['Characteristics',info.characteristics],['Other outcomes',info.other]].filter(([,entries])=>entries?.length);
- const label='View skills and outcomes: '+name;
- return '<details class="training-information"><summary aria-label="'+esc(label)+'" title="'+esc(label)+'"><span aria-hidden="true">ⓘ</span></summary>'+sections.map(([label,entries])=>'<p><strong>'+label+':</strong> '+entries.map(esc).join(', ')+'.</p>').join('')+'<p class="tiny">Possible outcomes, listed alphabetically. Choosing the table rolls one result; some results require a further choice.</p></details>';
+ const entries=info.entries??[...(info.skills??[]),...(info.characteristics??[]),...(info.other??[])],id=informationId(identity),label='View skills and outcomes: '+name;
+ return '<button type="button" class="training-info-trigger" aria-haspopup="dialog" popovertarget="'+id+'" aria-label="'+esc(label)+'" title="'+esc(label)+'"><span aria-hidden="true">ⓘ</span></button><div popover="auto" id="'+id+'" class="training-information" role="dialog" aria-label="'+esc(name+' table information')+'"><div class="training-info-heading"><h3>'+esc(name)+'</h3><button type="button" class="training-info-close" popovertarget="'+id+'" popovertargetaction="hide" aria-label="Close table information">×</button></div><ul>'+entries.map(entry=>'<li>'+esc(entry)+'</li>').join('')+'</ul><p class="tiny">In table order. Choosing the table rolls one result; some results require a further choice.</p></div>';
 }
 export function trainingChoiceView(label,info,action,attributes,{esc,button}){
- return '<div class="training-choice">'+button(esc(label),action,'choice',attributes)+trainingInformationView(info,label,esc)+'</div>';
+ return '<div class="training-choice">'+button(esc(label),action,'choice',attributes)+trainingInformationView(info,label,esc,action+' '+attributes+' '+label)+'</div>';
 }
 // Describe confirmed changes from the audit, not an assumed table award. Keep
 // saved summaries untouched so existing characters still replay identically.

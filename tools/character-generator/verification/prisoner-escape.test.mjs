@@ -11,6 +11,8 @@ const legacy=JSON.parse(readFileSync(new URL('./prisoner-escape-legacy.json',imp
 const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
 function assertOriginal(result,expected){
  const state=structuredClone(result.state);delete state.prisonerEscape;
+ // Preview labels are display metadata, not saved mechanics or RNG.
+ for(const option of state.trainingOptions??[])delete option.information;
  assert.equal(hash(state),expected.state);assert.equal(hash(result.log),expected.log);
 }
 export function escapeFixture(){return {session:structuredClone(legacy.session),...project(legacy.session)};}
@@ -45,6 +47,23 @@ test('explicit escape uses only the chosen skill, including a lower skill than t
   else {assert.equal(r.state.character.careers[1].escaped,true);assert.equal(r.state.stage,'term-end');}
   assert.deepEqual(project(importSession(exportSession(r.session))).state,r.state);
   rejected(r,'prisoner-escape',{skill},/No Prisoner escape/);
+ }
+});
+
+test('each old pending checkpoint can finish its original actions without rewriting history',()=>{
+ for(const expected of legacy.checkpoints){
+  const original={...legacy.session,events:legacy.session.events.slice(0,expected.count)},raw=exportSession(original);
+  let r={session:importSession(raw)};
+  for(const event of legacy.session.events.slice(expected.count))r=run(r,event.command.type,event.command.payload,{id:event.id});
+  assert.equal(exportSession(original),raw);
+  assert.deepEqual(r.session,legacy.session);
+  for(const branch of legacy.branches){
+   let continued=r;
+   for(const event of branch.events)continued=run(continued,event.command.type,event.command.payload,{id:event.id});
+   assertOriginal(project(continued.session),branch);
+   assert.deepEqual(continued.session.events.slice(0,expected.count),original.events);
+   assert.equal(continued.session.rulesRevision,original.rulesRevision);
+  }
  }
 });
 
