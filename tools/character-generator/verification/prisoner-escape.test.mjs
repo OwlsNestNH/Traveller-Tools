@@ -31,7 +31,7 @@ test('escape result colors use the verified selected-skill outcome, never notes 
 });
 
 test('unmodified .16 checkpoints and earlier escape results replay exactly without changing save bytes',()=>{
- assert.equal(RULES_REVISION,'character-preview-2026-11-09.17');
+ assert.equal(RULES_REVISION,'character-preview-2026-11-09.18');
  for(const expected of legacy.checkpoints){
   const session={...legacy.session,events:legacy.session.events.slice(0,expected.count)},raw=JSON.stringify(session,null,2);
   const imported=importSession(raw);assert.equal(exportSession(imported),raw);assert.equal(imported.rulesRevision,'character-preview-2026-11-09.16');
@@ -94,9 +94,9 @@ test('pending escape survives notes and restore, rejects invalid skills atomical
  assert.match(view,/Attempt escape using Stealth \(10\+\)/);assert.match(view,/Attempt escape using Deception \(10\+\)/);assert.match(view,/Stay in prison/);assert.match(view,/Check DM \+1/);
 });
 
-test('new sessions use .17 while .15 and older and deferred .16 saves retain their protection',()=>{
+test('new sessions use the current revision while .15 and older and deferred .16 saves retain their protection',()=>{
  assert.equal(api({operation:'create',seed:'new-escape'}).session.rulesRevision,RULES_REVISION);
- for(const revision of ['character-preview-2026-11-09.15','character-preview-2026-11-09.18',undefined]){
+ for(const revision of ['character-preview-2026-11-09.15','character-preview-2026-11-09.999',undefined]){
   const session={...legacy.session,rulesRevision:revision};assert.equal(api({operation:'project',session}).ok,false);
  }
  const damaged=structuredClone(legacy.session);damaged.events.find(event=>event.rolls?.length).rolls[0].values[0]=99;
@@ -104,7 +104,7 @@ test('new sessions use .17 while .15 and older and deferred .16 saves retain the
  const deferred=structuredClone(legacy.session);deferred.events[1].command.payload.species='zhodani';assert.equal(api({operation:'project',session:deferred}).ok,false);
 });
 
-test('fresh .17 sessions reach the same opportunity without converting a legacy save',()=>{
+test('fresh current-revision sessions reach the same opportunity without converting a legacy save',()=>{
  let r=api({operation:'create',seed:legacy.session.seed});
  for(const event of legacy.session.events)r=run(r,event.command.type,event.command.payload);
  assert.equal(r.session.rulesRevision,RULES_REVISION);assert.equal(prisonerEscapePending(r.state),true);

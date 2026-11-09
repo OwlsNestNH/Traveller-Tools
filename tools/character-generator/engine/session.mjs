@@ -2768,7 +2768,7 @@ export function project(session) {
  need(typeof session.seed==='string'&&session.seed.length>0&&session.seed.length<=120,'Invalid random seed.');
  need(Array.isArray(session.events)&&session.events.length<=LIMIT,'Save contains too many actions.');
  need(saveSize(session)<=MAX_SAVE_BYTES,'Save size limit reached. Export your current character before continuing.');
- let state=initial(session.seed);state.deferredSpecializations=!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision);const snapshots=[copy(state)],log=[];
+ let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision))state.deferredSpecializations=true;const snapshots=[copy(state)],log=[];
  for(let i=0;i<session.events.length;i++){
   const event=session.events[i];need(plain(event)&&typeof event.id==='string'&&event.id.length<=120,'Invalid action record.');
   need(!log.some(e=>e.id===event.id),'Duplicate action ID.');
@@ -2827,7 +2827,7 @@ export function project(session) {
  state.psionicOptions=state.stage==='psionic-training'?psionicOptions(state):[];
   state.psionicCanFinish=state.stage==='psionic-training'&&state.psionicTraining?.mode==='initial';
   state.canStartPsionicTraining=!accessMandatory(state)&&!state.character.psionicLoss&&['career','precareer'].includes(state.stage)&&state.active===null&&!state.forcedCareer&&!state.character.retirementFromCreation&&(!Object.hasOwn(state.character.stats,'PSI')||state.character.stats.PSI>0)&&!state.character.psionics?.training.some(t=>t.completed);
- state.skillChoiceSuggestions=skillChoiceSuggestions(state);state.specializationOptions=specializationOptions(state);state.skillChoiceBases=[...new Set([...state.skillChoiceSuggestions.map(n=>n.split(' (')[0]),...['Science (physics)','Language (Galanglic)','Profession (construction)'].filter(n=>state.stage==='skill-choice'&&skillNameAllowed(state,n,state.pendingChoice)).map(n=>n.split(' (')[0])])].sort();
+ state.skillChoiceSuggestions=skillChoiceSuggestions(state);if(state.deferredSpecializations){state.specializationOptions=specializationOptions(state);state.skillChoiceBases=[...new Set([...state.skillChoiceSuggestions.map(n=>n.split(' (')[0]),...['Science (physics)','Language (Galanglic)','Profession (construction)'].filter(n=>state.stage==='skill-choice'&&skillNameAllowed(state,n,state.pendingChoice)).map(n=>n.split(' (')[0])])].sort();}
  if(prisonerEscapePending(state))state.prisonerEscape={skills:['Stealth','Deception'].map(name=>({name,level:skillLevel(state,name),modifier:skillCheckDM(state,name)}))};
   state.trainingOptions=state.stage==='training'?trainingOptions(state):[];
  // Add labels only after replay. Presentation metadata cannot alter saved

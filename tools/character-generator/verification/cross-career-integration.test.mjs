@@ -76,7 +76,7 @@ test('explicit extra-roll exception remains separately audited and consumes a fo
  r=force(r,'advisory-cash',{},[1]);assert.equal(r.state.cashRolls,4);assert.equal(r.state.character.advisoryServices.at(-1).cash.capException,true);assert.equal(r.state.character.advisoryServices.at(-1).cashLimitDecision.decision,'allow-extra');roundtrip(r);
 });
 test('revision .6 rejects earlier .5 save unchanged before reconstruction',()=>{
- assert.equal(RULES_REVISION,'character-preview-2026-11-09.17');const old=structuredClone(government.session);old.rulesRevision='character-preview-2026-11-08.5';const bytes=JSON.stringify(old);assert.equal(api({operation:'project',session:old}).ok,false);assert.equal(JSON.stringify(old),bytes);
+ assert.equal(RULES_REVISION,'character-preview-2026-11-09.18');const old=structuredClone(government.session);old.rulesRevision='character-preview-2026-11-08.5';const bytes=JSON.stringify(old);assert.equal(api({operation:'project',session:old}).ok,false);assert.equal(JSON.stringify(old),bytes);
 });
 
 test('explicit one-roll credits defer by default and reject duplicate, unknown and ineligible identifiers',()=>{

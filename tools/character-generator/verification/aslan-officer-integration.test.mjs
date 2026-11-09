@@ -102,5 +102,5 @@ test('offer rechecks forced next career and current outcast restrictions without
  }
 });
 test('revision .10 rejects old .9 before replay without modifying the save',()=>{
- assert.equal(RULES_REVISION,'character-preview-2026-11-09.17');const old=structuredClone(buildAslanOfficerFixture().session);old.rulesRevision='character-preview-2026-11-08.9';const bytes=JSON.stringify(old);const result=api({operation:'project',session:old});assert.equal(result.ok,false);assert.match(result.error.message,/Legacy or different rules revision/);assert.equal(JSON.stringify(old),bytes);
+ assert.equal(RULES_REVISION,'character-preview-2026-11-09.18');const old=structuredClone(buildAslanOfficerFixture().session);old.rulesRevision='character-preview-2026-11-08.9';const bytes=JSON.stringify(old);const result=api({operation:'project',session:old});assert.equal(result.ok,false);assert.match(result.error.message,/Legacy or different rules revision/);assert.equal(JSON.stringify(old),bytes);
 });
