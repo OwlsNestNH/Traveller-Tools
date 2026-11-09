@@ -5,7 +5,7 @@ import {api,exportSession,project} from '../engine/session.mjs';
 import {trainingFixture,run} from './training-information-fixtures.mjs';
 const url=new URL('../engine/session.mjs',import.meta.url);
 let source=await readFile(url,'utf8');source=source.replace(/from\s+'(\.\/[^']+)'/g,(_,path)=>'from '+JSON.stringify(new URL(path,url).href));
-source+='\nexport const audit={initial,queueEffects,apply,skillChoiceSuggestions};';
+source+='\nexport const audit={initial,queueEffects,apply,skillChoiceSuggestions,skillChoiceBases};';
 const {audit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 function fixture(){const s=a.initial('deferred');s.deferredSpecializations=true;s.character.stats={STR:7,DEX:7,END:7,INT:7,EDU:7,SOC:7};s.stage='career';return s;}
 const skill=(name,value=1,mode='set')=>({kind:'skill',name,value,mode});
@@ -51,3 +51,7 @@ test('connection and mandatory positive Independence awards perform acquisition 
 test('dependent checks allocate only relevant bases and leave unrelated awards until finalization',()=>{const s=fixture();a.queueEffects(s,[skill('Science'),skill('Drive'),{kind:'check',skills:['Drive (wheel)'],target:100,success:[],failure:[]}],'career',[]);assert.equal(s.pendingChoice.allowed[0],'Drive');choose(s,'Drive (wheel)');assert.equal(s.stage,'career');assert.equal(s.character.deferredSkillAwards.find(a=>a.name==='Science').status,'pending');});
 
 test('later immediately selected specialty preserves earlier minimum award chronology and remaining choices',()=>{const s=fixture();a.queueEffects(s,[skill('Gun Combat'),{kind:'skill-choice',scope:'any',mode:'increase',value:1,count:2}],'career',[]);choose(s,'Gun Combat (slug)');assert.equal(s.pendingChoice.allocationId,'specialization-1');choose(s,'Gun Combat (slug)');assert.equal(s.character.skills['Gun Combat (slug)'],2);assert.equal(s.stage,'skill-choice');assert.equal(s.pendingChoice.count,1);choose(s,'Medic');assert.equal(s.stage,'career');assert.equal(s.character.skills.Medic,1);});
+
+test('Connections added after finish remain allocatable and return to finish',()=>{const s=fixture();s.stage='finish';a.apply(s,{type:'connection',payload:{person:'Late Friend',skill:'Gun Combat'}},[]);a.apply(s,{type:'allocate-specializations'},[]);choose(s,'Gun Combat (energy)');assert.equal(s.stage,'finish');assert.equal(s.character.skills['Gun Combat (energy)'],1);assert.equal(s.character.deferredSkillAwards[0].status,'allocated');});
+
+test('Science base remains available for an untrained subject when physics is already known',()=>{const s=fixture();s.character.skills['Science (physics)']=1;a.queueEffects(s,[{kind:'skill-choice',scope:'untrained-electronics-or-science',mode:'set',value:1}],'career',[]);assert.ok(a.skillChoiceBases(s).includes('Science'));choose(s,'Science (chemistry)');assert.equal(s.character.skills['Science (chemistry)'],1);});

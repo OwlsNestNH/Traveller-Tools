@@ -89,7 +89,7 @@ function deferSkillAward(state,e){const awards=state.character.deferredSkillAwar
 function deferrableChoice(state,e){return !!state.deferredSpecializations&&!e.allocationId&&e.kind!=='skill-reduction-choice'&&!e.distinctSpecialties&&!e.permittedNames&&['any','assignment','eligible-career',undefined].includes(e.scope);}
 function allocationEffects(state,base){return pendingSpecializations(state,base).map(a=>({...copy(a),kind:'skill-choice',scope:'any',allowed:[a.name],allocationId:a.id,deferSpeciality:false,label:'Allocate '+a.name+' award: '+(a.mode==='set'?'gain at least level ':'increase by ')+a.value}));}
 function requireAllocationsBefore(state,e,base){const effects=allocationEffects(state,base);if(!effects.length)return false;if(e.kind==='skill'&&e.name.includes(' ('))for(const effect of effects)effect.followingFixedAward=copy(e);state.effectsQueue.unshift(...effects,e);return true;}
-function specializationOptions(state){return {available:!!state.deferredSpecializations&&pendingSpecializations(state).length>0&&!state.pendingChoice&&!state.pending&&!state.effectsQueue?.length&&['career','precareer','training','survival','advancement','term-end','benefits','retirement'].includes(state.stage),count:pendingSpecializations(state).length};}
+function specializationOptions(state){return {available:!!state.deferredSpecializations&&pendingSpecializations(state).length>0&&!state.pendingChoice&&!state.pending&&!state.effectsQueue?.length&&['career','precareer','training','survival','advancement','term-end','benefits','retirement','finish'].includes(state.stage),count:pendingSpecializations(state).length};}
 function normalizedSkill(state,name,options={}){return normalizeSkillName(name,{...options,canonicalOpen:!!state.deferredSpecializations});}
 function allocationImproves(state,name,e){name=normalizedSkill(state,name).name;const old=state.character.skills[name]??0,next=e.mode==='set'?Math.max(old,e.value):Math.min(4,old+e.value),fixed=e.followingFixedAward;if(e.maximum&&next>e.maximum||e.followingConnection===name&&next>=3)return false;if(fixed?.name&&normalizedSkill(state,fixed.name).name===name){const after=n=>fixed.mode==='set'?Math.max(n,fixed.value):Math.min(4,n+fixed.value);return after(next)>after(old);}return next>old;}
 function independenceAcquired(state,name,rolls){
@@ -1346,6 +1346,15 @@ export function skillChoiceSuggestions(state){
  const candidates=entries.flatMap(name=>Array.isArray(SPECIALITIES[name])?[...(!requireSpeciality?[name]:[]),...SPECIALITIES[name].map(speciality=>name+' ('+speciality+')')]:[name]);
  candidates.push(...Object.keys(state.character.skills));
  return [...new Set(candidates)].filter(name=>{try{normalizeSkillName(name,{requireSpeciality});if(effect.distinctSpecialties)distinctScienceSelection(name,effect.selected??[]);if(effect.kind==='skill-reduction-choice'&&(!(state.character.skills[name]>0)||effect.names&&!effect.names.includes(name)))return false;return skillNameAllowed(state,name,effect)&&(!effect.allocationId||allocationImproves(state,name,effect));}catch{return false;}}).sort((a,b)=>a.localeCompare(b,'en'));
+}
+function skillChoiceBases(state){
+ const suggestions=skillChoiceSuggestions(state),bases=suggestions.map(n=>n.split(' (')[0]);
+ if(state.stage==='skill-choice'&&state.pendingChoice)for(const base of ['Science','Language','Profession']){
+  let subject=base==='Science'?'physics':base==='Language'?'galanglic':'construction';
+  if(state.pendingChoice.scope==='untrained-electronics-or-science'){let i=1;while(Object.hasOwn(state.character.skills,base+' ('+subject+')'))subject='new subject '+i++;}
+  if(skillNameAllowed(state,base+' ('+subject+')',state.pendingChoice))bases.push(base);
+ }
+ return [...new Set(bases)].sort();
 }
 const SPECIALIZED = Object.keys(SPECIALITIES);
 function nativeFallback(state,effect,reason) {
@@ -2842,7 +2851,7 @@ export function project(session) {
  state.psionicOptions=state.stage==='psionic-training'?psionicOptions(state):[];
   state.psionicCanFinish=state.stage==='psionic-training'&&state.psionicTraining?.mode==='initial';
   state.canStartPsionicTraining=!accessMandatory(state)&&!state.character.psionicLoss&&['career','precareer'].includes(state.stage)&&state.active===null&&!state.forcedCareer&&!state.character.retirementFromCreation&&(!Object.hasOwn(state.character.stats,'PSI')||state.character.stats.PSI>0)&&!state.character.psionics?.training.some(t=>t.completed);
- state.skillChoiceSuggestions=skillChoiceSuggestions(state);if(state.deferredSpecializations){state.specializationOptions=specializationOptions(state);state.skillChoiceBases=[...new Set([...state.skillChoiceSuggestions.map(n=>n.split(' (')[0]),...['Science (physics)','Language (Galanglic)','Profession (construction)'].filter(n=>state.stage==='skill-choice'&&skillNameAllowed(state,n,state.pendingChoice)).map(n=>n.split(' (')[0])])].sort();}
+ state.skillChoiceSuggestions=skillChoiceSuggestions(state);if(state.deferredSpecializations){state.specializationOptions=specializationOptions(state);state.skillChoiceBases=skillChoiceBases(state);}
  if(prisonerEscapePending(state))state.prisonerEscape={skills:['Stealth','Deception'].map(name=>({name,level:skillLevel(state,name),modifier:skillCheckDM(state,name)}))};
   state.trainingOptions=state.stage==='training'?trainingOptions(state):[];
  // Add labels only after replay. Presentation metadata cannot alter saved
