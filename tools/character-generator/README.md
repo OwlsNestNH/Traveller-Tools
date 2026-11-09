@@ -194,3 +194,11 @@ These display fields are derived after replay validation and never change saved 
 New `.20` characters pause between undercover checks, borrowed career tables, subsequent checks and random consequences, Life/Unusual tables, and injury table/severity dice. Each pending step is saved before its next roll. Relationship choices do not roll the later consequence. Published dice, modifiers, outcomes and career accounting are unchanged. Other generation procedures outside these borrowed-career routes are not claimed to be fully separated.
 
 Existing `.16`–`.19` recorded commands retain their original combined outcomes. The UI uses explicit new cover and relationship commands for future separated steps without rewriting those saved histories or revisions.
+
+## Assets and benefits at finalization
+
+New .21 characters retain ordinary Core Armour, Blade, Gun, Weapon, Scientific Equipment and Personal Vehicle awards automatically as generic entitlements. Item details wait until finalization; each award has its own button and source-limited popup. Review assets & benefits also opens the checklist between benefit rolls or careers. Cancel keeps the award pending. Separate repeated awards are never collapsed into one item.
+
+Repeated received-weapon skill improvements and armour trade-ins stay linked to eligible earlier awards. A skill improvement remains unapplied until resolved, and interrupts only when a later skill change, relevant characteristic change or next career needs it. Unrelated pending equipment does not cause that interruption. Choose a listed Core item or enter a source/referee-checked custom item. The bounded catalogue contains two Cloth variants, Blade, Cutlass, Dagger, Autopistol and Rifle; it is not a complete equipment or combat engine. Augmentations, small craft, ship-history rulings and unsupported benefits retain their existing handling. Earlier .16–.20 saves retain their original immediate equipment workflow.
+
+Core unusual-event Alien Artefact and Ancient Technology awards are retained as generic owned objects. Their finalization popup accepts an optional name/placeholder and description, including blank/unknown, without assigning powers or value. This timing and permissive description handling follows the user ruling; source ownership and event chronology are preserved.

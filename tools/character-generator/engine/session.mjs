@@ -1,5 +1,6 @@
 import {eventEffectSummary} from './event-effect-summary.mjs';
 import {decorateEventResults} from './event-result-projection.mjs';
+import {equipmentOptions,resolveEquipmentItem} from './equipment-catalog.mjs';
 import {culturalSkillAward,culturalAwardLabel,ASLAN_CULTURAL_SKILL_SOURCE,aslanSkillLabel,ASLAN_SKILL_LEGEND} from './aslan-skill-culture.mjs';
 import {believerBuyoutPlan,believerBuyoutChoice} from './believer-buyout.mjs';
 import {prisonerEscapePending} from './prisoner-escape.mjs';
@@ -1230,10 +1231,46 @@ function beginNamedBenefit(state,e,rolls){
  state.effectsQueue.unshift(...compileBenefitEffects(sourcedEffects(plan.effects,plan.source),award.id));return true;
 }
 const weaponSkills=['Gun Combat (archaic)','Gun Combat (energy)','Gun Combat (slug)','Melee (blade)','Melee (bludgeon)','Melee (natural)','Melee (unarmed)',...['Heavy Weapons','Gunner'].flatMap(base=>SPECIALITIES[base].map(s=>base+' ('+s+')')),'Athletics (dexterity)','Explosives'];
+function canDeferEquipment(p){return p.source==='core'&&['armour','blade','gun','weapon','scientific-equipment','personal-vehicle'].includes(p.category)&&!p.deferredEquipmentId&&(p.restrictions??[]).every(r=>['common-or-military-ranged','unarmed'].includes(r));}
+function retainGenericEquipment(state){
+ const p=state.pending;state.character.deferredEquipment??=[];need(!state.character.deferredEquipment.some(e=>e.awardId===p.awardId),'This award is already queued.');
+ const entry={id:'equipment-'+(state.character.deferredEquipment.length+1),kind:'equipment',awardId:p.awardId,status:'pending',selection:copy(p),priorAwardIds:state.character.benefitAwards.filter(a=>a.id!==p.awardId).map(a=>a.id)};state.character.deferredEquipment.push(entry);
+ benefitAward(state,p.awardId).decisions.push({type:'equipment-deferred',equipmentId:entry.id});state.pending=null;return entry;
+}
+function outstandingEquipment(state){return (state.character.deferredEquipment??[]).filter(e=>e.status==='pending');}
+function outstandingEquipmentSkills(state){return outstandingEquipment(state).filter(e=>e.kind==='weapon-improvement');}
+function openDeferredEquipment(state,entry,context){
+ state.pending={...copy(entry.selection),deferredEquipmentId:entry.id,canDeferEquipment:false,deferredContext:context};state.stage='book-step';
+ if(state.pending.replaceOriginal)state.pending.replacementAssetIds=(state.character.assets??[]).filter(a=>a.active&&a.definitionId===state.pending.definitionId&&a.awardIds.some(id=>entry.priorAwardIds.includes(id))).map(a=>a.id);
+ state.pending.label=context==='dependency'?'Choose this earlier awarded item because a pending skill increase affects the next action.':'Choose the details of this previously awarded item.';
+}
+function beginDeferredEquipmentTask(state,entry,context,rolls){
+ if(entry.kind==='artefact'){need(context==='finalization','Artefact descriptions are never a mechanical prerequisite.');state.pending={kind:'artefact-details',deferredContext:'finalization',deferredEquipmentId:entry.id,benefitName:entry.name,source:entry.source.id,page:entry.source.page};state.stage='book-step';return;}
+ if(entry.kind!=='weapon-improvement'){openDeferredEquipment(state,entry,context);return;}
+ state.resolvingEquipmentTask=entry.id;const effects=[{...copy(entry.effect),deferredEquipmentTaskId:entry.id,eligibleAwardIds:copy(entry.priorAwardIds)},{kind:'deferred-equipment-complete',id:entry.id}];
+ if(context==='finalization')queueEffects(state,effects,'equipment-finalization',rolls);else {state.effectsQueue.unshift(...effects);drainEffects(state,rolls);}
+}
+function equipmentTaskPrerequisite(state,entry){
+ if(entry.kind==='artefact')return null;
+ return outstandingEquipment(state).find(d=>d.kind==='equipment'&&entry.priorAwardIds.includes(d.awardId)&&(entry.kind==='weapon-improvement'?d.selection.weaponSkillOptions.some(n=>entry.effect.allowedBases.includes(n.split(' (')[0])):entry.selection.replaceOriginal&&d.selection.definitionId===entry.selection.definitionId));
+}
+function equipmentSkillBarrier(state,e){
+ if(!state.equipmentChoices||state.resolvingEquipmentTask||e.deferredEquipmentTaskId||e.kind==='deferred-equipment-complete')return false;
+ return outstandingEquipmentSkills(state).length&&(['equipment-command-resume','skill','skill-choice','skill-reduction-choice','check','source-check','education-skill-choice','education-selected-skill','psionic-talent','sainthood','independence'].includes(e.kind)||e.kind==='stat'&&['INT','EDU'].includes(e.name));
+}
+function queueWeaponImprovement(state,e){
+ if(!state.equipmentChoices||e.kind!=='weapon-skill-choice'||e.deferredEquipmentTaskId)return false;
+ const earlier=outstandingEquipment(state).filter(d=>d.kind==='weapon-improvement'||d.kind==='equipment'&&d.selection.weaponSkillOptions.some(n=>e.allowedBases.includes(n.split(' (')[0])));
+ if(!earlier.length)return false;
+ const award=benefitAward(state,e.awardId),priorAwardIds=state.character.benefitAwards.filter(a=>a.id!==award.id).map(a=>a.id);
+ state.character.deferredEquipment??=[];const entry={id:'equipment-'+(state.character.deferredEquipment.length+1),kind:'weapon-improvement',awardId:award.id,status:'pending',effect:copy(e),priorAwardIds};state.character.deferredEquipment.push(entry);
+ award.decisions.push({type:'weapon-improvement-deferred',equipmentId:entry.id});return true;
+}
 function openBenefitEquipment(state,e){
  const award=benefitAward(state,e.awardId),prior=(state.character.assets??[]).filter(a=>a.definitionId===award.definitionId&&a.active);
  const weaponSkillOptions=e.category==='blade'?['Melee (blade)']:e.category==='gun'?weaponSkills.filter(n=>n.startsWith('Gun Combat')):e.category==='weapon'?weaponSkills:[];
  benefitSource(state,award,'benefit-equipment','Choose the actual source-listed equipment and confirm its cost, TL and restrictions before receiving it.',{...e,weaponSkillRequired:weaponSkillOptions.length>0,weaponSkillOptions,replacementAssetIds:e.replaceOriginal?prior.map(a=>a.id):[]});
+ if(state.equipmentChoices){state.pending.catalogueItems=equipmentOptions(state.pending);state.pending.canDeferEquipment=canDeferEquipment(state.pending);}
 }
 function openBenefitShip(state,e,rolls){
  const award=benefitAward(state,e.awardId),existing=(state.character.assets??[]).find(a=>a.definitionId===award.definitionId&&a.type==='ship'&&a.active);
@@ -1424,7 +1461,7 @@ function borrowedRollPending(state,e){
 }
 function drainEffects(state,rolls,approvedRoll=null) {
  while(state.effectsQueue?.length) {
-  const next=state.effectsQueue[0],pending=borrowedRollPending(state,next);
+  const next=state.effectsQueue[0];if(queueWeaponImprovement(state,next)){state.effectsQueue.shift();continue;}if(equipmentSkillBarrier(state,next)){const improvement=outstandingEquipmentSkills(state)[0];beginDeferredEquipmentTask(state,equipmentTaskPrerequisite(state,improvement)??improvement,'dependency',rolls);return;}const pending=borrowedRollPending(state,next);
   if(pending&&next!==approvedRoll){state.pendingBorrowedRoll=pending;state.stage='borrowed-event-roll';return;}
   approvedRoll=null;
   state.effectSteps=(state.effectSteps??0)+1;need(state.effectSteps<200,'Rule-effect loop limit reached.');
@@ -1444,7 +1481,13 @@ function drainEffects(state,rolls,approvedRoll=null) {
     state.character.prisonerLawyers??=[];const entry={id:'prisoner-lawyer-'+(state.character.prisonerLawyers.length+1),source:{id:'core',page:57},careerIndex:state.active,careerTerms:record.terms,status:'pending',paroleBefore:record.parole};state.character.prisonerLawyers.push(entry);
     sourceStep(state,'prisoner-lawyer','core',57,'Choose whether to hire a lawyer','native-resume');state.pending.lawyerId=entry.id;return;
    }
-   case 'core-life-decision':sourceStep(state,'core-life-decision','core',46,e.label,'native-resume');Object.assign(state.pending,{decision:e.decision,lifeEventId:e.lifeEventId});return;
+   case 'core-life-decision':{
+    if(state.equipmentChoices&&e.decision==='artefact'){
+     const r=state.character.lifeEvents.find(r=>r.id===e.lifeEventId),name=r.row===3?'Alien Artefact':'Ancient Technology';state.character.assets??=[];const asset={id:'life-asset-'+r.id,type:'equipment',category:r.row===3?'alien artefact':'ancient technology',name,description:'',detailsPending:true,active:true,ownership:'owned',owner:'Traveller',source:copy(CORE_LIFE_SOURCE),lifeEventId:r.id};state.character.assets.push(asset);
+     state.character.deferredEquipment??=[];const entry={id:'equipment-'+(state.character.deferredEquipment.length+1),kind:'artefact',status:'pending',name,source:copy(CORE_LIFE_SOURCE),origin:{careerId:r.careerId??null},assetId:asset.id,lifeEventId:r.id,priorAwardIds:[]};state.character.deferredEquipment.push(entry);r.decision={kind:'artefact',assetId:asset.id,deferredDetails:true,reason:'Description can be entered at finalization.'};break;
+    }
+    sourceStep(state,'core-life-decision','core',46,e.label,'native-resume');Object.assign(state.pending,{decision:e.decision,lifeEventId:e.lifeEventId});return;
+   }
    case 'education-skill-choice':state.pendingChoice=e;state.stage=isCompanionEducation(educationRecord(state).id)&&e.selectionId!=='hobby'?'companion-skill':'education-skill';return;
    case 'education-selected-skill':{
     const name=educationRecord(state).selections[e.selectionId];need(name,'The saved university skill selection is missing.');
@@ -1515,15 +1558,17 @@ function drainEffects(state,rolls,approvedRoll=null) {
     if(state.character.species==='zhodani'&&state.active!==null&&e.name==='PSI'&&current<9&&state.character.stats.PSI>=9&&(state.character.stats.SOC??0)<10&&reviewZhodaniStatus(state,'career-psi-gain',rolls,'native-resume'))return;
     break;
    }
+   case 'equipment-command-resume':{const saved=state.equipmentCommandContinuation;need(saved,'No equipment-dependent source command is saved.');delete state.equipmentCommandContinuation;Object.assign(state,{stage:saved.stage,pending:saved.pending,effectsQueue:saved.effectsQueue,effectNext:saved.effectNext});apply(state,saved.command,rolls);return;}
+   case 'deferred-equipment-complete':{const entry=outstandingEquipment(state).find(e=>e.id===next.id);need(entry,'The linked equipment improvement is no longer pending.');entry.status='resolved';delete state.resolvingEquipmentTask;break;}
    case 'benefit-finalize':{const award=benefitAward(state,e.awardId);if(award.status==='pending')award.status='resolved';break;}
    case 'benefit-record':{const award=benefitAward(state,e.awardId);recordBenefitToken(state,award,e.name,e.value??1,{definitionId:'core.material.'+canonicalBenefitName(e.name),...(e.name==='Ship Share'?{redeemableForCash:false,valuePerShare:1000000}:{})});break;}
    case 'entitlement':{const award=benefitAward(state,e.awardId);recordBenefitToken(state,award,e.name,e.quantity??1,{...(e.redemption?{redemption:e.redemption}:{}),...(e.nonnumeric?{nonnumeric:true}:{})});break;}
-   case 'equipment-choice':openBenefitEquipment(state,e);return;
+   case 'equipment-choice':openBenefitEquipment(state,e);if(state.pending.canDeferEquipment){retainGenericEquipment(state);break;}return;
    case 'equipment-upgrade':{benefitSource(state,benefitAward(state,e.awardId),'benefit-source','Select a previously received augmentation and resolve its one-level upgrade explicitly, ignoring its original purchase limits.');return;}
    case 'weapon-skill-choice':{
-    const names=[...new Set((state.character.assets??[]).filter(a=>a.active&&a.weaponSkill&&e.allowedBases.includes(a.weaponSkill.split(' (')[0])).map(a=>a.weaponSkill))];
+    const names=[...new Set((state.character.assets??[]).filter(a=>a.active&&a.weaponSkill&&e.allowedBases.includes(a.weaponSkill.split(' (')[0])&&(!e.eligibleAwardIds||a.awardIds.some(id=>e.eligibleAwardIds.includes(id)))).map(a=>a.weaponSkill))];
     if(!names.length){benefitSource(state,benefitAward(state,e.awardId),'benefit-source','No received weapon has a recorded matching skill. Establish the weapon and skill before resolving this improvement.');return;}
-    state.pendingChoice={kind:'skill-choice',scope:'any',allowed:e.allowedBases,permittedNames:names,mode:e.mode,value:e.value,awardId:e.awardId,label:'Improve a skill matching a weapon already received: '+names.join(', ')};state.stage='skill-choice';return;
+    state.pendingChoice={kind:'skill-choice',scope:'any',allowed:e.allowedBases,permittedNames:names,mode:e.mode,value:e.value,awardId:e.awardId,...(e.deferredEquipmentTaskId?{deferredEquipmentTaskId:e.deferredEquipmentTaskId,source:copy(e.source)}:{}),label:'Improve a skill matching a weapon already received: '+names.join(', ')};state.stage='skill-choice';return;
    }
    case 'ship-use':case 'ship-mortgage':if(!openBenefitShip(state,e,rolls))return;break;
    case 'reroll-benefit':if(!rerollMaterialBenefit(state,e,rolls))return;break;
@@ -1748,7 +1793,14 @@ function trainingOptions(state){
 function apply(state,command,rolls) {
  need(plain(command)&&typeof command.type==='string','A command type is required.');
  const payload=command.payload??{};need(plain(payload),'Invalid command payload.');
+ if(outstandingEquipmentSkills(state).length&&state.active===null&&['career','retirement','assignment-entry','aslan-officer-entry'].includes(state.stage)&&['career','open-precareer','precareer','begin-aslan-officer','qualify-aslan-officer','qualify-assignment'].includes(command.type)){state.equipmentFinalizationReturn=state.stage;state.stage='equipment-finalization';return 'Resolve the pending weapon skill improvement before beginning another career or education path.';}
+ if(command.type==='resolve-book'&&state.stage==='book-step'&&state.pending&&payload.confirmed===true&&Array.isArray(payload.effects)&&payload.effects.some(e=>e.kind==='skill'||e.kind==='stat'&&['INT','EDU'].includes(e.name))&&outstandingEquipmentSkills(state).length){
+  state.equipmentCommandContinuation={command:copy(command),stage:state.stage,pending:copy(state.pending),effectsQueue:copy(state.effectsQueue),effectNext:state.effectNext};state.pending=null;
+  queueEffects(state,[{kind:'equipment-command-resume'}],'equipment-command-resume',rolls);return 'Resolve the earlier weapon improvement before applying this skill or characteristic ruling. The original source decision is retained.';
+ }
  if(state.correctedCareerEvents&&state.pendingChoice?.believerBuyoutChoice&&command.type==='gm-override')need(false,'Choose the buyout first, or use audited restore/replay to revise its benefit context.');
+ if(state.pending?.deferredEquipmentId)need(['resolve-book','resolve-artefact-details','cancel-deferred-equipment','notes','gm-mode'].includes(command.type),'Resolve the earlier equipment choice before continuing.');
+ if(state.stage==='equipment-finalization')need(['choose-deferred-equipment','close-equipment-finalization','finish','notes','gm-mode'].includes(command.type),'Complete or close the equipment checklist before continuing.');
  if(state.pending?.kind==='prisoner-lawyer')need(['resolve-prisoner-lawyer','notes','gm-mode'].includes(command.type),'Resolve the pending lawyer choice before changing its context. Use restore or replay to revise it.');
  if(state.character.aslanOrigin?.status==='pending')need(['roll-aslan-gender','roll-aslan-family','roll-aslan-birth-order','resolve-aslan-estate','roll-aslan-clan','choose-aslan-clan','name-aslan-clan','roll-aslan-pride','roll-aslan-rite','resolve-aslan-origin-source','background','choose-effect','choose-skill','skill-award-source','retry-skill-choice','resolve-book','notes','gm-mode'].includes(command.type),'Finish the recorded Aslan origin before changing its context. Restore or replay explicitly to revise it.');
  if(state.pending?.kind==='aslan-origin-source')need(['resolve-aslan-origin-source','notes','gm-mode'].includes(command.type),'Resolve this origin question with its typed source fields.');
@@ -2710,6 +2762,21 @@ function apply(state,command,rolls) {
   }
   r.decision=decision;state.pending=null;drainEffects(state,rolls);return 'Life event decision recorded. '+reason;
  }
+ case 'review-equipment':{
+  need(state.equipmentChoices&&['career','retirement','benefits'].includes(state.stage)&&outstandingEquipment(state).length,'No outstanding equipment checklist is available here.');state.equipmentFinalizationReturn=state.stage;state.stage='equipment-finalization';return 'Review the awarded assets and linked benefits.';
+ }
+ case 'choose-deferred-equipment':{
+  need(state.equipmentChoices&&state.stage==='equipment-finalization','Open the final equipment checklist first.');const entry=outstandingEquipment(state).find(e=>e.id===payload.id);need(entry,'Choose an unresolved equipment award.');need(!equipmentTaskPrerequisite(state,entry),'Resolve the linked earlier equipment award first.');beginDeferredEquipmentTask(state,entry,'finalization',rolls);return 'Resolve the awarded '+(entry.name??benefitAward(state,entry.awardId).name)+' details.';
+ }
+ case 'resolve-artefact-details':{
+  need(state.stage==='book-step'&&state.pending?.kind==='artefact-details','No artefact details are open.');need(Object.keys(payload).every(k=>['name','description'].includes(k)),'Use only the artefact name and description.');const entry=outstandingEquipment(state).find(e=>e.id===state.pending.deferredEquipmentId);need(entry?.kind==='artefact','The artefact details are no longer pending.');const asset=state.character.assets.find(a=>a.id===entry.assetId);need(asset,'The awarded artefact is missing.');asset.name=text(payload.name??'',120)||entry.name;asset.description=text(payload.description??'',2000);asset.detailsPending=false;entry.status='resolved';const r=state.character.lifeEvents.find(r=>r.id===entry.lifeEventId);r.decision.details={name:asset.name,description:asset.description};state.pending=null;state.stage='equipment-finalization';return 'Recorded '+entry.name+' details. An unknown description is permitted; no powers or value are assigned.';
+ }
+ case 'cancel-deferred-equipment':{
+  need(state.stage==='book-step'&&state.pending?.deferredContext==='finalization'||state.resolvingEquipmentTask&&state.effectNext==='equipment-finalization','This dependency must be resolved before continuing.');state.pending=null;if(state.resolvingEquipmentTask){state.pendingChoice=null;state.effectsQueue=[];state.effectNext=null;delete state.resolvingEquipmentTask;}state.stage='equipment-finalization';return 'Item details remain on the final checklist.';
+ }
+ case 'close-equipment-finalization':{
+  need(state.stage==='equipment-finalization','No equipment checklist is open.');state.stage=state.equipmentFinalizationReturn;delete state.equipmentFinalizationReturn;return 'Returned to career choices; outstanding equipment awards are preserved.';
+ }
  case 'resolve-book': {
   need(state.stage==='book-step'&&state.pending,'No source step to resolve.');
   need(payload.confirmed===true,'Confirm you checked the indicated source.');
@@ -2745,12 +2812,15 @@ function apply(state,command,rolls) {
    }
     if(pending.kind==='benefit-equipment'){
     const note=text(payload.note??'',500);need(note,'Record the equipment source and restriction checks.');need(!(payload.effects??[]).length,'Equipment uses its typed selection fields, not generic effects.');
-    const award=benefitAward(state,pending.awardId),name=text(payload.benefitItemName??'',120);need(name,'Choose an actual source-listed item.');
-    const cost=integer(payload.benefitItemCost,0,pending.maximumCost??1000000000,'Item cost'),techLevel=integer(payload.benefitItemTL,0,pending.maximumTL??40,'Item technology level');let weaponSkill=null;
-    if(pending.weaponSkillRequired){weaponSkill=normalizeSkillName(text(payload.benefitWeaponSkill??'',80),{requireSpeciality:true}).name;need(pending.weaponSkillOptions.includes(weaponSkill),'Choose the appropriate canonical skill for the received weapon.');}
+    let catalogueItem=null;
+    if(payload.benefitItemId){need(state.equipmentChoices,'Catalogue selections require the current rules revision.');catalogueItem=resolveEquipmentItem(pending,payload);}
+    const award=benefitAward(state,pending.awardId),name=text(catalogueItem?.name??payload.benefitItemName??'',120);need(name,'Choose an actual source-listed item.');
+    const cost=integer(catalogueItem?.cost??payload.benefitItemCost,0,pending.maximumCost??1000000000,'Item cost'),techLevel=integer(catalogueItem?.techLevel??payload.benefitItemTL,0,pending.maximumTL??40,'Item technology level');let weaponSkill=null;
+    if(pending.weaponSkillRequired){weaponSkill=normalizeSkillName(text(catalogueItem?.weaponSkill??payload.benefitWeaponSkill??'',80),{requireSpeciality:true}).name;need(pending.weaponSkillOptions.includes(weaponSkill),'Choose the appropriate canonical skill for the received weapon.');}
     let replaced=null;if(pending.replaceOriginal){need(pending.replacementAssetIds.includes(payload.benefitReplaceAssetId),'Choose the original active armour asset to trade in.');replaced=state.character.assets.find(a=>a.id===payload.benefitReplaceAssetId);need(replaced?.active,'The original asset is no longer active.');replaced.active=false;state.character.benefits=state.character.benefits.filter(b=>b.assetId!==replaced.id);}
     const asset=benefitAsset(state,award,{type:'equipment',name,category:pending.category,ownership:'owned',owner:'Traveller',cost,techLevel,...(weaponSkill?{weaponSkill}:{}),sourceDecision:note,...(replaced?{replacesAssetId:replaced.id}:{})});
-    award.decisions.push({type:'equipment',assetId:asset.id,note});state.pending=null;drainEffects(state,rolls);return 'Received '+name+' from '+award.name+' after source confirmation. '+note;
+    if(catalogueItem){asset.catalogueItemId=catalogueItem.id;asset.itemSource=copy(catalogueItem.source);asset.itemCategory=catalogueItem.category;}
+    award.decisions.push({type:'equipment',assetId:asset.id,note,...(catalogueItem?{catalogueItemId:catalogueItem.id,itemSource:copy(catalogueItem.source)}:{})});if(pending.deferredEquipmentId){const entry=outstandingEquipment(state).find(e=>e.id===pending.deferredEquipmentId);need(entry,'The deferred equipment award is no longer pending.');entry.status='resolved';entry.assetId=asset.id;}state.pending=null;if(pending.deferredContext==='finalization')state.stage='equipment-finalization';else drainEffects(state,rolls);return 'Received '+name+' from '+award.name+' after source confirmation. '+(catalogueItem?'Core 2022 p. '+catalogueItem.source.page+', Cr'+asset.cost+', TL '+asset.techLevel+'. ':'')+note;
    }
    if(pending.kind==='benefit-ship'){
     const note=text(payload.note??'',500);need(note,'Record the ship source decision.');need(!(payload.effects??[]).length,'Ship awards use typed fields, not generic effects.');
@@ -2929,7 +2999,7 @@ if(pending.kind==='psionic-training-terms'){
   return 'GM override '+field+(field==='pool'?'['+payload.index+']':'')+': '+String(old??'absent')+' → '+payload.value+'. Reason: '+reason+(field==='pool'?statisticsDivisionSummary(state):'');
  }
  case 'allocate-specializations':{need(specializationOptions(state).available,'No specialization allocation is available at this checkpoint.');const next=state.stage;queueEffects(state,allocationEffects(state),next,rolls);return 'Choose specialties for your saved awards.';}
- case 'finish':{const option=finishOptions(state);need(option.available,option.reason);if(pendingSpecializations(state).length){queueEffects(state,allocationEffects(state),state.stage,rolls);return 'Allocate your remaining skill awards before finishing.';}const settlement=settleInjuryBills(state);if(settlement===false)return 'Outstanding injury bills await source resolution of the cash balance.';state.stage='finish';return 'Finished source-assisted character. Unautomated stages remain listed in the record.'+(settlement?' Injury bills: paid Cr'+settlement.paid+', remaining medical debt Cr'+settlement.debt+'.':'');}
+ case 'finish':{if(state.stage==='equipment-finalization'){need(!outstandingEquipment(state).length,'Choose the remaining awarded items before finishing.');state.stage=state.equipmentFinalizationReturn;delete state.equipmentFinalizationReturn;}const option=finishOptions(state);need(option.available,option.reason);if(outstandingEquipment(state).length){state.equipmentFinalizationReturn=state.stage;state.stage='equipment-finalization';return 'Review the outstanding equipment awards before finishing.';}if(pendingSpecializations(state).length){queueEffects(state,allocationEffects(state),state.stage,rolls);return 'Allocate your remaining skill awards before finishing.';}const settlement=settleInjuryBills(state);if(settlement===false)return 'Outstanding injury bills await source resolution of the cash balance.';state.stage='finish';return 'Finished source-assisted character. Unautomated stages remain listed in the record.'+(settlement?' Injury bills: paid Cr'+settlement.paid+', remaining medical debt Cr'+settlement.debt+'.':'');}
  default:throw new Error('Unknown command: '+command.type);
  }
 }
@@ -2943,7 +3013,11 @@ export function project(session) {
  need(typeof session.seed==='string'&&session.seed.length>0&&session.seed.length<=120,'Invalid random seed.');
  need(Array.isArray(session.events)&&session.events.length<=LIMIT,'Save contains too many actions.');
  need(saveSize(session)<=MAX_SAVE_BYTES,'Save size limit reached. Export your current character before continuing.');
+<<<<<<< HEAD
  let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(['character-preview-2026-11-09.19','character-preview-2026-11-09.20',RULES_REVISION].includes(session.rulesRevision))state.immediateSpecializations=true;if(['character-preview-2026-11-09.20',RULES_REVISION].includes(session.rulesRevision))state.separateBorrowedRolls=true;if(session.rulesRevision===RULES_REVISION)state.believerFalseTeachingsRuling=true;const snapshots=[copy(state)],log=[];
+=======
+ let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(['character-preview-2026-11-09.19','character-preview-2026-11-09.20',RULES_REVISION].includes(session.rulesRevision))state.immediateSpecializations=true;if(['character-preview-2026-11-09.20',RULES_REVISION].includes(session.rulesRevision))state.separateBorrowedRolls=true;if(session.rulesRevision===RULES_REVISION)state.equipmentChoices=true;const snapshots=[copy(state)],log=[];
+>>>>>>> 6675659b (Retain generic equipment and artefact details for finalization)
  for(let i=0;i<session.events.length;i++){
   const event=session.events[i];need(plain(event)&&typeof event.id==='string'&&event.id.length<=120,'Invalid action record.');
   need(!log.some(e=>e.id===event.id),'Duplicate action ID.');

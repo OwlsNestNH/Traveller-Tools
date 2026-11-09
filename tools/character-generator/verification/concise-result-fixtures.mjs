@@ -22,5 +22,6 @@ export function equipmentFixture(){
  let before=api({operation:'create',seed:'benefit-public-4'});
  for(const [type,payload] of [['setup',{species:'human',name:'Synthetic display test'}],['roll-statistics',{}],['accept-statistics',{}],['background',{skills:['Admin','Animals','Art']}],['skip-precareer',{}],['career',{id:'core.scout',assignment:'courier'}],['choose-effect',{index:0}],['survival',{}],['choose-effect',{index:0}],['advancement',{}],['training',{table:'service'}],['leave-career',{}],['gm-mode',{enabled:true}],['benefit',{cash:false}]])before=run(before,type,payload);
  before=run(before,'gm-replay',{revision:before.revision,rollIndex:0,values:[4],reason:'Synthetic equipment display'});
+ before=run(before,'review-equipment');before=run(before,'choose-deferred-equipment',{id:'equipment-1'});
  return {before,after:run(before,'resolve-book',{confirmed:true,note:'Synthetic equipment ruling.',benefitItemName:'Synthetic weapon',benefitItemCost:2500,benefitItemTL:10,benefitWeaponSkill:'Gun Combat (slug)'})};
 }

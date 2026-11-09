@@ -76,3 +76,10 @@ body.final-sheet-open{overflow:hidden}#final-character-sheet{color:var(--ink);ba
 #full-action-log{width:min(900px,calc(100vw - 32px));max-height:calc(100dvh - 32px);box-sizing:border-box;overflow:auto;border:2px solid var(--blue);border-radius:12px;padding:20px;background:var(--paper);color:var(--ink)}
 #full-action-log::backdrop{background:#152c4266}.full-log-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.full-log-heading h2{margin:0}#full-log-content{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.9rem;line-height:1.5}#full-action-log button{min-height:44px}
 @media print{#full-action-log{display:none!important}}
+#equipment-dialog { width: min(44rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); overflow-y: auto; box-sizing: border-box; border: 1px solid var(--line); border-radius: .75rem; padding: 1rem; color: var(--ink); background: var(--paper); }
+#equipment-dialog::backdrop { background: #000a; }
+#equipment-dialog .form-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); }
+@media print { #equipment-dialog { display: none !important; } }
+
+#equipment-dialog .actions { position: sticky; bottom: -1rem; padding-block: .5rem; background: var(--paper); }
+.equipment-checklist .choice { flex-direction: column; align-items: flex-start; text-align: left; }
