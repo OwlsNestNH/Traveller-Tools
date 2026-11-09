@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {CAREERS,SPECIES,SKILLS} from '../engine/catalog.mjs';
 import {relationshipLossOptions} from '../engine/zhodani-choices.mjs';
 import {SPECIALITIES,PSIONIC_TALENTS} from '../engine/skills.mjs';
-import {createSession,execute} from '../engine/session.mjs';
+import {createSession,execute,project,RULES_REVISION} from '../engine/session.mjs';
 
 // WHITE-BOX CONTINUATION STRESS ONLY.
 // These synthetic fixtures bypass qualification, background and species setup.
@@ -26,13 +26,17 @@ let source=await readFile(sourceURL,'utf8');
 source=source.replace(/from\s+'(\.\/[^']+)'/g,(_,relative)=>'from '+JSON.stringify(new URL(relative,sourceURL).href));
 source+='\nexport const continuationAudit={initial,enterCareer,apply,trainingOptions,exitOptions,activeReeducation,activeMerchantFine,advisoryRecord,advisoryOptions,crossCareerTraining,crossCareerCover};';
 const {continuationAudit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+const currentPolicy=project(createSession('smoke-current-policy')).state;
+const policyFlags=Object.fromEntries(['deferredSpecializations','correctedCareerEvents','immediateSpecializations','separateBorrowedRolls'].map(key=>[key,currentPolicy[key]===true]));
+assert.equal(policyFlags.immediateSpecializations,true,'Current smoke must exercise immediate specialties.');
+assert.equal(policyFlags.separateBorrowedRolls,true,'Current smoke must exercise separate borrowed rolls.');
 const failures=[],stages={},sourceStops={},completedTerms={},completedStages={};
 let scenarios=0,completed=0;
 for(const career of CAREERS)for(const assignment of career.assignments)for(let seed=0;seed<seeds;seed++) {
  scenarios++;
  let state=a.initial(career.id+'|'+assignment.id+'|smoke'+seed);
- // Exercise current rules, not legacy immediate-choice behavior, in synthetic states.
- state.deferredSpecializations=true;state.correctedCareerEvents=true;
+ // Derive active policy flags from a real new session while retaining synthetic setup.
+ Object.assign(state,policyFlags);
  const species=['aslan','vargr','zhodani'].includes(career.group)?career.group:'human';
  state.character.species=species;
  state.character.gender=career.eligibility?.[assignment.id]??career.gender??(seed%2?'male':'female');
@@ -66,11 +70,12 @@ for(const career of CAREERS)for(const assignment of career.assignments)for(let s
    switch(state.stage) {
     case 'failed-entry':{assert.equal(state.forcedDraft?.status,'pending','Only the explicit forced-draft continuation is expected.');command={type:'fallback',payload:{draft:true}};break;}
     // These synthetic characters have no anagathic history. Never invent referee decisions.
-    case 'cross-career-cover':{const options=a.crossCareerCover(state).options;command={type:'cross-career-cover',payload:{careerId:options[(seed+step)%options.length].id}};break;}
+    case 'cross-career-cover':{const options=a.crossCareerCover(state).options;command={type:'cross-career-cover-check',payload:{careerId:options[(seed+step)%options.length].id}};break;}
     case 'cross-career-training':{const options=a.crossCareerTraining(state).options;command={type:'cross-career-training',payload:{assignment:options[(seed+step)%options.length].id}};break;}
     case 'advisory-career':{const options=a.advisoryOptions();command={type:'advisory-career',payload:{careerId:options[(seed+step)%options.length].id}};break;}
+    case 'borrowed-event-roll':command={type:'roll-borrowed-event',payload:{pendingId:state.pendingBorrowedRoll.id}};break;
     case 'advisory-cash':command={type:'advisory-cash',payload:{creditIds:[]}};break;
-    case 'relationship-event':{const e=state.pendingChoice,person=state.character.relationships.find(p=>(e.from??e.types).includes(p.role));command={type:'resolve-relationship-event',payload:{confirmed:true,...(person?{relationshipId:person.id}:{}),...(e.to?{role:e.to[0]}:{})}};break;}
+    case 'relationship-event':{const e=state.pendingChoice,person=state.character.relationships.find(p=>(e.from??e.types).includes(p.role));command={type:'resolve-relationship-event-step',payload:{confirmed:true,...(person?{relationshipId:person.id}:{}),...(e.to?{role:e.to[0]}:{})}};break;}
     case 'relationship-loss':{const options=relationshipLossOptions(state.character.relationships);command={type:'resolve-relationship-loss',payload:{index:options[(seed+step)%options.length].index}};break;}
     case 'benefit-wager':command={type:'resolve-benefit-wager',payload:{stake:0}};break;
     case 'merchant-fine-roll':command={type:'merchant-fine-roll'};break;
@@ -167,6 +172,7 @@ for(const failure of failures) {
 }
 console.log(JSON.stringify({
  scope:'White-box career continuation stress; not full qualification or source compliance.',
+ rulesRevision:RULES_REVISION,policyFlags,
  careers:CAREERS.length,assignments:CAREERS.reduce((sum,career)=>sum+career.assignments.length,0),seeds,termGoal,mental,
  scenarios,completed,completedStages,completedTerms,sourceStopCount:Object.values(sourceStops).reduce((sum,count)=>sum+count,0),
  sourceStops,stages,publicVargrBeliever:vargrResult,failureCount:failures.length,failureGroups:[...grouped.values()]
