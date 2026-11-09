@@ -27,7 +27,7 @@ source=source.replace(/from\s+'(\.\/[^']+)'/g,(_,relative)=>'from '+JSON.stringi
 source+='\nexport const continuationAudit={initial,enterCareer,apply,trainingOptions,exitOptions,activeReeducation,activeMerchantFine,advisoryRecord,advisoryOptions,crossCareerTraining,crossCareerCover};';
 const {continuationAudit:a}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const currentPolicy=project(createSession('smoke-current-policy')).state;
-const policyFlags=Object.fromEntries(['deferredSpecializations','correctedCareerEvents','immediateSpecializations','separateBorrowedRolls'].map(key=>[key,currentPolicy[key]===true]));
+const policyFlags=Object.fromEntries(['deferredSpecializations','correctedCareerEvents','immediateSpecializations','separateBorrowedRolls','equipmentChoices','printedBenefitMaximum','believerFalseTeachingsRuling','psionAcquisitionRuling'].map(key=>[key,currentPolicy[key]===true]));
 assert.equal(policyFlags.immediateSpecializations,true,'Current smoke must exercise immediate specialties.');
 assert.equal(policyFlags.separateBorrowedRolls,true,'Current smoke must exercise separate borrowed rolls.');
 const failures=[],stages={},sourceStops={},completedTerms={},completedStages={};
