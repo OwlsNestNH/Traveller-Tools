@@ -103,8 +103,8 @@ test('out-of-range advisory cash retains dice, consumes count/credits once and a
  r=run(r,'resolve-advisory-cash-result',{amount:12345,reason:'GM resolves the off-table result.'},{id:'cash-source-once'});assert.equal(r.state.stage,'advancement');assert.equal(r.state.character.cash,cash+12345);assert.equal(r.state.cashRolls,count);assert.equal(r.state.character.stats.WLT,wealth);assert.equal(r.log.at(-1).rolls.length,0);assert.equal(r.state.character.benefitRollHistory.at(-1).result,8);
  assert.deepEqual(run(r,'resolve-advisory-cash-result',{amount:12345,reason:'GM resolves the off-table result.'},{id:'cash-source-once'}).session,r.session);rejected(r,'resolve-advisory-cash-result',{amount:12345,reason:'Duplicate'});roundtrip(r);
 });
-test('ordinary out-of-range credit roll consumes exactly one benefit only after source resolution and retains its audit',()=>{
- let r=buildBenefitCreditFixture({credits:2}),before=career(r).benefitRolls,ids=r.state.benefitCreditOptions.map(c=>c.id),cash=r.state.character.cash;
+test('legacy .20 ordinary out-of-range credit roll consumes exactly one benefit only after source resolution and retains its audit',()=>{
+ let r=buildBenefitCreditFixture({credits:2});r.session.rulesRevision='character-preview-2026-11-09.20';r={session:r.session,...project(r.session)};const before=career(r).benefitRolls,ids=r.state.benefitCreditOptions.map(c=>c.id),cash=r.state.character.cash;
  r=force(r,'benefit',{cash:true,creditIds:ids},[6]);assert.equal(r.state.stage,'book-step');assert.equal(r.state.pending.kind,'benefit');assert.equal(r.state.pending.rollContext.result,8);assert.deepEqual(r.state.pending.rollContext.creditIds,ids);assert.equal(r.state.cashRolls,1);assert.equal(career(r).benefitRolls,before);roundtrip(r);
  r=run(r,'resolve-book',{confirmed:true,note:'Referee resolves the cash table result.',effects:[{kind:'cash',value:12345}]},{id:'ordinary-source-once'});assert.equal(career(r).benefitRolls,before-1);assert.equal(r.state.cashRolls,1);assert.equal(r.state.character.cash,cash+12345);assert.equal(r.state.character.benefitRollHistory.at(-1).completed,true);assert.equal(r.state.character.benefitRollHistory.at(-1).sourceAssisted,true);assert.deepEqual(r.state.character.benefitRollHistory.at(-1).creditIds,ids);
  assert.deepEqual(run(r,'resolve-book',{confirmed:true,note:'Referee resolves the cash table result.',effects:[{kind:'cash',value:12345}]},{id:'ordinary-source-once'}).session,r.session);roundtrip(r);
@@ -152,4 +152,15 @@ test('direct fatal injury ruling terminates the borrowed route rather than leave
  for(let attempt=0;attempt<40&&r.state.stage!=='injury-loss';attempt++)r=run(r,'gm-replay',{revision,rollIndex:3,values:[6],reason:'Borrowed injury-zero fixture'});
  assert.equal(r.state.stage,'injury-loss');r=run(r,'injury-loss',{index:2});assert.equal(r.state.pending.kind,'injury-zero');
  r=run(r,'resolve-book',{confirmed:true,note:'Referee confirms fatal injury.',injurySurvives:false});assert.equal(r.state.stage,'deceased');assert.equal(r.state.character.crossCareerRoutes[0].status,'deceased');assert.equal(r.state.character.crossCareerRoutes[0].training,null);assert.equal(career(r).terms,0);roundtrip(r);
+});
+
+
+test('modern ordinary overflow caps to printed maximum with one credit consumption and deterministic replay',()=>{
+ let r=buildBenefitCreditFixture({credits:2});const before=career(r).benefitRolls,cash=r.state.character.cash,ids=r.state.benefitCreditOptions.map(c=>c.id);
+ assert.equal(r.state.printedBenefitMaximum,true);
+ r=force(r,'benefit',{cash:true,creditIds:ids},[6]);
+ assert.equal(r.state.stage,'benefits');assert.equal(career(r).benefitRolls,before-1);assert.equal(r.state.cashRolls,1);assert.equal(r.state.character.cash,cash+100000);
+ const audit=r.state.character.benefitRollHistory.at(-1);assert.equal(audit.natural,6);assert.equal(audit.modifier,2);assert.equal(audit.result,8);assert.equal(audit.appliedResult,7);assert.equal(audit.completed,true);assert.deepEqual(audit.creditIds,ids);assert.deepEqual(audit.rolls,[{natural:6,modifier:2,result:8}]);
+ assert.ok(r.state.character.benefitCredits.every(c=>c.status==='consumed'));roundtrip(r);assert.deepEqual(project(r.session).state,r.state);
+ rejected(r,'benefit',{cash:true,creditIds:ids});
 });
