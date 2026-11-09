@@ -1,3 +1,4 @@
+import {BENEFIT_WAGERS,wagerLimit,wagerDelta} from './benefit-wagers.mjs';
 import { vargrTrainingChoice, tableSkillAllowed } from './vargr-training.mjs';
 import { CORE_LIFE_SOURCE, CORE_LIFE_TABLES, lifeNarrativeOptions, lifePsionAccess } from './core-life-events.mjs';
 import { assertReleaseRequest, releaseResult } from './release-scope.mjs';
@@ -29,7 +30,7 @@ const RULE_PACK={...CORE_PACK,...EXPANSION_PACK};
 import { API_VERSION, SOURCES, CAREERS, PRECAREERS, SPECIES, SKILLS, BACKGROUND_SKILLS, findCareer, findSpecies } from './catalog.mjs';
 const LIMIT = 2000;
 export const MAX_SAVE_BYTES = 2000000;
-export const RULES_REVISION='character-preview-2026-11-09.15';
+export const RULES_REVISION='character-preview-2026-11-09.16';
 const saveSize = value => new TextEncoder().encode(JSON.stringify(value,null,2)).byteLength;
 const copy = value => structuredClone(value);
 const plain = value => value && typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
@@ -468,9 +469,31 @@ function assertCrossCareerContext(state,route){
 }
 function crossCareerTraining(state){
  const id=state.pendingCrossCareerTraining;if(!id||state.stage!=='cross-career-training')return null;
- const route=crossCareerRoute(state,id),career=findCareer('zhodani.prole');
+ const route=crossCareerRoute(state,id),career=findCareer(route.coverCareerId??'zhodani.prole');
  return {id:route.id+'-training',routeId:route.id,originCareerId:route.originCareerId,originCareerIndex:route.originCareerIndex,
   sourceCareerId:career.id,source:copy(route.source),options:career.assignments.map(a=>({id:a.id,name:a.name}))};
+}
+// Cover identity borrows tables only: no entry check, rank, term or benefits career.
+// Aliens 2026 pp. 186, 189: bounded native career set plus the expressly
+// available Core Drifter. Cross-cultural and optional Companion covers need a ruling.
+function coverCareerOptions(originCareerId){
+ const ids=originCareerId==='core.agent'?['core.rogue','core.citizen']:
+  CAREERS.filter(c=>c.group==='vargr'&&c.id!=='vargr.agent'||c.id==='core.drifter').map(c=>c.id);
+ return ids.map(id=>findCareer(id)).filter(c=>RULE_PACK[c.id]?.training.assignments&&RULE_PACK[c.id]?.mishaps).map(c=>({id:c.id,name:c.name}));
+}
+function crossCareerCover(state){
+ if(state.stage!=='cross-career-cover'||!state.pendingCrossCareerCover)return null;
+ const route=crossCareerRoute(state,state.pendingCrossCareerCover);
+ return {routeId:route.id,originCareerId:route.originCareerId,source:copy(route.source),options:coverCareerOptions(route.originCareerId)};
+}
+function beginCoverChoice(state,e){
+ const {career,record}=currentCareer(state);
+ need(['core.agent','vargr.agent'].includes(career.id)&&career.id===e.originCareerId,'Undercover service requires its original Agent career.');
+ state.character.crossCareerRoutes??=[];
+ const route={id:'cross-career-'+(state.character.crossCareerRoutes.length+1),kind:'cover-undercover',source:copy(e.source),
+  originCareerId:career.id,originCareerIndex:state.active,careerTerms:record.terms,generationTerms:state.character.terms,age:state.character.age,
+  status:'awaiting-cover',coverCareerId:null,check:null,tables:[],training:null,completion:null};
+ state.character.crossCareerRoutes.push(route);state.pendingCrossCareerCover=route.id;state.stage='cross-career-cover';
 }
 function beginUndercover(state,rolls){
  const {career,record}=currentCareer(state);need(career.id==='zhodani.agent','Undercover service requires the original Agent career.');
@@ -1258,14 +1281,36 @@ function skillCheckDM(state,name) {
  return level+untrained+trait;
 }
 
+function coreTalentChoice(state,effect){
+ return effect.scope==='psionic-talents'&&effect.untrained==='acquisition-check'&&state.active!==null&&currentCareer(state).career.id==='core.psion'&&effect.psionicOrigin?.table==='service';
+}
+function availableNewTalents(state){return PSIONIC_TALENTS.filter(name=>name!=='Technopathy'&&skillLevel(state,name)<0);}
+function constrainedAward(state,name,e){
+ // A two-level award starts an absent skill at 2, rather than the ordinary one-level default.
+ return e.scope==='science-medic-electronics'&&!Object.hasOwn(state.character.skills,name)?{...e,mode:'set'}:e;
+}
+// Core 2022 p. 71 lists these non-psionic Science specialities. Open subjects
+// are not presumed eligible for Aliens p. 201's non-psionic training award.
+const NON_PSIONIC_SCIENCES=new Set(['archaeology','astronomy','biology','chemistry','cosmology','cybernetics','economics','genetics','history','linguistics','philosophy','physics','planetology','psychology','robotics','sophontology','xenology']);
+function nonPsionicEligibility(name){
+ const {base,speciality}=normalizeSkillName(name);
+ if(PSIONIC_TALENTS.includes(base)||/psion|telepath|telekin|clairvoy|teleport|technopath|extrasensory|precogn|psychokin|mind[ -]*(read|control)|remote[ -]*view/i.test(speciality??''))return 'excluded';
+ if(base==='Science'&&!NON_PSIONIC_SCIENCES.has(speciality?.toLowerCase()))return 'source-required';
+ return 'eligible';
+}
 function skillNameAllowed(state,name,effect) {
  let parsed;try{parsed=normalizeSkillName(name);}catch{return false;}name=parsed.name;const base=parsed.base;
- if(PSIONIC_TALENTS.includes(base)&&(skillLevel(state,name)<0||state.character.psionicLoss))return false;
+ if(PSIONIC_TALENTS.includes(base)&&(state.character.psionicLoss||skillLevel(state,name)<0&&!coreTalentChoice(state,effect)&&effect.scope!=='new-psionic-talent'))return false;
+ if(coreTalentChoice(state,effect)&&base==='Technopathy')return false;
+ if(effect.scope==='new-psionic-talent'&&(!availableNewTalents(state).includes(name)||(state.character.stats.PSI??0)<=0))return false;
+ if(effect.scope==='non-psionic'&&nonPsionicEligibility(name)!=='eligible')return false;
+ if(effect.scope==='untrained-electronics-or-science'&&(!['Electronics','Science'].includes(base)||Object.hasOwn(state.character.skills,name)))return false;
+ if(effect.scope==='science-medic-electronics'&&!['Science','Medic','Electronics'].includes(base))return false;
  if(!SKILLS.includes(base))return false;
  if(effect.exclude?.includes(base))return false;
  if(effect.scope==='existing'&&skillLevel(state,name)<0)return false;
  if(effect.scope==='science-specialties'&&base!=='Science')return false;
- if(effect.scope==='psionic-talents'&&(!['Telepathy','Clairvoyance','Telekinesis','Awareness','Teleportation','Technopathy'].includes(base)||skillLevel(state,name)<0))return false;
+ if(effect.scope==='psionic-talents'&&(!['Telepathy','Clairvoyance','Telekinesis','Awareness','Teleportation','Technopathy'].includes(base)||skillLevel(state,name)<0&&!coreTalentChoice(state,effect)))return false;
  if(effect.allowed&&!effect.allowed.includes(base))return false;
  if(effect.permittedNames&&!effect.permittedNames.includes(name))return false;
  if(effect.tableSkills&&!tableSkillAllowed(name,effect.tableSkills))return false;
@@ -1278,6 +1323,12 @@ function nativeFallback(state,effect,reason) {
  sourceStep(state,'native-effect',effect.source?.id??career.source,effect.source?.page??effect.source?.pages?.[0]??effect.sourcePage??career.page,reason??effect.reason??('Resolve '+effect.kind+' from the source.'),'native-resume');
  state.pending.effect=copy(effect);
 }
+// Bind only a completed award, never a generic skill's strongest other speciality.
+// Keep the check queued independently so source-assisted disposal cannot erase it.
+function bindAwardCheck(state,name) {
+ const check=state.effectsQueue?.[0];
+ if(check?.kind==='check'&&check.skillScope==='preceding-award')check.awardedSkill=name;
+}
 function drainEffects(state,rolls) {
  while(state.effectsQueue?.length) {
   state.effectSteps=(state.effectSteps??0)+1;need(state.effectSteps<200,'Rule-effect loop limit reached.');
@@ -1285,6 +1336,11 @@ function drainEffects(state,rolls) {
   switch(e.kind) {
    case 'core-life-complete':{const r=state.character.lifeEvents.find(r=>r.id===e.lifeEventId);r.status='completed';break;}
    case 'core-life-benefit-bonus':{state.character.lifeBenefitBonuses??=[];state.character.lifeBenefitBonuses.push({id:e.lifeEventId,source:copy(CORE_LIFE_SOURCE),value:2,status:'available'});break;}
+   case 'prisoner-lawyer':{
+    const {career,record}=currentCareer(state);need(career.id==='core.prisoner','The lawyer opportunity requires the Prisoner career.');
+    state.character.prisonerLawyers??=[];const entry={id:'prisoner-lawyer-'+(state.character.prisonerLawyers.length+1),source:{id:'core',page:57},careerIndex:state.active,careerTerms:record.terms,status:'pending',paroleBefore:record.parole};state.character.prisonerLawyers.push(entry);
+    sourceStep(state,'prisoner-lawyer','core',57,'Choose whether to hire a lawyer','native-resume');state.pending.lawyerId=entry.id;return;
+   }
    case 'core-life-decision':sourceStep(state,'core-life-decision','core',46,e.label,'native-resume');Object.assign(state.pending,{decision:e.decision,lifeEventId:e.lifeEventId});return;
    case 'education-skill-choice':state.pendingChoice=e;state.stage=isCompanionEducation(educationRecord(state).id)&&e.selectionId!=='hobby'?'companion-skill':'education-skill';return;
    case 'education-selected-skill':{
@@ -1316,9 +1372,10 @@ function drainEffects(state,rolls) {
      const {career,record}=currentCareer(state),choice=vargrTrainingChoice({careerId:career.id,assignment:record.assignment,pack:nativePack(state),eligibleTables:trainingOptions(state).map(t=>t.id),effect:e});
      if(choice?.tableSkills.length){state.pendingChoice=choice;state.stage='skill-choice';return;}
     }
-    if(state.character.psionicLoss&&(e.scope==='psionic-talents'||e.allowed?.length&&e.allowed.every(n=>PSIONIC_TALENTS.includes(n)))){nativeFallback(state,e,'Ageing permanently removed psionic ability. Resolve this constrained award explicitly without restoring historical talents.');return;}
-    if(e.scope==='psionic-talents'&&!acquiredTalents(state).length){nativeFallback(state,e,'This result improves an already acquired psionic talent, but none is possessed. Resolve the source award explicitly; it does not grant free acquisition.');return;}
-    if(!['any','existing','science-specialties','psionic-talents'].includes(e.scope)||(e.distinctSpecialties&&e.scope!=='science-specialties')||e.untrained){nativeFallback(state,e,'Resolve the constrained skill choice from the source.');return;}
+    if(state.character.psionicLoss&&(['psionic-talents','new-psionic-talent'].includes(e.scope)||e.allowed?.length&&e.allowed.every(n=>PSIONIC_TALENTS.includes(n)))){nativeFallback(state,e,'Ageing permanently removed psionic ability. Resolve this constrained award explicitly without restoring historical talents.');return;}
+    if(e.scope==='new-psionic-talent'&&(!(state.character.stats.PSI>0)||!availableNewTalents(state).length)){nativeFallback(state,e,'No eligible new talent is available. Resolve the source award explicitly without restoring lost ability or inventing a replacement.');return;}
+    if(e.scope==='psionic-talents'&&!coreTalentChoice(state,e)&&!acquiredTalents(state).length){nativeFallback(state,e,'This result improves an already acquired psionic talent, but none is possessed. Resolve the source award explicitly; it does not grant free acquisition.');return;}
+    if(!['any','existing','science-specialties','psionic-talents','untrained-electronics-or-science','science-medic-electronics','non-psionic','new-psionic-talent'].includes(e.scope)||(e.distinctSpecialties&&e.scope!=='science-specialties')||e.untrained&&!coreTalentChoice(state,e)){nativeFallback(state,e,'Resolve the constrained skill choice from the source.');return;}
     state.pendingChoice=e.scope==='science-specialties'?{...e,selected:e.selected??[],source:copy(e.source??e.reeducationOrigin?.source??{id:currentCareer(state).career.source,page:currentCareer(state).career.page+1}),label:'Choose a Science specialisation'}:e;state.stage='skill-choice';return;
    case 'skill-reduction-choice':{const eligible=Object.keys(state.character.skills).filter(n=>state.character.skills[n]>0&&(!e.names||e.names.includes(n))&&skillNameAllowed(state,n,e));if(!eligible.length){nativeFallback(state,e,'No eligible trained skill can satisfy this reduction. Resolve the printed mishap explicitly before continuing.');return;}state.pendingChoice=e;state.stage='skill-choice';return;}
    case 'skill':{
@@ -1327,7 +1384,7 @@ function drainEffects(state,rolls) {
     if(PSIONIC_TALENTS.includes(base)&&skillLevel(state,e.name)<0){requestTalentAward(state,e,rolls);return;}
     if(e.value>0&&SPECIALIZED.includes(base)&&e.name===base){state.pendingChoice={...copy(e),kind:'skill-choice',scope:'any',allowed:[base],mode:e.mode,value:e.value,...(e.awardId?{awardId:e.awardId}:{}),label:'Choose a '+base+' specialisation'};state.stage='skill-choice';return;}
 
-    if(skillAwardExceedsLimit(state,e.name,e.value??1,e.mode)){nativeFallback(state,e,'This mandatory skill award would exceed the total skill limit. Resolve its disposal from Core p. 18 without exceeding the cap.');return;}gainSkill(state,e.name,e.value??1,e.mode);break;
+    if(skillAwardExceedsLimit(state,e.name,e.value??1,e.mode)){nativeFallback(state,e,'This mandatory skill award would exceed the total skill limit. Resolve its disposal from Core p. 18 without exceeding the cap.');return;}gainSkill(state,e.name,e.value??1,e.mode);bindAwardCheck(state,e.name);break;
    }
    case 'stat':{
     if(state.character.species==='aezorgh'&&e.name==='CHA'){nativeFallback(state,e,'Aezorgh CHA is derived from SOC. Resolve this cross-book effect explicitly.');return;}
@@ -1366,6 +1423,14 @@ function drainEffects(state,rolls) {
    }
    case 'benefit':if(!beginNamedBenefit(state,e,rolls))return;break;
    case 'cash':state.character.cash+=integer(e.dice?mechanicalDice(state,e.dice,rolls,'Cash result')*(e.multiplier??1):e.value,-100000000,100000000,'Cash award');break;
+   case 'relationship-change':case 'relationship-remove':{
+    const career=currentCareer(state).career;
+    if(!['core.drifter','core.entertainer','core.rogue','core.psion','aslan.outcast','aslan.outlaw'].includes(e.tableCareerId??career.id)){nativeFallback(state,e,'Resolve this relationship effect from its source.');return;}
+    const eligible=state.character.relationships.filter(r=>(e.from??e.types).includes(r.role));
+    if(!eligible.length&&e.kind==='relationship-change'&&!e.fallback){nativeFallback(state,{...e,source:e.source??{id:career.source,page:career.page+1}},'No eligible Contact or Ally exists. The source gives no replacement relationship; resolve this ambiguity explicitly.');return;}
+    state.pendingChoice={...copy(e),source:copy(e.source??{id:career.source,page:career.page+1}),careerId:career.id,careerIndex:state.active,relationshipsBefore:copy(state.character.relationships)};
+    state.stage='relationship-event';return;
+   }
    case 'zhodani-relationship-loss':state.pendingChoice={...copy(e),source:copy(e.source??{id:'aliens',page:273}),label:'Choose an Ally or Contact to lose',relationshipsBefore:copy(state.character.relationships)};state.stage='relationship-loss';return;
    case 'relationship':{
     const count=e.countFrom?Math.max(e.countFrom.minimum??0,characteristicDM(stat(state,e.countFrom.statDM))):e.dice?mechanicalDice(state,e.dice,rolls,e.type+' count'):(e.count??1);
@@ -1373,6 +1438,10 @@ function drainEffects(state,rolls) {
     break;
    }
    case 'check':{
+    if(e.skillScope==='preceding-award'){
+     if(!e.awardedSkill){nativeFallback(state,e,'The preceding skill award was resolved manually or skipped. Resolve its required skill check and consequences explicitly from the source; no awarded speciality or automatic outcome is assumed.');return;}
+     e.skills=[e.awardedSkill];
+    }
     if(e.skillScope==='learned-this-term'){if(!learnedEducationSkills(state).length){nativeFallback(state,e,'No skill increased during this term; adjudicate the study challenge rather than assume a result.');return;}state.pendingChoice=e;state.stage='education-check';return;}
     let natural,total;
     if(e.stat){if(!checkAvailable(state,{stat:e.stat})&&!state._sourceCheck){state.effectsQueue.unshift(e);missingCheck(state,{stat:e.stat,target:e.target},e.stat+' check',null,e.source);return;}const r=rulesCheck(state,{stat:e.stat,target:e.target},rolls,e.stat+' check');natural=r.natural;total=r.total;}
@@ -1416,10 +1485,34 @@ function drainEffects(state,rolls) {
    case 'benefit-credit':{const {career}=currentCareer(state);state.character.benefitCredits??=[];state.character.benefitCredits.push({id:'benefit-credit-'+(state.character.benefitCredits.length+1),source:copy(e.source),originCareerId:career.id,originCareerIndex:state.active,value:e.value,scope:e.scope,status:'available',consumption:null});break;}
    case 'zhodani-advisory':beginAdvisory(state);return;
    case 'advisory-ready':{const record=advisoryRecord(state);assertAdvisoryContext(state,record);need(record.id===e.id,'The advisory entitlement changed.');record.status='awaiting-cash';state.stage='advisory-cash';return;}
+   case 'agent-cover':beginCoverChoice(state,e);return;
    case 'zhodani-undercover':beginUndercover(state,rolls);break;
    case 'cross-career-training':{const route=crossCareerRoute(state,e.routeId);assertCrossCareerContext(state,route);need(route.check.success&&!route.training,'The borrowed training is already resolved.');route.status='awaiting-training';state.pendingCrossCareerTraining=route.id;state.stage='cross-career-training';return;}
    case 'cross-career-complete':{const route=crossCareerRoute(state,e.routeId);assertCrossCareerContext(state,route);route.status='completed';route.completion={age:state.character.age,generationTerms:state.character.terms};break;}
+   case 'benefit-wager':{
+    const {career,record}=currentCareer(state),rule=BENEFIT_WAGERS[e.route];
+    const borrowed=e.crossCareerRouteId?crossCareerRoute(state,e.crossCareerRouteId):null;
+    if(borrowed)assertCrossCareerContext(state,borrowed);
+    need(rule&&(rule.careerId===career.id||career.id==='core.agent'&&rule.careerId==='core.rogue'&&e.tableCareerId===rule.careerId&&borrowed?.kind==='cover-undercover'&&borrowed.coverCareerId===rule.careerId&&borrowed.check?.success),'The wager career does not match its source.');
+    state.character.benefitWagers??=[];
+    const wager={id:'benefit-wager-'+(state.character.benefitWagers.length+1),route:e.route,source:copy(rule.source),sourceCareerId:rule.careerId,crossCareerRouteId:borrowed?.id??null,careerId:career.id,careerIndex:state.active,assignment:record.assignment,available:record.benefitRolls,maximum:wagerLimit(e.route,record.benefitRolls),skills:copy(rule.skills),status:'pending',continuation:state.effectNext};
+    state.character.benefitWagers.push(wager);state.pendingBenefitWager=wager.id;state.stage='benefit-wager';return;
+   }
+   case 'benefit-wager-complete':state.character.benefitWagers.find(w=>w.id===e.id).status='completed';break;
    case 'merchant-fine':beginMerchantFine(state,e);return;
+   case 'source-training-roll':{
+    const {career,record}=currentCareer(state),navy=e.trainingRoute==='navy-mishap-4',citizen=e.trainingRoute==='vargr-citizen-event-4';
+    need((navy&&career.id==='core.navy'||citizen&&career.id==='vargr.citizen')&&state.active===e.careerIndex&&record.assignment===e.assignment,'The source training context changed.');
+    need(navy?trainingOptions(state).some(t=>t.id===e.table):e.table==='advanced','This source does not permit that training table.');
+    const pack=nativePack(state),rows=e.table==='assignment'?pack.training.assignments[record.assignment]:pack.training[e.table];
+    need(rows?.length===6,'The source training table must have six rows.');
+    const die=dice(state,1,rolls,'Source training: '+e.table+' ('+e.source.id+' p. '+e.source.page+')');
+    state.character.sourceTraining??=[];
+    const award={id:'source-training-'+(state.character.sourceTraining.length+1),route:e.trainingRoute,source:copy(e.source),careerId:career.id,careerIndex:state.active,assignment:record.assignment,table:e.table,die,status:'pending'};
+    state.character.sourceTraining.push(award);
+    state.effectsQueue.unshift(...sourcedEffects(rows[die-1],e.source),{kind:'source-training-complete',awardId:award.id});break;
+   }
+   case 'source-training-complete':state.character.sourceTraining.find(a=>a.id===e.awardId).status='completed';break;
    case 'table-roll':{
     if(CORE_LIFE_TABLES[e.table]){
      const table=CORE_LIFE_TABLES[e.table],row=mechanicalDice(state,table.dice,rolls,e.table);
@@ -1434,7 +1527,16 @@ function drainEffects(state,rolls) {
      if(shared){const result=mechanicalDice(state,e.dice??shared.dice,rolls,e.table);state.effectsQueue.unshift(...copy(shared.results[result]??[{kind:'unsupported',reason:'Shared table result not encoded.'}]));break;}
      nativeFallback(state,e,'Resolve '+e.table+' from the source, including any required career or education consequences.');return;
     }
-    const {career,record}=currentCareer(state),tableCareerId=e.career??e.tableCareerId??career.id,tableCareer=findCareer(tableCareerId),pack=RULE_PACK[tableCareerId];
+    const current=currentCareer(state);
+    const navy=e.trainingRoute==='navy-mishap-4'&&current.career.id==='core.navy'&&e.table==='training'&&e.chooseAvailableTable&&e.source?.id==='core'&&e.source.page===37;
+    const citizen=e.trainingRoute==='vargr-citizen-event-4'&&current.career.id==='vargr.citizen'&&e.table==='training.advanced'&&e.ignorePrerequisite&&e.source?.id==='aliens'&&e.source.page===191;
+    if(navy||citizen){
+     const effect=table=>({kind:'source-training-roll',trainingRoute:e.trainingRoute,table,source:copy(e.source),careerIndex:state.active,assignment:current.record.assignment});
+     if(navy)state.effectsQueue.unshift({kind:'choice',source:copy(e.source),label:'Choose a qualifying Navy training table (Core p. 37)',options:trainingOptions(state).map(t=>({label:t.name,effects:[effect(t.id)]}))});
+     else state.effectsQueue.unshift(effect('advanced'));
+     break;
+    }
+    const {career,record}=current,tableCareerId=e.career??e.tableCareerId??career.id,tableCareer=findCareer(tableCareerId),pack=RULE_PACK[tableCareerId];
     if(e.chooseAvailableTable||e.ignorePrerequisite||e.tableChoice){nativeFallback(state,e,'Resolve this special table route from the source.');return;}
     const shared=EXPANSION_TABLES[e.table];
     if(shared){const result=mechanicalDice(state,e.dice??shared.dice,rolls,e.table);const row=shared.results[result];if(!row){nativeFallback(state,e,'Shared table result needs source resolution.');return;}const sharedSource={id:shared.source.id,page:shared.source.page??shared.source.pages?.[0]},origin=e.reeducationOrigin??reeducationOrigin(state,'shared',result);let effects=withReeducationOrigin(sourcedEffects(row,sharedSource),e.tableCareerId?{...copy(origin),table:e.table,row:result,source:sharedSource}:origin);if(e.tableCareerId){effects=borrowedEffects(effects,{tableCareerId:e.tableCareerId,crossCareerRouteId:e.crossCareerRouteId});if(e.crossCareerRouteId)crossCareerRoute(state,e.crossCareerRouteId).tables.push({careerId:e.tableCareerId,table:e.table,row:result,source:sharedSource});}state.effectsQueue.unshift(...effects);break;}
@@ -1477,7 +1579,7 @@ function drainEffects(state,rolls) {
     state.effectsQueue.unshift(...copy(passes?e.then??[]:e.otherwise??[]));break;
    }
    case 'parole':{
-    const {record}=currentCareer(state);record.parole=e.mode==='reset'?mechanicalDice(state,e.dice??'1D+2',rolls,'Parole threshold'):Math.max(0,Math.min(12,(record.parole??0)+e.value));break;
+    const {record}=currentCareer(state);record.parole=e.mode==='reset'?mechanicalDice(state,e.dice??'1D+2',rolls,'Parole threshold'):Math.min(12,(record.parole??0)+e.value);break;
    }
    case 'note':state.character.historyNotes??=[];state.character.historyNotes.push(e.text);break;
    default:nativeFallback(state,e);return;
@@ -1504,12 +1606,16 @@ function trainingOptions(state){
 function apply(state,command,rolls) {
  need(plain(command)&&typeof command.type==='string','A command type is required.');
  const payload=command.payload??{};need(plain(payload),'Invalid command payload.');
+ if(state.pending?.kind==='prisoner-lawyer')need(['resolve-prisoner-lawyer','notes','gm-mode'].includes(command.type),'Resolve the pending lawyer choice before changing its context. Use restore or replay to revise it.');
  if(state.character.aslanOrigin?.status==='pending')need(['roll-aslan-gender','roll-aslan-family','roll-aslan-birth-order','resolve-aslan-estate','roll-aslan-clan','choose-aslan-clan','name-aslan-clan','roll-aslan-pride','roll-aslan-rite','resolve-aslan-origin-source','background','choose-effect','choose-skill','skill-award-source','retry-skill-choice','resolve-book','notes','gm-mode'].includes(command.type),'Finish the recorded Aslan origin before changing its context. Restore or replay explicitly to revise it.');
  if(state.pending?.kind==='aslan-origin-source')need(['resolve-aslan-origin-source','notes','gm-mode'].includes(command.type),'Resolve this origin question with its typed source fields.');
  if(gamesPending(state))need([...GAMES_COMMANDS,'notes','gm-mode'].includes(command.type),'Complete the reserved Games term before changing the character or career. Restore/replay explicitly to revise its context.');
  if(activeReeducation(state))need(['reeducation-roll','reeducation-fine','resolve-reeducation','ageing','choose-effect','choose-skill','resolve-book','notes','gm-mode'].includes(command.type),'Complete the pending re-education and ageing continuation before changing the character. Restore/replay explicitly to revise it.');
  if(activeMerchantFine(state))need(['merchant-fine-roll','resolve-merchant-fine','notes','gm-mode'].includes(command.type),'Complete the pending Merchant fine before changing the character. Restore/replay explicitly to revise its context.');
+ if(state.stage==='benefit-wager')need(['resolve-benefit-wager','notes','gm-mode'].includes(command.type),'Resolve or decline the pending benefit wager before changing its context. Restore/replay explicitly to revise it.');
+ if(state.stage==='relationship-event')need(['resolve-relationship-event','notes','gm-mode'].includes(command.type),'Resolve the pending relationship event before changing the character. Restore/replay explicitly to revise it.');
  if(state.stage==='relationship-loss')need(['resolve-relationship-loss','notes','gm-mode'].includes(command.type),'Resolve the pending relationship loss before changing the character. Restore/replay explicitly to revise it.');
+ if(state.stage==='cross-career-cover')need(['cross-career-cover','notes','gm-mode'].includes(command.type),'Resolve the cover career before changing its context.');
  if(state.stage==='cross-career-training')need(['cross-career-training','notes','gm-mode'].includes(command.type),'Resolve the borrowed training before changing its career context. Restore/replay explicitly to revise it.');
  if(advisoryRecord(state))need(['advisory-career','advisory-cash','resolve-advisory-cash-limit','resolve-advisory-cash-result','choose-effect','choose-skill','skill-award-source','retry-skill-choice','resolve-book','notes','gm-mode'].includes(command.type),'Resolve the pending advisory service before changing the character. Restore/replay explicitly to revise it.');
  if(state.pending?.kind==='aslan-historical-entry')need(['resolve-aslan-historical-entry','notes','gm-mode'].includes(command.type),'Resolve the requested historical-entry ruling before changing its context.');
@@ -1762,12 +1868,53 @@ function apply(state,command,rolls) {
   return 'GM advisory cash-limit disposition: '+payload.decision+'. '+reason;
  }
 
+ case 'cross-career-cover':{
+  const pending=crossCareerCover(state);need(pending,'No cover career choice is pending.');
+  need(Object.keys(payload).every(k=>k==='careerId')&&pending.options.some(c=>c.id===payload.careerId),'Choose a listed cover career.');
+  const route=crossCareerRoute(state,pending.routeId);assertCrossCareerContext(state,route);
+  const natural=dice(state,2,rolls,'Undercover Deception check'),modifier=skillCheckDM(state,'Deception'),total=natural+modifier;
+  route.coverCareerId=payload.careerId;route.check={skill:'Deception',natural,modifier,total,target:8,success:total>=8};route.status='resolving-table';state.pendingCrossCareerCover=null;
+  const context={tableCareerId:route.coverCareerId,crossCareerRouteId:route.id};
+  const effects=route.check.success?
+   [...(route.originCareerId==='core.agent'?[{kind:'table-roll',table:'events',career:route.coverCareerId,dice:'2D'}]:[]),
+    {kind:'cross-career-training',routeId:route.id},
+    ...(route.originCareerId==='vargr.agent'?[{kind:'modifier',target:'advancement',value:2,scope:'next',career:route.originCareerId,source:copy(route.source)}]:[])]:
+   [{kind:'table-roll',table:'mishap',career:route.coverCareerId,dice:'1D'}];
+  state.effectsQueue.unshift(...borrowedEffects(effects,context),{kind:'cross-career-complete',routeId:route.id});drainEffects(state,rolls);
+  return 'Undercover cover: '+findCareer(route.coverCareerId).name+'. Deception '+total+' against 8.';
+ }
+
  case 'cross-career-training':{
   const pending=crossCareerTraining(state);need(pending,'No borrowed training is pending.');need(Object.keys(payload).every(k=>k==='assignment'),'Borrowed training accepts only an assignment.');
-  const route=crossCareerRoute(state,pending.routeId);assertCrossCareerContext(state,route);need(pending.options.some(a=>a.id===payload.assignment),'Choose a Prole assignment table.');
-  const career=findCareer(pending.sourceCareerId),die=dice(state,1,rolls,'Prole assignment training');route.training={careerId:career.id,assignment:payload.assignment,die,source:{id:career.source,page:career.page}};route.status='resolving-training';
+  const route=crossCareerRoute(state,pending.routeId);assertCrossCareerContext(state,route);need(pending.options.some(a=>a.id===payload.assignment),'Choose a listed specialist assignment table.');
+  const career=findCareer(pending.sourceCareerId),die=dice(state,1,rolls,route.originCareerId==='zhodani.agent'?'Prole assignment training':'Borrowed '+career.name+' assignment training');route.training={careerId:career.id,assignment:payload.assignment,die,source:{id:career.source,page:career.page}};route.status='resolving-training';
   state.pendingCrossCareerTraining=null;state.effectsQueue.unshift(...sourcedEffects(RULE_PACK[career.id].training.assignments[payload.assignment][die-1],route.training.source));drainEffects(state,rolls);
   return 'Borrowed '+career.name+' '+payload.assignment+' training: '+die+'.';
+ }
+
+ case 'resolve-relationship-event':{
+  need(state.stage==='relationship-event'&&['relationship-change','relationship-remove'].includes(state.pendingChoice?.kind),'No relationship event is pending.');
+  const e=state.pendingChoice;
+  need(Object.keys(payload).every(k=>['relationshipId','role','name','confirmed'].includes(k)),'Use only the typed relationship event fields.');
+  need(payload.confirmed===true,'Confirm the relationship event decision.');
+  need(state.active===e.careerIndex&&currentCareer(state).career.id===e.careerId&&JSON.stringify(state.character.relationships)===JSON.stringify(e.relationshipsBefore),'Relationship context changed. Restore/replay the original context.');
+  const eligible=state.character.relationships.filter(r=>(e.from??e.types).includes(r.role)),removing=e.kind==='relationship-remove';
+  let before=null,after=null;
+  if(removing)need(payload.role===undefined&&payload.name===undefined,'Removal cannot include a role or name.');
+  else need(e.to.includes(payload.role),'Choose a listed relationship role.');
+  if(eligible.length){
+   const target=eligible.find(r=>r.id===payload.relationshipId);need(target,'Choose an existing eligible relationship by ID.');
+   need(payload.name===undefined,'An existing relationship keeps its name.');before=copy(target);
+   if(removing)state.character.relationships=state.character.relationships.filter(r=>r.id!==target.id);
+   else{target.role=payload.role;after=copy(target);}
+  }else{
+   need(payload.relationshipId===undefined,'No eligible existing relationship can be selected.');
+   if(removing){need(Array.isArray(e.ifAbsent),'No source absence fallback exists.');state.effectsQueue.unshift(...copy(e.ifAbsent));}
+   else{need(e.fallback===true,'No source replacement relationship exists.');const name=text(payload.name??'',120)||'Unnamed '+payload.role.toLowerCase();after=copy(addRelationship(state,payload.role,name));}
+  }
+  state.character.relationshipEvents??=[];
+  state.character.relationshipEvents.push({id:'relationship-event-'+(state.character.relationshipEvents.length+1),kind:e.kind,source:copy(e.source),careerId:e.careerId,careerIndex:e.careerIndex,age:state.character.age,generationTerms:state.character.terms,before,after,absent:!eligible.length});
+  state.pendingChoice=null;drainEffects(state,rolls);return removing?(before?'Removed '+before.role+': '+before.name+'.':'No eligible relationship: applied the printed absence consequence.'):'Recorded '+after.role+': '+after.name+'.';
  }
 
  case 'resolve-relationship-loss':{
@@ -2143,10 +2290,15 @@ function apply(state,command,rolls) {
   need(state.stage==='book-step'&&state.pending?.kind==='native-effect'&&['skill-choice','skill-reduction-choice'].includes(state.pending.effect?.kind),'No skill choice can be retried.');state.pendingChoice=copy(state.pending.effect);state.pending=null;state.stage='skill-choice';return 'Returned to the pending skill choice without applying an award.';
  }
  case 'choose-skill': {
-  need(state.stage==='skill-choice'&&state.pendingChoice,'There is no skill choice.');const e=state.pendingChoice,name=normalizeSkillName(text(payload.name,80),{requireSpeciality:e.mode!=='set'||(e.value??1)>0}).name;need(skillNameAllowed(state,name,e),'Skill is not available for this award.');if(e.distinctSpecialties)distinctScienceSelection(name,e.selected??[]);
+  need(state.stage==='skill-choice'&&state.pendingChoice,'There is no skill choice.');const e=state.pendingChoice,name=normalizeSkillName(text(payload.name,80),{requireSpeciality:e.mode!=='set'||(e.value??1)>0}).name;
+  if(e.scope==='non-psionic'&&nonPsionicEligibility(name)==='source-required'){state.pendingChoice=null;nativeFallback(state,{...e,requestedName:name},'The selected Science subject is not classified for this non-psionic award. Confirm its non-psionic eligibility from the source before recording an award, or retry with a verified specialty.');return 'Unclassified Science specialty requires an explicit source eligibility decision; no skill awarded.';}
+  need(skillNameAllowed(state,name,e),'Skill is not available for this award.');if(e.distinctSpecialties)distinctScienceSelection(name,e.selected??[]);
+  if(coreTalentChoice(state,e)&&skillLevel(state,name)<0){state.pendingChoice=null;requestTalentAward(state,{...e,kind:'psionic-talent',name},rolls);return 'Selected '+name+' for a service-table acquisition attempt.';}
+  if(e.scope==='new-psionic-talent'){gainSkill(state,name,0,'set',true);const history=psionicHistory(state);history.firstTalentChosen=true;history.rulings.push({context:'vargr-psion-event-8',source:{id:'aliens',page:201},talent:name,level:0,acquisitionCheck:false});state.pendingChoice=null;drainEffects(state,rolls);return 'Acquired '+name+' at level 0 after the event check. Aliens 2026 p. 201; no additional acquisition check.';}
+  const award=constrainedAward(state,name,e);
   if((e.mode!=='set'||(e.value??1)>0)&&SPECIALIZED.includes(name.split(' (')[0]))need(name.includes(' ('),'Choose a specialisation, for example Science (physics).');
-  if(e.kind!=='skill-reduction-choice'&&skillAwardExceedsLimit(state,name,e.value??1,e.mode)){state.pendingChoice=null;nativeFallback(state,e,'The selected award would exceed the total skill limit. Choose another valid skill or record a source decision under Core p. 18.');return 'Over-cap skill choice requires an alternate selection or source resolution.';}
-  if(e.kind==='skill-reduction-choice'){need(Object.hasOwn(state.character.skills,name)&&state.character.skills[name]>0,'Choose a trained skill to reduce.');if(e.names)need(e.names.includes(name),'Choose one of the indicated skills.');state.character.skills[name]=Math.max(0,state.character.skills[name]-e.value);}else gainSkill(state,name,e.value??1,e.mode);if(e.awardId)benefitAward(state,e.awardId).decisions.push({type:'skill',name,mode:e.mode,value:e.value??1});state.pendingChoice=null;if((e.count??1)>1)state.effectsQueue.unshift({...e,count:e.count-1,...(e.distinctSpecialties?{selected:[...(e.selected??[]),name]}:{})});drainEffects(state,rolls);return 'Selected '+name+' for a skill award.'+(e.trainingContext?' Aliens 2026 p. '+e.source.page+'; '+e.trainingContext.careerId+' / '+e.trainingContext.assignment+'; eligible tables: '+e.trainingContext.tables.join(', ')+'.':'');
+  if(e.kind!=='skill-reduction-choice'&&skillAwardExceedsLimit(state,name,award.value??1,award.mode)){state.pendingChoice=null;nativeFallback(state,e,'The selected award would exceed the total skill limit. Choose another valid skill or record a source decision under Core p. 18.');return 'Over-cap skill choice requires an alternate selection or source resolution.';}
+  if(e.kind==='skill-reduction-choice'){need(Object.hasOwn(state.character.skills,name)&&state.character.skills[name]>0,'Choose a trained skill to reduce.');if(e.names)need(e.names.includes(name),'Choose one of the indicated skills.');state.character.skills[name]=Math.max(0,state.character.skills[name]-e.value);}else {gainSkill(state,name,award.value??1,award.mode);bindAwardCheck(state,name);}if(e.awardId)benefitAward(state,e.awardId).decisions.push({type:'skill',name,mode:e.mode,value:e.value??1});state.pendingChoice=null;if((e.count??1)>1)state.effectsQueue.unshift({...e,count:e.count-1,...(e.distinctSpecialties?{selected:[...(e.selected??[]),name]}:{})});drainEffects(state,rolls);return 'Selected '+name+' for a skill award.'+(e.trainingContext?' Aliens 2026 p. '+e.source.page+'; '+e.trainingContext.careerId+' / '+e.trainingContext.assignment+'; eligible tables: '+e.trainingContext.tables.join(', ')+'.':'');
  }
  case 'training': {
   need(state.stage==='training','No training roll is pending.');need(trainingOptions(state).some(x=>x.id===payload.table),'Training table is not available.');const pack=nativePack(state),{record,career}=currentCareer(state);const rows=payload.table==='assignment'?pack.training.assignments[record.assignment]:pack.training[payload.table];
@@ -2260,6 +2412,21 @@ function apply(state,command,rolls) {
   record.pension=pension.annualCredits;record.pensionCondition=pension.condition;finishCareerExit(state);
   return 'Left '+career.name+' with '+record.benefitRolls+' benefit rolls.'+(retire?' Early retirement ends creation after these benefits; no career transfer.':'');
  }
+ case 'resolve-benefit-wager':{
+  need(state.stage==='benefit-wager','No benefit wager is pending.');
+  const wager=state.character.benefitWagers?.find(w=>w.id===state.pendingBenefitWager),{career,record}=currentCareer(state);
+  if(wager?.crossCareerRouteId)assertCrossCareerContext(state,crossCareerRoute(state,wager.crossCareerRouteId));
+  need(wager?.status==='pending'&&wager.careerId===career.id&&wager.careerIndex===state.active&&wager.assignment===record.assignment&&wager.available===record.benefitRolls&&wager.continuation===state.effectNext,'The pending wager context changed.');
+  need(Object.keys(payload).every(k=>['stake','skill'].includes(k)),'Use only the wager stake and selected skill.');
+  const stake=integer(payload.stake,0,wagerLimit(wager.route,record.benefitRolls),'Wager stake'),rule=BENEFIT_WAGERS[wager.route];
+  need(stake===0?payload.skill===undefined:rule.skills.includes(payload.skill),'Choose an allowed skill, or decline without a skill.');
+  wager.stake=stake;wager.before=record.benefitRolls;state.pendingBenefitWager=null;
+  if(stake===0){wager.status='declined';wager.after=record.benefitRolls;drainEffects(state,rolls);return 'Declined the optional benefit wager. No roll or additional skill gain.';}
+  wager.skill=payload.skill;const natural=dice(state,2,rolls,'Benefit wager: '+payload.skill),modifier=skillCheckDM(state,payload.skill),total=natural+modifier;
+  wager.check={natural,modifier,total,target:8,success:total>=8};wager.delta=wagerDelta(wager.route,stake,wager.check.success);record.benefitRolls+=wager.delta;wager.after=record.benefitRolls;wager.status='resolving';
+  state.effectsQueue.unshift(...(rule.train?[{kind:'skill',name:payload.skill,value:1,source:copy(rule.source)}]:[]),{kind:'benefit-wager-complete',id:wager.id});drainEffects(state,rolls);
+  return 'Wagered '+stake+' accrued benefit rolls using '+payload.skill+': '+(wager.check.success?'success':'failure')+'; benefit roll change '+wager.delta+'.';
+ }
  case 'benefit': {
   need(state.stage==='benefits','No benefits to roll.');
   const {record,career}=currentCareer(state);need(record.benefitRolls>0,'No benefit rolls remain.');
@@ -2279,6 +2446,27 @@ function apply(state,command,rolls) {
   if(index>=7||index<0){sourceStep(state,'benefit',career.source,career.page,'Benefit result '+result+' is outside the printed table. Referee adjudication required.','benefits');state.pending.rollContext=copy(state.benefitRollContext);return 'Benefit roll exceeds printed table; no result was assumed.';}
   if(pack){const origin={careerId:career.id,careerIndex:state.active,source:{id:career.source,page:career.page},tableContext:{careerId:career.id,table:cash?'cash':'material',modifier,natural:result-modifier,result}};state.benefitRollContext={...origin.tableContext,careerIndex:state.active,creditIds,lifeBonusIds,rolls:[{natural:result-modifier,modifier,result}]};queueEffects(state,cash?[{kind:'cash',value:pack.benefits.cash[index]*(state.character.species==='aslan'&&state.character.culture==='native'&&state.character.gender==='male'&&cashRollAccount(state)!=='core'?0.5:1)}]:markBenefitOrigin(pack.benefits.material[index],origin),'benefit-complete',rolls);}else sourceStep(state,'benefit',career.source,career.page,'Resolve '+(cash?'cash':'material')+' benefit result '+result+'.','benefits');
   return 'Rolled '+(cash?'cash':'material')+' benefit '+result+' (DM '+modifier+').';
+ }
+ case 'resolve-prisoner-lawyer':{
+  need(state.stage==='book-step'&&state.pending?.kind==='prisoner-lawyer','No lawyer opportunity is pending.');
+  const entry=state.character.prisonerLawyers?.find(e=>e.id===state.pending.lawyerId),{career,record}=currentCareer(state);
+  need(entry?.status==='pending'&&entry.careerIndex===state.active&&career.id==='core.prisoner','No pending Prisoner lawyer opportunity.');
+  need(Object.keys(payload).every(k=>['outcome','level','zeroLevelConfirmed','reason'].includes(k)),'Use only typed lawyer decision fields.');
+  need(['hire','decline'].includes(payload.outcome),'Choose hire or decline.');
+  const decision={outcome:payload.outcome};
+  if(payload.outcome==='hire'){
+   need(typeof payload.level==='number'&&Number.isSafeInteger(payload.level)&&payload.level>=0,'Advocate level must be a nonnegative integer.');
+   const level=payload.level,cost=1000*level*level;need(Number.isSafeInteger(cost),'Lawyer cost exceeds the supported exact credit range.');
+   if(level===0){need(payload.zeroLevelConfirmed===true,'The referee must explicitly confirm a level-0 lawyer.');const reason=text(payload.reason??'',500);need(reason,'Record the source ruling for a level-0 lawyer.');Object.assign(decision,{zeroLevelConfirmed:true,reason});}
+   else need(payload.zeroLevelConfirmed===undefined&&payload.reason===undefined,'A positive-level lawyer needs no level-0 ruling.');
+   need(state.character.cash>=cost,'Insufficient cash to hire this lawyer. No debt or outside funding is assumed.');
+   const cashBefore=state.character.cash;state.character.cash-=cost;
+   const natural=dice(state,2,rolls,'Lawyer Advocate check'),total=natural+level,success=total>=8;
+   const reduction=success?dice(state,1,rolls,'Lawyer parole reduction'):0;
+   record.parole=Math.min(12,record.parole-reduction);
+   Object.assign(decision,{level,cost,cashBefore,cashAfter:state.character.cash,check:{natural,total,target:8,success},reduction});
+  }else need(payload.level===undefined&&payload.zeroLevelConfirmed===undefined&&payload.reason===undefined,'Declining cannot include hiring terms.');
+  Object.assign(entry,{status:'completed',decision,paroleAfter:record.parole});state.pending=null;drainEffects(state,rolls);return payload.outcome==='hire'?'Hired Advocate '+decision.level+' lawyer for Cr'+decision.cost+'. Appeal '+decision.check.total+' vs 8; parole '+entry.paroleBefore+' → '+entry.paroleAfter+'.'+(decision.reason?' Ruling: '+decision.reason:''):'Lawyer opportunity declined.';
  }
  case 'resolve-life-event': {
   need(state.stage==='book-step'&&state.pending?.kind==='core-life-decision','No life event decision is pending.');
@@ -2583,6 +2771,7 @@ export function project(session) {
  const merchantFine=activeMerchantFine(state)??state.character.merchantFines?.at(-1)??null;state.currentMerchantFine=copy(merchantFine);state.merchantFineOptions=state.stage==='merchant-fine-decision'&&activeMerchantFine(state)?merchantFineOptions({die:merchantFine.die,cash:state.character.cash}):[];
  const reeducation=activeReeducation(state)??state.character.reeducations?.at(-1)??null;state.currentReeducation=copy(reeducation);state.reeducationRequirements=activeReeducation(state)?copy(reeducation.plan?.requirements??[{key:'anagathicTerms',minimum:0,maximum:1000}]):[];
  state.relationshipLossOptions=state.stage==='relationship-loss'?relationshipLossOptions(state.character.relationships):[];
+ state.currentCrossCareerCover=crossCareerCover(state);
  state.currentCrossCareerTraining=crossCareerTraining(state);
  state.assignmentChangeOptions=assignmentOptions(state);state.currentAssignmentChange=copy(currentAssignmentChange(state)??state.character.assignmentChanges?.at(-1)??null);
  state.aslanHistoricalEntryOptions=historicalEntryOptions(state);state.currentAslanHistoricalEntry=currentHistoricalEntry(state);

@@ -47,6 +47,7 @@ test('later-career basic training leads to ordinary training, unlike first caree
   if(r.state.stage==='survival')r=run(r.session,'survival');
   else if(r.state.stage==='advancement')r=run(r.session,'advancement');
   else if(r.state.stage==='training')r=run(r.session,'training',{table:'service'});
+  else if(r.state.stage==='relationship-event'){const e=r.state.pendingChoice,person=r.state.character.relationships.find(p=>(e.from??e.types).includes(p.role));r=run(r.session,'resolve-relationship-event',{confirmed:true,...(person?{relationshipId:person.id}:{}),...(e.to?{role:e.to[0]}:{})});}
   else if(r.state.stage==='effect-choice')r=run(r.session,'choose-effect',{index:0});
   else if(r.state.stage==='skill-choice'){const p=r.state.pendingChoice;const base=p.allowed?.[0]??(p.scope==='existing'?Object.keys(r.state.character.skills)[0]:'Admin');r=run(r.session,'choose-skill',{name:p.allowed?base+' (test)':base});}
   else if(r.state.stage==='book-step')r=run(r.session,'resolve-book',{confirmed:true,effects:[],note:'Manual source resolution in fixture'});

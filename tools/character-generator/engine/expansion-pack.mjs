@@ -1844,11 +1844,11 @@ outcomes('companion.truther',{
  2:[T('mishap',{dice:'1D',keepCareer:true})],
  3:[OPT('Accept',[R(1),ANY('science-specialties'),relationship('Enemy',1,'D3')])],
  4:[relationship('Contact'),B()],
- 5:[ANY('untrained-electronics-or-science')],
+ 5:[ANY('untrained-electronics-or-science',{source:{id:'companion',page:37},label:'Choose a new Electronics or Science specialisation'})],
  6:C('Survival / Recon'),
  7:[T('core.life-events',{dice:'2D',sourcePage:46})],
  8:[...C('Carouse / Persuade'),stat('FOL',1)],
- 9:[Q([['Take opportunity',[Q([['Following',[DSTAT('FOL','D3')]],['Status',C('SOC+1')],['Skill',[ANY('science-medic-electronics',{value:2})]]]),relationship('Enemy',1,'D3')]],['Decline',[relationship('Ally')]]])],
+ 9:[Q([['Take opportunity',[Q([['Following',[DSTAT('FOL','D3')]],['Status',C('SOC+1')],['Skill',[ANY('science-medic-electronics',{value:2,source:{id:'companion',page:37},label:'Gain two levels in Science, Medic or Electronics'})]]]),relationship('Enemy',1,'D3')]],['Decline',[relationship('Ally')]]])],
  10:[...C('Streetwise / Recon / Carouse'),relationship('Contact',1,'D3')],
  11:[stat('SOC',1),relationship('Rival')],
  12:[DSTAT('FOL','D3')]
@@ -1877,7 +1877,7 @@ outcomes('vargr.agent',{
  3:[K('Investigate|Streetwise',8,C('CHA+1 / Deception / Stealth / Streetwise / Tactics (military)'),[T('mishap',{dice:'1D'})])],
  4:[contactsCHA()],5:[B()],6:[K('EDU',8,[ANY('eligible-career')])],
  8:[OPT('Profit from goods',[K('Deception',8,[R(1)],[stat('CHA',-1),M('survival',-4)])])],
- 9:[U('vargr.agent',189,'Choose a cover career; Deception 8+. Failure rolls its mishap. Success rolls its specialist training and gives next advancement DM+2.')],
+ 9:[{kind:'agent-cover',originCareerId:'vargr.agent',source:{id:'aliens',page:189}}],
  10:[relationship('Ally')],11:[A(4)],12:[P('next-check'),stat('CHA',1)]
 },{
  1:[I(2,'lower')],
@@ -1887,7 +1887,7 @@ outcomes('vargr.agent',{
 });
 outcomes('vargr.citizen',{
  3:[K('CHA',8,[A(2)],[M('survival',-2)])],
- 4:[T('training.advanced',{dice:'1D',ignorePrerequisite:true})],5:[B()],6:[K('EDU',8,[ANY('existing')])],
+ 4:[T('training.advanced',{dice:'1D',ignorePrerequisite:true,trainingRoute:'vargr-citizen-event-4',source:{id:'aliens',page:191}})],5:[B()],6:[K('EDU',8,[ANY('existing')])],
  8:[OPT('Exploit secret',[A(2),B(),stat('CHA',-1),...C('Streetwise=1 / Deception=1 / @Contact')])],
  9:[A(2)],10:[K('CHA',10,[P('next-check')])],11:[relationship('Ally'),A(4)],12:[Q([['Charisma',C('CHA+1')],['Advancement',[P('next-check')]]])]
 },{
@@ -1903,7 +1903,7 @@ outcomes('vargr.intermediary',{
  10:[K('CHA',10,[P('next-check')])],11:[Q([['Benefit',[R(1)]],['Advancement',[A(4)]]])],12:[P('next-check'),stat('CHA',1)]
 },{
  1:[I()],2:[stat('CHA',-1)],3:[relationship('Rival'),K('CHA',6,[],C('CHA-1'))],4:[K('CHA',8,[],[M('survival',-2)])],
- 5:[U('vargr.intermediary',193,'Choose END or Melee check at 8+. Success permits staying; failure causes an injury roll.')],
+ 5:[Q(['END','Melee'].map(name=>[name,[K(name,8,[stay()],[I()])]]))],
  6:[K('Broker|Diplomat|Persuade',10,[stay(),relationship('Enemy')],[ST('exit'),relationship('Rival')])]
 });
 outcomes('vargr.loner',{
@@ -1936,8 +1936,8 @@ outcomes('vargr.military',{
 outcomes('vargr.psion',{
  3:[OPT('Help',[K('Deception',8,[relationship('Ally')],[stat('CHA',-1)])])],
  4:[RAND('1D',[[1,2,[I()]],[3,4,[ANY('psionic-talents')]],[5,6,[stat('PSI',1)]]])],
- 5:[B()],6:[K('EDU',8,[ANY('non-psionic')])],
- 8:[K('PSI',10,[ANY('new-psionic-talent')],C('Science (psionicology)'))],
+ 5:[B()],6:[K('EDU',8,[ANY('non-psionic',{source:{id:'aliens',page:201},label:'Choose a non-psionic skill; unclassified Science subjects require a source eligibility decision'})])],
+ 8:[K('PSI',10,[ANY('new-psionic-talent',{source:{id:'aliens',page:201},mode:'set',value:0,label:'Choose a new psionic talent at level 0'})],C('Science (psionicology)'))],
  9:[relationship('Ally'),skill('Persuade')],10:[stat('PSI',1)],11:[relationship('Contact'),A(4)],12:[P('next-check')]
 },{
  1:[I()],2:[RAND('1D',[[1,4,[{kind:'note',text:'Missing for the rolled number of days.'}]],[5,6,[stat('PSI',-1),{kind:'note',text:'Missing for the rolled number of days.'}]]])],
@@ -2101,7 +2101,7 @@ outcomes('aslan.guardian',{
 outcomes('aslan.manager',{
  3:[K('Melee (natural)|Stealth|Gun Combat',8,[ANY()],[I()])],
  4:C('Drive=1 / Electronics=1 / Mechanic=1 / Pilot=1'),
- 5:[U('aslan.manager',29,'Wager up to three benefit rolls. Broker 8+ gains the wager in extra rolls on success; failure loses the wager.')],
+ 5:[{kind:'benefit-wager',route:'manager-event-5'}],
  6:[K('EDU',8,[ANY()])],8:C('Broker=1 / Profession=1 / Streetwise / @Contact'),
  9:[K('Diplomat|Admin',8,[relationship('Rival')],[A(-2)])],10:[A(2)],
  11:[Q([['Tolerance',C('Tolerance')],['Advancement',[A(4)]]])],12:[P()]
@@ -2113,7 +2113,7 @@ outcomes('aslan.manager',{
 outcomes('aslan.military',{
  3:[K('Recon|Gun Combat',8,[],[I()]),Q([['Heavy Weapons',[genderAward('male',C('Heavy Weapons=1'))]],['Leadership',[genderAward('male',C('Leadership=1'))]],['Medic',C('Medic=1')],['Stealth',C('Stealth=1')]])],
  4:[Q([['Contact',[relationship('Contact')]],['Communications',[genderAward('female',C('Electronics (comms)'))]],['Mechanic',[genderAward('female',C('Mechanic'))]],['Streetwise',C('Streetwise')]])],
- 5:[U('aslan.military',31,'Gain Melee (natural), Gun Combat, Drive or Survival; check the selected skill at 8+ for next advancement DM+2.')],
+ 5:[Q(['Melee (natural)','Gun Combat','Drive','Survival'].map(name=>[name,[...C(name),{...K(name,8,[A(2)]),skillScope:'preceding-award',source:{id:'aliens',page:31}}]]))],
  6:[K('EDU',8,[ANY()])],8:C('Gun Combat / Language / Melee / Recon / Survival'),
  9:[Q([['Duel',[K('Melee (natural)',8,C('SOC+1'),C('SOC-1'))]],['Prove courage',[RAND('1D',[[1,3,[I()]],[4,6,[relationship('Rival'),A(4),stat('SOC',1)]]])]]])],
  10:[officerOpportunity('aslan.military-officer',31,10)],
@@ -2246,7 +2246,7 @@ export const EXPANSION_TABLES = {
  'vargr.pack-events':{source:citation('aliens',206),dice:'1D',results:{
   1:C('CHA-1'),2:[K('CHA',6,[],[ST('exit')])],3:[{kind:'note',text:'Join a new pack.'}],
   4:[RAND('1D',[[1,3,[relationship('Rival')]],[4,6,[relationship('Ally')]]])],5:C('CHA+1'),
-  6:[U('vargr',206,'Choose Leadership or CHA check at10. Success makes the Traveller pack leader; failure grants a Rival.')]
+  6:[Q(['Leadership','CHA'].map(name=>[name,[K(name,10,[{kind:'note',text:'Became pack leader through a leadership challenge (Aliens 2026 p. 206).'}],[relationship('Rival')])]]))]
  }},
  'vargr.unusual-events':{source:citation('aliens',206),dice:'1D',results:{
   1:[{kind:'psionic-testing-opportunity',nextCareer:'vargr.psion',qualificationRequired:true}],
@@ -2301,7 +2301,17 @@ function visit(value,fn){
  for(const child of Object.values(value))visit(child,fn);
 }
 const PSIONIC_TALENTS=['Awareness','Clairvoyance','Telekinesis','Telepathy','Teleportation','Technopathy'];
-for(const c of Object.values(builds)){
+for(const [id,c] of Object.entries(builds)){
+ // Vargr optional single-roll awards, Aliens 2026 pp. 189–205.
+ // Merchant 3 instead couples a DM to its extra roll; retain that separate mechanic.
+ if(id.startsWith('vargr.'))for(const [row,effects] of Object.entries(c.events)){
+  if(id==='vargr.merchant'&&row==='3')continue;
+  visit(effects,e=>{if(e.kind==='modifier'&&e.target==='benefit'&&e.scope==='one'){
+   const scope=id==='vargr.intermediary'||id==='vargr.citizen'&&row==='5'?'any':'career';
+   const value=e.value;for(const key of Object.keys(e))delete e[key];
+   Object.assign(e,{kind:'benefit-credit',value,scope,source:{id:'aliens',page:c.source.pages[1]}});
+  }});
+ }
  visit(c,e=>{if(e.kind==='skill'&&PSIONIC_TALENTS.includes(e.name))e.kind='psionic-talent';});
  const unresolved=[];
  visit(c,e=>{if(e.kind==='source-required')unresolved.push({reason:e.reason,source:e.source});});

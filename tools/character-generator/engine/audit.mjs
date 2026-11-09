@@ -5,7 +5,7 @@ export function characterChanges(before,after){
  const add=(path,a,b)=>{if(JSON.stringify(a)!==JSON.stringify(b))changes.push({path,before:clone(a),after:clone(b)});};
  for(const field of ['name','notes','species','variant','culture','gender','identityGender','relationshipSequence','homeworld','age','terms','cash','debt','sentenced','outcast','deceased','qualificationBanned','psionEntryPermission','preCareer','birthOrder','medicalCosts','retirementFromCreation','nonCareerMonths','treatmentAgeingTerms','psionicLoss','cashRollAccounts','lifePsionAccess'])add(field,before[field],after[field]);
  for(const field of ['stats','skills'])for(const key of new Set([...Object.keys(before[field]??{}),...Object.keys(after[field]??{})]))add(field+'.'+key,before[field]?.[key],after[field]?.[key]);
- for(const field of ['benefits','relationships','historyNotes','futureConditions','traits','injuries','medicalBills','medicalSettlements','ageingCrises','benefitAwards','assets','annualIncome','benefitRollHistory','statusReviews','careerTransfers','relationshipLosses','lifeEvents','lifeBenefitBonuses','lifeBenefitLosses']){
+ for(const field of ['benefits','relationships','historyNotes','futureConditions','traits','injuries','medicalBills','medicalSettlements','ageingCrises','benefitAwards','assets','annualIncome','benefitRollHistory','statusReviews','careerTransfers','relationshipLosses','relationshipEvents','lifeEvents','lifeBenefitBonuses','lifeBenefitLosses']){
   const old=before[field]??[],next=after[field]??[];for(let i=0;i<Math.max(old.length,next.length);i++)add(field+'.'+i,old[i],next[i]);
  }
  // Persisted outcomes are audited without exposing internal continuation/effect queues.
@@ -23,9 +23,12 @@ export function characterChanges(before,after){
   aslanStatusChanges:['id','cause','source','careerIndex','generationTerms','age','socBefore','socAfter','outcastBefore','outcastAfter','removed','awardIds','forfeitures'],
   careerTransitions:['id','source','procedureSource','generationTerms','age','fromCareerIndex','fromCareerId','fromAssignment','toCareerId','toAssignment','mode','check','automaticReason','status','newCareerIndex'],
   assignmentChanges:['id','careerId','careerIndex','fromAssignment','toAssignment','mode','status','source','generationTerms','age','check','newCareerIndex','rank','officer','automaticReason','transitionId'],
+  sourceTraining:['id','route','source','careerId','careerIndex','assignment','table','die','status'],
   benefitCredits:['id','source','originCareerId','originCareerIndex','value','scope','status','consumption'],
   advisoryServices:['id','source','originCareerId','originCareerIndex','careerTerms','generationTerms','age','status','careerId','ruling','training','cash','cashLimitDecision','completion'],
-  crossCareerRoutes:['id','kind','source','originCareerId','originCareerIndex','careerTerms','generationTerms','age','status','check','tables','training','completion'],
+  benefitWagers:['id','route','source','sourceCareerId','crossCareerRouteId','careerId','careerIndex','assignment','available','maximum','skills','status','stake','skill','before','after','check','delta'],
+  crossCareerRoutes:['id','kind','coverCareerId','source','originCareerId','originCareerIndex','careerTerms','generationTerms','age','status','check','tables','training','completion'],
+  prisonerLawyers:['id','source','careerIndex','careerTerms','status','paroleBefore','decision','paroleAfter'],
   merchantFines:['id','source','status','die','amount','origin','decision','payment','reeducationId','completion'],
   reeducations:['id','source','status','origin','roll','fineDie','decisions','decisionHistory','timeline','completion']
  };

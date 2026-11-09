@@ -6,13 +6,17 @@ export const CORE_PACK_VERSION = 1;
 export const CORE_EFFECT_SCHEMA = Object.freeze({
   skill: 'name, mode (increase/set), value; set is a minimum, never a reduction',
   stat: 'name, value (delta); optional minimum applied after the delta',
+  'agent-cover': 'originCareerId, source; explicit borrowed career selection, Deception check and queued specialist training',
   choice: 'options: [{label, effects: []}]',
+  'assignment-effect': 'assignments: effects keyed by the current assignment',
   'skill-choice': 'scope (any/existing/psionic-talents/science-specialties), mode, value, optional exclude/count/distinctSpecialties',
   'psionic-talent': 'name, mode, value; untrained acquisition-check is mandatory',
   benefit: 'name, value; optional dice for quantity, no equipment/ship resolution implied',
   relationship: 'type, count or dice, optional onlyIfAbsent',
   check: 'stat or skills, target, success/failure effect arrays; optional natural result effects',
   modifier: 'target, value, scope (next/one/all), optional career',
+  'benefit-credit': 'value, scope (any/career), source; held until explicitly selected for one Benefit roll',
+  'benefit-wager': 'route: source-bound optional current-career stake and explicit skill choice',
   'benefit-rolls': 'value, or mode (retain-term/lose-all)',
   'table-roll': 'table, optional career, dice, keepCareer; may need source-assisted resolution',
   'career-status': 'action (stay/exit/next/auto-qualify), optional career',
@@ -20,6 +24,7 @@ export const CORE_EFFECT_SCHEMA = Object.freeze({
   injury: 'table core.injury; optional result or rolls/take/subject',
   random: 'dice, outcomes: [{min,max,effects}]',
   'relationship-change': 'from, to, optional fallback',
+  'prisoner-lawyer': 'Core p57 typed hire/decline; affordable square-cost payment, Advocate check and parole reduction',
   parole: 'value delta or mode reset; always apply the published ceiling',
   note: 'short original procedural/narrative label, no mechanical effect',
   unsupported: 'reason and source page; never silently resolve'
@@ -213,7 +218,7 @@ for(const [id,rows] of Object.entries({
  pack[id].training.officer=table(rows);
  pack[id].prerequisites.officer={commissioned:true};
 }
-pack['core.psion'].training.service=pack['core.psion'].training.service.map(row=>row.map(effect=>effect.kind==='skill'?{...effect,kind:'psionic-talent',untrained:'acquisition-check'}:{...effect,untrained:'acquisition-check'}));
+pack['core.psion'].training.service=pack['core.psion'].training.service.map(row=>row.map(effect=>effect.kind==='skill'?{...effect,kind:'psionic-talent',untrained:'acquisition-check'}:{...effect,untrained:'acquisition-check',source:{id:'core',page:236},label:'Choose a psionic talent to improve, or attempt to acquire an untrained talent'}));
 
 // Event and mishap outcomes are mechanical instructions, not source narration.
 // Missing procedural handlers must pause for source-assisted resolution.
@@ -255,7 +260,7 @@ common('core.agent',{
  4:[mod('benefit',1,'one')],
  5:[relation('Contact',1,'D3')],
  6:[check('EDU',8,[anySkill('existing')])],
- 8:[unsupported(23,'Undercover branch requires a Rogue/Citizen event or mishap and an assignment-table roll after Deception 8+; use the source to select both careers and specialist table.')],
+ 8:[{kind:'agent-cover',originCareerId:'core.agent',source:{id:'core',page:23}}],
  9:[mod('advancement',2)],
  10:use('Drive=1|Flyer=1|Pilot=1|Gunner=1'),
  11:mentor('Investigate')
@@ -282,7 +287,7 @@ common('core.army',{
  5:[relation('Rival')]
 });
 common('core.citizen',{
- 3:[unsupported(27,'Choose and gain Advocate, Persuade, Explosives or Streetwise at level 1, then check the chosen skill at 8+: next advancement +2 on success, next survival -2 on failure.')],
+ 3:[choice(['Advocate','Persuade','Explosives','Streetwise'].map(name=>[name,[...use(name+'=1'),check(name,8,[mod('advancement',2)],[mod('survival',-2)])]]))],
  4:use('Mechanic|Drive|Electronics|Flyer|Engineer'),
  5:[mod('benefit',1,'one')],
  6:[check('EDU',10,[anySkill('any','set')])],
@@ -354,7 +359,7 @@ common('core.merchant',{
    ['Refuse',[relation('Enemy')]]
  ])],
  4:use('Profession=1|Electronics=1|Engineer=1|Animals=1|Science=1'),
- 5:[unsupported(35,'Optional benefit-roll wager: Gambler or Broker 8+; success adds ceil(wager/2), failure loses wager, and the used skill increases by 1 either way.')],
+ 5:[{kind:'benefit-wager',route:'merchant-event-5'}],
  6:[relation('Contact')],
  8:[...use('Advocate=1|Admin=1|Diplomat=1|Investigate=1'),prisonOnTwo()],
  9:[check('EDU',8,[anySkill('existing')])],
@@ -379,9 +384,9 @@ common('core.navy',{
  12:[promote(true,'next-check')]
 },{
  2:[...use('STR-1|DEX-1|END-1'),status('stay')],
- 3:[unsupported(37,'Assignment-specific 8+ skill check; all outcomes leave the career, success retains this term benefit. Crew: Electronics (sensors)/Gunner; technical: Mechanic/Vacc Suit; flight: Pilot (small craft/spacecraft)/Tactics (naval).')],
+ 3:[{kind:'assignment-effect',assignments:Object.fromEntries(Object.entries({crew:['Electronics (sensors)','Gunner'],technical:['Mechanic','Vacc Suit'],flight:['Pilot (small craft)','Pilot (spacecraft)','Tactics (naval)']}).map(([assignment,names])=>[assignment,[choice(names.map(name=>[name,[check(name,8,[retain()])]]))]]))}],
  4:[choice([
-   ['Responsible',[tableRoll('training',{career:'current',chooseAvailableTable:true,dice:'1D'})]],
+   ['Responsible',[tableRoll('training',{career:'current',chooseAvailableTable:true,dice:'1D',trainingRoute:'navy-mishap-4',source:{id:'core',page:37}})]],
    ['Not responsible',[relation('Enemy'),retain()]]
  ])],
  5:[relation('Rival')]
@@ -418,7 +423,7 @@ common('core.rogue',{
  6:[choice([['Betray',[mod('advancement',4)]],['Refuse',[relation('Ally')]]])],
  8:use('Streetwise=1|Stealth=1|Melee=1|Gun Combat=1'),
  9:[check('Stealth|Gun Combat',8,[rolls(1)],[injury()])],
- 10:[...use('Gambler=1'),unsupported(41,'Optional benefit-roll wager using Gambler 8+: success adds ceil(wager/2), failure loses all wagered rolls.')],
+ 10:[...use('Gambler=1'),{kind:'benefit-wager',route:'rogue-event-10'}],
  11:mentor('Tactics (military)=1')
 },{
  2:[status('next','core.prisoner')],
@@ -475,7 +480,7 @@ common('core.prisoner',{
   [5,5,[parole(-2)]],[6,6,[check('Melee (unarmed)',8,[],[injury()])]]
  ])],
  8:[parole(-1)],
- 9:[unsupported(57,'Optional lawyer: select Advocate level, pay Cr1000 times its square, roll 2D plus that skill; 8+ reduces parole threshold by 1D.')],
+ 9:[{kind:'prisoner-lawyer',source:{id:'core',page:57}}],
  10:use('Admin|Advocate|Electronics (computers)|Steward'),
  11:[parole(-2)],
  12:[optional([random('2D',[[2,7,[injury()]],[8,12,[relation('Ally'),parole(-2)]]])])]
@@ -513,6 +518,14 @@ function walkEffects(value,visit) {
  }
 }
 for(const [id,career] of Object.entries(pack)) {
+ // Single-roll awards are held until selected; only explicit 'this career' wording expires.
+ for(const [row,effects] of Object.entries(career.events)) walkEffects(effects,e=>{
+  if(e.kind==='modifier'&&e.target==='benefit'&&e.scope==='one'){
+   const scope=id==='core.agent'||id==='core.citizen'&&row==='8'?'career':'any';
+   const value=e.value;for(const key of Object.keys(e))delete e[key];
+   Object.assign(e,{kind:'benefit-credit',value,scope,source:{id:'core',page:career.source.pages[1]}});
+  }
+ });
  walkEffects({events:career.events,mishaps:career.mishaps},effect=>{
   if(effect.kind==='unsupported') career.unsupported.push(effect);
  });

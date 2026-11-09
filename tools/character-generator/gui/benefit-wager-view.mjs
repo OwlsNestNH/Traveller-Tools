@@ -1,0 +1,7 @@
+export function benefitWagerView(state,{esc,button,sourceLabel}){
+ const w=state.character.benefitWagers.find(w=>w.id===state.pendingBenefitWager);
+ return '<p class="source">'+esc(sourceLabel(w.source.id,w.source.page))+'</p><p>'+esc(w.careerId)+' / '+esc(w.assignment)+'. Available accrued benefit rolls: '+esc(w.available)+'. Maximum wager: '+esc(w.maximum)+'. Unfinished-term and future rank awards cannot be wagered.</p>'+(w.maximum?'<label>Benefit rolls to wager<input id="wager-stake" type="number" min="1" max="'+w.maximum+'" step="1" value="1"></label><label>Skill for the 8+ check<select id="wager-skill">'+w.skills.map(s=>'<option>'+esc(s)+'</option>').join('')+'</select></label><p>Success gains '+(w.route==='manager-event-5'?'the stake':'half the stake, rounded up')+' in extra rolls; failure loses the stake.'+(w.route==='merchant-event-5'?' The chosen skill increases by one either way.':'')+'</p>'+button('Roll benefit wager','resolve-benefit-wager'):'<p>No accrued rolls are available to wager.</p>')+button('Decline wager','resolve-benefit-wager','quiet','data-decline="true"');
+}
+export function benefitWagerSheet(state,{esc,sourceLabel}){
+ const rows=state.character.benefitWagers??[];return rows.length?'<div class="sheet-section"><h3>Benefit wagers</h3>'+rows.map(w=>'<p>'+esc(sourceLabel(w.source.id,w.source.page))+' · '+esc(w.careerId)+' / '+esc(w.assignment)+': '+esc(w.status)+(w.stake?' · '+esc(w.skill)+' · stake '+esc(w.stake)+' · '+esc(w.before)+' → '+esc(w.after):'')+'</p>').join('')+'</div>':'';
+}

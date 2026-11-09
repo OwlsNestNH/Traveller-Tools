@@ -217,7 +217,7 @@ test('injury choices and stay exceptions are not replaced by generic ejection',(
  assert.ok(CORE_PACK['core.scholar'].mishaps[6].some(e=>e.kind==='career-status'&&e.action==='stay'));
 });
 test('complex unresolved handlers stay explicit and locatable',()=>{
- const expected=['core.agent','core.citizen','core.merchant','core.navy','core.rogue','core.prisoner'];
+ const expected=[];
  assert.deepEqual(ids.filter(id=>CORE_PACK[id].unsupported.length),expected);
  for(const id of expected) {
   const c=CORE_PACK[id];
