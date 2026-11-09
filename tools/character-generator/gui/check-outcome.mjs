@@ -37,6 +37,10 @@ export function checkOutcome(event){
   const m=summary.match(/^Education (.+) check (-?\d+) against (-?\d+)\.$/);
   if(m)evidence.push(checked('Education '+m[1]+' check',{total:Number(m[2]),target:Number(m[3]),success:Number(m[2])>=Number(m[3])}));
  }
+ if(event?.type==='prisoner-escape'){
+  const m=summary.match(/^Prisoner escape using (Stealth|Deception): (-?\d+) against 10\+; (succeeded\.|failed\. Parole Threshold \+2 \(maximum 12\)\.)$/);
+  if(m&&(Number(m[2])>=10)===(m[3]==='succeeded.'))evidence.push(checked('Prisoner escape using '+m[1],{total:Number(m[2]),target:10,success:Number(m[2])>=10}));
+ }
  if(event?.type==='education-graduation'){
   const m=summary.match(/^Graduation total (-?\d+) against (-?\d+): (honours|graduated|did not graduate)\.$/);
   if(m)evidence.push(checked('Graduation',{total:Number(m[1]),target:Number(m[2]),success:m[3]!=='did not graduate'}));
