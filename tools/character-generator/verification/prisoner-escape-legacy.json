@@ -1,0 +1,674 @@
+{
+  "provenance": "Generated using unchanged .16 engine at git 1af31388be3a248c4426f7049184fedf3e3f46cc. Synthetic test character only.",
+  "session": {
+    "format": "traveller-character-session",
+    "version": 1,
+    "rulesRevision": "character-preview-2026-11-09.16",
+    "seed": "prison-basic-training-22",
+    "events": [
+      {
+        "id": "action-1",
+        "command": {
+          "type": "configure",
+          "payload": {
+            "aezorghTwoDice": true
+          }
+        },
+        "rolls": [],
+        "summary": "Generation options: 0 boon rolls; player placement on; minimum-total reroll on (threshold confirmed at species setup); extras none; Zhodani PSI option off. Optional Aezorgh method: six raw 2D totals, free placement, then halve one-die destinations rounding down."
+      },
+      {
+        "id": "action-2",
+        "command": {
+          "type": "setup",
+          "payload": {
+            "species": "aezorgh",
+            "name": "Training regression",
+            "gender": "male"
+          }
+        },
+        "rolls": [],
+        "summary": "Started Training regression (Aezorgh). Optional Aezorgh method: six raw 2D totals; reroll minimum 43 before placement and halving; free swaps; one-die destinations halve rounding down before species bonuses."
+      },
+      {
+        "id": "action-3",
+        "command": {
+          "type": "gm-mode",
+          "payload": {
+            "enabled": true
+          }
+        },
+        "rolls": [],
+        "summary": "GM mode false → true."
+      },
+      {
+        "id": "action-4",
+        "command": {
+          "type": "roll-statistics",
+          "payload": {}
+        },
+        "rolls": [
+          {
+            "label": "STR",
+            "values": [
+              5,
+              2
+            ],
+            "kept": [
+              5,
+              2
+            ],
+            "total": 7
+          },
+          {
+            "label": "DEX",
+            "values": [
+              3,
+              6
+            ],
+            "kept": [
+              3,
+              6
+            ],
+            "total": 9
+          },
+          {
+            "label": "END",
+            "values": [
+              5,
+              6
+            ],
+            "kept": [
+              5,
+              6
+            ],
+            "total": 11
+          },
+          {
+            "label": "INT",
+            "values": [
+              4,
+              1
+            ],
+            "kept": [
+              4,
+              1
+            ],
+            "total": 5
+          },
+          {
+            "label": "EDU",
+            "values": [
+              3,
+              1
+            ],
+            "kept": [
+              3,
+              1
+            ],
+            "total": 4
+          },
+          {
+            "label": "SOC",
+            "values": [
+              2,
+              2
+            ],
+            "kept": [
+              2,
+              2
+            ],
+            "total": 4
+          }
+        ],
+        "summary": "Rolled statistics. Base total 40. Species modifiers excluded; extra characteristics excluded. Optional Aezorgh placement (round down before species bonuses): STR raw 7/2 = 3, species +0; DEX raw 9/1 = 9, species +3; END raw 11/2 = 5, species +1; INT raw 5/1 = 5, species +2; EDU raw 4/2 = 2, species +0; SOC raw 4/2 = 2, species +0."
+      },
+      {
+        "id": "action-5",
+        "command": {
+          "type": "gm-override",
+          "payload": {
+            "field": "pool",
+            "index": 0,
+            "value": 10,
+            "reason": "Stable Aezorgh training regression"
+          }
+        },
+        "rolls": [],
+        "summary": "GM override pool[0]: 7 → 10. Reason: Stable Aezorgh training regression Optional Aezorgh placement (round down before species bonuses): STR raw 10/2 = 5, species +0; DEX raw 9/1 = 9, species +3; END raw 11/2 = 5, species +1; INT raw 5/1 = 5, species +2; EDU raw 4/2 = 2, species +0; SOC raw 4/2 = 2, species +0."
+      },
+      {
+        "id": "action-6",
+        "command": {
+          "type": "gm-override",
+          "payload": {
+            "field": "pool",
+            "index": 1,
+            "value": 9,
+            "reason": "Stable Aezorgh training regression"
+          }
+        },
+        "rolls": [],
+        "summary": "GM override pool[1]: 9 → 9. Reason: Stable Aezorgh training regression Optional Aezorgh placement (round down before species bonuses): STR raw 10/2 = 5, species +0; DEX raw 9/1 = 9, species +3; END raw 11/2 = 5, species +1; INT raw 5/1 = 5, species +2; EDU raw 4/2 = 2, species +0; SOC raw 4/2 = 2, species +0."
+      },
+      {
+        "id": "action-7",
+        "command": {
+          "type": "gm-override",
+          "payload": {
+            "field": "pool",
+            "index": 2,
+            "value": 10,
+            "reason": "Stable Aezorgh training regression"
+          }
+        },
+        "rolls": [],
+        "summary": "GM override pool[2]: 11 → 10. Reason: Stable Aezorgh training regression Optional Aezorgh placement (round down before species bonuses): STR raw 10/2 = 5, species +0; DEX raw 9/1 = 9, species +3; END raw 10/2 = 5, species +1; INT raw 5/1 = 5, species +2; EDU raw 4/2 = 2, species +0; SOC raw 4/2 = 2, species +0."
+      },
+      {
+        "id": "action-8",
+        "command": {
+          "type": "gm-override",
+          "payload": {
+            "field": "pool",
+            "index": 3,
+            "value": 12,
+            "reason": "Stable Aezorgh training regression"
+          }
+        },
+        "rolls": [],
+        "summary": "GM override pool[3]: 5 → 12. Reason: Stable Aezorgh training regression Optional Aezorgh placement (round down before species bonuses): STR raw 10/2 = 5, species +0; DEX raw 9/1 = 9, species +3; END raw 10/2 = 5, species +1; INT raw 12/1 = 12, species +2; EDU raw 4/2 = 2, species +0; SOC raw 4/2 = 2, species +0."
+      },
+      {
+        "id": "action-9",
+        "command": {
+          "type": "gm-override",
+          "payload": {
+            "field": "pool",
+            "index": 4,
+            "value": 9,
+            "reason": "Stable Aezorgh training regression"
+          }
+        },
+        "rolls": [],
+        "summary": "GM override pool[4]: 4 → 9. Reason: Stable Aezorgh training regression Optional Aezorgh placement (round down before species bonuses): STR raw 10/2 = 5, species +0; DEX raw 9/1 = 9, species +3; END raw 10/2 = 5, species +1; INT raw 12/1 = 12, species +2; EDU raw 9/2 = 4, species +0; SOC raw 4/2 = 2, species +0."
+      },
+      {
+        "id": "action-10",
+        "command": {
+          "type": "gm-override",
+          "payload": {
+            "field": "pool",
+            "index": 5,
+            "value": 7,
+            "reason": "Stable Aezorgh training regression"
+          }
+        },
+        "rolls": [],
+        "summary": "GM override pool[5]: 4 → 7. Reason: Stable Aezorgh training regression Optional Aezorgh placement (round down before species bonuses): STR raw 10/2 = 5, species +0; DEX raw 9/1 = 9, species +3; END raw 10/2 = 5, species +1; INT raw 12/1 = 12, species +2; EDU raw 9/2 = 4, species +0; SOC raw 7/2 = 3, species +0."
+      },
+      {
+        "id": "action-11",
+        "command": {
+          "type": "accept-statistics",
+          "payload": {}
+        },
+        "rolls": [],
+        "summary": "Accepted statistics and generated selected extra characteristics."
+      },
+      {
+        "id": "action-12",
+        "command": {
+          "type": "background",
+          "payload": {
+            "skills": [
+              "Electronics"
+            ]
+          }
+        },
+        "rolls": [],
+        "summary": "Background skills: Electronics."
+      },
+      {
+        "id": "action-13",
+        "command": {
+          "type": "skip-precareer",
+          "payload": {}
+        },
+        "rolls": [],
+        "summary": "Skipped pre-career education."
+      },
+      {
+        "id": "action-14",
+        "command": {
+          "type": "career",
+          "payload": {
+            "id": "core.rogue",
+            "assignment": "thief"
+          }
+        },
+        "rolls": [
+          {
+            "label": "Qualification",
+            "values": [
+              6,
+              4
+            ],
+            "kept": [
+              6,
+              4
+            ],
+            "total": 10
+          }
+        ],
+        "summary": "Entered Rogue / Thief: {\"natural\":10,\"stat\":\"DEX\",\"dm\":2,\"modifier\":0,\"total\":12,\"target\":6,\"success\":true}."
+      },
+      {
+        "id": "action-15",
+        "command": {
+          "type": "survival",
+          "payload": {}
+        },
+        "rolls": [
+          {
+            "label": "Survival",
+            "values": [
+              3,
+              4
+            ],
+            "kept": [
+              3,
+              4
+            ],
+            "total": 7
+          },
+          {
+            "label": "Event table",
+            "values": [
+              2,
+              1
+            ],
+            "kept": [
+              2,
+              1
+            ],
+            "total": 3
+          }
+        ],
+        "summary": "Survival: {\"natural\":7,\"stat\":\"INT\",\"dm\":2,\"modifier\":0,\"total\":9,\"target\":6,\"success\":true}."
+      },
+      {
+        "id": "action-16",
+        "command": {
+          "type": "choose-effect",
+          "payload": {
+            "index": 0
+          }
+        },
+        "rolls": [
+          {
+            "label": "Skill check",
+            "values": [
+              1,
+              5
+            ],
+            "kept": [
+              1,
+              5
+            ],
+            "total": 6
+          }
+        ],
+        "summary": "Chose Self-represent."
+      },
+      {
+        "id": "action-17",
+        "command": {
+          "type": "leave-career",
+          "payload": {}
+        },
+        "rolls": [],
+        "summary": "Left Rogue with 1 benefit rolls."
+      },
+      {
+        "id": "action-18",
+        "command": {
+          "type": "benefit",
+          "payload": {
+            "cash": true
+          }
+        },
+        "rolls": [
+          {
+            "label": "Cash benefit",
+            "values": [
+              3
+            ],
+            "kept": [
+              3
+            ],
+            "total": 3
+          }
+        ],
+        "summary": "Rolled cash benefit 3 (DM 0)."
+      },
+      {
+        "id": "action-19",
+        "command": {
+          "type": "career",
+          "payload": {
+            "id": "core.prisoner",
+            "assignment": "fixer"
+          }
+        },
+        "rolls": [
+          {
+            "label": "Parole threshold (1D+2)",
+            "values": [
+              5
+            ],
+            "kept": [
+              5
+            ],
+            "total": 7,
+            "modifier": 2
+          }
+        ],
+        "summary": "Entered Prisoner / Fixer automatically."
+      },
+      {
+        "id": "action-20",
+        "command": {
+          "type": "choose-effect",
+          "payload": {
+            "index": 5
+          }
+        },
+        "rolls": [],
+        "summary": "Chose Basic-training option 6."
+      },
+      {
+        "id": "action-21",
+        "command": {
+          "type": "training",
+          "payload": {
+            "table": "assignment"
+          }
+        },
+        "rolls": [
+          {
+            "label": "Training: assignment",
+            "values": [
+              6
+            ],
+            "kept": [
+              6
+            ],
+            "total": 6
+          }
+        ],
+        "summary": "Training assignment result 6."
+      },
+      {
+        "id": "action-22",
+        "command": {
+          "type": "gm-replay",
+          "payload": {
+            "revision": 21,
+            "rollIndex": 0,
+            "values": [
+              3
+            ],
+            "reason": "Different trained escape skill levels"
+          }
+        },
+        "rolls": [
+          {
+            "label": "Training: assignment",
+            "values": [
+              3
+            ],
+            "kept": [
+              3
+            ],
+            "total": 3
+          }
+        ],
+        "summary": "GM replaced action 21 roll 1 [6] → [3]. Reason: Different trained escape skill levels. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. Training assignment result 3."
+      },
+      {
+        "id": "action-23",
+        "command": {
+          "type": "gm-override",
+          "payload": {
+            "field": "stat.INT",
+            "value": 18,
+            "reason": "Successful Prisoner survival fixture"
+          }
+        },
+        "rolls": [],
+        "summary": "GM override stat.INT: 14 → 18. Reason: Successful Prisoner survival fixture"
+      },
+      {
+        "id": "action-24",
+        "command": {
+          "type": "survival",
+          "payload": {}
+        },
+        "rolls": [
+          {
+            "label": "Survival",
+            "values": [
+              3,
+              6
+            ],
+            "kept": [
+              3,
+              6
+            ],
+            "total": 9
+          },
+          {
+            "label": "Event table",
+            "values": [
+              6,
+              4
+            ],
+            "kept": [
+              6,
+              4
+            ],
+            "total": 10
+          }
+        ],
+        "summary": "Survival: {\"natural\":9,\"stat\":\"INT\",\"dm\":3,\"modifier\":0,\"total\":12,\"target\":9,\"success\":true}."
+      },
+      {
+        "id": "action-25",
+        "command": {
+          "type": "gm-replay",
+          "payload": {
+            "revision": 24,
+            "rollIndex": 1,
+            "values": [
+              1,
+              2
+            ],
+            "reason": "Exercise Prisoner escape choice"
+          }
+        },
+        "rolls": [
+          {
+            "label": "Survival",
+            "values": [
+              3,
+              6
+            ],
+            "kept": [
+              3,
+              6
+            ],
+            "total": 9
+          },
+          {
+            "label": "Event table",
+            "values": [
+              1,
+              2
+            ],
+            "kept": [
+              1,
+              2
+            ],
+            "total": 3
+          }
+        ],
+        "summary": "GM replaced action 24 roll 2 [6, 4] → [1, 2]. Reason: Exercise Prisoner escape choice. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. Survival: {\"natural\":9,\"stat\":\"INT\",\"dm\":3,\"modifier\":0,\"total\":12,\"target\":9,\"success\":true}."
+      }
+    ]
+  },
+  "checkpoints": [
+    {
+      "count": 0,
+      "state": "f0eced6a3edf8641b018652ccca374924de0b8924cb92851b385870e3c4fbf24",
+      "log": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "count": 3,
+      "state": "6f70d8f1e37ab13e9cb3ee9c12ebf10627e39a06ebb3adf8add0a861da24fdba",
+      "log": "afd950204dda6ecf78552dcfec24c05d404c2e125f1c607afb19c01fd0527927"
+    },
+    {
+      "count": 14,
+      "state": "496e0151a0beda5c34d81b12fce90e5e3101c6c188fb1e8f7bbdb2d56fda2804",
+      "log": "5d56db26da790b6770a87384eaa6e58f49a3d8ef8cb7ea3e746d7613107226c1"
+    },
+    {
+      "count": 19,
+      "state": "4822c35f7b296514a9dab4831cade13ba67d7cca27736b7b3359dc736e07e953",
+      "log": "48a7a0eef27ffb82c6d0635ee3b2cfa2fdd29f2c8b7a4a3224911a0009692ebd"
+    },
+    {
+      "count": 20,
+      "state": "82969b3745f1137afe43c493f0eec686055166fc9edf2092058c3c1493505215",
+      "log": "83d608a1e053fe9638901a73fcd68ba1898d5194887806acc50b65e7a105459c"
+    },
+    {
+      "count": 25,
+      "state": "adb3e2632cd6115d3d447efbb09908a02cab0a59dc926623a507a9db4bd29b17",
+      "log": "c98b88664b49058ee8878d2da11ca5aa4bb7e3ed47bbf15e248ed2caf451054f"
+    }
+  ],
+  "branches": [
+    {
+      "name": "automatic-escape",
+      "events": [
+        {
+          "id": "action-26",
+          "command": {
+            "type": "choose-effect",
+            "payload": {
+              "index": 0
+            }
+          },
+          "rolls": [
+            {
+              "label": "Skill check",
+              "values": [
+                1,
+                2
+              ],
+              "kept": [
+                1,
+                2
+              ],
+              "total": 3
+            }
+          ],
+          "summary": "Chose Accept."
+        }
+      ],
+      "state": "6430511e55b346796fe7b50933f56911eb8e2e79d59828a3bca0268ff90eee5a",
+      "log": "4a60ea2c8131ecdc151aff9a32280824e5c17671bb416c897ca58cc1a655ba2c"
+    },
+    {
+      "name": "automatic-escape-boundary",
+      "events": [
+        {
+          "id": "action-26",
+          "command": {
+            "type": "choose-effect",
+            "payload": {
+              "index": 0
+            }
+          },
+          "rolls": [
+            {
+              "label": "Skill check",
+              "values": [
+                1,
+                2
+              ],
+              "kept": [
+                1,
+                2
+              ],
+              "total": 3
+            }
+          ],
+          "summary": "Chose Accept."
+        },
+        {
+          "id": "action-27",
+          "command": {
+            "type": "gm-replay",
+            "payload": {
+              "revision": 26,
+              "rollIndex": 0,
+              "values": [
+                4,
+                5
+              ],
+              "reason": "Legacy automatic best-skill escape at the boundary"
+            }
+          },
+          "rolls": [
+            {
+              "label": "Skill check",
+              "values": [
+                4,
+                5
+              ],
+              "kept": [
+                4,
+                5
+              ],
+              "total": 9
+            }
+          ],
+          "summary": "GM replaced action 26 roll 1 [1, 2] → [4, 5]. Reason: Legacy automatic best-skill escape at the boundary. Earlier rolls in this action were retained; later branch rolls were regenerated. Subsequent character changes were superseded; all actions remain in the log. Chose Accept."
+        }
+      ],
+      "state": "05c49d4cd6be3fe6d776b455ba1de201c901c0fa484bdb27ad0084940e50c8f4",
+      "log": "be42bcbfcf2f74264102e9afedd21296c33b3f3e95a80ab06e05a670f49cb4ef"
+    },
+    {
+      "name": "declined",
+      "events": [
+        {
+          "id": "action-26",
+          "command": {
+            "type": "choose-effect",
+            "payload": {
+              "index": 1
+            }
+          },
+          "rolls": [],
+          "summary": "Chose Decline."
+        }
+      ],
+      "state": "60f762e7f494a8166a2f71ad62550b49508115a6bfcdcaffcfff53820abf48e3",
+      "log": "a99202cc6569742bbab65ba011ffdb7dbe905267fc01f06d59aad50c4c2db034"
+    }
+  ]
+}
