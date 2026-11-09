@@ -1870,7 +1870,7 @@ outcomes('companion.believer',{
 },{
  1:[I(),ST('exit')],2:[relationship('Enemy')],
  3:[{kind:'rank',value:-1},R(-1),stay()],
- 4:[{kind:'skill-reduction-choice',names:['Profession (religion)','Science (belief)'],value:1},stay()],
+ 4:[{kind:'skill-reduction-choice',names:['Profession (religion)','Science (belief)'],value:1,believerFalseTeachings:true},{...stay(),believerFalseTeachingsStay:true}],
  5:[BR('lose-all'),stay()],6:[relationship('Rival',1,'D3')]
 });
 outcomes('vargr.agent',{

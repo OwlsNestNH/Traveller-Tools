@@ -21,6 +21,10 @@ CI retains all browser scripts. Five deferred suites use an explicit verificatio
 
 Limited Aslan outward rights allow only their stated elective destinations. Failed scoped Scholar qualification permits ordinary Drifter fallback, not elective wider careers or the Core draft.
 
+## Believer false-teachings ruling
+
+New revision histories apply the user ruling for Companion 2024 p. 39, mishap 4: if neither Profession (religion) nor Science (belief) is above zero, the Traveller cannot pay the skill-reduction cost of staying and is ejected. This also overrides event 2's normal protection against ejection. With an eligible skill, the Traveller chooses it, reduces it once and stays. Existing .20 and earlier histories preserve the source-assisted fallback and original replay behavior.
+
 ## Implemented infrastructure (including preserved development)
 
 - Independent versioned JSON rules API and optional localhost HTTP adapter.

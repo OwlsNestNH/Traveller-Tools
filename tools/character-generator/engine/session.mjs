@@ -38,9 +38,9 @@ const RULE_PACK={...CORE_PACK,...EXPANSION_PACK};
 import { API_VERSION, SOURCES, CAREERS, PRECAREERS, SPECIES, SKILLS, BACKGROUND_SKILLS, findCareer, findSpecies } from './catalog.mjs';
 const LIMIT = 2000;
 export const MAX_SAVE_BYTES = 2000000;
-export const RULES_REVISION='character-preview-2026-11-09.20';
+export const RULES_REVISION='character-preview-2026-11-09.21';
 // .19 chooses specialties on receipt; .18 retains deferred awards and corrections; .16/.17 retain historical mechanics.
-export const COMPATIBLE_RULES_REVISIONS=Object.freeze([RULES_REVISION,'character-preview-2026-11-09.19','character-preview-2026-11-09.18','character-preview-2026-11-09.17','character-preview-2026-11-09.16']);
+export const COMPATIBLE_RULES_REVISIONS=Object.freeze([RULES_REVISION,'character-preview-2026-11-09.20','character-preview-2026-11-09.19','character-preview-2026-11-09.18','character-preview-2026-11-09.17','character-preview-2026-11-09.16']);
 const saveSize = value => new TextEncoder().encode(JSON.stringify(value,null,2)).byteLength;
 const copy = value => structuredClone(value);
 const plain = value => value && typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
@@ -1481,7 +1481,16 @@ function drainEffects(state,rolls,approvedRoll=null) {
     if(!['any','existing','science-specialties','psionic-talents','untrained-electronics-or-science','science-medic-electronics','non-psionic','new-psionic-talent'].includes(e.scope)||(e.distinctSpecialties&&e.scope!=='science-specialties')||e.untrained&&!coreTalentChoice(state,e)){nativeFallback(state,e,'Resolve the constrained skill choice from the source.');return;}
     if(deferrableChoice(state,e))e.deferSpeciality=true;
     state.pendingChoice=e.scope==='science-specialties'?{...e,selected:e.selected??[],source:copy(e.source??e.reeducationOrigin?.source??{id:currentCareer(state).career.source,page:currentCareer(state).career.page+1}),label:'Choose a Science specialisation'}:e;state.stage='skill-choice';return;
-   case 'skill-reduction-choice':{const eligible=Object.keys(state.character.skills).filter(n=>state.character.skills[n]>0&&(!e.names||e.names.includes(n))&&skillNameAllowed(state,n,e));if(!eligible.length){nativeFallback(state,e,'No eligible trained skill can satisfy this reduction. Resolve the printed mishap explicitly before continuing.');return;}state.pendingChoice=e;state.stage='skill-choice';return;}
+   case 'skill-reduction-choice':{const eligible=Object.keys(state.character.skills).filter(n=>state.character.skills[n]>0&&(!e.names||e.names.includes(n))&&skillNameAllowed(state,n,e));if(!eligible.length){
+    // User ruling (2026-11-09), Companion 2024 p. 39: the reduction is the cost of staying.
+    if(state.believerFalseTeachingsRuling&&e.believerFalseTeachings){
+     need(state.effectsQueue[0]?.believerFalseTeachingsStay,'Missing Believer mishap continuation.');
+     state.effectsQueue.shift();currentCareer(state).record.forcedExit=true;
+     // The ruling also applies when event 2 supplies the otherwise-protected mishap.
+     const protection=state.effectsQueue.find(effect=>effect.kind==='keep-career');if(protection)protection.forcedExit=true;
+     state.character.historyNotes??=[];state.character.historyNotes.push('Believer false teachings (Companion 2024 p. 39; user ruling): neither Profession (religion) nor Science (belief) can be reduced, so you are ejected from the career.');break;
+    }
+    nativeFallback(state,e,'No eligible trained skill can satisfy this reduction. Resolve the printed mishap explicitly before continuing.');return;}state.pendingChoice=e;state.stage='skill-choice';return;}
    case 'skill':{
     const base=e.name.split(' (')[0];
     if(state.deferredSpecializations&&base==='Independence'&&(e.value??1)>0){state.effectsQueue.unshift({...e,kind:'independence'});break;}
@@ -2934,7 +2943,7 @@ export function project(session) {
  need(typeof session.seed==='string'&&session.seed.length>0&&session.seed.length<=120,'Invalid random seed.');
  need(Array.isArray(session.events)&&session.events.length<=LIMIT,'Save contains too many actions.');
  need(saveSize(session)<=MAX_SAVE_BYTES,'Save size limit reached. Export your current character before continuing.');
- let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(['character-preview-2026-11-09.19',RULES_REVISION].includes(session.rulesRevision))state.immediateSpecializations=true;if(session.rulesRevision===RULES_REVISION)state.separateBorrowedRolls=true;const snapshots=[copy(state)],log=[];
+ let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(['character-preview-2026-11-09.19','character-preview-2026-11-09.20',RULES_REVISION].includes(session.rulesRevision))state.immediateSpecializations=true;if(['character-preview-2026-11-09.20',RULES_REVISION].includes(session.rulesRevision))state.separateBorrowedRolls=true;if(session.rulesRevision===RULES_REVISION)state.believerFalseTeachingsRuling=true;const snapshots=[copy(state)],log=[];
  for(let i=0;i<session.events.length;i++){
   const event=session.events[i];need(plain(event)&&typeof event.id==='string'&&event.id.length<=120,'Invalid action record.');
   need(!log.some(e=>e.id===event.id),'Duplicate action ID.');
