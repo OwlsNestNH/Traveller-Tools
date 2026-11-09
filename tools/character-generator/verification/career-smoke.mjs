@@ -30,6 +30,8 @@ let scenarios=0,completed=0;
 for(const career of CAREERS)for(const assignment of career.assignments)for(let seed=0;seed<seeds;seed++) {
  scenarios++;
  let state=a.initial(career.id+'|'+assignment.id+'|smoke'+seed);
+ // Exercise current rules, not legacy immediate-choice behavior, in synthetic states.
+ state.deferredSpecializations=true;state.correctedCareerEvents=true;
  const species=['aslan','vargr','zhodani'].includes(career.group)?career.group:'human';
  state.character.species=species;
  state.character.gender=career.eligibility?.[assignment.id]??career.gender??(seed%2?'male':'female');
