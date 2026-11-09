@@ -160,7 +160,7 @@ async function send(type,payload={}){
   const result=await call({operation:'command',session,command:{type,payload},id:crypto.randomUUID(),expectedRevision:projection.revision});
   if(token!==operationGeneration)return false;
   if(!result.ok)throw new Error(result.error.message);
-  session=result.session;projection=result;if(type==='notes'&&notesDraft===payload.text)notesDraft=null;effects=[];persist();render();focusAfterAction(previousStage,focused);notify(storageWarning||actionNotice(type,result),!!storageWarning,rollResult(result.log.at(-1),result.state,catalog)?.status??'info',!storageWarning);return true;
+  session=result.session;projection=result;aslanManualReviewKey=null;if(type==='notes'&&notesDraft===payload.text)notesDraft=null;effects=[];persist();render();focusAfterAction(previousStage,focused);notify(storageWarning||actionNotice(type,result),!!storageWarning,rollResult(result.log.at(-1),result.state,catalog)?.status??'info',!storageWarning);return true;
  }catch(error){if(token===operationGeneration)notify(error.message,true);return false;}
  finally{if(token===operationGeneration)setBusy(false);}
 }
@@ -596,7 +596,7 @@ $('#new').onclick=async()=>{
  const token=++operationGeneration;setBusy(true);
  try{
   const result=await call({operation:'create',seed:crypto.randomUUID()});if(token!==operationGeneration)return;if(!result.ok)throw new Error(result.error.message);
-  session=result.session;projection=result;notesDraft=null;selectedCareer='';effects=[];recoveryRaw=null;persist();updateRecovery();render();$('#step-title')?.focus();notify(storageWarning||'New character started.',!!storageWarning);
+  session=result.session;projection=result;aslanManualReviewKey=null;notesDraft=null;selectedCareer='';effects=[];recoveryRaw=null;persist();updateRecovery();render();$('#step-title')?.focus();notify(storageWarning||'New character started.',!!storageWarning);
  }catch(error){if(token===operationGeneration)notify('Could not start a new character: '+error.message,true);}
  finally{if(token===operationGeneration)setBusy(false);}
 };
@@ -609,7 +609,7 @@ $('#import').onchange=async event=>{
   try{incomingRaw=new TextDecoder('utf-8',{fatal:true}).decode(await file.arrayBuffer());}catch{decodeIssue='The original file is not valid UTF-8. Download the unchanged file; no recorded text or character was imported.';throw new Error(decodeIssue);}
   const result=await call({operation:'import',raw:incomingRaw});if(token!==operationGeneration)return;if(!result.ok)throw new Error(result.error.message);
   if((projection.revision||(notesDraft!==null&&notesDraft!==projection.state.character.notes))&&!confirm('Load this character in place of the current browser draft? Save your current character first.'))return;
-  session=result.session;projection=result;notesDraft=null;selectedCareer='';effects=[];closeHistory();persist();render();$('#step-title')?.focus();notify(storageWarning||'Character loaded. Its complete action log was replayed and verified.',!!storageWarning);
+  session=result.session;projection=result;aslanManualReviewKey=null;notesDraft=null;selectedCareer='';effects=[];closeHistory();persist();render();$('#step-title')?.focus();notify(storageWarning||'Character loaded. Its complete action log was replayed and verified.',!!storageWarning);
  }catch(error){if(token===operationGeneration){inspectHistory(incomingRaw,file,decodeIssue||(file.size>2000000?'This file is too large to inspect. Download the unchanged original.':''));notify('Could not load: '+error.message+' Your current character was kept. Review the original recorded history below; it is not a verified character.',true);}}
  finally{event.target.value='';if(token===operationGeneration)setBusy(false);}
 };
@@ -620,7 +620,7 @@ async function start(){
   let saved;try{saved=localStorage.getItem(key);}catch{storageWarning='Browser storage unavailable. Save character & log regularly.';}
   if(saved){try{projection=await call({operation:'import',raw:saved});if(!projection.ok)throw new Error(projection.error.message);session=projection.session;}
    catch(error){recoveryRaw=saved;storageWarning='The stored draft could not be opened. Its raw file is preserved. Use the recovery controls to download it before choosing whether to replace it.';}}
-  if(!projection?.ok){const result=await call({operation:'create',seed:crypto.randomUUID()});if(!result.ok)throw new Error(result.error.message);session=result.session;projection=result;}
+  if(!projection?.ok){const result=await call({operation:'create',seed:crypto.randomUUID()});if(!result.ok)throw new Error(result.error.message);session=result.session;projection=result;aslanManualReviewKey=null;}
   updateRecovery();render();if(storageWarning)notify(storageWarning,true);
  }catch(error){notify('Unable to start the rules engine: '+error.message,true);}
  finally{setBusy(false);}
