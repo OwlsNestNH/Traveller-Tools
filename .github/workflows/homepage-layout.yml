@@ -1,0 +1,32 @@
+name: Homepage layout checks
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'index.html'
+      - 'assets/css/style.css'
+      - 'tests/homepage-layout.test.mjs'
+      - 'tests/tool-visits.test.cjs'
+      - '.github/workflows/homepage-layout.yml'
+permissions:
+  contents: read
+jobs:
+  homepage:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: node tests/tool-visits.test.cjs
+      - name: Install pinned Chromium runner
+        run: |
+          npm install --prefix "$RUNNER_TEMP/home-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
+          node "$RUNNER_TEMP/home-playwright/node_modules/playwright/cli.js" install --with-deps chromium
+      - name: Verify responsive homepage alignment
+        run: node tests/homepage-layout.test.mjs "$RUNNER_TEMP/home-playwright/node_modules/playwright"
+
