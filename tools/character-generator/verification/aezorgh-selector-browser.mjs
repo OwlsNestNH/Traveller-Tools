@@ -29,12 +29,13 @@ try{
   await page.locator('[name=species]').selectOption('aezorgh');assert.equal(await method(page).inputValue(),'raw');assert.equal(await minimum(page).inputValue(),'30');
   await method(page).selectOption(chosen);assert.equal(await minimum(page).inputValue(),chosen==='house'?'43':'30');
   assert.match(await page.locator('#aezorgh-method-summary').innerText(),chosen==='house'?/default for new Aezorgh/:/Published mixed 1D/);
-  assert.equal(await method(page).evaluate(n=>{const c=document.createElement('canvas').getContext('2d'),s=getComputedStyle(n);c.font=s.font;return c.measureText(n.selectedOptions[0].textContent).width+parseFloat(s.paddingLeft)+36<=n.clientWidth;}),true,'Selected method is not clipped');
+  assert.equal(await method(page).evaluate(n=>{const c=document.createElement('canvas').getContext('2d'),s=getComputedStyle(n);c.font=s.font;return c.measureText(n.selectedOptions[0].textContent).width+parseFloat(s.paddingLeft)+parseFloat(s.paddingRight)+18<=n.clientWidth;}),true,'Selected method is not clipped');
   const before=await snapshot(page),trigger=page.getByRole('button',{name:'About Aezorgh stat rolls'});
   await trigger.focus();await trigger.press('Enter');assert.equal(await page.locator('#opening-help-title').innerText(),'Aezorgh stat rolls');assert.equal(await page.locator('#opening-help-source').innerText(),OPENING_HELP.aezorgh.source);
   await page.keyboard.press('Tab');assert.equal(await page.locator('[data-opening-help-close]').evaluate(n=>n===document.activeElement),true);
   if(transport==='static'&&width===1440&&chosen==='house')await page.screenshot({path:fileURLToPath(new URL('aezorgh-selector-method-help.png',out))});
   await page.keyboard.press('Escape');assert.equal(await trigger.evaluate(n=>n===document.activeElement),true);await trigger.click();await page.locator('[data-opening-help-close]').click();assert.deepEqual(await snapshot(page),before);
+  if(transport==='static'&&width===320)await page.locator('#setup-house-rules').screenshot({path:fileURLToPath(new URL('aezorgh-selector-320-'+chosen+'.png',out))});
   if(transport==='static'&&chosen==='house'&&[1440,390].includes(width)){
    await page.locator('#opening-portrait img').evaluate(i=>i.decode());await page.evaluate(()=>scrollTo(0,0));
    await page.screenshot({path:fileURLToPath(new URL('aezorgh-selector-'+width+'.png',out)),fullPage:true});
