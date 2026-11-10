@@ -2,12 +2,7 @@
 export function aezorghSetupMethod(state,log=[]){
  return state.config?.aezorghTwoDice||(state.aezorghRoundUp===true&&log.length===0)?'house':'raw';
 }
-function methodSummary(method,roundUp){return method==='raw'?'Published mixed 1D / 2D.':roundUp?'2D6 ÷ 2 · default for new Aezorgh.':'2D6 ÷ 2 · historical round-down rules.';}
-export function aezorghRollChoiceView(state,log,{esc,infoButton}){
- const method=aezorghSetupMethod(state,log),house=state.aezorghRoundUp?'House · round up':'House · round down';
- return '<div id="aezorgh-roll-choice" class="opening-info-field" hidden><div class="opening-label-help">'+infoButton('aezorgh')+'<label for="setup-aezorgh-method">Aezorgh stat rolls</label></div><select id="setup-aezorgh-method" name="aezorghTwoDice" aria-describedby="aezorgh-method-summary" data-round-up="'+!!state.aezorghRoundUp+'" disabled><option value="house"'+(method==='house'?' selected':'')+'>'+esc(house)+'</option><option value="raw"'+(method==='raw'?' selected':'')+'>RAW · mixed dice</option></select><small id="aezorgh-method-summary" aria-live="polite">'+methodSummary(method,!!state.aezorghRoundUp)+'</small></div>';
-}
-export function syncAezorghMethodSummary(form){
- const select=form.elements.aezorghTwoDice,summary=form.querySelector('#aezorgh-method-summary');
- if(summary)summary.textContent=methodSummary(select.value,select.dataset.roundUp==='true');
+export function aezorghRollChoiceView(state,log,{infoButton}){
+ const checked=aezorghSetupMethod(state,log)==='house';
+ return '<div id="aezorgh-roll-choice" class="opening-aezorgh-check" hidden><div class="opening-label-help">'+infoButton('aezorgh')+'<label class="check" for="setup-aezorgh-method"><input id="setup-aezorgh-method" name="aezorghTwoDice" type="checkbox"'+(checked?' checked':'')+' disabled><span>Aezorgh: use 2D6 ÷ 2 for Stats</span></label></div></div>';
 }

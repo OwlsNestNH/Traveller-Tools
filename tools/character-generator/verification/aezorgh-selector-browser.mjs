@@ -22,14 +22,12 @@ const method=page=>page.locator('[name=aezorghTwoDice]');
 const minimum=page=>page.locator('#minimum-total');
 try{
  for(const transport of ['static','http'])for(const width of [1440,390,320])for(const chosen of ['house','raw'])await fresh(transport,width,async page=>{
-  assert.equal(await method(page).isDisabled(),true);await page.locator('[name=species]').selectOption('aezorgh');await house(page);
-  assert.equal(await method(page).inputValue(),'house');assert.equal(await minimum(page).inputValue(),'43');
-  await method(page).selectOption('raw');assert.equal(await minimum(page).inputValue(),'30');
+  assert.equal(await page.locator('label[for=setup-aezorgh-method]').textContent(),'Aezorgh: use 2D6 ÷ 2 for Stats');assert.equal(await page.locator('#aezorgh-roll-choice small').count(),0);assert.equal(await method(page).getAttribute('type'),'checkbox');assert.equal(await page.locator('#aezorgh-roll-choice input').count(),1);assert.equal(await page.locator('#aezorgh-roll-choice select,#aezorgh-roll-choice [type=radio]').count(),0);assert.equal(await method(page).isDisabled(),true);await page.locator('[name=species]').selectOption('aezorgh');await house(page);
+  assert.equal(await method(page).isChecked(),true);assert.equal(await minimum(page).inputValue(),'43');
+  await method(page).uncheck();assert.equal(await minimum(page).inputValue(),'30');
   await page.locator('[name=species]').selectOption('human');assert.equal(await method(page).isDisabled(),true);assert.equal(await minimum(page).inputValue(),'43');
-  await page.locator('[name=species]').selectOption('aezorgh');assert.equal(await method(page).inputValue(),'raw');assert.equal(await minimum(page).inputValue(),'30');
-  await method(page).selectOption(chosen);assert.equal(await minimum(page).inputValue(),chosen==='house'?'43':'30');
-  assert.match(await page.locator('#aezorgh-method-summary').innerText(),chosen==='house'?/default for new Aezorgh/:/Published mixed 1D/);
-  assert.equal(await method(page).evaluate(n=>{const c=document.createElement('canvas').getContext('2d'),s=getComputedStyle(n);c.font=s.font;return c.measureText(n.selectedOptions[0].textContent).width+parseFloat(s.paddingLeft)+parseFloat(s.paddingRight)+18<=n.clientWidth;}),true,'Selected method is not clipped');
+  await page.locator('[name=species]').selectOption('aezorgh');assert.equal(await method(page).isChecked(),false);assert.equal(await minimum(page).inputValue(),'30');
+  await method(page).setChecked(chosen==='house');assert.equal(await minimum(page).inputValue(),chosen==='house'?'43':'30');
   const before=await snapshot(page),trigger=page.getByRole('button',{name:'About Aezorgh stat rolls'});
   await trigger.focus();await trigger.press('Enter');assert.equal(await page.locator('#opening-help-title').innerText(),'Aezorgh stat rolls');assert.equal(await page.locator('#opening-help-source').innerText(),OPENING_HELP.aezorgh.source);
   await page.keyboard.press('Tab');assert.equal(await page.locator('[data-opening-help-close]').evaluate(n=>n===document.activeElement),true);
@@ -56,7 +54,7 @@ try{
  });
  for(const transport of ['static','http'])await fresh(transport,390,async page=>{
   await page.locator('[name=species]').selectOption('aezorgh');await page.locator('#setup-gm-controls').evaluate(n=>n.open=true);await minimum(page).fill('30');await minimum(page).press('Tab');
-  await house(page);for(const chosen of ['raw','house']){await method(page).selectOption(chosen);assert.equal(await minimum(page).inputValue(),'30');}
+  await house(page);for(const chosen of ['raw','house']){await method(page).setChecked(chosen==='house');assert.equal(await minimum(page).inputValue(),'30');}
   for(const species of ['human','aslan','vargr','aezorgh']){await page.locator('[name=species]').selectOption(species);assert.equal(await minimum(page).inputValue(),'30');}
   await page.getByRole('button',{name:'Begin character',exact:true}).click();await page.locator('body[data-stage="statistics"]').waitFor();const p=project(JSON.parse(await stored(page)));assert.equal(p.state.config.aezorghTwoDice,true);assert.equal(p.state.statisticsRerollThreshold,30);checks.push({transport,customThreshold:30});
  });
@@ -67,8 +65,7 @@ try{
  for(const transport of ['static','http'])for(const revision of COMPATIBLE_RULES_REVISIONS)for(const twoDice of [false,true])await fresh(transport,390,async page=>{
   let r=execute({...createSession('saved-method-'+revision+'-'+twoDice),rulesRevision:revision},{type:'configure',payload:{aezorghTwoDice:twoDice,minimumTotal:37}});
   const identity=exportSession(r.session);await load(page,identity,'identity');assert.equal(await stored(page),identity);
-  await page.locator('[name=species]').selectOption('aezorgh');await house(page);assert.equal(await method(page).inputValue(),twoDice?'house':'raw');assert.equal(await minimum(page).inputValue(),'37');
-  assert.match(await method(page).locator('option[value=house]').textContent(),revision===RULES_REVISION?/round up/:/round down/);
+  await page.locator('[name=species]').selectOption('aezorgh');await house(page);assert.equal(await method(page).isChecked(),twoDice);assert.equal(await minimum(page).inputValue(),'37');
   await page.getByRole('button',{name:'Begin character',exact:true}).click();await page.locator('body[data-stage="statistics"]').waitFor();await page.getByRole('button',{name:'Roll six characteristics'}).click();await ready(page);
   const raw=await stored(page),p=project(JSON.parse(raw));assert.equal(JSON.parse(raw).rulesRevision,revision);assert.equal(p.state.config.aezorghTwoDice,twoDice);assert.equal(p.state.statisticsRerollThreshold,37);
   for(const stat of p.state.pool)assert.equal(stat.derivedBase,twoDice?(revision===RULES_REVISION?Math.ceil:Math.floor)(stat.base/stat.divisor):stat.base);

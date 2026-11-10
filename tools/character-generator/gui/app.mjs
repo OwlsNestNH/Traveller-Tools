@@ -1,4 +1,4 @@
-import {aezorghRollChoiceView,syncAezorghMethodSummary} from './aezorgh-setup.mjs';
+import {aezorghRollChoiceView} from './aezorgh-setup.mjs';
 import {notesConnectionsView} from './notes-connections-view.mjs';
 import {emptyStatisticsView,statisticsCardsView,statisticsSummaryView,statisticsControlsView} from './characteristics-presentation.mjs';
 import {openingInfoButton,mountOpeningHelp} from './opening-help.mjs';
@@ -178,7 +178,7 @@ function setupView(){
 }
 function syncPsiOptions(form){const psi=form.querySelector('[name=extras][value=PSI]');if(psi){psi.disabled=form.elements.species.value==='zhodani';if(psi.disabled)psi.checked=false;}}
 function syncRerollOptions(form){
- const aezorgh=form.elements.species.value==='aezorgh',twoDice=aezorgh&&form.elements.aezorghTwoDice.value==='house';
+ const aezorgh=form.elements.species.value==='aezorgh',twoDice=aezorgh&&form.elements.aezorghTwoDice.checked;
  const input=form.elements.minimumTotal,defaultTotal=aezorgh&&!twoDice?30:43;
  if(input){
 
@@ -562,7 +562,6 @@ document.addEventListener('change',event=>{
  if(event.target.matches('[name=species],[name=gender]'))syncOpeningPortrait(event.target.form);
  if(event.target.matches('[name=minimumTotal]'))event.target.dataset.customTotal='true';
  if(event.target.matches('[name=aezorghTwoDice], [name=minimumTotal]'))syncRerollOptions(event.target.form);
- if(event.target.matches('[name=aezorghTwoDice]'))syncAezorghMethodSummary(event.target.form);
   if(event.target.matches('[name=gm]')){syncPsiOptions(event.target.form);const academy=event.target.form.elements.academyServiceSkill;if(academy){academy.disabled=!event.target.checked;if(academy.disabled)academy.checked=false;}}
  if(event.target.matches('[name=species],[name=extras],[name=gm],[name=zhodaniPsi]'))syncSetupOptionalSummary(event.target.form);
  if(['lawyer-outcome','lawyer-level'].includes(event.target.id))syncPrisonerLawyerControls($);
@@ -589,7 +588,7 @@ document.addEventListener('submit',async event=>{
  if(event.target.id==='setup-form'){
   event.preventDefault();if(busy)return;const form=event.target;const values=new FormData(form);
    if(values.get('zhodaniPsi')&&(!values.get('gm')||values.get('species')!=='zhodani')){notify('The Zhodani PSI option needs GM mode and a Zhodani Traveller.',true);return;}
-  if(!await send('configure',{boons:Number(values.get('boons')),minimumReroll:!!values.get('minimumReroll'),minimumTotal:Number(values.get('minimumTotal')),allocation:!!values.get('allocation'),extras:values.getAll('extras'),zhodaniPsi:!!values.get('zhodaniPsi'),aezorghTwoDice:values.get('species')==='aezorgh'&&values.get('aezorghTwoDice')==='house'}))return;
+  if(!await send('configure',{boons:Number(values.get('boons')),minimumReroll:!!values.get('minimumReroll'),minimumTotal:Number(values.get('minimumTotal')),allocation:!!values.get('allocation'),extras:values.getAll('extras'),zhodaniPsi:!!values.get('zhodaniPsi'),aezorghTwoDice:values.get('species')==='aezorgh'&&!!values.get('aezorghTwoDice')}))return;
   if(projection.state.config.gm&&projection.state.config.academyServiceSkill&&!values.get('academyServiceSkill')&&!await send('gm-academy-training',{enabled:false}))return;
   if(!!values.get('gm')!==projection.state.config.gm&&!await send('gm-mode',{enabled:!!values.get('gm')}))return;
   if(values.get('academyServiceSkill')&&!projection.state.config.academyServiceSkill&&!await send('gm-academy-training',{enabled:true}))return;

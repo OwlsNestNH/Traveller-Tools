@@ -29,7 +29,7 @@ test('omitted option keeps original config shape and species defaults',()=>{
 test('spinner defaults follow species and method while custom values survive switches',()=>{
  const source=fs.readFileSync(new URL('../gui/app.mjs',import.meta.url),'utf8'),a=source.indexOf('function syncRerollOptions('),b=source.indexOf('\nfunction syncIdentityOptions',a),nodes={};
  const sync=vm.runInNewContext(source.slice(a,b)+';syncRerollOptions',{$:id=>nodes[id]??={}});
- const input={value:'43',dataset:{}},form={elements:{species:{value:'human'},aezorghTwoDice:{value:'raw'},minimumTotal:input}};
- sync(form);assert.equal(input.value,'43');form.elements.species.value='aezorgh';sync(form);assert.equal(input.value,'30');form.elements.aezorghTwoDice.value='house';sync(form);assert.equal(input.value,'43');
- input.value='50';input.dataset.customTotal='true';sync(form);form.elements.aezorghTwoDice.value='raw';sync(form);assert.equal(input.value,'50');form.elements.species.value='human';sync(form);assert.equal(input.value,'50');assert.match(nodes['#reroll-option-text'].textContent,/50/);input.value='43';form.elements.species.value='aezorgh';sync(form);assert.equal(input.value,'43');assert.match(nodes['#reroll-option-text'].textContent,/43/);
+ const input={value:'43',dataset:{}},form={elements:{species:{value:'human'},aezorghTwoDice:{checked:false},minimumTotal:input}};
+ sync(form);assert.equal(input.value,'43');form.elements.species.value='aezorgh';sync(form);assert.equal(input.value,'30');form.elements.aezorghTwoDice.checked=true;sync(form);assert.equal(input.value,'43');
+ input.value='50';input.dataset.customTotal='true';sync(form);form.elements.aezorghTwoDice.checked=false;sync(form);assert.equal(input.value,'50');form.elements.species.value='human';sync(form);assert.equal(input.value,'50');assert.match(nodes['#reroll-option-text'].textContent,/50/);input.value='43';form.elements.species.value='aezorgh';sync(form);assert.equal(input.value,'43');assert.match(nodes['#reroll-option-text'].textContent,/43/);
 });

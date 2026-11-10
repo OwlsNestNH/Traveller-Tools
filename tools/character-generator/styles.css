@@ -224,5 +224,5 @@ body[data-stage="identity"] .gm-boons .house-option-label{display:inline-block;m
 }
 @media screen and (min-width:761px){body[data-stage="identity"] .opening-plain-label{padding-left:52px}}
 
-#aezorgh-method-summary{margin:0;color:#c4d4dd}
-@media screen and (min-width:761px){#aezorgh-method-summary{grid-column:2}}
+.opening-aezorgh-check .check{margin:0;min-width:0}
+.opening-aezorgh-check .opening-label-help{align-items:center}

@@ -39,9 +39,9 @@ test('saved identity GM state is shown honestly and setup can explicitly disable
  assert.match(setup,/GM changes on/);assert.match(setup,/name="gm" type="checkbox" checked/);
  assert.ok(source.includes("if(!!values.get('gm')!==projection.state.config.gm&&!await send('gm-mode',{enabled:!!values.get('gm')}))return;"));
 });
-test('setup wording distinguishes current round-up from historical undefined flag',()=>{
+test('setup checkbox keeps the requested label for current and historical rules',()=>{
  const source=read('gui/app.mjs'),start=source.indexOf('function setupView(){'),end=source.indexOf('\nfunction syncPsiOptions(',start);
  const render=state=>vm.runInNewContext(source.slice(start,end)+';setupView()', {projection:{state},catalog:{species:[{id:'human'},{id:'vargr',variants:[]}],extraStats:[]},options:()=>'',esc:String,setupOptionalSummary,openingInfoButton,aezorghRollChoiceView});
- assert.match(render({aezorghRoundUp:true}),/House · round up/);
- assert.match(render({}),/House · round down/);
+ assert.match(render({aezorghRoundUp:true}),/Aezorgh: use 2D6 ÷ 2 for Stats/);
+ assert.match(render({config:{aezorghTwoDice:true}}),/Aezorgh: use 2D6 ÷ 2 for Stats/);
 });
