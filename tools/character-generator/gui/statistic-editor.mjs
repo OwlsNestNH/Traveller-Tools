@@ -1,6 +1,7 @@
 // Direct stat-card access to the existing audited GM correction command.
 export function statisticEditTarget(state,code,pool=false){
  if(!state?.config.gm)return null;
+ if(!pool&&state.stage==='statistics'&&!state.optionalPsiRequiresTesting&&code!=='PSI')return null;
  if(pool){
   const index=state.pool.findIndex(p=>p.key===code);if(index<0)return null;
   const p=state.pool[index];return {code,field:'pool-score',index,value:p.value,min:0,max:40,pool:p};

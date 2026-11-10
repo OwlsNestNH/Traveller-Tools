@@ -207,7 +207,7 @@ function statCards(state,pool=false){
  if(!pool&&state.config.extras.includes('PSI')&&!Object.hasOwn(state.character.stats,'PSI'))entries.push(['PSI',null,null]);
  return '<div class="stats">'+entries.map(([code,value,p])=>{
   if(code==='PSI'&&!pool)return psiCard(state,{esc,infoButton:openingInfoButton},'sheet');
-  const editable=state.config.gm,tag=editable?'button':'div';
+  const editable=state.config.gm&&(pool||state.stage!=='statistics'||state.optionalPsiRequiresTesting),tag=editable?'button':'div';
   const attrs=editable?' type="button" id="stat-edit-'+(pool?'pool-':'sheet-')+esc(code)+'" data-edit-stat="'+esc(code)+'" data-stat-pool="'+pool+'" aria-haspopup="dialog" aria-controls="statistic-editor" aria-label="Set '+esc(code)+' score, currently '+esc(value)+'"':'';
   return '<'+tag+attrs+' class="stat'+(editable?' stat-editable':'')+'"><span class="code">'+esc(code)+'</span><strong>'+value+'</strong><span>'+(p?(p.divisor===2?'Raw '+p.base+' ÷ 2 → '+p.derivedBase:'Base '+p.base)+' · '+(p.adjustment>=0?'+':'')+p.adjustment+' species':('DM '+(state.statDMs[code]>=0?'+':'')+state.statDMs[code]))+'</span>'+(p?.finalOverride!==undefined?'<span>GM final score</span>':'')+(p?'<span>'+p.count+'D'+(p.boon?' + boon':'')+(p.divisor===2?' / 2, round '+(state.aezorghRoundUp?'up':'down'):'')+'</span>':'')+'</'+tag+'>';
  }).join('')+'</div>';
