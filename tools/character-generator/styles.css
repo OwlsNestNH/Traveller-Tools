@@ -267,3 +267,6 @@ body[data-stage="identity"] #setup-form>.actions>#cancel-character{width:auto;fl
 @media screen{body:is([data-stage="identity"],[data-stage="statistics"]) #cancel-character-dialog{background:#061a28;color:#f1f5f8;border-color:#eac746}}
 @media(max-width:760px){#cancel-character-dialog{padding:18px}#cancel-character-title{font-size:21px}body[data-stage="identity"] #setup-form>.actions>#cancel-character{flex:1 1 120px}}
 @media print{#cancel-character-dialog{display:none!important}body.cancel-character-open{overflow:visible}}
+
+/* Career specialties are a separate informational, never a selection action. */
+.career-choice-row{display:flex;align-items:center;gap:10px;min-width:0}.career-choice-row>.choice{flex:1;min-width:0;overflow-wrap:anywhere}.career-choice-row>.career-info-trigger{flex:0 0 44px;width:44px;height:44px;min-height:44px}.career-info-dialog li{margin:8px 0;overflow-wrap:anywhere}.career-info-dialog .help{color:#c4d4dd}
