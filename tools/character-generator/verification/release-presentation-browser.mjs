@@ -74,10 +74,10 @@ try{
    await editor.locator('#workspace').screenshot({path:fileURLToPath(new URL('gui-simplicity-'+name+'-options.png',out))});
    await editor.locator('#setup-optional-settings').evaluate(el=>el.open=true);await editor.locator('[name=extras][value=LCK]').uncheck();await editor.locator('#setup-gm-settings').evaluate(el=>el.open=true);await editor.locator('[name=gm]').uncheck();await optionalSummary.press('Enter');assert.match(await optionalSummary.textContent(),/No optional extras · GM changes off/);
    await editor.locator('[name=name]').fill('Unsaved release check '+width);
-   const limits=editor.locator('#automation-limits'),summary=limits.locator('summary');await summary.focus();await summary.press('Enter');
+   const limits=editor.locator('#beta-notice'),trigger=editor.locator('#beta-notice-open');await trigger.focus();await trigger.press('Enter');
    check(name+' limitations open with keyboard',await limits.getAttribute('open')!==null);
    assert.match(await limits.textContent(),/Notes do not automate future modifiers/);assert.match(await limits.textContent(),/Zhodani are deferred/);
-   await summary.press('Enter');check(name+' limitations close with keyboard',await limits.getAttribute('open')===null);await summary.press('Enter');
+   await editor.keyboard.press('Escape');check(name+' limitations close with keyboard',await limits.getAttribute('open')===null);assert.equal(await trigger.evaluate(n=>n===document.activeElement),true);
    check(name+' editor fits',await editor.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
    await editor.screenshot({path:fileURLToPath(new URL('release-presentation-'+name+'-editor.png',out)),fullPage:true});
    const open=editor.waitForEvent('popup');await editor.getByRole('link',{name:'Character Generator changelog (opens in a new tab)',exact:true}).click();const notes=await open;
