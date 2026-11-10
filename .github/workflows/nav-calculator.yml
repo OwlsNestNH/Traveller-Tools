@@ -30,6 +30,7 @@ jobs:
           node --test tests/tool-visits.test.cjs
           node --check tools/nav-calculator/engine.js
           node --check tools/nav-calculator/app.js
+          node --check tools/nav-calculator/updated.js
           node --test tools/nav-calculator/verification/engine.test.mjs
       - name: Set up browser verification
         run: |
@@ -43,3 +44,4 @@ jobs:
           node tools/nav-calculator/verification/audit.test.mjs
           node tools/nav-calculator/verification/layout.test.mjs
           node tools/nav-calculator/verification/parity.test.mjs
+          node tools/nav-calculator/verification/updated.test.mjs

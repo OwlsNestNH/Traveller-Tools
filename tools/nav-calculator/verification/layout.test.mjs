@@ -83,8 +83,9 @@ try{
   await changelog.focus();assert.ok(await changelog.evaluate(el=>el===document.activeElement));
   await page.keyboard.press('Enter');await page.waitForURL(base+'changes/nav.html');
   assert.equal(await page.getByRole('heading',{name:'Nav Calculator changelog',exact:true}).count(),1);
-  assert.equal(await page.locator('time[datetime="2026-11-10"]').count(),3);
+  assert.equal(await page.locator('time[datetime="2026-11-10"]').count(),4);
   assert.deepEqual(await page.locator('section[aria-labelledby="recent-heading"] h3').allTextContents(),[
+    'November 10, 2026 · Updated navigation dashboard',
     'November 10, 2026 · Reusable calculation engine',
     'November 10, 2026 · Audit fixes, aligned controls and changelog',
     'October 3, 2026 · Calculation and reset fixes'
