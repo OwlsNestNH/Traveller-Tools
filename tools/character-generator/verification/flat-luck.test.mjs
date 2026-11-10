@@ -38,7 +38,7 @@ test('flat Luck does not consume randomness or change other extra characteristic
  assert.equal(flat.state.rng,without.state.rng);
  const stats={...flat.state.character.stats};delete stats.LCK;assert.deepEqual(stats,without.state.character.stats);
  assert.deepEqual(flat.log.at(-1).rolls,without.log.at(-1).rolls);
- assert.deepEqual(flat.log.at(-1).rolls.map(r=>[r.label,r.values.length]),[['PSI',2],['MRL',2],['STY',2],['CHA',2]]);
+ assert.deepEqual(flat.log.at(-1).rolls.map(r=>[r.label,r.values.length]),[['MRL',2],['STY',2],['CHA',2]]);
  assert.equal(flat.state.character.stats.WLT,flat.state.character.stats.SOC);
 });
 

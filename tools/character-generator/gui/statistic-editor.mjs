@@ -3,15 +3,15 @@ export function statisticEditTarget(state,code,pool=false){
  if(!state?.config.gm)return null;
  if(pool){
   const index=state.pool.findIndex(p=>p.key===code);if(index<0)return null;
-  const p=state.pool[index];return {code,field:'pool',index,value:p.base,min:1,max:18,pool:p};
+  const p=state.pool[index];return {code,field:'pool-score',index,value:p.value,min:0,max:40,pool:p};
  }
- if(!Object.hasOwn(state.character.stats,code))return null;
+ if(!Object.hasOwn(state.character.stats,code)&&!(code==='PSI'&&state.config.extras?.includes('PSI')))return null;
  const derived=state.character.species==='aezorgh'&&code==='CHA';
  return {code,field:'stat.'+(derived?'SOC':code),value:state.character.stats[derived?'SOC':code],min:0,max:40,derived};
 }
 export function statisticPreview(target,state,value){
  if(!Number.isInteger(value)||value<target.min||value>target.max)return 'Enter a whole number from '+target.min+' to '+target.max+'.';
- if(target.pool){const p=target.pool,base=(state.aezorghRoundUp?Math.ceil:Math.floor)(value/(p.divisor??1));return 'Resulting '+target.code+': '+Math.max(1,base+p.adjustment)+'. Species modifiers'+(p.divisor===2?' and halving':'')+' are applied after the raw score.';}
+ if(target.pool)return 'Final '+target.code+': '+value+'. No species modifier is added. Original dice and raw total stay recorded. Raw swaps retain this final score; rerolling starts a new set.';
  if(target.derived)return 'Resulting CHA: '+Math.floor(value/2)+'. Aezorgh Charisma is derived from Social Standing.';
  if(target.code==='SOC'&&state.character.species==='aezorgh')return 'Resulting CHA: '+Math.floor(value/2)+'. Social Standing also updates derived Charisma.';
  if(target.code==='PSI')return 'This changes psionic potential only, not trained talents.';
@@ -27,12 +27,15 @@ export function mountStatisticEditor({document,getProjection,canOpen,onSave,getE
  find('cancel').addEventListener('click',close);
  dialog.addEventListener('cancel',event=>{event.preventDefault();close();});
  value.addEventListener('input',preview);
+ function open(code,pool=false,trigger=null){
+  if(dialog.open||!canOpen())return;
+  const projection=getProjection(),next=statisticEditTarget(projection.state,code,pool);if(!next)return;
+  target=next;openedRevision=projection.revision;triggerId=trigger?.id;
+  find('title').textContent='Set '+target.code+' score';find('current').textContent='Current '+(target.derived?'SOC':target.code)+': '+(target.value??'Untested');
+  find('label').textContent=target.derived?'New SOC score':'New final score';value.min=target.min;value.max=target.max;value.value=target.value??'';reason.value='';error.hidden=true;preview();dialog.showModal();value.focus();value.select();
+ }
  document.addEventListener('click',event=>{
-  const trigger=event.target.closest('[data-edit-stat]');if(!trigger||dialog.open||!canOpen())return;
-  const projection=getProjection(),next=statisticEditTarget(projection.state,trigger.dataset.editStat,trigger.dataset.statPool==='true');if(!next)return;
-  event.preventDefault();target=next;openedRevision=projection.revision;triggerId=trigger.id;
-  find('title').textContent='Set '+target.code+' score';find('current').textContent='Current '+(target.derived?'SOC':target.code)+(target.pool?' raw score':'')+': '+target.value;
-  find('label').textContent=target.pool?'New raw score':target.derived?'New SOC score':'New score';value.min=target.min;value.max=target.max;value.value=target.value;reason.value='';error.hidden=true;preview();dialog.showModal();value.focus();value.select();
+  const trigger=event.target.closest('[data-edit-stat]');if(!trigger)return;event.preventDefault();open(trigger.dataset.editStat,trigger.dataset.statPool==='true',trigger);
  });
  find('form').addEventListener('submit',async event=>{
   event.preventDefault();if(saving||!dialog.open||!canOpen()||!find('form').reportValidity())return;
@@ -46,6 +49,6 @@ export function mountStatisticEditor({document,getProjection,canOpen,onSave,getE
   }finally{saving=false;}
  });
  reason.addEventListener('input',()=>reason.setCustomValidity(''));
- return {close};
+ return {close,open};
 }
 

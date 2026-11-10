@@ -375,7 +375,8 @@ try {
       assert.equal(await page.locator('header h1').textContent(), 'A life among the stars');
       assert.notDeepEqual(await headerStyle(page), openingHeader, 'later stages keep their previous theme');
       assert.ok(Object.hasOwn((await projection(page)).state.character.stats, 'LCK'));
-      assert.ok(Object.hasOwn((await projection(page)).state.character.stats, 'PSI'));
+      assert.equal((await projection(page)).state.character.stats.PSI, undefined);
+      assert.match(await page.locator('#psi-choice-sheet').innerText(), /Untested/);
       await screenshot(page, label + '-background');
     });
 

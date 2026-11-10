@@ -41,9 +41,9 @@ const RULE_PACK={...CORE_PACK,...EXPANSION_PACK};
 import { API_VERSION, SOURCES, CAREERS, PRECAREERS, SPECIES, SKILLS, BACKGROUND_SKILLS, findCareer, findSpecies } from './catalog.mjs';
 const LIMIT = 2000;
 export const MAX_SAVE_BYTES = 2000000;
-export const RULES_REVISION='character-preview-2026-11-09.23';
+export const RULES_REVISION='character-preview-2026-11-09.24';
 // .19 chooses specialties on receipt; .18 retains deferred awards and corrections; .16/.17 retain historical mechanics.
-export const COMPATIBLE_RULES_REVISIONS=Object.freeze([RULES_REVISION,'character-preview-2026-11-09.22','character-preview-2026-11-09.21','character-preview-2026-11-09.20','character-preview-2026-11-09.19','character-preview-2026-11-09.18','character-preview-2026-11-09.17','character-preview-2026-11-09.16']);
+export const COMPATIBLE_RULES_REVISIONS=Object.freeze([RULES_REVISION,'character-preview-2026-11-09.23','character-preview-2026-11-09.22','character-preview-2026-11-09.21','character-preview-2026-11-09.20','character-preview-2026-11-09.19','character-preview-2026-11-09.18','character-preview-2026-11-09.17','character-preview-2026-11-09.16']);
 const saveSize = value => new TextEncoder().encode(JSON.stringify(value,null,2)).byteLength;
 const copy = value => structuredClone(value);
 const plain = value => value && typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
@@ -89,7 +89,7 @@ function stat(state,key) { need(Object.hasOwn(state.character.stats,key),'Charac
 function statisticsRerollThreshold(state) { return state.config.minimumTotal??(state.character.species==='aezorgh'&&!state.config.aezorghTwoDice?30:43); }
 function statisticsCanReroll(state) { return state.stage==='statistics'&&state.pool.length===6&&!!(state.config.gm||state.config.minimumReroll&&state.rollTotal<statisticsRerollThreshold(state)); }
 function refreshStatisticsPool(state) {
- for(const p of state.pool){p.divisor=state.character.species==='aezorgh'&&state.config.aezorghTwoDice&&p.formulaCount===1?2:1;p.derivedBase=(state.aezorghRoundUp?Math.ceil:Math.floor)(p.base/p.divisor);p.value=Math.max(1,p.derivedBase+p.adjustment);}
+ for(const p of state.pool){p.divisor=state.character.species==='aezorgh'&&state.config.aezorghTwoDice&&p.formulaCount===1?2:1;p.derivedBase=(state.aezorghRoundUp?Math.ceil:Math.floor)(p.base/p.divisor);p.value=p.finalOverride??Math.max(1,p.derivedBase+p.adjustment);}
  state.rollTotal=state.pool.reduce((sum,p)=>sum+p.base,0);
 }
 function statisticsDivisionSummary(state) {
@@ -984,6 +984,13 @@ function cashLimit(state) {
 const isCompanionEducation=id=>COMPANION_EDUCATION_IDS.includes(id);
 const completedCareerTerms=state=>state.character.careers.reduce((sum,c)=>sum+c.terms,0);
 
+function psionicTestingOptions(state){
+ if(Object.hasOwn(state.character.stats,'PSI'))return {available:false,reason:'Existing PSI is retained. Testing cannot reroll it; training is separate.'};
+ if(state.character.psionicLoss)return {available:false,reason:'Permanent psionic loss prevents testing.'};
+ if(!state.config.psiTestingWithoutEvent)return {available:false,reason:'Testing follows an eligible event. The GM house option can permit testing without an event.'};
+ if(!['precareer','career'].includes(state.stage)||state.active!==null||state.forcedCareer||state.character.retirementFromCreation||state.pending||state.pendingChoice||state.psionicTraining||accessMandatory(state))return {available:false,reason:'Testing is available after background skills at a quiet checkpoint between careers. Resolve the current step first; event testing uses its own controls.'};
+ return {available:true,reason:'GM house option enabled. Referee-approved access, testing costs and two-week timing still apply. Training is a separate later choice.'};
+}
 function psionicHistory(state,known=false){
  if(!state.character.psionics)state.character.psionics={historyKnown:known,checksAttempted:0,firstTalentChosen:false,attempts:[],tests:[],training:[],rulings:[],importedAttempted:[]};
  return state.character.psionics;
@@ -2302,9 +2309,13 @@ function apply(state,command,rolls) {
   if(payload.extras!==undefined){need(Array.isArray(payload.extras)&&payload.extras.length<=6&&new Set(payload.extras).size===payload.extras.length,'Invalid extra characteristics.');need(payload.extras.every(x=>EXTRA_STATS.some(e=>e.id===x)),'Unsupported extra characteristic.');state.config.extras=[...payload.extras];}
   if(payload.aezorghTwoDice!==undefined){need(typeof payload.aezorghTwoDice==='boolean','The optional Aezorgh two-dice method must be true or false.');need(!payload.aezorghTwoDice||state.stage==='identity'||state.character.species==='aezorgh','The optional two-dice method applies only to Aezorgh.');state.config.aezorghTwoDice=payload.aezorghTwoDice;}
   if(payload.flatLuck!==undefined){need(typeof payload.flatLuck==='boolean','Flat starting Luck must be true or false.');state.config.flatLuck=payload.flatLuck;}
+  if(payload.psiTestingWithoutEvent!==undefined){need(typeof payload.psiTestingWithoutEvent==='boolean','PSI testing house option must be true or false.');state.config.psiTestingWithoutEvent=payload.psiTestingWithoutEvent;}
   if(payload.zhodaniPsi!==undefined){need(typeof payload.zhodaniPsi==='boolean','Invalid Zhodani PSI option.');state.config.zhodaniPsi=payload.zhodaniPsi;}
   const rerollSummary=state.config.minimumTotal===undefined&&state.stage==='identity'&&Object.hasOwn(payload,'aezorghTwoDice')?'minimum-total reroll '+(state.config.minimumReroll?'on':'off')+' (threshold confirmed at species setup)':'below-'+statisticsRerollThreshold(state)+' reroll '+(state.config.minimumReroll?'on':'off');
-  return 'Generation options: '+state.config.boons+' boon rolls; player placement '+(state.config.allocation?'on':'off')+'; '+rerollSummary+'; extras '+(state.config.extras.join(', ')||'none')+'; Zhodani PSI option '+(state.config.zhodaniPsi?'on':'off')+'.'+(state.config.aezorghTwoDice?' Optional Aezorgh method: six raw 2D totals, free placement, then halve one-die destinations rounding '+(state.aezorghRoundUp?'up':'down')+'.':'')+(Object.hasOwn(payload,'flatLuck')?' House rule: flat starting Luck '+(state.config.flatLuck?'on (6, no roll)':'off (normal 2D)')+'.':'');
+  return 'Generation options: '+state.config.boons+' boon rolls; player placement '+(state.config.allocation?'on':'off')+'; '+rerollSummary+'; extras '+(state.config.extras.join(', ')||'none')+'; Zhodani PSI option '+(state.config.zhodaniPsi?'on':'off')+'.'+(state.config.aezorghTwoDice?' Optional Aezorgh method: six raw 2D totals, free placement, then halve one-die destinations rounding '+(state.aezorghRoundUp?'up':'down')+'.':'')+(Object.hasOwn(payload,'psiTestingWithoutEvent')?' House rule: PSI testing without an event '+(state.config.psiTestingWithoutEvent?'on':'off')+'.':'')+(Object.hasOwn(payload,'flatLuck')?' House rule: flat starting Luck '+(state.config.flatLuck?'on (6, no roll)':'off (normal 2D)')+'.':'');
+ }
+ case 'gm-psi-testing': {
+  need(state.config.gm,'Enable GM result changes to set this house option.');need(typeof payload.enabled==='boolean','PSI testing house option must be true or false.');state.config.psiTestingWithoutEvent=payload.enabled;return 'GM house option: PSI testing without an event '+(payload.enabled?'on':'off')+'. Testing costs, access and timing still apply; training is separate.';
  }
  case 'gm-academy-training': {
   need(state.config.gm,'Enable GM result changes to set this house option.');
@@ -2351,7 +2362,7 @@ function apply(state,command,rolls) {
   const imperialCharismaGenerated=optionalImperialCharisma(state)&&state.config.extras.includes('CHA')&&!Object.hasOwn(state.character.stats,'CHA');
   const flatLuckGenerated=state.config.flatLuck&&state.config.extras.includes('LCK')&&!Object.hasOwn(state.character.stats,'LCK');
   for(const id of state.config.extras) {
-   if(Object.hasOwn(state.character.stats,id))continue;
+   if(Object.hasOwn(state.character.stats,id)||id==='PSI'&&state.optionalPsiRequiresTesting)continue;
    const extra=EXTRA_STATS.find(e=>e.id===id);
    state.character.stats[id]=extraStartingValue(state,extra,rolls);
   }
@@ -2369,13 +2380,14 @@ function apply(state,command,rolls) {
   state.backgroundRemaining=species.id==='zhodani'&&state.character.stats.SOC>=10?0:species.extraBackground??Math.max(0,3+characteristicDM(state.character.stats.EDU));
   if(state.config.extras.includes('WLT'))state.character.stats.WLT=state.character.stats.SOC??0;
   state.stage='background';
-  if(Object.hasOwn(state.character.stats,'PSI')){const history=psionicHistory(state,true);history.tests.push({context:species.id==='zhodani'?'zhodani-childhood':'referee-potential',source:{id:species.id==='zhodani'?'aliens':'core',page:species.id==='zhodani'?254:228},psi:state.character.stats.PSI,careerTerms:0});}
+  if(Object.hasOwn(state.character.stats,'PSI')&&(!state.optionalPsiRequiresTesting||Object.hasOwn(species.dice,'PSI'))){const history=psionicHistory(state,true);history.tests.push({context:species.id==='zhodani'?'zhodani-childhood':'referee-potential',source:{id:species.id==='zhodani'?'aliens':'core',page:species.id==='zhodani'?254:228},psi:state.character.stats.PSI,careerTerms:0});}
    if(species.id==='zhodani'&&state.character.stats.SOC>=10)startPsionicTraining(state,{context:'zhodani-childhood',source:{id:'aliens',page:255},next:'precareer'},rolls);
    else if(species.id==='aslan'&&state.character.culture==='native')beginAslanOrigin(state);
    else if(species.setup&&species.id!=='zhodani')sourceStep(state,'species-setup',species.source,species.setupPage,species.setup,'background');
-  return 'Accepted statistics and generated selected extra characteristics.'+(imperialCharismaGenerated?' House rule: optional Imperial Vargr CHA uses 1D6 + 2.':'')+(flatLuckGenerated?' House rule: Luck starts at 6; no Luck dice were rolled.':'');
+  return 'Accepted statistics and generated selected extra characteristics.'+(imperialCharismaGenerated?' House rule: optional Imperial Vargr CHA uses 1D6 + 2.':'')+(flatLuckGenerated?' House rule: Luck starts at 6; no Luck dice were rolled.':'')+(state.optionalPsiRequiresTesting&&state.config.extras.includes('PSI')&&!Object.hasOwn(state.character.stats,'PSI')?' Selected PSI remains untested until a valid test or GM entry.':'');
  }
  case 'begin-psionic-training':{
+   need(!state.optionalPsiRequiresTesting||Object.hasOwn(state.character.stats,'PSI'),'Test psionic strength before arranging separate training.');
    need(!accessMandatory(state),'Resolve the accepted expedition before training.');need(['career','precareer'].includes(state.stage)&&state.active===null&&!state.forcedCareer&&!state.character.retirementFromCreation,'Begin institute training only between careers, before retirement.');
    need(!Object.hasOwn(state.character.stats,'PSI')||state.character.stats.PSI>0,'PSI zero has no training potential.');
    need(!state.character.psionics?.training.some(t=>t.completed),'Initial training has already been completed; later retries require a source award.');
@@ -3053,10 +3065,24 @@ if(pending.kind==='psionic-training-terms'){
   if(state.deferredSpecializations){const parsed=normalizedSkill(state,skill);need(SKILLS.includes(parsed.base),'Choose a supported skill.');if(SPECIALIZED.includes(skill)){deferSkillAward(state,{kind:'skill',name:skill,mode:'increase',value:1,maximum:3,connection:person});state.connections.push({person,skill,note:text(payload.note??'',300)});return 'Connection with '+person+': '+skill+' award saved for specialization allocation.';}const awards=allocationEffects(state,parsed.base);if(awards.length){for(const award of awards)award.followingConnection=skill;state.specializationContinuation={stage:state.stage,command:copy(command)};queueEffects(state,awards,'specialization-command',rolls);return 'Allocate earlier '+parsed.base+' awards before the connection skill.';}}
   const acquired=independenceAcquired(state,skill,rolls);if(acquired)gainSkill(state,skill,1);state.connections.push({person,skill,note:text(payload.note??'',300),...(state.deferredSpecializations&&!acquired?{acquired:false}:{})});return 'Connection with '+person+': '+skill+(acquired?' gained.':' acquisition failed; the opportunity is recorded.');
  }
+ case 'test-psionic-potential': {
+  const option=psionicTestingOptions(state);need(option.available,option.reason);
+  need(Object.keys(payload).every(k=>['accessConfirmed','timingConfirmed','funding','cost','providedConfirmed','reason'].includes(k)),'Use only the explicit testing fields.');
+  need(payload.accessConfirmed===true,'Confirm referee-approved institute or teacher access.');need(payload.timingConfirmed===true,'Confirm the two-week testing period in the character chronology.');
+  const reason=text(payload.reason??'',500);need(reason,'Record the testing access and timing arrangement.');
+  need(['cash','provided'].includes(payload.funding),'Choose testing funding.');const cost=integer(payload.cost,0,10000000,'Testing cost');
+  if(payload.funding==='cash'){need(cost>=5000,'Psionic testing costs at least Cr5000.');need(state.character.cash>=cost,'Insufficient cash for testing; no automatic debt is allowed.');}
+  else need(cost===0&&payload.providedConfirmed===true,'Confirm the source providing testing at no personal cost.');
+  const result=recordPsionicTest(state,'core-institute-testing',dice(state,2,rolls,'Psionic potential'),completedCareerTerms(state));
+  state.character.cash-=cost;psionicHistory(state).rulings.push({kind:'testing-only',source:{id:'core',page:228},cost,funding:payload.funding,durationWeeks:2,accessConfirmed:true,timingConfirmed:true,reason,age:state.character.age,careerTerms:completedCareerTerms(state)});
+  if(!state.config.extras.includes('PSI'))state.config.extras.push('PSI');
+  return 'Core psionic testing: PSI '+result.psi+' (2D '+result.natural+' minus '+result.careerTerms+' career terms); Cr'+cost+' '+payload.funding+'. Two-week timing confirmed. '+reason+'. Training and talents are not granted.';
+ }
  case 'add-extra': {
   need(state.pending?.kind!=='core-life-decision','Finish the pending life event decision before extra characteristics.');
   need(state.stage!=='identity'&&state.stage!=='statistics','Accept the six characteristics first.');
   const extra=EXTRA_STATS.find(e=>e.id===payload.id);need(extra,'Choose an available characteristic.');need(!Object.hasOwn(state.character.stats,extra.id),'This characteristic already exists.');
+  if(extra.id==='PSI'&&state.optionalPsiRequiresTesting){need(!state.config.extras.includes('PSI'),'PSI is already enabled and awaiting testing.');state.config.extras.push('PSI');return 'Enabled PSI. Potential remains untested until a valid event or institute test, or a GM-entered score. Training is separate.';}
   const value=extraStartingValue(state,extra,rolls);
   state.character.stats[extra.id]=extra.id==='PSI'?Math.max(0,value-completedCareerTerms(state)):value;
    if(extra.id==='PSI')recordPsionicTest(state,'referee-potential',value,completedCareerTerms(state));
@@ -3084,13 +3110,15 @@ if(pending.kind==='psionic-training-terms'){
   need(state.pending?.kind!=='core-life-decision','Finish the pending life event decision before corrections.'); {
   need(state.config.gm,'Enable GM mode before changing results.');const reason=text(payload.reason??'',300);need(reason,'A reason is required for an override.');
   const field=text(payload.field,40);let old;
-  if(field.startsWith('stat.')){const key=field.slice(5);need(!(state.character.species==='aezorgh'&&key==='CHA'),'Aezorgh CHA is derived from SOC; change SOC instead.');need(/^[A-Z][A-Z0-9]{1,7}$/.test(key),'Invalid characteristic code.');old=state.character.stats[key];need(key!=='PSI'||!state.character.psionicLoss||payload.value===0,'Ageing permanently removed psionic ability. Use an audited restore/replay to correct its originating loss.');setStat(state,key,integer(payload.value,0,40,'Characteristic'));}
+  if(field.startsWith('stat.')){const key=field.slice(5);need(!(state.character.species==='aezorgh'&&key==='CHA'),'Aezorgh CHA is derived from SOC; change SOC instead.');need(/^[A-Z][A-Z0-9]{1,7}$/.test(key),'Invalid characteristic code.');old=state.character.stats[key];need(key!=='PSI'||!state.character.psionicLoss||payload.value===0,'Ageing permanently removed psionic ability. Use an audited restore/replay to correct its originating loss.');setStat(state,key,integer(payload.value,0,40,'Characteristic'));if(key==='PSI'&&state.optionalPsiRequiresTesting&&old===undefined&&!acquiredTalents(state).length&&!state.character.psionics)psionicHistory(state,true);}
   else if(field==='age'){old=state.character.age;state.character.age=integer(payload.value,0,500,'Age');}
   else if(field==='cash'||field==='debt'){old=state.character[field];state.character[field]=integer(payload.value,0,100000000,'Amount');}
-  else if(field==='pool'){
-   need(state.stage==='statistics'&&state.pool.length===6,'Roll statistics first.');const index=integer(payload.index,0,5,'Pool index');old=state.pool[index].base;state.pool[index].base=integer(payload.value,1,18,'Base score');refreshStatisticsPool(state);
+  else if(field==='pool-score'){
+   need(state.stage==='statistics'&&state.pool.length===6,'Roll statistics first.');const index=integer(payload.index,0,5,'Pool index');old=state.pool[index].value;state.pool[index].finalOverride=integer(payload.value,0,40,'Final score');refreshStatisticsPool(state);
+  }else if(field==='pool'){
+   need(state.stage==='statistics'&&state.pool.length===6,'Roll statistics first.');const index=integer(payload.index,0,5,'Pool index');old=state.pool[index].base;state.pool[index].base=integer(payload.value,1,18,'Base score');delete state.pool[index].finalOverride;refreshStatisticsPool(state);
   }else throw new Error('That field cannot be overridden.');
-  return 'GM override '+field+(field==='pool'?'['+payload.index+']':'')+': '+String(old??'absent')+' → '+payload.value+'. Reason: '+reason+(field==='pool'?statisticsDivisionSummary(state):'');
+  return 'GM override '+field+(['pool','pool-score'].includes(field)?'['+payload.index+']':'')+': '+String(old??'absent')+' → '+payload.value+'. Reason: '+reason+(field==='pool'?statisticsDivisionSummary(state):field==='pool-score'?' Final displayed score; original dice and raw total retained.':'');
  }
  case 'allocate-specializations':{need(specializationOptions(state).available,'No specialization allocation is available at this checkpoint.');const next=state.stage;queueEffects(state,allocationEffects(state),next,rolls);return 'Choose specialties for your saved awards.';}
  case 'finish':{if(state.stage==='equipment-finalization'){need(!outstandingEquipment(state).length,'Choose the remaining awarded items before finishing.');state.stage=state.equipmentFinalizationReturn;delete state.equipmentFinalizationReturn;}const option=finishOptions(state);need(option.available,option.reason);if(outstandingEquipment(state).length){state.equipmentFinalizationReturn=state.stage;state.stage='equipment-finalization';return 'Review the outstanding equipment awards before finishing.';}if(pendingSpecializations(state).length){queueEffects(state,allocationEffects(state),state.stage,rolls);return 'Allocate your remaining skill awards before finishing.';}const settlement=settleInjuryBills(state);if(settlement===false)return 'Outstanding injury bills await source resolution of the cash balance.';state.stage='finish';return 'Finished source-assisted character. Unautomated stages remain listed in the record.'+(settlement?' Injury bills: paid Cr'+settlement.paid+', remaining medical debt Cr'+settlement.debt+'.':'');}
@@ -3108,7 +3136,7 @@ export function project(session) {
  need(Array.isArray(session.events)&&session.events.length<=LIMIT,'Save contains too many actions.');
  need(saveSize(session)<=MAX_SAVE_BYTES,'Save size limit reached. Export your current character before continuing.');
 
- let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(['character-preview-2026-11-09.19','character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22',RULES_REVISION].includes(session.rulesRevision))state.immediateSpecializations=true;if(['character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22',RULES_REVISION].includes(session.rulesRevision))state.separateBorrowedRolls=true;if(['character-preview-2026-11-09.21','character-preview-2026-11-09.22',RULES_REVISION].includes(session.rulesRevision)){state.believerFalseTeachingsRuling=true;state.equipmentChoices=true;state.printedBenefitMaximum=true;state.psionAcquisitionRuling=true;}if(['character-preview-2026-11-09.22',RULES_REVISION].includes(session.rulesRevision))state.aezorghRoundUp=true;if(session.rulesRevision===RULES_REVISION)state.optionalImperialCharisma=true;const snapshots=[copy(state)],log=[];
+ let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(['character-preview-2026-11-09.19','character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23',RULES_REVISION].includes(session.rulesRevision))state.immediateSpecializations=true;if(['character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23',RULES_REVISION].includes(session.rulesRevision))state.separateBorrowedRolls=true;if(['character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23',RULES_REVISION].includes(session.rulesRevision)){state.believerFalseTeachingsRuling=true;state.equipmentChoices=true;state.printedBenefitMaximum=true;state.psionAcquisitionRuling=true;}if(['character-preview-2026-11-09.22','character-preview-2026-11-09.23',RULES_REVISION].includes(session.rulesRevision))state.aezorghRoundUp=true;if(['character-preview-2026-11-09.23',RULES_REVISION].includes(session.rulesRevision))state.optionalImperialCharisma=true;if(session.rulesRevision===RULES_REVISION)state.optionalPsiRequiresTesting=true;const snapshots=[copy(state)],log=[];
  for(let i=0;i<session.events.length;i++){
   const event=session.events[i];need(plain(event)&&typeof event.id==='string'&&event.id.length<=120,'Invalid action record.');
   need(!log.some(e=>e.id===event.id),'Duplicate action ID.');
@@ -3137,6 +3165,7 @@ export function project(session) {
   log.push({number:i+1,id:event.id,type:event.command.type,summary,rolls,changes:characterChanges(snapshots[i].character,state.character)});snapshots.push(copy(state));
  }
  for(const career of state.character.careers)if(career.pensionExitStatusBasis){const socialClass=state.character.stats.SOC>=11?'noble':state.character.stats.SOC===10?'intendant':'prole';career.pensionStatusReviewRequired=socialClass!==career.pensionExitStatusBasis.socialClass;}
+ if(state.optionalPsiRequiresTesting)state.psionicTestingOptions=psionicTestingOptions(state);
  state.statisticsRerollThreshold=statisticsRerollThreshold(state);
  state.statisticsCanReroll=statisticsCanReroll(state);
  state.psionicGamesAvailability=psionicGamesAvailability(state);
@@ -3166,7 +3195,7 @@ export function project(session) {
  state.medicalOutstanding=(state.character.medicalBills??[]).filter(b=>!b.settled).reduce((sum,b)=>sum+b.personalCost,0);
  state.psionicOptions=state.stage==='psionic-training'?psionicOptions(state):[];
   state.psionicCanFinish=state.stage==='psionic-training'&&state.psionicTraining?.mode==='initial';
-  state.canStartPsionicTraining=!accessMandatory(state)&&!state.character.psionicLoss&&['career','precareer'].includes(state.stage)&&state.active===null&&!state.forcedCareer&&!state.character.retirementFromCreation&&(!Object.hasOwn(state.character.stats,'PSI')||state.character.stats.PSI>0)&&!state.character.psionics?.training.some(t=>t.completed);
+  state.canStartPsionicTraining=(!state.optionalPsiRequiresTesting||Object.hasOwn(state.character.stats,'PSI'))&&!accessMandatory(state)&&!state.character.psionicLoss&&['career','precareer'].includes(state.stage)&&state.active===null&&!state.forcedCareer&&!state.character.retirementFromCreation&&(!Object.hasOwn(state.character.stats,'PSI')||state.character.stats.PSI>0)&&!state.character.psionics?.training.some(t=>t.completed);
  if(state.deferredSpecializations&&state.character.species==='aslan'&&state.pendingChoice?.options)state.pendingChoice.options=state.pendingChoice.options.map(culturalAwardLabel);
  state.skillChoiceSuggestions=skillChoiceSuggestions(state);if(state.deferredSpecializations){state.specializationOptions=specializationOptions(state);state.skillChoiceBases=skillChoiceBases(state);}
  const aslanEventKind=aslanEventPending(state);if(aslanEventKind)state.aslanEventOutcome={kind:aslanEventKind,holdings:aslanOwnedLand(state)};

@@ -6,7 +6,8 @@ const cache=new Map();
 export function awardFixture(career='companion.truther',event=5){
  const key=career+event;if(cache.has(key))return structuredClone(cache.get(key));
  for(let seed=0;seed<100;seed++){
- let r=api({operation:'create',seed:'award-source-'+seed});r=run(r,'setup',{species:career.startsWith('vargr')?'vargr':'human'});r=run(r,'gm-mode',{enabled:true});r=run(r,'roll-statistics');
+ // These source-award seeds retain the pre-.24 initial-PSI sequence.
+ let r=api({operation:'create',seed:'award-source-'+seed});r.session.rulesRevision='character-preview-2026-11-09.23';r=run(r,'setup',{species:career.startsWith('vargr')?'vargr':'human'});r=run(r,'gm-mode',{enabled:true});r=run(r,'roll-statistics');
  for(let i=0;i<6;i++)r=run(r,'gm-override',{field:'pool',index:i,value:12,reason:'Stable award regression'});
  r=run(r,'accept-statistics');r=run(r,'background',{skills:r.state.backgroundOptions.slice(0,r.state.backgroundRemaining)});r=run(r,'skip-precareer');
  if(career.includes('psion')){r=run(r,'add-extra',{id:'PSI'});r=run(r,'gm-override',{field:'stat.PSI',value:15,reason:'Verified psionic potential fixture'});}

@@ -8,7 +8,7 @@ test('House is only a pristine current UI default, without changing the engine c
  for(const revision of COMPATIBLE_RULES_REVISIONS){
   const s={...createSession('method-ui-default'),rulesRevision:revision},p=project(s);
   assert.equal(p.state.config.aezorghTwoDice,false);
-  assert.equal(aezorghSetupMethod(p.state,p.log),[RULES_REVISION,'character-preview-2026-11-09.22'].includes(revision)?'house':'raw');
+  assert.equal(aezorghSetupMethod(p.state,p.log),[RULES_REVISION,'character-preview-2026-11-09.22','character-preview-2026-11-09.23'].includes(revision)?'house':'raw');
   for(const chosen of [false,true]){
    const r=run(s,'configure',{aezorghTwoDice:chosen});assert.equal(aezorghSetupMethod(r.state,r.log),chosen?'house':'raw');
    const raw=exportSession(r.session),replayed=project(importSession(raw));

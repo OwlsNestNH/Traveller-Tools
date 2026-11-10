@@ -1,3 +1,4 @@
+import {psiCard} from '../gui/psi-choice.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -23,7 +24,7 @@ function fixture(species = 'human', rolled = false) {
 function render(projection) {
   return vm.runInNewContext(statisticsSource + ';statisticsView(projection.state)', {
     projection, catalog: catalog(), esc, options, button, gmControlsView,
-    emptyStatisticsView, statisticsSummaryView, statisticsControlsView, statisticsCardsView, openingInfoButton,
+    emptyStatisticsView, statisticsSummaryView, statisticsControlsView, statisticsCardsView, openingInfoButton, psiCard,
   });
 }
 
@@ -151,7 +152,7 @@ test('Aezorgh required Charisma is not duplicated as a selected house extra', ()
   }
 });
 
-test('pending extras do not widen swaps, alter reroll total, or change existing Keep timing', () => {
+test('pending extras retain swaps and reroll total while PSI waits for testing', () => {
   const extras = ['PSI', 'LCK', 'MRL', 'STY', 'WLT', 'CHA'];
   let {session, projection} = optionalFixture(extras, true);
   const before = JSON.stringify(session);
@@ -164,9 +165,9 @@ test('pending extras do not widen swaps, alter reroll total, or change existing 
   const finalSoc = projection.state.pool.find(score => score.key === 'SOC').value;
   const result = execute(session, {type: 'accept-statistics'});
   const accepted = project(result.session);
-  assert.deepEqual(Object.keys(accepted.state.character.stats).sort(), ['STR', 'DEX', 'END', 'INT', 'EDU', 'SOC', ...extras].sort());
+  assert.deepEqual(Object.keys(accepted.state.character.stats).sort(), ['STR', 'DEX', 'END', 'INT', 'EDU', 'SOC', ...extras.filter(id=>id!=='PSI')].sort());
   assert.equal(accepted.state.character.stats.WLT, finalSoc);
-  assert.deepEqual(accepted.log.at(-1).rolls.map(roll => roll.label), ['PSI', 'LCK', 'MRL', 'STY', 'CHA']);
+  assert.deepEqual(accepted.log.at(-1).rolls.map(roll => roll.label), ['LCK', 'MRL', 'STY', 'CHA']);
   for (const roll of accepted.log.at(-1).rolls) {
     assert.equal(roll.values.length, 2);
     assert.equal(accepted.state.character.stats[roll.label], roll.values.reduce((sum, value) => sum + value, 0));

@@ -287,3 +287,5 @@ button.stat-editable:hover{border-color:var(--blue);background:var(--accent)}
 button.stat-psi-score{flex:1;min-height:60px}button.stat-psi-score:hover{background:#ffffff12}
 body[data-stage="statistics"] #workspace .stat-psi:hover{background:#0a1d29;border-color:#45667c}
 body[data-stage="statistics"] #workspace .stat-psi .stat-psi-score{color:inherit}
+
+@media print{button.stat-psi-score{display:block!important;color:inherit;background:none;border:0}#psi-choice-dialog{display:none!important}}
