@@ -41,9 +41,9 @@ const RULE_PACK={...CORE_PACK,...EXPANSION_PACK};
 import { API_VERSION, SOURCES, CAREERS, PRECAREERS, SPECIES, SKILLS, BACKGROUND_SKILLS, findCareer, findSpecies } from './catalog.mjs';
 const LIMIT = 2000;
 export const MAX_SAVE_BYTES = 2000000;
-export const RULES_REVISION='character-preview-2026-11-09.22';
+export const RULES_REVISION='character-preview-2026-11-09.23';
 // .19 chooses specialties on receipt; .18 retains deferred awards and corrections; .16/.17 retain historical mechanics.
-export const COMPATIBLE_RULES_REVISIONS=Object.freeze([RULES_REVISION,'character-preview-2026-11-09.21','character-preview-2026-11-09.20','character-preview-2026-11-09.19','character-preview-2026-11-09.18','character-preview-2026-11-09.17','character-preview-2026-11-09.16']);
+export const COMPATIBLE_RULES_REVISIONS=Object.freeze([RULES_REVISION,'character-preview-2026-11-09.22','character-preview-2026-11-09.21','character-preview-2026-11-09.20','character-preview-2026-11-09.19','character-preview-2026-11-09.18','character-preview-2026-11-09.17','character-preview-2026-11-09.16']);
 const saveSize = value => new TextEncoder().encode(JSON.stringify(value,null,2)).byteLength;
 const copy = value => structuredClone(value);
 const plain = value => value && typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
@@ -61,7 +61,9 @@ export const EXTRA_STATS = [
  {id:'CHA',name:'Charisma',kind:'house',source:'House option outside the Vargr rules',dice:2}
 ];
 // Explicit opt-in only: omitted options preserve historical config, dice and audit bytes.
+function optionalImperialCharisma(state){return !!state.optionalImperialCharisma&&state.character.species==='vargr'&&state.character.culture==='imperial';}
 function extraStartingValue(state,extra,rolls){
+ if(extra.id==='CHA'&&optionalImperialCharisma(state))return dice(state,1,rolls,'Imperial Vargr CHA')+2;
  return extra.id==='LCK'&&state.config.flatLuck?6:extra.derive?(state.character.stats[extra.derive]??0):dice(state,extra.dice,rolls,extra.id);
 }
 function initial(seed) {
@@ -2346,6 +2348,7 @@ function apply(state,command,rolls) {
   refreshStatisticsPool(state);
   for(const p of state.pool)state.character.stats[p.key]=p.value;
   for(const [key,[count,adjustment]] of Object.entries(species.dice).slice(6))state.character.stats[key]=key==='PSI'&&state.config.zhodaniPsi?state.optionalPsi:dice(state,count,rolls,key)+adjustment;
+  const imperialCharismaGenerated=optionalImperialCharisma(state)&&state.config.extras.includes('CHA')&&!Object.hasOwn(state.character.stats,'CHA');
   const flatLuckGenerated=state.config.flatLuck&&state.config.extras.includes('LCK')&&!Object.hasOwn(state.character.stats,'LCK');
   for(const id of state.config.extras) {
    if(Object.hasOwn(state.character.stats,id))continue;
@@ -2353,7 +2356,7 @@ function apply(state,command,rolls) {
    state.character.stats[id]=extraStartingValue(state,extra,rolls);
   }
   if(species.id==='vargr'){
-   if(state.character.culture==='imperial'){state.character.stats.CHA=dice(state,1,rolls,'Imperial Vargr CHA')+2;}
+   if(state.character.culture==='imperial'&&!state.optionalImperialCharisma){state.character.stats.CHA=dice(state,1,rolls,'Imperial Vargr CHA')+2;}
    gainSkill(state,'Melee',0,'set');
   }
   if(species.id==='aezorgh'){state.character.stats.CHA=Math.floor(state.character.stats.SOC/2);}
@@ -2370,7 +2373,7 @@ function apply(state,command,rolls) {
    if(species.id==='zhodani'&&state.character.stats.SOC>=10)startPsionicTraining(state,{context:'zhodani-childhood',source:{id:'aliens',page:255},next:'precareer'},rolls);
    else if(species.id==='aslan'&&state.character.culture==='native')beginAslanOrigin(state);
    else if(species.setup&&species.id!=='zhodani')sourceStep(state,'species-setup',species.source,species.setupPage,species.setup,'background');
-  return 'Accepted statistics and generated selected extra characteristics.'+(flatLuckGenerated?' House rule: Luck starts at 6; no Luck dice were rolled.':'');
+  return 'Accepted statistics and generated selected extra characteristics.'+(imperialCharismaGenerated?' House rule: optional Imperial Vargr CHA uses 1D6 + 2.':'')+(flatLuckGenerated?' House rule: Luck starts at 6; no Luck dice were rolled.':'');
  }
  case 'begin-psionic-training':{
    need(!accessMandatory(state),'Resolve the accepted expedition before training.');need(['career','precareer'].includes(state.stage)&&state.active===null&&!state.forcedCareer&&!state.character.retirementFromCreation,'Begin institute training only between careers, before retirement.');
@@ -3057,7 +3060,7 @@ if(pending.kind==='psionic-training-terms'){
   const value=extraStartingValue(state,extra,rolls);
   state.character.stats[extra.id]=extra.id==='PSI'?Math.max(0,value-completedCareerTerms(state)):value;
    if(extra.id==='PSI')recordPsionicTest(state,'referee-potential',value,completedCareerTerms(state));
-  state.config.extras.push(extra.id);return 'Added '+extra.name+' '+state.character.stats[extra.id]+'. '+(extra.id==='LCK'&&state.config.flatLuck?'House rule: flat starting Luck 6; no dice rolled. Normal source: ':'')+extra.source+(extra.id==='PSI'?'; testing reduced by completed career terms. Potential does not grant training or talents.':'.');
+  state.config.extras.push(extra.id);return 'Added '+extra.name+' '+state.character.stats[extra.id]+'. '+(extra.id==='LCK'&&state.config.flatLuck?'House rule: flat starting Luck 6; no dice rolled. Normal source: ':'')+(extra.id==='CHA'&&optionalImperialCharisma(state)?'House rule: optional Imperial Vargr CHA uses 1D6 + 2':extra.source)+(extra.id==='PSI'?'; testing reduced by completed career terms. Potential does not grant training or talents.':'.');
  }
  case 'ageing':{
   need(state.stage==='ageing','No ageing roll is due.');const species=findSpecies(state.character.species);
@@ -3105,7 +3108,7 @@ export function project(session) {
  need(Array.isArray(session.events)&&session.events.length<=LIMIT,'Save contains too many actions.');
  need(saveSize(session)<=MAX_SAVE_BYTES,'Save size limit reached. Export your current character before continuing.');
 
- let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(['character-preview-2026-11-09.19','character-preview-2026-11-09.20','character-preview-2026-11-09.21',RULES_REVISION].includes(session.rulesRevision))state.immediateSpecializations=true;if(['character-preview-2026-11-09.20','character-preview-2026-11-09.21',RULES_REVISION].includes(session.rulesRevision))state.separateBorrowedRolls=true;if(['character-preview-2026-11-09.21',RULES_REVISION].includes(session.rulesRevision)){state.believerFalseTeachingsRuling=true;state.equipmentChoices=true;state.printedBenefitMaximum=true;state.psionAcquisitionRuling=true;}if(session.rulesRevision===RULES_REVISION)state.aezorghRoundUp=true;const snapshots=[copy(state)],log=[];
+ let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(['character-preview-2026-11-09.19','character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22',RULES_REVISION].includes(session.rulesRevision))state.immediateSpecializations=true;if(['character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22',RULES_REVISION].includes(session.rulesRevision))state.separateBorrowedRolls=true;if(['character-preview-2026-11-09.21','character-preview-2026-11-09.22',RULES_REVISION].includes(session.rulesRevision)){state.believerFalseTeachingsRuling=true;state.equipmentChoices=true;state.printedBenefitMaximum=true;state.psionAcquisitionRuling=true;}if(['character-preview-2026-11-09.22',RULES_REVISION].includes(session.rulesRevision))state.aezorghRoundUp=true;if(session.rulesRevision===RULES_REVISION)state.optionalImperialCharisma=true;const snapshots=[copy(state)],log=[];
  for(let i=0;i<session.events.length;i++){
   const event=session.events[i];need(plain(event)&&typeof event.id==='string'&&event.id.length<=120,'Invalid action record.');
   need(!log.some(e=>e.id===event.id),'Duplicate action ID.');
