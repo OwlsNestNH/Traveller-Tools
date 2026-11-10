@@ -114,6 +114,30 @@ test('unrepresentable advisory times remain JSON-safe without changing route res
   assert.ok(Number.isFinite(s.nominalRoutedMin));assert.equal(s.jumpTimeSelMin,null);assert.equal(s.jumpTimeConstMin,null);assert.equal(s.jumpTimeFlipMin,null);
   assert.deepEqual(s.warnings,['CLEARANCE_TIME_OUT_OF_RANGE']);assert.deepEqual(JSON.parse(JSON.stringify(s)),s);
 });
+test('malformed public input shapes fail with stable codes rather than coercion',()=>{
+  for(const bad of [null,[],false,1,'text']){
+    throws(()=>Nav.solveRoute(bad));throws(()=>Nav.computeClearance(bad));
+    throws(()=>Nav.solveRoute({...base,distance:bad}));
+    throws(()=>Nav.solveRoute({...base,clearance:bad}));
+    throws(()=>Nav.computeClearance({thrustG:1,clearance:bad}));
+    throws(()=>Nav.solveRoute({...base,astrogation:bad}));
+    throws(()=>Nav.requiredDice(bad));
+  }
+  for(const manualPercent of [null,[20],{},true]) throws(()=>Nav.solveRoute({...base,astrogation:{enabled:true,manualPercent}}));
+  for(const enabled of ['false',1,null]){
+    throws(()=>Nav.solveRoute({...base,astrogation:{enabled}}));
+    throws(()=>Nav.clearanceDistance({enabled}));
+  }
+  throws(()=>Nav.solveRoute({...base,astrogation:{enabled:true,effect:1,autoDice:'false'}}));
+  throws(()=>Nav.clearanceDistance({enabled:true,bodyType:null}));
+  throws(()=>Nav.clearanceDistance({enabled:true,sizeCode:null}));
+});
+test('100D-only nonselected overflow is nullable while selected time stays finite',()=>{
+  const s=Nav.computeClearance({thrustG:1e-300,profile:'flip'});
+  assert.equal(s.timeConstMin,null);assert.ok(Number.isFinite(s.timeFlipMin));assert.equal(s.timeSelectedMin,s.timeFlipMin);
+  assert.deepEqual(s.warnings,['CLEARANCE_TIME_OUT_OF_RANGE']);assert.deepEqual(JSON.parse(JSON.stringify(s)),s);
+  throws(()=>Nav.computeClearance({thrustG:1e-300,profile:'const'}));
+});
 test('presentation structure and styles are byte-identical to PR264',async()=>{
   const original=await readFile(new URL('./fixtures/pr264.html',import.meta.url),'utf8');
   const current=await readFile(new URL('../index.html',import.meta.url),'utf8');

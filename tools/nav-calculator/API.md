@@ -166,7 +166,7 @@ existing random-call order. Other hosts may supply recorded rolls directly.
 - `warnings`: codes for nonrepresentable advisory values, otherwise `[]`.
 
 `computeClearance` returns `{thrustG, profile, jump, timeConstMin, timeFlipMin,
-timeSelectedMin}`. `computeDistance` returns the `distance` shape above.
+timeSelectedMin, warnings}`. `computeDistance` returns the `distance` shape above.
 `clearanceDistance` returns the `jump` shape above.
 
 Main distance, route time and speed must be positive/finite as appropriate.
@@ -174,7 +174,8 @@ At extreme numerical limits an unrepresentable `arcMult` or route advisory 100D
 time is `null`, not `Infinity`; route warnings contain
 `ARC_MULTIPLIER_OUT_OF_RANGE` or `CLEARANCE_TIME_OUT_OF_RANGE`. This preserves the
 current frontend's em-dash advisory display while keeping public results JSON-safe.
-The standalone 100D action rejects an unrepresentable selected clearance time.
+The standalone 100D action rejects an unrepresentable selected clearance time;
+an unrepresentable nonselected profile time is null with the same warning code.
 Labels are informational and may use the host locale for thousands separators.
 
 ## Errors and ownership

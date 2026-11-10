@@ -49,6 +49,14 @@ const G0 = 9.80665;              // m/s^2
   const ORBIT_ERROR = 'Enter Orbit# 0–20 and fractions from 0 to 0.99 in steps of 0.01.';
   const finite = value => typeof value === 'number' ? value : (typeof value === 'string' && value.trim() !== '' ? Number(value) : NaN);
   function fail(message, code = 'INVALID_INPUT'){ const error = new Error(message); error.code = code; throw error; }
+  function objectInput(value){
+    if(value === null || typeof value !== 'object' || Array.isArray(value)) fail('Provide calculation inputs as objects.');
+    return value;
+  }
+  function enabledValue(value){
+    if(value !== undefined && typeof value !== 'boolean') fail('Use a boolean for enabled options.');
+    return value === true;
+  }
   function profileValue(profile = 'flip'){
     if(profile !== 'flip' && profile !== 'const') fail('Select a transit profile.');
     return profile;
@@ -59,17 +67,20 @@ function orbitToAU(whole, frac){
     return ORBIT_BASE_AU[w] + (ORBIT_DIFF_AU[w] * f);
   }
   function checkedOrbit(orbit = {}){
+    objectInput(orbit);
     const au = orbitToAU(orbit.whole, orbit.fraction);
     const fraction = Number(orbit.fraction);
     if(!Number.isFinite(au) || Math.abs(fraction * 100 - Math.round(fraction * 100)) > 1e-8) fail(ORBIT_ERROR);
     return au;
   }
   function mapBodyAU(body = {}){
+    objectInput(body);
     if(body.mode === 'orbit') return checkedOrbit(body.orbit);
     if(body.mode !== undefined && body.mode !== 'au') fail('Select a map body distance mode.');
     return finite(body.au);
   }
   function distanceFromInput(input = {}){
+    objectInput(input);
     const mode = input.mode;
     if(mode === 'km' || mode === 'au'){
       const value = finite(input[mode]);
@@ -95,7 +106,7 @@ function orbitToAU(whole, frac){
       if(angle === undefined) fail('Select a compass separation.');
       const rawAU = Math.hypot(outer - inner, 2 * Math.sqrt(inner) * Math.sqrt(outer) * Math.sin(angle/2));
       if(!Number.isFinite(rawAU) || rawAU <= 0) fail('The selected bodies have zero separation. Choose different radii or directions.');
-      const routeType = input.routeType ?? 'direct';
+      const routeType = input.routeType === undefined ? 'direct' : input.routeType;
       if(routeType !== 'direct' && routeType !== 'trans') fail('Select a route type.');
       let routedAU = rawAU, arcMult = 1;
       if(routeType === 'trans'){
@@ -117,10 +128,12 @@ function orbitToAU(whole, frac){
     return distance;
   }
   function clearanceDistance(input = {}){
-    if(!input.enabled) return {clearanceKm:0, label:'Not applied'};
-    const type = input.bodyType ?? 'rocky';
+    objectInput(input);
+    if(!enabledValue(input.enabled)) return {clearanceKm:0, label:'Not applied'};
+    const type = input.bodyType === undefined ? 'rocky' : input.bodyType;
     if(type === 'rocky'){
-      const code = String(input.sizeCode ?? '8');
+      if(input.sizeCode !== undefined && typeof input.sizeCode !== 'string' && typeof input.sizeCode !== 'number') fail('Select a supported body size.');
+      const code = String(input.sizeCode === undefined ? '8' : input.sizeCode);
       if(!Object.hasOwn(SIZE_DIAM_KM,code)) fail('Select a supported body size.');
       const diamKm = SIZE_DIAM_KM[code];
       return diamKm === null ? {clearanceKm:0,label:`N/A (Size ${code})`} : {clearanceKm:diamKm*100,label:`100D from Size ${code} (${diamKm.toLocaleString()} km dia)`};
@@ -153,8 +166,10 @@ function speedFromDistance(distanceKm, thrustG, profile){
     }
   }
   function astrogationPlan(input = {}){
-    if(!input.enabled) return {kind:'none',sides:[]};
-    const manualInput = input.manualPercent == null ? '' : String(input.manualPercent).trim();
+    objectInput(input);
+    if(!enabledValue(input.enabled)) return {kind:'none',sides:[]};
+    if(input.manualPercent !== undefined && typeof input.manualPercent !== 'string' && typeof input.manualPercent !== 'number') fail('Manual time reduction must be finite and below 100%.');
+    const manualInput = input.manualPercent === undefined ? '' : String(input.manualPercent).trim();
     if(manualInput !== ''){
       const percent = finite(manualInput);
       if(!Number.isFinite(percent) || percent >= 100) fail('Manual time reduction must be finite and below 100%.');
@@ -163,6 +178,7 @@ function speedFromDistance(distanceKm, thrustG, profile){
     const effect = finite(input.effect);
     if(!Number.isSafeInteger(effect)) fail('Enter a whole-number Astrogation Effect (or a manual % override).');
     if(Math.abs(effect)>1000) fail('Effect is outside the supported range (-1000 to 1000). Use a manual percentage for exceptional cases.');
+    if(input.autoDice !== undefined && typeof input.autoDice !== 'boolean') fail('Use a boolean for automatic dice.');
     const autoDice = input.autoDice !== false;
     const count = effect > 0 ? effect : -effect + (effect <= -6 ? 4 : 0);
     return {kind:effect === 0 ? 'zero' : effect > 0 ? 'optimization' : effect <= -6 ? 'failure' : 'inefficiency',effect,autoDice,sides:autoDice ? Array(count).fill(effect > 0 ? 3 : 6) : []};
@@ -188,16 +204,21 @@ function speedFromDistance(distanceKm, thrustG, profile){
     return {...plan,totalPct,adjustedMinutes,rolls:rolls.slice()};
   }
   function computeClearance(input = {}){
+    objectInput(input);
     const thrustG = finite(input.thrustG), profile = profileValue(input.profile);
     if(!Number.isFinite(thrustG) || thrustG <= 0) fail('Enter a positive thrust in G to compute 100D time.');
-    const jump = clearanceDistance({...input.clearance,enabled:true});
+    const clearance = input.clearance === undefined ? {} : objectInput(input.clearance);
+    const jump = clearanceDistance({...clearance,enabled:true});
     const timeConstMin = jump.clearanceKm > 0 ? timeMinutesFromDistance(jump.clearanceKm,thrustG,'const') : 0;
     const timeFlipMin = jump.clearanceKm > 0 ? timeMinutesFromDistance(jump.clearanceKm,thrustG,'flip') : 0;
     const timeSelectedMin = profile === 'flip' ? timeFlipMin : timeConstMin;
     if(!Number.isFinite(timeSelectedMin)) fail('100D time is outside the supported finite range.');
-    return {thrustG,profile,jump,timeConstMin,timeFlipMin,timeSelectedMin};
+    const warnings = !Number.isFinite(timeConstMin) || !Number.isFinite(timeFlipMin) ? ['CLEARANCE_TIME_OUT_OF_RANGE'] : [];
+    return {thrustG,profile,jump,timeConstMin:Number.isFinite(timeConstMin)?timeConstMin:null,
+      timeFlipMin:Number.isFinite(timeFlipMin)?timeFlipMin:null,timeSelectedMin,warnings};
   }
   function solveRoute(input = {}, rolls = []){
+    objectInput(input);
     const thrustG = finite(input.thrustG), profile = profileValue(input.profile);
     if(!Number.isFinite(thrustG) || thrustG <= 0) fail('Enter a positive thrust in G.');
     const distance = computeDistance(input.distance);
