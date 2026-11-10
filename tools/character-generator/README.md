@@ -212,3 +212,11 @@ Outcast qualification permission expires after the next term and does not force 
 New-rule Aslan rite equipment credit and Wanderer landholds join the finalization checklist. Landhold name and location are optional GM placeholders; entering them never changes awarded parcels. Credit purchases are limited to the retained Art/Armour/Weapon budget, use verified catalogue rows or source-confirmed custom entries, and never become cash. Purchases save immediately; closing or cancelling preserves purchases and the remaining balance. Unspent credit may be retained. Historical characters are not retroactively blocked by these detail controls.
 
 The minimum raw total is adjustable in setup (whole numbers from 6 to 72). It defaults to 43, or 30 for standard Aezorgh; the optional all-six-2D6 Aezorgh method defaults to 43 before placement and halving. Custom totals remain selected when changing species or dice method. Rerolls remain enabled by default and are available only below the selected total. Saved characters without this option keep their original defaults and recorded history.
+
+## Characteristics-page presentation
+
+The opening navy/gold theme continues through rolling and placing the six characteristics. The live record keeps the selected illustrative species portrait. Before rolling, six species-appropriate placeholders are shown; rolled scores retain their raw values, species modifiers and dice method. Existing swapping, reroll thresholds, acceptance, save/replay and audit commands are unchanged.
+
+The opening **Boon rolls** house-option selector now lives inside **GM Controls → GM Settings**. The statistics page shows that setup choice read-only alongside the existing GM correction tools, closed by default. Help and logs are read-only. Later character-generation screens retain their existing presentation.
+
+`verification/characteristics-facelift-browser.mjs` covers static/HTTP transport, 1440px/320px layouts, help and disclosure keyboard behavior, repeat actions, projected reroll/placement eligibility, species formulas and save/export/import/reload continuity. The focused presentation tests verify that rendering does not mutate projected state or history.
