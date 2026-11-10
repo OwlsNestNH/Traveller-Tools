@@ -1,4 +1,4 @@
 tools/ship-combat-alpha/assets/ships/harrier-custom.svg -text
 
 # Immutable byte-for-byte oracle, verified by SHA-256 on every platform.
-tools/nav-calculator/verification/fixtures/pr264.html -text
+tools/nav-calculator/verification/fixtures/pr264.html -text -whitespace
