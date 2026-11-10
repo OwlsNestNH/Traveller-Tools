@@ -50,7 +50,7 @@ try{
  // Profiles, stale results, errors, 100D-only and repeated close/reopen.
  await page.click('#planRoute');await page.selectOption('#profile','const');
  assert.equal((await snapshot()).result.profile,'const');await page.click('#computePlan');
- assert.equal(await page.textContent('#uConsoleProfile'),'CONSTANT THRUST');assert.equal(await page.locator('#uFlip').isVisible(),false);assert.match(await page.textContent('#uSpeed'),/km\/s/);
+ assert.equal(await page.textContent('#uConsoleProfile'),'CONSTANT THRUST');assert.match(await page.locator('#uTransitSchematic').getAttribute('aria-label'),/constant thrust and no braking/);assert.equal(await page.locator('#uFlip').isVisible(),false);assert.match(await page.textContent('#uSpeed'),/km\/s/);
  await page.click('#planRoute');await page.fill('#thrust','0');await page.click('#computePlan');
  assert.equal(await page.locator('#planDialog').evaluate(e=>e.open),true);assert.match(await page.textContent('#planError'),/positive/);
  assert.equal(await page.evaluate(()=>navResult),null);
@@ -58,7 +58,7 @@ try{
  assert.equal(await page.locator('#distanceAu').isVisible(),false);
  await page.selectOption('#profile','flip');await page.click('#computePlan');
  const clearance=await snapshot();assert.equal(clearance.mode,'clearance');assert.equal(clearance.result.timeSelectedMin,clearance.result.timeFlipMin);
- assert.equal(await page.textContent('#uTimeLabel'),'100D TIME');assert.equal(await page.locator('#uArrivalRing').isVisible(),false);assert.equal(await page.locator('#uArrivalPlanet').isVisible(),false);assert.equal(await page.locator('#uClearanceEnd').isVisible(),true);
+ assert.equal(await page.textContent('#uTimeLabel'),'100D TIME');assert.match(await page.locator('#uTransitSchematic').getAttribute('aria-label'),/100D boundary.*midpoint flip/);assert.equal(await page.locator('#uArrivalRing').isVisible(),false);assert.equal(await page.locator('#uArrivalPlanet').isVisible(),false);assert.equal(await page.locator('#uClearanceEnd').isVisible(),true);
  await page.click('#legacyView');assert.deepEqual(await snapshot(),clearance);
  await page.click('#updatedView');assert.deepEqual(await snapshot(),clearance);
  if(shots) await page.screenshot({path:path.join(shots,'nav-100d-only-desktop.png'),fullPage:true});
