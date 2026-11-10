@@ -34,7 +34,7 @@ export function statisticsCardsView(state,catalog,baseHtml,{esc}){
  return (baseHtml.slice(0,end)+addition+baseHtml.slice(end)).replace(/class="stats([^"]*)"/,'class="stats$1 '+(inline?'statistics-psi-inline':'statistics-with-extras')+'"');
 }
 export function statisticsSummaryView(state,{esc}){
- const total=state.pool.length?esc(state.rollTotal):'—';
+ const total=state.pool.length&&state.rollTotal!==null?esc(state.rollTotal):'—';
  const availability=state.config.gm?'GM rerolls enabled.':state.config.minimumReroll?'Reroll below this total.':'Minimum-total rerolls are off.';
  return '<div class="statistics-summary"><p class="total">Raw total: <strong class="statistics-total-value">'+total+'</strong></p><p class="help">Reroll threshold: '+esc(state.statisticsRerollThreshold)+'. <span>'+availability+'</span></p><p class="statistics-total-help">Species modifiers and extra characteristics are excluded.'+(state.config.aezorghTwoDice?' The total is checked before placement and halving.':'')+'</p></div>';
 }

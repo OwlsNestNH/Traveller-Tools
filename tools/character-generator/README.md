@@ -50,6 +50,12 @@ See API.md for the request/response contract and COVERAGE.md for the boundaries 
 
 Finalized Travellers have a large **Open your character sheet** button. This opens a read-only, compact sheet with the current character record, completed terms and concise chronological events and decisions. Saved notes, medical notes and supported species-specific records stay visible. Superseded GM branches remain in the full action log rather than appearing as current outcomes. The sheet offers its own print view, the unchanged character-and-log export, and a separate full troubleshooting-log download. Closing the sheet or pressing Escape returns to the finish button without changing the character.
 
+## Physical dice entry
+
+Under **GM Controls**, enable **Allow physical dice score entry** (off by default). Rolled numbers and the existing layout stay visible until a score box is clicked. Click a starting score box to open its inline field; Enter, Tab or clicking outside saves a valid score, and Escape cancels. Enter the raw dice total, before species modifiers or Aezorgh halving. With boons, roll the displayed extra die and enter the sum of the retained dice. No individual dice are fabricated or verified. All six entries are required before keeping a manual set. Existing swaps and reroll limits apply. GM corrections remain independently controlled.
+
+Each entry appears in Simple Log and Full Log with its previous and new values. A warning stays on the live, final and printed character sheets after any manual entry, including after disabling the option or rolling another set. Save/load retains the audit history.
+
 ## Requested options
 
 0-6 boon rolls, score placement/swapping, optional minimum-total rerolls, and optional extra characteristics. These switches are explicitly identified as optional or house rules. Extra characteristics and species modifiers are excluded from the threshold. Boons apply to the first N rolls before allocation.

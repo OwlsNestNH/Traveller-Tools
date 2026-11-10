@@ -87,10 +87,21 @@ function dice(state,n,rolls,label,boon=false) {
 function stat(state,key) { need(Object.hasOwn(state.character.stats,key),'Characteristic '+key+' is not present.');return state.character.stats[key]; }
 // User-selected generation options, not additional published species rules.
 function statisticsRerollThreshold(state) { return state.config.minimumTotal??(state.character.species==='aezorgh'&&!state.config.aezorghTwoDice?30:43); }
-function statisticsCanReroll(state) { return state.stage==='statistics'&&state.pool.length===6&&!!(state.config.gm||state.config.minimumReroll&&state.rollTotal<statisticsRerollThreshold(state)); }
+function statisticsComplete(state) { return state.pool.length===6&&state.pool.every(p=>Number.isInteger(p.base)); }
+function physicalDiceTargets(state) {
+ const species=findSpecies(state.character.species);
+ const formulas=species.id==='vargr'?{...species.dice,...(SPECIES_RULES.vargr.variants[state.character.variant]??{})}:species.dice;
+ return Object.entries(formulas).slice(0,6).map(([key,formula],i)=>{
+  const [formulaCount,adjustment]=species.id==='vargr'&&state.character.culture==='imperial'&&key==='CHA'?[2,0]:formula;
+  if(species.id==='vargr'&&state.character.culture==='imperial'&&key==='CHA')key='SOC';
+  const count=state.config.aezorghTwoDice?2:formulaCount,divisor=species.id==='aezorgh'&&state.config.aezorghTwoDice&&formulaCount===1?2:1;
+  return {key,code:key,count,formulaCount,adjustment,divisor,boon:i<state.config.boons,min:count,max:count*6};
+ });
+}
+function statisticsCanReroll(state) { return state.stage==='statistics'&&statisticsComplete(state)&&!!(state.config.gm||state.config.minimumReroll&&state.rollTotal<statisticsRerollThreshold(state)); }
 function refreshStatisticsPool(state) {
- for(const p of state.pool){p.divisor=state.character.species==='aezorgh'&&state.config.aezorghTwoDice&&p.formulaCount===1?2:1;p.derivedBase=(state.aezorghRoundUp?Math.ceil:Math.floor)(p.base/p.divisor);p.value=p.finalOverride??Math.max(1,p.derivedBase+p.adjustment);}
- state.rollTotal=state.pool.reduce((sum,p)=>sum+p.base,0);
+ for(const p of state.pool){p.divisor=state.character.species==='aezorgh'&&state.config.aezorghTwoDice&&p.formulaCount===1?2:1;p.derivedBase=p.base===null?null:(state.aezorghRoundUp?Math.ceil:Math.floor)(p.base/p.divisor);p.value=p.finalOverride??(p.base===null?null:Math.max(1,p.derivedBase+p.adjustment));}
+ state.rollTotal=statisticsComplete(state)?state.pool.reduce((sum,p)=>sum+p.base,0):null;
 }
 function statisticsDivisionSummary(state) {
  return state.character.species==='aezorgh'&&state.config.aezorghTwoDice?' Optional Aezorgh placement (round '+(state.aezorghRoundUp?'up':'down')+' before species bonuses): '+state.pool.map(p=>p.key+' raw '+p.base+'/'+p.divisor+' = '+p.derivedBase+', species '+(p.adjustment>=0?'+':'')+p.adjustment).join('; ')+'.':'';
@@ -2302,6 +2313,7 @@ function apply(state,command,rolls) {
  }
  case 'configure': {
   need(state.stage==='identity'||state.stage==='statistics'&&!state.pool.length,'Options must be set before rolling.');
+  if(payload.physicalDice!==undefined){need(typeof payload.physicalDice==='boolean','Physical dice entry must be true or false.');state.config.physicalDice=payload.physicalDice;}
   if(payload.boons!==undefined)state.config.boons=integer(payload.boons,0,6,'Boon rolls');
   if(payload.minimumTotal!==undefined)state.config.minimumTotal=integer(payload.minimumTotal,6,72,'Minimum raw total');
   if(payload.minimumReroll!==undefined){need(typeof payload.minimumReroll==='boolean','Invalid reroll option.');state.config.minimumReroll=payload.minimumReroll;}
@@ -2313,7 +2325,7 @@ function apply(state,command,rolls) {
   if(payload.psiTestingWithoutEvent!==undefined){need(typeof payload.psiTestingWithoutEvent==='boolean','PSI testing house option must be true or false.');state.config.psiTestingWithoutEvent=payload.psiTestingWithoutEvent;}
   if(payload.zhodaniPsi!==undefined){need(typeof payload.zhodaniPsi==='boolean','Invalid Zhodani PSI option.');state.config.zhodaniPsi=payload.zhodaniPsi;}
   const rerollSummary=state.config.minimumTotal===undefined&&state.stage==='identity'&&Object.hasOwn(payload,'aezorghTwoDice')?'minimum-total reroll '+(state.config.minimumReroll?'on':'off')+' (threshold confirmed at species setup)':'below-'+statisticsRerollThreshold(state)+' reroll '+(state.config.minimumReroll?'on':'off');
-  return 'Generation options: '+state.config.boons+' boon rolls; player placement '+(state.config.allocation?'on':'off')+'; '+rerollSummary+'; extras '+(state.config.extras.join(', ')||'none')+'; Zhodani PSI option '+(state.config.zhodaniPsi?'on':'off')+'.'+(state.config.aezorghTwoDice?' Optional Aezorgh method: six raw 2D totals, free placement, then halve one-die destinations rounding '+(state.aezorghRoundUp?'up':'down')+'.':'')+(Object.hasOwn(payload,'psiGm')?' PSI-only GM controls '+(state.config.psiGm?'on':'off')+'; no automatic PSI roll.':'')+(Object.hasOwn(payload,'psiTestingWithoutEvent')?' House rule: PSI testing without an event '+(state.config.psiTestingWithoutEvent?'on':'off')+'.':'')+(Object.hasOwn(payload,'flatLuck')?' House rule: flat starting Luck '+(state.config.flatLuck?'on (6, no roll)':'off (normal 2D)')+'.':'');
+  return 'Generation options: '+state.config.boons+' boon rolls; player placement '+(state.config.allocation?'on':'off')+'; '+rerollSummary+'; extras '+(state.config.extras.join(', ')||'none')+'; Zhodani PSI option '+(state.config.zhodaniPsi?'on':'off')+'.'+(state.config.aezorghTwoDice?' Optional Aezorgh method: six raw 2D totals, free placement, then halve one-die destinations rounding '+(state.aezorghRoundUp?'up':'down')+'.':'')+(Object.hasOwn(payload,'psiGm')?' PSI-only GM controls '+(state.config.psiGm?'on':'off')+'; no automatic PSI roll.':'')+(Object.hasOwn(payload,'psiTestingWithoutEvent')?' House rule: PSI testing without an event '+(state.config.psiTestingWithoutEvent?'on':'off')+'.':'')+(Object.hasOwn(payload,'flatLuck')?' House rule: flat starting Luck '+(state.config.flatLuck?'on (6, no roll)':'off (normal 2D)')+'.':'')+(Object.hasOwn(payload,'physicalDice')?' Physical dice entry '+(state.config.physicalDice?'enabled':'disabled')+'; entered scores are unverified and marked on the character sheet and both logs.':'');
  }
  case 'gm-psi-mode': {
   need(Object.keys(payload).every(k=>k==='enabled')&&typeof payload.enabled==='boolean','PSI-only GM controls require an enabled boolean.');
@@ -2334,11 +2346,30 @@ function apply(state,command,rolls) {
   need(typeof payload.enabled==='boolean','GM mode must be true or false.');
   const old=state.config.gm;state.config.gm=payload.enabled;return 'GM mode '+old+' → '+payload.enabled+'.';
  }
+ case 'gm-physical-dice': {
+  need(['identity','statistics'].includes(state.stage),'Physical dice entry can only be changed before accepting characteristics.');
+  need(Object.keys(payload).every(k=>k==='enabled')&&typeof payload.enabled==='boolean','Physical dice entry requires an enabled boolean.');
+  state.config.physicalDice=payload.enabled;
+  return 'Physical dice entry '+(payload.enabled?'enabled':'disabled')+'. Entered scores are unverified; existing scores and manual-entry warnings are retained. GM result changes are unchanged.';
+ }
+ case 'enter-physical-statistic': {
+  need(state.stage==='statistics','Physical dice scores can only be entered before accepting characteristics.');
+  need(state.config.physicalDice,'Enable physical dice entry in GM Controls first.');
+  need(Object.keys(payload).every(k=>['code','value'].includes(k)),'Physical dice entry accepts only a characteristic code and raw total.');
+  const targets=physicalDiceTargets(state),target=targets.find(p=>p.key===payload.code);
+  need(target,'Choose one of the six starting characteristics.');
+  const value=integer(payload.value,target.min,target.max,'Physical dice raw total');
+  if(!state.pool.length)state.pool=targets.map(({min,max,code,divisor,...p})=>({...p,origin:p.key,base:null,value:null,derivedBase:null}));
+  const p=state.pool.find(p=>p.key===target.key),old=p.base,oldFinal=p.value;
+  Object.assign(p,{base:value,count:target.count,origin:target.key,boon:target.boon,physicalDiceEntered:true});delete p.finalOverride;
+  refreshStatisticsPool(state);state.character.physicalDiceEntered=true;
+  return 'Physical dice entry (unverified): '+p.key+' raw '+(old??'not entered')+' → '+value+'; final '+(oldFinal??'not entered')+' → '+p.value+'. Species adjustment '+(p.adjustment>=0?'+':'')+p.adjustment+(p.divisor===2?', divide raw by 2 rounding '+(state.aezorghRoundUp?'up':'down'):'')+'. No app dice were rolled. Warning retained on the character sheet and in both logs.';
+ }
  case 'roll-statistics': {
   need(state.stage==='statistics','Statistics cannot be rolled at this stage.');
 
   const rerollThreshold=statisticsRerollThreshold(state);
-  if(state.pool.length)need(statisticsCanReroll(state),'Reroll is available only below a six-score base total of '+rerollThreshold+', or in GM mode.');
+  if(statisticsComplete(state))need(statisticsCanReroll(state),'Reroll is available only below a six-score base total of '+rerollThreshold+', or in GM mode.');
   const species=findSpecies(state.character.species);
   if(state.config.zhodaniPsi){need(state.config.gm&&species.id==='zhodani','The Zhodani PSI option requires GM mode and a Zhodani Traveller.');state.optionalPsi=[9,9,10,10,11,12][dice(state,1,rolls,'Zhodani optional PSI')-1];}
   need(!state.config.aezorghTwoDice||species.id==='aezorgh','The optional two-dice method applies only to Aezorgh.');
@@ -2350,20 +2381,22 @@ function apply(state,command,rolls) {
   return (before?'Rerolled statistics; previous '+before.join(', ')+'. ':'Rolled statistics. ')+'Base total '+state.rollTotal+'. Species modifiers excluded; extra characteristics excluded.'+statisticsDivisionSummary(state);
  }
  case 'swap-statistics': {
-  need(state.stage==='statistics'&&state.pool.length===6,'Roll statistics first.');
+  need(state.stage==='statistics'&&statisticsComplete(state),'Roll or enter all six statistics first.');
   need(state.config.allocation||state.config.gm,'Player assignment is not enabled.');
   const a=integer(payload.a,0,5,'First score'),b=integer(payload.b,0,5,'Second score');need(a!==b,'Choose two different characteristics.');
   const mixedFormula=state.pool[a].formulaCount!==state.pool[b].formulaCount,freePlacement=state.character.species==='aezorgh'&&state.config.aezorghTwoDice;
   need(!mixedFormula||freePlacement||state.config.gm,'Published dice formulas differ. A GM override is required for this swap.');
   const old=[state.pool[a].base,state.pool[b].base];[state.pool[a].base,state.pool[b].base]=[state.pool[b].base,state.pool[a].base];
+  if(state.pool[a].physicalDiceEntered||state.pool[b].physicalDiceEntered)[state.pool[a].physicalDiceEntered,state.pool[b].physicalDiceEntered]=[!!state.pool[b].physicalDiceEntered,!!state.pool[a].physicalDiceEntered];
   [state.pool[a].boon,state.pool[b].boon]=[state.pool[b].boon,state.pool[a].boon];[state.pool[a].origin,state.pool[b].origin]=[state.pool[b].origin,state.pool[a].origin];[state.pool[a].count,state.pool[b].count]=[state.pool[b].count,state.pool[a].count];refreshStatisticsPool(state);
   return 'Swapped '+state.pool[a].key+' '+old[0]+' → '+old[1]+' and '+state.pool[b].key+' '+old[1]+' → '+old[0]+(mixedFormula&&!freePlacement?' (GM exception).':'.')+statisticsDivisionSummary(state);
  }
  case 'accept-statistics': {
-  need(state.stage==='statistics'&&state.pool.length===6,'Roll statistics first.');
+  need(state.stage==='statistics'&&statisticsComplete(state),'Roll or enter all six statistics first.');
   const species=findSpecies(state.character.species);
   refreshStatisticsPool(state);
   for(const p of state.pool)state.character.stats[p.key]=p.value;
+  if(state.character.physicalDiceEntered&&state.config.zhodaniPsi&&species.id==='zhodani'&&state.optionalPsi===undefined)state.optionalPsi=[9,9,10,10,11,12][dice(state,1,rolls,'Zhodani optional PSI')-1];
   for(const [key,[count,adjustment]] of Object.entries(species.dice).slice(6))state.character.stats[key]=key==='PSI'&&state.config.zhodaniPsi?state.optionalPsi:dice(state,count,rolls,key)+adjustment;
   const preserveGmWealth=state.optionalPsiRequiresTesting&&Object.hasOwn(state.character.stats,'WLT');
   const imperialCharismaGenerated=optionalImperialCharisma(state)&&state.config.extras.includes('CHA')&&!Object.hasOwn(state.character.stats,'CHA');
@@ -3175,6 +3208,14 @@ export function project(session) {
  if(state.optionalPsiRequiresTesting||state.psiActivationRequiresTesting)state.psionicTestingOptions=psionicTestingOptions(state);
  state.statisticsRerollThreshold=statisticsRerollThreshold(state);
  state.statisticsCanReroll=statisticsCanReroll(state);
+ // Manual entry remains disclosed even when a GM supersedes that branch.
+ // Projection-only: do not rewrite historical snapshots or audit summaries.
+ if(log.some(entry=>entry.type==='enter-physical-statistic'))state.character.physicalDiceEntered=true;
+ if(session.rulesRevision===RULES_REVISION||Object.hasOwn(state.config,'physicalDice')||state.character.physicalDiceEntered){
+  state.statisticsComplete=statisticsComplete(state);
+  state.physicalDiceTargets=physicalDiceTargets(state);
+  state.physicalDiceOptions=state.physicalDiceTargets;
+ }
  state.psionicGamesAvailability=psionicGamesAvailability(state);
  state.currentPsionicGames=copy(state.character.psionicGames?.applications.at(-1)??null);
  state.psionicGamesOptions=gamesPending(state)?gamesRemaining(gamesPending(state)):[];
