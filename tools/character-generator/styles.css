@@ -162,23 +162,24 @@ body[data-stage="statistics"] #workspace .stat .code{padding:11px 3px;margin:0 -
 body[data-stage="statistics"] #workspace .stat strong{font-size:36px;margin:8px 0;line-height:1.15}
 body[data-stage="statistics"] #workspace .stat>span:not(.code){font-size:11px;line-height:1.8;overflow-wrap:anywhere}
 body[data-stage="statistics"] #workspace .stat-empty strong{color:#7391a3}
-.statistics-summary{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 15px;background:#092331;border:1px solid #486577;border-radius:7px;padding:10px 14px;margin:14px 0 20px;font-size:13px;color:#c1d3de}
+.statistics-summary{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 20px;background:#092331;border:1px solid #486577;border-radius:7px;padding:10px 14px;margin:14px 0 12px;font-size:13px;color:#c1d3de}
 .statistics-summary .total,.statistics-summary .help{font-size:13px;margin:0}
-.statistics-summary .total{color:#f4f6f8}.statistics-summary .help span{display:block;font-size:12px}.statistics-total-help{font-size:12px;margin:0;max-width:300px}
+.statistics-summary .total{display:flex;align-items:center;gap:10px;color:#f4f6f8;white-space:nowrap}.statistics-total-value{font-size:38px;line-height:1.1;color:#ffdc67;font-variant-numeric:tabular-nums}.statistics-summary .help span{display:block;font-size:12px}.statistics-total-help{font-size:12px;margin:0;max-width:300px}
 .statistics-guidance{padding:0 4px 10px;font-size:15px}.statistics-guidance p{font-size:13px;color:#c1d3de;margin:5px 0 10px}
-.statistics-swap{padding:0 0 8px;margin-bottom:18px;border-bottom:1px solid #38576b}
+.statistics-swap{padding:0;margin:18px 0 0}
 body[data-stage="statistics"] .statistics-swap .inline-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:12px}
 body[data-stage="statistics"] .statistics-swap .inline-fields>*{min-width:0}
 .statistics-swap label{font-size:13px;color:#b8cdd9}.statistics-swap select{margin-top:5px;font-size:15px}
 body[data-stage="statistics"] .statistics-swap button{font-size:15px;min-height:46px;padding:10px 14px;margin-bottom:6px}
 .statistics-swap p{font-size:12px;color:#c1d3de;margin:8px 0}
+body[data-stage="statistics"] #statistics-gm-controls{margin-top:18px}
 body[data-stage="statistics"] #gm-controls{border:1px solid #d9b63d;border-radius:8px;padding:0;margin:0;background:#061b29}
 body[data-stage="statistics"] #gm-controls>summary{padding:13px 15px;font-size:16px;min-height:50px;list-style-position:inside}
 body[data-stage="statistics"] #gm-controls>summary small{float:right;font-size:12px;font-weight:400;color:#b7cdd9;margin:4px 0 0 12px}
 body[data-stage="statistics"] #gm-controls[open]>summary{border-bottom:1px solid #8a7532}
 body[data-stage="statistics"] #gm-controls>*:not(summary){margin:14px 16px}
 body[data-stage="statistics"] #gm-controls .statistics-boon-setting{font-size:13px;color:#c1d3de}
-body[data-stage="statistics"] .statistics-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px}
+body[data-stage="statistics"] .statistics-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:12px}
 body[data-stage="statistics"] .statistics-actions>.statistics-primary{flex:1 1 260px;min-height:59px;font-size:21px;color:#071925;border-color:#ffe99e;background:linear-gradient(#ffe18b,#ffca36);box-shadow:0 5px 15px #0005}
 body[data-stage="statistics"] .statistics-actions>.quiet{flex:0 1 190px;font-size:15px}
 body[data-stage="statistics"] .statistics-actions>button:disabled{color:#a0b7c4;border-color:#4f6b7c;background:#0a1d29;opacity:1;box-shadow:none}
@@ -223,3 +224,10 @@ body[data-stage="identity"] .opening-gm .gm-boons{padding:0;border:0;margin:14px
 body[data-stage="identity"] .gm-boons .house-option-label{display:inline-block;margin:0 0 0 5px;padding:2px 5px}
 }
 @media screen and (min-width:761px){body[data-stage="identity"] .opening-plain-label{padding-left:52px}}
+
+@media screen{
+body[data-stage="statistics"] .statistics-roll-feedback{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 16px;margin:0 0 14px;color:#c1d3de}
+body[data-stage="statistics"] .statistics-roll-feedback p{font-size:14px;margin:0}
+body[data-stage="statistics"] .statistics-roll-feedback button{min-height:44px;font-size:13px;padding:8px 12px}
+body[data-stage="statistics"] .statistics-roll-feedback button span{color:#ffdc67;font-family:Georgia,serif;font-weight:700;margin-right:4px}
+}
