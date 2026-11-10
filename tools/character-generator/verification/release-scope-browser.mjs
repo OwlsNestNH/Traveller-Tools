@@ -16,7 +16,7 @@ try{
   try{
    await page.goto(origin+'/'+transport);await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();
    assert.deepEqual(await page.locator('[name=species] option').evaluateAll(options=>options.map(o=>o.value)),['human','aslan','vargr','aezorgh']);assert.equal(await page.locator('[name=zhodaniPsi]').count(),0);
-   await page.locator('#setup-optional-settings>summary').click();await page.locator('#setup-gm-settings').evaluate(el=>el.open=true);await page.locator('[name=gm]').check();assert.equal(await page.locator('[name=extras][value=PSI]').isEnabled(),true);
+   await page.locator('#setup-gm-controls').evaluate(el=>el.open=true);await page.locator('#setup-optional-settings>summary').click();await page.locator('#setup-gm-controls').evaluate(el=>el.open=true);await page.locator('#setup-gm-settings').evaluate(el=>el.open=true);await page.locator('[name=gm]').check();assert.equal(await page.locator('[name=extras][value=PSI]').isEnabled(),true);
    await page.locator('[name=species]').selectOption('vargr');await page.locator('[name=species]').selectOption('human');assert.equal(await page.locator('[name=zhodaniPsi]').count(),0);
    // Both transports reject tampered persisted current-revision Zhodani saves,
    // retain their original bytes through reload, and expose only read-only history.

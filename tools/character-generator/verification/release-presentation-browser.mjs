@@ -57,6 +57,7 @@ try{
    await waitForCharacter(editor,name+'-launch');assert.equal(editor.url(),tool);
    assert.equal(await editor.locator('#release-version').textContent(),'Beta 0.1');
    assert.deepEqual(await editor.locator('[name=species] option').evaluateAll(nodes=>nodes.map(node=>node.value)),['human','aslan','vargr','aezorgh']);
+   assert.equal(await editor.locator('#setup-gm-controls').evaluate(n=>n.open),false);await editor.locator('#opening-gm-title').click();
    const optional=editor.locator('#setup-optional-settings'),optionalSummary=optional.locator('summary');
    assert.equal(await optional.getAttribute('open'),null);assert.equal(await editor.locator('[name=extras][value=LCK]').isVisible(),false);assert.equal(await editor.locator('[name=gm]').isVisible(),true);
    assert.equal(await editor.locator('[name=boons]').inputValue(),'0');assert.equal(await editor.locator('[name=allocation]').isChecked(),true);assert.equal(await editor.locator('[name=minimumReroll]').isChecked(),true);
