@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Nav Calculator updates, calculation assumptions and feedback.">
+<title>Nav Calculator - Changelog</title>
+<link rel="icon" href="data:,">
+<style>*{box-sizing:border-box}body{margin:0;background:#0b0e14;color:#e6e6e6;font:16px/1.6 system-ui,-apple-system,Segoe UI,sans-serif}header,main,footer{width:min(100%,850px);margin:auto;padding:24px}header{padding-bottom:8px}h1{font-size:clamp(1.6rem,5vw,2.2rem);line-height:1.2;margin:20px 0 8px}h2{font-size:1.3rem;margin:0 0 12px}h3{font-size:1rem;margin:0 0 8px}a{color:#b9c7ff;text-underline-offset:3px}a:focus-visible{outline:3px solid #fff;outline-offset:4px}nav{display:flex;flex-wrap:wrap;gap:12px 24px}nav a{display:inline-flex;align-items:center;min-height:44px}.feedback{border:1px solid #425270;background:#141a2a;border-radius:10px;padding:20px;margin-bottom:28px}.feedback p{margin:0 0 10px}.feedback a{font-size:1.05rem;overflow-wrap:anywhere}section+section{margin-top:32px}li{margin:10px 0}ul{padding-left:22px}.muted,footer{color:#aab6c9;font-size:.9rem}footer{border-top:1px solid #293448}@media(max-width:400px){header,main,footer{padding:16px}.feedback{padding:16px}}
+</style>
+</head>
+<body>
+<header>
+<nav aria-label="Page navigation"><a href="../">Traveller Tools</a><a href="../tools/nav-calculator/">Open Nav Calculator</a></nav>
+<h1>Nav Calculator changelog</h1>
+<p class="muted">Updated <time datetime="2026-11-10">November 10, 2026</time> &middot; Dates shown in UTC.</p>
+</header>
+<main>
+<section class="feedback" aria-labelledby="contact-heading">
+<h2 id="contact-heading">Contact &amp; feedback</h2>
+<p><a href="mailto:bows_cosmic.7e@icloud.com">bows_cosmic.7e@icloud.com</a></p>
+<p>Feel free to send any Bug Notes, Questions, Suggestions, or Feedback. Thanks!</p>
+</section>
+<section aria-labelledby="recent-heading">
+<h2 id="recent-heading">Recent changes</h2>
+<h3><time datetime="2026-11-10">November 10, 2026</time> &middot; Audit fixes, aligned controls and changelog</h3>
+<ul>
+<li>Solve Route, Compute 100D Only and Clear now share equal-width, equal-height buttons in one aligned row, with readable wrapped labels on narrow screens.</li>
+<li>Adjusted button text and touch targets, added visible keyboard focus, and let the header and readout adapt to small screens.</li>
+<li>Added this changelog, linked from the calculator and Traveller Tools home page.</li>
+<li>Clear restores rocky-body size controls and refreshes orbit/map previews. Edited inputs preserve the selected route or 100D-only calculation mode.</li>
+<li>Invalid Orbit# inputs and fractions now report an error instead of silently clamping. Clipboard feedback reports success only when copying succeeds.</li>
+<li>Named checkboxes, an accessible help toggle, a single live status summary, and focusable results/errors improve keyboard and small-screen use. Clarified that 100D guidance is not a separate flown leg.</li>
+</ul>
+<h3><time datetime="2026-10-03">October 3, 2026</time> &middot; Calculation and reset fixes</h3>
+<ul>
+<li>Corrected system-map angular separation and kept communication delay based on direct endpoint separation rather than the trans-solar flight detour.</li>
+<li>Rejected invalid time reductions, Effects and non-finite results. Changed inputs invalidate the old result and copied brief.</li>
+<li>Updated 100D-only calculations when the transit profile changes and reset all system-map input fields with Clear.</li>
+<li>Added browser regression checks for timing, geometry, validation, clearance, reset and stale results. <a href="https://github.com/OwlsNestNH/Traveller-Tools/commit/2cd61ac7e07111cc5c02b800b5b70d5365f7f4dd">Calculation fix commit</a>.</li>
+</ul>
+</section>
+<section aria-labelledby="assumptions-heading">
+<h2 id="assumptions-heading">Calculation assumptions</h2>
+<p>Transit starts from rest, using constant acceleration or symmetric flip-and-burn braking. The calculator uses 150,000,000 km per AU and 8.3 minutes of light time per AU.</p>
+<p>100D clearance is advisory and is not added to the flown route. Communication delay does not model blockage or relays. The inherited World Builder's Handbook orbit table and Astrogation rules were not independently source-verified by these updates.</p>
+</section>
+</main>
+<footer>Independent fan tool. <a href="../#copyright-notice">Copyright &amp; usage notice</a>. Dates shown in UTC.</footer>
+</body>
+</html>

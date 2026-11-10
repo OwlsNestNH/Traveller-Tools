@@ -82,17 +82,25 @@
     background: linear-gradient(180deg, rgba(10, 26, 38, .72), rgba(10, 26, 38, .35));
     box-shadow: var(--shadow);backdrop-filter: blur(8px);
   }
-  .brand{display:flex;flex-direction:column;gap:6px}
+  .brand{display:flex;flex-direction:column;gap:6px;min-width:0}
   .brand .line1{
     display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.18em;
     text-transform:uppercase;color:rgba(210,255,240,.95);
   }
-  .dot{width:10px;height:10px;border-radius:50%;background: var(--green);box-shadow:0 0 12px rgba(124,255,178,.45);margin-top:2px;}
+  .dot{width:10px;height:10px;border-radius:50%;background: var(--green);box-shadow:0 0 12px rgba(124,255,178,.45);margin-top:2px;flex-shrink:0;}
   .subtitle{
     color:var(--muted);font-family:var(--sans);font-size:13px;line-height:1.35;max-width: 98ch;
   }
 
+  .toolNav{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:4px}
+  .toolNav a{display:inline-flex;align-items:center;min-height:44px;color:var(--cyan);font:13px/1.4 var(--sans);text-underline-offset:3px}
+  button:focus-visible,.toolNav a:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
+  @media(max-width:720px){
+    .topbar{flex-direction:column}
+  }
+
   .rightStatus{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;justify-content:flex-end}
+  @media(max-width:720px){.rightStatus{justify-content:flex-start}}
   .pill{
     border:1px solid var(--border2);border-radius:999px;padding:8px 10px;
     background: rgba(10,26,38,.55);color:rgba(210,255,240,.80);
@@ -101,7 +109,7 @@
   .pill strong{color:rgba(210,255,240,.95)}
 
   .grid{
-    display:grid;grid-template-columns: 1.05fr .95fr;gap:16px;margin-top:16px;
+    display:grid;grid-template-columns: minmax(0,1.05fr) minmax(0,.95fr);gap:16px;margin-top:16px;
   }
   @media(max-width:1000px){ .grid{grid-template-columns:1fr} }
 
@@ -122,13 +130,16 @@
     font-size:12px;color:rgba(210,255,240,.62);font-family:var(--sans);
   }
   .panelBody{ padding:16px; }
+  .panelHead,.readout,.statusLine,.hint,.drawer{overflow-wrap:anywhere}
+  .tiles>*{min-width:0}
+  #resultsTop:focus-visible,#errorBox:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
 
   label{
     display:block;font-size:12px;letter-spacing:.12em;text-transform:uppercase;
     color:rgba(210,255,240,.70);margin:0 0 8px;
   }
   input, select{
-    width:100%;padding:12px;border-radius:14px;border: 1px solid rgba(140,255,220,.20);
+    width:100%;min-width:0;padding:12px;border-radius:14px;border: 1px solid rgba(140,255,220,.20);
     background: rgba(0,0,0,.28);color: var(--text);outline:none;font-family: var(--mono);
   }
   input:focus, select:focus{
@@ -144,10 +155,13 @@
 
   .divider{ margin:16px 0;border-top:1px dashed rgba(140,255,220,.18); }
 
-  .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch;margin-top:14px}
+  .primaryActions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;grid-auto-rows:1fr}
+  .primaryActions button{width:100%;min-height:56px;padding:10px 8px;overflow-wrap:anywhere}
+  @media(max-width:400px){.primaryActions button{min-height:64px;padding:8px 4px}}
   button{
     border:1px solid rgba(100,240,255,.25);
-    padding:12px 14px;border-radius:14px;font-weight:900;letter-spacing:.10em;text-transform:uppercase;
+    min-height:44px;padding:12px 14px;border-radius:14px;font-size:12px;line-height:1.35;font-weight:900;letter-spacing:.06em;text-transform:uppercase;
     cursor:pointer;font-family:var(--mono);color:#021018;
     background: linear-gradient(135deg, rgba(124,255,178,.95), rgba(100,240,255,.90));
     box-shadow: var(--glow);
@@ -175,6 +189,8 @@
     background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.10));
     padding:14px 14px 12px;
   }
+  .primary>div{min-width:0}
+  .primary{flex-wrap:wrap}
   .primary .big{
     margin:0;font-size: 30px;letter-spacing:.06em;color: rgba(210,255,240,.96);text-shadow: var(--glow);
   }
@@ -286,6 +302,7 @@
         <br><br>
         <b>// Ship Intellect Note:</b> “I will compute the route. You will provide the judgment. Please try not to confuse the two.”
       </div>
+      <nav class="toolNav" aria-label="Tool navigation"><a href="../../">Traveller Tools</a><a href="../../changes/nav.html">Nav Changelog</a></nav>
     </div>
     <div class="rightStatus">
       <div class="pill"><strong>PROFILE</strong> <span id="pillProfile">FLIP/BURN</span></div>
@@ -425,7 +442,7 @@
             </select>
 
             <div class="toggleRow" style="margin-top:10px;">
-              <button type="button" class="ghost" onclick="toggleMultiplierHelp()">
+              <button type="button" class="ghost" id="multHelpToggle" aria-controls="multHelp" aria-expanded="false" onclick="toggleMultiplierHelp()">
                 Why trans-solar multipliers?
               </button>
             </div>
@@ -492,7 +509,7 @@
         <div class="toggleRow">
           <div class="check">
             <input type="checkbox" id="use100d" onchange="on100DToggle()" />
-            <label style="margin:0; text-transform:none; letter-spacing:0; font-size:13px;">Show 100D jump clearance (distance only)</label>
+            <label for="use100d" style="margin:0; text-transform:none; letter-spacing:0; font-size:13px;">Show 100D jump clearance (advisory)</label>
           </div>
         </div>
 
@@ -507,7 +524,7 @@
                 <option value="gg_large">Gas Giant (Large, 160,000 km)</option>
                 <option value="gg_super">Gas Giant (Super, 200,000 km)</option>
               </select>
-              <div class="hint">100D distance is <b>100 × diameter</b>. Added as a separate leg.</div>
+              <div class="hint">100D distance is <b>100 × diameter</b>. Advisory only; not added to route time or distance.</div>
             </div>
 
             <div id="sizeCodeBlock">
@@ -543,11 +560,11 @@
         <div class="toggleRow">
           <div class="check">
             <input type="checkbox" id="useAstro" onchange="onAstroToggle()" />
-            <label style="margin:0; text-transform:none; letter-spacing:0; font-size:13px;">Apply Astrogation deviations (Effect)</label>
+            <label for="useAstro" style="margin:0; text-transform:none; letter-spacing:0; font-size:13px;">Apply Astrogation deviations (Effect)</label>
           </div>
           <div class="check">
             <input type="checkbox" id="autoDice" checked />
-            <label style="margin:0; text-transform:none; letter-spacing:0; font-size:13px;">Auto-roll deviation dice</label>
+            <label for="autoDice" style="margin:0; text-transform:none; letter-spacing:0; font-size:13px;">Auto-roll deviation dice</label>
           </div>
         </div>
 
@@ -571,7 +588,7 @@
           </div>
         </div>
 
-        <div class="actions">
+        <div class="actions primaryActions" role="group" aria-label="Navigation actions">
           <button onclick="solve()">Solve Route</button>
           <button onclick="compute100DOnly()">Compute 100D Only</button>
           <button onclick="resetAll()">Clear</button>
@@ -579,7 +596,7 @@
 
         <div class="statusLine">
           <span class="lamp" id="lamp"></span>
-          <span id="statusText">STANDBY • Awaiting input</span>
+          <span id="statusText" role="status" aria-live="polite" aria-atomic="true">STANDBY • Awaiting input</span>
         </div>
 
         <div class="mini" style="margin-top:10px;">
@@ -589,7 +606,7 @@
     </section>
 
     <!-- READOUT PANEL -->
-    <section class="panel">
+    <section class="panel" id="resultsTop" tabindex="-1" aria-label="NAV results">
       <div class="panelHead">
         <div>
           <div class="title">NAV READOUT</div>
@@ -682,7 +699,7 @@
           <div class="v" id="notesOut">Provide parameters, then solve.</div>
         </div>
 
-        <div id="errorBox"></div>
+        <div id="errorBox" tabindex="-1" aria-label="NAV error"></div>
       </div>
     </section>
   </div>
@@ -704,14 +721,9 @@
     154, 307, 615, 1270, 2400, 4900, 9700, 20000, 39200, 0
   ];
 
-  function clamp(n, lo, hi){
-    if(!Number.isFinite(n)) return lo;
-    return Math.min(hi, Math.max(lo, n));
-  }
-
   function orbitToAU(whole, frac){
-    const w = clamp(parseInt(whole,10), 0, 20);
-    const f = clamp(parseFloat(frac), 0, 0.99);
+    const w = Number(whole), f = Number(frac);
+    if(String(whole).trim() === "" || String(frac).trim() === "" || !Number.isInteger(w) || w < 0 || w > 20 || !Number.isFinite(f) || f < 0 || f > 0.99) return NaN;
     return ORBIT_BASE_AU[w] + (ORBIT_DIFF_AU[w] * f);
   }
 
@@ -803,9 +815,6 @@
   }
 
   function updateMapAUPreview(){
-    const mode = document.getElementById("distMode")?.value;
-    if(mode !== "map") return;
-
     const a = getMapBodyAU("A");
     const b = getMapBodyAU("B");
     const prev = document.getElementById("mapAUPreview");
@@ -821,9 +830,6 @@
   }
 
   function updateOrbitDistancePreview(){
-    const mode = document.getElementById("distMode")?.value;
-    if(mode !== "orbit") return;
-
     const sw = document.getElementById("orbitStartWhole").value;
     const sf = document.getElementById("orbitStartFrac").value;
     const ew = document.getElementById("orbitEndWhole").value;
@@ -835,7 +841,9 @@
     const dKm = dAU * AU_TO_KM;
 
     const prev = document.getElementById("orbitPreview");
-    if(prev){
+    if(prev && !Number.isFinite(dAU)){
+      prev.textContent = "Orbit model: enter Orbit# 0–20 and fractions 0–0.99.";
+    } else if(prev){
       prev.innerHTML = `Orbit model: <b>${dAU.toFixed(4)} AU</b> (${fmtDistance(dKm)})`;
     }
   }
@@ -865,6 +873,7 @@
   };
 
   let lastBrief = "";
+  let calculationMode = "route";
 
   function fmt(n, d=2){ return Number.isFinite(n) ? n.toFixed(d) : "—"; }
 
@@ -912,11 +921,18 @@ function setStatus(ok, text){
     document.getElementById("statusText").textContent = "STANDBY • Inputs changed";
   }
 
+  function revealOutput(id){
+    const target = document.getElementById(id);
+    target.focus({preventScroll:true});
+    target.scrollIntoView({behavior:"instant", block:"start"});
+  }
+
   function setError(msg){
     invalidateSolution();
     document.getElementById("errorBox").innerHTML =
       `<div class="err"><b>NAV ERROR:</b> ${msg}</div>`;
-    setStatus(false, "FAULT • Check input values");
+    setStatus(false, "NAV ERROR: " + msg);
+    revealOutput("errorBox");
   }
 
   function clearError(){ document.getElementById("errorBox").innerHTML = ""; }
@@ -928,6 +944,8 @@ function setStatus(ok, text){
     document.getElementById("distMapBlock").style.display = (mode==="map") ? "" : "none";
     document.getElementById("distOrbitBlock").style.display = (mode==="orbit") ? "" : "none";
     if(mode==="map"){ onMapBodyModeChange(); updateMapAUPreview(); }
+    updateOrbitDistancePreview();
+    syncPills();
   }
 
   function onRouteTypeChange(){
@@ -935,6 +953,7 @@ function setStatus(ok, text){
     document.getElementById("safetyBlock").style.display = (rt==="trans") ? "" : "none";
     if(rt !== "trans"){
       document.getElementById("multHelp").classList.remove("open");
+      document.getElementById("multHelpToggle").setAttribute("aria-expanded", "false");
     }
   }
 
@@ -952,28 +971,29 @@ function setStatus(ok, text){
 
   function onProfileChange(){
     // A 100D-only calculation must stay 100D-only even if an old route input exists.
-    const clearanceOnly = document.getElementById("statusText").textContent.startsWith("100D");
+    const clearanceOnly = calculationMode === "clearance";
     invalidateSolution();
     syncPills();
     if(clearanceOnly){
-      compute100DOnly();
+      compute100DOnly(false);
       return;
     }
     const thrustG = Number(document.getElementById("thrust").value);
     if(!Number.isFinite(thrustG) || thrustG <= 0) return;
     try { computeDistanceInfo(); } catch { return; }
-    solve();
+    solve(false);
   }
 
   function toggleMultiplierHelp(){
-    document.getElementById("multHelp").classList.toggle("open");
+    const open = document.getElementById("multHelp").classList.toggle("open");
+    document.getElementById("multHelpToggle").setAttribute("aria-expanded", String(open));
   }
 
   // 100D UI handlers
   function on100DToggle(){
     const on = document.getElementById("use100d").checked;
     document.getElementById("jumpBlock").style.display = on ? "" : "none";
-    if(on) update100DPreview();
+    update100DPreview();
   }
 
   function onJumpBodyTypeChange(){
@@ -1038,6 +1058,7 @@ function setStatus(ok, text){
   }
 
   function resetAll(){
+    calculationMode = "route";
     clearError();
     lastBrief = "";
 
@@ -1069,6 +1090,7 @@ function setStatus(ok, text){
     onMapBodyModeChange();
     document.getElementById("au1").value = "";
     document.getElementById("au2").value = "";
+    updateMapAUPreview();
     document.getElementById("separation").value = "same";
     document.getElementById("routeType").value = "direct";
     onRouteTypeChange();
@@ -1077,6 +1099,7 @@ function setStatus(ok, text){
     document.getElementById("use100d").checked = false;
     document.getElementById("jumpBodyType").value = "rocky";
     document.getElementById("sizeCode").value = "8";
+    onJumpBodyTypeChange();
     on100DToggle();
 
     document.getElementById("useAstro").checked = false;
@@ -1086,6 +1109,7 @@ function setStatus(ok, text){
     document.getElementById("manualPct").value = "";
 
     document.getElementById("multHelp").classList.remove("open");
+    document.getElementById("multHelpToggle").setAttribute("aria-expanded", "false");
 
     document.getElementById("mainTime").textContent = "0d 0h 0m";
     document.getElementById("mainSub").textContent = "No solution computed.";
@@ -1114,6 +1138,14 @@ function setStatus(ok, text){
 
   function computeDistanceInfo(){
     const distMode = document.getElementById("distMode").value;
+    const orbitPairs = distMode === "orbit" ? [["orbitStartWhole", "orbitStartFrac"], ["orbitEndWhole", "orbitEndFrac"]]
+      : distMode === "map" ? ["a", "b"].filter(body => document.getElementById(body + "Mode").value === "orbit").map(body => [body + "OrbitWhole", body + "OrbitFrac"]) : [];
+    for(const [wholeId, fractionId] of orbitPairs){
+      const whole = document.getElementById(wholeId), fraction = document.getElementById(fractionId);
+      if(!Number.isFinite(orbitToAU(whole.value, fraction.value)) || !fraction.validity.valid){
+        throw new Error("Enter Orbit# 0–20 and fractions from 0 to 0.99 in steps of 0.01.");
+      }
+    }
 
     if(distMode === "km"){
       const km = parseFloat(document.getElementById("distanceKm").value);
@@ -1235,21 +1267,31 @@ function setStatus(ok, text){
       alert("No NAV solution to copy yet. Solve a route first.");
       return;
     }
+    let copied = false;
     try{
       await navigator.clipboard.writeText(lastBrief);
-      alert("NAV brief copied to clipboard.");
-    } catch(e){
+      copied = true;
+    } catch {
+      const previousFocus = document.activeElement;
       const ta = document.createElement("textarea");
       ta.value = lastBrief;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-      alert("NAV brief copied (fallback).");
+      ta.setAttribute("aria-label", "NAV brief clipboard transfer");
+      ta.style.cssText = "position:fixed;top:0;left:0;width:1px;height:1px;opacity:0";
+      try{
+        document.body.appendChild(ta);
+        ta.select();
+        copied = document.execCommand("copy") === true;
+      } catch { copied = false; }
+      finally{
+        ta.remove();
+        previousFocus?.focus({preventScroll:true});
+      }
     }
+    alert(copied ? "NAV brief copied to clipboard." : "Could not copy NAV brief. Clipboard access is unavailable; try again or copy the readout manually.");
   }
 
-    function solve(){
+    function solve(reveal = true){
+  calculationMode = "route";
   try{
     clearError();
     invalidateSolution();
@@ -1455,9 +1497,8 @@ function setStatus(ok, text){
       notesShort: `${profileLabel}. ${useAstro ? "Astrogation deviations applied (routed leg)." : "No Astrogation deviations."} ${jumpKm>0 ? "100D shown (clearance only)." : "100D not applied."}`
     });
 
-    setStatus(true, "NAV SOLUTION • Route computed");
-    const rt = document.getElementById("resultsTop");
-    if(rt){ rt.scrollIntoView({behavior:"smooth", block:"start"}); }
+    setStatus(true, "NAV SOLUTION: Route computed. Travel time " + fmtDHM(adjustedRoutedMin));
+    if(reveal) revealOutput("resultsTop");
   } catch(e){
     const msg = (e && e.message) ? e.message : String(e);
     setError(msg);
@@ -1465,7 +1506,8 @@ function setStatus(ok, text){
   }
 }
 
-  function compute100DOnly(){
+  function compute100DOnly(reveal = true){
+    calculationMode = "clearance";
     clearError();
     invalidateSolution();
     syncPills();
@@ -1491,6 +1533,8 @@ function setStatus(ok, text){
     const jumpTimeFlipMin  = (jumpKm > 0) ? timeMinutesFromDistance(jumpKm, thrustG, "flip")  : 0;
     const jumpTimeSelMin   = (profile === "flip") ? jumpTimeFlipMin : jumpTimeConstMin;
 
+    if(!Number.isFinite(jumpTimeSelMin)) return setError("100D time is outside the supported finite range.");
+
     // Update 100D output only (do not compute route)
     document.getElementById("jumpOut").textContent =
       (jumpKm > 0)
@@ -1504,7 +1548,8 @@ function setStatus(ok, text){
         : `<b>100D Clearance:</b> N/A • ${jump.label}`;
 
     document.getElementById("mainSub").textContent = "100D advisory only. No route or NAV brief computed.";
-    setStatus(jumpKm > 0, jumpKm > 0 ? "100D COMPUTED • Clearance distance & time (advisory)" : "100D N/A • Check body type/size");
+    setStatus(jumpKm > 0, jumpKm > 0 ? "100D COMPUTED: " + document.getElementById("jumpOut").textContent + " (advisory)" : "100D N/A • Check body type/size");
+    if(reveal) revealOutput("resultsTop");
   }
 
   function init(){
@@ -1524,6 +1569,9 @@ function setStatus(ok, text){
       if(event.target.id === "profile") return;
       clearError();
       invalidateSolution();
+      updateOrbitDistancePreview();
+      updateMapAUPreview();
+      update100DPreview();
     });
     document.querySelector(".panelBody").addEventListener("change", event => {
       // Profile changes explicitly recompute through their inline handler.
