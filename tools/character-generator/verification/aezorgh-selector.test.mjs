@@ -25,11 +25,11 @@ test('existing unconfigured history and restored state do not receive a new UI d
 test('one checkbox is clearly labelled, checked by default, and historical labels retain floor rounding',()=>{
  const render=(state,log=[])=>aezorghRollChoiceView(state,log,{esc:String,infoButton:openingInfoButton});
  const current=render({aezorghRoundUp:true,config:{aezorghTwoDice:false}});
- assert.match(current,/id="aezorgh-roll-choice" class="opening-aezorgh-check" hidden/);
- assert.match(current,/<label class="check" for="setup-aezorgh-method">/);
+ assert.match(current,/id="aezorgh-roll-choice" class="opening-house-rule" hidden/);
+ assert.match(current,/<label for="setup-aezorgh-method">/);
  assert.equal((current.match(/type="checkbox"/g)||[]).length,1);assert.doesNotMatch(current,/<select|type="radio"/);
  assert.match(current,/<input id="setup-aezorgh-method" name="aezorghTwoDice" type="checkbox"[^>]* checked disabled>/);
- assert.match(current,/<span>Aezorgh: use 2D6 ÷ 2 for Stats<\/span>/);assert.doesNotMatch(current,/<small/);
+ assert.match(current,/<label for="setup-aezorgh-method">Aezorgh: use 2D6 ÷ 2 for Stats<\/label>/);assert.doesNotMatch(current,/<small/);
  assert.match(render({config:{aezorghTwoDice:true}},[{}]),/checked disabled/);
  assert.match(OPENING_HELP.aezorgh.source,/Vol\. 11, p\. 67/);
  for(const text of ['Checked: House','Unchecked: RAW','DEX and INT stay unhalved','30 for RAW','historical House saves continue rounding down'])assert.ok(OPENING_HELP.aezorgh.paragraphs.join(' ').includes(text));

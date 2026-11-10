@@ -4,5 +4,5 @@ export function aezorghSetupMethod(state,log=[]){
 }
 export function aezorghRollChoiceView(state,log,{infoButton}){
  const checked=aezorghSetupMethod(state,log)==='house';
- return '<div id="aezorgh-roll-choice" class="opening-aezorgh-check" hidden><div class="opening-label-help">'+infoButton('aezorgh')+'<label class="check" for="setup-aezorgh-method"><input id="setup-aezorgh-method" name="aezorghTwoDice" type="checkbox"'+(checked?' checked':'')+' disabled><span>Aezorgh: use 2D6 ÷ 2 for Stats</span></label></div></div>';
+ return '<div id="aezorgh-roll-choice" class="opening-house-rule" hidden>'+infoButton('aezorgh')+'<input id="setup-aezorgh-method" name="aezorghTwoDice" type="checkbox"'+(checked?' checked':'')+' disabled><label for="setup-aezorgh-method">Aezorgh: use 2D6 ÷ 2 for Stats</label></div>';
 }
