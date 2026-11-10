@@ -423,8 +423,9 @@ function syncOpeningPortrait(form){
 }
 function syncCharacterPortrait(species,gender){
  const figure=$('#opening-portrait');if(!figure)return;
- const file=species==='aezorgh'?'aezorgh':(['human','vargr'].includes(species)?species+'-'+gender:null);
- figure.hidden=!file;if(file){const img=figure.querySelector('img');img.src='./assets/'+file+'.png';img.alt='Illustrative '+(catalog.species.find(x=>x.id===species)?.name??species)+' portrait';}
+ const file=species==='aslan'?'aslan-pair':species==='aezorgh'?'aezorgh':(['human','vargr'].includes(species)?species+'-'+gender:null);
+ figure.hidden=!file;if(file){const img=figure.querySelector('img');img.src='./assets/'+file+'.png';img.style.objectPosition=species==='aslan'?(gender==='female'?'100% center':'0% center'):'center';img.alt='Illustrative '+(catalog.species.find(x=>x.id===species)?.name??species)+' portrait';}
+
 }
 function sheetView(state){
  const c=state.character,simpleBenefits=c.benefits.filter(b=>!b.assetId&&!b.annualCredits);
