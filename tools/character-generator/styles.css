@@ -270,3 +270,20 @@ body[data-stage="identity"] #setup-form>.actions>#cancel-character{width:auto;fl
 
 /* Career specialties are a separate informational, never a selection action. */
 .career-choice-row{display:flex;align-items:center;gap:10px;min-width:0}.career-choice-row>.choice{flex:1;min-width:0;overflow-wrap:anywhere}.career-choice-row>.career-info-trigger{flex:0 0 44px;width:44px;height:44px;min-height:44px}.career-info-dialog li{margin:8px 0;overflow-wrap:anywhere}.career-info-dialog .help{color:#c4d4dd}
+
+/* GM stat cards preserve the score layout and use a deliberate audited edit dialog. */
+button.stat-editable{display:block;width:100%;color:var(--ink);font-weight:400;line-height:1.55;min-height:44px}
+button.stat-editable:hover{border-color:var(--blue);background:var(--accent)}
+.statistic-editor{width:min(520px,calc(100% - 28px));max-width:none;max-height:calc(100dvh - 28px);margin:auto;overflow:auto;padding:24px;border:2px solid var(--blue);border-radius:14px;background:var(--paper);color:var(--ink);box-shadow:0 18px 70px #0008}
+.statistic-editor::backdrop{background:#001425aa}.statistic-editor p{overflow-wrap:anywhere}.statistic-editor .actions{margin-top:20px}
+#statistic-editor-error{color:#9c2222}
+@media screen{body[data-stage="statistics"] button.stat-editable{color:#d8e4eb}body[data-stage="statistics"] button.stat-editable:hover{background:#103044;border-color:#eac746}}
+@media(max-width:760px){.statistic-editor{padding:18px}.statistic-editor h2{font-size:23px}}
+@media print{button.stat-editable{display:block!important;color:var(--ink)}#statistic-editor{display:none!important}}
+
+.stat-psi-heading{display:flex;align-items:center;justify-content:center;gap:4px}
+.stat-psi-heading .opening-info-trigger{width:44px;height:44px;min-height:44px;flex:0 0 44px;padding:0}
+.stat-psi-score{display:block;width:100%;padding:0;border:0;border-radius:5px;background:transparent;color:inherit;font-weight:400;line-height:1.5}
+button.stat-psi-score{flex:1;min-height:60px}button.stat-psi-score:hover{background:#ffffff12}
+body[data-stage="statistics"] #workspace .stat-psi:hover{background:#0a1d29;border-color:#45667c}
+body[data-stage="statistics"] #workspace .stat-psi .stat-psi-score{color:inherit}

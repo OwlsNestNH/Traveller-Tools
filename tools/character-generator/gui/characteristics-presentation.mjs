@@ -1,3 +1,4 @@
+import {openingInfoButton} from './opening-help.mjs';
 // Read-only presentation for the characteristic rolling stage. Rules stay in the engine.
 const labels={STR:'Strength',DEX:'Dexterity',END:'Endurance',INT:'Intellect',EDU:'Education',SOC:'Social standing',CHA:'Charisma',PSI:'Psionic strength'};
 function primaryCodes(state,catalog){
@@ -22,6 +23,11 @@ export function statisticsCardsView(state,catalog,baseHtml,{esc}){
  const inline=extras.length===1&&extras[0].id==='PSI';
  const cards=extras.map(extra=>{
   const score=value(extra),known=Object.hasOwn(state.character.stats,extra.id);
+  if(extra.id==='PSI'){
+   const editable=known&&state.config.gm,tag=editable?'button':'div';
+   const attrs=editable?' type="button" id="stat-edit-optional-PSI" data-edit-stat="PSI" aria-label="Set PSI score, currently '+esc(score)+'" aria-haspopup="dialog" aria-controls="statistic-editor"':'';
+   return '<div class="stat stat-extra stat-psi'+(known?'':' stat-pending')+'" data-optional-stat="PSI"><div class="stat-psi-heading"><span class="code">PSI</span>'+openingInfoButton('extras')+'</div><'+tag+attrs+' class="stat-psi-score"><strong>'+esc(score)+'</strong><span>Psionic strength</span><span>'+(editable?'Set score':known?'Recorded score':'After Keep')+'</span></'+tag+'></div>';
+  }
   return '<button type="button" class="stat stat-extra'+(known?'':' stat-pending')+'" data-optional-stat="'+esc(extra.id)+'" data-opening-help="extras" aria-haspopup="dialog" aria-controls="opening-help-dialog" aria-label="'+esc(extra.name)+': '+esc(score)+'. About optional characteristics"><span class="code">'+esc(extra.id)+'</span><strong>'+esc(score)+'</strong><span>'+esc(extra.name)+'</span><span>'+(known?'About this score':extra.id==='LCK'&&state.config.flatLuck?'6 after Keep (house rule)':'After Keep')+' <span aria-hidden="true">ⓘ</span></span></button>';
  }).join('');
  const addition=inline?cards:'<div class="statistics-extras" role="group" aria-label="Selected additional characteristics">'+cards+'</div>';

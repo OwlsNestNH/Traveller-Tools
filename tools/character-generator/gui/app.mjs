@@ -1,3 +1,4 @@
+import {mountStatisticEditor} from './statistic-editor.mjs';
 import {careerInfoButton,mountCareerInfo} from './career-info.mjs';
 import {createCharacterCancel} from './cancel-character.mjs';
 import {flatLuckSetupView,syncFlatLuckSelection} from './flat-luck-setup.mjs';
@@ -175,6 +176,7 @@ async function send(type,payload={}){
 }
 function selected(form,name){return [...form.querySelectorAll('input[name="'+name+'"]:checked')].map(e=>e.value);}
 mountOpeningHelp(document);
+mountStatisticEditor({document,getProjection:()=>projection,canOpen:()=>!busy&&recoveryRaw===null,onSave:payload=>send('gm-override',payload),getError:()=>$('#message').textContent});
 mountCareerInfo(document,id=>projection?.state.careerChoices?.find(c=>c.id===id),sourceLabel);
 function setupView(){
  const s=projection.state;
@@ -200,7 +202,11 @@ function syncIdentityOptions(form){
 }
 function statCards(state,pool=false){
  const entries=pool?state.pool.map(p=>[p.key,p.value,p]):Object.entries(state.character.stats).map(([k,v])=>[k,v,null]);
- return '<div class="stats">'+entries.map(([code,value,p])=>'<div class="stat"><span class="code">'+esc(code)+'</span><strong>'+value+'</strong><span>'+(p?(p.divisor===2?'Raw '+p.base+' ÷ 2 → '+p.derivedBase:'Base '+p.base)+' · '+(p.adjustment>=0?'+':'')+p.adjustment+' species':('DM '+(state.statDMs[code]>=0?'+':'')+state.statDMs[code]))+'</span>'+(p?'<span>'+p.count+'D'+(p.boon?' + boon':'')+(p.divisor===2?' / 2, round '+(state.aezorghRoundUp?'up':'down'):'')+'</span>':'')+'</div>').join('')+'</div>';
+ return '<div class="stats">'+entries.map(([code,value,p])=>{
+  const editable=state.config.gm,tag=editable?'button':'div';
+  const attrs=editable?' type="button" id="stat-edit-'+(pool?'pool-':'sheet-')+esc(code)+'" data-edit-stat="'+esc(code)+'" data-stat-pool="'+pool+'" aria-haspopup="dialog" aria-controls="statistic-editor" aria-label="Set '+esc(code)+' score, currently '+esc(value)+'"':'';
+  return '<'+tag+attrs+' class="stat'+(editable?' stat-editable':'')+'"><span class="code">'+esc(code)+'</span><strong>'+value+'</strong><span>'+(p?(p.divisor===2?'Raw '+p.base+' ÷ 2 → '+p.derivedBase:'Base '+p.base)+' · '+(p.adjustment>=0?'+':'')+p.adjustment+' species':('DM '+(state.statDMs[code]>=0?'+':'')+state.statDMs[code]))+'</span>'+(p?'<span>'+p.count+'D'+(p.boon?' + boon':'')+(p.divisor===2?' / 2, round '+(state.aezorghRoundUp?'up':'down'):'')+'</span>':'')+'</'+tag+'>';
+ }).join('')+'</div>';
 }
 function statisticsView(state){
  const controls=statisticsControlsView(state,gmControlsView(state,projection.log,{esc,options}),{esc});
