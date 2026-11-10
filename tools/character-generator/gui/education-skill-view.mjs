@@ -1,3 +1,9 @@
+// Companion awards at level zero accept base skills only. University study
+// subjects use a separate workflow and retain their graduation specialities.
+export function companionSkillSuggestions(state,catalog) {
+ const choices=state.educationOptions.flatMap(o=>state.pendingChoice.value===0?[o.name.split(' (')[0]]:o.name.includes(' (')?[o.name]:[o.name,...(catalog.skillSpecialities[o.name]??[]).map(s=>o.name+' ('+s+')')]);
+ return [...new Set(choices)];
+}
 export function educationSkillTitle(state) {
  return state.stage==='education-skill'&&state.pendingChoice?.selectionId==='hobby'?'Choose your hobby skill':null;
 }

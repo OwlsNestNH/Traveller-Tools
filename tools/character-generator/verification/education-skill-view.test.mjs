@@ -1,10 +1,21 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {educationSkillTitle,educationSubjects,educationSpecialities,educationSkillView,syncEducationSubject} from '../gui/education-skill-view.mjs';
+import {educationSkillTitle,educationSubjects,educationSpecialities,educationSkillView,syncEducationSubject,companionSkillSuggestions} from '../gui/education-skill-view.mjs';
 import {catalog} from '../engine/session.mjs';
 import {UNIVERSITY_SKILL_CHOICES} from '../engine/education-pack.mjs';
 const esc=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
 const state=(step=0)=>({education:0,character:{educations:[{selections:step?{'university-0':'Science (physics)'}:{}}]},pendingChoice:{selectionId:'university-'+step,value:step},educationOptions:UNIVERSITY_SKILL_CHOICES});
+
+test('Companion level-zero autocomplete contains only distinct base skills',()=>{
+ const s={pendingChoice:{value:0},educationOptions:['Athletics','Deception','Drive','Gambler','Melee','Persuade','Stealth'].map(name=>({name}))};
+ assert.deepEqual(companionSkillSuggestions(s,catalog()),s.educationOptions.map(o=>o.name));
+ s.educationOptions=['Science','Profession','Melee (unarmed)','Melee'].map(name=>({name}));
+ assert.deepEqual(companionSkillSuggestions(s,catalog()),['Science','Profession','Melee']);
+});
+test('Companion positive-level autocomplete retains fixed and selectable specialties',()=>{
+ const s={pendingChoice:{value:1},educationOptions:['Melee','Science','Gun Combat (slug)'].map(name=>({name}))};
+ assert.deepEqual(companionSkillSuggestions(s,catalog()),['Melee','Melee (unarmed)','Melee (blade)','Melee (bludgeon)','Melee (natural)','Science','Gun Combat (slug)']);
+});
 test('University names both sequential awards and excludes the first subject from the second',()=>{
  const a=educationSkillView(state(),catalog(),esc,(label)=>label),b=educationSkillView(state(1),catalog(),esc,(label)=>label);
  assert.match(a,/University skill 1 of 2: level 0/);assert.match(a,/Record level 0 and choose level 1/);

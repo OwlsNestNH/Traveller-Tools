@@ -15,7 +15,7 @@ import {equipmentCatalogueView,syncEquipmentCatalogue} from './equipment-catalog
 let aslanManualReviewKey=null;
 import {aslanEventOutcomesView,aslanEventOutcomesSheet} from './aslan-event-outcomes-view.mjs';
 import {skillAwardView,syncAwardBase,deferredAwardsView} from './skill-award-view.mjs';
-import {educationSkillTitle,educationSkillView,syncEducationSubject} from './education-skill-view.mjs';
+import {educationSkillTitle,educationSkillView,syncEducationSubject,companionSkillSuggestions} from './education-skill-view.mjs';
 import {createLogViewer} from './log-viewer.mjs';
 import {prisonerEscapeTitle,prisonerEscapeView} from './prisoner-escape-view.mjs';
 import {extraCharacteristicsView,gmControlsView,syncCorrectionField,syncReplacementDice,syncCorrectionTask,correctionPayload,replacementPayload} from './character-controls.mjs';
@@ -239,7 +239,7 @@ function companionAdmissionView(state){
  return html+'<div class="actions">'+button(id==='companion.psionic'&&!config.psionicTrainingComplete?'Begin psionic testing and training':'Check entry and continue','companion-entry')+button('Back to education options','cancel-education','quiet')+'</div>';
 }
 function companionSkillView(state){
- const e=state.pendingChoice,choices=state.educationOptions.flatMap(o=>o.name.includes(' (')?[o.name]:[o.name,...(catalog.skillSpecialities[o.name]??[]).map(s=>o.name+' ('+s+')')]);
+ const e=state.pendingChoice,choices=companionSkillSuggestions(state,catalog);
  return '<p>Choose exactly <strong>'+(e.count??1)+'</strong> distinct skills. '+(e.mode==='increase'?'Increase each by '+e.value:'Gain each at least level '+e.value)+'.</p><p class="help">Available: '+state.educationOptions.map(o=>esc(o.name)).join(', ')+'. '+(e.value>0?'Include a speciality where required, for example Engineer (power).':'Use base skill names, without specialities.')+(e.requiredLevel!==undefined?' Each choice must currently be at level '+e.requiredLevel+'.':'')+(e.existingOnly?' Choose a skill you already possess.':'')+'</p>'+Array.from({length:e.count??1},(_,i)=>'<label>Study choice '+(i+1)+'<input data-companion-skill list="companion-study-options" maxlength="80" autocomplete="off"></label>').join('')+'<datalist id="companion-study-options">'+[...new Set(choices)].map(n=>'<option value="'+esc(n)+'"></option>').join('')+'</datalist><div class="actions">'+button('Record these choices','companion-skill')+button('Cannot satisfy this printed choice','companion-choice-source','quiet')+'</div>';
 }
 function companionDecisionView(state){
