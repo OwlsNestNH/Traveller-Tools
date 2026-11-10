@@ -22,7 +22,7 @@ export function statisticsCardsView(state,catalog,baseHtml,{esc}){
  const inline=extras.length===1&&extras[0].id==='PSI';
  const cards=extras.map(extra=>{
   const score=value(extra),known=Object.hasOwn(state.character.stats,extra.id);
-  return '<button type="button" class="stat stat-extra'+(known?'':' stat-pending')+'" data-optional-stat="'+esc(extra.id)+'" data-opening-help="extras" aria-haspopup="dialog" aria-controls="opening-help-dialog" aria-label="'+esc(extra.name)+': '+esc(score)+'. About optional characteristics"><span class="code">'+esc(extra.id)+'</span><strong>'+esc(score)+'</strong><span>'+esc(extra.name)+'</span><span>'+(known?'About this score':'After Keep')+' <span aria-hidden="true">ⓘ</span></span></button>';
+  return '<button type="button" class="stat stat-extra'+(known?'':' stat-pending')+'" data-optional-stat="'+esc(extra.id)+'" data-opening-help="extras" aria-haspopup="dialog" aria-controls="opening-help-dialog" aria-label="'+esc(extra.name)+': '+esc(score)+'. About optional characteristics"><span class="code">'+esc(extra.id)+'</span><strong>'+esc(score)+'</strong><span>'+esc(extra.name)+'</span><span>'+(known?'About this score':extra.id==='LCK'&&state.config.flatLuck?'6 after Keep (house rule)':'After Keep')+' <span aria-hidden="true">ⓘ</span></span></button>';
  }).join('');
  const addition=inline?cards:'<div class="statistics-extras" role="group" aria-label="Selected additional characteristics">'+cards+'</div>';
  const end=baseHtml.lastIndexOf('</div>');
