@@ -137,7 +137,7 @@ for (const culture of ['native', 'imperial']) test('Vargr ' + culture + ' six-sc
     const html = render(projection);
     const primary = [...html.matchAll(/<div class="stat(?: stat-empty)?"><span class="code">([^<]+)/g)].map(match => match[1]);
     assert.deepEqual(primary, ['STR', 'DEX', 'END', 'INT', 'EDU', culture === 'imperial' ? 'SOC' : 'CHA']);
-    assert.equal((html.match(/data-optional-stat="CHA"/g) ?? []).length, 0, 'species CHA is not a house extra');
+    assert.equal((html.match(/data-optional-stat="CHA"/g) ?? []).length, culture === 'imperial' ? 1 : 0, 'only Imperial CHA is optional');
     assert.equal((html.match(/data-optional-stat="PSI"/g) ?? []).length, 1);
   }
 });

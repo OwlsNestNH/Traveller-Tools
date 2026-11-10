@@ -31,8 +31,8 @@ test('new boons retain best two before rounding; targeted replay and original au
   assert.match(r.log.at(-1).summary,/round up before species bonuses/);assert.deepEqual(project(importSession(exportSession(r.session))).state,r.state);
  }
 });
-test('every compatible historical revision retains floor outcomes, summaries, bytes and continued play',()=>{
- for(const revision of COMPATIBLE_RULES_REVISIONS.filter(x=>x!==RULES_REVISION)){
+test('compatible .16-.21 revisions retain floor outcomes, summaries, bytes and continued play',()=>{
+ for(const revision of COMPATIBLE_RULES_REVISIONS.filter(x=>![RULES_REVISION,'character-preview-2026-11-09.22'].includes(x))){
   let r=pool([5,8,7,9,3,11],revision);assert.equal(r.state.aezorghRoundUp,undefined);assert.deepEqual(r.state.pool.map(p=>p.derivedBase),[2,8,3,9,1,5]);
   assert.match(r.log.find(x=>x.type==='roll-statistics').summary,/round down before species bonuses/);
   const saved=exportSession(r.session);assert.equal(exportSession(importSession(saved)),saved);assert.deepEqual(project(importSession(saved)).state,r.state);
@@ -43,3 +43,5 @@ test('new setup and configure explicitly state round-up; standard formulas remai
  const r=start();assert.match(r.log[0].summary,/rounding up/);assert.match(r.log[1].summary,/rounding up/);
  let standard=run(createSession('standard-rounding'),'setup',{species:'aezorgh'});standard=run(standard,'roll-statistics');assert.deepEqual(standard.state.pool.map(p=>p.count),[1,2,1,2,1,1]);for(const p of standard.state.pool)assert.equal(p.derivedBase,p.base);assert.equal(standard.state.statisticsRerollThreshold,30);
 });
+
+test('compatible .22 preserves its historical ceiling and continued play',()=>{let r=pool([5,8,7,9,3,11],'character-preview-2026-11-09.22');assert.equal(r.state.aezorghRoundUp,true);assert.deepEqual(r.state.pool.map(p=>p.derivedBase),[3,8,4,9,2,6]);const raw=exportSession(r.session);assert.equal(exportSession(importSession(raw)),raw);r=run(r,'swap-statistics',{a:0,b:3});assert.equal(r.state.pool[0].derivedBase,5);r=run(r,'accept-statistics');assert.equal(r.state.character.stats.STR,5);assert.equal(r.session.rulesRevision,'character-preview-2026-11-09.22');});
