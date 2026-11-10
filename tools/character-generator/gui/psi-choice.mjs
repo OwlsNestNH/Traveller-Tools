@@ -27,7 +27,7 @@ export function mountPsiChoice({document,getProjection,canOpen,onTest,onTraining
   const trigger=event.target.closest('[data-psi-choice]');if(!trigger||dialog.open||!canOpen())return;
   event.preventDefault();const p=getProjection(),s=p.state,known=Object.hasOwn(s.character.stats,'PSI');triggerId=trigger.id;revision=p.revision;
   q('psi-choice-status').textContent=known?'Current PSI: '+s.character.stats.PSI+'. This score is retained, not rerolled.':'PSI is untested. A valid event or confirmed institute test is needed unless the GM enters a score.';
-  q('psi-choice-edit').hidden=!s.config.gm||!!s.character.psionicLoss;q('psi-choice-edit').textContent=known?'Change PSI score (GM)':'Enter PSI score (GM)';
+  q('psi-choice-edit').hidden=!(s.config.gm||s.config.psiGm)||!!s.character.psionicLoss;q('psi-choice-edit').textContent=known?'Change PSI score (GM)':'Enter PSI score (GM)';
   q('psi-choice-test').hidden=known;q('psi-choice-test').disabled=!s.psionicTestingOptions?.available;
   q('psi-choice-training').hidden=!known||!s.canStartPsionicTraining;
   q('psi-choice-availability').textContent=s.psionicTestingOptions?.reason??'Testing is available at a quiet between-careers checkpoint after background skills. Event testing follows the event controls.';
