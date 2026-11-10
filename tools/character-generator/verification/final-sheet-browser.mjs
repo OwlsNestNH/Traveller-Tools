@@ -24,7 +24,7 @@ try{
    await page.getByRole('button',{name:'Finish character',exact:true}).click();
    const open=page.getByRole('button',{name:'Open your character sheet',exact:true});await open.waitFor();
    assert.ok(await open.evaluate(el=>el.getBoundingClientRect().height>=72));
-   await page.locator('#sheet details').filter({has:page.getByText('Notes & connections',{exact:true})}).locator('summary').click();
+   await page.locator('#notes-connections').locator('summary').click();
    await page.locator('#character-notes').fill('Unsaved biography '+label+' <img src=x>');
    await open.focus();await open.press('Enter');
    const dialog=page.getByRole('dialog',{name:'Character sheet',exact:true});await dialog.waitFor();
