@@ -229,6 +229,6 @@ Selected optional characteristics appear before acceptance without invented valu
 
 ## Flat starting Luck house rule
 
-**GM Controls → House Rules → Start Luck at 6** is off by default. It replaces only the initial Luck roll with 6, without rolling or consuming dice. Select Luck under Characteristic options to include it at Keep, or add it later using Add another characteristic. Enabling the rule alone does not add Luck. Set it before rolling the six base characteristics; GM result changes do not need to be enabled.
+**GM Controls → House Rules → Start Luck at 6** is off by default. It replaces only the initial Luck roll with 6, without rolling or consuming dice. Checking the house rule also checks Luck under Characteristic options, so it is included at Keep. Turning the house rule off leaves Luck selected, using normal 2D; uncheck Luck separately to remove it. If Luck is explicitly deselected or absent in a saved configuration, it can still be added later using Add another characteristic. Set it before rolling the six base characteristics; GM result changes do not need to be enabled.
 
 Luck remains outside placement and the six-score reroll total. Other extras retain their normal formulas. Existing Luck values are not reset, including GM edits or spent Luck. The action log records the house rule separately from the published 2D method. This additive option leaves the rules revision unchanged: saves without it retain their exact historical commands, summaries and random sequence. Saves explicitly using the new option require this updated app.

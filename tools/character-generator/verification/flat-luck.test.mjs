@@ -98,3 +98,15 @@ test('a pre-accept GM Luck override is preserved and never logged as a newly gen
  let r=start({extras:['LCK'],flatLuck:true});r=run(r,'gm-mode',{enabled:true});r=run(r,'gm-override',{field:'stat.LCK',value:4,reason:'Explicit starting Luck ruling'});r=accept(r);
  assert.equal(r.state.character.stats.LCK,4);assert.equal(r.log.at(-1).rolls.some(roll=>roll.label==='LCK'),false);assert.doesNotMatch(r.log.at(-1).summary,/Luck starts at 6/);assert.deepEqual(project(importSession(exportSession(r.session))).state,r.state);
 });
+
+import {flatLuckSetupView,syncFlatLuckSelection} from '../gui/flat-luck-setup.mjs';
+test('checking the setup rule also selects Luck; switching it off preserves selection and other extras',()=>{
+ const luck={checked:false,disabled:false},morale={checked:true},toggle={checked:true},form={elements:{flatLuck:toggle},querySelector:()=>luck};
+ assert.equal(syncFlatLuckSelection(form),true);assert.equal(luck.checked,true);assert.equal(morale.checked,true);assert.equal(syncFlatLuckSelection(form),false);
+ toggle.checked=false;assert.equal(syncFlatLuckSelection(form),false);assert.equal(luck.checked,true);
+ luck.checked=false;assert.equal(syncFlatLuckSelection(form),false);assert.equal(luck.checked,false);
+});
+test('rendering a saved rule never changes selections and uses the shared aligned House Rules structure',()=>{
+ const state={config:{flatLuck:true,extras:[]}},before=structuredClone(state);const html=flatLuckSetupView(state,id=>'<button>'+id+'</button>');
+ assert.match(html,/class="opening-house-rule"/);assert.match(html,/<button>flatLuck<\/button><input/);assert.match(html,/id="setup-flat-luck"[^>]* checked/);assert.match(html,/<label for="setup-flat-luck">/);assert.deepEqual(state,before);
+});
