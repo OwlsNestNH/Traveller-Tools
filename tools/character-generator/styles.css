@@ -212,3 +212,14 @@ body[data-stage="statistics"] #workspace .stat-extra:hover{background:#103044;bo
 .statistics-extras>.stat-extra:first-child{grid-column:1}
 @media(max-width:760px){body[data-stage="statistics"] #workspace>.stats.statistics-psi-inline{grid-template-columns:repeat(auto-fit,minmax(min(100%,74px),1fr))}}
 }
+
+/* Compact opening helpers keep explanatory notes in the existing accessible dialog. */
+@media screen {
+body[data-stage="identity"] #setup-form>.form-grid{gap:12px}
+body[data-stage="identity"] .opening-label-help{gap:8px;min-height:46px}
+body[data-stage="identity"] .opening-label-help>.opening-info-trigger{flex:0 0 44px;width:44px;height:44px;min-height:44px;padding:0;border:0;background:transparent;box-shadow:none}
+body[data-stage="identity"] .opening-label-help>.opening-info-trigger>span{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border:1px solid #eac746;border-radius:50%}
+body[data-stage="identity"] .opening-gm .gm-boons{padding:0;border:0;margin:14px 16px 20px}
+body[data-stage="identity"] .gm-boons .house-option-label{display:inline-block;margin:0 0 0 5px;padding:2px 5px}
+}
+@media screen and (min-width:761px){body[data-stage="identity"] .opening-plain-label{padding-left:52px}}
