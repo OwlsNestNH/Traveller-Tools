@@ -1,3 +1,4 @@
+import {aezorghRollChoiceView} from '../gui/aezorgh-setup.mjs';
 import test from 'node:test';
 import {openingInfoButton} from '../gui/opening-help.mjs';
 import assert from 'node:assert/strict';
@@ -15,7 +16,7 @@ test('optional setup summary distinguishes defaults and retained selected settin
 });
 test('actual setup view keeps essential fields and Begin outside the optional disclosure',()=>{
  const source=read('gui/app.mjs'),start=source.indexOf('function setupView(){'),end=source.indexOf('\nfunction syncPsiOptions(',start);
- const setup=vm.runInNewContext(source.slice(start,end)+';setupView()', {projection:{state:{}},catalog:{species:[{id:'human'},{id:'vargr',variants:[]}],extraStats:[{id:'LCK',name:'Luck',source:'Companion 2024 p. 5'},{id:'PSI',name:'Psionic strength',source:'Core 2022 p. 228'}]},options:()=>'',esc:String,setupOptionalSummary,openingInfoButton});
+ const setup=vm.runInNewContext(source.slice(start,end)+';setupView()', {projection:{state:{}},catalog:{species:[{id:'human'},{id:'vargr',variants:[]}],extraStats:[{id:'LCK',name:'Luck',source:'Companion 2024 p. 5'},{id:'PSI',name:'Psionic strength',source:'Core 2022 p. 228'}]},options:()=>'',esc:String,setupOptionalSummary,openingInfoButton,aezorghRollChoiceView});
  const parts=setup.match(/^([\s\S]*?)<details name="opening-gm-sections" id="setup-optional-settings">([\s\S]*?)<\/details>([\s\S]*)$/);assert.ok(parts);
  for(const name of ['name','species','gender','homeworld','boons','allocation','minimumReroll'])assert.ok(parts[1].includes('name="'+name+'"'),name);
  assert.match(parts[2],/<summary>Characteristic options<span id="setup-optional-summary">No optional extras · GM changes off<\/span><\/summary>/);
@@ -34,13 +35,13 @@ test('compact warning keeps complete limits in the same disclosure and retains e
 
 test('saved identity GM state is shown honestly and setup can explicitly disable it',()=>{
  const source=read('gui/app.mjs'),start=source.indexOf('function setupView(){'),end=source.indexOf('\nfunction syncPsiOptions(',start);
- const setup=vm.runInNewContext(source.slice(start,end)+';setupView()', {projection:{state:{config:{gm:true}}},catalog:{species:[{id:'human'},{id:'vargr',variants:[]}],extraStats:[]},options:()=>'',esc:String,setupOptionalSummary,openingInfoButton});
+ const setup=vm.runInNewContext(source.slice(start,end)+';setupView()', {projection:{state:{config:{gm:true}}},catalog:{species:[{id:'human'},{id:'vargr',variants:[]}],extraStats:[]},options:()=>'',esc:String,setupOptionalSummary,openingInfoButton,aezorghRollChoiceView});
  assert.match(setup,/GM changes on/);assert.match(setup,/name="gm" type="checkbox" checked/);
  assert.ok(source.includes("if(!!values.get('gm')!==projection.state.config.gm&&!await send('gm-mode',{enabled:!!values.get('gm')}))return;"));
 });
 test('setup wording distinguishes current round-up from historical undefined flag',()=>{
  const source=read('gui/app.mjs'),start=source.indexOf('function setupView(){'),end=source.indexOf('\nfunction syncPsiOptions(',start);
- const render=state=>vm.runInNewContext(source.slice(start,end)+';setupView()', {projection:{state},catalog:{species:[{id:'human'},{id:'vargr',variants:[]}],extraStats:[]},options:()=>'',esc:String,setupOptionalSummary,openingInfoButton});
- assert.match(render({aezorghRoundUp:true}),/rounding up, then apply/);
- assert.match(render({}),/rounding down \(historical save\), then apply/);
+ const render=state=>vm.runInNewContext(source.slice(start,end)+';setupView()', {projection:{state},catalog:{species:[{id:'human'},{id:'vargr',variants:[]}],extraStats:[]},options:()=>'',esc:String,setupOptionalSummary,openingInfoButton,aezorghRollChoiceView});
+ assert.match(render({aezorghRoundUp:true}),/House · round up/);
+ assert.match(render({}),/House · round down/);
 });

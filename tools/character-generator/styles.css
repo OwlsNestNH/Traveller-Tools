@@ -223,3 +223,6 @@ body[data-stage="identity"] .opening-gm .gm-boons{padding:0;border:0;margin:14px
 body[data-stage="identity"] .gm-boons .house-option-label{display:inline-block;margin:0 0 0 5px;padding:2px 5px}
 }
 @media screen and (min-width:761px){body[data-stage="identity"] .opening-plain-label{padding-left:52px}}
+
+#aezorgh-method-summary{margin:0;color:#c4d4dd}
+@media screen and (min-width:761px){#aezorgh-method-summary{grid-column:2}}
