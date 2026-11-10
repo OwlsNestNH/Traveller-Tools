@@ -17,7 +17,7 @@ try{
   await context.addInitScript(({key,raw})=>{if(!localStorage.getItem(key))localStorage.setItem(key,raw)},{key,raw});const page=await context.newPage();page.setDefaultTimeout(12000);page.on('pageerror',e=>errors.push(e.message));
   try{
    await page.goto(origin+(transport==='http'?'/?api=local':'/'));await page.locator('#stat-edit-pool-STR').waitFor();await ready(page);
-   assert.equal(await page.locator('#workspace [data-edit-stat]').count(),6);
+   assert.equal(await page.locator('#workspace [data-stat-pool="true"]').count(),6);
    await page.locator('#stat-edit-pool-STR').focus();await page.keyboard.press('Enter');await page.locator('#statistic-editor[open]').waitFor();
    assert.equal(await page.locator('#statistic-editor-value').inputValue(),String(project(session).state.pool[0].value));
    await page.locator('#statistic-editor-value').fill('15');await page.locator('#statistic-editor-reason').fill('Cancel must not change history');
@@ -28,8 +28,10 @@ try{
    await page.locator('#statistic-editor-reason').fill('Referee sets the score');
    await page.evaluate(()=>{const f=document.querySelector('#statistic-editor-form');f.requestSubmit();f.requestSubmit();});await changed(page,session.events.length);
    let updated=JSON.parse(await saved(page)),p=project(updated);assert.equal(p.state.pool[0].value,11);assert.equal(p.state.pool[0].base,project(session).state.pool[0].base);assert.equal(p.state.rollTotal,project(session).state.rollTotal);assert.equal(p.log.at(-1).type,'gm-override');assert.match(p.log.at(-1).summary,/Referee sets the score/);assert.deepEqual(updated.events.slice(0,session.events.length),session.events);assert.equal(await page.evaluate(()=>document.activeElement.id),'stat-edit-pool-STR');
+   await page.locator('#stat-edit-optional-LCK').click();await page.locator('#statistic-editor-value').fill('8');await page.locator('#statistic-editor-reason').fill('Final optional Luck');await page.locator('#statistic-editor-save').click();await changed(page,updated.events.length);
+   await page.locator('#stat-edit-optional-WLT').click();await page.locator('#statistic-editor-value').fill('40');await page.locator('#statistic-editor-reason').fill('Final optional Wealth');await page.locator('#statistic-editor-save').click();await changed(page,updated.events.length+1);
    await page.getByRole('button',{name:'Keep these characteristics',exact:true}).click();await page.locator('#psi-choice-sheet').waitFor();await ready(page);
-   const before=JSON.parse(await saved(page));await page.locator('#character-notes').evaluate(el=>el.closest('details').open=true);await page.locator('#character-notes').fill('Unsaved notes survive stat edit');
+   const before=JSON.parse(await saved(page));assert.equal(project(before).state.character.stats.LCK,8);assert.equal(project(before).state.character.stats.WLT,40);await page.locator('#character-notes').evaluate(el=>el.closest('details').open=true);await page.locator('#character-notes').fill('Unsaved notes survive stat edit');
    await page.locator('#psi-choice-sheet').click();await page.locator('#psi-choice-edit').click();await page.locator('#statistic-editor-value').fill('10');await page.locator('#statistic-editor-reason').fill('Referee potential');await page.locator('#statistic-editor-save').click();await changed(page,before.events.length);
    assert.equal(project(JSON.parse(await saved(page))).state.character.stats.PSI,10);assert.equal(await page.locator('#character-notes').inputValue(),'Unsaved notes survive stat edit');
    await page.locator('#stat-edit-sheet-WLT').click();await page.locator('#statistic-editor-value').fill('6');await page.locator('#statistic-editor-reason').fill('Referee wealth');await page.locator('#statistic-editor-save').click();await changed(page,before.events.length+1);

@@ -18,3 +18,11 @@ test('GM final pool score bounds and permission fail atomically; zero and forty 
  for(const value of [0,40])assert.equal(run(r,'gm-override',{field:'pool-score',index:0,value,reason:'Valid final'}).state.pool[0].value,value);
  const corrected=run(r,'gm-override',{field:'pool-score',index:0,value:10,reason:'Retained'}),disabled=run(corrected,'gm-mode',{enabled:false});assert.equal(disabled.state.pool[0].value,10);assert.throws(()=>run(disabled,'gm-override',{field:'pool-score',index:0,value:11,reason:'No permission'}),/GM/);
 });
+
+test('selected extra GM scores before Keep survive without additional rolls',()=>{
+ let r=run(createSession('extras-final'),'configure',{extras:['LCK','WLT','CHA','MRL','STY']});r=run(r,'setup',{species:'human'});r=run(r,'gm-mode',{enabled:true});r=run(r,'roll-statistics');for(const code of ['LCK','WLT','CHA','MRL','STY'])r=run(r,'gm-override',{field:'stat.'+code,value:10,reason:'Final optional score'});r=run(r,'accept-statistics');for(const code of ['LCK','WLT','CHA','MRL','STY'])assert.equal(r.state.character.stats[code],10);assert.deepEqual(r.log.at(-1).rolls,[]);
+});
+
+test('historical Wealth correction still follows original Keep rule',()=>{
+ let session=createSession('legacy-wealth');session.rulesRevision='character-preview-2026-11-09.23';let r=run(session,'configure',{extras:['WLT']});r=run(r,'setup',{species:'human'});r=run(r,'gm-mode',{enabled:true});r=run(r,'roll-statistics');r=run(r,'gm-override',{field:'stat.WLT',value:40,reason:'Historical correction'});r=run(r,'accept-statistics');assert.equal(r.state.character.stats.WLT,r.state.character.stats.SOC);
+});

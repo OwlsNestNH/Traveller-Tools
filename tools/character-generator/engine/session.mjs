@@ -2359,6 +2359,7 @@ function apply(state,command,rolls) {
   refreshStatisticsPool(state);
   for(const p of state.pool)state.character.stats[p.key]=p.value;
   for(const [key,[count,adjustment]] of Object.entries(species.dice).slice(6))state.character.stats[key]=key==='PSI'&&state.config.zhodaniPsi?state.optionalPsi:dice(state,count,rolls,key)+adjustment;
+  const preserveGmWealth=state.optionalPsiRequiresTesting&&Object.hasOwn(state.character.stats,'WLT');
   const imperialCharismaGenerated=optionalImperialCharisma(state)&&state.config.extras.includes('CHA')&&!Object.hasOwn(state.character.stats,'CHA');
   const flatLuckGenerated=state.config.flatLuck&&state.config.extras.includes('LCK')&&!Object.hasOwn(state.character.stats,'LCK');
   for(const id of state.config.extras) {
@@ -2378,7 +2379,7 @@ function apply(state,command,rolls) {
   }
   for(const skill of species.background??[])gainSkill(state,skill,0,'set');
   state.backgroundRemaining=species.id==='zhodani'&&state.character.stats.SOC>=10?0:species.extraBackground??Math.max(0,3+characteristicDM(state.character.stats.EDU));
-  if(state.config.extras.includes('WLT'))state.character.stats.WLT=state.character.stats.SOC??0;
+  if(state.config.extras.includes('WLT')&&!preserveGmWealth)state.character.stats.WLT=state.character.stats.SOC??0;
   state.stage='background';
   if(Object.hasOwn(state.character.stats,'PSI')&&(!state.optionalPsiRequiresTesting||Object.hasOwn(species.dice,'PSI'))){const history=psionicHistory(state,true);history.tests.push({context:species.id==='zhodani'?'zhodani-childhood':'referee-potential',source:{id:species.id==='zhodani'?'aliens':'core',page:species.id==='zhodani'?254:228},psi:state.character.stats.PSI,careerTerms:0});}
    if(species.id==='zhodani'&&state.character.stats.SOC>=10)startPsionicTraining(state,{context:'zhodani-childhood',source:{id:'aliens',page:255},next:'precareer'},rolls);

@@ -493,8 +493,8 @@ try {
       const expected = project(execute(JSON.parse(raw), {type: 'accept-statistics', payload: {}}, {id: accepted.log.at(-1).id}).session);
       assert.deepEqual(accepted.state, expected.state, label + ' Keep retains exact existing engine state');
       assert.deepEqual(accepted.log, expected.log, label + ' Keep retains exact existing audit and dice');
-      assert.deepEqual(Object.keys(accepted.state.character.stats).sort(), ['STR', 'DEX', 'END', 'INT', 'EDU', 'SOC', ...scenario.extras].sort());
-      assert.deepEqual(accepted.log.at(-1).rolls.map(roll => roll.label), scenario.extras.filter(code => code !== 'WLT'));
+      assert.deepEqual(Object.keys(accepted.state.character.stats).sort(), ['STR', 'DEX', 'END', 'INT', 'EDU', 'SOC', ...scenario.extras.filter(code => code !== 'PSI')].sort());
+      assert.deepEqual(accepted.log.at(-1).rolls.map(roll => roll.label), scenario.extras.filter(code => !['WLT', 'PSI'].includes(code)));
       if (scenario.extras.includes('WLT')) assert.equal(accepted.state.character.stats.WLT, swapped.state.pool[5].value);
       for (const roll of accepted.log.at(-1).rolls) assert.equal(roll.values.length, 2, 'each rolled optional extra uses existing 2D method');
       const kept = await saved(page);

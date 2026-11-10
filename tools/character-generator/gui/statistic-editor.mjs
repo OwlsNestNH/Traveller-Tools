@@ -5,7 +5,7 @@ export function statisticEditTarget(state,code,pool=false){
   const index=state.pool.findIndex(p=>p.key===code);if(index<0)return null;
   const p=state.pool[index];return {code,field:'pool-score',index,value:p.value,min:0,max:40,pool:p};
  }
- if(!Object.hasOwn(state.character.stats,code)&&!(code==='PSI'&&state.config.extras?.includes('PSI')))return null;
+ if(!Object.hasOwn(state.character.stats,code)&&!state.config.extras?.includes(code))return null;
  const derived=state.character.species==='aezorgh'&&code==='CHA';
  return {code,field:'stat.'+(derived?'SOC':code),value:state.character.stats[derived?'SOC':code],min:0,max:40,derived};
 }
@@ -31,7 +31,7 @@ export function mountStatisticEditor({document,getProjection,canOpen,onSave,getE
   if(dialog.open||!canOpen())return;
   const projection=getProjection(),next=statisticEditTarget(projection.state,code,pool);if(!next)return;
   target=next;openedRevision=projection.revision;triggerId=trigger?.id;
-  find('title').textContent='Set '+target.code+' score';find('current').textContent='Current '+(target.derived?'SOC':target.code)+': '+(target.value??'Untested');
+  find('title').textContent='Set '+target.code+' score';find('current').textContent='Current '+(target.derived?'SOC':target.code)+': '+(target.value??(target.code==='PSI'?'Untested':'Pending'));
   find('label').textContent=target.derived?'New SOC score':'New final score';value.min=target.min;value.max=target.max;value.value=target.value??'';reason.value='';error.hidden=true;preview();dialog.showModal();value.focus();value.select();
  }
  document.addEventListener('click',event=>{

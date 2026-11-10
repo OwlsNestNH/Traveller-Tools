@@ -26,6 +26,7 @@ export function statisticsCardsView(state,catalog,baseHtml,{esc}){
  const cards=extras.map(extra=>{
   const score=value(extra),known=Object.hasOwn(state.character.stats,extra.id);
   if(extra.id==='PSI')return psiCard(state,{esc,infoButton:openingInfoButton},'optional');
+  if(state.config.gm)return '<button type="button" id="stat-edit-optional-'+esc(extra.id)+'" class="stat stat-extra stat-editable'+(known?'':' stat-pending')+'" data-optional-stat="'+esc(extra.id)+'" data-edit-stat="'+esc(extra.id)+'" data-stat-pool="false" aria-haspopup="dialog" aria-controls="statistic-editor" aria-label="Set '+esc(extra.id)+' score, currently '+esc(score)+'"><span class="code">'+esc(extra.id)+'</span><strong>'+esc(score)+'</strong><span>'+esc(extra.name)+'</span><span>Set final score</span></button>';
   return '<button type="button" class="stat stat-extra'+(known?'':' stat-pending')+'" data-optional-stat="'+esc(extra.id)+'" data-opening-help="extras" aria-haspopup="dialog" aria-controls="opening-help-dialog" aria-label="'+esc(extra.name)+': '+esc(score)+'. About optional characteristics"><span class="code">'+esc(extra.id)+'</span><strong>'+esc(score)+'</strong><span>'+esc(extra.name)+'</span><span>'+(known?'About this score':extra.id==='LCK'&&state.config.flatLuck?'6 after Keep (house rule)':'After Keep')+' <span aria-hidden="true">ⓘ</span></span></button>';
  }).join('');
  const addition=inline?cards:'<div class="statistics-extras" role="group" aria-label="Selected additional characteristics">'+cards+'</div>';
