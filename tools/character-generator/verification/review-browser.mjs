@@ -115,7 +115,7 @@ try {
    if(request.command?.type==='configure')await route.fulfill({status:400,contentType:'application/json',body:JSON.stringify({ok:false,error:{message:'Injected configuration failure'}})});
    else await route.continue();
   });
-  await page.locator('[name=name]').fill('Keep my input');await page.locator('[name=boons]').selectOption('6');
+  await page.locator('[name=name]').fill('Keep my input');await page.locator('#setup-gm-controls').evaluate(el=>el.open=true);await page.locator('#setup-gm-settings').evaluate(el=>el.open=true);await page.locator('[name=boons]').selectOption('6');
   await page.getByRole('button',{name:'Begin character',exact:true}).click();
   await page.waitForFunction(()=>document.querySelector('#message').textContent.includes('Injected configuration failure'));
   assert.deepEqual(commands,['configure']);assert.equal(await page.locator('[name=name]').inputValue(),'Keep my input');
