@@ -1,3 +1,4 @@
+import {physicalDiceCards} from '../gui/physical-dice.mjs';
 import {psiCard} from '../gui/psi-choice.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -23,7 +24,7 @@ function fixture(species = 'human', rolled = false) {
 
 function render(projection) {
   return vm.runInNewContext(statisticsSource + ';statisticsView(projection.state)', {
-    projection, catalog: catalog(), esc, options, button, gmControlsView,
+    projection, catalog: catalog(), esc, options, button, gmControlsView, physicalDiceCards,
     emptyStatisticsView, statisticsSummaryView, statisticsControlsView, statisticsCardsView, openingInfoButton, psiCard,
   });
 }

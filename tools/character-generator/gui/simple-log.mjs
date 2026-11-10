@@ -30,7 +30,8 @@ function checkFor(event,roll){
  return null;
 }
 export function simpleActionLog(log){
- return (log??[]).filter(event=>event.rolls?.length||['restore','gm-replay'].includes(event.type)).map(event=>{
+ return (log??[]).filter(event=>event.rolls?.length||['restore','gm-replay','enter-physical-statistic','gm-physical-dice'].includes(event.type)).map(event=>{
+  if(['enter-physical-statistic','gm-physical-dice'].includes(event.type))return 'Action '+event.number+': '+event.summary;
   if(['restore','gm-replay'].includes(event.type))return 'Action '+event.number+': '+(event.type==='restore'?'GM restored an earlier step.':'GM replaced a roll and replayed an earlier step.')+' See Full Log for retained original and replacement history.';
   const lines=event.rolls.map(roll=>{
    const check=checkFor(event,roll),kept=roll.kept??roll.values??[],raw=kept.reduce((a,b)=>a+b,0);
