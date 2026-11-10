@@ -41,3 +41,23 @@ The Nav Calculator GitHub workflow runs both suites with pinned Playwright/Chrom
 Run `node verification/audit.test.mjs` for focused checks of Orbit validation, synchronized reset/previews, route versus 100D mode persistence, clipboard API and fallback success/failure/cleanup, named controls, keyboard help toggling, live summaries and repeated results/error focus at 320px. It accepts the same Playwright module argument or `PLAYWRIGHT_MODULE`, browser channel and `NAV_TEST_URL` settings. The layout suite also runs this suite over HTTP, and CI runs both static and HTTP paths.
 
 Orbit input validation enforces the existing control bounds: whole Orbit# 0–20 and fractions 0–0.99 in 0.01 steps. These are UI limits, not a new interpretation or independent verification of the handbook. Valid calculation formulas are unchanged. Profile changes retain the explicit route or 100D-only mode after other input edits; Clear restores route mode. Copy fallback always cleans up and restores focus, and reports failures truthfully.
+
+## Reusable engine and frontend separation
+
+The visible interface is unchanged. `index.html` owns markup/styles, `app.js` owns DOM input, events, local calculation mode, formatting, dice generation and clipboard handling, and `engine.js` owns calculations and validation. No server, storage, cloud sync or runtime dependency is added.
+
+The versioned, standalone engine can be used from browser scripts, browser/Node ES modules via `engine.mjs`, or Node CommonJS. See [API.md](API.md) for the public input/output contract, units, errors, deterministic dice and copy/paste integration examples. Other tools are not integrated by this change.
+
+Run the pure engine tests without a browser:
+
+```sh
+node --test verification/engine.test.mjs
+```
+
+Run independent before/after UI parity:
+
+```sh
+node verification/parity.test.mjs
+```
+
+The parity suite compares the refactor against the immutable PR264 HTML fixture at commit `ea48ea7d65699f99fd2a2f468c7c887c82695175`. It verifies the fixture SHA-256, runs deterministic inputs/dice at desktop/mobile widths, and compares outputs, clipboard text, errors, form state, focus, visibility and random-call count after every transition. A separate empty browser consumer checks the ES-module API. Existing static tests inline the exact deployed scripts; HTTP suites check actual relative script loading. CI runs all of these checks.

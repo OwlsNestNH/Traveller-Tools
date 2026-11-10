@@ -83,7 +83,12 @@ try{
   await changelog.focus();assert.ok(await changelog.evaluate(el=>el===document.activeElement));
   await page.keyboard.press('Enter');await page.waitForURL(base+'changes/nav.html');
   assert.equal(await page.getByRole('heading',{name:'Nav Calculator changelog',exact:true}).count(),1);
-  assert.equal(await page.locator('time[datetime="2026-11-10"]').count(),2);
+  assert.equal(await page.locator('time[datetime="2026-11-10"]').count(),3);
+  assert.deepEqual(await page.locator('section[aria-labelledby="recent-heading"] h3').allTextContents(),[
+    'November 10, 2026 · Reusable calculation engine',
+    'November 10, 2026 · Audit fixes, aligned controls and changelog',
+    'October 3, 2026 · Calculation and reset fixes'
+  ]);
   assert.equal(await page.getByRole('link',{name:'Calculation fix commit'}).getAttribute('href'),'https://github.com/OwlsNestNH/Traveller-Tools/commit/2cd61ac7e07111cc5c02b800b5b70d5365f7f4dd');
   for(const width of [1440,390,320]){
     await page.setViewportSize({width,height:900});assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'changelog overflow '+width);
