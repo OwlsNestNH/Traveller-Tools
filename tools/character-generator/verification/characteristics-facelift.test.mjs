@@ -3,8 +3,9 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {catalog, createSession, execute, project} from '../engine/session.mjs';
-import {emptyStatisticsView, statisticsSummaryView, statisticsControlsView} from '../gui/characteristics-presentation.mjs';
+import {emptyStatisticsView, statisticsSummaryView, statisticsControlsView, statisticsCardsView} from '../gui/characteristics-presentation.mjs';
 import {gmControlsView} from '../gui/character-controls.mjs';
+import {openingInfoButton} from '../gui/opening-help.mjs';
 
 const esc = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 const options = (items, selected) => items.map(item => '<option value="' + esc(item.id) + '"' +
@@ -22,7 +23,7 @@ function fixture(species = 'human', rolled = false) {
 function render(projection) {
   return vm.runInNewContext(statisticsSource + ';statisticsView(projection.state)', {
     projection, catalog: catalog(), esc, options, button, gmControlsView,
-    emptyStatisticsView, statisticsSummaryView, statisticsControlsView,
+    emptyStatisticsView, statisticsSummaryView, statisticsControlsView, statisticsCardsView, openingInfoButton,
   });
 }
 
@@ -97,4 +98,77 @@ test('minimum total and Aezorgh halving explanations retain the projected thresh
   assert.match(html, /Minimum-total rerolls are off/);
   assert.match(html, /before placement and halving/);
   assert.equal(JSON.stringify(projection), before);
+});
+
+
+const optionalCases = [[], ['PSI'], ['PSI', 'LCK'], ['LCK'], ['PSI', 'LCK', 'MRL', 'STY', 'WLT', 'CHA']];
+function optionalFixture(extras, rolled = false, species = 'human', culture) {
+  let session = execute(createSession('optional-statistics-view-' + species + '-' + extras.join('-')),
+    {type: 'configure', payload: {extras}}).session;
+  session = execute(session, {type: 'setup', payload: {species, ...(culture ? {culture} : {})}}).session;
+  if (rolled) session = execute(session, {type: 'roll-statistics'}).session;
+  return {session, projection: project(session)};
+}
+
+for (const extras of optionalCases) for (const rolled of [false, true]) {
+  test('enabled extras ' + (extras.join('+') || 'none') + ' stay pending ' + (rolled ? 'after' : 'before') + ' six-score roll', () => {
+    const {session, projection} = optionalFixture(extras, rolled);
+    const before = JSON.stringify(projection), save = JSON.stringify(session), html = render(projection);
+    const displayed = [...html.matchAll(/data-optional-stat="([^"]+)"/g)].map(match => match[1]);
+    assert.deepEqual(displayed.sort(), [...extras].sort());
+    assert.equal(html.includes('statistics-psi-inline'), extras.length === 1 && extras[0] === 'PSI');
+    assert.equal(/class="[^"]*\bstatistics-extras\b/.test(html), extras.some(code => code !== 'PSI'));
+    if (extras.includes('PSI')) assert.match(html, /Untested/);
+    for (const code of extras) assert.equal(Object.hasOwn(projection.state.character.stats, code), false);
+    assert.equal(projection.state.pool.length, rolled ? 6 : 0);
+    if (rolled) {
+      assert.equal(projection.log.at(-1).rolls.length, 6);
+      assert.deepEqual(projection.log.at(-1).rolls.map(roll => roll.label), projection.state.pool.map(score => score.key));
+      assert.equal((html.match(/<option value="[0-5]"/g) ?? []).length, 12);
+    }
+    assert.equal(JSON.stringify(projection), before);
+    assert.equal(JSON.stringify(session), save);
+  });
+}
+
+for (const culture of ['native', 'imperial']) test('Vargr ' + culture + ' six-score placeholders match rolled keys without optional CHA duplication', () => {
+  for (const rolled of [false, true]) {
+    const {projection} = optionalFixture(['CHA', 'PSI'], rolled, 'vargr', culture);
+    const html = render(projection);
+    const primary = [...html.matchAll(/<div class="stat(?: stat-empty)?"><span class="code">([^<]+)/g)].map(match => match[1]);
+    assert.deepEqual(primary, ['STR', 'DEX', 'END', 'INT', 'EDU', culture === 'imperial' ? 'SOC' : 'CHA']);
+    assert.equal((html.match(/data-optional-stat="CHA"/g) ?? []).length, 0, 'species CHA is not a house extra');
+    assert.equal((html.match(/data-optional-stat="PSI"/g) ?? []).length, 1);
+  }
+});
+
+test('Aezorgh required Charisma is not duplicated as a selected house extra', () => {
+  for (const rolled of [false, true]) {
+    const {projection} = optionalFixture(['CHA', 'PSI'], rolled, 'aezorgh');
+    const html = render(projection);
+    assert.equal((html.match(/data-optional-stat="CHA"/g) ?? []).length, 0);
+    assert.equal((html.match(/data-optional-stat="PSI"/g) ?? []).length, 1);
+  }
+});
+
+test('pending extras do not widen swaps, alter reroll total, or change existing Keep timing', () => {
+  const extras = ['PSI', 'LCK', 'MRL', 'STY', 'WLT', 'CHA'];
+  let {session, projection} = optionalFixture(extras, true);
+  const before = JSON.stringify(session);
+  assert.throws(() => execute(session, {type: 'swap-statistics', payload: {a: 0, b: 6}}), /0.*5/);
+  assert.equal(JSON.stringify(session), before);
+  session = execute(session, {type: 'swap-statistics', payload: {a: 0, b: 5}}).session;
+  projection = project(session);
+  assert.equal(projection.state.pool.length, 6);
+  assert.equal(projection.state.rollTotal, projection.state.pool.reduce((sum, score) => sum + score.base, 0));
+  const finalSoc = projection.state.pool.find(score => score.key === 'SOC').value;
+  const result = execute(session, {type: 'accept-statistics'});
+  const accepted = project(result.session);
+  assert.deepEqual(Object.keys(accepted.state.character.stats).sort(), ['STR', 'DEX', 'END', 'INT', 'EDU', 'SOC', ...extras].sort());
+  assert.equal(accepted.state.character.stats.WLT, finalSoc);
+  assert.deepEqual(accepted.log.at(-1).rolls.map(roll => roll.label), ['PSI', 'LCK', 'MRL', 'STY', 'CHA']);
+  for (const roll of accepted.log.at(-1).rolls) {
+    assert.equal(roll.values.length, 2);
+    assert.equal(accepted.state.character.stats[roll.label], roll.values.reduce((sum, value) => sum + value, 0));
+  }
 });

@@ -201,3 +201,17 @@ body[data-stage="statistics"] footer{margin-top:90px;font-size:13px}
 }
 @media print{#opening-portrait{display:none!important}.statistics-identity{display:block!important}}
 @media screen{body[data-stage="statistics"] .statistics-heading>.opening-info-trigger{width:44px;height:44px;min-height:44px;flex-basis:44px}body[data-stage="statistics"] #sheet .statistics-identity h2::before{display:none}}
+/* Optional scores are presentation-only until the existing Keep action generates them. */
+@media screen{
+body[data-stage="statistics"] #workspace>.stats.statistics-psi-inline{grid-template-columns:repeat(auto-fit,minmax(min(100%,104px),1fr))}
+body[data-stage="statistics"] #workspace .stat-extra{display:block;width:100%;min-width:44px;min-height:44px;text-align:center;color:#d8e4eb;box-shadow:none}
+body[data-stage="statistics"] #workspace .stat-extra strong{font-size:clamp(13px,1.35vw,19px);color:#c5d9e4;overflow-wrap:anywhere}
+body[data-stage="statistics"] #workspace .stat-extra:hover{background:#103044;border-color:#eac746}
+.statistics-extras{display:flex;flex-wrap:wrap;align-items:center;gap:6px 9px;margin:12px 0 0;padding:7px 10px;border:1px solid #486577;border-radius:7px;background:#092331;color:#c1d3de}
+body[data-stage="statistics"] .statistics-extras>.opening-info-trigger{width:44px;height:44px;min-height:44px;flex-basis:44px}
+.statistics-extra-value{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:6px;max-width:100%;padding:5px 8px;border:1px solid #38576b;border-radius:5px;font-size:13px}
+.statistics-extra-value .code{font-weight:750;color:#ffdc67}
+.statistics-extra-value strong{font-size:13px;font-weight:500;overflow-wrap:anywhere}
+.statistics-extras-timing{flex:1 1 180px;font-size:12px;line-height:1.4}
+@media(max-width:760px){body[data-stage="statistics"] #workspace>.stats.statistics-psi-inline{grid-template-columns:repeat(auto-fit,minmax(min(100%,74px),1fr))}.statistics-extras{gap:5px 7px;padding:6px}.statistics-extra-value{padding:4px 6px}.statistics-extras-timing{flex-basis:100%}}
+}

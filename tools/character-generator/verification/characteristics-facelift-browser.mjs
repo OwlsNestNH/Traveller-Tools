@@ -38,7 +38,7 @@ async function doubleActivate(page, action) {
 
 async function noOverflow(page, label) {
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true, label);
-  assert.deepEqual(await page.locator('#workspace .stats .stat').evaluateAll(cards => cards.flatMap(card => {
+  assert.deepEqual(await page.locator('#workspace .stats > .stat:not([data-optional-stat])').evaluateAll(cards => cards.flatMap(card => {
     const bounds = card.getBoundingClientRect();
     return [...card.children].filter(child => child.getBoundingClientRect().right > bounds.right + 1)
       .map(child => child.textContent);
@@ -81,10 +81,10 @@ async function generationHelp(page) {
 }
 
 async function verifyCards(page, state) {
-  assert.equal(await page.locator('#workspace .stats .stat').count(), 6);
+  assert.equal(await page.locator('#workspace .stats > .stat:not([data-optional-stat])').count(), 6);
   assert.equal(await page.locator('#workspace .stat-empty').count(), 0);
   for (const [index, score] of state.pool.entries()) {
-    const card = page.locator('#workspace .stats .stat').nth(index);
+    const card = page.locator('#workspace .stats > .stat:not([data-optional-stat])').nth(index);
     assert.equal(await card.locator('.code').textContent(), score.key);
     assert.equal(await card.locator('strong').textContent(), String(score.value));
     const text = await card.innerText();
@@ -143,8 +143,88 @@ function fixture({species = 'human', total = 43, allocation = true, minimumRerol
   return exportSession(result.session);
 }
 
+
+const primaryCards = '#workspace .stats > .stat:not([data-optional-stat])';
+const pendingCards = '#workspace [data-optional-stat]';
+
+function optionalFixture(extras, {species = 'human', culture} = {}) {
+  let session = createSession('optional-presentation-' + species + '-' + (culture || 'default') + '-' + extras.join('-'));
+  session = execute(session, {type: 'configure', payload: {extras, minimumTotal: 72}}).session;
+  session = execute(session, {type: 'setup', payload: {species, ...(culture ? {culture} : {}), name: 'Synthetic optional preview'}}).session;
+  return exportSession(session);
+}
+
+async function pendingLayout(page, extras, width, label) {
+  assert.equal(await page.locator(primaryCards).count(), 6, label + ' preserves six primary cards');
+  assert.deepEqual((await page.locator(pendingCards).evaluateAll(nodes => nodes.map(node => node.dataset.optionalStat))).sort(),
+    [...extras].sort(), label + ' displays only enabled, applicable extras');
+  const displayed = await page.locator(pendingCards).evaluateAll(nodes => nodes.map(node => ({
+    code: node.dataset.optionalStat, text: node.textContent,
+    values: [...node.querySelectorAll('strong')].map(value => value.textContent),
+  })));
+  for (const card of displayed) {
+    assert.match(card.text, card.code === 'PSI' ? /Untested/ : /Pending|After Keep/i, label + ' has explicit pending status');
+    assert.ok(card.values.every(value => !/\d/.test(value)), label + ' does not invent numeric extra values');
+  }
+  const grouped = extras.some(code => code !== 'PSI');
+  const lonePsi = extras.length === 1 && extras[0] === 'PSI';
+  assert.equal(await page.locator('#workspace .statistics-extras').count(), Number(grouped));
+  assert.equal(await page.locator('#workspace .stats.statistics-psi-inline').count(), Number(lonePsi));
+  if (grouped) {
+    assert.equal(await page.locator('#workspace .stats [data-optional-stat]').count(), 0, label + ' all extras move together');
+    assert.equal(await page.locator('#workspace .statistics-extras [data-optional-stat]').count(), extras.length);
+  }
+  const geometry = await page.evaluate(({primaryCards, pendingCards}) => {
+    const bounds = node => { const r = node.getBoundingClientRect(); return {left:r.left, right:r.right, top:r.top, bottom:r.bottom, width:r.width, height:r.height}; };
+    return {primary: [...document.querySelectorAll(primaryCards)].map(bounds),
+      extra: [...document.querySelectorAll(pendingCards)].map(bounds)};
+  }, {primaryCards, pendingCards});
+  if (lonePsi && width === 1440) {
+    assert.ok(geometry.primary.every(card => Math.abs(card.top - geometry.primary[0].top) < 2), label + ' desktop primary row');
+    assert.ok(Math.abs(geometry.extra[0].top - geometry.primary[0].top) < 2, label + ' lone PSI shares desktop row');
+  }
+  if (lonePsi && width < 400) assert.ok(geometry.extra[0].top > geometry.primary[0].top, label + ' PSI wraps on mobile');
+  if (grouped) for (const card of geometry.extra) {
+    assert.ok(card.top >= Math.max(...geometry.primary.map(card => card.bottom)) - 1, label + ' optional group is below all six primary cards');
+  }
+  await noOverflow(page, label);
+  const overflowing = await page.locator(pendingCards).evaluateAll(nodes => nodes.flatMap(node => {
+    const bounds = node.getBoundingClientRect();
+    return [...node.children].filter(child => child.getBoundingClientRect().right > bounds.right + 1 || child.getBoundingClientRect().left < bounds.left - 1)
+      .map(child => child.textContent);
+  }));
+  assert.deepEqual(overflowing, [], label + ' optional text stays inside cards');
+  const targets = await page.locator('#workspace .statistics-actions button, #workspace [data-opening-help], #workspace .statistics-swap select, #workspace .statistics-swap button')
+    .evaluateAll(nodes => nodes.filter(node => node.getClientRects().length).map(node => {
+      const r = node.getBoundingClientRect(); return {text: node.getAttribute('aria-label') || node.textContent, width:r.width, height:r.height};
+    }));
+  for (const target of targets) assert.ok(target.width >= 43.5 && target.height >= 43.5, label + ' minimum 44px target: ' + JSON.stringify(target));
+  return geometry;
+}
+
+async function optionalHelp(page, label) {
+  const triggers = page.locator('#workspace [data-opening-help="extras"]');
+  if (!(await triggers.count())) return;
+  const before = await saved(page), log = await downloadedActionLog(page);
+  for (const index of [...new Set([0, (await triggers.count()) - 1])]) {
+    const trigger = triggers.nth(index);
+    await trigger.focus();
+    await trigger.press('Enter');
+    assert.equal(await page.locator('#opening-help-dialog').evaluate(dialog => dialog.open), true);
+    assert.equal(await page.locator('#opening-help-title').evaluate(node => node === document.activeElement), true);
+    assert.match(await page.locator('#opening-help-copy').innerText(), /potential|six-score/i);
+    await page.keyboard.press('Escape');
+    assert.equal(await trigger.evaluate(node => node === document.activeElement), true, label + ' Escape returns extra-help focus');
+    await trigger.click();
+    await page.locator('[data-opening-help-close]').click();
+    assert.equal(await trigger.evaluate(node => node === document.activeElement), true, label + ' Close returns extra-help focus');
+  }
+  assert.equal(await saved(page), before, label + ' extra help cannot mutate saved state');
+  assert.equal(await downloadedActionLog(page), log, label + ' extra help cannot mutate audit log');
+}
+
 try {
-  for (const width of [1440, 320]) for (const transport of ['static', 'http']) {
+  for (const width of [1440, 390, 320]) for (const transport of ['static', 'http']) {
     const label = 'characteristics-' + transport + '-' + width;
     await withPage(transport, width, label + '-interactive', null, async page => {
       assert.equal(await page.locator('#setup-gm-controls').evaluate(details => details.open), false);
@@ -165,9 +245,9 @@ try {
       await ready(page);
       assert.deepEqual(await headerStyle(page), openingHeader, 'opening header styling continues through statistics');
       assert.equal(await page.locator('#workspace .stats .stat-empty').count(), 6);
-      assert.equal(await page.locator('#workspace .stats .stat').count(), 6);
-      assert.deepEqual(await page.locator('#workspace .stats .code').allTextContents(), ['STR', 'DEX', 'END', 'INT', 'EDU', 'SOC']);
-      assert.ok((await page.locator('#workspace .stats .stat strong').allTextContents()).every(value => !/\d/.test(value)));
+      assert.equal(await page.locator('#workspace .stats > .stat:not([data-optional-stat])').count(), 6);
+      assert.deepEqual(await page.locator('#workspace .stats > .stat:not([data-optional-stat]) .code').allTextContents(), ['STR', 'DEX', 'END', 'INT', 'EDU', 'SOC']);
+      assert.ok((await page.locator('#workspace .stats > .stat:not([data-optional-stat]) strong').allTextContents()).every(value => !/\d/.test(value)));
       assert.equal(await page.locator('#statistics-gm-controls #gm-controls').count(), 1);
       assert.equal(await page.locator('#gm-controls').evaluate(details => details.open), false);
       assert.equal(await page.locator('#gm-toggle').count(), 1);
@@ -292,6 +372,100 @@ try {
         assert.equal(await page.getByRole('button', {name: 'Reroll this set', exact: true}).isEnabled(), scenario.reroll);
       });
     }
+  }
+
+  const optionalScenarios = [
+    {name: 'none', extras: []},
+    {name: 'psi-only', extras: ['PSI']},
+    {name: 'psi-luck', extras: ['PSI', 'LCK']},
+    {name: 'luck-only', extras: ['LCK']},
+    {name: 'all-extras', extras: ['PSI', 'LCK', 'MRL', 'STY', 'WLT', 'CHA']},
+  ];
+  for (const width of [1440, 390, 320]) for (const transport of ['static', 'http']) for (const scenario of optionalScenarios) {
+    const label = 'optional-characteristics-' + transport + '-' + width + '-' + scenario.name;
+    await withPage(transport, width, label, optionalFixture(scenario.extras), async page => {
+      await ready(page);
+      const initialSave = await saved(page);
+      const initial = await projection(page);
+      assert.equal(initial.state.pool.length, 0);
+      assert.deepEqual(initial.state.character.stats, {});
+      await pendingLayout(page, scenario.extras, width, label + '-before');
+      await generationHelp(page);
+      await optionalHelp(page, label);
+      assert.equal(await saved(page), initialSave);
+      await screenshot(page, label + '-before');
+      await doubleActivate(page, 'roll-statistics');
+      const rolled = await projection(page);
+      assert.equal(rolled.state.pool.length, 6);
+      assert.equal(rolled.log.at(-1).rolls.length, 6);
+      assert.deepEqual(rolled.log.at(-1).rolls.map(roll => roll.label), ['STR', 'DEX', 'END', 'INT', 'EDU', 'SOC']);
+      assert.deepEqual(rolled.state.character.stats, {}, 'selected extras are not rolled before Keep');
+      await verifyCards(page, rolled.state);
+      await pendingLayout(page, scenario.extras, width, label + '-rolled');
+      for (const selector of ['#swap-a', '#swap-b']) {
+        assert.deepEqual(await page.locator(selector + ' option').evaluateAll(options => options.map(option => option.value)), ['0', '1', '2', '3', '4', '5']);
+      }
+      await page.locator('#swap-a').selectOption('0');
+      await page.locator('#swap-b').selectOption('5');
+      await doubleActivate(page, 'swap-statistics');
+      const swapped = await projection(page);
+      assert.equal(swapped.state.pool[5].base, rolled.state.pool[0].base);
+      assert.equal(swapped.state.rollTotal, rolled.state.rollTotal);
+      assert.deepEqual(swapped.state.character.stats, {});
+      await generationHelp(page);
+      await optionalHelp(page, label);
+      await screenshot(page, label + '-rolled');
+      const raw = await saved(page), log = await downloadedActionLog(page);
+      await page.reload();
+      await page.getByRole('button', {name: 'Keep these characteristics', exact: true}).waitFor();
+      await ready(page);
+      assert.equal(await saved(page), raw, label + ' exact reload');
+      assert.equal(await downloadedActionLog(page), log);
+      await pendingLayout(page, scenario.extras, width, label + '-reload');
+      page.once('dialog', dialog => dialog.accept());
+      await page.locator('#import').setInputFiles({name: 'optional-characteristics.json', mimeType: 'application/json', buffer: Buffer.from(raw)});
+      await page.waitForFunction(() => document.querySelector('#message').textContent.includes('Character loaded.'));
+      await ready(page);
+      assert.deepEqual(JSON.parse(await saved(page)), JSON.parse(raw), label + ' exact import');
+      await pendingLayout(page, scenario.extras, width, label + '-import');
+      await doubleActivate(page, 'accept-statistics');
+      await page.locator('#background-form').waitFor();
+      const accepted = await projection(page);
+      const expected = project(execute(JSON.parse(raw), {type: 'accept-statistics', payload: {}}, {id: accepted.log.at(-1).id}).session);
+      assert.deepEqual(accepted.state, expected.state, label + ' Keep retains exact existing engine state');
+      assert.deepEqual(accepted.log, expected.log, label + ' Keep retains exact existing audit and dice');
+      assert.deepEqual(Object.keys(accepted.state.character.stats).sort(), ['STR', 'DEX', 'END', 'INT', 'EDU', 'SOC', ...scenario.extras].sort());
+      assert.deepEqual(accepted.log.at(-1).rolls.map(roll => roll.label), scenario.extras.filter(code => code !== 'WLT'));
+      if (scenario.extras.includes('WLT')) assert.equal(accepted.state.character.stats.WLT, swapped.state.pool[5].value);
+      for (const roll of accepted.log.at(-1).rolls) assert.equal(roll.values.length, 2, 'each rolled optional extra uses existing 2D method');
+      const kept = await saved(page);
+      await page.reload();
+      await page.locator('#background-form').waitFor();
+      await ready(page);
+      assert.equal(await saved(page), kept, label + ' accepted extras persist through reload');
+    });
+  }
+  for (const transport of ['static', 'http']) for (const speciesCase of [
+    {species: 'vargr', culture: 'native', baseKey: 'CHA'},
+    {species: 'vargr', culture: 'imperial', baseKey: 'SOC'},
+    {species: 'aezorgh', baseKey: 'SOC'},
+  ]) {
+    const label = 'optional-species-' + transport + '-' + speciesCase.species + '-' + (speciesCase.culture || 'default');
+    await withPage(transport, 320, label, optionalFixture(['CHA', 'PSI'], speciesCase), async page => {
+      await ready(page);
+      assert.deepEqual(await page.locator(primaryCards + ' .code').allTextContents(), ['STR', 'DEX', 'END', 'INT', 'EDU', speciesCase.baseKey]);
+      await pendingLayout(page, ['PSI'], 320, label + '-before');
+      await doubleActivate(page, 'roll-statistics');
+      await verifyCards(page, (await projection(page)).state);
+      await pendingLayout(page, ['PSI'], 320, label + '-rolled');
+      const raw = await saved(page);
+      await doubleActivate(page, 'accept-statistics');
+      const actual = await projection(page);
+      const expected = project(execute(JSON.parse(raw), {type: 'accept-statistics', payload: {}}, {id: actual.log.at(-1).id}).session);
+      assert.deepEqual(actual.state, expected.state);
+      assert.deepEqual(actual.log, expected.log);
+      assert.ok(Object.hasOwn(actual.state.character.stats, 'CHA'), label + ' required species CHA remains');
+    });
   }
   assert.deepEqual(errors, []);
   await writeFile(new URL('characteristics-facelift-browser-results.json', out), JSON.stringify({checks, errors}, null, 2));

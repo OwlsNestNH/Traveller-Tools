@@ -1,4 +1,4 @@
-import {emptyStatisticsView,statisticsSummaryView,statisticsControlsView} from './characteristics-presentation.mjs';
+import {emptyStatisticsView,statisticsCardsView,statisticsSummaryView,statisticsControlsView} from './characteristics-presentation.mjs';
 import {openingInfoButton,mountOpeningHelp} from './opening-help.mjs';
 import {createSimpleLogViewer} from './simple-log-viewer.mjs';
 import {ledgerDetailsView,syncCreditSelection,creditPurchasePayload} from './finalization-ledgers.mjs';
@@ -199,8 +199,8 @@ function statCards(state,pool=false){
 function statisticsView(state){
  const controls=statisticsControlsView(state,gmControlsView(state,projection.log,{esc,options}),{esc});
  const introduction='<p class="statistics-introduction">Roll a set, then decide where each compatible score belongs. All rerolls and swaps stay in the action log.</p>';
- if(!state.pool.length)return introduction+emptyStatisticsView(state,catalog,{esc})+statisticsSummaryView(state,{esc})+'<div class="statistics-guidance"><strong>Start with your six characteristic rolls</strong><p>Roll the selected species dice, then review each score before continuing.</p></div>'+controls+'<div class="actions statistics-actions">'+button('Roll six characteristics','roll-statistics','statistics-primary')+'</div>';
- let html=introduction+statCards(state,true)+statisticsSummaryView(state,{esc});
+ if(!state.pool.length)return introduction+statisticsCardsView(state,catalog,emptyStatisticsView(state,catalog,{esc}),{esc,infoButton:openingInfoButton})+statisticsSummaryView(state,{esc})+'<div class="statistics-guidance"><strong>Start with your six characteristic rolls</strong><p>Roll the selected species dice, then review each score before continuing.</p></div>'+controls+'<div class="actions statistics-actions">'+button('Roll six characteristics','roll-statistics','statistics-primary')+'</div>';
+ let html=introduction+statisticsCardsView(state,catalog,statCards(state,true),{esc,infoButton:openingInfoButton})+statisticsSummaryView(state,{esc});
  if(state.config.allocation||state.config.gm)html+='<div class="statistics-swap"><div class="inline-fields"><label>Swap this score<select id="swap-a">'+state.pool.map((p,i)=>'<option value="'+i+'">'+p.key+' · raw '+p.base+'</option>').join('')+'</select></label><label>With this score<select id="swap-b">'+state.pool.map((p,i)=>'<option value="'+i+'" '+(i===1?'selected':'')+'>'+p.key+' · raw '+p.base+'</option>').join('')+'</select></label>'+button('Swap scores','swap-statistics','quiet')+'</div><p class="tiny">'+(state.character.species==='aezorgh'&&!state.config.aezorghTwoDice?'Standard Aezorgh: swap one-die characteristics within their group, and DEX/INT separately. GM mode permits exceptions.':state.config.aezorghTwoDice?'Swap any raw 2D6 totals. Halving and species bonuses belong to the destination characteristic.':'Swap any of the six raw scores; species modifiers remain with their characteristics.')+'</p></div>';
  return html+controls+'<div class="actions statistics-actions">'+button('Keep these characteristics','accept-statistics','statistics-primary')+button('Reroll this set','roll-statistics','quiet',(!state.statisticsCanReroll?'disabled title="'+(state.config.minimumReroll?'The raw total meets the reroll threshold.':'Minimum-total rerolls are off.')+'"':''))+'</div>';
 }
