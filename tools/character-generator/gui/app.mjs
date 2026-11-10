@@ -417,8 +417,8 @@ function syncOpeningPortrait(form){
  const figure=$('#opening-portrait');if(!figure||!form)return;
  const species=form.elements.species.value,gender=form.elements.gender.value==='female'?'female':'male';
  $('#sheet h2').textContent=form.elements.name.value.trim()||'Your Traveller';$('#sheet .sheet-meta').textContent=(catalog.species.find(x=>x.id===species)?.name??species)+(form.elements.gender.value?' | '+form.elements.gender.value:'')+(form.elements.homeworld.value?' | '+form.elements.homeworld.value:'');
- const file=species==='aezorgh'?'aezorgh':(['human','vargr'].includes(species)?species+'-'+gender:null);
- figure.hidden=!file;if(file){const img=figure.querySelector('img');img.src='./assets/'+file+'.png';img.alt='Illustrative '+(catalog.species.find(x=>x.id===species)?.name??species)+' portrait';}
+ const file=species==='aslan'?'aslan-pair':species==='aezorgh'?'aezorgh':(['human','vargr'].includes(species)?species+'-'+gender:null);
+ figure.hidden=!file;if(file){const img=figure.querySelector('img');img.src='./assets/'+file+'.png';img.style.objectPosition=species==='aslan'?(gender==='female'?'100% center':'0% center'):'center';img.alt='Illustrative '+(catalog.species.find(x=>x.id===species)?.name??species)+' portrait';}
 }
 function sheetView(state){
  const c=state.character,simpleBenefits=c.benefits.filter(b=>!b.assetId&&!b.annualCredits);
