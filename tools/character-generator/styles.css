@@ -255,3 +255,15 @@ body.beta-notice-open{overflow:hidden}
 @media screen{body:is([data-stage="identity"],[data-stage="statistics"]) #beta-notice,body:is([data-stage="identity"],[data-stage="statistics"]) .beta-notice-heading{background:#061a28;color:#f1f5f8;border-color:#eac746}body:is([data-stage="identity"],[data-stage="statistics"]) header .beta-notice-trigger{color:#ffdd75;background:#172530;border-color:#eac746}}
 @media(max-width:760px){header .beta-notice-trigger{display:inline-flex}#beta-notice{padding:18px}.beta-notice-heading{top:-18px;margin:-18px -18px 14px;padding:14px 18px}.beta-notice-heading h2{font-size:21px}}
 @media print{#beta-notice{display:none!important}body.beta-notice-open{overflow:visible}}
+
+/* Cancel is a separate, confirmed exit from the current character. */
+body.cancel-character-open{overflow:hidden}
+#cancel-character-dialog{width:min(520px,calc(100% - 28px));max-width:none;max-height:calc(100dvh - 28px);margin:auto;padding:24px;overflow:auto;border:1px solid var(--blue);border-radius:14px;background:var(--paper);color:var(--ink);box-shadow:0 18px 70px #0008}
+#cancel-character-title{margin:0;font-size:24px;overflow-wrap:anywhere}
+#cancel-character-dialog::backdrop{background:#001425aa}
+#cancel-character-confirm{background:#982c2c;border-color:#982c2c;color:#fff}
+body[data-stage="identity"] #setup-form>.actions>button[type="submit"]{width:auto;flex:1 1 240px}
+body[data-stage="identity"] #setup-form>.actions>#cancel-character{width:auto;flex:0 1 auto;min-height:54px;font-size:18px;color:#f1f5f8;border:1px solid #a4b7c4;background:#102937;box-shadow:0 3px 8px #0005}
+@media screen{body:is([data-stage="identity"],[data-stage="statistics"]) #cancel-character-dialog{background:#061a28;color:#f1f5f8;border-color:#eac746}}
+@media(max-width:760px){#cancel-character-dialog{padding:18px}#cancel-character-title{font-size:21px}body[data-stage="identity"] #setup-form>.actions>#cancel-character{flex:1 1 120px}}
+@media print{#cancel-character-dialog{display:none!important}body.cancel-character-open{overflow:visible}}

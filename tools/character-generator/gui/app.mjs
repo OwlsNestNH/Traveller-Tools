@@ -1,3 +1,4 @@
+import {createCharacterCancel} from './cancel-character.mjs';
 import {flatLuckSetupView,syncFlatLuckSelection} from './flat-luck-setup.mjs';
 import {aezorghRollChoiceView} from './aezorgh-setup.mjs';
 import {notesConnectionsView} from './notes-connections-view.mjs';
@@ -456,6 +457,7 @@ function render(){
  for(const [selector,value] of [['#gm-task',gmDraft.task],['#gm-field',gmDraft.field],['#gm-roll-choice',gmDraft.roll],['#gm-restore-choice',gmDraft.restore]]){const select=$(selector);if(select&&[...select.options].some(option=>option.value===value&&!option.disabled))select.value=value;}
  if(state.stage==='statistics')syncCharacterPortrait(state.character.species,(state.character.identityGender??state.character.gender)==='female'?'female':'male');
  syncCorrectionField(state,$);syncReplacementDice(projection.log,$,esc);syncCorrectionTask($);if(state.stage==='identity')syncRerollOptions($('#setup-form'));
+ cancelCharacter.placeButton();
  $('#workspace').dataset.revision=projection.revision;
  mountEquipmentDialog(document,()=>send('cancel-deferred-equipment'));
 }
@@ -634,10 +636,15 @@ $('#recovery-replace').onclick=()=>{
 $('#new').onclick=async()=>{
  if(busy)return;
  if(!confirm('Start a new character? Save your current character and log first. The current browser draft will be replaced.'+(recoveryRaw!==null?' Download the unreadable draft backup before replacing it.':'')))return;
+ await startNewCharacter({replaceRecovery:true});
+};
+const cancelCharacter=createCharacterCancel({document,canOpen:()=>!busy,onConfirm:()=>startNewCharacter()});
+async function startNewCharacter({replaceRecovery=false}={}){
+ if(busy)return;
  const token=++operationGeneration;setBusy(true);
  try{
   const result=await call({operation:'create',seed:crypto.randomUUID()});if(token!==operationGeneration)return;if(!result.ok)throw new Error(result.error.message);
-  session=result.session;projection=result;aslanManualReviewKey=null;notesDraft=null;selectedCareer='';effects=[];recoveryRaw=null;persist();updateRecovery();render();$('#step-title')?.focus();notify(storageWarning||'New character started.',!!storageWarning);
+  session=result.session;projection=result;aslanManualReviewKey=null;notesDraft=null;selectedCareer='';effects=[];if(replaceRecovery)recoveryRaw=null;closeHistory();persist();updateRecovery();render();$('#step-title')?.focus();notify(storageWarning||'New character started.',!!storageWarning);
  }catch(error){if(token===operationGeneration)notify('Could not start a new character: '+error.message,true);}
  finally{if(token===operationGeneration)setBusy(false);}
 };
