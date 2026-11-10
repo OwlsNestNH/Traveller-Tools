@@ -513,17 +513,18 @@ try {
     await withPage(transport, 320, label, optionalFixture(['CHA', 'PSI'], speciesCase), async page => {
       await ready(page);
       assert.deepEqual(await page.locator(primaryCards + ' .code').allTextContents(), ['STR', 'DEX', 'END', 'INT', 'EDU', speciesCase.baseKey]);
-      await pendingLayout(page, ['PSI'], 320, label + '-before');
+      const extras = speciesCase.species === 'vargr' && speciesCase.culture === 'imperial' ? ['CHA', 'PSI'] : ['PSI'];
+      await pendingLayout(page, extras, 320, label + '-before');
       await doubleActivate(page, 'roll-statistics');
       await verifyCards(page, (await projection(page)).state);
-      await pendingLayout(page, ['PSI'], 320, label + '-rolled');
+      await pendingLayout(page, extras, 320, label + '-rolled');
       const raw = await saved(page);
       await doubleActivate(page, 'accept-statistics');
       const actual = await projection(page);
       const expected = project(execute(JSON.parse(raw), {type: 'accept-statistics', payload: {}}, {id: actual.log.at(-1).id}).session);
       assert.deepEqual(actual.state, expected.state);
       assert.deepEqual(actual.log, expected.log);
-      assert.ok(Object.hasOwn(actual.state.character.stats, 'CHA'), label + ' required species CHA remains');
+      assert.ok(Object.hasOwn(actual.state.character.stats, 'CHA'), label + ' required or explicitly selected CHA remains');
     });
   }
   assert.deepEqual(errors, []);
