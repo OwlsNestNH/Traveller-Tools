@@ -182,3 +182,10 @@ Campaign ruling for new revision .23: Imperial Vargr retain base SOC and generat
 Card edits preserve raw dice, totals, audit and deterministic replay across species bonuses, halving, swaps and Keep. PSI header information is read-only; the score opens either confirmed testing or GM assignment. New PSI remains Untested until a valid source or explicit GM value. The off-by-default house option allows standalone Core p.228 testing with teacher/timing confirmation and separate two-week/Cr5000 cost (or confirmed provider). Training remains four-month/Cr100000 and does not retest; events retain their existing rights. Unknown delayed-training decline is not automatically invented.
 
 Native tests cover costs, lifecycle, rejection atomicity, repeat IDs, provenance, separate training and 32 frozen historical .16-.23 states/save bytes/random sequences. Static/HTTP desktop/320px browser tests cover both dialogs, keyboard cancellation, required fields, repeated submission, focus, audit and reload. Deferred Zhodani content remains outside release.
+
+
+### PSI-only GM activation
+
+The unchecked PSI activation control is independent of whole-character GM mode. It enables only explicit PSI value assignment and management of the separate testing house option. No automatic roll, test, training, talent, source entitlement or career admission is inferred. Exact-field engine checks reject other value changes, roll replacement, restore and Academy options. Disabling retains existing potential and history. New optional PSI remains Untested at Keep; historical values and rules are preserved unless the user explicitly opts into the new control.
+
+`psi-activation.test.mjs` covers permissions, omitted defaults, malformed input, no dice consumption, audit, replay, idempotency, legacy opt-in and public release boundaries. `psi-activation-browser.mjs` covers setup and later activation over static/HTTP at 1440px/320px, isolated correction access, separate testing controls, cancellation/focus, repeated submission, export/import/reload, disabling, print and overflow. Existing PSI, historical fingerprint and source-training suites remain required.
