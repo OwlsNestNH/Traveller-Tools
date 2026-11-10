@@ -16,6 +16,8 @@ try{
   const engineRequests=[];page.on('request',request=>{if(new URL(request.url()).pathname.includes('/engine/'))engineRequests.push(request.url());});
   await page.goto(origin+(transport==='http'?'/?api=local':'/'));await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();
   await page.locator('[name=name]').fill('Browser Test <Traveller>');
+  await page.locator('#setup-gm-controls > summary').click();
+  if(!await page.locator('#setup-gm-settings').evaluate(el=>el.open))await page.locator('#setup-gm-settings > summary').click();
   await page.locator('[name=boons]').selectOption('3');
   await page.locator('#setup-gm-controls').evaluate(el=>el.open=true);await page.locator('#setup-optional-settings>summary').click();await page.locator('#setup-gm-controls').evaluate(el=>el.open=true);await page.locator('#setup-optional-settings').evaluate(el=>el.open=true);await page.locator('[name=extras][value=LCK]').check();
   await page.getByRole('button',{name:'Begin character',exact:true}).click();
