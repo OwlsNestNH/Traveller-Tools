@@ -3,7 +3,7 @@ import {createRequire} from 'node:module';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {createServer} from '../server.mjs';
-import {project,exportSession} from '../engine/session.mjs';
+import {project,exportSession,createSession,execute} from '../engine/session.mjs';
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const browser=await chromium.launch({headless:true,...(process.env.CHARACTER_BROWSER_CHANNEL?{channel:process.env.CHARACTER_BROWSER_CHANNEL}:{})});
@@ -38,6 +38,17 @@ try{
    if(enabled){assert.equal(s.character.stats.LCK,6);assert.equal(raw.events.at(-1).rolls.some(r=>r.label==='LCK'),false);}else{assert.equal(raw.events.at(-1).rolls.find(r=>r.label==='LCK').values.length,2);}
    const accepted=await saved(p);await p.reload();await ready(p);assert.equal(await saved(p),accepted);assert.deepEqual(await state(p),s);await noOverflow(p);
    checks.push({http,width,enabled,passed:true});
+  }finally{await context.close();}
+ }
+ // A configuration saved before setup finishes must keep selected and deliberately absent Luck.
+ for(const http of [false,true])for(const extras of [['LCK','MRL'],['MRL']]){
+  const context=await browser.newContext({viewport:{width:390,height:1050}}),p=await context.newPage();
+  try{await p.goto('http://127.0.0.1:'+server.address().port+(http?'/?api=local':'/'));await p.locator('#setup-form').waitFor();
+   const fixture=execute(createSession('interrupted-luck'),{type:'configure',payload:{flatLuck:true,extras}}),raw=exportSession(fixture.session);
+   await p.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw});await p.reload();await p.locator('#setup-form').waitFor();await ready(p);assert.equal(await saved(p),raw);
+   assert.equal(await p.locator('[name=flatLuck]').isChecked(),true);assert.equal(await p.locator('[name=extras][value=LCK]').isChecked(),extras.includes('LCK'));assert.equal(await p.locator('[name=extras][value=MRL]').isChecked(),true);assert.equal((await p.locator('#setup-optional-summary').innerText()).includes('LCK'),extras.includes('LCK'));
+   p.once('dialog',d=>d.accept());await p.locator('#import').setInputFiles({name:'interrupted-luck.json',mimeType:'application/json',buffer:Buffer.from(raw)});await ready(p);assert.equal(await saved(p),raw);
+   await p.getByRole('button',{name:'Begin character',exact:true}).click();await p.locator('[data-action=roll-statistics]').waitFor();assert.deepEqual((await state(p)).config.extras,extras);assert.equal((await state(p)).config.flatLuck,true);checks.push({http,interruptedExtras:extras,passed:true});
   }finally{await context.close();}
  }
  // Unselected Luck remains absent, and its later-add route obeys the saved choice.
