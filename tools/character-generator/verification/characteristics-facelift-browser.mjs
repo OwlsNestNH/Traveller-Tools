@@ -127,7 +127,8 @@ async function withPage(transport, width, label, raw, work) {
 
 function fixture({species = 'human', total = 43, allocation = true, minimumReroll = true,
   gm = false, aezorghTwoDice = false, minimumTotal} = {}) {
-  let result = {session: createSession('characteristics-' + JSON.stringify(arguments[0] ?? {}))};
+  const seed = ['characteristics', species, total, +allocation, +minimumReroll, +gm, +aezorghTwoDice, minimumTotal ?? 'default'].join('-');
+  let result = {session: createSession(seed)};
   const run = (type, payload = {}) => result = execute(result.session, {type, payload});
   run('configure', {allocation, minimumReroll, aezorghTwoDice, ...(minimumTotal === undefined ? {} : {minimumTotal})});
   run('setup', {species, name: 'Synthetic characteristic regression'});
@@ -223,6 +224,7 @@ try {
       assert.deepEqual(JSON.parse(await saved(page)), JSON.parse(raw));
       assert.equal(await downloadedActionLog(page), stableLog);
       assert.equal(await page.locator('#gm-controls').evaluate(details => details.open), false);
+      page.once('dialog', dialog => dialog.accept());
       await page.locator('#import').setInputFiles({name: 'characteristics.json', mimeType: 'application/json', buffer: Buffer.from(raw)});
       await page.waitForFunction(() => document.querySelector('#message').textContent.includes('Character loaded.'));
       await ready(page);
