@@ -38,3 +38,9 @@ test('saved identity GM state is shown honestly and setup can explicitly disable
  assert.match(setup,/GM changes on/);assert.match(setup,/name="gm" type="checkbox" checked/);
  assert.ok(source.includes("if(!!values.get('gm')!==projection.state.config.gm&&!await send('gm-mode',{enabled:!!values.get('gm')}))return;"));
 });
+test('setup wording distinguishes current round-up from historical undefined flag',()=>{
+ const source=read('gui/app.mjs'),start=source.indexOf('function setupView(){'),end=source.indexOf('\nfunction syncPsiOptions(',start);
+ const render=state=>vm.runInNewContext(source.slice(start,end)+';setupView()', {projection:{state},catalog:{species:[{id:'human'},{id:'vargr',variants:[]}],extraStats:[]},options:()=>'',esc:String,setupOptionalSummary,openingInfoButton});
+ assert.match(render({aezorghRoundUp:true}),/rounding up, then apply/);
+ assert.match(render({}),/rounding down \(historical save\), then apply/);
+});
