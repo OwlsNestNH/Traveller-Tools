@@ -25,3 +25,13 @@ node verification/nav.test.mjs
 An optional first argument supplies an existing Playwright module path. Set `NAV_BROWSER_CHANNEL` to `msedge` or `chrome` to use an installed browser. Set `NAV_TEST_URL` to test a hosted copy; otherwise the test reads the adjacent calculator HTML.
 
 On 2026-10-03, 25 checks passed in Microsoft Edge, covering direct-distance timing, angular geometry, communication delay, invalid percentages/effects, 100D profile changes, complete map reset, and stale-result/brief invalidation. The tests use a fresh browser context and do not access the user's saved browser data.
+
+## Controls and changelog verification
+
+```sh
+node verification/layout.test.mjs
+```
+
+This suite starts a local static server, checks equal-size action buttons at eight widths from 320px to 1440px, expanded inputs, larger button text, keyboard navigation, repeated actions and changelog links, then repeats the calculation suite over HTTP. It shares `NAV_BROWSER_CHANNEL` and the optional Playwright module argument with the calculation suite. `PLAYWRIGHT_MODULE` supplies an alternative module path; `NAV_TEST_ROOT` supplies a hosted site root (including the repository prefix) instead of the local server. Optional `NAV_SCREENSHOT_DIR` saves desktop/mobile viewport screenshots.
+
+The Nav Calculator GitHub workflow runs both suites with pinned Playwright/Chromium, plus the shared visit-counter tests. Release notes are in [`changes/nav.html`](../../changes/nav.html).
