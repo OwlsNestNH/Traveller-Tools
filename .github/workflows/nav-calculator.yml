@@ -12,7 +12,7 @@ permissions:
 jobs:
   browser:
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
@@ -28,6 +28,9 @@ jobs:
           test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
           git rev-parse HEAD
           node --test tests/tool-visits.test.cjs
+          node --check tools/nav-calculator/engine.js
+          node --check tools/nav-calculator/app.js
+          node --test tools/nav-calculator/verification/engine.test.mjs
       - name: Set up browser verification
         run: |
           npm install --prefix "$RUNNER_TEMP/nav-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
@@ -39,3 +42,4 @@ jobs:
           node tools/nav-calculator/verification/nav.test.mjs "$PLAYWRIGHT_MODULE"
           node tools/nav-calculator/verification/audit.test.mjs
           node tools/nav-calculator/verification/layout.test.mjs
+          node tools/nav-calculator/verification/parity.test.mjs

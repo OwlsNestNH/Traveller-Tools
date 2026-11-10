@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
+import {loadStaticNav} from './static-nav.mjs';
 import {createRequire} from 'node:module';
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const browser=await chromium.launch({headless:true,...(process.env.NAV_BROWSER_CHANNEL?{channel:process.env.NAV_BROWSER_CHANNEL}:{})});
@@ -9,7 +9,7 @@ try {
  const page=await browser.newPage();
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  if(process.env.NAV_TEST_URL) await page.goto(process.env.NAV_TEST_URL);
- else await page.setContent(await readFile(new URL('../index.html',import.meta.url),'utf8'));
+ else await loadStaticNav(page);
  await page.waitForFunction(()=>typeof solve==='function');
  const fill=async(id,value)=>page.locator('#'+id).fill(String(value));
  const select=async(id,value)=>page.locator('#'+id).selectOption(String(value));
