@@ -384,3 +384,9 @@ A mechanical dependency can temporarily resolve only the relevant earlier weapon
 ## Adjustable minimum raw total
 
 The `configure` command accepts optional `minimumTotal`, an integer from 6 through 72, before any statistics rolls. It overrides the raw-total threshold without changing dice, placement, modifiers, or `minimumReroll`. The projected `statisticsRerollThreshold` is authoritative. Omitting `minimumTotal` preserves the existing species/method default (30 for standard Aezorgh, 43 otherwise) and legacy config/save shape. The option is saved and replayed with its command.
+
+### Flat starting Luck option
+
+`configure {flatLuck: boolean}` selects the optional flat starting Luck rule before any base characteristic roll. Omitted or `false` means normal 2D Luck. `true` means initial LCK is 6, with no roll or RNG consumption, both in `accept-statistics` when LCK is selected and in `add-extra {id:"LCK"}` later. The option does not select LCK itself, change other extras, or reset an existing score. It is independent of GM correction mode. Invalid non-booleans and changes after rolling are rejected atomically.
+
+The additive option does not bump `rulesRevision` or add a default key to historical config. Configure summaries mention it only when explicitly submitted; old histories without it replay unchanged. Histories using it require this updated implementation. `verification/flat-luck.test.mjs` compares historical `.16`–`.22` exported bytes against SHA-256 baselines from the prior implementation.

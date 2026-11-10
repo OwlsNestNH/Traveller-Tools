@@ -60,6 +60,10 @@ export const EXTRA_STATS = [
  {id:'WLT',name:'Wealth',kind:'optional',source:'Companion 2024 p. 4',derive:'SOC',note:'Starts at Social Standing; not a random roll.'},
  {id:'CHA',name:'Charisma',kind:'house',source:'House option outside the Vargr rules',dice:2}
 ];
+// Explicit opt-in only: omitted options preserve historical config, dice and audit bytes.
+function extraStartingValue(state,extra,rolls){
+ return extra.id==='LCK'&&state.config.flatLuck?6:extra.derive?(state.character.stats[extra.derive]??0):dice(state,extra.dice,rolls,extra.id);
+}
 function initial(seed) {
  return {version:API_VERSION,rng:hash(seed),stage:'identity',config:{boons:0,minimumReroll:true,allocation:true,extras:[],gm:false,zhodaniPsi:false,aezorghTwoDice:false},
  character:{name:'',species:'human',culture:'native',gender:'',homeworld:'',age:18,terms:0,stats:{},skills:{},traits:[],careers:[],relationships:[],benefits:[],cash:0,debt:0,notes:''},
@@ -2295,9 +2299,10 @@ function apply(state,command,rolls) {
   if(payload.allocation!==undefined){need(typeof payload.allocation==='boolean','Invalid allocation option.');state.config.allocation=payload.allocation;}
   if(payload.extras!==undefined){need(Array.isArray(payload.extras)&&payload.extras.length<=6&&new Set(payload.extras).size===payload.extras.length,'Invalid extra characteristics.');need(payload.extras.every(x=>EXTRA_STATS.some(e=>e.id===x)),'Unsupported extra characteristic.');state.config.extras=[...payload.extras];}
   if(payload.aezorghTwoDice!==undefined){need(typeof payload.aezorghTwoDice==='boolean','The optional Aezorgh two-dice method must be true or false.');need(!payload.aezorghTwoDice||state.stage==='identity'||state.character.species==='aezorgh','The optional two-dice method applies only to Aezorgh.');state.config.aezorghTwoDice=payload.aezorghTwoDice;}
+  if(payload.flatLuck!==undefined){need(typeof payload.flatLuck==='boolean','Flat starting Luck must be true or false.');state.config.flatLuck=payload.flatLuck;}
   if(payload.zhodaniPsi!==undefined){need(typeof payload.zhodaniPsi==='boolean','Invalid Zhodani PSI option.');state.config.zhodaniPsi=payload.zhodaniPsi;}
   const rerollSummary=state.config.minimumTotal===undefined&&state.stage==='identity'&&Object.hasOwn(payload,'aezorghTwoDice')?'minimum-total reroll '+(state.config.minimumReroll?'on':'off')+' (threshold confirmed at species setup)':'below-'+statisticsRerollThreshold(state)+' reroll '+(state.config.minimumReroll?'on':'off');
-  return 'Generation options: '+state.config.boons+' boon rolls; player placement '+(state.config.allocation?'on':'off')+'; '+rerollSummary+'; extras '+(state.config.extras.join(', ')||'none')+'; Zhodani PSI option '+(state.config.zhodaniPsi?'on':'off')+'.'+(state.config.aezorghTwoDice?' Optional Aezorgh method: six raw 2D totals, free placement, then halve one-die destinations rounding '+(state.aezorghRoundUp?'up':'down')+'.':'');
+  return 'Generation options: '+state.config.boons+' boon rolls; player placement '+(state.config.allocation?'on':'off')+'; '+rerollSummary+'; extras '+(state.config.extras.join(', ')||'none')+'; Zhodani PSI option '+(state.config.zhodaniPsi?'on':'off')+'.'+(state.config.aezorghTwoDice?' Optional Aezorgh method: six raw 2D totals, free placement, then halve one-die destinations rounding '+(state.aezorghRoundUp?'up':'down')+'.':'')+(Object.hasOwn(payload,'flatLuck')?' House rule: flat starting Luck '+(state.config.flatLuck?'on (6, no roll)':'off (normal 2D)')+'.':'');
  }
  case 'gm-academy-training': {
   need(state.config.gm,'Enable GM result changes to set this house option.');
@@ -2341,10 +2346,11 @@ function apply(state,command,rolls) {
   refreshStatisticsPool(state);
   for(const p of state.pool)state.character.stats[p.key]=p.value;
   for(const [key,[count,adjustment]] of Object.entries(species.dice).slice(6))state.character.stats[key]=key==='PSI'&&state.config.zhodaniPsi?state.optionalPsi:dice(state,count,rolls,key)+adjustment;
+  const flatLuckGenerated=state.config.flatLuck&&state.config.extras.includes('LCK')&&!Object.hasOwn(state.character.stats,'LCK');
   for(const id of state.config.extras) {
    if(Object.hasOwn(state.character.stats,id))continue;
    const extra=EXTRA_STATS.find(e=>e.id===id);
-   state.character.stats[id]=extra.derive?(state.character.stats[extra.derive]??0):dice(state,extra.dice,rolls,id);
+   state.character.stats[id]=extraStartingValue(state,extra,rolls);
   }
   if(species.id==='vargr'){
    if(state.character.culture==='imperial'){state.character.stats.CHA=dice(state,1,rolls,'Imperial Vargr CHA')+2;}
@@ -2364,7 +2370,7 @@ function apply(state,command,rolls) {
    if(species.id==='zhodani'&&state.character.stats.SOC>=10)startPsionicTraining(state,{context:'zhodani-childhood',source:{id:'aliens',page:255},next:'precareer'},rolls);
    else if(species.id==='aslan'&&state.character.culture==='native')beginAslanOrigin(state);
    else if(species.setup&&species.id!=='zhodani')sourceStep(state,'species-setup',species.source,species.setupPage,species.setup,'background');
-  return 'Accepted statistics and generated selected extra characteristics.';
+  return 'Accepted statistics and generated selected extra characteristics.'+(flatLuckGenerated?' House rule: Luck starts at 6; no Luck dice were rolled.':'');
  }
  case 'begin-psionic-training':{
    need(!accessMandatory(state),'Resolve the accepted expedition before training.');need(['career','precareer'].includes(state.stage)&&state.active===null&&!state.forcedCareer&&!state.character.retirementFromCreation,'Begin institute training only between careers, before retirement.');
@@ -3048,10 +3054,10 @@ if(pending.kind==='psionic-training-terms'){
   need(state.pending?.kind!=='core-life-decision','Finish the pending life event decision before extra characteristics.');
   need(state.stage!=='identity'&&state.stage!=='statistics','Accept the six characteristics first.');
   const extra=EXTRA_STATS.find(e=>e.id===payload.id);need(extra,'Choose an available characteristic.');need(!Object.hasOwn(state.character.stats,extra.id),'This characteristic already exists.');
-  const value=extra.derive?(state.character.stats[extra.derive]??0):dice(state,extra.dice,rolls,extra.id);
+  const value=extraStartingValue(state,extra,rolls);
   state.character.stats[extra.id]=extra.id==='PSI'?Math.max(0,value-completedCareerTerms(state)):value;
    if(extra.id==='PSI')recordPsionicTest(state,'referee-potential',value,completedCareerTerms(state));
-  state.config.extras.push(extra.id);return 'Added '+extra.name+' '+state.character.stats[extra.id]+'. '+extra.source+(extra.id==='PSI'?'; testing reduced by completed career terms. Potential does not grant training or talents.':'.');
+  state.config.extras.push(extra.id);return 'Added '+extra.name+' '+state.character.stats[extra.id]+'. '+(extra.id==='LCK'&&state.config.flatLuck?'House rule: flat starting Luck 6; no dice rolled. Normal source: ':'')+extra.source+(extra.id==='PSI'?'; testing reduced by completed career terms. Potential does not grant training or talents.':'.');
  }
  case 'ageing':{
   need(state.stage==='ageing','No ageing roll is due.');const species=findSpecies(state.character.species);
