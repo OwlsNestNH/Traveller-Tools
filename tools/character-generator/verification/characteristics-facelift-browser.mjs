@@ -5,6 +5,7 @@ import {mkdir, readFile, writeFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {createServer} from '../server.mjs';
 import {createSession, execute, exportSession, project} from '../engine/session.mjs';
+import {simpleActionLog} from '../gui/simple-log.mjs';
 import {downloadedActionLog} from './download-log-browser.mjs';
 
 const {chromium} = createRequire(import.meta.url)(process.argv[2] || 'playwright');
@@ -43,6 +44,51 @@ async function noOverflow(page, label) {
     return [...card.children].filter(child => child.getBoundingClientRect().right > bounds.right + 1)
       .map(child => child.textContent);
   })), [], label + ' score card contents');
+}
+
+async function statisticsOrder(page) {
+  const result = await page.evaluate(() => {
+    const selectors = ['#workspace > .stats', '.statistics-swap', '.statistics-summary', '.statistics-actions', '#statistics-gm-controls'];
+    const nodes = selectors.map(selector => document.querySelector(selector)).filter(Boolean);
+    const bounds = nodes.map(node => {const r=node.getBoundingClientRect(); return {top:r.top,bottom:r.bottom};});
+    const total = document.querySelector('.statistics-total-value');
+    return {bounds, last: document.querySelector('#workspace').lastElementChild.id,
+      totalFont:parseFloat(getComputedStyle(total).fontSize), labelFont:parseFloat(getComputedStyle(total.parentElement).fontSize),
+      order:nodes.every((node,index) => !index || !!(nodes[index-1].compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING))};
+  });
+  assert.equal(result.order, true, 'DOM and keyboard order follows the requested sequence');
+  assert.equal(result.last, 'statistics-gm-controls', 'GM controls are at the very bottom');
+  for (let i=1;i<result.bounds.length;i++) assert.ok(result.bounds[i].top >= result.bounds[i-1].bottom-1, 'visual order follows DOM order');
+  assert.ok(result.totalFont >= 36 && result.totalFont >= result.labelFont*2, 'raw total number is prominent');
+}
+
+async function compactRollDetails(page, rerolled) {
+  const before = await saved(page), log = await downloadedActionLog(page), current = await projection(page);
+  const text = rerolled ? 'Six characteristics rerolled.' : 'Six characteristics rolled.';
+  const panel = page.locator('#last-action-result');
+  assert.ok((await panel.innerText()).includes(text));
+  assert.doesNotMatch(await panel.innerText(), /previous|Base total|STR:/);
+  assert.equal(await page.locator('#message').textContent(), text);
+  const trigger = page.locator('[data-action="statistics-roll-details"]');
+  await trigger.focus(); await trigger.press('Enter');
+  assert.equal(await page.locator('#simple-action-log').evaluate(node=>node.open), true);
+  assert.equal(await page.locator('#simple-log-title').evaluate(node=>node===document.activeElement), true);
+  assert.equal(await page.locator('#simple-log-content').textContent(), simpleActionLog(current.log));
+  assert.match(await page.locator('#simple-log-content').innerText(), /STR: \[/);
+  if(rerolled) assert.match(await page.locator('#simple-log-content').innerText(), /Rerolled statistics; previous/);
+  await page.keyboard.press('Shift+Tab');
+  assert.equal(await page.locator('#simple-log-content').evaluate(node=>node===document.activeElement), true);
+  await page.keyboard.press('Tab');
+  assert.equal(await page.locator('[data-simple-log-close]').evaluate(node=>node===document.activeElement), true);
+  await page.keyboard.press('Escape');
+  assert.equal(await trigger.evaluate(node=>node===document.activeElement), true);
+  await trigger.evaluate(button=>{button.click();button.click();});
+  await page.locator('[data-simple-log-close]').click();
+  assert.equal(await page.locator('#simple-action-log').evaluate(node=>node.open), false);
+  assert.equal(await trigger.evaluate(node=>node===document.activeElement), true);
+  assert.equal(await saved(page), before, 'roll details cannot mutate saved state');
+  assert.equal(await downloadedActionLog(page), log, 'roll details cannot mutate the full log');
+  await statisticsOrder(page);
 }
 
 async function headerStyle(page) {
@@ -94,7 +140,7 @@ async function verifyCards(page, state) {
     assert.equal(text.includes('+ boon'), score.boon);
     if (score.divisor === 2) assert.match(text, /round up/);
   }
-  assert.match(await page.locator('.total').innerText(), new RegExp('Raw total: ' + state.rollTotal));
+  assert.match((await page.locator('.total').innerText()).replace(/\s+/g, ' '), new RegExp('Raw total: ' + state.rollTotal));
   assert.equal(await page.getByRole('button', {name: 'Reroll this set', exact: true}).isEnabled(), state.statisticsCanReroll);
   assert.equal(await page.locator('#swap-a').count(), Number(state.config.allocation || state.config.gm));
 }
@@ -264,8 +310,11 @@ try {
       await page.reload();
       await page.getByRole('button', {name: 'Roll six characteristics', exact: true}).waitFor();
       assert.equal(await saved(page), initial, 'unrolled statistics reload retains exact save');
+      await statisticsOrder(page);
       await screenshot(page, label + '-before');
       await doubleActivate(page, 'roll-statistics');
+      await compactRollDetails(page, false);
+      await screenshot(page, label + '-layout-first-roll');
       let current = await projection(page);
       await verifyCards(page, current.state);
       assert.deepEqual(current.log.at(-1).rolls.map(roll => roll.values.length), [3, 3, 3, 2, 2, 2]);
@@ -284,6 +333,8 @@ try {
       await doubleActivate(page, 'roll-statistics');
       current = await projection(page);
       await verifyCards(page, current.state);
+      await compactRollDetails(page, true);
+      await screenshot(page, label + '-layout-reroll');
       await page.locator('#gm-controls > summary').focus();
       await page.keyboard.press('Enter');
       assert.equal(await page.locator('#gm-controls').evaluate(details => details.open), true);
@@ -345,6 +396,7 @@ try {
         await ready(page);
         const initial = await projection(page), raw = await saved(page);
         await verifyCards(page, initial.state);
+        await statisticsOrder(page);
         assert.equal(await page.getByRole('button', {name: 'Reroll this set', exact: true}).isEnabled(), scenario.reroll);
         if (scenario.species === 'vargr') assert.equal(await page.locator('#workspace .code').last().textContent(), 'CHA');
         if (scenario.species === 'aezorgh' && !scenario.aezorghTwoDice) {
@@ -398,6 +450,7 @@ try {
       await generationHelp(page);
       await optionalHelp(page, label);
       assert.equal(await saved(page), initialSave);
+      await statisticsOrder(page);
       await screenshot(page, label + '-before');
       await doubleActivate(page, 'roll-statistics');
       const rolled = await projection(page);

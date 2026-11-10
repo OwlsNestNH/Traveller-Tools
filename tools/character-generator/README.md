@@ -213,13 +213,17 @@ New-rule Aslan rite equipment credit and Wanderer landholds join the finalizatio
 
 The minimum raw total is adjustable in setup (whole numbers from 6 to 72). It defaults to 43, or 30 for standard Aezorgh; the optional all-six-2D6 Aezorgh method defaults to 43 before placement and halving. Custom totals remain selected when changing species or dice method. Rerolls remain enabled by default and are available only below the selected total. Saved characters without this option keep their original defaults and recorded history.
 
+## Connections entry timing
+
+The live record keeps Background notes available during creation. Add a connection appears only after Finish character reaches the final review, not at setup, between terms, retirement or the equipment checklist. Existing recorded connections, skill awards, saves and audit history remain unchanged. Historical pre-finalization connection commands still replay under their original rules.
+
 ## Characteristics-page presentation
 
 The opening navy/gold theme continues through rolling and placing the six characteristics. The live record keeps the selected illustrative species portrait. Before rolling, six species-appropriate placeholders are shown; rolled scores retain their raw values, species modifiers and dice method. Existing swapping, reroll thresholds, acceptance, save/replay and audit commands are unchanged.
 
 The opening **Boon rolls** house-option selector now lives inside **GM Controls → GM Settings**. The statistics page shows that setup choice read-only alongside the existing GM correction tools, closed by default. Help and logs are read-only. Later character-generation screens retain their existing presentation.
 
-Selected optional characteristics appear before acceptance without invented values: PSI is shown as Untested and other selected extras as Pending. PSI alone shares the six-score row when space permits. Selecting any other extra starts a separate row of additional cards, matching the width and height of the six primary cards and wrapping on narrow screens. The existing Keep action still generates the selected extras separately; they do not join the swap pool or reroll total. Required species characteristics are not duplicated as optional cards. The raw total stays in its existing summary position.
+Selected optional characteristics appear before acceptance without invented values: PSI is shown as Untested and other selected extras as Pending. PSI alone shares the six-score row when space permits. Selecting any other extra starts a separate row of additional cards, matching the width and height of the six primary cards and wrapping on narrow screens. The existing Keep action still generates the selected extras separately; they do not join the swap pool or reroll total. Required species characteristics are not duplicated as optional cards. The raw total is prominent in a summary strip after the swap controls and immediately before Keep/Reroll, with GM Controls at the bottom. Before rolling, the empty summary sits above the Roll action. Roll/reroll feedback stays concise, with Roll details opening the existing read-only Simple Log for recorded dice and earlier results; the Full Log remains unchanged.
 
 `verification/characteristics-facelift-browser.mjs` covers static/HTTP transport, 1440px/390px/320px layouts, help and disclosure keyboard behavior, repeat actions, projected reroll/placement eligibility, species formulas, enabled-extra grouping and save/export/import/reload continuity. The focused presentation tests verify that rendering does not mutate projected state or history.
 

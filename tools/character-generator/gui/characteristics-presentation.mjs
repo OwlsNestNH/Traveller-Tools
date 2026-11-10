@@ -31,9 +31,19 @@ export function statisticsCardsView(state,catalog,baseHtml,{esc}){
 export function statisticsSummaryView(state,{esc}){
  const total=state.pool.length?esc(state.rollTotal):'—';
  const availability=state.config.gm?'GM rerolls enabled.':state.config.minimumReroll?'Reroll below this total.':'Minimum-total rerolls are off.';
- return '<div class="statistics-summary"><p class="total">Raw total: '+total+'</p><p class="help">Reroll threshold: '+esc(state.statisticsRerollThreshold)+'. <span>'+availability+'</span></p><p class="statistics-total-help">Species modifiers and extra characteristics are excluded.'+(state.config.aezorghTwoDice?' The total is checked before placement and halving.':'')+'</p></div>';
+ return '<div class="statistics-summary"><p class="total">Raw total: <strong class="statistics-total-value">'+total+'</strong></p><p class="help">Reroll threshold: '+esc(state.statisticsRerollThreshold)+'. <span>'+availability+'</span></p><p class="statistics-total-help">Species modifiers and extra characteristics are excluded.'+(state.config.aezorghTwoDice?' The total is checked before placement and halving.':'')+'</p></div>';
 }
 export function statisticsControlsView(state,controls,{esc}){
  const summary='<summary><span>GM Controls</span><small>Setup: '+esc(state.config.boons)+' boon rolls · Corrections '+(state.config.gm?'on':'off')+'</small></summary><p class="tiny statistics-boon-setting">Boon rolls: '+esc(state.config.boons)+' of six. This setup choice applies before placement; it does not change an already-rolled set.</p>';
  return '<div id="statistics-gm-controls">'+controls.replace('<summary>GM result controls</summary>',summary)+'</div>';
+}
+
+// Keep roll feedback brief here; the existing read-only log popup retains every roll.
+export function statisticsRollFeedback(event,state){
+ if(state?.stage!=='statistics'||event?.type!=='roll-statistics')return null;
+ return event.summary?.startsWith('Rerolled statistics')?'Six characteristics rerolled.':'Six characteristics rolled.';
+}
+export function statisticsRollFeedbackView(event,state,{esc}){
+ const text=statisticsRollFeedback(event,state);if(!text)return null;
+ return '<section id="last-action-result" class="statistics-roll-feedback" data-result-status="info" aria-label="Latest result"><p>'+esc(text)+'</p><button type="button" class="quiet" data-action="statistics-roll-details" aria-haspopup="dialog" aria-controls="simple-action-log"><span aria-hidden="true">i</span> Roll details</button></section>';
 }
