@@ -45,7 +45,7 @@ try{
   const context=await browser.newContext({viewport:{width:390,height:1050}}),p=await context.newPage();
   try{await p.goto('http://127.0.0.1:'+server.address().port+(http?'/?api=local':'/'));await p.locator('#setup-form').waitFor();
    const fixture=execute(createSession('interrupted-luck'),{type:'configure',payload:{flatLuck:true,extras}}),raw=exportSession(fixture.session);
-   await p.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw});await p.reload();await p.locator('#setup-form').waitFor();await ready(p);assert.equal(await saved(p),raw);
+   await p.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw});await p.reload();await p.locator('#setup-form').waitFor();await ready(p);assert.equal(await saved(p),raw);await p.locator('#setup-gm-controls > summary').click();
    assert.equal(await p.locator('[name=flatLuck]').isChecked(),true);assert.equal(await p.locator('[name=extras][value=LCK]').isChecked(),extras.includes('LCK'));assert.equal(await p.locator('[name=extras][value=MRL]').isChecked(),true);assert.equal((await p.locator('#setup-optional-summary').innerText()).includes('LCK'),extras.includes('LCK'));
    p.once('dialog',d=>d.accept());await p.locator('#import').setInputFiles({name:'interrupted-luck.json',mimeType:'application/json',buffer:Buffer.from(raw)});await ready(p);assert.equal(await saved(p),raw);
    await p.getByRole('button',{name:'Begin character',exact:true}).click();await p.locator('[data-action=roll-statistics]').waitFor();assert.deepEqual((await state(p)).config.extras,extras);assert.equal((await state(p)).config.flatLuck,true);checks.push({http,interruptedExtras:extras,passed:true});
