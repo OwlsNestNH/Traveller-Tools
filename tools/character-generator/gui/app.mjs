@@ -1,5 +1,5 @@
 import {notesConnectionsView} from './notes-connections-view.mjs';
-import {emptyStatisticsView,statisticsCardsView,statisticsSummaryView,statisticsControlsView} from './characteristics-presentation.mjs';
+import {emptyStatisticsView,statisticsCardsView,statisticsSummaryView,statisticsControlsView,statisticsRollFeedback,statisticsRollFeedbackView} from './characteristics-presentation.mjs';
 import {openingInfoButton,mountOpeningHelp} from './opening-help.mjs';
 import {createSimpleLogViewer} from './simple-log-viewer.mjs';
 import {ledgerDetailsView,syncCreditSelection,creditPurchasePayload} from './finalization-ledgers.mjs';
@@ -119,7 +119,7 @@ function syncClanShareControls(savedLot){
 function notify(message,error=false,status='info',action=false){$('#message').style.overflowWrap='anywhere';$('#message').className=error?'error':'result-'+status+(action?' action-announcement':'');$('#message').textContent=message;}
 function clearActionNotice(){if($('#message').classList.contains('action-announcement'))notify('');}
 function actionNotice(type,result){
- return conciseResult(result.log.at(-1),result.state,catalog)?.text??'Action recorded.';
+ return statisticsRollFeedback(result.log.at(-1),result.state)??conciseResult(result.log.at(-1),result.state,catalog)?.text??'Action recorded.';
 }
 
 function updateRecovery(){
@@ -200,10 +200,10 @@ function statCards(state,pool=false){
 function statisticsView(state){
  const controls=statisticsControlsView(state,gmControlsView(state,projection.log,{esc,options}),{esc});
  const introduction='<p class="statistics-introduction">Roll a set, then decide where each compatible score belongs. All rerolls and swaps stay in the action log.</p>';
- if(!state.pool.length)return introduction+statisticsCardsView(state,catalog,emptyStatisticsView(state,catalog,{esc}),{esc,infoButton:openingInfoButton})+statisticsSummaryView(state,{esc})+'<div class="statistics-guidance"><strong>Start with your six characteristic rolls</strong><p>Roll the selected species dice, then review each score before continuing.</p></div>'+controls+'<div class="actions statistics-actions">'+button('Roll six characteristics','roll-statistics','statistics-primary')+'</div>';
- let html=introduction+statisticsCardsView(state,catalog,statCards(state,true),{esc,infoButton:openingInfoButton})+statisticsSummaryView(state,{esc});
+ if(!state.pool.length)return introduction+statisticsCardsView(state,catalog,emptyStatisticsView(state,catalog,{esc}),{esc,infoButton:openingInfoButton})+'<div class="statistics-guidance"><strong>Start with your six characteristic rolls</strong><p>Roll the selected species dice, then review each score before continuing.</p></div>'+statisticsSummaryView(state,{esc})+'<div class="actions statistics-actions">'+button('Roll six characteristics','roll-statistics','statistics-primary')+'</div>'+controls;
+ let html=introduction+statisticsCardsView(state,catalog,statCards(state,true),{esc,infoButton:openingInfoButton});
  if(state.config.allocation||state.config.gm)html+='<div class="statistics-swap"><div class="inline-fields"><label>Swap this score<select id="swap-a">'+state.pool.map((p,i)=>'<option value="'+i+'">'+p.key+' · raw '+p.base+'</option>').join('')+'</select></label><label>With this score<select id="swap-b">'+state.pool.map((p,i)=>'<option value="'+i+'" '+(i===1?'selected':'')+'>'+p.key+' · raw '+p.base+'</option>').join('')+'</select></label>'+button('Swap scores','swap-statistics','quiet')+'</div><p class="tiny">'+(state.character.species==='aezorgh'&&!state.config.aezorghTwoDice?'Standard Aezorgh: swap one-die characteristics within their group, and DEX/INT separately. GM mode permits exceptions.':state.config.aezorghTwoDice?'Swap any raw 2D6 totals. Halving and species bonuses belong to the destination characteristic.':'Swap any of the six raw scores; species modifiers remain with their characteristics.')+'</p></div>';
- return html+controls+'<div class="actions statistics-actions">'+button('Keep these characteristics','accept-statistics','statistics-primary')+button('Reroll this set','roll-statistics','quiet',(!state.statisticsCanReroll?'disabled title="'+(state.config.minimumReroll?'The raw total meets the reroll threshold.':'Minimum-total rerolls are off.')+'"':''))+'</div>';
+ return html+statisticsSummaryView(state,{esc})+'<div class="actions statistics-actions">'+button('Keep these characteristics','accept-statistics','statistics-primary')+button('Reroll this set','roll-statistics','quiet',(!state.statisticsCanReroll?'disabled title="'+(state.config.minimumReroll?'The raw total meets the reroll threshold.':'Minimum-total rerolls are off.')+'"':''))+'</div>'+controls;
 }
 function backgroundView(state){
  return '<p>Choose <strong>'+state.backgroundRemaining+'</strong> background skills. Each begins at level 0.</p><form id="background-form"><div class="options-list">'+state.backgroundOptions.filter(name=>!Object.hasOwn(state.character.skills,name)).map(name=>'<label class="check"><input type="checkbox" name="skills" value="'+esc(name)+'"><span>'+esc(name)+'</span></label>').join('')+'</div><div class="actions"><button type="submit">Accept background skills</button></div></form>';
@@ -436,7 +436,7 @@ function sheetView(state){
 
 function render(){
  const lastRollResult=conciseResult(projection.log.at(-1),projection.state,catalog);
- const lastResult=projection.state.stage==='career'&&selectedCareer?'':latestResultView(lastRollResult,{esc});
+ const lastResult=projection.state.stage==='career'&&selectedCareer?'':statisticsRollFeedbackView(projection.log.at(-1),projection.state,{esc})??latestResultView(lastRollResult,{esc});
  const lawyerPanel=$('#prisoner-lawyer'),lawyerDraft=lawyerPanel?{id:lawyerPanel.dataset.lawyerId,fields:[...lawyerPanel.querySelectorAll('input,select,textarea')].map(input=>({id:input.id,value:input.value,checked:input.checked}))}:null;
  const lifePanel=$('#core-life-decision'),lifeDraft=lifePanel?{id:lifePanel.dataset.lifeEventId,fields:[...lifePanel.querySelectorAll('input,select,textarea')].map(input=>({id:input.id,value:input.value,checked:input.checked}))}:null;
  const accessOpen=$('#aslan-access-panel')?.open;
@@ -466,6 +466,7 @@ function readEffects(){
 document.addEventListener('click',async event=>{
  const el=event.target.closest('[data-action]');if(!el||busy)return;
  const action=el.dataset.action;
+ if(action==='statistics-roll-details')return simpleLogViewer.open();
  if(['record-aslan-rite-equipment','retain-aslan-secret','record-aslan-outcast-opportunity'].includes(action)){if(event.detail>1)return;return send(action,{});}
  if(action==='aslan-event-choices'){aslanManualReviewKey=null;return render();}
  if(action==='aslan-source-review'){aslanManualReviewKey=JSON.stringify([projection.revision,projection.state.pending]);return render();}

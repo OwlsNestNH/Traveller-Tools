@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {catalog, createSession, execute, project} from '../engine/session.mjs';
-import {emptyStatisticsView, statisticsSummaryView, statisticsControlsView, statisticsCardsView} from '../gui/characteristics-presentation.mjs';
+import {emptyStatisticsView, statisticsSummaryView, statisticsControlsView, statisticsCardsView, statisticsRollFeedback, statisticsRollFeedbackView} from '../gui/characteristics-presentation.mjs';
 import {gmControlsView} from '../gui/character-controls.mjs';
 import {openingInfoButton} from '../gui/opening-help.mjs';
 
@@ -35,7 +35,7 @@ for (const species of ['human', 'aslan', 'vargr', 'aezorgh']) {
     assert.deepEqual([...html.matchAll(/class="code">([^<]+)</g)].map(match => match[1]), expected);
     assert.equal((html.match(/class="stat stat-empty"/g) ?? []).length, 6);
     assert.equal((html.match(/aria-label="Not rolled"/g) ?? []).length, 6);
-    assert.match(html, /Raw total: [\u2014-]/);
+    assert.match(html, /Raw total: <strong class="statistics-total-value">[\u2014-]<\/strong>/);
     assert.match(html, /data-action="roll-statistics"/);
     assert.doesNotMatch(html, /data-action="accept-statistics"|id="swap-a"/);
     assert.equal(JSON.stringify(projection), before);
@@ -170,5 +170,43 @@ test('pending extras do not widen swaps, alter reroll total, or change existing 
   for (const roll of accepted.log.at(-1).rolls) {
     assert.equal(roll.values.length, 2);
     assert.equal(accepted.state.character.stats[roll.label], roll.values.reduce((sum, value) => sum + value, 0));
+  }
+});
+
+for (const rolled of [false, true]) for (const allocation of [false, true]) test('statistics order keeps the summary by actions and GM controls last: '+rolled+'/'+allocation, () => {
+  const projection = fixture('human', rolled);
+  projection.state.config.allocation = allocation;
+  const html = render(projection);
+  const markers = ['class="stats', ...(rolled && allocation ? ['class="statistics-swap"'] : []), 'class="statistics-summary"', 'class="actions statistics-actions"', 'id="statistics-gm-controls"'];
+  const positions = markers.map(marker => html.indexOf(marker));
+  assert.ok(positions.every(position => position >= 0));
+  assert.deepEqual(positions, [...positions].sort((a,b) => a-b));
+  assert.ok(html.endsWith(statisticsControlsView(projection.state, gmControlsView(projection.state, projection.log, {esc, options}), {esc})));
+});
+
+test('prominent raw total remains the projected six-only total with every extra selected', () => {
+  const {projection} = optionalFixture(['PSI', 'LCK', 'MRL', 'STY', 'WLT', 'CHA'], true);
+  const before = JSON.stringify(projection);
+  const html = statisticsSummaryView(projection.state, {esc});
+  assert.ok(html.includes('<strong class="statistics-total-value">'+projection.state.pool.reduce((sum, score) => sum+score.base, 0)+'</strong>'));
+  assert.equal(JSON.stringify(projection), before);
+});
+
+test('compact roll feedback is statistics-only and preserves the complete result and history', () => {
+  let session = execute(createSession('compact-roll-feedback'), {type:'configure', payload:{minimumTotal:72}}).session;
+  session = execute(session, {type:'setup', payload:{species:'human'}}).session;
+  for (const text of ['Six characteristics rolled.', 'Six characteristics rerolled.']) {
+    session = execute(session, {type:'roll-statistics'}).session;
+    const projection = project(session), before = JSON.stringify(projection), event = projection.log.at(-1);
+    assert.equal(statisticsRollFeedback(event, projection.state), text);
+    const html = statisticsRollFeedbackView(event, projection.state, {esc});
+    assert.ok(html.includes(text));
+    assert.match(html, /aria-controls="simple-action-log"/);
+    assert.doesNotMatch(html, /previous|Base total|STR:/);
+    assert.match(event.summary, /Base total/);
+    assert.equal(event.rolls.length, 6);
+    assert.equal(JSON.stringify(projection), before);
+    assert.equal(statisticsRollFeedbackView(event, {...projection.state, stage:'background'}, {esc}), null);
+    assert.equal(statisticsRollFeedbackView({...event, type:'gm-override'}, projection.state, {esc}), null);
   }
 });
