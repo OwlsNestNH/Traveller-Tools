@@ -211,3 +211,10 @@ test('compact roll feedback is statistics-only and preserves the complete result
     assert.equal(statisticsRollFeedbackView({...event, type:'gm-override'}, projection.state, {esc}), null);
   }
 });
+
+test('legacy pending optional cards remain informational until Keep can apply their original rules',()=>{
+ for(const revision of ['character-preview-2026-11-09.22','character-preview-2026-11-09.23'])for(const species of ['human','vargr']){
+  let session=createSession('legacy-card-'+revision+'-'+species);session.rulesRevision=revision;for(const command of [{type:'configure',payload:{extras:['WLT','CHA']}},{type:'setup',payload:{species,culture:'imperial'}},{type:'gm-mode',payload:{enabled:true}},{type:'roll-statistics'},{type:'gm-override',payload:{field:'stat.WLT',value:40,reason:'Historical value'}},{type:'gm-override',payload:{field:'stat.CHA',value:40,reason:'Historical value'}}])session=execute(session,command).session;
+  const state=project(session).state,html=statisticsCardsView(state,catalog(),'<div class="stats"></div>',{esc});assert.doesNotMatch(html,/data-edit-stat="(?:WLT|CHA)"/);assert.match(html,/data-opening-help="extras"/);
+ }
+});
