@@ -23,6 +23,13 @@
 </section>
 <section aria-labelledby="recent-heading">
 <h2 id="recent-heading">Recent changes</h2>
+<h3><time datetime="2026-11-10">November 10, 2026</time> &middot; Reusable calculation engine</h3>
+<ul>
+<li>Separated the calculation engine from the existing Nav interface. Controls, layout, route results and 100D-only behavior are unchanged.</li>
+<li>Added a documented, versioned API for other tools to reuse through browser scripts, browser or Node ES modules, and Node CommonJS. The engine has no DOM, storage or network dependency.</li>
+<li>Explicit dice inputs allow deterministic Astrogation calculations. Added input validation and numerical-limit handling for API consumers.</li>
+<li>Added pure-engine tests and desktop/mobile comparisons against the previous calculator, including results, clipboard briefs, errors and reset/profile transitions. No server, cloud sync or other-tool integration was added.</li>
+</ul>
 <h3><time datetime="2026-11-10">November 10, 2026</time> &middot; Audit fixes, aligned controls and changelog</h3>
 <ul>
 <li>Solve Route, Compute 100D Only and Clear now share equal-width, equal-height buttons in one aligned row, with readable wrapped labels on narrow screens.</li>
