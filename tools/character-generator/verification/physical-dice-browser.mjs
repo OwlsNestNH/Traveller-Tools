@@ -51,11 +51,11 @@ try{
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);checks.push(label+' setup/unchanged-rolled-cards/click-to-edit/Escape/Tab/Enter/validation/repeat/swaps/logs/off/reload/final/print');
   }finally{await context.close();}
  }
- for(const http of [false,true]){
+ for(const http of [false,true])for(const saveMethod of ['Enter','Tab','outside']){
   const context=await browser.newContext(),page=await context.newPage();try{
    let session=createSession('same-value-physical');for(const command of [{type:'setup',payload:{species:'human'}},{type:'roll-statistics'},{type:'gm-physical-dice',payload:{enabled:true}}])session=execute(session,command).session;
    const original=project(session).state.pool[0].base;await context.addInitScript(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(session)});await page.goto(origin+(http?'/?api=local':'/'));await ready(page);
-   await page.locator('#physical-card-STR').click();await page.locator('#physical-stat-STR').press('Enter');await ready(page);const after=JSON.parse(await saved(page));assert.equal(after.events.length,session.events.length+1);assert.equal(project(after).state.pool[0].base,original);assert.equal(project(after).state.character.physicalDiceEntered,true);assert.equal(await page.locator('#sheet .physical-dice-warning').count(),1);checks.push((http?'http':'static')+' same-value manual provenance');
+   await page.locator('#physical-card-STR').click();if(saveMethod==='outside')await page.locator('h1').click();else await page.locator('#physical-stat-STR').press(saveMethod);await ready(page);const after=JSON.parse(await saved(page));assert.equal(after.events.length,session.events.length+1);assert.equal(project(after).state.pool[0].base,original);assert.equal(project(after).state.character.physicalDiceEntered,true);assert.equal(await page.locator('#sheet .physical-dice-warning').count(),1);checks.push((http?'http':'static')+' same-value manual provenance '+saveMethod);
   }finally{await context.close();}
  }
  for(const http of [false,true]){

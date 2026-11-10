@@ -43,13 +43,13 @@ export function mountPhysicalDiceEditor({document,getProjection,canOpen,onSave,g
  }
  document.addEventListener('pointerdown',event=>{nextFromPointer=true;nextCode=event.target.closest('[data-physical-card]')?.dataset.physicalCard??null;},true);
  document.addEventListener('click',event=>{const card=event.target.closest('[data-physical-card]');if(card&&!event.target.closest('.physical-inline-entry')){event.preventDefault();open(card.dataset.physicalCard);}});
- document.addEventListener('change',event=>{if(event.target.matches('[data-physical-stat]')){const target=nextFromPointer?nextCode:null,code=active?.code;save(nextCode).then(ok=>{if(ok&&target&&target!==code)open(target);});}});
+ document.addEventListener('focusout',event=>{if(event.target.matches('[data-physical-stat]')){const target=nextFromPointer?nextCode:null,code=active?.code;save(nextCode).then(ok=>{if(ok&&target&&target!==code)open(target);});}});
  document.addEventListener('keydown',event=>{
   const input=event.target.closest('[data-physical-stat]');
   if(input){
    if(event.key==='Escape'){event.preventDefault();close(true);}
    if(event.key==='Enter'){event.preventDefault();save(active?.code);}
-   if(event.key==='Tab'){nextFromPointer=false;const cards=[...document.querySelectorAll('[data-physical-card]')],i=cards.indexOf(active?.card);nextCode=cards[i+(event.shiftKey?-1:1)]?.dataset.physicalCard??null;}
+   if(event.key==='Tab'){nextFromPointer=false;const cards=[...document.querySelectorAll('[data-physical-card]')],i=cards.indexOf(active?.card);nextCode=cards[i+(event.shiftKey?-1:1)]?.dataset.physicalCard??null;event.preventDefault();save(nextCode);}
   }else{const card=event.target.closest('[data-physical-card]');if(card&&['Enter',' '].includes(event.key)){event.preventDefault();open(card.dataset.physicalCard);}}
  });
 }
