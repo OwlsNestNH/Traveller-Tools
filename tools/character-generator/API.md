@@ -6,7 +6,7 @@ The rules engine is independent of the GUI. Import `api` from `engine/session.mj
 
 `api` exposes four species (Human, Aslan, Vargr, Aezorgh) and 36 careers. Zhodani setup, careers and the Intendant/Noble PSI configuration are deferred. Direct commands, projection, import and restore/replay histories containing these choices fail with `INVALID_REQUEST`; original files remain available through unverified read-only recovery. Filtering applies equally to the in-browser and HTTP API. No request flag enables development content. Human PSI, Core/Vargr Psion and Companion paths remain supported.
 
-The current rules revision is exported as `RULES_REVISION` by `engine/session.mjs`. Existing `.16`, `.17`, `.18`, `.19` and `.20` histories retain their recorded rules, revision, commands and outcomes on import. New sessions select required specialties immediately when awarded; `.18` saves retain their deferred-specialty workflow. The new explicit escape command requires this updated build. Current and compatible saves must also satisfy release scope. Earlier revisions, including `.15`, remain read-only recovery records. `developmentApi` and the direct engine procedures preserve full internal development coverage; they are not the public release contract. Zhodani-specific command descriptions below document that preserved, deferred implementation only.
+The current rules revision is exported as `RULES_REVISION` by `engine/session.mjs`. Existing `.16` through `.22` histories retain their recorded rules, revision, commands and outcomes on import. New sessions select required specialties immediately when awarded; `.18` saves retain their deferred-specialty workflow. The new explicit escape command requires this updated build. Current and compatible saves must also satisfy release scope. Earlier revisions, including `.15`, remain read-only recovery records. `developmentApi` and the direct engine procedures preserve full internal development coverage; they are not the public release contract. Zhodani-specific command descriptions below document that preserved, deferred implementation only.
 
 ## Operations
 
@@ -66,7 +66,7 @@ The local adapter binds to `127.0.0.1`, validates the Host header, rejects cross
 
 ## Rules revision and historical records
 
-New sessions carry `rulesRevision`, equal to the engine's exported `RULES_REVISION`. `project`, `execute`, `importSession` and `exportSession` accept only current `.17` and verified-compatible `.16`; they reject missing or unsupported revisions before any action is evaluated. They never rewrite the input revision. Save format 1 alone is not a rules-compatibility guarantee. Clients must preserve rejected files and must not inject the current revision, strip audit fields or drop failing actions.
+New sessions carry `rulesRevision`, equal to the engine's exported `RULES_REVISION`. `project`, `execute`, `importSession` and `exportSession` accept only current `.23` and verified-compatible `.16` through `.22`; they reject missing or unsupported revisions before any action is evaluated. They never rewrite the input revision. Save format 1 alone is not a rules-compatibility guarantee. Clients must preserve rejected files and must not inject the current revision, strip audit fields or drop failing actions.
 
 The GUI's separate read-only history inspector displays stored entries without importing or executing them. It exposes no reconstructed character state and labels the record unverified. This is recovery of recorded text, not a rules migration.
 
