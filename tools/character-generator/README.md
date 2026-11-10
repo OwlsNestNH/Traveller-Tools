@@ -64,6 +64,10 @@ At the end of a Core career term, the eleven careers explicitly listed on Core p
 
 The action log is always recorded. Download the full technical history separately with **Download full log**; it is not repeated on the character screen or printout. The sheet shows only meaningful career events, decisions and consequences. GM controls retain a named restore-step selector. GM edits require a reason and keep the old result. Restoring or replacing an old result requires GM mode and appends an action; it does not erase history or rewind the random sequence. Save files include that history. This is a local audit trail, **not cryptographic proof, hidden randomness, or protection against a person rewriting their own file**.
 
+## Career specialty information
+
+Each career choice has a separate leading information button. It lists that career's specialties (assignments) from the existing career projection, including unavailable-assignment reasons and the source page. Close or Escape returns to the icon without selecting a career or changing the character.
+
 ## Data and saves
 
 **Cancel**, beside the current step actions, opens a centered confirmation: "Are you sure? This will airlock your character." **Keep character** or Escape preserves all progress and unsaved fields. **Airlock character** replaces only the current draft with a fresh opening page. Exported files, other tools' records and protected unreadable drafts are not deleted.
