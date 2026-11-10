@@ -35,3 +35,9 @@ node verification/layout.test.mjs
 This suite starts a local static server, checks equal-size action buttons at eight widths from 320px to 1440px, expanded inputs, larger button text, keyboard navigation, repeated actions and changelog links, then repeats the calculation suite over HTTP. It shares `NAV_BROWSER_CHANNEL` and the optional Playwright module argument with the calculation suite. `PLAYWRIGHT_MODULE` supplies an alternative module path; `NAV_TEST_ROOT` supplies a hosted site root (including the repository prefix) instead of the local server. Optional `NAV_SCREENSHOT_DIR` saves desktop/mobile viewport screenshots.
 
 The Nav Calculator GitHub workflow runs both suites with pinned Playwright/Chromium, plus the shared visit-counter tests. Release notes are in [`changes/nav.html`](../../changes/nav.html).
+
+## Audit-fix verification
+
+Run `node verification/audit.test.mjs` for focused checks of Orbit validation, synchronized reset/previews, route versus 100D mode persistence, clipboard API and fallback success/failure/cleanup, named controls, keyboard help toggling, live summaries and repeated results/error focus at 320px. It accepts the same Playwright module argument or `PLAYWRIGHT_MODULE`, browser channel and `NAV_TEST_URL` settings. The layout suite also runs this suite over HTTP, and CI runs both static and HTTP paths.
+
+Orbit input validation enforces the existing control bounds: whole Orbit# 0–20 and fractions 0–0.99 in 0.01 steps. These are UI limits, not a new interpretation or independent verification of the handbook. Valid calculation formulas are unchanged. Profile changes retain the explicit route or 100D-only mode after other input edits; Clear restores route mode. Copy fallback always cleans up and restores focus, and reports failures truthfully.

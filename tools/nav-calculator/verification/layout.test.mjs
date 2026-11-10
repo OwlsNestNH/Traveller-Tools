@@ -99,11 +99,13 @@ try{
   // Run the calculation suite against the same HTTP/live deployment as the UI suite.
   // Asynchronous child execution lets the local fixture server answer its requests.
   const {spawn}=await import('node:child_process');
+  for(const suite of ['nav.test.mjs','audit.test.mjs']){
   const exitCode=await new Promise((resolve,reject)=>{
-    const child=spawn(process.execPath,[fileURLToPath(new URL('./nav.test.mjs',import.meta.url)),modulePath],{stdio:'inherit',env:{...process.env,NAV_TEST_URL:url}});
+    const child=spawn(process.execPath,[fileURLToPath(new URL('./'+suite,import.meta.url)),modulePath],{stdio:'inherit',env:{...process.env,NAV_TEST_URL:url}});
     child.on('error',reject);child.on('exit',resolve);
   });
-  assert.equal(exitCode,0,'HTTP calculation regression suite');
+  assert.equal(exitCode,0,'HTTP regression suite: '+suite);
+  }
 }finally{
   if(browser)await browser.close();
   if(server)await new Promise(resolve=>server.close(resolve));

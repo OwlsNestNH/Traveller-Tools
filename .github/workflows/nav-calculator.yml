@@ -32,9 +32,10 @@ jobs:
         run: |
           npm install --prefix "$RUNNER_TEMP/nav-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
           node "$RUNNER_TEMP/nav-playwright/node_modules/playwright/cli.js" install --with-deps chromium
-      - name: Check calculations, aligned controls and changelog in Chromium
+      - name: Check calculations, audit fixes, aligned controls and changelog in Chromium
         env:
           PLAYWRIGHT_MODULE: ${{ runner.temp }}/nav-playwright/node_modules/playwright
         run: |
           node tools/nav-calculator/verification/nav.test.mjs "$PLAYWRIGHT_MODULE"
+          node tools/nav-calculator/verification/audit.test.mjs
           node tools/nav-calculator/verification/layout.test.mjs
