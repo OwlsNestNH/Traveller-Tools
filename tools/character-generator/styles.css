@@ -289,3 +289,5 @@ body[data-stage="statistics"] #workspace .stat-psi:hover{background:#0a1d29;bord
 body[data-stage="statistics"] #workspace .stat-psi .stat-psi-score{color:inherit}
 
 @media print{button.stat-psi-score{display:block!important;color:inherit;background:none;border:0}#psi-choice-dialog{display:none!important}}
+
+.stat-psi-heading{flex-wrap:wrap}.stat-psi-score{min-width:0;overflow-wrap:anywhere}
