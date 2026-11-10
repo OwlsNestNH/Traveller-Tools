@@ -15,17 +15,18 @@ export function selectedOptionalStatistics(state,catalog){
  if(state.character.species==='aezorgh')inherent.add('CHA');
  return catalog.extraStats.filter(extra=>selected.has(extra.id)&&!inherent.has(extra.id));
 }
-export function statisticsCardsView(state,catalog,baseHtml,{esc,infoButton}){
+export function statisticsCardsView(state,catalog,baseHtml,{esc}){
  const extras=selectedOptionalStatistics(state,catalog);
  if(!extras.length)return baseHtml;
  const value=extra=>Object.hasOwn(state.character.stats,extra.id)?state.character.stats[extra.id]:extra.id==='PSI'?'Untested':'Pending';
- if(extras.length===1&&extras[0].id==='PSI'){
-  const score=value(extras[0]),known=Object.hasOwn(state.character.stats,'PSI');
-  const card='<button type="button" class="stat stat-extra" data-optional-stat="PSI" data-opening-help="extras" aria-haspopup="dialog" aria-controls="opening-help-dialog" aria-label="PSI: '+esc(score)+'. About optional characteristics"><span class="code">PSI</span><strong>'+esc(score)+'</strong><span>Psionic strength</span><span>'+(known?'About this score':'After Keep')+' <span aria-hidden="true">ⓘ</span></span></button>';
-  const end=baseHtml.lastIndexOf('</div>');
-  return (baseHtml.slice(0,end)+card+baseHtml.slice(end)).replace(/class="stats([^"]*)"/,'class="stats$1 statistics-psi-inline"');
- }
- return baseHtml+'<div class="statistics-extras" role="group" aria-label="Selected additional characteristics">'+infoButton('extras')+extras.map(extra=>'<span class="statistics-extra-value" data-optional-stat="'+esc(extra.id)+'" title="'+esc(extra.name)+'"><span class="code">'+esc(extra.id)+'</span><strong>'+esc(value(extra))+'</strong></span>').join('')+'<span class="statistics-extras-timing">Generated when you keep this set.</span></div>';
+ const inline=extras.length===1&&extras[0].id==='PSI';
+ const cards=extras.map(extra=>{
+  const score=value(extra),known=Object.hasOwn(state.character.stats,extra.id);
+  return '<button type="button" class="stat stat-extra'+(known?'':' stat-pending')+'" data-optional-stat="'+esc(extra.id)+'" data-opening-help="extras" aria-haspopup="dialog" aria-controls="opening-help-dialog" aria-label="'+esc(extra.name)+': '+esc(score)+'. About optional characteristics"><span class="code">'+esc(extra.id)+'</span><strong>'+esc(score)+'</strong><span>'+esc(extra.name)+'</span><span>'+(known?'About this score':'After Keep')+' <span aria-hidden="true">ⓘ</span></span></button>';
+ }).join('');
+ const addition=inline?cards:'<div class="statistics-extras" role="group" aria-label="Selected additional characteristics">'+cards+'</div>';
+ const end=baseHtml.lastIndexOf('</div>');
+ return (baseHtml.slice(0,end)+addition+baseHtml.slice(end)).replace(/class="stats([^"]*)"/,'class="stats$1 '+(inline?'statistics-psi-inline':'statistics-with-extras')+'"');
 }
 export function statisticsSummaryView(state,{esc}){
  const total=state.pool.length?esc(state.rollTotal):'—';

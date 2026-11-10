@@ -24,7 +24,11 @@ try{
   await page.getByRole('button',{name:'Roll six characteristics'}).waitFor();
   await page.getByRole('button',{name:'Roll six characteristics'}).click();
   await page.getByRole('button',{name:'Keep these characteristics'}).waitFor();
-  assert.equal(await page.locator('#workspace .stat').count(),6);
+  assert.equal(await page.locator('#workspace .stat:not([data-optional-stat])').count(),6);
+  assert.equal(await page.locator('#workspace [data-optional-stat]').count(),1);
+  assert.equal(await page.locator('#workspace [data-optional-stat="LCK"] strong').textContent(),'Pending');
+  assert.equal(await page.locator('#workspace [data-optional-stat="LCK"][data-opening-help="extras"]').count(),1);
+  assert.equal(await page.locator('#workspace [data-optional-stat="PSI"]').count(),0);
   const total=await page.locator('.total').innerText();
   await page.locator('#swap-a').selectOption('0');await page.locator('#swap-b').selectOption('1');
   await page.getByRole('button',{name:'Swap scores'}).click();

@@ -171,11 +171,11 @@ async function pendingLayout(page, extras, width, label) {
   assert.equal(await page.locator('#workspace .statistics-extras').count(), Number(grouped));
   assert.equal(await page.locator('#workspace .stats.statistics-psi-inline').count(), Number(lonePsi));
   if (grouped) {
-    assert.equal(await page.locator('#workspace .stats [data-optional-stat]').count(), 0, label + ' all extras move together');
-    assert.equal(await page.locator('#workspace .statistics-extras [data-optional-stat]').count(), extras.length);
+    assert.equal(await page.locator('#workspace .stats [data-optional-stat]').count(), extras.length, label + ' all extras share the primary grid');
+    assert.equal(await page.locator('#workspace .stats > .statistics-extras [data-optional-stat]').count(), extras.length);
   }
   const geometry = await page.evaluate(({primaryCards, pendingCards}) => {
-    const bounds = node => { const r = node.getBoundingClientRect(); return {left:r.left, right:r.right, top:r.top, bottom:r.bottom, width:r.width, height:r.height}; };
+    const bounds = node => { const r = node.getBoundingClientRect(), heading = node.querySelector('.code').getBoundingClientRect(); return {left:r.left, right:r.right, top:r.top, bottom:r.bottom, width:r.width, height:r.height, headingTop:heading.top-r.top}; };
     return {primary: [...document.querySelectorAll(primaryCards)].map(bounds),
       extra: [...document.querySelectorAll(pendingCards)].map(bounds)};
   }, {primaryCards, pendingCards});
@@ -186,6 +186,11 @@ async function pendingLayout(page, extras, width, label) {
   if (lonePsi && width < 400) assert.ok(geometry.extra[0].top > geometry.primary[0].top, label + ' PSI wraps on mobile');
   if (grouped) for (const card of geometry.extra) {
     assert.ok(card.top >= Math.max(...geometry.primary.map(card => card.bottom)) - 1, label + ' optional group is below all six primary cards');
+  }
+  for (const card of geometry.extra) {
+    assert.ok(Math.abs(card.width - geometry.primary[0].width) <= 1, label + ' optional card matches primary width: ' + JSON.stringify(geometry));
+    assert.ok(Math.abs(card.height - geometry.primary[0].height) <= 1, label + ' optional card matches primary height: ' + JSON.stringify(geometry));
+    assert.ok(Math.abs(card.headingTop - geometry.primary[0].headingTop) <= 1, label + ' optional header is top-aligned with primary headers: ' + JSON.stringify(geometry));
   }
   await noOverflow(page, label);
   const overflowing = await page.locator(pendingCards).evaluateAll(nodes => nodes.flatMap(node => {
@@ -206,7 +211,7 @@ async function optionalHelp(page, label) {
   const triggers = page.locator('#workspace [data-opening-help="extras"]');
   if (!(await triggers.count())) return;
   const before = await saved(page), log = await downloadedActionLog(page);
-  for (const index of [...new Set([0, (await triggers.count()) - 1])]) {
+  for (let index = 0; index < await triggers.count(); index++) {
     const trigger = triggers.nth(index);
     await trigger.focus();
     await trigger.press('Enter');
