@@ -1,3 +1,4 @@
+import {psiCard} from '../gui/psi-choice.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -23,7 +24,7 @@ function fixture(species = 'human', rolled = false) {
 function render(projection) {
   return vm.runInNewContext(statisticsSource + ';statisticsView(projection.state)', {
     projection, catalog: catalog(), esc, options, button, gmControlsView,
-    emptyStatisticsView, statisticsSummaryView, statisticsControlsView, statisticsCardsView, openingInfoButton,
+    emptyStatisticsView, statisticsSummaryView, statisticsControlsView, statisticsCardsView, openingInfoButton, psiCard,
   });
 }
 
@@ -151,7 +152,7 @@ test('Aezorgh required Charisma is not duplicated as a selected house extra', ()
   }
 });
 
-test('pending extras do not widen swaps, alter reroll total, or change existing Keep timing', () => {
+test('pending extras retain swaps and reroll total while PSI waits for testing', () => {
   const extras = ['PSI', 'LCK', 'MRL', 'STY', 'WLT', 'CHA'];
   let {session, projection} = optionalFixture(extras, true);
   const before = JSON.stringify(session);
@@ -164,9 +165,9 @@ test('pending extras do not widen swaps, alter reroll total, or change existing 
   const finalSoc = projection.state.pool.find(score => score.key === 'SOC').value;
   const result = execute(session, {type: 'accept-statistics'});
   const accepted = project(result.session);
-  assert.deepEqual(Object.keys(accepted.state.character.stats).sort(), ['STR', 'DEX', 'END', 'INT', 'EDU', 'SOC', ...extras].sort());
+  assert.deepEqual(Object.keys(accepted.state.character.stats).sort(), ['STR', 'DEX', 'END', 'INT', 'EDU', 'SOC', ...extras.filter(id=>id!=='PSI')].sort());
   assert.equal(accepted.state.character.stats.WLT, finalSoc);
-  assert.deepEqual(accepted.log.at(-1).rolls.map(roll => roll.label), ['PSI', 'LCK', 'MRL', 'STY', 'CHA']);
+  assert.deepEqual(accepted.log.at(-1).rolls.map(roll => roll.label), ['LCK', 'MRL', 'STY', 'CHA']);
   for (const roll of accepted.log.at(-1).rolls) {
     assert.equal(roll.values.length, 2);
     assert.equal(accepted.state.character.stats[roll.label], roll.values.reduce((sum, value) => sum + value, 0));
@@ -209,4 +210,13 @@ test('compact roll feedback is statistics-only and preserves the complete result
     assert.equal(statisticsRollFeedbackView(event, {...projection.state, stage:'background'}, {esc}), null);
     assert.equal(statisticsRollFeedbackView({...event, type:'gm-override'}, projection.state, {esc}), null);
   }
+});
+
+test('legacy pending optional cards remain informational until Keep can apply their original rules',()=>{
+ for(const revision of ['character-preview-2026-11-09.22','character-preview-2026-11-09.23'])for(const species of ['human','vargr']){
+  let session=createSession('legacy-card-'+revision+'-'+species);session.rulesRevision=revision;for(const command of [{type:'configure',payload:{extras:['WLT','CHA']}},{type:'setup',payload:{species,culture:'imperial'}},{type:'gm-mode',payload:{enabled:true}},{type:'roll-statistics'},{type:'gm-override',payload:{field:'stat.WLT',value:40,reason:'Historical value'}},{type:'gm-override',payload:{field:'stat.CHA',value:40,reason:'Historical value'}}])session=execute(session,command).session;
+  const state=project(session).state,html=statisticsCardsView(state,catalog(),'<div class="stats"></div>',{esc});assert.doesNotMatch(html,/data-edit-stat="(?:WLT|CHA)"/);assert.match(html,/data-opening-help="extras"/);
+  const sheet=vm.runInNewContext(statisticsSource+';statCards(state,false)',{state,esc,psiCard,openingInfoButton});assert.doesNotMatch(sheet,/data-edit-stat/);
+  const accepted=project(execute(session,{type:'accept-statistics'}).session).state;const after=vm.runInNewContext(statisticsSource+';statCards(state,false)',{state:accepted,esc,psiCard,openingInfoButton});assert.match(after,/data-edit-stat="WLT"/);
+ }
 });

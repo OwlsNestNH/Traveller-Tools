@@ -10,8 +10,8 @@ function fixture(species='human',career='core.psion'){
  if(career){s.character.careers=[{id:career,assignment:career==='core.psion'?'adept':'crew',terms:1,rank:0,benefitRolls:1}];s.active=0;}return s;
 }
 const cmd=(s,type,payload={},values)=>{const rolls=[];if(values)s._override={index:0,values};const summary=a.apply(s,{type,payload},rolls);delete s._override;return {rolls,summary};};
-function human(seed='native-public'){
- let r=run(createSession(seed),'setup',{species:'human'});r=run(r,'roll-statistics');r=run(r,'accept-statistics');r=run(r,'gm-mode',{enabled:true});r=run(r,'background',{skills:r.state.backgroundOptions.slice(0,r.state.backgroundRemaining)});return r;
+function human(seed='native-public',revision){
+ const session=createSession(seed);if(revision)session.rulesRevision=revision;let r=run(session,'setup',{species:'human'});r=run(r,'roll-statistics');r=run(r,'accept-statistics');r=run(r,'gm-mode',{enabled:true});r=run(r,'background',{skills:r.state.backgroundOptions.slice(0,r.state.backgroundRemaining)});return r;
 }
 function force(r,type,payload,values,index=0){const rolled=run(r,type,payload);return run(rolled,'gm-replay',{revision:rolled.revision,rollIndex:index,values,reason:'Source regression fixture'});}
 const terms={confirmed:true,note:'Referee verified teacher access, funding and elapsed training chronology',psionicApproved:true,psionicCost:0,psionicFunding:'provided',psionicTimingConfirmed:true};
@@ -72,7 +72,7 @@ test('Zhodani failed talent without a table has an explicit source continuation'
  cmd(s,'resolve-book',{confirmed:true,note:'Referee selected Admin as replacement',effects:[{kind:'skill',name:'Admin',value:1}]});assert.equal(s.character.skills.Admin,1);assert.equal(s.character.cash,77);assert.equal(s.stage,'survival');
 });
 test('ordinary institute training requires access, minimum fee, available cash and timing',()=>{
- let r=run(human(),'begin-psionic-training');assert.equal(r.state.pending.minimumCost,105000);assert.equal(r.state.pending.testingNeeded,true);assert.equal(r.log.at(-1).rolls.length,0);
+ let r=run(human('legacy-institute','character-preview-2026-11-09.23'),'begin-psionic-training');assert.equal(r.state.pending.minimumCost,105000);assert.equal(r.state.pending.testingNeeded,true);assert.equal(r.log.at(-1).rolls.length,0);
  assert.throws(()=>run(r,'resolve-book',{...terms,psionicCost:105000,psionicFunding:'cash'}),/Available cash/);
  assert.throws(()=>run(r,'resolve-book',{...terms,psionicCost:1,psionicFunding:'cash'}),/minimum/);
  assert.throws(()=>run(r,'resolve-book',{...terms,psionicTimingConfirmed:false}),/timing|time/);
@@ -80,7 +80,7 @@ test('ordinary institute training requires access, minimum fee, available cash a
  r=run(r,'resolve-book',terms);assert.equal(r.state.stage,'psionic-training');assert.equal(r.state.character.debt,0);assert.equal(r.state.character.age,18);
 });
 test('cash quote is charged once and repeated command IDs are idempotent',()=>{
- let r=run(human('cash'),'gm-override',{field:'cash',value:200000,reason:'Funding fixture'});r=run(r,'begin-psionic-training');const payload={...terms,psionicCost:105000,psionicFunding:'cash'};
+ let r=run(human('cash','character-preview-2026-11-09.23'),'gm-override',{field:'cash',value:200000,reason:'Funding fixture'});r=run(r,'begin-psionic-training');const payload={...terms,psionicCost:105000,psionicFunding:'cash'};
  r=run(r,'resolve-book',payload,{id:'pay-once'});assert.equal(r.state.character.cash,95000);const again=run(r,'resolve-book',payload,{id:'pay-once'});assert.deepEqual(again.state,r.state);assert.equal(again.revision,r.revision);
  assert.deepEqual(project(importSession(exportSession(r.session))).state,r.state);
 });
@@ -89,7 +89,7 @@ test('zero potential charges testing only and cannot buy another training course
  cmd(s,'begin-psionic-training');cmd(s,'resolve-book',{...terms,psionicCost:106000,psionicFunding:'cash'},[1,1]);assert.equal(s.character.stats.PSI,0);assert.equal(s.character.cash,194000);assert.equal(s.stage,'career');assert.equal(s.character.psionics.rulings.at(-1).cost,6000);assert.throws(()=>cmd(s,'begin-psionic-training'),/zero/);
 });
 test('declining institute training changes neither PSI nor cash or random rolls',()=>{
- let r=run(human(),'begin-psionic-training');const rng=r.state.rng;r=run(r,'resolve-book',{confirmed:true,note:'No teacher accessible',psionicApproved:false});assert.equal(r.state.stage,'precareer');assert.equal(r.state.rng,rng);assert.equal(r.state.character.stats.PSI,undefined);assert.equal(r.state.character.cash,0);
+ let r=run(human('legacy-institute','character-preview-2026-11-09.23'),'begin-psionic-training');const rng=r.state.rng;r=run(r,'resolve-book',{confirmed:true,note:'No teacher accessible',psionicApproved:false});assert.equal(r.state.stage,'precareer');assert.equal(r.state.rng,rng);assert.equal(r.state.character.stats.PSI,undefined);assert.equal(r.state.character.cash,0);
 });
 test('initial training cannot be purchased repeatedly for free retry opportunities',()=>{
  const s=fixture('human',null);cmd(s,'begin-psionic-training');cmd(s,'resolve-book',terms);cmd(s,'finish-psionic-training');assert.throws(()=>cmd(s,'begin-psionic-training'),/already/);
@@ -113,7 +113,7 @@ test('late-term community requires timing decision rather than retroactive free 
  cmd(s,'companion-entry');assert.equal(s.pending.kind,'psionic-training-terms');assert.equal(s.character.age,22);assert.equal(s.character.psionics.attempts.length,0);
 });
 test('player-selected human PSI keeps GM mode off without awarding a talent',()=>{
- let r=run(createSession('raw'),'setup',{species:'human'});r=run(r,'roll-statistics');r=run(r,'accept-statistics');r=run(r,'add-extra',{id:'PSI'});assert.equal(r.state.config.gm,false);assert.equal(r.state.character.psionics.historyKnown,true);assert.deepEqual(r.state.character.skills,{});
+ let r=run(createSession('raw'),'setup',{species:'human'});r=run(r,'roll-statistics');r=run(r,'accept-statistics');r=run(r,'add-extra',{id:'PSI'});assert.equal(r.state.config.gm,false);assert.equal(r.state.character.stats.PSI,undefined);assert.deepEqual(r.log.at(-1).rolls,[]);assert.deepEqual(r.state.character.skills,{});
 });
 test('Core Psion entry cannot silently bypass initial training',()=>{
  const s=fixture('human',null);s.config.gm=true;cmd(s,'career',{id:'core.psion',assignment:'adept'});assert.equal(s.pending.kind,'psionic-training-terms');assert.equal(s.character.careers.length,0);

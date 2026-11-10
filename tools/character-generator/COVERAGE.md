@@ -176,3 +176,9 @@ An explicit pre-roll option, off by default, replaces the initial optional Luck 
 ### Imperial Vargr optional CHA
 
 Campaign ruling for new revision .23: Imperial Vargr retain base SOC and generate CHA only when enabled, using exactly one 1D6 + 2 roll. The ordinary later-add command opts in with the same formula. Native Vargr CHA remains automatic. Historical .16-.22 saves and continuation preserve original results and dice consumption, including the old duplicate optional roll, with frozen synthetic replay fingerprints. Static/HTTP desktop/mobile browser checks cover selected/unselected CHA, reload/import, repeated actions and native CHA.
+
+### GM final-score cards and PSI testing (.24)
+
+Card edits preserve raw dice, totals, audit and deterministic replay across species bonuses, halving, swaps and Keep. PSI header information is read-only; the score opens either confirmed testing or GM assignment. New PSI remains Untested until a valid source or explicit GM value. The off-by-default house option allows standalone Core p.228 testing with teacher/timing confirmation and separate two-week/Cr5000 cost (or confirmed provider). Training remains four-month/Cr100000 and does not retest; events retain their existing rights. Unknown delayed-training decline is not automatically invented.
+
+Native tests cover costs, lifecycle, rejection atomicity, repeat IDs, provenance, separate training and 32 frozen historical .16-.23 states/save bytes/random sequences. Static/HTTP desktop/320px browser tests cover both dialogs, keyboard cancellation, required fields, repeated submission, focus, audit and reload. Deferred Zhodani content remains outside release.

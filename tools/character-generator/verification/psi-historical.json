@@ -1,0 +1,197 @@
+{
+  "sourceCommit": "6ea58d2395ab434c2f74113abb6250fcaa63f299",
+  "cases": [
+    {
+      "revision": 16,
+      "species": "human",
+      "saveHash": "cad241e6b6f464a6f04dad3d509a20f43402d3c1ff80065d5f491ebbca94f06d",
+      "stateHash": "915e79a6621a9b85d1fea1c4a265106b3aeb0ac94a637001b4fce62fd028a5e3"
+    },
+    {
+      "revision": 16,
+      "species": "aslan",
+      "saveHash": "ebf95eb41d11754a14e1ab895a4fb49f52c0044dc3a3c497cd3c8e72b9ce85a8",
+      "stateHash": "30597ae43e1104e04303df61c5e20acb6b379b480339f6e4a7f37f25e2f5013e"
+    },
+    {
+      "revision": 16,
+      "species": "vargr",
+      "saveHash": "98a1b17dca40dfd162a0a87421105236cfe81bd35906bd3a1b67b3bbdd708b74",
+      "stateHash": "9e71a5c177546ddf8275b879b1ed665e2ddcf3ec9cb61dc455cc8f76d098edf9"
+    },
+    {
+      "revision": 16,
+      "species": "aezorgh",
+      "saveHash": "dcc213aa34ec0ec992bbb8d5c2005b10f7aab633653045b5f6fa2a32e073e1c4",
+      "stateHash": "6bc977188c1c6533e70d90bd95327dbc6c39a01cdf1c6c5ce8e43a5b13e1286c"
+    },
+    {
+      "revision": 17,
+      "species": "human",
+      "saveHash": "e23f36a4969e6e329a4338efe0ac439aa70104517b5ba0efc5d865801df2c581",
+      "stateHash": "915e79a6621a9b85d1fea1c4a265106b3aeb0ac94a637001b4fce62fd028a5e3"
+    },
+    {
+      "revision": 17,
+      "species": "aslan",
+      "saveHash": "455421a4d61efe34f6bcc6cc49a66e85227ed18c8d33b8e09c47d3218ca9be4d",
+      "stateHash": "30597ae43e1104e04303df61c5e20acb6b379b480339f6e4a7f37f25e2f5013e"
+    },
+    {
+      "revision": 17,
+      "species": "vargr",
+      "saveHash": "aa4f36dda16e224b29ede3cb9ab2f440641aa565adfe1a79505fd2cd653046a5",
+      "stateHash": "9e71a5c177546ddf8275b879b1ed665e2ddcf3ec9cb61dc455cc8f76d098edf9"
+    },
+    {
+      "revision": 17,
+      "species": "aezorgh",
+      "saveHash": "189a3bec2d02e7a6f44718ab59387df6be4181abfd225a85deedb94446fc00fe",
+      "stateHash": "6bc977188c1c6533e70d90bd95327dbc6c39a01cdf1c6c5ce8e43a5b13e1286c"
+    },
+    {
+      "revision": 18,
+      "species": "human",
+      "saveHash": "5f169073de92e4e97170c769a9fd21811f87e783d62218f85ce06b37d25789bc",
+      "stateHash": "739b010fd5ec2451a1ff78d737d73ed7d1e010914f4ae8c043bf58bba83fdcf9"
+    },
+    {
+      "revision": 18,
+      "species": "aslan",
+      "saveHash": "36b2579027f6f29462e7266f7a6394d751d22919ac337007e453707697346609",
+      "stateHash": "6597996753be2fb9a63299d4fbb56e056bf1c7da0b2ec5b4678b52077c6d522f"
+    },
+    {
+      "revision": 18,
+      "species": "vargr",
+      "saveHash": "e792a7ef891ad0e3e58ee01503f92c9dbb84f26578ce6d09d21441c49fd3de3f",
+      "stateHash": "fc7f8494f39fbeb59cdf1208c906aa692338f08fdce380fb5fba950a0aab34b9"
+    },
+    {
+      "revision": 18,
+      "species": "aezorgh",
+      "saveHash": "0300eea00c96904b1e6a2a917951b9a7179e3317780be58606025ead1a9a61c2",
+      "stateHash": "6d1a795b0e7ce21e1124974d9a561d885107377226ca485ffeba064985572c7b"
+    },
+    {
+      "revision": 19,
+      "species": "human",
+      "saveHash": "45b3d73e910249dc9bcea42a5cb5ebaf602ee27da3459f94afee6de30a1e4494",
+      "stateHash": "da5820ecd68ec97b59462ab45450f568c21152f6d21a30238d4fca75cd5b21d9"
+    },
+    {
+      "revision": 19,
+      "species": "aslan",
+      "saveHash": "5d5196cc1ab3514c3f04ae04f266cd0ecc7eb84c13113c2d28f5d090c57bcb65",
+      "stateHash": "3ffe4025f17db55f6cd3c39e436a7d364bf1666a9e13b8869968223a1e73e803"
+    },
+    {
+      "revision": 19,
+      "species": "vargr",
+      "saveHash": "9e37140a117809fe02017bd2decc57b6aad5cdfdf53bb8c3a88cc50de81c37ff",
+      "stateHash": "10956697ad1c21f932b555db4b6dc6ae2025d0217e8e92ff5268b93872086d5b"
+    },
+    {
+      "revision": 19,
+      "species": "aezorgh",
+      "saveHash": "881aa2484d2cd1e26368d7024c2a672d7a792568954e7393886a6f98540f2832",
+      "stateHash": "6173d35990500568db8687e833bb8c344344df3b8ab80c9a40f262dfeef61cd7"
+    },
+    {
+      "revision": 20,
+      "species": "human",
+      "saveHash": "20c6cc233dd19ae8e3606c1e699d834273d7c3725a76f2a2b38b776210b82208",
+      "stateHash": "0724de12f100a4c25af8ca5e22e835ff26ac09f57b1007b92b51461e8ea3aeca"
+    },
+    {
+      "revision": 20,
+      "species": "aslan",
+      "saveHash": "630a103a1389778a73b35ea2e72340327b48ed92a019504f4a14c16924193a8f",
+      "stateHash": "07f461fd85c1549c14e1a6d8a7359327916e6b2ed9d8a6da0ea7a0ee2ff36041"
+    },
+    {
+      "revision": 20,
+      "species": "vargr",
+      "saveHash": "2436d0dffdef87f9f5a5612516faf7d6468a966173f73148543c4318a52cd315",
+      "stateHash": "87f41c8a0173fbf6b73d39174b155fbe5d99da759ae7abbea3d4272f2dd74365"
+    },
+    {
+      "revision": 20,
+      "species": "aezorgh",
+      "saveHash": "a7a394b314b1382eae1a5876f8827099e67e70a24e525e2c1da9d0a963f326f3",
+      "stateHash": "426994d67509cf7d411add9c268ce93b4079c477b07a8733487e33cfe08cc120"
+    },
+    {
+      "revision": 21,
+      "species": "human",
+      "saveHash": "e6afdcfe2c080f006c3788e454e347800cd3be8e67717b14feb75b0ff4dea778",
+      "stateHash": "d7f96e0a70526fbd75daee4fbb9990706872a6b2a71860804490521f6d08df0c"
+    },
+    {
+      "revision": 21,
+      "species": "aslan",
+      "saveHash": "e9a6917d4f7c2d875957cedab000fcfe9f66cf3dbae6384a8590bcf3acd40f52",
+      "stateHash": "3cc8cd77bd9186370099f6ac79d0a3ad88ab12cd622efc9cba0dc7b32de6604f"
+    },
+    {
+      "revision": 21,
+      "species": "vargr",
+      "saveHash": "ae8ead79de000f99dd141c52a7a488e0b4360d148c04344e4697955953b8b9b3",
+      "stateHash": "cf0eedeaadd432cf88d39c47a30e9e97b51b11cb3f9d6f5e66eab052123dcdcf"
+    },
+    {
+      "revision": 21,
+      "species": "aezorgh",
+      "saveHash": "54aab0fdffd024d601725496f1e06d11351da2762961f0d4d4d503c4649ca7e1",
+      "stateHash": "fcba0b6d7c016d562e9942dcda8eaa4b8a7f811597c08f9d031ef9a7a3f0765d"
+    },
+    {
+      "revision": 22,
+      "species": "human",
+      "saveHash": "4ab25358251842c520b4636d9037899cbd7ddf1de303c40d19dd05e28b1cf924",
+      "stateHash": "1ae923974afd1d9a0074f9b0722cb75d62ae6f6b82b81b5fd529c2e788286e8f"
+    },
+    {
+      "revision": 22,
+      "species": "aslan",
+      "saveHash": "f1b6de057ebc4164da678ecb4ba9703a49db254c8f49044f070fe8af0c3a2e2f",
+      "stateHash": "c804673ebf8015ec475790b308c60ed6fcd30f481ea0fa5b1a848c10880a831b"
+    },
+    {
+      "revision": 22,
+      "species": "vargr",
+      "saveHash": "2f72401f28625709512bb93287a36bcc6a1f8d62f875367d52b82a4960fc5903",
+      "stateHash": "9071a77dadec2551989eda93bfd93e2cd72b13eb487080fb7876d031eaab7576"
+    },
+    {
+      "revision": 22,
+      "species": "aezorgh",
+      "saveHash": "0e105dc273db94fab12a1c503f596350e3a0e19e52f6fad6ca155e68084a07c9",
+      "stateHash": "2ae0f75a740cd4b77c7a7316a082871c1eceabbe0dc17dc02e85ca81d3513e2b"
+    },
+    {
+      "revision": 23,
+      "species": "human",
+      "saveHash": "60c2b36c95b51cbec661e6b5ab7827184f4c5c879cc7dbce2d82fd0afd50491f",
+      "stateHash": "44f66bc324ad593e4e96d3826e804a79f3b4c1c7df5491b9772750a3638a75ba"
+    },
+    {
+      "revision": 23,
+      "species": "aslan",
+      "saveHash": "e3ae68c3610e4f36e1d3c5fe0fd14899bd9a2aae3bb1efdceb26b08251fa45d6",
+      "stateHash": "16c4551f7cf0de2eb67a80e25982bb605b60c4d52fb45936677dc7784b8a22b6"
+    },
+    {
+      "revision": 23,
+      "species": "vargr",
+      "saveHash": "09f1accdb55283b44473424845a9d78fbd41d92943572cd4d752459cf3880e5f",
+      "stateHash": "20263302d97b08c164b0cfbd78f83408dc625e45ba0f40374d4f88d4f0fa91fa"
+    },
+    {
+      "revision": 23,
+      "species": "aezorgh",
+      "saveHash": "145ec1ddadd5019ed6a060c35218b7ea619291f5ccfa221ed086f42e113399d9",
+      "stateHash": "0df51b21b7a031285f8fe194aed768b5ad4ff075db9f77c76191a5983a8ef053"
+    }
+  ]
+}

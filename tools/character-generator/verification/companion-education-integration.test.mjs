@@ -102,7 +102,7 @@ test('Prisoner mishap retains the end-of-term advancement and parole opportunity
  s.character.careers[0].parole=3;s._override={index:0,values:[6,6]};a.apply(s,{type:'advancement',payload:{}},[]);assert.equal(s.character.careers[0].released,true);
 });
 test('PSI added after an education-only term is reduced by career terms only',()=>{
- let r=spacer();r=force(r,'add-extra',{id:'PSI'},[4,4]);assert.equal(r.state.character.stats.PSI,8);assert.match(r.log.at(-1).summary,/completed career terms/);
+ let r=spacer();r=run(r,'gm-psi-testing',{enabled:true});r=force(r,'test-psionic-potential',{accessConfirmed:true,timingConfirmed:true,funding:'provided',cost:0,providedConfirmed:true,reason:'Confirmed teacher and two weeks'},[4,4]);assert.equal(r.state.character.stats.PSI,8);assert.match(r.log.at(-1).summary,/0 career terms/);
 });
 test('Companion UI exposes all phases and keeps UTF8 and focus safeguards intact',async()=>{
  const ui=await readFile(new URL('../gui/app.mjs',import.meta.url),'utf8');for(const name of ['companion-admission','companion-skill','education-tl','education-size','education-curriculum','education-citizen-decision','education-psi'])assert.ok(ui.includes(name),name);assert.ok(ui.includes('operationGeneration'));assert.ok(ui.includes('focusAfterAction'));assert.ok(!/[\u0000-\u0008\u000b\u000c\u000e-\u001f\ufffd]/.test(ui));
