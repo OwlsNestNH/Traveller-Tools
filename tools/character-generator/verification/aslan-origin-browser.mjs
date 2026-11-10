@@ -22,7 +22,7 @@ async function fresh(name,width,fixture,check,{staticMode=false}={}){
   await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(fixture.session)});await page.reload();
   await page.waitForFunction(()=>Number(document.querySelector('#workspace')?.dataset.revision??0)>5);await check(page);await ready(page);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,name+' overflow');
-  assert.deepEqual(await page.locator('button:visible').evaluateAll(nodes=>nodes.filter(n=>n.getBoundingClientRect().height<43).map(n=>n.textContent)),[]);
+  assert.deepEqual(await page.locator('button:visible').evaluateAll(nodes=>nodes.filter(n=>n.getBoundingClientRect().height<(n.closest('.log-switch')?24:43)).map(n=>n.textContent)),[]);
   await shot(page,name);checks.push({name,width,pass:true});
  }finally{await context.close();}
 }

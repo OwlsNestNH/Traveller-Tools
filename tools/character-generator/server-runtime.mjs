@@ -6,7 +6,7 @@ import { MAX_SAVE_BYTES } from './engine/session.mjs';
 // JSON import wraps an already-serialized save; escaping can nearly double it.
 const MAX_REQUEST_BYTES=2*MAX_SAVE_BYTES+65536;
 const root=fileURLToPath(new URL('.',import.meta.url));
-const types={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.json':'application/json'};
+const types={'.png':'image/png','.svg':'image/svg+xml','.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.json':'application/json'};
 export function createRulesServer(api){
  return http.createServer(async(req,res)=>{
   res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Cache-Control','no-store');

@@ -29,10 +29,10 @@ try{
    const page=await context.newPage(),engineRequests=[],apiRequests=[];page.on('pageerror',error=>errors.push(error.message));
    page.on('request',request=>{if(request.url().includes('/engine/'))engineRequests.push(request.url());if(new URL(request.url()).pathname==='/api/v1')apiRequests.push(request.url());});
    await page.goto(http?httpOrigin+'/?api=local':url);await page.getByRole('heading',{name:'Start your Traveller',exact:true}).waitFor();
-   await page.locator('#setup-optional-settings>summary').click();
+   await page.locator('#setup-gm-controls').evaluate(el=>el.open=true);await page.locator('#setup-optional-settings>summary').click();
    const psi=page.locator('[name=extras][value=PSI]'),gm=page.locator('[name=gm]');
    assert.equal(await psi.isEnabled(),true);assert.equal(await gm.isChecked(),false);
-   if(initial){await psi.check();await gm.check();await gm.uncheck();assert.equal(await psi.isChecked(),true);assert.match(await page.locator('#setup-optional-summary').textContent(),/PSI.*GM changes off/);}
+   if(initial){await psi.check();await page.locator('#setup-gm-controls').evaluate(el=>el.open=true);await page.locator('#setup-gm-settings>summary').click();await gm.check();await gm.uncheck();assert.equal(await psi.isChecked(),true);assert.match(await page.locator('#setup-optional-summary').textContent(),/PSI.*GM changes off/);}
    await page.getByRole('button',{name:'Begin character',exact:true}).click();
    await page.getByRole('button',{name:'Roll six characteristics',exact:true}).click();
    await page.getByRole('button',{name:'Keep these characteristics',exact:true}).click();

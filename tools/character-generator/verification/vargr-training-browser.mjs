@@ -25,7 +25,7 @@ try{
    await page.locator('#award-skill').fill('Engineer (power)');await page.locator('[data-action=choose-skill]').click();await page.locator('[data-action=advancement]').waitFor();
    const before=project(JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key)));assert.equal(before.state.character.skills['Engineer (power)'],1);await page.reload();await page.locator('[data-action=advancement]').waitFor();assert.deepEqual(project(JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key))),before);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
-   assert.deepEqual(await page.locator('button:visible').evaluateAll(nodes=>nodes.filter(n=>n.getBoundingClientRect().height<43).map(n=>n.textContent)),[]);await page.screenshot({path:fileURLToPath(new URL(name+'-complete.png',out)),fullPage:true});checks.push({name,pass:true});
+   assert.deepEqual(await page.locator('button:visible').evaluateAll(nodes=>nodes.filter(n=>n.getBoundingClientRect().height<(n.closest('.log-switch')?24:43)).map(n=>n.textContent)),[]);await page.screenshot({path:fileURLToPath(new URL(name+'-complete.png',out)),fullPage:true});checks.push({name,pass:true});
   }finally{await context.close();}
  }
  assert.deepEqual(errors,[]);await writeFile(new URL('vargr-training-browser-results.json',out),JSON.stringify({checks,errors},null,2));console.log(JSON.stringify({checks,errors}));

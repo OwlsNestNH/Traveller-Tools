@@ -17,7 +17,7 @@ try{
   await page.goto(origin+(transport==='http'?'/?api=local':'/'));await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();
   await page.locator('[name=name]').fill('Browser Test <Traveller>');
   await page.locator('[name=boons]').selectOption('3');
-  await page.locator('#setup-optional-settings>summary').click();await page.locator('[name=extras][value=LCK]').check();
+  await page.locator('#setup-gm-controls').evaluate(el=>el.open=true);await page.locator('#setup-optional-settings>summary').click();await page.locator('#setup-gm-controls').evaluate(el=>el.open=true);await page.locator('#setup-optional-settings').evaluate(el=>el.open=true);await page.locator('[name=extras][value=LCK]').check();
   await page.getByRole('button',{name:'Begin character',exact:true}).click();
   await page.getByRole('button',{name:'Roll six characteristics'}).waitFor();
   await page.getByRole('button',{name:'Roll six characteristics'}).click();
@@ -44,7 +44,7 @@ try{
   assert.equal(await page.locator('#sheet img,#sheet script').count(),0);
   const downloadEvent=page.waitForEvent('download');await page.locator('#export').click();const download=await downloadEvent;const exported=JSON.parse(await readFile(await download.path(),'utf8'));assert.equal(exported.events.length,beforeLog);
   const horizontal=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);assert.equal(horizontal,false,name+' horizontal overflow');
-  const tinyButtons=await page.locator('button:visible').evaluateAll(nodes=>nodes.filter(n=>n.getBoundingClientRect().height<43).map(n=>n.textContent));assert.deepEqual(tinyButtons,[]);
+  const tinyButtons=await page.locator('button:visible').evaluateAll(nodes=>nodes.filter(n=>n.getBoundingClientRect().height<(n.closest('.log-switch')?24:43)).map(n=>n.textContent));assert.deepEqual(tinyButtons,[]);
   await page.screenshot({path:path.join(out,name+'-career.png'),fullPage:true});
   await page.locator('#import').setInputFiles({name:'broken.json',mimeType:'application/json',buffer:Buffer.from('{"format":"invalid"}')});
   await page.waitForFunction(()=>document.querySelector('#message').textContent.includes('Could not load'));
