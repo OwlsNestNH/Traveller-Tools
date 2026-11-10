@@ -61,3 +61,13 @@ node verification/parity.test.mjs
 ```
 
 The parity suite compares the refactor against the immutable PR264 HTML fixture at commit `ea48ea7d65699f99fd2a2f468c7c887c82695175`. It verifies the fixture SHA-256, runs deterministic inputs/dice at desktop/mobile widths, and compares outputs, clipboard text, errors, form state, focus, visibility and random-call count after every transition. A separate empty browser consumer checks the ES-module API. Existing static tests inline the exact deployed scripts; HTTP suites check actual relative script loading. CI runs all of these checks.
+
+## Optional Updated interface
+
+Use the Legacy / Updated selector without losing inputs, the current solution, brief or dice. Legacy is the initial view. Updated opens the same controls in a centered Plan Route dialog; Close and Escape retain edits, and edited inputs invalidate prior results. Recompute explicitly solves again and may roll fresh Astrogation dice. Rendering or switching views never solves or rolls.
+
+The dashboard consumes the exact navResult recorded by the existing controller after solveRoute or computeClearance; there is still one engine and input adapter. updated.js adds presentation and updated.css scopes its styling. Nominal burn/brake estimates describe the symmetric physical profile; Astrogation adjusts total transit time only. 100D is advisory, not an extra leg or a braking point.
+
+Run node verification/updated.test.mjs from this directory with PLAYWRIGHT_MODULE and optional NAV_BROWSER_CHANNEL. Set NAV_SCREENSHOT_DIR for actual desktop, mobile and Plan Route screenshots. Existing engine, calculation, audit, layout, parity and shared visit tests still apply.
+
+The updated dashboard uses a compact instrument-panel layout, with a persistent lower-left 100D advisory readout. Route and drive summary fields open Plan Route. The six action tiles are Plan Route, Recompute, Copy Brief, 100D Only, Clear and Legacy; no illustrative Execute/Hold/Waypoint controls are included.

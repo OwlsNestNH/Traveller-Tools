@@ -128,6 +128,7 @@ const NavEngine = globalThis.TravellerNav;
 
 
   let lastBrief = "";
+  let navResult = null;
   let calculationMode = "route";
 
   function fmt(n, d=2){ return Number.isFinite(n) ? n.toFixed(d) : "—"; }
@@ -162,6 +163,7 @@ function setStatus(ok, text){
   }
 
   function invalidateSolution(){
+    navResult = null;
     lastBrief = "";
     for(const id of ["rawDistOut", "distOut", "arcMultOut", "jumpOut", "totalDistOut",
       "commOut", "nominalOut", "adjustedOut", "routeLegOut", "jumpLegOut", "legsSumOut", "speedOut"]){
@@ -290,6 +292,7 @@ function setStatus(ok, text){
   function get100DClearanceKm(){ return NavEngine.clearanceDistance(readNavInput().clearance); }
 
   function resetAll(){
+    navResult = null;
     calculationMode = "route";
     clearError();
     lastBrief = "";
@@ -438,6 +441,7 @@ function setStatus(ok, text){
         solution = NavEngine.solveRoute(input, error.sides.map(rollD));
       }
     } catch(error){ return setError(error.message); }
+    navResult = solution;
     const {thrustG,profile,distance:dist,jump,jumpTimeSelMin,totalKm,commLagMin,
       nominalRoutedMin,adjustedRoutedMin,vKmS,astrogation} = solution;
     const {rawKm,routedKm} = dist;
@@ -554,6 +558,7 @@ function setStatus(ok, text){
     let result;
     try { result = NavEngine.computeClearance(readNavInput()); }
     catch(error){ return setError(error.message); }
+    navResult = result;
     const {jump,timeSelectedMin:jumpTimeSelMin} = result;
     const jumpKm = jump.clearanceKm;
 
