@@ -213,6 +213,10 @@ New-rule Aslan rite equipment credit and Wanderer landholds join the finalizatio
 
 The minimum raw total is adjustable in setup (whole numbers from 6 to 72). It defaults to 43, or 30 for standard Aezorgh; the optional all-six-2D6 Aezorgh method defaults to 43 before placement and halving. Custom totals remain selected when changing species or dice method. Rerolls remain enabled by default and are available only below the selected total. Saved characters without this option keep their original defaults and recorded history.
 
+## Connections entry timing
+
+The live record keeps Background notes available during creation. Add a connection appears only after Finish character reaches the final review, not at setup, between terms, retirement or the equipment checklist. Existing recorded connections, skill awards, saves and audit history remain unchanged. Historical pre-finalization connection commands still replay under their original rules.
+
 ## Characteristics-page presentation
 
 The opening navy/gold theme continues through rolling and placing the six characteristics. The live record keeps the selected illustrative species portrait. Before rolling, six species-appropriate placeholders are shown; rolled scores retain their raw values, species modifiers and dice method. Existing swapping, reroll thresholds, acceptance, save/replay and audit commands are unchanged.

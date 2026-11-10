@@ -55,7 +55,7 @@ try{
    page.once('dialog',d=>d.accept());await page.getByRole('button',{name:'Restore this step',exact:true}).click();await page.waitForFunction(key=>JSON.parse(localStorage.getItem(key)).events.at(-1).command.type==='restore',key);
    assert.equal(await page.locator('#gm-restore-form').isVisible(),true);assert.match(await downloadedActionLog(page),/Restored|restore/i);
    // Storage errors are never cleared or visually suppressed by career navigation.
-   await load(fixtures.career.before);await page.locator('#sheet details').filter({has:page.getByText('Notes & connections',{exact:true})}).locator('summary').click();await page.locator('#character-notes').fill('Synthetic unsaved storage warning');
+   await load(fixtures.career.before);await page.locator('#notes-connections').locator('summary').click();await page.locator('#character-notes').fill('Synthetic unsaved storage warning');
    await page.evaluate(()=>{Storage.prototype.setItem=()=>{throw Error('Synthetic storage failure');};});await page.getByRole('button',{name:'Save notes',exact:true}).click();await page.locator('#message.error').waitFor();await page.locator('[data-action=select-career][data-id="core.rogue"]').click();assert.match(await page.locator('#message.error').innerText(),/could not save/);assert.equal(await page.locator('#message').evaluate(el=>el.classList.contains('action-announcement')),false);
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));if(transport==='http')assert.deepEqual(engineRequests,[]);checks.push(name);
   }finally{await context.close();}

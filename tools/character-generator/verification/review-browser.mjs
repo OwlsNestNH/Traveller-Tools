@@ -80,7 +80,7 @@ try {
    if(request.operation==='command'&&request.command.type==='notes'){started();await gate;}
    await route.continue();
   });
-  await page.locator('summary').filter({hasText:'Notes & connections'}).click();
+  await page.locator('#notes-connections > summary').click();
   await page.locator('#character-notes').fill('Retain this pending action');
   await page.getByRole('button',{name:'Save notes',exact:true}).click();await pending;
   try {
