@@ -18,7 +18,7 @@ const saved=page=>page.evaluate(key=>localStorage.getItem(key),key);
 const ready=page=>page.waitForFunction(()=>!document.querySelector('#export').disabled);
 const snapshot=async page=>project(JSON.parse(await saved(page)));
 async function changed(page,before){await page.waitForFunction(({key,before})=>JSON.parse(localStorage.getItem(key)).events.length>before&&!document.querySelector('#export').disabled,{key,before});}
-async function load(page,session){await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(session)});await page.reload();await ready();await page.locator('body[data-stage="statistics"]').waitFor();}
+async function load(page,session){await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(session)});await page.reload();await ready(page);await page.locator('body[data-stage="statistics"]').waitFor();}
 async function screenshot(page,name){await page.screenshot({path:fileURLToPath(new URL('outcome-taglines-'+name+'.png',out)),fullPage:true});}
 
 function fixture(species,config,outcome){
@@ -43,7 +43,7 @@ try{
   const context=await browser.newContext({viewport:{width,height:1000}}),page=await context.newPage(),requests=[];
   page.setDefaultTimeout(15000);page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>requests.push(r.url()));
   try{
-   await page.goto(origin+(transport==='http'?'/?api=local':'/'));await page.locator('#setup-form').waitFor();await ready();
+   await page.goto(origin+(transport==='http'?'/?api=local':'/'));await page.locator('#setup-form').waitFor();await ready(page);
    // Exercise the real button and repeated-click guard, rather than inserting a result into the DOM.
    await load(page,item.before);assert.equal(await page.locator('.outcome-tagline').count(),0);
    const beforeCount=item.before.events.length;
@@ -75,7 +75,7 @@ try{
    await page.locator('#simple-action-log[open]').waitFor();await page.keyboard.press('Escape');assert.equal(await details.evaluate(n=>n===document.activeElement),true);
    await page.locator('#cancel-character').click();await page.locator('#cancel-character-dialog[open]').waitFor();await page.keyboard.press('Escape');
    assert.equal(await saved(page),raw);assert.equal(await downloadedActionLog(page),fullLog);if(text)assert.equal(await tag.innerText(),text);
-   await page.reload();await ready();if(text)assert.equal(await tag.innerText(),text);else assert.equal(await tag.count(),0);
+   await page.reload();await ready(page);if(text)assert.equal(await tag.innerText(),text);else assert.equal(await tag.count(),0);
    assert.equal(await saved(page),raw,'reload does not add a presentation field');
    if(transport==='static'&&['human-low','human-high','aezorgh-low'].includes(item.name))await screenshot(page,item.name+'-'+width);
    // Swapping is a separate factual action: it must not select another joke.
