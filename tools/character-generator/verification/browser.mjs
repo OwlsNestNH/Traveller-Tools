@@ -35,10 +35,10 @@ try{
   await page.waitForFunction(()=>document.querySelector('#message').textContent.startsWith('Swapped'));
   assert.equal(await page.locator('.total').innerText(),total);
   await page.screenshot({path:path.join(out,name+'-statistics.png'),fullPage:true});
-  await page.getByRole('button',{name:'Keep these characteristics'}).click();await page.getByRole('heading',{name:'Choose background skills'}).waitFor();
+  await page.getByRole('button',{name:'Keep these characteristics'}).click();await page.getByRole('heading',{name:'Choose your background skills'}).waitFor();
   assert.equal(await page.locator('#sheet .stat').filter({hasText:'LCK'}).count(),1);
   assert.equal(await page.locator('#sheet .stat').filter({hasText:'PSI'}).count(),0);
-  const backgroundText=await page.locator('#workspace>p').allTextContents();const count=Number(backgroundText.join(' ').match(/Choose\s+(\d+)/)?.[1]??0);
+  const count=Number((await page.locator('#background-count').textContent()).match(/\/\s*(\d+)/)?.[1]??0);assert.ok(count>0);
   for(let i=0;i<count;i++)await page.locator('input[name=skills]').nth(i).check();
   await page.getByRole('button',{name:'Accept background skills'}).click();await page.getByRole('heading',{name:'Before your career'}).waitFor();
   await page.getByRole('button',{name:'Go straight to careers'}).click();await page.getByRole('heading',{name:'Choose your next career'}).waitFor();

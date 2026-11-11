@@ -1,3 +1,4 @@
+import {backgroundSelection,backgroundDraftKey,reconcileBackgroundDraft,backgroundSkillsView,syncBackgroundSkills,mountBackgroundLayout} from './background-skills.mjs';
 import {physicalDiceSetting,physicalDiceCards,physicalDiceWarning,mountPhysicalDiceEditor} from './physical-dice.mjs';
 import {psiCard,mountPsiChoice} from './psi-choice.mjs';
 import {mountStatisticEditor} from './statistic-editor.mjs';
@@ -56,6 +57,7 @@ const $=selector=>document.querySelector(selector);
 const numberInput=selector=>{const input=$(selector);return input&&input.value!==''?Number(input.value):undefined;};
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const key='traveller-character-generator.v1';
+let backgroundDraft=null;
 let notesDraft=null,inspectionRaw=null,inspectionHistory=null,inspectionOriginal=null;
 let session,projection,catalog,busy=false,selectedCareer='',effects=[],storageWarning='',operationGeneration=0,recoveryRaw=null;
 const stageNames={'equipment-finalization':'Assets & benefits','borrowed-event-roll':'Discover the next part of your story','career-event':'Discover your career event','career-mishap':'Resolve your career mishap','relationship-event':'Choose the relationship consequence','cross-career-cover':'Choose your cover career','benefit-wager':'Choose an optional benefit wager','aslan-family':'Discover your family background','aslan-birth-order':'Your place in the family','aslan-estate':'Record the family land baseline','aslan-clan':'Find your clan','aslan-pride':'Find your pride','aslan-rite':'Complete your rite','aslan-officer-entry':'Qualify for the officer career','aslan-officer-rank':'GM officer rank mapping','assignment-entry':'Qualify for your new assignment','advisory-cash-source':'Resolve the unprinted cash result','advisory-career':'Choose your advisory career','advisory-cash':'Resolve your advisory cash benefit','cross-career-training':'Choose your extra training','relationship-loss':'Choose a relationship to remove','merchant-fine-roll':'Roll the Merchant fine','merchant-fine-decision':'Resolve the Merchant fine','reeducation-roll':'Re-education outcome','reeducation-fine':'Re-education fine','reeducation-decisions':'Resolve re-education decisions','psionic-games-preliminaries':'Compete in the Psionic Games','psionic-games-final':'The Psionic Games final','psionic-games-decisions':'Resolve the Games term',retirement:'Retired from character creation','psionic-training':'Explore your psionic talents','injury-loss':'Resolve the injury','injury-treatment':'Choose injury treatment','companion-admission':'Check education admission','companion-skill':'Choose your education awards','education-skill':'Choose your study skills','education-service':'Choose academy service awards','education-event':'Your education term','education-check':'Demonstrate what you learned','education-graduation':'Graduation','preterm-commission':'Education commission opportunity',identity:'Start your Traveller',statistics:'Roll and place characteristics',background:'Choose background skills',precareer:'Before your career',career:'Choose your next career','failed-entry':'Choose a new direction','book-step':'Resolve a source step',survival:'Will you make it through?',advancement:'Your career develops',training:'Choose a training table','effect-choice':'Make a life-path choice','skill-choice':'Choose your new skill','term-end':'The end of a term',benefits:'What you take with you',finish:'Your Traveller is ready to review',ageing:'The passing years',deceased:'The end of a life path'};
@@ -145,6 +147,7 @@ function inspectHistory(raw,original=null,issue=''){
 function closeHistory(){inspectionRaw=null;inspectionOriginal=null;inspectionHistory=null;$('#legacy-history').hidden=true;$('#legacy-actions').replaceChildren();}
 function setBusy(value){
  busy=value;
+ if(projection?.state.stage==='background')syncBackgroundSkills(document,projection.state,backgroundDraft?.skills??[],{esc},value);
  if(value){for(const el of document.querySelectorAll('button,input[type=file],#character-notes'))if(!el.disabled){el.dataset.busyDisabled='true';el.disabled=true;}}
  else {for(const el of document.querySelectorAll('[data-busy-disabled]')){el.disabled=false;delete el.dataset.busyDisabled;}$('#legacy-text').disabled=inspectionHistory===null;}
 }
@@ -176,6 +179,7 @@ async function send(type,payload={}){
  }catch(error){if(token===operationGeneration)notify(error.message,true);return false;}
  finally{if(token===operationGeneration)setBusy(false);}
 }
+document.addEventListener('change',event=>{if(event.target.matches('#background-form [name=skills]')&&!busy){backgroundDraft={key:backgroundDraftKey(session,projection.state),skills:selected(event.target.form,'skills')};syncBackgroundSkills(document,projection.state,backgroundDraft.skills,{esc});}});
 function selected(form,name){return [...form.querySelectorAll('input[name="'+name+'"]:checked')].map(e=>e.value);}
 mountOpeningHelp(document);
 mountPhysicalDiceEditor({document,getProjection:()=>projection,canOpen:()=>!busy&&recoveryRaw===null,onSave:payload=>send('enter-physical-statistic',payload),getError:()=>$('#message').textContent});
@@ -223,7 +227,7 @@ function statisticsView(state){
  return html+statisticsSummaryView(state,{esc})+'<div class="actions statistics-actions">'+button('Keep these characteristics','accept-statistics','statistics-primary',state.pool.some(p=>p.base===null)?'disabled':'')+button(state.statisticsComplete===false?'Roll a computer set':'Reroll this set','roll-statistics','quiet',(!state.statisticsCanReroll&&state.statisticsComplete!==false?'disabled title="'+(state.config.minimumReroll?'The raw total meets the reroll threshold.':'Minimum-total rerolls are off.')+'"':''))+'</div>'+controls;
 }
 function backgroundView(state){
- return '<p>Choose <strong>'+state.backgroundRemaining+'</strong> background skills. Each begins at level 0.</p><form id="background-form"><div class="options-list">'+state.backgroundOptions.filter(name=>!Object.hasOwn(state.character.skills,name)).map(name=>'<label class="check"><input type="checkbox" name="skills" value="'+esc(name)+'"><span>'+esc(name)+'</span></label>').join('')+'</div><div class="actions"><button type="submit">Accept background skills</button></div></form>';
+ return backgroundSkillsView(state,backgroundDraft?.skills??[],catalog,{esc});
 }
 function preCareerView(state){
  return '<p>Core and Companion education include admission, study choices, events and graduation. Unresolved psionics and cross-book exceptions pause for an explicit source decision.</p><div class="choice-list">'+catalog.precareers.map(p=>button('<span><strong>'+esc(p.name)+'</strong><small>'+esc(sourceLabel(p.source,p.page))+'</small></span>','precareer','choice','data-id="'+p.id+'" '+(state.character.terms>=3||state.educationAttemptTerms?.includes(state.character.terms)?'disabled':''))).join('')+'</div><div class="actions">'+button('Go straight to careers','skip-precareer','quiet')+'</div>';
@@ -452,14 +456,15 @@ function sheetView(state){
 }
 
 function render(){
+ backgroundDraft=reconcileBackgroundDraft(backgroundDraft,backgroundDraftKey(session,projection.state),projection.state);
  const lastRollResult=conciseResult(projection.log.at(-1),projection.state,catalog);
- const lastResult=projection.state.stage==='career'&&selectedCareer?'':statisticsRollFeedbackView(projection.log.at(-1),projection.state,{esc})??latestResultView(lastRollResult,{esc});
+ const lastResult=projection.state.stage==='background'||projection.state.stage==='career'&&selectedCareer?'':statisticsRollFeedbackView(projection.log.at(-1),projection.state,{esc})??latestResultView(lastRollResult,{esc});
  const lawyerPanel=$('#prisoner-lawyer'),lawyerDraft=lawyerPanel?{id:lawyerPanel.dataset.lawyerId,fields:[...lawyerPanel.querySelectorAll('input,select,textarea')].map(input=>({id:input.id,value:input.value,checked:input.checked}))}:null;
  const lifePanel=$('#core-life-decision'),lifeDraft=lifePanel?{id:lifePanel.dataset.lifeEventId,fields:[...lifePanel.querySelectorAll('input,select,textarea')].map(input=>({id:input.id,value:input.value,checked:input.checked}))}:null;
  const accessOpen=$('#aslan-access-panel')?.open;
  const landOpen=$('#land-claim-panel')?.open;
  const shareDraft={open:$('#clan-share-panel')?.open,kind:$('#clan-share-kind')?.value,lot:$('#clan-share-lot')?.value};
- const state=projection.state;document.body.dataset.stage=state.stage;$('header h1').textContent=['identity','statistics'].includes(state.stage)?'CHARACTER BUILDER':'A life among the stars';$('header .lead').textContent=['identity','statistics'].includes(state.stage)?'TRAVELLER RPG':'Build your Traveller one decision at a time.';const detailKey=d=>d.id||d.querySelector(':scope > summary')?.textContent;const previousDetails=new Map([...document.querySelectorAll('#sheet details, #statistics-gm-controls details')].map(d=>[detailKey(d),d.open]));
+ const state=projection.state;document.body.dataset.stage=state.stage;$('header h1').textContent=['identity','statistics','background'].includes(state.stage)?'CHARACTER BUILDER':'A life among the stars';$('header .lead').textContent=['identity','statistics','background'].includes(state.stage)?'TRAVELLER RPG':'Build your Traveller one decision at a time.';const detailKey=d=>d.id||d.querySelector(':scope > summary')?.textContent;const previousDetails=new Map([...document.querySelectorAll('#sheet details, #statistics-gm-controls details')].map(d=>[detailKey(d),d.open]));
  const gmDraft={task:$('#gm-task')?.value,field:$('#gm-field')?.value,roll:$('#gm-roll-choice')?.value,restore:$('#gm-restore-choice')?.value};
  $('#workspace').innerHTML='<p class="step-count">COMPLETED TERMS: '+state.character.terms+' · '+esc(state.stage.toUpperCase().replaceAll('-',' '))+'</p><h2 id="step-title" tabindex="-1">'+esc(educationSkillTitle(state)??trainingContext(state)?.title??(state.prisonerEscape?prisonerEscapeTitle:null)??(isBasicTrainingChoice(state)?'Choose a basic-training skill':stageNames[state.stage]??state.stage))+'</h2>'+lastResult+aslanAccessView(state,{esc,button})+clanShareView(state,{esc,button,sourceLabel})+landClaimView(state,{esc,button,sourceLabel})+aslanAccessConflictView(state,{esc,button,sourceLabel})+stageView(state)+(['career','retirement','benefits'].includes(state.stage)&&(state.character.deferredEquipment??[]).some(e=>e.status==='pending')?button('Review assets & benefits','review-equipment','quiet'):'')+deferredAwardsView(state,{esc,button});
  if(state.stage==='statistics'){const heading=$('#step-title'),wrap=document.createElement('div');wrap.className='statistics-heading';heading.before(wrap);wrap.append(heading);wrap.insertAdjacentHTML('beforeend',openingInfoButton('generation'));}
@@ -472,6 +477,7 @@ function render(){
  if(state.stage==='statistics')syncCharacterPortrait(state.character.species,(state.character.identityGender??state.character.gender)==='female'?'female':'male');
  syncCorrectionField(state,$);syncReplacementDice(projection.log,$,esc);syncCorrectionTask($);if(state.stage==='identity')syncRerollOptions($('#setup-form'));
  cancelCharacter.placeButton();
+ mountBackgroundLayout(document,state,backgroundDraft?.skills??[],catalog,{esc});
  $('#workspace').dataset.revision=projection.revision;
  mountEquipmentDialog(document,()=>send('cancel-deferred-equipment'));
 }
@@ -618,7 +624,7 @@ document.addEventListener('submit',async event=>{
   if(values.get('academyServiceSkill')&&!projection.state.config.academyServiceSkill&&!await send('gm-academy-training',{enabled:true}))return;
   await send('setup',{name:values.get('name'),species:values.get('species'),gender:values.get('gender'),culture:values.get('culture')??'native',variant:values.get('species')==='vargr'?(values.get('variant')??'standard'):undefined,homeworld:values.get('homeworld')});
  }
- if(event.target.id==='background-form'){event.preventDefault();send('background',{skills:selected(event.target,'skills')});}
+ if(event.target.id==='background-form'){event.preventDefault();const selection=backgroundSelection(projection.state,selected(event.target,'skills'));if(!busy&&selection.valid)send('background',{skills:selection.skills});}
 });
 function download(name,contents,type='application/json'){
  const url=URL.createObjectURL(new Blob([contents],{type}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),5000);
@@ -663,7 +669,7 @@ async function startNewCharacter({replaceRecovery=false}={}){
  const token=++operationGeneration;setBusy(true);
  try{
   const result=await call({operation:'create',seed:crypto.randomUUID()});if(token!==operationGeneration)return;if(!result.ok)throw new Error(result.error.message);
-  session=result.session;projection=result;aslanManualReviewKey=null;notesDraft=null;selectedCareer='';effects=[];if(replaceRecovery)recoveryRaw=null;closeHistory();persist();updateRecovery();render();$('#step-title')?.focus();notify(storageWarning||'New character started.',!!storageWarning,'info',!storageWarning);
+  session=result.session;projection=result;aslanManualReviewKey=null;notesDraft=null;backgroundDraft=null;selectedCareer='';effects=[];if(replaceRecovery)recoveryRaw=null;closeHistory();persist();updateRecovery();render();$('#step-title')?.focus();notify(storageWarning||'New character started.',!!storageWarning,'info',!storageWarning);
  }catch(error){if(token===operationGeneration)notify('Could not start a new character: '+error.message,true);}
  finally{if(token===operationGeneration)setBusy(false);}
 };
@@ -676,7 +682,7 @@ $('#import').onchange=async event=>{
   try{incomingRaw=new TextDecoder('utf-8',{fatal:true}).decode(await file.arrayBuffer());}catch{decodeIssue='The original file is not valid UTF-8. Download the unchanged file; no recorded text or character was imported.';throw new Error(decodeIssue);}
   const result=await call({operation:'import',raw:incomingRaw});if(token!==operationGeneration)return;if(!result.ok)throw new Error(result.error.message);
   if((projection.revision||(notesDraft!==null&&notesDraft!==projection.state.character.notes))&&!confirm('Load this character in place of the current browser draft? Save your current character first.'))return;
-  session=result.session;projection=result;aslanManualReviewKey=null;notesDraft=null;selectedCareer='';effects=[];closeHistory();persist();render();$('#step-title')?.focus();notify(storageWarning||'Character loaded. Its complete action log was replayed and verified.',!!storageWarning);
+  session=result.session;projection=result;aslanManualReviewKey=null;notesDraft=null;backgroundDraft=null;selectedCareer='';effects=[];closeHistory();persist();render();$('#step-title')?.focus();notify(storageWarning||'Character loaded. Its complete action log was replayed and verified.',!!storageWarning);
  }catch(error){if(token===operationGeneration){inspectHistory(incomingRaw,file,decodeIssue||(file.size>2000000?'This file is too large to inspect. Download the unchanged original.':''));notify('Could not load: '+error.message+' Your current character was kept. Review the original recorded history below; it is not a verified character.',true);}}
  finally{event.target.value='';if(token===operationGeneration)setBusy(false);}
 };
