@@ -123,27 +123,30 @@
  #precareer-context,#precareer-rail,#sheet>details[data-precareer-bar],#sheet>details[data-precareer-bar]::details-content{display:block!important;content-visibility:visible!important;width:auto!important;padding:0!important;margin:0!important;border:0!important}
 }
 @media screen {
- #precareer-dialog[data-panel="admission"] #step-title{font-size:22px;color:#ffd34b;margin-bottom:14px}
- .admission-heading{display:flex;align-items:center;gap:22px;margin:10px 10px 22px}
- .admission-heading .precareer-art{width:150px;height:120px}
+ #precareer-dialog[data-panel="admission"] .step-count{display:none}
+ #precareer-dialog[data-panel="admission"] #step-title{font-size:22px;color:#ffd34b;margin-bottom:4px}
+ #precareer-dialog[data-panel="admission"] .precareer-information-rows{margin-top:12px}
+ .admission-heading{display:flex;align-items:center;gap:22px;margin:8px 10px 12px}
+ .admission-heading .precareer-art{width:150px;height:106px}
  #precareer-dialog .admission-heading h3{font-size:46px;line-height:1.12;margin:0;color:#f5f7fa}
  .admission-heading p{font-size:29px;color:#c8dbe9;margin:8px 0 0}
- .admission-numbers{border:2px solid #9cdbed;border-radius:20px;text-align:center;padding:12px 20px;box-shadow:inset 0 1px 7px #3a5969}
+ .admission-numbers{border:2px solid #9cdbed;border-radius:20px;text-align:center;padding:10px 20px;box-shadow:inset 0 1px 7px #3a5969}
  .admission-numbers h4{font-size:40px;line-height:1.2;margin:0}
  .admission-numbers p{font-size:24px;line-height:1.4;margin:10px 0 0}
- .admission-numbers .admission-formula{font-size:52px;font-weight:800;margin:0}
- #precareer-dialog #precareer-admission-roll{display:flex;align-items:center;justify-content:center;gap:20px;width:100%;min-height:102px;margin-top:22px;padding:12px 22px;border:2px solid #ffe17e;border-radius:20px;background:linear-gradient(#ffe47e,#ffc719);color:#10120b;font-size:40px;line-height:1.2;font-weight:800}
+ .admission-numbers .admission-formula{font-size:52px;font-weight:800;line-height:1.15;margin:0}
+ #precareer-dialog #precareer-admission-roll{display:flex;align-items:center;justify-content:center;gap:20px;width:100%;min-height:102px;margin-top:18px;padding:12px 22px;border:2px solid #ffe17e;border-radius:20px;background:linear-gradient(#ffe47e,#ffc719);color:#10120b;font-size:40px;line-height:1.2;font-weight:800}
  #precareer-dialog #precareer-admission-roll:hover{background:linear-gradient(#ffed9e,#ffd238)}
  .admission-dice{flex:none;width:86px;height:76px}
  .admission-warning{text-align:center;font-size:22px;line-height:1.3;margin:10px 0}
- .admission-source{text-align:center;font-size:16px;margin:6px 0}
- #precareer-admission .precareer-back{margin:16px 0}
+ .admission-source{text-align:center;font-size:16px;margin:6px 0;border:0;padding:0}
+ #precareer-admission .precareer-back{margin:10px 0}
  #precareer-dialog #precareer-admission-back{width:min(584px,100%);min-height:54px;padding:8px 16px;border:2px solid #9cdbed;border-radius:13px;font-size:29px}
 }
 @media screen and (max-width:650px){
+ #precareer-dialog[data-panel="admission"] #step-title{min-height:44px;padding-right:100px;display:flex;align-items:center}
  .admission-heading{gap:12px;margin:8px 0 20px}.admission-heading .precareer-art{width:64px;height:64px}
  #precareer-dialog .admission-heading h3{font-size:29px;overflow-wrap:anywhere}.admission-heading p{font-size:21px}
- .admission-numbers{padding:14px 10px}.admission-numbers h4{font-size:28px}.admission-numbers .admission-formula{font-size:37px}.admission-numbers p{font-size:19px}
+ .admission-numbers{padding:14px 10px}.admission-numbers h4{font-size:28px}.admission-numbers .admission-formula{font-size:clamp(27px,8.2vw,37px);white-space:nowrap}.admission-numbers p{font-size:19px}
  #precareer-dialog #precareer-admission-roll{font-size:27px;gap:8px;padding:12px 8px;min-height:96px}.admission-dice{width:42px;height:50px}.admission-dice:last-child{display:none}
  .admission-warning{font-size:19px}#precareer-dialog #precareer-admission-back{font-size:23px;min-height:60px}
 }

@@ -40,7 +40,7 @@ try{
   const context=await browser.newContext({viewport:{width,height:1049}}),p=await context.newPage();p.on('pageerror',e=>errors.push(e.message));
   try{
    await p.goto(origin);await ready(p);await load(p);await p.evaluate(()=>scrollTo(0,0));await shot(p,'standard-'+width);await fit(p);
-   await openAdmission(p);await p.evaluate(()=>scrollTo(0,0));await shot(p,'admission-'+width);await fit(p);await p.locator('#precareer-admission-back').click();
+   await openAdmission(p);await p.evaluate(()=>scrollTo(0,0));await shot(p,'admission-'+width);await fit(p);assert.ok(await p.locator('.admission-formula').evaluate(el=>el.getBoundingClientRect().height<=parseFloat(getComputedStyle(el).lineHeight)+1),'Admission formula must remain on one line');if(width===1499){assert.ok(await p.locator('#precareer-dialog').evaluate(el=>el.getBoundingClientRect().bottom<=innerHeight),'Desktop admission panel must fit the review viewport');assert.equal(await p.locator('.admission-source').evaluate(el=>getComputedStyle(el).borderLeftWidth),'0px');}await p.locator('#precareer-admission-back').click();
    await p.locator('#precareer-additional').click();await shot(p,'additional-'+width);await fit(p);await p.locator('#precareer-options-back').click();
    await p.locator('#precareer-rules-open').click();await shot(p,'rules-'+width);await closeInfo(p);
    await dismiss(p);await p.locator('#precareer-previous').click();await shot(p,'previous-readonly-'+width);await closeInfo(p);await shot(p,'cancelled-'+width);
