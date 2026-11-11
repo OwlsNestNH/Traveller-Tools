@@ -1,0 +1,106 @@
+/* Large, player-facing interaction panels, following the family-background
+   popup. The nonmodal shell keeps the file toolbar available at all times. */
+@media screen {
+ body:has(.journey-layout){background:#041520;--line:#63869b}
+ body:has(.journey-layout) header{min-height:0;padding-block:20px 12px;background:none;border:0}
+ body:has(.journey-layout) header::before,body:has(.journey-layout) header::after{display:none}
+ body:has(.journey-layout) header h1{font-size:clamp(28px,3vw,40px);line-height:1.15}
+ body:has(.journey-layout) header .lead{font-size:17px;margin:8px 0 0}
+ body:has(.journey-layout) .toolbar{margin-top:12px;margin-bottom:22px}
+ .layout.journey-layout{display:grid;grid-template-columns:minmax(0,1fr);position:relative;align-items:start;min-height:450px;isolation:isolate}
+ #journey-context{grid-area:1/1;display:flex;justify-content:space-between;align-items:start;gap:24px}
+ .journey-stage-card,.journey-rail{width:250px;min-width:0;box-sizing:border-box}
+ .journey-stage-card,#journey-character-summary{padding:24px;border:1px solid #2c5165;border-radius:13px;background:#071c29;color:#b8ccd8}
+ .journey-stage-card{min-height:300px}
+ .journey-stage-card .journey-stage-label,#journey-character-summary h2{font-size:26px;color:#e7eff5;overflow-wrap:anywhere}
+ #journey-character-summary p{font-size:18px}
+ #journey-character-summary .journey-record-updates{border-top:1px solid #41647a;margin-top:20px;padding-top:16px}
+ #journey-character-summary .journey-record-updates h3{font-size:16px;color:#ffdc67;margin:0 0 12px}
+ #journey-character-summary .journey-record-updates ul{padding:0;margin:0;list-style:none}
+ #journey-character-summary .journey-record-updates li{font-size:18px;line-height:1.45;color:#edf4f8;margin:10px 0;overflow-wrap:anywhere}
+ #journey-record{border:1px solid #41647a;border-radius:10px;margin-top:14px;background:#071c29;overflow:hidden}
+ #journey-record>summary{display:flex;justify-content:space-between;gap:15px;padding:17px 20px;cursor:pointer;font-size:18px;font-weight:700;color:#ffdc67;list-style:none}
+ #journey-record[open]>summary span{font-size:0}
+ #journey-record[open]>summary span::after{content:'−';font-size:20px}
+ body[data-stage] #journey-record #sheet{position:static;width:auto;border:0;border-top:1px solid #41647a;border-radius:0;background:#071c29;margin:0;padding:20px;min-width:0}
+ .journey-rail:has(#journey-record[open]){width:min(920px,75%)}
+ #journey-dialog{display:none;grid-area:1/1;position:relative;inset:auto;z-index:2;box-sizing:border-box;width:min(904px,calc(100% - 80px));max-width:none;max-height:calc(100dvh - 220px);margin:0 auto;padding:0;border:2px solid #75b0cb;border-radius:15px;color:#f5f7fa;background:radial-gradient(ellipse at center,#0a293b,#061d2b);box-shadow:0 24px 80px #0008,0 0 0 2px #07131d;overflow:auto}
+ #journey-dialog[open]{display:block}
+ body[data-stage] #journey-dialog #workspace{background:transparent;border:0;box-shadow:none;padding:30px 38px 26px;min-width:0;border-radius:inherit}
+ body[data-stage] #journey-dialog .step-count,.journey-eyebrow{color:#ffd34b;font-size:17px;font-weight:750;letter-spacing:.07em;margin:0 0 16px;line-height:1.4}
+ #journey-dialog #step-title{font-size:44px;font-weight:800;line-height:1.14;margin:0 0 18px;padding:0;color:#f5f7fa;max-width:100%}
+ #journey-dialog p{font-size:23px;line-height:1.45}
+ #journey-dialog .journey-instruction{font-size:27px;color:#c4d8e7;margin:0 0 28px}
+ #journey-dialog :is(button,.button){font-size:23px;min-height:66px;padding:14px 22px;border-radius:11px;line-height:1.25;white-space:normal}
+ #journey-dialog button:not(.quiet,.choice,.training-info-trigger,.training-info-close,.journey-close){background:linear-gradient(#ffdc59,#edb821);color:#071018;border-color:#ffd34b;font-weight:800}
+ #journey-dialog button:disabled{background:#34566a;color:#a5bac8;border-color:#34566a}
+ #journey-dialog .choice-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:22px 0}
+ #journey-dialog .choice{border:2px solid #639fb9;background:#082333;color:#f5f7fa;font-size:26px;font-weight:750;min-height:82px;justify-content:flex-start;text-align:left;box-shadow:none}
+ #journey-dialog .choice:hover,#journey-dialog .choice.selected{background:#173a48;border-color:#ffcf3e}
+ #journey-dialog .choice small{font-size:17px;font-weight:400}
+ #journey-dialog .actions{gap:16px;margin-block:24px 0;flex-wrap:wrap}
+ #journey-dialog .training-choice{position:relative;min-width:0;display:flex}
+ #journey-dialog .training-choice>.choice{flex:1;padding-right:56px}
+ #journey-dialog .training-info-trigger{position:absolute;right:10px;top:50%;transform:translateY(-50%);min-width:36px;width:36px;min-height:44px;height:44px;padding:0;font-size:25px}
+ #journey-dialog .training-information button{min-height:44px;padding:8px 14px;font-size:20px}
+ #journey-dialog .training-information{max-width:calc(100vw - 28px)}
+ #journey-dialog .training-information p,#journey-dialog .training-information li{font-size:20px}
+ #journey-dialog label,#journey-dialog legend{font-size:23px}
+ #journey-dialog :is(input,select,textarea){font-size:22px;min-height:52px}
+ #journey-dialog :is(input[type=radio],input[type=checkbox]){min-height:0;width:24px;height:24px}
+ #journey-dialog .journey-close{float:right;min-height:44px;padding:6px 12px;margin:-12px -20px 8px 16px;font-size:16px;border-color:#41647a;color:#c4d8e7;background:transparent}
+ #journey-dialog #journey-error:empty{display:none}
+ #journey-dialog #journey-error{color:#ffd1c8;border:1px solid #ce8880;padding:14px}
+ #journey-dialog .journey-details{clear:both;margin-top:24px;padding-top:16px;border-top:1px solid #578197}
+ #journey-dialog .journey-details>summary{color:#c4d8e7;cursor:pointer;font-size:18px;line-height:1.5}
+ #journey-dialog .journey-details :is(p,li){font-size:18px}
+ #journey-dialog .journey-details .result-panel{margin-bottom:0}
+ #journey-dialog .journey-result{border-bottom:1px solid #73b1cc;padding-bottom:25px;margin-bottom:25px}
+ #journey-dialog .journey-result h3{font-size:46px;line-height:1.18;margin:0 0 22px;color:#f5f7fa}
+ .journey-roll{display:flex;align-items:center;gap:24px;margin:20px 0}
+ .journey-dice{display:flex;gap:12px;flex-shrink:0;flex-wrap:wrap}
+ .journey-die{width:64px;height:64px;color:#f5f7fa}
+ .journey-roll span{font-size:20px;color:#bdd2df;display:block}
+ .journey-roll strong{font-size:36px;line-height:1.2;display:block}
+ .journey-roll small{font-size:18px;display:block}
+ #journey-dialog .journey-check{color:#ffdc67;font-size:25px;font-weight:700}
+ #journey-dialog .journey-story p{font-size:34px;font-weight:750;line-height:1.25;margin:22px 0}
+ #journey-dialog .journey-consequences p{font-size:26px;margin:14px 0}
+ #journey-dialog #step-title.journey-next-title{font-size:30px;margin-top:8px}
+ #journey-dialog .journey-finish-details h3{font-size:22px}
+ body[data-stage] #journey-dialog .final-sheet-invitation{padding:22px;border:0;background:transparent;text-align:center}
+ body[data-stage] #journey-dialog .final-sheet-button{font-size:30px;padding:20px 28px}
+ body[data-stage] #journey-dialog .final-sheet-invitation p{font-size:24px}
+ #journey-dialog :focus-visible{outline:3px solid #ffcf3e;outline-offset:4px}
+ body:has(.journey-layout) footer{margin-top:40px}
+}
+@media screen and (max-width:1000px){
+ .journey-stage-card{width:180px;padding:18px}.journey-rail{width:200px}
+ #journey-dialog{width:calc(100% - 36px)}
+}
+@media screen and (max-width:650px){
+ #journey-context{gap:12px;flex-direction:column}.journey-stage-card,.journey-rail{width:100%;min-height:0}.journey-stage-card{padding:16px}.journey-stage-card .journey-stage-label{font-size:21px}.journey-stage-card .journey-eyebrow{font-size:13px}
+ #journey-character-summary{padding:16px}#journey-character-summary h2{font-size:23px;margin:8px 0}#journey-character-summary p{font-size:16px;margin:6px 0}
+ .journey-rail:has(#journey-record[open]){width:100%}
+ #journey-dialog{width:100%;margin:0;border-radius:13px;max-height:calc(100dvh - 28px)}
+ body[data-stage] #journey-dialog #workspace{padding:22px 18px}
+ #journey-dialog #step-title{font-size:31px}
+ body[data-stage] #journey-dialog .step-count{font-size:13px;margin-bottom:18px;clear:both}
+ #journey-dialog .journey-close{margin:-8px -7px 8px 8px;min-height:44px}
+ #journey-dialog .journey-instruction{font-size:22px;margin-bottom:22px}
+ #journey-dialog p,#journey-dialog label,#journey-dialog legend{font-size:21px}
+ #journey-dialog .choice-list{grid-template-columns:1fr;gap:12px}
+ #journey-dialog button.choice{font-size:24px;min-height:72px;padding:15px}
+ #journey-dialog :is(button,.button){font-size:22px;min-height:60px}
+ #journey-dialog .actions>*{flex:1 1 100%}
+ #journey-dialog .journey-result h3{font-size:32px}
+ .journey-roll{gap:15px;flex-wrap:wrap}.journey-dice{gap:8px}.journey-die{width:50px;height:50px}.journey-roll strong{font-size:30px}
+ #journey-dialog .journey-story p{font-size:28px}#journey-dialog .journey-consequences p,#journey-dialog .journey-check{font-size:23px}
+ #journey-dialog #step-title.journey-next-title{font-size:27px}
+ #journey-dialog .journey-details>summary{font-size:17px}
+ body[data-stage] #journey-dialog .final-sheet-button{font-size:25px;padding:20px}
+}
+@media print{
+ #journey-dialog,#journey-context>.journey-stage-card,#journey-character-summary,#journey-record>summary{display:none!important}
+ #journey-context,#journey-context .journey-rail,#journey-record,#journey-record::details-content,#journey-record>#sheet{display:block!important;content-visibility:visible!important;width:auto!important;max-height:none!important;overflow:visible!important}
+}

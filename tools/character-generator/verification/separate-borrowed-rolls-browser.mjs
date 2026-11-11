@@ -3,6 +3,14 @@ import {createRequire} from 'node:module';
 import {createServer} from '../server.mjs';
 import {exportSession,project,RULES_REVISION} from '../engine/session.mjs';
 import {agentCoverFixture,run,forceAt} from './agent-cover-fixtures.mjs';
+// Full roll details are an explicit disclosure beneath the friendly result.
+async function openResultDetails(page){
+ await page.waitForFunction(()=>!document.querySelector('#new').disabled);
+ await page.locator('#last-action-result').waitFor({state:'attached'});
+ const details=page.locator('.journey-previous-result');
+ if(await details.count()&&!await details.evaluate(el=>el.open))await details.locator(':scope > summary').click();
+ await page.locator('#last-action-result').waitFor();
+}
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const server=createServer();await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const browser=await chromium.launch({headless:true,channel:process.env.CHARACTER_BROWSER_CHANNEL||'msedge'});
@@ -25,6 +33,7 @@ try{
     await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(fixture.session)});await page.reload();await ready(page);
     const before=await read(page);assert.equal(before.revision,fixture.revision);await page.reload();await ready(page);assert.equal((await read(page)).raw,before.raw);
     if(fixture===betrayal){
+     await openResultDetails(page);
      assert.match(await page.locator('#last-action-result').innerText(),/Betrayal/);
      await page.locator('#relationship-event-role').selectOption('Enemy');
      await page.locator('#relationship-event-confirm').check();
@@ -34,7 +43,7 @@ try{
     await page.waitForFunction(({key,revision})=>JSON.parse(localStorage.getItem(key)).events.length===revision+1,{key,revision:before.revision});await ready(page);
     const after=await read(page);assert.equal(after.revision,before.revision+1);assert.equal(after.log.at(-1).rolls.length,fixture===betrayal?0:1);
     if(fixture===betrayal)assert.equal(after.state.stage,'borrowed-event-roll');
-    const text=await page.locator('#last-action-result').innerText();await page.reload();await ready(page);assert.equal((await read(page)).raw,after.raw);assert.equal(await page.locator('#last-action-result').innerText(),text);
+    await openResultDetails(page);const text=await page.locator('#last-action-result').innerText();await page.reload();await ready(page);assert.equal((await read(page)).raw,after.raw);await openResultDetails(page);assert.equal(await page.locator('#last-action-result').innerText(),text);
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
    }
   }finally{await context.close();}

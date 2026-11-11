@@ -9,6 +9,27 @@ import {createServer} from '../server.mjs';
 import {exportSession,importSession,project} from '../engine/session.mjs';
 import {advancementResult} from '../gui/advancement-result.mjs';
 import {advancementFixture} from './advancement-result-fixtures.mjs';
+// Full roll details are an explicit disclosure beneath the friendly result.
+async function openResultDetails(page){
+ await page.waitForFunction(()=>!document.querySelector('#new').disabled);
+ await page.locator('#last-action-result').waitFor({state:'attached'});
+ const details=page.locator('.journey-previous-result');
+ if(await details.count()&&!await details.evaluate(el=>el.open))await details.locator(':scope > summary').click();
+ await page.locator('#last-action-result').waitFor();
+}
+async function openCharacterRecord(page){
+ const record=page.locator('#journey-record');
+ if(await record.count()){
+  if(await page.locator('#journey-dialog').evaluate(el=>el.open))await page.locator('#journey-close').click();
+  if(!await record.evaluate(el=>el.open))await record.locator(':scope > summary').click();
+ }
+ await page.locator('#sheet').waitFor();
+}
+async function reopenJourney(page){
+ const dialog=page.locator('#journey-dialog');
+ if(await dialog.count()&&!await dialog.evaluate(el=>el.open))await page.locator('#journey-reopen').click();
+ await page.locator('#workspace').waitFor();
+}
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const server=createServer();await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 let browser;
@@ -29,20 +50,22 @@ try{
     assert.ok(await page.locator('#last-action-result').count()<=1);
     // Repeated clicks must not roll advancement twice or erase its notice.
     await page.locator('[data-action="advancement"]').evaluate(button=>{button.click();button.click();});
-    await page.locator('#last-action-result').waitFor();
+    await openResultDetails(page);
     await page.waitForFunction(()=>!document.querySelector('#new').disabled);
     const expected=advancementResult(after.log.at(-1));
     await assertResultColor(page,expected.status,{message:true});
     assert.equal(await page.locator('#last-action-result h3').innerText(),expected.title);
+    await openCharacterRecord(page);
     assert.equal(await page.locator('#sheet .career-rank-value').innerText(),'Rank '+after.state.character.careers[after.state.active].rank);
     assert.equal(await page.locator('#sheet .career-rank-summary').evaluate(el=>el.compareDocumentPosition(document.querySelector('#sheet .stats')) & Node.DOCUMENT_POSITION_FOLLOWING),4);
+    await reopenJourney(page);
     for(const detail of expected.details)assert.ok((await page.locator('#last-action-result').innerText()).includes(detail),detail);
     assert.ok((await page.locator('#message').innerText()).includes(expected.title));
     assert.ok((await downloadedActionLog(page)).includes(after.log.at(-1).summary));
     const raw=await page.evaluate(key=>localStorage.getItem(key),key),saved=importSession(raw);
     assert.equal(saved.events.length,before.revision+1);assert.equal(exportSession(saved),raw);
     assert.equal(project(saved).log.at(-1).summary,after.log.at(-1).summary);
-    await page.reload();await page.locator('#last-action-result').waitFor();
+    await page.reload();await openResultDetails(page);
     assert.equal(await page.locator('#last-action-result h3').innerText(),expected.title);
     await assertResultColor(page,expected.status);
     assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);
@@ -57,6 +80,7 @@ try{
     assert.equal(await nextAction.count(),1,'An eligible next career action must be available.');
     await nextAction.click();
     await page.waitForFunction(revision=>JSON.parse(localStorage.getItem('traveller-character-generator.v1')).events.length===revision+2&&!document.querySelector('#new').disabled,before.revision);
+    await openResultDetails(page);
     assert.notEqual(await page.locator('#last-action-result h3').innerText(),expected.title);
     assert.ok((await downloadedActionLog(page)).includes(after.log.at(-1).summary));
     await page.reload();await page.waitForFunction(()=>!document.querySelector('#new').disabled);
@@ -65,7 +89,7 @@ try{
    }
    for(const success of [false,true]){
     const {after}=qualificationOutcomeFixture(success),raw=exportSession(after.session);
-    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw});await page.reload();await page.locator('#last-action-result').waitFor();
+    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw});await page.reload();await openResultDetails(page);
     await assertResultColor(page,success?'success':'failure');
     assert.ok((await page.locator('#last-action-result').innerText()).includes(success?'succeeded':'failed'));
     assert.ok((await downloadedActionLog(page)).includes(after.log.at(-1).summary));

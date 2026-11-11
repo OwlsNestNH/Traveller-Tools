@@ -8,6 +8,27 @@ import {createServer} from '../server.mjs';
 import {project,exportSession,importSession} from '../engine/session.mjs';
 import {survivalResult} from '../gui/survival-result.mjs';
 import {laterTermVargrFixture,run} from './survival-result-fixtures.mjs';
+// Full roll details are an explicit disclosure beneath the friendly result.
+async function openResultDetails(page){
+ await page.waitForFunction(()=>!document.querySelector('#new').disabled);
+ await page.locator('#last-action-result').waitFor({state:'attached'});
+ const details=page.locator('.journey-previous-result');
+ if(await details.count()&&!await details.evaluate(el=>el.open))await details.locator(':scope > summary').click();
+ await page.locator('#last-action-result').waitFor();
+}
+async function openCharacterRecord(page){
+ const record=page.locator('#journey-record');
+ if(await record.count()){
+  if(await page.locator('#journey-dialog').evaluate(el=>el.open))await page.locator('#journey-close').click();
+  if(!await record.evaluate(el=>el.open))await record.locator(':scope > summary').click();
+ }
+ await page.locator('#sheet').waitFor();
+}
+async function reopenJourney(page){
+ const dialog=page.locator('#journey-dialog');
+ if(await dialog.count()&&!await dialog.evaluate(el=>el.open))await page.locator('#journey-reopen').click();
+ await page.locator('#workspace').waitFor();
+}
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const server=createServer();await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const key='traveller-character-generator.v1',errors=[],checks=[],out=new URL('./artifacts/',import.meta.url);
@@ -30,7 +51,7 @@ try{
     await page.locator('[data-action=survival-check]').waitFor();
     const checked=run(before,'survival-check'),natural=run(checked,'career-event'),expected=survivalResult(checked.log.at(-1),checked.state);
     await page.locator('[data-action=survival-check]').evaluate(button=>{button.click();button.click();});
-    await page.locator('#last-action-result').waitFor();await page.waitForFunction(()=>!document.querySelector('#new').disabled);
+    await openResultDetails(page);await page.waitForFunction(()=>!document.querySelector('#new').disabled);
     await assertResultColor(page,expected.status,{message:true});
     const resultText=await page.locator('#last-action-result').innerText();
     assert.ok(resultText.includes(expected.title));
@@ -41,24 +62,24 @@ try{
     await page.reload();await page.locator('[data-action=career-event]').waitFor();assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),checkpoint);
 
     await page.locator('[data-action=career-event]').evaluate(button=>{button.click();button.click();});await page.waitForFunction(()=>!document.querySelector('#new').disabled);
-    const eventText=await page.locator('#last-action-result').innerText();assert.match(eventText,/Table outcome:/);assert.match(eventText,/Roll \[.*\] = \d+/);
-    if(term===3)assert.match(await page.locator('#sheet').innerText(),/Contact/);
+    await openResultDetails(page);const eventText=await page.locator('#last-action-result').innerText();assert.match(eventText,/Table outcome:/);assert.match(eventText,/Roll \[.*\] = \d+/);
+    if(term===3){await openCharacterRecord(page);assert.match(await page.locator('#sheet').innerText(),/Contact/);await reopenJourney(page);}
     else assert.match(eventText,/EDU check/);
     const raw=await page.evaluate(key=>localStorage.getItem(key),key),saved=importSession(raw);
     assert.equal(saved.events.length,before.revision+2);assert.equal(exportSession(saved),raw);
     assert.ok((await downloadedActionLog(page)).includes(natural.log.at(-1).summary));
-    await page.reload();await page.locator('#last-action-result').waitFor();assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);
+    await page.reload();await openResultDetails(page);assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);
     assert.equal(await page.locator('#last-action-result').innerText(),eventText);
     // Targeted regression outcomes must also persist on reload without replaying dice.
     const targetedRaw=exportSession(after.session);
-    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:targetedRaw});await page.reload();await page.locator('#last-action-result').waitFor();
+    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:targetedRaw});await page.reload();await openResultDetails(page);
     const targeted=survivalResult(after.log.at(-1),after.state),visible=await page.locator('#last-action-result').innerText();
     await assertResultColor(page,targeted.status);
     for(const detail of targeted.details)assert.ok(visible.includes(detail),detail);
-    const sheet=await page.locator('#sheet').innerText();assert.match(sheet,/Ally/);
+    await openCharacterRecord(page);const sheet=await page.locator('#sheet').innerText();assert.match(sheet,/Ally/);
     if(term===3)assert.match(sheet,/A new romantic relationship begins/);
     else assert.match(sheet,/advancement[^\n]*\+4|\+4[^\n]*advancement/i);
-    assert.ok((await downloadedActionLog(page)).includes(after.log.at(-1).summary));
+    await reopenJourney(page);assert.ok((await downloadedActionLog(page)).includes(after.log.at(-1).summary));
     assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),targetedRaw);
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
     const name='term-'+term+'-'+width+(http?'-http':'-static');
@@ -66,7 +87,7 @@ try{
    }
    const r=cases[0].after,revision=r.session.events.findIndex(e=>e.command.type==='survival')+1;
    const failed=run(r,'gm-replay',{revision,rollIndex:0,values:[1,1],reason:'Verify failed survival color'}),raw=exportSession(failed.session);
-   await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw});await page.reload();await page.locator('#last-action-result').waitFor();
+   await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw});await page.reload();await openResultDetails(page);
    await assertResultColor(page,'failure');assert.match(await page.locator('#last-action-result').innerText(),/Survival failed/);
    assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),raw);
    if(http)assert.deepEqual(engineRequests,[]);

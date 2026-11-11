@@ -1,3 +1,4 @@
+import {liveRecordText} from './journey-browser-helpers.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -41,7 +42,7 @@ try{
  await fresh('aslan-origin-gender-source-static',390,buildAslanOriginFixture({gender:'other',stage:'book-step'}),async page=>{
   const before=await snapshot(page);assert.equal(await page.locator('#aslan-origin-gender').inputValue(),'');await page.locator('[data-action=resolve-aslan-origin-source]').click();await ready(page);assert.equal((await snapshot(page)).revision,before.revision);
   await page.locator('#aslan-origin-gender').selectOption('female');await page.locator('#aslan-origin-reason').fill('Explicit referee source branch; chosen identity stays unchanged.');await shot(page,'aslan-origin-gender-source-pending');await page.locator('[data-action=resolve-aslan-origin-source]').click();await ready(page);
-  const after=await snapshot(page);assert.equal(after.state.character.identityGender,'other');assert.equal(after.state.character.gender,'female');assert.match(await page.locator('#sheet .sheet-meta').innerText(),/other/);assert.match(await page.locator('#sheet').innerText(),/Source rules branch: female/);await replay(page);
+  const after=await snapshot(page);assert.equal(after.state.character.identityGender,'other');assert.equal(after.state.character.gender,'female');assert.match(await liveRecordText(page,'#sheet .sheet-meta'),/other/);assert.match(await liveRecordText(page),/Source rules branch: female/);await replay(page);
  },{staticMode:true});
  await fresh('aslan-origin-birth-order',390,run(buildAslanOriginFixture({stage:'aslan-birth-order'}),'gm-mode',{enabled:false}),async page=>{
   await page.locator('[data-action=roll-aslan-birth-order]').click();await ready(page);const after=await snapshot(page),birth=after.state.currentAslanOrigin.birthOrder;
@@ -77,7 +78,7 @@ try{
  await fresh('aslan-origin-clan-referee',390,buildAslanOriginFixture({stage:'aslan-clan'}),async page=>{
   const before=await snapshot(page);await page.locator('summary').filter({hasText:'Referee-selected clan'}).click();await page.locator('[data-action=choose-aslan-clan]').click();await ready(page);assert.equal((await snapshot(page)).revision,before.revision);
   await page.locator('#aslan-clan-name').fill('Synthetic <Clan>');await page.locator('#aslan-clan-scope').fill('One source-approved world');await page.locator('#aslan-origin-reason').fill('Referee selected this synthetic clan for the test.');await shot(page,'aslan-origin-clan-referee-pending');await page.locator('[data-action=choose-aslan-clan]').click();await ready(page);
-  const after=await snapshot(page);assert.equal(after.state.character.aslanOrigin.clan.mode,'referee');assert.equal(after.log.at(-1).rolls.length,0);assert.match(await page.locator('#sheet').innerText(),/Synthetic <Clan>/);assert.equal(await page.locator('clan').count(),0);await replay(page);
+  const after=await snapshot(page);assert.equal(after.state.character.aslanOrigin.clan.mode,'referee');assert.equal(after.log.at(-1).rolls.length,0);assert.match(await liveRecordText(page),/Synthetic <Clan>/);assert.equal(await page.locator('clan').count(),0);await replay(page);
  });
  await fresh('aslan-origin-clan-name-pride',320,run(buildAslanOriginFixture({stage:'aslan-pride'}),'gm-mode',{enabled:false}),async page=>{
   await page.locator('summary').filter({hasText:'Give the clan a name'}).click();await page.locator('#aslan-clan-name').fill('A long synthetic clan name that should wrap rather than widen a narrow screen');await page.locator('[data-action=name-aslan-clan]').click();await ready(page);

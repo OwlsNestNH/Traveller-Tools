@@ -1,3 +1,4 @@
+import {openLiveRecord} from './journey-browser-helpers.mjs';
 // Temporary contexts and synthetic command histories only; never touches a user's browser draft.
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
@@ -48,6 +49,7 @@ try{
    assert.ok((await page.locator('.print-only').textContent()).includes('Synthetic earlier Traveller'));
    await page.emulateMedia({media:'print'});assert.equal(await page.locator('.print-only').isVisible(),true);await page.emulateMedia({media:'screen'});
    await page.getByRole('button',{name:'Finish character',exact:true}).click();await page.locator('[data-action="open-character-sheet"]').waitFor();await ready(page);await assertGate(page,true);
+   await openLiveRecord(page);
    if(!await page.locator('#notes-connections').evaluate(details=>details.open))await page.locator('#notes-connections > summary').click();await page.locator('#connection-person').fill('Synthetic final Traveller');await page.locator('#connection-skill').fill('Admin');await page.locator('#connection-note').fill('Recorded only at finalization.');
    const before=JSON.parse(await stored(page)),skillBefore=project(before).state.character.skills.Admin;
    await page.locator('[data-action="connection"]').evaluate(button=>{button.click();button.click();});await changed(page,before.events.length);
@@ -58,6 +60,7 @@ try{
    const raw=await stored(page),downloaded=page.waitForEvent('download');await page.locator('#export').click();assert.equal(await readFile(await (await downloaded).path(),'utf8'),raw);
    await page.reload();await page.locator('[data-action="open-character-sheet"]').waitFor();await ready(page);await assertGate(page,true);assert.equal(await stored(page),raw);
    // Opening and closing the disclosure must not generate new records.
+   await openLiveRecord(page);
    await page.locator('#notes-connections > summary').focus();await page.keyboard.press('Enter');await page.keyboard.press('Enter');assert.equal(await stored(page),raw);
    checks.push(label+' early gate, notes, legacy import/print, final entry, repeated click, export and reload');
   }finally{await context.close();}

@@ -383,8 +383,15 @@ try {
       for (let i = 0; i < background.backgroundRemaining; i++) await page.locator('#background-form [name=skills]').nth(i).check();
       await page.getByRole('button', {name: 'Accept background skills', exact: true}).click();
       await page.getByRole('heading', {name: 'Before your career', exact: true}).waitFor();
-      assert.equal(await page.locator('header h1').textContent(), 'A life among the stars');
-      assert.notDeepEqual(await headerStyle(page), openingHeader, 'later stages keep their previous theme');
+      assert.equal(await page.locator('header h1').textContent(), 'CHARACTER BUILDER');
+      const laterHeader = await headerStyle(page);
+      assert.deepEqual(laterHeader.title, openingHeader.title, 'later popup keeps the gold title and typeface');
+      assert.equal(laterHeader.titleText, openingHeader.titleText);
+      assert.equal(laterHeader.leadText, openingHeader.leadText);
+      assert.equal(laterHeader.body[0], openingHeader.body[0]);
+      assert.equal(laterHeader.body[3], openingHeader.body[3]);
+      assert.equal(laterHeader.body[1], 'rgb(4, 21, 32)', 'quiet dark background behind the dominant popup');
+      assert.equal(laterHeader.header[2], 'none', 'decorative header image does not compete with the popup');
     });
 
     const scenarios = [

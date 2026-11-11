@@ -5,6 +5,14 @@ import {fileURLToPath} from 'node:url';
 import {createServer} from '../server.mjs';
 import {assignmentSetup,run,force,settleAssignment} from './assignment-fixtures.mjs';
 import {api} from '../engine/session.mjs';
+// Full roll details are an explicit disclosure beneath the friendly result.
+async function openResultDetails(page){
+ await page.waitForFunction(()=>!document.querySelector('#new').disabled);
+ await page.locator('#last-action-result').waitFor({state:'attached'});
+ const details=page.locator('.journey-previous-result');
+ if(await details.count()&&!await details.evaluate(el=>el.open))await details.locator(':scope > summary').click();
+ await page.locator('#last-action-result').waitFor();
+}
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const browser=await chromium.launch({headless:true,...(process.env.CHARACTER_BROWSER_CHANNEL?{channel:process.env.CHARACTER_BROWSER_CHANNEL}:{})});
@@ -36,17 +44,18 @@ try{
   assert.ok(['career-event','career-mishap'].includes(projection.state.stage));
   assert.equal(afterCheck.events.length,initial.session.events.length+(failed?0:1));assert.equal(afterCheck.events.at(-1).rolls.length,1);
   const step=projection.state.stage;await page.locator('[data-action='+step+']').waitFor();
+  await openResultDetails(page);
   assert.doesNotMatch(await page.locator('#last-action-result').innerText(),/Career event rolled:|Mishap rolled:/);
   assert.equal(await page.locator('[data-action=advancement]').count(),0);
   await page.reload();await page.locator('[data-action='+step+']').waitFor();assert.deepEqual(await saved(page),afterCheck);
   await page.screenshot({path:fileURLToPath(new URL('separate-step-'+width+'-'+http+'-'+failed+'-checkpoint.png',out)),fullPage:true});
   await page.locator('[data-action='+step+']').dblclick();
   await page.waitForFunction(({key,count})=>JSON.parse(localStorage.getItem(key)).events.length===count,{key,count:afterCheck.events.length+1});
-  await page.locator('#last-action-result').filter({hasText:'Table outcome:'}).waitFor();
+  await openResultDetails(page);await page.locator('#last-action-result').filter({hasText:'Table outcome:'}).waitFor();
   const afterEvent=await saved(page);assert.equal(afterEvent.events.at(-1).command.type,step);assert.equal(afterEvent.events.length,afterCheck.events.length+1);
   assert.equal(await page.locator('[data-action='+step+']').count(),0);
   const result=await page.locator('#last-action-result').innerText();assert.match(result,/Table outcome:/);assert.match(result,/Roll \[[1-6](, [1-6])?\] = [0-9]+/);
-  await page.reload();await page.locator('#last-action-result').filter({hasText:'Table outcome:'}).waitFor();assert.deepEqual(await saved(page),afterEvent);assert.match(await page.locator('#last-action-result').innerText(),/Table outcome:/);
+  await page.reload();await openResultDetails(page);await page.locator('#last-action-result').filter({hasText:'Table outcome:'}).waitFor();assert.deepEqual(await saved(page),afterEvent);assert.match(await page.locator('#last-action-result').innerText(),/Table outcome:/);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
   await page.screenshot({path:fileURLToPath(new URL('separate-step-'+width+'-'+http+'-'+failed+'-outcome.png',out)),fullPage:true});checks.push({http,width,step,pass:true});await context.close();
  }

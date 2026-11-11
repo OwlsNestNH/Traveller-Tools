@@ -1,3 +1,4 @@
+import {liveRecordText} from './journey-browser-helpers.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -47,7 +48,7 @@ try{
  let male=enterCore(buildAslanAccessFixture({route:'outside-history',activated:true}));male=run(finishAccessCoreTerm(male),'leave-career');const maleExpected=run(male,'benefit',{cash:true});
  await fresh('aslan-access-male-core-cash',390,male,async page=>{assert.equal((await snapshot(page)).state.cashLimit,3);await page.locator('[data-action=cash-benefit]').click();await ready(page);const after=await snapshot(page);assert.equal(after.state.character.cash,maleExpected.state.character.cash);assert.equal(after.state.character.cashRollAccounts.core,1);assert.equal(last(after).aslanOutsideRules.cashMultiplier,1);await replay(page);});
  let pension=enterCore(buildAslanAccessFixture({route:'outside-history',activated:true}));for(let i=0;i<5;i++){pension=finishAccessCoreTerm(pension);if(i<4)pension=run(pension,'continue-career');}pension=run(pension,'leave-career');
- await fresh('aslan-access-core-pension',1440,pension,async page=>{const r=await snapshot(page);assert.equal(last(r).pension,10000);assert.equal(r.state.character.age,38);assert.equal(r.log.filter(e=>e.type==='ageing').length,0);assert.match(await page.locator('#sheet').innerText(),/10,000/);await replay(page);});
+ await fresh('aslan-access-core-pension',1440,pension,async page=>{const r=await snapshot(page);assert.equal(last(r).pension,10000);assert.equal(r.state.character.age,38);assert.equal(r.log.filter(e=>e.type==='ageing').length,0);assert.match(await liveRecordText(page),/10,000/);await replay(page);});
  let expired=buildAslanAccessFixture({activated:true});expired=run(expired,'gm-override',{field:'age',value:expired.state.character.age+1,reason:'Recorded chronology expires the unused automatic right.'});
  await fresh('aslan-access-expired-context',390,expired,async page=>{await panel(page);assert.match(await page.locator('#aslan-access-panel').innerText(),/Context status: expired/);assert.equal(await page.locator('[data-action=select-career][data-id="core.scholar"]').count(),0);await replay(page);});
  await fresh('aslan-access-long-destination',320,buildAslanAccessFixture(),async page=>{await choose(page);await destination(page,'World'+ 'X'.repeat(155));await activate(page);await ready(page);await panel(page);assert.match(await page.locator('#aslan-access-panel').innerText(),/WorldX{155}/);await shot(page,'aslan-access-long-destination-pending','#aslan-access-panel');await replay(page);});
