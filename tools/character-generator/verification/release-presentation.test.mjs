@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
+import {restoredAslanTrainingTagline} from '../gui/aslan-training-tagline.mjs';
 import {attachSiteLinks} from '../gui/site-integration.mjs';
 import {api} from '../engine/session.mjs';
 const read=file=>fs.readFileSync(new URL('../../../'+file,import.meta.url),'utf8');
@@ -81,7 +82,7 @@ test('actual GUI startup reports missing browser UUID instead of rendering a par
  assert.ok(begin>=0&&end>begin,'Inspect the unchanged startup function, not a rewritten implementation');
  async function run(crypto){
   const calls=[],messages=[];let renders=0;
-  const context={crypto,call:async request=>{calls.push(request.operation);return api(JSON.parse(JSON.stringify(request)));},localStorage:{getItem:()=>null},key:'test',projection:undefined,storageWarning:'',setBusy:()=>{},updateRecovery:()=>{},render:()=>renders++,notify:(message,error)=>messages.push({message,error})};
+  const context={crypto,restoredAslanTrainingTagline,call:async request=>{calls.push(request.operation);return api(JSON.parse(JSON.stringify(request)));},localStorage:{getItem:()=>null},key:'test',projection:undefined,storageWarning:'',setBusy:()=>{},updateRecovery:()=>{},render:()=>renders++,notify:(message,error)=>messages.push({message,error})};
   await vm.runInNewContext(app.slice(begin,end)+'\nstart();',context);return{calls,messages,renders};
  }
  const unavailable=await run({});assert.equal(unavailable.renders,0);assert.deepEqual(unavailable.calls,['catalog']);assert.equal(unavailable.messages[0].error,true);assert.match(unavailable.messages[0].message,/Unable to start the rules engine: crypto.randomUUID is not a function/);

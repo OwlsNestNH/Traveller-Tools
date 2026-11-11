@@ -23,6 +23,8 @@ import {prisonerEscapeTitle,prisonerEscapeView} from './prisoner-escape-view.mjs
 import {extraCharacteristicsView,gmControlsView,syncCorrectionField,syncReplacementDice,syncCorrectionTask,correctionPayload,replacementPayload} from './character-controls.mjs';
 import {rollResult} from './roll-result-view.mjs';
 import {conciseResult,latestResultView,isBasicTrainingChoice} from './concise-result.mjs';
+import {aslanTrainingTagline,restoredAslanTrainingTagline} from './aslan-training-tagline.mjs';
+let trainingTagline=null;
 import {fullActionLog} from './log-download.mjs';
 import {currentEffectsSheet} from './current-effects.mjs';
 import {careerRankView} from './career-rank-view.mjs';
@@ -170,13 +172,14 @@ function focusAfterAction(previousStage,focused){
 }
 async function send(type,payload={}){
  if(busy)return false;
- const token=operationGeneration,previousStage=projection.state.stage;
+ const token=operationGeneration,previousState=projection.state,previousStage=previousState.stage;
  const focused={id:document.activeElement?.id,action:document.activeElement?.dataset.action};
  setBusy(true);
  try{
   const result=await call({operation:'command',session,command:{type,payload},id:crypto.randomUUID(),expectedRevision:projection.revision});
   if(token!==operationGeneration)return false;
   if(!result.ok)throw new Error(result.error.message);
+  trainingTagline=aslanTrainingTagline(result.log.at(-1),result.state,{previousState,command:{type,payload}});
   session=result.session;projection=result;aslanManualReviewKey=null;if(type==='notes'&&notesDraft===payload.text)notesDraft=null;effects=[];persist();render();focusAfterAction(previousStage,focused);notify(storageWarning||actionNotice(type,result),!!storageWarning,rollResult(result.log.at(-1),result.state,catalog)?.status??'info',!storageWarning);return true;
  }catch(error){if(token===operationGeneration)notify(error.message,true);return false;}
  finally{if(token===operationGeneration)setBusy(false);}
@@ -460,7 +463,7 @@ function sheetView(state){
 function render(){
  backgroundDraft=reconcileBackgroundDraft(backgroundDraft,backgroundDraftKey(session,projection.state),projection.state);
  const lastRollResult=conciseResult(projection.log.at(-1),projection.state,catalog);
- const lastResult=projection.state.stage==='background'||projection.state.stage==='career'&&selectedCareer?'':statisticsRollFeedbackView(projection.log.at(-1),projection.state,{esc})??latestResultView(lastRollResult,{esc});
+ const lastResult=projection.state.stage==='background'||projection.state.stage==='career'&&selectedCareer?'':statisticsRollFeedbackView(projection.log.at(-1),projection.state,{esc})??latestResultView(lastRollResult,{esc,tagline:trainingTagline});
  const lawyerPanel=$('#prisoner-lawyer'),lawyerDraft=lawyerPanel?{id:lawyerPanel.dataset.lawyerId,fields:[...lawyerPanel.querySelectorAll('input,select,textarea')].map(input=>({id:input.id,value:input.value,checked:input.checked}))}:null;
  const lifePanel=$('#core-life-decision'),lifeDraft=lifePanel?{id:lifePanel.dataset.lifeEventId,fields:[...lifePanel.querySelectorAll('input,select,textarea')].map(input=>({id:input.id,value:input.value,checked:input.checked}))}:null;
  const accessOpen=$('#aslan-access-panel')?.open;
@@ -672,7 +675,7 @@ async function startNewCharacter({replaceRecovery=false}={}){
  const token=++operationGeneration;setBusy(true);
  try{
   const result=await call({operation:'create',seed:crypto.randomUUID()});if(token!==operationGeneration)return;if(!result.ok)throw new Error(result.error.message);
-  session=result.session;projection=result;aslanManualReviewKey=null;notesDraft=null;backgroundDraft=null;selectedCareer='';effects=[];if(replaceRecovery)recoveryRaw=null;closeHistory();persist();updateRecovery();render();$('#step-title')?.focus();notify(storageWarning||'New character started.',!!storageWarning,'info',!storageWarning);
+  trainingTagline=null;session=result.session;projection=result;aslanManualReviewKey=null;notesDraft=null;backgroundDraft=null;selectedCareer='';effects=[];if(replaceRecovery)recoveryRaw=null;closeHistory();persist();updateRecovery();render();$('#step-title')?.focus();notify(storageWarning||'New character started.',!!storageWarning,'info',!storageWarning);
  }catch(error){if(token===operationGeneration)notify('Could not start a new character: '+error.message,true);}
  finally{if(token===operationGeneration)setBusy(false);}
 };
@@ -685,7 +688,8 @@ $('#import').onchange=async event=>{
   try{incomingRaw=new TextDecoder('utf-8',{fatal:true}).decode(await file.arrayBuffer());}catch{decodeIssue='The original file is not valid UTF-8. Download the unchanged file; no recorded text or character was imported.';throw new Error(decodeIssue);}
   const result=await call({operation:'import',raw:incomingRaw});if(token!==operationGeneration)return;if(!result.ok)throw new Error(result.error.message);
   if((projection.revision||(notesDraft!==null&&notesDraft!==projection.state.character.notes))&&!confirm('Load this character in place of the current browser draft? Save your current character first.'))return;
-  session=result.session;projection=result;aslanManualReviewKey=null;notesDraft=null;backgroundDraft=null;selectedCareer='';effects=[];closeHistory();persist();render();$('#step-title')?.focus();notify(storageWarning||'Character loaded. Its complete action log was replayed and verified.',!!storageWarning);
+  const tagline=await restoredAslanTrainingTagline(result.session,result,call);if(token!==operationGeneration)return;
+  trainingTagline=tagline;session=result.session;projection=result;aslanManualReviewKey=null;notesDraft=null;backgroundDraft=null;selectedCareer='';effects=[];closeHistory();persist();render();$('#step-title')?.focus();notify(storageWarning||'Character loaded. Its complete action log was replayed and verified.',!!storageWarning);
  }catch(error){if(token===operationGeneration){inspectHistory(incomingRaw,file,decodeIssue||(file.size>2000000?'This file is too large to inspect. Download the unchanged original.':''));notify('Could not load: '+error.message+' Your current character was kept. Review the original recorded history below; it is not a verified character.',true);}}
  finally{event.target.value='';if(token===operationGeneration)setBusy(false);}
 };
@@ -697,6 +701,7 @@ async function start(){
   if(saved){try{projection=await call({operation:'import',raw:saved});if(!projection.ok)throw new Error(projection.error.message);session=projection.session;}
    catch(error){recoveryRaw=saved;storageWarning='The stored draft could not be opened. Its raw file is preserved. Use the recovery controls to download it before choosing whether to replace it.';}}
   if(!projection?.ok){const result=await call({operation:'create',seed:crypto.randomUUID()});if(!result.ok)throw new Error(result.error.message);session=result.session;projection=result;aslanManualReviewKey=null;}
+  trainingTagline=await restoredAslanTrainingTagline(session,projection,call);
   updateRecovery();render();if(storageWarning)notify(storageWarning,true);
  }catch(error){notify('Unable to start the rules engine: '+error.message,true);}
  finally{setBusy(false);}

@@ -73,8 +73,8 @@ export function conciseResult(event,state,catalog){
  if(basicSkills.length>1)details=[...details.filter(detail=>!basicSkills.includes(detail)),'Basic training: '+basicSkills.map(detail=>detail.slice(6).replace(': untrained → 0.',' 0')).join(', ')+'.'];
  details=unique([...eventResultDetails(event),...details]);return {title,details,status:full.status,text:[title,...details].join(' '),full,compact:true};
 }
-export function latestResultView(result,{esc}){
+export function latestResultView(result,{esc,tagline=null}){
  if(!result)return '';
  const paragraphs=details=>details.map(detail=>'<p>'+esc(detail)+'</p>').join('');
- return '<section id="last-action-result" class="result-panel result-'+result.status+'" data-result-status="'+result.status+'" aria-label="Latest result"><p class="result-status">'+({success:'Success',failure:'Failure',pending:'Pending resolution',info:'Information'}[result.status]??'Information')+'</p><h3>'+esc(result.title)+'</h3>'+paragraphs(result.details)+(result.compact?'<details class="result-information"><summary><span aria-hidden="true">ⓘ</span> Result details</summary><h4>'+esc(result.full.title)+'</h4>'+paragraphs(result.full.details)+'</details>':'')+'</section>';
+ return '<section id="last-action-result" class="result-panel result-'+result.status+'" data-result-status="'+result.status+'" aria-label="Latest result"><p class="result-status">'+({success:'Success',failure:'Failure',pending:'Pending resolution',info:'Information'}[result.status]??'Information')+'</p><h3>'+esc(result.title)+'</h3>'+paragraphs(result.details)+(tagline?'<p class="outcome-tagline">'+esc(tagline)+'</p>':'')+(result.compact?'<details class="result-information"><summary><span aria-hidden="true">ⓘ</span> Result details</summary><h4>'+esc(result.full.title)+'</h4>'+paragraphs(result.full.details)+'</details>':'')+'</section>';
 }
