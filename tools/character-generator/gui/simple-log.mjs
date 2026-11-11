@@ -29,11 +29,43 @@ function checkFor(event,roll){
  }
  return null;
 }
+// Statistics mechanics belong in Full Log. Keep the recorded choice, dice and
+// final awards here, without consulting today's character or mutating history.
+const readableKey=key=>String(key).replace(/([a-z])([A-Z])/g,'$1 $2').replace(/[._-]+/g,' ');
+function decisionText(value){
+ if(Array.isArray(value))return value.length?value.map(decisionText).join('; '):'none';
+ if(value&&typeof value==='object')return Object.entries(value).map(([key,item])=>readableKey(key)+': '+decisionText(item)).join('; ');
+ return value===true?'yes':value===false?'no':value===null?'none':String(value);
+}
+// A sanitized generic result title can discard a person's name or a source
+// decision. Retain that prose and render embedded JSON as readable fields.
+// This is plain text, assigned through textContent by the log viewer.
+function choiceSummary(summary){
+ let text='',start=0;
+ while(start<summary.length){
+  const next=summary.slice(start).search(/[\[{]/);
+  if(next<0){text+=summary.slice(start);break;}
+  const from=start+next;text+=summary.slice(start,from);let parsed=false;
+  for(let end=from+1;end<summary.length;end++){
+   if(!'}]'.includes(summary[end]))continue;
+   try{const value=JSON.parse(summary.slice(from,end+1));text+=decisionText(value);start=end+1;parsed=true;break;}catch{}
+  }
+  if(!parsed){text+=summary[from];start=from+1;}
+ }
+ return text;
+}
+function simpleTitle(event,result){
+ if(event.type==='roll-statistics')return event.summary?.startsWith('Rerolled')?'Rerolled statistics.':'Rolled statistics.';
+ if(event.type==='accept-statistics')return 'Accepted statistics.';
+ if(['swap-statistics','gm-override'].includes(event.type))return (event.summary??'').split(' Optional Aezorgh placement')[0].split(' Final displayed score;')[0];
+ const generic=readableKey(event.type)+' result.';
+ return event.summary&&(!result?.title||result.title===generic)?choiceSummary(event.summary):result?.title??event.summary;
+}
 export function simpleActionLog(log){
- return (log??[]).filter(event=>event.rolls?.length||['restore','gm-replay','enter-physical-statistic','gm-physical-dice'].includes(event.type)).map(event=>{
+ return (log??[]).filter(event=>event.rolls?.length||(event.summary&&event.type!=='notes')||['restore','gm-replay'].includes(event.type)).map(event=>{
   if(['enter-physical-statistic','gm-physical-dice'].includes(event.type))return 'Action '+event.number+': '+event.summary;
   if(['restore','gm-replay'].includes(event.type))return 'Action '+event.number+': '+(event.type==='restore'?'GM restored an earlier step.':'GM replaced a roll and replayed an earlier step.')+' See Full Log for retained original and replacement history.';
-  const lines=event.rolls.map(roll=>{
+  const lines=(event.rolls??[]).map(roll=>{
    const check=checkFor(event,roll),kept=roll.kept??roll.values??[],raw=kept.reduce((a,b)=>a+b,0);
    const selection=JSON.stringify(kept)!==JSON.stringify(roll.values)?' → kept/converted ['+kept.join(', ')+']':'';
    let text=roll.label+': ['+(roll.values??[]).join(', ')+']'+selection;
@@ -50,7 +82,7 @@ export function simpleActionLog(log){
   const result=rollResult(event,{},{});
   const outcomes=(event.eventResults??[]).map(r=>r.title+(r.summary?': '+r.summary:''));
   const effects=characterEffectDetails({...event,changes:(event.changes??[]).filter(c=>/^(skills\.|stats\.|cash$|debt$|benefits\.\d+$|assets\.\d+$)/.test(c.path))},{});
-  return 'Action '+event.number+'\n'+lines.join('\n')+'\n'+[result?.title,...outcomes,...effects].filter(Boolean).join('\n');
+  return 'Action '+event.number+'\n'+lines.join('\n')+'\n'+[simpleTitle(event,result),...outcomes,...effects].filter(Boolean).join('\n');
  }).join('\n\n');
 }
 

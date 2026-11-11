@@ -284,6 +284,10 @@ At background selection, only Aezorgh open a centered modal over the dimmed, ina
 
 The shared character toolbar stays across the top on every generation screen, including background selection. Save, load, print, both logs, log download and New character remain visible without expanding a Character actions menu.
 
+## Statistics feedback and logs
+
+Statistics swaps and GM corrections no longer display the full audit summary in an Information banner. The cards and controls remain visible; roll feedback stays brief. Simple Log includes recorded rolls, results, and choices (including actions without dice), while detailed Aezorgh placement arithmetic stays in Full Log. Full Log, saved sessions, and engine mechanics are unchanged.
+
 ## Optional Aezorgh Charisma (.27)
 
 New Aezorgh leave CHA off by default. For a Vargr campaign, explicitly select Charisma in optional characteristics or use Add another characteristic after accepting scores. CHA is half SOC, rounded down (JTAS Vol. 11 p. 67), with no dice roll, and follows subsequent SOC changes. There is no automatic campaign detection. Existing compatible `.16`–`.25` characters keep their recorded CHA and replay unchanged. Revision `.26` is reserved for a separate unpublished candidate.
