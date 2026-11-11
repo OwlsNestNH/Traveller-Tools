@@ -17,6 +17,7 @@ export function settleOrigin(r,{until='precareer',familyDie=6,birthDice=[1,2],cl
   else if(s.stage==='aslan-pride-result')r=run(r,'acknowledge-aslan-pride');
   else if(s.stage==='aslan-pride')r=force(r,'roll-aslan-pride',{},prideDice);
   else if(s.stage==='background')r=run(r,'background',{skills:s.backgroundOptions.filter(name=>!Object.hasOwn(s.character.skills,name)).slice(0,s.backgroundRemaining)});
+  else if(s.stage==='aslan-rite-result')r=run(r,'acknowledge-aslan-rite');
   else if(s.stage==='aslan-rite')r=force(r,'roll-aslan-rite',{},riteDice);
   else if(s.stage==='book-step'&&s.pending.kind==='aslan-origin-source'){
    const decision=sourceDecisions[s.pending.decision];if(!decision)break;r=run(r,'resolve-aslan-origin-source',decision);
