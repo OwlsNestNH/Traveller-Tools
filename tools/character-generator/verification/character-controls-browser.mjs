@@ -34,9 +34,10 @@ try{
    before=await count(page);await page.locator('#gm-value').fill('11');await page.getByRole('button',{name:'Save correction',exact:true}).click();assert.equal(await count(page),before); // reason required
    await page.locator('#gm-reason').fill('Correct the named DEX raw score');await page.getByRole('button',{name:'Save correction',exact:true}).click();await changed(page,before);
    let current=project(JSON.parse(await saved(page)));assert.equal(current.state.pool[1].base,11);assert.equal(current.state.pool[0].base,initial.state.pool[0].base);assert.equal(current.log.at(-1).type,'gm-override');assert.match(current.log.at(-1).summary,/pool\[1\]/);assert.equal(await page.evaluate(()=>document.activeElement.id),'gm-save-correction');
-   await page.getByRole('button',{name:'Keep these characteristics',exact:true}).click();await page.getByRole('heading',{name:'Choose background skills',exact:true}).waitFor();await ready(page);
+   await page.getByRole('button',{name:'Keep these characteristics',exact:true}).click();await page.getByRole('heading',{name:'Choose your background skills',exact:true}).waitFor();await ready(page);
    assert.equal(await page.locator('#additional-characteristics').getAttribute('open'),null);assert.notEqual(await page.locator('#gm-controls').getAttribute('open'),null); // disclosure state follows identity, not position
    assert.equal(await page.locator('#extra-stat option[value=LCK]').count(),0);assert.equal(await page.locator('#sheet .stat').filter({hasText:'LCK'}).count(),1);
+   await page.locator('#background-record > summary').click();assert.equal(await page.locator('#background-selection').evaluate(el=>el.open),false);
    await page.locator('#additional-characteristics > summary').click();await page.locator('#extra-stat').selectOption('MRL');before=await count(page);await page.getByRole('button',{name:'Add this characteristic',exact:true}).click();await changed(page,before);
    assert.equal(await page.locator('#extra-stat option[value=MRL]').count(),0);assert.equal(await page.locator('#sheet .stat').filter({hasText:'MRL'}).count(),1);
    await page.locator('#gm-field').selectOption('age');assert.equal(await page.locator('#gm-value').inputValue(),'18');await page.locator('#gm-value').fill('45');await page.locator('#gm-reason').fill('A fixture chronology correction');before=await count(page);
