@@ -256,72 +256,76 @@ body[data-family-popup="true"] #workspace,body[data-family-popup="true"] #sheet,
     }
 
 /* Approved Aslan ordinary background choices. */
-#aslan-family-dialog.aslan-background-dialog .background-title-row{display:flex;align-items:center;justify-content:space-between;gap:14px}
-    #aslan-family-dialog.aslan-background-dialog h2{font-size:44px;overflow-wrap:anywhere}
-    #aslan-family-dialog.aslan-background-dialog #aslan-background-info-open{flex:none;width:44px;height:44px;min-height:44px;padding:0;border:2px solid #ffd34b;border-radius:50%;background:transparent;color:#ffd34b;font-family:Georgia,serif;font-size:29px;font-style:normal;font-weight:700;line-height:1}
-    #aslan-family-dialog.aslan-background-dialog .aslan-family-band{font-size:23px;margin:6px 0 17px}
-    #aslan-family-dialog.aslan-background-dialog .background-family-award{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px 16px;margin:0 0 21px;padding:12px 16px;border:1px solid #639fb9;border-radius:10px;background:#082434}
-    #aslan-family-dialog.aslan-background-dialog .background-family-award p{font-size:18px;line-height:1.4;margin:0;color:#c4d8e7}
-    #aslan-family-dialog.aslan-background-dialog .background-family-award strong{display:block;font-size:19px;color:#f5f7fa}
-    #aslan-family-dialog.aslan-background-dialog .background-award-chip{display:inline-flex;align-items:center;gap:13px;padding:6px 13px;border:1px solid #639fb9;border-radius:9px;color:#c4d8e7;font-size:20px;font-weight:700;white-space:nowrap}
-    #aslan-family-dialog.aslan-background-dialog .background-award-chip b{color:#f5f7fa}
-    #aslan-family-dialog.aslan-background-dialog .background-instruction-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:0 0 15px}
-    #aslan-family-dialog.aslan-background-dialog .background-instruction-row h3{font-size:29px;margin:0 0 4px;line-height:1.25;color:#f5f7fa}
-    #aslan-family-dialog.aslan-background-dialog .background-instruction-row p{font-size:19px;margin:0;color:#c4d8e7}
-    #aslan-family-dialog.aslan-background-dialog .background-progress{border:2px solid #639fb9;border-radius:12px;background:#082434;padding:9px 16px;text-align:center;min-width:158px}
-    #aslan-family-dialog.aslan-background-dialog .background-progress strong{display:block;color:#ffd34b;font-size:29px;line-height:1.15}
-    #aslan-family-dialog.aslan-background-dialog .background-progress span{font-size:15px;font-weight:700;color:#c4d8e7}
-    #aslan-family-dialog.aslan-background-dialog .background-progress[data-ready="true"]{border-color:#ffd34b}
-    #aslan-family-dialog.aslan-background-dialog .background-skill-options{border:0;margin:0;padding:0;min-inline-size:0}
-    #aslan-family-dialog.aslan-background-dialog .background-skill-options legend{font-size:17px;font-weight:600;color:#c4d8e7;padding:0;margin:0 0 10px}
-    #aslan-family-dialog.aslan-background-dialog .background-skill-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
-    #aslan-family-dialog.aslan-background-dialog .background-skill-choice{display:flex;align-items:center;gap:13px;min-width:0;min-height:63px;margin:0;padding:11px 16px;border:2px solid #639fb9;border-radius:12px;background:#071e2c;color:#f5f7fa;font-size:23px;font-weight:750;cursor:pointer;line-height:1.25}
-    #aslan-family-dialog.aslan-background-dialog .background-skill-choice:hover{background:#123245}
-    #aslan-family-dialog.aslan-background-dialog .background-skill-choice:has(input:checked){border-color:#ffd34b;background:#293d3b}
-    #aslan-family-dialog.aslan-background-dialog .background-skill-choice input{appearance:auto;flex:none;width:27px;height:27px;min-height:27px;padding:0;margin:0;accent-color:#ffd34b}
-    #aslan-family-dialog.aslan-background-dialog .background-skill-choice span{min-width:0;overflow-wrap:anywhere}
-    #aslan-family-dialog.aslan-background-dialog .background-selection{margin:17px 0 0;padding:13px 16px;border:1px solid #639fb9;border-radius:10px;background:#082434;min-height:80px}
-    #aslan-family-dialog.aslan-background-dialog .background-selection h3{color:#c4d8e7;font-size:16px;margin:0 0 5px;font-weight:650}
-    #aslan-family-dialog.aslan-background-dialog .background-selection p{font-size:19px;line-height:1.4;margin:0;color:#f5f7fa;overflow-wrap:anywhere}
-    #aslan-family-dialog.aslan-background-dialog .background-selection .background-empty{color:#c4d8e7}
-    #aslan-family-dialog.aslan-background-dialog #background-status{font-size:18px;line-height:1.4;color:#ffd34b;margin:10px 0 15px;font-weight:650}
-    #aslan-family-dialog.aslan-background-dialog .background-next{font-size:18px;color:#c4d8e7;line-height:1.4;margin:0 0 15px}
-    #aslan-family-dialog.aslan-background-dialog footer{align-items:center;gap:14px;margin-top:0}
-    #aslan-family-dialog.aslan-background-dialog footer p{font-size:16px}
-    #aslan-family-dialog.aslan-background-dialog #aslan-background-continue{font-size:21px;min-height:60px;padding:12px 18px;max-width:100%}
-    #aslan-family-dialog.aslan-background-dialog .background-review-note{font-size:14px;line-height:1.4;color:#bdd1df;margin:13px 0 0}
-    #aslan-family-dialog.aslan-background-dialog .background-review-status{font-size:17px;line-height:1.4;color:#ffd34b;margin:12px 0 0;overflow-wrap:anywhere}
-    #aslan-family-dialog.aslan-background-dialog .background-review-status:empty{display:none}
-    #aslan-background-info{box-sizing:border-box;width:min(660px,calc(100vw - 28px));max-height:calc(100dvh - 32px);overflow:auto;margin:auto;padding:24px;background:#061d2b;color:#f5f7fa;border:2px solid #73b1cc;border-radius:15px}
-    #aslan-background-info::backdrop{background:rgba(1,12,20,.72)}
-    #aslan-background-info .info-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
-    #aslan-background-info h2{font-size:28px;margin:0;color:#f5f7fa}
-    #aslan-background-info h3{font-size:22px;color:#ffd34b;margin:22px 0 10px}
-    #aslan-background-info p{font-size:18px;line-height:1.5;color:#c4d8e7}
-    #aslan-background-info button{width:44px;height:44px;min-height:44px;flex:none;padding:0;background:#142e3c;border:1px solid #73b1cc;border-radius:8px;color:#f5f7fa;font-size:28px}
-    #aslan-background-info :focus-visible{outline:3px solid #ffcf3e;outline-offset:3px}
+#workspace #aslan-family-dialog.aslan-background-dialog .background-title-row{display:flex;align-items:center;justify-content:space-between;gap:14px}
+    #workspace #aslan-family-dialog.aslan-background-dialog h2{font-size:44px;overflow-wrap:anywhere}
+    #workspace #aslan-family-dialog.aslan-background-dialog #aslan-background-info-open{flex:none;width:44px;height:44px;min-height:44px;padding:0;border:2px solid #ffd34b;border-radius:50%;background:transparent;color:#ffd34b;font-family:Georgia,serif;font-size:29px;font-style:normal;font-weight:700;line-height:1}
+    #workspace #aslan-family-dialog.aslan-background-dialog .aslan-family-band{font-size:23px;margin:6px 0 17px}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-family-award{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px 16px;margin:0 0 21px;padding:12px 16px;border:1px solid #639fb9;border-radius:10px;background:#082434}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-family-award p{font-size:18px;line-height:1.4;margin:0;color:#c4d8e7}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-family-award strong{display:block;font-size:19px;color:#f5f7fa}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-award-chip{display:inline-flex;align-items:center;gap:13px;padding:6px 13px;border:1px solid #639fb9;border-radius:9px;color:#c4d8e7;font-size:20px;font-weight:700;white-space:nowrap}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-award-chip b{color:#f5f7fa}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-instruction-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:0 0 15px}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-instruction-row h3{font-size:29px;margin:0 0 4px;line-height:1.25;color:#f5f7fa}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-instruction-row p{font-size:19px;margin:0;color:#c4d8e7}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-progress{border:2px solid #639fb9;border-radius:12px;background:#082434;padding:9px 16px;text-align:center;min-width:158px}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-progress strong{display:block;color:#ffd34b;font-size:29px;line-height:1.15}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-progress span{font-size:15px;font-weight:700;color:#c4d8e7}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-progress[data-ready="true"]{border-color:#ffd34b}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-skill-options{border:0;margin:0;padding:0;min-inline-size:0}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-skill-options legend{font-size:17px;font-weight:600;color:#c4d8e7;padding:0;margin:0 0 10px}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-skill-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-skill-choice{display:flex;align-items:center;gap:13px;min-width:0;min-height:63px;margin:0;padding:11px 16px;border:2px solid #639fb9;border-radius:12px;background:#071e2c;color:#f5f7fa;font-size:23px;font-weight:750;cursor:pointer;line-height:1.25}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-skill-choice:hover{background:#123245}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-skill-choice:has(input:checked){border-color:#ffd34b;background:#293d3b}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-skill-choice input{appearance:auto;flex:none;width:27px;height:27px;min-height:27px;padding:0;margin:0;accent-color:#ffd34b}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-skill-choice span{min-width:0;overflow-wrap:anywhere}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-selection{margin:17px 0 0;padding:13px 16px;border:1px solid #639fb9;border-radius:10px;background:#082434;min-height:80px}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-selection h3{color:#c4d8e7;font-size:16px;margin:0 0 5px;font-weight:650}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-selection p{font-size:19px;line-height:1.4;margin:0;color:#f5f7fa;overflow-wrap:anywhere}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-selection .background-empty{color:#c4d8e7}
+    #workspace #aslan-family-dialog.aslan-background-dialog #background-status{font-size:18px;line-height:1.4;color:#ffd34b;margin:10px 0 15px;font-weight:650}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-next{font-size:18px;color:#c4d8e7;line-height:1.4;margin:0 0 15px}
+    #workspace #aslan-family-dialog.aslan-background-dialog footer{align-items:center;gap:14px;margin-top:0}
+    #workspace #aslan-family-dialog.aslan-background-dialog footer p{font-size:16px}
+    #workspace #aslan-family-dialog.aslan-background-dialog #aslan-background-continue{font-size:21px;min-height:60px;padding:12px 18px;max-width:100%}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-review-note{font-size:14px;line-height:1.4;color:#bdd1df;margin:13px 0 0}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-review-status{font-size:17px;line-height:1.4;color:#ffd34b;margin:12px 0 0;overflow-wrap:anywhere}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-review-status:empty{display:none}
+    #workspace #aslan-background-info{box-sizing:border-box;width:min(660px,calc(100vw - 28px));max-height:calc(100dvh - 32px);overflow:auto;margin:auto;padding:24px;background:#061d2b;color:#f5f7fa;border:2px solid #73b1cc;border-radius:15px}
+    #workspace #aslan-background-info::backdrop{background:rgba(1,12,20,.72)}
+    #workspace #aslan-background-info .info-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    #workspace #aslan-background-info h2{font-size:28px;margin:0;color:#f5f7fa}
+    #workspace #aslan-background-info h3{font-size:22px;color:#ffd34b;margin:22px 0 10px}
+    #workspace #aslan-background-info p{font-size:18px;line-height:1.5;color:#c4d8e7}
+    #workspace #aslan-background-info button{width:44px;height:44px;min-height:44px;flex:none;padding:0;background:#142e3c;border:1px solid #73b1cc;border-radius:8px;color:#f5f7fa;font-size:28px}
+    #workspace #aslan-background-info :focus-visible{outline:3px solid #ffcf3e;outline-offset:3px}
     @media(max-width:650px){
-      #aslan-family-dialog.aslan-background-dialog{padding:20px 18px}
-      #aslan-family-dialog.aslan-background-dialog h2{font-size:29px;line-height:1.2}
-      #aslan-family-dialog.aslan-background-dialog .aslan-family-band{font-size:17px;margin:8px 0 14px}
-      #aslan-family-dialog.aslan-background-dialog .background-family-award{padding:11px 12px;margin-bottom:17px}
-      #aslan-family-dialog.aslan-background-dialog .background-family-award p{font-size:15px}
-      #aslan-family-dialog.aslan-background-dialog .background-family-award strong{font-size:17px}
-      #aslan-family-dialog.aslan-background-dialog .background-award-chip{font-size:18px}
-      #aslan-family-dialog.aslan-background-dialog .background-instruction-row h3{font-size:24px}
-      #aslan-family-dialog.aslan-background-dialog .background-instruction-row p{font-size:17px}
-      #aslan-family-dialog.aslan-background-dialog .background-progress{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:8px 12px}
-      #aslan-family-dialog.aslan-background-dialog .background-progress strong{font-size:25px}
-      #aslan-family-dialog.aslan-background-dialog .background-skill-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
-      #aslan-family-dialog.aslan-background-dialog .background-skill-choice{font-size:17px;min-height:57px;padding:10px;gap:9px}
-      #aslan-family-dialog.aslan-background-dialog .background-skill-choice input{width:22px;height:22px;min-height:22px}
-      #aslan-family-dialog.aslan-background-dialog .background-skill-options legend{font-size:16px}
-      #aslan-family-dialog.aslan-background-dialog .background-selection{padding:12px;margin-top:15px}
-      #aslan-family-dialog.aslan-background-dialog .background-selection p,#aslan-family-dialog.aslan-background-dialog #background-status,#aslan-family-dialog.aslan-background-dialog .background-next{font-size:17px}
-      #aslan-family-dialog.aslan-background-dialog footer p{font-size:14px}
-      #aslan-family-dialog.aslan-background-dialog #aslan-background-continue{font-size:20px;width:100%}
-      #aslan-background-info{padding:20px 18px}
-      #aslan-background-info h2{font-size:25px}
-      #aslan-background-info p{font-size:17px}
+      #workspace #aslan-family-dialog.aslan-background-dialog{padding:20px 18px}
+      #workspace #aslan-family-dialog.aslan-background-dialog h2{font-size:29px;line-height:1.2}
+      #workspace #aslan-family-dialog.aslan-background-dialog .aslan-family-band{font-size:17px;margin:8px 0 14px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-family-award{padding:11px 12px;margin-bottom:17px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-family-award p{font-size:15px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-family-award strong{font-size:17px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-award-chip{font-size:18px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-instruction-row h3{font-size:24px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-instruction-row p{font-size:17px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-progress{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:8px 12px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-progress strong{font-size:25px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-skill-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-skill-choice{font-size:17px;min-height:57px;padding:10px;gap:9px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-skill-choice input{width:22px;height:22px;min-height:22px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-skill-options legend{font-size:16px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-selection{padding:12px;margin-top:15px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-selection p,#workspace #aslan-family-dialog.aslan-background-dialog #background-status,#workspace #aslan-family-dialog.aslan-background-dialog .background-next{font-size:17px}
+      #workspace #aslan-family-dialog.aslan-background-dialog footer p{font-size:14px}
+      #workspace #aslan-family-dialog.aslan-background-dialog #aslan-background-continue{font-size:20px;width:100%}
+      #workspace #aslan-background-info{padding:20px 18px}
+      #workspace #aslan-background-info h2{font-size:25px}
+      #workspace #aslan-background-info p{font-size:17px}
     }
-    @media(max-width:360px){#aslan-family-dialog.aslan-background-dialog .background-skill-grid{grid-template-columns:1fr}#aslan-family-dialog.aslan-background-dialog .background-skill-choice{font-size:20px}}
+    @media(max-width:360px){#workspace #aslan-family-dialog.aslan-background-dialog .background-skill-grid{grid-template-columns:1fr}#workspace #aslan-family-dialog.aslan-background-dialog .background-skill-choice{font-size:20px}}
+
+#workspace #aslan-family-dialog.aslan-background-dialog #aslan-background-continue{width:auto;flex:none}
+@media(max-width:650px){#workspace #aslan-family-dialog.aslan-background-dialog #aslan-background-continue{width:100%}}
+#workspace #aslan-family-dialog.aslan-background-dialog #aslan-background-continue:not(:disabled){background:linear-gradient(#ffd64d,#efb921);color:#071018;border-color:#ffd34b;border-radius:12px}
