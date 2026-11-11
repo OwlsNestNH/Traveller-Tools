@@ -48,7 +48,7 @@ export function mountJourneyPopup(root,{state,catalog,event,result,freshResult=f
  }
  if(!dialog){
   dialog=root.createElement('dialog');dialog.id='journey-dialog';dialog.className='journey-dialog';dialog.setAttribute('aria-labelledby','step-title');
-  context=root.createElement('div');context.id='journey-context';context.innerHTML='<section class="journey-stage-card"><p class="journey-eyebrow">YOUR NEXT STEP</p><h2 id="journey-stage-name"></h2><button type="button" id="journey-reopen" class="quiet" aria-controls="journey-dialog">Open this step</button></section><aside class="journey-rail"><div id="journey-character-summary"></div><details id="journey-record"><summary>Character sheet <span aria-hidden="true">＋</span></summary></details></aside>';
+  context=root.createElement('div');context.id='journey-context';context.innerHTML='<section class="journey-stage-card"><p class="journey-eyebrow">YOUR NEXT STEP</p><p id="journey-stage-name" class="journey-stage-label"></p><button type="button" id="journey-reopen" class="quiet" aria-controls="journey-dialog">Open this step</button></section><aside class="journey-rail"><div id="journey-character-summary"></div><details id="journey-record"><summary>Character sheet <span aria-hidden="true">＋</span></summary></details></aside>';
   layout.append(context,dialog);dialog.append(workspace);context.querySelector('#journey-record').append(sheet);
   dialog.addEventListener('cancel',event=>{event.preventDefault();close();});
   dialog.addEventListener('keydown',event=>{if(event.key==='Escape'&&!root.querySelector('dialog:modal,:popover-open')){event.preventDefault();close();}});
@@ -57,11 +57,13 @@ export function mountJourneyPopup(root,{state,catalog,event,result,freshResult=f
  }
  function close(){dialog.close();root.body.classList.remove('journey-open');context.querySelector('#journey-reopen').focus({preventScroll:true});}
  function open(){if(!dialog.open)dialog.show();root.body.classList.add('journey-open');}
- layout.classList.add('journey-layout');
+ const keepRecordOpen=dialog.dataset.stage===state.stage&&context.querySelector('#journey-record').open&&!freshResult;
+ dialog.dataset.stage=state.stage;layout.classList.add('journey-layout');
  const c=state.character,title=root.querySelector('#step-title').textContent;
  context.querySelector('#journey-stage-name').textContent=title;
  context.querySelector('#journey-character-summary').innerHTML='<p class="journey-eyebrow">YOUR TRAVELLER</p><h2>'+esc(c.name||'Your Traveller')+'</h2><p>'+esc(catalog.species.find(s=>s.id===c.species)?.name??c.species)+' · Age '+esc(c.age)+'</p><p>'+esc(c.terms)+' completed terms</p>';
  const heading=root.querySelector('#step-title'),eyebrow=workspace.querySelector('.step-count');
+ workspace.insertAdjacentHTML('beforeend','<p id="journey-error" role="alert"></p>');
  eyebrow.textContent=state.stage.replaceAll('-',' ').toUpperCase();
  const dismiss=root.createElement('button');dismiss.type='button';dismiss.id='journey-close';dismiss.className='journey-close quiet';dismiss.textContent='Close step';dismiss.addEventListener('click',close);eyebrow.before(dismiss);
  const originalResult=workspace.querySelector('#last-action-result'),model=journeyResult(event,state,catalog,result);
@@ -88,5 +90,6 @@ export function mountJourneyPopup(root,{state,catalog,event,result,freshResult=f
   for(const node of [...workspace.children])if(node.matches('h3,ul,p.warning')||node.matches('p:not(.step-count)')){let details=workspace.querySelector('.journey-finish-details');if(!details){details=root.createElement('details');details.className='journey-details journey-finish-details';details.innerHTML='<summary>Source-assisted coverage</summary>';workspace.append(details);}details.append(node);}
  }
  // A new stage or result opens naturally. Closing and reopening is read-only.
- context.querySelector('#journey-record').open=false;open();
+ if(keepRecordOpen){dialog.close();root.body.classList.remove('journey-open');}
+ else{context.querySelector('#journey-record').open=false;open();}
 }

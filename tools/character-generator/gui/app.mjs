@@ -128,7 +128,7 @@ function syncClanShareControls(savedLot){
  syncClanAssetControls();syncLandControls();
  const verifyContact=$('#clan-verify-contact');if(verifyContact){$('#clan-contact-clan-help').textContent=p.clans.find(c=>c.id===$('#clan-contact-clan').value)?.name??'';const c=p.contacts.find(c=>c.id===verifyContact.value);$('#clan-verify-contact-help').textContent=c?c.name+' · '+c.id+' · '+c.clanName:'';$('[data-action=verify-clan-contact]').disabled=!c?.canVerify||!$('#clan-contact-clan').value;}
 }
-function notify(message,error=false,status='info',action=false){$('#message').style.overflowWrap='anywhere';$('#message').className=error?'error':'result-'+status+(action?' action-announcement':'');$('#message').textContent=message;const popupError=$('#species-skill-error');if(popupError)popupError.textContent=error?message:'';}
+function notify(message,error=false,status='info',action=false){$('#message').style.overflowWrap='anywhere';$('#message').className=error?'error':'result-'+status+(action?' action-announcement':'');$('#message').textContent=message;const popupError=$('#species-skill-error');if(popupError)popupError.textContent=error?message:'';const journeyError=$('#journey-error');if(journeyError)journeyError.textContent=error?message:'';}
 function clearActionNotice(){if($('#message').classList.contains('action-announcement'))notify('');}
 function actionNotice(type,result){
  return statisticsRollFeedback(result.log.at(-1),result.state)??conciseResult(result.log.at(-1),result.state,catalog)?.text??'Action recorded.';
@@ -160,9 +160,9 @@ function persist(){
  catch{storageWarning='This browser could not save the draft. Use Save character & log to keep a backup.';}
 }
 function focusAfterAction(previousStage,focused){
- if($('#journey-result')){$('#journey-result').tabIndex=-1;$('#journey-result').focus();return;}
  if($('#species-skill-dialog')?.open){$('#species-skill-search').focus();return;}
  if($('#equipment-dialog')?.open){$('#equipment-dialog-title').focus();return;}
+ if($('#journey-result')){$('#journey-result').tabIndex=-1;$('#journey-result').focus();return;}
  if(previousStage==='book-step'&&projection.state.stage==='equipment-finalization'){document.querySelector('[data-action="choose-deferred-equipment"]:not(:disabled)')?.focus();return;}
  let target;
  if(previousStage===projection.state.stage){

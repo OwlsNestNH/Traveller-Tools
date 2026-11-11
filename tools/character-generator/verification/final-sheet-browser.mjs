@@ -12,6 +12,19 @@ await mkdir(out,{recursive:true});
 const raw=exportSession(finalSheetFixture().session),unfinished=exportSession(finalSheetFixture({finish:false}).session);
 const browser=await chromium.launch({headless:true,...(process.env.CHARACTER_BROWSER_CHANNEL?{channel:process.env.CHARACTER_BROWSER_CHANNEL}:{})});
 const checks=[],errors=[];
+async function openLiveRecord(page){
+ const record=page.locator('#journey-record');
+ if(await record.count()){
+  if(await page.locator('#journey-dialog').evaluate(el=>el.open))await page.locator('#journey-close').click();
+  if(!await record.evaluate(el=>el.open))await record.locator(':scope > summary').click();
+ }
+ await page.locator('#sheet').waitFor({state:'visible'});
+}
+async function reopenStep(page){
+ if(await page.locator('#journey-dialog').count()&&!await page.locator('#journey-dialog').evaluate(el=>el.open))await page.locator('#journey-reopen').click();
+ await page.locator('#workspace').waitFor({state:'visible'});
+}
+
 try{
  for(const width of [1440,320])for(const transport of ['static','http']){
   const context=await browser.newContext({viewport:{width,height:900}}),page=await context.newPage(),label=transport+'-'+width;
@@ -24,8 +37,10 @@ try{
    await page.getByRole('button',{name:'Finish character',exact:true}).click();
    const open=page.getByRole('button',{name:'Open your character sheet',exact:true});await open.waitFor();
    assert.ok(await open.evaluate(el=>el.getBoundingClientRect().height>=72));
+   await openLiveRecord(page);
    await page.locator('#notes-connections').locator('summary').click();
    await page.locator('#character-notes').fill('Unsaved biography '+label+' <img src=x>');
+   await reopenStep(page);
    await open.focus();await open.press('Enter');
    const dialog=page.getByRole('dialog',{name:'Character sheet',exact:true});await dialog.waitFor();
    assert.equal(await page.evaluate(()=>document.activeElement.id),'final-sheet-title');
@@ -47,7 +62,7 @@ try{
    await page.keyboard.press('Escape');await dialog.waitFor({state:'hidden'});
    assert.equal(await page.evaluate(()=>document.activeElement.dataset.action),'open-character-sheet');
    assert.equal(await page.evaluate(()=>document.body.classList.contains('final-sheet-open')),false);
-   await open.dblclick();await dialog.waitFor();assert.equal(await page.locator('dialog[open]').count(),1);
+   await open.dblclick();await dialog.waitFor();assert.equal(await page.locator('#final-character-sheet[open]').count(),1);assert.equal(await page.locator('dialog:modal').count(),1);
    await content.evaluate(el=>{const details=document.createElement('details');details.id='synthetic-print-disclosure';details.innerHTML='<summary>Synthetic read-only details</summary><p>Recorded source decision</p>';el.append(details);});
    await page.evaluate(()=>{window.__sheetPrints=0;window.print=()=>{window.__sheetPrints++;window.dispatchEvent(new Event('beforeprint'));window.__detailsPrinted=document.getElementById('synthetic-print-disclosure').open;window.dispatchEvent(new Event('afterprint'));};});
    await dialog.getByRole('button',{name:'Print this sheet',exact:true}).click();assert.equal(await page.evaluate(()=>window.__sheetPrints),1);
@@ -82,7 +97,7 @@ try{
    await page.locator('#import').setInputFiles({name:'synthetic-finished.json',mimeType:'application/json',buffer:Buffer.from(raw)});
    await page.getByRole('button',{name:'Open your character sheet',exact:true}).click();await page.getByRole('dialog',{name:'Character sheet',exact:true}).waitFor();
    await page.reload();await page.getByRole('button',{name:'Open your character sheet',exact:true}).waitFor();
-   assert.equal(await page.locator('dialog[open]').count(),0);assert.equal(await page.evaluate(()=>document.body.classList.contains('final-sheet-open')),false);
+   assert.equal(await page.locator('#final-character-sheet[open]').count(),0);assert.equal(await page.locator('dialog:modal').count(),0);assert.equal(await page.evaluate(()=>document.body.classList.contains('final-sheet-open')),false);
    checks.push(transport+' finalized import and reload');
   }finally{await context.close();}
  }

@@ -19,9 +19,9 @@ const saved=page=>page.evaluate(key=>localStorage.getItem(key),key);
 const ready=page=>page.waitForFunction(()=>document.querySelector('#workspace')?.dataset.revision&&!document.querySelector('#new').disabled);
 async function load(page,fixture){await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(fixture.session)});await page.reload();await ready(page);await page.locator('#journey-dialog[open]').waitFor();}
 async function fit(page){assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);assert.deepEqual(await page.locator('#journey-dialog,dialog:modal').evaluateAll(nodes=>nodes.filter(n=>n.scrollWidth>n.clientWidth+1).map(n=>n.id)),[]);}
-async function photo(page,name){await page.locator('#journey-dialog').scrollIntoViewIfNeeded();await page.locator('#journey-dialog').evaluate(el=>el.scrollTop=0);await page.screenshot({path:fileURLToPath(new URL('journey-'+name+'.png',out)),fullPage:false});}
+async function photo(page,name){await page.locator('#journey-dialog').scrollIntoViewIfNeeded();await page.locator('#journey-dialog').evaluate(el=>el.scrollTop=0);await page.locator('header h1').evaluate(el=>document.activeElement?.blur());await page.screenshot({path:fileURLToPath(new URL('journey-'+name+'.png',out)),fullPage:false});}
 try{
- for(const http of [false,true])for(const width of [1440,390,320]){
+ for(const http of [true,false])for(const width of [1440,390,320]){
   const context=await browser.newContext({viewport:{width,height:1000}}),page=await context.newPage();page.setDefaultTimeout(12000);page.on('pageerror',error=>errors.push(error.message));
   const label=(http?'http':'static')+'-'+width;
   try{

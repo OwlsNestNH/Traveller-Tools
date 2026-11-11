@@ -12,7 +12,7 @@
  .journey-stage-card,.journey-rail{width:250px;min-width:0;box-sizing:border-box}
  .journey-stage-card,#journey-character-summary{padding:24px;border:1px solid #2c5165;border-radius:13px;background:#071c29;color:#b8ccd8}
  .journey-stage-card{min-height:300px}
- .journey-stage-card h2,#journey-character-summary h2{font-size:26px;color:#e7eff5;overflow-wrap:anywhere}
+ .journey-stage-card .journey-stage-label,#journey-character-summary h2{font-size:26px;color:#e7eff5;overflow-wrap:anywhere}
  #journey-character-summary p{font-size:18px}
  #journey-record{border:1px solid #41647a;border-radius:10px;margin-top:14px;background:#071c29;overflow:hidden}
  #journey-record>summary{display:flex;justify-content:space-between;gap:15px;padding:17px 20px;cursor:pointer;font-size:18px;font-weight:700;color:#ffdc67;list-style:none}
@@ -45,6 +45,8 @@
  #journey-dialog :is(input,select,textarea){font-size:22px;min-height:52px}
  #journey-dialog :is(input[type=radio],input[type=checkbox]){min-height:0;width:24px;height:24px}
  #journey-dialog .journey-close{float:right;min-height:44px;padding:6px 12px;margin:-12px -20px 8px 16px;font-size:16px;border-color:#41647a;color:#c4d8e7;background:transparent}
+ #journey-dialog #journey-error:empty{display:none}
+ #journey-dialog #journey-error{color:#ffd1c8;border:1px solid #ce8880;padding:14px}
  #journey-dialog .journey-details{clear:both;margin-top:24px;padding-top:16px;border-top:1px solid #578197}
  #journey-dialog .journey-details>summary{color:#c4d8e7;cursor:pointer;font-size:18px;line-height:1.5}
  #journey-dialog .journey-details :is(p,li){font-size:18px}
@@ -73,7 +75,7 @@
  #journey-dialog{width:calc(100% - 36px)}
 }
 @media screen and (max-width:650px){
- #journey-context{gap:12px;flex-direction:column}.journey-stage-card,.journey-rail{width:100%;min-height:0}.journey-stage-card{padding:16px}.journey-stage-card h2{font-size:21px}.journey-stage-card .journey-eyebrow{font-size:13px}
+ #journey-context{gap:12px;flex-direction:column}.journey-stage-card,.journey-rail{width:100%;min-height:0}.journey-stage-card{padding:16px}.journey-stage-card .journey-stage-label{font-size:21px}.journey-stage-card .journey-eyebrow{font-size:13px}
  #journey-character-summary{padding:16px}#journey-character-summary h2{font-size:23px;margin:8px 0}#journey-character-summary p{font-size:16px;margin:6px 0}
  .journey-rail:has(#journey-record[open]){width:100%}
  #journey-dialog{width:100%;margin:0;border-radius:13px;max-height:calc(100dvh - 28px)}
@@ -84,7 +86,7 @@
  #journey-dialog .journey-instruction{font-size:22px;margin-bottom:22px}
  #journey-dialog p,#journey-dialog label,#journey-dialog legend{font-size:21px}
  #journey-dialog .choice-list{grid-template-columns:1fr;gap:12px}
- #journey-dialog .choice{font-size:24px;min-height:72px;padding:15px}
+ #journey-dialog button.choice{font-size:24px;min-height:72px;padding:15px}
  #journey-dialog :is(button,.button){font-size:22px;min-height:60px}
  #journey-dialog .actions>*{flex:1 1 100%}
  #journey-dialog .journey-result h3{font-size:32px}
