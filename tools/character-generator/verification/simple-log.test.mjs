@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {simpleActionLog} from '../gui/simple-log.mjs';
 import {fullActionLog} from '../gui/log-download.mjs';
-import {exportSession,importSession,project} from '../engine/session.mjs';
+import {createSession,execute,exportSession,importSession,project} from '../engine/session.mjs';
 import {failedSurvivalFixture,laterCareerFixture} from './concise-result-fixtures.mjs';
 const roll=(label,values,total=values.reduce((a,b)=>a+b,0))=>({label,values,kept:values,total});
 test('actual career and survival checks show dice, applied DMs and result without changing saves',()=>{
@@ -42,4 +42,32 @@ test('statistics rolls and choices stay concise while full mechanics remain unch
  assert.match(simple,/STR: \[4, 5\] = 9/);assert.match(simple,/Swapped STR 9 → 6 and DEX 6 → 9/);assert.match(simple,/Strength: none → 4/);assert.match(simple,/Pilot/);
  assert.doesNotMatch(simple,/raw 6\/2|species bonuses|Species modifiers excluded|House rule/);
  assert.match(full,/raw 6\/2/);assert.equal(fullActionLog(log),full);assert.equal(JSON.stringify(log),before);
+});
+
+function choiceFixture(){
+ let session=createSession('review-choice');
+ const run=(type,payload={})=>{const result=execute(session,{type,payload});session=result.session;return result;};
+ run('setup',{species:'human'});run('roll-statistics');const accepted=run('accept-statistics');
+ run('background',{skills:accepted.state.backgroundOptions.slice(0,accepted.state.backgroundRemaining)});
+ return {run,get session(){return session;}};
+}
+test('real connection retains the selected person even when the name includes punctuation',()=>{
+ const fixture=choiceFixture();fixture.run('skip-precareer');
+ const result=fixture.run('connection',{person:'Dr.Smith',skill:'Admin'}),before=exportSession(result.session);
+ assert.match(simpleActionLog([result.log.at(-1)]),/Connection with Dr\.Smith: Admin gained/);
+ assert.equal(exportSession(result.session),before);
+});
+test('real historical source-assisted admission retains the decision and referee note without raw JSON',()=>{
+ const fixture=choiceFixture();fixture.run('precareer',{id:'companion.colonial'});
+ fixture.session.rulesRevision='character-preview-2026-11-09.17';
+ fixture.run('companion-entry',{techLevel:10});
+ const result=fixture.run('resolve-book',{confirmed:true,note:'Referee permits this colony background despite unusual technology',educationEntrySuccess:true}),before=exportSession(result.session);
+ const text=simpleActionLog([result.log.at(-1)]);
+ assert.match(text,/Referee permits this colony background despite unusual technology/);
+ assert.match(text,/education Entry Success: yes/i);assert.doesNotMatch(text,/[{}]|"educationEntrySuccess"/);
+ assert.equal(exportSession(result.session),before);
+});
+test('choice prose keeps literal markup and nested decisions as plain text, without inventing rolls',()=>{
+ const text=simpleActionLog([{number:1,type:'resolve-book',rolls:[],summary:'Source-assisted ruling. <img src=x onerror=alert(1)> Decisions: {"choice":{"name":"Dr.Smith","accepted":false},"skills":["Admin","Pilot"]}.'}]);
+ assert.match(text,/<img src=x onerror=alert\(1\)>/);assert.match(text,/name: Dr\.Smith; accepted: no/);assert.match(text,/skills: Admin; Pilot/);assert.doesNotMatch(text,/\[|\{|DM/);
 });
