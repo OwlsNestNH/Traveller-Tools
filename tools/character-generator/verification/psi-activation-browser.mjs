@@ -4,7 +4,7 @@ import {createRequire} from 'node:module';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {createServer} from '../server.mjs';
-import {project} from '../engine/session.mjs';
+import {project,RULES_REVISION} from '../engine/session.mjs';
 
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const key='traveller-character-generator.v1',errors=[],checks=[],out=new URL('./artifacts/',import.meta.url);
@@ -31,7 +31,7 @@ try{
    await reveal(p,'[name="extras"][value="PSI"]');await p.locator('[name="extras"][value="PSI"]').check();await p.locator('[name="extras"][value="LCK"]').check();
    if(setupEnabled){await reveal(p,'[name="psiGm"]');await p.locator('[name="psiGm"]').check();}
    await p.getByRole('button',{name:'Begin character',exact:true}).click();await p.locator('[data-action="roll-statistics"]').waitFor();await ready(p);await action(p,()=>p.locator('[data-action="roll-statistics"]').click());
-   let initial=await state(p);assert.match(JSON.parse(await saved(p)).rulesRevision,/\.24$/);assert.equal(initial.character.stats.PSI,undefined);assert.equal(!!initial.config.psiGm,setupEnabled);assert.equal(!!initial.config.psiTestingWithoutEvent,false);await isolated(p);
+   let initial=await state(p);assert.equal(JSON.parse(await saved(p)).rulesRevision,RULES_REVISION);assert.equal(initial.character.stats.PSI,undefined);assert.equal(!!initial.config.psiGm,setupEnabled);assert.equal(!!initial.config.psiTestingWithoutEvent,false);await isolated(p);
    if(setupEnabled){await setPsi(p,'#psi-choice-optional',9);assert.equal((await state(p)).character.stats.PSI,9);}
    await action(p,()=>p.getByRole('button',{name:'Keep these characteristics',exact:true}).click());await reveal(p,'#psi-choice-sheet');await p.locator('#psi-choice-sheet').waitFor();await isolated(p);
    assert.equal((await state(p)).character.stats.PSI,setupEnabled?9:undefined);
