@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {createServer} from '../server.mjs';
-import {project} from '../engine/session.mjs';
+import {createSession,execute,exportSession,project} from '../engine/session.mjs';
 import {simpleActionLog} from '../gui/simple-log.mjs';
 import {fullActionLog} from '../gui/log-download.mjs';
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
@@ -32,6 +32,16 @@ try{
   await page.locator('#log-view').click();assert.equal(await page.locator('#full-log-content').textContent(),fullActionLog(log));await page.keyboard.press('Escape');
   await page.reload();await page.getByRole('button',{name:'Keep these characteristics'}).waitFor();await trigger.click();assert.equal(await page.locator('#simple-log-content').textContent(),simpleActionLog(log));await page.keyboard.press('Escape');
   assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),before);
+  let choiceSession=createSession('simple-log-choice');
+  const act=(type,payload={})=>{const r=execute(choiceSession,{type,payload});choiceSession=r.session;return r;};
+  act('setup',{species:'human'});act('roll-statistics');const accepted=act('accept-statistics');
+  act('background',{skills:accepted.state.backgroundOptions.slice(0,accepted.state.backgroundRemaining)});act('skip-precareer');
+  act('connection',{person:'Dr.Smith <img src=x onerror=alert(1)>',skill:'Admin'});
+  const choiceSave=exportSession(choiceSession);
+  await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:choiceSave});await page.reload();await page.waitForFunction(()=>!document.querySelector('#export').disabled);
+  await trigger.click();assert.match(await page.locator('#simple-log-content').textContent(),/Connection with Dr\.Smith <img src=x onerror=alert\(1\)>: Admin gained/);
+  assert.equal(await page.locator('#simple-log-content img').count(),0);await page.keyboard.press('Escape');
+  assert.equal(await page.evaluate(key=>localStorage.getItem(key),key),choiceSave);
   await context.close();
  }
  assert.deepEqual(errors,[]);console.log('Simple Log desktop/mobile static/HTTP, focus, repeated dismissal, replay, unchanged Full Log passed.');
