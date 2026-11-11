@@ -32,7 +32,9 @@ try{
   const total=await page.locator('.total').innerText();
   await page.locator('#swap-a').selectOption('0');await page.locator('#swap-b').selectOption('1');
   await page.getByRole('button',{name:'Swap scores'}).click();
-  await page.waitForFunction(()=>document.querySelector('#message').textContent.startsWith('Swapped'));
+  await page.waitForFunction(()=>!document.querySelector('#export').disabled&&document.querySelector('#message').textContent.startsWith('Choice recorded.'));
+  assert.equal(await page.locator('#last-action-result').count(),0);
+  await page.locator('#simple-log-view').click();assert.match(await page.locator('#simple-log-content').textContent(),/Swapped STR/);await page.keyboard.press('Escape');
   assert.equal(await page.locator('.total').innerText(),total);
   await page.screenshot({path:path.join(out,name+'-statistics.png'),fullPage:true});
   await page.getByRole('button',{name:'Keep these characteristics'}).click();await page.getByRole('heading',{name:'Choose your background skills',exact:true}).waitFor();
