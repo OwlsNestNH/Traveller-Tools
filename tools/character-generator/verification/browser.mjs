@@ -40,7 +40,7 @@ try{
   assert.equal(await page.locator('#sheet .stat').filter({hasText:'PSI'}).count(),0);
   const backgroundText=await page.locator('#workspace>p').allTextContents();const count=Number(backgroundText.join(' ').match(/Choose\s+(\d+)/)?.[1]??0);
   for(let i=0;i<count;i++)await page.locator('input[name=skills]').nth(i).check();
-  await page.getByRole('button',{name:'Accept background skills'}).click();await page.getByRole('heading',{name:'Before your career'}).waitFor();
+  await page.getByRole('button',{name:'Accept background skills'}).click();await page.getByRole('heading',{name:'Pre-Career'}).waitFor();
   await page.getByRole('button',{name:'Go straight to careers'}).click();await page.getByRole('heading',{name:'Choose your next career'}).waitFor();
   await page.getByRole('button',{name:/Drifter.*Core/}).click();await page.locator('#career-assignment').selectOption('wanderer');
   await page.getByRole('button',{name:'Attempt this career'}).click();

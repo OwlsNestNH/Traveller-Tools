@@ -382,9 +382,13 @@ try {
       const background = (await projection(page)).state;
       for (let i = 0; i < background.backgroundRemaining; i++) await page.locator('#background-form [name=skills]').nth(i).check();
       await page.getByRole('button', {name: 'Accept background skills', exact: true}).click();
-      await page.getByRole('heading', {name: 'Before your career', exact: true}).waitFor();
+      await page.getByRole('heading', {name: 'Pre-Career', exact: true}).waitFor();
+      assert.equal(await page.locator('header h1').textContent(), 'CHARACTER BUILDER');
+      assert.equal(await page.locator('body').evaluate(el=>getComputedStyle(el).colorScheme), 'dark', 'approved Pre-Career uses its own dark popup');
+      await page.locator('[data-action=skip-precareer]').click();
+      await page.locator('body[data-stage=career]').waitFor();
       assert.equal(await page.locator('header h1').textContent(), 'A life among the stars');
-      assert.notDeepEqual(await headerStyle(page), openingHeader, 'later stages keep their previous theme');
+      assert.notDeepEqual(await headerStyle(page), openingHeader, 'unapproved later stages retain their previous theme');
     });
 
     const scenarios = [
