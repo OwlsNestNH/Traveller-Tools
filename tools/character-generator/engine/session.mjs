@@ -34,7 +34,7 @@ import { psionicPotential, talentAcquisition, psionicTalentOptions } from './psi
 import { COMPANION_EDUCATION_IDS, companionEntryCheck, companionInitialAwards, companionEvent, companionGraduationCheck, companionTermOutcome, companionCareerBenefits, companionResolveSkillChoice } from './companion-education.mjs';
 import { characterChanges } from './audit.mjs';
 import { SPECIALITIES, PSIONIC_TALENTS, normalizeSkillName } from './skills.mjs';
-import { EDUCATION_PACK, PRECAREER_EVENTS, educationEntryCheck, educationGraduationCheck, educationCareerBenefits } from './education-pack.mjs';
+import { EDUCATION_PACK, PRECAREER_EVENTS, educationEntryPreview, educationEntryCheck, educationGraduationCheck, educationCareerBenefits } from './education-pack.mjs';
 import { CORE_PACK } from './core-pack.mjs';
 import { ageingOutcome, ageingCrisis, injuryOutcome, medicalBill, settleMedicalCosts, pensionForCareer } from './core-procedures.mjs';
 import { EXPANSION_PACK, SPECIES_RULES, PRECAREER_RULES, BENEFIT_RULES, SOURCE_DISCREPANCIES, EXPANSION_TABLES } from './expansion-pack.mjs';
@@ -3287,6 +3287,12 @@ export function project(session) {
  if(state.currentCrossCareerTraining){const training=state.currentCrossCareerTraining;training.options=training.options.map(option=>({...option,information:tableInfo(training.sourceCareerId,option.id,'assignment')}));}
  if(state.stage==='effect-choice')state.pendingChoice.options=state.pendingChoice.options.map(option=>{const effect=option.effects?.find(e=>e.kind==='source-training-roll');return effect?{...option,information:tableInfo(currentCareer(state).career.id,effect.assignment,effect.table)}:option;});
 
+ // Presentation projection only: no attempts, random draws or save fields.
+ const educationAdmissionPreviews=state.stage==='precareer'&&state.character.terms<3?Object.fromEntries(PRECAREERS.filter(p=>p.source==='core').map(pre=>{
+  const sourceAssisted=!!findSpecies(state.character.species).precareerDM||!Object.hasOwn(state.character.stats,'SOC')||!EDUCATION_PACK[pre.id];
+  const preview=sourceAssisted?{id:pre.id,sourceAssisted:true,source:{id:pre.source,page:pre.page},reason:!Object.hasOwn(state.character.stats,'SOC')?'This Traveller has no SOC characteristic. Resolve admission and species-specific education with your referee.':'Species-specific education modifiers require source-assisted resolution with your referee.'}:educationEntryPreview({id:pre.id,term:state.character.terms+1,stats:state.character.stats});
+  return [pre.id,preview];
+ })):{};
  state.educationOptions=['education-skill','companion-skill'].includes(state.stage)?educationOptions(state,state.pendingChoice):[];
  state.educationCheckSkills=state.stage==='education-check'?learnedEducationSkills(state):[];
  state.canChooseEducation=!accessMandatory(state)&&state.stage==='career'&&state.active===null&&!state.forcedCareer&&!state.character.retirementFromCreation&&state.character.terms<3&&!state.educationAttemptTerms?.includes(state.character.terms);
@@ -3298,7 +3304,7 @@ export function project(session) {
  for(let i=0;i<log.length;i++){const before=pendingEffects(snapshots[i]),after=pendingEffects(snapshots[i+1]);if(JSON.stringify(before)!==JSON.stringify(after))log[i].pendingEffectChanges={before,after};}
  decorateLifeEventPresentation({state,log,snapshots,events:session.events});
  decorateEventResults({log,snapshots,events:session.events});
- return {state,log,revision:session.events.length};
+ return {state,log,revision:session.events.length,...(state.stage==='precareer'?{educationAdmissionPreviews}:{})};
 }
 export function execute(session,command,{id,expectedRevision}={}) {
  const before=project(session);

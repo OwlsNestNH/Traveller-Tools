@@ -81,7 +81,8 @@ jobs:
         id: browser-install
         run: |
           npm install --prefix "$RUNNER_TEMP/character-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
-          node "$RUNNER_TEMP/character-playwright/node_modules/playwright/cli.js" install --with-deps chromium
+          # Ubuntu 24.04 runners provide Chromium runtime libraries and standard fonts.
+          node "$RUNNER_TEMP/character-playwright/node_modules/playwright/cli.js" install chromium
       - name: Compact character sheet interactions
         run: node tools/character-generator/verification/final-sheet-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
       - name: Upload compact sheet review
@@ -115,4 +116,30 @@ jobs:
         with:
           name: character-generator-review-${{ github.event.pull_request.head.sha }}
           path: tools/character-generator/verification/artifacts/
+          if-no-files-found: warn
+
+  precareer-review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - name: Install pinned Chromium runner
+        run: |
+          npm install --prefix "$RUNNER_TEMP/character-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
+          # Ubuntu 24.04 runners provide Chromium runtime libraries and standard fonts.
+          node "$RUNNER_TEMP/character-playwright/node_modules/playwright/cli.js" install chromium
+      - name: Approved Pre-Career screen interactions
+        run: node tools/character-generator/verification/precareer-popup-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+      - name: Upload Pre-Career working-screen review
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: precareer-working-review-${{ github.event.pull_request.head.sha }}
+          path: tools/character-generator/verification/artifacts/precareer-popup-*
           if-no-files-found: warn

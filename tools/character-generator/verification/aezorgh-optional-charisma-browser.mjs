@@ -10,13 +10,18 @@ await mkdir(out,{recursive:true});const server=createServer();await new Promise(
 const browser=await chromium.launch({headless:true,...(process.env.CHARACTER_BROWSER_CHANNEL?{channel:process.env.CHARACTER_BROWSER_CHANNEL}:{})});
 const saved=p=>p.evaluate(key=>localStorage.getItem(key),key),ready=p=>p.waitForFunction(()=>!document.querySelector('#export').disabled);
 function fixture(){let s=createSession('optional-cha-browser');for(const[type,payload]of [['setup',{species:'aezorgh',name:'Synthetic Aezorgh preview'}],['roll-statistics',{}],['accept-statistics',{}],['background',{skills:['Admin']}]])s=execute(s,{type,payload}).session;return s;}
+async function openPreCareerBar(page,id){
+ if(!await page.locator('#precareer-dialog').count())return;
+ if(await page.locator('#precareer-dialog').evaluate(el=>el.open))await page.locator('#precareer-dismiss').click();
+ const bar=page.locator('#'+id);if(!await bar.evaluate(el=>el.open))await bar.locator(':scope > summary').click();
+}
 try{
  for(const transport of ['static','http'])for(const width of [1440,320]){
   const context=await browser.newContext({viewport:{width,height:1000}});await context.addInitScript(({key,raw})=>{if(!localStorage.getItem(key))localStorage.setItem(key,raw)},{key,raw:exportSession(fixture())});const p=await context.newPage();p.on('pageerror',e=>errors.push(e.message));
   try{
    await p.goto('http://127.0.0.1:'+server.address().port+'/'+(transport==='http'?'?api=local':''));await ready(p);
    assert.equal(project(JSON.parse(await saved(p))).state.character.stats.CHA,undefined);assert.equal(await p.locator('#sheet .code').filter({hasText:/^CHA$/}).count(),0);
-   await p.locator('#additional-characteristics').evaluate(el=>el.open=true);await p.locator('#extra-stat').selectOption('CHA');const before=await saved(p);
+   await openPreCareerBar(p,'precareer-more-record');await p.locator('#additional-characteristics').evaluate(el=>el.open=true);await p.locator('#extra-stat').selectOption('CHA');const before=await saved(p);
    await p.locator('#additional-characteristics > summary').click();assert.equal(await saved(p),before);await p.locator('#additional-characteristics > summary').click();
    if(transport==='static')await p.locator('#additional-characteristics').screenshot({path:fileURLToPath(new URL('aezorgh-optional-cha-before-'+width+'.png',out))});
    await p.getByRole('button',{name:'Add this characteristic',exact:true}).click();await p.waitForFunction(({key,before})=>localStorage.getItem(key)!==before,{key,before});await ready(p);
