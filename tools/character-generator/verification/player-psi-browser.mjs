@@ -37,6 +37,7 @@ try{
    await page.getByRole('button',{name:'Roll six characteristics',exact:true}).click();
    await page.getByRole('button',{name:'Keep these characteristics',exact:true}).click();
    await page.waitForFunction(()=>document.querySelector('#sheet .stat')&&document.querySelector('#step-title')?.textContent!=='Roll and place characteristics');
+   await page.locator('#background-record > summary').click();
    if(!initial){
     const extras=page.locator('#sheet details').filter({has:page.locator('summary',{hasText:'Add another characteristic'})}).first();
     await extras.locator('summary').click();
