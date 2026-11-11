@@ -1,3 +1,4 @@
+import {openLiveRecord,reopenStep} from './journey-browser-helpers.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -20,7 +21,7 @@ try{
   for(const [species,gender,culture] of [['human','female','native'],['aslan','male','native'],['aslan','female','native'],['vargr','female','native'],['aezorgh','female','native']]){
    console.log('Checking career info:',transport,width,species,gender,culture);const fixture=careerInfoFixture(species,gender,culture);
    await page.locator('#import').setInputFiles({name:'career-info.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(fixture.session))});await page.waitForFunction(({key,seed})=>JSON.parse(localStorage.getItem(key)||'null')?.seed===seed,{key,seed:fixture.session.seed});await page.locator('body[data-stage="career"]').waitFor();await ready(page);
-   await page.locator('#notes-connections > summary').click();await page.locator('#character-notes').fill('Keep this unsaved note');const before=await snapshot(page),requestsBefore=requests;
+   await openLiveRecord(page);await page.locator('#notes-connections > summary').click();await page.locator('#character-notes').fill('Keep this unsaved note');await reopenStep(page);const before=await snapshot(page),requestsBefore=requests;
    assert.equal(await page.locator('[data-career-info]').count(),fixture.state.careerChoices.length);
    for(const career of fixture.state.careerChoices){
     const trigger=page.locator('[data-career-info="'+career.id+'"]'),choice=page.locator('[data-action="select-career"][data-id="'+career.id+'"]');

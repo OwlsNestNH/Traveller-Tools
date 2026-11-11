@@ -1,3 +1,4 @@
+import {openLiveRecord} from './journey-browser-helpers.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -32,8 +33,8 @@ try{for(const http of [false,true])for(const width of [320,1440]){
  const context=await browser.newContext({viewport:{width,height:1100}}),page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
  try{await page.goto('http://127.0.0.1:'+server.address().port+(http?'/?api=local':'/'));await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();
  for(const [service,enabled] of [['army',false],['army',true],['marine',true],['navy',true]]){
-  const fixture=academy(service);await load(page,fixture);assert.equal(fixture.session.rulesRevision,'character-preview-2026-11-09.19');await page.locator('#gm-controls > summary').click();const toggle=page.locator('#gm-academy-training');assert.equal(await toggle.isChecked(),false);assert.equal(await toggle.isEnabled(),true);
-  if(enabled){await toggle.check();await ready(page);assert.equal(project(await saved(page)).state.config.academyServiceSkill,true);await toggle.uncheck();await ready(page);assert.equal(project(await saved(page)).state.config.academyServiceSkill,false);await toggle.check();await ready(page);}
+  const fixture=academy(service);await load(page,fixture);assert.equal(fixture.session.rulesRevision,'character-preview-2026-11-09.19');await openLiveRecord(page);await page.locator('#gm-controls > summary').click();const toggle=page.locator('#gm-academy-training');assert.equal(await toggle.isChecked(),false);assert.equal(await toggle.isEnabled(),true);
+  if(enabled){await toggle.check();await ready(page);assert.equal(project(await saved(page)).state.config.academyServiceSkill,true);await openLiveRecord(page);await toggle.uncheck();await ready(page);assert.equal(project(await saved(page)).state.config.academyServiceSkill,false);await openLiveRecord(page);await toggle.check();await ready(page);}
   await replay(page);assert.equal(await toggle.isChecked(),enabled);
   await page.locator('[data-action=select-career][data-id="core.'+service+'"]').click();await page.locator('#career-assignment').selectOption(service==='navy'?'crew':'support');await page.getByRole('button',{name:'Attempt this career',exact:true}).click();
   let state=await choices(page);assert.equal(state.stage,enabled?'training':'survival');assert.equal(await toggle.isDisabled(),true);

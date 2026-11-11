@@ -293,3 +293,9 @@ New Aezorgh leave CHA off by default. For a Vargr campaign, explicitly select Ch
 The navy-and-gold screen theme continues through Pre-Career, education, career selection, training, events, benefits, source-assisted decisions and the finished character sheet. Success, failure and pending outcomes keep distinct labels and colors. The file/log toolbar remains present at every stage. Printing retains the light, ink-friendly sheet; rule results, logs and saved-session formats are unchanged.
 
 `node tools/character-generator/verification/later-stages-browser.mjs /path/to/playwright` checks the later-stage shell at desktop, mobile and 320px widths in static and local-HTTP modes, including keyboard dismissal, repeated navigation, unchanged saves and light print output. Its screenshots use synthetic test characters.
+
+## Player-facing journey popups
+
+Later choices open in a large centered, nonmodal popup. The file toolbar stays available. Close step and Open this step are presentation-only controls; opening the Character sheet bar closes the choice panel without losing its fields. New roll results show recorded dice, the adjusted check where known, a short description and actual consequences. Potential table effects remain distinct from awarded skills and unresolved source decisions. Previous results and detailed rule explanations are expandable. Simple Log, Full Log and the downloaded audit remain separate. The final character-sheet popup is retained.
+
+`node tools/character-generator/verification/journey-popup-browser.mjs /path/to/playwright` verifies desktop, phone and 320px layouts, genuine rolled results, repeated clicks, toolbar access, nested information, close/reopen, printing and unchanged saves. Its review images capture the working viewport using synthetic characters, not a full-page composite of the modal and background.

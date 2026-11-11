@@ -1,3 +1,4 @@
+import {openLiveRecord} from './journey-browser-helpers.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir,writeFile} from 'node:fs/promises';
@@ -16,7 +17,7 @@ try{
   try{
    await p.goto('http://127.0.0.1:'+server.address().port+'/'+(transport==='http'?'?api=local':''));await ready(p);
    assert.equal(project(JSON.parse(await saved(p))).state.character.stats.CHA,undefined);assert.equal(await p.locator('#sheet .code').filter({hasText:/^CHA$/}).count(),0);
-   await p.locator('#additional-characteristics').evaluate(el=>el.open=true);await p.locator('#extra-stat').selectOption('CHA');const before=await saved(p);
+   await openLiveRecord(p);await p.locator('#additional-characteristics').evaluate(el=>el.open=true);await p.locator('#extra-stat').selectOption('CHA');const before=await saved(p);
    await p.locator('#additional-characteristics > summary').click();assert.equal(await saved(p),before);await p.locator('#additional-characteristics > summary').click();
    if(transport==='static')await p.locator('#additional-characteristics').screenshot({path:fileURLToPath(new URL('aezorgh-optional-cha-before-'+width+'.png',out))});
    await p.getByRole('button',{name:'Add this characteristic',exact:true}).click();await p.waitForFunction(({key,before})=>localStorage.getItem(key)!==before,{key,before});await ready(p);
