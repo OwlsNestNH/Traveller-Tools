@@ -75,7 +75,7 @@ async function compactRollDetails(page, rerolled) {
   assert.equal(await page.locator('#simple-log-title').evaluate(node=>node===document.activeElement), true);
   assert.equal(await page.locator('#simple-log-content').textContent(), simpleActionLog(current.log));
   assert.match(await page.locator('#simple-log-content').innerText(), /STR: \[/);
-  if(rerolled) assert.match(await page.locator('#simple-log-content').innerText(), /Rerolled statistics; previous/);
+  if(rerolled) assert.match(await page.locator('#simple-log-content').innerText(), /Rerolled statistics\./);
   await page.keyboard.press('Shift+Tab');
   assert.equal(await page.locator('#simple-log-content').evaluate(node=>node===document.activeElement), true);
   await page.keyboard.press('Tab');
@@ -326,6 +326,9 @@ try {
       await page.locator('#swap-b').selectOption('1');
       await doubleActivate(page, 'swap-statistics');
       const swapped = await projection(page);
+      assert.equal(await page.locator('#last-action-result').count(),0);
+      assert.doesNotMatch(await page.locator('#workspace').innerText(),/Optional Aezorgh placement/);
+      assert.match(simpleActionLog(swapped.log),/Swapped/);
       assert.equal(swapped.state.pool[0].base, current.state.pool[1].base);
       assert.equal(swapped.state.pool[1].base, current.state.pool[0].base);
       assert.equal(swapped.state.rollTotal, current.state.rollTotal);
@@ -475,6 +478,9 @@ try {
       await page.locator('#swap-b').selectOption('5');
       await doubleActivate(page, 'swap-statistics');
       const swapped = await projection(page);
+      assert.equal(await page.locator('#last-action-result').count(),0);
+      assert.doesNotMatch(await page.locator('#workspace').innerText(),/Optional Aezorgh placement/);
+      assert.match(simpleActionLog(swapped.log),/Swapped/);
       assert.equal(swapped.state.pool[5].base, rolled.state.pool[0].base);
       assert.equal(swapped.state.rollTotal, rolled.state.rollTotal);
       assert.deepEqual(swapped.state.character.stats, {});
