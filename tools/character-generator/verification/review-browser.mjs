@@ -97,15 +97,17 @@ try {
  await check('Aslan birth order is rolled once and its recorded source result survives reload',async page=>{
   const fixture=buildAslanOriginFixture({stage:'aslan-birth-order'});
   await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(fixture.session)});
-  await page.reload();await page.getByRole('heading',{name:'Your place in the family'}).waitFor();
+  await page.reload();await page.locator('#aslan-family-dialog #aslan-family-title').waitFor();
   assert.equal(await page.locator('#birth-order').count(),0);
-  await page.getByRole('button',{name:'Roll birth order',exact:true}).click();
-  await page.getByRole('heading',{name:'Record the family land baseline'}).waitFor();
+  await page.locator('#aslan-family-roll').click();
+  await page.locator('body[data-stage="aslan-birth-result"]').waitFor();
   const saved=await stored(page),record=JSON.parse(saved).events.at(-1);
   assert.equal(record.command.type,'roll-aslan-birth-order');
   assert.equal(record.rolls.length,1);assert.equal(record.rolls[0].values.length,2);
-  await page.reload();await page.getByRole('heading',{name:'Record the family land baseline'}).waitFor();
+  await page.reload();await page.locator('body[data-stage="aslan-birth-result"]').waitFor();
   assert.equal(await stored(page),saved);
+  await page.locator('#aslan-family-continue').click();await page.locator('body[data-stage="aslan-estate"]').waitFor();
+  assert.deepEqual(JSON.parse(await stored(page)).events.at(-1).rolls,[]);
  });
  await check('failed setup configuration stops before later setup actions',async page=>{
   const commands=[];

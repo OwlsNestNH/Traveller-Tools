@@ -62,7 +62,7 @@ try{
   await page.getByRole('button',{name:'Begin character',exact:true}).click();await page.locator('body[data-stage="statistics"]').waitFor();const p=project(JSON.parse(await stored(page)));assert.equal(p.state.config.aezorghTwoDice,true);assert.equal(p.state.statisticsRerollThreshold,30);checks.push({transport,customThreshold:30});
  });
  for(const species of ['human','aslan','vargr'])await fresh('static',320,async page=>{
-  await page.locator('[name=species]').selectOption('aezorgh');await page.locator('[name=species]').selectOption(species);
+  await page.locator('[name=species]').selectOption('aezorgh');await page.locator('[name=species]').selectOption(species);if(species==='aslan')await page.locator('#setup-gender').selectOption('male');
   await page.getByRole('button',{name:'Begin character',exact:true}).click();await page.locator('body[data-stage="statistics"]').waitFor();assert.equal(project(JSON.parse(await stored(page))).state.config.aezorghTwoDice,false);await page.getByRole('button',{name:'Roll six characteristics'}).click();await ready(page);assert.equal(project(JSON.parse(await stored(page))).state.pool.length,6);checks.push({species,incompatibleFlag:false});
  });
  for(const transport of ['static','http'])for(const revision of COMPATIBLE_RULES_REVISIONS)for(const twoDice of [false,true])await fresh(transport,390,async page=>{

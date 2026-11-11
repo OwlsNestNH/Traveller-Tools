@@ -33,3 +33,57 @@ body[data-family-popup="true"] header h1{color:#ffd052}body[data-family-popup="t
 #aslan-family-dialog .birth-note,#aslan-family-dialog .aslan-family-ready .birth-note{font-size:18px;max-width:600px;margin:0 auto 20px;text-align:center}
 #aslan-family-dialog .aslan-birth-ready h3{font-size:40px}
 @media(max-width:650px){#aslan-family-dialog .birth-dice .aslan-family-mystery{width:110px;height:110px}#aslan-family-dialog .aslan-birth-ready h3{font-size:28px}#aslan-family-dialog .birth-dice .aslan-family-die{width:55px;height:55px}}
+
+/* Approved estate presentation. */
+
+    #aslan-family-dialog.aslan-estate-dialog .aslan-family-band{font-size:27px;margin-bottom:23px}
+    #aslan-family-dialog.aslan-estate-dialog .estate-minimum{text-align:center;padding:12px 0 23px}
+    #aslan-family-dialog.aslan-estate-dialog .estate-label{font-size:22px;color:#c4d8e7;margin:0}
+    #aslan-family-dialog.aslan-estate-dialog .estate-parcels{display:block;color:#ffd34b;font-size:100px;font-weight:800;line-height:1.08;margin:5px 0}
+    #aslan-family-dialog.aslan-estate-dialog .estate-parcels span{font-size:32px;font-weight:700;color:#f5f7fa}
+    #aslan-family-dialog.aslan-estate-dialog .estate-basis{font-size:20px;color:#c4d8e7;margin:12px 0 0}
+    #aslan-family-dialog.aslan-estate-dialog .estate-increment{display:grid;grid-template-columns:1fr auto;gap:5px 20px;margin:0 0 22px;padding:17px 21px;border:1px solid #639fb9;border-radius:12px;background:#082434}
+    #aslan-family-dialog.aslan-estate-dialog .estate-increment dt{font-size:21px;font-weight:700;color:#c4d8e7}
+    #aslan-family-dialog.aslan-estate-dialog .estate-increment dd{font-size:23px;font-weight:750;color:#f5f7fa;margin:0;text-align:right}
+    #aslan-family-dialog.aslan-estate-dialog .estate-increment .estate-increment-note{grid-column:1/-1;font-size:18px;font-weight:400;color:#bdd1df;text-align:left;line-height:1.45}
+    #aslan-family-dialog.aslan-estate-dialog .estate-inheritance{border-left:4px solid #ffd34b;padding:1px 0 1px 20px;margin:0 0 21px}
+    #aslan-family-dialog.aslan-estate-dialog .estate-inheritance h3{font-size:27px;color:#f5f7fa;line-height:1.2;margin:0 0 8px}
+    #aslan-family-dialog.aslan-estate-dialog .estate-inheritance p{font-size:21px;color:#c4d8e7;line-height:1.4;margin:0}
+    #aslan-family-dialog.aslan-estate-dialog .estate-note{font-size:18px;color:#bdd1df;line-height:1.45;margin:0 0 23px}
+    #aslan-family-dialog.aslan-estate-dialog footer{align-items:center}
+    #aslan-family-dialog.aslan-estate-dialog footer p{font-size:18px}
+    #aslan-family-dialog.aslan-estate-dialog footer a{color:#bdd1df;text-underline-offset:4px}
+    #aslan-family-dialog.aslan-estate-dialog footer button{font-size:24px;padding-inline:23px}
+    #aslan-family-dialog.aslan-estate-dialog .estate-review-status{font-size:18px;color:#ffd34b;line-height:1.4;margin:16px 0 0}
+    #aslan-family-dialog.aslan-estate-dialog .estate-review-status:empty{display:none}
+    @media(max-width:650px){
+      #aslan-family-dialog.aslan-estate-dialog{padding:18px}
+      #aslan-family-dialog.aslan-estate-dialog h2{font-size:28px;white-space:normal;overflow:visible}
+      #aslan-family-dialog.aslan-estate-dialog .estate-increment{margin-bottom:14px;padding:12px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-inheritance{margin-bottom:14px}
+
+      #aslan-family-dialog.aslan-estate-dialog .aslan-family-band{font-size:18px;margin-bottom:12px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-minimum{padding:0 0 14px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-label{font-size:19px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-parcels{font-size:64px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-parcels span{font-size:24px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-basis{font-size:17px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-increment{grid-template-columns:1fr;padding:14px 15px;gap:7px;margin-bottom:20px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-increment dt{font-size:17px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-increment dd{font-size:21px;text-align:left}
+      #aslan-family-dialog.aslan-estate-dialog .estate-increment .estate-increment-note{font-size:16px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-inheritance{padding-left:14px;margin-bottom:19px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-inheritance h3{font-size:21px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-inheritance p{font-size:16px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-note{font-size:16px;margin-bottom:20px}
+      #aslan-family-dialog.aslan-estate-dialog footer{margin-top:0;gap:14px}
+      #aslan-family-dialog.aslan-estate-dialog footer p{font-size:14px}
+      #aslan-family-dialog.aslan-estate-dialog footer button{font-size:21px;padding-inline:14px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-review-status{font-size:16px}
+    }
+
+
+#aslan-family-dialog .estate-tagline{margin:0 0 20px;text-align:center}
+
+#aslan-family-dialog.aslan-estate-dialog .estate-large-number{font-size:56px}
+@media(max-width:650px){#aslan-family-dialog.aslan-estate-dialog .estate-large-number{font-size:28px}}
