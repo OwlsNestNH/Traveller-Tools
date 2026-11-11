@@ -149,6 +149,12 @@ Normal automated paths and typed decisions retain their source, checks and manda
 
 ## Result presentation
 
+### Exceptional starting-total taglines
+
+The existing statistics roll feedback adds one light-hearted line for a raw six-score total in either extreme tail (at most 5% per tail). Each outcome has six alternatives in the presentation-only `gui/outcome-taglines.mjs` catalogue. Ordinary totals retain factual feedback only. The classifier enumerates the actual recorded 1D/2D and boon dice, excluding species adjustments, optional characteristics, placement/halving and the configurable reroll threshold. Unmodified six-2D totals trigger at 31 or lower / 53 or higher; standard mixed-dice Aezorgh at 19 or lower / 37 or higher. Boons adjust those thresholds automatically.
+
+The existing independently random action UUID selects the line without consuming rules RNG or adding saved data. The same action retains its line after rerender, reload or import. Only the latest original computer roll/reroll can show a tagline: swaps, physical entries, GM corrections, restored results and unsupported dice records remain factual-only. No popup, screen redesign, engine changes or audit-log changes are included. Run `node tools/character-generator/verification/outcome-taglines-browser.mjs /path/to/playwright` for static/HTTP desktop and narrow-screen checks and actual review screenshots.
+
 A shared, read-only result panel names each roll and its recorded effects across supported career/species paths. Advancement and survival checks show verified success/failure, while secondary rolls retain their labels and totals. The character sheet keeps current rank, injuries, recorded medical notes, ongoing modifiers and entitlements visible. Proposed treatment and source-assisted consequences are marked pending, not applied. Core life-event titles and Vargr Good Fortune are named; other expansion results retain verified table and result identifiers where titles are not sourced. The existing detailed action log and text download are unchanged. These derived display fields do not change rolls, command summaries, saved rules revisions or save compatibility.
 
 ## Later-career basic training

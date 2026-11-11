@@ -234,6 +234,7 @@ body[data-stage="identity"] .opening-house-rule>.opening-info-trigger>span{displ
 @media screen{
 body[data-stage="statistics"] .statistics-roll-feedback{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 16px;margin:0 0 14px;color:#c1d3de}
 body[data-stage="statistics"] .statistics-roll-feedback p{font-size:14px;margin:0}
+body[data-stage="statistics"] .statistics-roll-feedback .outcome-tagline{margin-top:4px;font-style:italic;color:#ffdc67}
 body[data-stage="statistics"] .statistics-roll-feedback button{min-height:44px;font-size:13px;padding:8px 12px}
 body[data-stage="statistics"] .statistics-roll-feedback button span{color:#ffdc67;font-family:Georgia,serif;font-weight:700;margin-right:4px}
 }

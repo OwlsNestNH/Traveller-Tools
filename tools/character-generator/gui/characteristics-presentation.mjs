@@ -1,5 +1,6 @@
 import {psiCard} from './psi-choice.mjs';
 import {openingInfoButton} from './opening-help.mjs';
+import {statisticsTagline} from './outcome-taglines.mjs';
 // Read-only presentation for the characteristic rolling stage. Rules stay in the engine.
 const labels={STR:'Strength',DEX:'Dexterity',END:'Endurance',INT:'Intellect',EDU:'Education',SOC:'Social standing',CHA:'Charisma',PSI:'Psionic strength'};
 function primaryCodes(state,catalog){
@@ -50,5 +51,6 @@ export function statisticsRollFeedback(event,state){
 }
 export function statisticsRollFeedbackView(event,state,{esc}){
  const text=statisticsRollFeedback(event,state);if(!text)return null;
- return '<section id="last-action-result" class="statistics-roll-feedback" data-result-status="info" aria-label="Latest result"><p>'+esc(text)+'</p><button type="button" class="quiet" data-action="statistics-roll-details" aria-haspopup="dialog" aria-controls="simple-action-log"><span aria-hidden="true">i</span> Roll details</button></section>';
+ const tagline=statisticsTagline(event,state);
+ return '<section id="last-action-result" class="statistics-roll-feedback" data-result-status="info" aria-label="Latest result"><div><p>'+esc(text)+'</p>'+(tagline?'<p class="outcome-tagline">'+esc(tagline)+'</p>':'')+'</div><button type="button" class="quiet" data-action="statistics-roll-details" aria-haspopup="dialog" aria-controls="simple-action-log"><span aria-hidden="true">i</span> Roll details</button></section>';
 }
