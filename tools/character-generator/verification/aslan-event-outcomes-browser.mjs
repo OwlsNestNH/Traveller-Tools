@@ -31,7 +31,7 @@ try{
    // Source review is reversible, presentation-only, and cannot hide the typed controls after reload.
    const before=await current(page);await page.locator('[data-action=aslan-source-review]').click();await page.locator('[data-action=aslan-event-choices]').click();assert.equal((await current(page)).revision,before.revision);await page.locator(selector).waitFor();
    await page.locator('[data-action=aslan-source-review]').click();await page.reload();await page.locator(selector).waitFor();
-   if(f.prepare)await f.prepare(page);await page.locator(selector).evaluate(button=>{button.click();button.click();});
+   if(f.prepare)await f.prepare(page);if(f.name==='rite')await page.locator(selector).evaluate(button=>{button.click();button.click();});else await page.locator(selector).dblclick();
    await page.waitForFunction(revision=>Number(document.querySelector('#workspace')?.dataset.revision)>revision,before.revision);
    const after=await current(page);assert.equal(after.revision,before.revision+1);f.check(after.state);if(f.name==='rite'){assert.equal(after.state.stage,'aslan-rite-result');assert.equal(after.state.character.equipmentCredits.length,1);assert.match(await page.locator(selector).innerText(),/Continue to pre-career/);}else assert.equal(await page.locator(selector).count(),0);
    await page.reload();await page.waitForFunction(revision=>Number(document.querySelector('#workspace')?.dataset.revision)===revision,after.revision);assert.deepEqual((await current(page)).state,after.state);
