@@ -4,7 +4,7 @@ import {createSession,execute,project,exportSession,importSession} from '../engi
 import {backgroundSkillsView,backgroundSelection} from '../gui/background-skills.mjs';
 import {catalog} from '../engine/session.mjs';
 const esc=s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
-function fixture(species='aezorgh',revision){let s=createSession('species-skill-popup');if(revision)s.rulesRevision=revision;for(const type of ['setup','roll-statistics','accept-statistics'])s=execute(s,{type,payload:type==='setup'?{species}: {}}).session;return s;}
+function fixture(species='aezorgh',revision){let s=createSession('species-skill-popup');if(revision)s.rulesRevision=revision;for(const type of ['setup','roll-statistics','accept-statistics'])s=execute(s,{type,payload:type==='setup'?{species,...(species==='aslan'?{gender:'male'}:{})}: {}}).session;return s;}
 test('new Aezorgh choose exactly one eligible base skill and replay it unchanged',()=>{
  const session=fixture(),state=project(session).state;
  assert.equal(state.backgroundRemaining,1);assert.ok(state.backgroundOptions.includes('Pilot'));assert.equal(state.backgroundOptions.length,34);

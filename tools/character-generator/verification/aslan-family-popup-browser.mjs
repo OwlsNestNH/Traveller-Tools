@@ -1,0 +1,62 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {mkdir,writeFile} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import {createServer} from '../server.mjs';
+import {api,exportSession} from '../engine/session.mjs';
+import {buildAslanOriginFixture as build,run,force} from './aslan-origin-fixtures.mjs';
+const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
+const out=fileURLToPath(new URL('./artifacts/',import.meta.url));await mkdir(out,{recursive:true});
+const server=createServer();await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+const origin='http://127.0.0.1:'+server.address().port,key='traveller-character-generator.v1';
+const browser=await chromium.launch({headless:true});const errors=[],checks=[];
+async function saved(page){return api({operation:'project',session:JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key))});}
+async function ready(page){await page.waitForFunction(()=>!document.querySelector('#new')?.disabled);}
+async function open(fixture,width,staticMode=false){const context=await browser.newContext({viewport:{width,height:width>650?992:844}}),page=await context.newPage();page.setDefaultTimeout(15000);page.on('pageerror',e=>errors.push(e.message));await page.goto(origin+(staticMode?'/':'/?api=local'));await ready(page);await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(fixture.session)});await page.reload();await ready(page);return {page,context};}
+async function screenshot(page,name){assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,name+' page overflow');const dialog=page.locator('#aslan-family-dialog');if(await dialog.count())assert.equal(await dialog.evaluate(e=>e.scrollWidth>e.clientWidth+1),false,name+' dialog overflow');await page.screenshot({path:out+name+'.png',fullPage:false});}
+let before;for(let i=0;i<100;i++){const r=build({familySOC:3,seed:'family-popup-'+i});if(run(r,'roll-aslan-family').state.currentAslanOrigin.family.die===1){before=run(r,'gm-mode',{enabled:false});break;}}assert.ok(before);
+try{
+ for(const width of [1586,390,320])for(const staticMode of [false,true]){
+  const {page,context}=await open(before,width,staticMode);try{
+   const prefix='aslan-family-'+width+'-'+(staticMode?'static':'http');
+   await page.locator('#aslan-family-roll').waitFor();const original=await saved(page);
+   await page.keyboard.press('Escape');assert.equal(await page.locator('#aslan-family-dialog').evaluate(e=>e.open),true);
+   await screenshot(page,prefix+'-before');
+   await page.locator('#aslan-family-roll').evaluate(button=>{button.click();button.click();});await ready(page);
+   const result=await saved(page);assert.equal(result.revision,original.revision+1);assert.equal(result.state.currentAslanOrigin.family.die,1);assert.equal(await page.locator('#aslan-family-dialog input:checked').count(),0);assert.equal(await page.locator('#aslan-family-continue').isDisabled(),true);
+   assert.match(await page.locator('#aslan-family-dialog').innerText(),/You rolled 1/);assert.match(await page.locator('#aslan-family-dialog').innerText(),/labouring family/);
+   const tagline=await page.locator('.aslan-family-tagline').innerText();await page.reload();await ready(page);assert.deepEqual((await saved(page)).state,result.state);assert.equal(await page.locator('.aslan-family-tagline').innerText(),tagline);
+   await screenshot(page,prefix+'-result');await page.locator('[name="aslan-family-choice"][value="1"]').check();assert.equal(await page.locator('#aslan-family-continue').isDisabled(),false);
+   await page.locator('#aslan-family-continue').click();await page.waitForFunction(()=>!document.querySelector('#aslan-family-dialog'));await ready(page);
+   const done=await saved(page);assert.equal(done.revision,result.revision+2);assert.equal(done.state.character.skills.Profession,0);assert.equal(done.state.character.skills.Animals,undefined);assert.equal(done.state.stage,'aslan-birth-order');assert.equal(done.state.currentAslanOrigin.family.acknowledged,true);
+   await page.reload();await ready(page);assert.deepEqual((await saved(page)).state,done.state);checks.push({prefix,pass:true});
+  }finally{await context.close();}
+ }
+ for(const gender of ['male','female']){
+  const fixture=force(build({familySOC:9,gender}),'roll-aslan-family',{},[1]);const {page,context}=await open(fixture,390);try{
+   const before=await saved(page);assert.equal(await page.locator('#aslan-family-continue').isDisabled(),false);await page.locator('#aslan-family-continue').click();await ready(page);const after=await saved(page);assert.equal(after.revision,before.revision+1);assert.deepEqual(after.state.character.skills,before.state.character.skills);assert.equal(after.state.stage,gender==='male'?'aslan-birth-order':'aslan-estate');checks.push({gender,automatic:true,pass:true});
+  }finally{await context.close();}
+ }
+
+ const failure=await open(before,390);try{
+  const original=await saved(failure.page);
+  await failure.page.route('**/api/v1',route=>{const body=route.request().postDataJSON();if(body.operation==='command'&&body.command.type==='roll-aslan-family')return route.fulfill({status:400,contentType:'application/json',body:JSON.stringify({ok:false,error:{message:'Test: family roll not recorded.'}})});return route.continue();});
+  await failure.page.locator('#aslan-family-roll').click();await ready(failure.page);await failure.page.locator('#aslan-family-error').filter({hasText:'Test: family roll not recorded.'}).waitFor();assert.equal((await saved(failure.page)).revision,original.revision);
+  await failure.page.unroute('**/api/v1');await failure.page.locator('#aslan-family-roll').click();await ready(failure.page);assert.equal((await saved(failure.page)).revision,original.revision+1);checks.push({errorRecovery:true,pass:true});
+ }finally{await failure.context.close();}
+
+ const ackFailure=await open(force(build({familySOC:3}),'roll-aslan-family',{},[1]),390);try{
+  await ackFailure.page.route('**/api/v1',route=>{const body=route.request().postDataJSON();if(body.operation==='command'&&body.command.type==='acknowledge-aslan-family')return route.fulfill({status:400,contentType:'application/json',body:JSON.stringify({ok:false,error:{message:'Test: Continue not recorded.'}})});return route.continue();});
+  await ackFailure.page.locator('[name="aslan-family-choice"][value="0"]').check();await ackFailure.page.locator('#aslan-family-continue').click();await ackFailure.page.locator('#aslan-family-error').filter({hasText:'Test: Continue not recorded.'}).waitFor();await ready(ackFailure.page);
+  const awarded=await saved(ackFailure.page);assert.equal(awarded.state.character.skills.Animals,0);assert.equal(awarded.state.stage,'aslan-family-result');
+  await ackFailure.page.unroute('**/api/v1');await ackFailure.page.locator('#aslan-family-continue').click();await ready(ackFailure.page);const after=await saved(ackFailure.page);assert.deepEqual(after.state.character.skills,awarded.state.character.skills);assert.equal(after.revision,awarded.revision+1);checks.push({acknowledgementFailure:true,pass:true});
+ }finally{await ackFailure.context.close();}
+ let acquisition;for(let i=0;i<100;i++){const r=run(build({familySOC:2,seed:'family-acquisition-'+i}),'roll-aslan-family');if(r.state.currentAslanOrigin.family.die===4){acquisition=r;break;}}assert.ok(acquisition);
+ for(const values of [[1,1],[1,2]]){const fixture=run(acquisition,'gm-replay',{revision:acquisition.revision,rollIndex:1,values,reason:'Strict acquisition GUI boundary fixture'});const {page,context}=await open(fixture,390);try{assert.match(await page.locator('.aslan-family-acquisition').innerText(),values[1]===1?/Not acquired/:/Success/);await screenshot(page,'aslan-family-acquisition-'+values.join('-'));checks.push({acquisition:values,pass:true});}finally{await context.close();}}
+ let rerolled;for(let i=0;i<100;i++){const r=run(build({familySOC:2,gender:'female',seed:'family-reroll-'+i}),'roll-aslan-family');if(r.state.currentAslanOrigin.family.rerolls?.length>1){rerolled=r;break;}}assert.ok(rerolled);
+ const reroll=await open(rerolled,390);try{assert.match(await reroll.page.locator('.aslan-family-rerolls').innerText(),/Recorded family rolls: 4/);assert.equal((await saved(reroll.page)).state.character.skills.Independence,undefined);await screenshot(reroll.page,'aslan-family-female-reroll');checks.push({sourceReroll:true,pass:true});}finally{await reroll.context.close();}
+ const setup=await browser.newContext({viewport:{width:390,height:844}});try{const page=await setup.newPage();await page.goto(origin+'/?api=local');await ready(page);await page.selectOption('#setup-species','aslan');assert.equal(await page.locator('#setup-gender').getAttribute('required')!==null,true);await page.selectOption('#setup-gender','female');await page.locator('#setup-form [type="submit"]').click();await ready(page);assert.equal((await saved(page)).state.character.gender,'female');assert.equal((await saved(page)).state.stage,'statistics');checks.push({setupGender:true,pass:true});}finally{await setup.close();}
+
+ for(const width of [1586,390,320]){const context=await browser.newContext({viewport:{width,height:width>650?992:844}}),page=await context.newPage();try{await page.goto(origin+'/verification/aslan-birth-review.html');await page.locator('#aslan-family-dialog[open]').waitFor();await screenshot(page,'aslan-family-birth-review-'+width);}finally{await context.close();}}
+ assert.deepEqual(errors,[]);await writeFile(out+'aslan-family-review.json',JSON.stringify({checks,errors,birthOrder:'Design review only; not wired to the engine.'},null,2));console.log('Aslan family browser checks passed:',checks.length);
+}finally{await browser.close();await new Promise(resolve=>server.close(resolve));}

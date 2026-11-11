@@ -6,6 +6,7 @@ export function settleOrigin(r,{until='precareer',familyDie=6,birthDice=[1,2],cl
  for(let n=0;n<35;n++){
   const s=r.state;if(s.stage===until)return r;
   if(s.stage==='aslan-family'){if(!s.currentAslanOrigin.gender)break;r=run(r,'roll-aslan-family');if(r.log.at(-1).rolls.length)r=run(r,'gm-replay',{revision:r.revision,rollIndex:0,values:[familyDie],reason:'Recorded source family fixture die'});}
+  else if(s.stage==='aslan-family-result')r=run(r,'acknowledge-aslan-family');
   else if(s.stage==='effect-choice')r=run(r,'choose-effect',{index:0});
   else if(s.stage==='skill-choice'){const e=s.pendingChoice;const base=e.allowed?.[0];if(!base)break;r=run(r,'choose-skill',{name:base+' (source fixture)'});}
   else if(s.stage==='aslan-birth-order')r=force(r,'roll-aslan-birth-order',{},birthDice);

@@ -1,0 +1,36 @@
+name: Aslan family GUI review
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'tools/character-generator/**'
+      - '.github/workflows/aslan-family-review.yml'
+permissions:
+  contents: read
+jobs:
+  family-popup:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - name: Install pinned Chromium runner
+        run: |
+          npm install --prefix "$RUNNER_TEMP/character-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
+          node "$RUNNER_TEMP/character-playwright/node_modules/playwright/cli.js" install chromium
+      - name: Verify family transitions, replay and tags
+        run: node --test tools/character-generator/verification/aslan-family-*.test.mjs tools/character-generator/verification/aslan-origin-*.test.mjs
+      - name: Capture actual desktop and mobile GUI plus next-screen design
+        run: node tools/character-generator/verification/aslan-family-popup-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+      - name: Upload family review
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: aslan-family-review-${{ github.event.pull_request.head.sha }}
+          path: tools/character-generator/verification/artifacts/aslan-family-*
+          if-no-files-found: warn

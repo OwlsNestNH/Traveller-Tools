@@ -1,3 +1,6 @@
+import {aslanFamilyPopupView,mountAslanFamilyPopup} from './aslan-family-popup.mjs';
+import {familyTagline} from './aslan-family-taglines.mjs';
+import {aslanFamilyPopupModel} from './aslan-family-presentation.mjs';
 import {mountSpeciesSkillPopup} from './species-skill-popup.mjs';
 import {backgroundSelection,backgroundDraftKey,reconcileBackgroundDraft,backgroundSkillsView,syncBackgroundSkills,mountBackgroundLayout} from './background-skills.mjs';
 import {physicalDiceSetting,physicalDiceCards,physicalDiceWarning,mountPhysicalDiceEditor} from './physical-dice.mjs';
@@ -160,6 +163,7 @@ function persist(){
  catch{storageWarning='This browser could not save the draft. Use Save character & log to keep a backup.';}
 }
 function focusAfterAction(previousStage,focused){
+ if($('#aslan-family-dialog')?.open){($('#aslan-family-roll')??$('#aslan-family-dialog input')??$('#aslan-family-continue')).focus();return;}
  if($('#species-skill-dialog')?.open){$('#species-skill-search').focus();return;}
  if($('#equipment-dialog')?.open){$('#equipment-dialog-title').focus();return;}
  if(previousStage==='book-step'&&projection.state.stage==='equipment-finalization'){document.querySelector('[data-action="choose-deferred-equipment"]:not(:disabled)')?.focus();return;}
@@ -211,6 +215,7 @@ function syncRerollOptions(form){
 function syncIdentityOptions(form){
  const species=form.elements.species.value,culture=form.elements.culture,variant=form.elements.variant;
  const imperial=['aslan','vargr'].includes(species);$('#culture-choice').hidden=!imperial;culture.disabled=!imperial;if(!imperial)culture.value='native';
+ form.elements.gender.required=!!projection.state.aslanFamilyPresentation&&species==='aslan'&&culture.value==='native';
  const strains=species==='vargr';$('#variant-choice').hidden=!strains;variant.disabled=!strains;if(!strains)variant.value='standard';const aezorgh=species==='aezorgh';$('#aezorgh-roll-choice').hidden=!aezorgh;form.elements.aezorghTwoDice.disabled=!aezorgh;syncPsiOptions(form);syncRerollOptions(form);
 }
 function statCards(state,pool=false){
@@ -381,6 +386,7 @@ function bookView(state){
 }
 function equipmentDetailsView(state){const p=state.pending;if(['landhold-details','equipment-credit-details'].includes(p.kind))return ledgerDetailsView(p,{esc,button,sourceLabel});if(p.kind==='artefact-details')return '<p>'+esc(sourceLabel(p.source,p.page))+'</p><p>This artefact is already yours. A placeholder, your own description, or leaving it unknown is fine. No value or powers are assumed.</p><label>Name or placeholder (optional)<input id="artefact-name" maxlength="120" placeholder="'+esc(p.benefitName)+'"></label><label>Description (optional)<textarea id="artefact-description" rows="4" maxlength="2000"></textarea></label><div class="actions">'+button('Save details','resolve-artefact-details')+button('Cancel','cancel-deferred-equipment','quiet')+'</div>';return '<p>'+esc(sourceLabel(p.source,p.page))+'</p>'+benefitDecisionView(state)+'<label>Source or referee note<textarea id="book-note" rows="2" maxlength="500"></textarea></label><label class="check"><input id="book-confirm" type="checkbox"><span>I checked this selection and its restrictions.</span></label><div class="actions">'+button('Record outcome and continue','resolve-book')+button('Cancel','cancel-deferred-equipment','quiet')+'</div>';}
 function stageView(state,insideEquipmentDialog=false){
+ const familyModel=aslanFamilyPopupModel(state);if(familyModel)return '<p>Your family background</p>'+aslanFamilyPopupView({...familyModel,tagline:familyModel.die?familyTagline(state.currentAslanOrigin.family.band,familyModel.die,projection.log.findLast(event=>event.type==='roll-aslan-family')?.id):''},{esc});
  if(!insideEquipmentDialog&&(state.pending?.deferredContext==='finalization'||state.resolvingEquipmentTask&&state.effectNext==='equipment-finalization'))return equipmentFinalizationView(state,{esc,button,sourceLabel})+'<dialog id="equipment-dialog" aria-labelledby="equipment-dialog-title"><h2 id="equipment-dialog-title" tabindex="-1">'+esc(state.pending?.benefitName??'Weapon improvement')+' details</h2>'+(['benefit-equipment','artefact-details','landhold-details','equipment-credit-details'].includes(state.pending?.kind)?equipmentDetailsView(state):stageView(state,true))+(state.resolvingEquipmentTask?button('Cancel','cancel-deferred-equipment','quiet'):'')+'</dialog>';
  switch(state.stage){
  case 'equipment-finalization':return equipmentFinalizationView(state,{esc,button,sourceLabel});
@@ -469,7 +475,7 @@ function render(){
  const accessOpen=$('#aslan-access-panel')?.open;
  const landOpen=$('#land-claim-panel')?.open;
  const shareDraft={open:$('#clan-share-panel')?.open,kind:$('#clan-share-kind')?.value,lot:$('#clan-share-lot')?.value};
- const state=projection.state;document.body.dataset.stage=state.stage;$('header h1').textContent=['identity','statistics','background'].includes(state.stage)?'CHARACTER BUILDER':'A life among the stars';$('header .lead').textContent=['identity','statistics','background'].includes(state.stage)?'TRAVELLER RPG':'Build your Traveller one decision at a time.';const detailKey=d=>d.id||d.querySelector(':scope > summary')?.textContent;const previousDetails=new Map([...document.querySelectorAll('#sheet details, #statistics-gm-controls details')].map(d=>[detailKey(d),d.open]));
+ const state=projection.state;document.body.dataset.stage=state.stage;document.body.dataset.familyPopup=String(!!aslanFamilyPopupModel(state));$('header h1').textContent=(['identity','statistics','background'].includes(state.stage)||aslanFamilyPopupModel(state))?'CHARACTER BUILDER':'A life among the stars';$('header .lead').textContent=(['identity','statistics','background'].includes(state.stage)||aslanFamilyPopupModel(state))?'TRAVELLER RPG':'Build your Traveller one decision at a time.';const detailKey=d=>d.id||d.querySelector(':scope > summary')?.textContent;const previousDetails=new Map([...document.querySelectorAll('#sheet details, #statistics-gm-controls details')].map(d=>[detailKey(d),d.open]));
  const gmDraft={task:$('#gm-task')?.value,field:$('#gm-field')?.value,roll:$('#gm-roll-choice')?.value,restore:$('#gm-restore-choice')?.value};
  $('#workspace').innerHTML='<p class="step-count">COMPLETED TERMS: '+state.character.terms+' · '+esc(state.stage.toUpperCase().replaceAll('-',' '))+'</p><h2 id="step-title" tabindex="-1">'+esc(educationSkillTitle(state)??trainingContext(state)?.title??(state.prisonerEscape?prisonerEscapeTitle:null)??(isBasicTrainingChoice(state)?'Choose a basic-training skill':stageNames[state.stage]??state.stage))+'</h2>'+lastResult+aslanAccessView(state,{esc,button})+clanShareView(state,{esc,button,sourceLabel})+landClaimView(state,{esc,button,sourceLabel})+aslanAccessConflictView(state,{esc,button,sourceLabel})+stageView(state)+(['career','retirement','benefits'].includes(state.stage)&&(state.character.deferredEquipment??[]).some(e=>e.status==='pending')?button('Review assets & benefits','review-equipment','quiet'):'')+deferredAwardsView(state,{esc,button});
  if(state.stage==='statistics'){const heading=$('#step-title'),wrap=document.createElement('div');wrap.className='statistics-heading';heading.before(wrap);wrap.append(heading);wrap.insertAdjacentHTML('beforeend',openingInfoButton('generation'));}
@@ -485,6 +491,11 @@ function render(){
  mountBackgroundLayout(document,state,backgroundDraft?.skills??[],catalog,{esc});
  $('#workspace').dataset.revision=projection.revision;
  mountSpeciesSkillPopup(document);
+ mountAslanFamilyPopup(document,{onRoll:async()=>{if(!await send('roll-aslan-family'))throw new Error($('#message').textContent||'The family roll could not be recorded.');},onContinue:async(index)=>{
+  const model=aslanFamilyPopupModel(projection.state);if(!model)return;
+  if(index!==null){const option=model.choices[index];if(!option)return;if(!await send('choose-effect',{index:option.index}))throw new Error($('#message').textContent||'The skill choice could not be recorded.');}
+  if(projection.state.stage==='aslan-family-result'&&!await send('acknowledge-aslan-family'))throw new Error($('#message').textContent||'Continue could not be recorded.');
+ }});
  mountEquipmentDialog(document,()=>send('cancel-deferred-equipment'));
 }
 function readEffects(){
@@ -588,7 +599,7 @@ document.addEventListener('input',event=>{if(event.target.name==='minimumTotal')
 window.addEventListener('beforeunload',event=>{if(notesDraft!==null&&notesDraft!==projection?.state.character.notes){event.preventDefault();event.returnValue='';}});
 document.addEventListener('change',event=>{
  if(event.target.id==='aslan-historical-target')$('#aslan-historical-selection').textContent=event.target.value?event.target.selectedOptions[0].textContent:'';
- if(event.target.matches('[name=species]'))syncIdentityOptions(event.target.form);
+ if(event.target.matches('[name=species],[name=culture]'))syncIdentityOptions(event.target.form);
  if(event.target.matches('[name=species],[name=gender]'))syncOpeningPortrait(event.target.form);
  if(event.target.matches('[name=minimumTotal]'))event.target.dataset.customTotal='true';
  if(event.target.matches('[name=aezorghTwoDice], [name=minimumTotal]'))syncRerollOptions(event.target.form);
@@ -623,6 +634,7 @@ document.addEventListener('submit',async event=>{
  }
  if(event.target.id==='setup-form'){
   event.preventDefault();if(busy)return;const form=event.target;const values=new FormData(form);
+  if(projection.state.aslanFamilyPresentation&&values.get('species')==='aslan'&&(values.get('culture')??'native')==='native'&&!values.get('gender')){notify('Choose gender on this species selection screen before starting your Aslan.',true);form.elements.gender.focus();return;}
    if(values.get('zhodaniPsi')&&(!values.get('gm')||values.get('species')!=='zhodani')){notify('The Zhodani PSI option needs GM mode and a Zhodani Traveller.',true);return;}
   if(!await send('configure',{...(values.get('physicalDice')||Object.hasOwn(projection.state.config,'physicalDice')?{physicalDice:!!values.get('physicalDice')}:{}),boons:Number(values.get('boons')),minimumReroll:!!values.get('minimumReroll'),minimumTotal:Number(values.get('minimumTotal')),allocation:!!values.get('allocation'),extras:values.getAll('extras'),...(values.get('psiGm')||Object.hasOwn(projection.state.config,'psiGm')?{psiGm:!!values.get('psiGm')}:{}),...(values.get('psiTestingWithoutEvent')||Object.hasOwn(projection.state.config,'psiTestingWithoutEvent')?{psiTestingWithoutEvent:!!values.get('psiTestingWithoutEvent')}:{}),...(values.get('flatLuck')||Object.hasOwn(projection.state.config,'flatLuck')?{flatLuck:!!values.get('flatLuck')}:{}),zhodaniPsi:!!values.get('zhodaniPsi'),aezorghTwoDice:values.get('species')==='aezorgh'&&!!values.get('aezorghTwoDice')}))return;
   if(projection.state.config.gm&&projection.state.config.academyServiceSkill&&!values.get('academyServiceSkill')&&!await send('gm-academy-training',{enabled:false}))return;

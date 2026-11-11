@@ -4,7 +4,9 @@ import {mkdir,writeFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {createServer} from '../server.mjs';
 import {project,exportSession} from '../engine/session.mjs';
-import {buildAslanOriginFixture,run} from './aslan-origin-fixtures.mjs';
+import {buildAslanOriginFixture as buildCurrentAslanOriginFixture,run} from './aslan-origin-fixtures.mjs';
+// Preserve coverage of the historical origin UI; new popup has its own browser suite.
+const buildAslanOriginFixture=options=>buildCurrentAslanOriginFixture({rulesRevision:'character-preview-2026-11-09.27',...options});
 const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const out=fileURLToPath(new URL('./artifacts/',import.meta.url));await mkdir(out,{recursive:true});
 const server=createServer();await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));

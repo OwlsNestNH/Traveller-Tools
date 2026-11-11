@@ -67,7 +67,7 @@ test('identity follows an explicit male identity, not a referee-selected mechani
 });
 
 test('real rolled male and explicit other identity keep their distinct presentation eligibility',()=>{
- let unspecified=buildAslanOriginFixture({gender:'',seed:'tagline-rolled-male'});
+ let unspecified=buildAslanOriginFixture({gender:'',seed:'tagline-rolled-male',rulesRevision:'character-preview-2026-11-09.27'});
  unspecified=force(unspecified,'roll-aslan-gender',{},[1,1]);
  assert.equal(unspecified.state.character.gender,'male');assert.equal(unspecified.state.character.aslanOrigin.identityGender,'');
  assert.equal(maleAslanIdentity(unspecified.state),true);

@@ -1,0 +1,29 @@
+#aslan-family-dialog{box-sizing:border-box;width:min(904px,calc(100vw - 32px));max-width:none;max-height:calc(100dvh - 32px);overflow:auto;margin:auto;padding:26px 38px;color:#f5f7fa;background:radial-gradient(ellipse at center,#092536 0%,#061d2b 100%);border:2px solid #73b1cc;border-radius:15px;box-shadow:0 0 0 2px #07131d;font-family:system-ui,sans-serif}
+#aslan-family-dialog::backdrop{background:rgba(1,12,20,.54)}
+#aslan-family-dialog .aslan-family-eyebrow{font-size:20px;letter-spacing:1px;font-weight:750;color:#ffcf3e;margin:0 0 13px}
+#aslan-family-dialog h2{font-size:48px;line-height:1.15;font-weight:800;margin:0 0 5px;color:#f5f7fa}
+#aslan-family-dialog .aslan-family-band{font-size:34px;color:#c4d8e7;margin:0 0 16px;line-height:1.3}
+.aslan-family-ready{text-align:center}.aslan-family-mystery{display:block;width:200px;height:200px;margin:8px auto 0;color:#ffd34b}
+#aslan-family-dialog .aslan-family-ready h3{font-size:46px;line-height:1.15;margin:0 0 18px;font-weight:800;color:#f5f7fa}
+#aslan-family-dialog .aslan-family-ready p{font-size:30px;color:#c4d8e7;margin:0 0 19px}
+#aslan-family-dialog button{background:linear-gradient(#ffd64d,#efb921);color:#071018;border:1px solid #ffd34b;border-radius:12px;font-weight:800;padding:12px 32px;min-height:66px;font-size:28px}
+#aslan-family-dialog #aslan-family-roll{font-size:38px;min-width:274px;margin:0 0 16px}
+#aslan-family-dialog .aslan-family-ready .aslan-family-hint{font-size:24px;font-style:italic;margin:0 0 25px}
+#aslan-family-dialog footer{display:flex;align-items:end;justify-content:space-between;gap:16px;border-top:1px solid #73b1cc;padding-top:14px}
+#aslan-family-dialog footer p{font-size:20px;color:#bdd1df;margin:0}
+.aslan-family-roll{display:flex;align-items:center;gap:30px}.aslan-family-roll strong{font-size:54px;line-height:1.1}.aslan-family-die{width:96px;height:96px;flex:none}
+#aslan-family-dialog .aslan-family-narrative{font-size:46px;line-height:1.2;font-weight:800;margin:16px 0 30px}
+#aslan-family-dialog .aslan-family-choices{border:0;padding:0;margin:0;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+#aslan-family-dialog .aslan-family-choices legend{font-size:34px;font-weight:750;margin:0 0 14px;padding:0}
+.aslan-family-choices label{display:flex;align-items:center;gap:25px;min-height:80px;padding:12px 25px;border:2px solid #639fb9;border-radius:12px;font-size:28px;font-weight:750;box-sizing:border-box}
+.aslan-family-choices input{appearance:auto;flex:none;width:30px;height:30px;margin:0;accent-color:#ffcf3e}.aslan-family-choices label:has(input:checked){border-color:#ffcf3e;background:#233b3d}
+#aslan-family-dialog .aslan-family-result-footer{display:flex;justify-content:space-between;gap:15px;border-top:1px solid #73b1cc;margin-top:30px;padding-top:14px}
+.aslan-family-result-footer p{font-size:22px;color:#bdd1df;margin:0 0 24px}.aslan-family-result-footer #aslan-family-choice-status{color:#ffcf3e;font-size:20px;font-weight:700;text-align:right}
+.aslan-family-result-footer+footer{border-top:0;padding-top:0}#aslan-family-dialog button:disabled{background:#34566a;border-color:#34566a;color:#8ca4b2}#aslan-family-dialog :focus-visible{outline:3px solid #ffcf3e;outline-offset:4px}
+#aslan-family-dialog #aslan-family-error:empty{display:none}.aslan-family-award{font-size:26px}
+@media(max-width:650px){#aslan-family-dialog{width:calc(100vw - 20px);max-height:calc(100dvh - 20px);padding:22px 18px}#aslan-family-dialog h2{font-size:30px}#aslan-family-dialog .aslan-family-eyebrow{font-size:13px}#aslan-family-dialog .aslan-family-band{font-size:24px}.aslan-family-mystery{width:140px;height:140px}#aslan-family-dialog .aslan-family-ready h3,#aslan-family-dialog .aslan-family-narrative{font-size:30px}#aslan-family-dialog .aslan-family-ready p{font-size:22px}#aslan-family-dialog .aslan-family-ready .aslan-family-hint{font-size:17px}#aslan-family-dialog #aslan-family-roll{min-width:0;width:100%;font-size:30px}.aslan-family-roll{gap:15px}.aslan-family-roll strong{font-size:32px}.aslan-family-die{width:64px;height:64px}#aslan-family-dialog .aslan-family-choices{grid-template-columns:1fr}#aslan-family-dialog .aslan-family-choices legend{font-size:24px}.aslan-family-choices label{font-size:23px;min-height:66px;padding:12px 16px}#aslan-family-dialog .aslan-family-result-footer{flex-direction:column;gap:8px}.aslan-family-result-footer p{font-size:16px;margin:0}.aslan-family-result-footer #aslan-family-choice-status{text-align:left;font-size:16px}#aslan-family-dialog footer{flex-wrap:wrap;margin-top:20px}#aslan-family-dialog footer p{font-size:14px}#aslan-family-dialog footer button{width:100%;font-size:24px}}
+#aslan-family-dialog .aslan-family-tagline{font-size:21px;color:#d8c47b;font-style:italic;margin:-14px 0 24px}.aslan-family-rerolls{font-size:16px;color:#bdd1df}
+body[data-family-popup="true"]{color-scheme:dark;--ink:#f1f5f8;--muted:#bdccd6;--blue:#ffd052;--line:#7b929f;--paper:#061a28;--wash:#071522;--focus:#fff1ae;--accent:#142e3c;background:#03111c;color:var(--ink)}
+body[data-family-popup="true"] header h1{color:#ffd052}body[data-family-popup="true"] #workspace,body[data-family-popup="true"] #sheet{background:linear-gradient(140deg,#062536ef,#03121deb);border:1px solid #517688}
+#aslan-family-dialog footer{width:100%;margin-inline:0;padding-bottom:0}#aslan-family-dialog input[type="radio"]{width:30px;min-height:30px;height:30px;padding:0;border:0;background:transparent}#aslan-family-dialog h2::before{display:none}#aslan-family-dialog button:disabled{opacity:1}
+#aslan-family-dialog .aslan-family-acquisition{font-size:20px;padding:14px;border:1px solid #73b1cc;border-radius:8px;color:#c4d8e7}
