@@ -34,7 +34,7 @@ try{
    if(culture==='imperial'){assert.equal(after.character.stats.SOC,s.pool[5].value);if(enabled){assert.equal(rolls.length,1);assert.equal(rolls[0].label,'Imperial Vargr CHA');assert.equal(rolls[0].values.length,1);assert.equal(after.character.stats.CHA,rolls[0].total+2);}else{assert.equal(after.character.stats.CHA,undefined);assert.deepEqual(rolls,[]);}}
    else{assert.equal(after.character.stats.CHA,s.pool[5].value);assert.equal(after.character.stats.SOC,undefined);assert.deepEqual(rolls,[]);}
    const accepted=await saved(p);await p.reload();await ready(p);assert.equal(await saved(p),accepted);assert.deepEqual(await state(p),after);await noOverflow(p);
-   if(culture==='imperial'&&!enabled){await p.locator('#additional-characteristics > summary').click();await p.locator('#extra-stat').selectOption('CHA');await activate(p,'add-extra');after=await state(p);rolls=JSON.parse(await saved(p)).events.at(-1).rolls;assert.equal(rolls.length,1);assert.equal(rolls[0].values.length,1);assert.equal(after.character.stats.CHA,rolls[0].total+2);assert.equal(await p.locator('#extra-stat option[value=CHA]').count(),0);}
+   if(culture==='imperial'&&!enabled){await p.locator('#background-record > summary').click();await p.locator('#additional-characteristics > summary').click();await p.locator('#extra-stat').selectOption('CHA');await activate(p,'add-extra');after=await state(p);rolls=JSON.parse(await saved(p)).events.at(-1).rolls;assert.equal(rolls.length,1);assert.equal(rolls[0].values.length,1);assert.equal(after.character.stats.CHA,rolls[0].total+2);assert.equal(await p.locator('#extra-stat option[value=CHA]').count(),0);}
    checks.push({http,width,culture,enabled,passed:true});
   }finally{await context.close();}
  }
