@@ -35,7 +35,7 @@ try{
   await page.waitForFunction(()=>document.querySelector('#message').textContent.startsWith('Swapped'));
   assert.equal(await page.locator('.total').innerText(),total);
   await page.screenshot({path:path.join(out,name+'-statistics.png'),fullPage:true});
-  await page.getByRole('button',{name:'Keep these characteristics'}).click();await page.getByRole('heading',{name:'Choose background skills'}).waitFor();
+  await page.getByRole('button',{name:'Keep these characteristics'}).click();await page.getByRole('heading',{name:'Choose your background skills',exact:true}).waitFor();
   assert.equal(await page.locator('#sheet .stat').filter({hasText:'LCK'}).count(),1);
   assert.equal(await page.locator('#sheet .stat').filter({hasText:'PSI'}).count(),0);
   const backgroundText=await page.locator('#workspace>p').allTextContents();const count=Number(backgroundText.join(' ').match(/Choose\s+(\d+)/)?.[1]??0);

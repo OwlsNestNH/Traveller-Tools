@@ -372,12 +372,19 @@ try {
       assert.equal(await page.locator('#statistics-gm-controls').count(), 0);
       assert.equal(await page.locator('#sheet #gm-controls').count(), 1);
       assert.equal(await page.locator('#gm-toggle').count(), 1);
-      assert.equal(await page.locator('header h1').textContent(), 'A life among the stars');
-      assert.notDeepEqual(await headerStyle(page), openingHeader, 'later stages keep their previous theme');
+      assert.equal(await page.locator('header h1').textContent(), 'CHARACTER BUILDER');
+      assert.equal(await page.locator('header .lead').textContent(), 'TRAVELLER RPG');
       assert.ok(Object.hasOwn((await projection(page)).state.character.stats, 'LCK'));
       assert.equal((await projection(page)).state.character.stats.PSI, undefined);
+      await page.locator('#background-record > summary').click();
       assert.match(await page.locator('#psi-choice-sheet').innerText(), /Untested/);
       await screenshot(page, label + '-background');
+      const background = (await projection(page)).state;
+      for (let i = 0; i < background.backgroundRemaining; i++) await page.locator('#background-form [name=skills]').nth(i).check();
+      await page.getByRole('button', {name: 'Accept background skills', exact: true}).click();
+      await page.getByRole('heading', {name: 'Before your career', exact: true}).waitFor();
+      assert.equal(await page.locator('header h1').textContent(), 'A life among the stars');
+      assert.notDeepEqual(await headerStyle(page), openingHeader, 'later stages keep their previous theme');
     });
 
     const scenarios = [
