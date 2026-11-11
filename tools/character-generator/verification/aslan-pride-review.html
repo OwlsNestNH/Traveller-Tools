@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Aslan pride design review</title>
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../gui/aslan-family-popup.css">
+  <style>
+    #aslan-family-dialog .pride-title-row{display:flex;align-items:center;justify-content:space-between;gap:14px}
+    #aslan-family-dialog #aslan-pride-info-open{flex:none;width:44px;height:44px;min-height:44px;padding:0;border:2px solid #ffd34b;border-radius:50%;background:transparent;color:#ffd34b;font-family:Georgia,serif;font-size:29px;font-style:normal;font-weight:700;line-height:1}
+    #aslan-family-dialog .aslan-family-band{font-size:27px;margin-bottom:16px}
+    #aslan-family-dialog .pride-clan-context{margin:0 0 14px;padding:12px 16px;border:1px solid #639fb9;border-radius:10px;background:#082434;color:#c4d8e7;font-size:19px;line-height:1.45;overflow-wrap:anywhere}
+    #aslan-family-dialog .pride-clan-context strong{color:#f5f7fa;font-weight:750}
+    #aslan-family-dialog .pride-dice{display:flex;align-items:center;justify-content:center;gap:12px;color:#ffd34b}
+    #aslan-family-dialog .pride-dice .aslan-family-mystery{width:150px;height:150px;margin:8px 0}
+    #aslan-family-dialog .aslan-family-ready h3{font-size:40px;line-height:1.2;margin:0 0 14px}
+    #aslan-family-dialog .aslan-family-ready .pride-instruction{font-size:24px;margin:0 0 16px}
+    #aslan-family-dialog #aslan-pride-roll{font-size:38px;min-width:274px;margin-bottom:16px}
+    #aslan-family-dialog .aslan-family-ready .aslan-family-hint{font-size:20px;margin-bottom:16px}
+    #aslan-family-dialog .pride-name-choice{border:1px solid #639fb9;background:#071e2c;border-radius:10px;margin:12px 0 20px;padding:12px 16px;color:#c4d8e7}
+    #aslan-family-dialog .pride-name-choice summary{font-size:18px;min-height:44px}
+    #aslan-family-dialog .pride-name-choice label{font-size:17px;margin:10px 0 12px}
+    #aslan-family-dialog .pride-name-choice input{background:#092536;border-color:#639fb9;color:#f5f7fa;font-size:18px;margin-top:6px}
+    #aslan-family-dialog .pride-name-choice button{font-size:19px;min-height:52px;padding:10px 18px}
+    #aslan-family-dialog .pride-name-hint{margin:12px 0 0;font-size:16px;line-height:1.45;color:#c4d8e7}
+    #aslan-family-dialog .pride-result-roll{display:flex;align-items:center;gap:23px;padding:15px 0}
+    #aslan-family-dialog .pride-result-roll .pride-dice{gap:10px;flex:none}
+    #aslan-family-dialog .pride-result-roll .aslan-family-die{width:76px;height:76px}
+    #aslan-family-dialog .pride-roll-label{display:block;color:#c4d8e7;font-size:19px}
+    #aslan-family-dialog .pride-result-roll strong{font-size:40px;line-height:1.25}
+    #aslan-family-dialog .pride-result-card{border:1px solid #639fb9;border-radius:12px;background:#082434;padding:21px 24px;margin:8px 0 22px}
+    #aslan-family-dialog .pride-result-label{font-size:18px;color:#c4d8e7;margin:0 0 5px}
+    #aslan-family-dialog .pride-result-name{font-size:48px;font-weight:800;color:#ffd34b;margin:0;line-height:1.2}
+    #aslan-family-dialog .pride-result-evidence{font-size:20px;color:#c4d8e7;line-height:1.45;margin:12px 0 0}
+    #aslan-family-dialog .pride-next-note{font-size:19px;color:#c4d8e7;line-height:1.45;margin:0 0 20px}
+    #aslan-family-dialog footer{align-items:center;margin-top:18px;gap:16px}
+    #aslan-family-dialog footer p{font-size:17px}
+    #aslan-family-dialog footer button{font-size:23px;padding:12px 21px;max-width:100%}
+    #aslan-family-dialog .pride-review-note{font-size:14px;color:#bdd1df;margin:14px 0 0;line-height:1.4}
+    #aslan-family-dialog .pride-review-status{font-size:17px;color:#ffd34b;margin:12px 0 0;line-height:1.4;overflow-wrap:anywhere}
+    #aslan-family-dialog .pride-review-status:empty{display:none}
+    #aslan-family-dialog [hidden]{display:none!important}
+    #aslan-pride-info{box-sizing:border-box;width:min(660px,calc(100vw - 28px));max-height:calc(100dvh - 32px);overflow:auto;margin:auto;padding:24px;background:#061d2b;color:#f5f7fa;border:2px solid #73b1cc;border-radius:15px}
+    #aslan-pride-info::backdrop{background:rgba(1,12,20,.72)}
+    #aslan-pride-info .info-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    #aslan-pride-info h2{font-size:28px;margin:0;color:#f5f7fa}
+    #aslan-pride-info h3{font-size:22px;color:#ffd34b;margin:22px 0 10px}
+    #aslan-pride-info p,#aslan-pride-info li{font-size:18px;line-height:1.5;color:#c4d8e7}
+    #aslan-pride-info li{margin:10px 0}
+    #aslan-pride-info button{width:44px;height:44px;min-height:44px;flex:none;padding:0;background:#142e3c;border:1px solid #73b1cc;border-radius:8px;color:#f5f7fa;font-size:28px}
+    #aslan-pride-info :focus-visible{outline:3px solid #ffcf3e;outline-offset:3px}
+    @media(max-width:650px){
+      #aslan-family-dialog{padding:20px 18px}
+      #aslan-family-dialog h2{font-size:30px;white-space:normal}
+      #aslan-family-dialog .aslan-family-band{font-size:21px;margin-bottom:12px}
+      #aslan-family-dialog .pride-clan-context{font-size:16px;padding:10px 12px;margin-bottom:10px}
+      #aslan-family-dialog .pride-dice .aslan-family-mystery{width:108px;height:108px;margin:8px 0}
+      #aslan-family-dialog .aslan-family-ready h3{font-size:28px;margin-bottom:12px}
+      #aslan-family-dialog .aslan-family-ready .pride-instruction{font-size:20px;margin-bottom:14px}
+      #aslan-family-dialog #aslan-pride-roll{font-size:30px;width:100%;min-width:0;min-height:60px}
+      #aslan-family-dialog .aslan-family-ready .aslan-family-hint{font-size:17px;margin-bottom:12px}
+      #aslan-family-dialog .pride-name-choice{padding:10px 12px;margin-bottom:16px}
+      #aslan-family-dialog .pride-name-choice summary{font-size:16px}
+      #aslan-family-dialog .pride-name-choice button{width:100%;font-size:18px}
+      #aslan-family-dialog .pride-name-hint{font-size:15px}
+      #aslan-family-dialog .pride-result-roll{flex-wrap:wrap;gap:12px;padding:12px 0}
+      #aslan-family-dialog .pride-result-roll .aslan-family-die{width:55px;height:55px}
+      #aslan-family-dialog .pride-roll-label{font-size:16px}
+      #aslan-family-dialog .pride-result-roll strong{font-size:28px}
+      #aslan-family-dialog .pride-result-card{padding:16px;margin-bottom:18px}
+      #aslan-family-dialog .pride-result-label{font-size:16px}
+      #aslan-family-dialog .pride-result-name{font-size:34px}
+      #aslan-family-dialog .pride-result-evidence{font-size:17px;margin-top:9px}
+      #aslan-family-dialog .pride-next-note{font-size:17px}
+      #aslan-family-dialog footer p{font-size:14px}
+      #aslan-family-dialog footer button{font-size:21px;width:100%}
+      #aslan-pride-info{padding:20px 18px}
+      #aslan-pride-info h2{font-size:25px}
+      #aslan-pride-info p,#aslan-pride-info li{font-size:17px}
+    }
+  </style>
+</head>
+<body data-family-popup="true">
+  <header><div><h1>CHARACTER BUILDER</h1><p>TRAVELLER RPG</p></div></header>
+  <main class="layout">
+    <section id="workspace"><p class="eyebrow">BACKGROUND</p><h2>Your family and heritage</h2></section>
+    <aside id="sheet"><h2>Character summary</h2><p>Aslan</p></aside>
+  </main>
+  <dialog id="aslan-family-dialog" class="aslan-family-dialog" aria-labelledby="aslan-family-title" aria-describedby="pride-review-note">
+    <p class="aslan-family-eyebrow">DESIGN REVIEW · PRIDE</p>
+    <div class="pride-title-row"><h2 id="aslan-family-title" tabindex="-1">Your pride</h2><button type="button" id="aslan-pride-info-open" aria-label="About pride rolls and clan naming" aria-haspopup="dialog" aria-controls="aslan-pride-info">i</button></div>
+    <p class="aslan-family-band">Aslan · Family and heritage</p>
+    <p class="pride-clan-context">Example clan: <strong id="pride-clan-name">Multiworld clan</strong><span id="pride-clan-type" hidden> · Multiworld</span> · 5 sectors</p>
+    <div id="pride-ready">
+      <div class="aslan-family-ready">
+        <div class="pride-dice" id="pride-mystery-dice" aria-hidden="true"></div>
+        <h3>Discover your family’s pride.</h3>
+        <p class="pride-instruction">Roll 2D to find your pride.</p>
+        <button type="button" id="aslan-pride-roll" aria-describedby="pride-review-note">Roll 2D</button>
+        <p class="aslan-family-hint">Your dice and pride result will appear here.</p>
+      </div>
+      <details class="pride-name-choice" id="pride-name-choice">
+        <summary>Give your clan a name (optional)</summary>
+        <form id="pride-clan-name-form">
+          <label for="aslan-clan-name">Clan name<input id="aslan-clan-name" name="clan-name" maxlength="80" required aria-describedby="pride-name-hint"></label>
+          <button type="submit">Use clan name</button>
+        </form>
+        <p class="pride-name-hint" id="pride-name-hint">Name the clan before rolling pride. Its type and scope stay the same.</p>
+        <p class="pride-review-status" id="pride-name-status" role="status" aria-live="polite"></p>
+      </details>
+    </div>
+    <section id="pride-result" hidden aria-labelledby="pride-result-name">
+      <div class="pride-result-roll">
+        <div class="pride-dice" id="pride-result-dice" aria-hidden="true"></div>
+        <div><span class="pride-roll-label">Fixed example pride roll · 2D</span><strong id="pride-roll-total"></strong></div>
+      </div>
+      <div class="pride-result-card">
+        <p class="pride-result-label">Your pride result</p>
+        <h3 class="pride-result-name" id="pride-result-name" tabindex="-1"></h3>
+        <p class="pride-result-evidence">A total of 5–9 gives an average pride.</p>
+      </div>
+      <p class="pride-next-note">Next: choose your background skills.</p>
+    </section>
+    <footer>
+      <p>AoCS1 Update 2026, p. 18</p>
+      <button type="button" id="aslan-pride-continue" hidden>Continue to background skills <span aria-hidden="true">→</span></button>
+    </footer>
+    <p class="pride-review-note" id="pride-review-note">Design review only. Roll 2D shows a fixed example; no dice are rolled. Clan names are preview-only. No character is changed or saved.</p>
+    <p class="pride-review-status" id="aslan-pride-status" role="status" aria-live="polite"></p>
+  </dialog>
+  <dialog id="aslan-pride-info" aria-labelledby="aslan-pride-info-title">
+    <div class="info-heading"><h2 id="aslan-pride-info-title">About your pride</h2><button type="button" id="aslan-pride-info-close" aria-label="Close pride information">×</button></div>
+    <p>A pride is a group of families within your clan, functioning much like a political party or regional government.</p>
+    <p>Your pride is determined separately from your clan. Roll two dice, add them together and use the total below.</p>
+    <h3>Pride roll · 2D</h3>
+    <ul>
+      <li><strong>2–4:</strong> Major pride</li>
+      <li><strong>5–9:</strong> Average pride</li>
+      <li><strong>10–12:</strong> Minor pride</li>
+    </ul>
+    <h3>Giving your clan a name</h3>
+    <p>You may name your clan before rolling pride, or leave it unnamed. Naming does not reroll your clan or change its type or scope.</p>
+    <h3>What comes next?</h3>
+    <p>Choose your ordinary background skills. These are separate from your family background skill awards.</p>
+    <p>AoCS1 Update 2026, p. 18</p>
+  </dialog>
+  <script type="module">
+    import {aslanFamilyDie} from '../gui/aslan-family-popup.mjs';
+    import {aslanPrideResult} from '../engine/aslan-origin.mjs';
+
+    // Presentation-only fixed example. No session, RNG, storage or commands.
+    // The pure existing rule projection verifies the displayed pride result.
+    const example = aslanPrideResult([3, 4]);
+    const dialog = document.querySelector('#aslan-family-dialog');
+    const info = document.querySelector('#aslan-pride-info');
+    const infoButton = document.querySelector('#aslan-pride-info-open');
+    const ready = document.querySelector('#pride-ready');
+    const nameInput = document.querySelector('#aslan-clan-name');
+    const nameStatus = document.querySelector('#pride-name-status');
+    infoButton.addEventListener('click', () => info.showModal());
+    document.querySelector('#aslan-pride-info-close').addEventListener('click', () => info.close());
+    info.addEventListener('close', () => infoButton.focus({preventScroll:true}));
+    document.querySelector('#pride-mystery-dice').innerHTML = aslanFamilyDie() + aslanFamilyDie();
+    document.querySelector('#pride-clan-name-form').addEventListener('submit', event => {
+      event.preventDefault();
+      if (ready.hidden) return;
+      const name = nameInput.value.trim();
+      if (!name) {
+        nameStatus.textContent = 'Enter a clan name, or leave this optional choice closed.';
+        nameInput.focus({preventScroll:true});
+        return;
+      }
+      document.querySelector('#pride-clan-name').textContent = name;
+      document.querySelector('#pride-clan-type').hidden = false;
+      nameStatus.textContent = 'Clan name shown in this preview. No dice were rolled.';
+    });
+    document.querySelector('#aslan-pride-roll').addEventListener('click', () => {
+      if (ready.hidden) return;
+      document.querySelector('#pride-result-dice').innerHTML = example.dice.map(aslanFamilyDie).join('');
+      document.querySelector('#pride-roll-total').textContent = example.dice.join(' + ') + ' = ' + example.total;
+      document.querySelector('#pride-result-name').textContent = example.name;
+      ready.hidden = true;
+      document.querySelector('#pride-result').hidden = false;
+      document.querySelector('#aslan-pride-continue').hidden = false;
+      document.querySelector('#pride-result-name').focus({preventScroll:true});
+      dialog.scrollTop = 0;
+    });
+    document.querySelector('#aslan-pride-continue').addEventListener('click', () => {
+      document.querySelector('#aslan-pride-status').textContent = 'Design review only. Background skills come next; no pride or clan name has been saved and no character has been changed.';
+    });
+    dialog.addEventListener('cancel', event => event.preventDefault());
+    dialog.showModal();
+    document.querySelector('#aslan-pride-roll').focus({preventScroll:true});
+    dialog.scrollTop = 0;
+  </script>
+</body>
+</html>

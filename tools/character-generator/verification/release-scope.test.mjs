@@ -15,7 +15,7 @@ test('public setup, career and PSI paths reject deferred choices without changin
  const session=createSession('release'),before=JSON.stringify(session);
  for(const [type,payload] of [['setup',{species:'zhodani'}],['configure',{zhodaniPsi:true}],['career',{id:'zhodani.army',assignment:'infantry'}]])denied(api(command(session,type,payload)));
  assert.equal(JSON.stringify(session),before);
- for(const species of ['human','aslan','vargr','aezorgh'])assert.equal(api(command(session,'setup',{species})).ok,true);
+ for(const species of ['human','aslan','vargr','aezorgh'])assert.equal(api(command(session,'setup',{species,...(species==='aslan'?{gender:'male'}:{})})).ok,true);
  let r=api(command(session,'gm-mode',{enabled:true}));r=api(command(r.session,'configure',{extras:['PSI'],zhodaniPsi:false}));assert.equal(r.ok,true);
 });
 test('all public session entry points reject deferred history and retain exact recovery bytes',()=>{

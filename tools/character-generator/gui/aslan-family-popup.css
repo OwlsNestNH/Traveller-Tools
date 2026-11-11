@@ -1,0 +1,424 @@
+#aslan-family-dialog{box-sizing:border-box;width:min(904px,calc(100vw - 32px));max-width:none;max-height:calc(100dvh - 32px);overflow:auto;margin:auto;padding:26px 38px;color:#f5f7fa;background:radial-gradient(ellipse at center,#092536 0%,#061d2b 100%);border:2px solid #73b1cc;border-radius:15px;box-shadow:0 0 0 2px #07131d;font-family:system-ui,sans-serif}
+#aslan-family-dialog::backdrop{background:rgba(1,12,20,.54)}
+#aslan-family-dialog .aslan-family-eyebrow{font-size:20px;letter-spacing:1px;font-weight:750;color:#ffcf3e;margin:0 0 13px}
+#aslan-family-dialog h2{font-size:48px;line-height:1.15;font-weight:800;margin:0 0 5px;color:#f5f7fa}
+#aslan-family-dialog .aslan-family-band{font-size:34px;color:#c4d8e7;margin:0 0 16px;line-height:1.3}
+.aslan-family-ready{text-align:center}.aslan-family-mystery{display:block;width:200px;height:200px;margin:8px auto 0;color:#ffd34b}
+#aslan-family-dialog .aslan-family-ready h3{font-size:46px;line-height:1.15;margin:0 0 18px;font-weight:800;color:#f5f7fa}
+#aslan-family-dialog .aslan-family-ready p{font-size:30px;color:#c4d8e7;margin:0 0 19px}
+#aslan-family-dialog button{background:linear-gradient(#ffd64d,#efb921);color:#071018;border:1px solid #ffd34b;border-radius:12px;font-weight:800;padding:12px 32px;min-height:66px;font-size:28px}
+#aslan-family-dialog #aslan-family-roll{font-size:38px;min-width:274px;margin:0 0 16px}
+#aslan-family-dialog .aslan-family-ready .aslan-family-hint{font-size:24px;font-style:italic;margin:0 0 25px}
+#aslan-family-dialog footer{display:flex;align-items:end;justify-content:space-between;gap:16px;border-top:1px solid #73b1cc;padding-top:14px}
+#aslan-family-dialog footer p{font-size:20px;color:#bdd1df;margin:0}
+.aslan-family-roll{display:flex;align-items:center;gap:30px}.aslan-family-roll strong{font-size:54px;line-height:1.1}.aslan-family-die{width:96px;height:96px;flex:none}
+#aslan-family-dialog .aslan-family-narrative{font-size:46px;line-height:1.2;font-weight:800;margin:16px 0 30px}
+#aslan-family-dialog .aslan-family-choices{border:0;padding:0;margin:0;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+#aslan-family-dialog .aslan-family-choices legend{font-size:34px;font-weight:750;margin:0 0 14px;padding:0}
+.aslan-family-choices label{display:flex;align-items:center;gap:25px;min-height:80px;padding:12px 25px;border:2px solid #639fb9;border-radius:12px;font-size:28px;font-weight:750;box-sizing:border-box}
+.aslan-family-choices input{appearance:auto;flex:none;width:30px;height:30px;margin:0;accent-color:#ffcf3e}.aslan-family-choices label:has(input:checked){border-color:#ffcf3e;background:#233b3d}
+#aslan-family-dialog .aslan-family-result-footer{display:flex;justify-content:space-between;gap:15px;border-top:1px solid #73b1cc;margin-top:30px;padding-top:14px}
+.aslan-family-result-footer p{font-size:22px;color:#bdd1df;margin:0 0 24px}.aslan-family-result-footer #aslan-family-choice-status{color:#ffcf3e;font-size:20px;font-weight:700;text-align:right}
+.aslan-family-result-footer+footer{border-top:0;padding-top:0}#aslan-family-dialog button:disabled{background:#34566a;border-color:#34566a;color:#8ca4b2}#aslan-family-dialog :focus-visible{outline:3px solid #ffcf3e;outline-offset:4px}
+#aslan-family-dialog #aslan-family-error:empty{display:none}.aslan-family-award{font-size:26px}
+@media(max-width:650px){#aslan-family-dialog{width:calc(100vw - 20px);max-height:calc(100dvh - 20px);padding:22px 18px}#aslan-family-dialog h2{font-size:30px}#aslan-family-dialog .aslan-family-eyebrow{font-size:13px}#aslan-family-dialog .aslan-family-band{font-size:24px}.aslan-family-mystery{width:140px;height:140px}#aslan-family-dialog .aslan-family-ready h3,#aslan-family-dialog .aslan-family-narrative{font-size:30px}#aslan-family-dialog .aslan-family-ready p{font-size:22px}#aslan-family-dialog .aslan-family-ready .aslan-family-hint{font-size:17px}#aslan-family-dialog #aslan-family-roll{min-width:0;width:100%;font-size:30px}.aslan-family-roll{gap:15px}.aslan-family-roll strong{font-size:32px}.aslan-family-die{width:64px;height:64px}#aslan-family-dialog .aslan-family-choices{grid-template-columns:1fr}#aslan-family-dialog .aslan-family-choices legend{font-size:24px}.aslan-family-choices label{font-size:23px;min-height:66px;padding:12px 16px}#aslan-family-dialog .aslan-family-result-footer{flex-direction:column;gap:8px}.aslan-family-result-footer p{font-size:16px;margin:0}.aslan-family-result-footer #aslan-family-choice-status{text-align:left;font-size:16px}#aslan-family-dialog footer{flex-wrap:wrap;margin-top:20px}#aslan-family-dialog footer p{font-size:14px}#aslan-family-dialog footer button{width:100%;font-size:24px}}
+#aslan-family-dialog .aslan-family-tagline{font-size:21px;color:#d8c47b;font-style:italic;margin:-14px 0 24px}.aslan-family-rerolls{font-size:16px;color:#bdd1df}
+body[data-family-popup="true"]{color-scheme:dark;--ink:#f1f5f8;--muted:#bdccd6;--blue:#ffd052;--line:#7b929f;--paper:#061a28;--wash:#071522;--focus:#fff1ae;--accent:#142e3c;background:#03111c;color:var(--ink)}
+body[data-family-popup="true"] header h1{color:#ffd052}body[data-family-popup="true"] #workspace,body[data-family-popup="true"] #sheet{background:linear-gradient(140deg,#062536ef,#03121deb);border:1px solid #517688}
+#aslan-family-dialog footer{width:100%;margin-inline:0;padding-bottom:0}#aslan-family-dialog input[type="radio"]{width:30px;min-height:30px;height:30px;padding:0;border:0;background:transparent}#aslan-family-dialog h2::before{display:none}#aslan-family-dialog button:disabled{opacity:1}
+#aslan-family-dialog .aslan-family-acquisition{font-size:20px;padding:14px;border:1px solid #73b1cc;border-radius:8px;color:#c4d8e7}
+
+#aslan-family-dialog .birth-dice{display:flex;justify-content:center;gap:10px}
+#aslan-family-dialog .birth-dice .aslan-family-mystery{width:150px;height:150px;margin:10px 0}
+#aslan-family-dialog .birth-note,#aslan-family-dialog .aslan-family-ready .birth-note{font-size:18px;max-width:600px;margin:0 auto 20px;text-align:center}
+#aslan-family-dialog .aslan-birth-ready h3{font-size:40px}
+@media(max-width:650px){#aslan-family-dialog .birth-dice .aslan-family-mystery{width:110px;height:110px}#aslan-family-dialog .aslan-birth-ready h3{font-size:28px}#aslan-family-dialog .birth-dice .aslan-family-die{width:55px;height:55px}}
+
+/* Approved estate presentation. */
+
+    #aslan-family-dialog.aslan-estate-dialog .aslan-family-band{font-size:27px;margin-bottom:23px}
+    #aslan-family-dialog.aslan-estate-dialog .estate-minimum{text-align:center;padding:12px 0 23px}
+    #aslan-family-dialog.aslan-estate-dialog .estate-label{font-size:22px;color:#c4d8e7;margin:0}
+    #aslan-family-dialog.aslan-estate-dialog .estate-parcels{display:block;color:#ffd34b;font-size:100px;font-weight:800;line-height:1.08;margin:5px 0}
+    #aslan-family-dialog.aslan-estate-dialog .estate-parcels span{font-size:32px;font-weight:700;color:#f5f7fa}
+    #aslan-family-dialog.aslan-estate-dialog .estate-basis{font-size:20px;color:#c4d8e7;margin:12px 0 0}
+    #aslan-family-dialog.aslan-estate-dialog .estate-increment{display:grid;grid-template-columns:1fr auto;gap:5px 20px;margin:0 0 22px;padding:17px 21px;border:1px solid #639fb9;border-radius:12px;background:#082434}
+    #aslan-family-dialog.aslan-estate-dialog .estate-increment dt{font-size:21px;font-weight:700;color:#c4d8e7}
+    #aslan-family-dialog.aslan-estate-dialog .estate-increment dd{font-size:23px;font-weight:750;color:#f5f7fa;margin:0;text-align:right}
+    #aslan-family-dialog.aslan-estate-dialog .estate-increment .estate-increment-note{grid-column:1/-1;font-size:18px;font-weight:400;color:#bdd1df;text-align:left;line-height:1.45}
+    #aslan-family-dialog.aslan-estate-dialog .estate-inheritance{border-left:4px solid #ffd34b;padding:1px 0 1px 20px;margin:0 0 21px}
+    #aslan-family-dialog.aslan-estate-dialog .estate-inheritance h3{font-size:27px;color:#f5f7fa;line-height:1.2;margin:0 0 8px}
+    #aslan-family-dialog.aslan-estate-dialog .estate-inheritance p{font-size:21px;color:#c4d8e7;line-height:1.4;margin:0}
+    #aslan-family-dialog.aslan-estate-dialog .estate-note{font-size:18px;color:#bdd1df;line-height:1.45;margin:0 0 23px}
+    #aslan-family-dialog.aslan-estate-dialog footer{align-items:center}
+    #aslan-family-dialog.aslan-estate-dialog footer p{font-size:18px}
+    #aslan-family-dialog.aslan-estate-dialog footer a{color:#bdd1df;text-underline-offset:4px}
+    #aslan-family-dialog.aslan-estate-dialog footer button{font-size:24px;padding-inline:23px}
+    #aslan-family-dialog.aslan-estate-dialog .estate-review-status{font-size:18px;color:#ffd34b;line-height:1.4;margin:16px 0 0}
+    #aslan-family-dialog.aslan-estate-dialog .estate-review-status:empty{display:none}
+    @media(max-width:650px){
+      #aslan-family-dialog.aslan-estate-dialog{padding:18px}
+      #aslan-family-dialog.aslan-estate-dialog h2{font-size:28px;white-space:normal;overflow:visible}
+      #aslan-family-dialog.aslan-estate-dialog .estate-increment{margin-bottom:14px;padding:12px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-inheritance{margin-bottom:14px}
+
+      #aslan-family-dialog.aslan-estate-dialog .aslan-family-band{font-size:18px;margin-bottom:12px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-minimum{padding:0 0 14px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-label{font-size:19px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-parcels{font-size:64px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-parcels span{font-size:24px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-basis{font-size:17px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-increment{grid-template-columns:1fr;padding:14px 15px;gap:7px;margin-bottom:20px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-increment dt{font-size:17px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-increment dd{font-size:21px;text-align:left}
+      #aslan-family-dialog.aslan-estate-dialog .estate-increment .estate-increment-note{font-size:16px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-inheritance{padding-left:14px;margin-bottom:19px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-inheritance h3{font-size:21px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-inheritance p{font-size:16px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-note{font-size:16px;margin-bottom:20px}
+      #aslan-family-dialog.aslan-estate-dialog footer{margin-top:0;gap:14px}
+      #aslan-family-dialog.aslan-estate-dialog footer p{font-size:14px}
+      #aslan-family-dialog.aslan-estate-dialog footer button{font-size:21px;padding-inline:14px}
+      #aslan-family-dialog.aslan-estate-dialog .estate-review-status{font-size:16px}
+    }
+
+
+#aslan-family-dialog .estate-tagline{margin:0 0 20px;text-align:center}
+
+#aslan-family-dialog.aslan-estate-dialog .estate-large-number{font-size:56px}
+@media(max-width:650px){#aslan-family-dialog.aslan-estate-dialog .estate-large-number{font-size:28px}}
+
+#aslan-family-dialog h2:focus{outline:none}
+
+/* Approved clan presentation. */
+
+    #aslan-family-dialog.aslan-clan-dialog .clan-title-row{display:flex;align-items:center;justify-content:space-between;gap:14px}
+    #aslan-family-dialog.aslan-clan-dialog #aslan-clan-info-open{flex:none;width:44px;height:44px;min-height:44px;padding:0;border:2px solid #ffd34b;border-radius:50%;background:transparent;color:#ffd34b;font-family:Georgia,serif;font-size:29px;font-style:normal;font-weight:700;line-height:1}
+    #aslan-clan-info{box-sizing:border-box;width:min(660px,calc(100vw - 28px));max-height:calc(100dvh - 32px);overflow:auto;margin:auto;padding:24px;background:#061d2b;color:#f5f7fa;border:2px solid #73b1cc;border-radius:15px}
+    #aslan-clan-info::backdrop{background:rgba(1,12,20,.72)}
+    #aslan-clan-info .info-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    #aslan-clan-info h2{font-size:28px;margin:0;color:#f5f7fa}
+    #aslan-clan-info h3{font-size:22px;color:#ffd34b;margin:22px 0 10px}
+    #aslan-clan-info p,#aslan-clan-info li{font-size:18px;line-height:1.5;color:#c4d8e7}
+    #aslan-clan-info li{margin:10px 0}
+    #aslan-clan-info button{width:44px;height:44px;min-height:44px;flex:none;padding:0;background:#142e3c;border:1px solid #73b1cc;border-radius:8px;color:#f5f7fa;font-size:28px}
+    #aslan-clan-info :focus-visible{outline:3px solid #ffcf3e;outline-offset:3px}
+    #aslan-family-dialog.aslan-clan-dialog .aslan-family-band{font-size:27px;margin-bottom:14px}
+    #aslan-family-dialog.aslan-clan-dialog .clan-dice{display:flex;align-items:center;justify-content:center;gap:12px;color:#ffd34b}
+    #aslan-family-dialog.aslan-clan-dialog .clan-dice .aslan-family-mystery{width:150px;height:150px;margin:8px 0}
+    #aslan-family-dialog.aslan-clan-dialog .aslan-family-ready h3{font-size:40px;line-height:1.2;margin:0 0 14px}
+    #aslan-family-dialog.aslan-clan-dialog .aslan-family-ready .clan-instruction{font-size:24px;margin:0 0 16px}
+    #aslan-family-dialog.aslan-clan-dialog #aslan-family-roll{font-size:38px;min-width:274px;margin-bottom:16px}
+    #aslan-family-dialog.aslan-clan-dialog .aslan-family-ready .aslan-family-hint{font-size:20px;margin-bottom:16px}
+    #aslan-family-dialog.aslan-clan-dialog .clan-scope-note{max-width:630px;margin:0 auto 20px;font-size:18px;color:#c4d8e7;text-align:center;line-height:1.45}
+    #aslan-family-dialog.aslan-clan-dialog .clan-details{border:1px solid #639fb9;background:#071e2c;border-radius:10px;margin:12px 0;padding:12px 16px;font-size:17px;color:#c4d8e7}
+    #aslan-family-dialog.aslan-clan-dialog .clan-details summary{color:#c4d8e7;font-size:18px;min-height:30px}
+    #aslan-family-dialog.aslan-clan-dialog .clan-details p{margin:10px 0;font-size:17px;line-height:1.5}
+    #aslan-family-dialog.aslan-clan-dialog .clan-details ul{padding-left:22px;margin:10px 0}
+    #aslan-family-dialog.aslan-clan-dialog .clan-details li{margin:5px 0}
+    #aslan-family-dialog.aslan-clan-dialog .clan-details label{font-size:17px;margin:12px 0}
+    #aslan-family-dialog.aslan-clan-dialog input,#aslan-family-dialog.aslan-clan-dialog textarea{background:#092536;border-color:#639fb9;color:#f5f7fa;font-size:18px}
+    #aslan-family-dialog.aslan-clan-dialog input:disabled,#aslan-family-dialog.aslan-clan-dialog textarea:disabled{opacity:.6}
+    #aslan-family-dialog.aslan-clan-dialog .clan-details button{font-size:19px;min-height:52px;padding:10px 18px}
+    #aslan-family-dialog.aslan-clan-dialog .clan-result-roll{display:flex;align-items:center;gap:23px;padding:15px 0}
+    #aslan-family-dialog.aslan-clan-dialog .clan-result-roll .clan-dice{gap:10px;flex:none}
+    #aslan-family-dialog.aslan-clan-dialog .clan-result-roll .aslan-family-die{width:76px;height:76px}
+    #aslan-family-dialog.aslan-clan-dialog .clan-roll-label{display:block;color:#c4d8e7;font-size:19px}
+    #aslan-family-dialog.aslan-clan-dialog .clan-result-roll strong{font-size:40px;line-height:1.25}
+    #aslan-family-dialog.aslan-clan-dialog .clan-result-type{font-size:46px;font-weight:800;margin:8px 0 16px;line-height:1.2}
+    #aslan-family-dialog.aslan-clan-dialog .clan-scope-card{display:grid;grid-template-columns:1fr auto;gap:6px 20px;border:1px solid #639fb9;border-radius:12px;background:#082434;padding:16px 20px;margin:0 0 17px}
+    #aslan-family-dialog.aslan-clan-dialog .clan-scope-label{grid-column:1;font-size:19px;color:#c4d8e7;margin:0}
+    #aslan-family-dialog.aslan-clan-dialog .clan-scope-value{grid-column:1;display:block;font-size:34px;color:#ffd34b;line-height:1.3}
+    #aslan-family-dialog.aslan-clan-dialog .clan-scope-card > .aslan-family-die{grid-column:2;grid-row:1/3;align-self:center}
+    #aslan-family-dialog.aslan-clan-dialog .clan-scope-card .aslan-family-die{width:64px;height:64px;color:#ffd34b}
+    #aslan-family-dialog.aslan-clan-dialog .clan-scope-evidence{grid-column:1/-1;margin:4px 0 0;font-size:18px;color:#c4d8e7;line-height:1.45}
+    #aslan-family-dialog.aslan-clan-dialog .clan-result-note{font-size:20px;color:#c4d8e7;line-height:1.45;margin:0 0 17px}
+    #aslan-family-dialog.aslan-clan-dialog .clan-next-note{font-size:17px;color:#bdd1df;margin:0 0 20px}
+    #aslan-family-dialog.aslan-clan-dialog .clan-review-note{font-size:14px;color:#bdd1df;margin:14px 0 0;line-height:1.4}
+    #aslan-family-dialog.aslan-clan-dialog footer{align-items:center;margin-top:18px;gap:16px}
+    #aslan-family-dialog.aslan-clan-dialog footer p{font-size:17px}
+    #aslan-family-dialog.aslan-clan-dialog footer button{font-size:23px;padding:12px 21px}
+    #aslan-family-dialog.aslan-clan-dialog .clan-review-status{font-size:17px;color:#ffd34b;margin:12px 0 0;line-height:1.4}
+    #aslan-family-dialog.aslan-clan-dialog .clan-review-status:empty{display:none}
+    #aslan-family-dialog.aslan-clan-dialog [hidden]{display:none!important}
+    @media(max-width:650px){
+      #aslan-family-dialog.aslan-clan-dialog{padding:20px 18px}
+      #aslan-family-dialog.aslan-clan-dialog h2{font-size:30px;white-space:normal}
+      #aslan-family-dialog.aslan-clan-dialog .aslan-family-band{font-size:21px;margin-bottom:8px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-dice .aslan-family-mystery{width:108px;height:108px;margin:8px 0}
+      #aslan-family-dialog.aslan-clan-dialog .aslan-family-ready h3{font-size:28px;margin-bottom:12px}
+      #aslan-family-dialog.aslan-clan-dialog .aslan-family-ready .clan-instruction{font-size:20px;margin-bottom:14px}
+      #aslan-family-dialog.aslan-clan-dialog #aslan-family-roll{font-size:30px;width:100%;min-width:0;min-height:60px}
+      #aslan-family-dialog.aslan-clan-dialog .aslan-family-ready .aslan-family-hint{font-size:17px;margin-bottom:12px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-scope-note{font-size:16px;margin-bottom:15px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-details{padding:10px 12px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-details summary{font-size:16px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-details p,#aslan-family-dialog.aslan-clan-dialog .clan-details li{font-size:15px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-result-roll{flex-wrap:wrap;gap:12px;padding:12px 0}
+      #aslan-family-dialog.aslan-clan-dialog .clan-result-roll .aslan-family-die{width:55px;height:55px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-roll-label{font-size:16px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-result-roll strong{font-size:28px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-result-type{font-size:32px;margin:8px 0 15px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-scope-card{padding:13px 15px;gap:5px 12px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-scope-label{font-size:17px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-scope-value{font-size:28px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-scope-card .aslan-family-die{width:54px;height:54px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-scope-evidence{font-size:16px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-result-note{font-size:18px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-next-note{font-size:16px}
+      #aslan-family-dialog.aslan-clan-dialog footer p{font-size:14px}
+      #aslan-family-dialog.aslan-clan-dialog footer button{font-size:21px;width:100%}
+    }
+
+#aslan-family-dialog.aslan-clan-dialog .clan-scope-value{overflow-wrap:anywhere}
+#aslan-family-dialog.aslan-clan-dialog .clan-gm-toggle{display:flex;align-items:center;gap:10px}
+#aslan-family-dialog.aslan-clan-dialog .clan-gm-toggle input{width:22px;height:22px;min-height:22px}
+
+#aslan-family-dialog.aslan-clan-dialog .clan-result-type{overflow-wrap:anywhere}
+/* Source-entered clan names/scopes must also wrap in the underlying audit and sheet. */
+body[data-family-popup="true"] #workspace,body[data-family-popup="true"] #sheet,body[data-family-popup="true"] #message{overflow-wrap:anywhere}
+
+.aslan-origin-sheet,body[data-stage="aslan-pride"] #workspace,body[data-stage="aslan-pride"] #message{overflow-wrap:anywhere}
+
+/* Approved pride presentation. */
+
+    #aslan-family-dialog.aslan-pride-dialog .pride-title-row{display:flex;align-items:center;justify-content:space-between;gap:14px}
+    #aslan-family-dialog.aslan-pride-dialog #aslan-pride-info-open{flex:none;width:44px;height:44px;min-height:44px;padding:0;border:2px solid #ffd34b;border-radius:50%;background:transparent;color:#ffd34b;font-family:Georgia,serif;font-size:29px;font-style:normal;font-weight:700;line-height:1}
+    #aslan-family-dialog.aslan-pride-dialog .aslan-family-band{font-size:27px;margin-bottom:16px}
+    #aslan-family-dialog.aslan-pride-dialog .pride-clan-context{margin:0 0 14px;padding:12px 16px;border:1px solid #639fb9;border-radius:10px;background:#082434;color:#c4d8e7;font-size:19px;line-height:1.45;overflow-wrap:anywhere}
+    #aslan-family-dialog.aslan-pride-dialog .pride-clan-context strong{color:#f5f7fa;font-weight:750}
+    #aslan-family-dialog.aslan-pride-dialog .pride-dice{display:flex;align-items:center;justify-content:center;gap:12px;color:#ffd34b}
+    #aslan-family-dialog.aslan-pride-dialog .pride-dice .aslan-family-mystery{width:150px;height:150px;margin:8px 0}
+    #aslan-family-dialog.aslan-pride-dialog .aslan-family-ready h3{font-size:40px;line-height:1.2;margin:0 0 14px}
+    #aslan-family-dialog.aslan-pride-dialog .aslan-family-ready .pride-instruction{font-size:24px;margin:0 0 16px}
+    #aslan-family-dialog.aslan-pride-dialog #aslan-family-roll{font-size:38px;min-width:274px;margin-bottom:16px}
+    #aslan-family-dialog.aslan-pride-dialog .aslan-family-ready .aslan-family-hint{font-size:20px;margin-bottom:16px}
+    #aslan-family-dialog.aslan-pride-dialog .pride-name-choice{border:1px solid #639fb9;background:#071e2c;border-radius:10px;margin:12px 0 20px;padding:12px 16px;color:#c4d8e7}
+    #aslan-family-dialog.aslan-pride-dialog .pride-name-choice summary{font-size:18px;min-height:44px}
+    #aslan-family-dialog.aslan-pride-dialog .pride-name-choice label{font-size:17px;margin:10px 0 12px}
+    #aslan-family-dialog.aslan-pride-dialog .pride-name-choice input{background:#092536;border-color:#639fb9;color:#f5f7fa;font-size:18px;margin-top:6px}
+    #aslan-family-dialog.aslan-pride-dialog .pride-name-choice button{font-size:19px;min-height:52px;padding:10px 18px}
+    #aslan-family-dialog.aslan-pride-dialog .pride-name-hint{margin:12px 0 0;font-size:16px;line-height:1.45;color:#c4d8e7}
+    #aslan-family-dialog.aslan-pride-dialog .pride-result-roll{display:flex;align-items:center;gap:23px;padding:15px 0}
+    #aslan-family-dialog.aslan-pride-dialog .pride-result-roll .pride-dice{gap:10px;flex:none}
+    #aslan-family-dialog.aslan-pride-dialog .pride-result-roll .aslan-family-die{width:76px;height:76px}
+    #aslan-family-dialog.aslan-pride-dialog .pride-roll-label{display:block;color:#c4d8e7;font-size:19px}
+    #aslan-family-dialog.aslan-pride-dialog .pride-result-roll strong{font-size:40px;line-height:1.25}
+    #aslan-family-dialog.aslan-pride-dialog .pride-result-card{border:1px solid #639fb9;border-radius:12px;background:#082434;padding:21px 24px;margin:8px 0 22px}
+    #aslan-family-dialog.aslan-pride-dialog .pride-result-label{font-size:18px;color:#c4d8e7;margin:0 0 5px}
+    #aslan-family-dialog.aslan-pride-dialog .pride-result-name{font-size:48px;font-weight:800;color:#ffd34b;margin:0;line-height:1.2}
+    #aslan-family-dialog.aslan-pride-dialog .pride-result-evidence{font-size:20px;color:#c4d8e7;line-height:1.45;margin:12px 0 0}
+    #aslan-family-dialog.aslan-pride-dialog .pride-next-note{font-size:19px;color:#c4d8e7;line-height:1.45;margin:0 0 20px}
+    #aslan-family-dialog.aslan-pride-dialog footer{align-items:center;margin-top:18px;gap:16px}
+    #aslan-family-dialog.aslan-pride-dialog footer p{font-size:17px}
+    #aslan-family-dialog.aslan-pride-dialog footer button{font-size:23px;padding:12px 21px;max-width:100%}
+    #aslan-family-dialog.aslan-pride-dialog .pride-review-note{font-size:14px;color:#bdd1df;margin:14px 0 0;line-height:1.4}
+    #aslan-family-dialog.aslan-pride-dialog .pride-review-status{font-size:17px;color:#ffd34b;margin:12px 0 0;line-height:1.4;overflow-wrap:anywhere}
+    #aslan-family-dialog.aslan-pride-dialog .pride-review-status:empty{display:none}
+    #aslan-family-dialog.aslan-pride-dialog [hidden]{display:none!important}
+    #aslan-pride-info{box-sizing:border-box;width:min(660px,calc(100vw - 28px));max-height:calc(100dvh - 32px);overflow:auto;margin:auto;padding:24px;background:#061d2b;color:#f5f7fa;border:2px solid #73b1cc;border-radius:15px}
+    #aslan-pride-info::backdrop{background:rgba(1,12,20,.72)}
+    #aslan-pride-info .info-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    #aslan-pride-info h2{font-size:28px;margin:0;color:#f5f7fa}
+    #aslan-pride-info h3{font-size:22px;color:#ffd34b;margin:22px 0 10px}
+    #aslan-pride-info p,#aslan-pride-info li{font-size:18px;line-height:1.5;color:#c4d8e7}
+    #aslan-pride-info li{margin:10px 0}
+    #aslan-pride-info button{width:44px;height:44px;min-height:44px;flex:none;padding:0;background:#142e3c;border:1px solid #73b1cc;border-radius:8px;color:#f5f7fa;font-size:28px}
+    #aslan-pride-info :focus-visible{outline:3px solid #ffcf3e;outline-offset:3px}
+    @media(max-width:650px){
+      #aslan-family-dialog.aslan-pride-dialog{padding:20px 18px}
+      #aslan-family-dialog.aslan-pride-dialog h2{font-size:30px;white-space:normal}
+      #aslan-family-dialog.aslan-pride-dialog .aslan-family-band{font-size:21px;margin-bottom:12px}
+      #aslan-family-dialog.aslan-pride-dialog .pride-clan-context{font-size:16px;padding:10px 12px;margin-bottom:10px}
+      #aslan-family-dialog.aslan-pride-dialog .pride-dice .aslan-family-mystery{width:108px;height:108px;margin:8px 0}
+      #aslan-family-dialog.aslan-pride-dialog .aslan-family-ready h3{font-size:28px;margin-bottom:12px}
+      #aslan-family-dialog.aslan-pride-dialog .aslan-family-ready .pride-instruction{font-size:20px;margin-bottom:14px}
+      #aslan-family-dialog.aslan-pride-dialog #aslan-family-roll{font-size:30px;width:100%;min-width:0;min-height:60px}
+      #aslan-family-dialog.aslan-pride-dialog .aslan-family-ready .aslan-family-hint{font-size:17px;margin-bottom:12px}
+      #aslan-family-dialog.aslan-pride-dialog .pride-name-choice{padding:10px 12px;margin-bottom:16px}
+      #aslan-family-dialog.aslan-pride-dialog .pride-name-choice summary{font-size:16px}
+      #aslan-family-dialog.aslan-pride-dialog .pride-name-choice button{width:100%;font-size:18px}
+      #aslan-family-dialog.aslan-pride-dialog .pride-name-hint{font-size:15px}
+      #aslan-family-dialog.aslan-pride-dialog .pride-result-roll{flex-wrap:wrap;gap:12px;padding:12px 0}
+      #aslan-family-dialog.aslan-pride-dialog .pride-result-roll .aslan-family-die{width:55px;height:55px}
+      #aslan-family-dialog.aslan-pride-dialog .pride-roll-label{font-size:16px}
+      #aslan-family-dialog.aslan-pride-dialog .pride-result-roll strong{font-size:28px}
+      #aslan-family-dialog.aslan-pride-dialog .pride-result-card{padding:16px;margin-bottom:18px}
+      #aslan-family-dialog.aslan-pride-dialog .pride-result-label{font-size:16px}
+      #aslan-family-dialog.aslan-pride-dialog .pride-result-name{font-size:34px}
+      #aslan-family-dialog.aslan-pride-dialog .pride-result-evidence{font-size:17px;margin-top:9px}
+      #aslan-family-dialog.aslan-pride-dialog .pride-next-note{font-size:17px}
+      #aslan-family-dialog.aslan-pride-dialog footer p{font-size:14px}
+      #aslan-family-dialog.aslan-pride-dialog footer button{font-size:21px;width:100%}
+      #aslan-pride-info{padding:20px 18px}
+      #aslan-pride-info h2{font-size:25px}
+      #aslan-pride-info p,#aslan-pride-info li{font-size:17px}
+    }
+
+/* Approved Aslan ordinary background choices. */
+#workspace #aslan-family-dialog.aslan-background-dialog .background-title-row{display:flex;align-items:center;justify-content:space-between;gap:14px}
+    #workspace #aslan-family-dialog.aslan-background-dialog h2{font-size:44px;overflow-wrap:anywhere}
+    #workspace #aslan-family-dialog.aslan-background-dialog #aslan-background-info-open{flex:none;width:44px;height:44px;min-height:44px;padding:0;border:2px solid #ffd34b;border-radius:50%;background:transparent;color:#ffd34b;font-family:Georgia,serif;font-size:29px;font-style:normal;font-weight:700;line-height:1}
+    #workspace #aslan-family-dialog.aslan-background-dialog .aslan-family-band{font-size:23px;margin:6px 0 17px}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-family-award{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px 16px;margin:0 0 21px;padding:12px 16px;border:1px solid #639fb9;border-radius:10px;background:#082434}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-family-award p{font-size:18px;line-height:1.4;margin:0;color:#c4d8e7}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-family-award strong{display:block;font-size:19px;color:#f5f7fa}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-award-chip{display:inline-flex;align-items:center;gap:13px;padding:6px 13px;border:1px solid #639fb9;border-radius:9px;color:#c4d8e7;font-size:20px;font-weight:700;white-space:nowrap}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-award-chip b{color:#f5f7fa}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-instruction-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:0 0 15px}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-instruction-row h3{font-size:29px;margin:0 0 4px;line-height:1.25;color:#f5f7fa}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-instruction-row p{font-size:19px;margin:0;color:#c4d8e7}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-progress{border:2px solid #639fb9;border-radius:12px;background:#082434;padding:9px 16px;text-align:center;min-width:158px}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-progress strong{display:block;color:#ffd34b;font-size:29px;line-height:1.15}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-progress span{font-size:15px;font-weight:700;color:#c4d8e7}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-progress[data-ready="true"]{border-color:#ffd34b}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-skill-options{border:0;margin:0;padding:0;min-inline-size:0}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-skill-options legend{font-size:17px;font-weight:600;color:#c4d8e7;padding:0;margin:0 0 10px}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-skill-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-skill-choice{display:flex;align-items:center;gap:13px;min-width:0;min-height:63px;margin:0;padding:11px 16px;border:2px solid #639fb9;border-radius:12px;background:#071e2c;color:#f5f7fa;font-size:23px;font-weight:750;cursor:pointer;line-height:1.25}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-skill-choice:hover{background:#123245}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-skill-choice:has(input:checked){border-color:#ffd34b;background:#293d3b}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-skill-choice input{appearance:auto;flex:none;width:27px;height:27px;min-height:27px;padding:0;margin:0;accent-color:#ffd34b}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-skill-choice span{min-width:0;overflow-wrap:anywhere}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-selection{margin:17px 0 0;padding:13px 16px;border:1px solid #639fb9;border-radius:10px;background:#082434;min-height:80px}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-selection h3{color:#c4d8e7;font-size:16px;margin:0 0 5px;font-weight:650}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-selection p{font-size:19px;line-height:1.4;margin:0;color:#f5f7fa;overflow-wrap:anywhere}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-selection .background-empty{color:#c4d8e7}
+    #workspace #aslan-family-dialog.aslan-background-dialog #background-status{font-size:18px;line-height:1.4;color:#ffd34b;margin:10px 0 15px;font-weight:650}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-next{font-size:18px;color:#c4d8e7;line-height:1.4;margin:0 0 15px}
+    #workspace #aslan-family-dialog.aslan-background-dialog footer{align-items:center;gap:14px;margin-top:0}
+    #workspace #aslan-family-dialog.aslan-background-dialog footer p{font-size:16px}
+    #workspace #aslan-family-dialog.aslan-background-dialog #aslan-background-continue{font-size:21px;min-height:60px;padding:12px 18px;max-width:100%}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-review-note{font-size:14px;line-height:1.4;color:#bdd1df;margin:13px 0 0}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-review-status{font-size:17px;line-height:1.4;color:#ffd34b;margin:12px 0 0;overflow-wrap:anywhere}
+    #workspace #aslan-family-dialog.aslan-background-dialog .background-review-status:empty{display:none}
+    #workspace #aslan-background-info{box-sizing:border-box;width:min(660px,calc(100vw - 28px));max-height:calc(100dvh - 32px);overflow:auto;margin:auto;padding:24px;background:#061d2b;color:#f5f7fa;border:2px solid #73b1cc;border-radius:15px}
+    #workspace #aslan-background-info::backdrop{background:rgba(1,12,20,.72)}
+    #workspace #aslan-background-info .info-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    #workspace #aslan-background-info h2{font-size:28px;margin:0;color:#f5f7fa}
+    #workspace #aslan-background-info h3{font-size:22px;color:#ffd34b;margin:22px 0 10px}
+    #workspace #aslan-background-info p{font-size:18px;line-height:1.5;color:#c4d8e7}
+    #workspace #aslan-background-info button{width:44px;height:44px;min-height:44px;flex:none;padding:0;background:#142e3c;border:1px solid #73b1cc;border-radius:8px;color:#f5f7fa;font-size:28px}
+    #workspace #aslan-background-info :focus-visible{outline:3px solid #ffcf3e;outline-offset:3px}
+    @media(max-width:650px){
+      #workspace #aslan-family-dialog.aslan-background-dialog{padding:20px 18px}
+      #workspace #aslan-family-dialog.aslan-background-dialog h2{font-size:29px;line-height:1.2}
+      #workspace #aslan-family-dialog.aslan-background-dialog .aslan-family-band{font-size:17px;margin:8px 0 14px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-family-award{padding:11px 12px;margin-bottom:17px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-family-award p{font-size:15px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-family-award strong{font-size:17px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-award-chip{font-size:18px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-instruction-row h3{font-size:24px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-instruction-row p{font-size:17px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-progress{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:8px 12px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-progress strong{font-size:25px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-skill-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-skill-choice{font-size:17px;min-height:57px;padding:10px;gap:9px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-skill-choice input{width:22px;height:22px;min-height:22px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-skill-options legend{font-size:16px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-selection{padding:12px;margin-top:15px}
+      #workspace #aslan-family-dialog.aslan-background-dialog .background-selection p,#workspace #aslan-family-dialog.aslan-background-dialog #background-status,#workspace #aslan-family-dialog.aslan-background-dialog .background-next{font-size:17px}
+      #workspace #aslan-family-dialog.aslan-background-dialog footer p{font-size:14px}
+      #workspace #aslan-family-dialog.aslan-background-dialog #aslan-background-continue{font-size:20px;width:100%}
+      #workspace #aslan-background-info{padding:20px 18px}
+      #workspace #aslan-background-info h2{font-size:25px}
+      #workspace #aslan-background-info p{font-size:17px}
+    }
+    @media(max-width:360px){#workspace #aslan-family-dialog.aslan-background-dialog .background-skill-grid{grid-template-columns:1fr}#workspace #aslan-family-dialog.aslan-background-dialog .background-skill-choice{font-size:20px}}
+
+#workspace #aslan-family-dialog.aslan-background-dialog #aslan-background-continue{width:auto;flex:none}
+@media(max-width:650px){#workspace #aslan-family-dialog.aslan-background-dialog #aslan-background-continue{width:100%}}
+#workspace #aslan-family-dialog.aslan-background-dialog #aslan-background-continue:not(:disabled){background:linear-gradient(#ffd64d,#efb921);color:#071018;border-color:#ffd34b;border-radius:12px}
+
+/* Approved Rite of Passage presentation. */
+#aslan-family-dialog.aslan-rite-dialog .rite-title-row{display:flex;align-items:center;justify-content:space-between;gap:14px}
+    #aslan-family-dialog.aslan-rite-dialog h2{font-size:44px;overflow-wrap:anywhere}
+    #aslan-family-dialog.aslan-rite-dialog :is(#aslan-rite-info-open,#aslan-rite-calculation-open){flex:none;width:44px;height:44px;min-height:44px;padding:0;border:2px solid #ffd34b;border-radius:50%;background:transparent;color:#ffd34b;font-family:Georgia,serif;font-size:29px;font-style:normal;font-weight:700;line-height:1}
+    #aslan-family-dialog.aslan-rite-dialog .aslan-family-band{font-size:23px;margin:6px 0 17px}
+    #aslan-family-dialog.aslan-rite-dialog .rite-dice{display:flex;align-items:center;justify-content:center;gap:12px;color:#ffd34b}
+    #aslan-family-dialog.aslan-rite-dialog .rite-dice .aslan-family-mystery{width:150px;height:150px;margin:8px 0}
+    #aslan-family-dialog.aslan-rite-dialog .aslan-family-ready h3{font-size:38px;line-height:1.2;margin:0 0 14px}
+    #aslan-family-dialog.aslan-rite-dialog .aslan-family-ready .rite-instruction{font-size:23px;margin:0 0 17px;line-height:1.4}
+    #aslan-family-dialog.aslan-rite-dialog #aslan-family-roll{font-size:38px;min-width:274px;margin-bottom:16px}
+    #aslan-family-dialog.aslan-rite-dialog .aslan-family-ready .aslan-family-hint{font-size:19px;margin:0 0 19px}
+    #aslan-family-dialog.aslan-rite-dialog .rite-stats-label{font-size:17px;line-height:1.4;color:#c4d8e7;margin:0 0 9px}
+    #aslan-family-dialog.aslan-rite-dialog .rite-starting-stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px;margin:0 0 18px;padding:0;list-style:none}
+    #aslan-family-dialog.aslan-rite-dialog .rite-starting-stats li{border:1px solid #639fb9;border-radius:10px;background:#082434;text-align:center;padding:9px 4px;color:#c4d8e7;font-size:15px;font-weight:700}
+    #aslan-family-dialog.aslan-rite-dialog .rite-starting-stats strong{display:block;color:#f5f7fa;font-size:27px;line-height:1.25}
+    #aslan-family-dialog.aslan-rite-dialog .rite-result-roll{display:flex;align-items:center;gap:23px;padding:5px 0 15px}
+    #aslan-family-dialog.aslan-rite-dialog .rite-result-roll .rite-dice{gap:10px;flex:none}
+    #aslan-family-dialog.aslan-rite-dialog .rite-result-roll .aslan-family-die{width:64px;height:64px}
+    #aslan-family-dialog.aslan-rite-dialog .rite-roll-label{display:block;color:#c4d8e7;font-size:17px}
+    #aslan-family-dialog.aslan-rite-dialog .rite-result-roll strong{font-size:36px;line-height:1.25}
+    #aslan-family-dialog.aslan-rite-dialog .rite-result-card{display:flex;align-items:center;justify-content:space-between;gap:16px;border:2px solid #639fb9;border-radius:12px;background:#082434;padding:16px 21px;margin:0 0 16px}
+    #aslan-family-dialog.aslan-rite-dialog .rite-result-label{color:#c4d8e7;font-size:18px;margin:0 0 4px}
+    #aslan-family-dialog.aslan-rite-dialog .rite-result-name{font-size:42px;font-weight:800;color:#ffd34b;margin:0;line-height:1.15}
+    #aslan-family-dialog.aslan-rite-dialog .rite-result-explanation{max-width:310px;color:#f5f7fa;font-size:20px;line-height:1.4;margin:0}
+    #aslan-family-dialog.aslan-rite-dialog .rite-comparisons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:0;margin:0 0 10px;list-style:none}
+    #aslan-family-dialog.aslan-rite-dialog .rite-comparisons li{min-width:0;border:1px solid #639fb9;border-radius:10px;background:#071e2c;padding:11px 14px;color:#c4d8e7;font-size:16px;line-height:1.4}
+    #aslan-family-dialog.aslan-rite-dialog .rite-comparisons li[data-counts="true"]{border-color:#ffd34b;background:#233b3d}
+    #aslan-family-dialog.aslan-rite-dialog .rite-comparisons strong{display:block;color:#f5f7fa;font-size:22px;line-height:1.25;margin-bottom:3px}
+    #aslan-family-dialog.aslan-rite-dialog .rite-comparisons li[data-counts="true"] span{color:#ffd34b}
+    #aslan-family-dialog.aslan-rite-dialog .rite-boundary-note{color:#c4d8e7;font-size:16px;line-height:1.4;margin:0 0 15px}
+    #aslan-family-dialog.aslan-rite-dialog .rite-event{border-left:3px solid #639fb9;padding:0 0 0 13px;margin:0 0 17px;color:#c4d8e7;font-size:18px;line-height:1.4}
+    #aslan-family-dialog.aslan-rite-dialog .rite-event strong{color:#f5f7fa}
+    #aslan-family-dialog.aslan-rite-dialog .rite-next{border-top:1px solid #639fb9;padding-top:13px;margin:0 0 15px;color:#c4d8e7;font-size:17px;line-height:1.45}
+    #aslan-family-dialog.aslan-rite-dialog .rite-next strong{display:block;color:#f5f7fa;font-size:20px;margin-bottom:3px}
+    #aslan-family-dialog.aslan-rite-dialog footer{align-items:center;gap:14px;margin-top:0}
+    #aslan-family-dialog.aslan-rite-dialog footer p{font-size:16px}
+    #aslan-family-dialog.aslan-rite-dialog #aslan-family-continue{font-size:22px;min-height:60px;padding:12px 20px;max-width:100%}
+    #aslan-family-dialog.aslan-rite-dialog .rite-review-note{font-size:14px;line-height:1.4;color:#bdd1df;margin:13px 0 0}
+    #aslan-family-dialog.aslan-rite-dialog .rite-review-status{font-size:17px;line-height:1.4;color:#ffd34b;margin:12px 0 0;overflow-wrap:anywhere}
+    #aslan-family-dialog.aslan-rite-dialog .rite-review-status:empty{display:none}
+    #aslan-family-dialog.aslan-rite-dialog [hidden]{display:none!important}
+    :is(#aslan-rite-info,#aslan-rite-calculation-info){box-sizing:border-box;width:min(660px,calc(100vw - 28px));max-height:calc(100dvh - 32px);overflow:auto;margin:auto;padding:24px;background:#061d2b;color:#f5f7fa;border:2px solid #73b1cc;border-radius:15px}
+    :is(#aslan-rite-info,#aslan-rite-calculation-info)::backdrop{background:rgba(1,12,20,.72)}
+    :is(#aslan-rite-info,#aslan-rite-calculation-info) .info-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    :is(#aslan-rite-info,#aslan-rite-calculation-info) h2{font-size:28px;margin:0;color:#f5f7fa}
+    :is(#aslan-rite-info,#aslan-rite-calculation-info) h3{font-size:22px;color:#ffd34b;margin:22px 0 10px}
+    :is(#aslan-rite-info,#aslan-rite-calculation-info) p,:is(#aslan-rite-info,#aslan-rite-calculation-info) li{font-size:18px;line-height:1.5;color:#c4d8e7}
+    :is(#aslan-rite-info,#aslan-rite-calculation-info) li{margin:10px 0}
+    :is(#aslan-rite-info,#aslan-rite-calculation-info) button{width:44px;height:44px;min-height:44px;flex:none;padding:0;background:#142e3c;border:1px solid #73b1cc;border-radius:8px;color:#f5f7fa;font-size:28px}
+    :is(#aslan-rite-info,#aslan-rite-calculation-info) :focus-visible{outline:3px solid #ffcf3e;outline-offset:3px}
+    @media(max-width:650px){
+      #aslan-family-dialog.aslan-rite-dialog{padding:20px 18px}
+      #aslan-family-dialog.aslan-rite-dialog h2{font-size:30px;white-space:normal}
+      #aslan-family-dialog.aslan-rite-dialog .aslan-family-band{font-size:20px;margin-bottom:13px}
+      #aslan-family-dialog.aslan-rite-dialog .rite-dice .aslan-family-mystery{width:108px;height:108px;margin:8px 0}
+      #aslan-family-dialog.aslan-rite-dialog .aslan-family-ready h3{font-size:28px;margin-bottom:12px}
+      #aslan-family-dialog.aslan-rite-dialog .aslan-family-ready .rite-instruction{font-size:19px;margin-bottom:14px}
+      #aslan-family-dialog.aslan-rite-dialog #aslan-family-roll{font-size:30px;width:100%;min-width:0;min-height:60px}
+      #aslan-family-dialog.aslan-rite-dialog .aslan-family-ready .aslan-family-hint{font-size:17px}
+      #aslan-family-dialog.aslan-rite-dialog .rite-starting-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+      #aslan-family-dialog.aslan-rite-dialog .rite-stats-label{font-size:16px}
+      #aslan-family-dialog.aslan-rite-dialog .rite-result-roll{flex-wrap:wrap;gap:12px;padding:0 0 13px}
+      #aslan-family-dialog.aslan-rite-dialog .rite-result-roll .aslan-family-die{width:53px;height:53px}
+      #aslan-family-dialog.aslan-rite-dialog .rite-roll-label{font-size:15px}
+      #aslan-family-dialog.aslan-rite-dialog .rite-result-roll strong{font-size:29px}
+      #aslan-family-dialog.aslan-rite-dialog .rite-result-card{display:block;padding:14px 16px}
+      #aslan-family-dialog.aslan-rite-dialog .rite-result-name{font-size:35px}
+      #aslan-family-dialog.aslan-rite-dialog .rite-result-label{font-size:16px}
+      #aslan-family-dialog.aslan-rite-dialog .rite-result-explanation{font-size:18px;margin-top:10px;max-width:none}
+      #aslan-family-dialog.aslan-rite-dialog .rite-comparisons{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+      #aslan-family-dialog.aslan-rite-dialog .rite-comparisons li{font-size:15px;padding:10px}
+      #aslan-family-dialog.aslan-rite-dialog .rite-comparisons strong{font-size:20px}
+      #aslan-family-dialog.aslan-rite-dialog .rite-event{font-size:17px}
+      #aslan-family-dialog.aslan-rite-dialog .rite-next{font-size:16px}
+      #aslan-family-dialog.aslan-rite-dialog .rite-next strong{font-size:19px}
+      #aslan-family-dialog.aslan-rite-dialog footer p{font-size:14px}
+      #aslan-family-dialog.aslan-rite-dialog #aslan-family-continue{font-size:21px;width:100%}
+      :is(#aslan-rite-info,#aslan-rite-calculation-info){padding:20px 18px}
+      :is(#aslan-rite-info,#aslan-rite-calculation-info) h2{font-size:25px}
+      :is(#aslan-rite-info,#aslan-rite-calculation-info) p,:is(#aslan-rite-info,#aslan-rite-calculation-info) li{font-size:17px}
+    }
+#aslan-family-dialog.aslan-rite-dialog .rite-source-review{font-size:16px;min-height:44px;padding:8px 12px;background:transparent;color:#c4d8e7;border-color:#639fb9;margin:10px 0}
+#aslan-family-dialog.aslan-rite-dialog .rite-extra-roll{border:1px solid #639fb9;border-radius:10px;padding:14px;margin:12px 0;overflow-wrap:anywhere}
+#aslan-family-dialog.aslan-rite-dialog .rite-extra-roll>strong{display:block;text-align:center;color:#ffd34b}
+
+#aslan-family-dialog.aslan-rite-dialog .rite-help-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;color:#c4d8e7;font-size:17px}
+#aslan-rite-calculation-info .rite-comparisons,#aslan-rite-calculation-info .rite-starting-stats{list-style:none;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+#aslan-rite-calculation-info .rite-comparisons li,#aslan-rite-calculation-info .rite-starting-stats li{margin:0;border:1px solid #639fb9;border-radius:10px;padding:10px;font-size:16px;background:#071e2c}
+#aslan-rite-calculation-info li strong{display:block;color:#f5f7fa;font-size:20px}
+#aslan-rite-calculation-info li[data-counts="true"]{border-color:#ffd34b;background:#233b3d}
+#aslan-rite-calculation-info li[data-counts="true"] span{color:#ffd34b}
+@media(max-width:650px){#aslan-rite-calculation-info .rite-comparisons{grid-template-columns:repeat(2,minmax(0,1fr))}}

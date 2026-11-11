@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Aslan family estate design review</title>
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../gui/aslan-family-popup.css">
+  <style>
+    #aslan-family-dialog .aslan-family-band{font-size:27px;margin-bottom:23px}
+    #aslan-family-dialog .estate-minimum{text-align:center;padding:12px 0 23px}
+    #aslan-family-dialog .estate-label{font-size:22px;color:#c4d8e7;margin:0}
+    #aslan-family-dialog .estate-parcels{display:block;color:#ffd34b;font-size:100px;font-weight:800;line-height:1.08;margin:5px 0}
+    #aslan-family-dialog .estate-parcels span{font-size:32px;font-weight:700;color:#f5f7fa}
+    #aslan-family-dialog .estate-basis{font-size:20px;color:#c4d8e7;margin:12px 0 0}
+    #aslan-family-dialog .estate-increment{display:grid;grid-template-columns:1fr auto;gap:5px 20px;margin:0 0 22px;padding:17px 21px;border:1px solid #639fb9;border-radius:12px;background:#082434}
+    #aslan-family-dialog .estate-increment dt{font-size:21px;font-weight:700;color:#c4d8e7}
+    #aslan-family-dialog .estate-increment dd{font-size:23px;font-weight:750;color:#f5f7fa;margin:0;text-align:right}
+    #aslan-family-dialog .estate-increment .estate-increment-note{grid-column:1/-1;font-size:18px;font-weight:400;color:#bdd1df;text-align:left;line-height:1.45}
+    #aslan-family-dialog .estate-inheritance{border-left:4px solid #ffd34b;padding:1px 0 1px 20px;margin:0 0 21px}
+    #aslan-family-dialog .estate-inheritance h3{font-size:27px;color:#f5f7fa;line-height:1.2;margin:0 0 8px}
+    #aslan-family-dialog .estate-inheritance p{font-size:21px;color:#c4d8e7;line-height:1.4;margin:0}
+    #aslan-family-dialog .estate-note{font-size:18px;color:#bdd1df;line-height:1.45;margin:0 0 23px}
+    #aslan-family-dialog footer{align-items:center}
+    #aslan-family-dialog footer p{font-size:18px}
+    #aslan-family-dialog footer a{color:#bdd1df;text-underline-offset:4px}
+    #aslan-family-dialog footer button{font-size:24px;padding-inline:23px}
+    #aslan-family-dialog .estate-review-status{font-size:18px;color:#ffd34b;line-height:1.4;margin:16px 0 0}
+    #aslan-family-dialog .estate-review-status:empty{display:none}
+    @media(max-width:650px){
+      #aslan-family-dialog{padding:18px}
+      #aslan-family-dialog h2{font-size:28px;white-space:normal;overflow:visible}
+      #aslan-family-dialog .estate-increment{margin-bottom:14px;padding:12px}
+      #aslan-family-dialog .estate-inheritance{margin-bottom:14px}
+
+      #aslan-family-dialog .aslan-family-band{font-size:18px;margin-bottom:12px}
+      #aslan-family-dialog .estate-minimum{padding:0 0 14px}
+      #aslan-family-dialog .estate-label{font-size:19px}
+      #aslan-family-dialog .estate-parcels{font-size:64px}
+      #aslan-family-dialog .estate-parcels span{font-size:24px}
+      #aslan-family-dialog .estate-basis{font-size:17px}
+      #aslan-family-dialog .estate-increment{grid-template-columns:1fr;padding:14px 15px;gap:7px;margin-bottom:20px}
+      #aslan-family-dialog .estate-increment dt{font-size:17px}
+      #aslan-family-dialog .estate-increment dd{font-size:21px;text-align:left}
+      #aslan-family-dialog .estate-increment .estate-increment-note{font-size:16px}
+      #aslan-family-dialog .estate-inheritance{padding-left:14px;margin-bottom:19px}
+      #aslan-family-dialog .estate-inheritance h3{font-size:21px}
+      #aslan-family-dialog .estate-inheritance p{font-size:16px}
+      #aslan-family-dialog .estate-note{font-size:16px;margin-bottom:20px}
+      #aslan-family-dialog footer{margin-top:0;gap:14px}
+      #aslan-family-dialog footer p{font-size:14px}
+      #aslan-family-dialog footer button{font-size:21px;padding-inline:14px}
+      #aslan-family-dialog .estate-review-status{font-size:16px}
+    }
+  </style>
+</head>
+<body data-family-popup="true">
+  <header><div><h1>CHARACTER BUILDER</h1><p>TRAVELLER RPG</p></div></header>
+  <main class="layout">
+    <section id="workspace"><p class="eyebrow">BACKGROUND</p><h2>Your family and heritage</h2></section>
+    <aside id="sheet"><h2>Character summary</h2><p>Aslan · Male</p></aside>
+  </main>
+  <dialog id="aslan-family-dialog" class="aslan-family-dialog" aria-labelledby="aslan-family-title">
+    <p class="aslan-family-eyebrow">DESIGN REVIEW · FAMILY ESTATE</p>
+    <h2 id="aslan-family-title">Your family estate</h2>
+    <p class="aslan-family-band">Example: Aslan · Noble family · SOC 9</p>
+    <section class="estate-minimum" aria-labelledby="estate-minimum-label">
+      <p class="estate-label" id="estate-minimum-label">Minimum family landhold</p>
+      <strong class="estate-parcels"><span id="estate-parcel-count" style="font:inherit;color:inherit">10</span> <span>parcels</span></strong>
+      <p class="estate-basis">Based on your initial family SOC of 9.</p>
+    </section>
+    <dl class="estate-increment">
+      <dt>Landhold change increment</dt>
+      <dd><span id="estate-increment-count">2</span> parcels · <span id="estate-increment-percent">20</span>% of minimum</dd>
+      <dd class="estate-increment-note">A reference for later gains or losses, not extra starting land.</dd>
+    </dl>
+    <section class="estate-inheritance" aria-labelledby="estate-inheritance-title">
+      <h3 id="estate-inheritance-title">Firstborn son · Eligible to inherit</h3>
+      <p>Ownership has not been established. Recording the family estate does not add land to your assets.</p>
+    </section>
+    <p class="estate-note">Use the printed minimum. No dice roll is specified for this table.</p>
+    <footer>
+      <p>AoCS1 Update 2026, pp. 16–17</p>
+      <button type="button" id="aslan-estate-record">Record family estate <span aria-hidden="true">→</span></button>
+    </footer>
+    <p class="estate-review-status" id="aslan-estate-status" role="status" aria-live="polite"></p>
+  </dialog>
+  <script type="module">
+    import {aslanEstateOptions, aslanEstate} from '../engine/aslan-origin.mjs';
+
+    // Fixed review example only. Pure rule projection: no game session, dice,
+    // character assets, storage, or engine commands are created or changed.
+    const options = aslanEstateOptions(9);
+    const estate = aslanEstate({soc:9, birthOrder:'first-son', payload:{method:'printed-minimum'}});
+    document.querySelector('#estate-parcel-count').textContent = estate.minimumParcels;
+    document.querySelector('#estate-increment-count').textContent = options.increment;
+    document.querySelector('#estate-increment-percent').textContent = 100 * options.increment / options.minimumParcels;
+
+    const dialog = document.querySelector('#aslan-family-dialog');
+    dialog.showModal();
+    dialog.addEventListener('cancel', event => event.preventDefault());
+    document.querySelector('#aslan-estate-record').addEventListener('click', () => {
+      document.querySelector('#aslan-estate-status').textContent = 'Design review only. No family estate has been recorded and no land has been awarded.';
+    });
+    document.querySelector('#aslan-estate-record').focus({preventScroll:true});
+    dialog.scrollTop = 0;
+  </script>
+</body>
+</html>

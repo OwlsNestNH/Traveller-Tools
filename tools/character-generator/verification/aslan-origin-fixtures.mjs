@@ -6,13 +6,18 @@ export function settleOrigin(r,{until='precareer',familyDie=6,birthDice=[1,2],cl
  for(let n=0;n<35;n++){
   const s=r.state;if(s.stage===until)return r;
   if(s.stage==='aslan-family'){if(!s.currentAslanOrigin.gender)break;r=run(r,'roll-aslan-family');if(r.log.at(-1).rolls.length)r=run(r,'gm-replay',{revision:r.revision,rollIndex:0,values:[familyDie],reason:'Recorded source family fixture die'});}
+  else if(s.stage==='aslan-family-result')r=run(r,'acknowledge-aslan-family');
   else if(s.stage==='effect-choice')r=run(r,'choose-effect',{index:0});
   else if(s.stage==='skill-choice'){const e=s.pendingChoice;const base=e.allowed?.[0];if(!base)break;r=run(r,'choose-skill',{name:base+' (source fixture)'});}
+  else if(s.stage==='aslan-birth-result')r=run(r,'acknowledge-aslan-birth-order');
   else if(s.stage==='aslan-birth-order')r=force(r,'roll-aslan-birth-order',{},birthDice);
   else if(s.stage==='aslan-estate'){if(s.currentAslanOrigin.estateOptions.requiresRefereeBaseline){if(!sourceDecisions.estate)break;r=run(r,'resolve-aslan-estate',sourceDecisions.estate);}else r=run(r,'resolve-aslan-estate',{method:'printed-minimum'});}
+  else if(s.stage==='aslan-clan-result')r=run(r,'acknowledge-aslan-clan');
   else if(s.stage==='aslan-clan')r=force(r,'roll-aslan-clan',{},clanDice);
+  else if(s.stage==='aslan-pride-result')r=run(r,'acknowledge-aslan-pride');
   else if(s.stage==='aslan-pride')r=force(r,'roll-aslan-pride',{},prideDice);
   else if(s.stage==='background')r=run(r,'background',{skills:s.backgroundOptions.filter(name=>!Object.hasOwn(s.character.skills,name)).slice(0,s.backgroundRemaining)});
+  else if(s.stage==='aslan-rite-result')r=run(r,'acknowledge-aslan-rite');
   else if(s.stage==='aslan-rite')r=force(r,'roll-aslan-rite',{},riteDice);
   else if(s.stage==='book-step'&&s.pending.kind==='aslan-origin-source'){
    const decision=sourceDecisions[s.pending.decision];if(!decision)break;r=run(r,'resolve-aslan-origin-source',decision);

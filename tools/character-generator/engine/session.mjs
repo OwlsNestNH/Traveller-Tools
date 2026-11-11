@@ -1,3 +1,4 @@
+import {familyNarrative} from './aslan-family-narrative.mjs';
 import {restrictedCreditItems,restrictedCreditPurchase} from './finalization-ledgers.mjs';
 import {aslanEventPending,aslanOutcastEntry,aslanOwnedLand} from './aslan-event-outcomes.mjs';
 import {eventEffectSummary} from './event-effect-summary.mjs';
@@ -33,7 +34,7 @@ import { psionicPotential, talentAcquisition, psionicTalentOptions } from './psi
 import { COMPANION_EDUCATION_IDS, companionEntryCheck, companionInitialAwards, companionEvent, companionGraduationCheck, companionTermOutcome, companionCareerBenefits, companionResolveSkillChoice } from './companion-education.mjs';
 import { characterChanges } from './audit.mjs';
 import { SPECIALITIES, PSIONIC_TALENTS, normalizeSkillName } from './skills.mjs';
-import { EDUCATION_PACK, PRECAREER_EVENTS, educationEntryCheck, educationGraduationCheck, educationCareerBenefits } from './education-pack.mjs';
+import { EDUCATION_PACK, PRECAREER_EVENTS, educationEntryPreview, educationEntryCheck, educationGraduationCheck, educationCareerBenefits } from './education-pack.mjs';
 import { CORE_PACK } from './core-pack.mjs';
 import { ageingOutcome, ageingCrisis, injuryOutcome, medicalBill, settleMedicalCosts, pensionForCareer } from './core-procedures.mjs';
 import { EXPANSION_PACK, SPECIES_RULES, PRECAREER_RULES, BENEFIT_RULES, SOURCE_DISCREPANCIES, EXPANSION_TABLES } from './expansion-pack.mjs';
@@ -41,10 +42,12 @@ const RULE_PACK={...CORE_PACK,...EXPANSION_PACK};
 import { API_VERSION, SOURCES, CAREERS, PRECAREERS, SPECIES, SKILLS, BACKGROUND_SKILLS, findCareer, findSpecies } from './catalog.mjs';
 const LIMIT = 2000;
 export const MAX_SAVE_BYTES = 2000000;
-export const RULES_REVISION='character-preview-2026-11-09.27';
+export const RULES_REVISION='character-preview-2026-11-09.29';
+// .29 adds explicit family-result acknowledgement and chosen Aslan gender.
+// .28 remains reserved for the independent Vargr candidate until integration.
 // .27 makes Aezorgh CHA opt-in; .26 is reserved for a separate unpublished candidate.
 // .19 chooses specialties on receipt; .18 retains deferred awards and corrections; .16/.17 retain historical mechanics.
-export const COMPATIBLE_RULES_REVISIONS=Object.freeze([RULES_REVISION,'character-preview-2026-11-09.25','character-preview-2026-11-09.24','character-preview-2026-11-09.23','character-preview-2026-11-09.22','character-preview-2026-11-09.21','character-preview-2026-11-09.20','character-preview-2026-11-09.19','character-preview-2026-11-09.18','character-preview-2026-11-09.17','character-preview-2026-11-09.16']);
+export const COMPATIBLE_RULES_REVISIONS=Object.freeze([RULES_REVISION,'character-preview-2026-11-09.27','character-preview-2026-11-09.25','character-preview-2026-11-09.24','character-preview-2026-11-09.23','character-preview-2026-11-09.22','character-preview-2026-11-09.21','character-preview-2026-11-09.20','character-preview-2026-11-09.19','character-preview-2026-11-09.18','character-preview-2026-11-09.17','character-preview-2026-11-09.16']);
 const saveSize = value => new TextEncoder().encode(JSON.stringify(value,null,2)).byteLength;
 const copy = value => structuredClone(value);
 const plain = value => value && typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
@@ -354,10 +357,15 @@ function originSource(state,decision,label,page){sourceStep(state,'aslan-origin-
 function currentAslanOrigin(state){
  const o=state.character.aslanOrigin;if(!o)return null;const decision=state.pending?.kind==='aslan-origin-source'?state.pending.decision:null;
  const options=decision==='family-band'?copy(ASLAN_FAMILY_BANDS):decision==='female-independence'?[{id:'omit',name:'Omit this award by referee ruling'},{id:'grant-level-zero',name:'Grant level 0 by referee exception'}]:decision==='gender'?[{id:'male',name:'Male source rules'},{id:'female',name:'Female source rules'}]:[];
- return {...copy(o),estateOptions:aslanEstateOptions(o.familySOC),canRollGender:state.stage==='aslan-family'&&!o.identityGender&&!o.gender&&!o.family,sourceDecision:decision?{kind:decision,options}:null};
+ return {...copy(o),...(state.aslanFamilyPresentation?{familyPresentation:true}:{}),estateOptions:aslanEstateOptions(o.familySOC),canRollGender:state.stage==='aslan-family'&&!o.identityGender&&!o.gender&&!o.family,sourceDecision:decision?{kind:decision,options}:null};
 }
 function finishAslanFamily(state){
  const o=state.character.aslanOrigin;o.family.status='completed';o.family.awardsAfter=copy(state.character.skills);
+ if(state.aslanFamilyPresentation){state.stage='aslan-family-result';return;}
+ advanceAfterAslanFamily(state);
+}
+function advanceAfterAslanFamily(state){
+ const o=state.character.aslanOrigin;
  if(state.character.gender==='male')state.stage='aslan-birth-order';else {o.birthOrder=aslanBirthOrder({gender:'female'});state.character.birthOrder=o.birthOrder.id;state.stage='aslan-estate';}
 }
 
@@ -1377,7 +1385,7 @@ function completeEffects(state,rolls) {
  const next=state.effectNext;state.effectsQueue=[];state.effectNext=null;state.pendingChoice=null;
  if(next==='specialization-command'){const saved=state.specializationContinuation;delete state.specializationContinuation;state.stage=saved.stage;if(saved.pendingChoice!==undefined)state.pendingChoice=saved.pendingChoice;if(saved.effectsQueue!==undefined)state.effectsQueue=saved.effectsQueue;if(saved.effectNext!==undefined)state.effectNext=saved.effectNext;apply(state,saved.command,rolls);return;}
  if(next==='aslan-origin-family'){finishAslanFamily(state);return;}
- if(next==='aslan-origin-complete'){state.character.aslanOrigin.status='completed';state.character.aslanOrigin.rite.effectsResolved=true;state.stage='precareer';return;}
+ if(next==='aslan-origin-complete'){state.character.aslanOrigin.status=state.aslanFamilyPresentation?'pending':'completed';state.character.aslanOrigin.rite.effectsResolved=true;state.stage=state.aslanFamilyPresentation?'aslan-rite-result':'precareer';return;}
  if(next==='education-finish'){educationFinish(state,rolls);return;}
  if(next==='education-graduation'){if(!educationRecord(state).graduationAllowed)educationFinish(state,rolls);else state.stage=next;return;}
  if(next==='end-term'){closeTerm(state);return;}
@@ -1851,7 +1859,7 @@ function apply(state,command,rolls) {
  if(state.pending?.deferredEquipmentId)need(['resolve-book','resolve-artefact-details','resolve-landhold-details','spend-equipment-credit','retain-equipment-credit','cancel-deferred-equipment','notes','gm-mode'].includes(command.type),'Resolve the earlier equipment choice before continuing.');
  if(state.stage==='equipment-finalization')need(['choose-deferred-equipment','close-equipment-finalization','finish','notes','gm-mode'].includes(command.type),'Complete or close the equipment checklist before continuing.');
  if(state.pending?.kind==='prisoner-lawyer')need(['resolve-prisoner-lawyer','notes','gm-mode'].includes(command.type),'Resolve the pending lawyer choice before changing its context. Use restore or replay to revise it.');
- if(state.character.aslanOrigin?.status==='pending')need(['roll-aslan-gender','roll-aslan-family','roll-aslan-birth-order','resolve-aslan-estate','roll-aslan-clan','choose-aslan-clan','name-aslan-clan','roll-aslan-pride','roll-aslan-rite','record-aslan-rite-equipment','resolve-aslan-origin-source','background','choose-effect','choose-skill','skill-award-source','retry-skill-choice','resolve-book','notes','gm-mode'].includes(command.type),'Finish the recorded Aslan origin before changing its context. Restore or replay explicitly to revise it.');
+ if(state.character.aslanOrigin?.status==='pending')need(['acknowledge-aslan-rite','acknowledge-aslan-pride','acknowledge-aslan-family','acknowledge-aslan-birth-order','acknowledge-aslan-clan','roll-aslan-gender','roll-aslan-family','roll-aslan-birth-order','resolve-aslan-estate','roll-aslan-clan','choose-aslan-clan','name-aslan-clan','roll-aslan-pride','roll-aslan-rite','record-aslan-rite-equipment','resolve-aslan-origin-source','background','choose-effect','choose-skill','skill-award-source','retry-skill-choice','resolve-book','notes','gm-mode'].includes(command.type),'Finish the recorded Aslan origin before changing its context. Restore or replay explicitly to revise it.');
  if(state.pending?.kind==='aslan-origin-source')need(['resolve-aslan-origin-source','notes','gm-mode'].includes(command.type),'Resolve this origin question with its typed source fields.');
  if(gamesPending(state))need([...GAMES_COMMANDS,'notes','gm-mode'].includes(command.type),'Complete the reserved Games term before changing the character or career. Restore/replay explicitly to revise its context.');
  if(activeReeducation(state))need(['reeducation-roll','reeducation-fine','resolve-reeducation','ageing','choose-effect','choose-skill','resolve-book','notes','gm-mode'].includes(command.type),'Complete the pending re-education and ageing continuation before changing the character. Restore/replay explicitly to revise it.');
@@ -1925,7 +1933,11 @@ function apply(state,command,rolls) {
   return 'Recorded the already-established land claim on '+claim.world.name+'. No travel, ageing or career time simulated. '+resolution.reason;
  }
 
+ case 'acknowledge-aslan-family':{
+  const o=state.character.aslanOrigin;need(state.aslanFamilyPresentation&&state.stage==='aslan-family-result'&&o?.family?.status==='completed'&&!o.family.acknowledged,'The completed family result is not awaiting acknowledgement.');need(Object.keys(payload).length===0,'Continue takes no inputs.');o.family.acknowledged=true;advanceAfterAslanFamily(state);return 'Family result acknowledged. No additional dice or skill awards.';
+ }
  case 'roll-aslan-gender':{
+  need(!state.aslanFamilyPresentation,'Choose gender explicitly; it is not rolled for new characters.');
   const o=state.character.aslanOrigin;need(state.stage==='aslan-family'&&o&&!o.identityGender&&!o.gender&&!o.family,'Only an unspecified origin gender can be rolled.');need(Object.keys(payload).length===0,'The gender roll takes no inputs.');
   const total=dice(state,2,rolls,'Aslan gender');state.character.gender=total<=5?'male':'female';o.gender={mode:'rolled',value:state.character.gender,dice:copy(rolls.at(-1).values),total};return 'Aslan source gender: '+state.character.gender+'.';
  }
@@ -1935,10 +1947,12 @@ function apply(state,command,rolls) {
   if(!band){originSource(state,'family-band','The initial SOC has no printed family band. Record a referee band before rolling.',17);return 'Family background awaits an unprinted-SOC ruling; no die rolled.';}
   const rows=Array.from({length:6},(_,i)=>aslanFamilyResult({soc:o.familySOC,die:i+1,gender:state.character.gender,band}).effects);
   const start=rolls.length,die=femaleIndependenceTableRoll(state,rows,0,rolls,'Aslan family background'),result=aslanFamilyResult({soc:o.familySOC,die,gender:state.character.gender,band});
-  o.family={source:result.source,die,band,label:result.label,status:'resolving-award',awardsBefore:copy(state.character.skills),awardsAfter:null};
+  o.family={source:result.source,die,band,label:result.label,...(state.aslanFamilyPresentation?familyNarrative(band,die):{}),status:'resolving-award',awardsBefore:copy(state.character.skills),awardsAfter:null};
   if(state.deferredSpecializations&&rolls.length>start+1)o.family.rerolls=rolls.slice(start).map(r=>({die:r.values[0],label:r.label,source:copy(result.source),band}));
   if(result.needsDecision){originSource(state,result.needsDecision,'Resolve the female family award against the male-only Independence rule.',20);return result.label+' awaits the typed Independence ruling.';}
-  queueEffects(state,sourcedEffects(result.effects,{id:'aliens',page:17}),'aslan-origin-family',rolls);return 'Family background: '+result.label+'. Award supplements ordinary background skills.';
+  queueEffects(state,sourcedEffects(result.effects,{id:'aliens',page:17}),'aslan-origin-family',rolls);
+  if(state.aslanFamilyPresentation){const acquisition=rolls.slice(start).find(r=>r.label==='Independence acquisition');if(acquisition)o.family.acquisition={dice:copy(acquisition.values),total:acquisition.total,soc:stat(state,'SOC'),success:acquisition.total>stat(state,'SOC'),source:{id:'aliens',page:20}};}
+  return 'Family background: '+result.label+'. '+(state.aslanFamilyPresentation?o.family.narrative+' ':'')+'Award supplements ordinary background skills.';
  }
  case 'resolve-aslan-origin-source':{
   need(state.stage==='book-step'&&state.pending?.kind==='aslan-origin-source','No Aslan origin source decision is pending.');need(state.config.gm,'Enable GM mode for an origin source decision.');const o=state.character.aslanOrigin,kind=state.pending.decision,reason=aslanOriginReason(payload.reason);
@@ -1954,28 +1968,40 @@ function apply(state,command,rolls) {
   }
   return 'Aslan origin source decision: '+kind+'. '+reason;
  }
+ case 'acknowledge-aslan-birth-order':{
+  const birth=state.character.aslanOrigin?.birthOrder;need(state.aslanFamilyPresentation&&state.stage==='aslan-birth-result'&&birth&&!birth.acknowledged,'Birth order is not awaiting acknowledgement.');need(Object.keys(payload).length===0,'Continue takes no inputs.');birth.acknowledged=true;state.stage='aslan-estate';return 'Birth order acknowledged. No additional dice, awards or owned land.';
+ }
  case 'roll-aslan-birth-order':{
-  need(state.stage==='aslan-birth-order'&&state.character.aslanOrigin?.birthOrder===null,'Birth order is not awaiting a roll.');need(Object.keys(payload).length===0,'Birth order takes no inputs.');dice(state,2,rolls,'Aslan birth order');const result=aslanBirthOrder({gender:state.character.gender,dice:rolls.at(-1).values});state.character.aslanOrigin.birthOrder=result;state.character.birthOrder=result.id;state.stage='aslan-estate';return 'Birth order: '+result.id+'. Inheritance eligibility is not owned land.';
+  need(state.stage==='aslan-birth-order'&&state.character.aslanOrigin?.birthOrder===null,'Birth order is not awaiting a roll.');need(Object.keys(payload).length===0,'Birth order takes no inputs.');dice(state,2,rolls,'Aslan birth order');const result=aslanBirthOrder({gender:state.character.gender,dice:rolls.at(-1).values});state.character.aslanOrigin.birthOrder=result;state.character.birthOrder=result.id;state.stage=state.aslanFamilyPresentation?'aslan-birth-result':'aslan-estate';return 'Birth order: '+result.id+'. Inheritance eligibility is not owned land.';
  }
  case 'resolve-aslan-estate':{
-  need(state.stage==='aslan-estate','Family estate is not awaiting its baseline.');const o=state.character.aslanOrigin;o.estate=aslanEstate({soc:o.familySOC,birthOrder:o.birthOrder.id,payload,gm:state.config.gm});if(o.estate.decision){o.decisions.push({kind:'estate',...o.estate.decision});if(!state.coverage.includes('aslan-origin-estate'))state.coverage.push('aslan-origin-estate');}state.stage='aslan-clan';return 'Family estate baseline recorded; ownership remains unestablished. No land-size die or owned asset granted.';
+  need(state.stage==='aslan-estate','Family estate is not awaiting its baseline.');const o=state.character.aslanOrigin;o.estate=aslanEstate({soc:o.familySOC,birthOrder:o.birthOrder.id,payload,gm:state.config.gm});if(o.estate.decision){o.decisions.push({kind:'estate',...o.estate.decision});if(!state.coverage.includes('aslan-origin-estate'))state.coverage.push('aslan-origin-estate');}state.stage='aslan-clan';return 'Family estate baseline recorded; ownership remains unestablished. No land-size die or owned asset granted.'+(state.aslanFamilyPresentation?' Initial family SOC '+o.familySOC+'; minimum '+(o.estate.minimumParcels===null?'unprinted':o.estate.minimumParcels+' parcels')+'; increment '+(o.estate.increment===null?'unprinted':o.estate.increment+' parcels')+'; inheritance '+o.estate.inheritance+'.':'');
+ }
+ case 'acknowledge-aslan-clan':{
+  const clan=state.character.aslanOrigin?.clan;need(state.aslanFamilyPresentation&&state.stage==='aslan-clan-result'&&clan&&!clan.acknowledged,'Clan is not awaiting acknowledgement.');need(Object.keys(payload).length===0,'Continue takes no inputs.');clan.acknowledged=true;state.stage='aslan-pride';return 'Clan result acknowledged. No additional dice or awards.';
  }
  case 'roll-aslan-clan':{
-  need(state.stage==='aslan-clan','Clan is not awaiting its roll.');need(Object.keys(payload).length===0,'The clan roll takes no inputs.');const total=dice(state,2,rolls,'Aslan clan'),values=copy(rolls.at(-1).values);const scopeDie=[3,4,5,10,11].includes(total)?dice(state,1,rolls,'Aslan clan scope'):undefined;state.character.aslanOrigin.clan=aslanClanResult({dice:values,scopeDie});state.stage='aslan-pride';return 'Clan: '+state.character.aslanOrigin.clan.type+'.';
+  need(state.stage==='aslan-clan','Clan is not awaiting its roll.');need(Object.keys(payload).length===0,'The clan roll takes no inputs.');const total=dice(state,2,rolls,'Aslan clan'),values=copy(rolls.at(-1).values);const scopeDie=[3,4,5,10,11].includes(total)?dice(state,1,rolls,'Aslan clan scope'):undefined;state.character.aslanOrigin.clan=aslanClanResult({dice:values,scopeDie});state.stage=state.aslanFamilyPresentation?'aslan-clan-result':'aslan-pride';const clan=state.character.aslanOrigin.clan;return 'Clan: '+clan.type+'.'+(state.aslanFamilyPresentation?' Clan roll '+values.join(' + ')+' = '+total+'; scope '+clan.scope.count+' '+clan.scope.unit+(clan.scope.die?'; scope die '+clan.scope.die+' (divisor '+clan.scope.divisor+')':'')+'.':'');
  }
  case 'choose-aslan-clan':{
-  need(state.stage==='aslan-clan','Clan is not awaiting selection.');need(state.config.gm,'Enable GM mode for a referee-selected clan.');need(Object.keys(payload).every(k=>['name','scope','reason'].includes(k)),'Use the clan name, scope and reason only.');const name=text(payload.name,80),scope=text(payload.scope,160),reason=aslanOriginReason(payload.reason);need(name&&scope,'Name the clan and describe its scope.');state.character.aslanOrigin.clan={source:{id:'aliens',page:18},mode:'referee',type:'Referee-selected',name,scope:{description:scope},reason};state.stage='aslan-pride';return 'Referee-selected clan: '+name+'. '+reason;
+  need(state.stage==='aslan-clan','Clan is not awaiting selection.');need(state.config.gm,'Enable GM mode for a referee-selected clan.');need(Object.keys(payload).every(k=>['name','scope','reason'].includes(k)),'Use the clan name, scope and reason only.');const name=text(payload.name,80),scope=text(payload.scope,160),reason=aslanOriginReason(payload.reason);need(name&&scope,'Name the clan and describe its scope.');state.character.aslanOrigin.clan={source:{id:'aliens',page:18},mode:'referee',type:'Referee-selected',name,scope:{description:scope},reason};state.stage=state.aslanFamilyPresentation?'aslan-clan-result':'aslan-pride';return 'Referee-selected clan: '+name+'. '+reason+(state.aslanFamilyPresentation?' Scope: '+scope+'. No dice rolled.':'');
  }
  case 'name-aslan-clan':{
   need(state.stage==='aslan-pride'&&state.character.aslanOrigin?.clan,'Name the generated clan before rolling pride.');need(Object.keys(payload).every(k=>k==='name'),'Only a descriptive clan name can be supplied.');const name=text(payload.name,80);need(name,'Enter a clan name.');state.character.aslanOrigin.clan.name=name;return 'Clan name: '+name+'.';
  }
+ case 'acknowledge-aslan-pride':{
+  const pride=state.character.aslanOrigin?.pride;need(state.aslanFamilyPresentation&&state.stage==='aslan-pride-result'&&pride&&!pride.acknowledged,'Pride is not awaiting acknowledgement.');need(Object.keys(payload).length===0,'Continue takes no inputs.');pride.acknowledged=true;state.stage='background';return 'Pride result acknowledged. No additional dice or awards.';
+ }
  case 'roll-aslan-pride':{
-  need(state.stage==='aslan-pride','Pride is not awaiting its roll.');need(Object.keys(payload).length===0,'The pride roll takes no inputs.');dice(state,2,rolls,'Aslan pride');state.character.aslanOrigin.pride=aslanPrideResult(rolls.at(-1).values);state.stage='background';return state.character.aslanOrigin.pride.name+'. Ordinary background skills remain separate from family awards.';
+  need(state.stage==='aslan-pride','Pride is not awaiting its roll.');need(Object.keys(payload).length===0,'The pride roll takes no inputs.');dice(state,2,rolls,'Aslan pride');state.character.aslanOrigin.pride=aslanPrideResult(rolls.at(-1).values);state.stage=state.aslanFamilyPresentation?'aslan-pride-result':'background';const pride=state.character.aslanOrigin.pride;return pride.name+'.'+(state.aslanFamilyPresentation?' Pride roll '+pride.dice.join(' + ')+' = '+pride.total+'.':'')+' Ordinary background skills remain separate from family awards.';
+ }
+ case 'acknowledge-aslan-rite':{
+  const origin=state.character.aslanOrigin,rite=origin?.rite;need(state.aslanFamilyPresentation&&state.stage==='aslan-rite-result'&&rite?.effectsResolved&&!rite.acknowledged,'The completed rite is not awaiting acknowledgement.');need(Object.keys(payload).length===0,'Continue takes no inputs.');rite.acknowledged=true;origin.status='completed';state.stage='precareer';return 'Rite result acknowledged. No additional dice or awards.';
  }
  case 'roll-aslan-rite':{
   need(state.stage==='aslan-rite'&&state.character.aslanOrigin?.rite===null,'The rite follows completed ordinary background skills, once.');need(Object.keys(payload).length===0,'The rite takes no inputs.');const total=dice(state,2,rolls,'Rite of Passage'),values=copy(rolls.at(-1).values),statsBefore=copy(state.character.stats);state.character.stats.RITE=['STR','DEX','END','INT','EDU','SOC'].filter(k=>stat(state,k)>total).length;
   state.character.aslanOrigin.rite={source:{id:'aliens',page:21},dice:values,total,modifier:state.character.stats.RITE,statsBefore,effectsResolved:false};
-  const effects=values[0]===values[1]?sourcedEffects(EXPANSION_TABLES['aslan.rite-doubles'].results[total],{id:'aliens',page:21}):[];queueEffects(state,effects,'aslan-origin-complete',rolls);return 'Rite of Passage: '+total+', RITE '+state.character.stats.RITE+'.';
+  const effects=values[0]===values[1]?sourcedEffects(EXPANSION_TABLES['aslan.rite-doubles'].results[total],{id:'aliens',page:21}):[];queueEffects(state,effects,'aslan-origin-complete',rolls);if(state.aslanFamilyPresentation)state.character.aslanOrigin.rite.additionalRolls=copy(rolls.slice(1));return 'Rite of Passage: '+total+', RITE '+state.character.stats.RITE+'.'+(state.aslanFamilyPresentation?' Dice '+values.join(' + ')+'. Counted characteristics: '+['STR','DEX','END','INT','EDU','SOC'].filter(k=>statsBefore[k]>total).join(', ')+'.'+(values[0]===values[1]?' Doubles event '+values[0]+' + '+values[1]+'.':' No doubles event.'):'');
  }
 
  case 'request-aslan-historical-entry':{
@@ -2306,6 +2332,7 @@ function apply(state,command,rolls) {
  case 'setup': {
   need(state.stage==='identity','Identity has already been accepted.');
   const species=findSpecies(payload.species);need(species,'Unknown species.');
+  if(state.aslanFamilyPresentation&&species.id==='aslan'&&payload.culture!=='imperial')need(text(payload.gender??'',20),'Choose gender on the species selection screen before starting a native Aslan.');
   need(!state.config.aezorghTwoDice||species.id==='aezorgh','The optional Aezorgh two-dice method applies only to Aezorgh. Disable it before selecting another species.');
   need(!(species.id==='zhodani'&&payload.culture==='imperial'),'Zhodani rules assume Consulate childhood. Select Human for outside-Consulate upbringing.');
   if(payload.variant!==undefined)need(species.id==='vargr','Only Vargr have this strain option.');
@@ -3180,7 +3207,7 @@ export function project(session) {
  need(Array.isArray(session.events)&&session.events.length<=LIMIT,'Save contains too many actions.');
  need(saveSize(session)<=MAX_SAVE_BYTES,'Save size limit reached. Export your current character before continuing.');
 
- let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(['character-preview-2026-11-09.19','character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25',RULES_REVISION].includes(session.rulesRevision))state.immediateSpecializations=true;if(['character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25',RULES_REVISION].includes(session.rulesRevision))state.separateBorrowedRolls=true;if(['character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25',RULES_REVISION].includes(session.rulesRevision)){state.believerFalseTeachingsRuling=true;state.equipmentChoices=true;state.printedBenefitMaximum=true;state.psionAcquisitionRuling=true;}if(['character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25',RULES_REVISION].includes(session.rulesRevision))state.aezorghRoundUp=true;if(['character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25',RULES_REVISION].includes(session.rulesRevision))state.optionalImperialCharisma=true;if(['character-preview-2026-11-09.24','character-preview-2026-11-09.25',RULES_REVISION].includes(session.rulesRevision))state.optionalPsiRequiresTesting=true;if(['character-preview-2026-11-09.25',RULES_REVISION].includes(session.rulesRevision))state.aezorghBaseSkillChoice=true;if(session.rulesRevision===RULES_REVISION)state.optionalAezorghCharisma=true;const snapshots=[copy(state)],log=[];
+ let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(['character-preview-2026-11-09.19','character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27',RULES_REVISION].includes(session.rulesRevision))state.immediateSpecializations=true;if(['character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27',RULES_REVISION].includes(session.rulesRevision))state.separateBorrowedRolls=true;if(['character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27',RULES_REVISION].includes(session.rulesRevision)){state.believerFalseTeachingsRuling=true;state.equipmentChoices=true;state.printedBenefitMaximum=true;state.psionAcquisitionRuling=true;}if(['character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27',RULES_REVISION].includes(session.rulesRevision))state.aezorghRoundUp=true;if(['character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27',RULES_REVISION].includes(session.rulesRevision))state.optionalImperialCharisma=true;if(['character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27',RULES_REVISION].includes(session.rulesRevision))state.optionalPsiRequiresTesting=true;if(['character-preview-2026-11-09.25','character-preview-2026-11-09.27',RULES_REVISION].includes(session.rulesRevision))state.aezorghBaseSkillChoice=true;if(['character-preview-2026-11-09.27',RULES_REVISION].includes(session.rulesRevision))state.optionalAezorghCharisma=true;if(session.rulesRevision===RULES_REVISION)state.aslanFamilyPresentation=true;const snapshots=[copy(state)],log=[];
  for(let i=0;i<session.events.length;i++){
   const event=session.events[i];need(plain(event)&&typeof event.id==='string'&&event.id.length<=120,'Invalid action record.');
   need(!log.some(e=>e.id===event.id),'Duplicate action ID.');
@@ -3215,7 +3242,7 @@ export function project(session) {
  // Manual entry remains disclosed even when a GM supersedes that branch.
  // Projection-only: do not rewrite historical snapshots or audit summaries.
  if(log.some(entry=>entry.type==='enter-physical-statistic'))state.character.physicalDiceEntered=true;
- if(['character-preview-2026-11-09.24','character-preview-2026-11-09.25',RULES_REVISION].includes(session.rulesRevision)||Object.hasOwn(state.config,'physicalDice')||state.character.physicalDiceEntered){
+ if(['character-preview-2026-11-09.24','character-preview-2026-11-09.25','character-preview-2026-11-09.27',RULES_REVISION].includes(session.rulesRevision)||Object.hasOwn(state.config,'physicalDice')||state.character.physicalDiceEntered){
   state.statisticsComplete=statisticsComplete(state);
   state.physicalDiceTargets=physicalDiceTargets(state);
   state.physicalDiceOptions=state.physicalDiceTargets;
@@ -3260,6 +3287,12 @@ export function project(session) {
  if(state.currentCrossCareerTraining){const training=state.currentCrossCareerTraining;training.options=training.options.map(option=>({...option,information:tableInfo(training.sourceCareerId,option.id,'assignment')}));}
  if(state.stage==='effect-choice')state.pendingChoice.options=state.pendingChoice.options.map(option=>{const effect=option.effects?.find(e=>e.kind==='source-training-roll');return effect?{...option,information:tableInfo(currentCareer(state).career.id,effect.assignment,effect.table)}:option;});
 
+ // Presentation projection only: no attempts, random draws or save fields.
+ const educationAdmissionPreviews=state.stage==='precareer'&&state.character.terms<3?Object.fromEntries(PRECAREERS.filter(p=>p.source==='core').map(pre=>{
+  const sourceAssisted=!!findSpecies(state.character.species).precareerDM||!Object.hasOwn(state.character.stats,'SOC')||!EDUCATION_PACK[pre.id];
+  const preview=sourceAssisted?{id:pre.id,sourceAssisted:true,source:{id:pre.source,page:pre.page},reason:!Object.hasOwn(state.character.stats,'SOC')?'This Traveller has no SOC characteristic. Resolve admission and species-specific education with your referee.':'Species-specific education modifiers require source-assisted resolution with your referee.'}:educationEntryPreview({id:pre.id,term:state.character.terms+1,stats:state.character.stats});
+  return [pre.id,preview];
+ })):{};
  state.educationOptions=['education-skill','companion-skill'].includes(state.stage)?educationOptions(state,state.pendingChoice):[];
  state.educationCheckSkills=state.stage==='education-check'?learnedEducationSkills(state):[];
  state.canChooseEducation=!accessMandatory(state)&&state.stage==='career'&&state.active===null&&!state.forcedCareer&&!state.character.retirementFromCreation&&state.character.terms<3&&!state.educationAttemptTerms?.includes(state.character.terms);
@@ -3271,7 +3304,7 @@ export function project(session) {
  for(let i=0;i<log.length;i++){const before=pendingEffects(snapshots[i]),after=pendingEffects(snapshots[i+1]);if(JSON.stringify(before)!==JSON.stringify(after))log[i].pendingEffectChanges={before,after};}
  decorateLifeEventPresentation({state,log,snapshots,events:session.events});
  decorateEventResults({log,snapshots,events:session.events});
- return {state,log,revision:session.events.length};
+ return {state,log,revision:session.events.length,...(state.stage==='precareer'?{educationAdmissionPreviews}:{})};
 }
 export function execute(session,command,{id,expectedRevision}={}) {
  const before=project(session);

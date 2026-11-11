@@ -25,7 +25,7 @@ function fixture(species,config,outcome){
  for(let index=0;index<2000;index++){
   let session=createSession('tagline-review-'+species+'-'+JSON.stringify(config)+'-'+index);
   session=execute(session,{type:'configure',payload:config}).session;
-  session=execute(session,{type:'setup',payload:{species,name:'Review Traveller'}}).session;
+  session=execute(session,{type:'setup',payload:{species,...(species==='aslan'?{gender:'male'}:{}),name:'Review Traveller'}}).session;
   const result=execute(session,{type:'roll-statistics'});
   if(statisticsTotalOutcome(result.log.at(-1),result.state)===outcome)return {before:session,after:result.session};
  }

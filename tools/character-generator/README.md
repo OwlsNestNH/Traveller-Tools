@@ -297,3 +297,19 @@ New Aezorgh leave CHA off by default. For a Vargr campaign, explicitly select Ch
 ### Aslan training taglines
 
 Six presentation-only alternatives can accompany a male Aslan’s actual gain of a female-associated skill from native career training (Aliens of Charted Space Volume 1 Update 2026, p. 19). Animals requires veterinary; Electronics requires comms, computers or remote ops, never sensors. Explicit non-male identity overrides a referee-selected male rules branch. Choices require original training provenance and a positive selected-skill audit change, including first acquisition at level 0. Pending, capped, source-assisted and unrelated awards remain factual-only. Historical delayed specialties retain their original provenance. The existing result panel shows the stable action-ID-selected line without new save fields, RNG calls, notifications or engine imports in HTTP mode. Run `node tools/character-generator/verification/aslan-training-tagline-browser.mjs /path/to/playwright` for static/HTTP desktop/mobile checks and screenshots.
+
+## Pre-Career review screen
+
+Pre-Career uses illustrated standard education cards and a separate Additional careers panel. Additional and Back switch presentation only. Cancel dismisses this popup without deleting, restarting or changing the Traveller; Open Pre-Career resumes it. Go straight to careers uses the existing skip command. Previous-step and result reviews are read-only. The existing file toolbar stays available and the right-hand record bars form an exclusive accordion.
+
+The screen retains all four Core and five Companion options and their existing source-assisted rules. No new species education is inferred. This presentation is scoped to Pre-Career; later stages remain unchanged.
+
+Run `node tools/character-generator/verification/precareer-popup-browser.mjs /path/to/playwright` for responsive screenshots and presentation/command regression checks. Screenshots use synthetic public-command saves.
+
+### Player-operated Core admission preview
+
+Selecting University or a Core academy now opens a read-only admission preview under Pre-Career. It shows the current characteristic, term modifier, applicable SOC bonus, total modifier, target and source. Only **Roll for Admission** sends the existing entry command. Back returns to the four choices; Cancel or Escape dismisses the popup and Open Pre-Career resumes it, without changing the character, random sequence, attempt count or log. Notes and GM characteristic edits refresh the preview. Reload, imported/replaced characters and leaving the stage clear the local preview; it is not saved as a game action.
+
+Native Vargr without SOC and species with source-specific education modifiers (including Aezorgh) instead see **Continue to source resolution**. It consumes the existing single attempt only when pressed and does not invent an automated roll. Physical-dice entry remains the existing starting-characteristic feature, not a new admission override. Companion admission and all result/graduation screens remain unchanged.
+
+Focused numbers/projection checks: `node --test tools/character-generator/verification/admission-preview.test.mjs`. The existing Pre-Career browser suite now captures admission screens at 1499, 390 and 320 pixels and checks both transports, no-mutation navigation, refreshed modifiers, exact single commands and source-assisted cases. Browser execution is required before merge; an unrun screenshot suite is not visual approval.

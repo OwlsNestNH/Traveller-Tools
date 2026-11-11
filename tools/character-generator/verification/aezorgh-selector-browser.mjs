@@ -62,7 +62,7 @@ try{
   await page.getByRole('button',{name:'Begin character',exact:true}).click();await page.locator('body[data-stage="statistics"]').waitFor();const p=project(JSON.parse(await stored(page)));assert.equal(p.state.config.aezorghTwoDice,true);assert.equal(p.state.statisticsRerollThreshold,30);checks.push({transport,customThreshold:30});
  });
  for(const species of ['human','aslan','vargr'])await fresh('static',320,async page=>{
-  await page.locator('[name=species]').selectOption('aezorgh');await page.locator('[name=species]').selectOption(species);
+  await page.locator('[name=species]').selectOption('aezorgh');await page.locator('[name=species]').selectOption(species);if(species==='aslan')await page.locator('#setup-gender').selectOption('male');
   await page.getByRole('button',{name:'Begin character',exact:true}).click();await page.locator('body[data-stage="statistics"]').waitFor();assert.equal(project(JSON.parse(await stored(page))).state.config.aezorghTwoDice,false);await page.getByRole('button',{name:'Roll six characteristics'}).click();await ready(page);assert.equal(project(JSON.parse(await stored(page))).state.pool.length,6);checks.push({species,incompatibleFlag:false});
  });
  for(const transport of ['static','http'])for(const revision of COMPATIBLE_RULES_REVISIONS)for(const twoDice of [false,true])await fresh(transport,390,async page=>{
@@ -71,7 +71,7 @@ try{
   await page.locator('[name=species]').selectOption('aezorgh');await house(page);assert.equal(await method(page).isChecked(),twoDice);assert.equal(await minimum(page).inputValue(),'37');
   await page.getByRole('button',{name:'Begin character',exact:true}).click();await page.locator('body[data-stage="statistics"]').waitFor();await page.getByRole('button',{name:'Roll six characteristics'}).click();await ready(page);
   const raw=await stored(page),p=project(JSON.parse(raw));assert.equal(JSON.parse(raw).rulesRevision,revision);assert.equal(p.state.config.aezorghTwoDice,twoDice);assert.equal(p.state.statisticsRerollThreshold,37);
-  for(const stat of p.state.pool)assert.equal(stat.derivedBase,twoDice?([RULES_REVISION,'character-preview-2026-11-09.25','character-preview-2026-11-09.24','character-preview-2026-11-09.23','character-preview-2026-11-09.22'].includes(revision)?Math.ceil:Math.floor)(stat.base/stat.divisor):stat.base);
+  for(const stat of p.state.pool)assert.equal(stat.derivedBase,twoDice?([RULES_REVISION,'character-preview-2026-11-09.27','character-preview-2026-11-09.25','character-preview-2026-11-09.24','character-preview-2026-11-09.23','character-preview-2026-11-09.22'].includes(revision)?Math.ceil:Math.floor)(stat.base/stat.divisor):stat.base);
   assert.equal(await exported(page),raw);await page.reload();await page.locator('body[data-stage="statistics"]').waitFor();assert.equal(await stored(page),raw);assert.deepEqual(project(importSession(raw)).state,p.state);checks.push({transport,revision,twoDice,savedSetupPreserved:true});
  });
  assert.deepEqual(errors,[]);await writeFile(new URL('aezorgh-selector-results.json',out),JSON.stringify({checks,errors},null,2));console.log(JSON.stringify({checks:checks.length,errors}));

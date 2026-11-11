@@ -153,14 +153,22 @@ function dm(value) { return value===0?-3:value<3?-2:value<6?-1:value<9?0:value<1
 function thresholdDM(rows,stats) { return rows.reduce((sum,row)=>sum+(score(stats,row.stat)>=row.minimum?row.value:0),0); }
 function outcome(page,effects,extra={}) { return {source:src(page),effects:structuredClone(effects),needsAdjudication:false,...extra}; }
 
+/** Read-only admission numbers, shared by projection and the actual check. */
+export function educationEntryPreview({id,term,stats}={}) {
+ const rule=get(id).entry;
+ integer(term,1,3,'Current term');
+ const characteristicDM=dm(score(stats,rule.stat)),termDM=rule.termDM[term],thresholdModifier=thresholdDM(rule.thresholdDM,stats);
+ return {id,term,stat:rule.stat,score:stats[rule.stat],characteristicDM,termDM,thresholdModifier,modifier:characteristicDM+termDM+thresholdModifier,target:rule.target,source:src(16)};
+}
+
 /** term is one-based, including prior education or career terms. */
 export function educationEntryCheck({id,term,stats,roll}={}) {
- const education=get(id),rule=education.entry;
- integer(term,1,3,'Current term');integer(roll,2,12,'Entry roll');
- const characteristicDM=dm(score(stats,rule.stat)),termDM=rule.termDM[term],thresholdModifier=thresholdDM(rule.thresholdDM,stats);
- const total=roll+characteristicDM+termDM+thresholdModifier,success=total>=rule.target;
+ const education=get(id),preview=educationEntryPreview({id,term,stats});
+ integer(roll,2,12,'Entry roll');
+ const {stat,characteristicDM,termDM,thresholdModifier,target}=preview;
+ const total=roll+preview.modifier,success=total>=target;
  return outcome(16,success?education.initialEffects:[],{
-  id,term,roll,stat:rule.stat,characteristicDM,termDM,thresholdModifier,total,target:rule.target,success,
+  id,term,roll,stat,characteristicDM,termDM,thresholdModifier,total,target,success,
   consumesTerm:success,next:success?'education-event':'career-qualification'
  });
 }

@@ -51,7 +51,7 @@ export function aslanOriginSheet(state, {esc}) {
   const origin = state.character.aslanOrigin;
   if (!origin) return '';
   const family = origin.family, estate = origin.estate, clan = origin.clan, pride = origin.pride;
-  return '<div class="sheet-section"><h3>Aslan family and origin</h3><p>Family SOC at creation: <strong>' + esc(origin.familySOC) + '</strong>.</p>' +
+  return '<div class="sheet-section aslan-origin-sheet"><h3>Aslan family and origin</h3><p>Family SOC at creation: <strong>' + esc(origin.familySOC) + '</strong>.</p>' +
     (origin.gender?.mode === 'referee' ? '<p>Source rules branch: ' + esc(origin.gender.value) + '. Chosen gender: ' + esc(origin.identityGender) + '.</p>' : '') +
     (family ? '<p>Family background: ' + esc(family.label ?? family.band) + '.</p>' : '') +
     (origin.birthOrder ? '<p>Family position: ' + esc(({ 'first-son': 'First son', 'second-son': 'Later son', daughter: 'Daughter' })[origin.birthOrder.id] ?? origin.birthOrder.id) + '.</p>' : '') +
