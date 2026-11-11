@@ -5,7 +5,7 @@ import {api,createSession,execute,project,exportSession,importSession,catalog} f
 import {statisticsCardsView,emptyStatisticsView} from '../gui/characteristics-presentation.mjs';
 const run=(r,type,payload={})=>execute(r.session??r,{type,payload});
 const esc=value=>String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;');
-function start(options={},species='human',seed='flat-luck') {let r=run(createSession(seed),'configure',options);return run(r,'setup',{species});}
+function start(options={},species='human',seed='flat-luck') {let r=run(createSession(seed),'configure',options);return run(r,'setup',{species,...(species==='aslan'?{gender:'male'}:{})});}
 function accept(r){return run(run(r,'roll-statistics'),'accept-statistics');}
 
 test('flat starting Luck defaults off; explicit false retains the same standard 2D dice and RNG',()=>{

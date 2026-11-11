@@ -17,7 +17,7 @@ const source = readFileSync(new URL('../gui/app.mjs', import.meta.url), 'utf8');
 const statisticsSource = source.slice(source.indexOf('function statCards('), source.indexOf('\nfunction backgroundView('));
 
 function fixture(species = 'human', rolled = false) {
-  let session = execute(createSession('characteristics-view-' + species), {type: 'setup', payload: {species}}).session;
+  let session = execute(createSession('characteristics-view-' + species), {type: 'setup', payload: {species,...(species==='aslan'?{gender:'male'}:{})}}).session;
   if (rolled) session = execute(session, {type: 'roll-statistics'}).session;
   return project(session);
 }
@@ -107,7 +107,7 @@ const optionalCases = [[], ['PSI'], ['PSI', 'LCK'], ['LCK'], ['PSI', 'LCK', 'MRL
 function optionalFixture(extras, rolled = false, species = 'human', culture) {
   let session = execute(createSession('optional-statistics-view-' + species + '-' + extras.join('-')),
     {type: 'configure', payload: {extras}}).session;
-  session = execute(session, {type: 'setup', payload: {species, ...(culture ? {culture} : {})}}).session;
+  session = execute(session, {type: 'setup', payload: {species,...(species==='aslan'?{gender:'male'}:{}), ...(culture ? {culture} : {})}}).session;
   if (rolled) session = execute(session, {type: 'roll-statistics'}).session;
   return {session, projection: project(session)};
 }

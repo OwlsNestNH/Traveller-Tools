@@ -59,7 +59,7 @@ test('each outcome has six distinct lines, selected independently from the rules
 function rolled(species='human',config={},seed='tagline-fixture',id='random-presentation-action'){
  let session=createSession(seed);
  session=execute(session,{type:'configure',payload:config}).session;
- session=execute(session,{type:'setup',payload:{species}}).session;
+ session=execute(session,{type:'setup',payload:{species,...(species==='aslan'?{gender:'male'}:{})}}).session;
  return execute(session,{type:'roll-statistics'},{id});
 }
 

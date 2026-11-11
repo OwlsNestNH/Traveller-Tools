@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {api,createSession,execute,project,exportSession,importSession} from '../engine/session.mjs';
 const run=(r,type,payload={})=>execute(r.session??r,{type,payload});
-function start(species='human',config={},identity={}){let r=run(createSession('physical-dice-'+species),'configure',{physicalDice:true,...config});return run(r,'setup',{species,...identity});}
+function start(species='human',config={},identity={}){let r=run(createSession('physical-dice-'+species),'configure',{physicalDice:true,...config});return run(r,'setup',{species,...(species==='aslan'?{gender:'male'}:{}),...identity});}
 function fill(r,value=7){for(const p of r.state.physicalDiceTargets)r=run(r,'enter-physical-statistic',{code:p.key,value:Math.min(value,p.max)});return r;}
 
 test('physical entry is off by default, independently enabled, and rejects invalid requests atomically',()=>{
