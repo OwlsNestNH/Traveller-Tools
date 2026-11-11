@@ -15,7 +15,7 @@ export function selectedOptionalStatistics(state,catalog){
  const species=catalog.species.find(item=>item.id===state.character.species);
  const inherent=new Set(Object.keys(species?.dice??{}));
  if(state.optionalImperialCharisma&&state.character.species==='vargr'&&state.character.culture==='imperial')inherent.delete('CHA');
- if(state.character.species==='aezorgh')inherent.add('CHA');
+ if(state.character.species==='aezorgh'&&!state.optionalAezorghCharisma)inherent.add('CHA');
  return catalog.extraStats.filter(extra=>selected.has(extra.id)&&!inherent.has(extra.id));
 }
 export function statisticsCardsView(state,catalog,baseHtml,{esc}){

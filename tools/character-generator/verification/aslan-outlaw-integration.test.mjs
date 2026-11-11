@@ -74,5 +74,5 @@ test('source ruling replay and restore do not resurrect a consumed approval or d
  r=run(r,'restore',{revision:base.revision});assert.equal(entry(r).status,'approved');assert.equal(rest(r).clanShares,3);assert.equal(r.state.character.careers.length,2);roundtrip(r);
 });
 test('revision .10 rejects exact .9 saves before any reconstruction or mutation',()=>{
- assert.equal(RULES_REVISION,'character-preview-2026-11-09.25');const old=structuredClone(buildOutlawDepartureFixture().session);old.rulesRevision='character-preview-2026-11-08.9';const bytes=JSON.stringify(old),r=api({operation:'project',session:old});assert.equal(r.ok,false);assert.match(r.error.message,/Legacy or different rules revision/);assert.equal(JSON.stringify(old),bytes);
+ assert.equal(RULES_REVISION,'character-preview-2026-11-09.27');const old=structuredClone(buildOutlawDepartureFixture().session);old.rulesRevision='character-preview-2026-11-08.9';const bytes=JSON.stringify(old),r=api({operation:'project',session:old});assert.equal(r.ok,false);assert.match(r.error.message,/Legacy or different rules revision/);assert.equal(JSON.stringify(old),bytes);
 });

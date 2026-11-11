@@ -526,7 +526,7 @@ try {
     await withPage(transport, 320, label, optionalFixture(['CHA', 'PSI'], speciesCase), async page => {
       await ready(page);
       assert.deepEqual(await page.locator(primaryCards + ' .code').allTextContents(), ['STR', 'DEX', 'END', 'INT', 'EDU', speciesCase.baseKey]);
-      const extras = speciesCase.species === 'vargr' && speciesCase.culture === 'imperial' ? ['CHA', 'PSI'] : ['PSI'];
+      const extras = (speciesCase.species === 'aezorgh' || speciesCase.species === 'vargr' && speciesCase.culture === 'imperial') ? ['CHA', 'PSI'] : ['PSI'];
       await pendingLayout(page, extras, 320, label + '-before');
       await doubleActivate(page, 'roll-statistics');
       await verifyCards(page, (await projection(page)).state);
