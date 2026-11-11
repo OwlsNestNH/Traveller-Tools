@@ -287,3 +287,9 @@ The shared character toolbar stays across the top on every generation screen, in
 ## Optional Aezorgh Charisma (.27)
 
 New Aezorgh leave CHA off by default. For a Vargr campaign, explicitly select Charisma in optional characteristics or use Add another characteristic after accepting scores. CHA is half SOC, rounded down (JTAS Vol. 11 p. 67), with no dice roll, and follows subsequent SOC changes. There is no automatic campaign detection. Existing compatible `.16`–`.25` characters keep their recorded CHA and replay unchanged. Revision `.26` is reserved for a separate unpublished candidate.
+
+## Consistent character-builder theme
+
+The navy-and-gold screen theme continues through Pre-Career, education, career selection, training, events, benefits, source-assisted decisions and the finished character sheet. Success, failure and pending outcomes keep distinct labels and colors. The file/log toolbar remains present at every stage. Printing retains the light, ink-friendly sheet; rule results, logs and saved-session formats are unchanged.
+
+`node tools/character-generator/verification/later-stages-browser.mjs /path/to/playwright` checks the later-stage shell at desktop, mobile and 320px widths in static and local-HTTP modes, including keyboard dismissal, repeated navigation, unchanged saves and light print output. Its screenshots use synthetic test characters.

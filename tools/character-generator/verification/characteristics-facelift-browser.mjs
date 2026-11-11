@@ -383,8 +383,8 @@ try {
       for (let i = 0; i < background.backgroundRemaining; i++) await page.locator('#background-form [name=skills]').nth(i).check();
       await page.getByRole('button', {name: 'Accept background skills', exact: true}).click();
       await page.getByRole('heading', {name: 'Before your career', exact: true}).waitFor();
-      assert.equal(await page.locator('header h1').textContent(), 'A life among the stars');
-      assert.notDeepEqual(await headerStyle(page), openingHeader, 'later stages keep their previous theme');
+      assert.equal(await page.locator('header h1').textContent(), 'CHARACTER BUILDER');
+      assert.deepEqual(await headerStyle(page), openingHeader, 'later stages retain the shared theme');
     });
 
     const scenarios = [
