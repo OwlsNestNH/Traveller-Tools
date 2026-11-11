@@ -34,7 +34,7 @@ test('later add explicitly enables Imperial CHA with the same single 1D6+2 formu
 });
 test('human optional CHA remains 2D and Aezorgh CHA remains derived',()=>{
  let r=run(run(createSession('non-vargr'),'configure',{extras:['CHA']}),'setup',{species:'human'});r=accepted(r);assert.equal(chaRolls(r)[0].values.length,2);assert.equal(r.state.character.stats.CHA,chaRolls(r)[0].total);
- r=accepted(run(createSession('aezorgh'),'setup',{species:'aezorgh'}));assert.equal(r.state.character.stats.CHA,Math.floor(r.state.character.stats.SOC/2));
+ r=accepted(run(run(createSession('aezorgh'),'configure',{extras:['CHA']}),'setup',{species:'aezorgh'}));assert.equal(r.state.character.stats.CHA,Math.floor(r.state.character.stats.SOC/2));
 });
 test('pending optional card appears only for selected Imperial CHA and is absent from base placeholders',()=>{
  for(const culture of ['imperial','native'])for(const extras of [[],['CHA']]){const r=start({culture,extras}),raw=exportSession(r.session),html=statisticsCardsView(r.state,catalog(),emptyStatisticsView(r.state,catalog(),{esc}),{esc});assert.equal((html.match(/data-optional-stat="CHA"/g)??[]).length,culture==='imperial'&&extras.length?1:0);assert.equal(exportSession(r.session),raw);}

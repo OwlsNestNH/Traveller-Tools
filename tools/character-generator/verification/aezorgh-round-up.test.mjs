@@ -11,7 +11,7 @@ test('new optional Aezorgh sessions round every raw2D total up after placement, 
   assert.deepEqual(r.state.pool.map(p=>p.value),[half,value+3,half+1,value+2,half,half]);
   assert.equal(r.state.rollTotal,value*6);assert.equal(r.state.statisticsRerollThreshold,43);
   const accepted=run(r,'accept-statistics');for(const p of r.state.pool)assert.equal(accepted.state.character.stats[p.key],p.value);
-  assert.equal(accepted.state.character.stats.CHA,Math.floor(half/2));
+  assert.equal(Object.hasOwn(accepted.state.character.stats,'CHA'),false);
  }
 });
 test('all swaps recalculate destination ceiling, leave raw total unchanged and replay exactly',()=>{
@@ -32,7 +32,7 @@ test('new boons retain best two before rounding; targeted replay and original au
  }
 });
 test('compatible .16-.21 revisions retain floor outcomes, summaries, bytes and continued play',()=>{
- for(const revision of COMPATIBLE_RULES_REVISIONS.filter(x=>![RULES_REVISION,'character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24'].includes(x))){
+ for(const revision of COMPATIBLE_RULES_REVISIONS.filter(x=>![RULES_REVISION,'character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25'].includes(x))){
   let r=pool([5,8,7,9,3,11],revision);assert.equal(r.state.aezorghRoundUp,undefined);assert.deepEqual(r.state.pool.map(p=>p.derivedBase),[2,8,3,9,1,5]);
   assert.match(r.log.find(x=>x.type==='roll-statistics').summary,/round down before species bonuses/);
   const saved=exportSession(r.session);assert.equal(exportSession(importSession(saved)),saved);assert.deepEqual(project(importSession(saved)).state,r.state);

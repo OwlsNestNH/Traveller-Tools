@@ -14,7 +14,7 @@ export function statisticPreview(target,state,value){
  if(!Number.isInteger(value)||value<target.min||value>target.max)return 'Enter a whole number from '+target.min+' to '+target.max+'.';
  if(target.pool)return 'Final '+target.code+': '+value+'. No species modifier is added. Original dice and raw total stay recorded. Raw swaps retain this final score; rerolling starts a new set.';
  if(target.derived)return 'Resulting CHA: '+Math.floor(value/2)+'. Aezorgh Charisma is derived from Social Standing.';
- if(target.code==='SOC'&&state.character.species==='aezorgh')return 'Resulting CHA: '+Math.floor(value/2)+'. Social Standing also updates derived Charisma.';
+ if(target.code==='SOC'&&state.character.species==='aezorgh'&&(!state.optionalAezorghCharisma||Object.hasOwn(state.character.stats,'CHA')))return 'Resulting CHA: '+Math.floor(value/2)+'. Social Standing also updates derived Charisma.';
  if(target.code==='PSI')return 'This changes psionic potential only, not trained talents.';
  return 'The current score changes. Earlier rolls and the reason stay in the full log.';
 }

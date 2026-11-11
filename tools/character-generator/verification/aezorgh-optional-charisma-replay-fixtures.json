@@ -1,0 +1,1652 @@
+[
+  {
+    "session": {
+      "format": "traveller-character-session",
+      "version": 1,
+      "rulesRevision": "character-preview-2026-11-09.25",
+      "seed": "cha-replay",
+      "events": [
+        {
+          "id": "action-1",
+          "command": {
+            "type": "setup",
+            "payload": {
+              "species": "aezorgh"
+            }
+          },
+          "rolls": [],
+          "summary": "Started an unnamed Traveller (Aezorgh). Standard Aezorgh method: published 1D/2D formulas; raw reroll minimum 30; swaps within matching formula groups, with GM exceptions."
+        },
+        {
+          "id": "action-2",
+          "command": {
+            "type": "configure",
+            "payload": {
+              "extras": [
+                "LCK"
+              ],
+              "aezorghTwoDice": true
+            }
+          },
+          "rolls": [],
+          "summary": "Generation options: 0 boon rolls; player placement on; below-43 reroll on; extras LCK; Zhodani PSI option off. Optional Aezorgh method: six raw 2D totals, free placement, then halve one-die destinations rounding up."
+        },
+        {
+          "id": "action-3",
+          "command": {
+            "type": "roll-statistics",
+            "payload": {}
+          },
+          "rolls": [
+            {
+              "label": "STR",
+              "values": [
+                1,
+                6
+              ],
+              "kept": [
+                1,
+                6
+              ],
+              "total": 7
+            },
+            {
+              "label": "DEX",
+              "values": [
+                1,
+                5
+              ],
+              "kept": [
+                1,
+                5
+              ],
+              "total": 6
+            },
+            {
+              "label": "END",
+              "values": [
+                5,
+                1
+              ],
+              "kept": [
+                5,
+                1
+              ],
+              "total": 6
+            },
+            {
+              "label": "INT",
+              "values": [
+                5,
+                2
+              ],
+              "kept": [
+                5,
+                2
+              ],
+              "total": 7
+            },
+            {
+              "label": "EDU",
+              "values": [
+                4,
+                2
+              ],
+              "kept": [
+                4,
+                2
+              ],
+              "total": 6
+            },
+            {
+              "label": "SOC",
+              "values": [
+                4,
+                1
+              ],
+              "kept": [
+                4,
+                1
+              ],
+              "total": 5
+            }
+          ],
+          "summary": "Rolled statistics. Base total 37. Species modifiers excluded; extra characteristics excluded. Optional Aezorgh placement (round up before species bonuses): STR raw 7/2 = 4, species +0; DEX raw 6/1 = 6, species +3; END raw 6/2 = 3, species +1; INT raw 7/1 = 7, species +2; EDU raw 6/2 = 3, species +0; SOC raw 5/2 = 3, species +0."
+        },
+        {
+          "id": "action-4",
+          "command": {
+            "type": "accept-statistics",
+            "payload": {}
+          },
+          "rolls": [
+            {
+              "label": "LCK",
+              "values": [
+                2,
+                2
+              ],
+              "kept": [
+                2,
+                2
+              ],
+              "total": 4
+            }
+          ],
+          "summary": "Accepted statistics and generated selected extra characteristics."
+        },
+        {
+          "id": "action-5",
+          "command": {
+            "type": "gm-mode",
+            "payload": {
+              "enabled": true
+            }
+          },
+          "rolls": [],
+          "summary": "GM mode false → true."
+        },
+        {
+          "id": "action-6",
+          "command": {
+            "type": "gm-override",
+            "payload": {
+              "field": "stat.SOC",
+              "value": 9,
+              "reason": "Synthetic replay fixture"
+            }
+          },
+          "rolls": [],
+          "summary": "GM override stat.SOC: 3 → 9. Reason: Synthetic replay fixture"
+        }
+      ]
+    },
+    "projectionSha256": "3dbb7392055993c8be52ba2fe9e8cb002e1685fa6897c11049cd3c3db574c87e",
+    "exportSha256": "76cd8024784c03b28098acce4252134e64cfb861184a90ae04df7d59cca189ca"
+  },
+  {
+    "session": {
+      "format": "traveller-character-session",
+      "version": 1,
+      "rulesRevision": "character-preview-2026-11-09.24",
+      "seed": "cha-replay",
+      "events": [
+        {
+          "id": "action-1",
+          "command": {
+            "type": "setup",
+            "payload": {
+              "species": "aezorgh"
+            }
+          },
+          "rolls": [],
+          "summary": "Started an unnamed Traveller (Aezorgh). Standard Aezorgh method: published 1D/2D formulas; raw reroll minimum 30; swaps within matching formula groups, with GM exceptions."
+        },
+        {
+          "id": "action-2",
+          "command": {
+            "type": "configure",
+            "payload": {
+              "extras": [
+                "LCK"
+              ],
+              "aezorghTwoDice": true
+            }
+          },
+          "rolls": [],
+          "summary": "Generation options: 0 boon rolls; player placement on; below-43 reroll on; extras LCK; Zhodani PSI option off. Optional Aezorgh method: six raw 2D totals, free placement, then halve one-die destinations rounding up."
+        },
+        {
+          "id": "action-3",
+          "command": {
+            "type": "roll-statistics",
+            "payload": {}
+          },
+          "rolls": [
+            {
+              "label": "STR",
+              "values": [
+                1,
+                6
+              ],
+              "kept": [
+                1,
+                6
+              ],
+              "total": 7
+            },
+            {
+              "label": "DEX",
+              "values": [
+                1,
+                5
+              ],
+              "kept": [
+                1,
+                5
+              ],
+              "total": 6
+            },
+            {
+              "label": "END",
+              "values": [
+                5,
+                1
+              ],
+              "kept": [
+                5,
+                1
+              ],
+              "total": 6
+            },
+            {
+              "label": "INT",
+              "values": [
+                5,
+                2
+              ],
+              "kept": [
+                5,
+                2
+              ],
+              "total": 7
+            },
+            {
+              "label": "EDU",
+              "values": [
+                4,
+                2
+              ],
+              "kept": [
+                4,
+                2
+              ],
+              "total": 6
+            },
+            {
+              "label": "SOC",
+              "values": [
+                4,
+                1
+              ],
+              "kept": [
+                4,
+                1
+              ],
+              "total": 5
+            }
+          ],
+          "summary": "Rolled statistics. Base total 37. Species modifiers excluded; extra characteristics excluded. Optional Aezorgh placement (round up before species bonuses): STR raw 7/2 = 4, species +0; DEX raw 6/1 = 6, species +3; END raw 6/2 = 3, species +1; INT raw 7/1 = 7, species +2; EDU raw 6/2 = 3, species +0; SOC raw 5/2 = 3, species +0."
+        },
+        {
+          "id": "action-4",
+          "command": {
+            "type": "accept-statistics",
+            "payload": {}
+          },
+          "rolls": [
+            {
+              "label": "LCK",
+              "values": [
+                2,
+                2
+              ],
+              "kept": [
+                2,
+                2
+              ],
+              "total": 4
+            }
+          ],
+          "summary": "Accepted statistics and generated selected extra characteristics."
+        },
+        {
+          "id": "action-5",
+          "command": {
+            "type": "gm-mode",
+            "payload": {
+              "enabled": true
+            }
+          },
+          "rolls": [],
+          "summary": "GM mode false → true."
+        },
+        {
+          "id": "action-6",
+          "command": {
+            "type": "gm-override",
+            "payload": {
+              "field": "stat.SOC",
+              "value": 9,
+              "reason": "Synthetic replay fixture"
+            }
+          },
+          "rolls": [],
+          "summary": "GM override stat.SOC: 3 → 9. Reason: Synthetic replay fixture"
+        }
+      ]
+    },
+    "projectionSha256": "ea6b3202c6ead484a98fce38fe1fb2b718382fe03a2038464381e66ae111c863",
+    "exportSha256": "073af94461042146c4b936fa776e667ddd4c28c68698d61faab1c04a2fc064ad"
+  },
+  {
+    "session": {
+      "format": "traveller-character-session",
+      "version": 1,
+      "rulesRevision": "character-preview-2026-11-09.23",
+      "seed": "cha-replay",
+      "events": [
+        {
+          "id": "action-1",
+          "command": {
+            "type": "setup",
+            "payload": {
+              "species": "aezorgh"
+            }
+          },
+          "rolls": [],
+          "summary": "Started an unnamed Traveller (Aezorgh). Standard Aezorgh method: published 1D/2D formulas; raw reroll minimum 30; swaps within matching formula groups, with GM exceptions."
+        },
+        {
+          "id": "action-2",
+          "command": {
+            "type": "configure",
+            "payload": {
+              "extras": [
+                "LCK"
+              ],
+              "aezorghTwoDice": true
+            }
+          },
+          "rolls": [],
+          "summary": "Generation options: 0 boon rolls; player placement on; below-43 reroll on; extras LCK; Zhodani PSI option off. Optional Aezorgh method: six raw 2D totals, free placement, then halve one-die destinations rounding up."
+        },
+        {
+          "id": "action-3",
+          "command": {
+            "type": "roll-statistics",
+            "payload": {}
+          },
+          "rolls": [
+            {
+              "label": "STR",
+              "values": [
+                1,
+                6
+              ],
+              "kept": [
+                1,
+                6
+              ],
+              "total": 7
+            },
+            {
+              "label": "DEX",
+              "values": [
+                1,
+                5
+              ],
+              "kept": [
+                1,
+                5
+              ],
+              "total": 6
+            },
+            {
+              "label": "END",
+              "values": [
+                5,
+                1
+              ],
+              "kept": [
+                5,
+                1
+              ],
+              "total": 6
+            },
+            {
+              "label": "INT",
+              "values": [
+                5,
+                2
+              ],
+              "kept": [
+                5,
+                2
+              ],
+              "total": 7
+            },
+            {
+              "label": "EDU",
+              "values": [
+                4,
+                2
+              ],
+              "kept": [
+                4,
+                2
+              ],
+              "total": 6
+            },
+            {
+              "label": "SOC",
+              "values": [
+                4,
+                1
+              ],
+              "kept": [
+                4,
+                1
+              ],
+              "total": 5
+            }
+          ],
+          "summary": "Rolled statistics. Base total 37. Species modifiers excluded; extra characteristics excluded. Optional Aezorgh placement (round up before species bonuses): STR raw 7/2 = 4, species +0; DEX raw 6/1 = 6, species +3; END raw 6/2 = 3, species +1; INT raw 7/1 = 7, species +2; EDU raw 6/2 = 3, species +0; SOC raw 5/2 = 3, species +0."
+        },
+        {
+          "id": "action-4",
+          "command": {
+            "type": "accept-statistics",
+            "payload": {}
+          },
+          "rolls": [
+            {
+              "label": "LCK",
+              "values": [
+                2,
+                2
+              ],
+              "kept": [
+                2,
+                2
+              ],
+              "total": 4
+            }
+          ],
+          "summary": "Accepted statistics and generated selected extra characteristics."
+        },
+        {
+          "id": "action-5",
+          "command": {
+            "type": "gm-mode",
+            "payload": {
+              "enabled": true
+            }
+          },
+          "rolls": [],
+          "summary": "GM mode false → true."
+        },
+        {
+          "id": "action-6",
+          "command": {
+            "type": "gm-override",
+            "payload": {
+              "field": "stat.SOC",
+              "value": 9,
+              "reason": "Synthetic replay fixture"
+            }
+          },
+          "rolls": [],
+          "summary": "GM override stat.SOC: 3 → 9. Reason: Synthetic replay fixture"
+        }
+      ]
+    },
+    "projectionSha256": "1d44e6e85d6161f4bb08846b8f25ccfae7e4a28dd007bf37fc4630b7d914baad",
+    "exportSha256": "738364c4bb7513d8156d9f36708574c83f37b2262971eaac7f5ccc73be5a6bd0"
+  },
+  {
+    "session": {
+      "format": "traveller-character-session",
+      "version": 1,
+      "rulesRevision": "character-preview-2026-11-09.22",
+      "seed": "cha-replay",
+      "events": [
+        {
+          "id": "action-1",
+          "command": {
+            "type": "setup",
+            "payload": {
+              "species": "aezorgh"
+            }
+          },
+          "rolls": [],
+          "summary": "Started an unnamed Traveller (Aezorgh). Standard Aezorgh method: published 1D/2D formulas; raw reroll minimum 30; swaps within matching formula groups, with GM exceptions."
+        },
+        {
+          "id": "action-2",
+          "command": {
+            "type": "configure",
+            "payload": {
+              "extras": [
+                "LCK"
+              ],
+              "aezorghTwoDice": true
+            }
+          },
+          "rolls": [],
+          "summary": "Generation options: 0 boon rolls; player placement on; below-43 reroll on; extras LCK; Zhodani PSI option off. Optional Aezorgh method: six raw 2D totals, free placement, then halve one-die destinations rounding up."
+        },
+        {
+          "id": "action-3",
+          "command": {
+            "type": "roll-statistics",
+            "payload": {}
+          },
+          "rolls": [
+            {
+              "label": "STR",
+              "values": [
+                1,
+                6
+              ],
+              "kept": [
+                1,
+                6
+              ],
+              "total": 7
+            },
+            {
+              "label": "DEX",
+              "values": [
+                1,
+                5
+              ],
+              "kept": [
+                1,
+                5
+              ],
+              "total": 6
+            },
+            {
+              "label": "END",
+              "values": [
+                5,
+                1
+              ],
+              "kept": [
+                5,
+                1
+              ],
+              "total": 6
+            },
+            {
+              "label": "INT",
+              "values": [
+                5,
+                2
+              ],
+              "kept": [
+                5,
+                2
+              ],
+              "total": 7
+            },
+            {
+              "label": "EDU",
+              "values": [
+                4,
+                2
+              ],
+              "kept": [
+                4,
+                2
+              ],
+              "total": 6
+            },
+            {
+              "label": "SOC",
+              "values": [
+                4,
+                1
+              ],
+              "kept": [
+                4,
+                1
+              ],
+              "total": 5
+            }
+          ],
+          "summary": "Rolled statistics. Base total 37. Species modifiers excluded; extra characteristics excluded. Optional Aezorgh placement (round up before species bonuses): STR raw 7/2 = 4, species +0; DEX raw 6/1 = 6, species +3; END raw 6/2 = 3, species +1; INT raw 7/1 = 7, species +2; EDU raw 6/2 = 3, species +0; SOC raw 5/2 = 3, species +0."
+        },
+        {
+          "id": "action-4",
+          "command": {
+            "type": "accept-statistics",
+            "payload": {}
+          },
+          "rolls": [
+            {
+              "label": "LCK",
+              "values": [
+                2,
+                2
+              ],
+              "kept": [
+                2,
+                2
+              ],
+              "total": 4
+            }
+          ],
+          "summary": "Accepted statistics and generated selected extra characteristics."
+        },
+        {
+          "id": "action-5",
+          "command": {
+            "type": "gm-mode",
+            "payload": {
+              "enabled": true
+            }
+          },
+          "rolls": [],
+          "summary": "GM mode false → true."
+        },
+        {
+          "id": "action-6",
+          "command": {
+            "type": "gm-override",
+            "payload": {
+              "field": "stat.SOC",
+              "value": 9,
+              "reason": "Synthetic replay fixture"
+            }
+          },
+          "rolls": [],
+          "summary": "GM override stat.SOC: 3 → 9. Reason: Synthetic replay fixture"
+        }
+      ]
+    },
+    "projectionSha256": "9a508c0db36ef6086bfa026d43ab29e1b0d4e69a677cd68492ce2f32658641af",
+    "exportSha256": "7f355204096315a81992d52e2ebf7908915c242b1cf8014fe766fea2ab9e6273"
+  },
+  {
+    "session": {
+      "format": "traveller-character-session",
+      "version": 1,
+      "rulesRevision": "character-preview-2026-11-09.21",
+      "seed": "cha-replay",
+      "events": [
+        {
+          "id": "action-1",
+          "command": {
+            "type": "setup",
+            "payload": {
+              "species": "aezorgh"
+            }
+          },
+          "rolls": [],
+          "summary": "Started an unnamed Traveller (Aezorgh). Standard Aezorgh method: published 1D/2D formulas; raw reroll minimum 30; swaps within matching formula groups, with GM exceptions."
+        },
+        {
+          "id": "action-2",
+          "command": {
+            "type": "configure",
+            "payload": {
+              "extras": [
+                "LCK"
+              ],
+              "aezorghTwoDice": true
+            }
+          },
+          "rolls": [],
+          "summary": "Generation options: 0 boon rolls; player placement on; below-43 reroll on; extras LCK; Zhodani PSI option off. Optional Aezorgh method: six raw 2D totals, free placement, then halve one-die destinations rounding down."
+        },
+        {
+          "id": "action-3",
+          "command": {
+            "type": "roll-statistics",
+            "payload": {}
+          },
+          "rolls": [
+            {
+              "label": "STR",
+              "values": [
+                1,
+                6
+              ],
+              "kept": [
+                1,
+                6
+              ],
+              "total": 7
+            },
+            {
+              "label": "DEX",
+              "values": [
+                1,
+                5
+              ],
+              "kept": [
+                1,
+                5
+              ],
+              "total": 6
+            },
+            {
+              "label": "END",
+              "values": [
+                5,
+                1
+              ],
+              "kept": [
+                5,
+                1
+              ],
+              "total": 6
+            },
+            {
+              "label": "INT",
+              "values": [
+                5,
+                2
+              ],
+              "kept": [
+                5,
+                2
+              ],
+              "total": 7
+            },
+            {
+              "label": "EDU",
+              "values": [
+                4,
+                2
+              ],
+              "kept": [
+                4,
+                2
+              ],
+              "total": 6
+            },
+            {
+              "label": "SOC",
+              "values": [
+                4,
+                1
+              ],
+              "kept": [
+                4,
+                1
+              ],
+              "total": 5
+            }
+          ],
+          "summary": "Rolled statistics. Base total 37. Species modifiers excluded; extra characteristics excluded. Optional Aezorgh placement (round down before species bonuses): STR raw 7/2 = 3, species +0; DEX raw 6/1 = 6, species +3; END raw 6/2 = 3, species +1; INT raw 7/1 = 7, species +2; EDU raw 6/2 = 3, species +0; SOC raw 5/2 = 2, species +0."
+        },
+        {
+          "id": "action-4",
+          "command": {
+            "type": "accept-statistics",
+            "payload": {}
+          },
+          "rolls": [
+            {
+              "label": "LCK",
+              "values": [
+                2,
+                2
+              ],
+              "kept": [
+                2,
+                2
+              ],
+              "total": 4
+            }
+          ],
+          "summary": "Accepted statistics and generated selected extra characteristics."
+        },
+        {
+          "id": "action-5",
+          "command": {
+            "type": "gm-mode",
+            "payload": {
+              "enabled": true
+            }
+          },
+          "rolls": [],
+          "summary": "GM mode false → true."
+        },
+        {
+          "id": "action-6",
+          "command": {
+            "type": "gm-override",
+            "payload": {
+              "field": "stat.SOC",
+              "value": 9,
+              "reason": "Synthetic replay fixture"
+            }
+          },
+          "rolls": [],
+          "summary": "GM override stat.SOC: 2 → 9. Reason: Synthetic replay fixture"
+        }
+      ]
+    },
+    "projectionSha256": "35d748426a3ebad3db6a17b0d7b0c5bcde9b1ffe26757845ffc143ffff287208",
+    "exportSha256": "008438211fdad8f0896629b6d49f569ff13ee1bc47cef7114d0108c3ae0d99ba"
+  },
+  {
+    "session": {
+      "format": "traveller-character-session",
+      "version": 1,
+      "rulesRevision": "character-preview-2026-11-09.20",
+      "seed": "cha-replay",
+      "events": [
+        {
+          "id": "action-1",
+          "command": {
+            "type": "setup",
+            "payload": {
+              "species": "aezorgh"
+            }
+          },
+          "rolls": [],
+          "summary": "Started an unnamed Traveller (Aezorgh). Standard Aezorgh method: published 1D/2D formulas; raw reroll minimum 30; swaps within matching formula groups, with GM exceptions."
+        },
+        {
+          "id": "action-2",
+          "command": {
+            "type": "configure",
+            "payload": {
+              "extras": [
+                "LCK"
+              ],
+              "aezorghTwoDice": true
+            }
+          },
+          "rolls": [],
+          "summary": "Generation options: 0 boon rolls; player placement on; below-43 reroll on; extras LCK; Zhodani PSI option off. Optional Aezorgh method: six raw 2D totals, free placement, then halve one-die destinations rounding down."
+        },
+        {
+          "id": "action-3",
+          "command": {
+            "type": "roll-statistics",
+            "payload": {}
+          },
+          "rolls": [
+            {
+              "label": "STR",
+              "values": [
+                1,
+                6
+              ],
+              "kept": [
+                1,
+                6
+              ],
+              "total": 7
+            },
+            {
+              "label": "DEX",
+              "values": [
+                1,
+                5
+              ],
+              "kept": [
+                1,
+                5
+              ],
+              "total": 6
+            },
+            {
+              "label": "END",
+              "values": [
+                5,
+                1
+              ],
+              "kept": [
+                5,
+                1
+              ],
+              "total": 6
+            },
+            {
+              "label": "INT",
+              "values": [
+                5,
+                2
+              ],
+              "kept": [
+                5,
+                2
+              ],
+              "total": 7
+            },
+            {
+              "label": "EDU",
+              "values": [
+                4,
+                2
+              ],
+              "kept": [
+                4,
+                2
+              ],
+              "total": 6
+            },
+            {
+              "label": "SOC",
+              "values": [
+                4,
+                1
+              ],
+              "kept": [
+                4,
+                1
+              ],
+              "total": 5
+            }
+          ],
+          "summary": "Rolled statistics. Base total 37. Species modifiers excluded; extra characteristics excluded. Optional Aezorgh placement (round down before species bonuses): STR raw 7/2 = 3, species +0; DEX raw 6/1 = 6, species +3; END raw 6/2 = 3, species +1; INT raw 7/1 = 7, species +2; EDU raw 6/2 = 3, species +0; SOC raw 5/2 = 2, species +0."
+        },
+        {
+          "id": "action-4",
+          "command": {
+            "type": "accept-statistics",
+            "payload": {}
+          },
+          "rolls": [
+            {
+              "label": "LCK",
+              "values": [
+                2,
+                2
+              ],
+              "kept": [
+                2,
+                2
+              ],
+              "total": 4
+            }
+          ],
+          "summary": "Accepted statistics and generated selected extra characteristics."
+        },
+        {
+          "id": "action-5",
+          "command": {
+            "type": "gm-mode",
+            "payload": {
+              "enabled": true
+            }
+          },
+          "rolls": [],
+          "summary": "GM mode false → true."
+        },
+        {
+          "id": "action-6",
+          "command": {
+            "type": "gm-override",
+            "payload": {
+              "field": "stat.SOC",
+              "value": 9,
+              "reason": "Synthetic replay fixture"
+            }
+          },
+          "rolls": [],
+          "summary": "GM override stat.SOC: 2 → 9. Reason: Synthetic replay fixture"
+        }
+      ]
+    },
+    "projectionSha256": "4346356a09627465b65d219b66edb94b565273b716e9c2caf9656dffe02986e2",
+    "exportSha256": "c8cd360f2457048320bf8f193d042726522a634b0b0be88f41fc1b24d744adf3"
+  },
+  {
+    "session": {
+      "format": "traveller-character-session",
+      "version": 1,
+      "rulesRevision": "character-preview-2026-11-09.19",
+      "seed": "cha-replay",
+      "events": [
+        {
+          "id": "action-1",
+          "command": {
+            "type": "setup",
+            "payload": {
+              "species": "aezorgh"
+            }
+          },
+          "rolls": [],
+          "summary": "Started an unnamed Traveller (Aezorgh). Standard Aezorgh method: published 1D/2D formulas; raw reroll minimum 30; swaps within matching formula groups, with GM exceptions."
+        },
+        {
+          "id": "action-2",
+          "command": {
+            "type": "configure",
+            "payload": {
+              "extras": [
+                "LCK"
+              ],
+              "aezorghTwoDice": true
+            }
+          },
+          "rolls": [],
+          "summary": "Generation options: 0 boon rolls; player placement on; below-43 reroll on; extras LCK; Zhodani PSI option off. Optional Aezorgh method: six raw 2D totals, free placement, then halve one-die destinations rounding down."
+        },
+        {
+          "id": "action-3",
+          "command": {
+            "type": "roll-statistics",
+            "payload": {}
+          },
+          "rolls": [
+            {
+              "label": "STR",
+              "values": [
+                1,
+                6
+              ],
+              "kept": [
+                1,
+                6
+              ],
+              "total": 7
+            },
+            {
+              "label": "DEX",
+              "values": [
+                1,
+                5
+              ],
+              "kept": [
+                1,
+                5
+              ],
+              "total": 6
+            },
+            {
+              "label": "END",
+              "values": [
+                5,
+                1
+              ],
+              "kept": [
+                5,
+                1
+              ],
+              "total": 6
+            },
+            {
+              "label": "INT",
+              "values": [
+                5,
+                2
+              ],
+              "kept": [
+                5,
+                2
+              ],
+              "total": 7
+            },
+            {
+              "label": "EDU",
+              "values": [
+                4,
+                2
+              ],
+              "kept": [
+                4,
+                2
+              ],
+              "total": 6
+            },
+            {
+              "label": "SOC",
+              "values": [
+                4,
+                1
+              ],
+              "kept": [
+                4,
+                1
+              ],
+              "total": 5
+            }
+          ],
+          "summary": "Rolled statistics. Base total 37. Species modifiers excluded; extra characteristics excluded. Optional Aezorgh placement (round down before species bonuses): STR raw 7/2 = 3, species +0; DEX raw 6/1 = 6, species +3; END raw 6/2 = 3, species +1; INT raw 7/1 = 7, species +2; EDU raw 6/2 = 3, species +0; SOC raw 5/2 = 2, species +0."
+        },
+        {
+          "id": "action-4",
+          "command": {
+            "type": "accept-statistics",
+            "payload": {}
+          },
+          "rolls": [
+            {
+              "label": "LCK",
+              "values": [
+                2,
+                2
+              ],
+              "kept": [
+                2,
+                2
+              ],
+              "total": 4
+            }
+          ],
+          "summary": "Accepted statistics and generated selected extra characteristics."
+        },
+        {
+          "id": "action-5",
+          "command": {
+            "type": "gm-mode",
+            "payload": {
+              "enabled": true
+            }
+          },
+          "rolls": [],
+          "summary": "GM mode false → true."
+        },
+        {
+          "id": "action-6",
+          "command": {
+            "type": "gm-override",
+            "payload": {
+              "field": "stat.SOC",
+              "value": 9,
+              "reason": "Synthetic replay fixture"
+            }
+          },
+          "rolls": [],
+          "summary": "GM override stat.SOC: 2 → 9. Reason: Synthetic replay fixture"
+        }
+      ]
+    },
+    "projectionSha256": "e676e7433741e4fe0e04afe9551200722bfcf1976dfea4fee6dc31c00850d230",
+    "exportSha256": "64c07d128543c2499d9c687061c7c8d1577a24b4cfbbe4d5c850af75beb25a78"
+  },
+  {
+    "session": {
+      "format": "traveller-character-session",
+      "version": 1,
+      "rulesRevision": "character-preview-2026-11-09.18",
+      "seed": "cha-replay",
+      "events": [
+        {
+          "id": "action-1",
+          "command": {
+            "type": "setup",
+            "payload": {
+              "species": "aezorgh"
+            }
+          },
+          "rolls": [],
+          "summary": "Started an unnamed Traveller (Aezorgh). Standard Aezorgh method: published 1D/2D formulas; raw reroll minimum 30; swaps within matching formula groups, with GM exceptions."
+        },
+        {
+          "id": "action-2",
+          "command": {
+            "type": "configure",
+            "payload": {
+              "extras": [
+                "LCK"
+              ],
+              "aezorghTwoDice": true
+            }
+          },
+          "rolls": [],
+          "summary": "Generation options: 0 boon rolls; player placement on; below-43 reroll on; extras LCK; Zhodani PSI option off. Optional Aezorgh method: six raw 2D totals, free placement, then halve one-die destinations rounding down."
+        },
+        {
+          "id": "action-3",
+          "command": {
+            "type": "roll-statistics",
+            "payload": {}
+          },
+          "rolls": [
+            {
+              "label": "STR",
+              "values": [
+                1,
+                6
+              ],
+              "kept": [
+                1,
+                6
+              ],
+              "total": 7
+            },
+            {
+              "label": "DEX",
+              "values": [
+                1,
+                5
+              ],
+              "kept": [
+                1,
+                5
+              ],
+              "total": 6
+            },
+            {
+              "label": "END",
+              "values": [
+                5,
+                1
+              ],
+              "kept": [
+                5,
+                1
+              ],
+              "total": 6
+            },
+            {
+              "label": "INT",
+              "values": [
+                5,
+                2
+              ],
+              "kept": [
+                5,
+                2
+              ],
+              "total": 7
+            },
+            {
+              "label": "EDU",
+              "values": [
+                4,
+                2
+              ],
+              "kept": [
+                4,
+                2
+              ],
+              "total": 6
+            },
+            {
+              "label": "SOC",
+              "values": [
+                4,
+                1
+              ],
+              "kept": [
+                4,
+                1
+              ],
+              "total": 5
+            }
+          ],
+          "summary": "Rolled statistics. Base total 37. Species modifiers excluded; extra characteristics excluded. Optional Aezorgh placement (round down before species bonuses): STR raw 7/2 = 3, species +0; DEX raw 6/1 = 6, species +3; END raw 6/2 = 3, species +1; INT raw 7/1 = 7, species +2; EDU raw 6/2 = 3, species +0; SOC raw 5/2 = 2, species +0."
+        },
+        {
+          "id": "action-4",
+          "command": {
+            "type": "accept-statistics",
+            "payload": {}
+          },
+          "rolls": [
+            {
+              "label": "LCK",
+              "values": [
+                2,
+                2
+              ],
+              "kept": [
+                2,
+                2
+              ],
+              "total": 4
+            }
+          ],
+          "summary": "Accepted statistics and generated selected extra characteristics."
+        },
+        {
+          "id": "action-5",
+          "command": {
+            "type": "gm-mode",
+            "payload": {
+              "enabled": true
+            }
+          },
+          "rolls": [],
+          "summary": "GM mode false → true."
+        },
+        {
+          "id": "action-6",
+          "command": {
+            "type": "gm-override",
+            "payload": {
+              "field": "stat.SOC",
+              "value": 9,
+              "reason": "Synthetic replay fixture"
+            }
+          },
+          "rolls": [],
+          "summary": "GM override stat.SOC: 2 → 9. Reason: Synthetic replay fixture"
+        }
+      ]
+    },
+    "projectionSha256": "bd59e2c6d49299c4b76c262c30469eb8ed7b8dc83f202f09bf76018610e13151",
+    "exportSha256": "aa029bbef93fba59657e06560274055d2107dffc0e39ec41795e3a4b1e3950d9"
+  },
+  {
+    "session": {
+      "format": "traveller-character-session",
+      "version": 1,
+      "rulesRevision": "character-preview-2026-11-09.17",
+      "seed": "cha-replay",
+      "events": [
+        {
+          "id": "action-1",
+          "command": {
+            "type": "setup",
+            "payload": {
+              "species": "aezorgh"
+            }
+          },
+          "rolls": [],
+          "summary": "Started an unnamed Traveller (Aezorgh). Standard Aezorgh method: published 1D/2D formulas; raw reroll minimum 30; swaps within matching formula groups, with GM exceptions."
+        },
+        {
+          "id": "action-2",
+          "command": {
+            "type": "configure",
+            "payload": {
+              "extras": [
+                "LCK"
+              ],
+              "aezorghTwoDice": true
+            }
+          },
+          "rolls": [],
+          "summary": "Generation options: 0 boon rolls; player placement on; below-43 reroll on; extras LCK; Zhodani PSI option off. Optional Aezorgh method: six raw 2D totals, free placement, then halve one-die destinations rounding down."
+        },
+        {
+          "id": "action-3",
+          "command": {
+            "type": "roll-statistics",
+            "payload": {}
+          },
+          "rolls": [
+            {
+              "label": "STR",
+              "values": [
+                1,
+                6
+              ],
+              "kept": [
+                1,
+                6
+              ],
+              "total": 7
+            },
+            {
+              "label": "DEX",
+              "values": [
+                1,
+                5
+              ],
+              "kept": [
+                1,
+                5
+              ],
+              "total": 6
+            },
+            {
+              "label": "END",
+              "values": [
+                5,
+                1
+              ],
+              "kept": [
+                5,
+                1
+              ],
+              "total": 6
+            },
+            {
+              "label": "INT",
+              "values": [
+                5,
+                2
+              ],
+              "kept": [
+                5,
+                2
+              ],
+              "total": 7
+            },
+            {
+              "label": "EDU",
+              "values": [
+                4,
+                2
+              ],
+              "kept": [
+                4,
+                2
+              ],
+              "total": 6
+            },
+            {
+              "label": "SOC",
+              "values": [
+                4,
+                1
+              ],
+              "kept": [
+                4,
+                1
+              ],
+              "total": 5
+            }
+          ],
+          "summary": "Rolled statistics. Base total 37. Species modifiers excluded; extra characteristics excluded. Optional Aezorgh placement (round down before species bonuses): STR raw 7/2 = 3, species +0; DEX raw 6/1 = 6, species +3; END raw 6/2 = 3, species +1; INT raw 7/1 = 7, species +2; EDU raw 6/2 = 3, species +0; SOC raw 5/2 = 2, species +0."
+        },
+        {
+          "id": "action-4",
+          "command": {
+            "type": "accept-statistics",
+            "payload": {}
+          },
+          "rolls": [
+            {
+              "label": "LCK",
+              "values": [
+                2,
+                2
+              ],
+              "kept": [
+                2,
+                2
+              ],
+              "total": 4
+            }
+          ],
+          "summary": "Accepted statistics and generated selected extra characteristics."
+        },
+        {
+          "id": "action-5",
+          "command": {
+            "type": "gm-mode",
+            "payload": {
+              "enabled": true
+            }
+          },
+          "rolls": [],
+          "summary": "GM mode false → true."
+        },
+        {
+          "id": "action-6",
+          "command": {
+            "type": "gm-override",
+            "payload": {
+              "field": "stat.SOC",
+              "value": 9,
+              "reason": "Synthetic replay fixture"
+            }
+          },
+          "rolls": [],
+          "summary": "GM override stat.SOC: 2 → 9. Reason: Synthetic replay fixture"
+        }
+      ]
+    },
+    "projectionSha256": "679759bbc94707fda35c81274f8875ba7ef000e976c09934247c2269814dba4a",
+    "exportSha256": "20f956285d28c144fe58297df39c80c8b93fb627f37b7d9e0466f6117deaddff"
+  },
+  {
+    "session": {
+      "format": "traveller-character-session",
+      "version": 1,
+      "rulesRevision": "character-preview-2026-11-09.16",
+      "seed": "cha-replay",
+      "events": [
+        {
+          "id": "action-1",
+          "command": {
+            "type": "setup",
+            "payload": {
+              "species": "aezorgh"
+            }
+          },
+          "rolls": [],
+          "summary": "Started an unnamed Traveller (Aezorgh). Standard Aezorgh method: published 1D/2D formulas; raw reroll minimum 30; swaps within matching formula groups, with GM exceptions."
+        },
+        {
+          "id": "action-2",
+          "command": {
+            "type": "configure",
+            "payload": {
+              "extras": [
+                "LCK"
+              ],
+              "aezorghTwoDice": true
+            }
+          },
+          "rolls": [],
+          "summary": "Generation options: 0 boon rolls; player placement on; below-43 reroll on; extras LCK; Zhodani PSI option off. Optional Aezorgh method: six raw 2D totals, free placement, then halve one-die destinations rounding down."
+        },
+        {
+          "id": "action-3",
+          "command": {
+            "type": "roll-statistics",
+            "payload": {}
+          },
+          "rolls": [
+            {
+              "label": "STR",
+              "values": [
+                1,
+                6
+              ],
+              "kept": [
+                1,
+                6
+              ],
+              "total": 7
+            },
+            {
+              "label": "DEX",
+              "values": [
+                1,
+                5
+              ],
+              "kept": [
+                1,
+                5
+              ],
+              "total": 6
+            },
+            {
+              "label": "END",
+              "values": [
+                5,
+                1
+              ],
+              "kept": [
+                5,
+                1
+              ],
+              "total": 6
+            },
+            {
+              "label": "INT",
+              "values": [
+                5,
+                2
+              ],
+              "kept": [
+                5,
+                2
+              ],
+              "total": 7
+            },
+            {
+              "label": "EDU",
+              "values": [
+                4,
+                2
+              ],
+              "kept": [
+                4,
+                2
+              ],
+              "total": 6
+            },
+            {
+              "label": "SOC",
+              "values": [
+                4,
+                1
+              ],
+              "kept": [
+                4,
+                1
+              ],
+              "total": 5
+            }
+          ],
+          "summary": "Rolled statistics. Base total 37. Species modifiers excluded; extra characteristics excluded. Optional Aezorgh placement (round down before species bonuses): STR raw 7/2 = 3, species +0; DEX raw 6/1 = 6, species +3; END raw 6/2 = 3, species +1; INT raw 7/1 = 7, species +2; EDU raw 6/2 = 3, species +0; SOC raw 5/2 = 2, species +0."
+        },
+        {
+          "id": "action-4",
+          "command": {
+            "type": "accept-statistics",
+            "payload": {}
+          },
+          "rolls": [
+            {
+              "label": "LCK",
+              "values": [
+                2,
+                2
+              ],
+              "kept": [
+                2,
+                2
+              ],
+              "total": 4
+            }
+          ],
+          "summary": "Accepted statistics and generated selected extra characteristics."
+        },
+        {
+          "id": "action-5",
+          "command": {
+            "type": "gm-mode",
+            "payload": {
+              "enabled": true
+            }
+          },
+          "rolls": [],
+          "summary": "GM mode false → true."
+        },
+        {
+          "id": "action-6",
+          "command": {
+            "type": "gm-override",
+            "payload": {
+              "field": "stat.SOC",
+              "value": 9,
+              "reason": "Synthetic replay fixture"
+            }
+          },
+          "rolls": [],
+          "summary": "GM override stat.SOC: 2 → 9. Reason: Synthetic replay fixture"
+        }
+      ]
+    },
+    "projectionSha256": "679759bbc94707fda35c81274f8875ba7ef000e976c09934247c2269814dba4a",
+    "exportSha256": "1205836471914ec89a96a0318335811cf6f496e0de33e9e3daf3b28d22c0dab1"
+  }
+]
