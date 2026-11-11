@@ -26,6 +26,7 @@ try{
    assert.match(await page.locator('#workspace').innerText(),/level 0.*regular training roll/s);
    await page.getByRole('button',{name:'Persuade 0',exact:true}).evaluate(button=>{button.click();button.click();});
    await page.getByRole('heading',{name:'Regular term training'}).waitFor();
+   await page.locator('.journey-details > summary').filter({hasText:'About this training roll'}).click();
    assert.match(await page.locator('#workspace').innerText(),/Basic training is complete.*later career.*p\. 18/s);
    const raw=await page.evaluate(key=>localStorage.getItem(key),key),trained=api({operation:'project',session:JSON.parse(raw)});
    assert.equal(trained.revision,basic.revision+1);assert.equal(trained.state.character.skills.Persuade,0);assert.equal(trained.state.character.skills['Melee (unarmed)'],1);

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {journeyResult,journeyResultView} from '../gui/journey-popup.mjs';
+import {journeyResult,journeyResultView,journeyRecordUpdates} from '../gui/journey-popup.mjs';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const state={stage:'training',character:{careers:[{id:'core.army'}]},active:0};
 const catalog={careers:[{id:'core.army',name:'Army'}]};
@@ -60,4 +60,13 @@ test('navigation and bookkeeping events do not become roll-result popups',()=>{
 test('finite recorded rolls only and full evidence stays available unchanged',()=>{
  const e=event({rolls:[{label:'Invalid',total:NaN},{label:'Invalid',total:Infinity},{label:'Valid',values:[2],total:2}]}),before=structuredClone(e),m=model(e);
  assert.equal(m.rolls.length,1);assert.equal(m.full,result);assert.deepEqual(e,before);
+});
+
+test('live rail shows actual skill and benefit changes without repeated age counters',()=>{
+ const e=event({changes:[change('skills.Recon',0,1),change('careers.0.benefitRolls',0,1),change('age',18,22),change('terms',0,1)]});
+ assert.deepEqual(journeyRecordUpdates(e,catalog),['Skill Recon: 0 → 1.','Benefit rolls: 0 → 1.']);
+});
+test('live rail does not mistake a possible table effect or restored branch for an award',()=>{
+ const e=event({eventResults:[{summary:'Gain Recon 1 on success.'}]});assert.deepEqual(journeyRecordUpdates(e,catalog),[]);
+ for(const type of ['restore','gm-replay'])assert.deepEqual(journeyRecordUpdates(event({type,changes:[change('skills.Recon',0,1)]}),catalog),[]);
 });

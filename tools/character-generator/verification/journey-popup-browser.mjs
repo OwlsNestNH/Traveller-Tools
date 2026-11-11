@@ -49,7 +49,8 @@ try{
    await page.locator('#journey-result').waitFor();const result=api({operation:'project',session:JSON.parse(await saved(page))});assert.equal(result.ok,true);
    const roll=result.log.at(-1).rolls[0];assert.match(await page.locator('#journey-result').innerText(),new RegExp('Dice total '+roll.total));
    assert.equal(await page.locator('#journey-result').evaluate(el=>document.activeElement===el),true);
-   for(const change of result.log.at(-1).changes.filter(c=>c.path.startsWith('skills.')&&typeof c.after==='number'))assert.ok((await page.locator('#journey-result').innerText()).includes(change.path.slice(7)));
+   for(const change of result.log.at(-1).changes.filter(c=>c.path.startsWith('skills.')&&typeof c.after==='number')){assert.ok((await page.locator('#journey-result').innerText()).includes(change.path.slice(7)));assert.ok((await page.locator('.journey-record-updates').textContent()).includes(change.path.slice(7)));}
+   assert.equal(await page.locator('.journey-record-updates').isVisible(),true);
    await fit(page);if(http)await photo(page,'training-result-'+width);
    const after=await saved(page);await page.locator('#journey-close').click();await page.locator('#journey-record>summary').click();assert.equal(await saved(page),after);
    await page.reload();await ready(page);assert.equal(await saved(page),after);await page.locator('.journey-previous-result>summary').click();assert.equal(await page.locator('#last-action-result').isVisible(),true);

@@ -27,6 +27,11 @@ export function journeyResult(event,state,catalog,result){
  return {title:specific?.title??(training?'Your training result':stories.length?'Your story continues':result.title),status:result.status,stories,consequences:unique(consequences),checkLine,rolls:(event.rolls??[]).filter(roll=>finite(roll.total)),full:result};
 }
 
+export function journeyRecordUpdates(event,catalog){
+ if(!event||['restore','gm-replay'].includes(event.type))return [];
+ return characterEffectDetails(event,catalog).filter(line=>!/^Age:|^Completed terms:|^Career terms:/.test(line));
+}
+
 const pips={1:[[50,50]],2:[[27,27],[73,73]],3:[[27,27],[50,50],[73,73]],4:[[27,27],[73,27],[27,73],[73,73]],5:[[27,27],[73,27],[50,50],[27,73],[73,73]],6:[[27,25],[73,25],[27,50],[73,50],[27,75],[73,75]]};
 function die(value){return '<svg class="journey-die" viewBox="0 0 100 100" aria-hidden="true"><rect x="3" y="3" width="94" height="94" rx="16" fill="none" stroke="currentColor" stroke-width="5"/>'+ (pips[value]??[]).map(([x,y])=>'<circle cx="'+x+'" cy="'+y+'" r="8" fill="currentColor"/>').join('')+'</svg>';}
 export function journeyResultView(model,{esc}){
@@ -61,7 +66,8 @@ export function mountJourneyPopup(root,{state,catalog,event,result,freshResult=f
  dialog.dataset.stage=state.stage;layout.classList.add('journey-layout');
  const c=state.character,title=root.querySelector('#step-title').textContent;
  context.querySelector('#journey-stage-name').textContent=title;
- context.querySelector('#journey-character-summary').innerHTML='<p class="journey-eyebrow">YOUR TRAVELLER</p><h2>'+esc(c.name||'Your Traveller')+'</h2><p>'+esc(catalog.species.find(s=>s.id===c.species)?.name??c.species)+' · Age '+esc(c.age)+'</p><p>'+esc(c.terms)+' completed terms</p>';
+ const updates=journeyRecordUpdates(event,catalog);
+ context.querySelector('#journey-character-summary').innerHTML='<p class="journey-eyebrow">YOUR TRAVELLER</p><h2>'+esc(c.name||'Your Traveller')+'</h2><p>'+esc(catalog.species.find(s=>s.id===c.species)?.name??c.species)+' · Age '+esc(c.age)+'</p><p>'+esc(c.terms)+' completed terms</p>'+(updates.length?'<section class="journey-record-updates" aria-label="Latest character changes"><h3>Just recorded</h3><ul>'+updates.slice(0,4).map(line=>'<li>'+esc(line)+'</li>').join('')+'</ul>'+(updates.length>4?'<p>'+esc(updates.length-4)+' more changes in the character sheet.</p>':'')+'</section>':'');
  const heading=root.querySelector('#step-title'),eyebrow=workspace.querySelector('.step-count');
  workspace.insertAdjacentHTML('beforeend','<p id="journey-error" role="alert"></p>');
  eyebrow.textContent=state.stage.replaceAll('-',' ').toUpperCase();
