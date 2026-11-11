@@ -10,7 +10,7 @@ const origin='http://127.0.0.1:'+server.address().port,key='traveller-character-
 const browser=await chromium.launch({headless:true,...(process.env.CHARACTER_BROWSER_CHANNEL?{channel:process.env.CHARACTER_BROWSER_CHANNEL}:{})});
 const saved=page=>page.evaluate(key=>localStorage.getItem(key),key),ready=page=>page.waitForFunction(()=>!document.querySelector('#export').disabled);
 const changed=async(page,n)=>page.waitForFunction(({key,n})=>JSON.parse(localStorage.getItem(key)).events.length===n+1&&!document.querySelector('#export').disabled,{key,n});
-function fixture(species='human',gm=true,accepted=false){let s=createSession('stat-card-'+species);for(const command of [{type:'configure',payload:{extras:['PSI','LCK','WLT']}},{type:'setup',payload:{species,culture:'imperial'}},{type:'gm-mode',payload:{enabled:gm}},{type:'roll-statistics'},...(accepted?[{type:'accept-statistics'}]:[])])s=execute(s,command).session;return s;}
+function fixture(species='human',gm=true,accepted=false){let s=createSession('stat-card-'+species);for(const command of [{type:'configure',payload:{extras:['PSI','LCK','WLT',...(species==='aezorgh'?['CHA']:[])]}},{type:'setup',payload:{species,culture:'imperial'}},{type:'gm-mode',payload:{enabled:gm}},{type:'roll-statistics'},...(accepted?[{type:'accept-statistics'}]:[])])s=execute(s,command).session;return s;}
 try{
  for(const width of [1440,320])for(const transport of ['static','http']){
   const context=await browser.newContext({viewport:{width,height:1000}}),session=fixture(),raw=exportSession(session);

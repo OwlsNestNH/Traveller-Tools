@@ -144,11 +144,11 @@ for (const culture of ['native', 'imperial']) test('Vargr ' + culture + ' six-sc
   }
 });
 
-test('Aezorgh required Charisma is not duplicated as a selected house extra', () => {
+test('Aezorgh selected Charisma appears as an optional extra', () => {
   for (const rolled of [false, true]) {
     const {projection} = optionalFixture(['CHA', 'PSI'], rolled, 'aezorgh');
     const html = render(projection);
-    assert.equal((html.match(/data-optional-stat="CHA"/g) ?? []).length, 0);
+    assert.equal((html.match(/data-optional-stat="CHA"/g) ?? []).length, 1);
     assert.equal((html.match(/data-optional-stat="PSI"/g) ?? []).length, 1);
   }
 });

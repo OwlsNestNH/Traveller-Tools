@@ -41,9 +41,10 @@ const RULE_PACK={...CORE_PACK,...EXPANSION_PACK};
 import { API_VERSION, SOURCES, CAREERS, PRECAREERS, SPECIES, SKILLS, BACKGROUND_SKILLS, findCareer, findSpecies } from './catalog.mjs';
 const LIMIT = 2000;
 export const MAX_SAVE_BYTES = 2000000;
-export const RULES_REVISION='character-preview-2026-11-09.25';
+export const RULES_REVISION='character-preview-2026-11-09.27';
+// .27 makes Aezorgh CHA opt-in; .26 is reserved for a separate unpublished candidate.
 // .19 chooses specialties on receipt; .18 retains deferred awards and corrections; .16/.17 retain historical mechanics.
-export const COMPATIBLE_RULES_REVISIONS=Object.freeze([RULES_REVISION,'character-preview-2026-11-09.24','character-preview-2026-11-09.23','character-preview-2026-11-09.22','character-preview-2026-11-09.21','character-preview-2026-11-09.20','character-preview-2026-11-09.19','character-preview-2026-11-09.18','character-preview-2026-11-09.17','character-preview-2026-11-09.16']);
+export const COMPATIBLE_RULES_REVISIONS=Object.freeze([RULES_REVISION,'character-preview-2026-11-09.25','character-preview-2026-11-09.24','character-preview-2026-11-09.23','character-preview-2026-11-09.22','character-preview-2026-11-09.21','character-preview-2026-11-09.20','character-preview-2026-11-09.19','character-preview-2026-11-09.18','character-preview-2026-11-09.17','character-preview-2026-11-09.16']);
 const saveSize = value => new TextEncoder().encode(JSON.stringify(value,null,2)).byteLength;
 const copy = value => structuredClone(value);
 const plain = value => value && typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
@@ -62,7 +63,9 @@ export const EXTRA_STATS = [
 ];
 // Explicit opt-in only: omitted options preserve historical config, dice and audit bytes.
 function optionalImperialCharisma(state){return !!state.optionalImperialCharisma&&state.character.species==='vargr'&&state.character.culture==='imperial';}
+function aezorghCharismaActive(state){return state.character.species==='aezorgh'&&(!state.optionalAezorghCharisma||Object.hasOwn(state.character.stats,'CHA'));}
 function extraStartingValue(state,extra,rolls){
+ if(extra.id==='CHA'&&state.optionalAezorghCharisma&&state.character.species==='aezorgh')return Math.floor(state.character.stats.SOC/2);
  if(extra.id==='CHA'&&optionalImperialCharisma(state))return dice(state,1,rolls,'Imperial Vargr CHA')+2;
  return extra.id==='LCK'&&state.config.flatLuck?6:extra.derive?(state.character.stats[extra.derive]??0):dice(state,extra.dice,rolls,extra.id);
 }
@@ -107,7 +110,7 @@ function statisticsDivisionSummary(state) {
  return state.character.species==='aezorgh'&&state.config.aezorghTwoDice?' Optional Aezorgh placement (round '+(state.aezorghRoundUp?'up':'down')+' before species bonuses): '+state.pool.map(p=>p.key+' raw '+p.base+'/'+p.divisor+' = '+p.derivedBase+', species '+(p.adjustment>=0?'+':'')+p.adjustment).join('; ')+'.':'';
 }
 function maxStat(state,key) { return findSpecies(state.character.species).maxima?.[key]??15; }
-function setStat(state,key,value) { integer(value,0,40,'Characteristic'); state.character.stats[key]=value;if(state.character.species==='aezorgh'&&key==='SOC')state.character.stats.CHA=Math.floor(value/2); }
+function setStat(state,key,value) { integer(value,0,40,'Characteristic'); state.character.stats[key]=value;if(aezorghCharismaActive(state)&&key==='SOC')state.character.stats.CHA=Math.floor(value/2); }
 // Unspecified awards remain individually allocatable, preserving minimum-level awards.
 function pendingSpecializations(state,base){return (state.character.deferredSkillAwards??[]).filter(a=>a.status==='pending'&&(!base||(Array.isArray(base)?base.includes(a.name):a.name===base)));}
 function deferSkillAward(state,e){const awards=state.character.deferredSkillAwards??=[];const award={...copy(e),id:'specialization-'+(awards.length+1),name:e.name,count:1,value:e.value??1,mode:e.mode??'increase',status:'pending',age:state.character.age,term:state.character.terms};awards.push(award);return award;}
@@ -1598,7 +1601,7 @@ function drainEffects(state,rolls,approvedRoll=null) {
     let next=e.mode==='minimum'?Math.max(current,e.value):Math.max(e.minimum??0,current+e.value);
     if(e.name==='SOC'&&next>ceiling)state.character.benefits.push({name:'Ship Share',quantity:next-ceiling});
     setStat(state,e.name,Math.min(ceiling,Math.max(0,next)));
-    if(state.character.species==='aezorgh'&&e.name==='SOC')state.character.stats.CHA=Math.floor(state.character.stats.SOC/2);
+    if(aezorghCharismaActive(state)&&e.name==='SOC')state.character.stats.CHA=Math.floor(state.character.stats.SOC/2);
     if(e.ageingOrigin&&e.name==='PSI'&&current>0&&state.character.stats.PSI===0)markPermanentPsionicLoss(state);
     if(state.character.species==='zhodani'&&state.active!==null&&e.name==='PSI'&&current<9&&state.character.stats.PSI>=9&&(state.character.stats.SOC??0)<10&&reviewZhodaniStatus(state,'career-psi-gain',rolls,'native-resume'))return;
     break;
@@ -2411,7 +2414,7 @@ function apply(state,command,rolls) {
    if(state.character.culture==='imperial'&&!state.optionalImperialCharisma){state.character.stats.CHA=dice(state,1,rolls,'Imperial Vargr CHA')+2;}
    gainSkill(state,'Melee',0,'set');
   }
-  if(species.id==='aezorgh'){state.character.stats.CHA=Math.floor(state.character.stats.SOC/2);}
+  if(aezorghCharismaActive(state)){state.character.stats.CHA=Math.floor(state.character.stats.SOC/2);}
   if(species.id==='zhodani'){
    if((state.config.zhodaniPsi||state.character.stats.PSI>=9)&&state.character.stats.SOC<10)state.character.stats.SOC=10;
    state.character.stats.EDU=Math.min(state.character.stats.EDU,state.character.stats.SOC);
@@ -3127,7 +3130,7 @@ if(pending.kind==='psionic-training-terms'){
   const value=extraStartingValue(state,extra,rolls);
   state.character.stats[extra.id]=extra.id==='PSI'?Math.max(0,value-completedCareerTerms(state)):value;
    if(extra.id==='PSI')recordPsionicTest(state,'referee-potential',value,completedCareerTerms(state));
-  state.config.extras.push(extra.id);return 'Added '+extra.name+' '+state.character.stats[extra.id]+'. '+(extra.id==='LCK'&&state.config.flatLuck?'House rule: flat starting Luck 6; no dice rolled. Normal source: ':'')+(extra.id==='CHA'&&optionalImperialCharisma(state)?'House rule: optional Imperial Vargr CHA uses 1D6 + 2':extra.source)+(extra.id==='PSI'?'; testing reduced by completed career terms. Potential does not grant training or talents.':'.');
+  state.config.extras.push(extra.id);return 'Added '+extra.name+' '+state.character.stats[extra.id]+'. '+(extra.id==='LCK'&&state.config.flatLuck?'House rule: flat starting Luck 6; no dice rolled. Normal source: ':'')+(extra.id==='CHA'&&state.optionalAezorghCharisma&&state.character.species==='aezorgh'?'JTAS Vol. 11 p. 67: Vargr society CHA is half SOC, rounded down; no dice rolled':extra.id==='CHA'&&optionalImperialCharisma(state)?'House rule: optional Imperial Vargr CHA uses 1D6 + 2':extra.source)+(extra.id==='PSI'?'; testing reduced by completed career terms. Potential does not grant training or talents.':'.');
  }
  case 'ageing':{
   need(state.stage==='ageing','No ageing roll is due.');const species=findSpecies(state.character.species);
@@ -3177,7 +3180,7 @@ export function project(session) {
  need(Array.isArray(session.events)&&session.events.length<=LIMIT,'Save contains too many actions.');
  need(saveSize(session)<=MAX_SAVE_BYTES,'Save size limit reached. Export your current character before continuing.');
 
- let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(['character-preview-2026-11-09.19','character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24',RULES_REVISION].includes(session.rulesRevision))state.immediateSpecializations=true;if(['character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24',RULES_REVISION].includes(session.rulesRevision))state.separateBorrowedRolls=true;if(['character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24',RULES_REVISION].includes(session.rulesRevision)){state.believerFalseTeachingsRuling=true;state.equipmentChoices=true;state.printedBenefitMaximum=true;state.psionAcquisitionRuling=true;}if(['character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24',RULES_REVISION].includes(session.rulesRevision))state.aezorghRoundUp=true;if(['character-preview-2026-11-09.23','character-preview-2026-11-09.24',RULES_REVISION].includes(session.rulesRevision))state.optionalImperialCharisma=true;if(['character-preview-2026-11-09.24',RULES_REVISION].includes(session.rulesRevision))state.optionalPsiRequiresTesting=true;if(session.rulesRevision===RULES_REVISION)state.aezorghBaseSkillChoice=true;const snapshots=[copy(state)],log=[];
+ let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(['character-preview-2026-11-09.19','character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25',RULES_REVISION].includes(session.rulesRevision))state.immediateSpecializations=true;if(['character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25',RULES_REVISION].includes(session.rulesRevision))state.separateBorrowedRolls=true;if(['character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25',RULES_REVISION].includes(session.rulesRevision)){state.believerFalseTeachingsRuling=true;state.equipmentChoices=true;state.printedBenefitMaximum=true;state.psionAcquisitionRuling=true;}if(['character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25',RULES_REVISION].includes(session.rulesRevision))state.aezorghRoundUp=true;if(['character-preview-2026-11-09.23','character-preview-2026-11-09.24','character-preview-2026-11-09.25',RULES_REVISION].includes(session.rulesRevision))state.optionalImperialCharisma=true;if(['character-preview-2026-11-09.24','character-preview-2026-11-09.25',RULES_REVISION].includes(session.rulesRevision))state.optionalPsiRequiresTesting=true;if(['character-preview-2026-11-09.25',RULES_REVISION].includes(session.rulesRevision))state.aezorghBaseSkillChoice=true;if(session.rulesRevision===RULES_REVISION)state.optionalAezorghCharisma=true;const snapshots=[copy(state)],log=[];
  for(let i=0;i<session.events.length;i++){
   const event=session.events[i];need(plain(event)&&typeof event.id==='string'&&event.id.length<=120,'Invalid action record.');
   need(!log.some(e=>e.id===event.id),'Duplicate action ID.');
@@ -3212,7 +3215,7 @@ export function project(session) {
  // Manual entry remains disclosed even when a GM supersedes that branch.
  // Projection-only: do not rewrite historical snapshots or audit summaries.
  if(log.some(entry=>entry.type==='enter-physical-statistic'))state.character.physicalDiceEntered=true;
- if(['character-preview-2026-11-09.24',RULES_REVISION].includes(session.rulesRevision)||Object.hasOwn(state.config,'physicalDice')||state.character.physicalDiceEntered){
+ if(['character-preview-2026-11-09.24','character-preview-2026-11-09.25',RULES_REVISION].includes(session.rulesRevision)||Object.hasOwn(state.config,'physicalDice')||state.character.physicalDiceEntered){
   state.statisticsComplete=statisticsComplete(state);
   state.physicalDiceTargets=physicalDiceTargets(state);
   state.physicalDiceOptions=state.physicalDiceTargets;
@@ -3260,7 +3263,7 @@ export function project(session) {
  state.educationOptions=['education-skill','companion-skill'].includes(state.stage)?educationOptions(state,state.pendingChoice):[];
  state.educationCheckSkills=state.stage==='education-check'?learnedEducationSkills(state):[];
  state.canChooseEducation=!accessMandatory(state)&&state.stage==='career'&&state.active===null&&!state.forcedCareer&&!state.character.retirementFromCreation&&state.character.terms<3&&!state.educationAttemptTerms?.includes(state.character.terms);
- if(state.character.species==='aezorgh'&&Object.hasOwn(state.character.stats,'SOC'))state.character.stats.CHA=Math.floor(state.character.stats.SOC/2);
+ if(aezorghCharismaActive(state)&&Object.hasOwn(state.character.stats,'SOC'))state.character.stats.CHA=Math.floor(state.character.stats.SOC/2);
  state.backgroundOptions=backgroundOptions(state);state.cashLimit=cashLimit(state);state.cashRollAccount=cashRollAccount(state);state.cashRollsUsed=cashRollsUsed(state);state.cashRollAccounting={id:cashRollAccount(state),name:cashRollAccount(state)==='core'?'Core lifetime cash rolls':cashRollAccount(state)==='aslan'?'Native Aslan cash rolls':'Cash benefit rolls',used:cashRollsUsed(state),limit:cashLimit(state),total:state.cashRolls,accounts:copy(state.character.cashRollAccounts??null)};if(state.character.aslanCareerContext)state.character.aslanCareerContext.scopeLabel=state.character.aslanCareerContext.careerIds?.map(id=>findCareer(id).name).join(' / ')??'Core careers';
  state.careerChoices=availableCareers(state);state.careerTransferOptions=transferOptions(state);state.statDMs=Object.fromEntries(Object.entries(state.character.stats).map(([k,v])=>[k,k==='RITE'?v:characteristicDM(v)]));
  for(let i=0;i<log.length;i++){const before=snapshots[i].modifiers??[],after=snapshots[i+1].modifiers??[];if(JSON.stringify(before)!==JSON.stringify(after))log[i].modifierChanges={before:copy(before),after:copy(after)};}
