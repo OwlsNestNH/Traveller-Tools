@@ -28,10 +28,18 @@ test('GM history is labelled without presenting replacement snapshots as fresh p
  assert.match(text,/GM restored/);assert.match(text,/GM replaced/);assert.doesNotMatch(text,/\[6, 6\]/);
 });
 test('source-assisted and non-dice actions are not fictional rolls',()=>{
- assert.equal(simpleActionLog([{number:1,type:'resolve-book',summary:'Source-assisted success.',rolls:[]}]),'');
+ assert.match(simpleActionLog([{number:1,type:'resolve-book',summary:'Source-assisted success.',rolls:[]}]),/Source-assisted success/);
  assert.equal(simpleActionLog([]),'');
 });
 test('table DMs and actual skill or cash awards are concise without false success labels',()=>{
  const text=simpleActionLog([{number:1,type:'benefit',summary:'Rolled cash benefit 7 (DM 2).',rolls:[roll('Cash benefit',[5])],changes:[{path:'cash',before:0,after:10000}]},{number:2,type:'training',summary:'Training service result 4.',rolls:[roll('Training: service',[3])],changes:[{path:'skills.Pilot',before:0,after:1}]}]);
  assert.match(text,/Cash benefit: \[5\]; DM \+2 = 7/);assert.match(text,/Training: service: \[3\]; DM \+1 = 4/);assert.match(text,/Cr10,000/);assert.match(text,/Skill Pilot/);assert.doesNotMatch(text,/failure|success/);
+});
+
+test('statistics rolls and choices stay concise while full mechanics remain unchanged',()=>{
+ const log=[{number:1,type:'roll-statistics',summary:'Rolled statistics. Base total 43. Species modifiers excluded; extra characteristics excluded. Optional Aezorgh placement (round up before species bonuses): STR raw 9/2 = 5, species +1.',rolls:[roll('STR',[4,5])]}, {number:2,type:'swap-statistics',summary:'Swapped STR 9 → 6 and DEX 6 → 9. Optional Aezorgh placement (round up before species bonuses): STR raw 6/2 = 3, species +1.',rolls:[]}, {number:3,type:'accept-statistics',summary:'Accepted statistics and generated selected extra characteristics. House rule: Luck starts at 6; no Luck dice were rolled.',rolls:[],changes:[{path:'stats.STR',after:4},{path:'stats.LCK',after:6}]}, {number:4,type:'background',summary:'Selected background skills: Pilot.',rolls:[],changes:[{path:'skills.Pilot',after:0}]}];
+ const before=JSON.stringify(log),full=fullActionLog(log),simple=simpleActionLog(log);
+ assert.match(simple,/STR: \[4, 5\] = 9/);assert.match(simple,/Swapped STR 9 → 6 and DEX 6 → 9/);assert.match(simple,/Strength: none → 4/);assert.match(simple,/Pilot/);
+ assert.doesNotMatch(simple,/raw 6\/2|species bonuses|Species modifiers excluded|House rule/);
+ assert.match(full,/raw 6\/2/);assert.equal(fullActionLog(log),full);assert.equal(JSON.stringify(log),before);
 });
