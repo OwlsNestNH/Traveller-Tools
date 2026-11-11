@@ -193,3 +193,10 @@ The unchecked PSI activation control is independent of whole-character GM mode. 
 ### Physical dice score entry
 
 The off-by-default control preserves the existing score cards until clicked. Valid raw totals save on Enter, Tab or clicking outside; Escape cancels. Manual provenance remains in both logs and the live/final/printed sheet. Unit coverage includes species formulas, incomplete sets, historical opt-in, same-value provenance, restore/replay and preserved deferred Zhodani optional PSI. Browser checks cover static/HTTP at desktop and 320px, click-to-edit, valid/invalid click-outside, equal-value entry, off/on recovery, keyboard flow, swaps, reload, logs and print.
+
+
+### Culture-aware background skills (.25)
+
+New sessions use revision character-preview-2026-11-09.25. Imperial/human-raised Aslan use the Core background pool (Core Update 2022 pp. 9–10, 52; Aliens of Charted Space Volume 1 Update 2026 p. 15). Hierate-raised Aslan retain the gender-specific pools (2026 p. 20). Core homeworld examples are suggestions, not restrictions. The released rules profile remains Core 2022, AoCS1 2026 and JTAS 11; no edition selector or additional species is introduced. Vargr retain their separate Melee 0 grant (AoCS1 2026 p. 186); Aezorgh retain four fixed skills and one additional choice (JTAS 11).
+
+Compatible .16–.24 saves retain their recorded revision and original species-only Aslan background rules, including Melee/Tolerance selections. No migration or historical projection field is added. Only new .25 state sets cultureAwareBackground; UI notices can distinguish legacy Imperial Aslan using its absence. Frozen pre-change fixtures verify exact session bytes, full state (including RNG) and log hashes across male/female background, selected, finished and restored histories. Existing .24 PSI and physical-dice feature gates remain active.

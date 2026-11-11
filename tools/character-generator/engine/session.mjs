@@ -41,9 +41,9 @@ const RULE_PACK={...CORE_PACK,...EXPANSION_PACK};
 import { API_VERSION, SOURCES, CAREERS, PRECAREERS, SPECIES, SKILLS, BACKGROUND_SKILLS, findCareer, findSpecies } from './catalog.mjs';
 const LIMIT = 2000;
 export const MAX_SAVE_BYTES = 2000000;
-export const RULES_REVISION='character-preview-2026-11-09.24';
+export const RULES_REVISION='character-preview-2026-11-09.25';
 // .19 chooses specialties on receipt; .18 retains deferred awards and corrections; .16/.17 retain historical mechanics.
-export const COMPATIBLE_RULES_REVISIONS=Object.freeze([RULES_REVISION,'character-preview-2026-11-09.23','character-preview-2026-11-09.22','character-preview-2026-11-09.21','character-preview-2026-11-09.20','character-preview-2026-11-09.19','character-preview-2026-11-09.18','character-preview-2026-11-09.17','character-preview-2026-11-09.16']);
+export const COMPATIBLE_RULES_REVISIONS=Object.freeze([RULES_REVISION,'character-preview-2026-11-09.24','character-preview-2026-11-09.23','character-preview-2026-11-09.22','character-preview-2026-11-09.21','character-preview-2026-11-09.20','character-preview-2026-11-09.19','character-preview-2026-11-09.18','character-preview-2026-11-09.17','character-preview-2026-11-09.16']);
 const saveSize = value => new TextEncoder().encode(JSON.stringify(value,null,2)).byteLength;
 const copy = value => structuredClone(value);
 const plain = value => value && typeof value === 'object' && !Array.isArray(value) && Object.getPrototypeOf(value) === Object.prototype;
@@ -982,6 +982,9 @@ function conditionMatches(state,condition) {
  return true;
 }
 function backgroundOptions(state) {
+ // AoCS1 Update 2026 pp15,20; Core Update 2022 pp9-10,52.
+ // Historical revisions retain their original species-only pool and audit.
+ if(state.cultureAwareBackground&&state.character.species==='aslan'&&state.character.culture==='imperial')return BACKGROUND_SKILLS;
  const species=SPECIES_RULES[state.character.species];
  return species?.background?.byGender?.[state.character.gender]??BACKGROUND_SKILLS;
 }
@@ -3176,7 +3179,7 @@ export function project(session) {
  need(Array.isArray(session.events)&&session.events.length<=LIMIT,'Save contains too many actions.');
  need(saveSize(session)<=MAX_SAVE_BYTES,'Save size limit reached. Export your current character before continuing.');
 
- let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(['character-preview-2026-11-09.19','character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23',RULES_REVISION].includes(session.rulesRevision))state.immediateSpecializations=true;if(['character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23',RULES_REVISION].includes(session.rulesRevision))state.separateBorrowedRolls=true;if(['character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23',RULES_REVISION].includes(session.rulesRevision)){state.believerFalseTeachingsRuling=true;state.equipmentChoices=true;state.printedBenefitMaximum=true;state.psionAcquisitionRuling=true;}if(['character-preview-2026-11-09.22','character-preview-2026-11-09.23',RULES_REVISION].includes(session.rulesRevision))state.aezorghRoundUp=true;if(['character-preview-2026-11-09.23',RULES_REVISION].includes(session.rulesRevision))state.optionalImperialCharisma=true;if(session.rulesRevision===RULES_REVISION)state.optionalPsiRequiresTesting=true;const snapshots=[copy(state)],log=[];
+ let state=initial(session.seed);if(!['character-preview-2026-11-09.16','character-preview-2026-11-09.17'].includes(session.rulesRevision)){state.deferredSpecializations=true;state.correctedCareerEvents=true;}if(['character-preview-2026-11-09.19','character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24',RULES_REVISION].includes(session.rulesRevision))state.immediateSpecializations=true;if(['character-preview-2026-11-09.20','character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24',RULES_REVISION].includes(session.rulesRevision))state.separateBorrowedRolls=true;if(['character-preview-2026-11-09.21','character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24',RULES_REVISION].includes(session.rulesRevision)){state.believerFalseTeachingsRuling=true;state.equipmentChoices=true;state.printedBenefitMaximum=true;state.psionAcquisitionRuling=true;}if(['character-preview-2026-11-09.22','character-preview-2026-11-09.23','character-preview-2026-11-09.24',RULES_REVISION].includes(session.rulesRevision))state.aezorghRoundUp=true;if(['character-preview-2026-11-09.23','character-preview-2026-11-09.24',RULES_REVISION].includes(session.rulesRevision))state.optionalImperialCharisma=true;if(['character-preview-2026-11-09.24',RULES_REVISION].includes(session.rulesRevision))state.optionalPsiRequiresTesting=true;if(session.rulesRevision===RULES_REVISION)state.cultureAwareBackground=true;const snapshots=[copy(state)],log=[];
  for(let i=0;i<session.events.length;i++){
   const event=session.events[i];need(plain(event)&&typeof event.id==='string'&&event.id.length<=120,'Invalid action record.');
   need(!log.some(e=>e.id===event.id),'Duplicate action ID.');
@@ -3211,7 +3214,7 @@ export function project(session) {
  // Manual entry remains disclosed even when a GM supersedes that branch.
  // Projection-only: do not rewrite historical snapshots or audit summaries.
  if(log.some(entry=>entry.type==='enter-physical-statistic'))state.character.physicalDiceEntered=true;
- if(session.rulesRevision===RULES_REVISION||Object.hasOwn(state.config,'physicalDice')||state.character.physicalDiceEntered){
+ if(['character-preview-2026-11-09.24',RULES_REVISION].includes(session.rulesRevision)||Object.hasOwn(state.config,'physicalDice')||state.character.physicalDiceEntered){
   state.statisticsComplete=statisticsComplete(state);
   state.physicalDiceTargets=physicalDiceTargets(state);
   state.physicalDiceOptions=state.physicalDiceTargets;
