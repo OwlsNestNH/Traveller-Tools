@@ -1,3 +1,4 @@
+import {speciesSkillPopupView} from './species-skill-popup.mjs';
 // Presentation state only; eligibility and allowance always come from the engine.
 export function backgroundSelection(state, selected=[]) {
  const options=[...new Set(state.backgroundOptions??[])].filter(name=>!Object.hasOwn(state.character.skills,name));
@@ -17,6 +18,7 @@ export function backgroundStatus(s){return s.remaining<0?'Remove '+(-s.remaining
 export function backgroundSummary(skills){return skills.length?'Selected: '+skills.map(name=>name+' 0').join(' · '):'No skills selected yet.';}
 export function backgroundSkillsView(state,selected,catalog,{esc}){
  const s=backgroundSelection(state,selected);
+ if(state.character.species==='aezorgh')return speciesSkillPopupView(state,s,{esc});
  return '<p class="background-instruction">Choose '+s.required+' skills. Each begins at level 0.</p><form id="background-form"><div class="background-counter" role="status" aria-live="polite" aria-atomic="true"><strong id="background-count">'+s.skills.length+' / '+s.required+' selected</strong><span id="background-status">'+backgroundStatus(s)+'</span></div><fieldset class="background-options"><legend>Available skills</legend><div class="background-grid">'+s.options.map((name,i)=>'<label class="background-tile'+(s.skills.includes(name)?' is-selected':'')+'"><input id="background-skill-'+i+'" type="checkbox" name="skills" value="'+esc(name)+'" '+(s.skills.includes(name)?'checked':'')+'><span>'+esc(name)+'</span></label>').join('')+'</div></fieldset><p id="background-selected-summary">'+esc(backgroundSummary(s.skills))+'</p><div class="actions"><button type="submit" '+(s.valid?'':'disabled')+'>Accept background skills</button></div></form>';
 }
 export function backgroundRailView(state,selected,catalog,{esc}){
@@ -28,17 +30,15 @@ export function syncBackgroundSkills(root,state,selected,{esc},busy=false){
  for(const input of form.querySelectorAll('[name="skills"]')){input.checked=s.skills.includes(input.value);input.disabled=busy;input.closest('label').classList.toggle('is-selected',input.checked);}
  form.querySelector('#background-count').textContent=s.skills.length+' / '+s.required+' selected';form.querySelector('#background-status').textContent=backgroundStatus(s);form.querySelector('#background-selected-summary').textContent=backgroundSummary(s.skills);const count=root.querySelector('#background-selection-count');if(count)count.textContent=s.skills.length+' / '+s.required;const preview=root.querySelector('#background-preview');if(preview)preview.innerHTML=backgroundPreview(s.skills,{esc});form.querySelector('[type="submit"]').disabled=busy||!s.valid;return s;
 }
-// Move existing controls without cloning their state or discarding the live record.
+// Keep the shared toolbar in place; move only the live character record.
 export function mountBackgroundLayout(root,state,selected,catalog,{esc}){
- const layout=root.querySelector('.layout'),sheet=root.querySelector('#sheet'),toolbar=root.querySelector('.toolbar');
+ const layout=root.querySelector('.layout'),sheet=root.querySelector('#sheet');
  if(state.stage!=='background'){
-  const actions=root.querySelector('#background-utilities');if(actions){actions.before(toolbar);actions.remove();}
   const rail=root.querySelector('#background-rail');if(rail){layout.append(sheet);rail.remove();}
   root.querySelector('#background-orientation')?.remove();return;
  }
- let utilities=root.querySelector('#background-utilities');if(!utilities){utilities=root.createElement('div');utilities.id='background-utilities';toolbar.before(utilities);const details=root.createElement('details');details.id='background-actions';details.innerHTML='<summary>Character actions</summary>';details.append(toolbar);utilities.append(details);const log=root.createElement('button');log.type='button';log.className='quiet';log.textContent='Full Log';log.id='background-full-log';log.addEventListener('click',()=>root.querySelector('#log-view').click());utilities.append(log);}
  let orientation=root.querySelector('#background-orientation');if(!orientation){orientation=root.createElement('ol');orientation.id='background-orientation';orientation.setAttribute('aria-label','Character creation overview');layout.before(orientation);}
- orientation.innerHTML='<li>✓ Characteristics</li><li aria-current="step">2 Background</li><li>3 Before career</li><li>4 Careers</li><li>5 Finalization</li>';
+ orientation.innerHTML='<li>✓ Characteristics</li><li aria-current="step">2 Background</li><li>3 Pre-Career</li><li>4 Careers</li><li>5 Finalization</li>';
  let rail=root.querySelector('#background-rail');if(!rail){
   rail=root.createElement('aside');rail.id='background-rail';
   rail.innerHTML='<details id="background-record" name="background-panels"><summary><span>Character sheet</span><span class="background-panel-toggle" aria-hidden="true"></span></summary></details><details id="background-selection" name="background-panels" open><summary><span>Selection preview <span id="background-selection-count"></span></span><span class="background-panel-toggle" aria-hidden="true"></span></summary><div id="background-selection-content"></div></details>';
