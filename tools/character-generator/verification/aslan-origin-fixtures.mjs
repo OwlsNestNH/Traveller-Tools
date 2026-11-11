@@ -12,6 +12,7 @@ export function settleOrigin(r,{until='precareer',familyDie=6,birthDice=[1,2],cl
   else if(s.stage==='aslan-birth-result')r=run(r,'acknowledge-aslan-birth-order');
   else if(s.stage==='aslan-birth-order')r=force(r,'roll-aslan-birth-order',{},birthDice);
   else if(s.stage==='aslan-estate'){if(s.currentAslanOrigin.estateOptions.requiresRefereeBaseline){if(!sourceDecisions.estate)break;r=run(r,'resolve-aslan-estate',sourceDecisions.estate);}else r=run(r,'resolve-aslan-estate',{method:'printed-minimum'});}
+  else if(s.stage==='aslan-clan-result')r=run(r,'acknowledge-aslan-clan');
   else if(s.stage==='aslan-clan')r=force(r,'roll-aslan-clan',{},clanDice);
   else if(s.stage==='aslan-pride')r=force(r,'roll-aslan-pride',{},prideDice);
   else if(s.stage==='background')r=run(r,'background',{skills:s.backgroundOptions.filter(name=>!Object.hasOwn(s.character.skills,name)).slice(0,s.backgroundRemaining)});

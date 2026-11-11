@@ -89,3 +89,89 @@ body[data-family-popup="true"] header h1{color:#ffd052}body[data-family-popup="t
 @media(max-width:650px){#aslan-family-dialog.aslan-estate-dialog .estate-large-number{font-size:28px}}
 
 #aslan-family-dialog h2:focus{outline:none}
+
+/* Approved clan presentation. */
+
+    #aslan-family-dialog.aslan-clan-dialog .clan-title-row{display:flex;align-items:center;justify-content:space-between;gap:14px}
+    #aslan-family-dialog.aslan-clan-dialog #aslan-clan-info-open{flex:none;width:44px;height:44px;min-height:44px;padding:0;border:2px solid #ffd34b;border-radius:50%;background:transparent;color:#ffd34b;font-family:Georgia,serif;font-size:29px;font-style:normal;font-weight:700;line-height:1}
+    #aslan-clan-info{box-sizing:border-box;width:min(660px,calc(100vw - 28px));max-height:calc(100dvh - 32px);overflow:auto;margin:auto;padding:24px;background:#061d2b;color:#f5f7fa;border:2px solid #73b1cc;border-radius:15px}
+    #aslan-clan-info::backdrop{background:rgba(1,12,20,.72)}
+    #aslan-clan-info .info-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    #aslan-clan-info h2{font-size:28px;margin:0;color:#f5f7fa}
+    #aslan-clan-info h3{font-size:22px;color:#ffd34b;margin:22px 0 10px}
+    #aslan-clan-info p,#aslan-clan-info li{font-size:18px;line-height:1.5;color:#c4d8e7}
+    #aslan-clan-info li{margin:10px 0}
+    #aslan-clan-info button{width:44px;height:44px;min-height:44px;flex:none;padding:0;background:#142e3c;border:1px solid #73b1cc;border-radius:8px;color:#f5f7fa;font-size:28px}
+    #aslan-clan-info :focus-visible{outline:3px solid #ffcf3e;outline-offset:3px}
+    #aslan-family-dialog.aslan-clan-dialog .aslan-family-band{font-size:27px;margin-bottom:14px}
+    #aslan-family-dialog.aslan-clan-dialog .clan-dice{display:flex;align-items:center;justify-content:center;gap:12px;color:#ffd34b}
+    #aslan-family-dialog.aslan-clan-dialog .clan-dice .aslan-family-mystery{width:150px;height:150px;margin:8px 0}
+    #aslan-family-dialog.aslan-clan-dialog .aslan-family-ready h3{font-size:40px;line-height:1.2;margin:0 0 14px}
+    #aslan-family-dialog.aslan-clan-dialog .aslan-family-ready .clan-instruction{font-size:24px;margin:0 0 16px}
+    #aslan-family-dialog.aslan-clan-dialog #aslan-family-roll{font-size:38px;min-width:274px;margin-bottom:16px}
+    #aslan-family-dialog.aslan-clan-dialog .aslan-family-ready .aslan-family-hint{font-size:20px;margin-bottom:16px}
+    #aslan-family-dialog.aslan-clan-dialog .clan-scope-note{max-width:630px;margin:0 auto 20px;font-size:18px;color:#c4d8e7;text-align:center;line-height:1.45}
+    #aslan-family-dialog.aslan-clan-dialog .clan-details{border:1px solid #639fb9;background:#071e2c;border-radius:10px;margin:12px 0;padding:12px 16px;font-size:17px;color:#c4d8e7}
+    #aslan-family-dialog.aslan-clan-dialog .clan-details summary{color:#c4d8e7;font-size:18px;min-height:30px}
+    #aslan-family-dialog.aslan-clan-dialog .clan-details p{margin:10px 0;font-size:17px;line-height:1.5}
+    #aslan-family-dialog.aslan-clan-dialog .clan-details ul{padding-left:22px;margin:10px 0}
+    #aslan-family-dialog.aslan-clan-dialog .clan-details li{margin:5px 0}
+    #aslan-family-dialog.aslan-clan-dialog .clan-details label{font-size:17px;margin:12px 0}
+    #aslan-family-dialog.aslan-clan-dialog input,#aslan-family-dialog.aslan-clan-dialog textarea{background:#092536;border-color:#639fb9;color:#f5f7fa;font-size:18px}
+    #aslan-family-dialog.aslan-clan-dialog input:disabled,#aslan-family-dialog.aslan-clan-dialog textarea:disabled{opacity:.6}
+    #aslan-family-dialog.aslan-clan-dialog .clan-details button{font-size:19px;min-height:52px;padding:10px 18px}
+    #aslan-family-dialog.aslan-clan-dialog .clan-result-roll{display:flex;align-items:center;gap:23px;padding:15px 0}
+    #aslan-family-dialog.aslan-clan-dialog .clan-result-roll .clan-dice{gap:10px;flex:none}
+    #aslan-family-dialog.aslan-clan-dialog .clan-result-roll .aslan-family-die{width:76px;height:76px}
+    #aslan-family-dialog.aslan-clan-dialog .clan-roll-label{display:block;color:#c4d8e7;font-size:19px}
+    #aslan-family-dialog.aslan-clan-dialog .clan-result-roll strong{font-size:40px;line-height:1.25}
+    #aslan-family-dialog.aslan-clan-dialog .clan-result-type{font-size:46px;font-weight:800;margin:8px 0 16px;line-height:1.2}
+    #aslan-family-dialog.aslan-clan-dialog .clan-scope-card{display:grid;grid-template-columns:1fr auto;gap:6px 20px;border:1px solid #639fb9;border-radius:12px;background:#082434;padding:16px 20px;margin:0 0 17px}
+    #aslan-family-dialog.aslan-clan-dialog .clan-scope-label{grid-column:1;font-size:19px;color:#c4d8e7;margin:0}
+    #aslan-family-dialog.aslan-clan-dialog .clan-scope-value{grid-column:1;display:block;font-size:34px;color:#ffd34b;line-height:1.3}
+    #aslan-family-dialog.aslan-clan-dialog .clan-scope-card > .aslan-family-die{grid-column:2;grid-row:1/3;align-self:center}
+    #aslan-family-dialog.aslan-clan-dialog .clan-scope-card .aslan-family-die{width:64px;height:64px;color:#ffd34b}
+    #aslan-family-dialog.aslan-clan-dialog .clan-scope-evidence{grid-column:1/-1;margin:4px 0 0;font-size:18px;color:#c4d8e7;line-height:1.45}
+    #aslan-family-dialog.aslan-clan-dialog .clan-result-note{font-size:20px;color:#c4d8e7;line-height:1.45;margin:0 0 17px}
+    #aslan-family-dialog.aslan-clan-dialog .clan-next-note{font-size:17px;color:#bdd1df;margin:0 0 20px}
+    #aslan-family-dialog.aslan-clan-dialog .clan-review-note{font-size:14px;color:#bdd1df;margin:14px 0 0;line-height:1.4}
+    #aslan-family-dialog.aslan-clan-dialog footer{align-items:center;margin-top:18px;gap:16px}
+    #aslan-family-dialog.aslan-clan-dialog footer p{font-size:17px}
+    #aslan-family-dialog.aslan-clan-dialog footer button{font-size:23px;padding:12px 21px}
+    #aslan-family-dialog.aslan-clan-dialog .clan-review-status{font-size:17px;color:#ffd34b;margin:12px 0 0;line-height:1.4}
+    #aslan-family-dialog.aslan-clan-dialog .clan-review-status:empty{display:none}
+    #aslan-family-dialog.aslan-clan-dialog [hidden]{display:none!important}
+    @media(max-width:650px){
+      #aslan-family-dialog.aslan-clan-dialog{padding:20px 18px}
+      #aslan-family-dialog.aslan-clan-dialog h2{font-size:30px;white-space:normal}
+      #aslan-family-dialog.aslan-clan-dialog .aslan-family-band{font-size:21px;margin-bottom:8px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-dice .aslan-family-mystery{width:108px;height:108px;margin:8px 0}
+      #aslan-family-dialog.aslan-clan-dialog .aslan-family-ready h3{font-size:28px;margin-bottom:12px}
+      #aslan-family-dialog.aslan-clan-dialog .aslan-family-ready .clan-instruction{font-size:20px;margin-bottom:14px}
+      #aslan-family-dialog.aslan-clan-dialog #aslan-family-roll{font-size:30px;width:100%;min-width:0;min-height:60px}
+      #aslan-family-dialog.aslan-clan-dialog .aslan-family-ready .aslan-family-hint{font-size:17px;margin-bottom:12px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-scope-note{font-size:16px;margin-bottom:15px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-details{padding:10px 12px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-details summary{font-size:16px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-details p,#aslan-family-dialog.aslan-clan-dialog .clan-details li{font-size:15px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-result-roll{flex-wrap:wrap;gap:12px;padding:12px 0}
+      #aslan-family-dialog.aslan-clan-dialog .clan-result-roll .aslan-family-die{width:55px;height:55px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-roll-label{font-size:16px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-result-roll strong{font-size:28px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-result-type{font-size:32px;margin:8px 0 15px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-scope-card{padding:13px 15px;gap:5px 12px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-scope-label{font-size:17px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-scope-value{font-size:28px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-scope-card .aslan-family-die{width:54px;height:54px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-scope-evidence{font-size:16px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-result-note{font-size:18px}
+      #aslan-family-dialog.aslan-clan-dialog .clan-next-note{font-size:16px}
+      #aslan-family-dialog.aslan-clan-dialog footer p{font-size:14px}
+      #aslan-family-dialog.aslan-clan-dialog footer button{font-size:21px;width:100%}
+    }
+
+#aslan-family-dialog.aslan-clan-dialog .clan-scope-value{overflow-wrap:anywhere}
+#aslan-family-dialog.aslan-clan-dialog .clan-gm-toggle{display:flex;align-items:center;gap:10px}
+#aslan-family-dialog.aslan-clan-dialog .clan-gm-toggle input{width:22px;height:22px;min-height:22px}
+
+#aslan-family-dialog.aslan-clan-dialog .clan-result-type{overflow-wrap:anywhere}
