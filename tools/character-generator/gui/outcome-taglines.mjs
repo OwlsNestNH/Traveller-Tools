@@ -1,10 +1,10 @@
 // Presentation-only catalogue. Every supported outcome has six alternatives.
 export const outcomeTaglines = Object.freeze({
  'statistics.low': Object.freeze([
-  'The dice have selected character development.',
+  'The dice have selected “character development.”',
   'Your strongest attribute appears to be optimism.',
   'You brought a backstory to a stat fight.',
-  'Well, nobody can accuse you of min-maxing.',
+  'Nobody can accuse you of min-maxing.',
   'The universe has supplied room for improvement.',
   'Have you considered a career behind someone larger?',
  ]),
