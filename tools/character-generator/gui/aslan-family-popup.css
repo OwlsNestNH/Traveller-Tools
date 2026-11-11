@@ -87,3 +87,5 @@ body[data-family-popup="true"] header h1{color:#ffd052}body[data-family-popup="t
 
 #aslan-family-dialog.aslan-estate-dialog .estate-large-number{font-size:56px}
 @media(max-width:650px){#aslan-family-dialog.aslan-estate-dialog .estate-large-number{font-size:28px}}
+
+#aslan-family-dialog h2:focus{outline:none}

@@ -24,7 +24,7 @@ export function mountAslanFamilyPopup(root, {onRoll, onContinue}) {
     const disabled = buttons.map(button => button.disabled);
     buttons.forEach(button => { button.disabled = true; });
     try { await callback(); }
-    catch (error) { const target=root.querySelector('#aslan-family-error');if(target)target.textContent=error.message; }
+    catch (error) { const target=root.querySelector('#aslan-family-error');if(target){target.textContent=error.message;target.tabIndex=-1;target.focus();} }
     finally { pending = false; buttons.forEach((button,index) => { button.disabled = disabled[index]; }); }
   };
   dialog.addEventListener('cancel', event => event.preventDefault());
@@ -40,5 +40,7 @@ export function mountAslanFamilyPopup(root, {onRoll, onContinue}) {
     dialog.querySelector('#aslan-family-choice-status').textContent = event.target.nextElementSibling.textContent + ' selected';
   });
   dialog.showModal();
-  (dialog.querySelector('#aslan-family-roll') ?? dialog.querySelector('input') ?? dialog.querySelector('#aslan-family-continue')).focus();
+  const focus=dialog.querySelector('#aslan-family-roll')??dialog.querySelector('#aslan-family-title');
+  if(focus){if(focus.tagName==='H2')focus.tabIndex=-1;focus.focus({preventScroll:true});}
+  dialog.scrollTop=0;
 }
