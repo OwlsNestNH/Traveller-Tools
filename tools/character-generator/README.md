@@ -283,3 +283,7 @@ The right-hand Character sheet and Selection preview bars form an accordion: ope
 At background selection, only Aezorgh open a centered modal over the dimmed, inactive base screen. The four granted skills appear in one line. Search the alphabetical list, select one skill, then Confirm to record it at level 0. New `.25` sessions offer all base skills except Jack-of-all-Trades (no benefit at level 0), psionic talents, Aslan cultural skills (Independence, Tolerance, Rites), and any already owned base or specialty. Engine validation uses the same eligibility and rejects duplicate, missing, multiple or specialized choices. Historical `.16`–`.24` saves keep their original ordinary background list, revision and replay outcomes. Other species retain their existing background interface and rules. Escape leaves this required choice open without recording anything.
 
 The shared character toolbar stays across the top on every generation screen, including background selection. Save, load, print, both logs, log download and New character remain visible without expanding a Character actions menu.
+
+## Statistics feedback and logs
+
+Statistics swaps and GM corrections no longer display the full audit summary in an Information banner. The cards and controls remain visible; roll feedback stays brief. Simple Log includes recorded rolls, results, and choices (including actions without dice), while detailed Aezorgh placement arithmetic stays in Full Log. Full Log, saved sessions, and engine mechanics are unchanged.
