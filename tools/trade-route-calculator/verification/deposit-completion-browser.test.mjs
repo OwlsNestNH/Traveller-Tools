@@ -345,7 +345,7 @@ async function catalogCase(page,result){
   {label:'Nav Changelog',href:'changes/nav.html'},
   {label:'Tool Locker Changelog',href:'changes/locker.html'},
   {label:'Trade Changelog',href:'changes/trade.html'},
-  {label:'Character Generator Changelog',href:'changes/character.html'},
+  {label:'Character Changelog',href:'changes/character.html'},
   {label:'Vehicle Changelog',href:'changes/vehicle.html'},
   {label:'Robot Builder Changelog',href:'changes/robot.html'},
   {label:'Combat Changelog',href:'changes/combat.html'}

@@ -53,7 +53,7 @@ try{
    assert.deepEqual(await page.locator('main .tool-card h2').allTextContents(),['Nav Calculator','Traveller Tool Locker','Traveller Ship Operations — Beta','Character Generator - Beta','Traveller Vehicle Builder','Robot Builder - Beta','Ship Combat Alpha','Ship’s Log & Ledger']);
    const card=page.locator('.tool-card').filter({has:page.getByRole('heading',{name:'Character Generator - Beta',exact:true})});
    check(name+' home fits',await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
-   const launch=page.waitForEvent('popup');await card.getByRole('link',{name:'Open Character Generator',exact:true}).click();const editor=await launch;
+   const launch=page.waitForEvent('popup');await card.getByRole('link',{name:'Launch Tool',exact:true}).click();const editor=await launch;
    await waitForCharacter(editor,name+'-launch');assert.equal(editor.url(),tool);
    assert.equal(await editor.locator('#release-version').textContent(),'Beta 0.1');
    assert.deepEqual(await editor.locator('[name=species] option').evaluateAll(nodes=>nodes.map(node=>node.value)),['human','aslan','vargr','aezorgh']);
@@ -94,7 +94,7 @@ try{
    await notes.close();assert.equal(await editor.locator('[name=name]').inputValue(),'Unsaved release check '+width);
    const repeat=editor.waitForEvent('popup');await editor.getByRole('link',{name:'Character Generator changelog (opens in a new tab)',exact:true}).press('Enter');const reopened=await repeat;
    await reopened.getByRole('heading',{name:'Character Generator changelog',exact:true}).waitFor();await reopened.close();assert.equal(await editor.locator('[name=name]').inputValue(),'Unsaved release check '+width);
-   await card.getByRole('link',{name:'Character Generator Changelog',exact:true}).click();await page.getByRole('heading',{name:'Character Generator changelog',exact:true}).waitFor();assert.equal(page.url(),notesURL);
+   await card.getByRole('link',{name:'Character Changelog',exact:true}).click();await page.getByRole('heading',{name:'Character Generator changelog',exact:true}).waitFor();assert.equal(page.url(),notesURL);
    await page.getByRole('link',{name:'Copyright & usage notice',exact:true}).click();check(name+' copyright return',await page.locator('#copyright-notice').isVisible());
    if(published){check(name+' shared counter ran',hits.length>=1);assert.ok(hits.every(url=>url==='https://hits.sh/owlsnestnh.github.io/Traveller-Tools/tools/character-generator.svg'));}else assert.deepEqual(hits,[]);
    checks.push(name+' repeated changelog, Back navigation and closing retain unsaved editor');
