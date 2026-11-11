@@ -1,5 +1,13 @@
 // Presentation-only catalogue. Every supported outcome has six alternatives.
 export const outcomeTaglines = Object.freeze({
+ 'aslan.training.female-associated': Object.freeze([
+  'A useful skill. Best discussed outside the clan hall.',
+  'The clan does not need to know how you know that.',
+  'For official purposes, you were only supervising.',
+  'This qualification is filed under “tactical necessity.”',
+  'Your résumé and your clan résumé are now separate documents.',
+  'A fine achievement. Perhaps leave it out of the ancestral ballad.',
+ ]),
  'statistics.low': Object.freeze([
   'The dice have selected “character development.”',
   'Your strongest attribute appears to be optimism.',

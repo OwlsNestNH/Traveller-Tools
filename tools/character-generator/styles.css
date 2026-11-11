@@ -394,3 +394,6 @@ body[data-stage="background"] #message{max-width:var(--tool-content-width);margi
 @media(min-width:761px){.species-skill-dialog{width:min(800px,calc(100vw - 48px))}.species-skill-options{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
 @media(min-width:761px){.species-skill-dialog{padding:18px 24px}.species-skill-dialog h2{margin-bottom:8px}.species-skill-dialog p{margin-block:8px}.species-skill-options{max-height:none;overflow:visible;gap:4px}.species-skill-options .background-tile{min-height:36px;padding:5px 10px}.species-skill-footer{margin-top:12px}#species-skill-dialog #species-skill-search{min-height:40px;margin:6px 0 10px}#species-skill-dialog #background-form button[type=submit]{min-height:44px}}
+
+/* Flavour remains ordinary readable text within the existing factual result. */
+.result-panel .outcome-tagline{font-style:italic;}

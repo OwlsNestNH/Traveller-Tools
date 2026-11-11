@@ -293,3 +293,7 @@ The shared character toolbar stays across the top on every generation screen, in
 ## Optional Aezorgh Charisma (.27)
 
 New Aezorgh leave CHA off by default. For a Vargr campaign, explicitly select Charisma in optional characteristics or use Add another characteristic after accepting scores. CHA is half SOC, rounded down (JTAS Vol. 11 p. 67), with no dice roll, and follows subsequent SOC changes. There is no automatic campaign detection. Existing compatible `.16`–`.25` characters keep their recorded CHA and replay unchanged. Revision `.26` is reserved for a separate unpublished candidate.
+
+### Aslan training taglines
+
+Six presentation-only alternatives can accompany a male Aslan’s actual gain of a female-associated skill from native career training (Aliens of Charted Space Volume 1 Update 2026, p. 19). Animals requires veterinary; Electronics requires comms, computers or remote ops, never sensors. Explicit non-male identity overrides a referee-selected male rules branch. Choices require original training provenance and a positive selected-skill audit change, including first acquisition at level 0. Pending, capped, source-assisted and unrelated awards remain factual-only. Historical delayed specialties retain their original provenance. The existing result panel shows the stable action-ID-selected line without new save fields, RNG calls, notifications or engine imports in HTTP mode. Run `node tools/character-generator/verification/aslan-training-tagline-browser.mjs /path/to/playwright` for static/HTTP desktop/mobile checks and screenshots.
