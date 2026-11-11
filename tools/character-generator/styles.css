@@ -367,3 +367,29 @@ body[data-stage="background"] #message{max-width:var(--tool-content-width);margi
  #background-selection-content{padding:20px}
  #background-actions[open] .toolbar{width:calc(100vw - 28px)}
 }
+
+/* Reusable species choice dialog; enabled only for the Aezorgh background step. */
+.species-skill-dialog{width:min(620px,calc(100vw - 32px));max-height:calc(100dvh - 32px);box-sizing:border-box;padding:24px;border:1px solid #63869c;border-radius:14px;background:#102433;color:#edf4f8;box-shadow:0 24px 80px #0009}
+.species-skill-dialog::backdrop{background:rgba(9,17,24,.76)}
+.species-skill-dialog h2{margin:0 0 12px;font-size:1.5rem}
+.species-skill-dialog p{font-size:.92rem}
+#species-skill-granted{color:#c1d2dd;line-height:1.5}
+#species-skill-search{width:100%;margin:8px 0 14px}
+.species-skill-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;max-height:42dvh;overflow:auto;border:0;padding:2px;margin:0}
+.species-skill-options .background-tile{min-height:38px;padding:6px 10px;font-size:.92rem}
+.species-skill-options .background-tile[hidden]{display:none}
+.species-skill-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px}
+.species-skill-footer p{margin:0}
+#species-skill-error:empty{display:none}
+#species-skill-error{color:#ffbdad}
+@media(max-width:460px){.species-skill-dialog{padding:18px}.species-skill-options{grid-template-columns:1fr;max-height:40dvh}}
+
+.species-skill-legend{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+#species-skill-dialog .species-skill-options input[type="radio"]{width:18px;height:18px;min-height:0;padding:0;margin:0;accent-color:var(--accent)}
+
+#species-skill-dialog #background-selected-summary{margin:0;font-size:15px}
+#species-skill-dialog #background-form button[type=submit]{width:auto;min-width:150px}
+
+@media(min-width:761px){.species-skill-dialog{width:min(800px,calc(100vw - 48px))}.species-skill-options{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+@media(min-width:761px){.species-skill-dialog{padding:18px 24px}.species-skill-dialog h2{margin-bottom:8px}.species-skill-dialog p{margin-block:8px}.species-skill-options{max-height:none;overflow:visible;gap:4px}.species-skill-options .background-tile{min-height:36px;padding:5px 10px}.species-skill-footer{margin-top:12px}#species-skill-dialog #species-skill-search{min-height:40px;margin:6px 0 10px}#species-skill-dialog #background-form button[type=submit]{min-height:44px}}

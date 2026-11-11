@@ -31,7 +31,7 @@ test('escape result colors use the verified selected-skill outcome, never notes 
 });
 
 test('unmodified .16 checkpoints and earlier escape results replay exactly without changing save bytes',()=>{
- assert.equal(RULES_REVISION,'character-preview-2026-11-09.24');
+ assert.equal(RULES_REVISION,'character-preview-2026-11-09.25');
  for(const expected of legacy.checkpoints){
   const session={...legacy.session,events:legacy.session.events.slice(0,expected.count)},raw=JSON.stringify(session,null,2);
   const imported=importSession(raw);assert.equal(exportSession(imported),raw);assert.equal(imported.rulesRevision,'character-preview-2026-11-09.16');
