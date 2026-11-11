@@ -34,6 +34,15 @@ jobs:
         run: |
           npm install --prefix "$RUNNER_TEMP/character-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
           node "$RUNNER_TEMP/character-playwright/node_modules/playwright/cli.js" install --with-deps chromium
+      - name: Player-facing popup interactions
+        run: node tools/character-generator/verification/journey-popup-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+      - name: Upload player popup review
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: player-popup-review-${{ github.event.pull_request.head.sha }}
+          path: tools/character-generator/verification/artifacts/journey-*
+          if-no-files-found: warn
       - name: Compact character sheet interactions
         run: node tools/character-generator/verification/final-sheet-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
       - name: Upload compact sheet review
