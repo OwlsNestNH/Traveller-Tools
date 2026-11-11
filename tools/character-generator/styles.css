@@ -317,9 +317,9 @@ body[data-stage="background"] header{padding:24px 0 0;min-height:0;background:no
 body[data-stage="background"] header h1{font-size:30px;line-height:1.2;letter-spacing:.015em;margin:0 0 10px;text-shadow:none}
 body[data-stage="background"] header .eyebrow{display:none}body[data-stage="background"] header .lead{font-size:13px;letter-spacing:.03em;color:#b8ccd6;margin:0}
 body[data-stage="background"] header .beta-notice-trigger{font-size:12px;min-height:44px;padding:6px 10px;border-color:#557380}
-#background-utilities{display:flex;justify-content:flex-end;gap:8px;align-items:flex-start;max-width:1244px;margin:-42px auto 0;padding-right:125px;min-height:44px;position:relative;z-index:2}
-#background-utilities>button,#background-actions>summary{font-size:13px;min-height:44px;padding:10px 12px;cursor:pointer;border:1px solid #557380;border-radius:6px;background:#09212e;color:#dce8ee;box-shadow:none}
-#background-actions{margin:0;border:0;padding:0;background:transparent}#background-actions[open] .toolbar{position:absolute;right:0;top:48px;z-index:3;width:min(600px,calc(100vw - 76px));padding:14px;background:#09212e;border:1px solid #557380;border-radius:8px;box-shadow:0 10px 20px #0008;grid-template-columns:repeat(3,minmax(0,1fr));margin:0}
+
+
+
 body[data-stage="background"] .toolbar button,body[data-stage="background"] .toolbar>*{font-size:13px;min-height:44px}
 #background-orientation{list-style:none;display:flex;gap:20px;justify-content:space-between;max-width:1000px;padding:0;margin:26px auto 26px 0;color:#8fa9b7;font-size:16px}#background-orientation [aria-current]{color:#ffda58;font-weight:700}
 body[data-stage="background"] .layout{max-width:1244px;width:100%;margin:0 auto;grid-template-columns:minmax(0,2.03fr) minmax(320px,1fr);gap:26px;align-items:start}
@@ -339,15 +339,15 @@ body[data-stage="background"] #workspace>.actions{margin:10px 0 0;justify-conten
 body[data-stage="background"] #message{max-width:var(--tool-content-width);margin:8px auto;font-size:14px}body[data-stage="background"] #message:empty{display:none}body[data-stage="background"] footer{max-width:1244px;font-size:12px;margin:25px auto 0;padding-top:14px}
 }
 @media screen and (min-width:1321px){#background-orientation{margin-left:auto;margin-right:auto;max-width:1244px;justify-content:flex-start;gap:75px}}
-@media screen and (max-width:1000px){body[data-stage="background"]{padding-inline:22px}body[data-stage="background"] .layout{grid-template-columns:minmax(0,1.65fr) minmax(280px,1fr);gap:18px}.background-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#background-utilities{margin:14px 0 0;padding:0;justify-content:flex-start}#background-orientation{gap:12px;font-size:14px}body[data-stage="background"] #workspace{padding:22px}body[data-stage="background"] #workspace h2{font-size:27px}}
-@media screen and (max-width:760px){body[data-stage="background"]{padding-inline:16px}body[data-stage="background"] header{padding-top:20px}body[data-stage="background"] header h1{font-size:26px}body[data-stage="background"] header .beta-notice-trigger{font-size:11px}#background-orientation{display:flex;flex-wrap:wrap;gap:10px 20px;margin:20px 0}#background-orientation li{font-size:13px}body[data-stage="background"] .layout{grid-template-columns:1fr;gap:18px}body[data-stage="background"] #workspace{padding:20px 18px}.background-grid{grid-template-columns:1fr}.background-counter{gap:5px;padding:12px 14px}.background-counter>*{width:auto}.background-counter strong{font-size:18px}.background-counter span{font-size:14px}.background-instruction{font-size:16px}.background-tile{min-height:52px}.background-tile span{font-size:16px}body[data-stage="background"] #background-form button[type=submit]{font-size:18px}#background-selection{padding:20px}.background-eyebrow{margin-bottom:18px}#background-actions[open] .toolbar{left:0;right:auto;width:calc(100vw - 32px);grid-template-columns:repeat(2,minmax(0,1fr))}body[data-stage="background"] footer{font-size:11px}}
-@media print{#background-utilities,#background-orientation,#background-selection,#background-record>summary{display:none!important}#background-rail,#background-record,#background-record::details-content,#background-record>#sheet{display:block!important;content-visibility:visible!important}#background-record{border:0;padding:0}}
+@media screen and (max-width:1000px){body[data-stage="background"]{padding-inline:22px}body[data-stage="background"] .layout{grid-template-columns:minmax(0,1.65fr) minmax(280px,1fr);gap:18px}.background-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#background-orientation{gap:12px;font-size:14px}body[data-stage="background"] #workspace{padding:22px}body[data-stage="background"] #workspace h2{font-size:27px}}
+@media screen and (max-width:760px){body[data-stage="background"]{padding-inline:16px}body[data-stage="background"] header{padding-top:20px}body[data-stage="background"] header h1{font-size:26px}body[data-stage="background"] header .beta-notice-trigger{font-size:11px}#background-orientation{display:flex;flex-wrap:wrap;gap:10px 20px;margin:20px 0}#background-orientation li{font-size:13px}body[data-stage="background"] .layout{grid-template-columns:1fr;gap:18px}body[data-stage="background"] #workspace{padding:20px 18px}.background-grid{grid-template-columns:1fr}.background-counter{gap:5px;padding:12px 14px}.background-counter>*{width:auto}.background-counter strong{font-size:18px}.background-counter span{font-size:14px}.background-instruction{font-size:16px}.background-tile{min-height:52px}.background-tile span{font-size:16px}body[data-stage="background"] #background-form button[type=submit]{font-size:18px}#background-selection{padding:20px}.background-eyebrow{margin-bottom:18px}body[data-stage="background"] footer{font-size:11px}}
+@media print{#background-orientation,#background-selection,#background-record>summary{display:none!important}#background-rail,#background-record,#background-record::details-content,#background-record>#sheet{display:block!important;content-visibility:visible!important}#background-record{border:0;padding:0}}
 
 /* Shared outer width stays stable when moving between creation steps. */
 @media screen {
  :root{--tool-content-width:1440px;--tool-gutter:24px}
  body[data-stage="background"]{padding-inline:0}
- body > :is(header,main,.toolbar,.notice,.log-section,footer,#message,#background-utilities,#background-orientation){width:min(var(--tool-content-width),calc(100% - 2 * var(--tool-gutter)));max-width:var(--tool-content-width);margin-inline:auto}
+ body > :is(header,main,.toolbar,.notice,.log-section,footer,#message,#background-orientation){width:min(var(--tool-content-width),calc(100% - 2 * var(--tool-gutter)));max-width:var(--tool-content-width);margin-inline:auto}
  #background-rail{gap:14px}
  #background-record,#background-selection{padding:0;margin:0;border:1px solid #557380;border-radius:8px;background:#09212e;min-width:0}
  #background-rail > details > summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:58px;padding:14px 20px;list-style:none;color:#bed0dc;font-size:16px;line-height:1.4}
@@ -365,5 +365,31 @@ body[data-stage="background"] #message{max-width:var(--tool-content-width);margi
  :root{--tool-gutter:14px}
  #background-rail > details > summary{padding:14px 16px;font-size:15px}
  #background-selection-content{padding:20px}
- #background-actions[open] .toolbar{width:calc(100vw - 28px)}
+
 }
+
+/* Reusable species choice dialog; enabled only for the Aezorgh background step. */
+.species-skill-dialog{width:min(620px,calc(100vw - 32px));max-height:calc(100dvh - 32px);box-sizing:border-box;padding:24px;border:1px solid #63869c;border-radius:14px;background:#102433;color:#edf4f8;box-shadow:0 24px 80px #0009}
+.species-skill-dialog::backdrop{background:rgba(9,17,24,.76)}
+.species-skill-dialog h2{margin:0 0 12px;font-size:1.5rem}
+.species-skill-dialog p{font-size:.92rem}
+#species-skill-granted{color:#c1d2dd;line-height:1.5}
+#species-skill-search{width:100%;margin:8px 0 14px}
+.species-skill-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;max-height:42dvh;overflow:auto;border:0;padding:2px;margin:0}
+.species-skill-options .background-tile{min-height:38px;padding:6px 10px;font-size:.92rem}
+.species-skill-options .background-tile[hidden]{display:none}
+.species-skill-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px}
+.species-skill-footer p{margin:0}
+#species-skill-error:empty{display:none}
+#species-skill-error{color:#ffbdad}
+@media(max-width:460px){.species-skill-dialog{padding:18px}.species-skill-options{grid-template-columns:1fr;max-height:40dvh}}
+
+.species-skill-legend{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+#species-skill-dialog .species-skill-options input[type="radio"]{width:18px;height:18px;min-height:0;padding:0;margin:0;accent-color:var(--accent)}
+
+#species-skill-dialog #background-selected-summary{margin:0;font-size:15px}
+#species-skill-dialog #background-form button[type=submit]{width:auto;min-width:150px}
+
+@media(min-width:761px){.species-skill-dialog{width:min(800px,calc(100vw - 48px))}.species-skill-options{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+@media(min-width:761px){.species-skill-dialog{padding:18px 24px}.species-skill-dialog h2{margin-bottom:8px}.species-skill-dialog p{margin-block:8px}.species-skill-options{max-height:none;overflow:visible;gap:4px}.species-skill-options .background-tile{min-height:36px;padding:5px 10px}.species-skill-footer{margin-top:12px}#species-skill-dialog #species-skill-search{min-height:40px;margin:6px 0 10px}#species-skill-dialog #background-form button[type=submit]{min-height:44px}}
