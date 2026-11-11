@@ -25,3 +25,8 @@ test('exceptional referee resolution stays available and is not labelled as the 
 test('each Rite flavor outcome has six stable nonmechanical variants',async()=>{
  const {ASLAN_ORIGIN_TAGLINES,originTagline}=await import('../gui/aslan-origin-taglines.mjs');for(const id of ['ordinary','shares','reward','contact','rival','scar','endurance']){const key='rite:'+id;assert.equal(ASLAN_ORIGIN_TAGLINES[key].length,6);assert.equal(new Set(ASLAN_ORIGIN_TAGLINES[key]).size,6);assert.equal(originTagline(key,'event'),originTagline(key,'event'));}
 });
+test('two labelled information panels keep required actions and actual events on the main screen',()=>{
+ for(const values of [[3,4],[1,1],[2,2],[6,6]]){
+  const r=force(build({stage:'aslan-rite'}),'roll-aslan-rite',{},values),model=aslanRitePopupModel(r.state),html=aslanRitePopupView(model,{esc:String}),main=html.split('</dialog>')[0];assert.match(main,/id="aslan-rite-info-open"/);assert.match(main,/id="aslan-rite-calculation-open"/);assert.match(html,/aria-labelledby="aslan-rite-calculation-title"/);assert.doesNotMatch(main,/rite-comparisons/);assert.ok(main.includes(riteEventSummary(model)));assert.ok(main.includes(values.join(' + ')+' = '+values.reduce((a,b)=>a+b)));assert.match(main,/id="aslan-family-continue"/);if(values[0]===1)assert.match(main,/Clan Share quantity/);if(values[0]===2)assert.match(main,/Record restricted credit/);assert.match(html,/Equal does not count/);
+ }
+});
