@@ -175,3 +175,7 @@ body[data-family-popup="true"] header h1{color:#ffd052}body[data-family-popup="t
 #aslan-family-dialog.aslan-clan-dialog .clan-gm-toggle input{width:22px;height:22px;min-height:22px}
 
 #aslan-family-dialog.aslan-clan-dialog .clan-result-type{overflow-wrap:anywhere}
+/* Source-entered clan names/scopes must also wrap in the underlying audit and sheet. */
+body[data-family-popup="true"] #workspace,body[data-family-popup="true"] #sheet,body[data-family-popup="true"] #message{overflow-wrap:anywhere}
+
+.aslan-origin-sheet,body[data-stage="aslan-pride"] #workspace,body[data-stage="aslan-pride"] #message{overflow-wrap:anywhere}
