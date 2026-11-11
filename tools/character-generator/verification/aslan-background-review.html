@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Aslan background skills design review</title>
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../gui/aslan-family-popup.css">
+  <style>
+    #aslan-family-dialog .background-title-row{display:flex;align-items:center;justify-content:space-between;gap:14px}
+    #aslan-family-dialog h2{font-size:44px;overflow-wrap:anywhere}
+    #aslan-family-dialog #aslan-background-info-open{flex:none;width:44px;height:44px;min-height:44px;padding:0;border:2px solid #ffd34b;border-radius:50%;background:transparent;color:#ffd34b;font-family:Georgia,serif;font-size:29px;font-style:normal;font-weight:700;line-height:1}
+    #aslan-family-dialog .aslan-family-band{font-size:23px;margin:6px 0 17px}
+    #aslan-family-dialog .background-family-award{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px 16px;margin:0 0 21px;padding:12px 16px;border:1px solid #639fb9;border-radius:10px;background:#082434}
+    #aslan-family-dialog .background-family-award p{font-size:18px;line-height:1.4;margin:0;color:#c4d8e7}
+    #aslan-family-dialog .background-family-award strong{display:block;font-size:19px;color:#f5f7fa}
+    #aslan-family-dialog .background-award-chip{display:inline-flex;align-items:center;gap:13px;padding:6px 13px;border:1px solid #639fb9;border-radius:9px;color:#c4d8e7;font-size:20px;font-weight:700;white-space:nowrap}
+    #aslan-family-dialog .background-award-chip b{color:#f5f7fa}
+    #aslan-family-dialog .background-instruction-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:0 0 15px}
+    #aslan-family-dialog .background-instruction-row h3{font-size:29px;margin:0 0 4px;line-height:1.25;color:#f5f7fa}
+    #aslan-family-dialog .background-instruction-row p{font-size:19px;margin:0;color:#c4d8e7}
+    #aslan-family-dialog .background-progress{border:2px solid #639fb9;border-radius:12px;background:#082434;padding:9px 16px;text-align:center;min-width:158px}
+    #aslan-family-dialog .background-progress strong{display:block;color:#ffd34b;font-size:29px;line-height:1.15}
+    #aslan-family-dialog .background-progress span{font-size:15px;font-weight:700;color:#c4d8e7}
+    #aslan-family-dialog .background-progress[data-ready="true"]{border-color:#ffd34b}
+    #aslan-family-dialog .background-skill-options{border:0;margin:0;padding:0;min-inline-size:0}
+    #aslan-family-dialog .background-skill-options legend{font-size:17px;font-weight:600;color:#c4d8e7;padding:0;margin:0 0 10px}
+    #aslan-family-dialog .background-skill-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+    #aslan-family-dialog .background-skill-choice{display:flex;align-items:center;gap:13px;min-width:0;min-height:63px;margin:0;padding:11px 16px;border:2px solid #639fb9;border-radius:12px;background:#071e2c;color:#f5f7fa;font-size:23px;font-weight:750;cursor:pointer;line-height:1.25}
+    #aslan-family-dialog .background-skill-choice:hover{background:#123245}
+    #aslan-family-dialog .background-skill-choice:has(input:checked){border-color:#ffd34b;background:#293d3b}
+    #aslan-family-dialog .background-skill-choice input{appearance:auto;flex:none;width:27px;height:27px;min-height:27px;padding:0;margin:0;accent-color:#ffd34b}
+    #aslan-family-dialog .background-skill-choice span{min-width:0;overflow-wrap:anywhere}
+    #aslan-family-dialog .background-selection{margin:17px 0 0;padding:13px 16px;border:1px solid #639fb9;border-radius:10px;background:#082434;min-height:80px}
+    #aslan-family-dialog .background-selection h3{color:#c4d8e7;font-size:16px;margin:0 0 5px;font-weight:650}
+    #aslan-family-dialog .background-selection p{font-size:19px;line-height:1.4;margin:0;color:#f5f7fa;overflow-wrap:anywhere}
+    #aslan-family-dialog .background-selection .background-empty{color:#c4d8e7}
+    #aslan-family-dialog #aslan-background-choice-status{font-size:18px;line-height:1.4;color:#ffd34b;margin:10px 0 15px;font-weight:650}
+    #aslan-family-dialog .background-next{font-size:18px;color:#c4d8e7;line-height:1.4;margin:0 0 15px}
+    #aslan-family-dialog footer{align-items:center;gap:14px;margin-top:0}
+    #aslan-family-dialog footer p{font-size:16px}
+    #aslan-family-dialog #aslan-background-continue{font-size:21px;min-height:60px;padding:12px 18px;max-width:100%}
+    #aslan-family-dialog .background-review-note{font-size:14px;line-height:1.4;color:#bdd1df;margin:13px 0 0}
+    #aslan-family-dialog .background-review-status{font-size:17px;line-height:1.4;color:#ffd34b;margin:12px 0 0;overflow-wrap:anywhere}
+    #aslan-family-dialog .background-review-status:empty{display:none}
+    #aslan-background-info{box-sizing:border-box;width:min(660px,calc(100vw - 28px));max-height:calc(100dvh - 32px);overflow:auto;margin:auto;padding:24px;background:#061d2b;color:#f5f7fa;border:2px solid #73b1cc;border-radius:15px}
+    #aslan-background-info::backdrop{background:rgba(1,12,20,.72)}
+    #aslan-background-info .info-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    #aslan-background-info h2{font-size:28px;margin:0;color:#f5f7fa}
+    #aslan-background-info h3{font-size:22px;color:#ffd34b;margin:22px 0 10px}
+    #aslan-background-info p{font-size:18px;line-height:1.5;color:#c4d8e7}
+    #aslan-background-info button{width:44px;height:44px;min-height:44px;flex:none;padding:0;background:#142e3c;border:1px solid #73b1cc;border-radius:8px;color:#f5f7fa;font-size:28px}
+    #aslan-background-info :focus-visible{outline:3px solid #ffcf3e;outline-offset:3px}
+    @media(max-width:650px){
+      #aslan-family-dialog{padding:20px 18px}
+      #aslan-family-dialog h2{font-size:29px;line-height:1.2}
+      #aslan-family-dialog .aslan-family-band{font-size:17px;margin:8px 0 14px}
+      #aslan-family-dialog .background-family-award{padding:11px 12px;margin-bottom:17px}
+      #aslan-family-dialog .background-family-award p{font-size:15px}
+      #aslan-family-dialog .background-family-award strong{font-size:17px}
+      #aslan-family-dialog .background-award-chip{font-size:18px}
+      #aslan-family-dialog .background-instruction-row h3{font-size:24px}
+      #aslan-family-dialog .background-instruction-row p{font-size:17px}
+      #aslan-family-dialog .background-progress{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:8px 12px}
+      #aslan-family-dialog .background-progress strong{font-size:25px}
+      #aslan-family-dialog .background-skill-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+      #aslan-family-dialog .background-skill-choice{font-size:17px;min-height:57px;padding:10px;gap:9px}
+      #aslan-family-dialog .background-skill-choice input{width:22px;height:22px;min-height:22px}
+      #aslan-family-dialog .background-skill-options legend{font-size:16px}
+      #aslan-family-dialog .background-selection{padding:12px;margin-top:15px}
+      #aslan-family-dialog .background-selection p,#aslan-family-dialog #aslan-background-choice-status,#aslan-family-dialog .background-next{font-size:17px}
+      #aslan-family-dialog footer p{font-size:14px}
+      #aslan-family-dialog #aslan-background-continue{font-size:20px;width:100%}
+      #aslan-background-info{padding:20px 18px}
+      #aslan-background-info h2{font-size:25px}
+      #aslan-background-info p{font-size:17px}
+    }
+    @media(max-width:360px){#aslan-family-dialog .background-skill-grid{grid-template-columns:1fr}#aslan-family-dialog .background-skill-choice{font-size:20px}}
+  </style>
+</head>
+<body data-family-popup="true">
+  <header><div><h1>CHARACTER BUILDER</h1><p>TRAVELLER RPG</p></div></header>
+  <main class="layout">
+    <section id="workspace"><p class="eyebrow">BACKGROUND</p><h2>Your family and heritage</h2></section>
+    <aside id="sheet"><h2>Character summary</h2><p>Aslan</p></aside>
+  </main>
+  <dialog id="aslan-family-dialog" class="aslan-family-dialog" aria-labelledby="aslan-family-title" aria-describedby="background-review-note">
+    <p class="aslan-family-eyebrow">DESIGN REVIEW · BACKGROUND</p>
+    <div class="background-title-row"><h2 id="aslan-family-title" tabindex="-1">Your background skills</h2><button type="button" id="aslan-background-info-open" aria-label="About background skill choices" aria-haspopup="dialog" aria-controls="aslan-background-info">i</button></div>
+    <p class="aslan-family-band" id="background-example-context"></p>
+    <section class="background-family-award" aria-labelledby="background-family-label">
+      <p><strong id="background-family-label">Already awarded by your family</strong>Separate from the choices below.</p>
+      <span class="background-award-chip" id="background-family-award"></span>
+    </section>
+    <form id="aslan-background-form">
+      <div class="background-instruction-row">
+        <div><h3 id="background-choice-instruction"></h3><p>Each starts at level 0.</p></div>
+        <div class="background-progress" id="background-progress" role="status" aria-live="polite" aria-atomic="true"><strong id="background-selection-count"></strong><span>skills selected</span></div>
+      </div>
+      <fieldset class="background-skill-options" aria-describedby="background-choice-instruction aslan-background-choice-status">
+        <legend id="background-options-legend">Available background skills</legend>
+        <div class="background-skill-grid" id="background-skill-grid"></div>
+      </fieldset>
+      <section class="background-selection" aria-labelledby="background-selection-title">
+        <h3 id="background-selection-title">Your selection · not yet recorded</h3>
+        <p id="background-selected-summary" class="background-empty">No skills selected yet.</p>
+      </section>
+      <p id="aslan-background-choice-status" aria-live="polite"></p>
+      <p class="background-next">Next: your Rite of Passage.</p>
+      <footer>
+        <p>AoCS1 Update 2026, p. 20</p>
+        <button type="submit" id="aslan-background-continue" disabled>Accept skills &amp; continue <span aria-hidden="true">→</span></button>
+      </footer>
+    </form>
+    <p class="background-review-note" id="background-review-note">Design review only. This is a fixed example; selections stay in this preview. No character is changed or saved.</p>
+    <p class="background-review-status" id="aslan-background-status" role="status" aria-live="polite"></p>
+  </dialog>
+  <dialog id="aslan-background-info" aria-labelledby="aslan-background-info-title">
+    <div class="info-heading"><h2 id="aslan-background-info-title">About background skills</h2><button type="button" id="aslan-background-info-close" aria-label="Close background skill information">×</button></div>
+    <h3>How many do I choose?</h3>
+    <p>Your ordinary background allowance is 3 + your EDU modifier, with a minimum of 0. Each chosen skill starts at level 0.</p>
+    <p id="background-allowance-example"></p>
+    <h3>What about my family skill?</h3>
+    <p>Family awards are additional. They do not use up your ordinary background choices. Choose distinct new skills; an already awarded skill is not offered again.</p>
+    <p id="background-family-example"></p>
+    <h3>Why these choices?</h3>
+    <p id="background-source-branch"></p>
+    <p>There is no roll on this screen. Select your own skills, then accept them when your selection is complete.</p>
+    <h3>What comes next?</h3>
+    <p>The Rite of Passage follows your ordinary background choices. Its roll is a separate step.</p>
+    <p>AoCS1 Update 2026, pp. 17, 20–21. Preview uses the existing generator rules.</p>
+  </dialog>
+  <script type="module">
+    import {SPECIES_RULES} from '../engine/expansion-pack.mjs';
+    import {characteristicDM} from '../engine/session.mjs';
+    import {aslanFamilyResult} from '../engine/aslan-origin.mjs';
+    import {backgroundSelection, backgroundStatus, backgroundSummary} from '../gui/background-skills.mjs';
+
+    // Static review only: no session creation, commands, RNG, network writes or storage.
+    // ?gender=female is a second fixed example for CI, not a character-editing control.
+    // The family example explicitly represents an earlier choice of Animals, not a
+    // choice made on this screen. The existing lower-class family row supports it.
+    const gender = new URLSearchParams(location.search).get('gender') === 'female' ? 'female' : 'male';
+    const edu = gender === 'female' ? 10 : 8;
+    const modifier = characteristicDM(edu);
+    const rules = SPECIES_RULES.aslan.background;
+    const family = aslanFamilyResult({soc:4,die:1,gender});
+    const familyAward = family.effects[0].options[0].effects[0];
+    const state = {
+      stage:'background',
+      backgroundRemaining:Math.max(0,rules.count.add + modifier),
+      backgroundOptions:rules.byGender[gender],
+      character:{skills:{[familyAward.name]:familyAward.value}}
+    };
+    const dialog = document.querySelector('#aslan-family-dialog');
+    const info = document.querySelector('#aslan-background-info');
+    const infoButton = document.querySelector('#aslan-background-info-open');
+    const form = document.querySelector('#aslan-background-form');
+    const grid = document.querySelector('#background-skill-grid');
+    const progress = document.querySelector('#background-progress');
+    const count = document.querySelector('#background-selection-count');
+    const summary = document.querySelector('#background-selected-summary');
+    const choiceStatus = document.querySelector('#aslan-background-choice-status');
+    const reviewStatus = document.querySelector('#aslan-background-status');
+    const continueButton = document.querySelector('#aslan-background-continue');
+    const capitalGender = gender[0].toUpperCase() + gender.slice(1);
+    let selected = [];
+
+    document.querySelector('#background-example-context').textContent = 'Example character · Aslan ' + gender + ' · EDU ' + edu;
+    document.querySelector('#background-family-award').append(document.createTextNode(familyAward.name + ' '));
+    const awardLevel = document.createElement('b');
+    awardLevel.textContent = familyAward.value;
+    document.querySelector('#background-family-award').append(awardLevel);
+    document.querySelector('#background-choice-instruction').textContent = 'Choose ' + state.backgroundRemaining + ' new skills.';
+    document.querySelector('#background-options-legend').textContent = capitalGender + ' background choices';
+    document.querySelector('#background-allowance-example').textContent = 'In this example: EDU ' + edu + ' gives DM ' + (modifier >= 0 ? '+' : '') + modifier + '. Your allowance is 3 + ' + modifier + ' = ' + state.backgroundRemaining + ' choices.';
+    document.querySelector('#background-family-example').textContent = 'This example already has ' + familyAward.name + ' ' + familyAward.value + ', chosen earlier from the lower-class family result. It is shown separately and omitted from the available choices.';
+    document.querySelector('#background-source-branch').textContent = 'These are the ordinary background options for the recorded ' + gender + ' rules branch. Other branches use their own source list.';
+
+    for (const [index, name] of backgroundSelection(state).options.entries()) {
+      const label = document.createElement('label');
+      label.className = 'background-skill-choice';
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.name = 'skills';
+      input.value = name;
+      input.id = 'aslan-background-skill-' + index;
+      const text = document.createElement('span');
+      text.textContent = name;
+      label.append(input,text);
+      grid.append(label);
+    }
+    function updateSelection() {
+      selected = [...form.querySelectorAll('[name="skills"]:checked')].map(input => input.value);
+      const selection = backgroundSelection(state,selected);
+      count.textContent = selection.skills.length + ' / ' + selection.required;
+      progress.dataset.ready = String(selection.valid);
+      summary.textContent = backgroundSummary(selection.skills);
+      summary.classList.toggle('background-empty',selection.skills.length === 0);
+      choiceStatus.textContent = backgroundStatus(selection);
+      continueButton.disabled = !selection.valid;
+      reviewStatus.textContent = '';
+    }
+    form.addEventListener('change',updateSelection);
+    form.addEventListener('submit',event => {
+      event.preventDefault();
+      if (!backgroundSelection(state,selected).valid) return;
+      reviewStatus.textContent = 'Preview complete: ' + selected.map(name => name + ' 0').join(', ') + '. Next would be your Rite of Passage. No skills were recorded and no rite was rolled.';
+      reviewStatus.scrollIntoView({block:'nearest'});
+    });
+    infoButton.addEventListener('click',() => { info.showModal(); info.scrollTop = 0; });
+    document.querySelector('#aslan-background-info-close').addEventListener('click',() => info.close());
+    info.addEventListener('close',() => infoButton.focus({preventScroll:true}));
+    dialog.addEventListener('cancel',event => event.preventDefault());
+    updateSelection();
+    dialog.showModal();
+    document.querySelector('#aslan-family-title').focus({preventScroll:true});
+    dialog.scrollTop = 0;
+  </script>
+</body>
+</html>
