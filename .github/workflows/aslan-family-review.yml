@@ -24,7 +24,7 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/character-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
           node "$RUNNER_TEMP/character-playwright/node_modules/playwright/cli.js" install chromium
       - name: Verify family transitions, replay and tags
-        run: node --test tools/character-generator/verification/aslan-family-*.test.mjs tools/character-generator/verification/aslan-birth-popup.test.mjs tools/character-generator/verification/aslan-estate-popup.test.mjs tools/character-generator/verification/aslan-clan-popup.test.mjs tools/character-generator/verification/aslan-pride-popup.test.mjs tools/character-generator/verification/aslan-origin-*.test.mjs
+        run: node --test tools/character-generator/verification/aslan-family-*.test.mjs tools/character-generator/verification/aslan-birth-popup.test.mjs tools/character-generator/verification/aslan-estate-popup.test.mjs tools/character-generator/verification/aslan-clan-popup.test.mjs tools/character-generator/verification/aslan-pride-popup.test.mjs tools/character-generator/verification/aslan-background-popup.test.mjs tools/character-generator/verification/aslan-origin-*.test.mjs
       - name: Capture actual desktop and mobile GUI plus next-screen design
         run: node tools/character-generator/verification/aslan-family-popup-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
       - name: Verify updated origin and species-selection regressions
@@ -37,5 +37,10 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: aslan-family-review-${{ github.event.pull_request.head.sha }}
-          path: tools/character-generator/verification/artifacts/aslan-family-*
+          path: |
+            tools/character-generator/verification/artifacts/aslan-family-*
+            !tools/character-generator/verification/artifacts/aslan-family-pride-review-*
+            !tools/character-generator/verification/artifacts/aslan-family-clan-review-*
+            !tools/character-generator/verification/artifacts/aslan-family-estate-review-*
+            !tools/character-generator/verification/artifacts/aslan-family-background-review-*
           if-no-files-found: warn

@@ -1,3 +1,4 @@
+import {hasAslanBackgroundPopup,aslanBackgroundPopupView} from './aslan-background-popup.mjs';
 import {speciesSkillPopupView} from './species-skill-popup.mjs';
 // Presentation state only; eligibility and allowance always come from the engine.
 export function backgroundSelection(state, selected=[]) {
@@ -18,6 +19,7 @@ export function backgroundStatus(s){return s.remaining<0?'Remove '+(-s.remaining
 export function backgroundSummary(skills){return skills.length?'Selected: '+skills.map(name=>name+' 0').join(' · '):'No skills selected yet.';}
 export function backgroundSkillsView(state,selected,catalog,{esc}){
  const s=backgroundSelection(state,selected);
+ if(hasAslanBackgroundPopup(state))return aslanBackgroundPopupView(state,s,{esc,status:backgroundStatus(s),summary:backgroundSummary(s.skills)});
  if(state.character.species==='aezorgh')return speciesSkillPopupView(state,s,{esc});
  return '<p class="background-instruction">Choose '+s.required+' skills. Each begins at level 0.</p><form id="background-form"><div class="background-counter" role="status" aria-live="polite" aria-atomic="true"><strong id="background-count">'+s.skills.length+' / '+s.required+' selected</strong><span id="background-status">'+backgroundStatus(s)+'</span></div><fieldset class="background-options"><legend>Available skills</legend><div class="background-grid">'+s.options.map((name,i)=>'<label class="background-tile'+(s.skills.includes(name)?' is-selected':'')+'"><input id="background-skill-'+i+'" type="checkbox" name="skills" value="'+esc(name)+'" '+(s.skills.includes(name)?'checked':'')+'><span>'+esc(name)+'</span></label>').join('')+'</div></fieldset><p id="background-selected-summary">'+esc(backgroundSummary(s.skills))+'</p><div class="actions"><button type="submit" '+(s.valid?'':'disabled')+'>Accept background skills</button></div></form>';
 }
@@ -28,7 +30,7 @@ export function backgroundRailView(state,selected,catalog,{esc}){
 export function syncBackgroundSkills(root,state,selected,{esc},busy=false){
  const s=backgroundSelection(state,selected),form=root.querySelector('#background-form');if(!form)return s;
  for(const input of form.querySelectorAll('[name="skills"]')){input.checked=s.skills.includes(input.value);input.disabled=busy;input.closest('label').classList.toggle('is-selected',input.checked);}
- form.querySelector('#background-count').textContent=s.skills.length+' / '+s.required+' selected';form.querySelector('#background-status').textContent=backgroundStatus(s);form.querySelector('#background-selected-summary').textContent=backgroundSummary(s.skills);const count=root.querySelector('#background-selection-count');if(count)count.textContent=s.skills.length+' / '+s.required;const preview=root.querySelector('#background-preview');if(preview)preview.innerHTML=backgroundPreview(s.skills,{esc});form.querySelector('[type="submit"]').disabled=busy||!s.valid;return s;
+ form.querySelector('#background-count').textContent=s.skills.length+' / '+s.required+(hasAslanBackgroundPopup(state)?'':' selected');const progress=form.querySelector('#background-progress');if(progress)progress.dataset.ready=String(s.valid);form.querySelector('#background-status').textContent=backgroundStatus(s);form.querySelector('#background-selected-summary').textContent=backgroundSummary(s.skills);const count=root.querySelector('#background-selection-count');if(count)count.textContent=s.skills.length+' / '+s.required;const preview=root.querySelector('#background-preview');if(preview)preview.innerHTML=backgroundPreview(s.skills,{esc});form.querySelector('[type="submit"]').disabled=busy||!s.valid;return s;
 }
 // Keep the shared toolbar in place; move only the live character record.
 export function mountBackgroundLayout(root,state,selected,catalog,{esc}){

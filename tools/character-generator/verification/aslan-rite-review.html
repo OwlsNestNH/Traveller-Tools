@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Aslan Rite of Passage design review</title>
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="stylesheet" href="../gui/aslan-family-popup.css">
+  <style>
+    #aslan-family-dialog .rite-title-row{display:flex;align-items:center;justify-content:space-between;gap:14px}
+    #aslan-family-dialog h2{font-size:44px;overflow-wrap:anywhere}
+    #aslan-family-dialog #aslan-rite-info-open{flex:none;width:44px;height:44px;min-height:44px;padding:0;border:2px solid #ffd34b;border-radius:50%;background:transparent;color:#ffd34b;font-family:Georgia,serif;font-size:29px;font-style:normal;font-weight:700;line-height:1}
+    #aslan-family-dialog .aslan-family-band{font-size:23px;margin:6px 0 17px}
+    #aslan-family-dialog .rite-dice{display:flex;align-items:center;justify-content:center;gap:12px;color:#ffd34b}
+    #aslan-family-dialog .rite-dice .aslan-family-mystery{width:150px;height:150px;margin:8px 0}
+    #aslan-family-dialog .aslan-family-ready h3{font-size:38px;line-height:1.2;margin:0 0 14px}
+    #aslan-family-dialog .aslan-family-ready .rite-instruction{font-size:23px;margin:0 0 17px;line-height:1.4}
+    #aslan-family-dialog #aslan-rite-roll{font-size:38px;min-width:274px;margin-bottom:16px}
+    #aslan-family-dialog .aslan-family-ready .aslan-family-hint{font-size:19px;margin:0 0 19px}
+    #aslan-family-dialog .rite-stats-label{font-size:17px;line-height:1.4;color:#c4d8e7;margin:0 0 9px}
+    #aslan-family-dialog .rite-starting-stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px;margin:0 0 18px;padding:0;list-style:none}
+    #aslan-family-dialog .rite-starting-stats li{border:1px solid #639fb9;border-radius:10px;background:#082434;text-align:center;padding:9px 4px;color:#c4d8e7;font-size:15px;font-weight:700}
+    #aslan-family-dialog .rite-starting-stats strong{display:block;color:#f5f7fa;font-size:27px;line-height:1.25}
+    #aslan-family-dialog .rite-result-roll{display:flex;align-items:center;gap:23px;padding:5px 0 15px}
+    #aslan-family-dialog .rite-result-roll .rite-dice{gap:10px;flex:none}
+    #aslan-family-dialog .rite-result-roll .aslan-family-die{width:64px;height:64px}
+    #aslan-family-dialog .rite-roll-label{display:block;color:#c4d8e7;font-size:17px}
+    #aslan-family-dialog .rite-result-roll strong{font-size:36px;line-height:1.25}
+    #aslan-family-dialog .rite-result-card{display:flex;align-items:center;justify-content:space-between;gap:16px;border:2px solid #639fb9;border-radius:12px;background:#082434;padding:16px 21px;margin:0 0 16px}
+    #aslan-family-dialog .rite-result-label{color:#c4d8e7;font-size:18px;margin:0 0 4px}
+    #aslan-family-dialog .rite-result-name{font-size:42px;font-weight:800;color:#ffd34b;margin:0;line-height:1.15}
+    #aslan-family-dialog .rite-result-explanation{max-width:310px;color:#f5f7fa;font-size:20px;line-height:1.4;margin:0}
+    #aslan-family-dialog .rite-comparisons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:0;margin:0 0 10px;list-style:none}
+    #aslan-family-dialog .rite-comparisons li{min-width:0;border:1px solid #639fb9;border-radius:10px;background:#071e2c;padding:11px 14px;color:#c4d8e7;font-size:16px;line-height:1.4}
+    #aslan-family-dialog .rite-comparisons li[data-counts="true"]{border-color:#ffd34b;background:#233b3d}
+    #aslan-family-dialog .rite-comparisons strong{display:block;color:#f5f7fa;font-size:22px;line-height:1.25;margin-bottom:3px}
+    #aslan-family-dialog .rite-comparisons li[data-counts="true"] span{color:#ffd34b}
+    #aslan-family-dialog .rite-boundary-note{color:#c4d8e7;font-size:16px;line-height:1.4;margin:0 0 15px}
+    #aslan-family-dialog .rite-event{border-left:3px solid #639fb9;padding:0 0 0 13px;margin:0 0 17px;color:#c4d8e7;font-size:18px;line-height:1.4}
+    #aslan-family-dialog .rite-event strong{color:#f5f7fa}
+    #aslan-family-dialog .rite-next{border-top:1px solid #639fb9;padding-top:13px;margin:0 0 15px;color:#c4d8e7;font-size:17px;line-height:1.45}
+    #aslan-family-dialog .rite-next strong{display:block;color:#f5f7fa;font-size:20px;margin-bottom:3px}
+    #aslan-family-dialog footer{align-items:center;gap:14px;margin-top:0}
+    #aslan-family-dialog footer p{font-size:16px}
+    #aslan-family-dialog #aslan-rite-continue{font-size:22px;min-height:60px;padding:12px 20px;max-width:100%}
+    #aslan-family-dialog .rite-review-note{font-size:14px;line-height:1.4;color:#bdd1df;margin:13px 0 0}
+    #aslan-family-dialog .rite-review-status{font-size:17px;line-height:1.4;color:#ffd34b;margin:12px 0 0;overflow-wrap:anywhere}
+    #aslan-family-dialog .rite-review-status:empty{display:none}
+    #aslan-family-dialog [hidden]{display:none!important}
+    #aslan-rite-info{box-sizing:border-box;width:min(660px,calc(100vw - 28px));max-height:calc(100dvh - 32px);overflow:auto;margin:auto;padding:24px;background:#061d2b;color:#f5f7fa;border:2px solid #73b1cc;border-radius:15px}
+    #aslan-rite-info::backdrop{background:rgba(1,12,20,.72)}
+    #aslan-rite-info .info-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    #aslan-rite-info h2{font-size:28px;margin:0;color:#f5f7fa}
+    #aslan-rite-info h3{font-size:22px;color:#ffd34b;margin:22px 0 10px}
+    #aslan-rite-info p,#aslan-rite-info li{font-size:18px;line-height:1.5;color:#c4d8e7}
+    #aslan-rite-info li{margin:10px 0}
+    #aslan-rite-info button{width:44px;height:44px;min-height:44px;flex:none;padding:0;background:#142e3c;border:1px solid #73b1cc;border-radius:8px;color:#f5f7fa;font-size:28px}
+    #aslan-rite-info :focus-visible{outline:3px solid #ffcf3e;outline-offset:3px}
+    @media(max-width:650px){
+      #aslan-family-dialog{padding:20px 18px}
+      #aslan-family-dialog h2{font-size:30px;white-space:normal}
+      #aslan-family-dialog .aslan-family-band{font-size:20px;margin-bottom:13px}
+      #aslan-family-dialog .rite-dice .aslan-family-mystery{width:108px;height:108px;margin:8px 0}
+      #aslan-family-dialog .aslan-family-ready h3{font-size:28px;margin-bottom:12px}
+      #aslan-family-dialog .aslan-family-ready .rite-instruction{font-size:19px;margin-bottom:14px}
+      #aslan-family-dialog #aslan-rite-roll{font-size:30px;width:100%;min-width:0;min-height:60px}
+      #aslan-family-dialog .aslan-family-ready .aslan-family-hint{font-size:17px}
+      #aslan-family-dialog .rite-starting-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+      #aslan-family-dialog .rite-stats-label{font-size:16px}
+      #aslan-family-dialog .rite-result-roll{flex-wrap:wrap;gap:12px;padding:0 0 13px}
+      #aslan-family-dialog .rite-result-roll .aslan-family-die{width:53px;height:53px}
+      #aslan-family-dialog .rite-roll-label{font-size:15px}
+      #aslan-family-dialog .rite-result-roll strong{font-size:29px}
+      #aslan-family-dialog .rite-result-card{display:block;padding:14px 16px}
+      #aslan-family-dialog .rite-result-name{font-size:35px}
+      #aslan-family-dialog .rite-result-label{font-size:16px}
+      #aslan-family-dialog .rite-result-explanation{font-size:18px;margin-top:10px;max-width:none}
+      #aslan-family-dialog .rite-comparisons{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+      #aslan-family-dialog .rite-comparisons li{font-size:15px;padding:10px}
+      #aslan-family-dialog .rite-comparisons strong{font-size:20px}
+      #aslan-family-dialog .rite-event{font-size:17px}
+      #aslan-family-dialog .rite-next{font-size:16px}
+      #aslan-family-dialog .rite-next strong{font-size:19px}
+      #aslan-family-dialog footer p{font-size:14px}
+      #aslan-family-dialog #aslan-rite-continue{font-size:21px;width:100%}
+      #aslan-rite-info{padding:20px 18px}
+      #aslan-rite-info h2{font-size:25px}
+      #aslan-rite-info p,#aslan-rite-info li{font-size:17px}
+    }
+  </style>
+</head>
+<body data-family-popup="true">
+  <header><div><h1>CHARACTER BUILDER</h1><p>TRAVELLER RPG</p></div></header>
+  <main class="layout">
+    <section id="workspace"><p class="eyebrow">BACKGROUND</p><h2>Your family and heritage</h2></section>
+    <aside id="sheet"><h2>Character summary</h2><p>Aslan</p></aside>
+  </main>
+  <dialog id="aslan-family-dialog" class="aslan-family-dialog" aria-labelledby="aslan-family-title" aria-describedby="rite-review-note">
+    <p class="aslan-family-eyebrow">DESIGN REVIEW · RITE OF PASSAGE</p>
+    <div class="rite-title-row"><h2 id="aslan-family-title" tabindex="-1">Your Rite of Passage</h2><button type="button" id="aslan-rite-info-open" aria-label="About the Rite of Passage and RITE modifier" aria-haspopup="dialog" aria-controls="aslan-rite-info">i</button></div>
+    <p class="aslan-family-band">Aslan · Background skills complete</p>
+    <section id="rite-ready" aria-labelledby="rite-ready-title">
+      <div class="aslan-family-ready">
+        <div class="rite-dice" id="rite-mystery-dice" aria-hidden="true"></div>
+        <h3 id="rite-ready-title">Take your place among the adults.</h3>
+        <p class="rite-instruction">Roll 2D, then count the characteristics<br>that are higher than your total.</p>
+        <button type="button" id="aslan-rite-roll" aria-describedby="rite-review-note">Roll 2D</button>
+        <p class="aslan-family-hint">Your dice, comparisons and RITE modifier will appear here.</p>
+      </div>
+      <p class="rite-stats-label">Example characteristics before the rite</p>
+      <ul class="rite-starting-stats" id="rite-starting-stats" aria-label="Example characteristics before the rite"></ul>
+    </section>
+    <section id="rite-result" hidden aria-labelledby="rite-result-name">
+      <div class="rite-result-roll">
+        <div class="rite-dice" id="rite-result-dice" aria-hidden="true"></div>
+        <div><span class="rite-roll-label">Fixed example rite roll · 2D</span><strong id="rite-roll-total"></strong></div>
+      </div>
+      <div class="rite-result-card">
+        <div><p class="rite-result-label">Your Rite of Passage modifier</p><h3 class="rite-result-name" id="rite-result-name" tabindex="-1"></h3></div>
+        <p class="rite-result-explanation" id="rite-result-explanation"></p>
+      </div>
+      <p class="rite-stats-label">Count 1 for each characteristic greater than the roll total.</p>
+      <ul class="rite-comparisons" id="rite-comparisons" aria-label="RITE calculation from all six characteristics"></ul>
+      <p class="rite-boundary-note">Equal does not count. Use the scores before any rite event changes them.</p>
+      <p class="rite-event" id="rite-event"><strong>No doubles.</strong> These dice do not trigger an additional rite event.</p>
+      <p class="rite-next"><strong>Next: pre-career choices</strong>Review education options, or choose “Go straight to careers” on the next screen.</p>
+    </section>
+    <footer>
+      <p>AoCS1 Update 2026, pp. 20–21</p>
+      <button type="button" id="aslan-rite-continue" hidden>Continue to pre-career <span aria-hidden="true">→</span></button>
+    </footer>
+    <p class="rite-review-note" id="rite-review-note">Design review only. Roll 2D shows a fixed example; no dice are rolled. No character is changed or saved.</p>
+    <p class="rite-review-status" id="aslan-rite-status" role="status" aria-live="polite"></p>
+  </dialog>
+  <dialog id="aslan-rite-info" aria-labelledby="aslan-rite-info-title">
+    <div class="info-heading"><h2 id="aslan-rite-info-title">About your Rite of Passage</h2><button type="button" id="aslan-rite-info-close" aria-label="Close Rite of Passage information">×</button></div>
+    <p>Your ordinary background skills are chosen first. The rite is a separate, single 2D roll.</p>
+    <h3>How RITE is calculated</h3>
+    <ol>
+      <li>Add the two dice.</li>
+      <li>Compare the total with STR, DEX, END, INT, EDU and SOC.</li>
+      <li>Count each score that is <strong>strictly greater</strong> than the total. Equal or lower scores do not count.</li>
+    </ol>
+    <p>The count is your RITE modifier. Use it directly for checks that call for RITE; it is not converted to an ordinary characteristic DM.</p>
+    <h3>What if the dice match?</h3>
+    <p>Doubles also trigger the corresponding rite event from the source. Calculate RITE first, then resolve the event and any required follow-up before continuing.</p>
+    <p>Only matching dice trigger that event. This preview uses 3 and 4, so there is no additional event or reward.</p>
+    <h3>What comes next?</h3>
+    <p>The completed rite leads to pre-career education choices. Education is optional: “Go straight to careers” opens career selection instead. The rite itself does not enrol you in education or enter a career.</p>
+    <p>AoCS1 Update 2026, pp. 20–21. Preview follows the existing generator rules.</p>
+  </dialog>
+  <script type="module">
+    import {aslanFamilyDie} from '../gui/aslan-family-popup.mjs';
+
+    // Presentation only: no session creation, commands, RNG or storage.
+    // Source: engine/session.mjs, roll-aslan-rite and aslan-origin-complete.
+    // Verified using buildAslanOriginFixture({familySOC:4,familyDie:1,
+    // stage:'aslan-rite'}) and the recorded 3 + 4 test roll. This keeps the
+    // background review's male, EDU 8, lower-class family example consistent.
+    const example = Object.freeze({
+      dice:Object.freeze([3,4]),
+      stats:Object.freeze({STR:9,DEX:7,END:9,INT:8,EDU:8,SOC:4})
+    });
+    const total = example.dice.reduce((sum,die) => sum + die,0);
+    const comparisons = Object.entries(example.stats).map(([name,value]) => ({name,value,counts:value > total}));
+    const modifier = comparisons.filter(row => row.counts).length;
+    const dialog = document.querySelector('#aslan-family-dialog');
+    const info = document.querySelector('#aslan-rite-info');
+    const infoButton = document.querySelector('#aslan-rite-info-open');
+    const ready = document.querySelector('#rite-ready');
+    const result = document.querySelector('#rite-result');
+    const continueButton = document.querySelector('#aslan-rite-continue');
+
+    document.querySelector('#rite-mystery-dice').innerHTML = aslanFamilyDie() + aslanFamilyDie();
+    for (const {name,value,counts} of comparisons) {
+      const starting = document.createElement('li');
+      const startingValue = document.createElement('strong');
+      startingValue.textContent = value;
+      starting.append(document.createTextNode(name),startingValue);
+      document.querySelector('#rite-starting-stats').append(starting);
+      const comparison = document.createElement('li');
+      comparison.dataset.counts = String(counts);
+      const score = document.createElement('strong');
+      score.textContent = name + ' ' + value;
+      const calculation = document.createElement('span');
+      calculation.textContent = value + (counts ? ' > ' : value === total ? ' = ' : ' < ') + total + (counts ? ' · +1 RITE' : ' · No count');
+      comparison.append(score,calculation);
+      document.querySelector('#rite-comparisons').append(comparison);
+    }
+    document.querySelector('#aslan-rite-roll').addEventListener('click',() => {
+      if (ready.hidden) return;
+      document.querySelector('#rite-result-dice').innerHTML = example.dice.map(aslanFamilyDie).join('');
+      document.querySelector('#rite-roll-total').textContent = example.dice.join(' + ') + ' = ' + total;
+      document.querySelector('#rite-result-name').textContent = 'RITE +' + modifier;
+      document.querySelector('#rite-result-explanation').textContent = modifier + ' of 6 characteristics are greater than ' + total + '.';
+      ready.hidden = true;
+      result.hidden = false;
+      continueButton.hidden = false;
+      document.querySelector('#rite-result-name').focus({preventScroll:true});
+      dialog.scrollTop = 0;
+    });
+    continueButton.addEventListener('click',() => {
+      if (result.hidden) return;
+      const status = document.querySelector('#aslan-rite-status');
+      status.textContent = 'Preview complete. Next comes pre-career education, with “Go straight to careers” as a separate choice. No rite, education or career has been recorded.';
+      status.scrollIntoView({block:'nearest'});
+    });
+    infoButton.addEventListener('click',() => { info.showModal(); info.scrollTop = 0; });
+    document.querySelector('#aslan-rite-info-close').addEventListener('click',() => info.close());
+    info.addEventListener('close',() => infoButton.focus({preventScroll:true}));
+    dialog.addEventListener('cancel',event => event.preventDefault());
+    dialog.showModal();
+    document.querySelector('#aslan-rite-roll').focus({preventScroll:true});
+    dialog.scrollTop = 0;
+  </script>
+</body>
+</html>
