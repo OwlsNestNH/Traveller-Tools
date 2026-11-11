@@ -28,19 +28,24 @@
     #aslan-family-dialog .estate-review-status{font-size:18px;color:#ffd34b;line-height:1.4;margin:16px 0 0}
     #aslan-family-dialog .estate-review-status:empty{display:none}
     @media(max-width:650px){
-      #aslan-family-dialog .aslan-family-band{font-size:20px;margin-bottom:20px}
-      #aslan-family-dialog .estate-minimum{padding:7px 0 21px}
+      #aslan-family-dialog{padding:18px}
+      #aslan-family-dialog h2{font-size:28px;white-space:normal;overflow:visible}
+      #aslan-family-dialog .estate-increment{margin-bottom:14px;padding:12px}
+      #aslan-family-dialog .estate-inheritance{margin-bottom:14px}
+
+      #aslan-family-dialog .aslan-family-band{font-size:18px;margin-bottom:12px}
+      #aslan-family-dialog .estate-minimum{padding:0 0 14px}
       #aslan-family-dialog .estate-label{font-size:19px}
-      #aslan-family-dialog .estate-parcels{font-size:78px}
-      #aslan-family-dialog .estate-parcels span{font-size:26px}
+      #aslan-family-dialog .estate-parcels{font-size:64px}
+      #aslan-family-dialog .estate-parcels span{font-size:24px}
       #aslan-family-dialog .estate-basis{font-size:17px}
       #aslan-family-dialog .estate-increment{grid-template-columns:1fr;padding:14px 15px;gap:7px;margin-bottom:20px}
-      #aslan-family-dialog .estate-increment dt{font-size:18px}
+      #aslan-family-dialog .estate-increment dt{font-size:17px}
       #aslan-family-dialog .estate-increment dd{font-size:21px;text-align:left}
       #aslan-family-dialog .estate-increment .estate-increment-note{font-size:16px}
       #aslan-family-dialog .estate-inheritance{padding-left:14px;margin-bottom:19px}
-      #aslan-family-dialog .estate-inheritance h3{font-size:23px}
-      #aslan-family-dialog .estate-inheritance p{font-size:18px}
+      #aslan-family-dialog .estate-inheritance h3{font-size:21px}
+      #aslan-family-dialog .estate-inheritance p{font-size:16px}
       #aslan-family-dialog .estate-note{font-size:16px;margin-bottom:20px}
       #aslan-family-dialog footer{margin-top:0;gap:14px}
       #aslan-family-dialog footer p{font-size:14px}
@@ -57,7 +62,7 @@
   </main>
   <dialog id="aslan-family-dialog" class="aslan-family-dialog" aria-labelledby="aslan-family-title">
     <p class="aslan-family-eyebrow">DESIGN REVIEW · FAMILY ESTATE</p>
-    <h2 id="aslan-family-title" tabindex="-1">Your family estate</h2>
+    <h2 id="aslan-family-title">Your family estate</h2>
     <p class="aslan-family-band">Example: Aslan · Noble family · SOC 9</p>
     <section class="estate-minimum" aria-labelledby="estate-minimum-label">
       <p class="estate-label" id="estate-minimum-label">Minimum family landhold</p>
@@ -97,7 +102,8 @@
     document.querySelector('#aslan-estate-record').addEventListener('click', () => {
       document.querySelector('#aslan-estate-status').textContent = 'Design review only. No family estate has been recorded and no land has been awarded.';
     });
-    document.querySelector('#aslan-family-title').focus({preventScroll:true});
+    document.querySelector('#aslan-estate-record').focus({preventScroll:true});
+    dialog.scrollTop = 0;
   </script>
 </body>
 </html>
