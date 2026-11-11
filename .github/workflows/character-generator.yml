@@ -12,6 +12,30 @@ on:
 permissions:
   contents: read
 jobs:
+  statistics-taglines:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - name: Install pinned Chromium runner
+        run: |
+          npm install --prefix "$RUNNER_TEMP/character-playwright" --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright@1.58.2
+          node "$RUNNER_TEMP/character-playwright/node_modules/playwright/cli.js" install --with-deps chromium
+      - name: Verify statistical taglines and capture review screenshots
+        run: node tools/character-generator/verification/outcome-taglines-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+      - name: Upload tagline review
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: statistics-taglines-review-${{ github.event.pull_request.head.sha }}
+          path: tools/character-generator/verification/artifacts/outcome-taglines-*
+          if-no-files-found: warn
   character-generator:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
