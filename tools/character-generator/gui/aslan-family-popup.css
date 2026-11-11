@@ -27,3 +27,9 @@ body[data-family-popup="true"]{color-scheme:dark;--ink:#f1f5f8;--muted:#bdccd6;-
 body[data-family-popup="true"] header h1{color:#ffd052}body[data-family-popup="true"] #workspace,body[data-family-popup="true"] #sheet{background:linear-gradient(140deg,#062536ef,#03121deb);border:1px solid #517688}
 #aslan-family-dialog footer{width:100%;margin-inline:0;padding-bottom:0}#aslan-family-dialog input[type="radio"]{width:30px;min-height:30px;height:30px;padding:0;border:0;background:transparent}#aslan-family-dialog h2::before{display:none}#aslan-family-dialog button:disabled{opacity:1}
 #aslan-family-dialog .aslan-family-acquisition{font-size:20px;padding:14px;border:1px solid #73b1cc;border-radius:8px;color:#c4d8e7}
+
+#aslan-family-dialog .birth-dice{display:flex;justify-content:center;gap:10px}
+#aslan-family-dialog .birth-dice .aslan-family-mystery{width:150px;height:150px;margin:10px 0}
+#aslan-family-dialog .birth-note,#aslan-family-dialog .aslan-family-ready .birth-note{font-size:18px;max-width:600px;margin:0 auto 20px;text-align:center}
+#aslan-family-dialog .aslan-birth-ready h3{font-size:40px}
+@media(max-width:650px){#aslan-family-dialog .birth-dice .aslan-family-mystery{width:110px;height:110px}#aslan-family-dialog .aslan-birth-ready h3{font-size:28px}#aslan-family-dialog .birth-dice .aslan-family-die{width:55px;height:55px}}

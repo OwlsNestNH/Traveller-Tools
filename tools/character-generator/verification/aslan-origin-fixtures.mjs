@@ -9,6 +9,7 @@ export function settleOrigin(r,{until='precareer',familyDie=6,birthDice=[1,2],cl
   else if(s.stage==='aslan-family-result')r=run(r,'acknowledge-aslan-family');
   else if(s.stage==='effect-choice')r=run(r,'choose-effect',{index:0});
   else if(s.stage==='skill-choice'){const e=s.pendingChoice;const base=e.allowed?.[0];if(!base)break;r=run(r,'choose-skill',{name:base+' (source fixture)'});}
+  else if(s.stage==='aslan-birth-result')r=run(r,'acknowledge-aslan-birth-order');
   else if(s.stage==='aslan-birth-order')r=force(r,'roll-aslan-birth-order',{},birthDice);
   else if(s.stage==='aslan-estate'){if(s.currentAslanOrigin.estateOptions.requiresRefereeBaseline){if(!sourceDecisions.estate)break;r=run(r,'resolve-aslan-estate',sourceDecisions.estate);}else r=run(r,'resolve-aslan-estate',{method:'printed-minimum'});}
   else if(s.stage==='aslan-clan')r=force(r,'roll-aslan-clan',{},clanDice);

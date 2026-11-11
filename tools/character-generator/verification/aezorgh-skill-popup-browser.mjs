@@ -8,7 +8,7 @@ const {chromium}=createRequire(import.meta.url)(process.argv[2]||'playwright');
 const server=createServer();await new Promise(r=>server.listen(0,'127.0.0.1',r));
 const browser=await chromium.launch({headless:true,...(process.env.CHARACTER_BROWSER_EXECUTABLE?{executablePath:process.env.CHARACTER_BROWSER_EXECUTABLE}:{}),...(process.env.CHARACTER_BROWSER_CHANNEL?{channel:process.env.CHARACTER_BROWSER_CHANNEL}:{})});
 const key='traveller-character-generator.v1',origin='http://127.0.0.1:'+server.address().port,out=new URL('./artifacts/',import.meta.url),errors=[];await mkdir(out,{recursive:true});
-function fixture(species){let s=createSession('popup-ui-'+species);for(const type of ['setup','roll-statistics','accept-statistics'])s=execute(s,{type,payload:type==='setup'?{species,name:'Your Traveller'}:{}}).session;return s;}
+function fixture(species){let s=createSession('popup-ui-'+species);for(const type of ['setup','roll-statistics','accept-statistics'])s=execute(s,{type,payload:type==='setup'?{species,...(species==='aslan'?{gender:'male'}:{}),name:'Your Traveller'}:{}}).session;return s;}
 try{
  for(const width of [1440,800,390,320])for(const http of [false,true]){
   const context=await browser.newContext({viewport:{width,height:900}}),page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
