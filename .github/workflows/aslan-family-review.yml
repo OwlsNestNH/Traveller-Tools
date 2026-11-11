@@ -29,7 +29,7 @@ jobs:
         run: node tools/character-generator/verification/aslan-family-popup-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
       - name: Verify updated origin and species-selection regressions
         run: |
-          for suite in review-browser female-independence-browser aezorgh-selector-browser; do
+          for suite in review-browser female-independence-browser aezorgh-selector-browser aslan-event-outcomes-browser; do
             node "tools/character-generator/verification/$suite.mjs" "$RUNNER_TEMP/character-playwright/node_modules/playwright"
           done
       - name: Upload family review

@@ -27,14 +27,15 @@ try{
    const page=await context.newPage(),engineRequests=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(r.url().includes('/engine/'))engineRequests.push(r.url());});
    await page.goto(http?httpOrigin+'/?api=local':staticOrigin+'/tools/character-generator/');await page.getByRole('heading',{name:'Start your Traveller',exact:true}).waitFor();
    await page.evaluate(({key,raw})=>localStorage.setItem(key,raw),{key,raw:exportSession(f.r.session)});await page.reload();
-   const selector='[data-action="'+f.action+'"]'+(f.selector??'');await page.locator(selector).waitFor();
+   const selector=f.name==='rite'?'#aslan-family-continue':'[data-action="'+f.action+'"]'+(f.selector??'');await page.locator(selector).waitFor();
    // Source review is reversible, presentation-only, and cannot hide the typed controls after reload.
    const before=await current(page);await page.locator('[data-action=aslan-source-review]').click();await page.locator('[data-action=aslan-event-choices]').click();assert.equal((await current(page)).revision,before.revision);await page.locator(selector).waitFor();
    await page.locator('[data-action=aslan-source-review]').click();await page.reload();await page.locator(selector).waitFor();
-   if(f.prepare)await f.prepare(page);await page.locator(selector).dblclick();
+   if(f.prepare)await f.prepare(page);await page.locator(selector).evaluate(button=>{button.click();button.click();});
    await page.waitForFunction(revision=>Number(document.querySelector('#workspace')?.dataset.revision)>revision,before.revision);
-   const after=await current(page);assert.equal(after.revision,before.revision+1);f.check(after.state);assert.equal(await page.locator(selector).count(),0);
+   const after=await current(page);assert.equal(after.revision,before.revision+1);f.check(after.state);if(f.name==='rite'){assert.equal(after.state.stage,'aslan-rite-result');assert.equal(after.state.character.equipmentCredits.length,1);assert.match(await page.locator(selector).innerText(),/Continue to pre-career/);}else assert.equal(await page.locator(selector).count(),0);
    await page.reload();await page.waitForFunction(revision=>Number(document.querySelector('#workspace')?.dataset.revision)===revision,after.revision);assert.deepEqual((await current(page)).state,after.state);
+   if(f.name==='rite'){await page.locator(selector).evaluate(button=>{button.click();button.click();});await page.waitForFunction(revision=>Number(document.querySelector('#workspace')?.dataset.revision)===revision,after.revision+1);const done=await current(page);assert.equal(done.state.stage,'precareer');assert.deepEqual(done.state.character.equipmentCredits,after.state.character.equipmentCredits);assert.equal(done.state.character.cash,0);assert.deepEqual(done.log.at(-1).rolls,[]);await page.locator('#precareer-dialog[open]').waitFor();}
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,f.name+' overflow');if(http)assert.deepEqual(engineRequests,[],'HTTP must not import engine');
    console.log('PASS '+f.name+' '+width+' '+(http?'HTTP':'static')+' click/double-click/reload/source-back');
   }finally{await context.close();}
