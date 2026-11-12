@@ -25,7 +25,7 @@ async function blocked(p,button,{type,focus,detail,shot}){
  const raw=await saved(p),state=raw?project(JSON.parse(raw)).state:null;
  assert.equal(await button.isEnabled(),true);await button.click();
  const warning=p.locator('.required-action-warning:visible');await warning.waitFor();assert.match(await warning.innerText(),detail);
- const info=warning.getByRole('button',{name:"About Crow's assistance"});await info.click();assert.equal(await info.getAttribute('aria-expanded'),'true');assert.match(await warning.locator('.crow-assistance-help').innerText(),/Your selections stay here/);assert.match(await warning.innerText(),detail);await info.click();assert.equal(await info.getAttribute('aria-expanded'),'false');
+ const info=warning.getByRole('button',{name:"About Crow's assistance"});await info.click();if(await info.getAttribute('aria-haspopup')==='dialog'){await p.locator('#crow-introduction-dialog[open]').waitFor();await p.keyboard.press('Escape');assert.equal(await info.evaluate(n=>n===document.activeElement),true);}else{assert.equal(await info.getAttribute('aria-expanded'),'true');assert.match(await warning.locator('.crow-assistance-help').innerText(),/Your selections stay here/);await info.click();assert.equal(await info.getAttribute('aria-expanded'),'false');}assert.match(await warning.innerText(),detail);
  const title=await warning.locator('strong').innerText();await button.click();assert.equal(await warning.locator('strong').innerText(),title);
  assert.equal(await saved(p),raw);if(raw)assert.deepEqual(project(JSON.parse(await saved(p))).state,state);
  const target=p.locator(focus).first();assert.equal(await target.getAttribute('aria-invalid'),'true');assert.equal(await target.evaluate(n=>n===document.activeElement),true);

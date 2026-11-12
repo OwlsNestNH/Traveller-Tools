@@ -39,10 +39,10 @@ test('Crow introduction keeps only the approved product history and assistance r
 });
 
 test('scope clearing hides an orphaned warning after its invalid effect control is removed',()=>{
- const warning={hidden:false};clearRequiredActions({querySelectorAll:selector=>selector==='.required-action-warning'?[warning]:[]});assert.equal(warning.hidden,true);
+ const warning={hidden:false};clearRequiredActions({querySelector:()=>null,querySelectorAll:selector=>selector==='.required-action-warning'?[warning]:[]});assert.equal(warning.hidden,true);
  const attrs=new Map([['aria-invalid','true'],['aria-describedby','original-help required-action-warning-1']]);
  const control={getAttribute:k=>attrs.get(k),setAttribute:(k,v)=>attrs.set(k,v),removeAttribute:k=>attrs.delete(k)};
- clearRequiredActions({querySelectorAll:selector=>selector==='.required-action-warning'?[warning]:[control]});assert.equal(attrs.has('aria-invalid'),false);assert.equal(attrs.get('aria-describedby'),'original-help');
+ clearRequiredActions({querySelector:()=>null,querySelectorAll:selector=>selector==='.required-action-warning'?[warning]:[control]});assert.equal(attrs.has('aria-invalid'),false);assert.equal(attrs.get('aria-describedby'),'original-help');
 });
 
 test('only the three approved costume roles are selected; absent artwork falls back to the real base',()=>{

@@ -73,6 +73,7 @@ export function actionRequirements(action,state={},trigger={}){
  }
  return result;
 }
+export function requiredActionKey(state,control){return JSON.stringify([state.rng,state.stage,state.pending?.kind,state.pendingChoice?.selectionId,control.id||control.name]);}
 export function missingField(control){
  if(control.type==='checkbox'||control.type==='radio')return !control.checked;
  return !String(control.value??'').trim()||control.validity?.valid===false;
@@ -83,7 +84,8 @@ export function showRequiredAction(root,{control,type='generic',detail,key=''}){
  const scope=control.closest('dialog[open]')??root.querySelector('#workspace')??root.body;
  let warning=scope.querySelector(':scope > .required-action-warning');
  if(!warning){warning=root.createElement('div');warning.id='required-action-warning-'+(++serial);warning.className='required-action-warning';warning.setAttribute('role','alert');warning.setAttribute('aria-atomic','true');scope.prepend(warning);}
- const assistance=crowAssistanceView(root,{type});assistance.help.id=warning.id+'-crow-help';assistance.button.setAttribute('aria-controls',assistance.help.id);
+ const introduction=scope.querySelector(':scope > #crow-introduction');if(introduction)introduction.hidden=true;
+ const assistance=crowAssistanceView(root,{type,informationDialog:introduction?'crow-introduction-dialog':null});assistance.help.id=warning.id+'-crow-help';if(!introduction)assistance.button.setAttribute('aria-controls',assistance.help.id);
  const title=root.createElement('strong'),instruction=root.createElement('p');title.textContent=requiredHeadline(type,key);instruction.textContent=detail;
  const speech=root.createElement('div');speech.className='crow-speech';speech.append(title,instruction);
  warning.replaceChildren(assistance.row,speech,assistance.help);warning.hidden=false;
@@ -99,7 +101,7 @@ export function showRequiredAction(root,{control,type='generic',detail,key=''}){
 // before any command, draft persistence, RNG call or navigation can run.
 export function mountRequiredActions({document:root,getState,isBusy,backgroundSelection,studyValid}){
  const active=control=>control&&!control.disabled&&!control.closest('[hidden]');
- const fail=(control,type,detail)=>{const state=getState();showRequiredAction(root,{control,type,detail,key:JSON.stringify([state.rng,state.stage,state.pending?.kind,state.pendingChoice?.selectionId,control.id||control.name])});return true;};
+ const fail=(control,type,detail)=>{const state=getState();showRequiredAction(root,{control,type,detail,key:requiredActionKey(state,control)});return true;};
  function validate(action,trigger){
   const state=getState();
   if(action==='background'){
@@ -166,6 +168,7 @@ export function mountRequiredActions({document:root,getState,isBusy,backgroundSe
 export function clearRequiredActions(scope){
  if(!scope)return;
  for(const warning of scope.querySelectorAll('.required-action-warning'))warning.hidden=true;
+ const introduction=scope.querySelector('#crow-introduction');if(introduction)introduction.hidden=false;
  for(const control of scope.querySelectorAll('[aria-describedby]')){
   const ids=(control.getAttribute('aria-describedby')??'').split(/\s+/),remaining=ids.filter(id=>id&&!id.startsWith('required-action-warning-'));
   if(remaining.length===ids.length)continue;
