@@ -54,3 +54,14 @@ test('Crow tone uses explicit outcome status and keeps new choices informational
 test("Army contextual rule information has verified book pages and publisher link",async()=>{const {armyRuleInformation}=await import("../gui/career-template.mjs");for(let phase=0;phase<7;phase++){const info=armyRuleInformation(phase);assert.equal(info.book,"Core Rulebook Update 2022");assert.ok([24,25].includes(info.page));assert.equal(info.url,"https://www.mongoosepublishing.com/products/traveller-core-rulebook-update-2022");assert.ok(info.summary.length>50);}assert.equal(armyRuleInformation(3).page,25);});
 
 test("specialty summaries project names without effect levels or table rows",()=>{const names=catalog.careerPresentation["core.army"].specialtySkills;assert.deepEqual(Object.keys(names),["support","infantry","cavalry"]);assert.deepEqual(names.support,["Drive","Electronics (comms)","Explosives","Flyer","Mechanic","Medic","Profession"]);assert.deepEqual(names.infantry,["Athletics","Gun Combat","Heavy Weapons","Melee","Recon","Stealth"]);assert.deepEqual(names.cavalry,["Drive","Electronics (sensors)","Flyer","Heavy Weapons (vehicle)","Mechanic","Recon"]);const model=careerTemplateModel(state,catalog);for(const specialty of model.specialties)assert.deepEqual(specialty.skills,names[specialty.id]);});
+
+test('Army first service training explicitly offers Drive or Vacc Suit and records only the selected award',async()=>{
+ const {assignmentSetup,run}=await import('./assignment-fixtures.mjs');
+ const entry=run(run(assignmentSetup('army-pilot-1'),'skip-precareer'),'career',{id:'core.army',assignment:'support'});
+ assert.equal(entry.state.stage,'effect-choice');assert.deepEqual(entry.state.pendingChoice.options.map(o=>o.label),['Drive','Vacc Suit']);
+ assert.deepEqual(getCoreCareerPack('core.army').training.service[0][0].options.map(o=>o.label),['Drive','Vacc Suit']);
+ const raw=JSON.stringify(entry.session);for(const [index,name,other] of [[0,'Drive','Vacc Suit'],[1,'Vacc Suit','Drive']]){
+  assert.equal(entry.state.character.skills[name],undefined);const result=run(entry,'choose-effect',{index});assert.equal(result.state.character.skills[name],0);assert.equal(result.state.character.skills[other],undefined);assert.equal(result.session.events.length,entry.session.events.length+1);assert.equal(result.state.rng,entry.state.rng);assert.equal(JSON.stringify(entry.session),raw);
+  const replay=api({operation:'import',raw:JSON.stringify(result.session)});assert.equal(replay.ok,true);assert.equal(replay.state.character.skills[name],0);assert.equal(replay.state.character.skills[other],undefined);
+ }
+});
