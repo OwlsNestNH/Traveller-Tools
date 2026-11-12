@@ -1,3 +1,4 @@
+import {dismissTechnicalError} from './technical-error-browser-assertions.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {mkdir} from 'node:fs/promises';
@@ -24,7 +25,7 @@ try{
   await dialog.getByRole('radio',{name:'Admin',exact:true}).check();assert.equal(await dialog.locator('input:checked').count(),1);assert.equal(project(JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key))).state.stage,'background');
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);assert.ok((await dialog.locator('.background-tile').first().boundingBox()).height<=46);assert.ok((await dialog.locator('input[type=radio]').first().boundingBox()).height<=22);
   await page.screenshot({path:fileURLToPath(new URL('aezorgh-skill-popup-'+width+'-'+(http?'http':'static')+'.png',out)),fullPage:false});
-  if(http){let fail=true;await page.route('**/api/v1',async route=>{if(fail&&route.request().postDataJSON()?.command?.type==='background'){fail=false;await route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({ok:false,error:{message:'Synthetic retryable failure'}})});}else await route.continue();});await confirm.click();await page.locator('#species-skill-error').getByText('Synthetic retryable failure').waitFor();assert.equal(await dialog.locator('input:checked').count(),1);await page.unroute('**/api/v1');}
+  if(http){let fail=true;await page.route('**/api/v1',async route=>{if(fail&&route.request().postDataJSON()?.command?.type==='background'){fail=false;await route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({ok:false,error:{message:'Synthetic retryable failure'}})});}else await route.continue();});await confirm.click();await page.locator('#species-skill-error').getByText('Synthetic retryable failure').waitFor();assert.equal(await dialog.locator('input:checked').count(),1);await dismissTechnicalError(page);await page.unroute('**/api/v1');}
   await confirm.evaluate(button=>{button.form.requestSubmit();button.form.requestSubmit();});await dialog.waitFor({state:'detached'});
   const saved=JSON.parse(await page.evaluate(key=>localStorage.getItem(key),key));assert.equal(saved.events.filter(e=>e.command.type==='background').length,1);assert.equal(project(saved).state.character.skills.Admin,0);await context.close();
  }

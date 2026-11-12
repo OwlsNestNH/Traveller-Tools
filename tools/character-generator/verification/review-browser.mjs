@@ -1,3 +1,4 @@
+import {dismissTechnicalError} from './technical-error-browser-assertions.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {readFile} from 'node:fs/promises';
@@ -139,10 +140,10 @@ try {
   await page.evaluate(()=>Object.defineProperty(Storage.prototype,'setItem',{configurable:true,value(){throw new DOMException('test quota','QuotaExceededError');}}));
   page.on('dialog',dialog=>dialog.accept());await page.locator('#new').click();
   await page.getByRole('heading',{name:'Start your Traveller'}).waitFor();
-  assert.match(await page.locator('#message').textContent(),/could not save/);
+  assert.match(await page.locator('#message').textContent(),/could not save/);await dismissTechnicalError(page);
   await importFile(page,savedCharacter());
   await page.waitForFunction(()=>document.querySelector('#sheet h2').textContent==='Imported Traveller');
-  assert.match(await page.locator('#message').textContent(),/could not save/);
+  assert.match(await page.locator('#message').textContent(),/could not save/);await dismissTechnicalError(page);
  });
  assert.deepEqual(pageErrors,[]);
  console.log(JSON.stringify({checks,pageErrors},null,2));
