@@ -61,3 +61,5 @@
 @media(max-width:760px){#precareer-dialog>.popup-character-sheet-button{display:block;margin:0 0 10px auto;min-height:44px}}
 #final-sheet-content .career-rank-summary{background:#123b4e;border-color:var(--sheet-cyan);color:var(--sheet-ink)}
 @media print{#final-sheet-content .career-rank-summary{background:#fff;color:#111}}
+/* Keep desktop event controls above the fold; share the existing utility row. */
+@media(min-width:761px){#precareer-dialog:modal>.popup-character-sheet-button{position:absolute;right:140px;top:27px;margin:0;min-height:44px;padding:8px 12px;z-index:2}}
