@@ -1,5 +1,5 @@
 import {mountCrowIntroduction} from './crow-assistance.mjs';
-import {mountRequiredActions} from './required-action.mjs';
+import {mountRequiredActions,clearRequiredActions} from './required-action.mjs';
 import {physicalSexSelectView} from './physical-sex-setup.mjs';
 import {shareAwardLabel,readableFutureCondition,readableTrait} from './species-record-labels.mjs';
 import {educationCheckpointModel,educationCheckpointView,educationEventStoryView} from './education-event-checkpoint-view.mjs';
@@ -541,6 +541,10 @@ function render(){
  mountAslanClanInformation(document);mountAslanPrideInformation(document);mountAslanBackgroundInformation(document);mountAslanRiteInformation(document,{resultKey:JSON.stringify([operationGeneration,session.seed,session.events[0]?.id,projection.log.findLast(event=>event.type==='roll-aslan-rite')?.id,state.currentAslanOrigin?.rite?.dice,state.currentAslanOrigin?.rite?.statsBefore,state.currentAslanOrigin?.rite?.modifier,state.currentAslanOrigin?.rite?.additionalRolls])});
  mountEquipmentDialog(document,()=>send('cancel-deferred-equipment'));
 }
+function renderEffects(){
+ const list=$('#effect-list');clearRequiredActions(list.closest('dialog[open]')??$('#workspace'));
+ list.innerHTML=effects.map(effectView).join('');
+}
 function readEffects(){
  return [...document.querySelectorAll('[data-effect]')].map(row=>{
  const value={};row.querySelectorAll('[data-field]').forEach(input=>value[input.dataset.field]=input.dataset.field==='value'?Number(input.value):input.value);
@@ -566,8 +570,8 @@ document.addEventListener('click',async event=>{
  if(['redeem-clan-shares','verify-clan-share-lot','verify-clan-contact','resolve-land-claim','activate-aslan-access','resolve-aslan-access-conflict'].includes(action)&&event.detail>1)return;
  if(action==='select-career'){selectedCareer=el.dataset.id;clearActionNotice();render();$('#step-title')?.focus();return;}
  if(action==='career-list'){selectedCareer='';clearActionNotice();render();$('#step-title')?.focus();return;}
- if(action==='add-effect'){effects=readEffects();effects.push({kind:projection.state.stage==='psionic-games-decisions'?'stat':'skill',name:'',value:1,mode:'increase',role:'Contact'});$('#effect-list').innerHTML=effects.map(effectView).join('');return;}
- if(action==='remove-effect'){effects=readEffects();effects.splice(Number(el.dataset.index),1);$('#effect-list').innerHTML=effects.map(effectView).join('');return;}
+ if(action==='add-effect'){effects=readEffects();effects.push({kind:projection.state.stage==='psionic-games-decisions'?'stat':'skill',name:'',value:1,mode:'increase',role:'Contact'});renderEffects();return;}
+ if(action==='remove-effect'){effects=readEffects();effects.splice(Number(el.dataset.index),1);renderEffects();return;}
  if(action==='clan-add-weapon'){const items=readClanWeaponItems();if(items.length<projection.state.clanShareOptions.assetRules.maxItems){renderClanWeaponItems([...items,{quantity:1}]);document.querySelectorAll('[data-weapon-row]')[items.length]?.querySelector('input')?.focus();}return;}
  if(action==='clan-remove-weapon'){const items=readClanWeaponItems(),index=Number(el.dataset.index);if(items.length>1&&Number.isInteger(index)&&index>=0&&index<items.length){renderClanWeaponItems(items.filter((_,i)=>i!==index));document.querySelectorAll('[data-weapon-row]')[Math.min(index,items.length-2)]?.querySelector('input')?.focus();}return;}
  if(action==='redeem-clan-shares'&&$('#clan-share-kind').value==='land')return send(action,landRedemptionPayload(projection.state,readLandRows(),readLandFields()));
@@ -673,7 +677,7 @@ document.addEventListener('change',event=>{
   if(event.target.id==='gm-academy-training')send('gm-academy-training',{enabled:event.target.checked});
    if(event.target.id==='gm-physical-dice')send('gm-physical-dice',{enabled:event.target.checked});
    if(event.target.id==='gm-toggle')send('gm-mode',{enabled:event.target.checked});
- if(event.target.matches('[data-field="kind"]')){effects=readEffects();$('#effect-list').innerHTML=effects.map(effectView).join('');}
+ if(event.target.matches('[data-field="kind"]')){effects=readEffects();renderEffects();}
 });
 document.addEventListener('submit',async event=>{
  if(event.target.id==='gm-restore-form'){

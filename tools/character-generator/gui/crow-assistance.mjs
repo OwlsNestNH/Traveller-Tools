@@ -1,8 +1,19 @@
 // Use only the owner's verified Crow artwork. No substitute image is inferred.
-export const CROW_ASSISTANCE_IMAGE=null;
-export function crowAssistanceView(document){
- const row=document.createElement('div');row.className='crow-assistance';
- if(CROW_ASSISTANCE_IMAGE){const image=document.createElement('img');image.className='crow-assistance-image';image.src=CROW_ASSISTANCE_IMAGE;image.alt='Crow, your character-building assistant';image.width=56;image.height=56;row.append(image);}
+export const CROW_ASSISTANCE_IMAGE=Object.freeze({src:'./assets/crow-pet.png',kind:'sprite'});
+// Supplied artwork only. Empty costume slots fall back to the verified base pet.
+export const CROW_ASSISTANCE_VARIANTS=Object.freeze({technician:'./assets/crow-technician.png',professor:'./assets/crow-professor.png',referee:'./assets/crow-referee.png'});
+export function crowVariant(type){return type==='skills'?'professor':type==='referee'?'referee':'technician';}
+export function crowAsset(type,variants=CROW_ASSISTANCE_VARIANTS,base=CROW_ASSISTANCE_IMAGE){return variants[crowVariant(type)]??base;}
+function portrait(document,asset){
+ if(!asset)return null;
+ if(asset.kind==='sprite'){
+  const image=document.createElement('span');image.className='crow-assistance-image crow-assistance-sprite';image.setAttribute('role','img');image.setAttribute('aria-label','Crow, your character-building assistant');image.style.backgroundImage='url("'+asset.src+'")';return image;
+ }
+ const image=document.createElement('img');image.className='crow-assistance-image';image.src=typeof asset==='string'?asset:asset.src;image.alt='Crow, your character-building assistant';image.width=56;image.height=56;return image;
+}
+export function crowAssistanceView(document,{type='generic'}={}){
+ const row=document.createElement('div');row.className='crow-assistance';row.dataset.crowVariant=crowVariant(type);
+ const image=portrait(document,crowAsset(type));if(image)row.append(image);
  const words=document.createElement('span');words.textContent='CROW IS ASSISTING';row.append(words);
  const button=document.createElement('button');button.type='button';button.className='crow-assistance-info';button.textContent='i';button.setAttribute('aria-label',"About Crow's assistance");button.setAttribute('aria-expanded','false');
  const help=document.createElement('p');help.className='crow-assistance-help';help.hidden=true;help.textContent='Crow points out the choice or detail needed on this screen. Your selections stay here while you finish. You make the choices, and your referee makes any required rulings.';

@@ -417,3 +417,9 @@ body[data-stage="background"] #message{max-width:var(--tool-content-width);margi
 .crow-introduction-dialog h2{margin:0;color:#ffd15a}.crow-expansion{font-weight:700}.crow-series{font-size:.9rem}.crow-introduction-dialog blockquote{margin:20px 0;padding-left:16px;border-left:3px solid #ffd15a;color:#ffd15a;font-weight:700}
 #aslan-family-dialog .required-action-warning .crow-assistance-info{min-width:44px;min-height:44px;width:44px;height:44px;padding:0;border:2px solid #8b1018;border-radius:50%;background:#fff;color:#8b1018;font-size:1.1rem;box-shadow:none}
 #workspace #crow-introduction-title{font-size:1.7rem;line-height:1.3;margin:0;color:#ffd15a}#workspace #crow-introduction-title::before{display:none}
+.crow-assistance-sprite{display:inline-block;height:60.6667px;background-size:800% 1100%;background-position:0 0;background-repeat:no-repeat}
+.required-action-warning .crow-speech{position:relative;background:#fff;border:1px solid #c42b35;border-radius:9px;padding:12px;margin-top:8px}
+.required-action-warning .crow-speech::before{content:"";position:absolute;width:12px;height:12px;left:22px;top:-7px;transform:rotate(45deg);background:#fff;border-left:1px solid #c42b35;border-top:1px solid #c42b35}
+.required-action-warning .crow-speech strong{position:relative;font-size:1rem;line-height:1.4}
+.required-action-warning .crow-speech p{font-size:1rem;line-height:1.5}
+.crow-assistance-image{width:72px;height:72px;flex-basis:72px}.crow-assistance-sprite{height:78px}
