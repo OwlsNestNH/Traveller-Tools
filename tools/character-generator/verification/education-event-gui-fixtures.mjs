@@ -3,9 +3,10 @@ import {educationReady,forceEducation,command} from './education-result-fixtures
 export const eventFixture=row=>forceEducation(educationReady(),'education-event',{},[Math.max(1,row-6),Math.min(6,row-1)]);
 export const eventStep=(r,values)=>forceEducation(r,'roll-education-event-step',{pendingId:r.state.pendingEducationEventRoll.id},values);
 export function checkpointFixtures(){
- const fixtures=[];for(const row of [2,3,4,5,6,7,8,10,11,12])fixtures.push({label:'event-'+row,result:eventFixture(row),capture:[2,3,4,5,6,10].includes(row)});
- for(const row of [4,6,8,11])fixtures.push({label:'resolved-'+row,result:eventStep(eventFixture(row),row===6?[5]:[6,6]),capture:row===6});
+ const fixtures=[];for(const row of [2,3,4,5,6,7,8,10,11,12])fixtures.push({label:'event-'+row,result:eventFixture(row),capture:[2,3,4,5,6,8,10,11,12].includes(row)});
+ for(const row of [4,6,8,11])fixtures.push({label:'resolved-'+row,result:eventStep(eventFixture(row),row===6?[5]:[6,6]),capture:row===6||row===8});
  for(const index of [0,1])fixtures.push({label:'potential-'+index,result:command(eventFixture(2),'choose-effect',{index})});
+ fixtures.push({label:'political-failure',result:eventStep(eventFixture(8),[1,1]),capture:true});
  const recorded=command(eventFixture(2),'gm-override',{field:'stat.PSI',value:0,reason:'Synthetic recorded zero potential'});fixtures.push({label:'potential-recorded',result:recorded});fixtures.push({label:'potential-recorded-result',result:command(recorded,'choose-effect',{index:0})});
  fixtures.push({label:'challenge-result',result:command(eventFixture(10),'education-check',{name:'Medic'})});
  const choice=eventStep(eventFixture(11),[1,1]);fixtures.push({label:'departure-choice',result:choice});const draft=command(choice,'choose-effect',{index:1});fixtures.push({label:'draft-roll',result:draft,capture:true});fixtures.push({label:'draft-result',result:eventStep(draft,[4])});

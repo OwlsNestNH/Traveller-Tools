@@ -1,3 +1,4 @@
+import {aslanRiteNarratives} from '../shared/aslan-rite-narratives.mjs';
 import {aslanFamilyDie} from './aslan-family-popup.mjs';
 const characteristics=['STR','DEX','END','INT','EDU','SOC'];
 export function aslanRitePopupModel(state){
@@ -28,11 +29,43 @@ export function aslanRitePopupView(model,{esc}){
  const {rite:r}=model;
  const ready='<div class="aslan-family-ready"><div class="rite-dice">'+aslanFamilyDie()+aslanFamilyDie()+'</div><h3>Take your place among the adults.</h3><p class="rite-instruction">Roll 2D to discover your RITE modifier.</p><button type="button" id="aslan-family-roll" aria-label="Roll 2D for the Rite of Passage">Roll 2D</button><p class="aslan-family-hint">Your dice and result will appear here.</p></div><p class="rite-boundary-note">Doubles may add an event or a quantity die.</p>';
  const result=r?'<div class="rite-result-roll"><div class="rite-dice">'+r.dice.map(aslanFamilyDie).join('')+'</div><div><span class="rite-roll-label">Rite roll · 2D</span><strong>'+r.dice.map(esc).join(' + ')+' = '+esc(r.total)+'</strong></div></div><div class="rite-result-card"><div><p class="rite-result-label">Your Rite of Passage modifier</p><h3 class="rite-result-name">RITE +'+esc(r.modifier)+'</h3></div><p class="rite-result-explanation">'+esc(r.modifier)+' of 6 characteristics are greater than '+esc(r.total)+'.</p></div><p class="rite-event">'+esc(riteEventSummary(model))+'</p>'+(r.additionalRolls??[]).map(roll=>'<div class="rite-extra-roll"><span>'+esc(roll.label)+'</span><div class="rite-dice">'+roll.values.map(aslanFamilyDie).join('')+'</div><strong>'+roll.values.map(esc).join(' + ')+' = '+esc(roll.total)+'</strong></div>').join('')+(model.equipment?'<button type="button" data-action="aslan-source-review" class="rite-source-review">Review exceptional source outcome</button>':'')+(model.tagline?'<p class="aslan-family-tagline">'+esc(model.tagline)+'</p>':'')+(!model.equipment?'<p class="rite-next">Next: pre-career choices.</p>':''):'';
- return '<dialog id="aslan-family-dialog" class="aslan-family-dialog aslan-rite-dialog" aria-labelledby="aslan-family-title"><p class="aslan-family-eyebrow">RITE OF PASSAGE · '+(r?'YOUR RESULT':'ROLL 2D')+'</p><div class="rite-title-row"><h2 id="aslan-family-title" tabindex="-1">Your Rite of Passage</h2><button type="button" id="aslan-rite-info-open" aria-label="What the Rite of Passage means" aria-haspopup="dialog" aria-controls="aslan-rite-info">i</button></div><p class="aslan-family-band">Aslan · Background skills complete</p><div class="rite-help-row"><span>'+(r?'How this result was calculated':'How RITE works')+'</span><button type="button" id="aslan-rite-calculation-open" aria-label="How RITE is calculated and how doubles work" aria-haspopup="dialog" aria-controls="aslan-rite-calculation-info">i</button></div>'+(r?result:ready)+'<footer><p>AoCS1 Update 2026, pp. 20–21</p>'+(r?'<button type="button" id="aslan-family-continue">'+(model.equipment?'Record restricted credit':'Continue to pre-career')+' <span aria-hidden="true">→</span></button>':'')+'</footer><p id="aslan-family-error" role="alert"></p></dialog>'+riteInformation(model,esc);
+ return '<dialog id="aslan-family-dialog" class="aslan-family-dialog aslan-rite-dialog" aria-labelledby="aslan-family-title"><p class="aslan-family-eyebrow">RITE OF PASSAGE · '+(r?'YOUR RESULT':'ROLL 2D')+'</p><div class="rite-title-row"><h2 id="aslan-family-title" tabindex="-1">Your Rite of Passage</h2><button type="button" id="aslan-rite-info-open" aria-label="What the Rite of Passage means" aria-haspopup="dialog" aria-controls="aslan-rite-info">i</button></div><p class="aslan-family-band">Aslan · Background skills complete</p><div class="rite-help-row"><span>'+(r?'How this result was calculated':'How RITE works')+'</span><button type="button" id="aslan-rite-calculation-open" aria-label="How RITE is calculated and how doubles work" aria-haspopup="dialog" aria-controls="aslan-rite-calculation-info">i</button></div>'+(r?result:ready)+'<footer><p>AoCS1 Update 2026, pp. 20–21</p>'+(r?'<button type="button" id="aslan-family-continue">'+(model.equipment?'Record restricted credit':'Continue to pre-career')+' <span aria-hidden="true">→</span></button>':'')+'</footer><p id="aslan-family-error" role="alert"></p></dialog>'+riteInformation(model,esc)+aslanRiteDoublesView(model,{esc});
 }
-export function mountAslanRiteInformation(root){
+export function mountAslanRiteInformation(root,{resultKey}={}){
+ mountAslanRiteDoubles(root,resultKey);
  for(const [dialogId,openId,closeId] of [['aslan-rite-info','aslan-rite-info-open','aslan-rite-info-close'],['aslan-rite-calculation-info','aslan-rite-calculation-open','aslan-rite-calculation-close']]){
   const info=root.querySelector('#'+dialogId),button=root.querySelector('#'+openId);if(!info||!button)continue;
   button.addEventListener('click',()=>{info.showModal();info.scrollTop=0;});root.querySelector('#'+closeId).addEventListener('click',()=>info.close());info.addEventListener('close',()=>button.focus({preventScroll:true}));
  }
+}
+
+const seenDoublesResults=new Set();
+export function riteDoublesHeadline(model){
+ const r=model.rite;
+ switch(r?.total){
+ case 2:{const quantity=r.additionalRolls?.[0]?.total;return Number.isFinite(quantity)?quantity+' Clan Share'+(quantity===1?'':'s'):'Clan Shares recorded';}
+ case 4:return model.gender==='female'?'Cr5000 cash':model.equipment?'Cr5000 restricted credit pending':model.creditRecorded?'Cr5000 restricted credit':'Referee outcome recorded';
+ case 6:return '1 Contact';
+ case 8:return '1 Rival';
+ case 10:return 'Distinctive rite scar';
+ case 12:return 'END +1';
+ default:return '';
+ }
+}
+export function aslanRiteDoublesView(model,{esc}){
+ const r=model.rite;if(!r||r.dice[0]!==r.dice[1])return '';
+ const titles={2:'An exceptional future',4:'A valuable reward',6:'A new friend',8:'A new rival',10:'A lasting scar',12:'Exceptional determination'};
+ const narrative=aslanRiteNarratives[r.total];
+ if(!narrative)return '';
+ const quantity=(r.additionalRolls??[]).map(roll=>'<div class="rite-doubles-quantity"><p>'+esc(roll.label)+'</p><div class="rite-dice">'+roll.values.map(aslanFamilyDie).join('')+'</div><strong>'+roll.values.map(esc).join(' + ')+' = '+esc(roll.total)+'</strong></div>').join('');
+ return '<dialog id="aslan-rite-doubles-dialog" class="aslan-family-dialog aslan-rite-doubles-dialog" aria-labelledby="aslan-rite-doubles-title"><p class="aslan-family-eyebrow">RITE OF PASSAGE · DOUBLES EVENT</p><h2 id="aslan-rite-doubles-title" tabindex="-1">'+esc(titles[r.total])+'</h2><div class="rite-dice">'+r.dice.map(aslanFamilyDie).join('')+'</div><p class="aslan-family-band">Double '+esc(r.dice[0])+' · '+r.dice.map(esc).join(' + ')+' = '+esc(r.total)+'</p><section class="rite-doubles-effect" aria-labelledby="rite-doubles-outcome"><p class="rite-doubles-status">'+(model.equipment?'Decision still required':'Recorded outcome')+'</p><h3 id="rite-doubles-outcome">'+esc(riteDoublesHeadline(model))+'</h3><p>'+esc(riteEventSummary(model))+'</p>'+quantity+'</section><p class="aslan-family-narrative">'+esc(narrative)+'</p><p class="rite-doubles-note">'+(model.equipment?'Continue to your Rite result to record the restricted credit or review the exceptional source outcome.':'This event is already recorded. Continue returns to your Rite result without rolling or awarding anything again.')+'</p><footer><p>AoCS1 Update 2026, p. 21</p><button type="button" id="aslan-rite-doubles-continue">Continue to Rite result <span aria-hidden="true">→</span></button></footer></dialog>';
+}
+export function mountAslanRiteDoubles(root,resultKey){
+ const dialog=root.querySelector('#aslan-rite-doubles-dialog');if(!dialog)return;
+ const close=()=>dialog.close();
+ root.querySelector('#aslan-rite-doubles-continue').addEventListener('click',close);
+ dialog.addEventListener('close',()=>root.querySelector('#aslan-family-title')?.focus({preventScroll:true}));
+ if(resultKey&&seenDoublesResults.has(resultKey))return;
+ if(resultKey)seenDoublesResults.add(resultKey);
+ dialog.showModal();dialog.scrollTop=0;root.querySelector('#aslan-rite-doubles-title').focus({preventScroll:true});
 }

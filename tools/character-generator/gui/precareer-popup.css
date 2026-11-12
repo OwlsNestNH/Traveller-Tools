@@ -86,7 +86,7 @@
  #sheet>details[data-precareer-bar][open]>summary span::after{content:'−';font-size:22px}
  #sheet>details[data-precareer-bar]>*:not(summary){margin:12px;padding:0;border:0}
  #precareer-notes>#notes-connections>summary{display:none}
- #precareer-rail .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+ #precareer-rail .stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
  #precareer-rail .stat{padding:8px 4px}
  #precareer-rail .stat strong{font-size:25px}
 }
@@ -280,10 +280,54 @@
 .education-checkpoint-details{margin:14px 0;border-top:1px solid #91e6ed}
 .education-checkpoint-details summary{min-height:48px;display:list-item;padding:12px 8px;font-size:21px;cursor:pointer;color:#ffda36}
 .education-checkpoint-details summary:focus-visible{outline:3px solid #ffd34b;outline-offset:3px}
-.education-checkpoint-details pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:16px}
+.education-event-story{margin:12px 0 16px;text-align:left}
+.education-event-story h4{color:#ffda36;font-size:25px;margin:0 0 8px}
+.education-event-story p{font-size:21px;line-height:1.35;margin:8px 0;overflow-wrap:anywhere}
+.education-event-story .education-event-possible{font-size:18px;color:#d8e4ed}
+.education-checkpoint-child .education-child-story{grid-column:1 / -1;font-size:18px}
+@media(max-width:650px){.education-event-story p{font-size:19px}.education-event-story .education-event-possible{font-size:17px}}
 .education-checkpoint-child{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:18px;align-items:center}
 .education-checkpoint-child h4{margin:0}.education-checkpoint-child .education-recorded-dice{grid-column:2;grid-row:1 / span 3;margin:0}
 @media(max-width:650px){.education-checkpoint-child{display:block}.education-checkpoint-child .education-recorded-dice{margin:12px 0}}
 
 /* Recorded event faces retain the gold identity of their unrolled dice. */
 .education-checkpoint .education-recorded-dice{color:#ffd34b}
+
+/* Give the live record a readable desktop width; mobile remains full width. */
+@media screen and (min-width:651px){#precareer-rail{width:clamp(320px,27vw,400px);min-width:320px}}
+@media screen{#precareer-aslan-origin>.aslan-origin-sheet>h3{display:none}#precareer-aslan-origin .aslan-origin-sheet{font-size:16px;line-height:1.5;overflow-wrap:anywhere}#precareer-aslan-origin>summary{font-weight:750;color:#ffdc67}#precareer-aslan-origin .aslan-origin-sheet p{margin:0 0 14px}}
+
+@media screen{#precareer-overview{padding:20px 22px;min-height:0}#precareer-overview h2{margin:10px 0}#precareer-overview p.sheet-meta{font-size:16px;line-height:1.45;overflow-wrap:anywhere}#precareer-overview .sheet-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0 0}#precareer-overview .sheet-facts>span{min-width:0;overflow-wrap:anywhere}#precareer-overview .sheet-facts strong{font-size:20px}}
+/* Nonmodal choices reserve space for the live record instead of covering it. */
+@media screen and (min-width:1101px){
+ .layout.precareer-layout:has(>#precareer-dialog:not(:modal)){grid-template-columns:minmax(0,1fr) clamp(320px,27vw,400px);column-gap:24px;row-gap:16px}
+ .precareer-layout:has(>#precareer-dialog:not(:modal)) #precareer-context{display:contents}
+ .precareer-layout:has(>#precareer-dialog:not(:modal)) #precareer-rail{grid-column:2;grid-row:1 / span 2;width:100%;min-width:0}
+ .precareer-layout:has(>#precareer-dialog:not(:modal)) .precareer-step-card{grid-column:1;grid-row:2;width:100%;min-width:0;min-height:0;display:flex;align-items:center;flex-wrap:wrap;gap:10px 18px;padding:12px 18px}
+ .precareer-layout:has(>#precareer-dialog:not(:modal)) .precareer-step-card :is(p,button){margin:0}
+ .precareer-layout:has(>#precareer-dialog:not(:modal)) .precareer-step-rule{display:none}
+ .precareer-layout #precareer-dialog:not(:modal){grid-column:1;grid-row:1;width:100%;min-width:0;margin:0}
+ .precareer-layout #precareer-dialog:not(:modal) button.precareer-choice{gap:14px;padding:15px 18px;font-size:clamp(24px,2vw,32px)}
+}
+@media screen and (min-width:651px) and (max-width:1100px){
+ .precareer-layout:has(>#precareer-dialog:not(:modal)) #precareer-context{grid-row:1}
+ .precareer-layout #precareer-dialog:not(:modal){grid-row:2;width:100%;margin:18px 0 0}
+}
+/* Keep the full PSI story and choices visible without shrinking the dice.
+   Only wide screens place PSI/challenge explanation beside the pending roll. */
+@media screen and (min-width:1101px){
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]):has(>.education-pending-dice){display:grid;grid-template-columns:minmax(0,1fr) 316px;column-gap:20px;align-items:center}
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]):has(>.education-pending-dice)>*{grid-column:1 / -1}
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]):has(>.education-pending-dice)>.education-event-content{grid-column:1;grid-row:2}
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]):has(>.education-pending-dice)>.education-pending-dice{grid-column:2;grid-row:2}
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]):has(>.education-pending-dice)>.education-event-heading{grid-row:1}
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]):has(>.education-pending-dice)>.education-nested-label{grid-row:3}
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]):has(>.education-pending-dice)>.education-event-roll{grid-row:4}
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]):has(>.education-pending-dice)>.education-potential-decline{grid-row:5}
+ :is(.education-potential-prompt,.education-nested-prompt[data-education-choice="challenge"]):has(>.education-pending-dice)>.education-event-agency{grid-row:6}
+}
+
+/* Reserve desktop result-footer clearance below the persistent toolbar. */
+@media screen and (min-width:1101px){
+ body[data-education-popup="true"] #precareer-dialog[data-panel="result"] #workspace{padding-top:16px;padding-bottom:12px}
+}

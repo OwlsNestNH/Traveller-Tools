@@ -1,3 +1,4 @@
+import {aslanRiteNarratives} from '../shared/aslan-rite-narratives.mjs';
 // Original context summaries, independently paraphrased from Aliens of Charted
 // Space Volume 1 Update 2026, pp21, 25-46 and 189-206. These are not rules text.
 // Choices, checks and actual outcomes remain in the existing rules engine.
@@ -389,14 +390,7 @@ tables['vargr.unusual-events'] = rows(1, [
  'Your pack gains prominence and deals with a government leader.',
  'You acquire an object thought to date from the Ancients bringing the Vargr to Lair.'
 ]);
-tables['aslan.rite-doubles'] = {
- 2: 'Your rite performance leads the clan to expect an exceptional future from you.',
- 4: 'An impressive rite performance earns you a valuable reward.',
- 6: 'You befriend a young Aslan taking the rite alongside you.',
- 8: 'Another participant competes with you during the rite.',
- 10: 'An injury during the rite leaves a recognisable scar.',
- 12: 'You push through the rite with exceptional determination.'
-};
+tables['aslan.rite-doubles'] = aslanRiteNarratives;
 export function alienEventNarrative(table, row) {
  const text = Object.hasOwn(tables, table) ? tables[table]?.[Number(row)] : null;
  return typeof text === 'string' ? text : null;

@@ -1,7 +1,15 @@
 // Read-only evidence for revision .31 University event checkpoints. Roll faces
 // come only from recorded roll objects; effects are never inferred as awards.
 import {characterChanges} from './audit.mjs';
-const names={2:'Psionic potential',3:'Education interrupted',4:'Social conflict',5:'Carousing',6:'New allies',7:'Life event',8:'Social connections',9:'Hobby skill',10:'Study challenge',11:'Political trouble',12:'Social standing'};
+import {eventNarrative} from './event-narratives.mjs';
+import {eventEffectSummary} from './event-effect-summary.mjs';
+import {PRECAREER_EVENTS} from './education-pack.mjs';
+import {preCareerEventName} from '../shared/precareer-event-presentation.mjs';
+// Original available narrative and encoded consequences, not copied book prose.
+export function educationEventText(row){
+ if(!Object.hasOwn(PRECAREER_EVENTS,row))return null;
+ return {row,name:preCareerEventName(row),description:eventNarrative('core.pre-career-events',row),summary:eventEffectSummary(PRECAREER_EVENTS[row]),source:{id:'core',title:'Core Rulebook Update 2022',page:17}};
+}
 const commands=new Set(['education-event','choose-effect','education-check','roll-education-event-step','resolve-book','choose-skill','allocate-specializations','skill-award-source','retry-skill-choice','education-skill','resolve-life-event','injury-loss','injury-treatment']);
 const contextId=s=>s.educationEventContext?.id??s.educationEventResult?.id?.replace(/-result$/,'');
 export function educationEventEvidence(view,{state,log,snapshots,events,skillModifier}){
@@ -32,9 +40,10 @@ export function educationEventEvidence(view,{state,log,snapshots,events,skillMod
    if(Number.isFinite(pending?.target)&&Number.isFinite(pending.modifier))check={...(pending.stat?{stat:pending.stat}:{}),modifier:pending.modifier,target:pending.target,...(pending.comparison?{comparison:pending.comparison,comparisonStat:pending.comparisonStat,comparisonScore:pending.comparisonScore}:{})};
    else if(command.type==='education-check'&&typeof skillModifier==='function')check={skill:command.payload.name,modifier:skillModifier(before,command.payload.name),target:before.pendingChoice.target};
    if(check){check.total=roll.total+check.modifier;check.success=check.total>=check.target;}
-   childRolls.push({actionId:log[i].id,...structuredClone(roll),source:structuredClone(pending?.source??(command.type==='resolve-life-event'?{id:'core',page:228}:{id:'core',page:17})),...(check?{check}:{})});
+   const eventResult=(log[i].eventResults??[]).findLast(result=>result.roll.label===roll.label&&result.roll.total===roll.total&&JSON.stringify(result.roll.values)===JSON.stringify(roll.values));
+   childRolls.push({...(eventResult?{eventDescription:eventResult.description,eventSummary:eventResult.summary}:{}),actionId:log[i].id,...structuredClone(roll),source:structuredClone(pending?.source??(command.type==='resolve-life-event'?{id:'core',page:228}:{id:'core',page:17})),...(check?{check}:{})});
   }
  }
  const {rolls:_internalRolls,...publicView}=view;
- return {...structuredClone(publicView),name:names[view.row],forcedCareer:structuredClone(state.forcedCareer??null),descriptionSource:'implemented-mechanics',eventDice:[...initial.kept],eventTotal:view.row,childRolls,appliedChanges:applied,appliedStateChanges,pendingEffects:structuredClone(state.effectsQueue??[]),pendingChoice:structuredClone(state.pendingChoice??null),source:{id:'core',title:'Core Rulebook Update 2022',page:17}};
+ return {...structuredClone(publicView),...educationEventText(view.row),forcedCareer:structuredClone(state.forcedCareer??null),descriptionSource:'implemented-mechanics',eventDice:[...initial.kept],eventTotal:view.row,childRolls,appliedChanges:applied,appliedStateChanges,pendingEffects:structuredClone(state.effectsQueue??[]),pendingChoice:structuredClone(state.pendingChoice??null),source:{id:'core',title:'Core Rulebook Update 2022',page:17}};
 }

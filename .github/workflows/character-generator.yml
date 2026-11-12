@@ -136,10 +136,19 @@ jobs:
           node "$RUNNER_TEMP/character-playwright/node_modules/playwright/cli.js" install chromium
       - name: Approved Pre-Career screen interactions
         run: node tools/character-generator/verification/precareer-popup-browser.mjs "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+      - name: Player-facing setup and species record review
+        run: |
+          for suite in opening-help-browser clan-share-browser aslan-land-browser; do
+            node "tools/character-generator/verification/$suite.mjs" "$RUNNER_TEMP/character-playwright/node_modules/playwright"
+          done
       - name: Upload Pre-Career working-screen review
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: precareer-working-review-${{ github.event.pull_request.head.sha }}
-          path: tools/character-generator/verification/artifacts/precareer-popup-*
+          path: |
+            tools/character-generator/verification/artifacts/precareer-popup-*
+            tools/character-generator/verification/artifacts/opening-informationals-*
+            tools/character-generator/verification/artifacts/clan-share-*
+            tools/character-generator/verification/artifacts/aslan-land-*
           if-no-files-found: warn

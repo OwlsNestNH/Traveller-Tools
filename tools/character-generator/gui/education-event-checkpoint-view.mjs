@@ -1,5 +1,9 @@
 import {aslanFamilyDie} from './aslan-family-popup.mjs';
 const validFaces=values=>Array.isArray(values)&&values.length>0&&values.every(n=>Number.isInteger(n)&&n>=1&&n<=6);
+export function educationEventStoryView(context,{esc,heading=true}){
+ if(!context?.description)return '';
+ return '<section class="education-event-story">'+(heading?'<h4>'+esc(context.name)+'</h4>':'')+'<p>'+esc(context.description)+'</p><p class="education-event-possible"><strong>Event rules:</strong> '+esc(context.summary)+'</p></section>';
+}
 export function educationCheckpointModel(projection){
  const view=projection?.educationEventView,state=projection?.state;
  if(!view||!state||!validFaces(view.eventDice)||view.eventDice.length!==2||view.eventDice.reduce((a,b)=>a+b,0)!==view.eventTotal)return null;
@@ -21,6 +25,7 @@ export function educationAppliedLines(groups,stateGroups=[]){
  const lines=[];
  for(const group of groups??[])for(const change of group.changes??[]){
   const {path,before,after}=change;
+  if(path.startsWith('benefits.')&&after?.name){lines.push('Benefit: '+after.name+' × '+(after.quantity??1)+(before?.quantity?' (was '+before.quantity+')':'')+'.');continue;}
   if(path.startsWith('lifeBenefitLosses.')&&after){lines.push(after.status==='owed'?'One future Benefit roll must be forfeited.':'Benefit-roll loss: '+after.status+'.');continue;}
   if(path==='lifePsionAccess'&&after){lines.push('Conditional Psion access at '+after.availableAtTerms+' completed term(s), only while career count remains '+after.careerCount+' and PSI stays positive without permanent loss. Admission and training are not granted.');continue;}
   if(path.startsWith('lifeEvents.')&&after?.decision?.kind==='narrative'&&JSON.stringify(before?.decision)!==JSON.stringify(after.decision)){const outcomes={birth:'A birth was recorded.',death:'A death was recorded in your life story.',amnesia:'Amnesia was recorded.',government:'Encounter with Imperial government recorded.'};lines.push(outcomes[after.decision.outcome]??'Life-event narrative decision recorded.');continue;}
@@ -48,8 +53,8 @@ export function educationAppliedLines(groups,stateGroups=[]){
 }
 export function educationCheckpointView(model,{esc,sourceLabel,choiceHtml='',careerLabel=id=>id}){
  const initial='<section class="education-checkpoint-record"><h4>Recorded education event</h4><div class="education-recorded-dice" role="img" aria-label="'+esc(model.eventDice.join(' + ')+' = '+model.eventTotal)+'">'+faces(model.eventDice,esc)+'<strong>= '+esc(model.eventTotal)+'</strong></div></section>';
- const children=(model.childRolls??[]).map(roll=>'<section class="education-checkpoint-child"><h4>'+esc(roll.label.replace('core.life-events','Life event').replace('core.unusual-events','Unusual event'))+'</h4>'+(validFaces(roll.values)?'<div class="education-recorded-dice" role="img" aria-label="Recorded dice '+esc(roll.values.join(', '))+'">'+faces(roll.values,esc)+'</div>':'')+'<p>Recorded total: '+esc(roll.total)+(JSON.stringify(roll.kept)!==JSON.stringify(roll.values)?' · Kept/converted: '+esc((roll.kept??[]).join(', ')):'')+'</p>'+(roll.check?'<p class="education-checkpoint-check">'+esc(checkSummary(roll.check))+'</p>':'')+(roll.source?'<small>'+esc(sourceLabel(roll.source.id,roll.source.page))+'</small>':'')+'</section>');
- const changes=educationAppliedLines(model.appliedChanges,model.appliedStateChanges),applied=changes.length?'<section class="education-checkpoint-applied"><h4>Applied results</h4><ul>'+changes.map(line=>'<li>'+esc(line)+'</li>').join('')+'</ul></section>':model.mode==='result'?'<p class="education-checkpoint-neutral">Full recorded changes are available below.</p>':'';
+ const children=(model.childRolls??[]).map(roll=>'<section class="education-checkpoint-child"><h4>'+esc(roll.label.replace('core.life-events','Life event').replace('core.unusual-events','Unusual event'))+'</h4>'+(validFaces(roll.values)?'<div class="education-recorded-dice" role="img" aria-label="Recorded dice '+esc(roll.values.join(', '))+'">'+faces(roll.values,esc)+'</div>':'')+'<p>Dice total: '+esc(roll.total)+(JSON.stringify(roll.kept)!==JSON.stringify(roll.values)?' · Kept/converted: '+esc((roll.kept??[]).join(', ')):'')+'</p>'+(roll.check?'<p class="education-checkpoint-check">'+esc(checkSummary(roll.check))+'</p>':'')+(roll.eventDescription?'<p class="education-child-story">'+esc(roll.eventDescription)+'</p>':'')+(roll.eventSummary?'<p class="education-child-story"><strong>Event rules:</strong> '+esc(roll.eventSummary)+'</p>':'')+(roll.source?'<small>'+esc(sourceLabel(roll.source.id,roll.source.page))+'</small>':'')+'</section>');
+ const changes=educationAppliedLines(model.appliedChanges,model.appliedStateChanges),applied=changes.length?'<section class="education-checkpoint-applied"><h4>Applied results</h4><ul>'+changes.map(line=>'<li>'+esc(line)+'</li>').join('')+'</ul></section>':model.mode==='result'?'<p class="education-checkpoint-neutral">'+(model.row===8&&model.childRolls?.at(-1)?.check?.success===false?'Your SOC check failed. You gain neither an Ally nor an Enemy from this event.':model.row===10&&model.childRolls?.at(-1)?.check?.success===false?'Your study challenge failed. Your skill is unchanged and you gain no Rival.':model.row===11&&model.childRolls?.at(-1)?.check?.success===true?'Your SOC check succeeded. You avoid the draft and may still attempt graduation.':'No character changes were recorded by this event.')+'</p>':'';
  let control='';
  if(model.mode==='roll'){
   const r=model.roll,count=r.dice==='2D'?2:1;
@@ -61,10 +66,9 @@ export function educationCheckpointView(model,{esc,sourceLabel,choiceHtml='',car
  const destination=model.mode==='result'&&model.forcedCareer?'<p class="education-checkpoint-destination">Required next career: '+esc(careerLabel(typeof model.forcedCareer==='string'?model.forcedCareer:model.forcedCareer.id))+'.</p>':'';
  const latest=children.length?children.at(-1):initial;
  const earlier=children.length?initial+children.slice(0,-1).join(''):'';
- const hasDetail=!!earlier||[...(model.appliedChanges??[]),...(model.appliedStateChanges??[])].some(group=>group.changes?.length);
- const detail=hasDetail?'<details class="education-checkpoint-details"><summary>Earlier rolls and recorded changes</summary>'+earlier+'<pre>'+esc(JSON.stringify({character:model.appliedChanges??[],state:model.appliedStateChanges??[]},null,2))+'</pre></details>':'';
+ const detail=earlier?'<details class="education-checkpoint-details"><summary>Earlier rolls</summary>'+earlier+'</details>':'';
  const independence=model.roll?.kind==='education-hobby-independence'||model.childRolls?.some(r=>r.check?.comparison==='greater-than');
  const check=model.childRolls?.findLast(r=>r.check?.comparison==='greater-than')?.check;
  const selection=independence?'<p>Selected hobby: Independence.</p>'+(check?.success===false?'<p>No Independence skill was gained from this check.</p>':''):'';
- return '<section class="education-checkpoint" data-checkpoint-mode="'+esc(model.mode)+'"><div class="education-event-heading"><h3>University education event</h3></div><p class="education-potential-label">Event '+esc(model.row)+' · '+esc(model.eventName)+'</p>'+latest+selection+applied+departure+destination+control+detail+'<p class="education-checkpoint-source">'+esc(sourceLabel(model.source.id,model.source.page))+'</p></section>';
+ return '<section class="education-checkpoint" data-checkpoint-mode="'+esc(model.mode)+'"><div class="education-event-heading"><h3>University education event</h3></div><p class="education-potential-label">Event '+esc(model.row)+' · '+esc(model.eventName)+'</p>'+educationEventStoryView(model,{esc,heading:false})+latest+selection+applied+departure+destination+control+detail+'<p class="education-checkpoint-source">'+esc(sourceLabel(model.source.id,model.source.page))+'</p></section>';
 }
