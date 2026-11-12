@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {REQUIRED_HEADLINES,requiredHeadline,actionRequirements,missingField,clearRequiredActions} from '../gui/required-action.mjs';
+import {ARMY_SKILL_HEADLINES,REQUIRED_HEADLINES,requiredHeadline,actionRequirements,missingField,clearRequiredActions} from '../gui/required-action.mjs';
 test('all eight approved banks have six stable, reachable headlines',()=>{
  assert.deepEqual(Object.keys(REQUIRED_HEADLINES),['starting','skills','rolls','career','event','details','referee','generic']);
  for(const [type,bank] of Object.entries(REQUIRED_HEADLINES)){
@@ -49,4 +49,12 @@ test('only the three approved costume roles are selected; absent artwork falls b
  assert.equal(crowVariant('skills'),'professor');assert.equal(crowVariant('referee'),'referee');
  for(const type of ['starting','rolls','career','event','details','generic','unknown'])assert.equal(crowVariant(type),'technician');
  const base={verified:true},education={approved:true};assert.equal(crowAsset('skills',{professor:education},base),education);assert.equal(crowAsset('referee',{},base),base);assert.equal(crowAsset('skills',{},null),null);
+});
+
+test('Army skill warnings retain six reachable variants without education-only wording',()=>{
+ assert.equal(ARMY_SKILL_HEADLINES.length,6);assert.equal(new Set(ARMY_SKILL_HEADLINES).size,6);
+ const selected=new Set();for(let n=0;n<100;n++){const key='checkpoint-'+n;selected.add(requiredHeadline('skills',key,'core.army'));assert.equal(requiredHeadline('skills',key,'core.army'),requiredHeadline('skills',key,'core.army'));}
+ assert.deepEqual(selected,new Set(ARMY_SKILL_HEADLINES));assert.ok(ARMY_SKILL_HEADLINES.every(text=>!/diploma|study|school/i.test(text)));
+ assert.equal(requiredHeadline('skills','checkpoint','other'),requiredHeadline('skills','checkpoint'));
+ for(const type of ['starting','rolls','career','event','details','referee','generic'])assert.equal(requiredHeadline(type,'checkpoint','core.army'),requiredHeadline(type,'checkpoint'));
 });

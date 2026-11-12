@@ -388,8 +388,9 @@ try {
       assert.equal(await page.locator('body').evaluate(el=>getComputedStyle(el).colorScheme), 'dark', 'approved Pre-Career uses its own dark popup');
       await page.locator('[data-action=skip-precareer]').click();
       await page.locator('body[data-stage=career]').waitFor();
-      assert.equal(await page.locator('header h1').textContent(), 'A life among the stars');
-      assert.notDeepEqual(await headerStyle(page), openingHeader, 'unapproved later stages retain their previous theme');
+      assert.equal(await page.locator('header h1').textContent(), 'CHARACTER BUILDER');
+      assert.equal(await page.locator('#army-career-dialog').isVisible(), true, 'career selection uses the approved popup shell');
+      assert.equal(await page.locator('body').evaluate(el=>getComputedStyle(el).colorScheme), 'dark');
     });
 
     const scenarios = [

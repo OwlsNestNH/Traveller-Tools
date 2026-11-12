@@ -87,7 +87,7 @@ try{
    const afterNotes=await saved(p);await p.reload();await ready(p);assert.equal(await saved(p),afterNotes);assert.equal(await p.locator('#precareer-standard').isVisible(),true);
    await p.locator('[data-action=skip-precareer]').evaluate(el=>{el.click();el.click();});await p.locator('body[data-stage=career]').waitFor();await ready(p);
    const afterSkip=JSON.parse(await saved(p));assert.equal(afterSkip.events.length,JSON.parse(afterNotes).events.length+1);assert.equal(afterSkip.events.at(-1).command.type,'skip-precareer');
-   assert.equal(await p.locator('#precareer-dialog,#precareer-context,#precareer-information').count(),0);assert.equal(await p.locator('header h1').textContent(),'A life among the stars');assert.equal(await p.locator('body').evaluate(el=>getComputedStyle(el).colorScheme),'light');assert.equal(await p.locator('#cancel-character').count(),1);
+   assert.equal(await p.locator('#precareer-dialog,#precareer-context,#precareer-information').count(),0);assert.equal(await p.locator('header h1').textContent(),'CHARACTER BUILDER');assert.equal(await p.locator('body').evaluate(el=>getComputedStyle(el).colorScheme),'dark');assert.equal(await p.locator('#army-career-dialog').isVisible(),true);assert.match(await p.locator('#step-title').innerText(),/career/i);assert.equal(await p.locator('#cancel-character').count(),1);
    // Admission is presentation only until the player explicitly presses the dice button.
    await load(p);const previewBefore=await saved(p),previewCommands=commands.length;
    await coreChoice(p).focus();await p.keyboard.press('Enter');await admission(p).waitFor();
